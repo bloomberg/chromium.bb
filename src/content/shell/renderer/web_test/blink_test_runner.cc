@@ -36,7 +36,6 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/common/web_preferences.h"
-#include "content/public/renderer/media_stream_utils.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
@@ -170,8 +169,7 @@ BlinkTestRunner::BlinkTestRunner(RenderView* render_view)
     : RenderViewObserver(render_view),
       RenderViewObserverTracker<BlinkTestRunner>(render_view),
       test_config_(mojom::ShellTestConfiguration::New()),
-      is_main_window_(false),
-      focus_on_next_commit_(false) {}
+      is_main_window_(false) {}
 
 BlinkTestRunner::~BlinkTestRunner() {}
 
@@ -607,7 +605,8 @@ bool BlinkTestRunner::AllowExternalPages() {
 
 void BlinkTestRunner::FetchManifest(
     blink::WebView* view,
-    base::OnceCallback<void(const GURL&, const blink::Manifest&)> callback) {
+    base::OnceCallback<void(const blink::WebURL&, const blink::Manifest&)>
+        callback) {
   ::content::FetchManifest(view, std::move(callback));
 }
 
@@ -698,28 +697,6 @@ bool BlinkTestRunner::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void BlinkTestRunner::Navigate(const GURL& url) {
-  focus_on_next_commit_ = true;
-}
-
-void BlinkTestRunner::DidCommitProvisionalLoad(WebLocalFrame* frame,
-                                               bool is_new_navigation) {
-  if (waiting_for_reset_ && frame == render_view()->GetWebView()->MainFrame() &&
-      GURL(frame->GetDocumentLoader()->GetUrl()).IsAboutBlank()) {
-    waiting_for_reset_ = false;
-    Send(new BlinkTestHostMsg_ResetDone(routing_id()));
-  }
-  if (!focus_on_next_commit_)
-    return;
-  focus_on_next_commit_ = false;
-  render_view()->GetWebView()->SetFocusedFrame(frame);
-}
-
-void BlinkTestRunner::DidFailProvisionalLoad(WebLocalFrame* frame,
-                                             const WebURLError& error) {
-  focus_on_next_commit_ = false;
-}
-
 // Public methods - -----------------------------------------------------------
 
 void BlinkTestRunner::Reset(bool for_new_test) {
@@ -755,6 +732,17 @@ void BlinkTestRunner::CaptureDump(
 
   dump_callback_ = std::move(callback);
   CaptureDumpComplete();
+}
+
+void BlinkTestRunner::DidCommitNavigationInMainFrame() {
+  WebFrame* main_frame = render_view()->GetWebView()->MainFrame();
+  if (!waiting_for_reset_ || !main_frame->IsWebLocalFrame())
+    return;
+  GURL url = main_frame->ToWebLocalFrame()->GetDocumentLoader()->GetUrl();
+  if (!url.IsAboutBlank())
+    return;
+  waiting_for_reset_ = false;
+  Send(new BlinkTestHostMsg_ResetDone(routing_id()));
 }
 
 // Private methods  -----------------------------------------------------------
@@ -827,7 +815,13 @@ void BlinkTestRunner::OnReset() {
   // Navigating to about:blank will make sure that no new loads are initiated
   // by the renderer.
   waiting_for_reset_ = true;
-  main_frame->StartNavigation(WebURLRequest(GURL(url::kAboutBlankURL)));
+
+  auto request = blink::WebURLRequest(GURL(url::kAboutBlankURL));
+  request.SetFetchRequestMode(network::mojom::FetchRequestMode::kNavigate);
+  request.SetFetchRedirectMode(network::mojom::FetchRedirectMode::kManual);
+  request.SetRequestContext(blink::mojom::RequestContextType::INTERNAL);
+  request.SetRequestorOrigin(blink::WebSecurityOrigin::CreateUniqueOpaque());
+  main_frame->StartNavigation(request);
 }
 
 void BlinkTestRunner::OnTestFinishedInSecondaryRenderer() {

@@ -18,6 +18,14 @@ std::string RemoteDevice::GenerateDeviceId(const std::string& public_key) {
   return device_id;
 }
 
+// static
+std::string RemoteDevice::DerivePublicKey(const std::string& device_id) {
+  std::string public_key;
+  if (base::Base64Decode(device_id, &public_key))
+    return public_key;
+  return std::string();
+}
+
 RemoteDevice::RemoteDevice() : last_update_time_millis(0L) {}
 
 RemoteDevice::RemoteDevice(

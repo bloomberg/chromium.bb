@@ -257,9 +257,6 @@ TEST_P(MultisampledRenderingTest, ResolveInto2DTexture) {
 
 // Test multisampled rendering with depth test works correctly.
 TEST_P(MultisampledRenderingTest, MultisampledRenderingWithDepthTest) {
-    // TODO(jiawei.shao@intel.com): find out why this test fails on Intel Windows Vulkan drivers.
-    DAWN_SKIP_TEST_IF(IsIntel() && IsVulkan() && IsWindows());
-
     constexpr bool kTestDepth = true;
     dawn::CommandEncoder commandEncoder = device.CreateCommandEncoder();
     dawn::RenderPipeline pipeline = CreateRenderPipelineWithOneOutputForTest(kTestDepth);
@@ -413,8 +410,6 @@ TEST_P(MultisampledRenderingTest, ResolveOneMultisampledTextureTwice) {
 
 // Test using a layer of a 2D texture as resolve target works correctly.
 TEST_P(MultisampledRenderingTest, ResolveIntoOneMipmapLevelOf2DTexture) {
-    // TODO(jiawei.shao@intel.com): investigate why this case fails on Intel and Nvidia.
-    DAWN_SKIP_TEST_IF(IsMetal() && (IsIntel() || IsNvidia()));
     constexpr uint32_t kBaseMipLevel = 2;
 
     dawn::TextureViewDescriptor textureViewDescriptor;
@@ -453,8 +448,6 @@ TEST_P(MultisampledRenderingTest, ResolveIntoOneMipmapLevelOf2DTexture) {
 
 // Test using a level or a layer of a 2D array texture as resolve target works correctly.
 TEST_P(MultisampledRenderingTest, ResolveInto2DArrayTexture) {
-    // TODO(jiawei.shao@intel.com): investigate why this case fails on Intel and Nvidia.
-    DAWN_SKIP_TEST_IF(IsMetal() && (IsIntel() || IsNvidia()));
     dawn::TextureView multisampledColorView2 =
         CreateTextureForOutputAttachment(kColorFormat, kSampleCount).CreateDefaultView();
 
@@ -513,4 +506,13 @@ TEST_P(MultisampledRenderingTest, ResolveInto2DArrayTexture) {
     VerifyResolveTarget(kGreen, resolveTexture2, kBaseMipLevel2, kBaseArrayLayer2);
 }
 
-DAWN_INSTANTIATE_TEST(MultisampledRenderingTest, D3D12Backend, OpenGLBackend, MetalBackend, VulkanBackend);
+DAWN_INSTANTIATE_TEST(MultisampledRenderingTest,
+                      D3D12Backend,
+                      MetalBackend,
+                      OpenGLBackend,
+                      VulkanBackend,
+                      ForceWorkarounds(MetalBackend, {"emulate_store_and_msaa_resolve"}),
+                      ForceWorkarounds(MetalBackend, {"always_resolve_into_zero_level_and_layer"}),
+                      ForceWorkarounds(MetalBackend,
+                                       {"always_resolve_into_zero_level_and_layer",
+                                        "emulate_store_and_msaa_resolve"}));

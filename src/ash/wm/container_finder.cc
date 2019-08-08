@@ -7,7 +7,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/wm/always_on_top_controller.h"
 #include "ash/wm/root_window_finder.h"

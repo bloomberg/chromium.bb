@@ -309,6 +309,10 @@ class V4ProtocolManagerUtil {
   static void GeneratePatternsToCheck(const GURL& url,
                                       std::vector<std::string>* urls);
 
+  // Returns a FullHash for the basic host+path pattern for a given URL after
+  // canonicalization. Not intended for general use.
+  static FullHash GetFullHash(const GURL& url);
+
   // Generates a Pver4 request URL and sets the appropriate header values.
   // |request_base64| is the serialized request protocol buffer encoded in
   // base 64.

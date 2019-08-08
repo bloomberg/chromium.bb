@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">ಮೆನುವನ್ನು ಕುಗ್ಗಿಸಿ</translation>
 <translation id="1383876407941801731">ಹುಡುಕಾಟ</translation>
 <translation id="1419738280318246476">ಅಧಿಸೂಚನೆ ಕ್ರಿಯೆಯನ್ನು ನಿರ್ವಹಿಸಲು ಸಾಧನವನ್ನು ಅನ್‌ಲಾಕ್ ಮಾಡಿ</translation>
+<translation id="1426410128494586442">ಹೌದು</translation>
 <translation id="1455242230282523554">ಭಾಷೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೋರಿಸಿ</translation>
 <translation id="1467432559032391204">ಎಡಕ್ಕೆ</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -47,7 +48,6 @@
 <translation id="1570871743947603115">ಬ್ಲೂಟೂತ್ ಟಾಗಲ್ ಮಾಡಿ. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">ಈ ಸೆಶನ್‌ನಲ್ಲಿ ನೀವು ನಡೆಸುವ ಎಲ್ಲಾ ಚಟುವಟಿಕೆಯನ್ನು ಪ್ರವೇಶಿಸುವುದು</translation>
 <translation id="1608626060424371292">ಈ ಬಳಕೆದಾರರನ್ನು ತೆಗೆದುಹಾಕಿ</translation>
-<translation id="1621499497873603021">ಬ್ಯಾಟರಿ ಖಾಲಿ ಆಗುವವರೆಗೆ ಉಳಿದಿರುವ ಸಮಯ, <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">ಧ್ವನಿ ಪ್ರಶ್ನೆಯನ್ನು ಕೇಳಲು ಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="1658406695958299976">ಕ್ಷಮಿಸಿ, ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಇನ್ನೂ ಪರಿಶೀಲಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ಗಮನಿಸಿ: ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ನೀವು ಇತ್ತೀಚೆಗೆ ಬದಲಾಯಿಸಿದ್ದರೆ, ನೀವು ಸೈನ್ ಔಟ್ ಮಾಡಿದ ನಂತರ ನಿಮ್ಮ ಹೊಸ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಜಾರಿಗೆ ತರಲಾಗುತ್ತದೆ, ಇಲ್ಲಿ ಹಳೆಯ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಬಳಸಿ.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> ಬಾಕಿ ಉಳಿದಿದೆ</translation>
@@ -72,7 +72,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">ಇತ್ತೀಚಿನ <ph name="SYSTEM_APP_NAME" /> ಅಪ್‌ಡೇಟ್ ಕುರಿತು ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ</translation>
 <translation id="1995660704900986789">ಪವರ್ ಆಫ್</translation>
-<translation id="1999763610967697511">ಎಳೆಯಿರಿ ಮತ್ತು ಬಿಡಿ</translation>
 <translation id="2012624427112548395">Ctrl+ಹುಡುಕಾಟ+H</translation>
 <translation id="2016340657076538683">ಸಂದೇಶವನ್ನು ಟೈಪ್‌ ಮಾಡಿ</translation>
 <translation id="2050339315714019657">ಪೋಟ್ರೇಟ್</translation>
@@ -100,7 +99,6 @@
 <translation id="239188844683466770">ಅಡಚಣೆ ಮಾಡಬೇಡಿ ಸ್ಥಿತಿಯನ್ನು ಟಾಗಲ್ ಮಾಡಿ</translation>
 <translation id="2412593942846481727">ಅಪ್‌ಡೇಟ್‌‌ ಲಭ್ಯವಿದೆ</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> ಎಂಬುದು <ph name="DOMAIN" /> ಮೂಲಕ ನಿರ್ವಹಿಸಲಾದ ಒಂದು ನಿರ್ವಹಿಸಿದ ಸೆಶನ್ ಆಗಿದೆ</translation>
-<translation id="2416346634399901812"><ph name="NETWORK_NAME" /> ಗೆ ಸಂಪರ್ಕಿಸಲಾಗಿದೆ</translation>
 <translation id="2427507373259914951">ಎಡ-ಕ್ಲಿಕ್</translation>
 <translation id="2429753432712299108">ಬ್ಲೂಟೂತ್‌‌ ಸಾಧನವು "<ph name="DEVICE_NAME" />" ಜೋಡಣೆಗಾಗಿ ಅನುಮತಿಯನ್ನು ಬಯಸುತ್ತದೆ. ಸಮ್ಮತಿಸುವುದಕ್ಕೂ ಮೊದಲು, ದಯವಿಟ್ಟು ಆ ಸಾಧನದಲ್ಲಿ ಈ ಪಾಸ್‌ಕೀಲಿಯನ್ನು ತೋರಿಸಲಾಗಿದೆಯೇ ಎಂಬುದನ್ನು ಖಾತರಿಪಡಿಸಿಕೊಳ್ಳಿ: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">ಸೂಚನೆಗಳು</translation>
@@ -114,11 +112,11 @@
 <translation id="2597972630681408282">ನೈಟ್ ಲೈಟ್: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">ಸಿಮ್‌ ಕಾರ್ಡ್ ಲಾಕ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="2653659639078652383">ಸಲ್ಲಿಸು</translation>
+<translation id="2658778018866295321">ಕ್ಲಿಕ್ ಮಾಡಿ ಮತ್ತು ಡ್ರ್ಯಾಗ್ ಮಾಡಿ</translation>
 <translation id="2700493154570097719">ನಿಮ್ಮ ಕೀಬೋರ್ಡ್ ಅನ್ನು ಹೊಂದಿಸಿ</translation>
 <translation id="2718395828230677721">ನೈಟ್ ಲೈಟ್</translation>
 <translation id="2727977024730340865">ಕಡಿಮೆ ವಿದ್ಯುತ್ ಚಾರ್ಜರ್‌ಗೆ ಪ್ಲಗ್ ಮಾಡಲಾಗಿದೆ. ಬ್ಯಾಟರಿ ಚಾರ್ಜಿಂಗ್ ವಿಶ್ವಾಸಾರ್ಹವಾಗಿಲ್ಲದಿರಬಹುದು.</translation>
 <translation id="2761704814324807722">ಸ್ಥಿತಿ ಟ್ರೇ, ಸಮಯ <ph name="TIME" />, <ph name="BATTERY" /></translation>
-<translation id="277257480934873581"><ph name="NAME" /> ಗೆ ಮರುಸಂಪರ್ಕಪಡಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="2792498699870441125">Alt+ಹುಡುಕಾಟ</translation>
 <translation id="2803734122639935495">ಅನ್‌ಲಾಕ್ ಮಾಡಲು, ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ನಮೂದಿಸಿ</translation>
 <translation id="2819276065543622893">ಈಗ ನಿಮ್ಮನ್ನು ಸೈನ್ ಔಟ್ ಮಾಡಲಾಗುತ್ತದೆ.</translation>
@@ -139,7 +137,6 @@
 <translation id="2996462380875591307">ಡಾಕ್‌‌ ಮಾಡಿರುವ ವರ್ಧಕವನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ. ಅದನ್ನು ಟಾಗಲ್‌ ಆಫ್‌ ಮಾಡಲು ಪುನಃ Ctrl+Search+D ಅನ್ನು ಒತ್ತಿರಿ.</translation>
 <translation id="3000461861112256445">ಮೊನೊ ಆಡಿಯೊ</translation>
 <translation id="3009178788565917040">ಔಟ್‌ಪುಟ್</translation>
-<translation id="3019353588588144572">ಬ್ಯಾಟರಿ ಪೂರ್ಣವಾಗಿ ಚಾರ್ಜ್ ಆಗುವವರೆಗೆ ಉಳಿದಿರುವ ಸಮಯ, <ph name="TIME_REMAINING" /></translation>
 <translation id="3051128274746680507">ನಿಮ್ಮ ಮೇಲ್ವಿಚಾರಣೆಯ ಬಳಕೆದಾರರ ಪ್ರೊಫೈಲ್ ಅನ್ನು ಶೀಘ್ರವೇ ತೆಗೆದುಹಾಕಲಾಗುತ್ತದೆ. ಇನ್ನಷ್ಟು ತಿಳಿದುಕೊಳ್ಳಲು ಸೈನ್ ಇನ್ ಮಾಡಿ.</translation>
 <translation id="3055162170959710888">ನೀವು ಇಂದು <ph name="USED_TIME" /> ರಷ್ಟು ಸಮಯ ಈ ಸಾಧನವನ್ನು ಬಳಸಿದ್ದೀರಿ</translation>
 <translation id="3077734595579995578">shift</translation>
@@ -175,6 +172,7 @@
 <translation id="3510164367642747937">ಮೌಸ್ ಕರ್ಸರ್ ಎದ್ದುಗಾಣಿಸಿ</translation>
 <translation id="3513798432020909783"><ph name="MANAGER_EMAIL" /> ಮೂಲಕ ಖಾತೆಯನ್ನು ನಿರ್ವಹಿಸಲಾಗಿದೆ</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" ಗೆ ಮರುಬದಲಾಯಿಸಿ (ಮರುಪ್ರಾರಂಭಿಸುವ ಅಗತ್ಯವಿದೆ)</translation>
+<translation id="3576141592585647168">ಸಮಯವಲಯವನ್ನು ಬದಲಾಯಿಸಿ</translation>
 <translation id="3595596368722241419">ಬ್ಯಾಟರಿ ಭರ್ತಿಯಾಗಿದೆ</translation>
 <translation id="3606978283550408104">ಬ್ರೇಲ್ ಪ್ರದರ್ಶನವನ್ನು ಸಂಪರ್ಕಗೊಳಿಸಲಾಗಿದೆ.</translation>
 <translation id="3621202678540785336">ಇನ್‌ಪುಟ್</translation>
@@ -202,6 +200,7 @@
 <translation id="394485226368336402">ಆಡಿಯೊ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="3962859241508114581">ಹಿಂದಿನ ಟ್ರ್ಯಾಕ್</translation>
 <translation id="397105322502079400">ಎಣಿಸಲಾಗುತ್ತಿದೆ...</translation>
+<translation id="3977512764614765090">ಬ್ಯಾಟರಿ <ph name="PERCENTAGE" />% ಇದೆ ಮತ್ತು ಚಾರ್ಜ್ ಆಗುತ್ತಿದೆ.</translation>
 <translation id="3995138139523574647">USB-C ಸಾಧನ (ಬಲ ಭಾಗದ ಹಿಂದಿನ ಪೋರ್ಟ್‌)</translation>
 <translation id="4017989525502048489">ಲೇಸರ್ ಪಾಯಿಂಟರ್</translation>
 <translation id="4042660782729322247">ನಿಮ್ಮ ಪರದೆಯನ್ನು ಹಂಚಿಕೊಳ್ಳುತ್ತಿದ್ದೀರಿ</translation>
@@ -218,7 +217,7 @@
 <translation id="4269883910223712419">ಈ ಸಾಧನದ ನಿರ್ವಾಹಕರು ಈ ಕೆಳಗಿನ ಸಾಮರ್ಥ್ಯಗಳನ್ನು ಹೊಂದಿದ್ದಾರೆ:</translation>
 <translation id="4279490309300973883">ಪ್ರತಿಬಿಂಬಿಸುವಿಕೆ</translation>
 <translation id="4281007048406351813">ಟೈಮರ್‌ಗೆ 1 ನಿಮಿಷವನ್ನು ಸೇರಿಸಿ</translation>
-<translation id="4292681942966152062"><ph name="NETWORK_NAME" /> ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲಾಗುತ್ತಿದೆ</translation>
+<translation id="4296136865091727875">ಎಲ್ಲಾ <ph name="COUNT" /> ಅಧಿಸೂಚನೆಗಳನ್ನು ತೆರವುಗೊಳಿಸಿ</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">ನೀವು ಅಧಿಕ ಕಾಂಟ್ರಾಸ್ಟ್‌ನ ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌ಕಟ್ ಒತ್ತಿದ್ದೀರಿ. ನೀವು ಅದನ್ನು ಆನ್ ಮಾಡಲು ಬಯಸುವಿರಾ?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -234,7 +233,6 @@
 <translation id="4477350412780666475">ಮುಂದಿನ ಟ್ರ್ಯಾಕ್</translation>
 <translation id="4479639480957787382">ಈಥರ್ನೆಟ್</translation>
 <translation id="4481530544597605423">ಜೋಡಿಯಾಗಿರದ ಸಾಧನಗಳು</translation>
-<translation id="4508225577814909926"><ph name="NAME" />: ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="4513946894732546136">ಪ್ರತಿಕ್ರಿಯೆ</translation>
 <translation id="4527045527269911712">ಬ್ಲೂಟೂತ್‌‌ ಸಾಧನವು "<ph name="DEVICE_NAME" />" ಜೋಡಣೆಗಾಗಿ ಅನುಮತಿಯನ್ನು ಬಯಸುತ್ತದೆ.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> ಪೂರ್ಣಗೊಳ್ಳುವವರೆಗೆ</translation>
@@ -247,12 +245,12 @@
 <translation id="4696813013609194136">ಪೋಷಕ ಕೋಡ್ ಬಳಸಿಕೊಂಡು ಸಾಧನವನ್ನು ಅನ್‌ಲಾಕ್ ಮಾಡಿ</translation>
 <translation id="4731797938093519117">ಪೋಷಕ ಪ್ರವೇಶ ಬಟನ್‌</translation>
 <translation id="4734965478015604180">ಅಡ್ಡ</translation>
-<translation id="476166673298332917">ಈ ಡಿವೈಸ್‌ ನಿರ್ವಾಹಕರು ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್‌ ಚಟುವಟಿಕೆಯನ್ನು ಗಮನಿಸಬಹುದು.</translation>
 <translation id="4774338217796918551">ನಾಳೆ <ph name="COME_BACK_TIME" /> ಸಮಯಕ್ಕೆ ಹಿಂತಿರುಗಿ.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> ಗಾಗಿ ಪಾಸ್‌ವರ್ಡ್</translation>
 <translation id="4778095205580009397">Google ಅಸಿಸ್ಟೆಂಟ್‌ ಡೆಮೊ ಸೆಶನ್‌ನಲ್ಲಿ ಲಭ್ಯವಿಲ್ಲ.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">ಡಿಸ್‌ಕನೆಕ್ಟ್</translation>
+<translation id="4831034276697007977">ಸ್ವಯಂಚಾಲಿತ ಕ್ಲಿಕ್‌ಗಳನ್ನು ಖಚಿತವಾಗಿಯೂ ಆಫ್ ಮಾಡಲು ಬಯಸುವಿರಾ?</translation>
 <translation id="4849058404725798627">ಕೀಬೋರ್ಡ್‌ ಫೋಕಸ್‌ ಮೂಲಕ ವಿಷಯವನ್ನು ಎದ್ದುಗಾಣಿಸಿ</translation>
 <translation id="485592688953820832">ಯಾವುದೇ ಕ್ರಮ ಕೈಗೊಳ್ಳಬೇಡಿ (ವಿರಾಮಗೊಳಿಸಿ)</translation>
 <translation id="4872237917498892622">Alt+ಹುಡುಕಾಟ ಅಥವಾ Shift</translation>
@@ -356,9 +354,9 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="6537270692134705506">ಸೆರೆಹಿಡಿಯುವ ಪರದೆ</translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" /> ಗೆ ಬಿತ್ತರಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="6559976592393364813">ನಿರ್ವಾಹಕರನ್ನು ಕೇಳಿ</translation>
-<translation id="6574601967010742428">ನಿಮ್ಮ ಚಟುವಟಿಕೆಯನ್ನು ಮೇಲ್ವಿಚಾರಣೆ ಮಾಡಲು ಸಾಧನ ನಿರ್ವಾಹಕರಿಗೆ ಸಾಧ್ಯವಾಗಬಹುದು.</translation>
 <translation id="6585808820553845416">ಸೆಷನ್ <ph name="SESSION_TIME_REMAINING" /> ರಲ್ಲಿ ಕೊನೆಗೊಳ್ಳಲಿದೆ.</translation>
 <translation id="6627638273713273709">ಹುಡುಕಾಟ+Shift+K</translation>
+<translation id="6637729079642709226">ಸಮಯವನ್ನು ಬದಲಾಯಿಸಿ</translation>
 <translation id="6650933572246256093">ಬ್ಲೂಟೂತ್‌ ಸಾಧನವು "<ph name="DEVICE_NAME" />" ಜೋಡಣೆಗಾಗಿ ಅನುಮತಿಯನ್ನು ಬಯಸುತ್ತಿದೆ. ಆ ಸಾಧನದಲ್ಲಿ ಈ ಪಾಸ್‌ಕೀಲಿಯನ್ನು ನಮೂದಿಸಿ: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">ಪಾಸ್‌ವರ್ಡ್</translation>
 <translation id="6665545700722362599">ಸ್ಥಳ ಸೇವೆಗಳು, ಸಾಧನದ ಮೈಕ್ರೊಫೋನ್, ಕ್ಯಾಮೆರಾ, ಅಥವಾ ಇತರ ವೈಶಿಷ್ಟ್ಯಗಳನ್ನು ಬಳಸಲು ವೆಬ್‌ಸೈಟ್‌ಗಳು, ಆ್ಯಪ್‌ಗಳು ಮತ್ತು ವಿಸ್ತರಣೆಗಳಿಗೆ ಅನುಮತಿಯನ್ನು ನೀಡುವುದು</translation>
@@ -370,7 +368,6 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="6715542151869432661">ಯಾವುದೇ ಮೊಬೈಲ್ ಸಾಧನಗಳು ಕಂಡುಬಂದಿಲ್ಲ.</translation>
 <translation id="6723839937902243910">ಪವರ್‌</translation>
 <translation id="6751826523481687655">ಕಾರ್ಯಕ್ಷಮತೆಯ ಟ್ರೇಸಿಂಗ್ ಅನ್ನು ಆನ್ ಮಾಡಲಾಗಿದೆ</translation>
-<translation id="6785414152754474415">ಬ್ಯಾಟರಿ <ph name="PERCENTAGE" />% ಪೂರ್ಣಗೊಂಡಿದೆ ಮತ್ತು ಚಾರ್ಜ್ ಆಗುತ್ತಿದೆ.</translation>
 <translation id="6790428901817661496">ಪ್ಲೇ ಮಾಡು</translation>
 <translation id="6803622936009808957">ಯಾವುದೇ ಬೆಂಬಲಿತ ಪರಿಹಾರಗಳು ಕಂಡುಬರದ ಕಾರಣ ಪ್ರದರ್ಶನಗಳನ್ನು ಪ್ರತಿಬಿಂಬಿಸಲಾಗಲಿಲ್ಲ. ಬದಲಿಗೆ ವಿಸ್ತರಿತ ಡೆಸ್ಕ್‌ಟಾಪ್ ಅನ್ನು ನಮೂದಿಸಲಾಗಿದೆ.</translation>
 <translation id="6820676911989879663">ವಿರಾಮ ತೆಗೆದುಕೊಳ್ಳಿ!</translation>
@@ -404,6 +401,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="7348093485538360975">ಆನ್ ಸ್ಕ್ರೀನ್ ಕೀಬೋರ್ಡ್</translation>
 <translation id="735745346212279324">VPN ಸಂಪರ್ಕ ಕಡಿತಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="7377169924702866686">CAPS LOCK ಆನ್ ಆಗಿದೆ.</translation>
+<translation id="7378594059915113390">ಮೀಡಿಯಾ ನಿಯಂತ್ರಣಗಳು</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" />ಸೆ</translation>
 <translation id="7398254312354928459">ನೆಟ್‌ವರ್ಕ್ ಸಂಪರ್ಕವನ್ನು ಬದಲಿಸಲಾಗಿದೆ</translation>
 <translation id="7405710164030118432">ಸಾಧನವನ್ನು ಅನ್‌ಲಾಕ್‌ ಮಾಡಲು, ನಿಮ್ಮ Family Link ಪೋಷಕ ಪ್ರವೇಶದ ಕೋಡ್ ಅನ್ನು ನಮೂದಿಸಿ</translation>
@@ -417,6 +415,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="7561014039265304140"><ph name="SPECIFIED_RESOLUTION" /> ಅನ್ನು <ph name="DISPLAY_NAME" /> ಬೆಂಬಲಿಸುವುದಿಲ್ಲ. ರೆಸಲ್ಯೂಶನ್‌ ಅನ್ನು <ph name="FALLBACK_RESOLUTION" /> ಗೆ ಬದಲಾಯಿಸಲಾಗಿದೆ</translation>
 <translation id="7562368315689366235">ಎಮೋಜಿ ಪ್ಯಾಲೆಟ್</translation>
 <translation id="7564874036684306347">ವಿಂಡೋಗಳನ್ನು ಬೇರೊಂದು ಡೆಸ್ಕ್‌ಟಾಪ್‌ಗೆ ಸರಿಸಿದರೆ, ಅದು ಅನಿರೀಕ್ಷಿತ ವರ್ತನೆಗೆ ಕಾರಣವಾಗಬಹುದು. ಆನಂತರ ಬರುವ ಅಧಿಸೂಚನೆಗಳು, ವಿಂಡೋಗಳು ಮತ್ತು ಡೈಲಾಗ್‌ಗಳು ಡೆಸ್ಕ್‌ಟಾಪ್‌ಗಳ ನಡುವೆ ವಿಭಜನೆಯಾಗಬಹುದು.</translation>
+<translation id="7568294522609223312">ಸ್ವಯಂಚಾಲಿತ ಕ್ಲಿಕ್‌ಗಳನ್ನು ಆಫ್ ಮಾಡಿ</translation>
 <translation id="7569509451529460200">ಬ್ರೈಲ್ ಹಾಗೂ ChromeVox ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="7593891976182323525">ಹುಡುಕಾಟ ಅಥವಾ Shift</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (ಮಾಲೀಕರು)</translation>
@@ -433,7 +432,6 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="7814236020522506259"><ph name="HOUR" /> ಮತ್ತು <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">ಪ್ರಬಲ ಸಿಗ್ನಲ್</translation>
 <translation id="7837740436429729974">ಸಮಯ ಮುಗಿದಿದೆ</translation>
-<translation id="7842211907556571265"><ph name="NETWORK_NAME" /> ಗೆ ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="7842569679327885685">ಎಚ್ಚರಿಕೆ: ಪ್ರಾಯೋಗಿಕ ವೈಶಿಷ್ಟ್ಯ</translation>
 <translation id="7846634333498149051">ಕೀಬೋರ್ಡ್</translation>
 <translation id="7868900307798234037">ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಮೂಲಕ ಅನ್‌ಲಾಕ್ ಮಾಡಲಾಗುತ್ತಿದೆ</translation>
@@ -505,6 +503,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="8877788021141246043">ಜ್ಞಾಪನೆಯನ್ನು ಹೊಂದಿಸಿ</translation>
 <translation id="8878886163241303700">ಪರದೆಯನ್ನು ವಿಸ್ತರಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="890616557918890486">ಮೂಲವನ್ನು ಬದಲಿಸಿ</translation>
+<translation id="8909138438987180327">ಬ್ಯಾಟರಿ <ph name="PERCENTAGE" /> ಪ್ರತಿಶತ ಇದೆ.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google ಸಹಾಯಕವು ಈ ಭಾಷೆಯನ್ನು ಮಾತನಾಡುವುದಿಲ್ಲ.</translation>
 <translation id="8938800817013097409">USB-C ಸಾಧನ (ಹಿಂಭಾಗದಲ್ಲಿನ ಬಲ ಪೋರ್ಟ್‌)</translation>
@@ -513,9 +512,11 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="8990809378771970590"><ph name="IME_NAME" /> ಬಳಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="899350903320462459">ಅಧಿಸೂಚನೆ ಕ್ರಿಯೆಯನ್ನು ನಿರ್ವಹಿಸಲು ಸಾಧನವನ್ನು <ph name="LOGIN_ID" /> ನಂತೆ ಅನ್‌ಲಾಕ್ ಮಾಡಿ</translation>
 <translation id="8995603266996330174"><ph name="DOMAIN" /> ನಿಂದ ನಿರ್ವಹಿಸಲಾಗಿದೆ</translation>
+<translation id="9017320285115481645">Family Link ಪೋಷಕ ಪ್ರವೇಶದ ಕೋಡ್ ಅನ್ನು ನಮೂದಿಸಿ.</translation>
 <translation id="9029474291399787231">Adobe Flash Player ಅಪ್‌ಡೇಟ್ ಲಭ್ಯವಿದೆ</translation>
 <translation id="9056839673611986238">ಸಾಧನವನ್ನು ಮುಂಚಿನ ನಿರ್ದಿಷ್ಟ ಸ್ಥಿತಿಗೆ ಹಿಂತಿರುಗಿಸಲಾಗುತ್ತದೆ</translation>
 <translation id="9070640332319875144">ಅಸಿಸ್ಟೆಂಟ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
+<translation id="9072519059834302790">ಬ್ಯಾಟರಿ ಖಾಲಿಯಾಗಲು <ph name="TIME_LEFT" /> ಸಮಯವಿದೆ.</translation>
 <translation id="9074739597929991885">ಬ್ಲೂಟೂತ್‌</translation>
 <translation id="9079731690316798640">ವೈ-ಫೈ: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">ಮೈಕ್ರೊಫೋನ್ ಬಳಕೆಯಲ್ಲಿದೆ.</translation>
@@ -526,8 +527,8 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="9179259655489829027">ಸೈನ್-ಇನ್ ಮಾಡಿರುವ ಯಾವುದೇ ಬಳಕೆದಾರರನ್ನು, ಪಾಸ್‌ವರ್ಡ್ ಇಲ್ಲದೆಯೇ ಪ್ರವೇಶಿಸಲು ಈ ವೈಶಿಷ್ಟ್ಯವು ಅವಕಾಶ ನೀಡುತ್ತದೆ. ನಿಮಗೆ ವಿಶ್ವಾಸವಿರುವ ಖಾತೆಗಳೊಂದಿಗೆ ಮಾತ್ರ ಈ ವೈಶಿಷ್ಟ್ಯವನ್ನು ಬಳಸಿ.</translation>
 <translation id="9193626018745640770">"ಅಪರಿಚಿತ ಸ್ವೀಕರಿಸುವವರು" ನಲ್ಲಿ ಬಿತ್ತರಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="9194617393863864469">ಮತ್ತೊಂದು ಬಳಕೆದಾರರಾಗಿ ಸೈನ್‌ ಇನ್‌ ಮಾಡಿ...</translation>
-<translation id="9201131092683066720">ಬ್ಯಾಟರಿ <ph name="PERCENTAGE" />% ಪೂರ್ಣವಾಗಿದೆ.</translation>
 <translation id="9210037371811586452">ಏಕೀಕೃತ ಡೆಸ್ಕ್‌ಟಾಪ್ ಮೋಡ್‌ನಿಂದ ನಿರ್ಗಮಿಸಲಾಗುತ್ತಿದೆ</translation>
+<translation id="9211681782751733685">ಬ್ಯಾಟರಿ ಸಂಪೂರ್ಣವಾಗಿ ಚಾರ್ಜ್ ಆಗಲು <ph name="TIME_REMAINING" /> ಉಳಿದಿದೆ.</translation>
 <translation id="9215934040295798075">ವಾಲ್‌ಪೇಪರ್‌ ಹೊಂದಿಸಿ</translation>
 <translation id="921989828232331238">ಈ ದಿನ ನಿಮ್ಮ ಪೋಷಕರು ನಿಮ್ಮ ಸಾಧನವನ್ನು ಲಾಕ್ ಮಾಡಿದ್ದಾರೆ</translation>
 <translation id="923686485342484400">ಸೈನ್ ಔಟ್ ಮಾಡಲು Control Shift Q ಅನ್ನು ಎರಡುಬಾರಿ ಒತ್ತಿರಿ.</translation>

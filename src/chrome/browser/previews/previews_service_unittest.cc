@@ -42,20 +42,15 @@ TEST_F(PreviewsServiceTest, TestOfflineFieldTrialNotSet) {
 }
 
 TEST_F(PreviewsServiceTest, TestOfflineFeatureDisabled) {
-  std::unique_ptr<base::FeatureList> feature_list =
-      std::make_unique<base::FeatureList>();
-
-  // The feature is explicitly enabled on the command-line.
-  feature_list->InitializeFromCommandLine("", "OfflinePreviews");
-  base::FeatureList::ClearInstanceForTesting();
-  base::FeatureList::SetInstance(std::move(feature_list));
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      previews::features::kOfflinePreviews);
 
   blacklist::BlacklistData::AllowedTypesAndVersions allowed_types_and_versions =
       PreviewsService::GetAllowedPreviews();
   EXPECT_EQ(allowed_types_and_versions.find(
                 static_cast<int>(previews::PreviewsType::OFFLINE)),
             allowed_types_and_versions.end());
-  base::FeatureList::ClearInstanceForTesting();
 }
 
 TEST_F(PreviewsServiceTest, TestClientLoFiFeatureEnabled) {
@@ -158,5 +153,25 @@ TEST_F(PreviewsServiceTest, TestNoScriptPreviewsEnabledByFeature) {
       allowed_types_and_versions2 = PreviewsService::GetAllowedPreviews();
   EXPECT_NE(allowed_types_and_versions2.find(
                 static_cast<int>(previews::PreviewsType::NOSCRIPT)),
+            allowed_types_and_versions2.end());
+}
+
+TEST_F(PreviewsServiceTest, TestDeferAllScriptPreviewsEnabledByFeature) {
+#if !defined(OS_ANDROID)
+  // For non-android, default is disabled.
+  blacklist::BlacklistData::AllowedTypesAndVersions allowed_types_and_versions =
+      PreviewsService::GetAllowedPreviews();
+  EXPECT_EQ(allowed_types_and_versions.find(
+                static_cast<int>(previews::PreviewsType::DEFER_ALL_SCRIPT)),
+            allowed_types_and_versions.end());
+#endif  // defined(OS_ANDROID)
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      previews::features::kDeferAllScriptPreviews);
+  blacklist::BlacklistData::AllowedTypesAndVersions
+      allowed_types_and_versions2 = PreviewsService::GetAllowedPreviews();
+  EXPECT_NE(allowed_types_and_versions2.find(
+                static_cast<int>(previews::PreviewsType::DEFER_ALL_SCRIPT)),
             allowed_types_and_versions2.end());
 }

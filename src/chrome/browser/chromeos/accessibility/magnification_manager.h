@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_MAGNIFICATION_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_MAGNIFICATION_MANAGER_H_
 
-#include "ash/public/interfaces/docked_magnifier_controller.mojom.h"
 #include "base/macros.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_observer.h"
@@ -94,9 +93,6 @@ class MagnificationManager
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
   std::unique_ptr<user_manager::ScopedUserSessionStateObserver>
       session_state_observer_;
-
-  // Ash's mojom::DockedMagnifierController used to request Ash's a11y feature.
-  ash::mojom::DockedMagnifierControllerPtr docked_magnifier_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(MagnificationManager);
 };

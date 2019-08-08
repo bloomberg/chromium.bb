@@ -20,6 +20,15 @@ namespace autofill_assistant {
 // UI delegate called for script executions.
 class UiDelegate {
  public:
+  // Colors of the overlay. Empty string to use the default.
+  struct OverlayColors {
+    // Overlay background color.
+    std::string background;
+
+    // Color of the border around the highlighted portions of the overlay.
+    std::string highlight_border;
+  };
+
   virtual ~UiDelegate() = default;
 
   // Returns the current state of the controller.
@@ -33,6 +42,10 @@ class UiDelegate {
   // Called when user interaction within the allowed touchable area was
   // detected. This should cause rerun of preconditions check.
   virtual void OnUserInteractionInsideTouchableArea() = 0;
+
+  // Returns a string describing the current execution context. This is useful
+  // when analyzing feedback forms and for debugging in general.
+  virtual std::string GetDebugContext() = 0;
 
   // Returns the current status message.
   virtual std::string GetStatusMessage() const = 0;
@@ -66,6 +79,10 @@ class UiDelegate {
   // field contains a non-null options describing the request.
   virtual const PaymentRequestOptions* GetPaymentRequestOptions() const = 0;
 
+  // If the controller is waiting for payment request information, this
+  // field contains a non-null object describing the currently selected data.
+  virtual const PaymentInformation* GetPaymentRequestInformation() const = 0;
+
   // Sets shipping address, in response to the current payment request options.
   virtual void SetShippingAddress(
       std::unique_ptr<autofill::AutofillProfile> address) = 0;
@@ -82,8 +99,8 @@ class UiDelegate {
   // Sets credit card, in response to the current payment request options.
   virtual void SetCreditCard(std::unique_ptr<autofill::CreditCard> card) = 0;
 
-  // Sets terms and conditions, in response to the current payment request
-  // options.
+  // Sets the state of the third party terms & conditions, pertaining to the
+  // current payment request options.
   virtual void SetTermsAndConditions(
       TermsAndConditionsState terms_and_conditions) = 0;
 
@@ -92,11 +109,15 @@ class UiDelegate {
   //
   // At the end of this call, |rectangles| contains one element per configured
   // rectangles, though these can correspond to empty rectangles. Coordinates
-  // are relative to the width or height of the visible viewport, as a number
-  // between 0 and 1.
+  // absolute CSS coordinates.
   //
   // Note that the vector is not cleared before rectangles are added.
   virtual void GetTouchableArea(std::vector<RectF>* rectangles) const = 0;
+
+  // Returns the current size of the visual viewport. May be empty if unknown.
+  //
+  // The rectangle is expressed in absolute CSS coordinates.
+  virtual void GetVisualViewport(RectF* viewport) const = 0;
 
   // Reports a fatal error to Autofill Assistant, which should then stop.
   virtual void OnFatalError(const std::string& error_message,
@@ -106,6 +127,22 @@ class UiDelegate {
   virtual bool GetResizeViewport() = 0;
 
   virtual ConfigureBottomSheetProto::PeekMode GetPeekMode() = 0;
+
+  // Fills in the overlay colors.
+  virtual void GetOverlayColors(OverlayColors* colors) const = 0;
+
+  // Returns the current form. May be null if there is no form to show.
+  virtual const FormProto* GetForm() const = 0;
+
+  // Sets a counter value.
+  virtual void SetCounterValue(int input_index,
+                               int counter_index,
+                               int value) = 0;
+
+  // Sets whether a selection choice is selected.
+  virtual void SetChoiceSelected(int input_index,
+                                 int choice_index,
+                                 bool selected) = 0;
 
  protected:
   UiDelegate() = default;

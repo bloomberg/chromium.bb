@@ -16,6 +16,7 @@
 #include "chromeos/dbus/biod/biod_client.h"
 #include "chromeos/dbus/cups_proxy/cups_proxy_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/initialize_dbus_client.h"
 #include "chromeos/dbus/kerberos/kerberos_client.h"
 #include "chromeos/dbus/machine_learning/machine_learning_client.h"
 #include "chromeos/dbus/media_analytics/media_analytics_client.h"
@@ -54,40 +55,20 @@ void InitializeDBus() {
 
   // NOTE: base::Feature is not initialized yet, so any non MultiProcessMash
   // dbus client initialization for Ash should be done in Shell::Init.
-
-  if (bus) {
-    ArcCameraClient::Initialize(bus);
-    AuthPolicyClient::Initialize(bus);
-    BiodClient::Initialize(bus);  // For device::Fingerprint.
-    bluez::BluezDBusManager::Initialize(bus);
-    CrasAudioClient::Initialize(bus);
-    CryptohomeClient::Initialize(bus);
-    CupsProxyClient::Initialize(bus);
-    KerberosClient::Initialize(bus);
-    MachineLearningClient::Initialize(bus);
-    MediaAnalyticsClient::Initialize(bus);
-    PermissionBrokerClient::Initialize(bus);
-    PowerManagerClient::Initialize(bus);
-    SessionManagerClient::Initialize(bus);
-    SystemClockClient::Initialize(bus);
-    UpstartClient::Initialize(bus);
-  } else {
-    ArcCameraClient::InitializeFake();
-    AuthPolicyClient::InitializeFake();
-    BiodClient::InitializeFake();  // For device::Fingerprint.
-    bluez::BluezDBusManager::InitializeFake();
-    CrasAudioClient::InitializeFake();
-    CryptohomeClient::InitializeFake();
-    CupsProxyClient::InitializeFake();
-    KerberosClient::InitializeFake();
-    MachineLearningClient::InitializeFake();
-    MediaAnalyticsClient::InitializeFake();
-    PermissionBrokerClient::InitializeFake();
-    PowerManagerClient::InitializeFake();
-    SessionManagerClient::InitializeFake();
-    SystemClockClient::InitializeFake();
-    UpstartClient::InitializeFake();
-  }
+  InitializeDBusClient<ArcCameraClient>(bus);
+  InitializeDBusClient<AuthPolicyClient>(bus);
+  InitializeDBusClient<BiodClient>(bus);  // For device::Fingerprint.
+  InitializeDBusClient<CrasAudioClient>(bus);
+  InitializeDBusClient<CryptohomeClient>(bus);
+  InitializeDBusClient<CupsProxyClient>(bus);
+  InitializeDBusClient<KerberosClient>(bus);
+  InitializeDBusClient<MachineLearningClient>(bus);
+  InitializeDBusClient<MediaAnalyticsClient>(bus);
+  InitializeDBusClient<PermissionBrokerClient>(bus);
+  InitializeDBusClient<PowerManagerClient>(bus);
+  InitializeDBusClient<SessionManagerClient>(bus);
+  InitializeDBusClient<SystemClockClient>(bus);
+  InitializeDBusClient<UpstartClient>(bus);
 
   // Initialize the device settings service so that we'll take actions per
   // signals sent from the session manager. This needs to happen before
@@ -96,7 +77,17 @@ void InitializeDBus() {
   InstallAttributes::Initialize();
 }
 
+void InitializeFeatureListDependentDBus() {
+  dbus::Bus* bus = DBusThreadManager::Get()->GetSystemBus();
+  InitializeDBusClient<bluez::BluezDBusManager>(bus);
+}
+
 void ShutdownDBus() {
+  // Feature list-dependent D-Bus clients are shut down first because we try to.
+  // shut down in reverse order of initialization (in case of dependencies).
+  bluez::BluezDBusManager::Shutdown();
+
+  // Other D-Bus clients are shut down, also in reverse order of initialization.
   UpstartClient::Shutdown();
   SystemClockClient::Shutdown();
   SessionManagerClient::Shutdown();
@@ -108,7 +99,6 @@ void ShutdownDBus() {
   CupsProxyClient::Shutdown();
   CryptohomeClient::Shutdown();
   CrasAudioClient::Shutdown();
-  bluez::BluezDBusManager::Shutdown();
   BiodClient::Shutdown();
   AuthPolicyClient::Shutdown();
   ArcCameraClient::Shutdown();

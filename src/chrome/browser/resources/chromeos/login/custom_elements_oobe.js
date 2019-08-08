@@ -17,6 +17,7 @@
 // <include src="gaia_input_form.js">
 // <include src="gaia_input.js">
 // <include src="gaia_password_changed.js">
+// <include src="screen_gaia_signin.js">
 // <include src="hd-iron-icon.js">
 // <include src="network_select_login.js">
 // <include src="notification_card.js">
@@ -54,3 +55,4 @@
 // <include src="marketing_opt_in.js">
 // <include src="../assistant_optin/assistant_optin_flow.js">
 // <include src="multidevice_setup_first_run.js">
+// <include src="supervision_onboarding.js">

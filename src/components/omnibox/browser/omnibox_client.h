@@ -67,23 +67,11 @@ class OmniboxClient {
   // Returns the favicon of the current page.
   virtual gfx::Image GetFavicon() const;
 
-  // Returns true if the current page is a New Tab Page rendered by Instant.
-  virtual bool IsInstantNTP() const;
-
-  // Returns true if the committed entry is a search results page.
-  virtual bool IsSearchResultsPage() const;
-
   // Returns whether the current page is loading.
   virtual bool IsLoading() const;
 
   // Returns whether paste-and-go functionality is enabled.
   virtual bool IsPasteAndGoEnabled() const;
-
-  // Returns whether |url| corresponds to the new tab page.
-  virtual bool IsNewTabPage(const GURL& url) const;
-
-  // Returns whether |url| corresponds to the user's home page.
-  virtual bool IsHomePage(const GURL& url) const;
 
   // Returns false if Default Search is disabled by a policy.
   virtual bool IsDefaultSearchProviderEnabled() const;

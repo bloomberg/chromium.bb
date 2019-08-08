@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/lazy_instance.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "components/device_event_log/device_event_log.h"
@@ -21,8 +22,10 @@
 #include "extensions/browser/api/bluetooth/bluetooth_api.h"
 #include "extensions/browser/api/bluetooth/bluetooth_api_pairing_delegate.h"
 #include "extensions/browser/api/bluetooth/bluetooth_event_router.h"
+#include "extensions/common/api/bluetooth.h"
 #include "extensions/common/api/bluetooth_private.h"
 
+namespace bt = extensions::api::bluetooth;
 namespace bt_private = extensions::api::bluetooth_private;
 namespace SetDiscoveryFilter = bt_private::SetDiscoveryFilter;
 
@@ -33,9 +36,68 @@ static base::LazyInstance<BrowserContextKeyedAPIFactory<BluetoothPrivateAPI>>::
 
 namespace {
 
+// This enum is tied directly to a UMA enum defined in
+// //tools/metrics/histograms/enums.xml, and should always reflect it (do not
+// change one without changing the other).
+enum BluetoothTransportType {
+  kUnknown = 0,
+  kClassic = 1,
+  kLE = 2,
+  kDual = 3,
+  kInvalid = 4,
+  kMaxValue
+};
+
 std::string GetListenerId(const EventListenerInfo& details) {
   return !details.extension_id.empty() ? details.extension_id
                                        : details.listener_url.host();
+}
+
+void RecordPairingResult(bool success, bt::Transport transport) {
+  std::string transport_histogram_name;
+  switch (transport) {
+    case bt::Transport::TRANSPORT_CLASSIC:
+      transport_histogram_name = "Classic";
+      break;
+    case bt::Transport::TRANSPORT_LE:
+      transport_histogram_name = "BLE";
+      break;
+    case bt::Transport::TRANSPORT_DUAL:
+      transport_histogram_name = "Dual";
+      break;
+    default:
+      // A transport type of INVALID or other is unexpected, and no success
+      // metric for it exists.
+      return;
+  }
+
+  base::UmaHistogramBoolean("Bluetooth.ChromeOS.Pairing.Result", success);
+  base::UmaHistogramBoolean(
+      "Bluetooth.ChromeOS.Pairing.Result." + transport_histogram_name, success);
+}
+
+void RecordPairingTransport(bt::Transport transport) {
+  BluetoothTransportType type;
+  switch (transport) {
+    case bt::Transport::TRANSPORT_CLASSIC:
+      type = BluetoothTransportType::kClassic;
+      break;
+    case bt::Transport::TRANSPORT_LE:
+      type = BluetoothTransportType::kLE;
+      break;
+    case bt::Transport::TRANSPORT_DUAL:
+      type = BluetoothTransportType::kDual;
+      break;
+    case bt::Transport::TRANSPORT_INVALID:
+      type = BluetoothTransportType::kInvalid;
+      break;
+    default:
+      type = BluetoothTransportType::kUnknown;
+      break;
+  }
+
+  base::UmaHistogramEnumeration("Bluetooth.ChromeOS.Pairing.TransportType",
+                                type);
 }
 
 }  // namespace
@@ -589,6 +651,41 @@ void BluetoothPrivatePairFunction::OnSuccessCallback() {
 void BluetoothPrivatePairFunction::OnErrorCallback(
     device::BluetoothDevice::ConnectErrorCode error) {
   Respond(Error(kPairingFailed));
+}
+
+BluetoothPrivateRecordPairingFunction::BluetoothPrivateRecordPairingFunction() =
+    default;
+
+BluetoothPrivateRecordPairingFunction::
+    ~BluetoothPrivateRecordPairingFunction() = default;
+
+bool BluetoothPrivateRecordPairingFunction::CreateParams() {
+  params_ = bt_private::RecordPairing::Params::Create(*args_);
+  return params_ != nullptr;
+}
+
+void BluetoothPrivateRecordPairingFunction::DoWork(
+    scoped_refptr<device::BluetoothAdapter> adapter) {
+  RecordPairingResult(params_->success, params_->transport);
+  RecordPairingTransport(params_->transport);
+}
+
+BluetoothPrivateRecordReconnectionFunction::
+    BluetoothPrivateRecordReconnectionFunction() = default;
+
+BluetoothPrivateRecordReconnectionFunction::
+    ~BluetoothPrivateRecordReconnectionFunction() = default;
+
+bool BluetoothPrivateRecordReconnectionFunction::CreateParams() {
+  params_ = bt_private::RecordReconnection::Params::Create(*args_);
+  return params_ != nullptr;
+}
+
+void BluetoothPrivateRecordReconnectionFunction::DoWork(
+    scoped_refptr<device::BluetoothAdapter> adapter) {
+  base::UmaHistogramBoolean(
+      "Bluetooth.ChromeOS.UserInitiatedReconnectionAttempt.Result.Settings",
+      params_->success);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

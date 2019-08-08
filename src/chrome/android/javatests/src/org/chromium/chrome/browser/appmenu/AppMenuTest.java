@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.appmenu;
 
-import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
@@ -19,21 +18,29 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ObservableSupplier;
 import org.chromium.base.task.PostTask;
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.ui.test.util.UiRestriction;
+
+import java.util.concurrent.TimeoutException;
 
 /**
  * Tests AppMenu popup
@@ -43,30 +50,32 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class AppMenuTest {
     @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
     private static final String TEST_URL = UrlUtils.encodeHtmlDataUri("<html>foo</html>");
 
     private AppMenu mAppMenu;
-    private AppMenuHandler mAppMenuHandler;
+    private AppMenuHandlerImpl mAppMenuHandler;
 
     /**
-     * AppMenuHandler that will be used to intercept item selections for testing.
+     * AppMenuHandlerImpl that will be used to intercept item selections for testing.
      */
-    public static class AppMenuHandlerForTest extends AppMenuHandler {
+    public static class AppMenuHandlerForTest extends AppMenuHandlerImpl {
         int mLastSelectedItemId = -1;
 
         /**
-         * AppMenuHandler for intercepting options item selections.
+         * AppMenuHandlerImpl for intercepting options item selections.
          */
-        public AppMenuHandlerForTest(Activity activity, AppMenuPropertiesDelegate delegate,
-                int menuResourceId) {
-            super(activity, delegate, menuResourceId);
+        public AppMenuHandlerForTest(AppMenuPropertiesDelegate delegate,
+                AppMenuDelegate appMenuDelegate, int menuResourceId, View decorView,
+                ActivityLifecycleDispatcher activityLifecycleDispatcher,
+                ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier) {
+            super(delegate, appMenuDelegate, menuResourceId, decorView, activityLifecycleDispatcher,
+                    overviewModeBehaviorSupplier);
         }
 
         @Override
-        void onOptionsItemSelected(MenuItem item) {
+        public void onOptionsItemSelected(MenuItem item) {
             mLastSelectedItemId = item.getItemId();
         }
     }
@@ -76,17 +85,23 @@ public class AppMenuTest {
         // We need list selection; ensure we are not in touch mode.
         InstrumentationRegistry.getInstrumentation().setInTouchMode(false);
 
-        ChromeActivity.setAppMenuHandlerFactoryForTesting(
-                (activity, delegate, menuResourceId) -> {
-                    mAppMenuHandler =
-                            new AppMenuHandlerForTest(activity, delegate, menuResourceId);
+        AppMenuCoordinatorImpl.setAppMenuHandlerFactoryForTesting(
+                (delegate, appMenuDelegate, menuResourceId, decorView, activityLifecycleDispatcher,
+                        overviewModeBehaviorSupplier) -> {
+                    mAppMenuHandler = new AppMenuHandlerForTest(delegate, appMenuDelegate,
+                            menuResourceId, decorView, activityLifecycleDispatcher,
+                            overviewModeBehaviorSupplier);
                     return mAppMenuHandler;
                 });
 
         mActivityTestRule.startMainActivityWithURL(TEST_URL);
 
         showAppMenuAndAssertMenuShown();
-        mAppMenu = mActivityTestRule.getActivity().getAppMenuHandler().getAppMenu();
+        mAppMenu = ((AppMenuCoordinatorImpl) mActivityTestRule.getActivity()
+                            .getRootUiCoordinatorForTesting()
+                            .getAppMenuCoordinatorForTesting())
+                           .getAppMenuHandlerImplForTesting()
+                           .getAppMenu();
         PostTask.runOrPostTask(
                 UiThreadTaskTraits.DEFAULT, () -> mAppMenu.getListView().setSelection(0));
         CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, () -> getCurrentFocusedRow()));
@@ -216,9 +231,60 @@ public class AppMenuTest {
         });
     }
 
+    @Test
+    @SmallTest
+    @Feature({"Browser", "Main"})
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    public void testHideMenuOnToggleOverview() throws TimeoutException, InterruptedException {
+        CallbackHelper overviewModeFinishedShowingCallback = new CallbackHelper();
+        OverviewModeBehavior.OverviewModeObserver overviewModeObserver =
+                new OverviewModeBehavior.OverviewModeObserver() {
+                    @Override
+                    public void onOverviewModeStartedShowing(boolean showToolbar) {}
+
+                    @Override
+                    public void onOverviewModeFinishedShowing() {
+                        overviewModeFinishedShowingCallback.notifyCalled();
+                    }
+
+                    @Override
+                    public void onOverviewModeStartedHiding(
+                            boolean showToolbar, boolean delayAnimation) {}
+
+                    @Override
+                    public void onOverviewModeFinishedHiding() {}
+                };
+        // App menu is shown during setup.
+        Assert.assertTrue("App menu should be showing.", mAppMenu.isShowing());
+        Assert.assertFalse("Overview shouldn't be showing.",
+                mActivityTestRule.getActivity().getOverviewModeBehavior().overviewVisible());
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mActivityTestRule.getActivity().getLayoutManager().addOverviewModeObserver(
+                    overviewModeObserver);
+            mActivityTestRule.getActivity().getLayoutManager().showOverview(false);
+        });
+        overviewModeFinishedShowingCallback.waitForCallback(0);
+
+        Assert.assertTrue("Overview should be showing.",
+                mActivityTestRule.getActivity().getOverviewModeBehavior().overviewVisible());
+        Assert.assertFalse("App menu shouldn't be showing.", mAppMenu.isShowing());
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertTrue(
+                    "App menu should be allowed to show.", mAppMenuHandler.shouldShowAppMenu());
+        });
+        showAppMenuAndAssertMenuShown();
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mActivityTestRule.getActivity().getLayoutManager().hideOverview(false));
+        Assert.assertFalse("Overview shouldn't be showing.",
+                mActivityTestRule.getActivity().getOverviewModeBehavior().overviewVisible());
+        Assert.assertFalse("App menu shouldn't be showing.", mAppMenu.isShowing());
+    }
+
     private void showAppMenuAndAssertMenuShown() {
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
-                (Runnable) () -> mAppMenuHandler.showAppMenu(null, false, false));
+                () -> { mAppMenuHandler.showAppMenu(null, false, false); });
         CriteriaHelper.pollInstrumentationThread(new Criteria("AppMenu did not show") {
             @Override
             public boolean isSatisfied() {

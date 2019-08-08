@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <dawn/dawncpp.h>
-
 #include "gpu/command_buffer/client/webgpu_implementation.h"
 #include "gpu/command_buffer/tests/webgpu_test.h"
 #include "testing/gmock/include/gmock/gmock.h"

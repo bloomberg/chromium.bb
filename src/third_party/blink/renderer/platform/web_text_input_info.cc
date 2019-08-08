@@ -38,7 +38,7 @@ bool WebTextInputInfo::Equals(const WebTextInputInfo& other) const {
          selection_end == other.selection_end &&
          composition_start == other.composition_start &&
          composition_end == other.composition_end &&
-         input_mode == other.input_mode;
+         input_mode == other.input_mode && action == other.action;
 }
 
 }  // namespace blink

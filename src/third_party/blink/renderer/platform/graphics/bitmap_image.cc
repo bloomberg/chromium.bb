@@ -34,7 +34,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image_metrics.h"
-#include "third_party/blink/renderer/platform/graphics/dark_mode_image_classifier.h"
+#include "third_party/blink/renderer/platform/graphics/dark_mode_bitmap_image_classifier.h"
 #include "third_party/blink/renderer/platform/graphics/deferred_image_decoder.h"
 #include "third_party/blink/renderer/platform/graphics/image_observer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
@@ -445,9 +445,8 @@ void BitmapImage::SetAnimationPolicy(ImageAnimationPolicy policy) {
 
 DarkModeClassification BitmapImage::ClassifyImageForDarkMode(
     const FloatRect& src_rect) {
-  DarkModeImageClassifier dark_mode_image_classifier;
-  return dark_mode_image_classifier.ClassifyBitmapImageForDarkMode(*this,
-                                                                   src_rect);
+  DarkModeBitmapImageClassifier dark_mode_bitmap_image_classifier;
+  return dark_mode_bitmap_image_classifier.Classify(*this, src_rect);
 }
 
 }  // namespace blink

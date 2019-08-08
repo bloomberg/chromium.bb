@@ -139,7 +139,7 @@ class NET_EXPORT HttpNetworkSession {
     // QUIC runtime configuration options.
 
     // Versions of QUIC which may be used.
-    quic::QuicTransportVersionVector quic_supported_versions;
+    quic::ParsedQuicVersionVector quic_supported_versions;
     // User agent description to send in the QUIC handshake.
     std::string quic_user_agent_id;
     // Limit on the size of QUIC packets.
@@ -179,7 +179,8 @@ class NET_EXPORT HttpNetworkSession {
     // a connection was timed out with open streams.
     int quic_reduced_ping_timeout_seconds;
     // Maximum time that a session can have no retransmittable packets on the
-    // wire.
+    // wire. Set to zero if not specified and no retransmittable PING will be
+    // sent to peer when the wire has no retransmittable packets.
     int quic_retransmittable_on_wire_timeout_milliseconds;
     // Maximum time the session can be alive before crypto handshake is
     // finished.
@@ -231,6 +232,10 @@ class NET_EXPORT HttpNetworkSession {
     // If true, client headers will include HTTP/2 stream dependency info
     // derived from the request priority.
     bool quic_headers_include_h2_stream_dependency;
+    // The initial rtt that will be used in crypto handshake if no cached
+    // smoothed rtt is present.
+    int quic_initial_rtt_for_handshake_milliseconds;
+
     // If non-empty, QUIC will only be spoken to hosts in this list.
     base::flat_set<std::string> quic_host_whitelist;
 

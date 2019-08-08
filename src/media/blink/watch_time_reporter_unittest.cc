@@ -22,6 +22,7 @@
 
 namespace media {
 
+constexpr gfx::Size kSizeTooSmall = gfx::Size(101, 101);
 constexpr gfx::Size kSizeJustRight = gfx::Size(201, 201);
 
 using blink::WebMediaPlayer;
@@ -658,6 +659,14 @@ TEST_P(WatchTimeReporterTest, WatchTimeReporter) {
   wtr_.reset();
 }
 
+TEST_P(WatchTimeReporterTest, WatchTimeReporterInfiniteStartTime) {
+  EXPECT_CALL(*this, GetCurrentMediaTime())
+      .WillRepeatedly(testing::Return(kInfiniteDuration));
+  Initialize(false, false, kSizeJustRight);
+  wtr_->OnPlaying();
+  EXPECT_FALSE(IsMonitoring());
+}
+
 TEST_P(WatchTimeReporterTest, WatchTimeReporterBasic) {
   constexpr base::TimeDelta kWatchTimeEarly = base::TimeDelta::FromSeconds(5);
   constexpr base::TimeDelta kWatchTimeLate = base::TimeDelta::FromSeconds(10);
@@ -806,6 +815,51 @@ TEST_P(WatchTimeReporterTest, WatchTimeReporterSecondaryProperties) {
 
   // Ensure expectations are met before |properies| goes out of scope.
   testing::Mock::VerifyAndClearExpectations(this);
+}
+
+TEST_P(WatchTimeReporterTest, SecondaryProperties_SizeIncreased) {
+  if (!has_video_)
+    return;
+
+  EXPECT_CALL(*this, GetCurrentMediaTime())
+      .WillRepeatedly(testing::Return(base::TimeDelta()));
+  Initialize(false, false, kSizeTooSmall);
+  wtr_->OnPlaying();
+  EXPECT_FALSE(IsMonitoring());
+
+  EXPECT_CALL(*this, OnUpdateSecondaryProperties(_))
+      .Times((has_audio_ && has_video_) ? 3 : 2);
+  wtr_->UpdateSecondaryProperties(mojom::SecondaryPlaybackProperties::New(
+      kUnknownAudioCodec, kUnknownVideoCodec, "", "",
+      EncryptionMode::kUnencrypted, EncryptionMode::kUnencrypted,
+      kSizeJustRight));
+  EXPECT_TRUE(IsMonitoring());
+
+  EXPECT_WATCH_TIME_FINALIZED();
+  wtr_.reset();
+}
+
+TEST_P(WatchTimeReporterTest, SecondaryProperties_SizeDecreased) {
+  if (!has_video_)
+    return;
+
+  EXPECT_CALL(*this, GetCurrentMediaTime())
+      .WillRepeatedly(testing::Return(base::TimeDelta()));
+  Initialize(false, false, kSizeJustRight);
+  wtr_->OnPlaying();
+  EXPECT_TRUE(IsMonitoring());
+
+  EXPECT_CALL(*this, OnUpdateSecondaryProperties(_))
+      .Times((has_audio_ && has_video_) ? 3 : 2);
+  wtr_->UpdateSecondaryProperties(mojom::SecondaryPlaybackProperties::New(
+      kUnknownAudioCodec, kUnknownVideoCodec, "", "",
+      EncryptionMode::kUnencrypted, EncryptionMode::kUnencrypted,
+      kSizeTooSmall));
+  EXPECT_WATCH_TIME_FINALIZED();
+  CycleReportingTimer();
+
+  EXPECT_FALSE(IsMonitoring());
+  wtr_.reset();
 }
 
 TEST_P(WatchTimeReporterTest, WatchTimeReporterAutoplayInitiated) {

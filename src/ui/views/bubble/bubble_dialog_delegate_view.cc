@@ -168,11 +168,8 @@ NonClientFrameView* BubbleDialogDelegateView::CreateNonClientFrameView(
       provider->GetInsetsMetric(INSETS_DIALOG_SUBSECTION));
   frame->SetFootnoteView(CreateFootnoteView());
 
-  BubbleBorder::Arrow adjusted_arrow = arrow();
-  if (base::i18n::IsRTL())
-    adjusted_arrow = BubbleBorder::horizontal_mirror(adjusted_arrow);
   std::unique_ptr<BubbleBorder> border =
-      std::make_unique<BubbleBorder>(adjusted_arrow, GetShadow(), color());
+      std::make_unique<BubbleBorder>(arrow(), GetShadow(), color());
   if (CustomShadowsSupported() && ShouldHaveRoundCorners()) {
     border->SetCornerRadius(
         base::FeatureList::IsEnabled(features::kEnableMDRoundedCornersOnDialogs)
@@ -186,6 +183,17 @@ NonClientFrameView* BubbleDialogDelegateView::CreateNonClientFrameView(
 
 const char* BubbleDialogDelegateView::GetClassName() const {
   return kViewClassName;
+}
+
+bool BubbleDialogDelegateView::AcceleratorPressed(
+    const ui::Accelerator& accelerator) {
+  if (accelerator.key_code() == ui::VKEY_DOWN ||
+      accelerator.key_code() == ui::VKEY_UP) {
+    // Move the focus up or down.
+    GetFocusManager()->AdvanceFocus(accelerator.key_code() != ui::VKEY_DOWN);
+    return true;
+  }
+  return DialogDelegateView::AcceleratorPressed(accelerator);
 }
 
 void BubbleDialogDelegateView::OnWidgetClosing(Widget* widget) {
@@ -265,6 +273,8 @@ void BubbleDialogDelegateView::SetHighlightedButton(
 }
 
 void BubbleDialogDelegateView::SetArrow(BubbleBorder::Arrow arrow) {
+  if (base::i18n::IsRTL())
+    arrow = BubbleBorder::horizontal_mirror(arrow);
   if (arrow_ == arrow)
     return;
   arrow_ = arrow;
@@ -272,7 +282,7 @@ void BubbleDialogDelegateView::SetArrow(BubbleBorder::Arrow arrow) {
   // If SetArrow() is called before CreateWidget(), there's no need to update
   // the BubbleFrameView.
   if (GetBubbleFrameView()) {
-    GetBubbleFrameView()->bubble_border()->set_arrow(arrow);
+    GetBubbleFrameView()->SetArrow(arrow);
     SizeToContents();
   }
 }
@@ -308,12 +318,12 @@ BubbleDialogDelegateView::BubbleDialogDelegateView(View* anchor_view,
     : close_on_deactivate_(true),
       anchor_view_tracker_(std::make_unique<ViewTracker>()),
       anchor_widget_(nullptr),
-      arrow_(arrow),
       shadow_(shadow),
       color_explicitly_set_(false),
       accept_events_(true),
       adjust_if_offscreen_(true),
       parent_window_(nullptr) {
+  SetArrow(arrow);
   LayoutProvider* provider = LayoutProvider::Get();
   // An individual bubble should override these margins if its layout differs
   // from the typical title/text/buttons.
@@ -321,7 +331,7 @@ BubbleDialogDelegateView::BubbleDialogDelegateView(View* anchor_view,
   title_margins_ = provider->GetInsetsMetric(INSETS_DIALOG_TITLE);
   if (anchor_view)
     SetAnchorView(anchor_view);
-  UpdateColorsFromTheme(GetNativeTheme());
+  UpdateColorsFromTheme();
   UMA_HISTOGRAM_BOOLEAN("Dialog.BubbleDialogDelegateView.Create", true);
 }
 
@@ -350,6 +360,21 @@ ax::mojom::Role BubbleDialogDelegateView::GetAccessibleWindowRole() {
   return ax::mojom::Role::kAlertDialog;
 }
 
+void BubbleDialogDelegateView::OnPaintAsActiveChanged(bool paint_as_active) {
+  if (!paint_as_active) {
+    paint_as_active_lock_.reset();
+    return;
+  }
+
+  if (!anchor_widget() || !anchor_widget()->GetTopLevelWidget())
+    return;
+
+  // When this bubble renders as active, its anchor widget should also render as
+  // active.
+  paint_as_active_lock_ =
+      anchor_widget()->GetTopLevelWidget()->LockPaintAsActive();
+}
+
 gfx::Size BubbleDialogDelegateView::GetMinimumSize() const {
   // Note that although BubbleDialogFrameView will never invoke this, a subclass
   // may override CreateNonClientFrameView() to provide a NonClientFrameView
@@ -361,9 +386,8 @@ gfx::Size BubbleDialogDelegateView::GetMaximumSize() const {
   return gfx::Size();
 }
 
-void BubbleDialogDelegateView::OnNativeThemeChanged(
-    const ui::NativeTheme* theme) {
-  UpdateColorsFromTheme(theme);
+void BubbleDialogDelegateView::OnThemeChanged() {
+  UpdateColorsFromTheme();
 }
 
 void BubbleDialogDelegateView::Init() {}
@@ -376,10 +400,9 @@ void BubbleDialogDelegateView::SetAnchorView(View* anchor_view) {
   // change as well.
   if (!anchor_view || anchor_widget() != anchor_view->GetWidget()) {
     if (anchor_widget()) {
-      if (GetWidget() && GetWidget()->IsVisible()) {
-        UpdateAnchorWidgetRenderState(false);
+      if (GetWidget() && GetWidget()->IsVisible())
         UpdateHighlightedButton(false);
-      }
+      paint_as_active_lock_.reset();
       anchor_widget_->RemoveObserver(this);
       anchor_widget_ = nullptr;
     }
@@ -388,8 +411,14 @@ void BubbleDialogDelegateView::SetAnchorView(View* anchor_view) {
       if (anchor_widget_) {
         anchor_widget_->AddObserver(this);
         const bool visible = GetWidget() && GetWidget()->IsVisible();
-        UpdateAnchorWidgetRenderState(visible);
         UpdateHighlightedButton(visible);
+        // Have the anchor widget's paint-as-active state track this view's
+        // widget - lock is only required if the bubble widget is active.
+        if (anchor_widget_->GetTopLevelWidget() && GetWidget() &&
+            GetWidget()->ShouldPaintAsActive()) {
+          paint_as_active_lock_ =
+              anchor_widget_->GetTopLevelWidget()->LockPaintAsActive();
+        }
       }
     }
   }
@@ -405,7 +434,7 @@ void BubbleDialogDelegateView::SetAnchorView(View* anchor_view) {
     OnAnchorBoundsChanged();
   }
 
-  if (anchor_view) {
+  if (anchor_view && focus_traversable_from_anchor_view_) {
     // Make sure that focus can move into here from the anchor view (but not
     // out, focus will cycle inside the dialog once it gets here).
     anchor_view->SetProperty(kAnchoredDialogKey, this);
@@ -437,13 +466,13 @@ BubbleFrameView* BubbleDialogDelegateView::GetBubbleFrameView() const {
   return view ? static_cast<BubbleFrameView*>(view->frame_view()) : nullptr;
 }
 
-void BubbleDialogDelegateView::UpdateColorsFromTheme(
-    const ui::NativeTheme* theme) {
+void BubbleDialogDelegateView::UpdateColorsFromTheme() {
   if (!color_explicitly_set_)
-    color_ = theme->GetSystemColor(ui::NativeTheme::kColorId_BubbleBackground);
+    color_ = GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_BubbleBackground);
   BubbleFrameView* frame_view = GetBubbleFrameView();
   if (frame_view)
-    frame_view->bubble_border()->set_background_color(color());
+    frame_view->SetBackgroundColor(color());
 
   // When there's an opaque layer, the bubble border background won't show
   // through, so explicitly paint a background color.
@@ -452,12 +481,16 @@ void BubbleDialogDelegateView::UpdateColorsFromTheme(
                     : nullptr);
 }
 
+void BubbleDialogDelegateView::EnableUpDownKeyboardAccelerators() {
+  // The arrow keys can be used to tab between items.
+  AddAccelerator(ui::Accelerator(ui::VKEY_DOWN, ui::EF_NONE));
+  AddAccelerator(ui::Accelerator(ui::VKEY_UP, ui::EF_NONE));
+}
+
 void BubbleDialogDelegateView::HandleVisibilityChanged(Widget* widget,
                                                        bool visible) {
-  if (widget == GetWidget()) {
-    UpdateAnchorWidgetRenderState(visible);
+  if (widget == GetWidget())
     UpdateHighlightedButton(visible);
-  }
 
   // Fire ax::mojom::Event::kAlert for bubbles marked as
   // ax::mojom::Role::kAlertDialog; this instructs accessibility tools to read
@@ -475,15 +508,6 @@ void BubbleDialogDelegateView::HandleVisibilityChanged(Widget* widget,
 void BubbleDialogDelegateView::OnDeactivate() {
   if (close_on_deactivate() && GetWidget())
     GetWidget()->CloseWithReason(views::Widget::ClosedReason::kLostFocus);
-}
-
-void BubbleDialogDelegateView::UpdateAnchorWidgetRenderState(bool visible) {
-  if (!anchor_widget() || !anchor_widget()->GetTopLevelWidget() ||
-      !CanActivate()) {
-    return;
-  }
-
-  anchor_widget()->GetTopLevelWidget()->SetAlwaysRenderAsActive(visible);
 }
 
 void BubbleDialogDelegateView::UpdateHighlightedButton(bool highlighted) {

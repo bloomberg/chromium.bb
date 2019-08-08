@@ -371,20 +371,23 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   // are responsible for destroying the task, replying to the caller that made
   // the task and starting the a new content protection task if one is queued.
   void OnContentProtectionQueried(QueryContentProtectionCallback callback,
-                                  uint64_t client_id,
+                                  ContentProtectionClientId client_id,
                                   int64_t display_id,
                                   ContentProtectionTask::Status status,
                                   uint32_t connection_mask,
                                   uint32_t protection_mask);
   void OnContentProtectionApplied(ApplyContentProtectionCallback callback,
-                                  uint64_t client_id,
-                                  int64_t display_id,
-                                  uint32_t protection_mask,
+                                  ContentProtectionClientId client_id,
                                   ContentProtectionTask::Status status);
-  void OnContentProtectionClientUnregistered(
-      ContentProtectionTask::Status status);
 
-  void QueueContentProtectionTask(ContentProtectionTask* task);
+  // Returns content protections for |client_id|, or nullptr if invalid.
+  ContentProtections* GetContentProtections(
+      ContentProtectionClientId client_id);
+
+  // Returns cumulative content protections given all client requests.
+  ContentProtections AggregateContentProtections() const;
+
+  void QueueContentProtectionTask(std::unique_ptr<ContentProtectionTask> task);
   void DequeueContentProtectionTask();
 
   // Callbacks used to signal when the native platform has released/taken

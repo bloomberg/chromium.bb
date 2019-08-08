@@ -4,7 +4,7 @@
 
 /**
  * @fileoverview Fake implementation of chrome.networkingPrivate for testing.
- *    NOTE: Include "ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js'"
+ *    NOTE: Include "'//ui/webui/resources/js/promise_resolver.js'"
  *    in any test that uses this.
  */
 cr.define('chrome', function() {

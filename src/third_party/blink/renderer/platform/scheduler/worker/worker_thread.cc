@@ -9,7 +9,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
@@ -17,6 +17,7 @@
 #include "base/task/sequence_manager/task_queue.h"
 #include "base/time/default_tick_clock.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/platform/memory_pressure_listener.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_scheduler_proxy.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
 
@@ -28,7 +29,8 @@ WorkerThread::WorkerThread(const ThreadCreationParams& params)
       worker_scheduler_proxy_(params.frame_or_worker_scheduler
                                   ? std::make_unique<WorkerSchedulerProxy>(
                                         params.frame_or_worker_scheduler)
-                                  : nullptr) {
+                                  : nullptr),
+      supports_gc_(params.supports_gc) {
   auto non_main_thread_scheduler_factory = base::BindOnce(
       &WorkerThread::CreateNonMainThreadScheduler, base::Unretained(this));
   base::SimpleThread::Options options;
@@ -36,9 +38,17 @@ WorkerThread::WorkerThread(const ThreadCreationParams& params)
   thread_ = std::make_unique<SimpleThreadImpl>(
       params.name ? params.name : std::string(), options,
       std::move(non_main_thread_scheduler_factory));
+  if (supports_gc_) {
+    MemoryPressureListenerRegistry::Instance().RegisterThread(
+        const_cast<scheduler::WorkerThread*>(this));
+  }
 }
 
 WorkerThread::~WorkerThread() {
+  if (supports_gc_) {
+    MemoryPressureListenerRegistry::Instance().UnregisterThread(
+        const_cast<scheduler::WorkerThread*>(this));
+  }
   thread_->Quit();
   thread_->Join();
 }
@@ -80,9 +90,10 @@ WorkerThread::SimpleThreadImpl::SimpleThreadImpl(
   // TODO(alexclarke): Do we need to unify virtual time for workers and the main
   // thread?
   sequence_manager_ = base::sequence_manager::CreateUnboundSequenceManager(
-      base::sequence_manager::SequenceManager::Settings{
-          base::MessageLoop::TYPE_DEFAULT,
-          /*randomised_sampling_enabled=*/true});
+      base::sequence_manager::SequenceManager::Settings::Builder()
+          .SetMessagePumpType(base::MessageLoop::TYPE_DEFAULT)
+          .SetRandomisedSamplingEnabled(true)
+          .Build());
   internal_task_queue_ = sequence_manager_->CreateTaskQueue(
       base::sequence_manager::TaskQueue::Spec("worker_thread_internal_tq"));
   internal_task_runner_ = internal_task_queue_->CreateTaskRunner(
@@ -103,8 +114,7 @@ void WorkerThread::SimpleThreadImpl::Run() {
   auto scoped_sequence_manager = std::move(sequence_manager_);
   auto scoped_internal_task_queue = std::move(internal_task_queue_);
   scoped_sequence_manager->BindToMessagePump(
-      base::MessageLoop::CreateMessagePumpForType(
-          base::MessageLoop::TYPE_DEFAULT));
+      base::MessagePump::Create(base::MessagePump::Type::DEFAULT));
   non_main_thread_scheduler_ =
       std::move(scheduler_factory_).Run(scoped_sequence_manager.get());
   non_main_thread_scheduler_->Init();

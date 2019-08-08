@@ -12,7 +12,6 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.DeviceConditions;
 import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskParameters;
@@ -32,10 +31,11 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
     private static final int MINIMUM_BATTERY_PERCENTAGE_FOR_PREFETCHING = 50;
 
     private static boolean sSkipConditionCheckingForTesting;
+    private static boolean sAlwaysSupportServiceManagerOnlyForTesting;
 
     private long mNativeTask;
     private TaskFinishedCallback mTaskFinishedCallback;
-    private Profile mProfile;
+
     // We update this when we call TaskFinishedCallback, so that subsequent calls to
     // onStopTask* can respond the same way.  This is possible due to races with the JobScheduler.
     // Defaults to true so that we are rescheduled automatically if somehow we were unable to start
@@ -46,11 +46,6 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
     private String mGcmToken;
 
     public PrefetchBackgroundTask() {}
-
-    protected Profile getProfile() {
-        if (mProfile == null) mProfile = Profile.getLastUsedProfile();
-        return mProfile;
-    }
 
     @Override
     public @StartBeforeNativeResult int onStartTaskBeforeNativeLoaded(
@@ -95,6 +90,11 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
         sSkipConditionCheckingForTesting = true;
     }
 
+    @VisibleForTesting
+    static void alwaysSupportServiceManagerOnlyForTesting() {
+        sAlwaysSupportServiceManagerOnlyForTesting = true;
+    }
+
     @Override
     protected void onStartTaskWithNative(
             Context context, TaskParameters taskParameters, TaskFinishedCallback callback) {
@@ -113,7 +113,7 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
             return;
         }
 
-        nativeStartPrefetchTask(getProfile(), mGcmToken);
+        nativeStartPrefetchTask(mGcmToken);
     }
 
     private boolean isBrowserRunningInReducedMode() {
@@ -201,12 +201,13 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
 
     @Override
     protected boolean supportsServiceManagerOnly() {
-        return FeatureUtilities.isServiceManagerForBackgroundPrefetchEnabled()
-                && FeatureUtilities.isFeedEnabled();
+        if (sAlwaysSupportServiceManagerOnlyForTesting) return true;
+
+        return FeatureUtilities.isServiceManagerForBackgroundPrefetchEnabled();
     }
 
     @VisibleForTesting
-    native boolean nativeStartPrefetchTask(Profile profile, String gcmToken);
+    native boolean nativeStartPrefetchTask(String gcmToken);
     @VisibleForTesting
     native boolean nativeOnStopTask(long nativePrefetchBackgroundTaskAndroid);
     native void nativeSetTaskReschedulingForTesting(

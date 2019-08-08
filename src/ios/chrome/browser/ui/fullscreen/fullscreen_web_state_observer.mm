@@ -18,7 +18,7 @@
 #include "ios/web/common/url_util.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
-#include "ios/web/public/ssl_status.h"
+#include "ios/web/public/security/ssl_status.h"
 #import "ios/web/public/web_state/navigation_context.h"
 #import "ios/web/public/web_state/page_display_state.h"
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"

@@ -67,7 +67,7 @@ TEST_F(EditingCommandsUtilitiesTest, TidyUpHTMLStructureFromBody) {
 }
 
 TEST_F(EditingCommandsUtilitiesTest, TidyUpHTMLStructureFromDiv) {
-  Element* div = HTMLDivElement::Create(GetDocument());
+  auto* div = MakeGarbageCollected<HTMLDivElement>(GetDocument());
   MakeDocumentEmpty();
   GetDocument().setDesignMode("on");
   GetDocument().AppendChild(div);

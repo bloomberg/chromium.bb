@@ -17,7 +17,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "content/public/common/content_features.h"
 
 namespace chromeos {
 
@@ -145,11 +144,7 @@ InternetConfigDialogUI::InternetConfigDialogUI(content::WebUI* web_ui)
   source->AddLocalizedString("title", IDS_SETTINGS_INTERNET_CONFIG);
   source->SetJsonPath("strings.js");
 #if BUILDFLAG(OPTIMIZE_WEBUI)
-  source->UseGzip();
-  source->SetDefaultResource(
-      base::FeatureList::IsEnabled(features::kWebUIPolymer2)
-          ? IDR_INTERNET_CONFIG_DIALOG_VULCANIZED_P2_HTML
-          : IDR_INTERNET_CONFIG_DIALOG_VULCANIZED_HTML);
+  source->SetDefaultResource(IDR_INTERNET_CONFIG_DIALOG_VULCANIZED_HTML);
   source->AddResourcePath("crisper.js", IDR_INTERNET_CONFIG_DIALOG_CRISPER_JS);
 #else
   source->SetDefaultResource(IDR_INTERNET_CONFIG_DIALOG_HTML);

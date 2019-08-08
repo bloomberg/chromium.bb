@@ -47,6 +47,10 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
     return gpu_feature_info_;
   }
 
+  const WebglPreferences& GetWebglPreferences() const override {
+    return webgl_preferences_;
+  }
+
   viz::GLHelper* GetGLHelper() override { return nullptr; }
 
   gpu::gles2::GLES2Interface* ContextGL() override { return gl_; }
@@ -56,9 +60,7 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
   void SetLostContextCallback(base::Closure) override {}
   void SetErrorMessageCallback(
       base::RepeatingCallback<void(const char*, int32_t id)>) override {}
-  cc::ImageDecodeCache* ImageDecodeCache(
-      SkColorType color_type,
-      sk_sp<SkColorSpace> color_space) override {
+  cc::ImageDecodeCache* ImageDecodeCache(SkColorType color_type) override {
     return image_decode_cache_;
   }
   viz::TestSharedImageInterface* SharedImageInterface() override {
@@ -72,6 +74,7 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
   sk_sp<GrContext> gr_context_;
   gpu::Capabilities capabilities_;
   gpu::GpuFeatureInfo gpu_feature_info_;
+  WebglPreferences webgl_preferences_;
   cc::ImageDecodeCache* image_decode_cache_;
 };
 

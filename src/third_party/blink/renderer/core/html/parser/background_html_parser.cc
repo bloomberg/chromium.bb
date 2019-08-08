@@ -78,6 +78,8 @@ void BackgroundHTMLParser::Init(
     std::unique_ptr<CachedDocumentParameters> cached_document_parameters,
     const MediaValuesCached::MediaValuesCachedData& media_values_cached_data,
     bool priority_hints_origin_trial_enabled) {
+  TRACE_EVENT1("loading", "BackgroundHTMLParser::Init", "url",
+               document_url.GetString().Utf8());
   preload_scanner_.reset(new TokenPreloadScanner(
       document_url, std::move(cached_document_parameters),
       media_values_cached_data, TokenPreloadScanner::ScannerType::kMainDocument,
@@ -106,6 +108,7 @@ BackgroundHTMLParser::~BackgroundHTMLParser() = default;
 
 void BackgroundHTMLParser::AppendRawBytesFromMainThread(
     std::unique_ptr<Vector<char>> buffer) {
+  TRACE_EVENT0("loading", "BackgroundHTMLParser::AppendRawBytesFromMainThread");
   DCHECK(decoder_);
   UpdateDocument(decoder_->Decode(buffer->data(), buffer->size()));
 }
@@ -270,7 +273,7 @@ void BackgroundHTMLParser::EnqueueTokenizedChunk() {
                          chunk.get(), TRACE_EVENT_FLAG_FLOW_OUT);
 
   chunk->preloads.swap(pending_preloads_);
-  if (viewport_description_.set)
+  if (viewport_description_.has_value())
     chunk->viewport = viewport_description_;
   chunk->xss_infos.swap(pending_xss_infos_);
   chunk->tokenizer_state = tokenizer_->GetState();

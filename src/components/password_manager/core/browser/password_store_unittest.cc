@@ -154,29 +154,29 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
   static const PasswordFormData form_data[] = {
       // A form on https://www.google.com/ older than the cutoff. Will be
       // ignored.
-      {PasswordForm::SCHEME_HTML, "https://www.google.com",
+      {PasswordForm::Scheme::kHtml, "https://www.google.com",
        "https://www.google.com/origin", "https://www.google.com/action",
        L"submit_element", L"username_element", L"password_element",
        L"username_value_1", L"", true, cutoff - 1},
       // A form on https://www.google.com/ older than the cutoff. Will be
       // ignored.
-      {PasswordForm::SCHEME_HTML, "https://www.google.com",
+      {PasswordForm::Scheme::kHtml, "https://www.google.com",
        "https://www.google.com/origin", "https://www.google.com/action",
        L"submit_element", L"username_element", L"password_element",
        L"username_value_2", L"", true, cutoff - 1},
       // A form on https://www.google.com/ newer than the cutoff.
-      {PasswordForm::SCHEME_HTML, "https://www.google.com",
+      {PasswordForm::Scheme::kHtml, "https://www.google.com",
        "https://www.google.com/origin", "https://www.google.com/action",
        L"submit_element", L"username_element", L"password_element",
        L"username_value_3", L"", true, cutoff + 1},
       // A form on https://accounts.google.com/ older than the cutoff.
-      {PasswordForm::SCHEME_HTML, "https://accounts.google.com",
+      {PasswordForm::Scheme::kHtml, "https://accounts.google.com",
        "https://accounts.google.com/origin",
        "https://accounts.google.com/action", L"submit_element",
        L"username_element", L"password_element", L"username_value", L"", true,
        cutoff - 1},
       // A form on http://bar.example.com/ older than the cutoff.
-      {PasswordForm::SCHEME_HTML, "http://bar.example.com",
+      {PasswordForm::Scheme::kHtml, "http://bar.example.com",
        "http://bar.example.com/origin", "http://bar.example.com/action",
        L"submit_element", L"username_element", L"password_element",
        L"username_value", L"", true, cutoff - 1},
@@ -194,21 +194,21 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
   // any login forms on www.google.com to save, but we technically allow them.
   // We should not get back the older saved password though.
   const PasswordStore::FormDigest www_google = {
-      PasswordForm::SCHEME_HTML, "https://www.google.com", GURL()};
+      PasswordForm::Scheme::kHtml, "https://www.google.com", GURL()};
   std::vector<std::unique_ptr<PasswordForm>> www_google_expected;
   www_google_expected.push_back(std::make_unique<PasswordForm>(*all_forms[2]));
 
   // We should still get the accounts.google.com login even though it's older
   // than our cutoff - this is the new location of all Google login forms.
   const PasswordStore::FormDigest accounts_google = {
-      PasswordForm::SCHEME_HTML, "https://accounts.google.com", GURL()};
+      PasswordForm::Scheme::kHtml, "https://accounts.google.com", GURL()};
   std::vector<std::unique_ptr<PasswordForm>> accounts_google_expected;
   accounts_google_expected.push_back(
       std::make_unique<PasswordForm>(*all_forms[3]));
 
   // Same thing for a generic saved login.
   const PasswordStore::FormDigest bar_example = {
-      PasswordForm::SCHEME_HTML, "http://bar.example.com", GURL()};
+      PasswordForm::Scheme::kHtml, "http://bar.example.com", GURL()};
   std::vector<std::unique_ptr<PasswordForm>> bar_example_expected;
   bar_example_expected.push_back(std::make_unique<PasswordForm>(*all_forms[4]));
 
@@ -258,14 +258,14 @@ TEST_F(PasswordStoreTest, UpdateLoginPrimaryKeyFields) {
   /* clang-format off */
   static const PasswordFormData kTestCredentials[] = {
       // The old credential.
-      {PasswordForm::SCHEME_HTML,
+      {PasswordForm::Scheme::kHtml,
        kTestWebRealm1,
        kTestWebOrigin1,
        "", L"", L"username_element_1",  L"password_element_1",
        L"username_value_1",
        L"", true, 1},
       // The new credential with different values for all primary key fields.
-      {PasswordForm::SCHEME_HTML,
+      {PasswordForm::Scheme::kHtml,
        kTestWebRealm2,
        kTestWebOrigin2,
        "", L"", L"username_element_2",  L"password_element_2",
@@ -317,7 +317,7 @@ TEST_F(PasswordStoreTest, UpdateLoginPrimaryKeyFields) {
 TEST_F(PasswordStoreTest, RemoveLoginsCreatedBetweenCallbackIsCalled) {
   /* clang-format off */
   static const PasswordFormData kTestCredential =
-      {PasswordForm::SCHEME_HTML,
+      {PasswordForm::Scheme::kHtml,
        kTestWebRealm1,
        kTestWebOrigin1,
        "", L"", L"username_element_1",  L"password_element_1",
@@ -356,21 +356,21 @@ TEST_F(PasswordStoreTest, GetLoginsWithoutAffiliations) {
   /* clang-format off */
   static const PasswordFormData kTestCredentials[] = {
       // Credential that is an exact match of the observed form.
-      {PasswordForm::SCHEME_HTML,
+      {PasswordForm::Scheme::kHtml,
        kTestWebRealm1,
        kTestWebOrigin1,
        "", L"", L"",  L"",
        L"username_value_1",
        L"", true, 1},
       // Credential that is a PSL match of the observed form.
-      {PasswordForm::SCHEME_HTML,
+      {PasswordForm::Scheme::kHtml,
        kTestPSLMatchingWebRealm,
        kTestPSLMatchingWebOrigin,
        "", L"", L"",  L"",
        L"username_value_2",
        L"", true, 1},
       // Credential for an unrelated Android application.
-      {PasswordForm::SCHEME_HTML,
+      {PasswordForm::Scheme::kHtml,
        kTestUnrelatedAndroidRealm,
        "", "", L"", L"", L"",
        L"username_value_3",
@@ -388,7 +388,7 @@ TEST_F(PasswordStoreTest, GetLoginsWithoutAffiliations) {
   }
 
   PasswordStore::FormDigest observed_form = {
-      PasswordForm::SCHEME_HTML, kTestWebRealm1, GURL(kTestWebOrigin1)};
+      PasswordForm::Scheme::kHtml, kTestWebRealm1, GURL(kTestWebOrigin1)};
 
   std::vector<std::unique_ptr<PasswordForm>> expected_results;
   expected_results.push_back(
@@ -427,13 +427,13 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliations) {
   } kTestCredentials[] = {
       // Credential that is an exact match of the observed form.
       {
-          {PasswordForm::SCHEME_HTML, kTestWebRealm1, kTestWebOrigin1, "", L"",
-           L"", L"", L"username_value_1", L"", true, 1},
+          {PasswordForm::Scheme::kHtml, kTestWebRealm1, kTestWebOrigin1, "",
+           L"", L"", L"", L"username_value_1", L"", true, 1},
           false,
       },
       // Credential that is a PSL match of the observed form.
       {
-          {PasswordForm::SCHEME_HTML, kTestPSLMatchingWebRealm,
+          {PasswordForm::Scheme::kHtml, kTestPSLMatchingWebRealm,
            kTestPSLMatchingWebOrigin, "", L"", L"", L"", L"username_value_2",
            L"", true, 1},
           false,
@@ -441,38 +441,38 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliations) {
       // Credential for an Android application affiliated with the realm of the
       // observed from.
       {
-          {PasswordForm::SCHEME_HTML, kTestAndroidRealm1, "", "", L"", L"", L"",
-           L"username_value_3", L"", true, 1},
+          {PasswordForm::Scheme::kHtml, kTestAndroidRealm1, "", "", L"", L"",
+           L"", L"username_value_3", L"", true, 1},
           false,
       },
       // Second credential for the same Android application.
       {
-          {PasswordForm::SCHEME_HTML, kTestAndroidRealm1, "", "", L"", L"", L"",
-           L"username_value_3b", L"", true, 1},
+          {PasswordForm::Scheme::kHtml, kTestAndroidRealm1, "", "", L"", L"",
+           L"", L"username_value_3b", L"", true, 1},
           false,
       },
       // Third credential for the same application which is username-only.
       {
-          {PasswordForm::SCHEME_USERNAME_ONLY, kTestAndroidRealm1, "", "", L"",
+          {PasswordForm::Scheme::kUsernameOnly, kTestAndroidRealm1, "", "", L"",
            L"", L"", L"username_value_3c", L"", true, 1},
           false,
       },
       // Credential for another Android application affiliated with the realm
       // of the observed from.
       {
-          {PasswordForm::SCHEME_HTML, kTestAndroidRealm2, "", "", L"", L"", L"",
-           L"username_value_4", L"", true, 1},
+          {PasswordForm::Scheme::kHtml, kTestAndroidRealm2, "", "", L"", L"",
+           L"", L"username_value_4", L"", true, 1},
           false,
       },
       // Federated credential for this second Android application.
       {
-          {PasswordForm::SCHEME_HTML, kTestAndroidRealm2, "", "", L"", L"", L"",
-           L"username_value_4b", L"", true, 1},
+          {PasswordForm::Scheme::kHtml, kTestAndroidRealm2, "", "", L"", L"",
+           L"", L"username_value_4b", L"", true, 1},
           true,
       },
       // Credential for an unrelated Android application.
       {
-          {PasswordForm::SCHEME_HTML, kTestUnrelatedAndroidRealm, "", "", L"",
+          {PasswordForm::Scheme::kHtml, kTestUnrelatedAndroidRealm, "", "", L"",
            L"", L"", L"username_value_5", L"", true, 1},
           false,
       }};
@@ -489,7 +489,7 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliations) {
   }
 
   PasswordStore::FormDigest observed_form = {
-      PasswordForm::SCHEME_HTML, kTestWebRealm1, GURL(kTestWebOrigin1)};
+      PasswordForm::Scheme::kHtml, kTestWebRealm1, GURL(kTestWebOrigin1)};
 
   std::vector<std::unique_ptr<PasswordForm>> expected_results;
   expected_results.push_back(
@@ -548,7 +548,7 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
       // The credential for the Android application that will be updated
       // explicitly so it can be tested if the changes are correctly propagated
       // to affiliated Web credentials.
-      {PasswordForm::SCHEME_HTML,
+      {PasswordForm::Scheme::kHtml,
        kTestAndroidRealm1,
        "", "", L"", L"", L"",
        kTestUsername,
@@ -558,7 +558,7 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
       // automatically propagated to.
 
       // Credential for an affiliated web site with the same username.
-      {PasswordForm::SCHEME_HTML,
+      {PasswordForm::Scheme::kHtml,
        kTestWebRealm1,
        kTestWebOrigin1,
        "", L"", L"",  L"",
@@ -567,7 +567,7 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
       // Credential for another affiliated web site with the same username.
       // Although the password is different than the current/old password for
       // the Android application, it should be updated regardless.
-      {PasswordForm::SCHEME_HTML,
+      {PasswordForm::Scheme::kHtml,
        kTestWebRealm2,
        kTestWebOrigin2,
        "", L"", L"",  L"",
@@ -579,21 +579,21 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
 
       // Credential for another affiliated web site, but one that already has
       // the new password.
-      {PasswordForm::SCHEME_HTML,
+      {PasswordForm::Scheme::kHtml,
        kTestWebRealm3,
        kTestWebOrigin3,
        "", L"", L"",  L"",
        kTestUsername,
        kTestNewPassword, true, 1},
       // Credential for the HTTP version of an affiliated web site.
-      {PasswordForm::SCHEME_HTML,
+      {PasswordForm::Scheme::kHtml,
        kTestInsecureWebRealm,
        kTestInsecureWebOrigin,
        "", L"", L"",  L"",
        kTestUsername,
        kTestOldPassword, true, 1},
       // Credential for an affiliated web site, but with a different username.
-      {PasswordForm::SCHEME_HTML,
+      {PasswordForm::Scheme::kHtml,
        kTestWebRealm1,
        kTestWebOrigin1,
        "", L"", L"",  L"",
@@ -601,34 +601,34 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
        kTestOldPassword, true, 1},
       // Credential for a web site that is a PSL match to a web sites affiliated
       // with the Android application.
-      {PasswordForm::SCHEME_HTML,
+      {PasswordForm::Scheme::kHtml,
        kTestPSLMatchingWebRealm,
        kTestPSLMatchingWebOrigin,
        "poisoned", L"poisoned", L"",  L"",
        kTestUsername,
        kTestOldPassword, true, 1},
       // Credential for an unrelated web site.
-      {PasswordForm::SCHEME_HTML,
+      {PasswordForm::Scheme::kHtml,
        kTestUnrelatedWebRealm,
        kTestUnrelatedWebOrigin,
        "", L"", L"",  L"",
        kTestUsername,
        kTestOldPassword, true, 1},
       // Credential for an affiliated Android application.
-      {PasswordForm::SCHEME_HTML,
+      {PasswordForm::Scheme::kHtml,
        kTestAndroidRealm2,
        "", "", L"", L"", L"",
        kTestUsername,
        kTestOldPassword, true, 1},
       // Credential for an unrelated Android application.
-      {PasswordForm::SCHEME_HTML,
+      {PasswordForm::Scheme::kHtml,
        kTestUnrelatedAndroidRealm,
        "", "", L"", L"", L"",
        kTestUsername,
        kTestOldPassword, true, 1},
       // Credential for an affiliated web site with the same username, but one
       // that was updated at the same time via Sync as the Android credential.
-      {PasswordForm::SCHEME_HTML,
+      {PasswordForm::Scheme::kHtml,
        kTestWebRealm5,
        kTestWebOrigin5,
        "", L"", L"",  L"",
@@ -701,9 +701,9 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
       store->ScheduleTask(
           base::BindOnce(IgnoreResult(&PasswordStore::RemoveLoginSync), store,
                          *all_credentials[0]));
-      store->ScheduleTask(
-          base::BindOnce(IgnoreResult(&PasswordStore::AddLoginSync), store,
-                         *expected_credentials_after_update[0]));
+      store->ScheduleTask(base::BindOnce(
+          IgnoreResult(&PasswordStore::AddLoginSync), store,
+          *expected_credentials_after_update[0], /*error=*/nullptr));
     } else {
       store->ScheduleTask(
           base::BindOnce(IgnoreResult(&PasswordStore::UpdateLoginSync), store,
@@ -727,20 +727,20 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
 
 TEST_F(PasswordStoreTest, GetAllLogins) {
   static constexpr PasswordFormData kTestCredentials[] = {
-      {PasswordForm::SCHEME_HTML, kTestAndroidRealm1, "", "", L"", L"", L"",
+      {PasswordForm::Scheme::kHtml, kTestAndroidRealm1, "", "", L"", L"", L"",
        L"username_value_1", L"", true, 1},
-      {PasswordForm::SCHEME_HTML, kTestAndroidRealm2, "", "", L"", L"", L"",
+      {PasswordForm::Scheme::kHtml, kTestAndroidRealm2, "", "", L"", L"", L"",
        L"username_value_2", L"", true, 1},
-      {PasswordForm::SCHEME_HTML, kTestAndroidRealm3, "", "", L"", L"", L"",
+      {PasswordForm::Scheme::kHtml, kTestAndroidRealm3, "", "", L"", L"", L"",
        L"username_value_3", L"", true, 1},
-      {PasswordForm::SCHEME_HTML, kTestWebRealm1, kTestWebOrigin1, "", L"", L"",
-       L"", L"username_value_4", L"", true, 1},
+      {PasswordForm::Scheme::kHtml, kTestWebRealm1, kTestWebOrigin1, "", L"",
+       L"", L"", L"username_value_4", L"", true, 1},
       // A PasswordFormData with nullptr as the username_value will be converted
       // in a blacklisted PasswordForm in FillPasswordFormWithData().
-      {PasswordForm::SCHEME_HTML, kTestWebRealm2, kTestWebOrigin2, "", L"", L"",
-       L"", nullptr, L"", true, 1},
-      {PasswordForm::SCHEME_HTML, kTestWebRealm3, kTestWebOrigin3, "", L"", L"",
-       L"", nullptr, L"", true, 1}};
+      {PasswordForm::Scheme::kHtml, kTestWebRealm2, kTestWebOrigin2, "", L"",
+       L"", L"", nullptr, L"", true, 1},
+      {PasswordForm::Scheme::kHtml, kTestWebRealm3, kTestWebOrigin3, "", L"",
+       L"", L"", nullptr, L"", true, 1}};
 
   auto store = base::MakeRefCounted<PasswordStoreDefault>(
       std::make_unique<LoginDatabase>(test_login_db_file_path()));
@@ -767,20 +767,20 @@ TEST_F(PasswordStoreTest, GetAllLogins) {
 
 TEST_F(PasswordStoreTest, GetAllLoginsWithAffiliationAndBrandingInformation) {
   static constexpr PasswordFormData kTestCredentials[] = {
-      {PasswordForm::SCHEME_HTML, kTestAndroidRealm1, "", "", L"", L"", L"",
+      {PasswordForm::Scheme::kHtml, kTestAndroidRealm1, "", "", L"", L"", L"",
        L"username_value_1", L"", true, 1},
-      {PasswordForm::SCHEME_HTML, kTestAndroidRealm2, "", "", L"", L"", L"",
+      {PasswordForm::Scheme::kHtml, kTestAndroidRealm2, "", "", L"", L"", L"",
        L"username_value_2", L"", true, 1},
-      {PasswordForm::SCHEME_HTML, kTestAndroidRealm3, "", "", L"", L"", L"",
+      {PasswordForm::Scheme::kHtml, kTestAndroidRealm3, "", "", L"", L"", L"",
        L"username_value_3", L"", true, 1},
-      {PasswordForm::SCHEME_HTML, kTestWebRealm1, kTestWebOrigin1, "", L"", L"",
-       L"", L"username_value_4", L"", true, 1},
+      {PasswordForm::Scheme::kHtml, kTestWebRealm1, kTestWebOrigin1, "", L"",
+       L"", L"", L"username_value_4", L"", true, 1},
       // A PasswordFormData with nullptr as the username_value will be converted
       // in a blacklisted PasswordForm in FillPasswordFormWithData().
-      {PasswordForm::SCHEME_HTML, kTestWebRealm2, kTestWebOrigin2, "", L"", L"",
-       L"", nullptr, L"", true, 1},
-      {PasswordForm::SCHEME_HTML, kTestWebRealm3, kTestWebOrigin3, "", L"", L"",
-       L"", nullptr, L"", true, 1}};
+      {PasswordForm::Scheme::kHtml, kTestWebRealm2, kTestWebOrigin2, "", L"",
+       L"", L"", nullptr, L"", true, 1},
+      {PasswordForm::Scheme::kHtml, kTestWebRealm3, kTestWebOrigin3, "", L"",
+       L"", L"", nullptr, L"", true, 1}};
 
   auto store = base::MakeRefCounted<PasswordStoreDefault>(
       std::make_unique<LoginDatabase>(test_login_db_file_path()));
@@ -834,9 +834,9 @@ TEST_F(PasswordStoreTest, GetAllLoginsWithAffiliationAndBrandingInformation) {
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 TEST_F(PasswordStoreTest, CheckPasswordReuse) {
   static constexpr PasswordFormData kTestCredentials[] = {
-      {PasswordForm::SCHEME_HTML, "https://www.google.com",
+      {PasswordForm::Scheme::kHtml, "https://www.google.com",
        "https://www.google.com", "", L"", L"", L"", L"", L"password", true, 1},
-      {PasswordForm::SCHEME_HTML, "https://facebook.com",
+      {PasswordForm::Scheme::kHtml, "https://facebook.com",
        "https://facebook.com", "", L"", L"", L"", L"", L"topsecret", true, 1}};
 
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(

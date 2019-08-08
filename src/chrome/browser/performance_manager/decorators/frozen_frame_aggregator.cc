@@ -5,6 +5,7 @@
 #include "chrome/browser/performance_manager/decorators/frozen_frame_aggregator.h"
 
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
+#include "chrome/browser/performance_manager/graph/graph_impl.h"
 #include "chrome/browser/performance_manager/graph/node_attached_data_impl.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
@@ -52,7 +53,8 @@ class FrozenDataImpl : public FrozenFrameAggregator::Data,
   struct Traits : public NodeAttachedDataInternalOnNodeType<PageNodeImpl>,
                   public NodeAttachedDataInternalOnNodeType<ProcessNodeImpl> {};
 
-  FrozenDataImpl() = default;
+  explicit FrozenDataImpl(const PageNodeImpl* page_node) {}
+  explicit FrozenDataImpl(const ProcessNodeImpl* process_node) {}
   ~FrozenDataImpl() override = default;
 
   static StorageType* GetInternalStorage(PageNodeImpl* page_node) {
@@ -119,11 +121,11 @@ void FrozenFrameAggregator::OnRegistered() {
 bool FrozenFrameAggregator::ShouldObserve(const NodeBase* node) {
   // Use the ShouldObserve hook to ensure page and process node attached data
   // is initialized. There's no need to observe these nodes beyond that.
-  switch (node->id().type) {
-    case resource_coordinator::CoordinationUnitType::kFrame:
+  switch (node->type()) {
+    case FrameNodeImpl::Type():
       return true;
 
-    case resource_coordinator::CoordinationUnitType::kPage: {
+    case PageNodeImpl::Type(): {
       auto* page_node = PageNodeImpl::FromNodeBase(node);
       // Expect a page to always start in the running state.
       DCHECK_EQ(LifecycleState::kRunning, page_node->lifecycle_state());
@@ -131,7 +133,7 @@ bool FrozenFrameAggregator::ShouldObserve(const NodeBase* node) {
       return false;
     }
 
-    case resource_coordinator::CoordinationUnitType::kProcess: {
+    case ProcessNodeImpl::Type(): {
       FrozenDataImpl::GetOrCreate(ProcessNodeImpl::FromNodeBase(node));
       return false;
     }
@@ -144,8 +146,7 @@ bool FrozenFrameAggregator::ShouldObserve(const NodeBase* node) {
 
 void FrozenFrameAggregator::OnNodeAdded(NodeBase* node) {
   // We only observe frame nodes.
-  DCHECK_EQ(resource_coordinator::CoordinationUnitType::kFrame,
-            node->id().type);
+  DCHECK_EQ(FrameNodeImpl::Type(), node->type());
 
   auto* frame_node = FrameNodeImpl::FromNodeBase(node);
   DCHECK(!IsFrozen(frame_node));  // A newly created node can never be frozen.
@@ -153,7 +154,7 @@ void FrozenFrameAggregator::OnNodeAdded(NodeBase* node) {
 }
 
 void FrozenFrameAggregator::OnBeforeNodeRemoved(NodeBase* node) {
-  if (node->id().type != resource_coordinator::CoordinationUnitType::kFrame)
+  if (node->type() != FrameNodeImpl::Type())
     return;
 
   auto* frame_node = FrameNodeImpl::FromNodeBase(node);

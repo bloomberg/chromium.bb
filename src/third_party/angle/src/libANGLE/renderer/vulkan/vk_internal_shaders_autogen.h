@@ -111,6 +111,34 @@ enum DestFormat
 };
 }  // namespace ImageCopy_frag
 
+namespace Resolve_frag
+{
+enum flags
+{
+    kSrcIsArray = 0x00000001,
+    kFlagsMask  = 0x00000001,
+};
+enum Resolve
+{
+    kResolveColorFloat   = 0x00000000,
+    kResolveColorInt     = 0x00000002,
+    kResolveColorUint    = 0x00000004,
+    kResolveDepth        = 0x00000006,
+    kResolveStencil      = 0x00000008,
+    kResolveDepthStencil = 0x0000000A,
+    kResolveMask         = 0x0000000E,
+};
+}  // namespace Resolve_frag
+
+namespace ResolveStencilNoExport_comp
+{
+enum flags
+{
+    kSrcIsArray = 0x00000001,
+    kFlagsMask  = 0x00000001,
+};
+}  // namespace ResolveStencilNoExport_comp
+
 }  // namespace InternalShader
 
 class ShaderLibrary final : angle::NonCopyable
@@ -136,6 +164,12 @@ class ShaderLibrary final : angle::NonCopyable
     angle::Result getImageCopy_frag(Context *context,
                                     uint32_t shaderFlags,
                                     RefCounted<ShaderAndSerial> **shaderOut);
+    angle::Result getResolve_frag(Context *context,
+                                  uint32_t shaderFlags,
+                                  RefCounted<ShaderAndSerial> **shaderOut);
+    angle::Result getResolveStencilNoExport_comp(Context *context,
+                                                 uint32_t shaderFlags,
+                                                 RefCounted<ShaderAndSerial> **shaderOut);
 
   private:
     RefCounted<ShaderAndSerial>
@@ -153,6 +187,10 @@ class ShaderLibrary final : angle::NonCopyable
         mImageCopy_frag_shaders[InternalShader::ImageCopy_frag::kFlagsMask |
                                 InternalShader::ImageCopy_frag::kSrcFormatMask |
                                 InternalShader::ImageCopy_frag::kDestFormatMask];
+    RefCounted<ShaderAndSerial> mResolve_frag_shaders[InternalShader::Resolve_frag::kFlagsMask |
+                                                      InternalShader::Resolve_frag::kResolveMask];
+    RefCounted<ShaderAndSerial> mResolveStencilNoExport_comp_shaders
+        [InternalShader::ResolveStencilNoExport_comp::kFlagsMask];
 };
 }  // namespace vk
 }  // namespace rx

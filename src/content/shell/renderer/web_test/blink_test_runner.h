@@ -52,11 +52,6 @@ class BlinkTestRunner : public RenderViewObserver,
   // RenderViewObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
   void DidClearWindowObject(blink::WebLocalFrame* frame) override;
-  void Navigate(const GURL& url) override;
-  void DidCommitProvisionalLoad(blink::WebLocalFrame* frame,
-                                bool is_new_navigation) override;
-  void DidFailProvisionalLoad(blink::WebLocalFrame* frame,
-                              const blink::WebURLError& error) override;
 
   // WebTestDelegate implementation.
   void ClearEditCommand() override;
@@ -126,8 +121,8 @@ class BlinkTestRunner : public RenderViewObserver,
   bool AllowExternalPages() override;
   void FetchManifest(
       blink::WebView* view,
-      base::OnceCallback<void(const GURL&, const blink::Manifest&)> callback)
-      override;
+      base::OnceCallback<void(const blink::WebURL&, const blink::Manifest&)>
+          callback) override;
   void SetPermission(const std::string& name,
                      const std::string& value,
                      const GURL& origin,
@@ -155,6 +150,7 @@ class BlinkTestRunner : public RenderViewObserver,
   void OnReplicateTestConfiguration(mojom::ShellTestConfigurationPtr params);
   void OnSetupSecondaryRenderer();
   void CaptureDump(mojom::WebTestControl::CaptureDumpCallback callback);
+  void DidCommitNavigationInMainFrame();
 
  private:
   // Message handlers.
@@ -193,7 +189,6 @@ class BlinkTestRunner : public RenderViewObserver,
 
   bool is_main_window_;
 
-  bool focus_on_next_commit_;
   bool waiting_for_reset_ = false;
 
   std::unique_ptr<test_runner::AppBannerService> app_banner_service_;

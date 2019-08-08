@@ -54,28 +54,22 @@ void DeviceOrientationController::DidAddEventListener(
   if (event_type != EventTypeName())
     return;
 
-  LocalFrame* frame = GetDocument().GetFrame();
-  if (frame) {
-    if (GetDocument().IsSecureContext()) {
-      UseCounter::Count(GetDocument(),
-                        WebFeature::kDeviceOrientationSecureOrigin);
-    } else {
-      Deprecation::CountDeprecation(
-          GetDocument(), WebFeature::kDeviceOrientationInsecureOrigin);
-      HostsUsingFeatures::CountAnyWorld(
-          GetDocument(),
-          HostsUsingFeatures::Feature::kDeviceOrientationInsecureHost);
-      if (GetDocument()
-              .GetFrame()
-              ->GetSettings()
-              ->GetStrictPowerfulFeatureRestrictions())
-        return;
-      if (RuntimeEnabledFeatures::
-              RestrictDeviceSensorEventsToSecureContextsEnabled()) {
-        return;
-      }
-    }
-  }
+  // The document could be detached, e.g. if it is the `contentDocument` of an
+  // <iframe> that has been removed from the DOM of its parent frame.
+  if (GetDocument().IsContextDestroyed())
+    return;
+
+  // The API is not exposed to Workers or Worklets, so if the current realm
+  // execution context is valid, it must have a responsible browsing context.
+  SECURITY_CHECK(GetDocument().GetFrame());
+
+  // The event handler property on `window` is restricted to [SecureContext],
+  // but nothing prevents a site from calling `window.addEventListener(...)`
+  // from a non-secure browsing context.
+  if (!GetDocument().IsSecureContext())
+    return;
+
+  UseCounter::Count(GetDocument(), WebFeature::kDeviceOrientationSecureOrigin);
 
   if (!has_event_listener_) {
     Platform::Current()->RecordRapporURL("DeviceSensors.DeviceOrientation",
@@ -89,7 +83,8 @@ void DeviceOrientationController::DidAddEventListener(
 
     if (!CheckPolicyFeatures({mojom::FeaturePolicyFeature::kAccelerometer,
                               mojom::FeaturePolicyFeature::kGyroscope})) {
-      LogToConsolePolicyFeaturesDisabled(frame, EventTypeName());
+      LogToConsolePolicyFeaturesDisabled(GetDocument().GetFrame(),
+                                         EventTypeName());
       return;
     }
   }
@@ -115,7 +110,7 @@ void DeviceOrientationController::RegisterWithDispatcher() {
 
 void DeviceOrientationController::UnregisterWithDispatcher() {
   if (orientation_event_pump_)
-    orientation_event_pump_->RemoveController(this);
+    orientation_event_pump_->RemoveController();
 }
 
 Event* DeviceOrientationController::LastEvent() const {
@@ -166,7 +161,7 @@ void DeviceOrientationController::RegisterWithOrientationEventPump(
         MakeGarbageCollected<DeviceOrientationEventPump>(task_runner, absolute);
   }
   // TODO(crbug.com/850619): Ensure a valid frame is passed.
-  orientation_event_pump_->AddController(this, frame);
+  orientation_event_pump_->SetController(this);
 }
 
 // static

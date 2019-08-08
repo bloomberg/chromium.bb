@@ -12,8 +12,8 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-blink.h"
 #include "third_party/blink/public/platform/scheduler/web_resource_loading_task_runner_handle.h"
+#include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_or_worker_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -87,6 +87,13 @@ class FrameScheduler : public FrameOrWorkerScheduler {
   virtual bool IsAdFrame() const = 0;
 
   virtual void TraceUrlChange(const String&) = 0;
+
+  // Keep track of the amount of time spent running tasks for the frame.
+  // Forwards this tally to PageLoadMetrics and resets it each time it reaches
+  // 100ms.  The FrameScheduler will get this information primarily from the
+  // MainThreadTaskScheduler, but for tasks that are unattributable to a single
+  // frame (e.g. requestAnimationFrame), this method must be called explicitly.
+  virtual void AddTaskTime(base::TimeDelta time) = 0;
 
   // Returns the frame type, which currently determines whether this frame is
   // the top level frame, i.e. a main frame.

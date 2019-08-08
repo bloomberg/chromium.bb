@@ -13,25 +13,28 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/hash/md5.h"
+#include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
+#include "base/mac/launch_services_util.h"
 #include "base/mac/mach_logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/app_shim/app_shim_delegate.h"
 #include "chrome/browser/ui/cocoa/browser_window_command_handler.h"
 #include "chrome/browser/ui/cocoa/chrome_command_dispatcher_delegate.h"
 #include "chrome/browser/ui/cocoa/main_menu_builder.h"
-#include "content/public/browser/ns_view_bridge_factory_impl.h"
-#include "content/public/common/ns_view_bridge_factory.mojom.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/mac/app_mode_common.h"
+#include "components/remote_cocoa/app_shim/bridge_factory_impl.h"
+#include "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
+#include "components/remote_cocoa/common/bridge_factory.mojom.h"
+#include "content/public/browser/remote_cocoa.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/platform/features.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/views_bridge_mac/bridge_factory_impl.h"
-#include "ui/views_bridge_mac/bridged_native_widget_impl.h"
-#include "ui/views_bridge_mac/mojo/bridge_factory.mojom.h"
 
 namespace {
 // The maximum amount of time to wait for Chrome's AppShimHostManager to be
@@ -45,11 +48,12 @@ constexpr base::TimeDelta kPollPeriodMsec =
     base::TimeDelta::FromMilliseconds(100);
 }  // namespace
 
-AppShimController::AppShimController(
-    const app_mode::ChromeAppModeInfo* app_mode_info,
-    base::scoped_nsobject<NSRunningApplication> chrome_running_app)
-    : app_mode_info_(app_mode_info),
-      chrome_running_app_(chrome_running_app),
+AppShimController::Params::Params() = default;
+AppShimController::Params::Params(const Params& other) = default;
+AppShimController::Params::~Params() = default;
+
+AppShimController::AppShimController(const Params& params)
+    : params_(params),
       shim_binding_(this),
       host_request_(mojo::MakeRequest(&host_)),
       delegate_([[AppShimDelegate alloc] init]),
@@ -59,6 +63,9 @@ AppShimController::AppShimController(
   // NSApp will not be set, so use sharedApplication.
   NSApplication* sharedApplication = [NSApplication sharedApplication];
   [sharedApplication setDelegate:delegate_];
+
+  // Ensure Chrome is launched.
+  FindOrLaunchChrome();
 
   // Start polling to see if Chrome is ready to connect.
   PollForChromeReady(kPollTimeoutSeconds);
@@ -70,6 +77,52 @@ AppShimController::~AppShimController() {
   [sharedApplication setDelegate:nil];
 }
 
+void AppShimController::FindOrLaunchChrome() {
+  DCHECK(!chrome_running_app_);
+
+  // If this shim was launched by Chrome, open that specified process.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          app_mode::kLaunchedByChromeProcessId)) {
+    std::string chrome_pid_string =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            app_mode::kLaunchedByChromeProcessId);
+    int chrome_pid;
+    if (!base::StringToInt(chrome_pid_string, &chrome_pid))
+      LOG(FATAL) << "Invalid PID: " << chrome_pid_string;
+
+    chrome_running_app_.reset([NSRunningApplication
+        runningApplicationWithProcessIdentifier:chrome_pid]);
+    if (!chrome_running_app_)
+      LOG(FATAL) << "Failed open process with PID: " << chrome_pid;
+  }
+
+  // Find an already running instance of Chrome to open, if one exists.
+  NSArray* running_chrome_instances = [NSRunningApplication
+      runningApplicationsWithBundleIdentifier:[base::mac::OuterBundle()
+                                                  bundleIdentifier]];
+  if ([running_chrome_instances count] > 0) {
+    chrome_running_app_.reset([running_chrome_instances objectAtIndex:0],
+                              base::scoped_policy::RETAIN);
+    return;
+  }
+
+  // In tests, launching Chrome does nothing.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          app_mode::kLaunchedForTest)) {
+    return;
+  }
+
+  // Launch Chrome.
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitch(switches::kSilentLaunch);
+  command_line.AppendSwitchPath(switches::kProfileDirectory,
+                                params_.profile_dir);
+  chrome_running_app_.reset(base::mac::OpenApplicationWithPath(
+      base::mac::OuterBundlePath(), command_line, NSWorkspaceLaunchDefault));
+  if (!chrome_running_app_)
+    LOG(FATAL) << "Failed launch Chrome.";
+}
+
 void AppShimController::PollForChromeReady(
     const base::TimeDelta& time_until_timeout) {
   // If the Chrome application we planned to connect to is not running, quit.
@@ -79,19 +132,15 @@ void AppShimController::PollForChromeReady(
   // Check to see if the app shim socket symlink path exists. If it does, then
   // we know that the AppShimHostManager is listening in the browser process,
   // and we can connect.
-  base::FilePath user_data_dir = base::FilePath(app_mode_info_->user_data_dir)
-                                     .DirName()
-                                     .DirName()
-                                     .DirName();
-  CHECK(!user_data_dir.empty());
+  CHECK(!params_.user_data_dir.empty());
   base::FilePath symlink_path =
-      user_data_dir.Append(app_mode::kAppShimSocketSymlinkName);
+      params_.user_data_dir.Append(app_mode::kAppShimSocketSymlinkName);
 
   // If the MojoChannelMac signal file is present, the browser is running
   // with Mach IPC instead of socket-based IPC, and the shim can connect
   // via that.
   base::FilePath mojo_channel_mac_signal_file =
-      user_data_dir.Append(app_mode::kMojoChannelMacSignalFile);
+      params_.user_data_dir.Append(app_mode::kMojoChannelMacSignalFile);
   if (base::PathExists(symlink_path) ||
       base::PathExists(mojo_channel_mac_signal_file)) {
     InitBootstrapPipe();
@@ -144,14 +193,7 @@ void AppShimController::InitBootstrapPipe() {
 
   // Chrome will relaunch shims when relaunching apps.
   [NSApp disableRelaunchOnLogin];
-
-  // The user_data_dir for shims actually contains the app_data_path.
-  // I.e. <user_data_dir>/<profile_dir>/Web Applications/_crx_extensionid/
-  base::FilePath user_data_dir = base::FilePath(app_mode_info_->user_data_dir)
-                                     .DirName()
-                                     .DirName()
-                                     .DirName();
-  CHECK(!user_data_dir.empty());
+  CHECK(!params_.user_data_dir.empty());
 
   mojo::PlatformChannelEndpoint endpoint;
 
@@ -160,7 +202,7 @@ void AppShimController::InitBootstrapPipe() {
   // Mach IPC. The FeatureList also needs to be initialized with that on, so
   // Mojo internals use the right transport mechanism.
   base::FilePath mojo_channel_mac_signal_file =
-      user_data_dir.Append(app_mode::kMojoChannelMacSignalFile);
+      params_.user_data_dir.Append(app_mode::kMojoChannelMacSignalFile);
   if (base::PathExists(mojo_channel_mac_signal_file)) {
     base::FeatureList::InitializeInstance(mojo::features::kMojoChannelMac.name,
                                           std::string());
@@ -173,12 +215,12 @@ void AppShimController::InitBootstrapPipe() {
     std::string name_fragment = base::StringPrintf(
         "%s.%s.%s", base::SysNSStringToUTF8(browser_bundle_id).c_str(),
         app_mode::kAppShimBootstrapNameFragment,
-        base::MD5String(user_data_dir.value()).c_str());
+        base::MD5String(params_.user_data_dir.value()).c_str());
 
     endpoint = ConnectToBrowser(name_fragment);
   } else {
     base::FilePath symlink_path =
-        user_data_dir.Append(app_mode::kAppShimSocketSymlinkName);
+        params_.user_data_dir.Append(app_mode::kAppShimSocketSymlinkName);
     base::FilePath socket_path;
     if (base::ReadSymbolicLink(symlink_path, &socket_path)) {
       app_mode::VerifySocketPermissions(socket_path);
@@ -214,16 +256,14 @@ void AppShimController::CreateChannelAndSendLaunchApp(
   std::vector<base::FilePath> files;
   [delegate_ getFilesToOpenAtStartup:&files];
 
-  host_bootstrap_->LaunchApp(std::move(host_request_),
-                             base::FilePath(app_mode_info_->profile_dir),
-                             app_mode_info_->app_mode_id, launch_type, files,
+  host_bootstrap_->LaunchApp(std::move(host_request_), params_.profile_dir,
+                             params_.app_mode_id, launch_type, files,
                              base::BindOnce(&AppShimController::LaunchAppDone,
                                             base::Unretained(this)));
 }
 
 void AppShimController::SetUpMenu() {
-  chrome::BuildMainMenu(NSApp, delegate_,
-                        base::UTF8ToUTF16(app_mode_info_->app_mode_name), true);
+  chrome::BuildMainMenu(NSApp, delegate_, params_.app_mode_name, true);
 }
 
 void AppShimController::BootstrapChannelError(uint32_t custom_reason,
@@ -264,13 +304,11 @@ void AppShimController::LaunchAppDone(
 }
 
 void AppShimController::CreateViewsBridgeFactory(
-    views_bridge_mac::mojom::BridgeFactoryAssociatedRequest request) {
-  views_bridge_mac::BridgeFactoryImpl::Get()->BindRequest(std::move(request));
-}
-
-void AppShimController::CreateContentNSViewBridgeFactory(
-    content::mojom::NSViewBridgeFactoryAssociatedRequest request) {
-  content::NSViewBridgeFactoryImpl::Get()->BindRequest(std::move(request));
+    remote_cocoa::mojom::BridgeFactoryAssociatedRequest request) {
+  remote_cocoa::BridgeFactoryImpl::Get()->BindRequest(std::move(request));
+  remote_cocoa::BridgeFactoryImpl::Get()->SetContentNSViewCreateCallbacks(
+      base::BindRepeating(content::CreateRenderWidgetHostNSView),
+      base::BindRepeating(content::CreateWebContentsNSView));
 }
 
 void AppShimController::CreateCommandDispatcherForWidget(uint64_t widget_id) {

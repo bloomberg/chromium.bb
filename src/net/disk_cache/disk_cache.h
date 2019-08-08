@@ -480,6 +480,9 @@ struct EntryDeleter {
 };
 
 // Automatically closes an entry when it goes out of scope.
+// Warning: Be careful. Automatically closing may not be the desired behavior
+// when writing to an entry. You may wish to doom first (e.g., in case writing
+// hasn't yet completed but the browser is shutting down).
 typedef std::unique_ptr<Entry, EntryDeleter> ScopedEntryPtr;
 
 }  // namespace disk_cache

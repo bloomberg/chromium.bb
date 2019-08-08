@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.download.home.metrics.UmaUtils;
 import org.chromium.chrome.browser.download.home.metrics.UmaUtils.MenuAction;
 import org.chromium.chrome.browser.download.home.toolbar.ToolbarUtils;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
+import org.chromium.chrome.browser.gesturenav.HistoryNavigationDelegate;
 import org.chromium.chrome.browser.native_page.BasicNativePage;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.download.DownloadPreferences;
@@ -44,7 +45,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.ThumbnailProvider;
 import org.chromium.chrome.browser.widget.ThumbnailProviderImpl;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
@@ -344,7 +344,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
     }
 
     @Override
-    public void setTab(Tab tab) {}
+    public void setHistoryNavigationDelegate(HistoryNavigationDelegate delegate) {}
 
     @Override
     public boolean onMenuItemClick(MenuItem item) {

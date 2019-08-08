@@ -34,11 +34,11 @@ using syncer::SyncData;
 using syncer::SyncDataList;
 using syncer::SyncError;
 using syncer::SyncErrorFactory;
+using testing::_;
 using testing::AssertionFailure;
 using testing::AssertionResult;
 using testing::AssertionSuccess;
 using testing::SaveArgPointee;
-using testing::_;
 
 namespace dom_distiller {
 
@@ -182,12 +182,12 @@ AssertionResult AreEntriesEqual(const DomDistillerStore::EntryVector& entries,
   for (auto it = entries.begin(); it != entries.end(); ++it) {
     auto expected_it = expected_entries.find(it->entry_id());
     if (expected_it == expected_entries.end()) {
-      return AssertionFailure() << "Found unexpected entry with id <"
-                                << it->entry_id() << ">";
+      return AssertionFailure()
+             << "Found unexpected entry with id <" << it->entry_id() << ">";
     }
     if (!AreEntriesEqual(expected_it->second, *it)) {
-      return AssertionFailure() << "Mismatched entry with id <"
-                                << it->entry_id() << ">";
+      return AssertionFailure()
+             << "Mismatched entry with id <" << it->entry_id() << ">";
     }
     expected_entries.erase(expected_it);
   }

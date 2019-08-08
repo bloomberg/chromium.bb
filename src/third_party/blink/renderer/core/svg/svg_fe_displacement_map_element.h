@@ -35,8 +35,6 @@ class SVGFEDisplacementMapElement final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_NODE_FACTORY(SVGFEDisplacementMapElement);
-
   explicit SVGFEDisplacementMapElement(Document&);
 
   static ChannelSelectorType StringToChannel(const String&);

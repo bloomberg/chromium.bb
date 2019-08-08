@@ -90,7 +90,7 @@ double GetSiteEngagementScore(content::WebContents* contents) {
 }
 
 mojom::SiteCharacteristicsFeaturePtr ConvertFeatureFromProto(
-    const SiteCharacteristicsFeatureProto& proto) {
+    const SiteDataFeatureProto& proto) {
   mojom::SiteCharacteristicsFeaturePtr feature =
       mojom::SiteCharacteristicsFeature::New();
 
@@ -110,7 +110,7 @@ mojom::SiteCharacteristicsFeaturePtr ConvertFeatureFromProto(
 }
 
 mojom::SiteCharacteristicsDatabaseEntryPtr ConvertEntryFromProto(
-    SiteCharacteristicsProto* proto) {
+    SiteDataProto* proto) {
   mojom::SiteCharacteristicsDatabaseValuePtr value =
       mojom::SiteCharacteristicsDatabaseValue::New();
 
@@ -345,7 +345,7 @@ void DiscardsDetailsProviderImpl::GetSiteCharacteristicsDatabase(
   for (const url::Origin& origin : in_memory_origins) {
     // Get the data for this origin and convert it from proto to the
     // corresponding mojo structure.
-    std::unique_ptr<SiteCharacteristicsProto> proto;
+    std::unique_ptr<SiteDataProto> proto;
     bool is_dirty = false;
     if (data_store_inspector_->GetDataForOrigin(origin, &is_dirty, &proto)) {
       auto entry = ConvertEntryFromProto(proto.get());
@@ -428,7 +428,6 @@ DiscardsUI::DiscardsUI(content::WebUI* web_ui)
       IDR_DISCARDS_MOJO_PUBLIC_BASE_PROCESS_ID_MOJOM_LITE_JS);
 
   source->SetDefaultResource(IDR_DISCARDS_HTML);
-  source->UseGzip();
 
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, source.release());
@@ -451,7 +450,7 @@ void DiscardsUI::BindDiscardsDetailsProvider(
 }
 
 void DiscardsUI::BindWebUIGraphDumpProvider(
-    resource_coordinator::mojom::WebUIGraphDumpRequest request) {
+    performance_manager::mojom::WebUIGraphDumpRequest request) {
   performance_manager::PerformanceManager* performance_manager =
       performance_manager::PerformanceManager::GetInstance();
   if (performance_manager) {

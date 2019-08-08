@@ -341,7 +341,17 @@ class TestingProfile : public Profile {
   base::Time GetStartTime() const override;
   ProfileKey* GetProfileKey() const override;
   policy::SchemaRegistryService* GetPolicySchemaRegistryService() override;
+#if defined(OS_CHROMEOS)
+  policy::UserCloudPolicyManagerChromeOS* GetUserCloudPolicyManagerChromeOS()
+      override;
+  policy::ActiveDirectoryPolicyManager* GetActiveDirectoryPolicyManager()
+      override;
+#else
   policy::UserCloudPolicyManager* GetUserCloudPolicyManager() override;
+#endif  // defined(OS_CHROMEOS)
+  policy::ProfilePolicyConnector* GetProfilePolicyConnector() override;
+  const policy::ProfilePolicyConnector* GetProfilePolicyConnector()
+      const override;
   base::FilePath last_selected_directory() override;
   void set_last_selected_directory(const base::FilePath& path) override;
   bool WasCreatedByVersionOrLater(const std::string& version) override;
@@ -415,8 +425,7 @@ class TestingProfile : public Profile {
   // |original_profile_|.
   void CreateIncognitoPrefService();
 
-  // Creates a ProfilePolicyConnector that the ProfilePolicyConnectorFactory
-  // maps to this profile.
+  // Creates a ProfilePolicyConnector.
   void CreateProfilePolicyConnector();
 
   std::unique_ptr<net::CookieStore, content::BrowserThread::DeleteOnIOThread>

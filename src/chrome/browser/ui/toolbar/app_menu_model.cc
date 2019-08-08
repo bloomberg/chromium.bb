@@ -82,6 +82,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chromeos/constants/chromeos_switches.h"
 #endif
 
@@ -123,7 +124,7 @@ base::Optional<base::string16> GetInstallPWAAppMenuItemName(Browser* browser) {
   if (!web_contents)
     return base::nullopt;
   base::string16 app_name =
-      banners::AppBannerManager::GetInstallableAppName(web_contents);
+      banners::AppBannerManager::GetInstallableWebAppName(web_contents);
   if (app_name.empty())
     return base::nullopt;
   return l10n_util::GetStringFUTF16(IDS_INSTALL_TO_OS_LAUNCH_SURFACE, app_name);
@@ -764,29 +765,37 @@ void AppMenuModel::Build() {
 
   AddItemWithStringId(IDC_FIND, IDS_FIND);
 
-  if (banners::AppBannerManager::IsExperimentalAppBannersEnabled()) {
-    const extensions::Extension* pwa =
-        base::FeatureList::IsEnabled(features::kDesktopPWAWindowing)
-            ? extensions::util::GetPwaForSecureActiveTab(browser_)
-            : nullptr;
-    if (pwa) {
-      AddItem(
-          IDC_OPEN_IN_PWA_WINDOW,
-          l10n_util::GetStringFUTF16(
-              IDS_OPEN_IN_APP_WINDOW,
-              gfx::TruncateString(base::UTF8ToUTF16(pwa->name()),
-                                  kMaxAppNameLength, gfx::CHARACTER_BREAK)));
-    } else {
-      base::Optional<base::string16> install_pwa_item_name =
-          GetInstallPWAAppMenuItemName(browser_);
-      if (install_pwa_item_name)
-        AddItem(IDC_INSTALL_PWA, *install_pwa_item_name);
-    }
+  const extensions::Extension* pwa =
+      extensions::util::GetPwaForSecureActiveTab(browser_);
+  if (pwa) {
+    AddItem(IDC_OPEN_IN_PWA_WINDOW,
+            l10n_util::GetStringFUTF16(
+                IDS_OPEN_IN_APP_WINDOW,
+                gfx::TruncateString(base::UTF8ToUTF16(pwa->name()),
+                                    kMaxAppNameLength, gfx::CHARACTER_BREAK)));
+  } else {
+    base::Optional<base::string16> install_pwa_item_name =
+        GetInstallPWAAppMenuItemName(browser_);
+    if (install_pwa_item_name)
+      AddItem(IDC_INSTALL_PWA, *install_pwa_item_name);
   }
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableDomDistiller))
+          switches::kEnableDomDistiller)) {
     AddItemWithStringId(IDC_DISTILL_PAGE, IDS_DISTILL_PAGE);
+  }
+
+#if defined(OS_CHROMEOS)
+  // Always show this option if we're in tablet mode on Chrome OS.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableRequestTabletSite) ||
+      (TabletModeClient::Get() &&
+       TabletModeClient::Get()->tablet_mode_enabled())) {
+    AddCheckItemWithStringId(IDC_TOGGLE_REQUEST_TABLET_SITE,
+                             IDS_TOGGLE_REQUEST_TABLET_SITE);
+  }
+#endif
+
   tools_menu_model_.reset(new ToolsMenuModel(this, browser_));
   AddSubMenuWithStringId(
       IDC_MORE_TOOLS_MENU, IDS_MORE_TOOLS_MENU, tools_menu_model_.get());
@@ -805,12 +814,6 @@ void AppMenuModel::Build() {
 #else
   AddItem(IDC_ABOUT, l10n_util::GetStringUTF16(IDS_ABOUT));
 #endif
-#if defined(OS_CHROMEOS)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableRequestTabletSite))
-    AddCheckItemWithStringId(IDC_TOGGLE_REQUEST_TABLET_SITE,
-                             IDS_TOGGLE_REQUEST_TABLET_SITE);
-#endif
 
   if (browser_defaults::kShowExitMenuItem) {
     AddSeparator(ui::NORMAL_SEPARATOR);
@@ -827,8 +830,9 @@ void AppMenuModel::Build() {
         ui::NativeTheme::kColorId_HighlightedMenuItemForegroundColor);
     const auto icon =
         gfx::CreateVectorIcon(vector_icons::kBusinessIcon, kIconSize, color);
-    AddHighlightedItemWithStringIdAndIcon(IDC_SHOW_MANAGEMENT_PAGE,
-                                          IDS_MANAGED_BY_ORG, icon);
+    AddHighlightedItemWithIcon(
+        IDC_SHOW_MANAGEMENT_PAGE,
+        chrome::GetManagedUiMenuItemLabel(browser_->profile()), icon);
   }
 #endif  // !defined(OS_CHROMEOS)
 

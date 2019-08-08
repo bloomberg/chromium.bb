@@ -154,7 +154,7 @@ static int Delay(int32_t c, DelayMode mode) {
   if (c < limit) {
     c++;               // spin
   } else {
-    ABSL_TSAN_MUTEX_PRE_DIVERT(0, 0);
+    ABSL_TSAN_MUTEX_PRE_DIVERT(nullptr, 0);
     if (c == limit) {  // yield once
       AbslInternalMutexYield();
       c++;
@@ -162,7 +162,7 @@ static int Delay(int32_t c, DelayMode mode) {
       absl::SleepFor(absl::Microseconds(10));
       c = 0;
     }
-    ABSL_TSAN_MUTEX_POST_DIVERT(0, 0);
+    ABSL_TSAN_MUTEX_POST_DIVERT(nullptr, 0);
   }
   return (c);
 }
@@ -207,8 +207,8 @@ static absl::base_internal::SpinLock deadlock_graph_mu(
     absl::base_internal::kLinkerInitialized);
 
 // graph used to detect deadlocks.
-static GraphCycles *deadlock_graph GUARDED_BY(deadlock_graph_mu)
-    PT_GUARDED_BY(deadlock_graph_mu);
+static GraphCycles *deadlock_graph ABSL_GUARDED_BY(deadlock_graph_mu)
+    ABSL_PT_GUARDED_BY(deadlock_graph_mu);
 
 //------------------------------------------------------------------
 // An event mechanism for debugging mutex use.
@@ -279,10 +279,10 @@ static const uint32_t kNSynchEvent = 1031;
 
 static struct SynchEvent {     // this is a trivial hash table for the events
   // struct is freed when refcount reaches 0
-  int refcount GUARDED_BY(synch_event_mu);
+  int refcount ABSL_GUARDED_BY(synch_event_mu);
 
   // buckets have linear, 0-terminated  chains
-  SynchEvent *next GUARDED_BY(synch_event_mu);
+  SynchEvent *next ABSL_GUARDED_BY(synch_event_mu);
 
   // Constant after initialization
   uintptr_t masked_addr;  // object at this address is called "name"
@@ -296,7 +296,7 @@ static struct SynchEvent {     // this is a trivial hash table for the events
 
   // Constant after initialization
   char name[1];         // actually longer---null-terminated std::string
-} *synch_event[kNSynchEvent] GUARDED_BY(synch_event_mu);
+} *synch_event[kNSynchEvent] ABSL_GUARDED_BY(synch_event_mu);
 
 // Ensure that the object at "addr" has a SynchEvent struct associated with it,
 // set "bits" in the word there (waiting until lockbit is clear before doing
@@ -901,11 +901,15 @@ static PerThreadSynch *Enqueue(PerThreadSynch *head,
       // base_internal::CycleClock::Now() is 0.5%.
       int policy;
       struct sched_param param;
-      pthread_getschedparam(pthread_self(), &policy, &param);
-      s->priority = param.sched_priority;
-      s->next_priority_read_cycles =
-          now_cycles +
-          static_cast<int64_t>(base_internal::CycleClock::Frequency());
+      const int err = pthread_getschedparam(pthread_self(), &policy, &param);
+      if (err != 0) {
+        ABSL_RAW_LOG(ERROR, "pthread_getschedparam failed: %d", err);
+      } else {
+        s->priority = param.sched_priority;
+        s->next_priority_read_cycles =
+            now_cycles +
+            static_cast<int64_t>(base_internal::CycleClock::Frequency());
+      }
     }
     if (s->priority > head->priority) {  // s's priority is above head's
       // try to put s in priority-fifo order, or failing that at the front.
@@ -1139,7 +1143,7 @@ PerThreadSynch *Mutex::Wakeup(PerThreadSynch *w) {
 }
 
 static GraphId GetGraphIdLocked(Mutex *mu)
-    EXCLUSIVE_LOCKS_REQUIRED(deadlock_graph_mu) {
+    ABSL_EXCLUSIVE_LOCKS_REQUIRED(deadlock_graph_mu) {
   if (!deadlock_graph) {  // (re)create the deadlock graph.
     deadlock_graph =
         new (base_internal::LowLevelAlloc::Alloc(sizeof(*deadlock_graph)))
@@ -1148,7 +1152,7 @@ static GraphId GetGraphIdLocked(Mutex *mu)
   return deadlock_graph->GetId(mu);
 }
 
-static GraphId GetGraphId(Mutex *mu) LOCKS_EXCLUDED(deadlock_graph_mu) {
+static GraphId GetGraphId(Mutex *mu) ABSL_LOCKS_EXCLUDED(deadlock_graph_mu) {
   deadlock_graph_mu.Lock();
   GraphId id = GetGraphIdLocked(mu);
   deadlock_graph_mu.Unlock();
@@ -2583,7 +2587,7 @@ void CondVar::Wakeup(PerThreadSynch *w) {
 }
 
 void CondVar::Signal() {
-  ABSL_TSAN_MUTEX_PRE_SIGNAL(0, 0);
+  ABSL_TSAN_MUTEX_PRE_SIGNAL(nullptr, 0);
   intptr_t v;
   int c = 0;
   for (v = cv_.load(std::memory_order_relaxed); v != 0;
@@ -2612,17 +2616,17 @@ void CondVar::Signal() {
       if ((v & kCvEvent) != 0) {
         PostSynchEvent(this, SYNCH_EV_SIGNAL);
       }
-      ABSL_TSAN_MUTEX_POST_SIGNAL(0, 0);
+      ABSL_TSAN_MUTEX_POST_SIGNAL(nullptr, 0);
       return;
     } else {
       c = Delay(c, GENTLE);
     }
   }
-  ABSL_TSAN_MUTEX_POST_SIGNAL(0, 0);
+  ABSL_TSAN_MUTEX_POST_SIGNAL(nullptr, 0);
 }
 
 void CondVar::SignalAll () {
-  ABSL_TSAN_MUTEX_PRE_SIGNAL(0, 0);
+  ABSL_TSAN_MUTEX_PRE_SIGNAL(nullptr, 0);
   intptr_t v;
   int c = 0;
   for (v = cv_.load(std::memory_order_relaxed); v != 0;
@@ -2649,13 +2653,13 @@ void CondVar::SignalAll () {
       if ((v & kCvEvent) != 0) {
         PostSynchEvent(this, SYNCH_EV_SIGNALALL);
       }
-      ABSL_TSAN_MUTEX_POST_SIGNAL(0, 0);
+      ABSL_TSAN_MUTEX_POST_SIGNAL(nullptr, 0);
       return;
     } else {
       c = Delay(c, GENTLE);           // try again after a delay
     }
   }
-  ABSL_TSAN_MUTEX_POST_SIGNAL(0, 0);
+  ABSL_TSAN_MUTEX_POST_SIGNAL(nullptr, 0);
 }
 
 void ReleasableMutexLock::Release() {

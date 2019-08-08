@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/public/cpp/ash_switches.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -19,7 +20,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
-#include "chrome/browser/chromeos/login/screens/gaia_view.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager_factory.h"
 #include "chrome/browser/chromeos/login/signin_specifics.h"
@@ -39,6 +39,7 @@
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -243,6 +244,7 @@ class OAuth2Test : public OobeBaseTest {
   // OobeBaseTest overrides.
   void SetUpCommandLine(base::CommandLine* command_line) override {
     OobeBaseTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(ash::switches::kShowWebUiLogin);
 
     base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
 
@@ -437,7 +439,7 @@ class OAuth2Test : public OobeBaseTest {
     // our email normalization kicks in.
     LoginDisplayHost::default_host()
         ->GetOobeUI()
-        ->GetGaiaScreenView()
+        ->GetView<GaiaScreenHandler>()
         ->ShowSigninScreenForTest(kTestRawEmail, kTestAccountPassword,
                                   kTestAccountServices);
     session_start_waiter.Wait();
@@ -678,7 +680,7 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, TerminateOnBadMergeSessionAfterOnlineAuth) {
   // Simulate an online sign-in.
   LoginDisplayHost::default_host()
       ->GetOobeUI()
-      ->GetGaiaScreenView()
+      ->GetView<GaiaScreenHandler>()
       ->ShowSigninScreenForTest(kTestRawEmail, kTestAccountPassword,
                                 kTestAccountServices);
 

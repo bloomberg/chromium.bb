@@ -8,10 +8,10 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset_rect.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_size.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_break_token.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_size.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_style_variant.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
@@ -21,12 +21,9 @@
 namespace blink {
 
 class ComputedStyle;
-class LayoutObject;
 class Node;
 class NGFragmentBuilder;
-class NGBreakToken;
 class NGInlineItem;
-struct NGPixelSnappedPhysicalBoxStrut;
 class PaintLayer;
 
 class NGPhysicalFragment;
@@ -131,13 +128,13 @@ class CORE_EXPORT NGPhysicalFragment
   // inside the fieldset except the rendered legend).
   bool IsFieldsetContainer() const { return is_fieldset_container_; }
 
-  // Returns whether the fragment is old layout root.
-  bool IsOldLayoutRoot() const { return is_old_layout_root_; }
+  // Returns whether the fragment is legacy layout root.
+  bool IsLegacyLayoutRoot() const { return is_legacy_layout_root_; }
 
   bool IsBlockFormattingContextRoot() const {
     return (IsBox() &&
             BoxType() >= NGBoxType::kMinimumBlockFormattingContextRoot) ||
-           IsOldLayoutRoot();
+           IsLegacyLayoutRoot();
   }
 
   // |Offset()| is reliable only when this fragment was placed by LayoutNG
@@ -151,24 +148,30 @@ class CORE_EXPORT NGPhysicalFragment
   // exist for paint, hit-testing, etc.
 
   // Returns the border-box size.
-  NGPhysicalSize Size() const { return size_; }
+  PhysicalSize Size() const { return size_; }
 
   // Returns the rect in the local coordinate of this fragment; i.e., offset is
   // (0, 0).
-  NGPhysicalOffsetRect LocalRect() const { return {{}, size_}; }
+  PhysicalRect LocalRect() const { return {{}, size_}; }
 
-  // Bitmask for border edges, see NGBorderEdges::Physical.
-  unsigned BorderEdges() const { return border_edge_; }
-  NGPixelSnappedPhysicalBoxStrut BorderWidths() const;
-
-  NGBreakToken* BreakToken() const { return break_token_.get(); }
   NGStyleVariant StyleVariant() const {
     return static_cast<NGStyleVariant>(style_variant_);
   }
   bool UsesFirstLineStyle() const {
     return StyleVariant() == NGStyleVariant::kFirstLine;
   }
-  const ComputedStyle& Style() const;
+
+  // Returns the style for this fragment.
+  //
+  // For a line box, this returns the style of the containing block. This mostly
+  // represents the style for the line box, except 1) |style.Direction()| maybe
+  // incorrect, use |BaseDirection()| instead, and 2) margin/border/padding,
+  // background etc. do not apply to the line box.
+  const ComputedStyle& Style() const {
+    return StyleVariant() == NGStyleVariant::kStandard
+               ? layout_object_.StyleRef()
+               : SlowEffectiveStyle();
+  }
   Node* GetNode() const;
 
   // Whether there is a PaintLayer associated with the fragment.
@@ -187,13 +190,32 @@ class CORE_EXPORT NGPhysicalFragment
 
   // GetLayoutObject should only be used when necessary for compatibility
   // with LegacyLayout.
-  LayoutObject* GetLayoutObject() const { return layout_object_; }
+  //
+  // For a line box, |layout_object_| has its containing block but this function
+  // returns |nullptr| for the historical reasons. TODO(kojii): We may change
+  // this in future. Use |IsLineBox()| instead of testing this is |nullptr|.
+  const LayoutObject* GetLayoutObject() const {
+    return !IsLineBox() ? &layout_object_ : nullptr;
+  }
+  // TODO(kojii): We should not have mutable version at all, the use of this
+  // function should be eliminiated over time.
+  LayoutObject* GetMutableLayoutObject() const {
+    return !IsLineBox() ? &layout_object_ : nullptr;
+  }
+
+  // Returns the latest generation of the post-layout fragment. Returns
+  // |nullptr| if |this| is the one.
+  //
+  // When subtree relayout occurs at the relayout boundary, its containing block
+  // may keep the reference to old generations of this fragment. Callers can
+  // check if there were newer generations.
+  const NGPhysicalFragment* PostLayout() const;
 
   // Scrollable overflow. including contents, in the local coordinate.
-  NGPhysicalOffsetRect ScrollableOverflow() const;
+  PhysicalRect ScrollableOverflow() const;
 
   // ScrollableOverflow(), with transforms applied wrt container if needed.
-  NGPhysicalOffsetRect ScrollableOverflowForPropagation(
+  PhysicalRect ScrollableOverflowForPropagation(
       const LayoutObject* container) const;
 
   // The allowed touch action is the union of the effective touch action
@@ -206,6 +228,14 @@ class CORE_EXPORT NGPhysicalFragment
   // Returns the resolved direction of a text or atomic inline fragment. Not to
   // be confused with the CSS 'direction' property.
   TextDirection ResolvedDirection() const;
+
+  // Utility functions for caret painting. Note that carets are painted as part
+  // of the containing block's foreground.
+  bool ShouldPaintCursorCaret() const;
+  bool ShouldPaintDragCaret() const;
+  bool ShouldPaintCarets() const {
+    return ShouldPaintCursorCaret() || ShouldPaintDragCaret();
+  }
 
   String ToString() const;
 
@@ -226,10 +256,10 @@ class CORE_EXPORT NGPhysicalFragment
   typedef int DumpFlags;
 
   String DumpFragmentTree(DumpFlags,
-                          base::Optional<NGPhysicalOffset> = base::nullopt,
+                          base::Optional<PhysicalOffset> = base::nullopt,
                           unsigned indent = 2) const;
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   void ShowFragmentTree() const;
 #endif
 
@@ -240,40 +270,51 @@ class CORE_EXPORT NGPhysicalFragment
 
   NGPhysicalFragment(LayoutObject* layout_object,
                      NGStyleVariant,
-                     NGPhysicalSize size,
+                     PhysicalSize size,
                      NGFragmentType type,
-                     unsigned sub_type,
-                     scoped_refptr<NGBreakToken> break_token = nullptr);
+                     unsigned sub_type);
+
+  const ComputedStyle& SlowEffectiveStyle() const;
 
   const Vector<NGInlineItem>& InlineItemsOfContainingBlock() const;
 
-  LayoutObject* const layout_object_;
-  const NGPhysicalSize size_;
-  scoped_refptr<NGBreakToken> break_token_;
+  LayoutObject& layout_object_;
+  const PhysicalSize size_;
 
   const unsigned type_ : 2;      // NGFragmentType
   const unsigned sub_type_ : 3;  // NGBoxType, NGTextType, or NGLineBoxType
   const unsigned style_variant_ : 2;  // NGStyleVariant
 
-  // The following bitfield is only to be used by NGPhysicalContainerFragment
+  // The following bitfields are only to be used by NGPhysicalContainerFragment
   // (it's defined here to save memory, since that class has no bitfields).
   unsigned has_floating_descendants_ : 1;
+  unsigned has_orthogonal_flow_roots_ : 1;
+  unsigned may_have_descendant_above_block_start_ : 1;
+  unsigned depends_on_percentage_block_size_ : 1;
 
-  // The following bitfield is only to be used by NGPhysicalLineBoxFragment
+  // The following bitfields are only to be used by NGPhysicalLineBoxFragment
   // (it's defined here to save memory, since that class has no bitfields).
+  unsigned has_propagated_descendants_ : 1;
   unsigned base_direction_ : 1;  // TextDirection
+  unsigned has_hanging_ : 1;
 
-  // The following bitfield is only to be used by NGPhysicalBoxFragment (it's
-  // defined here to save memory, since that class has no bitfields).
+  // The following bitfields are only to be used by NGPhysicalBoxFragment
+  // (it's defined here to save memory, since that class has no bitfields).
   unsigned children_inline_ : 1;
-  unsigned is_fieldset_container_ : 1;
-  unsigned is_old_layout_root_ : 1;
   unsigned border_edge_ : 4;  // NGBorderEdges::Physical
+  unsigned has_borders_ : 1;
+  unsigned has_padding_ : 1;
 
-  // The following bitfield is only to be used by NGPhysicalTextFragment (it's
-  // defined here to save memory, since that class has no bitfields).
+  // The following are only used by NGPhysicalBoxFragment but are initialized
+  // for all types to allow methods using them to be inlined.
+  unsigned is_fieldset_container_ : 1;
+  unsigned is_legacy_layout_root_ : 1;
+
+  // The following bitfields are only to be used by NGPhysicalTextFragment
+  // (it's defined here to save memory, since that class has no bitfields).
   unsigned line_orientation_ : 2;  // NGLineOrientation
-  unsigned is_anonymous_text_ : 1;
+  unsigned is_generated_text_ : 1;
+  mutable unsigned ink_overflow_computed_ : 1;
 
  private:
   friend struct NGPhysicalFragmentTraits;
@@ -285,9 +326,9 @@ struct CORE_EXPORT NGPhysicalFragmentWithOffset {
   DISALLOW_NEW();
 
   scoped_refptr<const NGPhysicalFragment> fragment;
-  NGPhysicalOffset offset_to_container_box;
+  PhysicalOffset offset_to_container_box;
 
-  NGPhysicalOffsetRect RectInContainerBox() const;
+  PhysicalRect RectInContainerBox() const;
 };
 
 #if !DCHECK_IS_ON()

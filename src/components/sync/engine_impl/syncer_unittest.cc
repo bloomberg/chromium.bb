@@ -26,7 +26,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/sync/base/cancelation_signal.h"
-#include "components/sync/base/cryptographer.h"
 #include "components/sync/base/extensions_activity.h"
 #include "components/sync/base/fake_encryptor.h"
 #include "components/sync/base/time.h"
@@ -41,6 +40,7 @@
 #include "components/sync/engine_impl/net/server_connection_manager.h"
 #include "components/sync/engine_impl/sync_scheduler_impl.h"
 #include "components/sync/engine_impl/syncer_proto_util.h"
+#include "components/sync/nigori/cryptographer.h"
 #include "components/sync/protocol/bookmark_specifics.pb.h"
 #include "components/sync/protocol/nigori_specifics.pb.h"
 #include "components/sync/protocol/preference_specifics.pb.h"
@@ -281,7 +281,8 @@ class SyncerTest : public testing::Test,
         mock_server_.get(), directory(), extensions_activity_.get(), listeners,
         debug_info_getter_.get(), model_type_registry_.get(),
         true,  // enable keystore encryption
-        "fake_invalidator_client_id",
+        "fake_invalidator_client_id", mock_server_->store_birthday(),
+        "fake_bag_of_chips",
         /*poll_interval=*/base::TimeDelta::FromMinutes(30));
     syncer_ = new Syncer(&cancelation_signal_);
     scheduler_ = std::make_unique<SyncSchedulerImpl>(
@@ -297,7 +298,6 @@ class SyncerTest : public testing::Test,
     root_id_ = TestIdFactory::root();
     parent_id_ = ids_.MakeServer("parent id");
     child_id_ = ids_.MakeServer("child id");
-    directory()->set_store_birthday(mock_server_->store_birthday());
     mock_server_->SetKeystoreKey("encryption_key");
   }
 

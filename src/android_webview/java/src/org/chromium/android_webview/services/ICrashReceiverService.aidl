@@ -5,5 +5,5 @@
 package org.chromium.android_webview.services;
 
 interface ICrashReceiverService {
-    void transmitCrashes(in ParcelFileDescriptor[] fileDescriptors);
+    void transmitCrashes(in ParcelFileDescriptor[] fileDescriptors, in List crashInfo);
 }

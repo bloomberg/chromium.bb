@@ -570,8 +570,15 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
       },
 
-      'moblab-generic-vm-paladin': site_config.templates.moblab_vm_tests,
-      'moblab-generic-vm-pre-cq': site_config.templates.moblab_vm_tests,
+      'moblab-generic-vm-paladin': config_lib.BuildConfig().apply(
+          site_config.templates.moblab_vm_tests,
+          site_config.templates.tast_vm_paladin_tests,
+      ),
+      # Disabled due to https://crbug.com/968271
+      # 'moblab-generic-vm-pre-cq': config_lib.BuildConfig().apply(
+      #    site_config.templates.moblab_vm_tests,
+      #    site_config.templates.tast_vm_paladin_tests,
+      # ),
 
       'reef-chrome-pfq': {
           'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
@@ -599,10 +606,26 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       'betty-paladin': site_config.templates.tast_vm_paladin_tests,
       'betty-pre-cq': site_config.templates.tast_vm_paladin_tests,
 
+      'amd64-generic-chromium-pfq':
+          site_config.templates.tast_vm_chrome_pfq_tests,
+      'amd64-generic-tot-chromium-pfq-informational':
+          site_config.templates.tast_vm_chrome_pfq_tests,
+      'betty-arcnext-chrome-pfq':
+          site_config.templates.tast_vm_chrome_pfq_tests,
+      'betty-chrome-pfq': site_config.templates.tast_vm_chrome_pfq_tests,
+
+      'betty-arc64-nyc-android-pfq':
+          site_config.templates.tast_vm_android_pfq_tests,
+      'betty-nyc-android-pfq':
+          site_config.templates.tast_vm_android_pfq_tests,
+      'betty-arcnext-pi-android-pfq':
+          site_config.templates.tast_vm_android_pfq_tests,
+
       # There's no amd64-generic-release builder, so we use amd64-generic-full
       # to validate informational Tast tests on amd64-generic:
       # https://crbug.com/946858
       'amd64-generic-full': site_config.templates.tast_vm_canary_tests,
+      'amd64-generic-goma-full': site_config.templates.tast_vm_canary_tests,
       'betty-arc64-release': site_config.templates.tast_vm_canary_tests,
       'betty-release': site_config.templates.tast_vm_canary_tests,
   }

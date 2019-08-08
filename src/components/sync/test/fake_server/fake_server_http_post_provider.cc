@@ -25,9 +25,7 @@ FakeServerHttpPostProviderFactory::FakeServerHttpPostProviderFactory(
 
 FakeServerHttpPostProviderFactory::~FakeServerHttpPostProviderFactory() {}
 
-void FakeServerHttpPostProviderFactory::Init(
-    const std::string& user_agent,
-    const syncer::BindToTrackerCallback& bind_to_tracker_callback) {}
+void FakeServerHttpPostProviderFactory::Init(const std::string& user_agent) {}
 
 syncer::HttpPostProviderInterface* FakeServerHttpPostProviderFactory::Create() {
   FakeServerHttpPostProvider* http =

@@ -9,9 +9,11 @@
 #include "base/bind.h"
 #include "content/browser/appcache/appcache_response.h"
 #include "content/browser/service_worker/service_worker_cache_writer.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/ip_endpoint.h"
+#include "net/base/load_flags.h"
 #include "services/network/public/cpp/net_adapters.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
@@ -68,12 +70,18 @@ namespace content {
 ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
     const GURL& url,
     bool is_main_script,
+    bool force_bypass_cache,
+    blink::mojom::ServiceWorkerUpdateViaCache update_via_cache,
+    base::TimeDelta time_since_last_check,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
     std::unique_ptr<ServiceWorkerResponseReader> compare_reader,
     std::unique_ptr<ServiceWorkerResponseReader> copy_reader,
     std::unique_ptr<ServiceWorkerResponseWriter> writer,
     ResultCallback callback)
     : script_url_(url),
+      force_bypass_cache_(force_bypass_cache),
+      update_via_cache_(update_via_cache),
+      time_since_last_check_(time_since_last_check),
       network_client_binding_(this),
       network_watcher_(FROM_HERE,
                        mojo::SimpleWatcher::ArmingPolicy::MANUAL,
@@ -88,7 +96,11 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
   if (is_main_script)
     resource_request.headers.SetHeader("Service-Worker", "script");
 
-  // TODO(momohatt): Handle cases where force_bypass_cache is enabled.
+  if (ServiceWorkerUtils::ShouldValidateBrowserCacheForScript(
+          is_main_script, force_bypass_cache_, update_via_cache_,
+          time_since_last_check_)) {
+    resource_request.load_flags |= net::LOAD_VALIDATE_CACHE;
+  }
 
   cache_writer_ = ServiceWorkerCacheWriter::CreateForComparison(
       std::move(compare_reader), std::move(copy_reader), std::move(writer),
@@ -135,7 +147,7 @@ void ServiceWorkerSingleScriptUpdateChecker::OnReceiveResponse(
 
   network_loader_state_ =
       ServiceWorkerNewScriptLoader::NetworkLoaderState::kWaitingForBody;
-
+  network_accessed_ = response_head.network_accessed;
   WriteHeaders(
       base::MakeRefCounted<HttpResponseInfoIOBuffer>(std::move(response_info)));
 }
@@ -157,7 +169,7 @@ void ServiceWorkerSingleScriptUpdateChecker::OnUploadProgress(
 }
 
 void ServiceWorkerSingleScriptUpdateChecker::OnReceiveCachedMetadata(
-    const std::vector<uint8_t>& data) {}
+    mojo_base::BigBuffer data) {}
 
 void ServiceWorkerSingleScriptUpdateChecker::OnTransferSizeUpdated(
     int32_t transfer_size_diff) {}

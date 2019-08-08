@@ -324,8 +324,6 @@ static void ParseOldStyleNames(
           ToBoolean(constraint.value_));
     } else if (constraint.name_.Equals(kGoogHighpassFilter)) {
       result.goog_highpass_filter.SetExact(ToBoolean(constraint.value_));
-    } else if (constraint.name_.Equals(kGoogTypingNoiseDetection)) {
-      result.goog_typing_noise_detection.SetExact(ToBoolean(constraint.value_));
     } else if (constraint.name_.Equals(kGoogAudioMirroring)) {
       result.goog_audio_mirroring.SetExact(ToBoolean(constraint.value_));
     } else if (constraint.name_.Equals(kDAEchoCancellation)) {
@@ -414,7 +412,8 @@ static void ParseOldStyleNames(
                constraint.name_.Equals(kGoogBeamforming) ||
                constraint.name_.Equals(kGoogArrayGeometry) ||
                constraint.name_.Equals(kPowerLineFrequency) ||
-               constraint.name_.Equals(kMediaStreamAudioHotword)) {
+               constraint.name_.Equals(kMediaStreamAudioHotword) ||
+               constraint.name_.Equals(kGoogTypingNoiseDetection)) {
       // TODO(crbug.com/856176): Remove the kGoogBeamforming and
       // kGoogArrayGeometry special cases.
       context->AddConsoleMessage(ConsoleMessage::Create(
@@ -648,10 +647,6 @@ void CopyConstraintSet(const MediaTrackConstraintSet* constraints_in,
   if (constraints_in->hasResizeMode()) {
     CopyStringConstraint(constraints_in->resizeMode(), naked_treatment,
                          constraint_buffer.resize_mode);
-  }
-  if (constraints_in->hasVolume()) {
-    CopyDoubleConstraint(constraints_in->volume(), naked_treatment,
-                         constraint_buffer.volume);
   }
   if (constraints_in->hasSampleRate()) {
     CopyLongConstraint(constraints_in->sampleRate(), naked_treatment,
@@ -904,8 +899,6 @@ void ConvertConstraintSet(const WebMediaTrackConstraintSet& input,
     output->setFacingMode(ConvertString(input.facing_mode, naked_treatment));
   if (!input.resize_mode.IsEmpty())
     output->setResizeMode(ConvertString(input.resize_mode, naked_treatment));
-  if (!input.volume.IsEmpty())
-    output->setVolume(ConvertDouble(input.volume, naked_treatment));
   if (!input.sample_rate.IsEmpty())
     output->setSampleRate(ConvertLong(input.sample_rate, naked_treatment));
   if (!input.sample_size.IsEmpty())

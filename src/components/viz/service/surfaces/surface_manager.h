@@ -21,6 +21,7 @@
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
+#include "base/trace_event/trace_event.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/surfaces/surface_observer.h"
@@ -37,7 +38,6 @@ class TickClock;
 
 namespace viz {
 
-class BeginFrameSource;
 class Surface;
 class SurfaceAllocationGroup;
 class SurfaceClient;
@@ -80,8 +80,6 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // A temporary reference will be added to the new Surface.
   Surface* CreateSurface(base::WeakPtr<SurfaceClient> surface_client,
                          const SurfaceInfo& surface_info,
-                         BeginFrameSource* begin_frame_source,
-                         bool needs_sync_tokens,
                          bool block_activation_on_parent);
 
   // Marks |surface_id| for destruction. The surface will get destroyed when

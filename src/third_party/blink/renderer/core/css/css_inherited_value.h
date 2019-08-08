@@ -27,9 +27,13 @@
 
 namespace blink {
 
-class CSSInheritedValue : public CSSValue {
+class CORE_EXPORT CSSInheritedValue : public CSSValue {
  public:
   static CSSInheritedValue* Create();
+
+  // Only construct through MakeGarbageCollected for the initial value. Use
+  // Create() to get the pooled value.
+  CSSInheritedValue() : CSSValue(kInheritedClass) {}
 
   String CustomCSSText() const;
 
@@ -41,8 +45,6 @@ class CSSInheritedValue : public CSSValue {
 
  private:
   friend class CSSValuePool;
-
-  CSSInheritedValue() : CSSValue(kInheritedClass) {}
 };
 
 template <>

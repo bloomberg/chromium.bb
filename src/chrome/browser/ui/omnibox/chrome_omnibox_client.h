@@ -37,12 +37,8 @@ class ChromeOmniboxClient : public OmniboxClient {
   const GURL& GetURL() const override;
   const base::string16& GetTitle() const override;
   gfx::Image GetFavicon() const override;
-  bool IsInstantNTP() const override;
-  bool IsSearchResultsPage() const override;
   bool IsLoading() const override;
   bool IsPasteAndGoEnabled() const override;
-  bool IsNewTabPage(const GURL& url) const override;
-  bool IsHomePage(const GURL& url) const override;
   bool IsDefaultSearchProviderEnabled() const override;
   const SessionID& GetSessionID() const override;
   bookmarks::BookmarkModel* GetBookmarkModel() override;

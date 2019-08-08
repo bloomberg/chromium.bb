@@ -108,6 +108,7 @@
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -239,7 +240,7 @@ Document* LocalDOMWindow::CreateDocument(const String& mime_type,
   if (force_xhtml) {
     // This is a hack for XSLTProcessor. See
     // XSLTProcessor::createDocumentFromSource().
-    document = Document::Create(init);
+    document = MakeGarbageCollected<Document>(init);
   } else {
     document = DOMImplementation::createDocument(
         mime_type, init,
@@ -650,8 +651,8 @@ void LocalDOMWindow::print(ScriptState* script_state) {
     return;
   }
 
-  UseCounter::CountCrossOriginIframe(*document(),
-                                     WebFeature::kCrossOriginWindowPrint);
+  document()->CountUseOnlyInCrossOriginIframe(
+      WebFeature::kCrossOriginWindowPrint);
 
   should_print_when_finished_loading_ = false;
   page->GetChromeClient().Print(GetFrame());
@@ -687,8 +688,8 @@ void LocalDOMWindow::alert(ScriptState* script_state, const String& message) {
   if (!page)
     return;
 
-  UseCounter::CountCrossOriginIframe(*document(),
-                                     WebFeature::kCrossOriginWindowAlert);
+  document()->CountUseOnlyInCrossOriginIframe(
+      WebFeature::kCrossOriginWindowAlert);
 
   page->GetChromeClient().OpenJavaScriptAlert(GetFrame(), message);
 }
@@ -717,8 +718,8 @@ bool LocalDOMWindow::confirm(ScriptState* script_state, const String& message) {
   if (!page)
     return false;
 
-  UseCounter::CountCrossOriginIframe(*document(),
-                                     WebFeature::kCrossOriginWindowConfirm);
+  document()->CountUseOnlyInCrossOriginIframe(
+      WebFeature::kCrossOriginWindowConfirm);
 
   return page->GetChromeClient().OpenJavaScriptConfirm(GetFrame(), message);
 }
@@ -754,8 +755,8 @@ String LocalDOMWindow::prompt(ScriptState* script_state,
                                                    default_value, return_value))
     return return_value;
 
-  UseCounter::CountCrossOriginIframe(*document(),
-                                     WebFeature::kCrossOriginWindowPrompt);
+  document()->CountUseOnlyInCrossOriginIframe(
+      WebFeature::kCrossOriginWindowPrompt);
 
   return String();
 }
@@ -1184,29 +1185,47 @@ void LocalDOMWindow::resizeTo(int width, int height) const {
 }
 
 int LocalDOMWindow::requestAnimationFrame(V8FrameRequestCallback* callback) {
-  auto* frame_callback =
-      MakeGarbageCollected<FrameRequestCallbackCollection::V8FrameCallback>(
-          callback);
-  frame_callback->SetUseLegacyTimeBase(false);
-  if (Document* doc = document())
+  if (Document* doc = document()) {
+    auto* frame_callback =
+        MakeGarbageCollected<FrameRequestCallbackCollection::V8FrameCallback>(
+            callback);
+    frame_callback->SetUseLegacyTimeBase(false);
     return doc->RequestAnimationFrame(frame_callback);
+  }
   return 0;
 }
 
 int LocalDOMWindow::webkitRequestAnimationFrame(
     V8FrameRequestCallback* callback) {
-  auto* frame_callback =
-      MakeGarbageCollected<FrameRequestCallbackCollection::V8FrameCallback>(
-          callback);
-  frame_callback->SetUseLegacyTimeBase(true);
-  if (Document* document = this->document())
-    return document->RequestAnimationFrame(frame_callback);
+  if (Document* doc = document()) {
+    auto* frame_callback =
+        MakeGarbageCollected<FrameRequestCallbackCollection::V8FrameCallback>(
+            callback);
+    frame_callback->SetUseLegacyTimeBase(true);
+    return doc->RequestAnimationFrame(frame_callback);
+  }
   return 0;
 }
 
 void LocalDOMWindow::cancelAnimationFrame(int id) {
   if (Document* document = this->document())
     document->CancelAnimationFrame(id);
+}
+
+int LocalDOMWindow::requestPostAnimationFrame(
+    V8FrameRequestCallback* callback) {
+  if (Document* doc = document()) {
+    FrameRequestCallbackCollection::V8FrameCallback* frame_callback =
+        MakeGarbageCollected<FrameRequestCallbackCollection::V8FrameCallback>(
+            callback);
+    return doc->RequestPostAnimationFrame(frame_callback);
+  }
+  return 0;
+}
+
+void LocalDOMWindow::cancelPostAnimationFrame(int id) {
+  if (Document* doc = this->document())
+    doc->CancelPostAnimationFrame(id);
 }
 
 void LocalDOMWindow::queueMicrotask(V8VoidFunction* callback) {
@@ -1238,7 +1257,7 @@ CustomElementRegistry* LocalDOMWindow::customElements(
 
 CustomElementRegistry* LocalDOMWindow::customElements() const {
   if (!custom_elements_ && document_)
-    custom_elements_ = CustomElementRegistry::Create(this);
+    custom_elements_ = MakeGarbageCollected<CustomElementRegistry>(this);
   return custom_elements_;
 }
 
@@ -1477,8 +1496,7 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
   WebWindowFeatures window_features = GetWindowFeaturesFromString(features);
 
   FrameLoadRequest frame_request(active_document,
-                                 ResourceRequest(completed_url),
-                                 target.IsEmpty() ? "_blank" : target);
+                                 ResourceRequest(completed_url));
   frame_request.SetFeaturesForWindowOpen(window_features);
 
   // Normally, FrameLoader would take care of setting the referrer for a
@@ -1500,28 +1518,25 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
   GetFrame()->MaybeLogAdClickNavigation();
 
   FrameTree::FindResult result =
-      GetFrame()->Tree().FindOrCreateFrameForNavigation(frame_request);
+      GetFrame()->Tree().FindOrCreateFrameForNavigation(
+          frame_request, target.IsEmpty() ? "_blank" : target);
   if (!result.frame)
     return nullptr;
 
-  if (!result.new_window) {
-    Page* target_page = result.frame->GetPage();
-    if (target_page == GetFrame()->GetPage())
-      target_page->GetFocusController().SetFocusedFrame(result.frame);
-    else
-      target_page->GetChromeClient().Focus(GetFrame());
+  // If the navigation opened a new window, focus is handled during window
+  // creation. If the navigation reused an existing frame in a different page,
+  // FindOrCreateFrameForNavigation() took care of focus. Most navigations don't
+  // refocus when a different frame in the same page is navigated, but
+  // window.open() does. Why?
+  if (result.frame->GetPage() == GetFrame()->GetPage()) {
+    GetFrame()->GetPage()->GetFocusController().SetFocusedFrame(result.frame);
     // Focusing can fire onblur, so check for detach.
     if (!result.frame->GetPage())
       return nullptr;
   }
 
-  if ((!completed_url.IsEmpty() || result.new_window) &&
-      !result.frame->DomWindow()->IsInsecureScriptAccess(*incumbent_window,
-                                                         completed_url)) {
-    frame_request.SetFrameName("_self");
-    frame_request.SetNavigationPolicy(kNavigationPolicyCurrentTab);
+  if (!completed_url.IsEmpty() || result.new_window)
     result.frame->Navigate(frame_request, WebFrameLoadType::kStandard);
-  }
 
   // TODO(japhet): window-open-noopener.html?_top and several tests in
   // html/browsers/windows/browsing-context-names/ appear to require that

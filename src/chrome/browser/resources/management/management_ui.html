@@ -67,6 +67,19 @@
         margin-top: 16px;
       }
 
+      .overview-container img {
+        float: left;
+        margin-inline-end: 10px;
+        vertical-align: top;
+        width: 20%;
+      }
+
+      .overview-container div {
+        display: block;
+        overflow: hidden;
+        width: auto;
+      }
+
       .overview-messages {
         margin-top: 0;
       }
@@ -186,7 +199,11 @@
             <div inner-h-t-m-l="[[managementNoticeHtml_]]"></div>
 </if>
 <if expr="chromeos">
-            <div>[[managementOverview_]]</div>
+            <div class="overview-container">
+              <img src="[[customerLogo_]]" alt="" aria-hidden="true"
+                  hidden="[[!customerLogo_]]">
+              <div>[[managementOverview_]]</div>
+            </div>
 </if>
           </section>
 <if expr="chromeos">

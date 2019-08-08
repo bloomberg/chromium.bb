@@ -130,23 +130,26 @@ class SpellCheckTest : public testing::Test {
   base::test::ScopedTaskEnvironment task_environment_;
 };
 
+struct MockTextCheckingResult {
+  size_t completion_count_ = 0;
+  blink::WebVector<blink::WebTextCheckingResult> last_results_;
+};
+
 // A fake completion object for verification.
 class MockTextCheckingCompletion : public blink::WebTextCheckingCompletion {
  public:
-  MockTextCheckingCompletion()
-      : completion_count_(0) {
-  }
+  explicit MockTextCheckingCompletion(MockTextCheckingResult* result)
+      : result_(result) {}
 
   void DidFinishCheckingText(
       const blink::WebVector<blink::WebTextCheckingResult>& results) override {
-    completion_count_++;
-    last_results_ = results;
+    result_->completion_count_++;
+    result_->last_results_ = results;
   }
 
-  void DidCancelCheckingText() override { completion_count_++; }
+  void DidCancelCheckingText() override { result_->completion_count_++; }
 
-  size_t completion_count_;
-  blink::WebVector<blink::WebTextCheckingResult> last_results_;
+  MockTextCheckingResult* result_;
 };
 
 // Operates unit tests for the content::SpellCheck::SpellCheckWord() function
@@ -999,9 +1002,11 @@ TEST_F(SpellCheckTest, SpellCheckParagraphLongSentenceMultipleMisspellings) {
 
 // Make sure RequestTextChecking does not crash if input is empty.
 TEST_F(SpellCheckTest, RequestSpellCheckWithEmptyString) {
-  MockTextCheckingCompletion completion;
+  MockTextCheckingResult completion;
 
-  spell_check()->RequestTextChecking(base::string16(), &completion);
+  spell_check()->RequestTextChecking(
+      base::string16(),
+      std::make_unique<MockTextCheckingCompletion>(&completion));
 
   base::RunLoop().RunUntilIdle();
 
@@ -1010,10 +1015,11 @@ TEST_F(SpellCheckTest, RequestSpellCheckWithEmptyString) {
 
 // A simple test case having no misspellings.
 TEST_F(SpellCheckTest, RequestSpellCheckWithoutMisspelling) {
-  MockTextCheckingCompletion completion;
+  MockTextCheckingResult completion;
 
   const base::string16 text = base::ASCIIToUTF16("hello");
-  spell_check()->RequestTextChecking(text, &completion);
+  spell_check()->RequestTextChecking(
+      text, std::make_unique<MockTextCheckingCompletion>(&completion));
 
   base::RunLoop().RunUntilIdle();
 
@@ -1022,10 +1028,11 @@ TEST_F(SpellCheckTest, RequestSpellCheckWithoutMisspelling) {
 
 // A simple test case having one misspelling.
 TEST_F(SpellCheckTest, RequestSpellCheckWithSingleMisspelling) {
-  MockTextCheckingCompletion completion;
+  MockTextCheckingResult completion;
 
   const base::string16 text = base::ASCIIToUTF16("apple, zz");
-  spell_check()->RequestTextChecking(text, &completion);
+  spell_check()->RequestTextChecking(
+      text, std::make_unique<MockTextCheckingCompletion>(&completion));
 
   base::RunLoop().RunUntilIdle();
 
@@ -1037,10 +1044,11 @@ TEST_F(SpellCheckTest, RequestSpellCheckWithSingleMisspelling) {
 
 // A simple test case having a few misspellings.
 TEST_F(SpellCheckTest, RequestSpellCheckWithMisspellings) {
-  MockTextCheckingCompletion completion;
+  MockTextCheckingResult completion;
 
   const base::string16 text = base::ASCIIToUTF16("apple, zz, orange, zz");
-  spell_check()->RequestTextChecking(text, &completion);
+  spell_check()->RequestTextChecking(
+      text, std::make_unique<MockTextCheckingCompletion>(&completion));
 
   base::RunLoop().RunUntilIdle();
 
@@ -1055,7 +1063,7 @@ TEST_F(SpellCheckTest, RequestSpellCheckWithMisspellings) {
 // A test case that multiple requests comes at once. Make sure all
 // requests are processed.
 TEST_F(SpellCheckTest, RequestSpellCheckWithMultipleRequests) {
-  MockTextCheckingCompletion completion[3];
+  MockTextCheckingResult completion[3];
 
   const base::string16 text[3] = {
     base::ASCIIToUTF16("what, zz"),
@@ -1064,7 +1072,8 @@ TEST_F(SpellCheckTest, RequestSpellCheckWithMultipleRequests) {
   };
 
   for (int i = 0; i < 3; ++i)
-    spell_check()->RequestTextChecking(text[i], &completion[i]);
+    spell_check()->RequestTextChecking(
+        text[i], std::make_unique<MockTextCheckingCompletion>(&completion[i]));
 
   base::RunLoop().RunUntilIdle();
 
@@ -1081,10 +1090,11 @@ TEST_F(SpellCheckTest, RequestSpellCheckWithMultipleRequests) {
 TEST_F(SpellCheckTest, RequestSpellCheckWithoutInitialization) {
   UninitializeSpellCheck();
 
-  MockTextCheckingCompletion completion;
+  MockTextCheckingResult completion;
   const base::string16 text = base::ASCIIToUTF16("zz");
 
-  spell_check()->RequestTextChecking(text, &completion);
+  spell_check()->RequestTextChecking(
+      text, std::make_unique<MockTextCheckingCompletion>(&completion));
 
   // The task will not be posted yet.
   base::RunLoop().RunUntilIdle();
@@ -1096,7 +1106,7 @@ TEST_F(SpellCheckTest, RequestSpellCheckWithoutInitialization) {
 TEST_F(SpellCheckTest, RequestSpellCheckMultipleTimesWithoutInitialization) {
   UninitializeSpellCheck();
 
-  MockTextCheckingCompletion completion[3];
+  MockTextCheckingResult completion[3];
   const base::string16 text[3] = {
     base::ASCIIToUTF16("what, zz"),
     base::ASCIIToUTF16("apple, zz"),
@@ -1105,7 +1115,8 @@ TEST_F(SpellCheckTest, RequestSpellCheckMultipleTimesWithoutInitialization) {
 
   // Calls RequestTextchecking a few times.
   for (int i = 0; i < 3; ++i)
-    spell_check()->RequestTextChecking(text[i], &completion[i]);
+    spell_check()->RequestTextChecking(
+        text[i], std::make_unique<MockTextCheckingCompletion>(&completion[i]));
 
   // The last task will be posted after initialization, however the other
   // requests should be pressed without spellchecking.

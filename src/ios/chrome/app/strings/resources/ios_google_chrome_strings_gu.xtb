@@ -1,11 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="gu">
+<translation id="1282031177488366470">Chromeની સુવિધાઓ અને કાર્યપ્રદર્શનને સુધારવામાં સહાય કરો</translation>
 <translation id="1326317727527857210">તમારા અન્ય ઉપકરણો પરથી તમારા ટૅબ્સ મેળવવા માટે, Chrome માં સાઇન ઇન કરો.</translation>
+<translation id="1682483655351012182">તમારા Chrome ડેટાને સિંક કરો</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Google Chrome ગોપનીયતા સૂચના</translation>
 <translation id="1863312987075920112">આ ઍપ્લિકેશનનો ઉપયોગ કરીને, તમે Chromeની <ph name="BEGIN_LINK_TOS" />સેવાની શરતો<ph name="END_LINK_TOS" /> અને <ph name="BEGIN_LINK_PRIVACY" />ગોપનીયતા સૂચના<ph name="END_LINK_PRIVACY" /> સાથે સંમત થાઓ છો.</translation>
-<translation id="1984705450038014246">તમારા Chromeના ડેટાને સિંક કરો</translation>
 <translation id="2147651015520127414">Chrome એ ચકાસણી કરી છે કે <ph name="ISSUER" /> એ આ વેબસાઇટનું પ્રમાણપત્ર ઇસ્યુ કર્યું છે.</translation>
 <translation id="2199719347983604670">Chrome સિંકમાંનો ડેટા</translation>
 <translation id="2342981853652716282">તમારા બધા ઉપકરણો પર તમારા બુકમાર્ક, પાસવર્ડ અને બીજુ ઘણું મેળવવા માટે Chromeમાં સાઇન ઇન કરો.</translation>
@@ -26,7 +27,6 @@
 <translation id="4099578267706723511">ઉપયોગનાં આંકડા અને ક્રૅશ રિપોર્ટ Googleને મોકલીને Chromeને વધુ સારું બનાવવામાં મદદ કરો.</translation>
 <translation id="415767770115540173">Chrome માં તમારા સ્થાન પર આધારિત બહેતર Google અનુભવ મેળવો.</translation>
 <translation id="424864128008805179">Chromeમાંથી સાઇન આઉટ કરીએ?</translation>
-<translation id="447252321002412580">Chromeની સુવિધાઓ અને પ્રદર્શનને સુધારવામાં સહાય કરો</translation>
 <translation id="4523886039239821078">કેટલાંક એડ-ઓનને કારણે Chrome ક્રૅશ થાય છે. કૃપા કરી આને અનઇન્સ્ટૉલ કરો:</translation>
 <translation id="4615174829807303908">તમે <ph name="SIGNOUT_MANAGED_DOMAIN" /> દ્વારા મેનેજ એકાઉન્ટમાંથી સાઇન આઉટ કરી રહ્યાં છો. આ તમારા Chrome ડેટાને આ ડિવાઇસમાંથી ડિલીટ કરશે, પરંતુ તમારો ડેટા તમારા Google એકાઉન્ટમાં રહેશે.</translation>
 <translation id="5389212809648216794">Google Chrome, તમારા કૅમેરાનો ઉપયોગ કરી શકતું નથી કારણ કે તે બીજી ઍપ્લિકેશન દ્વારા ઉપયોગમાં છે</translation>

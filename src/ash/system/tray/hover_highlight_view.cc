@@ -56,7 +56,7 @@ void HoverHighlightView::AddRightView(views::View* view,
     tri_view_->SetContainerBorder(TriView::Container::END, std::move(border));
 
   right_view_ = view;
-  right_view_->SetEnabled(enabled());
+  right_view_->SetEnabled(GetEnabled());
   tri_view_->AddView(TriView::Container::END, right_view_);
   tri_view_->SetContainerVisible(TriView::Container::END, true);
 }
@@ -130,12 +130,12 @@ void HoverHighlightView::DoAddIconAndLabels(
 
   left_icon_ = TrayPopupUtils::CreateMainImageView();
   left_icon_->SetImage(image);
-  left_icon_->SetEnabled(enabled());
+  left_icon_->SetEnabled(GetEnabled());
   tri_view_->AddView(TriView::Container::START, left_icon_);
 
   text_label_ = TrayPopupUtils::CreateDefaultLabel();
   text_label_->SetText(text);
-  text_label_->SetEnabled(enabled());
+  text_label_->SetEnabled(GetEnabled());
   TrayPopupItemStyle style(font_style, use_unified_theme_);
   style.SetupLabel(text_label_);
   tri_view_->AddView(TriView::Container::CENTER, text_label_);
@@ -229,6 +229,10 @@ void HoverHighlightView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetCheckedState(checked_state);
 }
 
+const char* HoverHighlightView::GetClassName() const {
+  return "HoverHighlightView";
+}
+
 gfx::Size HoverHighlightView::CalculatePreferredSize() const {
   gfx::Size size = ActionableView::CalculatePreferredSize();
 
@@ -242,18 +246,18 @@ int HoverHighlightView::GetHeightForWidth(int width) const {
   return GetPreferredSize().height();
 }
 
-void HoverHighlightView::OnEnabledChanged() {
-  if (left_icon_)
-    left_icon_->SetEnabled(enabled());
-  if (text_label_)
-    text_label_->SetEnabled(enabled());
-  if (right_view_)
-    right_view_->SetEnabled(enabled());
-}
-
 void HoverHighlightView::OnFocus() {
   ScrollRectToVisible(gfx::Rect(gfx::Point(), size()));
   ActionableView::OnFocus();
+}
+
+void HoverHighlightView::OnEnabledChanged() {
+  if (left_icon_)
+    left_icon_->SetEnabled(GetEnabled());
+  if (text_label_)
+    text_label_->SetEnabled(GetEnabled());
+  if (right_view_)
+    right_view_->SetEnabled(GetEnabled());
 }
 
 }  // namespace ash

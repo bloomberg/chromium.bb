@@ -87,7 +87,7 @@ class CONTENT_EXPORT MediaRecorderHandler final
   // Updates |video_tracks_|,|audio_tracks_| and returns true if any changed.
   bool UpdateTracksAndCheckIfChanged();
 
-  void OnVideoFrameForTesting(const scoped_refptr<media::VideoFrame>& frame,
+  void OnVideoFrameForTesting(scoped_refptr<media::VideoFrame> frame,
                               const base::TimeTicks& timestamp);
   void OnAudioBusForTesting(const media::AudioBus& audio_bus,
                             const base::TimeTicks& timestamp);

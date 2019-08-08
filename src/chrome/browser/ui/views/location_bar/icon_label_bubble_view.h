@@ -129,7 +129,7 @@ class IconLabelBubbleView : public views::InkDropObserver,
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
-  void OnNativeThemeChanged(const ui::NativeTheme* native_theme) override;
+  void OnThemeChanged() override;
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
   SkColor GetInkDropBaseColor() const override = 0;
   bool IsTriggerableEvent(const ui::Event& event) override;
@@ -201,10 +201,6 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // Padding after the separator. If this separator is shown, this includes the
   // separator width.
   int GetEndPaddingWithSeparator() const;
-
-  // The view has been activated by a user gesture such as spacebar.
-  // Returns true if some handling was performed.
-  bool OnActivate(const ui::Event& event);
 
   // views::View:
   const char* GetClassName() const override;

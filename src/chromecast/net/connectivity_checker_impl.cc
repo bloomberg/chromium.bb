@@ -142,7 +142,7 @@ void ConnectivityCheckerImpl::CheckInternal() {
   if (url_request_.get())
     return;
 
-  VLOG(1) << "Connectivity check: url=" << *connectivity_check_url_;
+  DVLOG(1) << "Connectivity check: url=" << *connectivity_check_url_;
   url_request_ = url_request_context_->CreateRequest(
       *connectivity_check_url_, net::MAXIMUM_PRIORITY, this);
   url_request_->set_method("HEAD");
@@ -159,7 +159,7 @@ void ConnectivityCheckerImpl::CheckInternal() {
 
 void ConnectivityCheckerImpl::OnNetworkChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
-  VLOG(2) << "OnNetworkChanged " << type;
+  DVLOG(2) << "OnNetworkChanged " << type;
   connection_type_ = type;
 
   if (network_changed_pending_)
@@ -197,7 +197,7 @@ void ConnectivityCheckerImpl::OnResponseStarted(net::URLRequest* request,
   url_request_.reset(nullptr);
 
   if (http_response_code < 400) {
-    VLOG(1) << "Connectivity check succeeded";
+    DVLOG(1) << "Connectivity check succeeded";
     check_errors_ = 0;
     SetConnected(true);
     // Some products don't have an idle screen that makes periodic network
@@ -209,7 +209,7 @@ void ConnectivityCheckerImpl::OnResponseStarted(net::URLRequest* request,
     timeout_.Cancel();
     return;
   }
-  VLOG(1) << "Connectivity check failed: " << http_response_code;
+  DVLOG(1) << "Connectivity check failed: " << http_response_code;
   OnUrlRequestError(ErrorType::BAD_HTTP_STATUS);
   timeout_.Cancel();
 }
@@ -221,6 +221,7 @@ void ConnectivityCheckerImpl::OnReadCompleted(net::URLRequest* request,
 
 void ConnectivityCheckerImpl::OnSSLCertificateError(
     net::URLRequest* request,
+    int net_error,
     const net::SSLInfo& ssl_info,
     bool fatal) {
   if (url_request_context_->http_transaction_factory()
@@ -271,7 +272,7 @@ void ConnectivityCheckerImpl::Cancel() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (!url_request_.get())
     return;
-  VLOG(2) << "Cancel connectivity check in progress";
+  DVLOG(2) << "Cancel connectivity check in progress";
   url_request_.reset(nullptr);  // URLRequest::Cancel() is called in destructor.
   timeout_.Cancel();
 }

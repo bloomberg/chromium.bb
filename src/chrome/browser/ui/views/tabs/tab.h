@@ -12,6 +12,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
+#include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -33,7 +35,7 @@ class TabStyleViews;
 namespace gfx {
 class Animation;
 class LinearAnimation;
-}
+}  // namespace gfx
 namespace views {
 class Label;
 }
@@ -47,7 +49,8 @@ class Tab : public gfx::AnimationDelegate,
             public views::ButtonListener,
             public views::ContextMenuController,
             public views::MaskedTargeterDelegate,
-            public views::View {
+            public views::View,
+            public views::ViewObserver {
  public:
   // The Tab's class name.
   static const char kViewClassName[];
@@ -95,6 +98,8 @@ class Tab : public gfx::AnimationDelegate,
   void PaintChildren(const views::PaintInfo& info) override;
   void OnPaint(gfx::Canvas* canvas) override;
   void AddedToWidget() override;
+  void OnFocus() override;
+  void OnBlur() override;
   void OnThemeChanged() override;
 
   TabController* controller() const { return controller_; }
@@ -111,6 +116,11 @@ class Tab : public gfx::AnimationDelegate,
   // tab should be invisibly closed.  This is irreversible.
   void set_detached() { detached_ = true; }
   bool detached() const { return detached_; }
+
+  void SetGroup(base::Optional<TabGroupId> group);
+
+  // Returns the color for the tab's group, if any.
+  base::Optional<SkColor> GetGroupColor() const;
 
   // Returns the color used for the alert indicator icon.
   SkColor GetAlertIndicatorColor(TabAlertState state) const;
@@ -176,6 +186,7 @@ class Tab : public gfx::AnimationDelegate,
                                        TabAlertState alert_state);
 
  private:
+  class TabCloseButtonObserver;
   friend class AlertIndicatorTest;
   friend class TabTest;
   friend class TabStripTest;
@@ -183,6 +194,8 @@ class Tab : public gfx::AnimationDelegate,
   FRIEND_TEST_ALL_PREFIXES(TabStripTest,
                            TabCloseButtonVisibilityWhenNotStacked);
   FRIEND_TEST_ALL_PREFIXES(TabTest, TitleTextHasSufficientContrast);
+  FRIEND_TEST_ALL_PREFIXES(TabHoverCardBubbleViewBrowserTest,
+                           WidgetVisibleOnTabCloseButtonFocusAfterTabFocus);
 
   // Invoked from Layout to adjust the position of the favicon or alert
   // indicator for pinned tabs. The visual_width parameter is how wide the
@@ -206,6 +219,10 @@ class Tab : public gfx::AnimationDelegate,
   // and alert icon.
   void UpdateForegroundColors();
 
+  // Considers switching to hovered mode or [re-]showing the hover card based on
+  // the mouse moving over the tab.
+  void MaybeUpdateHoverStatus(const ui::MouseEvent& event);
+
   // The controller, never nullptr.
   TabController* const controller_;
 
@@ -221,6 +238,9 @@ class Tab : public gfx::AnimationDelegate,
 
   // True if the tab has been detached.
   bool detached_ = false;
+
+  // Defined when the tab is part of a group.
+  base::Optional<TabGroupId> group_;
 
   TabIcon* icon_ = nullptr;
   AlertIndicator* alert_indicator_ = nullptr;
@@ -273,6 +293,8 @@ class Tab : public gfx::AnimationDelegate,
   // different from View::IsMouseHovered() which does a naive intersection with
   // the view bounds.
   bool mouse_hovered_ = false;
+
+  std::unique_ptr<TabCloseButtonObserver> tab_close_button_observer_;
 
   // Focus ring for accessibility.
   std::unique_ptr<views::FocusRing> focus_ring_;

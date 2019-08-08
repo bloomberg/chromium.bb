@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/app_list/app_list_export.h"
+#include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "base/macros.h"
 #include "ui/views/view.h"
 
@@ -20,17 +21,24 @@ namespace app_list {
 class AssistantMainStage;
 class DialogPlate;
 
-class APP_LIST_EXPORT AssistantMainView : public views::View {
+class APP_LIST_EXPORT AssistantMainView : public views::View,
+                                          public ash::AssistantUiModelObserver {
  public:
   explicit AssistantMainView(ash::AssistantViewDelegate* delegate);
   ~AssistantMainView() override;
 
   // views::View:
   const char* GetClassName() const override;
-  gfx::Size CalculatePreferredSize() const override;
   void ChildPreferredSizeChanged(views::View* child) override;
   void ChildVisibilityChanged(views::View* child) override;
   void RequestFocus() override;
+
+  // ash::AssistantUiModelObserver:
+  void OnUiVisibilityChanged(
+      ash::AssistantVisibility new_visibility,
+      ash::AssistantVisibility old_visibility,
+      base::Optional<ash::AssistantEntryPoint> entry_point,
+      base::Optional<ash::AssistantExitPoint> exit_point) override;
 
   // Returns the first focusable view or nullptr to defer to views::FocusSearch.
   views::View* FindFirstFocusableView();

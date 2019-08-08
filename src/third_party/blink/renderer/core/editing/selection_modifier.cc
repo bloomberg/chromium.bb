@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/inline_box_position.h"
+#include "third_party/blink/renderer/core/editing/inline_box_traversal.h"
 #include "third_party/blink/renderer/core/editing/local_caret_rect.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
@@ -67,7 +68,10 @@ VisiblePosition RightBoundaryOfLine(const VisiblePosition& c,
                                           : LogicalStartOfLine(c);
 }
 
-VisiblePosition PreviousParagraphPosition(
+}  // namespace
+
+// static
+VisiblePosition SelectionModifier::PreviousParagraphPosition(
     const VisiblePosition& passed_position,
     LayoutUnit x_point) {
   DCHECK(passed_position.IsValid()) << passed_position;
@@ -83,8 +87,10 @@ VisiblePosition PreviousParagraphPosition(
   return position;
 }
 
-VisiblePosition NextParagraphPosition(const VisiblePosition& passed_position,
-                                      LayoutUnit x_point) {
+// static
+VisiblePosition SelectionModifier::NextParagraphPosition(
+    const VisiblePosition& passed_position,
+    LayoutUnit x_point) {
   DCHECK(passed_position.IsValid()) << passed_position;
   VisiblePosition position = passed_position;
   do {
@@ -96,8 +102,6 @@ VisiblePosition NextParagraphPosition(const VisiblePosition& passed_position,
   } while (InSameParagraph(passed_position, position));
   return position;
 }
-
-}  // namespace
 
 LayoutUnit NoXPosForVerticalArrowNavigation() {
   return LayoutUnit::Min();
@@ -168,6 +172,30 @@ base::Optional<TextDirection> DirectionAt(const VisiblePosition& position) {
   return base::nullopt;
 }
 
+// TODO(xiaochengh): Deduplicate code with |DirectionAt()|.
+base::Optional<TextDirection> LineDirectionAt(const VisiblePosition& position) {
+  if (position.IsNull())
+    return base::nullopt;
+  const PositionWithAffinity adjusted = ComputeInlineAdjustedPosition(position);
+  if (adjusted.IsNull())
+    return base::nullopt;
+
+  if (NGInlineFormattingContextOf(adjusted.GetPosition())) {
+    if (const NGPaintFragment* fragment =
+            ComputeNGCaretPosition(adjusted).fragment) {
+      return ParagraphDirectionOf(*fragment);
+    }
+    return base::nullopt;
+  }
+
+  if (const InlineBox* box =
+          ComputeInlineBoxPositionForInlineAdjustedPosition(adjusted)
+              .inline_box) {
+    return ParagraphDirectionOf(*box);
+  }
+  return base::nullopt;
+}
+
 TextDirection DirectionOf(const VisibleSelection& visible_selection) {
   base::Optional<TextDirection> maybe_start_direction =
       DirectionAt(visible_selection.VisibleStart());
@@ -184,6 +212,11 @@ TextDirection DirectionOf(const VisibleSelection& visible_selection) {
 
 TextDirection SelectionModifier::DirectionOfSelection() const {
   return DirectionOf(selection_);
+}
+
+TextDirection SelectionModifier::LineDirectionOfExtent() const {
+  return LineDirectionAt(selection_.VisibleExtent())
+      .value_or(DirectionOfEnclosingBlockOf(selection_.Extent()));
 }
 
 static bool IsBaseStart(const VisibleSelection& visible_selection,
@@ -386,17 +419,17 @@ VisiblePosition SelectionModifier::ModifyMovingRight(
   switch (granularity) {
     case TextGranularity::kCharacter:
       if (!selection_.IsRange()) {
-        return RightPositionOf(ComputeVisibleExtent(selection_));
+        if (LineDirectionOfExtent() == TextDirection::kLtr)
+          return ModifyMovingForward(granularity);
+        return ModifyMovingBackward(granularity);
       }
       if (DirectionOfSelection() == TextDirection::kLtr)
         return CreateVisiblePosition(selection_.End(), selection_.Affinity());
       return CreateVisiblePosition(selection_.Start(), selection_.Affinity());
-    case TextGranularity::kWord: {
-      const bool skips_space_when_moving_right =
-          GetFrame().GetEditor().Behavior().ShouldSkipSpaceWhenMovingRight();
-      return RightWordPosition(ComputeVisibleExtent(selection_),
-                               skips_space_when_moving_right);
-    }
+    case TextGranularity::kWord:
+      if (LineDirectionOfExtent() == TextDirection::kLtr)
+        return ModifyMovingForward(granularity);
+      return ModifyMovingBackward(granularity);
     case TextGranularity::kSentence:
     case TextGranularity::kLine:
     case TextGranularity::kParagraph:
@@ -560,17 +593,17 @@ VisiblePosition SelectionModifier::ModifyMovingLeft(
   switch (granularity) {
     case TextGranularity::kCharacter:
       if (!selection_.IsRange()) {
-        return LeftPositionOf(ComputeVisibleExtent(selection_));
+        if (LineDirectionOfExtent() == TextDirection::kLtr)
+          return ModifyMovingBackward(granularity);
+        return ModifyMovingForward(granularity);
       }
       if (DirectionOfSelection() == TextDirection::kLtr)
         return CreateVisiblePosition(selection_.Start(), selection_.Affinity());
       return CreateVisiblePosition(selection_.End(), selection_.Affinity());
-    case TextGranularity::kWord: {
-      const bool skips_space_when_moving_right =
-          GetFrame().GetEditor().Behavior().ShouldSkipSpaceWhenMovingRight();
-      return LeftWordPosition(ComputeVisibleExtent(selection_),
-                              skips_space_when_moving_right);
-    }
+    case TextGranularity::kWord:
+      if (LineDirectionOfExtent() == TextDirection::kLtr)
+        return ModifyMovingBackward(granularity);
+      return ModifyMovingForward(granularity);
     case TextGranularity::kSentence:
     case TextGranularity::kLine:
     case TextGranularity::kParagraph:
@@ -898,16 +931,14 @@ static LayoutUnit LineDirectionPointForBlockDirectionNavigationOf(
   // This ignores transforms on purpose, for now. Vertical navigation is done
   // without consulting transforms, so that 'up' in transformed text is 'up'
   // relative to the text, not absolute 'up'.
-  const FloatPoint& caret_point = caret_rect.layout_object->LocalToAbsolute(
-      FloatPoint(caret_rect.rect.Location()));
-  const LayoutObject* const containing_block =
-      caret_rect.layout_object->ContainingBlock();
-  // Just use ourselves to determine the writing mode if we have no containing
-  // block.
-  const LayoutObject* const layout_object =
-      containing_block ? containing_block : caret_rect.layout_object;
-  return LayoutUnit(layout_object->IsHorizontalWritingMode() ? caret_point.X()
-                                                             : caret_point.Y());
+  PhysicalOffset caret_point =
+      UNLIKELY(caret_rect.layout_object->HasFlippedBlocksWritingMode())
+          ? caret_rect.rect.MaxXMinYCorner()
+          : caret_rect.rect.MinXMinYCorner();
+  caret_point = caret_rect.layout_object->LocalToAbsolutePoint(
+      caret_point, kIgnoreTransforms);
+  return caret_rect.layout_object->IsHorizontalWritingMode() ? caret_point.left
+                                                             : caret_point.top;
 }
 
 LayoutUnit SelectionModifier::LineDirectionPointForBlockDirectionNavigation(

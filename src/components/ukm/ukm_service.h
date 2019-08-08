@@ -109,10 +109,10 @@ class UkmService : public UkmRecorderImpl {
   void RotateLog();
 
   // Constructs a new Report from available data and stores it in
-  // persisted_logs_.
+  // unsent_log_store_.
   void BuildAndStoreLog();
 
-  // Starts an upload of the next log from persisted_logs_.
+  // Starts an upload of the next log from unsent_log_store_.
   void StartScheduledUpload();
 
   // Called by log_uploader_ when the an upload is completed.

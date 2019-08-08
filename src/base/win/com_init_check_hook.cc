@@ -93,19 +93,30 @@ class HookManager {
 
   void RegisterHook() {
     AutoLock auto_lock(lock_);
-    if (init_count_ == 0)
-      WriteHook();
-
     ++init_count_;
+    if (disabled_)
+      return;
+    if (init_count_ == 1)
+      WriteHook();
   }
 
   void UnregisterHook() {
     AutoLock auto_lock(lock_);
     DCHECK_NE(0U, init_count_);
-    if (init_count_ == 1)
-      RevertHook();
-
     --init_count_;
+    if (disabled_)
+      return;
+    if (init_count_ == 0)
+      RevertHook();
+  }
+
+  void DisableCOMChecksForProcess() {
+    AutoLock auto_lock(lock_);
+    if (disabled_)
+      return;
+    disabled_ = true;
+    if (init_count_ > 0)
+      RevertHook();
   }
 
  private:
@@ -291,6 +302,7 @@ class HookManager {
   // Synchronizes everything in this class.
   base::Lock lock_;
   size_t init_count_ = 0;
+  bool disabled_ = false;
   HMODULE ole32_library_ = nullptr;
   uint32_t co_create_instance_padded_address_ = 0;
   HotpatchPlaceholderFormat hotpatch_placeholder_format_ =
@@ -319,6 +331,12 @@ ComInitCheckHook::~ComInitCheckHook() {
 #if defined(COM_INIT_CHECK_HOOK_ENABLED)
   HookManager::GetInstance()->UnregisterHook();
 #endif  // defined(COM_INIT_CHECK_HOOK_ENABLED)
+}
+
+void ComInitCheckHook::DisableCOMChecksForProcess() {
+#if defined(COM_INIT_CHECK_HOOK_ENABLED)
+  HookManager::GetInstance()->DisableCOMChecksForProcess();
+#endif
 }
 
 }  // namespace win

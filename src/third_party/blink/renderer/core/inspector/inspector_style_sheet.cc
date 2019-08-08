@@ -54,6 +54,7 @@
 #include "third_party/blink/renderer/core/inspector/inspector_resource_container.h"
 #include "third_party/blink/renderer/core/svg/svg_style_element.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_position.h"
@@ -66,7 +67,7 @@ namespace {
 
 static const CSSParserContext* ParserContextForDocument(Document* document) {
   // Fallback to an insecure context parser if no document is present.
-  return document ? CSSParserContext::Create(*document)
+  return document ? MakeGarbageCollected<CSSParserContext>(*document)
                   : StrictCSSParserContext(SecureContextMode::kInsecureContext);
 }
 
@@ -344,8 +345,8 @@ void StyleSheetHandler::ObserveComment(unsigned start_offset,
 
 bool VerifyRuleText(Document* document, const String& rule_text) {
   DEFINE_STATIC_LOCAL(String, bogus_property_name, ("-webkit-boguz-propertee"));
-  StyleSheetContents* style_sheet =
-      StyleSheetContents::Create(ParserContextForDocument(document));
+  auto* style_sheet = MakeGarbageCollected<StyleSheetContents>(
+      ParserContextForDocument(document));
   CSSRuleSourceDataList* source_data =
       MakeGarbageCollected<CSSRuleSourceDataList>();
   String text = rule_text + " div { " + bogus_property_name + ": none; }";
@@ -382,8 +383,8 @@ bool VerifyStyleText(Document* document, const String& text) {
 }
 
 bool VerifyKeyframeKeyText(Document* document, const String& key_text) {
-  StyleSheetContents* style_sheet =
-      StyleSheetContents::Create(ParserContextForDocument(document));
+  auto* style_sheet = MakeGarbageCollected<StyleSheetContents>(
+      ParserContextForDocument(document));
   CSSRuleSourceDataList* source_data =
       MakeGarbageCollected<CSSRuleSourceDataList>();
   String text = "@keyframes boguzAnim { " + key_text +
@@ -413,8 +414,8 @@ bool VerifyKeyframeKeyText(Document* document, const String& key_text) {
 
 bool VerifySelectorText(Document* document, const String& selector_text) {
   DEFINE_STATIC_LOCAL(String, bogus_property_name, ("-webkit-boguz-propertee"));
-  StyleSheetContents* style_sheet =
-      StyleSheetContents::Create(ParserContextForDocument(document));
+  auto* style_sheet = MakeGarbageCollected<StyleSheetContents>(
+      ParserContextForDocument(document));
   CSSRuleSourceDataList* source_data =
       MakeGarbageCollected<CSSRuleSourceDataList>();
   String text = selector_text + " { " + bogus_property_name + ": none; }";
@@ -443,8 +444,8 @@ bool VerifySelectorText(Document* document, const String& selector_text) {
 
 bool VerifyMediaText(Document* document, const String& media_text) {
   DEFINE_STATIC_LOCAL(String, bogus_property_name, ("-webkit-boguz-propertee"));
-  StyleSheetContents* style_sheet =
-      StyleSheetContents::Create(ParserContextForDocument(document));
+  auto* style_sheet = MakeGarbageCollected<StyleSheetContents>(
+      ParserContextForDocument(document));
   CSSRuleSourceDataList* source_data =
       MakeGarbageCollected<CSSRuleSourceDataList>();
   String text = "@media " + media_text + " { div { " + bogus_property_name +
@@ -1411,7 +1412,7 @@ void InspectorStyleSheet::InnerSetText(const String& text,
                                        bool mark_as_locally_modified) {
   CSSRuleSourceDataList* rule_tree =
       MakeGarbageCollected<CSSRuleSourceDataList>();
-  StyleSheetContents* style_sheet = StyleSheetContents::Create(
+  auto* style_sheet = MakeGarbageCollected<StyleSheetContents>(
       page_style_sheet_->Contents()->ParserContext());
   StyleSheetHandler handler(text, page_style_sheet_->OwnerDocument(),
                             rule_tree);
@@ -1421,10 +1422,11 @@ void InspectorStyleSheet::InnerSetText(const String& text,
   CSSStyleSheet* source_data_sheet = nullptr;
   if (auto* import_rule =
           DynamicTo<CSSImportRule>(page_style_sheet_->ownerRule())) {
-    source_data_sheet = CSSStyleSheet::Create(style_sheet, import_rule);
-  } else {
     source_data_sheet =
-        CSSStyleSheet::Create(style_sheet, *page_style_sheet_->ownerNode());
+        MakeGarbageCollected<CSSStyleSheet>(style_sheet, import_rule);
+  } else {
+    source_data_sheet = MakeGarbageCollected<CSSStyleSheet>(
+        style_sheet, *page_style_sheet_->ownerNode());
   }
 
   parsed_flat_rules_.clear();

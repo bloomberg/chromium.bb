@@ -50,8 +50,8 @@ void DesktopNativeCursorManager::SetCursor(
   delegate->CommitCursor(new_cursor);
 
   if (delegate->IsCursorVisible()) {
-    for (auto i = hosts_.begin(); i != hosts_.end(); ++i)
-      (*i)->SetCursor(new_cursor);
+    for (auto* host : hosts_)
+      host->SetCursor(new_cursor);
   }
 }
 
@@ -65,12 +65,12 @@ void DesktopNativeCursorManager::SetVisibility(
   } else {
     gfx::NativeCursor invisible_cursor(ui::CursorType::kNone);
     cursor_loader_->SetPlatformCursor(&invisible_cursor);
-    for (auto i = hosts_.begin(); i != hosts_.end(); ++i)
-      (*i)->SetCursor(invisible_cursor);
+    for (auto* host : hosts_)
+      host->SetCursor(invisible_cursor);
   }
 
-  for (auto i = hosts_.begin(); i != hosts_.end(); ++i)
-    (*i)->OnCursorVisibilityChanged(visible);
+  for (auto* host : hosts_)
+    host->OnCursorVisibilityChanged(visible);
 }
 
 void DesktopNativeCursorManager::SetCursorSize(
@@ -89,8 +89,8 @@ void DesktopNativeCursorManager::SetMouseEventsEnabled(
 
   SetVisibility(delegate->IsCursorVisible(), delegate);
 
-  for (auto i = hosts_.begin(); i != hosts_.end(); ++i)
-    (*i)->dispatcher()->OnMouseEventsEnableStateChanged(enabled);
+  for (auto* host : hosts_)
+    host->dispatcher()->OnMouseEventsEnableStateChanged(enabled);
 }
 
 }  // namespace views

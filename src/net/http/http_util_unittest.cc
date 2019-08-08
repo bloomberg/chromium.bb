@@ -12,10 +12,6 @@
 
 namespace net {
 
-namespace {
-class HttpUtilTest : public testing::Test {};
-}
-
 TEST(HttpUtilTest, IsSafeHeader) {
   static const char* const unsafe_headers[] = {
     "sec-",
@@ -691,7 +687,7 @@ TEST(HttpUtilTest, AssembleRawHeaders) {
   for (size_t i = 0; i < base::size(tests); ++i) {
     std::string input = tests[i].input;
     std::replace(input.begin(), input.end(), '|', '\0');
-    std::string raw = HttpUtil::AssembleRawHeaders(input.data(), input.size());
+    std::string raw = HttpUtil::AssembleRawHeaders(input);
     std::replace(raw.begin(), raw.end(), '\0', '|');
     EXPECT_EQ(tests[i].expected_result, raw);
   }
@@ -736,13 +732,6 @@ TEST(HttpUtilTest, RequestUrlSanitize) {
 
     EXPECT_EQ(expected_spec, HttpUtil::SpecForRequest(url));
   }
-}
-
-// Test SpecForRequest() for "ftp" scheme.
-TEST(HttpUtilTest, SpecForRequestForUrlWithFtpScheme) {
-  GURL ftp_url("ftp://user:pass@google.com/pub/chromium/");
-  EXPECT_EQ("ftp://google.com/pub/chromium/",
-            HttpUtil::SpecForRequest(ftp_url));
 }
 
 TEST(HttpUtilTest, GenerateAcceptLanguageHeader) {

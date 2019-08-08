@@ -76,11 +76,13 @@
 #include "chrome/browser/ui/webui/chromeos/bluetooth_dialog_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_shares_localized_strings_provider.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "chromeos/services/multidevice_setup/public/cpp/url_provider.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
+#include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/chromeos/events/keyboard_layout_util.h"
@@ -327,6 +329,8 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
       base::FeatureList::IsEnabled(features::kExperimentalAccessibilityLabels));
 
 #if defined(OS_CHROMEOS)
+  html_source->AddString("accountManagerLearnMoreUrl",
+                         chrome::kAccountManagerLearnMoreURL);
   html_source->AddString("a11yLearnMoreUrl",
                          chrome::kChromeAccessibilityHelpURL);
 
@@ -334,10 +338,6 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
   html_source->AddBoolean(
       "showExperimentalA11yFeatures",
       cmd.HasSwitch(::switches::kEnableExperimentalAccessibilityFeatures));
-
-  html_source->AddBoolean(
-      "showExperimentalAccessibilityAutoclick",
-      cmd.HasSwitch(::switches::kEnableExperimentalAccessibilityAutoclick));
 
   html_source->AddBoolean(
       "showExperimentalAccessibilitySwitchAccess",
@@ -499,6 +499,15 @@ void AddPluginVmStrings(content::WebUIDataSource* html_source,
       {"pluginVmPageTitle", IDS_SETTINGS_PLUGIN_VM_PAGE_TITLE},
       {"pluginVmPageLabel", IDS_SETTINGS_PLUGIN_VM_PAGE_LABEL},
       {"pluginVmPrinterAccess", IDS_SETTINGS_PLUGIN_VM_PRINTER_ACCESS},
+      {"pluginVmSharedPaths", IDS_SETTINGS_PLUGIN_VM_SHARED_PATHS},
+      {"pluginVmSharedPathsListHeading",
+       IDS_SETTINGS_PLUGIN_VM_SHARED_PATHS_LIST_HEADING},
+      {"pluginVmSharedPathsInstructionsAdd",
+       IDS_SETTINGS_PLUGIN_VM_SHARED_PATHS_INSTRUCTIONS_ADD},
+      {"pluginVmSharedPathsInstructionsRemove",
+       IDS_SETTINGS_PLUGIN_VM_SHARED_PATHS_INSTRUCTIONS_REMOVE},
+      {"pluginVmSharedPathsRemoveSharing",
+       IDS_SETTINGS_PLUGIN_VM_SHARED_PATHS_REMOVE_SHARING},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings,
                           base::size(kLocalizedStrings));
@@ -556,6 +565,16 @@ void AddAndroidAppStrings(content::WebUIDataSource* html_source) {
           IDS_SETTINGS_ANDROID_APPS_SUBTEXT,
           GetHelpUrlWithBoard(chrome::kAndroidAppsLearnMoreURL)));
 }
+
+void AddAppsStrings(content::WebUIDataSource* html_source) {
+  LocalizedString localized_strings[] = {
+      {"appsPageTitle", IDS_SETTINGS_APPS_TITLE},
+      {"manageYourApps", IDS_SETTINGS_APPS_LINK_TEXT},
+  };
+
+  AddLocalizedStringsBulk(html_source, localized_strings,
+                          base::size(localized_strings));
+}
 #endif
 
 void AddAppearanceStrings(content::WebUIDataSource* html_source,
@@ -574,6 +593,7 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source,
 #else
     {"resetToDefaultTheme", IDS_SETTINGS_RESET_TO_DEFAULT_THEME},
 #endif
+    {"chromeColors", IDS_SETTINGS_CHROME_COLORS},
     {"showHomeButton", IDS_SETTINGS_SHOW_HOME_BUTTON},
     {"showBookmarksBar", IDS_SETTINGS_SHOW_BOOKMARKS_BAR},
     {"homePageNtp", IDS_SETTINGS_HOME_PAGE_NTP},
@@ -581,8 +601,9 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source,
     {"themesGalleryUrl", IDS_THEMES_GALLERY_URL},
     {"chooseFromWebStore", IDS_SETTINGS_WEB_STORE},
 #if defined(OS_CHROMEOS)
-    {"openWallpaperApp", IDS_SETTINGS_OPEN_WALLPAPER_APP},
-    {"setWallpaper", IDS_SETTINGS_SET_WALLPAPER},
+    {"personalizationPageTitle", IDS_OS_SETTINGS_PERSONALIZATION},
+    {"openWallpaperApp", IDS_OS_SETTINGS_OPEN_WALLPAPER_APP},
+    {"setWallpaper", IDS_OS_SETTINGS_SET_WALLPAPER},
 #endif
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
     {"showWindowDecorations", IDS_SHOW_WINDOW_DECORATIONS},
@@ -909,7 +930,12 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
       {"storageClearDriveCacheDialogDescription",
        IDS_SETTINGS_STORAGE_CLEAR_DRIVE_CACHE_DESCRIPTION},
       {"storageDeleteAllButtonTitle",
-       IDS_SETTINGS_STORAGE_DELETE_ALL_BUTTON_TITLE}};
+       IDS_SETTINGS_STORAGE_DELETE_ALL_BUTTON_TITLE},
+      {"storageExternal", IDS_SETTINGS_STORAGE_EXTERNAL},
+      {"storageAndroidAppsExternalDrives",
+       IDS_SETTINGS_STORAGE_ANDROID_APPS_ACCESS_EXTERNAL_DRIVES},
+      {"storageAndroidAppsExternalDrivesNote",
+       IDS_SETTINGS_STORAGE_ANDROID_APPS_ACCESS_EXTERNAL_DRIVES_NOTE}};
   AddLocalizedStringsBulk(html_source, kStorageStrings,
                           base::size(kStorageStrings));
 
@@ -965,6 +991,8 @@ void AddDownloadsStrings(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_MOUNT_EXISTS_MESSAGE},
     {"smbShareAddedInvalidURLMessage",
      IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_MOUNT_INVALID_URL_MESSAGE},
+    {"smbShareAddedInvalidSSOURLMessage",
+     IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_MOUNT_INVALID_SSO_URL_MESSAGE},
 #endif
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings,
@@ -1395,6 +1423,8 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source) {
     {"spellCheckEnhancedDescription",
      IDS_SETTINGS_LANGUAGES_SPELL_CHECK_ENHANCED_DESCRIPTION},
 #if !defined(OS_MACOSX)
+    {"spellCheckDisabledReason",
+     IDS_SETTING_LANGUAGES_SPELL_CHECK_DISABLED_REASON},
     {"spellCheckLanguagesListTitle",
      IDS_SETTINGS_LANGUAGES_SPELL_CHECK_LANGUAGES_LIST_TITLE},
     {"manageSpellCheck", IDS_SETTINGS_LANGUAGES_SPELL_CHECK_MANAGE},
@@ -1616,6 +1646,10 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"removeAccountLabel", IDS_SETTINGS_ACCOUNT_MANAGER_REMOVE_ACCOUNT_LABEL},
     {"accountManagerSignedOutAccountName",
      IDS_SETTINGS_ACCOUNT_MANAGER_SIGNED_OUT_ACCOUNT_PLACEHOLDER},
+    {"accountManagerUnmigratedAccountName",
+     IDS_SETTINGS_ACCOUNT_MANAGER_UNMIGRATED_ACCOUNT_PLACEHOLDER},
+    {"accountManagerMigrationLabel",
+     IDS_SETTINGS_ACCOUNT_MANAGER_MIGRATION_LABEL},
     {"accountManagerReauthenticationLabel",
      IDS_SETTINGS_ACCOUNT_MANAGER_REAUTHENTICATION_LABEL},
     {"accountManagerManagedLabel",
@@ -1648,6 +1682,36 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"configurePinTooLong", IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_TOO_LONG},
     {"configurePinWeakPin", IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_WEAK_PIN},
     {"enableScreenlock", IDS_SETTINGS_PEOPLE_ENABLE_SCREENLOCK},
+    {"kerberosAccountsSubMenuLabel",
+     IDS_SETTINGS_KERBEROS_ACCOUNTS_SUBMENU_LABEL},
+    {"kerberosAccountsPageTitle", IDS_SETTINGS_KERBEROS_ACCOUNTS_PAGE_TITLE},
+    {"kerberosAccountsDescription", IDS_SETTINGS_KERBEROS_ACCOUNTS_DESCRIPTION},
+    {"kerberosAccountsListHeader", IDS_SETTINGS_KERBEROS_ACCOUNTS_LIST_HEADER},
+    {"kerberosAccountsAddAccountLabel",
+     IDS_SETTINGS_KERBEROS_ACCOUNTS_ADD_ACCOUNT_LABEL},
+    {"kerberosAccountsRemoveAccountLabel",
+     IDS_SETTINGS_KERBEROS_ACCOUNTS_REMOVE_ACCOUNT_LABEL},
+    {"kerberosAccountsSignedIn", IDS_SETTINGS_KERBEROS_ACCOUNTS_SIGNED_IN},
+    {"kerberosAccountsSignedOut", IDS_SETTINGS_KERBEROS_ACCOUNTS_SIGNED_OUT},
+    {"kerberosAccountsReauthenticationLabel",
+     IDS_SETTINGS_KERBEROS_ACCOUNTS_REAUTHENTICATION_LABEL},
+    {"addKerberosAccount", IDS_SETTINGS_ADD_KERBEROS_ACCOUNT},
+    {"kerberosUsername", IDS_SETTINGS_KERBEROS_USERNAME},
+    {"kerberosPassword", IDS_SETTINGS_KERBEROS_PASSWORD},
+    {"kerberosErrorNetworkProblem",
+     IDS_SETTINGS_KERBEROS_ERROR_NETWORK_PROBLEM},
+    {"kerberosErrorUsernameInvalid",
+     IDS_SETTINGS_KERBEROS_ERROR_USERNAME_INVALID},
+    {"kerberosErrorUsernameUnknown",
+     IDS_SETTINGS_KERBEROS_ERROR_USERNAME_UNKNOWN},
+    {"kerberosErrorContactingServer",
+     IDS_SETTINGS_KERBEROS_ERROR_CONTACTING_SERVER},
+    {"kerberosErrorPasswordInvalid",
+     IDS_SETTINGS_KERBEROS_ERROR_PASSWORD_INVALID},
+    {"kerberosErrorPasswordExpired",
+     IDS_SETTINGS_KERBEROS_ERROR_PASSWORD_EXPIRED},
+    {"kerberosErrorKdcEncType", IDS_SETTINGS_KERBEROS_ERROR_KDC_ENC_TYPE},
+    {"kerberosErrorGeneral", IDS_SETTINGS_KERBEROS_ERROR_GENERAL},
     {"lockScreenAddFingerprint",
      IDS_SETTINGS_PEOPLE_LOCK_SCREEN_ADD_FINGERPRINT_BUTTON},
     {"lockScreenChangePinButton",
@@ -1923,10 +1987,15 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
       base::FeatureList::IsEnabled(omnibox::kDocumentProvider));
 
 #if defined(OS_CHROMEOS)
-  // Used to control the display of Chrome OS Account Manager submenu in the
-  // People section.
+  // Toggles the Chrome OS Account Manager submenu in the People section.
   html_source->AddBoolean("isAccountManagerEnabled",
                           chromeos::IsAccountManagerAvailable(profile));
+
+  // Toggles the Chrome OS Kerberos Accounts submenu in the People section.
+  // Note that the handler is also dependent on this pref.
+  html_source->AddBoolean(
+      "isKerberosEnabled",
+      g_browser_process->local_state()->GetBoolean(prefs::kKerberosEnabled));
 #endif
 }
 
@@ -1956,8 +2025,10 @@ void AddPrintingStrings(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTERS_NEARBY_TITLE},
     {"addPrintersManuallyTitle",
      IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTERS_MANUALLY_TITLE},
-    {"selectManufacturerAndModelTitle",
+    {"manufacturerAndModelDialogTitle",
      IDS_SETTINGS_PRINTING_CUPS_SELECT_MANUFACTURER_AND_MODEL_TITLE},
+    {"manufacturerAndModelAdditionalInformation",
+     IDS_SETTINGS_PRINTING_CUPS_MANUFACTURER_MODEL_ADDITIONAL_INFORMATION},
     {"addPrinterButtonText", IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTER_BUTTON_ADD},
     {"printerDetailsAdvanced", IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADVANCED},
     {"printerDetailsA11yLabel",
@@ -2020,6 +2091,7 @@ void AddPrintingStrings(content::WebUIDataSource* html_source) {
     {"editPrinterButtonText", IDS_SETTINGS_PRINTING_CUPS_EDIT_PRINTER_BUTTON},
     {"currentPpdMessage",
      IDS_SETTINGS_PRINTING_CUPS_EDIT_PRINTER_CURRENT_PPD_MESSAGE},
+    {"printerEulaNotice", IDS_SETTINGS_PRINTING_CUPS_EULA_NOTICE},
 #else
     {"localPrintersTitle", IDS_SETTINGS_PRINTING_LOCAL_PRINTERS_TITLE},
 #endif
@@ -2034,6 +2106,9 @@ void AddPrintingStrings(content::WebUIDataSource* html_source) {
 #if defined(OS_CHROMEOS)
   html_source->AddString("printingCUPSPrintLearnMoreUrl",
                          GetHelpUrlWithBoard(chrome::kCupsPrintLearnMoreURL));
+  html_source->AddString(
+      "printingCUPSPrintPpdLearnMoreUrl",
+      GetHelpUrlWithBoard(chrome::kCupsPrintPPDLearnMoreURL));
 #endif
 }
 
@@ -2168,26 +2243,33 @@ void AddSearchInSettingsStrings(content::WebUIDataSource* html_source) {
 
 void AddSearchStrings(content::WebUIDataSource* html_source, Profile* profile) {
 #if defined(OS_CHROMEOS)
+  // NOTE: This will be false when the flag is disabled.
   const bool is_assistant_allowed =
       assistant::IsAssistantAllowedForProfile(profile) ==
       ash::mojom::AssistantAllowedState::ALLOWED;
+  // SplitSettings moves Assistant to the OS settings window.
+  const bool assistant_in_browser_settings =
+      is_assistant_allowed && !chromeos::features::IsSplitSettingsEnabled();
 #endif
 
   LocalizedString localized_strings[] = {
 #if defined(OS_CHROMEOS)
-    {"searchPageTitle", is_assistant_allowed ? IDS_SETTINGS_SEARCH_AND_ASSISTANT
-                                             : IDS_SETTINGS_SEARCH},
+    {"searchPageTitle", assistant_in_browser_settings
+                            ? IDS_SETTINGS_SEARCH_AND_ASSISTANT
+                            : IDS_SETTINGS_SEARCH},
 #else
     {"searchPageTitle", IDS_SETTINGS_SEARCH},
 #endif
     {"searchEnginesManage", IDS_SETTINGS_SEARCH_MANAGE_SEARCH_ENGINES},
 #if defined(OS_CHROMEOS)
+    {"osSearchPageTitle", is_assistant_allowed
+                              ? IDS_SETTINGS_SEARCH_AND_ASSISTANT
+                              : IDS_SETTINGS_SEARCH},
     {"searchGoogleAssistant", IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT},
     {"searchGoogleAssistantEnabled",
      IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_ENABLED},
     {"searchGoogleAssistantDisabled",
      IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_DISABLED},
-    {"assistantTurnOn", IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_TURN_ON},
 #endif
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
@@ -2197,9 +2279,7 @@ void AddSearchStrings(content::WebUIDataSource* html_source, Profile* profile) {
       base::ASCIIToUTF16(chrome::kOmniboxLearnMoreURL));
   html_source->AddString("searchExplanation", search_explanation_text);
 #if defined(OS_CHROMEOS)
-  html_source->AddBoolean("enableVoiceInteraction", is_assistant_allowed);
-  html_source->AddBoolean("enableAssistant",
-                          chromeos::switches::IsAssistantEnabled());
+  html_source->AddBoolean("isAssistantAllowed", is_assistant_allowed);
 #endif
 }
 
@@ -2399,8 +2479,9 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
     {"siteSettingsSoundBlock", IDS_SETTINGS_SITE_SETTINGS_SOUND_BLOCK},
     {"siteSettingsFlash", IDS_SETTINGS_SITE_SETTINGS_FLASH},
     {"siteSettingsFlashAskFirst", IDS_SETTINGS_SITE_SETTINGS_ASK_FIRST},
-    {"siteSettingsFlashAskFirstRecommended",
-     IDS_SETTINGS_SITE_SETTINGS_ASK_FIRST_RECOMMENDED},
+    {"siteSettingsFlashBlock", IDS_SETTINGS_SITE_SETTINGS_FLASH_BLOCK},
+    {"siteSettingsFlashBlockRecommended",
+     IDS_SETTINGS_SITE_SETTINGS_FLASH_BLOCK_RECOMMENDED},
     {"siteSettingsFlashPermissionsEphemeral",
      IDS_SETTINGS_SITE_SETTINGS_FLASH_PERMISSIONS_ARE_EPHEMERAL},
     {"siteSettingsPdfDocuments", IDS_SETTINGS_SITE_SETTINGS_PDF_DOCUMENTS},
@@ -2455,7 +2536,6 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_ASK_BEFORE_SENDING},
     {"siteSettingsAskBeforeSendingRecommended",
      IDS_SETTINGS_SITE_SETTINGS_ASK_BEFORE_SENDING_RECOMMENDED},
-    {"siteSettingsFlashBlock", IDS_SETTINGS_SITE_SETTINGS_FLASH_BLOCK},
     {"siteSettingsAllowRecentlyClosedSites",
      IDS_SETTINGS_SITE_SETTINGS_ALLOW_RECENTLY_CLOSED_SITES},
     {"siteSettingsAllowRecentlyClosedSitesRecommended",
@@ -2608,6 +2688,14 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_BLOCK_AUTOPLAY},
     {"emptyAllSitesPage", IDS_SETTINGS_SITE_SETTINGS_EMPTY_ALL_SITES_PAGE},
     {"noSitesFound", IDS_SETTINGS_SITE_SETTINGS_NO_SITES_FOUND},
+    {"siteSettingsBluetoothScanning",
+     IDS_SETTINGS_SITE_SETTINGS_BLUETOOTH_SCANNING},
+    {"siteSettingsBluetoothScanningAsk",
+     IDS_SETTINGS_SITE_SETTINGS_BLUETOOTH_SCANNING_ASK},
+    {"siteSettingsBluetoothScanningAskRecommended",
+     IDS_SETTINGS_SITE_SETTINGS_BLUETOOTH_SCANNING_ASK_RECOMMENDED},
+    {"siteSettingsBluetoothScanningBlock",
+     IDS_SETTINGS_SITE_SETTINGS_BLUETOOTH_SCANNING_BLOCK},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings,
                           base::size(kLocalizedStrings));
@@ -2657,6 +2745,10 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean(
       "enableExperimentalWebPlatformFeatures",
       cmd.HasSwitch(::switches::kEnableExperimentalWebPlatformFeatures));
+
+  html_source->AddBoolean(
+      "enableBluetoothScanningContentSetting",
+      cmd.HasSwitch(::switches::kEnableWebBluetoothScanning));
 }
 
 #if defined(OS_CHROMEOS)
@@ -2894,6 +2986,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddPluginVmStrings(html_source, profile);
   AddKioskNextShellStrings(html_source);
   AddAndroidAppStrings(html_source);
+  AddAppsStrings(html_source);
   AddBluetoothStrings(html_source);
   AddChromeOSUserStrings(html_source, profile);
   AddDateTimeStrings(html_source);

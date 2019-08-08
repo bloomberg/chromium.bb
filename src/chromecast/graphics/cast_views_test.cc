@@ -3,15 +3,15 @@
 // found in the LICENSE file.
 
 #include "chromecast/graphics/cast_window_manager_aura.h"
-#include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
 #include "ui/views/controls/progress_bar.h"
+#include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 
 namespace chromecast {
 namespace test {
 
-using CastViewsTest = aura::test::AuraTestBase;
+using CastViewsTest = views::ViewsTestBase;
 
 TEST_F(CastViewsTest, ProgressBar) {
   std::unique_ptr<CastWindowManager> window_manager =
@@ -40,8 +40,8 @@ TEST_F(CastViewsTest, ProgressBar) {
 
   EXPECT_TRUE(progress_bar->GetWidget());
   EXPECT_TRUE(progress_bar->GetWidget()->IsVisible());
-  EXPECT_TRUE(progress_bar->visible());
-  EXPECT_TRUE(progress_bar->enabled());
+  EXPECT_TRUE(progress_bar->GetVisible());
+  EXPECT_TRUE(progress_bar->GetEnabled());
 
   widget.reset();
   window_manager.reset();

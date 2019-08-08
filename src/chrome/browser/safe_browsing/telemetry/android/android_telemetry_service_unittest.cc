@@ -10,6 +10,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -59,8 +60,12 @@ class AndroidTelemetryServiceTest : public testing::Test {
                 {content::BrowserThread::IO}));
     browser_process_->SetSystemRequestContext(
         system_request_context_getter_.get());
-    sb_service_ =
-        safe_browsing::SafeBrowsingService::CreateSafeBrowsingService();
+    safe_browsing::SafeBrowsingServiceInterface::RegisterFactory(
+        GetSafeBrowsingServiceFactory());
+    // TODO(crbug/925153): Port consumers of the |sb_service_| to use
+    // the interface in components/safe_browsing, and remove this cast.
+    sb_service_ = static_cast<SafeBrowsingService*>(
+        safe_browsing::SafeBrowsingService::CreateSafeBrowsingService());
     browser_process_->SetSafeBrowsingService(sb_service_.get());
     sb_service_->Initialize();
     base::RunLoop().RunUntilIdle();
@@ -72,7 +77,13 @@ class AndroidTelemetryServiceTest : public testing::Test {
         std::make_unique<AndroidTelemetryService>(sb_service_.get(), profile());
   }
 
-  void TearDown() override {}
+  void TearDown() override {
+    // Make sure the NetworkContext owned by SafeBrowsingService is destructed
+    // before the NetworkService object..
+    browser_process_->safe_browsing_service()->ShutDown();
+    browser_process_->SetSafeBrowsingService(nullptr);
+    base::RunLoop().RunUntilIdle();
+  }
 
   bool CanSendPing(download::DownloadItem* item) {
     return telemetry_service_->CanSendPing(item);
@@ -107,8 +118,6 @@ TEST_F(AndroidTelemetryServiceTest, CantSendPing_NonApk) {
   // Enable Scout Reporting.
   profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingScoutReportingEnabled,
                                     true);
-  // Enable feature.
-  scoped_feature_list_.InitAndEnableFeature(kTelemetryForApkDownloads);
   // Simulate non-APK download.
   ON_CALL(*download_item_, GetMimeType())
       .WillByDefault(testing::Return("text/plain"));
@@ -126,8 +135,6 @@ TEST_F(AndroidTelemetryServiceTest, CantSendPing_SafeBrowsingDisabled) {
   // Enable Scout Reporting.
   profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingScoutReportingEnabled,
                                     true);
-  // Enable feature.
-  scoped_feature_list_.InitAndEnableFeature(kTelemetryForApkDownloads);
   // Simulate APK download.
   ON_CALL(*download_item_, GetMimeType())
       .WillByDefault(
@@ -150,8 +157,6 @@ TEST_F(AndroidTelemetryServiceTest, CantSendPing_IncognitoMode) {
   // Enable Scout Reporting.
   profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingScoutReportingEnabled,
                                     true);
-  // Enable feature.
-  scoped_feature_list_.InitAndEnableFeature(kTelemetryForApkDownloads);
   // Simulate APK download.
   ON_CALL(*download_item_, GetMimeType())
       .WillByDefault(
@@ -174,8 +179,6 @@ TEST_F(AndroidTelemetryServiceTest, CantSendPing_SBERDisabled) {
 
   // Enable Safe Browsing.
   profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled, true);
-  // Enable feature.
-  scoped_feature_list_.InitAndEnableFeature(kTelemetryForApkDownloads);
   // Simulate APK download.
   ON_CALL(*download_item_, GetMimeType())
       .WillByDefault(
@@ -189,36 +192,12 @@ TEST_F(AndroidTelemetryServiceTest, CantSendPing_SBERDisabled) {
       ApkDownloadTelemetryOutcome::NOT_SENT_EXTENDED_REPORTING_DISABLED, 1);
 }
 
-TEST_F(AndroidTelemetryServiceTest, CantSendPing_FeatureDisabled) {
-  // Disable feature.
-  scoped_feature_list_.InitAndDisableFeature(kTelemetryForApkDownloads);
-
-  // Enable Safe Browsing.
-  profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled, true);
-  // Enable Scout Reporting.
-  profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingScoutReportingEnabled,
-                                    true);
-  // Simulate APK download.
-  ON_CALL(*download_item_, GetMimeType())
-      .WillByDefault(
-          testing::Return("application/vnd.android.package-archive"));
-
-  EXPECT_FALSE(CanSendPing(download_item_.get()));
-
-  get_histograms()->ExpectTotalCount(kApkDownloadTelemetryOutcomeMetric, 1);
-  get_histograms()->ExpectBucketCount(
-      kApkDownloadTelemetryOutcomeMetric,
-      ApkDownloadTelemetryOutcome::NOT_SENT_FEATURE_NOT_ENABLED, 1);
-}
-
 TEST_F(AndroidTelemetryServiceTest, CanSendPing_AllConditionsMet) {
   // Enable Safe Browsing.
   profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled, true);
   // Enable Scout Reporting.
   profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingScoutReportingEnabled,
                                     true);
-  // Enable feature.
-  scoped_feature_list_.InitAndEnableFeature(kTelemetryForApkDownloads);
   // Simulate APK download.
   ON_CALL(*download_item_, GetMimeType())
       .WillByDefault(

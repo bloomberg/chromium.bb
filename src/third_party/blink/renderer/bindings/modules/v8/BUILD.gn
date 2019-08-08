@@ -55,6 +55,8 @@ generate_origin_trial_features("bindings_modules_origin_trial_features") {
   component = "modules"
   output_dir = bindings_modules_output_dir + "/v8"
   deps = [
+    "//third_party/blink/renderer/bindings:global_constructors_idls",
+    "//third_party/blink/renderer/bindings/modules:interfaces_info_modules",
     "//third_party/blink/renderer/bindings/modules:modules_global_constructors_idls",
   ]
 }
@@ -63,7 +65,7 @@ action("bindings_modules_v8_generated_init_partial") {
   script = "$bindings_scripts_dir/generate_init_partial_interfaces.py"
 
   inputs = [
-    "$bindings_modules_output_dir/InterfacesInfoOverall.pickle",
+    "$bindings_output_dir/interfaces_info.pickle",
   ]
   outputs = [
     bindings_modules_generated_init_partial_interfaces_file,
@@ -82,7 +84,7 @@ action("bindings_modules_v8_generated_init_partial") {
   ]
 
   deps = [
-    "//third_party/blink/renderer/bindings/modules:interfaces_info",
+    "//third_party/blink/renderer/bindings:interfaces_info",
   ]
 }
 
@@ -95,12 +97,12 @@ group("generate_mojo_bindings") {
 
   deps = [
     "//device/gamepad/public/mojom:mojom_blink_headers",
-    "//device/usb/public/mojom:mojom_blink_headers",
     "//device/vr/public/mojom:mojom_blink_headers",
     "//media/capture/mojom:image_capture_blink_headers",
     "//media/midi:mojo_blink_headers",
     "//services/device/public/mojom:generic_sensor_headers",
     "//services/device/public/mojom:mojom_blink_headers",
+    "//services/device/public/mojom:usb_blink_headers",
     "//services/shape_detection/public/mojom:mojom_blink_headers",
 
     # IndexedDB Mojom Blink headers are provided by the mojom_modules
@@ -160,9 +162,7 @@ action("generate_v8_context_snapshot_external_references") {
   ]
 
   deps = [
-    "//third_party/blink/renderer/bindings/core:interfaces_info_individual_core",
-    "//third_party/blink/renderer/bindings/modules:interfaces_info",
-    "//third_party/blink/renderer/bindings/modules:interfaces_info_individual_modules",
+    "//third_party/blink/renderer/bindings:interfaces_info",
     "//third_party/blink/renderer/bindings/scripts:cached_jinja_templates",
     "//third_party/blink/renderer/bindings/scripts:cached_lex_yacc_tables",
   ]

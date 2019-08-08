@@ -56,6 +56,8 @@ will have a weighted time that is the same or similar to its elapsed time. A
 compile that runs in parallel with 999 other compiles will have a weighted time
 that is tiny."""
 
+from __future__ import print_function
+
 import argparse
 import errno
 import os
@@ -100,7 +102,7 @@ class Target:
         # Allow for modest floating-point errors
         epsilon = 0.000002
         if (self.weighted_duration > self.Duration() + epsilon):
-          print '%s > %s?' % (self.weighted_duration, self.Duration())
+          print('%s > %s?' % (self.weighted_duration, self.Duration()))
         assert(self.weighted_duration <= self.Duration() + epsilon)
         return self.weighted_duration
 
@@ -256,16 +258,16 @@ def SummarizeEntries(entries):
 
     # Warn if the sum of weighted times is off by more than half a second.
     if abs(length - weighted_total) > 500:
-      print 'Discrepancy!!! Length = %.3f, weighted total = %.3f' % (
-            length, weighted_total)
+      print('Discrepancy!!! Length = %.3f, weighted total = %.3f' % (
+            length, weighted_total))
 
     # Print the slowest build steps (by weighted time).
-    print '    Longest build steps:'
+    print('    Longest build steps:')
     entries.sort(key=lambda x: x.WeightedDuration())
     for target in entries[-long_count:]:
-      print '      %8.1f weighted s to build %s (%.1f s CPU time)' % (
+      print('      %8.1f weighted s to build %s (%.1f s CPU time)' % (
             target.WeightedDuration(),
-            target.DescribeTargets(), target.Duration())
+            target.DescribeTargets(), target.Duration()))
 
     # Sum up the time by file extension/type of the output file
     count_by_ext = {}
@@ -279,21 +281,21 @@ def SummarizeEntries(entries):
               0) + target.WeightedDuration()
       count_by_ext[extension] = count_by_ext.get(extension, 0) + 1
 
-    print '    Time by build-step type:'
+    print('    Time by build-step type:')
     # Copy to a list with extension name and total time swapped, to (time, ext)
     weighted_time_by_ext_sorted = sorted((y, x) for (x, y) in
                                           weighted_time_by_ext.items())
     # Print the slowest build target types (by weighted time):
     for time, extension in weighted_time_by_ext_sorted[-long_ext_count:]:
-        print ('      %8.1f s weighted time to generate %d %s files '
-               '(%1.1f s CPU time)') % (time, count_by_ext[extension],
-                                        extension, time_by_ext[extension])
+        print('      %8.1f s weighted time to generate %d %s files '
+               '(%1.1f s CPU time)' % (time, count_by_ext[extension],
+                                        extension, time_by_ext[extension]))
 
-    print '    %.1f s weighted time (%.1f s CPU time, %1.1fx parallelism)' % (
+    print('    %.1f s weighted time (%.1f s CPU time, %1.1fx parallelism)' % (
           length, total_cpu_time,
-          total_cpu_time * 1.0 / length)
-    print '    %d build steps completed, average of %1.2f/s' % (
-          len(entries), len(entries) / (length))
+          total_cpu_time * 1.0 / length))
+    print('    %d build steps completed, average of %1.2f/s' % (
+          len(entries), len(entries) / (length)))
 
 
 def main():
@@ -314,7 +316,7 @@ def main():
         entries = ReadTargets(log, False)
         SummarizeEntries(entries)
     except IOError:
-      print 'Log file %r not found, no build summary created.' % log_file
+      print('Log file %r not found, no build summary created.' % log_file)
       return errno.ENOENT
 
 

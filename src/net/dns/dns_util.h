@@ -108,18 +108,6 @@ uint16_t DnsQueryTypeToQtype(DnsQueryType dns_query_type);
 NET_EXPORT DnsQueryType
 AddressFamilyToDnsQueryType(AddressFamily address_family);
 
-// The SecureDnsMode specifies what types of lookups (secure/insecure) should
-// be performed and in what order when resolving a specific query.
-enum SecureDnsMode : int {
-  // In OFF mode, no DoH lookups should be performed.
-  OFF,
-  // In AUTOMATIC mode, DoH lookups should be performed first if DoH is
-  // available, and insecure DNS lookups should be performed as a fallback.
-  AUTOMATIC,
-  // In SECURE mode, only DoH lookups should be performed.
-  SECURE,
-};
-
 }  // namespace net
 
 #endif  // NET_DNS_DNS_UTIL_H_

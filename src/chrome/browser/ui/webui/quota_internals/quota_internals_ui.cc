@@ -29,7 +29,6 @@ content::WebUIDataSource* CreateQuotaInternalsHTMLSource() {
   source->AddResourcePath(
       "message_dispatcher.js", IDR_QUOTA_INTERNALS_MESSAGE_DISPATCHER_JS);
   source->SetDefaultResource(IDR_QUOTA_INTERNALS_MAIN_HTML);
-  source->UseGzip();
   return source;
 }
 

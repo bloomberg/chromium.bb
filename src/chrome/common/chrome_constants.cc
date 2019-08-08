@@ -153,6 +153,8 @@ const base::FilePath::CharType kLocalStateFilename[] = FPL("Local State");
 const base::FilePath::CharType kMediaCacheDirname[] = FPL("Media Cache");
 const base::FilePath::CharType kNetworkPersistentStateFilename[] =
     FPL("Network Persistent State");
+const base::FilePath::CharType kNotificationSchedulerStorageDirname[] =
+    FPL("Notification Scheduler");
 const base::FilePath::CharType kOfflinePageArchivesDirname[] =
     FPL("Offline Pages/archives");
 const base::FilePath::CharType kOfflinePageMetadataDirname[] =

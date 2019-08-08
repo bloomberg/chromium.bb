@@ -10,10 +10,12 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
+#include "net/base/privacy_mode.h"
 #include "net/base/proxy_server.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_headers.h"
@@ -90,8 +92,9 @@ class MockClientSocketHandleFactory {
     socket_handle->Init(
         ClientSocketPool::GroupId(HostPortPair("a", 80),
                                   ClientSocketPool::SocketType::kHttp,
-                                  false /* privacy_mode */),
-        scoped_refptr<ClientSocketPool::SocketParams>(), MEDIUM, SocketTag(),
+                                  PrivacyMode::PRIVACY_MODE_DISABLED),
+        scoped_refptr<ClientSocketPool::SocketParams>(),
+        base::nullopt /* proxy_annotation_tag */, MEDIUM, SocketTag(),
         ClientSocketPool::RespectLimits::ENABLED, CompletionOnceCallback(),
         ClientSocketPool::ProxyAuthCallback(), &pool_, NetLogWithSource());
     return socket_handle;
@@ -119,6 +122,7 @@ class TestConnectDelegate : public WebSocketStream::ConnectDelegate {
   void OnSSLCertificateError(
       std::unique_ptr<WebSocketEventInterface::SSLErrorCallbacks>
           ssl_error_callbacks,
+      int net_error,
       const SSLInfo& ssl_info,
       bool fatal) override {}
   int OnAuthRequired(const AuthChallengeInfo& auth_info,

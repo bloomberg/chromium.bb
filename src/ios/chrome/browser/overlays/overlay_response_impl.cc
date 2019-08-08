@@ -12,6 +12,6 @@ std::unique_ptr<OverlayResponse> OverlayResponse::Create() {
 OverlayResponseImpl::OverlayResponseImpl() {}
 OverlayResponseImpl::~OverlayResponseImpl() {}
 
-base::SupportsUserData& OverlayResponseImpl::data() {
-  return *this;
+base::SupportsUserData* OverlayResponseImpl::data() {
+  return this;
 }

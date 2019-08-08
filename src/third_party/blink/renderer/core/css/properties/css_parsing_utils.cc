@@ -4,6 +4,9 @@
 
 #include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
 
+#include <memory>
+#include <utility>
+
 #include "third_party/blink/renderer/core/css/css_basic_shape_values.h"
 #include "third_party/blink/renderer/core/css/css_border_image.h"
 #include "third_party/blink/renderer/core/css/css_content_distribution_value.h"
@@ -13,6 +16,7 @@
 #include "third_party/blink/renderer/core/css/css_font_style_range_value.h"
 #include "third_party/blink/renderer/core/css/css_function_value.h"
 #include "third_party/blink/renderer/core/css/css_grid_auto_repeat_value.h"
+#include "third_party/blink/renderer/core/css/css_grid_integer_repeat_value.h"
 #include "third_party/blink/renderer/core/css/css_grid_line_names_value.h"
 #include "third_party/blink/renderer/core/css/css_grid_template_areas_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
@@ -44,6 +48,7 @@
 #include "third_party/blink/renderer/platform/animation/timing_function.h"
 #include "third_party/blink/renderer/platform/fonts/font_selection_types.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -152,28 +157,6 @@ CSSValue* ConsumeSteps(CSSParserTokenRange& range) {
   return CSSStepsTimingFunctionValue::Create(steps->GetIntValue(), position);
 }
 
-CSSValue* ConsumeFrames(CSSParserTokenRange& range) {
-  DCHECK_EQ(range.Peek().FunctionId(), CSSValueID::kFrames);
-  CSSParserTokenRange range_copy = range;
-  CSSParserTokenRange args =
-      css_property_parser_helpers::ConsumeFunction(range_copy);
-
-  CSSPrimitiveValue* frames =
-      css_property_parser_helpers::ConsumePositiveInteger(args);
-  if (!frames)
-    return nullptr;
-
-  int frames_int = frames->GetIntValue();
-  if (frames_int <= 1)
-    return nullptr;
-
-  if (!args.AtEnd())
-    return nullptr;
-
-  range = range_copy;
-  return CSSFramesTimingFunctionValue::Create(frames_int);
-}
-
 CSSValue* ConsumeCubicBezier(CSSParserTokenRange& range) {
   DCHECK_EQ(range.Peek().FunctionId(), CSSValueID::kCubicBezier);
   CSSParserTokenRange range_copy = range;
@@ -253,12 +236,13 @@ CSSBasicShapeEllipseValue* ConsumeBasicShapeEllipse(
   auto* shape = MakeGarbageCollected<CSSBasicShapeEllipseValue>();
   WebFeature feature = WebFeature::kBasicShapeEllipseNoRadius;
   if (CSSValue* radius_x = ConsumeShapeRadius(args, context.Mode())) {
-    shape->SetRadiusX(radius_x);
-    feature = WebFeature::kBasicShapeEllipseOneRadius;
-    if (CSSValue* radius_y = ConsumeShapeRadius(args, context.Mode())) {
-      shape->SetRadiusY(radius_y);
-      feature = WebFeature::kBasicShapeEllipseTwoRadius;
+    CSSValue* radius_y = ConsumeShapeRadius(args, context.Mode());
+    if (!radius_y) {
+      return nullptr;
     }
+    shape->SetRadiusX(radius_x);
+    shape->SetRadiusY(radius_y);
+    feature = WebFeature::kBasicShapeEllipseTwoRadius;
   }
   if (css_property_parser_helpers::ConsumeIdent<CSSValueID::kAt>(args)) {
     CSSValue* center_x = nullptr;
@@ -552,10 +536,6 @@ CSSValue* ConsumeAnimationTimingFunction(CSSParserTokenRange& range) {
   CSSValueID function = range.Peek().FunctionId();
   if (function == CSSValueID::kSteps)
     return ConsumeSteps(range);
-  if (RuntimeEnabledFeatures::FramesTimingFunctionEnabled() &&
-      function == CSSValueID::kFrames) {
-    return ConsumeFrames(range);
-  }
   if (function == CSSValueID::kCubicBezier)
     return ConsumeCubicBezier(range);
   return nullptr;
@@ -1782,11 +1762,13 @@ bool ConsumeGridTrackRepeatFunction(CSSParserTokenRange& range,
     // We clamp the repetitions to a multiple of the repeat() track list's size,
     // while staying below the max grid size.
     repetitions = std::min(repetitions, kGridMaxTracks / number_of_tracks);
-    for (size_t i = 0; i < repetitions; ++i) {
-      for (size_t j = 0; j < repeated_values->length(); ++j)
-        list.Append(repeated_values->Item(j));
-    }
+    auto* integer_repeated_values =
+        MakeGarbageCollected<CSSGridIntegerRepeatValue>(repetitions);
+    for (size_t i = 0; i < repeated_values->length(); ++i)
+      integer_repeated_values->Append(repeated_values->Item(i));
+    list.Append(*integer_repeated_values);
   }
+
   return true;
 }
 
@@ -2199,7 +2181,7 @@ CSSValue* ConsumePath(CSSParserTokenRange& range) {
   range = function_range;
   if (byte_stream->IsEmpty())
     return CSSIdentifierValue::Create(CSSValueID::kNone);
-  return CSSPathValue::Create(std::move(byte_stream));
+  return MakeGarbageCollected<CSSPathValue>(std::move(byte_stream));
 }
 
 CSSValue* ConsumeRay(CSSParserTokenRange& range,

@@ -7,6 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol InfobarModalPositioner;
+
 typedef NS_ENUM(NSInteger, InfobarModalTransition) {
   // InfobarModal will be presented from a base ViewController.
   InfobarModalTransitionBase,
@@ -24,6 +26,9 @@ typedef NS_ENUM(NSInteger, InfobarModalTransition) {
 
 // The InfobarModalTransition mode being used for this Transition driver.
 @property(nonatomic, assign, readonly) InfobarModalTransition transitionMode;
+
+// Delegate used to position the ModalInfobar.
+@property(nonatomic, assign) id<InfobarModalPositioner> modalPositioner;
 
 @end
 

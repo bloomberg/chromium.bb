@@ -31,7 +31,6 @@
 
 #include "third_party/blink/renderer/core/exported/local_frame_client_impl.h"
 
-#include <memory>
 #include <utility>
 
 #include "base/time/time.h"
@@ -41,7 +40,6 @@
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider_client.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_application_cache_host.h"
 #include "third_party/blink/public/platform/web_media_player_source.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
@@ -49,11 +47,13 @@
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/public/web/web_application_cache_host.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_dom_event.h"
 #include "third_party/blink/public/web/web_form_element.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
+#include "third_party/blink/public/web/web_manifest_manager.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/public/web/web_node.h"
 #include "third_party/blink/public/web/web_plugin.h"
@@ -88,6 +88,7 @@
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/loader/history_item.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/plugin_data.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
@@ -376,14 +377,6 @@ void LocalFrameClientImpl::DispatchWillSendRequest(ResourceRequest& request) {
   }
 }
 
-void LocalFrameClientImpl::DispatchDidReceiveResponse(
-    const ResourceResponse& response) {
-  if (web_frame_->Client()) {
-    WrappedResourceResponse webresp(response);
-    web_frame_->Client()->DidReceiveResponse(webresp);
-  }
-}
-
 void LocalFrameClientImpl::DispatchDidFinishDocumentLoad() {
   // TODO(dglazkov): Sadly, workers are WebLocalFrameClients, and they can
   // totally destroy themselves when didFinishDocumentLoad is invoked, and in
@@ -470,18 +463,20 @@ void LocalFrameClientImpl::DispatchDidCommitLoad(
   }
   if (WebDevToolsAgentImpl* dev_tools = DevToolsAgent())
     dev_tools->DidCommitLoadForLocalFrame(web_frame_->GetFrame());
+
+  CoreInitializer::GetInstance().DidCommitLoad(*web_frame_->GetFrame());
 }
 
 void LocalFrameClientImpl::DispatchDidFailProvisionalLoad(
     const ResourceError& error,
-    WebHistoryCommitType commit_type) {
-  web_frame_->DidFail(error, true, commit_type);
+    const AtomicString& http_method) {
+  web_frame_->DidFailProvisionalLoad(error, http_method);
 }
 
 void LocalFrameClientImpl::DispatchDidFailLoad(
     const ResourceError& error,
     WebHistoryCommitType commit_type) {
-  web_frame_->DidFail(error, false, commit_type);
+  web_frame_->DidFailLoad(error, commit_type);
 }
 
 void LocalFrameClientImpl::DispatchDidFinishLoad() {
@@ -590,6 +585,23 @@ void LocalFrameClientImpl::BeginNavigation(
         source_location->LineNumber();
     navigation_info->source_location.column_number =
         source_location->ColumnNumber();
+  }
+
+  std::unique_ptr<Vector<OriginTrialFeature>> initiator_origin_trial_features =
+      OriginTrialContext::GetEnabledNavigationFeatures(
+          web_frame_->GetFrame()->GetDocument());
+  if (initiator_origin_trial_features) {
+    navigation_info->initiator_origin_trial_features.reserve(
+        initiator_origin_trial_features->size());
+    for (auto feature : *initiator_origin_trial_features) {
+      // Convert from OriginTrialFeature to int. We convert to int here since
+      // OriginTrialFeature is not visible (and is not needed) outside of
+      // blink. These values are only passed outside of blink so they can be
+      // forwarded to the next blink navigation, but aren't used outside of
+      // blink other than to forward the values between navigations.
+      navigation_info->initiator_origin_trial_features.emplace_back(
+          static_cast<int>(feature));
+    }
   }
 
   if (WebDevToolsAgentImpl* devtools = DevToolsAgent()) {
@@ -749,9 +761,10 @@ void LocalFrameClientImpl::DidObserveNewCssPropertyUsage(int css_property,
   }
 }
 
-void LocalFrameClientImpl::DidObserveLayoutJank(double jank_fraction) {
+void LocalFrameClientImpl::DidObserveLayoutJank(double jank_fraction,
+                                                bool after_input_or_scroll) {
   if (WebLocalFrameClient* client = web_frame_->Client())
-    client->DidObserveLayoutJank(jank_fraction);
+    client->DidObserveLayoutJank(jank_fraction, after_input_or_scroll);
 }
 
 void LocalFrameClientImpl::DidObserveLazyLoadBehavior(
@@ -843,8 +856,10 @@ LocalFrame* LocalFrameClientImpl::CreateFrame(
 std::pair<RemoteFrame*, base::UnguessableToken>
 LocalFrameClientImpl::CreatePortal(
     HTMLPortalElement* portal,
-    mojom::blink::PortalAssociatedRequest request) {
-  return web_frame_->CreatePortal(portal, std::move(request));
+    mojom::blink::PortalAssociatedRequest request,
+    mojom::blink::PortalClientAssociatedPtrInfo client) {
+  return web_frame_->CreatePortal(portal, std::move(request),
+                                  std::move(client));
 }
 
 RemoteFrame* LocalFrameClientImpl::AdoptPortal(HTMLPortalElement* portal) {
@@ -1008,8 +1023,7 @@ LocalFrameClientImpl::CreateApplicationCacheHost(
 }
 
 void LocalFrameClientImpl::DispatchDidChangeManifest() {
-  if (web_frame_->Client())
-    web_frame_->Client()->DidChangeManifest();
+  CoreInitializer::GetInstance().DidChangeManifest(*web_frame_->GetFrame());
 }
 
 unsigned LocalFrameClientImpl::BackForwardLength() {
@@ -1199,14 +1213,14 @@ void LocalFrameClientImpl::FrameRectsChanged(const IntRect& frame_rect) {
   web_frame_->Client()->FrameRectsChanged(frame_rect);
 }
 
-bool LocalFrameClientImpl::MaybeCreateMimeHandlerView(
+bool LocalFrameClientImpl::IsPluginHandledExternally(
     HTMLPlugInElement& plugin_element,
     const KURL& resource_url,
     const String& suggesed_mime_type) {
   if (!RuntimeEnabledFeatures::MimeHandlerViewInCrossProcessFrameEnabled())
     return false;
 
-  return web_frame_->Client()->MaybeCreateMimeHandlerView(
+  return web_frame_->Client()->IsPluginHandledExternally(
       &plugin_element, resource_url, suggesed_mime_type);
 }
 
@@ -1242,6 +1256,12 @@ void LocalFrameClientImpl::SetMouseCapture(bool capture) {
 
 bool LocalFrameClientImpl::UsePrintingLayout() const {
   return web_frame_->UsePrintingLayout();
+}
+
+void LocalFrameClientImpl::TransferUserActivationFrom(
+    LocalFrame* source_frame) {
+  web_frame_->Client()->TransferUserActivationFrom(
+      WebLocalFrameImpl::FromFrame(source_frame));
 }
 
 STATIC_ASSERT_ENUM(DownloadCrossOriginRedirects::kFollow,

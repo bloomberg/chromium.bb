@@ -382,7 +382,9 @@ class DisplayResolutionBootTest
     : public chromeos::MixinBasedInProcessBrowserTest,
       public testing::WithParamInterface<PolicyValue> {
  protected:
-  DisplayResolutionBootTest() = default;
+  DisplayResolutionBootTest() {
+    device_state_.set_skip_initial_policy_setup(true);
+  }
   ~DisplayResolutionBootTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -392,7 +394,6 @@ class DisplayResolutionBootTest
   void SetUpInProcessBrowserTestFixture() override {
     // Override FakeSessionManagerClient. This will be shut down by the browser.
     chromeos::SessionManagerClient::InitializeFakeInMemory();
-    test_helper_.InstallOwnerKey();
     ash::DisplayConfigurationController::DisableAnimatorForTest();
     chromeos::MixinBasedInProcessBrowserTest::
         SetUpInProcessBrowserTestFixture();

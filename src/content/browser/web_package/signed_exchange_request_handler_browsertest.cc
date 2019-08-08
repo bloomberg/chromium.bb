@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <tuple>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -199,25 +202,44 @@ class SignedExchangeRequestHandlerBrowserTestBase
   DISALLOW_COPY_AND_ASSIGN(SignedExchangeRequestHandlerBrowserTestBase);
 };
 
-enum class SignedExchangeRequestHandlerBrowserTestPrefetchParam {
-  kPrefetchDisabled,
-  kPrefetchEnabled
-};
-
 class SignedExchangeRequestHandlerBrowserTest
-    : public SignedExchangeRequestHandlerBrowserTestBase,
-      public testing::WithParamInterface<
-          SignedExchangeRequestHandlerBrowserTestPrefetchParam> {
+    : public testing::WithParamInterface<
+          std::tuple<bool /* prefetch_enabled */,
+                     bool /* network_service_enabled */,
+                     bool /* sxg_subresource_prefetch_enabled */>>,
+      public SignedExchangeRequestHandlerBrowserTestBase {
  public:
   SignedExchangeRequestHandlerBrowserTest() = default;
+  ~SignedExchangeRequestHandlerBrowserTest() = default;
 
- protected:
-  bool PrefetchIsEnabled() {
-    return GetParam() == SignedExchangeRequestHandlerBrowserTestPrefetchParam::
-                             kPrefetchEnabled;
+  void SetUp() override {
+    bool network_service_enabled;
+    bool sxg_subresource_prefetch_enabled;
+    std::tie(prefetch_enabled_, network_service_enabled,
+             sxg_subresource_prefetch_enabled) = GetParam();
+    std::vector<base::Feature> enable_features;
+    std::vector<base::Feature> disabled_features;
+    if (network_service_enabled) {
+      enable_features.push_back(network::features::kNetworkService);
+    } else {
+      disabled_features.push_back(network::features::kNetworkService);
+    }
+    if (sxg_subresource_prefetch_enabled) {
+      enable_features.push_back(features::kSignedExchangeSubresourcePrefetch);
+    } else {
+      disabled_features.push_back(features::kSignedExchangeSubresourcePrefetch);
+    }
+    feature_list_.InitWithFeatures(enable_features, disabled_features);
+    SignedExchangeRequestHandlerBrowserTestBase::SetUp();
   }
 
+ protected:
+  bool PrefetchIsEnabled() const { return prefetch_enabled_; }
+
  private:
+  bool prefetch_enabled_;
+  base::test::ScopedFeatureList feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(SignedExchangeRequestHandlerBrowserTest);
 };
 
@@ -445,7 +467,13 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
       PrefetchIsEnabled() ? 2 : 1);
 }
 
-IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, BadMICE) {
+#if defined(OS_ANDROID)
+// https://crbug.com/966820. Fails pretty often on Android.
+#define MAYBE_BadMICE DISABLED_BadMICE
+#else
+#define MAYBE_BadMICE BadMICE
+#endif
+IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, MAYBE_BadMICE) {
   InstallMockCertChainInterceptor();
   InstallMockCert();
 
@@ -529,13 +557,11 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, CertNotFound) {
       PrefetchIsEnabled() ? 2 : 1);
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    SignedExchangeRequestHandlerBrowserTest,
-    SignedExchangeRequestHandlerBrowserTest,
-    testing::Values(
-        SignedExchangeRequestHandlerBrowserTestPrefetchParam::kPrefetchDisabled,
-        SignedExchangeRequestHandlerBrowserTestPrefetchParam::
-            kPrefetchEnabled));
+INSTANTIATE_TEST_SUITE_P(,
+                         SignedExchangeRequestHandlerBrowserTest,
+                         ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool(),
+                                            ::testing::Bool()));
 
 class SignedExchangeRequestHandlerDownloadBrowserTest
     : public SignedExchangeRequestHandlerBrowserTestBase {
@@ -888,13 +914,17 @@ class SignedExchangeAcceptHeaderBrowserTest
 
   base::Optional<std::string> GetInterceptedAcceptHeader(
       const GURL& url) const {
+    base::AutoLock lock(url_accept_header_map_lock_);
     const auto it = url_accept_header_map_.find(url);
     if (it == url_accept_header_map_.end())
       return base::nullopt;
     return it->second;
   }
 
-  void ClearInterceptedAcceptHeaders() { url_accept_header_map_.clear(); }
+  void ClearInterceptedAcceptHeaders() {
+    base::AutoLock lock(url_accept_header_map_lock_);
+    url_accept_header_map_.clear();
+  }
 
   net::EmbeddedTestServer https_server_;
 
@@ -944,6 +974,8 @@ class SignedExchangeAcceptHeaderBrowserTest
     const auto it = request.headers.find(std::string(network::kAcceptHeader));
     if (it == request.headers.end())
       return;
+    // Note this method is called on the EmbeddedTestServer's background thread.
+    base::AutoLock lock(url_accept_header_map_lock_);
     url_accept_header_map_[request.base_url.Resolve(request.relative_url)] =
         it->second;
   }
@@ -951,6 +983,10 @@ class SignedExchangeAcceptHeaderBrowserTest
   base::test::ScopedFeatureList feature_list_;
   base::test::ScopedFeatureList feature_list_for_accept_header_;
 
+  // url_accept_header_map_ is accessed both on the main thread and on the
+  // EmbeddedTestServer's background thread via MonitorRequest(), so it must be
+  // locked.
+  mutable base::Lock url_accept_header_map_lock_;
   std::map<GURL, std::string> url_accept_header_map_;
 };
 

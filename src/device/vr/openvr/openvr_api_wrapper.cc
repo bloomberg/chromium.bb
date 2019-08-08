@@ -98,14 +98,14 @@ bool OpenVRWrapper::any_initialized_ = false;
 ServiceTestHook* OpenVRWrapper::service_test_hook_ = nullptr;
 
 std::string GetOpenVRString(vr::IVRSystem* vr_system,
-                            vr::TrackedDeviceProperty prop) {
+                            vr::TrackedDeviceProperty prop,
+                            uint32_t device_index) {
   std::string out;
 
   vr::TrackedPropertyError error = vr::TrackedProp_Success;
   char openvr_string[vr::k_unMaxPropertyStringSize];
   vr_system->GetStringTrackedDeviceProperty(
-      vr::k_unTrackedDeviceIndex_Hmd, prop, openvr_string,
-      vr::k_unMaxPropertyStringSize, &error);
+      device_index, prop, openvr_string, vr::k_unMaxPropertyStringSize, &error);
 
   if (error == vr::TrackedProp_Success)
     out = openvr_string;

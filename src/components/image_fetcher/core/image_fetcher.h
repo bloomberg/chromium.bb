@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/image_fetcher/core/image_fetcher_types.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "ui/gfx/geometry/size.h"

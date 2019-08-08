@@ -1590,28 +1590,28 @@ TEST_P(PaintPropertyTreeUpdateTest, SubpixelAccumulationAcrossIsolation) {
   auto* parent = parent_element->GetLayoutObject();
   auto* isolation_properties = PaintPropertiesForElement("isolation");
   auto* child = GetLayoutObjectByElementId("child");
-  EXPECT_EQ(LayoutPoint(LayoutUnit(10.25), LayoutUnit()),
+  EXPECT_EQ(PhysicalOffset(LayoutUnit(10.25), LayoutUnit()),
             parent->FirstFragment().PaintOffset());
   EXPECT_EQ(FloatSize(10, 0),
             isolation_properties->PaintOffsetTranslation()->Translation2D());
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    EXPECT_EQ(LayoutPoint(), child->FirstFragment().PaintOffset());
+    EXPECT_EQ(PhysicalOffset(), child->FirstFragment().PaintOffset());
   } else {
-    EXPECT_EQ(LayoutPoint(LayoutUnit(0.25), LayoutUnit()),
+    EXPECT_EQ(PhysicalOffset(LayoutUnit(0.25), LayoutUnit()),
               child->FirstFragment().PaintOffset());
   }
 
   parent_element->setAttribute(html_names::kStyleAttr, "margin-left: 12.75px");
   UpdateAllLifecyclePhasesForTest();
 
-  EXPECT_EQ(LayoutPoint(LayoutUnit(12.75), LayoutUnit()),
+  EXPECT_EQ(PhysicalOffset(LayoutUnit(12.75), LayoutUnit()),
             parent->FirstFragment().PaintOffset());
   EXPECT_EQ(FloatSize(13, 0),
             isolation_properties->PaintOffsetTranslation()->Translation2D());
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    EXPECT_EQ(LayoutPoint(), child->FirstFragment().PaintOffset());
+    EXPECT_EQ(PhysicalOffset(), child->FirstFragment().PaintOffset());
   } else {
-    EXPECT_EQ(LayoutPoint(LayoutUnit(-0.25), LayoutUnit()),
+    EXPECT_EQ(PhysicalOffset(LayoutUnit(-0.25), LayoutUnit()),
               child->FirstFragment().PaintOffset());
   }
 }

@@ -251,22 +251,24 @@ void PrepareDropDataForChildProcess(
         file_system_context->CrackURL(file_system_file.url);
 
     std::string register_name;
-    std::string filesystem_id = isolated_context->RegisterFileSystemForPath(
-        file_system_url.type(), file_system_url.filesystem_id(),
-        file_system_url.path(), &register_name);
+    storage::IsolatedContext::ScopedFSHandle filesystem =
+        isolated_context->RegisterFileSystemForPath(
+            file_system_url.type(), file_system_url.filesystem_id(),
+            file_system_url.path(), &register_name);
 
-    if (!filesystem_id.empty()) {
-      // Grant the permission iff the ID is valid.
-      security_policy->GrantReadFileSystem(child_id, filesystem_id);
+    if (filesystem.is_valid()) {
+      // Grant the permission iff the ID is valid. This will also keep the FS
+      // alive after |filesystem| goes out of scope.
+      security_policy->GrantReadFileSystem(child_id, filesystem.id());
     }
 
     // Note: We are using the origin URL provided by the sender here. It may be
     // different from the receiver's.
     file_system_file.url = GURL(
         storage::GetIsolatedFileSystemRootURIString(
-            file_system_url.origin().GetURL(), filesystem_id, std::string())
+            file_system_url.origin().GetURL(), filesystem.id(), std::string())
             .append(register_name));
-    file_system_file.filesystem_id = filesystem_id;
+    file_system_file.filesystem_id = filesystem.id();
   }
 }
 

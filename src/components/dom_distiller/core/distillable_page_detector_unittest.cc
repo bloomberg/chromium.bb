@@ -40,7 +40,7 @@ class Builder {
   AdaBoostProto proto_;
 };
 
-}
+}  // namespace
 
 TEST(DomDistillerDistillablePageDetectorTest, TestCalculateThreshold) {
   std::unique_ptr<DistillablePageDetector> detector =
@@ -48,10 +48,7 @@ TEST(DomDistillerDistillablePageDetectorTest, TestCalculateThreshold) {
 
   EXPECT_DOUBLE_EQ(1.5, detector->GetThreshold());
 
-  detector = Builder()
-                 .Stump(0, 1.0, -1.0)
-                 .Stump(0, 1.4, 2.0)
-                 .Build();
+  detector = Builder().Stump(0, 1.0, -1.0).Stump(0, 1.4, 2.0).Build();
   EXPECT_DOUBLE_EQ(0.5, detector->GetThreshold());
 
   detector = Builder()
@@ -106,6 +103,4 @@ TEST(DomDistillerDistillablePageDetectorTest, TestScoreWrongNumberFeatures) {
   EXPECT_DOUBLE_EQ(0.0, detector->Score(features));
 }
 
-
-}
-
+}  // namespace dom_distiller

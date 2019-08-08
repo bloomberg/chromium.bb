@@ -46,9 +46,6 @@ void ProximityAuthProfilePrefManager::RegisterPrefs(
       prefs::kProximityAuthLastPromotionCheckTimestampMs, 0L);
   registry->RegisterIntegerPref(prefs::kProximityAuthPromotionShownCount, 0);
   registry->RegisterDictionaryPref(prefs::kProximityAuthRemoteBleDevices);
-  registry->RegisterIntegerPref(
-      prefs::kEasyUnlockProximityThreshold, 1,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
       prefs::kProximityAuthIsChromeOSLoginEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
@@ -75,8 +72,6 @@ void ProximityAuthProfilePrefManager::StartSyncingToLocalState(
   registrar_.Add(
       chromeos::multidevice_setup::kSmartLockEnabledDeprecatedPrefName,
       on_pref_changed_callback);
-  registrar_.Add(proximity_auth::prefs::kEasyUnlockProximityThreshold,
-                 on_pref_changed_callback);
   registrar_.Add(proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled,
                  on_pref_changed_callback);
   registrar_.Add(chromeos::multidevice_setup::kSmartLockSigninAllowedPrefName,
@@ -95,8 +90,6 @@ void ProximityAuthProfilePrefManager::SyncPrefsToLocalState() {
   user_prefs_dict->SetKey(
       chromeos::multidevice_setup::kSmartLockEnabledPrefName,
       base::Value(IsEasyUnlockEnabled()));
-  user_prefs_dict->SetKey(prefs::kEasyUnlockProximityThreshold,
-                          base::Value(GetProximityThreshold()));
   user_prefs_dict->SetKey(prefs::kProximityAuthIsChromeOSLoginEnabled,
                           base::Value(IsChromeOSLoginEnabled()));
   user_prefs_dict->SetKey(
@@ -122,7 +115,8 @@ void ProximityAuthProfilePrefManager::SetIsEasyUnlockEnabled(
 }
 
 bool ProximityAuthProfilePrefManager::IsEasyUnlockEnabled() const {
-  return feature_state_ ==
+  return multidevice_setup_client_->GetFeatureState(
+             chromeos::multidevice_setup::mojom::Feature::kSmartLock) ==
          chromeos::multidevice_setup::mojom::FeatureState::kEnabledByUser;
 }
 
@@ -154,18 +148,6 @@ int ProximityAuthProfilePrefManager::GetPromotionShownCount() const {
   return pref_service_->GetInteger(prefs::kProximityAuthPromotionShownCount);
 }
 
-void ProximityAuthProfilePrefManager::SetProximityThreshold(
-    ProximityThreshold value) {
-  pref_service_->SetInteger(prefs::kEasyUnlockProximityThreshold, value);
-}
-
-ProximityAuthProfilePrefManager::ProximityThreshold
-ProximityAuthProfilePrefManager::GetProximityThreshold() const {
-  int pref_value =
-      pref_service_->GetInteger(prefs::kEasyUnlockProximityThreshold);
-  return static_cast<ProximityThreshold>(pref_value);
-}
-
 bool ProximityAuthProfilePrefManager::IsChromeOSLoginAllowed() const {
   return pref_service_->GetBoolean(
       chromeos::multidevice_setup::kSmartLockSigninAllowedPrefName);
@@ -184,15 +166,6 @@ bool ProximityAuthProfilePrefManager::IsChromeOSLoginEnabled() const {
 void ProximityAuthProfilePrefManager::OnFeatureStatesChanged(
     const chromeos::multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap&
         feature_states_map) {
-  const auto it = feature_states_map.find(
-      chromeos::multidevice_setup::mojom::Feature::kSmartLock);
-  if (it == feature_states_map.end()) {
-    feature_state_ = chromeos::multidevice_setup::mojom::FeatureState::
-        kUnavailableNoVerifiedHost;
-    return;
-  }
-  feature_state_ = it->second;
-
   if (local_state_ && account_id_.is_valid())
     SyncPrefsToLocalState();
 }

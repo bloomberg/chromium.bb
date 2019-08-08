@@ -15,6 +15,7 @@
 import("../../../gn/perfetto.gni")
 import("../../../gn/proto_library.gni")
 import("../../../gn/protozero_library.gni")
+import("../../../gn/proto_descriptor.gni")
 
 common_sources = [ "metrics.proto" ]
 
@@ -36,4 +37,14 @@ protozero_library("zero") {
   proto_out_dir = "$perfetto_root_path/protos"
   sources = common_sources
   generator_plugin_options = "wrapper_namespace=pbzero"
+}
+
+if (perfetto_build_standalone) {
+  proto_descriptor("descriptor") {
+    proto_in_dir = "$perfetto_root_path/protos"
+    proto_out_dir = "$perfetto_root_path/protos"
+    sources = common_sources
+    generate_descriptor =
+        "$perfetto_root_path/protos/perfetto/metrics/metrics.descriptor"
+  }
 }

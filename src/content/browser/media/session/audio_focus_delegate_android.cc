@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "jni/AudioFocusDelegate_jni.h"
+#include "media/base/media_switches.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 
 using base::android::JavaParamRef;
@@ -61,7 +62,8 @@ AudioFocusDelegateAndroid::GetCurrentFocusType() const {
 
 void AudioFocusDelegateAndroid::OnSuspend(JNIEnv*,
                                           const JavaParamRef<jobject>&) {
-  if (!media_session_->IsActive())
+  if (!media_session_->IsActive() ||
+      !base::FeatureList::IsEnabled(media::kAudioFocusLossSuspendMediaSession))
     return;
 
   media_session_->Suspend(MediaSession::SuspendType::kSystem);

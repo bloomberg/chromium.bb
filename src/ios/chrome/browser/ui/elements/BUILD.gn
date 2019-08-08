@@ -7,6 +7,8 @@ source_set("elements") {
   sources = [
     "extended_touch_target_button.h",
     "extended_touch_target_button.mm",
+    "gray_highlight_button.h",
+    "gray_highlight_button.mm",
     "selector_coordinator.h",
     "selector_coordinator.mm",
     "selector_picker_presentation_controller.h",
@@ -14,6 +16,8 @@ source_set("elements") {
     "selector_picker_view_controller.h",
     "selector_picker_view_controller.mm",
     "selector_view_controller_delegate.h",
+    "text_field_configuration.h",
+    "text_field_configuration.mm",
     "top_aligned_image_view.h",
     "top_aligned_image_view.mm",
     "windowed_container_view.h",
@@ -35,6 +39,7 @@ source_set("unit_tests") {
     "chrome_activity_overlay_coordinator_unittest.mm",
     "selector_coordinator_unittest.mm",
     "selector_picker_view_controller_unittest.mm",
+    "text_field_configuration_unittest.mm",
     "windowed_container_view_unittest.mm",
   ]
   deps = [
@@ -63,9 +68,10 @@ source_set("elements_internal") {
   deps = [
     "//base",
     "//ios/chrome/browser",
-    "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/material_components",
+    "//ios/chrome/browser/ui/util",
+    "//ios/chrome/common/ui_util",
     "//ios/third_party/material_components_ios",
   ]
   libs = [ "UIKit.framework" ]

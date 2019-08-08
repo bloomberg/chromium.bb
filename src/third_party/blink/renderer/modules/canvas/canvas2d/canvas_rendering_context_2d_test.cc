@@ -42,7 +42,7 @@
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "third_party/skia/third_party/skcms/skcms.h"
+#include "third_party/skia/include/third_party/skcms/skcms.h"
 
 using testing::_;
 using testing::InSequence;
@@ -657,14 +657,8 @@ TEST_F(CanvasRenderingContext2DTest, ContextDisposedBeforeCanvas) {
   // Passes by not crashing later during teardown
 }
 
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_GetImageDataDisablesAcceleration \
-  DISABLED_GetImageDataDisablesAcceleration
-#else
-#define MAYBE_GetImageDataDisablesAcceleration GetImageDataDisablesAcceleration
-#endif
-
-TEST_F(CanvasRenderingContext2DTest, MAYBE_GetImageDataDisablesAcceleration) {
+TEST_F(CanvasRenderingContext2DTest,
+       DISABLED_GetImageDataDisablesAcceleration) {
   ScopedCanvas2dFixedRenderingModeForTest canvas_2d_fixed_rendering_mode(false);
 
   // This Page is not actually being shown by a compositor, but we act like it

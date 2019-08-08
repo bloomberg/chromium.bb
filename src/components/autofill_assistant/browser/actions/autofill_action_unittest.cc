@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "build/build_config.h"
-#include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill_assistant/browser/actions/mock_action_delegate.h"
 #include "components/autofill_assistant/browser/client_memory.h"
@@ -116,9 +116,8 @@ class AutofillActionTest : public testing::Test {
     ON_CALL(mock_action_delegate_, GetPersonalDataManager)
         .WillByDefault(Return(personal_data_manager_.get()));
     ON_CALL(mock_action_delegate_, RunElementChecks)
-        .WillByDefault(Invoke([this](BatchElementChecker* checker,
-                                     base::OnceCallback<void()> all_done) {
-          checker->Run(&mock_web_controller_, std::move(all_done));
+        .WillByDefault(Invoke([this](BatchElementChecker* checker) {
+          checker->Run(&mock_web_controller_);
         }));
     ON_CALL(mock_action_delegate_, OnShortWaitForElement(_, _))
         .WillByDefault(RunOnceCallback<1>(true));

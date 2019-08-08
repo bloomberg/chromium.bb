@@ -56,13 +56,10 @@ void ApplyUrlFading(SkCanvas* canvas,
 
 }  // namespace
 
-UrlText::UrlText(
-    float font_height_dmm,
-    const base::RepeatingCallback<void()>& unhandled_codepoint_callback)
+UrlText::UrlText(float font_height_dmm)
     : Text(font_height_dmm), font_height_dmm_(font_height_dmm) {
   SetLayoutMode(kSingleLineFixedWidth);
 
-  SetOnUnhandledCodePointCallback(unhandled_codepoint_callback);
   SetOnRenderTextCreated(base::BindRepeating(&UrlText::OnRenderTextCreated,
                                              base::Unretained(this)));
   SetOnRenderTextRendered(base::BindRepeating(&UrlText::OnRenderTextRendered,

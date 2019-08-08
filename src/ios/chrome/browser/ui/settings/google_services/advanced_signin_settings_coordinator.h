@@ -5,10 +5,17 @@
 #ifndef IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_ADVANCED_SIGNIN_SETTINGS_COORDINATOR_H_
 #define IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_ADVANCED_SIGNIN_SETTINGS_COORDINATOR_H_
 
+#import "base/ios/block_types.h"
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
 @class AdvancedSigninSettingsCoordinator;
 @protocol ApplicationCommands;
+
+// The accessibility identifier for the navigation "Confirm" button.
+extern NSString* const kSyncSettingsConfirmButtonId;
+
+// The accessibility identifier for the navigation "Cancel" button.
+extern NSString* const kSyncSettingsCancelButtonId;
 
 // AdvancedSigninSettingsCoordinator delegate.
 @protocol AdvancedSigninSettingsCoordinatorDelegate <NSObject>
@@ -36,7 +43,13 @@
 // sync settings doesn't sign out the user. The sync is left unsetup and doesn't
 // start. This method does nothing if called twice.
 // |dismiss|, dismisses the view controller if YES.
-- (void)abortWithDismiss:(BOOL)dismiss;
+// |animated|, the view is animated if YES.
+// |completion|, this completion block is called after the view is dismissed.
+//               It will be called even the view is already dismissed. The value
+//               can be nil.
+- (void)abortWithDismiss:(BOOL)dismiss
+                animated:(BOOL)animated
+              completion:(ProceduralBlock)completion;
 
 @end
 

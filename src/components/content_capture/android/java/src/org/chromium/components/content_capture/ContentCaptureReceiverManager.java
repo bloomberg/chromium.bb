@@ -41,6 +41,14 @@ public class ContentCaptureReceiverManager {
     }
 
     @CalledByNative
+    private void didUpdateContent(Object[] session, ContentCaptureData data) {
+        if (mContentCaptureConsumer != null) {
+            mContentCaptureConsumer.onContentUpdated(toFrameSession(session), data);
+        }
+        if (sDump.booleanValue()) Log.i(TAG, "Updated Content: %s", data);
+    }
+
+    @CalledByNative
     private void didRemoveContent(Object[] session, long[] data) {
         FrameSession frameSession = toFrameSession(session);
         if (mContentCaptureConsumer != null)

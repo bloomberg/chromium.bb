@@ -26,7 +26,7 @@
 
 namespace blink {
 
-inline SVGCircleElement::SVGCircleElement(Document& document)
+SVGCircleElement::SVGCircleElement(Document& document)
     : SVGGeometryElement(svg_names::kCircleTag, document),
       cx_(MakeGarbageCollected<SVGAnimatedLength>(
           this,
@@ -57,8 +57,6 @@ void SVGCircleElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(r_);
   SVGGeometryElement::Trace(visitor);
 }
-
-DEFINE_NODE_FACTORY(SVGCircleElement)
 
 Path SVGCircleElement::AsPath() const {
   Path path;

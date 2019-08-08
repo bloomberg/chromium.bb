@@ -10,6 +10,10 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 
+namespace device {
+class XrDeviceService;
+}  // namespace device
+
 namespace base {
 namespace win {
 
@@ -34,6 +38,14 @@ class BASE_EXPORT ComInitCheckHook {
   ~ComInitCheckHook();
 
  private:
+  // For components that cannot use COM_INIT_CHECK_HOOK_DISABLED, call
+  // DisableCOMChecksForProcess() below. This should only be for code that calls
+  // into Windows components that don't explicitly initialize the MTA in the
+  // Windows thread pool.
+  friend class device::XrDeviceService;
+
+  static void DisableCOMChecksForProcess();
+
   DISALLOW_COPY_AND_ASSIGN(ComInitCheckHook);
 };
 

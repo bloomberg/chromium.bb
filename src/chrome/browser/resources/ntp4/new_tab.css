@@ -180,33 +180,6 @@ html[dir='rtl'] .login-status-icon {
   background-position-x: left;
 }
 
-#login-status-bubble-contents {
-  font-size: 1.1em;
-}
-
-#login-status-message-container {
-  margin-bottom: 13px;
-}
-
-#login-status-learn-more {
-  display: inline-block;
-}
-
-.login-status-row {
-  -webkit-box-align: center;
-  -webkit-box-orient: horizontal;
-  -webkit-box-pack: end;
-  display: -webkit-box;
-}
-
-#login-status-advanced-container {
-  -webkit-box-flex: 1;
-}
-
-#login-status-dismiss {
-  min-width: 6em;
-}
-
 /* Trash. *********************************************************************/
 
 #trash {

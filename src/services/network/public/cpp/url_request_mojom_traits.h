@@ -105,7 +105,8 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
       const network::ResourceRequest& request) {
     return request.priority;
   }
-  static int32_t appcache_host_id(const network::ResourceRequest& request) {
+  static const base::Optional<base::UnguessableToken>& appcache_host_id(
+      const network::ResourceRequest& request) {
     return request.appcache_host_id;
   }
   static bool should_reset_appcache(const network::ResourceRequest& request) {
@@ -124,6 +125,12 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   }
   static bool skip_service_worker(const network::ResourceRequest& request) {
     return request.skip_service_worker;
+  }
+  static bool corb_detachable(const network::ResourceRequest& request) {
+    return request.corb_detachable;
+  }
+  static bool corb_excluded(const network::ResourceRequest& request) {
+    return request.corb_excluded;
   }
   static network::mojom::FetchRequestMode fetch_request_mode(
       const network::ResourceRequest& request) {
@@ -144,10 +151,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   static int32_t fetch_request_context_type(
       const network::ResourceRequest& request) {
     return request.fetch_request_context_type;
-  }
-  static network::mojom::RequestContextFrameType fetch_frame_type(
-      const network::ResourceRequest& request) {
-    return request.fetch_frame_type;
   }
   static const scoped_refptr<network::ResourceRequestBody>& request_body(
       const network::ResourceRequest& request) {
@@ -195,6 +198,10 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   }
   static bool is_revalidating(const network::ResourceRequest& request) {
     return request.is_revalidating;
+  }
+  static bool should_also_use_factory_bound_origin_for_cors(
+      const network::ResourceRequest& request) {
+    return request.should_also_use_factory_bound_origin_for_cors;
   }
   static const base::Optional<base::UnguessableToken>& throttling_profile_id(
       const network::ResourceRequest& request) {

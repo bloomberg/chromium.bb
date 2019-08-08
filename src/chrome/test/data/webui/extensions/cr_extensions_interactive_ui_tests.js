@@ -4,12 +4,8 @@
 
 /** @fileoverview Runs the Polymer Extensions interactive UI tests. */
 
-/** @const {string} Path to source root. */
-const ROOT_PATH = '../../../../../';
-
 // Polymer BrowserTest fixture.
-GEN_INCLUDE(
-    [ROOT_PATH + 'chrome/test/data/webui/polymer_interactive_ui_test.js']);
+GEN_INCLUDE(['//chrome/test/data/webui/polymer_interactive_ui_test.js']);
 GEN('#include "chrome/browser/ui/webui/extensions/' +
     'extension_settings_browsertest.h"');
 
@@ -26,9 +22,15 @@ const CrExtensionsInteractiveUITest = class extends PolymerInteractiveUITest {
 
   /** @override */
   get extraLibraries() {
-    return PolymerTest.getLibraries(ROOT_PATH).concat([
+    return [
+      ...super.extraLibraries,
       '../settings/test_util.js',
-    ]);
+    ];
+  }
+
+  /** @override */
+  get loaderFile() {
+    return 'subpage_loader.html';
   }
 };
 
@@ -45,6 +47,12 @@ CrExtensionsOptionsPageTest = class extends CrExtensionsInteractiveUITest {
     return super.extraLibraries.concat([
       'extension_options_dialog_test.js',
     ]);
+  }
+
+  /** @override */
+  get customElementName() {
+    // Wait for the manager since this test is loading the main page.
+    return 'extensions-manager';
   }
 
   /** @override */

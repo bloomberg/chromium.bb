@@ -230,9 +230,34 @@ def as_cppType(name):
     else:
         return name.CamelCase()
 
+def convert_cType_to_cppType(typ, annotation, arg, indent=0):
+    if typ.category == 'native':
+        return arg
+    if annotation == 'value':
+        if typ.category == 'object':
+            return '{}::Acquire({})'.format(as_cppType(typ.name), arg)
+        elif typ.category == 'structure':
+            converted_members = [
+                convert_cType_to_cppType(
+                    member.type, member.annotation,
+                    '{}.{}'.format(arg, as_varName(member.name)),
+                    indent + 1)
+                for member in typ.members]
+
+            converted_members = [(' ' * 4) + m for m in converted_members ]
+            converted_members = ',\n'.join(converted_members)
+
+            return as_cppType(typ.name) + ' {\n' + converted_members + '\n}'
+        else:
+            return 'static_cast<{}>({})'.format(as_cppType(typ.name), arg)
+    else:
+        return 'reinterpret_cast<{} {}>({})'.format(as_cppType(typ.name), annotation, arg)
+
 def decorate(name, typ, arg):
     if arg.annotation == 'value':
         return typ + ' ' + name
+    elif arg.annotation == '*':
+        return typ + ' * ' + name
     elif arg.annotation == 'const*':
         return typ + ' const * ' + name
     elif arg.annotation == 'const*const*':
@@ -314,6 +339,7 @@ def get_renders_for_targets(api_params, wire_json, targets):
         'as_cProc': as_cProc,
         'as_cType': as_cType,
         'as_cppType': as_cppType,
+        'convert_cType_to_cppType': convert_cType_to_cppType,
         'as_varName': as_varName,
         'decorate': decorate,
     }
@@ -372,11 +398,11 @@ def get_renders_for_targets(api_params, wire_json, targets):
         renders.append(FileRender('dawn_wire/client/ApiProcs.h', 'dawn_wire/client/ApiProcs_autogen.h', wire_params))
         renders.append(FileRender('dawn_wire/client/ClientBase.h', 'dawn_wire/client/ClientBase_autogen.h', wire_params))
         renders.append(FileRender('dawn_wire/client/ClientHandlers.cpp', 'dawn_wire/client/ClientHandlers_autogen.cpp', wire_params))
-        renders.append(FileRender('dawn_wire/client/ClientPrototypes.inl', 'dawn_wire/client/ClientPrototypes_autogen.inl', wire_params))
+        renders.append(FileRender('dawn_wire/client/ClientPrototypes.inc', 'dawn_wire/client/ClientPrototypes_autogen.inc', wire_params))
         renders.append(FileRender('dawn_wire/server/ServerBase.h', 'dawn_wire/server/ServerBase_autogen.h', wire_params))
         renders.append(FileRender('dawn_wire/server/ServerDoers.cpp', 'dawn_wire/server/ServerDoers_autogen.cpp', wire_params))
         renders.append(FileRender('dawn_wire/server/ServerHandlers.cpp', 'dawn_wire/server/ServerHandlers_autogen.cpp', wire_params))
-        renders.append(FileRender('dawn_wire/server/ServerPrototypes.inl', 'dawn_wire/server/ServerPrototypes_autogen.inl', wire_params))
+        renders.append(FileRender('dawn_wire/server/ServerPrototypes.inc', 'dawn_wire/server/ServerPrototypes_autogen.inc', wire_params))
 
     return renders
 

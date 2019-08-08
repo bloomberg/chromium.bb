@@ -363,6 +363,7 @@ void XSSAuditor::InitForFragment() {
 
 void XSSAuditor::Init(Document* document,
                       XSSAuditorDelegate* auditor_delegate) {
+  TRACE_EVENT0("loading", "XSSAuditor::Init");
   DCHECK(IsMainThread());
   if (state_ != kUninitialized)
     return;
@@ -464,6 +465,7 @@ void XSSAuditor::Init(Document* document,
 }
 
 void XSSAuditor::SetEncoding(const WTF::TextEncoding& encoding) {
+  TRACE_EVENT0("loading", "XSSAuditor::SetEncoding");
   const wtf_size_t kMiniumLengthForSuffixTree =
       512;  // FIXME: Tune this parameter.
   const int kSuffixTreeDepth = 5;
@@ -843,6 +845,8 @@ String XSSAuditor::SnippetFromAttribute(const FilterTokenRequest& request,
 }
 
 String XSSAuditor::Canonicalize(String snippet, TruncationKind treatment) {
+  TRACE_EVENT0("loading", "XSSAuditor::Canonicalize");
+
   String decoded_snippet = FullyDecodeString(snippet, encoding_);
 
   if (treatment != kNoTruncation) {
@@ -922,7 +926,13 @@ String XSSAuditor::CanonicalizedSnippetForJavaScript(
           StartsMultiLineCommentAt(string, found_position)) {
         break;
       }
-      if (!request.should_allow_cdata) {
+      if (request.should_allow_cdata) {
+        // Under SVG/XML rules, blink may apply an additional html entity
+        // decoding to this particular string before handing it to the JS
+        // parser. So stop before anything that looks like an entity.
+        if (string[found_position] == '&')
+          break;
+      } else {
         if (StartsHTMLOpenCommentAt(string, found_position) ||
             StartsHTMLCloseCommentAt(string, found_position)) {
           break;

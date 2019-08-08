@@ -14,7 +14,7 @@ namespace test {
 
 namespace {
 
-constexpr char kGaiaAuthenticator[] = "$('gaia-signin').gaiaAuthHost_";
+constexpr char kGaiaAuthenticator[] = "$('gaia-signin').authenticator_";
 constexpr char kEnrollmentAuthenticator[] =
     "$('oauth-enrollment').authenticator_";
 

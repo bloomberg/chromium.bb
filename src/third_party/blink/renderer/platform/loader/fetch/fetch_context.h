@@ -36,8 +36,8 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
-#include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-shared.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
@@ -59,8 +59,6 @@ namespace blink {
 enum class ResourceType : uint8_t;
 class ClientHintsPreferences;
 class KURL;
-class PlatformProbeSink;
-class ResourceFetcherProperties;
 class ResourceTimingInfo;
 class WebScopedVirtualTimePauser;
 
@@ -74,28 +72,15 @@ class WebScopedVirtualTimePauser;
 class PLATFORM_EXPORT FetchContext
     : public GarbageCollectedFinalized<FetchContext> {
  public:
-  FetchContext();
+  FetchContext() = default;
 
   static FetchContext& NullInstance();
 
   virtual ~FetchContext() = default;
 
-  // Called from a ResourceFetcher constructor. This is called only once.
-  // TODO(yhirano): Consider removing this.
-  void Init(const ResourceFetcherProperties& properties) {
-    DCHECK(!resource_fetcher_properties_);
-    resource_fetcher_properties_ = &properties;
-  }
-
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(blink::Visitor*) {}
 
   virtual void AddAdditionalRequestHeaders(ResourceRequest&);
-
-  // This function must not be called before |Init| is called.
-  const ResourceFetcherProperties& GetResourceFetcherProperties() const {
-    DCHECK(resource_fetcher_properties_);
-    return *resource_fetcher_properties_;
-  }
 
   // Returns the cache policy for the resource. ResourceRequest is not passed as
   // a const reference as a header needs to be added for doc.write blocking
@@ -116,8 +101,6 @@ class PLATFORM_EXPORT FetchContext
                               const FetchInitiatorInfo&,
                               WebScopedVirtualTimePauser& virtual_time_pauser,
                               ResourceType);
-
-  bool ShouldLoadNewResource(ResourceType) const;
 
   // Called when a resource load is first requested, which may not be when the
   // load actually begins.
@@ -156,26 +139,13 @@ class PLATFORM_EXPORT FetchContext
                                        const FetchParameters::ResourceWidth&,
                                        ResourceRequest&);
 
-  PlatformProbeSink* GetPlatformProbeSink() const {
-    return platform_probe_sink_;
-  }
-
   // Called when the underlying context is detached. Note that some
   // FetchContexts continue working after detached (e.g., for fetch() operations
   // with "keepalive" specified).
   // Returns a "detached" fetch context which cannot be null.
   virtual FetchContext* Detach() {
-    DCHECK(resource_fetcher_properties_);
     auto* context = &NullInstance();
-    context->Init(*resource_fetcher_properties_);
     return context;
-  }
-
-  // Returns the updated priority of the resource based on the experiments that
-  // may be currently enabled.
-  virtual ResourceLoadPriority ModifyPriorityForExperiments(
-      ResourceLoadPriority priority) const {
-    return priority;
   }
 
   // Determine if the request is on behalf of an advertisement. If so, return
@@ -186,9 +156,6 @@ class PLATFORM_EXPORT FetchContext
   }
 
  private:
-  Member<PlatformProbeSink> platform_probe_sink_;
-  Member<const ResourceFetcherProperties> resource_fetcher_properties_;
-
   DISALLOW_COPY_AND_ASSIGN(FetchContext);
 };
 

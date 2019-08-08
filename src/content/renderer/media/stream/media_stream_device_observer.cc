@@ -45,7 +45,7 @@ struct MediaStreamDeviceObserver::Stream {
 
 MediaStreamDeviceObserver::MediaStreamDeviceObserver(RenderFrame* render_frame)
     : RenderFrameObserver(render_frame), binding_(this) {
-  registry_.AddInterface(base::Bind(
+  registry_.AddInterface(base::BindRepeating(
       &MediaStreamDeviceObserver::BindMediaStreamDeviceObserverRequest,
       base::Unretained(this)));
 }

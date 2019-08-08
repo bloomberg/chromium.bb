@@ -88,7 +88,7 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
   // Use node's address as an id for WebUI to look it up.
   dict->SetString(kKeyId, GetTreeNodeId(&node));
   dict->SetString(kKeyTitle, node.GetTitle());
-  dict->SetBoolean(kKeyHasChildren, !node.empty());
+  dict->SetBoolean(kKeyHasChildren, !node.children().empty());
 
   switch (node.GetDetailedInfo().node_type) {
     case CookieTreeNode::DetailedInfo::TYPE_HOST: {

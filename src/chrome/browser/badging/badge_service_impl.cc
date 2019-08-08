@@ -83,9 +83,9 @@ bool BadgeServiceImpl::IsInApp() {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
   if (!browser)
     return false;
-  WebAppBrowserController* web_app_controller = browser->web_app_controller();
-  return web_app_controller &&
-         extensions::IsSameScope(web_app_controller->GetAppLaunchURL(),
+  web_app::AppBrowserController* app_controller = browser->app_controller();
+  return app_controller &&
+         extensions::IsSameScope(app_controller->GetAppLaunchURL(),
                                  web_contents_->GetLastCommittedURL(),
                                  web_contents_->GetBrowserContext());
 }

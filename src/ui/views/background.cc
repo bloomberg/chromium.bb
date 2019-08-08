@@ -71,12 +71,12 @@ class ThemedSolidBackground : public SolidBackground, public ViewObserver {
         observer_(this),
         color_id_(color_id) {
     observer_.Add(view);
-    OnViewNativeThemeChanged(view);
+    OnViewThemeChanged(view);
   }
   ~ThemedSolidBackground() override = default;
 
   // ViewObserver:
-  void OnViewNativeThemeChanged(View* view) override {
+  void OnViewThemeChanged(View* view) override {
     SetNativeControlColor(view->GetNativeTheme()->GetSystemColor(color_id_));
     view->SchedulePaint();
   }

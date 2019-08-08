@@ -39,7 +39,7 @@ void StreamTextureProxy::ClearReceivedFrameCB() {
 }
 
 void StreamTextureProxy::BindToTaskRunner(
-    const base::Closure& received_frame_cb,
+    const base::RepeatingClosure& received_frame_cb,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(task_runner.get());
 

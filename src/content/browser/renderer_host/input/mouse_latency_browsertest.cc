@@ -135,14 +135,14 @@ class TracingRenderWidgetHostFactory : public RenderWidgetHostFactory {
     RenderWidgetHostFactory::UnregisterFactory();
   }
 
-  RenderWidgetHostImpl* CreateRenderWidgetHost(
+  std::unique_ptr<RenderWidgetHostImpl> CreateRenderWidgetHost(
       RenderWidgetHostDelegate* delegate,
       RenderProcessHost* process,
       int32_t routing_id,
       mojom::WidgetPtr widget_interface,
       bool hidden) override {
-    return new TracingRenderWidgetHost(delegate, process, routing_id,
-                                       std::move(widget_interface), hidden);
+    return std::make_unique<TracingRenderWidgetHost>(
+        delegate, process, routing_id, std::move(widget_interface), hidden);
   }
 
  private:

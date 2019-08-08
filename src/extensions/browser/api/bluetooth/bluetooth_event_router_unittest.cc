@@ -114,9 +114,16 @@ TEST_F(BluetoothEventRouterTest, SetDiscoveryFilter) {
                               kTestExtensionId, base::DoNothing(),
                               base::DoNothing());
 
-  EXPECT_CALL(*mock_adapter_, StartDiscoverySessionWithFilterRaw(
-                                  testing::Pointee(IsFilterEqual(&df)),
-                                  testing::_, testing::_)).Times(1);
+  EXPECT_CALL(
+      *mock_adapter_,
+      StartScanWithFilter_(testing::Pointee(IsFilterEqual(&df)), testing::_))
+      .Times(1);
+
+  // RemoveDiscoverySession will be called when the BluetoothDiscoverySession
+  // is destroyed
+  EXPECT_CALL(*mock_adapter_,
+              RemoveDiscoverySession_(testing::_, testing::_, testing::_))
+      .Times(1);
 
   router_->StartDiscoverySession(mock_adapter_, kTestExtensionId,
                                  base::DoNothing(), base::DoNothing());

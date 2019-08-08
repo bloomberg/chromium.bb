@@ -263,7 +263,9 @@ class CONTENT_EXPORT RenderWidgetHostView {
 
   // Set the last time a tab change starts to be processed for this
   // RenderWidgetHostView. Will overwrite any previously stored value.
-  virtual void SetLastTabChangeStartTime(base::TimeTicks start_time) = 0;
+  virtual void SetRecordTabSwitchTimeRequest(base::TimeTicks start_time,
+                                             bool destination_is_loaded,
+                                             bool destination_is_frozen) = 0;
 };
 
 }  // namespace content

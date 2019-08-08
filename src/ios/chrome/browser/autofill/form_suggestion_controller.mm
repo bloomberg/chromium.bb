@@ -10,7 +10,7 @@
 #include "base/mac/scoped_block.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/browser/autofill_popup_delegate.h"
+#include "components/autofill/core/browser/ui/autofill_popup_delegate.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "components/autofill/ios/browser/form_suggestion_provider.h"
 #include "components/autofill/ios/form_util/form_activity_params.h"
@@ -20,10 +20,10 @@
 #import "ios/chrome/browser/autofill/form_suggestion_view.h"
 #import "ios/chrome/browser/passwords/password_generation_utils.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/web/public/deprecated/crw_js_injection_receiver.h"
+#import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/url_scheme_util.h"
-#import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
-#import "ios/web/public/web_state/web_frames_manager.h"
 #import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

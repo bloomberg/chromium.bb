@@ -167,13 +167,18 @@ struct WiFi {
 // The physical network types exposed to ARC by the host,
 // corresponding to a subset of shill technology types defined
 // in platform2/system_api/dbus/shill/dbus-constants.h.
+// The missing shill technology types are:
+//  - WiMAX: obsolete WiFi standard, deprecated in Chrome OS in Q2 2019.
+//  - Bluetooth: ARC does not support host IP networks over Bluetooth.
+//  - PPPoE: ARC does not support host Point to Point networks.
+// Next Enum ID: 5
+// ID 4 was previously assigned to WiMAX.
 [Extensible]
 enum NetworkType {
-  CELLULAR,
-  ETHERNET,
-  VPN,
-  WIFI,
-  WIMAX,
+  CELLULAR = 0,
+  ETHERNET = 1,
+  VPN = 2,
+  WIFI = 3,
 };
 
 // Used by ARC to request a network configuration to be created on the host.

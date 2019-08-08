@@ -35,6 +35,9 @@ class CORE_EXPORT EventTiming final {
   // Notifies the Performance object that the event has been dispatched.
   void DidDispatchEvent(const Event&);
 
+  // The caller owns the |clock| which must outlive the EventTiming.
+  static void SetTickClockForTesting(const base::TickClock* clock);
+
  private:
   // The time the first event handler or default action started to execute.
   TimeTicks processing_start_;

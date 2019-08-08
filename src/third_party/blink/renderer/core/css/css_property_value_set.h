@@ -176,7 +176,9 @@ class CSSLazyPropertyParser
   DISALLOW_COPY_AND_ASSIGN(CSSLazyPropertyParser);
 };
 
-class CORE_EXPORT ImmutableCSSPropertyValueSet : public CSSPropertyValueSet {
+class CORE_EXPORT alignas(Member<const CSSValue>) alignas(
+    CSSPropertyValueMetadata) ImmutableCSSPropertyValueSet
+    : public CSSPropertyValueSet {
  public:
   ImmutableCSSPropertyValueSet(const CSSPropertyValue*,
                                unsigned count,
@@ -195,23 +197,27 @@ class CORE_EXPORT ImmutableCSSPropertyValueSet : public CSSPropertyValueSet {
   int FindPropertyIndex(T property) const;
 
   void TraceAfterDispatch(blink::Visitor*);
-
-  void* operator new(std::size_t, void* location) { return location; }
-
-  void* storage_;
 };
 
 inline const Member<const CSSValue>* ImmutableCSSPropertyValueSet::ValueArray()
     const {
-  return reinterpret_cast<const Member<const CSSValue>*>(
-      const_cast<const void**>(&(this->storage_)));
+  static_assert(
+      sizeof(ImmutableCSSPropertyValueSet) % alignof(Member<const CSSValue>) ==
+          0,
+      "ValueArray may be improperly aligned");
+  return reinterpret_cast<const Member<const CSSValue>*>(this + 1);
 }
 
 inline const CSSPropertyValueMetadata*
 ImmutableCSSPropertyValueSet::MetadataArray() const {
-  return reinterpret_cast<const CSSPropertyValueMetadata*>(
-      &reinterpret_cast<const char*>(
-          &(this->storage_))[array_size_ * sizeof(Member<CSSValue>)]);
+  static_assert(
+      sizeof(ImmutableCSSPropertyValueSet) %
+                  alignof(CSSPropertyValueMetadata) ==
+              0 &&
+          sizeof(Member<CSSValue>) % alignof(CSSPropertyValueMetadata) == 0,
+      "MetadataArray may be improperly aligned");
+  return reinterpret_cast<const CSSPropertyValueMetadata*>(ValueArray() +
+                                                           array_size_);
 }
 
 template <>
@@ -228,10 +234,6 @@ class CORE_EXPORT MutableCSSPropertyValueSet : public CSSPropertyValueSet {
   MutableCSSPropertyValueSet(const CSSPropertyValue* properties,
                              unsigned count);
   ~MutableCSSPropertyValueSet() = default;
-
-  static MutableCSSPropertyValueSet* Create(CSSParserMode);
-  static MutableCSSPropertyValueSet* Create(const CSSPropertyValue* properties,
-                                            unsigned count);
 
   unsigned PropertyCount() const { return property_vector_.size(); }
 

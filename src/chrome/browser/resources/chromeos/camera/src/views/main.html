@@ -12,6 +12,7 @@
     <script src="../js/google-analytics-bundle.js"></script>
     <script src="../js/metrics.js"></script>
     <script src="../js/util.js"></script>
+    <script src="../js/resolution_event_broker.js"></script>
     <script src="../js/toast.js"></script>
     <script src="../js/tooltip.js"></script>
     <script src="../js/state.js"></script>
@@ -22,6 +23,9 @@
     <script src="../js/models/gallery.js"></script>
     <script src="../js/models/filesystem.js"></script>
     <script src="../js/mojo/mojo_bindings_lite.js"></script>
+    <script src="../js/mojo/camera_metadata_tags.mojom-lite.js"></script>
+    <script src="../js/mojo/camera_metadata.mojom-lite.js"></script>
+    <script src="../js/mojo/camera_common.mojom-lite.js"></script>
     <script src="../js/mojo/image_capture.mojom-lite.js"></script>
     <script src="../js/mojo/cros_image_capture.mojom-lite.js"></script>
     <script src="../js/mojo/imagecapture.js"></script>
@@ -32,6 +36,7 @@
     <script src="../js/views/camera/options.js"></script>
     <script src="../js/views/camera/preview.js"></script>
     <script src="../js/views/camera/recordtime.js"></script>
+    <script src="../js/views/camera/resolution_preference.js"></script>
     <script src="../js/views/camera/timertick.js"></script>
     <script src="../js/views/camera/modes.js"></script>
     <script src="../js/views/dialog.js"></script>
@@ -55,6 +60,16 @@
                   tabindex="-1" hidden></object>
         </div>
         <div class="centered-overlay" id="camera-mode"></div>
+      </div>
+      <div id="shutters-group" class="buttons right-stripe circle">
+        <button id="start-recordvideo" class="shutter" tabindex="0"
+                i18n-label="record_video_start_button"></button>
+        <button id="stop-recordvideo" class="shutter" tabindex="0"
+                i18n-label="record_video_stop_button"></button>
+        <button id="start-takephoto" class="shutter" tabindex="0"
+                i18n-label="take_photo_button"></button>
+        <button id="stop-takephoto" class="shutter" tabindex="0"
+                i18n-label="take_photo_cancel_button"></button>
       </div>
       <div id="modes-group" class="buttons right-stripe">
         <div class="mode-item">
@@ -86,46 +101,49 @@
                 aria-hidden="true"></span>
         </div>
       </div>
-      <div id="shutters-group" class="buttons right-stripe circle">
-        <button id="start-recordvideo" class="shutter" tabindex="0"
-                i18n-label="record_video_start_button"></button>
-        <button id="stop-recordvideo" class="shutter" tabindex="0"
-                i18n-label="record_video_stop_button"></button>
-        <button id="start-takephoto" class="shutter" tabindex="0"
-                i18n-label="take_photo_button"></button>
-        <button id="stop-takephoto" class="shutter" tabindex="0"
-                i18n-label="take_photo_cancel_button"></button>
+      <div class="bottom-stripe right-stripe buttons circle">
+        <button id="gallery-enter" tabindex="0"
+                i18n-label="gallery_button" hidden></button>
       </div>
-      <div class="top-stripe right-stripe buttons">
-        <input type="checkbox" id="toggle-mic" tabindex="0"
-               i18n-label="toggle_mic_button" data-state="mic"
-               data-key="toggleMic" checked>
-      </div>
-      <div class="top-stripe left-stripe buttons">
-        <button id="open-settings" tabindex="0"
-                i18n-label="settings_button" aria-haspopup="true"></button>
-      </div>
-      <div id="options-group" class="left-stripe buttons">
-        <input type="checkbox" id="toggle-mirror" tabindex="0"
-               i18n-label="toggle_mirror_button" data-state="mirror" checked>
-        <input type="checkbox" id="toggle-grid" tabindex="0"
-               i18n-label="toggle_grid_button" data-state="grid"
-               data-key="toggleGrid">
-        <input type="checkbox" id="toggle-timer" tabindex="0"
-               i18n-label="toggle_timer_button" data-state="timer"
-               data-key="toggleTimer">
+      <div id="banner" class="horizontal-center-stripe" aria-live="polite">
+        <div id="banner-title">
+          <div id="banner-title-icon"></div>
+          <span id="banner-title-text" i18n-content="banner_title"></span>
+        </div>
+        <div id="banner-msg">
+          <span i18n-content="banner_msg"></span>
+          <button id="banner-learn-more"
+                  i18n-content="banner_learn_more_button">
+          </button>
+        </div>
+        <button id="banner-close" i18n-label="banner_close_button"></button>
       </div>
       <div class="bottom-stripe left-stripe buttons circle">
         <button id="switch-device" tabindex="0"
                 i18n-label="switch_camera_button"></button>
       </div>
-      <div class="bottom-stripe right-stripe buttons circle">
-        <button id="gallery-enter" tabindex="0"
-                i18n-label="gallery_button" hidden></button>
+      <div id="options-group" class="left-stripe buttons">
+        <input type="checkbox" id="toggle-timer" tabindex="0"
+               i18n-label="toggle_timer_button" data-state="timer"
+               data-key="toggleTimer">
+        <input type="checkbox" id="toggle-grid" tabindex="0"
+               i18n-label="toggle_grid_button" data-state="grid"
+               data-key="toggleGrid">
+        <input type="checkbox" id="toggle-mirror" tabindex="0"
+               i18n-label="toggle_mirror_button" data-state="mirror" checked>
+      </div>
+      <div class="top-stripe left-stripe buttons">
+        <button id="open-settings" tabindex="0"
+                i18n-label="settings_button" aria-haspopup="true"></button>
       </div>
       <div class="top-stripe horizontal-center-stripe" id="record-time" hidden>
         <div class="icon"></div>
         <div id="record-time-msg"></div>
+      </div>
+      <div class="top-stripe right-stripe buttons">
+        <input type="checkbox" id="toggle-mic" tabindex="0"
+               i18n-label="toggle_mic_button" data-state="mic"
+               data-key="toggleMic" checked>
       </div>
       <div class="centered-overlay">
         <div id="timer-tick-msg"></div>
@@ -159,6 +177,12 @@
               <span i18n-content="label_timer_3s"></span>
               <span i18n-content="label_timer_10s"></span>
             </div>
+          </div>
+          <div class="icon end"></div>
+        </button>
+        <button class="menu-item circle" id="settings-resolution" tabindex="0">
+          <div class="icon"></div>
+          <div i18n-content="camera_resolution_button">
           </div>
           <div class="icon end"></div>
         </button>
@@ -214,6 +238,79 @@
         </label>
       </div>
     </div>
+    <div id="resolutionsettings">
+      <div class="menu">
+        <div class="menu-header circle">
+          <button class="icon" tabindex="0" i18n-aria="back_button"></button>
+          <div i18n-content="camera_resolution_button"></div>
+        </div>
+        <div id="builtin-photo-header" class="menu-item"
+          i18n-content="label_switch_take_photo_button"></div>
+        <button class="menu-item resol-item circle"
+                id="settings-front-photores" tabindex="0"
+                aria-describedby="front-photores-desc">
+          <div>
+            <div i18n-content="label_front_camera"></div>
+            <div class="description" id="front-photores-desc"
+                 aria-hidden="true">
+              <span></span>
+            </div>
+          </div>
+          <div class="icon end"></div>
+        </button>
+        <button class="menu-item resol-item circle"
+                id="settings-back-photores" tabindex="0"
+                aria-describedby="back-photores-desc">
+          <div>
+            <div i18n-content="label_back_camera"></div>
+            <div class="description" id="back-photores-desc" aria-hidden="true">
+              <span></span>
+            </div>
+          </div>
+          <div class="icon end"></div>
+        </button>
+        <div id="builtin-video-header" class="menu-item"
+          i18n-content="label_switch_record_video_button"></div>
+        <button class="menu-item resol-item circle"
+                id="settings-front-videores" tabindex="0"
+                aria-describedby="front-videores-desc">
+          <div>
+            <div i18n-content="label_front_camera"></div>
+            <div class="description" id="front-videores-desc" aria-hidden="true">
+              <span></span>
+            </div>
+          </div>
+          <div class="icon end"></div>
+        </button>
+        <button class="menu-item resol-item circle"
+                id="settings-back-videores" tabindex="0"
+                aria-describedby="back-videores-desc">
+          <div>
+            <div i18n-content="label_back_camera"></div>
+            <div class="description" id="back-videores-desc" aria-hidden="true">
+              <span></span>
+            </div>
+          </div>
+          <div class="icon end"></div>
+        </button>
+      </div>
+    </div>
+    <div id="photoresolutionsettings">
+      <div class="menu" data-name="photores">
+        <div class="menu-header circle">
+          <button class="icon" tabindex="0" i18n-aria="back_button"></button>
+          <div i18n-content="photo_resolution_button"></div>
+        </div>
+      </div>
+    </div>
+    <div id="videoresolutionsettings">
+      <div class="menu" data-name="videores">
+        <div class="menu-header circle">
+          <button class="icon" tabindex="0" i18n-aria="back_button"></button>
+          <div i18n-content="video_resolution_button"></div>
+        </div>
+      </div>
+    </div>
     <div class="centered-overlay" id="spinner"></div>
     <div id="browser" role="listbox" i18n-aria="gallery_images">
       <div class="padder">
@@ -234,13 +331,13 @@
     <div id="warning">
       <div id="error-msg" aria-live="polite"></div>
     </div>
-    <div id="dialog">
-      <div id="dialog-popup" role="dialog" aria-labelledby="dialog-msg">
-        <div id="dialog-msg"></div>
-        <div id="dialog-buttons">
-          <button id="dialog-negative-button" tabindex="0"
+    <div id="message-dialog" class="dialog">
+      <div class="dialog-popup" role="dialog" aria-labelledby="dialog-msg">
+        <div class="dialog-msg dialog-msg-holder"></div>
+        <div class="dialog-buttons">
+          <button class="dialog-negative-button" tabindex="0"
                   i18n-content="dialog_cancel_button"></button>
-          <button id="dialog-positive-button" tabindex="0"
+          <button class="dialog-positive-button" tabindex="0"
                   i18n-content="dialog_ok_button"></button>
         </div>
       </div>
@@ -251,5 +348,35 @@
     <audio id="sound-shutter" src="../sounds/shutter.ogg" data-timeout="350">
     <audio id="sound-rec-start" src="../sounds/record_start.ogg" data-timeout="200">
     <audio id="sound-rec-end" src="../sounds/record_end.ogg" data-timeout="450">
+    <template id="resolution-item-template">
+      <label class="menu-item circle">
+        <input class="icon" type="radio" tabindex="0">
+        <span></span>
+      </label>
+    </template>
+    <template id="extcam-resolution-item-template">
+        <div class="menu-item external-camera"
+          i18n-content="label_external_camera"></div>
+        <button class="menu-item resol-item external-camera"
+              tabindex="0">
+          <div>
+            <div i18n-content="photo_resolution_button"></div>
+            <div class="description" aria-hidden="true">
+              <span></span>
+            </div>
+          </div>
+          <div class="icon end"></div>
+        </button>
+        <button class="menu-item resol-item circle external-camera"
+              tabindex="0">
+          <div>
+            <div i18n-content="video_resolution_button"></div>
+            <div class="description" aria-hidden="true">
+              <span></span>
+            </div>
+          </div>
+          <div class="icon end"></div>
+        </button>
+    </template>
   </body>
 </html>

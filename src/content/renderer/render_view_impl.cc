@@ -68,7 +68,6 @@
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_visitor.h"
 #include "content/public/renderer/window_features_converter.h"
-#include "content/renderer/appcache/web_application_cache_host_impl.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/compositor/layer_tree_view.h"
@@ -88,7 +87,6 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
-#include "content/renderer/renderer_webapplicationcachehost_impl.h"
 #include "content/renderer/savable_resources.h"
 #include "content/renderer/v8_value_converter_impl.h"
 #include "content/renderer/web_ui_extension_data.h"
@@ -130,8 +128,6 @@
 #include "third_party/blink/public/public_buildflags.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
 #include "third_party/blink/public/web/web_ax_object.h"
-#include "third_party/blink/public/web/web_date_time_chooser_completion.h"
-#include "third_party/blink/public/web/web_date_time_chooser_params.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_dom_event.h"
 #include "third_party/blink/public/web/web_dom_message_event.h"
@@ -588,12 +584,6 @@ RenderViewImpl::~RenderViewImpl() {
   DCHECK(!frame_widget_);
   RenderThread::Get()->RemoveRoute(routing_id_);
 
-#if defined(OS_ANDROID)
-  // The date/time picker client is both a std::unique_ptr member of this class
-  // and a RenderViewObserver. Reset it to prevent double deletion.
-  date_time_picker_client_.reset();
-#endif
-
 #ifndef NDEBUG
   // Make sure we are no longer referenced by the ViewMap or RoutingIDViewMap.
   ViewMap* views = g_view_map.Pointer();
@@ -696,8 +686,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   WebRuntimeFeatures::EnableDatabase(prefs.databases_enabled);
   settings->SetOfflineWebApplicationCacheEnabled(
       prefs.application_cache_enabled);
-  settings->SetHistoryEntryRequiresUserGesture(
-      prefs.history_entry_requires_user_gesture);
   settings->SetShouldProtectAgainstIpcFlooding(
       !prefs.disable_ipc_flooding_protection);
   settings->SetHyperlinkAuditingEnabled(prefs.hyperlink_auditing_enabled);
@@ -836,6 +824,7 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   web_view->SetDefaultPageScaleLimits(prefs.default_minimum_page_scale_factor,
                                       prefs.default_maximum_page_scale_factor);
 
+  settings->SetFullscreenSupported(prefs.fullscreen_supported);
   settings->SetTextAutosizingEnabled(prefs.text_autosizing_enabled);
   settings->SetDoubleTapToZoomEnabled(prefs.double_tap_to_zoom_enabled);
   blink::WebNetworkStateNotifier::SetNetworkQualityWebHoldback(
@@ -850,7 +839,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->SetAllowCustomScrollbarInMainFrame(false);
   settings->SetAccessibilityFontScaleFactor(prefs.font_scale_factor);
   settings->SetDeviceScaleAdjustment(prefs.device_scale_adjustment);
-  settings->SetFullscreenSupported(prefs.fullscreen_supported);
   web_view->SetIgnoreViewportTagScaleLimits(prefs.force_enable_zoom);
   settings->SetAutoZoomFocusedNodeToLegibleScale(true);
   settings->SetDefaultVideoPosterURL(
@@ -862,8 +850,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->SetWideViewportQuirkEnabled(prefs.wide_viewport_quirk);
   settings->SetUseWideViewport(prefs.use_wide_viewport);
   settings->SetForceZeroLayoutHeight(prefs.force_zero_layout_height);
-  settings->SetViewportMetaLayoutSizeQuirk(
-      prefs.viewport_meta_layout_size_quirk);
   settings->SetViewportMetaMergeContentQuirk(
       prefs.viewport_meta_merge_content_quirk);
   settings->SetViewportMetaNonUserScalableQuirk(
@@ -1700,25 +1686,25 @@ void RenderViewImpl::FocusPrevious() {
   Send(new ViewHostMsg_TakeFocus(GetRoutingID(), true));
 }
 
-// TODO(esprehn): Blink only ever passes Elements, this should take WebElement.
-void RenderViewImpl::FocusedNodeChanged(const WebNode& fromNode,
-                                        const WebNode& toNode) {
+void RenderViewImpl::FocusedElementChanged(const WebElement& from_element,
+                                           const WebElement& to_element) {
   RenderFrameImpl* previous_frame = nullptr;
-  if (!fromNode.IsNull())
+  if (!from_element.IsNull())
     previous_frame =
-        RenderFrameImpl::FromWebFrame(fromNode.GetDocument().GetFrame());
+        RenderFrameImpl::FromWebFrame(from_element.GetDocument().GetFrame());
   RenderFrameImpl* new_frame = nullptr;
-  if (!toNode.IsNull())
-    new_frame = RenderFrameImpl::FromWebFrame(toNode.GetDocument().GetFrame());
+  if (!to_element.IsNull())
+    new_frame =
+        RenderFrameImpl::FromWebFrame(to_element.GetDocument().GetFrame());
 
   if (previous_frame && previous_frame != new_frame)
-    previous_frame->FocusedNodeChanged(WebNode());
+    previous_frame->FocusedElementChanged(WebElement());
   if (new_frame)
-    new_frame->FocusedNodeChanged(toNode);
+    new_frame->FocusedElementChanged(to_element);
 
   // TODO(dmazzoni): remove once there's a separate a11y tree per frame.
   if (main_render_frame_)
-    main_render_frame_->FocusedNodeChangedForAccessibility(toNode);
+    main_render_frame_->FocusedElementChangedForAccessibility(to_element);
 }
 
 void RenderViewImpl::DidUpdateMainFrameLayout() {
@@ -1914,10 +1900,6 @@ blink::WebView* RenderViewImpl::GetWebView() {
   return webview();
 }
 
-blink::WebFrameWidget* RenderViewImpl::GetWebFrameWidget() {
-  return frame_widget_;
-}
-
 bool RenderViewImpl::GetContentStateImmediately() {
   return send_content_state_immediately_;
 }
@@ -1985,19 +1967,17 @@ void RenderViewImpl::OnSetRendererPrefs(
           : base::TimeDelta::FromMilliseconds(
                 blink::mojom::kDefaultCaretBlinkIntervalInMilliseconds));
 
-#if BUILDFLAG(USE_DEFAULT_RENDER_THEME)
+#if defined(USE_AURA)
   if (renderer_prefs.use_custom_colors) {
     blink::SetFocusRingColor(renderer_prefs.focus_ring_color);
-
-    if (webview()) {
-      webview()->SetSelectionColors(renderer_prefs.active_selection_bg_color,
-                                    renderer_prefs.active_selection_fg_color,
-                                    renderer_prefs.inactive_selection_bg_color,
-                                    renderer_prefs.inactive_selection_fg_color);
+    blink::SetSelectionColors(renderer_prefs.active_selection_bg_color,
+                              renderer_prefs.active_selection_fg_color,
+                              renderer_prefs.inactive_selection_bg_color,
+                              renderer_prefs.inactive_selection_fg_color);
+    if (webview())
       webview()->MainFrameWidget()->ThemeChanged();
-    }
   }
-#endif  // BUILDFLAG(USE_DEFAULT_RENDER_THEME)
+#endif
 
   if (webview() &&
       old_accept_languages != renderer_preferences_.accept_languages) {
@@ -2081,17 +2061,12 @@ void RenderViewImpl::ZoomLimitsChanged(double minimum_level,
                                         maximum_percent));
 }
 
-void RenderViewImpl::PageScaleFactorChanged(float page_scale_factor,
-                                            bool is_pinch_gesture_active) {
+void RenderViewImpl::PageScaleFactorChanged(float page_scale_factor) {
   if (!webview())
     return;
 
   Send(new ViewHostMsg_PageScaleFactorChanged(GetRoutingID(),
                                               page_scale_factor));
-  // TODO(wjmaclean): Merge this into RenderWidget's
-  // SetPageScaleFactorAndLimits().
-  GetWidget()->PageScaleFactorChanged(page_scale_factor,
-                                      is_pinch_gesture_active);
 }
 
 void RenderViewImpl::PageImportanceSignalsChanged() {
@@ -2165,22 +2140,6 @@ blink::WebScreenInfo RenderViewImpl::GetScreenInfo() {
 }
 
 #if defined(OS_ANDROID)
-bool RenderViewImpl::OpenDateTimeChooser(
-    const blink::WebDateTimeChooserParams& params,
-    blink::WebDateTimeChooserCompletion* completion) {
-  // JavaScript may try to open a date time chooser while one is already open.
-  if (date_time_picker_client_)
-    return false;
-  date_time_picker_client_.reset(
-      new RendererDateTimePicker(this, params, completion));
-  return date_time_picker_client_->Open();
-}
-
-void RenderViewImpl::DismissDateTimeDialog() {
-  DCHECK(date_time_picker_client_);
-  date_time_picker_client_.reset();
-}
-
 void RenderViewImpl::SuspendVideoCaptureDevices(bool suspend) {
   if (!main_render_frame_)
     return;

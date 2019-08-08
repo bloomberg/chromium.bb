@@ -7,9 +7,16 @@
 
 #include <stdint.h>
 
+#include "ui/base/ui_base_types.h"
+
+namespace gfx {
+class Rect;
+}
+
 namespace views {
 
-class MenuButton;
+enum class MenuAnchorPosition;
+class MenuButtonController;
 class Widget;
 
 // Used internally by MenuRunner to show the menu. Can be set in tests (see
@@ -18,7 +25,7 @@ class VIEWS_EXPORT MenuRunnerHandler {
  public:
   virtual ~MenuRunnerHandler() = default;
   virtual void RunMenuAt(Widget* parent,
-                         MenuButton* button,
+                         MenuButtonController* button_controller,
                          const gfx::Rect& bounds,
                          MenuAnchorPosition anchor,
                          ui::MenuSourceType source_type,

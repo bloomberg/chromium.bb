@@ -2,8 +2,8 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_tabs/cr_tabs.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
-<link rel="import" href="chrome://resources/cr_elements/paper_tabs_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_indicator.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
@@ -11,7 +11,6 @@
 <link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-tabs/paper-tabs.html">
 <link rel="import" href="display_layout.html">
 <link rel="import" href="display_overscan_dialog.html">
 <link rel="import" href="night_light_slider.html">
@@ -23,7 +22,7 @@
 
 <dom-module id="settings-display">
   <template>
-    <style include="settings-shared md-select iron-flex iron-flex-alignment paper-tabs-style">
+    <style include="settings-shared md-select iron-flex iron-flex-alignment">
       .indented {
         align-self: stretch;
         margin-inline-start: var(--cr-section-indent-padding);
@@ -93,12 +92,9 @@
 
     </div>
     <div hidden="[[!hasMultipleDisplays_(displays)]]" class="settings-box">
-      <paper-tabs noink selected="[[selectedDisplay.id]]" class="display-tabs"
-          on-iron-select="onSelectDisplayTab_" attr-for-selected="display-id">
-        <template is="dom-repeat" items="[[displays]]">
-          <paper-tab display-id="[[item.id]]">[[item.name]]</paper-tab>
-        </template>
-      </paper-tabs>
+      <cr-tabs selected="[[selectedTab_]]" class="display-tabs"
+          on-selected-changed="onSelectDisplayTab_"
+          tab-names="[[displayTabNames_]]"></cr-tabs>
     </div>
     <div hidden="[[hasMultipleDisplays_(displays)]]"
         class="settings-box line-only"></div>

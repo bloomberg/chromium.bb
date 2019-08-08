@@ -13,15 +13,15 @@ namespace gfx {
 NativePixmapDmaBuf::NativePixmapDmaBuf(const gfx::Size& size,
                                        gfx::BufferFormat format,
                                        gfx::NativePixmapHandle handle)
-    : size_(size), format_(format), planes_(std::move(handle.planes)) {}
+    : size_(size), format_(format), handle_(std::move(handle)) {}
 
 NativePixmapDmaBuf::~NativePixmapDmaBuf() {}
 
 bool NativePixmapDmaBuf::AreDmaBufFdsValid() const {
-  if (planes_.empty())
+  if (handle_.planes.empty())
     return false;
 
-  for (const auto& plane : planes_) {
+  for (const auto& plane : handle_.planes) {
     if (!plane.fd.is_valid())
       return false;
   }
@@ -29,23 +29,22 @@ bool NativePixmapDmaBuf::AreDmaBufFdsValid() const {
 }
 
 int NativePixmapDmaBuf::GetDmaBufFd(size_t plane) const {
-  DCHECK_LT(plane, planes_.size());
-  return planes_[plane].fd.get();
+  DCHECK_LT(plane, handle_.planes.size());
+  return handle_.planes[plane].fd.get();
 }
 
 int NativePixmapDmaBuf::GetDmaBufPitch(size_t plane) const {
-  DCHECK_LT(plane, planes_.size());
-  return planes_[plane].stride;
+  DCHECK_LT(plane, handle_.planes.size());
+  return handle_.planes[plane].stride;
 }
 
 int NativePixmapDmaBuf::GetDmaBufOffset(size_t plane) const {
-  DCHECK_LT(plane, planes_.size());
-  return planes_[plane].offset;
+  DCHECK_LT(plane, handle_.planes.size());
+  return handle_.planes[plane].offset;
 }
 
-uint64_t NativePixmapDmaBuf::GetDmaBufModifier(size_t plane) const {
-  DCHECK_LT(plane, planes_.size());
-  return planes_[plane].modifier;
+uint64_t NativePixmapDmaBuf::GetBufferFormatModifier() const {
+  return handle_.modifier;
 }
 
 gfx::BufferFormat NativePixmapDmaBuf::GetBufferFormat() const {

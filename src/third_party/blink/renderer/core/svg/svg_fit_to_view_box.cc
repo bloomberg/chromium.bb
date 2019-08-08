@@ -32,10 +32,6 @@ namespace blink {
 
 class SVGAnimatedViewBoxRect : public SVGAnimatedRect {
  public:
-  static SVGAnimatedRect* Create(SVGElement* context_element) {
-    return MakeGarbageCollected<SVGAnimatedViewBoxRect>(context_element);
-  }
-
   SVGAnimatedViewBoxRect(SVGElement* context_element)
       : SVGAnimatedRect(context_element, svg_names::kViewBoxAttr) {}
 

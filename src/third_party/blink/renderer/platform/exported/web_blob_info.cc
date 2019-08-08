@@ -4,6 +4,7 @@
 
 #include "third_party/blink/public/platform/web_blob_info.h"
 
+#include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 
 namespace blink {

@@ -39,12 +39,13 @@ bool g_auto_accept_bookmark_app_for_testing = false;
 BookmarkAppConfirmationView::~BookmarkAppConfirmationView() {}
 
 BookmarkAppConfirmationView::BookmarkAppConfirmationView(
-    const WebApplicationInfo& web_app_info,
+    std::unique_ptr<WebApplicationInfo> web_app_info,
     chrome::AppInstallationAcceptanceCallback callback)
-    : web_app_info_(web_app_info),
+    : web_app_info_(std::move(web_app_info)),
       callback_(std::move(callback)),
       open_as_window_checkbox_(nullptr),
       title_tf_(nullptr) {
+  DCHECK(web_app_info_);
   const ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
   set_margins(layout_provider->GetDialogInsetsForContentType(views::CONTROL,
                                                              views::TEXT));
@@ -69,7 +70,7 @@ BookmarkAppConfirmationView::BookmarkAppConfirmationView(
                        extension_misc::EXTENSION_ICON_SMALL);
   gfx::ImageSkia image(
       std::make_unique<WebAppInfoImageSource>(
-          extension_misc::EXTENSION_ICON_SMALL, web_app_info_.icons),
+          extension_misc::EXTENSION_ICON_SMALL, web_app_info_->icons),
       image_size);
   icon_image_view->SetImageSize(image_size);
   icon_image_view->SetImage(image);
@@ -77,7 +78,7 @@ BookmarkAppConfirmationView::BookmarkAppConfirmationView(
   layout->AddView(icon_image_view);
 
   title_tf_ = new views::Textfield();
-  title_tf_->SetText(web_app_info_.title);
+  title_tf_->SetText(web_app_info_->title);
   title_tf_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_BOOKMARK_APP_AX_BUBBLE_NAME_LABEL));
   title_tf_->set_controller(this);
@@ -88,7 +89,7 @@ BookmarkAppConfirmationView::BookmarkAppConfirmationView(
       layout_provider->GetDistanceMetric(DISTANCE_CONTROL_LIST_VERTICAL));
   open_as_window_checkbox_ = new views::Checkbox(
       l10n_util::GetStringUTF16(IDS_BOOKMARK_APP_BUBBLE_OPEN_AS_WINDOW));
-  open_as_window_checkbox_->SetChecked(web_app_info_.open_as_window);
+  open_as_window_checkbox_->SetChecked(web_app_info_->open_as_window);
   layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId);
   layout->SkipColumns(1);
   layout->AddView(open_as_window_checkbox_);
@@ -118,15 +119,18 @@ bool BookmarkAppConfirmationView::ShouldShowCloseButton() const {
 }
 
 void BookmarkAppConfirmationView::WindowClosing() {
-  if (callback_)
-    std::move(callback_).Run(false, web_app_info_);
+  if (callback_) {
+    DCHECK(web_app_info_);
+    std::move(callback_).Run(false, std::move(web_app_info_));
+  }
 }
 
 bool BookmarkAppConfirmationView::Accept() {
-  web_app_info_.title = GetTrimmedTitle();
-  web_app_info_.open_as_window =
-      open_as_window_checkbox_ && open_as_window_checkbox_->checked();
-  std::move(callback_).Run(true, web_app_info_);
+  DCHECK(web_app_info_);
+  web_app_info_->title = GetTrimmedTitle();
+  web_app_info_->open_as_window =
+      open_as_window_checkbox_ && open_as_window_checkbox_->GetChecked();
+  std::move(callback_).Run(true, std::move(web_app_info_));
   return true;
 }
 
@@ -158,10 +162,11 @@ base::string16 BookmarkAppConfirmationView::GetTrimmedTitle() const {
 namespace chrome {
 
 void ShowBookmarkAppDialog(content::WebContents* web_contents,
-                           const WebApplicationInfo& web_app_info,
+                           std::unique_ptr<WebApplicationInfo> web_app_info,
                            AppInstallationAcceptanceCallback callback) {
   constrained_window::ShowWebModalDialogViews(
-      new BookmarkAppConfirmationView(web_app_info, std::move(callback)),
+      new BookmarkAppConfirmationView(std::move(web_app_info),
+                                      std::move(callback)),
       web_contents);
 }
 

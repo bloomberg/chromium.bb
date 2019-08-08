@@ -8,23 +8,18 @@
 #include <windows.ui.input.spatial.h>
 #include <wrl.h>
 
+#include <memory>
 #include <unordered_map>
 #include <vector>
 
+#include "base/callback_list.h"
 #include "base/synchronization/lock.h"
 #include "device/gamepad/public/cpp/gamepads.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
+#include "device/vr/util/gamepad_builder.h"
 
 namespace device {
-struct ButtonData {
-  bool pressed;
-  bool touched;
-  double value;
-
-  double x_axis;
-  double y_axis;
-};
 
 enum class ButtonName {
   kSelect,
@@ -35,28 +30,30 @@ enum class ButtonName {
 
 struct ParsedInputState {
   mojom::XRInputSourceStatePtr source_state;
-  std::unordered_map<ButtonName, ButtonData> button_data;
+  std::unordered_map<ButtonName, GamepadBuilder::ButtonData> button_data;
   GamepadPose gamepad_pose;
+  uint16_t vendor_id = 0;
+  uint16_t product_id = 0;
   ParsedInputState();
   ~ParsedInputState();
   ParsedInputState(ParsedInputState&& other);
 };
 
+class WMRCoordinateSystem;
+class WMRInputManager;
+class WMRInputSourceState;
+class WMRInputSourceEventArgs;
+class WMRTimestamp;
 class MixedRealityInputHelper {
  public:
   MixedRealityInputHelper(HWND hwnd);
   virtual ~MixedRealityInputHelper();
   std::vector<mojom::XRInputSourceStatePtr> GetInputState(
-      Microsoft::WRL::ComPtr<
-          ABI::Windows::Perception::Spatial::ISpatialCoordinateSystem> origin,
-      Microsoft::WRL::ComPtr<ABI::Windows::Perception::IPerceptionTimestamp>
-          timestamp);
+      const WMRCoordinateSystem* origin,
+      const WMRTimestamp* timestamp);
 
-  mojom::XRGamepadDataPtr GetWebVRGamepadData(
-      Microsoft::WRL::ComPtr<
-          ABI::Windows::Perception::Spatial::ISpatialCoordinateSystem> origin,
-      Microsoft::WRL::ComPtr<ABI::Windows::Perception::IPerceptionTimestamp>
-          timestamp);
+  mojom::XRGamepadDataPtr GetWebVRGamepadData(const WMRCoordinateSystem* origin,
+                                              const WMRTimestamp* timestamp);
 
   void Dispose();
 
@@ -64,49 +61,41 @@ class MixedRealityInputHelper {
   bool EnsureSpatialInteractionManager();
 
   ParsedInputState LockedParseWindowsSourceState(
-      Microsoft::WRL::ComPtr<
-          ABI::Windows::UI::Input::Spatial::ISpatialInteractionSourceState>
-          state,
-      Microsoft::WRL::ComPtr<
-          ABI::Windows::Perception::Spatial::ISpatialCoordinateSystem> origin);
+      const WMRInputSourceState* state,
+      const WMRCoordinateSystem* origin);
 
-  HRESULT OnSourcePressed(
-      ABI::Windows::UI::Input::Spatial::ISpatialInteractionManager* sender,
-      ABI::Windows::UI::Input::Spatial::ISpatialInteractionSourceEventArgs*
-          args);
-  HRESULT OnSourceReleased(
-      ABI::Windows::UI::Input::Spatial::ISpatialInteractionManager* sender,
-      ABI::Windows::UI::Input::Spatial::ISpatialInteractionSourceEventArgs*
-          args);
-  HRESULT ProcessSourceEvent(
-      ABI::Windows::UI::Input::Spatial::ISpatialInteractionSourceEventArgs*
-          raw_args,
-      bool is_pressed);
+  void OnSourcePressed(const WMRInputSourceEventArgs& args);
+  void OnSourceReleased(const WMRInputSourceEventArgs& args);
+  void ProcessSourceEvent(const WMRInputSourceEventArgs& args, bool is_pressed);
 
   void SubscribeEvents();
   void UnsubscribeEvents();
 
-  Microsoft::WRL::ComPtr<
-      ABI::Windows::UI::Input::Spatial::ISpatialInteractionManager>
-      spatial_interaction_manager_;
-  EventRegistrationToken pressed_token_;
-  EventRegistrationToken released_token_;
+  std::unique_ptr<WMRInputManager> input_manager_;
+  std::unique_ptr<
+      base::CallbackList<void(const WMRInputSourceEventArgs&)>::Subscription>
+      pressed_subscription_;
+  std::unique_ptr<
+      base::CallbackList<void(const WMRInputSourceEventArgs&)>::Subscription>
+      released_subscription_;
 
   struct ControllerState {
-    bool pressed;
-    bool clicked;
+    bool pressed = false;
+    bool clicked = false;
+    base::Optional<gfx::Transform> grip_from_pointer = base::nullopt;
+    ControllerState();
+    virtual ~ControllerState();
   };
   std::unordered_map<uint32_t, ControllerState> controller_states_;
   HWND hwnd_;
 
-  std::vector<Microsoft::WRL::ComPtr<
-      ABI::Windows::UI::Input::Spatial::ISpatialInteractionSourceState>>
-      pending_voice_states_;
+  std::vector<std::unique_ptr<WMRInputSourceState>> pending_voice_states_;
 
   base::Lock lock_;
 
   DISALLOW_COPY_AND_ASSIGN(MixedRealityInputHelper);
 };
+
 }  // namespace device
 
 #endif  // DEVICE_VR_WINDOWS_MIXED_REALITY_MIXED_REALITY_INPUT_HELPER_H_

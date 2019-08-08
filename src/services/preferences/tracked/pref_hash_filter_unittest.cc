@@ -17,12 +17,12 @@
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "components/prefs/testing_pref_store.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -634,7 +634,7 @@ class PrefHashFilterTest : public testing::TestWithParam<EnforcementLevel>,
     reset_recorded_ = true;
   }
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   MockValidationDelegate mock_validation_delegate_;
   mojo::BindingSet<prefs::mojom::ResetOnLoadObserver>
       reset_on_load_observer_bindings_;

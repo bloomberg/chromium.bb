@@ -80,8 +80,8 @@ class DomDistillerViewerTest : public testing::Test {
   std::unique_ptr<ViewerHandle> CreateViewRequest(
       const std::string& path,
       ViewRequestDelegate* view_request_delegate) {
-    return viewer::CreateViewRequest(
-        service_.get(), path, view_request_delegate, gfx::Size());
+    return viewer::CreateViewRequest(service_.get(), path,
+                                     view_request_delegate, gfx::Size());
   }
 
   std::unique_ptr<TestDomDistillerService> service_;

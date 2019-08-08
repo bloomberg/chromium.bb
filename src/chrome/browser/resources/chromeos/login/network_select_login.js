@@ -205,13 +205,13 @@
     },
 
     /**
-     * This is called when network setup is done.
-     *
+     * Called when network setup is done. Notifies parent that network setup is
+     * done.
      * @private
      */
     onSelectedNetworkConnected_: function() {
       this.networkLastSelectedGuid_ = '';
-      chrome.send('login.NetworkScreen.userActed', ['continue']);
+      this.fire('selected-network-connected');
     },
 
     /**

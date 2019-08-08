@@ -34,12 +34,12 @@
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/document_lifecycle.h"
-#include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
 class Document;
+class PaintArtifactCompositor;
 
 class DocumentAnimations {
   STATIC_ONLY(DocumentAnimations);
@@ -55,7 +55,7 @@ class DocumentAnimations {
   static void UpdateAnimations(
       Document&,
       DocumentLifecycle::LifecycleState required_lifecycle_state,
-      const base::Optional<CompositorElementIdSet>&);
+      const PaintArtifactCompositor* paint_artifact_compositor);
 };
 
 }  // namespace blink

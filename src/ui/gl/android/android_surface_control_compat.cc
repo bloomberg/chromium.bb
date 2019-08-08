@@ -48,6 +48,7 @@ enum {
 
 enum {
   AHARDWAREBUFFER_USAGE_COMPOSER_OVERLAY = 1ULL << 11,
+  AHARDWAREBUFFER_USAGE_QCOMM_UBWC = 1ULL << 28,
 };
 
 // ASurfaceTransaction
@@ -89,6 +90,8 @@ using pASurfaceTransaction_setBufferDataSpace =
 // ASurfaceTransactionStats
 using pASurfaceTransactionStats_getPresentFenceFd =
     int (*)(ASurfaceTransactionStats* stats);
+using pASurfaceTransactionStats_getLatchTime =
+    int64_t (*)(ASurfaceTransactionStats* stats);
 using pASurfaceTransactionStats_getASurfaceControls =
     void (*)(ASurfaceTransactionStats* stats,
              ASurfaceControl*** surface_controls,
@@ -103,6 +106,8 @@ namespace gl {
 namespace {
 
 base::AtomicSequenceNumber g_next_transaction_id;
+
+uint64_t g_agb_required_usage_bits = AHARDWAREBUFFER_USAGE_COMPOSER_OVERLAY;
 
 // Helper function to log errors from dlsym. Calling LOG(ERROR) inside a macro
 // crashes clang code coverage. https://crbug.com/843356
@@ -151,6 +156,7 @@ struct SurfaceControlMethods {
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransaction_setBufferDataSpace);
 
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransactionStats_getPresentFenceFd);
+    LOAD_FUNCTION(main_dl_handle, ASurfaceTransactionStats_getLatchTime);
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransactionStats_getASurfaceControls);
     LOAD_FUNCTION(main_dl_handle,
                   ASurfaceTransactionStats_releaseASurfaceControls);
@@ -184,6 +190,8 @@ struct SurfaceControlMethods {
   // TransactionStats methods.
   pASurfaceTransactionStats_getPresentFenceFd
       ASurfaceTransactionStats_getPresentFenceFdFn;
+  pASurfaceTransactionStats_getLatchTime
+      ASurfaceTransactionStats_getLatchTimeFn;
   pASurfaceTransactionStats_getASurfaceControls
       ASurfaceTransactionStats_getASurfaceControlsFn;
   pASurfaceTransactionStats_releaseASurfaceControls
@@ -197,6 +205,8 @@ ARect RectToARect(const gfx::Rect& rect) {
 }
 
 int32_t OverlayTransformToWindowTransform(gfx::OverlayTransform transform) {
+  // Note that the gfx::OverlayTransform expresses rotations in anticlockwise
+  // direction while the ANativeWindow rotations are in clockwise direction.
   switch (transform) {
     case gfx::OVERLAY_TRANSFORM_INVALID:
       DCHECK(false) << "Invalid Transform";
@@ -208,11 +218,11 @@ int32_t OverlayTransformToWindowTransform(gfx::OverlayTransform transform) {
     case gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL:
       return ANATIVEWINDOW_TRANSFORM_MIRROR_VERTICAL;
     case gfx::OVERLAY_TRANSFORM_ROTATE_90:
-      return ANATIVEWINDOW_TRANSFORM_ROTATE_90;
+      return ANATIVEWINDOW_TRANSFORM_ROTATE_270;
     case gfx::OVERLAY_TRANSFORM_ROTATE_180:
       return ANATIVEWINDOW_TRANSFORM_ROTATE_180;
     case gfx::OVERLAY_TRANSFORM_ROTATE_270:
-      return ANATIVEWINDOW_TRANSFORM_ROTATE_270;
+      return ANATIVEWINDOW_TRANSFORM_ROTATE_90;
   };
   NOTREACHED();
   return ANATIVEWINDOW_TRANSFORM_IDENTITY;
@@ -239,6 +249,13 @@ SurfaceControl::TransactionStats ToTransactionStats(
   transaction_stats.present_fence = base::ScopedFD(
       SurfaceControlMethods::Get().ASurfaceTransactionStats_getPresentFenceFdFn(
           stats));
+  transaction_stats.latch_time =
+      base::TimeTicks() +
+      base::TimeDelta::FromNanoseconds(
+          SurfaceControlMethods::Get().ASurfaceTransactionStats_getLatchTimeFn(
+              stats));
+  if (transaction_stats.latch_time == base::TimeTicks())
+    transaction_stats.latch_time = base::TimeTicks::Now();
 
   ASurfaceControl** surface_controls = nullptr;
   size_t size = 0u;
@@ -301,7 +318,11 @@ bool SurfaceControl::SupportsColorSpace(const gfx::ColorSpace& color_space) {
 uint64_t SurfaceControl::RequiredUsage() {
   if (!IsSupported())
     return 0u;
-  return AHARDWAREBUFFER_USAGE_COMPOSER_OVERLAY;
+  return g_agb_required_usage_bits;
+}
+
+void SurfaceControl::EnableQualcommUBWC() {
+  g_agb_required_usage_bits |= AHARDWAREBUFFER_USAGE_QCOMM_UBWC;
 }
 
 SurfaceControl::Surface::Surface() = default;
@@ -309,13 +330,15 @@ SurfaceControl::Surface::Surface() = default;
 SurfaceControl::Surface::Surface(const Surface& parent, const char* name) {
   surface_ = SurfaceControlMethods::Get().ASurfaceControl_createFn(
       parent.surface(), name);
-  DCHECK(surface_);
+  if (!surface_)
+    LOG(ERROR) << "Failed to create ASurfaceControl : " << name;
 }
 
 SurfaceControl::Surface::Surface(ANativeWindow* parent, const char* name) {
   surface_ = SurfaceControlMethods::Get().ASurfaceControl_createFromWindowFn(
       parent, name);
-  DCHECK(surface_);
+  if (!surface_)
+    LOG(ERROR) << "Failed to create ASurfaceControl : " << name;
 }
 
 SurfaceControl::Surface::~Surface() {

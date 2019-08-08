@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -67,7 +68,6 @@
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/transforms/transform_state.h"
 
 namespace {
 
@@ -237,19 +237,21 @@ void ScrollingCoordinator::UpdateAfterPaint(LocalFrameView* frame_view) {
 }
 
 template <typename Function>
-static void ForAllGraphicsLayers(GraphicsLayer& layer,
-                                 const Function& function) {
-  function(layer);
+static void ForAllPaintingGraphicsLayers(GraphicsLayer& layer,
+                                         const Function& function) {
+  // Don't recurse into display-locked elements.
+  if (layer.Client().PaintBlockedByDisplayLock())
+    return;
+
+  if (layer.PaintsContentOrHitTest())
+    function(layer);
   for (auto* child : layer.Children())
-    ForAllGraphicsLayers(*child, function);
+    ForAllPaintingGraphicsLayers(*child, function);
 }
 
 // Set the touch action rects on the cc layer from the touch action data stored
 // on the GraphicsLayer's paint chunks.
 static void UpdateLayerTouchActionRects(GraphicsLayer& layer) {
-  if (!layer.PaintsContentOrHitTest())
-    return;
-
   if (layer.Client().ShouldThrottleRendering()) {
     layer.CcLayer()->SetTouchActionRegion(cc::TouchActionRegion());
     return;
@@ -544,19 +546,17 @@ void ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
 
     // TODO(bokan): This method shouldn't be resizing the layer geometry. That
     // happens in CompositedLayerMapping::UpdateScrollingLayerGeometry.
-    LayoutSize subpixel_accumulation =
+    PhysicalOffset subpixel_accumulation =
         scrollable_area->Layer()
             ? scrollable_area->Layer()->SubpixelAccumulation()
-            : LayoutSize();
-    LayoutSize contents_size =
+            : PhysicalOffset();
+    PhysicalSize contents_size =
         scrollable_area->GetLayoutBox()
-            ? LayoutSize(scrollable_area->GetLayoutBox()->ScrollWidth(),
-                         scrollable_area->GetLayoutBox()->ScrollHeight())
-            : LayoutSize(scrollable_area->ContentsSize());
+            ? PhysicalSize(scrollable_area->GetLayoutBox()->ScrollWidth(),
+                           scrollable_area->GetLayoutBox()->ScrollHeight())
+            : PhysicalSize(scrollable_area->ContentsSize());
     IntSize scroll_contents_size =
-        PixelSnappedIntRect(
-            LayoutRect(LayoutPoint(subpixel_accumulation), contents_size))
-            .Size();
+        PhysicalRect(subpixel_accumulation, contents_size).PixelSnappedSize();
 
     if (scrollable_area != &page_->GetVisualViewport()) {
       // The scrolling contents layer must be at least as large as its clip.
@@ -630,7 +630,7 @@ void ScrollingCoordinator::UpdateTouchEventTargetRectsIfNeeded(
 
   auto* view_layer = frame->View()->GetLayoutView()->Layer();
   if (auto* root = view_layer->Compositor()->PaintRootGraphicsLayer())
-    ForAllGraphicsLayers(*root, UpdateLayerTouchActionRects);
+    ForAllPaintingGraphicsLayers(*root, UpdateLayerTouchActionRects);
 }
 
 void ScrollingCoordinator::UpdateUserInputScrollable(
@@ -905,10 +905,8 @@ void ScrollingCoordinator::ComputeShouldHandleScrollGestureOnMainThreadRegion(
           scrollable_area->ResizerCornerRect(bounds_in_frame, kResizerForTouch);
 
       IntRect corner_in_root_frame =
-          scrollable_area->GetLayoutBox()
-              ->LocalToAbsoluteQuad(FloatRect(corner_in_frame),
-                                    kTraverseDocumentBoundaries)
-              .EnclosingBoundingBox();
+          EnclosingIntRect(scrollable_area->GetLayoutBox()->LocalToAbsoluteRect(
+              PhysicalRect(corner_in_frame), kTraverseDocumentBoundaries));
 
       if (ScrollsWithRootFrame(scrollable_area->GetLayoutBox())) {
         scrolling_region->Unite(

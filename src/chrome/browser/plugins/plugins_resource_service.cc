@@ -87,9 +87,9 @@ PluginsResourceService::PluginsResourceService(PrefService* local_state)
           g_browser_process->system_network_context_manager()
               ->GetSharedURLLoaderFactory(),
           switches::kDisableBackgroundNetworking,
-          base::Bind(data_decoder::SafeJsonParser::Parse,
-                     content::ServiceManagerConnection::GetForProcess()
-                         ->GetConnector()),
+          base::BindRepeating(&data_decoder::SafeJsonParser::Parse,
+                              content::ServiceManagerConnection::GetForProcess()
+                                  ->GetConnector()),
           kPluginResourceServiceTrafficAnnotation,
           base::BindOnce(&content::GetNetworkConnectionTracker)) {}
 

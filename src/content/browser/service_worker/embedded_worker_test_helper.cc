@@ -16,58 +16,12 @@
 #include "content/common/renderer.mojom.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/test/fake_network_url_loader_factory.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "net/http/http_util.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 
 namespace content {
-
-// A URLLoaderFactory that returns 200 OK with a simple body to any request.
-class EmbeddedWorkerTestHelper::MockNetworkURLLoaderFactory final
-    : public network::mojom::URLLoaderFactory {
- public:
-  MockNetworkURLLoaderFactory() = default;
-
-  // network::mojom::URLLoaderFactory implementation.
-  void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
-                            int32_t routing_id,
-                            int32_t request_id,
-                            uint32_t options,
-                            const network::ResourceRequest& url_request,
-                            network::mojom::URLLoaderClientPtr client,
-                            const net::MutableNetworkTrafficAnnotationTag&
-                                traffic_annotation) override {
-    std::string headers = "HTTP/1.1 200 OK\n\n";
-    net::HttpResponseInfo info;
-    info.headers = new net::HttpResponseHeaders(
-        net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.length()));
-    network::ResourceResponseHead response;
-    response.headers = info.headers;
-    response.headers->GetMimeType(&response.mime_type);
-    client->OnReceiveResponse(response);
-
-    std::string body = "this body came from the network";
-    uint32_t bytes_written = body.size();
-    mojo::DataPipe data_pipe;
-    data_pipe.producer_handle->WriteData(body.data(), &bytes_written,
-                                         MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
-    client->OnStartLoadingResponseBody(std::move(data_pipe.consumer_handle));
-
-    network::URLLoaderCompletionStatus status;
-    status.error_code = net::OK;
-    client->OnComplete(status);
-  }
-
-  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
-    bindings_.AddBinding(this, std::move(request));
-  }
-
- private:
-  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
-  DISALLOW_COPY_AND_ASSIGN(MockNetworkURLLoaderFactory);
-};
 
 class EmbeddedWorkerTestHelper::MockRendererInterface : public mojom::Renderer {
  public:
@@ -181,7 +135,7 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
       std::move(new_renderer_interface_ptr));
 
   default_network_loader_factory_ =
-      std::make_unique<MockNetworkURLLoaderFactory>();
+      std::make_unique<FakeNetworkURLLoaderFactory>();
   SetNetworkFactory(default_network_loader_factory_.get());
 }
 

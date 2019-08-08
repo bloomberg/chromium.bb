@@ -12,6 +12,7 @@
 #include "ash/app_list/app_list_util.h"
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/views/app_list_main_view.h"
+#include "ash/app_list/views/assistant/privacy_info_view.h"
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_base_view.h"
@@ -149,11 +150,17 @@ class SearchResultPageView::HorizontalSeparator : public views::View {
   DISALLOW_COPY_AND_ASSIGN(HorizontalSeparator);
 };
 
-SearchResultPageView::SearchResultPageView() : contents_view_(new views::View) {
+SearchResultPageView::SearchResultPageView(AppListViewDelegate* view_delegate)
+    : view_delegate_(view_delegate), contents_view_(new views::View) {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
   contents_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(), 0));
+
+  if (view_delegate_->ShouldShowAssistantPrivacyInfo()) {
+    assistant_privacy_info_view_ = new PrivacyInfoView(view_delegate_, this);
+    contents_view_->AddChildView(assistant_privacy_info_view_);
+  }
 
   // Create and set a shadow to be displayed as a border for this view.
   auto shadow_border = std::make_unique<views::BubbleBorder>(
@@ -260,6 +267,14 @@ gfx::Size SearchResultPageView::CalculatePreferredSize() const {
 }
 
 void SearchResultPageView::ReorderSearchResultContainers() {
+  int view_offset = 0;
+  if (assistant_privacy_info_view_) {
+    const bool show_privacy_info =
+        view_delegate_->ShouldShowAssistantPrivacyInfo();
+    view_offset = show_privacy_info ? 1 : 0;
+    assistant_privacy_info_view_->SetVisible(show_privacy_info);
+  }
+
   // Sort the result container views by their score.
   std::sort(result_container_views_.begin(), result_container_views_.end(),
             [](const SearchResultContainerView* a,
@@ -279,12 +294,12 @@ void SearchResultPageView::ReorderSearchResultContainers() {
       else
         separator->SetVisible(true);
 
-      contents_view_->ReorderChildView(separator, i * 2 - 1);
-      contents_view_->ReorderChildView(view->parent(), i * 2);
+      contents_view_->ReorderChildView(separator, i * 2 - 1 + view_offset);
+      contents_view_->ReorderChildView(view->parent(), i * 2 + view_offset);
 
       result_y_index += kSeparatorThickness;
     } else {
-      contents_view_->ReorderChildView(view->parent(), i);
+      contents_view_->ReorderChildView(view->parent(), i + view_offset);
     }
 
     view->NotifyFirstResultYIndex(result_y_index);
@@ -348,6 +363,10 @@ void SearchResultPageView::OnSearchResultContainerResultFocused(
   } else {
     search_box->SetText(focused_result_view->result()->title());
   }
+}
+
+void SearchResultPageView::OnAssistantPrivacyInfoViewCloseButtonPressed() {
+  ReorderSearchResultContainers();
 }
 
 void SearchResultPageView::OnHidden() {

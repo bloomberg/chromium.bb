@@ -4,9 +4,13 @@
 
 #include "chrome/browser/vr/service/xr_device_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/trace_event/common/trace_event_common.h"
+#include "build/build_config.h"
 #include "chrome/browser/vr/metrics/session_metrics_helper.h"
 #include "chrome/browser/vr/mode.h"
 #include "chrome/browser/vr/service/browser_xr_runtime.h"
@@ -20,6 +24,12 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
 #include "device/vr/vr_display_impl.h"
+
+#if defined(OS_WIN)
+#include "chrome/browser/vr/service/xr_session_request_consent_manager.h"
+#elif defined(OS_ANDROID)
+#include "chrome/browser/vr/service/gvr_consent_helper.h"
+#endif
 
 namespace vr {
 
@@ -44,10 +54,8 @@ device::mojom::XRRuntimeSessionOptionsPtr GetRuntimeOptions(
   device::mojom::XRRuntimeSessionOptionsPtr runtime_options =
       device::mojom::XRRuntimeSessionOptions::New();
   runtime_options->immersive = options->immersive;
-  runtime_options->has_user_activation = options->has_user_activation;
   runtime_options->environment_integration = options->environment_integration;
-  runtime_options->use_legacy_webvr_render_path =
-      options->use_legacy_webvr_render_path;
+  runtime_options->is_legacy_webvr = options->is_legacy_webvr;
   return runtime_options;
 }
 
@@ -63,9 +71,14 @@ XRDeviceImpl::XRDeviceImpl(content::RenderFrameHost* render_frame_host,
       binding_(this),
       weak_ptr_factory_(this) {
   binding_.Bind(std::move(request));
+  magic_window_controllers_.set_connection_error_handler(base::BindRepeating(
+      &XRDeviceImpl::OnInlineSessionDisconnected,
+      base::Unretained(this)));  // Unretained is OK since the collection is
+                                 // owned by XRDeviceImpl.
 }
 
-void XRDeviceImpl::OnNonImmersiveSessionCreated(
+void XRDeviceImpl::OnInlineSessionCreated(
+    device::mojom::XRDeviceId session_runtime_id,
     device::mojom::XRDevice::RequestSessionCallback callback,
     device::mojom::XRSessionPtr session,
     device::mojom::XRSessionControllerPtr controller) {
@@ -77,18 +90,45 @@ void XRDeviceImpl::OnNonImmersiveSessionCreated(
   // Start giving out magic window data if we are focused.
   controller->SetFrameDataRestricted(!in_focused_frame_);
 
-  magic_window_controllers_.AddPtr(std::move(controller));
+  auto id = magic_window_controllers_.AddPtr(std::move(controller));
 
-  OnSessionCreated(std::move(callback), std::move(session));
+  // Note: We might be recording an inline session that was created by WebVR.
+  GetSessionMetricsHelper()->RecordInlineSessionStart(id);
+
+  OnSessionCreated(session_runtime_id, std::move(callback), std::move(session));
+}
+
+void XRDeviceImpl::OnInlineSessionDisconnected(size_t session_id) {
+  // Notify metrics helper that inline session was stopped.
+  auto* metrics_helper = GetSessionMetricsHelper();
+  metrics_helper->RecordInlineSessionStop(session_id);
+}
+
+SessionMetricsHelper* XRDeviceImpl::GetSessionMetricsHelper() {
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host_);
+  SessionMetricsHelper* metrics_helper =
+      SessionMetricsHelper::FromWebContents(web_contents);
+  if (!metrics_helper) {
+    // This will only happen if we are not already in VR; set start params
+    // accordingly.
+    metrics_helper =
+        SessionMetricsHelper::CreateForWebContents(web_contents, Mode::kNoVr);
+  }
+
+  return metrics_helper;
 }
 
 void XRDeviceImpl::OnSessionCreated(
+    device::mojom::XRDeviceId session_runtime_id,
     device::mojom::XRDevice::RequestSessionCallback callback,
     device::mojom::XRSessionPtr session) {
   if (!session) {
     std::move(callback).Run(nullptr);
     return;
   }
+
+  UMA_HISTOGRAM_ENUMERATION("XR.RuntimeUsed", session_runtime_id);
 
   device::mojom::XRSessionClientPtr client;
   session->client_request = mojo::MakeRequest(&client);
@@ -104,7 +144,6 @@ XRDeviceImpl::~XRDeviceImpl() {
 
 void XRDeviceImpl::RequestSession(
     device::mojom::XRSessionOptionsPtr options,
-    bool triggered_by_displayactive,
     device::mojom::XRDevice::RequestSessionCallback callback) {
   DCHECK(options);
 
@@ -126,16 +165,92 @@ void XRDeviceImpl::RequestSession(
     return;
   }
 
+  // Inline sessions do not need permissions. WebVR did not require
+  // permissions.
+  // TODO(crbug.com/968221): Address privacy requirements for inline sessions
+  if (!options->immersive || options->is_legacy_webvr) {
+    DoRequestSession(std::move(options), std::move(callback));
+    return;
+  }
+
+  // TODO(crbug.com/968233): Unify the below consent flow.
+#if defined(OS_ANDROID)
+
+  if (options->environment_integration) {
+    // The session has requested AR mode. This will only work if
+    // the ARCore-backed runtime is available and enabled, and that has
+    // its own separate consent prompt. Otherwise, the session request will
+    // fail since no other runtimes support environment integration. In
+    // either case, there's no need to show the VR-specific consent prompt.
+    DoRequestSession(std::move(options), std::move(callback));
+    return;
+  } else {
+    // GVR.
+    if (!render_frame_host_) {
+      // Reject promise.
+      std::move(callback).Run(nullptr);
+    } else {
+      GvrConsentHelper::GetInstance()->PromptUserAndGetConsent(
+          render_frame_host_->GetProcess()->GetID(),
+          render_frame_host_->GetRoutingID(),
+          base::BindOnce(&XRDeviceImpl::OnConsentResult,
+                         weak_ptr_factory_.GetWeakPtr(), std::move(options),
+                         std::move(callback)));
+    }
+    return;
+  }
+
+#elif defined(OS_WIN)
+
+  DCHECK(!options->environment_integration);
+  XRSessionRequestConsentManager::Instance()->ShowDialogAndGetConsent(
+      GetWebContents(),
+      base::BindOnce(&XRDeviceImpl::OnConsentResult,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(options),
+                     std::move(callback)));
+  return;
+
+#else
+
+  NOTREACHED();
+
+#endif
+}
+
+void XRDeviceImpl::OnConsentResult(
+    device::mojom::XRSessionOptionsPtr options,
+    device::mojom::XRDevice::RequestSessionCallback callback,
+    bool is_consent_granted) {
+  if (!is_consent_granted) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  // Re-check for another device instance after a potential user consent.
+  // TODO(crbug.com/967513): prevent such races.
+  if (XRRuntimeManager::GetInstance()->IsOtherDevicePresenting(this)) {
+    // Can't create sessions while an immersive session exists.
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  DoRequestSession(std::move(options), std::move(callback));
+}
+
+void XRDeviceImpl::DoRequestSession(
+    device::mojom::XRSessionOptionsPtr options,
+    device::mojom::XRDevice::RequestSessionCallback callback) {
   // Get the runtime we'll be creating a session with.
   BrowserXRRuntime* runtime =
       XRRuntimeManager::GetInstance()->GetRuntimeForOptions(options.get());
-  int id_for_event = runtime ? static_cast<int>(runtime->GetId()) : -1;
-  TRACE_EVENT_INSTANT1("xr", "GetRuntimeForOptions", TRACE_EVENT_SCOPE_THREAD,
-                       "id", id_for_event);
   if (!runtime) {
     std::move(callback).Run(nullptr);
     return;
   }
+
+  device::mojom::XRDeviceId session_runtime_id = runtime->GetId();
+  TRACE_EVENT_INSTANT1("xr", "GetRuntimeForOptions", TRACE_EVENT_SCOPE_THREAD,
+                       "id", session_runtime_id);
 
   auto runtime_options = GetRuntimeOptions(options.get());
   runtime_options->render_process_id =
@@ -144,21 +259,21 @@ void XRDeviceImpl::RequestSession(
       render_frame_host_ ? render_frame_host_->GetRoutingID() : -1;
 
   if (runtime_options->immersive) {
-    if (!triggered_by_displayactive) {
-      ReportRequestPresent();
-    }
+    GetSessionMetricsHelper()->ReportRequestPresent(*runtime_options);
 
     base::OnceCallback<void(device::mojom::XRSessionPtr)> immersive_callback =
         base::BindOnce(&XRDeviceImpl::OnSessionCreated,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback));
+                       weak_ptr_factory_.GetWeakPtr(), session_runtime_id,
+                       std::move(callback));
     runtime->RequestSession(this, std::move(runtime_options),
                             std::move(immersive_callback));
   } else {
     base::OnceCallback<void(device::mojom::XRSessionPtr,
                             device::mojom::XRSessionControllerPtr)>
         non_immersive_callback =
-            base::BindOnce(&XRDeviceImpl::OnNonImmersiveSessionCreated,
-                           weak_ptr_factory_.GetWeakPtr(), std::move(callback));
+            base::BindOnce(&XRDeviceImpl::OnInlineSessionCreated,
+                           weak_ptr_factory_.GetWeakPtr(), session_runtime_id,
+                           std::move(callback));
     runtime->GetRuntime()->RequestSession(std::move(runtime_options),
                                           std::move(non_immersive_callback));
   }
@@ -169,20 +284,6 @@ void XRDeviceImpl::SupportsSession(
     device::mojom::XRDevice::SupportsSessionCallback callback) {
   XRRuntimeManager::GetInstance()->SupportsSession(std::move(options),
                                                    std::move(callback));
-}
-
-void XRDeviceImpl::ReportRequestPresent() {
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(render_frame_host_);
-  SessionMetricsHelper* metrics_helper =
-      SessionMetricsHelper::FromWebContents(web_contents);
-  if (!metrics_helper) {
-    // This will only happen if we are not already in VR, set start params
-    // accordingly.
-    metrics_helper =
-        SessionMetricsHelper::CreateForWebContents(web_contents, Mode::kNoVr);
-  }
-  metrics_helper->ReportRequestPresent();
 }
 
 void XRDeviceImpl::ExitPresent() {

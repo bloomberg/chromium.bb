@@ -47,12 +47,11 @@ class LayoutSVGInline : public LayoutInline {
   FloatRect StrokeBoundingBox() const final;
   FloatRect VisualRectInLocalSVGCoordinates() const final;
 
-  LayoutRect VisualRectInDocument(
+  PhysicalRect VisualRectInDocument(
       VisualRectFlags = kDefaultVisualRectFlags) const final;
-  void MapLocalToAncestor(
-      const LayoutBoxModelObject* ancestor,
-      TransformState&,
-      MapCoordinatesFlags = kApplyContainerFlip) const final;
+  void MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
+                          TransformState&,
+                          MapCoordinatesFlags) const final;
   const LayoutObject* PushMappingToContainer(
       const LayoutBoxModelObject* ancestor_to_stop_at,
       LayoutGeometryMap&) const final;

@@ -191,7 +191,7 @@ BackgroundFetchTestBase::CreateBackgroundFetchRegistrationData(
       /* download_total= */ 0, /* downloaded= */ 0, result, failure_reason);
 }
 
-scoped_refptr<DevToolsBackgroundServicesContext>
+scoped_refptr<DevToolsBackgroundServicesContextImpl>
 BackgroundFetchTestBase::devtools_context() const {
   DCHECK(storage_partition_);
   return static_cast<StoragePartitionImpl*>(storage_partition_)

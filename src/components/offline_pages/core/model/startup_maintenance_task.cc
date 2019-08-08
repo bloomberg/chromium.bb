@@ -4,6 +4,8 @@
 
 #include "components/offline_pages/core/model/startup_maintenance_task.h"
 
+#include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -16,6 +18,7 @@
 #include "base/trace_event/trace_event.h"
 #include "components/offline_pages/core/archive_manager.h"
 #include "components/offline_pages/core/client_policy_controller.h"
+#include "components/offline_pages/core/model/delete_page_task.h"
 #include "components/offline_pages/core/offline_page_client_policy.h"
 #include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/offline_store_utils.h"
@@ -66,20 +69,6 @@ std::set<base::FilePath> GetAllArchives(const base::FilePath& archives_dir) {
     result.insert(archive_path);
   }
   return result;
-}
-
-bool DeletePagesByOfflineIds(const std::vector<int64_t>& offline_ids,
-                             sql::Database* db) {
-  static const char kSql[] =
-      "DELETE FROM " OFFLINE_PAGES_TABLE_NAME " WHERE offline_id = ?";
-
-  for (const auto& offline_id : offline_ids) {
-    sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
-    statement.BindInt64(0, offline_id);
-    if (!statement.Run())
-      return false;
-  }
-  return true;
 }
 
 bool DeleteFiles(const std::vector<base::FilePath>& file_paths) {
@@ -140,7 +129,7 @@ SyncOperationResult ClearLegacyPagesInPrivateDirSync(
   // If there's any database related errors, the function will return failure,
   // and the database operations will be rolled back since the transaction will
   // not be committed.
-  if (!DeletePagesByOfflineIds(offline_ids_to_delete, db))
+  if (!DeletePageTask::DeletePagesFromDbSync(offline_ids_to_delete, db))
     return SyncOperationResult::DB_OPERATION_ERROR;
 
   if (!transaction.Commit())
@@ -194,7 +183,7 @@ SyncOperationResult CheckTemporaryPageConsistencySync(
     // database related errors, the function will return false, and the database
     // operations will be rolled back since the transaction will not be
     // committed.
-    if (!DeletePagesByOfflineIds(offline_ids_to_delete, db))
+    if (!DeletePageTask::DeletePagesFromDbSync(offline_ids_to_delete, db))
       return SyncOperationResult::DB_OPERATION_ERROR;
     UMA_HISTOGRAM_COUNTS_1M(
         "OfflinePages.ConsistencyCheck.Temporary.PagesMissingArchiveFileCount",

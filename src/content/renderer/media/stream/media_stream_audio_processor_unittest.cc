@@ -157,25 +157,19 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
     const webrtc::AudioProcessing::Config config =
         audio_processing->GetConfig();
     EXPECT_TRUE(config.echo_canceller.enabled);
+    EXPECT_TRUE(config.gain_controller1.enabled);
+    EXPECT_TRUE(config.high_pass_filter.enabled);
+    EXPECT_TRUE(config.noise_suppression.enabled);
+    EXPECT_EQ(config.noise_suppression.level, config.noise_suppression.kHigh);
+    EXPECT_FALSE(config.voice_detection.enabled);
 #if defined(OS_ANDROID)
     EXPECT_TRUE(config.echo_canceller.mobile_mode);
-    EXPECT_FALSE(config.voice_detection.enabled);
+    EXPECT_EQ(config.gain_controller1.mode,
+              config.gain_controller1.kFixedDigital);
 #else
     EXPECT_FALSE(config.echo_canceller.mobile_mode);
-    EXPECT_TRUE(config.voice_detection.enabled);
-#endif
-    EXPECT_TRUE(config.high_pass_filter.enabled);
-
-    EXPECT_TRUE(audio_processing->noise_suppression()->is_enabled());
-    EXPECT_TRUE(audio_processing->noise_suppression()->level() ==
-        webrtc::NoiseSuppression::kHigh);
-    EXPECT_TRUE(audio_processing->gain_control()->is_enabled());
-#if defined(OS_ANDROID)
-    EXPECT_TRUE(audio_processing->gain_control()->mode() ==
-        webrtc::GainControl::kFixedDigital);
-#else
-    EXPECT_TRUE(audio_processing->gain_control()->mode() ==
-        webrtc::GainControl::kAdaptiveAnalog);
+    EXPECT_EQ(config.gain_controller1.mode,
+              config.gain_controller1.kAdaptiveAnalog);
 #endif
   }
 
@@ -246,8 +240,18 @@ TEST_F(MediaStreamAudioProcessorTest, MAYBE_TestAllSampleRates) {
           properties, webrtc_audio_device.get()));
   EXPECT_TRUE(audio_processor->has_audio_processing());
 
-  static const int kSupportedSampleRates[] =
-      { 8000, 16000, 22050, 32000, 44100, 48000 };
+  static const int kSupportedSampleRates[] = {
+    8000,
+    16000,
+    22050,
+    32000,
+    44100,
+    48000
+#if defined(IS_CHROMECAST)
+    ,
+    96000
+#endif  // defined(IS_CHROMECAST)
+  };
   for (size_t i = 0; i < base::size(kSupportedSampleRates); ++i) {
     int buffer_size = kSupportedSampleRates[i] / 100;
     media::AudioParameters params(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
@@ -256,10 +260,15 @@ TEST_F(MediaStreamAudioProcessorTest, MAYBE_TestAllSampleRates) {
     audio_processor->OnCaptureFormatChanged(params);
     VerifyDefaultComponents(audio_processor.get());
 
-    ProcessDataAndVerifyFormat(audio_processor.get(),
-                               blink::kAudioProcessingSampleRate,
+    int expected_sample_rate =
+#if defined(IS_CHROMECAST)
+        std::min(kSupportedSampleRates[i], blink::kAudioProcessingSampleRate);
+#else
+        blink::kAudioProcessingSampleRate;
+#endif  // defined(IS_CHROMECAST)
+    ProcessDataAndVerifyFormat(audio_processor.get(), expected_sample_rate,
                                kAudioProcessingNumberOfChannel,
-                               blink::kAudioProcessingSampleRate / 100);
+                               expected_sample_rate / 100);
   }
 
   // Stop |audio_processor| so that it removes itself from

@@ -119,7 +119,7 @@ TEST_F(FeedbackUploaderDispatchTest, 204Response) {
   network::ResourceResponseHead head;
   std::string headers("HTTP/1.1 204 No Content\n\n");
   head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+      net::HttpUtil::AssembleRawHeaders(headers));
   network::URLLoaderCompletionStatus status;
   test_url_loader_factory()->AddResponse(GURL(kFeedbackPostUrl), head, "",
                                          status);
@@ -142,7 +142,7 @@ TEST_F(FeedbackUploaderDispatchTest, 400Response) {
   network::ResourceResponseHead head;
   std::string headers("HTTP/1.1 400 Bad Request\n\n");
   head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+      net::HttpUtil::AssembleRawHeaders(headers));
   network::URLLoaderCompletionStatus status;
   test_url_loader_factory()->AddResponse(GURL(kFeedbackPostUrl), head, "",
                                          status);
@@ -164,7 +164,7 @@ TEST_F(FeedbackUploaderDispatchTest, 500Response) {
   network::ResourceResponseHead head;
   std::string headers("HTTP/1.1 500 Server Error\n\n");
   head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+      net::HttpUtil::AssembleRawHeaders(headers));
   network::URLLoaderCompletionStatus status;
   test_url_loader_factory()->AddResponse(GURL(kFeedbackPostUrl), head, "",
                                          status);

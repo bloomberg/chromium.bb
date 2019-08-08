@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_types.h"
 #include "media/gpu/media_gpu_export.h"
 
 namespace media {
@@ -24,8 +25,15 @@ class MEDIA_GPU_EXPORT VideoFrameMapper {
   virtual scoped_refptr<VideoFrame> Map(
       scoped_refptr<const VideoFrame> video_frame) const = 0;
 
+  // Returns the allowed pixel format of video frames on Map().
+  VideoPixelFormat pixel_format() const { return format_; }
+
  protected:
-  VideoFrameMapper() = default;
+  explicit VideoFrameMapper(VideoPixelFormat format) : format_(format) {}
+
+  // The allowed pixel format of video frames on Map().
+  VideoPixelFormat format_;
+
   DISALLOW_COPY_AND_ASSIGN(VideoFrameMapper);
 };
 

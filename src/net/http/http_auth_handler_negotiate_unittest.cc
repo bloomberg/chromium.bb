@@ -152,7 +152,7 @@ class HttpAuthHandlerNegotiateTest : public PlatformTest,
             GSS_S_CONTINUE_NEEDED,  // Major response code
             0,                      // Minor response code
             context1,               // Context
-            NULL,                   // Expected input token
+            nullptr,                // Expected input token
             kAuthResponse),         // Output token
         MockAuthLibrary::SecurityContextQuery(
             "Negotiate",     // Package name
@@ -178,7 +178,7 @@ class HttpAuthHandlerNegotiateTest : public PlatformTest,
   void SetupErrorMocks(MockAuthLibrary* mock_library,
                        int major_status,
                        int minor_status) {
-    const gss_OID_desc kDefaultMech = { 0, NULL };
+    const gss_OID_desc kDefaultMech = {0, nullptr};
     test::GssContextMockImpl context(
         "localhost",                    // Source name
         "example.com",                  // Target name
@@ -192,8 +192,8 @@ class HttpAuthHandlerNegotiateTest : public PlatformTest,
         major_status,  // Major response code
         minor_status,  // Minor response code
         context,       // Context
-        NULL,          // Expected input token
-        NULL);         // Output token
+        nullptr,       // Expected input token
+        nullptr);      // Output token
 
     mock_library->ExpectSecurityContext(query.expected_package,
                                         query.response_code,
@@ -355,12 +355,13 @@ TEST_F(HttpAuthHandlerNegotiateTest, ServerNotInKerberosDatabase) {
   std::unique_ptr<HttpAuthHandlerNegotiate> auth_handler;
   EXPECT_EQ(OK, CreateHandler(
       false, false, false, "http://alias:500", &auth_handler));
-  ASSERT_TRUE(auth_handler.get() != NULL);
+  ASSERT_TRUE(auth_handler.get() != nullptr);
   TestCompletionCallback callback;
   HttpRequestInfo request_info;
   std::string token;
-  EXPECT_EQ(ERR_IO_PENDING, auth_handler->GenerateAuthToken(
-      NULL, &request_info, callback.callback(), &token));
+  EXPECT_EQ(ERR_IO_PENDING,
+            auth_handler->GenerateAuthToken(nullptr, &request_info,
+                                            callback.callback(), &token));
   EXPECT_THAT(callback.WaitForResult(), IsError(ERR_MISSING_AUTH_CREDENTIALS));
 }
 
@@ -371,12 +372,13 @@ TEST_F(HttpAuthHandlerNegotiateTest, NoKerberosCredentials) {
   std::unique_ptr<HttpAuthHandlerNegotiate> auth_handler;
   EXPECT_EQ(OK, CreateHandler(
       false, false, false, "http://alias:500", &auth_handler));
-  ASSERT_TRUE(auth_handler.get() != NULL);
+  ASSERT_TRUE(auth_handler.get() != nullptr);
   TestCompletionCallback callback;
   HttpRequestInfo request_info;
   std::string token;
-  EXPECT_EQ(ERR_IO_PENDING, auth_handler->GenerateAuthToken(
-      NULL, &request_info, callback.callback(), &token));
+  EXPECT_EQ(ERR_IO_PENDING,
+            auth_handler->GenerateAuthToken(nullptr, &request_info,
+                                            callback.callback(), &token));
   EXPECT_THAT(callback.WaitForResult(), IsError(ERR_MISSING_AUTH_CREDENTIALS));
 }
 
@@ -398,9 +400,28 @@ TEST_F(HttpAuthHandlerNegotiateTest, MissingGSSAPI) {
       "Negotiate", HttpAuth::AUTH_SERVER, gurl, NetLogWithSource(),
       &generic_handler);
   EXPECT_THAT(rv, IsError(ERR_UNSUPPORTED_AUTH_SCHEME));
-  EXPECT_TRUE(generic_handler.get() == NULL);
+  EXPECT_TRUE(generic_handler.get() == nullptr);
 }
 #endif  // defined(DLOPEN_KERBEROS)
+
+// AllowGssapiLibraryLoad() is only supported on Chrome OS.
+#if defined(OS_CHROMEOS)
+TEST_F(HttpAuthHandlerNegotiateTest, AllowGssapiLibraryLoad) {
+  // Disabling allow_gssapi_library_load should prevent handler creation.
+  SetupMocks(AuthLibrary());
+  http_auth_preferences()->set_allow_gssapi_library_load(false);
+  std::unique_ptr<HttpAuthHandlerNegotiate> auth_handler;
+  int rv = CreateHandler(true, false, true, "http://alias:500", &auth_handler);
+  EXPECT_THAT(rv, IsError(ERR_UNSUPPORTED_AUTH_SCHEME));
+  EXPECT_FALSE(auth_handler);
+
+  // Handler creation can be dynamically re-enabled.
+  http_auth_preferences()->set_allow_gssapi_library_load(true);
+  rv = CreateHandler(true, false, true, "http://alias:500", &auth_handler);
+  EXPECT_EQ(OK, rv);
+  EXPECT_TRUE(auth_handler);
+}
+#endif  // defined(OS_CHROMEOS)
 
 #endif  // defined(OS_POSIX)
 

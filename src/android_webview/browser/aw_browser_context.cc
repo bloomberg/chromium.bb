@@ -25,6 +25,7 @@
 #include "base/task/post_task.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/download/public/common/in_progress_download_manager.h"
+#include "components/keyed_service/core/simple_key_map.h"
 #include "components/policy/core/browser/browser_policy_connector_base.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -107,9 +108,12 @@ AwBrowserContext::AwBrowserContext(
     std::unique_ptr<policy::BrowserPolicyConnectorBase> policy_connector)
     : context_storage_path_(path),
       user_pref_service_(std::move(pref_service)),
-      browser_policy_connector_(std::move(policy_connector)) {
+      browser_policy_connector_(std::move(policy_connector)),
+      simple_factory_key_(GetPath(), IsOffTheRecord()) {
   DCHECK(!g_browser_context);
   g_browser_context = this;
+  SimpleKeyMap::GetInstance()->Associate(this, &simple_factory_key_);
+
   BrowserContext::Initialize(this, path);
 
   pref_change_registrar_.Init(user_pref_service_.get());
@@ -122,6 +126,7 @@ AwBrowserContext::AwBrowserContext(
 
 AwBrowserContext::~AwBrowserContext() {
   DCHECK_EQ(this, g_browser_context);
+  SimpleKeyMap::GetInstance()->Dissociate(this);
   g_browser_context = NULL;
 }
 
@@ -390,7 +395,7 @@ AwBrowserContext::RetriveInProgressDownloadManager() {
   return new download::InProgressDownloadManager(
       nullptr, base::FilePath(),
       base::BindRepeating(&IgnoreOriginSecurityCheck),
-      base::BindRepeating(&content::DownloadRequestUtils::IsURLSafe));
+      base::BindRepeating(&content::DownloadRequestUtils::IsURLSafe), nullptr);
 }
 
 web_restrictions::WebRestrictionsClient*

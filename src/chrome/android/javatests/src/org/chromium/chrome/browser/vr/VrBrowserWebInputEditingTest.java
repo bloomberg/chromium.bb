@@ -44,7 +44,8 @@ import java.util.concurrent.TimeoutException;
  * End-to-end tests for interacting with HTML input elements on a webpage.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@CommandLineFlags.
+Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-features=LogJsConsoleMessages"})
 @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
 public class VrBrowserWebInputEditingTest {
     // We explicitly instantiate a rule here instead of using parameterization since this class
@@ -439,6 +440,9 @@ public class VrBrowserWebInputEditingTest {
     @Feature({"Browser", "RenderTest"})
     public void testFullscreenVideoControls()
             throws InterruptedException, TimeoutException, IOException {
+        // There's occasionally slight AA differences along the play button, so tolerate a small
+        // amount of differing.
+        mRenderTestRule.setPixelDiffThreshold(2);
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
         NativeUiUtils.enableMockedInput();
         mVrBrowserTestFramework.loadUrlAndAwaitInitialization(

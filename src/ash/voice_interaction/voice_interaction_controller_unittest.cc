@@ -5,6 +5,7 @@
 #include "ash/voice_interaction/voice_interaction_controller.h"
 
 #include <memory>
+#include <utility>
 
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/shell.h"
@@ -47,6 +48,7 @@ class TestVoiceInteractionObserver : public mojom::VoiceInteractionObserver {
   void OnArcPlayStoreEnabledChanged(bool enabled) override {
     arc_play_store_enabled_ = enabled;
   }
+  void OnLockedFullScreenStateChanged(bool enabled) override {}
 
   mojom::VoiceInteractionState voice_interaction_state() const {
     return state_;

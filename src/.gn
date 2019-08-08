@@ -77,6 +77,8 @@ check_targets = [
   "//buildtools/*",
   "//cc/*",
 
+  #"//chrome/*",          # Many errors: https://crbug.com/949535
+
   #"//chrome/android/*",  # 13 errors
   "//chrome/app/*",
   "//chrome/app_shim/*",
@@ -104,7 +106,6 @@ check_targets = [
   "//chrome/browser/client_hints/*",
   "//chrome/browser/clipboard/*",
   "//chrome/browser/component_updater/*",
-  "//chrome/browser/conflicts/*",
   "//chrome/browser/consent_auditor/*",
   "//chrome/browser/content_settings/*",
   "//chrome/browser/crash_upload_list/*",
@@ -227,6 +228,7 @@ check_targets = [
   "//chrome/build/*",
 
   #"//chrome/child/*",  # 1 error on Windows
+  "//chrome/chrome_elf/*",
   "//chrome/chrome_cleaner/*",
 
   #"//chrome/chrome_watcher/*",  # 3 errors on Windows
@@ -243,14 +245,14 @@ check_targets = [
   #"//chrome/renderer/*",  # ~30 errors
   #"//chrome/service/*",  # 2 errors
   #"//chrome/services/*",  # ~30 errors
-  #"//chrome/test/*",  # ~3000 errors
+  #"//chrome/test/*",  # ~1900 errors
+  "//chrome/test/chromedriver",
   "//chrome/third_party/*",
   "//chrome/tools/*",
   "//chrome/utility/*",
 
   "//chromecast/*",
   "//chromeos/*",
-  "//chrome_elf/*",
   "//cloud_print/*",
   "//components/*",
   "//content/*",
@@ -267,7 +269,10 @@ check_targets = [
   "//extensions/browser",
   "//extensions/browser:browser_tests",
   "//extensions/browser:unit_tests",
+  "//extensions/browser/api:api_registration",
   "//extensions/browser/install:*",
+  "//extensions/browser/kiosk/*",
+  "//extensions/browser/guest_view/web_view/web_ui/*",
   "//extensions/common/*",
   "//extensions/components/javascript_dialog_extensions_client",
   "//extensions/components/native_app_window",
@@ -487,7 +492,6 @@ check_targets = [
   "//third_party/logilab/*",
   "//third_party/lss/*",
   "//third_party/lzma_sdk/*",
-  "//third_party/mach_override/*",
   "//third_party/markdown/*",
   "//third_party/markupsafe/*",
   "//third_party/material_design_icons/*",
@@ -508,8 +512,6 @@ check_targets = [
   "//third_party/objenesis/*",
   "//third_party/ocmock/*",
   "//third_party/openh264/*",
-
-  # "//third_party/openmax_dl/*",  # 1 error
   "//third_party/openvr/*",
   "//third_party/opus/*",
   "//third_party/ots/*",
@@ -524,7 +526,6 @@ check_targets = [
   "//third_party/protobuf/*",
   "//third_party/pycoverage/*",
   "//third_party/pyelftools/*",
-  "//third_party/pyftpdlib/*",
   "//third_party/pyjson5/*",
   "//third_party/pylint/*",
   "//third_party/pymock/*",

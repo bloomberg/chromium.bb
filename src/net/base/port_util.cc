@@ -72,8 +72,8 @@ const int kRestrictedPorts[] = {
     548,     // AFP (Apple Filing Protocol)
     556,     // remotefs
     563,     // nntp+ssl
-    587,     // stmp?
-    601,     // ??
+    587,     // smtp (rfc6409)
+    601,     // syslog-conn (rfc3195)
     636,     // ldap+ssl
     993,     // ldap+ssl
     995,     // pop3+ssl

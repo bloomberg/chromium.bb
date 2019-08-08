@@ -18,7 +18,7 @@
 namespace blink {
 
 void VideoPainter::PaintReplaced(const PaintInfo& paint_info,
-                                 const LayoutPoint& paint_offset) {
+                                 const PhysicalOffset& paint_offset) {
   WebMediaPlayer* media_player =
       layout_video_.MediaElement()->GetWebMediaPlayer();
   bool displaying_poster =
@@ -26,8 +26,8 @@ void VideoPainter::PaintReplaced(const PaintInfo& paint_info,
   if (!displaying_poster && !media_player)
     return;
 
-  LayoutRect replaced_rect(layout_video_.ReplacedContentRect());
-  replaced_rect.MoveBy(paint_offset);
+  PhysicalRect replaced_rect = layout_video_.ReplacedContentRect();
+  replaced_rect.Move(paint_offset);
   IntRect snapped_replaced_rect = PixelSnappedIntRect(replaced_rect);
 
   if (snapped_replaced_rect.IsEmpty())
@@ -38,8 +38,8 @@ void VideoPainter::PaintReplaced(const PaintInfo& paint_info,
     return;
 
   GraphicsContext& context = paint_info.context;
-  LayoutRect content_box_rect = layout_video_.PhysicalContentBoxRect();
-  content_box_rect.MoveBy(paint_offset);
+  PhysicalRect content_box_rect = layout_video_.PhysicalContentBoxRect();
+  content_box_rect.Move(paint_offset);
 
   // Since we may have changed the location of the replaced content, we need to
   // notify PAC.

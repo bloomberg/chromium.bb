@@ -10,8 +10,8 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "remoting/base/grpc_support/scoped_grpc_server_stream.h"
+#include "remoting/proto/ftl/v1/ftl_services.grpc.pb.h"
 #include "remoting/signaling/ftl_grpc_context.h"
-#include "remoting/signaling/ftl_services.grpc.pb.h"
 
 namespace remoting {
 
@@ -138,7 +138,7 @@ void FtlMessageReceptionChannel::RunStreamClosedCallbacks(
 }
 
 void FtlMessageReceptionChannel::RetryStartReceivingMessagesWithBackoff() {
-  VLOG(0) << "RetryStartReceivingMessages will be called with backoff: "
+  VLOG(1) << "RetryStartReceivingMessages will be called with backoff: "
           << reconnect_retry_backoff_.GetTimeUntilRelease();
   reconnect_retry_timer_.Start(
       FROM_HERE, reconnect_retry_backoff_.GetTimeUntilRelease(),
@@ -147,7 +147,7 @@ void FtlMessageReceptionChannel::RetryStartReceivingMessagesWithBackoff() {
 }
 
 void FtlMessageReceptionChannel::RetryStartReceivingMessages() {
-  VLOG(0) << "RetryStartReceivingMessages called";
+  VLOG(1) << "RetryStartReceivingMessages called";
   StopReceivingMessagesInternal();
   StartReceivingMessagesInternal();
 }
@@ -171,7 +171,7 @@ void FtlMessageReceptionChannel::StopReceivingMessagesInternal() {
   stream_pong_timer_.reset();
 }
 
-bool FtlMessageReceptionChannel::IsReceivingMessages() {
+bool FtlMessageReceptionChannel::IsReceivingMessages() const {
   return receive_messages_stream_.get() != nullptr;
 }
 
@@ -194,7 +194,7 @@ void FtlMessageReceptionChannel::OnPongTimeout() {
 }
 
 void FtlMessageReceptionChannel::OnStreamLifetimeExceeded() {
-  VLOG(0) << "Reached maximum lifetime for current stream.";
+  VLOG(1) << "Reached maximum lifetime for current stream.";
   reconnect_retry_backoff_.Reset();
   RetryStartReceivingMessages();
 }

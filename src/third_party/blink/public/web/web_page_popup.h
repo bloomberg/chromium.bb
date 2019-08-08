@@ -38,6 +38,7 @@
 namespace blink {
 
 class WebWidgetClient;
+class WebDocument;
 
 class WebPagePopupClient : public WebWidgetClient {
  public:
@@ -53,6 +54,11 @@ class WebPagePopup : public WebWidget {
   // be released when the popup is closed via Close().
   BLINK_EXPORT static WebPagePopup* Create(WebPagePopupClient*);
   virtual WebPoint PositionRelativeToOwner() = 0;
+
+  // The popup's accessibility tree is connected to the main document's
+  // accessibility tree. Access to the popup document is needed to ensure the
+  // popup's layout is clean before serializing the combined tree.
+  virtual WebDocument GetDocument() = 0;
 
   // Web tests require access to the client for a WebPagePopup in order
   // to synchronously composite.

@@ -29,6 +29,8 @@ class AppUpdate;
 namespace chromeos {
 namespace kiosk_next_home {
 
+class IntentConfigHelper;
+
 // Service implementation for the Kiosk Next AppController.
 // This class is responsible for managing Chrome OS apps and returning useful
 // information about them to the Kiosk Next Home.
@@ -52,11 +54,17 @@ class AppControllerService : public mojom::AppController,
   void UninstallApp(const std::string& app_id) override;
   void GetArcAndroidId(
       mojom::AppController::GetArcAndroidIdCallback callback) override;
-  void LaunchHomeUrl(const std::string& suffix,
-                     LaunchHomeUrlCallback callback) override;
+  void LaunchIntent(const std::string& intent,
+                    LaunchIntentCallback callback) override;
 
   // apps::AppRegistryCache::Observer:
   void OnAppUpdate(const apps::AppUpdate& update) override;
+  void OnAppRegistryCacheWillBeDestroyed(
+      apps::AppRegistryCache* cache) override;
+
+  // Allows overriding the intent config helper for tests.
+  void SetIntentConfigHelperForTesting(
+      std::unique_ptr<IntentConfigHelper> helper);
 
  private:
   // Creates a new Kiosk Next App from a delta app update coming from
@@ -74,6 +82,7 @@ class AppControllerService : public mojom::AppController,
   mojo::BindingSet<mojom::AppController> bindings_;
   mojom::AppControllerClientPtr client_;
   apps::AppServiceProxy* app_service_proxy_;
+  std::unique_ptr<IntentConfigHelper> intent_config_helper_;
 
   // Map of app ids to android packages.
   //

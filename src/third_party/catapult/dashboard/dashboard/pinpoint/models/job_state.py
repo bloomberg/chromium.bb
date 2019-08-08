@@ -2,7 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from future_builtins import map # pylint: disable=redefined-builtin
+
 import collections
+import functools
 import httplib
 import logging
 
@@ -78,7 +84,7 @@ class JobState(object):
     else:
       change_with_pin = change
 
-    for _ in xrange(_REPEAT_COUNT_INCREASE):
+    for _ in range(_REPEAT_COUNT_INCREASE):
       attempt = attempt_module.Attempt(self._quests, change_with_pin)
       self._attempts[change].append(attempt)
 
@@ -109,7 +115,8 @@ class JobState(object):
     # The Change insertion simultaneously uses and modifies the list indices.
     # However, the loop index goes in reverse order and Changes are only added
     # after the loop index, so the loop never encounters the modified items.
-    for index in xrange(len(self._changes) - 1, 0, -1):
+    # TODO: consider using `reduce(...)` here to implement a fold?
+    for index in range(len(self._changes) - 1, 0, -1):
       change_a = self._changes[index - 1]
       change_b = self._changes[index]
       comparison = self._Compare(change_a, change_b)
@@ -134,7 +141,7 @@ class JobState(object):
 
   def ScheduleWork(self):
     work_left = False
-    for attempts in self._attempts.itervalues():
+    for attempts in self._attempts.values():
       for attempt in attempts:
         if attempt.completed:
           continue
@@ -149,7 +156,7 @@ class JobState(object):
 
   def _RaiseErrorIfAllAttemptsFailed(self):
     counter = collections.Counter()
-    for attempts in self._attempts.itervalues():
+    for attempts in self._attempts.values():
       for attempt in attempts:
         if not attempt.exception:
           return
@@ -160,7 +167,7 @@ class JobState(object):
       return
 
     exception, exception_count = most_common_exceptions[0]
-    attempt_count = sum(counter.itervalues())
+    attempt_count = sum(counter.values())
     raise Exception(
         'All of the runs failed. The most common error (%d/%d runs) '
         'was:\n%s' % (exception_count, attempt_count, exception))
@@ -176,33 +183,48 @@ class JobState(object):
       A list of tuples: [(Change_before, Change_after), ...]
     """
     differences = []
-    for index in xrange(1, len(self._changes)):
-      change_a = self._changes[index - 1]
-      change_b = self._changes[index]
-      if self._Compare(change_a, change_b) == compare.DIFFERENT:
-        differences.append((change_a, change_b))
+    def Comparison(a, b):
+      if not a:
+        return b
+      if self._Compare(a, b) == compare.DIFFERENT:
+        differences.append((a, b))
+      return b
+    functools.reduce(Comparison, self._changes, None)
     return differences
 
   def AsDict(self):
-    state = []
-    for change in self._changes:
-      state.append({
+    def Transform(change):
+      return ({
           'attempts': [attempt.AsDict() for attempt in self._attempts[change]],
           'change': change.AsDict(),
           'comparisons': {},
           'result_values': self.ResultValues(change),
-      })
+      }, change)
 
-    for index in xrange(1, len(self._changes)):
-      comparison = self._Compare(self._changes[index - 1], self._changes[index])
-      state[index - 1]['comparisons']['next'] = comparison
-      state[index]['comparisons']['prev'] = comparison
+    def CollectStates(states, change_b):
+      if len(states) == 0:
+        states.append(Transform(change_b))
+        return states
+
+      transformed_a, change_a = states.pop()
+      transformed_b, change_b = Transform(change_b)
+      comparison = self._Compare(change_a, change_b)
+      transformed_a['comparisons']['next'] = comparison
+      transformed_b['comparisons']['prev'] = comparison
+      states.extend([(transformed_a, change_a), (transformed_b, change_b)])
+      return states
 
     return {
-        'comparison_mode': self._comparison_mode,
-        'metric': self.metric,
-        'quests': map(str, self._quests),
-        'state': state,
+        'comparison_mode':
+            self._comparison_mode,
+        'metric':
+            self.metric,
+        'quests':
+            list(map(str, self._quests)),
+        'state': [
+            transformed for transformed, _ in functools.reduce(
+                CollectStates, self._changes, [])
+        ]
     }
 
   def _Compare(self, change_a, change_b):
@@ -229,7 +251,7 @@ class JobState(object):
     if any(not attempt.completed for attempt in attempts_a + attempts_b):
       return compare.PENDING
 
-    attempt_count = (len(attempts_a) + len(attempts_b)) / 2
+    attempt_count = (len(attempts_a) + len(attempts_b)) // 2
 
     executions_by_quest_a = _ExecutionsPerQuest(attempts_a)
     executions_by_quest_b = _ExecutionsPerQuest(attempts_b)
@@ -270,7 +292,7 @@ class JobState(object):
           if max_iqr:
             comparison_magnitude = abs(self._comparison_magnitude / max_iqr)
           else:
-            comparison_magnitude = 1000  # Something very large.
+            comparison_magnitude = 1000.0  # Something very large.
         else:
           comparison_magnitude = 1.0
         comparison = compare.Compare(values_a, values_b, attempt_count,
@@ -314,7 +336,7 @@ def _ExecutionsPerQuest(attempts):
 
 
 def Mean(values):
-  values = [v for v in values if isinstance(v, (int, long, float))]
+  values = [v for v in values if isinstance(v, (int, float))]
   if len(values) == 0:
     return float('nan')
   return float(sum(values)) / len(values)

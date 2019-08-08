@@ -33,6 +33,7 @@
 #include "content/app/resources/grit/content_resources.h"
 #include "content/app/strings/grit/content_strings.h"
 #include "content/child/child_thread_impl.h"
+#include "content/common/appcache_interfaces.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -50,7 +51,18 @@
 #include "third_party/blink/public/resources/grit/blink_resources.h"
 #include "third_party/zlib/google/compression_utils.h"
 #include "ui/base/layout.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/gestures/blink/web_gesture_curve_impl.h"
+
+#if defined(OS_ANDROID)
+#include "content/child/webthemeengine_impl_android.h"
+#else
+#include "content/child/webthemeengine_impl_default.h"
+#endif
+
+#if defined(OS_MACOSX)
+#include "content/child/webthemeengine_impl_mac.h"
+#endif
 
 using blink::WebData;
 using blink::WebLocalizedString;
@@ -61,7 +73,21 @@ using blink::WebURLError;
 
 namespace content {
 
-static int ToMessageID(WebLocalizedString::Name name) {
+namespace {
+
+std::unique_ptr<blink::WebThemeEngine> GetWebThemeEngine() {
+#if defined(OS_ANDROID)
+  return std::make_unique<WebThemeEngineAndroid>();
+#elif defined(OS_MACOSX)
+  if (features::IsFormControlsRefreshEnabled())
+    return std::make_unique<WebThemeEngineDefault>();
+  return std::make_unique<WebThemeEngineMac>();
+#else
+  return std::make_unique<WebThemeEngineDefault>();
+#endif
+}
+
+int ToMessageID(WebLocalizedString::Name name) {
   switch (name) {
     case WebLocalizedString::kAXAMPMFieldText:
       return IDS_AX_AM_PM_FIELD_TEXT;
@@ -323,30 +349,6 @@ static int ToMessageID(WebLocalizedString::Name name) {
   return -1;
 }
 
-// TODO(skyostil): Ensure that we always have an active task runner when
-// constructing the platform.
-BlinkPlatformImpl::BlinkPlatformImpl()
-    : BlinkPlatformImpl(base::ThreadTaskRunnerHandle::IsSet()
-                            ? base::ThreadTaskRunnerHandle::Get()
-                            : nullptr,
-                        nullptr) {}
-
-BlinkPlatformImpl::BlinkPlatformImpl(
-    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner)
-    : main_thread_task_runner_(std::move(main_thread_task_runner)),
-      io_thread_task_runner_(std::move(io_thread_task_runner)) {}
-
-BlinkPlatformImpl::~BlinkPlatformImpl() {
-}
-
-void BlinkPlatformImpl::RecordAction(const blink::UserMetricsAction& name) {
-  if (ChildThread* child_thread = ChildThread::Get())
-    child_thread->RecordComputedAction(name.Action());
-}
-
-namespace {
-
 WebData loadAudioSpatializationResource(const char* name) {
 #ifdef IDR_AUDIO_SPATIALIZATION_COMPOSITE
   if (!strcmp(name, "Composite")) {
@@ -533,6 +535,28 @@ class NestedMessageLoopRunnerImpl
 
 }  // namespace
 
+// TODO(skyostil): Ensure that we always have an active task runner when
+// constructing the platform.
+BlinkPlatformImpl::BlinkPlatformImpl()
+    : BlinkPlatformImpl(base::ThreadTaskRunnerHandle::IsSet()
+                            ? base::ThreadTaskRunnerHandle::Get()
+                            : nullptr,
+                        nullptr) {}
+
+BlinkPlatformImpl::BlinkPlatformImpl(
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner)
+    : main_thread_task_runner_(std::move(main_thread_task_runner)),
+      io_thread_task_runner_(std::move(io_thread_task_runner)),
+      native_theme_engine_(GetWebThemeEngine()) {}
+
+BlinkPlatformImpl::~BlinkPlatformImpl() {}
+
+void BlinkPlatformImpl::RecordAction(const blink::UserMetricsAction& name) {
+  if (ChildThread* child_thread = ChildThread::Get())
+    child_thread->RecordComputedAction(name.Action());
+}
+
 WebData BlinkPlatformImpl::GetDataResource(const char* name) {
   // Some clients will call into this method with an empty |name| when they have
   // optional resources.  For example, the PopupMenuChromium code can have icons
@@ -624,13 +648,12 @@ const char* BlinkPlatformImpl::GetBrowserServiceName() const {
   return mojom::kBrowserServiceName;
 }
 
-blink::WebMediaCapabilitiesClient*
-BlinkPlatformImpl::MediaCapabilitiesClient() {
-  return &media_capabilities_client_;
+WebThemeEngine* BlinkPlatformImpl::ThemeEngine() {
+  return native_theme_engine_.get();
 }
 
-WebThemeEngine* BlinkPlatformImpl::ThemeEngine() {
-  return &native_theme_engine_;
+bool BlinkPlatformImpl::IsURLSupportedForAppCache(const blink::WebURL& url) {
+  return IsSchemeSupportedForAppCache(url);
 }
 
 base::File BlinkPlatformImpl::DatabaseOpenFile(

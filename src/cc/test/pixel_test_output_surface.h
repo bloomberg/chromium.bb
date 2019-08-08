@@ -33,12 +33,17 @@ class PixelTestOutputSurface : public viz::OutputSurface {
   bool HasExternalStencilTest() const override;
   void ApplyExternalStencil() override;
   void SwapBuffers(viz::OutputSurfaceFrame frame) override;
-  viz::OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
+  std::unique_ptr<viz::OverlayCandidateValidator>
+  TakeOverlayCandidateValidator() override;
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
   gfx::BufferFormat GetOverlayBufferFormat() const override;
   uint32_t GetFramebufferCopyTextureFormat() override;
   unsigned UpdateGpuFence() override;
+  void SetUpdateVSyncParametersCallback(
+      viz::UpdateVSyncParametersCallback callback) override;
+  void SetDisplayTransformHint(gfx::OverlayTransform transform) override {}
+  gfx::OverlayTransform GetDisplayTransform() override;
 
   void set_has_external_stencil_test(bool has_test) {
     external_stencil_test_ = has_test;

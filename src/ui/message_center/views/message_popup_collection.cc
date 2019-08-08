@@ -197,6 +197,15 @@ void MessagePopupCollection::AnimationCanceled(
   Update();
 }
 
+MessagePopupView* MessagePopupCollection::GetPopupViewForNotificationID(
+    const std::string& notification_id) {
+  for (const auto& item : popup_items_) {
+    if (item.id == notification_id)
+      return item.popup;
+  }
+  return nullptr;
+}
+
 MessagePopupView* MessagePopupCollection::CreatePopup(
     const Notification& notification) {
   return new MessagePopupView(notification, alignment_delegate_, this);

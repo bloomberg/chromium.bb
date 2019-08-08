@@ -111,7 +111,8 @@ extensions::APIPermission::APIPermission::ID APIPermissionFromGroupName(
 
 // Asks the |profile| for hosted apps which have the |permission| set, and
 // adds their web extent and launch URL to the |exceptions| list.
-void AddExceptionsGrantedByHostedApps(content::BrowserContext* context,
+void AddExceptionsGrantedByHostedApps(
+    content::BrowserContext* context,
     extensions::APIPermission::APIPermission::ID permission,
     base::ListValue* exceptions) {
   const extensions::ExtensionSet& extensions =
@@ -127,8 +128,8 @@ void AddExceptionsGrantedByHostedApps(content::BrowserContext* context,
     for (auto pattern = web_extent.begin(); pattern != web_extent.end();
          ++pattern) {
       std::string url_pattern = pattern->GetAsString();
-      site_settings::AddExceptionForHostedApp(
-          url_pattern, *extension->get(), exceptions);
+      site_settings::AddExceptionForHostedApp(url_pattern, *extension->get(),
+                                              exceptions);
     }
     // Retrieve the launch URL.
     GURL launch_url =
@@ -136,8 +137,8 @@ void AddExceptionsGrantedByHostedApps(content::BrowserContext* context,
     // Skip adding the launch URL if it is part of the web extent.
     if (web_extent.MatchesURL(launch_url))
       continue;
-    site_settings::AddExceptionForHostedApp(
-        launch_url.spec(), *extension->get(), exceptions);
+    site_settings::AddExceptionForHostedApp(launch_url.spec(),
+                                            *extension->get(), exceptions);
   }
 }
 
@@ -320,7 +321,6 @@ SiteSettingsHandler::~SiteSettingsHandler() {
 }
 
 void SiteSettingsHandler::RegisterMessages() {
-
   web_ui()->RegisterMessageCallback(
       "fetchUsageTotal",
       base::BindRepeating(&SiteSettingsHandler::HandleFetchUsageTotal,
@@ -425,12 +425,10 @@ void SiteSettingsHandler::OnJavascriptAllowed() {
   if (profile_->HasOffTheRecordProfile())
     ObserveSourcesForProfile(profile_->GetOffTheRecordProfile());
 
-  notification_registrar_.Add(
-      this, chrome::NOTIFICATION_PROFILE_CREATED,
-      content::NotificationService::AllSources());
-  notification_registrar_.Add(
-      this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-      content::NotificationService::AllSources());
+  notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
+                              content::NotificationService::AllSources());
+  notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
+                              content::NotificationService::AllSources());
 
   // Here we only subscribe to the HostZoomMap for the default storage partition
   // since we don't allow the user to manage the zoom levels for apps.
@@ -534,16 +532,15 @@ void SiteSettingsHandler::OnContentSettingChanged(
   }
 }
 
-void SiteSettingsHandler::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+void SiteSettingsHandler::Observe(int type,
+                                  const content::NotificationSource& source,
+                                  const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_PROFILE_DESTROYED: {
       Profile* profile = content::Source<Profile>(source).ptr();
       if (!profile_->IsSameProfile(profile))
         break;
-      SendIncognitoStatus(profile, /*was_destroyed=*/ true);
+      SendIncognitoStatus(profile, /*was_destroyed=*/true);
 
       if (profile->IsOffTheRecord())
         StopObservingSourcesForProfile(profile);
@@ -554,7 +551,7 @@ void SiteSettingsHandler::Observe(
       Profile* profile = content::Source<Profile>(source).ptr();
       if (!profile_->IsSameProfile(profile))
         break;
-      SendIncognitoStatus(profile, /*was_destroyed=*/ false);
+      SendIncognitoStatus(profile, /*was_destroyed=*/false);
 
       ObserveSourcesForProfile(profile);
       break;
@@ -582,8 +579,7 @@ void SiteSettingsHandler::OnZoomLevelChanged(
   SendZoomLevels();
 }
 
-void SiteSettingsHandler::HandleFetchUsageTotal(
-    const base::ListValue* args) {
+void SiteSettingsHandler::HandleFetchUsageTotal(const base::ListValue* args) {
   AllowJavascript();
   CHECK_EQ(1U, args->GetSize());
   std::string host;
@@ -598,8 +594,7 @@ void SiteSettingsHandler::HandleFetchUsageTotal(
   EnsureCookiesTreeModelCreated();
 }
 
-void SiteSettingsHandler::HandleClearUsage(
-    const base::ListValue* args) {
+void SiteSettingsHandler::HandleClearUsage(const base::ListValue* args) {
   CHECK_EQ(1U, args->GetSize());
   std::string origin;
   CHECK(args->GetString(0, &origin));
@@ -841,7 +836,7 @@ void SiteSettingsHandler::HandleGetExceptionList(const base::ListValue* args) {
       HostContentSettingsMapFactory::GetForProfile(profile_);
   const auto* extension_registry = extensions::ExtensionRegistry::Get(profile_);
   AddExceptionsGrantedByHostedApps(profile_, APIPermissionFromGroupName(type),
-      exceptions.get());
+                                   exceptions.get());
   site_settings::GetExceptionsFromHostContentSettingsMap(
       map, content_type, extension_registry, web_ui(), /*incognito=*/false,
       /*filter=*/nullptr, exceptions.get());
@@ -875,10 +870,9 @@ void SiteSettingsHandler::HandleGetChooserExceptionList(
       site_settings::ChooserTypeFromGroupName(type);
   CHECK(chooser_type);
 
-  std::unique_ptr<base::ListValue> exceptions =
-      site_settings::GetChooserExceptionListFromProfile(profile_,
-                                                        *chooser_type);
-  ResolveJavascriptCallback(*callback_id, *exceptions.get());
+  base::Value exceptions = site_settings::GetChooserExceptionListFromProfile(
+      profile_, *chooser_type);
+  ResolveJavascriptCallback(*callback_id, std::move(exceptions));
 }
 
 void SiteSettingsHandler::HandleGetOriginPermissions(
@@ -1143,19 +1137,15 @@ void SiteSettingsHandler::HandleResetChooserExceptionForSite(
   GURL requesting_origin(origin_str);
   CHECK(requesting_origin.is_valid());
 
-  // An empty embedding origin means that the user exception object was granted
-  // for any embedding origin.
   std::string embedding_origin_str;
   CHECK(args->GetString(2, &embedding_origin_str));
   GURL embedding_origin(embedding_origin_str);
-  CHECK(embedding_origin.is_valid() || embedding_origin.is_empty());
-
-  const base::DictionaryValue* object = nullptr;
-  CHECK(args->GetDictionary(3, &object));
+  CHECK(embedding_origin.is_valid());
 
   ChooserContextBase* chooser_context = chooser_type->get_context(profile_);
-  chooser_context->RevokeObjectPermission(requesting_origin, embedding_origin,
-                                          *object);
+  chooser_context->RevokeObjectPermission(
+      url::Origin::Create(requesting_origin),
+      url::Origin::Create(embedding_origin), args->GetList()[3]);
 }
 
 void SiteSettingsHandler::HandleIsOriginValid(const base::ListValue* args) {
@@ -1194,18 +1184,19 @@ void SiteSettingsHandler::HandleIsPatternValidForType(
 void SiteSettingsHandler::HandleUpdateIncognitoStatus(
     const base::ListValue* args) {
   AllowJavascript();
-  SendIncognitoStatus(profile_, /*was_destroyed=*/ false);
+  SendIncognitoStatus(profile_, /*was_destroyed=*/false);
 }
 
-void SiteSettingsHandler::SendIncognitoStatus(
-    Profile* profile, bool was_destroyed) {
+void SiteSettingsHandler::SendIncognitoStatus(Profile* profile,
+                                              bool was_destroyed) {
   if (!IsJavascriptAllowed())
     return;
 
   // When an incognito profile is destroyed, it sends out the destruction
   // message before destroying, so HasOffTheRecordProfile for profile_ won't
   // return false until after the profile actually been destroyed.
-  bool incognito_enabled = profile_->HasOffTheRecordProfile() &&
+  bool incognito_enabled =
+      profile_->HasOffTheRecordProfile() &&
       !(was_destroyed && profile == profile_->GetOffTheRecordProfile());
 
   FireWebUIListener("onIncognitoStatusChanged", base::Value(incognito_enabled));
@@ -1303,7 +1294,7 @@ void SiteSettingsHandler::HandleRemoveZoomLevel(const base::ListValue* args) {
   CHECK(args->GetString(0, &origin));
 
   if (origin ==
-          l10n_util::GetStringUTF8(IDS_ZOOMLEVELS_CHROME_ERROR_PAGES_LABEL)) {
+      l10n_util::GetStringUTF8(IDS_ZOOMLEVELS_CHROME_ERROR_PAGES_LABEL)) {
     origin = content::kUnreachableWebDataURL;
   }
 

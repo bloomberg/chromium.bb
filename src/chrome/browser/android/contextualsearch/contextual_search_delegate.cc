@@ -105,8 +105,9 @@ void ContextualSearchDelegate::GatherAndSaveSurroundingText(
     content::WebContents* web_contents) {
   DCHECK(web_contents);
   RenderFrameHost::TextSurroundingSelectionCallback callback =
-      base::Bind(&ContextualSearchDelegate::OnTextSurroundingSelectionAvailable,
-                 AsWeakPtr());
+      base::BindRepeating(
+          &ContextualSearchDelegate::OnTextSurroundingSelectionAvailable,
+          AsWeakPtr());
   context_ = contextual_search_context;
   if (context_ == nullptr)
     return;
@@ -122,6 +123,11 @@ void ContextualSearchDelegate::GatherAndSaveSurroundingText(
   } else {
     callback.Run(base::string16(), 0, 0);
   }
+}
+
+void ContextualSearchDelegate::SetActiveContext(
+    base::WeakPtr<ContextualSearchContext> contextual_search_context) {
+  context_ = contextual_search_context;
 }
 
 void ContextualSearchDelegate::StartSearchTermResolutionRequest(
@@ -271,10 +277,6 @@ std::string ContextualSearchDelegate::BuildRequestUrl(
   int contextual_cards_version =
       contextual_search::kContextualCardsUrlActionsIntegration;
   if (base::FeatureList::IsEnabled(
-          chrome::android::kContextualSearchTranslationModel)) {
-    contextual_cards_version =
-        contextual_search::kContextualCardsTranslationsIntegration;
-  } else if (base::FeatureList::IsEnabled(
                  chrome::android::kContextualSearchDefinitions)) {
     contextual_cards_version =
         contextual_search::kContextualCardsDefinitionsIntegration;

@@ -15,17 +15,16 @@
 
 namespace net {
 
-std::unique_ptr<base::Value> NetLogX509CertificateCallback(
-    const X509Certificate* certificate,
-    NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  std::unique_ptr<base::ListValue> certs(new base::ListValue());
+base::Value NetLogX509CertificateCallback(const X509Certificate* certificate,
+                                          NetLogCaptureMode capture_mode) {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  base::Value certs(base::Value::Type::LIST);
   std::vector<std::string> encoded_chain;
   certificate->GetPEMEncodedChain(&encoded_chain);
-  for (size_t i = 0; i < encoded_chain.size(); ++i)
-    certs->AppendString(encoded_chain[i]);
-  dict->Set("certificates", std::move(certs));
-  return std::move(dict);
+  for (auto& pem : encoded_chain)
+    certs.GetList().emplace_back(std::move(pem));
+  dict.SetKey("certificates", std::move(certs));
+  return dict;
 }
 
 }  // namespace net

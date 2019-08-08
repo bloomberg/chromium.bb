@@ -36,6 +36,7 @@ def main(argv):
   _AddSwitch(parser, '--enable-assert')
   _AddSwitch(parser, '--enable-thread-annotations')
   _AddSwitch(parser, '--enable-check-class-path')
+  parser.add_argument('--enable-class-deps-output', default='')
   parser.add_argument(
       '--split-compat-class-names',
       action='append',
@@ -65,6 +66,7 @@ def main(argv):
       args.script, args.input_jar, args.output_jar, verbose, args.is_prebuilt,
       args.enable_assert, args.enable_custom_resources,
       args.enable_thread_annotations, args.enable_check_class_path,
+      args.enable_class_deps_output,
       str(len(sdk_jars))
   ] + sdk_jars + [str(len(direct_jars))] + direct_jars + [
       str(len(split_compat_class_names))

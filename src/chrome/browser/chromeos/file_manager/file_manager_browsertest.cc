@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
@@ -13,9 +14,9 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
+#include "components/user_manager/user_manager_base.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
-#include "ui/keyboard/public/keyboard_switches.h"
 
 namespace file_manager {
 
@@ -257,6 +258,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("fileDisplayMtp"),
         TestCase("fileDisplayUsb"),
         TestCase("fileDisplayUsbPartition"),
+        TestCase("fileDisplayUsbToast"),
+        TestCase("fileDisplayUsbNoToast"),
         TestCase("fileDisplayPartitionFileTable"),
         TestCase("fileSearch"),
         TestCase("fileSearch").EnableMyFilesVolume(),
@@ -293,7 +296,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("fileDisplayUnmountLastPartition"),
         TestCase("fileSearchCaseInsensitive"),
         TestCase("fileSearchNotFound"),
-        TestCase("fileDisplayDownloadsWithBlockedFileTaskRunner")));
+        TestCase("fileDisplayDownloadsWithBlockedFileTaskRunner"),
+        TestCase("fileDisplayCheckSelectWithFakeItemSelected")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     OpenVideoFiles, /* open_video_files.js */
@@ -341,7 +345,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 // NaCl fails to compile zip plugin.pexe too often on ASAN, crbug.com/867738
 // The tests are flaky on the debug bot and always time out first and then pass
 // on retry. Disabled for debug as per crbug.com/936429.
-#if defined(ADDRESS_SANITIZER) || defined(DEBUG)
+#if defined(ADDRESS_SANITIZER) || !defined(NDEBUG)
 #define MAYBE_ZipFiles DISABLED_ZipFiles
 #else
 #define MAYBE_ZipFiles ZipFiles
@@ -354,11 +358,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       ZipCase("zipFileOpenDownloadsShiftJIS"),
                       ZipCase("zipFileOpenDownloadsMacOs"),
                       ZipCase("zipFileOpenDownloadsWithAbsolutePaths"),
-// Disable the test in debug mode. In debug mode, the test run time is very
-// close to, and often exceeds the 45 second test timeout.
-#if defined(NDEBUG)
                       ZipCase("zipFileOpenDownloadsEncryptedCancelPassphrase"),
-#endif
                       ZipCase("zipFileOpenDrive").DisableDriveFs(),
                       ZipCase("zipFileOpenDrive").EnableDriveFs(),
                       ZipCase("zipFileOpenUsb"),
@@ -489,7 +489,11 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("checkPlayFilesContextMenu"),
         TestCase("checkPlayFilesContextMenu").EnableMyFilesVolume(),
         TestCase("checkLinuxFilesContextMenu"),
-        TestCase("checkLinuxFilesContextMenu").EnableMyFilesVolume()));
+        TestCase("checkLinuxFilesContextMenu").EnableMyFilesVolume(),
+        TestCase("checkDeleteDisabledInDocProvider").EnableDocumentsProvider(),
+        TestCase("checkDeleteEnabledInDocProvider").EnableDocumentsProvider(),
+        TestCase("checkRenameDisabledInDocProvider").EnableDocumentsProvider(),
+        TestCase("checkRenameEnabledInDocProvider").EnableDocumentsProvider()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Delete, /* delete.js */
@@ -653,7 +657,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("transferBetweenTeamDrives").EnableDriveFs(),
         TestCase("transferDragAndDrop"),
         TestCase("transferDragAndHover"),
-        TestCase("transferFromDownloadsToDownloads")));
+        TestCase("transferFromDownloadsToDownloads"),
+        TestCase("transferDeletedFile")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     RestorePrefs, /* restore_prefs.js */
@@ -903,7 +908,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       TestCase("requestMountSourceFile"),
                       TestCase("requestMountSourceFile").DisableNativeSmb(),
                       TestCase("providerEject"),
-                      TestCase("providerEject").DisableNativeSmb()));
+                      TestCase("providerEject").DisableNativeSmb(),
+                      TestCase("installNewServiceOnline"),
+                      TestCase("installNewServiceOffline").Offline()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     GearMenu, /* gear_menu.js */
@@ -927,6 +934,13 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(TestCase("filesTooltipFocus"),
                       TestCase("filesTooltipMouseOver"),
                       TestCase("filesTooltipClickHides")));
+
+WRAPPED_INSTANTIATE_TEST_SUITE_P(
+    FileList, /* file_list.js */
+    FilesAppBrowserTest,
+    ::testing::Values(TestCase("fileListAriaAttributes"),
+                      TestCase("fileListFocusFirstItem"),
+                      TestCase("fileListSelectLastFocusedItem")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Crostini, /* crostini.js */
@@ -953,7 +967,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .EnableMyFilesVolume()
             .DontMountVolumes(),
         TestCase("myFilesUpdatesChildren").EnableMyFilesVolume(),
-        TestCase("myFilesAutoExpandOnce").EnableMyFilesVolume()));
+        TestCase("myFilesAutoExpandOnce").EnableMyFilesVolume(),
+        TestCase("myFilesToolbarDelete").EnableMyFilesVolume()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     InstallLinuxPackageDialog, /* install_linux_package_dialog.js */
@@ -997,6 +1012,11 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("metadataLargeDrive").DisableDriveFs(),
         TestCase("metadataLargeDrive").EnableDriveFs(),
         TestCase("metadataLargeDrive").EnableDriveFs().EnableMyFilesVolume()));
+
+WRAPPED_INSTANTIATE_TEST_SUITE_P(
+    NavigationList, /* navigation_list.js */
+    FilesAppBrowserTest,
+    ::testing::Values(TestCase("navigationScrollsWhenClipped")));
 
 // Structure to describe an account info.
 struct TestAccountInfo {
@@ -1076,10 +1096,17 @@ class MultiProfileFilesAppBrowserTest : public FileManagerBrowserTestBase {
     base::ScopedAllowBlockingForTesting allow_blocking;
     const AccountId account_id(
         AccountId::FromUserEmailGaiaId(info.email, info.gaia_id));
+    user_manager::User* user =
+        user_manager::User::CreateRegularUserForTesting(account_id);
+    static_cast<user_manager::UserManagerBase*>(
+        user_manager::UserManager::Get())
+        ->AddUserRecordForTesting(user);
     if (log_in) {
       session_manager::SessionManager::Get()->CreateSession(account_id,
                                                             info.hash, false);
     }
+    chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(
+        user, profile());
     user_manager::UserManager::Get()->SaveUserDisplayName(
         account_id, base::UTF8ToUTF16(info.display_name));
     Profile* profile =
@@ -1098,9 +1125,7 @@ class MultiProfileFilesAppBrowserTest : public FileManagerBrowserTestBase {
     return test_case_name_.c_str();
   }
 
-  std::string GetFullTestCaseName() const override {
-    return test_case_name_;
-  }
+  std::string GetFullTestCaseName() const override { return test_case_name_; }
 
   const char* GetTestExtensionManifestName() const override {
     return "file_manager_test_manifest.json";

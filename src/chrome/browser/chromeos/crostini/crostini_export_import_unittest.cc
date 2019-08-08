@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/test/base/testing_profile.h"
@@ -43,6 +44,9 @@ class CrostiniExportImportTest : public testing::Test {
     signal.set_container_name(kCrostiniDefaultContainerName);
     signal.set_status(status);
     signal.set_progress_percent(progress_percent);
+    signal.set_progress_percent(progress_percent);
+    signal.set_architecture_device("arch_dev");
+    signal.set_architecture_container("arch_con");
     fake_cicerone_client_->NotifyImportLxdContainerProgress(signal);
   }
 
@@ -223,5 +227,31 @@ TEST_F(CrostiniExportImportTest, TestImportFail) {
       vm_tools::cicerone::ImportLxdContainerProgressSignal_Status_FAILED, 0);
   EXPECT_EQ(notification->get_status(),
             CrostiniExportImportNotification::Status::FAILED);
+  std::string msg("Restoring couldn't be completed due to an error");
+  EXPECT_EQ(notification->get_notification()->message(),
+            base::UTF8ToUTF16(msg));
+}
+
+TEST_F(CrostiniExportImportTest, TestImportFailArchitecture) {
+  crostini_export_import()->FileSelected(
+      tarball_, 0, reinterpret_cast<void*>(ExportImportType::IMPORT));
+  run_loop_->RunUntilIdle();
+  CrostiniExportImportNotification* notification =
+      crostini_export_import()->GetNotificationForTesting(container_id_);
+
+  // Failed Architecture.
+  SendImportProgress(
+      vm_tools::cicerone::
+          ImportLxdContainerProgressSignal_Status_FAILED_ARCHITECTURE,
+      0);
+  EXPECT_EQ(notification->get_status(),
+            CrostiniExportImportNotification::Status::FAILED);
+  std::string msg(
+      "Cannot import container architecture type arch_con with this device "
+      "which is arch_dev. You can try restoring this container into a "
+      "different device, or you can access the files inside this container "
+      "image by opening in Files app.");
+  EXPECT_EQ(notification->get_notification()->message(),
+            base::UTF8ToUTF16(msg));
 }
 }  // namespace crostini

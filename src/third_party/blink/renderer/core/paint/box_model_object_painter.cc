@@ -57,10 +57,11 @@ BoxModelObjectPainter::BoxModelObjectPainter(const LayoutBoxModelObject& box,
       box_model_(box),
       flow_box_(flow_box) {}
 
-void BoxModelObjectPainter::PaintTextClipMask(GraphicsContext& context,
-                                              const IntRect& mask_rect,
-                                              const LayoutPoint& paint_offset,
-                                              bool object_has_multiple_boxes) {
+void BoxModelObjectPainter::PaintTextClipMask(
+    GraphicsContext& context,
+    const IntRect& mask_rect,
+    const PhysicalOffset& paint_offset,
+    bool object_has_multiple_boxes) {
   PaintInfo paint_info(context, mask_rect, PaintPhase::kTextClip,
                        kGlobalPaintNormalPhase, 0);
   if (flow_box_) {
@@ -71,8 +72,8 @@ void BoxModelObjectPainter::PaintTextClipMask(GraphicsContext& context,
       local_offset -= LogicalOffsetOnLine(*flow_box_);
     }
     const RootInlineBox& root = flow_box_->Root();
-    flow_box_->Paint(paint_info, paint_offset - local_offset, root.LineTop(),
-                     root.LineBottom());
+    flow_box_->Paint(paint_info, paint_offset.ToLayoutPoint() - local_offset,
+                     root.LineTop(), root.LineBottom());
   } else if (auto* layout_block = DynamicTo<LayoutBlock>(box_model_)) {
     layout_block->PaintObject(paint_info, paint_offset);
   } else {
@@ -83,10 +84,10 @@ void BoxModelObjectPainter::PaintTextClipMask(GraphicsContext& context,
   }
 }
 
-LayoutRect BoxModelObjectPainter::AdjustRectForScrolledContent(
+PhysicalRect BoxModelObjectPainter::AdjustRectForScrolledContent(
     const PaintInfo& paint_info,
     const BoxPainterBase::FillLayerInfo& info,
-    const LayoutRect& rect) {
+    const PhysicalRect& rect) {
   if (!info.is_clipped_with_local_scrolling)
     return rect;
 
@@ -94,15 +95,15 @@ LayoutRect BoxModelObjectPainter::AdjustRectForScrolledContent(
   if (BoxDecorationData::IsPaintingScrollingBackground(paint_info, this_box))
     return rect;
 
-  LayoutRect scrolled_paint_rect = rect;
+  PhysicalRect scrolled_paint_rect = rect;
   GraphicsContext& context = paint_info.context;
   // Clip to the overflow area.
   // TODO(chrishtr): this should be pixel-snapped.
-  context.Clip(FloatRect(this_box.OverflowClipRect(rect.Location())));
+  context.Clip(FloatRect(this_box.OverflowClipRect(rect.offset)));
 
   // Adjust the paint rect to reflect a scrolled content box with borders at
   // the ends.
-  IntSize offset = this_box.ScrolledContentOffset();
+  PhysicalOffset offset(this_box.ScrolledContentOffset());
   scrolled_paint_rect.Move(-offset);
   LayoutRectOutsets border = AdjustedBorderOutsets(info);
   scrolled_paint_rect.SetWidth(border.Left() + this_box.ScrollWidth() +

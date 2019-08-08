@@ -717,7 +717,7 @@ TEST_F(VolumeManagerTest, OnFormatEvent_Completed) {
   EXPECT_EQ("device1", event.device_path);
   EXPECT_TRUE(event.success);
 
-  // When "format" is successfully done, VolumeManager requests to mount it.
+  // When "format" is done, VolumeManager requests to mount it.
   ASSERT_EQ(1U, disk_mount_manager_->mount_requests().size());
   const FakeDiskMountManager::MountRequest& mount_request =
       disk_mount_manager_->mount_requests()[0];
@@ -742,7 +742,14 @@ TEST_F(VolumeManagerTest, OnFormatEvent_CompletedFailed) {
   EXPECT_EQ("device1", event.device_path);
   EXPECT_FALSE(event.success);
 
-  EXPECT_EQ(0U, disk_mount_manager_->mount_requests().size());
+  // When "format" is done, VolumeManager requests to mount it.
+  ASSERT_EQ(1U, disk_mount_manager_->mount_requests().size());
+  const FakeDiskMountManager::MountRequest& mount_request =
+      disk_mount_manager_->mount_requests()[0];
+  EXPECT_EQ("device1", mount_request.source_path);
+  EXPECT_EQ("", mount_request.source_format);
+  EXPECT_EQ("", mount_request.mount_label);
+  EXPECT_EQ(chromeos::MOUNT_TYPE_DEVICE, mount_request.type);
 
   volume_manager()->RemoveObserver(&observer);
 }

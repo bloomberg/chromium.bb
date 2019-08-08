@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/optional.h"
-#include "components/autofill/core/browser/autofill_profile.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/signin/core/browser/account_info.h"

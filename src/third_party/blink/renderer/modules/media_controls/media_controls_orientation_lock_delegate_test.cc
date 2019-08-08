@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/modules/screen_orientation/screen_orientation_controller_impl.h"
 #include "third_party/blink/renderer/modules/screen_orientation/web_lock_orientation_callback.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/empty_web_media_player.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -303,7 +304,7 @@ class MediaControlsOrientationLockAndRotateToFullscreenDelegateTest
 
     // Reset the <video> element now we've enabled the runtime feature.
     video_->parentElement()->RemoveChild(video_);
-    video_ = HTMLVideoElement::Create(GetDocument());
+    video_ = MakeGarbageCollected<HTMLVideoElement>(GetDocument());
     video_->setAttribute(html_names::kControlsAttr, g_empty_atom);
     // Most tests should call GetDocument().body()->AppendChild(&Video());
     // This is not done automatically, so that tests control timing of `Attach`,
@@ -433,13 +434,13 @@ TEST_F(MediaControlsOrientationLockDelegateTest, DelegateRequiresFlag) {
   // Same with flag off.
   ScopedVideoFullscreenOrientationLockForTest video_fullscreen_orientation_lock(
       false);
-  HTMLVideoElement* video = HTMLVideoElement::Create(GetDocument());
+  auto* video = MakeGarbageCollected<HTMLVideoElement>(GetDocument());
   GetDocument().body()->AppendChild(video);
   EXPECT_FALSE(HasDelegate(*video->GetMediaControls()));
 }
 
 TEST_F(MediaControlsOrientationLockDelegateTest, DelegateRequiresVideo) {
-  HTMLAudioElement* audio = HTMLAudioElement::Create(GetDocument());
+  auto* audio = MakeGarbageCollected<HTMLAudioElement>(GetDocument());
   GetDocument().body()->AppendChild(audio);
   EXPECT_FALSE(HasDelegate(*audio->GetMediaControls()));
 }

@@ -51,7 +51,8 @@ InspectorEmulationAgent::InspectorEmulationAgent(
       virtual_time_policy_(&agent_state_, /*default_value=*/WTF::String()),
       virtual_time_task_starvation_count_(&agent_state_, /*default_value=*/0),
       wait_for_navigation_(&agent_state_, /*default_value=*/false),
-      emulate_focus_(&agent_state_, /*default_value=*/false) {}
+      emulate_focus_(&agent_state_, /*default_value=*/false),
+      timezone_id_override_(&agent_state_, /*default_value=*/WTF::String()) {}
 
 InspectorEmulationAgent::~InspectorEmulationAgent() = default;
 
@@ -89,6 +90,9 @@ void InspectorEmulationAgent::Restore() {
     }
   }
   setFocusEmulationEnabled(emulate_focus_.Get());
+
+  if (!timezone_id_override_.Get().IsNull())
+    setTimezoneOverride(timezone_id_override_.Get());
 
   if (virtual_time_policy_.Get().IsNull())
     return;
@@ -447,6 +451,20 @@ Response InspectorEmulationAgent::setUserAgentOverride(
     GetWebViewImpl()->GetPage()->GetSettings().SetNavigatorPlatformOverride(
         navigator_platform_override_.Get());
   }
+  return Response::OK();
+}
+
+Response InspectorEmulationAgent::setTimezoneOverride(
+    const String& timezone_id) {
+  timezone_override_.reset();
+  if (!timezone_id.IsEmpty()) {
+    timezone_override_ = TimeZoneController::SetTimeZoneOverride(timezone_id);
+    if (!timezone_override_)
+      return Response::Error("Timezone override is already in effect");
+  }
+
+  timezone_id_override_.Set(timezone_id);
+
   return Response::OK();
 }
 

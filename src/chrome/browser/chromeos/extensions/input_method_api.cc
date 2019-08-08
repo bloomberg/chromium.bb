@@ -12,7 +12,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -30,7 +29,6 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/input_method_private.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync/driver/sync_service.h"
@@ -44,6 +42,7 @@
 #include "ui/base/ime/chromeos/input_method_util.h"
 #include "ui/base/ime/ime_bridge.h"
 
+namespace input_method_private = extensions::api::input_method_private;
 namespace AddWordToDictionary =
     extensions::api::input_method_private::AddWordToDictionary;
 namespace SetCurrentInputMethod =
@@ -66,8 +65,12 @@ namespace GetSurroundingText =
     extensions::api::input_method_private::GetSurroundingText;
 namespace GetSetting = extensions::api::input_method_private::GetSetting;
 namespace SetSetting = extensions::api::input_method_private::SetSetting;
+namespace SetCompositionRange =
+    extensions::api::input_method_private::SetCompositionRange;
 namespace OnSettingsChanged =
     extensions::api::input_method_private::OnSettingsChanged;
+
+using input_method::InputMethodEngineBase;
 
 namespace {
 
@@ -86,10 +89,7 @@ InputMethodPrivateGetInputMethodConfigFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(false);
 #else
   std::unique_ptr<base::DictionaryValue> output(new base::DictionaryValue());
-  output->SetBoolean(
-      "isPhysicalKeyboardAutocorrectEnabled",
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kDisablePhysicalKeyboardAutocorrect));
+  output->SetBoolean("isPhysicalKeyboardAutocorrectEnabled", true);
   output->SetBoolean("isImeMenuActivated",
                      Profile::FromBrowserContext(browser_context())
                          ->GetPrefs()
@@ -389,6 +389,51 @@ ExtensionFunction::ResponseAction InputMethodPrivateSetSettingFunction::Run() {
 
   return RespondNow(NoArguments());
 #endif
+}
+
+ExtensionFunction::ResponseAction
+InputMethodPrivateSetCompositionRangeFunction::Run() {
+  InputImeEventRouter* event_router =
+      GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()));
+  InputMethodEngineBase* engine =
+      event_router ? event_router->GetActiveEngine(extension_id()) : nullptr;
+  if (engine) {
+    const auto parent_params = SetCompositionRange::Params::Create(*args_);
+    const auto& params = parent_params->parameters;
+    std::vector<InputMethodEngineBase::SegmentInfo> segments;
+    if (params.segments) {
+      for (const auto& segments_arg : *params.segments) {
+        InputMethodEngineBase::SegmentInfo segment_info;
+        segment_info.start = segments_arg.start;
+        segment_info.end = segments_arg.end;
+        switch (segments_arg.style) {
+          case input_method_private::UNDERLINE_STYLE_UNDERLINE:
+            segment_info.style = InputMethodEngineBase::SEGMENT_STYLE_UNDERLINE;
+            break;
+          case input_method_private::UNDERLINE_STYLE_NONE:
+            EXTENSION_FUNCTION_VALIDATE(false);
+            break;
+        }
+        segments.push_back(segment_info);
+      }
+    } else {
+      // Default to a single segment that spans the entire range.
+      InputMethodEngineBase::SegmentInfo segment_info;
+      segment_info.start = 0;
+      segment_info.end = params.selection_before + params.selection_after;
+      segment_info.style = InputMethodEngineBase::SEGMENT_STYLE_UNDERLINE;
+      segments.push_back(segment_info);
+    }
+    std::string error;
+    if (!engine->SetCompositionRange(params.context_id, params.selection_before,
+                                     params.selection_after, segments,
+                                     &error)) {
+      auto results = std::make_unique<base::ListValue>();
+      results->Append(std::make_unique<base::Value>(false));
+      return RespondNow(ErrorWithArguments(std::move(results), error));
+    }
+  }
+  return RespondNow(OneArgument(std::make_unique<base::Value>(true)));
 }
 
 InputMethodAPI::InputMethodAPI(content::BrowserContext* context)

@@ -135,7 +135,7 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline {
   // Notifications from RendererWrapper.
   void OnError(PipelineStatus error);
   void OnEnded();
-  void OnMetadata(PipelineMetadata metadata);
+  void OnMetadata(const PipelineMetadata& metadata);
   void OnBufferingStateChange(BufferingState state);
   void OnDurationChange(base::TimeDelta duration);
   void OnWaiting(WaitingReason reason);

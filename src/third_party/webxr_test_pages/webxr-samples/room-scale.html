@@ -36,6 +36,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     <!--The polyfill is not needed for browser that have native API support,
         but is linked by these samples for wider compatibility.-->
     <!--script src='https://cdn.jsdelivr.net/npm/webxr-polyfill@latest/build/webxr-polyfill.js'></script-->
+    <script src='js/xrray-polyfill.js' type='module'></script>
     <script src='js/webxr-polyfill.js'></script>
 
     <script src='js/webxr-button.js'></script>
@@ -48,7 +49,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           This sample demonstrates using a 'stage' frame of reference to provide
           room scale tracking. If stage bounds are provided by the XRDevice, they
           will be represented as a green ground plane.
-          <a class="back" href="./">Back</a>
+          <a class="back" href="./index.html">Back</a>
         </p>
       </summary>
     </header>
@@ -97,13 +98,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       function initFallback() {
         initGL();
-        document.body.appendChild(gl.canvas);
         let fallbackHelper = new FallbackHelper(scene, gl);
         fallbackHelper.emulateStage = true;
       }
 
       function onRequestSession() {
         navigator.xr.requestSession('immersive-vr').then((session) => {
+          session.mode = 'immersive-vr';
           xrButton.setSession(session);
           onSessionStarted(session);
         });
@@ -116,6 +117,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         gl = createWebGLContext({
           xrCompatible: true
         });
+        document.body.appendChild(gl.canvas);
+
+        function onResize () {
+          gl.canvas.width = (gl.canvas.offsetWidth * window.devicePixelRatio);
+          gl.canvas.height = (gl.canvas.offsetHeight * window.devicePixelRatio);
+        }
+        window.addEventListener('resize', onResize);
+        onResize();
 
         renderer = new Renderer(gl);
 
@@ -123,16 +132,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
 
       function onSessionStarted(session) {
+        if (!session.mode)
+          session.mode = 'inline';
         session.addEventListener('end', onSessionEnded);
 
         initGL();
 
-        let outputCanvas = document.createElement('canvas');
-        document.body.appendChild(outputCanvas);
-
         session.updateRenderState({
-            baseLayer: new XRWebGLLayer(session, gl),
-            outputContext: outputCanvas.getContext('xrpresent')
+            baseLayer: new XRWebGLLayer(session, gl, {
+              compositionDisabled: session.mode == 'inline'
+            })
         });
 
         // Attempt to get a 'bounded' reference space, which will align the
@@ -152,25 +161,24 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           // floor-relative space and will always be supported for
           // immersive sessions. It will not, however, provide boundaries
           // and generally expects the user to stand in one place.
-          // If the device doesn't have a way of determining the floor 
+          // If the device doesn't have a way of determining the floor
           // level (for example, with a 3DoF device) then it will return
           // an emulated floor-level space, where the view is translated
           // up by a static height so that the scene still renders in
           // approximately the right place.
           console.log('Falling back to floor-level reference space');
-          return session.requestReferenceSpace({ type: 'stationary', subtype: 'floor-level' }).catch((e) => {
+          return session.requestReferenceSpace('local-floor').catch((e) => {
             if (!session.mode.startsWith('immersive')) {
               // If we're in inline mode, our underlying platform may not support
               // the stationary reference space, but an identity space is guaranteed.
               console.log('Falling back to identity reference space');
-              return session.requestReferenceSpace({ type: 'identity' }).then((refSpace) => {
+              return session.requestReferenceSpace('viewer').then((refSpace) => {
                 // If we use an identity reference space we need to scoot the
                 // origin down a bit to put the camera at approximately the
                 // right level. (Here we're moving it 1.6 meters, which should
                 // *very* roughly align us with the eye height of an "average"
                 // adult human.)
-                refSpace.originOffset = new XRRigidTransform({y: -1.6});
-                return refSpace;
+                return refSpace.getOffsetReferenceSpace(new XRRigidTransform({y: -1.6}));
               });
             } else {
               throw e;
@@ -194,10 +202,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       function onSessionEnded(event) {
         if (event.session.mode.startsWith('immersive')) {
           xrButton.setSession(null);
-        }
-
-        if (event.session.renderState.outputContext) {
-          document.body.removeChild(event.session.renderState.outputContext.canvas);
         }
       }
 

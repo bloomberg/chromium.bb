@@ -51,16 +51,10 @@
 
 namespace blink {
 
-inline HTMLMarqueeElement::HTMLMarqueeElement(Document& document)
+HTMLMarqueeElement::HTMLMarqueeElement(Document& document)
     : HTMLElement(html_names::kMarqueeTag, document) {
   UseCounter::Count(document, WebFeature::kHTMLMarqueeElement);
-}
-
-HTMLMarqueeElement* HTMLMarqueeElement::Create(Document& document) {
-  HTMLMarqueeElement* marquee_element =
-      MakeGarbageCollected<HTMLMarqueeElement>(document);
-  marquee_element->EnsureUserAgentShadowRoot();
-  return marquee_element;
+  EnsureUserAgentShadowRoot();
 }
 
 void HTMLMarqueeElement::DidAddUserAgentShadowRoot(ShadowRoot& shadow_root) {
@@ -74,7 +68,7 @@ void HTMLMarqueeElement::DidAddUserAgentShadowRoot(ShadowRoot& shadow_root) {
       ":host > div { will-change: transform; }");
   shadow_root.AppendChild(style);
 
-  Element* mover = HTMLDivElement::Create(GetDocument());
+  auto* mover = MakeGarbageCollected<HTMLDivElement>(GetDocument());
   shadow_root.AppendChild(mover);
 
   mover->AppendChild(
@@ -252,23 +246,23 @@ StringKeyframeEffectModel* HTMLMarqueeElement::CreateEffectModel(
       mover_->GetDocument().GetSecureContextMode();
 
   StringKeyframeVector keyframes;
-  StringKeyframe* keyframe1 = StringKeyframe::Create();
+  auto* keyframe1 = MakeGarbageCollected<StringKeyframe>();
   set_result = keyframe1->SetCSSPropertyValue(
       CSSPropertyID::kTransform, parameters.transform_begin,
       secure_context_mode, style_sheet_contents);
   DCHECK(set_result.did_parse);
   keyframes.push_back(keyframe1);
 
-  StringKeyframe* keyframe2 = StringKeyframe::Create();
+  auto* keyframe2 = MakeGarbageCollected<StringKeyframe>();
   set_result = keyframe2->SetCSSPropertyValue(
       CSSPropertyID::kTransform, parameters.transform_end, secure_context_mode,
       style_sheet_contents);
   DCHECK(set_result.did_parse);
   keyframes.push_back(keyframe2);
 
-  return StringKeyframeEffectModel::Create(keyframes,
-                                           EffectModel::kCompositeReplace,
-                                           LinearTimingFunction::Shared());
+  return MakeGarbageCollected<StringKeyframeEffectModel>(
+      keyframes, EffectModel::kCompositeReplace,
+      LinearTimingFunction::Shared());
 }
 
 void HTMLMarqueeElement::ContinueAnimation() {
@@ -301,8 +295,8 @@ void HTMLMarqueeElement::ContinueAnimation() {
       UnrestrictedDoubleOrString::FromUnrestrictedDouble(duration));
   TimingInput::Update(timing, effect_timing, nullptr, ASSERT_NO_EXCEPTION);
 
-  KeyframeEffect* keyframe_effect =
-      KeyframeEffect::Create(mover_, effect_model, timing);
+  auto* keyframe_effect =
+      MakeGarbageCollected<KeyframeEffect>(mover_, effect_model, timing);
   Animation* player = mover_->GetDocument().Timeline().Play(keyframe_effect);
   player->setId(g_empty_string);
   player->setOnfinish(MakeGarbageCollected<AnimationFinished>(this));

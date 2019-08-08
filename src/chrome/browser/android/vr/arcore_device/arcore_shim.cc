@@ -24,6 +24,7 @@ namespace {
   CALL(ArFrame_destroy)                 \
   CALL(ArFrame_hitTestRay)              \
   CALL(ArFrame_transformCoordinates2d)  \
+  CALL(ArHitResult_acquireTrackable)    \
   CALL(ArHitResult_create)              \
   CALL(ArHitResult_destroy)             \
   CALL(ArHitResult_getHitPose)          \
@@ -31,6 +32,12 @@ namespace {
   CALL(ArHitResultList_destroy)         \
   CALL(ArHitResultList_getItem)         \
   CALL(ArHitResultList_getSize)         \
+  CALL(ArPlane_acquireSubsumedBy)       \
+  CALL(ArPlane_getCenterPose)           \
+  CALL(ArPlane_getPolygon)              \
+  CALL(ArPlane_getPolygonSize)          \
+  CALL(ArPlane_getType)                 \
+  CALL(ArPlane_isPoseInPolygon)         \
   CALL(ArPose_create)                   \
   CALL(ArPose_destroy)                  \
   CALL(ArPose_getMatrix)                \
@@ -38,15 +45,19 @@ namespace {
   CALL(ArSession_configure)             \
   CALL(ArSession_create)                \
   CALL(ArSession_destroy)               \
+  CALL(ArSession_getAllTrackables)      \
   CALL(ArSession_pause)                 \
   CALL(ArSession_resume)                \
   CALL(ArSession_setCameraTextureName)  \
   CALL(ArSession_setDisplayGeometry)    \
-  CALL(ArHitResult_acquireTrackable)    \
+  CALL(ArSession_update)                \
+  CALL(ArTrackable_getTrackingState)    \
   CALL(ArTrackable_getType)             \
   CALL(ArTrackable_release)             \
-  CALL(ArPlane_isPoseInPolygon)         \
-  CALL(ArSession_update)
+  CALL(ArTrackableList_acquireItem)     \
+  CALL(ArTrackableList_create)          \
+  CALL(ArTrackableList_destroy)         \
+  CALL(ArTrackableList_getSize)
 
 #define CALL(fn) decltype(&fn) impl_##fn = nullptr;
 struct ArCoreApi {
@@ -194,10 +205,74 @@ void ArHitResult_acquireTrackable(const ArSession* session,
                                                 out_trackable);
 }
 
+void ArTrackable_getTrackingState(const ArSession* session,
+                                  const ArTrackable* trackable,
+                                  ArTrackingState* out_tracking_state) {
+  arcore_api->impl_ArTrackable_getTrackingState(session, trackable,
+                                                out_tracking_state);
+}
+
 void ArTrackable_getType(const ArSession* session,
                          const ArTrackable* trackable,
                          ArTrackableType* out_trackable_type) {
   arcore_api->impl_ArTrackable_getType(session, trackable, out_trackable_type);
+}
+
+void ArTrackable_release(ArTrackable* trackable) {
+  arcore_api->impl_ArTrackable_release(trackable);
+}
+
+void ArTrackableList_acquireItem(const ArSession* session,
+                                 const ArTrackableList* trackable_list,
+                                 int32_t index,
+                                 ArTrackable** out_trackable) {
+  arcore_api->impl_ArTrackableList_acquireItem(session, trackable_list, index,
+                                               out_trackable);
+}
+
+void ArTrackableList_create(const ArSession* session,
+                            ArTrackableList** out_trackable_list) {
+  arcore_api->impl_ArTrackableList_create(session, out_trackable_list);
+}
+
+void ArTrackableList_destroy(ArTrackableList* trackable_list) {
+  arcore_api->impl_ArTrackableList_destroy(trackable_list);
+}
+
+void ArTrackableList_getSize(const ArSession* session,
+                             const ArTrackableList* trackable_list,
+                             int32_t* out_size) {
+  arcore_api->impl_ArTrackableList_getSize(session, trackable_list, out_size);
+}
+
+void ArPlane_acquireSubsumedBy(const ArSession* session,
+                               const ArPlane* plane,
+                               ArPlane** out_subsumed_by) {
+  arcore_api->impl_ArPlane_acquireSubsumedBy(session, plane, out_subsumed_by);
+}
+
+void ArPlane_getCenterPose(const ArSession* session,
+                           const ArPlane* plane,
+                           ArPose* out_pose) {
+  arcore_api->impl_ArPlane_getCenterPose(session, plane, out_pose);
+}
+
+void ArPlane_getPolygon(const ArSession* session,
+                        const ArPlane* plane,
+                        float* out_polygon_xz) {
+  arcore_api->impl_ArPlane_getPolygon(session, plane, out_polygon_xz);
+}
+
+void ArPlane_getPolygonSize(const ArSession* session,
+                            const ArPlane* plane,
+                            int32_t* out_polygon_size) {
+  arcore_api->impl_ArPlane_getPolygonSize(session, plane, out_polygon_size);
+}
+
+void ArPlane_getType(const ArSession* session,
+                     const ArPlane* plane,
+                     ArPlaneType* out_plane_type) {
+  arcore_api->impl_ArPlane_getType(session, plane, out_plane_type);
 }
 
 void ArPlane_isPoseInPolygon(const ArSession* session,
@@ -206,10 +281,6 @@ void ArPlane_isPoseInPolygon(const ArSession* session,
                              int32_t* out_pose_in_polygon) {
   arcore_api->impl_ArPlane_isPoseInPolygon(session, plane, pose,
                                            out_pose_in_polygon);
-}
-
-void ArTrackable_release(ArTrackable* trackable) {
-  arcore_api->impl_ArTrackable_release(trackable);
 }
 
 void ArHitResultList_create(const ArSession* session,
@@ -270,6 +341,13 @@ ArStatus ArSession_create(void* env,
 
 void ArSession_destroy(ArSession* session) {
   arcore_api->impl_ArSession_destroy(session);
+}
+
+void ArSession_getAllTrackables(const ArSession* session,
+                                ArTrackableType filter_type,
+                                ArTrackableList* out_trackable_list) {
+  arcore_api->impl_ArSession_getAllTrackables(session, filter_type,
+                                              out_trackable_list);
 }
 
 ArStatus ArSession_pause(ArSession* session) {

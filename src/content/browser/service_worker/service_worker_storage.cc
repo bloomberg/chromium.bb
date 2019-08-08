@@ -33,8 +33,6 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 
-using std::swap;
-
 namespace content {
 
 namespace {
@@ -68,8 +66,8 @@ const base::FilePath::CharType kDatabaseName[] =
 const base::FilePath::CharType kDiskCacheName[] =
     FILE_PATH_LITERAL("ScriptCache");
 
+// Taken from AppCache's in-memory cache size.
 const int kMaxServiceWorkerStorageMemDiskCacheSize = 10 * 1024 * 1024;
-const int kMaxServiceWorkerStorageDiskCacheSize = 250 * 1024 * 1024;
 
 blink::ServiceWorkerStatusCode DatabaseStatusToStatusCode(
     ServiceWorkerDatabase::Status status) {
@@ -429,6 +427,7 @@ void ServiceWorkerStorage::StoreRegistration(
 
   DCHECK_NE(version->fetch_handler_existence(),
             ServiceWorkerVersion::FetchHandlerExistence::UNKNOWN);
+  DCHECK_EQ(registration->status(), ServiceWorkerRegistration::Status::kIntact);
 
   ServiceWorkerDatabase::RegistrationData data;
   data.registration_id = registration->id();
@@ -446,7 +445,7 @@ void ServiceWorkerStorage::StoreRegistration(
   data.navigation_preload_state = registration->navigation_preload_state();
   data.script_response_time = version->GetInfo().script_response_time;
   for (const blink::mojom::WebFeature feature : version->used_features())
-    data.used_features.insert(static_cast<uint32_t>(feature));
+    data.used_features.insert(feature);
 
   ResourceList resources;
   version->script_cache_map()->GetResources(&resources);
@@ -474,8 +473,6 @@ void ServiceWorkerStorage::StoreRegistration(
                      base::BindOnce(&ServiceWorkerStorage::DidStoreRegistration,
                                     weak_factory_.GetWeakPtr(),
                                     std::move(callback), data)));
-
-  registration->set_is_deleted(false);
 }
 
 void ServiceWorkerStorage::UpdateToActiveState(
@@ -562,9 +559,10 @@ void ServiceWorkerStorage::UpdateNavigationPreloadHeader(
       base::BindOnce(&DidUpdateNavigationPreloadState, std::move(callback)));
 }
 
-void ServiceWorkerStorage::DeleteRegistration(int64_t registration_id,
-                                              const GURL& origin,
-                                              StatusCallback callback) {
+void ServiceWorkerStorage::DeleteRegistration(
+    scoped_refptr<ServiceWorkerRegistration> registration,
+    const GURL& origin,
+    StatusCallback callback) {
   DCHECK(state_ == STORAGE_STATE_INITIALIZED ||
          state_ == STORAGE_STATE_DISABLED)
       << state_;
@@ -578,23 +576,22 @@ void ServiceWorkerStorage::DeleteRegistration(int64_t registration_id,
   if (!has_checked_for_stale_resources_)
     DeleteStaleResources();
 
+  DCHECK(!registration->is_deleted())
+      << "attempt to delete a registration twice";
+
   auto params = std::make_unique<DidDeleteRegistrationParams>(
-      registration_id, origin, std::move(callback));
+      registration->id(), origin, std::move(callback));
 
   database_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
           &DeleteRegistrationFromDB, database_.get(),
-          base::ThreadTaskRunnerHandle::Get(), registration_id, origin,
+          base::ThreadTaskRunnerHandle::Get(), registration->id(), origin,
           base::BindOnce(&ServiceWorkerStorage::DidDeleteRegistration,
                          weak_factory_.GetWeakPtr(), std::move(params))));
 
-  // The registration should no longer be findable.
-  pending_deletions_.insert(registration_id);
-  ServiceWorkerRegistration* registration =
-      context_->GetLiveRegistration(registration_id);
-  if (registration)
-    registration->set_is_deleted(true);
+  uninstalling_registrations_[registration->id()] = registration;
+  registration->SetStatus(ServiceWorkerRegistration::Status::kUninstalling);
 }
 
 void ServiceWorkerStorage::PerformStorageCleanup(base::OnceClosure callback) {
@@ -1121,15 +1118,10 @@ void ServiceWorkerStorage::NotifyDoneInstallingRegistration(
   }
 }
 
-void ServiceWorkerStorage::NotifyUninstallingRegistration(
-    ServiceWorkerRegistration* registration) {
-  DCHECK(uninstalling_registrations_.find(registration->id()) ==
-         uninstalling_registrations_.end());
-  uninstalling_registrations_[registration->id()] = registration;
-}
-
 void ServiceWorkerStorage::NotifyDoneUninstallingRegistration(
-    ServiceWorkerRegistration* registration) {
+    ServiceWorkerRegistration* registration,
+    ServiceWorkerRegistration::Status new_status) {
+  registration->SetStatus(new_status);
   uninstalling_registrations_.erase(registration->id());
 }
 
@@ -1493,12 +1485,25 @@ void ServiceWorkerStorage::DidStoreRegistration(
             deleted_version.resources_total_size_bytes);
   }
 
+  // Purge the deleted version's resources now if needed. This is subtle. The
+  // version might still be used for a long time even after it's deleted. We can
+  // only purge safely once the version is REDUNDANT, since it will never be
+  // used again.
+  //
+  // If the deleted version's ServiceWorkerVersion doesn't exist, we can assume
+  // it's effectively REDUNDANT so it's safe to purge now. This is because the
+  // caller is assumed to promote the new version to active unless the deleted
+  // version is doing work, and it can't be doing work if it's not live.
+  //
+  // If the ServiceWorkerVersion does exist, it triggers purging once it reaches
+  // REDUNDANT. Otherwise, purging happens on the next browser session (via
+  // DeleteStaleResources).
+  if (!context_->GetLiveVersion(deleted_version.version_id))
+    StartPurgingResources(newly_purgeable_resources);
+
   context_->NotifyRegistrationStored(new_version.registration_id,
                                      new_version.scope);
   std::move(callback).Run(blink::ServiceWorkerStatusCode::kOk);
-
-  if (!context_->GetLiveVersion(deleted_version.version_id))
-    StartPurgingResources(newly_purgeable_resources);
 }
 
 void ServiceWorkerStorage::DidUpdateToActiveState(
@@ -1517,7 +1522,6 @@ void ServiceWorkerStorage::DidDeleteRegistration(
     const ServiceWorkerDatabase::RegistrationData& deleted_version,
     const std::vector<int64_t>& newly_purgeable_resources,
     ServiceWorkerDatabase::Status status) {
-  pending_deletions_.erase(params->registration_id);
   if (status != ServiceWorkerDatabase::STATUS_OK) {
     ScheduleDeleteAndStartOver();
     std::move(params->callback).Run(DatabaseStatusToStatusCode(status));
@@ -1622,10 +1626,9 @@ ServiceWorkerStorage::GetOrCreateRegistration(
       new ServiceWorkerRegistration(options, data.registration_id, context_);
   registration->set_resources_total_size_bytes(data.resources_total_size_bytes);
   registration->set_last_update_check(data.last_update_check);
-  if (pending_deletions_.find(data.registration_id) !=
-      pending_deletions_.end()) {
-    registration->set_is_deleted(true);
-  }
+  DCHECK(uninstalling_registrations_.find(data.registration_id) ==
+         uninstalling_registrations_.end());
+
   scoped_refptr<ServiceWorkerVersion> version =
       context_->GetLiveVersion(data.version_id);
   if (!version) {
@@ -1642,20 +1645,7 @@ ServiceWorkerStorage::GetOrCreateRegistration(
     if (data.origin_trial_tokens)
       version->SetValidOriginTrialTokens(*data.origin_trial_tokens);
 
-    // Some features may be outside the valid range of features, if the data on
-    // disk was written by a later version of Chrome than currently running
-    // (crbug.com/758419).
-    // TODO(falken): Maybe Chrome should have a generic mechanism to detect
-    // profile downgrade and just abort? Or we could just crash here, but that
-    // seems extreme and difficult for a user to escape.
-    std::set<blink::mojom::WebFeature> used_features;
-    for (const uint32_t feature : data.used_features) {
-      if (feature <
-          static_cast<uint32_t>(blink::mojom::WebFeature::kNumberOfFeatures)) {
-        used_features.insert(static_cast<blink::mojom::WebFeature>(feature));
-      }
-    }
-    version->set_used_features(std::move(used_features));
+    version->set_used_features(data.used_features);
   }
   version->set_script_response_time_for_devtools(data.script_response_time);
 
@@ -1735,7 +1725,7 @@ void ServiceWorkerStorage::InitializeDiskCache() {
   disk_cache_->set_is_waiting_to_initialize(false);
   expecting_done_with_disk_on_disable_ = true;
   int rv = disk_cache_->InitWithDiskBackend(
-      GetDiskCachePath(), kMaxServiceWorkerStorageDiskCacheSize, false,
+      GetDiskCachePath(), false,
       base::BindOnce(&ServiceWorkerStorage::DiskCacheImplDoneWithDisk,
                      weak_factory_.GetWeakPtr()),
       base::BindOnce(&ServiceWorkerStorage::OnDiskCacheInitialized,
@@ -1805,6 +1795,9 @@ void ServiceWorkerStorage::OnResourcePurged(int64_t id, int rv) {
 
   ServiceWorkerMetrics::RecordPurgeResourceResult(rv);
 
+  // TODO(falken): Is it always OK to ClearPurgeableResourceIds if |rv| is
+  // failure? The disk cache entry might still remain and once we remove its
+  // purgeable id, we will never retry deleting it.
   std::set<int64_t> ids = {id};
   database_task_runner_->PostTask(
       FROM_HERE,

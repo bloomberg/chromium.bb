@@ -100,7 +100,7 @@ const RecognitionError = {
  * href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API">
  * Web Speech API</a>, error handling and executing search queries.
  */
-let speech = {};
+const speech = {};
 
 
 /**
@@ -976,7 +976,7 @@ speech.onClick_ = function(shouldSubmit, shouldRetry, navigatingAway) {
  * Provides methods for styling and animating the text areas
  * left of the microphone button.
  */
-let text = {};
+const text = {};
 
 
 /**
@@ -1200,7 +1200,7 @@ text.getErrorMessage_ = function(error) {
  * @private
  */
 text.getErrorLink_ = function(error) {
-  let linkElement = document.createElement('a');
+  const linkElement = document.createElement('a');
   linkElement.className = text.ERROR_LINK_CLASS_;
 
   switch (error) {
@@ -1306,7 +1306,7 @@ text.startListeningMessageAnimation_ = function() {
  * Provides methods for animating the microphone button and icon
  * on the Voice Search full screen overlay.
  */
-let microphone = {};
+const microphone = {};
 
 
 /**
@@ -1439,7 +1439,7 @@ microphone.runLevelAnimation_ = function() {
  * Provides methods for manipulating and animating the Voice Search
  * full screen overlay.
  */
-let view = {};
+const view = {};
 
 
 /**
@@ -1639,7 +1639,7 @@ view.init = function(onClick) {
  * @param {!Object} translatedStrings Dictionary of localized title strings.
  */
 view.setTitles = function(translatedStrings) {
-  let closeButton = $(view.CLOSE_BUTTON_ID);
+  const closeButton = $(view.CLOSE_BUTTON_ID);
   closeButton.title = translatedStrings.voiceCloseTooltip;
   closeButton.setAttribute('aria-label', translatedStrings.voiceCloseTooltip);
 };

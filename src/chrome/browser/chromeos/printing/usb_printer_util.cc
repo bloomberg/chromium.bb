@@ -6,6 +6,8 @@
 
 #include <ctype.h>
 #include <stdint.h>
+
+#include <string>
 #include <vector>
 
 #include "base/big_endian.h"
@@ -17,11 +19,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/printing/printer_configuration.h"
-#include "device/usb/public/cpp/usb_utils.h"
-#include "device/usb/public/mojom/device_enumeration_options.mojom.h"
-#include "device/usb/public/mojom/device_manager.mojom.h"
-#include "device/usb/usb_device.h"
+#include "services/device/public/cpp/usb/usb_utils.h"
+#include "services/device/public/mojom/usb_enumeration_options.mojom.h"
+#include "services/device/public/mojom/usb_manager.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
+
+using device::mojom::UsbDeviceInfo;
 
 namespace chromeos {
 namespace {
@@ -86,6 +89,17 @@ void MD5UpdateString16(base::MD5Context* ctx, const base::string16& str) {
   base::MD5Update(ctx, base::StringPiece(tmp.data(), tmp.size()));
 }
 
+uint16_t GetUsbVersion(const UsbDeviceInfo& device_info) {
+  return device_info.usb_version_major << 8 |
+         device_info.usb_version_minor << 4 | device_info.usb_version_subminor;
+}
+
+uint16_t GetDeviceVersion(const UsbDeviceInfo& device_info) {
+  return device_info.device_version_major << 8 |
+         device_info.device_version_minor << 4 |
+         device_info.device_version_subminor;
+}
+
 // Get the usb printer id for |device|.  This is used both as the identifier for
 // the printer in the user's PrintersManager and as the name of the printer in
 // CUPS, so it has to satisfy the naming restrictions of both.  CUPS in
@@ -94,33 +108,34 @@ void MD5UpdateString16(base::MD5Context* ctx, const base::string16& str) {
 // possible for that device.  So we basically toss every bit of stable
 // information from the device into an MD5 hash, and then hexify the hash value
 // as a suffix to "usb-" as the final printer id.
-std::string UsbPrinterId(const device::UsbDevice& device) {
+std::string UsbPrinterId(const UsbDeviceInfo& device_info) {
   // Paranoid checks; in the unlikely event someone messes with the USB device
   // definition, our (supposedly stable) hashes will change.
-  static_assert(sizeof(device.device_class()) == 1, "Class size changed");
-  static_assert(sizeof(device.device_subclass()) == 1, "Subclass size changed");
-  static_assert(sizeof(device.device_protocol()) == 1, "Protocol size changed");
-  static_assert(sizeof(device.vendor_id()) == 2, "Vendor id size changed");
-  static_assert(sizeof(device.product_id()) == 2, "Product id size changed");
-  static_assert(sizeof(device.device_version()) == 2, "Version size changed");
+  static_assert(sizeof(device_info.class_code) == 1, "Class size changed");
+  static_assert(sizeof(device_info.subclass_code) == 1,
+                "Subclass size changed");
+  static_assert(sizeof(device_info.protocol_code) == 1,
+                "Protocol size changed");
+  static_assert(sizeof(device_info.vendor_id) == 2, "Vendor id size changed");
+  static_assert(sizeof(device_info.product_id) == 2, "Product id size changed");
+  static_assert(sizeof(GetDeviceVersion(device_info)) == 2,
+                "Version size changed");
 
   base::MD5Context ctx;
   base::MD5Init(&ctx);
-  MD5UpdateBigEndian(&ctx, device.device_class());
-  MD5UpdateBigEndian(&ctx, device.device_subclass());
-  MD5UpdateBigEndian(&ctx, device.device_protocol());
-  MD5UpdateBigEndian(&ctx, device.vendor_id());
-  MD5UpdateBigEndian(&ctx, device.product_id());
-  MD5UpdateBigEndian(&ctx, device.device_version());
-  MD5UpdateString16(&ctx, device.manufacturer_string());
-  MD5UpdateString16(&ctx, device.product_string());
-  MD5UpdateString16(&ctx, device.serial_number());
+  MD5UpdateBigEndian(&ctx, device_info.class_code);
+  MD5UpdateBigEndian(&ctx, device_info.subclass_code);
+  MD5UpdateBigEndian(&ctx, device_info.protocol_code);
+  MD5UpdateBigEndian(&ctx, device_info.vendor_id);
+  MD5UpdateBigEndian(&ctx, device_info.product_id);
+  MD5UpdateBigEndian(&ctx, GetDeviceVersion(device_info));
+  MD5UpdateString16(&ctx, GetManufacturerName(device_info));
+  MD5UpdateString16(&ctx, GetProductName(device_info));
+  MD5UpdateString16(&ctx, GetSerialNumber(device_info));
   base::MD5Digest digest;
   base::MD5Final(&digest, &ctx);
   return base::StringPrintf("usb-%s", base::MD5DigestToBase16(digest).c_str());
 }
-
-}  // namespace
 
 // Creates a mojom filter which can be used to identify a basic USB printer.
 mojo::StructPtr<device::mojom::UsbDeviceFilter> CreatePrinterFilter() {
@@ -133,20 +148,17 @@ mojo::StructPtr<device::mojom::UsbDeviceFilter> CreatePrinterFilter() {
   return printer_filter;
 }
 
-bool UsbDeviceIsPrinter(const device::UsbDevice& usb_device) {
-  auto printer_filter = CreatePrinterFilter();
-  return UsbDeviceFilterMatches(*printer_filter, usb_device);
-}
-
-bool UsbDeviceSupportsIppusb(const device::UsbDevice& usb_device) {
+bool UsbDeviceSupportsIppusb(const UsbDeviceInfo& device_info) {
   auto printer_filter = CreatePrinterFilter();
   printer_filter->has_protocol_code = true;
   printer_filter->protocol_code = kPrinterIppusbProtocol;
 
-  return UsbDeviceFilterMatches(*printer_filter, usb_device);
+  return device::UsbDeviceFilterMatches(*printer_filter, device_info);
 }
 
-std::string UsbPrinterDeviceDetailsAsString(const device::UsbDevice& device) {
+// Convert the interesting details of a device to a string, for
+// logging/debugging.
+std::string UsbPrinterDeviceDetailsAsString(const UsbDeviceInfo& device_info) {
   return base::StringPrintf(
       " guid:                %s\n"
       " usb version:         %d\n"
@@ -159,29 +171,67 @@ std::string UsbPrinterDeviceDetailsAsString(const device::UsbDevice& device) {
       " manufacturer string: %s\n"
       " product string:      %s\n"
       " serial number:       %s",
-      device.guid().c_str(), device.usb_version(), device.device_class(),
-      device.device_subclass(), device.device_protocol(), device.vendor_id(),
-      device.product_id(), device.device_version(),
-      base::UTF16ToUTF8(device.manufacturer_string()).c_str(),
-      base::UTF16ToUTF8(device.product_string()).c_str(),
-      base::UTF16ToUTF8(device.serial_number()).c_str());
+      device_info.guid.c_str(), GetUsbVersion(device_info),
+      device_info.class_code, device_info.subclass_code,
+      device_info.protocol_code, device_info.vendor_id, device_info.product_id,
+      GetDeviceVersion(device_info),
+      base::UTF16ToUTF8(GetManufacturerName(device_info)).c_str(),
+      base::UTF16ToUTF8(GetProductName(device_info)).c_str(),
+      base::UTF16ToUTF8(GetSerialNumber(device_info)).c_str());
+}
+
+// Gets the URI CUPS would use to refer to this USB device.  Assumes device
+// is a printer.
+std::string UsbPrinterUri(const UsbDeviceInfo& device_info) {
+  // Note that serial may, for some devices, be empty or bogus (all zeros, non
+  // unique, or otherwise not really a serial number), but having a non-unique
+  // or empty serial field in the URI still lets us print, it just means we
+  // don't have a way to uniquely identify a printer if there are multiple ones
+  // plugged in with the same VID/PID, so we may print to the *wrong* printer.
+  // There doesn't seem to be a robust solution to this problem; if printers
+  // don't supply a serial number, we don't have any reliable way to do that
+  // differentiation.
+  std::string serial = base::UTF16ToUTF8(GetSerialNumber(device_info));
+  return CupsURIEscape(
+      base::StringPrintf("usb://%04x/%04x?serial=%s", device_info.vendor_id,
+                         device_info.product_id, serial.c_str()));
+}
+
+}  // namespace
+
+base::string16 GetManufacturerName(const UsbDeviceInfo& device_info) {
+  return device_info.manufacturer_name.value_or(base::string16());
+}
+
+base::string16 GetProductName(const UsbDeviceInfo& device_info) {
+  return device_info.product_name.value_or(base::string16());
+}
+
+base::string16 GetSerialNumber(const UsbDeviceInfo& device_info) {
+  return device_info.serial_number.value_or(base::string16());
+}
+
+bool UsbDeviceIsPrinter(const UsbDeviceInfo& device_info) {
+  auto printer_filter = CreatePrinterFilter();
+  return device::UsbDeviceFilterMatches(*printer_filter, device_info);
 }
 
 // Attempt to gather all the information we need to work with this printer by
 // querying the USB device.  This should only be called using devices we believe
 // are printers, not arbitrary USB devices, as we may get weird partial results
 // from arbitrary devices.
-std::unique_ptr<Printer> UsbDeviceToPrinter(const device::UsbDevice& device) {
+std::unique_ptr<Printer> UsbDeviceToPrinter(const UsbDeviceInfo& device_info) {
   // Preflight all required fields and log errors if we find something wrong.
-  if (device.vendor_id() == 0 || device.product_id() == 0) {
+  if (device_info.vendor_id == 0 || device_info.product_id == 0) {
     LOG(ERROR) << "Failed to convert USB device to printer.  Fields were:\n"
-               << UsbPrinterDeviceDetailsAsString(device);
+               << UsbPrinterDeviceDetailsAsString(device_info);
     return nullptr;
   }
 
   auto printer = std::make_unique<Printer>();
-  printer->set_manufacturer(base::UTF16ToUTF8(device.manufacturer_string()));
-  printer->set_model(base::UTF16ToUTF8(device.product_string()));
+  printer->set_manufacturer(
+      base::UTF16ToUTF8(GetManufacturerName(device_info)));
+  printer->set_model(base::UTF16ToUTF8(GetProductName(device_info)));
   // Synthesize make-and-model string for printer identification.
   printer->set_make_and_model(
       base::JoinString({printer->manufacturer(), printer->model()}, " "));
@@ -207,25 +257,10 @@ std::unique_ptr<Printer> UsbDeviceToPrinter(const device::UsbDevice& device) {
   }
 
   printer->set_description(printer->display_name());
-  printer->set_uri(UsbPrinterUri(device));
-  printer->set_id(UsbPrinterId(device));
-  printer->set_supports_ippusb(UsbDeviceSupportsIppusb(device));
+  printer->set_uri(UsbPrinterUri(device_info));
+  printer->set_id(UsbPrinterId(device_info));
+  printer->set_supports_ippusb(UsbDeviceSupportsIppusb(device_info));
   return printer;
-}
-
-std::string UsbPrinterUri(const device::UsbDevice& device) {
-  // Note that serial may, for some devices, be empty or bogus (all zeros, non
-  // unique, or otherwise not really a serial number), but having a non-unique
-  // or empty serial field in the URI still lets us print, it just means we
-  // don't have a way to uniquely identify a printer if there are multiple ones
-  // plugged in with the same VID/PID, so we may print to the *wrong* printer.
-  // There doesn't seem to be a robust solution to this problem; if printers
-  // don't supply a serial number, we don't have any reliable way to do that
-  // differentiation.
-  std::string serial = base::UTF16ToUTF8(device.serial_number());
-  return CupsURIEscape(base::StringPrintf("usb://%04x/%04x?serial=%s",
-                                          device.vendor_id(),
-                                          device.product_id(), serial.c_str()));
 }
 
 }  // namespace chromeos

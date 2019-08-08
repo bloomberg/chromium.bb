@@ -212,6 +212,12 @@ class SurfaceSynchronizationTest : public testing::Test {
     // BeginFrames, since the frame sink hierarchy is not set up in this test.
     frame_sink_manager_.RegisterBeginFrameSource(begin_frame_source_.get(),
                                                  kDisplayFrameSink);
+    frame_sink_manager_.RegisterFrameSinkHierarchy(kDisplayFrameSink,
+                                                   kParentFrameSink);
+    frame_sink_manager_.RegisterFrameSinkHierarchy(kDisplayFrameSink,
+                                                   kChildFrameSink1);
+    frame_sink_manager_.RegisterFrameSinkHierarchy(kDisplayFrameSink,
+                                                   kChildFrameSink2);
   }
 
   void TearDown() override {
@@ -1923,22 +1929,9 @@ TEST_F(SurfaceSynchronizationTest, FrameActivationAfterFrameSinkDestruction) {
   // alive by the display.
   DestroyFrameSink(kParentFrameSink);
 
-  Surface* parent_surface = GetSurfaceForId(parent_id);
-  ASSERT_NE(nullptr, parent_surface);
-
-  EXPECT_TRUE(parent_surface->has_deadline());
-  EXPECT_TRUE(parent_surface->HasActiveFrame());
-  EXPECT_TRUE(parent_surface->HasPendingFrame());
-
-  // Advance BeginFrames to trigger a deadline. This activates the
-  // CompositorFrame submitted above.
-  for (int i = 0; i < 4; ++i)
-    SendNextBeginFrame();
-
   // The parent surface stays alive through the display.
-  parent_surface = GetSurfaceForId(parent_id);
+  Surface* parent_surface = GetSurfaceForId(parent_id);
   EXPECT_NE(nullptr, parent_surface);
-  EXPECT_TRUE(surface_observer().IsSurfaceDamaged(parent_id));
 
   // Submitting a new CompositorFrame to the display should free the parent.
   display_support().SubmitCompositorFrame(display_id.local_surface_id(),
@@ -1975,7 +1968,7 @@ TEST_F(SurfaceSynchronizationTest, PreviousFrameSurfaceId) {
 
   // Activate the pending frame in |parent_id2|. previous_frame_surface_id()
   // should still return |parent_id1|.
-  parent_surface2->ActivatePendingFrameForDeadline(base::nullopt);
+  parent_surface2->ActivatePendingFrameForDeadline();
   EXPECT_TRUE(parent_surface2->HasActiveFrame());
   EXPECT_FALSE(parent_surface2->HasPendingFrame());
   EXPECT_EQ(parent_id1, parent_surface2->previous_frame_surface_id());
@@ -2008,7 +2001,7 @@ TEST_F(SurfaceSynchronizationTest, FrameIndexWithPendingFrames) {
 
   // Activate the pending frame. GetActiveFrameIndex should return the frame
   // index of the newly activated frame.
-  parent_surface->ActivatePendingFrameForDeadline(base::nullopt);
+  parent_surface->ActivatePendingFrameForDeadline();
   EXPECT_EQ(initial_frame_index + n_iterations,
             parent_surface->GetActiveFrameIndex());
 }
@@ -3503,6 +3496,7 @@ TEST_F(SurfaceSynchronizationTest,
   const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1, 1);
   const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink1, 1, 2);
   const SurfaceId child_id3 = MakeSurfaceId(kChildFrameSink1, 1, 3);
+  const SurfaceId child_id4 = MakeSurfaceId(kChildFrameSink1, 1, 4);
 
   // |child_id1| Surface should immediately activate because one unembedded
   // surface is allowed.
@@ -3536,8 +3530,8 @@ TEST_F(SurfaceSynchronizationTest,
   EXPECT_FALSE(child_surface2->HasPendingFrame());
   EXPECT_TRUE(child_surface2->HasActiveFrame());
 
-  // The child submits to |child_id3|. Now again we have two unembedded surface
-  // so throttling should kick in.
+  // The child submits to |child_id3|. Throttling should still not kick in due
+  // to https://crbug.com/951992.
   child_support1().SubmitCompositorFrame(
       child_id3.local_surface_id(),
       MakeCompositorFrame(empty_surface_ids(), empty_surface_ranges(),
@@ -3545,8 +3539,42 @@ TEST_F(SurfaceSynchronizationTest,
                           MakeDeadline(1u)));
   Surface* child_surface3 = GetSurfaceForId(child_id3);
   ASSERT_NE(nullptr, child_surface3);
-  EXPECT_TRUE(child_surface3->HasPendingFrame());
-  EXPECT_FALSE(child_surface3->HasActiveFrame());
+  EXPECT_FALSE(child_surface3->HasPendingFrame());
+  EXPECT_TRUE(child_surface3->HasActiveFrame());
+
+  // The child submits to |child_id4|. Throttling should kick in.
+  child_support1().SubmitCompositorFrame(
+      child_id4.local_surface_id(),
+      MakeCompositorFrame(empty_surface_ids(), empty_surface_ranges(),
+                          std::vector<TransferableResource>(),
+                          MakeDeadline(1u)));
+  Surface* child_surface4 = GetSurfaceForId(child_id4);
+  ASSERT_NE(nullptr, child_surface4);
+  EXPECT_TRUE(child_surface4->HasPendingFrame());
+  EXPECT_FALSE(child_surface4->HasActiveFrame());
+}
+
+// Verifies that the value of last active surface is correct after embed token
+// changes. https://crbug.com/967012
+TEST_F(SurfaceSynchronizationTest,
+       CheckLastActiveSurfaceAfterEmbedTokenChange) {
+  const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 2);
+  const SurfaceId parent_id2(
+      kParentFrameSink, LocalSurfaceId(1, base::UnguessableToken::Create()));
+  parent_support().SubmitCompositorFrame(parent_id1.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+  Surface* parent_surface1 = GetSurfaceForId(parent_id1);
+  EXPECT_TRUE(parent_surface1->HasActiveFrame());
+  EXPECT_FALSE(parent_surface1->HasPendingFrame());
+  parent_support().SubmitCompositorFrame(parent_id2.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+  Surface* parent_surface2 = GetSurfaceForId(parent_id2);
+  EXPECT_TRUE(parent_surface2->HasActiveFrame());
+  EXPECT_FALSE(parent_surface2->HasPendingFrame());
+
+  // Even though |parent_id1| has a larger sequence number, the value of
+  // |last_activated_surface_id| should be |parent_id2|.
+  EXPECT_EQ(parent_id2, parent_support().last_activated_surface_id());
 }
 
 }  // namespace viz

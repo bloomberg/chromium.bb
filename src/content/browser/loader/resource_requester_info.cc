@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
-#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/child_process_host.h"
@@ -23,34 +22,18 @@
 
 namespace content {
 
-namespace {
-
-void GetContextsCallbackForNavigationPreload(
-    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
-    net::URLRequestContext* url_request_context,
-    ResourceType resource_type,
-    ResourceContext** resource_context_out,
-    net::URLRequestContext** request_context_out) {
-  *resource_context_out = service_worker_context->resource_context();
-  *request_context_out = url_request_context;
-}
-
-}  // namespace
-
 ResourceRequesterInfo::ResourceRequesterInfo(
     RequesterType type,
     int child_id,
     ChromeAppCacheService* appcache_service,
     ChromeBlobStorageContext* blob_storage_context,
     storage::FileSystemContext* file_system_context,
-    ServiceWorkerContextWrapper* service_worker_context,
     const GetContextsCallback& get_contexts_callback)
     : type_(type),
       child_id_(child_id),
       appcache_service_(appcache_service),
       blob_storage_context_(blob_storage_context),
       file_system_context_(file_system_context),
-      service_worker_context_(service_worker_context),
       get_contexts_callback_(get_contexts_callback) {}
 
 ResourceRequesterInfo::~ResourceRequesterInfo() {}
@@ -73,11 +56,10 @@ scoped_refptr<ResourceRequesterInfo> ResourceRequesterInfo::CreateForRenderer(
     ChromeAppCacheService* appcache_service,
     ChromeBlobStorageContext* blob_storage_context,
     storage::FileSystemContext* file_system_context,
-    ServiceWorkerContextWrapper* service_worker_context,
     const GetContextsCallback& get_contexts_callback) {
   return scoped_refptr<ResourceRequesterInfo>(new ResourceRequesterInfo(
       RequesterType::RENDERER, child_id, appcache_service, blob_storage_context,
-      file_system_context, service_worker_context, get_contexts_callback));
+      file_system_context, get_contexts_callback));
 }
 
 scoped_refptr<ResourceRequesterInfo>
@@ -85,7 +67,7 @@ ResourceRequesterInfo::CreateForRendererTesting(int child_id) {
   return scoped_refptr<ResourceRequesterInfo>(new ResourceRequesterInfo(
       RequesterType::RENDERER, child_id, nullptr /* appcache_service */,
       nullptr /* blob_storage_context */, nullptr /* file_system_context */,
-      nullptr /*service_worker_context */, GetContextsCallback()));
+      GetContextsCallback()));
 }
 
 scoped_refptr<ResourceRequesterInfo>
@@ -94,7 +76,7 @@ ResourceRequesterInfo::CreateForBrowserSideNavigation() {
       RequesterType::BROWSER_SIDE_NAVIGATION,
       ChildProcessHost::kInvalidUniqueID, nullptr /* appcache_service */,
       nullptr /* blob_storage_context */, nullptr /* file_system_context */,
-      nullptr /* service_worker_context */, GetContextsCallback()));
+      GetContextsCallback()));
 }
 
 scoped_refptr<ResourceRequesterInfo>
@@ -102,32 +84,7 @@ ResourceRequesterInfo::CreateForDownloadOrPageSave(int child_id) {
   return scoped_refptr<ResourceRequesterInfo>(new ResourceRequesterInfo(
       RequesterType::DOWNLOAD_OR_PAGE_SAVE, child_id,
       nullptr /* appcache_service */, nullptr /* blob_storage_context */,
-      nullptr /* file_system_context */, nullptr /*service_worker_context */,
-      GetContextsCallback()));
-}
-
-scoped_refptr<ResourceRequesterInfo>
-ResourceRequesterInfo::CreateForNavigationPreload(
-    ResourceRequesterInfo* original_request_info,
-    net::URLRequestContext* url_request_context) {
-  DCHECK(original_request_info->IsBrowserSideNavigation());
-  DCHECK(original_request_info->service_worker_context());
-  DCHECK(!original_request_info->get_contexts_callback_);
-  // The requester info for browser side navigation doesn't have the
-  // get_contexts_callback. So create the callback here which gets the
-  // ResourceContext and the URLRequestContext from ServiceWorkerContext.
-  auto get_contexts_callback =
-      base::BindRepeating(&GetContextsCallbackForNavigationPreload,
-                          scoped_refptr<ServiceWorkerContextWrapper>(
-                              original_request_info->service_worker_context()),
-                          url_request_context);
-
-  return scoped_refptr<ResourceRequesterInfo>(new ResourceRequesterInfo(
-      RequesterType::NAVIGATION_PRELOAD, ChildProcessHost::kInvalidUniqueID,
-      nullptr /* appcache_service */, nullptr /* blob_storage_context */,
-      nullptr /* file_system_context */,
-      original_request_info->service_worker_context(),
-      std::move(get_contexts_callback)));
+      nullptr /* file_system_context */, GetContextsCallback()));
 }
 
 scoped_refptr<ResourceRequesterInfo>
@@ -138,7 +95,7 @@ ResourceRequesterInfo::CreateForCertificateFetcherForSignedExchange(
       RequesterType::CERTIFICATE_FETCHER_FOR_SIGNED_EXCHANGE,
       ChildProcessHost::kInvalidUniqueID, nullptr /* appcache_service */,
       nullptr /* blob_storage_context */, nullptr /* file_system_context */,
-      nullptr /* service_worker_context */, get_contexts_callback));
+      get_contexts_callback));
 }
 
 }  // namespace content

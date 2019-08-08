@@ -4,6 +4,8 @@
 
 #include "chrome/chrome_cleaner/engines/broker/scanner_sandbox_interface.h"
 
+#include <windows.h>
+
 #include <algorithm>
 #include <string>
 #include <vector>
@@ -14,6 +16,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/path_service.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/test/test_reg_util_win.h"
@@ -33,7 +36,6 @@
 #include "chrome/chrome_cleaner/test/test_task_scheduler.h"
 #include "chrome/chrome_cleaner/test/test_util.h"
 #include "sandbox/win/src/nt_internals.h"
-#include "sandbox/win/src/sandbox_utils.h"
 #include "sandbox/win/src/sid.h"
 #include "sandbox/win/src/win_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -80,6 +82,29 @@ bool operator!=(const chrome_cleaner::TaskScheduler::TaskExecAction& left,
          left.arguments != right.arguments;
 }
 
+base::FilePath GetNativePath(const base::string16& path) {
+  // Add the native path \??\ prefix described at
+  // https://googleprojectzero.blogspot.com/2016/02/the-definitive-guide-on-win32-to-nt.html
+  return base::FilePath(base::StrCat({L"\\??\\", path}));
+}
+
+base::FilePath GetUniversalPath(const base::string16& path) {
+  // Add the universal \\?\ prefix described at
+  // https://docs.microsoft.com/en-us/windows/desktop/fileio/naming-a-file#namespaces
+  return base::FilePath(base::StrCat({L"\\\\?\\", path}));
+}
+
+bool CreateNetworkedFile(const base::FilePath& path) {
+  chrome_cleaner::CreateEmptyFile(path);
+
+  // Fake an attribute that would be present on a networked file.
+  // FILE_ATTRIBUTE_OFFLINE was chosen as FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS
+  // and FILE_ATTRIBUTE_RECALL_ON_OPEN do not seem to be user-settable.
+  const DWORD attr = ::GetFileAttributes(path.value().c_str());
+  return ::SetFileAttributesW(path.value().c_str(),
+                              attr | FILE_ATTRIBUTE_OFFLINE);
+}
+
 }  // namespace
 
 TEST(ScannerSandboxInterface, FindFirstFile_OneFile) {
@@ -89,7 +114,7 @@ TEST(ScannerSandboxInterface, FindFirstFile_OneFile) {
 
   ASSERT_TRUE(chrome_cleaner::CreateEmptyFile(file_path));
 
-  std::wstring search_pattern = L"temp*";
+  base::string16 search_pattern = L"temp*";
   base::FilePath search_path = temp.GetPath().Append(search_pattern);
 
   HANDLE handle;
@@ -107,9 +132,22 @@ TEST(ScannerSandboxInterface, FindFirstFile_OneFile) {
   ScopedCurrentDirectory directory_override(temp.GetPath());
 
   EXPECT_EQ(
-      SandboxErrorCode::RELATIVE_PATH_NOT_ALLOWED,
+      SandboxErrorCode::INVALID_FILE_PATH,
       SandboxFindFirstFile(base::FilePath(search_pattern), &data, &handle));
   EXPECT_EQ(INVALID_HANDLE_VALUE, handle);
+
+  // Make sure that the file path requires a drive letter.
+  base::FilePath native_path = GetNativePath(search_pattern);
+  EXPECT_EQ(SandboxErrorCode::INVALID_FILE_PATH,
+            SandboxFindFirstFile(native_path, &data, &handle))
+      << native_path;
+  EXPECT_EQ(INVALID_HANDLE_VALUE, handle) << native_path;
+
+  base::FilePath universal_path = GetUniversalPath(search_pattern);
+  EXPECT_EQ(SandboxErrorCode::INVALID_FILE_PATH,
+            SandboxFindFirstFile(universal_path, &data, &handle))
+      << universal_path;
+  EXPECT_EQ(INVALID_HANDLE_VALUE, handle) << universal_path;
 }
 
 TEST(ScannerSandboxInterface, FindNextFile_MultipleFiles) {
@@ -127,7 +165,7 @@ TEST(ScannerSandboxInterface, FindNextFile_MultipleFiles) {
 
   EXPECT_EQ(0U, SandboxFindFirstFile(search_path, &data, &handle));
   EXPECT_NE(INVALID_HANDLE_VALUE, handle);
-  std::wstring first_found = data.cFileName;
+  base::string16 first_found = data.cFileName;
   EXPECT_TRUE(base::EqualsCaseInsensitiveASCII(file_path_1.BaseName().value(),
                                                data.cFileName) ||
               base::EqualsCaseInsensitiveASCII(file_path_2.BaseName().value(),
@@ -157,7 +195,7 @@ TEST(ScannerSandboxInterface, FindFirstFile_InvalidInputs) {
   HANDLE handle;
   WIN32_FIND_DATAW data;
 
-  EXPECT_EQ(SandboxErrorCode::NULL_FILE_NAME,
+  EXPECT_EQ(SandboxErrorCode::INVALID_FILE_PATH,
             SandboxFindFirstFile(base::FilePath(), &data, &handle));
   EXPECT_EQ(INVALID_HANDLE_VALUE, handle);
 }
@@ -190,7 +228,7 @@ TEST(ScannerSandboxInterface, FindFirstFile_Wow64Disabled) {
     WIN32_FIND_DATAW data;
     EXPECT_EQ(0U, SandboxFindFirstFile(search_path, &data, &handle));
     EXPECT_NE(INVALID_HANDLE_VALUE, handle);
-    std::wstring first_found = data.cFileName;
+    base::string16 first_found = data.cFileName;
     EXPECT_TRUE(base::EqualsCaseInsensitiveASCII(kTestFile, data.cFileName));
 
     EXPECT_EQ(static_cast<uint32_t>(ERROR_NO_MORE_FILES),
@@ -215,9 +253,143 @@ TEST(ScannerSandboxInterface, FindFirstFile_Wow64Disabled) {
   }
 }
 
+TEST(ScannerSandboxInterface, FindFirstFile_WithNetworkedFile) {
+  base::ScopedTempDir temp;
+  ASSERT_TRUE(temp.CreateUniqueTempDir());
+  base::FilePath file_path = temp.GetPath().Append(L"temp_file_1.txt");
+  ASSERT_TRUE(CreateNetworkedFile(file_path));
+
+  HANDLE handle;
+  WIN32_FIND_DATAW data;
+  EXPECT_EQ(static_cast<uint32_t>(ERROR_NO_MORE_FILES),
+            SandboxFindFirstFile(file_path, &data, &handle));
+  EXPECT_EQ(INVALID_HANDLE_VALUE, handle);
+}
+
+TEST(ScannerSandboxInterface, FindNextFile_WithNetworkedFile) {
+  base::ScopedTempDir temp;
+  ASSERT_TRUE(temp.CreateUniqueTempDir());
+  base::FilePath file_path_1 = temp.GetPath().Append(L"temp_file_1.txt");
+  base::FilePath file_path_2 = temp.GetPath().Append(L"temp_file_2.txt");
+
+  ASSERT_TRUE(chrome_cleaner::CreateEmptyFile(file_path_1));
+  ASSERT_TRUE(CreateNetworkedFile(file_path_2));
+
+  HANDLE handle;
+  base::FilePath search_path = temp.GetPath().Append(L"temp*");
+  WIN32_FIND_DATAW data;
+
+  EXPECT_EQ(0U, SandboxFindFirstFile(search_path, &data, &handle));
+  EXPECT_NE(INVALID_HANDLE_VALUE, handle);
+  base::string16 first_found = data.cFileName;
+  EXPECT_TRUE(base::EqualsCaseInsensitiveASCII(file_path_1.BaseName().value(),
+                                               data.cFileName))
+      << "Returned file name doesn't match, expected "
+      << file_path_1.BaseName().value() << " and got " << data.cFileName;
+
+  EXPECT_EQ(static_cast<uint32_t>(ERROR_NO_MORE_FILES),
+            SandboxFindNextFile(handle, &data));
+
+  EXPECT_EQ(0U, SandboxFindClose(handle));
+}
+
 TEST(ScannerSandboxInterface, FindClose_Invalid) {
   EXPECT_EQ(static_cast<uint32_t>(ERROR_INVALID_HANDLE),
             SandboxFindClose(INVALID_HANDLE_VALUE));
+}
+
+TEST(ScannerSandboxInterface, GetFileAttributes_Valid) {
+  base::ScopedTempDir temp;
+  ASSERT_TRUE(temp.CreateUniqueTempDir());
+  base::FilePath file_path = temp.GetPath().Append(L"file.txt");
+  ASSERT_TRUE(chrome_cleaner::CreateEmptyFile(file_path));
+
+  uint32_t attributes = 0;
+  int32_t result = SandboxGetFileAttributes(file_path, &attributes);
+  EXPECT_NE(INVALID_FILE_ATTRIBUTES, attributes);
+  EXPECT_EQ(ERROR_SUCCESS, result);
+}
+
+TEST(ScannerSandboxInterface, GetFileAttributes_MissingFile) {
+  base::ScopedTempDir temp;
+  ASSERT_TRUE(temp.CreateUniqueTempDir());
+  base::FilePath file_path = temp.GetPath().Append(L"missing_file.txt");
+
+  uint32_t attributes = 0;
+  int32_t result = SandboxGetFileAttributes(file_path, &attributes);
+  EXPECT_EQ(INVALID_FILE_ATTRIBUTES, attributes);
+  EXPECT_EQ(ERROR_FILE_NOT_FOUND, result);
+}
+
+TEST(ScannerSandboxInterface, GetFileAttributes_EmptyPath) {
+  uint32_t attributes = 0;
+  uint32_t result = SandboxGetFileAttributes(base::FilePath(), &attributes);
+  EXPECT_EQ(INVALID_FILE_ATTRIBUTES, attributes);
+  EXPECT_EQ(SandboxErrorCode::INVALID_FILE_PATH, result);
+}
+
+TEST(ScannerSandboxInterface, GetFileAttributes_RelativePath) {
+  base::ScopedTempDir temp;
+  ASSERT_TRUE(temp.CreateUniqueTempDir());
+  base::FilePath file_name(L"file.txt");
+  ASSERT_TRUE(
+      chrome_cleaner::CreateEmptyFile(temp.GetPath().Append(file_name)));
+  ScopedCurrentDirectory directory_override(temp.GetPath());
+
+  uint32_t attributes = 0;
+  uint32_t result = SandboxGetFileAttributes(file_name, &attributes);
+  EXPECT_EQ(INVALID_FILE_ATTRIBUTES, attributes);
+  EXPECT_EQ(SandboxErrorCode::INVALID_FILE_PATH, result);
+}
+
+TEST(ScannerSandboxInterface, GetFileAttributes_Wow64Disabled) {
+  static constexpr wchar_t kTestFile[] = L"temp_file.txt";
+
+  ScopedTempDirNoWow64 temp_dir;
+  ASSERT_TRUE(temp_dir.CreateEmptyFileInUniqueSystem32TempDir(kTestFile));
+  base::FilePath base_path = temp_dir.GetPath().BaseName();
+
+  // Make sure the file can be found in the system32 directory.
+  base::FilePath system_path;
+  ASSERT_TRUE(base::PathService::Get(base::DIR_SYSTEM, &system_path));
+
+  {
+    base::FilePath search_path =
+        system_path.Append(base_path).Append(kTestFile);
+    SCOPED_TRACE(::testing::Message() << "search_path = " << search_path);
+    uint32_t attributes;
+    int32_t result = SandboxGetFileAttributes(search_path, &attributes);
+    EXPECT_EQ(ERROR_SUCCESS, result);
+  }
+
+  // Make sure the file is NOT found in the redirected directory. Skip this
+  // test on 32-bit Windows because the redirected path will be empty as Wow64
+  // redirection is not supported.
+  if (chrome_cleaner::IsX64Architecture()) {
+    base::FilePath redirected_path = GetWow64RedirectedSystemPath();
+    ASSERT_FALSE(redirected_path.empty());
+    ASSERT_NE(redirected_path, system_path);
+    base::FilePath search_path =
+        redirected_path.Append(base_path).Append(kTestFile);
+    SCOPED_TRACE(::testing::Message() << "search_path = " << search_path);
+
+    uint32_t attributes;
+    int32_t result = SandboxGetFileAttributes(search_path, &attributes);
+    EXPECT_EQ(ERROR_PATH_NOT_FOUND, result);
+    EXPECT_EQ(INVALID_FILE_ATTRIBUTES, attributes);
+  }
+}
+
+TEST(ScannerSandboxInterface, GetFileAttributes_WithNetworkedFile) {
+  base::ScopedTempDir temp;
+  ASSERT_TRUE(temp.CreateUniqueTempDir());
+  base::FilePath file_path = temp.GetPath().Append(L"file.txt");
+  ASSERT_TRUE(CreateNetworkedFile(file_path));
+
+  uint32_t attributes = 0;
+  int32_t result = SandboxGetFileAttributes(file_path, &attributes);
+  EXPECT_EQ(INVALID_FILE_ATTRIBUTES, attributes);
+  EXPECT_EQ(ERROR_FILE_NOT_FOUND, result);
 }
 
 TEST(ScannerSandboxInterface, GetKnownFolderPath) {
@@ -400,6 +572,17 @@ TEST_F(ScannerSandboxInterface_OpenReadOnlyFile, BasicFile) {
       SandboxOpenReadOnlyFile(base::FilePath(file_name), FILE_ATTRIBUTE_NORMAL);
   EXPECT_FALSE(relative_handle.IsValid());
 
+  // Make sure that the file path requires a drive letter.
+  base::FilePath native_path = GetNativePath(file_path.value());
+  base::win::ScopedHandle native_handle =
+      SandboxOpenReadOnlyFile(native_path, FILE_ATTRIBUTE_NORMAL);
+  EXPECT_FALSE(native_handle.IsValid()) << native_path;
+
+  base::FilePath universal_path = GetUniversalPath(file_path.value());
+  base::win::ScopedHandle universal_handle =
+      SandboxOpenReadOnlyFile(universal_path, FILE_ATTRIBUTE_NORMAL);
+  EXPECT_FALSE(universal_handle.IsValid()) << universal_path;
+
   // Make sure the file can be opened using a path with trailing whitespaces.
   const base::string16 path_with_space = file_path.value() + L" ";
   handle = SandboxOpenReadOnlyFile(base::FilePath(path_with_space),
@@ -489,6 +672,22 @@ TEST_F(ScannerSandboxInterface_OpenReadOnlyFile, Wow64Disabled) {
                                      /*dwFlagsAndAttributes=*/0);
     EXPECT_FALSE(handle.IsValid()) << "file_path = " << file_path.value();
   }
+}
+
+TEST_F(ScannerSandboxInterface_OpenReadOnlyFile, NetworkedFile) {
+  base::ScopedTempDir temp;
+  ASSERT_TRUE(temp.CreateUniqueTempDir());
+  base::FilePath file_path = temp.GetPath().Append(L"temp_file.txt");
+
+  ASSERT_TRUE(CreateNetworkedFile(file_path));
+
+  base::win::ScopedHandle handle(
+      SandboxOpenReadOnlyFile(file_path, FILE_ATTRIBUTE_NORMAL));
+  EXPECT_FALSE(handle.IsValid());
+
+  handle = SandboxOpenReadOnlyFile(file_path,
+                                   /*dwFlagsAndAttributes=*/0);
+  EXPECT_FALSE(handle.IsValid());
 }
 
 TEST_F(ScannerSandboxInterface_OpenReadOnlyFile, BelowFileSizeLimit) {

@@ -17,7 +17,6 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
 #include "base/location.h"
@@ -151,8 +150,7 @@ static bool HeaderMatches(const HttpRequestHeaders& headers,
 
     HttpUtil::ValuesIterator v(header_value.begin(), header_value.end(), ',');
     while (v.GetNext()) {
-      if (base::LowerCaseEqualsASCII(
-              base::StringPiece(v.value_begin(), v.value_end()), search->value))
+      if (base::LowerCaseEqualsASCII(v.value_piece(), search->value))
         return true;
     }
   }
@@ -1032,7 +1030,7 @@ int HttpCache::Transaction::DoLoop(int result) {
 
   if (rv != ERR_IO_PENDING && !callback_.is_null()) {
     read_buf_ = nullptr;  // Release the buffer before invoking the callback.
-    base::ResetAndReturn(&callback_).Run(rv);
+    std::move(callback_).Run(rv);
   }
 
   return rv;
@@ -1057,7 +1055,7 @@ int HttpCache::Transaction::DoGetBackendComplete(int result) {
 
   // Keep track of the fraction of requests that we can double-key.
   UMA_HISTOGRAM_BOOLEAN("HttpCache.TopFrameOriginPresent",
-                        request_->top_frame_origin.has_value());
+                        request_->network_isolation_key.IsFullyPopulated());
 
   if (!ShouldPassThrough()) {
     cache_key_ = cache_->GenerateCacheKey(request_);
@@ -1840,7 +1838,7 @@ int HttpCache::Transaction::DoSuccessfulSendRequest() {
   // Invalidate any cached GET with a successful POST.
   if (!(effective_load_flags_ & LOAD_DISABLE_CACHE) && method_ == "POST" &&
       NonErrorResponse(new_response->headers->response_code())) {
-    cache_->DoomMainEntryForUrl(request_->url, request_->top_frame_origin);
+    cache_->DoomMainEntryForUrl(request_->url, request_->network_isolation_key);
   }
 
   RecordNoStoreHeaderHistogram(request_->load_flags, new_response);
@@ -2484,7 +2482,7 @@ bool HttpCache::Transaction::ShouldPassThrough() {
   // cache otherwise resources from different pages could share a cached entry
   // in such cases.
   if (base::FeatureList::IsEnabled(features::kSplitCacheByTopFrameOrigin) &&
-      (!request_->top_frame_origin || request_->top_frame_origin->opaque())) {
+      request_->network_isolation_key.IsTransient()) {
     return true;
   }
 

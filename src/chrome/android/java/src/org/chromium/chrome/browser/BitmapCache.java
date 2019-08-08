@@ -121,6 +121,14 @@ public class BitmapCache {
         sDeduplicationCache.put(key, new WeakReference<>(bitmap));
     }
 
+    /**
+     * Evict all bitmaps from the cache.
+     */
+    public void clear() {
+        getBitmapCache().evictAll();
+        scheduleDeduplicationCache();
+    }
+
     /** @return The total number of bytes taken by the bitmaps in this cache. */
     public int size() {
         return getBitmapCache().size();

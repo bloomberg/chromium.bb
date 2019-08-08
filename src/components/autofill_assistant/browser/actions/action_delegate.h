@@ -10,10 +10,12 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "components/autofill_assistant/browser/actions/click_action.h"
 #include "components/autofill_assistant/browser/batch_element_checker.h"
 #include "components/autofill_assistant/browser/details.h"
 #include "components/autofill_assistant/browser/info_box.h"
 #include "components/autofill_assistant/browser/selector.h"
+#include "components/autofill_assistant/browser/top_padding.h"
 #include "components/autofill_assistant/browser/ui_controller.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 #include "third_party/icu/source/common/unicode/umachine.h"
@@ -33,6 +35,7 @@ class WebContents;
 namespace autofill_assistant {
 class ClientMemory;
 class ClientStatus;
+struct ClientSettings;
 
 // Action delegate called when processing actions.
 class ActionDelegate {
@@ -47,8 +50,7 @@ class ActionDelegate {
   virtual std::string GetStatusMessage() = 0;
 
   // Checks one or more elements.
-  virtual void RunElementChecks(BatchElementChecker* checker,
-                                base::OnceCallback<void()> all_done) = 0;
+  virtual void RunElementChecks(BatchElementChecker* checker) = 0;
 
   // Wait for a short time for a given selector to appear.
   //
@@ -63,32 +65,23 @@ class ActionDelegate {
   virtual void ShortWaitForElement(const Selector& selector,
                                    base::OnceCallback<void(bool)> callback) = 0;
 
-  enum class SelectorPredicate {
-    // The selector matches elements
-    kMatches,
-
-    // The selector doesn't match any elements
-    kDoesntMatch
-  };
-
-  // Wait for up to |max_wait_time| for the element |selectors| to match
-  // element(s) on the page, then call |callback| with true if at least an
-  // element matched, false otherwise.
-  //
-  // |selector_predicate| specifies the condition that must be satisfied for
-  // WaitForDom to return successfully. It applies to the given |selector|.
+  // Wait for up to |max_wait_time| for element conditions to match on the page,
+  // then call |callback| with a successful status if at least an element
+  // matched, an error status otherwise.
   //
   // If |allow_interrupt| interrupts can run while waiting.
   virtual void WaitForDom(
       base::TimeDelta max_wait_time,
       bool allow_interrupt,
-      SelectorPredicate selector_predicate,
-      const Selector& selector,
+      base::RepeatingCallback<void(BatchElementChecker*,
+                                   base::OnceCallback<void(bool)>)>
+          check_elements,
       base::OnceCallback<void(ProcessedActionStatusProto)> callback) = 0;
 
   // Click or tap the element given by |selector| on the web page.
   virtual void ClickOrTapElement(
       const Selector& selector,
+      ClickAction::ClickType click_type,
       base::OnceCallback<void(const ClientStatus&)> callback) = 0;
 
   // Ask user to select one of the given suggestions.
@@ -137,9 +130,11 @@ class ActionDelegate {
       const std::string& selected_option,
       base::OnceCallback<void(const ClientStatus&)> callback) = 0;
 
-  // Focus on the element given by |selector|.
+  // Focus on element given by |selector|. |top_padding| specifies the padding
+  // between focused element and the top.
   virtual void FocusElement(
       const Selector& selector,
+      const TopPadding& top_padding,
       base::OnceCallback<void(const ClientStatus&)> callback) = 0;
 
   // Sets selector of areas that can be manipulated:
@@ -254,8 +249,30 @@ class ActionDelegate {
   // Set whether the viewport should be resized.
   virtual void SetResizeViewport(bool resize_viewport) = 0;
 
+  // Checks whether the viewport should be resized.
+  virtual bool GetResizeViewport() = 0;
+
   // Set the peek mode.
   virtual void SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) = 0;
+
+  // Checks the current peek mode.
+  virtual ConfigureBottomSheetProto::PeekMode GetPeekMode() = 0;
+
+  // Calls the callback once the main document window has been resized.
+  virtual void WaitForWindowHeightChange(
+      base::OnceCallback<void(const ClientStatus&)> callback) = 0;
+
+  // Returns the current client settings.
+  virtual const ClientSettings& GetSettings() = 0;
+
+  // Show a form to the user and call |callback| with its values whenever there
+  // is a change. |callback| will be called directly with the initial values of
+  // the form directly after this call. Returns true if the form was correctly
+  // set, false otherwise. The latter can happen if the form contains
+  // unsupported or invalid inputs.
+  virtual bool SetForm(
+      std::unique_ptr<FormProto> form,
+      base::RepeatingCallback<void(const FormProto::Result*)> callback) = 0;
 
  protected:
   ActionDelegate() = default;

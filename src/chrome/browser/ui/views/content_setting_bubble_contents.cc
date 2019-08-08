@@ -410,18 +410,17 @@ void ContentSettingBubbleContents::OnListItemRemovedAt(int index) {
 int ContentSettingBubbleContents::GetSelectedRadioOption() {
   for (RadioGroup::const_iterator i(radio_group_.begin());
        i != radio_group_.end(); ++i) {
-    if ((*i)->checked())
+    if ((*i)->GetChecked())
       return i - radio_group_.begin();
   }
   NOTREACHED();
   return 0;
 }
 
-void ContentSettingBubbleContents::OnNativeThemeChanged(
-    const ui::NativeTheme* theme) {
-  views::BubbleDialogDelegateView::OnNativeThemeChanged(theme);
+void ContentSettingBubbleContents::OnThemeChanged() {
+  views::BubbleDialogDelegateView::OnThemeChanged();
   if (learn_more_button_)
-    StyleLearnMoreButton(theme);
+    StyleLearnMoreButton();
 }
 
 base::string16 ContentSettingBubbleContents::GetWindowTitle() const {
@@ -545,15 +544,16 @@ views::View* ContentSettingBubbleContents::CreateExtraView() {
   DCHECK(content_setting_bubble_model_);
   const auto& bubble_content = content_setting_bubble_model_->bubble_content();
   const auto* layout = ChromeLayoutProvider::Get();
-  std::vector<View*> extra_views;
+  std::vector<std::unique_ptr<views::View>> extra_views;
   // Optionally add a help icon if the view wants to link to a help page.
   if (bubble_content.show_learn_more) {
-    learn_more_button_ = views::CreateVectorImageButton(this);
-    learn_more_button_->SetFocusForPlatform();
-    learn_more_button_->SetTooltipText(
+    auto learn_more_button = views::CreateVectorImageButton(this);
+    learn_more_button->SetFocusForPlatform();
+    learn_more_button->SetTooltipText(
         l10n_util::GetStringUTF16(IDS_LEARN_MORE));
-    StyleLearnMoreButton(GetNativeTheme());
-    extra_views.push_back(learn_more_button_);
+    learn_more_button_ = learn_more_button.get();
+    StyleLearnMoreButton();
+    extra_views.push_back(std::move(learn_more_button));
   }
   // Optionally add a "Manage" button if the view wants to use a button to
   // invoke a separate management UI related to the dialog content.
@@ -562,22 +562,24 @@ views::View* ContentSettingBubbleContents::CreateExtraView() {
     base::string16 title = bubble_content.manage_text;
     if (title.empty())
       title = l10n_util::GetStringUTF16(IDS_MANAGE);
-    manage_button_ = views::MdTextButton::CreateSecondaryUiButton(this, title);
-    manage_button_->SetMinSize(gfx::Size(
+    auto manage_button =
+        views::MdTextButton::CreateSecondaryUiButton(this, title);
+    manage_button->SetMinSize(gfx::Size(
         layout->GetDistanceMetric(views::DISTANCE_DIALOG_BUTTON_MINIMUM_WIDTH),
         0));
-    extra_views.push_back(manage_button_);
+    manage_button_ = manage_button.get();
+    extra_views.push_back(std::move(manage_button));
   }
   if (extra_views.empty())
     return nullptr;
   if (extra_views.size() == 1)
-    return extra_views.front();
+    return extra_views.front().release();
   views::View* container = new views::View();
   container->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, gfx::Insets(),
       layout->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
-  for (auto* extra_view : extra_views)
-    container->AddChildView(extra_view);
+  for (auto& extra_view : extra_views)
+    container->AddChildView(std::move(extra_view));
   return container;
 }
 
@@ -603,11 +605,10 @@ base::string16 ContentSettingBubbleContents::GetDialogButtonLabel(
   return done_text.empty() ? l10n_util::GetStringUTF16(IDS_DONE) : done_text;
 }
 
-void ContentSettingBubbleContents::StyleLearnMoreButton(
-    const ui::NativeTheme* theme) {
+void ContentSettingBubbleContents::StyleLearnMoreButton() {
   DCHECK(learn_more_button_);
-  SkColor text_color =
-      theme->GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor);
+  SkColor text_color = GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_LabelEnabledColor);
   views::SetImageFromVectorIcon(learn_more_button_,
                                 vector_icons::kHelpOutlineIcon, text_color);
 }
@@ -645,7 +646,7 @@ void ContentSettingBubbleContents::ButtonPressed(views::Button* sender,
   DCHECK(content_setting_bubble_model_);
   if (sender == manage_checkbox_) {
     content_setting_bubble_model_->OnManageCheckboxChecked(
-        manage_checkbox_->checked());
+        manage_checkbox_->GetChecked());
 
     // Toggling the check state may change the dialog button text.
     DialogModelChanged();
@@ -679,5 +680,5 @@ void ContentSettingBubbleContents::OnPerformAction(views::Combobox* combobox) {
   MediaComboboxModel* model =
       static_cast<MediaComboboxModel*>(combobox->model());
   content_setting_bubble_model_->OnMediaMenuClicked(
-      model->type(), model->GetDevices()[combobox->selected_index()].id);
+      model->type(), model->GetDevices()[combobox->GetSelectedIndex()].id);
 }

@@ -5,6 +5,8 @@
 #ifndef ASH_KIOSK_NEXT_KIOSK_NEXT_SHELL_CONTROLLER_H_
 #define ASH_KIOSK_NEXT_KIOSK_NEXT_SHELL_CONTROLLER_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "ash/kiosk_next/kiosk_next_shell_observer.h"
 #include "ash/public/interfaces/kiosk_next_shell.mojom.h"
@@ -18,6 +20,7 @@ class PrefRegistrySimple;
 namespace ash {
 
 class KioskNextHomeController;
+class ShelfModel;
 
 // KioskNextShellController allows an ash consumer to manage a Kiosk Next
 // session. During this session most system functions are disabled and we launch
@@ -48,7 +51,13 @@ class ASH_EXPORT KioskNextShellController
   // SessionObserver:
   void OnActiveUserPrefServiceChanged(PrefService* pref_service) override;
 
+  ShelfModel* shelf_model() { return shelf_model_.get(); }
+
  private:
+  // Launches Kiosk Next if the pref is enabled and the KioskNextShellClient is
+  // available.
+  void LaunchKioskNextShellIfEnabled();
+
   mojom::KioskNextShellClientPtr kiosk_next_shell_client_;
   mojo::BindingSet<mojom::KioskNextShellController> bindings_;
   base::ObserverList<KioskNextShellObserver> observer_list_;
@@ -57,6 +66,11 @@ class ASH_EXPORT KioskNextShellController
 
   // Controls the KioskNext home screen when the Kiosk Next Shell is enabled.
   std::unique_ptr<KioskNextHomeController> kiosk_next_home_controller_;
+
+  // When KioskNextShell is enabled, only the home button and back button are
+  // made visible on the Shelf. KioskNextShellController therefore hosts its own
+  // ShelfModel to control the entries visible on the shelf.
+  std::unique_ptr<ShelfModel> shelf_model_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskNextShellController);
 };

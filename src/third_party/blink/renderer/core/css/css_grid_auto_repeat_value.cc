@@ -19,5 +19,10 @@ String CSSGridAutoRepeatValue::CustomCSSText() const {
   return result.ToString();
 }
 
+bool CSSGridAutoRepeatValue::Equals(const CSSGridAutoRepeatValue& other) const {
+  return auto_repeat_id_ == other.auto_repeat_id_ &&
+         CSSValueList::Equals(other);
+}
+
 }  // namespace cssvalue
 }  // namespace blink

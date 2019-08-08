@@ -38,7 +38,8 @@ enum class InstallResultCode {
   kUserInstallDeclined = 7,
   kInstallManagerDestroyed = 8,
   kWindowOpened = 9,
-  kMaxValue = kWindowOpened,
+  kNotValidManifestForWebApp = 10,
+  kMaxValue = kNotValidManifestForWebApp,
 };
 
 // Where an app was installed from. This affects what flags will be used when

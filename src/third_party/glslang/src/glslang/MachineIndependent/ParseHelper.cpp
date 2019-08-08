@@ -377,7 +377,8 @@ TIntermTyped* TParseContext::handleBracketDereference(const TSourceLoc& loc, TIn
     // basic type checks...
     variableCheck(base);
 
-    if (! base->isArray() && ! base->isMatrix() && ! base->isVector() && ! base->getType().isCoopMat()) {
+    if (! base->isArray() && ! base->isMatrix() && ! base->isVector() && ! base->getType().isCoopMat() &&
+        base->getBasicType() != EbtReference) {
         if (base->getAsSymbolNode())
             error(loc, " left of '[' is not of type array, matrix, or vector ", base->getAsSymbolNode()->getName().c_str(), "");
         else
@@ -405,6 +406,14 @@ TIntermTyped* TParseContext::handleBracketDereference(const TSourceLoc& loc, TIn
 
     // at least one of base and index is not a front-end constant variable...
     TIntermTyped* result = nullptr;
+
+    if (base->getBasicType() == EbtReference && ! base->isArray()) {
+        requireExtensions(loc, 1, &E_GL_EXT_buffer_reference2, "buffer reference indexing");
+        result = intermediate.addBinaryMath(EOpAdd, base, index, loc);
+        result->setType(base->getType());
+        return result;
+    }
+
     if (index->getQualifier().isFrontEndConstant())
         checkIndex(loc, base->getType(), indexValue);
 
@@ -1156,6 +1165,15 @@ TIntermTyped* TParseContext::handleFunctionCall(const TSourceLoc& loc, TFunction
                             error(arguments->getLoc(), message, "readonly", "");
                         if (argQualifier.writeonly && ! formalQualifier.writeonly)
                             error(arguments->getLoc(), message, "writeonly", "");
+                        if (!builtIn && argQualifier.restrict && ! formalQualifier.restrict)
+                            error(arguments->getLoc(), message, "restrict", "");
+                    }
+                    if (!builtIn && argQualifier.layoutFormat != formalQualifier.layoutFormat) {
+                        // we have mismatched formats, which should only be allowed if writeonly
+                        // and at least one format is unknown
+                        if (!formalQualifier.writeonly || (formalQualifier.layoutFormat != ElfNone &&
+                                                              argQualifier.layoutFormat != ElfNone))
+                            error(arguments->getLoc(), "image formats must match", "format", "");
                     }
 
                     if (builtIn && arg->getAsTyped()->getType().containsBasicType(EbtFloat16))
@@ -4994,6 +5012,7 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
     integerCheck(node, feature);
     const TIntermConstantUnion* constUnion = node->getAsConstantUnion();
     int value;
+    bool nonLiteral = false;
     if (constUnion) {
         value = constUnion->getConstArray()[0].getIConst();
         if (! constUnion->isLiteral()) {
@@ -5003,6 +5022,7 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
     } else {
         // grammar should have give out the error message
         value = 0;
+        nonLiteral = true;
     }
 
     if (value < 0) {
@@ -5024,6 +5044,8 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
             profileRequires(loc, EEsProfile, 310, nullptr, feature);
         }
         publicType.qualifier.layoutOffset = value;
+        if (nonLiteral)
+            error(loc, "needs a literal integer", "offset", "");
         return;
     } else if (id == "align") {
         const char* feature = "uniform buffer-member align";
@@ -5036,6 +5058,8 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
             error(loc, "must be a power of 2", "align", "");
         else
             publicType.qualifier.layoutAlign = value;
+        if (nonLiteral)
+            error(loc, "needs a literal integer", "align", "");
         return;
     } else if (id == "location") {
         profileRequires(loc, EEsProfile, 300, nullptr, "location");
@@ -5045,6 +5069,8 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
             error(loc, "location is too large", id.c_str(), "");
         else
             publicType.qualifier.layoutLocation = value;
+        if (nonLiteral)
+            error(loc, "needs a literal integer", "location", "");
         return;
     } else if (id == "set") {
         if ((unsigned int)value >= TQualifier::layoutSetEnd)
@@ -5053,6 +5079,8 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
             publicType.qualifier.layoutSet = value;
         if (value != 0)
             requireVulkan(loc, "descriptor set");
+        if (nonLiteral)
+            error(loc, "needs a literal integer", "set", "");
         return;
     } else if (id == "binding") {
         profileRequires(loc, ~EEsProfile, 420, E_GL_ARB_shading_language_420pack, "binding");
@@ -5061,6 +5089,8 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
             error(loc, "binding is too large", id.c_str(), "");
         else
             publicType.qualifier.layoutBinding = value;
+        if (nonLiteral)
+            error(loc, "needs a literal integer", "binding", "");
         return;
     } else if (id == "component") {
         requireProfile(loc, ECoreProfile | ECompatibilityProfile, "component");
@@ -5069,6 +5099,8 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
             error(loc, "component is too large", id.c_str(), "");
         else
             publicType.qualifier.layoutComponent = value;
+        if (nonLiteral)
+            error(loc, "needs a literal integer", "component", "");
         return;
     } else if (id.compare(0, 4, "xfb_") == 0) {
         // "Any shader making any static use (after preprocessing) of any of these
@@ -5089,12 +5121,16 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
                 error(loc, "buffer is too large:", id.c_str(), "internal max is %d", TQualifier::layoutXfbBufferEnd-1);
             else
                 publicType.qualifier.layoutXfbBuffer = value;
+            if (nonLiteral)
+                error(loc, "needs a literal integer", "xfb_buffer", "");
             return;
         } else if (id == "xfb_offset") {
             if (value >= (int)TQualifier::layoutXfbOffsetEnd)
                 error(loc, "offset is too large:", id.c_str(), "internal max is %d", TQualifier::layoutXfbOffsetEnd-1);
             else
                 publicType.qualifier.layoutXfbOffset = value;
+            if (nonLiteral)
+                error(loc, "needs a literal integer", "xfb_offset", "");
             return;
         } else if (id == "xfb_stride") {
             // "The resulting stride (implicit or explicit), when divided by 4, must be less than or equal to the
@@ -5107,6 +5143,8 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
                 error(loc, "stride is too large:", id.c_str(), "internal max is %d", TQualifier::layoutXfbStrideEnd-1);
             else
                 publicType.qualifier.layoutXfbStride = value;
+            if (nonLiteral)
+                error(loc, "needs a literal integer", "xfb_stride", "");
             return;
         }
     }
@@ -5117,6 +5155,8 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
             error(loc, "attachment index is too large", id.c_str(), "");
         else
             publicType.qualifier.layoutAttachment = value;
+        if (nonLiteral)
+            error(loc, "needs a literal integer", "input_attachment_index", "");
         return;
     }
     if (id == "constant_id") {
@@ -5129,11 +5169,15 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
             if (! intermediate.addUsedConstantId(value))
                 error(loc, "specialization-constant id already used", id.c_str(), "");
         }
+        if (nonLiteral)
+            error(loc, "needs a literal integer", "constant_id", "");
         return;
     }
     if (id == "num_views") {
         requireExtensions(loc, Num_OVR_multiview_EXTs, OVR_multiview_EXTs, "num_views");
         publicType.shaderQualifiers.numViews = value;
+        if (nonLiteral)
+            error(loc, "needs a literal integer", "num_views", "");
         return;
     }
 
@@ -5145,6 +5189,8 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
         if (id == "secondary_view_offset") {
             requireExtensions(loc, 1, &E_GL_NV_stereo_view_rendering, "stereo view rendering");
             publicType.qualifier.layoutSecondaryViewportRelativeOffset = value;
+            if (nonLiteral)
+                error(loc, "needs a literal integer", "secondary_view_offset", "");
             return;
         }
     }
@@ -5156,6 +5202,8 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
             error(loc, "must be a power of 2", "buffer_reference_align", "");
         else
             publicType.qualifier.layoutBufferReferenceAlign = (unsigned int)std::log2(value);
+        if (nonLiteral)
+            error(loc, "needs a literal integer", "buffer_reference_align", "");
         return;
     }
 
@@ -5169,6 +5217,8 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
                 error(loc, "must be greater than 0", "vertices", "");
             else
                 publicType.shaderQualifiers.vertices = value;
+            if (nonLiteral)
+                error(loc, "needs a literal integer", "vertices", "");
             return;
         }
         break;
@@ -5183,12 +5233,16 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
                 error(loc, "must be at least 1", "invocations", "");
             else
                 publicType.shaderQualifiers.invocations = value;
+            if (nonLiteral)
+                error(loc, "needs a literal integer", "invocations", "");
             return;
         }
         if (id == "max_vertices") {
             publicType.shaderQualifiers.vertices = value;
             if (value > resources.maxGeometryOutputVertices)
                 error(loc, "too large, must be less than gl_MaxGeometryOutputVertices", "max_vertices", "");
+            if (nonLiteral)
+                error(loc, "needs a literal integer", "max_vertices", "");
             return;
         }
         if (id == "stream") {
@@ -5196,6 +5250,8 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
             publicType.qualifier.layoutStream = value;
             if (value > 0)
                 intermediate.setMultiStream();
+            if (nonLiteral)
+                error(loc, "needs a literal integer", "stream", "");
             return;
         }
         break;
@@ -5213,6 +5269,8 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
             }
 
             publicType.qualifier.layoutIndex = value;
+            if (nonLiteral)
+                error(loc, "needs a literal integer", "index", "");
             return;
         }
         break;
@@ -5224,6 +5282,8 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
             publicType.shaderQualifiers.vertices = value;
             if (value > resources.maxMeshOutputVerticesNV)
                 error(loc, "too large, must be less than gl_MaxMeshOutputVerticesNV", "max_vertices", "");
+            if (nonLiteral)
+                error(loc, "needs a literal integer", "max_vertices", "");
             return;
         }
         if (id == "max_primitives") {
@@ -5231,6 +5291,8 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
             publicType.shaderQualifiers.primitives = value;
             if (value > resources.maxMeshOutputPrimitivesNV)
                 error(loc, "too large, must be less than gl_MaxMeshOutputPrimitivesNV", "max_primitives", "");
+            if (nonLiteral)
+                error(loc, "needs a literal integer", "max_primitives", "");
             return;
         }
         // Fall through
@@ -5250,6 +5312,8 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
                 profileRequires(loc, EEsProfile, 310, 0, "gl_WorkGroupSize");
                 profileRequires(loc, ~EEsProfile, 430, E_GL_ARB_compute_shader, "gl_WorkGroupSize");
             }
+            if (nonLiteral)
+                error(loc, "needs a literal integer", "local_size", "");
             if (id.size() == 12 && value == 0) {
                 error(loc, "must be at least 1", id.c_str(), "");
                 return;
@@ -6887,9 +6951,10 @@ TIntermTyped* TParseContext::constructBuiltIn(const TType& type, TOperator op, T
         break;
 
     case EOpConstructNonuniform:
-        node->getWritableType().getQualifier().nonUniform = true;
-        return node;
-        break;
+        // Make a nonuniform copy of node
+        newNode = intermediate.addBuiltInFunctionCall(node->getLoc(), EOpCopyObject, true, node, node->getType());
+        newNode->getWritableType().getQualifier().nonUniform = true;
+        return newNode;
 
     case EOpConstructReference:
         // construct reference from reference

@@ -264,13 +264,13 @@ TEST_F(DesktopMediaPickerViewsTest, AudioCheckboxState) {
 #if defined(OS_WIN) || defined(USE_CRAS)
   expect_value = true;
 #endif
-  EXPECT_EQ(expect_value, test_api_.GetAudioShareCheckbox()->visible());
+  EXPECT_EQ(expect_value, test_api_.GetAudioShareCheckbox()->GetVisible());
 
   test_api_.SelectTabForSourceType(DesktopMediaID::TYPE_WINDOW);
-  EXPECT_FALSE(test_api_.GetAudioShareCheckbox()->visible());
+  EXPECT_FALSE(test_api_.GetAudioShareCheckbox()->GetVisible());
 
   test_api_.SelectTabForSourceType(DesktopMediaID::TYPE_WEB_CONTENTS);
-  EXPECT_TRUE(test_api_.GetAudioShareCheckbox()->visible());
+  EXPECT_TRUE(test_api_.GetAudioShareCheckbox()->GetVisible());
 }
 
 // Verifies that audio share information is recorded in the ID if the checkbox

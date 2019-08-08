@@ -118,7 +118,7 @@ void AuthenticationService::Initialize(
     // Sign out the user if sync was not configured after signing
     // in (see PM comments in http://crbug.com/339831 ).
     SignOut(signin_metrics::ABORT_SIGNIN, nil);
-    SetPromptForSignIn(true);
+    SetPromptForSignIn();
     is_signed_in = false;
   }
   breakpad_helper::SetCurrentlySignedIn(is_signed_in);
@@ -200,11 +200,12 @@ void AuthenticationService::OnApplicationEnterBackground() {
   is_in_foreground_ = false;
 }
 
-void AuthenticationService::SetPromptForSignIn(bool should_prompt) {
-  if (ShouldPromptForSignIn() != should_prompt) {
-    pref_service_->SetBoolean(prefs::kSigninShouldPromptForSigninAgain,
-                              should_prompt);
-  }
+void AuthenticationService::SetPromptForSignIn() {
+  pref_service_->SetBoolean(prefs::kSigninShouldPromptForSigninAgain, true);
+}
+
+void AuthenticationService::ResetPromptForSignIn() {
+  pref_service_->SetBoolean(prefs::kSigninShouldPromptForSigninAgain, false);
 }
 
 bool AuthenticationService::ShouldPromptForSignIn() {
@@ -217,10 +218,10 @@ void AuthenticationService::ComputeHaveAccountsChanged() {
   // While the AuthenticationService is in background, changes should be shown
   // to the user and |should_prompt| is true.
   ReloadCredentialsFromIdentities(!is_in_foreground_ /* should_prompt */);
-  std::vector<AccountInfo> new_accounts_info =
+  std::vector<CoreAccountInfo> new_accounts_info =
       identity_manager_->GetAccountsWithRefreshTokens();
   std::vector<std::string> new_accounts;
-  for (const AccountInfo& account_info : new_accounts_info)
+  for (const CoreAccountInfo& account_info : new_accounts_info)
     new_accounts.push_back(account_info.account_id);
   std::vector<std::string> old_accounts = GetAccountsInPrefs();
   std::sort(new_accounts.begin(), new_accounts.end());
@@ -251,48 +252,42 @@ void AuthenticationService::MigrateAccountsStoredInPrefsIfNeeded() {
   }
 
   std::vector<std::string> account_ids = GetAccountsInPrefs();
-  base::ListValue accounts_pref_value;
+  std::vector<base::Value> accounts_pref_value;
   for (const std::string& account_id : account_ids) {
-    auto maybe_account =
-        identity_manager_->FindAccountInfoForAccountWithRefreshTokenByAccountId(
-            account_id);
-    AccountInfo account_info =
-        maybe_account.has_value() ? maybe_account.value() : AccountInfo();
-    if (!account_info.email.empty()) {
-      DCHECK(!account_info.gaia.empty());
-      accounts_pref_value.AppendString(account_info.account_id);
+    if (identity_manager_->HasAccountWithRefreshToken(account_id)) {
+      accounts_pref_value.emplace_back(account_id);
     } else {
       // The account for |email| was removed since the last application cold
       // start. Insert |kFakeAccountIdForRemovedAccount| to ensure
       // |have_accounts_changed_| will be set to true and the removal won't be
       // silently ignored.
-      accounts_pref_value.AppendString(kFakeAccountIdForRemovedAccount);
+      accounts_pref_value.emplace_back(kFakeAccountIdForRemovedAccount);
     }
   }
-  pref_service_->Set(prefs::kSigninLastAccounts, accounts_pref_value);
+  pref_service_->Set(prefs::kSigninLastAccounts,
+                     base::Value(std::move(accounts_pref_value)));
   pref_service_->SetBoolean(prefs::kSigninLastAccountsMigrated, true);
 }
 
 void AuthenticationService::StoreAccountsInPrefs() {
-  std::vector<AccountInfo> accounts(
+  std::vector<CoreAccountInfo> accounts(
       identity_manager_->GetAccountsWithRefreshTokens());
-  base::ListValue accounts_pref_value;
-  for (const AccountInfo& account_info : accounts)
-    accounts_pref_value.AppendString(account_info.account_id);
-  pref_service_->Set(prefs::kSigninLastAccounts, accounts_pref_value);
+  std::vector<base::Value> accounts_pref_value;
+  for (const CoreAccountInfo& account_info : accounts)
+    accounts_pref_value.emplace_back(account_info.account_id.id);
+  pref_service_->Set(prefs::kSigninLastAccounts,
+                     base::Value(std::move(accounts_pref_value)));
 }
 
 std::vector<std::string> AuthenticationService::GetAccountsInPrefs() {
-  std::vector<std::string> accounts;
-  const base::ListValue* accounts_pref =
+  const base::Value* accounts_pref =
       pref_service_->GetList(prefs::kSigninLastAccounts);
-  for (size_t i = 0; i < accounts_pref->GetSize(); ++i) {
-    std::string account;
-    if (accounts_pref->GetString(i, &account) && !account.empty()) {
-      accounts.push_back(account);
-    } else {
-      NOTREACHED();
-    }
+
+  std::vector<std::string> accounts;
+  for (const auto& value : accounts_pref->GetList()) {
+    DCHECK(value.is_string());
+    DCHECK(!value.GetString().empty());
+    accounts.push_back(value.GetString());
   }
   return accounts;
 }
@@ -319,7 +314,7 @@ void AuthenticationService::SignIn(ChromeIdentity* identity,
              ->GetChromeIdentityService()
              ->IsValidIdentity(identity));
 
-  SetPromptForSignIn(false);
+  ResetPromptForSignIn();
   sync_setup_service_->PrepareForFirstSyncSetup();
 
   // The account info needs to be seeded for the primary account id before
@@ -429,7 +424,7 @@ bool AuthenticationService::ShowMDMErrorDialogForIdentity(
 }
 
 void AuthenticationService::ResetChromeIdentityServiceObserverForTesting() {
-  identity_service_observer_.RemoveAll();
+  DCHECK(!identity_service_observer_.IsObservingSources());
   identity_service_observer_.Add(
       ios::GetChromeBrowserProvider()->GetChromeIdentityService());
 }
@@ -547,7 +542,8 @@ void AuthenticationService::HandleForgottenIdentity(
 
   // Sign the user out.
   SignOut(signin_metrics::ABORT_SIGNIN, nil);
-  SetPromptForSignIn(should_prompt);
+  if (should_prompt)
+    SetPromptForSignIn();
 }
 
 void AuthenticationService::ReloadCredentialsFromIdentities(
@@ -559,7 +555,7 @@ void AuthenticationService::ReloadCredentialsFromIdentities(
   base::AutoReset<bool> auto_reset(&is_reloading_credentials_, true);
 
   HandleForgottenIdentity(nil, should_prompt);
-  if (GetAuthenticatedUserEmail()) {
+  if (IsAuthenticated()) {
     // TODO(crbug.com/930094): Eliminate this.
     identity_manager_->LegacyReloadAccountsFromSystem();
   }
@@ -573,15 +569,6 @@ bool AuthenticationService::IsAuthenticated() {
     ReloadCredentialsFromIdentities(true /* should_prompt */);
   }
   return identity_manager_->HasPrimaryAccount();
-}
-
-NSString* AuthenticationService::GetAuthenticatedUserEmail() {
-  if (!IsAuthenticated())
-    return nil;
-  std::string authenticated_username =
-      identity_manager_->GetPrimaryAccountInfo().email;
-  DCHECK_LT(0U, authenticated_username.length());
-  return base::SysUTF8ToNSString(authenticated_username);
 }
 
 bool AuthenticationService::IsAuthenticatedIdentityManaged() {

@@ -28,4 +28,9 @@ public class ForwardingListObservable<P>
             ListObservable<P> source, int index, int count, @Nullable P payload) {
         notifyItemRangeChanged(index, count, payload);
     }
+
+    @Override
+    public void onItemMoved(ListObservable source, int fromIndex, int toIndex) {
+        notifyItemMoved(fromIndex, toIndex);
+    }
 }

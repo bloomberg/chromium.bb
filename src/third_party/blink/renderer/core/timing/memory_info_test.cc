@@ -30,6 +30,8 @@
 
 #include "third_party/blink/renderer/core/timing/memory_info.h"
 
+#include "base/test/test_mock_time_task_runner.h"
+#include "base/time/default_tick_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -64,28 +66,8 @@ TEST(MemoryInfo, quantizeMemorySize) {
 
 static constexpr int kModForBucketizationCheck = 100000;
 
-// The current time per the MemoryInfo Tests.
-// Use a large value as a start so that when subtracting twenty minutes it does
-// not become negative.
-static double current_time_ = 60 * 60;
-
 class MemoryInfoTest : public testing::Test {
  protected:
-  void SetUp() override {
-    // Use a large value so that when subtracting twenty minutes it does not
-    // become negative. current_time_ = 60 * 60;
-    original_time_function_ = SetTimeFunctionsForTesting(MockTimeFunction);
-    // Advance clock by a large amount so that if there were previous MemoryInfo
-    // values, then they are no longer cached.
-    AdvanceClock(300 * 60);
-  }
-
-  void TearDown() override {
-    SetTimeFunctionsForTesting(original_time_function_);
-  }
-
-  void AdvanceClock(double seconds) { current_time_ += seconds; }
-
   void CheckValues(MemoryInfo* info, MemoryInfo::Precision precision) {
     // Check that used <= total <= limit.
 
@@ -113,11 +95,29 @@ class MemoryInfoTest : public testing::Test {
     EXPECT_EQ(info2->usedJSHeapSize(), info->usedJSHeapSize());
     EXPECT_EQ(info2->jsHeapSizeLimit(), info->jsHeapSizeLimit());
   }
+};
 
- private:
-  static double MockTimeFunction() { return current_time_; }
+struct MemoryInfoTestScopedMockTime {
+  MemoryInfoTestScopedMockTime(MemoryInfo::Precision precision) {
+    MemoryInfo::SetTickClockForTestingForCurrentThread(
+        test_task_runner_->GetMockTickClock());
+  }
 
-  TimeFunction original_time_function_;
+  ~MemoryInfoTestScopedMockTime() {
+    // MemoryInfo creates a HeapSizeCache object which lives in the current
+    // thread. This means that it will be shared by all the tests when
+    // executed sequentially. We must ensure that it ends up in a consistent
+    // state after each test execution.
+    MemoryInfo::SetTickClockForTestingForCurrentThread(
+        base::DefaultTickClock::GetInstance());
+  }
+
+  void AdvanceClock(base::TimeDelta delta) {
+    test_task_runner_->FastForwardBy(delta);
+  }
+
+  scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner_ =
+      base::MakeRefCounted<base::TestMockTimeTaskRunner>();
 };
 
 TEST_F(MemoryInfoTest, Bucketized) {
@@ -129,6 +129,7 @@ TEST_F(MemoryInfoTest, Bucketized) {
   // impossible for GC to clear them up unexpectedly early.
   std::vector<v8::Local<v8::ArrayBuffer>> objects;
 
+  MemoryInfoTestScopedMockTime mock_time(MemoryInfo::Precision::Bucketized);
   MemoryInfo* bucketized_memory =
       MakeGarbageCollected<MemoryInfo>(MemoryInfo::Precision::Bucketized);
 
@@ -137,7 +138,7 @@ TEST_F(MemoryInfoTest, Bucketized) {
 
   // Advance the clock for a minute. Not enough to make bucketized value
   // recalculate. Also allocate some memory.
-  AdvanceClock(60);
+  mock_time.AdvanceClock(base::TimeDelta::FromMinutes(1));
   objects.push_back(v8::ArrayBuffer::New(isolate, 100));
 
   MemoryInfo* bucketized_memory2 =
@@ -157,7 +158,7 @@ TEST_F(MemoryInfoTest, Bucketized) {
   for (int i = 0; i < 10; i++) {
     // Advance the clock for another thirty minutes, enough to make the
     // bucketized value recalculate.
-    AdvanceClock(60 * 30);
+    mock_time.AdvanceClock(base::TimeDelta::FromMinutes(30));
     objects.push_back(v8::ArrayBuffer::New(isolate, 100));
     MemoryInfo* bucketized_memory3 =
         MakeGarbageCollected<MemoryInfo>(MemoryInfo::Precision::Bucketized);
@@ -173,6 +174,7 @@ TEST_F(MemoryInfoTest, Precise) {
   v8::Isolate* isolate = scope.GetIsolate();
   std::vector<v8::Local<v8::ArrayBuffer>> objects;
 
+  MemoryInfoTestScopedMockTime mock_time(MemoryInfo::Precision::Precise);
   MemoryInfo* precise_memory =
       MakeGarbageCollected<MemoryInfo>(MemoryInfo::Precision::Precise);
   // Check that the precise values are monotone and not heavily rounded.
@@ -180,7 +182,7 @@ TEST_F(MemoryInfoTest, Precise) {
 
   // Advance the clock for a nanosecond, which should not be enough to make the
   // precise value recalculate.
-  AdvanceClock(1e-9);
+  mock_time.AdvanceClock(base::TimeDelta::FromNanoseconds(1));
   // Allocate an object in heap and keep it in a vector to make sure that it
   // does not get accidentally GC'd. This single ArrayBuffer should be enough to
   // be noticed by the used heap size in the precise MemoryInfo case.
@@ -193,7 +195,7 @@ TEST_F(MemoryInfoTest, Precise) {
   for (int i = 0; i < 10; i++) {
     // Advance the clock for another thirty seconds, enough to make the precise
     // values be recalculated. Also allocate another object.
-    AdvanceClock(30);
+    mock_time.AdvanceClock(base::TimeDelta::FromSeconds(30));
     objects.push_back(v8::ArrayBuffer::New(isolate, 100));
 
     MemoryInfo* new_precise_memory =
@@ -238,12 +240,11 @@ TEST_F(MemoryInfoTest, FlagEnabled) {
 }
 
 TEST_F(MemoryInfoTest, ZeroTime) {
-  // In this test, we make sure that even if the CurrentTimeTicks() value is
+  // In this test, we make sure that even if the current TimeTicks() value is
   // very close to 0, we still obtain memory information from the first call to
-  // MakeGarbageCollected<MemoryInfo>. We cannot just subtract
-  // CurrentTimeTicks() here because many places have DCHECKs for
-  // !time.is_null(), which would be hit if we set the clock to be exactly 0.
-  AdvanceClock(-CurrentTimeTicksInSeconds() + 0.0001);
+  // MemoryInfo::Create.
+  MemoryInfoTestScopedMockTime mock_time(MemoryInfo::Precision::Precise);
+  mock_time.AdvanceClock(base::TimeDelta::FromMicroseconds(100));
   V8TestingScope scope;
   v8::Isolate* isolate = scope.GetIsolate();
   std::vector<v8::Local<v8::ArrayBuffer>> objects;

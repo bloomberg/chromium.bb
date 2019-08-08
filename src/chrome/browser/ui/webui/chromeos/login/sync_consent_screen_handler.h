@@ -8,17 +8,40 @@
 #include <unordered_set>
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/login/screens/sync_consent_screen_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
 namespace chromeos {
 
 class SyncConsentScreen;
 
+// Interface for dependency injection between SyncConsentScreen and its
+// WebUI representation.
+class SyncConsentScreenView {
+ public:
+  constexpr static StaticOobeScreenId kScreenId{"sync-consent"};
+
+  virtual ~SyncConsentScreenView() = default;
+
+  // Sets screen this view belongs to.
+  virtual void Bind(SyncConsentScreen* screen) = 0;
+
+  // Shows the contents of the screen.
+  virtual void Show() = 0;
+
+  // Hides the contents of the screen.
+  virtual void Hide() = 0;
+
+  // Controls if the loading throbber is visible. This is used when
+  // SyncScreenBehavior is unknown.
+  virtual void SetThrobberVisible(bool visible) = 0;
+};
+
 // The sole implementation of the SyncConsentScreenView, using WebUI.
 class SyncConsentScreenHandler : public BaseScreenHandler,
                                  public SyncConsentScreenView {
  public:
+  using TView = SyncConsentScreenView;
+
   explicit SyncConsentScreenHandler(JSCallsContainer* js_calls_container);
   ~SyncConsentScreenHandler() override;
 

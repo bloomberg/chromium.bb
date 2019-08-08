@@ -28,8 +28,6 @@ using WakeLockContextCallback = base::Callback<gfx::NativeView(int)>;
 class WakeLock : public mojom::WakeLock {
  public:
   // This is an interface for classes to be notified of wake lock events.
-  // Observers should register themselves by calling the parent class's
-  // |AddObserver| method.
   class Observer {
    public:
     virtual ~Observer() = default;
@@ -63,7 +61,7 @@ class WakeLock : public mojom::WakeLock {
            Observer* observer);
   ~WakeLock() override;
 
-  // WakeLockSevice implementation.
+  // mojom::WakeLock implementation.
   void RequestWakeLock() override;
   void CancelWakeLock() override;
   void AddClient(mojom::WakeLockRequest request) override;

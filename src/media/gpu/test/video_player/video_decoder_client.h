@@ -77,6 +77,8 @@ class VideoDecoderClient {
   // Wait until all frame processors have finished processing. Returns whether
   // processing was successful.
   bool WaitForFrameProcessors();
+  // Wait until the renderer has finished rendering all queued frames.
+  void WaitForRenderer();
   // Get the frame renderer associated with the video decoder client.
   FrameRenderer* GetFrameRenderer() const;
 
@@ -137,7 +139,7 @@ class VideoDecoderClient {
   // Called by the decoder when a fragment has been decoded.
   void DecodeDoneTask(media::DecodeStatus status);
   // Called by the decoder when a video frame is ready.
-  void FrameReadyTask(const scoped_refptr<VideoFrame>& video_frame);
+  void FrameReadyTask(scoped_refptr<VideoFrame> video_frame);
   // Called by the decoder when flushing has completed.
   void FlushDoneTask(media::DecodeStatus status);
   // Called by the decoder when resetting has completed.

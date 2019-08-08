@@ -19,7 +19,6 @@ import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.ApplicationData;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
@@ -41,7 +40,6 @@ public class MultiInstanceMigrationTest {
                                                       .getTargetContext()
                                                       .getApplicationContext());
         ContextUtils.initApplicationContextForTests(mAppContext);
-        ApplicationData.clearAppData(mAppContext);
 
         // Set the shared pref stating that the legacy file migration has occurred. The
         // multi-instance migration won't happen if the legacy path is taken.
@@ -51,7 +49,7 @@ public class MultiInstanceMigrationTest {
 
     @After
     public void tearDown() throws Exception {
-        ApplicationData.clearAppData(mAppContext);
+
     }
 
     private void buildPersistentStoreAndWaitForMigration() {

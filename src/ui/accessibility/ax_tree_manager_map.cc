@@ -33,4 +33,24 @@ AXTreeManager* AXTreeManagerMap::GetManager(AXTreeID tree_id) {
   return map_[tree_id];
 }
 
+AXTreeManager* AXTreeManagerMap::GetManagerForChildTree(
+    const AXNode& parent_node) {
+  if (!parent_node.data().HasStringAttribute(
+          ax::mojom::StringAttribute::kChildTreeId)) {
+    return nullptr;
+  }
+
+  AXTreeID child_tree_id =
+      AXTreeID::FromString(parent_node.data().GetStringAttribute(
+          ax::mojom::StringAttribute::kChildTreeId));
+  AXTreeManager* child_tree_manager =
+      AXTreeManagerMap::GetInstance().GetManager(child_tree_id);
+
+  DCHECK(child_tree_manager &&
+         child_tree_manager->GetParentNodeFromParentTreeAsAXNode()->id() ==
+             parent_node.id());
+
+  return child_tree_manager;
+}
+
 }  // namespace ui

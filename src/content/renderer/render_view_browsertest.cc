@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <tuple>
 
 #include "base/bind.h"
@@ -17,10 +18,12 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "cc/input/browser_controls_state.h"
 #include "cc/trees/layer_tree_host.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
@@ -61,11 +64,11 @@
 #include "net/cert/cert_status_flags.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/resource_request_body.h"
-#include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/common/origin_trials/origin_trial_policy.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
+#include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_data.h"
@@ -95,6 +98,7 @@
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/range/range.h"
 #include "ui/native_theme/native_theme_features.h"
+#include "url/url_constants.h"
 
 #if defined(OS_ANDROID)
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
@@ -575,7 +579,14 @@ TEST_F(RenderViewImplTest, IsPinchGestureActivePropagatesToProxies) {
   EXPECT_FALSE(child_proxy_1->is_pinch_gesture_active_for_testing());
 
   // Set the |is_pinch_gesture_active| flag.
-  view()->PageScaleFactorChanged(1.f, true);
+  cc::ApplyViewportChangesArgs args;
+  args.page_scale_delta = 1.f;
+  args.is_pinch_gesture_active = true;
+  args.browser_controls_delta = 0.f;
+  args.browser_controls_constraint = cc::BrowserControlsState::kHidden;
+  args.scroll_gesture_did_end = false;
+
+  view()->webview()->MainFrameWidget()->ApplyViewportChanges(args);
   EXPECT_TRUE(child_proxy_1->is_pinch_gesture_active_for_testing());
 
   // Create a new remote child, and get its proxy. Swapping out will force
@@ -591,7 +602,8 @@ TEST_F(RenderViewImplTest, IsPinchGestureActivePropagatesToProxies) {
   EXPECT_TRUE(child_proxy_2->is_pinch_gesture_active_for_testing());
 
   // Reset the flag, make sure both children respond.
-  view()->PageScaleFactorChanged(1.f, false);
+  args.is_pinch_gesture_active = false;
+  view()->webview()->MainFrameWidget()->ApplyViewportChanges(args);
   EXPECT_FALSE(child_proxy_1->is_pinch_gesture_active_for_testing());
   EXPECT_FALSE(child_proxy_2->is_pinch_gesture_active_for_testing());
 }
@@ -719,8 +731,7 @@ TEST_F(RenderViewImplTest, BeginNavigation) {
 
   // Verify that form posts to WebUI URLs will be sent to the browser process.
   auto form_navigation_info = std::make_unique<blink::WebNavigationInfo>();
-  form_navigation_info->url_request =
-      blink::WebURLRequest(GURL("chrome://foo"));
+  form_navigation_info->url_request = blink::WebURLRequest(GetWebUIURL("foo"));
   form_navigation_info->url_request.SetHttpMethod("POST");
   form_navigation_info->url_request.SetRequestorOrigin(requestor_origin);
   form_navigation_info->frame_type =
@@ -735,10 +746,9 @@ TEST_F(RenderViewImplTest, BeginNavigation) {
       FrameHostMsg_OpenURL::ID));
 
   // Verify that popup links to WebUI URLs also are sent to browser.
-  blink::WebURLRequest popup_request(GURL("chrome://foo"));
+  blink::WebURLRequest popup_request(GetWebUIURL("foo"));
   auto popup_navigation_info = std::make_unique<blink::WebNavigationInfo>();
-  popup_navigation_info->url_request =
-      blink::WebURLRequest(GURL("chrome://foo"));
+  popup_navigation_info->url_request = blink::WebURLRequest(GetWebUIURL("foo"));
   popup_navigation_info->url_request.SetRequestorOrigin(requestor_origin);
   popup_navigation_info->frame_type =
       network::mojom::RequestContextFrameType::kAuxiliary;
@@ -805,8 +815,7 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
 
   // Navigations to WebUI URLs will also be sent to browser process.
   auto webui_navigation_info = std::make_unique<blink::WebNavigationInfo>();
-  webui_navigation_info->url_request =
-      blink::WebURLRequest(GURL("chrome://foo"));
+  webui_navigation_info->url_request = blink::WebURLRequest(GetWebUIURL("foo"));
   webui_navigation_info->url_request.SetRequestorOrigin(requestor_origin);
   webui_navigation_info->frame_type =
       network::mojom::RequestContextFrameType::kTopLevel;
@@ -885,15 +894,19 @@ class AlwaysForkingRenderViewTest : public RenderViewImplTest {
 TEST_F(AlwaysForkingRenderViewTest, BeginNavigationDoesNotForkEmptyUrl) {
   GURL example_url("http://example.com");
   GURL empty_url("");
-  GURL blank_url("about:blank");
 
   LoadHTMLWithUrlOverride("<body></body", example_url.spec().c_str());
   EXPECT_EQ(example_url,
             GURL(frame()->GetWebFrame()->GetDocumentLoader()->GetUrl()));
 
   // Empty url should never fork.
+  blink::WebURLRequest request(empty_url);
+  request.SetFetchRequestMode(network::mojom::FetchRequestMode::kNavigate);
+  request.SetFetchRedirectMode(network::mojom::FetchRedirectMode::kManual);
+  request.SetRequestContext(blink::mojom::RequestContextType::INTERNAL);
+  request.SetRequestorOrigin(blink::WebSecurityOrigin::Create(example_url));
   auto navigation_info = std::make_unique<blink::WebNavigationInfo>();
-  navigation_info->url_request = blink::WebURLRequest(empty_url);
+  navigation_info->url_request = request;
   navigation_info->frame_type =
       network::mojom::RequestContextFrameType::kTopLevel;
   navigation_info->navigation_policy = blink::kWebNavigationPolicyCurrentTab;
@@ -904,15 +917,20 @@ TEST_F(AlwaysForkingRenderViewTest, BeginNavigationDoesNotForkEmptyUrl) {
 
 TEST_F(AlwaysForkingRenderViewTest, BeginNavigationDoesNotForkAboutBlank) {
   GURL example_url("http://example.com");
-  GURL blank_url("about:blank");
+  GURL blank_url(url::kAboutBlankURL);
 
   LoadHTMLWithUrlOverride("<body></body", example_url.spec().c_str());
   EXPECT_EQ(example_url,
             GURL(frame()->GetWebFrame()->GetDocumentLoader()->GetUrl()));
 
-  // About blank should never fork.
+  // about:blank should never fork.
+  blink::WebURLRequest request(blank_url);
+  request.SetFetchRequestMode(network::mojom::FetchRequestMode::kNavigate);
+  request.SetFetchRedirectMode(network::mojom::FetchRedirectMode::kManual);
+  request.SetRequestContext(blink::mojom::RequestContextType::INTERNAL);
+  request.SetRequestorOrigin(blink::WebSecurityOrigin::Create(example_url));
   auto navigation_info = std::make_unique<blink::WebNavigationInfo>();
-  navigation_info->url_request = blink::WebURLRequest(blank_url);
+  navigation_info->url_request = request;
   navigation_info->frame_type =
       network::mojom::RequestContextFrameType::kTopLevel;
   navigation_info->navigation_policy = blink::kWebNavigationPolicyCurrentTab;
@@ -1153,110 +1171,6 @@ TEST_F(RenderViewImplEnableZoomForDSFTest,
   main_frame->SwapOut(kProxyRoutingId, true,
                       ReconstructReplicationStateForTesting(main_frame));
   EXPECT_TRUE(view()->webview()->MainFrame()->IsWebRemoteFrame());
-}
-
-// Test that we get the correct UpdateState message when we go back twice
-// quickly without committing.  Regression test for http://crbug.com/58082.
-// Disabled: http://crbug.com/157357 .
-TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
-  // Load page A.
-  LoadHTML("<div>Page A</div>");
-
-  // Load page B, which will trigger an UpdateState message for page A.
-  LoadHTML("<div>Page B</div>");
-
-  // Check for a valid UpdateState message for page A.
-  base::RunLoop().RunUntilIdle();
-  const IPC::Message* msg_A = render_thread_->sink().GetUniqueMessageMatching(
-      FrameHostMsg_UpdateState::ID);
-  ASSERT_TRUE(msg_A);
-  FrameHostMsg_UpdateState::Param param;
-  FrameHostMsg_UpdateState::Read(msg_A, &param);
-  PageState state_A = std::get<0>(param);
-  render_thread_->sink().ClearMessages();
-
-  // Load page C, which will trigger an UpdateState message for page B.
-  LoadHTML("<div>Page C</div>");
-
-  // Check for a valid UpdateState for page B.
-  base::RunLoop().RunUntilIdle();
-  const IPC::Message* msg_B = render_thread_->sink().GetUniqueMessageMatching(
-      FrameHostMsg_UpdateState::ID);
-  ASSERT_TRUE(msg_B);
-  FrameHostMsg_UpdateState::Read(msg_B, &param);
-  PageState state_B = std::get<0>(param);
-  EXPECT_NE(state_A, state_B);
-  render_thread_->sink().ClearMessages();
-
-  // Load page D, which will trigger an UpdateState message for page C.
-  LoadHTML("<div>Page D</div>");
-
-  // Check for a valid UpdateState for page C.
-  base::RunLoop().RunUntilIdle();
-  const IPC::Message* msg_C = render_thread_->sink().GetUniqueMessageMatching(
-      FrameHostMsg_UpdateState::ID);
-  ASSERT_TRUE(msg_C);
-  FrameHostMsg_UpdateState::Read(msg_C, &param);
-  PageState state_C = std::get<0>(param);
-  EXPECT_NE(state_B, state_C);
-  render_thread_->sink().ClearMessages();
-
-  // Go back to C and commit, preparing for our real test.
-  CommonNavigationParams common_params_C;
-  CommitNavigationParams commit_params_C;
-  common_params_C.navigation_type =
-      FrameMsg_Navigate_Type::HISTORY_DIFFERENT_DOCUMENT;
-  common_params_C.transition = ui::PAGE_TRANSITION_FORWARD_BACK;
-  commit_params_C.current_history_list_length = 4;
-  commit_params_C.current_history_list_offset = 3;
-  commit_params_C.pending_history_list_offset = 2;
-  commit_params_C.nav_entry_id = 3;
-  commit_params_C.page_state = state_C;
-  frame()->Navigate(common_params_C, commit_params_C);
-  base::RunLoop().RunUntilIdle();
-  render_thread_->sink().ClearMessages();
-
-  // Go back twice quickly, such that page B does not have a chance to commit.
-  // This leads to two changes to the back/forward list but only one change to
-  // the RenderView's page ID.
-
-  // Back to page B without committing.
-  CommonNavigationParams common_params_B;
-  CommitNavigationParams commit_params_B;
-  common_params_B.navigation_type =
-      FrameMsg_Navigate_Type::HISTORY_DIFFERENT_DOCUMENT;
-  common_params_B.transition = ui::PAGE_TRANSITION_FORWARD_BACK;
-  commit_params_B.current_history_list_length = 4;
-  commit_params_B.current_history_list_offset = 2;
-  commit_params_B.pending_history_list_offset = 1;
-  commit_params_B.nav_entry_id = 2;
-  commit_params_B.page_state = state_B;
-  frame()->Navigate(common_params_B, commit_params_B);
-
-  // Back to page A and commit.
-  CommonNavigationParams common_params;
-  CommitNavigationParams commit_params;
-  common_params.navigation_type =
-      FrameMsg_Navigate_Type::HISTORY_DIFFERENT_DOCUMENT;
-  common_params.transition = ui::PAGE_TRANSITION_FORWARD_BACK;
-  commit_params.current_history_list_length = 4;
-  commit_params.current_history_list_offset = 2;
-  commit_params.pending_history_list_offset = 0;
-  commit_params.nav_entry_id = 1;
-  commit_params.page_state = state_A;
-  frame()->Navigate(common_params, commit_params);
-  base::RunLoop().RunUntilIdle();
-
-  // Now ensure that the UpdateState message we receive is consistent
-  // and represents page C in state.
-  const IPC::Message* msg = render_thread_->sink().GetUniqueMessageMatching(
-      FrameHostMsg_UpdateState::ID);
-  ASSERT_TRUE(msg);
-  FrameHostMsg_UpdateState::Read(msg, &param);
-  PageState state = std::get<0>(param);
-  EXPECT_NE(state_A, state);
-  EXPECT_NE(state_B, state);
-  EXPECT_EQ(state_C, state);
 }
 
 // Test that our IME backend sends a notification message when the input focus
@@ -1560,26 +1474,6 @@ TEST_F(RenderViewImplTest, OnSetTextDirection) {
   }
 }
 
-// Crashy, http://crbug.com/53247.
-TEST_F(RenderViewImplTest, DISABLED_DidFailProvisionalLoadWithErrorForError) {
-  GetMainFrame()->EnableViewSourceMode(true);
-  WebURLError error(net::ERR_FILE_NOT_FOUND, GURL("http://foo"));
-  WebLocalFrame* web_frame = GetMainFrame();
-
-  // Start a load that will reach provisional state synchronously,
-  // but won't complete synchronously.
-  CommonNavigationParams common_params;
-  common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
-  common_params.url = GURL("data:text/html,test data");
-  frame()->Navigate(common_params, CommitNavigationParams());
-
-  // An error occurred.
-  view()->GetMainRenderFrame()->DidFailProvisionalLoad(
-      error, blink::kWebStandardCommit);
-  // Frame should exit view-source mode.
-  EXPECT_FALSE(web_frame->IsViewSourceModeEnabled());
-}
-
 TEST_F(RenderViewImplTest, DidFailProvisionalLoadWithErrorForCancellation) {
   GetMainFrame()->EnableViewSourceMode(true);
   WebURLError error(net::ERR_ABORTED, GURL("http://foo"));
@@ -1593,8 +1487,7 @@ TEST_F(RenderViewImplTest, DidFailProvisionalLoadWithErrorForCancellation) {
   frame()->Navigate(common_params, CommitNavigationParams());
 
   // A cancellation occurred.
-  view()->GetMainRenderFrame()->DidFailProvisionalLoad(
-      error, blink::kWebStandardCommit);
+  view()->GetMainRenderFrame()->DidFailProvisionalLoad(error, "GET");
   // Frame should stay in view-source mode.
   EXPECT_TRUE(web_frame->IsViewSourceModeEnabled());
 }
@@ -2139,8 +2032,8 @@ TEST_F(RendererErrorPageTest, MAYBE_HttpStatusCodeErrorWithEmptyBody) {
   network::ResourceResponseHead head;
   std::string headers(
       "HTTP/1.1 503 SERVICE UNAVAILABLE\nContent-type: text/html\n\n");
-  head.headers = new net::HttpResponseHeaders(
-      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(headers));
 
   TestRenderFrame* main_frame = static_cast<TestRenderFrame*>(frame());
   main_frame->Navigate(head, common_params, CommitNavigationParams());
@@ -2486,35 +2379,6 @@ TEST_F(RenderViewImplTest, HistoryIsProperlyUpdatedOnShouldClearHistoryList) {
                    view()->HistoryForwardListCount() + 1);
 }
 
-// IPC Listener that runs a callback when a console.log() is executed from
-// javascript.
-class ConsoleCallbackFilter : public IPC::Listener {
- public:
-  explicit ConsoleCallbackFilter(
-      base::Callback<void(const base::string16&)> callback)
-      : callback_(callback) {}
-
-  bool OnMessageReceived(const IPC::Message& msg) override {
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(ConsoleCallbackFilter, msg)
-      IPC_MESSAGE_HANDLER(FrameHostMsg_DidAddMessageToConsole,
-                          OnDidAddMessageToConsole)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    return handled;
-  }
-
-  void OnDidAddMessageToConsole(int32_t,
-                                const base::string16& message,
-                                int32_t,
-                                const base::string16&) {
-    callback_.Run(message);
-  }
-
- private:
-  base::Callback<void(const base::string16&)> callback_;
-};
-
 // Tests that there's no UaF after dispatchBeforeUnloadEvent.
 // See https://crbug.com/666714.
 TEST_F(RenderViewImplTest, DispatchBeforeUnloadCanDetachFrame) {
@@ -2522,26 +2386,29 @@ TEST_F(RenderViewImplTest, DispatchBeforeUnloadCanDetachFrame) {
       "<script>window.onbeforeunload = function() { "
       "window.console.log('OnBeforeUnload called'); }</script>");
 
-  // Creates a callback that swaps the frame when the 'OnBeforeUnload called'
+  // Create a callback that swaps the frame when the 'OnBeforeUnload called'
   // log is printed from the beforeunload handler.
-  std::unique_ptr<ConsoleCallbackFilter> callback_filter(
-      new ConsoleCallbackFilter(base::Bind(
-          [](RenderFrameImpl* frame, const base::string16& msg) {
-            // Makes sure this happens during the beforeunload handler.
-            EXPECT_EQ(base::UTF8ToUTF16("OnBeforeUnload called"), msg);
+  base::RunLoop run_loop;
+  bool was_callback_run = false;
+  frame()->SetDidAddMessageToConsoleCallback(
+      base::BindOnce(base::BindLambdaForTesting([&](const base::string16& msg) {
+        // Makes sure this happens during the beforeunload handler.
+        EXPECT_EQ(base::UTF8ToUTF16("OnBeforeUnload called"), msg);
 
-            // Swaps the main frame.
-            frame->OnMessageReceived(FrameMsg_SwapOut(
-                frame->GetRoutingID(), 1, false, FrameReplicationState()));
-          },
-          base::Unretained(frame()))));
-  render_thread_->sink().AddFilter(callback_filter.get());
+        // Swaps the main frame.
+        frame()->OnMessageReceived(FrameMsg_SwapOut(
+            frame()->GetRoutingID(), 1, false, FrameReplicationState()));
 
-  // Simulates a BeforeUnload IPC received from the browser.
+        was_callback_run = true;
+        run_loop.Quit();
+      })));
+
+  // Simulate a BeforeUnload IPC received from the browser.
   frame()->OnMessageReceived(
       FrameMsg_BeforeUnload(frame()->GetRoutingID(), false));
 
-  render_thread_->sink().RemoveFilter(callback_filter.get());
+  run_loop.Run();
+  ASSERT_TRUE(was_callback_run);
 }
 
 // IPC Listener that runs a callback when a javascript modal dialog is
@@ -2730,7 +2597,7 @@ TEST_F(RenderViewImplEnableZoomForDSFTest,
   SetDeviceScaleFactor(1.f);
 #if defined(OS_WIN)
   // http://crbug.com/508747
-  if (base::win::GetVersion() >= base::win::VERSION_WIN10)
+  if (base::win::GetVersion() >= base::win::Version::WIN10)
     return;
 #endif
 

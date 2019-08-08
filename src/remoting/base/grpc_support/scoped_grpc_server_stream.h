@@ -20,8 +20,11 @@ class ScopedGrpcServerStream {
       base::WeakPtr<GrpcAsyncServerStreamingRequestBase> request);
   virtual ~ScopedGrpcServerStream();
 
+  base::WeakPtr<ScopedGrpcServerStream> GetWeakPtr();
+
  private:
   base::WeakPtr<GrpcAsyncServerStreamingRequestBase> request_;
+  base::WeakPtrFactory<ScopedGrpcServerStream> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(ScopedGrpcServerStream);
 };
 

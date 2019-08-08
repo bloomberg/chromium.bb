@@ -92,7 +92,7 @@ class RemoteSuggestionsFetcherImpl : public RemoteSuggestionsFetcher {
                        SnippetsAvailableCallback callback,
                        bool is_authenticated,
                        std::string access_token,
-                       std::unique_ptr<base::Value> result,
+                       base::Value result,
                        internal::FetchResult status_code,
                        const std::string& error_details);
   void FetchFinished(OptionalFetchedCategories categories,

@@ -145,7 +145,7 @@ std::unique_ptr<base::Value> AsValue(const SkColorFilter& filter) {
   }
 
   SkScalar color_matrix[20];
-  if (filter.asColorMatrix(color_matrix)) {
+  if (filter.asAColorMatrix(color_matrix)) {
     std::unique_ptr<base::ListValue> color_matrix_val(new base::ListValue());
     for (unsigned i = 0; i < 20; ++i)
       color_matrix_val->Append(AsValue(color_matrix[i]));

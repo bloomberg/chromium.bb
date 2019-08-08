@@ -8,9 +8,10 @@
 
 namespace base {
 
+constexpr size_t StackSampler::StackBuffer::kPlatformStackAlignment;
+
 StackSampler::StackBuffer::StackBuffer(size_t buffer_size)
-    : buffer_(new uintptr_t[(buffer_size + sizeof(uintptr_t) - 1) /
-                            sizeof(uintptr_t)]),
+    : buffer_(new uint8_t[buffer_size + kPlatformStackAlignment - 1]),
       size_(buffer_size) {}
 
 StackSampler::StackBuffer::~StackBuffer() = default;

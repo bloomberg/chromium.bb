@@ -157,8 +157,8 @@ VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
       bind_image_cb_(bind_image_cb),
       weak_this_factory_(this) {
   weak_this_ = weak_this_factory_.GetWeakPtr();
-  va_surface_release_cb_ = BindToCurrentLoop(
-      base::Bind(&VaapiVideoDecodeAccelerator::RecycleVASurfaceID, weak_this_));
+  va_surface_release_cb_ = BindToCurrentLoop(base::BindRepeating(
+      &VaapiVideoDecodeAccelerator::RecycleVASurfaceID, weak_this_));
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "media::VaapiVideoDecodeAccelerator",
       base::ThreadTaskRunnerHandle::Get());
@@ -454,7 +454,8 @@ void VaapiVideoDecodeAccelerator::DecodeTask() {
             base::BindOnce(
                 &VaapiVideoDecodeAccelerator::InitiateSurfaceSetChange,
                 weak_this_, decoder_->GetRequiredNumOfPictures(),
-                decoder_->GetPicSize(), decoder_->GetNumReferenceFrames()));
+                decoder_->GetPicSize(), decoder_->GetNumReferenceFrames(),
+                decoder_->GetVisibleRect()));
         // We'll get rescheduled once ProvidePictureBuffers() finishes.
         return;
 
@@ -494,7 +495,8 @@ void VaapiVideoDecodeAccelerator::DecodeTask() {
 void VaapiVideoDecodeAccelerator::InitiateSurfaceSetChange(
     size_t num_pics,
     gfx::Size size,
-    size_t num_reference_frames) {
+    size_t num_reference_frames,
+    const gfx::Rect& visible_rect) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!awaiting_va_surfaces_recycle_);
   DCHECK_GT(num_pics, num_reference_frames);
@@ -508,6 +510,7 @@ void VaapiVideoDecodeAccelerator::InitiateSurfaceSetChange(
   awaiting_va_surfaces_recycle_ = true;
 
   requested_pic_size_ = size;
+  requested_visible_rect_ = visible_rect;
 
   if (buffer_allocation_mode_ == BufferAllocationMode::kSuperReduced) {
     // Add one to the reference frames for the one being currently egressed.
@@ -578,15 +581,14 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
   const VideoPixelFormat format = GfxBufferFormatToVideoPixelFormat(
       vaapi_picture_factory_->GetBufferFormat());
   task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&Client::ProvidePictureBuffers, client_,
-                     requested_num_pics_, format, 1, requested_pic_size_,
-                     vaapi_picture_factory_->GetGLTextureTarget()));
+      FROM_HERE, base::BindOnce(&Client::ProvidePictureBuffersWithVisibleRect,
+                                client_, requested_num_pics_, format, 1,
+                                requested_pic_size_, requested_visible_rect_,
+                                vaapi_picture_factory_->GetGLTextureTarget()));
   // |client_| may respond via AssignPictureBuffers().
 }
 
-void VaapiVideoDecodeAccelerator::Decode(
-    const BitstreamBuffer& bitstream_buffer) {
+void VaapiVideoDecodeAccelerator::Decode(BitstreamBuffer bitstream_buffer) {
   Decode(bitstream_buffer.ToDecoderBuffer(), bitstream_buffer.id());
 }
 
@@ -1011,7 +1013,7 @@ scoped_refptr<VASurface> VaapiVideoDecodeAccelerator::CreateSurface() {
 
     return new VASurface(id, requested_pic_size_,
                          vaapi_wrapper_->va_surface_format(),
-                         va_surface_release_cb_);
+                         base::BindOnce(va_surface_release_cb_));
   }
 
   // Find the first |available_va_surfaces_| id such that the associated
@@ -1027,7 +1029,7 @@ scoped_refptr<VASurface> VaapiVideoDecodeAccelerator::CreateSurface() {
         base::Erase(available_va_surfaces_, va_surface_id);
         return new VASurface(va_surface_id, requested_pic_size_,
                              vaapi_wrapper_->va_surface_format(),
-                             va_surface_release_cb_);
+                             base::BindOnce(va_surface_release_cb_));
       }
     }
   }

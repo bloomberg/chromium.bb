@@ -190,7 +190,7 @@ class WebInputEvent {
     kPointerTypeFirst = kPointerDown,
     kPointerUp,
     kPointerMove,
-    kPointerRawMove,  // To be only used within blink.
+    kPointerRawUpdate,  // To be only used within blink.
     kPointerCancel,
     kPointerCausedUaAction,
     kPointerTypeLast = kPointerCausedUaAction,
@@ -412,7 +412,7 @@ class WebInputEvent {
       CASE_TYPE(PointerDown);
       CASE_TYPE(PointerUp);
       CASE_TYPE(PointerMove);
-      CASE_TYPE(PointerRawMove);
+      CASE_TYPE(PointerRawUpdate);
       CASE_TYPE(PointerCancel);
       CASE_TYPE(PointerCausedUaAction);
     }

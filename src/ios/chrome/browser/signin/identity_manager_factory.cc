@@ -18,7 +18,6 @@
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/signin/account_tracker_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory_observer.h"
 #include "ios/chrome/browser/signin/profile_oauth2_token_service_ios_provider_impl.h"
 #include "ios/chrome/browser/signin/signin_client_factory.h"
@@ -31,14 +30,22 @@
 namespace {
 
 std::unique_ptr<ProfileOAuth2TokenService> BuildTokenService(
-    ios::ChromeBrowserState* chrome_browser_state) {
+    ios::ChromeBrowserState* chrome_browser_state,
+    AccountTrackerService* account_tracker_service) {
   auto delegate = std::make_unique<ProfileOAuth2TokenServiceIOSDelegate>(
       SigninClientFactory::GetForBrowserState(chrome_browser_state),
       std::make_unique<ProfileOAuth2TokenServiceIOSProviderImpl>(),
-      ios::AccountTrackerServiceFactory::GetForBrowserState(
-          chrome_browser_state));
+      account_tracker_service);
   return std::make_unique<ProfileOAuth2TokenService>(
       chrome_browser_state->GetPrefs(), std::move(delegate));
+}
+
+std::unique_ptr<AccountTrackerService> BuildAccountTrackerService(
+    ios::ChromeBrowserState* chrome_browser_state) {
+  auto account_tracker_service = std::make_unique<AccountTrackerService>();
+  account_tracker_service->Initialize(chrome_browser_state->GetPrefs(),
+                                      base::FilePath());
+  return account_tracker_service;
 }
 
 std::unique_ptr<AccountFetcherService> BuildAccountFetcherService(
@@ -54,14 +61,13 @@ std::unique_ptr<AccountFetcherService> BuildAccountFetcherService(
 
 std::unique_ptr<SigninManager> BuildSigninManager(
     ios::ChromeBrowserState* chrome_browser_state,
+    AccountTrackerService* account_tracker_service,
     ProfileOAuth2TokenService* token_service,
     GaiaCookieManagerService* gaia_cookie_manager_service) {
   std::unique_ptr<SigninManager> service = std::make_unique<SigninManager>(
       SigninClientFactory::GetForBrowserState(chrome_browser_state),
-      token_service,
-      ios::AccountTrackerServiceFactory::GetForBrowserState(
-          chrome_browser_state),
-      gaia_cookie_manager_service, signin::AccountConsistencyMethod::kMirror);
+      token_service, account_tracker_service, gaia_cookie_manager_service,
+      signin::AccountConsistencyMethod::kMirror);
   service->Initialize(GetApplicationContext()->GetLocalState());
   return service;
 }
@@ -76,7 +82,6 @@ IdentityManagerFactory::IdentityManagerFactory()
     : BrowserStateKeyedServiceFactory(
           "IdentityManager",
           BrowserStateDependencyManager::GetInstance()) {
-  DependsOn(ios::AccountTrackerServiceFactory::GetInstance());
   DependsOn(SigninClientFactory::GetInstance());
 }
 
@@ -105,7 +110,6 @@ IdentityManagerFactory* IdentityManagerFactory::GetInstance() {
 // static
 void IdentityManagerFactory::EnsureFactoryAndDependeeFactoriesBuilt() {
   IdentityManagerFactory::GetInstance();
-  ios::AccountTrackerServiceFactory::GetInstance();
   SigninClientFactory::GetInstance();
 }
 
@@ -125,22 +129,23 @@ std::unique_ptr<KeyedService> IdentityManagerFactory::BuildServiceInstanceFor(
       ios::ChromeBrowserState::FromBrowserState(context);
 
   // Construct the dependencies that IdentityManager will own.
+  std::unique_ptr<AccountTrackerService> account_tracker_service =
+      BuildAccountTrackerService(browser_state);
+
   std::unique_ptr<ProfileOAuth2TokenService> token_service =
-      BuildTokenService(browser_state);
+      BuildTokenService(browser_state, account_tracker_service.get());
 
   auto gaia_cookie_manager_service = std::make_unique<GaiaCookieManagerService>(
       token_service.get(),
       SigninClientFactory::GetForBrowserState(browser_state));
 
   std::unique_ptr<SigninManager> signin_manager = BuildSigninManager(
-      browser_state, token_service.get(), gaia_cookie_manager_service.get());
-
-  AccountTrackerService* account_tracker_service =
-      ios::AccountTrackerServiceFactory::GetForBrowserState(browser_state);
+      browser_state, account_tracker_service.get(), token_service.get(),
+      gaia_cookie_manager_service.get());
 
   auto primary_account_mutator =
       std::make_unique<identity::PrimaryAccountMutatorImpl>(
-          account_tracker_service, signin_manager.get());
+          account_tracker_service.get(), signin_manager.get());
 
   auto accounts_cookie_mutator =
       std::make_unique<identity::AccountsCookieMutatorImpl>(
@@ -153,10 +158,10 @@ std::unique_ptr<KeyedService> IdentityManagerFactory::BuildServiceInstanceFor(
   std::unique_ptr<AccountFetcherService> account_fetcher_service =
       BuildAccountFetcherService(
           SigninClientFactory::GetForBrowserState(browser_state),
-          token_service.get(), account_tracker_service);
+          token_service.get(), account_tracker_service.get());
 
   auto identity_manager = std::make_unique<IdentityManagerWrapper>(
-      account_tracker_service, std::move(token_service),
+      std::move(account_tracker_service), std::move(token_service),
       std::move(gaia_cookie_manager_service), std::move(signin_manager),
       std::move(account_fetcher_service), std::move(primary_account_mutator),
       /*accounts_mutator=*/nullptr, std::move(accounts_cookie_mutator),

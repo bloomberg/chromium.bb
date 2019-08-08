@@ -24,6 +24,9 @@ public class BuildInfo {
     private static PackageInfo sBrowserPackageInfo;
     private static boolean sInitialized;
 
+    /** Not a member variable to avoid creating the instance early (it is set early in start up). */
+    private static String sFirebaseAppId = "";
+
     /** The application name (e.g. "Chrome"). For WebView, this is name of the embedding app. */
     public final String hostPackageLabel;
     /** By default: same as versionCode. For WebView: versionCode of the embedding app. */
@@ -74,7 +77,7 @@ public class BuildInfo {
                 buildInfo.gmsVersionCode,
                 buildInfo.installerPackageName,
                 buildInfo.abiString,
-                BuildConfig.FIREBASE_APP_ID,
+                sFirebaseAppId,
                 buildInfo.customThemes,
                 buildInfo.resourcesVersion,
                 buildInfo.extractedFileSuffix,
@@ -163,10 +166,9 @@ public class BuildInfo {
                 abiString = String.format("ABI1: %s, ABI2: %s", Build.CPU_ABI, Build.CPU_ABI2);
             }
 
-            // Use lastUpdateTime when developing locally, since versionCode does not normally
-            // change in this case.
-            long version = versionCode > 10 ? versionCode : pi.lastUpdateTime;
-            extractedFileSuffix = String.format("@%x", version);
+            // Append lastUpdateTime to versionCode, since versionCode is unlikely to change when
+            // developing locally but lastUpdateTime is.
+            extractedFileSuffix = String.format("@%x_%x", versionCode, pi.lastUpdateTime);
 
             // The value is truncated, as this is used for crash and UMA reporting.
             androidBuildFingerprint = Build.FINGERPRINT.substring(
@@ -206,6 +208,15 @@ public class BuildInfo {
      */
     public static boolean targetsAtLeastQ() {
         return ContextUtils.getApplicationContext().getApplicationInfo().targetSdkVersion >= 29;
+    }
+
+    public static void setFirebaseAppId(String id) {
+        assert sFirebaseAppId.equals("");
+        sFirebaseAppId = id;
+    }
+
+    public static String getFirebaseAppId() {
+        return sFirebaseAppId;
     }
 
     // End:BuildCompat

@@ -58,6 +58,12 @@ struct CONTENT_EXPORT ChildProcessTerminationInfo {
   int remaining_process_with_strong_binding = 0;
   int remaining_process_with_moderate_binding = 0;
   int remaining_process_with_waived_binding = 0;
+
+  // Eg lowest ranked process at time of death should have value 0.
+  // Valid values are non-negative.
+  // -1 means could not be obtained due to threading restrictions.
+  // -2 means not applicable because process is not ranked.
+  int best_effort_reverse_rank = -1;
 #endif
 };
 

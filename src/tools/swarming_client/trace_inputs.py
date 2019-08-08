@@ -34,15 +34,19 @@ import threading
 import time
 import weakref
 
-from third_party import colorama
-from third_party.depot_tools import fix_encoding
-from third_party.depot_tools import subcommand
+from utils import tools
+tools.force_local_third_party()
 
+# third_party/
+import colorama
+from depot_tools import fix_encoding
+from depot_tools import subcommand
+
+# pylint: disable=ungrouped-imports
 from utils import file_path
 from utils import fs
 from utils import logging_utils
 from utils import subprocess42
-from utils import tools
 
 ## OS-specific imports
 
@@ -60,7 +64,7 @@ ROOT_DIR = os.path.dirname(os.path.dirname(BASE_DIR))
 
 
 class TracingFailure(Exception):
-  """An exception occured during tracing."""
+  """An exception occurred during tracing."""
   def __init__(self, description, pid, line_number, line, *args):
     super(TracingFailure, self).__init__(
         description, pid, line_number, line, *args)
@@ -135,7 +139,7 @@ def create_subprocess_thunk():
 def create_exec_thunk():
   """Creates a small temporary script to start the child executable.
 
-  Reads from the file handle provided as the fisrt argument to block, then
+  Reads from the file handle provided as the first argument to block, then
   execv() the command to be traced.
   """
   handle, name = tempfile.mkstemp(prefix=u'trace_inputs_thunk', suffix='.py')
@@ -169,16 +173,16 @@ def strace_process_quoted_arguments(text):
   TODO(maruel): Implement escaping.
   """
   # All the possible states of the DFA.
-  ( NEED_QUOTE,         # Begining of a new arguments.
-    INSIDE_STRING,      # Inside an argument.
-    ESCAPED,            # Found a '\' inside a quote. Treat the next char as-is.
-    NEED_COMMA_OR_DOT,  # Right after the closing quote of an argument. Could be
-                        # a serie of 3 dots or a comma.
-    NEED_SPACE,         # Right after a comma
-    NEED_DOT_2,         # Found a dot, need a second one.
-    NEED_DOT_3,         # Found second dot, need a third one.
-    NEED_COMMA,         # Found third dot, need a comma.
-    ) = range(8)
+  (NEED_QUOTE,         # Beginning of a new arguments.
+   INSIDE_STRING,      # Inside an argument.
+   ESCAPED,            # Found a '\' inside a quote. Treat the next char as-is.
+   NEED_COMMA_OR_DOT,  # Right after the closing quote of an argument. Could be
+                       # a series of 3 dots or a comma.
+   NEED_SPACE,         # Right after a comma
+   NEED_DOT_2,         # Found a dot, need a second one.
+   NEED_DOT_3,         # Found second dot, need a third one.
+   NEED_COMMA,         # Found third dot, need a comma.
+   ) = range(8)
 
   state = NEED_QUOTE
   out = []
@@ -405,7 +409,7 @@ class Results(object):
     """A file that was accessed. May not be present anymore.
 
     If tainted is true, it means it is not a real path anymore as a variable
-    replacement occured.
+    replacement occurred.
 
     |mode| can be one of None, TOUCHED, READ or WRITE.
     """
@@ -621,14 +625,14 @@ class ApiBase(object):
           """Receives a tuple (filepath, mode) and processes filepath."""
           x = fix_path(x)
           if not x:
-            return
+            return None, None
           # The blacklist needs to be reapplied, since path casing could
           # influence blacklisting.
           if self._blacklist(x):
-            return
+            return None, None
           # Filters out directories. Some may have passed through.
           if fs.isdir(x):
-            return
+            return None, None
           return x, m
 
         # Renders all the files as strings, as some could be RelativePath
@@ -637,7 +641,7 @@ class ApiBase(object):
         rendered = (
             fix_and_blacklist_path(f, m) for f, m in self.files.iteritems())
         files = sorted(
-          (f for f in rendered if f),
+          (f for f in rendered if f[0]),
           key=lambda x: (x[0], Results.File.ACCEPTABLE_MODES.index(x[1])))
         # Then converting into a dict will automatically clean up lesser
         # important values.
@@ -873,9 +877,9 @@ class Strace(ApiBase):
           assert function.__name__.startswith('handle_')
           def hook(self, args, result):
             if expect_zero is True and not result.startswith('0'):
-              return
+              return None
             if expect_zero is False and result.startswith(('?', '-1')):
-              return
+              return None
             match = re.match(regexp, args)
             if not match:
               raise TracingFailure(
@@ -961,19 +965,19 @@ class Strace(ApiBase):
 
           if self.RE_SIGNAL.match(line):
             # Ignore signals.
-            return
+            return None
 
           match = self.RE_KILLED.match(line)
           if match:
             # Converts a '+++ killed by Foo +++' trace into an exit_group().
             self.handle_exit_group(match.group(1), None)
-            return
+            return None
 
           match = self.RE_PROCESS_EXITED.match(line)
           if match:
             # Converts a '+++ exited with 1 +++' trace into an exit_group()
             self.handle_exit_group(match.group(1), None)
-            return
+            return None
 
           match = self.RE_UNFINISHED.match(line)
           if match:
@@ -984,7 +988,7 @@ class Strace(ApiBase):
                   self._pending_calls)
             self._pending_calls[match.group(1)] = (
                 match.group(1) + match.group(2))
-            return
+            return None
 
           match = self.RE_UNAVAILABLE.match(line)
           if match:
@@ -992,14 +996,14 @@ class Strace(ApiBase):
             # canceled.
             # TODO(maruel): Look up the last exit_group() trace just above and
             # make sure any self._pending_calls[anything] is properly flushed.
-            return
+            return None
 
           match = self.RE_PTRACE.match(line)
           if match:
             # Not sure what this means. Anyhow, the process died.
             # TODO(maruel): Add note that only RE_PROCESS_EXITED is valid
             # afterward.
-            return
+            return None
 
           match = self.RE_RESUMED.match(line)
           if match:
@@ -1019,10 +1023,10 @@ class Strace(ApiBase):
             # No other line can be processed afterward.
             logging.debug('%d is done: %s', self.pid, line)
             self._done = True
-            return
+            return None
 
           if match.group(1) == self.UNNAMED_FUNCTION:
-            return
+            return None
 
           # It's a valid line, handle it.
           handler = getattr(self, 'handle_%s' % match.group(1), None)
@@ -1184,7 +1188,7 @@ class Strace(ApiBase):
 
       @parse_args(
           r'^(\".+?\"|0x[a-f0-9]+), (?:\".+?\"(?:\.\.\.)?|0x[a-f0-9]+), '
-            '\d+$',
+            r'\d+$',
           False)
       def handle_readlink(self, args, _result):
         # TODO(maruel): Resolve file handle.
@@ -1827,7 +1831,7 @@ class Dtrace(ApiBase):
       text = text[:-2]
 
       def unescape(x):
-        """Replaces '\\' with '\' and '\?' (where ? is anything) with ?."""
+        """Replaces '\\\\' with '\\' and '\\?' (where ? is anything) with ?."""
         out = []
         escaped = False
         for i in x:
@@ -1882,7 +1886,7 @@ class Dtrace(ApiBase):
     #   in the associative array.
     # 1 is for tracked processes.
     # 2 is for the script created by create_subprocess_thunk() only. It is not
-    #   tracked itself but all its decendants are.
+    #   tracked itself but all its descendants are.
     #
     # The script will kill itself only once waiting_to_die == 1 and
     # current_processes == 0, so that both getlogin() was called and that
@@ -2340,7 +2344,7 @@ class Dtrace(ApiBase):
         fs.remove(self._dummy_file_name)
 
     def post_process_log(self):
-      """Sorts the log back in order when each call occured.
+      """Sorts the log back in order when each call occurred.
 
       dtrace doesn't save the buffer in strict order since it keeps one buffer
       per CPU.
@@ -2501,12 +2505,12 @@ class LogmanTrace(ApiBase):
       tid = int(tid, 16)
       pid = self._threads_active.get(tid)
       if not pid or not self._process_lookup.get(pid):
-        return
+        return None
       return self._process_lookup[pid]
 
     @classmethod
     def handle_EventTrace_Header(cls, line):
-      """Verifies no event was dropped, e.g. no buffer overrun occured."""
+      """Verifies no event was dropped, e.g. no buffer overrun occurred."""
       BUFFER_SIZE = cls.USER_DATA
       #VERSION = cls.USER_DATA + 1
       #PROVIDER_VERSION = cls.USER_DATA + 2
@@ -2531,8 +2535,8 @@ class LogmanTrace(ApiBase):
       #LOG_FILE_NAME_STRING = cls.USER_DATA + 21
       if line[EVENTS_LOST] != '0':
         raise TracingFailure(
-            ( '%s events were lost during trace, please increase the buffer '
-              'size from %s') % (line[EVENTS_LOST], line[BUFFER_SIZE]),
+            ('%s events were lost during trace, please increase the buffer '
+             'size from %s') % (line[EVENTS_LOST], line[BUFFER_SIZE]),
             None, None, None)
 
     def handle_FileIo_Cleanup(self, line):
@@ -2598,7 +2602,7 @@ class LogmanTrace(ApiBase):
         return
       # Override any stale file object.
       # TODO(maruel): Figure out a way to detect if the file was opened for
-      # reading or writting. Sadly CREATE_OPTIONS doesn't seem to be of any help
+      # reading or writing. Sadly CREATE_OPTIONS doesn't seem to be of any help
       # here. For now mark as None to make it clear we have no idea what it is
       # about.
       proc.file_objects[file_object] = (filepath, None)
@@ -2652,8 +2656,8 @@ class LogmanTrace(ApiBase):
         # TODO(maruel): The check is quite weak. Add the thunk path.
         if self._thunk_process:
           raise TracingFailure(
-              ( 'Parent process is _thunk_pid(%d) but thunk_process(%d) is '
-                'already set') % (self._thunk_pid, self._thunk_process.pid),
+              ('Parent process is _thunk_pid(%d) but thunk_process(%d) is '
+               'already set') % (self._thunk_pid, self._thunk_process.pid),
               None, None, None)
         proc = self.Process(self.blacklist, pid, None)
         self._thunk_process = proc
@@ -2721,7 +2725,7 @@ class LogmanTrace(ApiBase):
 
     @classmethod
     def supported_events(cls):
-      """Returns all the procesed events."""
+      """Returns all the processed events."""
       out = []
       for member in dir(cls):
         match = re.match(r'^handle_([A-Za-z]+)_([A-Za-z]+)$', member)
@@ -2772,24 +2776,24 @@ class LogmanTrace(ApiBase):
       """
         # 0. Had a ',' or one of the following ' ' after a comma, next should
         # be ' ', '"' or string or ',' for an empty field.
-      ( HAD_DELIMITER,
-        # 1. Processing an unquoted field up to ','.
-        IN_STR,
-        # 2. Processing a new field starting with '"'.
-        STARTING_STR_QUOTED,
-        # 3. Second quote in a row at the start of a field. It could be either
-        # '""foo""' or '""'. Who the hell thought it was a great idea to use
-        # the same character for delimiting and escaping?
-        STARTING_SECOND_QUOTE,
-        # 4. A quote inside a quoted string where the previous character was
-        # not a quote, so the string is not empty. Can be either: end of a
-        # quoted string (a delimiter) or a quote escape. The next char must be
-        # either '"' or ','.
-        HAD_QUOTE_IN_QUOTED,
-        # 5. Second quote inside a quoted string.
-        HAD_SECOND_QUOTE_IN_A_ROW_IN_QUOTED,
-        # 6. Processing a field that started with '"'.
-        IN_STR_QUOTED) = range(7)
+      (HAD_DELIMITER,
+       # 1. Processing an unquoted field up to ','.
+       IN_STR,
+       # 2. Processing a new field starting with '"'.
+       STARTING_STR_QUOTED,
+       # 3. Second quote in a row at the start of a field. It could be either
+       # '""foo""' or '""'. Who the hell thought it was a great idea to use
+       # the same character for delimiting and escaping?
+       STARTING_SECOND_QUOTE,
+       # 4. A quote inside a quoted string where the previous character was
+       # not a quote, so the string is not empty. Can be either: end of a
+       # quoted string (a delimiter) or a quote escape. The next char must be
+       # either '"' or ','.
+       HAD_QUOTE_IN_QUOTED,
+       # 5. Second quote inside a quoted string.
+       HAD_SECOND_QUOTE_IN_A_ROW_IN_QUOTED,
+       # 6. Processing a field that started with '"'.
+       IN_STR_QUOTED) = range(7)
 
       def __init__(self, f):
         self.f = f
@@ -3052,6 +3056,7 @@ class LogmanTrace(ApiBase):
                   None, None, None)
             continue
           # As you can see, the CSV is full of useful non-redundant information:
+          # pylint: disable=too-many-boolean-expressions
           if (line[2] != '0' or  # Event ID
               line[3] not in ('2', '3') or  # Version
               line[4] != '0' or  # Channel
@@ -3222,7 +3227,7 @@ def extract_directories(root_dir, files, blacklist):
   Arguments:
     - root_dir: Optional base directory that shouldn't be search further.
     - files: list of Results.File instances.
-    - blacklist: lambda to reject unneeded files, for example r'.+\.pyc'.
+    - blacklist: lambda to reject unneeded files, for example '.+\\.pyc'.
   """
   logging.info(
       'extract_directories(%s, %d files, ...)' % (root_dir, len(files)))
@@ -3433,7 +3438,7 @@ class OptionParserTraceInputs(logging_utils.OptionParserWithLogging):
   def parse_args(self, *args, **kwargs):
     """Makes sure the paths make sense.
 
-    On Windows, / and \ are often mixed together in a path.
+    On Windows, / and \\ are often mixed together in a path.
     """
     options, args = logging_utils.OptionParserWithLogging.parse_args(
         self, *args, **kwargs)

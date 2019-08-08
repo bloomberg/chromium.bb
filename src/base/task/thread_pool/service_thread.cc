@@ -38,10 +38,10 @@ void ServiceThread::SetHeartbeatIntervalForTesting(TimeDelta heartbeat) {
 }
 
 void ServiceThread::Init() {
-  // In unit tests we sometimes do not have a fully functional ThreadPool
+  // In unit tests we sometimes do not have a fully functional thread pool
   // environment, do not perform the heartbeat report in that case since it
   // relies on such an environment.
-  if (ThreadPool::GetInstance()) {
+  if (ThreadPoolInstance::Get()) {
     // Compute the histogram every hour (with a slight offset to drift if that
     // hour tick happens to line up with specific events). Once per hour per
     // user was deemed sufficient to gather a reliable metric.
@@ -79,8 +79,8 @@ void ServiceThread::PerformHeartbeatLatencyReport() const {
   // Only record latency for one set of TaskTraits per report to avoid bias in
   // the order in which tasks are posted (should we record all at once) as well
   // as to avoid spinning up many worker threads to process this report if the
-  // thread pool is currently idle (each pool keeps at least one idle thread so
-  // a single task isn't an issue).
+  // thread pool is currently idle (each thread group keeps at least one idle
+  // thread so a single task isn't an issue).
 
   // Invoke RandInt() out-of-line to ensure it's obtained before
   // TimeTicks::Now().
@@ -89,8 +89,8 @@ void ServiceThread::PerformHeartbeatLatencyReport() const {
 
   // Post through the static API to time the full stack. Use a new Now() for
   // every set of traits in case PostTaskWithTraits() itself is slow.
-  // Bonus: this appraoch also includes the overhead of Bind() in the reported
-  // latency).
+  // Bonus: this approach also includes the overhead of BindOnce() in the
+  // reported latency.
   // TODO(jessemckenna): pass |profiled_traits| directly to
   // RecordHeartbeatLatencyAndTasksRunWhileQueuingHistograms() once compiler
   // error on NaCl is fixed

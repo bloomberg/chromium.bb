@@ -1,6 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="crostini_browser_proxy.html">
@@ -12,32 +12,32 @@
 <dom-module id="settings-crostini-subpage">
   <template>
     <style include="settings-shared"></style>
-    <div id="crostini-shared-paths" class="settings-box first"
-        on-click="onSharedPathsClick_" actionable>
-      <div class="start">$i18n{crostiniSharedPaths}</div>
-      <cr-icon-button class="subpage-arrow"
-          aria-label="$i18n{crostiniSharedPaths}"></cr-icon-button>
-    </div>
+    <cr-link-row
+        id="crostini-shared-paths"
+        label="$i18n{crostiniSharedPaths}"
+        on-click="onSharedPathsClick_">
+    </cr-link-row>
     <template is="dom-if" if="[[enableCrostiniUsbDeviceSupport_]]">
-      <div id="crostini-shared-usb-devices" class="settings-box"
-          on-click="onSharedUsbDevicesClick_" actionable>
-        <div class="start">$i18n{crostiniSharedUsbDevicesLabel}</div>
-        <cr-icon-button class="subpage-arrow"
-            aria-label="$i18n{crostiniSharedUsbDevicesLabel}"></cr-icon-button>
-      </div>
+      <cr-link-row
+          class="hr"
+          label="$i18n{crostiniSharedUsbDevicesLabel}"
+          id="crostini-shared-usb-devices"
+          on-click="onSharedUsbDevicesClick_">
+      </cr-link-row>
     </template>
     <template is="dom-if" if="[[showCrostiniExportImport_]]">
-      <div id="crostini-export-import" class="settings-box"
-          on-click="onExportImportClick_" actionable>
-        <div class="start">$i18n{crostiniExportImportTitle}</div>
-        <cr-icon-button class="subpage-arrow"
-            aria-label="$i18n{crostiniExportImportTitle}"></cr-icon-button>
-      </div>
+      <cr-link-row
+          class="hr"
+          label="$i18n{crostiniExportImportTitle}"
+          id="crostini-export-import"
+          on-click="onExportImportClick_">
+      </cr-link-row>
     </template>
     <template is="dom-if" if="[[!hideCrostiniUninstall_]]">
       <div id="remove" class="settings-box">
-        <div class="start">$i18n{crostiniRemove}</div>
-        <paper-button on-click="onRemoveClick_">
+        <div id="removeCrostiniLabel" class="start">$i18n{crostiniRemove}</div>
+        <paper-button on-click="onRemoveClick_"
+          aria-labelledby="removeCrostiniLabel">
            $i18n{crostiniRemoveButton}
         </paper-button>
       </div>

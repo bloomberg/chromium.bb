@@ -70,7 +70,7 @@ void VideoThumbnailDecoder::OnEosBufferDecoded(DecodeStatus status) {
 }
 
 void VideoThumbnailDecoder::OnVideoFrameDecoded(
-    const scoped_refptr<VideoFrame>& frame) {
+    scoped_refptr<VideoFrame> frame) {
   NotifyComplete(std::move(frame));
 }
 

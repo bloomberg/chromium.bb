@@ -6,35 +6,38 @@
 
 #include <string>
 
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/auth/chrome_cryptohome_authenticator.h"
+#include "chrome/browser/chromeos/login/saml/saml_password_expiry_notification.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/login/auth/saml_password_attributes.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 
 namespace chromeos {
 
-InSessionPasswordChangeHandler::InSessionPasswordChangeHandler() = default;
+InSessionPasswordChangeHandler::InSessionPasswordChangeHandler(
+    const std::string& password_change_url)
+    : password_change_url_(password_change_url) {}
 InSessionPasswordChangeHandler::~InSessionPasswordChangeHandler() = default;
 
 void InSessionPasswordChangeHandler::HandleInitialize(
     const base::ListValue* value) {
-  const Profile* profile = Profile::FromWebUI(web_ui());
+  Profile* profile = Profile::FromWebUI(web_ui());
   CHECK(profile->GetPrefs()->GetBoolean(
       prefs::kSamlInSessionPasswordChangeEnabled));
 
   AllowJavascript();
   base::Value params(base::Value::Type::DICTIONARY);
-  const std::string password_change_url =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kSamlPasswordChangeUrl);
-  params.SetKey("passwordChangeUrl", base::Value(password_change_url));
+  if (password_change_url_.empty()) {
+    LOG(ERROR) << "Password change url is empty";
+    return;
+  }
+  params.SetKey("passwordChangeUrl", base::Value(password_change_url_));
   const user_manager::User* user =
       ProfileHelper::Get()->GetUserByProfile(profile);
   if (user)
@@ -79,6 +82,17 @@ void InSessionPasswordChangeHandler::OnAuthSuccess(
   user_manager::UserManager::Get()->SaveForceOnlineSignin(
       user_context.GetAccountId(), false);
   authenticator_.reset();
+
+  // Clear expiration time from prefs so that we don't keep nagging the user to
+  // change password (until the SAML provider tells us a new expiration time).
+  Profile* profile = Profile::FromWebUI(web_ui());
+  SamlPasswordAttributes loaded =
+      SamlPasswordAttributes::LoadFromPrefs(profile->GetPrefs());
+  SamlPasswordAttributes(
+      /*modified_time=*/base::Time::Now(), /*expiration_time=*/base::Time(),
+      loaded.password_change_url())
+      .SaveToPrefs(profile->GetPrefs());
+  DismissSamlPasswordExpiryNotification(profile);
 }
 
 void InSessionPasswordChangeHandler::OnAuthFailure(const AuthFailure& error) {

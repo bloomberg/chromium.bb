@@ -125,7 +125,8 @@ class Database(object):
     # Mapping of owners to the paths or globs they own.
     self._owners_to_paths = {EVERYONE: set()}
 
-    # Mapping of paths to authorized owners.
+    # Mappings of directories -> globs in the directory -> owners
+    # Example: "chrome/browser" -> "chrome/browser/*.h" -> ("john", "maria")
     self._paths_to_owners = {}
 
     # Mapping reviewers to the preceding comment per file in the OWNERS files.
@@ -134,9 +135,15 @@ class Database(object):
     # Cache of compiled regexes for _fnmatch()
     self._fnmatch_cache = {}
 
-    # Set of paths that stop us from looking above them for owners.
+    # Sets of paths that stop us from looking above them for owners.
     # (This is implicitly true for the root directory).
-    self._stop_looking = set([''])
+    #
+    # The implementation is a mapping:
+    # Directory -> globs in the directory,
+    #
+    # Example:
+    # 'ui/events/devices/mojo' -> 'ui/events/devices/mojo/*_struct_traits*.*'
+    self._stop_looking = {'': set([''])}
 
     # Set of files which have already been read.
     self.read_files = set()
@@ -219,23 +226,59 @@ class Database(object):
 
   def load_data_needed_for(self, files):
     self._read_global_comments()
+    visited_dirs = set()
     for f in files:
       dirpath = self.os_path.dirname(f)
-      while not self._owners_for(dirpath):
+      while dirpath not in visited_dirs:
+        visited_dirs.add(dirpath)
+
+        obj_owners = self._owners_for(dirpath)
+        if obj_owners:
+          break
         self._read_owners(self.os_path.join(dirpath, 'OWNERS'))
         if self._should_stop_looking(dirpath):
           break
+
         dirpath = self.os_path.dirname(dirpath)
 
   def _should_stop_looking(self, objname):
-    return any(self._fnmatch(objname, stop_looking)
-               for stop_looking in self._stop_looking)
+    dirname = objname
+    while True:
+      if dirname in self._stop_looking:
+        if any(self._fnmatch(objname, stop_looking)
+               for stop_looking in self._stop_looking[dirname]):
+          return True
+      up_dirname = self.os_path.dirname(dirname)
+      if up_dirname == dirname:
+        break
+      dirname = up_dirname
+    return False
+
+  def _get_root_affected_dir(self, obj_name):
+    """Returns the deepest directory/path that is affected by a file pattern
+    |obj_name|."""
+    root_affected_dir = obj_name
+    while '*' in root_affected_dir:
+      root_affected_dir = self.os_path.dirname(root_affected_dir)
+    return root_affected_dir
 
   def _owners_for(self, objname):
     obj_owners = set()
-    for owned_path, path_owners in self._paths_to_owners.iteritems():
-      if self._fnmatch(objname, owned_path):
-        obj_owners |= path_owners
+
+    # Possibly relevant rules can be found stored at every directory
+    # level so iterate upwards, looking for them.
+    dirname = objname
+    while True:
+      dir_owner_rules = self._paths_to_owners.get(dirname)
+      if dir_owner_rules:
+        for owned_path, path_owners in dir_owner_rules.iteritems():
+          if self._fnmatch(objname, owned_path):
+            obj_owners |= path_owners
+      up_dirname = self.os_path.dirname(dirname)
+      if up_dirname == dirname:
+        break
+      dirname = up_dirname
+
     return obj_owners
 
   def _read_owners(self, path):
@@ -268,7 +311,7 @@ class Database(object):
       line = line.strip()
       if line.startswith('#'):
         if is_toplevel:
-          m = re.match('#\s*OWNERS_STATUS\s+=\s+(.+)$', line)
+          m = re.match(r'#\s*OWNERS_STATUS\s+=\s+(.+)$', line)
           if m:
             self._status_file = m.group(1).strip()
             continue
@@ -293,7 +336,8 @@ class Database(object):
 
       previous_line_was_blank = False
       if line == 'set noparent':
-        self._stop_looking.add(dirpath)
+        self._stop_looking.setdefault(
+          self._get_root_affected_dir(dirpath), set()).add(dirpath)
         continue
 
       m = re.match('per-file (.+)=(.+)', line)
@@ -364,7 +408,8 @@ class Database(object):
 
   def _add_entry(self, owned_paths, directive, owners_path, lineno, comment):
     if directive == 'set noparent':
-      self._stop_looking.add(owned_paths)
+      self._stop_looking.setdefault(
+        self._get_root_affected_dir(owned_paths), set()).add(owned_paths)
     elif directive.startswith('file:'):
       include_file = self._resolve_include(directive[5:], owners_path, lineno)
       if not include_file:
@@ -374,13 +419,17 @@ class Database(object):
       included_owners = self._read_just_the_owners(include_file)
       for owner in included_owners:
         self._owners_to_paths.setdefault(owner, set()).add(owned_paths)
-        self._paths_to_owners.setdefault(owned_paths, set()).add(owner)
+        self._paths_to_owners.setdefault(
+          self._get_root_affected_dir(owned_paths), {}).setdefault(
+            owned_paths, set()).add(owner)
     elif self.email_regexp.match(directive) or directive == EVERYONE:
       if comment:
         self.comments.setdefault(directive, {})
         self.comments[directive][owned_paths] = comment
       self._owners_to_paths.setdefault(directive, set()).add(owned_paths)
-      self._paths_to_owners.setdefault(owned_paths, set()).add(directive)
+      self._paths_to_owners.setdefault(
+        self._get_root_affected_dir(owned_paths), {}).setdefault(
+          owned_paths, set()).add(directive)
     else:
       raise SyntaxErrorInOwnersFile(owners_path, lineno,
           ('"%s" is not a "set noparent", file include, "*", '
@@ -463,29 +512,60 @@ class Database(object):
           all_possible_owners[o] = new_dirs
     return suggested_owners
 
-  def all_possible_owners(self, dirs, author):
+  def _all_possible_owners_for_dir_or_file(self, dir_or_file, author,
+                                           cache):
+    """Returns a dict of {potential owner: (dir_or_file, distance)} mappings.
+    """
+    assert not dir_or_file.startswith("/")
+    res = cache.get(dir_or_file)
+    if res is None:
+      res = {}
+      dirname = dir_or_file
+      for owner in self._owners_for(dirname):
+        if author and owner == author:
+          continue
+        res.setdefault(owner, [])
+        res[owner] = (dir_or_file, 1)
+      if not self._should_stop_looking(dirname):
+        dirname = self.os_path.dirname(dirname)
+
+        parent_res = self._all_possible_owners_for_dir_or_file(dirname,
+                                                               author, cache)
+
+        # Merge the parent information with our information, adjusting
+        # distances as necessary, and replacing the parent directory
+        # names with our names.
+        for owner, par_dir_and_distances in parent_res.iteritems():
+          if owner in res:
+            # If the same person is in multiple OWNERS files above a given
+            # directory, only count the closest one.
+            continue
+          parent_distance = par_dir_and_distances[1]
+          res[owner] = (dir_or_file, parent_distance + 1)
+
+      cache[dir_or_file] = res
+
+    return res
+
+  def all_possible_owners(self, dirs_and_files, author):
     """Returns a dict of {potential owner: (dir, distance)} mappings.
 
     A distance of 1 is the lowest/closest possible distance (which makes the
     subsequent math easier).
     """
+
+    all_possible_owners_for_dir_or_file_cache = {}
     all_possible_owners = {}
-    for current_dir in dirs:
-      dirname = current_dir
-      distance = 1
-      while True:
-        for owner in self._owners_for(dirname):
-          if author and owner == author:
-            continue
-          all_possible_owners.setdefault(owner, [])
-          # If the same person is in multiple OWNERS files above a given
-          # directory, only count the closest one.
-          if not any(current_dir == el[0] for el in all_possible_owners[owner]):
-            all_possible_owners[owner].append((current_dir, distance))
-        if self._should_stop_looking(dirname):
-          break
-        dirname = self.os_path.dirname(dirname)
-        distance += 1
+    for current_dir in dirs_and_files:
+      dir_owners = self._all_possible_owners_for_dir_or_file(
+        current_dir, author,
+        all_possible_owners_for_dir_or_file_cache)
+      for owner, dir_and_distance in dir_owners.iteritems():
+          if owner in all_possible_owners:
+            all_possible_owners[owner].append(dir_and_distance)
+          else:
+            all_possible_owners[owner] = [dir_and_distance]
+
     return all_possible_owners
 
   def _fnmatch(self, filename, pattern):

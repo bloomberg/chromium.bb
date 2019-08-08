@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/link_loader.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -60,11 +61,6 @@ HTMLLinkElement::HTMLLinkElement(Document& document,
       sizes_(MakeGarbageCollected<DOMTokenList>(*this, html_names::kSizesAttr)),
       rel_list_(MakeGarbageCollected<RelList>(this)),
       created_by_parser_(flags.IsCreatedByParser()) {}
-
-HTMLLinkElement* HTMLLinkElement::Create(Document& document,
-                                         const CreateElementFlags flags) {
-  return MakeGarbageCollected<HTMLLinkElement>(document, flags);
-}
 
 HTMLLinkElement::~HTMLLinkElement() = default;
 
@@ -208,7 +204,7 @@ LinkResource* HTMLLinkElement::LinkResourceToProcess() {
         return nullptr;
       }
     } else if (rel_attribute_.IsManifest()) {
-      link_ = LinkManifest::Create(this);
+      link_ = MakeGarbageCollected<LinkManifest>(this);
     } else {
       auto* link = MakeGarbageCollected<LinkStyle>(this);
       if (FastHasAttribute(kDisabledAttr)) {

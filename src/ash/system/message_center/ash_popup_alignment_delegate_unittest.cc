@@ -8,6 +8,9 @@
 #include <utility>
 #include <vector>
 
+#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_util.h"
+#include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -19,9 +22,6 @@
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_util.h"
-#include "ui/keyboard/public/keyboard_switches.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 
 namespace ash {

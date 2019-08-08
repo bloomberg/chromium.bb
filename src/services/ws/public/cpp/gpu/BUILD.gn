@@ -42,6 +42,7 @@ source_set("gpu") {
     "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp",
     "//services/ws/public/mojom",
+    "//ui/base:features",
     "//ui/gl",
   ]
 

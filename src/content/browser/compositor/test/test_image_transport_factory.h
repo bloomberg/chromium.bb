@@ -18,6 +18,7 @@
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
 #include "content/browser/compositor/image_transport_factory.h"
+#include "services/viz/privileged/interfaces/compositing/vsync_parameter_observer.mojom.h"
 #include "ui/compositor/compositor.h"
 
 namespace viz {
@@ -79,6 +80,9 @@ class TestImageTransportFactory : public ui::ContextFactory,
   void IssueExternalBeginFrame(ui::Compositor* compositor,
                                const viz::BeginFrameArgs& args) override {}
   void SetOutputIsSecure(ui::Compositor* compositor, bool secure) override {}
+  void AddVSyncParameterObserver(
+      ui::Compositor* compositor,
+      viz::mojom::VSyncParameterObserverPtr observer) override {}
   viz::FrameSinkManagerImpl* GetFrameSinkManager() override;
 
   // ImageTransportFactory implementation.

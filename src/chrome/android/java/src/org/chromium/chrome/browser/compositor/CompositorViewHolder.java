@@ -133,7 +133,9 @@ public class CompositorViewHolder extends FrameLayout
 
     private boolean mIsInVr;
 
-    protected ContentCaptureConsumer mContentCaptureConsumer;
+    // Indicates if ContentCaptureConsumer should be created, we only try to create it once.
+    private boolean mShouldCreateContentCaptureConsumer = true;
+    private ContentCaptureConsumer mContentCaptureConsumer;
 
     /**
      * This view is created on demand to display debugging information.
@@ -453,7 +455,7 @@ public class CompositorViewHolder extends FrameLayout
             mInsetObserverView = null;
         }
         if (mContentCaptureConsumer != null) {
-            mContentCaptureConsumer.destroy();
+            mContentCaptureConsumer.onWebContentsChanged(null);
             mContentCaptureConsumer = null;
         }
     }
@@ -1079,9 +1081,22 @@ public class CompositorViewHolder extends FrameLayout
 
         if (mTabVisible != null) initializeTab(mTabVisible);
 
+        if (mShouldCreateContentCaptureConsumer) {
+            mContentCaptureConsumer = createContentCaptureConsumer();
+            mShouldCreateContentCaptureConsumer = false;
+        }
         if (mContentCaptureConsumer != null) {
             mContentCaptureConsumer.onWebContentsChanged(getWebContents());
         }
+    }
+
+    /**
+     * This method is used by subclass to provide ContentCaptureConsumer.
+     *
+     * @return the ContentCaptureConsumer or null if it is not available.
+     */
+    protected ContentCaptureConsumer createContentCaptureConsumer() {
+        return null;
     }
 
     /**

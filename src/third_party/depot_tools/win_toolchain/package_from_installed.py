@@ -30,6 +30,8 @@ useful as the resulting zip can't be redistributed, and most will presumably
 have a Pro license anyway).
 """
 
+from __future__ import print_function
+
 import collections
 import glob
 import json
@@ -409,14 +411,14 @@ def AddEnvSetup(files):
                 'win_sdk\\bin\\SetEnv.arm64.json'))
   vs_version_file = os.path.join(tempdir, 'VS_VERSION')
   with open(vs_version_file, 'wb') as version:
-    print >>version, VS_VERSION
+    print(VS_VERSION, file=version)
   files.append((vs_version_file, 'VS_VERSION'))
 
 
 def RenameToSha1(output):
   """Determine the hash in the same way that the unzipper does to rename the
   # .zip file."""
-  print 'Extracting to determine hash...'
+  print('Extracting to determine hash...')
   tempdir = tempfile.mkdtemp()
   old_dir = os.getcwd()
   os.chdir(tempdir)
@@ -424,13 +426,13 @@ def RenameToSha1(output):
   with zipfile.ZipFile(
       os.path.join(old_dir, output), 'r', zipfile.ZIP_DEFLATED, True) as zf:
     zf.extractall(rel_dir)
-  print 'Hashing...'
+  print('Hashing...')
   sha1 = get_toolchain_if_necessary.CalculateHash(rel_dir, None)
   os.chdir(old_dir)
   shutil.rmtree(tempdir)
   final_name = sha1 + '.zip'
   os.rename(output, final_name)
-  print 'Renamed %s to %s.' % (output, final_name)
+  print('Renamed %s to %s.' % (output, final_name))
 
 
 def main():
@@ -454,7 +456,7 @@ def main():
     files = BuildRepackageFileList(options.repackage_dir)
   else:
     if len(args) != 1 or args[0] not in ('2015', '2017'):
-      print 'Must specify 2015 or 2017'
+      print('Must specify 2015 or 2017')
       parser.print_help();
       return 1
 
@@ -462,7 +464,7 @@ def main():
       if (not os.path.exists(os.path.join(options.override_dir, 'bin')) or
           not os.path.exists(os.path.join(options.override_dir, 'include')) or
           not os.path.exists(os.path.join(options.override_dir, 'lib'))):
-        print 'Invalid override directory - must contain bin/include/lib dirs'
+        print('Invalid override directory - must contain bin/include/lib dirs')
         return 1
 
     global VS_VERSION
@@ -478,14 +480,14 @@ def main():
     else:
       VC_TOOLS = 'VC'
 
-    print 'Building file list for VS %s Windows %s...' % (VS_VERSION, WIN_VERSION)
+    print('Building file list for VS %s Windows %s...' % (VS_VERSION, WIN_VERSION))
     files = BuildFileList(options.override_dir)
 
     AddEnvSetup(files)
 
   if False:
     for f in files:
-      print f[0], '->', f[1]
+      print(f[0], '->', f[1])
     return 0
 
   output = 'out.zip'

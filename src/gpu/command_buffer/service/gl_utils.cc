@@ -43,9 +43,10 @@ bool IsValidPVRTCSize(GLint level, GLsizei size) {
   return GLES2Util::IsPOT(size);
 }
 
-bool IsValidS3TCSizeForWebGL(GLint level, GLsizei size) {
-  // WebGL only allows multiple-of-4 sizes, except for levels > 0 where it also
-  // allows 1 or 2. See WEBGL_compressed_texture_s3tc.
+bool IsValidS3TCSizeForWebGLAndANGLE(GLint level, GLsizei size) {
+  // WebGL and ANGLE only allow multiple-of-4 sizes, except for levels > 0 where
+  // it also allows 1 or 2. See WEBGL_compressed_texture_s3tc and
+  // ANGLE_compressed_texture_dxt*
   return (level && size == 1) || (level && size == 2) ||
          !(size % kS3TCBlockWidth);
 }
@@ -532,7 +533,6 @@ bool ValidateCompressedTexSubDimensions(GLenum target,
                                         GLsizei depth,
                                         GLenum format,
                                         Texture* texture,
-                                        bool restrict_for_webgl,
                                         const char** error_message) {
   if (xoffset < 0 || yoffset < 0 || zoffset < 0) {
     *error_message = "x/y/z offset < 0";
@@ -655,8 +655,7 @@ bool ValidateCompressedTexSubDimensions(GLenum target,
         return false;
       }
       return ValidateCompressedTexDimensions(target, level, width, height, 1,
-                                             format, restrict_for_webgl,
-                                             error_message);
+                                             format, error_message);
     }
 
     // ES3 formats
@@ -696,7 +695,6 @@ bool ValidateCompressedTexDimensions(GLenum target,
                                      GLsizei height,
                                      GLsizei depth,
                                      GLenum format,
-                                     bool restrict_for_webgl,
                                      const char** error_message) {
   switch (format) {
     case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
@@ -708,8 +706,8 @@ bool ValidateCompressedTexDimensions(GLenum target,
     case GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT:
     case GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT:
       DCHECK_EQ(1, depth);  // 2D formats.
-      if (restrict_for_webgl && (!IsValidS3TCSizeForWebGL(level, width) ||
-                                 !IsValidS3TCSizeForWebGL(level, height))) {
+      if (!IsValidS3TCSizeForWebGLAndANGLE(level, width) ||
+          !IsValidS3TCSizeForWebGLAndANGLE(level, height)) {
         *error_message = "width or height invalid for level";
         return false;
       }
@@ -903,23 +901,6 @@ CopyTextureMethod GetCopyTextureCHROMIUMMethod(const FeatureInfo* feature_info,
       break;
   }
 
-  // CopyTex{Sub}Image2D() from GL_RGB10_A2 has issues on some Android chipsets.
-  if (source_internal_format == GL_RGB10_A2) {
-    if (feature_info->workarounds().disable_copy_tex_image_2d_rgb10_a2_tegra) {
-      if (dest_internal_format == GL_RGBA4)
-        return CopyTextureMethod::DIRECT_DRAW;
-      return CopyTextureMethod::DRAW_AND_COPY;
-    }
-    if (feature_info->workarounds().disable_copy_tex_image_2d_rgb10_a2_adreno &&
-        dest_internal_format != GL_RGB10_A2) {
-      return CopyTextureMethod::DRAW_AND_COPY;
-    }
-    if (feature_info->workarounds().disable_copy_tex_image_2d_rgb10_a2_mali &&
-        (dest_internal_format == GL_RGB || dest_internal_format == GL_RGBA)) {
-      return CopyTextureMethod::DRAW_AND_COPY;
-    }
-  }
-
   // CopyTexImage* should not allow internalformat of GL_BGRA_EXT and
   // GL_BGRA8_EXT. https://crbug.com/663086.
   bool copy_tex_image_format_valid =
@@ -930,6 +911,15 @@ CopyTextureMethod GetCopyTextureCHROMIUMMethod(const FeatureInfo* feature_info,
       ValidateCopyTexFormatHelper(feature_info, dest_internal_format,
                                   source_internal_format, source_type,
                                   &output_error_msg);
+
+  // The ES3 spec is vague about whether or not glCopyTexImage2D from a
+  // GL_RGB10_A2 attachment to an unsized internal format is valid. Most drivers
+  // interpreted the explicit call out as not valid (and dEQP actually checks
+  // this), so avoid DIRECT_COPY in that case.
+  if (feature_info->gl_version_info().is_es &&
+      source_internal_format == GL_RGB10_A2 &&
+      dest_internal_format != source_internal_format)
+    copy_tex_image_format_valid = false;
 
   // TODO(qiankun.miao@intel.com): for WebGL 2.0 or OpenGL ES 3.0, both
   // DIRECT_DRAW path for dest_level > 0 and DIRECT_COPY path for source_level >

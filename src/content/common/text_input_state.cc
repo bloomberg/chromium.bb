@@ -9,6 +9,7 @@ namespace content {
 TextInputState::TextInputState()
     : type(ui::TEXT_INPUT_TYPE_NONE),
       mode(ui::TEXT_INPUT_MODE_DEFAULT),
+      action(ui::TextInputAction::kDefault),
       flags(0),
       selection_start(0),
       selection_end(0),

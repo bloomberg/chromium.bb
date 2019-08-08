@@ -7,37 +7,16 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "base/pickle.h"
 #include "build/build_config.h"
-#include "third_party/blink/public/platform/web_image.h"
-#include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
-
-using blink::WebCursorInfo;
-
-constexpr int kMaxSize = 1024;
 
 namespace content {
-
-namespace {
-
-// Checks for a reasonable value of a |CursorInfo::image_scale_factor|.
-bool IsReasonableScale(float scale) {
-  return scale >= 0.01f && scale <= 100.f;
-}
-
-}  // namespace
 
 WebCursor::~WebCursor() {
   CleanupPlatformData();
 }
 
-WebCursor::WebCursor(const CursorInfo& info) : info_(info) {
-  DCHECK(IsReasonableScale(info.image_scale_factor)) << info.image_scale_factor;
-  DCHECK_LE(info.custom_image.width(), kMaxSize);
-  DCHECK_LE(info.custom_image.height(), kMaxSize);
-  DCHECK_LE(info.custom_image.width() / info.image_scale_factor, kMaxSize);
-  DCHECK_LE(info.custom_image.height() / info.image_scale_factor, kMaxSize);
-  ClampHotspot();
+WebCursor::WebCursor(const CursorInfo& info) {
+  SetInfo(info);
 }
 
 WebCursor::WebCursor(const WebCursor& other) {
@@ -50,46 +29,28 @@ WebCursor& WebCursor::operator=(const WebCursor& other) {
   return *this;
 }
 
-bool WebCursor::Deserialize(const base::Pickle* m, base::PickleIterator* iter) {
-  // Leave |this| unmodified unless deserialization is successful.
-  int type = 0, hotspot_x = 0, hotspot_y = 0;
-  float scale = 1.f;
-  SkBitmap bitmap;
-  if (!iter->ReadInt(&type))
+bool WebCursor::SetInfo(const CursorInfo& info) {
+  static constexpr int kMaxSize = 1024;
+  if (info.image_scale_factor < 0.01f || info.image_scale_factor > 100.f ||
+      info.custom_image.width() > kMaxSize ||
+      info.custom_image.height() > kMaxSize ||
+      info.custom_image.width() / info.image_scale_factor > kMaxSize ||
+      info.custom_image.height() / info.image_scale_factor > kMaxSize) {
     return false;
-
-  if (type == WebCursorInfo::kTypeCustom) {
-    if (!iter->ReadInt(&hotspot_x) || !iter->ReadInt(&hotspot_y) ||
-        !iter->ReadFloat(&scale) || !IsReasonableScale(scale)) {
-      return false;
-    }
-
-    if (!IPC::ParamTraits<SkBitmap>::Read(m, iter, &bitmap))
-      return false;
-
-    if (bitmap.width() > kMaxSize || bitmap.height() > kMaxSize ||
-        bitmap.width() / scale > kMaxSize ||
-        bitmap.height() / scale > kMaxSize) {
-      return false;
-    }
   }
 
-  info_.type = static_cast<WebCursorInfo::Type>(type);
-  info_.custom_image = bitmap;
-  info_.hotspot = gfx::Point(hotspot_x, hotspot_y);
-  info_.image_scale_factor = scale;
-  ClampHotspot();
+  CleanupPlatformData();
+  info_ = info;
+
+  // Clamp the hotspot to the custom image's dimensions.
+  if (info_.type == blink::WebCursorInfo::kTypeCustom) {
+    info_.hotspot.set_x(std::max(
+        0, std::min(info_.custom_image.width() - 1, info_.hotspot.x())));
+    info_.hotspot.set_y(std::max(
+        0, std::min(info_.custom_image.height() - 1, info_.hotspot.y())));
+  }
+
   return true;
-}
-
-void WebCursor::Serialize(base::Pickle* pickle) const {
-  pickle->WriteInt(info_.type);
-  if (info_.type == WebCursorInfo::kTypeCustom) {
-    pickle->WriteInt(info_.hotspot.x());
-    pickle->WriteInt(info_.hotspot.y());
-    pickle->WriteFloat(info_.image_scale_factor);
-    IPC::ParamTraits<SkBitmap>::Write(pickle, info_.custom_image);
-  }
 }
 
 bool WebCursor::operator==(const WebCursor& other) const {
@@ -105,19 +66,8 @@ bool WebCursor::operator!=(const WebCursor& other) const {
 }
 
 void WebCursor::CopyAllData(const WebCursor& other) {
-  info_ = other.info_;
+  SetInfo(other.info_);
   CopyPlatformData(other);
-}
-
-void WebCursor::ClampHotspot() {
-  if (info_.type != WebCursorInfo::kTypeCustom)
-    return;
-
-  // Clamp the hotspot to the custom image's dimensions.
-  info_.hotspot.set_x(
-      std::max(0, std::min(info_.custom_image.width() - 1, info_.hotspot.x())));
-  info_.hotspot.set_y(std::max(
-      0, std::min(info_.custom_image.height() - 1, info_.hotspot.y())));
 }
 
 }  // namespace content

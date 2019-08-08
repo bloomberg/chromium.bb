@@ -20,9 +20,17 @@
 
 namespace blink {
 
-// The dispatcher receives JS paint callback from the compositor, and dispatch
-// the callback to the painter (on the paint worklet thread) that is associated
-// with the given paint image.
+// PaintWorkletPaintDispatcher is responsible for mediating between the raster
+// threads and the PaintWorklet thread(s). It receives requests from raster
+// threads to paint a paint class instance represented by a PaintWorkletInput,
+// dispatches the input to the appropriate PaintWorklet, synchronously receives
+// the result, and passes it back to the raster thread.
+//
+// Each PaintWorklet (there is one per frame, either same-origin or
+// same-process-cross-origin) has a backing thread, which may be shared between
+// worklets, and a scheduler, which is not shared. All PaintWorklets for a
+// single renderer process share one PaintWorkletPaintDispatcher on the
+// compositor side.
 class PLATFORM_EXPORT PaintWorkletPaintDispatcher
     : public ThreadSafeRefCounted<PaintWorkletPaintDispatcher> {
  public:
@@ -32,28 +40,39 @@ class PLATFORM_EXPORT PaintWorkletPaintDispatcher
 
   PaintWorkletPaintDispatcher() = default;
 
-  // Interface for use by the PaintWorklet thread(s) to request calls.
-  // (To the given Painter on the given TaskRunner.)
-  void RegisterPaintWorkletPainter(
-      PaintWorkletPainter*,
-      scoped_refptr<base::SingleThreadTaskRunner> mutator_runner);
-
-  void UnregisterPaintWorkletPainter(PaintWorkletPainter*);
-
+  // Dispatches a single paint class instance - represented by a
+  // PaintWorkletInput - to the appropriate PaintWorklet thread, and blocks
+  // until it receives the result.
   sk_sp<cc::PaintRecord> Paint(cc::PaintWorkletInput*);
 
- private:
-  friend class PaintWorkletProxyClientTest;
-  // We can have more than one task-runner because using a worklet inside a
-  // frame with a different origin causes a new global scope => new thread.
-  using PaintWorkletPainterToTaskRunnerMap =
-      HashMap<CrossThreadPersistent<PaintWorkletPainter>,
-              scoped_refptr<base::SingleThreadTaskRunner>>;
+  // Register and unregister a PaintWorklet (represented in this context by a
+  // PaintWorkletPainter). A given PaintWorklet is registered once all its
+  // global scopes have been created, and is usually only unregistered when the
+  // associated PaintWorklet thread is being torn down.
+  //
+  // The passed in PaintWorkletPainter* should only be used on the given
+  // base::SingleThreadTaskRunner.
+  using PaintWorkletId = int;
+  void RegisterPaintWorkletPainter(PaintWorkletPainter*,
+                                   scoped_refptr<base::SingleThreadTaskRunner>);
+  void UnregisterPaintWorkletPainter(PaintWorkletId);
 
+  using PaintWorkletPainterToTaskRunnerMap =
+      HashMap<PaintWorkletId,
+              std::pair<CrossThreadPersistent<PaintWorkletPainter>,
+                        scoped_refptr<base::SingleThreadTaskRunner>>>;
+  const PaintWorkletPainterToTaskRunnerMap& PainterMapForTesting() const {
+    return painter_map_;
+  }
+
+ private:
+  // This class handles paint class instances for multiple PaintWorklets. These
+  // are disambiguated via the PaintWorklets unique id; this map exists to do
+  // that disambiguation.
   PaintWorkletPainterToTaskRunnerMap painter_map_;
 
   // The (Un)registerPaintWorkletPainter comes from the worklet thread, and the
-  // Paint call is initiated from the raster threads, this mutex ensures that
+  // Paint call is initiated from the raster threads - this mutex ensures that
   // accessing / updating the |painter_map_| is thread safe.
   Mutex painter_map_mutex_;
 

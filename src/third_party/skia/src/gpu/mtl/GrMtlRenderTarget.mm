@@ -5,10 +5,14 @@
  * found in the LICENSE file.
  */
 
-#include "GrMtlRenderTarget.h"
+#include "src/gpu/mtl/GrMtlRenderTarget.h"
 
-#include "GrMtlGpu.h"
-#include "GrMtlUtil.h"
+#include "src/gpu/mtl/GrMtlGpu.h"
+#include "src/gpu/mtl/GrMtlUtil.h"
+
+#if !__has_feature(objc_arc)
+#error This file must be compiled with Arc. Use -fobjc-arc flag
+#endif
 
 // Called for wrapped non-texture render targets.
 GrMtlRenderTarget::GrMtlRenderTarget(GrMtlGpu* gpu,

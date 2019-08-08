@@ -5,7 +5,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/heap/heap_test_utilities.h"
 #include "third_party/blink/renderer/platform/heap/thread_state_scopes.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
@@ -18,7 +18,6 @@ class ThreadStateSchedulingTest : public testing::Test {
   }
 
   void TearDown() override {
-    features_backup_.Restore();
     PreciselyCollectGarbage();
     EXPECT_EQ(ThreadState::kNoGCScheduled, state_->GetGCState());
     EXPECT_FALSE(state_->IsMarkingInProgress());
@@ -26,7 +25,6 @@ class ThreadStateSchedulingTest : public testing::Test {
   }
 
   void StartIncrementalMarking() {
-    RuntimeEnabledFeatures::SetHeapIncrementalMarkingEnabled(true);
     EXPECT_EQ(ThreadState::kNoGCScheduled, state_->GetGCState());
     state_->ScheduleIncrementalGC(BlinkGC::GCReason::kForcedGCForTesting);
     state_->RunScheduledGC(BlinkGC::kNoHeapPointersOnStack);
@@ -56,7 +54,6 @@ class ThreadStateSchedulingTest : public testing::Test {
  private:
   ThreadState* state_;
   int initial_gc_age_;
-  RuntimeEnabledFeatures::Backup features_backup_;
 };
 
 TEST_F(ThreadStateSchedulingTest, ScheduleIncrementalV8FollowupGCAgain) {
@@ -104,6 +101,7 @@ TEST_F(ThreadStateSchedulingTest,
 
 TEST_F(ThreadStateSchedulingTest, SchedulePreciseGCWhileIncrementalMarking) {
   ThreadStateSchedulingTest* test = this;
+  ScopedHeapIncrementalMarkingForTest scoped_feature(true);
   test->StartIncrementalMarking();
   test->state()->SchedulePreciseGC();
   // Scheduling a precise GC should cancel incremental marking tasks.
@@ -124,6 +122,7 @@ TEST_F(ThreadStateSchedulingTest, SchedulePreciseGCWhileIncrementalMarking) {
 TEST_F(ThreadStateSchedulingTest,
        ScheduleIncrementalV8FollowupGCWhileIncrementalMarking) {
   ThreadStateSchedulingTest* test = this;
+  ScopedHeapIncrementalMarkingForTest scoped_feature(true);
   test->StartIncrementalMarking();
   test->state()->ScheduleIncrementalGC(
       BlinkGC::GCReason::kIncrementalV8FollowupGC);

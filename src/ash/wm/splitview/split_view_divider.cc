@@ -7,12 +7,12 @@
 #include <memory>
 
 #include "ash/display/screen_orientation_controller.h"
-#include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
-#include "ash/wm/overview/rounded_rect_view.h"
+#include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/splitview/split_view_divider_handler_view.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/window_util.h"
 #include "base/sequenced_task_runner.h"
@@ -21,10 +21,6 @@
 #include "ui/aura/window_targeter.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/gfx/animation/animation_delegate.h"
-#include "ui/gfx/animation/slide_animation.h"
-#include "ui/gfx/animation/tween.h"
-#include "ui/gfx/canvas.h"
 #include "ui/views/view.h"
 #include "ui/views/view_targeter_delegate.h"
 #include "ui/views/widget/widget.h"
@@ -38,20 +34,13 @@ namespace ash {
 
 namespace {
 
-// The length of short side of the black bar of the divider in dp.
-constexpr int kDividerShortSideLength = 8;
-constexpr int kDividerEnlargedShortSideLength = 16;
-
-// The length of the white bar of the divider in dp.
-constexpr int kWhiteBarShortSideLength = 2;
-constexpr int kWhiteBarLongSideLength = 16;
-constexpr int kWhiteBarRadius = 4;
-constexpr int kWhiteBarCornerRadius = 1;
-
-constexpr SkColor kDividerBackgroundColor = SK_ColorBLACK;
-constexpr SkColor kWhiteBarBackgroundColor = SK_ColorWHITE;
-constexpr int kDividerBoundsChangeDurationMs = 250;
-constexpr int kWhiteBarBoundsChangeDurationMs = 250;
+constexpr base::TimeDelta kDividerSelectionStatusChangeDuration =
+    base::TimeDelta::FromMilliseconds(
+        kSplitviewDividerSelectionStatusChangeDurationMs);
+constexpr base::TimeDelta kDividerSpawnDuration =
+    base::TimeDelta::FromMilliseconds(kSplitviewDividerSpawnDurationMs);
+constexpr base::TimeDelta kDividerSpawnDelay =
+    base::TimeDelta::FromMilliseconds(kSplitviewDividerSpawnDelayMs);
 
 // The distance to the divider edge in which a touch gesture will be considered
 // as a valid event on the divider.
@@ -84,56 +73,62 @@ class AlwaysOnTopWindowTargeter : public aura::WindowTargeter {
   DISALLOW_COPY_AND_ASSIGN(AlwaysOnTopWindowTargeter);
 };
 
-// The white handler bar in the middle of the divider.
-class DividerHandlerView : public RoundedRectView {
- public:
-  DividerHandlerView(int corner_radius, SkColor background_color)
-      : RoundedRectView(corner_radius, background_color) {}
-  ~DividerHandlerView() override = default;
-
-  // views::View:
-  void OnPaint(gfx::Canvas* canvas) override {
-    views::View::OnPaint(canvas);
-    // It's needed to avoid artifacts when tapping on the divider quickly.
-    canvas->DrawColor(SK_ColorTRANSPARENT, SkBlendMode::kSrc);
-    RoundedRectView::OnPaint(canvas);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DividerHandlerView);
-};
-
 // The divider view class. Passes the mouse/gesture events to the controller.
-class DividerView : public views::View,
-                    public views::ViewTargeterDelegate,
-                    public gfx::AnimationDelegate {
+// Has two child views, one for the divider and one for its white handler. The
+// bounds and transforms of these two child views can be affected by the
+// spawning animation and by dragging, but regardless, the controller receives
+// mouse/gesture events in the bounds of the |DividerView| object itself.
+class DividerView : public views::View, public views::ViewTargeterDelegate {
  public:
   explicit DividerView(SplitViewDivider* divider)
-      : controller_(Shell::Get()->split_view_controller()),
-        divider_(divider),
-        white_bar_animation_(this) {
+      : controller_(Shell::Get()->split_view_controller()), divider_(divider) {
     divider_view_ = new views::View();
     divider_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
-    divider_view_->layer()->SetColor(kDividerBackgroundColor);
+    divider_view_->layer()->SetColor(kSplitviewDividerColor);
 
-    divider_handler_view_ =
-        new DividerHandlerView(kWhiteBarCornerRadius, kWhiteBarBackgroundColor);
-    divider_handler_view_->SetPaintToLayer();
+    divider_handler_view_ = new SplitViewDividerHandlerView();
 
     AddChildView(divider_view_);
     AddChildView(divider_handler_view_);
 
     SetEventTargeter(
         std::unique_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
-    white_bar_animation_.SetSlideDuration(kWhiteBarBoundsChangeDurationMs);
-    white_bar_animation_.SetTweenType(gfx::Tween::EASE_IN);
   }
-  ~DividerView() override { white_bar_animation_.Stop(); }
+  ~DividerView() override = default;
+
+  void DoSpawningAnimation(int spawn_position) {
+    const gfx::Rect bounds = GetBoundsInScreen();
+    int divider_signed_offset;
+    // To animate the divider scaling up from nothing, animate its bounds rather
+    // than its transform, mostly because a transform that scales by zero would
+    // be singular. For that bounds animation, express |spawn_position| in local
+    // coordinates by subtracting a coordinate of the origin. Compute
+    // |divider_signed_offset| as described in the comment for
+    // |SplitViewDividerHandlerView::DoSpawningAnimation|.
+    if (IsCurrentScreenOrientationLandscape()) {
+      divider_view_->SetBounds(spawn_position - bounds.x(), 0, 0,
+                               bounds.height());
+      divider_signed_offset = spawn_position - bounds.CenterPoint().x();
+    } else {
+      divider_view_->SetBounds(0, spawn_position - bounds.y(), bounds.width(),
+                               0);
+      divider_signed_offset = spawn_position - bounds.CenterPoint().y();
+    }
+    ui::LayerAnimator* divider_animator = divider_view_->layer()->GetAnimator();
+    ui::ScopedLayerAnimationSettings settings(divider_animator);
+    settings.SetTransitionDuration(kDividerSpawnDuration);
+    settings.SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
+    settings.SetPreemptionStrategy(ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
+    divider_animator->SchedulePauseForProperties(
+        kDividerSpawnDelay, ui::LayerAnimationElement::BOUNDS);
+    divider_view_->SetBounds(0, 0, bounds.width(), bounds.height());
+    divider_handler_view_->DoSpawningAnimation(divider_signed_offset);
+  }
 
   // views::View:
   void Layout() override {
     divider_view_->SetBoundsRect(GetLocalBounds());
-    UpdateWhiteHandlerBounds();
+    divider_handler_view_->Refresh();
   }
 
   bool OnMousePressed(const ui::MouseEvent& event) override {
@@ -193,33 +188,18 @@ class DividerView : public views::View,
     return true;
   }
 
-  // gfx::AnimationDelegate:
-  void AnimationEnded(const gfx::Animation* animation) override {
-    UpdateWhiteHandlerBounds();
-  }
-
-  void AnimationProgressed(const gfx::Animation* animation) override {
-    UpdateWhiteHandlerBounds();
-  }
-
-  void AnimationCanceled(const gfx::Animation* animation) override {
-    UpdateWhiteHandlerBounds();
-  }
-
  private:
   void OnResizeStatusChanged() {
     // It's possible that when this function is called, split view mode has
     // been ended, and the divider widget is to be deleted soon. In this case
     // no need to update the divider layout and do the animation.
-    if (!controller_->IsSplitViewModeActive())
+    if (!controller_->InSplitViewMode())
       return;
 
-    // Do the white handler bar enlarge/shrink animation when starting/ending
-    // dragging.
-    if (controller_->is_resizing())
-      white_bar_animation_.Show();
-    else
-      white_bar_animation_.Hide();
+    // If |divider_view_|'s bounds are animating, it is for the divider spawning
+    // animation. Stop that before animating |divider_view_|'s transform.
+    ui::LayerAnimator* divider_animator = divider_view_->layer()->GetAnimator();
+    divider_animator->StopAnimatingProperty(ui::LayerAnimationElement::BOUNDS);
 
     // Do the divider enlarge/shrink animation when starting/ending dragging.
     divider_view_->SetBoundsRect(GetLocalBounds());
@@ -233,56 +213,20 @@ class DividerView : public views::View,
     transform.Scale(
         static_cast<float>(new_bounds.width()) / old_bounds.width(),
         static_cast<float>(new_bounds.height()) / old_bounds.height());
-    ui::ScopedLayerAnimationSettings settings(
-        divider_view_->layer()->GetAnimator());
-    settings.SetTransitionDuration(
-        base::TimeDelta::FromMilliseconds(kDividerBoundsChangeDurationMs));
+    ui::ScopedLayerAnimationSettings settings(divider_animator);
+    settings.SetTransitionDuration(kDividerSelectionStatusChangeDuration);
     settings.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
     settings.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
     divider_view_->SetTransform(transform);
-  }
 
-  // Returns the expected bounds of the white divider handler.
-  void UpdateWhiteHandlerBounds() {
-    // Calculate the width/height/radius for the rounded rectangle.
-    int width, height, radius;
-    const int expected_width_unselected = IsCurrentScreenOrientationLandscape()
-                                              ? kWhiteBarShortSideLength
-                                              : kWhiteBarLongSideLength;
-    const int expected_height_unselected = IsCurrentScreenOrientationLandscape()
-                                               ? kWhiteBarLongSideLength
-                                               : kWhiteBarShortSideLength;
-    if (white_bar_animation_.is_animating()) {
-      width = white_bar_animation_.CurrentValueBetween(
-          expected_width_unselected, kWhiteBarRadius * 2);
-      height = white_bar_animation_.CurrentValueBetween(
-          expected_height_unselected, kWhiteBarRadius * 2);
-      radius = white_bar_animation_.CurrentValueBetween(kWhiteBarCornerRadius,
-                                                        kWhiteBarRadius);
-    } else {
-      if (controller_->is_resizing()) {
-        width = kWhiteBarRadius * 2;
-        height = kWhiteBarRadius * 2;
-        radius = kWhiteBarRadius;
-      } else {
-        width = expected_width_unselected;
-        height = expected_height_unselected;
-        radius = kWhiteBarCornerRadius;
-      }
-    }
-
-    gfx::Rect white_bar_bounds(GetLocalBounds());
-    white_bar_bounds.ClampToCenteredSize(gfx::Size(width, height));
-    divider_handler_view_->SetCornerRadius(radius);
-    divider_handler_view_->SetBoundsRect(white_bar_bounds);
+    divider_handler_view_->Refresh();
   }
 
   views::View* divider_view_ = nullptr;
-  DividerHandlerView* divider_handler_view_ = nullptr;
+  SplitViewDividerHandlerView* divider_handler_view_ = nullptr;
   SplitViewController* controller_;
   SplitViewDivider* divider_;
-  gfx::SlideAnimation white_bar_animation_;
 
   DISALLOW_COPY_AND_ASSIGN(DividerView);
 };
@@ -317,15 +261,15 @@ gfx::Size SplitViewDivider::GetDividerSize(
     OrientationLockType screen_orientation,
     bool is_dragging) {
   if (IsLandscapeOrientation(screen_orientation)) {
-    return is_dragging
-               ? gfx::Size(kDividerEnlargedShortSideLength,
-                           work_area_bounds.height())
-               : gfx::Size(kDividerShortSideLength, work_area_bounds.height());
+    return is_dragging ? gfx::Size(kSplitviewDividerEnlargedShortSideLength,
+                                   work_area_bounds.height())
+                       : gfx::Size(kSplitviewDividerShortSideLength,
+                                   work_area_bounds.height());
   } else {
-    return is_dragging
-               ? gfx::Size(work_area_bounds.width(),
-                           kDividerEnlargedShortSideLength)
-               : gfx::Size(work_area_bounds.width(), kDividerShortSideLength);
+    return is_dragging ? gfx::Size(work_area_bounds.width(),
+                                   kSplitviewDividerEnlargedShortSideLength)
+                       : gfx::Size(work_area_bounds.width(),
+                                   kSplitviewDividerShortSideLength);
   }
 }
 
@@ -337,8 +281,9 @@ gfx::Rect SplitViewDivider::GetDividerBoundsInScreen(
     bool is_dragging) {
   const gfx::Size divider_size = GetDividerSize(
       work_area_bounds_in_screen, screen_orientation, is_dragging);
-  int dragging_diff =
-      (kDividerEnlargedShortSideLength - kDividerShortSideLength) / 2;
+  int dragging_diff = (kSplitviewDividerEnlargedShortSideLength -
+                       kSplitviewDividerShortSideLength) /
+                      2;
   switch (screen_orientation) {
     case OrientationLockType::kLandscapePrimary:
     case OrientationLockType::kLandscapeSecondary:
@@ -355,8 +300,8 @@ gfx::Rect SplitViewDivider::GetDividerBoundsInScreen(
       return is_dragging
                  ? gfx::Rect(work_area_bounds_in_screen.x(),
                              work_area_bounds_in_screen.y() + divider_position -
-                                 (kDividerEnlargedShortSideLength -
-                                  kDividerShortSideLength) /
+                                 (kSplitviewDividerEnlargedShortSideLength -
+                                  kSplitviewDividerShortSideLength) /
                                      2,
                              divider_size.width(), divider_size.height())
                  : gfx::Rect(work_area_bounds_in_screen.x(),
@@ -366,6 +311,11 @@ gfx::Rect SplitViewDivider::GetDividerBoundsInScreen(
       NOTREACHED();
       return gfx::Rect();
   }
+}
+
+void SplitViewDivider::DoSpawningAnimation(int spawning_position) {
+  static_cast<DividerView*>(divider_widget_->GetContentsView())
+      ->DoSpawningAnimation(spawning_position);
 }
 
 void SplitViewDivider::UpdateDividerBounds() {
@@ -494,6 +444,8 @@ void SplitViewDivider::CreateDividerWidget(aura::Window* root_window) {
   DividerView* divider_view = new DividerView(this);
   divider_widget_->set_focus_on_creation(false);
   divider_widget_->Init(params);
+  divider_widget_->SetVisibilityAnimationTransition(
+      views::Widget::ANIMATE_NONE);
   divider_widget_->SetContentsView(divider_view);
   divider_widget_->SetBounds(GetDividerBoundsInScreen(false /* is_dragging */));
   divider_widget_->Show();

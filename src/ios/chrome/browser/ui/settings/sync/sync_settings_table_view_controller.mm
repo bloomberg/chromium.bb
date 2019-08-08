@@ -212,6 +212,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
               allowSwitchSyncAccount:(BOOL)allowSwitchSyncAccount {
+  DCHECK(!unified_consent::IsUnifiedConsentFeatureEnabled());
   DCHECK(browserState);
   UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
                                ? UITableViewStylePlain
@@ -304,7 +305,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     auto* identity_manager =
         IdentityManagerFactory::GetForBrowserState(_browserState);
 
-    for (const AccountInfo& account :
+    for (const CoreAccountInfo& account :
          identity_manager->GetAccountsWithRefreshTokens()) {
       ChromeIdentity* identity = ios::GetChromeBrowserProvider()
                                      ->GetChromeIdentityService()
@@ -912,7 +913,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (BOOL)shouldDisplaySyncError {
   SyncSetupService::SyncServiceState state =
       _syncSetupService->GetSyncServiceState();
-  DCHECK(!unified_consent::IsUnifiedConsentFeatureEnabled());
   // Without unity, kSyncSettingsNotConfirmed should not be shown.
   return state != SyncSetupService::kNoSyncServiceError &&
          state != SyncSetupService::kSyncSettingsNotConfirmed;

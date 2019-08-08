@@ -358,7 +358,7 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
 
   std::unique_ptr<blink::MediaStreamAudioSource> CreateAudioSource(
       const blink::MediaStreamDevice& device,
-      const blink::WebPlatformMediaStreamSource::ConstraintsCallback&
+      blink::WebPlatformMediaStreamSource::ConstraintsRepeatingCallback
           source_ready) override {
     std::unique_ptr<blink::MediaStreamAudioSource> source;
     if (create_source_that_fails_) {
@@ -389,7 +389,7 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
       blink::scheduler::GetSingleThreadTaskRunnerForTesting()->PostTask(
           FROM_HERE,
           base::BindOnce(&UserMediaProcessorUnderTest::SignalSourceReady,
-                         source_ready, source.get()));
+                         std::move(source_ready), source.get()));
     }
 
     return source;
@@ -413,10 +413,9 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
 
  private:
   static void SignalSourceReady(
-      const blink::WebPlatformMediaStreamSource::ConstraintsCallback&
-          source_ready,
+      blink::WebPlatformMediaStreamSource::ConstraintsOnceCallback source_ready,
       blink::WebPlatformMediaStreamSource* source) {
-    source_ready.Run(source, blink::MEDIA_DEVICE_OK, "");
+    std::move(source_ready).Run(source, blink::MEDIA_DEVICE_OK, "");
   }
 
   PeerConnectionDependencyFactory* factory_;
@@ -917,7 +916,6 @@ TEST_F(UserMediaClientImplTest, DefaultConstraintsPropagate) {
   EXPECT_EQ(
       blink::AudioProcessingProperties().goog_experimental_echo_cancellation,
       properties.goog_experimental_echo_cancellation);
-  EXPECT_TRUE(properties.goog_typing_noise_detection);
   EXPECT_TRUE(properties.goog_noise_suppression);
   EXPECT_TRUE(properties.goog_experimental_noise_suppression);
   EXPECT_TRUE(properties.goog_highpass_filter);
@@ -977,7 +975,6 @@ TEST_F(UserMediaClientImplTest, DefaultTabCapturePropagate) {
   EXPECT_FALSE(properties.goog_audio_mirroring);
   EXPECT_FALSE(properties.goog_auto_gain_control);
   EXPECT_FALSE(properties.goog_experimental_echo_cancellation);
-  EXPECT_FALSE(properties.goog_typing_noise_detection);
   EXPECT_FALSE(properties.goog_noise_suppression);
   EXPECT_FALSE(properties.goog_experimental_noise_suppression);
   EXPECT_FALSE(properties.goog_highpass_filter);
@@ -1035,7 +1032,6 @@ TEST_F(UserMediaClientImplTest, DefaultDesktopCapturePropagate) {
   EXPECT_FALSE(properties.goog_audio_mirroring);
   EXPECT_FALSE(properties.goog_auto_gain_control);
   EXPECT_FALSE(properties.goog_experimental_echo_cancellation);
-  EXPECT_FALSE(properties.goog_typing_noise_detection);
   EXPECT_FALSE(properties.goog_noise_suppression);
   EXPECT_FALSE(properties.goog_experimental_noise_suppression);
   EXPECT_FALSE(properties.goog_highpass_filter);
@@ -1071,7 +1067,6 @@ TEST_F(UserMediaClientImplTest, NonDefaultAudioConstraintsPropagate) {
   factory.basic().render_to_associated_sink.SetExact(true);
   factory.basic().echo_cancellation.SetExact(false);
   factory.basic().goog_audio_mirroring.SetExact(true);
-  factory.basic().goog_typing_noise_detection.SetExact(true);
   blink::WebMediaConstraints audio_constraints =
       factory.CreateWebMediaConstraints();
   // Request contains only audio
@@ -1099,7 +1094,6 @@ TEST_F(UserMediaClientImplTest, NonDefaultAudioConstraintsPropagate) {
   EXPECT_TRUE(properties.goog_audio_mirroring);
   EXPECT_FALSE(properties.goog_auto_gain_control);
   EXPECT_FALSE(properties.goog_experimental_echo_cancellation);
-  EXPECT_TRUE(properties.goog_typing_noise_detection);
   EXPECT_FALSE(properties.goog_noise_suppression);
   EXPECT_FALSE(properties.goog_experimental_noise_suppression);
   EXPECT_FALSE(properties.goog_highpass_filter);

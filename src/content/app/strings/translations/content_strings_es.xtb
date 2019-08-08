@@ -11,7 +11,6 @@
 <translation id="1206693055195146388">control deslizante</translation>
 <translation id="1211441953136645838">nota final</translation>
 <translation id="1281252709823657822">cuadro de diálogo</translation>
-<translation id="1289247557029249093">Salir del modo imagen en imagen</translation>
 <translation id="1335095011850992622">créditos</translation>
 <translation id="1342835525016946179">artículo</translation>
 <translation id="1359897965706325498">banner</translation>
@@ -37,6 +36,7 @@
 <translation id="2148716181193084225">Hoy</translation>
 <translation id="2158401438286456825">lista de páginas</translation>
 <translation id="2226276347425096477">Reduce la longitud de este texto a <ph name="MAX_CHARACTERS" /> caracteres o menos (actualmente, el texto tiene <ph name="CURRENT_LENGTH" /> caracteres)</translation>
+<translation id="2246498165605549352">Archivo local</translation>
 <translation id="2247351761944213033">Semana <ph name="WEEKNUMBER" />, <ph name="YEAR" /></translation>
 <translation id="2277199496770840904">Pista <ph name="NUMBER" /></translation>
 <translation id="2291999235780842123">casilla de verificación</translation>
@@ -75,6 +75,7 @@
 <translation id="3685101356851116974">Imagen sin descripción</translation>
 <translation id="3706100364254443312">interruptor</translation>
 <translation id="3732799496749320381">mm</translation>
+<translation id="3754210790023674521">Salir del modo imagen en imagen</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3808586225841795776">término</translation>
 <translation id="3822383571486410024">Aumenta la longitud del texto a <ph name="MIN_CHARACTERS" /> caracteres como mínimo (actualmente, el texto tiene <ph name="CURRENT_LENGTH" /> caracteres).</translation>
@@ -102,6 +103,7 @@
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">El texto detrás del signo "<ph name="ATSIGN" />" no debe incluir el símbolo "<ph name="INVALIDCHARACTER" />".</translation>
 <translation id="4668956016107839909">apéndice</translation>
+<translation id="4718048029184481307">Reproduciendo en modo imagen en imagen</translation>
 <translation id="4742539557769756338">portada</translation>
 <translation id="4748357248530471599">activar pantalla completa en el recorte de la pantalla</translation>
 <translation id="4757246831282535685">panel de pestaña</translation>
@@ -150,7 +152,7 @@
 <translation id="6166809985690652833">epílogo</translation>
 <translation id="6209276755895393898">Parece que es: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">glosario</translation>
-<translation id="628938136236500310">Reproduciendo en modo imagen en imagen</translation>
+<translation id="6310801910862476708">Salir del modo imagen en imagen</translation>
 <translation id="6398862346408813489">Mostrar panel para seleccionar el mes</translation>
 <translation id="6404546809543547843">control deslizante de duración de audio</translation>
 <translation id="6443871981718447451">mostrar menú de subtítulos</translation>

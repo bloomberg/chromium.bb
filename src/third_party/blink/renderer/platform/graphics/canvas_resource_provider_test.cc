@@ -61,6 +61,10 @@ class MockWebGraphisContext3DProviderWrapper
     return gpu_feature_info_;
   }
 
+  const WebglPreferences& GetWebglPreferences() const override {
+    return webgl_preferences_;
+  }
+
   viz::GLHelper* GetGLHelper() override { return nullptr; }
 
   gpu::gles2::GLES2Interface* ContextGL() override {
@@ -84,9 +88,7 @@ class MockWebGraphisContext3DProviderWrapper
   void SetLostContextCallback(base::RepeatingClosure) override {}
   void SetErrorMessageCallback(
       base::RepeatingCallback<void(const char*, int32_t id)>) override {}
-  cc::ImageDecodeCache* ImageDecodeCache(
-      SkColorType color_type,
-      sk_sp<SkColorSpace> color_space) override {
+  cc::ImageDecodeCache* ImageDecodeCache(SkColorType color_type) override {
     return image_decode_cache_;
   }
   viz::TestSharedImageInterface* SharedImageInterface() override {
@@ -99,6 +101,7 @@ class MockWebGraphisContext3DProviderWrapper
   scoped_refptr<viz::TestContextProvider> test_context_provider_;
   gpu::Capabilities capabilities_;
   gpu::GpuFeatureInfo gpu_feature_info_;
+  WebglPreferences webgl_preferences_;
   cc::ImageDecodeCache* image_decode_cache_;
 };
 
@@ -267,6 +270,68 @@ TEST_F(CanvasResourceProviderTest, CanvasResourceProviderSharedImage) {
   auto resource_again = provider->ProduceCanvasResource();
   EXPECT_EQ(resource_ptr, resource_again);
   EXPECT_NE(sync_token, resource_again->GetSyncToken());
+}
+
+TEST_F(CanvasResourceProviderTest,
+       CanvasResourceProviderSharedImageStaticBitmapImage) {
+  const IntSize kSize(10, 10);
+  const CanvasColorParams kColorParams(kSRGBCanvasColorSpace,
+                                       kRGBA8CanvasPixelFormat, kNonOpaque);
+  EnsureBufferFormatIsSupported(kColorParams.GetBufferFormat());
+
+  auto provider = CanvasResourceProvider::Create(
+      kSize, CanvasResourceProvider::kCreateSharedImageForTesting,
+      context_provider_wrapper_, 0 /* msaa_sample_count */, kColorParams,
+      CanvasResourceProvider::kAllowImageChromiumPresentationMode,
+      nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
+  ASSERT_TRUE(provider->IsValid());
+
+  // Same resource returned until the canvas is updated.
+  auto image = provider->Snapshot();
+  ASSERT_TRUE(image);
+  auto new_image = provider->Snapshot();
+  EXPECT_EQ(image->GetMailbox(), new_image->GetMailbox());
+  EXPECT_EQ(provider->ProduceCanvasResource()->GetOrCreateGpuMailbox(
+                kOrderingBarrier),
+            image->GetMailbox());
+
+  // Resource updated after draw.
+  provider->Canvas()->clear(SK_ColorWHITE);
+  new_image = provider->Snapshot();
+  EXPECT_NE(new_image->GetMailbox(), image->GetMailbox());
+
+  // Resource recycled.
+  auto original_mailbox = image->GetMailbox();
+  image.reset();
+  provider->Canvas()->clear(SK_ColorBLACK);
+  EXPECT_EQ(original_mailbox, provider->Snapshot()->GetMailbox());
+}
+
+TEST_F(CanvasResourceProviderTest,
+       CanvasResourceProviderSharedImageCopyOnWriteDisabled) {
+  auto* mock_context = static_cast<MockWebGraphisContext3DProviderWrapper*>(
+      context_provider_wrapper_->ContextProvider());
+  auto caps = mock_context->GetCapabilities();
+  caps.disable_2d_canvas_copy_on_write = true;
+  mock_context->SetCapabilities(caps);
+
+  const IntSize kSize(10, 10);
+  const CanvasColorParams kColorParams(kSRGBCanvasColorSpace,
+                                       kRGBA8CanvasPixelFormat, kNonOpaque);
+  EnsureBufferFormatIsSupported(kColorParams.GetBufferFormat());
+
+  auto provider = CanvasResourceProvider::Create(
+      kSize, CanvasResourceProvider::kCreateSharedImageForTesting,
+      context_provider_wrapper_, 0 /* msaa_sample_count */, kColorParams,
+      CanvasResourceProvider::kAllowImageChromiumPresentationMode,
+      nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
+  ASSERT_TRUE(provider->IsValid());
+
+  // Disabling copy-on-write forces a copy each time the resource is queried.
+  auto resource = provider->ProduceCanvasResource();
+  EXPECT_NE(resource->GetOrCreateGpuMailbox(kOrderingBarrier),
+            provider->ProduceCanvasResource()->GetOrCreateGpuMailbox(
+                kOrderingBarrier));
 }
 
 TEST_F(CanvasResourceProviderTest, CanvasResourceProviderBitmap) {

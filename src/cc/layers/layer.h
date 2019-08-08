@@ -34,6 +34,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/rrect_f.h"
 #include "ui/gfx/transform.h"
@@ -249,16 +250,13 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // Set or get the rounded corner radii which is applied to the layer and its
   // subtree (as if they are together as a single composited entity) when
   // blitting into their target. Setting this makes the layer masked to bounds.
-  void SetRoundedCorner(const std::array<uint32_t, 4>& corner_radii);
-  const std::array<uint32_t, 4>& corner_radii() const {
+  void SetRoundedCorner(const gfx::RoundedCornersF& corner_radii);
+  const gfx::RoundedCornersF& corner_radii() const {
     return inputs_.corner_radii;
   }
 
   // Returns true if any of the corner has a non-zero radius set.
-  bool HasRoundedCorner() const {
-    return corner_radii()[0] + corner_radii()[1] + corner_radii()[2] +
-           corner_radii()[3];
-  }
+  bool HasRoundedCorner() const { return !corner_radii().IsEmpty(); }
 
   // Set or get the flag that disables the requirement of a render surface for
   // this layer due to it having rounded corners. This improves performance at
@@ -318,7 +316,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   }
 
   void SetBackdropFilterBounds(const gfx::RRectF& backdrop_filter_bounds);
-  const gfx::RRectF& backdrop_filter_bounds() const {
+  void ClearBackdropFilterBounds();
+  const base::Optional<gfx::RRectF>& backdrop_filter_bounds() const {
     return inputs_.backdrop_filter_bounds;
   }
 
@@ -337,7 +336,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   // Set or get whether this layer should be a hit test target
   void SetHitTestable(bool should_hit_test);
-  bool HitTestable() const;
+  virtual bool HitTestable() const;
 
   // Set or gets if this layer is a container for fixed position layers in its
   // subtree. Such layers will be positioned and transformed relative to this
@@ -799,6 +798,11 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return should_flatten_screen_space_transform_from_property_tree_;
   }
 
+#if DCHECK_IS_ON()
+  // For debugging, containing information about the associated DOM, etc.
+  std::string DebugName() const;
+#endif
+
   std::string ToString() const;
 
   // Called when a property has been modified in a way that the layer knows
@@ -878,6 +882,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   // Interactions with attached animations.
   void OnFilterAnimated(const FilterOperations& filters);
+  void OnBackdropFilterAnimated(const FilterOperations& backdrop_filters);
   void OnOpacityAnimated(float opacity);
   void OnTransformAnimated(const gfx::Transform& transform);
 
@@ -954,13 +959,13 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
     FilterOperations filters;
     FilterOperations backdrop_filters;
-    gfx::RRectF backdrop_filter_bounds;
+    base::Optional<gfx::RRectF> backdrop_filter_bounds;
     gfx::PointF filters_origin;
     float backdrop_filter_quality;
 
     // Corner clip radius for the 4 corners of the layer in the following order:
     //     top left, top right, bottom right, bottom left
-    std::array<uint32_t, 4> corner_radii;
+    gfx::RoundedCornersF corner_radii;
 
     // If set, disables this layer's rounded corner from triggering a render
     // surface on itself if possible.

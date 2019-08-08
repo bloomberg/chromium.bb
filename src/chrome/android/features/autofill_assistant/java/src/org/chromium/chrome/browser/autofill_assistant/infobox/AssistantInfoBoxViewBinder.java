@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.autofill_assistant.infobox;
 import android.content.Context;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.support.v7.content.res.AppCompatResources;
 import android.view.View;
 import android.widget.TextView;
 
@@ -71,9 +70,7 @@ class AssistantInfoBoxViewBinder
     private void setInfoBox(AssistantInfoBox infoBox, ViewHolder viewHolder) {
         viewHolder.mExplanationView.setText(infoBox.getExplanation());
         if (infoBox.getImagePath().isEmpty()) {
-            viewHolder.mExplanationView.setCompoundDrawablesWithIntrinsicBounds(null,
-                    AppCompatResources.getDrawable(mContext, R.drawable.ic_tick_outline_48dp), null,
-                    null);
+            viewHolder.mExplanationView.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
         } else {
             mImageFetcher.fetchImage(infoBox.getImagePath(),
                     ImageFetcher.ASSISTANT_INFO_BOX_UMA_CLIENT_NAME, image -> {

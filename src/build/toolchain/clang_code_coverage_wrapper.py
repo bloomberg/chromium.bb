@@ -39,6 +39,8 @@ Example usage:
       --files-to-instrument=coverage_instrumentation_input.txt
 """
 
+from __future__ import print_function
+
 import argparse
 import os
 import subprocess
@@ -124,7 +126,7 @@ def main():
     #   obj/base/base/file_path.o
     index_dash_c = compile_command.index('-c')
   except ValueError:
-    print '-c argument is not found in the compile command.'
+    print('-c argument is not found in the compile command.')
     raise
 
   if index_dash_c + 1 >= len(compile_command):

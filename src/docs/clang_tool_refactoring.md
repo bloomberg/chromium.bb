@@ -96,7 +96,7 @@ doesn't work well for Chromium:
 Synopsis:
 
 ```shell
-tools/clang/scripts/update.py --bootstrap --force-local-build --without-android \
+tools/clang/scripts/build.py --bootstrap --without-android \
   --extra-tools rewrite_to_chrome_style
 ```
 

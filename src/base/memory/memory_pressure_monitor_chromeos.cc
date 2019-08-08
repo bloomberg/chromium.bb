@@ -20,12 +20,17 @@ namespace base {
 namespace chromeos {
 
 namespace {
-
-// Type-safe version of |g_monitor| from base/memory/memory_pressure_monitor.cc.
+// Type-safe version of |g_monitor| from base/memory/memory_pressure_monitor.cc,
+// this was originally added because TabManagerDelegate for chromeos needs to
+// call into ScheduleEarlyCheck which isn't a public API in the base
+// MemoryPressureMonitor. This matters because ChromeOS may create a
+// FakeMemoryPressureMonitor for browser tests and that's why this type-specific
+// version was added.
 MemoryPressureMonitor* g_monitor = nullptr;
 
 // The time between memory pressure checks. While under critical pressure, this
-// is also the timer to repeat cleanup attempts.
+// is also the timer to repeat cleanup attempts. Note: this is only for the UMA
+// ChromeOS.MemoryPressureLevel.
 const int kMemoryPressureIntervalMs = 1000;
 
 // The time which should pass between two moderate memory pressure calls.
@@ -168,7 +173,10 @@ void MemoryPressureMonitor::StopObserving() {
 
 void MemoryPressureMonitor::CheckMemoryPressureAndRecordStatistics() {
   CheckMemoryPressure();
-  if (seconds_since_reporting_++ == 5) {
+  // We report the platform independent Memory.PressureLevel after
+  // kUMAMemoryPressureLevelPeriod which is 5s.
+  if (seconds_since_reporting_++ ==
+      base::MemoryPressureMonitor::kUMAMemoryPressureLevelPeriod.InSeconds()) {
     seconds_since_reporting_ = 0;
     RecordMemoryPressure(current_memory_pressure_level_, 1);
   }
@@ -188,6 +196,8 @@ void MemoryPressureMonitor::CheckMemoryPressureAndRecordStatistics() {
       break;
   }
 
+  // TODO(bgeffon): Remove this platform specific metric once all work has
+  // been completed to deal with the 5s Memory.PressureLevel metric.
   UMA_HISTOGRAM_ENUMERATION("ChromeOS.MemoryPressureLevel",
                             memory_pressure_level_uma,
                             NUM_MEMORY_PRESSURE_LEVELS);

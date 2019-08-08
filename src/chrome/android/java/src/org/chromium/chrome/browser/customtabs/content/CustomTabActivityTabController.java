@@ -32,14 +32,14 @@ import org.chromium.chrome.browser.customtabs.CustomTabTabPersistencePolicy;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.FirstMeaningfulPaintObserver;
 import org.chromium.chrome.browser.customtabs.PageLoadMetricsObserver;
-import org.chromium.chrome.browser.customtabs.TabObserverRegistrar;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
-import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAssociatedApp;
+import org.chromium.chrome.browser.tab.TabObserverRegistrar;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParams;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
@@ -295,7 +295,8 @@ public class CustomTabActivityTabController implements InflationObserver, Native
                 WebContentsState.PRERENDERED_WEBCONTENTS, WebContentsState.NUM_ENTRIES);
         TabAssociatedApp.from(tab).setAppId(mConnection.getClientPackageNameForSession(mSession));
         if (mIntentDataProvider.shouldEnableEmbeddedMediaExperience()) {
-            tab.enableEmbeddedMediaExperience(true);
+            // Configures web preferences for viewing downloaded media.
+            if (tab.getWebContents() != null) tab.getWebContents().notifyRendererPreferenceUpdate();
         }
         initializeTab(tab);
         return tab;
@@ -318,7 +319,7 @@ public class CustomTabActivityTabController implements InflationObserver, Native
                 null, false /*unfreeze*/);
 
         if (mIntentDataProvider.shouldEnableEmbeddedMediaExperience()) {
-            tab.enableEmbeddedMediaExperience(true);
+            if (tab.getWebContents() != null) tab.getWebContents().notifyRendererPreferenceUpdate();
         }
 
         initializeTab(tab);

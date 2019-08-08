@@ -35,10 +35,10 @@ import java.util.List;
 import javax.annotation.concurrent.GuardedBy;
 
 /**
- * This is the base class for child services; the embedding application should contain
- * ProcessService0, 1.. etc subclasses that provide the concrete service entry points, so it can
- * connect to more than one distinct process (i.e. one process per service number, up to limit of
- * N).
+ * This is the base class for child services.
+ * Pre-Q, and for privileged services, the embedding application should contain ProcessService0,
+ * 1, etc subclasses that provide the concrete service entry points, so it can connect to more than
+ * one distinct process (i.e. one process per service number, up to limit of N).
  * The embedding application must declare these service instances in the application section
  * of its AndroidManifest.xml, first with some meta-data describing the services:
  *     <meta-data android:name="org.chromium.test_app.SERVICES_NAME"
@@ -46,6 +46,9 @@ import javax.annotation.concurrent.GuardedBy;
  * and then N entries of the form:
  *     <service android:name="org.chromium.test_app.ProcessServiceX"
  *              android:process=":processX" />
+ *
+ * Q added bindIsolatedService which supports creating multiple instances from a single manifest
+ * declaration for isolated services. In this case, only need to declare instance 0 in the manifest.
  *
  * Subclasses must also provide a delegate in this class constructor. That delegate is responsible
  * for loading native libraries and running the main entry point of the service.
@@ -318,7 +321,7 @@ public abstract class ChildProcessService extends Service {
      */
     @Override
     public IBinder onBind(Intent intent) {
-        assert !mServiceBound;
+        if (mServiceBound) return mBinder;
 
         // We call stopSelf() to request that this service be stopped as soon as the client unbinds.
         // Otherwise the system may keep it around and available for a reconnect. The child

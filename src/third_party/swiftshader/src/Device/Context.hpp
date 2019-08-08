@@ -34,7 +34,7 @@ namespace vk
 
 namespace sw
 {
-	class Sampler;
+	struct Sampler;
 	class PixelShader;
 	class VertexShader;
 	class SpirvShader;
@@ -104,35 +104,23 @@ namespace sw
 		bool setDepthBufferEnable(bool depthBufferEnable);
 
 		bool setAlphaBlendEnable(bool alphaBlendEnable);
-		bool setSourceBlendFactor(VkBlendFactor sourceBlendFactor);
-		bool setDestBlendFactor(VkBlendFactor destBlendFactor);
-		bool setBlendOperation(VkBlendOp blendOperation);
-
-		bool setSeparateAlphaBlendEnable(bool separateAlphaBlendEnable);
-		bool setSourceBlendFactorAlpha(VkBlendFactor sourceBlendFactorAlpha);
-		bool setDestBlendFactorAlpha(VkBlendFactor destBlendFactorAlpha);
-		bool setBlendOperationAlpha(VkBlendOp blendOperationAlpha);
-
 		bool setColorWriteMask(int index, int colorWriteMask);
 		bool setWriteSRGB(bool sRGB);
 
-		bool depthWriteActive();
-		bool alphaTestActive();
-		bool depthBufferActive();
-		bool stencilActive();
+		bool depthWriteActive() const;
+		bool alphaTestActive() const;
+		bool depthBufferActive() const;
+		bool stencilActive() const;
 
-		bool perspectiveActive();
+		bool allTargetsColorClamp() const;
+		bool alphaBlendActive() const;
+		VkBlendFactor sourceBlendFactor() const;
+		VkBlendFactor destBlendFactor() const;
+		VkBlendOp blendOperation() const;
 
-		bool alphaBlendActive();
-		VkBlendFactor sourceBlendFactor();
-		VkBlendFactor destBlendFactor();
-		VkBlendOp blendOperation();
-
-		VkBlendFactor sourceBlendFactorAlpha();
-		VkBlendFactor destBlendFactorAlpha();
-		VkBlendOp blendOperationAlpha();
-
-		VkLogicOp colorLogicOp();
+		VkBlendFactor sourceBlendFactorAlpha() const;
+		VkBlendFactor destBlendFactorAlpha() const;
+		VkBlendOp blendOperationAlpha() const;
 
 		VkPrimitiveTopology topology;
 
@@ -144,15 +132,14 @@ namespace sw
 		// Pixel processor states
 		VkCullModeFlags cullMode;
 		bool frontFacingCCW;
-		float alphaReference;
 
 		float depthBias;
 		float slopeDepthBias;
 
-		VkFormat renderTargetInternalFormat(int index);
-		bool colorWriteActive();
-		int colorWriteActive(int index);
-		bool colorUsed();
+		VkFormat renderTargetInternalFormat(int index) const;
+		bool colorWriteActive() const;
+		int colorWriteActive(int index) const;
+		bool colorUsed() const;
 
 		vk::DescriptorSet::Bindings descriptorSets = {};
 		vk::DescriptorSet::DynamicOffsets descriptorDynamicOffsets = {};
@@ -160,11 +147,8 @@ namespace sw
 		void *indexBuffer;
 
 		vk::ImageView *renderTarget[RENDERTARGETS];
-		unsigned int renderTargetLayer[RENDERTARGETS];
 		vk::ImageView *depthBuffer;
-		unsigned int depthBufferLayer;
 		vk::ImageView *stencilBuffer;
-		unsigned int stencilBufferLayer;
 
 		vk::PipelineLayout const *pipelineLayout;
 
@@ -189,7 +173,6 @@ namespace sw
 		VkBlendFactor destBlendFactorState;
 		VkBlendOp blendOperationState;
 
-		bool separateAlphaBlendEnable;
 		VkBlendFactor sourceBlendFactorStateAlpha;
 		VkBlendFactor destBlendFactorStateAlpha;
 		VkBlendOp blendOperationStateAlpha;
@@ -197,10 +180,10 @@ namespace sw
 		float lineWidth;
 
 		int colorWriteMask[RENDERTARGETS];   // RGBA
-		bool writeSRGB;
 		unsigned int sampleMask;
 		unsigned int multiSampleMask;
 		int sampleCount;
+		bool alphaToCoverage;
 
 		PushConstantStorage pushConstants;
 	};

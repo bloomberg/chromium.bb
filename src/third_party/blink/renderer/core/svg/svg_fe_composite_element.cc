@@ -43,7 +43,7 @@ const SVGEnumerationMap& GetEnumerationMap<CompositeOperationType>() {
   return entries;
 }
 
-inline SVGFECompositeElement::SVGFECompositeElement(Document& document)
+SVGFECompositeElement::SVGFECompositeElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFECompositeTag,
                                            document),
       k1_(MakeGarbageCollected<SVGAnimatedNumber>(this,
@@ -84,8 +84,6 @@ void SVGFECompositeElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(svg_operator_);
   SVGFilterPrimitiveStandardAttributes::Trace(visitor);
 }
-
-DEFINE_NODE_FACTORY(SVGFECompositeElement)
 
 bool SVGFECompositeElement::SetFilterEffectAttribute(
     FilterEffect* effect,

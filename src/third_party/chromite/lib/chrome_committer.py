@@ -9,13 +9,13 @@ from __future__ import print_function
 
 import os
 
+from chromite.lib import alerts
 from chromite.lib import constants
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import osutils
-from chromite.lib import tree_status
 
 
 class CommitError(Exception):
@@ -99,7 +99,7 @@ class ChromeCommitter(object):
       upload_args = self._git_committer_args + [
           'cl', 'upload', '-v', '-m', self._commit_msg, '--bypass-hooks', '-f']
       # Add the gardener(s) as TBR; fall-back to tbr-owners.
-      gardeners = tree_status.GetGardenerEmailAddresses()
+      gardeners = alerts.GetGardenerEmailAddresses()
       if gardeners:
         for tbr in gardeners:
           upload_args += ['--tbrs', tbr]

@@ -69,15 +69,26 @@ class POLICY_EXPORT PolicyMap {
     // Add a localized error given its l10n message ID.
     void AddError(int message_id);
 
+    // Add a localized error given its l10n message ID.
+    void AddWarning(int message_id);
+
     // Adds a conflicting policy.
     void AddConflictingPolicy(const Entry& conflict);
 
     // Removes all the conflicts.
     void ClearConflicts();
 
-    bool IsBlocked() const;
+    // Returns true if the policy is either blocked or ignored.
+    bool IsBlockedOrIgnored() const;
 
+    // Marks the policy as blocked because it is not supported in the current
+    // environment.
     void SetBlocked();
+
+    // Marks the policy as ignored because it does not share the priority of
+    // its policy atomic group.
+    void SetIgnoredByPolicyAtomicGroup();
+    bool IsIgnoredByAtomicGroup() const;
 
     // Callback used to look up a localized string given its l10n message ID. It
     // should return a UTF-16 string.
@@ -88,9 +99,14 @@ class POLICY_EXPORT PolicyMap {
     // separated with LF characters.
     base::string16 GetLocalizedErrors(L10nLookupFunction lookup) const;
 
+    // Returns localized warnings added through AddWarning(), as UTF-16, and
+    // separated with LF characters.
+    base::string16 GetLocalizedWarnings(L10nLookupFunction lookup) const;
+
    private:
     std::string error_strings_;
     std::set<int> error_message_ids_;
+    std::set<int> warning_message_ids_;
   };
 
   typedef std::map<std::string, Entry> PolicyMapType;
@@ -130,6 +146,11 @@ class POLICY_EXPORT PolicyMap {
   // that should be shown to the user alongisde the value in the policy UI. This
   // should only be called for policies that are already stored in the map.
   void AddError(const std::string& policy, int message_id);
+
+  // Return True if the policy is set but its value is ignored because it does
+  // not share the highest priority from its atomic group. Returns False if the
+  // policy is active or not set.
+  bool IsPolicyIgnoredByAtomicGroup(const std::string& policy) const;
 
   // For all policies, overwrite the PolicySource with |source|.
   void SetSourceForAll(PolicySource source);

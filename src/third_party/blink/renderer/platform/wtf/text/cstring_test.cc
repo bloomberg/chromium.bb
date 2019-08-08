@@ -78,12 +78,12 @@ TEST(CStringTest, EmptyRegularConstructor) {
   CString string(reference_string);
   EXPECT_FALSE(string.IsNull());
   EXPECT_EQ(strlen(reference_string), string.length());
-  EXPECT_STREQ(reference_string, string.data());
+  EXPECT_EQ(reference_string, string);
 
   CString string_with_length(reference_string, 6);
   EXPECT_FALSE(string_with_length.IsNull());
   EXPECT_EQ(strlen(reference_string), string_with_length.length());
-  EXPECT_STREQ(reference_string, string_with_length.data());
+  EXPECT_EQ(reference_string, string_with_length);
 }
 
 TEST(CStringTest, UninitializedConstructor) {
@@ -193,11 +193,11 @@ TEST(CStringTest, Comparison) {
 }
 
 TEST(CStringTest, Printer) {
-  EXPECT_STREQ("<null>", PrintedString(CString()).data());
-  EXPECT_STREQ("\"abc\"", PrintedString("abc").data());
-  EXPECT_STREQ("\"\\t\\n\\r\\\"\\\\\"", PrintedString("\t\n\r\"\\").data());
-  EXPECT_STREQ("\"\\xFF\\x00\\x01xyz\"",
-               PrintedString(CString("\xff\0\x01xyz", 6)).data());
+  EXPECT_EQ("<null>", PrintedString(CString()));
+  EXPECT_EQ("\"abc\"", PrintedString("abc"));
+  EXPECT_EQ("\"\\t\\n\\r\\\"\\\\\"", PrintedString("\t\n\r\"\\"));
+  EXPECT_EQ("\"\\xFF\\x00\\x01xyz\"",
+            PrintedString(CString("\xff\0\x01xyz", 6)));
 }
 
 }  // namespace WTF

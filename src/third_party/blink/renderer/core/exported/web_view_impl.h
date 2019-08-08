@@ -93,6 +93,8 @@ class WebSettingsImpl;
 class WebViewClient;
 class WebWidgetClient;
 
+using PaintHoldingCommitTrigger = cc::PaintHoldingCommitTrigger;
+
 class CORE_EXPORT WebViewImpl final : public WebView,
                                       private WebWidget,
                                       public RefCounted<WebViewImpl>,
@@ -181,10 +183,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   uint64_t CreateUniqueIdentifierForRequest() override;
   void EnableDeviceEmulation(const WebDeviceEmulationParams&) override;
   void DisableDeviceEmulation() override;
-  void SetSelectionColors(unsigned active_background_color,
-                          unsigned active_foreground_color,
-                          unsigned inactive_background_color,
-                          unsigned inactive_foreground_color) override;
   void PerformCustomContextMenuAction(unsigned action) override;
   void DidCloseContextMenu() override;
   void CancelPagePopup() override;
@@ -409,7 +407,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void DeferMainFrameUpdateForTesting();
 
   void StartDeferringCommits(base::TimeDelta timeout);
-  void StopDeferringCommits();
+  void StopDeferringCommits(PaintHoldingCommitTrigger);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WebFrameTest, DivScrollIntoEditableTest);

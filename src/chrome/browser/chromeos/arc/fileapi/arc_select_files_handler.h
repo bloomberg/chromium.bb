@@ -27,6 +27,7 @@ class SelectFileDialogHolder;
 
 // Exposed for testing.
 extern const char kScriptClickOk[];
+extern const char kScriptClickCancel[];
 extern const char kScriptClickDirectory[];
 extern const char kScriptClickFile[];
 extern const char kScriptGetElements[];
@@ -82,7 +83,8 @@ class SelectFileDialogHolder {
 
   virtual void SelectFile(ui::SelectFileDialog::Type type,
                           const base::FilePath& default_path,
-                          const ui::SelectFileDialog::FileTypeInfo* file_types);
+                          const ui::SelectFileDialog::FileTypeInfo* file_types,
+                          bool show_android_picker_apps);
 
   virtual void ExecuteJavaScript(
       const std::string& script,

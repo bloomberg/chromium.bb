@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-
 #include "chrome/browser/vr/service/browser_xr_runtime.h"
 #include "chrome/browser/vr/service/xr_device_impl.h"
 #include "chrome/browser/vr/service/xr_runtime_manager.h"
@@ -89,7 +88,7 @@ void VRServiceImpl::MaybeReturnDevice() {
       device_ = std::make_unique<XRDeviceImpl>(render_frame_host_,
                                                mojo::MakeRequest(&device));
     }
-    base::ResetAndReturn(&request_device_callback_).Run(std::move(device));
+    std::move(request_device_callback_).Run(std::move(device));
   }
 }
 

@@ -6,10 +6,10 @@
 #define ASH_WM_WORK_AREA_INSETS_H_
 
 #include "ash/ash_export.h"
+#include "ash/keyboard/ui/keyboard_controller_observer.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/keyboard/keyboard_controller_observer.h"
 
 namespace aura {
 class Window;

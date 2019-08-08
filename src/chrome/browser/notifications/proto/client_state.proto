@@ -10,6 +10,14 @@ package notifications.proto;
 
 import "impression.proto";
 
+// The type of clients using the notification scheduler system.
+enum SchedulerClientType {
+  TEST_1 = -1;
+  TEST_2 = -2;
+  TEST_3 = -3;
+  UNKNOWN = 0;
+}
+
 // Contains details about supression and recovery after suppression expired.
 // Should match SuppressionInfo in impression_types.h.
 // Next tag: 4
@@ -29,14 +37,6 @@ message SuppressionInfo {
 // client. Should match ClientState in impression_types.h.
 // Next tag: 5
 message ClientState {
-  // The type of clients using the notification scheduler system.
-  enum SchedulerClientType {
-    TEST_1 = -1;
-    TEST_2 = -2;
-    TEST_3 = -3;
-    UNKNOWN = 0;
-  }
-
   // The type of notification using the scheduler.
   optional SchedulerClientType type = 1;
 

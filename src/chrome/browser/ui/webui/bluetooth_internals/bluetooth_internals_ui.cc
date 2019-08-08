@@ -62,7 +62,6 @@ BluetoothInternalsUI::BluetoothInternalsUI(content::WebUI* web_ui)
                                IDR_BLUETOOTH_INTERNALS_VALUE_CONTROL_JS);
 
   html_source->SetDefaultResource(IDR_BLUETOOTH_INTERNALS_HTML);
-  html_source->UseGzip();
 
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, html_source);

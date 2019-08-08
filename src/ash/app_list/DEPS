@@ -9,7 +9,6 @@ include_rules = [
   "+components/sync",
   "+mojo/public/cpp",
   "+net/http/http_response_headers.h",
-  "+services/ws/public",
   "+skia",
   "+third_party/google_toolbox_for_mac/src",
   "+third_party/skia",

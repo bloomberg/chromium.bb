@@ -42,7 +42,9 @@
 
 namespace blink {
 
-struct Timing {
+class EffectTiming;
+
+struct CORE_EXPORT Timing {
   USING_FAST_MALLOC(Timing);
 
  public:
@@ -78,6 +80,8 @@ struct Timing {
            iteration_duration.value() >= AnimationTimeDelta());
     DCHECK(timing_function);
   }
+
+  EffectTiming* ConvertToEffectTiming() const;
 
   bool operator==(const Timing& other) const {
     return start_delay == other.start_delay && end_delay == other.end_delay &&

@@ -89,7 +89,7 @@ int AcquireDefaultCredentials(SSPILibrary* library, const SEC_WCHAR* package,
   TimeStamp expiry;
 
   // Pass the username/password to get the credentials handle.
-  // Note: Since the 5th argument is NULL, it uses the default
+  // Note: Since the 5th argument is nullptr, it uses the default
   // cached credentials for the logged in user, which can be used
   // for a single sign-on.
   SECURITY_STATUS status = library->AcquireCredentialsHandle(

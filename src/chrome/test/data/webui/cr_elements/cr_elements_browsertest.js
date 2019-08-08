@@ -4,12 +4,8 @@
 
 /** @fileoverview Tests for shared Polymer elements. */
 
-/** @const {string} Path to source root. */
-const ROOT_PATH = '../../../../../';
-
 // Polymer BrowserTest fixture.
-GEN_INCLUDE(
-    [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
+GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
 /**
  * Test fixture for shared Polymer elements.
@@ -22,9 +18,10 @@ CrElementsBrowserTest.prototype = {
   __proto__: PolymerTest.prototype,
 
   /** @override */
-  extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
-    ROOT_PATH + 'ui/webui/resources/js/assert.js',
-  ]),
+  extraLibraries: [
+    ...PolymerTest.prototype.extraLibraries,
+    '//ui/webui/resources/js/assert.js',
+  ],
 
   /** @override */
   get browsePreload() {
@@ -320,6 +317,11 @@ CrElementsFingerprintProgressArcTest.prototype = {
       'cr_fingerprint_progress_arc.html',
 
   /** @override */
+  commandLineSwitches: [{
+    switchName: 'enable-pixel-output-in-tests',
+  }],
+
+  /** @override */
   extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
     'cr_fingerprint_progress_arc_tests.js',
   ]),
@@ -391,7 +393,7 @@ CrElementsToastTest.prototype = {
 
   /** @override */
   extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
-    ROOT_PATH + 'chrome/test/data/webui/mock_timer.js',
+    '//chrome/test/data/webui/mock_timer.js',
     'cr_toast_test.js',
   ]),
 };
@@ -493,6 +495,51 @@ CrElementsIconButtonTest.prototype = {
 };
 
 TEST_F('CrElementsIconButtonTest', 'All', function() {
+  mocha.run();
+});
+
+/**
+ * @constructor
+ * @extends {CrElementsBrowserTest}
+ */
+function CrElementsLinkRowTest() {}
+
+CrElementsLinkRowTest.prototype = {
+  __proto__: CrElementsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://resources/cr_elements/cr_link_row/cr_link_row.html',
+
+  /** @override */
+  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    'cr_link_row_tests.js',
+  ]),
+};
+
+TEST_F('CrElementsLinkRowTest', 'All', function() {
+  mocha.run();
+});
+
+/**
+ * @constructor
+ * @extends {CrElementsBrowserTest}
+ */
+function CrElementsExpandButtonTest() {}
+
+CrElementsExpandButtonTest.prototype = {
+  __proto__: CrElementsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html',
+
+  /** @override */
+  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    'cr_expand_button_tests.js',
+  ]),
+};
+
+TEST_F('CrElementsExpandButtonTest', 'All', function() {
   mocha.run();
 });
 

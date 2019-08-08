@@ -14,7 +14,7 @@
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/web/public/navigation_item.h"
-#include "ios/web/public/ssl_status.h"
+#include "ios/web/public/security/ssl_status.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"

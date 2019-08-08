@@ -12,10 +12,10 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
-#include "chrome/browser/chromeos/login/screens/reset_view.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/reset/metrics.h"
 #include "chrome/browser/chromeos/tpm_firmware_update.h"
+#include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -90,7 +90,7 @@ void ResetScreen::SetTpmFirmwareUpdateCheckerForTesting(
 ResetScreen::ResetScreen(ResetView* view,
                          ErrorScreen* error_screen,
                          const base::RepeatingClosure& exit_callback)
-    : BaseScreen(OobeScreen::SCREEN_OOBE_RESET),
+    : BaseScreen(ResetView::kScreenId),
       view_(view),
       error_screen_(error_screen),
       exit_callback_(exit_callback),

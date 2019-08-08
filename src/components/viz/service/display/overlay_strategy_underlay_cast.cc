@@ -57,13 +57,13 @@ bool OverlayStrategyUnderlayCast::Attempt(
       // the underlay to be visible.
       // VIDEO_HOLE implies it requires overlay.
       is_underlay =
-          quad->material == DrawQuad::VIDEO_HOLE &&
+          quad->material == DrawQuad::Material::kVideoHole &&
           OverlayCandidate::FromDrawQuad(resource_provider, output_color_matrix,
                                          quad, &candidate);
       found_underlay = is_underlay;
     }
 
-    if (!found_underlay && quad->material == DrawQuad::SOLID_COLOR) {
+    if (!found_underlay && quad->material == DrawQuad::Material::kSolidColor) {
       const SolidColorDrawQuad* solid = SolidColorDrawQuad::MaterialCast(quad);
       if (solid->color == SK_ColorBLACK)
         continue;
@@ -81,18 +81,18 @@ bool OverlayStrategyUnderlayCast::Attempt(
     VLOG(1) << (found_underlay ? "Overlay activated" : "Overlay deactivated");
   }
 
-  if (found_underlay) {
-    // If the primary plane shows up in the candidates list make sure it isn't
-    // opaque otherwise the video underlay won't be visible.
-    if (!candidate_list->empty()) {
-      DCHECK_EQ(1u, candidate_list->size());
-      DCHECK(candidate_list->front().use_output_surface_for_resource);
-      candidate_list->front().is_opaque = false;
-    }
+  // If the primary plane shows up in the candidates list make sure it isn't
+  // opaque otherwise the content underneath won't be visible.
+  if (!candidate_list->empty()) {
+    DCHECK_EQ(1u, candidate_list->size());
+    DCHECK(candidate_list->front().use_output_surface_for_resource);
+    candidate_list->front().is_opaque = false;
+  }
 
+  if (found_underlay) {
     for (auto it = quad_list.begin(); it != quad_list.end(); ++it) {
       OverlayCandidate candidate;
-      if (it->material != DrawQuad::VIDEO_HOLE ||
+      if (it->material != DrawQuad::Material::kVideoHole ||
           !OverlayCandidate::FromDrawQuad(
               resource_provider, output_color_matrix, *it, &candidate)) {
         continue;

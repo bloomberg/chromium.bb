@@ -29,6 +29,7 @@
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/printing/ppd_provider.h"
 #include "chromeos/printing/printer_configuration.h"
+#include "components/prefs/pref_service.h"
 #include "components/printing/browser/printer_capabilities.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -41,25 +42,20 @@ namespace {
 
 using chromeos::CupsPrintersManager;
 using chromeos::CupsPrintersManagerFactory;
+using chromeos::PrinterClass;
 
 // We only support sending username for named users but just in case.
 const char kUsernamePlaceholder[] = "chronos";
 
-// Store the name used in CUPS, Printer#id in |printer_name|, the description
-// as the system_driverinfo option value, and the Printer#display_name in
-// the |printer_description| field.  This will match how Mac OS X presents
-// printer information.
 PrinterBasicInfo ToBasicInfo(const chromeos::Printer& printer) {
   PrinterBasicInfo basic_info;
 
-  // TODO(skau): Unify Mac with the other platforms for display name
-  // presentation so I can remove this strange code.
-  basic_info.options[kDriverInfoTagName] = printer.description();
   basic_info.options[kCUPSEnterprisePrinter] =
       (printer.source() == chromeos::Printer::SRC_POLICY) ? kValueTrue
                                                           : kValueFalse;
   basic_info.printer_name = printer.id();
-  basic_info.printer_description = printer.display_name();
+  basic_info.display_name = printer.display_name();
+  basic_info.printer_description = printer.description();
   return basic_info;
 }
 
@@ -162,15 +158,19 @@ void LocalPrinterHandlerChromeos::StartGetPrinters(
   // thread.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  // TODO(crbug.com/971823): Re-enable printing from OOBE.
+  if (chromeos::ProfileHelper::IsSigninProfile(profile_)) {
+    std::move(done_callback).Run();
+    return;
+  }
+
   PrinterList printer_list;
-  AddPrintersToList(printers_manager_->GetPrinters(CupsPrintersManager::kSaved),
+  AddPrintersToList(printers_manager_->GetPrinters(PrinterClass::kSaved),
                     &printer_list);
-  AddPrintersToList(
-      printers_manager_->GetPrinters(CupsPrintersManager::kEnterprise),
-      &printer_list);
-  AddPrintersToList(
-      printers_manager_->GetPrinters(CupsPrintersManager::kAutomatic),
-      &printer_list);
+  AddPrintersToList(printers_manager_->GetPrinters(PrinterClass::kEnterprise),
+                    &printer_list);
+  AddPrintersToList(printers_manager_->GetPrinters(PrinterClass::kAutomatic),
+                    &printer_list);
 
   ConvertPrinterListForCallback(added_printers_callback,
                                 std::move(done_callback), printer_list);
@@ -203,9 +203,22 @@ void LocalPrinterHandlerChromeos::StartGetCapability(
   }
 
   printer_configurer_->SetUpPrinter(
-      *printer, base::BindOnce(&LocalPrinterHandlerChromeos::HandlePrinterSetup,
-                               weak_factory_.GetWeakPtr(), *printer,
-                               std::move(cb), printer->IsUsbProtocol()));
+      *printer,
+      base::BindOnce(&LocalPrinterHandlerChromeos::OnPrinterInstalled,
+                     weak_factory_.GetWeakPtr(), *printer, std::move(cb)));
+}
+
+void LocalPrinterHandlerChromeos::OnPrinterInstalled(
+    const chromeos::Printer& printer,
+    GetCapabilityCallback cb,
+    chromeos::PrinterSetupResult result) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (result == chromeos::PrinterSetupResult::kSuccess) {
+    printers_manager_->PrinterInstalled(printer, true /*is_automatic*/);
+  }
+
+  HandlePrinterSetup(printer, std::move(cb), printer.IsUsbProtocol(), result);
 }
 
 void LocalPrinterHandlerChromeos::HandlePrinterSetup(
@@ -224,7 +237,6 @@ void LocalPrinterHandlerChromeos::HandlePrinterSetup(
         chromeos::PrinterConfigurer::RecordUsbPrinterSetupSource(
             chromeos::UsbPrinterSetupSource::kPrintPreview);
       }
-      printers_manager_->PrinterInstalled(printer, true /*is_automatic*/);
       // fetch settings on the blocking pool and invoke callback.
       FetchCapabilities(printer, GetNativePrinterPolicies(), std::move(cb));
       return;

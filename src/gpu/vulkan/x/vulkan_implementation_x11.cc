@@ -4,10 +4,12 @@
 
 #include "gpu/vulkan/x/vulkan_implementation_x11.h"
 
+#include "base/base_paths.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/optional.h"
+#include "base/path_service.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_instance.h"
 #include "gpu/vulkan/vulkan_posix_util.h"
@@ -15,6 +17,7 @@
 #include "gpu/vulkan/vulkan_util.h"
 #include "gpu/vulkan/x/vulkan_surface_x11.h"
 #include "ui/gfx/gpu_fence.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 
 namespace gpu {
 
@@ -32,7 +35,8 @@ class ScopedUnsetDisplay {
 
 }  // namespace
 
-VulkanImplementationX11::VulkanImplementationX11() {
+VulkanImplementationX11::VulkanImplementationX11(bool use_swiftshader)
+    : VulkanImplementation(use_swiftshader) {
   gfx::GetXDisplay();
 }
 
@@ -57,13 +61,22 @@ bool VulkanImplementationX11::InitializeVulkanInstance(bool using_surface) {
   VulkanFunctionPointers* vulkan_function_pointers =
       gpu::GetVulkanFunctionPointers();
 
+  base::FilePath path;
+  if (use_swiftshader()) {
+    if (!base::PathService::Get(base::DIR_MODULE, &path))
+      return false;
+    path = path.Append("swiftshader/libvulkan.so");
+  } else {
+    path = base::FilePath("libvulkan.so.1");
+  }
+
   base::NativeLibraryLoadError native_library_load_error;
-  vulkan_function_pointers->vulkan_loader_library_ = base::LoadNativeLibrary(
-      base::FilePath("libvulkan.so.1"), &native_library_load_error);
+  vulkan_function_pointers->vulkan_loader_library_ =
+      base::LoadNativeLibrary(path, &native_library_load_error);
   if (!vulkan_function_pointers->vulkan_loader_library_)
     return false;
 
-  if (!vulkan_instance_.Initialize(required_extensions, {}))
+  if (!vulkan_instance_.Initialize(required_extensions, {}, use_swiftshader()))
     return false;
   return true;
 }
@@ -83,6 +96,10 @@ bool VulkanImplementationX11::GetPhysicalDevicePresentationSupport(
     VkPhysicalDevice device,
     const std::vector<VkQueueFamilyProperties>& queue_family_properties,
     uint32_t queue_family_index) {
+  // TODO(samans): Don't early out once Swiftshader supports this method.
+  // https://crbug.com/swiftshader/129
+  if (use_swiftshader())
+    return true;
   XDisplay* display = gfx::GetXDisplay();
   return vkGetPhysicalDeviceXlibPresentationSupportKHR(
       device, queue_family_index, display,
@@ -91,9 +108,13 @@ bool VulkanImplementationX11::GetPhysicalDevicePresentationSupport(
 
 std::vector<const char*>
 VulkanImplementationX11::GetRequiredDeviceExtensions() {
-  std::vector<const char*> extensions = {
-      VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME,
-      VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME};
+  std::vector<const char*> extensions;
+  // TODO(samans): Add these extensions once Swiftshader supports them.
+  // https://crbug.com/963988
+  if (!use_swiftshader()) {
+    extensions.push_back(VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME);
+    extensions.push_back(VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME);
+  }
   if (using_surface_)
     extensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
   return extensions;
@@ -133,6 +154,23 @@ SemaphoreHandle VulkanImplementationX11::GetSemaphoreHandle(
 VkExternalMemoryHandleTypeFlagBits
 VulkanImplementationX11::GetExternalImageHandleType() {
   return VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT;
+}
+
+bool VulkanImplementationX11::CanImportGpuMemoryBuffer(
+    gfx::GpuMemoryBufferType memory_buffer_type) {
+  return false;
+}
+
+bool VulkanImplementationX11::CreateImageFromGpuMemoryHandle(
+    VkDevice vk_device,
+    gfx::GpuMemoryBufferHandle gmb_handle,
+    gfx::Size size,
+    VkImage* vk_image,
+    VkImageCreateInfo* vk_image_info,
+    VkDeviceMemory* vk_device_memory,
+    VkDeviceSize* mem_allocation_size) {
+  NOTIMPLEMENTED();
+  return false;
 }
 
 }  // namespace gpu

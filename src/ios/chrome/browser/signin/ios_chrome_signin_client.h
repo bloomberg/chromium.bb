@@ -35,9 +35,7 @@ class IOSChromeSigninClient : public SigninClient {
   std::string GetProductVersion() override;
   std::unique_ptr<GaiaAuthFetcher> CreateGaiaAuthFetcher(
       GaiaAuthConsumer* consumer,
-      gaia::GaiaSource source,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-      override;
+      gaia::GaiaSource source) override;
   void PreGaiaLogout(base::OnceClosure callback) override;
   PrefService* GetPrefs() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
@@ -45,6 +43,7 @@ class IOSChromeSigninClient : public SigninClient {
   void DoFinalInit() override;
   bool IsFirstRun() const override;
   bool AreSigninCookiesAllowed() override;
+  bool AreSigninCookiesDeletedOnExit() override;
   void AddContentSettingsObserver(
       content_settings::Observer* observer) override;
   void RemoveContentSettingsObserver(

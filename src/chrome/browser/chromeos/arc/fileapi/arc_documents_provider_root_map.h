@@ -64,6 +64,7 @@ class ArcDocumentsProviderRootMap : public KeyedService {
   void RegisterRoot(const std::string& authority,
                     const std::string& root_document_id,
                     const std::string& root_id,
+                    bool read_only,
                     const std::vector<std::string>& mime_types);
 
   // Unregister a DocumentsProvider's Root.

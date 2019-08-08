@@ -82,8 +82,6 @@ class DateTimeEditElement final : public HTMLDivElement,
         : locale(locale), step_range(step_range) {}
   };
 
-  static DateTimeEditElement* Create(Document&, EditControlOwner&);
-
   DateTimeEditElement(Document&, EditControlOwner&);
   ~DateTimeEditElement() override;
   void Trace(Visitor*) override;
@@ -162,6 +160,13 @@ DEFINE_TYPE_CASTS(DateTimeEditElement,
                   element,
                   element->IsDateTimeEditElement(),
                   element.IsDateTimeEditElement());
+
+template <>
+struct DowncastTraits<DateTimeEditElement> {
+  static bool AllowFrom(const Element& element) {
+    return element.IsDateTimeEditElement();
+  }
+};
 
 }  // namespace blink
 

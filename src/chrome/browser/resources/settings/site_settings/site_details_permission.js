@@ -227,7 +227,10 @@ Polymer({
    * @private
    */
   showAllowedSetting_: function(category) {
-    return category != settings.ContentSettingsTypes.USB_DEVICES;
+    return !(
+        category == settings.ContentSettingsTypes.SERIAL_PORTS ||
+        category == settings.ContentSettingsTypes.USB_DEVICES ||
+        category == settings.ContentSettingsTypes.BLUETOOTH_SCANNING);
   },
 
   /**
@@ -240,7 +243,13 @@ Polymer({
    */
   showAskSetting_: function(category, setting, source) {
     // For chooser-based permissions 'ask' takes the place of 'allow'.
-    if (category == settings.ContentSettingsTypes.USB_DEVICES) {
+    if (category == settings.ContentSettingsTypes.SERIAL_PORTS ||
+        category == settings.ContentSettingsTypes.USB_DEVICES) {
+      return true;
+    }
+
+    // For Bluetooth scanning permission 'ask' takes the place of 'allow'.
+    if (category == settings.ContentSettingsTypes.BLUETOOTH_SCANNING) {
       return true;
     }
 

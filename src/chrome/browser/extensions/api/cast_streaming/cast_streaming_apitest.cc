@@ -8,10 +8,10 @@
 #include <algorithm>
 #include <cmath>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -152,7 +152,7 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
     if (done_callback_.is_null())
       return;
     if (expected_tones_.empty() && expected_yuv_colors_.empty()) {
-      base::ResetAndReturn(&done_callback_).Run();
+      std::move(done_callback_).Run();
     } else {
       LOG(INFO) << "Waiting to encounter " << expected_tones_.size()
                 << " more tone(s) and " << expected_yuv_colors_.size()
@@ -162,7 +162,7 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
 
   // Invoked by InProcessReceiver for each received audio frame.
   void OnAudioFrame(std::unique_ptr<media::AudioBus> audio_frame,
-                    const base::TimeTicks& playout_time,
+                    base::TimeTicks playout_time,
                     bool is_continuous) override {
     DCHECK(cast_env()->CurrentlyOn(media::cast::CastEnvironment::MAIN));
 
@@ -199,8 +199,8 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
     }
   }
 
-  void OnVideoFrame(const scoped_refptr<media::VideoFrame>& video_frame,
-                    const base::TimeTicks& playout_time,
+  void OnVideoFrame(scoped_refptr<media::VideoFrame> video_frame,
+                    base::TimeTicks playout_time,
                     bool is_continuous) override {
     DCHECK(cast_env()->CurrentlyOn(media::cast::CastEnvironment::MAIN));
 
@@ -215,7 +215,7 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
     // letterboxed content region of mostly a solid color plus a small piece of
     // "something" that's animating to keep the tab capture pipeline generating
     // new frames.
-    const gfx::Rect region = FindLetterboxedContentRegion(video_frame.get());
+    const gfx::Rect region = FindLetterboxedContentRegion(*video_frame);
     YUVColor current_color;
     current_color.y = ComputeMedianIntensityInRegionInPlane(
         region,
@@ -256,11 +256,11 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
   // Return the region that excludes the black letterboxing borders surrounding
   // the content within |frame|, if any.
   static gfx::Rect FindLetterboxedContentRegion(
-      const media::VideoFrame* frame) {
+      const media::VideoFrame& frame) {
     const int kNonBlackIntensityThreshold = 20;  // 16 plus some fuzz.
-    const int width = frame->row_bytes(media::VideoFrame::kYPlane);
-    const int height = frame->rows(media::VideoFrame::kYPlane);
-    const int stride = frame->stride(media::VideoFrame::kYPlane);
+    const int width = frame.row_bytes(media::VideoFrame::kYPlane);
+    const int height = frame.rows(media::VideoFrame::kYPlane);
+    const int stride = frame.stride(media::VideoFrame::kYPlane);
 
     gfx::Rect result;
 
@@ -268,7 +268,7 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
     // encountered.
     for (int y = height - 1; y >= 0; --y) {
       const uint8_t* const start =
-          frame->data(media::VideoFrame::kYPlane) + y * stride;
+          frame.data(media::VideoFrame::kYPlane) + y * stride;
       const uint8_t* const end = start + width;
       for (const uint8_t* p = end - 1; p >= start; --p) {
         if (*p > kNonBlackIntensityThreshold) {
@@ -283,7 +283,7 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
     // Scan from the upper-left until the first non-black pixel is encountered.
     for (int y = 0; y < result.height(); ++y) {
       const uint8_t* const start =
-          frame->data(media::VideoFrame::kYPlane) + y * stride;
+          frame.data(media::VideoFrame::kYPlane) + y * stride;
       const uint8_t* const end = start + result.width();
       for (const uint8_t* p = start; p < end; ++p) {
         if (*p > kNonBlackIntensityThreshold) {

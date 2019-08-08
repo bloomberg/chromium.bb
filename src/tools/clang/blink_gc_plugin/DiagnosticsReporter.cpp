@@ -4,6 +4,8 @@
 
 #include "DiagnosticsReporter.h"
 
+#include "llvm/Support/ErrorHandling.h"
+
 using namespace clang;
 
 namespace {
@@ -372,7 +374,7 @@ void DiagnosticsReporter::ClassContainsInvalidFields(
     } else if (error.second == CheckFieldsVisitor::kIteratorToGCManaged) {
       note = diag_iterator_to_gc_managed_collection_note_;
     } else {
-      assert(false && "Unknown field error");
+      llvm_unreachable("Unknown field error.");
     }
     NoteField(error.first, note);
   }

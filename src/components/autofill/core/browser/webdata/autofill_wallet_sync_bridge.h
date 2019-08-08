@@ -94,28 +94,21 @@ class AutofillWalletSyncBridge : public base::SupportsUserData::Data,
                    bool notify_metadata_bridge);
 
   // Sets |customer_data| to this client and returns whether any change has been
-  // applied (i.e., whether |customer_data| was different from local data) and
-  // whether we |should_log_diff|, i.e. metrics for diffs in counts of addresses
-  // and cards.
-  bool SetPaymentsCustomerData(std::vector<PaymentsCustomerData> customer_data,
-                               bool* should_log_diff);
+  // applied (i.e., whether |customer_data| was different from local data).
+  bool SetPaymentsCustomerData(std::vector<PaymentsCustomerData> customer_data);
 
-  // Sets |wallet_cards| to this client, records metrics about added/deleted
-  // data (if |log_diff| is true) and returns whether any change has been
+  // Sets |wallet_cards| to this client and returns whether any change has been
   // applied (i.e., whether |wallet_cards| was different from local data). If
   // |notify_metadata_bridge|, it also notifies via WebDataBackend about any
   // individual entity changes.
   bool SetWalletCards(std::vector<CreditCard> wallet_cards,
-                      bool log_diff,
                       bool notify_metadata_bridge);
 
-  // Sets |wallet_addresses| to this client, records metrics about added/deleted
-  // data (if |log_diff| is true) and returns whether any change has been
-  // applied (i.e., whether |wallet_addresses| was different from local data).
-  // If |notify_metadata_bridge|, it also notifies via WebDataBackend about any
-  // individual entity changes.
+  // Sets |wallet_addresses| to this client and returns whether any change has
+  // been applied (i.e., whether |wallet_addresses| was different from local
+  // data). If |notify_metadata_bridge|, it also notifies via WebDataBackend
+  // about any individual entity changes.
   bool SetWalletAddresses(std::vector<AutofillProfile> wallet_addresses,
-                          bool log_diff,
                           bool notify_metadata_bridge);
 
   // Computes a "diff" (items added, items removed) of two vectors of items,

@@ -26,7 +26,7 @@ void PrefetchGCMAppHandler::SetService(PrefetchService* service) {
 
 void PrefetchGCMAppHandler::GetGCMToken(
     instance_id::InstanceID::GetTokenCallback callback) {
-  token_factory_->GetGCMToken(callback);
+  token_factory_->GetGCMToken(std::move(callback));
 }
 
 void PrefetchGCMAppHandler::ShutdownHandler() {

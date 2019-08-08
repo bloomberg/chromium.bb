@@ -113,7 +113,6 @@ def CreateWebDriver(browser, user_data_dir, url, fullscreen,
     options.add_argument('--no-default-browser-check')
     options.add_argument('--autoplay-policy=no-user-gesture-required')
     options.add_argument('--start-maximized')
-    options.add_argument('--disable-infobars')
     for arg in extra_browser_args:
       options.add_argument(arg)
     logging.debug(" ".join(options.arguments))

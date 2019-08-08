@@ -26,6 +26,8 @@ def NormalizeSourcePaths(source_paths):
     * Sorting the source paths in alphabetical order.
     * Remove paths that are sub-path of others in the source paths.
     * Ensure all the directory path strings are ended with the trailing '/'.
+    * Convert all the path from absolute paths to relative path (relative to
+      the chroot source root).
   """
   for i, path in enumerate(source_paths):
     assert os.path.isabs(path), 'path %s is not an aboslute path' % path
@@ -43,6 +45,7 @@ def NormalizeSourcePaths(source_paths):
     if not is_subpath_of_other:
       if os.path.isdir(path) and not path.endswith('/'):
         path += '/'
+      path = os.path.relpath(path, constants.CHROOT_SOURCE_ROOT)
       results.append(path)
 
   return results

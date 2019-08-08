@@ -8,9 +8,9 @@
 #include <cstdint>
 #include <memory>
 
-#include "base/error.h"
-#include "base/ip_address.h"
-#include "base/macros.h"
+#include "osp_base/error.h"
+#include "osp_base/ip_address.h"
+#include "osp_base/macros.h"
 #include "platform/api/network_interface.h"
 
 namespace openscreen {
@@ -41,6 +41,21 @@ using UdpSocketUniquePtr = std::unique_ptr<UdpSocket, UdpSocketDeleter>;
 // reference implementation.
 class UdpSocket {
  public:
+  // Constants used to specify how we want packets sent from this socket.
+  enum class DscpMode : uint8_t {
+    // Default value set by the system on creation of a new socket.
+    kUnspecified = 0x0,
+
+    // Mode for Audio only.
+    kAudioOnly = 0xb8,
+
+    // Mode for Audio + Video.
+    kAudioVideo = 0x88,
+
+    // Mode for low priority operations such as trace log data.
+    kLowPriority = 0x20
+  };
+
   using Version = IPAddress::Version;
 
   // Creates a new, scoped UdpSocket within the IPv4 or IPv6 family.
@@ -78,12 +93,15 @@ class UdpSocket {
   // block, which can be expected during normal operation.
   Error SendMessage(const void* data, size_t length, const IPEndpoint& dest);
 
+  // Sets the DSCP value to use for all messages sent from this socket.
+  Error SetDscp(DscpMode state);
+
  protected:
   UdpSocket();
   ~UdpSocket();
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(UdpSocket);
+  OSP_DISALLOW_COPY_AND_ASSIGN(UdpSocket);
 };
 
 }  // namespace platform

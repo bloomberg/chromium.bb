@@ -141,7 +141,7 @@ void CheckTrue(bool result) {
 }
 
 void WriteHTMLAttributes(const PasswordForm& form, base::Pickle* pickle) {
-  pickle->WriteInt(form.scheme);
+  pickle->WriteInt(static_cast<int>(form.scheme));
   pickle->WriteString(form.origin.spec());
   pickle->WriteString(form.action.spec());
   pickle->WriteString16(form.username_element);
@@ -190,7 +190,7 @@ class NativeBackendKWalletTestBase :
 
     form_google_ = old_form_google_;
     form_google_.times_used = 3;
-    form_google_.type = PasswordForm::TYPE_GENERATED;
+    form_google_.type = PasswordForm::Type::kGenerated;
     form_google_.form_data.name = UTF8ToUTF16("form_name");
     form_google_.date_synced = base::Time::Now();
     form_google_.date_created = old_form_google_.date_created;
@@ -199,7 +199,8 @@ class NativeBackendKWalletTestBase :
     form_google_.federation_origin =
         url::Origin::Create(GURL("http://www.google.com/"));
     form_google_.skip_zero_click = true;
-    form_google_.generation_upload_status = PasswordForm::NEGATIVE_SIGNAL_SENT;
+    form_google_.generation_upload_status =
+        PasswordForm::GenerationUploadStatus::kNegativeSignalSent;
 
     form_isc_.origin = GURL("http://www.isc.org/");
     form_isc_.action = GURL("http://www.isc.org/auth");
@@ -918,7 +919,7 @@ TEST_P(NativeBackendKWalletTest, AndroidCredentials) {
   EXPECT_TRUE(backend.InitWithBus(mock_session_bus_));
 
   PasswordForm saved_android_form;
-  saved_android_form.scheme = PasswordForm::SCHEME_HTML;
+  saved_android_form.scheme = PasswordForm::Scheme::kHtml;
   saved_android_form.signon_realm =
       "android://7x7IDboo8u9YKraUsbmVkuf1-@net.rateflix.app/";
   saved_android_form.username_value = base::UTF8ToUTF16("randomusername");
@@ -1171,7 +1172,7 @@ void NativeBackendKWalletPickleTest::CreateVersion1PlusPickle(
   pickle->WriteInt64(form.date_created.ToInternalValue());
   if (effective_version < 2)
     return;
-  pickle->WriteInt(form.type);
+  pickle->WriteInt(static_cast<int>(form.type));
   pickle->WriteInt(form.times_used);
   autofill::SerializeFormData(form.form_data, pickle);
   if (effective_version < 3)
@@ -1185,7 +1186,7 @@ void NativeBackendKWalletPickleTest::CreateVersion1PlusPickle(
   pickle->WriteBool(form.skip_zero_click);
   if (effective_version < 7)
     return;
-  pickle->WriteInt(form.generation_upload_status);
+  pickle->WriteInt(static_cast<int>(form.generation_upload_status));
 }
 
 void NativeBackendKWalletPickleTest::CreateVersion0Pickle(
@@ -1360,19 +1361,19 @@ void NativeBackendKWalletPickleTest::CheckVersion0Pickle(
 // read all combinations in any event.
 
 TEST_F(NativeBackendKWalletPickleTest, ReadsOld32BitHTMLPickles) {
-  CheckVersion0Pickle(true, PasswordForm::SCHEME_HTML);
+  CheckVersion0Pickle(true, PasswordForm::Scheme::kHtml);
 }
 
 TEST_F(NativeBackendKWalletPickleTest, ReadsOld32BitHTTPPickles) {
-  CheckVersion0Pickle(true, PasswordForm::SCHEME_BASIC);
+  CheckVersion0Pickle(true, PasswordForm::Scheme::kBasic);
 }
 
 TEST_F(NativeBackendKWalletPickleTest, ReadsOld64BitHTMLPickles) {
-  CheckVersion0Pickle(false, PasswordForm::SCHEME_HTML);
+  CheckVersion0Pickle(false, PasswordForm::Scheme::kHtml);
 }
 
 TEST_F(NativeBackendKWalletPickleTest, ReadsOld64BitHTTPPickles) {
-  CheckVersion0Pickle(false, PasswordForm::SCHEME_BASIC);
+  CheckVersion0Pickle(false, PasswordForm::Scheme::kBasic);
 }
 
 TEST_F(NativeBackendKWalletPickleTest, CheckVersion1Pickle) {

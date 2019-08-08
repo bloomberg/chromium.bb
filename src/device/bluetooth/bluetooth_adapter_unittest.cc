@@ -79,15 +79,8 @@ class TestBluetoothAdapter : public BluetoothAdapter {
 
   bool IsDiscovering() const override { return false; }
 
-  void StartDiscoverySessionWithFilter(
-      std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
-      const DiscoverySessionCallback& callback,
-      const ErrorCallback& error_callback) override {
-    OnStartDiscoverySession(std::move(discovery_filter), callback);
-  }
-
   void StartDiscoverySession(const DiscoverySessionCallback& callback,
-                             const ErrorCallback& error_callback) override {}
+                             const ErrorCallback& error_callback) {}
 
   UUIDList GetUUIDs() const override { return UUIDList(); }
 
@@ -126,11 +119,9 @@ class TestBluetoothAdapter : public BluetoothAdapter {
 
   void TestErrorCallback() {}
 
-  std::vector<std::unique_ptr<BluetoothDiscoverySession>> discovery_sessions_;
-
   void TestOnStartDiscoverySession(
       std::unique_ptr<device::BluetoothDiscoverySession> discovery_session) {
-    discovery_sessions_.push_back(std::move(discovery_session));
+    discovery_sessions_holder_.push_back(std::move(discovery_session));
   }
 
   void CleanupSessions() { discovery_sessions_.clear(); }
@@ -150,10 +141,18 @@ class TestBluetoothAdapter : public BluetoothAdapter {
 
   bool SetPoweredImpl(bool powered) override { return false; }
 
-  void AddDiscoverySession(
-      BluetoothDiscoveryFilter* discovery_filter,
-      const base::Closure& callback,
-      DiscoverySessionErrorCallback error_callback) override {}
+  void StartScanWithFilter(
+      std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
+      DiscoverySessionResultCallback callback) override {
+    std::move(callback).Run(false,
+                            UMABluetoothDiscoverySessionOutcome::SUCCESS);
+  }
+
+  void UpdateFilter(std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
+                    DiscoverySessionResultCallback callback) override {
+    std::move(callback).Run(false,
+                            UMABluetoothDiscoverySessionOutcome::SUCCESS);
+  }
 
   void RemoveDiscoverySession(
       BluetoothDiscoveryFilter* discovery_filter,
@@ -167,6 +166,11 @@ class TestBluetoothAdapter : public BluetoothAdapter {
 
   void RemovePairingDelegateInternal(
       BluetoothDevice::PairingDelegate* pairing_delegate) override {}
+
+  // |discovery_sessions_holder_| is used to hold unique pointers of Discovery
+  // Sessions so that the destructors don't get called.
+  std::vector<std::unique_ptr<BluetoothDiscoverySession>>
+      discovery_sessions_holder_;
 };
 
 class TestPairingDelegate : public BluetoothDevice::PairingDelegate {
@@ -296,7 +300,7 @@ TEST(BluetoothAdapterTest, GetMergedDiscoveryFilterRssi) {
   df2->SetRSSI(-65);
   std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter2(df2);
 
-  // make sure adapter have one session wihout filtering.
+  // Make sure adapter has one session without filtering.
   adapter->InjectFilteredSession(std::move(discovery_filter));
 
   // DO_NOTHING should have no impact
@@ -331,7 +335,7 @@ TEST(BluetoothAdapterTest, GetMergedDiscoveryFilterRssi) {
   df3->SetPathloss(60);
   std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter3(df3);
 
-  // when rssi and pathloss are merged, both should be cleared, becuase there is
+  // when rssi and pathloss are merged, both should be cleared, because there is
   // no way to tell which filter will be more generic
   adapter->InjectFilteredSession(std::move(discovery_filter3));
   resulting_filter = adapter->GetMergedDiscoveryFilter();
@@ -413,11 +417,9 @@ TEST(BluetoothAdapterTest, GetMergedDiscoveryFilterAllFields) {
   df3->AddUUID(device::BluetoothUUID("1003"));
   std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter3(df3);
 
-  // make sure adapter have one session wihout filtering.
   adapter->InjectFilteredSession(std::move(discovery_filter));
   adapter->InjectFilteredSession(std::move(discovery_filter2));
   adapter->InjectFilteredSession(std::move(discovery_filter3));
-
   std::unique_ptr<BluetoothDiscoveryFilter> resulting_filter =
       adapter->GetMergedDiscoveryFilter();
   resulting_filter->GetRSSI(&resulting_rssi);

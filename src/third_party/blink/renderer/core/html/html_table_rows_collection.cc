@@ -42,7 +42,7 @@ static inline bool IsInSection(HTMLTableRowElement& row,
   // Because we know that the parent is a table or a section, it's safe to cast
   // it to an HTMLElement giving us access to the faster hasTagName overload
   // from that class.
-  return ToHTMLElement(row.parentNode())->HasTagName(section_tag);
+  return To<HTMLElement>(row.parentNode())->HasTagName(section_tag);
 }
 
 HTMLTableRowElement* HTMLTableRowsCollection::RowAfter(
@@ -146,10 +146,10 @@ HTMLTableRowsCollection::HTMLTableRowsCollection(ContainerNode& table)
   DCHECK(IsHTMLTableElement(table));
 }
 
-HTMLTableRowsCollection* HTMLTableRowsCollection::Create(ContainerNode& table,
-                                                         CollectionType type) {
+HTMLTableRowsCollection::HTMLTableRowsCollection(ContainerNode& table,
+                                                 CollectionType type)
+    : HTMLTableRowsCollection(table) {
   DCHECK_EQ(type, kTableRows);
-  return MakeGarbageCollected<HTMLTableRowsCollection>(table);
 }
 
 Element* HTMLTableRowsCollection::VirtualItemAfter(Element* previous) const {

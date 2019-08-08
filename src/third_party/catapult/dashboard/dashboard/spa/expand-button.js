@@ -3,76 +3,70 @@
    found in the LICENSE file.
 */
 'use strict';
-tr.exportTo('cp', () => {
-  class ExpandButton extends cp.ElementBase {
-    static get template() {
-      return Polymer.html`
-        <style>
-          :host {
-            display: flex;
-            cursor: pointer;
-          }
-          iron-icon {
-            height: 20px;
-            width: 20px;
-          }
-        </style>
 
-        <iron-icon icon="[[getIcon_(isExpanded)]]">
-        </iron-icon>
-        <slot></slot>
-      `;
-    }
+import {ElementBase, STORE} from './element-base.js';
+import {TOGGLE} from './simple-redux.js';
+import {get} from '@polymer/polymer/lib/utils/path.js';
+import {html} from '@polymer/polymer/polymer-element.js';
 
-    ready() {
-      super.ready();
-      this.addEventListener('click', this.onClick_.bind(this));
-    }
+export default class ExpandButton extends ElementBase {
+  static get is() { return 'expand-button'; }
 
-    async onClick_(event) {
-      await this.dispatch('toggle', this.statePath);
-    }
+  static get properties() {
+    return {
+      horizontal: {type: Boolean, value: false},
+      after: {type: Boolean, value: false},
 
-    getIcon_(isExpanded) {
-      return ExpandButton.getIcon(isExpanded, this.horizontal, this.after);
-    }
+      statePath: String,
+      isExpanded: Boolean,
+    };
   }
 
-  ExpandButton.getIcon = (isExpanded, horizontal, after) => {
+  static buildState(options = {}) {
+    return {
+      isExpanded: options.isExpanded || false,
+    };
+  }
+
+  static get template() {
+    return html`
+      <style>
+        :host {
+          display: flex;
+          cursor: pointer;
+        }
+        iron-icon {
+          height: 20px;
+          width: 20px;
+        }
+      </style>
+
+      <iron-icon icon="[[getIcon_(isExpanded)]]">
+      </iron-icon>
+      <slot></slot>
+    `;
+  }
+
+  ready() {
+    super.ready();
+    this.addEventListener('click', this.onClick_.bind(this));
+  }
+
+  async onClick_(event) {
+    STORE.dispatch(TOGGLE(this.statePath + '.isExpanded'));
+  }
+
+  getIcon_(isExpanded) {
+    return ExpandButton.getIcon(isExpanded, this.horizontal, this.after);
+  }
+
+  static getIcon(isExpanded, horizontal, after) {
     if (after) isExpanded = !isExpanded;
     if (horizontal) {
       return (isExpanded ? 'cp:left' : 'cp:right');
     }
     return (isExpanded ? 'cp:less' : 'cp:more');
-  };
+  }
+}
 
-  const ExpandState = {
-    isExpanded: options => options.isExpanded || false,
-  };
-
-  ExpandButton.properties = {
-    ...cp.buildProperties('state', ExpandState),
-    horizontal: {
-      type: Boolean,
-      value: false,
-    },
-    after: {
-      type: Boolean,
-      value: false,
-    },
-  };
-
-  ExpandButton.buildState = options => cp.buildState(ExpandState, options);
-
-  ExpandButton.actions = {
-    toggle: statePath => async(dispatch, getState) => {
-      dispatch(Redux.TOGGLE(statePath + '.isExpanded'));
-    },
-  };
-
-  cp.ElementBase.register(ExpandButton);
-
-  return {
-    ExpandButton,
-  };
-});
+ElementBase.register(ExpandButton);

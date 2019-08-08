@@ -10,7 +10,6 @@
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/search_box_view.h"
-#include "ash/app_list/views/search_result_suggestion_chip_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/bind.h"
@@ -45,7 +44,7 @@ SuggestionChipContainerView::SuggestionChipContainerView(
           views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
           kChipSpacing));
   layout_manager->set_main_axis_alignment(
-      views::BoxLayout::MainAxisAlignment::MAIN_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::MainAxisAlignment::kCenter);
 
   for (size_t i = 0; i < static_cast<size_t>(
                              AppListConfig::instance().num_start_page_tiles());
@@ -53,13 +52,19 @@ SuggestionChipContainerView::SuggestionChipContainerView(
     SearchResultSuggestionChipView* chip =
         new SearchResultSuggestionChipView(view_delegate());
     chip->SetVisible(false);
-    chip->SetIndexInSuggestionChipContainer(i);
+    chip->set_index_in_container(i);
     suggestion_chip_views_.emplace_back(chip);
     AddChildView(chip);
   }
 }
 
 SuggestionChipContainerView::~SuggestionChipContainerView() = default;
+
+SearchResultSuggestionChipView* SuggestionChipContainerView::GetResultViewAt(
+    size_t index) {
+  DCHECK(index >= 0 && index < suggestion_chip_views_.size());
+  return suggestion_chip_views_[index];
+}
 
 int SuggestionChipContainerView::DoUpdate() {
   if (IgnoreUpdateAndLayout())

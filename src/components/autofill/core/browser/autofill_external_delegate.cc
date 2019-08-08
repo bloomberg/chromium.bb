@@ -21,7 +21,7 @@
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
-#include "components/autofill/core/browser/popup_item_ids.h"
+#include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/signin/core/browser/signin_metrics.h"
@@ -141,7 +141,7 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   if (query_field_.is_focusable) {
     manager_->client()->ShowAutofillPopup(
         element_bounds_, query_field_.text_direction, suggestions,
-        autoselect_first_suggestion, GetWeakPtr());
+        autoselect_first_suggestion, popup_type_, GetWeakPtr());
   }
 }
 
@@ -420,12 +420,8 @@ void AutofillExternalDelegate::InsertDataListValues(
   suggestions->insert(suggestions->begin(), data_list_values_.size(),
                       Suggestion());
   for (size_t i = 0; i < data_list_values_.size(); i++) {
-    // A suggestion's label has one line of disambiguating information to show
-    // to the user. However, when the two-line suggestion display experiment is
-    // enabled on desktop, label is replaced by additional label.
     (*suggestions)[i].value = data_list_values_[i];
     (*suggestions)[i].label = data_list_labels_[i];
-    (*suggestions)[i].additional_label = data_list_labels_[i];
     (*suggestions)[i].frontend_id = POPUP_ITEM_ID_DATALIST_ENTRY;
   }
 }

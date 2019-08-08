@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/empty_web_media_player.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
@@ -38,7 +39,7 @@ class HTMLVideoElementTest : public PageTestBase {
                          MakeGarbageCollected<test::MediaStubLocalFrameClient>(
                              std::move(mock_media_player)),
                          nullptr);
-    video_ = HTMLVideoElement::Create(GetDocument());
+    video_ = MakeGarbageCollected<HTMLVideoElement>(GetDocument());
     GetDocument().body()->appendChild(video_);
   }
 

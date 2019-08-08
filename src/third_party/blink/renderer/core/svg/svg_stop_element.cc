@@ -27,7 +27,7 @@
 
 namespace blink {
 
-inline SVGStopElement::SVGStopElement(Document& document)
+SVGStopElement::SVGStopElement(Document& document)
     : SVGElement(svg_names::kStopTag, document),
       offset_(MakeGarbageCollected<SVGAnimatedNumber>(
           this,
@@ -44,8 +44,6 @@ void SVGStopElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(offset_);
   SVGElement::Trace(visitor);
 }
-
-DEFINE_NODE_FACTORY(SVGStopElement)
 
 namespace {
 

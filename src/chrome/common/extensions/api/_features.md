@@ -245,7 +245,8 @@ that can use the feature.  It is very common for certain features to only be
 allowed in certain extension classes, rather than available to all types.
 
 Accepted values are lists of strings from `extension`, `hosted_app`,
-`legacy_packaged_app`, `platform_app`, `shared_module`, and `theme`.
+`legacy_packaged_app`, `platform_app`, `shared_module`, `theme`, and
+`login_screen_extension`.
 
 ### location
 
@@ -320,7 +321,7 @@ The accepted values are lists of strings from `regular`, `kiosk` and
 `regular` session is a session launched for a regular, authenticated user.
 
 `kiosk` session is a session launched for a kiosk app - an app that runs on its
-own, in full control of the current session. 
+own, in full control of the current session.
 
 `kiosk.autolaunched` represents auto-launched kiosk session - a kiosk session
 that is launched automatically from Chrome OS login screen, without any user

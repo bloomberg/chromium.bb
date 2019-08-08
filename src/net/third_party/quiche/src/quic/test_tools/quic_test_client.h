@@ -9,7 +9,6 @@
 #include <memory>
 #include <string>
 
-#include "testing/gmock/include/gmock/gmock.h"
 #include "net/third_party/quiche/src/quic/core/proto/cached_network_parameters.pb.h"
 #include "net/third_party/quiche/src/quic/core/quic_framer.h"
 #include "net/third_party/quiche/src/quic/core/quic_packet_creator.h"
@@ -18,6 +17,7 @@
 #include "net/third_party/quiche/src/quic/platform/api/quic_epoll.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_map_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/tools/quic_client.h"
 
 namespace quic {
@@ -55,7 +55,7 @@ class MockableQuicClient : public QuicClient {
   ~MockableQuicClient() override;
 
   QuicConnectionId GenerateNewConnectionId() override;
-  void UseConnectionId(QuicConnectionId connection_id);
+  void UseConnectionId(QuicConnectionId server_connection_id);
 
   void UseWriter(QuicPacketWriterWrapper* writer);
   void set_peer_address(const QuicSocketAddress& address);
@@ -69,9 +69,9 @@ class MockableQuicClient : public QuicClient {
   const MockableQuicClientEpollNetworkHelper* mockable_network_helper() const;
 
  private:
-  // ConnectionId to use, if connection_id_overridden_
-  QuicConnectionId override_connection_id_;
-  bool connection_id_overridden_;
+  // Server connection ID to use, if server_connection_id_overridden_
+  QuicConnectionId override_server_connection_id_;
+  bool server_connection_id_overridden_;
   CachedNetworkParameters cached_network_paramaters_;
 };
 
@@ -185,8 +185,8 @@ class QuicTestClient : public QuicSpdyStream::Visitor,
   void WaitForResponseForMs(int timeout_ms) {
     WaitUntil(timeout_ms, [this]() { return !closed_stream_states_.empty(); });
     if (response_complete()) {
-      VLOG(1) << "Client received response:"
-              << response_headers()->DebugString() << response_body();
+      QUIC_VLOG(1) << "Client received response:"
+                   << response_headers()->DebugString() << response_body();
     }
   }
 
@@ -219,9 +219,9 @@ class QuicTestClient : public QuicSpdyStream::Visitor,
   // Configures client_ to take ownership of and use the writer.
   // Must be called before initial connect.
   void UseWriter(QuicPacketWriterWrapper* writer);
-  // If the given ConnectionId is nonzero, configures client_ to use a specific
-  // ConnectionId instead of a random one.
-  void UseConnectionId(QuicConnectionId connection_id);
+  // Configures client_ to use a specific server connection ID instead of a
+  // random one.
+  void UseConnectionId(QuicConnectionId server_connection_id);
 
   // Returns nullptr if the maximum number of streams have already been created.
   QuicSpdyClientStream* GetOrCreateStream();

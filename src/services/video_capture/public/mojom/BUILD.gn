@@ -26,6 +26,10 @@ mojom("mojom") {
     "//services/ws/public/mojom",
     "//ui/gfx/geometry/mojo",
   ]
+
+  if (is_chromeos) {
+    deps += [ "//components/chromeos_camera/common" ]
+  }
 }
 
 mojom("constants") {

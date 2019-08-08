@@ -66,10 +66,9 @@ namespace sw
 		word4 maskW01Q[4];
 		dword4 maskD01X[4];
 		word4 mask565Q[8];
+		dword2 mask10Q[16];		// 4 bit writemask -> A2B10G10R10 bit patterns, replicated 2x
 
 		unsigned short sRGBtoLinear8_16[256];
-		unsigned short sRGBtoLinear6_16[64];
-		unsigned short sRGBtoLinear5_16[32];
 
 		unsigned short linearToSRGB12_16[4096];
 		unsigned short sRGBtoLinear12_16[4096];

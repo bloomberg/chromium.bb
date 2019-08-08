@@ -39,6 +39,10 @@ const base::Feature kInstantTetheringBackgroundAdvertisementSupport{
 const base::Feature kAccountManager{"ChromeOSAccountManager",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether to enable Chrome OS Add Child Account Supervision flow.
+const base::Feature kAddSupervision{"ChromeOSAddSupervision",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether to enable Google Assistant feature.
 const base::Feature kAssistantFeature{"ChromeOSAssistant",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
@@ -164,9 +168,6 @@ const char kChildWallpaperSmall[] = "child-wallpaper-small";
 
 const char kConservativeThreshold[] = "conservative";
 
-// Forces use of Chrome OS Gaia API v1.
-const char kCrosGaiaApiV1[] = "cros-gaia-api-v1";
-
 // Forces CrOS region value.
 const char kCrosRegion[] = "cros-region";
 
@@ -213,9 +214,6 @@ const char kDisableDeviceDisabling[] = "disable-device-disabling";
 // Disable encryption migration for user's cryptohome to run latest Arc.
 const char kDisableEncryptionMigration[] = "disable-encryption-migration";
 
-// Disables notification when device is in end of life status.
-const char kDisableEolNotification[] = "disable-eol-notification";
-
 // Disables fine grained time zone detection.
 const char kDisableFineGrainedTimeZoneDetection[] =
     "disable-fine-grained-time-zone-detection";
@@ -233,24 +231,11 @@ const char kDisableLoginAnimations[] = "disable-login-animations";
 // Disables requests for an enterprise machine certificate during attestation.
 const char kDisableMachineCertRequest[] = "disable-machine-cert-request";
 
-// Disables mtp write support.
-const char kDisableMtpWriteSupport[] = "disable-mtp-write-support";
-
 // Disables the multiple display layout UI.
 const char kDisableMultiDisplayLayout[] = "disable-multi-display-layout";
 
-// Disables Office Editing for Docs, Sheets & Slides component app so handlers
-// won't be registered, making it possible to install another version for
-// testing.
-const char kDisableOfficeEditingComponentApp[] =
-    "disable-office-editing-component-extension";
-
 // Disables per-user timezone.
 const char kDisablePerUserTimezone[] = "disable-per-user-timezone";
-
-// Disables suggestions while typing on a physical keyboard.
-const char kDisablePhysicalKeyboardAutocorrect[] =
-    "disable-physical-keyboard-autocorrect";
 
 // Disables rollback option on reset screen.
 const char kDisableRollbackOption[] = "disable-rollback-option";
@@ -305,10 +290,6 @@ const char kEnableFirstRunUITransitions[] = "enable-first-run-ui-transitions";
 
 // Enables the marketing opt-in screen in OOBE.
 const char kEnableMarketingOptInScreen[] = "enable-market-opt-in";
-
-// Enables suggestions while typing on a physical keyboard.
-const char kEnablePhysicalKeyboardAutocorrect[] =
-    "enable-physical-keyboard-autocorrect";
 
 // Enables request of tablet site (via user agent override).
 const char kEnableRequestTabletSite[] = "enable-request-tablet-site";
@@ -422,9 +403,6 @@ const char kHomedir[] = "homedir";
 const char kIgnoreUserProfileMappingForTests[] =
     "ignore-user-profile-mapping-for-tests";
 
-// URL prefix that can be launched by Kiosk Next Home.
-const char kKioskNextHomeUrlPrefix[] = "kiosk-next-home-url-prefix";
-
 // Enables Chrome-as-a-login-manager behavior.
 const char kLoginManager[] = "login-manager";
 
@@ -437,10 +415,6 @@ const char kLoginProfile[] = "login-profile";
 
 // Specifies the user which is already logged in.
 const char kLoginUser[] = "login-user";
-
-// The memory pressure threshold selection which is used to decide whether and
-// when a memory pressure event needs to get fired.
-const char kMemoryPressureThresholds[] = "memory-pressure-thresholds";
 
 // Enables natural scroll by default.
 const char kNaturalScrollDefault[] = "enable-natural-scroll-default";
@@ -505,6 +479,11 @@ const char kRegulatoryLabelDir[] = "regulatory-label-dir";
 // This makes it easier to test layout logic.
 const char kShowLoginDevOverlay[] = "show-login-dev-overlay";
 
+// Url prefix for the Supervision Onboarding remote web pages.
+// This makes it easier to test with fake HTTP servers or local dev versions.
+const char kSupervisionOnboardingUrlPrefix[] =
+    "supervision-onboarding-url-prefix";
+
 // Enables testing for encryption migration UI.
 const char kTestEncryptionMigrationUI[] = "test-encryption-migration-ui";
 
@@ -555,33 +534,16 @@ base::chromeos::MemoryPressureMonitor::MemoryPressureThresholds
 GetMemoryPressureThresholds() {
   using MemoryPressureMonitor = base::chromeos::MemoryPressureMonitor;
 
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          kMemoryPressureThresholds)) {
-    const std::string group_name =
-        base::FieldTrialList::FindFullName(kMemoryPressureExperimentName);
-    if (group_name == kConservativeThreshold)
-      return MemoryPressureMonitor::THRESHOLD_CONSERVATIVE;
-    if (group_name == kAggressiveCacheDiscardThreshold)
-      return MemoryPressureMonitor::THRESHOLD_AGGRESSIVE_CACHE_DISCARD;
-    if (group_name == kAggressiveTabDiscardThreshold)
-      return MemoryPressureMonitor::THRESHOLD_AGGRESSIVE_TAB_DISCARD;
-    if (group_name == kAggressiveThreshold)
-      return MemoryPressureMonitor::THRESHOLD_AGGRESSIVE;
-    return MemoryPressureMonitor::THRESHOLD_DEFAULT;
-  }
-
-  const std::string option =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          kMemoryPressureThresholds);
-  if (option == kConservativeThreshold)
+  const std::string group_name =
+      base::FieldTrialList::FindFullName(kMemoryPressureExperimentName);
+  if (group_name == kConservativeThreshold)
     return MemoryPressureMonitor::THRESHOLD_CONSERVATIVE;
-  if (option == kAggressiveCacheDiscardThreshold)
+  if (group_name == kAggressiveCacheDiscardThreshold)
     return MemoryPressureMonitor::THRESHOLD_AGGRESSIVE_CACHE_DISCARD;
-  if (option == kAggressiveTabDiscardThreshold)
+  if (group_name == kAggressiveTabDiscardThreshold)
     return MemoryPressureMonitor::THRESHOLD_AGGRESSIVE_TAB_DISCARD;
-  if (option == kAggressiveThreshold)
+  if (group_name == kAggressiveThreshold)
     return MemoryPressureMonitor::THRESHOLD_AGGRESSIVE;
-
   return MemoryPressureMonitor::THRESHOLD_DEFAULT;
 }
 
@@ -600,6 +562,10 @@ bool IsCellularFirstDevice() {
 
 bool IsAccountManagerEnabled() {
   return base::FeatureList::IsEnabled(kAccountManager);
+}
+
+bool IsAddSupervisionEnabled() {
+  return base::FeatureList::IsEnabled(kAddSupervision);
 }
 
 bool IsAssistantFlagsEnabled() {

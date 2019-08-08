@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/property_registration.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -329,8 +330,10 @@ CSSStyleValueVector StyleValueFactory::CoerceStyleValuesOrStrings(
       style_values.push_back(*value.GetAsCSSStyleValue());
     } else {
       DCHECK(value.IsString());
-      if (!parser_context)
-        parser_context = CSSParserContext::Create(execution_context);
+      if (!parser_context) {
+        parser_context =
+            MakeGarbageCollected<CSSParserContext>(execution_context);
+      }
 
       const auto subvalues = StyleValueFactory::FromString(
           property.PropertyID(), custom_property_name, registration,

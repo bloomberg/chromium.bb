@@ -12,6 +12,7 @@
 
 #include "base/files/file_path.h"
 #include "base/unguessable_token.h"
+#include "components/keyed_service/core/simple_factory_key.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/resource_context.h"
@@ -143,6 +144,7 @@ class HEADLESS_EXPORT HeadlessBrowserContextImpl final
       permission_controller_delegate_;
 
   std::unique_ptr<HeadlessRequestContextManager> request_context_manager_;
+  std::unique_ptr<SimpleFactoryKey> simple_factory_key_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessBrowserContextImpl);
 };

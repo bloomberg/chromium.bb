@@ -45,7 +45,6 @@ class CastRenderer : public ::media::Renderer,
   // |host_interfaces| provides interfaces tied to RenderFrameHost.
   CastRenderer(CmaBackendFactory* backend_factory,
                const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-               const std::string& audio_device_id,
                VideoModeSwitcher* video_mode_switcher,
                VideoResolutionPolicy* video_resolution_policy,
                MediaResourceTracker* media_resource_tracker,
@@ -95,7 +94,6 @@ class CastRenderer : public ::media::Renderer,
 
   CmaBackendFactory* const backend_factory_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  const std::string audio_device_id_;
   VideoModeSwitcher* video_mode_switcher_;
   VideoResolutionPolicy* video_resolution_policy_;
   MediaResourceTracker* media_resource_tracker_;

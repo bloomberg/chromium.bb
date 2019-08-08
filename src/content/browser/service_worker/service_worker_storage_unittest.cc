@@ -399,12 +399,13 @@ class ServiceWorkerStorageTest : public testing::Test {
     return result.value();
   }
 
-  blink::ServiceWorkerStatusCode DeleteRegistration(int64_t registration_id,
-                                                    const GURL& origin) {
+  blink::ServiceWorkerStatusCode DeleteRegistration(
+      scoped_refptr<ServiceWorkerRegistration> registration,
+      const GURL& origin) {
     bool was_called = false;
     base::Optional<blink::ServiceWorkerStatusCode> result;
-    storage()->DeleteRegistration(
-        registration_id, origin, MakeStatusCallback(&was_called, &result));
+    storage()->DeleteRegistration(registration, origin,
+                                  MakeStatusCallback(&was_called, &result));
     EXPECT_FALSE(was_called);  // always async
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(was_called);
@@ -672,7 +673,7 @@ TEST_F(ServiceWorkerStorageTest, DisabledStorage) {
             UpdateToActiveState(live_registration));
 
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorAbort,
-            DeleteRegistration(kRegistrationId, kScope.GetOrigin()));
+            DeleteRegistration(live_registration, kScope.GetOrigin()));
 
   // Response reader and writer created by the disabled storage should fail to
   // access the disk cache.
@@ -888,25 +889,6 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
   EXPECT_EQ(ServiceWorkerVersion::ACTIVATED,
             found_registration->active_version()->status());
   EXPECT_EQ(kToday, found_registration->last_update_check());
-
-  // Delete from storage but with a instance still live.
-  EXPECT_TRUE(context()->GetLiveVersion(kRegistrationId));
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
-            DeleteRegistration(kRegistrationId, kScope.GetOrigin()));
-  EXPECT_TRUE(context()->GetLiveVersion(kRegistrationId));
-
-  // Should no longer be found.
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorNotFound,
-            FindRegistrationForId(kRegistrationId, kScope.GetOrigin(),
-                                  &found_registration));
-  EXPECT_FALSE(found_registration.get());
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorNotFound,
-            FindRegistrationForIdOnly(kRegistrationId, &found_registration));
-  EXPECT_FALSE(found_registration.get());
-
-  // Deleting an unstored registration should succeed.
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
-            DeleteRegistration(kRegistrationId + 1, kScope.GetOrigin()));
 }
 
 TEST_F(ServiceWorkerStorageTest, InstallingRegistrationsAreFindable) {
@@ -1154,7 +1136,7 @@ TEST_F(ServiceWorkerStorageTest, StoreUserData) {
   ASSERT_EQ("data", data_out[0]);
 
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
-            DeleteRegistration(kRegistrationId, kScope.GetOrigin()));
+            DeleteRegistration(live_registration, kScope.GetOrigin()));
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorNotFound,
             GetUserData(kRegistrationId, {"key"}, &data_out));
   data_list_out.clear();
@@ -1399,13 +1381,12 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_NoLiveVersion) {
   std::set<int64_t> verify_ids;
 
   registration_->SetWaitingVersion(nullptr);
-  registration_ = nullptr;
 
   // Deleting the registration should result in the resources being added to the
   // purgeable list and then doomed in the disk cache and removed from that
   // list.
   storage()->DeleteRegistration(
-      registration_id_, scope_.GetOrigin(),
+      registration_, scope_.GetOrigin(),
       base::BindOnce(&VerifyPurgeableListStatusCallback,
                      base::Unretained(database()), &verify_ids, &was_called,
                      &result));
@@ -1432,7 +1413,7 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_WaitingVersion) {
   // purgeable list and then doomed in the disk cache and removed from that
   // list.
   storage()->DeleteRegistration(
-      registration_->id(), scope_.GetOrigin(),
+      registration_, scope_.GetOrigin(),
       base::BindOnce(&VerifyPurgeableListStatusCallback,
                      base::Unretained(database()), &verify_ids, &was_called,
                      &result));
@@ -1448,11 +1429,9 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_WaitingVersion) {
   EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, false));
   EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id2_, false));
 
-  // Doom the version, now it happens.
+  // Doom the version. The resources should be purged.
   registration_->waiting_version()->Doom();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, result);
-  EXPECT_EQ(2u, verify_ids.size());
   verify_ids.clear();
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
             database()->GetPurgeableResourceIds(&verify_ids));
@@ -1465,6 +1444,7 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_WaitingVersion) {
 TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
   // Promote the worker to active and add a controllee.
   registration_->SetActiveVersion(registration_->waiting_version());
+  registration_->active_version()->SetStatus(ServiceWorkerVersion::ACTIVATED);
   storage()->UpdateToActiveState(registration_.get(), base::DoNothing());
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
   base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
@@ -1480,7 +1460,7 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
   // Deleting the registration should move the resources to the purgeable list
   // but keep them available.
   storage()->DeleteRegistration(
-      registration_->id(), scope_.GetOrigin(),
+      registration_, scope_.GetOrigin(),
       base::BindOnce(&VerifyPurgeableListStatusCallback,
                      base::Unretained(database()), &verify_ids, &was_called,
                      &result));
@@ -1496,10 +1476,11 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
   EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, true));
   EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id2_, true));
 
-  // Removing the controllee should cause the resources to be deleted.
+  // Dooming the version should cause the resources to be deleted.
   registration_->active_version()->RemoveControllee(host->client_uuid());
   registration_->active_version()->Doom();
   base::RunLoop().RunUntilIdle();
+
   verify_ids.clear();
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
             database()->GetPurgeableResourceIds(&verify_ids));
@@ -1512,6 +1493,7 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
 TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
   // Promote the worker to active and add a controllee.
   registration_->SetActiveVersion(registration_->waiting_version());
+  registration_->active_version()->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration_->SetWaitingVersion(nullptr);
   storage()->UpdateToActiveState(registration_.get(), base::DoNothing());
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
@@ -1528,7 +1510,7 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
   // Deleting the registration should move the resources to the purgeable list
   // but keep them available.
   storage()->DeleteRegistration(
-      registration_->id(), scope_.GetOrigin(),
+      registration_, scope_.GetOrigin(),
       base::BindOnce(&VerifyPurgeableListStatusCallback,
                      base::Unretained(database()), &verify_ids, &was_called,
                      &result));
@@ -1672,6 +1654,7 @@ TEST_F(ServiceWorkerResourceStorageDiskTest,
 TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
   // Promote the worker to active worker and add a controllee.
   registration_->SetActiveVersion(registration_->waiting_version());
+  registration_->active_version()->SetStatus(ServiceWorkerVersion::ACTIVATED);
   storage()->UpdateToActiveState(registration_.get(), base::DoNothing());
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
   base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
@@ -1715,16 +1698,67 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
   EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, false));
   EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id2_, false));
 
-  // Removing the controllee should cause the old version's resources to be
-  // deleted.
-  registration_->active_version()->RemoveControllee(host->client_uuid());
-  registration_->active_version()->Doom();
+  // Remove the controllee to allow the new version to become active, making the
+  // old version redundant.
+  scoped_refptr<ServiceWorkerVersion> old_version(
+      registration_->active_version());
+  old_version->RemoveControllee(host->client_uuid());
+  registration_->ActivateWaitingVersionWhenReady();
+  EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, old_version->status());
+
+  // Its resources should be purged.
   base::RunLoop().RunUntilIdle();
   verify_ids.clear();
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
             database()->GetPurgeableResourceIds(&verify_ids));
   EXPECT_TRUE(verify_ids.empty());
 
+  EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id1_, false));
+  EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id2_, false));
+}
+
+TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration_NoLiveVersion) {
+  // Promote the worker to active worker and add a controllee.
+  registration_->SetActiveVersion(registration_->waiting_version());
+  storage()->UpdateToActiveState(registration_.get(), base::DoNothing());
+
+  // Make an updated registration.
+  scoped_refptr<ServiceWorkerVersion> live_version = new ServiceWorkerVersion(
+      registration_.get(), script_, blink::mojom::ScriptType::kClassic,
+      storage()->NewVersionId(), context()->AsWeakPtr());
+  live_version->SetStatus(ServiceWorkerVersion::NEW);
+  registration_->SetWaitingVersion(live_version);
+  std::vector<ResourceRecord> records;
+  records.push_back(ResourceRecord(10, live_version->script_url(), 100));
+  live_version->script_cache_map()->SetResources(records);
+  live_version->set_fetch_handler_existence(
+      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
+
+  // Destroy the active version.
+  registration_->UnsetVersion(registration_->active_version());
+
+  // Writing the registration should purge the old version's resources,
+  // since it's not live.
+  std::set<int64_t> verify_ids;
+  bool was_called = false;
+  auto result = blink::ServiceWorkerStatusCode::kErrorFailed;
+  storage()->StoreRegistration(
+      registration_.get(), registration_->waiting_version(),
+      base::BindOnce(&VerifyPurgeableListStatusCallback,
+                     base::Unretained(database()), &verify_ids, &was_called,
+                     &result));
+  base::RunLoop().RunUntilIdle();
+
+  // The StoreRegistration callback was called with the purgeable list.
+  ASSERT_TRUE(was_called);
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, result);
+  EXPECT_EQ(2u, verify_ids.size());
+
+  // The resources have already been purged.
+  verify_ids.clear();
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database()->GetPurgeableResourceIds(&verify_ids));
+  EXPECT_TRUE(verify_ids.empty());
   EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id1_, false));
   EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id2_, false));
 }

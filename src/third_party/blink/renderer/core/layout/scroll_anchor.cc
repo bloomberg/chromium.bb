@@ -80,13 +80,13 @@ static LayoutPoint CornerPointOfRect(LayoutRect rect, Corner which_corner) {
 // Bounds of the LayoutObject relative to the scroller's visible content rect.
 static LayoutRect RelativeBounds(const LayoutObject* layout_object,
                                  const ScrollableArea* scroller) {
-  LayoutRect local_bounds;
+  PhysicalRect local_bounds;
   if (layout_object->IsBox()) {
-    local_bounds = ToLayoutBox(layout_object)->BorderBoxRect();
+    local_bounds = ToLayoutBox(layout_object)->PhysicalBorderBoxRect();
     if (!layout_object->HasOverflowClip()) {
-      // borderBoxRect doesn't include overflow content and floats.
+      // BorderBoxRect doesn't include overflow content and floats.
       LayoutUnit max_y =
-          std::max(local_bounds.MaxY(),
+          std::max(local_bounds.Bottom(),
                    ToLayoutBox(layout_object)->LayoutOverflowRect().MaxY());
       auto* layout_block_flow = DynamicTo<LayoutBlockFlow>(layout_object);
       if (layout_block_flow && layout_block_flow->ContainsFloats()) {
@@ -94,10 +94,14 @@ static LayoutRect RelativeBounds(const LayoutObject* layout_object,
         // grandchildren.
         max_y = std::max(max_y, layout_block_flow->LowestFloatLogicalBottom());
       }
-      local_bounds.ShiftMaxYEdgeTo(max_y);
+      local_bounds.ShiftBottomEdgeTo(max_y);
     }
   } else if (layout_object->IsText()) {
-    local_bounds.Unite(ToLayoutText(layout_object)->LinesBoundingBox());
+    const auto* text = ToLayoutText(layout_object);
+    // TODO(kojii): |PhysicalLinesBoundingBox()| cannot compute, and thus
+    // returns (0, 0) when changes are made that |DeleteLineBoxes()| or clear
+    // |SetPaintFragment()|, e.g., |SplitFlow()|. crbug.com/965352
+    local_bounds.Unite(text->PhysicalLinesBoundingBox());
   } else {
     // Only LayoutBox and LayoutText are supported.
     NOTREACHED();

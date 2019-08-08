@@ -72,7 +72,6 @@ WebUIDataSource* CreateGpuHTMLSource() {
   source->SetJsonPath("strings.js");
   source->AddResourcePath("gpu_internals.js", IDR_GPU_INTERNALS_JS);
   source->SetDefaultResource(IDR_GPU_INTERNALS_HTML);
-  source->UseGzip();
   return source;
 }
 
@@ -188,15 +187,12 @@ std::unique_ptr<base::ListValue> BasicGpuInfoAsListValue(
   basic_info->Append(NewDescriptionValuePair(
       "Supports overlays",
       std::make_unique<base::Value>(gpu_info.supports_overlays)));
-
-  auto overlay_capabilities = std::make_unique<base::ListValue>();
-  for (const auto& cap : gpu_info.overlay_capabilities) {
-    overlay_capabilities->Append(NewDescriptionValuePair(
-        gpu::OverlayFormatToString(cap.format),
-        cap.is_scaling_supported ? "SCALING" : "DIRECT"));
-  }
-  basic_info->Append(NewDescriptionValuePair("Overlay capabilities",
-                                             std::move(overlay_capabilities)));
+  basic_info->Append(NewDescriptionValuePair(
+      "YUY2 overlay support",
+      gpu::OverlaySupportToString(gpu_info.yuy2_overlay_support)));
+  basic_info->Append(NewDescriptionValuePair(
+      "NV12 overlay support",
+      gpu::OverlaySupportToString(gpu_info.nv12_overlay_support)));
 
   std::vector<gfx::PhysicalDisplaySize> display_sizes =
       gfx::GetPhysicalSizeForDisplays();
@@ -308,6 +304,21 @@ std::unique_ptr<base::ListValue> BasicGpuInfoAsListValue(
       "RGBA visual ID", base::NumberToString(gpu_info.rgba_visual)));
 #endif
 
+  std::string buffer_formats;
+  for (int i = 0; i <= static_cast<int>(gfx::BufferFormat::LAST); ++i) {
+    const gfx::BufferFormat buffer_format = static_cast<gfx::BufferFormat>(i);
+    if (i > 0)
+      buffer_formats += ",  ";
+    buffer_formats += gfx::BufferFormatToString(buffer_format);
+    const bool supported = base::ContainsValue(
+        gpu_feature_info.supported_buffer_formats_for_allocation_and_texturing,
+        buffer_format);
+    buffer_formats += supported ? ": supported" : ": not supported";
+  }
+  basic_info->Append(NewDescriptionValuePair(
+      "gfx::BufferFormats supported for allocation and texturing",
+      buffer_formats));
+
   return basic_info;
 }
 
@@ -387,6 +398,11 @@ std::unique_ptr<base::ListValue> getDisplayInfo() {
         base::NumberToString(display.depth_per_component())));
     display_info->Append(NewDescriptionValuePair(
         "Bits per pixel", base::NumberToString(display.color_depth())));
+    if (display.display_frequency()) {
+      display_info->Append(NewDescriptionValuePair(
+          "Refresh Rate in Hz",
+          base::NumberToString(display.display_frequency())));
+    }
   }
   return display_info;
 }

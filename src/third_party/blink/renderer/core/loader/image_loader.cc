@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/frame_owner.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/cross_origin_attribute.h"
@@ -57,6 +58,7 @@
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
@@ -68,38 +70,90 @@
 namespace blink {
 
 namespace {
-bool IsLazyLoadableImage(const LocalFrame* frame,
-                         HTMLImageElement* html_image,
-                         const KURL& url) {
-  if (!url.ProtocolIsInHTTPFamily())
-    return false;
 
-  if (EqualIgnoringASCIICase(
-          html_image->FastGetAttribute(html_names::kLoadingAttr), "lazy"))
-    return true;
+enum class LazyLoadImageEligibility {
+  kDisabled,
+  kEnabledExplicit,
+  kEnabledAutomatic
+};
+
+enum class LoadingAttrValue { kAuto, kLazy, kEager };
+
+LoadingAttrValue GetLoadingAttrValue(const HTMLImageElement& html_image) {
+  const auto& attribute_value =
+      html_image.FastGetAttribute(html_names::kLoadingAttr);
+  return EqualIgnoringASCIICase(attribute_value, "eager")
+             ? LoadingAttrValue::kEager
+             : EqualIgnoringASCIICase(attribute_value, "lazy")
+                   ? LoadingAttrValue::kLazy
+                   : LoadingAttrValue::kAuto;
+}
+LazyLoadImageEligibility DetermineLazyLoadImageEligibility(
+    const LocalFrame& frame,
+    const HTMLImageElement& html_image,
+    const KURL& url) {
+  if (!url.ProtocolIsInHTTPFamily())
+    return LazyLoadImageEligibility::kDisabled;
+
+  LoadingAttrValue loading_attr = GetLoadingAttrValue(html_image);
+  if (loading_attr == LoadingAttrValue::kLazy) {
+    UseCounter::Count(frame.GetDocument(),
+                      WebFeature::kLazyLoadImageLoadingAttributeLazy);
+    return LazyLoadImageEligibility::kEnabledExplicit;
+  }
+  if (loading_attr == LoadingAttrValue::kEager &&
+      !frame.GetDocument()->IsLazyLoadPolicyEnforced()) {
+    UseCounter::Count(frame.GetDocument(),
+                      WebFeature::kLazyLoadImageLoadingAttributeEager);
+    return LazyLoadImageEligibility::kDisabled;
+  }
 
   // Do not lazyload image elements created from javascript.
-  if (!html_image->ElementCreatedByParser())
-    return false;
+  if (!html_image.ElementCreatedByParser())
+    return LazyLoadImageEligibility::kDisabled;
 
-  if (EqualIgnoringASCIICase(
-          html_image->FastGetAttribute(html_names::kLoadingAttr), "eager") &&
-      !frame->GetDocument()->IsLazyLoadPolicyEnforced()) {
-    return false;
+  if (frame.Owner() && !frame.Owner()->ShouldLazyLoadChildren())
+    return LazyLoadImageEligibility::kDisabled;
+
+  // Avoid automatically lazyloading if width and height attributes are small.
+  // This heuristic helps avoid double fetching tracking pixels.
+  if (HTMLImageElement::GetAttributeLazyLoadDimensionType(
+          html_image.FastGetAttribute(html_names::kWidthAttr)) ==
+          HTMLImageElement::LazyLoadDimensionType::kAbsoluteSmall &&
+      HTMLImageElement::GetAttributeLazyLoadDimensionType(
+          html_image.FastGetAttribute(html_names::kHeightAttr)) ==
+          HTMLImageElement::LazyLoadDimensionType::kAbsoluteSmall) {
+    return LazyLoadImageEligibility::kDisabled;
   }
-  // Avoid lazyloading if width and height attributes are small. This
-  // heuristic helps avoid double fetching tracking pixels.
-  if (HTMLImageElement::IsDimensionSmallAndAbsoluteForLazyLoad(
-          html_image->getAttribute(html_names::kWidthAttr)) &&
-      HTMLImageElement::IsDimensionSmallAndAbsoluteForLazyLoad(
-          html_image->getAttribute(html_names::kHeightAttr))) {
-    return false;
+  // Avoid automatically lazyloading if width or height is specified in inline
+  // style and is small enough. This heuristic helps avoid double fetching
+  // tracking pixels.
+  if (HTMLImageElement::GetInlineStyleDimensionsType(
+          html_image.InlineStyle()) ==
+      HTMLImageElement::LazyLoadDimensionType::kAbsoluteSmall) {
+    return LazyLoadImageEligibility::kDisabled;
   }
-  // Avoid lazyloading if width or height is specified in inline style and is
-  // small enough. This heuristic helps avoid double fetching tracking pixels.
-  if (HTMLImageElement::IsInlineStyleDimensionsSmall(html_image->InlineStyle()))
-    return false;
-  return true;
+
+  return LazyLoadImageEligibility::kEnabledAutomatic;
+}
+
+// Returns true if absolute dimension is specified in the width and height
+// attributes or in the inline style.
+bool IsDimensionAbsoluteLarge(const HTMLImageElement& html_image) {
+  if (HTMLImageElement::GetAttributeLazyLoadDimensionType(
+          html_image.FastGetAttribute(html_names::kWidthAttr)) ==
+          HTMLImageElement::LazyLoadDimensionType::kAbsoluteNotSmall ||
+      HTMLImageElement::GetAttributeLazyLoadDimensionType(
+          html_image.FastGetAttribute(html_names::kHeightAttr)) ==
+          HTMLImageElement::LazyLoadDimensionType::kAbsoluteNotSmall) {
+    return true;
+  }
+  if (HTMLImageElement::GetInlineStyleDimensionsType(
+          html_image.InlineStyle()) ==
+      HTMLImageElement::LazyLoadDimensionType::kAbsoluteNotSmall) {
+    return true;
+  }
+  return false;
 }
 
 bool CheckForUnoptimizedImagePolicy(const Document& document,
@@ -110,7 +164,7 @@ bool CheckForUnoptimizedImagePolicy(const Document& document,
   // Render the image as a placeholder image if the image is not sufficiently
   // well-compressed, according to the unoptimized image feature policies on
   // |document|.
-  if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
+  if (RuntimeEnabledFeatures::UnoptimizedImagePoliciesEnabled(&document) &&
       !new_image->IsAcceptableCompressionRatio(document)) {
     return true;
   }
@@ -198,6 +252,7 @@ ImageLoader::ImageLoader(Element* element)
       image_complete_(true),
       loading_image_document_(false),
       suppress_error_events_(false),
+      was_fully_deferred_(false),
       lazy_image_load_state_(LazyImageLoadState::kNone) {
   RESOURCE_LOADING_DVLOG(1) << "new ImageLoader " << this;
 }
@@ -438,8 +493,21 @@ void ImageLoader::UpdateImageState(ImageResourceContent* new_image_content) {
     }
   } else {
     image_complete_ = false;
-    if (lazy_image_load_state_ == LazyImageLoadState::kDeferred)
-      LazyLoadImageObserver::StartMonitoring(GetElement());
+    if (lazy_image_load_state_ == LazyImageLoadState::kDeferred) {
+      if (auto* html_image = ToHTMLImageElementOrNull(GetElement())) {
+        using DeferralMessage = LazyLoadImageObserver::DeferralMessage;
+        LoadingAttrValue loading_attr = GetLoadingAttrValue(*html_image);
+        DCHECK_NE(loading_attr, LoadingAttrValue::kEager);
+        auto deferral_message = DeferralMessage::kNone;
+        if (loading_attr == LoadingAttrValue::kAuto) {
+          deferral_message = DeferralMessage::kLoadEventsDeferred;
+        } else if (!IsDimensionAbsoluteLarge(*html_image)) {
+          DCHECK_EQ(loading_attr, LoadingAttrValue::kLazy);
+          deferral_message = DeferralMessage::kMissingDimensionForLazy;
+        }
+        LazyLoadImageObserver::StartMonitoring(html_image, deferral_message);
+      }
+    }
   }
   delay_until_image_notify_finished_ = nullptr;
 }
@@ -505,8 +573,8 @@ void ImageLoader::DoUpdateFromElement(
     // own origin checking logic that may get confused if service workers
     // respond with resources from another origin.
     // https://w3c.github.io/ServiceWorker/#implementer-concerns
-    if (GetElement()->IsHTMLElement() &&
-        ToHTMLElement(GetElement())->IsPluginElement()) {
+    auto* html_element = DynamicTo<HTMLElement>(GetElement());
+    if (html_element && html_element->IsPluginElement()) {
       resource_request.SetSkipServiceWorker(true);
     }
 
@@ -521,22 +589,49 @@ void ImageLoader::DoUpdateFromElement(
       if (frame->IsClientLoFiAllowed(params.GetResourceRequest())) {
         params.SetClientLoFiPlaceholder();
       } else if (auto* html_image = ToHTMLImageElementOrNull(GetElement())) {
-        if (IsLazyLoadableImage(frame, html_image,
-                                params.GetResourceRequest().Url())) {
-          if (frame->GetDocument()->GetSettings()->GetLazyLoadEnabled() &&
-              frame->IsLazyLoadingImageAllowed()) {
+        const LazyLoadImageEligibility lazy_load_image_eligibility =
+            DetermineLazyLoadImageEligibility(*frame, *html_image,
+                                              params.Url());
+        const auto lazy_load_image_enabled_state =
+            frame->GetLazyLoadImageEnabledState();
+
+        if ((lazy_load_image_eligibility ==
+                 LazyLoadImageEligibility::kEnabledExplicit &&
+             lazy_load_image_enabled_state !=
+                 LocalFrame::LazyLoadImageEnabledState::kDisabled) ||
+            (lazy_load_image_eligibility ==
+                 LazyLoadImageEligibility::kEnabledAutomatic &&
+             lazy_load_image_enabled_state ==
+                 LocalFrame::LazyLoadImageEnabledState::kEnabledAutomatic)) {
+          if ((was_fully_deferred_ =
+                   !RuntimeEnabledFeatures::
+                       LazyImageLoadingMetadataFetchEnabled() ||
+                   IsDimensionAbsoluteLarge(*html_image))) {
+            params.SetLazyImageDeferred();
+            if (frame->Client()) {
+              frame->Client()->DidObserveLazyLoadBehavior(
+                  WebLocalFrameClient::LazyLoadBehavior::kDeferredImage);
+            }
+          } else {
             params.SetLazyImagePlaceholder();
-            lazy_image_load_state_ = LazyImageLoadState::kDeferred;
           }
-          if (!frame->Owner() || frame->Owner()->ShouldLazyLoadChildren())
-            LazyLoadImageObserver::StartTrackingVisibilityMetrics(html_image);
+          lazy_image_load_state_ = LazyImageLoadState::kDeferred;
+        }
+
+        if (RuntimeEnabledFeatures::LazyImageVisibleLoadTimeMetricsEnabled() &&
+            (lazy_load_image_eligibility ==
+                 LazyLoadImageEligibility::kEnabledExplicit ||
+             lazy_load_image_eligibility ==
+                 LazyLoadImageEligibility::kEnabledAutomatic)) {
+          LazyLoadImageObserver::StartTrackingVisibilityMetrics(html_image);
         }
       }
     }
 
-    // If the image was previously set to full image, it is a full load of a
-    // placeholder image.
-    if (lazy_image_load_state_ == LazyImageLoadState::kFullImage) {
+    // If the image was previously set to full image and had no dimensions, it
+    //     // is a full load of a placeholder image.
+    if (!was_fully_deferred_ &&
+        lazy_image_load_state_ == LazyImageLoadState::kFullImage) {
       params.SetLazyImageAutoReload();
     }
 
@@ -786,7 +881,7 @@ void ImageLoader::ImageNotifyFinished(ImageResourceContent* resource) {
   // crbug.com/930281
   if (CheckForUnoptimizedImagePolicy(element_->GetDocument(), image_content_) &&
       IsHTMLImageElement(element_))
-    ToHTMLImageElement(element_)->SetImagePolicyViolated();
+    ToHTMLImageElement(element_.Get())->SetImagePolicyViolated();
 
   DispatchDecodeRequestsIfComplete();
 
@@ -929,6 +1024,14 @@ void ImageLoader::LoadDeferredImage(
     return;
   DCHECK(!image_complete_);
   lazy_image_load_state_ = LazyImageLoadState::kFullImage;
+
+  // If the image has been fully deferred (no placeholder fetch), report it as
+  // fully loaded now.
+  LocalFrame* frame = element_->GetDocument().GetFrame();
+  if (was_fully_deferred_ && frame && frame->Client()) {
+    frame->Client()->DidObserveLazyLoadBehavior(
+        WebLocalFrameClient::LazyLoadBehavior::kLazyLoadedImage);
+  }
   UpdateFromElement(kUpdateNormal, referrer_policy);
 }
 
@@ -959,7 +1062,7 @@ void ImageLoader::DecodeRequest::Resolve() {
 }
 
 void ImageLoader::DecodeRequest::Reject() {
-  resolver_->Reject(DOMException::Create(
+  resolver_->Reject(MakeGarbageCollected<DOMException>(
       DOMExceptionCode::kEncodingError, "The source image cannot be decoded."));
   loader_ = nullptr;
 }

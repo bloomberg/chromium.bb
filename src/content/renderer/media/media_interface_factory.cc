@@ -110,18 +110,20 @@ void MediaInterfaceFactory::CreateMediaPlayerRenderer(
 
 void MediaInterfaceFactory::CreateFlingingRenderer(
     const std::string& presentation_id,
+    media::mojom::FlingingRendererClientExtensionPtr client_extension,
     media::mojom::RendererRequest request) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&MediaInterfaceFactory::CreateFlingingRenderer,
-                       weak_this_, presentation_id, std::move(request)));
+                       weak_this_, presentation_id, std::move(client_extension),
+                       std::move(request)));
     return;
   }
 
   DVLOG(1) << __func__;
-  GetMediaInterfaceFactory()->CreateFlingingRenderer(presentation_id,
-                                                     std::move(request));
+  GetMediaInterfaceFactory()->CreateFlingingRenderer(
+      presentation_id, std::move(client_extension), std::move(request));
 }
 #endif  // defined(OS_ANDROID)
 

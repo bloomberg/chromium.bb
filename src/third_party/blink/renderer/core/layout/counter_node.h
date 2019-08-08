@@ -110,8 +110,8 @@ class CounterNode : public RefCounted<CounterNode> {
 
 }  // namespace blink
 
-#ifndef NDEBUG
-// Outside the WebCore namespace for ease of invocation from gdb.
+#if DCHECK_IS_ON()
+// Outside the blink namespace for ease of invocation from gdb.
 void showCounterTree(const blink::CounterNode*);
 #endif
 

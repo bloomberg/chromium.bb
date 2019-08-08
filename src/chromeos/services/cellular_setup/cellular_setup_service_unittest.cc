@@ -29,8 +29,8 @@ namespace {
 using CarrierPortalHandlerPair =
     std::pair<mojom::CarrierPortalHandlerPtr, FakeCarrierPortalHandler*>;
 
-const char kTestCellularNetworkGuid[] = "testCellularNetworkGuid";
 const char kTestPaymentUrl[] = "testPaymentUrl";
+const char kTestPaymentPostData[] = "testPaymentPostData";
 const char kTestCarrier[] = "testCarrier";
 const char kTestMeid[] = "testMeid";
 const char kTestImei[] = "testImei";
@@ -85,7 +85,6 @@ class CellularSetupServiceTest : public testing::Test {
   // Calls StartActivation() and returns the fake CarrierPortalHandler and its
   // associated InterfacePtr.
   CarrierPortalHandlerPair CallStartActivation(
-      const std::string& cellular_network_guid,
       FakeActivationDelegate* fake_activation_delegate) {
     std::vector<std::unique_ptr<FakeCellularSetup::StartActivationInvocation>>&
         start_activation_invocations =
@@ -95,15 +94,13 @@ class CellularSetupServiceTest : public testing::Test {
 
     // Make StartActivation() call and propagate it to the service.
     cellular_setup_ptr_->StartActivation(
-        cellular_network_guid, fake_activation_delegate->GenerateInterfacePtr(),
+        fake_activation_delegate->GenerateInterfacePtr(),
         base::BindOnce(&CellularSetupServiceTest::OnStartActivationResult,
                        base::Unretained(this), run_loop.QuitClosure()));
     cellular_setup_ptr_.FlushForTesting();
 
     // Verify that the call was made successfully.
     EXPECT_EQ(num_args_before_call + 1u, start_activation_invocations.size());
-    EXPECT_EQ(cellular_network_guid,
-              start_activation_invocations.back()->cellular_network_guid());
 
     // Execute the callback and retrieve the returned CarrierPortalHandler.
     FakeCarrierPortalHandler* fake_carrier_portal_observer =
@@ -130,7 +127,8 @@ class CellularSetupServiceTest : public testing::Test {
     size_t num_elements_before_call = cellular_metadata_list.size();
 
     GetLastActivationDelegate()->OnActivationStarted(
-        mojom::CellularMetadata::New(GURL(kTestPaymentUrl), kTestCarrier,
+        mojom::CellularMetadata::New(GURL(kTestPaymentUrl),
+                                     kTestPaymentPostData, kTestCarrier,
                                      kTestMeid, kTestImei, kTestMdn));
     GetLastActivationDelegate().FlushForTesting();
 
@@ -213,8 +211,8 @@ class CellularSetupServiceTest : public testing::Test {
 TEST_F(CellularSetupServiceTest, StartActivation_Success) {
   auto fake_activation_delegate = std::make_unique<FakeActivationDelegate>();
 
-  CarrierPortalHandlerPair pair = CallStartActivation(
-      kTestCellularNetworkGuid, fake_activation_delegate.get());
+  CarrierPortalHandlerPair pair =
+      CallStartActivation(fake_activation_delegate.get());
   NotifyLastDelegateThatActivationStarted(fake_activation_delegate.get());
 
   SendCarrierPortalStatusUpdate(
@@ -222,15 +220,16 @@ TEST_F(CellularSetupServiceTest, StartActivation_Success) {
   SendCarrierPortalStatusUpdate(
       mojom::CarrierPortalStatus::kPortalLoadedAndUserCompletedPayment, &pair);
 
-  NotifyLastDelegateThatActivationFinished(mojom::ActivationResult::kSuccess,
-                                           fake_activation_delegate.get());
+  NotifyLastDelegateThatActivationFinished(
+      mojom::ActivationResult::kSuccessfullyStartedActivation,
+      fake_activation_delegate.get());
 }
 
 TEST_F(CellularSetupServiceTest, StartActivation_PortalFailsToLoad) {
   auto fake_activation_delegate = std::make_unique<FakeActivationDelegate>();
 
-  CarrierPortalHandlerPair pair = CallStartActivation(
-      kTestCellularNetworkGuid, fake_activation_delegate.get());
+  CarrierPortalHandlerPair pair =
+      CallStartActivation(fake_activation_delegate.get());
   NotifyLastDelegateThatActivationStarted(fake_activation_delegate.get());
 
   SendCarrierPortalStatusUpdate(mojom::CarrierPortalStatus::kPortalFailedToLoad,
@@ -244,8 +243,8 @@ TEST_F(CellularSetupServiceTest, StartActivation_PortalFailsToLoad) {
 TEST_F(CellularSetupServiceTest, StartActivation_ErrorDuringPayment) {
   auto fake_activation_delegate = std::make_unique<FakeActivationDelegate>();
 
-  CarrierPortalHandlerPair pair = CallStartActivation(
-      kTestCellularNetworkGuid, fake_activation_delegate.get());
+  CarrierPortalHandlerPair pair =
+      CallStartActivation(fake_activation_delegate.get());
   NotifyLastDelegateThatActivationStarted(fake_activation_delegate.get());
 
   SendCarrierPortalStatusUpdate(
@@ -256,23 +255,6 @@ TEST_F(CellularSetupServiceTest, StartActivation_ErrorDuringPayment) {
 
   NotifyLastDelegateThatActivationFinished(
       mojom::ActivationResult::kFailedToActivate,
-      fake_activation_delegate.get());
-}
-
-TEST_F(CellularSetupServiceTest, StartActivation_TimedOut) {
-  auto fake_activation_delegate = std::make_unique<FakeActivationDelegate>();
-
-  CarrierPortalHandlerPair pair = CallStartActivation(
-      kTestCellularNetworkGuid, fake_activation_delegate.get());
-  NotifyLastDelegateThatActivationStarted(fake_activation_delegate.get());
-
-  SendCarrierPortalStatusUpdate(
-      mojom::CarrierPortalStatus::kPortalLoadedWithoutPaidUser, &pair);
-  SendCarrierPortalStatusUpdate(
-      mojom::CarrierPortalStatus::kPortalLoadedAndUserCompletedPayment, &pair);
-
-  NotifyLastDelegateThatActivationFinished(
-      mojom::ActivationResult::kTimedOutActivating,
       fake_activation_delegate.get());
 }
 

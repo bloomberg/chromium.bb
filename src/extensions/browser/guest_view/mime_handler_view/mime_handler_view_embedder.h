@@ -32,10 +32,15 @@ namespace extensions {
 //.  - the embedder or the <iframe> are removed from DOM.
 class MimeHandlerViewEmbedder : public content::WebContentsObserver {
  public:
+  // Returns the instances associated with an ongoing navigation in a frame
+  // identified by |frame_tree_node_id|.
+  static MimeHandlerViewEmbedder* Get(int32_t frame_tree_node_id);
+
   static void Create(int32_t frame_tree_node_id,
                      const GURL& resource_url,
                      const std::string& mime_type,
-                     const std::string& stream_id);
+                     const std::string& stream_id,
+                     const std::string& internal_id);
 
   ~MimeHandlerViewEmbedder() override;
 
@@ -44,17 +49,26 @@ class MimeHandlerViewEmbedder : public content::WebContentsObserver {
   void FrameDeleted(content::RenderFrameHost* render_frame_host) override;
   void DidStartNavigation(content::NavigationHandle* handle) override;
   void ReadyToCommitNavigation(content::NavigationHandle* handle) override;
+  void DidFinishNavigation(content::NavigationHandle* handle) override;
+
+  void ReadyToCreateMimeHandlerView(bool result);
 
  private:
   MimeHandlerViewEmbedder(int32_t frame_tree_node_id,
                           const GURL& resource_url,
                           const std::string& mime_type,
-                          const std::string& stream_id);
+                          const std::string& stream_id,
+                          const std::string& internal_id);
   void CreateMimeHandlerViewGuest(
       mime_handler::BeforeUnloadControlPtr before_unload_control_ptr);
   void DidCreateMimeHandlerViewGuest(content::WebContents* guest_web_contents);
   // Returns null before |render_frame_host_| is known.
   mojom::MimeHandlerViewContainerManager* GetContainerManager();
+
+  // Checks the sandbox state of |render_frame_host_|. If the frame is sandboxed
+  // it will send an IPC to renderer to show an empty page and immediately
+  // deletes |this|.
+  void CheckSandboxFlags();
 
   // The ID for the embedder frame of MimeHandlerViewGuest.
   int32_t frame_tree_node_id_;
@@ -76,7 +90,11 @@ class MimeHandlerViewEmbedder : public content::WebContentsObserver {
   // to after it is created.
   mime_handler::BeforeUnloadControlPtrInfo pending_before_unload_control_;
 
-  mojom::MimeHandlerViewContainerManagerPtr container_manager_;
+  mojom::MimeHandlerViewContainerManagerAssociatedPtr container_manager_;
+
+  const std::string internal_id_;
+
+  bool ready_to_create_mime_handler_view_ = false;
 
   base::WeakPtrFactory<MimeHandlerViewEmbedder> weak_factory_;
 

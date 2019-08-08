@@ -38,6 +38,7 @@
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
+#include "third_party/blink/public/platform/web_gesture_event.h"
 #include "third_party/blink/public/platform/web_intrinsic_sizing_info.h"
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/public/platform/web_point.h"
@@ -51,6 +52,7 @@
 class SkBitmap;
 
 namespace cc {
+struct ElementId;
 class PaintImage;
 struct ViewportLayers;
 }
@@ -166,12 +168,24 @@ class WebWidgetClient {
                              const WebFloatPoint& position_in_viewport,
                              const WebFloatSize& velocity_in_viewport) {}
 
+  // Requests that a gesture of |injected_type| be reissued at a later point in
+  // time. |injected_type| is required to be one of
+  // GestureScroll{Begin,Update,End}. The dispatched gesture will scroll the
+  // ScrollableArea identified by |scrollable_area_element_id| by the given
+  // delta + granularity.
+  virtual void InjectGestureScrollEvent(
+      WebGestureDevice device,
+      const WebFloatSize& delta,
+      ui::input_types::ScrollGranularity granularity,
+      cc::ElementId scrollable_area_element_id,
+      WebInputEvent::Type injected_type) {}
+
   // Set the browser's behavior when overscroll happens, e.g. whether to glow
   // or navigate.
   virtual void SetOverscrollBehavior(const cc::OverscrollBehavior&) {}
 
-  // Called to update if pointerrawmove events should be sent.
-  virtual void HasPointerRawMoveEventHandlers(bool) {}
+  // Called to update if pointerrawupdate events should be sent.
+  virtual void HasPointerRawUpdateEventHandlers(bool) {}
 
   // Called to update if touch events should be sent.
   virtual void HasTouchEventHandlers(bool) {}
@@ -245,9 +259,10 @@ class WebWidgetClient {
 
   // Sets the current page scale factor and minimum / maximum limits. Both
   // limits are initially 1 (no page scale allowed).
-  virtual void SetPageScaleFactorAndLimits(float page_scale_factor,
-                                           float minimum,
-                                           float maximum) {}
+  virtual void SetPageScaleStateAndLimits(float page_scale_factor,
+                                          bool is_pinch_gesture_active,
+                                          float minimum,
+                                          float maximum) {}
 
   // Starts an animation of the page scale to a target scale factor and scroll
   // offset.

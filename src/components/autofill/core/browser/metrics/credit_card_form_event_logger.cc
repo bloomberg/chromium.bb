@@ -28,10 +28,16 @@ CreditCardFormEventLogger::CreditCardFormEventLogger(
 
 CreditCardFormEventLogger::~CreditCardFormEventLogger() = default;
 
-void CreditCardFormEventLogger::OnDidSelectMaskedServerCardSuggestion(
+void CreditCardFormEventLogger::OnDidSelectCardSuggestion(
+    const CreditCard& credit_card,
     const FormStructure& form,
     AutofillSyncSigninState sync_state) {
   sync_state_ = sync_state;
+
+  // No need to log selections for local/full-server cards -- a selection is
+  // always followed by a form fill, which is logged separately.
+  if (credit_card.record_type() != CreditCard::MASKED_SERVER_CARD)
+    return;
 
   Log(FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_SELECTED, form);
   if (!has_logged_masked_server_card_suggestion_selected_) {

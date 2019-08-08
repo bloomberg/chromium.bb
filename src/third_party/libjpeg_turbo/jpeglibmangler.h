@@ -19,7 +19,19 @@
 #define jpeg_idct_islow chromium_jpeg_idct_islow
 #define jpeg_idct_ifast chromium_jpeg_idct_ifast
 #define jpeg_idct_float chromium_jpeg_idct_float
+#define jpeg_idct_16x16 chromium_jpeg_idct_16x16
+#define jpeg_idct_15x15 chromium_jpeg_idct_15x15
+#define jpeg_idct_14x14 chromium_jpeg_idct_14x14
+#define jpeg_idct_13x13 chromium_jpeg_idct_13x13
+#define jpeg_idct_12x12 chromium_jpeg_idct_12x12
+#define jpeg_idct_11x11 chromium_jpeg_idct_11x11
+#define jpeg_idct_10x10 chromium_jpeg_idct_10x10
+#define jpeg_idct_9x9 chromium_jpeg_idct_9x9
+#define jpeg_idct_7x7 chromium_jpeg_idct_7x7
+#define jpeg_idct_6x6 chromium_jpeg_idct_6x6
+#define jpeg_idct_5x5 chromium_jpeg_idct_5x5
 #define jpeg_idct_4x4 chromium_jpeg_idct_4x4
+#define jpeg_idct_3x3 chromium_jpeg_idct_3x3
 #define jpeg_idct_2x2 chromium_jpeg_idct_2x2
 #define jpeg_idct_1x1 chromium_jpeg_idct_1x1
 #define jinit_compress_master chromium_jinit_compress_master
@@ -74,6 +86,8 @@
 #define jpeg_start_compress chromium_jpeg_start_compress
 #define jpeg_write_scanlines chromium_jpeg_write_scanlines
 #define jpeg_finish_compress chromium_jpeg_finish_compress
+#define jpeg_read_icc_profile chromium_jpeg_read_icc_profile
+#define jpeg_write_icc_profile chromium_jpeg_write_icc_profile
 #define jpeg_write_raw_data chromium_jpeg_write_raw_data
 #define jpeg_write_marker chromium_jpeg_write_marker
 #define jpeg_write_m_header chromium_jpeg_write_m_header
@@ -108,6 +122,8 @@
 #define jpeg_get_large chromium_jpeg_get_large
 #define jpeg_free_large chromium_jpeg_free_large
 #define jpeg_mem_available chromium_jpeg_mem_available
+#define jpeg_mem_dest chromium_jpeg_mem_dest
+#define jpeg_mem_src chromium_jpeg_mem_src
 #define jpeg_open_backing_store chromium_jpeg_open_backing_store
 #define jpeg_mem_init chromium_jpeg_mem_init
 #define jpeg_mem_term chromium_jpeg_mem_term

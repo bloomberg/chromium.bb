@@ -31,12 +31,11 @@ namespace net {
 
 namespace {
 
-std::unique_ptr<base::Value> TrialVerificationJobResultCallback(
-    bool trial_success,
-    NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> results(new base::DictionaryValue());
-  results->SetKey("trial_success", base::Value(trial_success));
-  return std::move(results);
+base::Value TrialVerificationJobResultCallback(bool trial_success,
+                                               NetLogCaptureMode capture_mode) {
+  base::Value results(base::Value::Type::DICTIONARY);
+  results.SetBoolKey("trial_success", trial_success);
+  return results;
 }
 
 bool CertVerifyResultEqual(const CertVerifyResult& a,
@@ -263,9 +262,9 @@ class TrialComparisonCertVerifier::TrialVerificationJob {
       }
       // Chains were different, reverify the trial_result_.verified_cert chain
       // using the platform verifier and compare results again.
-      RequestParams reverification_params(trial_result_.verified_cert,
-                                          params_.hostname(), params_.flags(),
-                                          params_.ocsp_response());
+      RequestParams reverification_params(
+          trial_result_.verified_cert, params_.hostname(), params_.flags(),
+          params_.ocsp_response(), params_.sct_list());
 
       int rv = cert_verifier_->primary_reverifier()->Verify(
           reverification_params, &reverification_result_,

@@ -29,8 +29,6 @@ class CORE_EXPORT SVGGElement final : public SVGGraphicsElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_NODE_FACTORY(SVGGElement);
-
   explicit SVGGElement(Document&, ConstructionType = kCreateSVGElement);
 
  protected:

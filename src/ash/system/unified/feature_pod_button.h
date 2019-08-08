@@ -6,6 +6,7 @@
 #define ASH_SYSTEM_UNIFIED_FEATURE_POD_BUTTON_H_
 
 #include "ash/ash_export.h"
+#include "base/bind.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/view.h"
@@ -36,6 +37,7 @@ class FeaturePodIconButton : public views::ImageButton {
       const override;
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  const char* GetClassName() const override;
 
   bool toggled() const { return toggled_; }
 
@@ -65,22 +67,28 @@ class FeaturePodLabelButton : public views::Button {
 
   // views::Button:
   void Layout() override;
-  void OnEnabledChanged() override;
   gfx::Size CalculatePreferredSize() const override;
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
+  const char* GetClassName() const override;
 
  private:
   // Layout |child| in horizontal center with its vertical origin set to |y|.
   void LayoutInCenter(views::View* child, int y);
 
+  void OnEnabledChanged();
+
   // Owned by views hierarchy.
   views::Label* const label_;
   views::Label* const sub_label_;
   views::ImageView* const detailed_view_arrow_;
+  views::PropertyChangedSubscription enabled_changed_subscription_ =
+      AddEnabledChangedCallback(
+          base::BindRepeating(&FeaturePodLabelButton::OnEnabledChanged,
+                              base::Unretained(this)));
 
   DISALLOW_COPY_AND_ASSIGN(FeaturePodLabelButton);
 };
@@ -139,7 +147,7 @@ class ASH_EXPORT FeaturePodButton : public views::View,
   void SetVisible(bool visible) override;
   bool HasFocus() const override;
   void RequestFocus() override;
-  void OnEnabledChanged() override;
+  const char* GetClassName() const override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -150,6 +158,8 @@ class ASH_EXPORT FeaturePodButton : public views::View,
   FeaturePodIconButton* icon_button() const { return icon_button_; }
 
  private:
+  void OnEnabledChanged();
+
   // Unowned.
   FeaturePodControllerBase* const controller_;
 
@@ -163,6 +173,11 @@ class ASH_EXPORT FeaturePodButton : public views::View,
   // In such case, the preferred visibility is reflected after the container is
   // expanded.
   bool visible_preferred_ = true;
+
+  views::PropertyChangedSubscription enabled_changed_subscription_ =
+      AddEnabledChangedCallback(
+          base::BindRepeating(&FeaturePodButton::OnEnabledChanged,
+                              base::Unretained(this)));
 
   DISALLOW_COPY_AND_ASSIGN(FeaturePodButton);
 };

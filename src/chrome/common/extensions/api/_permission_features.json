@@ -351,12 +351,6 @@
       "58B0C2968C335964D5433E89CA4D86628A0E3D4B"   // http://crbug.com/673004
     ]
   }],
-  "firstRunPrivate": {
-    "channel": "stable",
-    "extension_types": ["platform_app"],
-    "location": "component",
-    "platforms": ["chromeos"]
-  },
   "fontSettings": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]
@@ -439,6 +433,16 @@
       "EFCF5358672FEE04789FD2EC3638A67ADEDB6C8C",  // Share to Classroom (test)
       "A8208CCC87F8261AFAEB6B85D5E8D47372DDEA6B"   // Share to Classroom
                                                    // (staging)
+    ]
+  },
+  "loginScreenUi": {
+    "channel": "dev",
+    "extension_types": ["login_screen_extension"],
+    "location": "policy",
+    "platforms": ["chromeos"],
+    "whitelist": [
+      "7FE4A999359A456C4B0FB7B7AD85CEA29CA50519", // chrome.loginScreenUi test extension
+      "E219EE36A3B40612FD2A8CD6937B03EF0C97D3FE"  // Imprivata (login screen)
     ]
   },
   "webcamPrivate": {

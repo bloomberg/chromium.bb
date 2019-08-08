@@ -368,8 +368,6 @@ NativeThemeGtk::NativeThemeGtk() {
   g_type_class_unref(g_type_class_ref(gtk_tree_view_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_window_get_type()));
 
-  g_signal_connect_after(gtk_settings_get_default(), "notify::gtk-theme-name",
-                         G_CALLBACK(OnThemeChangedThunk), this);
   OnThemeChanged(gtk_settings_get_default(), nullptr);
 }
 
@@ -410,6 +408,24 @@ void NativeThemeGtk::OnThemeChanged(GtkSettings* settings,
           "GtkFileChooser GtkPaned { background-color: @theme_base_color; }"));
     }
   }
+
+  // GTK has a dark mode setting called "gtk-application-prefer-dark-theme", but
+  // this is really only used for themes that have a dark or light variant that
+  // gets toggled based on this setting (eg. Adwaita).  Most dark themes do not
+  // have a light variant and aren't affected by the setting.  Because of this,
+  // experimentally check if the theme is dark by checking if the window
+  // background color is dark.
+  set_dark_mode(color_utils::IsDark(GetSystemColor(kColorId_WindowBackground)));
+
+  // GTK doesn't have a native high contrast setting.  Rather, it's implied by
+  // the theme name.  The only high contrast GTK themes that I know of are
+  // HighContrast (GNOME) and ContrastHighInverse (MATE).  So infer the contrast
+  // based on if the theme name contains both "high" and "contrast",
+  // case-insensitive.
+  std::transform(theme_name.begin(), theme_name.end(), theme_name.begin(),
+                 ::tolower);
+  set_high_contrast(theme_name.find("high") != std::string::npos &&
+                    theme_name.find("contrast") != std::string::npos);
 }
 
 SkColor NativeThemeGtk::GetSystemColor(ColorId color_id) const {
@@ -594,8 +610,7 @@ void NativeThemeGtk::PaintFrameTopArea(
     State state,
     const gfx::Rect& rect,
     const FrameTopAreaExtraParams& frame_top_area) const {
-  auto context = GetStyleContextFromCss(frame_top_area.use_custom_frame &&
-                                                GtkVersionCheck(3, 10)
+  auto context = GetStyleContextFromCss(frame_top_area.use_custom_frame
                                             ? "#headerbar.header-bar.titlebar"
                                             : "GtkMenuBar#menubar");
   ApplyCssToContext(context, "* { border-radius: 0px; border-style: none; }");

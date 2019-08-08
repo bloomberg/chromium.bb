@@ -27,13 +27,13 @@ namespace {
 
 constexpr char kChromotingAuthScopeValues[] =
     "https://www.googleapis.com/auth/chromoting "
+    "https://www.googleapis.com/auth/chromoting.remote.support "
     "https://www.googleapis.com/auth/googletalk "
     "https://www.googleapis.com/auth/userinfo.email "
     "https://www.googleapis.com/auth/tachyon";
 
 constexpr char kOauthRedirectUrl[] =
-    "https://chromoting-oauth.talkgadget."
-    "google.com/talkgadget/oauth/chrome-remote-desktop/dev";
+    "https://remotedesktop.google.com/_/oauthredirect";
 
 std::string GetAuthorizationCodeUri(bool show_consent_page) {
   // Replace space characters with a '+' sign when formatting.
@@ -41,8 +41,7 @@ std::string GetAuthorizationCodeUri(bool show_consent_page) {
   std::string uri = base::StringPrintf(
       "https://accounts.google.com/o/oauth2/auth"
       "?scope=%s"
-      "&redirect_uri=https://chromoting-oauth.talkgadget.google.com/"
-      "talkgadget/oauth/chrome-remote-desktop/dev"
+      "&redirect_uri=https://remotedesktop.google.com/_/oauthredirect"
       "&response_type=code"
       "&client_id=%s"
       "&access_type=offline",
@@ -140,6 +139,10 @@ void TestOAuthTokenGetter::InvalidateCache() {
   token_getter_->CallWithToken(base::DoNothing());
 }
 
+base::WeakPtr<TestOAuthTokenGetter> TestOAuthTokenGetter::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 std::unique_ptr<OAuthTokenGetter>
 TestOAuthTokenGetter::CreateFromIntermediateCredentials(
     const std::string& auth_code,
@@ -164,7 +167,7 @@ std::unique_ptr<OAuthTokenGetter> TestOAuthTokenGetter::CreateWithRefreshToken(
           email, refresh_token, is_service_account);
 
   return std::make_unique<OAuthTokenGetterImpl>(
-      std::move(oauth_credentials),
+      std::move(oauth_credentials), base::DoNothing(),
       url_loader_factory_owner_->GetURLLoaderFactory(),
       /*auto_refresh=*/true);
 }

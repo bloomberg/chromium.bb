@@ -15,6 +15,7 @@ per-file chromium_strings.grd=*
 per-file generated_resources.grd=*
 per-file google_chrome_strings.grd=*
 per-file extensions_strings.grdp=*
+per-file os_settings_strings.grdp=*
 
 per-file app_management_strings.grdp=file://chrome/browser/ui/webui/app_management/OWNERS
 
@@ -29,6 +30,7 @@ per-file profiles_strings.grdp=file://chrome/browser/profiles/OWNERS
 per-file settings*strings*=file://chrome/browser/resources/settings/OWNERS
 
 per-file vr_strings.grdp=file://chrome/browser/vr/OWNERS
+per-file xr_support_ui_strings.grdp=file://chrome/browser/vr/OWNERS
 
 # Non-GRD rules.
 
@@ -46,6 +48,10 @@ per-file chrome_exe_main_mac.cc=mark@chromium.org
 per-file main_dll_loader_win.cc=brucedawson@chromium.org
 per-file main_dll_loader_win.cc=wfh@chromium.org
 
+per-file builtin_service_manifests.cc=set noparent
+per-file builtin_service_manifests.cc=file://ipc/SECURITY_OWNERS
+per-file builtin_service_manifests.h=set noparent
+per-file builtin_service_manifests.h=file://ipc/SECURITY_OWNERS
 per-file chrome_content_browser_overlay_manifest.cc=set noparent
 per-file chrome_content_browser_overlay_manifest.cc=file://ipc/SECURITY_OWNERS
 per-file chrome_content_browser_overlay_manifest.h=set noparent
@@ -62,10 +68,6 @@ per-file chrome_content_utility_overlay_manifest.cc=set noparent
 per-file chrome_content_utility_overlay_manifest.cc=file://ipc/SECURITY_OWNERS
 per-file chrome_content_utility_overlay_manifest.h=set noparent
 per-file chrome_content_utility_overlay_manifest.h=file://ipc/SECURITY_OWNERS
-per-file chrome_packaged_service_manifests.cc=set noparent
-per-file chrome_packaged_service_manifests.cc=file://ipc/SECURITY_OWNERS
-per-file chrome_packaged_service_manifests.h=set noparent
-per-file chrome_packaged_service_manifests.h=file://ipc/SECURITY_OWNERS
 per-file chrome_renderer_manifest.cc=set noparent
 per-file chrome_renderer_manifest.cc=file://ipc/SECURITY_OWNERS
 per-file chrome_renderer_manifest.h=set noparent

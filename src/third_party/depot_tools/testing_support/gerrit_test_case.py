@@ -38,6 +38,8 @@ One gotcha: 'repo upload' will always attempt to use the ssh interface to talk
 to gerrit.
 """
 
+from __future__ import print_function
+
 import collections
 import errno
 import netrc
@@ -77,7 +79,7 @@ class GerritTestCase(unittest.TestCase):
   """
 
   COMMIT_RE = re.compile(r'^commit ([0-9a-fA-F]{40})$')
-  CHANGEID_RE = re.compile('^\s+Change-Id:\s*(\S+)$')
+  CHANGEID_RE = re.compile(r'^\s+Change-Id:\s*(\S+)$')
   DEVNULL = open(os.devnull, 'w')
   TEST_USERNAME = 'test-username'
   TEST_EMAIL = 'test-username@test.org'
@@ -350,9 +352,9 @@ class GerritTestCase(unittest.TestCase):
           return
 
       # If we get here, the gerrit process is still alive.  Send the process
-      # SIGKILL for good measure.
+      # SIGTERM for good measure.
       try:
-        os.kill(gerrit_instance.gerrit_pid, signal.SIGKILL)
+        os.kill(gerrit_instance.gerrit_pid, signal.SIGTERM)
       except OSError:
         if e.errno == errno.ESRCH:
           # os.kill raised an error because the process doesn't exist.  Maybe
@@ -363,7 +365,7 @@ class GerritTestCase(unittest.TestCase):
       # Announce that gerrit didn't shut down cleanly.
       msg = 'Test gerrit server (pid=%d) did not shut down cleanly.' % (
           gerrit_instance.gerrit_pid)
-      print >> sys.stderr, msg
+      print(msg, file=sys.stderr)
 
   @classmethod
   def tearDownClass(cls):

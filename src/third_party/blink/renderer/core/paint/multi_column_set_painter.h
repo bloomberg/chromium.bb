@@ -9,9 +9,9 @@
 
 namespace blink {
 
-struct PaintInfo;
-class LayoutPoint;
 class LayoutMultiColumnSet;
+struct PaintInfo;
+struct PhysicalOffset;
 
 class MultiColumnSetPainter {
   STACK_ALLOCATED();
@@ -19,10 +19,10 @@ class MultiColumnSetPainter {
  public:
   MultiColumnSetPainter(const LayoutMultiColumnSet& layout_multi_column_set)
       : layout_multi_column_set_(layout_multi_column_set) {}
-  void PaintObject(const PaintInfo&, const LayoutPoint& paint_offset);
+  void PaintObject(const PaintInfo&, const PhysicalOffset& paint_offset);
 
  private:
-  void PaintColumnRules(const PaintInfo&, const LayoutPoint& paint_offset);
+  void PaintColumnRules(const PaintInfo&, const PhysicalOffset& paint_offset);
 
   const LayoutMultiColumnSet& layout_multi_column_set_;
 };

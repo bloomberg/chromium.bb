@@ -27,6 +27,8 @@ namespace extensions {
 
 namespace {
 
+// TODO(devlin): We don't need this separate enum now that SystemIndicator is
+// no longer part of ActionInfo.
 enum class TestActionType {
   kBrowserAction,
   kPageAction,
@@ -242,6 +244,58 @@ TEST_P(ExtensionActionManifestTest, Invalid) {
   constexpr char kInvalidIcon[] = R"({ "default_icon": [] })";
   LoadAndExpectError(GetManifestData(kInvalidIcon),
                      manifest_errors::kInvalidActionDefaultIcon);
+}
+
+// Test the handling of the default_state key.
+TEST_P(ExtensionActionManifestTest, DefaultState) {
+  constexpr char kDefaultStateDisabled[] = R"({"default_state": "disabled"})";
+  constexpr char kDefaultStateEnabled[] = R"({"default_state": "enabled"})";
+  constexpr char kDefaultStateInvalid[] = R"({"default_state": "foo"})";
+
+  // default_state is only valid for "action" types.
+  const bool default_state_allowed = GetParam() == TestActionType::kAction;
+  const char* key_disallowed_error =
+      manifest_errors::kDefaultStateShouldNotBeSet;
+
+  struct {
+    // The manifest definition of the action key.
+    const char* spec;
+    // The expected error, if parsing was unsuccessful.
+    const char* expected_error;
+    // The expected state, if parsing was successful.
+    base::Optional<ActionInfo::DefaultState> expected_state;
+  } test_cases[] = {
+      {kDefaultStateDisabled,
+       default_state_allowed ? nullptr : key_disallowed_error,
+       default_state_allowed ? base::make_optional(ActionInfo::STATE_DISABLED)
+                             : base::nullopt},
+      {kDefaultStateEnabled,
+       default_state_allowed ? nullptr : key_disallowed_error,
+       default_state_allowed ? base::make_optional(ActionInfo::STATE_ENABLED)
+                             : base::nullopt},
+      {kDefaultStateInvalid,
+       default_state_allowed ? manifest_errors::kInvalidActionDefaultState
+                             : key_disallowed_error,
+       base::nullopt},
+  };
+
+  for (const auto& test_case : test_cases) {
+    SCOPED_TRACE(test_case.spec);
+
+    if (test_case.expected_error == nullptr) {
+      ASSERT_TRUE(test_case.expected_state);
+      scoped_refptr<const Extension> extension =
+          LoadAndExpectSuccess(GetManifestData(test_case.spec));
+      ASSERT_TRUE(extension);
+      const ActionInfo* action_info = GetActionInfo(*extension);
+      ASSERT_TRUE(action_info);
+      EXPECT_EQ(*test_case.expected_state, action_info->default_state);
+    } else {
+      ASSERT_FALSE(test_case.expected_state);
+      LoadAndExpectError(GetManifestData(test_case.spec),
+                         test_case.expected_error);
+    }
+  }
 }
 
 INSTANTIATE_TEST_SUITE_P(,

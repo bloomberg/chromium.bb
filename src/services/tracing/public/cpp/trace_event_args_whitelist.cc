@@ -29,12 +29,14 @@ const char* const kScopedBlockingCallAllowedArgs[] = {"file_name",
 const char* const kGetFallbackFontsAllowedArgs[] = {"script", nullptr};
 const char* const kGPUAllowedArgs[] = {nullptr};
 const char* const kInputLatencyAllowedArgs[] = {"data", nullptr};
-const char* const kMemoryDumpAllowedArgs[] = {"dumps", nullptr};
+const char* const kMemoryDumpAllowedArgs[] = {"dumps", "top_queued_message_tag",
+                                              "count", nullptr};
 const char* const kRendererHostAllowedArgs[] = {
     "class",           "line", "should_background", "has_pending_views",
     "bytes_allocated", nullptr};
 const char* const kV8GCAllowedArgs[] = {"num_items", "num_tasks", nullptr};
 const char* const kTopLevelFlowAllowedArgs[] = {"task_queue_name", nullptr};
+const char* const kTopLevelIpcRunTaskAllowedArgs[] = {"ipc_hash", nullptr};
 
 const WhitelistEntry kEventArgsWhitelist[] = {
     {"__metadata", "thread_name", nullptr},
@@ -56,6 +58,7 @@ const WhitelistEntry kEventArgsWhitelist[] = {
     {"startup", "PrefProvider::PrefProvider", nullptr},
     {"task_scheduler", "*", nullptr},
     {"toplevel", "*", nullptr},
+    {"toplevel.ipc", "TaskAnnotator::RunTask", kTopLevelIpcRunTaskAllowedArgs},
     {TRACE_DISABLED_BY_DEFAULT("cpu_profiler"), "*", nullptr},
     // Redefined the string since MemoryDumpManager::kTraceCategory causes
     // static initialization of this struct.

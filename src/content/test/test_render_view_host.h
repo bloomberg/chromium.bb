@@ -112,8 +112,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
   void Focus() override {}
   void SetIsLoading(bool is_loading) override {}
   void UpdateCursor(const WebCursor& cursor) override {}
-  void RenderProcessGone(base::TerminationStatus status,
-                         int error_code) override;
+  void RenderProcessGone() override;
   void Destroy() override;
   void SetTooltipText(const base::string16& tooltip_text) override {}
   gfx::Rect GetBoundsInRootWindow() override;
@@ -136,11 +135,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
   void reset_did_change_compositor_frame_sink() {
     did_change_compositor_frame_sink_ = false;
   }
-#if defined(USE_AURA)
-  void ScheduleEmbed(ws::mojom::WindowTreeClientPtr client,
-                     base::OnceCallback<void(const base::UnguessableToken&)>
-                         callback) override {}
-#endif
   // viz::HostFrameSinkClient implementation.
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
   void OnFrameTokenChanged(uint32_t frame_token) override;

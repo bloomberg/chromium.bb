@@ -80,7 +80,6 @@
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/tab_load_tracker_test_support.h"
@@ -207,8 +206,6 @@
 #include "content/public/test/url_loader_interceptor.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
-#include "device/usb/mock_usb_device.h"
-#include "device/usb/mojo/type_converters.h"
 #include "extensions/browser/api/messaging/messaging_delegate.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
@@ -243,6 +240,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_interceptor.h"
+#include "services/device/public/cpp/test/fake_usb_device_info.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -1263,10 +1261,7 @@ IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, PRE_AllowedLanguages) {
   SkipToLoginScreen();
   LogIn(kAccountId, kAccountPassword, kEmptyServices);
 
-  const user_manager::User* const user =
-      user_manager::UserManager::Get()->GetActiveUser();
-  Profile* const profile =
-      chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+  Profile* const profile = GetProfileForActiveUser();
   PrefService* prefs = profile->GetPrefs();
 
   // Set locale and preferred languages to "en-US".
@@ -1279,16 +1274,14 @@ IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, PRE_AllowedLanguages) {
   base::ListValue allowed_languages;
   allowed_languages.AppendString("fr");
   policy->SetKey(key::kAllowedLanguages, std::move(allowed_languages));
-  user_policy_helper()->UpdatePolicy(*policy, base::DictionaryValue(), profile);
+  user_policy_helper()->SetPolicyAndWait(*policy, base::DictionaryValue(),
+                                         profile);
 }
 
 IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedLanguages) {
   LogIn(kAccountId, kAccountPassword, kEmptyServices);
 
-  const user_manager::User* const user =
-      user_manager::UserManager::Get()->GetActiveUser();
-  Profile* const profile =
-      chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+  Profile* const profile = GetProfileForActiveUser();
   const PrefService* prefs = profile->GetPrefs();
 
   // Verifies that the default locale has been overridden by policy
@@ -1318,10 +1311,7 @@ IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedInputMethods) {
   SkipToLoginScreen();
   LogIn(kAccountId, kAccountPassword, kEmptyServices);
 
-  const user_manager::User* const user =
-      user_manager::UserManager::Get()->GetActiveUser();
-  Profile* const profile =
-      chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+  Profile* const profile = GetProfileForActiveUser();
 
   chromeos::input_method::InputMethodManager* imm =
       chromeos::input_method::InputMethodManager::Get();
@@ -1351,7 +1341,8 @@ IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedInputMethods) {
   allowed_input_methods.AppendString("xkb:de::ger");
   allowed_input_methods.AppendString("invalid_value_will_be_ignored");
   policy->SetKey(key::kAllowedInputMethods, std::move(allowed_input_methods));
-  user_policy_helper()->UpdatePolicy(*policy, base::DictionaryValue(), profile);
+  user_policy_helper()->SetPolicyAndWait(*policy, base::DictionaryValue(),
+                                         profile);
 
   // Only "xkb:fr::fra", "xkb:de::ger" should be allowed, current input method
   // should be "xkb:fr::fra", enabling "xkb:us::eng" should not be possible,
@@ -1369,8 +1360,8 @@ IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedInputMethods) {
   invalid_input_methods.AppendString("invalid_value_will_be_ignored");
   policy_invalid->SetKey(key::kAllowedInputMethods,
                          std::move(invalid_input_methods));
-  user_policy_helper()->UpdatePolicy(*policy_invalid, base::DictionaryValue(),
-                                     profile);
+  user_policy_helper()->SetPolicyAndWait(*policy_invalid,
+                                         base::DictionaryValue(), profile);
 
   // No restrictions and current input method should still be "xkb:fr::fra".
   EXPECT_EQ(0U, ime_state->GetAllowedInputMethods().size());
@@ -1379,14 +1370,57 @@ IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedInputMethods) {
   EXPECT_TRUE(ime_state->EnableInputMethod(input_methods[2]));
 
   // Allow all input methods again.
-  user_policy_helper()->UpdatePolicy(base::DictionaryValue(),
-                                     base::DictionaryValue(), profile);
+  user_policy_helper()->SetPolicyAndWait(base::DictionaryValue(),
+                                         base::DictionaryValue(), profile);
 
   // No restrictions and current input method should still be "xkb:fr::fra".
   EXPECT_EQ(0U, ime_state->GetAllowedInputMethods().size());
   EXPECT_EQ(input_methods[1], ime_state->GetCurrentInputMethod().id());
   EXPECT_TRUE(ime_state->EnableInputMethod(input_methods[0]));
   EXPECT_TRUE(ime_state->EnableInputMethod(input_methods[2]));
+}
+
+class StartupBrowserWindowLaunchSuppressedTest : public LoginPolicyTestBase {
+ public:
+  StartupBrowserWindowLaunchSuppressedTest() = default;
+
+  void SetUpPolicy(bool enabled) {
+    std::unique_ptr<base::DictionaryValue> policy =
+        std::make_unique<base::DictionaryValue>();
+
+    policy->SetKey(key::kStartupBrowserWindowLaunchSuppressed,
+                   base::Value(enabled));
+
+    user_policy_helper()->SetPolicy(*policy, base::DictionaryValue());
+  }
+
+  void CheckLaunchedBrowserCount(unsigned int count) {
+    SkipToLoginScreen();
+    LogIn(kAccountId, kAccountPassword, kEmptyServices);
+
+    Profile* const profile = GetProfileForActiveUser();
+
+    ASSERT_EQ(count, chrome::GetBrowserCount(profile));
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(StartupBrowserWindowLaunchSuppressedTest);
+};
+
+// Test that the browser window is not launched when
+// StartupBrowserWindowLaunchSuppressed is set to true.
+IN_PROC_BROWSER_TEST_F(StartupBrowserWindowLaunchSuppressedTest,
+                       TrueDoesNotAllowBrowserWindowLaunch) {
+  SetUpPolicy(true);
+  CheckLaunchedBrowserCount(0u);
+}
+
+// Test that the browser window is launched when
+// StartupBrowserWindowLaunchSuppressed is set to false.
+IN_PROC_BROWSER_TEST_F(StartupBrowserWindowLaunchSuppressedTest,
+                       FalseAllowsBrowserWindowLaunch) {
+  SetUpPolicy(false);
+  CheckLaunchedBrowserCount(1u);
 }
 
 #endif  // defined(OS_CHROMEOS)
@@ -1590,7 +1624,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SeparateProxyPoliciesMerging) {
           ->GetPolicies(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
   EXPECT_TRUE(expected.Equals(actual_from_browser));
   const PolicyMap& actual_from_profile =
-      ProfilePolicyConnectorFactory::GetForBrowserContext(browser()->profile())
+      browser()
+          ->profile()
+          ->GetProfilePolicyConnector()
           ->policy_service()
           ->GetPolicies(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
   EXPECT_TRUE(expected.Equals(actual_from_profile));
@@ -3952,6 +3988,58 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, AccessibilityVirtualKeyboardEnabled) {
   EXPECT_FALSE(accessibility_manager->IsVirtualKeyboardEnabled());
 }
 
+IN_PROC_BROWSER_TEST_F(PolicyTest, StickyKeysEnabled) {
+  // Verifies that the sticky keys accessibility feature can be
+  // controlled through policy.
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+
+  // Verify that the sticky keys is initially disabled
+  EXPECT_FALSE(accessibility_manager->IsStickyKeysEnabled());
+
+  // Manually enable the sticky keys.
+  accessibility_manager->EnableStickyKeys(true);
+  EXPECT_TRUE(accessibility_manager->IsStickyKeysEnabled());
+
+  // Verify that policy overrides the manual setting.
+  PolicyMap policies;
+  policies.Set(key::kStickyKeysEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(false), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_FALSE(accessibility_manager->IsStickyKeysEnabled());
+
+  // Verify that the sticky keys cannot be enabled manually anymore.
+  accessibility_manager->EnableStickyKeys(true);
+  EXPECT_FALSE(accessibility_manager->IsStickyKeysEnabled());
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, DockedMagnifierEnabled) {
+  // Verifies that the docked magnifier accessibility feature can be
+  // controlled through policy.
+  chromeos::MagnificationManager* magnification_manager =
+      chromeos::MagnificationManager::Get();
+
+  // Verify that the docked magnifier is initially disabled
+  EXPECT_FALSE(magnification_manager->IsDockedMagnifierEnabled());
+
+  // Manually enable the docked magnifier.
+  magnification_manager->SetDockedMagnifierEnabled(true);
+  EXPECT_TRUE(magnification_manager->IsDockedMagnifierEnabled());
+
+  // Verify that policy overrides the manual setting.
+  PolicyMap policies;
+  policies.Set(key::kDockedMagnifierEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(false), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_FALSE(magnification_manager->IsDockedMagnifierEnabled());
+
+  // Verify that the docked magnifier cannot be enabled manually anymore.
+  magnification_manager->SetDockedMagnifierEnabled(true);
+  EXPECT_FALSE(magnification_manager->IsDockedMagnifierEnabled());
+}
+
 IN_PROC_BROWSER_TEST_F(PolicyTest, VirtualKeyboardEnabled) {
   auto* keyboard_client = ChromeKeyboardControllerClient::Get();
   ASSERT_TRUE(keyboard_client);
@@ -3989,7 +4077,71 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, VirtualKeyboardEnabled) {
   EXPECT_FALSE(keyboard_client->is_keyboard_enabled());
 }
 
-#endif
+IN_PROC_BROWSER_TEST_F(PolicyTest, AssistantContextEnabled) {
+  PrefService* prefs = browser()->profile()->GetPrefs();
+  EXPECT_FALSE(
+      prefs->IsManagedPreference(arc::prefs::kVoiceInteractionContextEnabled));
+  EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
+  prefs->SetBoolean(arc::prefs::kVoiceInteractionContextEnabled, true);
+  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
+
+  // Verifies that the Assistant context can be forced to always disabled.
+  PolicyMap policies;
+  policies.Set(key::kVoiceInteractionContextEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(false), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_TRUE(
+      prefs->IsManagedPreference(arc::prefs::kVoiceInteractionContextEnabled));
+  EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
+  prefs->SetBoolean(arc::prefs::kVoiceInteractionContextEnabled, true);
+  EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
+
+  // Verifies that the Assistant context can be forced to always enabled.
+  policies.Set(key::kVoiceInteractionContextEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(true), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_TRUE(
+      prefs->IsManagedPreference(arc::prefs::kVoiceInteractionContextEnabled));
+  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
+  prefs->SetBoolean(arc::prefs::kVoiceInteractionContextEnabled, false);
+  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, AssistantHotwordEnabled) {
+  PrefService* prefs = browser()->profile()->GetPrefs();
+  EXPECT_FALSE(
+      prefs->IsManagedPreference(arc::prefs::kVoiceInteractionHotwordEnabled));
+  EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
+  prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled, true);
+  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
+
+  // Verifies that the Assistant hotword can be forced to always disabled.
+  PolicyMap policies;
+  policies.Set(key::kVoiceInteractionHotwordEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(false), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_TRUE(
+      prefs->IsManagedPreference(arc::prefs::kVoiceInteractionHotwordEnabled));
+  EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
+  prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled, true);
+  EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
+
+  // Verifies that the Assistant hotword can be forced to always enabled.
+  policies.Set(key::kVoiceInteractionHotwordEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(true), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_TRUE(
+      prefs->IsManagedPreference(arc::prefs::kVoiceInteractionHotwordEnabled));
+  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
+  prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled, false);
+  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
+}
+
+#endif  // defined(OS_CHROMEOS)
 
 namespace {
 
@@ -4709,7 +4861,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest,
         helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting());
     main_frame = web_contents->GetMainFrame();
   } else {
-    const content::InterstitialPage* interstitial =
+    content::InterstitialPage* interstitial =
         content::InterstitialPage::GetInterstitialPage(web_contents);
     ASSERT_TRUE(interstitial);
     main_frame = interstitial->GetMainFrame();
@@ -6391,39 +6543,40 @@ IN_PROC_BROWSER_TEST_F(AutoplayPolicyTest, AutoplayAllowedGlobalAndURL) {
 #endif  // !defined(OS_ANDROID)
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, WebUsbDefault) {
-  const GURL kTestUrl("https://foo.com:443");
+  const auto kTestOrigin = url::Origin::Create(GURL("https://foo.com:443"));
 
   // Expect the default permission value to be 'ask'.
   auto* context = UsbChooserContextFactory::GetForProfile(browser()->profile());
-  EXPECT_TRUE(context->CanRequestObjectPermission(kTestUrl, kTestUrl));
+  EXPECT_TRUE(context->CanRequestObjectPermission(kTestOrigin, kTestOrigin));
 
   // Update policy to change the default permission value to 'block'.
   PolicyMap policies;
   SetPolicy(&policies, key::kDefaultWebUsbGuardSetting,
             std::make_unique<base::Value>(2));
   UpdateProviderPolicy(policies);
-  EXPECT_FALSE(context->CanRequestObjectPermission(kTestUrl, kTestUrl));
+  EXPECT_FALSE(context->CanRequestObjectPermission(kTestOrigin, kTestOrigin));
 
   // Update policy to change the default permission value to 'ask'.
   SetPolicy(&policies, key::kDefaultWebUsbGuardSetting,
             std::make_unique<base::Value>(3));
   UpdateProviderPolicy(policies);
-  EXPECT_TRUE(context->CanRequestObjectPermission(kTestUrl, kTestUrl));
+  EXPECT_TRUE(context->CanRequestObjectPermission(kTestOrigin, kTestOrigin));
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, WebUsbAllowDevicesForUrls) {
-  const GURL kTestUrl("https://foo.com:443");
-  scoped_refptr<device::UsbDevice> device =
-      base::MakeRefCounted<device::MockUsbDevice>(0, 0, "Google", "Gizmo",
-                                                  "123ABC");
-  auto device_info = device::mojom::UsbDeviceInfo::From(*device);
+  const auto kTestOrigin = url::Origin::Create(GURL("https://foo.com:443"));
+  scoped_refptr<device::FakeUsbDeviceInfo> device =
+      base::MakeRefCounted<device::FakeUsbDeviceInfo>(0, 0, "Google", "Gizmo",
+                                                      "123ABC");
+  const auto& device_info = device->GetDeviceInfo();
 
   // Expect the default permission value to be empty.
   auto* context = UsbChooserContextFactory::GetForProfile(browser()->profile());
-  EXPECT_FALSE(context->HasDevicePermission(kTestUrl, kTestUrl, *device_info));
+  EXPECT_FALSE(
+      context->HasDevicePermission(kTestOrigin, kTestOrigin, device_info));
 
-  // Update policy to add an entry to the permission value to allow |kTestUrl|
-  // to access the device described by |device_info|.
+  // Update policy to add an entry to the permission value to allow
+  // |kTestOrigin| to access the device described by |device_info|.
   PolicyMap policies;
 
   base::Value device_value(base::Value::Type::DICTIONARY);
@@ -6447,14 +6600,16 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, WebUsbAllowDevicesForUrls) {
             std::move(policy_value));
   UpdateProviderPolicy(policies);
 
-  EXPECT_TRUE(context->HasDevicePermission(kTestUrl, kTestUrl, *device_info));
+  EXPECT_TRUE(
+      context->HasDevicePermission(kTestOrigin, kTestOrigin, device_info));
 
   // Remove the policy to ensure that it can be dynamically updated.
   SetPolicy(&policies, key::kWebUsbAllowDevicesForUrls,
             std::make_unique<base::Value>(base::Value::Type::LIST));
   UpdateProviderPolicy(policies);
 
-  EXPECT_FALSE(context->HasDevicePermission(kTestUrl, kTestUrl, *device_info));
+  EXPECT_FALSE(
+      context->HasDevicePermission(kTestOrigin, kTestOrigin, device_info));
 }
 
 // Handler for embedded http-server, returns a small page with javascript

@@ -29,6 +29,7 @@ class PasswordReuseDetectionManager : public PasswordReuseDetectorConsumer {
   ~PasswordReuseDetectionManager() override;
   void DidNavigateMainFrame(const GURL& main_frame_url);
   void OnKeyPressed(const base::string16& text);
+  void OnPaste(const base::string16 text);
 
   // PasswordReuseDetectorConsumer implementation
   void OnReuseFound(

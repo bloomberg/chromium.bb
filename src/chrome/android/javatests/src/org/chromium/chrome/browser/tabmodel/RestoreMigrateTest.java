@@ -26,7 +26,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.ApplicationData;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
@@ -110,7 +109,6 @@ public class RestoreMigrateTest {
     @Feature({"TabPersistentStore"})
     @UiThreadTest
     public void testMigrateData() throws IOException, InterruptedException, ExecutionException {
-        ApplicationData.clearAppData(mAppContext);
 
         // Write old state files.
         File filesDir = mAppContext.getFilesDir();
@@ -155,7 +153,6 @@ public class RestoreMigrateTest {
         Assert.assertFalse("Could still find old tab 2 file", tab2.exists());
         Assert.assertFalse("Could still find old tab 3 file", tab3.exists());
 
-        ApplicationData.clearAppData(mAppContext);
     }
 
     /**
@@ -170,7 +167,6 @@ public class RestoreMigrateTest {
     @Feature({"TabPersistentStore"})
     @UiThreadTest
     public void testSkipMigrateData() throws IOException, InterruptedException, ExecutionException {
-        ApplicationData.clearAppData(mAppContext);
 
         // Write old state files.
         File filesDir = mAppContext.getFilesDir();
@@ -213,7 +209,6 @@ public class RestoreMigrateTest {
         Assert.assertFalse("Could find new tab 2 file", newTab2.exists());
         Assert.assertFalse("Could find new tab 3 file", newTab3.exists());
 
-        ApplicationData.clearAppData(mAppContext);
     }
 
     /**
@@ -229,7 +224,6 @@ public class RestoreMigrateTest {
     @UiThreadTest
     public void testMigrationLeavesOtherFilesAlone()
             throws IOException, InterruptedException, ExecutionException {
-        ApplicationData.clearAppData(mAppContext);
 
         // Write old state files.
         File filesDir = mAppContext.getFilesDir();
@@ -260,7 +254,6 @@ public class RestoreMigrateTest {
         Assert.assertTrue("Could not find new tab 0 file", newTab0.exists());
         Assert.assertFalse("Could find new other file", newOtherFile.exists());
 
-        ApplicationData.clearAppData(mAppContext);
     }
 
     /**

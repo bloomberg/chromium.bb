@@ -144,6 +144,9 @@ Response FromProtocolPermissionType(
     *out_type = PermissionType::BACKGROUND_FETCH;
   } else if (type == protocol::Browser::PermissionTypeEnum::IdleDetection) {
     *out_type = PermissionType::IDLE_DETECTION;
+  } else if (type ==
+             protocol::Browser::PermissionTypeEnum::PeriodicBackgroundSync) {
+    *out_type = PermissionType::PERIODIC_BACKGROUND_SYNC;
   } else {
     return Response::InvalidParams("Unknown permission type: " + type);
   }
@@ -280,8 +283,7 @@ Response BrowserHandler::Crash() {
 }
 
 Response BrowserHandler::CrashGpuProcess() {
-  GpuProcessHost::CallOnIO(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
-                           false /* force_create */,
+  GpuProcessHost::CallOnIO(GPU_PROCESS_KIND_SANDBOXED, false /* force_create */,
                            base::BindOnce([](GpuProcessHost* host) {
                              if (host)
                                host->gpu_service()->Crash();

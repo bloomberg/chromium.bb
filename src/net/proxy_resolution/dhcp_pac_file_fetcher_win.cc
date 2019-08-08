@@ -202,31 +202,23 @@ class TaskRunnerWithCap : public base::TaskRunner {
   DISALLOW_COPY_AND_ASSIGN(TaskRunnerWithCap);
 };
 
-// Helper to set an integer value into a base::DictionaryValue. Because of
-// C++'s implicit narrowing casts to |int|, this can be called with int64_t and
-// ULONG too.
-void SetInt(base::StringPiece key, int value, base::DictionaryValue* dict) {
-  dict->SetKey(key, base::Value(value));
-}
-
-std::unique_ptr<base::Value> NetLogGetAdaptersDoneCallback(
+base::Value NetLogGetAdaptersDoneCallback(
     DhcpAdapterNamesLoggingInfo* info,
     NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> result =
-      std::make_unique<base::DictionaryValue>();
+  base::Value result(base::Value::Type::DICTIONARY);
 
   // Add information on each of the adapters enumerated (including those that
   // were subsequently skipped).
-  base::ListValue adapters_value;
+  base::Value adapters_value(base::Value::Type::LIST);
   for (IP_ADAPTER_ADDRESSES* adapter = info->adapters.get(); adapter;
        adapter = adapter->Next) {
-    base::DictionaryValue adapter_value;
+    base::Value adapter_value(base::Value::Type::DICTIONARY);
 
-    adapter_value.SetKey("AdapterName", base::Value(adapter->AdapterName));
-    SetInt("IfType", adapter->IfType, &adapter_value);
-    SetInt("Flags", adapter->Flags, &adapter_value);
-    SetInt("OperStatus", adapter->OperStatus, &adapter_value);
-    SetInt("TunnelType", adapter->TunnelType, &adapter_value);
+    adapter_value.SetStringKey("AdapterName", adapter->AdapterName);
+    adapter_value.SetIntKey("IfType", adapter->IfType);
+    adapter_value.SetIntKey("Flags", adapter->Flags);
+    adapter_value.SetIntKey("OperStatus", adapter->OperStatus);
+    adapter_value.SetIntKey("TunnelType", adapter->TunnelType);
 
     // "skipped" means the adapter was not ultimately chosen as a candidate for
     // testing WPAD.
@@ -235,36 +227,32 @@ std::unique_ptr<base::Value> NetLogGetAdaptersDoneCallback(
 
     adapters_value.GetList().push_back(std::move(adapter_value));
   }
-  result->SetKey("adapters", std::move(adapters_value));
+  result.SetKey("adapters", std::move(adapters_value));
 
-  SetInt("origin_to_worker_thread_hop_dt",
-         (info->worker_thread_start_time - info->origin_thread_start_time)
-             .InMilliseconds(),
-         result.get());
-  SetInt("worker_to_origin_thread_hop_dt",
-         (info->origin_thread_end_time - info->worker_thread_end_time)
-             .InMilliseconds(),
-         result.get());
-  SetInt("worker_dt",
-         (info->worker_thread_end_time - info->worker_thread_start_time)
-             .InMilliseconds(),
-         result.get());
+  result.SetIntKey(
+      "origin_to_worker_thread_hop_dt",
+      (info->worker_thread_start_time - info->origin_thread_start_time)
+          .InMilliseconds());
+  result.SetIntKey("worker_to_origin_thread_hop_dt",
+                   (info->origin_thread_end_time - info->worker_thread_end_time)
+                       .InMilliseconds());
+  result.SetIntKey("worker_dt", (info->worker_thread_end_time -
+                                 info->worker_thread_start_time)
+                                    .InMilliseconds());
 
   if (info->error != ERROR_SUCCESS)
-    SetInt("error", info->error, result.get());
+    result.SetIntKey("error", info->error);
 
   return result;
 }
 
-std::unique_ptr<base::Value> NetLogFetcherDoneCallback(
-    int fetcher_index,
-    int net_error,
-    NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> result =
-      std::make_unique<base::DictionaryValue>();
+base::Value NetLogFetcherDoneCallback(int fetcher_index,
+                                      int net_error,
+                                      NetLogCaptureMode /* capture_mode */) {
+  base::Value result(base::Value::Type::DICTIONARY);
 
-  result->SetKey("fetcher_index", base::Value(fetcher_index));
-  result->SetKey("net_error", base::Value(net_error));
+  result.SetIntKey("fetcher_index", fetcher_index);
+  result.SetIntKey("net_error", net_error);
 
   return result;
 }

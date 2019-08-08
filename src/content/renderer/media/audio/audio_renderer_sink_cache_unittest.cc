@@ -33,8 +33,9 @@ constexpr base::TimeDelta kDeleteTimeout =
 class AudioRendererSinkCacheTest : public testing::Test {
  public:
   AudioRendererSinkCacheTest()
-      : task_env_(base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-                  base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED),
+      : task_env_(
+            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
+            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED),
         cache_(std::make_unique<AudioRendererSinkCacheImpl>(
             task_env_.GetMainThreadTaskRunner(),
             base::BindRepeating(&AudioRendererSinkCacheTest::CreateSink,

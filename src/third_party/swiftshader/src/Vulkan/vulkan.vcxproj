@@ -62,7 +62,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(SolutionDir)include;$(SolutionDir)third_party\SPIRV-Headers\include;$(SolutionDir)third_party\SPIRV-Tools\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;NOMINMAX;_SECURE_SCL=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>VK_EXPORT=;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;NOMINMAX;_SECURE_SCL=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <AdditionalOptions>/permissive- %(AdditionalOptions)</AdditionalOptions>
       <TreatSpecificWarningsAsErrors>4018;5038;4838</TreatSpecificWarningsAsErrors>
@@ -88,7 +88,7 @@ IF EXIST "$(SolutionDir)..\deqp\build\external\vulkancts\modules\vulkan\" (copy 
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(SolutionDir)include;$(SolutionDir)third_party\SPIRV-Headers\include;$(SolutionDir)third_party\SPIRV-Tools\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;NOMINMAX;DEBUGGER_WAIT_DIALOG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>VK_EXPORT=;_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;NOMINMAX;DEBUGGER_WAIT_DIALOG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <AdditionalOptions>/permissive- %(AdditionalOptions)</AdditionalOptions>
       <TreatSpecificWarningsAsErrors>4018;5038;4838</TreatSpecificWarningsAsErrors>
@@ -134,6 +134,7 @@ IF EXIST "$(SolutionDir)..\deqp\build\external\vulkancts\modules\vulkan\" (copy 
     <ClCompile Include="VkQueryPool.cpp" />
     <ClCompile Include="VkQueue.cpp" />
     <ClCompile Include="VkRenderPass.cpp" />
+    <ClCompile Include="VkSampler.cpp" />
     <ClCompile Include="VkShaderModule.cpp" />
     <ClCompile Include="..\Device\Blitter.cpp" />
     <ClCompile Include="..\Device\Clipper.cpp" />
@@ -147,7 +148,6 @@ IF EXIST "$(SolutionDir)..\deqp\build\external\vulkancts\modules\vulkan\" (copy 
     <ClCompile Include="..\Device\Point.cpp" />
     <ClCompile Include="..\Device\QuadRasterizer.cpp" />
     <ClCompile Include="..\Device\Renderer.cpp" />
-    <ClCompile Include="..\Device\Sampler.cpp" />
     <ClCompile Include="..\Device\SetupProcessor.cpp" />
     <ClCompile Include="..\Device\SwiftConfig.cpp" />
     <ClCompile Include="..\Device\Vector.cpp" />
@@ -180,7 +180,6 @@ IF EXIST "$(SolutionDir)..\deqp\build\external\vulkancts\modules\vulkan\" (copy 
     <ClCompile Include="..\System\Memory.cpp" />
     <ClCompile Include="..\System\Resource.cpp" />
     <ClCompile Include="..\System\Socket.cpp" />
-    <ClCompile Include="..\System\Thread.cpp" />
     <ClCompile Include="..\System\Timer.cpp" />
     <ClCompile Include="..\WSI\VkSurfaceKHR.cpp" />
     <ClCompile Include="..\WSI\VkSwapchainKHR.cpp" />
@@ -224,6 +223,7 @@ IF EXIST "$(SolutionDir)..\deqp\build\external\vulkancts\modules\vulkan\" (copy 
     <ClInclude Include="VkSampler.hpp" />
     <ClInclude Include="VkSemaphore.hpp" />
     <ClInclude Include="VkShaderModule.hpp" />
+    <ClInclude Include="VulkanPlatform.h" />
     <ClInclude Include="..\Device\Blitter.hpp" />
     <ClInclude Include="..\Device\Clipper.hpp" />
     <ClInclude Include="..\Device\Color.hpp" />
@@ -274,10 +274,10 @@ IF EXIST "$(SolutionDir)..\deqp\build\external\vulkancts\modules\vulkan\" (copy 
     <ClInclude Include="..\System\Half.hpp" />
     <ClInclude Include="..\System\Math.hpp" />
     <ClInclude Include="..\System\Memory.hpp" />
-    <ClInclude Include="..\System\MutexLock.hpp" />
     <ClInclude Include="..\System\Resource.hpp" />
     <ClInclude Include="..\System\SharedLibrary.hpp" />
     <ClInclude Include="..\System\Socket.hpp" />
+    <ClInclude Include="..\System\Synchronization.hpp" />
     <ClInclude Include="..\System\Thread.hpp" />
     <ClInclude Include="..\System\Timer.hpp" />
     <ClInclude Include="..\System\Types.hpp" />

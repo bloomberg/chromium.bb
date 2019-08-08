@@ -39,7 +39,6 @@ namespace blink {
 namespace scheduler {
 class WebThreadScheduler;
 }
-class WebCanvasCaptureHandler;
 class WebGraphicsContext3DProvider;
 class WebMediaPlayer;
 class WebMediaRecorderHandler;
@@ -73,7 +72,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   // Platform methods:
   blink::WebSandboxSupport* GetSandboxSupport() override;
-  blink::WebCookieJar* CookieJar() override;
   blink::WebThemeEngine* ThemeEngine() override;
   std::unique_ptr<blink::WebSpeechSynthesizer> CreateSpeechSynthesizer(
       blink::WebSpeechSynthesizerClient* client) override;
@@ -88,11 +86,9 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
                      base::Time,
                      const uint8_t*,
                      size_t) override;
-  void FetchCachedCode(
-      blink::mojom::CodeCacheType cache_type,
-      const GURL&,
-      base::OnceCallback<void(base::Time, const std::vector<uint8_t>&)>)
-      override;
+  void FetchCachedCode(blink::mojom::CodeCacheType cache_type,
+                       const GURL&,
+                       FetchCachedCodeCallback) override;
   void ClearCodeCacheEntry(blink::mojom::CodeCacheType cache_type,
                            const GURL&) override;
   void CacheMetadataInCacheStorage(
@@ -162,20 +158,10 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       blink::WebLocalFrame* frame) override;
   std::unique_ptr<webrtc::AsyncResolverFactory>
   CreateWebRtcAsyncResolverFactory() override;
-  std::unique_ptr<blink::WebCanvasCaptureHandler> CreateCanvasCaptureHandler(
-      const blink::WebSize& size,
-      double frame_rate,
-      blink::WebMediaStreamTrack* track) override;
-  void CreateHTMLVideoElementCapturer(
-      blink::WebMediaStream* web_media_stream,
-      blink::WebMediaPlayer* web_media_player,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   void CreateHTMLAudioElementCapturer(
       blink::WebMediaStream* web_media_stream,
       blink::WebMediaPlayer* web_media_player,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
-  std::unique_ptr<blink::WebImageCaptureFrameGrabber>
-  CreateImageCaptureFrameGrabber() override;
   std::unique_ptr<webrtc::RtpCapabilities> GetRtpSenderCapabilities(
       const blink::WebString& kind) override;
   std::unique_ptr<webrtc::RtpCapabilities> GetRtpReceiverCapabilities(
@@ -203,7 +189,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   void RecordRappor(const char* metric,
                     const blink::WebString& sample) override;
   void RecordRapporURL(const char* metric, const blink::WebURL& url) override;
-  blink::WebPushProvider* PushProvider() override;
   blink::WebTransmissionEncodingInfoHandler* TransmissionEncodingInfoHandler()
       override;
 
@@ -214,6 +199,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   void DidStartWorkerThread() override;
   void WillStopWorkerThread() override;
   void WorkerContextCreated(const v8::Local<v8::Context>& worker) override;
+  bool IsExcludedHeaderForServiceWorkerFetchEvent(
+      const blink::WebString& header_name) override;
 
   void RecordMetricsForBackgroundedRendererPurge() override;
 
@@ -238,8 +225,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       mojo::ScopedMessagePipeHandle url_loader_factory_handle) override;
   std::unique_ptr<blink::WebURLLoaderFactory> WrapSharedURLLoaderFactory(
       scoped_refptr<network::SharedURLLoaderFactory> factory) override;
-  std::unique_ptr<blink::WebDataConsumerHandle> CreateDataConsumerHandle(
-      mojo::ScopedDataPipeConsumerHandle handle) override;
 
   // Returns non-null.
   // It is invalid to call this in an incomplete env where

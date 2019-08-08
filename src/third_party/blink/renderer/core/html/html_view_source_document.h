@@ -38,11 +38,6 @@ class CORE_EXPORT HTMLViewSourceDocument final : public HTMLDocument {
  public:
   enum SourceAnnotation { kAnnotateSourceAsSafe, kAnnotateSourceAsXSS };
 
-  static HTMLViewSourceDocument* Create(const DocumentInit& initializer,
-                                        const String& mime_type) {
-    return MakeGarbageCollected<HTMLViewSourceDocument>(initializer, mime_type);
-  }
-
   HTMLViewSourceDocument(const DocumentInit&, const String& mime_type);
 
   void AddSource(const String&, HTMLToken&, SourceAnnotation);

@@ -35,6 +35,9 @@ class ASH_EXPORT AssistantOverlay : public views::View {
   bool IsWaiting() const { return AnimationState::WAITING == animation_state_; }
   bool IsHidden() const { return AnimationState::HIDDEN == animation_state_; }
 
+  // views::View:
+  const char* GetClassName() const override;
+
  private:
   enum class AnimationState {
     // Indicates no animation is playing.

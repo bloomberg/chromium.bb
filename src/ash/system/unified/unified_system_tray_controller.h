@@ -41,10 +41,6 @@ class ASH_EXPORT UnifiedSystemTrayController
   // Create the view. The created view is unowned.
   UnifiedSystemTrayView* CreateView();
 
-  // Switch the active user to |user_index|. Called from the view.
-  void HandleUserSwitch(int user_index);
-  // Show multi profile login UI. Called from the view.
-  void HandleAddUserAction();
   // Sign out from the current user. Called from the view.
   void HandleSignOutAction();
   // Show lock screen which asks the user password. Called from the view.
@@ -53,6 +49,8 @@ class ASH_EXPORT UnifiedSystemTrayController
   void HandleSettingsAction();
   // Shutdown the computer. Called from the view.
   void HandlePowerAction();
+  // Switch to page represented by it's button. Called from the view.
+  void HandlePageSwitchAction(int page);
   // Show date and time settings. Called from the view.
   void HandleOpenDateTimeSettingsAction();
   // Show enterprise managed device info. Called from the view.
@@ -104,9 +102,6 @@ class ASH_EXPORT UnifiedSystemTrayController
 
   // Ensure the main view is expanded. Called from the slider bubble controller.
   void EnsureExpanded();
-
-  // Return true if user chooser is enabled. Called from the view.
-  bool IsUserChooserEnabled() const;
 
   // gfx::AnimationDelegate:
   void AnimationEnded(const gfx::Animation* animation) override;

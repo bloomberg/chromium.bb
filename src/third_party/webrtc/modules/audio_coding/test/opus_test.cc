@@ -73,12 +73,12 @@ void OpusTest::Perform() {
   in_file_mono_.ReadStereo(false);
 
   // Create Opus encoders for mono and stereo.
-  ASSERT_GT(WebRtcOpus_EncoderCreate(&opus_mono_encoder_, 1, 0), -1);
-  ASSERT_GT(WebRtcOpus_EncoderCreate(&opus_stereo_encoder_, 2, 1), -1);
+  ASSERT_GT(WebRtcOpus_EncoderCreate(&opus_mono_encoder_, 1, 0, 48000), -1);
+  ASSERT_GT(WebRtcOpus_EncoderCreate(&opus_stereo_encoder_, 2, 1, 48000), -1);
 
   // Create Opus decoders for mono and stereo for stand-alone testing of Opus.
-  ASSERT_GT(WebRtcOpus_DecoderCreate(&opus_mono_decoder_, 1), -1);
-  ASSERT_GT(WebRtcOpus_DecoderCreate(&opus_stereo_decoder_, 2), -1);
+  ASSERT_GT(WebRtcOpus_DecoderCreate(&opus_mono_decoder_, 1, 48000), -1);
+  ASSERT_GT(WebRtcOpus_DecoderCreate(&opus_stereo_decoder_, 2, 48000), -1);
   WebRtcOpus_DecoderInit(opus_mono_decoder_);
   WebRtcOpus_DecoderInit(opus_stereo_decoder_);
 
@@ -316,7 +316,7 @@ void OpusTest::Run(TestPackStereo* channel,
 
         // Send data to the channel. "channel" will handle the loss simulation.
         channel->SendData(AudioFrameType::kAudioFrameSpeech, payload_type_,
-                          rtp_timestamp_, bitstream, bitstream_len_byte, NULL);
+                          rtp_timestamp_, bitstream, bitstream_len_byte);
         if (first_packet) {
           first_packet = false;
           start_time_stamp = rtp_timestamp_;

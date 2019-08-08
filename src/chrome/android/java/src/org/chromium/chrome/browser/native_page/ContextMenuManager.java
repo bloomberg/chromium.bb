@@ -31,8 +31,8 @@ import java.lang.annotation.RetentionPolicy;
  * {@link Delegate#isItemSupported(int)}.
  */
 public class ContextMenuManager implements OnCloseContextMenuListener {
-    @IntDef({ContextMenuItemId.SEARCH, ContextMenuItemId.OPEN_IN_NEW_WINDOW,
-            ContextMenuItemId.OPEN_IN_NEW_TAB, ContextMenuItemId.OPEN_IN_INCOGNITO_TAB,
+    @IntDef({ContextMenuItemId.SEARCH, ContextMenuItemId.OPEN_IN_NEW_TAB,
+            ContextMenuItemId.OPEN_IN_INCOGNITO_TAB, ContextMenuItemId.OPEN_IN_NEW_WINDOW,
             ContextMenuItemId.SAVE_FOR_OFFLINE, ContextMenuItemId.ADD_TO_MY_APPS,
             ContextMenuItemId.REMOVE, ContextMenuItemId.LEARN_MORE})
     @Retention(RetentionPolicy.SOURCE)
@@ -41,9 +41,9 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
         // the value of the existing ones should be modified so they stay in order.
         // Values are also used for indexing - should start from 0 and can't have gaps.
         int SEARCH = 0;
-        int OPEN_IN_NEW_WINDOW = 1;
-        int OPEN_IN_NEW_TAB = 2;
-        int OPEN_IN_INCOGNITO_TAB = 3;
+        int OPEN_IN_NEW_TAB = 1;
+        int OPEN_IN_INCOGNITO_TAB = 2;
+        int OPEN_IN_NEW_WINDOW = 3;
         int SAVE_FOR_OFFLINE = 4;
         int ADD_TO_MY_APPS = 5;
         int REMOVE = 6;
@@ -227,12 +227,12 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
         switch (itemId) {
             case ContextMenuItemId.SEARCH:
                 return false;
-            case ContextMenuItemId.OPEN_IN_NEW_WINDOW:
-                return mNavigationDelegate.isOpenInNewWindowEnabled();
             case ContextMenuItemId.OPEN_IN_NEW_TAB:
                 return true;
             case ContextMenuItemId.OPEN_IN_INCOGNITO_TAB:
                 return mNavigationDelegate.isOpenInIncognitoEnabled();
+            case ContextMenuItemId.OPEN_IN_NEW_WINDOW:
+                return mNavigationDelegate.isOpenInNewWindowEnabled();
             case ContextMenuItemId.SAVE_FOR_OFFLINE: {
                 String itemUrl = delegate.getUrl();
                 return itemUrl != null && OfflinePageBridge.canSavePage(itemUrl);
@@ -254,8 +254,6 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
      */
     protected @StringRes int getResourceIdForMenuItem(@ContextMenuItemId int id) {
         switch (id) {
-            case ContextMenuItemId.OPEN_IN_NEW_WINDOW:
-                return R.string.contextmenu_open_in_other_window;
             case ContextMenuItemId.OPEN_IN_NEW_TAB:
                 return FeatureUtilities.isTabGroupsAndroidEnabled()
                         ? R.string.contextmenu_open_in_new_tab_group
@@ -265,6 +263,8 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
                                 && ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)
                         ? R.string.contextmenu_open_in_private_tab
                         : R.string.contextmenu_open_in_incognito_tab;
+            case ContextMenuItemId.OPEN_IN_NEW_WINDOW:
+                return R.string.contextmenu_open_in_other_window;
             case ContextMenuItemId.SAVE_FOR_OFFLINE:
                 return R.string.contextmenu_save_link;
             case ContextMenuItemId.REMOVE:
@@ -284,10 +284,6 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
      */
     protected boolean handleMenuItemClick(@ContextMenuItemId int itemId, Delegate delegate) {
         switch (itemId) {
-            case ContextMenuItemId.OPEN_IN_NEW_WINDOW:
-                delegate.openItem(WindowOpenDisposition.NEW_WINDOW);
-                RecordUserAction.record(mUserActionPrefix + ".ContextMenu.OpenItemInNewWindow");
-                return true;
             case ContextMenuItemId.OPEN_IN_NEW_TAB:
                 delegate.openItem(WindowOpenDisposition.NEW_BACKGROUND_TAB);
                 RecordUserAction.record(mUserActionPrefix + ".ContextMenu.OpenItemInNewTab");
@@ -295,6 +291,10 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
             case ContextMenuItemId.OPEN_IN_INCOGNITO_TAB:
                 delegate.openItem(WindowOpenDisposition.OFF_THE_RECORD);
                 RecordUserAction.record(mUserActionPrefix + ".ContextMenu.OpenItemInIncognitoTab");
+                return true;
+            case ContextMenuItemId.OPEN_IN_NEW_WINDOW:
+                delegate.openItem(WindowOpenDisposition.NEW_WINDOW);
+                RecordUserAction.record(mUserActionPrefix + ".ContextMenu.OpenItemInNewWindow");
                 return true;
             case ContextMenuItemId.SAVE_FOR_OFFLINE:
                 delegate.openItem(WindowOpenDisposition.SAVE_TO_DISK);

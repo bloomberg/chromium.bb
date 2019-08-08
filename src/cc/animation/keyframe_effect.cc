@@ -183,13 +183,11 @@ void KeyframeEffect::RemoveFromTicking() {
 void KeyframeEffect::UpdateState(bool start_ready_keyframe_models,
                                  AnimationEvents* events) {
   DCHECK(has_bound_element_animations());
-  if (!element_animations_->has_element_in_active_list())
-    return;
 
   // Animate hasn't been called, this happens if an element has been added
   // between the Commit and Draw phases.
   if (last_tick_time_ == base::TimeTicks())
-    return;
+    start_ready_keyframe_models = false;
 
   if (start_ready_keyframe_models)
     PromoteStartedKeyframeModels(events);
@@ -204,6 +202,9 @@ void KeyframeEffect::UpdateState(bool start_ready_keyframe_models,
       PromoteStartedKeyframeModels(events);
     }
   }
+
+  if (!element_animations()->has_element_in_any_list())
+    RemoveFromTicking();
 }
 
 void KeyframeEffect::UpdateTickingState() {
@@ -460,27 +461,6 @@ bool KeyframeEffect::HasNonDeletedKeyframeModel() const {
   return false;
 }
 
-bool KeyframeEffect::HasOnlyTranslationTransforms(
-    ElementListType list_type) const {
-  for (const auto& keyframe_model : keyframe_models_) {
-    if (keyframe_model->is_finished() ||
-        keyframe_model->target_property_id() != TargetProperty::TRANSFORM)
-      continue;
-
-    if ((list_type == ElementListType::ACTIVE &&
-         !keyframe_model->affects_active_elements()) ||
-        (list_type == ElementListType::PENDING &&
-         !keyframe_model->affects_pending_elements()))
-      continue;
-
-    const TransformAnimationCurve* transform_animation_curve =
-        keyframe_model->curve()->ToTransformAnimationCurve();
-    if (!transform_animation_curve->IsTranslation())
-      return false;
-  }
-  return true;
-}
-
 bool KeyframeEffect::AnimationsPreserveAxisAlignment() const {
   for (const auto& keyframe_model : keyframe_models_) {
     if (keyframe_model->is_finished() ||
@@ -495,9 +475,13 @@ bool KeyframeEffect::AnimationsPreserveAxisAlignment() const {
   return true;
 }
 
-bool KeyframeEffect::AnimationStartScale(ElementListType list_type,
-                                         float* start_scale) const {
-  *start_scale = 0.f;
+bool KeyframeEffect::GetAnimationScales(ElementListType list_type,
+                                        float* maximum_scale,
+                                        float* starting_scale) const {
+  *maximum_scale = kNotScaled;
+  *starting_scale = kNotScaled;
+  bool maximum_scale_valid = true;
+  bool starting_scale_valid = true;
   for (const auto& keyframe_model : keyframe_models_) {
     if (keyframe_model->is_finished() ||
         keyframe_model->target_property_id() != TargetProperty::TRANSFORM)
@@ -507,6 +491,11 @@ bool KeyframeEffect::AnimationStartScale(ElementListType list_type,
          !keyframe_model->affects_active_elements()) ||
         (list_type == ElementListType::PENDING &&
          !keyframe_model->affects_pending_elements()))
+      continue;
+
+    const TransformAnimationCurve* transform_animation_curve =
+        keyframe_model->curve()->ToTransformAnimationCurve();
+    if (transform_animation_curve->IsTranslation())
       continue;
 
     bool forward_direction = true;
@@ -521,52 +510,32 @@ bool KeyframeEffect::AnimationStartScale(ElementListType list_type,
         break;
     }
 
-    const TransformAnimationCurve* transform_animation_curve =
-        keyframe_model->curve()->ToTransformAnimationCurve();
-    float keyframe_model_start_scale = 0.f;
-    if (!transform_animation_curve->AnimationStartScale(
-            forward_direction, &keyframe_model_start_scale))
-      return false;
-    *start_scale = std::max(*start_scale, keyframe_model_start_scale);
-  }
-  return true;
-}
-
-bool KeyframeEffect::MaximumTargetScale(ElementListType list_type,
-                                        float* max_scale) const {
-  *max_scale = 0.f;
-  for (const auto& keyframe_model : keyframe_models_) {
-    if (keyframe_model->is_finished() ||
-        keyframe_model->target_property_id() != TargetProperty::TRANSFORM)
-      continue;
-
-    if ((list_type == ElementListType::ACTIVE &&
-         !keyframe_model->affects_active_elements()) ||
-        (list_type == ElementListType::PENDING &&
-         !keyframe_model->affects_pending_elements()))
-      continue;
-
-    bool forward_direction = true;
-    switch (keyframe_model->direction()) {
-      case KeyframeModel::Direction::NORMAL:
-      case KeyframeModel::Direction::ALTERNATE_NORMAL:
-        forward_direction = keyframe_model->playback_rate() >= 0.0;
-        break;
-      case KeyframeModel::Direction::REVERSE:
-      case KeyframeModel::Direction::ALTERNATE_REVERSE:
-        forward_direction = keyframe_model->playback_rate() < 0.0;
-        break;
+    if (maximum_scale_valid) {
+      float keyframe_model_maximum_scale = kNotScaled;
+      if (transform_animation_curve->MaximumTargetScale(
+              forward_direction, &keyframe_model_maximum_scale)) {
+        *maximum_scale = std::max(*maximum_scale, keyframe_model_maximum_scale);
+      } else {
+        maximum_scale_valid = false;
+        *maximum_scale = kNotScaled;
+      }
     }
 
-    const TransformAnimationCurve* transform_animation_curve =
-        keyframe_model->curve()->ToTransformAnimationCurve();
-    float keyframe_model_scale = 0.f;
-    if (!transform_animation_curve->MaximumTargetScale(forward_direction,
-                                                       &keyframe_model_scale))
-      return false;
-    *max_scale = std::max(*max_scale, keyframe_model_scale);
-  }
+    if (starting_scale_valid) {
+      float keyframe_model_starting_scale = kNotScaled;
+      if (transform_animation_curve->AnimationStartScale(
+              forward_direction, &keyframe_model_starting_scale)) {
+        *starting_scale =
+            std::max(*starting_scale, keyframe_model_starting_scale);
+      } else {
+        starting_scale_valid = false;
+        *starting_scale = kNotScaled;
+      }
+    }
 
+    if (!maximum_scale_valid && !starting_scale_valid)
+      return false;
+  }
   return true;
 }
 
@@ -681,6 +650,15 @@ void KeyframeEffect::PurgeKeyframeModelsMarkedForDeletion(bool impl_only) {
       });
 }
 
+void KeyframeEffect::PurgeDeletedKeyframeModels() {
+  base::EraseIf(keyframe_models_,
+                [](const std::unique_ptr<KeyframeModel>& keyframe_model) {
+                  return keyframe_model->run_state() ==
+                             KeyframeModel::WAITING_FOR_DELETION &&
+                         !keyframe_model->affects_pending_elements();
+                });
+}
+
 void KeyframeEffect::PushNewKeyframeModelsToImplThread(
     KeyframeEffect* keyframe_effect_impl) const {
   // Any new KeyframeModels owned by the main thread's Animation are
@@ -746,22 +724,15 @@ void KeyframeEffect::RemoveKeyframeModelsCompletedOnMainThread(
   // elements, and should stop affecting active elements after the next call
   // to ActivateKeyframeEffects. If already WAITING_FOR_DELETION, they can be
   // removed immediately.
-  auto& keyframe_models = keyframe_effect_impl->keyframe_models_;
-  for (const auto& keyframe_model : keyframe_models) {
+  for (const std::unique_ptr<KeyframeModel>& keyframe_model :
+       keyframe_effect_impl->keyframe_models_) {
     if (IsCompleted(keyframe_model.get(), this)) {
       keyframe_model->set_affects_pending_elements(false);
       keyframe_model_completed = true;
     }
   }
-  auto affects_active_only_and_is_waiting_for_deletion =
-      [](const std::unique_ptr<KeyframeModel>& keyframe_model) {
-        return keyframe_model->run_state() ==
-                   KeyframeModel::WAITING_FOR_DELETION &&
-               !keyframe_model->affects_pending_elements();
-      };
-  base::EraseIf(keyframe_models,
-                affects_active_only_and_is_waiting_for_deletion);
 
+  keyframe_effect_impl->PurgeDeletedKeyframeModels();
   if (has_bound_element_animations() && keyframe_model_completed)
     element_animations_->SetNeedsPushProperties();
 }

@@ -50,7 +50,7 @@ constexpr int kOpusBitrateNbBps = 12000;
 constexpr int kOpusBitrateWbBps = 20000;
 constexpr int kOpusBitrateFbBps = 32000;
 
-constexpr int kSampleRateHz = 48000;
+constexpr int kRtpTimestampRateHz = 48000;
 constexpr int kDefaultMaxPlaybackRate = 48000;
 
 // These two lists must be sorted from low to high
@@ -276,8 +276,10 @@ float AudioEncoderOpusImpl::NewPacketLossRateOptimizer::OptimizePacketLossRate(
 
 void AudioEncoderOpusImpl::AppendSupportedEncoders(
     std::vector<AudioCodecSpec>* specs) {
-  const SdpAudioFormat fmt = {
-      "opus", 48000, 2, {{"minptime", "10"}, {"useinbandfec", "1"}}};
+  const SdpAudioFormat fmt = {"opus",
+                              kRtpTimestampRateHz,
+                              2,
+                              {{"minptime", "10"}, {"useinbandfec", "1"}}};
   const AudioCodecInfo info = QueryAudioEncoder(*SdpToConfig(fmt));
   specs->push_back({fmt, info});
 }
@@ -285,7 +287,8 @@ void AudioEncoderOpusImpl::AppendSupportedEncoders(
 AudioCodecInfo AudioEncoderOpusImpl::QueryAudioEncoder(
     const AudioEncoderOpusConfig& config) {
   RTC_DCHECK(config.IsOk());
-  AudioCodecInfo info(48000, config.num_channels, *config.bitrate_bps,
+  AudioCodecInfo info(config.sample_rate_hz, config.num_channels,
+                      *config.bitrate_bps,
                       AudioEncoderOpusConfig::kMinBitrateBps,
                       AudioEncoderOpusConfig::kMaxBitrateBps);
   info.allow_comfort_noise = false;
@@ -300,29 +303,10 @@ std::unique_ptr<AudioEncoder> AudioEncoderOpusImpl::MakeAudioEncoder(
   return absl::make_unique<AudioEncoderOpusImpl>(config, payload_type);
 }
 
-absl::optional<AudioCodecInfo> AudioEncoderOpusImpl::QueryAudioEncoder(
-    const SdpAudioFormat& format) {
-  if (absl::EqualsIgnoreCase(format.name, GetPayloadName()) &&
-      format.clockrate_hz == 48000 && format.num_channels == 2) {
-    const size_t num_channels = GetChannelCount(format);
-    const int bitrate =
-        CalculateBitrate(GetMaxPlaybackRate(format), num_channels,
-                         GetFormatParameter(format, "maxaveragebitrate"));
-    AudioCodecInfo info(48000, num_channels, bitrate,
-                        AudioEncoderOpusConfig::kMinBitrateBps,
-                        AudioEncoderOpusConfig::kMaxBitrateBps);
-    info.allow_comfort_noise = false;
-    info.supports_network_adaption = true;
-
-    return info;
-  }
-  return absl::nullopt;
-}
-
 absl::optional<AudioEncoderOpusConfig> AudioEncoderOpusImpl::SdpToConfig(
     const SdpAudioFormat& format) {
   if (!absl::EqualsIgnoreCase(format.name, "opus") ||
-      format.clockrate_hz != 48000 || format.num_channels != 2) {
+      format.clockrate_hz != kRtpTimestampRateHz || format.num_channels != 2) {
     return absl::nullopt;
   }
 
@@ -475,11 +459,15 @@ AudioEncoderOpusImpl::~AudioEncoderOpusImpl() {
 }
 
 int AudioEncoderOpusImpl::SampleRateHz() const {
-  return kSampleRateHz;
+  return config_.sample_rate_hz;
 }
 
 size_t AudioEncoderOpusImpl::NumChannels() const {
   return config_.num_channels;
+}
+
+int AudioEncoderOpusImpl::RtpTimestampRateHz() const {
+  return kRtpTimestampRateHz;
 }
 
 size_t AudioEncoderOpusImpl::Num10MsFramesInNextPacket() const {
@@ -722,7 +710,8 @@ size_t AudioEncoderOpusImpl::Num10msFramesPerPacket() const {
 }
 
 size_t AudioEncoderOpusImpl::SamplesPer10msFrame() const {
-  return rtc::CheckedDivExact(kSampleRateHz, 100) * config_.num_channels;
+  return rtc::CheckedDivExact(config_.sample_rate_hz, 100) *
+         config_.num_channels;
 }
 
 size_t AudioEncoderOpusImpl::SufficientOutputBufferSize() const {
@@ -752,7 +741,8 @@ bool AudioEncoderOpusImpl::RecreateEncoderInstance(
                       config.application ==
                               AudioEncoderOpusConfig::ApplicationMode::kVoip
                           ? 0
-                          : 1));
+                          : 1,
+                      config.sample_rate_hz));
   const int bitrate = GetBitrateBps(config);
   RTC_CHECK_EQ(0, WebRtcOpus_SetBitRate(inst_, bitrate));
   RTC_LOG(LS_INFO) << "Set Opus bitrate to " << bitrate << " bps.";

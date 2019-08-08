@@ -1300,9 +1300,7 @@ class TransferUserActivationFrameTreeBrowserTest : public ContentBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(TransferUserActivationFrameTreeBrowserTest,
-                       PostMessageTransferActivation) {
-  // TODO(lanwei): Also test transferring user activation in the frame trees
-  // for the same origin case a(b,b). crbug.com/928838.
+                       PostMessageTransferActivationCrossOrigin) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b,c)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -1367,6 +1365,71 @@ IN_PROC_BROWSER_TEST_F(TransferUserActivationFrameTreeBrowserTest,
       "window.parent.frames[1].postMessage('Hey', "
       "{targetOrigin: '*', transferUserActivation: "
       "true})"));
+  while (msg_queue.WaitForMessage(&actual_test_reply)) {
+    if (actual_test_reply == "\"done-Hey\"")
+      break;
+  }
+  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasTransientUserActivation());
+  EXPECT_FALSE(child1->HasBeenActivated());
+  EXPECT_FALSE(child1->HasTransientUserActivation());
+  EXPECT_TRUE(child2->HasBeenActivated());
+  EXPECT_TRUE(child2->HasTransientUserActivation());
+}
+
+IN_PROC_BROWSER_TEST_F(TransferUserActivationFrameTreeBrowserTest,
+                       PostMessageTransferActivationSameOrigin) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b(b))"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  WebContentsImpl* contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  FrameTreeNode* root = contents->GetFrameTree()->root();
+  FrameTreeNode* child1 = root->child_at(0);
+  FrameTreeNode* child2 = child1->child_at(0);
+  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasTransientUserActivation());
+  EXPECT_FALSE(child1->HasBeenActivated());
+  EXPECT_FALSE(child1->HasTransientUserActivation());
+  EXPECT_FALSE(child2->HasBeenActivated());
+  EXPECT_FALSE(child2->HasTransientUserActivation());
+
+  // Activate the root frame and transfer the user activation state from root
+  // to child1.
+  std::string message_event_listener =
+      "window.addEventListener('message', function(event) {\n"
+      "  domAutomationController.send('done-' + event.data);\n"
+      "});";
+  EXPECT_TRUE(ExecuteScript(shell(), ""));
+  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(child1->current_frame_host(),
+                                              message_event_listener));
+  DOMMessageQueue msg_queue;
+  std::string actual_test_reply;
+  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
+      shell(),
+      "window.frames[0].postMessage('Hello', "
+      "{targetOrigin: '*', transferUserActivation: true})"));
+  while (msg_queue.WaitForMessage(&actual_test_reply)) {
+    if (actual_test_reply == "\"done-Hello\"")
+      break;
+  }
+  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasTransientUserActivation());
+  EXPECT_TRUE(child1->HasBeenActivated());
+  EXPECT_TRUE(child1->HasTransientUserActivation());
+  EXPECT_FALSE(child2->HasBeenActivated());
+  EXPECT_FALSE(child2->HasTransientUserActivation());
+
+  // Post a message from child1 to its child child2 in the same origin with
+  // |transferUserActivation| true to transfer the user activation state from
+  // one node to its child node in the frame tree.
+  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(child2->current_frame_host(),
+                                              message_event_listener));
+  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
+      child1->current_frame_host(),
+      "window.frames[0].postMessage('Hey', "
+      "{targetOrigin: '*', transferUserActivation: true})"));
   while (msg_queue.WaitForMessage(&actual_test_reply)) {
     if (actual_test_reply == "\"done-Hey\"")
       break;

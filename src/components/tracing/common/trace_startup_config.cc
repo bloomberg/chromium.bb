@@ -242,10 +242,12 @@ bool TraceStartupConfig::EnableFromConfigFile() {
 
 bool TraceStartupConfig::EnableFromBackgroundTracing() {
 #if defined(OS_ANDROID)
+  // Tests can enable this value.
   is_enabled_from_background_tracing_ =
+      is_enabled_from_background_tracing_ ||
       base::android::GetBackgroundStartupTracingFlag();
 #else
-  is_enabled_from_background_tracing_ = false;
+  // TODO(ssid): Implement saving setting to preference for next startup.
 #endif
   // Do not set the flag to false if it's not enabled unnecessarily.
   if (!is_enabled_from_background_tracing_)

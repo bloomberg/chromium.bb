@@ -23,7 +23,7 @@ String ContentHolder::GetValue() const {
 IntRect ContentHolder::GetBoundingBox() const {
   DCHECK(IsValid());
   if (node_ && node_->GetLayoutObject())
-    return EnclosedIntRect(node_->GetLayoutObject()->VisualRectInDocument());
+    return EnclosingIntRect(node_->GetLayoutObject()->VisualRectInDocument());
   return IntRect();
 }
 

@@ -92,17 +92,16 @@ DelegatedFrameHost::~DelegatedFrameHost() {
 void DelegatedFrameHost::WasShown(
     const viz::LocalSurfaceId& new_local_surface_id,
     const gfx::Size& new_dip_size,
-    bool record_presentation_time,
-    base::TimeTicks tab_switch_start_time) {
+    const base::Optional<RecordTabSwitchTimeRequest>&
+        record_tab_switch_time_request) {
   // Cancel any pending frame eviction and unpause it if paused.
   frame_eviction_state_ = FrameEvictionState::kNotStarted;
 
   frame_evictor_->SetVisible(true);
-  if (record_presentation_time && compositor_ &&
-      !tab_switch_start_time.is_null()) {
+  if (record_tab_switch_time_request && compositor_) {
     compositor_->RequestPresentationTimeForNextFrame(
-        tab_switch_time_recorder_.BeginTimeRecording(
-            tab_switch_start_time, true /* has_saved_frames */,
+        tab_switch_time_recorder_.TabWasShown(
+            true /* has_saved_frames */, record_tab_switch_time_request.value(),
             base::TimeTicks::Now()));
   }
 
@@ -124,6 +123,7 @@ bool DelegatedFrameHost::HasSavedFrame() const {
 
 void DelegatedFrameHost::WasHidden() {
   frame_evictor_->SetVisible(false);
+  tab_switch_time_recorder_.TabWasHidden();
 }
 
 void DelegatedFrameHost::CopyFromCompositingSurface(
@@ -282,7 +282,10 @@ void DelegatedFrameHost::EmbedSurface(
   if (seen_first_activation_)
     frame_evictor_->OnNewSurfaceEmbedded();
 #else
-  frame_evictor_->OnNewSurfaceEmbedded();
+  // Ignore empty frames. Extensions often create empty background page frames
+  // which shouldn't count against the saved frames.
+  if (!new_dip_size.IsEmpty())
+    frame_evictor_->OnNewSurfaceEmbedded();
 #endif
 
   if (!primary_surface_id ||
@@ -437,7 +440,8 @@ void DelegatedFrameHost::DidCopyStaleContent(
 
   auto transfer_resource = viz::TransferableResource::MakeGL(
       result->GetTextureResult()->mailbox, GL_LINEAR, GL_TEXTURE_2D,
-      result->GetTextureResult()->sync_token);
+      result->GetTextureResult()->sync_token, result->size(),
+      false /* is_overlay_candidate */);
   std::unique_ptr<viz::SingleReleaseCallback> release_callback =
       result->TakeTextureOwnership();
 

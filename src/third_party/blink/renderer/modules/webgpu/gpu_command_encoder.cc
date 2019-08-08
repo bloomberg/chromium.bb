@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/modules/webgpu/gpu_command_encoder.h"
 
-#include "third_party/blink/renderer/modules/webgpu/dawn_control_client_holder.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_conversions.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_buffer.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_buffer_copy_view.h"

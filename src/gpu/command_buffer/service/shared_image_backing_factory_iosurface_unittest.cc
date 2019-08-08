@@ -21,6 +21,7 @@
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "ui/gl/buildflags.h"
 #include "ui/gl/gl_context.h"
@@ -57,7 +58,7 @@ class SharedImageBackingFactoryIOSurfaceTest : public testing::Test {
     context_state_->InitializeGL(GpuPreferences(), std::move(feature_info));
 
     backing_factory_ = std::make_unique<SharedImageBackingFactoryIOSurface>(
-        workarounds, GpuFeatureInfo());
+        workarounds, GpuFeatureInfo(), /*use_gl*/ true);
 
     memory_type_tracker_ = std::make_unique<MemoryTypeTracker>(nullptr);
     shared_image_representation_factory_ =
@@ -135,13 +136,18 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, Basic) {
   auto skia_representation = shared_image_representation_factory_->ProduceSkia(
       mailbox, context_state_);
   EXPECT_TRUE(skia_representation);
+  std::vector<GrBackendSemaphore> begin_semaphores;
+  std::vector<GrBackendSemaphore> end_semaphores;
   auto surface = skia_representation->BeginWriteAccess(
-      0, SkSurfaceProps(0, kUnknown_SkPixelGeometry));
+      0, SkSurfaceProps(0, kUnknown_SkPixelGeometry), &begin_semaphores,
+      &end_semaphores);
   EXPECT_TRUE(surface);
   EXPECT_EQ(size.width(), surface->width());
   EXPECT_EQ(size.height(), surface->height());
+  EXPECT_TRUE(begin_semaphores.empty());
+  EXPECT_TRUE(end_semaphores.empty());
   skia_representation->EndWriteAccess(std::move(surface));
-  auto promise_texture = skia_representation->BeginReadAccess();
+  auto promise_texture = skia_representation->BeginReadAccess(nullptr, nullptr);
   EXPECT_TRUE(promise_texture);
   if (promise_texture) {
     GrBackendTexture backend_texture = promise_texture->backendTexture();
@@ -202,7 +208,7 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, GL_SkiaGL) {
   auto skia_representation = shared_image_representation_factory_->ProduceSkia(
       mailbox, context_state_);
   EXPECT_TRUE(skia_representation);
-  auto promise_texture = skia_representation->BeginReadAccess();
+  auto promise_texture = skia_representation->BeginReadAccess(nullptr, nullptr);
   EXPECT_TRUE(promise_texture);
   if (promise_texture) {
     GrBackendTexture backend_texture = promise_texture->backendTexture();
@@ -282,18 +288,19 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, Dawn_SkiaGL) {
         dawn::Texture::Acquire(dawn_representation->BeginAccess(
             DAWN_TEXTURE_USAGE_BIT_OUTPUT_ATTACHMENT));
 
-    dawn::RenderPassColorAttachmentDescriptor colorDesc;
-    colorDesc.attachment = texture.CreateDefaultView();
-    colorDesc.resolveTarget = nullptr;
-    colorDesc.loadOp = dawn::LoadOp::Clear;
-    colorDesc.storeOp = dawn::StoreOp::Store;
-    colorDesc.clearColor = {0, 255, 0, 255};
+    dawn::RenderPassColorAttachmentDescriptor color_desc;
+    color_desc.attachment = texture.CreateDefaultView();
+    color_desc.resolveTarget = nullptr;
+    color_desc.loadOp = dawn::LoadOp::Clear;
+    color_desc.storeOp = dawn::StoreOp::Store;
+    color_desc.clearColor = {0, 255, 0, 255};
 
-    dawn::RenderPassColorAttachmentDescriptor* colorAttachmentsPtr = &colorDesc;
+    dawn::RenderPassColorAttachmentDescriptor* color_attachments_ptr =
+        &color_desc;
 
     dawn::RenderPassDescriptor renderPassDesc;
     renderPassDesc.colorAttachmentCount = 1;
-    renderPassDesc.colorAttachments = &colorAttachmentsPtr;
+    renderPassDesc.colorAttachments = &color_attachments_ptr;
     renderPassDesc.depthStencilAttachment = nullptr;
 
     dawn::CommandEncoder encoder = device.CreateCommandEncoder();
@@ -311,7 +318,7 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, Dawn_SkiaGL) {
   auto skia_representation = shared_image_representation_factory_->ProduceSkia(
       mailbox, context_state_);
   EXPECT_TRUE(skia_representation);
-  auto promise_texture = skia_representation->BeginReadAccess();
+  auto promise_texture = skia_representation->BeginReadAccess(nullptr, nullptr);
   EXPECT_TRUE(promise_texture);
   if (promise_texture) {
     GrBackendTexture backend_texture = promise_texture->backendTexture();

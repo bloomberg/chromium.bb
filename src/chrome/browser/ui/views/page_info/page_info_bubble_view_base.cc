@@ -88,3 +88,8 @@ void PageInfoBubbleViewBase::DidStartNavigation(
   if (handle->IsInMainFrame())
     GetWidget()->Close();
 }
+
+void PageInfoBubbleViewBase::DidChangeVisibleSecurityState() {
+  // Subclasses may update instead, but this the only safe general option.
+  GetWidget()->Close();
+}

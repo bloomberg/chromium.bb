@@ -171,8 +171,9 @@ void PluginInstanceThrottlerImpl::Initialize(
     // is disabled.
     frame->RegisterPeripheralPlugin(
         content_origin,
-        base::Bind(&PluginInstanceThrottlerImpl::MarkPluginEssential,
-                   weak_factory_.GetWeakPtr(), UNTHROTTLE_METHOD_BY_WHITELIST));
+        base::BindOnce(&PluginInstanceThrottlerImpl::MarkPluginEssential,
+                       weak_factory_.GetWeakPtr(),
+                       UNTHROTTLE_METHOD_BY_WHITELIST));
   }
 }
 

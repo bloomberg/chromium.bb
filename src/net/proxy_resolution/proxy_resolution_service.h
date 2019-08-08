@@ -187,13 +187,6 @@ class NET_EXPORT ProxyResolutionService
   // before th ProxyResolutionService itself.
   void OnShutdown();
 
-  // Tells this ProxyResolutionService to start using a new ProxyConfigService
-  // to retrieve its ProxyConfig from. The new ProxyConfigService will
-  // immediately be queried for new config info which will be used for all
-  // subsequent ResolveProxy calls.
-  void ResetConfigService(
-      std::unique_ptr<ProxyConfigService> new_proxy_config_service);
-
   // Returns the last configuration fetched from ProxyConfigService.
   const base::Optional<ProxyConfigWithAnnotation>& fetched_config() const {
     return fetched_config_;

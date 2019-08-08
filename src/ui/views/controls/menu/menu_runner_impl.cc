@@ -8,7 +8,7 @@
 
 #include "build/build_config.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/views/controls/button/menu_button.h"
+#include "ui/views/controls/button/menu_button_controller.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 #include "ui/views/controls/menu/menu_item_view.h"
@@ -72,7 +72,7 @@ void MenuRunnerImpl::Release() {
       // Release is invoked when MenuRunner is destroyed. Assume this is
       // happening because the object referencing the menu has been destroyed
       // and the menu button is no longer valid.
-      controller_->Cancel(MenuController::EXIT_DESTROYED);
+      controller_->Cancel(MenuController::ExitType::kDestroyed);
       return;
     }
   }
@@ -81,7 +81,7 @@ void MenuRunnerImpl::Release() {
 }
 
 void MenuRunnerImpl::RunMenuAt(Widget* parent,
-                               MenuButton* button,
+                               MenuButtonController* button_controller,
                                const gfx::Rect& bounds,
                                MenuAnchorPosition anchor,
                                int32_t run_types) {
@@ -96,7 +96,7 @@ void MenuRunnerImpl::RunMenuAt(Widget* parent,
   if (controller) {
     if ((run_types & MenuRunner::IS_NESTED) != 0) {
       if (controller->for_drop()) {
-        controller->CancelAll();
+        controller->Cancel(MenuController::ExitType::kAll);
         controller = nullptr;
       } else {
         // Only nest the delegate when not cancelling drag-and-drop. When
@@ -106,7 +106,7 @@ void MenuRunnerImpl::RunMenuAt(Widget* parent,
       }
     } else {
       // There's some other menu open and we're not nested. Cancel the menu.
-      controller->CancelAll();
+      controller->Cancel(MenuController::ExitType::kAll);
       if ((run_types & MenuRunner::FOR_DROP) == 0) {
         // We can't open another menu, otherwise the message loop would become
         // twice nested. This isn't necessarily a problem, but generally isn't
@@ -130,12 +130,13 @@ void MenuRunnerImpl::RunMenuAt(Widget* parent,
   }
   DCHECK((run_types & MenuRunner::COMBOBOX) == 0 ||
          (run_types & MenuRunner::EDITABLE_COMBOBOX) == 0);
+  using ComboboxType = MenuController::ComboboxType;
   if (run_types & MenuRunner::COMBOBOX)
-    controller->set_combobox_type(MenuController::kReadonlyCombobox);
+    controller->set_combobox_type(ComboboxType::kReadonly);
   else if (run_types & MenuRunner::EDITABLE_COMBOBOX)
-    controller->set_combobox_type(MenuController::kEditableCombobox);
+    controller->set_combobox_type(ComboboxType::kEditable);
   else
-    controller->set_combobox_type(MenuController::kNotACombobox);
+    controller->set_combobox_type(ComboboxType::kNone);
   controller->set_send_gesture_events_to_owner(
       (run_types & MenuRunner::SEND_GESTURE_EVENTS_TO_OWNER) != 0);
   controller->set_use_touchable_layout(
@@ -143,16 +144,16 @@ void MenuRunnerImpl::RunMenuAt(Widget* parent,
   controller_ = controller->AsWeakPtr();
   menu_->set_controller(controller_.get());
   menu_->PrepareForRun(owns_controller_, has_mnemonics,
-                       !for_drop_ && ShouldShowMnemonics(button, run_types));
+                       !for_drop_ && ShouldShowMnemonics(run_types));
 
-  controller->Run(parent, button, menu_, bounds, anchor,
+  controller->Run(parent, button_controller, menu_, bounds, anchor,
                   (run_types & MenuRunner::CONTEXT_MENU) != 0,
                   (run_types & MenuRunner::NESTED_DRAG) != 0);
 }
 
 void MenuRunnerImpl::Cancel() {
   if (running_)
-    controller_->Cancel(MenuController::EXIT_ALL);
+    controller_->Cancel(MenuController::ExitType::kAll);
 }
 
 base::TimeTicks MenuRunnerImpl::GetClosingEventTime() const {
@@ -202,12 +203,11 @@ void MenuRunnerImpl::SiblingMenuCreated(MenuItemView* menu) {
 
 MenuRunnerImpl::~MenuRunnerImpl() {
   delete menu_;
-  for (auto i = sibling_menus_.begin(); i != sibling_menus_.end(); ++i)
-    delete *i;
+  for (auto* sibling_menu : sibling_menus_)
+    delete sibling_menu;
 }
 
-bool MenuRunnerImpl::ShouldShowMnemonics(MenuButton* button,
-                                         int32_t run_types) {
+bool MenuRunnerImpl::ShouldShowMnemonics(int32_t run_types) {
   bool show_mnemonics = run_types & MenuRunner::SHOULD_SHOW_MNEMONICS;
   // Show mnemonics if the button has focus or alt is pressed.
 #if defined(OS_WIN)

@@ -149,4 +149,9 @@ void ExtensionsAPIClient::SaveImageDataToClipboard(
     const base::Callback<void(const std::string&)>& error_callback) {}
 #endif
 
+AutomationInternalApiDelegate*
+ExtensionsAPIClient::GetAutomationInternalApiDelegate() {
+  return nullptr;
+}
+
 }  // namespace extensions

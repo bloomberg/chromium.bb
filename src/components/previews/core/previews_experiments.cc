@@ -120,6 +120,12 @@ size_t MaxHostsForOptimizationGuideServiceHintsFetch() {
       "max_hosts_for_optimization_guide_service_hints_fetch", 30);
 }
 
+base::TimeDelta StoredFetchedHintsFreshnessDuration() {
+  return base::TimeDelta::FromDays(GetFieldTrialParamByFeatureAsInt(
+      features::kOptimizationHintsFetching,
+      "max_store_duration_for_featured_hints_in_days", 7));
+}
+
 int PerHostBlackListOptOutThreshold() {
   return GetParamValueAsInt(kClientSidePreviewsFieldTrial,
                             "per_host_opt_out_threshold", 2);
@@ -167,15 +173,6 @@ base::TimeDelta LitePagePreviewsNavigationTimeoutDuration() {
                                              30 * 1000));
 }
 
-std::vector<std::string> LitePagePreviewsBlacklistedPathSuffixes() {
-  const std::string csv = base::GetFieldTrialParamValueByFeature(
-      features::kLitePageServerPreviews, "blacklisted_path_suffixes");
-  if (csv == "")
-    return {};
-  return base::SplitString(csv, ",", base::TRIM_WHITESPACE,
-                           base::SPLIT_WANT_NONEMPTY);
-}
-
 int LitePageRedirectPreviewMaxServerBlacklistByteSize() {
   return base::GetFieldTrialParamByFeatureAsInt(
       features::kLitePageServerPreviews, "max_blacklist_byte_size",
@@ -199,6 +196,10 @@ bool LitePagePreviewsTriggerOnLocalhost() {
 }
 
 bool LitePagePreviewsOverridePageHints() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kLitePageRedirectOverridesPageHints)) {
+    return true;
+  }
   return base::GetFieldTrialParamByFeatureAsBool(
       features::kLitePageServerPreviews, "override_pagehints", false);
 }
@@ -283,6 +284,10 @@ net::EffectiveConnectionType GetECTThresholdForPreview(
       return GetParamValueAsECTByFeature(features::kResourceLoadingHints,
                                          kEffectiveConnectionTypeThreshold,
                                          net::EFFECTIVE_CONNECTION_TYPE_2G);
+    case PreviewsType::DEFER_ALL_SCRIPT:
+      return GetParamValueAsECTByFeature(features::kDeferAllScriptPreviews,
+                                         kEffectiveConnectionTypeThreshold,
+                                         net::EFFECTIVE_CONNECTION_TYPE_2G);
     case PreviewsType::DEPRECATED_AMP_REDIRECTION:
     case PreviewsType::LAST:
       break;
@@ -299,10 +304,6 @@ net::EffectiveConnectionType GetSessionMaxECTThreshold() {
 
 bool ArePreviewsAllowed() {
   return base::FeatureList::IsEnabled(features::kPreviews);
-}
-
-bool IsPreviewsOmniboxUiEnabled() {
-  return base::FeatureList::IsEnabled(features::kAndroidOmniboxPreviewsBadge);
 }
 
 bool IsOfflinePreviewsEnabled() {
@@ -323,6 +324,10 @@ bool IsResourceLoadingHintsEnabled() {
 
 bool IsLitePageServerPreviewsEnabled() {
   return base::FeatureList::IsEnabled(features::kLitePageServerPreviews);
+}
+
+bool IsDeferAllScriptPreviewsEnabled() {
+  return base::FeatureList::IsEnabled(features::kDeferAllScriptPreviews);
 }
 
 int OfflinePreviewsVersion() {
@@ -346,6 +351,11 @@ int NoScriptPreviewsVersion() {
 
 int ResourceLoadingHintsVersion() {
   return GetFieldTrialParamByFeatureAsInt(features::kResourceLoadingHints,
+                                          kVersion, 0);
+}
+
+int DeferAllScriptPreviewsVersion() {
+  return GetFieldTrialParamByFeatureAsInt(features::kDeferAllScriptPreviews,
                                           kVersion, 0);
 }
 
@@ -387,9 +397,44 @@ int ResourceLoadingHintsPreviewsInflationBytes() {
       features::kResourceLoadingHints, kResourceLoadingHintsInflationBytes, 0);
 }
 
-bool ShouldOverrideCoinFlipHoldbackResult() {
+size_t OfflinePreviewsHelperMaxPrefSize() {
+  return GetFieldTrialParamByFeatureAsInt(
+      features::kOfflinePreviewsFalsePositivePrevention, "max_pref_entries",
+      100);
+}
+
+bool ShouldOverrideNavigationCoinFlipToHoldback() {
   return base::GetFieldTrialParamByFeatureAsBool(
       features::kCoinFlipHoldback, "force_coin_flip_always_holdback", false);
+}
+
+bool ShouldOverrideNavigationCoinFlipToAllowed() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      features::kCoinFlipHoldback, "force_coin_flip_always_allow", false);
+}
+
+bool ShouldExcludeMediaSuffix(const GURL& url) {
+  if (!base::FeatureList::IsEnabled(features::kExcludedMediaSuffixes))
+    return false;
+
+  std::vector<std::string> suffixes = {
+      ".apk", ".avi",  ".gif", ".gifv", ".jpeg", ".jpg", ".mp3",
+      ".mp4", ".mpeg", ".pdf", ".png",  ".webm", ".webp"};
+
+  std::string csv = base::GetFieldTrialParamValueByFeature(
+      features::kExcludedMediaSuffixes, "excluded_path_suffixes");
+  if (csv != "") {
+    suffixes = base::SplitString(csv, ",", base::TRIM_WHITESPACE,
+                                 base::SPLIT_WANT_NONEMPTY);
+  }
+
+  for (const std::string& suffix : suffixes) {
+    if (base::EndsWith(url.path(), suffix,
+                       base::CompareCase::INSENSITIVE_ASCII)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace params
@@ -414,6 +459,8 @@ std::string GetStringNameForType(PreviewsType type) {
       return "Unspecified";
     case PreviewsType::RESOURCE_LOADING_HINTS:
       return "ResourceLoadingHints";
+    case PreviewsType::DEFER_ALL_SCRIPT:
+      return "DeferAllScript";
     case PreviewsType::DEPRECATED_AMP_REDIRECTION:
     case PreviewsType::LAST:
       break;

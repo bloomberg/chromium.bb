@@ -5,8 +5,6 @@
 #ifndef CC_TREES_PROXY_H_
 #define CC_TREES_PROXY_H_
 
-#include <stdint.h>
-
 #include <memory>
 #include <string>
 
@@ -17,6 +15,7 @@
 #include "base/values.h"
 #include "cc/cc_export.h"
 #include "cc/input/browser_controls_state.h"
+#include "cc/trees/paint_holding_commit_trigger.h"
 #include "cc/trees/task_runner_provider.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -71,7 +70,7 @@ class CC_EXPORT Proxy {
   virtual void StartDeferringCommits(base::TimeDelta timeout) = 0;
 
   // Immediately stop deferring commits.
-  virtual void StopDeferringCommits() = 0;
+  virtual void StopDeferringCommits(PaintHoldingCommitTrigger) = 0;
 
   virtual bool CommitRequested() const = 0;
 
@@ -93,13 +92,10 @@ class CC_EXPORT Proxy {
 
   virtual void RequestBeginMainFrameNotExpected(bool new_state) = 0;
 
-  // See description in LayerTreeHost
-  virtual uint32_t GenerateChildSurfaceSequenceNumberSync() = 0;
-
   // Testing hooks
   virtual bool MainFrameWillHappenForTesting() = 0;
 
-  virtual void SetURLForUkm(const GURL& url) = 0;
+  virtual void SetSourceURL(ukm::SourceId source_id, const GURL& url) = 0;
 
   virtual void ClearHistory() = 0;
 

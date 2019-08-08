@@ -312,9 +312,12 @@ bool PbufferPictureBuffer::CopyOutputSampleDataToPictureBuffer(
     // when we receive a notification that the copy was completed or when the
     // DXVAPictureBuffer instance is destroyed.
     decoder_dx11_texture_ = dx11_texture;
-    decoder->CopyTexture(dx11_texture, dx11_decoding_texture_.Get(),
-                         dx11_keyed_mutex_, keyed_mutex_value_, id(),
-                         input_buffer_id, color_space_);
+    if (!decoder->CopyTexture(dx11_texture, dx11_decoding_texture_.Get(),
+                              dx11_keyed_mutex_, keyed_mutex_value_, id(),
+                              input_buffer_id, color_space_)) {
+      // |this| might be destroyed.
+      return false;
+    }
     return true;
   }
   D3DSURFACE_DESC surface_desc;
@@ -772,9 +775,12 @@ bool EGLStreamCopyPictureBuffer::CopyOutputSampleDataToPictureBuffer(
   // when we receive a notification that the copy was completed or when the
   // DXVAPictureBuffer instance is destroyed.
   dx11_decoding_texture_ = dx11_texture;
-  decoder->CopyTexture(dx11_texture, decoder_copy_texture_.Get(),
-                       dx11_keyed_mutex_, keyed_mutex_value_, id(),
-                       input_buffer_id, color_space_);
+  if (!decoder->CopyTexture(dx11_texture, decoder_copy_texture_.Get(),
+                            dx11_keyed_mutex_, keyed_mutex_value_, id(),
+                            input_buffer_id, color_space_)) {
+    // |this| might be destroyed
+    return false;
+  }
   // The texture copy will acquire the current keyed mutex value and release
   // with the value + 1.
   keyed_mutex_value_++;

@@ -57,6 +57,8 @@ class PERFETTO_EXPORT DataSourceDescriptor {
     return !(*this == other);
   }
 
+  // Raw proto decoding.
+  void ParseRawProto(const std::string&);
   // Conversion methods from/to the corresponding protobuf types.
   void FromProto(const perfetto::protos::DataSourceDescriptor&);
   void ToProto(perfetto::protos::DataSourceDescriptor*) const;
@@ -70,10 +72,18 @@ class PERFETTO_EXPORT DataSourceDescriptor {
   bool will_notify_on_start() const { return will_notify_on_start_; }
   void set_will_notify_on_start(bool value) { will_notify_on_start_ = value; }
 
+  bool handles_incremental_state_clear() const {
+    return handles_incremental_state_clear_;
+  }
+  void set_handles_incremental_state_clear(bool value) {
+    handles_incremental_state_clear_ = value;
+  }
+
  private:
   std::string name_ = {};
   bool will_notify_on_stop_ = {};
   bool will_notify_on_start_ = {};
+  bool handles_incremental_state_clear_ = {};
 
   // Allows to preserve unknown protobuf fields for compatibility
   // with future versions of .proto files.

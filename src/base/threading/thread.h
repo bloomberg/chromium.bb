@@ -72,7 +72,8 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   };
 
   struct BASE_EXPORT Options {
-    typedef Callback<std::unique_ptr<MessagePump>()> MessagePumpFactory;
+    using MessagePumpFactory =
+        RepeatingCallback<std::unique_ptr<MessagePump>()>;
 
     Options();
     Options(MessageLoop::Type type, size_t size);

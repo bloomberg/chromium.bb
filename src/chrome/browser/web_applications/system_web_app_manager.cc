@@ -20,6 +20,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
+#include "content/public/common/content_switches.h"
 
 namespace web_app {
 
@@ -27,7 +28,6 @@ namespace {
 
 base::flat_map<SystemAppType, GURL> CreateSystemWebApps() {
   base::flat_map<SystemAppType, GURL> urls;
-
 // TODO(calamity): Split this into per-platform functions.
 #if defined(OS_CHROMEOS)
   urls[SystemAppType::DISCOVER] = GURL(chrome::kChromeUIDiscoverURL);
@@ -55,9 +55,18 @@ InstallOptions CreateInstallOptionsForSystemApp(const GURL& url) {
 
 SystemWebAppManager::SystemWebAppManager(Profile* profile,
                                          PendingAppManager* pending_app_manager)
-    : pref_service_(profile->GetPrefs()),
+    : on_apps_synchronized_(new base::OneShotEvent()),
+      pref_service_(profile->GetPrefs()),
       pending_app_manager_(pending_app_manager),
       weak_ptr_factory_(this) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kTestType)) {
+    // Always update in tests, and return early to avoid populating with real
+    // system apps.
+    update_policy_ = UpdatePolicy::kAlwaysUpdate;
+    return;
+  }
+
 #if defined(OFFICIAL_BUILD)
   // Official builds should trigger updates whenever the version number changes.
   update_policy_ = UpdatePolicy::kOnVersionChange;
@@ -94,11 +103,25 @@ void SystemWebAppManager::Start() {
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-base::Optional<std::string> SystemWebAppManager::GetAppIdForSystemApp(
+void SystemWebAppManager::InstallSystemAppsForTesting() {
+  on_apps_synchronized_.reset(new base::OneShotEvent());
+  system_app_urls_ = CreateSystemWebApps();
+  Start();
+
+  // Wait for the System Web Apps to install.
+  base::RunLoop run_loop;
+  on_apps_synchronized().Post(FROM_HERE, run_loop.QuitClosure());
+  run_loop.Run();
+}
+
+base::Optional<AppId> SystemWebAppManager::GetAppIdForSystemApp(
     SystemAppType id) const {
-  auto app = system_app_urls_.find(id);
-  DCHECK(app != system_app_urls_.end());
-  return pending_app_manager_->LookupAppId(app->second);
+  auto app_url_it = system_app_urls_.find(id);
+
+  if (app_url_it == system_app_urls_.end())
+    return base::Optional<AppId>();
+
+  return pending_app_manager_->LookupAppId(app_url_it->second);
 }
 
 bool SystemWebAppManager::IsSystemWebApp(const AppId& app_id) const {
@@ -137,8 +160,8 @@ void SystemWebAppManager::OnAppsSynchronized(
                              CurrentVersion().GetString());
   }
 
-  if (!on_apps_synchronized_.is_signaled())
-    on_apps_synchronized_.Signal();
+  if (!on_apps_synchronized_->is_signaled())
+    on_apps_synchronized_->Signal();
 }
 
 bool SystemWebAppManager::NeedsUpdate() const {

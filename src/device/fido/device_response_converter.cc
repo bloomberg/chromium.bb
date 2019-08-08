@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/containers/span.h"
+#include "base/i18n/streaming_utf8_validator.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
@@ -30,7 +31,7 @@ constexpr size_t kResponseCodeLength = 1;
 
 ProtocolVersion ConvertStringToProtocolVersion(base::StringPiece version) {
   if (version == kCtap2Version)
-    return ProtocolVersion::kCtap;
+    return ProtocolVersion::kCtap2;
   if (version == kU2fVersion)
     return ProtocolVersion::kU2f;
 
@@ -205,6 +206,7 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
       std::move(protocol_versions),
       base::make_span<kAaguidLength>(it->second.GetBytestring()));
 
+  AuthenticatorSupportedOptions options;
   it = response_map.find(CBOR(2));
   if (it != response_map.end()) {
     if (!it->second.is_array())
@@ -215,12 +217,15 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
       if (!extension.is_string())
         return base::nullopt;
 
-      extensions.push_back(extension.GetString());
+      const std::string& extension_str = extension.GetString();
+      if (extension_str == kExtensionCredProtect) {
+        options.supports_cred_protect = true;
+      }
+      extensions.push_back(extension_str);
     }
-    response.SetExtensions(std::move(extensions));
+    response.extensions = std::move(extensions);
   }
 
-  AuthenticatorSupportedOptions options;
   it = response_map.find(CBOR(4));
   if (it != response_map.end()) {
     if (!it->second.is_map())
@@ -278,7 +283,40 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
             ClientPinAvailability::kSupportedButPinNotSet;
       }
     }
-    response.SetOptions(std::move(options));
+
+    option_map_it = option_map.find(CBOR(kCredentialManagementMapKey));
+    if (option_map_it != option_map.end()) {
+      if (!option_map_it->second.is_bool()) {
+        return base::nullopt;
+      }
+      options.supports_credential_management = option_map_it->second.GetBool();
+    }
+
+    option_map_it = option_map.find(CBOR(kCredentialManagementPreviewMapKey));
+    if (option_map_it != option_map.end()) {
+      if (!option_map_it->second.is_bool()) {
+        return base::nullopt;
+      }
+      options.supports_credential_management_preview =
+          option_map_it->second.GetBool();
+    }
+
+    // TODO(noviv) add support for kBioEnrollmentMapKey
+    option_map_it = option_map.find(CBOR(kBioEnrollmentPreviewMapKey));
+    if (option_map_it != option_map.end()) {
+      if (!option_map_it->second.is_bool()) {
+        return base::nullopt;
+      }
+      using Availability =
+          AuthenticatorSupportedOptions::BioEnrollmentAvailability;
+
+      options.bio_enrollment_availability_preview =
+          option_map_it->second.GetBool()
+              ? Availability::kSupportedAndProvisioned
+              : Availability::kSupportedButUnprovisioned;
+    }
+
+    response.options = std::move(options);
   }
 
   it = response_map.find(CBOR(5));
@@ -286,7 +324,7 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
     if (!it->second.is_unsigned())
       return base::nullopt;
 
-    response.SetMaxMsgSize(it->second.GetUnsigned());
+    response.max_msg_size = it->second.GetUnsigned();
   }
 
   it = response_map.find(CBOR(6));
@@ -301,10 +339,208 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
 
       supported_pin_protocols.push_back(protocol.GetUnsigned());
     }
-    response.SetPinProtocols(std::move(supported_pin_protocols));
+    response.pin_protocols = std::move(supported_pin_protocols);
   }
 
   return base::Optional<AuthenticatorGetInfoResponse>(std::move(response));
+}
+
+static base::Optional<std::string> FixInvalidUTF8String(
+    base::span<const uint8_t> utf8_bytes) {
+  // CTAP2 devices must store at least 64 bytes of any string.
+  if (utf8_bytes.size() < 64) {
+    FIDO_LOG(ERROR) << "Not accepting invalid UTF-8 string because it's only "
+                    << utf8_bytes.size() << " bytes long";
+    return base::nullopt;
+  }
+
+  base::StreamingUtf8Validator validator;
+  base::StreamingUtf8Validator::State state;
+  size_t longest_valid_prefix_len = 0;
+
+  for (size_t i = 0; i < utf8_bytes.size(); i++) {
+    state =
+        validator.AddBytes(reinterpret_cast<const char*>(&utf8_bytes[i]), 1);
+    switch (state) {
+      case base::StreamingUtf8Validator::VALID_ENDPOINT:
+        longest_valid_prefix_len = i + 1;
+        break;
+
+      case base::StreamingUtf8Validator::INVALID:
+        return base::nullopt;
+
+      case base::StreamingUtf8Validator::VALID_MIDPOINT:
+        break;
+    }
+  }
+
+  switch (state) {
+    case base::StreamingUtf8Validator::VALID_ENDPOINT:
+      // |base::IsStringUTF8|, which the CBOR code uses, is stricter than
+      // |StreamingUtf8Validator| in that the former rejects ranges of code
+      // points that should never appear. Therefore, if this case occurs, the
+      // string is structurally valid as UTF-8, but includes invalid code points
+      // and thus we reject it.
+      return base::nullopt;
+
+    case base::StreamingUtf8Validator::INVALID:
+      // This shouldn't happen because we should return immediately if
+      // |INVALID| occurs.
+      NOTREACHED();
+      return base::nullopt;
+
+    case base::StreamingUtf8Validator::VALID_MIDPOINT: {
+      // This string has been truncated. This is the case that we expect to
+      // have to handle since CTAP2 devices are permitted to truncate strings
+      // without reference to UTF-8.
+      const std::string candidate(
+          reinterpret_cast<const char*>(utf8_bytes.data()),
+          longest_valid_prefix_len);
+      // Check that the result is now acceptable to |IsStringUTF8|, which is
+      // stricter than |StreamingUtf8Validator|. Without this, a string could
+      // have both contained invalid code-points /and/ been truncated, and this
+      // function would only have corrected the latter issue.
+      if (base::IsStringUTF8(candidate)) {
+        return candidate;
+      }
+      return base::nullopt;
+    }
+  }
+}
+
+typedef bool (*PathPredicate)(const std::vector<const cbor::Value*>&);
+
+static base::Optional<cbor::Value> FixInvalidUTF8Value(
+    const cbor::Value& v,
+    std::vector<const cbor::Value*>* path,
+    PathPredicate predicate) {
+  switch (v.type()) {
+    case cbor::Value::Type::INVALID_UTF8: {
+      if (!predicate(*path)) {
+        return base::nullopt;
+      }
+      base::Optional<std::string> maybe_fixed(
+          FixInvalidUTF8String(v.GetInvalidUTF8()));
+      if (!maybe_fixed) {
+        return base::nullopt;
+      }
+      return cbor::Value(*maybe_fixed);
+    }
+
+    case cbor::Value::Type::UNSIGNED:
+    case cbor::Value::Type::NEGATIVE:
+    case cbor::Value::Type::BYTE_STRING:
+    case cbor::Value::Type::STRING:
+    case cbor::Value::Type::TAG:
+    case cbor::Value::Type::SIMPLE_VALUE:
+    case cbor::Value::Type::NONE:
+      return v.Clone();
+
+    case cbor::Value::Type::ARRAY: {
+      const cbor::Value::ArrayValue& old_array = v.GetArray();
+      cbor::Value::ArrayValue new_array;
+      new_array.reserve(old_array.size());
+
+      for (const auto& child : old_array) {
+        base::Optional<cbor::Value> maybe_fixed =
+            FixInvalidUTF8Value(child, path, predicate);
+        if (!maybe_fixed) {
+          return base::nullopt;
+        }
+        new_array.emplace_back(std::move(*maybe_fixed));
+      }
+
+      return cbor::Value(new_array);
+    }
+
+    case cbor::Value::Type::MAP: {
+      const cbor::Value::MapValue& old_map = v.GetMap();
+      cbor::Value::MapValue new_map;
+      new_map.reserve(old_map.size());
+
+      for (const auto& it : old_map) {
+        switch (it.first.type()) {
+          case cbor::Value::Type::INVALID_UTF8:
+            // Invalid strings in map keys are not supported.
+            return base::nullopt;
+
+          case cbor::Value::Type::UNSIGNED:
+          case cbor::Value::Type::NEGATIVE:
+          case cbor::Value::Type::STRING:
+            break;
+
+          default:
+            // Other types are not permitted as map keys in CTAP2.
+            return base::nullopt;
+        }
+
+        path->push_back(&it.first);
+        base::Optional<cbor::Value> maybe_fixed =
+            FixInvalidUTF8Value(it.second, path, predicate);
+        path->pop_back();
+        if (!maybe_fixed) {
+          return base::nullopt;
+        }
+
+        new_map.emplace(it.first.Clone(), std::move(*maybe_fixed));
+      }
+
+      return cbor::Value(new_map);
+    }
+  }
+}
+
+// ContainsInvalidUTF8 returns true if any element of |v| (recursively) contains
+// a string with invalid UTF-8. It bases this determination purely on the type
+// of the nodes and doesn't actually check the contents of the strings
+// themselves.
+static bool ContainsInvalidUTF8(const cbor::Value& v) {
+  switch (v.type()) {
+    case cbor::Value::Type::INVALID_UTF8:
+      return true;
+
+    case cbor::Value::Type::UNSIGNED:
+    case cbor::Value::Type::NEGATIVE:
+    case cbor::Value::Type::BYTE_STRING:
+    case cbor::Value::Type::STRING:
+    case cbor::Value::Type::TAG:
+    case cbor::Value::Type::SIMPLE_VALUE:
+    case cbor::Value::Type::NONE:
+      return false;
+
+    case cbor::Value::Type::ARRAY: {
+      const cbor::Value::ArrayValue& array = v.GetArray();
+      for (const auto& child : array) {
+        if (ContainsInvalidUTF8(child)) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+
+    case cbor::Value::Type::MAP: {
+      const cbor::Value::MapValue& map = v.GetMap();
+      for (const auto& it : map) {
+        if (ContainsInvalidUTF8(it.first) || ContainsInvalidUTF8(it.second)) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+  }
+}
+
+base::Optional<cbor::Value> FixInvalidUTF8(cbor::Value in,
+                                           PathPredicate predicate) {
+  if (!ContainsInvalidUTF8(in)) {
+    // Common case that everything is fine.
+    return in;
+  }
+
+  std::vector<const cbor::Value*> path;
+  return FixInvalidUTF8Value(in, &path, predicate);
 }
 
 }  // namespace device

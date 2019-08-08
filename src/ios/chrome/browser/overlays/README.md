@@ -1,32 +1,60 @@
-# OverlayService
+# OverlayPresenter
 
-OverlayService is used to schedule the display of UI over the content area of a
-WebState.
+OverlayPresenter is used to schedule the display of UI alongside the content
+area of a WebState.
 
 ## Classes of note:
 
 ##### OverlayRequest
 
-OverlayRequests are passed to OverlayService to trigger the display of overlay
-UI over a WebState's content area.  Service clients should create
-OverlayRequests with an OverlayUserData subclass with the information necessary
-to configure the overlay UI.  The config user data can later be extracted from
-OverlayRequests by the service's observers and UI delegate.
+OverlayRequests are model objects that are used to schedule the display of
+UI alongside a WebState's content area.  They are created with an
+OverlayUserData subclass containing the information necessary to configure the
+requested UI.
 
 ##### OverlayResponse
 
 OverlayResponses are provided to each OverlayRequest to describe the user's
-interaction with the overlay UI.  Service clients should create OverlayResponses
-with an OverlayUserData subclass with the overlay UI user interaction
-information necessary to execute the callback for that overlay.
+interaction with the overlay UI.  Clients should create OverlayResponses with an
+OverlayUserData subclass with the overlay UI user interaction information
+necessary to execute the callback for that overlay.
 
 ##### OverlayRequestQueue
 
-Each WebState has an OverlayRequestQueue that stores the OverlayRequests for
-that WebState.  The public interface exposes an immutable queue where the front
-OverlayRequest is visible.  Internally, the queue is mutable and observable.
+Each WebState has an OverlayRequestQueue at each OverlayModality that stores the
+OverlayRequests for overlays to be displayed alongside that WebState's content
+area.  When a client wishes to schedule the display of an overlay, it should
+add an OverlayRequest to the desired WebState's queue.  This will trigger the
+scheduling logic for that request's corresponding overlay UI.
 
-## Example usage of service:
+##### OverlayPresenter
+
+OverlayPresenter drives the presentation of the UI for OverlayRequests added to
+queues for WebStates in a Browser.
+
+#### OverlayPresenter::UIDelegate
+
+Clients must provide a UI delegate to a Browser's OverlayPresenter that handles
+the presentation of overlay UI for that presenter's modality and Browser.
+
+#### OverlayPresenter::Observer
+
+Objects that care about the presentation and dismissal of overlay UI by the
+presenter should add themselves as observers to the presenter.  This can be used
+to respond to update UI for UI presentation, for example to update the location
+bar text while a dialog is displayed.
+
+## Setting up OverlayPresenterr:
+
+Multiple OverlayPresenters may be active for a single Browser to manage overlay
+UI at different levels of modality (i.e. modal over WebState content area, modal
+over entire browser, etc).
+
+Each instance of OverlayPresenter must be provided with an OverlayPresenter::
+UIDelegate that manages the overlay UI at the modality associated with the
+presenter.
+
+## Example usage of presenter:
 
 ### Showing an alert with a title, message, an OK button, and a Cancel button
 
@@ -63,15 +91,30 @@ An OverlayRequest for the alert can be created using:
     OverlayRequest::CreateWithConfig<AlertConfig>(
         "alert title", "message text");
 
-*TODO: insert OverlayService calls when interface is added.*
+A callback can be added to the request to use the response info:
+
+    OverlayCallback callback =
+        base::BindOnce(base::RetainBlock(^(OverlayResponse* response) {
+      if (!response)
+        return;
+      AlertInfo* info = response->GetInfo<AlertInfo>();
+      /* Handle button tap at info->tapped\_button\_index() */
+    }));
+    request->set_callback(std::move(callback));
+
+Clients can then supply this request to the OverlayRequestQueue corresponding
+with the WebState alongside which the overlay should be shown:
+
+    OverlayModality modality =
+        OverlayModality::kWebContentArea;
+    OverlayRequestQueue::FromWebState(web_state, modality)->
+        AddRequest(std::move(request));
 
 #####3. Supply a response to the request.
 
-An OverlayResponse for the alert can be created using:
+Upon the user tapping a button on the alert, say at index 0, a response can be
+created and supplied to that request.
 
-    OverlayResponse::CreateWithInfo<AlertInfo>(0);
+    OverlayRequestQueue::FromWebState(web_state, modality)->front_request()->
+        set_response(OverlayResponse::CreateWithInfo<AlertInfo>(0));
 
-
-*NOTE: this service is a work-in-progress, and this file only outlines how to
-use the files currently in the repository.  It will be updated with more
-complete instructions as more of the service lands.*

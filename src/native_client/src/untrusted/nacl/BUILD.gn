@@ -19,34 +19,12 @@ static_library("nacl_dyncode_private") {
     "//build/config/nacl:nacl_base",
   ]
 }
-static_library("nacl_random_private") {
-  cflags_c = []
-  sources = [
-    "irt_random",
-  ]
-
-  if (current_cpu == "pnacl") {
-    cflags_c += [
-      "-Wno-self-assign",
-    ]
-  }
-  deps = [
-    "//build/config/nacl:nacl_base",
-  ]
-}
 static_library("nacl_sys_private") {
   cflags_c = []
   sources = [
     "null.c",
     "sysbrk.c",
   ]
-
-  if (current_os != "glibc") {
-    sources += [
-      "None",
-      "private_blockhook",
-    ]
-  }
 
   if (current_cpu == "pnacl") {
     cflags_c += [

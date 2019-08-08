@@ -1,5 +1,6 @@
 include_rules = [
   "+components/translate/core/language_detection",
+  "+content/app/strings/grit",
   "+content/public/child",
   "+content/public/renderer",
 
@@ -21,6 +22,8 @@ include_rules = [
   "+third_party/zlib/google/compression_utils.h",
 
   "+tools/json_schema_compiler",
+
+  "+ui/accessibility",
 
   "-v8",
   "+v8/include",

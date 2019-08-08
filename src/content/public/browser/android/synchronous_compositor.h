@@ -92,7 +92,8 @@ class CONTENT_EXPORT SynchronousCompositor {
       const std::vector<viz::ReturnedResource>& resources) = 0;
 
   virtual void DidPresentCompositorFrames(
-      viz::PresentationFeedbackMap feedbacks) = 0;
+      viz::PresentationFeedbackMap feedbacks,
+      uint32_t frame_token) = 0;
 
   // "On demand" SW draw, into the supplied canvas (observing the transform
   // and clip set there-in).

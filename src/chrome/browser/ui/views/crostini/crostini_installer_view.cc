@@ -71,8 +71,6 @@ constexpr int kOOBEWindowWidth = 768;
 constexpr int kOOBEWindowHeight = 640 - 48;
 constexpr int kLinuxIllustrationWidth = 448;
 constexpr int kLinuxIllustrationHeight = 180;
-constexpr base::FilePath::CharType kHomeDirectory[] =
-    FILE_PATH_LITERAL("/home");
 
 constexpr char kCrostiniSetupResultHistogram[] = "Crostini.SetupResult";
 constexpr char kCrostiniSetupSourceHistogram[] = "Crostini.SetupSource";
@@ -87,6 +85,14 @@ constexpr char kCrostiniAvailableDiskSuccess[] =
     "Crostini.AvailableDiskSuccess";
 constexpr char kCrostiniAvailableDiskCancel[] = "Crostini.AvailableDiskCancel";
 constexpr char kCrostiniAvailableDiskError[] = "Crostini.AvailableDiskError";
+
+// Generates a Google Help URL which includes a "board type" parameter. Some
+// help pages need to be adjusted depending on the type of CrOS device that is
+// accessing the page.
+base::string16 GetHelpUrlWithBoard(const std::string& original_url) {
+  return base::ASCIIToUTF16(original_url +
+                            "&b=" + base::SysInfo::GetLsbReleaseBoard());
+}
 
 void RecordTimeFromDeviceSetupToInstallMetric() {
   base::PostTaskWithTraitsAndReplyWithResult(
@@ -139,7 +145,7 @@ void CrostiniInstallerView::Show(Profile* profile) {
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&base::SysInfo::AmountOfFreeDiskSpace,
-                     base::FilePath(kHomeDirectory)),
+                     base::FilePath(crostini::kHomeDirectory)),
       base::BindOnce(
           &CrostiniInstallerView::OnAvailableDiskSpace,
           g_crostini_installer_view->weak_ptr_factory_.GetWeakPtr()));
@@ -318,8 +324,9 @@ gfx::Size CrostiniInstallerView::CalculatePreferredSize() const {
 void CrostiniInstallerView::LinkClicked(views::Link* source, int event_flags) {
   DCHECK_EQ(source, learn_more_link_);
 
-  NavigateParams params(profile_, GURL(chrome::kLinuxAppsLearnMoreURL),
-                        ui::PAGE_TRANSITION_LINK);
+  NavigateParams params(
+      profile_, GURL(GetHelpUrlWithBoard(chrome::kLinuxAppsLearnMoreURL)),
+      ui::PAGE_TRANSITION_LINK);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   Navigate(&params);
 }
@@ -521,7 +528,7 @@ CrostiniInstallerView::CrostiniInstallerView(Profile* profile)
   logo_image_->SetImage(
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           IDR_LOGO_CROSTINI_DEFAULT_32));
-  logo_image_->SetHorizontalAlignment(views::ImageView::LEADING);
+  logo_image_->SetHorizontalAlignment(views::ImageView::Alignment::kLeading);
   upper_container_view->AddChildView(logo_image_);
 
   const base::string16 device_type = ui::GetChromeOSDeviceName();
@@ -572,7 +579,7 @@ CrostiniInstallerView::CrostiniInstallerView(Profile* profile)
 
   // Make sure the lower_container_view is pinned to the bottom of the dialog.
   lower_container_layout->set_main_axis_alignment(
-      views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
+      views::BoxLayout::MainAxisAlignment::kEnd);
   layout->SetFlexForView(lower_container_view, 1, true);
 
   chrome::RecordDialogCreation(chrome::DialogIdentifier::CROSTINI_INSTALLER);
@@ -750,6 +757,9 @@ void CrostiniInstallerView::StepProgress() {
     if (progress_bar_callback_for_testing_) {
       progress_bar_callback_for_testing_.Run(progress_bar_->current_value());
     }
+  } else if (state_ == State::CLEANUP) {
+    progress_bar_->SetValue(-1);
+    progress_bar_->SetVisible(true);
   } else {
     progress_bar_->SetVisible(false);
   }
@@ -839,6 +849,10 @@ void CrostiniInstallerView::SetBigMessageLabel() {
       break;
     case State::INSTALL_END:
       message = l10n_util::GetStringUTF16(IDS_CROSTINI_INSTALLER_COMPLETE);
+      break;
+    case State::CLEANUP:
+      message =
+          l10n_util::GetStringUTF16(IDS_CROSTINI_INSTALLER_CANCELING_TITLE);
       break;
 
     default:

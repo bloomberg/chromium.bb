@@ -10,37 +10,18 @@ import("//build/util/process_version.gni")
 # Location where Fuchsia release archives and supporting files are placed.
 _release_artifact_root = "$root_out_dir/fuchsia_artifacts"
 
-fidl_library("web_fidl") {
-  library_name = "web"
-  namespace = "chromium"
-
-  sources = [
-    "fidl/web/context.fidl",
-    "fidl/web/context_provider.fidl",
-    "fidl/web/frame.fidl",
-    "fidl/web/navigation_controller.fidl",
-    "fidl/web/navigation_event_observer.fidl",
-  ]
-
-  public_deps = [
-    "//third_party/fuchsia-sdk/sdk:io",
-    "//third_party/fuchsia-sdk/sdk:sys",
-    "//third_party/fuchsia-sdk/sdk:ui_views",
-  ]
-}
-
 fidl_library("cast_fidl") {
   library_name = "cast"
   namespace = "chromium"
 
   sources = [
+    "fidl/cast/api_bindings.fidl",
     "fidl/cast/application_config.fidl",
     "fidl/cast/cast_channel.fidl",
     "fidl/cast/queryable_data.fidl",
   ]
 
   public_deps = [
-    ":web_fidl",
     "//third_party/fuchsia-sdk/sdk:web",
   ]
 }
@@ -52,7 +33,7 @@ if (host_os == "mac") {
   _gn_path = "//buildtools/linux64/gn"
 }
 
-# Produces a LICENSE file for webrunner and its transitive dependencies.
+# Produces a LICENSE file for Fuchsia packages.
 _license_path = "$_release_artifact_root/LICENSE"
 action("license") {
   script = "//tools/licenses.py"
@@ -164,5 +145,6 @@ group("gn_all") {
     "runners:cast_runner_browsertests",
     "runners:cast_runner_integration_tests",
     "runners:web_runner",
+    "//chromecast/bindings:bindings_manager_fuchsia",
   ]
 }

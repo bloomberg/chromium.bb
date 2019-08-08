@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/card_unmask_delegate.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_controller.h"
 

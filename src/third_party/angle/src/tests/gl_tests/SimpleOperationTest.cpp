@@ -59,7 +59,7 @@ class SimpleOperationTest : public ANGLETest
 
 void SimpleOperationTest::verifyBuffer(const std::vector<uint8_t> &data, GLenum binding)
 {
-    if (!extensionEnabled("GL_EXT_map_buffer_range"))
+    if (!IsGLExtensionEnabled("GL_EXT_map_buffer_range"))
     {
         return;
     }
@@ -1087,8 +1087,8 @@ TEST_P(SimpleOperationTest, PrimitiveModeNegativeTest)
 // tests should be run against.
 ANGLE_INSTANTIATE_TEST(SimpleOperationTest,
                        ES2_D3D9(),
-                       ES2_D3D11(EGL_EXPERIMENTAL_PRESENT_PATH_COPY_ANGLE),
-                       ES2_D3D11(EGL_EXPERIMENTAL_PRESENT_PATH_FAST_ANGLE),
+                       ES2_D3D11(),
+                       ES2_D3D11_PRESENT_PATH_FAST(),
                        ES3_D3D11(),
                        ES2_OPENGL(),
                        ES3_OPENGL(),

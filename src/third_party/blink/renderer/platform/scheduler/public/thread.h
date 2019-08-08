@@ -64,6 +64,7 @@ struct PLATFORM_EXPORT ThreadCreationParams {
   const char* name;
   FrameOrWorkerScheduler* frame_or_worker_scheduler;  // NOT OWNED
   base::ThreadPriority thread_priority = base::ThreadPriority::NORMAL;
+  bool supports_gc = false;
 };
 
 // The interface of a thread recognized by Blink.

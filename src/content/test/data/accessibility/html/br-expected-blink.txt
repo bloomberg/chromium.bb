@@ -7,7 +7,7 @@ rootWebArea
 ++++staticText name='Text line 2'
 ++++++inlineTextBox name='Text line 2'
 ++++lineBreak size=(0, 0) name='<newline>'
-++++++inlineTextBox offscreen size=(0, 0) name='<newline>'
+++++++inlineTextBox name='<newline>'
 ++++staticText name='Text line 3'
 ++++++inlineTextBox name='Text line 3'
 ++lineBreak size=(0, 0) name='<newline>'

@@ -64,8 +64,6 @@ bool DeviceState::PropertyChanged(const std::string& key,
     country_code_ = country_code ? country_code->GetString() : "";
   } else if (key == shill::kTechnologyFamilyProperty) {
     return GetStringValue(key, value, &technology_family_);
-  } else if (key == shill::kCarrierProperty) {
-    return GetStringValue(key, value, &carrier_);
   } else if (key == shill::kFoundNetworksProperty) {
     const base::ListValue* list = nullptr;
     if (!value.GetAsList(&list))

@@ -10,7 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -47,8 +47,7 @@ AutofillSaveCardInfoBarDelegateMobile::AutofillSaveCardInfoBarDelegateMobile(
       had_user_interaction_(false),
       issuer_icon_id_(CreditCard::IconResourceId(card.network())),
       card_label_(card.NetworkAndLastFourDigits()),
-      card_sub_label_(card.AbbreviatedExpirationDateForDisplay(
-          !features::IsAutofillSaveCardDialogUnlabeledExpirationDateEnabled())),
+      card_sub_label_(card.AbbreviatedExpirationDateForDisplay(false)),
       card_last_four_digits_(card.LastFourDigits()),
       is_off_the_record_(is_off_the_record) {
   DCHECK_EQ(upload, !upload_save_card_prompt_callback_.is_null());
@@ -92,7 +91,11 @@ bool AutofillSaveCardInfoBarDelegateMobile::LegalMessagesParsedSuccessfully() {
 }
 
 bool AutofillSaveCardInfoBarDelegateMobile::IsGooglePayBrandingEnabled() const {
+#if defined(GOOGLE_CHROME_BUILD)
   return upload_;
+#else
+  return false;
+#endif
 }
 
 base::string16 AutofillSaveCardInfoBarDelegateMobile::GetDescriptionText()
@@ -158,7 +161,7 @@ base::string16 AutofillSaveCardInfoBarDelegateMobile::GetButtonLabel(
   return options_.should_request_name_from_user ||
                  options_.should_request_expiration_date_from_user
              ? l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_CARD_PROMPT_CONTINUE)
-             : l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT);
+             : l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_CARD_INFOBAR_ACCEPT);
 }
 
 bool AutofillSaveCardInfoBarDelegateMobile::Accept() {

@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/render_frame_host.h"
@@ -24,6 +23,11 @@
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/tabs/tab_group_id.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#endif
 
 class Browser;
 class Profile;
@@ -172,14 +176,6 @@ struct NavigateParams {
   // accordance with |add_types|. The default allows the TabHandler to decide.
   int tabstrip_index = -1;
 
-  // The group the caller would like the tab to be added to.
-  base::Optional<int> group;
-
-  // A bitmask of values defined in TabStripModel::AddTabTypes. Helps
-  // determine where to insert a new tab and whether or not it should be
-  // selected, among other properties.
-  int tabstrip_add_types = TabStripModel::ADD_ACTIVE;
-
   // If non-empty, the new tab is an app tab.
   std::string extension_app_id;
 
@@ -231,6 +227,14 @@ struct NavigateParams {
   //       window can assume responsibility for the Browser's lifetime (Browser
   //       objects are deleted when the user closes a visible browser window).
   Browser* browser = nullptr;
+
+  // The group the caller would like the tab to be added to.
+  base::Optional<TabGroupId> group;
+
+  // A bitmask of values defined in TabStripModel::AddTabTypes. Helps
+  // determine where to insert a new tab and whether or not it should be
+  // selected, among other properties.
+  int tabstrip_add_types = TabStripModel::ADD_ACTIVE;
 #endif
 
   // The profile that is initiating the navigation. If there is a non-NULL

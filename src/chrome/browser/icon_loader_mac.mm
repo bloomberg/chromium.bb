@@ -31,11 +31,11 @@ void IconLoader::ReadIcon() {
   NSWorkspace* workspace = [NSWorkspace sharedWorkspace];
   NSImage* icon = [workspace iconForFileType:group];
 
-  std::unique_ptr<gfx::Image> image;
+  gfx::Image image;
 
   if (icon_size_ == ALL) {
     // The NSImage already has all sizes.
-    image = std::make_unique<gfx::Image>(icon);
+    image = gfx::Image(icon);
   } else {
     NSSize size = NSZeroSize;
     switch (icon_size_) {
@@ -51,7 +51,7 @@ void IconLoader::ReadIcon() {
     gfx::ImageSkia image_skia(gfx::ImageSkiaFromResizedNSImage(icon, size));
     if (!image_skia.isNull()) {
       image_skia.MakeThreadSafe();
-      image = std::make_unique<gfx::Image>(image_skia);
+      image = gfx::Image(image_skia);
     }
   }
 

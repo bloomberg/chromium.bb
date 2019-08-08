@@ -18,9 +18,8 @@ ProximityAuthSystem::ProximityAuthSystem(
     chromeos::secure_channel::SecureChannelClient* secure_channel_client)
     : secure_channel_client_(secure_channel_client),
       unlock_manager_(
-          new UnlockManagerImpl(screenlock_type,
-                                proximity_auth_client,
-                                proximity_auth_client->GetPrefManager())),
+          std::make_unique<UnlockManagerImpl>(screenlock_type,
+                                              proximity_auth_client)),
       suspended_(false),
       started_(false) {}
 
@@ -60,6 +59,11 @@ void ProximityAuthSystem::SetRemoteDevicesForUser(
     const AccountId& account_id,
     const chromeos::multidevice::RemoteDeviceRefList& remote_devices,
     base::Optional<chromeos::multidevice::RemoteDeviceRef> local_device) {
+  PA_LOG(VERBOSE) << "Setting devices for user " << account_id.Serialize()
+                  << ". Remote device count: " << remote_devices.size()
+                  << ", Local device: ["
+                  << (local_device.has_value() ? "present" : "absent") << "].";
+
   remote_devices_map_[account_id] = remote_devices;
   local_device_map_.emplace(account_id, *local_device);
 

@@ -64,6 +64,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
   // This should be true prior to calling ImportLxdContainer.
   bool IsImportLxdContainerProgressSignalConnected() override;
 
+  // This should be true before expecting to recieve
+  // PendingAppListUpdatesSignal.
+  bool IsPendingAppListUpdatesSignalConnected() override;
+
   // Fake version of the method that launches an application inside a running
   // Container. |callback| is called after the method call finishes.
   void LaunchContainerApplication(
@@ -340,6 +344,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
       const vm_tools::cicerone::InstallLinuxPackageProgressSignal& signal);
   void UninstallPackageProgress(
       const vm_tools::cicerone::UninstallPackageProgressSignal& signal);
+  void NotifyPendingAppListUpdates(
+      const vm_tools::cicerone::PendingAppListUpdatesSignal& signal);
 
  protected:
   void Init(dbus::Bus* bus) override {}

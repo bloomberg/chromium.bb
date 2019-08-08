@@ -81,13 +81,9 @@ class AudioEncoderOpusImpl final : public AudioEncoder {
   AudioEncoderOpusImpl(int payload_type, const SdpAudioFormat& format);
   ~AudioEncoderOpusImpl() override;
 
-  // Static interface for use by BuiltinAudioEncoderFactory.
-  static constexpr const char* GetPayloadName() { return "opus"; }
-  static absl::optional<AudioCodecInfo> QueryAudioEncoder(
-      const SdpAudioFormat& format);
-
   int SampleRateHz() const override;
   size_t NumChannels() const override;
+  int RtpTimestampRateHz() const override;
   size_t Num10MsFramesInNextPacket() const override;
   size_t Max10MsFramesInAPacket() const override;
   int GetTargetBitrate() const override;

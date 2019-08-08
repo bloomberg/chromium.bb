@@ -62,7 +62,7 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
 
   // VideoDecodeAccelerator implementation:
   bool Initialize(const Config& config, Client* client) override;
-  void Decode(const BitstreamBuffer& bitstream_buffer) override;
+  void Decode(BitstreamBuffer bitstream_buffer) override;
   void AssignPictureBuffers(const std::vector<PictureBuffer>& buffers) override;
   void ReusePictureBuffer(int32_t picture_buffer_id) override;
   void Flush() override;
@@ -193,7 +193,7 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
 
   // Decode the content in the |bitstream_buffer|. Note that a
   // |bitstream_buffer| of id as -1 indicates a flush command.
-  void DecodeBuffer(const BitstreamBuffer& bitstream_buffer);
+  void DecodeBuffer(BitstreamBuffer bitstream_buffer);
 
   // Called during Initialize() for encrypted streams to set up the CDM.
   void InitializeCdm();
@@ -308,10 +308,12 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // if any.  The goal is to prevent leaving a BitstreamBuffer's shared memory
   // handle open.
   struct BitstreamRecord {
-    BitstreamRecord(const BitstreamBuffer&);
+    BitstreamRecord(BitstreamBuffer);
     BitstreamRecord(BitstreamRecord&& other);
     ~BitstreamRecord();
 
+    // The region in this buffer will not be valid, as it will have been passed
+    // to |memory|, below.
     BitstreamBuffer buffer;
 
     // |memory| may be null if buffer has no data.

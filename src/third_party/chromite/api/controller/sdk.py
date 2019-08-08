@@ -24,15 +24,13 @@ def Create(input_proto, output_proto):
   bootstrap = input_proto.flags.bootstrap
   use_image = not input_proto.flags.no_use_image
 
-  chrome_root = input_proto.paths.chrome
-  cache_dir = input_proto.paths.cache
-  chroot_path = input_proto.paths.chroot
+  chroot_path = input_proto.chroot.path
+  cache_dir = input_proto.chroot.cache_dir
 
   if chroot_path and not os.path.isabs(chroot_path):
     cros_build_lib.Die('The chroot path must be absolute.')
 
-  paths = sdk.ChrootPaths(cache_dir=cache_dir, chrome_root=chrome_root,
-                          chroot_path=chroot_path)
+  paths = sdk.ChrootPaths(cache_dir=cache_dir, chroot_path=chroot_path)
   args = sdk.CreateArguments(replace=replace, bootstrap=bootstrap,
                              use_image=use_image, paths=paths)
 

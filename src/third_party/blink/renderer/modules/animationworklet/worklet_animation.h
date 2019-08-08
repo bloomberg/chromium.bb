@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/animation/animation_effect_owner.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect.h"
 #include "third_party/blink/renderer/core/animation/worklet_animation_base.h"
+#include "third_party/blink/renderer/modules/animationworklet/worklet_animation_effect_timings.h"
 #include "third_party/blink/renderer/modules/animationworklet/worklet_animation_options.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation.h"
@@ -174,11 +175,16 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   // time and avoid the animation output from jumping.
   void SetPlaybackRateInternal(double);
 
-  // Updates a running animation on the compositor side.
-  void UpdateOnCompositor();
+  // Updates a running animation on the compositor side. Returns false if the
+  // update is terminated. e.g. the animated target is gone.
+  bool UpdateOnCompositor();
 
   std::unique_ptr<cc::AnimationOptions> CloneOptions() const {
     return options_ ? options_->Clone() : nullptr;
+  }
+
+  std::unique_ptr<cc::AnimationEffectTimings> CloneEffectTimings() const {
+    return effect_timings_ ? effect_timings_->Clone() : nullptr;
   }
 
   Animation::AnimationPlayState PlayState() const { return play_state_; }
@@ -218,6 +224,7 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   HeapVector<Member<KeyframeEffect>> effects_;
   Member<AnimationTimeline> timeline_;
   std::unique_ptr<WorkletAnimationOptions> options_;
+  std::unique_ptr<WorkletAnimationEffectTimings> effect_timings_;
 
   std::unique_ptr<CompositorAnimation> compositor_animation_;
   bool running_on_main_thread_;

@@ -292,7 +292,6 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void UpdateOverflowMenuWanted() const;
   void UpdateOverflowMenuItemCSSClass() const;
   void UpdateScrubbingMessageFits() const;
-  void UpdateOverflowAndTrackListCSSClassForPip() const;
   void UpdateSizingCSSClass();
   void MaybeRecordElementsDisplayed() const;
 
@@ -432,9 +431,6 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
 
   DISALLOW_COPY_AND_ASSIGN(MediaControlsImpl);
 };
-
-DEFINE_ELEMENT_TYPE_CASTS(MediaControlsImpl, IsMediaControls());
-
 }  // namespace blink
 
 #endif

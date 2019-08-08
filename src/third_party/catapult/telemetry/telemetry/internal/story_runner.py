@@ -16,7 +16,6 @@ from py_utils import memory_debug  # pylint: disable=import-error
 from py_utils import logging_util  # pylint: disable=import-error
 
 from telemetry.core import exceptions
-from telemetry.core import platform as platform_module
 from telemetry.internal.actions import page_action
 from telemetry.internal.browser import browser_finder
 from telemetry.internal.browser import browser_finder_exceptions
@@ -87,6 +86,14 @@ def AddCommandLineArgs(parser):
                     help='Ignore expectations.config disabling.')
   parser.add_option('-p', '--print-only', dest='print_only',
                     choices=['stories', 'tags', 'both'], default=None)
+  parser.add_option('-w', '--wait-for-cpu-temp',
+                    dest='wait_for_cpu_temp', action='store_true',
+                    default=False,
+                    help='Introduces a wait between each story '
+                    'until the device CPU has cooled down. If '
+                    'not specified, this wait is disabled. '
+                    'Device must be supported. ')
+
 
 def ProcessCommandLineArgs(parser, args):
   story_module.StoryFilter.ProcessCommandLineArgs(parser, args)
@@ -282,6 +289,8 @@ def Run(test, story_set, finder_options, results, max_failures=None,
         try:
           if state.platform:
             state.platform.WaitForBatteryTemperature(35)
+            if finder_options.wait_for_cpu_temp:
+              state.platform.WaitForCpuTemperature(38.0)
             _WaitForThermalThrottlingIfNeeded(state.platform)
           _RunStoryAndProcessErrorIfNeeded(story, results, state, test)
 
@@ -350,61 +359,58 @@ def ValidateStory(story):
         story.name)
 
 
+def _ShouldRunBenchmark(benchmark, possible_browser, finder_options):
+  if not possible_browser:
+    print ('No browser of type "%s" found for running benchmark "%s".' % (
+        finder_options.browser_options.browser_type, benchmark.Name()))
+    return False
+
+  # In other cases, if there is a browser, we exit early if we determine
+  # that the benchmark should be run.
+
+  if finder_options.print_only:
+    return True  # Should always run on print-only mode.
+
+  if benchmark._CanRunOnPlatform(possible_browser.platform, finder_options):
+    disabled_reason = benchmark.expectations.IsBenchmarkDisabled(
+        possible_browser.platform, finder_options)
+    if not disabled_reason:
+      return True  # Can run on this platform and is not disabled.
+    print 'Benchmark "%s" is disabled on the chosen browser due to: %s.' % (
+        benchmark.Name(), disabled_reason)
+    if finder_options.run_disabled_tests:
+      print 'Running benchmark anyway due to: --also-run-disabled-tests'
+      return True
+    else:
+      print 'Try --also-run-disabled-tests to force the benchmark to run.'
+  else:
+    print ('Benchmark "%s" is not supported on the current platform. If this '
+           "is in error please add it to the benchmark's SUPPORTED_PLATFORMS."
+           % benchmark.Name())
+
+  # If we reach this point the benchmark should not be run; but we still need
+  # to report the disabled state of the benchmark with an empty set of results.
+  with results_options.CreateResults(
+      benchmark.GetMetadata(), finder_options,
+      should_add_value=benchmark.ShouldAddValue,
+      benchmark_enabled=False) as results:
+    results.PrintSummary()
+  return False
+
+
 def RunBenchmark(benchmark, finder_options):
   """Run this test with the given options.
 
   Returns:
-    1 if there is failure or 2 if there is an uncaught exception.
+    -1 if the benchmark was skipped,
+    0 for success
+    1 if there was a failure
+    2 if there was an uncaught exception.
   """
   benchmark.CustomizeOptions(finder_options)
-
-  benchmark_metadata = benchmark.GetMetadata()
   possible_browser = browser_finder.FindBrowser(finder_options)
-  if not possible_browser:
-    logging.error('No browser of type "%s" found for benchmark "%s"' % (
-        finder_options.browser_options.browser_type, benchmark.Name()))
-    return 0
-  expectations = benchmark.expectations
-
-  target_platform = None
-  if possible_browser:
-    target_platform = possible_browser.platform
-  else:
-    target_platform = platform_module.GetHostPlatform()
-
-  if not hasattr(finder_options, 'print_only') or not finder_options.print_only:
-    can_run_on_platform = benchmark._CanRunOnPlatform(
-        target_platform, finder_options)
-
-    expectations_disabled = False
-    # For now, test expectations are only applicable in the cases where the
-    # testing target involves a browser.
-    if possible_browser:
-      expectations_disabled = expectations.IsBenchmarkDisabled(
-          possible_browser.platform, finder_options)
-
-    if expectations_disabled or not can_run_on_platform:
-      print '%s is disabled on the selected browser' % benchmark.Name()
-      if finder_options.run_disabled_tests and can_run_on_platform:
-        print 'Running benchmark anyway due to: --also-run-disabled-tests'
-      else:
-        if can_run_on_platform:
-          print 'Try --also-run-disabled-tests to force the benchmark to run.'
-        else:
-          print ("This platform is not supported for this benchmark. If this "
-                 "is in error please add it to the benchmark's supported "
-                 "platforms.")
-        # If chartjson is specified, this will print a dict indicating the
-        # benchmark name and disabled state.
-        with results_options.CreateResults(
-            benchmark_metadata, finder_options,
-            should_add_value=benchmark.ShouldAddValue,
-            benchmark_enabled=False
-            ) as results:
-          results.PrintSummary()
-        # When a disabled benchmark is run we now want to return success since
-        # we are no longer filtering these out in the buildbot recipes.
-        return 0
+  if not _ShouldRunBenchmark(benchmark, possible_browser, finder_options):
+    return -1
 
   pt = benchmark.CreatePageTest(finder_options)
   pt.__name__ = benchmark.__class__.__name__
@@ -418,13 +424,19 @@ def RunBenchmark(benchmark, finder_options):
           'telemetry.page.Page stories.')
 
   with results_options.CreateResults(
-      benchmark_metadata, finder_options,
+      benchmark.GetMetadata(), finder_options,
       should_add_value=benchmark.ShouldAddValue,
       benchmark_enabled=True) as results:
     try:
       Run(pt, stories, finder_options, results, benchmark.max_failures,
-          expectations=expectations, max_num_values=benchmark.MAX_NUM_VALUES)
-      return_code = 1 if results.had_failures else 0
+          expectations=benchmark.expectations,
+          max_num_values=benchmark.MAX_NUM_VALUES)
+      if results.had_failures:
+        return_code = 1
+      elif results.had_successes_not_skipped:
+        return_code = 0
+      else:
+        return_code = -1  # All stories were skipped.
       # We want to make sure that all expectations are linked to real stories,
       # this will log error messages if names do not match what is in the set.
       benchmark.GetBrokenExpectations(stories)

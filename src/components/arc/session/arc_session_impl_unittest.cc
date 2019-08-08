@@ -90,6 +90,10 @@ class FakeDelegate : public ArcSessionImpl::Delegate {
       lcd_density_callback_ = std::move(callback);
   }
 
+  void GetFreeDiskSpace(GetFreeDiskSpaceCallback callback) override {
+    std::move(callback).Run(free_disk_space_);
+  }
+
   version_info::Channel GetChannel() override {
     return version_info::Channel::DEFAULT;
   }
@@ -99,6 +103,8 @@ class FakeDelegate : public ArcSessionImpl::Delegate {
     ASSERT_TRUE(!lcd_density_callback_.is_null());
     std::move(lcd_density_callback_).Run(lcd_density_);
   }
+
+  void SetFreeDiskSpace(int64_t space) { free_disk_space_ = space; }
 
  private:
   void PostCallback(ConnectMojoCallback callback) {
@@ -112,6 +118,7 @@ class FakeDelegate : public ArcSessionImpl::Delegate {
   int32_t lcd_density_ = 0;
   bool success_ = true;
   bool suspend_ = false;
+  int64_t free_disk_space_ = kMinimumFreeDiskSpaceBytes * 2;
   ConnectMojoCallback pending_callback_;
   GetLcdDensityCallback lcd_density_callback_;
 
@@ -198,10 +205,6 @@ class ArcSessionImplTest : public testing::Test {
         user_manager::UserManager::Get());
   }
 
-  void EmulateDBusFailure() {
-    chromeos::FakeSessionManagerClient::Get()->set_arc_available(false);
-  }
-
   std::unique_ptr<ArcSessionImpl, ArcSessionDeleter> CreateArcSession(
       std::unique_ptr<ArcSessionImpl::Delegate> delegate = nullptr,
       int32_t lcd_density = 160) {
@@ -243,7 +246,7 @@ TEST_F(ArcSessionImplTest, MiniInstance_Success) {
 // SessionManagerClient::StartArcMiniContainer() reports an error, causing the
 // mini-container start to fail.
 TEST_F(ArcSessionImplTest, MiniInstance_DBusFail) {
-  EmulateDBusFailure();
+  chromeos::FakeSessionManagerClient::Get()->set_arc_available(false);
 
   auto arc_session = CreateArcSession();
   TestArcSessionObserver observer(arc_session.get());
@@ -262,10 +265,13 @@ TEST_F(ArcSessionImplTest, MiniInstance_DBusFail) {
 // causing the container upgrade to fail to start container with reason
 // LOW_DISK_SPACE.
 TEST_F(ArcSessionImplTest, Upgrade_LowDisk) {
-  chromeos::FakeSessionManagerClient::Get()->set_low_disk(true);
+  auto delegate = std::make_unique<FakeDelegate>();
+  delegate->SetFreeDiskSpace(kMinimumFreeDiskSpaceBytes / 2);
+
   // Set up. Start mini-container. The mini-container doesn't use the disk, so
   // there being low disk space won't cause it to start.
-  auto arc_session = CreateArcSession();
+  auto arc_session = CreateArcSession(std::move(delegate));
+
   base::RunLoop run_loop;
   TestArcSessionObserver observer(arc_session.get(), &run_loop);
   ASSERT_NO_FATAL_FAILURE(SetupMiniContainer(arc_session.get(), &observer));
@@ -306,7 +312,7 @@ TEST_F(ArcSessionImplTest, Upgrade_DBusFail) {
   ASSERT_NO_FATAL_FAILURE(SetupMiniContainer(arc_session.get(), &observer));
 
   // Hereafter, let SessionManagerClient::UpgradeArcContainer() fail.
-  EmulateDBusFailure();
+  chromeos::FakeSessionManagerClient::Get()->set_force_upgrade_failure(true);
 
   // Then upgrade, which should fail.
   arc_session->RequestUpgrade(DefaultUpgradeParams());
@@ -514,33 +520,6 @@ TEST_F(ArcSessionImplTest,
   EXPECT_TRUE(observer.on_session_stopped_args()->upgrade_requested);
 }
 
-// Stop is requested, but at the same time
-// SessionManagerClient::StartArcMiniContainer() reports an error. Then, it
-// should be handled as regular SHUTDOWN, because graceful shutdown itself is
-// difficult and sometimes reports unexpected error although it succeeds.
-TEST_F(ArcSessionImplTest, Stop_ConflictWithFailure) {
-  // Let SessionManagerClient::StartArcMiniContainer() fail.
-  EmulateDBusFailure();
-
-  auto arc_session = CreateArcSession();
-  TestArcSessionObserver observer(arc_session.get());
-  arc_session->StartMiniInstance();
-  ASSERT_EQ(ArcSessionImpl::State::STARTING_MINI_INSTANCE,
-            arc_session->GetStateForTesting());
-
-  arc_session->Stop();
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(ArcSessionImpl::State::STOPPED, arc_session->GetStateForTesting());
-  ASSERT_TRUE(observer.on_session_stopped_args().has_value());
-  // Even if D-Bus reports an error, if Stop() is invoked, it will be handled
-  // as clean shutdown.
-  EXPECT_EQ(ArcStopReason::SHUTDOWN,
-            observer.on_session_stopped_args()->reason);
-  EXPECT_FALSE(observer.on_session_stopped_args()->was_running);
-  EXPECT_FALSE(observer.on_session_stopped_args()->upgrade_requested);
-}
-
 // Emulating crash.
 TEST_F(ArcSessionImplTest, ArcStopInstance) {
   auto arc_session = CreateArcSession();
@@ -552,35 +531,13 @@ TEST_F(ArcSessionImplTest, ArcStopInstance) {
             arc_session->GetStateForTesting());
 
   // Deliver the ArcInstanceStopped D-Bus signal.
-  chromeos::FakeSessionManagerClient::Get()->NotifyArcInstanceStopped(
-      login_manager::ArcContainerStopReason::CRASH,
-      chromeos::FakeSessionManagerClient::Get()->container_instance_id());
+  chromeos::FakeSessionManagerClient::Get()->NotifyArcInstanceStopped();
 
   EXPECT_EQ(ArcSessionImpl::State::STOPPED, arc_session->GetStateForTesting());
   ASSERT_TRUE(observer.on_session_stopped_args().has_value());
   EXPECT_EQ(ArcStopReason::CRASH, observer.on_session_stopped_args()->reason);
   EXPECT_TRUE(observer.on_session_stopped_args()->was_running);
   EXPECT_TRUE(observer.on_session_stopped_args()->upgrade_requested);
-}
-
-// ArcStopInstance for the *previous* ARC container may be reported
-// to the current instance in very racy timing.
-// Unrelated ArcStopInstance signal should be ignored.
-TEST_F(ArcSessionImplTest, ArcStopInstance_WrongContainerInstanceId) {
-  auto arc_session = CreateArcSession();
-  arc_session->StartMiniInstance();
-  arc_session->RequestUpgrade(DefaultUpgradeParams());
-  base::RunLoop().RunUntilIdle();
-  ASSERT_EQ(ArcSessionImpl::State::RUNNING_FULL_INSTANCE,
-            arc_session->GetStateForTesting());
-
-  // Deliver the ArcInstanceStopped D-Bus signal.
-  chromeos::FakeSessionManagerClient::Get()->NotifyArcInstanceStopped(
-      login_manager::ArcContainerStopReason::CRASH, "dummy instance id");
-
-  // The signal should be ignored.
-  EXPECT_EQ(ArcSessionImpl::State::RUNNING_FULL_INSTANCE,
-            arc_session->GetStateForTesting());
 }
 
 struct PackagesCacheModeState {

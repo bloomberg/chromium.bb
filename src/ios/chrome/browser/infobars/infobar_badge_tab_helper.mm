@@ -31,24 +31,21 @@ void InfobarBadgeTabHelper::SetDelegate(
   delegate_ = delegate;
 }
 
-void InfobarBadgeTabHelper::UpdateBadgeForInfobarBannerDismissed() {
-  delegate_.badgeState &= ~InfobarBadgeStateSelected;
-}
-
-void InfobarBadgeTabHelper::UpdateBadgeForInfobarModalPresented() {
-  delegate_.badgeState |= InfobarBadgeStateSelected;
-}
-
-void InfobarBadgeTabHelper::UpdateBadgeForInfobarModalDismissed() {
-  delegate_.badgeState &= ~InfobarBadgeStateSelected;
-}
-
 void InfobarBadgeTabHelper::UpdateBadgeForInfobarAccepted() {
   delegate_.badgeState |= InfobarBadgeStateAccepted;
+  is_badge_accepted_ = true;
 }
 
-bool InfobarBadgeTabHelper::IsInfobarBadgeDisplaying() {
+bool InfobarBadgeTabHelper::is_infobar_displaying() {
   return is_infobar_displaying_;
+}
+
+InfobarType InfobarBadgeTabHelper::infobar_type() {
+  return infobar_type_;
+}
+
+bool InfobarBadgeTabHelper::is_badge_accepted() {
+  return is_badge_accepted_;
 }
 
 InfobarBadgeTabHelper::~InfobarBadgeTabHelper() = default;
@@ -68,9 +65,9 @@ InfobarBadgeTabHelper::InfobarBadgeTabHelper(web::WebState* web_state)
 
 void InfobarBadgeTabHelper::OnInfoBarAdded(infobars::InfoBar* infobar) {
   this->UpdateBadgeForInfobar(infobar, true);
-  // Set the badgeState to selected since the InfobarBanner has to be presented
-  // on OnInfoBarAdded.
-  delegate_.badgeState = InfobarBadgeStateSelected;
+  // Set the badgeState to None to allow for selecting the infobar when the
+  // banner is being presented.
+  delegate_.badgeState = InfobarBadgeStateNone;
 }
 
 void InfobarBadgeTabHelper::OnInfoBarRemoved(infobars::InfoBar* infobar,
@@ -87,11 +84,12 @@ void InfobarBadgeTabHelper::OnManagerShuttingDown(
 
 void InfobarBadgeTabHelper::UpdateBadgeForInfobar(infobars::InfoBar* infobar,
                                                   bool display) {
-  is_infobar_displaying_ = display;
   InfoBarIOS* infobar_ios = static_cast<InfoBarIOS*>(infobar);
   id<InfobarUIDelegate> controller_ = infobar_ios->InfobarUIDelegate();
   if (IsInfobarUIRebootEnabled() && [controller_ isPresented]) {
-    [delegate_ displayBadge:display];
+    is_infobar_displaying_ = display;
+    infobar_type_ = controller_.infobarType;
+    [delegate_ displayBadge:display type:infobar_type_];
   }
 }
 

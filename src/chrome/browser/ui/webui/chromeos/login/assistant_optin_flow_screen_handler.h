@@ -8,15 +8,36 @@
 #include <memory>
 #include <string>
 
-#include "ash/public/interfaces/assistant_setup.mojom.h"
+#include "ash/public/cpp/assistant/assistant_setup.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
-#include "chrome/browser/chromeos/login/screens/assistant_optin_flow_screen_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chromeos/services/assistant/public/mojom/settings.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace chromeos {
+
+class AssistantOptInFlowScreen;
+
+// Interface for dependency injection between AssistantOptInFlowScreen
+// and its WebUI representation.
+class AssistantOptInFlowScreenView {
+ public:
+  constexpr static StaticOobeScreenId kScreenId{"assistant-optin-flow"};
+
+  virtual ~AssistantOptInFlowScreenView() = default;
+
+  virtual void Bind(AssistantOptInFlowScreen* screen) = 0;
+  virtual void Unbind() = 0;
+  virtual void Show() = 0;
+  virtual void Hide() = 0;
+
+ protected:
+  AssistantOptInFlowScreenView() = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AssistantOptInFlowScreenView);
+};
 
 // TODO(updowndota): Refactor to reuse AssistantOptInHandler methods.
 class AssistantOptInFlowScreenHandler
@@ -25,6 +46,8 @@ class AssistantOptInFlowScreenHandler
       public arc::VoiceInteractionControllerClient::Observer,
       assistant::mojom::SpeakerIdEnrollmentClient {
  public:
+  using TView = AssistantOptInFlowScreenView;
+
   explicit AssistantOptInFlowScreenHandler(
       JSCallsContainer* js_calls_container);
   ~AssistantOptInFlowScreenHandler() override;
@@ -79,6 +102,9 @@ class AssistantOptInFlowScreenHandler
   // Send GetSettings request for the opt-in UI.
   void SendGetSettingsRequest();
 
+  // Stops the current speaker ID enrollment flow.
+  void StopSpeakerIdEnrollment();
+
   // Send message and consent data to the page.
   void ReloadContent(const base::Value& dict);
   void AddSettingZippy(const std::string& type, const base::Value& data);
@@ -127,7 +153,8 @@ class AssistantOptInFlowScreenHandler
   // Whether the use has completed voice match enrollment.
   bool voice_match_enrollment_done_ = false;
 
-  bool is_retrain_flow_ = false;
+  // Assistant optin flow type.
+  ash::FlowType flow_type_ = ash::FlowType::kConsentFlow;
 
   // Time that get settings request is sent.
   base::TimeTicks send_request_time_;

@@ -4,8 +4,9 @@
 
 #include "remoting/host/dns_blackhole_checker.h"
 
+#include <utility>
+
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "remoting/base/logging.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -45,7 +46,7 @@ void DnsBlackholeChecker::OnURLLoadComplete(
              << ")";
   }
   url_loader_.reset();
-  base::ResetAndReturn(&callback_).Run(allow);
+  std::move(callback_).Run(allow);
 }
 
 void DnsBlackholeChecker::CheckForDnsBlackhole(

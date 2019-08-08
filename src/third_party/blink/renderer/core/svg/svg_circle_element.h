@@ -31,8 +31,6 @@ class SVGCircleElement final : public SVGGeometryElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_NODE_FACTORY(SVGCircleElement);
-
   explicit SVGCircleElement(Document&);
 
   Path AsPath() const override;

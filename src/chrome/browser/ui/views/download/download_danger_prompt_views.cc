@@ -230,16 +230,9 @@ base::string16 DownloadDangerPromptViews::GetMessageBody() const {
       case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:  // Fall through
       case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
       case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST: {
-        if (safe_browsing::AdvancedProtectionStatusManager::
-                RequestsAdvancedProtectionVerdicts(profile_)) {
-          return l10n_util::GetStringFUTF16(
-              IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT_IN_ADVANCED_PROTECTION,
-              download_->GetFileNameToReportUser().LossyDisplayName());
-        } else {
-          return l10n_util::GetStringFUTF16(
-              IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT,
-              download_->GetFileNameToReportUser().LossyDisplayName());
-        }
+        return l10n_util::GetStringFUTF16(
+            IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT,
+            download_->GetFileNameToReportUser().LossyDisplayName());
       }
       case download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT: {
         if (safe_browsing::AdvancedProtectionStatusManager::
@@ -254,16 +247,9 @@ base::string16 DownloadDangerPromptViews::GetMessageBody() const {
         }
       }
       case download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED: {
-        if (safe_browsing::AdvancedProtectionStatusManager::
-                RequestsAdvancedProtectionVerdicts(profile_)) {
-          return l10n_util::GetStringFUTF16(
-              IDS_PROMPT_DOWNLOAD_CHANGES_SETTINGS_IN_ADVANCED_PROTECTION,
-              download_->GetFileNameToReportUser().LossyDisplayName());
-        } else {
-          return l10n_util::GetStringFUTF16(
-              IDS_PROMPT_DOWNLOAD_CHANGES_SETTINGS,
-              download_->GetFileNameToReportUser().LossyDisplayName());
-        }
+        return l10n_util::GetStringFUTF16(
+            IDS_PROMPT_DOWNLOAD_CHANGES_SETTINGS,
+            download_->GetFileNameToReportUser().LossyDisplayName());
       }
       case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
       case download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:

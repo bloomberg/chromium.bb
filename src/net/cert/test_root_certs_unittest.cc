@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "build/build_config.h"
 #include "net/base/net_errors.h"
+#include "net/cert/cert_net_fetcher.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verify_proc.h"
 #include "net/cert/cert_verify_result.h"
@@ -88,11 +89,12 @@ TEST(TestRootCertsTest, OverrideTrust) {
   // certificate should not yet be trusted.
   int flags = 0;
   CertVerifyResult bad_verify_result;
-  scoped_refptr<CertVerifyProc> verify_proc(CertVerifyProc::CreateDefault());
-  int bad_status =
-      verify_proc->Verify(test_cert.get(), "127.0.0.1", std::string(), flags,
-                          net::CRLSet::BuiltinCRLSet().get(), CertificateList(),
-                          &bad_verify_result);
+  scoped_refptr<CertVerifyProc> verify_proc(
+      CertVerifyProc::CreateDefault(/*cert_net_fetcher=*/nullptr));
+  int bad_status = verify_proc->Verify(
+      test_cert.get(), "127.0.0.1", /*ocsp_response=*/std::string(),
+      /*sct_list=*/std::string(), flags, net::CRLSet::BuiltinCRLSet().get(),
+      CertificateList(), &bad_verify_result);
   EXPECT_NE(OK, bad_status);
   EXPECT_NE(0u, bad_verify_result.cert_status & CERT_STATUS_AUTHORITY_INVALID);
 
@@ -105,8 +107,9 @@ TEST(TestRootCertsTest, OverrideTrust) {
   // TestRootCerts is successfully imbuing trust.
   CertVerifyResult good_verify_result;
   int good_status = verify_proc->Verify(
-      test_cert.get(), "127.0.0.1", std::string(), flags,
-      CRLSet::BuiltinCRLSet().get(), CertificateList(), &good_verify_result);
+      test_cert.get(), "127.0.0.1", /*ocsp_response=*/std::string(),
+      /*sct_list=*/std::string(), flags, CRLSet::BuiltinCRLSet().get(),
+      CertificateList(), &good_verify_result);
   EXPECT_THAT(good_status, IsOk());
   EXPECT_EQ(0u, good_verify_result.cert_status);
 
@@ -117,10 +120,10 @@ TEST(TestRootCertsTest, OverrideTrust) {
   // revert to their original state, and don't linger. If trust status
   // lingers, it will likely break other tests in net_unittests.
   CertVerifyResult restored_verify_result;
-  int restored_status =
-      verify_proc->Verify(test_cert.get(), "127.0.0.1", std::string(), flags,
-                          CRLSet::BuiltinCRLSet().get(), CertificateList(),
-                          &restored_verify_result);
+  int restored_status = verify_proc->Verify(
+      test_cert.get(), "127.0.0.1", /*ocsp_response=*/std::string(),
+      /*sct_list=*/std::string(), flags, CRLSet::BuiltinCRLSet().get(),
+      CertificateList(), &restored_verify_result);
   EXPECT_NE(OK, restored_status);
   EXPECT_NE(0u,
             restored_verify_result.cert_status & CERT_STATUS_AUTHORITY_INVALID);

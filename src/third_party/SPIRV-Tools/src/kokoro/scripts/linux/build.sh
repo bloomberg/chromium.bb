@@ -71,13 +71,18 @@ git clone --depth=1 https://github.com/KhronosGroup/SPIRV-Headers external/spirv
 git clone --depth=1 https://github.com/google/googletest          external/googletest
 git clone --depth=1 https://github.com/google/effcee              external/effcee
 git clone --depth=1 https://github.com/google/re2                 external/re2
+git clone --depth=1 https://github.com/protocolbuffers/protobuf   external/protobuf
+pushd external/protobuf
+git fetch --all --tags --prune
+git checkout v3.7.1
+popd
 
 mkdir build && cd $SRC/build
 
 # Invoke the build.
 BUILD_SHA=${KOKORO_GITHUB_COMMIT:-$KOKORO_GITHUB_PULL_REQUEST_COMMIT}
 echo $(date): Starting build...
-cmake -DPYTHON_EXECUTABLE:FILEPATH=/usr/bin/python3 -GNinja -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=install -DRE2_BUILD_TESTING=OFF $ADDITIONAL_CMAKE_FLAGS $CMAKE_C_CXX_COMPILER ..
+cmake -DPYTHON_EXECUTABLE:FILEPATH=/usr/bin/python3 -GNinja -DCMAKE_INSTALL_PREFIX=$KOKORO_ARTIFACTS_DIR/install -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DRE2_BUILD_TESTING=OFF -DSPIRV_BUILD_FUZZER=ON $ADDITIONAL_CMAKE_FLAGS $CMAKE_C_CXX_COMPILER ..
 
 echo $(date): Build everything...
 ninja
@@ -97,3 +102,7 @@ then
 fi
 echo $(date): ctest completed.
 
+# Package the build.
+ninja install
+cd $KOKORO_ARTIFACTS_DIR
+tar czf install.tgz install

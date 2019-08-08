@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import os
 
 def CheckChangeOnUpload(input_api, output_api):
   return _CommonChecks(input_api, output_api)
@@ -50,11 +49,22 @@ translation from the place using the shared code. For an example: see
 <cr-dialog>#closeText (http://bit.ly/2eLEsqh).""")]
 
 
-def _CommonChecks(input_api, output_api):
+def _CheckSvgsOptimized(input_api, output_api):
   results = []
-  results += _CheckForTranslations(input_api, output_api)
-  results += input_api.canned_checks.CheckPatchFormatted(input_api, output_api,
-                                                         check_js=True)
+  try:
+    import sys
+    old_sys_path = sys.path[:]
+    cwd = input_api.PresubmitLocalPath()
+    sys.path += [input_api.os_path.join(cwd, '..', '..', '..', 'tools')]
+    from resources import svgo_presubmit
+    results += svgo_presubmit.CheckOptimized(input_api, output_api)
+  finally:
+    sys.path = old_sys_path
+  return results
+
+
+def _CheckWebDevStyle(input_api, output_api):
+  results = []
   try:
     import sys
     old_sys_path = sys.path[:]
@@ -66,4 +76,14 @@ def _CommonChecks(input_api, output_api):
     results += presubmit_support.CheckStyle(input_api, output_api, file_filter)
   finally:
     sys.path = old_sys_path
+  return results
+
+
+def _CommonChecks(input_api, output_api):
+  results = []
+  results += _CheckForTranslations(input_api, output_api)
+  results += _CheckSvgsOptimized(input_api, output_api)
+  results += _CheckWebDevStyle(input_api, output_api)
+  results += input_api.canned_checks.CheckPatchFormatted(input_api, output_api,
+                                                         check_js=True)
   return results

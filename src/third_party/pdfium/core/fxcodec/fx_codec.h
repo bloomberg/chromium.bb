@@ -9,7 +9,6 @@
 
 #include <map>
 #include <memory>
-#include <tuple>
 #include <utility>
 
 #include "core/fxcodec/fx_codec_def.h"
@@ -35,16 +34,8 @@
 #endif  // PDF_ENABLE_XFA_TIFF
 #endif  // PDF_ENABLE_XFA
 
-class CCodec_BasicModule;
-class CCodec_FaxModule;
-class CCodec_FlateModule;
-class CCodec_IccModule;
 class CCodec_Jbig2Module;
 class CCodec_JpegModule;
-class CCodec_JpxModule;
-class CFX_DIBBase;
-class CJPX_Decoder;
-class CPDF_ColorSpace;
 
 #ifdef PDF_ENABLE_XFA
 class CCodec_ProgressiveDecoder;
@@ -66,13 +57,8 @@ class CCodec_ModuleMgr {
   CCodec_ModuleMgr();
   ~CCodec_ModuleMgr();
 
-  CCodec_BasicModule* GetBasicModule() const { return m_pBasicModule.get(); }
-  CCodec_FaxModule* GetFaxModule() const { return m_pFaxModule.get(); }
   CCodec_JpegModule* GetJpegModule() const { return m_pJpegModule.get(); }
-  CCodec_JpxModule* GetJpxModule() const { return m_pJpxModule.get(); }
   CCodec_Jbig2Module* GetJbig2Module() const { return m_pJbig2Module.get(); }
-  CCodec_IccModule* GetIccModule() const { return m_pIccModule.get(); }
-  CCodec_FlateModule* GetFlateModule() const { return m_pFlateModule.get(); }
 
 #ifdef PDF_ENABLE_XFA
   std::unique_ptr<CCodec_ProgressiveDecoder> CreateProgressiveDecoder();
@@ -107,12 +93,8 @@ class CCodec_ModuleMgr {
 #endif  // PDF_ENABLE_XFA
 
  protected:
-  std::unique_ptr<CCodec_BasicModule> m_pBasicModule;
-  std::unique_ptr<CCodec_FaxModule> m_pFaxModule;
   std::unique_ptr<CCodec_JpegModule> m_pJpegModule;
-  std::unique_ptr<CCodec_JpxModule> m_pJpxModule;
   std::unique_ptr<CCodec_Jbig2Module> m_pJbig2Module;
-  std::unique_ptr<CCodec_IccModule> m_pIccModule;
 
 #ifdef PDF_ENABLE_XFA
 #ifdef PDF_ENABLE_XFA_BMP
@@ -131,20 +113,10 @@ class CCodec_ModuleMgr {
   std::unique_ptr<CCodec_TiffModule> m_pTiffModule;
 #endif  // PDF_ENABLE_XFA_TIFF
 #endif  // PDF_ENABLE_XFA
-
-  std::unique_ptr<CCodec_FlateModule> m_pFlateModule;
 };
 
 void ReverseRGB(uint8_t* pDestBuf, const uint8_t* pSrcBuf, int pixels);
 uint32_t ComponentsForFamily(int family);
-std::tuple<float, float, float> AdobeCMYK_to_sRGB(float c,
-                                                  float m,
-                                                  float y,
-                                                  float k);
-std::tuple<uint8_t, uint8_t, uint8_t> AdobeCMYK_to_sRGB1(uint8_t c,
-                                                         uint8_t m,
-                                                         uint8_t y,
-                                                         uint8_t k);
 
 FX_SAFE_UINT32 CalculatePitch8(uint32_t bpc, uint32_t components, int width);
 FX_SAFE_UINT32 CalculatePitch32(int bpp, int width);

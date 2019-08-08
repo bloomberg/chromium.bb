@@ -4,13 +4,12 @@
 
 package org.chromium.chrome.browser.preferences.website;
 
-import android.content.Intent;
-import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
+import android.util.Pair;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -32,7 +31,6 @@ import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.LocationSettings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
-import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
@@ -43,6 +41,7 @@ import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.concurrent.Callable;
 
 /**
@@ -74,8 +73,8 @@ public class SiteSettingsPreferencesTest {
 
     private void setAllowLocation(final boolean enabled) {
         LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
-        final Preferences preferenceActivity =
-                startSiteSettingsCategory(SiteSettingsCategory.Type.DEVICE_LOCATION);
+        final Preferences preferenceActivity = SiteSettingsTestUtils.startSiteSettingsCategory(
+                SiteSettingsCategory.Type.DEVICE_LOCATION);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SingleCategoryPreferences websitePreferences =
@@ -145,34 +144,6 @@ public class SiteSettingsPreferencesTest {
         Assert.assertTrue(mActivityTestRule.getInfoBars().isEmpty());
     }
 
-    private Preferences startSiteSettingsMenu(String category) {
-        Bundle fragmentArgs = new Bundle();
-        fragmentArgs.putString(SingleCategoryPreferences.EXTRA_CATEGORY, category);
-        Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                InstrumentationRegistry.getTargetContext(), SiteSettingsPreferences.class.getName(),
-                fragmentArgs);
-        return (Preferences) InstrumentationRegistry.getInstrumentation().startActivitySync(intent);
-    }
-
-    private Preferences startSiteSettingsCategory(@SiteSettingsCategory.Type int type) {
-        Bundle fragmentArgs = new Bundle();
-        fragmentArgs.putString(
-                SingleCategoryPreferences.EXTRA_CATEGORY, SiteSettingsCategory.preferenceKey(type));
-        Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                InstrumentationRegistry.getTargetContext(),
-                SingleCategoryPreferences.class.getName(), fragmentArgs);
-        return (Preferences) InstrumentationRegistry.getInstrumentation().startActivitySync(intent);
-    }
-
-    private Preferences startSingleWebsitePreferences(Website site) {
-        Bundle fragmentArgs = new Bundle();
-        fragmentArgs.putSerializable(SingleWebsitePreferences.EXTRA_SITE, site);
-        Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                InstrumentationRegistry.getTargetContext(),
-                SingleWebsitePreferences.class.getName(), fragmentArgs);
-        return (Preferences) InstrumentationRegistry.getInstrumentation().startActivitySync(intent);
-    }
-
     private void setCookiesEnabled(final Preferences preferenceActivity, final boolean enabled) {
         TestThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -219,7 +190,8 @@ public class SiteSettingsPreferencesTest {
 
     private void setGlobalToggleForCategory(
             final @SiteSettingsCategory.Type int type, final boolean enabled) {
-        final Preferences preferenceActivity = startSiteSettingsCategory(type);
+        final Preferences preferenceActivity =
+                SiteSettingsTestUtils.startSiteSettingsCategory(type);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SingleCategoryPreferences preferences =
@@ -260,7 +232,8 @@ public class SiteSettingsPreferencesTest {
      */
     private void checkPreferencesForCategory(
             final @SiteSettingsCategory.Type int type, String[] expectedKeys) {
-        final Preferences preferenceActivity = startSiteSettingsCategory(type);
+        final Preferences preferenceActivity =
+                SiteSettingsTestUtils.startSiteSettingsCategory(type);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             PreferenceFragment preferenceFragment =
@@ -295,7 +268,7 @@ public class SiteSettingsPreferencesTest {
     @Feature({"Preferences"})
     public void testThirdPartyCookieToggleGetsDisabled() throws Exception {
         Preferences preferenceActivity =
-                startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
+                SiteSettingsTestUtils.startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
         setCookiesEnabled(preferenceActivity, true);
         setThirdPartyCookiesEnabled(preferenceActivity, false);
         setThirdPartyCookiesEnabled(preferenceActivity, true);
@@ -311,7 +284,7 @@ public class SiteSettingsPreferencesTest {
     @Feature({"Preferences"})
     public void testCookiesNotBlocked() throws Exception {
         Preferences preferenceActivity =
-                startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
+                SiteSettingsTestUtils.startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
         setCookiesEnabled(preferenceActivity, true);
         preferenceActivity.finish();
 
@@ -338,7 +311,7 @@ public class SiteSettingsPreferencesTest {
     @Feature({"Preferences"})
     public void testCookiesBlocked() throws Exception {
         Preferences preferenceActivity =
-                startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
+                SiteSettingsTestUtils.startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
         setCookiesEnabled(preferenceActivity, false);
         preferenceActivity.finish();
 
@@ -403,7 +376,8 @@ public class SiteSettingsPreferencesTest {
 
     private void resetSite(WebsiteAddress address) {
         Website website = new Website(address, address);
-        final Preferences preferenceActivity = startSingleWebsitePreferences(website);
+        final Preferences preferenceActivity =
+                SiteSettingsTestUtils.startSingleWebsitePreferences(website);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SingleWebsitePreferences websitePreferences =
                     (SingleWebsitePreferences) preferenceActivity.getFragmentForTest();
@@ -454,7 +428,7 @@ public class SiteSettingsPreferencesTest {
     @SmallTest
     @Feature({"Preferences"})
     public void testSiteSettingsMenu() throws Exception {
-        final Preferences preferenceActivity = startSiteSettingsMenu("");
+        final Preferences preferenceActivity = SiteSettingsTestUtils.startSiteSettingsMenu("");
         preferenceActivity.finish();
     }
 
@@ -467,7 +441,7 @@ public class SiteSettingsPreferencesTest {
     @Feature({"Preferences"})
     public void testMediaMenu() throws Exception {
         final Preferences preferenceActivity =
-                startSiteSettingsMenu(SiteSettingsPreferences.MEDIA_KEY);
+                SiteSettingsTestUtils.startSiteSettingsMenu(SiteSettingsPreferences.MEDIA_KEY);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SiteSettingsPreferences siteSettings =
                     (SiteSettingsPreferences) preferenceActivity.getFragmentForTest();
@@ -498,9 +472,69 @@ public class SiteSettingsPreferencesTest {
     @SmallTest
     @Feature({"Preferences"})
     public void testOnlyExpectedPreferencesShown() throws Exception {
-        // TODO: Add tests for other categories. The allow/block group could be tricky.
-        checkPreferencesForCategory(SiteSettingsCategory.Type.ALL_SITES, new String[0]);
-        checkPreferencesForCategory(SiteSettingsCategory.Type.USE_STORAGE, new String[0]);
+        // If you add a category in the SiteSettings UI, please add a test for it below.
+        Assert.assertEquals(18, SiteSettingsCategory.Type.NUM_ENTRIES);
+
+        String[] nullArray = new String[0];
+        String[] binaryToggle = new String[] {"binary_toggle"};
+        String[] binaryToggleWithException = new String[] {"binary_toggle", "add_exception"};
+        String[] binaryToggleWithAllowed = new String[] {"binary_toggle", "allowed_group"};
+        String[] cookie = new String[] {"binary_toggle", "third_party_cookies", "add_exception"};
+        String[] protectedMedia = new String[] {"tri_state_toggle", "protected_content_learn_more"};
+
+        HashMap<Integer, Pair<String[], String[]>> testCases =
+                new HashMap<Integer, Pair<String[], String[]>>();
+        testCases.put(SiteSettingsCategory.Type.ADS, new Pair<>(binaryToggle, binaryToggle));
+        testCases.put(SiteSettingsCategory.Type.ALL_SITES, new Pair<>(nullArray, nullArray));
+        testCases.put(SiteSettingsCategory.Type.AUTOMATIC_DOWNLOADS,
+                new Pair<>(binaryToggleWithException, binaryToggle));
+        testCases.put(SiteSettingsCategory.Type.AUTOPLAY,
+                new Pair<>(binaryToggleWithException, binaryToggle));
+        testCases.put(SiteSettingsCategory.Type.BACKGROUND_SYNC,
+                new Pair<>(binaryToggleWithException, binaryToggle));
+        testCases.put(SiteSettingsCategory.Type.CAMERA, new Pair<>(binaryToggle, binaryToggle));
+        testCases.put(SiteSettingsCategory.Type.CLIPBOARD, new Pair<>(binaryToggle, binaryToggle));
+        testCases.put(SiteSettingsCategory.Type.COOKIES, new Pair<>(cookie, cookie));
+        testCases.put(SiteSettingsCategory.Type.DEVICE_LOCATION,
+                new Pair<>(binaryToggleWithAllowed, binaryToggleWithAllowed));
+        testCases.put(SiteSettingsCategory.Type.JAVASCRIPT,
+                new Pair<>(binaryToggleWithException, binaryToggleWithException));
+        testCases.put(SiteSettingsCategory.Type.MICROPHONE, new Pair<>(binaryToggle, binaryToggle));
+        testCases.put(SiteSettingsCategory.Type.NOTIFICATIONS,
+                new Pair<>(binaryToggleWithAllowed, binaryToggleWithAllowed));
+        testCases.put(SiteSettingsCategory.Type.POPUPS, new Pair<>(binaryToggle, binaryToggle));
+        testCases.put(SiteSettingsCategory.Type.PROTECTED_MEDIA,
+                new Pair<>(protectedMedia, protectedMedia));
+        testCases.put(SiteSettingsCategory.Type.SENSORS, new Pair<>(binaryToggle, binaryToggle));
+        testCases.put(SiteSettingsCategory.Type.SOUND,
+                new Pair<>(binaryToggleWithException, binaryToggleWithException));
+        testCases.put(SiteSettingsCategory.Type.USB, new Pair<>(binaryToggle, binaryToggle));
+        testCases.put(SiteSettingsCategory.Type.USE_STORAGE, new Pair<>(nullArray, nullArray));
+
+        for (@SiteSettingsCategory.Type int key = 0; key < SiteSettingsCategory.Type.NUM_ENTRIES;
+                ++key) {
+            Pair<String[], String[]> values = testCases.get(key);
+
+            if (key == SiteSettingsCategory.Type.ALL_SITES
+                    || key == SiteSettingsCategory.Type.USE_STORAGE) {
+                checkPreferencesForCategory(key, values.first);
+                return;
+            }
+
+            // Disable the category and check for the right preferences.
+            setGlobalToggleForCategory(key, false);
+            checkPreferencesForCategory(key, values.first);
+            // Re-enable the category and check for the right preferences.
+            setGlobalToggleForCategory(key, true);
+            checkPreferencesForCategory(key, values.second);
+        }
+
+        // Location is not the only system-managed permission, but having one test for a
+        // system-managed permission has been shown to catch stray permissons appearing where they
+        // should not.
+        LocationSettingsTestUtil.setSystemLocationSettingEnabled(false);
+        checkPreferencesForCategory(SiteSettingsCategory.Type.DEVICE_LOCATION, binaryToggle);
+        LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
     }
 
     /**

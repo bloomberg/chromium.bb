@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_DBUS_CONCIERGE_CLIENT_H_
 #define CHROMEOS_DBUS_CONCIERGE_CLIENT_H_
 
+#include <memory>
+
 #include "base/component_export.h"
 #include "base/files/scoped_file.h"
 #include "chromeos/dbus/concierge/service.pb.h"
@@ -15,10 +17,12 @@
 namespace chromeos {
 
 // ConciergeClient is used to communicate with Concierge, which is used to
-// start and stop VMs.
+// start and stop VMs, as well as for disk image management.
 class COMPONENT_EXPORT(CHROMEOS_DBUS) ConciergeClient : public DBusClient {
  public:
-  class Observer {
+  // Used for observing all concierge signals related to running
+  // containers (e.g. startup).
+  class ContainerObserver {
    public:
     // OnContainerStartupFailed is signaled by Concierge after the long-running
     // container startup process's failure is detected. Note the signal protocol
@@ -27,18 +31,40 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) ConciergeClient : public DBusClient {
         const vm_tools::concierge::ContainerStartedSignal& signal) = 0;
 
    protected:
-    virtual ~Observer() = default;
+    virtual ~ContainerObserver() = default;
   };
 
-  // Adds an observer.
-  virtual void AddObserver(Observer* observer) = 0;
+  // Used for observing all concierge signals related to VM disk image
+  // operations, e.g. importing.
+  class DiskImageObserver {
+   public:
+    // OnDiskImageProgress is signaled by Concierge after an ImportDiskImage
+    // call has been made and an update about the status of the import
+    // is available.
+    virtual void OnDiskImageProgress(
+        const vm_tools::concierge::DiskImageStatusResponse& signal) = 0;
 
+   protected:
+    virtual ~DiskImageObserver() = default;
+  };
+
+  // Adds an observer for container startup.
+  virtual void AddContainerObserver(ContainerObserver* observer) = 0;
   // Removes an observer if added.
-  virtual void RemoveObserver(Observer* observer) = 0;
+  virtual void RemoveContainerObserver(ContainerObserver* observer) = 0;
+
+  // Adds an observer for disk image operations.
+  virtual void AddDiskImageObserver(DiskImageObserver* observer) = 0;
+  // Adds an observer for disk image operations.
+  virtual void RemoveDiskImageObserver(DiskImageObserver* observer) = 0;
 
   // IsContainerStartupFailedSignalConnected must return true before
   // StartContainer is called.
   virtual bool IsContainerStartupFailedSignalConnected() = 0;
+
+  // IsDiskImageProgressSignalConnected must return true before
+  // ImportDiskImage is called.
+  virtual bool IsDiskImageProgressSignalConnected() = 0;
 
   // Creates a disk image for the Termina VM.
   // |callback| is called after the method call finishes.
@@ -52,6 +78,29 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) ConciergeClient : public DBusClient {
   virtual void DestroyDiskImage(
       const vm_tools::concierge::DestroyDiskImageRequest& request,
       DBusMethodCallback<vm_tools::concierge::DestroyDiskImageResponse>
+          callback) = 0;
+
+  // Imports a VM disk image.
+  // |callback| is called after the method call finishes.
+  virtual void ImportDiskImage(
+      base::ScopedFD fd,
+      const vm_tools::concierge::ImportDiskImageRequest& request,
+      DBusMethodCallback<vm_tools::concierge::ImportDiskImageResponse>
+          callback) = 0;
+
+  // Cancels a VM disk image operation (import or export) that is being
+  // executed.
+  // |callback| is called after the method call finishes.
+  virtual void CancelDiskImageOperation(
+      const vm_tools::concierge::CancelDiskImageRequest& request,
+      DBusMethodCallback<vm_tools::concierge::CancelDiskImageResponse>
+          callback) = 0;
+
+  // Retrieves the status of a disk image operation
+  // |callback| is called after the method call finishes.
+  virtual void DiskImageStatus(
+      const vm_tools::concierge::DiskImageStatusRequest& request,
+      DBusMethodCallback<vm_tools::concierge::DiskImageStatusResponse>
           callback) = 0;
 
   // Lists the Termina VMs.
@@ -73,6 +122,12 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) ConciergeClient : public DBusClient {
       const vm_tools::concierge::StopVmRequest& request,
       DBusMethodCallback<vm_tools::concierge::StopVmResponse> callback) = 0;
 
+  // Get VM Info.
+  // |callback| is called after the method call finishes.
+  virtual void GetVmInfo(
+      const vm_tools::concierge::GetVmInfoRequest& request,
+      DBusMethodCallback<vm_tools::concierge::GetVmInfoResponse> callback) = 0;
+
   // Registers |callback| to run when the Concierge service becomes available.
   // If the service is already available, or if connecting to the name-owner-
   // changed signal fails, |callback| will be run once asynchronously.
@@ -89,29 +144,29 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) ConciergeClient : public DBusClient {
       DBusMethodCallback<vm_tools::concierge::ContainerSshKeysResponse>
           callback) = 0;
 
-  // Attaches a USB device to a VM
-  // |callback| is called once the method call has finished
+  // Attaches a USB device to a VM.
+  // |callback| is called once the method call has finished.
   virtual void AttachUsbDevice(base::ScopedFD fd,
       const vm_tools::concierge::AttachUsbDeviceRequest& request,
       DBusMethodCallback<vm_tools::concierge::AttachUsbDeviceResponse>
           callback) = 0;
 
-  // Remove a USB device from a VM it's been attached to
-  // |callback| is called once the method call has finished
+  // Removes a USB device from a VM it's been attached to.
+  // |callback| is called once the method call has finished.
   virtual void DetachUsbDevice(
       const vm_tools::concierge::DetachUsbDeviceRequest& request,
       DBusMethodCallback<vm_tools::concierge::DetachUsbDeviceResponse>
           callback) = 0;
 
-  // List all the USB devices currently attached to a given VM
-  // |callback| is called once the method call has finished
+  // Lists all the USB devices currently attached to a given VM.
+  // |callback| is called once the method call has finished.
   virtual void ListUsbDevices(
       const vm_tools::concierge::ListUsbDeviceRequest& request,
       DBusMethodCallback<vm_tools::concierge::ListUsbDeviceResponse>
           callback) = 0;
 
   // Creates an instance of ConciergeClient.
-  static ConciergeClient* Create();
+  static std::unique_ptr<ConciergeClient> Create();
 
   ~ConciergeClient() override;
 

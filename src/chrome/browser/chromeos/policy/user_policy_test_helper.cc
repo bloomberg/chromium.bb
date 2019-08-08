@@ -7,18 +7,13 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/files/file_path.h"
-#include "base/files/file_util.h"
-#include "base/json/json_writer.h"
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
-#include "chrome/browser/policy/test/local_policy_test_server.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
@@ -32,58 +27,18 @@
 
 namespace policy {
 
-namespace {
-
-std::string BuildPolicy(const base::DictionaryValue& mandatory,
-                        const base::DictionaryValue& recommended,
-                        const std::string& policyType,
-                        const std::string& account_id) {
-  std::unique_ptr<base::DictionaryValue> policy_type_dict(
-      new base::DictionaryValue);
-  policy_type_dict->SetWithoutPathExpansion("mandatory",
-                                            mandatory.CreateDeepCopy());
-  policy_type_dict->SetWithoutPathExpansion("recommended",
-                                            recommended.CreateDeepCopy());
-
-  std::unique_ptr<base::ListValue> managed_users_list(new base::ListValue);
-  managed_users_list->AppendString("*");
-
-  base::DictionaryValue root_dict;
-  root_dict.SetWithoutPathExpansion(policyType, std::move(policy_type_dict));
-  root_dict.SetWithoutPathExpansion("managed_users",
-                                    std::move(managed_users_list));
-  root_dict.SetKey("policy_user", base::Value(account_id));
-  root_dict.SetKey("current_key_index", base::Value(0));
-
-  std::string json_policy;
-  base::JSONWriter::WriteWithOptions(
-      root_dict, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json_policy);
-  return json_policy;
-}
-
-}  // namespace
-
-UserPolicyTestHelper::UserPolicyTestHelper(const std::string& account_id)
-    : account_id_(account_id) {
-}
+UserPolicyTestHelper::UserPolicyTestHelper(
+    const std::string& account_id,
+    chromeos::LocalPolicyTestServerMixin* local_policy_server)
+    : account_id_(account_id), local_policy_server_(local_policy_server) {}
 
 UserPolicyTestHelper::~UserPolicyTestHelper() {
 }
 
-void UserPolicyTestHelper::Init(
-    const base::DictionaryValue& mandatory_policy,
-    const base::DictionaryValue& recommended_policy) {
-  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  WritePolicyFile(mandatory_policy, recommended_policy);
-
-  test_server_.reset(new LocalPolicyTestServer(PolicyFilePath()));
-  ASSERT_TRUE(test_server_->Start());
-}
-
-void UserPolicyTestHelper::UpdateCommandLine(
-    base::CommandLine* command_line) const {
-  command_line->AppendSwitchASCII(policy::switches::kDeviceManagementUrl,
-                                  test_server_->GetServiceURL().spec());
+void UserPolicyTestHelper::SetPolicy(const base::DictionaryValue& mandatory,
+                                     const base::DictionaryValue& recommended) {
+  ASSERT_TRUE(local_policy_server_->UpdateUserPolicy(mandatory, recommended,
+                                                     account_id_));
 }
 
 void UserPolicyTestHelper::WaitForInitialPolicy(Profile* profile) {
@@ -92,8 +47,7 @@ void UserPolicyTestHelper::WaitForInitialPolicy(Profile* profile) {
   connector->ScheduleServiceInitialization(0);
 
   UserCloudPolicyManagerChromeOS* const policy_manager =
-      UserPolicyManagerFactoryChromeOS::GetCloudPolicyManagerForProfile(
-          profile);
+      profile->GetUserCloudPolicyManagerChromeOS();
   DCHECK(!policy_manager->IsInitializationComplete(POLICY_DOMAIN_CHROME));
 
   // Give a bogus OAuth token to the |policy_manager|. This should make its
@@ -110,7 +64,7 @@ void UserPolicyTestHelper::WaitForInitialPolicy(Profile* profile) {
       std::string() /* requisition */, std::string() /* current_state_key */);
 
   policy::ProfilePolicyConnector* const profile_connector =
-      policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile);
+      profile->GetProfilePolicyConnector();
   policy::PolicyService* const policy_service =
       profile_connector->policy_service();
 
@@ -119,41 +73,20 @@ void UserPolicyTestHelper::WaitForInitialPolicy(Profile* profile) {
   run_loop.Run();
 }
 
-void UserPolicyTestHelper::UpdatePolicy(
+void UserPolicyTestHelper::SetPolicyAndWait(
     const base::DictionaryValue& mandatory_policy,
     const base::DictionaryValue& recommended_policy,
     Profile* profile) {
-  WritePolicyFile(mandatory_policy, recommended_policy);
+  SetPolicy(mandatory_policy, recommended_policy);
 
   policy::ProfilePolicyConnector* const profile_connector =
-      policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile);
+      profile->GetProfilePolicyConnector();
   policy::PolicyService* const policy_service =
       profile_connector->policy_service();
 
   base::RunLoop run_loop;
   policy_service->RefreshPolicies(run_loop.QuitClosure());
   run_loop.Run();
-}
-
-void UserPolicyTestHelper::DeletePolicyFile() {
-  base::ScopedAllowBlockingForTesting allow_io;
-  base::DeleteFile(PolicyFilePath(), false);
-}
-
-void UserPolicyTestHelper::WritePolicyFile(
-    const base::DictionaryValue& mandatory,
-    const base::DictionaryValue& recommended) {
-  const std::string policy = BuildPolicy(
-      mandatory, recommended, dm_protocol::kChromeUserPolicyType, account_id_);
-
-  base::ScopedAllowBlockingForTesting allow_io;
-  const int bytes_written =
-      base::WriteFile(PolicyFilePath(), policy.data(), policy.size());
-  ASSERT_EQ(static_cast<int>(policy.size()), bytes_written);
-}
-
-base::FilePath UserPolicyTestHelper::PolicyFilePath() const {
-  return temp_dir_.GetPath().AppendASCII("policy.json");
 }
 
 }  // namespace policy

@@ -12,6 +12,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/supports_user_data.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_core_service.h"
@@ -34,6 +35,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 #include "ui/base/text/bytes_formatting.h"
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/browser.h"
+#endif
 
 using base::TimeDelta;
 using download::DownloadItem;
@@ -651,7 +656,7 @@ void DownloadItemModel::ExecuteCommand(DownloadCommands* download_commands,
           (sb_service ? sb_service->download_protection_service() : nullptr);
       if (protection_service)
         protection_service->ShowDetailsForDownload(
-            *download_, download_commands->GetBrowser());
+            download_, download_commands->GetBrowser());
 #else
       // Should only be getting invoked if we are using safe browsing.
       NOTREACHED();

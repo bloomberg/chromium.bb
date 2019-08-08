@@ -145,24 +145,25 @@ std::string RegisterFileSystem(WebContents* web_contents,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CHECK(web_contents->GetURL().SchemeIs(content::kChromeDevToolsScheme));
   std::string root_name(kRootName);
-  std::string file_system_id = isolated_context()->RegisterFileSystemForPath(
-      storage::kFileSystemTypeNativeLocal, std::string(), path, &root_name);
+  storage::IsolatedContext::ScopedFSHandle file_system =
+      isolated_context()->RegisterFileSystemForPath(
+          storage::kFileSystemTypeNativeLocal, std::string(), path, &root_name);
 
   content::ChildProcessSecurityPolicy* policy =
       content::ChildProcessSecurityPolicy::GetInstance();
   RenderViewHost* render_view_host = web_contents->GetRenderViewHost();
   int renderer_id = render_view_host->GetProcess()->GetID();
-  policy->GrantReadFileSystem(renderer_id, file_system_id);
-  policy->GrantWriteFileSystem(renderer_id, file_system_id);
-  policy->GrantCreateFileForFileSystem(renderer_id, file_system_id);
-  policy->GrantDeleteFromFileSystem(renderer_id, file_system_id);
+  policy->GrantReadFileSystem(renderer_id, file_system.id());
+  policy->GrantWriteFileSystem(renderer_id, file_system.id());
+  policy->GrantCreateFileForFileSystem(renderer_id, file_system.id());
+  policy->GrantDeleteFromFileSystem(renderer_id, file_system.id());
 
   // We only need file level access for reading FileEntries. Saving FileEntries
   // just needs the file system to have read/write access, which is granted
   // above if required.
   if (!policy->CanReadFile(renderer_id, path))
     policy->GrantReadFile(renderer_id, path);
-  return file_system_id;
+  return file_system.id();
 }
 
 DevToolsFileHelper::FileSystem CreateFileSystemStruct(

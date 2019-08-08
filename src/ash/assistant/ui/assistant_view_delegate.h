@@ -20,8 +20,8 @@
 #include "ash/assistant/ui/caption_bar.h"
 #include "ash/assistant/ui/dialog_plate/dialog_plate.h"
 #include "ash/assistant/ui/main_stage/assistant_opt_in_view.h"
+#include "ash/public/cpp/assistant/assistant_image_downloader.h"
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
-#include "ash/public/interfaces/assistant_image_downloader.mojom.h"
 #include "base/component_export.h"
 #include "base/observer_list_types.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
@@ -127,7 +127,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
   // attempt is unsuccessful, a NULL image is returned.
   virtual void DownloadImage(
       const GURL& url,
-      mojom::AssistantImageDownloader::DownloadCallback callback) = 0;
+      AssistantImageDownloader::DownloadCallback callback) = 0;
 
   // Returns the status of the user's consent.
   virtual mojom::ConsentStatus GetConsentStatus() const = 0;

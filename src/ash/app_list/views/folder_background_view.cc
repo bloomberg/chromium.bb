@@ -5,7 +5,7 @@
 #include "ash/app_list/views/folder_background_view.h"
 
 #include "ash/app_list/views/app_list_folder_view.h"
-#include "ui/keyboard/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_controller.h"
 
 namespace app_list {
 
@@ -13,6 +13,10 @@ FolderBackgroundView::FolderBackgroundView(AppListFolderView* folder_view)
     : folder_view_(folder_view) {}
 
 FolderBackgroundView::~FolderBackgroundView() = default;
+
+const char* FolderBackgroundView::GetClassName() const {
+  return "FolderBackgroundView";
+}
 
 bool FolderBackgroundView::OnMousePressed(const ui::MouseEvent& event) {
   HandleClickOrTap();

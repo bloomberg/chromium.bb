@@ -135,6 +135,12 @@ const char kSupervisedUserCustodianEmail[] = "profile.managed.custodian_email";
 // starts a session.
 const char kSupervisedUserCustodianName[] = "profile.managed.custodian_name";
 
+// Stores the obfuscated gaia id associated with the google account of the
+// custodian of the supervised user, updated (if possible) each time the
+// supervised user starts a session.
+const char kSupervisedUserCustodianObfuscatedGaiaId[] =
+    "profile.managed.custodian_obfuscated_gaia_id";
+
 // Stores the URL of the profile image associated with the google account of the
 // custodian of the supervised user.
 const char kSupervisedUserCustodianProfileImageURL[] =
@@ -169,6 +175,12 @@ const char kSupervisedUserSecondCustodianEmail[] =
 // supervised user starts a session.
 const char kSupervisedUserSecondCustodianName[] =
     "profile.managed.second_custodian_name";
+
+// Stores the obfuscated gaia id associated with the google account of the
+// secondary custodian of the supervised user, updated (if possible) each time
+// the supervised user starts a session.
+const char kSupervisedUserSecondCustodianObfuscatedGaiaId[] =
+    "profile.managed.second_custodian_obfuscated_gaia_id";
 
 // Stores the URL of the profile image associated with the google account of the
 // secondary custodian of the supervised user.
@@ -920,6 +932,23 @@ const char kMostRecentlyUsedNetworkFileShareURL[] =
 const char kDeviceWallpaperImageFilePath[] =
     "policy.device_wallpaper_image_file_path";
 
+// Boolean whether Kerberos daemon supports remembering passwords.
+const char kKerberosRememberPasswordEnabled[] =
+    "kerberos.remember_password_enabled";
+// Boolean whether users may add new Kerberos accounts.
+const char kKerberosAddAccountsAllowed[] = "kerberos.add_accounts_allowed";
+// Dictionary specifying a pre-set list of Kerberos accounts.
+const char kKerberosAccounts[] = "kerberos.accounts";
+
+// A boolean pref for enabling/disabling App reinstall recommendations in Zero
+// State Launcher by policy.
+const char kAppReinstallRecommendationEnabled[] =
+    "zero_state_app_install_recommendation.enabled";
+
+// A boolean pref that when set to true, prevents the browser window from
+// launching at the start of the session.
+const char kStartupBrowserWindowLaunchSuppressed[] =
+    "startup_browser_window_launch_suppressed";
 #endif  // defined(OS_CHROMEOS)
 
 // A boolean pref set to true if a Home button to open the Home pages should be
@@ -1504,6 +1533,12 @@ const char kRestartLastSessionOnShutdown[] = "restart.last.session.on.shutdown";
 // Pref name for the policy controlling presentation of full-tab promotional
 // and/or educational content.
 const char kPromotionalTabsEnabled[] = "browser.promotional_tabs_enabled";
+
+// Boolean that specifies whether or not to show security warnings for some
+// potentially bad command-line flags. True by default. Controlled by the
+// CommandLineFlagSecurityWarningsEnabled policy setting.
+const char kCommandLineFlagSecurityWarningsEnabled[] =
+    "browser.command_line_flag_security_warnings_enabled";
 #endif  // !defined(OS_CHROMEOS)
 
 // Boolean that specifies whether or not showing the unsupported OS warning is
@@ -1514,7 +1549,6 @@ const char kSuppressUnsupportedOSWarning[] =
 
 // Set before autorestarting Chrome, cleared on clean exit.
 const char kWasRestarted[] = "was.restarted";
-
 #endif  // !defined(OS_ANDROID)
 
 // Whether Extensions are enabled.
@@ -1537,24 +1571,6 @@ const char kNtpCollapsedSnapshotDocument[] = "ntp.collapsed_snapshot_document";
 
 // Keeps track of sync promo collapsed state in the Other Devices menu.
 const char kNtpCollapsedSyncPromo[] = "ntp.collapsed_sync_promo";
-
-// Tracks whether we should show notifications related to content suggestions.
-const char kContentSuggestionsNotificationsEnabled[] =
-    "ntp.content_suggestions.notifications.enabled";
-
-// Tracks how many notifications the user has ignored, so we can tell when we
-// should stop showing them.
-const char kContentSuggestionsConsecutiveIgnoredPrefName[] =
-    "ntp.content_suggestions.notifications.consecutive_ignored";
-
-// Tracks how many notifications have been sent today, and what day "today" is,
-// as an integer YYYYMMDD, in wall time in the local timezone.
-// If sent_day changes, sent_count is reset to 0. Allows limiting per-day
-// notification count.
-const char kContentSuggestionsNotificationsSentDay[] =
-    "ntp.content_suggestions.notifications.sent_day";
-const char kContentSuggestionsNotificationsSentCount[] =
-    "ntp.content_suggestions.notifications.sent_count";
 #else
 // Tracks whether a field trial to hide shortcuts on the NTP has been activated.
 // It is only activated for fresh installs, and remains active for those clients
@@ -1628,16 +1644,6 @@ const char kDevToolsPreferences[] = "devtools.preferences";
 // Tracks the number of times the dice signin promo has been shown in the user
 // menu.
 const char kDiceSigninUserMenuPromoCount[] = "sync_promo.user_menu_show_count";
-
-// Boolean that specifies if the sign in promo is allowed to show on first run.
-// This preference is specified in the master preference file to suppress the
-// sign in promo for some installations.
-const char kSignInPromoShowOnFirstRunAllowed[] =
-    "sync_promo.show_on_first_run_allowed";
-
-// Boolean that specifies if we should show a bubble in the new tab page.
-// The bubble is used to confirm that the user is signed into sync.
-const char kSignInPromoShowNTPBubble[] = "sync_promo.show_ntp_bubble";
 #endif
 
 // Create web application shortcut dialog preferences.
@@ -1650,6 +1656,9 @@ const char kWebAppCreateInQuickLaunchBar[] =
 // two strings: the URL of the Web App and "tab" or "window" for where the app
 // will be launched.
 const char kWebAppInstallForceList[] = "profile.web_app.install.forcelist";
+
+// Dictionary that maps web app ids to installation metrics used by UMA.
+const char kWebAppInstallMetrics[] = "web_app_install_metrics";
 
 // Dictionary that maps web app URLs to Chrome extension IDs.
 const char kWebAppsExtensionIDs[] = "web_apps.extension_ids";
@@ -1732,6 +1741,11 @@ const char kAuthNegotiateDelegateByKdcPolicy[] =
 // Boolean that specifies whether NTLMv2 is enabled.
 const char kNtlmV2Enabled[] = "auth.ntlm_v2_enabled";
 #endif  // defined(OS_POSIX)
+
+#if defined(OS_CHROMEOS)
+// Boolean whether Kerberos functionality is enabled.
+const char kKerberosEnabled[] = "kerberos.enabled";
+#endif
 
 // Boolean that specifies whether to enable revocation checking (best effort)
 // by default.
@@ -2105,6 +2119,13 @@ const char kRelaunchNotificationPeriod[] =
     "browser.relaunch_notification_period";
 #endif  // !defined(OS_ANDROID)
 
+#if defined(OS_CHROMEOS)
+// Pref name for the policy controlling the time period between the first user
+// notification about need to relaunch and the end of the
+// RelaunchNotificationPeriod. Values are in milliseconds.
+const char kRelaunchHeadsUpPeriod[] = "browser.relaunch_heads_up_period";
+#endif  // defined(OS_CHROMEOS)
+
 // *************** SERVICE PREFS ***************
 // These are attached to the service process.
 
@@ -2329,7 +2350,7 @@ const char kRecoveryComponentNeedsElevation[] =
 const char kRegisteredSupervisedUserWhitelists[] =
     "supervised_users.whitelists";
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID)
 // Boolean that indicates whether Chrome enterprise cloud reporting is enabled
 // or not.
 const char kCloudReportingEnabled[] =
@@ -2464,11 +2485,6 @@ const char kIncompatibleApplications[] = "incompatible_applications";
 // external tampering.
 const char kModuleBlacklistCacheMD5Digest[] =
     "module_blacklist_cache_md5_digest";
-
-// Acts as a cache to remember problematic programs through restarts. Used for
-// the Incompatible Applications Warning feature.
-// Note: Deprecated. Renamed to kIncompatibleApplications.
-const char kProblematicPrograms[] = "problematic_programs";
 
 // A boolean value, controlling whether third party software is allowed to
 // inject into Chrome's processes.

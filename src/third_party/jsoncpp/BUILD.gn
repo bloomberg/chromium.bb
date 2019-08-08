@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/libfuzzer/fuzzer_test.gni")
+
 config("jsoncpp_config") {
   include_dirs = [
     "overrides/include",
@@ -32,4 +34,14 @@ source_set("jsoncpp") {
   defines = [ "JSON_USE_EXCEPTION=0" ]
 
   include_dirs = [ "source/src/lib_json" ]
+}
+
+fuzzer_test("jsoncpp_fuzzer") {
+  sources = [
+    "fuzzers/json_fuzzer.cc",
+  ]
+  deps = [
+    ":jsoncpp",
+  ]
+  dict = "//testing/libfuzzer/fuzzers/dicts/json.dict"
 }

@@ -41,8 +41,6 @@ class LayoutNGMixin : public Base {
   LayoutUnit FirstLineBoxBaseline() const final;
   LayoutUnit InlineBlockBaseline(LineDirectionMode) const final;
 
-  void InvalidateDisplayItemClients(PaintInvalidationReason) const final;
-
   void Paint(const PaintInfo&) const final;
 
   bool NodeAtPoint(HitTestResult&,
@@ -50,9 +48,17 @@ class LayoutNGMixin : public Base {
                    const LayoutPoint& accumulated_offset,
                    HitTestAction) final;
 
-  PositionWithAffinity PositionForPoint(const LayoutPoint&) const final;
+  PositionWithAffinity PositionForPoint(const LayoutPoint&) const override;
 
-  NGPaintFragment* PaintFragment() const final { return paint_fragment_.get(); }
+  const NGPaintFragment* PaintFragment() const final {
+    // TODO(layout-dev) crbug.com/963103
+    // Safer option here is to return nullptr only if
+    // Lifecycle > DocumentLifecycle::kAfterPerformLayout, but this breaks
+    // some layout tests.
+    if (Base::NeedsLayout())
+      return nullptr;
+    return paint_fragment_.get();
+  }
   void SetPaintFragment(const NGBlockBreakToken*,
                         scoped_refptr<const NGPhysicalFragment>) final;
 
@@ -67,9 +73,11 @@ class LayoutNGMixin : public Base {
 
   void AddLayoutOverflowFromChildren() final;
 
-  void AddOutlineRects(Vector<LayoutRect>&,
-                       const LayoutPoint& additional_offset,
+  void AddOutlineRects(Vector<PhysicalRect>&,
+                       const PhysicalOffset& additional_offset,
                        NGOutlineType) const final;
+
+  bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const final;
 
   const NGPhysicalBoxFragment* CurrentFragment() const final;
 

@@ -3,12 +3,7 @@
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
 
-# Lambda may not be necessary.
-# pylint: disable=W0108
-
 import functools
-import logging
-import os
 import signal
 import sys
 import threading
@@ -16,9 +11,8 @@ import time
 import traceback
 import unittest
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
-    __file__.decode(sys.getfilesystemencoding()))))
-sys.path.insert(0, ROOT_DIR)
+# Mutates sys.path.
+import test_env
 
 from utils import threading_utils
 
@@ -569,7 +563,7 @@ class TaskChannelTest(unittest.TestCase):
   def test_wrap_task_passes_exception_value(self):
     with threading_utils.ThreadPool(1, 1, 0) as tp:
       channel = threading_utils.TaskChannel()
-      tp.add_task(0, channel.wrap_task(lambda: Exception()))
+      tp.add_task(0, channel.wrap_task(Exception))
       self.assertTrue(isinstance(channel.next(), Exception))
 
   def test_send_exception_raises_exception(self):
@@ -636,6 +630,4 @@ class TaskChannelTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-  VERBOSE = '-v' in sys.argv
-  logging.basicConfig(level=logging.DEBUG if VERBOSE else logging.ERROR)
-  unittest.main()
+  test_env.main()

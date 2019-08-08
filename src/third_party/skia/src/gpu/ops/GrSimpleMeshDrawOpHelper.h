@@ -8,12 +8,12 @@
 #ifndef GrSimpleMeshDrawOpHelper_DEFINED
 #define GrSimpleMeshDrawOpHelper_DEFINED
 
-#include "GrMemoryPool.h" // only here bc of the templated FactoryHelper
-#include "GrMeshDrawOp.h"
-#include "GrOpFlushState.h"
-#include "GrPipeline.h"
-#include "GrRecordingContext.h"
-#include "GrRecordingContextPriv.h"
+#include "include/private/GrRecordingContext.h"
+#include "src/gpu/GrMemoryPool.h"
+#include "src/gpu/GrOpFlushState.h"
+#include "src/gpu/GrPipeline.h"
+#include "src/gpu/GrRecordingContextPriv.h"
+#include "src/gpu/ops/GrMeshDrawOp.h"
 #include <new>
 
 struct SkRect;
@@ -107,7 +107,7 @@ public:
         friend class GrSimpleMeshDrawOpHelper;
     };
 
-    void visitProxies(const std::function<void(GrSurfaceProxy*)>& func) const {
+    void visitProxies(const GrOp::VisitProxyFunc& func) const {
         if (fProcessors) {
             fProcessors->visitProxies(func);
         }

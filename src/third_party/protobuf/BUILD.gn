@@ -219,13 +219,16 @@ static_library("protobuf_full") {
     "//third_party/perfetto/protos/ftrace:full",
     "//third_party/perfetto/gn:protobuf_full_deps",
 
-    # The SQLite fuzzer's corpus generator needs protobuf_full and is not
-    # included in Chrome.
-    "//third_party/sqlite:sqlite3_lpm_corpus_gen",
-
     # Some tests inside ChromeOS need reflection to parse golden files.
     # Not included in production code.
     "//chrome/test:usage_time_limit_unittests",
+
+    # The protobuf-based SQLite and GPU fuzzers need protobuf_full and are not
+    # included in Chrome.
+    "//third_party/sqlite:sqlite3_lpm_corpus_gen",
+    "//gpu:gl_lpm_fuzzer_proto",
+    "//gpu:gl_lpm_fuzzer_proto_gen",
+    "//gpu:gl_lpm_shader_to_string_unittest",
   ]
 
   sources = protobuf_lite_sources + [

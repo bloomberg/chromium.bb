@@ -7,11 +7,11 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/sync/base/nigori.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/engine/sync_encryption_handler.h"
 #include "components/sync/protocol/proto_value_conversions.h"
+#include "components/unified_consent/feature.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory_util.h"
@@ -25,6 +25,7 @@
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
@@ -37,6 +38,7 @@
 
 using chrome_test_util::AccountsSyncButton;
 using chrome_test_util::ButtonWithAccessibilityLabel;
+using chrome_test_util::GoogleServicesSettingsButton;
 using chrome_test_util::SettingsAccountButton;
 using chrome_test_util::SettingsDoneButton;
 using chrome_test_util::SignOutAccountsButton;
@@ -69,7 +71,9 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
   [SigninEarlGreyUI signinWithIdentity:identity];
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:SettingsAccountButton()];
-  [ChromeEarlGreyUI tapAccountsMenuButton:AccountsSyncButton()];
+  if (!unified_consent::IsUnifiedConsentFeatureEnabled()) {
+    [ChromeEarlGreyUI tapAccountsMenuButton:AccountsSyncButton()];
+  }
 
   // Forget |identity|, screens should be popped back to the Main Settings.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
@@ -78,8 +82,7 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
 
   [[EarlGrey selectElementWithMatcher:PrimarySignInButton()]
       assertWithMatcher:grey_sufficientlyVisible()];
-  NSError* signedOutError = [SigninEarlGreyUtils checkSignedOut];
-  GREYAssertNil(signedOutError, signedOutError.localizedDescription);
+  CHROME_EG_ASSERT_NO_ERROR([SigninEarlGreyUtils checkSignedOut]);
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -105,8 +108,7 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
 
   [[EarlGrey selectElementWithMatcher:PrimarySignInButton()]
       assertWithMatcher:grey_sufficientlyVisible()];
-  NSError* signedOutError = [SigninEarlGreyUtils checkSignedOut];
-  GREYAssertNil(signedOutError, signedOutError.localizedDescription);
+  CHROME_EG_ASSERT_NO_ERROR([SigninEarlGreyUtils checkSignedOut]);
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -139,9 +141,8 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
                                    grey_accessibilityLabel(identity2.userEmail),
                                    grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_nil()];
-  NSError* signedInError =
-      [SigninEarlGreyUtils checkSignedInWithIdentity:identity1];
-  GREYAssertNil(signedInError, signedInError.localizedDescription);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [SigninEarlGreyUtils checkSignedInWithIdentity:identity1]);
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -150,6 +151,13 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
 // Tests that the Sync Settings screen is correctly reloaded when one of the
 // secondary accounts disappears.
 - (void)testSignInReloadSyncOnForgetIdentity {
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+    EARL_GREY_TEST_DISABLED(
+        @"Sync section was moved to the Sync and Google services settings "
+         "screen, so it is no longer present in the account settings screen. "
+         "This test is now covered by GoogleServicesSettingsTestCase.");
+  }
+
   ios::FakeChromeIdentityService* identity_service =
       ios::FakeChromeIdentityService::GetInstanceFromChromeProvider();
   ChromeIdentity* identity1 = [SigninEarlGreyUtils fakeIdentity1];
@@ -180,9 +188,8 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
                                    grey_accessibilityLabel(identity2.userEmail),
                                    grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_nil()];
-  NSError* signedInError =
-      [SigninEarlGreyUtils checkSignedInWithIdentity:identity1];
-  GREYAssertNil(signedInError, signedInError.localizedDescription);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [SigninEarlGreyUtils checkSignedInWithIdentity:identity1]);
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -208,8 +215,7 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
   // Check that the user is signed out and the Main Settings screen is shown.
   [[EarlGrey selectElementWithMatcher:PrimarySignInButton()]
       assertWithMatcher:grey_sufficientlyVisible()];
-  NSError* signedOutError = [SigninEarlGreyUtils checkSignedOut];
-  GREYAssertNil(signedOutError, signedOutError.localizedDescription);
+  CHROME_EG_ASSERT_NO_ERROR([SigninEarlGreyUtils checkSignedOut]);
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -238,9 +244,8 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::
                                           SettingsAccountsCollectionView()]
       assertWithMatcher:grey_sufficientlyVisible()];
-  NSError* signedInError =
-      [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
-  GREYAssertNil(signedInError, signedInError.localizedDescription);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [SigninEarlGreyUtils checkSignedInWithIdentity:identity]);
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -251,6 +256,8 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
 - (void)checkSyncCellWithExpectedTextLabelCallback:
     (ExpectedTextLabelCallback)callback {
   NSAssert(callback, @"Need callback");
+  NSAssert(!unified_consent::IsUnifiedConsentFeatureEnabled(),
+           @"Only runs when unified consent is disabled");
   ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
 
   // Sign In |identity|, then open the Account Settings.
@@ -277,6 +284,12 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
 
 // Tests the sync cell is correctly configured when having a MDM error.
 - (void)testMDMError {
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+    EARL_GREY_TEST_DISABLED(
+        @"Sync section was moved to the Sync and Google services settings "
+         "screen, so it is no longer present in the account settings screen. "
+         "This test is now covered by GoogleServicesSettingsTestCase.");
+  }
   ios::FakeChromeIdentityService* fakeChromeIdentityService =
       ios::FakeChromeIdentityService::GetInstanceFromChromeProvider();
   fakeChromeIdentityService->SetFakeMDMError(true);
@@ -288,6 +301,13 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
 
 // Tests the sync cell is correctly configured when no error.
 - (void)testSyncItemWithSyncingMessage {
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+    EARL_GREY_TEST_DISABLED(
+        @"Sync section was moved to the Sync and Google services settings "
+         "screen, so it is no longer present in the account settings screen. "
+         "This test is now covered by GoogleServicesSettingsTestCase.");
+  }
+
   ExpectedTextLabelCallback callback = ^(NSString* identityEmail) {
     return l10n_util::GetNSStringF(IDS_IOS_SIGN_IN_TO_CHROME_SETTING_SYNCING,
                                    base::SysNSStringToUTF16(identityEmail));
@@ -297,6 +317,13 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
 
 // Tests the sync cell is correctly configured when the passphrase is required.
 - (void)testSyncItemWithPassphraseRequired {
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+    EARL_GREY_TEST_DISABLED(
+        @"Sync section was moved to the Sync and Google services settings "
+         "screen, so it is no longer present in the account settings screen. "
+         "This test is now covered by GoogleServicesSettingsTestCase.");
+  }
+
   ExpectedTextLabelCallback callback = ^(NSString* identityEmail) {
     ios::ChromeBrowserState* browser_state =
         chrome_test_util::GetOriginalBrowserState();

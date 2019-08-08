@@ -41,6 +41,7 @@
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::CreateFunctor;
+using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::Mock;
 using ::testing::NiceMock;
@@ -61,13 +62,13 @@ class VideoRendererImplTest : public testing::Test {
     decoder_ = new NiceMock<MockVideoDecoder>();
     std::vector<std::unique_ptr<VideoDecoder>> decoders;
     decoders.push_back(base::WrapUnique(decoder_));
-    ON_CALL(*decoder_, Initialize(_, _, _, _, _, _))
+    ON_CALL(*decoder_, Initialize_(_, _, _, _, _, _))
         .WillByDefault(DoAll(SaveArg<4>(&output_cb_),
-                             RunCallback<3>(expect_init_success_)));
+                             RunOnceCallback<3>(expect_init_success_)));
     // Monitor decodes from the decoder.
-    ON_CALL(*decoder_, Decode(_, _))
+    ON_CALL(*decoder_, Decode_(_, _))
         .WillByDefault(Invoke(this, &VideoRendererImplTest::DecodeRequested));
-    ON_CALL(*decoder_, Reset(_))
+    ON_CALL(*decoder_, Reset_(_))
         .WillByDefault(Invoke(this, &VideoRendererImplTest::FlushRequested));
     ON_CALL(*decoder_, GetMaxDecodeRequests()).WillByDefault(Return(1));
     return decoders;
@@ -459,7 +460,7 @@ class VideoRendererImplTest : public testing::Test {
   // Use StrictMock<T> to catch missing/extra callbacks.
   class MockCB : public MockRendererClient {
    public:
-    MOCK_METHOD1(FrameReceived, void(const scoped_refptr<VideoFrame>&));
+    MOCK_METHOD1(FrameReceived, void(scoped_refptr<VideoFrame>));
   };
   StrictMock<MockCB> mock_cb_;
 
@@ -470,11 +471,11 @@ class VideoRendererImplTest : public testing::Test {
 
  private:
   void DecodeRequested(scoped_refptr<DecoderBuffer> buffer,
-                       const VideoDecoder::DecodeCB& decode_cb) {
+                       VideoDecoder::DecodeCB& decode_cb) {
     EXPECT_TRUE(
         task_environment_.GetMainThreadTaskRunner()->BelongsToCurrentThread());
     CHECK(!decode_cb_);
-    decode_cb_ = decode_cb;
+    decode_cb_ = std::move(decode_cb);
 
     // Wake up WaitForPendingDecode() if needed.
     if (wait_for_pending_decode_cb_)
@@ -489,7 +490,7 @@ class VideoRendererImplTest : public testing::Test {
     SatisfyPendingDecode();
   }
 
-  void FlushRequested(const base::Closure& callback) {
+  void FlushRequested(base::OnceClosure& callback) {
     EXPECT_TRUE(
         task_environment_.GetMainThreadTaskRunner()->BelongsToCurrentThread());
     decode_results_.clear();
@@ -498,7 +499,8 @@ class VideoRendererImplTest : public testing::Test {
       SatisfyPendingDecode();
     }
 
-    task_environment_.GetMainThreadTaskRunner()->PostTask(FROM_HERE, callback);
+    task_environment_.GetMainThreadTaskRunner()->PostTask(FROM_HERE,
+                                                          std::move(callback));
   }
 
   // Used to protect |time_|.
@@ -511,7 +513,7 @@ class VideoRendererImplTest : public testing::Test {
   base::TimeDelta next_frame_timestamp_;
 
   // Run during DecodeRequested() to unblock WaitForPendingDecode().
-  base::Closure wait_for_pending_decode_cb_;
+  base::OnceClosure wait_for_pending_decode_cb_;
 
   base::circular_deque<std::pair<DecodeStatus, scoped_refptr<VideoFrame>>>
       decode_results_;
@@ -884,6 +886,9 @@ TEST_F(VideoRendererImplTest, RenderingStartedThenStopped) {
   // Note: This is not the total, but just the increase in the last call since
   // the previous call, the total should be 4 * 115200.
   EXPECT_EQ(115200, last_pipeline_statistics.video_memory_usage);
+
+  EXPECT_EQ(renderer_->GetPreferredRenderInterval(),
+            last_pipeline_statistics.video_frame_duration_average);
 
   // Consider the case that rendering is faster than we setup the test event.
   // In that case, when we run out of the frames, BUFFERING_HAVE_NOTHING will

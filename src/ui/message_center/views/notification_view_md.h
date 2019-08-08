@@ -29,7 +29,6 @@ class Textfield;
 
 namespace message_center {
 
-class BoundedLabel;
 class NotificationHeaderView;
 class ProportionalImageView;
 
@@ -123,7 +122,7 @@ class NotificationInputContainerMD : public views::InkDropHostView,
   NotificationInputContainerMD(NotificationInputDelegate* delegate);
   ~NotificationInputContainerMD() override;
 
-  void AnimateBackground(const ui::LocatedEvent& event);
+  void AnimateBackground(const ui::Event& event);
 
   // Overridden from views::InkDropHostView:
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
@@ -224,10 +223,14 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestIconSizing);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestInlineReply);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest,
+                           TestInlineReplyActivateWithKeyPress);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest,
                            TestInlineReplyRemovedByUpdate);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestLongTitleAndMessage);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UpdateAddingIcon);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UpdateButtonCountTest);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UpdateButtonsStateTest);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UpdateInSettings);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UpdateViewsOrderingTest);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UseImageAsIcon);
 
@@ -301,7 +304,7 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
 
   // Views which are dynamically created inside view hierarchy.
   views::Label* title_view_ = nullptr;
-  BoundedLabel* message_view_ = nullptr;
+  views::Label* message_view_ = nullptr;
   views::Label* status_view_ = nullptr;
   ProportionalImageView* icon_view_ = nullptr;
   views::View* image_container_view_ = nullptr;

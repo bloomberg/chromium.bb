@@ -18,6 +18,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.shapes.RoundRectShape;
 import android.graphics.drawable.shapes.Shape;
+import android.support.annotation.ColorRes;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
@@ -120,6 +121,15 @@ public class RoundedCornerImageView extends ImageView {
         maybeCreateShader();
 
         updateApplyShader();
+    }
+
+    /**
+     * Set the fill color resource.
+     * @param id The color resource id.
+     */
+    public void setRoundedFillColor(@ColorRes int id) {
+        mFillPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mFillPaint.setColor(getContext().getResources().getColor(id));
     }
 
     protected void maybeCreateShader() {

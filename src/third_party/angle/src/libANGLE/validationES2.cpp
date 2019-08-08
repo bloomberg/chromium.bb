@@ -730,9 +730,7 @@ bool ValidateES2CopyTexImageParameters(Context *context,
             case GL_DEPTH_COMPONENT:
             case GL_DEPTH_COMPONENT16:
             case GL_DEPTH_COMPONENT32_OES:
-            case GL_DEPTH_STENCIL_OES:
-            case GL_DEPTH24_STENCIL8_OES:
-                if (context->getExtensions().depthTextures)
+                if (context->getExtensions().depthTextureAny())
                 {
                     context->validationError(GL_INVALID_OPERATION, kInvalidFormat);
                     return false;
@@ -742,6 +740,21 @@ bool ValidateES2CopyTexImageParameters(Context *context,
                     context->validationError(GL_INVALID_ENUM, kEnumNotSupported);
                     return false;
                 }
+                break;
+            case GL_DEPTH_STENCIL_OES:
+            case GL_DEPTH24_STENCIL8_OES:
+                if (context->getExtensions().depthTextureAny() ||
+                    context->getExtensions().packedDepthStencil)
+                {
+                    context->validationError(GL_INVALID_OPERATION, kInvalidFormat);
+                    return false;
+                }
+                else
+                {
+                    context->validationError(GL_INVALID_ENUM, kEnumNotSupported);
+                    return false;
+                }
+                break;
             default:
                 context->validationError(GL_INVALID_ENUM, kEnumNotSupported);
                 return false;
@@ -1111,6 +1124,27 @@ bool ValidDstBlendFunc(const Context *context, GLenum val)
 
     return false;
 }
+
+bool IsValidImageLayout(ImageLayout layout)
+{
+    switch (layout)
+    {
+        case ImageLayout::General:
+        case ImageLayout::ColorAttachment:
+        case ImageLayout::DepthStencilAttachment:
+        case ImageLayout::DepthStencilReadOnlyAttachment:
+        case ImageLayout::ShaderReadOnly:
+        case ImageLayout::TransferSrc:
+        case ImageLayout::TransferDst:
+        case ImageLayout::DepthReadOnlyStencilAttachment:
+        case ImageLayout::DepthAttachmentStencilReadOnly:
+            return true;
+
+        default:
+            return false;
+    }
+}
+
 }  // anonymous namespace
 
 bool ValidateES2TexImageParameters(Context *context,
@@ -1497,7 +1531,9 @@ bool ValidateES2TexImageParameters(Context *context,
                 break;
             case GL_DEPTH_COMPONENT:
             case GL_DEPTH_STENCIL_OES:
-                if (!context->getExtensions().depthTextures)
+                if (!context->getExtensions().depthTextureANGLE &&
+                    !(context->getExtensions().packedDepthStencil &&
+                      context->getExtensions().depthTextureOES))
                 {
                     context->validationError(GL_INVALID_ENUM, kEnumNotSupported);
                     return false;
@@ -1509,15 +1545,18 @@ bool ValidateES2TexImageParameters(Context *context,
                 }
                 // OES_depth_texture supports loading depth data and multiple levels,
                 // but ANGLE_depth_texture does not
-                if (pixels != nullptr)
+                if (!context->getExtensions().depthTextureOES)
                 {
-                    context->validationError(GL_INVALID_OPERATION, kPixelDataNotNull);
-                    return false;
-                }
-                if (level != 0)
-                {
-                    context->validationError(GL_INVALID_OPERATION, kLevelNotZero);
-                    return false;
+                    if (pixels != nullptr)
+                    {
+                        context->validationError(GL_INVALID_OPERATION, kPixelDataNotNull);
+                        return false;
+                    }
+                    if (level != 0)
+                    {
+                        context->validationError(GL_INVALID_OPERATION, kLevelNotZero);
+                        return false;
+                    }
                 }
                 break;
             default:
@@ -1587,8 +1626,16 @@ bool ValidateES2TexImageParameters(Context *context,
                     break;
 
                 case GL_DEPTH_COMPONENT:
+                    if (!(context->getExtensions().depthTextureAny()))
+                    {
+                        context->validationError(GL_INVALID_ENUM, kInvalidFormat);
+                        return false;
+                    }
+                    break;
+
                 case GL_DEPTH_STENCIL:
-                    if (!context->getExtensions().depthTextures)
+                    if (!(context->getExtensions().depthTextureANGLE ||
+                          context->getExtensions().packedDepthStencil))
                     {
                         context->validationError(GL_INVALID_ENUM, kInvalidFormat);
                         return false;
@@ -1883,8 +1930,7 @@ bool ValidateES2TexStorageParameters(Context *context,
             break;
         case GL_DEPTH_COMPONENT16:
         case GL_DEPTH_COMPONENT32_OES:
-        case GL_DEPTH24_STENCIL8_OES:
-            if (!context->getExtensions().depthTextures)
+            if (!(context->getExtensions().depthTextureAny()))
             {
                 context->validationError(GL_INVALID_ENUM, kEnumNotSupported);
                 return false;
@@ -1895,12 +1941,39 @@ bool ValidateES2TexStorageParameters(Context *context,
                 return false;
             }
             // ANGLE_depth_texture only supports 1-level textures
-            if (levels != 1)
+            if (!context->getExtensions().depthTextureOES)
             {
-                context->validationError(GL_INVALID_OPERATION, kInvalidMipLevels);
-                return false;
+                if (levels != 1)
+                {
+                    context->validationError(GL_INVALID_OPERATION, kInvalidMipLevels);
+                    return false;
+                }
             }
             break;
+        case GL_DEPTH24_STENCIL8_OES:
+            if (!(context->getExtensions().depthTextureANGLE ||
+                  (context->getExtensions().packedDepthStencil &&
+                   context->getExtensions().textureStorage)))
+            {
+                context->validationError(GL_INVALID_ENUM, kEnumNotSupported);
+                return false;
+            }
+            if (target != TextureType::_2D)
+            {
+                context->validationError(GL_INVALID_OPERATION, kInvalidTextureTarget);
+                return false;
+            }
+            if (!context->getExtensions().packedDepthStencil)
+            {
+                // ANGLE_depth_texture only supports 1-level textures
+                if (levels != 1)
+                {
+                    context->validationError(GL_INVALID_OPERATION, kInvalidMipLevels);
+                    return false;
+                }
+            }
+            break;
+
         default:
             break;
     }
@@ -2689,7 +2762,7 @@ bool ValidateClear(Context *context, GLbitfield mask)
         }
     }
 
-    if (extensions.multiview2 && extensions.disjointTimerQuery)
+    if ((extensions.multiview || extensions.multiview2) && extensions.disjointTimerQuery)
     {
         const State &state       = context->getState();
         Framebuffer *framebuffer = state.getDrawFramebuffer();
@@ -3220,8 +3293,7 @@ bool ValidateDeleteSemaphoresEXT(Context *context, GLsizei n, const GLuint *sema
         return false;
     }
 
-    UNIMPLEMENTED();
-    return false;
+    return ValidateGenOrDelete(context, n);
 }
 
 bool ValidateGenSemaphoresEXT(Context *context, GLsizei n, GLuint *semaphores)
@@ -3232,8 +3304,7 @@ bool ValidateGenSemaphoresEXT(Context *context, GLsizei n, GLuint *semaphores)
         return false;
     }
 
-    UNIMPLEMENTED();
-    return false;
+    return ValidateGenOrDelete(context, n);
 }
 
 bool ValidateGetSemaphoreParameterui64vEXT(Context *context,
@@ -3259,8 +3330,7 @@ bool ValidateIsSemaphoreEXT(Context *context, GLuint semaphore)
         return false;
     }
 
-    UNIMPLEMENTED();
-    return false;
+    return true;
 }
 
 bool ValidateSemaphoreParameterui64vEXT(Context *context,
@@ -3292,8 +3362,16 @@ bool ValidateSignalSemaphoreEXT(Context *context,
         return false;
     }
 
-    UNIMPLEMENTED();
-    return false;
+    for (GLuint i = 0; i < numTextureBarriers; ++i)
+    {
+        if (!IsValidImageLayout(FromGLenum<ImageLayout>(dstLayouts[i])))
+        {
+            context->validationError(GL_INVALID_ENUM, kInvalidImageLayout);
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool ValidateWaitSemaphoreEXT(Context *context,
@@ -3310,8 +3388,16 @@ bool ValidateWaitSemaphoreEXT(Context *context,
         return false;
     }
 
-    UNIMPLEMENTED();
-    return false;
+    for (GLuint i = 0; i < numTextureBarriers; ++i)
+    {
+        if (!IsValidImageLayout(FromGLenum<ImageLayout>(srcLayouts[i])))
+        {
+            context->validationError(GL_INVALID_ENUM, kInvalidImageLayout);
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool ValidateImportSemaphoreFdEXT(Context *context,
@@ -3325,8 +3411,16 @@ bool ValidateImportSemaphoreFdEXT(Context *context,
         return false;
     }
 
-    UNIMPLEMENTED();
-    return false;
+    switch (handleType)
+    {
+        case HandleType::OpaqueFd:
+            break;
+        default:
+            context->validationError(GL_INVALID_ENUM, kInvalidHandleType);
+            return false;
+    }
+
+    return true;
 }
 
 bool ValidateMapBufferBase(Context *context, BufferBinding target)

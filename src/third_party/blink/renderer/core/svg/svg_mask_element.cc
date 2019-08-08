@@ -29,7 +29,7 @@
 
 namespace blink {
 
-inline SVGMaskElement::SVGMaskElement(Document& document)
+SVGMaskElement::SVGMaskElement(Document& document)
     : SVGElement(svg_names::kMaskTag, document),
       SVGTests(this),
       // Spec: If the x/y attribute is not specified, the effect is as if a
@@ -88,8 +88,6 @@ void SVGMaskElement::Trace(blink::Visitor* visitor) {
   SVGElement::Trace(visitor);
   SVGTests::Trace(visitor);
 }
-
-DEFINE_NODE_FACTORY(SVGMaskElement)
 
 void SVGMaskElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,

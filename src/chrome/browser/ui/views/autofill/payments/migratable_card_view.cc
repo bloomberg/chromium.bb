@@ -55,7 +55,7 @@ MigratableCardView::MigratableCardView(
           provider->GetDistanceMetric(
               views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+      views::BoxLayout::CrossAxisAlignment::kStart);
 
   views::Label* checkbox_uncheck_text_ = new views::Label(
       l10n_util::GetStringUTF16(
@@ -74,7 +74,7 @@ MigratableCardView::MigratableCardView(
 MigratableCardView::~MigratableCardView() = default;
 
 bool MigratableCardView::IsSelected() {
-  return !checkbox_ || checkbox_->checked();
+  return !checkbox_ || checkbox_->GetChecked();
 }
 
 std::string MigratableCardView::GetGuid() {
@@ -176,13 +176,15 @@ MigratableCardView::GetMigratableCardDescriptionView(
             IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_LABEL_INVALID_CARDS),
         views::style::CONTEXT_LABEL, ChromeTextStyle::STYLE_RED));
 
-    delete_card_from_local_button_ = views::CreateVectorImageButton(listener);
-    views::SetImageFromVectorIcon(delete_card_from_local_button_,
+    auto delete_card_from_local_button =
+        views::CreateVectorImageButton(listener);
+    views::SetImageFromVectorIcon(delete_card_from_local_button.get(),
                                   kTrashCanIcon);
-    delete_card_from_local_button_->SetTooltipText(l10n_util::GetStringUTF16(
+    delete_card_from_local_button->SetTooltipText(l10n_util::GetStringUTF16(
         IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_TRASH_CAN_BUTTON_TOOLTIP));
-    migratable_card_description_view->AddChildView(
-        delete_card_from_local_button_);
+    delete_card_from_local_button_ =
+        migratable_card_description_view->AddChildView(
+            std::move(delete_card_from_local_button));
   }
 
   return migratable_card_description_view;
@@ -199,7 +201,7 @@ void MigratableCardView::ButtonPressed(views::Button* sender,
     // button if needed.
     parent_dialog_->DialogModelChanged();
     // The warning text will be visible only when user unchecks the checkbox.
-    checkbox_uncheck_text_container_->SetVisible(!checkbox_->checked());
+    checkbox_uncheck_text_container_->SetVisible(!checkbox_->GetChecked());
     InvalidateLayout();
     parent_dialog_->UpdateLayout();
   } else {

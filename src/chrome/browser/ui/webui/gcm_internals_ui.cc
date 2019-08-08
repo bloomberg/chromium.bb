@@ -169,7 +169,6 @@ GCMInternalsUI::GCMInternalsUI(content::WebUI* web_ui)
   html_source->AddResourcePath(gcm_driver::kGcmInternalsJS,
                                IDR_GCM_DRIVER_GCM_INTERNALS_JS);
   html_source->SetDefaultResource(IDR_GCM_DRIVER_GCM_INTERNALS_HTML);
-  html_source->UseGzip();
 
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, html_source);

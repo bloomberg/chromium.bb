@@ -48,12 +48,8 @@ static const int kDateDefaultStep = 1;
 static const int kDateDefaultStepBase = 0;
 static const int kDateStepScaleFactor = 86400000;
 
-inline DateInputType::DateInputType(HTMLInputElement& element)
+DateInputType::DateInputType(HTMLInputElement& element)
     : BaseTemporalInputType(element) {}
-
-InputType* DateInputType::Create(HTMLInputElement& element) {
-  return MakeGarbageCollected<DateInputType>(element);
-}
 
 void DateInputType::CountUsage() {
   CountUsageIfVisible(WebFeature::kInputTypeDate);

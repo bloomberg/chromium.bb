@@ -1,18 +1,14 @@
 [
     {
-        "duration": "54.0",
-        "name": "heap_profiling.mobile.disabled/load:news:cnn"
+        "duration": "48.0",
+        "name": "heap_profiling.mobile.disabled/load:news:cnn:2018"
     },
     {
-        "duration": "34.0",
-        "name": "heap_profiling.mobile.disabled/load:search:google"
+        "duration": "38.0",
+        "name": "heap_profiling.mobile.disabled/load:search:google:2018"
     },
     {
-        "duration": "25.0",
+        "duration": "37.0",
         "name": "heap_profiling.mobile.disabled/load:social:twitter"
-    },
-    {
-        "duration": "35.0",
-        "name": "heap_profiling.mobile.native/load:search:google"
     }
 ]

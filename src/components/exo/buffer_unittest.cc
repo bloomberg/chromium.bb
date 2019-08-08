@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/exo/buffer.h"
+
 #include <GLES2/gl2extchromium.h>
 
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "components/exo/buffer.h"
 #include "components/exo/frame_sink_resource_manager.h"
 #include "components/exo/surface_tree_host.h"
 #include "components/exo/test/exo_test_base.h"
@@ -18,17 +19,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/env.h"
 #include "ui/compositor/compositor.h"
-#include "ui/compositor/test/in_process_context_factory.h"
+#include "ui/compositor/test/in_process_context_provider.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
 namespace exo {
 namespace {
 
 using BufferTest = test::ExoTestBase;
-
-aura::Env* GetAuraEnv() {
-  return ash::Shell::Get()->aura_env();
-}
 
 void Release(int* release_call_count) {
   (*release_call_count)++;
@@ -39,7 +36,7 @@ void VerifySyncTokensInCompositorFrame(viz::CompositorFrame* frame) {
   for (auto& resource : frame->resource_list)
     sync_tokens.push_back(resource.mailbox_holder.sync_token.GetData());
   gpu::raster::RasterInterface* ri =
-      GetAuraEnv()
+      aura::Env::GetInstance()
           ->context_factory()
           ->SharedMainThreadRasterContextProvider()
           ->RasterInterface();
@@ -103,7 +100,9 @@ TEST_F(BufferTest, IsLost) {
   ASSERT_TRUE(rv);
 
   scoped_refptr<viz::RasterContextProvider> context_provider =
-      GetAuraEnv()->context_factory()->SharedMainThreadRasterContextProvider();
+      aura::Env::GetInstance()
+          ->context_factory()
+          ->SharedMainThreadRasterContextProvider();
   if (context_provider) {
     gpu::raster::RasterInterface* ri = context_provider->RasterInterface();
     ri->LoseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
@@ -155,8 +154,13 @@ TEST_F(BufferTest, OnLostResources) {
       frame_sink_holder->resource_manager(), false, &resource);
   ASSERT_TRUE(rv);
 
-  static_cast<ui::InProcessContextFactory*>(GetAuraEnv()->context_factory())
-      ->SendOnLostSharedContext();
+  viz::RasterContextProvider* context_provider =
+      aura::Env::GetInstance()
+          ->context_factory()
+          ->SharedMainThreadRasterContextProvider()
+          .get();
+  static_cast<ui::InProcessContextProvider*>(context_provider)
+      ->SendOnContextLost();
 }
 
 TEST_F(BufferTest, SurfaceTreeHostDestruction) {

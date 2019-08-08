@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "content/renderer/media/webrtc/fake_rtc_rtp_transceiver.h"
 #include "content/renderer/media/webrtc/webrtc_util.h"
-
-#include <vector>
 
 namespace content {
 
@@ -105,6 +105,11 @@ void FakeRTCRtpSender::SetParameters(
 void FakeRTCRtpSender::GetStats(
     blink::WebRTCStatsReportCallback,
     const std::vector<webrtc::NonStandardGroupId>&) {
+  NOTIMPLEMENTED();
+}
+
+void FakeRTCRtpSender::SetStreams(
+    const blink::WebVector<blink::WebString>& stream_ids) {
   NOTIMPLEMENTED();
 }
 

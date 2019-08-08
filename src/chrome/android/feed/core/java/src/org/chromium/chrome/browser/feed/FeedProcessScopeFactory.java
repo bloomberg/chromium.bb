@@ -6,13 +6,14 @@ package org.chromium.chrome.browser.feed;
 
 import android.support.annotation.Nullable;
 
-import com.google.android.libraries.feed.api.scope.FeedProcessScope;
+import com.google.android.libraries.feed.api.client.scope.ProcessScopeBuilder;
+import com.google.android.libraries.feed.api.host.config.ApplicationInfo;
+import com.google.android.libraries.feed.api.host.config.Configuration;
+import com.google.android.libraries.feed.api.host.config.DebugBehavior;
+import com.google.android.libraries.feed.api.host.network.NetworkClient;
+import com.google.android.libraries.feed.api.host.stream.TooltipSupportedApi;
+import com.google.android.libraries.feed.api.internal.scope.FeedProcessScope;
 import com.google.android.libraries.feed.common.functional.Consumer;
-import com.google.android.libraries.feed.host.config.ApplicationInfo;
-import com.google.android.libraries.feed.host.config.Configuration;
-import com.google.android.libraries.feed.host.config.DebugBehavior;
-import com.google.android.libraries.feed.host.network.NetworkClient;
-import com.google.android.libraries.feed.host.stream.TooltipSupportedApi;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -136,20 +137,16 @@ public class FeedProcessScopeFactory {
         NetworkClient networkClient = sTestNetworkClient == null ?
             new FeedNetworkBridge(profile) : sTestNetworkClient;
         sFeedLoggingBridge = new FeedLoggingBridge(profile);
-        sFeedProcessScope =
-                new FeedProcessScope
-                        .Builder(configHostApi, Executors.newSingleThreadExecutor(),
-                                sFeedLoggingBridge, networkClient, schedulerBridge,
-                                DebugBehavior.SILENT, ContextUtils.getApplicationContext(),
-                                applicationInfo, new StubFeedTooltiSupportedApi())
-                        .setContentStorage(contentStorage)
-                        .setJournalStorage(journalStorage)
-                        .build();
-        schedulerBridge.initializeFeedDependencies(
-                sFeedProcessScope.getRequestManager(), sFeedProcessScope.getSessionManager());
+        sFeedProcessScope = (FeedProcessScope) new ProcessScopeBuilder(configHostApi,
+                Executors.newSingleThreadExecutor(), sFeedLoggingBridge, networkClient,
+                schedulerBridge, DebugBehavior.SILENT, ContextUtils.getApplicationContext(),
+                applicationInfo, new StubFeedTooltiSupportedApi())
+                                    .setContentStorage(contentStorage)
+                                    .setJournalStorage(journalStorage)
+                                    .build();
+        schedulerBridge.initializeFeedDependencies(sFeedProcessScope.getRequestManager());
 
-        sFeedOfflineIndicator =
-                new FeedOfflineBridge(profile, sFeedProcessScope.getKnownContentApi());
+        sFeedOfflineIndicator = new FeedOfflineBridge(profile, sFeedProcessScope.getKnownContent());
 
         sFeedAppLifecycle = new FeedAppLifecycle(sFeedProcessScope.getAppLifecycleListener(),
                 new FeedLifecycleBridge(profile), sFeedScheduler);
@@ -178,13 +175,11 @@ public class FeedProcessScopeFactory {
         ApplicationInfo applicationInfo =
                 new ApplicationInfo.Builder(ContextUtils.getApplicationContext()).build();
 
-        sFeedProcessScope =
-                new FeedProcessScope
-                        .Builder(configHostApi, Executors.newSingleThreadExecutor(),
-                                sFeedLoggingBridge, networkClient, sFeedScheduler,
-                                DebugBehavior.SILENT, ContextUtils.getApplicationContext(),
-                                applicationInfo, new StubFeedTooltiSupportedApi())
-                        .build();
+        sFeedProcessScope = (FeedProcessScope) new ProcessScopeBuilder(configHostApi,
+                Executors.newSingleThreadExecutor(), sFeedLoggingBridge, networkClient,
+                sFeedScheduler, DebugBehavior.SILENT, ContextUtils.getApplicationContext(),
+                applicationInfo, new StubFeedTooltiSupportedApi())
+                                    .build();
     }
 
     /** Use supplied NetworkClient instead of real one, for tests. */

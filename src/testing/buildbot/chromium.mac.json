@@ -14,6 +14,10 @@
   "Mac10.10 Tests": {
     "gtest_tests": [
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -26,6 +30,10 @@
         "test": "accessibility_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -38,6 +46,10 @@
         "test": "angle_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -50,6 +62,10 @@
         "test": "app_shell_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -62,6 +78,26 @@
         "test": "base_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "none",
+              "os": "Mac-10.10"
+            }
+          ]
+        },
+        "test": "base_util_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -74,6 +110,10 @@
         "test": "blink_common_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -86,6 +126,10 @@
         "test": "blink_fuzzer_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -98,6 +142,10 @@
         "test": "blink_heap_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -110,6 +158,10 @@
         "test": "blink_platform_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "webkit_unit_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -123,6 +175,10 @@
         "test": "blink_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -135,6 +191,10 @@
         "test": "boringssl_crypto_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -151,6 +211,10 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter",
           "--gtest_shuffle"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -168,6 +232,10 @@
           "--disable-blink-features=HTMLImports,ShadowDOMV0,CustomElementsV0",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_html_imports_polyfill_browser_tests.filter"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "webui_html_imports_polyfill_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -181,24 +249,10 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "none",
-              "os": "Mac-10.10"
-            }
-          ],
-          "shards": 4
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "test": "browser_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -214,6 +268,10 @@
         "args": [
           "--gtest_filter=-*UsingRealWebcam*"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -226,6 +284,10 @@
         "test": "capture_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -238,6 +300,10 @@
         "test": "cast_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -250,6 +316,10 @@
         "test": "cc_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -262,6 +332,10 @@
         "test": "chrome_app_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -274,6 +348,10 @@
         "test": "chromedriver_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -286,6 +364,10 @@
         "test": "components_browsertests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -298,6 +380,10 @@
         "test": "components_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -315,6 +401,10 @@
           "--disable-perfetto",
           "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "nonperfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -328,6 +418,10 @@
         "test": "content_browsertests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -340,6 +434,10 @@
         "test": "content_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -352,6 +450,10 @@
         "test": "crashpad_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -364,6 +466,10 @@
         "test": "cronet_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -376,6 +482,10 @@
         "test": "cronet_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -388,6 +498,10 @@
         "test": "crypto_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -400,6 +514,10 @@
         "test": "device_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -412,6 +530,10 @@
         "test": "display_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -424,6 +546,10 @@
         "test": "events_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -436,6 +562,10 @@
         "test": "extensions_browsertests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -448,6 +578,10 @@
         "test": "extensions_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -460,6 +594,10 @@
         "test": "filesystem_service_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -472,6 +610,10 @@
         "test": "gcm_unit_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -484,6 +626,10 @@
         "test": "gfx_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -496,6 +642,10 @@
         "test": "gin_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -508,6 +658,10 @@
         "test": "google_apis_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -520,6 +674,10 @@
         "test": "gpu_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -532,6 +690,10 @@
         "test": "headless_browsertests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -544,6 +706,10 @@
         "test": "headless_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -558,10 +724,14 @@
       },
       {
         "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
+          "--disable-blink-features=HTMLImports,ShadowDOMV0,CustomElementsV0",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_html_imports_polyfill_interactive_ui_tests.filter"
         ],
-        "name": "webui_polymer1_interactive_ui_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "webui_html_imports_polyfill_interactive_ui_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -574,6 +744,10 @@
         "test": "interactive_ui_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -586,6 +760,10 @@
         "test": "ipc_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -598,6 +776,10 @@
         "test": "jingle_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -610,6 +792,10 @@
         "test": "latency_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -622,6 +808,10 @@
         "test": "leveldb_service_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -634,6 +824,10 @@
         "test": "libjingle_xmpp_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -646,6 +840,10 @@
         "test": "media_blink_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -658,6 +856,10 @@
         "test": "media_service_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -670,6 +872,10 @@
         "test": "media_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -682,6 +888,10 @@
         "test": "message_center_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -694,6 +904,10 @@
         "test": "midi_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -706,6 +920,10 @@
         "test": "mojo_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -718,6 +936,10 @@
         "test": "nacl_loader_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -730,6 +952,10 @@
         "test": "native_theme_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -742,6 +968,10 @@
         "test": "net_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -754,6 +984,10 @@
         "test": "pdf_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -766,6 +1000,10 @@
         "test": "perfetto_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -778,6 +1016,10 @@
         "test": "ppapi_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -790,6 +1032,10 @@
         "test": "printing_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -802,6 +1048,10 @@
         "test": "remoting_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -814,6 +1064,10 @@
         "test": "sandbox_mac_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -826,6 +1080,10 @@
         "test": "service_manager_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -838,6 +1096,10 @@
         "test": "services_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -850,6 +1112,10 @@
         "test": "shell_dialogs_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -862,6 +1128,10 @@
         "test": "skia_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -874,6 +1144,10 @@
         "test": "snapshot_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -886,6 +1160,10 @@
         "test": "sql_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -898,6 +1176,10 @@
         "test": "storage_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -910,6 +1192,10 @@
         "test": "sync_integration_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -922,6 +1208,10 @@
         "test": "ui_base_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -934,6 +1224,10 @@
         "test": "ui_touch_selection_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -946,6 +1240,10 @@
         "test": "unit_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -958,6 +1256,10 @@
         "test": "url_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -970,6 +1272,10 @@
         "test": "views_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -982,6 +1288,10 @@
         "test": "viz_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -997,6 +1307,10 @@
     "isolated_scripts": [
       {
         "isolate_name": "blink_python_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "blink_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1013,6 +1327,10 @@
           "--test-type=integration"
         ],
         "isolate_name": "chromedriver_py_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "chromedriver_py_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1026,6 +1344,10 @@
       },
       {
         "isolate_name": "chromedriver_replay_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "chromedriver_replay_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1061,6 +1383,10 @@
       },
       {
         "isolate_name": "content_shell_crash_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "content_shell_crash_test",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1074,6 +1400,10 @@
       },
       {
         "isolate_name": "flatbuffers_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "flatbuffers_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1086,7 +1416,28 @@
         }
       },
       {
+        "isolate_name": "grit_python_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "grit_python_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "none",
+              "os": "Mac-10.10"
+            }
+          ]
+        }
+      },
+      {
         "isolate_name": "mac_signing_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "mac_signing_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1100,6 +1451,10 @@
       },
       {
         "isolate_name": "metrics_python_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "metrics_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1113,6 +1468,10 @@
       },
       {
         "isolate_name": "telemetry_gpu_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "telemetry_gpu_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1176,6 +1535,10 @@
   "Mac10.11 Tests": {
     "gtest_tests": [
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1188,6 +1551,10 @@
         "test": "accessibility_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1200,6 +1567,10 @@
         "test": "angle_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1212,6 +1583,10 @@
         "test": "app_shell_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1224,6 +1599,26 @@
         "test": "base_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "none",
+              "os": "Mac-10.11"
+            }
+          ]
+        },
+        "test": "base_util_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1236,6 +1631,10 @@
         "test": "blink_common_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1248,6 +1647,10 @@
         "test": "blink_fuzzer_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1260,6 +1663,10 @@
         "test": "blink_heap_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1272,6 +1679,10 @@
         "test": "blink_platform_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "webkit_unit_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1285,6 +1696,10 @@
         "test": "blink_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1297,6 +1712,10 @@
         "test": "boringssl_crypto_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1313,6 +1732,10 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter",
           "--gtest_shuffle"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1330,6 +1753,10 @@
           "--disable-blink-features=HTMLImports,ShadowDOMV0,CustomElementsV0",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_html_imports_polyfill_browser_tests.filter"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "webui_html_imports_polyfill_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1343,24 +1770,10 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "none",
-              "os": "Mac-10.11"
-            }
-          ],
-          "shards": 4
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "test": "browser_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1376,6 +1789,10 @@
         "args": [
           "--gtest_filter=-*UsingRealWebcam*"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1388,6 +1805,10 @@
         "test": "capture_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1400,6 +1821,10 @@
         "test": "cast_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1412,6 +1837,10 @@
         "test": "cc_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1424,6 +1853,10 @@
         "test": "chrome_app_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1436,6 +1869,10 @@
         "test": "chromedriver_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1448,6 +1885,10 @@
         "test": "components_browsertests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1460,6 +1901,10 @@
         "test": "components_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1477,6 +1922,10 @@
           "--disable-perfetto",
           "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "nonperfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1490,6 +1939,10 @@
         "test": "content_browsertests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1502,6 +1955,10 @@
         "test": "content_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1514,6 +1971,10 @@
         "test": "crashpad_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1526,6 +1987,10 @@
         "test": "cronet_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1538,6 +2003,10 @@
         "test": "cronet_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1550,6 +2019,10 @@
         "test": "crypto_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1562,6 +2035,10 @@
         "test": "device_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1574,6 +2051,10 @@
         "test": "display_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1586,6 +2067,10 @@
         "test": "events_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1598,6 +2083,10 @@
         "test": "extensions_browsertests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1610,6 +2099,10 @@
         "test": "extensions_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1622,6 +2115,10 @@
         "test": "filesystem_service_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1634,6 +2131,10 @@
         "test": "gcm_unit_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1646,6 +2147,10 @@
         "test": "gfx_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1658,6 +2163,10 @@
         "test": "gin_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1670,6 +2179,10 @@
         "test": "google_apis_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1682,6 +2195,10 @@
         "test": "gpu_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1694,6 +2211,10 @@
         "test": "headless_browsertests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1706,6 +2227,10 @@
         "test": "headless_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1720,10 +2245,14 @@
       },
       {
         "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
+          "--disable-blink-features=HTMLImports,ShadowDOMV0,CustomElementsV0",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_html_imports_polyfill_interactive_ui_tests.filter"
         ],
-        "name": "webui_polymer1_interactive_ui_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "webui_html_imports_polyfill_interactive_ui_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1736,6 +2265,10 @@
         "test": "interactive_ui_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1748,6 +2281,10 @@
         "test": "ipc_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1760,6 +2297,10 @@
         "test": "jingle_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1772,6 +2313,10 @@
         "test": "latency_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1784,6 +2329,10 @@
         "test": "leveldb_service_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1796,6 +2345,10 @@
         "test": "libjingle_xmpp_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1808,6 +2361,10 @@
         "test": "media_blink_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1820,6 +2377,10 @@
         "test": "media_service_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1832,6 +2393,10 @@
         "test": "media_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1844,6 +2409,10 @@
         "test": "message_center_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1856,6 +2425,10 @@
         "test": "midi_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1868,6 +2441,10 @@
         "test": "mojo_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1880,6 +2457,10 @@
         "test": "nacl_loader_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1892,6 +2473,10 @@
         "test": "native_theme_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1904,6 +2489,10 @@
         "test": "net_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1916,6 +2505,10 @@
         "test": "pdf_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1928,6 +2521,10 @@
         "test": "perfetto_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1940,6 +2537,10 @@
         "test": "ppapi_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1952,6 +2553,10 @@
         "test": "printing_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1964,6 +2569,10 @@
         "test": "remoting_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1976,6 +2585,10 @@
         "test": "sandbox_mac_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1988,6 +2601,10 @@
         "test": "service_manager_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2000,6 +2617,10 @@
         "test": "services_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2012,6 +2633,10 @@
         "test": "shell_dialogs_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2024,6 +2649,10 @@
         "test": "skia_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2036,6 +2665,10 @@
         "test": "snapshot_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2048,6 +2681,10 @@
         "test": "sql_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2060,6 +2697,10 @@
         "test": "storage_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2072,6 +2713,10 @@
         "test": "sync_integration_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2084,6 +2729,10 @@
         "test": "ui_base_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2096,6 +2745,10 @@
         "test": "ui_touch_selection_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2108,6 +2761,10 @@
         "test": "unit_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2120,6 +2777,10 @@
         "test": "url_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2132,6 +2793,10 @@
         "test": "views_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2144,6 +2809,10 @@
         "test": "viz_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2159,6 +2828,10 @@
     "isolated_scripts": [
       {
         "isolate_name": "blink_python_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "blink_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2175,6 +2848,10 @@
           "--test-type=integration"
         ],
         "isolate_name": "chromedriver_py_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "chromedriver_py_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2188,6 +2865,10 @@
       },
       {
         "isolate_name": "chromedriver_replay_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "chromedriver_replay_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2223,6 +2904,10 @@
       },
       {
         "isolate_name": "content_shell_crash_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "content_shell_crash_test",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2236,6 +2921,10 @@
       },
       {
         "isolate_name": "flatbuffers_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "flatbuffers_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2248,7 +2937,28 @@
         }
       },
       {
+        "isolate_name": "grit_python_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "grit_python_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "none",
+              "os": "Mac-10.11"
+            }
+          ]
+        }
+      },
+      {
         "isolate_name": "mac_signing_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "mac_signing_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2262,6 +2972,10 @@
       },
       {
         "isolate_name": "metrics_python_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "metrics_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2275,6 +2989,10 @@
       },
       {
         "isolate_name": "telemetry_gpu_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "telemetry_gpu_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2338,6 +3056,10 @@
   "Mac10.12 Tests": {
     "gtest_tests": [
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2350,6 +3072,10 @@
         "test": "accessibility_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2362,6 +3088,10 @@
         "test": "angle_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2374,6 +3104,10 @@
         "test": "app_shell_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2386,6 +3120,26 @@
         "test": "base_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.12.6"
+            }
+          ]
+        },
+        "test": "base_util_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2398,6 +3152,10 @@
         "test": "blink_common_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2410,6 +3168,10 @@
         "test": "blink_fuzzer_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2422,6 +3184,10 @@
         "test": "blink_heap_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2434,6 +3200,10 @@
         "test": "blink_platform_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "webkit_unit_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2447,6 +3217,10 @@
         "test": "blink_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2459,6 +3233,10 @@
         "test": "boringssl_crypto_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2475,6 +3253,10 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter",
           "--gtest_shuffle"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2492,6 +3274,10 @@
           "--disable-blink-features=HTMLImports,ShadowDOMV0,CustomElementsV0",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_html_imports_polyfill_browser_tests.filter"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "webui_html_imports_polyfill_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2505,24 +3291,10 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
-            }
-          ],
-          "shards": 4
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "test": "browser_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2538,6 +3310,10 @@
         "args": [
           "--gtest_filter=-*UsingRealWebcam*"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2550,6 +3326,10 @@
         "test": "capture_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2562,6 +3342,10 @@
         "test": "cast_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2574,6 +3358,10 @@
         "test": "cc_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2586,6 +3374,10 @@
         "test": "chrome_app_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2598,6 +3390,10 @@
         "test": "chromedriver_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2610,6 +3406,10 @@
         "test": "components_browsertests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2622,6 +3422,10 @@
         "test": "components_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2639,6 +3443,10 @@
           "--disable-perfetto",
           "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "nonperfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2652,6 +3460,10 @@
         "test": "content_browsertests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2664,6 +3476,10 @@
         "test": "content_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2676,6 +3492,10 @@
         "test": "crashpad_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2688,6 +3508,10 @@
         "test": "cronet_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2700,6 +3524,10 @@
         "test": "cronet_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2712,6 +3540,10 @@
         "test": "crypto_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2724,6 +3556,10 @@
         "test": "device_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2736,6 +3572,10 @@
         "test": "display_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2748,6 +3588,10 @@
         "test": "events_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2760,6 +3604,10 @@
         "test": "extensions_browsertests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2772,6 +3620,10 @@
         "test": "extensions_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2784,6 +3636,10 @@
         "test": "filesystem_service_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2796,6 +3652,10 @@
         "test": "gcm_unit_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2808,6 +3668,10 @@
         "test": "gfx_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2820,6 +3684,10 @@
         "test": "gin_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2832,6 +3700,10 @@
         "test": "google_apis_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2844,6 +3716,10 @@
         "test": "gpu_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2856,6 +3732,10 @@
         "test": "headless_browsertests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2868,6 +3748,10 @@
         "test": "headless_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2882,10 +3766,14 @@
       },
       {
         "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
+          "--disable-blink-features=HTMLImports,ShadowDOMV0,CustomElementsV0",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_html_imports_polyfill_interactive_ui_tests.filter"
         ],
-        "name": "webui_polymer1_interactive_ui_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "webui_html_imports_polyfill_interactive_ui_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2898,6 +3786,10 @@
         "test": "interactive_ui_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2910,6 +3802,10 @@
         "test": "ipc_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2922,6 +3818,10 @@
         "test": "jingle_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2934,6 +3834,10 @@
         "test": "latency_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2946,6 +3850,10 @@
         "test": "leveldb_service_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2958,6 +3866,10 @@
         "test": "libjingle_xmpp_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2970,6 +3882,10 @@
         "test": "media_blink_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2982,6 +3898,10 @@
         "test": "media_service_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2994,6 +3914,10 @@
         "test": "media_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3006,6 +3930,10 @@
         "test": "message_center_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3018,6 +3946,10 @@
         "test": "midi_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3030,6 +3962,10 @@
         "test": "mojo_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3042,6 +3978,10 @@
         "test": "nacl_loader_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3054,6 +3994,10 @@
         "test": "native_theme_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3066,6 +4010,10 @@
         "test": "net_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3078,6 +4026,10 @@
         "test": "pdf_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3090,6 +4042,10 @@
         "test": "perfetto_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3102,6 +4058,10 @@
         "test": "ppapi_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3114,6 +4074,10 @@
         "test": "printing_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3126,6 +4090,10 @@
         "test": "remoting_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3138,6 +4106,10 @@
         "test": "sandbox_mac_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3150,6 +4122,10 @@
         "test": "service_manager_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3162,6 +4138,10 @@
         "test": "services_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3174,6 +4154,10 @@
         "test": "shell_dialogs_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3186,6 +4170,10 @@
         "test": "skia_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3198,6 +4186,10 @@
         "test": "snapshot_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3210,6 +4202,10 @@
         "test": "sql_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3222,6 +4218,10 @@
         "test": "storage_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3234,6 +4234,10 @@
         "test": "sync_integration_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3246,6 +4250,10 @@
         "test": "ui_base_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3258,6 +4266,10 @@
         "test": "ui_touch_selection_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3270,6 +4282,10 @@
         "test": "unit_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3282,6 +4298,10 @@
         "test": "url_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3294,6 +4314,10 @@
         "test": "views_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3306,6 +4330,10 @@
         "test": "viz_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3321,6 +4349,10 @@
     "isolated_scripts": [
       {
         "isolate_name": "blink_python_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "blink_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -3337,6 +4369,10 @@
           "--test-type=integration"
         ],
         "isolate_name": "chromedriver_py_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "chromedriver_py_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -3350,6 +4386,10 @@
       },
       {
         "isolate_name": "chromedriver_replay_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "chromedriver_replay_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -3385,6 +4425,10 @@
       },
       {
         "isolate_name": "content_shell_crash_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "content_shell_crash_test",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -3398,6 +4442,10 @@
       },
       {
         "isolate_name": "flatbuffers_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "flatbuffers_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -3410,7 +4458,28 @@
         }
       },
       {
+        "isolate_name": "grit_python_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "grit_python_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.12.6"
+            }
+          ]
+        }
+      },
+      {
         "isolate_name": "mac_signing_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "mac_signing_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -3424,6 +4493,10 @@
       },
       {
         "isolate_name": "metrics_python_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "metrics_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -3437,6 +4510,10 @@
       },
       {
         "isolate_name": "telemetry_gpu_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "telemetry_gpu_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -3454,6 +4531,10 @@
           "--jobs=1"
         ],
         "isolate_name": "telemetry_perf_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "telemetry_perf_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -3473,6 +4554,10 @@
           "--extra-browser-args=--disable-gpu"
         ],
         "isolate_name": "telemetry_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "telemetry_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -3537,6 +4622,10 @@
   "Mac10.13 Tests": {
     "gtest_tests": [
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3549,6 +4638,10 @@
         "test": "accessibility_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3561,6 +4654,10 @@
         "test": "angle_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3573,6 +4670,10 @@
         "test": "app_shell_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3585,6 +4686,26 @@
         "test": "base_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "none",
+              "os": "Mac-10.13.6"
+            }
+          ]
+        },
+        "test": "base_util_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3597,6 +4718,10 @@
         "test": "blink_common_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3609,6 +4734,10 @@
         "test": "blink_fuzzer_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3621,6 +4750,10 @@
         "test": "blink_heap_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3633,6 +4766,10 @@
         "test": "blink_platform_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "webkit_unit_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -3646,6 +4783,10 @@
         "test": "blink_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3658,6 +4799,10 @@
         "test": "boringssl_crypto_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3674,6 +4819,10 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter",
           "--gtest_shuffle"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3691,6 +4840,10 @@
           "--disable-blink-features=HTMLImports,ShadowDOMV0,CustomElementsV0",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_html_imports_polyfill_browser_tests.filter"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "webui_html_imports_polyfill_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -3704,24 +4857,10 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "none",
-              "os": "Mac-10.13.6"
-            }
-          ],
-          "shards": 4
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "test": "browser_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3737,6 +4876,10 @@
         "args": [
           "--gtest_filter=-*UsingRealWebcam*"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3749,6 +4892,10 @@
         "test": "capture_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3761,6 +4908,10 @@
         "test": "cast_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3773,6 +4924,10 @@
         "test": "cc_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3785,6 +4940,10 @@
         "test": "chrome_app_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3797,6 +4956,10 @@
         "test": "chromedriver_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3809,6 +4972,10 @@
         "test": "components_browsertests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3821,6 +4988,10 @@
         "test": "components_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3838,6 +5009,10 @@
           "--disable-perfetto",
           "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "nonperfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -3851,6 +5026,10 @@
         "test": "content_browsertests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3863,6 +5042,10 @@
         "test": "content_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3875,6 +5058,10 @@
         "test": "crashpad_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3887,6 +5074,10 @@
         "test": "cronet_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3899,6 +5090,10 @@
         "test": "cronet_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3911,6 +5106,10 @@
         "test": "crypto_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3923,6 +5122,10 @@
         "test": "device_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3935,6 +5138,10 @@
         "test": "display_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3947,6 +5154,10 @@
         "test": "events_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3959,6 +5170,10 @@
         "test": "extensions_browsertests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3971,6 +5186,10 @@
         "test": "extensions_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3983,6 +5202,10 @@
         "test": "filesystem_service_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3995,6 +5218,10 @@
         "test": "gcm_unit_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4007,6 +5234,10 @@
         "test": "gfx_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4019,6 +5250,10 @@
         "test": "gin_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4031,6 +5266,10 @@
         "test": "google_apis_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4043,6 +5282,10 @@
         "test": "gpu_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4055,6 +5298,10 @@
         "test": "headless_browsertests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4067,6 +5314,10 @@
         "test": "headless_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4081,10 +5332,14 @@
       },
       {
         "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
+          "--disable-blink-features=HTMLImports,ShadowDOMV0,CustomElementsV0",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_html_imports_polyfill_interactive_ui_tests.filter"
         ],
-        "name": "webui_polymer1_interactive_ui_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "webui_html_imports_polyfill_interactive_ui_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4097,6 +5352,10 @@
         "test": "interactive_ui_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4109,6 +5368,10 @@
         "test": "ipc_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4121,6 +5384,10 @@
         "test": "jingle_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4133,6 +5400,10 @@
         "test": "latency_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4145,6 +5416,10 @@
         "test": "leveldb_service_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4157,6 +5432,10 @@
         "test": "libjingle_xmpp_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4169,6 +5448,10 @@
         "test": "media_blink_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4181,6 +5464,10 @@
         "test": "media_service_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4193,6 +5480,10 @@
         "test": "media_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4205,6 +5496,10 @@
         "test": "message_center_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4217,6 +5512,10 @@
         "test": "midi_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4229,6 +5528,10 @@
         "test": "mojo_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4241,6 +5544,10 @@
         "test": "nacl_loader_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4253,6 +5560,10 @@
         "test": "native_theme_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4265,6 +5576,10 @@
         "test": "net_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4277,6 +5592,10 @@
         "test": "pdf_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4289,6 +5608,10 @@
         "test": "perfetto_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4301,6 +5624,10 @@
         "test": "ppapi_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4313,6 +5640,10 @@
         "test": "printing_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4325,6 +5656,10 @@
         "test": "remoting_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4337,6 +5672,10 @@
         "test": "sandbox_mac_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4349,6 +5688,10 @@
         "test": "service_manager_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4361,6 +5704,10 @@
         "test": "services_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4373,6 +5720,10 @@
         "test": "shell_dialogs_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4385,6 +5736,10 @@
         "test": "skia_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4397,6 +5752,10 @@
         "test": "snapshot_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4409,6 +5768,10 @@
         "test": "sql_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4421,6 +5784,10 @@
         "test": "storage_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4433,6 +5800,10 @@
         "test": "sync_integration_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4445,6 +5816,10 @@
         "test": "ui_base_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4457,6 +5832,10 @@
         "test": "ui_touch_selection_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4469,6 +5848,10 @@
         "test": "unit_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4481,6 +5864,10 @@
         "test": "url_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4493,6 +5880,10 @@
         "test": "views_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4505,6 +5896,10 @@
         "test": "viz_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4520,6 +5915,10 @@
     "isolated_scripts": [
       {
         "isolate_name": "blink_python_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "blink_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -4536,6 +5935,10 @@
           "--test-type=integration"
         ],
         "isolate_name": "chromedriver_py_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "chromedriver_py_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -4549,6 +5952,10 @@
       },
       {
         "isolate_name": "chromedriver_replay_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "chromedriver_replay_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -4584,6 +5991,10 @@
       },
       {
         "isolate_name": "content_shell_crash_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "content_shell_crash_test",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -4597,6 +6008,10 @@
       },
       {
         "isolate_name": "flatbuffers_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "flatbuffers_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -4609,7 +6024,28 @@
         }
       },
       {
+        "isolate_name": "grit_python_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "grit_python_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "none",
+              "os": "Mac-10.13.6"
+            }
+          ]
+        }
+      },
+      {
         "isolate_name": "mac_signing_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "mac_signing_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -4623,6 +6059,10 @@
       },
       {
         "isolate_name": "metrics_python_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "metrics_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -4636,6 +6076,10 @@
       },
       {
         "isolate_name": "telemetry_gpu_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "telemetry_gpu_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -4654,6 +6098,10 @@
           "--extra-browser-args=--disable-gpu"
         ],
         "isolate_name": "telemetry_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "telemetry_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -4730,6 +6178,10 @@
   "Mac10.13 Tests (dbg)": {
     "gtest_tests": [
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4742,6 +6194,10 @@
         "test": "accessibility_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4754,6 +6210,10 @@
         "test": "angle_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4766,6 +6226,10 @@
         "test": "app_shell_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4778,6 +6242,26 @@
         "test": "base_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "none",
+              "os": "Mac-10.13.6"
+            }
+          ]
+        },
+        "test": "base_util_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4790,6 +6274,10 @@
         "test": "blink_common_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4802,6 +6290,10 @@
         "test": "blink_fuzzer_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4814,6 +6306,10 @@
         "test": "blink_heap_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4826,6 +6322,10 @@
         "test": "blink_platform_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "webkit_unit_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -4839,6 +6339,10 @@
         "test": "blink_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4851,6 +6355,10 @@
         "test": "boringssl_crypto_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4867,6 +6375,10 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter",
           "--gtest_shuffle"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4884,6 +6396,10 @@
           "--disable-blink-features=HTMLImports,ShadowDOMV0,CustomElementsV0",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_html_imports_polyfill_browser_tests.filter"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "webui_html_imports_polyfill_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -4897,24 +6413,10 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "none",
-              "os": "Mac-10.13.6"
-            }
-          ],
-          "shards": 4
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "test": "browser_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4930,6 +6432,10 @@
         "args": [
           "--gtest_filter=-*UsingRealWebcam*"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4942,6 +6448,10 @@
         "test": "capture_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4954,6 +6464,10 @@
         "test": "cast_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4966,6 +6480,10 @@
         "test": "cc_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4978,6 +6496,10 @@
         "test": "chrome_app_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4990,6 +6512,10 @@
         "test": "chromedriver_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5002,6 +6528,10 @@
         "test": "components_browsertests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5014,6 +6544,10 @@
         "test": "components_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5031,6 +6565,10 @@
           "--disable-perfetto",
           "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "nonperfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -5044,6 +6582,10 @@
         "test": "content_browsertests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5056,6 +6598,10 @@
         "test": "content_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5068,6 +6614,10 @@
         "test": "crashpad_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5080,6 +6630,10 @@
         "test": "cronet_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5092,6 +6646,10 @@
         "test": "cronet_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5104,6 +6662,10 @@
         "test": "crypto_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5116,6 +6678,10 @@
         "test": "device_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5128,6 +6694,10 @@
         "test": "display_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5140,6 +6710,10 @@
         "test": "events_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5152,6 +6726,10 @@
         "test": "extensions_browsertests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5164,6 +6742,10 @@
         "test": "extensions_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5176,6 +6758,10 @@
         "test": "filesystem_service_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5188,6 +6774,10 @@
         "test": "gcm_unit_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5200,6 +6790,10 @@
         "test": "gfx_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5212,6 +6806,10 @@
         "test": "gin_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5224,6 +6822,10 @@
         "test": "google_apis_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5236,6 +6838,10 @@
         "test": "gpu_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5248,6 +6854,10 @@
         "test": "headless_browsertests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5260,6 +6870,10 @@
         "test": "headless_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5274,10 +6888,14 @@
       },
       {
         "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
+          "--disable-blink-features=HTMLImports,ShadowDOMV0,CustomElementsV0",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_html_imports_polyfill_interactive_ui_tests.filter"
         ],
-        "name": "webui_polymer1_interactive_ui_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "webui_html_imports_polyfill_interactive_ui_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5290,6 +6908,10 @@
         "test": "interactive_ui_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5302,6 +6924,10 @@
         "test": "ipc_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5314,6 +6940,10 @@
         "test": "jingle_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5326,6 +6956,10 @@
         "test": "latency_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5338,6 +6972,10 @@
         "test": "leveldb_service_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5350,6 +6988,10 @@
         "test": "libjingle_xmpp_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5362,6 +7004,10 @@
         "test": "media_blink_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5374,6 +7020,10 @@
         "test": "media_service_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5386,6 +7036,10 @@
         "test": "media_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5398,6 +7052,10 @@
         "test": "message_center_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5410,6 +7068,10 @@
         "test": "midi_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5422,6 +7084,10 @@
         "test": "mojo_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5434,6 +7100,10 @@
         "test": "nacl_loader_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5446,6 +7116,10 @@
         "test": "native_theme_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5458,6 +7132,10 @@
         "test": "net_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5470,6 +7148,10 @@
         "test": "pdf_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5482,6 +7164,10 @@
         "test": "perfetto_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5494,6 +7180,10 @@
         "test": "ppapi_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5506,6 +7196,10 @@
         "test": "printing_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5518,6 +7212,10 @@
         "test": "remoting_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5530,6 +7228,10 @@
         "test": "sandbox_mac_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5542,6 +7244,10 @@
         "test": "service_manager_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5554,6 +7260,10 @@
         "test": "services_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5566,6 +7276,10 @@
         "test": "shell_dialogs_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5578,6 +7292,10 @@
         "test": "skia_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5590,6 +7308,10 @@
         "test": "snapshot_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5602,6 +7324,10 @@
         "test": "sql_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5614,6 +7340,10 @@
         "test": "storage_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5626,6 +7356,10 @@
         "test": "sync_integration_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5638,6 +7372,10 @@
         "test": "ui_base_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5650,6 +7388,10 @@
         "test": "ui_touch_selection_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5662,6 +7404,10 @@
         "test": "unit_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5674,6 +7420,10 @@
         "test": "url_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5686,6 +7436,10 @@
         "test": "views_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5698,6 +7452,10 @@
         "test": "viz_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5713,6 +7471,10 @@
     "isolated_scripts": [
       {
         "isolate_name": "blink_python_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "blink_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -5726,6 +7488,10 @@
       },
       {
         "isolate_name": "content_shell_crash_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "content_shell_crash_test",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -5739,6 +7505,10 @@
       },
       {
         "isolate_name": "flatbuffers_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "flatbuffers_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -5751,7 +7521,28 @@
         }
       },
       {
+        "isolate_name": "grit_python_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "grit_python_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "none",
+              "os": "Mac-10.13.6"
+            }
+          ]
+        }
+      },
+      {
         "isolate_name": "metrics_python_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "metrics_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -5791,6 +7582,10 @@
       },
       {
         "isolate_name": "telemetry_gpu_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "telemetry_gpu_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -5809,6 +7604,10 @@
           "--extra-browser-args=--disable-gpu"
         ],
         "isolate_name": "telemetry_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "telemetry_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -5904,6 +7703,10 @@
   "mac-dummy-rel": {
     "gtest_tests": [
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5916,6 +7719,10 @@
         "test": "accessibility_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5928,6 +7735,10 @@
         "test": "angle_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5940,6 +7751,10 @@
         "test": "app_shell_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5952,6 +7767,26 @@
         "test": "base_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "none",
+              "os": "Mac-10.13.6"
+            }
+          ]
+        },
+        "test": "base_util_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5964,6 +7799,10 @@
         "test": "blink_common_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5976,6 +7815,10 @@
         "test": "blink_fuzzer_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5988,6 +7831,10 @@
         "test": "blink_heap_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6000,6 +7847,10 @@
         "test": "blink_platform_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "webkit_unit_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -6013,6 +7864,10 @@
         "test": "blink_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6025,6 +7880,10 @@
         "test": "boringssl_crypto_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6041,6 +7900,10 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter",
           "--gtest_shuffle"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6058,6 +7921,10 @@
           "--disable-blink-features=HTMLImports,ShadowDOMV0,CustomElementsV0",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_html_imports_polyfill_browser_tests.filter"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "webui_html_imports_polyfill_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -6071,24 +7938,10 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "none",
-              "os": "Mac-10.13.6"
-            }
-          ],
-          "shards": 4
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "test": "browser_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6104,6 +7957,10 @@
         "args": [
           "--gtest_filter=-*UsingRealWebcam*"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6116,6 +7973,10 @@
         "test": "capture_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6128,6 +7989,10 @@
         "test": "cast_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6140,6 +8005,10 @@
         "test": "cc_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6152,6 +8021,10 @@
         "test": "chrome_app_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6164,6 +8037,10 @@
         "test": "chromedriver_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6176,6 +8053,10 @@
         "test": "components_browsertests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6188,6 +8069,10 @@
         "test": "components_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6205,6 +8090,10 @@
           "--disable-perfetto",
           "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "nonperfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -6218,6 +8107,10 @@
         "test": "content_browsertests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6230,6 +8123,10 @@
         "test": "content_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6242,6 +8139,10 @@
         "test": "crashpad_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6254,6 +8155,10 @@
         "test": "cronet_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6266,6 +8171,10 @@
         "test": "cronet_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6278,6 +8187,10 @@
         "test": "crypto_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6290,6 +8203,10 @@
         "test": "device_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6302,6 +8219,10 @@
         "test": "display_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6314,6 +8235,10 @@
         "test": "events_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6326,6 +8251,10 @@
         "test": "extensions_browsertests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6338,6 +8267,10 @@
         "test": "extensions_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6350,6 +8283,10 @@
         "test": "filesystem_service_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6362,6 +8299,10 @@
         "test": "gcm_unit_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6374,6 +8315,10 @@
         "test": "gfx_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6386,6 +8331,10 @@
         "test": "gin_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6398,6 +8347,10 @@
         "test": "google_apis_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6410,6 +8363,10 @@
         "test": "gpu_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6422,6 +8379,10 @@
         "test": "headless_browsertests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6434,6 +8395,10 @@
         "test": "headless_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6448,10 +8413,14 @@
       },
       {
         "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
+          "--disable-blink-features=HTMLImports,ShadowDOMV0,CustomElementsV0",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_html_imports_polyfill_interactive_ui_tests.filter"
         ],
-        "name": "webui_polymer1_interactive_ui_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "webui_html_imports_polyfill_interactive_ui_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6464,6 +8433,10 @@
         "test": "interactive_ui_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6476,6 +8449,10 @@
         "test": "ipc_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6488,6 +8465,10 @@
         "test": "jingle_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6500,6 +8481,10 @@
         "test": "latency_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6512,6 +8497,10 @@
         "test": "leveldb_service_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6524,6 +8513,10 @@
         "test": "libjingle_xmpp_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6536,6 +8529,10 @@
         "test": "media_blink_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6548,6 +8545,10 @@
         "test": "media_service_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6560,6 +8561,10 @@
         "test": "media_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6572,6 +8577,10 @@
         "test": "message_center_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6584,6 +8593,10 @@
         "test": "midi_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6596,6 +8609,10 @@
         "test": "mojo_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6608,6 +8625,10 @@
         "test": "nacl_loader_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6620,6 +8641,10 @@
         "test": "native_theme_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6632,6 +8657,10 @@
         "test": "net_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6644,6 +8673,10 @@
         "test": "pdf_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6656,6 +8689,10 @@
         "test": "perfetto_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6668,6 +8705,10 @@
         "test": "ppapi_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6680,6 +8721,10 @@
         "test": "printing_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6692,6 +8737,10 @@
         "test": "remoting_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6704,6 +8753,10 @@
         "test": "sandbox_mac_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6716,6 +8769,10 @@
         "test": "service_manager_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6728,6 +8785,10 @@
         "test": "services_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6740,6 +8801,10 @@
         "test": "shell_dialogs_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6752,6 +8817,10 @@
         "test": "skia_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6764,6 +8833,10 @@
         "test": "snapshot_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6776,6 +8849,10 @@
         "test": "sql_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6788,6 +8865,10 @@
         "test": "storage_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6800,6 +8881,10 @@
         "test": "sync_integration_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6812,6 +8897,10 @@
         "test": "ui_base_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6824,6 +8913,10 @@
         "test": "ui_touch_selection_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6836,6 +8929,10 @@
         "test": "unit_tests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6848,6 +8945,10 @@
         "test": "url_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6860,6 +8961,10 @@
         "test": "views_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6872,6 +8977,10 @@
         "test": "viz_unittests"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6887,6 +8996,10 @@
     "isolated_scripts": [
       {
         "isolate_name": "blink_python_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "blink_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -6903,6 +9016,10 @@
           "--test-type=integration"
         ],
         "isolate_name": "chromedriver_py_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "chromedriver_py_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -6916,6 +9033,10 @@
       },
       {
         "isolate_name": "chromedriver_replay_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "chromedriver_replay_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -6951,6 +9072,10 @@
       },
       {
         "isolate_name": "content_shell_crash_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "content_shell_crash_test",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -6964,6 +9089,10 @@
       },
       {
         "isolate_name": "flatbuffers_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "flatbuffers_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -6976,7 +9105,28 @@
         }
       },
       {
+        "isolate_name": "grit_python_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "grit_python_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "none",
+              "os": "Mac-10.13.6"
+            }
+          ]
+        }
+      },
+      {
         "isolate_name": "mac_signing_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "mac_signing_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -6990,6 +9140,10 @@
       },
       {
         "isolate_name": "metrics_python_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "metrics_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -7003,6 +9157,10 @@
       },
       {
         "isolate_name": "telemetry_gpu_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "telemetry_gpu_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -7017,6 +9175,10 @@
       },
       {
         "isolate_name": "telemetry_perf_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "telemetry_perf_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -7036,6 +9198,10 @@
           "--extra-browser-args=--disable-gpu"
         ],
         "isolate_name": "telemetry_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "telemetry_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,

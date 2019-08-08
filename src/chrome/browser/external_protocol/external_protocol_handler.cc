@@ -39,7 +39,7 @@ constexpr const char* kDeniedSchemes[] = {
     // execute the file specified!  Hopefully we won't see any "file" schemes
     // because we think of file:// URLs as handled URLs, but better to be safe
     // than to let an attacker format the user's hard drive.
-    "file", "hcp", "javascript", "ms-help", "nntp", "shell", "vbscript",
+    "file", "hcp", "javascript", "ms-help", "nntp", "res", "shell", "vbscript",
     // view-source is a special case in chrome. When it comes through an
     // iframe or a redirect, it looks like an external protocol, but we don't
     // want to shellexecute it.

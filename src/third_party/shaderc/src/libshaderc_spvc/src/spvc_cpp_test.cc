@@ -28,7 +28,8 @@ TEST(Compile, Glsl) {
   CompileOptions options;
 
   CompilationResult result = compiler.CompileSpvToGlsl(
-      kShader1, sizeof(kShader1) / sizeof(uint32_t), options);
+      kSmokeShaderBinary, sizeof(kSmokeShaderBinary) / sizeof(uint32_t),
+      options);
   EXPECT_EQ(shaderc_compilation_status_success, result.GetCompilationStatus());
   EXPECT_NE(0, result.GetOutput().size());
 }
@@ -38,7 +39,8 @@ TEST(Compile, Hlsl) {
   CompileOptions options;
 
   CompilationResult result = compiler.CompileSpvToHlsl(
-      kShader1, sizeof(kShader1) / sizeof(uint32_t), options);
+      kSmokeShaderBinary, sizeof(kSmokeShaderBinary) / sizeof(uint32_t),
+      options);
   EXPECT_EQ(shaderc_compilation_status_success, result.GetCompilationStatus());
   EXPECT_NE(0, result.GetOutput().size());
 }
@@ -48,7 +50,8 @@ TEST(Compile, Msl) {
   CompileOptions options;
 
   CompilationResult result = compiler.CompileSpvToMsl(
-      kShader1, sizeof(kShader1) / sizeof(uint32_t), options);
+      kSmokeShaderBinary, sizeof(kSmokeShaderBinary) / sizeof(uint32_t),
+      options);
   EXPECT_EQ(shaderc_compilation_status_success, result.GetCompilationStatus());
   EXPECT_NE(0, result.GetOutput().size());
 }

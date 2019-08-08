@@ -26,7 +26,6 @@
 
 namespace blink {
 class WebDocument;
-class WebNode;
 }  // namespace blink
 
 namespace ui {
@@ -93,7 +92,8 @@ class CONTENT_EXPORT RenderAccessibilityImpl
 
   // Called when an accessibility notification occurs in Blink.
   void HandleWebAccessibilityEvent(const blink::WebAXObject& obj,
-                                   ax::mojom::Event event);
+                                   ax::mojom::Event event,
+                                   ax::mojom::EventFrom event_from);
   void MarkWebAXObjectDirty(const blink::WebAXObject& obj, bool subtree);
 
   // Called when a new find in page result is highlighted.
@@ -105,11 +105,13 @@ class CONTENT_EXPORT RenderAccessibilityImpl
       const blink::WebAXObject& end_object,
       int end_offset);
 
-  void AccessibilityFocusedNodeChanged(const blink::WebNode& node);
+  void AccessibilityFocusedElementChanged(const blink::WebElement& element);
 
-  void HandleAXEvent(const blink::WebAXObject& obj,
-                     ax::mojom::Event event,
-                     int action_request_id = -1);
+  void HandleAXEvent(
+      const blink::WebAXObject& obj,
+      ax::mojom::Event event,
+      ax::mojom::EventFrom event_from = ax::mojom::EventFrom::kNone,
+      int action_request_id = -1);
 
   // Returns the main top-level document for this page, or NULL if there's
   // no view or frame.
@@ -162,11 +164,13 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   void Scroll(const blink::WebAXObject& target,
               ax::mojom::Action scroll_action);
   void ScrollPlugin(int id_to_make_visible);
-  ax::mojom::EventFrom GetEventFrom();
   void ScheduleSendAccessibilityEventsIfNeeded();
   void RecordImageMetrics(AXContentTreeUpdate* update);
   void AddImageAnnotationDebuggingAttributes(
       const std::vector<AXContentTreeUpdate>& updates);
+
+  // Returns the document for the active popup if any.
+  blink::WebDocument GetPopupDocument();
 
   // The RenderFrameImpl that owns us.
   RenderFrameImpl* render_frame_;
@@ -220,9 +224,6 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   // Nonzero if the browser requested we reset the accessibility state.
   // We need to return this token in the next IPC.
   int reset_token_;
-
-  // Whether we are processing a client-initiated action.
-  bool during_action_;
 
   // Token to send with event messages so we know when they're acknowledged.
   int ack_token_;

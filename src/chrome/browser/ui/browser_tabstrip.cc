@@ -23,7 +23,7 @@ void AddTabAt(Browser* browser,
               const GURL& url,
               int idx,
               bool foreground,
-              base::Optional<int> group) {
+              base::Optional<TabGroupId> group) {
   // Time new tab page creation time.  We keep track of the timing data in
   // WebContents, but we want to include the time it takes to create the
   // WebContents object too.

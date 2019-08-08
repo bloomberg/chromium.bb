@@ -22,7 +22,6 @@ import org.chromium.ui.base.WindowAndroid;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.Locale;
 
 /**
  * Controls Smart Text selection. Talks to the Android TextClassificationManager API.
@@ -58,13 +57,12 @@ public class SmartSelectionProvider {
         };
     }
 
-    public void sendSuggestAndClassifyRequest(
-            CharSequence text, int start, int end, Locale[] locales) {
-        sendSmartSelectionRequest(RequestType.SUGGEST_AND_CLASSIFY, text, start, end, locales);
+    public void sendSuggestAndClassifyRequest(CharSequence text, int start, int end) {
+        sendSmartSelectionRequest(RequestType.SUGGEST_AND_CLASSIFY, text, start, end);
     }
 
-    public void sendClassifyRequest(CharSequence text, int start, int end, Locale[] locales) {
-        sendSmartSelectionRequest(RequestType.CLASSIFY, text, start, end, locales);
+    public void sendClassifyRequest(CharSequence text, int start, int end) {
+        sendSmartSelectionRequest(RequestType.CLASSIFY, text, start, end);
     }
 
     public void cancelAllRequests() {
@@ -98,7 +96,7 @@ public class SmartSelectionProvider {
 
     @TargetApi(Build.VERSION_CODES.O)
     private void sendSmartSelectionRequest(
-            @RequestType int requestType, CharSequence text, int start, int end, Locale[] locales) {
+            @RequestType int requestType, CharSequence text, int start, int end) {
         TextClassifier classifier = getTextClassifier();
         if (classifier == null || classifier == TextClassifier.NO_OP) {
             mHandler.post(mFailureResponseRunnable);
@@ -110,8 +108,7 @@ public class SmartSelectionProvider {
             mClassificationTask = null;
         }
 
-        mClassificationTask =
-                new ClassificationTask(classifier, requestType, text, start, end, locales);
+        mClassificationTask = new ClassificationTask(classifier, requestType, text, start, end);
         mClassificationTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
@@ -122,16 +119,14 @@ public class SmartSelectionProvider {
         private final CharSequence mText;
         private final int mOriginalStart;
         private final int mOriginalEnd;
-        private final Locale[] mLocales;
 
         ClassificationTask(TextClassifier classifier, @RequestType int requestType,
-                CharSequence text, int start, int end, Locale[] locales) {
+                CharSequence text, int start, int end) {
             mTextClassifier = classifier;
             mRequestType = requestType;
             mText = text;
             mOriginalStart = start;
             mOriginalEnd = end;
-            mLocales = locales;
         }
 
         @Override
@@ -143,21 +138,15 @@ public class SmartSelectionProvider {
 
             if (mRequestType == RequestType.SUGGEST_AND_CLASSIFY) {
                 textSelection = mTextClassifier.suggestSelection(
-                        mText, start, end, makeLocaleList(mLocales));
+                        mText, start, end, LocaleList.getAdjustedDefault());
                 start = Math.max(0, textSelection.getSelectionStartIndex());
                 end = Math.min(mText.length(), textSelection.getSelectionEndIndex());
                 if (isCancelled()) return new SelectionClient.Result();
             }
 
-            TextClassification tc =
-                    mTextClassifier.classifyText(mText, start, end, makeLocaleList(mLocales));
+            TextClassification tc = mTextClassifier.classifyText(
+                    mText, start, end, LocaleList.getAdjustedDefault());
             return makeResult(start, end, tc, textSelection);
-        }
-
-        @SuppressLint("NewApi")
-        private LocaleList makeLocaleList(Locale[] locales) {
-            if (locales == null || locales.length == 0) return null;
-            return new LocaleList(locales);
         }
 
         private SelectionClient.Result makeResult(

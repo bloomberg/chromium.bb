@@ -44,6 +44,8 @@ class AppManagementPageHandler : public app_management::mojom::PageHandler,
 
   // apps::AppRegistryCache::Observer overrides:
   void OnAppUpdate(const apps::AppUpdate& update) override;
+  void OnAppRegistryCacheWillBeDestroyed(
+      apps::AppRegistryCache* cache) override;
 
   mojo::Binding<app_management::mojom::PageHandler> binding_;
 

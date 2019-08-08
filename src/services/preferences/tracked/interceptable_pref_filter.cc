@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 
 InterceptablePrefFilter::InterceptablePrefFilter() {}
 InterceptablePrefFilter::~InterceptablePrefFilter() {}
@@ -27,7 +26,7 @@ void InterceptablePrefFilter::FilterOnLoad(
     const FinalizeFilterOnLoadCallback finalize_filter_on_load(
         base::Bind(&InterceptablePrefFilter::FinalizeFilterOnLoad, AsWeakPtr(),
                    post_filter_on_load_callback));
-    base::ResetAndReturn(&filter_on_load_interceptor_)
+    std::move(filter_on_load_interceptor_)
         .Run(finalize_filter_on_load, std::move(pref_store_contents));
   }
 }

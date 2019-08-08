@@ -515,6 +515,9 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   // Invoked when the renderer process changes the page scale factor.
   virtual void OnPageScaleFactorChanged(float page_scale_factor) {}
 
+  // Invoked when a paste event occurs.
+  virtual void OnPaste() {}
+
   // Invoked if an IPC message is coming from a specific RenderFrameHost.
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  RenderFrameHost* render_frame_host);

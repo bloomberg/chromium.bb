@@ -23,8 +23,6 @@ namespace gl
 
 struct Extensions;
 
-typedef std::set<GLuint> SupportedSampleSet;
-
 struct TextureCaps
 {
     TextureCaps();
@@ -116,6 +114,9 @@ struct Extensions
     // GL_EXT_texture_norm16
     // GL_EXT_texture_compression_bptc
     void setTextureExtensionSupport(const TextureCapsMap &textureCaps);
+
+    // indicate if any depth texture extension is available
+    bool depthTextureAny() const { return (depthTextureANGLE || depthTextureOES); }
 
     // ES2 Extension support
 
@@ -238,7 +239,10 @@ struct Extensions
     bool sRGB;
 
     // GL_ANGLE_depth_texture
-    bool depthTextures;
+    bool depthTextureANGLE;
+
+    // OES_depth_texture
+    bool depthTextureOES;
 
     // GL_OES_depth32
     // Allows DEPTH_COMPONENT32_OES as a valid Renderbuffer format.
@@ -302,9 +306,12 @@ struct Extensions
     // GL_EXT_frag_depth
     bool fragDepth;
 
+    // OVR_multiview
+    bool multiview;
+    GLuint maxViews;
+
     // OVR_multiview2
     bool multiview2;
-    GLuint maxViews;
 
     // GL_ANGLE_texture_usage
     bool textureUsage;
@@ -538,6 +545,9 @@ struct Limitations
 
     // D3D does not support having multiple transform feedback outputs go to the same buffer.
     bool noDoubleBoundTransformFeedbackBuffers;
+
+    // D3D does not support vertex attribute aliasing
+    bool noVertexAttributeAliasing;
 };
 
 struct TypePrecision
@@ -870,6 +880,12 @@ struct DisplayExtensions
 
     // EGL_ANDROID_recordable
     bool recordable;
+
+    // EGL_ANGLE_power_preference
+    bool powerPreference;
+
+    // EGL_ANGLE_workaround_control
+    bool workaroundControlANGLE;
 };
 
 struct DeviceExtensions

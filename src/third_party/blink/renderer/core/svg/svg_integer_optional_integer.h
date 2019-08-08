@@ -43,12 +43,6 @@ class SVGIntegerOptionalInteger final : public SVGPropertyBase {
   typedef void TearOffType;
   typedef void PrimitiveType;
 
-  static SVGIntegerOptionalInteger* Create(SVGInteger* first_integer,
-                                           SVGInteger* second_integer) {
-    return MakeGarbageCollected<SVGIntegerOptionalInteger>(first_integer,
-                                                           second_integer);
-  }
-
   SVGIntegerOptionalInteger(SVGInteger* first_integer,
                             SVGInteger* second_integer);
 

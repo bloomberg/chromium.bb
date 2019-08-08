@@ -27,6 +27,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "perfetto/trace_processor/basic_types.h"
 #include "src/trace_processor/scoped_db.h"
 #include "src/trace_processor/table.h"
 
@@ -75,17 +76,6 @@ class SpanJoinOperatorTable : public Table {
     // All other columns are dynamic depending on the joined tables.
   };
 
-  SpanJoinOperatorTable(sqlite3*, const TraceStorage*);
-
-  static void RegisterTable(sqlite3* db, const TraceStorage* storage);
-
-  // Table implementation.
-  base::Optional<Table::Schema> Init(int, const char* const*) override;
-  std::unique_ptr<Table::Cursor> CreateCursor(const QueryConstraints&,
-                                              sqlite3_value**) override;
-  int BestIndex(const QueryConstraints& qc, BestIndexInfo* info) override;
-
- private:
   enum class PartitioningType {
     kNoPartitioning = 0,
     kSamePartitioning = 1,
@@ -94,8 +84,8 @@ class SpanJoinOperatorTable : public Table {
 
   // Parsed version of a table descriptor.
   struct TableDescriptor {
-    static base::Optional<TableDescriptor> Parse(
-        const std::string& raw_descriptor);
+    static util::Status Parse(const std::string& raw_descriptor,
+                              TableDescriptor* descriptor);
 
     bool IsPartitioned() const { return !partition_col.empty(); }
 
@@ -159,6 +149,12 @@ class SpanJoinOperatorTable : public Table {
     Query(SpanJoinOperatorTable*, const TableDefinition*, sqlite3* db);
     virtual ~Query();
 
+    Query(Query&) = delete;
+    Query& operator=(const Query&) = delete;
+
+    Query(Query&&) noexcept = default;
+    Query& operator=(Query&&) = default;
+
     int Initialize(const QueryConstraints& qc, sqlite3_value** argv);
 
     StepRet Step();
@@ -218,9 +214,9 @@ class SpanJoinOperatorTable : public Table {
     bool cursor_eof_ = false;
     Mode mode_ = Mode::kRealSlice;
 
-    const TableDefinition* const defn_;
-    sqlite3* const db_;
-    SpanJoinOperatorTable* const table_;
+    const TableDefinition* defn_ = nullptr;
+    sqlite3* db_ = nullptr;
+    SpanJoinOperatorTable* table_ = nullptr;
   };
 
   // Base class for a cursor on the span table.
@@ -229,13 +225,18 @@ class SpanJoinOperatorTable : public Table {
     Cursor(SpanJoinOperatorTable*, sqlite3* db);
     ~Cursor() override = default;
 
-    int Initialize(const QueryConstraints& qc, sqlite3_value** argv);
+    int Filter(const QueryConstraints& qc, sqlite3_value** argv) override;
     int Column(sqlite3_context* context, int N) override;
-
     int Next() override;
     int Eof() override;
 
-   protected:
+   private:
+    Cursor(Cursor&) = delete;
+    Cursor& operator=(const Cursor&) = delete;
+
+    Cursor(Cursor&&) noexcept = default;
+    Cursor& operator=(Cursor&&) = default;
+
     bool IsOverlappingSpan();
     Query::StepRet StepUntilRealSlice();
 
@@ -243,9 +244,19 @@ class SpanJoinOperatorTable : public Table {
     Query t2_;
     Query* next_stepped_ = nullptr;
 
-    SpanJoinOperatorTable* const table_;
+    SpanJoinOperatorTable* table_;
   };
 
+  SpanJoinOperatorTable(sqlite3*, const TraceStorage*);
+
+  static void RegisterTable(sqlite3* db, const TraceStorage* storage);
+
+  // Table implementation.
+  util::Status Init(int, const char* const*, Table::Schema*) override;
+  std::unique_ptr<Table::Cursor> CreateCursor() override;
+  int BestIndex(const QueryConstraints& qc, BestIndexInfo* info) override;
+
+ private:
   // Identifier for a column by index in a given table.
   struct ColumnLocator {
     const TableDefinition* defn;
@@ -260,9 +271,10 @@ class SpanJoinOperatorTable : public Table {
                                     : t2_defn_.partition_col();
   }
 
-  base::Optional<TableDefinition> CreateTableDefinition(
+  util::Status CreateTableDefinition(
       const TableDescriptor& desc,
-      bool emit_shadow_slices);
+      bool emit_shadow_slices,
+      SpanJoinOperatorTable::TableDefinition* defn);
 
   std::vector<std::string> ComputeSqlConstraintsForDefinition(
       const TableDefinition& defn,

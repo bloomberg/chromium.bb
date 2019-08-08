@@ -24,6 +24,21 @@ Polymer({
   currentIndex_: 0,
 
   /**
+   * The delay in ms between speaker ID enrollment finishes and the
+   * voice-match-done action is reported to chrome.
+   * @private {number}
+   */
+  doneActionDelayMs_: 3000,
+
+  /**
+   * Overrides the default delay for sending voice-match-done action.
+   * @param {number} delay The delay to be used in tests.
+   */
+  setDoneActionDelayForTesting: function(delay) {
+    this.doneActionDelayMs_ = delay;
+  },
+
+  /**
    * On-tap event handler for skip button.
    *
    * @private
@@ -132,7 +147,7 @@ Polymer({
       chrome.send(
           'login.AssistantOptInFlowScreen.VoiceMatchScreen.userActed',
           ['voice-match-done']);
-    }, 3000);
+    }, this.doneActionDelayMs_);
   },
 
   /**

@@ -46,15 +46,6 @@ class ExtensionActionAPI : public BrowserContextKeyedAPI {
         content::WebContents* web_contents,
         content::BrowserContext* browser_context);
 
-    // Called when there is a change to the extension action's visibility.
-    virtual void OnExtensionActionVisibilityChanged(
-        const std::string& extension_id,
-        bool is_now_visible);
-
-    // Called when the page actions have been refreshed do to a possible change
-    // in count or visibility.
-    virtual void OnPageActionsUpdated(content::WebContents* web_contents);
-
     // Called when the ExtensionActionAPI is shutting down, giving observers a
     // chance to unregister themselves if there is not a definitive lifecycle.
     virtual void OnExtensionActionAPIShuttingDown();
@@ -101,10 +92,6 @@ class ExtensionActionAPI : public BrowserContextKeyedAPI {
   // Clears the values for all ExtensionActions for the tab associated with the
   // given |web_contents| (and signals that page actions changed).
   void ClearAllValuesForTab(content::WebContents* web_contents);
-
-  // Notifies that the current set of page actions for |web_contents| has
-  // changed, and signals the browser to update.
-  void NotifyPageActionsChanged(content::WebContents* web_contents);
 
   void set_prefs_for_testing(ExtensionPrefs* prefs) {
     extension_prefs_ = prefs;

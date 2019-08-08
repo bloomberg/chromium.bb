@@ -46,9 +46,6 @@ class QuicSentPacketManagerPeer {
 
   static RttStats* GetRttStats(QuicSentPacketManager* sent_packet_manager);
 
-  static bool HasPendingPackets(
-      const QuicSentPacketManager* sent_packet_manager);
-
   // Returns true if |packet_number| is a retransmission of a packet.
   static bool IsRetransmission(QuicSentPacketManager* sent_packet_manager,
                                uint64_t packet_number);
@@ -68,13 +65,7 @@ class QuicSentPacketManagerPeer {
   static QuicTime::Delta GetTailLossProbeDelay(
       const QuicSentPacketManager* sent_packet_manager);
 
-  static bool HasUnackedCryptoPackets(
-      const QuicSentPacketManager* sent_packet_manager);
-
   static size_t GetNumRetransmittablePackets(
-      const QuicSentPacketManager* sent_packet_manager);
-
-  static QuicByteCount GetBytesInFlight(
       const QuicSentPacketManager* sent_packet_manager);
 
   static void SetConsecutiveRtoCount(QuicSentPacketManager* sent_packet_manager,
@@ -90,9 +81,6 @@ class QuicSentPacketManagerPeer {
                              bool using_pacing);
 
   static bool UsingPacing(const QuicSentPacketManager* sent_packet_manager);
-
-  static bool IsUnacked(QuicSentPacketManager* sent_packet_manager,
-                        uint64_t packet_number);
 
   static bool HasRetransmittableFrames(
       QuicSentPacketManager* sent_packet_manager,

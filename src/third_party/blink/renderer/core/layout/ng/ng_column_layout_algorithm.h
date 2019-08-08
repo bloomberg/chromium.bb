@@ -12,18 +12,15 @@ namespace blink {
 
 class NGBlockNode;
 class NGBlockBreakToken;
-class NGBreakToken;
 class NGConstraintSpace;
-struct NGLogicalSize;
+struct LogicalSize;
 
 class CORE_EXPORT NGColumnLayoutAlgorithm
     : public NGLayoutAlgorithm<NGBlockNode,
                                NGBoxFragmentBuilder,
                                NGBlockBreakToken> {
  public:
-  NGColumnLayoutAlgorithm(NGBlockNode node,
-                          const NGConstraintSpace& space,
-                          const NGBreakToken* break_token = nullptr);
+  NGColumnLayoutAlgorithm(const NGLayoutAlgorithmParams& params);
 
   scoped_refptr<const NGLayoutResult> Layout() override;
 
@@ -31,8 +28,8 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
       const MinMaxSizeInput&) const override;
 
  private:
-  NGLogicalSize CalculateColumnSize(const NGLogicalSize& content_box_size);
-  LayoutUnit CalculateBalancedColumnBlockSize(const NGLogicalSize& column_size,
+  LogicalSize CalculateColumnSize(const LogicalSize& content_box_size);
+  LayoutUnit CalculateBalancedColumnBlockSize(const LogicalSize& column_size,
                                               int column_count);
 
   // Stretch the column length, if allowed. We do this during column balancing,
@@ -43,11 +40,17 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
       LayoutUnit current_column_size,
       LayoutUnit container_content_box_block_size) const;
 
+  LayoutUnit ConstrainColumnBlockSize(LayoutUnit size) const;
+
   NGConstraintSpace CreateConstraintSpaceForColumns(
-      const NGLogicalSize& column_size,
+      const LogicalSize& column_size,
       bool separate_leading_margins) const;
-  NGConstraintSpace CreateConstaintSpaceForBalancing(
-      const NGLogicalSize& column_size) const;
+  NGConstraintSpace CreateConstraintSpaceForBalancing(
+      const LogicalSize& column_size) const;
+  NGConstraintSpace CreateConstraintSpaceForMinMax() const;
+
+  const NGBoxStrut border_padding_;
+  const NGBoxStrut border_scrollbar_padding_;
 };
 
 }  // namespace blink

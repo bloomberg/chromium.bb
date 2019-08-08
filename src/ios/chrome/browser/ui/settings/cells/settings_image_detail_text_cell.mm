@@ -57,7 +57,7 @@
   _detailTextLabel = [[UILabel alloc] init];
   _detailTextLabel.numberOfLines = 0;
   _detailTextLabel.font =
-      [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+      [UIFont preferredFontForTextStyle:kTableViewSublabelFontStyle];
   _detailTextLabel.adjustsFontForContentSizeCategory = YES;
   _detailTextLabel.textColor =
       UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);

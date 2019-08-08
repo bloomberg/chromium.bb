@@ -158,7 +158,7 @@ void MarkupFormatter::AppendStartMarkup(StringBuilder& result,
       NOTREACHED();
       break;
     case Node::kCommentNode:
-      AppendComment(result, ToComment(node).data());
+      AppendComment(result, To<Comment>(node).data());
       break;
     case Node::kDocumentNode:
       AppendXMLDeclaration(result, To<Document>(node));
@@ -166,18 +166,18 @@ void MarkupFormatter::AppendStartMarkup(StringBuilder& result,
     case Node::kDocumentFragmentNode:
       break;
     case Node::kDocumentTypeNode:
-      AppendDocumentType(result, ToDocumentType(node));
+      AppendDocumentType(result, To<DocumentType>(node));
       break;
     case Node::kProcessingInstructionNode:
       AppendProcessingInstruction(result,
-                                  ToProcessingInstruction(node).target(),
-                                  ToProcessingInstruction(node).data());
+                                  To<ProcessingInstruction>(node).target(),
+                                  To<ProcessingInstruction>(node).data());
       break;
     case Node::kElementNode:
       NOTREACHED();
       break;
     case Node::kCdataSectionNode:
-      AppendCDATASection(result, ToCDATASection(node).data());
+      AppendCDATASection(result, To<CDATASection>(node).data());
       break;
     case Node::kAttributeNode:
       NOTREACHED();

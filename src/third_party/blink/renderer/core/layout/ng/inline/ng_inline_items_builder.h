@@ -21,6 +21,8 @@ class ComputedStyle;
 class LayoutInline;
 class LayoutObject;
 class LayoutText;
+struct NGInlineNodeData;
+class NGDirtyLines;
 
 // NGInlineItemsBuilder builds a string and a list of NGInlineItem from inlines.
 //
@@ -42,8 +44,13 @@ class NGInlineItemsBuilderTemplate {
   STACK_ALLOCATED();
 
  public:
-  explicit NGInlineItemsBuilderTemplate(Vector<NGInlineItem>* items)
-      : items_(items) {}
+  // Create a builder that appends items to |items|.
+  //
+  // If |dirty_lines| is given, this builder calls its functions to mark lines
+  // dirty.
+  explicit NGInlineItemsBuilderTemplate(Vector<NGInlineItem>* items,
+                                        NGDirtyLines* dirty_lines = nullptr)
+      : items_(items), dirty_lines_(dirty_lines) {}
   ~NGInlineItemsBuilderTemplate();
 
   String ToString();
@@ -62,11 +69,19 @@ class NGInlineItemsBuilderTemplate {
     return changes_may_affect_earlier_lines_;
   }
 
+  // Append a string from |LayoutText|.
+  //
+  // If |previous_data| is given, reuse existing items if they exist and are
+  // reusable. Otherwise appends new items.
+  void AppendText(LayoutText* layout_text,
+                  const NGInlineNodeData* previous_data);
+
   // Append existing items from an unchanged LayoutObject.
   // Returns whether the existing items could be reused.
   // NOTE: The state of the builder remains unchanged if the append operation
   // fails (i.e. if it returns false).
-  bool AppendTextReusing(const String& previous_text, LayoutText* layout_text);
+  bool AppendTextReusing(const NGInlineNodeData& previous_data,
+                         LayoutText* layout_text);
 
   // Append a string.
   // When appending, spaces are collapsed according to CSS Text, The white space
@@ -114,7 +129,7 @@ class NGInlineItemsBuilderTemplate {
 
   void EnterBlock(const ComputedStyle*);
   void ExitBlock();
-  void EnterInline(LayoutObject*);
+  void EnterInline(LayoutInline*);
   void ExitInline(LayoutObject*);
 
   OffsetMappingBuilder& GetOffsetMappingBuilder() { return mapping_builder_; }
@@ -133,6 +148,8 @@ class NGInlineItemsBuilderTemplate {
 
   Vector<NGInlineItem>* items_;
   StringBuilder text_;
+
+  NGDirtyLines* dirty_lines_;
 
   // |mapping_builder_| builds the whitespace-collapsed offset mapping
   // during inline collection. It is updated whenever |text_| is modified or a
@@ -200,11 +217,17 @@ class NGInlineItemsBuilderTemplate {
   void AppendGeneratedBreakOpportunity(LayoutObject*);
 
   void Exit(LayoutObject*);
+
+  bool ShouldInsertBreakOpportunityAfterLeadingPreservedSpaces(
+      const String&,
+      const ComputedStyle&) const;
 };
 
 template <>
-CORE_EXPORT bool NGInlineItemsBuilderTemplate<
-    NGOffsetMappingBuilder>::AppendTextReusing(const String&, LayoutText*);
+CORE_EXPORT bool
+NGInlineItemsBuilderTemplate<NGOffsetMappingBuilder>::AppendTextReusing(
+    const NGInlineNodeData&,
+    LayoutText*);
 
 template <>
 CORE_EXPORT void

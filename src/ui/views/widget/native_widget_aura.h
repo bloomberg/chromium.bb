@@ -21,7 +21,6 @@
 #include "ui/wm/public/activation_delegate.h"
 
 namespace aura {
-class Env;
 class Window;
 }
 
@@ -40,12 +39,7 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
                                       public aura::client::FocusChangeObserver,
                                       public aura::client::DragDropDelegate {
  public:
-  // |is_parallel_widget_in_window_manager| is true only when this
-  // NativeWidgetAura is created in the window manager to represent a client
-  // window, in all other cases it's false.
-  explicit NativeWidgetAura(internal::NativeWidgetDelegate* delegate,
-                            bool is_parallel_widget_in_window_manager = false,
-                            aura::Env* env = nullptr);
+  explicit NativeWidgetAura(internal::NativeWidgetDelegate* delegate);
 
   // Called internally by NativeWidgetAura and DesktopNativeWidgetAura to
   // associate |native_widget| with |window|.
@@ -62,6 +56,11 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   static void SetShadowElevationFromInitParams(
       aura::Window* window,
       const Widget::InitParams& params);
+
+  // Sets the window property aura::client::kResizeBehaviorKey based on the
+  // values from the delegate.
+  static void SetResizeBehaviorFromDelegate(WidgetDelegate* delegate,
+                                            aura::Window* window);
 
   // Overridden from internal::NativeWidgetPrivate:
   void InitNativeWidget(const Widget::InitParams& params) override;
@@ -216,10 +215,6 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   void SetInitialFocus(ui::WindowShowState show_state);
 
   internal::NativeWidgetDelegate* delegate_;
-
-  // True if the Widget is created in the window-manager and another client is
-  // embedded in it. When true certain operations are not performed.
-  const bool is_parallel_widget_in_window_manager_;
 
   // WARNING: set to NULL when destroyed. As the Widget is not necessarily
   // destroyed along with |window_| all usage of |window_| should first verify

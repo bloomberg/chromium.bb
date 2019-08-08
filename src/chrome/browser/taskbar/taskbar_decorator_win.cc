@@ -149,12 +149,12 @@ void DrawTaskbarDecorationString(gfx::NativeWindow window,
   // |content| fits into our 16x16px icon, with margins.
   do {
     font.setSize(text_size--);
-    font.measureText(content.c_str(), content.size(), kUTF8_SkTextEncoding,
+    font.measureText(content.c_str(), content.size(), SkTextEncoding::kUTF8,
                      &bounds);
   } while (text_size >= kMinTextSize &&
            (bounds.width() > kMaxBounds || bounds.height() > kMaxBounds));
 
-  canvas.drawSimpleText(content.c_str(), content.size(), kUTF8_SkTextEncoding,
+  canvas.drawSimpleText(content.c_str(), content.size(), SkTextEncoding::kUTF8,
                         kRadius - bounds.width() / 2 - bounds.x(),
                         kRadius - bounds.height() / 2 - bounds.y(), font,
                         paint);

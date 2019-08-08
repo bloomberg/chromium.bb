@@ -18,13 +18,16 @@
 #include "base/strings/string_piece.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/task/single_thread_task_runner_thread_mode.h"
+#include "base/task/task_executor.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool/delayed_task_manager.h"
 #include "base/task/thread_pool/environment_config.h"
-#include "base/task/thread_pool/scheduler_single_thread_task_runner_manager.h"
-#include "base/task/thread_pool/scheduler_task_runner_delegate.h"
-#include "base/task/thread_pool/scheduler_worker_pool_impl.h"
+#include "base/task/thread_pool/pooled_single_thread_task_runner_manager.h"
+#include "base/task/thread_pool/pooled_task_runner_delegate.h"
+#include "base/task/thread_pool/task_source.h"
 #include "base/task/thread_pool/task_tracker.h"
+#include "base/task/thread_pool/thread_group.h"
+#include "base/task/thread_pool/thread_group_impl.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "base/updateable_sequenced_task_runner.h"
 #include "build/build_config.h"
@@ -34,12 +37,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include "base/task/thread_pool/platform_native_worker_pool_win.h"
 #include "base/win/com_init_check_hook.h"
-#endif
-
-#if defined(OS_MACOSX)
-#include "base/task/thread_pool/platform_native_worker_pool_mac.h"
 #endif
 
 namespace base {
@@ -48,10 +46,11 @@ class Thread;
 
 namespace internal {
 
-// Default ThreadPool implementation. This class is thread-safe.
-class BASE_EXPORT ThreadPoolImpl : public ThreadPool,
-                                   public SchedulerWorkerPool::Delegate,
-                                   public SchedulerTaskRunnerDelegate {
+// Default ThreadPoolInstance implementation. This class is thread-safe.
+class BASE_EXPORT ThreadPoolImpl : public ThreadPoolInstance,
+                                   public TaskExecutor,
+                                   public ThreadGroup::Delegate,
+                                   public PooledTaskRunnerDelegate {
  public:
   using TaskTrackerImpl =
 #if defined(OS_POSIX) && !defined(OS_NACL_SFI)
@@ -70,17 +69,17 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPool,
 
   ~ThreadPoolImpl() override;
 
-  // ThreadPool:
-  void Start(const ThreadPool::InitParams& init_params,
-             SchedulerWorkerObserver* scheduler_worker_observer) override;
+  // ThreadPoolInstance:
+  void Start(const ThreadPoolInstance::InitParams& init_params,
+             WorkerThreadObserver* worker_thread_observer) override;
   int GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
       const TaskTraits& traits) const override;
   void Shutdown() override;
   void FlushForTesting() override;
   void FlushAsyncForTesting(OnceClosure flush_callback) override;
   void JoinForTesting() override;
-  void SetCanRun(bool can_run) override;
-  void SetCanRunBestEffort(bool can_run_best_effort) override;
+  void SetHasFence(bool has_fence) override;
+  void SetHasBestEffortFence(bool has_best_effort_fence) override;
 
   // TaskExecutor:
   bool PostDelayedTaskWithTraits(const Location& from_here,
@@ -100,11 +99,10 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPool,
       SingleThreadTaskRunnerThreadMode thread_mode) override;
 #endif  // defined(OS_WIN)
   scoped_refptr<UpdateableSequencedTaskRunner>
-  CreateUpdateableSequencedTaskRunnerWithTraitsForTesting(
-      const TaskTraits& traits);
+  CreateUpdateableSequencedTaskRunnerWithTraits(const TaskTraits& traits);
 
  private:
-  // Invoked after |can_run_| or |can_run_best_effort_| is updated. Sets the
+  // Invoked after |has_fence_| or |has_best_effort_fence_| is updated. Sets the
   // CanRunPolicy in TaskTracker and wakes up workers as appropriate.
   void UpdateCanRunPolicy();
 
@@ -114,28 +112,27 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPool,
 
   void ReportHeartbeatMetrics() const;
 
-  // Returns the thread pool responsible for foreground execution.
-  const SchedulerWorkerPool* GetForegroundWorkerPool() const;
-  SchedulerWorkerPool* GetForegroundWorkerPool();
+  const ThreadGroup* GetThreadGroupForTraits(const TaskTraits& traits) const;
 
-  const SchedulerWorkerPool* GetWorkerPoolForTraits(
-      const TaskTraits& traits) const;
+  // ThreadGroup::Delegate:
+  ThreadGroup* GetThreadGroupForTraits(const TaskTraits& traits) override;
 
-  // SchedulerWorkerPool::Delegate:
-  SchedulerWorkerPool* GetWorkerPoolForTraits(
-      const TaskTraits& traits) override;
+  // Posts |task| to be executed by the appropriate thread group as part of
+  // |sequence|. This must only be called after |task| has gone through
+  // TaskTracker::WillPostTask() and after |task|'s delayed run time.
+  bool PostTaskWithSequenceNow(Task task, scoped_refptr<Sequence> sequence);
 
-  // SchedulerTaskRunnerDelegate:
+  // PooledTaskRunnerDelegate:
   bool PostTaskWithSequence(Task task,
                             scoped_refptr<Sequence> sequence) override;
   bool IsRunningPoolWithTraits(const TaskTraits& traits) const override;
-  void UpdatePriority(scoped_refptr<Sequence> sequence,
+  void UpdatePriority(scoped_refptr<TaskSource> task_source,
                       TaskPriority priority) override;
 
   const std::unique_ptr<TaskTrackerImpl> task_tracker_;
   std::unique_ptr<Thread> service_thread_;
   DelayedTaskManager delayed_task_manager_;
-  SchedulerSingleThreadTaskRunnerManager single_thread_task_runner_manager_;
+  PooledSingleThreadTaskRunnerManager single_thread_task_runner_manager_;
 
   // Indicates that all tasks are handled as if they had been posted with
   // TaskPriority::USER_BLOCKING. Since this is set in Start(), it doesn't apply
@@ -145,23 +142,21 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPool,
   // TODO(fdoray): Remove after experiment. https://crbug.com/757022
   AtomicFlag all_tasks_user_blocking_;
 
-  Optional<SchedulerWorkerPoolImpl> foreground_pool_;
-  Optional<SchedulerWorkerPoolImpl> background_pool_;
+  std::unique_ptr<ThreadGroup> foreground_thread_group_;
+  std::unique_ptr<ThreadGroupImpl> background_thread_group_;
 
   // Whether this TaskScheduler was started. Access controlled by
   // |sequence_checker_|.
   bool started_ = false;
 
-  // Whether starting to run a Task with any/BEST_EFFORT priority is currently
-  // allowed. Access controlled by |sequence_checker_|.
-  bool can_run_ = true;
-  bool can_run_best_effort_;
+  // Whether the --disable-best-effort-tasks switch is preventing execution of
+  // BEST_EFFORT tasks until shutdown.
+  const bool has_disable_best_effort_switch_;
 
-#if defined(OS_WIN)
-  Optional<PlatformNativeWorkerPoolWin> native_foreground_pool_;
-#elif defined(OS_MACOSX)
-  Optional<PlatformNativeWorkerPoolMac> native_foreground_pool_;
-#endif
+  // Whether a fence is preventing execution of tasks of any/BEST_EFFORT
+  // priority. Access controlled by |sequence_checker_|.
+  bool has_fence_ = false;
+  bool has_best_effort_fence_ = false;
 
 #if DCHECK_IS_ON()
   // Set once JoinForTesting() has returned.
@@ -176,7 +171,7 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPool,
   // Asserts that operations occur in sequence with Start().
   SEQUENCE_CHECKER(sequence_checker_);
 
-  TrackedRefFactory<SchedulerWorkerPool::Delegate> tracked_ref_factory_;
+  TrackedRefFactory<ThreadGroup::Delegate> tracked_ref_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ThreadPoolImpl);
 };

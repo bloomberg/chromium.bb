@@ -31,6 +31,7 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_navigation_util_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_reboot_dialog_controller_impl_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_runner_win.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/reporter_runner_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/settings_resetter_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_client_info_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
@@ -180,11 +181,6 @@ void RecordOnDemandUpdateRequiredHistogram(bool value) {
 
 }  // namespace
 
-void RecordCleanupStartedHistogram(CleanupStartedHistogramValue value) {
-  UMA_HISTOGRAM_ENUMERATION("SoftwareReporter.CleanupStarted", value,
-                            CLEANUP_STARTED_MAX);
-}
-
 ChromeCleanerControllerDelegate::ChromeCleanerControllerDelegate() = default;
 
 ChromeCleanerControllerDelegate::~ChromeCleanerControllerDelegate() = default;
@@ -238,10 +234,6 @@ ChromeCleanerController* ChromeCleanerController::GetInstance() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return ChromeCleanerControllerImpl::GetInstance();
 }
-
-ChromeCleanerController::ChromeCleanerController() = default;
-
-ChromeCleanerController::~ChromeCleanerController() = default;
 
 ChromeCleanerController::State ChromeCleanerControllerImpl::state() const {
   return state_;

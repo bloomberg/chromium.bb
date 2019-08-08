@@ -46,7 +46,7 @@ class CONTENT_EXPORT ProcessedLocalAudioSource final
       const blink::MediaStreamDevice& device,
       bool disable_local_echo,
       const blink::AudioProcessingProperties& audio_processing_properties,
-      const ConstraintsCallback& started_callback,
+      ConstraintsOnceCallback started_callback,
       PeerConnectionDependencyFactory* factory,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
@@ -133,7 +133,7 @@ class CONTENT_EXPORT ProcessedLocalAudioSource final
   blink::AudioProcessingProperties audio_processing_properties_;
 
   // Callback that's called when the audio source has been initialized.
-  ConstraintsCallback started_callback_;
+  ConstraintsOnceCallback started_callback_;
 
   // At most one of |audio_processor_| and |audio_processor_proxy_| can be set.
 

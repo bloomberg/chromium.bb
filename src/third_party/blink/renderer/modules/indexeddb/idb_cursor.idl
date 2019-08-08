@@ -41,6 +41,7 @@ enum IDBCursorDirection {
     readonly attribute IDBCursorDirection direction;
     [CallWith=ScriptState, CachedAttribute=isKeyDirty] readonly attribute any key;
     [CallWith=ScriptState, CachedAttribute=isPrimaryKeyDirty] readonly attribute any primaryKey;
+    [SameObject] readonly attribute IDBRequest request;
 
     [RaisesException] void advance([EnforceRange] unsigned long count);
     [CallWith=ScriptState, ImplementedAs=Continue, RaisesException] void continue([DefaultValue=Undefined] optional any key);

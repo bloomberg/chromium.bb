@@ -191,8 +191,8 @@ TEST_F(URLRequestContextBuilderTest, ShutDownNELAndReportingWithPendingUpload) {
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
 TEST_F(URLRequestContextBuilderTest, DefaultHostResolver) {
-  auto manager =
-      std::make_unique<HostResolverManager>(HostResolver::Options(), nullptr);
+  auto manager = std::make_unique<HostResolverManager>(
+      HostResolver::ManagerOptions(), nullptr);
 
   builder_.set_host_resolver_manager(manager.get());
   std::unique_ptr<URLRequestContext> context = builder_.Build();

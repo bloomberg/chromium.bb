@@ -58,25 +58,14 @@ void ViewAccessibility::AddVirtualChildView(
   DCHECK(virtual_view);
   if (virtual_view->parent_view() == this)
     return;
-  AddVirtualChildViewAt(std::move(virtual_view), virtual_child_count());
-}
-
-void ViewAccessibility::AddVirtualChildViewAt(
-    std::unique_ptr<AXVirtualView> virtual_view,
-    int index) {
-  DCHECK(virtual_view);
   DCHECK(!virtual_view->parent_view()) << "This |view| already has a View "
                                           "parent. Call RemoveVirtualChildView "
                                           "first.";
   DCHECK(!virtual_view->virtual_parent_view()) << "This |view| already has an "
                                                   "AXVirtualView parent. Call "
                                                   "RemoveChildView first.";
-  DCHECK_GE(index, 0);
-  DCHECK_LE(index, virtual_child_count());
-
   virtual_view->set_parent_view(this);
-  virtual_children_.insert(virtual_children_.begin() + index,
-                           std::move(virtual_view));
+  virtual_children_.push_back(std::move(virtual_view));
 }
 
 std::unique_ptr<AXVirtualView> ViewAccessibility::RemoveVirtualChildView(
@@ -166,10 +155,18 @@ void ViewAccessibility::GetAccessibleNodeData(ui::AXNodeData* data) const {
       ax::mojom::IntAttribute::kPosInSet,
       ax::mojom::IntAttribute::kSetSize,
   };
-
   for (auto attribute : kOverridableIntAttributes) {
     if (custom_data_.HasIntAttribute(attribute))
       data->AddIntAttribute(attribute, custom_data_.GetIntAttribute(attribute));
+  }
+
+  static const ax::mojom::IntListAttribute kOverridableIntListAttributes[]{
+      ax::mojom::IntListAttribute::kDescribedbyIds,
+  };
+  for (auto attribute : kOverridableIntListAttributes) {
+    if (custom_data_.HasIntListAttribute(attribute))
+      data->AddIntListAttribute(attribute,
+                                custom_data_.GetIntListAttribute(attribute));
   }
 
   if (!data->HasStringAttribute(ax::mojom::StringAttribute::kDescription)) {
@@ -195,10 +192,10 @@ void ViewAccessibility::GetAccessibleNodeData(ui::AXNodeData* data) const {
   if (view_->IsAccessibilityFocusable())
     data->AddState(ax::mojom::State::kFocusable);
 
-  if (!view_->enabled())
+  if (!view_->GetEnabled())
     data->SetRestriction(ax::mojom::Restriction::kDisabled);
 
-  if (!view_->visible() && data->role != ax::mojom::Role::kAlert)
+  if (!view_->GetVisible() && data->role != ax::mojom::Role::kAlert)
     data->AddState(ax::mojom::State::kInvisible);
 
   if (view_->context_menu_controller())
@@ -242,6 +239,13 @@ void ViewAccessibility::OverrideIsIgnored(bool value) {
 
 void ViewAccessibility::OverrideBounds(const gfx::RectF& bounds) {
   custom_data_.relative_bounds.bounds = bounds;
+}
+
+void ViewAccessibility::OverrideDescribedBy(View* described_by_view) {
+  int described_by_id =
+      described_by_view->GetViewAccessibility().GetUniqueId().Get();
+  custom_data_.AddIntListAttribute(ax::mojom::IntListAttribute::kDescribedbyIds,
+                                   {described_by_id});
 }
 
 void ViewAccessibility::OverridePosInSet(int pos_in_set, int set_size) {

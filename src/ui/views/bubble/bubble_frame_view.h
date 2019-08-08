@@ -40,7 +40,8 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
       const base::string16& title_text);
 
   // Creates a close button used in the corner of the dialog.
-  static Button* CreateCloseButton(ButtonListener* listener, bool is_dark_mode);
+  static std::unique_ptr<Button> CreateCloseButton(ButtonListener* listener,
+                                                   bool is_dark_mode);
 
   // NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;
@@ -67,7 +68,6 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   void OnPaint(gfx::Canvas* canvas) override;
   void PaintChildren(const PaintInfo& paint_info) override;
   void OnThemeChanged() override;
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
   void VisibilityChanged(View* starting_from, bool is_visible) override;
@@ -75,8 +75,7 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   // ButtonListener:
   void ButtonPressed(Button* sender, const ui::Event& event) override;
 
-  // Use bubble_border() and SetBubbleBorder(), not border() and SetBorder().
-  BubbleBorder* bubble_border() const { return bubble_border_; }
+  // Use SetBubbleBorder() not SetBorder().
   void SetBubbleBorder(std::unique_ptr<BubbleBorder> border);
 
   const View* title() const {
@@ -97,6 +96,23 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   void set_preferred_arrow_adjustment(PreferredArrowAdjustment adjustment) {
     preferred_arrow_adjustment_ = adjustment;
   }
+
+  bool hit_test_transparent() const { return hit_test_transparent_; }
+  void set_hit_test_transparent(bool hit_test_transparent) {
+    hit_test_transparent_ = hit_test_transparent;
+  }
+
+  // Get/set the corner radius of the bubble border.
+  int corner_radius() const {
+    return bubble_border_ ? bubble_border_->corner_radius() : 0;
+  }
+  void SetCornerRadius(int radius);
+
+  // Set the arrow of the bubble border.
+  void SetArrow(BubbleBorder::Arrow arrow);
+
+  // Set the background color of the bubble border.
+  void SetBackgroundColor(SkColor color);
 
   // Given the size of the contents and the rect to point at, returns the bounds
   // of the bubble window. The bubble's arrow location may change if the bubble
@@ -129,13 +145,15 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   bool IsCloseButtonVisible() const;
   gfx::Rect GetCloseButtonMirroredBounds() const;
 
+  BubbleBorder* bubble_border_for_testing() const { return bubble_border_; }
+
  private:
-  FRIEND_TEST_ALL_PREFIXES(BubbleFrameViewTest, GetBoundsForClientView);
   FRIEND_TEST_ALL_PREFIXES(BubbleFrameViewTest, RemoveFootnoteView);
   FRIEND_TEST_ALL_PREFIXES(BubbleFrameViewTest, LayoutWithIcon);
   FRIEND_TEST_ALL_PREFIXES(BubbleFrameViewTest, IgnorePossiblyUnintendedClicks);
   FRIEND_TEST_ALL_PREFIXES(BubbleDelegateTest, CloseReasons);
   FRIEND_TEST_ALL_PREFIXES(BubbleDialogDelegateViewTest, CloseMethods);
+  FRIEND_TEST_ALL_PREFIXES(BubbleDialogDelegateViewTest, CreateDelegate);
 
   // Mirrors the bubble's arrow location on the |vertical| or horizontal axis,
   // if the generated window bounds don't fit in the given available bounds.
@@ -205,6 +223,10 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   // the available bounds.
   PreferredArrowAdjustment preferred_arrow_adjustment_ =
       PreferredArrowAdjustment::kMirror;
+
+  // If true the view is transparent to all  hit tested events (i.e. click and
+  // hover).
+  bool hit_test_transparent_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleFrameView);
 };

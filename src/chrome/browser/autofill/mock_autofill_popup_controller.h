@@ -12,7 +12,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
-#include "components/autofill/core/browser/suggestion.h"
+#include "components/autofill/core/browser/ui/suggestion.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/geometry/rect_f.h"
 

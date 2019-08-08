@@ -3,12 +3,12 @@
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_search_field/cr_search_field.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/find_shortcut_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-resizable-behavior/iron-resizable-behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-ripple/paper-ripple.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
-<link rel="import" href="../icons.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_shared_css.html">
 
@@ -17,10 +17,10 @@
     <style include="settings-shared">
       :host {
         background-color: var(--cr-card-background-color);
-        bottom: 0;
+        box-sizing: border-box;
         display: block;
         left: 0;
-        min-height: fit-content;
+        min-height: calc(100vh - var(--cr-toolbar-height));
         padding-bottom: 60px;
         position: absolute;
         right: 0;
@@ -72,7 +72,7 @@
       <template is="dom-if" if="[[learnMoreUrl]]">
         <a id="learnMore" aria-label="$i18n{learnMore}"
             href="[[learnMoreUrl]]" target="_blank">
-          <iron-icon icon="settings:help-outline"></iron-icon>
+          <iron-icon icon="cr:help-outline"></iron-icon>
           <paper-ripple class="circle" center></paper-ripple>
         </a>
       </template>

@@ -16,7 +16,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/engagement/site_engagement_service_factory.h"
-#include "chrome/browser/engagement/top_sites/site_engagement_top_sites_provider.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_utils.h"
 #include "chrome/browser/profiles/profile.h"
@@ -28,10 +27,8 @@
 #include "chrome/grit/locale_settings.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/grit/components_scaled_resources.h"
-#include "components/history/core/browser/default_top_sites_provider.h"
 #include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/top_sites_impl.h"
-#include "components/history/core/browser/top_sites_provider.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -115,17 +112,6 @@ void InitializePrepopulatedPageList(
 #endif
 }
 
-std::unique_ptr<history::TopSitesProvider> CreateTopSitesProvider(
-    Profile* profile,
-    history::HistoryService* history_service) {
-  if (base::FeatureList::IsEnabled(features::kTopSitesFromSiteEngagement)) {
-    return std::make_unique<SiteEngagementTopSitesProvider>(
-        SiteEngagementService::Get(profile), history_service);
-  }
-
-  return std::make_unique<history::DefaultTopSitesProvider>(history_service);
-}
-
 }  // namespace
 
 // static
@@ -151,8 +137,7 @@ scoped_refptr<history::TopSites> TopSitesFactory::BuildTopSites(
       HistoryServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::EXPLICIT_ACCESS);
   scoped_refptr<history::TopSitesImpl> top_sites(new history::TopSitesImpl(
-      profile->GetPrefs(), history_service,
-      CreateTopSitesProvider(profile, history_service), prepopulated_page_list,
+      profile->GetPrefs(), history_service, prepopulated_page_list,
       base::Bind(CanAddURLToHistory)));
   top_sites->Init(context->GetPath().Append(history::kTopSitesFilename));
   return top_sites;

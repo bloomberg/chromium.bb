@@ -166,7 +166,7 @@ struct ResponseMetadata {
 
   network::ResourceResponseHead head;
   std::unique_ptr<net::RedirectInfo> redirect_info;
-  std::vector<uint8_t> cached_metadata;
+  mojo_base::BigBuffer cached_metadata;
   size_t encoded_length = 0;
   size_t transfer_size = 0;
   network::URLLoaderCompletionStatus status;
@@ -276,7 +276,7 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         OnUploadProgressCallback callback) override;
-  void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override;
+  void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override;
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
@@ -1039,8 +1039,7 @@ Response InterceptionJob::ProcessResponseOverride(
 
 void InterceptionJob::ProcessSetCookies(const net::HttpResponseHeaders& headers,
                                         base::OnceClosure callback) {
-  if (create_loader_params_->request.load_flags &
-      net::LOAD_DO_NOT_SAVE_COOKIES) {
+  if (!create_loader_params_->request.SavesCookies()) {
     std::move(callback).Run();
     return;
   }
@@ -1050,6 +1049,12 @@ void InterceptionJob::ProcessSetCookies(const net::HttpResponseHeaders& headers,
   size_t iter = 0;
   net::CookieOptions options;
   options.set_include_httponly();
+  options.set_same_site_cookie_context(
+      net::cookie_util::ComputeSameSiteContextForResponse(
+          create_loader_params_->request.url,
+          create_loader_params_->request.site_for_cookies,
+          create_loader_params_->request.request_initiator));
+
   std::vector<std::unique_ptr<net::CanonicalCookie>> cookies;
   base::Time response_date;
   if (headers.GetDateValue(&response_date))
@@ -1100,8 +1105,9 @@ void InterceptionJob::ProcessRedirectByClient(const GURL& redirect_url) {
 void InterceptionJob::SendResponse(scoped_refptr<base::RefCountedMemory> body,
                                    size_t offset) {
   client_->OnReceiveResponse(response_metadata_->head);
-  if (!response_metadata_->cached_metadata.empty())
-    client_->OnReceiveCachedMetadata(response_metadata_->cached_metadata);
+  if (response_metadata_->cached_metadata.size() != 0)
+    client_->OnReceiveCachedMetadata(
+        std::move(response_metadata_->cached_metadata));
 
   if (body) {
     DCHECK_LE(offset, body->size());
@@ -1186,8 +1192,7 @@ std::unique_ptr<InterceptedRequestInfo> InterceptionJob::BuildRequestInfo(
 
 void InterceptionJob::FetchCookies(
     network::mojom::CookieManager::GetCookieListCallback callback) {
-  if (create_loader_params_->request.load_flags &
-      net::LOAD_DO_NOT_SEND_COOKIES) {
+  if (!create_loader_params_->request.SendsCookies()) {
     std::move(callback).Run({}, {});
     return;
   }
@@ -1360,12 +1365,11 @@ void InterceptionJob::OnUploadProgress(int64_t current_position,
   client_->OnUploadProgress(current_position, total_size, std::move(callback));
 }
 
-void InterceptionJob::OnReceiveCachedMetadata(
-    const std::vector<uint8_t>& data) {
+void InterceptionJob::OnReceiveCachedMetadata(mojo_base::BigBuffer data) {
   if (ShouldBypassForResponse())
-    client_->OnReceiveCachedMetadata(data);
+    client_->OnReceiveCachedMetadata(std::move(data));
   else
-    response_metadata_->cached_metadata = data;
+    response_metadata_->cached_metadata = std::move(data);
 }
 
 void InterceptionJob::OnTransferSizeUpdated(int32_t transfer_size_diff) {

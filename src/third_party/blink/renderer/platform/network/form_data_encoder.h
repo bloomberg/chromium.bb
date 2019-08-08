@@ -58,7 +58,7 @@ class PLATFORM_EXPORT FormDataEncoder {
                                            const WTF::TextEncoding&,
                                            const String& filename);
   static void AddContentTypeToMultiPartHeader(Vector<char>&,
-                                              const CString& mime_type);
+                                              const String& mime_type);
   static void FinishMultiPartHeader(Vector<char>&);
 
   // Helper functions used by HTMLFormElement for non multi-part form data. Mode

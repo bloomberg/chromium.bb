@@ -22,11 +22,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PRIMITIVE_VALUE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PRIMITIVE_VALUE_H_
 
+#include <bitset>
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
-#include "third_party/blink/renderer/platform/wtf/bit_vector.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
@@ -140,11 +140,10 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
 
   struct CSSLengthArray {
     CSSLengthArray() : values(kLengthUnitTypeCount) {
-      type_flags.Resize(kLengthUnitTypeCount);
     }
 
     Vector<double, CSSPrimitiveValue::kLengthUnitTypeCount> values;
-    BitVector type_flags;
+    std::bitset<kLengthUnitTypeCount> type_flags;
   };
 
   void AccumulateLengthArray(CSSLengthArray&, double multiplier = 1) const;

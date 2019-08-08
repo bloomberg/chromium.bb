@@ -51,181 +51,179 @@ T *FindField(TestConfig *config, const Flag<T> (&flags)[N], const char *flag) {
 }
 
 const Flag<bool> kBoolFlags[] = {
-  { "-server", &TestConfig::is_server },
-  { "-dtls", &TestConfig::is_dtls },
-  { "-fallback-scsv", &TestConfig::fallback_scsv },
-  { "-require-any-client-certificate",
-    &TestConfig::require_any_client_certificate },
-  { "-false-start", &TestConfig::false_start },
-  { "-async", &TestConfig::async },
-  { "-write-different-record-sizes",
-    &TestConfig::write_different_record_sizes },
-  { "-cbc-record-splitting", &TestConfig::cbc_record_splitting },
-  { "-partial-write", &TestConfig::partial_write },
-  { "-no-tls13", &TestConfig::no_tls13 },
-  { "-no-tls12", &TestConfig::no_tls12 },
-  { "-no-tls11", &TestConfig::no_tls11 },
-  { "-no-tls1", &TestConfig::no_tls1 },
-  { "-no-ticket", &TestConfig::no_ticket },
-  { "-enable-channel-id", &TestConfig::enable_channel_id },
-  { "-shim-writes-first", &TestConfig::shim_writes_first },
-  { "-expect-session-miss", &TestConfig::expect_session_miss },
-  { "-decline-alpn", &TestConfig::decline_alpn },
-  { "-select-empty-alpn", &TestConfig::select_empty_alpn },
-  { "-expect-extended-master-secret",
-    &TestConfig::expect_extended_master_secret },
-  { "-enable-ocsp-stapling", &TestConfig::enable_ocsp_stapling },
-  { "-enable-signed-cert-timestamps",
-    &TestConfig::enable_signed_cert_timestamps },
-  { "-implicit-handshake", &TestConfig::implicit_handshake },
-  { "-use-early-callback", &TestConfig::use_early_callback },
-  { "-fail-early-callback", &TestConfig::fail_early_callback },
-  { "-install-ddos-callback", &TestConfig::install_ddos_callback },
-  { "-fail-ddos-callback", &TestConfig::fail_ddos_callback },
-  { "-fail-cert-callback", &TestConfig::fail_cert_callback },
-  { "-handshake-never-done", &TestConfig::handshake_never_done },
-  { "-use-export-context", &TestConfig::use_export_context },
-  { "-tls-unique", &TestConfig::tls_unique },
-  { "-expect-ticket-renewal", &TestConfig::expect_ticket_renewal },
-  { "-expect-no-session", &TestConfig::expect_no_session },
-  { "-expect-ticket-supports-early-data",
-    &TestConfig::expect_ticket_supports_early_data },
-  { "-use-ticket-callback", &TestConfig::use_ticket_callback },
-  { "-renew-ticket", &TestConfig::renew_ticket },
-  { "-enable-early-data", &TestConfig::enable_early_data },
-  { "-check-close-notify", &TestConfig::check_close_notify },
-  { "-shim-shuts-down", &TestConfig::shim_shuts_down },
-  { "-verify-fail", &TestConfig::verify_fail },
-  { "-verify-peer", &TestConfig::verify_peer },
-  { "-verify-peer-if-no-obc", &TestConfig::verify_peer_if_no_obc },
-  { "-expect-verify-result", &TestConfig::expect_verify_result },
-  { "-renegotiate-once", &TestConfig::renegotiate_once },
-  { "-renegotiate-freely", &TestConfig::renegotiate_freely },
-  { "-renegotiate-ignore", &TestConfig::renegotiate_ignore },
-  { "-forbid-renegotiation-after-handshake",
-    &TestConfig::forbid_renegotiation_after_handshake },
-  { "-enable-all-curves", &TestConfig::enable_all_curves },
-  { "-use-old-client-cert-callback",
-    &TestConfig::use_old_client_cert_callback },
-  { "-send-alert", &TestConfig::send_alert },
-  { "-peek-then-read", &TestConfig::peek_then_read },
-  { "-enable-grease", &TestConfig::enable_grease },
-  { "-use-exporter-between-reads", &TestConfig::use_exporter_between_reads },
-  { "-retain-only-sha256-client-cert",
-    &TestConfig::retain_only_sha256_client_cert },
-  { "-expect-sha256-client-cert",
-    &TestConfig::expect_sha256_client_cert },
-  { "-read-with-unfinished-write", &TestConfig::read_with_unfinished_write },
-  { "-expect-secure-renegotiation",
-    &TestConfig::expect_secure_renegotiation },
-  { "-expect-no-secure-renegotiation",
-    &TestConfig::expect_no_secure_renegotiation },
-  { "-expect-session-id", &TestConfig::expect_session_id },
-  { "-expect-no-session-id", &TestConfig::expect_no_session_id },
-  { "-expect-accept-early-data", &TestConfig::expect_accept_early_data },
-  { "-expect-reject-early-data", &TestConfig::expect_reject_early_data },
-  { "-expect-no-offer-early-data", &TestConfig::expect_no_offer_early_data },
-  { "-no-op-extra-handshake", &TestConfig::no_op_extra_handshake },
-  { "-handshake-twice", &TestConfig::handshake_twice },
-  { "-allow-unknown-alpn-protos", &TestConfig::allow_unknown_alpn_protos },
-  { "-enable-ed25519", &TestConfig::enable_ed25519 },
-  { "-use-custom-verify-callback", &TestConfig::use_custom_verify_callback },
-  { "-allow-false-start-without-alpn",
-    &TestConfig::allow_false_start_without_alpn },
-  { "-ignore-tls13-downgrade", &TestConfig::ignore_tls13_downgrade },
-  { "-expect-tls13-downgrade", &TestConfig::expect_tls13_downgrade },
-  { "-handoff", &TestConfig::handoff },
-  { "-no-rsa-pss-rsae-certs", &TestConfig::no_rsa_pss_rsae_certs },
-  { "-use-ocsp-callback", &TestConfig::use_ocsp_callback },
-  { "-set-ocsp-in-callback", &TestConfig::set_ocsp_in_callback },
-  { "-decline-ocsp-callback", &TestConfig::decline_ocsp_callback },
-  { "-fail-ocsp-callback", &TestConfig::fail_ocsp_callback },
-  { "-install-cert-compression-algs",
-    &TestConfig::install_cert_compression_algs },
-  { "-is-handshaker-supported", &TestConfig::is_handshaker_supported },
-  { "-handshaker-resume", &TestConfig::handshaker_resume },
-  { "-reverify-on-resume", &TestConfig::reverify_on_resume },
-  { "-enforce-rsa-key-usage", &TestConfig::enforce_rsa_key_usage },
-  { "-jdk11-workaround", &TestConfig::jdk11_workaround },
-  { "-server-preference", &TestConfig::server_preference },
-  { "-export-traffic-secrets", &TestConfig::export_traffic_secrets },
-  { "-key-update", &TestConfig::key_update },
+    {"-server", &TestConfig::is_server},
+    {"-dtls", &TestConfig::is_dtls},
+    {"-fallback-scsv", &TestConfig::fallback_scsv},
+    {"-require-any-client-certificate",
+     &TestConfig::require_any_client_certificate},
+    {"-false-start", &TestConfig::false_start},
+    {"-async", &TestConfig::async},
+    {"-write-different-record-sizes",
+     &TestConfig::write_different_record_sizes},
+    {"-cbc-record-splitting", &TestConfig::cbc_record_splitting},
+    {"-partial-write", &TestConfig::partial_write},
+    {"-no-tls13", &TestConfig::no_tls13},
+    {"-no-tls12", &TestConfig::no_tls12},
+    {"-no-tls11", &TestConfig::no_tls11},
+    {"-no-tls1", &TestConfig::no_tls1},
+    {"-no-ticket", &TestConfig::no_ticket},
+    {"-enable-channel-id", &TestConfig::enable_channel_id},
+    {"-shim-writes-first", &TestConfig::shim_writes_first},
+    {"-expect-session-miss", &TestConfig::expect_session_miss},
+    {"-decline-alpn", &TestConfig::decline_alpn},
+    {"-select-empty-alpn", &TestConfig::select_empty_alpn},
+    {"-expect-extended-master-secret",
+     &TestConfig::expect_extended_master_secret},
+    {"-enable-ocsp-stapling", &TestConfig::enable_ocsp_stapling},
+    {"-enable-signed-cert-timestamps",
+     &TestConfig::enable_signed_cert_timestamps},
+    {"-implicit-handshake", &TestConfig::implicit_handshake},
+    {"-use-early-callback", &TestConfig::use_early_callback},
+    {"-fail-early-callback", &TestConfig::fail_early_callback},
+    {"-install-ddos-callback", &TestConfig::install_ddos_callback},
+    {"-fail-ddos-callback", &TestConfig::fail_ddos_callback},
+    {"-fail-cert-callback", &TestConfig::fail_cert_callback},
+    {"-handshake-never-done", &TestConfig::handshake_never_done},
+    {"-use-export-context", &TestConfig::use_export_context},
+    {"-tls-unique", &TestConfig::tls_unique},
+    {"-expect-ticket-renewal", &TestConfig::expect_ticket_renewal},
+    {"-expect-no-session", &TestConfig::expect_no_session},
+    {"-expect-ticket-supports-early-data",
+     &TestConfig::expect_ticket_supports_early_data},
+    {"-use-ticket-callback", &TestConfig::use_ticket_callback},
+    {"-renew-ticket", &TestConfig::renew_ticket},
+    {"-enable-early-data", &TestConfig::enable_early_data},
+    {"-check-close-notify", &TestConfig::check_close_notify},
+    {"-shim-shuts-down", &TestConfig::shim_shuts_down},
+    {"-verify-fail", &TestConfig::verify_fail},
+    {"-verify-peer", &TestConfig::verify_peer},
+    {"-verify-peer-if-no-obc", &TestConfig::verify_peer_if_no_obc},
+    {"-expect-verify-result", &TestConfig::expect_verify_result},
+    {"-renegotiate-once", &TestConfig::renegotiate_once},
+    {"-renegotiate-freely", &TestConfig::renegotiate_freely},
+    {"-renegotiate-ignore", &TestConfig::renegotiate_ignore},
+    {"-forbid-renegotiation-after-handshake",
+     &TestConfig::forbid_renegotiation_after_handshake},
+    {"-enable-all-curves", &TestConfig::enable_all_curves},
+    {"-use-old-client-cert-callback",
+     &TestConfig::use_old_client_cert_callback},
+    {"-send-alert", &TestConfig::send_alert},
+    {"-peek-then-read", &TestConfig::peek_then_read},
+    {"-enable-grease", &TestConfig::enable_grease},
+    {"-use-exporter-between-reads", &TestConfig::use_exporter_between_reads},
+    {"-retain-only-sha256-client-cert",
+     &TestConfig::retain_only_sha256_client_cert},
+    {"-expect-sha256-client-cert", &TestConfig::expect_sha256_client_cert},
+    {"-read-with-unfinished-write", &TestConfig::read_with_unfinished_write},
+    {"-expect-secure-renegotiation", &TestConfig::expect_secure_renegotiation},
+    {"-expect-no-secure-renegotiation",
+     &TestConfig::expect_no_secure_renegotiation},
+    {"-expect-session-id", &TestConfig::expect_session_id},
+    {"-expect-no-session-id", &TestConfig::expect_no_session_id},
+    {"-expect-accept-early-data", &TestConfig::expect_accept_early_data},
+    {"-expect-reject-early-data", &TestConfig::expect_reject_early_data},
+    {"-expect-no-offer-early-data", &TestConfig::expect_no_offer_early_data},
+    {"-no-op-extra-handshake", &TestConfig::no_op_extra_handshake},
+    {"-handshake-twice", &TestConfig::handshake_twice},
+    {"-allow-unknown-alpn-protos", &TestConfig::allow_unknown_alpn_protos},
+    {"-enable-ed25519", &TestConfig::enable_ed25519},
+    {"-use-custom-verify-callback", &TestConfig::use_custom_verify_callback},
+    {"-allow-false-start-without-alpn",
+     &TestConfig::allow_false_start_without_alpn},
+    {"-ignore-tls13-downgrade", &TestConfig::ignore_tls13_downgrade},
+    {"-expect-tls13-downgrade", &TestConfig::expect_tls13_downgrade},
+    {"-handoff", &TestConfig::handoff},
+    {"-no-rsa-pss-rsae-certs", &TestConfig::no_rsa_pss_rsae_certs},
+    {"-use-ocsp-callback", &TestConfig::use_ocsp_callback},
+    {"-set-ocsp-in-callback", &TestConfig::set_ocsp_in_callback},
+    {"-decline-ocsp-callback", &TestConfig::decline_ocsp_callback},
+    {"-fail-ocsp-callback", &TestConfig::fail_ocsp_callback},
+    {"-install-cert-compression-algs",
+     &TestConfig::install_cert_compression_algs},
+    {"-is-handshaker-supported", &TestConfig::is_handshaker_supported},
+    {"-handshaker-resume", &TestConfig::handshaker_resume},
+    {"-reverify-on-resume", &TestConfig::reverify_on_resume},
+    {"-enforce-rsa-key-usage", &TestConfig::enforce_rsa_key_usage},
+    {"-jdk11-workaround", &TestConfig::jdk11_workaround},
+    {"-server-preference", &TestConfig::server_preference},
+    {"-export-traffic-secrets", &TestConfig::export_traffic_secrets},
+    {"-key-update", &TestConfig::key_update},
 };
 
 const Flag<std::string> kStringFlags[] = {
-  { "-write-settings", &TestConfig::write_settings },
-  { "-key-file", &TestConfig::key_file },
-  { "-cert-file", &TestConfig::cert_file },
-  { "-expect-server-name", &TestConfig::expected_server_name },
-  { "-advertise-npn", &TestConfig::advertise_npn },
-  { "-expect-next-proto", &TestConfig::expected_next_proto },
-  { "-select-next-proto", &TestConfig::select_next_proto },
-  { "-send-channel-id", &TestConfig::send_channel_id },
-  { "-host-name", &TestConfig::host_name },
-  { "-advertise-alpn", &TestConfig::advertise_alpn },
-  { "-expect-alpn", &TestConfig::expected_alpn },
-  { "-expect-late-alpn", &TestConfig::expected_late_alpn },
-  { "-expect-advertised-alpn", &TestConfig::expected_advertised_alpn },
-  { "-select-alpn", &TestConfig::select_alpn },
-  { "-psk", &TestConfig::psk },
-  { "-psk-identity", &TestConfig::psk_identity },
-  { "-srtp-profiles", &TestConfig::srtp_profiles },
-  { "-cipher", &TestConfig::cipher },
-  { "-export-label", &TestConfig::export_label },
-  { "-export-context", &TestConfig::export_context },
-  { "-expect-peer-cert-file", &TestConfig::expect_peer_cert_file },
-  { "-use-client-ca-list", &TestConfig::use_client_ca_list },
-  { "-expect-client-ca-list", &TestConfig::expected_client_ca_list },
-  { "-expect-msg-callback", &TestConfig::expect_msg_callback },
-  { "-handshaker-path", &TestConfig::handshaker_path },
-  { "-delegated-credential", &TestConfig::delegated_credential },
+    {"-write-settings", &TestConfig::write_settings},
+    {"-key-file", &TestConfig::key_file},
+    {"-cert-file", &TestConfig::cert_file},
+    {"-expect-server-name", &TestConfig::expect_server_name},
+    {"-advertise-npn", &TestConfig::advertise_npn},
+    {"-expect-next-proto", &TestConfig::expect_next_proto},
+    {"-select-next-proto", &TestConfig::select_next_proto},
+    {"-send-channel-id", &TestConfig::send_channel_id},
+    {"-host-name", &TestConfig::host_name},
+    {"-advertise-alpn", &TestConfig::advertise_alpn},
+    {"-expect-alpn", &TestConfig::expect_alpn},
+    {"-expect-late-alpn", &TestConfig::expect_late_alpn},
+    {"-expect-advertised-alpn", &TestConfig::expect_advertised_alpn},
+    {"-select-alpn", &TestConfig::select_alpn},
+    {"-psk", &TestConfig::psk},
+    {"-psk-identity", &TestConfig::psk_identity},
+    {"-srtp-profiles", &TestConfig::srtp_profiles},
+    {"-cipher", &TestConfig::cipher},
+    {"-export-label", &TestConfig::export_label},
+    {"-export-context", &TestConfig::export_context},
+    {"-expect-peer-cert-file", &TestConfig::expect_peer_cert_file},
+    {"-use-client-ca-list", &TestConfig::use_client_ca_list},
+    {"-expect-client-ca-list", &TestConfig::expect_client_ca_list},
+    {"-expect-msg-callback", &TestConfig::expect_msg_callback},
+    {"-handshaker-path", &TestConfig::handshaker_path},
+    {"-delegated-credential", &TestConfig::delegated_credential},
+    {"-expect-early-data-reason", &TestConfig::expect_early_data_reason},
 };
 
 const Flag<std::string> kBase64Flags[] = {
-  { "-expect-certificate-types", &TestConfig::expected_certificate_types },
-  { "-expect-channel-id", &TestConfig::expected_channel_id },
-  { "-token-binding-params", &TestConfig::send_token_binding_params },
-  { "-expect-ocsp-response", &TestConfig::expected_ocsp_response },
-  { "-expect-signed-cert-timestamps",
-    &TestConfig::expected_signed_cert_timestamps },
-  { "-ocsp-response", &TestConfig::ocsp_response },
-  { "-signed-cert-timestamps", &TestConfig::signed_cert_timestamps },
-  { "-ticket-key", &TestConfig::ticket_key },
-  { "-quic-transport-params", &TestConfig::quic_transport_params },
-  { "-expected-quic-transport-params",
-    &TestConfig::expected_quic_transport_params },
+    {"-expect-certificate-types", &TestConfig::expect_certificate_types},
+    {"-expect-channel-id", &TestConfig::expect_channel_id},
+    {"-token-binding-params", &TestConfig::send_token_binding_params},
+    {"-expect-ocsp-response", &TestConfig::expect_ocsp_response},
+    {"-expect-signed-cert-timestamps",
+     &TestConfig::expect_signed_cert_timestamps},
+    {"-ocsp-response", &TestConfig::ocsp_response},
+    {"-signed-cert-timestamps", &TestConfig::signed_cert_timestamps},
+    {"-ticket-key", &TestConfig::ticket_key},
+    {"-quic-transport-params", &TestConfig::quic_transport_params},
+    {"-expect-quic-transport-params",
+     &TestConfig::expect_quic_transport_params},
 };
 
 const Flag<int> kIntFlags[] = {
-  { "-port", &TestConfig::port },
-  { "-resume-count", &TestConfig::resume_count },
-  { "-expected-token-binding-param",
-    &TestConfig::expected_token_binding_param },
-  { "-min-version", &TestConfig::min_version },
-  { "-max-version", &TestConfig::max_version },
-  { "-expect-version", &TestConfig::expect_version },
-  { "-mtu", &TestConfig::mtu },
-  { "-export-early-keying-material",
-    &TestConfig::export_early_keying_material },
-  { "-export-keying-material", &TestConfig::export_keying_material },
-  { "-expect-total-renegotiations", &TestConfig::expect_total_renegotiations },
-  { "-expect-peer-signature-algorithm",
-    &TestConfig::expect_peer_signature_algorithm },
-  { "-expect-curve-id", &TestConfig::expect_curve_id },
-  { "-initial-timeout-duration-ms", &TestConfig::initial_timeout_duration_ms },
-  { "-max-cert-list", &TestConfig::max_cert_list },
-  { "-expect-cipher-aes", &TestConfig::expect_cipher_aes },
-  { "-expect-cipher-no-aes", &TestConfig::expect_cipher_no_aes },
-  { "-resumption-delay", &TestConfig::resumption_delay },
-  { "-max-send-fragment", &TestConfig::max_send_fragment },
-  { "-read-size", &TestConfig::read_size },
-  { "-expect-ticket-age-skew", &TestConfig::expect_ticket_age_skew },
+    {"-port", &TestConfig::port},
+    {"-resume-count", &TestConfig::resume_count},
+    {"-expect-token-binding-param", &TestConfig::expect_token_binding_param},
+    {"-min-version", &TestConfig::min_version},
+    {"-max-version", &TestConfig::max_version},
+    {"-expect-version", &TestConfig::expect_version},
+    {"-mtu", &TestConfig::mtu},
+    {"-export-early-keying-material",
+     &TestConfig::export_early_keying_material},
+    {"-export-keying-material", &TestConfig::export_keying_material},
+    {"-expect-total-renegotiations", &TestConfig::expect_total_renegotiations},
+    {"-expect-peer-signature-algorithm",
+     &TestConfig::expect_peer_signature_algorithm},
+    {"-expect-curve-id", &TestConfig::expect_curve_id},
+    {"-initial-timeout-duration-ms", &TestConfig::initial_timeout_duration_ms},
+    {"-max-cert-list", &TestConfig::max_cert_list},
+    {"-expect-cipher-aes", &TestConfig::expect_cipher_aes},
+    {"-expect-cipher-no-aes", &TestConfig::expect_cipher_no_aes},
+    {"-resumption-delay", &TestConfig::resumption_delay},
+    {"-max-send-fragment", &TestConfig::max_send_fragment},
+    {"-read-size", &TestConfig::read_size},
+    {"-expect-ticket-age-skew", &TestConfig::expect_ticket_age_skew},
 };
 
 const Flag<std::vector<int>> kIntVectorFlags[] = {
     {"-signing-prefs", &TestConfig::signing_prefs},
     {"-verify-prefs", &TestConfig::verify_prefs},
-    {"-expect-peer-verify-pref", &TestConfig::expected_peer_verify_prefs},
+    {"-expect-peer-verify-pref", &TestConfig::expect_peer_verify_prefs},
     {"-curves", &TestConfig::curves},
 };
 
@@ -403,9 +401,9 @@ static int ServerNameCallback(SSL *ssl, int *out_alert, void *arg) {
   const TestConfig *config = GetTestConfig(ssl);
   const char *server_name = SSL_get_servername(ssl, TLSEXT_NAMETYPE_host_name);
   if (server_name == nullptr ||
-      std::string(server_name) != config->expected_server_name) {
+      std::string(server_name) != config->expect_server_name) {
     fprintf(stderr, "servername mismatch (got %s; want %s)\n", server_name,
-            config->expected_server_name.c_str());
+            config->expect_server_name.c_str());
     return SSL_TLSEXT_ERR_ALERT_FATAL;
   }
 
@@ -618,9 +616,9 @@ static int AlpnSelectCallback(SSL *ssl, const uint8_t **out, uint8_t *outlen,
     return SSL_TLSEXT_ERR_NOACK;
   }
 
-  if (!config->expected_advertised_alpn.empty() &&
-      (config->expected_advertised_alpn.size() != inlen ||
-       OPENSSL_memcmp(config->expected_advertised_alpn.data(), in, inlen) !=
+  if (!config->expect_advertised_alpn.empty() &&
+      (config->expect_advertised_alpn.size() != inlen ||
+       OPENSSL_memcmp(config->expect_advertised_alpn.data(), in, inlen) !=
            0)) {
     fprintf(stderr, "bad ALPN select callback inputs\n");
     exit(1);
@@ -634,7 +632,7 @@ static int AlpnSelectCallback(SSL *ssl, const uint8_t **out, uint8_t *outlen,
 
 static bool CheckVerifyCallback(SSL *ssl) {
   const TestConfig *config = GetTestConfig(ssl);
-  if (!config->expected_ocsp_response.empty()) {
+  if (!config->expect_ocsp_response.empty()) {
     const uint8_t *data;
     size_t len;
     SSL_get0_ocsp_response(ssl, &data, &len);
@@ -847,22 +845,22 @@ static bssl::UniquePtr<STACK_OF(X509_NAME)> DecodeHexX509Names(
 
 static bool CheckPeerVerifyPrefs(SSL *ssl) {
   const TestConfig *config = GetTestConfig(ssl);
-  if (!config->expected_peer_verify_prefs.empty()) {
+  if (!config->expect_peer_verify_prefs.empty()) {
     const uint16_t *peer_sigalgs;
     size_t num_peer_sigalgs =
         SSL_get0_peer_verify_algorithms(ssl, &peer_sigalgs);
-    if (config->expected_peer_verify_prefs.size() != num_peer_sigalgs) {
+    if (config->expect_peer_verify_prefs.size() != num_peer_sigalgs) {
       fprintf(stderr,
               "peer verify preferences length mismatch (got %zu, wanted %zu)\n",
-              num_peer_sigalgs, config->expected_peer_verify_prefs.size());
+              num_peer_sigalgs, config->expect_peer_verify_prefs.size());
       return false;
     }
     for (size_t i = 0; i < num_peer_sigalgs; i++) {
       if (static_cast<int>(peer_sigalgs[i]) !=
-          config->expected_peer_verify_prefs[i]) {
+          config->expect_peer_verify_prefs[i]) {
         fprintf(stderr,
                 "peer verify preference %zu mismatch (got %04x, wanted %04x\n",
-                i, peer_sigalgs[i], config->expected_peer_verify_prefs[i]);
+                i, peer_sigalgs[i], config->expect_peer_verify_prefs[i]);
         return false;
       }
     }
@@ -877,22 +875,22 @@ static bool CheckCertificateRequest(SSL *ssl) {
     return false;
   }
 
-  if (!config->expected_certificate_types.empty()) {
+  if (!config->expect_certificate_types.empty()) {
     const uint8_t *certificate_types;
     size_t certificate_types_len =
         SSL_get0_certificate_types(ssl, &certificate_types);
-    if (certificate_types_len != config->expected_certificate_types.size() ||
+    if (certificate_types_len != config->expect_certificate_types.size() ||
         OPENSSL_memcmp(certificate_types,
-                       config->expected_certificate_types.data(),
+                       config->expect_certificate_types.data(),
                        certificate_types_len) != 0) {
       fprintf(stderr, "certificate types mismatch\n");
       return false;
     }
   }
 
-  if (!config->expected_client_ca_list.empty()) {
+  if (!config->expect_client_ca_list.empty()) {
     bssl::UniquePtr<STACK_OF(X509_NAME)> expected =
-        DecodeHexX509Names(config->expected_client_ca_list);
+        DecodeHexX509Names(config->expect_client_ca_list);
     const size_t num_expected = sk_X509_NAME_num(expected.get());
 
     const STACK_OF(X509_NAME) *received = SSL_get_client_CA_list(ssl);
@@ -1099,7 +1097,7 @@ static enum ssl_select_cert_result_t SelectCertificateCallback(
   const TestConfig *config = GetTestConfig(client_hello->ssl);
   GetTestState(client_hello->ssl)->early_callback_called = true;
 
-  if (!config->expected_server_name.empty()) {
+  if (!config->expect_server_name.empty()) {
     const uint8_t *extension_data;
     size_t extension_len;
     CBS extension, server_name_list, host_name;
@@ -1124,8 +1122,8 @@ static enum ssl_select_cert_result_t SelectCertificateCallback(
     }
 
     if (!CBS_mem_equal(&host_name,
-                       (const uint8_t *)config->expected_server_name.data(),
-                       config->expected_server_name.size())) {
+                       (const uint8_t *)config->expect_server_name.data(),
+                       config->expect_server_name.size())) {
       fprintf(stderr, "Server name mismatch.\n");
     }
   }
@@ -1240,7 +1238,7 @@ bssl::UniquePtr<SSL_CTX> TestConfig::SetupCtx(SSL_CTX *old_ctx) const {
     SSL_CTX_set_grease_enabled(ssl_ctx.get(), 1);
   }
 
-  if (!expected_server_name.empty()) {
+  if (!expect_server_name.empty()) {
     SSL_CTX_set_tlsext_servername_callback(ssl_ctx.get(), ServerNameCallback);
   }
 
@@ -1520,7 +1518,7 @@ bssl::UniquePtr<SSL> TestConfig::NewSSL(
   if (no_ticket) {
     SSL_set_options(ssl.get(), SSL_OP_NO_TICKET);
   }
-  if (!expected_channel_id.empty() || enable_channel_id) {
+  if (!expect_channel_id.empty() || enable_channel_id) {
     SSL_set_tls_channel_id_enabled(ssl.get(), 1);
   }
   if (!send_channel_id.empty()) {

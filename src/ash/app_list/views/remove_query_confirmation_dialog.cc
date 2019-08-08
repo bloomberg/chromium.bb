@@ -55,6 +55,10 @@ void RemoveQueryConfirmationDialog::Show(gfx::NativeWindow parent) {
   GetWidget()->Show();
 }
 
+const char* RemoveQueryConfirmationDialog::GetClassName() const {
+  return "RemoveQueryConfirmationDialog";
+}
+
 base::string16 RemoveQueryConfirmationDialog::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_REMOVE_ZERO_STATE_SUGGESTION_TITLE);
 }

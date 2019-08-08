@@ -29,7 +29,8 @@ class CacheStorageOperation;
 // the next operation.
 class CONTENT_EXPORT CacheStorageScheduler {
  public:
-  explicit CacheStorageScheduler(CacheStorageSchedulerClient client_type);
+  CacheStorageScheduler(CacheStorageSchedulerClient client_type,
+                        scoped_refptr<base::SequencedTaskRunner> task_runner);
   virtual ~CacheStorageScheduler();
 
   // Adds the operation to the tail of the queue and starts it if the scheduler
@@ -52,6 +53,10 @@ class CONTENT_EXPORT CacheStorageScheduler {
                           weak_ptr_factory_.GetWeakPtr(), std::move(callback));
   }
 
+ protected:
+  // virtual for testing
+  virtual void DispatchOperationTask(base::OnceClosure task);
+
  private:
   void RunOperationIfIdle();
 
@@ -68,9 +73,10 @@ class CONTENT_EXPORT CacheStorageScheduler {
       CompleteOperationAndRunNext();
   }
 
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   std::list<std::unique_ptr<CacheStorageOperation>> pending_operations_;
   std::unique_ptr<CacheStorageOperation> running_operation_;
-  CacheStorageSchedulerClient client_type_;
+  const CacheStorageSchedulerClient client_type_;
 
   base::WeakPtrFactory<CacheStorageScheduler> weak_ptr_factory_;
 

@@ -167,7 +167,7 @@ void MenuRunnerImplCocoa::Release() {
 }
 
 void MenuRunnerImplCocoa::RunMenuAt(Widget* parent,
-                                    MenuButton* button,
+                                    MenuButtonController* button_controller,
                                     const gfx::Rect& bounds,
                                     MenuAnchorPosition anchor,
                                     int32_t run_types) {

@@ -197,7 +197,6 @@ TEST_F(MediaSessionImplTest, SessionInfoState) {
   {
     MockMediaSessionMojoObserver observer(*GetMediaSession());
     RequestAudioFocus(GetMediaSession(), AudioFocusType::kGain);
-    FlushForTesting(GetMediaSession());
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
 
     EXPECT_TRUE(observer.session_info().Equals(
@@ -207,7 +206,6 @@ TEST_F(MediaSessionImplTest, SessionInfoState) {
   {
     MockMediaSessionMojoObserver observer(*GetMediaSession());
     GetMediaSession()->StartDucking();
-    FlushForTesting(GetMediaSession());
     observer.WaitForState(MediaSessionInfo::SessionState::kDucking);
 
     EXPECT_TRUE(observer.session_info().Equals(
@@ -217,7 +215,6 @@ TEST_F(MediaSessionImplTest, SessionInfoState) {
   {
     MockMediaSessionMojoObserver observer(*GetMediaSession());
     GetMediaSession()->StopDucking();
-    FlushForTesting(GetMediaSession());
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
 
     EXPECT_TRUE(observer.session_info().Equals(
@@ -227,7 +224,6 @@ TEST_F(MediaSessionImplTest, SessionInfoState) {
   {
     MockMediaSessionMojoObserver observer(*GetMediaSession());
     GetMediaSession()->Suspend(MediaSession::SuspendType::kSystem);
-    FlushForTesting(GetMediaSession());
     observer.WaitForState(MediaSessionInfo::SessionState::kSuspended);
 
     EXPECT_TRUE(observer.session_info().Equals(
@@ -237,7 +233,6 @@ TEST_F(MediaSessionImplTest, SessionInfoState) {
   {
     MockMediaSessionMojoObserver observer(*GetMediaSession());
     GetMediaSession()->Resume(MediaSession::SuspendType::kSystem);
-    FlushForTesting(GetMediaSession());
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
 
     EXPECT_TRUE(observer.session_info().Equals(
@@ -247,7 +242,6 @@ TEST_F(MediaSessionImplTest, SessionInfoState) {
   {
     MockMediaSessionMojoObserver observer(*GetMediaSession());
     AbandonAudioFocus(GetMediaSession());
-    FlushForTesting(GetMediaSession());
     observer.WaitForState(MediaSessionInfo::SessionState::kInactive);
 
     EXPECT_TRUE(observer.session_info().Equals(

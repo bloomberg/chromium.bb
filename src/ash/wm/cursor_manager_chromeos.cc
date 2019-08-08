@@ -6,11 +6,11 @@
 
 #include <utility>
 
+#include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/shell.h"
 #include "base/logging.h"
 #include "ui/aura/env.h"
 #include "ui/events/event.h"
-#include "ui/keyboard/keyboard_util.h"
 #include "ui/wm/core/cursor_manager.h"
 #include "ui/wm/core/native_cursor_manager.h"
 
@@ -33,7 +33,7 @@ bool CursorManager::ShouldHideCursorOnKeyEvent(
     return false;
 
   // Do not hide cursor when clicking the key with mouse button pressed.
-  if (Shell::Get()->aura_env()->IsMouseButtonDown())
+  if (aura::Env::GetInstance()->IsMouseButtonDown())
     return false;
 
   // Clicking on a key when the accessibility virtual keyboard is enabled should

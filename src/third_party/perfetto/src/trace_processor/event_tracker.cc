@@ -25,6 +25,7 @@
 #include "src/trace_processor/process_tracker.h"
 #include "src/trace_processor/stats.h"
 #include "src/trace_processor/trace_processor_context.h"
+#include "src/trace_processor/variadic.h"
 
 #include "perfetto/trace/ftrace/ftrace_event.pbzero.h"
 #include "perfetto/trace/ftrace/sched.pbzero.h"
@@ -84,8 +85,12 @@ void EventTracker::PushSchedSwitch(uint32_t cpu,
       // We store the state as a uint16 as we only consider values up to 2048
       // when unpacking the information inside; this allows savings of 48 bits
       // per slice.
-      slices->set_end_state(slice_idx, ftrace_utils::TaskState(
-                                           static_cast<uint16_t>(prev_state)));
+      auto task_state =
+          ftrace_utils::TaskState(static_cast<uint16_t>(prev_state));
+      if (!task_state.is_valid()) {
+        context_->storage->IncrementStats(stats::task_state_invalid);
+      }
+      slices->set_end_state(slice_idx, task_state);
     } else {
       // If the pids ae not consistent, make a note of this.
       context_->storage->IncrementStats(stats::mismatched_sched_switch_tids);
@@ -107,10 +112,8 @@ void EventTracker::PushSchedSwitch(uint32_t cpu,
   // Note: this ordering is important. The events should be pushed in the same
   // order as the order of fields in the proto; this is used by the raw table to
   // index these events using the field ids.
-  using Variadic = TraceStorage::Args::Variadic;
   using SS = protos::pbzero::SchedSwitchFtraceEvent;
-  auto add_raw_arg = [this](RowId row_id, int field_num,
-                            TraceStorage::Args::Variadic var) {
+  auto add_raw_arg = [this](RowId row_id, int field_num, Variadic var) {
     StringId key = sched_switch_field_ids_[static_cast<size_t>(field_num)];
     context_->args_tracker->AddArg(row_id, key, key, var);
   };
@@ -135,7 +138,8 @@ RowId EventTracker::PushCounter(int64_t timestamp,
                                 double value,
                                 StringId name_id,
                                 int64_t ref,
-                                RefType ref_type) {
+                                RefType ref_type,
+                                bool resolve_utid_to_upid) {
   if (timestamp < prev_timestamp_) {
     PERFETTO_DLOG("counter event (ts: %" PRId64
                   ") out of order by %.4f ms, skipping",
@@ -145,13 +149,91 @@ RowId EventTracker::PushCounter(int64_t timestamp,
   }
   prev_timestamp_ = timestamp;
 
+  PERFETTO_DCHECK(!resolve_utid_to_upid || ref_type == RefType::kRefUtid);
+
   auto* definitions = context_->storage->mutable_counter_definitions();
-  auto counter_row = definitions->AddCounterDefinition(name_id, ref, ref_type);
+  TraceStorage::CounterDefinitions::Id defn_id;
+  if (resolve_utid_to_upid) {
+    defn_id = TraceStorage::CounterDefinitions::kInvalidId;
+  } else {
+    defn_id = definitions->AddCounterDefinition(name_id, ref, ref_type);
+  }
 
   auto* counter_values = context_->storage->mutable_counter_values();
-  size_t idx = counter_values->AddCounterValue(counter_row, timestamp, value);
+  uint32_t idx = counter_values->AddCounterValue(defn_id, timestamp, value);
+  if (resolve_utid_to_upid) {
+    PendingUpidResolutionCounter pending;
+    pending.row = idx;
+    pending.utid = static_cast<UniqueTid>(ref);
+    pending.name_id = name_id;
+    pending_upid_resolution_counter_.emplace_back(pending);
+  }
   return TraceStorage::CreateRowId(TableId::kCounterValues,
                                    static_cast<uint32_t>(idx));
+}
+
+RowId EventTracker::PushInstant(int64_t timestamp,
+                                StringId name_id,
+                                double value,
+                                int64_t ref,
+                                RefType ref_type,
+                                bool resolve_utid_to_upid) {
+  auto* instants = context_->storage->mutable_instants();
+  uint32_t idx;
+  if (resolve_utid_to_upid) {
+    idx = instants->AddInstantEvent(timestamp, name_id, value, 0,
+                                    RefType::kRefUpid);
+    PendingUpidResolutionInstant pending;
+    pending.row = idx;
+    pending.utid = static_cast<UniqueTid>(ref);
+    pending_upid_resolution_instant_.emplace_back(pending);
+  } else {
+    idx = instants->AddInstantEvent(timestamp, name_id, value, ref, ref_type);
+  }
+  return TraceStorage::CreateRowId(TableId::kInstants,
+                                   static_cast<uint32_t>(idx));
+}
+
+void EventTracker::FlushPendingEvents() {
+  // TODO(lalitm): the day this method is called before end of trace, don't
+  // flush the sched events as they will probably be pushed in the next round
+  // of ftrace events.
+  int64_t end_ts = context_->storage->GetTraceTimestampBoundsNs().second;
+  auto* slices = context_->storage->mutable_slices();
+  for (const auto& pending_sched : pending_sched_per_cpu_) {
+    size_t row = pending_sched.storage_index;
+    if (row == std::numeric_limits<size_t>::max())
+      continue;
+
+    int64_t duration = end_ts - slices->start_ns()[row];
+    slices->set_duration(row, duration);
+    slices->set_end_state(
+        row, ftrace_utils::TaskState(ftrace_utils::TaskState::kRunnable));
+  }
+
+  for (const auto& pending_counter : pending_upid_resolution_counter_) {
+    const auto& thread = context_->storage->GetThread(pending_counter.utid);
+    // TODO(lalitm): having upid == 0 is probably not the correct approach here
+    // but it's unclear what may be better.
+    UniquePid upid = thread.upid.value_or(0);
+    auto id =
+        context_->storage->mutable_counter_definitions()->AddCounterDefinition(
+            pending_counter.name_id, upid, RefType::kRefUpid);
+    context_->storage->mutable_counter_values()->set_counter_id(
+        pending_counter.row, id);
+  }
+
+  for (const auto& pending_instant : pending_upid_resolution_instant_) {
+    const auto& thread = context_->storage->GetThread(pending_instant.utid);
+    // TODO(lalitm): having upid == 0 is probably not the correct approach here
+    // but it's unclear what may be better.
+    UniquePid upid = thread.upid.value_or(0);
+    context_->storage->mutable_instants()->set_ref(pending_instant.row, upid);
+  }
+
+  pending_sched_per_cpu_ = {};
+  pending_upid_resolution_counter_.clear();
+  pending_upid_resolution_instant_.clear();
 }
 
 }  // namespace trace_processor

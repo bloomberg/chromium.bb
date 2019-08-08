@@ -5,12 +5,11 @@
 #include "chrome/browser/profiles/profile_key.h"
 
 #include "base/logging.h"
-#include "components/keyed_service/core/simple_dependency_manager.h"
 
 ProfileKey::ProfileKey(const base::FilePath& path, ProfileKey* original_key)
-    : SimpleFactoryKey(path), prefs_(nullptr), original_key_(original_key) {
-  SimpleDependencyManager::GetInstance()->MarkContextLive(this);
-}
+    : SimpleFactoryKey(path, original_key != nullptr /* is_off_the_record */),
+      prefs_(nullptr),
+      original_key_(original_key) {}
 
 ProfileKey::~ProfileKey() = default;
 
@@ -22,10 +21,6 @@ PrefService* ProfileKey::GetPrefs() {
 void ProfileKey::SetPrefs(PrefService* prefs) {
   DCHECK(!prefs_);
   prefs_ = prefs;
-}
-
-bool ProfileKey::IsOffTheRecord() const {
-  return original_key_ != nullptr;
 }
 
 // static

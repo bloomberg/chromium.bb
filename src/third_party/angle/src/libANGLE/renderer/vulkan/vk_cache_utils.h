@@ -56,12 +56,25 @@ class alignas(4) RenderPassDesc final
     RenderPassDesc(const RenderPassDesc &other);
     RenderPassDesc &operator=(const RenderPassDesc &other);
 
-    // The caller must pack the depth/stencil attachment last.
-    void packAttachment(const Format &format);
+    // Set format for an enabled GL color attachment.
+    void packColorAttachment(size_t colorIndexGL, angle::FormatID formatID);
+    // Mark a GL color attachment index as disabled.
+    void packColorAttachmentGap(size_t colorIndexGL);
+    // The caller must pack the depth/stencil attachment last, which is packed right after the color
+    // attachments (including gaps), i.e. with an index starting from |colorAttachmentRange()|.
+    void packDepthStencilAttachment(angle::FormatID angleFormatID);
 
     size_t hash() const;
 
-    size_t colorAttachmentCount() const;
+    // Color attachments are in [0, colorAttachmentRange()), with possible gaps.
+    size_t colorAttachmentRange() const { return mColorAttachmentRange; }
+    size_t depthStencilAttachmentIndex() const { return colorAttachmentRange(); }
+
+    bool isColorAttachmentEnabled(size_t colorIndexGL) const;
+    bool hasDepthStencilAttachment() const { return mHasDepthStencilAttachment; }
+
+    // Get the number of attachments in the Vulkan render pass, i.e. after removing disabled
+    // color attachments.
     size_t attachmentCount() const;
 
     void setSamples(GLint samples);
@@ -76,8 +89,28 @@ class alignas(4) RenderPassDesc final
 
   private:
     uint8_t mSamples;
-    uint8_t mColorAttachmentCount : 4;
-    uint8_t mDepthStencilAttachmentCount : 4;
+    uint8_t mColorAttachmentRange : 7;
+    uint8_t mHasDepthStencilAttachment : 1;
+    // Color attachment formats are stored with their GL attachment indices.  The depth/stencil
+    // attachment formats follow the last enabled color attachment.  When creating a render pass,
+    // the disabled attachments are removed and the resulting attachments are packed.
+    //
+    // The attachment indices provided as input to various functions in this file are thus GL
+    // attachment indices.  These indices are marked as such, e.g. colorIndexGL.  The render pass
+    // (and corresponding framebuffer object) lists the packed attachments, with the corresponding
+    // indices marked with Vk, e.g. colorIndexVk.  The subpass attachment references create the
+    // link between the two index spaces.  The subpass declares attachment references with GL
+    // indices (which corresponds to the location decoration of shader outputs).  The attachment
+    // references then contain the Vulkan indices or VK_ATTACHMENT_UNUSED.
+    //
+    // For example, if GL uses color attachments 0 and 3, then there are two render pass
+    // attachments (indexed 0 and 1) and 4 subpass attachments:
+    //
+    //  - Subpass attachment 0 -> Renderpass attachment 0
+    //  - Subpass attachment 1 -> VK_ATTACHMENT_UNUSED
+    //  - Subpass attachment 2 -> VK_ATTACHMENT_UNUSED
+    //  - Subpass attachment 3 -> Renderpass attachment 1
+    //
     gl::AttachmentArray<uint8_t> mAttachmentFormats;
 };
 
@@ -162,11 +195,11 @@ struct RasterizationStateBits final
     uint32_t polygonMode : 4;
     uint32_t cullMode : 4;
     uint32_t frontFace : 4;
-    uint32_t depthBiasEnable : 4;
-    uint32_t rasterizationSamples : 4;
+    uint32_t depthBiasEnable : 1;
     uint32_t sampleShadingEnable : 1;
     uint32_t alphaToCoverageEnable : 1;
-    uint32_t alphaToOneEnable : 2;
+    uint32_t alphaToOneEnable : 1;
+    uint32_t rasterizationSamples : 8;
 };
 
 constexpr size_t kRasterizationStateBitsSize = sizeof(RasterizationStateBits);
@@ -351,6 +384,16 @@ class GraphicsPipelineDesc final
                          bool invertFrontFace);
     void updateLineWidth(GraphicsPipelineTransitionBits *transition, float lineWidth);
 
+    // Multisample states
+    void setRasterizationSamples(uint32_t rasterizationSamples);
+    void updateRasterizationSamples(GraphicsPipelineTransitionBits *transition,
+                                    uint32_t rasterizationSamples);
+    void updateAlphaToCoverageEnable(GraphicsPipelineTransitionBits *transition, bool enable);
+    void updateAlphaToOneEnable(GraphicsPipelineTransitionBits *transition, bool enable);
+    void updateSampleMask(GraphicsPipelineTransitionBits *transition,
+                          uint32_t maskNumber,
+                          uint32_t mask);
+
     // RenderPass description.
     const RenderPassDesc &getRenderPassDesc() const { return mRenderPassDesc; }
 
@@ -367,7 +410,7 @@ class GraphicsPipelineDesc final
                               const gl::BlendState &blendState);
     void setColorWriteMask(VkColorComponentFlags colorComponentFlags,
                            const gl::DrawBufferMask &alphaMask);
-    void setSingleColorWriteMask(uint32_t colorIndex, VkColorComponentFlags colorComponentFlags);
+    void setSingleColorWriteMask(uint32_t colorIndexGL, VkColorComponentFlags colorComponentFlags);
     void updateColorWriteMask(GraphicsPipelineTransitionBits *transition,
                               VkColorComponentFlags colorComponentFlags,
                               const gl::DrawBufferMask &alphaMask);
@@ -442,14 +485,16 @@ class GraphicsPipelineDesc final
 constexpr size_t kGraphicsPipelineDescSize = sizeof(GraphicsPipelineDesc);
 static_assert(kGraphicsPipelineDescSize == kGraphicsPipelineDescSumOfSizes, "Size mismatch");
 
-constexpr uint32_t kMaxDescriptorSetLayoutBindings = gl::IMPLEMENTATION_MAX_ACTIVE_TEXTURES;
+constexpr uint32_t kMaxDescriptorSetLayoutBindings =
+    std::max(gl::IMPLEMENTATION_MAX_ACTIVE_TEXTURES,
+             gl::IMPLEMENTATION_MAX_UNIFORM_BUFFER_BINDINGS);
 
 using DescriptorSetLayoutBindingVector =
     angle::FixedVector<VkDescriptorSetLayoutBinding, kMaxDescriptorSetLayoutBindings>;
 
 // A packed description of a descriptor set layout. Use similarly to RenderPassDesc and
-// GraphicsPipelineDesc. Currently we only need to differentiate layouts based on sampler usage. In
-// the future we could generalize this.
+// GraphicsPipelineDesc. Currently we only need to differentiate layouts based on sampler and ubo
+// usage. In the future we could generalize this.
 class DescriptorSetLayoutDesc final
 {
   public:
@@ -461,16 +506,19 @@ class DescriptorSetLayoutDesc final
     size_t hash() const;
     bool operator==(const DescriptorSetLayoutDesc &other) const;
 
-    void update(uint32_t bindingIndex, VkDescriptorType type, uint32_t count);
+    void update(uint32_t bindingIndex,
+                VkDescriptorType type,
+                uint32_t count,
+                VkShaderStageFlags stages);
 
     void unpackBindings(DescriptorSetLayoutBindingVector *bindings) const;
 
   private:
     struct PackedDescriptorSetBinding
     {
-        uint16_t type;   // Stores a packed VkDescriptorType descriptorType.
+        uint8_t type;    // Stores a packed VkDescriptorType descriptorType.
+        uint8_t stages;  // Stores a packed VkShaderStageFlags.
         uint16_t count;  // Stores a packed uint32_t descriptorCount.
-        // We currently make all descriptors available in the VS and FS shaders.
     };
 
     static_assert(sizeof(PackedDescriptorSetBinding) == sizeof(uint32_t), "Unexpected size");
@@ -480,9 +528,9 @@ class DescriptorSetLayoutDesc final
         mPackedDescriptorSetLayout;
 };
 
-// The following are for caching descriptor set layouts. Limited to max two descriptor set layouts
+// The following are for caching descriptor set layouts. Limited to max four descriptor set layouts
 // and one push constant per shader stage. This can be extended in the future.
-constexpr size_t kMaxDescriptorSetLayouts = 3;
+constexpr size_t kMaxDescriptorSetLayouts = 4;
 constexpr size_t kMaxPushConstantRanges   = angle::EnumSize<gl::ShaderType>();
 
 struct PackedPushConstantRange
@@ -730,7 +778,7 @@ class GraphicsPipelineCache final : angle::NonCopyable
     ~GraphicsPipelineCache();
 
     void destroy(VkDevice device);
-    void release(RendererVk *renderer);
+    void release(ContextVk *context);
 
     void populate(const vk::GraphicsPipelineDesc &desc, vk::Pipeline &&pipeline);
 
@@ -808,11 +856,32 @@ class PipelineLayoutCache final : angle::NonCopyable
 };
 
 // Some descriptor set and pipeline layout constants.
-constexpr uint32_t kVertexUniformsBindingIndex       = 0;
-constexpr uint32_t kFragmentUniformsBindingIndex     = 1;
-constexpr uint32_t kUniformsDescriptorSetIndex       = 0;
-constexpr uint32_t kTextureDescriptorSetIndex        = 1;
-constexpr uint32_t kDriverUniformsDescriptorSetIndex = 2;
+//
+// The set/binding assignment is done as following:
+//
+// - Set 0 contains the ANGLE driver uniforms at binding 0.  Note that driver uniforms are updated
+//   only under rare circumstances, such as viewport or depth range change.  However, there is only
+//   one binding in this set.
+// - Set 1 contains uniform blocks created to encompass default uniforms.  Bindings 0 and 1
+//   correspond to default uniforms in the vertex and fragment shaders respectively.
+// - Set 2 contains all textures.
+// - Set 3 contains all uniform blocks.
+
+// ANGLE driver uniforms set index (binding is always 0):
+constexpr uint32_t kDriverUniformsDescriptorSetIndex = 0;
+// Uniforms set index:
+constexpr uint32_t kUniformsDescriptorSetIndex = 1;
+// Textures set index:
+constexpr uint32_t kTextureDescriptorSetIndex = 2;
+// Uniform blocks set index:
+constexpr uint32_t kUniformBlockDescriptorSetIndex = 3;
+
+// Only 1 driver uniform binding is used.
+constexpr uint32_t kReservedDriverUniformBindingCount = 1;
+// Binding index for default uniforms in the vertex shader:
+constexpr uint32_t kVertexUniformsBindingIndex = 0;
+// Binding index for default uniforms in the fragment shader:
+constexpr uint32_t kFragmentUniformsBindingIndex = 1;
 
 }  // namespace rx
 

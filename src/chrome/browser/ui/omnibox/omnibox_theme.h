@@ -27,9 +27,8 @@ enum class OmniboxPart {
   RESULTS_TEXT_URL,
 };
 
-// The tint of the omnibox theme. E.g. Incognito may use a DARK tint. NATIVE is
-// only used on Desktop Linux.
-enum class OmniboxTint { DARK, LIGHT, NATIVE };
+// The tint of the omnibox theme. E.g. Incognito may use a DARK tint.
+enum class OmniboxTint { DARK, LIGHT };
 
 // An optional state for a given |OmniboxPart|.
 enum class OmniboxPartState {

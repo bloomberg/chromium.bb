@@ -39,7 +39,7 @@ class LayoutVideo final : public LayoutMedia {
 
   static LayoutSize DefaultSize();
 
-  LayoutRect ReplacedContentRect() const final;
+  PhysicalRect ReplacedContentRect() const final;
 
   bool SupportsAcceleratedRendering() const;
 
@@ -65,7 +65,7 @@ class LayoutVideo final : public LayoutMedia {
   }
 
   void PaintReplaced(const PaintInfo&,
-                     const LayoutPoint& paint_offset) const override;
+                     const PhysicalOffset& paint_offset) const override;
 
   void UpdateLayout() override;
 

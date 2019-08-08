@@ -9,7 +9,7 @@ using ::testing::_;
 
 namespace chromeos {
 
-MockErrorScreen::MockErrorScreen(NetworkErrorView* view) : ErrorScreen(view) {}
+MockErrorScreen::MockErrorScreen(ErrorScreenView* view) : ErrorScreen(view) {}
 
 MockErrorScreen::~MockErrorScreen() {}
 
@@ -29,22 +29,22 @@ void MockErrorScreen::SetErrorState(NetworkError::ErrorState error_state,
   MockSetErrorState(error_state, network);
 }
 
-MockNetworkErrorView::MockNetworkErrorView() {
+MockErrorScreenView::MockErrorScreenView() {
   EXPECT_CALL(*this, MockBind(_)).Times(AtLeast(1));
   EXPECT_CALL(*this, MockUnbind()).Times(AtLeast(1));
 }
 
-MockNetworkErrorView::~MockNetworkErrorView() {
+MockErrorScreenView::~MockErrorScreenView() {
   if (screen_)
     screen_->OnViewDestroyed(this);
 }
 
-void MockNetworkErrorView::Bind(ErrorScreen* screen) {
+void MockErrorScreenView::Bind(ErrorScreen* screen) {
   screen_ = screen;
   MockBind(screen);
 }
 
-void MockNetworkErrorView::Unbind() {
+void MockErrorScreenView::Unbind() {
   screen_ = nullptr;
   MockUnbind();
 }

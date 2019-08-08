@@ -300,7 +300,7 @@ void CleanerLoggingService::Initialize(RegistryLogger* registry_logger) {
     // Set invariant environment / machine data.
     ChromeCleanerReport_EnvironmentData* env_data =
         chrome_cleaner_report_.mutable_environment();
-    env_data->set_windows_version(base::win::GetVersion());
+    env_data->set_windows_version(static_cast<int>(base::win::GetVersion()));
     env_data->set_cleaner_version(CHROME_CLEANER_VERSION_UTF8_STRING);
     if (languages.size() > 0)
       env_data->set_default_locale(base::WideToUTF8(languages[0]));

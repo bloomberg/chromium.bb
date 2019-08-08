@@ -9,7 +9,7 @@
 
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/public/cpp/ash_pref_names.h"
-#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/cpp/docked_magnifier_controller.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -109,11 +109,6 @@ MagnificationManager::MagnificationManager() {
   // fullscreen magnifier or docked magnifier is enabled.
   registrar_.Add(this, content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
                  content::NotificationService::AllSources());
-
-  // Connect to ash's DockedMagnifierController interface.
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &docked_magnifier_controller_);
 }
 
 MagnificationManager::~MagnificationManager() {
@@ -298,9 +293,8 @@ void MagnificationManager::HandleFocusChangedInPage(
     return;
   }
   DCHECK(docked_magnifier_enabled);
-  // Called when docked magnifier feature is enabled to avoid unnecessary
-  // mojo IPC to ash.
-  docked_magnifier_controller_->CenterOnPoint(bounds_in_screen.CenterPoint());
+  ash::DockedMagnifierController::Get()->CenterOnPoint(
+      bounds_in_screen.CenterPoint());
 }
 
 }  // namespace chromeos

@@ -42,14 +42,12 @@
 
 namespace blink {
 
-class WebDateTimeChooserCompletion;
-class WebNode;
+class WebElement;
 class WebPagePopup;
 class WebURL;
 class WebURLRequest;
 class WebView;
 enum class WebSandboxFlags;
-struct WebDateTimeChooserParams;
 struct WebRect;
 struct WebSize;
 struct WebWindowFeatures;
@@ -108,18 +106,6 @@ class WebViewClient {
   // Called when PageImportanceSignals for the WebView is updated.
   virtual void PageImportanceSignalsChanged() {}
 
-  // Dialogs -------------------------------------------------------------
-
-  // Ask users to choose date/time for the specified parameters. When a user
-  // chooses a value, an implementation of this function should call
-  // WebDateTimeChooserCompletion::didChooseValue or didCancelChooser. If the
-  // implementation opened date/time chooser UI successfully, it should return
-  // true. This function is used only if ExternalDateTimeChooser is used.
-  virtual bool OpenDateTimeChooser(const WebDateTimeChooserParams&,
-                                   WebDateTimeChooserCompletion*) {
-    return false;
-  }
-
   // UI ------------------------------------------------------------------
 
   // Called when hovering over an anchor with the given URL.
@@ -137,10 +123,10 @@ class WebViewClient {
   virtual void FocusNext() {}
   virtual void FocusPrevious() {}
 
-  // Called when a new node gets focused. |fromNode| is the previously focused
-  // node, |toNode| is the newly focused node. Either can be null.
-  virtual void FocusedNodeChanged(const WebNode& from_node,
-                                  const WebNode& to_node) {}
+  // Called when a new element gets focused. |from_element| is the previously
+  // focused element, |to_element| is the newly focused one. Either can be null.
+  virtual void FocusedElementChanged(const WebElement& from_element,
+                                     const WebElement& to_element) {}
 
   // Called to check if layout update should be processed.
   virtual bool CanUpdateLayout() { return false; }
@@ -197,8 +183,7 @@ class WebViewClient {
 
   // Informs the browser that the page scale has changed and/or a pinch gesture
   // has started or ended.
-  virtual void PageScaleFactorChanged(float page_scale_factor,
-                                      bool is_pinch_gesture_active) {}
+  virtual void PageScaleFactorChanged(float page_scale_factor) {}
 
   // Gestures -------------------------------------------------------------
 

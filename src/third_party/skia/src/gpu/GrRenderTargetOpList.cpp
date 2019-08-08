@@ -5,22 +5,22 @@
  * found in the LICENSE file.
  */
 
-#include "GrRenderTargetOpList.h"
-#include "GrAuditTrail.h"
-#include "GrCaps.h"
-#include "GrGpu.h"
-#include "GrGpuCommandBuffer.h"
-#include "GrMemoryPool.h"
-#include "GrRecordingContext.h"
-#include "GrRecordingContextPriv.h"
-#include "GrRect.h"
-#include "GrRenderTargetContext.h"
-#include "GrResourceAllocator.h"
-#include "SkExchange.h"
-#include "SkRectPriv.h"
-#include "SkTraceEvent.h"
-#include "ops/GrClearOp.h"
-#include "ops/GrCopySurfaceOp.h"
+#include "include/private/GrAuditTrail.h"
+#include "include/private/GrRecordingContext.h"
+#include "src/core/SkExchange.h"
+#include "src/core/SkRectPriv.h"
+#include "src/core/SkTraceEvent.h"
+#include "src/gpu/GrCaps.h"
+#include "src/gpu/GrGpu.h"
+#include "src/gpu/GrGpuCommandBuffer.h"
+#include "src/gpu/GrMemoryPool.h"
+#include "src/gpu/GrRecordingContextPriv.h"
+#include "src/gpu/GrRect.h"
+#include "src/gpu/GrRenderTargetContext.h"
+#include "src/gpu/GrRenderTargetOpList.h"
+#include "src/gpu/GrResourceAllocator.h"
+#include "src/gpu/ops/GrClearOp.h"
+#include "src/gpu/ops/GrCopySurfaceOp.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -130,16 +130,15 @@ GrRenderTargetOpList::OpChain::OpChain(std::unique_ptr<GrOp> op,
     fBounds = fList.head()->bounds();
 }
 
-void GrRenderTargetOpList::OpChain::visitProxies(const GrOp::VisitProxyFunc& func,
-                                                 GrOp::VisitorType visitor) const {
+void GrRenderTargetOpList::OpChain::visitProxies(const GrOp::VisitProxyFunc& func) const {
     if (fList.empty()) {
         return;
     }
     for (const auto& op : GrOp::ChainRange<>(fList.head())) {
-        op.visitProxies(func, visitor);
+        op.visitProxies(func);
     }
     if (fDstProxy.proxy()) {
-        func(fDstProxy.proxy());
+        func(fDstProxy.proxy(), GrMipMapped::kNo);
     }
     if (fAppliedClip) {
         fAppliedClip->visitProxies(func);
@@ -348,11 +347,10 @@ inline void GrRenderTargetOpList::OpChain::validate() const {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-GrRenderTargetOpList::GrRenderTargetOpList(GrResourceProvider* resourceProvider,
-                                           sk_sp<GrOpMemoryPool> opMemoryPool,
+GrRenderTargetOpList::GrRenderTargetOpList(sk_sp<GrOpMemoryPool> opMemoryPool,
                                            sk_sp<GrRenderTargetProxy> proxy,
                                            GrAuditTrail* auditTrail)
-        : INHERITED(resourceProvider, std::move(opMemoryPool), std::move(proxy), auditTrail)
+        : INHERITED(std::move(opMemoryPool), std::move(proxy), auditTrail)
         , fLastClipStackGenID(SK_InvalidUniqueID)
         SkDEBUGCODE(, fNumClips(0)) {
 }
@@ -397,7 +395,7 @@ void GrRenderTargetOpList::dump(bool printDependencies) const {
 
 void GrRenderTargetOpList::visitProxies_debugOnly(const GrOp::VisitProxyFunc& func) const {
     for (const OpChain& chain : fOpChains) {
-        chain.visitProxies(func, GrOp::VisitorType::kOther);
+        chain.visitProxies(func);
     }
 }
 
@@ -595,14 +593,14 @@ bool GrRenderTargetOpList::copySurface(GrRecordingContext* context,
 
 void GrRenderTargetOpList::purgeOpsWithUninstantiatedProxies() {
     bool hasUninstantiatedProxy = false;
-    auto checkInstantiation = [&hasUninstantiatedProxy](GrSurfaceProxy* p) {
+    auto checkInstantiation = [&hasUninstantiatedProxy](GrSurfaceProxy* p, GrMipMapped) {
         if (!p->isInstantiated()) {
             hasUninstantiatedProxy = true;
         }
     };
     for (OpChain& recordedOp : fOpChains) {
         hasUninstantiatedProxy = false;
-        recordedOp.visitProxies(checkInstantiation, GrOp::VisitorType::kOther);
+        recordedOp.visitProxies(checkInstantiation);
         if (hasUninstantiatedProxy) {
             // When instantiation of the proxy fails we drop the Op
             recordedOp.deleteOps(fOpMemoryPool.get());
@@ -613,13 +611,13 @@ void GrRenderTargetOpList::purgeOpsWithUninstantiatedProxies() {
 bool GrRenderTargetOpList::onIsUsed(GrSurfaceProxy* proxyToCheck) const {
     bool used = false;
 
-    auto visit = [ proxyToCheck, &used ] (GrSurfaceProxy* p) {
+    auto visit = [ proxyToCheck, &used ] (GrSurfaceProxy* p, GrMipMapped) {
         if (p == proxyToCheck) {
             used = true;
         }
     };
     for (const OpChain& recordedOp : fOpChains) {
-        recordedOp.visitProxies(visit, GrOp::VisitorType::kOther);
+        recordedOp.visitProxies(visit);
     }
 
     return used;
@@ -634,28 +632,31 @@ void GrRenderTargetOpList::gatherProxyIntervals(GrResourceAllocator* alloc) cons
         // they can be recycled. This is a bit unfortunate because a flush can proceed in waves
         // with sub-flushes. The deferred proxies only need to be pinned from the start of
         // the sub-flush in which they appear.
-        alloc->addInterval(fDeferredProxies[i], 0, 0);
+        alloc->addInterval(fDeferredProxies[i], 0, 0, GrResourceAllocator::ActualUse::kNo);
     }
 
     // Add the interval for all the writes to this opList's target
     if (fOpChains.count()) {
         unsigned int cur = alloc->curOp();
 
-        alloc->addInterval(fTarget.get(), cur, cur + fOpChains.count() - 1);
+        alloc->addInterval(fTarget.get(), cur, cur + fOpChains.count() - 1,
+                           GrResourceAllocator::ActualUse::kYes);
     } else {
         // This can happen if there is a loadOp (e.g., a clear) but no other draws. In this case we
         // still need to add an interval for the destination so we create a fake op# for
         // the missing clear op.
-        alloc->addInterval(fTarget.get(), alloc->curOp(), alloc->curOp());
+        alloc->addInterval(fTarget.get(), alloc->curOp(), alloc->curOp(),
+                           GrResourceAllocator::ActualUse::kYes);
         alloc->incOps();
     }
 
-    auto gather = [ alloc SkDEBUGCODE(, this) ] (GrSurfaceProxy* p) {
-        alloc->addInterval(p, alloc->curOp(), alloc->curOp() SkDEBUGCODE(, fTarget.get() == p));
+    auto gather = [ alloc SkDEBUGCODE(, this) ] (GrSurfaceProxy* p, GrMipMapped) {
+        alloc->addInterval(p, alloc->curOp(), alloc->curOp(), GrResourceAllocator::ActualUse::kYes
+                           SkDEBUGCODE(, fTarget.get() == p));
     };
     for (const OpChain& recordedOp : fOpChains) {
         // only diff from the GrTextureOpList version
-        recordedOp.visitProxies(gather, GrOp::VisitorType::kAllocatorGather);
+        recordedOp.visitProxies(gather);
 
         // Even though the op may have been (re)moved we still need to increment the op count to
         // keep all the math consistent.

@@ -6,8 +6,11 @@
 
 #include <memory>
 
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -16,9 +19,11 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
@@ -51,26 +56,43 @@ const Extension* InstallBookmarkApp(Profile* profile, WebApplicationInfo info) {
   size_t num_extensions =
       ExtensionRegistry::Get(profile)->enabled_extensions().size();
 
+  // TODO(crbug.com/915043): Erase windowed_observer code path.
   content::WindowedNotificationObserver windowed_observer(
       NOTIFICATION_CRX_INSTALLER_DONE,
       content::NotificationService::AllSources());
 
+  base::RunLoop run_loop;
+  web_app::AppId app_id;
   auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile);
   DCHECK(provider);
   provider->install_manager().InstallWebAppForTesting(
-      std::make_unique<WebApplicationInfo>(info), base::DoNothing());
+      std::make_unique<WebApplicationInfo>(info),
+      base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
+                                     web_app::InstallResultCode code) {
+        DCHECK_EQ(web_app::InstallResultCode::kSuccess, code);
+        app_id = installed_app_id;
+        run_loop.Quit();
+      }));
 
-  windowed_observer.Wait();
+  const Extension* app = nullptr;
+  // The legacy system doesn't support completion callback in
+  // InstallWebAppForTesting. Use |windowed_observer| if
+  // kDesktopPWAsUnifiedInstall disabled.
+  if (base::FeatureList::IsEnabled(features::kDesktopPWAsUnifiedInstall)) {
+    run_loop.Run();
+    app = ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(app_id);
+  } else {
+    windowed_observer.Wait();
+    app = content::Details<const Extension>(windowed_observer.details()).ptr();
+  }
 
   EXPECT_EQ(++num_extensions,
             ExtensionRegistry::Get(profile)->enabled_extensions().size());
-  const Extension* app =
-      content::Details<const Extension>(windowed_observer.details()).ptr();
+  DCHECK(app);
   extensions::SetLaunchType(profile, app->id(),
                             info.open_as_window
                                 ? extensions::LAUNCH_TYPE_WINDOW
                                 : extensions::LAUNCH_TYPE_REGULAR);
-
   return app;
 }
 

@@ -157,6 +157,36 @@ TEST_F(ParkableStringTest, ParkUnparkIdenticalContent) {
   EXPECT_EQ(MakeLargeString(), parkable.ToString());
 }
 
+TEST_F(ParkableStringTest, DecompressUtf16String) {
+  UChar emoji_grinning_face[2] = {0xd83d, 0xde00};
+  size_t size_in_chars = 2 * kSizeKb * 1000 / sizeof(UChar);
+
+  std::vector<UChar> data(size_in_chars);
+  for (size_t i = 0; i < size_in_chars / 2; ++i) {
+    data[i * 2] = emoji_grinning_face[0];
+    data[i * 2 + 1] = emoji_grinning_face[1];
+  }
+
+  String large_string = String(&data[0], size_in_chars);
+  String copy = large_string.IsolatedCopy();
+  ParkableString parkable(large_string.ReleaseImpl());
+  large_string = String();
+  EXPECT_FALSE(parkable.Is8Bit());
+  EXPECT_EQ(size_in_chars, parkable.length());
+  EXPECT_EQ(sizeof(UChar) * size_in_chars, parkable.CharactersSizeInBytes());
+
+  EXPECT_TRUE(parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kAlways));
+  RunPostedTasks();
+  EXPECT_TRUE(parkable.Impl()->is_parked());
+
+  // Decompression checks that the size is correct.
+  String unparked = parkable.ToString();
+  EXPECT_FALSE(unparked.Is8Bit());
+  EXPECT_EQ(size_in_chars, unparked.length());
+  EXPECT_EQ(sizeof(UChar) * size_in_chars, unparked.CharactersSizeInBytes());
+  EXPECT_EQ(copy, unparked);
+}
+
 TEST_F(ParkableStringTest, Simple) {
   ParkableString parkable_abc(String("abc").ReleaseImpl());
 
@@ -967,6 +997,12 @@ TEST_F(ParkableStringForegroundParkingTest,
 
 TEST_F(ParkableStringForegroundParkingTest, ReportTotalUnparkingTime) {
   base::HistogramTester histogram_tester;
+
+  // On some platforms, initialization takes time, though it happens when
+  // base::ThreadTicks is used. To prevent flakiness depending on test execution
+  // ordering, force initialization.
+  if (base::ThreadTicks::IsSupported())
+    base::ThreadTicks::WaitUntilInitialized();
 
   // Need to make the string really large, otherwise unparking takes less than
   // 1ms, and the 0 bucket is populated.

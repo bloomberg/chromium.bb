@@ -62,8 +62,8 @@ ContainerNode* LayoutTreeBuilderTraversal::Parent(const Node& node,
   // LayoutTreeBuilderTraversal::parent() is used only for a node which is
   // connected.
   // DCHECK(node.isConnected());
-  if (node.IsPseudoElement()) {
-    AssertPseudoElementParent(ToPseudoElement(node));
+  if (auto* element = DynamicTo<PseudoElement>(node)) {
+    AssertPseudoElementParent(*element);
     return node.parentNode();
   }
   return FlatTreeTraversal::Parent(node, details);
@@ -87,7 +87,7 @@ LayoutObject* LayoutTreeBuilderTraversal::ParentLayoutObject(const Node& node) {
 
 Node* LayoutTreeBuilderTraversal::NextSibling(const Node& node) {
   if (node.IsBeforePseudoElement()) {
-    AssertPseudoElementParent(ToPseudoElement(node));
+    AssertPseudoElementParent(To<PseudoElement>(node));
     if (Node* next = FlatTreeTraversal::FirstChild(*node.parentNode()))
       return next;
   } else {
@@ -106,7 +106,7 @@ Node* LayoutTreeBuilderTraversal::NextSibling(const Node& node) {
 
 Node* LayoutTreeBuilderTraversal::PreviousSibling(const Node& node) {
   if (node.IsAfterPseudoElement()) {
-    AssertPseudoElementParent(ToPseudoElement(node));
+    AssertPseudoElementParent(To<PseudoElement>(node));
     if (Node* previous = FlatTreeTraversal::LastChild(*node.parentNode()))
       return previous;
   } else {

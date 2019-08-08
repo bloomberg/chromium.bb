@@ -131,7 +131,7 @@ class Tab : public View {
 
   View* contents() const { return contents_; }
 
-  bool selected() const { return contents_->visible(); }
+  bool selected() const { return contents_->GetVisible(); }
   void SetSelected(bool selected);
 
   // Overridden from View:

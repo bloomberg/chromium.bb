@@ -35,6 +35,7 @@
 #include <vector>
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
@@ -142,6 +143,12 @@ struct CrossThreadCopier<base::Time>
   STATIC_ONLY(CrossThreadCopier);
 };
 
+template <>
+struct CrossThreadCopier<gpu::SyncToken>
+    : public CrossThreadCopierPassThrough<gpu::SyncToken> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+
 // nullptr_t can be passed through without any changes.
 template <>
 struct CrossThreadCopier<std::nullptr_t>
@@ -183,13 +190,6 @@ struct CrossThreadCopier<
   }
 };
 
-template <wtf_size_t inlineCapacity, typename Allocator>
-struct CrossThreadCopier<Vector<uint8_t, inlineCapacity, Allocator>> {
-  STATIC_ONLY(CrossThreadCopier);
-  using Type = Vector<uint8_t, inlineCapacity, Allocator>;
-  static Type Copy(Type value) { return value; }
-};
-
 template <>
 struct CrossThreadCopier<std::vector<uint8_t>> {
   STATIC_ONLY(CrossThreadCopier);
@@ -197,11 +197,27 @@ struct CrossThreadCopier<std::vector<uint8_t>> {
   static Type Copy(Type value) { return value; }
 };
 
-template <wtf_size_t inlineCapacity, typename Allocator>
-struct CrossThreadCopier<Vector<uint64_t, inlineCapacity, Allocator>> {
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
+struct CrossThreadCopier<Vector<T, inlineCapacity, Allocator>> {
   STATIC_ONLY(CrossThreadCopier);
-  using Type = Vector<uint64_t, inlineCapacity, Allocator>;
+  static_assert(std::is_enum<T>() || std::is_arithmetic<T>(),
+                "Vectors of this type are not known to be safe to pass to "
+                "another thread.");
+  using Type = Vector<T, inlineCapacity, Allocator>;
   static Type Copy(Type value) { return value; }
+};
+
+template <wtf_size_t inlineCapacity, typename Allocator>
+struct CrossThreadCopier<Vector<String, inlineCapacity, Allocator>> {
+  STATIC_ONLY(CrossThreadCopier);
+  using Type = Vector<String, inlineCapacity, Allocator>;
+  static Type Copy(const Type& value) {
+    Type result;
+    result.ReserveInitialCapacity(value.size());
+    for (const auto& element : value)
+      result.push_back(element.IsolatedCopy());
+    return result;
+  }
 };
 
 template <typename T>
@@ -242,6 +258,13 @@ template <typename Signature>
 struct CrossThreadCopier<WTF::CrossThreadFunction<Signature>> {
   STATIC_ONLY(CrossThreadCopier);
   using Type = WTF::CrossThreadFunction<Signature>;
+  static Type Copy(Type&& value) { return std::move(value); }
+};
+
+template <typename Signature>
+struct CrossThreadCopier<WTF::CrossThreadOnceFunction<Signature>> {
+  STATIC_ONLY(CrossThreadCopier);
+  using Type = WTF::CrossThreadOnceFunction<Signature>;
   static Type Copy(Type&& value) { return std::move(value); }
 };
 

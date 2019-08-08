@@ -152,6 +152,7 @@ V4L2VideoEncodeAccelerator::~V4L2VideoEncodeAccelerator() {
 
 bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
                                             Client* client) {
+  TRACE_EVENT0("media,gpu", "V4L2VEA::Initialize");
   VLOGF(2) << ": " << config.AsHumanReadableString();
 
   visible_size_ = config.input_visible_size;
@@ -362,7 +363,7 @@ void V4L2VideoEncodeAccelerator::ImageProcessorError() {
   NOTIFY_ERROR(kPlatformFailureError);
 }
 
-void V4L2VideoEncodeAccelerator::Encode(const scoped_refptr<VideoFrame>& frame,
+void V4L2VideoEncodeAccelerator::Encode(scoped_refptr<VideoFrame> frame,
                                         bool force_keyframe) {
   DVLOGF(4) << "force_keyframe=" << force_keyframe;
   DCHECK(child_task_runner_->BelongsToCurrentThread());
@@ -382,7 +383,7 @@ void V4L2VideoEncodeAccelerator::Encode(const scoped_refptr<VideoFrame>& frame,
           ImageProcessor::OutputMode::IMPORT) {
         const auto& buf = image_processor_output_buffers_[output_buffer_index];
         auto output_frame = VideoFrame::WrapVideoFrame(
-            buf, buf->format(), buf->visible_rect(), buf->natural_size());
+            *buf, buf->format(), buf->visible_rect(), buf->natural_size());
 
         // We have to bind |weak_this| for FrameProcessed, because child
         // thread is outlive this V4L2VideoEncodeAccelerator.
@@ -404,18 +405,18 @@ void V4L2VideoEncodeAccelerator::Encode(const scoped_refptr<VideoFrame>& frame,
         }
       }
     } else {
-      image_processor_input_queue_.emplace(frame, force_keyframe);
+      image_processor_input_queue_.emplace(std::move(frame), force_keyframe);
     }
   } else {
     encoder_thread_.task_runner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&V4L2VideoEncodeAccelerator::EncodeTask,
-                       base::Unretained(this), frame, force_keyframe));
+        FROM_HERE, base::BindOnce(&V4L2VideoEncodeAccelerator::EncodeTask,
+                                  base::Unretained(this), std::move(frame),
+                                  force_keyframe));
   }
 }
 
 void V4L2VideoEncodeAccelerator::UseOutputBitstreamBuffer(
-    const BitstreamBuffer& buffer) {
+    BitstreamBuffer buffer) {
   DVLOGF(4) << "id=" << buffer.id();
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
@@ -424,7 +425,7 @@ void V4L2VideoEncodeAccelerator::UseOutputBitstreamBuffer(
     return;
   }
 
-  auto shm = std::make_unique<UnalignedSharedMemory>(buffer.handle(),
+  auto shm = std::make_unique<UnalignedSharedMemory>(buffer.TakeRegion(),
                                                      buffer.size(), false);
   if (!shm->MapAt(buffer.offset(), buffer.size())) {
     NOTIFY_ERROR(kPlatformFailureError);
@@ -627,9 +628,8 @@ size_t V4L2VideoEncodeAccelerator::CopyIntoOutputBuffer(
   return buffer_ref->shm->size() - remaining_dst_size;
 }
 
-void V4L2VideoEncodeAccelerator::EncodeTask(
-    const scoped_refptr<VideoFrame>& frame,
-    bool force_keyframe) {
+void V4L2VideoEncodeAccelerator::EncodeTask(scoped_refptr<VideoFrame> frame,
+                                            bool force_keyframe) {
   DVLOGF(4) << "force_keyframe=" << force_keyframe;
   DCHECK(encoder_thread_.task_runner()->BelongsToCurrentThread());
   DCHECK_NE(encoder_state_, kUninitialized);
@@ -639,7 +639,7 @@ void V4L2VideoEncodeAccelerator::EncodeTask(
     return;
   }
 
-  encoder_input_queue_.emplace(frame, force_keyframe);
+  encoder_input_queue_.emplace(std::move(frame), force_keyframe);
   Enqueue();
 }
 
@@ -720,6 +720,7 @@ void V4L2VideoEncodeAccelerator::ServiceDeviceTask() {
 
 void V4L2VideoEncodeAccelerator::Enqueue() {
   DCHECK(encoder_thread_.task_runner()->BelongsToCurrentThread());
+  TRACE_EVENT0("media,gpu", "V4L2VEA::Enqueue");
 
   DVLOGF(4) << "free_input_buffers: " << free_input_buffers_.size()
             << "input_queue: " << encoder_input_queue_.size();
@@ -792,6 +793,7 @@ void V4L2VideoEncodeAccelerator::Enqueue() {
 void V4L2VideoEncodeAccelerator::Dequeue() {
   DVLOGF(4);
   DCHECK(encoder_thread_.task_runner()->BelongsToCurrentThread());
+  TRACE_EVENT0("media,gpu", "V4L2VEA::Dequeue");
 
   // Dequeue completed input (VIDEO_OUTPUT) buffers, and recycle to the free
   // list.
@@ -893,6 +895,7 @@ bool V4L2VideoEncodeAccelerator::EnqueueInputRecord() {
   DVLOGF(4);
   DCHECK(!free_input_buffers_.empty());
   DCHECK(!encoder_input_queue_.empty());
+  TRACE_EVENT0("media,gpu", "V4L2VEA::EnqueueInputRecord");
 
   // Enqueue an input (VIDEO_OUTPUT) buffer.
   InputFrameInfo frame_info = encoder_input_queue_.front();
@@ -989,6 +992,7 @@ bool V4L2VideoEncodeAccelerator::EnqueueOutputRecord() {
   DVLOGF(4);
   DCHECK(!free_output_buffers_.empty());
   DCHECK(!encoder_output_queue_.empty());
+  TRACE_EVENT0("media,gpu", "V4L2VEA::EnqueueOutputRecord");
 
   // Enqueue an output (VIDEO_CAPTURE) buffer.
   const int index = free_output_buffers_.back();
@@ -1139,6 +1143,8 @@ void V4L2VideoEncodeAccelerator::RequestEncodingParametersChangeTask(
     uint32_t framerate) {
   VLOGF(2) << "bitrate=" << bitrate << ", framerate=" << framerate;
   DCHECK(encoder_thread_.task_runner()->BelongsToCurrentThread());
+  TRACE_EVENT2("media,gpu", "V4L2VEA::RequestEncodingParametersChangeTask",
+               "bitrate", bitrate, "framerate", framerate);
 
   DCHECK_GT(bitrate, 0u);
   DCHECK_GT(framerate, 0u);

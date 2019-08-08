@@ -14,7 +14,7 @@ namespace features {
 // frame without user activation.
 const base::Feature kBlockingDownloadsInAdFrameWithoutUserActivation{
     "BlockingDownloadsInAdFrameWithoutUserActivation",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable defer commits a bit to avoid flash.
 const base::Feature kAvoidFlashBetweenNavigation{
@@ -36,6 +36,10 @@ const base::Feature kEnableGpuRasterizationViewportRestriction{
 const base::Feature kScriptStreaming{"ScriptStreaming",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Allow streaming small (<30kB) scripts.
+const base::Feature kSmallScriptStreaming{"SmallScriptStreaming",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables user level memory pressure signal generation on Android.
 const base::Feature kUserLevelMemoryPressureSignal{
     "UserLevelMemoryPressureSignal", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -48,10 +52,9 @@ const base::Feature kFirstContentfulPaintPlusPlus{
 const base::Feature kFreezePurgeMemoryAllPagesFrozen{
     "FreezePurgeMemoryAllPagesFrozen", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether or not the font cache is invalidated when a critical memory
-// pressure signal is sent.
-const base::Feature kInvalidateFontCacheOnPurge{
-    "InvalidateFontCacheOnPurge", base::FEATURE_ENABLED_BY_DEFAULT};
+// Freezes the user-agent as part of https://github.com/WICG/ua-client-hints.
+const base::Feature kFreezeUserAgent{"FreezeUserAgent",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables the experimental sweep-line algorithm for tracking "jank" from
 // layout objects changing their visual location between animation frames.
@@ -63,8 +66,21 @@ const base::Feature kJankTrackingSweepLine{"JankTrackingSweepLine",
 const base::Feature kBlinkGenPropertyTrees{"BlinkGenPropertyTrees",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enable a new CSS property called backdrop-filter.
+const base::Feature kCSSBackdropFilter{"CSSBackdropFilter",
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enable Display Locking JavaScript APIs.
+const base::Feature kDisplayLocking{"DisplayLocking",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable applying rounded corner masks via a GL shader rather than
+// a mask layer.
+const base::Feature kFastBorderRadius{"FastBorderRadius",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable LayoutNG.
-const base::Feature kLayoutNG{"LayoutNG", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kLayoutNG{"LayoutNG", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kMixedContentAutoupgrade{"AutoupgradeMixedContent",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
@@ -92,12 +108,12 @@ const base::Feature kOffMainThreadDedicatedWorkerScriptFetch{
 // Enable off-the-main-thread service worker script fetch.
 // (https://crbug.com/924043)
 const base::Feature kOffMainThreadServiceWorkerScriptFetch{
-    "OffMainThreadServiceWorkerScriptFetch", base::FEATURE_DISABLED_BY_DEFAULT};
+    "OffMainThreadServiceWorkerScriptFetch", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable off-the-main-thread shared worker script fetch.
 // (https://crbug.com/924041)
 const base::Feature kOffMainThreadSharedWorkerScriptFetch{
-    "OffMainThreadSharedWorkerScriptFetch", base::FEATURE_DISABLED_BY_DEFAULT};
+    "OffMainThreadSharedWorkerScriptFetch", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Onion souping for all DOMStorage. https://crbug.com/781870
 const base::Feature kOnionSoupDOMStorage{"OnionSoupDOMStorage",
@@ -199,14 +215,8 @@ const base::Feature kFreezeBackgroundTabOnNetworkIdle{
 
 // Freeze non-timer task queues in background, after allowed grace time.
 // "stop" is a legacy name.
-const base::Feature kStopNonTimersInBackground {
-  "stop-non-timers-in-background",
-#if defined(OS_ANDROID)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
+const base::Feature kStopNonTimersInBackground{
+    "stop-non-timers-in-background", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable text snippets in URL fragments. https://crbug.com/919204.
 const base::Feature kTextFragmentAnchor{"TextFragmentAnchor",
@@ -218,20 +228,17 @@ const base::Feature kTextFragmentAnchor{"TextFragmentAnchor",
 const base::Feature kWasmCodeCache = {"WasmCodeCache",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Writable files and native filesystem access. https://crbug.com/853326
-const base::Feature kNativeFilesystemAPI{"NativeFilesystemAPI",
+// Writable files and native file system access. https://crbug.com/853326
+const base::Feature kNativeFileSystemAPI{"NativeFileSystemAPI",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+// File handling integration. https://crbug.com/829689
+const base::Feature kFileHandlingAPI{"FileHandlingAPI",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Allows for synchronous XHR requests during page dismissal
 const base::Feature kForbidSyncXHRInPageDismissal{
     "ForbidSyncXHRInPageDismissal", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Emergency lever that can be used to restore DeviceOrientationEvent and
-// DeviceMotionEvent functionality in non-secure browsing contexts.
-// See: https://crbug.com/932078.
-const base::Feature kRestrictDeviceSensorEventsToSecureContexts{
-    "RestrictDeviceSensorEventsToSecureContexts",
-    base::FEATURE_ENABLED_BY_DEFAULT};
 
 const char kMixedContentAutoupgradeModeParamName[] = "mode";
 const char kMixedContentAutoupgradeModeBlockable[] = "blockable";
@@ -245,7 +252,7 @@ const base::Feature kDecodeLossyWebPImagesToYUV{
 
 // Use accelerated canvases whenever possible see https://crbug.com/909937
 const base::Feature kAlwaysAccelerateCanvas{"AlwaysAccelerateCanvas",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables cache-aware WebFonts loading. See https://crbug.com/570205.
 // The feature is disabled on Android for WebView API issue discussed at
@@ -264,14 +271,16 @@ const base::Feature kWebFontsCacheAwareTimeoutAdaption {
 const base::Feature kBlockingFocusWithoutUserActivation{
     "BlockingFocusWithoutUserActivation", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kAudioWorkletRealtimeThread{
+    "AudioWorkletRealtimeThread", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Use scroll gestures for scrollbar scrolls (see https://crbug.com/954007).
+const base::Feature kScrollbarInjectScrollGestures{
+    "ScrollbarInjectScrollGestures", base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsOffMainThreadSharedWorkerScriptFetchEnabled() {
   // Off-the-main-thread shared worker script fetch depends on PlzSharedWorker
   // (NetworkService).
-  DCHECK(!base::FeatureList::IsEnabled(
-             features::kOffMainThreadSharedWorkerScriptFetch) ||
-         base::FeatureList::IsEnabled(network::features::kNetworkService))
-      << "OffMainThreadSharedWorkerScriptFetch is enabled but NetworkService "
-      << "isn't. OffMainThreadSharedWorkerScriptFetch requires NetworkService.";
   return base::FeatureList::IsEnabled(network::features::kNetworkService) &&
          base::FeatureList::IsEnabled(
              features::kOffMainThreadSharedWorkerScriptFetch);
@@ -297,6 +306,13 @@ bool IsPlzDedicatedWorkerEnabled() {
          base::FeatureList::IsEnabled(network::features::kNetworkService) &&
          base::FeatureList::IsEnabled(features::kPlzDedicatedWorker);
 }
+
+// Enables a delay before BufferingBytesConsumer begins reading from its
+// underlying consumer when instantiated with CreateWithDelay().
+const base::Feature kBufferingBytesConsumerDelay{
+    "BufferingBytesConsumerDelay", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::FeatureParam<int> kBufferingBytesConsumerDelayMilliseconds{
+    &kBufferingBytesConsumerDelay, "milliseconds", 50};
 
 }  // namespace features
 }  // namespace blink

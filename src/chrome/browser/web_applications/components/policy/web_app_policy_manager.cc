@@ -77,10 +77,8 @@ WebAppPolicyManager::WebAppPolicyManager(Profile* profile,
 WebAppPolicyManager::~WebAppPolicyManager() = default;
 
 void WebAppPolicyManager::Start() {
-  content::BrowserThread::PostAfterStartupTask(
-      FROM_HERE,
-      base::CreateSingleThreadTaskRunnerWithTraits(
-          {content::BrowserThread::UI}),
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&WebAppPolicyManager::
                          InitChangeRegistrarAndRefreshPolicyInstalledApps,
                      weak_ptr_factory_.GetWeakPtr()));

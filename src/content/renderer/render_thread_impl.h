@@ -140,7 +140,7 @@ class StreamTextureFactory;
 #pragma warning(disable: 4250)
 #endif
 
-// The RenderThreadImpl class represents a background thread where RenderView
+// The RenderThreadImpl class represents the main thread, where RenderView
 // instances live.  The RenderThread supports an API that is used by its
 // consumer to talk indirectly to the RenderViews and supporting objects.
 // Likewise, it provides an API for the RenderViews to talk back to the main
@@ -200,7 +200,7 @@ class CONTENT_EXPORT RenderThreadImpl
   std::unique_ptr<base::SharedMemory> HostAllocateSharedMemoryBuffer(
       size_t buffer_size) override;
   void RegisterExtension(std::unique_ptr<v8::Extension> extension) override;
-  int PostTaskToAllWebWorkers(const base::Closure& closure) override;
+  int PostTaskToAllWebWorkers(const base::RepeatingClosure& closure) override;
   bool ResolveProxy(const GURL& url, std::string* proxy_list) override;
   base::WaitableEvent* GetShutdownEvent() override;
   int32_t GetClientId() override;
@@ -727,6 +727,9 @@ class CONTENT_EXPORT RenderThreadImpl
   // this member.
   mojo::Binding<viz::mojom::CompositingModeWatcher>
       compositing_mode_watcher_binding_;
+
+  base::TimeTicks init_start_;
+  base::TimeTicks init_end_;
 
   base::WeakPtrFactory<RenderThreadImpl> weak_factory_;
 

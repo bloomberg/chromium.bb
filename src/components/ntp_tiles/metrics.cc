@@ -9,15 +9,13 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
+#include "components/ntp_tiles/constants.h"
 #include "components/rappor/public/rappor_utils.h"
 
 namespace ntp_tiles {
 namespace metrics {
 
 namespace {
-
-// Maximum number of tiles to record in histograms.
-const int kMaxNumTiles = 12;
 
 const int kLastTitleSource = static_cast<int>(TileTitleSource::LAST);
 
@@ -29,6 +27,7 @@ const char kHistogramBakedInName[] = "popular_baked_in";
 const char kHistogramWhitelistName[] = "whitelist";
 const char kHistogramHomepageName[] = "homepage";
 const char kHistogramCustomLinksName[] = "custom_links";
+const char kHistogramExploreName[] = "explore";
 const char kHistogramSearchName[] = "search_page";
 
 // Suffixes for the various icon types.
@@ -60,6 +59,8 @@ std::string GetSourceHistogramName(TileSource source) {
       return kHistogramHomepageName;
     case TileSource::CUSTOM_LINKS:
       return kHistogramCustomLinksName;
+    case TileSource::EXPLORE:
+      return kHistogramExploreName;
     case TileSource::SEARCH_PAGE:
       return kHistogramSearchName;
   }

@@ -338,7 +338,7 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
 
   // Flushes any pending tasks in the message loops of all threads.
   void FlushThreadMessageLoops() {
-    base::ThreadPool::GetInstance()->FlushForTesting();
+    base::ThreadPoolInstance::Get()->FlushForTesting();
     FlushMessageLoop(BrowserThread::IO);
     RunLoop().RunUntilIdle();
   }
@@ -558,8 +558,7 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
 
 void DownloadProtectionServiceTest::CheckClientDownloadReportCorruptArchive(
     ArchiveType type) {
-  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
 
   NiceMockDownloadItem item;
   if (type == ZIP) {
@@ -654,8 +653,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadNotABinary) {
 TEST_F(DownloadProtectionServiceTest,
        CheckClientDownloadWhitelistedUrlWithoutSampling) {
   // Response to any requests will be DANGEROUS.
-  PrepareResponse(ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+  PrepareResponse(ClientDownloadResponse::DANGEROUS, net::HTTP_OK, net::OK);
 
   NiceMockDownloadItem item;
   PrepareBasicDownloadItem(&item,
@@ -748,8 +746,7 @@ TEST_F(DownloadProtectionServiceTest,
        CheckClientDownloadWhitelistedUrlWithSampling) {
   // Server responses "SAFE" to every requests coming from whitelisted
   // download.
-  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
 
   NiceMockDownloadItem item;
   PrepareBasicDownloadItem(&item,
@@ -891,8 +888,7 @@ TEST_F(DownloadProtectionServiceTest,
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSampledFile) {
   // Server response will be discarded.
-  PrepareResponse(ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+  PrepareResponse(ClientDownloadResponse::DANGEROUS, net::HTTP_OK, net::OK);
 
   NiceMockDownloadItem item;
   PrepareBasicDownloadItem(
@@ -983,7 +979,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSampledFile) {
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadFetchFailed) {
   // HTTP request will fail.
   PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_INTERNAL_SERVER_ERROR,
-                  net::URLRequestStatus::FAILED);
+                  net::ERR_FAILED);
 
   NiceMockDownloadItem item;
   PrepareBasicDownloadItem(&item, {"http://www.evil.com/a.exe"},  // url_chain
@@ -1007,8 +1003,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadFetchFailed) {
 }
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
-  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
 
   NiceMockDownloadItem item;
   PrepareBasicDownloadItem(&item, {"http://www.evil.com/a.exe"},  // url_chain
@@ -1059,8 +1054,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   {
     // If the response is dangerous the result should also be marked as
     // dangerous, and should not upload if not requested.
-    PrepareResponse(ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
-                    net::URLRequestStatus::SUCCESS,
+    PrepareResponse(ClientDownloadResponse::DANGEROUS, net::HTTP_OK, net::OK,
                     false /* upload_requested */);
     RunLoop run_loop;
     download_service_->CheckClientDownload(
@@ -1076,8 +1070,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   {
     // If the response is dangerous and the server requests an upload,
     // we should upload.
-    PrepareResponse(ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
-                    net::URLRequestStatus::SUCCESS,
+    PrepareResponse(ClientDownloadResponse::DANGEROUS, net::HTTP_OK, net::OK,
                     true /* upload_requested */);
     RunLoop run_loop;
     download_service_->CheckClientDownload(
@@ -1092,8 +1085,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   }
   {
     // If the response is uncommon the result should also be marked as uncommon.
-    PrepareResponse(ClientDownloadResponse::UNCOMMON, net::HTTP_OK,
-                    net::URLRequestStatus::SUCCESS,
+    PrepareResponse(ClientDownloadResponse::UNCOMMON, net::HTTP_OK, net::OK,
                     true /* upload_requested */);
     RunLoop run_loop;
     download_service_->CheckClientDownload(
@@ -1116,8 +1108,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
     // If the response is dangerous_host the result should also be marked as
     // dangerous_host.
     PrepareResponse(ClientDownloadResponse::DANGEROUS_HOST, net::HTTP_OK,
-                    net::URLRequestStatus::SUCCESS,
-                    true /* upload_requested */);
+                    net::OK, true /* upload_requested */);
     RunLoop run_loop;
     download_service_->CheckClientDownload(
         &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
@@ -1136,7 +1127,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
     // If the response is POTENTIALLY_UNWANTED the result should also be marked
     // as POTENTIALLY_UNWANTED.
     PrepareResponse(ClientDownloadResponse::POTENTIALLY_UNWANTED, net::HTTP_OK,
-                    net::URLRequestStatus::SUCCESS);
+                    net::OK);
     RunLoop run_loop;
     download_service_->CheckClientDownload(
         &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
@@ -1149,8 +1140,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   {
     // If the response is UNKNOWN the result should also be marked as
     // UNKNOWN. And if the server requests an upload, we should upload.
-    PrepareResponse(ClientDownloadResponse::UNKNOWN, net::HTTP_OK,
-                    net::URLRequestStatus::SUCCESS,
+    PrepareResponse(ClientDownloadResponse::UNKNOWN, net::HTTP_OK, net::OK,
                     true /* upload_requested */);
     RunLoop run_loop;
     download_service_->CheckClientDownload(
@@ -1166,8 +1156,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
 }
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadHTTPS) {
-  PrepareResponse(ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+  PrepareResponse(ClientDownloadResponse::DANGEROUS, net::HTTP_OK, net::OK);
 
   NiceMockDownloadItem item;
   PrepareBasicDownloadItem(&item, {"http://www.evil.com/a.exe"},  // url_chain
@@ -1196,8 +1185,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadHTTPS) {
 }
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadBlob) {
-  PrepareResponse(ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+  PrepareResponse(ClientDownloadResponse::DANGEROUS, net::HTTP_OK, net::OK);
 
   NiceMockDownloadItem item;
   PrepareBasicDownloadItem(
@@ -1228,8 +1216,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadBlob) {
 }
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadData) {
-  PrepareResponse(ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+  PrepareResponse(ClientDownloadResponse::DANGEROUS, net::HTTP_OK, net::OK);
 
   NiceMockDownloadItem item;
   PrepareBasicDownloadItem(
@@ -1285,8 +1272,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadData) {
 }
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
-  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
 
   NiceMockDownloadItem item;
   PrepareBasicDownloadItem(&item, {"http://www.evil.com/a.zip"},  // url_chain
@@ -1350,8 +1336,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
   {
     // If the response is dangerous the result should also be marked as
     // dangerous.
-    PrepareResponse(ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
-                    net::URLRequestStatus::SUCCESS);
+    PrepareResponse(ClientDownloadResponse::DANGEROUS, net::HTTP_OK, net::OK);
     RunLoop run_loop;
     download_service_->CheckClientDownload(
         &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
@@ -1413,8 +1398,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadReportCorruptDmg) {
 }
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadReportValidDmg) {
-  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
 
   base::FilePath test_dmg;
   EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_dmg));
@@ -1448,8 +1432,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadReportValidDmg) {
 // Tests that signatures get recorded and uploaded for signed DMGs.
 TEST_F(DownloadProtectionServiceTest,
        CheckClientDownloadReportDmgWithSignature) {
-  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
 
   base::FilePath signed_dmg;
   EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &signed_dmg));
@@ -1495,8 +1478,7 @@ TEST_F(DownloadProtectionServiceTest,
 // Tests that no signature gets recorded and uploaded for unsigned DMGs.
 TEST_F(DownloadProtectionServiceTest,
        CheckClientDownloadReportDmgWithoutSignature) {
-  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
 
   base::FilePath unsigned_dmg;
   EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &unsigned_dmg));
@@ -1532,8 +1514,7 @@ TEST_F(DownloadProtectionServiceTest,
 // trailer are treated as disk images and processed accordingly.
 TEST_F(DownloadProtectionServiceTest,
        CheckClientDownloadReportDmgWithoutExtension) {
-  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
 
   base::FilePath test_data;
   EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data));
@@ -1566,8 +1547,7 @@ TEST_F(DownloadProtectionServiceTest,
 // Demonstrate that a .dmg file whose a) extension has been changed to .txt and
 // b) 'koly' signature has been removed is not processed as a disk image.
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadReportDmgWithoutKoly) {
-  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
 
   base::FilePath test_data;
   EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data));
@@ -1600,8 +1580,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadReportDmgWithoutKoly) {
 // Test that a large DMG (size equals max value of 64 bit signed int) is not
 // unpacked for binary feature analysis.
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadReportLargeDmg) {
-  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
 
   base::FilePath unsigned_dmg;
   EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &unsigned_dmg));
@@ -1648,8 +1627,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadReportLargeDmg) {
 
 // Verifies the results of DMG analysis end-to-end.
 TEST_F(DownloadProtectionServiceTest, DMGAnalysisEndToEnd) {
-  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
 
   base::FilePath dmg;
   EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &dmg));
@@ -1746,8 +1724,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
       .WillOnce(SetDosHeaderContents("dummy dos header"));
 #endif  // OS_MACOSX
 
-  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
 
   RunLoop run_loop;
   download_service_->CheckClientDownload(
@@ -1822,8 +1799,7 @@ TEST_F(DownloadProtectionServiceTest,
                   tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _));
 #endif  // OS_MACOSX
 
-  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
 
   RunLoop run_loop;
   download_service_->CheckClientDownload(
@@ -1893,8 +1869,7 @@ TEST_F(DownloadProtectionServiceTest,
                 interceptor_run_loop.Quit();
             }));
 
-    PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK,
-                    net::URLRequestStatus::SUCCESS);
+    PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
 
     RunLoop run_loop;
     download_service_->CheckClientDownload(
@@ -1964,8 +1939,7 @@ TEST_F(DownloadProtectionServiceTest,
                   reinterpret_cast<history::ContextID>(1), 0, GURL(), redirects,
                   ui::PAGE_TRANSITION_TYPED, history::SOURCE_BROWSED, false);
 
-    PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK,
-                    net::URLRequestStatus::SUCCESS);
+    PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
 
     RunLoop run_loop;
     download_service_->CheckClientDownload(
@@ -2253,7 +2227,7 @@ TEST_F(DownloadProtectionServiceTest, ShowDetailsForDownloadHasContext) {
       .WillOnce(Return(download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST));
   EXPECT_CALL(mock_page_navigator, OpenURL(OpenURLParamsWithContextValue("7")));
 
-  download_service_->ShowDetailsForDownload(mock_download_item,
+  download_service_->ShowDetailsForDownload(&mock_download_item,
                                             &mock_page_navigator);
 }
 
@@ -2302,8 +2276,7 @@ TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_SupportedDefault) {
 
   for (const auto& test_case : kExpectedResults) {
     sb_service_->test_url_loader_factory()->ClearResponses();
-    PrepareResponse(test_case.verdict, net::HTTP_OK,
-                    net::URLRequestStatus::SUCCESS);
+    PrepareResponse(test_case.verdict, net::HTTP_OK, net::OK);
     SetExtendedReportingPreference(true);
     RunLoop run_loop;
     download_service_->CheckPPAPIDownloadRequest(
@@ -2322,8 +2295,7 @@ TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_SupportedAlternate) {
   base::FilePath default_file_path(FILE_PATH_LITERAL("/foo/bar/test.txt"));
   std::vector<base::FilePath::StringType> alternate_extensions{
       FILE_PATH_LITERAL(".tmp"), FILE_PATH_LITERAL(".crx")};
-  PrepareResponse(ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+  PrepareResponse(ClientDownloadResponse::DANGEROUS, net::HTTP_OK, net::OK);
   EXPECT_CALL(*sb_service_->mock_database_manager(),
               MatchDownloadWhitelistUrl(_))
       .WillRepeatedly(Return(false));
@@ -2363,7 +2335,7 @@ TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_FetchFailed) {
   base::FilePath default_file_path(FILE_PATH_LITERAL("/foo/bar/test.crx"));
   std::vector<base::FilePath::StringType> alternate_extensions;
   PrepareResponse(ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
-                  net::URLRequestStatus::FAILED);
+                  net::ERR_FAILED);
   EXPECT_CALL(*sb_service_->mock_database_manager(),
               MatchDownloadWhitelistUrl(_))
       .WillRepeatedly(Return(false));
@@ -2403,8 +2375,7 @@ TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_Timeout) {
   EXPECT_CALL(*sb_service_->mock_database_manager(),
               MatchDownloadWhitelistUrl(_))
       .WillRepeatedly(Return(false));
-  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
   download_service_->download_request_timeout_ms_ = 0;
   RunLoop run_loop;
   download_service_->CheckPPAPIDownloadRequest(
@@ -2433,8 +2404,7 @@ TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_Payload) {
   EXPECT_CALL(*sb_service_->mock_database_manager(),
               MatchDownloadWhitelistUrl(_))
       .WillRepeatedly(Return(false));
-  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
   const GURL kRequestorUrl("http://example.com/foo");
   RunLoop run_loop;
   download_service_->CheckPPAPIDownloadRequest(
@@ -2731,8 +2701,7 @@ TEST_F(DownloadProtectionServiceTest,
 }
 
 TEST_F(DownloadProtectionServiceTest, DoesNotSendPingForCancelledDownloads) {
-  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
 
   NiceMockDownloadItem item;
   PrepareBasicDownloadItem(&item, {"http://www.evil.test/a.exe"},  // url_chain

@@ -6,8 +6,8 @@
 #define NGConstraintSpaceBuilder_h
 
 #include "base/optional.h"
+#include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
@@ -63,20 +63,20 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   // https://www.w3.org/TR/css-writing-modes-3/#orthogonal-auto
   void AdjustInlineSizeIfNeeded(LayoutUnit* inline_size) const {
     DCHECK(!is_in_parallel_flow_);
-    if (*inline_size != NGSizeIndefinite)
+    if (*inline_size != kIndefiniteSize)
       return;
-    DCHECK_NE(orthogonal_fallback_inline_size_, NGSizeIndefinite);
+    DCHECK_NE(orthogonal_fallback_inline_size_, kIndefiniteSize);
     *inline_size = orthogonal_fallback_inline_size_;
   }
 
-  NGConstraintSpaceBuilder& SetAvailableSize(NGLogicalSize available_size) {
+  NGConstraintSpaceBuilder& SetAvailableSize(LogicalSize available_size) {
 #if DCHECK_IS_ON()
     is_available_size_set_ = true;
 #endif
     space_.available_size_ = available_size;
 
     if (UNLIKELY(!is_in_parallel_flow_)) {
-      space_.available_size_.Flip();
+      space_.available_size_.Transpose();
       AdjustInlineSizeIfNeeded(&space_.available_size_.inline_size);
     }
 
@@ -84,10 +84,10 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   }
 
   NGConstraintSpaceBuilder& SetPercentageResolutionSize(
-      NGLogicalSize percentage_resolution_size);
+      LogicalSize percentage_resolution_size);
 
   NGConstraintSpaceBuilder& SetReplacedPercentageResolutionSize(
-      NGLogicalSize replaced_percentage_resolution_size);
+      LogicalSize replaced_percentage_resolution_size);
 
   // Set the fallback available inline-size for an orthogonal child. The size is
   // the inline size in the writing mode of the orthogonal child.
@@ -101,7 +101,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     DCHECK(!is_fragmentainer_block_size_set_);
     is_fragmentainer_block_size_set_ = true;
 #endif
-    if (size != NGSizeIndefinite)
+    if (size != kIndefiniteSize)
       space_.EnsureRareData()->fragmentainer_block_size = size;
     return *this;
   }
@@ -111,7 +111,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     DCHECK(!is_fragmentainer_space_at_bfc_start_set_);
     is_fragmentainer_space_at_bfc_start_set_ = true;
 #endif
-    if (space != NGSizeIndefinite)
+    if (space != kIndefiniteSize)
       space_.EnsureRareData()->fragmentainer_space_at_bfc_start = space;
     return *this;
   }
@@ -123,18 +123,18 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 
   NGConstraintSpaceBuilder& SetIsFixedSizeInline(bool b) {
     if (LIKELY(is_in_parallel_flow_))
-      SetFlag(NGConstraintSpace::kFixedSizeInline, b);
+      space_.bitfields_.is_fixed_size_inline = b;
     else
-      SetFlag(NGConstraintSpace::kFixedSizeBlock, b);
+      space_.bitfields_.is_fixed_size_block = b;
 
     return *this;
   }
 
   NGConstraintSpaceBuilder& SetIsFixedSizeBlock(bool b) {
     if (LIKELY(is_in_parallel_flow_))
-      SetFlag(NGConstraintSpace::kFixedSizeBlock, b);
+      space_.bitfields_.is_fixed_size_block = b;
     else
-      SetFlag(NGConstraintSpace::kFixedSizeInline, b);
+      space_.bitfields_.is_fixed_size_inline = b;
 
     return *this;
   }
@@ -147,7 +147,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   }
 
   NGConstraintSpaceBuilder& SetIsShrinkToFit(bool b) {
-    SetFlag(NGConstraintSpace::kShrinkToFit, b);
+    space_.bitfields_.is_shrink_to_fit = b;
     return *this;
   }
 
@@ -184,6 +184,11 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     return *this;
   }
 
+  NGConstraintSpaceBuilder& SetAncestorHasClearancePastAdjoiningFloats() {
+    SetFlag(NGConstraintSpace::kAncestorHasClearancePastAdjoiningFloats, true);
+    return *this;
+  }
+
   NGConstraintSpaceBuilder& SetAdjoiningFloatTypes(NGFloatTypes floats) {
     if (!is_new_fc_)
       space_.bitfields_.adjoining_floats = static_cast<unsigned>(floats);
@@ -212,15 +217,15 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 
     return *this;
   }
-  NGConstraintSpaceBuilder& SetFloatsBfcBlockOffset(
-      const base::Optional<LayoutUnit>& floats_bfc_block_offset) {
+  NGConstraintSpaceBuilder& SetForcedBfcBlockOffset(
+      const base::Optional<LayoutUnit>& forced_bfc_block_offset) {
 #if DCHECK_IS_ON()
-    DCHECK(!is_floats_bfc_block_offset_set_);
-    is_floats_bfc_block_offset_set_ = true;
+    DCHECK(!is_forced_bfc_block_offset_set_);
+    is_forced_bfc_block_offset_set_ = true;
 #endif
-    if (LIKELY(!is_new_fc_ && floats_bfc_block_offset != base::nullopt)) {
-      space_.EnsureRareData()->floats_bfc_block_offset =
-          floats_bfc_block_offset;
+    if (LIKELY(!is_new_fc_ && forced_bfc_block_offset != base::nullopt)) {
+      space_.EnsureRareData()->forced_bfc_block_offset =
+          forced_bfc_block_offset;
     }
 
     return *this;
@@ -237,15 +242,15 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     return *this;
   }
 
-  NGConstraintSpaceBuilder& SetShouldForceClearance(bool b) {
-    SetFlag(NGConstraintSpace::kForceClearance, b);
-    return *this;
-  }
-
   NGConstraintSpaceBuilder& SetTableCellChildLayoutPhase(
       NGTableCellChildLayoutPhase table_cell_child_layout_phase) {
     space_.bitfields_.table_cell_child_layout_phase =
         static_cast<unsigned>(table_cell_child_layout_phase);
+    return *this;
+  }
+
+  NGConstraintSpaceBuilder& SetIsInRestrictedBlockSizeTableCell() {
+    space_.bitfields_.is_in_restricted_block_size_table_cell = true;
     return *this;
   }
 
@@ -300,7 +305,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   // Orthogonal writing mode roots may need a fallback, to prevent available
   // inline size from being indefinite, which isn't allowed. This is the
   // available inline size in the writing mode of the orthogonal child.
-  LayoutUnit orthogonal_fallback_inline_size_ = NGSizeIndefinite;
+  LayoutUnit orthogonal_fallback_inline_size_ = kIndefiniteSize;
 
   bool is_in_parallel_flow_;
   bool is_new_fc_;
@@ -312,7 +317,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   bool is_fragmentainer_space_at_bfc_start_set_ = false;
   bool is_block_direction_fragmentation_type_set_ = false;
   bool is_margin_strut_set_ = false;
-  bool is_floats_bfc_block_offset_set_ = false;
+  bool is_forced_bfc_block_offset_set_ = false;
   bool is_clearance_offset_set_ = false;
 
   bool to_constraint_space_called_ = false;

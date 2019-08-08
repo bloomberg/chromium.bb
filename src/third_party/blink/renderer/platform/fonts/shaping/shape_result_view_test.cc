@@ -135,7 +135,8 @@ TEST_F(ShapeResultViewTest, LatinMultiRun) {
 
   // Combine four separate results into a single one to ensure we have a result
   // with multiple runs: "hello world!"
-  scoped_refptr<ShapeResult> result = ShapeResult::Create(&font, 0, direction);
+  scoped_refptr<ShapeResult> result =
+      ShapeResult::Create(&font, 0, 0, direction);
   shaper_a.Shape(&font, direction)->CopyRange(0u, 5u, result.get());
   shaper_b.Shape(&font, direction)->CopyRange(0u, 2u, result.get());
   shaper_c.Shape(&font, direction)->CopyRange(0u, 4u, result.get());
@@ -177,7 +178,7 @@ TEST_F(ShapeResultViewTest, LatinMultiRun) {
                                  static_cast<void*>(&reference_glyphs));
 
   scoped_refptr<ShapeResult> composite_copy =
-      ShapeResult::Create(&font, 0, direction);
+      ShapeResult::Create(&font, 0, 0, direction);
   result->CopyRange(0, 8, composite_copy.get());
   result->CopyRange(7, 8, composite_copy.get());
   result->CopyRange(10, 11, composite_copy.get());
@@ -192,16 +193,6 @@ TEST_F(ShapeResultViewTest, LatinMultiRun) {
   EXPECT_TRUE(
       CompareResultGlyphs(composite_copy_glyphs, reference_glyphs, 0u, 16u));
   EXPECT_EQ(composite_view->Width(), composite_copy->Width());
-
-  // Rounding of x and width may be off by ~0.1 on Mac.
-  float tolerance = 0.1f;
-  EXPECT_NEAR(composite_view->Bounds().X(), composite_copy->Bounds().X(),
-              tolerance);
-  EXPECT_NEAR(composite_view->Bounds().Width(),
-              composite_copy->Bounds().Width(), tolerance);
-  EXPECT_EQ(composite_view->Bounds().Y(), composite_copy->Bounds().Y());
-  EXPECT_EQ(composite_view->Bounds().Height(),
-            composite_copy->Bounds().Height());
 }
 
 TEST_F(ShapeResultViewTest, LatinCompositeView) {
@@ -226,7 +217,7 @@ TEST_F(ShapeResultViewTest, LatinCompositeView) {
   // TODO(layout-dev): Arguably both should be updated to renumber the first
   // result as well but some callers depend on the existing behavior.
   scoped_refptr<ShapeResult> composite_copy =
-      ShapeResult::Create(&font, 0, direction);
+      ShapeResult::Create(&font, 0, 0, direction);
   result->CopyRange(14, 23, composite_copy.get());
   result->CopyRange(33, 55, composite_copy.get());
   result->CopyRange(4, 5, composite_copy.get());
@@ -255,7 +246,6 @@ TEST_F(ShapeResultViewTest, LatinCompositeView) {
   EXPECT_EQ(composite_glyphs.size(), 36u);
   EXPECT_TRUE(CompareResultGlyphs(composite_glyphs, reference_glyphs, 0u, 22u));
   EXPECT_EQ(composite_view->Width(), composite_copy->Width());
-  EXPECT_EQ(composite_view->Bounds(), composite_copy->Bounds());
 }
 
 TEST_F(ShapeResultViewTest, MixedScriptsCompositeView) {
@@ -278,7 +268,7 @@ TEST_F(ShapeResultViewTest, MixedScriptsCompositeView) {
   // reference_result data might use different fonts, resulting in different
   // glyph ids and metrics.
   scoped_refptr<ShapeResult> composite_copy =
-      ShapeResult::Create(&font, 0, direction);
+      ShapeResult::Create(&font, 0, 0, direction);
   result_a->CopyRange(0, 22, composite_copy.get());
   result_b->CopyRange(0, 7, composite_copy.get());
   EXPECT_EQ(composite_copy->NumCharacters(), reference_result->NumCharacters());
@@ -301,18 +291,6 @@ TEST_F(ShapeResultViewTest, MixedScriptsCompositeView) {
   EXPECT_TRUE(CompareResultGlyphs(composite_glyphs, reference_glyphs, 0u,
                                   reference_glyphs.size()));
   EXPECT_EQ(composite_view->Width(), composite_copy->Width());
-
-  // Rounding of x may be off by ~0.1 on Mac.
-  float tolerance = 0.1f;
-  EXPECT_NEAR(composite_view->Bounds().X(), composite_copy->Bounds().X(),
-              tolerance);
-  // The rounding for the x/width might be off slightly for composite views.
-  tolerance = composite_view->Bounds().Width() / 10;
-  EXPECT_NEAR(composite_view->Bounds().Width(),
-              composite_copy->Bounds().Width(), tolerance);
-  EXPECT_EQ(composite_view->Bounds().Y(), composite_copy->Bounds().Y());
-  EXPECT_EQ(composite_view->Bounds().Height(),
-            composite_copy->Bounds().Height());
 }
 
 TEST_F(ShapeResultViewTest, TrimEndOfView) {

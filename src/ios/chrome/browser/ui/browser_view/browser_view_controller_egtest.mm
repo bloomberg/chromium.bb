@@ -19,6 +19,7 @@
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ios/web/public/test/http_server/html_response_provider.h"
@@ -55,10 +56,11 @@
   web::test::SetUpSimpleHttpServer(responses);
 
   // Just load the first URL.
-  [ChromeEarlGrey loadURL:startURL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:startURL]);
 
   // Waits for the page to load and check it is the expected content.
-  [ChromeEarlGrey waitForWebViewContainingText:responses[startURL]];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebStateContainingText:responses[startURL]]);
 
   // In the omnibox, the URL should be present, without the http:// prefix.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
@@ -81,7 +83,8 @@
                   @"Did not navigate to the destination url.");
 
   // Verifies that the destination page is shown.
-  [ChromeEarlGrey waitForWebViewContainingText:responses[destinationURL]];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebStateContainingText:responses[destinationURL]]);
 }
 
 // Tests the fix for the regression reported in https://crbug.com/801165.  The
@@ -97,12 +100,13 @@
   web::test::SetUpSimpleHttpServer(responses);
 
   // Load the test page.
-  [ChromeEarlGrey loadURL:testURL];
-  [ChromeEarlGrey waitForWebViewContainingText:"File Picker Test"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:testURL]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebStateContainingText:"File Picker Test"]);
 
   // Invoke the file picker and tap on the "Cancel" button to dismiss the file
   // picker.
-  [ChromeEarlGrey tapWebViewElementWithID:@"file"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"file"]);
   [[EarlGrey selectElementWithMatcher:chrome_test_util::CancelButton()]
       performAction:grey_tap()];
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
@@ -126,13 +130,13 @@
   int mainTabCount = 1;
   if (base::FeatureList::IsEnabled(kBlockNewTabPagePendingLoad))
     mainTabCount = 2;
-  [ChromeEarlGrey waitForMainTabCount:mainTabCount];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:mainTabCount]);
 }
 
 // Tests that BVC properly handles open URL. When BVC is showing a non-NTP
 // tab, the URL should be opened in a new tab, adding to the tab count.
 - (void)testOpenURLFromTab {
-  [ChromeEarlGrey loadURL:GURL("https://invalid")];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GURL("https://invalid")]);
   id<UIApplicationDelegate> appDelegate =
       [[UIApplication sharedApplication] delegate];
   [appDelegate application:[UIApplication sharedApplication]
@@ -141,14 +145,14 @@
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           "https://anything")]
       assertWithMatcher:grey_notNil()];
-  [ChromeEarlGrey waitForMainTabCount:2];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
 }
 
 // Tests that BVC properly handles open URL. When tab switcher is showing,
 // the URL should be opened in a new tab, and BVC should be shown.
 - (void)testOpenURLFromTabSwitcher {
-  chrome_test_util::CloseCurrentTab();
-  [ChromeEarlGrey waitForMainTabCount:0];
+  [ChromeEarlGrey closeCurrentTab];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:0]);
   id<UIApplicationDelegate> appDelegate =
       [[UIApplication sharedApplication] delegate];
   [appDelegate application:[UIApplication sharedApplication]
@@ -157,7 +161,7 @@
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           "https://anything")]
       assertWithMatcher:grey_notNil()];
-  [ChromeEarlGrey waitForMainTabCount:1];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);
 }
 
 #pragma mark - WebState visibility
@@ -173,14 +177,16 @@
   web::test::SetUpSimpleHttpServer(responses);
 
   // Load the test page.
-  [ChromeEarlGrey loadURL:testURL];
-  [ChromeEarlGrey waitForWebViewContainingText:testPageContents];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:testURL]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebStateContainingText:testPageContents]);
   web::WebState* firstWebState = chrome_test_util::GetCurrentTab().webState;
 
   // And do the same in a second tab.
-  [ChromeEarlGrey openNewTab];
-  [ChromeEarlGrey loadURL:testURL];
-  [ChromeEarlGrey waitForWebViewContainingText:testPageContents];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:testURL]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebStateContainingText:testPageContents]);
   web::WebState* secondWebState = chrome_test_util::GetCurrentTab().webState;
 
   // Check visibility before and after switching tabs.
@@ -188,12 +194,12 @@
   GREYAssert(!firstWebState->IsVisible(),
              @"firstWebState unexpectedly visible");
 
-  chrome_test_util::SelectTabAtIndexInCurrentMode(0);
+  [ChromeEarlGrey selectTabAtIndex:0];
   GREYAssert(firstWebState->IsVisible(), @"firstWebState not visible");
   GREYAssert(!secondWebState->IsVisible(),
              @"secondWebState unexpectedly visible");
 
-  chrome_test_util::SelectTabAtIndexInCurrentMode(1);
+  [ChromeEarlGrey selectTabAtIndex:1];
   GREYAssert(secondWebState->IsVisible(), @"secondWebState not visible");
   GREYAssert(!firstWebState->IsVisible(),
              @"firstWebState unexpectedly visible");

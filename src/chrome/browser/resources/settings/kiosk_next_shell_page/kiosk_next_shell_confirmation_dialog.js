@@ -9,6 +9,13 @@
  * shell requires a sign out, we need to provide this dialog to avoid surprising
  * users.
  */
+
+/**
+ * Histogram name for KioskNextShell enabled state.
+ * @type {string}
+ */
+const KIOSK_NEXT_SHELL_ENABLED_STATE_UMA_NAME = 'KioskNextShell.EnabledState';
+
 Polymer({
   is: 'settings-kiosk-next-shell-confirmation-dialog',
 
@@ -42,7 +49,12 @@ Polymer({
    */
   onConfirmClick_: function(event) {
     const prefPath = 'ash.kiosk_next_shell.enabled';
-    this.setPrefValue(prefPath, !this.getPref(prefPath).value);
+    // Toggle previous enabled state.
+    const isEnabled = !this.getPref(prefPath).value;
+    chrome.send(
+        'metricsHandler:recordBooleanHistogram',
+        [KIOSK_NEXT_SHELL_ENABLED_STATE_UMA_NAME, isEnabled]);
+    this.setPrefValue(prefPath, isEnabled);
     settings.LifetimeBrowserProxyImpl.getInstance().signOutAndRestart();
     this.$.dialog.close();
     event.stopPropagation();

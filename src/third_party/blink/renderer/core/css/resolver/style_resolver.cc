@@ -30,8 +30,7 @@
 
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 
-#include "third_party/blink/renderer/core/animation/animatable/animatable_value.h"
-#include "third_party/blink/renderer/core/animation/css/css_animatable_value_factory.h"
+#include "third_party/blink/renderer/core/animation/css/compositor_keyframe_value_factory.h"
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
 #include "third_party/blink/renderer/core/animation/css_interpolation_environment.h"
 #include "third_party/blink/renderer/core/animation/css_interpolation_types_map.h"
@@ -62,7 +61,6 @@
 #include "third_party/blink/renderer/core/css/part_names.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
-#include "third_party/blink/renderer/core/css/resolver/animated_style_builder.h"
 #include "third_party/blink/renderer/core/css/resolver/css_variable_animator.h"
 #include "third_party/blink/renderer/core/css/resolver/css_variable_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/match_result.h"
@@ -95,6 +93,7 @@
 #include "third_party/blink/renderer/core/style/style_initial_data.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -125,9 +124,9 @@ bool HasAnimationsOrTransitions(const StyleResolverState& state,
 using namespace html_names;
 
 static CSSPropertyValueSet* LeftToRightDeclaration() {
-  DEFINE_STATIC_LOCAL(Persistent<MutableCSSPropertyValueSet>,
-                      left_to_right_decl,
-                      (MutableCSSPropertyValueSet::Create(kHTMLQuirksMode)));
+  DEFINE_STATIC_LOCAL(
+      Persistent<MutableCSSPropertyValueSet>, left_to_right_decl,
+      (MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLQuirksMode)));
   if (left_to_right_decl->IsEmpty()) {
     left_to_right_decl->SetProperty(CSSPropertyID::kDirection,
                                     CSSValueID::kLtr);
@@ -136,9 +135,9 @@ static CSSPropertyValueSet* LeftToRightDeclaration() {
 }
 
 static CSSPropertyValueSet* RightToLeftDeclaration() {
-  DEFINE_STATIC_LOCAL(Persistent<MutableCSSPropertyValueSet>,
-                      right_to_left_decl,
-                      (MutableCSSPropertyValueSet::Create(kHTMLQuirksMode)));
+  DEFINE_STATIC_LOCAL(
+      Persistent<MutableCSSPropertyValueSet>, right_to_left_decl,
+      (MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLQuirksMode)));
   if (right_to_left_decl->IsEmpty()) {
     right_to_left_decl->SetProperty(CSSPropertyID::kDirection,
                                     CSSValueID::kRtl);
@@ -568,11 +567,10 @@ void StyleResolver::MatchAllRules(StyleResolverState& state,
     collector.AddElementStyleProperties(
         state.GetElement()->AdditionalPresentationAttributeStyle());
 
-    if (state.GetElement()->IsHTMLElement()) {
+    if (auto* html_element = DynamicTo<HTMLElement>(state.GetElement())) {
       bool is_auto;
       TextDirection text_direction =
-          ToHTMLElement(state.GetElement())
-              ->DirectionalityIfhasDirAutoAttribute(is_auto);
+          html_element->DirectionalityIfhasDirAutoAttribute(is_auto);
       if (is_auto) {
         state.SetHasDirAutoAttribute(true);
         collector.AddElementStyleProperties(
@@ -598,10 +596,11 @@ void StyleResolver::MatchAllRules(StyleResolverState& state,
     }
 
     // Now check SMIL animation override style.
-    if (include_smil_properties && state.GetElement()->IsSVGElement())
+    auto* svg_element = DynamicTo<SVGElement>(state.GetElement());
+    if (include_smil_properties && svg_element) {
       collector.AddElementStyleProperties(
-          ToSVGElement(state.GetElement())->AnimatedSMILStyleProperties(),
-          false /* isCacheable */);
+          svg_element->AnimatedSMILStyleProperties(), false /* isCacheable */);
+    }
   }
 
   collector.FinishAddingAuthorRulesForTreeScope();
@@ -720,7 +719,8 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
 
   ElementResolveContext element_context(*element);
 
-  StyleResolverState state(GetDocument(), element_context, default_parent,
+  StyleResolverState state(GetDocument(), element_context,
+                           nullptr /* pseudo_element */, default_parent,
                            default_layout_parent);
 
   const ComputedStyle* base_computed_style =
@@ -853,9 +853,7 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
   return state.TakeStyle();
 }
 
-// TODO(alancutter): Create compositor keyframe values directly instead of
-// intermediate AnimatableValues.
-AnimatableValue* StyleResolver::CreateAnimatableValueSnapshot(
+CompositorKeyframeValue* StyleResolver::CreateCompositorKeyframeValueSnapshot(
     Element& element,
     const ComputedStyle& base_style,
     const ComputedStyle* parent_style,
@@ -863,7 +861,8 @@ AnimatableValue* StyleResolver::CreateAnimatableValueSnapshot(
     const CSSValue* value) {
   // TODO(alancutter): Avoid creating a StyleResolverState just to apply a
   // single value on a ComputedStyle.
-  StyleResolverState state(element.GetDocument(), &element, parent_style,
+  StyleResolverState state(element.GetDocument(), &element,
+                           nullptr /* pseudo_element */, parent_style,
                            parent_style);
   state.SetStyle(ComputedStyle::Clone(base_style));
   if (value) {
@@ -873,7 +872,7 @@ AnimatableValue* StyleResolver::CreateAnimatableValueSnapshot(
         state.StyleRef());
     CSSVariableResolver(state).ResolveVariableDefinitions();
   }
-  return CSSAnimatableValueFactory::Create(property, *state.Style());
+  return CompositorKeyframeValueFactory::Create(property, *state.Style());
 }
 
 bool StyleResolver::PseudoStyleForElementInternal(
@@ -965,8 +964,10 @@ scoped_refptr<ComputedStyle> StyleResolver::PseudoStyleForElement(
   if (!element)
     return nullptr;
 
-  StyleResolverState state(GetDocument(), element, parent_style,
-                           parent_layout_object_style);
+  StyleResolverState state(
+      GetDocument(), element,
+      element->GetPseudoElement(pseudo_style_request.pseudo_id), parent_style,
+      parent_layout_object_style);
   if (!PseudoStyleForElementInternal(*element, pseudo_style_request, state)) {
     if (pseudo_style_request.type == PseudoStyleRequest::kForRenderer)
       return nullptr;
@@ -985,7 +986,8 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForPage(int page_index) {
   scoped_refptr<ComputedStyle> initial_style =
       InitialStyleForElement(GetDocument());
   StyleResolverState state(GetDocument(), GetDocument().documentElement(),
-                           initial_style.get(), initial_style.get());
+                           nullptr /* pseudo_element */, initial_style.get(),
+                           initial_style.get());
 
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
   const ComputedStyle* root_element_style =
@@ -1037,9 +1039,6 @@ scoped_refptr<ComputedStyle> StyleResolver::InitialStyleForElement(
                                                        : 1);
   initial_style->SetEffectiveZoom(initial_style->Zoom());
 
-  if (document.GetStyleEngine().GetColorScheme() == ColorScheme::kDark)
-    initial_style->SetDarkColorScheme();
-
   FontDescription document_font_description =
       initial_style->GetFontDescription();
   document_font_description.SetLocale(
@@ -1082,7 +1081,8 @@ void StyleResolver::AddMatchedRulesToTracker(
 StyleRuleList* StyleResolver::StyleRulesForElement(Element* element,
                                                    unsigned rules_to_include) {
   DCHECK(element);
-  StyleResolverState state(GetDocument(), element);
+  StyleResolverState state(GetDocument(), element,
+                           nullptr /* pseudo_element */);
   ElementRuleCollector collector(state.ElementContext(), selector_filter_,
                                  state.Style());
   collector.SetMode(SelectorChecker::kCollectingStyleRules);
@@ -1096,7 +1096,8 @@ CSSRuleList* StyleResolver::PseudoCSSRulesForElement(
     PseudoId pseudo_id,
     unsigned rules_to_include) {
   DCHECK(element);
-  StyleResolverState state(GetDocument(), element);
+  StyleResolverState state(GetDocument(), element,
+                           nullptr /* pseudo_element */);
   ElementRuleCollector collector(state.ElementContext(), selector_filter_,
                                  state.Style());
   collector.SetMode(SelectorChecker::kCollectingCSSRules);
@@ -1984,7 +1985,8 @@ void StyleResolver::ComputeFont(ComputedStyle* style,
   };
 
   // TODO(timloh): This is weird, the style is being used as its own parent
-  StyleResolverState state(GetDocument(), nullptr, style, style);
+  StyleResolverState state(GetDocument(), nullptr /* element */,
+                           nullptr /* pseudo_element */, style, style);
   state.SetStyle(style);
 
   for (const CSSProperty* property : properties) {

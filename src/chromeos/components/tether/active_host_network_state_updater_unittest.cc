@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "chromeos/components/tether/fake_active_host.h"
 #include "chromeos/network/network_state.h"
+#include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

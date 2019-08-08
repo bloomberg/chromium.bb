@@ -81,7 +81,7 @@ int AssistantProgressIndicator::GetHeightForWidth(int width) const {
 }
 
 void AssistantProgressIndicator::AddedToWidget() {
-  VisibilityChanged(/*starting_from=*/this, /*is_visible=*/visible());
+  VisibilityChanged(/*starting_from=*/this, /*is_visible=*/GetVisible());
 }
 
 void AssistantProgressIndicator::RemovedFromWidget() {
@@ -91,7 +91,7 @@ void AssistantProgressIndicator::RemovedFromWidget() {
 void AssistantProgressIndicator::OnLayerOpacityChanged(
     ui::PropertyChangeReason reason) {
   VisibilityChanged(/*starting_from=*/this,
-                    /*is_visible=*/visible());
+                    /*is_visible=*/GetVisible());
 }
 
 void AssistantProgressIndicator::VisibilityChanged(views::View* starting_from,
@@ -146,7 +146,7 @@ void AssistantProgressIndicator::VisibilityChanged(views::View* starting_from,
                 ui::LayerAnimationElement::AnimatableProperty::TRANSFORM,
                 base::TimeDelta::FromMilliseconds(500)),
             // Animation parameters.
-            {.is_cyclic = true}));
+            {/*is_cyclic=*/true}));
   }
 }
 
@@ -157,7 +157,7 @@ void AssistantProgressIndicator::InitLayout() {
           kSpacingDip));
 
   layout_manager->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
 
   // Initialize dots.
   for (int i = 0; i < kDotCount; ++i) {

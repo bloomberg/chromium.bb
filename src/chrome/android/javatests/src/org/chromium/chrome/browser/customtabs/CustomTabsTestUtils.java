@@ -120,8 +120,10 @@ public class CustomTabsTestUtils {
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
                 () -> { activity.onMenuOrKeyboardAction(R.id.show_menu, false); });
 
-        CriteriaHelper.pollUiThread(
-                activity.getAppMenuHandler()::isAppMenuShowing, "App menu was not shown");
+        CriteriaHelper.pollUiThread(activity.getRootUiCoordinatorForTesting()
+                                            .getAppMenuCoordinatorForTesting()
+                                            .getAppMenuHandler()::isAppMenuShowing,
+                "App menu was not shown");
     }
 
     public static void setHideCctTopBarOnModuleManagedUrls(Intent intent, boolean hideCctTopBar)

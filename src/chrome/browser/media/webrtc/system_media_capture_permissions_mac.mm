@@ -22,8 +22,11 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "base/macros.h"
+#include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "chrome/browser/media/webrtc/media_authorization_wrapper_mac.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -31,18 +34,74 @@ namespace system_media_permissions {
 
 namespace {
 
+// Pointer to OS call wrapper that tests can set.
+MediaAuthorizationWrapper* g_media_authorization_wrapper_for_tests = nullptr;
+
+// Implementation of OS call wrapper that does the actual OS calls.
+class MediaAuthorizationWrapperImpl : public MediaAuthorizationWrapper {
+ public:
+  MediaAuthorizationWrapperImpl() = default;
+  ~MediaAuthorizationWrapperImpl() final = default;
+
+  NSInteger AuthorizationStatusForMediaType(NSString* media_type) final {
+    if (@available(macOS 10.14, *)) {
+      AVCaptureDevice* target = [AVCaptureDevice class];
+      SEL selector = @selector(authorizationStatusForMediaType:);
+      NSInteger auth_status = 0;
+      if ([target respondsToSelector:selector]) {
+        auth_status =
+            (NSInteger)[target performSelector:selector withObject:media_type];
+      } else {
+        DLOG(WARNING)
+            << "authorizationStatusForMediaType could not be executed";
+      }
+      return auth_status;
+    }
+
+    NOTREACHED();
+    return 0;
+  }
+
+  void RequestAccessForMediaType(NSString* media_type,
+                                 base::RepeatingClosure callback,
+                                 const base::TaskTraits& traits) final {
+    if (@available(macOS 10.14, *)) {
+      AVCaptureDevice* target = [AVCaptureDevice class];
+      SEL selector = @selector(requestAccessForMediaType:completionHandler:);
+      if ([target respondsToSelector:selector]) {
+        [target performSelector:selector
+                     withObject:media_type
+                     withObject:^(BOOL granted) {
+                       base::PostTaskWithTraits(FROM_HERE, traits,
+                                                std::move(callback));
+                     }];
+      } else {
+        DLOG(WARNING) << "requestAccessForMediaType could not be executed";
+        base::PostTaskWithTraits(FROM_HERE, traits, std::move(callback));
+      }
+    } else {
+      NOTREACHED();
+      base::PostTaskWithTraits(FROM_HERE, traits, std::move(callback));
+    }
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MediaAuthorizationWrapperImpl);
+};
+
+MediaAuthorizationWrapper& GetMediaAuthorizationWrapper() {
+  if (g_media_authorization_wrapper_for_tests)
+    return *g_media_authorization_wrapper_for_tests;
+
+  static base::NoDestructor<MediaAuthorizationWrapperImpl>
+      media_authorization_wrapper;
+  return *media_authorization_wrapper;
+}
+
 NSInteger MediaAuthorizationStatus(NSString* media_type) {
   if (@available(macOS 10.14, *)) {
-    AVCaptureDevice* target = [AVCaptureDevice class];
-    SEL selector = @selector(authorizationStatusForMediaType:);
-    NSInteger auth_status = 0;
-    if ([target respondsToSelector:selector]) {
-      auth_status =
-          (NSInteger)[target performSelector:selector withObject:media_type];
-    } else {
-      DLOG(WARNING) << "authorizationStatusForMediaType could not be executed";
-    }
-    return auth_status;
+    return GetMediaAuthorizationWrapper().AuthorizationStatusForMediaType(
+        media_type);
   }
 
   NOTREACHED();
@@ -77,18 +136,8 @@ void RequestSystemMediaCapturePermission(NSString* media_type,
                                          base::RepeatingClosure callback,
                                          const base::TaskTraits& traits) {
   if (@available(macOS 10.14, *)) {
-      AVCaptureDevice* target = [AVCaptureDevice class];
-      SEL selector = @selector(requestAccessForMediaType:completionHandler:);
-      if ([target respondsToSelector:selector]) {
-        [target performSelector:selector
-                     withObject:media_type
-                     withObject:^(BOOL granted) {
-                       base::PostTaskWithTraits(FROM_HERE, traits,
-                                                std::move(callback));
-                     }];
-      } else {
-        DLOG(WARNING) << "requestAccessForMediaType could not be executed";
-      }
+    GetMediaAuthorizationWrapper().RequestAccessForMediaType(
+        media_type, std::move(callback), traits);
   } else {
     NOTREACHED();
     // Should never happen since for pre-10.14 system permissions don't exist
@@ -120,6 +169,12 @@ void RequestSystemVideoCapturePermisson(base::OnceClosure callback,
   RequestSystemMediaCapturePermission(
       AVMediaTypeVideo, base::AdaptCallbackForRepeating(std::move(callback)),
       traits);
+}
+
+void SetMediaAuthorizationWrapperForTesting(
+    MediaAuthorizationWrapper* wrapper) {
+  CHECK(!g_media_authorization_wrapper_for_tests);
+  g_media_authorization_wrapper_for_tests = wrapper;
 }
 
 }  // namespace system_media_permissions

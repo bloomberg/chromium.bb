@@ -485,7 +485,7 @@ class PrerenderManager : public content::NotificationObserver,
   // |url| and |session_storage_namespace|.
   PrerenderData* FindPrerenderData(
       const GURL& url,
-      const content::SessionStorageNamespace* session_storage_namespace);
+      content::SessionStorageNamespace* session_storage_namespace);
 
   // Given the |prerender_contents|, find the iterator in |active_prerenders_|
   // correponding to the given prerender.

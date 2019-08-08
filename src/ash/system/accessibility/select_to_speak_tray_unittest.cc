@@ -4,7 +4,7 @@
 
 #include "ash/system/accessibility/select_to_speak_tray.h"
 
-#include "ash/accelerators/accelerator_controller.h"
+#include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/shell.h"
@@ -48,7 +48,7 @@ class SelectToSpeakTrayTest : public AshTestBase {
 
  protected:
   // Returns true if the Select to Speak tray is visible.
-  bool IsVisible() { return GetTray()->visible(); }
+  bool IsVisible() { return GetTray()->GetVisible(); }
 
   // Returns true if the background color of the tray is active.
   bool IsTrayBackgroundActive() { return GetTray()->is_active(); }

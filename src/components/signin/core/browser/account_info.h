@@ -8,6 +8,7 @@
 #include <string>
 
 #include "components/account_id/account_id.h"
+#include "google_apis/gaia/core_account_id.h"
 #include "ui/gfx/image/image.h"
 
 // Value representing no hosted domain associated with an account.
@@ -29,7 +30,7 @@ struct CoreAccountInfo {
   CoreAccountInfo& operator=(const CoreAccountInfo& other);
   CoreAccountInfo& operator=(CoreAccountInfo&& other) noexcept;
 
-  std::string account_id;
+  CoreAccountId account_id;
   std::string gaia;
   std::string email;
 
@@ -69,6 +70,10 @@ struct AccountInfo : public CoreAccountInfo {
   // one field was updated.
   bool UpdateWith(const AccountInfo& other);
 };
+
+bool operator==(const CoreAccountInfo& l, const CoreAccountInfo& r);
+bool operator!=(const CoreAccountInfo& l, const CoreAccountInfo& r);
+std::ostream& operator<<(std::ostream& os, const CoreAccountInfo& account);
 
 // Returns AccountID populated from |account_info|.
 AccountId AccountIdFromAccountInfo(const CoreAccountInfo& account_info);

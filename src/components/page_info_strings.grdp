@@ -250,6 +250,12 @@
     <message name="IDS_PAGE_INFO_TYPE_USB" desc="The label used for the USB permission controls in the Page Info popup.">
       USB devices
     </message>
+    <message name="IDS_PAGE_INFO_TYPE_SERIAL" desc="The label used for the serial port permission controls in the Page Info popup.">
+      Serial ports
+    </message>
+    <message name="IDS_PAGE_INFO_TYPE_BLUETOOTH_SCANNING" desc="The label used for the Bluetooth scanning controls in the Page Info popup.">
+      Bluetooth scanning
+    </message>
     <!-- TODO(crbug.com/716303): A few permissions are missing here. -->
 
     <!-- Permission values -->

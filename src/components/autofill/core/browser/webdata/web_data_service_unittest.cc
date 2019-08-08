@@ -21,9 +21,9 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "components/autofill/core/browser/autofill_country.h"
-#include "components/autofill/core/browser/autofill_profile.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/geo/autofill_country.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
@@ -153,7 +153,7 @@ class WebDataServiceAutofillTest : public WebDataServiceTest {
         &AutofillWebDataService::AddObserver;
     wds_->GetDBTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(add_observer_func, wds_, &observer_));
-    base::ThreadPool::GetInstance()->FlushForTesting();
+    base::ThreadPoolInstance::Get()->FlushForTesting();
   }
 
   void TearDown() override {

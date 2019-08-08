@@ -26,10 +26,17 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
+#include "ui/display/win/dpi.h"
+#include "ui/gfx/system_fonts_win.h"
 #include "ui/gfx/win/direct_write.h"
 #endif
 
 namespace {
+
+// The default system font name.
+#if defined(OS_WIN)
+const char kDefaultFontName[] = "Segoe UI";
+#endif
 
 // Constant from the Harmony spec.
 constexpr int kHarmonyTitleSize = 15;
@@ -39,17 +46,52 @@ class LayoutProviderTest : public testing::Test {
  public:
   LayoutProviderTest() {}
 
-#if defined(OS_WIN)
  protected:
-  static void SetUpTestCase() {
-    // The expected case is to have DirectWrite enabled; the fallback gives
-    // different font heights. However, only use DirectWrite on Windows 10 and
-    // later, since it's known to have flaky results on Windows 7. See
-    // http://crbug.com/759870.
-    if (base::win::GetVersion() >= base::win::VERSION_WIN10)
-      gfx::win::InitializeDirectWrite();
-  }
+  static void SetUpTestSuite() {
+#if defined(OS_WIN)
+    gfx::win::InitializeDirectWrite();
+
+    // Ensures anti-aliasing is activated.
+    BOOL antialiasing = TRUE;
+    BOOL result =
+        SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &antialiasing, 0);
+    EXPECT_NE(result, FALSE);
+    EXPECT_NE(antialiasing, FALSE)
+        << "The test requires that fonts smoothing (anti-aliasing) is "
+           "activated. If this assert is failing you need to manually activate "
+           "the flag in your system fonts settings.";
+
+    // Ensures that the screen resolution is at the default value.
+    float system_dpi_scale = display::win::GetDPIScale();
+    EXPECT_EQ(system_dpi_scale, 1.0)
+        << "The test requires default display settings. The DPI of the display "
+           "is not 100%. dpi_scale="
+        << system_dpi_scale;
+
+    double accessibility_font_scale = display::win::GetAccessibilityFontScale();
+    EXPECT_EQ(accessibility_font_scale, 1.0)
+        << "The test requires default display settings. The fonts are scaled "
+           "due to accessibility settings. font_scale="
+        << accessibility_font_scale;
+
+    // Ensures that the default fonts are used.
+    EXPECT_EQ(
+        gfx::win::GetSystemFont(gfx::win::SystemFont::kCaption).GetFontName(),
+        kDefaultFontName);
+    EXPECT_EQ(gfx::win::GetSystemFont(gfx::win::SystemFont::kSmallCaption)
+                  .GetFontName(),
+              kDefaultFontName);
+    EXPECT_EQ(
+        gfx::win::GetSystemFont(gfx::win::SystemFont::kMenu).GetFontName(),
+        kDefaultFontName);
+    EXPECT_EQ(
+        gfx::win::GetSystemFont(gfx::win::SystemFont::kStatus).GetFontName(),
+        kDefaultFontName);
+    EXPECT_EQ(
+        gfx::win::GetSystemFont(gfx::win::SystemFont::kMessage).GetFontName(),
+        kDefaultFontName);
 #endif
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LayoutProviderTest);
@@ -58,23 +100,30 @@ class LayoutProviderTest : public testing::Test {
 // Check legacy font sizes. No new code should be using these constants, but if
 // these tests ever fail it probably means something in the old UI will have
 // changed by mistake.
-// Disabled since this relies on machine configuration. http://crbug.com/701241.
-TEST_F(LayoutProviderTest, DISABLED_LegacyFontSizeConstants) {
+// https://crbug.com/961938
+#if defined(OS_MACOSX)
+#define MAYBE_LegacyFontSizeConstants DISABLED_LegacyFontSizeConstants
+#else
+#define MAYBE_LegacyFontSizeConstants LegacyFontSizeConstants
+#endif
+TEST_F(LayoutProviderTest, MAYBE_LegacyFontSizeConstants) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   gfx::FontList label_font = rb.GetFontListWithDelta(ui::kLabelFontSizeDelta);
 
-  EXPECT_EQ(12, label_font.GetFontSize());
+#if defined(OS_WIN)
+  EXPECT_EQ(16, label_font.GetHeight());
+  EXPECT_EQ(13, label_font.GetBaseline());
+#else
   EXPECT_EQ(15, label_font.GetHeight());
   EXPECT_EQ(12, label_font.GetBaseline());
+#endif
+  EXPECT_EQ(12, label_font.GetFontSize());
   EXPECT_EQ(9, label_font.GetCapHeight());
-// Note some Windows bots report 11,13,11,9 for the above.
-// TODO(tapted): Smoke them out and figure out why.
 
 #if defined(OS_MACOSX)
-  EXPECT_EQ(10, label_font.GetExpectedTextWidth(1));
+  EXPECT_EQ(7, label_font.GetExpectedTextWidth(1));
 #else
   EXPECT_EQ(6, label_font.GetExpectedTextWidth(1));
-// Some Windows bots may say 5.
 #endif
 
   gfx::FontList title_font = rb.GetFontListWithDelta(ui::kTitleFontSizeDelta);
@@ -104,7 +153,7 @@ TEST_F(LayoutProviderTest, DISABLED_LegacyFontSizeConstants) {
   if (base::mac::IsOS10_9()) {
     EXPECT_EQ(7, title_font.GetExpectedTextWidth(1));
   } else {
-    EXPECT_EQ(12, title_font.GetExpectedTextWidth(1));
+    EXPECT_EQ(8, title_font.GetExpectedTextWidth(1));
   }
 #else
   EXPECT_EQ(8, title_font.GetExpectedTextWidth(1));
@@ -142,8 +191,7 @@ TEST_F(LayoutProviderTest, DISABLED_LegacyFontSizeConstants) {
 // platform starts returning 18 in a standard configuration then the
 // TypographyProvider must add 4 instead. We do this so that Chrome adapts
 // correctly to _non-standard_ system font configurations on user machines.
-// Disabled since this relies on machine configuration. http://crbug.com/701241.
-TEST_F(LayoutProviderTest, DISABLED_RequestFontBySize) {
+TEST_F(LayoutProviderTest, RequestFontBySize) {
 #if defined(OS_MACOSX)
   constexpr int kBase = 13;
 #else
@@ -311,8 +359,7 @@ TEST_F(LayoutProviderTest, TypographyLineHeight) {
 // Ensure that line heights reported in a default bot configuration match the
 // Harmony spec. This test will only run if it detects that the current machine
 // has the default OS configuration.
-// Flaky. http://crbug.com/759870
-TEST_F(LayoutProviderTest, DISABLED_ExplicitTypographyLineHeight) {
+TEST_F(LayoutProviderTest, ExplicitTypographyLineHeight) {
   std::unique_ptr<views::LayoutProvider> layout_provider =
       ChromeLayoutProvider::CreateLayoutProvider();
 

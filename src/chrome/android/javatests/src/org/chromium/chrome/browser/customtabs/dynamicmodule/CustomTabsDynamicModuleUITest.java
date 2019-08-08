@@ -23,6 +23,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ActivityState;
@@ -39,8 +41,9 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
+import org.chromium.chrome.browser.customtabs.dynamicmodule.CustomTabsDynamicModuleTestUtils.AppHooksModuleForTest;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.CustomTabsDynamicModuleTestUtils.IntentBuilder;
-import org.chromium.chrome.browser.dependency_injection.ModuleFactoryOverrides;
+import org.chromium.chrome.browser.dependency_injection.ModuleOverridesRule;
 import org.chromium.chrome.browser.toolbar.top.CustomTabToolbar;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -66,8 +69,15 @@ import java.util.concurrent.TimeoutException;
         // EmbeddedTestServer, running on 127.0.0.1, without a valid certificate.
         ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1", "ignore-certificate-errors"})
 public class CustomTabsDynamicModuleUITest {
+
+    private TestRule mModuleOverridesRule = new ModuleOverridesRule()
+            .setOverride(AppHooksModule.Factory.class, AppHooksModuleForTest::new);
+
+    private CustomTabActivityTestRule mActivityRule = new CustomTabActivityTestRule();
+
     @Rule
-    public CustomTabActivityTestRule mActivityRule = new CustomTabActivityTestRule();
+    public TestRule mOverrideModulesThenLaunchRule =
+            RuleChain.outerRule(mModuleOverridesRule).around(mActivityRule);
 
     private static final String TEST_PAGE = "/chrome/test/data/android/google.html";
     private static final String TEST_PAGE_2 = "/chrome/test/data/android/test.html";
@@ -85,9 +95,6 @@ public class CustomTabsDynamicModuleUITest {
     public void setUp() throws Exception {
         LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
 
-        ModuleFactoryOverrides.setOverride(AppHooksModule.Factory.class,
-                CustomTabsDynamicModuleTestUtils.AppHooksModuleForTest::new);
-
         // Module managed hosts only work with HTTPS.
         mTestServer = EmbeddedTestServer.createAndStartHTTPSServer(
                 InstrumentationRegistry.getInstrumentation().getContext(),
@@ -104,7 +111,6 @@ public class CustomTabsDynamicModuleUITest {
 
     @After
     public void tearDown() throws Exception {
-        ModuleFactoryOverrides.clearOverrides();
         DynamicModuleCoordinator.setAllowNonStandardPortNumber(false);
     }
 

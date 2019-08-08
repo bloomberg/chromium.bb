@@ -11,7 +11,7 @@ namespace imageloader {
 const char kDlcManifestRootpath[] = "/opt/google/dlc/";
 
 // The root path of all DLC module images.
-const char kDlcImageRootpath[] = "/var/lib/dlc/";
+const char kDlcImageRootpath[] = "/var/cache/dlc/";
 
 }  // namespace imageloader
 

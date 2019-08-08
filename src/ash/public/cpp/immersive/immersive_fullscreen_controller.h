@@ -42,7 +42,6 @@ class Widget;
 
 namespace ash {
 
-class ImmersiveContext;
 class ImmersiveFocusWatcher;
 class ImmersiveFullscreenControllerDelegate;
 class ImmersiveFullscreenControllerTestApi;
@@ -76,7 +75,7 @@ class ASH_PUBLIC_EXPORT ImmersiveFullscreenController
   // (primary display above/below secondary display).
   static const int kMouseRevealBoundsHeight;
 
-  explicit ImmersiveFullscreenController(ImmersiveContext* context);
+  ImmersiveFullscreenController();
   ~ImmersiveFullscreenController() override;
 
   // Initializes the controller. Must be called prior to enabling immersive
@@ -254,7 +253,6 @@ class ASH_PUBLIC_EXPORT ImmersiveFullscreenController
   void EnableTouchInsets(bool enable);
 
   // Not owned.
-  ImmersiveContext* immersive_context_;
   ImmersiveFullscreenControllerDelegate* delegate_ = nullptr;
   views::View* top_container_ = nullptr;
   views::Widget* widget_ = nullptr;

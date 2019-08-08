@@ -33,8 +33,8 @@ namespace dawn_native { namespace null {
         virtual ~Adapter() = default;
 
       private:
-        ResultOrError<DeviceBase*> CreateDeviceImpl() override {
-            return {new Device(this)};
+        ResultOrError<DeviceBase*> CreateDeviceImpl(const DeviceDescriptor* descriptor) override {
+            return {new Device(this, descriptor)};
         }
     };
 
@@ -58,11 +58,20 @@ namespace dawn_native { namespace null {
 
     // Device
 
-    Device::Device(Adapter* adapter) : DeviceBase(adapter) {
+    Device::Device(Adapter* adapter, const DeviceDescriptor* descriptor)
+        : DeviceBase(adapter, descriptor) {
+        // Apply toggle overrides if necessary for test
+        if (descriptor != nullptr) {
+            ApplyToggleOverrides(descriptor);
+        }
     }
 
     Device::~Device() {
         mDynamicUploader = nullptr;
+
+        // Ensure any in-flight maps have been cleaned up.
+        SubmitPendingOperations();
+        ASSERT(mMemoryUsage == 0);
     }
 
     ResultOrError<BindGroupBase*> Device::CreateBindGroupImpl(
@@ -74,6 +83,7 @@ namespace dawn_native { namespace null {
         return new BindGroupLayout(this, descriptor);
     }
     ResultOrError<BufferBase*> Device::CreateBufferImpl(const BufferDescriptor* descriptor) {
+        DAWN_TRY(IncrementMemoryUsage(descriptor->size));
         return new Buffer(this, descriptor);
     }
     CommandBufferBase* Device::CreateCommandBuffer(CommandEncoderBase* encoder) {
@@ -133,6 +143,20 @@ namespace dawn_native { namespace null {
         return DAWN_UNIMPLEMENTED_ERROR("Device unable to copy from staging buffer.");
     }
 
+    MaybeError Device::IncrementMemoryUsage(size_t bytes) {
+        static_assert(kMaxMemoryUsage <= std::numeric_limits<size_t>::max() / 2, "");
+        if (bytes > kMaxMemoryUsage || mMemoryUsage + bytes > kMaxMemoryUsage) {
+            return DAWN_CONTEXT_LOST_ERROR("Out of memory.");
+        }
+        mMemoryUsage += bytes;
+        return {};
+    }
+
+    void Device::DecrementMemoryUsage(size_t bytes) {
+        ASSERT(mMemoryUsage >= bytes);
+        mMemoryUsage -= bytes;
+    }
+
     Serial Device::GetCompletedCommandSerial() const {
         return mCompletedSerial;
     }
@@ -179,11 +203,18 @@ namespace dawn_native { namespace null {
         : BufferBase(device, descriptor) {
         if (GetUsage() & (dawn::BufferUsageBit::TransferDst | dawn::BufferUsageBit::MapRead |
                           dawn::BufferUsageBit::MapWrite)) {
-            mBackingData = std::unique_ptr<char[]>(new char[GetSize()]);
+            mBackingData = std::unique_ptr<uint8_t[]>(new uint8_t[GetSize()]);
         }
     }
 
     Buffer::~Buffer() {
+        DestroyInternal();
+        ToBackend(GetDevice())->DecrementMemoryUsage(GetSize());
+    }
+
+    MaybeError Buffer::MapAtCreationImpl(uint8_t** mappedPointer) {
+        *mappedPointer = mBackingData.get();
+        return {};
     }
 
     void Buffer::MapReadOperationCompleted(uint32_t serial, void* ptr, bool isWrite) {

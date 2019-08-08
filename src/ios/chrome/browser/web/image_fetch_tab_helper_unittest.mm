@@ -53,8 +53,7 @@ class ImageFetchTabHelperTest : public web::WebTestWithWebState {
         "HTTP/1.1 200 OK\n"
         "Content-type: image/png\n\n";
     head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-        net::HttpUtil::AssembleRawHeaders(raw_header.c_str(),
-                                          raw_header.size()));
+        net::HttpUtil::AssembleRawHeaders(raw_header));
     head.mime_type = "image/png";
     network::URLLoaderCompletionStatus status;
     status.decoded_body_length = strlen(kImageData);

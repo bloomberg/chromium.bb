@@ -32,8 +32,6 @@ class SVGAnimateTransformElement final : public SVGAnimateElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_NODE_FACTORY(SVGAnimateTransformElement);
-
   explicit SVGAnimateTransformElement(Document&);
 
  private:

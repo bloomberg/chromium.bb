@@ -80,8 +80,10 @@ TEST(PaintedScrollbarLayerImplTest, Occlusion) {
     const viz::DrawQuad* thumb_draw_quad = impl.quad_list().ElementAt(0);
     const viz::DrawQuad* track_draw_quad = impl.quad_list().ElementAt(1);
 
-    EXPECT_EQ(viz::DrawQuad::TEXTURE_CONTENT, thumb_draw_quad->material);
-    EXPECT_EQ(viz::DrawQuad::TEXTURE_CONTENT, track_draw_quad->material);
+    EXPECT_EQ(viz::DrawQuad::Material::kTextureContent,
+              thumb_draw_quad->material);
+    EXPECT_EQ(viz::DrawQuad::Material::kTextureContent,
+              track_draw_quad->material);
 
     const viz::TextureDrawQuad* thumb_quad =
         viz::TextureDrawQuad::MaterialCast(thumb_draw_quad);

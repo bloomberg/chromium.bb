@@ -10,7 +10,6 @@
 #include "base/callback_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/stl_util.h"
-#include "device/base/device_client.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/device/hid/hid_connection_impl.h"
 

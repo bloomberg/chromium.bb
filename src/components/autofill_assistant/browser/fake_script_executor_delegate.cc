@@ -11,7 +11,15 @@ namespace autofill_assistant {
 FakeScriptExecutorDelegate::FakeScriptExecutorDelegate() = default;
 FakeScriptExecutorDelegate::~FakeScriptExecutorDelegate() = default;
 
+const ClientSettings& FakeScriptExecutorDelegate::GetSettings() {
+  return client_settings_;
+}
+
 const GURL& FakeScriptExecutorDelegate::GetCurrentURL() {
+  return current_url_;
+}
+
+const GURL& FakeScriptExecutorDelegate::GetDeeplinkURL() {
   return current_url_;
 }
 
@@ -85,10 +93,22 @@ void FakeScriptExecutorDelegate::SetPaymentRequestOptions(
   payment_request_options_ = std::move(options);
 }
 
-void FakeScriptExecutorDelegate::SetResizeViewport(bool resize_viewport) {}
+void FakeScriptExecutorDelegate::SetResizeViewport(bool resize_viewport) {
+  resize_viewport_ = resize_viewport;
+}
+
+bool FakeScriptExecutorDelegate::GetResizeViewport() {
+  return resize_viewport_;
+}
 
 void FakeScriptExecutorDelegate::SetPeekMode(
-    ConfigureBottomSheetProto::PeekMode peek_mode) {}
+    ConfigureBottomSheetProto::PeekMode peek_mode) {
+  peek_mode_ = peek_mode;
+}
+
+ConfigureBottomSheetProto::PeekMode FakeScriptExecutorDelegate::GetPeekMode() {
+  return peek_mode_;
+}
 
 bool FakeScriptExecutorDelegate::HasNavigationError() {
   return navigation_error_;
@@ -104,5 +124,11 @@ void FakeScriptExecutorDelegate::AddListener(Listener* listener) {
 
 void FakeScriptExecutorDelegate::RemoveListener(Listener* listener) {
   listeners_.erase(listener);
+}
+
+bool FakeScriptExecutorDelegate::SetForm(
+    std::unique_ptr<FormProto> form,
+    base::RepeatingCallback<void(const FormProto::Result*)> callback) {
+  return true;
 }
 }  // namespace autofill_assistant

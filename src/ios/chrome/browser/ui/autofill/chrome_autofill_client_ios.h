@@ -14,7 +14,6 @@
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/payments/card_unmask_delegate.h"
-#include "components/autofill/core/browser/payments/legacy_strike_database.h"
 #include "components/autofill/core/browser/payments/strike_database.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_controller_impl.h"
@@ -53,7 +52,6 @@ class ChromeAutofillClientIOS : public AutofillClient {
   identity::IdentityManager* GetIdentityManager() override;
   FormDataImporter* GetFormDataImporter() override;
   payments::PaymentsClient* GetPaymentsClient() override;
-  LegacyStrikeDatabase* GetLegacyStrikeDatabase() override;
   StrikeDatabase* GetStrikeDatabase() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
@@ -98,6 +96,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
       base::i18n::TextDirection text_direction,
       const std::vector<Suggestion>& suggestions,
       bool /*unused_autoselect_first_suggestion*/,
+      PopupType popup_type,
       base::WeakPtr<AutofillPopupDelegate> delegate) override;
   void UpdateAutofillPopupDataListValues(
       const std::vector<base::string16>& values,

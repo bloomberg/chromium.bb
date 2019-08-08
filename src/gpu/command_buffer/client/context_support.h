@@ -154,6 +154,10 @@ class ContextSupport {
 
   virtual void DidCallGLFromSkia() = 0;
 
+  // Notifies the onscreen surface of the display transform applied to the swaps
+  // from the client.
+  virtual void SetDisplayTransform(gfx::OverlayTransform transform) = 0;
+
  protected:
   ContextSupport() = default;
   virtual ~ContextSupport() = default;

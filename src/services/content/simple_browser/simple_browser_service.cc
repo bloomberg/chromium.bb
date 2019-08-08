@@ -11,10 +11,6 @@
 #include "third_party/skia/include/ports/SkFontConfigInterface.h"  // nogncheck
 #endif
 
-#if defined(USE_AURA) && BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
-#include "ui/views/mus/aura_init.h"  // nogncheck
-#endif
-
 namespace simple_browser {
 
 SimpleBrowserService::SimpleBrowserService(
@@ -31,18 +27,6 @@ void SimpleBrowserService::OnStart() {
     font_loader_ =
         sk_make_sp<font_service::FontLoader>(service_binding_.GetConnector());
     SkFontConfigInterface::SetGlobal(font_loader_);
-#endif
-
-#if defined(USE_AURA) && BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
-    views::AuraInit::InitParams params;
-    params.connector = service_binding_.GetConnector();
-    params.identity = service_binding_.identity();
-    params.register_path_provider = false;
-    aura_init_ = views::AuraInit::Create(params);
-    CHECK(aura_init_);
-#else
-    NOTREACHED() << "Remote UI embedding not supported on this platform.";
-
 #endif
   }
 

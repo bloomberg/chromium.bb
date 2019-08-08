@@ -4,6 +4,8 @@
 
 #include "components/download/content/factory/download_service_factory_helper.h"
 
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "build/build_config.h"
 #include "components/download/content/factory/navigation_monitor_factory.h"
@@ -25,6 +27,7 @@
 #include "components/download/public/task/empty_task_scheduler.h"
 #include "components/leveldb_proto/content/proto_database_provider_factory.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_ANDROID)
 #include "components/download/internal/background_service/android/battery_status_listener_android.h"
@@ -46,7 +49,7 @@ const base::FilePath::CharType kFilesStorageDir[] = FILE_PATH_LITERAL("Files");
 
 // Helper function to create download service with different implementation
 // details.
-DownloadService* CreateDownloadServiceInternal(
+std::unique_ptr<DownloadService> CreateDownloadServiceInternal(
     SimpleFactoryKey* simple_factory_key,
     std::unique_ptr<DownloadClientMap> clients,
     std::unique_ptr<Configuration> config,
@@ -89,15 +92,13 @@ DownloadService* CreateDownloadServiceInternal(
       files_storage_dir);
   logger->SetLogSource(controller.get());
 
-  return new DownloadServiceImpl(std::move(config), std::move(logger),
-                                 std::move(controller));
+  return std::make_unique<DownloadServiceImpl>(
+      std::move(config), std::move(logger), std::move(controller));
 }
 
 // Create download service for normal profile.
-DownloadService* BuildDownloadService(
-    content::BrowserContext* browser_context,
+std::unique_ptr<DownloadService> BuildDownloadService(
     SimpleFactoryKey* simple_factory_key,
-    PrefService* prefs,
     std::unique_ptr<DownloadClientMap> clients,
     network::NetworkConnectionTracker* network_connection_tracker,
     const base::FilePath& storage_dir,
@@ -107,7 +108,6 @@ DownloadService* BuildDownloadService(
   auto config = Configuration::CreateFromFinch();
 
   auto driver = std::make_unique<DownloadDriverImpl>(
-      content::BrowserContext::GetDownloadManager(browser_context),
       download_manager_coordinator);
 
   auto entry_db_storage_dir = storage_dir.Append(kEntryDBStorageDir);
@@ -131,19 +131,19 @@ DownloadService* BuildDownloadService(
 }
 
 // Create download service for incognito mode without any database or file IO.
-DownloadService* BuildInMemoryDownloadService(
+std::unique_ptr<DownloadService> BuildInMemoryDownloadService(
     SimpleFactoryKey* simple_factory_key,
     std::unique_ptr<DownloadClientMap> clients,
     network::NetworkConnectionTracker* network_connection_tracker,
     const base::FilePath& storage_dir,
-    BlobTaskProxy::BlobContextGetter blob_context_getter,
+    BlobContextGetterFactoryPtr blob_context_getter_factory,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   auto config = Configuration::CreateFromFinch();
   auto download_factory = std::make_unique<InMemoryDownloadFactory>(
-      url_loader_factory.get(), blob_context_getter, io_task_runner);
-  auto driver =
-      std::make_unique<InMemoryDownloadDriver>(std::move(download_factory));
+      url_loader_factory.get(), io_task_runner);
+  auto driver = std::make_unique<InMemoryDownloadDriver>(
+      std::move(download_factory), std::move(blob_context_getter_factory));
   auto store = std::make_unique<NoopStore>();
   auto task_scheduler = std::make_unique<EmptyTaskScheduler>();
 

@@ -11,10 +11,8 @@ namespace blink {
 
 using namespace html_names;
 
-inline HTMLRubyElement::HTMLRubyElement(Document& document)
+HTMLRubyElement::HTMLRubyElement(Document& document)
     : HTMLElement(kRubyTag, document) {}
-
-DEFINE_NODE_FACTORY(HTMLRubyElement)
 
 LayoutObject* HTMLRubyElement::CreateLayoutObject(const ComputedStyle& style,
                                                   LegacyLayout legacy) {

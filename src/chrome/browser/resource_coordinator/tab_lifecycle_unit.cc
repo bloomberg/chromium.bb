@@ -180,7 +180,7 @@ StateChangeReason DiscardReasonToStateChangeReason(
 }
 
 struct FeatureUsageEntry {
-  SiteFeatureUsage usage;
+  performance_manager::SiteFeatureUsage usage;
   DecisionFailureReason failure_reason;
 };
 
@@ -200,9 +200,10 @@ void CheckFeatureUsage(const SiteCharacteristicsDataReader* reader,
 
   const auto* last = features + base::size(features);
   for (const auto* f = features; f != last; f++) {
-    if (f->usage == SiteFeatureUsage::kSiteFeatureInUse) {
+    if (f->usage == performance_manager::SiteFeatureUsage::kSiteFeatureInUse) {
       details->AddReason(f->failure_reason);
-    } else if (f->usage == SiteFeatureUsage::kSiteFeatureUsageUnknown) {
+    } else if (f->usage == performance_manager::SiteFeatureUsage::
+                               kSiteFeatureUsageUnknown) {
       insufficient_observation = true;
     }
   }
@@ -277,6 +278,10 @@ class TabLifecycleUnitExternalImpl : public TabLifecycleUnitExternal {
 
   int GetDiscardCount() const override {
     return tab_lifecycle_unit_->GetDiscardCount();
+  }
+
+  bool IsFrozen() const override {
+    return IsFrozenOrPendingFreeze(tab_lifecycle_unit_->GetState());
   }
 
  private:
@@ -455,15 +460,6 @@ base::ProcessHandle TabLifecycleUnitSource::TabLifecycleUnit::GetProcessHandle()
 
 LifecycleUnit::SortKey TabLifecycleUnitSource::TabLifecycleUnit::GetSortKey()
     const {
-  if (base::FeatureList::IsEnabled(features::kTabRanker)) {
-    const base::Optional<float> reactivation_score =
-        resource_coordinator::TabActivityWatcher::GetInstance()
-            ->CalculateReactivationScore(web_contents());
-    if (reactivation_score.has_value())
-      return SortKey(reactivation_score.value(), last_focused_time_);
-    return SortKey(SortKey::kMaxScore, last_focused_time_);
-  }
-
   return SortKey(last_focused_time_);
 }
 
@@ -898,6 +894,14 @@ void TabLifecycleUnitSource::TabLifecycleUnit::OnLifecycleUnitStateChanged(
     for (auto& observer : *observers_)
       observer.OnDiscardedStateChange(web_contents(), GetDiscardReason(),
                                       is_discarded);
+  }
+
+  // Invoke OnFrozenStateChange() if necessary.
+  const bool was_frozen = IsFrozenOrPendingFreeze(last_state);
+  const bool is_frozen = IsFrozenOrPendingFreeze(GetState());
+  if (was_frozen != is_frozen) {
+    for (auto& observer : *observers_)
+      observer.OnFrozenStateChange(web_contents(), is_frozen);
   }
 }
 

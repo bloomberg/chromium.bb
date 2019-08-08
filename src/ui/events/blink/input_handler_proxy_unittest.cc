@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -45,6 +46,7 @@ using blink::WebMouseWheelEvent;
 using blink::WebTouchEvent;
 using blink::WebTouchPoint;
 using testing::_;
+using testing::DoAll;
 using testing::Field;
 
 namespace ui {
@@ -156,7 +158,10 @@ class MockInputHandler : public cc::InputHandler {
 
   void MouseLeave() override {}
 
-  void MouseMoveAt(const gfx::Point& mouse_position) override {}
+  cc::InputHandlerPointerResult MouseMoveAt(
+      const gfx::Point& mouse_position) override {
+    return cc::InputHandlerPointerResult();
+  }
 
   MOCK_CONST_METHOD2(IsCurrentlyScrollingLayerAt,
                      bool(const gfx::Point& point,
@@ -730,7 +735,7 @@ TEST_P(InputHandlerProxyTest, GestureScrollByPage) {
 
   gesture_.SetType(WebInputEvent::kGestureScrollBegin);
   gesture_.data.scroll_begin.delta_hint_units =
-      WebGestureEvent::ScrollUnits::kPage;
+      ui::input_types::ScrollGranularity::kScrollByPage;
   EXPECT_EQ(expected_disposition_,
             input_handler_->RouteToTypeSpecificHandler(gesture_));
 
@@ -738,7 +743,8 @@ TEST_P(InputHandlerProxyTest, GestureScrollByPage) {
 
   gesture_.SetType(WebInputEvent::kGestureScrollUpdate);
   gesture_.data.scroll_update.delta_y = 1;
-  gesture_.data.scroll_update.delta_units = WebGestureEvent::ScrollUnits::kPage;
+  gesture_.data.scroll_update.delta_units =
+      ui::input_types::ScrollGranularity::kScrollByPage;
   EXPECT_EQ(expected_disposition_,
             input_handler_->RouteToTypeSpecificHandler(gesture_));
 
@@ -765,7 +771,7 @@ TEST_P(InputHandlerProxyTest, DISABLED_GestureScrollByCoarsePixels) {
 
   gesture_.SetType(WebInputEvent::kGestureScrollBegin);
   gesture_.data.scroll_begin.delta_hint_units =
-      WebGestureEvent::ScrollUnits::kPixels;
+      ui::input_types::ScrollGranularity::kScrollByPixel;
   EXPECT_CALL(mock_input_handler_, ScrollAnimatedBegin(_))
       .WillOnce(testing::Return(kImplThreadScrollState));
   EXPECT_EQ(expected_disposition_,
@@ -773,7 +779,7 @@ TEST_P(InputHandlerProxyTest, DISABLED_GestureScrollByCoarsePixels) {
 
   gesture_.SetType(WebInputEvent::kGestureScrollUpdate);
   gesture_.data.scroll_update.delta_units =
-      WebGestureEvent::ScrollUnits::kPixels;
+      ui::input_types::ScrollGranularity::kScrollByPixel;
 
   EXPECT_CALL(mock_input_handler_, ScrollAnimated(_, _, _))
       .WillOnce(testing::Return(kImplThreadScrollState));
@@ -818,7 +824,7 @@ void InputHandlerProxyTest::FlingAndSnap() {
   gesture_.data.scroll_update.delta_y =
       -40;  // -Y means scroll down - i.e. in the +Y direction.
   gesture_.data.scroll_update.inertial_phase =
-      blink::WebGestureEvent::kMomentumPhase;
+      blink::WebGestureEvent::InertialPhaseState::kMomentum;
   EXPECT_CALL(mock_input_handler_, GetSnapFlingInfo(_, _, _))
       .WillOnce(DoAll(testing::SetArgPointee<1>(gfx::Vector2dF(0, 0)),
                       testing::SetArgPointee<2>(gfx::Vector2dF(0, 100)),
@@ -846,7 +852,7 @@ TEST_P(InputHandlerProxyTest, SnapFlingIgnoresFollowingGSUAndGSE) {
   expected_disposition_ = InputHandlerProxy::DROP_EVENT;
   gesture_.SetType(WebInputEvent::kGestureScrollEnd);
   gesture_.data.scroll_end.inertial_phase =
-      blink::WebGestureEvent::kMomentumPhase;
+      blink::WebGestureEvent::InertialPhaseState::kMomentum;
   EXPECT_CALL(mock_input_handler_, ScrollEnd(_, _)).Times(0);
   EXPECT_EQ(expected_disposition_,
             input_handler_->RouteToTypeSpecificHandler(gesture_));
@@ -2488,6 +2494,348 @@ TEST_F(InputHandlerProxyForceHandlingOnMainThread, GestureEvents) {
   gesture.SetType(WebInputEvent::kGestureScrollEnd);
   EXPECT_EQ(InputHandlerProxy::DID_NOT_HANDLE,
             input_handler_proxy_.RouteToTypeSpecificHandler(gesture));
+}
+
+class InputHandlerProxyMomentumScrollJankTest : public testing::Test {
+ public:
+  InputHandlerProxyMomentumScrollJankTest()
+      : input_handler_proxy_(&mock_input_handler_,
+                             &mock_client_,
+                             /*force_input_to_main_thread=*/false) {
+    tick_clock_.SetNowTicks(base::TimeTicks::Now());
+    input_handler_proxy_.SetTickClockForTesting(&tick_clock_);
+  }
+
+  ~InputHandlerProxyMomentumScrollJankTest() = default;
+
+  void HandleScrollBegin() {
+    WebGestureEvent gesture(WebInputEvent::kGestureScrollBegin,
+                            WebInputEvent::kNoModifiers, tick_clock_.NowTicks(),
+                            blink::WebGestureDevice::kTouchscreen);
+    HandleGesture(WebInputEventTraits::Clone(gesture));
+  }
+
+  void HandleScrollEnd() {
+    WebGestureEvent gesture(WebInputEvent::kGestureScrollEnd,
+                            WebInputEvent::kNoModifiers, tick_clock_.NowTicks(),
+                            blink::WebGestureDevice::kTouchscreen);
+    HandleGesture(WebInputEventTraits::Clone(gesture));
+  }
+
+  void HandleScrollUpdate(bool is_momentum) {
+    WebGestureEvent gesture(WebInputEvent::kGestureScrollUpdate,
+                            WebInputEvent::kNoModifiers, tick_clock_.NowTicks(),
+                            blink::WebGestureDevice::kTouchscreen);
+    gesture.data.scroll_update.delta_y = -20;
+    if (is_momentum) {
+      gesture.data.scroll_update.inertial_phase =
+          blink::WebGestureEvent::InertialPhaseState::kMomentum;
+    }
+    HandleGesture(WebInputEventTraits::Clone(gesture));
+  }
+
+  void AdvanceClock(uint32_t milliseconds) {
+    tick_clock_.Advance(base::TimeDelta::FromMilliseconds(milliseconds));
+  }
+
+  void AddNonJankyEvents(uint32_t count) {
+    for (uint32_t i = 0; i < count; ++i) {
+      AdvanceClock(16);
+      HandleScrollUpdate(true /* is_momentum */);
+      input_handler_proxy_.DeliverInputForBeginFrame();
+    }
+  }
+
+ protected:
+  void HandleGesture(WebScopedInputEvent event) {
+    LatencyInfo latency;
+    input_handler_proxy_.HandleInputEventWithLatencyInfo(
+        std::move(event), latency, base::DoNothing());
+  }
+
+  testing::NiceMock<MockInputHandler> mock_input_handler_;
+  testing::NiceMock<MockInputHandlerProxyClient> mock_client_;
+  TestInputHandlerProxy input_handler_proxy_;
+  base::SimpleTestTickClock tick_clock_;
+};
+
+TEST_F(InputHandlerProxyMomentumScrollJankTest, TestJank) {
+  cc::InputHandlerScrollResult scroll_result_did_scroll;
+  scroll_result_did_scroll.did_scroll = true;
+  EXPECT_CALL(
+      mock_input_handler_,
+      ScrollBy(testing::Property(&cc::ScrollState::delta_y, testing::Gt(0))))
+      .WillRepeatedly(testing::Return(scroll_result_did_scroll));
+
+  base::HistogramTester histogram_tester;
+  HandleScrollBegin();
+
+  // Flush one update, the first update is always ignored.
+  AdvanceClock(16);
+  HandleScrollUpdate(true /* is_momentum */);
+  input_handler_proxy_.DeliverInputForBeginFrame();
+
+  // Enqueue three updates, they will be coalesced and count as two janks.
+  // These will not count as an ordering jank, as there are more than 2
+  // coalesced events.
+  AdvanceClock(16);
+  HandleScrollUpdate(true /* is_momentum */);
+  AdvanceClock(16);
+  HandleScrollUpdate(true /* is_momentum */);
+  AdvanceClock(16);
+  HandleScrollUpdate(true /* is_momentum */);
+  AdvanceClock(1);
+  input_handler_proxy_.DeliverInputForBeginFrame();
+
+  // Enqueue two updates, they will be coalesced and count as one jank and one
+  // ordering jank (https://crbug.com/952930).
+  AdvanceClock(16);
+  HandleScrollUpdate(true /* is_momentum */);
+  AdvanceClock(16);
+  HandleScrollUpdate(true /* is_momentum */);
+  AdvanceClock(1);
+  input_handler_proxy_.DeliverInputForBeginFrame();
+
+  // Enqueue two updates, they will be coalesced and count as one jank and one
+  // ordering jank (https://crbug.com/952930).
+  AdvanceClock(16);
+  HandleScrollUpdate(true /* is_momentum */);
+  AdvanceClock(16);
+  HandleScrollUpdate(true /* is_momentum */);
+  AdvanceClock(1);
+  input_handler_proxy_.DeliverInputForBeginFrame();
+
+  // Add 93 non-janky events, bringing us to a total of 100 events.
+  AddNonJankyEvents(93);
+
+  HandleScrollEnd();
+  input_handler_proxy_.DeliverInputForBeginFrame();
+
+  histogram_tester.ExpectUniqueSample("Renderer4.MomentumScrollJankPercentage",
+                                      4, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Renderer4.MomentumScrollOrderingJankPercentage", 2, 1);
+}
+
+TEST_F(InputHandlerProxyMomentumScrollJankTest, TestJankMultipleGestures) {
+  cc::InputHandlerScrollResult scroll_result_did_scroll;
+  scroll_result_did_scroll.did_scroll = true;
+  EXPECT_CALL(
+      mock_input_handler_,
+      ScrollBy(testing::Property(&cc::ScrollState::delta_y, testing::Gt(0))))
+      .WillRepeatedly(testing::Return(scroll_result_did_scroll));
+
+  base::HistogramTester histogram_tester;
+
+  for (int i = 0; i < 3; ++i) {
+    HandleScrollBegin();
+
+    // Flush one update, the first update is always ignored.
+    AdvanceClock(16);
+    HandleScrollUpdate(true /* is_momentum */);
+    input_handler_proxy_.DeliverInputForBeginFrame();
+
+    // Enqueue two updates, they will be coalesced and count as one jank and one
+    // ordering jank (https://crbug.com/952930).
+    AdvanceClock(16);
+    HandleScrollUpdate(true /* is_momentum */);
+    AdvanceClock(16);
+    HandleScrollUpdate(true /* is_momentum */);
+    AdvanceClock(1);
+    input_handler_proxy_.DeliverInputForBeginFrame();
+
+    // Add 98 non-janky events, bringing us to a total of 100 events.
+    AddNonJankyEvents(98);
+
+    HandleScrollEnd();
+    input_handler_proxy_.DeliverInputForBeginFrame();
+
+    histogram_tester.ExpectUniqueSample(
+        "Renderer4.MomentumScrollJankPercentage", 1, i + 1);
+    histogram_tester.ExpectUniqueSample(
+        "Renderer4.MomentumScrollOrderingJankPercentage", 1, i + 1);
+  }
+}
+
+TEST_F(InputHandlerProxyMomentumScrollJankTest, TestJankRounding) {
+  cc::InputHandlerScrollResult scroll_result_did_scroll;
+  scroll_result_did_scroll.did_scroll = true;
+  EXPECT_CALL(
+      mock_input_handler_,
+      ScrollBy(testing::Property(&cc::ScrollState::delta_y, testing::Gt(0))))
+      .WillRepeatedly(testing::Return(scroll_result_did_scroll));
+
+  base::HistogramTester histogram_tester;
+
+  HandleScrollBegin();
+
+  // Flush one update, the first update is always ignored.
+  AdvanceClock(16);
+  HandleScrollUpdate(true /* is_momentum */);
+  input_handler_proxy_.DeliverInputForBeginFrame();
+
+  // Enqueue two updates, they will be coalesced and count as one jank and one
+  // ordering jank (https://crbug.com/952930).
+  AdvanceClock(16);
+  HandleScrollUpdate(true /* is_momentum */);
+  AdvanceClock(16);
+  HandleScrollUpdate(true /* is_momentum */);
+  AdvanceClock(1);
+  input_handler_proxy_.DeliverInputForBeginFrame();
+
+  // Add 500 non-janky events. Even with this many events, our round-up logic
+  // should cause us to report 1% jank.
+  AddNonJankyEvents(500);
+
+  HandleScrollEnd();
+  input_handler_proxy_.DeliverInputForBeginFrame();
+
+  histogram_tester.ExpectUniqueSample("Renderer4.MomentumScrollJankPercentage",
+                                      1, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Renderer4.MomentumScrollOrderingJankPercentage", 1, 1);
+}
+
+TEST_F(InputHandlerProxyMomentumScrollJankTest, TestSimpleNoJank) {
+  cc::InputHandlerScrollResult scroll_result_did_scroll;
+  scroll_result_did_scroll.did_scroll = true;
+  EXPECT_CALL(
+      mock_input_handler_,
+      ScrollBy(testing::Property(&cc::ScrollState::delta_y, testing::Gt(0))))
+      .WillRepeatedly(testing::Return(scroll_result_did_scroll));
+
+  base::HistogramTester histogram_tester;
+  HandleScrollBegin();
+
+  // Flush one update, the first update is always ignored.
+  AdvanceClock(16);
+  HandleScrollUpdate(true /* is_momentum */);
+  AdvanceClock(1);
+  input_handler_proxy_.DeliverInputForBeginFrame();
+
+  // Enqueue one updates, no jank.
+  AdvanceClock(16);
+  HandleScrollUpdate(true /* is_momentum */);
+  AdvanceClock(1);
+  input_handler_proxy_.DeliverInputForBeginFrame();
+
+  // Enqueue one updates, no jank.
+  AdvanceClock(16);
+  HandleScrollUpdate(true /* is_momentum */);
+  AdvanceClock(1);
+  input_handler_proxy_.DeliverInputForBeginFrame();
+
+  HandleScrollEnd();
+  input_handler_proxy_.DeliverInputForBeginFrame();
+
+  histogram_tester.ExpectUniqueSample("Renderer4.MomentumScrollJankPercentage",
+                                      0, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Renderer4.MomentumScrollOrderingJankPercentage", 0, 1);
+}
+
+TEST_F(InputHandlerProxyMomentumScrollJankTest, TestFirstGestureNoJank) {
+  cc::InputHandlerScrollResult scroll_result_did_scroll;
+  scroll_result_did_scroll.did_scroll = true;
+  EXPECT_CALL(
+      mock_input_handler_,
+      ScrollBy(testing::Property(&cc::ScrollState::delta_y, testing::Gt(0))))
+      .WillRepeatedly(testing::Return(scroll_result_did_scroll));
+
+  base::HistogramTester histogram_tester;
+  HandleScrollBegin();
+
+  // Even with 3 coalesced frames, the first gesture should not trigger a jank.
+  AdvanceClock(16);
+  HandleScrollUpdate(true /* is_momentum */);
+  AdvanceClock(16);
+  HandleScrollUpdate(true /* is_momentum */);
+  AdvanceClock(16);
+  HandleScrollUpdate(true /* is_momentum */);
+  AdvanceClock(1);
+  input_handler_proxy_.DeliverInputForBeginFrame();
+
+  HandleScrollEnd();
+  input_handler_proxy_.DeliverInputForBeginFrame();
+
+  histogram_tester.ExpectTotalCount("Renderer4.MomentumScrollJankPercentage",
+                                    0);
+  histogram_tester.ExpectTotalCount(
+      "Renderer4.MomentumScrollOrderingJankPercentage", 0);
+}
+
+TEST_F(InputHandlerProxyMomentumScrollJankTest, TestNonMomentumNoJank) {
+  cc::InputHandlerScrollResult scroll_result_did_scroll;
+  scroll_result_did_scroll.did_scroll = true;
+  EXPECT_CALL(
+      mock_input_handler_,
+      ScrollBy(testing::Property(&cc::ScrollState::delta_y, testing::Gt(0))))
+      .WillRepeatedly(testing::Return(scroll_result_did_scroll));
+
+  base::HistogramTester histogram_tester;
+  HandleScrollBegin();
+
+  // Flush one update, the first update is always ignored.
+  AdvanceClock(16);
+  HandleScrollUpdate(false /* is_momentum */);
+  AdvanceClock(1);
+  input_handler_proxy_.DeliverInputForBeginFrame();
+
+  // Enqueue three updates, these will not cause jank, as none are momentum.
+  AdvanceClock(16);
+  HandleScrollUpdate(false /* is_momentum */);
+  AdvanceClock(16);
+  HandleScrollUpdate(false /* is_momentum */);
+  AdvanceClock(16);
+  HandleScrollUpdate(false /* is_momentum */);
+  AdvanceClock(1);
+  input_handler_proxy_.DeliverInputForBeginFrame();
+
+  HandleScrollEnd();
+  input_handler_proxy_.DeliverInputForBeginFrame();
+
+  histogram_tester.ExpectTotalCount("Renderer4.MomentumScrollJankPercentage",
+                                    0);
+  histogram_tester.ExpectTotalCount(
+      "Renderer4.MomentumScrollOrderingJankPercentage", 0);
+}
+
+TEST_F(InputHandlerProxyMomentumScrollJankTest, TestLongDelayNoOrderingJank) {
+  cc::InputHandlerScrollResult scroll_result_did_scroll;
+  scroll_result_did_scroll.did_scroll = true;
+  EXPECT_CALL(
+      mock_input_handler_,
+      ScrollBy(testing::Property(&cc::ScrollState::delta_y, testing::Gt(0))))
+      .WillRepeatedly(testing::Return(scroll_result_did_scroll));
+
+  base::HistogramTester histogram_tester;
+  HandleScrollBegin();
+
+  // Flush one update, the first update is always ignored.
+  AdvanceClock(16);
+  HandleScrollUpdate(true /* is_momentum */);
+  input_handler_proxy_.DeliverInputForBeginFrame();
+
+  // Enqueue two updates, they will be coalesced but won't count as ordering
+  // jank due to the long delay.
+  AdvanceClock(16);
+  HandleScrollUpdate(true /* is_momentum */);
+  AdvanceClock(16);
+  HandleScrollUpdate(true /* is_momentum */);
+  AdvanceClock(3);  // 3ms delay prevents counting as ordering jank
+                    // (https://crbug.com/952930).
+  input_handler_proxy_.DeliverInputForBeginFrame();
+
+  // Add 98 non-janky events, bringing us to a total of 100 events.
+  AddNonJankyEvents(98);
+
+  HandleScrollEnd();
+  input_handler_proxy_.DeliverInputForBeginFrame();
+
+  histogram_tester.ExpectUniqueSample("Renderer4.MomentumScrollJankPercentage",
+                                      1, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Renderer4.MomentumScrollOrderingJankPercentage", 0, 1);
 }
 
 INSTANTIATE_TEST_SUITE_P(AnimateInput,

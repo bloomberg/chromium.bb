@@ -87,7 +87,9 @@ void ReportValidationError(ValidationContext* context,
 COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE)
 void ReportValidationErrorForMessage(mojo::Message* message,
                                      ValidationError error,
-                                     const char* description = nullptr);
+                                     const char* interface_name,
+                                     unsigned int method_ordinal,
+                                     bool is_response);
 
 // This class may be used by tests to suppress validation error logging. This is
 // not thread-safe and must only be instantiated on the main thread with no

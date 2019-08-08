@@ -1140,7 +1140,7 @@ int LayoutTableSection::DistributeExtraLogicalHeightToRows(
   return extra_logical_height - remaining_extra_logical_height;
 }
 
-bool CellHasExplicitlySpecifiedHeight(const LayoutTableCell& cell) {
+static bool CellHasExplicitlySpecifiedHeight(const LayoutTableCell& cell) {
   if (cell.StyleRef().LogicalHeight().IsFixed())
     return true;
   LayoutBlock* cb = cell.ContainingBlock();
@@ -1153,6 +1153,9 @@ static bool ShouldFlexCellChild(const LayoutTableCell& cell,
                                 LayoutObject* cell_descendant) {
   if (!CellHasExplicitlySpecifiedHeight(cell))
     return false;
+  // TODO(dgrogan): Delete ShouldFlexCellChild. It's only called when
+  // CellHasExplicitlySpecifiedHeight is false.
+  NOTREACHED() << "This is dead code?";
   if (cell_descendant->StyleRef().OverflowY() == EOverflow::kVisible ||
       cell_descendant->StyleRef().OverflowY() == EOverflow::kHidden)
     return true;
@@ -1458,6 +1461,7 @@ bool LayoutTableSection::RecalcLayoutOverflow() {
 }
 
 void LayoutTableSection::RecalcVisualOverflow() {
+  SECURITY_CHECK(!needs_cell_recalc_);
   unsigned total_rows = grid_.size();
   for (unsigned r = 0; r < total_rows; r++) {
     LayoutTableRow* row_layouter = RowLayoutObjectAt(r);
@@ -1483,6 +1487,7 @@ void LayoutTableSection::MarkAllCellsWidthsDirtyAndOrNeedsLayout(
 }
 
 LayoutUnit LayoutTableSection::FirstLineBoxBaseline() const {
+  DCHECK(!NeedsCellRecalc());
   if (!grid_.size())
     return LayoutUnit(-1);
 
@@ -1510,7 +1515,7 @@ LayoutRect LayoutTableSection::LogicalRectForWritingModeAndDirection(
     const LayoutRect& rect) const {
   LayoutRect table_aligned_rect(rect);
 
-  FlipForWritingMode(table_aligned_rect);
+  DeprecatedFlipForWritingMode(table_aligned_rect);
 
   if (!TableStyle().IsHorizontalWritingMode())
     table_aligned_rect = table_aligned_rect.TransposedRect();
@@ -1528,6 +1533,7 @@ void LayoutTableSection::DirtiedRowsAndEffectiveColumns(
     const LayoutRect& damage_rect,
     CellSpan& rows,
     CellSpan& columns) const {
+  DCHECK(!NeedsCellRecalc());
   if (!grid_.size()) {
     rows = CellSpan();
     columns = CellSpan(1, 1);

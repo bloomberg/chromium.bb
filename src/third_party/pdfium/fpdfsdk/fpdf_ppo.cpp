@@ -25,6 +25,7 @@
 #include "core/fpdfapi/parser/cpdf_stream.h"
 #include "core/fpdfapi/parser/cpdf_stream_acc.h"
 #include "core/fpdfapi/parser/cpdf_string.h"
+#include "core/fxcrt/fx_safe_types.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "fpdfsdk/cpdfsdk_helpers.h"
@@ -330,19 +331,19 @@ bool CPDF_PageOrganizer::Init() {
       pElement ? ToDictionary(pElement->GetDirect()) : nullptr;
   if (!pNewPages) {
     pNewPages = dest()->NewIndirect<CPDF_Dictionary>();
-    pNewRoot->SetFor("Pages", pNewPages->MakeReference(dest()));
+    pNewRoot->SetNewFor<CPDF_Reference>("Pages", dest(),
+                                        pNewPages->GetObjNum());
   }
-
   ByteString cbPageType = pNewPages->GetStringFor("Type", ByteString());
   if (cbPageType.IsEmpty())
     pNewPages->SetNewFor<CPDF_Name>("Type", "Pages");
 
   if (!pNewPages->GetArrayFor("Kids")) {
+    auto* pNewArray = dest()->NewIndirect<CPDF_Array>();
     pNewPages->SetNewFor<CPDF_Number>("Count", 0);
-    pNewPages->SetFor("Kids",
-                      dest()->NewIndirect<CPDF_Array>()->MakeReference(dest()));
+    pNewPages->SetNewFor<CPDF_Reference>("Kids", dest(),
+                                         pNewArray->GetObjNum());
   }
-
   return true;
 }
 
@@ -365,7 +366,7 @@ bool CPDF_PageOrganizer::UpdateReference(CPDF_Object* pObj) {
           const ByteString& key = it.first;
           if (key == "Parent" || key == "Prev" || key == "First")
             continue;
-          CPDF_Object* pNextObj = it.second.get();
+          CPDF_Object* pNextObj = it.second.Get();
           if (!pNextObj)
             return false;
           if (!UpdateReference(pNextObj))
@@ -411,7 +412,7 @@ uint32_t CPDF_PageOrganizer::GetNewObjId(CPDF_Reference* pRef) {
   if (!pDirect)
     return 0;
 
-  std::unique_ptr<CPDF_Object> pClone = pDirect->Clone();
+  RetainPtr<CPDF_Object> pClone = pDirect->Clone();
   if (CPDF_Dictionary* pDictClone = pClone->AsDictionary()) {
     if (pDictClone->KeyExist("Type")) {
       ByteString strType = pDictClone->GetStringFor("Type");
@@ -471,7 +472,7 @@ bool CPDF_PageExporter::ExportPage(const std::vector<uint32_t>& pageNums,
         continue;
       }
 
-      CPDF_Object* pObj = it.second.get();
+      CPDF_Object* pObj = it.second.Get();
       pDestPageDict->SetFor(cbSrcKeyStr, pObj->Clone());
     }
 
@@ -727,8 +728,8 @@ void CPDF_NPageToOneExporter::FinishPage(CPDF_Dictionary* pDestPageDict,
   CPDF_Stream* pStream =
       dest()->NewIndirect<CPDF_Stream>(nullptr, 0, std::move(pDict));
   pStream->SetData(bsContent.AsRawSpan());
-  pDestPageDict->SetFor(pdfium::page_object::kContents,
-                        pStream->MakeReference(dest()));
+  pDestPageDict->SetNewFor<CPDF_Reference>(pdfium::page_object::kContents,
+                                           dest(), pStream->GetObjNum());
 }
 
 }  // namespace

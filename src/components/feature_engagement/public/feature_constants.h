@@ -40,12 +40,17 @@ extern const base::Feature kIPHDownloadInfoBarDownloadContinuingFeature;
 extern const base::Feature kIPHDownloadInfoBarDownloadsAreFasterFeature;
 extern const base::Feature kIPHHomePageButtonFeature;
 extern const base::Feature kIPHHomepageTileFeature;
+extern const base::Feature kIPHIdentityDiscFeature;
+extern const base::Feature kIPHKeyboardAccessoryAddressFillingFeature;
+extern const base::Feature kIPHKeyboardAccessoryPasswordFillingFeature;
+extern const base::Feature kIPHKeyboardAccessoryPaymentFillingFeature;
 extern const base::Feature kIPHNewTabPageButtonFeature;
 extern const base::Feature kIPHPreviewsOmniboxUIFeature;
 extern const base::Feature kIPHTabGroupsQuicklyComparePagesFeature;
 extern const base::Feature kIPHTabGroupsTapToSeeAnotherTabFeature;
 extern const base::Feature kIPHTabGroupsYourTabsAreTogetherFeature;
 extern const base::Feature kIPHTranslateMenuButtonFeature;
+extern const base::Feature kIPHExploreSitesTileFeature;
 #endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
@@ -53,6 +58,7 @@ extern const base::Feature kIPHBookmarkFeature;
 extern const base::Feature kIPHIncognitoWindowFeature;
 extern const base::Feature kIPHNewTabFeature;
 extern const base::Feature kIPHReopenTabFeature;
+extern const base::Feature kIPHFocusModeFeature;
 #endif  // BUILDFLAG(ENABLE_DESKTOP_IPH)
 
 #if defined(OS_IOS)

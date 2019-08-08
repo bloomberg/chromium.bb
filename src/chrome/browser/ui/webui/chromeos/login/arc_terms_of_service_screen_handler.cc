@@ -11,7 +11,6 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/optin/arc_optin_preference_handler.h"
 #include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen.h"
-#include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen_view_observer.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/network/network_handler.h"
@@ -44,6 +44,8 @@ using ArcPlayTermsOfServiceConsent =
 using sync_pb::UserConsentTypes;
 
 namespace chromeos {
+
+constexpr StaticOobeScreenId ArcTermsOfServiceScreenView::kScreenId;
 
 ArcTermsOfServiceScreenHandler::ArcTermsOfServiceScreenHandler(
     JSCallsContainer* js_calls_container)
@@ -86,9 +88,9 @@ void ArcTermsOfServiceScreenHandler::MaybeLoadPlayStoreToS(
 }
 
 void ArcTermsOfServiceScreenHandler::OnCurrentScreenChanged(
-    OobeScreen current_screen,
-    OobeScreen new_screen) {
-  if (new_screen != OobeScreen::SCREEN_GAIA_SIGNIN)
+    OobeScreenId current_screen,
+    OobeScreenId new_screen) {
+  if (new_screen != GaiaView::kScreenId)
     return;
 
   MaybeLoadPlayStoreToS(false);
@@ -316,7 +318,7 @@ bool ArcTermsOfServiceScreenHandler::NeedDispatchEventOnAction() {
 
 void ArcTermsOfServiceScreenHandler::RecordConsents(
     const std::string& tos_content,
-    bool record_tos_content,
+    bool record_tos_consent,
     bool tos_accepted,
     bool record_backup_consent,
     bool backup_accepted,
@@ -334,7 +336,7 @@ void ArcTermsOfServiceScreenHandler::RecordConsents(
                                        : UserConsentTypes::NOT_GIVEN);
   play_consent.set_confirmation_grd_id(IDS_ARC_OOBE_TERMS_BUTTON_ACCEPT);
   play_consent.set_consent_flow(ArcPlayTermsOfServiceConsent::SETUP);
-  if (record_tos_content) {
+  if (record_tos_consent) {
     play_consent.set_play_terms_of_service_text_length(tos_content.length());
     play_consent.set_play_terms_of_service_hash(
         base::SHA1HashString(tos_content));

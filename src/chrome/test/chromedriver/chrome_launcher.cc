@@ -80,7 +80,6 @@ const char* const kDesktopSwitches[] = {
     "disable-sync",
     "no-first-run",
     "disable-background-networking",
-    "disable-web-resources",
     "disable-client-side-phishing-detection",
     "disable-default-apps",
     "enable-logging",

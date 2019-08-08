@@ -45,8 +45,7 @@ class ASH_EXPORT DragWindowResizer : public WindowResizer {
                            DragWindowControllerAcrossThreeDisplays);
 
   // Updates the bounds of the drag window for window dragging.
-  void UpdateDragWindow(const gfx::Rect& bounds_in_parent,
-                        const gfx::Point& drag_location_in_screen);
+  void UpdateDragWindow(const gfx::Point& drag_location_in_screen);
 
   // Returns true if we should allow the mouse pointer to warp.
   bool ShouldAllowMouseWarp();

@@ -160,6 +160,13 @@ class SyncTest : public InProcessBrowserTest {
   // Like SetupSync() but does not wait for the clients to be ready to sync.
   void SetupSyncNoWaitingForCompletion();
 
+  // Like SetupSync() but does wait for commits to complete before proceeding to
+  // another client.
+  // TODO(crbug.com/956043): Investigate deeper why such sequential setup is
+  // needed by some tests and why using SetupSync() instead is causing
+  // flakiness. Ideally get rid of this function.
+  void SetupSyncOneClientAfterAnother();
+
   // Sets whether or not the sync clients in this test should respond to
   // notifications of their own commits.  Real sync clients do not do this, but
   // many test assertions require this behavior.
@@ -267,6 +274,11 @@ class SyncTest : public InProcessBrowserTest {
   network::TestURLLoaderFactory test_url_loader_factory_;
 
  private:
+  enum SetupSyncMode {
+    NO_WAITING,
+    WAIT_FOR_SYNC_SETUP_TO_COMPLETE,
+    WAIT_FOR_COMMITS_TO_COMPLETE
+  };
   // Handles Profile creation for given index. Profile's path and type is
   // determined at runtime based on server type.
   bool CreateProfile(int index);
@@ -327,7 +339,7 @@ class SyncTest : public InProcessBrowserTest {
   void InitializeInvalidations(int index);
 
   // Internal routine for setting up sync.
-  void SetupSyncInternal(bool wait_for_completion);
+  void SetupSyncInternal(SetupSyncMode setup_mode);
 
   // GAIA account used by the test case.
   std::string username_;

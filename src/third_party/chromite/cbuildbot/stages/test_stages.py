@@ -643,6 +643,7 @@ class DebugInfoTestStage(generic_stages.BoardSpecificBuilderStage,
     * whether FORTIFY is enabled, etc.
   """
 
+  option_name = 'tests'
   category = constants.CI_INFRA_STAGE
 
   def PerformStage(self):
@@ -677,9 +678,9 @@ class TestPlanStage(generic_stages.BoardSpecificBuilderStage):
                       "option in the builder config is set to True.")
       return
 
-    # For non-uni builds, we don't pass a model (just board)
-    models = [config_lib.ModelTestConfig(None, board)]
 
+    models = [config_lib.ModelTestConfig(
+        None, config_lib.GetNonUniBuildLabBoardName(board))]
     if builder_run.config.models:
       models = builder_run.config.models
 

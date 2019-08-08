@@ -223,7 +223,7 @@ void Resource::MarkClientFinished(ResourceClient* client) {
 }
 
 void Resource::AppendData(const char* data, size_t length) {
-  TRACE_EVENT0("blink", "Resource::appendData");
+  TRACE_EVENT1("blink", "Resource::appendData", "length", length);
   DCHECK(!is_revalidating_);
   DCHECK(!ErrorOccurred());
   if (options_.data_buffering_policy == kBufferData) {

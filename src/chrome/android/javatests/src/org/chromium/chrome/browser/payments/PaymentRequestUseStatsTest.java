@@ -25,7 +25,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -48,8 +47,7 @@ public class PaymentRequestUseStatsTest implements MainActivityStartCallback {
     String mCreditCardId;
 
     @Override
-    public void onMainActivityStarted()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
         mHelper = new AutofillTestHelper();
         // The user has a shipping address and a credit card associated with that address on disk.
         mBillingAddressId = mHelper.setProfile(new AutofillProfile("", "https://example.com",
@@ -67,8 +65,7 @@ public class PaymentRequestUseStatsTest implements MainActivityStartCallback {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testLogProfileAndCreditCardUse()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testLogProfileAndCreditCardUse() throws InterruptedException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
 
         // Get the current date value just before the start of the Payment Request.

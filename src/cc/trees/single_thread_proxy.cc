@@ -50,7 +50,7 @@ SingleThreadProxy::SingleThreadProxy(LayerTreeHost* layer_tree_host,
 #endif
       inside_draw_(false),
       defer_main_frame_update_(false),
-      defer_commits_(false),
+      defer_commits_(true),
       animate_requested_(false),
       commit_requested_(false),
       inside_synchronous_composite_(false),
@@ -300,11 +300,13 @@ void SingleThreadProxy::StartDeferringCommits(base::TimeDelta timeout) {
   commits_restart_time_ = base::TimeTicks::Now() + timeout;
 }
 
-void SingleThreadProxy::StopDeferringCommits() {
+void SingleThreadProxy::StopDeferringCommits(
+    PaintHoldingCommitTrigger trigger) {
   if (!defer_commits_)
     return;
   defer_commits_ = false;
   commits_restart_time_ = base::TimeTicks();
+  UMA_HISTOGRAM_ENUMERATION("PaintHolding.CommitTrigger", trigger);
   TRACE_EVENT_ASYNC_END0("cc", "SingleThreadProxy::SetDeferCommits", this);
 }
 
@@ -525,21 +527,10 @@ void SingleThreadProxy::DidPresentCompositorFrameOnImplThread(
                                               feedback);
 }
 
-void SingleThreadProxy::DidGenerateLocalSurfaceIdAllocationOnImplThread(
-    const viz::LocalSurfaceIdAllocation& allocation) {
-  DebugScopedSetMainThread main(task_runner_provider_);
-  layer_tree_host_->DidGenerateLocalSurfaceIdAllocation(allocation);
-}
-
 void SingleThreadProxy::NotifyAnimationWorkletStateChange(
     AnimationWorkletMutationState state,
     ElementListType element_list_type) {
   layer_tree_host_->NotifyAnimationWorkletStateChange(state, element_list_type);
-}
-
-uint32_t SingleThreadProxy::GenerateChildSurfaceSequenceNumberSync() {
-  DebugScopedSetImplThread impl(task_runner_provider_);
-  return host_impl_->GenerateChildSurfaceSequenceNumberSync();
 }
 
 void SingleThreadProxy::RequestBeginMainFrameNotExpected(bool new_state) {
@@ -813,7 +804,7 @@ void SingleThreadProxy::BeginMainFrame(
 
   // Check now if we should stop deferring commits
   if (defer_commits_ && base::TimeTicks::Now() > commits_restart_time_) {
-    StopDeferringCommits();
+    StopDeferringCommits(PaintHoldingCommitTrigger::kTimeout);
   }
 
   // At this point the main frame may have deferred commits to avoid committing

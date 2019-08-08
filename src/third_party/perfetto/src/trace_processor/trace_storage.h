@@ -29,10 +29,13 @@
 #include "perfetto/base/logging.h"
 #include "perfetto/base/optional.h"
 #include "perfetto/base/string_view.h"
+#include "perfetto/base/time.h"
 #include "perfetto/base/utils.h"
 #include "src/trace_processor/ftrace_utils.h"
+#include "src/trace_processor/metadata.h"
 #include "src/trace_processor/stats.h"
 #include "src/trace_processor/string_pool.h"
+#include "src/trace_processor/variadic.h"
 
 namespace perfetto {
 namespace trace_processor {
@@ -57,6 +60,7 @@ enum TableId : uint8_t {
   kRawEvents = 2,
   kInstants = 3,
   kSched = 4,
+  kNestableSlices = 5,
 };
 
 // The top 8 bits are set to the TableId and the bottom 32 to the row of the
@@ -74,9 +78,10 @@ enum RefType {
   kRefIrq = 3,
   kRefSoftIrq = 4,
   kRefUpid = 5,
-  kRefUtidLookupUpid = 6,
   kRefMax
 };
+
+const std::vector<const char*>& GetRefTypeStringMap();
 
 // Stores a data inside a trace file in a columnar form. This makes it efficient
 // to read or search across a single field of the trace (e.g. all the thread
@@ -108,39 +113,6 @@ class TraceStorage {
   // Generic key value storage which can be referenced by other tables.
   class Args {
    public:
-    // Variadic type representing the possible values for the args table.
-    struct Variadic {
-      enum Type { kInt, kString, kReal };
-
-      static Variadic Integer(int64_t int_value) {
-        Variadic variadic;
-        variadic.type = Type::kInt;
-        variadic.int_value = int_value;
-        return variadic;
-      }
-
-      static Variadic String(StringId string_id) {
-        Variadic variadic;
-        variadic.type = Type::kString;
-        variadic.string_value = string_id;
-        return variadic;
-      }
-
-      static Variadic Real(double real_value) {
-        Variadic variadic;
-        variadic.type = Type::kReal;
-        variadic.real_value = real_value;
-        return variadic;
-      }
-
-      Type type;
-      union {
-        int64_t int_value;
-        StringId string_value;
-        double real_value;
-      };
-    };
-
     struct Arg {
       StringId flat_key = 0;
       StringId key = 0;
@@ -281,37 +253,48 @@ class TraceStorage {
 
   class NestableSlices {
    public:
-    inline size_t AddSlice(int64_t start_ns,
-                           int64_t duration_ns,
-                           UniqueTid utid,
-                           StringId cat,
-                           StringId name,
-                           uint8_t depth,
-                           int64_t stack_id,
-                           int64_t parent_stack_id) {
+    inline uint32_t AddSlice(int64_t start_ns,
+                             int64_t duration_ns,
+                             int64_t ref,
+                             RefType type,
+                             StringId cat,
+                             StringId name,
+                             uint8_t depth,
+                             int64_t stack_id,
+                             int64_t parent_stack_id) {
       start_ns_.emplace_back(start_ns);
       durations_.emplace_back(duration_ns);
-      utids_.emplace_back(utid);
+      refs_.emplace_back(ref);
+      types_.emplace_back(type);
       cats_.emplace_back(cat);
       names_.emplace_back(name);
       depths_.emplace_back(depth);
       stack_ids_.emplace_back(stack_id);
       parent_stack_ids_.emplace_back(parent_stack_id);
+      arg_set_ids_.emplace_back(kInvalidArgSetId);
       return slice_count() - 1;
     }
 
-    void set_duration(size_t index, int64_t duration_ns) {
+    void set_duration(uint32_t index, int64_t duration_ns) {
       durations_[index] = duration_ns;
     }
 
-    void set_stack_id(size_t index, int64_t stack_id) {
+    void set_stack_id(uint32_t index, int64_t stack_id) {
       stack_ids_[index] = stack_id;
     }
 
-    size_t slice_count() const { return start_ns_.size(); }
+    void set_arg_set_id(uint32_t index, ArgSetId id) {
+      arg_set_ids_[index] = id;
+    }
+
+    uint32_t slice_count() const {
+      return static_cast<uint32_t>(start_ns_.size());
+    }
+
     const std::deque<int64_t>& start_ns() const { return start_ns_; }
     const std::deque<int64_t>& durations() const { return durations_; }
-    const std::deque<UniqueTid>& utids() const { return utids_; }
+    const std::deque<int64_t>& refs() const { return refs_; }
+    const std::deque<RefType>& types() const { return types_; }
     const std::deque<StringId>& cats() const { return cats_; }
     const std::deque<StringId>& names() const { return names_; }
     const std::deque<uint8_t>& depths() const { return depths_; }
@@ -319,21 +302,25 @@ class TraceStorage {
     const std::deque<int64_t>& parent_stack_ids() const {
       return parent_stack_ids_;
     }
+    const std::deque<ArgSetId>& arg_set_ids() const { return arg_set_ids_; }
 
    private:
     std::deque<int64_t> start_ns_;
     std::deque<int64_t> durations_;
-    std::deque<UniqueTid> utids_;
+    std::deque<int64_t> refs_;
+    std::deque<RefType> types_;
     std::deque<StringId> cats_;
     std::deque<StringId> names_;
     std::deque<uint8_t> depths_;
     std::deque<int64_t> stack_ids_;
     std::deque<int64_t> parent_stack_ids_;
+    std::deque<ArgSetId> arg_set_ids_;
   };
 
   class CounterDefinitions {
    public:
     using Id = uint32_t;
+    static constexpr Id kInvalidId = std::numeric_limits<Id>::max();
 
     inline Id AddCounterDefinition(StringId name_id,
                                    int64_t ref,
@@ -382,7 +369,27 @@ class TraceStorage {
       timestamps_.emplace_back(timestamp);
       values_.emplace_back(value);
       arg_set_ids_.emplace_back(kInvalidArgSetId);
+
+      if (counter_id != CounterDefinitions::kInvalidId) {
+        if (counter_id >= rows_for_counter_id_.size()) {
+          rows_for_counter_id_.resize(counter_id + 1);
+        }
+        rows_for_counter_id_[counter_id].emplace_back(size() - 1);
+      }
       return size() - 1;
+    }
+
+    void set_counter_id(uint32_t index, CounterDefinitions::Id counter_id) {
+      PERFETTO_DCHECK(counter_ids_[index] == CounterDefinitions::kInvalidId);
+
+      counter_ids_[index] = counter_id;
+      if (counter_id >= rows_for_counter_id_.size()) {
+        rows_for_counter_id_.resize(counter_id + 1);
+      }
+
+      auto* new_rows = &rows_for_counter_id_[counter_id];
+      new_rows->insert(
+          std::upper_bound(new_rows->begin(), new_rows->end(), index), index);
     }
 
     void set_arg_set_id(uint32_t row, ArgSetId id) { arg_set_ids_[row] = id; }
@@ -399,30 +406,45 @@ class TraceStorage {
 
     const std::deque<ArgSetId>& arg_set_ids() const { return arg_set_ids_; }
 
+    const std::deque<std::vector<uint32_t>>& rows_for_counter_id() const {
+      return rows_for_counter_id_;
+    }
+
    private:
     std::deque<CounterDefinitions::Id> counter_ids_;
     std::deque<int64_t> timestamps_;
     std::deque<double> values_;
     std::deque<ArgSetId> arg_set_ids_;
+
+    // Indexed by counter_id value and contains the row numbers corresponding to
+    // it.
+    std::deque<std::vector<uint32_t>> rows_for_counter_id_;
   };
 
   class SqlStats {
    public:
     static constexpr size_t kMaxLogEntries = 100;
-    void RecordQueryBegin(const std::string& query,
-                          int64_t time_queued,
-                          int64_t time_started);
-    void RecordQueryEnd(int64_t time_ended);
+    uint32_t RecordQueryBegin(const std::string& query,
+                              int64_t time_queued,
+                              int64_t time_started);
+    void RecordQueryFirstNext(uint32_t row, int64_t time_first_next);
+    void RecordQueryEnd(uint32_t row, int64_t time_end);
     size_t size() const { return queries_.size(); }
     const std::deque<std::string>& queries() const { return queries_; }
     const std::deque<int64_t>& times_queued() const { return times_queued_; }
     const std::deque<int64_t>& times_started() const { return times_started_; }
+    const std::deque<int64_t>& times_first_next() const {
+      return times_first_next_;
+    }
     const std::deque<int64_t>& times_ended() const { return times_ended_; }
 
    private:
+    uint32_t popped_queries_ = 0;
+
     std::deque<std::string> queries_;
     std::deque<int64_t> times_queued_;
     std::deque<int64_t> times_started_;
+    std::deque<int64_t> times_first_next_;
     std::deque<int64_t> times_ended_;
   };
 
@@ -441,6 +463,8 @@ class TraceStorage {
       arg_set_ids_.emplace_back(kInvalidArgSetId);
       return static_cast<uint32_t>(instant_count() - 1);
     }
+
+    void set_ref(uint32_t row, int64_t ref) { refs_[row] = ref; }
 
     void set_arg_set_id(uint32_t row, ArgSetId id) { arg_set_ids_[row] = id; }
 
@@ -542,6 +566,153 @@ class TraceStorage {
   };
   using StatsMap = std::array<Stats, stats::kNumKeys>;
 
+  using MetadataMap = std::array<std::vector<Variadic>, metadata::kNumKeys>;
+
+  class HeapProfileFrames {
+   public:
+    struct Row {
+      StringId name_id;
+      int64_t mapping_row;
+      int64_t rel_pc;
+
+      bool operator==(const Row& other) const {
+        return std::tie(name_id, mapping_row, rel_pc) ==
+               std::tie(other.name_id, other.mapping_row, other.rel_pc);
+      }
+    };
+
+    uint32_t size() const { return static_cast<uint32_t>(names_.size()); }
+
+    int64_t Insert(const Row& row) {
+      names_.emplace_back(row.name_id);
+      mappings_.emplace_back(row.mapping_row);
+      rel_pcs_.emplace_back(row.rel_pc);
+      return static_cast<int64_t>(names_.size()) - 1;
+    }
+
+    const std::deque<StringId>& names() const { return names_; }
+    const std::deque<int64_t>& mappings() const { return mappings_; }
+    const std::deque<int64_t>& rel_pcs() const { return rel_pcs_; }
+
+   private:
+    std::deque<StringId> names_;
+    std::deque<int64_t> mappings_;
+    std::deque<int64_t> rel_pcs_;
+  };
+
+  class HeapProfileCallsites {
+   public:
+    struct Row {
+      int64_t depth;
+      int64_t parent_id;
+      int64_t frame_row;
+
+      bool operator==(const Row& other) const {
+        return std::tie(depth, parent_id, frame_row) ==
+               std::tie(other.depth, other.parent_id, other.frame_row);
+      }
+    };
+
+    uint32_t size() const { return static_cast<uint32_t>(frame_ids_.size()); }
+
+    int64_t Insert(const Row& row) {
+      frame_depths_.emplace_back(row.depth);
+      parent_callsite_ids_.emplace_back(row.parent_id);
+      frame_ids_.emplace_back(row.frame_row);
+      return static_cast<int64_t>(frame_depths_.size()) - 1;
+    }
+
+    const std::deque<int64_t>& frame_depths() const { return frame_depths_; }
+    const std::deque<int64_t>& parent_callsite_ids() const {
+      return parent_callsite_ids_;
+    }
+    const std::deque<int64_t>& frame_ids() const { return frame_ids_; }
+
+   private:
+    std::deque<int64_t> frame_depths_;
+    std::deque<int64_t> parent_callsite_ids_;
+    std::deque<int64_t> frame_ids_;
+  };
+
+  class HeapProfileMappings {
+   public:
+    struct Row {
+      StringId build_id;
+      int64_t offset;
+      int64_t start;
+      int64_t end;
+      int64_t load_bias;
+      StringId name_id;
+
+      bool operator==(const Row& other) const {
+        return std::tie(build_id, offset, start, end, load_bias, name_id) ==
+               std::tie(other.build_id, other.offset, other.start, other.end,
+                        other.load_bias, other.name_id);
+      }
+    };
+
+    uint32_t size() const { return static_cast<uint32_t>(names_.size()); }
+
+    int64_t Insert(const Row& row) {
+      build_ids_.emplace_back(row.build_id);
+      offsets_.emplace_back(row.offset);
+      starts_.emplace_back(row.start);
+      ends_.emplace_back(row.end);
+      load_biases_.emplace_back(row.load_bias);
+      names_.emplace_back(row.name_id);
+      return static_cast<int64_t>(build_ids_.size()) - 1;
+    }
+
+    const std::deque<StringId>& build_ids() const { return build_ids_; }
+    const std::deque<int64_t>& offsets() const { return offsets_; }
+    const std::deque<int64_t>& starts() const { return starts_; }
+    const std::deque<int64_t>& ends() const { return ends_; }
+    const std::deque<int64_t>& load_biases() const { return load_biases_; }
+    const std::deque<StringId>& names() const { return names_; }
+
+   private:
+    std::deque<StringId> build_ids_;
+    std::deque<int64_t> offsets_;
+    std::deque<int64_t> starts_;
+    std::deque<int64_t> ends_;
+    std::deque<int64_t> load_biases_;
+    std::deque<StringId> names_;
+  };
+
+  class HeapProfileAllocations {
+   public:
+    struct Row {
+      int64_t timestamp;
+      UniquePid upid;
+      int64_t callsite_id;
+      int64_t count;
+      int64_t size;
+    };
+
+    uint32_t size() const { return static_cast<uint32_t>(timestamps_.size()); }
+
+    void Insert(const Row& row) {
+      timestamps_.emplace_back(row.timestamp);
+      upids_.emplace_back(row.upid);
+      callsite_ids_.emplace_back(row.callsite_id);
+      counts_.emplace_back(row.count);
+      sizes_.emplace_back(row.size);
+    }
+
+    const std::deque<int64_t>& timestamps() const { return timestamps_; }
+    const std::deque<UniquePid>& upids() const { return upids_; }
+    const std::deque<int64_t>& callsite_ids() const { return callsite_ids_; }
+    const std::deque<int64_t>& counts() const { return counts_; }
+    const std::deque<int64_t>& sizes() const { return sizes_; }
+
+   private:
+    std::deque<int64_t> timestamps_;
+    std::deque<UniquePid> upids_;
+    std::deque<int64_t> callsite_ids_;
+    std::deque<int64_t> counts_;
+    std::deque<int64_t> sizes_;
+  };
+
   void ResetStorage();
 
   UniqueTid AddEmptyThread(uint32_t tid) {
@@ -585,11 +756,79 @@ class TraceStorage {
     stats_[key].value += increment;
   }
 
+  // Example usage: IncrementIndexedStats(stats::cpu_failure, 1);
+  void IncrementIndexedStats(size_t key, int index, int64_t increment = 1) {
+    PERFETTO_DCHECK(key < stats::kNumKeys);
+    PERFETTO_DCHECK(stats::kTypes[key] == stats::kIndexed);
+    stats_[key].indexed_values[index] += increment;
+  }
+
   // Example usage: SetIndexedStats(stats::cpu_failure, 1, 42);
   void SetIndexedStats(size_t key, int index, int64_t value) {
     PERFETTO_DCHECK(key < stats::kNumKeys);
     PERFETTO_DCHECK(stats::kTypes[key] == stats::kIndexed);
     stats_[key].indexed_values[index] = value;
+  }
+
+  // Example usage:
+  // SetMetadata(metadata::benchmark_name,
+  //             Variadic::String(storage->InternString("foo"));
+  // Virtual for testing.
+  virtual void SetMetadata(size_t key, Variadic value) {
+    PERFETTO_DCHECK(key < metadata::kNumKeys);
+    PERFETTO_DCHECK(metadata::kKeyTypes[key] == metadata::kSingle);
+    PERFETTO_DCHECK(value.type == metadata::kValueTypes[key]);
+    metadata_[key] = {value};
+  }
+
+  // Example usage:
+  // AppendMetadata(metadata::benchmark_story_tags,
+  //                Variadic::String(storage->InternString("bar"));
+  // Virtual for testing.
+  virtual void AppendMetadata(size_t key, Variadic value) {
+    PERFETTO_DCHECK(key < metadata::kNumKeys);
+    PERFETTO_DCHECK(metadata::kKeyTypes[key] == metadata::kMulti);
+    PERFETTO_DCHECK(value.type == metadata::kValueTypes[key]);
+    metadata_[key].push_back(value);
+  }
+
+  class ScopedStatsTracer {
+   public:
+    ScopedStatsTracer(TraceStorage* storage, size_t key)
+        : storage_(storage), key_(key), start_ns_(base::GetWallTimeNs()) {}
+
+    ~ScopedStatsTracer() {
+      if (!storage_)
+        return;
+      auto delta_ns = base::GetWallTimeNs() - start_ns_;
+      storage_->IncrementStats(key_, delta_ns.count());
+    }
+
+    ScopedStatsTracer(ScopedStatsTracer&& other) noexcept { MoveImpl(&other); }
+
+    ScopedStatsTracer& operator=(ScopedStatsTracer&& other) {
+      MoveImpl(&other);
+      return *this;
+    }
+
+   private:
+    ScopedStatsTracer(const ScopedStatsTracer&) = delete;
+    ScopedStatsTracer& operator=(const ScopedStatsTracer&) = delete;
+
+    void MoveImpl(ScopedStatsTracer* other) {
+      storage_ = other->storage_;
+      key_ = other->key_;
+      start_ns_ = other->start_ns_;
+      other->storage_ = nullptr;
+    }
+
+    TraceStorage* storage_;
+    size_t key_;
+    base::TimeNanos start_ns_;
+  };
+
+  ScopedStatsTracer TraceExecutionTimeIntoStats(size_t key) {
+    return ScopedStatsTracer(this, key);
   }
 
   // Reading methods.
@@ -646,11 +885,41 @@ class TraceStorage {
 
   const StatsMap& stats() const { return stats_; }
 
+  const MetadataMap& metadata() const { return metadata_; }
+
   const Args& args() const { return args_; }
   Args* mutable_args() { return &args_; }
 
   const RawEvents& raw_events() const { return raw_events_; }
   RawEvents* mutable_raw_events() { return &raw_events_; }
+
+  const HeapProfileMappings& heap_profile_mappings() const {
+    return heap_profile_mappings_;
+  }
+  HeapProfileMappings* mutable_heap_profile_mappings() {
+    return &heap_profile_mappings_;
+  }
+
+  const HeapProfileFrames& heap_profile_frames() const {
+    return heap_profile_frames_;
+  }
+  HeapProfileFrames* mutable_heap_profile_frames() {
+    return &heap_profile_frames_;
+  }
+
+  const HeapProfileCallsites& heap_profile_callsites() const {
+    return heap_profile_callsites_;
+  }
+  HeapProfileCallsites* mutable_heap_profile_callsites() {
+    return &heap_profile_callsites_;
+  }
+
+  const HeapProfileAllocations& heap_profile_allocations() const {
+    return heap_profile_allocations_;
+  }
+  HeapProfileAllocations* mutable_heap_profile_allocations() {
+    return &heap_profile_allocations_;
+  }
 
   const StringPool& string_pool() const { return string_pool_; }
 
@@ -682,6 +951,9 @@ class TraceStorage {
 
   // Stats about parsing the trace.
   StatsMap stats_{};
+
+  // Trace metadata from chrome and benchmarking infrastructure.
+  MetadataMap metadata_{};
 
   // One entry for each CPU in the trace.
   Slices slices_;
@@ -723,9 +995,58 @@ class TraceStorage {
   // trace.
   RawEvents raw_events_;
   AndroidLogs android_log_;
+
+  HeapProfileMappings heap_profile_mappings_;
+  HeapProfileFrames heap_profile_frames_;
+  HeapProfileCallsites heap_profile_callsites_;
+  HeapProfileAllocations heap_profile_allocations_;
 };
 
 }  // namespace trace_processor
 }  // namespace perfetto
+
+namespace std {
+
+template <>
+struct hash<::perfetto::trace_processor::TraceStorage::HeapProfileFrames::Row> {
+  using argument_type =
+      ::perfetto::trace_processor::TraceStorage::HeapProfileFrames::Row;
+  using result_type = size_t;
+
+  result_type operator()(const argument_type& r) const {
+    return std::hash<::perfetto::trace_processor::StringId>{}(r.name_id) ^
+           std::hash<int64_t>{}(r.mapping_row) ^ std::hash<int64_t>{}(r.rel_pc);
+  }
+};
+
+template <>
+struct hash<
+    ::perfetto::trace_processor::TraceStorage::HeapProfileCallsites::Row> {
+  using argument_type =
+      ::perfetto::trace_processor::TraceStorage::HeapProfileCallsites::Row;
+  using result_type = size_t;
+
+  result_type operator()(const argument_type& r) const {
+    return std::hash<int64_t>{}(r.depth) ^ std::hash<int64_t>{}(r.parent_id) ^
+           std::hash<int64_t>{}(r.frame_row);
+  }
+};
+
+template <>
+struct hash<
+    ::perfetto::trace_processor::TraceStorage::HeapProfileMappings::Row> {
+  using argument_type =
+      ::perfetto::trace_processor::TraceStorage::HeapProfileMappings::Row;
+  using result_type = size_t;
+
+  result_type operator()(const argument_type& r) const {
+    return std::hash<::perfetto::trace_processor::StringId>{}(r.build_id) ^
+           std::hash<int64_t>{}(r.offset) ^ std::hash<int64_t>{}(r.start) ^
+           std::hash<int64_t>{}(r.end) ^ std::hash<int64_t>{}(r.load_bias) ^
+           std::hash<::perfetto::trace_processor::StringId>{}(r.name_id);
+  }
+};
+
+}  // namespace std
 
 #endif  // SRC_TRACE_PROCESSOR_TRACE_STORAGE_H_

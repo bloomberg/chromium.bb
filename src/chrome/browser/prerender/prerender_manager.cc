@@ -1039,7 +1039,7 @@ void PrerenderManager::SortActivePrerenders() {
 
 PrerenderManager::PrerenderData* PrerenderManager::FindPrerenderData(
     const GURL& url,
-    const SessionStorageNamespace* session_storage_namespace) {
+    SessionStorageNamespace* session_storage_namespace) {
   for (const auto& prerender : active_prerenders_) {
     PrerenderContents* contents = prerender->contents();
     if (contents->Matches(url, session_storage_namespace))

@@ -15,6 +15,10 @@ class DictionaryValue;
 struct Feature;
 }  // namespace base
 
+namespace policy {
+class PolicyMap;
+}  // namespace policy
+
 class Profile;
 
 namespace nux {
@@ -38,7 +42,17 @@ bool IsNuxOnboardingEnabled(Profile* profile);
 
 bool IsAppVariationEnabled();
 
+bool DoesOnboardingHaveModulesToShow(Profile* profile);
+
 base::DictionaryValue GetNuxOnboardingModules(Profile* profile);
+
+// Exposed for testing.
+bool CanShowGoogleAppModuleForTesting(const policy::PolicyMap& policies);
+bool CanShowNTPBackgroundModuleForTesting(const policy::PolicyMap& policies,
+                                          Profile* profile);
+bool CanShowSetDefaultModuleForTesting(const policy::PolicyMap& policies);
+bool CanShowSigninModuleForTesting(const policy::PolicyMap& policies);
+
 }  // namespace nux
 
 #endif  // CHROME_BROWSER_UI_WEBUI_WELCOME_NUX_HELPER_H_

@@ -139,6 +139,14 @@ interface FrameSinkManager {
   SetHitTestAsyncQueriedDebugRegions(
       FrameSinkId root_frame_sink_id,
       array<FrameSinkId> hit_test_async_queried_debug_queue);
+
+  // Caches the back buffer for the |root_frame_sink_id|. The back buffer is
+  // keyed using |cache_id| and evicted when EvictBackBuffer with the same id is
+  // called.
+  CacheBackBuffer(uint32 cache_id, FrameSinkId root_frame_sink_id);
+
+  [Sync]
+  EvictBackBuffer(uint32 cache_id) => ();
 };
 
 // The FrameSinkManagerClient interface is implemented by the Display

@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/task_type_names.h"
+#include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -562,9 +563,14 @@ MainThreadSchedulerImpl::SchedulingSettings::SchedulingSettings() {
   use_resource_priorities_only_during_loading =
       base::FeatureList::IsEnabled(kUseResourceFetchPriorityOnlyWhenLoading);
 
+  compositor_very_high_priority_always =
+      base::FeatureList::IsEnabled(kVeryHighPriorityForCompositingAlways);
+  compositor_very_high_priority_when_fast =
+      base::FeatureList::IsEnabled(kVeryHighPriorityForCompositingWhenFast);
+
   if (use_resource_fetch_priority ||
       use_resource_priorities_only_during_loading) {
-    std::map<std::string, std::string> params;
+    base::FieldTrialParams params;
     base::GetFieldTrialParams(kResourceFetchPriorityExperiment, &params);
     for (size_t net_priority = 0;
          net_priority < net::RequestPrioritySize::NUM_PRIORITIES;
@@ -1059,6 +1065,11 @@ void MainThreadSchedulerImpl::SetHaveSeenABlockingGestureForTesting(
   any_thread().have_seen_a_blocking_gesture = status;
 }
 
+void MainThreadSchedulerImpl::PerformMicrotaskCheckpoint() {
+  if (isolate())
+    EventLoop::PerformIsolateGlobalMicrotasksCheckpoint(isolate());
+}
+
 // static
 bool MainThreadSchedulerImpl::ShouldPrioritizeInputEvent(
     const blink::WebInputEvent& web_input_event) {
@@ -1484,6 +1495,21 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       NOTREACHED();
   }
 
+  if (scheduling_settings_.compositor_very_high_priority_always &&
+      new_policy.compositor_priority() !=
+          TaskQueue::QueuePriority::kHighestPriority) {
+    new_policy.compositor_priority() =
+        TaskQueue::QueuePriority::kVeryHighPriority;
+  }
+
+  if (scheduling_settings_.compositor_very_high_priority_when_fast &&
+      main_thread_compositing_is_fast &&
+      new_policy.compositor_priority() !=
+          TaskQueue::QueuePriority::kHighestPriority) {
+    new_policy.compositor_priority() =
+        TaskQueue::QueuePriority::kVeryHighPriority;
+  }
+
   // TODO(skyostil): Add an idle state for foreground tabs too.
   if (main_thread_only().renderer_hidden)
     new_policy.rail_mode() = RAILMode::kIdle;
@@ -1793,7 +1819,7 @@ void MainThreadSchedulerImpl::SetVirtualTimeStopped(bool virtual_time_stopped) {
 void MainThreadSchedulerImpl::VirtualTimePaused() {
   for (const auto& pair : task_runners_) {
     if (!pair.first->ShouldUseVirtualTime())
-      return;
+      continue;
     if (pair.first->queue_class() == MainThreadTaskQueue::QueueClass::kTimer) {
       DCHECK(!task_queue_throttler_->IsThrottled(pair.first.get()));
       pair.first->InsertFence(TaskQueue::InsertFencePosition::kNow);
@@ -1804,7 +1830,7 @@ void MainThreadSchedulerImpl::VirtualTimePaused() {
 void MainThreadSchedulerImpl::VirtualTimeResumed() {
   for (const auto& pair : task_runners_) {
     if (!pair.first->ShouldUseVirtualTime())
-      return;
+      continue;
     if (pair.first->queue_class() == MainThreadTaskQueue::QueueClass::kTimer) {
       DCHECK(!task_queue_throttler_->IsThrottled(pair.first.get()));
       DCHECK(pair.first->HasActiveFence());
@@ -2374,16 +2400,23 @@ void MainThreadSchedulerImpl::OnTaskStarted(
 }
 
 void MainThreadSchedulerImpl::OnTaskCompleted(
-    MainThreadTaskQueue* queue,
+    base::WeakPtr<MainThreadTaskQueue> queue,
     const base::sequence_manager::Task& task,
-    const TaskQueue::TaskTiming& task_timing) {
-  DCHECK_LE(task_timing.start_time(), task_timing.end_time());
+    TaskQueue::TaskTiming* task_timing,
+    base::sequence_manager::LazyNow* lazy_now) {
+  // Microtasks may detach the task queue and invalidate |queue|.
+  PerformMicrotaskCheckpoint();
+
+  task_timing->RecordTaskEnd(lazy_now);
+
+  DCHECK_LE(task_timing->start_time(), task_timing->end_time());
   DCHECK(!main_thread_only().running_queues.empty());
-  DCHECK(!queue || main_thread_only().running_queues.top().get() == queue);
-  if (task_timing.has_wall_time() && queue && queue->GetFrameScheduler())
-    queue->GetFrameScheduler()->AddTaskTime(task_timing.wall_duration());
+  DCHECK(!queue ||
+         main_thread_only().running_queues.top().get() == queue.get());
+  if (task_timing->has_wall_time() && queue && queue->GetFrameScheduler())
+    queue->GetFrameScheduler()->AddTaskTime(task_timing->wall_duration());
   main_thread_only().running_queues.pop();
-  queueing_time_estimator_.OnExecutionStopped(task_timing.end_time());
+  queueing_time_estimator_.OnExecutionStopped(task_timing->end_time());
   if (main_thread_only().nested_runloop)
     return;
 
@@ -2391,13 +2424,14 @@ void MainThreadSchedulerImpl::OnTaskCompleted(
 
   if (queue) {
     task_queue_throttler()->OnTaskRunTimeReported(
-        queue, task_timing.start_time(), task_timing.end_time());
+        queue.get(), task_timing->start_time(), task_timing->end_time());
   }
 
-  main_thread_only().compositing_experiment.OnTaskCompleted(queue);
+  main_thread_only().compositing_experiment.OnTaskCompleted(queue.get());
 
   // TODO(altimin): Per-page metrics should also be considered.
-  main_thread_only().metrics_helper.RecordTaskMetrics(queue, task, task_timing);
+  main_thread_only().metrics_helper.RecordTaskMetrics(queue.get(), task,
+                                                      *task_timing);
   main_thread_only().has_safepoint = false;
 
   main_thread_only().task_description_for_tracing = base::nullopt;
@@ -2405,7 +2439,7 @@ void MainThreadSchedulerImpl::OnTaskCompleted(
   // Unset the state of |task_priority_for_tracing|.
   main_thread_only().task_priority_for_tracing = base::nullopt;
 
-  RecordTaskUkm(queue, task, task_timing);
+  RecordTaskUkm(queue.get(), task, *task_timing);
 }
 
 void MainThreadSchedulerImpl::RecordTaskUkm(

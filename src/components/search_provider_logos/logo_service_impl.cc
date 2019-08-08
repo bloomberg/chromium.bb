@@ -476,9 +476,6 @@ void LogoServiceImpl::FetchLogo() {
         })");
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = url;
-  // TODO(https://crbug.com/808498) re-add data use measurement once
-  // SimpleURLLoader supports it:
-  // data_use_measurement::DataUseUserData::SEARCH_PROVIDER_LOGOS
   loader_ =
       network::SimpleURLLoader::Create(std::move(request), traffic_annotation);
   loader_->DownloadToString(

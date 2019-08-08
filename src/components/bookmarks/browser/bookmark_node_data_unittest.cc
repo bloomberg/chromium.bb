@@ -414,4 +414,15 @@ TEST_F(BookmarkNodeDataTest, MetaInfo) {
   EXPECT_EQ("someothervalue", meta_info_map["someotherkey"]);
 }
 
+#if !defined(OS_MACOSX)
+TEST_F(BookmarkNodeDataTest, ReadFromPickleTooManyNodes) {
+  // Test case determined by a fuzzer. See https://crbug.com/956583.
+  const char pickled_data[] = {0x08, 0x00, 0x00, 0x00, 0x00, 0x00,
+                               0x00, 0x00, 0xff, 0x03, 0x03, 0x41};
+  base::Pickle pickle(pickled_data, sizeof(pickled_data));
+  BookmarkNodeData bookmark_node_data;
+  EXPECT_FALSE(bookmark_node_data.ReadFromPickle(&pickle));
+}
+#endif
+
 }  // namespace bookmarks

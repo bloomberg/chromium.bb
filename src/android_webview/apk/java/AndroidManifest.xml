@@ -26,7 +26,7 @@
 
     <application android:label="{{ application_label|default('Android System WebView') }}"
                  android:icon="@{{manifest_package|default('com.android.webview')}}:drawable/icon_webview"
-                 android:name="{{ application_name|default('com.android.webview.chromium.WebViewApplication') }}"
+                 android:name="{{ application_name|default('com.android.webview.chromium.WebViewApkApplication') }}"
                  android:multiArch="true"
                  android:use32bitAbi="true"
                  android:extractNativeLibs="{{ trichrome_library is not defined }}">

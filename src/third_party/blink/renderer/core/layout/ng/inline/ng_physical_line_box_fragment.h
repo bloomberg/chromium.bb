@@ -32,7 +32,7 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
       NGLineBoxFragmentBuilder* builder);
 
   ~NGPhysicalLineBoxFragment() {
-    for (const NGLinkStorage& child : Children())
+    for (const NGLink& child : Children())
       child.fragment->Release();
   }
 
@@ -41,8 +41,9 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
   }
   bool IsEmptyLineBox() const { return LineBoxType() == kEmptyLineBox; }
 
+  // True if descendants were propagated to outside of this fragment.
+  bool HasPropagatedDescendants() const { return has_propagated_descendants_; }
 
-  const ComputedStyle& Style() const { return *style_; }
   const NGLineHeightMetrics& Metrics() const { return metrics_; }
 
   // The base direction of this line. Also known as the paragraph direction.
@@ -59,20 +60,22 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
   // ScrollableOverflow is not precomputed/cached because it cannot be computed
   // when LineBox is generated because it needs container dimensions to
   // resolve relative position of its children.
-  NGPhysicalOffsetRect ScrollableOverflow(
-      const LayoutObject* container,
-      const ComputedStyle* container_style,
-      NGPhysicalSize container_physical_size) const;
+  PhysicalRect ScrollableOverflow(const LayoutObject* container,
+                                  const ComputedStyle* container_style,
+                                  PhysicalSize container_physical_size) const;
 
   // Returns the first/last leaf fragment in the line in logical order. Returns
   // nullptr if the line box is empty.
   const NGPhysicalFragment* FirstLogicalLeaf() const;
   const NGPhysicalFragment* LastLogicalLeaf() const;
 
+  const LayoutObject* ClosestLeafChildForPoint(const PhysicalOffset&,
+                                               bool only_editable_leaves) const;
+
   // Returns a point at the visual start/end of the line.
   // Encapsulates the handling of text direction and writing mode.
-  NGPhysicalOffset LineStartPoint() const;
-  NGPhysicalOffset LineEndPoint() const;
+  PhysicalOffset LineStartPoint() const;
+  PhysicalOffset LineEndPoint() const;
 
   // Whether the content soft-wraps to the next line.
   bool HasSoftWrapToNextLine() const;
@@ -80,9 +83,8 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
  private:
   NGPhysicalLineBoxFragment(NGLineBoxFragmentBuilder* builder);
 
-  scoped_refptr<const ComputedStyle> style_;
   NGLineHeightMetrics metrics_;
-  NGLinkStorage children_[];
+  NGLink children_[];
 };
 
 template <>

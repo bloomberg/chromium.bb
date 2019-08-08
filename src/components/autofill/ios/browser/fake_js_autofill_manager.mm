@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
-#include "ios/web/public/web_state/web_frame.h"
+#include "ios/web/public/js_messaging/web_frame.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 

@@ -216,7 +216,8 @@ class MediaEngagementBrowserTest : public InProcessBrowserTest {
                     int media_playbacks,
                     int audible_playbacks,
                     int significant_playbacks) {
-    MediaEngagementScore score = service->CreateEngagementScore(url);
+    MediaEngagementScore score =
+        service->CreateEngagementScore(url::Origin::Create(url));
     EXPECT_EQ(visits, score.visits());
     EXPECT_EQ(media_playbacks, score.media_playbacks());
     EXPECT_EQ(audible_playbacks, score.audible_playbacks());

@@ -10,6 +10,7 @@
 #include "base/task/scoped_set_task_priority_for_current_thread.h"
 #include "base/task/task_executor.h"
 #include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_impl.h"
 #include "base/threading/post_task_and_reply_impl.h"
 
 namespace base {
@@ -32,21 +33,23 @@ class PostTaskAndReplyWithTraitsTaskRunner
 };
 
 // Returns TaskTraits based on |traits|. If TaskPriority hasn't been set
-// explicitly in |traits|, the returned TaskTraits have the current
+// explicitly in |traits|, the returned TaskTraits will inherit the current
 // TaskPriority.
 TaskTraits GetTaskTraitsWithExplicitPriority(TaskTraits traits) {
-  if (!traits.priority_set_explicitly())
-    traits.UpdatePriority(internal::GetTaskPriorityForCurrentThread());
+  traits.InheritPriority(internal::GetTaskPriorityForCurrentThread());
   return traits;
 }
 
 TaskExecutor* GetTaskExecutorForTraits(const TaskTraits& traits) {
-  DCHECK(ThreadPool::GetInstance())
+  TaskExecutor* executor = GetRegisteredTaskExecutorForTraits(traits);
+  DCHECK(executor || ThreadPoolInstance::Get())
       << "Ref. Prerequisite section of post_task.h.\n\n"
          "Hint: if this is in a unit test, you're likely merely missing a "
          "base::test::ScopedTaskEnvironment member in your fixture.\n";
-  TaskExecutor* executor = GetRegisteredTaskExecutorForTraits(traits);
-  return executor ? executor : ThreadPool::GetInstance();
+  // TODO(skyostil): Make thread affinity a required trait.
+  if (!executor || traits.use_thread_pool())
+    return static_cast<internal::ThreadPoolImpl*>(ThreadPoolInstance::Get());
+  return executor;
 }
 
 }  // namespace
@@ -105,6 +108,24 @@ scoped_refptr<SequencedTaskRunner> CreateSequencedTaskRunnerWithTraits(
   const TaskTraits adjusted_traits = GetTaskTraitsWithExplicitPriority(traits);
   return GetTaskExecutorForTraits(adjusted_traits)
       ->CreateSequencedTaskRunnerWithTraits(adjusted_traits);
+}
+
+scoped_refptr<UpdateableSequencedTaskRunner>
+CreateUpdateableSequencedTaskRunnerWithTraits(const TaskTraits& traits) {
+  DCHECK(ThreadPoolInstance::Get())
+      << "Ref. Prerequisite section of post_task.h.\n\n"
+         "Hint: if this is in a unit test, you're likely merely missing a "
+         "base::test::ScopedTaskEnvironment member in your fixture.\n";
+  DCHECK(traits.use_thread_pool())
+      << "The base::UseThreadPool() trait is mandatory with "
+         "CreateUpdateableSequencedTaskRunnerWithTraits().";
+  CHECK_EQ(traits.extension_id(),
+           TaskTraitsExtensionStorage::kInvalidExtensionId)
+      << "Extension traits cannot be used with "
+         "CreateUpdateableSequencedTaskRunnerWithTraits().";
+  const TaskTraits adjusted_traits = GetTaskTraitsWithExplicitPriority(traits);
+  return static_cast<internal::ThreadPoolImpl*>(ThreadPoolInstance::Get())
+      ->CreateUpdateableSequencedTaskRunnerWithTraits(adjusted_traits);
 }
 
 scoped_refptr<SingleThreadTaskRunner> CreateSingleThreadTaskRunnerWithTraits(

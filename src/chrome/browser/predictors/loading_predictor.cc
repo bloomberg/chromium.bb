@@ -10,7 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/predictors/loading_data_collector.h"
 #include "chrome/browser/predictors/loading_stats_collector.h"
-#include "chrome/browser/predictors/resource_prefetch_common.h"
+#include "chrome/browser/predictors/navigation_id.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "content/public/browser/browser_thread.h"
 

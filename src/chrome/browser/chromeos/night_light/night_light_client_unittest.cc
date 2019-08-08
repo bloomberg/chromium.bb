@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/night_light/night_light_client.h"
 
 #include "ash/public/interfaces/night_light_controller.mojom.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/clock.h"
 #include "base/time/tick_clock.h"
@@ -12,10 +13,22 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/icu/source/common/unicode/unistr.h"
+#include "third_party/icu/source/i18n/unicode/timezone.h"
 
 namespace {
 
 using ScheduleType = ash::mojom::NightLightController::ScheduleType;
+
+// Constructs a TimeZone object from the given |timezone_id|.
+std::unique_ptr<icu::TimeZone> CreateTimezone(const char* timezone_id) {
+  return base::WrapUnique(icu::TimeZone::createTimeZone(
+      icu::UnicodeString(timezone_id, -1, US_INV)));
+}
+
+base::string16 GetTimezoneId(const icu::TimeZone& timezone) {
+  return chromeos::system::TimezoneSettings::GetTimezoneID(timezone);
+}
 
 // A fake implementation of NightLightController for testing.
 class FakeNightLightController : public ash::mojom::NightLightController {
@@ -220,6 +233,60 @@ TEST_F(NightLightClientTest, TestRepeatedScheduleTypeChanges) {
       NightLightClient::GetNextRequestDelayAfterSuccessForTesting() -
       client_.Now();
   EXPECT_EQ(expected_delay, client_.timer().GetCurrentDelay());
+}
+
+// Tests that timezone changes result in new geoposition requests only if the
+// schedule type is sunset to sunrise.
+TEST_F(NightLightClientTest, TestTimezoneChanges) {
+  EXPECT_EQ(0, controller_.position_pushes_num());
+  client_.SetCurrentTimezoneIdForTesting(
+      base::ASCIIToUTF16("America/Los_Angeles"));
+
+  // When schedule type is not sunset to sunrise, timezone changes do not result
+  // in geoposition requests.
+  controller_.NotifyScheduleTypeChanged(ScheduleType::kNone);
+  scoped_task_environment_.RunUntilIdle();
+  client_.FlushNightLightControllerForTesting();
+  EXPECT_FALSE(client_.using_geoposition());
+  auto timezone = CreateTimezone("Africa/Cairo");
+  client_.TimezoneChanged(*timezone);
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_EQ(0, controller_.position_pushes_num());
+  EXPECT_EQ(0, client_.geoposition_requests_num());
+  EXPECT_EQ(GetTimezoneId(*timezone), client_.current_timezone_id());
+
+  // Prepare a valid geoposition.
+  chromeos::Geoposition position;
+  position.latitude = 32.0;
+  position.longitude = 31.0;
+  position.status = chromeos::Geoposition::STATUS_OK;
+  position.accuracy = 10;
+  position.timestamp = base::Time::Now();
+  client_.set_position_to_send(position);
+
+  // Change the schedule type to sunset to sunrise, and expect the geoposition
+  // will be pushed.
+  controller_.NotifyScheduleTypeChanged(ScheduleType::kSunsetToSunrise);
+  scoped_task_environment_.RunUntilIdle();
+  client_.FlushNightLightControllerForTesting();
+  EXPECT_EQ(1, controller_.position_pushes_num());
+  EXPECT_EQ(1, client_.geoposition_requests_num());
+
+  // Updates with the same timezone does not result in new requests.
+  timezone = CreateTimezone("Africa/Cairo");
+  client_.TimezoneChanged(*timezone);
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_EQ(1, controller_.position_pushes_num());
+  EXPECT_EQ(1, client_.geoposition_requests_num());
+  EXPECT_EQ(GetTimezoneId(*timezone), client_.current_timezone_id());
+
+  // Only new timezones results in new geoposition requests.
+  timezone = CreateTimezone("Asia/Tokyo");
+  client_.TimezoneChanged(*timezone);
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_EQ(2, controller_.position_pushes_num());
+  EXPECT_EQ(2, client_.geoposition_requests_num());
+  EXPECT_EQ(GetTimezoneId(*timezone), client_.current_timezone_id());
 }
 
 }  // namespace

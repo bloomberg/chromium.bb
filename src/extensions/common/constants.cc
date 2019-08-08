@@ -5,6 +5,7 @@
 #include "extensions/common/constants.h"
 
 #include "base/stl_util.h"
+#include "base/strings/string_piece.h"
 
 namespace extensions {
 
@@ -127,7 +128,31 @@ const char kScreensaverAppId[] = "mnoijifedipmbjaoekhadjcijipaijjc";
 const char kScreensaverEveAppId[] = "gdobaoeekhiklaljmhladjfdfkigampc";
 const char kScreensaverNocturneAppId[] = "lminefdanffajachfahfpmphfkhahcnj";
 const char kScreensaverAltAppId[] = "bnabjkecnachpogjlfilfcnlpcmacglh";
-#endif
+
+bool IsSystemUIApp(base::StringPiece extension_id) {
+  static const char* const kApps[] = {
+      // clang-format off
+      kCameraAppId,
+      kChromeVoxExtensionId,
+      kFeedbackExtensionId,
+      kFilesManagerAppId,
+      kHighlightsEveAppId,
+      kHighlightsNocturneAppId,
+      kHighlightsAltAppId,
+      kHighlightsAppId,
+      kScreensaverEveAppId,
+      kScreensaverNocturneAppId,
+      kScreensaverAltAppId,
+      kScreensaverAppId,
+      // clang-format on
+  };
+  for (const char* id : kApps) {
+    if (extension_id == id)
+      return true;
+  }
+  return false;
+}
+#endif  // defined(OS_CHROMEOS)
 
 const char kProdHangoutsExtensionId[] = "nckgahadagoaajjgafhacjanaoiihapd";
 const char* const kHangoutsExtensionIds[6] = {

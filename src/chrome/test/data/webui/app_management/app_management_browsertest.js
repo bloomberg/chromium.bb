@@ -5,10 +5,7 @@
 /**
  * @fileoverview Test suite for the App Management page.
  */
-const ROOT_PATH = '../../../../../';
-
-GEN_INCLUDE(
-    [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
+GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 GEN('#include "chrome/common/chrome_features.h"');
 
 function AppManagementBrowserTest() {}
@@ -18,13 +15,14 @@ AppManagementBrowserTest.prototype = {
 
   browsePreload: 'chrome://app-management',
 
-  extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+  extraLibraries: [
+    ...PolymerTest.prototype.extraLibraries,
     '../test_store.js',
     'test_util.js',
     'test_store.js',
-  ]),
+  ],
 
-  featureList: ['features::kAppManagement', ''],
+  featureList: {enabled: ['features::kAppManagement']},
 
   /** override */
   runAccessibilityChecks: true,

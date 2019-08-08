@@ -5,26 +5,26 @@
  * found in the LICENSE file.
  */
 
-#include "GrSoftwarePathRenderer.h"
-#include "GrAuditTrail.h"
-#include "GrCaps.h"
-#include "GrClip.h"
-#include "GrContextPriv.h"
-#include "GrDeferredProxyUploader.h"
-#include "GrGpuResourcePriv.h"
-#include "GrOpFlushState.h"
-#include "GrOpList.h"
-#include "GrProxyProvider.h"
-#include "GrRecordingContextPriv.h"
-#include "GrSWMaskHelper.h"
-#include "GrShape.h"
-#include "GrSurfaceContextPriv.h"
-#include "SkMakeUnique.h"
-#include "SkSemaphore.h"
-#include "SkTaskGroup.h"
-#include "SkTraceEvent.h"
-#include "ops/GrDrawOp.h"
-#include "ops/GrFillRectOp.h"
+#include "include/private/GrAuditTrail.h"
+#include "include/private/GrOpList.h"
+#include "include/private/SkSemaphore.h"
+#include "src/core/SkMakeUnique.h"
+#include "src/core/SkTaskGroup.h"
+#include "src/core/SkTraceEvent.h"
+#include "src/gpu/GrCaps.h"
+#include "src/gpu/GrClip.h"
+#include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrDeferredProxyUploader.h"
+#include "src/gpu/GrGpuResourcePriv.h"
+#include "src/gpu/GrOpFlushState.h"
+#include "src/gpu/GrProxyProvider.h"
+#include "src/gpu/GrRecordingContextPriv.h"
+#include "src/gpu/GrRenderTargetContextPriv.h"
+#include "src/gpu/GrSWMaskHelper.h"
+#include "src/gpu/GrShape.h"
+#include "src/gpu/GrSoftwarePathRenderer.h"
+#include "src/gpu/GrSurfaceContextPriv.h"
+#include "src/gpu/ops/GrDrawOp.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 GrPathRenderer::CanDrawPath
@@ -100,11 +100,8 @@ void GrSoftwarePathRenderer::DrawNonAARect(GrRenderTargetContext* renderTargetCo
                                            const SkMatrix& viewMatrix,
                                            const SkRect& rect,
                                            const SkMatrix& localMatrix) {
-    auto context = renderTargetContext->surfPriv().getContext();
-    renderTargetContext->addDrawOp(clip,
-                                   GrFillRectOp::MakeWithLocalMatrix(
-                                           context, std::move(paint), GrAAType::kNone, viewMatrix,
-                                           localMatrix, rect, &userStencilSettings));
+    renderTargetContext->priv().stencilRect(clip, &userStencilSettings, std::move(paint), GrAA::kNo,
+                                            viewMatrix, rect, &localMatrix);
 }
 
 void GrSoftwarePathRenderer::DrawAroundInvPath(GrRenderTargetContext* renderTargetContext,
@@ -187,10 +184,8 @@ static sk_sp<GrTextureProxy> make_deferred_mask_texture_proxy(GrRecordingContext
     const GrBackendFormat format =
             context->priv().caps()->getBackendFormatFromColorType(kAlpha_8_SkColorType);
 
-    // MDB TODO: We're going to fill this proxy with an ASAP upload (which is out of order wrt to
-    // ops), so it can't have any pending IO.
-    return proxyProvider->createProxy(format, desc, kTopLeft_GrSurfaceOrigin, fit, SkBudgeted::kYes,
-                                      GrInternalSurfaceFlags::kNoPendingIO);
+    return proxyProvider->createProxy(format, desc, kTopLeft_GrSurfaceOrigin, fit,
+                                      SkBudgeted::kYes);
 }
 
 namespace {

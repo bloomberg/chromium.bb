@@ -64,7 +64,7 @@ class FtlServicesPlayground {
                              const grpc::Status& status);
   void StartReceivingMessages(base::OnceClosure on_done);
   void StopReceivingMessages(base::OnceClosure on_done);
-  void OnMessageReceived(const std::string& sender_id,
+  void OnMessageReceived(const ftl::Id& sender_id,
                          const std::string& sender_registration_id,
                          const ftl::ChromotingMessage& message);
   void OnReceiveMessagesStreamReady();

@@ -14,11 +14,11 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "device/usb/public/mojom/device.mojom.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/usb/usb_device_manager.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/api/usb.h"
+#include "services/device/public/mojom/usb_device.mojom.h"
 
 namespace extensions {
 
@@ -75,6 +75,7 @@ class UsbTransferFunction : public UsbConnectionFunction {
   void OnTransferInCompleted(device::mojom::UsbTransferStatus status,
                              const std::vector<uint8_t>& data);
   void OnTransferOutCompleted(device::mojom::UsbTransferStatus status);
+  void OnDisconnect();
 };
 
 class UsbGenericTransferFunction : public UsbTransferFunction {
@@ -105,6 +106,7 @@ class UsbFindDevicesFunction : public UsbExtensionFunction {
                       device::mojom::UsbDevicePtr device_ptr,
                       device::mojom::UsbOpenDeviceError error);
   void OpenComplete();
+  void OnDisconnect();
 
   uint16_t vendor_id_;
   uint16_t product_id_;
@@ -199,6 +201,7 @@ class UsbOpenDeviceFunction : public UsbPermissionCheckingFunction {
   void OnDeviceOpened(std::string guid,
                       device::mojom::UsbDevicePtr device_ptr,
                       device::mojom::UsbOpenDeviceError error);
+  void OnDisconnect();
 
   DISALLOW_COPY_AND_ASSIGN(UsbOpenDeviceFunction);
 };

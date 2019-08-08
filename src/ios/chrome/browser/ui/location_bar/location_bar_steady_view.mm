@@ -71,7 +71,7 @@ const CGFloat kButtonTrailingSpacing = 10;
   scheme.fontColor = [UIColor colorWithWhite:0 alpha:0.7];
   scheme.placeholderColor = [UIColor colorWithWhite:0
                                               alpha:kOmniboxPlaceholderAlpha];
-  scheme.trailingButtonColor = [UIColor colorWithWhite:0 alpha:0.7];
+  scheme.trailingButtonColor = [UIColor colorWithWhite:0 alpha:0.45];
 
   return scheme;
 }
@@ -231,17 +231,14 @@ const CGFloat kButtonTrailingSpacing = 10;
 
     if (IsInfobarUIRebootEnabled()) {
       // Setup leading button.
-      _leadingButton =
-          [ExtendedTouchTargetButton buttonWithType:UIButtonTypeSystem];
+      _leadingButton = [InfobarBadgeButton buttonWithType:UIButtonTypeSystem];
       _leadingButton.translatesAutoresizingMaskIntoConstraints = NO;
-      // TODO(crbug.com/935804): Create constants variables for the magic
-      // numbers being used here if/when this stops being temporary.
-      _leadingButton.layer.cornerRadius = 15;
       [_locationButton addSubview:_leadingButton];
 
       // Setup and activate the leading button constraints.
       [NSLayoutConstraint activateConstraints:@[
-        [_leadingButton.widthAnchor constraintEqualToConstant:35],
+        [_leadingButton.widthAnchor
+            constraintEqualToAnchor:_leadingButton.heightAnchor],
         [_leadingButton.topAnchor constraintEqualToAnchor:self.topAnchor],
         [_leadingButton.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
         [_leadingButton.leadingAnchor
@@ -254,6 +251,11 @@ const CGFloat kButtonTrailingSpacing = 10;
 
   // Setup accessibility.
   _trailingButton.isAccessibilityElement = YES;
+  if (IsInfobarUIRebootEnabled()) {
+    _leadingButton.isAccessibilityElement = YES;
+    _leadingButton.accessibilityLabel =
+        l10n_util::GetNSString(IDS_IOS_INFOBAR_BADGES_PASSWORD_HINT);
+  }
   _locationButton.isAccessibilityElement = YES;
   _locationButton.accessibilityLabel =
       l10n_util::GetNSString(IDS_ACCNAME_LOCATION);
@@ -314,6 +316,19 @@ const CGFloat kButtonTrailingSpacing = 10;
   }
   _securityLevelAccessibilityString = [string copy];
   [self updateAccessibility];
+}
+
+- (void)displayBadge:(BOOL)display animated:(BOOL)animated {
+  if (display) {
+    // Adding InfobarBadge button as an accessibility element behind location
+    // label. Thus, there should be at least one object alreading in
+    // |accessibleElements|.
+    DCHECK([self.accessibleElements count] > 0);
+    [self.accessibleElements insertObject:self.leadingButton atIndex:1];
+  } else {
+    [self.accessibleElements removeObject:self.leadingButton];
+  }
+  [self.leadingButton displayBadge:display animated:animated];
 }
 
 #pragma mark - UIResponder

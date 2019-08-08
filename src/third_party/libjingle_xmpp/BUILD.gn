@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 
 group("libjingle_xmpp") {
@@ -52,6 +53,7 @@ static_library("rtc_xmllite") {
 
   deps = [
     "//base",
+
     # TODO(mbonadei): The dependency on the TQ is not directly
     # needed but removing it causes a linker error that it is
     # difficult to track down.
@@ -117,6 +119,15 @@ static_library("rtc_xmpp") {
   if (is_nacl) {
     deps += [ "//native_client_sdk/src/libraries/nacl_io" ]
   }
+}
+
+fuzzer_test("libjingle_xmpp_xmlparser_fuzzer") {
+  sources = [
+    "xmllite/xmlparser_fuzzer.cc",
+  ]
+  deps = [
+    ":libjingle_xmpp",
+  ]
 }
 
 test("libjingle_xmpp_unittests") {

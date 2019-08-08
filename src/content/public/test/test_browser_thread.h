@@ -12,10 +12,6 @@
 #include "base/single_thread_task_runner.h"
 #include "content/public/browser/browser_thread.h"
 
-namespace base {
-class Thread;
-}
-
 namespace content {
 
 class BrowserProcessSubThread;
@@ -26,6 +22,9 @@ class BrowserThreadImpl;
 // BrowserThread instances.
 class TestBrowserThread {
  public:
+  // Starts the thread with a MessagePumpForIO.
+  static std::unique_ptr<TestBrowserThread> StartIOThread();
+
   // Constructs a TestBrowserThread with a |real_thread_| and starts it (with a
   // MessageLoopForIO if |identifier == BrowserThread::IO|.
   explicit TestBrowserThread(BrowserThread::ID identifier);
@@ -37,31 +36,16 @@ class TestBrowserThread {
 
   ~TestBrowserThread();
 
-  // We provide a subset of the capabilities of the Thread interface
-  // to enable certain unit tests.  To avoid a stronger dependency of
-  // the internals of BrowserThread, we do not provide the full Thread
-  // interface.
-
-  // Starts the thread with a generic message loop.
-  void Start();
-
-  // Starts the thread with a generic message loop and waits for the
-  // thread to run.
-  void StartAndWaitForTesting();
-
-  // Starts the thread with an IOThread message loop.
-  void StartIOThread();
-
-  // Together these are the same as StartIOThread(). They can be called in
-  // phases to test binding BrowserThread::IO after its underlying thread was
-  // started.
-  void StartIOThreadUnregistered();
-  void RegisterAsBrowserThread();
-
   // Stops the thread, no-op if this is not a real thread.
   void Stop();
 
  private:
+  explicit TestBrowserThread(
+      BrowserThread::ID identifier,
+      std::unique_ptr<BrowserProcessSubThread> real_thread);
+
+  void RegisterAsBrowserThread();
+
   const BrowserThread::ID identifier_;
 
   // A real thread which represents |identifier_| when constructor #1 is used

@@ -71,7 +71,7 @@ void FrameOverlay::UpdatePrePaint() {
   if (!layer_) {
     layer_ = std::make_unique<GraphicsLayer>(*this);
     layer_->SetDrawsContent(true);
-    layer_->SetHitTestable(true);
+    layer_->SetHitTestable(false);
 
     if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
       // This is required for contents of overlay to stay in sync with the page

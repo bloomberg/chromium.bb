@@ -168,9 +168,9 @@ public final class UiUtils {
     /** @return Whether or not {@code item} can show a thumbnail in the UI. */
     public static boolean canHaveThumbnails(OfflineItem item) {
         switch (item.filter) {
-            case OfflineItemFilter.FILTER_PAGE:
-            case OfflineItemFilter.FILTER_VIDEO:
-            case OfflineItemFilter.FILTER_IMAGE:
+            case OfflineItemFilter.PAGE:
+            case OfflineItemFilter.VIDEO:
+            case OfflineItemFilter.IMAGE:
                 return true;
             default:
                 return false;

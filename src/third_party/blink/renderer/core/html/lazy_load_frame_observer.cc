@@ -39,7 +39,7 @@ namespace {
 // could break their functionality, so these heuristics are used to recognize
 // likely hidden frames and immediately load them so that they can function
 // properly.
-bool IsFrameProbablyHidden(const LayoutRect& bounding_client_rect,
+bool IsFrameProbablyHidden(const PhysicalRect& bounding_client_rect,
                            const Element& element) {
   // Tiny frames that are 4x4 or smaller are likely not intended to be seen by
   // the user. Note that this condition includes frames marked as
@@ -49,7 +49,7 @@ bool IsFrameProbablyHidden(const LayoutRect& bounding_client_rect,
 
   // Frames that are positioned completely off the page above or to the left are
   // likely never intended to be visible to the user.
-  if (bounding_client_rect.MaxX() < 0.0 || bounding_client_rect.MaxY() < 0.0)
+  if (bounding_client_rect.Right() < 0.0 || bounding_client_rect.Bottom() < 0.0)
     return true;
 
   const ComputedStyle* style = element.GetComputedStyle();

@@ -318,7 +318,6 @@ const Extension* GetInstalledPwaForUrl(
     content::BrowserContext* context,
     const GURL& url,
     base::Optional<LaunchContainer> launch_container_filter) {
-  DCHECK(base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing));
   const ExtensionPrefs* prefs = ExtensionPrefs::Get(context);
   for (scoped_refptr<const Extension> app :
        ExtensionRegistry::Get(context)->enabled_extensions()) {
@@ -361,7 +360,7 @@ bool IsWebContentsInAppWindow(content::WebContents* web_contents) {
   // TODO(loyso): Unify this check as a util (including
   // MaybeCreateHostedAppController).
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  return browser && browser->web_app_controller();
+  return browser && browser->app_controller();
 }
 
 }  // namespace util

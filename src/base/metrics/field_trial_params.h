@@ -14,14 +14,16 @@ namespace base {
 
 struct Feature;
 
+// Key-value mapping type for field trial parameters.
+typedef std::map<std::string, std::string> FieldTrialParams;
+
 // Associates the specified set of key-value |params| with the field trial
 // specified by |trial_name| and |group_name|. Fails and returns false if the
 // specified field trial already has params associated with it or the trial
 // is already active (group() has been called on it). Thread safe.
-BASE_EXPORT bool AssociateFieldTrialParams(
-    const std::string& trial_name,
-    const std::string& group_name,
-    const std::map<std::string, std::string>& params);
+BASE_EXPORT bool AssociateFieldTrialParams(const std::string& trial_name,
+                                           const std::string& group_name,
+                                           const FieldTrialParams& params);
 
 // Retrieves the set of key-value |params| for the specified field trial, based
 // on its selected group. If the field trial does not exist or its selected
@@ -29,9 +31,8 @@ BASE_EXPORT bool AssociateFieldTrialParams(
 // does not modify |params|. Calling this function will result in the field
 // trial being marked as active if found (i.e. group() will be called on it),
 // if it wasn't already. Thread safe.
-BASE_EXPORT bool GetFieldTrialParams(
-    const std::string& trial_name,
-    std::map<std::string, std::string>* params);
+BASE_EXPORT bool GetFieldTrialParams(const std::string& trial_name,
+                                     FieldTrialParams* params);
 
 // Retrieves the set of key-value |params| for the field trial associated with
 // the specified |feature|. A feature is associated with at most one field
@@ -40,9 +41,8 @@ BASE_EXPORT bool GetFieldTrialParams(
 // returns false and does not modify |params|. Calling this function will
 // result in the associated field trial being marked as active if found (i.e.
 // group() will be called on it), if it wasn't already. Thread safe.
-BASE_EXPORT bool GetFieldTrialParamsByFeature(
-    const base::Feature& feature,
-    std::map<std::string, std::string>* params);
+BASE_EXPORT bool GetFieldTrialParamsByFeature(const base::Feature& feature,
+                                              FieldTrialParams* params);
 
 // Retrieves a specific parameter value corresponding to |param_name| for the
 // specified field trial, based on its selected group. If the field trial does

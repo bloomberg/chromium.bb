@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "base/time/tick_clock.h"
-#include "net/dns/dns_client.h"
 #include "net/dns/dns_config.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver_manager.h"
@@ -84,6 +83,9 @@ ContextHostResolver::ContextHostResolver(HostResolverManager* manager,
                                          std::unique_ptr<HostCache> host_cache)
     : manager_(manager), host_cache_(std::move(host_cache)) {
   DCHECK(manager_);
+
+  if (host_cache_)
+    manager_->AddHostCacheInvalidator(host_cache_->invalidator());
 }
 
 ContextHostResolver::ContextHostResolver(
@@ -93,11 +95,17 @@ ContextHostResolver::ContextHostResolver(
       owned_manager_(std::move(owned_manager)),
       host_cache_(std::move(host_cache)) {
   DCHECK(manager_);
+
+  if (host_cache_)
+    manager_->AddHostCacheInvalidator(host_cache_->invalidator());
 }
 
 ContextHostResolver::~ContextHostResolver() {
   if (owned_manager_)
     DCHECK_EQ(owned_manager_.get(), manager_);
+
+  if (host_cache_)
+    manager_->RemoveHostCacheInvalidator(host_cache_->invalidator());
 
   // Silently cancel all requests associated with this resolver.
   while (!active_requests_.empty())
@@ -109,7 +117,6 @@ ContextHostResolver::CreateRequest(
     const HostPortPair& host,
     const NetLogWithSource& source_net_log,
     const base::Optional<ResolveHostParameters>& optional_parameters) {
-  // TODO(crbug.com/934402): DHCECK |context_| once universally set.
   auto request = std::make_unique<WrappedRequest>(
       manager_->CreateRequest(host, source_net_log, optional_parameters,
                               context_, host_cache_.get()),
@@ -124,36 +131,12 @@ ContextHostResolver::CreateMdnsListener(const HostPortPair& host,
   return manager_->CreateMdnsListener(host, query_type);
 }
 
-void ContextHostResolver::SetDnsClientEnabled(bool enabled) {
-  manager_->SetDnsClientEnabled(enabled);
-}
-
 HostCache* ContextHostResolver::GetHostCache() {
-  return manager_->GetHostCache();
-}
-
-bool ContextHostResolver::HasCached(base::StringPiece hostname,
-                                    HostCache::Entry::Source* source_out,
-                                    HostCache::EntryStaleness* stale_out,
-                                    bool* secure_out) const {
-  return manager_->HasCached(hostname, source_out, stale_out, secure_out);
+  return host_cache_.get();
 }
 
 std::unique_ptr<base::Value> ContextHostResolver::GetDnsConfigAsValue() const {
   return manager_->GetDnsConfigAsValue();
-}
-
-void ContextHostResolver::SetNoIPv6OnWifi(bool no_ipv6_on_wifi) {
-  manager_->SetNoIPv6OnWifi(no_ipv6_on_wifi);
-}
-
-bool ContextHostResolver::GetNoIPv6OnWifi() {
-  return manager_->GetNoIPv6OnWifi();
-}
-
-void ContextHostResolver::SetDnsConfigOverrides(
-    const DnsConfigOverrides& overrides) {
-  manager_->SetDnsConfigOverrides(overrides);
 }
 
 void ContextHostResolver::SetRequestContext(
@@ -162,11 +145,6 @@ void ContextHostResolver::SetRequestContext(
   DCHECK(!context_);
 
   context_ = request_context;
-}
-
-const std::vector<DnsConfig::DnsOverHttpsServerConfig>*
-ContextHostResolver::GetDnsOverHttpsServersForTesting() const {
-  return manager_->GetDnsOverHttpsServersForTesting();
 }
 
 HostResolverManager* ContextHostResolver::GetManagerForTesting() {
@@ -178,21 +156,16 @@ const URLRequestContext* ContextHostResolver::GetContextForTesting() const {
 }
 
 size_t ContextHostResolver::LastRestoredCacheSize() const {
-  return manager_->LastRestoredCacheSize();
+  return host_cache_ ? host_cache_->last_restore_size() : 0;
 }
 
 size_t ContextHostResolver::CacheSize() const {
-  return manager_->CacheSize();
+  return host_cache_ ? host_cache_->size() : 0;
 }
 
 void ContextHostResolver::SetProcParamsForTesting(
     const ProcTaskParams& proc_params) {
   manager_->set_proc_params_for_test(proc_params);
-}
-
-void ContextHostResolver::SetDnsClientForTesting(
-    std::unique_ptr<DnsClient> dns_client) {
-  manager_->SetDnsClient(std::move(dns_client));
 }
 
 void ContextHostResolver::SetBaseDnsConfigForTesting(
@@ -203,6 +176,8 @@ void ContextHostResolver::SetBaseDnsConfigForTesting(
 void ContextHostResolver::SetTickClockForTesting(
     const base::TickClock* tick_clock) {
   manager_->SetTickClockForTesting(tick_clock);
+  if (host_cache_)
+    host_cache_->set_tick_clock_for_testing(tick_clock);
 }
 
 }  // namespace net

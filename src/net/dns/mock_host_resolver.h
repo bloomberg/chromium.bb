@@ -20,6 +20,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_checker.h"
 #include "net/base/completion_once_callback.h"
+#include "net/dns/dns_config.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_proc.h"
 #include "net/dns/host_resolver_source.h"
@@ -121,11 +122,6 @@ class MockHostResolverBase
       const HostPortPair& host,
       DnsQueryType query_type) override;
   HostCache* GetHostCache() override;
-  bool HasCached(base::StringPiece hostname,
-                 HostCache::Entry::Source* source_out,
-                 HostCache::EntryStaleness* stale_out,
-                 bool* secure_out) const override;
-  void SetDnsConfigOverrides(const DnsConfigOverrides& overrides) override {}
   void SetRequestContext(URLRequestContext* request_context) override {}
 
   // Preloads the cache with what would currently be the result of a request
@@ -186,6 +182,13 @@ class MockHostResolverBase
     return last_request_priority_;
   }
 
+  // Returns the SecureDnsMode override of the last call to Resolve() (or
+  // base::nullopt if Resolve() hasn't been called yet).
+  base::Optional<DnsConfig::SecureDnsMode> last_secure_dns_mode_override()
+      const {
+    return last_secure_dns_mode_override_;
+  }
+
   void TriggerMdnsListeners(const HostPortPair& host,
                             DnsQueryType query_type,
                             MdnsListener::Delegate::UpdateType update_type,
@@ -243,6 +246,7 @@ class MockHostResolverBase
   void RemoveCancelledListener(MdnsListenerImpl* listener);
 
   RequestPriority last_request_priority_;
+  base::Optional<DnsConfig::SecureDnsMode> last_secure_dns_mode_override_;
   bool synchronous_mode_;
   bool ondemand_mode_;
   std::map<HostResolverSource, scoped_refptr<RuleBasedHostResolverProc>>
@@ -314,7 +318,7 @@ class MockHostResolverFactory : public HostResolver::Factory {
       bool enable_caching) override;
   std::unique_ptr<HostResolver> CreateStandaloneResolver(
       NetLog* net_log,
-      const HostResolver::Options& options,
+      const HostResolver::ManagerOptions& options,
       base::StringPiece host_mapping_rules,
       bool enable_caching) override;
 
@@ -448,10 +452,6 @@ class HangingHostResolver : public HostResolver {
       const NetLogWithSource& net_log,
       const base::Optional<ResolveHostParameters>& optional_parameters)
       override;
-  bool HasCached(base::StringPiece hostname,
-                 HostCache::Entry::Source* source_out,
-                 HostCache::EntryStaleness* stale_out,
-                 bool* secure_out) const override;
 
   // Use to detect cancellations since there's otherwise no externally-visible
   // differentiation between a cancelled and a hung task.

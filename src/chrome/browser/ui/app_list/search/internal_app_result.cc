@@ -12,8 +12,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/favicon/large_icon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/app_context_menu.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
+#include "chrome/browser/ui/app_list/internal_app/internal_app_context_menu.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "components/favicon/core/favicon_server_fetcher_params.h"
 #include "components/favicon/core/large_icon_service.h"
@@ -150,7 +150,8 @@ void InternalAppResult::OnGetFaviconFromCacheFinished(
       ->GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
           favicon::FaviconServerFetcherParams::CreateForDesktop(
               url_for_continuous_reading_),
-          /*may_page_url_be_private=*/false, traffic_annotation,
+          /*may_page_url_be_private=*/false,
+          /*should_trim_page_url_path=*/false, traffic_annotation,
           base::BindRepeating(
               &InternalAppResult::OnGetFaviconFromGoogleServerFinished,
               weak_factory_.GetWeakPtr()));
@@ -173,8 +174,8 @@ void InternalAppResult::GetContextMenuModel(GetMenuModelCallback callback) {
   }
 
   if (!context_menu_) {
-    context_menu_ = std::make_unique<AppContextMenu>(nullptr, profile(), id(),
-                                                     controller());
+    context_menu_ =
+        std::make_unique<InternalAppContextMenu>(profile(), id(), controller());
   }
   context_menu_->GetMenuModel(std::move(callback));
 }

@@ -26,7 +26,7 @@
 #include "components/sync/engine/events/protocol_event.h"
 #include "components/sync/js/js_event_details.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/sync/user_events/user_event_service.h"
+#include "components/sync_user_events/user_event_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
 

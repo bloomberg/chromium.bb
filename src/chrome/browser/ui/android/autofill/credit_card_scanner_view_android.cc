@@ -11,7 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/android/view_android_helper.h"
 #include "chrome/browser/ui/autofill/payments/credit_card_scanner_view_delegate.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "jni/CreditCardScannerBridge_jni.h"
 #include "ui/android/view_android.h"

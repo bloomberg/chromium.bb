@@ -72,9 +72,11 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   gpu::GpuFeatureInfo GetGpuFeatureInfo() const;
   gpu::GpuFeatureInfo GetGpuFeatureInfoForHardwareGpu() const;
 
-  void AppendGpuCommandLine(base::CommandLine* command_line) const;
+  void AppendGpuCommandLine(base::CommandLine* command_line,
+                            GpuProcessKind kind) const;
 
-  void UpdateGpuPreferences(gpu::GpuPreferences* gpu_preferences) const;
+  void UpdateGpuPreferences(gpu::GpuPreferences* gpu_preferences,
+                            GpuProcessKind kind) const;
 
   void AddLogMessage(int level,
                      const std::string& header,

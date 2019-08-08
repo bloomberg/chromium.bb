@@ -7,6 +7,8 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/sanitizer_buildflags.h"
 #include "base/strings/string_piece.h"
 #include "base/test/scoped_feature_list.h"
@@ -31,6 +33,9 @@
 #endif  // OS_WIN
 
 #if defined(OS_FUCHSIA)
+#include <fuchsia/logger/cpp/fidl.h>
+#include <fuchsia/logger/cpp/fidl_test_base.h>
+#include <lib/fidl/cpp/binding.h>
 #include <lib/zx/event.h>
 #include <lib/zx/port.h>
 #include <lib/zx/process.h>
@@ -41,7 +46,8 @@
 #include <zircon/syscalls/port.h>
 #include <zircon/types.h>
 #include "base/fuchsia/fuchsia_logging.h"
-#endif
+#include "base/fuchsia/service_directory_client.h"
+#endif  // OS_FUCHSIA
 
 namespace logging {
 
@@ -81,6 +87,7 @@ class LogStateSaver {
 
 class LoggingTest : public testing::Test {
  private:
+  base::MessageLoopForIO message_loop_;
   LogStateSaver log_state_saver_;
 };
 
@@ -211,6 +218,22 @@ TEST_F(LoggingTest, LoggingIsLazyByDestination) {
   LOG(ERROR) << mock_log_source_error.Log();
 }
 
+// Check that logging to stderr is gated on LOG_TO_STDERR.
+TEST_F(LoggingTest, LogToStdErrFlag) {
+  LoggingSettings settings;
+  settings.logging_dest = LOG_NONE;
+  InitLogging(settings);
+  MockLogSource mock_log_source;
+  EXPECT_CALL(mock_log_source, Log()).Times(0);
+  LOG(INFO) << mock_log_source.Log();
+
+  settings.logging_dest = LOG_TO_STDERR;
+  MockLogSource mock_log_source_stderr;
+  InitLogging(settings);
+  EXPECT_CALL(mock_log_source_stderr, Log()).Times(1).WillOnce(Return("foo"));
+  LOG(INFO) << mock_log_source_stderr.Log();
+}
+
 // Official builds have CHECKs directly call BreakDebugger.
 #if !defined(OFFICIAL_BUILD)
 
@@ -226,7 +249,7 @@ TEST_F(LoggingTest, MAYBE_CheckStreamsAreLazy) {
       WillRepeatedly(Return("check message"));
   EXPECT_CALL(uncalled_mock_log_source, Log()).Times(0);
 
-  ScopedLogAssertHandler scoped_assert_handler(base::Bind(LogSink));
+  ScopedLogAssertHandler scoped_assert_handler(base::BindRepeating(LogSink));
 
   CHECK(mock_log_source.Log()) << uncalled_mock_log_source.Log();
   PCHECK(!mock_log_source.Log()) << mock_log_source.Log();
@@ -575,12 +598,12 @@ TEST_F(LoggingTest, MAYBE_Dcheck) {
   EXPECT_FALSE(DLOG_IS_ON(DCHECK));
 #elif defined(NDEBUG) && defined(DCHECK_ALWAYS_ON)
   // Release build with real DCHECKS.
-  ScopedLogAssertHandler scoped_assert_handler(base::Bind(LogSink));
+  ScopedLogAssertHandler scoped_assert_handler(base::BindRepeating(LogSink));
   EXPECT_TRUE(DCHECK_IS_ON());
   EXPECT_TRUE(DLOG_IS_ON(DCHECK));
 #else
   // Debug build.
-  ScopedLogAssertHandler scoped_assert_handler(base::Bind(LogSink));
+  ScopedLogAssertHandler scoped_assert_handler(base::BindRepeating(LogSink));
   EXPECT_TRUE(DCHECK_IS_ON());
   EXPECT_TRUE(DLOG_IS_ON(DCHECK));
 #endif
@@ -693,7 +716,7 @@ TEST_F(LoggingTest, NestedLogAssertHandlers) {
           base::StringPiece("Last assert must be caught by handler_a again"),
           _));
 
-  logging::ScopedLogAssertHandler scoped_handler_a(base::Bind(
+  logging::ScopedLogAssertHandler scoped_handler_a(base::BindRepeating(
       &MockLogAssertHandler::HandleLogAssert, base::Unretained(&handler_a)));
 
   // Using LOG(FATAL) rather than CHECK(false) here since log messages aren't
@@ -701,7 +724,7 @@ TEST_F(LoggingTest, NestedLogAssertHandlers) {
   LOG(FATAL) << "First assert must be caught by handler_a";
 
   {
-    logging::ScopedLogAssertHandler scoped_handler_b(base::Bind(
+    logging::ScopedLogAssertHandler scoped_handler_b(base::BindRepeating(
         &MockLogAssertHandler::HandleLogAssert, base::Unretained(&handler_b)));
     LOG(FATAL) << "Second assert must be caught by handler_b";
   }
@@ -747,7 +770,7 @@ TEST_F(LoggingTest, ConfigurableDCheck) {
   ::testing::StrictMock<MockLogAssertHandler> handler;
   EXPECT_CALL(handler, HandleLogAssert(_, _, _, _)).Times(2);
   {
-    logging::ScopedLogAssertHandler scoped_handler_b(base::Bind(
+    logging::ScopedLogAssertHandler scoped_handler_b(base::BindRepeating(
         &MockLogAssertHandler::HandleLogAssert, base::Unretained(&handler)));
     DCHECK(false);
     DCHECK_EQ(1, 2);
@@ -781,6 +804,79 @@ TEST_F(LoggingTest, ConfigurableDCheckFeature) {
 #endif  // defined(DCHECK_IS_CONFIGURABLE)
 
 #if defined(OS_FUCHSIA)
+
+class TestLogListener : public fuchsia::logger::testing::LogListener_TestBase {
+ public:
+  TestLogListener() = default;
+  ~TestLogListener() override = default;
+
+  void RunUntilDone() {
+    base::RunLoop loop;
+    dump_logs_done_quit_closure_ = loop.QuitClosure();
+    loop.Run();
+  }
+
+  bool DidReceiveString(base::StringPiece message,
+                        fuchsia::logger::LogMessage* logged_message) {
+    for (const auto& log_message : log_messages_) {
+      if (log_message.msg.find(message.as_string()) != std::string::npos) {
+        *logged_message = log_message;
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // LogListener implementation.
+  void LogMany(std::vector<fuchsia::logger::LogMessage> messages) override {
+    log_messages_.insert(log_messages_.end(),
+                         std::make_move_iterator(messages.begin()),
+                         std::make_move_iterator(messages.end()));
+  }
+
+  void Done() override { std::move(dump_logs_done_quit_closure_).Run(); }
+
+  void NotImplemented_(const std::string& name) override {
+    NOTIMPLEMENTED() << name;
+  }
+
+ private:
+  fuchsia::logger::LogListenerPtr log_listener_;
+  std::vector<fuchsia::logger::LogMessage> log_messages_;
+  base::OnceClosure dump_logs_done_quit_closure_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestLogListener);
+};
+
+// Verifies that calling the log macro goes to the Fuchsia system logs.
+TEST_F(LoggingTest, FuchsiaSystemLogging) {
+  const char kLogMessage[] = "system log!";
+  LOG(ERROR) << kLogMessage;
+
+  TestLogListener listener;
+  fidl::Binding<fuchsia::logger::LogListener> binding(&listener);
+
+  fuchsia::logger::LogMessage logged_message;
+  do {
+    std::unique_ptr<fuchsia::logger::LogFilterOptions> options =
+        std::make_unique<fuchsia::logger::LogFilterOptions>();
+    options->tags = {"base_unittests__exec"};
+    fuchsia::logger::LogPtr logger =
+        base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
+            ->ConnectToService<fuchsia::logger::Log>();
+    logger->DumpLogs(binding.NewBinding(), std::move(options));
+    listener.RunUntilDone();
+  } while (!listener.DidReceiveString(kLogMessage, &logged_message));
+
+  EXPECT_EQ(logged_message.severity,
+            static_cast<int32_t>(fuchsia::logger::LogLevelFilter::ERROR));
+  ASSERT_EQ(logged_message.tags.size(), 1u);
+  EXPECT_EQ(logged_message.tags[0], base::CommandLine::ForCurrentProcess()
+                                        ->GetProgram()
+                                        .BaseName()
+                                        .AsUTF8Unsafe());
+}
+
 TEST_F(LoggingTest, FuchsiaLogging) {
   MockLogSource mock_log_source;
   EXPECT_CALL(mock_log_source, Log())

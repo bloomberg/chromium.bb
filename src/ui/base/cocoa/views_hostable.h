@@ -11,12 +11,19 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 
+namespace remote_cocoa {
+namespace mojom {
+class BridgeFactory;
+}  // namespace mojom
+}  // namespace remote_cocoa
+
 namespace ui {
 
 class Layer;
 
 // Interface that it used to stitch a content::WebContentsView into a
 // views::View.
+// TODO(ccameron): Move this to components/remote_cocoa.
 class ViewsHostableView {
  public:
   // Host interface through which the WebContentsView may indicate that its C++
@@ -26,10 +33,11 @@ class ViewsHostableView {
     // Query the ui::Layer of the host.
     virtual ui::Layer* GetUiLayer() const = 0;
 
-    // Return the id for the process in which the host NSView exists. Used to
-    // migrate the content::WebContentsView and content::RenderWidgetHostview
-    // to that process.
-    virtual uint64_t GetViewsFactoryHostId() const = 0;
+    // Return the mojo interface to the application in a remote process in which
+    // the host NSView exists. Used to migrate the content::WebContentsView and
+    // content::RenderWidgetHostView to that process.
+    virtual remote_cocoa::mojom::BridgeFactory* GetRemoteCocoaApplication()
+        const = 0;
 
     // The id for the views::View's NSView. Used to add the
     // content::WebContentsView's NSView as a child view.

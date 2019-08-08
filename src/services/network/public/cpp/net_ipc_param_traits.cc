@@ -17,6 +17,8 @@ void ParamTraits<net::AuthChallengeInfo>::Write(base::Pickle* m,
   WriteParam(m, p.challenger);
   WriteParam(m, p.scheme);
   WriteParam(m, p.realm);
+  WriteParam(m, p.challenge);
+  WriteParam(m, p.path);
 }
 
 bool ParamTraits<net::AuthChallengeInfo>::Read(const base::Pickle* m,
@@ -24,7 +26,8 @@ bool ParamTraits<net::AuthChallengeInfo>::Read(const base::Pickle* m,
                                                param_type* r) {
   return ReadParam(m, iter, &r->is_proxy) &&
          ReadParam(m, iter, &r->challenger) && ReadParam(m, iter, &r->scheme) &&
-         ReadParam(m, iter, &r->realm);
+         ReadParam(m, iter, &r->realm) && ReadParam(m, iter, &r->challenge) &&
+         ReadParam(m, iter, &r->path);
 }
 
 void ParamTraits<net::AuthChallengeInfo>::Log(const param_type& p,
@@ -314,26 +317,17 @@ void ParamTraits<net::OCSPVerifyResult>::Log(const param_type& p,
 void ParamTraits<scoped_refptr<net::SSLCertRequestInfo>>::Write(
     base::Pickle* m,
     const param_type& p) {
-  WriteParam(m, p != nullptr);
-  if (p) {
-    WriteParam(m, p->host_and_port);
-    WriteParam(m, p->is_proxy);
-    WriteParam(m, p->cert_authorities);
-    WriteParam(m, p->cert_key_types);
-  }
+  DCHECK(p);
+  WriteParam(m, p->host_and_port);
+  WriteParam(m, p->is_proxy);
+  WriteParam(m, p->cert_authorities);
+  WriteParam(m, p->cert_key_types);
 }
 
 bool ParamTraits<scoped_refptr<net::SSLCertRequestInfo>>::Read(
     const base::Pickle* m,
     base::PickleIterator* iter,
     param_type* r) {
-  bool has_object;
-  if (!ReadParam(m, iter, &has_object))
-    return false;
-  if (!has_object) {
-    *r = nullptr;
-    return true;
-  }
   *r = new net::SSLCertRequestInfo();
   return ReadParam(m, iter, &(*r)->host_and_port) &&
          ReadParam(m, iter, &(*r)->is_proxy) &&

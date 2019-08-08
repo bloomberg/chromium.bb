@@ -191,12 +191,6 @@ HTMLCollection::HTMLCollection(ContainerNode& owner_node,
   GetDocument().RegisterNodeList(this);
 }
 
-HTMLCollection* HTMLCollection::Create(ContainerNode& base,
-                                       CollectionType type) {
-  return MakeGarbageCollected<HTMLCollection>(base, type,
-                                              kDoesNotOverrideItemAfter);
-}
-
 HTMLCollection::~HTMLCollection() = default;
 
 void HTMLCollection::InvalidateCache(Document* old_document) const {
@@ -211,7 +205,7 @@ unsigned HTMLCollection::length() const {
 Element* HTMLCollection::item(unsigned offset) const {
   Element* element = collection_items_cache_.NodeAt(*this, offset);
   if (element && element->GetDocument().InDOMNodeRemovedHandler()) {
-    if (NodeChildRemovalTracker::IsBeingRemoved(element))
+    if (NodeChildRemovalTracker::IsBeingRemoved(*element))
       GetDocument().CountDetachingNodeAccessInDOMNodeRemovedHandler();
   }
   return element;
@@ -302,8 +296,8 @@ inline bool HTMLCollection::ElementMatches(const Element& element) const {
   }
 
   // The following only applies to HTMLElements.
-  return element.IsHTMLElement() &&
-         IsMatchingHTMLElement(*this, ToHTMLElement(element));
+  auto* html_element = DynamicTo<HTMLElement>(element);
+  return html_element && IsMatchingHTMLElement(*this, *html_element);
 }
 
 namespace {
@@ -483,12 +477,13 @@ void HTMLCollection::SupportedPropertyNames(Vector<String>& names) {
       if (add_result.is_new_entry)
         names.push_back(id_attribute);
     }
-    if (!element->IsHTMLElement())
+    auto* html_element = DynamicTo<HTMLElement>(element);
+    if (!html_element)
       continue;
     const AtomicString& name_attribute = element->GetNameAttribute();
     if (!name_attribute.IsEmpty() &&
         (GetType() != kDocAll ||
-         NameShouldBeVisibleInDocumentAll(ToHTMLElement(*element)))) {
+         NameShouldBeVisibleInDocumentAll(*html_element))) {
       HashSet<AtomicString>::AddResult add_result =
           existing_names.insert(name_attribute);
       if (add_result.is_new_entry)
@@ -513,12 +508,13 @@ void HTMLCollection::UpdateIdNameCache() const {
     const AtomicString& id_attr_val = element->GetIdAttribute();
     if (!id_attr_val.IsEmpty())
       cache->AddElementWithId(id_attr_val, element);
-    if (!element->IsHTMLElement())
+    auto* html_element = DynamicTo<HTMLElement>(element);
+    if (!html_element)
       continue;
     const AtomicString& name_attr_val = element->GetNameAttribute();
     if (!name_attr_val.IsEmpty() && id_attr_val != name_attr_val &&
         (GetType() != kDocAll ||
-         NameShouldBeVisibleInDocumentAll(ToHTMLElement(*element))))
+         NameShouldBeVisibleInDocumentAll(*html_element)))
       cache->AddElementWithName(name_attr_val, element);
   }
   // Set the named item cache last as traversing the tree may cause cache

@@ -32,11 +32,6 @@ namespace internal {
 
 namespace {
 
-enum EventType {
-  EVENT_ENTER,
-  EVENT_EXIT
-};
-
 class MouseEnterExitEvent : public ui::MouseEvent {
  public:
   MouseEnterExitEvent(const ui::MouseEvent& event, ui::EventType type)
@@ -77,8 +72,9 @@ class PreEventDispatchHandler : public ui::EventHandler {
 // macOS doesn't have keyboard-triggered context menus.
 #if !defined(OS_MACOSX)
     // Special case to handle keyboard-triggered context menus.
-    if (v && v->enabled() && ((event->key_code() == ui::VKEY_APPS) ||
-       (event->key_code() == ui::VKEY_F10 && event->IsShiftDown()))) {
+    if (v && v->GetEnabled() &&
+        ((event->key_code() == ui::VKEY_APPS) ||
+         (event->key_code() == ui::VKEY_F10 && event->IsShiftDown()))) {
       // Clamp the menu location within the visible bounds of each ancestor view
       // to avoid showing the menu over a completely different view or window.
       gfx::Point location = v->GetKeyboardContextMenuLocation();
@@ -197,7 +193,7 @@ void RootView::SetContentsView(View* contents_view) {
 }
 
 View* RootView::GetContentsView() {
-  return children().empty() ? nullptr : child_at(0);
+  return children().empty() ? nullptr : children().front();
 }
 
 void RootView::NotifyNativeViewHierarchyChanged() {
@@ -253,11 +249,6 @@ View* RootView::GetFocusTraversableParentView() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // RootView, ui::EventProcessor overrides:
-
-ui::EventTarget* RootView::GetInitialEventTarget(ui::Event* event) {
-  // Views has no special initial target.
-  return nullptr;
-}
 
 ui::EventTarget* RootView::GetRootForEvent(ui::Event* event) {
   return this;
@@ -325,7 +316,7 @@ Widget* RootView::GetWidget() {
 }
 
 bool RootView::IsDrawn() const {
-  return visible();
+  return GetVisible();
 }
 
 const char* RootView::GetClassName() const {
@@ -369,7 +360,7 @@ bool RootView::OnMousePressed(const ui::MouseEvent& event) {
        mouse_pressed_handler_ = mouse_pressed_handler_->parent()) {
     DVLOG(1) << "OnMousePressed testing "
         << mouse_pressed_handler_->GetClassName();
-    if (!mouse_pressed_handler_->enabled()) {
+    if (!mouse_pressed_handler_->GetEnabled()) {
       // Disabled views should eat events instead of propagating them upwards.
       hit_disabled_view = true;
       break;
@@ -487,7 +478,7 @@ void RootView::OnMouseMoved(const ui::MouseEvent& event) {
   // first.  The check for the existing handler is because if a view becomes
   // disabled while handling moves, it's wrong to suddenly send ET_MOUSE_EXITED
   // and ET_MOUSE_ENTERED events, because the mouse hasn't actually exited yet.
-  while (v && !v->enabled() && (v != mouse_move_handler_))
+  while (v && !v->GetEnabled() && (v != mouse_move_handler_))
     v = v->parent();
   if (v && v != this) {
     if (v != mouse_move_handler_) {
@@ -504,7 +495,11 @@ void RootView::OnMouseMoved(const ui::MouseEvent& event) {
         // The mouse_move_handler_ could have been destroyed in the context of
         // the mouse exit event.
         if (!dispatch_details.target_destroyed) {
-          CHECK(mouse_move_handler_);
+          // View was removed by ET_MOUSE_EXITED, or |mouse_move_handler_| was
+          // cleared, perhaps by a nested event handler, so return and wait for
+          // the next mouse move event.
+          if (!mouse_move_handler_)
+            return;
           dispatch_details = NotifyEnterExitOfDescendant(
               event, ui::ET_MOUSE_EXITED, mouse_move_handler_, v);
           if (dispatch_details.dispatcher_destroyed)
@@ -524,7 +519,11 @@ void RootView::OnMouseMoved(const ui::MouseEvent& event) {
             dispatch_details.target_destroyed) {
           return;
         }
-        CHECK(mouse_move_handler_);
+        // View was removed by ET_MOUSE_ENTERED, or |mouse_move_handler_| was
+        // cleared, perhaps by a nested event handler, so return and wait for
+        // the next mouse move event.
+        if (!mouse_move_handler_)
+          return;
         dispatch_details = NotifyEnterExitOfDescendant(
             event, ui::ET_MOUSE_ENTERED, mouse_move_handler_, old_handler);
         if (dispatch_details.dispatcher_destroyed ||
@@ -550,7 +549,11 @@ void RootView::OnMouseMoved(const ui::MouseEvent& event) {
     // The mouse_move_handler_ could have been destroyed in the context of the
     // mouse exit event.
     if (!dispatch_details.target_destroyed) {
-      CHECK(mouse_move_handler_);
+      // View was removed by ET_MOUSE_EXITED, or |mouse_move_handler_| was
+      // cleared, perhaps by a nested event handler, so return and wait for
+      // the next mouse move event.
+      if (!mouse_move_handler_)
+        return;
       dispatch_details = NotifyEnterExitOfDescendant(event, ui::ET_MOUSE_EXITED,
                                                      mouse_move_handler_, v);
       if (dispatch_details.dispatcher_destroyed)
@@ -727,7 +730,7 @@ ui::EventDispatchDetails RootView::PreDispatchEvent(ui::EventTarget* target,
     // Disabled views are permitted to be targets of gesture events, but
     // gesture events should never actually be dispatched to them. Prevent
     // dispatch by marking the event as handled.
-    if (!view->enabled())
+    if (!view->GetEnabled())
       event->SetHandled();
   }
 

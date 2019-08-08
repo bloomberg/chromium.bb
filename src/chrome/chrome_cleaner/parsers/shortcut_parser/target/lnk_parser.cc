@@ -211,42 +211,10 @@ LnkInfoPartialHeader* LocateAndParseLnkInfoPartialHeader(
 
 }  // namespace internal
 
-// Please note that the documentation used to write this parser was obtained
-// from the following link:
-// https://msdn.microsoft.com/en-us/library/dd871305.aspx
-mojom::LnkParsingResult ParseLnk(base::win::ScopedHandle file_handle,
-                                 ParsedLnkFile* parsed_shortcut) {
+mojom::LnkParsingResult internal::ParseLnkBytes(
+    std::vector<BYTE> file_buffer,
+    ParsedLnkFile* parsed_shortcut) {
   DCHECK(parsed_shortcut);
-
-  if (!file_handle.IsValid()) {
-    LOG(ERROR) << "Invalid File Handle";
-    return mojom::LnkParsingResult::INVALID_HANDLE;
-  }
-
-  base::File lnk_file(file_handle.Take());
-  int64_t lnk_file_size = lnk_file.GetLength();
-  if (lnk_file_size <= 0) {
-    LOG(ERROR) << "Error getting file size";
-    return mojom::LnkParsingResult::INVALID_LNK_FILE_SIZE;
-  } else if (lnk_file_size >= kMaximumFileSize) {
-    LOG(ERROR) << "Unexpectedly large file size: " << lnk_file_size;
-    return mojom::LnkParsingResult::INVALID_LNK_FILE_SIZE;
-  }
-
-  std::vector<BYTE> file_buffer(lnk_file_size);
-  int bytes_read = lnk_file.Read(
-      /*offset=*/0, reinterpret_cast<char*>(file_buffer.data()), lnk_file_size);
-  if (bytes_read == -1) {
-    LOG(ERROR) << "Error reading lnk file";
-    return mojom::LnkParsingResult::READING_ERROR;
-  }
-
-  if (bytes_read != lnk_file_size) {
-    LOG(ERROR) << "read less bytes than the actual file size, bytes read: "
-               << bytes_read << " file size: " << lnk_file_size;
-    return mojom::LnkParsingResult::READING_ERROR;
-  }
-
   // This variable is used to keep track which part of the buffer we are
   // currently parsing, please note that its value will be modified in all
   // of the function it is passed as parameter.
@@ -378,6 +346,43 @@ mojom::LnkParsingResult ParseLnk(base::win::ScopedHandle file_handle,
   }
 
   return mojom::LnkParsingResult::SUCCESS;
+}
+
+// Please note that the documentation used to write this parser was obtained
+// from the following link:
+// https://msdn.microsoft.com/en-us/library/dd871305.aspx
+mojom::LnkParsingResult ParseLnk(base::win::ScopedHandle file_handle,
+                                 ParsedLnkFile* parsed_shortcut) {
+  if (!file_handle.IsValid()) {
+    LOG(ERROR) << "Invalid File Handle";
+    return mojom::LnkParsingResult::INVALID_HANDLE;
+  }
+
+  base::File lnk_file(file_handle.Take());
+  int64_t lnk_file_size = lnk_file.GetLength();
+  if (lnk_file_size <= 0) {
+    LOG(ERROR) << "Error getting file size";
+    return mojom::LnkParsingResult::INVALID_LNK_FILE_SIZE;
+  } else if (lnk_file_size >= kMaximumFileSize) {
+    LOG(ERROR) << "Unexpectedly large file size: " << lnk_file_size;
+    return mojom::LnkParsingResult::INVALID_LNK_FILE_SIZE;
+  }
+
+  std::vector<BYTE> file_buffer(lnk_file_size);
+  int bytes_read = lnk_file.Read(
+      /*offset=*/0, reinterpret_cast<char*>(file_buffer.data()), lnk_file_size);
+  if (bytes_read == -1) {
+    LOG(ERROR) << "Error reading lnk file";
+    return mojom::LnkParsingResult::READING_ERROR;
+  }
+
+  if (bytes_read != lnk_file_size) {
+    LOG(ERROR) << "read less bytes than the actual file size, bytes read: "
+               << bytes_read << " file size: " << lnk_file_size;
+    return mojom::LnkParsingResult::READING_ERROR;
+  }
+
+  return internal::ParseLnkBytes(file_buffer, parsed_shortcut);
 }
 
 }  // namespace chrome_cleaner

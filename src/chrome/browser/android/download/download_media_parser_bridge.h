@@ -24,7 +24,7 @@ class DownloadMediaParserBridge {
       DownloadMediaParser::ParseCompleteCB parse_complete_cb);
   ~DownloadMediaParserBridge();
 
-  void Destory(JNIEnv* env, jobject obj);
+  void Destroy(JNIEnv* env, jobject obj);
   void Start(JNIEnv* env, jobject obj);
 
  private:

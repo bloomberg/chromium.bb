@@ -62,8 +62,6 @@ class CORE_EXPORT SpinButtonElement final : public HTMLDivElement,
   // The owner of SpinButtonElement must call removeSpinButtonOwner
   // because SpinButtonElement can be outlive SpinButtonOwner
   // implementation, e.g. during event handling.
-  static SpinButtonElement* Create(Document&, SpinButtonOwner&);
-
   SpinButtonElement(Document&, SpinButtonOwner&);
 
   UpDownState GetUpDownState() const { return up_down_state_; }
@@ -109,6 +107,13 @@ DEFINE_TYPE_CASTS(SpinButtonElement,
                   node,
                   ToElement(node)->IsSpinButtonElement(),
                   ToElement(node).IsSpinButtonElement());
+
+template <>
+struct DowncastTraits<SpinButtonElement> {
+  static bool AllowFrom(const Node& node) {
+    return ToElement(node).IsSpinButtonElement();
+  }
+};
 
 }  // namespace blink
 

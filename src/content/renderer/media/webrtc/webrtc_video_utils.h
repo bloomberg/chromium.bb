@@ -6,7 +6,7 @@
 #define CONTENT_RENDERER_MEDIA_WEBRTC_WEBRTC_VIDEO_UTILS_H_
 
 #include "media/base/video_color_space.h"
-#include "media/base/video_rotation.h"
+#include "media/base/video_transformation.h"
 #include "third_party/webrtc/api/video/color_space.h"
 #include "third_party/webrtc/api/video/video_rotation.h"
 

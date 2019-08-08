@@ -22,10 +22,6 @@ if (optimize_webui) {
       "vulcanized.html",
       "lazy_load.vulcanized.html",
     ]
-    html_out_files_polymer2 = [
-      "vulcanized.p2.html",
-      "lazy_load.vulcanized.p2.html",
-    ]
     insert_in_head = "<base href=\"chrome://os-settings\">"
     input = rebase_path("$target_gen_dir/$unpak_folder", root_build_dir)
     js_out_files = [
@@ -66,9 +62,15 @@ if (optimize_webui) {
 
 group("closure_compile") {
   deps = [
+    "os_a11y_page:closure_compile",
+    "os_people_page:closure_compile",
+    "os_privacy_page:closure_compile",
+    "os_reset_page:closure_compile",
+    "os_search_page:closure_compile",
     "os_settings_main:closure_compile",
     "os_settings_menu:closure_compile",
     "os_settings_page:closure_compile",
     "os_settings_ui:closure_compile",
+    "personalization_page:closure_compile",
   ]
 }

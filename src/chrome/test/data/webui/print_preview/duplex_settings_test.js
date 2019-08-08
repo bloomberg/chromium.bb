@@ -52,13 +52,12 @@ cr.define('duplex_settings_test', function() {
       assertTrue(collapse.opened);
 
       const select = duplexSection.$$('select');
-      assertEquals(
-          print_preview_new.DuplexMode.LONG_EDGE.toString(), select.value);
+      assertEquals(print_preview.DuplexMode.LONG_EDGE.toString(), select.value);
 
       duplexSection.setSetting('duplexShortEdge', true);
       await test_util.eventToPromise('process-select-change', duplexSection);
       assertEquals(
-          print_preview_new.DuplexMode.SHORT_EDGE.toString(), select.value);
+          print_preview.DuplexMode.SHORT_EDGE.toString(), select.value);
     });
 
     // Tests that checking the box or selecting a new option in the dropdown
@@ -78,13 +77,12 @@ cr.define('duplex_settings_test', function() {
       assertFalse(duplexSection.getSettingValue('duplexShortEdge'));
 
       const select = duplexSection.$$('select');
-      assertEquals(
-          print_preview_new.DuplexMode.LONG_EDGE.toString(), select.value);
+      assertEquals(print_preview.DuplexMode.LONG_EDGE.toString(), select.value);
       assertEquals(2, select.options.length);
 
       // Verify that selecting an new option in the dropdown sets the setting.
       await print_preview_test_utils.selectOption(
-          duplexSection, print_preview_new.DuplexMode.SHORT_EDGE.toString());
+          duplexSection, print_preview.DuplexMode.SHORT_EDGE.toString());
       assertTrue(duplexSection.getSettingValue('duplex'));
       assertTrue(duplexSection.getSettingValue('duplexShortEdge'));
     });

@@ -14,6 +14,8 @@ See https://git-scm.com/docs/gitattributes ("Defining a custom merge
 driver") for more details.
 """
 
+from __future__ import print_function
+
 import subprocess
 import sys
 
@@ -29,14 +31,14 @@ def main():
   base, current, others, file_name_in_tree = sys.argv[1:5]
 
   if file_name_in_tree == '%P':
-    print >>sys.stderr
-    print >>sys.stderr, 'ERROR: clang-format merge driver needs git 2.5+'
+    print(file=sys.stderr)
+    print('ERROR: clang-format merge driver needs git 2.5+', file=sys.stderr)
     if sys.platform == 'darwin':
-      print >>sys.stderr, 'Upgrade to Xcode 7.2+'
-    print >>sys.stderr
+      print('Upgrade to Xcode 7.2+', file=sys.stderr)
+    print(file=sys.stderr)
     return 1
 
-  print 'Running clang-format 3-way merge driver on ' + file_name_in_tree
+  print('Running clang-format 3-way merge driver on ' + file_name_in_tree)
 
   try:
     tool = clang_format.FindClangFormatToolInChromiumTree()
@@ -55,9 +57,9 @@ def main():
             stdin=input_file)
       with open(fpath, 'wb') as output_file:
         output_file.write(output)
-  except clang_format.NotFoundError, e:
-    print e
-    print 'Failed to find clang-format. Falling-back on standard 3-way merge'
+  except clang_format.NotFoundError as e:
+    print(e)
+    print('Failed to find clang-format. Falling-back on standard 3-way merge')
 
   return subprocess.call(['git', 'merge-file', '-Lcurrent', '-Lbase', '-Lother',
                           current, base, others])

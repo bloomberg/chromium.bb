@@ -8,7 +8,7 @@
 
 namespace chromeos {
 
-BaseScreen::BaseScreen(OobeScreen screen_id) : screen_id_(screen_id) {}
+BaseScreen::BaseScreen(OobeScreenId screen_id) : screen_id_(screen_id) {}
 
 BaseScreen::~BaseScreen() {}
 

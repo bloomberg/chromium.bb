@@ -23,6 +23,7 @@ bool GLContextStub::Initialize(GLSurface* compatible_surface,
 }
 
 bool GLContextStub::MakeCurrent(GLSurface* surface) {
+  DCHECK(surface);
   BindGLApi();
   SetCurrent(surface);
   InitializeDynamicBindings();

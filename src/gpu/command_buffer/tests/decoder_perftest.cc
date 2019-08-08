@@ -319,6 +319,8 @@ class RecordReplayContext : public GpuControl {
     return true;
   }
 
+  void SetDisplayTransform(gfx::OverlayTransform) override { NOTREACHED(); }
+
   GpuPreferences gpu_preferences_;
 
   gles2::MailboxManagerImpl mailbox_manager_;

@@ -226,6 +226,7 @@ class MetricsWebContentsObserver
       content::NavigationHandle* new_navigation,
       UserInitiatedInfo user_initiated_info);
 
+  // Whether metrics should be tracked for the navigation.
   bool ShouldTrackNavigation(
       content::NavigationHandle* navigation_handle) const;
 

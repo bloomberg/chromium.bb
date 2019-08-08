@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/webmidi/midi_access_initializer.h"
 #include "third_party/blink/renderer/modules/webmidi/midi_options.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 namespace {
@@ -85,7 +86,8 @@ ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* script_state,
                                                   const MIDIOptions* options) {
   if (!script_state->ContextIsValid()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kAbortError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError,
                                            "The frame is not working."));
   }
 
@@ -94,8 +96,7 @@ ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* script_state,
     UseCounter::Count(
         document,
         WebFeature::kRequestMIDIAccessWithSysExOption_ObscuredByFootprinting);
-    UseCounter::CountCrossOriginIframe(
-        document,
+    document.CountUseOnlyInCrossOriginIframe(
         WebFeature::
             kRequestMIDIAccessIframeWithSysExOption_ObscuredByFootprinting);
   } else {
@@ -108,15 +109,16 @@ ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* script_state,
                       ? WebFeature::kNoSysexWebMIDIWithoutPermission
                       : WebFeature::kNoSysexWebMIDIOnInsecureOrigin);
   }
-  UseCounter::CountCrossOriginIframe(
-      document, WebFeature::kRequestMIDIAccessIframe_ObscuredByFootprinting);
+  document.CountUseOnlyInCrossOriginIframe(
+      WebFeature::kRequestMIDIAccessIframe_ObscuredByFootprinting);
 
   if (!document.IsFeatureEnabled(mojom::FeaturePolicyFeature::kMidiFeature,
                                  ReportOptions::kReportOnFailure,
                                  kFeaturePolicyConsoleWarning)) {
     UseCounter::Count(document, WebFeature::kMidiDisabledByFeaturePolicy);
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kSecurityError,
                                            kFeaturePolicyErrorMessage));
   }
 

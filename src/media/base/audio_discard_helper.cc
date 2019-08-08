@@ -49,9 +49,8 @@ void AudioDiscardHelper::Reset(size_t initial_discard) {
   delayed_discard_padding_ = DecoderBuffer::DiscardPadding();
 }
 
-bool AudioDiscardHelper::ProcessBuffers(
-    const DecoderBuffer& encoded_buffer,
-    const scoped_refptr<AudioBuffer>& decoded_buffer) {
+bool AudioDiscardHelper::ProcessBuffers(const DecoderBuffer& encoded_buffer,
+                                        AudioBuffer* decoded_buffer) {
   DCHECK(!encoded_buffer.end_of_stream());
   DCHECK(encoded_buffer.timestamp() != kNoTimestamp);
 
@@ -69,7 +68,7 @@ bool AudioDiscardHelper::ProcessBuffers(
   }
   DCHECK(initialized());
 
-  if (!decoded_buffer.get()) {
+  if (!decoded_buffer) {
     // If there's a one buffer delay for decoding, we need to save it so it can
     // be processed with the next decoder buffer.
     if (delayed_discard_)

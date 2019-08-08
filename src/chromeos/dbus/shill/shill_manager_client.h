@@ -9,6 +9,7 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/shill/shill_client_helper.h"
 
@@ -91,8 +92,11 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillManagerClient {
     // or states provided by the command line.
     virtual void SetupDefaultEnvironment() = 0;
 
-    // Returns the interactive delay specified on the command line, 0 for none.
-    virtual int GetInteractiveDelay() const = 0;
+    // Returns the interactive delay (specified by the command line or a test).
+    virtual base::TimeDelta GetInteractiveDelay() const = 0;
+
+    // Sets the interactive delay for testing.
+    virtual void SetInteractiveDelay(base::TimeDelta delay) = 0;
 
     // Sets the 'best' service to connect to on a ConnectToBestServices call.
     virtual void SetBestServiceToConnect(const std::string& service_path) = 0;

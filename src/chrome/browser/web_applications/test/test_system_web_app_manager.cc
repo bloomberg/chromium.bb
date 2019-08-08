@@ -12,7 +12,9 @@ namespace web_app {
 TestSystemWebAppManager::TestSystemWebAppManager(
     Profile* profile,
     PendingAppManager* pending_app_manager)
-    : SystemWebAppManager(profile, pending_app_manager) {}
+    : SystemWebAppManager(profile, pending_app_manager) {
+  SetSystemApps(base::flat_map<SystemAppType, GURL>());
+}
 
 TestSystemWebAppManager::~TestSystemWebAppManager() = default;
 

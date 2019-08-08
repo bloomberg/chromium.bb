@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 3615 tests; 3570 PASS, 45 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 3618 tests; 3577 PASS, 41 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Document: original interface defined
 PASS Partial interface mixin NavigatorID: original interface mixin defined
@@ -100,6 +100,7 @@ PASS HTMLElement interface: attribute draggable
 PASS HTMLElement interface: attribute spellcheck
 PASS HTMLElement interface: attribute autocapitalize
 PASS HTMLElement interface: attribute innerText
+PASS HTMLElement interface: operation attachInternals()
 PASS HTMLElement interface: attribute onabort
 PASS HTMLElement interface: attribute onauxclick
 PASS HTMLElement interface: attribute onblur
@@ -167,7 +168,7 @@ PASS HTMLElement interface: attribute oncopy
 PASS HTMLElement interface: attribute oncut
 PASS HTMLElement interface: attribute onpaste
 PASS HTMLElement interface: attribute contentEditable
-FAIL HTMLElement interface: attribute enterKeyHint assert_true: The prototype object must have a property "enterKeyHint" expected true got false
+PASS HTMLElement interface: attribute enterKeyHint
 PASS HTMLElement interface: attribute isContentEditable
 PASS HTMLElement interface: attribute inputMode
 PASS HTMLElement interface: attribute dataset
@@ -189,6 +190,7 @@ PASS HTMLElement interface: document.createElement("noscript") must inherit prop
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "spellcheck" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "autocapitalize" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "innerText" with the proper type
+PASS HTMLElement interface: document.createElement("noscript") must inherit property "attachInternals()" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onabort" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onauxclick" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onblur" with the proper type
@@ -256,7 +258,7 @@ PASS HTMLElement interface: document.createElement("noscript") must inherit prop
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "oncut" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onpaste" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "contentEditable" with the proper type
-FAIL HTMLElement interface: document.createElement("noscript") must inherit property "enterKeyHint" with the proper type assert_inherits: property "enterKeyHint" not found in prototype chain
+PASS HTMLElement interface: document.createElement("noscript") must inherit property "enterKeyHint" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "isContentEditable" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "inputMode" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "dataset" with the proper type
@@ -836,7 +838,6 @@ PASS HTMLObjectElement interface: existence and properties of interface prototyp
 PASS HTMLObjectElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLObjectElement interface: attribute data
 PASS HTMLObjectElement interface: attribute type
-FAIL HTMLObjectElement interface: attribute typeMustMatch assert_true: The prototype object must have a property "typeMustMatch" expected true got false
 PASS HTMLObjectElement interface: attribute name
 PASS HTMLObjectElement interface: attribute useMap
 PASS HTMLObjectElement interface: attribute form
@@ -865,7 +866,6 @@ PASS HTMLObjectElement must be primary interface of document.createElement("obje
 PASS Stringification of document.createElement("object")
 PASS HTMLObjectElement interface: document.createElement("object") must inherit property "data" with the proper type
 PASS HTMLObjectElement interface: document.createElement("object") must inherit property "type" with the proper type
-FAIL HTMLObjectElement interface: document.createElement("object") must inherit property "typeMustMatch" with the proper type assert_inherits: property "typeMustMatch" not found in prototype chain
 PASS HTMLObjectElement interface: document.createElement("object") must inherit property "name" with the proper type
 PASS HTMLObjectElement interface: document.createElement("object") must inherit property "useMap" with the proper type
 PASS HTMLObjectElement interface: document.createElement("object") must inherit property "form" with the proper type
@@ -1481,6 +1481,7 @@ FAIL HTMLFormElement interface: attribute relList assert_true: The prototype obj
 PASS HTMLFormElement interface: attribute elements
 PASS HTMLFormElement interface: attribute length
 PASS HTMLFormElement interface: operation submit()
+PASS HTMLFormElement interface: operation requestSubmit(HTMLElement)
 PASS HTMLFormElement interface: operation reset()
 PASS HTMLFormElement interface: operation checkValidity()
 PASS HTMLFormElement interface: operation reportValidity()
@@ -1500,6 +1501,8 @@ FAIL HTMLFormElement interface: document.createElement("form") must inherit prop
 PASS HTMLFormElement interface: document.createElement("form") must inherit property "elements" with the proper type
 PASS HTMLFormElement interface: document.createElement("form") must inherit property "length" with the proper type
 PASS HTMLFormElement interface: document.createElement("form") must inherit property "submit()" with the proper type
+PASS HTMLFormElement interface: document.createElement("form") must inherit property "requestSubmit(HTMLElement)" with the proper type
+PASS HTMLFormElement interface: calling requestSubmit(HTMLElement) on document.createElement("form") with too few arguments must throw TypeError
 PASS HTMLFormElement interface: document.createElement("form") must inherit property "reset()" with the proper type
 PASS HTMLFormElement interface: document.createElement("form") must inherit property "checkValidity()" with the proper type
 PASS HTMLFormElement interface: document.createElement("form") must inherit property "reportValidity()" with the proper type

@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "base/json/json_reader.h"
-#include "components/autofill/core/browser/autofill_profile.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/payments/core/autofill_payment_instrument.h"
 #include "components/payments/core/payment_address.h"
 #include "components/payments/core/payment_details.h"

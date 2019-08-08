@@ -17,20 +17,12 @@ const base::Feature kExpectCTReporting{"ExpectCTReporting",
 const base::Feature kNetworkErrorLogging{"NetworkErrorLogging",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 // Enables the network service.
-const base::Feature kNetworkService {
-  "NetworkService",
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
-    (defined(OS_LINUX) && !defined(IS_CHROMECAST))
-      base::FEATURE_ENABLED_BY_DEFAULT
-};
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-};
-#endif
+const base::Feature kNetworkService{"NetworkService",
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Out of Blink CORS
 const base::Feature kOutOfBlinkCors{"OutOfBlinkCors",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kReporting{"Reporting", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -52,22 +44,21 @@ const base::Feature kThrottleDelayable{"ThrottleDelayable",
 const base::Feature kDelayRequestsOnMultiplexedConnections{
     "DelayRequestsOnMultiplexedConnections", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Kill switch for enforcing
-// URLLoaderFactoryParams::request_initiator_origin_lock for Cross-Origin Read
-// Blocking.  When enabled, then CORB treats |request_initiator| as opaque
-// when it doesn't match |request_initiator_site_lock|.
-const base::Feature kEnforceRequestInitiatorLockForCorb{
-    "EnforceRequestInitiatorLockForCorb", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Implementation of https://mikewest.github.io/sec-metadata/
 const base::Feature kFetchMetadata{"FetchMetadata",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
 // The `Sec-Fetch-Dest` header is split out from the main "FetchMetadata"
 // feature so we can ship the broader feature without this specifific bit
 // while we continue discussion.
 const base::Feature kFetchMetadataDestination{
     "FetchMetadataDestination", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// When kRequestInitiatorSiteLock is enabled, then CORB, CORP and Sec-Fetch-Site
+// will validate network::ResourceRequest::request_initiator against
+// network::mojom::URLLoaderFactoryParams::request_initiator_site_lock.
+const base::Feature kRequestInitiatorSiteLock{"RequestInitiatorSiteLock",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool ShouldEnableOutOfBlinkCors() {
   // OOR-CORS requires NetworkService.

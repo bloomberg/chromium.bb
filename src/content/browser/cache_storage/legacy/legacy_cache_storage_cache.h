@@ -19,6 +19,7 @@
 #include "base/optional.h"
 #include "content/browser/cache_storage/cache_storage_cache.h"
 #include "content/browser/cache_storage/cache_storage_handle.h"
+#include "content/browser/cache_storage/scoped_writable_entry.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/io_buffer.h"
@@ -67,6 +68,7 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
       CacheStorageOwner owner,
       const std::string& cache_name,
       LegacyCacheStorage* cache_storage,
+      scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner,
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context,
       std::unique_ptr<crypto::SymmetricKey> cache_padding_key);
@@ -76,6 +78,7 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
       const std::string& cache_name,
       LegacyCacheStorage* cache_storage,
       const base::FilePath& path,
+      scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner,
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context,
       int64_t cache_size,
@@ -195,6 +198,10 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
   void DropHandleRef() override;
   bool IsUnreferenced() const override;
 
+  // Override the default scheduler with a customized scheduler for testing.
+  // The current scheduler must be idle.
+  void SetSchedulerForTesting(std::unique_ptr<CacheStorageScheduler> scheduler);
+
   static LegacyCacheStorageCache* From(const CacheStorageCacheHandle& handle) {
     return static_cast<LegacyCacheStorageCache*>(handle.value());
   }
@@ -239,6 +246,7 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
       const std::string& cache_name,
       const base::FilePath& path,
       LegacyCacheStorage* cache_storage,
+      scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner,
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context,
       int64_t cache_size,
@@ -333,16 +341,19 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
       int64_t trace_id,
       scoped_refptr<net::IOBuffer> buffer,
       int buf_len,
-      disk_cache::ScopedEntryPtr entry,
+      ScopedWritableEntry entry,
       std::unique_ptr<proto::CacheMetadata> headers);
   void WriteSideDataDidWrite(
       ErrorCallback callback,
-      disk_cache::ScopedEntryPtr entry,
+      ScopedWritableEntry entry,
       int expected_bytes,
       std::unique_ptr<content::proto::CacheResponse> response,
       int side_data_size_before_write,
       int64_t trace_id,
       int rv);
+  void WriteSideDataComplete(ErrorCallback callback,
+                             ScopedWritableEntry entry,
+                             blink::mojom::CacheStorageError error);
 
   // Puts the request and response object in the cache. The response body (if
   // present) is stored in the cache, but not the request body. Returns OK on
@@ -367,8 +378,10 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
                            int disk_cache_body_index);
   void PutDidWriteBlobToCache(std::unique_ptr<PutContext> put_context,
                               BlobToDiskCacheIDMap::KeyType blob_to_cache_key,
-                              disk_cache::ScopedEntryPtr entry,
+                              ScopedWritableEntry entry,
                               bool success);
+  void PutComplete(std::unique_ptr<PutContext> put_context,
+                   blink::mojom::CacheStorageError error);
 
   // Asynchronously calculates the current cache size, notifies the quota
   // manager of any change from the last report, and sets cache_size_ to the new

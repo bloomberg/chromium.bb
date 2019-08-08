@@ -17,7 +17,7 @@ let testName = "XRFrame.getPose works between eye-level and floor-level spaces";
 
 let fakeDeviceInitParams = { supportsImmersive:true };
 
-let requestSessionOptions = ['immersive-vr'];
+let requestSessionModes = ['immersive-vr'];
 
 let testFunction = function(session, t, fakeDeviceController) {
   // Session must have a baseLayer or frame requests will be ignored.
@@ -36,8 +36,8 @@ let testFunction = function(session, t, fakeDeviceController) {
     }]);
 
   return Promise.all([
-    session.requestReferenceSpace({ type: "stationary", subtype: "eye-level" }),
-    session.requestReferenceSpace({ type: "stationary", subtype: "floor-level" })
+    session.requestReferenceSpace('local'),
+    session.requestReferenceSpace('local-floor')
   ]).then((spaces) => new Promise((resolve) => {
     function onFrame(time, xrFrame) {
       // eye-level space starts out with originOffset = identity matrix
@@ -58,6 +58,6 @@ let testFunction = function(session, t, fakeDeviceController) {
 };
 
 xr_session_promise_test(
-  testFunction, fakeDeviceInitParams, requestSessionOptions, testName);
+  testFunction, fakeDeviceInitParams, requestSessionModes, testName);
 
 </script>

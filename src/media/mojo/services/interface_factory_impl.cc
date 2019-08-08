@@ -170,6 +170,7 @@ void InterfaceFactoryImpl::CreateMediaPlayerRenderer(
 
 void InterfaceFactoryImpl::CreateFlingingRenderer(
     const std::string& audio_device_id,
+    mojom::FlingingRendererClientExtensionPtr client_extension,
     mojo::InterfaceRequest<mojom::Renderer> request) {
   NOTREACHED();
 }

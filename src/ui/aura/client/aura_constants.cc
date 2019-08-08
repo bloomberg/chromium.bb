@@ -4,7 +4,6 @@
 
 #include "ui/aura/client/aura_constants.h"
 
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/base/class_property.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -20,7 +19,6 @@ DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(AURA_EXPORT, gfx::Size*)
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(AURA_EXPORT, gfx::SizeF*)
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(AURA_EXPORT, std::string*)
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(AURA_EXPORT, ui::WindowShowState)
-DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(AURA_EXPORT, ws::mojom::WindowType)
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(AURA_EXPORT, void*)
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(AURA_EXPORT, SkColor)
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(AURA_EXPORT, int32_t)
@@ -44,8 +42,6 @@ DEFINE_UI_CLASS_PROPERTY_KEY(bool, kActivateOnPointerKey, true)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kAlwaysOnTopKey, false)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kAnimationsDisabledKey, false)
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::ImageSkia, kAppIconKey, nullptr)
-DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::ImageSkia, kAppIconLargeKey, nullptr)
-DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::ImageSkia, kAppIconSmallKey, nullptr)
 DEFINE_UI_CLASS_PROPERTY_KEY(int, kAppType, 0)
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::SizeF, kAspectRatio, nullptr)
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::ImageSkia, kAvatarIconKey, nullptr)
@@ -57,9 +53,6 @@ DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect,
                                    kEmbeddedWindowEnsureNotInRect,
                                    nullptr)
 DEFINE_UI_CLASS_PROPERTY_KEY(FocusClient*, kFocusClientKey, nullptr)
-DEFINE_UI_CLASS_PROPERTY_KEY(bool,
-                             kGestureDragFromClientAreaTopMovesWindow,
-                             false)
 DEFINE_UI_CLASS_PROPERTY_KEY(Window*, kHostWindowKey, nullptr)
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Size, kMaximumSize, nullptr)
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Size, kMinimumSize, nullptr)
@@ -76,9 +69,7 @@ DEFINE_UI_CLASS_PROPERTY_KEY(ui::WindowShowState,
 DEFINE_UI_CLASS_PROPERTY_KEY(ui::WindowShowState,
                              kPreFullscreenShowStateKey,
                              ui::SHOW_STATE_DEFAULT)
-DEFINE_UI_CLASS_PROPERTY_KEY(int32_t,
-                             kResizeBehaviorKey,
-                             ws::mojom::kResizeBehaviorCanResize)
+DEFINE_UI_CLASS_PROPERTY_KEY(int, kResizeBehaviorKey, kResizeBehaviorCanResize)
 DEFINE_UI_CLASS_PROPERTY_KEY(int, kResizeHandleInset, 0)
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect, kRestoreBoundsKey, nullptr)
 DEFINE_UI_CLASS_PROPERTY_KEY(ui::WindowShowState,
@@ -89,9 +80,6 @@ DEFINE_UI_CLASS_PROPERTY_KEY(bool, kTitleShownKey, true)
 DEFINE_UI_CLASS_PROPERTY_KEY(int, kTopViewInset, 0)
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::ImageSkia, kWindowIconKey, nullptr)
 DEFINE_UI_CLASS_PROPERTY_KEY(int, kWindowCornerRadiusKey, -1)
-DEFINE_UI_CLASS_PROPERTY_KEY(ws::mojom::WindowType,
-                             kWindowTypeKey,
-                             ws::mojom::WindowType::UNKNOWN)
 
 }  // namespace client
 }  // namespace aura

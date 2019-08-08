@@ -23,6 +23,9 @@ class AppUpdateTest : public testing::Test {
   std::string expect_short_name_;
   bool expect_short_name_changed_;
 
+  std::string expect_description_;
+  bool expect_description_changed_;
+
   std::vector<std::string> expect_additional_search_terms_;
   bool expect_additional_search_terms_changed_;
 
@@ -38,11 +41,17 @@ class AppUpdateTest : public testing::Test {
   std::vector<apps::mojom::PermissionPtr> expect_permissions_;
   bool expect_permissions_changed_;
 
-  apps::mojom::OptionalBool expect_installed_internally_;
-  bool expect_installed_internally_changed_;
+  apps::mojom::InstallSource expect_install_source_;
+  bool expect_install_source_changed_;
 
   apps::mojom::OptionalBool expect_is_platform_app_;
   bool expect_is_platform_app_changed_;
+
+  apps::mojom::OptionalBool expect_recommendable_;
+  bool expect_recommendable_changed_;
+
+  apps::mojom::OptionalBool expect_searchable_;
+  bool expect_searchable_changed_;
 
   apps::mojom::OptionalBool expect_show_in_launcher_;
   bool expect_show_in_launcher_changed_;
@@ -69,13 +78,16 @@ class AppUpdateTest : public testing::Test {
     expect_readiness_changed_ = false;
     expect_name_changed_ = false;
     expect_short_name_changed_ = false;
+    expect_description_changed_ = false;
     expect_additional_search_terms_changed_ = false;
     expect_icon_key_changed_ = false;
     expect_last_launch_time_changed_ = false;
     expect_install_time_changed_ = false;
     expect_permissions_changed_ = false;
-    expect_installed_internally_changed_ = false;
+    expect_install_source_changed_ = false;
     expect_is_platform_app_changed_ = false;
+    expect_recommendable_changed_ = false;
+    expect_searchable_changed_ = false;
     expect_show_in_launcher_changed_ = false;
     expect_show_in_search_changed_ = false;
     expect_show_in_management_changed_ = false;
@@ -90,6 +102,9 @@ class AppUpdateTest : public testing::Test {
 
     EXPECT_EQ(expect_short_name_, u.ShortName());
     EXPECT_EQ(expect_short_name_changed_, u.ShortNameChanged());
+
+    EXPECT_EQ(expect_description_, u.Description());
+    EXPECT_EQ(expect_description_changed_, u.DescriptionChanged());
 
     EXPECT_EQ(expect_additional_search_terms_, u.AdditionalSearchTerms());
     EXPECT_EQ(expect_additional_search_terms_changed_,
@@ -107,12 +122,17 @@ class AppUpdateTest : public testing::Test {
     EXPECT_EQ(expect_permissions_, u.Permissions());
     EXPECT_EQ(expect_permissions_changed_, u.PermissionsChanged());
 
-    EXPECT_EQ(expect_installed_internally_, u.InstalledInternally());
-    EXPECT_EQ(expect_installed_internally_changed_,
-              u.InstalledInternallyChanged());
+    EXPECT_EQ(expect_install_source_, u.InstallSource());
+    EXPECT_EQ(expect_install_source_changed_, u.InstallSourceChanged());
 
     EXPECT_EQ(expect_is_platform_app_, u.IsPlatformApp());
     EXPECT_EQ(expect_is_platform_app_changed_, u.IsPlatformAppChanged());
+
+    EXPECT_EQ(expect_recommendable_, u.Recommendable());
+    EXPECT_EQ(expect_recommendable_changed_, u.RecommendableChanged());
+
+    EXPECT_EQ(expect_searchable_, u.Searchable());
+    EXPECT_EQ(expect_searchable_changed_, u.SearchableChanged());
 
     EXPECT_EQ(expect_show_in_launcher_, u.ShowInLauncher());
     EXPECT_EQ(expect_show_in_launcher_changed_, u.ShowInLauncherChanged());
@@ -134,13 +154,16 @@ class AppUpdateTest : public testing::Test {
     expect_readiness_ = apps::mojom::Readiness::kUnknown;
     expect_name_ = "";
     expect_short_name_ = "";
+    expect_description_ = "";
     expect_additional_search_terms_.clear();
     expect_icon_key_ = nullptr;
     expect_last_launch_time_ = base::Time();
     expect_install_time_ = base::Time();
     expect_permissions_.clear();
-    expect_installed_internally_ = apps::mojom::OptionalBool::kUnknown;
+    expect_install_source_ = apps::mojom::InstallSource::kUnknown;
     expect_is_platform_app_ = apps::mojom::OptionalBool::kUnknown;
+    expect_recommendable_ = apps::mojom::OptionalBool::kUnknown;
+    expect_searchable_ = apps::mojom::OptionalBool::kUnknown;
     expect_show_in_launcher_ = apps::mojom::OptionalBool::kUnknown;
     expect_show_in_search_ = apps::mojom::OptionalBool::kUnknown;
     expect_show_in_management_ = apps::mojom::OptionalBool::kUnknown;
@@ -203,6 +226,26 @@ class AppUpdateTest : public testing::Test {
       expect_short_name_ = "Bob";
       expect_short_name_changed_ = true;
       CheckExpects(u);
+    }
+
+    if (state) {
+      apps::AppUpdate::Merge(state, delta);
+      ExpectNoChange();
+      CheckExpects(u);
+    }
+
+    // Description tests.
+
+    if (state) {
+      state->description = "Has a cat.";
+      expect_description_ = "Has a cat.";
+      expect_description_changed_ = true;
+    }
+
+    if (delta) {
+      delta->description = "Has a dog.";
+      expect_description_ = "Has a dog.";
+      expect_description_changed_ = true;
     }
 
     if (state) {
@@ -306,19 +349,18 @@ class AppUpdateTest : public testing::Test {
       CheckExpects(u);
     }
 
-    // InstalledInternally tests.
-
+    // InstallSource tests.
     if (state) {
-      state->installed_internally = apps::mojom::OptionalBool::kFalse;
-      expect_installed_internally_ = apps::mojom::OptionalBool::kFalse;
-      expect_installed_internally_changed_ = false;
+      state->install_source = apps::mojom::InstallSource::kUser;
+      expect_install_source_ = apps::mojom::InstallSource::kUser;
+      expect_install_source_changed_ = false;
       CheckExpects(u);
     }
 
     if (delta) {
-      delta->installed_internally = apps::mojom::OptionalBool::kTrue;
-      expect_installed_internally_ = apps::mojom::OptionalBool::kTrue;
-      expect_installed_internally_changed_ = true;
+      delta->install_source = apps::mojom::InstallSource::kPolicy;
+      expect_install_source_ = apps::mojom::InstallSource::kPolicy;
+      expect_install_source_changed_ = true;
       CheckExpects(u);
     }
 
@@ -341,6 +383,72 @@ class AppUpdateTest : public testing::Test {
       delta->is_platform_app = apps::mojom::OptionalBool::kTrue;
       expect_is_platform_app_ = apps::mojom::OptionalBool::kTrue;
       expect_is_platform_app_changed_ = true;
+      CheckExpects(u);
+    }
+
+    if (state) {
+      apps::AppUpdate::Merge(state, delta);
+      ExpectNoChange();
+      CheckExpects(u);
+    }
+
+    // Recommendable tests.
+
+    if (state) {
+      state->recommendable = apps::mojom::OptionalBool::kFalse;
+      expect_recommendable_ = apps::mojom::OptionalBool::kFalse;
+      expect_recommendable_changed_ = false;
+      CheckExpects(u);
+    }
+
+    if (delta) {
+      delta->recommendable = apps::mojom::OptionalBool::kTrue;
+      expect_recommendable_ = apps::mojom::OptionalBool::kTrue;
+      expect_recommendable_changed_ = true;
+      CheckExpects(u);
+    }
+
+    if (state) {
+      apps::AppUpdate::Merge(state, delta);
+      ExpectNoChange();
+      CheckExpects(u);
+    }
+
+    // Searchable tests.
+
+    if (state) {
+      state->searchable = apps::mojom::OptionalBool::kFalse;
+      expect_searchable_ = apps::mojom::OptionalBool::kFalse;
+      expect_searchable_changed_ = false;
+      CheckExpects(u);
+    }
+
+    if (delta) {
+      delta->searchable = apps::mojom::OptionalBool::kTrue;
+      expect_searchable_ = apps::mojom::OptionalBool::kTrue;
+      expect_searchable_changed_ = true;
+      CheckExpects(u);
+    }
+
+    if (state) {
+      apps::AppUpdate::Merge(state, delta);
+      ExpectNoChange();
+      CheckExpects(u);
+    }
+
+    // ShowInLauncher tests.
+
+    if (state) {
+      state->show_in_launcher = apps::mojom::OptionalBool::kFalse;
+      expect_show_in_launcher_ = apps::mojom::OptionalBool::kFalse;
+      expect_show_in_launcher_changed_ = false;
+      CheckExpects(u);
+    }
+
+    if (delta) {
+      delta->show_in_launcher = apps::mojom::OptionalBool::kTrue;
+      expect_show_in_launcher_ = apps::mojom::OptionalBool::kTrue;
+      expect_show_in_launcher_changed_ = true;
       CheckExpects(u);
     }
 

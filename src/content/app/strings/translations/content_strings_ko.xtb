@@ -11,7 +11,6 @@
 <translation id="1206693055195146388">슬라이더</translation>
 <translation id="1211441953136645838">미주</translation>
 <translation id="1281252709823657822">대화상자</translation>
-<translation id="1289247557029249093">PIP 모드 종료</translation>
 <translation id="1335095011850992622">저작권 표시</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">배너</translation>
@@ -37,6 +36,7 @@
 <translation id="2148716181193084225">오늘</translation>
 <translation id="2158401438286456825">페이지 목록</translation>
 <translation id="2226276347425096477">이 텍스트를 <ph name="MAX_CHARACTERS" />자 이하로 줄이세요(현재 <ph name="CURRENT_LENGTH" />자 사용 중).</translation>
+<translation id="2246498165605549352">로컬 파일</translation>
 <translation id="2247351761944213033"><ph name="YEAR" />, <ph name="WEEKNUMBER" />번째 주</translation>
 <translation id="2277199496770840904"><ph name="NUMBER" />번 트랙</translation>
 <translation id="2291999235780842123">체크박스</translation>
@@ -75,6 +75,7 @@
 <translation id="3685101356851116974">라벨이 없는 이미지</translation>
 <translation id="3706100364254443312">전환</translation>
 <translation id="3732799496749320381">월</translation>
+<translation id="3754210790023674521">PIP 모드 종료</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" />GB</translation>
 <translation id="3808586225841795776">용어</translation>
 <translation id="3822383571486410024">이 텍스트를 <ph name="MIN_CHARACTERS" />자 이상으로 늘리세요(현재 <ph name="CURRENT_LENGTH" />자 사용 중).</translation>
@@ -102,6 +103,7 @@
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">'<ph name="ATSIGN" />' 다음 부분에 '<ph name="INVALIDCHARACTER" />' 기호가 포함되면 안됩니다.</translation>
 <translation id="4668956016107839909">부록</translation>
+<translation id="4718048029184481307">PIP 모드에서 재생</translation>
 <translation id="4742539557769756338">표지</translation>
 <translation id="4748357248530471599">디스플레이 컷아웃을 전체화면으로 전환</translation>
 <translation id="4757246831282535685">탭 패널</translation>
@@ -150,7 +152,7 @@
 <translation id="6166809985690652833">후기</translation>
 <translation id="6209276755895393898"><ph name="DESCRIPTION" /> 같습니다</translation>
 <translation id="6213469881011901533">용어설명</translation>
-<translation id="628938136236500310">PIP 모드로 재생 중</translation>
+<translation id="6310801910862476708">PIP 모드 종료</translation>
 <translation id="6398862346408813489">월 선택 패널 표시</translation>
 <translation id="6404546809543547843">오디오 시간 스크러버</translation>
 <translation id="6443871981718447451">자막 메뉴 표시</translation>

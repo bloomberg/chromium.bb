@@ -10,7 +10,9 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
+#ifdef TEMP_INSTRUMENTATION_901501
+#include "base/debug/alias.h"
+#endif
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -129,6 +131,14 @@ SpdyHttpStream::~SpdyHttpStream() {
     stream_->DetachDelegate();
     DCHECK(!stream_);
   }
+#ifdef TEMP_INSTRUMENTATION_901501
+  liveness_ = DEAD;
+  stack_trace_ = base::debug::StackTrace();
+  // Probably not necessary, but just in case compiler tries to optimize out the
+  // writes to liveness_ and stack_trace_.
+  base::debug::Alias(&liveness_);
+  base::debug::Alias(&stack_trace_);
+#endif
 }
 
 int SpdyHttpStream::InitializeStream(const HttpRequestInfo* request_info,
@@ -444,7 +454,8 @@ void SpdyHttpStream::OnDataSent() {
 void SpdyHttpStream::OnTrailers(const spdy::SpdyHeaderBlock& trailers) {}
 
 void SpdyHttpStream::OnClose(int status) {
-  DCHECK(stream_);
+  CHECK(stream_);
+  CrashIfInvalid();
 
   // Cancel any pending reads from the upload data stream.
   if (request_info_ && request_info_->upload_data_stream)
@@ -468,12 +479,16 @@ void SpdyHttpStream::OnClose(int status) {
       return;
   }
 
+  CrashIfInvalid();
+
   if (status == OK) {
     // We need to complete any pending buffered read now.
     DoBufferedReadCallback();
     if (!self)
       return;
   }
+
+  CrashIfInvalid();
 
   if (!response_callback_.is_null()) {
     DoResponseCallback(status);
@@ -591,6 +606,8 @@ bool SpdyHttpStream::ShouldWaitForMoreBufferedData() const {
 }
 
 void SpdyHttpStream::DoBufferedReadCallback() {
+  CrashIfInvalid();
+
   buffered_read_callback_pending_ = false;
 
   // If the transaction is cancelled or errored out, we don't need to complete
@@ -612,6 +629,8 @@ void SpdyHttpStream::DoBufferedReadCallback() {
   if (!user_buffer_.get())
     return;
 
+  CrashIfInvalid();
+
   if (!response_body_queue_.IsEmpty()) {
     int rv =
         response_body_queue_.Dequeue(user_buffer_->data(), user_buffer_len_);
@@ -630,13 +649,13 @@ void SpdyHttpStream::DoRequestCallback(int rv) {
   CHECK(!request_callback_.is_null());
   // Since Run may result in being called back, reset request_callback_ in
   // advance.
-  base::ResetAndReturn(&request_callback_).Run(rv);
+  std::move(request_callback_).Run(rv);
 }
 
 void SpdyHttpStream::MaybeDoRequestCallback(int rv) {
   CHECK_NE(ERR_IO_PENDING, rv);
   if (request_callback_)
-    base::ResetAndReturn(&request_callback_).Run(rv);
+    std::move(request_callback_).Run(rv);
 }
 
 void SpdyHttpStream::MaybePostRequestCallback(int rv) {
@@ -653,7 +672,7 @@ void SpdyHttpStream::DoResponseCallback(int rv) {
 
   // Since Run may result in being called back, reset response_callback_ in
   // advance.
-  base::ResetAndReturn(&response_callback_).Run(rv);
+  std::move(response_callback_).Run(rv);
 }
 
 bool SpdyHttpStream::GetRemoteEndpoint(IPEndPoint* endpoint) {
@@ -672,6 +691,24 @@ void SpdyHttpStream::SetPriority(RequestPriority priority) {
   if (stream_) {
     stream_->SetPriority(priority);
   }
+}
+
+void SpdyHttpStream::CrashIfInvalid() const {
+#ifdef TEMP_INSTRUMENTATION_901501
+  Liveness liveness = liveness_;
+
+  if (liveness == ALIVE)
+    return;
+
+  // Copy relevant variables onto the stack to guarantee they will be available
+  // in minidumps, and then crash.
+  base::debug::StackTrace stack_trace = stack_trace_;
+
+  base::debug::Alias(&liveness);
+  base::debug::Alias(&stack_trace);
+
+  CHECK_EQ(ALIVE, liveness);
+#endif
 }
 
 }  // namespace net

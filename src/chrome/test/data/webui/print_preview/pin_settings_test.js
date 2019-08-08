@@ -22,7 +22,7 @@ cr.define('pin_settings_test', function() {
 
       pinSection = document.createElement('print-preview-pin-settings');
       pinSection.settings = model.settings;
-      pinSection.state = print_preview_new.State.READY;
+      pinSection.state = print_preview.State.READY;
       pinSection.disabled = false;
       test_util.fakeDataBind(model, pinSection, 'settings');
       document.body.appendChild(pinSection);

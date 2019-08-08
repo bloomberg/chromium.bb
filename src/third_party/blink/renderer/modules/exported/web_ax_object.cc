@@ -30,7 +30,6 @@
 
 #include "third_party/blink/public/web/web_ax_object.h"
 
-#include "SkMatrix44.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
@@ -61,6 +60,7 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_range.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_selection.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/skia/include/core/SkMatrix44.h"
 
 namespace blink {
 
@@ -99,8 +99,25 @@ class WebAXSparseAttributeClientAdapter : public AXSparseAttributeClient {
   }
 };
 
+// A utility class which uses the lifetime of this object to signify when
+// AXObjCache handles programmatic actions.
+class ScopedActionAnnotator {
+ public:
+  explicit ScopedActionAnnotator(AXObject* obj)
+      : cache_(&(obj->AXObjectCache())) {
+    cache_->set_is_handling_action(true);
+  }
+
+  ~ScopedActionAnnotator() { cache_->set_is_handling_action(false); }
+
+ private:
+  Persistent<AXObjectCacheImpl> cache_;
+};
+
 static bool IsLayoutClean(Document* document) {
   if (!document || !document->View())
+    return false;
+  if (document->NeedsLayoutTreeUpdate())
     return false;
   if (document->View()->NeedsLayout())
     return false;
@@ -299,6 +316,13 @@ bool WebAXObject::IsFocused() const {
     return false;
 
   return private_->IsFocused();
+}
+
+WebAXGrabbedState WebAXObject::IsGrabbed() const {
+  if (IsDetached())
+    return kWebAXGrabbedStateUndefined;
+
+  return static_cast<WebAXGrabbedState>(private_->IsGrabbed());
 }
 
 bool WebAXObject::IsHovered() const {
@@ -645,6 +669,7 @@ WebAXObject WebAXObject::HitTest(const WebPoint& point) const {
   if (IsDetached())
     return WebAXObject();
 
+  ScopedActionAnnotator annotater(private_.Get());
   IntPoint contents_point =
       private_->DocumentFrameView()->SoonToBeRemovedUnscaledViewportToContents(
           point);
@@ -699,6 +724,7 @@ bool WebAXObject::ClearAccessibilityFocus() const {
   if (IsDetached())
     return false;
 
+  ScopedActionAnnotator annotater(private_.Get());
   return private_->InternalClearAccessibilityFocusAction();
 }
 
@@ -706,6 +732,7 @@ bool WebAXObject::Click() const {
   if (IsDetached())
     return false;
 
+  ScopedActionAnnotator annotater(private_.Get());
   return private_->RequestClickAction();
 }
 
@@ -713,6 +740,7 @@ bool WebAXObject::Increment() const {
   if (IsDetached())
     return false;
 
+  ScopedActionAnnotator annotater(private_.Get());
   return private_->RequestIncrementAction();
 }
 
@@ -720,6 +748,7 @@ bool WebAXObject::Decrement() const {
   if (IsDetached())
     return false;
 
+  ScopedActionAnnotator annotater(private_.Get());
   return private_->RequestDecrementAction();
 }
 
@@ -820,37 +849,11 @@ void WebAXObject::Selection(bool& is_selection_backward,
   }
 }
 
-void WebAXObject::SelectionDeprecated(
-    WebAXObject& anchor_object,
-    int& anchor_offset,
-    ax::mojom::TextAffinity& anchor_affinity,
-    WebAXObject& focus_object,
-    int& focus_offset,
-    ax::mojom::TextAffinity& focus_affinity) const {
-  if (IsDetached()) {
-    anchor_object = WebAXObject();
-    anchor_offset = -1;
-    anchor_affinity = ax::mojom::TextAffinity::kDownstream;
-    focus_object = WebAXObject();
-    focus_offset = -1;
-    focus_affinity = ax::mojom::TextAffinity::kDownstream;
-    return;
-  }
-
-  AXObject::AXSelection ax_selection = private_->Selection();
-  anchor_object = WebAXObject(ax_selection.anchor_object);
-  anchor_offset = ax_selection.anchor_offset;
-  anchor_affinity = ToAXAffinity(ax_selection.anchor_affinity);
-  focus_object = WebAXObject(ax_selection.focus_object);
-  focus_offset = ax_selection.focus_offset;
-  focus_affinity = ToAXAffinity(ax_selection.focus_affinity);
-  return;
-}
-
 bool WebAXObject::SetAccessibilityFocus() const {
   if (IsDetached())
     return false;
 
+  ScopedActionAnnotator annotater(private_.Get());
   return private_->InternalSetAccessibilityFocusAction();
 }
 
@@ -858,6 +861,7 @@ bool WebAXObject::SetSelected(bool selected) const {
   if (IsDetached())
     return false;
 
+  ScopedActionAnnotator annotater(private_.Get());
   return private_->RequestSetSelectedAction(selected);
 }
 
@@ -868,6 +872,7 @@ bool WebAXObject::SetSelection(const WebAXObject& anchor_object,
   if (IsDetached() || anchor_object.IsDetached() || focus_object.IsDetached())
     return false;
 
+  ScopedActionAnnotator annotater(private_.Get());
   AXPosition ax_base, ax_extent;
   if (static_cast<const AXObject*>(anchor_object)->IsTextObject() ||
       static_cast<const AXObject*>(anchor_object)->IsNativeTextControl()) {
@@ -945,45 +950,11 @@ unsigned WebAXObject::SelectionStart() const {
   return ax_selection.Base().ChildIndex();
 }
 
-bool WebAXObject::SetSelectionDeprecated(const WebAXObject& anchor_object,
-                                         int anchor_offset,
-                                         const WebAXObject& focus_object,
-                                         int focus_offset) const {
-  if (IsDetached())
-    return false;
-
-  AXObject::AXSelection ax_selection(anchor_object, anchor_offset,
-                                     TextAffinity::kUpstream, focus_object,
-                                     focus_offset, TextAffinity::kDownstream);
-  return private_->RequestSetSelectionAction(ax_selection);
-}
-
-unsigned WebAXObject::SelectionEndDeprecated() const {
-  if (IsDetached())
-    return 0;
-
-  AXObject::AXSelection ax_selection = private_->SelectionUnderObject();
-  if (ax_selection.focus_offset < 0)
-    return 0;
-
-  return ax_selection.focus_offset;
-}
-
-unsigned WebAXObject::SelectionStartDeprecated() const {
-  if (IsDetached())
-    return 0;
-
-  AXObject::AXSelection ax_selection = private_->SelectionUnderObject();
-  if (ax_selection.anchor_offset < 0)
-    return 0;
-
-  return ax_selection.anchor_offset;
-}
-
 bool WebAXObject::Focus() const {
   if (IsDetached())
     return false;
 
+  ScopedActionAnnotator annotater(private_.Get());
   return private_->RequestFocusAction();
 }
 
@@ -991,6 +962,7 @@ bool WebAXObject::SetSequentialFocusNavigationStartingPoint() const {
   if (IsDetached())
     return false;
 
+  ScopedActionAnnotator annotater(private_.Get());
   return private_->RequestSetSequentialFocusNavigationStartingPointAction();
 }
 
@@ -998,6 +970,7 @@ bool WebAXObject::SetValue(WebString value) const {
   if (IsDetached())
     return false;
 
+  ScopedActionAnnotator annotater(private_.Get());
   return private_->RequestSetValueAction(value);
 }
 
@@ -1005,6 +978,7 @@ bool WebAXObject::ShowContextMenu() const {
   if (IsDetached())
     return false;
 
+  ScopedActionAnnotator annotater(private_.Get());
   return private_->RequestShowContextMenuAction();
 }
 
@@ -1521,6 +1495,21 @@ void WebAXObject::SetScrollOffset(const WebPoint& offset) const {
   private_->SetScrollOffset(offset);
 }
 
+void WebAXObject::Dropeffects(
+    WebVector<ax::mojom::Dropeffect>& dropeffects) const {
+  if (IsDetached())
+    return;
+  Vector<ax::mojom::Dropeffect> enum_dropeffects;
+  private_->Dropeffects(enum_dropeffects);
+  WebVector<ax::mojom::Dropeffect> web_dropeffects(enum_dropeffects.size());
+
+  for (wtf_size_t i = 0; i < enum_dropeffects.size(); ++i) {
+    web_dropeffects[i] = enum_dropeffects[i];
+  }
+
+  dropeffects.Swap(web_dropeffects);
+}
+
 void WebAXObject::GetRelativeBounds(WebAXObject& offset_container,
                                     WebFloatRect& bounds_in_container,
                                     SkMatrix44& container_transform,
@@ -1544,6 +1533,7 @@ bool WebAXObject::ScrollToMakeVisible() const {
   if (IsDetached())
     return false;
 
+  ScopedActionAnnotator annotater(private_.Get());
   return private_->RequestScrollToMakeVisibleAction();
 }
 
@@ -1552,6 +1542,7 @@ bool WebAXObject::ScrollToMakeVisibleWithSubFocus(
   if (IsDetached())
     return false;
 
+  ScopedActionAnnotator annotater(private_.Get());
   return private_->RequestScrollToMakeVisibleWithSubFocusAction(subfocus);
 }
 
@@ -1559,6 +1550,7 @@ bool WebAXObject::ScrollToGlobalPoint(const WebPoint& point) const {
   if (IsDetached())
     return false;
 
+  ScopedActionAnnotator annotater(private_.Get());
   return private_->RequestScrollToGlobalPointAction(point);
 }
 

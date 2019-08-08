@@ -11,18 +11,12 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
-namespace {
-// Used to generate the host id for a navigation initiated by the browser.
-// Starts at -1 and keeps going down.
-static int g_next_appcache_host_id = -1;
-}
-
 namespace content {
 
 AppCacheNavigationHandle::AppCacheNavigationHandle(
     ChromeAppCacheService* appcache_service,
     int process_id)
-    : appcache_host_id_(g_next_appcache_host_id--),
+    : appcache_host_id_(base::UnguessableToken::Create()),
       core_(std::make_unique<AppCacheNavigationHandleCore>(appcache_service,
                                                            appcache_host_id_,
                                                            process_id)) {

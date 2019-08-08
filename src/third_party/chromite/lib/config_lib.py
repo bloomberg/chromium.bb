@@ -11,6 +11,7 @@ import copy
 import itertools
 import json
 import os
+import re
 
 from chromite.lib import constants
 from chromite.lib import memoize
@@ -46,6 +47,7 @@ DISPLAY_LABEL_MNC_ANDROID_PFQ = 'mnc_android_pfq'
 DISPLAY_LABEL_NYC_ANDROID_PFQ = 'nyc_android_pfq'
 DISPLAY_LABEL_PI_ANDROID_PFQ = 'pi_android_pfq'
 DISPLAY_LABEL_VMPI_ANDROID_PFQ = 'vmpi_android_pfq'
+DISPLAY_LABEL_QT_ANDROID_PFQ = 'qt_android_pfq'
 DISPLAY_LABEL_FIRMWARE = 'firmware'
 DISPLAY_LABEL_FACTORY = 'factory'
 DISPLAY_LABEL_TOOLCHAIN = 'toolchain'
@@ -69,6 +71,7 @@ ALL_DISPLAY_LABEL = {
     DISPLAY_LABEL_NYC_ANDROID_PFQ,
     DISPLAY_LABEL_PI_ANDROID_PFQ,
     DISPLAY_LABEL_VMPI_ANDROID_PFQ,
+    DISPLAY_LABEL_QT_ANDROID_PFQ,
     DISPLAY_LABEL_FIRMWARE,
     DISPLAY_LABEL_FACTORY,
     DISPLAY_LABEL_TOOLCHAIN,
@@ -80,36 +83,40 @@ ALL_DISPLAY_LABEL = {
 #
 # https://chrome-internal.googlesource.com/chromeos/
 #     infra/config/+/refs/heads/master/luci/cr-buildbucket.cfg
-LUCI_BUILDER_TRY = 'Try'
-LUCI_BUILDER_PRECQ = 'PreCQ'
-LUCI_BUILDER_PROD = 'Prod'
-LUCI_BUILDER_INCREMENTAL = 'Incremental'
-LUCI_BUILDER_INFRA = 'Infra'
-LUCI_BUILDER_LEGACY_POSTSUBMIT = 'LegacyPostsubmit'
 LUCI_BUILDER_COMMITQUEUE = 'CommitQueue'
 LUCI_BUILDER_CQ = 'CQ'
-LUCI_BUILDER_STAGING = 'Staging'
-LUCI_BUILDER_INFORMATIONAL = 'Informational'
-LUCI_BUILDER_PFQ = 'PFQ'
-LUCI_BUILDER_FULL = 'Full'
 LUCI_BUILDER_FACTORY = 'Factory'
+LUCI_BUILDER_FULL = 'Full'
+LUCI_BUILDER_INCREMENTAL = 'Incremental'
+LUCI_BUILDER_INFORMATIONAL = 'Informational'
+LUCI_BUILDER_INFRA = 'Infra'
+LUCI_BUILDER_LEGACY_POSTSUBMIT = 'LegacyPostsubmit'
+LUCI_BUILDER_LEGACY_RELEASE = 'LegacyRelease'
+LUCI_BUILDER_PFQ = 'PFQ'
+LUCI_BUILDER_PRECQ = 'PreCQ'
+LUCI_BUILDER_PRECQ_LAUNCHER = 'PreCQLauncher'
+LUCI_BUILDER_PROD = 'Prod'
 LUCI_BUILDER_RELEASE = 'Release'
+LUCI_BUILDER_STAGING = 'Staging'
+LUCI_BUILDER_TRY = 'Try'
 
 ALL_LUCI_BUILDER = {
-    LUCI_BUILDER_TRY,
-    LUCI_BUILDER_PRECQ,
-    LUCI_BUILDER_PROD,
-    LUCI_BUILDER_INCREMENTAL,
-    LUCI_BUILDER_CQ,
     LUCI_BUILDER_COMMITQUEUE,
-    LUCI_BUILDER_STAGING,
-    LUCI_BUILDER_INFORMATIONAL,
-    LUCI_BUILDER_PFQ,
-    LUCI_BUILDER_FULL,
+    LUCI_BUILDER_CQ,
     LUCI_BUILDER_FACTORY,
-    LUCI_BUILDER_RELEASE,
-    LUCI_BUILDER_LEGACY_POSTSUBMIT,
+    LUCI_BUILDER_FULL,
+    LUCI_BUILDER_INCREMENTAL,
+    LUCI_BUILDER_INFORMATIONAL,
     LUCI_BUILDER_INFRA,
+    LUCI_BUILDER_LEGACY_POSTSUBMIT,
+    LUCI_BUILDER_LEGACY_RELEASE,
+    LUCI_BUILDER_PFQ,
+    LUCI_BUILDER_PRECQ,
+    LUCI_BUILDER_PRECQ_LAUNCHER,
+    LUCI_BUILDER_PROD,
+    LUCI_BUILDER_RELEASE,
+    LUCI_BUILDER_STAGING,
+    LUCI_BUILDER_TRY,
 }
 
 
@@ -899,6 +906,11 @@ def DefaultSettings():
       # builders run gce tests.
       gce_tests=[],
 
+      # Whether to run CPEExport stage. This stage generates portage depgraph
+      # data that is used for bugs reporting (see go/why-cpeexport). Only
+      # release builders should run this stage.
+      run_cpeexport=False,
+
       # A list of TastVMTestConfig objects describing Tast-based test suites
       # that should be run in a VM.
       tast_vm_tests=[],
@@ -1026,9 +1038,9 @@ def DefaultSettings():
       # Use SDK as opposed to building the chroot from source.
       use_sdk=True,
 
-      # Bootstrap from previous SDK instead of Gentoo stage3 when building chroot
-      # from source (only applicable with use_sdk=False).
-      self_bootstrap = False,
+      # Bootstrap from previous SDK instead of Gentoo stage3 when building
+      # chroot from source (only applicable with use_sdk=False).
+      self_bootstrap=False,
 
       # The description string to print out for config when user runs --list.
       description=None,
@@ -1828,6 +1840,15 @@ def GroupBoardsByBuilder(board_list):
 
   return builder_to_boards_dict
 
+def GetNonUniBuildLabBoardName(board):
+  """Return the board name labeled in the lab for non-unibuild."""
+  # Those special string represent special configuration used in the image,
+  # and should run on DUT without those string.
+  # We strip those string from the board so that lab can handle it correctly.
+  SPECIAL_SUFFIX = ['-arcnext$', '-arcvm$', '-kernelnext$']
+  for suffix in SPECIAL_SUFFIX:
+    board = re.sub(suffix, '', board)
+  return board
 
 def GetArchBoardDict(ge_build_config):
   """Get a dict mapping arch types to board names.

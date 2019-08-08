@@ -307,7 +307,7 @@ class TestSimpleChromeWorkflowStage(generic_stages.BoardSpecificBuilderStage,
       self._VerifyChromeDeployed(tempdir)
 
   def _VMTest(self, sdk_cmd):
-    """Run cros_run_vm_test."""
+    """Run cros_run_test."""
     image_path = os.path.join(self.GetImageDirSymlink(),
                               constants.VM_IMAGE_BIN)
     # Run VM test for boards where we've built a VM.

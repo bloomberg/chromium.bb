@@ -130,8 +130,9 @@ class TabAndroid {
         const base::android::JavaParamRef<jobject>& jweb_contents_delegate,
         const base::android::JavaParamRef<jobject>& jcontext_menu_populator);
   void DestroyWebContents(JNIEnv* env,
-                          const base::android::JavaParamRef<jobject>& obj,
-                          jboolean delete_native);
+                          const base::android::JavaParamRef<jobject>& obj);
+  void ReleaseWebContents(JNIEnv* env,
+                          const base::android::JavaParamRef<jobject>& obj);
   void OnPhysicalBackingSizeChanged(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
@@ -191,33 +192,6 @@ class TabAndroid {
                          const base::android::JavaParamRef<jobject>& obj,
                          const base::android::JavaParamRef<jstring>& url);
 
-  void SetWebappManifestScope(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jstring>& scope);
-
-  const GURL& GetWebappManifestScope() const { return webapp_manifest_scope_; }
-
-  void SetPictureInPictureEnabled(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      jboolean enabled);
-
-  bool IsPictureInPictureEnabled() const;
-
-  void EnableEmbeddedMediaExperience(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      jboolean enabled);
-
-  bool ShouldEnableEmbeddedMediaExperience() const;
-
-  void SetNightModeEnabled(JNIEnv* env,
-                           const base::android::JavaParamRef<jobject>& obj,
-                           jboolean enabled);
-
-  bool NightModeEnabled() const;
-
   scoped_refptr<content::DevToolsAgentHost> GetDevToolsAgentHost();
 
   void SetDevToolsAgentHost(scoped_refptr<content::DevToolsAgentHost> host);
@@ -245,11 +219,6 @@ class TabAndroid {
       web_contents_delegate_;
   scoped_refptr<content::DevToolsAgentHost> devtools_host_;
   std::unique_ptr<browser_sync::SyncedTabDelegateAndroid> synced_tab_delegate_;
-
-  GURL webapp_manifest_scope_;
-  bool picture_in_picture_enabled_;
-  bool embedded_media_experience_enabled_;
-  bool night_mode_enabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TabAndroid);
 };

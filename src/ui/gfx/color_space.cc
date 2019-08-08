@@ -43,7 +43,8 @@ static bool FloatsEqualWithinTolerance(const float* a,
 }  // namespace
 
 // static
-int ColorSpace::kInvalidId = -1;
+constexpr int ColorSpace::kInvalidId;
+constexpr float ColorSpace::kDefaultSDRWhiteLevel;
 
 ColorSpace::ColorSpace(PrimaryID primaries,
                        TransferID transfer)
@@ -406,6 +407,17 @@ ColorSpace ColorSpace::GetBlendingColorSpace() const {
   if (IsHDR())
     return CreateExtendedSRGB();
   return *this;
+}
+
+ColorSpace ColorSpace::GetWithMatrixAndRange(MatrixID matrix,
+                                             RangeID range) const {
+  ColorSpace result(*this);
+  if (!IsValid())
+    return result;
+
+  result.matrix_ = matrix;
+  result.range_ = range;
+  return result;
 }
 
 sk_sp<SkColorSpace> ColorSpace::ToSkColorSpace() const {

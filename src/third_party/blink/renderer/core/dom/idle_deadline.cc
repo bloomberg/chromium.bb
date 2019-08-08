@@ -4,18 +4,20 @@
 
 #include "third_party/blink/renderer/core/dom/idle_deadline.h"
 
+#include "base/time/default_tick_clock.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/timing/performance.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
 IdleDeadline::IdleDeadline(TimeTicks deadline, CallbackType callback_type)
-    : deadline_(deadline), callback_type_(callback_type) {}
+    : deadline_(deadline),
+      callback_type_(callback_type),
+      clock_(base::DefaultTickClock::GetInstance()) {}
 
 double IdleDeadline::timeRemaining() const {
-  TimeDelta time_remaining = deadline_ - CurrentTimeTicks();
+  TimeDelta time_remaining = deadline_ - clock_->NowTicks();
   if (time_remaining < TimeDelta() ||
       ThreadScheduler::Current()->ShouldYieldForHighPriorityWork()) {
     return 0;

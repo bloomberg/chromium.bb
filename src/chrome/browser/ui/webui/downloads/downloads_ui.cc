@@ -18,6 +18,7 @@
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/ui/webui/dark_mode_handler.h"
 #include "chrome/browser/ui/webui/downloads/downloads_dom_handler.h"
+#include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
@@ -25,8 +26,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/downloads_resources.h"
+#include "chrome/grit/downloads_resources_map.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/prefs/pref_service.h"
@@ -35,10 +37,10 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "content/public/common/content_features.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/resources/grit/webui_resources.h"
 
 using content::BrowserContext;
 using content::DownloadManager;
@@ -50,71 +52,62 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIDownloadsHost);
 
-  source->AddLocalizedString("title", IDS_DOWNLOAD_TITLE);
-  source->AddLocalizedString("searchResultsPlural", IDS_SEARCH_RESULTS_PLURAL);
-  source->AddLocalizedString("searchResultsSingular",
-                             IDS_SEARCH_RESULTS_SINGULAR);
-  source->AddLocalizedString("downloads", IDS_DOWNLOAD_TITLE);
-
-  source->AddLocalizedString("actionMenuDescription",
-                             IDS_DOWNLOAD_ACTION_MENU_DESCRIPTION);
-  source->AddLocalizedString("clearAll", IDS_DOWNLOAD_LINK_CLEAR_ALL);
-  source->AddLocalizedString("clearSearch", IDS_DOWNLOAD_CLEAR_SEARCH);
-  source->AddLocalizedString("openDownloadsFolder",
-                             IDS_DOWNLOAD_LINK_OPEN_DOWNLOADS_FOLDER);
-  source->AddLocalizedString("moreActions", IDS_DOWNLOAD_MORE_ACTIONS);
-  source->AddLocalizedString("search", IDS_DOWNLOAD_SEARCH);
-
-  // No results message that shows instead of the downloads list.
-  source->AddLocalizedString("noDownloads", IDS_DOWNLOAD_NO_DOWNLOADS);
-  source->AddLocalizedString("noSearchResults", IDS_SEARCH_NO_RESULTS);
-
-  // Status.
-  source->AddLocalizedString("statusCancelled", IDS_DOWNLOAD_TAB_CANCELLED);
-  source->AddLocalizedString("statusRemoved", IDS_DOWNLOAD_FILE_REMOVED);
-
-  // Dangerous file.
-  source->AddLocalizedString("dangerFileDesc",
-                             IDS_BLOCK_REASON_GENERIC_DOWNLOAD);
-
   bool requests_ap_verdicts = safe_browsing::AdvancedProtectionStatusManager::
       RequestsAdvancedProtectionVerdicts(profile);
+  source->AddBoolean("requestsApVerdicts", requests_ap_verdicts);
 
-  source->AddLocalizedString(
-      "dangerDownloadDesc",
-      requests_ap_verdicts
-          ? IDS_BLOCK_REASON_DANGEROUS_DOWNLOAD_IN_ADVANCED_PROTECTION
-          : IDS_BLOCK_REASON_DANGEROUS_DOWNLOAD);
+  static constexpr LocalizedString kStrings[] = {
+      {"title", IDS_DOWNLOAD_TITLE},
+      {"searchResultsPlural", IDS_SEARCH_RESULTS_PLURAL},
+      {"searchResultsSingular", IDS_SEARCH_RESULTS_SINGULAR},
+      {"downloads", IDS_DOWNLOAD_TITLE},
+      {"actionMenuDescription", IDS_DOWNLOAD_ACTION_MENU_DESCRIPTION},
+      {"clearAll", IDS_DOWNLOAD_LINK_CLEAR_ALL},
+      {"clearSearch", IDS_DOWNLOAD_CLEAR_SEARCH},
+      {"openDownloadsFolder", IDS_DOWNLOAD_LINK_OPEN_DOWNLOADS_FOLDER},
+      {"moreActions", IDS_DOWNLOAD_MORE_ACTIONS},
+      {"search", IDS_DOWNLOAD_SEARCH},
+
+      // No results message that shows instead of the downloads list.
+      {"noDownloads", IDS_DOWNLOAD_NO_DOWNLOADS},
+      {"noSearchResults", IDS_SEARCH_NO_RESULTS},
+
+      // Status.
+      {"statusCancelled", IDS_DOWNLOAD_TAB_CANCELLED},
+      {"statusRemoved", IDS_DOWNLOAD_FILE_REMOVED},
+
+      // Dangerous file.
+      {"dangerFileDesc", IDS_BLOCK_REASON_GENERIC_DOWNLOAD},
+      {"dangerSave", IDS_CONFIRM_DOWNLOAD},
+      {"dangerRestore", IDS_CONFIRM_DOWNLOAD_RESTORE},
+      {"dangerDiscard", IDS_DISCARD_DOWNLOAD},
+
+      // Controls.
+      {"controlPause", IDS_DOWNLOAD_LINK_PAUSE},
+      {"controlCancel", IDS_DOWNLOAD_LINK_CANCEL},
+      {"controlResume", IDS_DOWNLOAD_LINK_RESUME},
+      {"controlRemoveFromList", IDS_DOWNLOAD_LINK_REMOVE},
+      {"controlRemoveFromListAriaLabel", IDS_DOWNLOAD_LINK_REMOVE_ARIA_LABEL},
+      {"controlRetry", IDS_DOWNLOAD_LINK_RETRY},
+      {"controlledByUrl", IDS_DOWNLOAD_BY_EXTENSION_URL},
+      {"toastClearedAll", IDS_DOWNLOAD_TOAST_CLEARED_ALL},
+      {"toastRemovedFromList", IDS_DOWNLOAD_TOAST_REMOVED_FROM_LIST},
+      {"undo", IDS_DOWNLOAD_UNDO},
+  };
+  AddLocalizedStringsBulk(source, kStrings, base::size(kStrings));
+
+  source->AddLocalizedString("dangerDownloadDesc",
+                             IDS_BLOCK_REASON_DANGEROUS_DOWNLOAD);
   source->AddLocalizedString(
       "dangerUncommonDesc",
       requests_ap_verdicts
           ? IDS_BLOCK_REASON_UNCOMMON_DOWNLOAD_IN_ADVANCED_PROTECTION
           : IDS_BLOCK_REASON_UNCOMMON_DOWNLOAD);
-  source->AddLocalizedString(
-      "dangerSettingsDesc",
-      requests_ap_verdicts
-          ? IDS_BLOCK_REASON_UNWANTED_DOWNLOAD_IN_ADVANCED_PROTECTION
-          : IDS_BLOCK_REASON_UNWANTED_DOWNLOAD);
+  source->AddLocalizedString("dangerSettingsDesc",
+                             IDS_BLOCK_REASON_UNWANTED_DOWNLOAD);
 
-  source->AddLocalizedString("dangerSave", IDS_CONFIRM_DOWNLOAD);
-  source->AddLocalizedString("dangerRestore", IDS_CONFIRM_DOWNLOAD_RESTORE);
-  source->AddLocalizedString("dangerDiscard", IDS_DISCARD_DOWNLOAD);
-
-  // Controls.
-  source->AddLocalizedString("controlPause", IDS_DOWNLOAD_LINK_PAUSE);
   if (browser_defaults::kDownloadPageHasShowInFolder)
     source->AddLocalizedString("controlShowInFolder", IDS_DOWNLOAD_LINK_SHOW);
-  source->AddLocalizedString("controlCancel", IDS_DOWNLOAD_LINK_CANCEL);
-  source->AddLocalizedString("controlResume", IDS_DOWNLOAD_LINK_RESUME);
-  source->AddLocalizedString("controlRemoveFromList", IDS_DOWNLOAD_LINK_REMOVE);
-  source->AddLocalizedString("controlRemoveFromListAriaLabel",
-                             IDS_DOWNLOAD_LINK_REMOVE_ARIA_LABEL);
-  source->AddLocalizedString("controlRetry", IDS_DOWNLOAD_LINK_RETRY);
-  source->AddLocalizedString("controlledByUrl", IDS_DOWNLOAD_BY_EXTENSION_URL);
-  source->AddLocalizedString("toastClearedAll", IDS_DOWNLOAD_TOAST_CLEARED_ALL);
-  source->AddLocalizedString("toastRemovedFromList",
-                             IDS_DOWNLOAD_TOAST_REMOVED_FROM_LIST);
-  source->AddLocalizedString("undo", IDS_DOWNLOAD_UNDO);
 
   // Build an Accelerator to describe undo shortcut
   // NOTE: the undo shortcut is also defined in downloads/downloads.html
@@ -138,39 +131,19 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
                           IDR_DOWNLOADS_IMAGES_NO_DOWNLOADS_SVG);
   source->AddResourcePath("downloads.mojom-lite.js",
                           IDR_DOWNLOADS_MOJO_LITE_JS);
-
 #if BUILDFLAG(OPTIMIZE_WEBUI)
-  source->UseGzip(base::BindRepeating([](const std::string& path) {
-    return path != "images/incognito_marker.svg" &&
-           path != "images/no_downloads.svg" &&
-           path != "downloads.mojom-lite.js";
-  }));
-
+  source->AddResourcePath("downloads.mojom-lite.html",
+                          IDR_DOWNLOADS_MOJO_LITE_HTML);
   source->AddResourcePath("crisper.js", IDR_DOWNLOADS_CRISPER_JS);
-  source->SetDefaultResource(
-      base::FeatureList::IsEnabled(features::kWebUIPolymer2)
-          ? IDR_DOWNLOADS_VULCANIZED_P2_HTML
-          : IDR_DOWNLOADS_VULCANIZED_HTML);
+  source->SetDefaultResource(IDR_DOWNLOADS_VULCANIZED_HTML);
 #else
-  source->AddResourcePath("browser_proxy.html",
-                          IDR_DOWNLOADS_BROWSER_PROXY_HTML);
-  source->AddResourcePath("browser_proxy.js", IDR_DOWNLOADS_BROWSER_PROXY_JS);
-  source->AddResourcePath("constants.html", IDR_DOWNLOADS_CONSTANTS_HTML);
-  source->AddResourcePath("constants.js", IDR_DOWNLOADS_CONSTANTS_JS);
-  source->AddResourcePath("downloads.js", IDR_DOWNLOADS_DOWNLOADS_JS);
-  source->AddResourcePath("i18n_setup.html", IDR_DOWNLOADS_I18N_SETUP_HTML);
-  source->AddResourcePath("icon_loader.html", IDR_DOWNLOADS_ICON_LOADER_HTML);
-  source->AddResourcePath("icon_loader.js", IDR_DOWNLOADS_ICON_LOADER_JS);
-  source->AddResourcePath("icons.html", IDR_DOWNLOADS_ICONS_HTML);
-  source->AddResourcePath("item.html", IDR_DOWNLOADS_ITEM_HTML);
-  source->AddResourcePath("item.js", IDR_DOWNLOADS_ITEM_JS);
-  source->AddResourcePath("manager.html", IDR_DOWNLOADS_MANAGER_HTML);
-  source->AddResourcePath("manager.js", IDR_DOWNLOADS_MANAGER_JS);
-  source->AddResourcePath("search_service.html",
-                          IDR_DOWNLOADS_SEARCH_SERVICE_HTML);
-  source->AddResourcePath("search_service.js", IDR_DOWNLOADS_SEARCH_SERVICE_JS);
-  source->AddResourcePath("toolbar.html", IDR_DOWNLOADS_TOOLBAR_HTML);
-  source->AddResourcePath("toolbar.js", IDR_DOWNLOADS_TOOLBAR_JS);
+  for (size_t i = 0; i < kDownloadsResourcesSize; ++i) {
+    source->AddResourcePath(kDownloadsResources[i].name,
+                            kDownloadsResources[i].value);
+  }
+  // Add the subpage loader, to load subpages in non-optimized builds.
+  source->AddResourcePath("subpage_loader.html", IDR_WEBUI_HTML_SUBPAGE_LOADER);
+  source->AddResourcePath("subpage_loader.js", IDR_WEBUI_JS_SUBPAGE_LOADER);
   source->SetDefaultResource(IDR_DOWNLOADS_DOWNLOADS_HTML);
 #endif
 

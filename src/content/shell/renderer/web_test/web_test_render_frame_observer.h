@@ -20,6 +20,11 @@ class WebTestRenderFrameObserver : public RenderFrameObserver,
 
  private:
   // RenderFrameObserver implementation.
+  void ReadyToCommitNavigation(
+      blink::WebDocumentLoader* document_loader) override;
+  void DidCommitProvisionalLoad(bool is_same_document_navigation,
+                                ui::PageTransition transition) override;
+  void DidFailProvisionalLoad(const blink::WebURLError& error) override;
   void OnDestruct() override;
 
   void CaptureDump(CaptureDumpCallback callback) override;
@@ -32,6 +37,7 @@ class WebTestRenderFrameObserver : public RenderFrameObserver,
   void BindRequest(mojom::WebTestControlAssociatedRequest request);
 
   mojo::AssociatedBinding<mojom::WebTestControl> binding_;
+  bool focus_on_next_commit_ = false;
   DISALLOW_COPY_AND_ASSIGN(WebTestRenderFrameObserver);
 };
 

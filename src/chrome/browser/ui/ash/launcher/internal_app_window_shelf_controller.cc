@@ -1,12 +1,13 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "chrome/browser/ui/ash/launcher/internal_app_window_shelf_controller.h"
 
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
+#include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/shell.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
@@ -14,7 +15,7 @@
 #include "chrome/browser/ui/ash/launcher/app_window_base.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/aura/client/aura_constants.h"
@@ -28,18 +29,13 @@
 InternalAppWindowShelfController::InternalAppWindowShelfController(
     ChromeLauncherController* owner)
     : AppWindowLauncherController(owner) {
-  // TODO(mash): Find another way to observe for internal app window creation.
-  // https://crbug.com/887156
-  if (!features::IsMultiProcessMash())
-    ash::Shell::Get()->aura_env()->AddObserver(this);
+  aura::Env::GetInstance()->AddObserver(this);
 }
 
 InternalAppWindowShelfController::~InternalAppWindowShelfController() {
   for (auto* window : observed_windows_)
     window->RemoveObserver(this);
-
-  if (!features::IsMultiProcessMash())
-    ash::Shell::Get()->aura_env()->RemoveObserver(this);
+  aura::Env::GetInstance()->RemoveObserver(this);
 }
 
 void InternalAppWindowShelfController::ActiveUserChanged(
@@ -51,7 +47,7 @@ void InternalAppWindowShelfController::ActiveUserChanged(
       continue;
     }
 
-    if (MultiUserWindowManagerClient::GetInstance()
+    if (MultiUserWindowManagerHelper::GetWindowManager()
             ->GetWindowOwner(w.first)
             .GetUserEmail() == user_email) {
       AddToShelf(app_window);
@@ -145,7 +141,7 @@ void InternalAppWindowShelfController::RegisterAppWindow(
   // Keyboard Shortcut Viewer has a global instance so it can be shared with
   // different users.
   if (shelf_id.app_id != app_list::kInternalAppIdKeyboardShortcutViewer) {
-    MultiUserWindowManagerClient::GetInstance()->SetWindowOwner(
+    MultiUserWindowManagerHelper::GetWindowManager()->SetWindowOwner(
         window,
         user_manager::UserManager::Get()->GetActiveUser()->GetAccountId());
   }

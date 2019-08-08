@@ -33,13 +33,6 @@ struct ANGLE_UTIL_EXPORT ConfigParameters
 
     void reset();
 
-    static bool CanShareDisplay(const ConfigParameters &a, const ConfigParameters &b);
-
-    // Display parameters.
-    Optional<bool> debugLayersEnabled;
-    Optional<bool> contextVirtualization;
-    angle::PlatformMethods *platformMethods;
-
     // Surface and Context parameters.
     int redBits;
     int greenBits;
@@ -47,7 +40,6 @@ struct ANGLE_UTIL_EXPORT ConfigParameters
     int alphaBits;
     int depthBits;
     int stencilBits;
-    int swapInterval;
 
     Optional<bool> webGLCompatibility;
     Optional<bool> robustResourceInit;
@@ -77,29 +69,21 @@ class ANGLE_UTIL_EXPORT GLWindowBase : angle::NonCopyable
 
     virtual bool initializeGL(OSWindow *osWindow,
                               angle::Library *glWindowingLibrary,
-                              const ConfigParameters &config) = 0;
-    virtual bool isGLInitialized() const                      = 0;
-    virtual void swap()                                       = 0;
-    virtual void destroyGL()                                  = 0;
-    virtual void makeCurrent()                                = 0;
-    virtual bool hasError() const                             = 0;
-
-    int getConfigRedBits() const { return mConfigParams.redBits; }
-    int getConfigGreenBits() const { return mConfigParams.greenBits; }
-    int getConfigBlueBits() const { return mConfigParams.blueBits; }
-    int getConfigAlphaBits() const { return mConfigParams.alphaBits; }
-    int getConfigDepthBits() const { return mConfigParams.depthBits; }
-    int getConfigStencilBits() const { return mConfigParams.stencilBits; }
-    int getSwapInterval() const { return mConfigParams.swapInterval; }
+                              const EGLPlatformParameters &platformParams,
+                              const ConfigParameters &configParams) = 0;
+    virtual bool isGLInitialized() const                            = 0;
+    virtual void swap()                                             = 0;
+    virtual void destroyGL()                                        = 0;
+    virtual bool makeCurrent()                                      = 0;
+    virtual bool hasError() const                                   = 0;
+    virtual bool setSwapInterval(EGLint swapInterval)               = 0;
 
     bool isMultisample() const { return mConfigParams.multisample; }
     bool isDebugEnabled() const { return mConfigParams.debug; }
 
-    const angle::PlatformMethods *getPlatformMethods() const
-    {
-        return mConfigParams.platformMethods;
-    }
+    const angle::PlatformMethods *getPlatformMethods() const { return mPlatform.platformMethods; }
 
+    const EGLPlatformParameters &getPlatform() const { return mPlatform; }
     const ConfigParameters &getConfigParams() const { return mConfigParams; }
 
   protected:
@@ -108,22 +92,18 @@ class ANGLE_UTIL_EXPORT GLWindowBase : angle::NonCopyable
 
     EGLint mClientMajorVersion;
     EGLint mClientMinorVersion;
+    EGLPlatformParameters mPlatform;
     ConfigParameters mConfigParams;
 };
 
 class ANGLE_UTIL_EXPORT EGLWindow : public GLWindowBase
 {
   public:
-    static EGLWindow *New(EGLint glesMajorVersion,
-                          EGLint glesMinorVersion,
-                          const EGLPlatformParameters &platform);
+    static EGLWindow *New(EGLint glesMajorVersion, EGLint glesMinorVersion);
     static void Delete(EGLWindow **window);
 
     static EGLBoolean FindEGLConfig(EGLDisplay dpy, const EGLint *attrib_list, EGLConfig *config);
 
-    void swap() override;
-
-    const EGLPlatformParameters &getPlatform() const { return mPlatform; }
     EGLConfig getConfig() const;
     EGLDisplay getDisplay() const;
     EGLSurface getSurface() const;
@@ -132,12 +112,20 @@ class ANGLE_UTIL_EXPORT EGLWindow : public GLWindowBase
     // Internally initializes the Display, Surface and Context.
     bool initializeGL(OSWindow *osWindow,
                       angle::Library *glWindowingLibrary,
-                      const ConfigParameters &params) override;
+                      const EGLPlatformParameters &platformParams,
+                      const ConfigParameters &configParams) override;
+
+    bool isGLInitialized() const override;
+    void swap() override;
+    void destroyGL() override;
+    bool makeCurrent() override;
+    bool hasError() const override;
+    bool setSwapInterval(EGLint swapInterval) override;
 
     // Only initializes the Display.
     bool initializeDisplay(OSWindow *osWindow,
                            angle::Library *glWindowingLibrary,
-                           const ConfigParameters &params);
+                           const EGLPlatformParameters &params);
 
     // Only initializes the Surface.
     bool initializeSurface(OSWindow *osWindow,
@@ -150,21 +138,13 @@ class ANGLE_UTIL_EXPORT EGLWindow : public GLWindowBase
     // Only initializes the Context.
     bool initializeContext();
 
-    void destroyGL() override;
     void destroySurface();
     void destroyContext();
-    bool isGLInitialized() const override;
-    void makeCurrent() override;
-    bool hasError() const override;
 
     bool isDisplayInitialized() const { return mDisplay != EGL_NO_DISPLAY; }
 
-    static bool ClientExtensionEnabled(const std::string &extName);
-
   private:
-    EGLWindow(EGLint glesMajorVersion,
-              EGLint glesMinorVersion,
-              const EGLPlatformParameters &platform);
+    EGLWindow(EGLint glesMajorVersion, EGLint glesMinorVersion);
 
     ~EGLWindow() override;
 
@@ -175,7 +155,6 @@ class ANGLE_UTIL_EXPORT EGLWindow : public GLWindowBase
 
     EGLint mEGLMajorVersion;
     EGLint mEGLMinorVersion;
-    EGLPlatformParameters mPlatform;
 };
 
 ANGLE_UTIL_EXPORT bool CheckExtensionExists(const char *allExtensions, const std::string &extName);

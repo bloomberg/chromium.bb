@@ -276,15 +276,15 @@ TEST_F(FlexLayoutTest, Layout_VisibilitySetBeforeInstall) {
   host->SetLayoutManager(std::make_unique<FlexLayout>());
 
   host->Layout();
-  EXPECT_FALSE(child1->visible());
-  EXPECT_TRUE(child2->visible());
+  EXPECT_FALSE(child1->GetVisible());
+  EXPECT_TRUE(child2->GetVisible());
 
   child1->SetVisible(true);
   child2->SetVisible(false);
 
   host->Layout();
-  EXPECT_TRUE(child1->visible());
-  EXPECT_FALSE(child2->visible());
+  EXPECT_TRUE(child1->GetVisible());
+  EXPECT_FALSE(child2->GetVisible());
 }
 
 TEST_F(FlexLayoutTest, Layout_VisibilitySetAfterInstall) {
@@ -294,15 +294,15 @@ TEST_F(FlexLayoutTest, Layout_VisibilitySetAfterInstall) {
   View* child2 = AddChild(Size(10, 10), base::Optional<Size>(), true);
 
   host_->Layout();
-  EXPECT_FALSE(child1->visible());
-  EXPECT_TRUE(child2->visible());
+  EXPECT_FALSE(child1->GetVisible());
+  EXPECT_TRUE(child2->GetVisible());
 
   child1->SetVisible(true);
   child2->SetVisible(false);
 
   host_->Layout();
-  EXPECT_TRUE(child1->visible());
-  EXPECT_FALSE(child2->visible());
+  EXPECT_TRUE(child1->GetVisible());
+  EXPECT_FALSE(child2->GetVisible());
 }
 
 TEST_F(FlexLayoutTest, Layout_VisibilitySetBeforeAdd) {
@@ -316,7 +316,7 @@ TEST_F(FlexLayoutTest, Layout_VisibilitySetBeforeAdd) {
 
   host_->Layout();
   EXPECT_EQ(true, layout_->IsHiddenByOwner(child2));
-  EXPECT_FALSE(child2->visible());
+  EXPECT_FALSE(child2->GetVisible());
   EXPECT_EQ(Rect(6, 5, 12, 10), child1->bounds());
   EXPECT_EQ(Rect(18, 5, 17, 13), child3->bounds());
   EXPECT_EQ(Size(44, 25), host_->GetPreferredSize());
@@ -325,7 +325,7 @@ TEST_F(FlexLayoutTest, Layout_VisibilitySetBeforeAdd) {
   child2->SetVisible(false);
   host_->Layout();
   EXPECT_EQ(true, layout_->IsHiddenByOwner(child2));
-  EXPECT_FALSE(child2->visible());
+  EXPECT_FALSE(child2->GetVisible());
   EXPECT_EQ(Rect(6, 5, 12, 10), child1->bounds());
   EXPECT_EQ(Rect(18, 5, 17, 13), child3->bounds());
   EXPECT_EQ(Size(44, 25), host_->GetPreferredSize());
@@ -335,7 +335,7 @@ TEST_F(FlexLayoutTest, Layout_VisibilitySetBeforeAdd) {
   std::vector<Rect> expected{Rect(6, 5, 12, 10), Rect(18, 5, 13, 11),
                              Rect(31, 5, 17, 13)};
   EXPECT_EQ(false, layout_->IsHiddenByOwner(child2));
-  EXPECT_TRUE(child2->visible());
+  EXPECT_TRUE(child2->GetVisible());
   EXPECT_EQ(expected, GetChildBounds());
   EXPECT_EQ(Size(57, 25), host_->GetPreferredSize());
 }
@@ -352,7 +352,7 @@ TEST_F(FlexLayoutTest, Layout_VisibilitySetAfterAdd) {
   child2->SetVisible(false);
   host_->Layout();
   EXPECT_EQ(true, layout_->IsHiddenByOwner(child2));
-  EXPECT_FALSE(child2->visible());
+  EXPECT_FALSE(child2->GetVisible());
   EXPECT_EQ(Rect(6, 5, 12, 10), child1->bounds());
   EXPECT_EQ(Rect(18, 5, 17, 13), child3->bounds());
   EXPECT_EQ(Size(44, 25), host_->GetPreferredSize());
@@ -362,7 +362,7 @@ TEST_F(FlexLayoutTest, Layout_VisibilitySetAfterAdd) {
   std::vector<Rect> expected{Rect(6, 5, 12, 10), Rect(18, 5, 13, 11),
                              Rect(31, 5, 17, 13)};
   EXPECT_EQ(false, layout_->IsHiddenByOwner(child2));
-  EXPECT_TRUE(child2->visible());
+  EXPECT_TRUE(child2->GetVisible());
   EXPECT_EQ(expected, GetChildBounds());
   EXPECT_EQ(Size(57, 25), host_->GetPreferredSize());
 }
@@ -382,7 +382,7 @@ TEST_F(FlexLayoutTest,
   host_->SetSize(Size(40, 25));
   host_->Layout();
   EXPECT_EQ(false, layout_->IsHiddenByOwner(child2));
-  EXPECT_FALSE(child2->visible());
+  EXPECT_FALSE(child2->GetVisible());
   EXPECT_EQ(Rect(6, 5, 12, 10), child1->bounds());
   EXPECT_EQ(Rect(18, 5, 17, 13), child3->bounds());
   // Preferred size should still reflect child hidden due to flex rule.
@@ -395,7 +395,7 @@ TEST_F(FlexLayoutTest,
   // Layout is the same, but we should report that the view is hidden by owner.
   host_->Layout();
   EXPECT_EQ(true, layout_->IsHiddenByOwner(child2));
-  EXPECT_FALSE(child2->visible());
+  EXPECT_FALSE(child2->GetVisible());
   EXPECT_EQ(Rect(6, 5, 12, 10), child1->bounds());
   EXPECT_EQ(Rect(18, 5, 17, 13), child3->bounds());
   EXPECT_EQ(Size(44, 25), host_->GetPreferredSize());
@@ -895,7 +895,7 @@ TEST_F(FlexLayoutTest, Layout_AddDroppedMargins) {
   host_->SetSize(Size(25, 50));
   host_->Layout();
   EXPECT_EQ(Rect(5, 5, 10, 10), child1->bounds());
-  EXPECT_FALSE(child2->visible());
+  EXPECT_FALSE(child2->GetVisible());
   EXPECT_EQ(Rect(15, 5, 10, 10), child3->bounds());
 }
 
@@ -924,9 +924,9 @@ TEST_F(FlexLayoutTest, Layout_IgnoreMinimumSize_DropViews) {
   EXPECT_EQ(Size(77, 32), host_->GetPreferredSize());
   EXPECT_EQ(Size(47, 25), host_->GetMinimumSize());
   host_->Layout();
-  EXPECT_FALSE(child1->visible());
-  EXPECT_TRUE(child2->visible());
-  EXPECT_TRUE(child3->visible());
+  EXPECT_FALSE(child1->GetVisible());
+  EXPECT_TRUE(child2->GetVisible());
+  EXPECT_TRUE(child3->GetVisible());
   EXPECT_EQ(Rect(6, 5, 13, 11), child2->bounds());
   EXPECT_EQ(Rect(21, 5, 17, 13), child3->bounds());
 
@@ -935,9 +935,9 @@ TEST_F(FlexLayoutTest, Layout_IgnoreMinimumSize_DropViews) {
   EXPECT_EQ(Size(77, 32), host_->GetPreferredSize());
   EXPECT_EQ(Size(62, 32), host_->GetMinimumSize());
   host_->Layout();
-  EXPECT_TRUE(child1->visible());
-  EXPECT_FALSE(child2->visible());
-  EXPECT_TRUE(child3->visible());
+  EXPECT_TRUE(child1->GetVisible());
+  EXPECT_FALSE(child2->GetVisible());
+  EXPECT_TRUE(child3->GetVisible());
   EXPECT_EQ(Rect(11, 10, 12, 10), child1->bounds());
   EXPECT_EQ(Rect(36, 5, 17, 13), child3->bounds());
 
@@ -946,9 +946,9 @@ TEST_F(FlexLayoutTest, Layout_IgnoreMinimumSize_DropViews) {
   EXPECT_EQ(Size(77, 32), host_->GetPreferredSize());
   EXPECT_EQ(Size(58, 32), host_->GetMinimumSize());
   host_->Layout();
-  EXPECT_TRUE(child1->visible());
-  EXPECT_TRUE(child2->visible());
-  EXPECT_FALSE(child3->visible());
+  EXPECT_TRUE(child1->GetVisible());
+  EXPECT_TRUE(child2->GetVisible());
+  EXPECT_FALSE(child3->GetVisible());
   EXPECT_EQ(Rect(11, 10, 12, 10), child1->bounds());
   EXPECT_EQ(Rect(36, 5, 13, 11), child2->bounds());
 }
@@ -974,34 +974,34 @@ TEST_F(FlexLayoutTest, Layout_IgnoreMinimumSize_DropInOrder) {
 
   host_->SetSize(Size(100, 50));
   host_->Layout();
-  EXPECT_TRUE(child1->visible());
-  EXPECT_TRUE(child2->visible());
-  EXPECT_TRUE(child3->visible());
+  EXPECT_TRUE(child1->GetVisible());
+  EXPECT_TRUE(child2->GetVisible());
+  EXPECT_TRUE(child3->GetVisible());
 
   host_->SetSize(Size(58, 50));
   host_->Layout();
-  EXPECT_TRUE(child1->visible());
-  EXPECT_TRUE(child2->visible());
-  EXPECT_FALSE(child3->visible());
+  EXPECT_TRUE(child1->GetVisible());
+  EXPECT_TRUE(child2->GetVisible());
+  EXPECT_FALSE(child3->GetVisible());
 
   host_->SetSize(Size(57, 50));
   host_->Layout();
-  EXPECT_TRUE(child1->visible());
-  EXPECT_FALSE(child2->visible());
-  EXPECT_FALSE(child3->visible());
+  EXPECT_TRUE(child1->GetVisible());
+  EXPECT_FALSE(child2->GetVisible());
+  EXPECT_FALSE(child3->GetVisible());
 
   // Since there's no room for child1, child2 becomes visible.
   host_->SetSize(Size(28, 50));
   host_->Layout();
-  EXPECT_FALSE(child1->visible());
-  EXPECT_TRUE(child2->visible());
-  EXPECT_FALSE(child3->visible());
+  EXPECT_FALSE(child1->GetVisible());
+  EXPECT_TRUE(child2->GetVisible());
+  EXPECT_FALSE(child3->GetVisible());
 
   host_->SetSize(Size(27, 50));
   host_->Layout();
-  EXPECT_FALSE(child1->visible());
-  EXPECT_FALSE(child2->visible());
-  EXPECT_FALSE(child3->visible());
+  EXPECT_FALSE(child1->GetVisible());
+  EXPECT_FALSE(child2->GetVisible());
+  EXPECT_FALSE(child3->GetVisible());
 }
 
 TEST_F(FlexLayoutTest, Layout_IgnoreMinimumSize_DropInOrder_DefaultFlex) {
@@ -1023,34 +1023,34 @@ TEST_F(FlexLayoutTest, Layout_IgnoreMinimumSize_DropInOrder_DefaultFlex) {
 
   host_->SetSize(Size(100, 50));
   host_->Layout();
-  EXPECT_TRUE(child1->visible());
-  EXPECT_TRUE(child2->visible());
-  EXPECT_TRUE(child3->visible());
+  EXPECT_TRUE(child1->GetVisible());
+  EXPECT_TRUE(child2->GetVisible());
+  EXPECT_TRUE(child3->GetVisible());
 
   host_->SetSize(Size(58, 50));
   host_->Layout();
-  EXPECT_TRUE(child1->visible());
-  EXPECT_TRUE(child2->visible());
-  EXPECT_FALSE(child3->visible());
+  EXPECT_TRUE(child1->GetVisible());
+  EXPECT_TRUE(child2->GetVisible());
+  EXPECT_FALSE(child3->GetVisible());
 
   host_->SetSize(Size(57, 50));
   host_->Layout();
-  EXPECT_TRUE(child1->visible());
-  EXPECT_FALSE(child2->visible());
-  EXPECT_FALSE(child3->visible());
+  EXPECT_TRUE(child1->GetVisible());
+  EXPECT_FALSE(child2->GetVisible());
+  EXPECT_FALSE(child3->GetVisible());
 
   // Since there's no room for child1, child2 becomes visible.
   host_->SetSize(Size(28, 50));
   host_->Layout();
-  EXPECT_FALSE(child1->visible());
-  EXPECT_TRUE(child2->visible());
-  EXPECT_FALSE(child3->visible());
+  EXPECT_FALSE(child1->GetVisible());
+  EXPECT_TRUE(child2->GetVisible());
+  EXPECT_FALSE(child3->GetVisible());
 
   host_->SetSize(Size(27, 50));
   host_->Layout();
-  EXPECT_FALSE(child1->visible());
-  EXPECT_FALSE(child2->visible());
-  EXPECT_FALSE(child3->visible());
+  EXPECT_FALSE(child1->GetVisible());
+  EXPECT_FALSE(child2->GetVisible());
+  EXPECT_FALSE(child3->GetVisible());
 }
 
 TEST_F(FlexLayoutTest, Layout_IgnoreMinimumSize_DropByPriority) {
@@ -1072,27 +1072,27 @@ TEST_F(FlexLayoutTest, Layout_IgnoreMinimumSize_DropByPriority) {
 
   host_->SetSize(Size(100, 50));
   host_->Layout();
-  EXPECT_TRUE(child1->visible());
-  EXPECT_TRUE(child2->visible());
-  EXPECT_TRUE(child3->visible());
+  EXPECT_TRUE(child1->GetVisible());
+  EXPECT_TRUE(child2->GetVisible());
+  EXPECT_TRUE(child3->GetVisible());
 
   host_->SetSize(Size(65, 50));
   host_->Layout();
-  EXPECT_TRUE(child1->visible());
-  EXPECT_FALSE(child2->visible());
-  EXPECT_TRUE(child3->visible());
+  EXPECT_TRUE(child1->GetVisible());
+  EXPECT_FALSE(child2->GetVisible());
+  EXPECT_TRUE(child3->GetVisible());
 
   host_->SetSize(Size(40, 50));
   host_->Layout();
-  EXPECT_FALSE(child1->visible());
-  EXPECT_FALSE(child2->visible());
-  EXPECT_TRUE(child3->visible());
+  EXPECT_FALSE(child1->GetVisible());
+  EXPECT_FALSE(child2->GetVisible());
+  EXPECT_TRUE(child3->GetVisible());
 
   host_->SetSize(Size(20, 50));
   host_->Layout();
-  EXPECT_FALSE(child1->visible());
-  EXPECT_FALSE(child2->visible());
-  EXPECT_FALSE(child3->visible());
+  EXPECT_FALSE(child1->GetVisible());
+  EXPECT_FALSE(child2->GetVisible());
+  EXPECT_FALSE(child3->GetVisible());
 }
 
 TEST_F(FlexLayoutTest, Layout_Flex_OneViewScales) {
@@ -1155,7 +1155,7 @@ TEST_F(FlexLayoutTest,
   host_->SetSize(Size(20, 20));
   host_->Layout();
   EXPECT_EQ(Size(10, 10), child1->size());
-  EXPECT_FALSE(child2->visible());
+  EXPECT_FALSE(child2->GetVisible());
 }
 
 TEST_F(FlexLayoutTest,
@@ -1176,7 +1176,7 @@ TEST_F(FlexLayoutTest,
   // TODO(dfried): Make this work.
   // EXPECT_EQ(Size(10, 9), child1->size());
   EXPECT_EQ(Size(10, 7), child1->size());
-  EXPECT_FALSE(child2->visible());
+  EXPECT_FALSE(child2->GetVisible());
 }
 
 TEST_F(FlexLayoutTest, Layout_Flex_TwoChildViews_EqualWeight) {
@@ -1319,7 +1319,7 @@ TEST_F(FlexLayoutTest,
   host_->SetSize(Size(35, 20));
   host_->Layout();
   EXPECT_EQ(Size(20, 10), child2->size());
-  EXPECT_FALSE(child1->visible());
+  EXPECT_FALSE(child1->GetVisible());
 }
 
 TEST_F(FlexLayoutTest, Layout_FlexRule_UnboundedSnapToMinimum) {
@@ -1385,7 +1385,7 @@ TEST_F(FlexLayoutTest, Layout_FlexRule_UnboundedScaleToMinimumSnapToZero) {
   // the view does not drop out.
   host_->SetSize(Size(25, 10));
   host_->Layout();
-  EXPECT_TRUE(child->visible());
+  EXPECT_TRUE(child->GetVisible());
   EXPECT_EQ(Size(15, 0), child->size());
 
   host_->SetSize(Size(15, 15));
@@ -1394,7 +1394,7 @@ TEST_F(FlexLayoutTest, Layout_FlexRule_UnboundedScaleToMinimumSnapToZero) {
 
   host_->SetSize(Size(14, 15));
   host_->Layout();
-  EXPECT_FALSE(child->visible());
+  EXPECT_FALSE(child->GetVisible());
 }
 
 TEST_F(FlexLayoutTest, Layout_FlexRule_UnboundedScaleToZero) {
@@ -1429,7 +1429,7 @@ TEST_F(FlexLayoutTest, Layout_FlexRule_UnboundedScaleToZero) {
   // the view does not drop out.
   host_->SetSize(Size(25, 10));
   host_->Layout();
-  EXPECT_TRUE(child->visible());
+  EXPECT_TRUE(child->GetVisible());
   EXPECT_EQ(Size(15, 0), child->size());
 
   host_->SetSize(Size(15, 15));
@@ -1442,7 +1442,7 @@ TEST_F(FlexLayoutTest, Layout_FlexRule_UnboundedScaleToZero) {
 
   host_->SetSize(Size(9, 14));
   host_->Layout();
-  EXPECT_FALSE(child->visible());
+  EXPECT_FALSE(child->GetVisible());
 }
 
 // A higher priority view which can expand past its maximum size should displace
@@ -1464,7 +1464,7 @@ TEST_F(FlexLayoutTest,
   host_->SetSize(Size(4, 5));
   host_->Layout();
   EXPECT_EQ(kSmallSize, child1->size());
-  EXPECT_FALSE(child2->visible());
+  EXPECT_FALSE(child2->GetVisible());
 
   // When the first view has less room than its preferred size, it should still
   // take up all of the space.
@@ -1472,7 +1472,7 @@ TEST_F(FlexLayoutTest,
   host_->SetSize(kIntermediateSize);
   host_->Layout();
   EXPECT_EQ(kIntermediateSize, child1->size());
-  EXPECT_FALSE(child2->visible());
+  EXPECT_FALSE(child2->GetVisible());
 
   // When the first view has more room than its preferred size, but not enough
   // to make room for the second view, the second view still drops out.
@@ -1480,7 +1480,7 @@ TEST_F(FlexLayoutTest,
   host_->SetSize(kLargerSize);
   host_->Layout();
   EXPECT_EQ(kLargerSize, child1->size());
-  EXPECT_FALSE(child2->visible());
+  EXPECT_FALSE(child2->GetVisible());
 }
 
 // When a view is allowed to flex above its preferred size, it will still yield
@@ -1682,7 +1682,7 @@ TEST_F(FlexLayoutTest, Layout_FlexRule_CustomFlexRule_ShrinkToZero) {
 
   host_->SetSize(Size(20, 20));
   host_->Layout();
-  EXPECT_FALSE(child->visible());
+  EXPECT_FALSE(child->GetVisible());
 }
 
 TEST_F(FlexLayoutTest, Layout_OnlyCallsSetViewVisibilityWhenNecessary) {
@@ -1701,15 +1701,15 @@ TEST_F(FlexLayoutTest, Layout_OnlyCallsSetViewVisibilityWhenNecessary) {
   child2->ResetCounts();
   host_->SetSize(Size(40, 20));
   host_->Layout();
-  EXPECT_TRUE(child1->visible());
-  EXPECT_TRUE(child2->visible());
+  EXPECT_TRUE(child1->GetVisible());
+  EXPECT_TRUE(child2->GetVisible());
   EXPECT_EQ(0, child1->GetSetVisibleCount());
   EXPECT_EQ(0, child2->GetSetVisibleCount());
 
   host_->SetSize(Size(35, 20));
   host_->Layout();
-  EXPECT_FALSE(child1->visible());
-  EXPECT_TRUE(child2->visible());
+  EXPECT_FALSE(child1->GetVisible());
+  EXPECT_TRUE(child2->GetVisible());
   EXPECT_EQ(1, child1->GetSetVisibleCount());
   EXPECT_EQ(0, child2->GetSetVisibleCount());
 
@@ -1717,8 +1717,8 @@ TEST_F(FlexLayoutTest, Layout_OnlyCallsSetViewVisibilityWhenNecessary) {
   child2->ResetCounts();
   host_->SetSize(Size(30, 20));
   host_->Layout();
-  EXPECT_FALSE(child1->visible());
-  EXPECT_TRUE(child2->visible());
+  EXPECT_FALSE(child1->GetVisible());
+  EXPECT_TRUE(child2->GetVisible());
   EXPECT_EQ(0, child1->GetSetVisibleCount());
   EXPECT_EQ(0, child2->GetSetVisibleCount());
 
@@ -1727,8 +1727,8 @@ TEST_F(FlexLayoutTest, Layout_OnlyCallsSetViewVisibilityWhenNecessary) {
 
   host_->SetSize(Size(40, 20));
   host_->Layout();
-  EXPECT_FALSE(child1->visible());
-  EXPECT_TRUE(child2->visible());
+  EXPECT_FALSE(child1->GetVisible());
+  EXPECT_TRUE(child2->GetVisible());
   EXPECT_EQ(0, child1->GetSetVisibleCount());
   EXPECT_EQ(0, child2->GetSetVisibleCount());
 }
@@ -1745,7 +1745,7 @@ class FlexLayoutCrossAxisFitTest : public FlexLayoutTest {
     FlexLayoutTest::SetUp();
     DCHECK(child_views_.empty());
 
-    for (int i = 0; i < kNumChildren; ++i) {
+    for (size_t i = 0; i < kNumChildren; ++i) {
       View* const child = AddChild(kChildSizes[i]);
       child->SetProperty(kMarginsKey, new gfx::Insets(kChildMargins[i]));
       child_views_.push_back(child);
@@ -1760,7 +1760,7 @@ class FlexLayoutCrossAxisFitTest : public FlexLayoutTest {
   void TearDown() override { child_views_.clear(); }
 
  protected:
-  static constexpr int kNumChildren = 3;
+  static constexpr size_t kNumChildren = 3;
   static const gfx::Size kHostSize;
   static const gfx::Size kChildSizes[kNumChildren];
   static const gfx::Insets kChildMargins[kNumChildren];
@@ -1784,7 +1784,7 @@ TEST_F(FlexLayoutCrossAxisFitTest, Layout_CrossStretch) {
 
   // Expect child views to respect their leading margin and to occupy all
   // available space (other than margins), with a minimum size of zero.
-  for (int i = 0; i < kNumChildren; ++i) {
+  for (size_t i = 0; i < kNumChildren; ++i) {
     EXPECT_EQ(kChildMargins[i].top(), child_views_[i]->origin().y());
     const int expected_height =
         std::max(0, kHostSize.height() - kChildMargins[i].height());
@@ -1797,7 +1797,7 @@ TEST_F(FlexLayoutCrossAxisFitTest, Layout_CrossStart) {
   host_->Layout();
 
   // These should all justify to the leading edge and keep their original size.
-  for (int i = 0; i < kNumChildren; ++i) {
+  for (size_t i = 0; i < kNumChildren; ++i) {
     EXPECT_EQ(kChildMargins[i].top(), child_views_[i]->origin().y());
     EXPECT_EQ(kChildSizes[i].height(), child_views_[i]->size().height());
   }
@@ -1827,9 +1827,8 @@ TEST_F(FlexLayoutCrossAxisFitTest, Layout_CrossCenter) {
   EXPECT_EQ(expected, child_views_[2]->origin().y());
 
   // Expect child views to retain their preferred sizes.
-  for (int i = 0; i < kNumChildren; ++i) {
+  for (size_t i = 0; i < kNumChildren; ++i)
     EXPECT_EQ(kChildSizes[i].height(), child_views_[i]->size().height());
-  }
 }
 
 TEST_F(FlexLayoutCrossAxisFitTest, Layout_CrossEnd) {
@@ -1837,7 +1836,7 @@ TEST_F(FlexLayoutCrossAxisFitTest, Layout_CrossEnd) {
   host_->Layout();
 
   // These should all justify to the trailing edge and keep their original size.
-  for (int i = 0; i < kNumChildren; ++i) {
+  for (size_t i = 0; i < kNumChildren; ++i) {
     EXPECT_EQ(kHostSize.height() - kChildMargins[i].bottom(),
               child_views_[i]->bounds().bottom());
     EXPECT_EQ(kChildSizes[i].height(), child_views_[i]->size().height());
@@ -1848,36 +1847,36 @@ TEST_F(FlexLayoutCrossAxisFitTest, Layout_CrossEnd) {
 
 class NestedFlexLayoutTest : public FlexLayoutTest {
  public:
-  void AddChildren(int num_children) {
-    for (int i = 0; i < num_children; ++i) {
-      View* v = new View;
+  void AddChildren(size_t num_children) {
+    for (size_t i = 0; i < num_children; ++i) {
+      auto v = std::make_unique<View>();
       FlexLayout* layout = v->SetLayoutManager(std::make_unique<FlexLayout>());
-      host_->AddChildView(v);
-      children_.push_back(v);
+      children_.push_back(v.get());
       layouts_.push_back(layout);
+      host_->AddChildView(std::move(v));
     }
   }
 
   View* AddGrandchild(
-      int child_index,
+      size_t child_index,
       const gfx::Size& preferred,
-      const base::Optional<gfx::Size>& minimum = base::Optional<gfx::Size>()) {
+      const base::Optional<gfx::Size>& minimum = base::nullopt) {
     return AddChild(children_[child_index - 1], preferred, minimum);
   }
 
-  View* child(int child_index) const { return children_[child_index - 1]; }
+  View* child(size_t child_index) const { return children_[child_index - 1]; }
 
-  FlexLayout* layout(int child_index) const {
+  FlexLayout* layout(size_t child_index) const {
     return layouts_[child_index - 1];
   }
 
-  View* grandchild(int child_index, int grandchild_index) const {
-    return children_[child_index - 1]->child_at(grandchild_index - 1);
+  View* grandchild(size_t child_index, size_t grandchild_index) const {
+    return children_[child_index - 1]->children()[grandchild_index - 1];
   }
 
  private:
   std::vector<FlexLayout*> layouts_;
-  std::vector<View*> children_;
+  View::Views children_;
 };
 
 TEST_F(NestedFlexLayoutTest, Layout_OppositeOrientation) {
@@ -1992,9 +1991,9 @@ TEST_F(NestedFlexLayoutTest, Layout_Flex) {
   EXPECT_EQ(gfx::Rect(2, 2, 7, 9), child(1)->bounds());
   EXPECT_EQ(gfx::Rect(11, 2, 7, 10), child(2)->bounds());
   EXPECT_EQ(gfx::Rect(2, 2, 1, 5), grandchild(1, 1)->bounds());
-  EXPECT_FALSE(grandchild(1, 2)->visible());
+  EXPECT_FALSE(grandchild(1, 2)->GetVisible());
   EXPECT_EQ(gfx::Rect(2, 2, 1, 6), grandchild(2, 1)->bounds());
-  EXPECT_FALSE(grandchild(2, 2)->visible());
+  EXPECT_FALSE(grandchild(2, 2)->GetVisible());
 
   host_->SetSize(gfx::Size(25, 15));
   host_->Layout();

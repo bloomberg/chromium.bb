@@ -42,11 +42,10 @@ class ScheduledNotificationManager {
 
   // Creates the instance.
   static std::unique_ptr<ScheduledNotificationManager> Create(
-      std::unique_ptr<CollectionStore<NotificationEntry>> store,
-      Delegate* delegate);
+      std::unique_ptr<CollectionStore<NotificationEntry>> store);
 
   // Initializes the notification store.
-  virtual void Init(InitCallback callback) = 0;
+  virtual void Init(Delegate* delegate, InitCallback callback) = 0;
 
   // Adds a new notification.
   virtual void ScheduleNotification(

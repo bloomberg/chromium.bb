@@ -229,7 +229,7 @@ locale.  The strings in this file are specific to iOS.
         Suggest  Password...
       </message>
       <message name="IDS_IOS_SUGGESTED_PASSWORD" desc="Text that shows a suggested generated password at user's request [Length: unlimited] [iOS only]">
-        Chrome Suggested Password: <ph name="SUGGESTED_PASSWORD">$1<ex>Ax#f4gH*k7</ex></ph>
+        Chrome Suggested Password:
       </message>
       <message name="IDS_IOS_SUGGESTED_PASSWORD_HINT" desc="Text shown alongside a suggested password to tell user that generated passwords are recorded by chrome. [Length: unlimited] [iOS only]">
         Chrome will remember this password for you. You don't have to remember it.
@@ -504,23 +504,23 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_OPEN_HISTORY_BUTTON" desc="Title of a button that allows the user to open history.google.com. [Length: 15em]">
         Open history.google.com
       </message>
-      <message name="IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_BEGINNING_OF_TIME" desc="Label of a time range option. This is used to specify that the user wishes to clear their browsing data since the beginning of time. In titlecase. [Length: 22em] [iOS only]">
-        Beginning of Time
+      <message name="IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_BEGINNING_OF_TIME" desc="Label of a time range option. This is used to specify that the user wishes to clear their browsing data since the beginning of time. In titlecase.">
+        All Time
       </message>
-      <message name="IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_LAST_FOUR_WEEKS" desc="Label of a time range option. This is used to specify that the user wishes to clear their browsing data for the last 4 weeks. In titlecase. [Length: 22em] [iOS only]">
+      <message name="IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_LAST_FOUR_WEEKS" desc="Label of a time range option. This is used to specify that the user wishes to clear their browsing data for the last 4 weeks. In titlecase.">
         Last 4 Weeks
       </message>
-      <message name="IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_OLDER_THAN_30_DAYS" desc="Label of a time range option. This is used to specify that the user wishes to clear their browsing data that is older than 30 days. In titlecase. [Length: 22em] [iOS only]">
+      <message name="IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_OLDER_THAN_30_DAYS" desc="Label of a time range option. This is used to specify that the user wishes to clear their browsing data that is older than 30 days. In titlecase.">
         Older than 30 days
       </message>
-      <message name="IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_PAST_DAY" desc="Label of a time range option. This is used to specify that the user wishes to clear their browsing data for the past day. In titlecase. [Length: 22em] [iOS only]">
-        Past Day
+      <message name="IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_PAST_DAY" desc="Label of a time range option. This is used to specify that the user wishes to clear their browsing data for the past day. In titlecase.">
+        Last 24 Hours
       </message>
-      <message name="IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_PAST_HOUR" desc="Label of a time range option. This is used to specify that the user wishes to clear their browsing data for the past hour. In titlecase. [Length: 22em] [iOS only]">
-        Past Hour
+      <message name="IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_PAST_HOUR" desc="Label of a time range option. This is used to specify that the user wishes to clear their browsing data for the past hour. In titlecase.">
+        Last Hour
       </message>
-      <message name="IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_PAST_WEEK" desc="Label of a time range option. This is used to specify that the user wishes to clear their browsing data for the past week. In titlecase. [Length: 22em] [iOS only]">
-        Past Week
+      <message name="IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_PAST_WEEK" desc="Label of a time range option. This is used to specify that the user wishes to clear their browsing data for the past week. In titlecase.">
+        Last 7 Days
       </message>
       <message name="IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_SELECTOR_TITLE" desc="Title for the view that allows the user to pick a time range. The selector is used to pick the time period for which to clear the browsing data. In titlecase. [Length: 13em] [iOS only]">
         Time Range
@@ -739,25 +739,25 @@ locale.  The strings in this file are specific to iOS.
         Google Apps
       </message>
       <message name="IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOCOMPLETE_SEARCHES_AND_URLS_DETAIL" desc="Feature detail text in the settings for the user to enable/disable, to have autocomplete searches and URLs. Text related to 'Autocomplete Searches and URLs' [iOS only]">
-        Sends some cookies and searches from the address bar and search box to your default search engine
+        Sends some cookies and searches from the address bar and search box to your default search engine.
       </message>
       <message name="IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOCOMPLETE_SEARCHES_AND_URLS_TEXT" desc="Feature title in the settings for the user to enable/disable, to have autocomplete searches and URLs. Text related to 'Sends searches from the address bar and search box, and some cookies to your default search engine' [iOS only]">
-        Autocomplete searches and URLs
+        Autocomplete Searches and URLs
       </message>
       <message name="IDS_IOS_GOOGLE_SERVICES_SETTINGS_BETTER_SEARCH_AND_BROWSING_DETAIL" desc="Detail text for a feature in the settings for the user to enable/disable, to make searches andn browsing better. Related to 'Make searches and browsing better'. [iOS only]">
-        Sends URLs of pages you visit to Google
+        Sends URLs of pages you visit to Google.
       </message>
       <message name="IDS_IOS_GOOGLE_SERVICES_SETTINGS_BETTER_SEARCH_AND_BROWSING_TEXT" desc="Title for a feature in the settings for the user to enable/disable, to make searches andn browsing better. Related to 'Sends URLs of pages you visit to Google'. [iOS only]">
-        Make searches and browsing better
+        Make Searches and Browsing Better
       </message>
       <message name="IDS_IOS_GOOGLE_SERVICES_SETTINGS_ENTER_PASSPHRASE_TO_START_SYNC" desc="Title button to ask the user to tap their passphrase. The sync is blocked until the correct passphrase is entered">
-        Enter passphrase to start sync
+        Enter passphrase to start sync.
       </message>
       <message name="IDS_IOS_GOOGLE_SERVICES_SETTINGS_IMPROVE_CHROME_DETAIL" desc="Feature detail text in the settings for the user enable or disable. Related with 'Help improve Chrome's features and performance' feature. [iOS only]">
-        Automatically sends usage statistics and crash reports to Google
+        Automatically sends usage statistics and crash reports to Google.
       </message>
       <message name="IDS_IOS_GOOGLE_SERVICES_SETTINGS_SIGN_IN_DETAIL_TEXT" desc="Invite the user to sign-in and explains the benefit. [iOS only]">
-        Sync and personalize across devices
+        Sync and personalize across devices.
       </message>
       <message name="IDS_IOS_GOOGLE_SERVICES_SETTINGS_TITLE" desc="Title for the view in the Settings for enabling/disabling Sync and all the Google services. [Length: 26em] [iOS only]">
         Sync and Google Services
@@ -788,6 +788,24 @@ locale.  The strings in this file are specific to iOS.
       </message>
       <message name="IDS_IOS_ICON_SEARCH" desc="Accessibility label for the search icon [iOS only].">
         Search
+      </message>
+      <message name="IDS_IOS_INFOBAR_BANNER_DISMISS_HINT" desc="Accessibility hint that indicates the user that can dismiss the Infobar Banner. [Length:Unlimited]">
+        Dismiss
+      </message>
+      <message name="IDS_IOS_INFOBAR_BANNER_OPTIONS_HINT" desc="Accessibility hint that indicates the user that can get more options for the Infobar banner. [Length:Unlimited]">
+        More Options
+      </message>
+      <message name="IDS_IOS_INFOBAR_BADGES_PASSWORD_HINT" desc="The iOS infobar badge item for saving password credentials [Length:Unlimited]">
+        Options to Save Password
+      </message>
+      <message name="IDS_IOS_INFOBAR_MODAL_PASSWORD_SETTINGS_HINT" desc="Accessibility hint that indicates to the user that they can access the Password Settings. [Length:Unlimited]">
+        Access password settings
+      </message>
+      <message name="IDS_IOS_INFOBAR_MODAL_PASSWORD_REVEAL_PASSWORD_HINT" desc="Accessibility hint that indicates to the user that they can reveal the hidden/masked password. [Length:Unlimited]">
+        Reveal Password
+      </message>
+      <message name="IDS_IOS_INFOBAR_MODAL_PASSWORD_HIDE_PASSWORD_HINT" desc="Accessibility hint that indicates to the user that then can hide/mask the password. [Length:Unlimited]">
+        Hide Password
       </message>
       <message name="IDS_IOS_INSPECT_UI_CONSOLE_NOTICE" desc="The message at the top of the debugging page which displays JavaScript console logs [iOS only].">
         Tap the "Start Logging" button to collect future JavaScript console logs and errors from all tabs. Logs will be collected (and stored only in memory) until this page is closed or "Stop Logging" is tapped.
@@ -833,6 +851,9 @@ locale.  The strings in this file are specific to iOS.
       </message>
       <message name="IDS_IOS_LONG_PRESS_TOOLBAR_IPH_PROMOTION_TEXT" desc="Text for the LongPress Toolbar Tip in-product help promotion, explaining that the user can long press on the toolbar's button to display more options. [iOS only]">
         Press and hold for more tab options
+      </message>
+      <message name="IDS_IOS_MANAGE_YOUR_GOOGLE_ACCOUNT_TITLE" desc="Title for the view in the Settings to open 'Google Account' web page.">
+        Manage Your Google Account
       </message>
       <message name="IDS_IOS_MANAGE_SYNC_SETTINGS_TITLE" desc="Title for the view in the Settings for enabling/disabling Sync. [iOS only]">
         Manage Sync
@@ -1115,11 +1136,17 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_PASSWORD_MANAGER_BLACKLIST_BUTTON" desc="Button text for the 'Save Password' infobar's 'Never remember for this site' option [Length: 10em]">
         Never
       </message>
+      <message name="IDS_IOS_PASSWORD_MANAGER_MODAL_BLACKLIST_BUTTON" desc="Button text for the 'Save Password' Infobar's Modal 'Never remember this site' option [Length: 70em]">
+        Never For This Site
+      </message>
       <message name="IDS_IOS_PASSWORD_MANAGER_SAVE_BUTTON" desc="Save button text for password manager [Length: 10em]">
         Save
       </message>
       <message name="IDS_IOS_PASSWORD_MANAGER_SAVE_PASSWORD_PROMPT" desc="Info bar message to save a password. [Length: 60em]">
         Save password?
+      </message>
+      <message name="IDS_IOS_PASSWORD_MANAGER_SAVE_PASSWORD_TITLE" desc="Infobar title to save a password. [Length: 70em]">
+        Save password
       </message>
       <message name="IDS_IOS_PASSWORD_MANAGER_UPDATE_BUTTON" desc="Label for the 'update' button in the Update Password infobar. This infobar asks if the user wishes to update the saved password for a site to a new password the user has just entered; the button applies the suggested update. [Length: 10em]">
         Update
@@ -1129,6 +1156,9 @@ Handoff must also be enabled in the General section of Settings, and your device
       </message>
       <message name="IDS_IOS_PASSWORD_MANAGER_UPDATE_PASSWORD_FOR_ACCOUNT" desc="Infobar message to update a password for named account. [Length:70em]">
         Update password for <ph name="USERNAME">$1<ex>don.john.lemon@example.com</ex></ph>?
+      </message>
+        <message name="IDS_IOS_PASSWORD_MANAGER_UPDATE_PASSWORD_TITLE" desc="Infobar title to update a password. [Length: 70em]">
+        Update password
       </message>
       <message name="IDS_SAVE_PASSWORD_FOOTER" desc="The footer text of the infobar that offers user to save/update a password to Chrome.">
         Passwords are saved in your Google Account so you can use them on any device.
@@ -1466,8 +1496,32 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_SHARE_MENU_REQUEST_DESKTOP_SITE" desc="Text label to the Request Desktop Site action in the extension menu that request the desktop version of the current page. [iOS only]">
         Request Desktop Site
       </message>
-      <message name="IDS_IOS_SHARE_MENU_REQUEST_MOBILE_SITE" desc="Text label to the Request Desktop Site action in the extension menu that request the desktop version of the current page. [iOS only]">
+      <message name="IDS_IOS_SHARE_MENU_REQUEST_MOBILE_SITE" desc="Text label to the Request Mobile Site action in the extension menu that request the mobile version of the current page. [iOS only]">
         Request Mobile Site
+      </message>
+      <message name="IDS_IOS_SHARE_MENU_SEND_TAB_TO_SELF_ACTION" desc="Text label to the Send Tab To Self action in the extension menu that sends the current tab to the user's other devices. [iOS only]">
+        Send To Your Devices
+      </message>
+      <message name="IDS_IOS_SHARE_MENU_SEND_TAB_TO_SELF_DEVICE_ACTION" desc="Text label for the Send Tab To Self action sheet that chooses the device to which the current tab will be sent. [iOS only]">
+        Send <ph name="Title">$1<ex>Webpage Title</ex></ph> to one of your devices.
+      </message>
+      <message name="IDS_IOS_SEND_TAB_TO_SELF_SNACKBAR_MESSAGE" desc="Message briefly displayed at the bottom of the screen to the user to inform that the tab is being sent to the target device. [Length: 35em]" meaning="The is being sent to the target device. [Length: 35em]">
+        Sending...
+      </message>
+      <message name="IDS_IOS_SEND_TAB_TO_SELF_TARGET_DEVICE_ACTION" desc="Button label for the Send Tab To Self modal dialog that sends the current tab to a user's other device. [iOS only]">
+        Send To Your Device
+      </message>
+      <message name="IDS_IOS_SEND_TAB_TO_SELF_TARGET_DEVICE_TITLE" desc="Title for the Send Tab To Self modal dialog that chooses the device to which the current tab will be sent. [iOS only]">
+        Send Webpage
+      </message>
+      <message name="IDS_IOS_SEND_TAB_TO_SELF_TARGET_DEVICE_ITEM_SUBTITLE_TODAY" desc="Text label for the Send Tab To Self modal dialog that shows the last active time of a user's device. [iOS only]">
+        Active Today
+      </message>
+      <message name="IDS_IOS_SEND_TAB_TO_SELF_TARGET_DEVICE_ITEM_SUBTITLE_DAY" desc="Text label for the Send Tab To Self modal dialog that shows the last active time of a user's device. [iOS only]">
+        Active 1 Day Ago
+      </message>
+      <message name="IDS_IOS_SEND_TAB_TO_SELF_TARGET_DEVICE_ITEM_SUBTITLE_DAYS" desc="Text label for the Send Tab To Self modal dialog that shows the last active time of a user's devicet. [iOS only]">
+        Active <ph name="Days">$1<ex>2</ex></ph> Days Ago
       </message>
       <message name="IDS_IOS_SHARE_MESSAGES_COMPLETE" desc="Message shown when message share has been sent. [Length: Unknown. Keep it short.] [iOS only]">
         Message sent.
@@ -1635,7 +1689,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
         Unable to connect to the Internet.
       </message>
       <message name="IDS_IOS_SYNC_ERROR_TITLE" desc="Title of the error message shown for sync errors. [Length: 60em] [iOS only]">
-        Sync isn't working
+        Sync Isn't Working
       </message>
       <message name="IDS_IOS_SYNC_ERROR_UNRECOVERABLE" desc="The error message to display when there is an unrecoverable sync error. [Length: 100em, can be multiple lines] [iOS only]">
         Try signing in again.
@@ -1888,6 +1942,30 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       </message>
       <message name="IDS_IOS_TRANSLATE_INFOBAR_TRANSLATING_ACCESSIBILITY_ANNOUNCEMENT" desc="The accessibility announcement read by Voice Over when the Translate Infobar UI is shown in translating mode. [Length: unlimited] [iOS only]">
         Translating the page to <ph name="language">$1<ex>French</ex></ph>. Options available near bottom of the screen.
+      </message>
+      <message name="IDS_IOS_LANGUAGE_SETTINGS_TITLE" desc="Title for the language settings menu entry and page. [Length: 25em] [iOS only]">
+        Languages
+      </message>
+      <message name="IDS_IOS_LANGUAGE_SETTINGS_ADD_LANGUAGE_TITLE" desc="Title for the add language page of language settings. [Length: 25em] [iOS only]">
+        Add Language
+      </message>
+      <message name="IDS_IOS_LANGUAGE_SETTINGS_HEADER" desc="Header for the fluent languages section in the language settings page. [Length: unlimited] [iOS only]">
+        Websites will show text in your preferred language, when possible.
+      </message>
+      <message name="IDS_IOS_LANGUAGE_SETTINGS_ADD_LANGUAGE_BUTTON_TITLE" desc="Title for the button to add a language to the list of fluent languages in the language settings page. [Length: 30em] [iOS only]">
+        Add Language...
+      </message>
+      <message name="IDS_IOS_LANGUAGE_SETTINGS_TRANSLATE_SWITCH_TITLE" desc="Title for the switch to enable or disable translation in the language settings page. [Length: 30em] [iOS only]" meaning="Turning this switch on enables offering translation and turning it off disables offering translation.">
+        Translate Pages
+      </message>
+      <message name="IDS_IOS_LANGUAGE_SETTINGS_TRANSLATE_SWITCH_SUBTITLE" desc="Subtitle for the switch to enable or disable translation in the language settings page. [Length: unlimited] [iOS only]" meaning="This switch controls offering translation for pages in languages other than the languages listed above.">
+        Offer to translate pages in other languages
+      </message>
+      <message name="IDS_IOS_LANGUAGE_SETTINGS_NEVER_TRANSLATE_TITLE" desc="Label shown next to a language for which translation is not offered. [Length: 25em] [iOS only]">
+        Never Translate
+      </message>
+      <message name="IDS_IOS_LANGUAGE_SETTINGS_OFFER_TO_TRANSLATE_TITLE" desc="Label shown next to a language for which translation is offered. [Length: 25em] [iOS only]">
+        Offer to Translate
       </message>
       <message name="IDS_IOS_TRANSLATE_SETTING" desc="Title for the view and option in Settings for Translate. [Length: 25em] [iOS only]">
         Google Translate

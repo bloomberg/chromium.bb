@@ -181,26 +181,6 @@ TEST_F(ResourceSchedulerParamsManagerTest, VerifyAllDefaultParams) {
 // kDelayRequestsOnMultiplexedConnections is enabled.
 TEST_F(ResourceSchedulerParamsManagerTest,
        DelayRequestsOnMultiplexedConnections) {
-  base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
-  const std::string kTrialName = "TrialFoo";
-  const std::string kGroupName = "GroupFoo";  // Value not used
-  base::test::ScopedFeatureList scoped_feature_list;
-
-  scoped_refptr<base::FieldTrial> trial =
-      base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
-
-  std::map<std::string, std::string> params;
-  params["MaxEffectiveConnectionType"] = "2G";
-  ASSERT_TRUE(
-      base::FieldTrialParamAssociator::GetInstance()->AssociateFieldTrialParams(
-          kTrialName, kGroupName, params));
-
-  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  feature_list->RegisterFieldTrialOverride(
-      features::kDelayRequestsOnMultiplexedConnections.name,
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
-  scoped_feature_list.InitWithFeatureList(std::move(feature_list));
-
   ResourceSchedulerParamsManager resource_scheduler_params_manager;
 
   for (int effective_connection_type = net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
@@ -223,6 +203,46 @@ TEST_F(ResourceSchedulerParamsManagerTest,
       EXPECT_TRUE(resource_scheduler_params_manager
                       .GetParamsForEffectiveConnectionType(ect)
                       .max_queuing_time.has_value());
+
+    } else {
+      VerifyDefaultParams(
+          resource_scheduler_params_manager,
+          static_cast<net::EffectiveConnectionType>(effective_connection_type));
+    }
+  }
+}
+
+// Verify that the params are parsed correctly when
+// kDelayRequestsOnMultiplexedConnections is disabled.
+TEST_F(ResourceSchedulerParamsManagerTest,
+       DisableDelayRequestsOnMultiplexedConnections) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kDelayRequestsOnMultiplexedConnections);
+
+  ResourceSchedulerParamsManager resource_scheduler_params_manager;
+
+  for (int effective_connection_type = net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+       effective_connection_type < net::EFFECTIVE_CONNECTION_TYPE_LAST;
+       ++effective_connection_type) {
+    net::EffectiveConnectionType ect =
+        static_cast<net::EffectiveConnectionType>(effective_connection_type);
+    if (effective_connection_type == net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G ||
+        effective_connection_type == net::EFFECTIVE_CONNECTION_TYPE_2G ||
+        effective_connection_type == net::EFFECTIVE_CONNECTION_TYPE_3G) {
+      EXPECT_EQ(8u, resource_scheduler_params_manager
+                        .GetParamsForEffectiveConnectionType(ect)
+                        .max_delayable_requests);
+      EXPECT_EQ(3.0, resource_scheduler_params_manager
+                         .GetParamsForEffectiveConnectionType(ect)
+                         .non_delayable_weight);
+      EXPECT_FALSE(resource_scheduler_params_manager
+                       .GetParamsForEffectiveConnectionType(ect)
+                       .delay_requests_on_multiplexed_connections);
+      EXPECT_TRUE(resource_scheduler_params_manager
+                      .GetParamsForEffectiveConnectionType(ect)
+                      .max_queuing_time.has_value());
+
     } else {
       VerifyDefaultParams(
           resource_scheduler_params_manager,

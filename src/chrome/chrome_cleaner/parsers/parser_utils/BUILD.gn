@@ -9,7 +9,7 @@ static_library("parse_tasks_remaining_counter") {
   ]
 
   deps = [
-    "//base:base",
+    "//base",
   ]
 }
 
@@ -20,9 +20,9 @@ static_library("command_line_arguments_sanitizer") {
   ]
 
   deps = [
-    "//base:base",
+    "//base",
     "//chrome/chrome_cleaner/os:common_os",
-    "//url:url",
+    "//url",
   ]
 }
 
@@ -33,7 +33,7 @@ source_set("unittest_sources") {
   ]
   deps = [
     ":command_line_arguments_sanitizer",
-    "//base:base",
+    "//base",
     "//chrome/chrome_cleaner/os:common_os",
     "//testing/gmock",
     "//testing/gtest",

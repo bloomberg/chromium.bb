@@ -1016,4 +1016,500 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   }
 }
 
+// Regression test for https://crbug.com/960006.
+//
+// 1. Navigate to a1(a2(b3),c4),
+// 2. b3 has a slow unload handler.
+// 3. a2 navigates same process.
+// 4. When the new document is loaded, a message is sent to c4 to check it
+//    cannot see b3 anymore, even if b3 is still unloading.
+IN_PROC_BROWSER_TEST_F(
+    SitePerProcessBrowserTest,
+    IsDetachedSubframeObservableDuringUnloadHandlerSameProcess) {
+  GURL page_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a(b),c)"));
+  EXPECT_TRUE(NavigateToURL(shell(), page_url));
+  RenderFrameHostImpl* node1 =
+      static_cast<WebContentsImpl*>(shell()->web_contents())
+          ->GetFrameTree()
+          ->root()
+          ->current_frame_host();
+  RenderFrameHostImpl* node2 = node1->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* node3 = node2->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* node4 = node1->child_at(1)->current_frame_host();
+  ASSERT_TRUE(ExecJs(node1, "window.name = 'node1'"));
+  ASSERT_TRUE(ExecJs(node2, "window.name = 'node2'"));
+  ASSERT_TRUE(ExecJs(node3, "window.name = 'node3'"));
+  ASSERT_TRUE(ExecJs(node4, "window.name = 'node4'"));
+
+  // Test sanity check.
+  EXPECT_EQ(true, EvalJs(node1, "!!top.node2.node3"));
+  EXPECT_EQ(true, EvalJs(node2, "!!top.node2.node3"));
+  EXPECT_EQ(true, EvalJs(node3, "!!top.node2.node3"));
+  EXPECT_EQ(true, EvalJs(node4, "!!top.node2.node3"));
+
+  // Simulate a long-running unload handler in |node3|.
+  auto detach_filter = base::MakeRefCounted<DropMessageFilter>(
+      FrameMsgStart, FrameHostMsg_Detach::ID);
+  node3->GetProcess()->AddFilter(detach_filter.get());
+  node2->DisableSwapOutTimerForTesting();
+  ASSERT_TRUE(ExecJs(node3, "window.onunload = ()=>{}"));
+
+  // Prepare |node4| to respond to postMessage with a report of whether it can
+  // still find |node3|.
+  const char* kPostMessageHandlerScript = R"(
+      window.postMessageGotData == false;
+      window.postMessageCallback = function() {};
+      function receiveMessage(event) {
+          console.log('node4 - receiveMessage...');
+
+          var can_node3_be_found = false;
+          try {
+            can_node3_be_found = !!top.node2.node3;
+          } catch(e) {
+            can_node3_be_found = false;
+          }
+
+          window.postMessageGotData = true;
+          window.postMessageData = can_node3_be_found;
+          window.postMessageCallback(window.postMessageData);
+      }
+      window.addEventListener("message", receiveMessage, false);
+  )";
+  ASSERT_TRUE(ExecJs(node4, kPostMessageHandlerScript));
+
+  // Make |node1| navigate |node2| same process and after the navigation
+  // succeeds, send a post message to |node4|. We expect that the effects of the
+  // commit should be visible to |node4| by the time it receives the posted
+  // message.
+  const char* kNavigationScript = R"(
+      var node2_frame = document.getElementsByTagName('iframe')[0];
+      node2_frame.onload = function() {
+          console.log('node2_frame.onload ...');
+          node4.postMessage('try to find node3', '*');
+      };
+      node2_frame.src = $1;
+  )";
+  GURL url = embedded_test_server()->GetURL("a.com", "/title1.html");
+  ASSERT_TRUE(ExecJs(node1, JsReplace(kNavigationScript, url)));
+
+  // Check if |node4| has seen |node3| even after |node2| navigation finished
+  // (no other frame should see |node3| after the navigation of its parent).
+  const char* kPostMessageResultsScript = R"(
+      new Promise(function (resolve, reject) {
+          if (window.postMessageGotData)
+            resolve(window.postMessageData);
+          else
+            window.postMessageCallback = resolve;
+      });
+  )";
+  EXPECT_EQ(false, EvalJs(node4, kPostMessageResultsScript));
+}
+
+// Regression test for https://crbug.com/960006.
+//
+// 1. Navigate to a1(a2(b3),c4),
+// 2. b3 has a slow unload handler.
+// 3. a2 navigates cross process.
+// 4. When the new document is loaded, a message is sent to c4 to check it
+//    cannot see b3 anymore, even if b3 is still unloading.
+//
+// Note: This test is the same as the above, except it uses a cross-process
+// navigation at step 3.
+IN_PROC_BROWSER_TEST_F(
+    SitePerProcessBrowserTest,
+    IsDetachedSubframeObservableDuringUnloadHandlerCrossProcess) {
+  GURL page_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a(b),c)"));
+  EXPECT_TRUE(NavigateToURL(shell(), page_url));
+  RenderFrameHostImpl* node1 =
+      static_cast<WebContentsImpl*>(shell()->web_contents())
+          ->GetFrameTree()
+          ->root()
+          ->current_frame_host();
+  RenderFrameHostImpl* node2 = node1->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* node3 = node2->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* node4 = node1->child_at(1)->current_frame_host();
+  ASSERT_TRUE(ExecJs(node1, "window.name = 'node1'"));
+  ASSERT_TRUE(ExecJs(node2, "window.name = 'node2'"));
+  ASSERT_TRUE(ExecJs(node3, "window.name = 'node3'"));
+  ASSERT_TRUE(ExecJs(node4, "window.name = 'node4'"));
+
+  // Test sanity check.
+  EXPECT_EQ(true, EvalJs(node1, "!!top.node2.node3"));
+  EXPECT_EQ(true, EvalJs(node2, "!!top.node2.node3"));
+  EXPECT_EQ(true, EvalJs(node3, "!!top.node2.node3"));
+  EXPECT_EQ(true, EvalJs(node4, "!!top.node2.node3"));
+
+  // Add a long-running unload handler to |node3|.
+  auto detach_filter = base::MakeRefCounted<DropMessageFilter>(
+      FrameMsgStart, FrameHostMsg_Detach::ID);
+  node3->GetProcess()->AddFilter(detach_filter.get());
+  node2->DisableSwapOutTimerForTesting();
+  ASSERT_TRUE(ExecJs(node3, "window.onunload = ()=>{}"));
+
+  // Prepare |node4| to respond to postMessage with a report of whether it can
+  // still find |node3|.
+  const char* kPostMessageHandlerScript = R"(
+      window.postMessageGotData == false;
+      window.postMessageCallback = function() {};
+      function receiveMessage(event) {
+          console.log('node4 - receiveMessage...');
+
+          var can_node3_be_found = false;
+          try {
+            can_node3_be_found = !!top.node2.node3;
+          } catch(e) {
+            can_node3_be_found = false;
+          }
+
+          window.postMessageGotData = true;
+          window.postMessageData = can_node3_be_found;
+          window.postMessageCallback(window.postMessageData);
+      }
+      window.addEventListener("message", receiveMessage, false);
+  )";
+  ASSERT_TRUE(ExecJs(node4, kPostMessageHandlerScript));
+
+  // Make |node1| navigate |node2| cross process and after the navigation
+  // succeeds, send a post message to |node4|. We expect that the effects of the
+  // commit should be visible to |node4| by the time it receives the posted
+  // message.
+  const char* kNavigationScript = R"(
+      var node2_frame = document.getElementsByTagName('iframe')[0];
+      node2_frame.onload = function() {
+          console.log('node2_frame.onload ...');
+          node4.postMessage('try to find node3', '*');
+      };
+      node2_frame.src = $1;
+  )";
+  GURL url = embedded_test_server()->GetURL("d.com", "/title1.html");
+  ASSERT_TRUE(ExecJs(node1, JsReplace(kNavigationScript, url)));
+
+  // Check if |node4| has seen |node3| even after |node2| navigation finished
+  // (no other frame should see |node3| after the navigation of its parent).
+  const char* kPostMessageResultsScript = R"(
+      new Promise(function (resolve, reject) {
+          if (window.postMessageGotData)
+            resolve(window.postMessageData);
+          else
+            window.postMessageCallback = resolve;
+      });
+  )";
+  EXPECT_EQ(false, EvalJs(node4, kPostMessageResultsScript));
+}
+
+// Regression test. https://crbug.com/963330
+// 1. Start from A1(B2,C3)
+// 2. B2 is the "focused frame", is deleted and starts unloading.
+// 3. C3 commits a new navigation before B2 has completed its unload.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, FocusedFrameUnload) {
+  // 1) Start from A1(B2,C3)
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL(
+                   "a.com", "/cross_site_iframe_factory.html?a(b,c)")));
+  RenderFrameHostImpl* A1 = web_contents()->GetMainFrame();
+  RenderFrameHostImpl* B2 = A1->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* C3 = A1->child_at(1)->current_frame_host();
+  FrameTree* frame_tree = A1->frame_tree_node()->frame_tree();
+
+  // 2.1) Make B2 to be the focused frame.
+  EXPECT_EQ(A1->frame_tree_node(), frame_tree->GetFocusedFrame());
+  EXPECT_TRUE(ExecJs(A1, "document.querySelector('iframe').focus()"));
+  EXPECT_EQ(B2->frame_tree_node(), frame_tree->GetFocusedFrame());
+
+  // 2.2 Unload B2. Drop detach message to simulate a long unloading.
+  auto filter = base::MakeRefCounted<DropMessageFilter>(
+      FrameMsgStart, FrameHostMsg_Detach::ID);
+  B2->GetProcess()->AddFilter(filter.get());
+  B2->SetSubframeUnloadTimeoutForTesting(base::TimeDelta::FromSeconds(30));
+
+  EXPECT_FALSE(B2->GetSuddenTerminationDisablerState(blink::kUnloadHandler));
+  EXPECT_TRUE(ExecJs(B2, "window.onunload = ()=>{};"));
+  EXPECT_TRUE(B2->GetSuddenTerminationDisablerState(blink::kUnloadHandler));
+
+  EXPECT_TRUE(B2->is_active());
+  EXPECT_TRUE(ExecJs(A1, "document.querySelector('iframe').remove()"));
+  EXPECT_EQ(nullptr, frame_tree->GetFocusedFrame());
+  EXPECT_EQ(2u, A1->child_count());
+  EXPECT_FALSE(B2->is_active());
+
+  // 3. C3 navigates.
+  NavigateFrameToURL(C3->frame_tree_node(),
+                     embedded_test_server()->GetURL("d.com", "/title1.html"));
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+  EXPECT_EQ(2u, A1->child_count());
+}
+
+// Test the unload timeout is effective.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, UnloadTimeout) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  RenderFrameHostImpl* A1 = web_contents()->GetMainFrame();
+  RenderFrameHostImpl* B2 = A1->child_at(0)->current_frame_host();
+
+  // Simulate the iframe being slow to unload by dropping the
+  // FrameHostMsg_Detach message sent from B2 to the browser.
+  EXPECT_TRUE(ExecJs(B2, "window.onunload = ()=>{};"));
+  auto detach_filter = base::MakeRefCounted<DropMessageFilter>(
+      FrameMsgStart, FrameHostMsg_Detach::ID);
+  B2->GetProcess()->AddFilter(detach_filter.get());
+
+  RenderFrameDeletedObserver delete_B2(B2);
+  EXPECT_TRUE(ExecJs(A1, "document.querySelector('iframe').remove()"));
+  delete_B2.WaitUntilDeleted();
+}
+
+// Test that an unloading child can PostMessage its cross-process parent.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       UnloadPostMessageToParentCrossProcess) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  RenderFrameHostImpl* A1 = web_contents()->GetMainFrame();
+  RenderFrameHostImpl* B2 = A1->child_at(0)->current_frame_host();
+  RenderFrameDeletedObserver delete_B2(B2);
+  EXPECT_TRUE(ExecJs(B2, R"(
+    window.addEventListener("unload", function() {
+      window.parent.postMessage("B2 message", "*");
+    });
+  )"));
+  EXPECT_TRUE(ExecJs(A1, R"(
+    window.received_message = "nothing received";
+    var received = false;
+    window.addEventListener('message', function(event) {
+      received_message = event.data;
+    });
+    document.querySelector('iframe').remove();
+  )"));
+  delete_B2.WaitUntilDeleted();
+  // TODO(https://crbug.com/964950): PostMessage called from an unloading frame
+  // must work. A1 must received 'B2 message'. This is not the case here.
+  EXPECT_EQ("nothing received", EvalJs(A1, "received_message"));
+}
+
+// Test that an unloading child can PostMessage its same-process parent.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       UnloadPostMessageToParentSameProcess) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  RenderFrameHostImpl* A1 = web_contents()->GetMainFrame();
+  RenderFrameHostImpl* A2 = A1->child_at(0)->current_frame_host();
+  RenderFrameDeletedObserver delete_A1(A2);
+  EXPECT_TRUE(ExecJs(A2, R"(
+    window.addEventListener("unload", function() {
+      window.parent.postMessage("A2 message", "*");
+    });
+  )"));
+  EXPECT_TRUE(ExecJs(A1, R"(
+    window.received_message = "nothing received";
+    var received = false;
+    window.addEventListener('message', function(event) {
+      received_message = event.data;
+    });
+    document.querySelector('iframe').remove();
+  )"));
+  delete_A1.WaitUntilDeleted();
+  EXPECT_EQ("A2 message", EvalJs(A1, "received_message"));
+}
+
+// Related to issue https://crbug.com/950625.
+//
+// 1. Start from A1(B1)
+// 2. Navigate A1 to A3, same-process.
+// 3. A1 requests the browser to detach B1, but this message is dropped.
+// 4. The browser must be resilient and detach B1 when A3 commits.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       SameProcessNavigationResilientToDetachDropped) {
+  GURL A1_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  GURL A3_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), A1_url));
+  RenderFrameHostImpl* A1 = web_contents()->GetMainFrame();
+  RenderFrameHostImpl* B1 = A1->child_at(0)->current_frame_host();
+
+  auto detach_filter = base::MakeRefCounted<DropMessageFilter>(
+      FrameMsgStart, FrameHostMsg_Detach::ID);
+  A1->GetProcess()->AddFilter(detach_filter.get());
+  RenderFrameDeletedObserver delete_B1(B1);
+  shell()->LoadURL(A3_url);
+  delete_B1.WaitUntilDeleted();
+}
+
+// Unload handlers should be able to do things that might require for instance
+// the RenderFrameHostImpl to stay alive.
+// - use console.log (handled via RFHI::DidAddMessageToConsole).
+// - use history.replaceState (handled via RFHI::OnUpdateState).
+// - use document.cookie
+// - use localStorage
+//
+// Test case:
+//  1. Start on A1(B2). B2 has an unload handler.
+//  2. Go to A3.
+//  3. Go back to A4(B5).
+//
+// TODO(https://crbug.com/960976): history.replaceState is broken in OOPIFs.
+//
+// This test is similar to UnloadHandlersArePowerfulGrandChild, but with a
+// different frame hierarchy.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, UnloadHandlersArePowerful) {
+  // Navigate to a page hosting a cross-origin frame.
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  RenderFrameHostImpl* A1 = web_contents()->GetMainFrame();
+  RenderFrameHostImpl* B2 = A1->child_at(0)->current_frame_host();
+
+  // Add an unload handler to the subframe and try in that handler to preserve
+  // state that we will try to recover later.
+  ASSERT_TRUE(ExecJs(B2, R"(
+    window.addEventListener("unload", function() {
+      // Waiting for 100ms, to give more time for browser-side things to go bad
+      // and delete RenderFrameHostImpl prematurely.
+      var start = (new Date()).getTime();
+      do {
+        curr = (new Date()).getTime();
+      } while (start + 100 > curr);
+
+      // Test that various RFHI-dependent things work fine in an unload handler.
+      stateObj = { "history_test_key": "history_test_value" }
+      history.replaceState(stateObj, 'title', window.location.href);
+      console.log('console.log() sent');
+
+      // As a sanity check, test that RFHI-independent things also work fine.
+      localStorage.localstorage_test_key = 'localstorage_test_value';
+      document.cookie = 'cookie_test_key=' + 'cookie_test_value';
+    });
+  )"));
+
+  // Navigate A1(B2) to A3.
+  {
+    // Prepare observers.
+    ConsoleObserverDelegate console(web_contents(), "console.log() sent");
+    web_contents()->SetDelegate(&console);
+    RenderFrameDeletedObserver B2_deleted(B2);
+
+    // Navigate
+    GURL away_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+    ASSERT_TRUE(ExecJs(A1, JsReplace("location = $1", away_url)));
+
+    // Observers must be reached.
+    B2_deleted.WaitUntilDeleted();
+    console.Wait();
+  }
+
+  // Navigate back from A3 to A4(B5).
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  RenderFrameHostImpl* A4 = web_contents()->GetMainFrame();
+  RenderFrameHostImpl* B5 = A4->child_at(0)->current_frame_host();
+
+  // Verify that we can recover the data that should have been persisted by the
+  // unload handler.
+  EXPECT_EQ("localstorage_test_value",
+            EvalJs(B5, "localStorage.localstorage_test_key"));
+  EXPECT_EQ("cookie_test_key=cookie_test_value", EvalJs(B5, "document.cookie"));
+
+  // TODO(lukasza): https://crbug.com/960976: Make the verification below
+  // unconditional, once the bug is fixed.
+  if (!AreAllSitesIsolatedForTesting()) {
+    EXPECT_EQ("history_test_value",
+              EvalJs(B5, "history.state.history_test_key"));
+  }
+}
+
+// Unload handlers should be able to do things that might require for instance
+// the RenderFrameHostImpl to stay alive.
+// - use console.log (handled via RFHI::DidAddMessageToConsole).
+// - use history.replaceState (handled via RFHI::OnUpdateState).
+// - use document.cookie
+// - use localStorage
+//
+// Test case:
+//  1. Start on A1(B2(C3)). C3 has an unload handler.
+//  2. Go to A4.
+//  3. Go back to A5(B6(C7)).
+//
+// TODO(https://crbug.com/960976): history.replaceState is broken in OOPIFs.
+//
+// This test is similar to UnloadHandlersArePowerful, but with a different frame
+// hierarchy.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       UnloadHandlersArePowerfulGrandChild) {
+  // Navigate to a page hosting a cross-origin frame.
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b(c))");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  RenderFrameHostImpl* A1 = web_contents()->GetMainFrame();
+  RenderFrameHostImpl* B2 = A1->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* C3 = B2->child_at(0)->current_frame_host();
+
+  // Add an unload handler to the subframe and try in that handler to preserve
+  // state that we will try to recover later.
+  ASSERT_TRUE(ExecJs(C3, R"(
+    window.addEventListener("unload", function() {
+      // Waiting for 100ms, to give more time for browser-side things to go bad
+      // and delete RenderFrameHostImpl prematurely.
+      var start = (new Date()).getTime();
+      do {
+        curr = (new Date()).getTime();
+      } while (start + 100 > curr);
+
+      // Test that various RFHI-dependent things work fine in an unload handler.
+      stateObj = { "history_test_key": "history_test_value" }
+      history.replaceState(stateObj, 'title', window.location.href);
+      console.log('console.log() sent');
+
+      // As a sanity check, test that RFHI-independent things also work fine.
+      localStorage.localstorage_test_key = 'localstorage_test_value';
+      document.cookie = 'cookie_test_key=' + 'cookie_test_value';
+    });
+  )"));
+
+  // Navigate A1(B2(C3) to A4.
+  {
+    // Prepare observers.
+    ConsoleObserverDelegate console(web_contents(), "console.log() sent");
+    web_contents()->SetDelegate(&console);
+    RenderFrameDeletedObserver B2_deleted(B2);
+    RenderFrameDeletedObserver C3_deleted(C3);
+
+    // Navigate
+    GURL away_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+    ASSERT_TRUE(ExecJs(A1, JsReplace("location = $1", away_url)));
+
+    // Observers must be reached.
+    B2_deleted.WaitUntilDeleted();
+    C3_deleted.WaitUntilDeleted();
+    console.Wait();
+  }
+
+  // Navigate back from A4 to A5(B6(C7))
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  RenderFrameHostImpl* A4 = web_contents()->GetMainFrame();
+  RenderFrameHostImpl* B5 = A4->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* C6 = B5->child_at(0)->current_frame_host();
+
+  // Verify that we can recover the data that should have been persisted by the
+  // unload handler.
+  EXPECT_EQ("localstorage_test_value",
+            EvalJs(C6, "localStorage.localstorage_test_key"));
+  EXPECT_EQ("cookie_test_key=cookie_test_value", EvalJs(C6, "document.cookie"));
+
+  // TODO(lukasza): https://crbug.com/960976: Make the verification below
+  // unconditional, once the bug is fixed.
+  if (!AreAllSitesIsolatedForTesting()) {
+    EXPECT_EQ("history_test_value",
+              EvalJs(C6, "history.state.history_test_key"));
+  }
+}
+
 }  // namespace content

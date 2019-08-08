@@ -9,6 +9,11 @@
  *
  */
 
+// Everything declared/defined in this header is only required when WebRTC is
+// build with H264 support, please do not move anything out of the
+// #ifdef unless needed and tested.
+#ifdef WEBRTC_USE_H264
+
 #include "modules/video_coding/codecs/h264/h264_decoder_impl.h"
 
 #include <algorithm>
@@ -283,7 +288,7 @@ int32_t H264DecoderImpl::Decode(const EncodedImage& input_image,
   VideoFrame* input_frame =
       static_cast<VideoFrame*>(av_buffer_get_opaque(av_frame_->buf[0]));
   RTC_DCHECK(input_frame);
-  rtc::scoped_refptr<webrtc::I420BufferInterface> i420_buffer =
+  const webrtc::I420BufferInterface* i420_buffer =
       input_frame->video_frame_buffer()->GetI420();
   RTC_CHECK_EQ(av_frame_->data[kYPlaneIndex], i420_buffer->DataY());
   RTC_CHECK_EQ(av_frame_->data[kUPlaneIndex], i420_buffer->DataU());
@@ -335,9 +340,9 @@ int32_t H264DecoderImpl::Decode(const EncodedImage& input_image,
 
   VideoFrame decoded_frame = VideoFrame::Builder()
                                  .set_video_frame_buffer(decoded_buffer)
-                                 .set_timestamp_us(input_frame->timestamp_us())
                                  .set_timestamp_rtp(input_image.Timestamp())
-                                 .set_rotation(input_frame->rotation())
+                                 .set_rotation(input_image.rotation_)
+                                 .set_ntp_time_ms(input_image.ntp_time_ms_)
                                  .set_color_space(color_space)
                                  .build();
 
@@ -380,3 +385,5 @@ void H264DecoderImpl::ReportError() {
 }
 
 }  // namespace webrtc
+
+#endif  // WEBRTC_USE_H264

@@ -98,16 +98,14 @@ void WebstoreDataFetcher::Start(
                      base::Unretained(this)));
 }
 
-void WebstoreDataFetcher::OnJsonParseSuccess(
-    std::unique_ptr<base::Value> parsed_json) {
-  if (!parsed_json->is_dict()) {
+void WebstoreDataFetcher::OnJsonParseSuccess(base::Value parsed_json) {
+  if (!parsed_json.is_dict()) {
     OnJsonParseFailure(kInvalidWebstoreResponseError);
     return;
   }
 
-  delegate_->OnWebstoreResponseParseSuccess(
-      std::unique_ptr<base::DictionaryValue>(
-          static_cast<base::DictionaryValue*>(parsed_json.release())));
+  delegate_->OnWebstoreResponseParseSuccess(base::DictionaryValue::From(
+      base::Value::ToUniquePtrValue(std::move(parsed_json))));
 }
 
 void WebstoreDataFetcher::OnJsonParseFailure(
@@ -126,8 +124,8 @@ void WebstoreDataFetcher::OnSimpleLoaderComplete(
   data_decoder::SafeJsonParser::Parse(
       content::ServiceManagerConnection::GetForProcess()->GetConnector(),
       *response_body,
-      base::Bind(&WebstoreDataFetcher::OnJsonParseSuccess, AsWeakPtr()),
-      base::Bind(&WebstoreDataFetcher::OnJsonParseFailure, AsWeakPtr()));
+      base::BindOnce(&WebstoreDataFetcher::OnJsonParseSuccess, AsWeakPtr()),
+      base::BindOnce(&WebstoreDataFetcher::OnJsonParseFailure, AsWeakPtr()));
 }
 
 }  // namespace extensions

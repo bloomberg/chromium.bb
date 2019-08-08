@@ -68,7 +68,7 @@ void BackgroundFetchPermissionContext::DecidePermission(
     const GURL& requesting_origin,
     const GURL& embedding_origin,
     bool user_gesture,
-    const BrowserPermissionCallback& callback) {
+    BrowserPermissionCallback callback) {
   // The user should never be prompted to authorize Background Fetch
   // from BackgroundFetchPermissionContext.
   // BackgroundFetchDelegateImpl invokes CanDownload() on DownloadRequestLimiter
@@ -80,7 +80,7 @@ void BackgroundFetchPermissionContext::NotifyPermissionSet(
     const PermissionRequestID& id,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
-    const BrowserPermissionCallback& callback,
+    BrowserPermissionCallback callback,
     bool persist,
     ContentSetting content_setting) {
   DCHECK(!persist);

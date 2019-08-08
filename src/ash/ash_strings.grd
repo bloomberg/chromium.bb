@@ -482,14 +482,20 @@ This file contains the strings for ash.
       <message name="IDS_ASH_AUTOCLICK_OPTION_DOUBLE_CLICK" desc="The tooltip text for a menu option for the automatic clicks menu that results in the next automatic click being a double-click.">
         Double click
       </message>
-      <message name="IDS_ASH_AUTOCLICK_OPTION_DRAG_AND_DROP" desc="The tooltip text for a menu option for the automatic clicks menu that results in the next automatic click being a drag-and-drop.">
-        Drag and drop
+      <message name="IDS_ASH_AUTOCLICK_OPTION_DRAG_AND_DROP" desc="The tooltip text for a menu option for the automatic clicks menu that results in the next automatic click being a click and drag action.">
+        Click and drag
       </message>
       <message name="IDS_ASH_AUTOCLICK_OPTION_NO_ACTION" desc="The tooltip text for a menu option for the automatic clicks menu that results in pausing the automatic clicks feature without disabling it.">
         No action (pause)
       </message>
       <message name="IDS_ASH_AUTOCLICK_OPTION_CHANGE_POSITION" desc="The tooltip text for a menu option for automatic clicks menu that results in the menu changing position on the screen. The menu will toggle through several pre-set positions.">
         Toggle menu position
+      </message>
+      <message name="IDS_ASH_AUTOCLICK_DISABLE_CONFIRMATION_TITLE" desc="The title for the modal dialog shown when the user disables automatic clicks, to confirm they meant to disable the feature.">
+        Turn off automatic clicks
+      </message>
+      <message name="IDS_ASH_AUTOCLICK_DISABLE_CONFIRMATION_BODY" desc="The message in the modal dialog shown when the user disables automatic clicks, to confirm they meant to disable the feature">
+        Are you sure you want to turn off automatic clicks?
       </message>
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD" desc="The label used in the accessibility menu of the system tray to toggle on/off the onscreen keyboard.">
         On-screen keyboard
@@ -859,21 +865,26 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_ACTIVATING_SUBLABEL" desc="The sub label text used when network is activating. The network name is shown above this label.">
         Activating
       </message>
+
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_DISCONNECTED_TOOLTIP" desc="The tooltip text used when network is not connected.">
         Disconnected
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_NOT_CONNECTED_A11Y" desc="The message used by accessibility for telling that currently the device is not connected to a network.">
         Not connected to network
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING_TOOLTIP" desc="The tooltip text used when network is connecting.">
-        Connecting to <ph name="NETWORK_NAME">$1<ex>public wifi</ex></ph>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING" desc="Message for the network tray tooltip and a11y name when connecting to a network.">
+        Connecting to <ph name="NAME">$1<ex>GoogleGuest</ex></ph>
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED_TOOLTIP" desc="The tooltip text used when network is connected.">
-        Connected to <ph name="NETWORK_NAME">$1<ex>public wifi</ex></ph>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED" desc="Message for the network tray tooltip and a11y name when connected to a network.">
+        Connected to <ph name="NAME">$1<ex>GoogleGuest</ex></ph>
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_NETWORK_ACTIVATING_TOOLTIP" desc="The tooltip text used when network is activating.">
-        Activating <ph name="NETWORK_NAME">$1<ex>cellular network</ex></ph>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED_TOOLTIP" desc="The tooltip text used when connected to a network.">
+        Connected to <ph name="NAME">$1<ex>GoogleGuest</ex></ph>, <ph name="STRENGTH">$2<ex>Weak signal.</ex></ph>
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_ACTIVATING" desc="Message for the network tray tooltip and a11y name when activating a network.">
+        Activating <ph name="NAME">$1<ex>YBH Cellular</ex></ph>
+      </message>
+
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_TOGGLE_TOOLTIP" desc="The tooltip text for the button that toggles network enabled/disabled state.">
         Toggle network connection. <ph name="STATE_TEXT">$1<ex>Connected to public wifi</ex></ph>
       </message>
@@ -881,7 +892,7 @@ This file contains the strings for ash.
         Show network list. <ph name="STATE_TEXT">$1<ex>Connected to public wifi</ex></ph>
       </message>
 
-      <!-- Status Tray Network strings -->
+      <!-- Status Tray Bluetooth strings -->
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISPLAY_PINCODE" desc="Bluetooth pairing message typically shown on a request from a 2.0 device that has a keyboard.">
         Bluetooth device "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>" would like permission to pair. Please enter this PIN code on that device: <ph name="PINCODE">$2<ex>123456</ex></ph>
       </message>
@@ -1118,19 +1129,19 @@ This file contains the strings for ash.
         Battery is full.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_ACCESSIBLE" desc="The message used by accessibility to show battery is discharging.">
-        Battery is <ph name="percentage">$1<ex>56</ex></ph>% full.
+        Battery at <ph name="percentage">$1<ex>56</ex></ph> percent.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_CHARGING_ACCESSIBLE" desc="The message used by accessibility to show battery is being charged.">
-        Battery is <ph name="percentage">$1<ex>56</ex></ph>% full and charging.
+        Battery at <ph name="percentage">$1<ex>56</ex></ph>% and charging.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING_ACCESSIBLE" desc="The message used by accessibility to show battery is calculating its time in short message.">
         Calculating battery time.
       </message>
       <message name= "IDS_ASH_STATUS_TRAY_BATTERY_TIME_LEFT_ACCESSIBLE" desc="The message used by accessibility to read remaining battery time until empty.">
-        Time left until battery is empty, <ph name="time_left">$1<ex>1 hour and 15 minutes</ex></ph>
+        <ph name="time_left">$1<ex>1 hour and 15 minutes</ex></ph> until battery is empty.
       </message>
       <message name= "IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL_ACCESSIBLE" desc="The message used by accessibility to read the estimated time until full.">
-        Time remaining until battery is fully charged, <ph name="time_remaining">$1<ex>1 hour and 15 minutes</ex></ph>
+        <ph name="time_remaining">$1<ex>1 hour and 15 minutes</ex></ph> remaining until battery is fully charged.
       </message>
       <message name = "IDS_ASH_STATUS_TRAY_BATTERY_TIME_ACCESSIBLE" desc="The message used by accessibility to read battery time, which includes both non-zero hours and minutes.">
         <ph name="hour">$1<ex> 1 hour</ex></ph> and <ph name="minute">$2<ex>15 minutes</ex></ph>
@@ -1212,29 +1223,11 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_SIM_CARD_LOCKED" desc="Message for the status area when a SIM card is locked.">
         SIM card is locked
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_NETWORK_ACTIVATING" desc="Message for the network tray tooltip and network list when activating a network.">
-        Activating <ph name="NAME">$1<ex>YBH Cellular</ex></ph>
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED" desc="Message for the network tray tooltip and network list when connected to a network.">
-        Connected to <ph name="NAME">$1<ex>GoogleGuest</ex></ph>
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED_ACCESSIBLE" desc="The accessible message for when connected to a network.">
-        Connected to <ph name="NAME">$1<ex>GoogleGuest</ex></ph>, <ph name="STRENGTH">$2<ex>Weak signal.</ex></ph>
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING" desc="Message for the network tray tooltip and network list when connecting to a network.">
-        Connecting to <ph name="NAME">$1<ex>GoogleGuest</ex></ph>
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_NETWORK_RECONNECTING" desc="Message for the network tray tooltip and network list when reconnecting to a network.">
-        Reconnecting to <ph name="NAME">$1<ex>Company VPN</ex></ph>
-      </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_LIST_ACTIVATE" desc="Message for the network list to activate the network.">
         Activate <ph name="NETWORKSERVICE">$1<ex>YBH Cellular</ex></ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_LIST_ACTIVATING" desc="Message for the network list when activating a network.">
         <ph name="NAME">$1<ex>YBH Cellular</ex></ph>: Activating...
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_NETWORK_LIST_CONNECTING" desc="Message for the network list when connecting to a network.">
-        <ph name="NAME">$1<ex>GoogleGuest</ex></ph>: Connecting...
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_NOT_CONNECTED" desc="Description in status area or network list when no network is connected.">
         No network
@@ -1378,6 +1371,10 @@ This file contains the strings for ash.
       <message name="IDS_ASH_CONTINUE_BUTTON" desc="The text for continue button on accessibility confirmation dialogs.">
         Continue
       </message>
+      <message name="IDS_ASH_YES_BUTTON" desc="The text for the button on a dialog OK button that agrees to the contents of the dialog.">
+        Yes
+      </message>
+
 
       <message name="IDS_ASH_IME_MENU_ACCESSIBLE_NAME" desc="The accessible text for opt-in IME menu icon in status tray.">
         IME menu button
@@ -1544,12 +1541,6 @@ This file contains the strings for ash.
       <message name="IDS_ASH_LOGIN_PUBLIC_ACCOUNT_MONITORING_WARNING" desc="Template for text shown in the public account user pod, informing the user that this is a public, managed account.">
         The device admin may monitor your browsing activity.
       </message>
-      <message name="IDS_ASH_LOGIN_MANAGED_SESSION_MONITORING_FULL_WARNING" desc="Text shown in the public account user pod in case of risky configuration, informing the user that this session is managed and admin can monitor all activity.">
-        The administrator of this device has access to all activity, including passwords and communications.
-      </message>
-      <message name="IDS_ASH_LOGIN_MANAGED_SESSION_MONITORING_SOFT_WARNING" desc="Text shown in the public account user pod in case of non-risky configuration, informing the user that this session is managed and admin can monitor all activity.">
-        The device administrator may be able to monitor your activity.
-      </message>
       <message name="IDS_ASH_LOGIN_PUBLIC_ACCOUNT_SIGNOUT_REMINDER" desc="Text shown in the public account user pod, reminding the user to log out.">
         Your internet session will be cleared when you sign out. <ph name="LEARN_MORE">$1<ex>Learn more</ex></ph>
       </message>
@@ -1631,6 +1622,12 @@ This file contains the strings for ash.
       <message name="IDS_ASH_LOGIN_PUBLIC_ACCOUNT_MONITORING_INFO_ITEM_4" desc="Text shown in the warning dialog after user clicks on the learn more link, notifying the user of potential security and privacy implications of using the device">
         Adjust privacy settings
       </message>
+      <message name="IDS_ASH_LOGIN_PARENT_ACCESS_TITLE_CHANGE_TIME" desc="Title of the parent access input dialog that allows to change the child's device time.">
+        Change time
+      </message>
+      <message name="IDS_ASH_LOGIN_PARENT_ACCESS_TITLE_CHANGE_TIMEZONE" desc="Title of the parent access input dialog that allows to change the child's device timezone.">
+        Change timezone
+      </message>
       <message name="IDS_ASH_LOGIN_PARENT_ACCESS_DIALOG_NAME" desc="Accessible name of the parent access input dialog that allows to unlock child's device with a code.">
         Parent access
       </message>
@@ -1642,6 +1639,9 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_LOGIN_PARENT_ACCESS_DESCRIPTION" desc="Description shown on the parent access input dialog. Explains what code should be used to unlock the device.">
         To unlock the device, enter your Family Link parent access code
+      </message>
+      <message name="IDS_ASH_LOGIN_PARENT_ACCESS_GENERIC_DESCRIPTION" desc="Description shown on the parent access input dialog. Explains what code should be used to unlock the device.">
+        Enter Family Link parent access code.
       </message>
       <message name="IDS_ASH_LOGIN_PARENT_ACCESS_HELP" desc="Label of a button shown on the parent access input dialog.">
         Need help?
@@ -1711,6 +1711,9 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_MESSAGE_CENTER_HIDDEN_NOTIFICATION_COUNT_LABEL" desc="The label text the number of hidden notifications.">
         +<ph name="COUNT">$1<ex>2</ex></ph> more
+      </message>
+      <message name="IDS_ASH_MESSAGE_CENTER_STACKING_BAR_CLEAR_ALL_BUTTON_TOOLTIP" desc="The tooltip text for the top clear all button, which also has the total number of notifications. Note: This button only appears when there are 2 or more notifications.">
+        Clear all <ph name="COUNT">$1<ex>2</ex></ph> notifications
       </message>
       <message name="IDS_ASH_MESSAGE_CENTER_SETTINGS_BUTTON_TOOLTIP" desc="The tooltip text for visiting the appropriate settings page in the footer of the message center.">
         Settings
@@ -1914,6 +1917,9 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_MEDIA_NOTIFICATION_ACTION_NEXT_TRACK" desc="The button to trigger media playback to go to the next track.">
         Next Track
+      </message>
+      <message name="IDS_ASH_MEDIA_NOTIFICATION_ACCESSIBLE_NAME" desc="The accessible name for the media notification to control playback">
+        Media Controls
       </message>
     </messages>
   </release>

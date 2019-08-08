@@ -14,10 +14,12 @@
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
+#include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/worker_devtools_params.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
@@ -30,6 +32,7 @@
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -47,7 +50,9 @@ class FakeWorkerGlobalScope : public WorkerGlobalScope {
       WorkerThread* thread)
       : WorkerGlobalScope(std::move(creation_params),
                           thread,
-                          CurrentTimeTicks()) {}
+                          CurrentTimeTicks()) {
+    ReadyToRunClassicScript();
+  }
 
   ~FakeWorkerGlobalScope() override = default;
 
@@ -57,15 +62,37 @@ class FakeWorkerGlobalScope : public WorkerGlobalScope {
   }
 
   // WorkerGlobalScope
+  void Initialize(const KURL& response_url,
+                  network::mojom::ReferrerPolicy response_referrer_policy,
+                  mojom::IPAddressSpace response_address_space,
+                  const Vector<CSPHeaderAndType>& response_csp_headers,
+                  const Vector<String>* response_origin_trial_tokens) override {
+    InitializeURL(response_url);
+    SetReferrerPolicy(response_referrer_policy);
+    SetAddressSpace(response_address_space);
+
+    // These should be called after SetAddressSpace() to correctly override the
+    // address space by the "treat-as-public-address" CSP directive.
+    InitContentSecurityPolicyFromVector(response_csp_headers);
+    BindContentSecurityPolicyToExecutionContext();
+
+    OriginTrialContext::AddTokens(this, response_origin_trial_tokens);
+
+    // This should be called after OriginTrialContext::AddTokens() to install
+    // origin trial features in JavaScript's global object.
+    ScriptController()->PrepareForEvaluation();
+  }
   void FetchAndRunClassicScript(
       const KURL& script_url,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
+      WorkerResourceTimingNotifier& outside_resource_timing_notifier,
       const v8_inspector::V8StackTraceId& stack_id) override {
     NOTREACHED();
   }
   void FetchAndRunModuleScript(
       const KURL& module_url_record,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
+      WorkerResourceTimingNotifier& outside_resource_timing_notifier,
       network::mojom::FetchCredentialsMode) override {
     NOTREACHED();
   }
@@ -119,9 +146,10 @@ class WorkerThreadForTest : public WorkerThread {
 
   void WaitForInit() {
     base::WaitableEvent completion_event;
-    GetWorkerBackingThread().BackingThread().PostTask(
-        FROM_HERE, CrossThreadBind(&base::WaitableEvent::Signal,
-                                   CrossThreadUnretained(&completion_event)));
+    PostCrossThreadTask(
+        *GetWorkerBackingThread().BackingThread().GetTaskRunner(), FROM_HERE,
+        CrossThreadBindOnce(&base::WaitableEvent::Signal,
+                            CrossThreadUnretained(&completion_event)));
     completion_event.Wait();
   }
 

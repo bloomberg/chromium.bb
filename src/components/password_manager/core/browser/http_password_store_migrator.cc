@@ -47,7 +47,7 @@ HttpPasswordStoreMigrator::HttpPasswordStoreMigrator(
   GURL::Replacements rep;
   rep.SetSchemeStr(url::kHttpScheme);
   GURL http_origin = https_origin.ReplaceComponents(rep);
-  PasswordStore::FormDigest form(autofill::PasswordForm::SCHEME_HTML,
+  PasswordStore::FormDigest form(autofill::PasswordForm::Scheme::kHtml,
                                  http_origin.GetOrigin().spec(), http_origin);
   http_origin_domain_ = http_origin.GetOrigin();
   client_->GetPasswordStore()->GetLogins(form, this);
@@ -79,7 +79,8 @@ autofill::PasswordForm HttpPasswordStoreMigrator::MigrateHttpFormToHttps(
   if (!http_form.action.SchemeIs(url::kHttpsScheme))
     https_form.action = https_form.origin;
   https_form.form_data = autofill::FormData();
-  https_form.generation_upload_status = autofill::PasswordForm::NO_SIGNAL_SENT;
+  https_form.generation_upload_status =
+      autofill::PasswordForm::GenerationUploadStatus::kNoSignalSent;
   https_form.skip_zero_click = false;
   return https_form;
 }

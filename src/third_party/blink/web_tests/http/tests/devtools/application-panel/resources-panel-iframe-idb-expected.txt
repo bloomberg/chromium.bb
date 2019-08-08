@@ -24,6 +24,9 @@ Storage
 Cache
  Cache Storage
  Application Cache
+Background Services
+ Background Fetch
+ Background Sync
 Frames
  top
 
@@ -47,6 +50,9 @@ Storage
 Cache
  Cache Storage
  Application Cache
+Background Services
+ Background Fetch
+ Background Sync
 Frames
  top
 
@@ -74,6 +80,9 @@ Storage
 Cache
  Cache Storage
  Application Cache
+Background Services
+ Background Fetch
+ Background Sync
 Frames
  top
 

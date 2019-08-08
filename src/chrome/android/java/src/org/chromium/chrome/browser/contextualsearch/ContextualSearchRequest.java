@@ -30,6 +30,7 @@ class ContextualSearchRequest {
     private boolean mIsTranslationForced;
     private boolean mIsFullSearchUrlProvided;
 
+    private static final String GWS_NORMAL_PRIORITY_SEARCH_PATH = "search";
     private static final String GWS_LOW_PRIORITY_SEARCH_PATH = "s";
     private static final String GWS_SEARCH_NO_SUGGESTIONS_PARAM = "sns";
     private static final String GWS_SEARCH_NO_SUGGESTIONS_PARAM_VALUE = "1";
@@ -233,13 +234,18 @@ class ContextualSearchRequest {
      */
     @VisibleForTesting
     boolean isGoogleUrl(@Nullable String someUrl) {
-        return !TextUtils.isEmpty(someUrl) && UrlUtilities.nativeIsGoogleDomainUrl(someUrl, true);
+        return !TextUtils.isEmpty(someUrl) && UrlUtilities.nativeIsGoogleSubDomainUrl(someUrl);
     }
 
     /**
      * @return a low-priority {@code Uri} from the given base {@code Uri}.
      */
     private Uri makeLowPriorityUri(Uri baseUri) {
+        if (baseUri.getPath() == null
+                || !baseUri.getPath().contains(GWS_NORMAL_PRIORITY_SEARCH_PATH)) {
+            return baseUri;
+        }
+
         return baseUri.buildUpon()
                 .path(GWS_LOW_PRIORITY_SEARCH_PATH)
                 .appendQueryParameter(

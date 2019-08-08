@@ -7,9 +7,6 @@
 namespace display {
 namespace features {
 
-const base::Feature kHighDynamicRange{"HighDynamicRange",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-
 // This features allows listing all display modes of external displays in the
 // display settings and setting any one of them exactly as requested, which can
 // be very useful for debugging and development purposes.

@@ -7,12 +7,12 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "chrome/browser/chromeos/login/screens/update_required_view.h"
+#include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
 
 namespace chromeos {
 
 UpdateRequiredScreen::UpdateRequiredScreen(UpdateRequiredView* view)
-    : BaseScreen(OobeScreen::SCREEN_UPDATE_REQUIRED),
+    : BaseScreen(UpdateRequiredView::kScreenId),
       view_(view),
       weak_factory_(this) {
   if (view_)

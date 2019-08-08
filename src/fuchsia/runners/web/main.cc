@@ -12,11 +12,11 @@ int main(int argc, char** argv) {
   base::RunLoop run_loop;
 
   WebContentRunner runner(base::fuchsia::ServiceDirectory::GetDefault(),
-                          WebContentRunner::CreateDefaultWebContext(),
-                          run_loop.QuitClosure());
+                          WebContentRunner::CreateDefaultWebContext());
 
   // Run until there are no Components, or the last service client channel is
   // closed.
+  // TODO(https://crbug.com/952560): Implement Components v2 graceful exit.
   run_loop.Run();
 
   return 0;

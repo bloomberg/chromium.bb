@@ -74,8 +74,8 @@ android_resources("autofill_java_resources") {
 
 java_cpp_enum("autofill_core_browser_java_enums") {
   sources = [
-    "../core/browser/accessory_sheet_data.h",
-    "../core/browser/popup_item_ids.h",
+    "../core/browser/ui/accessory_sheet_enums.h",
+    "../core/browser/ui/popup_item_ids.h",
   ]
 }
 

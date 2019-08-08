@@ -64,7 +64,7 @@ ScrollAnimator::ScrollAnimator(ScrollableArea* scrollable_area,
                                WTF::TimeFunction time_function)
     : ScrollAnimatorBase(scrollable_area),
       time_function_(time_function),
-      last_granularity_(kScrollByPixel) {}
+      last_granularity_(ScrollGranularity::kScrollByPixel) {}
 
 ScrollAnimator::~ScrollAnimator() = default;
 
@@ -104,7 +104,7 @@ ScrollResult ScrollAnimator::UserScroll(ScrollGranularity granularity,
 
   TRACE_EVENT0("blink", "ScrollAnimator::scroll");
 
-  if (granularity == kScrollByPrecisePixel) {
+  if (granularity == ScrollGranularity::kScrollByPrecisePixel) {
     // Cancel scroll animation because asked to instant scroll.
     if (HasRunningAnimation())
       CancelAnimation();
@@ -293,7 +293,7 @@ void ScrollAnimator::CreateAnimationCurve() {
   DCHECK(!animation_curve_);
   animation_curve_ = std::make_unique<CompositorScrollOffsetAnimationCurve>(
       CompositorOffsetFromBlinkOffset(target_offset_),
-      last_granularity_ == kScrollByPixel
+      last_granularity_ == ScrollGranularity::kScrollByPixel
           ? CompositorScrollOffsetAnimationCurve::kScrollDurationInverseDelta
           : CompositorScrollOffsetAnimationCurve::kScrollDurationConstant);
   animation_curve_->SetInitialValue(

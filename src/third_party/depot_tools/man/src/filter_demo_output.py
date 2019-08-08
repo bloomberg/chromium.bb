@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import collections
 import os
 import re
@@ -13,7 +15,7 @@ from xml.sax.saxutils import escape
 from cStringIO import StringIO
 
 if not os.path.exists('ansi2html'):
-  print 'You must run ./make_docs.sh once before running this script.'
+  print('You must run ./make_docs.sh once before running this script.')
   sys.exit(1)
 
 # This dependency is pulled in by make_docs.sh
@@ -66,7 +68,7 @@ def main():
   backend = sys.argv[1]
   output = sys.stdin.read().rstrip()
 
-  callout_re = re.compile('\x1b\[(\d+)c\n')
+  callout_re = re.compile(r'\x1b\[(\d+)c\n')
   callouts = collections.defaultdict(int)
   for i, line in enumerate(output.splitlines(True)):
     m = callout_re.match(line)

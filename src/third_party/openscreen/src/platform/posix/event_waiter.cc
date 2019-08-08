@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/error.h"
+#include "osp_base/error.h"
 #include "platform/api/logging.h"
 #include "platform/posix/socket.h"
 

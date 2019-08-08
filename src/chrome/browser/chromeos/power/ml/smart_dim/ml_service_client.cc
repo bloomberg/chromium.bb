@@ -5,11 +5,13 @@
 #include "chrome/browser/chromeos/power/ml/smart_dim/ml_service_client.h"
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/power/ml/smart_dim/model_impl.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 #include "chromeos/services/machine_learning/public/mojom/graph_executor.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/model.mojom.h"
@@ -130,7 +132,10 @@ void MlServiceClientImpl::ExecuteCallback(
 void MlServiceClientImpl::InitMlServiceHandlesIfNeeded() {
   if (!model_) {
     // Load the model.
-    ModelSpecPtr spec = ModelSpec::New(ModelId::SMART_DIM);
+    ModelSpecPtr spec =
+        ModelSpec::New(base::FeatureList::IsEnabled(features::kSmartDimModelV3)
+                           ? ModelId::SMART_DIM_20190221
+                           : ModelId::SMART_DIM_20181115);
     chromeos::machine_learning::ServiceConnection::GetInstance()->LoadModel(
         std::move(spec), mojo::MakeRequest(&model_),
         base::BindOnce(&MlServiceClientImpl::LoadModelCallback,

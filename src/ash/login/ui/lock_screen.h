@@ -19,7 +19,6 @@ class Widget;
 namespace ash {
 
 class LockContentsView;
-class LoginDataDispatcher;
 class TrayAction;
 
 class ASH_EXPORT LockScreen : public TrayActionObserver,
@@ -58,14 +57,12 @@ class ASH_EXPORT LockScreen : public TrayActionObserver,
 
   ScreenType screen_type() const { return type_; }
 
-  // Returns the active data dispatcher.
-  LoginDataDispatcher* data_dispatcher() { return data_dispatcher_.get(); }
-
   // Returns if the screen has been shown (i.e. |LockWindow::Show| was called).
   bool is_shown() const { return is_shown_; }
 
   void FocusNextUser();
   void FocusPreviousUser();
+  void ShowParentAccessDialog();
 
   // TrayActionObserver:
   void OnLockScreenNoteStateChanged(mojom::TrayActionState state) override;
@@ -83,8 +80,6 @@ class ASH_EXPORT LockScreen : public TrayActionObserver,
 
   // The lock screen widget.
   std::unique_ptr<views::Widget> widget_;
-
-  std::unique_ptr<LoginDataDispatcher> data_dispatcher_;
 
   // Unowned pointer to the LockContentsView hosted in lock window.
   LockContentsView* contents_view_ = nullptr;

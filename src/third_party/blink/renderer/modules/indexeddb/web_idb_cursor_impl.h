@@ -31,11 +31,9 @@ class MODULES_EXPORT WebIDBCursorImpl : public WebIDBCursor {
                       const IDBKey* primary_key,
                       WebIDBCallbacks* callback) override;
   void CursorContinueCallback(std::unique_ptr<WebIDBCallbacks> callbacks,
-                              mojom::blink::IDBErrorPtr error,
-                              mojom::blink::IDBCursorValuePtr value);
+                              mojom::blink::IDBCursorResultPtr result);
   void PrefetchCallback(std::unique_ptr<WebIDBCallbacks> callbacks,
-                        mojom::blink::IDBErrorPtr error,
-                        mojom::blink::IDBCursorValuePtr value);
+                        mojom::blink::IDBCursorResultPtr result);
 
   void PostSuccessHandlerCallback() override;
 
@@ -53,8 +51,7 @@ class MODULES_EXPORT WebIDBCursorImpl : public WebIDBCursor {
 
  private:
   void AdvanceCallback(std::unique_ptr<WebIDBCallbacks> callbacks,
-                       mojom::blink::IDBErrorPtr error,
-                       mojom::blink::IDBCursorValuePtr value);
+                       mojom::blink::IDBCursorResultPtr result);
   mojom::blink::IDBCallbacksAssociatedPtrInfo GetCallbacksProxy(
       std::unique_ptr<WebIDBCallbacks> callbacks);
 

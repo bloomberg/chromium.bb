@@ -22,8 +22,8 @@ class CORE_EXPORT V8ThrowDOMException {
   static void Init();
 
   // Creates and returns a DOMException object, or returns an empty handle if
-  // the isolate is being terminated. Unlike DOMException::Create, this function
-  // associates the stacktrace with the returned object.
+  // the isolate is being terminated. Unlike the DOMException constructor,
+  // this function associates the stacktrace with the returned object.
   //
   // |unsanitized_message| should be specified iff SecurityError.
   static v8::Local<v8::Value> CreateOrEmpty(

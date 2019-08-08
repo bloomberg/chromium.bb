@@ -101,22 +101,6 @@ interface VideoEncodeAccelerator {
 
   // Encodes the given frame.
   // Parameters:
-  //  |frame_fd| is the handle of the video frame buffer. This could be the
-  //  file descriptor of the shared memory or the dmabuf, depends on the
-  //  storage type assigned in Initialize().
-  //  |planes| is arrays of offset and stride of planes in the video frame.
-  //  |timestamp| the timestamp of the video frame(in microseconds).
-  //  |force_keyframe| forces the encoding of a keyframe for this frame.
-  // Callback:
-  //  Called when the frame has been processed and no longer used by this
-  //  accelerator.
-  EncodeDeprecated@2(handle frame_fd,
-                     array<VideoFramePlane> planes,
-                     int64 timestamp,
-                     bool force_keyframe) => ();
-
-  // Encodes the given frame.
-  // Parameters:
   //  |format| is the pixel format of video frame. This could be different from
   //  pixel format configured on Initialize().
   //  |frame_fd| is the handle of the video frame buffer. This could be the

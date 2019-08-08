@@ -16,7 +16,6 @@
 #include "base/callback.h"
 #include "services/content/public/cpp/navigable_contents_view.h"
 #include "ui/aura/window.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -146,8 +145,6 @@ void AssistantWebView::OnDeepLinkReceived(
 
   contents_ = std::make_unique<content::NavigableContents>(
       contents_factory_.get(), std::move(contents_params));
-  if (features::IsUsingWindowService())
-    contents_->ForceUseWindowService();
 
   // We observe |contents_| so that we can handle events from the underlying
   // web contents.

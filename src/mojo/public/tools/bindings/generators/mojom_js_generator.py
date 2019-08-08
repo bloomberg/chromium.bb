@@ -253,10 +253,12 @@ class Generator(generator.Generator):
   def _GetParameters(self, for_compile=False):
     return {
       "enums": self.module.enums,
+      "html_imports": self._GenerateHtmlImports(),
       "imports": self.module.imports,
       "interfaces": self.module.interfaces,
       "kinds": self.module.kinds,
       "module": self.module,
+      "mojom_filename": os.path.basename(self.module.path),
       "mojom_namespace": self.module.mojom_namespace,
       "structs": self.module.structs + self._GetStructsFromMethods(),
       "unions": self.module.unions,
@@ -341,6 +343,10 @@ class Generator(generator.Generator):
   def _GenerateLiteBindings(self):
     return self._GetParameters()
 
+  @UseJinja("lite/mojom.html.tmpl")
+  def _GenerateLiteHtml(self):
+    return self._GetParameters()
+
   @UseJinja("lite/mojom-lite.js.tmpl")
   def _GenerateLiteBindingsForCompile(self):
     return self._GetParameters(for_compile=True)
@@ -359,6 +365,7 @@ class Generator(generator.Generator):
     self.Write(self._GenerateAMDModule(), "%s.js" % self.module.path)
     self.Write(self._GenerateExterns(), "%s.externs.js" % self.module.path)
     if self.js_bindings_mode == "new":
+      self.Write(self._GenerateLiteHtml(), "%s.html" % self.module.path)
       self.Write(self._GenerateLiteBindings(), "%s-lite.js" % self.module.path)
       self.Write(self._GenerateLiteBindingsForCompile(),
           "%s-lite-for-compile.js" % self.module.path)
@@ -401,10 +408,12 @@ class Generator(generator.Generator):
     if mojom.IsInterfaceRequestKind(kind) or mojom.IsPendingReceiverKind(kind):
       return "mojo.InterfaceRequest"
     # TODO(calamity): Support associated interfaces properly.
-    if mojom.IsAssociatedInterfaceKind(kind):
+    if (mojom.IsAssociatedInterfaceKind(kind) or
+        mojom.IsPendingAssociatedRemoteKind(kind)):
       return "mojo.AssociatedInterfacePtrInfo"
     # TODO(calamity): Support associated interface requests properly.
-    if mojom.IsAssociatedInterfaceRequestKind(kind):
+    if (mojom.IsAssociatedInterfaceRequestKind(kind) or
+        mojom.IsPendingAssociatedReceiverKind(kind)):
       return "mojo.AssociatedInterfaceRequest"
     # TODO(calamity): Support enums properly.
 
@@ -459,10 +468,12 @@ class Generator(generator.Generator):
     if mojom.IsInterfaceRequestKind(kind) or mojom.IsPendingReceiverKind(kind):
       return name + "Request"
     # TODO(calamity): Support associated interfaces properly.
-    if mojom.IsAssociatedInterfaceKind(kind):
+    if (mojom.IsAssociatedInterfaceKind(kind) or
+        mojom.IsPendingAssociatedRemoteKind(kind)):
       return "Object"
     # TODO(calamity): Support associated interface requests properly.
-    if mojom.IsAssociatedInterfaceRequestKind(kind):
+    if (mojom.IsAssociatedInterfaceRequestKind(kind) or
+        mojom.IsPendingAssociatedReceiverKind(kind)):
       return "Object"
 
     raise Exception("No valid closure type: %s" % kind)
@@ -553,11 +564,13 @@ class Generator(generator.Generator):
       return "mojo.internal.InterfaceProxy(%sProxy)" % name
     if mojom.IsInterfaceRequestKind(kind) or mojom.IsPendingReceiverKind(kind):
       return "mojo.internal.InterfaceRequest(%sRequest)" % name
-    if mojom.IsAssociatedInterfaceKind(kind):
+    if (mojom.IsAssociatedInterfaceKind(kind) or
+        mojom.IsPendingAssociatedRemoteKind(kind)):
       # TODO(rockot): Implement associated interfaces.
       return "mojo.internal.AssociatedInterfaceProxy(%sProxy)" % (
           name)
-    if mojom.IsAssociatedInterfaceRequestKind(kind):
+    if (mojom.IsAssociatedInterfaceRequestKind(kind) or
+        mojom.IsPendingAssociatedReceiverKind(kind)):
       return "mojo.internal.AssociatedInterfaceRequest(%s)" % name
 
     return name
@@ -594,9 +607,11 @@ class Generator(generator.Generator):
     if (mojom.IsInterfaceRequestKind(field.kind) or
         mojom.IsPendingReceiverKind(field.kind)):
       return "new bindings.InterfaceRequest()"
-    if mojom.IsAssociatedInterfaceKind(field.kind):
+    if (mojom.IsAssociatedInterfaceKind(field.kind) or
+        mojom.IsPendingAssociatedRemoteKind(field.kind)):
       return "new associatedBindings.AssociatedInterfacePtrInfo()"
-    if mojom.IsAssociatedInterfaceRequestKind(field.kind):
+    if (mojom.IsAssociatedInterfaceRequestKind(field.kind) or
+        mojom.IsPendingAssociatedReceiverKind(field.kind)):
       return "new associatedBindings.AssociatedInterfaceRequest()"
     if mojom.IsEnumKind(field.kind):
       return "0"
@@ -641,10 +656,12 @@ class Generator(generator.Generator):
       return "codec.%s" % (
           "NullableInterfaceRequest" if mojom.IsNullableKind(kind)
                                      else "InterfaceRequest")
-    if mojom.IsAssociatedInterfaceKind(kind):
+    if (mojom.IsAssociatedInterfaceKind(kind) or
+        mojom.IsPendingAssociatedRemoteKind(kind)):
       return "codec.%s" % ("NullableAssociatedInterfacePtrInfo"
           if mojom.IsNullableKind(kind) else "AssociatedInterfacePtrInfo")
-    if mojom.IsAssociatedInterfaceRequestKind(kind):
+    if (mojom.IsAssociatedInterfaceRequestKind(kind) or
+        mojom.IsPendingAssociatedReceiverKind(kind)):
       return "codec.%s" % ("NullableAssociatedInterfaceRequest"
           if mojom.IsNullableKind(kind) else "AssociatedInterfaceRequest")
     if mojom.IsEnumKind(kind):
@@ -793,6 +810,13 @@ class Generator(generator.Generator):
 
     return self._ExpressionToText(token)
 
+  def _GenerateHtmlImports(self):
+    result = []
+    for full_import in self.module.imports:
+      result.append(os.path.relpath(full_import.path,
+                                    os.path.dirname(self.module.path)))
+    return result
+
   def _GetStructsFromMethods(self):
     result = []
     for interface in self.module.interfaces:
@@ -812,10 +836,12 @@ class Generator(generator.Generator):
     elif mojom.IsPendingRemoteKind(kind):
       return '{0}.{1}Ptr'.format(kind.kind.module.namespace,
                                  kind.kind.name)
-    elif mojom.IsAssociatedInterfaceRequestKind(kind):
+    elif (mojom.IsAssociatedInterfaceRequestKind(kind) or
+          mojom.IsPendingAssociatedReceiverKind(kind)):
       return '{0}.{1}AssociatedRequest'.format(kind.kind.module.namespace,
                                                kind.kind.name)
-    elif mojom.IsAssociatedInterfaceKind(kind):
+    elif (mojom.IsAssociatedInterfaceKind(kind) or
+          mojom.IsPendingAssociatedRemoteKind(kind)):
       return '{0}.{1}AssociatedPtr'.format(kind.kind.module.namespace,
                                            kind.kind.name)
     elif mojom.IsSharedBufferKind(kind):

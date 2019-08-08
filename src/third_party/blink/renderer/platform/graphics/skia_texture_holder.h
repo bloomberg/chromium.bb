@@ -7,6 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "third_party/blink/renderer/platform/graphics/texture_holder.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
@@ -37,10 +38,10 @@ class PLATFORM_EXPORT SkiaTextureHolder final : public TextureHolder {
   SkiaTextureHolder(std::unique_ptr<TextureHolder>);
 
  private:
-  //  void ReleaseImageThreadSafe();
-
-  // The m_image should always be texture-backed
+  // The image_ should always be texture-backed.
   sk_sp<SkImage> image_;
+
+  GLuint shared_image_texture_id_ = 0u;
   THREAD_CHECKER(thread_checker_);
 };
 

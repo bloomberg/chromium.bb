@@ -20,13 +20,15 @@ using net::URLRequestStatus;
 
 namespace {
 
+const char kPublicTopicNameKey[] = "publicTopicName";
 const char kPrivateTopicNameKey[] = "privateTopicName";
 
-base::Value* GetPrivateTopicName(base::Value* value) {
-  if (!value || !value->is_dict()) {
+const std::string* GetTopicName(base::Value& value) {
+  if (!value.is_dict())
     return nullptr;
-  }
-  return value->FindKeyOfType(kPrivateTopicNameKey, base::Value::Type::STRING);
+  if (value.FindBoolKey("isPublic").value_or(false))
+    return value.FindStringKey(kPublicTopicNameKey);
+  return value.FindStringKey(kPrivateTopicNameKey);
 }
 
 // Subscription status values for UMA_HISTOGRAM.
@@ -177,15 +179,12 @@ void PerUserTopicRegistrationRequest::OnJsonParseFailure(
            std::string());
 }
 
-void PerUserTopicRegistrationRequest::OnJsonParseSuccess(
-    std::unique_ptr<base::Value> value) {
-  const base::Value* private_topic_name_value =
-      GetPrivateTopicName(value.get());
+void PerUserTopicRegistrationRequest::OnJsonParseSuccess(base::Value value) {
+  const std::string* private_topic_name = GetTopicName(value);
   RecordRequestStatus(SubscriptionStatus::kSuccess, type_, topic_);
-  if (private_topic_name_value) {
+  if (private_topic_name) {
     std::move(request_completed_callback_)
-        .Run(Status(StatusCode::SUCCESS, std::string()),
-             private_topic_name_value->GetString());
+        .Run(Status(StatusCode::SUCCESS, std::string()), *private_topic_name);
   } else {
     RecordRequestStatus(SubscriptionStatus::kParsingFailure, type_, topic_);
     std::move(request_completed_callback_)
@@ -212,9 +211,14 @@ PerUserTopicRegistrationRequest::Builder::Build() const {
           scope_.c_str(), project_id_.c_str(), token_.c_str());
       break;
     case UNSUBSCRIBE:
+      std::string public_param;
+      if (topic_is_public_) {
+        public_param = "subscription.is_public=true&";
+      }
       url = base::StringPrintf(
-          "%s/v1/perusertopics/%s/rel/topics/%s?subscriber_token=%s",
-          scope_.c_str(), project_id_.c_str(), topic_.c_str(), token_.c_str());
+          "%s/v1/perusertopics/%s/rel/topics/%s?%ssubscriber_token=%s",
+          scope_.c_str(), project_id_.c_str(), topic_.c_str(),
+          public_param.c_str(), token_.c_str());
       break;
   }
   GURL full_url(url);
@@ -277,6 +281,13 @@ PerUserTopicRegistrationRequest::Builder::SetType(RequestType type) {
   return *this;
 }
 
+PerUserTopicRegistrationRequest::Builder&
+PerUserTopicRegistrationRequest::Builder::SetTopicIsPublic(
+    bool topic_is_public) {
+  topic_is_public_ = topic_is_public;
+  return *this;
+}
+
 HttpRequestHeaders PerUserTopicRegistrationRequest::Builder::BuildHeaders()
     const {
   HttpRequestHeaders headers;
@@ -290,6 +301,9 @@ std::string PerUserTopicRegistrationRequest::Builder::BuildBody() const {
   base::DictionaryValue request;
 
   request.SetString("public_topic_name", topic_);
+  if (topic_is_public_) {
+    request.SetBoolean("is_public", true);
+  }
 
   std::string request_json;
   bool success = base::JSONWriter::Write(request, &request_json);

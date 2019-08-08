@@ -98,7 +98,7 @@ void JNI_CronetTestUtil_PrepareNetworkThread(
 
 static void CleanupNetworkThreadOnNetworkThread() {
   DCHECK(g_message_loop);
-  DCHECK(g_message_loop->IsBoundToCurrentThread());
+  DCHECK(g_message_loop->task_runner()->RunsTasksInCurrentSequence());
   delete g_message_loop;
   g_message_loop = nullptr;
 }

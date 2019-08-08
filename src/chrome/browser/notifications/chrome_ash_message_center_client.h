@@ -10,6 +10,8 @@
 #include "chrome/browser/notifications/notification_platform_bridge.h"
 #include "chrome/browser/notifications/notification_platform_bridge_chromeos.h"
 #include "chrome/browser/notifications/notifier_controller.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
 
@@ -19,7 +21,8 @@
 // NotifierControllers to provide notifier settings information to Ash (visible
 // in NotifierSettingsView).
 class ChromeAshMessageCenterClient : public ash::mojom::AshMessageCenterClient,
-                                     public NotifierController::Observer {
+                                     public NotifierController::Observer,
+                                     public content::NotificationObserver {
  public:
   explicit ChromeAshMessageCenterClient(
       NotificationPlatformBridgeDelegate* delegate);
@@ -57,6 +60,14 @@ class ChromeAshMessageCenterClient : public ash::mojom::AshMessageCenterClient,
   static void FlushForTesting();
 
  private:
+  void RespondWithNotifierList(Profile* profile,
+                               GetNotifierListCallback callback) const;
+
+  // content::NotificationObserver override.
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
+
   NotificationPlatformBridgeDelegate* delegate_;
 
   // A mapping from display token to notification ID. The display token is
@@ -73,6 +84,8 @@ class ChromeAshMessageCenterClient : public ash::mojom::AshMessageCenterClient,
 
   ash::mojom::AshMessageCenterControllerPtr controller_;
   mojo::AssociatedBinding<ash::mojom::AshMessageCenterClient> binding_;
+  content::NotificationRegistrar registrar_;
+  GetNotifierListCallback deferred_notifier_list_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAshMessageCenterClient);
 };

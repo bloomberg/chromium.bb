@@ -81,11 +81,17 @@ class TestPathFinder(unittest.TestCase):
 
     def test_strip_webdriver_tests_path(self):
         finder = PathFinder(MockFileSystem())
-        path_with_webdriver_prefix = 'external/wpt/webdriver/' + 'foo/bar.py::test'
+        path_with_webdriver_prefix = 'external/wpt/webdriver/' + 'foo/bar.py>>test'
         self.assertEqual(
             finder.strip_webdriver_tests_path(path_with_webdriver_prefix),
-            'foo/bar.py::test')
-        path_without_webdriver_prefix = 'external/wpt' + 'bar/foo.py::test'
+            'foo/bar.py>>test')
+        path_without_webdriver_prefix = 'external/wpt' + 'bar/foo.py>>test'
         self.assertEqual(
             finder.strip_webdriver_tests_path(path_without_webdriver_prefix),
             path_without_webdriver_prefix)
+
+    def test_is_webdriver_test_path(self):
+        finder = PathFinder(MockFileSystem())
+        path_with_webdriver_prefix = 'external/wpt/webdriver/' + 'foo/bar.py>>test'
+
+        self.assertTrue(finder.is_webdriver_test_path(path_with_webdriver_prefix))

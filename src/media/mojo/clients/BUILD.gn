@@ -88,23 +88,6 @@ jumbo_source_set("clients") {
   }
 }
 
-source_set("jpeg_decode_accelerator") {
-  visibility = [
-    "//content/browser",
-    "//media/capture:capture_lib",
-  ]
-
-  sources = [
-    "mojo_mjpeg_decode_accelerator.cc",
-    "mojo_mjpeg_decode_accelerator.h",
-  ]
-
-  deps = [
-    "//base",
-    "//media/mojo/interfaces",
-  ]
-}
-
 source_set("unit_tests") {
   testonly = true
 

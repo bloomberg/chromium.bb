@@ -368,6 +368,10 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   void UpdateBrowserToolbar();
   void UpdateBrowserWindow();
 
+  // Registers a WebContentsModalDialogManager for our WebContents in order to
+  // display web modal dialogs triggered by it.
+  void RegisterModalDialogManager(Browser* browser);
+
   std::unique_ptr<ObserverWithAccessor> inspected_contents_observer_;
 
   FrontendType frontend_type_;

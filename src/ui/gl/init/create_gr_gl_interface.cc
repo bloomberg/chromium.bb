@@ -32,6 +32,21 @@ GrGLFunction<R GR_GL_FUNCTION_TYPE(Args...)> bind_slow(
 }
 
 template <typename R, typename... Args>
+GrGLFunction<R GR_GL_FUNCTION_TYPE(Args...)> bind_slow_on_mac(
+    R(GL_BINDING_CALL* func)(Args...),
+    gl::ProgressReporter* progress_reporter) {
+#if defined(OS_MACOSX)
+  if (!progress_reporter)
+    return func;
+  return [func, progress_reporter](Args... args) {
+    gl::ScopedProgressReporter scoped_reporter(progress_reporter);
+    return func(args...);
+  };
+#endif
+  return func;
+}
+
+template <typename R, typename... Args>
 GrGLFunction<R GR_GL_FUNCTION_TYPE(Args...)> bind_with_flush_on_mac(
     R(GL_BINDING_CALL* func)(Args...)) {
 #if defined(OS_MACOSX)
@@ -144,7 +159,8 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
   functions->fBindUniformLocation = gl->glBindUniformLocationCHROMIUMFn;
   functions->fBeginQuery = gl->glBeginQueryFn;
   functions->fBindSampler = gl->glBindSamplerFn;
-  functions->fBindTexture = gl->glBindTextureFn;
+  functions->fBindTexture =
+      bind_slow_on_mac(gl->glBindTextureFn, progress_reporter);
 
   functions->fBlendBarrier = gl->glBlendBarrierKHRFn;
 
@@ -153,7 +169,8 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
   functions->fBlendFunc = gl->glBlendFuncFn;
   functions->fBufferData = gl->glBufferDataFn;
   functions->fBufferSubData = gl->glBufferSubDataFn;
-  functions->fClear = gl->glClearFn;
+  functions->fClear =
+      bind_slow_with_flush_on_mac(gl->glClearFn, progress_reporter);
   functions->fClearColor = gl->glClearColorFn;
   functions->fClearStencil = gl->glClearStencilFn;
   functions->fClearTexImage = gl->glClearTexImageFn;
@@ -177,24 +194,30 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
   functions->fDeleteQueries = gl->glDeleteQueriesFn;
   functions->fDeleteSamplers = gl->glDeleteSamplersFn;
   functions->fDeleteShader = bind_slow(gl->glDeleteShaderFn, progress_reporter);
-  functions->fDeleteTextures = bind_with_flush_on_mac(gl->glDeleteTexturesFn);
+  functions->fDeleteTextures =
+      bind_slow_with_flush_on_mac(gl->glDeleteTexturesFn, progress_reporter);
   functions->fDepthMask = gl->glDepthMaskFn;
   functions->fDisable = gl->glDisableFn;
   functions->fDisableVertexAttribArray = gl->glDisableVertexAttribArrayFn;
   functions->fDiscardFramebuffer = gl->glDiscardFramebufferEXTFn;
-  functions->fDrawArrays = gl->glDrawArraysFn;
+  functions->fDrawArrays =
+      bind_slow_on_mac(gl->glDrawArraysFn, progress_reporter);
   functions->fDrawBuffer = gl->glDrawBufferFn;
   functions->fDrawBuffers = gl->glDrawBuffersARBFn;
-  functions->fDrawElements = gl->glDrawElementsFn;
+  functions->fDrawElements =
+      bind_slow_on_mac(gl->glDrawElementsFn, progress_reporter);
 
-  functions->fDrawArraysInstanced = gl->glDrawArraysInstancedANGLEFn;
-  functions->fDrawElementsInstanced = gl->glDrawElementsInstancedANGLEFn;
+  functions->fDrawArraysInstanced =
+      bind_slow_on_mac(gl->glDrawArraysInstancedANGLEFn, progress_reporter);
+  functions->fDrawElementsInstanced =
+      bind_slow_on_mac(gl->glDrawElementsInstancedANGLEFn, progress_reporter);
 
   // GL 4.0 or GL_ARB_draw_indirect or ES 3.1
   functions->fDrawArraysIndirect = gl->glDrawArraysIndirectFn;
   functions->fDrawElementsIndirect = gl->glDrawElementsIndirectFn;
 
-  functions->fDrawRangeElements = gl->glDrawRangeElementsFn;
+  functions->fDrawRangeElements =
+      bind_slow_on_mac(gl->glDrawRangeElementsFn, progress_reporter);
   functions->fEnable = gl->glEnableFn;
   functions->fEnableVertexAttribArray = gl->glEnableVertexAttribArrayFn;
   functions->fEndQuery = gl->glEndQueryFn;
@@ -262,8 +285,10 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
   functions->fTexParameterfv = gl->glTexParameterfvFn;
   functions->fTexParameteri = gl->glTexParameteriFn;
   functions->fTexParameteriv = gl->glTexParameterivFn;
-  functions->fTexStorage2D = bind_with_flush_on_mac(gl->glTexStorage2DEXTFn);
-  functions->fTexSubImage2D = bind_with_flush_on_mac(gl->glTexSubImage2DFn);
+  functions->fTexStorage2D =
+      bind_slow_with_flush_on_mac(gl->glTexStorage2DEXTFn, progress_reporter);
+  functions->fTexSubImage2D =
+      bind_slow_with_flush_on_mac(gl->glTexSubImage2DFn, progress_reporter);
 
   // GL 4.5 or GL_ARB_texture_barrier or GL_NV_texture_barrier
   // functions->fTextureBarrier = gl->glTextureBarrierFn;

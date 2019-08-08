@@ -61,7 +61,8 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   void RemoveObserver(GpuDataManagerObserver* observer) override;
   void DisableHardwareAcceleration() override;
   bool HardwareAccelerationEnabled() const override;
-  void AppendGpuCommandLine(base::CommandLine* command_line) const override;
+  void AppendGpuCommandLine(base::CommandLine* command_line,
+                            GpuProcessKind kind) const override;
 
   void RequestGpuSupportedRuntimeVersion() const;
   bool GpuProcessStartAllowed() const;
@@ -89,7 +90,8 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   gpu::GpuFeatureInfo GetGpuFeatureInfoForHardwareGpu() const;
 
   // Update GpuPreferences based on blacklisting decisions.
-  void UpdateGpuPreferences(gpu::GpuPreferences* gpu_preferences) const;
+  void UpdateGpuPreferences(gpu::GpuPreferences* gpu_preferences,
+                            GpuProcessKind kind) const;
 
   void AddLogMessage(int level,
                      const std::string& header,

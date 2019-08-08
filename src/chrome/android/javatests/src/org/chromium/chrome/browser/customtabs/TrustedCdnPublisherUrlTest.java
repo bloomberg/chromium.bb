@@ -370,7 +370,7 @@ public class TrustedCdnPublisherUrlTest {
         String testUrl = mWebServer.getResponseUrl("/test.html");
         mCustomTabActivityTestRule.loadUrl(testUrl);
         verifyUrl(UrlFormatter.formatUrlForSecurityDisplayOmitScheme(testUrl));
-        verifySecurityIcon(R.drawable.offline_pin_round);
+        verifySecurityIcon(R.drawable.ic_offline_pin_24dp);
     }
 
     private void runTrustedCdnPublisherUrlTest(@Nullable String publisherUrl, String clientPackage,

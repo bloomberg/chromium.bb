@@ -31,8 +31,6 @@ class SVGFEOffsetElement final : public SVGFilterPrimitiveStandardAttributes {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_NODE_FACTORY(SVGFEOffsetElement);
-
   explicit SVGFEOffsetElement(Document&);
 
   SVGAnimatedNumber* dx() { return dx_.Get(); }

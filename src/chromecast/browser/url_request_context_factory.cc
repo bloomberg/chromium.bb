@@ -38,8 +38,6 @@
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/http_stream_factory.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
-#include "net/ssl/channel_id_service.h"
-#include "net/ssl/default_channel_id_store.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/file_protocol_handler.h"
@@ -235,8 +233,9 @@ void URLRequestContextFactory::InitializeSystemContextDependencies() {
     return;
 
   host_resolver_manager_ = std::make_unique<net::HostResolverManager>(
-      net::HostResolver::Options(), nullptr);
-  cert_verifier_ = net::CertVerifier::CreateDefault();
+      net::HostResolver::ManagerOptions(), nullptr);
+  cert_verifier_ =
+      net::CertVerifier::CreateDefault(/*cert_net_fetcher=*/nullptr);
   ssl_config_service_.reset(new net::SSLConfigServiceDefaults);
   transport_security_state_.reset(new net::TransportSecurityState());
   cert_transparency_verifier_.reset(new net::MultiLogCTVerifier());
@@ -432,7 +431,6 @@ void URLRequestContextFactory::ConfigureURLRequestContext(
     const std::unique_ptr<CastNetworkDelegate>& network_delegate,
     const std::unique_ptr<net::HostResolver>& host_resolver) {
   // common settings
-  context->set_channel_id_service(channel_id_service_.get());
   context->set_cert_verifier(cert_verifier_.get());
   context->set_cert_transparency_verifier(cert_transparency_verifier_.get());
   context->set_ct_policy_enforcer(ct_policy_enforcer_.get());

@@ -34,12 +34,10 @@ ScopedViewsTestHelper::ScopedViewsTestHelper(
 
   test_helper_.reset(
       ViewsTestHelper::Create(context_factory, context_factory_private));
-  platform_test_helper_->OnTestHelperCreated(test_helper_.get());
   test_helper_->SetUp();
 
   ui::InitializeInputMethodForTesting();
-  if (!ui::Clipboard::GetForCurrentThread())
-    ui::TestClipboard::CreateForCurrentThread();
+  ui::TestClipboard::CreateForCurrentThread();
 }
 
 ScopedViewsTestHelper::~ScopedViewsTestHelper() {
@@ -50,8 +48,8 @@ ScopedViewsTestHelper::~ScopedViewsTestHelper() {
 
   test_views_delegate_.reset();
 
-  // The Mus PlatformTestHelper has state that is deleted by
-  // ui::TerminateContextFactoryForTests().
+  // The Mus PlatformTestHelper has state that is deleted by destruction of
+  // ui::TestContextFactories.
   platform_test_helper_.reset();
 }
 

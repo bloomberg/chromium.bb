@@ -52,6 +52,7 @@ constexpr char FakeCryptohomeClient::kStubTpmPassword[] = "Stub-TPM-password";
 
 FakeCryptohomeClient::FakeCryptohomeClient()
     : service_is_available_(true),
+      service_reported_not_available_(false),
       remove_firmware_management_parameters_from_tpm_call_count_(0),
       async_call_id_(1),
       unmount_result_(true),
@@ -88,9 +89,9 @@ void FakeCryptohomeClient::RemoveObserver(Observer* observer) {
 
 void FakeCryptohomeClient::WaitForServiceToBeAvailable(
     WaitForServiceToBeAvailableCallback callback) {
-  if (service_is_available_) {
+  if (service_is_available_ || service_reported_not_available_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), true));
+        FROM_HERE, base::BindOnce(std::move(callback), service_is_available_));
   } else {
     pending_wait_for_service_to_be_available_callbacks_.push_back(
         std::move(callback));
@@ -608,7 +609,21 @@ void FakeCryptohomeClient::MountEx(
 void FakeCryptohomeClient::LockToSingleUserMountUntilReboot(
     const cryptohome::LockToSingleUserMountUntilRebootRequest& request,
     DBusMethodCallback<cryptohome::BaseReply> callback) {
-  ReturnProtobufMethodCallback(cryptohome::BaseReply(), std::move(callback));
+  cryptohome::BaseReply reply;
+  cryptohome::LockToSingleUserMountUntilRebootReply* mutable_reply =
+      reply.MutableExtension(
+          cryptohome::LockToSingleUserMountUntilRebootReply::reply);
+  if (cryptohome_error_ == cryptohome::CRYPTOHOME_ERROR_NOT_SET) {
+    mutable_reply->set_result(
+        cryptohome::LockToSingleUserMountUntilRebootResult::SUCCESS);
+    is_device_locked_to_single_user_ = true;
+  } else {
+    mutable_reply->set_result(
+        cryptohome::LockToSingleUserMountUntilRebootResult::
+            FAILED_TO_EXTEND_PCR);
+  }
+
+  ReturnProtobufMethodCallback(reply, std::move(callback));
 }
 
 void FakeCryptohomeClient::AddKeyEx(
@@ -679,10 +694,12 @@ void FakeCryptohomeClient::MigrateToDircrypto(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), true));
   dircrypto_migration_progress_ = 0;
-  dircrypto_migration_progress_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kDircryptoMigrationUpdateIntervalMs),
-      this, &FakeCryptohomeClient::OnDircryptoMigrationProgressUpdated);
+  if (run_default_dircrypto_migration_) {
+    dircrypto_migration_progress_timer_.Start(
+        FROM_HERE,
+        base::TimeDelta::FromMilliseconds(kDircryptoMigrationUpdateIntervalMs),
+        this, &FakeCryptohomeClient::OnDircryptoMigrationProgressUpdated);
+  }
 }
 
 void FakeCryptohomeClient::RemoveFirmwareManagementParametersFromTpm(
@@ -736,6 +753,16 @@ void FakeCryptohomeClient::SetServiceIsAvailable(bool is_available) {
   callbacks.swap(pending_wait_for_service_to_be_available_callbacks_);
   for (auto& callback : callbacks)
     std::move(callback).Run(true);
+}
+
+void FakeCryptohomeClient::ReportServiceIsNotAvailable() {
+  DCHECK(!service_is_available_);
+  service_reported_not_available_ = true;
+
+  std::vector<WaitForServiceToBeAvailableCallback> callbacks;
+  callbacks.swap(pending_wait_for_service_to_be_available_callbacks_);
+  for (auto& callback : callbacks)
+    std::move(callback).Run(false);
 }
 
 void FakeCryptohomeClient::SetTpmAttestationUserCertificate(

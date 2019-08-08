@@ -99,8 +99,6 @@
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/peer_connection_tracker.h"
 #include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
-#include "content/renderer/mus/render_widget_window_tree_client_factory.h"
-#include "content/renderer/mus/renderer_window_tree_client.h"
 #include "content/renderer/net_info_helper.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/render_frame_proxy.h"
@@ -143,7 +141,6 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
 #include "services/ws/public/cpp/gpu/gpu.h"
-#include "services/ws/public/mojom/constants.mojom.h"
 #include "skia/ext/skia_memory_dump_provider.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_cache.h"
@@ -161,7 +158,6 @@
 #include "third_party/boringssl/src/include/openssl/evp.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "ui/base/layout.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display_switches.h"
 
@@ -716,6 +712,7 @@ RenderThreadImpl::RenderThreadImpl(
 
 void RenderThreadImpl::Init() {
   TRACE_EVENT0("startup", "RenderThreadImpl::Init");
+  init_start_ = base::TimeTicks::Now();
 
   GetContentClient()->renderer()->PostIOThreadCreated(GetIOTaskRunner().get());
 
@@ -738,10 +735,7 @@ void RenderThreadImpl::Init() {
       base::BindRepeating(&CreateSingleSampleMetricsProvider,
                           main_thread_runner(), GetConnector()));
 
-  gpu_ = ws::Gpu::Create(GetConnector(),
-                         features::IsMultiProcessMash()
-                             ? ws::mojom::kServiceName
-                             : mojom::kBrowserServiceName,
+  gpu_ = ws::Gpu::Create(GetConnector(), mojom::kBrowserServiceName,
                          GetIOTaskRunner());
 
   resource_dispatcher_.reset(new ResourceDispatcher());
@@ -777,12 +771,7 @@ void RenderThreadImpl::Init() {
 
   audio_output_ipc_factory_.emplace(GetIOTaskRunner());
 
-#if defined(USE_AURA)
-  if (features::IsMultiProcessMash())
-    CreateRenderWidgetWindowTreeClientFactory(GetServiceManagerConnection());
-#endif
-
-  registry->AddInterface(base::Bind(&SharedWorkerFactoryImpl::Create),
+  registry->AddInterface(base::BindRepeating(&SharedWorkerFactoryImpl::Create),
                          base::ThreadTaskRunnerHandle::Get());
   registry->AddInterface(base::BindRepeating(CreateResourceUsageReporter,
                                              weak_factory_.GetWeakPtr()),
@@ -796,7 +785,8 @@ void RenderThreadImpl::Init() {
         std::make_unique<service_manager::BinderRegistryWithArgs<
             const service_manager::BindSourceInfo&>>();
     registry_with_source_info->AddInterface(
-        base::Bind(&CreateFrameFactory), base::ThreadTaskRunnerHandle::Get());
+        base::BindRepeating(&CreateFrameFactory),
+        base::ThreadTaskRunnerHandle::Get());
     GetServiceManagerConnection()->AddConnectionFilter(
         std::make_unique<SimpleConnectionFilterWithSourceInfo>(
             std::move(registry_with_source_info)));
@@ -806,9 +796,8 @@ void RenderThreadImpl::Init() {
 
   StartServiceManagerConnection();
 
-  GetAssociatedInterfaceRegistry()->AddInterface(
-      base::Bind(&RenderThreadImpl::OnRendererInterfaceRequest,
-                 base::Unretained(this)));
+  GetAssociatedInterfaceRegistry()->AddInterface(base::BindRepeating(
+      &RenderThreadImpl::OnRendererInterfaceRequest, base::Unretained(this)));
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -904,10 +893,11 @@ void RenderThreadImpl::Init() {
   }
 #endif
 
-  memory_pressure_listener_.reset(new base::MemoryPressureListener(
-      base::Bind(&RenderThreadImpl::OnMemoryPressure, base::Unretained(this)),
-      base::Bind(&RenderThreadImpl::OnSyncMemoryPressure,
-                 base::Unretained(this))));
+  memory_pressure_listener_ = std::make_unique<base::MemoryPressureListener>(
+      base::BindRepeating(&RenderThreadImpl::OnMemoryPressure,
+                          base::Unretained(this)),
+      base::BindRepeating(&RenderThreadImpl::OnSyncMemoryPressure,
+                          base::Unretained(this)));
 
   int num_raster_threads = 0;
   std::string string_value =
@@ -933,17 +923,8 @@ void RenderThreadImpl::Init() {
   categorized_worker_pool_->Start(num_raster_threads);
 
   discardable_memory::mojom::DiscardableSharedMemoryManagerPtr manager_ptr;
-  if (features::IsMultiProcessMash()) {
-#if defined(USE_AURA)
-    GetServiceManagerConnection()->GetConnector()->BindInterface(
-        ws::mojom::kServiceName, &manager_ptr);
-#else
-    NOTREACHED();
-#endif
-  } else {
-    ChildThread::Get()->GetConnector()->BindInterface(
-        mojom::kBrowserServiceName, mojo::MakeRequest(&manager_ptr));
-  }
+  ChildThread::Get()->GetConnector()->BindInterface(
+      mojom::kBrowserServiceName, mojo::MakeRequest(&manager_ptr));
 
   discardable_shared_memory_manager_ = std::make_unique<
       discardable_memory::ClientDiscardableSharedMemoryManager>(
@@ -982,6 +963,8 @@ void RenderThreadImpl::Init() {
     compositing_mode_reporter_->AddCompositingModeWatcher(
         std::move(watcher_ptr));
   }
+
+  init_end_ = base::TimeTicks::Now();
 }
 
 RenderThreadImpl::~RenderThreadImpl() {
@@ -1090,6 +1073,10 @@ void RenderThreadImpl::AddRoute(int32_t routing_id, IPC::Listener* listener) {
   if (!frame)
     return;
 
+  GetChannel()->AddListenerTaskRunner(
+      routing_id,
+      frame->GetTaskRunner(blink::TaskType::kInternalNavigationAssociated));
+
   scoped_refptr<PendingFrameCreate> create(it->second);
   frame->BindFrame(it->second->browser_info(), it->second->TakeFrameRequest());
   pending_frame_creates_.erase(it);
@@ -1097,6 +1084,7 @@ void RenderThreadImpl::AddRoute(int32_t routing_id, IPC::Listener* listener) {
 
 void RenderThreadImpl::RemoveRoute(int32_t routing_id) {
   ChildThreadImpl::GetRouter()->RemoveRoute(routing_id);
+  GetChannel()->RemoveListenerTaskRunner(routing_id);
 }
 
 void RenderThreadImpl::RegisterPendingFrameCreate(
@@ -1238,7 +1226,7 @@ void RenderThreadImpl::RegisterSchemes() {
   WebSecurityPolicy::RegisterURLSchemeAsNotAllowingJavascriptURLs(
       chrome_scheme);
 
-  // chrome-devtools:
+  // devtools:
   WebString devtools_scheme(WebString::FromASCII(kChromeDevToolsScheme));
   WebSecurityPolicy::RegisterURLSchemeAsDisplayIsolated(devtools_scheme);
 
@@ -1270,7 +1258,8 @@ void RenderThreadImpl::RegisterExtension(
   WebScriptController::RegisterExtension(std::move(extension));
 }
 
-int RenderThreadImpl::PostTaskToAllWebWorkers(const base::Closure& closure) {
+int RenderThreadImpl::PostTaskToAllWebWorkers(
+    const base::RepeatingClosure& closure) {
   return WorkerThreadRegistry::Instance()->PostTaskToAllThreads(closure);
 }
 
@@ -1910,31 +1899,6 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
 
   params.client_name = client_name;
 
-#if defined(USE_AURA)
-  if (features::IsMultiProcessMash()) {
-    if (!RendererWindowTreeClient::Get(widget_routing_id)) {
-      std::move(callback).Run(nullptr);
-      return;
-    }
-    scoped_refptr<gpu::GpuChannelHost> channel = EstablishGpuChannelSync();
-    // If the channel could not be established correctly, then return null. This
-    // would cause the compositor to wait and try again at a later time.
-    if (!channel) {
-      std::move(callback).Run(nullptr);
-      return;
-    }
-    RendererWindowTreeClient::Get(widget_routing_id)
-        ->RequestLayerTreeFrameSink(
-            gpu_->CreateContextProvider(std::move(channel)),
-            GetGpuMemoryBufferManager(), std::move(callback));
-    frame_sink_provider_->RegisterRenderFrameMetadataObserver(
-        widget_routing_id,
-        std::move(render_frame_metadata_observer_client_request),
-        std::move(render_frame_metadata_observer_ptr));
-    return;
-  }
-#endif
-
   viz::mojom::CompositorFrameSinkRequest compositor_frame_sink_request =
       mojo::MakeRequest(&params.pipes.compositor_frame_sink_info);
   viz::mojom::CompositorFrameSinkClientPtr compositor_frame_sink_client;
@@ -2008,6 +1972,14 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
   if (GetContentClient()->UsingSynchronousCompositing()) {
     RenderWidget* widget = RenderWidget::FromRoutingID(widget_routing_id);
     if (widget) {
+      // TODO(ericrk): Remove this check when SurfaceSynchronization is always
+      // enabled, and collapse with non-webview registration below.
+      if (features::IsSurfaceSynchronizationEnabled()) {
+        frame_sink_provider_->RegisterRenderFrameMetadataObserver(
+            widget_routing_id,
+            std::move(render_frame_metadata_observer_client_request),
+            std::move(render_frame_metadata_observer_ptr));
+      }
       std::move(callback).Run(std::make_unique<SynchronousLayerTreeFrameSink>(
           std::move(context_provider), std::move(worker_context_provider),
           compositor_task_runner_, GetGpuMemoryBufferManager(),
@@ -2119,6 +2091,24 @@ void RenderThreadImpl::CreateFrameProxy(
 
 void RenderThreadImpl::SetUpEmbeddedWorkerChannelForServiceWorker(
     blink::mojom::EmbeddedWorkerInstanceClientRequest client_request) {
+  // This is a hack. Process creation and initialization occurs before tracing
+  // is setup, so trace events logged at that time get dropped. We want these
+  // trace events to analyze service worker performance, so log them here.
+  //
+  // TODO(crbug.com/968424): Remove this hack when trace events that happen
+  // early on are supported.
+  if (!init_start_.is_null()) {
+    TRACE_EVENT_BEGIN_WITH_ID_TID_AND_TIMESTAMP0(
+        "ServiceWorker", "RenderThreadImpl initialization", this,
+        0 /* thread_id */, init_start_);
+    TRACE_EVENT_END_WITH_ID_TID_AND_TIMESTAMP0(
+        "ServiceWorker", "RenderThreadImpl initialization", this,
+        0 /* thread_id */, init_end_);
+    // Clear to avoid double logging.
+    init_start_ = base::TimeTicks();
+    init_end_ = base::TimeTicks();
+  }
+
   EmbeddedWorkerInstanceClientImpl::Create(std::move(client_request));
 }
 

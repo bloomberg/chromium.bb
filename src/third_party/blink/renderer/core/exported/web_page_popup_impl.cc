@@ -64,6 +64,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
 
@@ -231,6 +232,16 @@ class PagePopupChromeClient final : public EmptyChromeClient {
     }
   }
 
+  void InjectGestureScrollEvent(LocalFrame& local_frame,
+                                WebGestureDevice device,
+                                const blink::WebFloatSize& delta,
+                                ScrollGranularity granularity,
+                                cc::ElementId scrollable_area_element_id,
+                                WebInputEvent::Type injected_type) override {
+    popup_->WidgetClient()->InjectGestureScrollEvent(
+        device, delta, granularity, scrollable_area_element_id, injected_type);
+  }
+
   WebPagePopupImpl* popup_;
 };
 
@@ -287,10 +298,10 @@ void WebPagePopupImpl::Initialize(WebViewImpl* web_view,
   ProvideContextFeaturesTo(*page_, std::make_unique<PagePopupFeaturesClient>());
   DEFINE_STATIC_LOCAL(Persistent<LocalFrameClient>, empty_local_frame_client,
                       (MakeGarbageCollected<EmptyLocalFrameClient>()));
-  LocalFrame* frame =
-      LocalFrame::Create(empty_local_frame_client, *page_, nullptr);
+  auto* frame = MakeGarbageCollected<LocalFrame>(empty_local_frame_client,
+                                                 *page_, nullptr);
   frame->SetPagePopupOwner(popup_client_->OwnerElement());
-  frame->SetView(LocalFrameView::Create(*frame));
+  frame->SetView(MakeGarbageCollected<LocalFrameView>(*frame));
   frame->Init();
   frame->View()->SetParentVisible(true);
   frame->View()->SetSelfVisible(true);
@@ -576,6 +587,10 @@ WebPoint WebPagePopupImpl::PositionRelativeToOwner() {
   WebRect window_rect = WindowRectInScreen();
   return WebPoint(window_rect.x - root_window_rect.x,
                   window_rect.y - root_window_rect.y);
+}
+
+WebDocument WebPagePopupImpl::GetDocument() {
+  return WebDocument(MainFrame().GetDocument());
 }
 
 WebPagePopupClient* WebPagePopupImpl::GetClientForTesting() const {

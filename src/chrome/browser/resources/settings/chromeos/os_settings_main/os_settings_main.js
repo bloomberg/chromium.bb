@@ -65,12 +65,7 @@ Polymer({
     },
 
     /** @private */
-    showingSubpage_: {
-      type: Boolean,
-      // TODO(dpapad): Initial value only needed for Polymer 1, remove once
-      // Polymer 2 migration is done.
-      value: false,
-    },
+    showingSubpage_: Boolean,
 
     toolbarSpinnerActive: {
       type: Boolean,
@@ -83,6 +78,8 @@ Polymer({
      * @type {!PageVisibility}
      */
     pageVisibility: Object,
+
+    showApps: Boolean,
 
     showAndroidApps: Boolean,
 
@@ -176,13 +173,9 @@ Polymer({
   /**
    * Returns the root page (if it exists) for a route.
    * @param {!settings.Route} route
-   * @return {(?SettingsAboutPageElement|?OsSettingsPageElement)}
+   * @return {?OsSettingsPageElement}
    */
   getPage_: function(route) {
-    if (settings.routes.ABOUT.contains(route)) {
-      return /** @type {?SettingsAboutPageElement} */ (
-          this.$$('settings-about-page'));
-    }
     if (settings.routes.BASIC.contains(route) ||
         (settings.routes.ADVANCED &&
          settings.routes.ADVANCED.contains(route))) {
@@ -237,6 +230,7 @@ Polymer({
    * @private
    */
   showManagedHeader_: function() {
-    return !this.inSearchMode_ && !this.showingSubpage_;
+    return !this.inSearchMode_ && !this.showingSubpage_ &&
+        !this.showPages_.about;
   },
 });

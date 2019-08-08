@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TAB_MODAL_CONFIRM_DIALOG_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_TAB_MODAL_CONFIRM_DIALOG_VIEWS_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
@@ -30,8 +32,9 @@ class TabModalConfirmDialogViews : public TabModalConfirmDialog,
                                    public views::DialogDelegate,
                                    public views::LinkListener {
  public:
-  TabModalConfirmDialogViews(TabModalConfirmDialogDelegate* delegate,
-                             content::WebContents* web_contents);
+  TabModalConfirmDialogViews(
+      std::unique_ptr<TabModalConfirmDialogDelegate> delegate,
+      content::WebContents* web_contents);
 
   // views::DialogDelegate:
   base::string16 GetWindowTitle() const override;
@@ -59,6 +62,9 @@ class TabModalConfirmDialogViews : public TabModalConfirmDialog,
 
   // views::LinkListener:
   void LinkClicked(views::Link* source, int event_flags) override;
+
+  int GetDefaultDialogButton() const override;
+  views::View* GetInitiallyFocusedView() override;
 
   std::unique_ptr<TabModalConfirmDialogDelegate> delegate_;
 

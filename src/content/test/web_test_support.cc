@@ -38,6 +38,7 @@
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_rect.h"
+#include "third_party/blink/public/web/web_manifest_manager.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/blink/blink_event_util.h"
@@ -150,9 +151,10 @@ void EnableWebTestProxyCreation() {
 }
 
 void FetchManifest(blink::WebView* view, FetchManifestCallback callback) {
-  RenderFrameImpl::FromWebFrame(view->MainFrame())
-      ->GetManifestManager()
-      .RequestManifest(std::move(callback));
+  blink::WebManifestManager* manifest_manager =
+      blink::WebManifestManager::FromFrame(
+          RenderFrameImpl::FromWebFrame(view->MainFrame())->GetWebFrame());
+  manifest_manager->RequestManifest(std::move(callback));
 }
 
 void SetWorkerRewriteURLFunction(RewriteURLFunction rewrite_url_function) {

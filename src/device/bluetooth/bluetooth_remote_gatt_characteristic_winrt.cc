@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
@@ -104,13 +105,13 @@ BluetoothRemoteGattCharacteristicWinrt::Create(
 BluetoothRemoteGattCharacteristicWinrt::
     ~BluetoothRemoteGattCharacteristicWinrt() {
   if (pending_read_callbacks_) {
-    pending_read_callbacks_->error_callback.Run(
-        BluetoothGattService::GATT_ERROR_FAILED);
+    std::move(pending_read_callbacks_->error_callback)
+        .Run(BluetoothGattService::GATT_ERROR_FAILED);
   }
 
   if (pending_write_callbacks_) {
-    pending_write_callbacks_->error_callback.Run(
-        BluetoothGattService::GATT_ERROR_FAILED);
+    std::move(pending_write_callbacks_->error_callback)
+        .Run(BluetoothGattService::GATT_ERROR_FAILED);
   }
 
   if (value_changed_token_)
@@ -147,12 +148,12 @@ BluetoothRemoteGattService* BluetoothRemoteGattCharacteristicWinrt::GetService()
 }
 
 void BluetoothRemoteGattCharacteristicWinrt::ReadRemoteCharacteristic(
-    const ValueCallback& callback,
-    const ErrorCallback& error_callback) {
+    ValueCallback callback,
+    ErrorCallback error_callback) {
   if (!(GetProperties() & PROPERTY_READ)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(error_callback,
+        base::BindOnce(std::move(error_callback),
                        BluetoothRemoteGattService::GATT_ERROR_NOT_PERMITTED));
     return;
   }
@@ -160,7 +161,7 @@ void BluetoothRemoteGattCharacteristicWinrt::ReadRemoteCharacteristic(
   if (pending_read_callbacks_ || pending_write_callbacks_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(error_callback,
+        base::BindOnce(std::move(error_callback),
                        BluetoothRemoteGattService::GATT_ERROR_IN_PROGRESS));
     return;
   }
@@ -173,7 +174,7 @@ void BluetoothRemoteGattCharacteristicWinrt::ReadRemoteCharacteristic(
             << logging::SystemErrorCodeToString(hr);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(error_callback,
+        base::BindOnce(std::move(error_callback),
                        BluetoothRemoteGattService::GATT_ERROR_FAILED));
     return;
   }
@@ -188,24 +189,24 @@ void BluetoothRemoteGattCharacteristicWinrt::ReadRemoteCharacteristic(
             << logging::SystemErrorCodeToString(hr);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(error_callback,
+        base::BindOnce(std::move(error_callback),
                        BluetoothRemoteGattService::GATT_ERROR_FAILED));
     return;
   }
 
-  pending_read_callbacks_ =
-      std::make_unique<PendingReadCallbacks>(callback, error_callback);
+  pending_read_callbacks_ = std::make_unique<PendingReadCallbacks>(
+      std::move(callback), std::move(error_callback));
 }
 
 void BluetoothRemoteGattCharacteristicWinrt::WriteRemoteCharacteristic(
     const std::vector<uint8_t>& value,
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+    base::OnceClosure callback,
+    ErrorCallback error_callback) {
   if (!(GetProperties() & PROPERTY_WRITE) &&
       !(GetProperties() & PROPERTY_WRITE_WITHOUT_RESPONSE)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(error_callback,
+        base::BindOnce(std::move(error_callback),
                        BluetoothRemoteGattService::GATT_ERROR_NOT_PERMITTED));
     return;
   }
@@ -213,7 +214,7 @@ void BluetoothRemoteGattCharacteristicWinrt::WriteRemoteCharacteristic(
   if (pending_read_callbacks_ || pending_write_callbacks_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(error_callback,
+        base::BindOnce(std::move(error_callback),
                        BluetoothRemoteGattService::GATT_ERROR_IN_PROGRESS));
     return;
   }
@@ -225,7 +226,7 @@ void BluetoothRemoteGattCharacteristicWinrt::WriteRemoteCharacteristic(
             << logging::SystemErrorCodeToString(hr);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(error_callback,
+        base::BindOnce(std::move(error_callback),
                        BluetoothRemoteGattService::GATT_ERROR_FAILED));
     return;
   }
@@ -237,7 +238,7 @@ void BluetoothRemoteGattCharacteristicWinrt::WriteRemoteCharacteristic(
             << logging::SystemErrorCodeToString(hr);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(error_callback,
+        base::BindOnce(std::move(error_callback),
                        BluetoothRemoteGattService::GATT_ERROR_FAILED));
     return;
   }
@@ -254,7 +255,7 @@ void BluetoothRemoteGattCharacteristicWinrt::WriteRemoteCharacteristic(
             << logging::SystemErrorCodeToString(hr);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(error_callback,
+        base::BindOnce(std::move(error_callback),
                        BluetoothRemoteGattService::GATT_ERROR_FAILED));
     return;
   }
@@ -270,13 +271,13 @@ void BluetoothRemoteGattCharacteristicWinrt::WriteRemoteCharacteristic(
             << logging::SystemErrorCodeToString(hr);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(error_callback,
+        base::BindOnce(std::move(error_callback),
                        BluetoothRemoteGattService::GATT_ERROR_FAILED));
     return;
   }
 
-  pending_write_callbacks_ =
-      std::make_unique<PendingWriteCallbacks>(callback, error_callback);
+  pending_write_callbacks_ = std::make_unique<PendingWriteCallbacks>(
+      std::move(callback), std::move(error_callback));
 }
 
 void BluetoothRemoteGattCharacteristicWinrt::UpdateDescriptors(
@@ -362,8 +363,8 @@ BluetoothRemoteGattCharacteristicWinrt::GetCharacteristicForTesting() {
 
 void BluetoothRemoteGattCharacteristicWinrt::SubscribeToNotifications(
     BluetoothRemoteGattDescriptor* ccc_descriptor,
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+    base::OnceClosure callback,
+    ErrorCallback error_callback) {
   value_changed_token_ = AddTypedEventHandler(
       characteristic_.Get(), &IGattCharacteristic::add_ValueChanged,
       base::BindRepeating(
@@ -374,7 +375,7 @@ void BluetoothRemoteGattCharacteristicWinrt::SubscribeToNotifications(
     VLOG(2) << "Adding Value Changed Handler failed.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(error_callback,
+        base::BindOnce(std::move(error_callback),
                        BluetoothRemoteGattService::GATT_ERROR_FAILED));
     return;
   }
@@ -383,32 +384,34 @@ void BluetoothRemoteGattCharacteristicWinrt::SubscribeToNotifications(
       (GetProperties() & PROPERTY_NOTIFY)
           ? GattClientCharacteristicConfigurationDescriptorValue_Notify
           : GattClientCharacteristicConfigurationDescriptorValue_Indicate,
-      callback, error_callback);
+      std::move(callback), std::move(error_callback));
 }
 
 void BluetoothRemoteGattCharacteristicWinrt::UnsubscribeFromNotifications(
     BluetoothRemoteGattDescriptor* ccc_descriptor,
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+    base::OnceClosure callback,
+    ErrorCallback error_callback) {
+  auto repeating_error_callback =
+      base::AdaptCallbackForRepeating(std::move(error_callback));
+  base::OnceClosure success_callback = base::BindOnce(
+      [](base::WeakPtr<BluetoothRemoteGattCharacteristicWinrt> characteristic,
+         base::OnceClosure callback, ErrorCallback error_callback) {
+        if (characteristic && !characteristic->RemoveValueChangedHandler()) {
+          std::move(error_callback)
+              .Run(BluetoothGattService::GATT_ERROR_FAILED);
+          return;
+        }
+
+        std::move(callback).Run();
+      },
+      weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+      repeating_error_callback);
   WriteCccDescriptor(
       GattClientCharacteristicConfigurationDescriptorValue_None,
-      // Wrap the success and error callbacks in a lambda, so that we can notify
-      // callers whether removing the event handler succeeded after the
-      // descriptor has been written to.
-      base::BindOnce(
-          [](base::WeakPtr<BluetoothRemoteGattCharacteristicWinrt>
-                 characteristic,
-             base::OnceClosure callback, ErrorCallback error_callback) {
-            if (characteristic &&
-                !characteristic->RemoveValueChangedHandler()) {
-              error_callback.Run(BluetoothGattService::GATT_ERROR_FAILED);
-              return;
-            }
-
-            std::move(callback).Run();
-          },
-          weak_ptr_factory_.GetWeakPtr(), callback, error_callback),
-      error_callback);
+      // Wrap the success and error callbacks in a lambda, so that we can
+      // notify callers whether removing the event handler succeeded after
+      // the descriptor has been written to.
+      std::move(success_callback), repeating_error_callback);
 }
 
 BluetoothRemoteGattCharacteristicWinrt::PendingReadCallbacks::
@@ -446,7 +449,7 @@ BluetoothRemoteGattCharacteristicWinrt::BluetoothRemoteGattCharacteristicWinrt(
 void BluetoothRemoteGattCharacteristicWinrt::WriteCccDescriptor(
     GattClientCharacteristicConfigurationDescriptorValue value,
     base::OnceClosure callback,
-    const ErrorCallback& error_callback) {
+    ErrorCallback error_callback) {
   DCHECK(!pending_notification_callbacks_);
   ComPtr<IGattCharacteristic3> characteristic_3;
   HRESULT hr = characteristic_.As(&characteristic_3);
@@ -455,7 +458,7 @@ void BluetoothRemoteGattCharacteristicWinrt::WriteCccDescriptor(
             << logging::SystemErrorCodeToString(hr);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(error_callback,
+        base::BindOnce(std::move(error_callback),
                        BluetoothRemoteGattService::GATT_ERROR_FAILED));
     return;
   }
@@ -471,7 +474,7 @@ void BluetoothRemoteGattCharacteristicWinrt::WriteCccDescriptor(
             << logging::SystemErrorCodeToString(hr);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(error_callback,
+        base::BindOnce(std::move(error_callback),
                        BluetoothRemoteGattService::GATT_ERROR_FAILED));
     return;
   }
@@ -487,14 +490,14 @@ void BluetoothRemoteGattCharacteristicWinrt::WriteCccDescriptor(
             << logging::SystemErrorCodeToString(hr);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(error_callback,
+        base::BindOnce(std::move(error_callback),
                        BluetoothRemoteGattService::GATT_ERROR_FAILED));
     return;
   }
 
   pending_notification_callbacks_ =
       std::make_unique<PendingNotificationCallbacks>(std::move(callback),
-                                                     error_callback);
+                                                     std::move(error_callback));
 }
 
 void BluetoothRemoteGattCharacteristicWinrt::OnReadValue(
@@ -503,8 +506,8 @@ void BluetoothRemoteGattCharacteristicWinrt::OnReadValue(
   auto pending_read_callbacks = std::move(pending_read_callbacks_);
 
   if (!read_result) {
-    pending_read_callbacks->error_callback.Run(
-        BluetoothGattService::GATT_ERROR_FAILED);
+    std::move(pending_read_callbacks->error_callback)
+        .Run(BluetoothGattService::GATT_ERROR_FAILED);
     return;
   }
 
@@ -513,8 +516,8 @@ void BluetoothRemoteGattCharacteristicWinrt::OnReadValue(
   if (FAILED(hr)) {
     VLOG(2) << "Getting GATT Communication Status failed: "
             << logging::SystemErrorCodeToString(hr);
-    pending_read_callbacks->error_callback.Run(
-        BluetoothGattService::GATT_ERROR_FAILED);
+    std::move(pending_read_callbacks->error_callback)
+        .Run(BluetoothGattService::GATT_ERROR_FAILED);
     return;
   }
 
@@ -525,13 +528,14 @@ void BluetoothRemoteGattCharacteristicWinrt::OnReadValue(
     if (FAILED(hr)) {
       VLOG(2) << "As IGattReadResult2 failed: "
               << logging::SystemErrorCodeToString(hr);
-      pending_read_callbacks->error_callback.Run(
-          BluetoothGattService::GATT_ERROR_FAILED);
+      std::move(pending_read_callbacks->error_callback)
+          .Run(BluetoothGattService::GATT_ERROR_FAILED);
       return;
     }
 
-    pending_read_callbacks->error_callback.Run(
-        BluetoothRemoteGattServiceWinrt::GetGattErrorCode(read_result_2.Get()));
+    std::move(pending_read_callbacks->error_callback)
+        .Run(BluetoothRemoteGattServiceWinrt::GetGattErrorCode(
+            read_result_2.Get()));
     return;
   }
 
@@ -540,8 +544,8 @@ void BluetoothRemoteGattCharacteristicWinrt::OnReadValue(
   if (FAILED(hr)) {
     VLOG(2) << "Getting Characteristic Value failed: "
             << logging::SystemErrorCodeToString(hr);
-    pending_read_callbacks->error_callback.Run(
-        BluetoothGattService::GATT_ERROR_FAILED);
+    std::move(pending_read_callbacks->error_callback)
+        .Run(BluetoothGattService::GATT_ERROR_FAILED);
     return;
   }
 
@@ -551,13 +555,13 @@ void BluetoothRemoteGattCharacteristicWinrt::OnReadValue(
   if (FAILED(hr)) {
     VLOG(2) << "Getting Pointer To Buffer Data failed: "
             << logging::SystemErrorCodeToString(hr);
-    pending_read_callbacks->error_callback.Run(
-        BluetoothGattService::GATT_ERROR_FAILED);
+    std::move(pending_read_callbacks->error_callback)
+        .Run(BluetoothGattService::GATT_ERROR_FAILED);
     return;
   }
 
   value_.assign(data, data + length);
-  pending_read_callbacks->callback.Run(value_);
+  std::move(pending_read_callbacks->callback).Run(value_);
 }
 
 void BluetoothRemoteGattCharacteristicWinrt::OnWriteValueWithResultAndOption(
@@ -576,7 +580,8 @@ void BluetoothRemoteGattCharacteristicWinrt::OnWriteImpl(
     ComPtr<IGattWriteResult> write_result,
     std::unique_ptr<PendingWriteCallbacks> callbacks) {
   if (!write_result) {
-    callbacks->error_callback.Run(BluetoothGattService::GATT_ERROR_FAILED);
+    std::move(callbacks->error_callback)
+        .Run(BluetoothGattService::GATT_ERROR_FAILED);
     return;
   }
 
@@ -585,14 +590,16 @@ void BluetoothRemoteGattCharacteristicWinrt::OnWriteImpl(
   if (FAILED(hr)) {
     VLOG(2) << "Getting GATT Communication Status failed: "
             << logging::SystemErrorCodeToString(hr);
-    callbacks->error_callback.Run(BluetoothGattService::GATT_ERROR_FAILED);
+    std::move(callbacks->error_callback)
+        .Run(BluetoothGattService::GATT_ERROR_FAILED);
     return;
   }
 
   if (status != GattCommunicationStatus_Success) {
     VLOG(2) << "Unexpected GattCommunicationStatus: " << status;
-    callbacks->error_callback.Run(
-        BluetoothRemoteGattServiceWinrt::GetGattErrorCode(write_result.Get()));
+    std::move(callbacks->error_callback)
+        .Run(BluetoothRemoteGattServiceWinrt::GetGattErrorCode(
+            write_result.Get()));
     return;
   }
 

@@ -23,14 +23,68 @@
 
 #include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/network/form_data_encoder.h"
+#include "third_party/blink/renderer/platform/network/wrapped_data_pipe_getter.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 
 namespace blink {
 
+FormDataElement::FormDataElement() : type_(kData) {}
+
+FormDataElement::FormDataElement(const Vector<char>& array)
+    : type_(kData), data_(array) {}
+
 bool FormDataElement::IsSafeToSendToAnotherThread() const {
   return filename_.IsSafeToSendToAnotherThread() &&
          blob_uuid_.IsSafeToSendToAnotherThread();
+}
+
+FormDataElement::FormDataElement(const String& filename,
+                                 int64_t file_start,
+                                 int64_t file_length,
+                                 double expected_file_modification_time)
+    : type_(kEncodedFile),
+      filename_(filename),
+      file_start_(file_start),
+      file_length_(file_length),
+      expected_file_modification_time_(expected_file_modification_time) {}
+
+FormDataElement::FormDataElement(const String& blob_uuid,
+                                 scoped_refptr<BlobDataHandle> optional_handle)
+    : type_(kEncodedBlob),
+      blob_uuid_(blob_uuid),
+      optional_blob_data_handle_(std::move(optional_handle)) {}
+
+FormDataElement::FormDataElement(
+    scoped_refptr<WrappedDataPipeGetter> data_pipe_getter)
+    : type_(kDataPipe), data_pipe_getter_(std::move(data_pipe_getter)) {}
+
+FormDataElement::FormDataElement(const FormDataElement&) = default;
+FormDataElement::FormDataElement(FormDataElement&&) = default;
+FormDataElement::~FormDataElement() = default;
+FormDataElement& FormDataElement::operator=(const FormDataElement&) = default;
+FormDataElement& FormDataElement::operator=(FormDataElement&&) = default;
+
+bool operator==(const FormDataElement& a, const FormDataElement& b) {
+  if (&a == &b)
+    return true;
+
+  if (a.type_ != b.type_)
+    return false;
+  if (a.type_ == FormDataElement::kData)
+    return a.data_ == b.data_;
+  if (a.type_ == FormDataElement::kEncodedFile) {
+    return a.filename_ == b.filename_ && a.file_start_ == b.file_start_ &&
+           a.file_length_ == b.file_length_ &&
+           a.expected_file_modification_time_ ==
+               b.expected_file_modification_time_;
+  }
+  if (a.type_ == FormDataElement::kEncodedBlob)
+    return a.blob_uuid_ == b.blob_uuid_;
+  if (a.type_ == FormDataElement::kDataPipe)
+    return a.data_pipe_getter_ == b.data_pipe_getter_;
+
+  return true;
 }
 
 inline EncodedFormData::EncodedFormData()

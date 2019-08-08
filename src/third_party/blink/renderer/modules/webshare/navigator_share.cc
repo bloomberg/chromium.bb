@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <utility>
+
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -14,8 +15,10 @@
 #include "third_party/blink/renderer/core/fileapi/file.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/modules/webshare/share_data.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 
 namespace blink {
@@ -79,7 +82,7 @@ String CheckForTypeError(const Document& doc,
 class NavigatorShare::ShareClientImpl final
     : public GarbageCollected<ShareClientImpl> {
  public:
-  ShareClientImpl(NavigatorShare*, ScriptPromiseResolver*);
+  ShareClientImpl(NavigatorShare*, bool has_files, ScriptPromiseResolver*);
 
   void Callback(mojom::blink::ShareError);
 
@@ -92,22 +95,32 @@ class NavigatorShare::ShareClientImpl final
 
  private:
   WeakMember<NavigatorShare> navigator_;
+  bool has_files_;
   Member<ScriptPromiseResolver> resolver_;
 };
 
 NavigatorShare::ShareClientImpl::ShareClientImpl(
     NavigatorShare* navigator_share,
+    bool has_files,
     ScriptPromiseResolver* resolver)
-    : navigator_(navigator_share), resolver_(resolver) {}
+    : navigator_(navigator_share), has_files_(has_files), resolver_(resolver) {}
 
 void NavigatorShare::ShareClientImpl::Callback(mojom::blink::ShareError error) {
   if (navigator_)
     navigator_->clients_.erase(this);
 
   if (error == mojom::blink::ShareError::OK) {
+    UseCounter::Count(ExecutionContext::From(resolver_->GetScriptState()),
+                      has_files_
+                          ? WebFeature::kWebShareSuccessfulContainingFiles
+                          : WebFeature::kWebShareSuccessfulWithoutFiles);
     resolver_->Resolve();
   } else {
-    resolver_->Reject(DOMException::Create(
+    UseCounter::Count(ExecutionContext::From(resolver_->GetScriptState()),
+                      has_files_
+                          ? WebFeature::kWebShareUnsuccessfulContainingFiles
+                          : WebFeature::kWebShareUnsuccessfulWithoutFiles);
+    resolver_->Reject(MakeGarbageCollected<DOMException>(
         (error == mojom::blink::ShareError::PERMISSION_DENIED)
             ? DOMExceptionCode::kNotAllowedError
             : DOMExceptionCode::kAbortError,
@@ -116,7 +129,7 @@ void NavigatorShare::ShareClientImpl::Callback(mojom::blink::ShareError error) {
 }
 
 void NavigatorShare::ShareClientImpl::OnConnectionError() {
-  resolver_->Reject(DOMException::Create(
+  resolver_->Reject(MakeGarbageCollected<DOMException>(
       DOMExceptionCode::kAbortError,
       "Internal error: could not connect to Web Share interface."));
 }
@@ -167,7 +180,7 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
   }
 
   if (!LocalFrame::HasTransientUserActivation(doc->GetFrame())) {
-    DOMException* error = DOMException::Create(
+    auto* error = MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotAllowedError,
         "Must be handling a user gesture to perform a share request.");
     return ScriptPromise::RejectWithDOMException(script_state, error);
@@ -176,10 +189,10 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
   if (!service_) {
     LocalFrame* frame = doc->GetFrame();
     if (!frame) {
-      DOMException* error =
-          DOMException::Create(DOMExceptionCode::kAbortError,
-                               "Internal error: document frame is missing (the "
-                               "navigator may be detached).");
+      auto* error = MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kAbortError,
+          "Internal error: document frame is missing (the "
+          "navigator may be detached).");
       return ScriptPromise::RejectWithDOMException(script_state, error);
     }
 
@@ -191,15 +204,16 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
     DCHECK(service_);
   }
 
+  bool has_files = HasFiles(*share_data);
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ShareClientImpl* client =
-      MakeGarbageCollected<ShareClientImpl>(this, resolver);
+      MakeGarbageCollected<ShareClientImpl>(this, has_files, resolver);
   clients_.insert(client);
   ScriptPromise promise = resolver->Promise();
 
   WTF::Vector<mojom::blink::SharedFilePtr> files;
   uint64_t total_bytes = 0;
-  if (share_data->hasFiles()) {
+  if (has_files) {
     files.ReserveInitialCapacity(share_data->files().size());
     for (const blink::Member<blink::File>& file : share_data->files()) {
       total_bytes += file->size();
@@ -209,7 +223,7 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
 
     if (files.size() > kMaxSharedFileCount ||
         total_bytes > kMaxSharedFileBytes) {
-      DOMException* error = DOMException::Create(
+      auto* error = MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotAllowedError, "Permission denied");
       return ScriptPromise::RejectWithDOMException(script_state, error);
     }

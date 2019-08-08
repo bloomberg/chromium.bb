@@ -34,7 +34,6 @@
 #include "test/task_runner_thread_delegates.h"
 #include "test/test_helper.h"
 
-#include "perfetto/trace/trace_packet.pb.h"
 #include "perfetto/trace/trace_packet.pbzero.h"
 
 namespace perfetto {
@@ -99,6 +98,7 @@ class FakeProducer : public Producer {
   void StopDataSource(DataSourceInstanceID) override {}
   void OnTracingSetup() override {}
   void Flush(FlushRequestID, const DataSourceInstanceID*, size_t) override {}
+  void ClearIncrementalState(const DataSourceInstanceID*, size_t) {}
 
  private:
   const std::string name_;

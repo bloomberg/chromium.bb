@@ -16,7 +16,6 @@
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_item.h"
-#include "ash/app_list/pagination_controller.h"
 #include "ash/app_list/views/app_list_drag_and_drop_host.h"
 #include "ash/app_list/views/app_list_folder_view.h"
 #include "ash/app_list/views/app_list_item_view.h"
@@ -31,6 +30,7 @@
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
+#include "ash/public/cpp/pagination/pagination_controller.h"
 #include "base/guid.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
@@ -336,11 +336,12 @@ AppsGridView::AppsGridView(ContentsView* contents_view,
       AppListConfig::instance().overscroll_page_transition_duration_ms());
 
   pagination_model_.AddObserver(this);
-
-  pagination_controller_ = std::make_unique<PaginationController>(
-      &pagination_model_, folder_delegate_
-                              ? PaginationController::SCROLL_AXIS_HORIZONTAL
-                              : PaginationController::SCROLL_AXIS_VERTICAL);
+  pagination_controller_ = std::make_unique<ash::PaginationController>(
+      &pagination_model_,
+      folder_delegate_ ? ash::PaginationController::SCROLL_AXIS_HORIZONTAL
+                       : ash::PaginationController::SCROLL_AXIS_VERTICAL,
+      base::BindRepeating(&RecordPageSwitcherSourceByEventType),
+      IsTabletMode());
 }
 
 AppsGridView::~AppsGridView() {
@@ -357,6 +358,12 @@ AppsGridView::~AppsGridView() {
 
   if (item_list_)
     item_list_->RemoveObserver(this);
+
+  // Cancel animations now, otherwise RemoveAllChildViews() may call back to
+  // ViewHierarchyChanged() during removal, which can lead to double deletes
+  // (because ViewHierarchyChanged() may attempt to delete a view that is part
+  // way through deletion).
+  bounds_animator_.Cancel();
 
   view_model_.Clear();
   RemoveAllChildViews(true);
@@ -435,6 +442,8 @@ void AppsGridView::DisableFocusForShowingActiveFolder(bool disabled) {
 }
 
 void AppsGridView::OnTabletModeChanged(bool started) {
+  pagination_controller_->set_is_tablet_mode(started);
+
   // Enable/Disable folder icons's background blur based on tablet mode.
   for (int i = 0; i < view_model_.view_size(); ++i) {
     auto* item_view = view_model_.view_at(i);
@@ -930,9 +939,8 @@ void AppsGridView::Layout() {
   views::ViewModelUtils::SetViewBoundsToIdealBounds(pulsing_blocks_model_);
 }
 
-void AppsGridView::UpdateControlVisibility(
-    ash::mojom::AppListViewState app_list_state,
-    bool is_in_drag) {
+void AppsGridView::UpdateControlVisibility(ash::AppListViewState app_list_state,
+                                           bool is_in_drag) {
   if (!folder_delegate_ && app_list_features::IsBackgroundBlurEnabled()) {
     if (is_in_drag) {
       layer()->SetMaskLayer(nullptr);
@@ -951,8 +959,7 @@ void AppsGridView::UpdateControlVisibility(
   }
 
   const bool fullscreen_apps_in_drag =
-      app_list_state == ash::mojom::AppListViewState::kFullscreenAllApps ||
-      is_in_drag;
+      app_list_state == ash::AppListViewState::kFullscreenAllApps || is_in_drag;
   for (int i = 0; i < view_model_.view_size(); ++i) {
     AppListItemView* view = GetItemViewAt(i);
     view->SetVisible(fullscreen_apps_in_drag);
@@ -1204,7 +1211,7 @@ const gfx::Vector2d AppsGridView::CalculateTransitionOffset(
 
   // If there is a transition, calculates offset for current and target page.
   const int current_page = pagination_model_.selected_page();
-  const PaginationModel::Transition& transition =
+  const ash::PaginationModel::Transition& transition =
       pagination_model_.transition();
   const bool is_valid = pagination_model_.is_valid_page(transition.target_page);
 
@@ -1215,7 +1222,7 @@ const gfx::Vector2d AppsGridView::CalculateTransitionOffset(
   int y_offset = 0;
 
   if (pagination_controller_->scroll_axis() ==
-      PaginationController::SCROLL_AXIS_HORIZONTAL) {
+      ash::PaginationController::SCROLL_AXIS_HORIZONTAL) {
     // Page size including padding pixels. A tile.x + page_width means the same
     // tile slot in the next page.
     const int page_width =
@@ -1854,8 +1861,8 @@ void AppsGridView::UpdateOpacity() {
   // centerline reaches |kAllAppsOpacityEndPx| above the work area bottom.
   AppListView* app_list_view = contents_view_->app_list_view();
   const bool should_restore_opacity =
-      !app_list_view->is_in_drag() && (app_list_view->app_list_state() !=
-                                       ash::mojom::AppListViewState::kClosed);
+      !app_list_view->is_in_drag() &&
+      (app_list_view->app_list_state() != ash::AppListViewState::kClosed);
   const int selected_page = pagination_model_.selected_page();
   auto current_page = view_structure_.pages()[selected_page];
   float centerline_above_work_area = 0.f;
@@ -1922,8 +1929,6 @@ void AppsGridView::HandleKeyboardReparent(AppListItemView* reparented_view,
       GetTargetGridIndexForKeyboardReparent(key_code);
   AnnounceReorder(target_index);
   ReparentItemForReorder(reparented_view_in_root_grid, target_index);
-
-  contents_view_->GetAppsContainerView()->ResetForShowApps();
 
   GetViewAtIndex(target_index)->RequestFocus();
   Layout();
@@ -2022,7 +2027,7 @@ void AppsGridView::MaybeStartPageFlipTimer(const gfx::Point& drag_point) {
 
   // Drag zones are at the edges of the scroll axis.
   if (pagination_controller_->scroll_axis() ==
-      PaginationController::SCROLL_AXIS_VERTICAL) {
+      ash::PaginationController::SCROLL_AXIS_VERTICAL) {
     if (drag_point.y() <
         AppListConfig::instance().page_flip_zone_size() + GetInsets().top()) {
       new_page_flip_target = pagination_model_.selected_page() - 1;
@@ -2068,8 +2073,7 @@ void AppsGridView::OnPageFlipTimer() {
   }
 
   pagination_model_.SelectPage(page_flip_target_, true);
-  UMA_HISTOGRAM_ENUMERATION(kAppListPageSwitcherSourceHistogram,
-                            kDragAppToBorder, kMaxAppListPageSwitcherSource);
+  RecordPageSwitcherSource(kDragAppToBorder, IsTabletMode());
 
   BeginHideCurrentGhostImageView();
 }
@@ -2456,7 +2460,7 @@ void AppsGridView::OnListItemAdded(size_t index, AppListItem* item) {
     // shown while in PEEKING. The visibility of the app icons will be updated
     // on drag/animation from PEEKING.
     view->SetVisible(model_->state_fullscreen() !=
-                     ash::mojom::AppListViewState::kPeeking);
+                     ash::AppListViewState::kPeeking);
   }
 
   if (!folder_delegate_)
@@ -2550,7 +2554,7 @@ void AppsGridView::TransitionStarted() {
 void AppsGridView::TransitionChanged() {
   // Update layout for valid page transition only since over-scroll no longer
   // animates app icons.
-  const PaginationModel::Transition& transition =
+  const ash::PaginationModel::Transition& transition =
       pagination_model_.transition();
   if (pagination_model_.is_valid_page(transition.target_page))
     Layout();
@@ -2908,11 +2912,8 @@ void AppsGridView::HandleKeyboardMove(ui::KeyboardCode key_code) {
   Layout();
   AnnounceReorder(target_index);
 
-  if (target_index.page != original_selected_view_index.page) {
-    UMA_HISTOGRAM_ENUMERATION(kAppListPageSwitcherSourceHistogram,
-                              kMoveAppWithKeyboard,
-                              kMaxAppListPageSwitcherSource);
-  }
+  if (target_index.page != original_selected_view_index.page)
+    RecordPageSwitcherSource(kMoveAppWithKeyboard, IsTabletMode());
 }
 
 size_t AppsGridView::GetTargetItemIndexForMove(AppListItemView* moved_view,

@@ -11,4 +11,7 @@ interface HTMLPortalElement : HTMLElement {
   [CallWith=ScriptState, RaisesException] void postMessage(any message, DOMString targetOrigin,
                                      optional sequence<object> transfer = []);
   [CallWith=ScriptState, RaisesException] void postMessage(any message, optional WindowPostMessageOptions options);
+
+  attribute EventHandler onmessage;
+  attribute EventHandler onmessageerror;
 };

@@ -16,7 +16,6 @@ static_library("web_resource") {
 
   deps = [
     "//base",
-    "//components/data_use_measurement/core",
     "//components/google/core/browser",
     "//components/pref_registry",
     "//components/prefs",

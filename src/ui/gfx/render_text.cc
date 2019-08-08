@@ -66,6 +66,14 @@ const SkScalar kLineThicknessFactor = (SK_Scalar1 / 18);
 // re-calculation of baseline.
 const int kInvalidBaseline = INT_MAX;
 
+// Float comparison needs epsilon to consider rounding errors in float
+// arithmetic. Epsilon should be dependent on the context and here, we are
+// dealing with glyph widths, use a fairly large number.
+const float kFloatComparisonEpsilon = 0.001f;
+float Clamp(float f) {
+  return f < kFloatComparisonEpsilon ? 0 : f;
+}
+
 // Given |font| and |display_width|, returns the width of the fade gradient.
 int CalculateFadeGradientWidth(const FontList& font_list, int display_width) {
   // Fade in/out about 3 characters of the beginning/end of the string.
@@ -377,6 +385,7 @@ std::unique_ptr<RenderText> RenderText::CreateInstanceOfSameStyle(
   render_text->font_size_overrides_ = font_size_overrides_;
   render_text->colors_ = colors_;
   render_text->weights_ = weights_;
+  render_text->glyph_width_for_test_ = glyph_width_for_test_;
   return render_text;
 }
 
@@ -420,6 +429,14 @@ void RenderText::AppendText(const base::string16& text) {
 void RenderText::SetHorizontalAlignment(HorizontalAlignment alignment) {
   if (horizontal_alignment_ != alignment) {
     horizontal_alignment_ = alignment;
+    display_offset_ = Vector2d();
+    cached_bounds_and_offset_valid_ = false;
+  }
+}
+
+void RenderText::SetVerticalAlignment(VerticalAlignment alignment) {
+  if (vertical_alignment_ != alignment) {
+    vertical_alignment_ = alignment;
     display_offset_ = Vector2d();
     cached_bounds_and_offset_valid_ = false;
   }
@@ -475,6 +492,7 @@ void RenderText::SetMaxLines(size_t max_lines) {
 }
 
 size_t RenderText::GetNumLines() {
+  EnsureLayout();
   return lines_.size();
 }
 
@@ -547,13 +565,20 @@ void RenderText::MoveCursor(BreakType break_type,
   // |direction| (e.g. the arrow key) rather than the current selection range.
   if ((!has_directed_selection_ || selection_behavior == SELECTION_NONE) &&
       !selection().is_empty()) {
-    SelectionModel start = GetSelectionModelForSelectionStart();
-    int start_x = GetCursorBounds(start, true).x();
-    int end_x = GetCursorBounds(cursor, true).x();
+    SelectionModel selection_start = GetSelectionModelForSelectionStart();
+    Point start = GetCursorBounds(selection_start, true).origin();
+    Point end = GetCursorBounds(cursor, true).origin();
 
     // Use the selection start if it is left (when |direction| is CURSOR_LEFT)
     // or right (when |direction| is CURSOR_RIGHT) of the selection end.
-    if (direction == CURSOR_RIGHT ? start_x > end_x : start_x < end_x) {
+    // Consider only the y-coordinates if the selection start and end are on
+    // different lines.
+    const bool cursor_is_leading =
+        (start.y() > end.y()) ||
+        ((start.y() == end.y()) && (start.x() > end.x()));
+    const bool cursor_should_be_trailing =
+        (direction == CURSOR_RIGHT) || (direction == CURSOR_DOWN);
+    if (cursor_is_leading == cursor_should_be_trailing) {
       // In this case, a direction has been chosen that doesn't match
       // |selection_model|, so the range must be reversed to place the cursor at
       // the other end. Note the affinity won't matter: only the affinity of
@@ -561,13 +586,13 @@ void RenderText::MoveCursor(BreakType break_type,
       Range range = selection_model_.selection();
       selection_model_ = SelectionModel(Range(range.end(), range.start()),
                                         selection_model_.caret_affinity());
-      cursor = start;
+      cursor = selection_start;
     }
   }
 
   // Cancelling a selection moves to the edge of the selection.
-  if (break_type != LINE_BREAK && !selection().is_empty() &&
-      selection_behavior == SELECTION_NONE) {
+  if (break_type != FIELD_BREAK && break_type != LINE_BREAK &&
+      !selection().is_empty() && selection_behavior == SELECTION_NONE) {
     // Use the nearest word boundary in the proper |direction| for word breaks.
     if (break_type == WORD_BREAK)
       cursor = GetAdjacentSelectionModel(cursor, break_type, direction);
@@ -614,6 +639,14 @@ void RenderText::MoveCursor(BreakType break_type,
 
   SetSelection(cursor);
   has_directed_selection_ = true;
+
+  // |cached_cursor_x| keeps the initial x-coordinates where CURSOR_UP or
+  // CURSOR_DOWN starts. This enables the cursor to keep the same x-coordinates
+  // even when the cursor passes through empty or short lines. The cached
+  // x-coordinates should be reset when the cursor moves in a horizontal
+  // direction.
+  if (direction != CURSOR_UP && direction != CURSOR_DOWN)
+    reset_cached_cursor_x();
 }
 
 bool RenderText::SetSelection(const SelectionModel& model) {
@@ -634,6 +667,7 @@ bool RenderText::SetSelection(const SelectionModel& model) {
 bool RenderText::MoveCursorToPoint(const gfx::Point& point,
                                    bool select,
                                    const gfx::Point& drag_origin) {
+  reset_cached_cursor_x();
   gfx::SelectionModel model = FindCursorPosition(point, drag_origin);
   if (select)
     model.set_selection_start(selection().start());
@@ -782,6 +816,14 @@ SizeF RenderText::GetStringSizeF() {
   return SizeF(GetStringSize());
 }
 
+Size RenderText::GetLineSize(const SelectionModel& caret) {
+  return GetStringSize();
+}
+
+float RenderText::TotalLineWidth() {
+  return GetStringSizeF().width();
+}
+
 float RenderText::GetContentWidthF() {
   const float string_size = GetStringSizeF().width();
   // The cursor is drawn one pixel beyond the int-enclosed text bounds.
@@ -841,10 +883,6 @@ bool RenderText::IsValidLogicalIndex(size_t index) const {
 
 Rect RenderText::GetCursorBounds(const SelectionModel& caret,
                                  bool insert_mode) {
-  // TODO(ckocagil): Support multiline. This function should return the height
-  //                 of the line the cursor is on. |GetStringSize()| now returns
-  //                 the multiline size, eliminate its use here.
-  DCHECK(!multiline_);
   EnsureLayout();
   size_t caret_pos = caret.caret_pos();
   DCHECK(IsValidLogicalIndex(caret_pos));
@@ -852,8 +890,8 @@ Rect RenderText::GetCursorBounds(const SelectionModel& caret,
   // overtype the next character.
   LogicalCursorDirection caret_affinity =
       insert_mode ? caret.caret_affinity() : CURSOR_FORWARD;
-  int x = 0, width = 1;
-  Size size = GetStringSize();
+  float x = 0;
+  int width = 1;
 
   // Check whether the caret is attached to a boundary. Always return a 1-dip
   // width caret at the boundary. Avoid calling IndexOfAdjacentGrapheme(), since
@@ -866,22 +904,26 @@ Rect RenderText::GetCursorBounds(const SelectionModel& caret,
   if (at_boundary) {
     const bool rtl = GetDisplayTextDirection() == base::i18n::RIGHT_TO_LEFT;
     if (rtl == (caret_pos == 0))
-      x = size.width();
+      x = TotalLineWidth();
   } else {
     // Find the next grapheme continuing in the current direction. This
     // determines the substring range that should be highlighted.
     size_t caret_end = IndexOfAdjacentGrapheme(caret_pos, caret_affinity);
     if (caret_end < caret_pos)
       std::swap(caret_end, caret_pos);
-    const Range xspan = GetCursorSpan(Range(caret_pos, caret_end));
+    const RangeF xspan = GetCursorSpan(Range(caret_pos, caret_end));
     if (insert_mode) {
       x = (caret_affinity == CURSOR_BACKWARD) ? xspan.end() : xspan.start();
     } else {  // overtype mode
       x = xspan.GetMin();
-      width = xspan.length();
+      // Ceil the start and end of the |xspan| because the cursor x-coordinates
+      // are always ceiled.
+      width =
+          std::ceil(Clamp(xspan.GetMax())) - std::ceil(Clamp(xspan.GetMin()));
     }
   }
-  return Rect(ToViewPoint(Point(x, 0)), Size(width, size.height()));
+  return Rect(ToViewPoint(PointF(x, 0), caret_affinity),
+              Size(width, GetLineSize(caret).height()));
 }
 
 const Rect& RenderText::GetUpdatedCursorBounds() {
@@ -922,7 +964,7 @@ SelectionModel RenderText::GetSelectionModelForSelectionStart() const {
 }
 
 RectF RenderText::GetStringRect() {
-  return RectF(PointF(ToViewPoint(Point())), GetStringSizeF());
+  return RectF(PointF(ToViewPoint(PointF(), CURSOR_FORWARD)), GetStringSizeF());
 }
 
 const Vector2d& RenderText::GetUpdatedDisplayOffset() {
@@ -971,6 +1013,7 @@ Vector2d RenderText::GetLineOffset(size_t line_number) {
   Vector2d offset = display_rect().OffsetFromOrigin();
   // TODO(ckocagil): Apply the display offset for multiline scrolling.
   if (!multiline()) {
+    DCHECK_EQ(ALIGN_MIDDLE, vertical_alignment_);
     offset.Add(GetUpdatedDisplayOffset());
   } else {
     DCHECK_LT(line_number, lines().size());
@@ -1029,8 +1072,42 @@ base::string16 RenderText::GetTextFromRange(const Range& range) const {
   return base::string16();
 }
 
+bool RenderText::IsNewlineSegment(const internal::LineSegment& segment) const {
+  return IsNewlineSegment(text_, segment);
+}
+
+bool RenderText::IsNewlineSegment(const base::string16& text,
+                                  const internal::LineSegment& segment) const {
+  DCHECK_LT(segment.char_range.start(), text.length());
+  return text[segment.char_range.start()] == '\n';
+}
+
+Range RenderText::GetLineRange(const base::string16& text,
+                               const internal::Line& line) const {
+  // This will find the logical start and end indices of the given line.
+  size_t max_index = 0;
+  size_t min_index = text.length();
+  for (const auto& segment : line.segments) {
+    min_index = std::min<size_t>(min_index, segment.char_range.GetMin());
+    max_index = std::max<size_t>(max_index, segment.char_range.GetMax());
+  }
+
+  // Do not include the newline character, as that could be considered leading
+  // into the next line. Note that the newline character is always the last
+  // character of the line regardless of the text direction, so decrease the
+  // |max_index|.
+  if (!line.segments.empty() &&
+      (IsNewlineSegment(text, line.segments.back()) ||
+       IsNewlineSegment(text, line.segments.front()))) {
+    --max_index;
+  }
+
+  return Range(min_index, max_index);
+}
+
 RenderText::RenderText()
     : horizontal_alignment_(base::i18n::IsRTL() ? ALIGN_RIGHT : ALIGN_LEFT),
+      vertical_alignment_(ALIGN_MIDDLE),
       directionality_mode_(DIRECTIONALITY_FROM_TEXT),
       text_direction_(base::i18n::UNKNOWN_DIRECTION),
       cursor_enabled_(true),
@@ -1079,8 +1156,12 @@ SelectionModel RenderText::GetAdjacentSelectionModel(
     VisualCursorDirection direction) {
   EnsureLayout();
 
-  if (break_type == LINE_BREAK || text().empty())
+  if (direction == CURSOR_UP || direction == CURSOR_DOWN)
+    return AdjacentLineSelectionModel(current, direction);
+  if (break_type == FIELD_BREAK || text().empty())
     return EdgeSelectionModel(direction);
+  if (break_type == LINE_BREAK)
+    return LineSelectionModel(GetLineContainingCaret(current), direction);
   if (break_type == CHARACTER_BREAK)
     return AdjacentCharSelectionModel(current, direction);
   DCHECK(break_type == WORD_BREAK);
@@ -1096,25 +1177,28 @@ SelectionModel RenderText::EdgeSelectionModel(
 
 SelectionModel RenderText::LineSelectionModel(size_t line_index,
                                               VisualCursorDirection direction) {
+  DCHECK(direction == CURSOR_LEFT || direction == CURSOR_RIGHT);
   const internal::Line& line = lines()[line_index];
   if (line.segments.empty()) {
     // Only the last line can be empty.
     DCHECK_EQ(lines().size() - 1, line_index);
     return EdgeSelectionModel(GetVisualDirectionOfLogicalEnd());
   }
-
-  size_t max_index = 0;
-  size_t min_index = text().length();
-  for (const auto& segment : line.segments) {
-    min_index = std::min<size_t>(min_index, segment.char_range.GetMin());
-    max_index = std::max<size_t>(max_index, segment.char_range.GetMax());
+  if (line_index ==
+      (direction == GetVisualDirectionOfLogicalEnd() ? GetNumLines() - 1 : 0)) {
+    return EdgeSelectionModel(direction);
   }
 
+  DCHECK_GT(GetNumLines(), 1U);
+  Range line_range = GetLineRange(text(), line);
+
+  // Cursor affinity should be the opposite of visual direction to preserve the
+  // line number of the cursor in multiline text.
   return direction == GetVisualDirectionOfLogicalEnd()
-             ? SelectionModel(DisplayIndexToTextIndex(max_index),
-                              CURSOR_FORWARD)
-             : SelectionModel(DisplayIndexToTextIndex(min_index),
-                              CURSOR_BACKWARD);
+             ? SelectionModel(DisplayIndexToTextIndex(line_range.end()),
+                              CURSOR_BACKWARD)
+             : SelectionModel(DisplayIndexToTextIndex(line_range.start()),
+                              CURSOR_FORWARD);
 }
 
 void RenderText::SetSelectionModel(const SelectionModel& model) {
@@ -1158,11 +1242,15 @@ void RenderText::UpdateDisplayText(float text_width) {
     render_text->EnsureLayout();
 
     if (render_text->lines_.size() > max_lines_) {
-      size_t start_of_elision = render_text->lines_[max_lines_ - 1]
-                                    .segments.front()
-                                    .char_range.start();
-      base::string16 text_to_elide = layout_text_.substr(start_of_elision);
-      display_text_.assign(layout_text_.substr(0, start_of_elision) +
+      // Find the start and end index of the line to be elided.
+      Range line_range =
+          GetLineRange(layout_text_, render_text->lines_[max_lines_ - 1]);
+      // Add an ellipsis character in case the last line is short enough to fit
+      // on a single line. Otherwise that character will be elided anyway.
+      base::string16 text_to_elide =
+          layout_text_.substr(line_range.start(), line_range.length()) +
+          base::string16(kEllipsisUTF16);
+      display_text_.assign(layout_text_.substr(0, line_range.start()) +
                            Elide(text_to_elide, 0,
                                  static_cast<float>(display_rect_.width()),
                                  ELIDE_TAIL));
@@ -1227,21 +1315,75 @@ void RenderText::UndoCompositionAndSelectionStyles() {
   composition_and_selection_styles_applied_ = false;
 }
 
-Point RenderText::ToViewPoint(const Point& point) {
-  if (!multiline())
-    return point + GetLineOffset(0);
+Point RenderText::ToViewPoint(const PointF& point,
+                              LogicalCursorDirection caret_affinity) {
+  const auto float_eq = [](float a, float b) {
+    return std::fabs(a - b) <= kFloatComparisonEpsilon;
+  };
+  const auto float_ge = [](float a, float b) {
+    return a > b || std::fabs(a - b) <= kFloatComparisonEpsilon;
+  };
+  const auto float_gt = [](float a, float b) {
+    return a - b > kFloatComparisonEpsilon;
+  };
 
-  // TODO(ckocagil): Traverse individual line segments for RTL support.
-  DCHECK(!lines_.empty());
-  int x = point.x();
-  size_t line = 0;
-  for (; line < lines_.size() && x > lines_[line].size.width(); ++line)
-    x -= lines_[line].size.width();
+  const size_t num_lines = GetNumLines();
+  if (num_lines == 1) {
+    return Point(std::ceil(Clamp(point.x())), std::round(point.y())) +
+           GetLineOffset(0);
+  }
 
-  // If |point| is outside the text space, clip it to the end of the last line.
-  if (line == lines_.size())
-    x = lines_[--line].size.width();
-  return Point(x, point.y()) + GetLineOffset(line);
+  float x = point.x();
+  size_t line;
+
+  if (GetDisplayTextDirection() == base::i18n::RIGHT_TO_LEFT) {
+    // |xspan| returned from |GetCursorSpan| in |GetCursorBounds| starts to grow
+    // from the last character in RTL. On the other hand, the last character is
+    // positioned in the last line in RTL. So, traverse from the last line.
+    for (line = num_lines - 1;
+         line > 0 && float_ge(x, lines_[line].size.width()); --line) {
+      x -= lines_[line].size.width();
+    }
+
+    // Increment the |line| when |x| is at the newline character. The line is
+    // broken by word wrapping if the front edge of the line is not a newline
+    // character. In that case, the same caret position where the line is broken
+    // can be on both lines depending on the caret affinity.
+    if (line < num_lines - 1 &&
+        (IsNewlineSegment(lines_[line].segments.front()) ||
+         caret_affinity == CURSOR_FORWARD)) {
+      if (float_eq(x, 0))
+        x = lines_[++line].size.width();
+
+      // In RTL, the newline character is at the front of the line. Because the
+      // newline character is not drawn at the front of the line, |x| should be
+      // decreased by the width of the newline character. Check for a newline
+      // again because the line may have changed.
+      if (!lines_[line].segments.empty() &&
+          IsNewlineSegment(lines_[line].segments.front())) {
+        x -= lines_[line].segments.front().width();
+      }
+    }
+  } else {
+    for (line = 0; line < num_lines && float_gt(x, lines_[line].size.width());
+         ++line) {
+      x -= lines_[line].size.width();
+    }
+
+    if (line == num_lines) {
+      x = lines_[--line].size.width();
+    } else if (line < num_lines - 1 && float_eq(lines_[line].size.width(), x) &&
+               (IsNewlineSegment(lines_[line].segments.back()) ||
+                caret_affinity == CURSOR_FORWARD)) {
+      // If |x| is at the edge of the line end, move the cursor to the start of
+      // the next line.
+      ++line;
+      x = 0;
+    }
+  }
+
+  return Point(std::ceil(Clamp(x)), std::round(point.y())) +
+         GetLineOffset(line);
 }
 
 HorizontalAlignment RenderText::GetCurrentHorizontalAlignment() {
@@ -1268,14 +1410,14 @@ Vector2d RenderText::GetAlignmentOffset(size_t line_number) {
       offset.set_x((offset.x() + 1) / 2);
   }
 
-  // Vertically center the text.
-  if (multiline_) {
-    const int text_height = lines_.back().preceding_heights +
-        lines_.back().size.height();
-    offset.set_y((display_rect_.height() - text_height) / 2);
-  } else {
+  if (!multiline_)
     offset.set_y(GetBaseline() - GetDisplayTextBaseline());
-  }
+  else if (vertical_alignment_ == ALIGN_TOP)
+    offset.set_y(0);
+  else if (vertical_alignment_ == ALIGN_MIDDLE)
+    offset.set_y((display_rect_.height() - GetStringSize().height()) / 2);
+  else
+    offset.set_y(display_rect_.height() - GetStringSize().height());
 
   return offset;
 }
@@ -1801,10 +1943,6 @@ internal::TextRunList* RenderText::GetRunList() {
 const internal::TextRunList* RenderText::GetRunList() const {
   NOTREACHED();
   return nullptr;
-}
-
-void RenderText::SetGlyphWidthForTest(float test_width) {
-  NOTREACHED();
 }
 
 }  // namespace gfx

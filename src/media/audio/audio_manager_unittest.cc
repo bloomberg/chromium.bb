@@ -268,7 +268,8 @@ class AudioManagerTest : public ::testing::Test {
     chromeos::CrasAudioClient::InitializeFake();
     chromeos::FakeCrasAudioClient::Get()->SetAudioNodesForTesting(audio_nodes);
     audio_pref_handler_ = new chromeos::AudioDevicesPrefHandlerStub();
-    chromeos::CrasAudioHandler::Initialize(audio_pref_handler_);
+    chromeos::CrasAudioHandler::Initialize(/*connector=*/nullptr,
+                                           audio_pref_handler_);
     cras_audio_handler_ = chromeos::CrasAudioHandler::Get();
     base::RunLoop().RunUntilIdle();
   }
@@ -722,6 +723,8 @@ TEST_F(AudioManagerTest, CheckMakeOutputStreamWithPreferredParameters) {
   AudioOutputStream* stream =
       audio_manager_->MakeAudioOutputStreamProxy(params, "");
   ASSERT_TRUE(stream);
+
+  stream->Close();
 }
 
 #if defined(OS_MACOSX) || defined(USE_CRAS)

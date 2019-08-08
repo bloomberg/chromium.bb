@@ -4,6 +4,19 @@
 
 module chromecast.external_mojo.mojom;
 
+import "mojo/public/mojom/base/time.mojom";
+
+// Struct for information provided when calling QueryServiceList().
+struct ExternalServiceInfo {
+  // Service name provided to RegisterServiceInstance.
+  string name;
+  // TimeTicks value when the service was last registered.
+  mojo_base.mojom.TimeTicks connect_time;
+  // TimeTicks value when the service was disconnected.
+  // This value is set to TimeTicks() if the service is currently connected.
+  mojo_base.mojom.TimeTicks disconnect_time;
+};
+
 // Interface for external (non-Chromium process) Mojo services to receive Mojo
 // binding requests from other processes/services.
 interface ExternalService {
@@ -36,4 +49,7 @@ interface ExternalConnector {
 
   // Binds to a Chromium service_manager::Connector instance, if possible.
   BindChromiumConnector(handle<message_pipe> interface_pipe);
+
+  // Query services that are available from this connector.
+  QueryServiceList() => (array<ExternalServiceInfo> services);
 };

@@ -426,7 +426,7 @@ class TouchEventHandler : public ui::EventHandler {
 TEST_F(DesktopWidgetTestInteractive, DISABLED_TouchNoActivateWindow) {
   // ui_controls::SendTouchEvents which uses InjectTouchInput API only works
   // on Windows 8 and up.
-  if (base::win::GetVersion() <= base::win::VERSION_WIN7)
+  if (base::win::GetVersion() <= base::win::Version::WIN7)
     return;
 
   View* focusable_view = new View;
@@ -801,10 +801,10 @@ TEST_F(WidgetTestInteractive, ChildStackedRelativeToParent) {
 TEST_F(WidgetTestInteractive, ViewFocusOnHWNDEnabledChanges) {
   Widget* widget = CreateTopLevelFramelessPlatformWidget();
   widget->SetContentsView(new View);
-  for (int i = 0; i < 2; ++i) {
-    widget->GetContentsView()->AddChildView(new View);
-    widget->GetContentsView()->child_at(i)->SetFocusBehavior(
-        View::FocusBehavior::ALWAYS);
+  for (size_t i = 0; i < 2; ++i) {
+    auto child = std::make_unique<View>();
+    child->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+    widget->GetContentsView()->AddChildView(std::move(child));
   }
 
   widget->Show();
@@ -1025,6 +1025,7 @@ class ModalDialogDelegate : public DialogDelegateView {
   DISALLOW_COPY_AND_ASSIGN(ModalDialogDelegate);
 };
 
+#if !defined(OS_CHROMEOS)
 // Tests whether the focused window is set correctly when a modal window is
 // created and destroyed. When it is destroyed it should focus the owner window.
 TEST_F(DesktopWidgetTestInteractive, WindowModalWindowDestroyedActivationTest) {
@@ -1051,12 +1052,6 @@ TEST_F(DesktopWidgetTestInteractive, WindowModalWindowDestroyedActivationTest) {
 
   // Create a modal dialog.
   ui::ModalType modal_type = ui::MODAL_TYPE_WINDOW;
-#if defined(OS_CHROMEOS)
-  // On Chrome OS this only works for MODAL_TYPE_CHILD, which makes a widget
-  // backed by NativeWidgetAura. Restoring focus to the parent window from a
-  // closed MODAL_TYPE_WINDOW requires help from the window service.
-  modal_type = ui::MODAL_TYPE_CHILD;
-#endif
   // This instance will be destroyed when the dialog is destroyed.
   ModalDialogDelegate* dialog_delegate = new ModalDialogDelegate(modal_type);
 
@@ -1090,11 +1085,12 @@ TEST_F(DesktopWidgetTestInteractive, WindowModalWindowDestroyedActivationTest) {
   top_level_widget.CloseNow();
   WidgetFocusManager::GetInstance()->RemoveFocusChangeListener(&focus_listener);
 }
+#endif
 
 // Disabled on Mac. Desktop Mac doesn't have system modal windows since Carbon
 // was deprecated. It does have application modal windows, but only Ash requests
 // those.
-#if defined(OS_MACOSX) && !defined(USE_AURA)
+#if defined(OS_MACOSX)
 #define MAYBE_SystemModalWindowReleasesCapture \
   DISABLED_SystemModalWindowReleasesCapture
 #elif defined(OS_CHROMEOS)
@@ -1345,7 +1341,7 @@ TEST_F(WidgetTestInteractive, InactiveWidgetDoesNotGrabActivation) {
 // currently only Desktop widgets and fullscreen changes have to coordinate with
 // the OS. See BridgedNativeWidgetUITest for native Mac fullscreen tests.
 // Maximize on mac is also (intentionally) a no-op.
-#if defined(OS_MACOSX) && !defined(USE_AURA)
+#if defined(OS_MACOSX)
 #define MAYBE_ExitFullscreenRestoreState DISABLED_ExitFullscreenRestoreState
 #else
 #define MAYBE_ExitFullscreenRestoreState ExitFullscreenRestoreState
@@ -1463,6 +1459,7 @@ TEST_F(DesktopWidgetTestInteractive, RestoreAndMinimizeVisibility) {
 }
 #endif  // defined(OS_WIN)
 
+#if !defined(OS_CHROMEOS)
 // Tests that minimizing a widget causes the gesture_handler
 // to be cleared when the widget is minimized.
 TEST_F(DesktopWidgetTestInteractive, EventHandlersClearedOnWidgetMinimize) {
@@ -1482,6 +1479,7 @@ TEST_F(DesktopWidgetTestInteractive, EventHandlersClearedOnWidgetMinimize) {
 
   widget->CloseNow();
 }
+#endif
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 // Tests that when a desktop native widget has modal transient child, it should
@@ -1533,7 +1531,7 @@ TEST_F(DesktopWidgetTestInteractive,
   top_level->CloseNow();
   deactivate_widget->CloseNow();
 }
-#endif  // defined(USE_AURA) && !defined(OS_CHROMEOS)
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 namespace {
 
@@ -1821,7 +1819,7 @@ TEST_F(WidgetCaptureTest, SetCaptureToNonToplevel) {
   child->AddObserver(&observer);
   child->Show();
 
-#if defined(OS_MACOSX) && !defined(USE_AURA)
+#if defined(OS_MACOSX)
   // On Mac, activation is asynchronous. A single trip to the runloop should be
   // sufficient. On Aura platforms, note that since the child widget isn't top-
   // level, the aura window manager gets asked whether the widget is active, not

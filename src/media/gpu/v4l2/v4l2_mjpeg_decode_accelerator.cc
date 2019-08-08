@@ -16,8 +16,8 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "media/filters/jpeg_parser.h"
 #include "media/gpu/macros.h"
+#include "media/parsers/jpeg_parser.h"
 #include "third_party/libyuv/include/libyuv.h"
 
 #define IOCTL_OR_ERROR_RETURN_VALUE(type, arg, value, type_name)    \
@@ -128,10 +128,12 @@ V4L2MjpegDecodeAccelerator::BufferRecord::BufferRecord() : at_device(false) {
 V4L2MjpegDecodeAccelerator::BufferRecord::~BufferRecord() {}
 
 V4L2MjpegDecodeAccelerator::JobRecord::JobRecord(
-    const BitstreamBuffer& bitstream_buffer,
+    BitstreamBuffer bitstream_buffer,
     scoped_refptr<VideoFrame> video_frame)
     : bitstream_buffer_id(bitstream_buffer.id()),
-      shm(bitstream_buffer.handle(), bitstream_buffer.size(), true),
+      shm(bitstream_buffer.TakeRegion(),
+          bitstream_buffer.size(),
+          false /* read_only */),
       offset(bitstream_buffer.offset()),
       out_frame(video_frame) {}
 
@@ -201,7 +203,8 @@ void V4L2MjpegDecodeAccelerator::PostNotifyError(int32_t bitstream_buffer_id,
                                 weak_ptr_, bitstream_buffer_id, error));
 }
 
-bool V4L2MjpegDecodeAccelerator::Initialize(Client* client) {
+bool V4L2MjpegDecodeAccelerator::Initialize(
+    chromeos_camera::MjpegDecodeAccelerator::Client* client) {
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
   if (!device_->Open(V4L2Device::Type::kJpegDecoder, V4L2_PIX_FMT_JPEG)) {
@@ -247,17 +250,14 @@ bool V4L2MjpegDecodeAccelerator::Initialize(Client* client) {
   return true;
 }
 
-void V4L2MjpegDecodeAccelerator::Decode(
-    const BitstreamBuffer& bitstream_buffer,
-    const scoped_refptr<VideoFrame>& video_frame) {
+void V4L2MjpegDecodeAccelerator::Decode(BitstreamBuffer bitstream_buffer,
+                                        scoped_refptr<VideoFrame> video_frame) {
   DVLOGF(4) << "input_id=" << bitstream_buffer.id()
             << ", size=" << bitstream_buffer.size();
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   if (bitstream_buffer.id() < 0) {
     VLOGF(1) << "Invalid bitstream_buffer, id: " << bitstream_buffer.id();
-    if (base::SharedMemory::IsHandleValid(bitstream_buffer.handle()))
-      base::SharedMemory::CloseHandle(bitstream_buffer.handle());
     PostNotifyError(bitstream_buffer.id(), INVALID_ARGUMENT);
     return;
   }
@@ -268,7 +268,7 @@ void V4L2MjpegDecodeAccelerator::Decode(
   }
 
   std::unique_ptr<JobRecord> job_record(
-      new JobRecord(bitstream_buffer, video_frame));
+      new JobRecord(std::move(bitstream_buffer), std::move(video_frame)));
 
   decoder_task_runner_->PostTask(
       FROM_HERE,
@@ -672,7 +672,7 @@ void V4L2MjpegDecodeAccelerator::EnqueueOutput() {
 
 bool V4L2MjpegDecodeAccelerator::ConvertOutputImage(
     const BufferRecord& output_buffer,
-    const scoped_refptr<VideoFrame>& dst_frame) {
+    VideoFrame* dst_frame) {
   uint8_t* dst_y = dst_frame->data(VideoFrame::kYPlane);
   uint8_t* dst_u = dst_frame->data(VideoFrame::kUPlane);
   uint8_t* dst_v = dst_frame->data(VideoFrame::kVPlane);
@@ -822,7 +822,7 @@ void V4L2MjpegDecodeAccelerator::Dequeue() {
       // Copy the decoded data from output buffer to the buffer provided by the
       // client. Do format conversion when output format is not
       // V4L2_PIX_FMT_YUV420.
-      if (!ConvertOutputImage(output_record, job_record->out_frame)) {
+      if (!ConvertOutputImage(output_record, job_record->out_frame.get())) {
         PostNotifyError(job_record->bitstream_buffer_id, PLATFORM_FAILURE);
         return;
       }

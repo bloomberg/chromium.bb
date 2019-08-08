@@ -428,42 +428,22 @@ Chromium is unable to recover your settings.
                desc="Message shown on the download shelf when the download is known to change settings in the browser in a malicious way.">
         <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> may be dangerous, so Chromium has blocked it.
       </message>
-      <message name="IDS_PROMPT_DOWNLOAD_CHANGES_SETTINGS_IN_ADVANCED_PROTECTION"
-               desc="Message shown on the download shelf when the download is known to change settings in the browser in a malicious way. This variant is shown when the user is enrolled in the Advanced Protection program.">
-        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> may be dangerous, so Chromium has blocked it. You're defended by Advanced Protection.
-      </message>
 
       <message name="IDS_PROMPT_MALICIOUS_DOWNLOAD_URL"
          desc="Message shown to the user to validate the download when the download url is classified to lead to malware by the safebrowsing database.">
         This file is dangerous, so Chromium has blocked it.
       </message>
-      <message name="IDS_PROMPT_MALICIOUS_DOWNLOAD_URL_IN_ADVANCED_PROTECTION"
-         desc="Message shown to the user to validate the download when the download url is classified to lead to malware by the safebrowsing database. This variant is shown when the user is enrolled in this Advanced Protection program.">
-        This file is dangerous, so Chromium has blocked it. You're defended by Advanced Protection.
-      </message>
       <message name="IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT"
          desc="Message shown to the user to validate the download when the download content is classified to lead to malware by safebrowsing.">
         <ph name="FILE_NAME">$1<ex>malware.exe</ex></ph> is dangerous, so Chromium has blocked it.
-      </message>
-      <message name="IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT_IN_ADVANCED_PROTECTION"
-         desc="Message shown to the user to validate the download when the download content is classified to lead to malware by safebrowsing. This variant is shown when the user is enrolled in the Advanced Protection program.">
-        <ph name="FILE_NAME">$1<ex>malware.exe</ex></ph> is dangerous, so Chromium has blocked it. You're defended by Advanced Protection.
       </message>
       <message name="IDS_BLOCK_REASON_DANGEROUS_DOWNLOAD"
          desc="Message shown to the user on chrome://downloads page to explain that this download is blocked because it is malware.">
         This file is dangerous, so Chromium has blocked it.
       </message>
-      <message name="IDS_BLOCK_REASON_DANGEROUS_DOWNLOAD_IN_ADVANCED_PROTECTION"
-         desc="Message shown to the user on chrome://downloads page to explain that this download is blocked because it is malware. This variant is shown when the user is enrolled in the Advanced Protection program.">
-        This file is dangerous, so Chromium has blocked it. You're defended by Advanced Protection.
-      </message>
       <message name="IDS_BLOCK_REASON_UNWANTED_DOWNLOAD"
          desc="Message shown to the user on chrome://downloads page to explain that this download is blocked because it is unwanted sofware.">
         This file may be dangerous, so Chromium has blocked it.
-      </message>
-      <message name="IDS_BLOCK_REASON_UNWANTED_DOWNLOAD_IN_ADVANCED_PROTECTION"
-         desc="Message shown to the user on chrome://downloads page to explain that this download is blocked because it is unwanted sofware. This variant is shown when the user is enrolled in the Advanced Protection program.">
-        This file may be dangerous, so Chromium has blocked it. You're defended by Advanced Protection.
       </message>
 
       <!-- Abandon in-progress downloads confirmation dialog -->
@@ -768,15 +748,11 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
         </message>
       </if>
 
-      <message name="IDS_AUTOFILL_DIALOG_SAVE_LOCALLY_CHECKBOX" desc="Checkbox that controls whether info the user types into the autofill dialog is saved by chrome.">
-        Save details in Chromium
-      </message>
-      <message name="IDS_AUTOFILL_DIALOG_SAVE_LOCALLY_TOOLTIP" desc="Tooltip which explains function of checkbox that controls whether info the user types into the autofill dialog is saved by chrome.">
-        Chromium will securely store your personal details so you don't need to type them in again.
-      </message>
-      <message name="IDS_AUTOFILL_DESCRIBE_LOCAL_COPY" desc="Text label that described a Wallet credit card which has been copied to the local Chrome instance.">
-        Copied to Chromium
-      </message>
+      <if expr="is_android">
+        <message name="IDS_AUTOFILL_DESCRIBE_LOCAL_COPY" desc="Text label that described a Wallet credit card which has been copied to the local Chrome instance.">
+          Copied to Chromium
+        </message>
+      </if>
 
       <!-- App list -->
       <if expr="enable_app_list">
@@ -953,7 +929,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@example.com</
           If an image doesn’t have a useful description, Chromium will try to provide one for you. To create descriptions, images are sent to Google.
         </message>
         <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_TEXT" desc="The text of a bubble that confirms users allows integrating the spelling service of Google to Chrome.">
-          This uses the same spellchecker that's used in Google search. Text you type in the browser is sent to Google. You can always change this behavior in settings.
+          This uses the same spell checker that's used in Google search. Text you type in the browser is sent to Google. You can always change this behavior in settings.
         </message>
         <if expr="not use_titlecase">
           <message name="IDS_CONTENT_CONTEXT_OPENLINKNEWTAB_INAPP" desc="The name of the command to open a link in a newly created browser tab when the user is in an app window">
@@ -1238,76 +1214,39 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@example.com</
       <!-- Relaunch notification bubble and dialog. -->
       <if expr="not is_android">
         <if expr="not chromeos">
-          <then>
-            <message name="IDS_RELAUNCH_RECOMMENDED_TITLE" desc="The title of a dialog that tells users that a browser relaunch is recommended for an update available for some number of days.">
-              {0, plural,
-               =0 {A Chromium update is available}
-               =1 {A Chromium update is available}
-               other {A Chromium update has been available for # days}}
-            </message>
-            <message name="IDS_RELAUNCH_RECOMMENDED_BODY" desc="The body text of a dialog that tells users that a browser relaunch is recommended for an update.">
-              Your administrator asks that you relaunch Chromium to apply this update
-            </message>
-            <message name="IDS_RELAUNCH_REQUIRED_TITLE_DAYS" desc="The title of a dialog that tells users the browser must be relaunched within two or more days.">
-              {0, plural,
-               =1 {Relaunch Chromium within a day}
-               other {Relaunch Chromium within # days}}
-            </message>
-            <message name="IDS_RELAUNCH_REQUIRED_TITLE_HOURS" desc="The title of a dialog that tells users the browser must be relaunched within one or more hours.">
-              {0, plural,
-               =1 {Chromium will relaunch in an hour}
-               other {Chromium will relaunch in # hours}}
-            </message>
-            <message name="IDS_RELAUNCH_REQUIRED_TITLE_MINUTES" desc="The title of a dialog that tells users the browser must be relaunched within one or more minutes.">
-              {0, plural,
-               =1 {Chromium will relaunch in 1 minute}
-               other {Chromium will relaunch in # minutes}}
-            </message>
-            <message name="IDS_RELAUNCH_REQUIRED_TITLE_SECONDS" desc="The title of a dialog that tells users the browser must be relaunched within some number of seconds.">
-              {0, plural,
-               =0 {Chromium will relaunch now}
-               =1 {Chromium will relaunch in 1 second}
-               other {Chromium will relaunch in # seconds}}
-            </message>
-            <message name="IDS_RELAUNCH_REQUIRED_BODY" desc="The body text of a dialog that tells users the browser must be relaunched.">
-              Your administrator requires that you relaunch Chromium to apply an update
-            </message>
-          </then>
-          <else>
-            <message name="IDS_RELAUNCH_RECOMMENDED_TITLE" desc="The title of a dialog that tells users that a device restart is recommended for an update available for some number of days.">
-              {0, plural,
-               =0 {A Chromium OS update is available}
-               =1 {A Chromium OS update is available}
-               other {A Chromium OS update has been available for # days}}
-            </message>
-            <message name="IDS_RELAUNCH_RECOMMENDED_BODY" desc="The body text of a dialog that tells users that a device restart is recommended for an update.">
-              Your administrator asks that you restart Chromium OS to apply this update
-            </message>
-            <message name="IDS_RELAUNCH_REQUIRED_TITLE_DAYS" desc="The title of a dialog that tells users the device must be restarted within two or more days.">
-              {0, plural,
-               =1 {Restart Chromium OS within a day}
-               other {Restart Chromium OS within # days}}
-            </message>
-            <message name="IDS_RELAUNCH_REQUIRED_TITLE_HOURS" desc="The title of a dialog that tells users the device must be restarted within one or more hours.">
-              {0, plural,
-               =1 {Chromium OS will restart in an hour}
-               other {Chromium OS will restart in # hours}}
-            </message>
-            <message name="IDS_RELAUNCH_REQUIRED_TITLE_MINUTES" desc="The title of a dialog that tells users the device must be restarted within one or more minutes.">
-              {0, plural,
-               =1 {Chromium OS will restart in 1 minute}
-               other {Chromium OS will restart in # minutes}}
-            </message>
-            <message name="IDS_RELAUNCH_REQUIRED_TITLE_SECONDS" desc="The title of a dialog that tells users the device must be restarted within some number of seconds.">
-              {0, plural,
-               =0 {Chromium OS will restart now}
-               =1 {Chromium OS will restart in 1 second}
-               other {Chromium OS will restart in # seconds}}
-            </message>
-            <message name="IDS_RELAUNCH_REQUIRED_BODY" desc="The body text of a dialog that tells users the device must be restarted.">
-              Your administrator requires that you restart Chromium OS to apply an update
-            </message>
-          </else>
+          <message name="IDS_RELAUNCH_RECOMMENDED_TITLE" desc="The title of a dialog that tells users that a browser relaunch is recommended for an update available for some number of days.">
+            {0, plural,
+              =0 {A Chromium update is available}
+              =1 {A Chromium update is available}
+              other {A Chromium update has been available for # days}}
+          </message>
+          <message name="IDS_RELAUNCH_RECOMMENDED_BODY" desc="The body text of a dialog that tells users that a browser relaunch is recommended for an update.">
+            Your administrator asks that you relaunch Chromium to apply this update
+          </message>
+          <message name="IDS_RELAUNCH_REQUIRED_TITLE_DAYS" desc="The title of a dialog that tells users the browser must be relaunched within two or more days.">
+            {0, plural,
+              =1 {Relaunch Chromium within a day}
+              other {Relaunch Chromium within # days}}
+          </message>
+          <message name="IDS_RELAUNCH_REQUIRED_TITLE_HOURS" desc="The title of a dialog that tells users the browser must be relaunched within one or more hours.">
+            {0, plural,
+              =1 {Chromium will relaunch in an hour}
+              other {Chromium will relaunch in # hours}}
+          </message>
+          <message name="IDS_RELAUNCH_REQUIRED_TITLE_MINUTES" desc="The title of a dialog that tells users the browser must be relaunched within one or more minutes.">
+            {0, plural,
+              =1 {Chromium will relaunch in 1 minute}
+              other {Chromium will relaunch in # minutes}}
+          </message>
+          <message name="IDS_RELAUNCH_REQUIRED_TITLE_SECONDS" desc="The title of a dialog that tells users the browser must be relaunched within some number of seconds.">
+            {0, plural,
+              =0 {Chromium will relaunch now}
+              =1 {Chromium will relaunch in 1 second}
+              other {Chromium will relaunch in # seconds}}
+          </message>
+          <message name="IDS_RELAUNCH_REQUIRED_BODY" desc="The body text of a dialog that tells users the browser must be relaunched.">
+            Your administrator requires that you relaunch Chromium to apply an update
+          </message>
         </if>
       </if>
       <!-- Chromium launch blocking dialog. -->
@@ -1325,6 +1264,9 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@example.com</
           Close
         </message>
       </if>
+      <message name="IDS_DESKTOP_MEDIA_PICKER_TITLE_WEB_CONTENTS_ONLY" desc="Title for the window picker dialog shown when desktop capture of a tab is requested by an app.">
+        Share a Chromium tab
+      </message>
     </messages>
   </release>
 </grit>

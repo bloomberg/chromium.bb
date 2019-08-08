@@ -16,12 +16,12 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/update_engine_client.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/chromeos/devicetype_utils.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -82,11 +82,6 @@ class EolNotificationDelegate : public message_center::NotificationDelegate {
 
 // static
 bool EolNotification::ShouldShowEolNotification() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kDisableEolNotification)) {
-    return false;
-  }
-
   // Do not show end of life notification if this device is managed by
   // enterprise user.
   if (g_browser_process->platform_part()
@@ -154,15 +149,15 @@ void EolNotification::Update() {
       ash::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kEolNotificationId,
           GetStringUTF16(IDS_EOL_NOTIFICATION_TITLE),
-          GetStringUTF16(IDS_EOL_NOTIFICATION_EOL),
-          GetStringUTF16(IDS_EOL_NOTIFICATION_DISPLAY_SOURCE),
-          GURL(kEolNotificationId),
+          l10n_util::GetStringFUTF16(IDS_EOL_NOTIFICATION_EOL,
+                                     ui::GetChromeOSDeviceName()),
+          base::string16() /* display_source */, GURL(kEolNotificationId),
           message_center::NotifierId(
               message_center::NotifierType::SYSTEM_COMPONENT,
               kEolNotificationId),
           data, new EolNotificationDelegate(profile_),
           ash::kNotificationEndOfSupportIcon,
-          message_center::SystemNotificationWarningLevel::CRITICAL_WARNING);
+          message_center::SystemNotificationWarningLevel::NORMAL);
 
   NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
       NotificationHandler::Type::TRANSIENT, *notification,

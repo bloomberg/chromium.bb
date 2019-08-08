@@ -20,6 +20,7 @@ class {{export_attribute}} {{interface.name}}
   static constexpr bool PassesAssociatedKinds_ = {% if interface|passes_associated_kinds %}true{% else %}false{% endif %};
   static constexpr bool HasSyncMethods_ = {% if interface|has_sync_methods %}true{% else %}false{% endif %};
 
+  using Base_ = {{interface.name}}InterfaceBase;
   using Proxy_ = {{interface.name}}Proxy;
 
   template <typename ImplRefTraits>

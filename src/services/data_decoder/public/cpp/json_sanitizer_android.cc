@@ -38,8 +38,8 @@ namespace {
 // rejected.
 class JsonSanitizerAndroid : public JsonSanitizer {
  public:
-  JsonSanitizerAndroid(const StringCallback& success_callback,
-                       const StringCallback& error_callback);
+  JsonSanitizerAndroid(StringCallback success_callback,
+                       StringCallback error_callback);
   ~JsonSanitizerAndroid() {}
 
   void Sanitize(const std::string& unsafe_json);
@@ -54,10 +54,10 @@ class JsonSanitizerAndroid : public JsonSanitizer {
   DISALLOW_COPY_AND_ASSIGN(JsonSanitizerAndroid);
 };
 
-JsonSanitizerAndroid::JsonSanitizerAndroid(
-    const StringCallback& success_callback,
-    const StringCallback& error_callback)
-    : success_callback_(success_callback), error_callback_(error_callback) {}
+JsonSanitizerAndroid::JsonSanitizerAndroid(StringCallback success_callback,
+                                           StringCallback error_callback)
+    : success_callback_(std::move(success_callback)),
+      error_callback_(std::move(error_callback)) {}
 
 void JsonSanitizerAndroid::Sanitize(const std::string& unsafe_json) {
   // The JSON parser only accepts wellformed UTF-8.
@@ -77,12 +77,12 @@ void JsonSanitizerAndroid::Sanitize(const std::string& unsafe_json) {
 
 void JsonSanitizerAndroid::OnSuccess(const std::string& json) {
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(success_callback_, json));
+      FROM_HERE, base::BindOnce(std::move(success_callback_), json));
 }
 
 void JsonSanitizerAndroid::OnError(const std::string& error) {
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(error_callback_, error));
+      FROM_HERE, base::BindOnce(std::move(error_callback_), error));
 }
 
 }  // namespace
@@ -106,12 +106,13 @@ void JNI_JsonSanitizer_OnError(JNIEnv* env,
 // static
 void JsonSanitizer::Sanitize(service_manager::Connector* connector,
                              const std::string& unsafe_json,
-                             const StringCallback& success_callback,
-                             const StringCallback& error_callback) {
+                             StringCallback success_callback,
+                             StringCallback error_callback) {
   // JsonSanitizerAndroid does all its work synchronously, but posts any
   // callbacks to the current sequence. This means it can be destroyed at
   // the end of this method.
-  JsonSanitizerAndroid sanitizer(success_callback, error_callback);
+  JsonSanitizerAndroid sanitizer(std::move(success_callback),
+                                 std::move(error_callback));
   sanitizer.Sanitize(unsafe_json);
 }
 

@@ -24,7 +24,6 @@
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/pref_registry/pref_registry_syncable.h"

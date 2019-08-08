@@ -371,7 +371,8 @@ static bool IsRequiredOwnedElement(AXObject* parent,
                                    ax::mojom::Role current_role,
                                    HTMLElement* current_element) {
   Node* parent_node = parent->GetNode();
-  if (!parent_node || !parent_node->IsHTMLElement())
+  auto* parent_html_element = DynamicTo<HTMLElement>(parent_node);
+  if (!parent_html_element)
     return false;
 
   if (current_role == ax::mojom::Role::kListItem)
@@ -388,7 +389,7 @@ static bool IsRequiredOwnedElement(AXObject* parent,
   if (IsHTMLTableCellElement(*current_element))
     return IsHTMLTableRowElement(*parent_node);
   if (IsHTMLTableRowElement(*current_element))
-    return IsHTMLTableSectionElement(ToHTMLElement(*parent_node));
+    return IsHTMLTableSectionElement(parent_html_element);
 
   // In case of ListboxRole and its child, ListBoxOptionRole, inheritance of
   // presentation role is handled in AXListBoxOption because ListBoxOption Role
@@ -417,9 +418,7 @@ const AXObject* AXNodeObject::InheritsPresentationalRoleFrom() const {
   if (!parent)
     return nullptr;
 
-  HTMLElement* element = nullptr;
-  if (GetNode() && GetNode()->IsHTMLElement())
-    element = ToHTMLElement(GetNode());
+  auto* element = DynamicTo<HTMLElement>(GetNode());
   if (!parent->HasInheritedPresentationalRole())
     return nullptr;
 
@@ -730,7 +729,6 @@ void AXNodeObject::AccessibilityChildrenFromAOMProperty(
   HeapVector<Member<Element>> elements;
   if (!HasAOMPropertyOrARIAAttribute(property, elements))
     return;
-
   AXObjectCacheImpl& cache = AXObjectCache();
   for (const auto& element : elements) {
     if (AXObject* child = cache.GetOrCreate(element)) {
@@ -1279,26 +1277,26 @@ int AXNodeObject::HeadingLevel() const {
     }
   }
 
-  if (!node->IsHTMLElement())
+  auto* element = DynamicTo<HTMLElement>(node);
+  if (!element)
     return 0;
 
-  HTMLElement& element = ToHTMLElement(*node);
-  if (element.HasTagName(kH1Tag))
+  if (element->HasTagName(kH1Tag))
     return 1;
 
-  if (element.HasTagName(kH2Tag))
+  if (element->HasTagName(kH2Tag))
     return 2;
 
-  if (element.HasTagName(kH3Tag))
+  if (element->HasTagName(kH3Tag))
     return 3;
 
-  if (element.HasTagName(kH4Tag))
+  if (element->HasTagName(kH4Tag))
     return 4;
 
-  if (element.HasTagName(kH5Tag))
+  if (element->HasTagName(kH5Tag))
     return 5;
 
-  if (element.HasTagName(kH6Tag))
+  if (element->HasTagName(kH6Tag))
     return 6;
 
   if (RoleValue() == ax::mojom::Role::kHeading)
@@ -1374,12 +1372,12 @@ void AXNodeObject::Markers(Vector<DocumentMarker::MarkerType>& marker_types,
   if (!GetNode() || !GetDocument() || !GetDocument()->View())
     return;
 
-  if (!GetNode()->IsTextNode())
+  auto* text_node = DynamicTo<Text>(GetNode());
+  if (!text_node)
     return;
 
   DocumentMarkerController& marker_controller = GetDocument()->Markers();
-  DocumentMarkerVector markers =
-      marker_controller.MarkersFor(ToText(*GetNode()));
+  DocumentMarkerVector markers = marker_controller.MarkersFor(*text_node);
   for (DocumentMarker* marker : markers) {
     if (!MarkerTypeIsUsedForAccessibility(marker->GetType()))
       continue;
@@ -1404,7 +1402,7 @@ AXObject* AXNodeObject::InPageLinkTarget() const {
   if (!node_ || !IsHTMLAnchorElement(node_) || !GetDocument())
     return AXObject::InPageLinkTarget();
 
-  HTMLAnchorElement* anchor = ToHTMLAnchorElement(node_);
+  HTMLAnchorElement* anchor = ToHTMLAnchorElement(node_.Get());
   DCHECK(anchor);
   KURL link_url = anchor->Href();
   if (!link_url.IsValid())
@@ -1470,7 +1468,7 @@ AXObject::AXObjectVector AXNodeObject::RadioButtonsInGroup() const {
   if (!node_ || RoleValue() != ax::mojom::Role::kRadioButton)
     return radio_buttons;
 
-  if (auto* node_radio_button = ToHTMLInputElementOrNull(node_)) {
+  if (auto* node_radio_button = ToHTMLInputElementOrNull(node_.Get())) {
     HeapVector<Member<HTMLInputElement>> html_radio_buttons =
         FindAllRadioButtonsWithSameName(node_radio_button);
     for (HTMLInputElement* radio_button : html_radio_buttons) {
@@ -1970,8 +1968,8 @@ String AXNodeObject::TextAlternative(bool recursive,
         name_sources->back().type = name_from;
       }
 
-      if (node && node->IsTextNode())
-        text_alternative = ToText(node)->wholeText();
+      if (auto* text_node = DynamicTo<Text>(node))
+        text_alternative = text_node->wholeText();
       else if (IsHTMLBRElement(node))
         text_alternative = String("\n");
       else
@@ -2088,9 +2086,18 @@ String AXNodeObject::TextFromDescendants(AXObjectSet& visited,
 
   HeapVector<Member<AXObject>> owned_children;
   ComputeAriaOwnsChildren(owned_children);
-  for (AXObject* obj = RawFirstChild(); obj; obj = obj->RawNextSibling()) {
-    if (!AXObjectCache().IsAriaOwned(obj))
-      children.push_back(obj);
+
+  for (Node* child = LayoutTreeBuilderTraversal::FirstChild(*node_); child;
+       child = LayoutTreeBuilderTraversal::NextSibling(*child)) {
+    auto* child_text_node = DynamicTo<Text>(child);
+    if (child_text_node &&
+        child_text_node->wholeText().ContainsOnlyWhitespaceOrEmpty()) {
+      // skip over empty text nodes
+      continue;
+    }
+    AXObject* child_obj = AXObjectCache().GetOrCreate(child);
+    if (child_obj && !AXObjectCache().IsAriaOwned(child_obj))
+      children.push_back(child_obj);
   }
   for (const auto& owned_child : owned_children)
     children.push_back(owned_child);
@@ -2178,9 +2185,7 @@ bool AXNodeObject::NameFromLabelElement() const {
   // Based on
   // http://rawgit.com/w3c/aria/master/html-aam/html-aam.html#accessible-name-and-description-calculation
   // 5.1/5.5 Text inputs, Other labelable Elements
-  HTMLElement* html_element = nullptr;
-  if (GetNode()->IsHTMLElement())
-    html_element = ToHTMLElement(GetNode());
+  auto* html_element = DynamicTo<HTMLElement>(GetNode());
   if (html_element && html_element->IsLabelable()) {
     if (html_element->labels() && html_element->labels()->length() > 0)
       return true;
@@ -2330,6 +2335,7 @@ void AXNodeObject::AddChildren() {
   }
 
   AddHiddenChildren();
+  AddPopupChildren();
   AddImageMapChildren();
   AddInlineTextBoxChildren(false);
   AddAccessibleNodeChildren();
@@ -2349,7 +2355,7 @@ void AXNodeObject::AddChild(AXObject* child) {
 }
 
 void AXNodeObject::InsertChild(AXObject* child, unsigned index) {
-  if (!child)
+  if (!child || !CanHaveChildren())
     return;
 
   // If the parent is asking for this child's children, then either it's the
@@ -2773,24 +2779,10 @@ void AXNodeObject::ComputeAriaOwnsChildren(
     return;
   }
 
-  // Case 2: AOM owns property
-  HeapVector<Member<Element>> elements;
-  if (HasAOMProperty(AOMRelationListProperty::kOwns, elements)) {
-    AXObjectCache().UpdateAriaOwns(this, id_vector, owned_children);
-
-    for (const auto& element : elements) {
-      AXObject* ax_element = ax_object_cache_->GetOrCreate(&*element);
-      if (ax_element && !ax_element->AccessibilityIsIgnored())
-        owned_children.push_back(ax_element);
-    }
-
-    return;
-  }
-
   if (!HasAttribute(kAriaOwnsAttr))
     return;
 
-  // Case 3: aria-owns attribute
+  // Case 2: aria-owns attribute
   TokenVectorFromAttribute(id_vector, kAriaOwnsAttr);
   AXObjectCache().UpdateAriaOwns(this, id_vector, owned_children);
 }
@@ -2818,10 +2810,7 @@ String AXNodeObject::NativeTextAlternative(
 
   // 5.1/5.5 Text inputs, Other labelable Elements
   // If you change this logic, update AXNodeObject::nameFromLabelElement, too.
-  HTMLElement* html_element = nullptr;
-  if (GetNode()->IsHTMLElement())
-    html_element = ToHTMLElement(GetNode());
-
+  auto* html_element = DynamicTo<HTMLElement>(GetNode());
   if (html_element && html_element->IsLabelable()) {
     name_from = ax::mojom::NameFrom::kRelatedElement;
     if (name_sources) {
@@ -2830,7 +2819,9 @@ String AXNodeObject::NativeTextAlternative(
       name_sources->back().native_source = kAXTextFromNativeHTMLLabel;
     }
 
-    LabelsNodeList* labels = html_element->labels();
+    LabelsNodeList* labels = nullptr;
+    if (AXObjectCache().MayHaveHTMLLabel(*html_element))
+      labels = html_element->labels();
     if (labels && labels->length() > 0) {
       HeapVector<Member<Element>> label_elements;
       for (unsigned label_index = 0; label_index < labels->length();
@@ -3171,9 +3162,9 @@ String AXNodeObject::NativeTextAlternative(
       name_sources->back().type = name_from;
       name_sources->back().native_source = kAXTextFromNativeHTMLTitleElement;
     }
-    DCHECK(GetNode()->IsContainerNode());
+    auto* container_node = To<ContainerNode>(GetNode());
     Element* title = ElementTraversal::FirstChild(
-        ToContainerNode(*(GetNode())), HasTagName(svg_names::kTitleTag));
+        *container_node, HasTagName(svg_names::kTitleTag));
 
     if (title) {
       AXObject* title_ax_object = AXObjectCache().GetOrCreate(title);
@@ -3352,28 +3343,6 @@ String AXNodeObject::Description(ax::mojom::NameFrom name_from,
     description_sources->push_back(
         DescriptionSource(found_description, kAriaDescribedbyAttr));
     description_sources->back().type = description_from;
-  }
-
-  // aria-describedby overrides any other accessible description, from:
-  // http://rawgit.com/w3c/aria/master/html-aam/html-aam.html
-  // AOM version.
-  HeapVector<Member<Element>> elements;
-  if (HasAOMProperty(AOMRelationListProperty::kDescribedBy, elements)) {
-    AXObjectSet visited;
-    description = TextFromElements(true, visited, elements, related_objects);
-    if (!description.IsNull()) {
-      if (description_sources) {
-        DescriptionSource& source = description_sources->back();
-        source.type = description_from;
-        source.related_objects = *related_objects;
-        source.text = description;
-        found_description = true;
-      } else {
-        return description;
-      }
-    } else if (description_sources) {
-      description_sources->back().invalid = true;
-    }
   }
 
   // aria-describedby overrides any other accessible description, from:

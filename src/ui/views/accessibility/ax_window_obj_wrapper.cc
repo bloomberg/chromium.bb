@@ -14,7 +14,6 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
-#include "ui/views/accessibility/ax_aura_window_utils.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -44,7 +43,7 @@ AXWindowObjWrapper::AXWindowObjWrapper(AXAuraObjCache* aura_obj_cache,
                                        aura::Window* window)
     : AXAuraObjWrapper(aura_obj_cache),
       window_(window),
-      is_root_window_(AXAuraWindowUtils::Get()->IsRootWindow(window)) {
+      is_root_window_(window->IsRootWindow()) {
   window->AddObserver(this);
 
   if (is_root_window_)
@@ -60,7 +59,7 @@ bool AXWindowObjWrapper::IsIgnored() {
 }
 
 AXAuraObjWrapper* AXWindowObjWrapper::GetParent() {
-  aura::Window* parent = AXAuraWindowUtils::Get()->GetParent(window_);
+  aura::Window* parent = window_->parent();
   if (!parent)
     return nullptr;
 
@@ -69,11 +68,8 @@ AXAuraObjWrapper* AXWindowObjWrapper::GetParent() {
 
 void AXWindowObjWrapper::GetChildren(
     std::vector<AXAuraObjWrapper*>* out_children) {
-  aura::Window::Windows children =
-      AXAuraWindowUtils::Get()->GetChildren(window_);
-  for (size_t i = 0; i < children.size(); ++i) {
-    out_children->push_back(aura_obj_cache_->GetOrCreate(children[i]));
-  }
+  for (auto* child : window_->children())
+    out_children->push_back(aura_obj_cache_->GetOrCreate(child));
 
   // Also consider any associated widgets as children.
   Widget* widget = GetWidgetForWindow(window_);
@@ -193,10 +189,8 @@ void AXWindowObjWrapper::FireEvent(aura::Window* window,
       root_view->NotifyAccessibilityEvent(event_type, true);
   }
 
-  aura::Window::Windows children =
-      AXAuraWindowUtils::Get()->GetChildren(window);
-  for (size_t i = 0; i < children.size(); ++i)
-    FireEvent(children[i], ax::mojom::Event::kLocationChanged);
+  for (auto* child : window->children())
+    FireEvent(child, ax::mojom::Event::kLocationChanged);
 }
 
 }  // namespace views

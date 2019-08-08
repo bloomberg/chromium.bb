@@ -38,9 +38,16 @@ class CORE_EXPORT ScrollbarLayerDelegate : public cc::Scrollbar {
   gfx::Point Location() const override;
   int ThumbThickness() const override;
   int ThumbLength() const override;
+
+  // Returns the track rect relative to the scrollbar's origin.
   gfx::Rect TrackRect() const override;
+
+  // Returns the back button rect relative to the scrollbar's origin.
   gfx::Rect BackButtonRect() const override;
+
+  // Returns the forward button rect relative to the scrollbar's origin.
   gfx::Rect ForwardButtonRect() const override;
+
   float ThumbOpacity() const override;
   bool NeedsPaintPart(cc::ScrollbarPart part) const override;
   bool HasTickmarks() const override;

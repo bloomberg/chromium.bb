@@ -92,6 +92,8 @@ class DevToolsURLInterceptorRequestJob : public net::URLRequestJob {
   // fields.
   struct RequestDetails {
     RequestDetails(const GURL& url,
+                   const GURL& site_for_cookies,
+                   base::Optional<url::Origin> initiator,
                    const std::string& method,
                    std::unique_ptr<net::UploadDataStream> post_data,
                    const net::HttpRequestHeaders& extra_request_headers,
@@ -102,6 +104,8 @@ class DevToolsURLInterceptorRequestJob : public net::URLRequestJob {
     ~RequestDetails();
 
     GURL url;
+    GURL site_for_cookies;
+    base::Optional<url::Origin> initiator;
     std::string method;
     std::unique_ptr<net::UploadDataStream> post_data;
     std::string cookie_line;

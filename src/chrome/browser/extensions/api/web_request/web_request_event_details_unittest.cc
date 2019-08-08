@@ -9,6 +9,7 @@
 #include "base/values.h"
 #include "extensions/browser/api/web_request/web_request_api_constants.h"
 #include "extensions/browser/api/web_request/web_request_api_helpers.h"
+#include "extensions/browser/api/web_request/web_request_info.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
@@ -84,9 +85,8 @@ TEST(WebRequestEventDetailsTest, SetResponseHeaders) {
       "Key1: Value1\r\n"
       "X-Chrome-ID-Consistency-Response: Value2\r\n"
       "\r\n";
-  scoped_refptr<net::HttpResponseHeaders> headers(
-      new net::HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
-          headers_string, sizeof(headers_string))));
+  auto headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(headers_string));
 
   {
     // Non-Gaia URL.

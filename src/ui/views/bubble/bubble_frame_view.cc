@@ -80,21 +80,21 @@ BubbleFrameView::BubbleFrameView(const gfx::Insets& title_margins,
       title_icon_(new views::ImageView()),
       default_title_(CreateDefaultTitleLabel(base::string16()).release()),
       custom_title_(nullptr),
-      close_(nullptr),
       footnote_container_(nullptr) {
   AddChildView(title_icon_);
 
   default_title_->SetVisible(false);
   AddChildView(default_title_);
 
-  close_ = CreateCloseButton(this, GetNativeTheme()->SystemDarkModeEnabled());
-  close_->SetVisible(false);
+  auto close =
+      CreateCloseButton(this, GetNativeTheme()->SystemDarkModeEnabled());
+  close->SetVisible(false);
 #if defined(OS_WIN)
   // Windows will automatically create a tooltip for the close button based on
   // the HTCLOSE result from NonClientHitTest().
-  close_->SetTooltipText(base::string16());
+  close->SetTooltipText(base::string16());
 #endif
-  AddChildView(close_);
+  close_ = AddChildView(std::move(close));
 }
 
 BubbleFrameView::~BubbleFrameView() = default;
@@ -110,12 +110,12 @@ std::unique_ptr<Label> BubbleFrameView::CreateDefaultTitleLabel(
 }
 
 // static
-Button* BubbleFrameView::CreateCloseButton(ButtonListener* listener,
-                                           bool is_dark_mode) {
-  ImageButton* close_button = nullptr;
-  close_button = CreateVectorImageButton(listener);
+std::unique_ptr<Button> BubbleFrameView::CreateCloseButton(
+    ButtonListener* listener,
+    bool is_dark_mode) {
+  auto close_button = CreateVectorImageButton(listener);
   SetImageFromVectorIconWithColor(
-      close_button, vector_icons::kCloseRoundedIcon,
+      close_button.get(), vector_icons::kCloseRoundedIcon,
       is_dark_mode ? SkColorSetA(SK_ColorWHITE, 0xDD) : gfx::kGoogleGrey700);
   close_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_APP_CLOSE));
   close_button->SizeToPreferredSize();
@@ -140,7 +140,7 @@ gfx::Rect BubbleFrameView::GetBoundsForClientView() const {
   client_bounds.Inset(GetClientInsetsForFrameWidth(client_bounds.width()));
   // Only account for footnote_container_'s height if it's visible, because
   // content_margins_ adds extra padding even if all child views are invisible.
-  if (footnote_container_ && footnote_container_->visible()) {
+  if (footnote_container_ && footnote_container_->GetVisible()) {
     client_bounds.set_height(client_bounds.height() -
                              footnote_container_->height());
   }
@@ -159,7 +159,7 @@ bool BubbleFrameView::GetClientMask(const gfx::Size& size, SkPath* path) const {
   DCHECK(GetBoundsForClientView().size() == size);
   DCHECK(GetWidget()->client_view()->size() == size);
 
-  const int radius = bubble_border_->GetBorderCornerRadius();
+  const int radius = bubble_border_->corner_radius();
   const gfx::Insets insets =
       GetClientInsetsForFrameWidth(GetContentsBounds().width());
 
@@ -177,13 +177,15 @@ bool BubbleFrameView::GetClientMask(const gfx::Size& size, SkPath* path) const {
 int BubbleFrameView::NonClientHitTest(const gfx::Point& point) {
   if (!bounds().Contains(point))
     return HTNOWHERE;
-  if (close_->visible() && close_->GetMirroredBounds().Contains(point))
+  if (hit_test_transparent_)
+    return HTTRANSPARENT;
+  if (close_->GetVisible() && close_->GetMirroredBounds().Contains(point))
     return HTCLOSE;
 
   // Convert to RRectF to accurately represent the rounded corners of the
   // dialog and allow events to pass through the shadows.
   gfx::RRectF round_contents_bounds(gfx::RectF(GetContentsBounds()),
-                                    bubble_border_->GetBorderCornerRadius());
+                                    bubble_border_->corner_radius());
   if (bubble_border_->shadow() != BubbleBorder::NO_ASSETS)
     round_contents_bounds.Outset(BubbleBorder::kBorderThicknessDip);
   gfx::RectF rectf_point(point.x(), point.y(), 1, 1);
@@ -192,8 +194,7 @@ int BubbleFrameView::NonClientHitTest(const gfx::Point& point) {
 
   if (point.y() < title()->bounds().bottom()) {
     auto* dialog_delegate = GetWidget()->widget_delegate()->AsDialogDelegate();
-    // Allow the dialog to be dragged if it is not a bubble dialog.
-    if (dialog_delegate && !dialog_delegate->AsBubbleDialogDelegate()) {
+    if (dialog_delegate && dialog_delegate->IsDialogDraggable()) {
       return HTCAPTION;
     }
   }
@@ -218,8 +219,7 @@ void BubbleFrameView::GetWindowMask(const gfx::Size& size,
   // Use a window mask roughly matching the border in the image assets.
   const int kBorderStrokeSize =
       bubble_border_->shadow() == BubbleBorder::NO_ASSETS ? 0 : 1;
-  const SkScalar kCornerRadius =
-      SkIntToScalar(bubble_border_->GetBorderCornerRadius());
+  const SkScalar kCornerRadius = SkIntToScalar(bubble_border_->corner_radius());
   const gfx::Insets border_insets = bubble_border_->GetInsets();
   SkRect rect = {
       SkIntToScalar(border_insets.left() - kBorderStrokeSize),
@@ -316,7 +316,7 @@ void BubbleFrameView::Layout() {
   // The title margins may not be set, but make sure that's only the case when
   // there's no title.
   DCHECK(!title_margins_.IsEmpty() ||
-         (!custom_title_ && !default_title_->visible()));
+         (!custom_title_ && !default_title_->GetVisible()));
 
   const gfx::Rect contents_bounds = GetContentsBounds();
   gfx::Rect bounds = contents_bounds;
@@ -325,7 +325,7 @@ void BubbleFrameView::Layout() {
     return;
 
   int title_label_right = bounds.right();
-  if (close_->visible()) {
+  if (close_->GetVisible()) {
     // The close button is positioned somewhat closer to the edge of the bubble.
     const int close_margin =
         LayoutProvider::Get()->GetDistanceMetric(DISTANCE_CLOSE_BUTTON_MARGIN);
@@ -366,7 +366,7 @@ void BubbleFrameView::Layout() {
 
   // Only account for footnote_container_'s height if it's visible, because
   // content_margins_ adds extra padding even if all child views are invisible.
-  if (footnote_container_ && footnote_container_->visible()) {
+  if (footnote_container_ && footnote_container_->GetVisible()) {
     const int width = contents_bounds.width();
     const int height = footnote_container_->GetHeightForWidth(width);
     footnote_container_->SetBounds(
@@ -378,9 +378,7 @@ void BubbleFrameView::OnThemeChanged() {
   UpdateWindowTitle();
   ResetWindowControls();
   UpdateWindowIcon();
-}
 
-void BubbleFrameView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   if (bubble_border_ && bubble_border_->use_theme_background_color()) {
     bubble_border_->set_background_color(GetNativeTheme()->GetSystemColor(
         ui::NativeTheme::kColorId_DialogBackground));
@@ -395,7 +393,7 @@ void BubbleFrameView::ViewHierarchyChanged(
 
   if (!details.is_add && details.parent == footnote_container_ &&
       footnote_container_->children().size() == 1 &&
-      details.child == footnote_container_->child_at(0)) {
+      details.child == footnote_container_->children().front()) {
     // Setting the footnote_container_ to be hidden and null it. This will
     // remove update the bubble to have no placeholder for the footnote and
     // enable the destructor to delete the footnote_container_ later.
@@ -440,7 +438,7 @@ void BubbleFrameView::SetBubbleBorder(std::unique_ptr<BubbleBorder> border) {
   bubble_border_ = border.get();
 
   if (footnote_container_)
-    footnote_container_->SetCornerRadius(border->GetBorderCornerRadius());
+    footnote_container_->SetCornerRadius(border->corner_radius());
 
   SetBorder(std::move(border));
 
@@ -453,10 +451,22 @@ void BubbleFrameView::SetFootnoteView(View* view) {
     return;
 
   DCHECK(!footnote_container_);
-  int radius = bubble_border_ ? bubble_border_->GetBorderCornerRadius() : 0;
+  int radius = bubble_border_ ? bubble_border_->corner_radius() : 0;
   footnote_container_ =
       new FootnoteContainerView(footnote_margins_, view, radius);
   AddChildView(footnote_container_);
+}
+
+void BubbleFrameView::SetCornerRadius(int radius) {
+  bubble_border_->SetCornerRadius(radius);
+}
+
+void BubbleFrameView::SetArrow(BubbleBorder::Arrow arrow) {
+  bubble_border_->set_arrow(arrow);
+}
+
+void BubbleFrameView::SetBackgroundColor(SkColor color) {
+  bubble_border_->set_background_color(color);
 }
 
 gfx::Rect BubbleFrameView::GetUpdatedWindowBounds(
@@ -529,7 +539,7 @@ bool BubbleFrameView::ExtendClientIntoTitle() const {
 }
 
 bool BubbleFrameView::IsCloseButtonVisible() const {
-  return close_->visible();
+  return close_->GetVisible();
 }
 
 gfx::Rect BubbleFrameView::GetCloseButtonMirroredBounds() const {
@@ -546,7 +556,7 @@ void BubbleFrameView::MirrorArrowIfOutOfBounds(
   // Check if the bounds don't fit in the available bounds.
   gfx::Rect window_bounds(bubble_border_->GetBounds(anchor_rect, client_size));
   if (GetOverflowLength(available_bounds, window_bounds, vertical) > 0) {
-    BubbleBorder::Arrow arrow = bubble_border()->arrow();
+    BubbleBorder::Arrow arrow = bubble_border_->arrow();
     // Mirror the arrow and get the new bounds.
     bubble_border_->set_arrow(
         vertical ? BubbleBorder::vertical_mirror(arrow) :
@@ -570,7 +580,7 @@ void BubbleFrameView::OffsetArrowIfOutOfBounds(
     const gfx::Rect& anchor_rect,
     const gfx::Size& client_size,
     const gfx::Rect& available_bounds) {
-  BubbleBorder::Arrow arrow = bubble_border()->arrow();
+  BubbleBorder::Arrow arrow = bubble_border_->arrow();
   DCHECK(BubbleBorder::is_arrow_at_center(arrow) ||
          preferred_arrow_adjustment_ == PreferredArrowAdjustment::kOffset);
 
@@ -640,7 +650,7 @@ gfx::Size BubbleFrameView::GetFrameSizeForClientSize(
 
   // Only account for footnote_container_'s height if it's visible, because
   // content_margins_ adds extra padding even if all child views are invisible.
-  if (footnote_container_ && footnote_container_->visible())
+  if (footnote_container_ && footnote_container_->GetVisible())
     size.Enlarge(0, footnote_container_->GetHeightForWidth(size.width()));
 
   return size;

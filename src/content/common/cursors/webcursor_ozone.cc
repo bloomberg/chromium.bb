@@ -9,15 +9,11 @@
 #include "third_party/blink/public/platform/web_cursor_info.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_util.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
 
 namespace content {
 
 ui::PlatformCursor WebCursor::GetPlatformCursor(const ui::Cursor& cursor) {
-  if (features::IsUsingWindowService())
-    return nullptr;
-
   if (!platform_cursor_) {
     platform_cursor_ = ui::CursorFactoryOzone::GetInstance()->CreateImageCursor(
         cursor.GetBitmap(), cursor.GetHotspot(), cursor.device_scale_factor());

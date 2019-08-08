@@ -14,7 +14,8 @@ class IdentityTestEnvironmentTest : public testing::Test {
   IdentityTestEnvironmentTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
-            base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED) {}
+            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::
+                QUEUED) {}
 
   ~IdentityTestEnvironmentTest() override {
     scoped_task_environment_.RunUntilIdle();

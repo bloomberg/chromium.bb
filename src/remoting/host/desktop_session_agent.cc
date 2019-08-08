@@ -10,6 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/platform_shared_memory_region.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/process/process_handle.h"
@@ -41,7 +42,91 @@
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor.h"
 #include "third_party/webrtc/modules/desktop_capture/shared_memory.h"
 
+#if defined(OS_WIN)
+#include "base/memory/writable_shared_memory_region.h"
+#endif
+
 namespace remoting {
+
+// webrtc::SharedMemory implementation that creates a
+// base::ReadOnlySharedMemoryRegion along with a writable mapping.
+//
+// This is declared outside the anonymous namespace so that it can be friended
+// with base::WritableSharedMemoryRegion. It is not exported in the header.
+class SharedMemoryImpl : public webrtc::SharedMemory {
+ public:
+  static std::unique_ptr<SharedMemoryImpl>
+  Create(size_t size, int id, const base::Closure& on_deleted_callback) {
+    webrtc::SharedMemory::Handle handle = webrtc::SharedMemory::kInvalidHandle;
+#if defined(OS_WIN)
+    // webrtc::ScreenCapturer uses webrtc::SharedMemory::handle() only on
+    // windows. This handle must be writable. A WritableSharedMemoryRegion is
+    // created, and then it is converted to read-only.  On the windows platform,
+    // it happens to be the case that converting a region to read-only does not
+    // change the status of existing handles. This is not true on all other
+    // platforms, so please don't emulate this behavior!
+    base::WritableSharedMemoryRegion region =
+        base::WritableSharedMemoryRegion::Create(size);
+    base::WritableSharedMemoryMapping mapping = region.Map();
+    // Converting |region| to read-only will close its associated handle, so we
+    // must duplicate it into the handle used for |webrtc::ScreenCapturer|.
+    HANDLE process = ::GetCurrentProcess();
+    BOOL success =
+        ::DuplicateHandle(process, region.UnsafeGetPlatformHandle(), process,
+                          &handle, 0, FALSE, DUPLICATE_SAME_ACCESS);
+    if (!success)
+      return nullptr;
+    base::ReadOnlySharedMemoryRegion read_only_region =
+        base::WritableSharedMemoryRegion::ConvertToReadOnly(std::move(region));
+#else
+    base::MappedReadOnlyRegion region_mapping =
+        base::ReadOnlySharedMemoryRegion::Create(size);
+    base::ReadOnlySharedMemoryRegion read_only_region =
+        std::move(region_mapping.region);
+    base::WritableSharedMemoryMapping mapping =
+        std::move(region_mapping.mapping);
+#endif
+    if (!mapping.IsValid())
+      return nullptr;
+    // The SharedMemoryImpl ctor is private, so std::make_unique can't be
+    // used.
+    return base::WrapUnique(new SharedMemoryImpl(std::move(read_only_region),
+                                                 std::move(mapping), handle, id,
+                                                 on_deleted_callback));
+  }
+
+  ~SharedMemoryImpl() override { on_deleted_callback_.Run(); }
+
+  const base::ReadOnlySharedMemoryRegion& region() const { return region_; }
+
+ private:
+  SharedMemoryImpl(base::ReadOnlySharedMemoryRegion region,
+                   base::WritableSharedMemoryMapping mapping,
+                   webrtc::SharedMemory::Handle handle,
+                   int id,
+                   const base::Closure& on_deleted_callback)
+      : SharedMemory(mapping.memory(), mapping.size(), handle, id),
+        on_deleted_callback_(on_deleted_callback)
+#if defined(OS_WIN)
+        ,
+        writable_handle_(handle)
+#endif
+  {
+    region_ = std::move(region);
+    mapping_ = std::move(mapping);
+  }
+
+  base::Closure on_deleted_callback_;
+  base::ReadOnlySharedMemoryRegion region_;
+  base::WritableSharedMemoryMapping mapping_;
+#if defined(OS_WIN)
+  // Owns the handle passed to the base class which is used by
+  // webrtc::ScreenCapturer.
+  base::win::ScopedHandle writable_handle_;
+#endif
+
+  DISALLOW_COPY_AND_ASSIGN(SharedMemoryImpl);
+};
 
 namespace {
 
@@ -71,53 +156,6 @@ void DesktopSessionClipboardStub::InjectClipboardEvent(
     const protocol::ClipboardEvent& event) {
   desktop_session_agent_->InjectClipboardEvent(event);
 }
-
-// webrtc::SharedMemory implementation that creates a
-// base::ReadOnlySharedMemoryRegion.
-class SharedMemoryImpl : public webrtc::SharedMemory {
- public:
-  static std::unique_ptr<SharedMemoryImpl>
-  Create(size_t size, int id, const base::Closure& on_deleted_callback) {
-    auto region_mapping = base::ReadOnlySharedMemoryRegion::Create(size);
-    if (!region_mapping.IsValid())
-      return nullptr;
-    // The SharedMemoryImpl constructor is private, so std::make_unique can't be
-    // used.
-    return base::WrapUnique(new SharedMemoryImpl(std::move(region_mapping), id,
-                                                 on_deleted_callback));
-  }
-
-  ~SharedMemoryImpl() override { on_deleted_callback_.Run(); }
-
-  const base::ReadOnlySharedMemoryRegion& region() const {
-    return region_mapping_.region;
-  }
-
- private:
-  SharedMemoryImpl(base::MappedReadOnlyRegion region_mapping,
-                   int id,
-                   const base::Closure& on_deleted_callback)
-      : SharedMemory(
-            region_mapping.mapping.memory(),
-            region_mapping.mapping.size(),
-// webrtc::ScreenCapturer uses webrtc::SharedMemory::handle() only on Windows.
-#if defined(OS_WIN)
-            base::ReadOnlySharedMemoryRegion::TakeHandleForSerialization(
-                region_mapping.region.Duplicate())
-                .PassPlatformHandle()
-                .Take(),
-#else
-            0,
-#endif
-            id),
-        on_deleted_callback_(on_deleted_callback) {
-    region_mapping_ = std::move(region_mapping);
-  }
-
-  base::Closure on_deleted_callback_;
-  base::MappedReadOnlyRegion region_mapping_;
-  DISALLOW_COPY_AND_ASSIGN(SharedMemoryImpl);
-};
 
 class SharedMemoryFactoryImpl : public webrtc::SharedMemoryFactory {
  public:
@@ -276,11 +314,12 @@ void DesktopSessionAgent::DisconnectSession(protocol::ErrorCode error) {
       std::make_unique<ChromotingDesktopNetworkMsg_DisconnectSession>(error));
 }
 
-void DesktopSessionAgent::OnLocalMouseMoved(
-    const webrtc::DesktopVector& new_pos) {
+void DesktopSessionAgent::OnLocalPointerMoved(
+    const webrtc::DesktopVector& new_pos,
+    ui::EventType type) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  remote_input_filter_->LocalMouseMoved(new_pos);
+  remote_input_filter_->LocalPointerMoved(new_pos, type);
 }
 
 void DesktopSessionAgent::SetDisableInputs(bool disable_inputs) {
@@ -292,6 +331,13 @@ void DesktopSessionAgent::SetDisableInputs(bool disable_inputs) {
 
 void DesktopSessionAgent::OnDesktopDisplayChanged(
     std::unique_ptr<protocol::VideoLayout> layout) {
+  LOG(INFO) << "DSA::OnDesktopDisplayChanged";
+  for (int display_id = 0; display_id < layout->video_track_size();
+       display_id++) {
+    protocol::VideoTrackLayout track = layout->video_track(display_id);
+    LOG(INFO) << "   #" << display_id << " : "
+              << " [" << track.x_dpi() << "," << track.y_dpi() << "]";
+  }
   SendToNetwork(std::make_unique<ChromotingDesktopNetworkMsg_DisplayChanged>(
       *layout.get()));
 }

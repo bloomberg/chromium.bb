@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -182,7 +183,7 @@ void MailboxToSurfaceBridge::OnContextAvailableOnUiThread(
     // The client is responsible for running BindContextProviderToCurrentThread
     // before use.
     constructor_thread_task_runner_->PostTask(
-        FROM_HERE, base::ResetAndReturn(&on_context_provider_ready_));
+        FROM_HERE, std::move(on_context_provider_ready_));
   } else {
     DCHECK(on_context_bound_);
     constructor_thread_task_runner_->PostTask(
@@ -215,7 +216,7 @@ void MailboxToSurfaceBridge::BindContextProviderToCurrentThread() {
 
   DVLOG(1) << __FUNCTION__ << ": Context ready";
   if (on_context_bound_) {
-    base::ResetAndReturn(&on_context_bound_).Run();
+    std::move(on_context_bound_).Run();
   }
 }
 
@@ -228,7 +229,8 @@ void MailboxToSurfaceBridge::CreateSurface(
   surface_ = std::make_unique<gl::ScopedJavaSurface>(surface_texture);
   surface_handle_ =
       tracker->AddSurfaceForNativeWidget(gpu::GpuSurfaceTracker::SurfaceRecord(
-          window, surface_->j_surface().obj()));
+          window, surface_->j_surface().obj(),
+          false /* can_be_used_with_surface_control */));
   // Unregistering happens in the destructor.
   ANativeWindow_release(window);
 }

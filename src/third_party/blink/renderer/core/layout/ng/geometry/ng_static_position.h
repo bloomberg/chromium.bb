@@ -6,7 +6,7 @@
 #define NGStaticPosition_h
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
@@ -18,11 +18,11 @@ struct CORE_EXPORT NGStaticPosition {
   enum Type { kTopLeft, kTopRight, kBottomLeft, kBottomRight };
 
   Type type;  // Logical corner that corresponds to physical top left.
-  NGPhysicalOffset offset;
+  PhysicalOffset offset;
 
   // Creates a position with proper type wrt writing mode and direction.
   // It expects physical offset of inline_start/block_start vertex.
-  static NGStaticPosition Create(WritingMode, TextDirection, NGPhysicalOffset);
+  static NGStaticPosition Create(WritingMode, TextDirection, PhysicalOffset);
 
   // Left/Right/TopPosition functions map static position to inset of
   // left/right/top edge wrt container space.
@@ -45,10 +45,25 @@ struct CORE_EXPORT NGStaticPosition {
                          LayoutUnit margin_top,
                          LayoutUnit margin_bottom) const;
 
-  LayoutUnit Left() const;
-  LayoutUnit Right() const;
-  LayoutUnit Top() const;
-  LayoutUnit Bottom() const;
+  LayoutUnit Left() const {
+    DCHECK(HasLeft());
+    return offset.left;
+  }
+
+  LayoutUnit Right() const {
+    DCHECK(!HasLeft());
+    return offset.left;
+  }
+
+  LayoutUnit Top() const {
+    DCHECK(HasTop());
+    return offset.top;
+  }
+
+  LayoutUnit Bottom() const {
+    DCHECK(!HasTop());
+    return offset.top;
+  }
 
   bool HasTop() const { return type == kTopLeft || type == kTopRight; }
   bool HasLeft() const { return type == kTopLeft || type == kBottomLeft; }

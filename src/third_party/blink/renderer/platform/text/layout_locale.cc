@@ -39,7 +39,7 @@ PerThreadData& GetPerThreadData() {
 }  // namespace
 
 static hb_language_t ToHarfbuzLanguage(const AtomicString& locale) {
-  CString locale_as_latin1 = locale.Latin1();
+  std::string locale_as_latin1 = locale.Latin1();
   return hb_language_from_string(locale_as_latin1.data(),
                                  locale_as_latin1.length());
 }

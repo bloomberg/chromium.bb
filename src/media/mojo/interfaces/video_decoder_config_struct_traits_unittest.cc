@@ -26,7 +26,7 @@ TEST(VideoDecoderConfigStructTraitsTest, ConvertVideoDecoderConfig_Normal) {
   const std::vector<uint8_t> kExtraDataVector(
       &kExtraData[0], &kExtraData[0] + base::size(kExtraData));
   VideoDecoderConfig input(kCodecVP8, VP8PROFILE_ANY, PIXEL_FORMAT_I420,
-                           VideoColorSpace(), VIDEO_ROTATION_0, kCodedSize,
+                           VideoColorSpace(), kNoTransformation, kCodedSize,
                            kVisibleRect, kNaturalSize, kExtraDataVector,
                            Unencrypted());
   std::vector<uint8_t> data =
@@ -40,7 +40,7 @@ TEST(VideoDecoderConfigStructTraitsTest, ConvertVideoDecoderConfig_Normal) {
 TEST(VideoDecoderConfigStructTraitsTest,
      ConvertVideoDecoderConfig_EmptyExtraData) {
   VideoDecoderConfig input(kCodecVP8, VP8PROFILE_ANY, PIXEL_FORMAT_I420,
-                           VideoColorSpace(), VIDEO_ROTATION_0, kCodedSize,
+                           VideoColorSpace(), kNoTransformation, kCodedSize,
                            kVisibleRect, kNaturalSize, EmptyExtraData(),
                            Unencrypted());
   std::vector<uint8_t> data =
@@ -53,7 +53,7 @@ TEST(VideoDecoderConfigStructTraitsTest,
 
 TEST(VideoDecoderConfigStructTraitsTest, ConvertVideoDecoderConfig_Encrypted) {
   VideoDecoderConfig input(kCodecVP8, VP8PROFILE_ANY, PIXEL_FORMAT_I420,
-                           VideoColorSpace(), VIDEO_ROTATION_0, kCodedSize,
+                           VideoColorSpace(), kNoTransformation, kCodedSize,
                            kVisibleRect, kNaturalSize, EmptyExtraData(),
                            AesCtrEncryptionScheme());
   std::vector<uint8_t> data =
@@ -72,7 +72,7 @@ TEST(VideoDecoderConfigStructTraitsTest,
                       VideoColorSpace::TransferID::SMPTEST2084,
                       VideoColorSpace::MatrixID::BT2020_CL,
                       gfx::ColorSpace::RangeID::LIMITED),
-      VIDEO_ROTATION_0, kCodedSize, kVisibleRect, kNaturalSize,
+      kNoTransformation, kCodedSize, kVisibleRect, kNaturalSize,
       EmptyExtraData(), Unencrypted());
   std::vector<uint8_t> data =
       media::mojom::VideoDecoderConfig::Serialize(&input);
@@ -85,7 +85,7 @@ TEST(VideoDecoderConfigStructTraitsTest,
 TEST(VideoDecoderConfigStructTraitsTest,
      ConvertVideoDecoderConfig_HDRMetadata) {
   VideoDecoderConfig input(kCodecVP8, VP8PROFILE_ANY, PIXEL_FORMAT_I420,
-                           VideoColorSpace(), VIDEO_ROTATION_0, kCodedSize,
+                           VideoColorSpace(), kNoTransformation, kCodedSize,
                            kVisibleRect, kNaturalSize, EmptyExtraData(),
                            Unencrypted());
   HDRMetadata hdr_metadata;
@@ -127,7 +127,7 @@ TEST(VideoDecoderConfigStructTraitsTest,
   // Next try an non-empty invalid config. Natural size must not be zero.
   const gfx::Size kInvalidNaturalSize(0, 0);
   input.Initialize(kCodecVP8, VP8PROFILE_ANY, PIXEL_FORMAT_I420,
-                   VideoColorSpace(), VIDEO_ROTATION_0, kCodedSize,
+                   VideoColorSpace(), kNoTransformation, kCodedSize,
                    kVisibleRect, kInvalidNaturalSize, EmptyExtraData(),
                    Unencrypted());
   EXPECT_FALSE(input.IsValidConfig());

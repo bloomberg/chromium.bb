@@ -75,6 +75,7 @@ class MockDownloadFile : public DownloadFile {
                     const std::string& mime_type,
                     const RenameCompletionCallback& callback));
   MOCK_METHOD1(PublishDownload, void(const RenameCompletionCallback& callback));
+  MOCK_METHOD0(GetDisplayName, base::FilePath());
 #endif  // defined(OS_ANDROID)
 };
 

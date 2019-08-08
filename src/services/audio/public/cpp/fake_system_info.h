@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/audio/public/mojom/system_info.mojom.h"
 
@@ -49,7 +49,7 @@ class FakeSystemInfo : public mojom::SystemInfo {
  private:
   void Bind(mojom::SystemInfoRequest request);
 
-  mojo::BindingSet<mojom::SystemInfo> bindings_;
+  mojo::ReceiverSet<mojom::SystemInfo> receivers_;
   DISALLOW_COPY_AND_ASSIGN(FakeSystemInfo);
 };
 

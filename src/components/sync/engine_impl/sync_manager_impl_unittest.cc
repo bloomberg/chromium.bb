@@ -50,6 +50,7 @@
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/entry.h"
 #include "components/sync/syncable/mutable_entry.h"
+#include "components/sync/syncable/nigori_handler.h"
 #include "components/sync/syncable/nigori_util.h"
 #include "components/sync/syncable/read_node.h"
 #include "components/sync/syncable/read_transaction.h"
@@ -866,8 +867,7 @@ class TestHttpPostProviderInterface : public HttpPostProviderInterface {
 class TestHttpPostProviderFactory : public HttpPostProviderFactory {
  public:
   ~TestHttpPostProviderFactory() override {}
-  void Init(const std::string& user_agent,
-            const BindToTrackerCallback& bind_to_tracker_callback) override {}
+  void Init(const std::string& user_agent) override {}
   HttpPostProviderInterface* Create() override {
     return new TestHttpPostProviderInterface();
   }
@@ -948,16 +948,21 @@ class SyncManagerTest : public testing::Test,
     scoped_refptr<ModelSafeWorker> worker = new FakeModelWorker(GROUP_PASSIVE);
     workers.push_back(worker);
 
+    auto encryption_observer =
+        std::make_unique<StrictMock<SyncEncryptionHandlerObserverMock>>();
+    encryption_observer_ = encryption_observer.get();
+
     SyncManager::InitArgs args;
     args.database_location = temp_dir_.GetPath();
     args.service_url = GURL("https://example.com/");
-    args.post_factory = std::unique_ptr<HttpPostProviderFactory>(
-        new TestHttpPostProviderFactory());
+    args.post_factory = std::make_unique<TestHttpPostProviderFactory>();
     args.workers = workers;
+    args.encryption_observer_proxy = std::move(encryption_observer);
     args.extensions_activity = extensions_activity_.get(),
     args.change_delegate = this;
     if (!enable_local_sync_backend)
       args.authenticated_account_id = "foo@bar.com";
+    args.cache_guid = "fake_cache_guid";
     args.invalidator_client_id = "fake_invalidator_client_id";
     args.enable_local_sync_backend = enable_local_sync_backend;
     args.local_sync_backend_folder = temp_dir_.GetPath();
@@ -968,8 +973,6 @@ class SyncManagerTest : public testing::Test,
     args.cancelation_signal = &cancelation_signal_;
     args.poll_interval = base::TimeDelta::FromMinutes(60);
     sync_manager_.Init(&args);
-
-    sync_manager_.GetEncryptionHandler()->AddObserver(&encryption_observer_);
 
     EXPECT_TRUE(js_backend_.IsInitialized());
     EXPECT_EQ(EngineComponentsFactory::STORAGE_ON_DISK, storage_used_);
@@ -1133,13 +1136,13 @@ class SyncManagerTest : public testing::Test,
   EngineComponentsFactory::Switches GetSwitches() const { return switches_; }
 
   void ExpectPassphraseAcceptance() {
-    EXPECT_CALL(encryption_observer_, OnPassphraseAccepted());
-    EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
-    EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
+    EXPECT_CALL(*encryption_observer_, OnPassphraseAccepted());
+    EXPECT_CALL(*encryption_observer_, OnEncryptionComplete());
+    EXPECT_CALL(*encryption_observer_, OnCryptographerStateChanged(_));
   }
 
   void SetCustomPassphraseAndCheck(const std::string& passphrase) {
-    EXPECT_CALL(encryption_observer_,
+    EXPECT_CALL(*encryption_observer_,
                 OnPassphraseTypeChanged(PassphraseType::CUSTOM_PASSPHRASE, _));
     sync_manager_.GetEncryptionHandler()->SetEncryptionPassphrase(passphrase);
     EXPECT_EQ(PassphraseType::CUSTOM_PASSPHRASE, GetPassphraseType());
@@ -1165,7 +1168,8 @@ class SyncManagerTest : public testing::Test,
   WeakHandle<JsBackend> js_backend_;
   bool initialization_succeeded_;
   StrictMock<SyncManagerObserverMock> manager_observer_;
-  StrictMock<SyncEncryptionHandlerObserverMock> encryption_observer_;
+  // Owned by |sync_manager_|.
+  StrictMock<SyncEncryptionHandlerObserverMock>* encryption_observer_;
   EngineComponentsFactory::Switches switches_;
   EngineComponentsFactory::StorageOption storage_used_;
   MockUnrecoverableErrorHandler mock_unrecoverable_error_handler_;
@@ -1173,9 +1177,9 @@ class SyncManagerTest : public testing::Test,
 
 TEST_F(SyncManagerTest, RefreshEncryptionReady) {
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
-  EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
-  EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
-  EXPECT_CALL(encryption_observer_, OnEncryptedTypesChanged(_, false));
+  EXPECT_CALL(*encryption_observer_, OnEncryptionComplete());
+  EXPECT_CALL(*encryption_observer_, OnCryptographerStateChanged(_));
+  EXPECT_CALL(*encryption_observer_, OnEncryptedTypesChanged(_, false));
 
   sync_manager_.GetEncryptionHandler()->Init();
   PumpLoop();
@@ -1202,9 +1206,9 @@ TEST_F(SyncManagerTest, RefreshEncryptionNotReady) {
 
   // Should fail. Triggers an OnPassphraseRequired because the cryptographer
   // is not ready.
-  EXPECT_CALL(encryption_observer_, OnPassphraseRequired(_, _, _)).Times(1);
-  EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
-  EXPECT_CALL(encryption_observer_, OnEncryptedTypesChanged(_, false));
+  EXPECT_CALL(*encryption_observer_, OnPassphraseRequired(_, _, _)).Times(1);
+  EXPECT_CALL(*encryption_observer_, OnCryptographerStateChanged(_));
+  EXPECT_CALL(*encryption_observer_, OnEncryptedTypesChanged(_, false));
   sync_manager_.GetEncryptionHandler()->Init();
   PumpLoop();
 
@@ -1216,9 +1220,9 @@ TEST_F(SyncManagerTest, RefreshEncryptionNotReady) {
 // Attempt to refresh encryption when nigori is empty.
 TEST_F(SyncManagerTest, RefreshEncryptionEmptyNigori) {
   EXPECT_TRUE(SetUpEncryption(DONT_WRITE_NIGORI, DEFAULT_ENCRYPTION));
-  EXPECT_CALL(encryption_observer_, OnEncryptionComplete()).Times(1);
-  EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
-  EXPECT_CALL(encryption_observer_, OnEncryptedTypesChanged(_, false));
+  EXPECT_CALL(*encryption_observer_, OnEncryptionComplete()).Times(1);
+  EXPECT_CALL(*encryption_observer_, OnCryptographerStateChanged(_));
+  EXPECT_CALL(*encryption_observer_, OnEncryptedTypesChanged(_, false));
 
   // Should write to nigori.
   sync_manager_.GetEncryptionHandler()->Init();
@@ -1243,9 +1247,9 @@ TEST_F(SyncManagerTest, RefreshEncryptionEmptyNigori) {
 TEST_F(SyncManagerTest, EncryptDataTypesWithNoData) {
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
   EXPECT_CALL(
-      encryption_observer_,
+      *encryption_observer_,
       OnEncryptedTypesChanged(HasModelTypes(EncryptableUserTypes()), true));
-  EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
+  EXPECT_CALL(*encryption_observer_, OnEncryptionComplete());
   sync_manager_.GetEncryptionHandler()->EnableEncryptEverything();
   EXPECT_TRUE(IsEncryptEverythingEnabledForTest());
 }
@@ -1286,9 +1290,9 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
   }
 
   EXPECT_CALL(
-      encryption_observer_,
+      *encryption_observer_,
       OnEncryptedTypesChanged(HasModelTypes(EncryptableUserTypes()), true));
-  EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
+  EXPECT_CALL(*encryption_observer_, OnEncryptionComplete());
   sync_manager_.GetEncryptionHandler()->EnableEncryptEverything();
   EXPECT_TRUE(IsEncryptEverythingEnabledForTest());
   {
@@ -1304,7 +1308,7 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
 
   // Trigger's a ReEncryptEverything with new passphrase.
   testing::Mock::VerifyAndClearExpectations(&encryption_observer_);
-  EXPECT_CALL(encryption_observer_,
+  EXPECT_CALL(*encryption_observer_,
               OnBootstrapTokenUpdated(_, PASSPHRASE_BOOTSTRAP_TOKEN));
   ExpectPassphraseAcceptance();
   SetCustomPassphraseAndCheck("new_passphrase");
@@ -1322,11 +1326,11 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
   // Calling EncryptDataTypes with an empty encrypted types should not trigger
   // a reencryption and should just notify immediately.
   testing::Mock::VerifyAndClearExpectations(&encryption_observer_);
-  EXPECT_CALL(encryption_observer_,
+  EXPECT_CALL(*encryption_observer_,
               OnBootstrapTokenUpdated(_, PASSPHRASE_BOOTSTRAP_TOKEN))
       .Times(0);
-  EXPECT_CALL(encryption_observer_, OnPassphraseAccepted()).Times(0);
-  EXPECT_CALL(encryption_observer_, OnEncryptionComplete()).Times(0);
+  EXPECT_CALL(*encryption_observer_, OnPassphraseAccepted()).Times(0);
+  EXPECT_CALL(*encryption_observer_, OnEncryptionComplete()).Times(0);
   sync_manager_.GetEncryptionHandler()->EnableEncryptEverything();
 }
 
@@ -1355,7 +1359,7 @@ TEST_F(SyncManagerTest, SetPassphraseWithPassword) {
     data.set_password_value("secret");
     password_node.SetPasswordSpecifics(data);
   }
-  EXPECT_CALL(encryption_observer_,
+  EXPECT_CALL(*encryption_observer_,
               OnBootstrapTokenUpdated(_, PASSPHRASE_BOOTSTRAP_TOKEN));
   ExpectPassphraseAcceptance();
   SetCustomPassphraseAndCheck("new_passphrase");
@@ -1404,7 +1408,7 @@ TEST_F(SyncManagerTest, SupplyPendingGAIAPass) {
     EXPECT_TRUE(cryptographer->has_pending_keys());
     node.SetNigoriSpecifics(nigori);
   }
-  EXPECT_CALL(encryption_observer_,
+  EXPECT_CALL(*encryption_observer_,
               OnBootstrapTokenUpdated(_, PASSPHRASE_BOOTSTRAP_TOKEN));
   ExpectPassphraseAcceptance();
   sync_manager_.GetEncryptionHandler()->SetDecryptionPassphrase("passphrase2");
@@ -1448,13 +1452,13 @@ TEST_F(SyncManagerTest, SupplyPendingExplicitPass) {
     nigori.set_keybag_is_frozen(true);
     node.SetNigoriSpecifics(nigori);
   }
-  EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
-  EXPECT_CALL(encryption_observer_,
+  EXPECT_CALL(*encryption_observer_, OnCryptographerStateChanged(_));
+  EXPECT_CALL(*encryption_observer_,
               OnPassphraseTypeChanged(PassphraseType::CUSTOM_PASSPHRASE, _));
-  EXPECT_CALL(encryption_observer_, OnPassphraseRequired(_, _, _));
-  EXPECT_CALL(encryption_observer_, OnEncryptedTypesChanged(_, false));
+  EXPECT_CALL(*encryption_observer_, OnPassphraseRequired(_, _, _));
+  EXPECT_CALL(*encryption_observer_, OnEncryptedTypesChanged(_, false));
   sync_manager_.GetEncryptionHandler()->Init();
-  EXPECT_CALL(encryption_observer_,
+  EXPECT_CALL(*encryption_observer_,
               OnBootstrapTokenUpdated(_, PASSPHRASE_BOOTSTRAP_TOKEN));
   ExpectPassphraseAcceptance();
   sync_manager_.GetEncryptionHandler()->SetDecryptionPassphrase("explicit");
@@ -1486,7 +1490,7 @@ TEST_F(SyncManagerTest, SetPassphraseWithEmptyPasswordNode) {
     EXPECT_EQ(WriteNode::INIT_SUCCESS, result);
     node_id = password_node.GetId();
   }
-  EXPECT_CALL(encryption_observer_,
+  EXPECT_CALL(*encryption_observer_,
               OnBootstrapTokenUpdated(_, PASSPHRASE_BOOTSTRAP_TOKEN));
   ExpectPassphraseAcceptance();
   SetCustomPassphraseAndCheck("new_passphrase");
@@ -1572,9 +1576,9 @@ TEST_F(SyncManagerTest, EncryptBookmarksWithLegacyData) {
   }
 
   EXPECT_CALL(
-      encryption_observer_,
+      *encryption_observer_,
       OnEncryptedTypesChanged(HasModelTypes(EncryptableUserTypes()), true));
-  EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
+  EXPECT_CALL(*encryption_observer_, OnEncryptionComplete());
   sync_manager_.GetEncryptionHandler()->EnableEncryptEverything();
   EXPECT_TRUE(IsEncryptEverythingEnabledForTest());
 
@@ -1658,13 +1662,13 @@ TEST_F(SyncManagerTest, UpdateEntryWithEncryption) {
 
   // Encrypt the datatatype, should set is_unsynced.
   EXPECT_CALL(
-      encryption_observer_,
+      *encryption_observer_,
       OnEncryptedTypesChanged(HasModelTypes(EncryptableUserTypes()), true));
-  EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
+  EXPECT_CALL(*encryption_observer_, OnEncryptionComplete());
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, FULL_ENCRYPTION));
 
-  EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
-  EXPECT_CALL(encryption_observer_, OnEncryptedTypesChanged(_, true));
+  EXPECT_CALL(*encryption_observer_, OnCryptographerStateChanged(_));
+  EXPECT_CALL(*encryption_observer_, OnEncryptedTypesChanged(_, true));
   sync_manager_.GetEncryptionHandler()->Init();
   PumpLoop();
   {
@@ -1685,7 +1689,7 @@ TEST_F(SyncManagerTest, UpdateEntryWithEncryption) {
 
   // Set a new passphrase. Should set is_unsynced.
   testing::Mock::VerifyAndClearExpectations(&encryption_observer_);
-  EXPECT_CALL(encryption_observer_,
+  EXPECT_CALL(*encryption_observer_,
               OnBootstrapTokenUpdated(_, PASSPHRASE_BOOTSTRAP_TOKEN));
   ExpectPassphraseAcceptance();
   SetCustomPassphraseAndCheck("new_passphrase");
@@ -1707,9 +1711,9 @@ TEST_F(SyncManagerTest, UpdateEntryWithEncryption) {
 
   // Force a re-encrypt everything. Should not set is_unsynced.
   testing::Mock::VerifyAndClearExpectations(&encryption_observer_);
-  EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
-  EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
-  EXPECT_CALL(encryption_observer_, OnEncryptedTypesChanged(_, true));
+  EXPECT_CALL(*encryption_observer_, OnEncryptionComplete());
+  EXPECT_CALL(*encryption_observer_, OnCryptographerStateChanged(_));
+  EXPECT_CALL(*encryption_observer_, OnEncryptedTypesChanged(_, true));
 
   sync_manager_.GetEncryptionHandler()->Init();
   PumpLoop();
@@ -1869,7 +1873,7 @@ TEST_F(SyncManagerTest, UpdatePasswordNewPassphrase) {
 
   // Set a new passphrase. Should set is_unsynced.
   testing::Mock::VerifyAndClearExpectations(&encryption_observer_);
-  EXPECT_CALL(encryption_observer_,
+  EXPECT_CALL(*encryption_observer_,
               OnBootstrapTokenUpdated(_, PASSPHRASE_BOOTSTRAP_TOKEN));
   ExpectPassphraseAcceptance();
   SetCustomPassphraseAndCheck("new_passphrase");
@@ -1941,9 +1945,9 @@ TEST_F(SyncManagerTest, UpdatePasswordReencryptEverything) {
 
   // Force a re-encrypt everything. Should not set is_unsynced.
   testing::Mock::VerifyAndClearExpectations(&encryption_observer_);
-  EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
-  EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
-  EXPECT_CALL(encryption_observer_, OnEncryptedTypesChanged(_, false));
+  EXPECT_CALL(*encryption_observer_, OnEncryptionComplete());
+  EXPECT_CALL(*encryption_observer_, OnCryptographerStateChanged(_));
+  EXPECT_CALL(*encryption_observer_, OnEncryptedTypesChanged(_, false));
   sync_manager_.GetEncryptionHandler()->Init();
   PumpLoop();
   EXPECT_FALSE(ResetUnsyncedEntry(PASSWORDS, kClientTag));
@@ -1973,9 +1977,9 @@ TEST_F(SyncManagerTest, UpdatePasswordReencryptEverythingFillMetadata) {
 
   // Force a re-encrypt everything. Should set is_unsynced.
   testing::Mock::VerifyAndClearExpectations(&encryption_observer_);
-  EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
-  EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
-  EXPECT_CALL(encryption_observer_, OnEncryptedTypesChanged(_, false));
+  EXPECT_CALL(*encryption_observer_, OnEncryptionComplete());
+  EXPECT_CALL(*encryption_observer_, OnCryptographerStateChanged(_));
+  EXPECT_CALL(*encryption_observer_, OnEncryptedTypesChanged(_, false));
   sync_manager_.GetEncryptionHandler()->Init();
   PumpLoop();
   // Check that unencrypted metadata field was set.
@@ -2021,9 +2025,9 @@ TEST_F(SyncManagerTest,
 
   // Force a re-encrypt everything. Should not set is_unsynced.
   testing::Mock::VerifyAndClearExpectations(&encryption_observer_);
-  EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
-  EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
-  EXPECT_CALL(encryption_observer_, OnEncryptedTypesChanged(_, false));
+  EXPECT_CALL(*encryption_observer_, OnEncryptionComplete());
+  EXPECT_CALL(*encryption_observer_, OnCryptographerStateChanged(_));
+  EXPECT_CALL(*encryption_observer_, OnEncryptedTypesChanged(_, false));
   sync_manager_.GetEncryptionHandler()->Init();
   PumpLoop();
   EXPECT_FALSE(ResetUnsyncedEntry(PASSWORDS, kClientTag));
@@ -2061,9 +2065,9 @@ TEST_F(SyncManagerTest, ReencryptEverythingWithUnrecoverableErrorPasswords) {
   // Force a re-encrypt everything. Should trigger an unrecoverable error due
   // to being unable to decrypt the data that was previously applied.
   testing::Mock::VerifyAndClearExpectations(&encryption_observer_);
-  EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
-  EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
-  EXPECT_CALL(encryption_observer_, OnEncryptedTypesChanged(_, false));
+  EXPECT_CALL(*encryption_observer_, OnEncryptionComplete());
+  EXPECT_CALL(*encryption_observer_, OnCryptographerStateChanged(_));
+  EXPECT_CALL(*encryption_observer_, OnEncryptedTypesChanged(_, false));
   EXPECT_FALSE(HasUnrecoverableError());
   sync_manager_.GetEncryptionHandler()->Init();
   PumpLoop();
@@ -2075,7 +2079,7 @@ TEST_F(SyncManagerTest, ReencryptEverythingWithUnrecoverableErrorPasswords) {
 TEST_F(SyncManagerTest, ReencryptEverythingWithUnrecoverableErrorBookmarks) {
   const char kClientTag[] = "client_tag";
   EXPECT_CALL(
-      encryption_observer_,
+      *encryption_observer_,
       OnEncryptedTypesChanged(HasModelTypes(EncryptableUserTypes()), true));
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, FULL_ENCRYPTION));
   sync_pb::EntitySpecifics entity_specifics;
@@ -2106,9 +2110,9 @@ TEST_F(SyncManagerTest, ReencryptEverythingWithUnrecoverableErrorBookmarks) {
   // Force a re-encrypt everything. Should trigger an unrecoverable error due
   // to being unable to decrypt the data that was previously applied.
   testing::Mock::VerifyAndClearExpectations(&encryption_observer_);
-  EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
-  EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
-  EXPECT_CALL(encryption_observer_, OnEncryptedTypesChanged(_, true));
+  EXPECT_CALL(*encryption_observer_, OnEncryptionComplete());
+  EXPECT_CALL(*encryption_observer_, OnCryptographerStateChanged(_));
+  EXPECT_CALL(*encryption_observer_, OnEncryptedTypesChanged(_, true));
   EXPECT_FALSE(HasUnrecoverableError());
   sync_manager_.GetEncryptionHandler()->Init();
   PumpLoop();
@@ -2163,12 +2167,12 @@ TEST_F(SyncManagerTest, SetBookmarkTitleWithEncryption) {
 
   // Encrypt the datatatype, should set is_unsynced.
   EXPECT_CALL(
-      encryption_observer_,
+      *encryption_observer_,
       OnEncryptedTypesChanged(HasModelTypes(EncryptableUserTypes()), true));
-  EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
+  EXPECT_CALL(*encryption_observer_, OnEncryptionComplete());
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, FULL_ENCRYPTION));
-  EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
-  EXPECT_CALL(encryption_observer_, OnEncryptedTypesChanged(_, true));
+  EXPECT_CALL(*encryption_observer_, OnCryptographerStateChanged(_));
+  EXPECT_CALL(*encryption_observer_, OnEncryptedTypesChanged(_, true));
   sync_manager_.GetEncryptionHandler()->Init();
   PumpLoop();
   EXPECT_TRUE(ResetUnsyncedEntry(BOOKMARKS, client_tag));
@@ -2254,12 +2258,12 @@ TEST_F(SyncManagerTest, SetNonBookmarkTitleWithEncryption) {
 
   // Encrypt the datatatype, should set is_unsynced.
   EXPECT_CALL(
-      encryption_observer_,
+      *encryption_observer_,
       OnEncryptedTypesChanged(HasModelTypes(EncryptableUserTypes()), true));
-  EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
+  EXPECT_CALL(*encryption_observer_, OnEncryptionComplete());
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, FULL_ENCRYPTION));
-  EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
-  EXPECT_CALL(encryption_observer_, OnEncryptedTypesChanged(_, true));
+  EXPECT_CALL(*encryption_observer_, OnCryptographerStateChanged(_));
+  EXPECT_CALL(*encryption_observer_, OnEncryptedTypesChanged(_, true));
   sync_manager_.GetEncryptionHandler()->Init();
   PumpLoop();
   EXPECT_TRUE(ResetUnsyncedEntry(PREFERENCES, client_tag));
@@ -2447,9 +2451,9 @@ class SyncManagerWithLocalBackendTest : public SyncManagerTest {
 // the local backend case.
 TEST_F(SyncManagerWithLocalBackendTest, StartSyncInLocalMode) {
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
-  EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
-  EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
-  EXPECT_CALL(encryption_observer_, OnEncryptedTypesChanged(_, false));
+  EXPECT_CALL(*encryption_observer_, OnEncryptionComplete());
+  EXPECT_CALL(*encryption_observer_, OnCryptographerStateChanged(_));
+  EXPECT_CALL(*encryption_observer_, OnEncryptedTypesChanged(_, false));
 
   sync_manager_.GetEncryptionHandler()->Init();
   PumpLoop();
@@ -2818,6 +2822,14 @@ TEST_F(SyncManagerTest, PurgeUnappliedTypes) {
     EXPECT_GT(bookmark_node.GetServerVersion(), 0);
     EXPECT_EQ(bookmark_node.GetBaseVersion(), -1);
   }
+}
+
+TEST(SyncManagerImplTest, GenerateCacheGUID) {
+  const std::string guid1 = SyncManagerImpl::GenerateCacheGUIDForTest();
+  const std::string guid2 = SyncManagerImpl::GenerateCacheGUIDForTest();
+  EXPECT_EQ(24U, guid1.size());
+  EXPECT_EQ(24U, guid2.size());
+  EXPECT_NE(guid1, guid2);
 }
 
 // A test harness to exercise the code that processes and passes changes from

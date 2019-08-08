@@ -32,6 +32,8 @@ Example:
 # >
 # [VPYTHON:END]
 
+from __future__ import print_function
+
 import collections
 import contextlib
 from datetime import datetime
@@ -375,7 +377,7 @@ class MyActivity(object):
       return list(gerrit_util.GenerateAllChanges(instance['url'], req,
           o_params=['MESSAGES', 'LABELS', 'DETAILED_ACCOUNTS',
                     'CURRENT_REVISION', 'CURRENT_COMMIT']))
-    except gerrit_util.GerritError, e:
+    except gerrit_util.GerritError as e:
       error_message = 'Looking up %r: %s' % (instance['url'], e)
       if error_message not in self.access_errors:
         self.access_errors.add(error_message)
@@ -566,8 +568,8 @@ class MyActivity(object):
     })
 
   def print_heading(self, heading):
-    print
-    print self.options.output_format_heading.format(heading=heading)
+    print()
+    print(self.options.output_format_heading.format(heading=heading))
 
   def match(self, author):
     if '@' in self.user:
@@ -654,8 +656,8 @@ class MyActivity(object):
     }
     if optional_values is not None:
       values.update(optional_values)
-    print DefaultFormatter().format(output_format, **values).encode(
-        sys.getdefaultencoding())
+    print(DefaultFormatter().format(output_format,
+                                    **values).encode(sys.getdefaultencoding()))
 
 
   def filter_issue(self, issue, should_filter_by_user=True):
@@ -802,25 +804,25 @@ class MyActivity(object):
       if changes_by_issue_uid[issue_uid] or not skip_empty_own:
         self.print_issue(issues[issue_uid])
       if changes_by_issue_uid[issue_uid]:
-        print
+        print()
         for change in changes_by_issue_uid[issue_uid]:
-          print '   ',  # this prints one space due to comma, but no newline
+          print('    ', end='')  # this prints no newline
           self.print_change(change)
-        print
+        print()
 
     # Changes referencing others' issues.
     for issue_uid in ref_issues:
       assert changes_by_ref_issue_uid[issue_uid]
       self.print_issue(ref_issues[issue_uid])
       for change in changes_by_ref_issue_uid[issue_uid]:
-        print '',  # this prints one space due to comma, but no newline
+        print('', end=' ')  # this prints one space due to comma, but no newline
         self.print_change(change)
 
     # Changes referencing no issues.
     if changes_without_issue:
-      print self.options.output_format_no_url.format(title='Other changes')
+      print(self.options.output_format_no_url.format(title='Other changes'))
       for change in changes_without_issue:
-        print '',  # this prints one space due to comma, but no newline
+        print('', end=' ')  # this prints one space due to comma, but no newline
         self.print_change(change)
 
   def print_activity(self):
@@ -855,7 +857,7 @@ class MyActivity(object):
       'changes': format_for_json_dump(self.changes),
       'issues': format_for_json_dump(self.issues)
     }
-    print json.dumps(output, indent=2, cls=PythonObjectEncoder)
+    print(json.dumps(output, indent=2, cls=PythonObjectEncoder))
 
 
 def main():

@@ -112,7 +112,7 @@ void ManagedBookmarksTracker::ReloadManagedBookmarks() {
   UpdateBookmarks(managed_node_, list);
 
   // The managed bookmarks folder isn't visible when that pref isn't present.
-  managed_node_->set_visible(!managed_node_->empty());
+  managed_node_->set_visible(!managed_node_->children().empty());
 }
 
 void ManagedBookmarksTracker::UpdateBookmarks(const BookmarkNode* folder,

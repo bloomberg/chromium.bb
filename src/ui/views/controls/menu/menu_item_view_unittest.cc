@@ -23,6 +23,23 @@
 
 namespace views {
 
+TEST(MenuItemViewUnitTest, AddAndRemoveChildren) {
+  views::TestMenuItemView root_menu;
+  root_menu.set_owned_by_client();
+
+  auto* item = root_menu.AppendMenuItemWithLabel(0, base::string16());
+
+  views::SubmenuView* submenu = root_menu.GetSubmenu();
+  ASSERT_TRUE(submenu);
+  const auto menu_items = submenu->GetMenuItems();
+  ASSERT_EQ(1u, menu_items.size());
+  EXPECT_EQ(item, menu_items.front());
+
+  root_menu.RemoveMenuItem(item);
+
+  EXPECT_TRUE(submenu->GetMenuItems().empty());
+}
+
 namespace {
 
 // A simple View class that will match its height to the available width.
@@ -99,9 +116,9 @@ TEST(MenuItemViewUnitTest, TestEmptyTopLevelWhenAllItemsAreHidden) {
   // Because all of the submenu's children are hidden, an empty menu item should
   // have been added.
   ASSERT_EQ(3u, submenu->children().size());
-  MenuItemView* empty_item = static_cast<MenuItemView*>(submenu->child_at(0));
+  auto* empty_item = static_cast<MenuItemView*>(submenu->children().front());
   ASSERT_TRUE(empty_item);
-  ASSERT_EQ(MenuItemView::kEmptyMenuItemViewID, empty_item->id());
+  ASSERT_EQ(MenuItemView::kEmptyMenuItemViewID, empty_item->GetID());
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_APP_MENU_EMPTY_SUBMENU),
             empty_item->title());
 }
@@ -133,13 +150,13 @@ TEST(MenuItemViewUnitTest, TestEmptySubmenuWhenAllChildItemsAreHidden) {
   // Because all of the submenu's children are hidden, an empty menu item should
   // have been added.
   ASSERT_EQ(3u, submenu->children().size());
-  MenuItemView* empty_item = static_cast<MenuItemView*>(submenu->child_at(0));
+  auto* empty_item = static_cast<MenuItemView*>(submenu->children().front());
   ASSERT_TRUE(empty_item);
   // Not allowed to add an duplicated empty menu item
   // if it already has an empty menu item.
   root_menu.AddEmptyMenus();
   ASSERT_EQ(3u, submenu->children().size());
-  ASSERT_EQ(MenuItemView::kEmptyMenuItemViewID, empty_item->id());
+  ASSERT_EQ(MenuItemView::kEmptyMenuItemViewID, empty_item->GetID());
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_APP_MENU_EMPTY_SUBMENU),
             empty_item->title());
 }

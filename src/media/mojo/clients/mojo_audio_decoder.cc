@@ -44,7 +44,7 @@ bool MojoAudioDecoder::IsPlatformDecoder() const {
 
 void MojoAudioDecoder::Initialize(const AudioDecoderConfig& config,
                                   CdmContext* cdm_context,
-                                  const InitCB& init_cb,
+                                  InitCB init_cb,
                                   const OutputCB& output_cb,
                                   const WaitingCB& waiting_cb) {
   DVLOG(1) << __func__;
@@ -56,7 +56,8 @@ void MojoAudioDecoder::Initialize(const AudioDecoderConfig& config,
   // This could happen during reinitialization.
   if (remote_decoder_.encountered_error()) {
     DVLOG(1) << __func__ << ": Connection error happened.";
-    task_runner_->PostTask(FROM_HERE, base::BindOnce(init_cb, false));
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(std::move(init_cb), false));
     return;
   }
 
@@ -67,11 +68,12 @@ void MojoAudioDecoder::Initialize(const AudioDecoderConfig& config,
 
   if (config.is_encrypted() && CdmContext::kInvalidCdmId == cdm_id) {
     DVLOG(1) << __func__ << ": Invalid CdmContext.";
-    task_runner_->PostTask(FROM_HERE, base::BindOnce(init_cb, false));
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(std::move(init_cb), false));
     return;
   }
 
-  init_cb_ = init_cb;
+  init_cb_ = std::move(init_cb);
   output_cb_ = output_cb;
   waiting_cb_ = waiting_cb;
 
@@ -109,7 +111,7 @@ void MojoAudioDecoder::Decode(scoped_refptr<DecoderBuffer> media_buffer,
       base::Bind(&MojoAudioDecoder::OnDecodeStatus, base::Unretained(this)));
 }
 
-void MojoAudioDecoder::Reset(const base::Closure& closure) {
+void MojoAudioDecoder::Reset(base::OnceClosure closure) {
   DVLOG(2) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -120,12 +122,12 @@ void MojoAudioDecoder::Reset(const base::Closure& closure) {
           base::BindOnce(std::move(decode_cb_), DecodeStatus::DECODE_ERROR));
     }
 
-    task_runner_->PostTask(FROM_HERE, closure);
+    task_runner_->PostTask(FROM_HERE, std::move(closure));
     return;
   }
 
   DCHECK(!reset_cb_);
-  reset_cb_ = closure;
+  reset_cb_ = std::move(closure);
   remote_decoder_->Reset(
       base::Bind(&MojoAudioDecoder::OnResetDone, base::Unretained(this)));
 }

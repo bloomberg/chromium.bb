@@ -15,11 +15,11 @@ FreeMemoryObservationWindow::FreeMemoryObservationWindow(
 
 FreeMemoryObservationWindow::~FreeMemoryObservationWindow() = default;
 
-bool FreeMemoryObservationWindow::MemoryIsUnderEarlyLimit() {
+bool FreeMemoryObservationWindow::MemoryIsUnderEarlyLimit() const {
   return MemoryIsUnderLimitImpl(sample_below_early_limit_count_);
 }
 
-bool FreeMemoryObservationWindow::MemoryIsUnderCriticalLimit() {
+bool FreeMemoryObservationWindow::MemoryIsUnderCriticalLimit() const {
   return MemoryIsUnderLimitImpl(sample_below_critical_limit_count_);
 }
 
@@ -38,7 +38,7 @@ void FreeMemoryObservationWindow::OnSampleRemoved(const int& sample) {
 }
 
 bool FreeMemoryObservationWindow::MemoryIsUnderLimitImpl(
-    size_t sample_under_limit_cnt) {
+    size_t sample_under_limit_cnt) const {
   size_t sample_count = SampleCount();
   if (sample_count < config_.min_sample_count)
     return false;
@@ -56,7 +56,7 @@ DiskIdleTimeObservationWindow::DiskIdleTimeObservationWindow(
 
 DiskIdleTimeObservationWindow::~DiskIdleTimeObservationWindow() = default;
 
-bool DiskIdleTimeObservationWindow::DiskIdleTimeIsLow() {
+bool DiskIdleTimeObservationWindow::DiskIdleTimeIsLow() const {
   if (SampleCount() == 0)
     return false;
   DCHECK_GE(sum_, 0.0);

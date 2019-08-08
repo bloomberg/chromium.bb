@@ -12,9 +12,7 @@
 namespace ntp_snippets {
 
 namespace {
-// All categories must be present. An exception is
-// KnownCategories::CONTEXTUAL because it is not handled by
-// ContentSuggestionsService.
+// All categories must be present.
 constexpr KnownCategories kKnownCategoriesDefaultOrder[] = {
     KnownCategories::READING_LIST,
     KnownCategories::ARTICLES,
@@ -115,7 +113,7 @@ void ConstantCategoryRanker::OnCategoryDismissed(Category category) {
 std::vector<KnownCategories>
 ConstantCategoryRanker::GetKnownCategoriesDefaultOrder() {
   static_assert(
-      static_cast<size_t>(KnownCategories::LOCAL_CATEGORIES_COUNT) == 7,
+      static_cast<size_t>(KnownCategories::LOCAL_CATEGORIES_COUNT) == 6,
       "Number of local categories has changed, please update "
       "ConstantCategoryRanker::kKnownCategoriesDefaultOrder to list all "
       "local KnownCategories for all orders.");

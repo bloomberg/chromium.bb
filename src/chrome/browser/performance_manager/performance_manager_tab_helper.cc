@@ -5,7 +5,6 @@
 #include "chrome/browser/performance_manager/performance_manager_tab_helper.h"
 
 #include <type_traits>
-#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -17,23 +16,13 @@
 #include "chrome/browser/performance_manager/render_process_user_data.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 
 namespace performance_manager {
 
-PerformanceManagerTabHelper* PerformanceManagerTabHelper::first_ = nullptr;
-
 // static
-bool PerformanceManagerTabHelper::GetCoordinationIDForWebContents(
-    content::WebContents* web_contents,
-    resource_coordinator::CoordinationUnitID* id) {
-  PerformanceManagerTabHelper* helper = FromWebContents(web_contents);
-  if (!helper)
-    return false;
-  *id = helper->page_node_->id();
-
-  return true;
-}
+PerformanceManagerTabHelper* PerformanceManagerTabHelper::first_ = nullptr;
 
 // static
 void PerformanceManagerTabHelper::DetachAndDestroyAll() {
@@ -46,11 +35,9 @@ PerformanceManagerTabHelper::PerformanceManagerTabHelper(
     : content::WebContentsObserver(web_contents),
       performance_manager_(PerformanceManager::GetInstance()),
       weak_factory_(this) {
-  page_node_ = performance_manager_->CreatePageNode(weak_factory_.GetWeakPtr());
-
-  // Make sure to set the visibility property when we create
-  // |page_resource_coordinator_|.
-  UpdatePageNodeVisibility(web_contents->GetVisibility());
+  page_node_ = performance_manager_->CreatePageNode(
+      WebContentsProxy(weak_factory_.GetWeakPtr()),
+      web_contents->GetVisibility() == content::Visibility::VISIBLE);
 
   // Dispatch creation notifications for any pre-existing frames.
   std::vector<content::RenderFrameHost*> existing_frames =
@@ -114,14 +101,19 @@ void PerformanceManagerTabHelper::RenderFrameCreated(
                            render_frame_host->GetProcess())
                            ->process_node();
 
+  auto* site_instance = render_frame_host->GetSiteInstance();
+
   // Create the frame node, and provide a callback that will run in the graph to
   // initialize it.
   std::unique_ptr<FrameNodeImpl> frame = performance_manager_->CreateFrameNode(
       process_node, page_node_.get(), parent_frame_node,
       render_frame_host->GetFrameTreeNodeId(),
+      render_frame_host->GetDevToolsFrameToken(),
+      site_instance->GetBrowsingInstanceId(), site_instance->GetId(),
       base::BindOnce(
           [](const GURL& url, bool is_current, FrameNodeImpl* frame_node) {
-            frame_node->set_url(url);
+            if (!url.is_empty())
+              frame_node->OnNavigationCommitted(url, /* same_document */ false);
             frame_node->SetIsCurrent(is_current);
           },
           render_frame_host->GetLastCommittedURL(),
@@ -215,7 +207,9 @@ void PerformanceManagerTabHelper::DidStopLoading() {
 
 void PerformanceManagerTabHelper::OnVisibilityChanged(
     content::Visibility visibility) {
-  UpdatePageNodeVisibility(visibility);
+  const bool is_visible = visibility == content::Visibility::VISIBLE;
+  PostToGraph(FROM_HERE, &PageNodeImpl::SetIsVisible, page_node_.get(),
+              is_visible);
 }
 
 void PerformanceManagerTabHelper::DidFinishNavigation(
@@ -240,7 +234,8 @@ void PerformanceManagerTabHelper::DidFinishNavigation(
 
   // Notify the frame of the committed URL.
   GURL url = navigation_handle->GetURL();
-  PostToGraph(FROM_HERE, &FrameNodeImpl::set_url, frame_node, url);
+  PostToGraph(FROM_HERE, &FrameNodeImpl::OnNavigationCommitted, frame_node, url,
+              navigation_handle->IsSameDocument());
 
   if (navigation_handle->IsSameDocument() ||
       !navigation_handle->IsInMainFrame()) {
@@ -279,13 +274,13 @@ void PerformanceManagerTabHelper::OnInterfaceRequestFromFrame(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle* interface_pipe) {
   if (interface_name !=
-      resource_coordinator::mojom::FrameCoordinationUnit::Name_)
+      resource_coordinator::mojom::DocumentCoordinationUnit::Name_)
     return;
 
   auto it = frames_.find(render_frame_host);
   DCHECK(it != frames_.end());
-  PostToGraph(FROM_HERE, &FrameNodeImpl::AddBinding, it->second.get(),
-              resource_coordinator::mojom::FrameCoordinationUnitRequest(
+  PostToGraph(FROM_HERE, &FrameNodeImpl::Bind, it->second.get(),
+              resource_coordinator::mojom::DocumentCoordinationUnitRequest(
                   std::move(*interface_pipe)));
 }
 
@@ -318,14 +313,6 @@ void PerformanceManagerTabHelper::OnMainFrameNavigation(int64_t navigation_id) {
 
   first_time_title_set_ = false;
   first_time_favicon_set_ = false;
-}
-
-void PerformanceManagerTabHelper::UpdatePageNodeVisibility(
-    content::Visibility visibility) {
-  // TODO(fdoray): An OCCLUDED tab should not be considered visible.
-  const bool is_visible = visibility != content::Visibility::HIDDEN;
-  PostToGraph(FROM_HERE, &PageNodeImpl::SetIsVisible, page_node_.get(),
-              is_visible);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(PerformanceManagerTabHelper)

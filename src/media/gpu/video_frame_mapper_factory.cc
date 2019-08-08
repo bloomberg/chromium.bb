@@ -18,24 +18,26 @@
 namespace media {
 
 // static
-std::unique_ptr<VideoFrameMapper> VideoFrameMapperFactory::CreateMapper() {
+std::unique_ptr<VideoFrameMapper> VideoFrameMapperFactory::CreateMapper(
+    VideoPixelFormat format) {
 #if BUILDFLAG(USE_VAAPI) && defined(OS_LINUX)
-  return CreateMapper(false);
+  return CreateMapper(format, false);
 #else
-  return CreateMapper(true);
+  return CreateMapper(format, true);
 #endif  // BUILDFLAG(USE_VAAPI) && defined(OS_LINUX)
 }
 
 // static
 std::unique_ptr<VideoFrameMapper> VideoFrameMapperFactory::CreateMapper(
+    VideoPixelFormat format,
     bool linear_buffer_mapper) {
 #if defined(OS_LINUX)
   if (linear_buffer_mapper)
-    return std::make_unique<GenericDmaBufVideoFrameMapper>();
+    return GenericDmaBufVideoFrameMapper::Create(format);
 #endif  // defined(OS_LINUX)
 
 #if BUILDFLAG(USE_VAAPI) && defined(OS_LINUX)
-  return VaapiDmaBufVideoFrameMapper::Create();
+  return VaapiDmaBufVideoFrameMapper::Create(format);
 #endif  // BUILDFLAG(USE_VAAPI) && defined(OS_LINUX)
 
   return nullptr;

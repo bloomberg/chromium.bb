@@ -51,7 +51,7 @@ class NET_EXPORT_PRIVATE HttpNegotiateAuthSystem {
   // being generated for.
   //
   // If this is the first round of a multiple round scheme, credentials are
-  // obtained using |*credentials|. If |credentials| is NULL, the default
+  // obtained using |*credentials|. If |credentials| is nullptr, the default
   // credentials are used instead.
   virtual int GenerateAuthToken(const AuthCredentials* credentials,
                                 const std::string& spn,

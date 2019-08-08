@@ -33,7 +33,8 @@ void VideoTestEnvironment::SetUp() {
 
   // Needed to enable DVLOG through --vmodule.
   logging::LoggingSettings settings;
-  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+  settings.logging_dest =
+      logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;
   LOG_ASSERT(logging::InitLogging(settings));
 
   // Setting up a task environment will create a task runner for the current

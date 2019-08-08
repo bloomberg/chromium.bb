@@ -202,11 +202,6 @@ class InternalPopupMenu::ItemIterationContext {
 
 // ----------------------------------------------------------------
 
-InternalPopupMenu* InternalPopupMenu::Create(ChromeClient* chrome_client,
-                                             HTMLSelectElement& owner_element) {
-  return MakeGarbageCollected<InternalPopupMenu>(chrome_client, owner_element);
-}
-
 InternalPopupMenu::InternalPopupMenu(ChromeClient* chrome_client,
                                      HTMLSelectElement& owner_element)
     : chrome_client_(chrome_client),

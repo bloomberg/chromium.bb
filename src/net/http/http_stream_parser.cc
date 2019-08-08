@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -68,15 +67,15 @@ bool HeadersContainMultipleCopiesOfField(const HttpResponseHeaders& headers,
   return false;
 }
 
-std::unique_ptr<base::Value> NetLogSendRequestBodyCallback(
+base::Value NetLogSendRequestBodyCallback(
     uint64_t length,
     bool is_chunked,
     bool did_merge,
     NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetInteger("length", static_cast<int>(length));
-  dict->SetBoolean("is_chunked", is_chunked);
-  dict->SetBoolean("did_merge", did_merge);
+  base::DictionaryValue dict;
+  dict.SetInteger("length", static_cast<int>(length));
+  dict.SetBoolean("is_chunked", is_chunked);
+  dict.SetBoolean("did_merge", did_merge);
   return std::move(dict);
 }
 
@@ -396,7 +395,7 @@ void HttpStreamParser::OnIOComplete(int result) {
   // The client callback can do anything, including destroying this class,
   // so any pending callback must be issued after everything else is done.
   if (result != ERR_IO_PENDING && !callback_.is_null()) {
-    base::ResetAndReturn(&callback_).Run(result);
+    std::move(callback_).Run(result);
   }
 }
 

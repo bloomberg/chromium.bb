@@ -55,15 +55,15 @@ public class AuthenticatorImpl implements Authenticator, HandlerResponseCallback
     @Override
     public void makeCredential(
             PublicKeyCredentialCreationOptions options, MakeCredentialResponse callback) {
+        if (mIsOperationPending) {
+            callback.call(AuthenticatorStatus.PENDING_REQUEST, null);
+            return;
+        }
+
         mMakeCredentialCallback = callback;
         Context context = ChromeActivity.fromWebContents(mWebContents);
         if (PackageUtils.getPackageVersion(context, GMSCORE_PACKAGE_NAME) < GMSCORE_MIN_VERSION) {
             onError(AuthenticatorStatus.NOT_IMPLEMENTED);
-            return;
-        }
-
-        if (mIsOperationPending) {
-            onError(AuthenticatorStatus.PENDING_REQUEST);
             return;
         }
 
@@ -74,15 +74,15 @@ public class AuthenticatorImpl implements Authenticator, HandlerResponseCallback
     @Override
     public void getAssertion(
             PublicKeyCredentialRequestOptions options, GetAssertionResponse callback) {
+        if (mIsOperationPending) {
+            callback.call(AuthenticatorStatus.PENDING_REQUEST, null);
+            return;
+        }
+
         mGetAssertionCallback = callback;
         Context context = ChromeActivity.fromWebContents(mWebContents);
         if (PackageUtils.getPackageVersion(context, GMSCORE_PACKAGE_NAME) < GMSCORE_MIN_VERSION) {
             onError(AuthenticatorStatus.NOT_IMPLEMENTED);
-            return;
-        }
-
-        if (mIsOperationPending) {
-            onError(AuthenticatorStatus.PENDING_REQUEST);
             return;
         }
 
@@ -114,6 +114,12 @@ public class AuthenticatorImpl implements Authenticator, HandlerResponseCallback
         FingerprintManager fingerprintManager =
                 (FingerprintManager) context.getSystemService(Context.FINGERPRINT_SERVICE);
         callback.call(fingerprintManager != null && fingerprintManager.hasEnrolledFingerprints());
+    }
+
+    @Override
+    public void cancel() {
+        onError(AuthenticatorStatus.NOT_IMPLEMENTED);
+        return;
     }
 
     /**

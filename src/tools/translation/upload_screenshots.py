@@ -50,7 +50,7 @@ else:
   GIT = 'git'
 
 
-def query_yes_no(question, default='yes'):
+def query_yes_no(question, default='no'):
   """Ask a yes/no question via raw_input() and return their answer.
 
   "question" is a string that is presented to the user.
@@ -201,7 +201,8 @@ def main():
   # Always ask if the .sha1 files should be added to the CL, even if they are
   # already part of the CL. If the files are not modified, adding again is a
   # no-op.
-  if not query_yes_no('Do you want to add these files to your CL?'):
+  if not query_yes_no('Do you want to add these files to your CL?',
+                      default='yes'):
     exit(0)
 
   if not args.dry_run:

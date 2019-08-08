@@ -359,3 +359,36 @@ class TemplateWriter(object):
       str_key = policy['name']
     # Groups come before regular policies.
     return (not is_group, str_key)
+
+  def GetLocalizedMessage(self, msg_id):
+    '''Returns a localized message for this writer.
+
+    Args:
+      msg_id: The identifier of the message.
+
+    Returns:
+      The localized message.
+    '''
+    return self.messages['doc_' + msg_id]['text']
+
+  def HasExpandedPolicyDescription(self, policy):
+    '''Returns whether the policy has expanded documentation containing the link
+    to the documentation with schema and formatting.
+    '''
+    return (policy['type'] in ('dict', 'external') or 'url_schema' in policy or
+            'validation_schema' in policy or 'description_schema' in policy)
+
+  def GetExpandedPolicyDescription(self, policy):
+    '''Returns the expanded description of the policy containing the link to the
+    documentation with schema and formatting.
+    '''
+    schema_description_link_text = self.GetLocalizedMessage(
+        'schema_description_link')
+    url = None
+    if 'url_schema' in policy:
+      url = policy['url_schema']
+    if (policy['type'] in ('dict', 'external') or
+        'validation_schema' in policy or 'description_schema' in policy):
+      url = 'https://www.chromium.org/administrators/policy-list-3#' + policy[
+          'name']
+    return schema_description_link_text.replace('$6', url) if url else ''

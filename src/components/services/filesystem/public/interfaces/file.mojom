@@ -71,7 +71,7 @@ interface File {
   // I.e., the access mode, etc. (as specified to |Directory::OpenFile()| by the
   // |open_flags| argument) as well as file position.
   [Sync]
-  Dup(File& file) => (mojo_base.mojom.FileError error);
+  Dup(pending_receiver<File> file) => (mojo_base.mojom.FileError error);
 
   // Syncs data to disk.
   [Sync]

@@ -62,38 +62,6 @@ class OfflinePageModel : public base::SupportsUserData, public KeyedService {
     std::string request_origin;
   };
 
-  // Information about a deleted page.
-  struct DeletedPageInfo {
-    DeletedPageInfo();
-    DeletedPageInfo(const DeletedPageInfo& other);
-    ~DeletedPageInfo();
-    DeletedPageInfo(int64_t offline_id,
-                    int64_t system_download_id,
-                    const ClientId& client_id,
-                    const std::string& request_origin,
-                    const GURL& url);
-
-    const GURL& GetOriginalUrl() const {
-      return original_url_if_different.is_empty() ? url
-                                                  : original_url_if_different;
-    }
-
-    // The ID of the deleted page.
-    int64_t offline_id;
-    // The system download manager id of the deleted page.  This will be 0 if
-    // there is no system download manager assigned id.
-    int64_t system_download_id;
-    // Client ID of the deleted page.
-    ClientId client_id;
-    // The origin that the page was saved on behalf of.
-    std::string request_origin;
-    // URL of the page that was deleted.
-    GURL url;
-    // Originally request URL of the page that was deleted. If this is empty,
-    // the final URL is not different than the original URL.
-    GURL original_url_if_different;
-  };
-
   // Observer of the OfflinePageModel.
   class Observer {
    public:
@@ -105,7 +73,7 @@ class OfflinePageModel : public base::SupportsUserData, public KeyedService {
                                   const OfflinePageItem& added_page) = 0;
 
     // Invoked when an offline copy related to |offline_id| was deleted.
-    virtual void OfflinePageDeleted(const DeletedPageInfo& page_info) = 0;
+    virtual void OfflinePageDeleted(const OfflinePageItem& deleted_page) = 0;
 
     // Invoked when a thumbnail for an offline page is added.
     virtual void ThumbnailAdded(OfflinePageModel* model,
@@ -169,20 +137,9 @@ class OfflinePageModel : public base::SupportsUserData, public KeyedService {
   // will be updated. Requires that the model is loaded.
   virtual void MarkPageAccessed(int64_t offline_id) = 0;
 
-  // Deletes pages based on |offline_ids|.
-  virtual void DeletePagesByOfflineId(const std::vector<int64_t>& offline_ids,
-                                      DeletePageCallback callback) = 0;
-
-  // Deletes all pages associated with any of |client_ids|.
-  virtual void DeletePagesByClientIds(const std::vector<ClientId>& client_ids,
-                                      DeletePageCallback callback) = 0;
-
-  // Deletes all pages associated with any of the |client_ids| provided the page
-  // also was created by origin.
-  virtual void DeletePagesByClientIdsAndOrigin(
-      const std::vector<ClientId>& client_ids,
-      const std::string& origin,
-      DeletePageCallback callback) = 0;
+  // Deletes pages that match |criteria|.
+  virtual void DeletePagesWithCriteria(const PageCriteria& criteria,
+                                       DeletePageCallback callback) = 0;
 
   // Deletes cached offline pages matching the URL predicate.
   virtual void DeleteCachedPagesByURLPredicate(const UrlPredicate& predicate,

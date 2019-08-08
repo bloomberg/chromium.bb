@@ -6,6 +6,7 @@
 #define COMPONENTS_USER_MANAGER_FAKE_USER_MANAGER_H_
 
 #include <map>
+#include <set>
 #include <string>
 
 #include "base/macros.h"
@@ -37,6 +38,8 @@ class USER_MANAGER_EXPORT FakeUserManager : public UserManagerBase {
   // UserManager overrides.
   const user_manager::UserList& GetUsers() const override;
   user_manager::UserList GetUsersAllowedForMultiProfile() const override;
+  void UpdateUserAccountData(const AccountId& account_id,
+                             const UserAccountData& account_data) override;
 
   // Set the user as logged in.
   void UserLoggedIn(const AccountId& account_id,
@@ -56,8 +59,6 @@ class USER_MANAGER_EXPORT FakeUserManager : public UserManagerBase {
   bool HasBrowserRestarted() const override;
 
   // Not implemented.
-  void UpdateUserAccountData(const AccountId& account_id,
-                             const UserAccountData& account_data) override {}
   void Shutdown() override {}
   const user_manager::UserList& GetLRULoggedInUsers() const override;
   user_manager::UserList GetUnlockUsers() const override;

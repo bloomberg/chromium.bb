@@ -449,8 +449,8 @@ TEST_F(ScrollIntoViewTest, SmoothAndInstantInChain) {
 TEST_F(ScrollIntoViewTest, SmoothScrollAnchor) {
   v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
   WebView().MainFrameWidget()->Resize(WebSize(800, 600));
-  SimRequest request("https://example.com/test.html", "text/html");
-  LoadURL("https://example.com/test.html");
+  SimRequest request("https://example.com/test.html#link", "text/html");
+  LoadURL("https://example.com/test.html#link");
   request.Complete(R"HTML(
     <div id='container' style='height: 600px; overflow: scroll;
       scroll-behavior: smooth'>
@@ -462,12 +462,8 @@ TEST_F(ScrollIntoViewTest, SmoothScrollAnchor) {
 
   Element* content = GetDocument().getElementById("content");
   Element* container = GetDocument().getElementById("container");
-  KURL url(KURL(), "https://test.html/#link");
-  LocalFrameView* frame_view = GetDocument().View();
-  Compositor().BeginFrame();
   ASSERT_EQ(container->scrollTop(), 0);
 
-  frame_view->ProcessUrlFragment(url);
   // Scrolling the container
   Compositor().BeginFrame();  // update run_state_.
   Compositor().BeginFrame();  // Set start_time = now.

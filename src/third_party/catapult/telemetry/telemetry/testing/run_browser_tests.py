@@ -192,7 +192,7 @@ def LoadTestCasesToBeRun(
 
 
 def _CreateTestArgParsers():
-  parser = typ.ArgumentParser(discovery=False, reporting=True, running=True)
+  parser = typ.ArgumentParser(discovery=True, reporting=True, running=True)
   parser.add_argument('test', type=str, help='Name of the test suite to run')
 
   parser.add_argument(
@@ -287,35 +287,33 @@ def RunTests(args):
       abbr_results = json.load(f)
       test_times = abbr_results.get('times')
 
-  test_class_expectations_files = test_class.ExpectationsFiles()
-  # all file paths in test_class_expectations-files must be absolute
-  assert all(os.path.isabs(path) for path in test_class_expectations_files)
-  options.expectations_files.extend(test_class_expectations_files)
-
   # Setup typ.Runner instance.
-  typ_runner.setup_fn = _SetUpProcess
-  typ_runner.teardown_fn = _TearDownProcess
+  typ_runner.args.all = options.all
   typ_runner.args.expectations_files = options.expectations_files
-  typ_runner.args.tags = options.tags
   typ_runner.args.jobs = options.jobs
+  typ_runner.args.list_only = options.list_only
   typ_runner.args.metadata = options.metadata
   typ_runner.args.passthrough = options.passthrough
   typ_runner.args.path = options.path
+  typ_runner.args.quiet = options.quiet
   typ_runner.args.repeat = options.repeat
   typ_runner.args.retry_limit = options.retry_limit
+  typ_runner.args.retry_only_retry_on_failure_tests = (
+      options.retry_only_retry_on_failure_tests)
+  typ_runner.args.skip = options.skip
+  typ_runner.args.suffixes = TEST_SUFFIXES
+  typ_runner.args.tags = options.tags
+  typ_runner.args.test_name_prefix = options.test_name_prefix
+  typ_runner.args.test_filter = options.test_filter
   typ_runner.args.test_results_server = options.test_results_server
   typ_runner.args.test_type = options.test_type
   typ_runner.args.top_level_dir = options.top_level_dir
   typ_runner.args.write_full_results_to = options.write_full_results_to
   typ_runner.args.write_trace_to = options.write_trace_to
-  typ_runner.args.list_only = options.list_only
-  typ_runner.args.skip = options.skip
+
+  typ_runner.setup_fn = _SetUpProcess
+  typ_runner.teardown_fn = _TearDownProcess
   typ_runner.classifier = _GetClassifier(typ_runner)
-  typ_runner.args.retry_only_retry_on_failure_tests = (
-      options.retry_only_retry_on_failure_tests)
-  typ_runner.args.test_name_prefix = options.test_name_prefix
-  typ_runner.args.test_filter = options.test_filter
-  typ_runner.args.suffixes = TEST_SUFFIXES
   typ_runner.path_delimiter = test_class.GetJSONResultsDelimiter()
 
   tests_to_run = LoadTestCasesToBeRun(
@@ -329,6 +327,17 @@ def RunTests(args):
     typ_runner.context.test_case_ids_to_run.add(t.id())
   typ_runner.context.Freeze()
   browser_test_context._global_test_context = typ_runner.context
+
+  # several class level variables are set for GPU tests  when
+  # LoadTestCasesToBeRun is called. Functions line ExpectationsFiles and
+  # GenerateTags which use these variables should be called after
+  # LoadTestCasesToBeRun
+
+  test_class_expectations_files = test_class.ExpectationsFiles()
+  # all file paths in test_class_expectations-files must be absolute
+  assert all(os.path.isabs(path) for path in test_class_expectations_files)
+  typ_runner.args.expectations_files.extend(
+      test_class_expectations_files)
 
   # Since sharding logic is handled by browser_test_runner harness by passing
   # browser_test_context.test_case_ids_to_run to subprocess to indicate test

@@ -221,6 +221,7 @@ Message::Message(Message&& other)
       serialized_(other.serialized_) {
   other.transferable_ = false;
   other.serialized_ = false;
+  heap_profiler_tag_ = other.heap_profiler_tag_;
 #if defined(ENABLE_IPC_FUZZER)
   interface_name_ = other.interface_name_;
   method_name_ = other.method_name_;
@@ -302,6 +303,7 @@ Message& Message::operator=(Message&& other) {
   other.transferable_ = false;
   serialized_ = other.serialized_;
   other.serialized_ = false;
+  other.heap_profiler_tag_ = heap_profiler_tag_;
 #if defined(ENABLE_IPC_FUZZER)
   interface_name_ = other.interface_name_;
   method_name_ = other.method_name_;
@@ -316,6 +318,7 @@ void Message::Reset() {
   associated_endpoint_handles_.clear();
   transferable_ = false;
   serialized_ = false;
+  heap_profiler_tag_ = nullptr;
 }
 
 const uint8_t* Message::payload() const {
@@ -516,17 +519,17 @@ bool PassThroughFilter::Accept(Message* message) {
 
 SyncMessageResponseContext::SyncMessageResponseContext()
     : outer_context_(current()) {
-  g_sls_sync_response_context.Get().Set(this);
+  g_sls_sync_response_context.Get().emplace(this);
 }
 
 SyncMessageResponseContext::~SyncMessageResponseContext() {
   DCHECK_EQ(current(), this);
-  g_sls_sync_response_context.Get().Set(outer_context_);
+  g_sls_sync_response_context.Get().emplace(outer_context_);
 }
 
 // static
 SyncMessageResponseContext* SyncMessageResponseContext::current() {
-  return g_sls_sync_response_context.Get().Get();
+  return g_sls_sync_response_context.Get().GetOrCreateValue();
 }
 
 void SyncMessageResponseContext::ReportBadMessage(const std::string& error) {
@@ -558,17 +561,17 @@ MessageHeaderV2::MessageHeaderV2() = default;
 
 MessageDispatchContext::MessageDispatchContext(Message* message)
     : outer_context_(current()), message_(message) {
-  g_sls_message_dispatch_context.Get().Set(this);
+  g_sls_message_dispatch_context.Get().emplace(this);
 }
 
 MessageDispatchContext::~MessageDispatchContext() {
   DCHECK_EQ(current(), this);
-  g_sls_message_dispatch_context.Get().Set(outer_context_);
+  g_sls_message_dispatch_context.Get().emplace(outer_context_);
 }
 
 // static
 MessageDispatchContext* MessageDispatchContext::current() {
-  return g_sls_message_dispatch_context.Get().Get();
+  return g_sls_message_dispatch_context.Get().GetOrCreateValue();
 }
 
 ReportBadMessageCallback MessageDispatchContext::GetBadMessageCallback() {

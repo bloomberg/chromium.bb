@@ -242,17 +242,17 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_characterExtents(
   if (!out_x || !out_y || !out_width || !out_height)
     return E_INVALIDARG;
 
-  const base::string16& text_str = GetText();
+  const base::string16& text_str = GetHypertext();
   HandleSpecialTextOffset(&offset);
   if (offset < 0 || offset > static_cast<LONG>(text_str.size()))
     return E_INVALIDARG;
 
   gfx::Rect character_bounds;
   if (coordinate_type == IA2_COORDTYPE_SCREEN_RELATIVE) {
-    character_bounds = owner()->GetScreenRangeBoundsRect(
+    character_bounds = owner()->GetScreenHypertextRangeBoundsRect(
         offset, 1, ui::AXClippingBehavior::kUnclipped);
   } else if (coordinate_type == IA2_COORDTYPE_PARENT_RELATIVE) {
-    character_bounds = owner()->GetRootFrameRangeBoundsRect(
+    character_bounds = owner()->GetRootFrameHypertextRangeBoundsRect(
         offset, 1, ui::AXClippingBehavior::kUnclipped);
     if (owner()->PlatformGetParent()) {
       character_bounds -= owner()
@@ -294,7 +294,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_text(LONG start_offset,
   if (!text)
     return E_INVALIDARG;
 
-  const base::string16& text_str = GetText();
+  const base::string16& text_str = GetHypertext();
   HandleSpecialTextOffset(&start_offset);
   HandleSpecialTextOffset(&end_offset);
 
@@ -341,7 +341,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_textAtOffset(
   if (offset < 0)
     return E_INVALIDARG;
 
-  const base::string16& text_str = GetText();
+  const base::string16& text_str = GetHypertext();
   LONG text_len = text_str.length();
   if (offset > text_len)
     return E_INVALIDARG;
@@ -385,7 +385,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_textBeforeOffset(
   *end_offset = 0;
   *text = NULL;
 
-  const base::string16& text_str = GetText();
+  const base::string16& text_str = GetHypertext();
   LONG text_len = text_str.length();
   if (offset > text_len)
     return E_INVALIDARG;
@@ -420,7 +420,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_textAfterOffset(
   *end_offset = 0;
   *text = NULL;
 
-  const base::string16& text_str = GetText();
+  const base::string16& text_str = GetHypertext();
   LONG text_len = text_str.length();
   if (offset > text_len)
     return E_INVALIDARG;
@@ -453,7 +453,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_newText(
   if (new_len == 0)
     return E_FAIL;
 
-  base::string16 substr = GetText().substr(start, new_len);
+  base::string16 substr = GetHypertext().substr(start, new_len);
   new_text->text = SysAllocString(substr.c_str());
   new_text->start = static_cast<LONG>(start);
   new_text->end = static_cast<LONG>(start + new_len);
@@ -535,7 +535,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::scrollSubstringToPoint(
   LONG length = end_index - start_index + 1;
   DCHECK_GE(length, 0);
 
-  gfx::Rect string_bounds = owner()->GetRootFrameRangeBoundsRect(
+  gfx::Rect string_bounds = owner()->GetRootFrameHypertextRangeBoundsRect(
       start_index, length, ui::AXClippingBehavior::kUnclipped);
   string_bounds -=
       owner()->GetUnclippedRootFrameBoundsRect().OffsetFromOrigin();
@@ -594,7 +594,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_attributes(
   if (!owner())
     return E_FAIL;
 
-  const base::string16 text = GetText();
+  const base::string16 text = GetHypertext();
   HandleSpecialTextOffset(&offset);
   if (offset < 0 || offset > static_cast<LONG>(text.size()))
     return E_INVALIDARG;
@@ -670,7 +670,8 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_hyperlinkIndex(
   if (!hyperlink_index)
     return E_INVALIDARG;
 
-  if (char_index < 0 || char_index >= static_cast<LONG>(GetText().size())) {
+  if (char_index < 0 ||
+      char_index >= static_cast<LONG>(GetHypertext().size())) {
     return E_INVALIDARG;
   }
 
@@ -701,7 +702,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_anchor(LONG index,
   if (index != 0 || !anchor)
     return E_INVALIDARG;
 
-  BSTR ia2_hypertext = SysAllocString(GetText().c_str());
+  BSTR ia2_hypertext = SysAllocString(GetHypertext().c_str());
   DCHECK(ia2_hypertext);
   anchor->vt = VT_BSTR;
   anchor->bstrVal = ia2_hypertext;
@@ -1473,13 +1474,13 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_unclippedSubstringBounds(
   if (!out_x || !out_y || !out_width || !out_height)
     return E_INVALIDARG;
 
-  unsigned int text_length = static_cast<unsigned int>(GetText().size());
+  unsigned int text_length = static_cast<unsigned int>(GetHypertext().size());
   if (start_index > text_length || end_index > text_length ||
       start_index > end_index) {
     return E_INVALIDARG;
   }
 
-  gfx::Rect bounds = owner()->GetScreenRangeBoundsRect(
+  gfx::Rect bounds = owner()->GetScreenHypertextRangeBoundsRect(
       start_index, end_index - start_index, ui::AXClippingBehavior::kUnclipped);
   *out_x = bounds.x();
   *out_y = bounds.y();
@@ -1501,16 +1502,16 @@ IFACEMETHODIMP BrowserAccessibilityComWin::scrollToSubstring(
   if (!manager)
     return E_FAIL;
 
-  unsigned int text_length = static_cast<unsigned int>(GetText().size());
+  unsigned int text_length = static_cast<unsigned int>(GetHypertext().size());
   if (start_index > text_length || end_index > text_length ||
       start_index > end_index) {
     return E_INVALIDARG;
   }
 
-  manager->ScrollToMakeVisible(
-      *owner(),
-      owner()->GetRootFrameRangeBoundsRect(start_index, end_index - start_index,
-                                           ui::AXClippingBehavior::kUnclipped));
+  manager->ScrollToMakeVisible(*owner(),
+                               owner()->GetRootFrameHypertextRangeBoundsRect(
+                                   start_index, end_index - start_index,
+                                   ui::AXClippingBehavior::kUnclipped));
 
   return S_OK;
 }
@@ -1629,8 +1630,8 @@ STDMETHODIMP BrowserAccessibilityComWin::InternalQueryInterface(
     }
   }
 
-  return CComObjectRootBase::InternalQueryInterface(this_ptr, entries, iid,
-                                                    object);
+  return AXPlatformNodeWin::InternalQueryInterface(this_ptr, entries, iid,
+                                                   object);
 }
 
 void BrowserAccessibilityComWin::ComputeStylesIfNeeded() {
@@ -1675,7 +1676,7 @@ void BrowserAccessibilityComWin::ComputeStylesIfNeeded() {
           child->GetSpellingAttributes();
       MergeSpellingIntoTextAttributes(spelling_attributes, start_offset,
                                       &attributes_map);
-      start_offset += child->GetText().length();
+      start_offset += child->GetHypertext().length();
     } else {
       start_offset += 1;
     }
@@ -2028,7 +2029,7 @@ BrowserAccessibilityComWin::GetSpellingAttributes() {
           spelling_attributes[start_offset + attribute.first] =
               std::move(attribute.second);
         }
-        start_offset += static_cast<int>(text_win->GetText().length());
+        start_offset += static_cast<int>(text_win->GetHypertext().length());
       }
     }
   }
@@ -2140,12 +2141,7 @@ void BrowserAccessibilityComWin::SetIA2HypertextSelection(LONG start_offset,
                                                           LONG end_offset) {
   HandleSpecialTextOffset(&start_offset);
   HandleSpecialTextOffset(&end_offset);
-  BrowserAccessibilityPositionInstance start_position =
-      owner()->CreatePositionForSelectionAt(static_cast<int>(start_offset));
-  BrowserAccessibilityPositionInstance end_position =
-      owner()->CreatePositionForSelectionAt(static_cast<int>(end_offset));
-  Manager()->SetSelection(
-      AXPlatformRange(std::move(start_position), std::move(end_position)));
+  SetHypertextSelection(start_offset, end_offset);
 }
 
 LONG BrowserAccessibilityComWin::FindIA2Boundary(
@@ -2162,7 +2158,7 @@ LONG BrowserAccessibilityComWin::FindIA2Boundary(
   if (selection_end >= 0 && start_offset == selection_end)
     affinity = Manager()->GetTreeData().sel_focus_affinity;
 
-  ui::TextBoundaryType boundary = IA2TextBoundaryToTextBoundary(ia2_boundary);
+  ui::AXTextBoundary boundary = ui::FromIA2TextBoundary(ia2_boundary);
   return static_cast<LONG>(
       FindTextBoundary(boundary, start_offset, direction, affinity));
 }
@@ -2170,7 +2166,7 @@ LONG BrowserAccessibilityComWin::FindIA2Boundary(
 LONG BrowserAccessibilityComWin::FindStartOfStyle(
     LONG start_offset,
     ui::TextBoundaryDirection direction) {
-  LONG text_length = static_cast<LONG>(GetText().length());
+  LONG text_length = static_cast<LONG>(GetHypertext().length());
   DCHECK_GE(start_offset, 0);
   DCHECK_LE(start_offset, text_length);
 

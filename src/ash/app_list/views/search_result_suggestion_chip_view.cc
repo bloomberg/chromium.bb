@@ -10,8 +10,8 @@
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/search/search_result.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
-#include "ash/public/interfaces/app_list.mojom.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -44,10 +44,10 @@ constexpr int kPaddingDip = 16;
 constexpr int kPreferredHeightDip = 32;
 
 // Records an app being launched.
-void LogAppLaunch(int index_in_suggestion_chip_container) {
-  DCHECK_GE(index_in_suggestion_chip_container, 0);
+void LogAppLaunch(int index_in_container) {
+  DCHECK_GE(index_in_container, 0);
   base::UmaHistogramSparse("Apps.AppListSuggestedChipLaunched",
-                           index_in_suggestion_chip_container);
+                           index_in_container);
 
   base::RecordAction(base::UserMetricsAction("AppList_OpenSuggestedApp"));
 }
@@ -95,11 +95,6 @@ void SearchResultSuggestionChipView::OnResultChanged() {
   UpdateSuggestionChipView();
 }
 
-void SearchResultSuggestionChipView::SetIndexInSuggestionChipContainer(
-    size_t index) {
-  index_in_suggestion_chip_container_ = index;
-}
-
 void SearchResultSuggestionChipView::OnMetadataChanged() {
   UpdateSuggestionChipView();
 }
@@ -107,14 +102,13 @@ void SearchResultSuggestionChipView::OnMetadataChanged() {
 void SearchResultSuggestionChipView::ButtonPressed(views::Button* sender,
                                                    const ui::Event& event) {
   DCHECK(result());
-  LogAppLaunch(index_in_suggestion_chip_container_);
+  LogAppLaunch(index_in_container());
   RecordSearchResultOpenSource(result(), view_delegate_->GetModel(),
                                view_delegate_->GetSearchModel());
   view_delegate_->OpenSearchResult(
       result()->id(), event.flags(),
-      ash::mojom::AppListLaunchedFrom::kLaunchedFromSuggestionChip,
-      ash::mojom::AppListLaunchType::kAppSearchResult,
-      index_in_suggestion_chip_container_);
+      ash::AppListLaunchedFrom::kLaunchedFromSuggestionChip,
+      ash::AppListLaunchType::kAppSearchResult, index_in_container());
 }
 
 const char* SearchResultSuggestionChipView::GetClassName() const {
@@ -126,7 +120,7 @@ void SearchResultSuggestionChipView::ChildVisibilityChanged(
   // When icon visibility is modified we need to update layout padding.
   if (child == icon_view_) {
     const int padding_left_dip =
-        icon_view_->visible() ? kIconMarginDip : kPaddingDip;
+        icon_view_->GetVisible() ? kIconMarginDip : kPaddingDip;
     layout_manager_->set_inside_border_insets(
         gfx::Insets(0, padding_left_dip, 0, kPaddingDip));
   }
@@ -257,7 +251,7 @@ void SearchResultSuggestionChipView::InitLayout() {
       gfx::Insets(0, kPaddingDip, 0, kPaddingDip), kIconMarginDip));
 
   layout_manager_->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
 
   // Icon.
   const int icon_size =

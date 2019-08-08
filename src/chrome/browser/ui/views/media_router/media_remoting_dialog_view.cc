@@ -158,7 +158,7 @@ void MediaRemotingDialogView::WindowClosing() {
 void MediaRemotingDialogView::ReportPermission(bool allowed) {
   DCHECK(remember_choice_checkbox_);
   DCHECK(permission_callback_);
-  if (remember_choice_checkbox_->checked()) {
+  if (remember_choice_checkbox_->GetChecked()) {
     pref_service_->SetBoolean(::prefs::kMediaRouterMediaRemotingEnabled,
                               allowed);
   }

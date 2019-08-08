@@ -415,27 +415,37 @@ angle::Result InitShaderAndSerial(Context *context,
     return angle::Result::Continue;
 }
 
-// GarbageObject implementation.
-GarbageObject::GarbageObject()
-    : mSerial(), mHandleType(HandleType::Invalid), mHandle(VK_NULL_HANDLE)
-{}
-
-GarbageObject::GarbageObject(const GarbageObject &other) = default;
-
-GarbageObject &GarbageObject::operator=(const GarbageObject &other) = default;
-
-bool GarbageObject::destroyIfComplete(VkDevice device, Serial completedSerial)
+gl::TextureType Get2DTextureType(uint32_t layerCount, GLint samples)
 {
-    if (completedSerial >= mSerial)
+    if (layerCount > 1)
     {
-        destroy(device);
-        return true;
+        if (samples > 1)
+        {
+            return gl::TextureType::_2DMultisampleArray;
+        }
+        else
+        {
+            return gl::TextureType::_2DArray;
+        }
     }
-
-    return false;
+    else
+    {
+        if (samples > 1)
+        {
+            return gl::TextureType::_2DMultisample;
+        }
+        else
+        {
+            return gl::TextureType::_2D;
+        }
+    }
 }
 
-void GarbageObject::destroy(VkDevice device)
+GarbageObjectBase::GarbageObjectBase() : mHandleType(HandleType::Invalid), mHandle(VK_NULL_HANDLE)
+{}
+
+// GarbageObjectBase implementation
+void GarbageObjectBase::destroy(VkDevice device)
 {
     switch (mHandleType)
     {
@@ -503,6 +513,25 @@ void GarbageObject::destroy(VkDevice device)
             break;
     }
 }
+
+// GarbageObject implementation.
+GarbageObject::GarbageObject() : mSerial() {}
+
+GarbageObject::GarbageObject(const GarbageObject &other) = default;
+
+GarbageObject &GarbageObject::operator=(const GarbageObject &other) = default;
+
+bool GarbageObject::destroyIfComplete(VkDevice device, Serial completedSerial)
+{
+    if (completedSerial >= mSerial)
+    {
+        destroy(device);
+        return true;
+    }
+
+    return false;
+}
+
 }  // namespace vk
 
 // VK_EXT_debug_utils
@@ -518,6 +547,9 @@ PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT = nullptr;
 
 // VK_KHR_get_physical_device_properties2
 PFN_vkGetPhysicalDeviceProperties2KHR vkGetPhysicalDeviceProperties2KHR = nullptr;
+
+// VK_KHR_external_semaphore_fd
+PFN_vkImportSemaphoreFdKHR vkImportSemaphoreFdKHR = nullptr;
 
 #if defined(ANGLE_PLATFORM_FUCHSIA)
 // VK_FUCHSIA_imagepipe_surface
@@ -568,6 +600,11 @@ void InitExternalMemoryHardwareBufferANDROIDFunctions(VkInstance instance)
     GET_FUNC(vkGetMemoryAndroidHardwareBufferANDROID);
 }
 #endif
+
+void InitExternalSemaphoreFdFunctions(VkInstance instance)
+{
+    GET_FUNC(vkImportSemaphoreFdKHR);
+}
 
 #undef GET_FUNC
 
@@ -822,4 +859,42 @@ void GetViewport(const gl::Rectangle &viewport,
     }
 }
 }  // namespace gl_vk
+
+namespace vk_gl
+{
+void AddSampleCounts(VkSampleCountFlags sampleCounts, gl::SupportedSampleSet *setOut)
+{
+    // The possible bits are VK_SAMPLE_COUNT_n_BIT = n, with n = 1 << b.  At the time of this
+    // writing, b is in [0, 6], however, we test all 32 bits in case the enum is extended.
+    for (unsigned long bit : angle::BitSet32<32>(sampleCounts))
+    {
+        setOut->insert(1 << bit);
+    }
+}
+
+GLuint GetMaxSampleCount(VkSampleCountFlags sampleCounts)
+{
+    GLuint maxCount = 0;
+    for (unsigned long bit : angle::BitSet32<32>(sampleCounts))
+    {
+        maxCount = 1 << bit;
+    }
+    return maxCount;
+}
+
+GLuint GetSampleCount(VkSampleCountFlags supportedCounts, GLuint requestedCount)
+{
+    for (unsigned long bit : angle::BitSet32<32>(supportedCounts))
+    {
+        GLuint sampleCount = 1 << bit;
+        if (sampleCount >= requestedCount)
+        {
+            return sampleCount;
+        }
+    }
+
+    UNREACHABLE();
+    return 0;
+}
+}  // namespace vk_gl
 }  // namespace rx

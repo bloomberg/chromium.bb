@@ -264,9 +264,9 @@ void WebViewPermissionHelper::RequestGeolocationPermission(
     int bridge_id,
     const GURL& requesting_frame,
     bool user_gesture,
-    const base::Callback<void(bool)>& callback) {
+    base::OnceCallback<void(bool)> callback) {
   web_view_permission_helper_delegate_->RequestGeolocationPermission(
-      bridge_id, requesting_frame, user_gesture, callback);
+      bridge_id, requesting_frame, user_gesture, std::move(callback));
 }
 
 void WebViewPermissionHelper::CancelGeolocationPermissionRequest(

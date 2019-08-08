@@ -16,7 +16,6 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extensions_client.h"
 #include "extensions/renderer/console.h"
 #include "extensions/renderer/safe_builtins.h"
 #include "extensions/renderer/script_context.h"
@@ -37,6 +36,15 @@ const char kModuleSystem[] = "module_system";
 const char kModuleName[] = "module_name";
 const char kModuleField[] = "module_field";
 const char kModulesField[] = "modules";
+
+// Determines if certain fatal extensions errors should be suppressed
+// (i.e., only logged) or allowed (i.e., logged before crashing).
+bool ShouldSuppressFatalErrors() {
+  // Suppress fatal everywhere until the cause of bugs like http://crbug/471599
+  // are fixed. This would typically be:
+  // return GetCurrentChannel() > version_info::Channel::DEV;
+  return true;
+}
 
 // Logs an error for the calling context in preparation for potentially
 // crashing the renderer, with some added metadata about the context:
@@ -59,11 +67,9 @@ void Fatal(ScriptContext* context, const std::string& message) {
   full_message += ") ";
   full_message += message;
 
-  ExtensionsClient* client = ExtensionsClient::Get();
-  if (client->ShouldSuppressFatalErrors()) {
+  if (ShouldSuppressFatalErrors()) {
     console::AddMessage(context, blink::mojom::ConsoleMessageLevel::kError,
                         full_message);
-    client->RecordDidSuppressFatalError();
   } else {
     console::Fatal(context, full_message);
   }

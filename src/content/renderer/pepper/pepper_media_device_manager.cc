@@ -101,9 +101,8 @@ PepperMediaDeviceManager::~PepperMediaDeviceManager() {
   DCHECK(open_callbacks_.empty());
 }
 
-void PepperMediaDeviceManager::EnumerateDevices(
-    PP_DeviceType_Dev type,
-    const DevicesCallback& callback) {
+void PepperMediaDeviceManager::EnumerateDevices(PP_DeviceType_Dev type,
+                                                DevicesOnceCallback callback) {
   bool request_audio_input = type == PP_DEVICETYPE_DEV_AUDIOCAPTURE;
   bool request_video_input = type == PP_DEVICETYPE_DEV_VIDEOCAPTURE;
   bool request_audio_output = type == PP_DEVICETYPE_DEV_AUDIOOUTPUT;
@@ -113,7 +112,7 @@ void PepperMediaDeviceManager::EnumerateDevices(
       false /* request_video_input_capabilities */,
       false /* request_audio_input_capabilities */,
       base::BindOnce(&PepperMediaDeviceManager::DevicesEnumerated, AsWeakPtr(),
-                     callback, ToMediaDeviceType(type)));
+                     std::move(callback), ToMediaDeviceType(type)));
 }
 
 size_t PepperMediaDeviceManager::StartMonitoringDevices(
@@ -151,8 +150,8 @@ void PepperMediaDeviceManager::StopMonitoringDevices(PP_DeviceType_Dev type,
 int PepperMediaDeviceManager::OpenDevice(PP_DeviceType_Dev type,
                                          const std::string& device_id,
                                          PP_Instance pp_instance,
-                                         const OpenDeviceCallback& callback) {
-  open_callbacks_[next_id_] = callback;
+                                         OpenDeviceCallback callback) {
+  open_callbacks_[next_id_] = std::move(callback);
   int request_id = next_id_++;
 
   RendererPpapiHostImpl* host =
@@ -246,21 +245,22 @@ void PepperMediaDeviceManager::OnDeviceOpened(
   if (success)
     GetMediaStreamDeviceObserver()->AddStream(label, device);
 
-  OpenDeviceCallback callback = iter->second;
+  OpenDeviceCallback callback = std::move(iter->second);
   open_callbacks_.erase(iter);
 
   std::move(callback).Run(request_id, success, success ? label : std::string());
 }
 
 void PepperMediaDeviceManager::DevicesEnumerated(
-    const DevicesCallback& client_callback,
+    DevicesOnceCallback client_callback,
     blink::MediaDeviceType type,
     const std::vector<blink::WebMediaDeviceInfoArray>& enumeration,
     std::vector<blink::mojom::VideoInputDeviceCapabilitiesPtr>
         video_input_capabilities,
     std::vector<blink::mojom::AudioInputDeviceCapabilitiesPtr>
         audio_input_capabilities) {
-  client_callback.Run(FromMediaDeviceInfoArray(type, enumeration[type]));
+  std::move(client_callback)
+      .Run(FromMediaDeviceInfoArray(type, enumeration[type]));
 }
 
 const blink::mojom::MediaStreamDispatcherHostPtr&

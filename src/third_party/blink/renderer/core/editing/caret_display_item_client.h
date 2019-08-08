@@ -30,8 +30,8 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
-#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 
@@ -63,7 +63,7 @@ class CORE_EXPORT CaretDisplayItemClient final : public DisplayItemClient {
     return &block == layout_block_;
   }
   void PaintCaret(GraphicsContext&,
-                  const LayoutPoint& paint_offset,
+                  const PhysicalOffset& paint_offset,
                   DisplayItem::Type) const;
 
   // DisplayItemClient methods.
@@ -75,7 +75,7 @@ class CORE_EXPORT CaretDisplayItemClient final : public DisplayItemClient {
   friend class ParameterizedComputeCaretRectTest;
 
   struct CaretRectAndPainterBlock {
-    LayoutRect caret_rect;  // local to |painter_block|
+    PhysicalRect caret_rect;  // local to |painter_block|
     LayoutBlock* painter_block = nullptr;
   };
   // Creating VisiblePosition causes synchronous layout so we should use the
@@ -89,7 +89,7 @@ class CORE_EXPORT CaretDisplayItemClient final : public DisplayItemClient {
 
   // These are updated by updateStyleAndLayoutIfNeeded().
   Color color_;
-  LayoutRect local_rect_;
+  PhysicalRect local_rect_;
   LayoutBlock* layout_block_ = nullptr;
 
   // Visual rect of the caret in layout_block_. This is updated by

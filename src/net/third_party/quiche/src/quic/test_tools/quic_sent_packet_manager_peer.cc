@@ -79,12 +79,6 @@ RttStats* QuicSentPacketManagerPeer::GetRttStats(
 }
 
 // static
-bool QuicSentPacketManagerPeer::HasPendingPackets(
-    const QuicSentPacketManager* sent_packet_manager) {
-  return sent_packet_manager->unacked_packets_.HasInFlightPackets();
-}
-
-// static
 bool QuicSentPacketManagerPeer::IsRetransmission(
     QuicSentPacketManager* sent_packet_manager,
     uint64_t packet_number) {
@@ -142,12 +136,6 @@ QuicTime::Delta QuicSentPacketManagerPeer::GetTailLossProbeDelay(
 }
 
 // static
-bool QuicSentPacketManagerPeer::HasUnackedCryptoPackets(
-    const QuicSentPacketManager* sent_packet_manager) {
-  return sent_packet_manager->unacked_packets_.HasPendingCryptoPackets();
-}
-
-// static
 size_t QuicSentPacketManagerPeer::GetNumRetransmittablePackets(
     const QuicSentPacketManager* sent_packet_manager) {
   size_t num_unacked_packets = 0;
@@ -158,12 +146,6 @@ size_t QuicSentPacketManagerPeer::GetNumRetransmittablePackets(
     }
   }
   return num_unacked_packets;
-}
-
-// static
-QuicByteCount QuicSentPacketManagerPeer::GetBytesInFlight(
-    const QuicSentPacketManager* sent_packet_manager) {
-  return sent_packet_manager->unacked_packets_.bytes_in_flight();
 }
 
 // static
@@ -197,14 +179,6 @@ void QuicSentPacketManagerPeer::SetUsingPacing(
     QuicSentPacketManager* sent_packet_manager,
     bool using_pacing) {
   sent_packet_manager->using_pacing_ = using_pacing;
-}
-
-// static
-bool QuicSentPacketManagerPeer::IsUnacked(
-    QuicSentPacketManager* sent_packet_manager,
-    uint64_t packet_number) {
-  return sent_packet_manager->unacked_packets_.IsUnacked(
-      QuicPacketNumber(packet_number));
 }
 
 // static

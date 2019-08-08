@@ -20,23 +20,24 @@ namespace {
 void ConfigureVectorImageButton(ImageButton* button) {
   button->SetInkDropMode(Button::InkDropMode::ON);
   button->set_has_ink_drop_action_on_click(true);
-  button->SetImageAlignment(ImageButton::ALIGN_CENTER,
-                            ImageButton::ALIGN_MIDDLE);
+  button->SetImageHorizontalAlignment(ImageButton::ALIGN_CENTER);
+  button->SetImageVerticalAlignment(ImageButton::ALIGN_MIDDLE);
   button->SetBorder(CreateEmptyBorder(
       LayoutProvider::Get()->GetInsetsMetric(INSETS_VECTOR_IMAGE_BUTTON)));
 }
 
 }  // namespace
 
-ImageButton* CreateVectorImageButton(ButtonListener* listener) {
-  ImageButton* button = new ImageButton(listener);
-  ConfigureVectorImageButton(button);
+std::unique_ptr<ImageButton> CreateVectorImageButton(ButtonListener* listener) {
+  auto button = std::make_unique<ImageButton>(listener);
+  ConfigureVectorImageButton(button.get());
   return button;
 }
 
-ToggleImageButton* CreateVectorToggleImageButton(ButtonListener* listener) {
-  ToggleImageButton* button = new ToggleImageButton(listener);
-  ConfigureVectorImageButton(button);
+std::unique_ptr<ToggleImageButton> CreateVectorToggleImageButton(
+    ButtonListener* listener) {
+  auto button = std::make_unique<ToggleImageButton>(listener);
+  ConfigureVectorImageButton(button.get());
   return button;
 }
 

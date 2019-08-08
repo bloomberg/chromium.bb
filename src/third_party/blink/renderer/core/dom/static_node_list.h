@@ -78,7 +78,7 @@ NodeType* StaticNodeTypeList<NodeType>::item(unsigned index) const {
   if (index < nodes_.size()) {
     auto* node = nodes_[index].Get();
     if (node->GetDocument().InDOMNodeRemovedHandler() &&
-        NodeChildRemovalTracker::IsBeingRemoved(node))
+        NodeChildRemovalTracker::IsBeingRemoved(*node))
       node->GetDocument().CountDetachingNodeAccessInDOMNodeRemovedHandler();
     return node;
   }

@@ -15,8 +15,15 @@ namespace device {
 using testing::Invoke;
 using testing::_;
 
-MockBluetoothAdapter::Observer::Observer() = default;
-MockBluetoothAdapter::Observer::~Observer() = default;
+MockBluetoothAdapter::Observer::Observer(
+    scoped_refptr<BluetoothAdapter> adapter)
+    : adapter_(std::move(adapter)) {
+  adapter_->AddObserver(this);
+}
+
+MockBluetoothAdapter::Observer::~Observer() {
+  adapter_->RemoveObserver(this);
+}
 
 MockBluetoothAdapter::MockBluetoothAdapter() {
   ON_CALL(*this, AddObserver(_))
@@ -40,29 +47,34 @@ bool MockBluetoothAdapter::SetPoweredImpl(bool powered) {
   return false;
 }
 
-void MockBluetoothAdapter::AddDiscoverySession(
-    BluetoothDiscoveryFilter* discovery_filter,
-    const base::Closure& callback,
-    DiscoverySessionErrorCallback error_callback) {}
+void MockBluetoothAdapter::StartScanWithFilter(
+    std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
+    DiscoverySessionResultCallback callback) {
+  StartScanWithFilter_(discovery_filter.get(), callback);
+}
+
+void MockBluetoothAdapter::UpdateFilter(
+    std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
+    DiscoverySessionResultCallback callback) {
+  StartScanWithFilter_(discovery_filter.get(), callback);
+}
 
 void MockBluetoothAdapter::RemoveDiscoverySession(
     BluetoothDiscoveryFilter* discovery_filter,
     const base::Closure& callback,
-    DiscoverySessionErrorCallback error_callback) {}
+    DiscoverySessionErrorCallback error_callback) {
+  RemoveDiscoverySession_(discovery_filter, callback, error_callback);
+}
 
 void MockBluetoothAdapter::SetDiscoveryFilter(
     std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
     const base::Closure& callback,
     DiscoverySessionErrorCallback error_callback) {
-  SetDiscoveryFilterRaw(discovery_filter.get(), callback, error_callback);
-}
-
-void MockBluetoothAdapter::StartDiscoverySessionWithFilter(
-    std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
-    const DiscoverySessionCallback& callback,
-    const ErrorCallback& error_callback) {
-  StartDiscoverySessionWithFilterRaw(discovery_filter.get(), callback,
-                                     error_callback);
+  if (discovery_filter.get()) {
+    SetDiscoveryFilterRaw(discovery_filter.get(), callback, error_callback);
+    return;
+  }
+  SetDiscoveryFilterRaw(nullptr, callback, error_callback);
 }
 
 void MockBluetoothAdapter::AddMockDevice(

@@ -15,6 +15,7 @@ namespace message_center {
 namespace {
 constexpr int kSwipeRestoreDurationMs = 150;
 constexpr int kSwipeOutTotalDurationMs = 150;
+gfx::Tween::Type kSwipeTweenType = gfx::Tween::EASE_IN;
 }  // anonymous namespace
 
 SlideOutController::SlideOutController(ui::EventTarget* target,
@@ -132,9 +133,11 @@ void SlideOutController::RestoreVisualState() {
       gesture_amount_ = 0.f;
       break;
     case SwipeControlOpenState::OPEN_ON_RIGHT:
+      gesture_amount_ = -swipe_control_width_;
       transform.Translate(-swipe_control_width_, 0);
       break;
     case SwipeControlOpenState::OPEN_ON_LEFT:
+      gesture_amount_ = swipe_control_width_;
       transform.Translate(swipe_control_width_, 0);
       break;
   }
@@ -169,6 +172,7 @@ void SlideOutController::SetTransformWithAnimationIfNecessary(
   if (layer->transform() != transform) {
     ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
     settings.SetTransitionDuration(animation_duration);
+    settings.SetTweenType(kSwipeTweenType);
     settings.AddObserver(this);
 
     // An animation starts. OnImplicitAnimationsCompleted will be called just

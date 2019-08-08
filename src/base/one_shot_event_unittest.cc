@@ -52,8 +52,8 @@ TEST(OneShotEventTest, CallsQueueAsDistinctTask) {
   scoped_refptr<base::TestSimpleTaskRunner> runner(
       new base::TestSimpleTaskRunner);
   int i = 0;
-  event.Post(FROM_HERE, base::Bind(&Increment, &i), runner);
-  event.Post(FROM_HERE, base::Bind(&Increment, &i), runner);
+  event.Post(FROM_HERE, base::BindOnce(&Increment, &i), runner);
+  event.Post(FROM_HERE, base::BindOnce(&Increment, &i), runner);
   EXPECT_EQ(0U, runner->NumPendingTasks());
   event.Signal();
 
@@ -69,8 +69,8 @@ TEST(OneShotEventTest, CallsQueue) {
   scoped_refptr<base::TestSimpleTaskRunner> runner(
       new base::TestSimpleTaskRunner);
   int i = 0;
-  event.Post(FROM_HERE, base::Bind(&Increment, &i), runner);
-  event.Post(FROM_HERE, base::Bind(&Increment, &i), runner);
+  event.Post(FROM_HERE, base::BindOnce(&Increment, &i), runner);
+  event.Post(FROM_HERE, base::BindOnce(&Increment, &i), runner);
   EXPECT_EQ(0U, runner->NumPendingTasks());
   event.Signal();
   ASSERT_EQ(2U, runner->NumPendingTasks());
@@ -87,7 +87,7 @@ TEST(OneShotEventTest, CallsAfterSignalDontRunInline) {
   int i = 0;
 
   event.Signal();
-  event.Post(FROM_HERE, base::Bind(&Increment, &i), runner);
+  event.Post(FROM_HERE, base::BindOnce(&Increment, &i), runner);
   EXPECT_EQ(1U, runner->NumPendingTasks());
   EXPECT_EQ(0, i);
   runner->RunPendingTasks();
@@ -102,8 +102,8 @@ TEST(OneShotEventTest, PostDefaultsToCurrentMessageLoop) {
   int runner_i = 0;
   int loop_i = 0;
 
-  event.Post(FROM_HERE, base::Bind(&Increment, &runner_i), runner);
-  event.Post(FROM_HERE, base::Bind(&Increment, &loop_i));
+  event.Post(FROM_HERE, base::BindOnce(&Increment, &runner_i), runner);
+  event.Post(FROM_HERE, base::BindOnce(&Increment, &loop_i));
   event.Signal();
   EXPECT_EQ(1U, runner->NumPendingTasks());
   EXPECT_EQ(0, runner_i);
@@ -119,7 +119,7 @@ void CheckSignaledAndPostIncrement(
     const scoped_refptr<base::SingleThreadTaskRunner>& runner,
     int* i) {
   EXPECT_TRUE(event->is_signaled());
-  event->Post(FROM_HERE, base::Bind(&Increment, i), runner);
+  event->Post(FROM_HERE, base::BindOnce(&Increment, i), runner);
 }
 
 TEST(OneShotEventTest, IsSignaledAndPostsFromCallbackWork) {
@@ -129,7 +129,7 @@ TEST(OneShotEventTest, IsSignaledAndPostsFromCallbackWork) {
   int i = 0;
 
   event.Post(FROM_HERE,
-             base::Bind(&CheckSignaledAndPostIncrement, &event, runner, &i),
+             base::BindOnce(&CheckSignaledAndPostIncrement, &event, runner, &i),
              runner);
   EXPECT_EQ(0, i);
   event.Signal();

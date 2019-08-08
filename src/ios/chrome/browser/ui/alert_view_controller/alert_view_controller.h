@@ -7,21 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-// This class is a replacement for UIAlertAction.
-// Current limitations:
-//     Actions Styles are not supported.
-@interface AlertAction : NSObject
-
-// The title for this action.
-@property(nonatomic, readonly) NSString* title;
-
-// Initializes an action with |title| and |handler|.
-+ (instancetype)actionWithTitle:(NSString*)title
-                        handler:(void (^)(AlertAction* action))handler;
-
-- (instancetype)init NS_UNAVAILABLE;
-
-@end
+#import "ios/chrome/browser/ui/alert_view_controller/alert_consumer.h"
 
 // This class is a replacement for UIAlertController that supports custom
 // presentation styles, i.e. change modalPresentationStyle,
@@ -29,27 +15,10 @@
 // the rest of Chromium. Current limitations:
 //     Action Sheet Style is not supported.
 //     Text fields are not supported.
-@interface AlertViewController : UIViewController
+@interface AlertViewController : UIViewController <AlertConsumer>
 
-// The title of the alert, will appear at the top and in bold.
-@property(nonatomic, copy) NSString* title;
-
-// The message of the alert, will appear after the title.
-@property(nonatomic, copy) NSString* message;
-
-// The actions that had been added to this alert.
-@property(nonatomic, readonly) NSArray<AlertAction*>* actions;
-
-// The text fields that had been added to this alert.
-@property(nonatomic, readonly) NSArray<UITextField*>* textFields;
-
-// Adds an action to the alert.
-- (void)addAction:(AlertAction*)action;
-
-// Adds a text field and with an optional block to configure the properties of
-// the text field.
-- (void)addTextFieldWithConfigurationHandler:
-    (void (^)(UITextField* textField))configurationHandler;
+// The text in the text fields after presentation.
+@property(nonatomic, readonly) NSArray<NSString*>* textFieldResults;
 
 @end
 

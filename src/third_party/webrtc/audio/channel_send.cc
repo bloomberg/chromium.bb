@@ -89,7 +89,7 @@ class ChannelSend : public ChannelSendInterface,
   ChannelSend(Clock* clock,
               TaskQueueFactory* task_queue_factory,
               ProcessThread* module_process_thread,
-              MediaTransportInterface* media_transport,
+              const MediaTransportConfig& media_transport_config,
               OverheadObserver* overhead_observer,
               Transport* rtp_transport,
               RtcpRttStats* rtcp_rtt_stats,
@@ -185,8 +185,7 @@ class ChannelSend : public ChannelSendInterface,
                    uint8_t payloadType,
                    uint32_t timeStamp,
                    const uint8_t* payloadData,
-                   size_t payloadSize,
-                   const RTPFragmentationHeader* fragmentation) override;
+                   size_t payloadSize) override;
 
   void OnUplinkPacketLossRate(float packet_loss_rate);
   bool InputMute() const;
@@ -196,19 +195,19 @@ class ChannelSend : public ChannelSendInterface,
   int32_t SendRtpAudio(AudioFrameType frameType,
                        uint8_t payloadType,
                        uint32_t timeStamp,
-                       rtc::ArrayView<const uint8_t> payload,
-                       const RTPFragmentationHeader* fragmentation)
+                       rtc::ArrayView<const uint8_t> payload)
       RTC_RUN_ON(encoder_queue_);
 
   int32_t SendMediaTransportAudio(AudioFrameType frameType,
                                   uint8_t payloadType,
                                   uint32_t timeStamp,
-                                  rtc::ArrayView<const uint8_t> payload,
-                                  const RTPFragmentationHeader* fragmentation)
+                                  rtc::ArrayView<const uint8_t> payload)
       RTC_RUN_ON(encoder_queue_);
 
   // Return media transport or nullptr if using RTP.
-  MediaTransportInterface* media_transport() { return media_transport_; }
+  MediaTransportInterface* media_transport() {
+    return media_transport_config_.media_transport;
+  }
 
   // Called on the encoder task queue when a new input audio frame is ready
   // for encoding.
@@ -269,7 +268,7 @@ class ChannelSend : public ChannelSendInterface,
 
   bool encoder_queue_is_active_ RTC_GUARDED_BY(encoder_queue_) = false;
 
-  MediaTransportInterface* const media_transport_;
+  MediaTransportConfig media_transport_config_;
   int media_transport_sequence_number_ RTC_GUARDED_BY(encoder_queue_) = 0;
 
   rtc::CriticalSection media_transport_lock_;
@@ -314,14 +313,11 @@ class TransportFeedbackProxy : public TransportFeedbackObserver {
   }
 
   // Implements TransportFeedbackObserver.
-  void AddPacket(uint32_t ssrc,
-                 uint16_t sequence_number,
-                 size_t length,
-                 const PacedPacketInfo& pacing_info) override {
+  void OnAddPacket(const RtpPacketSendInfo& packet_info) override {
     RTC_DCHECK(pacer_thread_.IsCurrent());
     rtc::CritScope lock(&crit_);
     if (feedback_observer_)
-      feedback_observer_->AddPacket(ssrc, sequence_number, length, pacing_info);
+      feedback_observer_->OnAddPacket(packet_info);
   }
 
   void OnTransportFeedback(const rtcp::TransportFeedback& feedback) override {
@@ -480,8 +476,7 @@ int32_t ChannelSend::SendData(AudioFrameType frameType,
                               uint8_t payloadType,
                               uint32_t timeStamp,
                               const uint8_t* payloadData,
-                              size_t payloadSize,
-                              const RTPFragmentationHeader* fragmentation) {
+                              size_t payloadSize) {
   RTC_DCHECK_RUN_ON(&encoder_queue_);
   rtc::ArrayView<const uint8_t> payload(payloadData, payloadSize);
 
@@ -492,19 +487,16 @@ int32_t ChannelSend::SendData(AudioFrameType frameType,
       return 0;
     }
 
-    return SendMediaTransportAudio(frameType, payloadType, timeStamp, payload,
-                                   fragmentation);
+    return SendMediaTransportAudio(frameType, payloadType, timeStamp, payload);
   } else {
-    return SendRtpAudio(frameType, payloadType, timeStamp, payload,
-                        fragmentation);
+    return SendRtpAudio(frameType, payloadType, timeStamp, payload);
   }
 }
 
 int32_t ChannelSend::SendRtpAudio(AudioFrameType frameType,
                                   uint8_t payloadType,
                                   uint32_t timeStamp,
-                                  rtc::ArrayView<const uint8_t> payload,
-                                  const RTPFragmentationHeader* fragmentation) {
+                                  rtc::ArrayView<const uint8_t> payload) {
   if (_includeAudioLevelIndication) {
     // Store current audio level in the RTP sender.
     // The level will be used in combination with voice-activity state
@@ -515,7 +507,11 @@ int32_t ChannelSend::SendRtpAudio(AudioFrameType frameType,
   // E2EE Custom Audio Frame Encryption (This is optional).
   // Keep this buffer around for the lifetime of the send call.
   rtc::Buffer encrypted_audio_payload;
-  if (frame_encryptor_ != nullptr) {
+  // We don't invoke encryptor if payload is empty, which means we are to send
+  // DTMF, or the encoder entered DTX.
+  // TODO(minyue): see whether DTMF packets should be encrypted or not. In
+  // current implementation, they are not.
+  if (frame_encryptor_ != nullptr && !payload.empty()) {
     // TODO(benwright@webrtc.org) - Allocate enough to always encrypt inline.
     // Allocate a buffer to hold the maximum possible encrypted payload.
     size_t max_ciphertext_size = frame_encryptor_->GetMaxCiphertextByteSize(
@@ -575,8 +571,7 @@ int32_t ChannelSend::SendMediaTransportAudio(
     AudioFrameType frameType,
     uint8_t payloadType,
     uint32_t timeStamp,
-    rtc::ArrayView<const uint8_t> payload,
-    const RTPFragmentationHeader* fragmentation) {
+    rtc::ArrayView<const uint8_t> payload) {
   // TODO(nisse): Use null _transportPtr for MediaTransport.
   // RTC_DCHECK(_transportPtr == nullptr);
   uint64_t channel_id;
@@ -629,7 +624,7 @@ int32_t ChannelSend::SendMediaTransportAudio(
 ChannelSend::ChannelSend(Clock* clock,
                          TaskQueueFactory* task_queue_factory,
                          ProcessThread* module_process_thread,
-                         MediaTransportInterface* media_transport,
+                         const MediaTransportConfig& media_transport_config,
                          OverheadObserver* overhead_observer,
                          Transport* rtp_transport,
                          RtcpRttStats* rtcp_rtt_stats,
@@ -653,7 +648,7 @@ ChannelSend::ChannelSend(Clock* clock,
           new RateLimiter(clock, kMaxRetransmissionWindowMs)),
       use_twcc_plr_for_ana_(
           webrtc::field_trial::FindFullName("UseTwccPlrForAna") == "Enabled"),
-      media_transport_(media_transport),
+      media_transport_config_(media_transport_config),
       frame_encryptor_(frame_encryptor),
       crypto_options_(crypto_options),
       encoder_queue_(task_queue_factory->CreateTaskQueue(
@@ -670,7 +665,7 @@ ChannelSend::ChannelSend(Clock* clock,
   // transport. All of this logic should be moved to the future
   // RTPMediaTransport. In this case it means that overhead and bandwidth
   // observers should not be called when using media transport.
-  if (!media_transport_) {
+  if (!media_transport_config.media_transport) {
     configuration.overhead_observer = overhead_observer;
     configuration.bandwidth_callback = rtcp_observer_.get();
     configuration.transport_feedback_callback = feedback_observer_proxy_.get();
@@ -700,10 +695,11 @@ ChannelSend::ChannelSend(Clock* clock,
 
   // We want to invoke the 'TargetRateObserver' and |OnOverheadChanged|
   // callbacks after the audio_coding_ is fully initialized.
-  if (media_transport_) {
+  if (media_transport_config.media_transport) {
     RTC_DLOG(LS_INFO) << "Setting media_transport_ rate observers.";
-    media_transport_->AddTargetTransferRateObserver(this);
-    media_transport_->SetAudioOverheadObserver(overhead_observer);
+    media_transport_config.media_transport->AddTargetTransferRateObserver(this);
+    media_transport_config.media_transport->SetAudioOverheadObserver(
+        overhead_observer);
   } else {
     RTC_DLOG(LS_INFO) << "Not setting media_transport_ rate observers.";
   }
@@ -725,9 +721,10 @@ ChannelSend::ChannelSend(Clock* clock,
 ChannelSend::~ChannelSend() {
   RTC_DCHECK(construction_thread_.IsCurrent());
 
-  if (media_transport_) {
-    media_transport_->RemoveTargetTransferRateObserver(this);
-    media_transport_->SetAudioOverheadObserver(nullptr);
+  if (media_transport_config_.media_transport) {
+    media_transport_config_.media_transport->RemoveTargetTransferRateObserver(
+        this);
+    media_transport_config_.media_transport->SetAudioOverheadObserver(nullptr);
   }
 
   StopSend();
@@ -790,7 +787,7 @@ void ChannelSend::SetEncoder(int payload_type,
                                           encoder->RtpTimestampRateHz(),
                                           encoder->NumChannels(), 0);
 
-  if (media_transport_) {
+  if (media_transport_config_.media_transport) {
     rtc::CritScope cs(&media_transport_lock_);
     media_transport_payload_type_ = payload_type;
     // TODO(nisse): Currently broken for G722, since timestamps passed through
@@ -867,7 +864,7 @@ void ChannelSend::OnUplinkPacketLossRate(float packet_loss_rate) {
 
 void ChannelSend::ReceivedRTCPPacket(const uint8_t* data, size_t length) {
   // May be called on either worker thread or network thread.
-  if (media_transport_) {
+  if (media_transport_config_.media_transport) {
     // Ignore RTCP packets while media transport is used.
     // Those packets should not arrive, but we are seeing occasional packets.
     return;
@@ -942,7 +939,7 @@ void ChannelSend::SetLocalSSRC(uint32_t ssrc) {
   RTC_DCHECK_RUN_ON(&worker_thread_checker_);
   RTC_DCHECK(!sending_);
 
-  if (media_transport_) {
+  if (media_transport_config_.media_transport) {
     rtc::CritScope cs(&media_transport_lock_);
     media_transport_channel_id_ = ssrc;
   }
@@ -1086,6 +1083,7 @@ CallSendStatistics ChannelSend::GetRTCPStatistics() const {
   stats.packetsSent =
       rtp_stats.transmitted.packets + rtx_stats.transmitted.packets;
   stats.retransmitted_packets_sent = rtp_stats.retransmitted.packets;
+  stats.report_block_datas = _rtpRtcpModule->GetLatestReportBlockData();
 
   return stats;
 }
@@ -1176,12 +1174,13 @@ int ChannelSend::SetSendRtpHeaderExtension(bool enable,
 }
 
 int64_t ChannelSend::GetRTT() const {
-  if (media_transport_) {
+  if (media_transport_config_.media_transport) {
     // GetRTT is generally used in the RTCP codepath, where media transport is
     // not present and so it shouldn't be needed. But it's also invoked in
     // 'GetStats' method, and for now returning media transport RTT here gives
     // us "free" rtt stats for media transport.
-    auto target_rate = media_transport_->GetLatestTargetTransferRate();
+    auto target_rate =
+        media_transport_config_.media_transport->GetLatestTargetTransferRate();
     if (target_rate.has_value()) {
       return target_rate.value().network_estimate.round_trip_time.ms();
     }
@@ -1225,7 +1224,7 @@ void ChannelSend::SetFrameEncryptor(
 // AudioSendStream. Since AudioSendStream owns encoder and configures ANA, it
 // makes sense to consolidate all rate (and overhead) calculation there.
 void ChannelSend::OnTargetTransferRate(TargetTransferRate rate) {
-  RTC_DCHECK(media_transport_);
+  RTC_DCHECK(media_transport_config_.media_transport);
   OnReceivedRtt(rate.network_estimate.round_trip_time.ms());
 }
 
@@ -1241,7 +1240,7 @@ std::unique_ptr<ChannelSendInterface> CreateChannelSend(
     Clock* clock,
     TaskQueueFactory* task_queue_factory,
     ProcessThread* module_process_thread,
-    MediaTransportInterface* media_transport,
+    const MediaTransportConfig& media_transport_config,
     OverheadObserver* overhead_observer,
     Transport* rtp_transport,
     RtcpRttStats* rtcp_rtt_stats,
@@ -1251,7 +1250,7 @@ std::unique_ptr<ChannelSendInterface> CreateChannelSend(
     bool extmap_allow_mixed,
     int rtcp_report_interval_ms) {
   return absl::make_unique<ChannelSend>(
-      clock, task_queue_factory, module_process_thread, media_transport,
+      clock, task_queue_factory, module_process_thread, media_transport_config,
       overhead_observer, rtp_transport, rtcp_rtt_stats, rtc_event_log,
       frame_encryptor, crypto_options, extmap_allow_mixed,
       rtcp_report_interval_ms);

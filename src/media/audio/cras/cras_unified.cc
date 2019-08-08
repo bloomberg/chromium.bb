@@ -131,6 +131,10 @@ void CrasUnifiedStream::Close() {
   manager_->ReleaseOutputStream(this);
 }
 
+// This stream is always used with sub second buffer sizes, where it's
+// sufficient to simply always flush upon Start().
+void CrasUnifiedStream::Flush() {}
+
 void CrasUnifiedStream::Start(AudioSourceCallback* callback) {
   CHECK(callback);
 

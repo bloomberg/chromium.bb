@@ -140,19 +140,19 @@ void ZipFileInstaller::ManifestRead(
 
   data_decoder::SafeJsonParser::Parse(
       connector_, *manifest_content,
-      base::Bind(&ZipFileInstaller::ManifestParsed, this, unzip_dir),
-      base::Bind(&ZipFileInstaller::ManifestParsingFailed, this));
+      base::BindOnce(&ZipFileInstaller::ManifestParsed, this, unzip_dir),
+      base::BindOnce(&ZipFileInstaller::ManifestParsingFailed, this));
 }
 
 void ZipFileInstaller::ManifestParsingFailed(const std::string& error) {
   ReportFailure(std::string(kExtensionHandlerFileUnzipError));
 }
 
-void ZipFileInstaller::ManifestParsed(
-    const base::FilePath& unzip_dir,
-    std::unique_ptr<base::Value> manifest_value) {
+void ZipFileInstaller::ManifestParsed(const base::FilePath& unzip_dir,
+                                      base::Value manifest_value) {
   std::unique_ptr<base::DictionaryValue> manifest_dictionary =
-      base::DictionaryValue::From(std::move(manifest_value));
+      base::DictionaryValue::From(
+          base::Value::ToUniquePtrValue(std::move(manifest_value)));
   if (!manifest_dictionary) {
     ReportFailure(std::string(kExtensionHandlerFileUnzipError));
     return;

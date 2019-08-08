@@ -7,10 +7,10 @@
 #include "ash/home_screen/home_launcher_gesture_handler.h"
 #include "ash/home_screen/home_screen_delegate.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
-#include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_session.h"
@@ -31,8 +31,10 @@ bool MinimizeAllWindows() {
   bool handled = false;
   aura::Window* container = Shell::Get()->GetPrimaryRootWindow()->GetChildById(
       kShellWindowId_HomeScreenContainer);
+  // The home screen opens for the current active desk, there's no need to
+  // minimize windows in the inactive desks.
   aura::Window::Windows windows =
-      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kActiveDesk);
   for (auto it = windows.rbegin(); it != windows.rend(); it++) {
     if (!container->Contains(*it) && !wm::GetWindowState(*it)->IsMinimized()) {
       wm::GetWindowState(*it)->Minimize();
@@ -84,14 +86,14 @@ bool HomeScreenController::GoHome(int64_t display_id) {
     return true;
   }
 
-  if (Shell::Get()->overview_controller()->IsSelecting()) {
+  if (Shell::Get()->overview_controller()->InOverviewSession()) {
     // End overview mode.
     Shell::Get()->overview_controller()->ToggleOverview(
         OverviewSession::EnterExitOverviewType::kWindowsMinimized);
     return true;
   }
 
-  if (Shell::Get()->split_view_controller()->IsSplitViewModeActive()) {
+  if (Shell::Get()->split_view_controller()->InSplitViewMode()) {
     // End split view mode.
     Shell::Get()->split_view_controller()->EndSplitView(
         SplitViewController::EndReason::kHomeLauncherPressed);
@@ -167,7 +169,8 @@ void HomeScreenController::UpdateVisibility() {
   if (!window)
     return;
 
-  const bool in_overview = Shell::Get()->overview_controller()->IsSelecting();
+  const bool in_overview =
+      Shell::Get()->overview_controller()->InOverviewSession();
   if (in_overview || in_wallpaper_preview_ || in_window_dragging_)
     window->Hide();
   else

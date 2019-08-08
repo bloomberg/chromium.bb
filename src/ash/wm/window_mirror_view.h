@@ -24,10 +24,6 @@ namespace ui {
 class LayerTreeOwner;
 }
 
-namespace ws {
-class ScopedForceVisible;
-}
-
 namespace ash {
 namespace wm {
 
@@ -88,7 +84,6 @@ class ASH_EXPORT WindowMirrorView : public views::View,
 
   std::unique_ptr<aura::WindowOcclusionTracker::ScopedForceVisible>
       force_occlusion_tracker_visible_;
-  std::unique_ptr<ws::ScopedForceVisible> force_proxy_window_visible_;
 
   ScopedObserver<aura::Env, aura::EnvObserver> env_observer_{this};
 

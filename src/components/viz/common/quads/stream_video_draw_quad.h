@@ -11,6 +11,7 @@
 
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/viz_common_export.h"
+#include "gpu/ipc/common/vulkan_ycbcr_info.h"
 #include "ui/gfx/geometry/point_f.h"
 
 namespace viz {
@@ -20,15 +21,19 @@ class VIZ_COMMON_EXPORT StreamVideoDrawQuad : public DrawQuad {
   static const size_t kResourceIdIndex = 0;
 
   StreamVideoDrawQuad();
+  ~StreamVideoDrawQuad() override;
+  StreamVideoDrawQuad(const StreamVideoDrawQuad& quad);
 
-  void SetNew(const SharedQuadState* shared_quad_state,
-              const gfx::Rect& rect,
-              const gfx::Rect& visible_rect,
-              bool needs_blending,
-              unsigned resource_id,
-              gfx::Size resource_size_in_pixels,
-              const gfx::PointF& uv_top_left,
-              const gfx::PointF& uv_bottom_right);
+  void SetNew(
+      const SharedQuadState* shared_quad_state,
+      const gfx::Rect& rect,
+      const gfx::Rect& visible_rect,
+      bool needs_blending,
+      unsigned resource_id,
+      gfx::Size resource_size_in_pixels,
+      const gfx::PointF& uv_top_left,
+      const gfx::PointF& uv_bottom_right,
+      const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info = base::nullopt);
 
   void SetAll(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
@@ -47,6 +52,9 @@ class VIZ_COMMON_EXPORT StreamVideoDrawQuad : public DrawQuad {
     gfx::Size size_in_pixels[Resources::kMaxResourceIdCount];
   };
   OverlayResources overlay_resources;
+
+  // Sampler conversion information which is used in vulkan context for android.
+  base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info;
 
   static const StreamVideoDrawQuad* MaterialCast(const DrawQuad*);
 

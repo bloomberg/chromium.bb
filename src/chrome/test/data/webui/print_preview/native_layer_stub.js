@@ -198,7 +198,11 @@ cr.define('print_preview', function() {
     /** @override */
     signIn(addAccount) {
       this.methodCalled('signIn', addAccount);
-      return Promise.resolve();
+      const accounts = ['foo@chromium.org'];
+      if (addAccount) {
+        accounts.push('bar@chromium.org');
+      }
+      cr.webUIListenerCallback('user-accounts-updated', accounts);
     }
 
     /**

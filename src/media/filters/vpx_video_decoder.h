@@ -37,12 +37,11 @@ class MEDIA_EXPORT VpxVideoDecoder : public OffloadableVideoDecoder {
   void Initialize(const VideoDecoderConfig& config,
                   bool low_delay,
                   CdmContext* cdm_context,
-                  const InitCB& init_cb,
+                  InitCB init_cb,
                   const OutputCB& output_cb,
                   const WaitingCB& waiting_cb) override;
-  void Decode(scoped_refptr<DecoderBuffer> buffer,
-              const DecodeCB& decode_cb) override;
-  void Reset(const base::Closure& reset_cb) override;
+  void Decode(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb) override;
+  void Reset(base::OnceClosure reset_cb) override;
 
   // OffloadableVideoDecoder implementation.
   void Detach() override;

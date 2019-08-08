@@ -96,8 +96,8 @@ SearchResultImageButton::SearchResultImageButton(
   SetInkDropMode(InkDropMode::ON);
 
   SetPreferredSize({kImageButtonSizeDip, kImageButtonSizeDip});
-  SetImageAlignment(HorizontalAlignment::ALIGN_CENTER,
-                    VerticalAlignment::ALIGN_MIDDLE);
+  SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
+  SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
 
   SetButtonImage(action.image,
                  AppListConfig::instance().search_list_icon_dimension());
@@ -112,7 +112,7 @@ SearchResultImageButton::SearchResultImageButton(
 void SearchResultImageButton::OnFocus() {
   parent_->ActionButtonStateChanged();
   SchedulePaint();
-  if (visible())
+  if (GetVisible())
     NotifyAccessibilityEvent(ax::mojom::Event::kFocus, true);
 }
 
@@ -185,12 +185,8 @@ void SearchResultImageButton::UpdateOnStateChanged() {
 
   // Show button if the associated result row is hovered or selected, or one
   // of the action buttons is selected.
-  if (parent_->IsSearchResultHoveredOrSelected() ||
-      parent()->Contains(GetFocusManager()->GetFocusedView())) {
-    SetVisible(true);
-  } else {
-    SetVisible(false);
-  }
+  SetVisible(parent_->IsSearchResultHoveredOrSelected() ||
+             parent()->Contains(GetFocusManager()->GetFocusedView()));
 }
 
 void SearchResultImageButton::OnPaintBackground(gfx::Canvas* canvas) {
@@ -222,7 +218,7 @@ const char* SearchResultImageButton::GetClassName() const {
 
 SearchResultActionsView::SearchResultActionsView(
     SearchResultActionsViewDelegate* delegate)
-    : delegate_(delegate), selected_action_(-1) {
+    : delegate_(delegate) {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, gfx::Insets(),
       kActionButtonBetweenSpacing));
@@ -233,33 +229,13 @@ SearchResultActionsView::~SearchResultActionsView() {}
 void SearchResultActionsView::SetActions(const SearchResult::Actions& actions) {
   buttons_.clear();
   RemoveAllChildViews(true);
-
-  for (size_t i = 0; i < actions.size(); ++i) {
-    const SearchResult::Action& action = actions.at(i);
+  for (const auto& action : actions)
     CreateImageButton(action);
-  }
-
   PreferredSizeChanged();
-  SetSelectedAction(-1);
 }
 
-void SearchResultActionsView::SetSelectedAction(int action_index) {
-  action_index = base::ClampToRange(action_index, -1, int{children().size()});
-
-  if (selected_action_ == action_index)
-    return;
-
-  selected_action_ = action_index;
-  SchedulePaint();
-
-  if (IsValidActionIndex(selected_action_)) {
-    child_at(selected_action_)
-        ->NotifyAccessibilityEvent(ax::mojom::Event::kHover, true);
-  }
-}
-
-bool SearchResultActionsView::IsValidActionIndex(int action_index) const {
-  return action_index >= 0 && size_t{action_index} < children().size();
+bool SearchResultActionsView::IsValidActionIndex(size_t action_index) const {
+  return action_index < children().size();
 }
 
 bool SearchResultActionsView::IsSearchResultHoveredOrSelected() const {
@@ -275,20 +251,15 @@ void SearchResultActionsView::ActionButtonStateChanged() {
   UpdateButtonsOnStateChanged();
 }
 
+const char* SearchResultActionsView::GetClassName() const {
+  return "SearchResultActionsView";
+}
+
 void SearchResultActionsView::CreateImageButton(
     const SearchResult::Action& action) {
   SearchResultImageButton* button = new SearchResultImageButton(this, action);
   AddChildView(button);
   buttons_.emplace_back(button);
-}
-
-void SearchResultActionsView::OnPaint(gfx::Canvas* canvas) {
-  if (!IsValidActionIndex(selected_action_))
-    return;
-
-  const gfx::Rect active_action_bounds(child_at(selected_action_)->bounds());
-  const SkColor kActiveActionBackground = SkColorSetRGB(0xA0, 0xA0, 0xA0);
-  canvas->FillRect(active_action_bounds, kActiveActionBackground);
 }
 
 void SearchResultActionsView::ChildVisibilityChanged(views::View* child) {

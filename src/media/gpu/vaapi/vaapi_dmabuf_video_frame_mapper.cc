@@ -75,14 +75,25 @@ scoped_refptr<VideoFrame> CreateMappedVideoFrame(
   return video_frame;
 }
 
+bool IsFormatSupported(VideoPixelFormat format) {
+  return format == PIXEL_FORMAT_NV12;
+}
+
 }  // namespace
 
 // static
-std::unique_ptr<VideoFrameMapper> VaapiDmaBufVideoFrameMapper::Create() {
-  auto video_frame_mapper = base::WrapUnique(new VaapiDmaBufVideoFrameMapper);
-  if (video_frame_mapper->vaapi_wrapper_ == nullptr) {
+std::unique_ptr<VideoFrameMapper> VaapiDmaBufVideoFrameMapper::Create(
+    VideoPixelFormat format) {
+  if (!IsFormatSupported(format)) {
+    VLOGF(1) << " Unsupported format: " << format;
     return nullptr;
   }
+
+  auto video_frame_mapper =
+      base::WrapUnique(new VaapiDmaBufVideoFrameMapper(format));
+  if (!video_frame_mapper->vaapi_wrapper_)
+    return nullptr;
+
   return video_frame_mapper;
 }
 
@@ -90,8 +101,10 @@ std::unique_ptr<VideoFrameMapper> VaapiDmaBufVideoFrameMapper::Create() {
 // not required for VaapiWrapper to perform pixel format conversion.
 // TODO(crbug.com/898423): Create a VaapiWrapper only for pixel format
 // conversion. Either mode or profile isn't required to create the VaapiWrapper.
-VaapiDmaBufVideoFrameMapper::VaapiDmaBufVideoFrameMapper()
-    : vaapi_wrapper_(VaapiWrapper::CreateForVideoCodec(VaapiWrapper::kDecode,
+VaapiDmaBufVideoFrameMapper::VaapiDmaBufVideoFrameMapper(
+    VideoPixelFormat format)
+    : VideoFrameMapper(format),
+      vaapi_wrapper_(VaapiWrapper::CreateForVideoCodec(VaapiWrapper::kDecode,
                                                        H264PROFILE_MAIN,
                                                        base::DoNothing())),
       vaapi_picture_factory_(new VaapiPictureFactory()) {}
@@ -105,8 +118,8 @@ scoped_refptr<VideoFrame> VaapiDmaBufVideoFrameMapper::Map(
   if (!video_frame->HasDmaBufs()) {
     return nullptr;
   }
-  if (video_frame->format() != PIXEL_FORMAT_NV12) {
-    NOTIMPLEMENTED() << " Unsupported PixelFormat: " << video_frame->format();
+  if (video_frame->format() != format_) {
+    VLOGF(1) << "Unexpected format: " << video_frame->format();
     return nullptr;
   }
 

@@ -64,13 +64,35 @@ source_set("lib") {
     "ftrace_descriptors.h",
     "ftrace_utils.cc",
     "ftrace_utils.h",
+    "fuchsia_provider_view.cc",
+    "fuchsia_provider_view.h",
+    "fuchsia_trace_parser.cc",
+    "fuchsia_trace_parser.h",
+    "fuchsia_trace_tokenizer.cc",
+    "fuchsia_trace_tokenizer.h",
+    "fuchsia_trace_utils.cc",
+    "fuchsia_trace_utils.h",
+    "heap_profile_allocation_table.cc",
+    "heap_profile_allocation_table.h",
+    "heap_profile_callsite_table.cc",
+    "heap_profile_callsite_table.h",
+    "heap_profile_frame_table.cc",
+    "heap_profile_frame_table.h",
+    "heap_profile_mapping_table.cc",
+    "heap_profile_mapping_table.h",
+    "heap_profile_tracker.cc",
+    "heap_profile_tracker.h",
     "instants_table.cc",
     "instants_table.h",
+    "metadata.h",
+    "metadata_table.cc",
+    "metadata_table.h",
     "null_term_string_view.h",
     "process_table.cc",
     "process_table.h",
     "process_tracker.cc",
     "process_tracker.h",
+    "proto_incremental_state.h",
     "proto_trace_parser.cc",
     "proto_trace_parser.h",
     "proto_trace_tokenizer.cc",
@@ -129,6 +151,7 @@ source_set("lib") {
     "trace_sorter.h",
     "trace_storage.cc",
     "trace_storage.h",
+    "variadic.h",
     "virtual_destructors.cc",
     "window_operator_table.cc",
     "window_operator_table.h",
@@ -139,21 +162,30 @@ source_set("lib") {
     "../../gn:default_deps",
     "../../include/perfetto/traced:sys_stats_counters",
     "../../protos/perfetto/common:zero",
+    "../../protos/perfetto/config:zero",
+    "../../protos/perfetto/metrics:zero",
+    "../../protos/perfetto/metrics/android:zero",
     "../../protos/perfetto/trace:zero",
     "../../protos/perfetto/trace/android:zero",
+    "../../protos/perfetto/trace/chrome:zero",
     "../../protos/perfetto/trace/ftrace:zero",
+    "../../protos/perfetto/trace/interned_data:zero",
     "../../protos/perfetto/trace/power:zero",
     "../../protos/perfetto/trace/profiling:zero",
     "../../protos/perfetto/trace/ps:zero",
     "../../protos/perfetto/trace/sys_stats:zero",
+    "../../protos/perfetto/trace/track_event:zero",
     "../base",
     "../protozero",
+    "metrics:lib",
   ]
   public_deps = [
     "../../include/perfetto/trace_processor",
   ]
   if (perfetto_build_standalone) {
     sources += [
+      "export_json.cc",
+      "export_json.h",
       "json_trace_parser.cc",
       "json_trace_parser.h",
       "json_trace_tokenizer.cc",
@@ -167,17 +199,27 @@ source_set("lib") {
 
 if (current_toolchain == host_toolchain) {
   executable("trace_processor_shell_host") {
+    testonly = true  # We need this for proto full.
     deps = [
       ":lib",
       "../../gn:default_deps",
+      "../../gn:protobuf_full_deps",
       "../base",
+      "metrics:lib",
     ]
     if (perfetto_build_standalone) {
       deps += [
         "../../buildtools:linenoise",
         "../../gn/standalone:gen_git_revision",
       ]
+
+      # Build the descriptors as the diff testing framework depends on this.
+      deps += [
+        "../../protos/perfetto/metrics:descriptor",
+        "../../protos/perfetto/trace:descriptor",
+      ]
     }
+
     sources = [
       "trace_processor_shell.cc",
     ]
@@ -185,6 +227,7 @@ if (current_toolchain == host_toolchain) {
 }
 
 copy("trace_processor_shell") {
+  testonly = true  # We need this for proto full.
   host_out_dir_ = get_label_info(":trace_processor_shell_host($host_toolchain)",
                                  "root_out_dir")
   deps = [
@@ -201,10 +244,13 @@ copy("trace_processor_shell") {
 source_set("unittests") {
   testonly = true
   sources = [
+    "args_table_unittest.cc",
     "clock_tracker_unittest.cc",
     "event_tracker_unittest.cc",
     "filtered_row_index_unittest.cc",
     "ftrace_utils_unittest.cc",
+    "heap_profile_tracker_unittest.cc",
+    "metadata_table_unittest.cc",
     "null_term_string_view_unittest.cc",
     "process_table_unittest.cc",
     "process_tracker_unittest.cc",
@@ -227,14 +273,18 @@ source_set("unittests") {
     "../../gn:gtest_deps",
     "../../protos/perfetto/common:zero",
     "../../protos/perfetto/trace:zero",
+    "../../protos/perfetto/trace/chrome:zero",
     "../../protos/perfetto/trace/ftrace:zero",
+    "../../protos/perfetto/trace/interned_data:zero",
     "../../protos/perfetto/trace/ps:zero",
     "../../protos/perfetto/trace/sys_stats:zero",
+    "../../protos/perfetto/trace/track_event:zero",
     "../base",
     "../protozero",
   ]
   if (perfetto_build_standalone) {
     sources += [
+      "export_json_unittest.cc",
       "json_trace_tokenizer_unittest.cc",
       "json_trace_utils_unittest.cc",
     ]

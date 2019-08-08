@@ -51,22 +51,15 @@ void ContentCaptureSender::DidCaptureContent(
     const std::vector<scoped_refptr<blink::WebContentHolder>>& data,
     bool first_data) {
   ContentCaptureData frame_data;
-  FillContentCaptureData(&frame_data, first_data /* set_url */);
-
-  frame_data.children.reserve(data.size());
-  base::TimeTicks start = base::TimeTicks::Now();
-  for (auto holder : data) {
-    ContentCaptureData child;
-    child.id = holder->GetId();
-    child.value = holder->GetValue().Utf16();
-    child.bounds = holder->GetBoundingBox();
-    frame_data.children.push_back(child);
-  }
-  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-      "ContentCapture.GetBoundingBox", base::TimeTicks::Now() - start,
-      base::TimeDelta::FromMicroseconds(1),
-      base::TimeDelta::FromMilliseconds(10), 50);
+  FillContentCaptureData(data, &frame_data, first_data /* set_url */);
   GetContentCaptureReceiver()->DidCaptureContent(frame_data, first_data);
+}
+
+void ContentCaptureSender::DidUpdateContent(
+    const std::vector<scoped_refptr<blink::WebContentHolder>>& data) {
+  ContentCaptureData frame_data;
+  FillContentCaptureData(data, &frame_data, false /* set_url */);
+  GetContentCaptureReceiver()->DidUpdateContent(frame_data);
 }
 
 void ContentCaptureSender::DidRemoveContent(const std::vector<int64_t>& data) {
@@ -85,13 +78,28 @@ void ContentCaptureSender::OnDestruct() {
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
-void ContentCaptureSender::FillContentCaptureData(ContentCaptureData* data,
-                                                  bool set_url) {
+void ContentCaptureSender::FillContentCaptureData(
+    const std::vector<scoped_refptr<blink::WebContentHolder>>& node_holders,
+    ContentCaptureData* data,
+    bool set_url) {
   data->bounds = render_frame()->GetWebFrame()->VisibleContentRect();
   if (set_url) {
     data->value =
         render_frame()->GetWebFrame()->GetDocument().Url().GetString().Utf16();
   }
+  data->children.reserve(node_holders.size());
+  base::TimeTicks start = base::TimeTicks::Now();
+  for (auto holder : node_holders) {
+    ContentCaptureData child;
+    child.id = holder->GetId();
+    child.value = holder->GetValue().Utf16();
+    child.bounds = holder->GetBoundingBox();
+    data->children.push_back(child);
+  }
+  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+      "ContentCapture.GetBoundingBox", base::TimeTicks::Now() - start,
+      base::TimeDelta::FromMicroseconds(1),
+      base::TimeDelta::FromMilliseconds(10), 50);
 }
 
 const mojom::ContentCaptureReceiverAssociatedPtr&

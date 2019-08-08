@@ -10,10 +10,10 @@
 #include <vector>
 
 #include "ash/public/cpp/ash_pref_names.h"
-#include "ash/session/session_controller.h"
+#include "ash/public/cpp/test/shell_test_api.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
-#include "ash/shell_test_api.h"
 #include "ash/test/ash_test_base.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
@@ -187,7 +187,7 @@ class PowerPrefsTest : public NoSessionAshTestBase {
     NoSessionAshTestBase::SetUp();
 
     power_policy_controller_ = chromeos::PowerPolicyController::Get();
-    power_prefs_ = ShellTestApi(Shell::Get()).power_prefs();
+    power_prefs_ = ShellTestApi().power_prefs();
 
     // Advance the clock an arbitrary amount of time so it won't report zero.
     tick_clock_.Advance(base::TimeDelta::FromSeconds(1));
@@ -200,8 +200,7 @@ class PowerPrefsTest : public NoSessionAshTestBase {
   }
 
   void TearDown() override {
-    static_cast<ShellObserver*>(power_prefs_)
-        ->OnLocalStatePrefServiceInitialized(nullptr);
+    power_prefs_->local_state_ = nullptr;
 
     NoSessionAshTestBase::TearDown();
   }
@@ -220,8 +219,8 @@ class PowerPrefsTest : public NoSessionAshTestBase {
 
     PowerPrefs::RegisterLocalStatePrefs(pref_registry_.get());
 
-    static_cast<ShellObserver*>(power_prefs_)
-        ->OnLocalStatePrefServiceInitialized(local_state_.get());
+    power_prefs_->local_state_ = local_state_.get();
+    power_prefs_->ObserveLocalStatePrefs(power_prefs_->local_state_);
   }
 
   std::string GetCurrentPowerPolicy() const {
@@ -525,6 +524,12 @@ TEST_F(PowerPrefsTest, UsbPowerShare) {
 
   managed_pref_store_->SetBoolean(prefs::kUsbPowerShareEnabled, false);
   EXPECT_FALSE(power_manager_client()->policy().usb_power_share());
+}
+
+TEST_F(PowerPrefsTest, AlsLoggingEnabled) {
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetActivePrefService();
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kPowerAlsLoggingEnabled));
 }
 
 }  // namespace ash

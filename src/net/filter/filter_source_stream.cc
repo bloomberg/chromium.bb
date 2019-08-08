@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
@@ -192,7 +191,7 @@ void FilterSourceStream::OnIOComplete(int result) {
   output_buffer_ = nullptr;
   output_buffer_size_ = 0;
 
-  base::ResetAndReturn(&callback_).Run(rv);
+  std::move(callback_).Run(rv);
 }
 
 bool FilterSourceStream::NeedMoreData() const {

@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.explore_sites;
 
+import static org.chromium.components.feature_engagement.EventConstants.EXPLORE_SITES_TILE_TAPPED;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
@@ -16,12 +18,14 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.explore_sites.ExploreSitesCategory.CategoryType;
+import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.SuggestionsConfig.TileStyle;
 import org.chromium.chrome.browser.suggestions.TileGridLayout;
 import org.chromium.chrome.browser.util.ViewUtils;
+import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.mojom.WindowOpenDisposition;
@@ -104,8 +108,9 @@ public class ExploreSitesSection {
     }
 
     private ExploreSitesCategory createMoreTileCategory() {
-        ExploreSitesCategory category = ExploreSitesCategory.createPlaceholder(
-                CategoryType.MORE_BUTTON, getContext().getString(R.string.more));
+        ExploreSitesCategory category =
+                ExploreSitesCategory.createPlaceholder(CategoryType.MORE_BUTTON,
+                        getContext().getString(R.string.explore_sites_top_sites_tile));
         category.setDrawable(getVectorDrawable(R.drawable.ic_arrow_forward_blue_24dp));
         return category;
     }
@@ -121,7 +126,7 @@ public class ExploreSitesSection {
                                .inflate(R.layout.explore_sites_category_tile_view, mExploreSection,
                                        false);
         }
-        tileView.initialize(category);
+        tileView.initialize(category, mProfile);
         mExploreSection.addView(tileView);
         tileView.setOnClickListener((View v) -> onClicked(tileIndex, category, v));
     }
@@ -219,6 +224,8 @@ public class ExploreSitesSection {
         recordOpenedEsp(tileIndex);
         mNavigationDelegate.openUrl(WindowOpenDisposition.CURRENT_TAB,
                 new LoadUrlParams(category.getUrl(), PageTransition.AUTO_BOOKMARK));
+        final Tracker tracker = TrackerFactory.getTrackerForProfile(mProfile);
+        tracker.notifyEvent(EXPLORE_SITES_TILE_TAPPED);
     }
 
     private void recordOpenedEsp(int tileIndex) {

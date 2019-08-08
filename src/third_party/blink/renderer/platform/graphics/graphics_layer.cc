@@ -115,6 +115,12 @@ GraphicsLayer::~GraphicsLayer() {
   RemoveAllChildren();
   RemoveFromParent();
   DCHECK(!parent_);
+
+  // This ensures we clean-up the ElementId to cc::Layer mapping in
+  // LayerTreeHost before a new layer with the same ElementId is added.
+  // Regression from BGPT: https://crbug.com/979002
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+    SetElementId(CompositorElementId());
 }
 
 IntRect GraphicsLayer::VisualRect() const {
@@ -259,7 +265,7 @@ void GraphicsLayer::RemoveFromParent() {
       !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     CcLayer()->RemoveFromParent();
   } else {
-    SetPaintArtifactCompositorNeedsUpdate();
+    client_.GraphicsLayersDidChange();
   }
 }
 
@@ -301,6 +307,9 @@ void GraphicsLayer::PaintRecursively() {
 
 void GraphicsLayer::PaintRecursivelyInternal(
     Vector<GraphicsLayer*>& repainted_layers) {
+  if (client_.PaintBlockedByDisplayLock())
+    return;
+
   if (PaintsContentOrHitTest()) {
     if (Paint())
       repainted_layers.push_back(this);
@@ -323,10 +332,12 @@ bool GraphicsLayer::Paint(GraphicsContext::DisabledMode disabled_mode) {
     return false;
 #endif
 
-  if (PaintWithoutCommit(disabled_mode))
+  if (PaintWithoutCommit(disabled_mode)) {
     GetPaintController().CommitNewDisplayItems();
-  else if (!needs_check_raster_invalidation_)
+    UpdateSafeOpaqueBackgroundColor();
+  } else if (!needs_check_raster_invalidation_) {
     return false;
+  }
 
 #if DCHECK_IS_ON()
   if (VLOG_IS_ON(2)) {
@@ -358,6 +369,15 @@ bool GraphicsLayer::Paint(GraphicsContext::DisabledMode disabled_mode) {
 
   needs_check_raster_invalidation_ = false;
   return true;
+}
+
+void GraphicsLayer::UpdateSafeOpaqueBackgroundColor() {
+  if (!DrawsContent())
+    return;
+  // Copy the first chunk's safe opaque background color over to the cc::Layer.
+  const auto& chunks = GetPaintController().GetPaintArtifact().PaintChunks();
+  CcLayer()->SetSafeOpaqueBackgroundColor(
+      chunks.size() ? chunks[0].safe_opaque_background_color : SK_ColorWHITE);
 }
 
 bool GraphicsLayer::PaintWithoutCommitForTesting(
@@ -403,7 +423,7 @@ void GraphicsLayer::UpdateChildList() {
   // When using layer lists, cc::Layers are created in PaintArtifactCompositor.
   if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
       RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    SetPaintArtifactCompositorNeedsUpdate();
+    client_.GraphicsLayersDidChange();
     return;
   }
 
@@ -631,7 +651,7 @@ void GraphicsLayer::TrackRasterInvalidation(const DisplayItemClient& client,
     tracking->AddInvalidation(&client, client.DebugName(), rect, reason);
 }
 
-String GraphicsLayer::DebugName(cc::Layer* layer) const {
+String GraphicsLayer::DebugName(const cc::Layer* layer) const {
   if (layer->id() == contents_layer_id_)
     return "ContentsLayer for " + client_.DebugName(this);
 
@@ -738,10 +758,6 @@ void GraphicsLayer::SetContentsVisible(bool contents_visible) {
 
   contents_visible_ = contents_visible;
   UpdateLayerIsDrawable();
-}
-
-void GraphicsLayer::SetPaintArtifactCompositorNeedsUpdate() const {
-  client_.SetPaintArtifactCompositorNeedsUpdate();
 }
 
 void GraphicsLayer::SetClipParent(cc::Layer* parent) {
@@ -876,6 +892,7 @@ void GraphicsLayer::SetContentsRect(const IntRect& rect) {
 
   contents_rect_ = rect;
   UpdateContentsRect();
+  client_.GraphicsLayersDidChange();
 }
 
 void GraphicsLayer::SetContentsToImage(
@@ -975,7 +992,7 @@ void GraphicsLayer::RemoveLinkHighlight(LinkHighlight* link_highlight) {
 }
 
 std::unique_ptr<base::trace_event::TracedValue> GraphicsLayer::TakeDebugInfo(
-    cc::Layer* layer) {
+    const cc::Layer* layer) {
   auto traced_value = std::make_unique<base::trace_event::TracedValue>();
 
   traced_value->SetString(
@@ -1055,7 +1072,7 @@ void GraphicsLayer::SetLayerState(const PropertyTreeState& layer_state,
   }
 
   if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    SetPaintArtifactCompositorNeedsUpdate();
+    client_.GraphicsLayersDidChange();
 }
 
 void GraphicsLayer::SetContentsLayerState(const PropertyTreeState& layer_state,
@@ -1074,7 +1091,7 @@ void GraphicsLayer::SetContentsLayerState(const PropertyTreeState& layer_state,
   }
 
   if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    SetPaintArtifactCompositorNeedsUpdate();
+    client_.GraphicsLayersDidChange();
 }
 
 scoped_refptr<cc::DisplayItemList> GraphicsLayer::PaintContentsToDisplayList(

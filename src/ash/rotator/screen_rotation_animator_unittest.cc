@@ -395,7 +395,7 @@ TEST_F(ScreenRotationAnimatorSlowAnimationTest,
                      display::Display::RotationSource::USER,
                      DisplayConfigurationController::ANIMATION_SYNC);
 
-  EXPECT_FALSE(GetTray()->visible());
+  EXPECT_FALSE(GetTray()->GetVisible());
 }
 
 TEST_F(ScreenRotationAnimatorSmoothAnimationTest, Observer) {
@@ -634,7 +634,7 @@ TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
   WaitForCopyCallback();
 
   GetTray()->layer()->GetAnimator()->StopAnimating();
-  EXPECT_FALSE(GetTray()->visible());
+  EXPECT_FALSE(GetTray()->GetVisible());
 }
 
 // Test that smooth screen rotation animation will work when |root_window|

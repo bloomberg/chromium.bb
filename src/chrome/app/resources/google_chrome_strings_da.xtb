@@ -14,7 +14,6 @@
 <translation id="123620459398936149">Chrome OS kunne ikke synkronisere dine data. Opdater din adgangssætning til synkronisering.</translation>
 <translation id="127345590676626841">Chrome opdateres automatisk, så du altid har den nyeste version. Når downloaden er fuldført, genstartes Chrome, og så er du godt på vej.</translation>
 <translation id="1302523850133262269">Vent, mens Chrome installerer de nyeste systemopdateringer.</translation>
-<translation id="1312676208694947750">{0,plural, =0{Der er en tilgængelig Chrome OS-opdatering}=1{Der er en tilgængelig Chrome OS-opdatering}one{En Chrome OS-opdatering har været tilgængelig i # dag}other{En Chrome OS-opdatering har været tilgængelig i # dage}}</translation>
 <translation id="137466361146087520">Google Chrome beta</translation>
 <translation id="1393853151966637042">Få hjælp til at bruge Chrome</translation>
 <translation id="1399397803214730675">Denne computer har allerede en nyere version af Google Chrome. Hvis programmet ikke virker, skal du afinstallere Google Chrome og prøve igen.</translation>
@@ -32,6 +31,7 @@
 <translation id="1674870198290878346">Åbn linket i et inko&amp;gnitovindue i Chrome</translation>
 <translation id="1682634494516646069">Google Chrome kan ikke læse og skrive i sin egen datamappe: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome er en webbrowser, som kører websider og apps med lynets hast. Den er hurtig, stabil og nem at bruge. Surf mere sikkert med indbygget beskyttelse mod malware og phishing i Google Chrome.</translation>
+<translation id="1713301662689114961">{0,plural, =1{Chrome genstarter om en time}one{Chrome genstarter om # time}other{Chrome genstarter om # timer}}</translation>
 <translation id="1718131156967340976">Vælg <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
 <translation id="1734234790201236882">Chrome gemmer denne adgangskode på din Google-konto. Du behøver ikke at huske den.</translation>
 <translation id="174539241580958092">Google Chrome kunne ikke synkronisere dine data på grund af en loginfejl.</translation>
@@ -39,7 +39,6 @@
 <translation id="1773601347087397504">Få hjælp til at bruge Chrome OS</translation>
 <translation id="1795405610103747296">Installer Chrome på din telefon. Vi sender en sms til din telefon: <ph name="PHONE_NUMBER" /></translation>
 <translation id="1812689907177901597">Når du deaktiverer denne indstilling, kan du logge ind på Google-websites som f.eks. Gmail uden at logge ind i Chrome</translation>
-<translation id="1815759068706561639"><ph name="FILE_NAME" /> er skadelig, så Chrome har blokeret den. Du beskyttes af Avanceret beskyttelse.</translation>
 <translation id="1860536484129686729">Chrome skal have tilladelse til at bruge dit kamera på dette website</translation>
 <translation id="1873233029667955273">Google Chrome er ikke din standardbrowser</translation>
 <translation id="1874309113135274312">Google Chrome beta (mDNS-In)</translation>
@@ -53,7 +52,6 @@
 <translation id="216054706567564023">Installer Chrome på din telefon. Vi sender en sms til telefonnummeret til gendannelse for din konto.</translation>
 <translation id="2246246234298806438">Google Chrome kan ikke vise udskrifter, når den indbyggede PDF-fremviser mangler.</translation>
 <translation id="2252923619938421629">Vær med til at gøre Google Chrome bedre ved at rapportere de aktuelle indstillinger</translation>
-<translation id="225363235161345695">{0,plural, =1{Chrome genstarter om en time}one{Chrome genstarter om # time}other{Chrome genstarter om # timer}}</translation>
 <translation id="2286950485307333924">Du er nu logget ind i Chrome</translation>
 <translation id="2290014774651636340">Google API-nøgler mangler. Nogle funktioner i Google Chrome deaktiveres.</translation>
 <translation id="2290095356545025170">Er du sikker på, at du vil afinstallere Google Chrome?</translation>
@@ -65,7 +63,6 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="2429317896000329049">Google Chrome kunne ikke synkronisere dine data, fordi synkronisering ikke er tilgængelig for dit domæne.</translation>
 <translation id="2467438592969358367">Google Chrome anmoder om at eksportere dine adgangskoder. Angiv din Windows-adgangskode for at tillade dette.</translation>
 <translation id="2485422356828889247">Afinstaller</translation>
-<translation id="2521856951867783208">Denne fil kan være skadelig, så Chrome har blokeret den. Du beskyttes af Avanceret beskyttelse.</translation>
 <translation id="2534507159460261402">Google Pay (kopieret til Chrome)</translation>
 <translation id="2535429035253759792">Din administrator anmoder om, at du genstarter Chrome for at anvende denne opdatering</translation>
 <translation id="2580411288591421699">Det er ikke muligt at installere den samme version af Google Chrome, som allerede kører. Luk Google Chrome, og prøv igen.</translation>
@@ -96,13 +93,13 @@ Du kan forhindre <ph name="NEW_PROFILE_NAME" /> i at få adgang til din konto ve
 Gå til din mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejledning.</translation>
 <translation id="3282568296779691940">Log ind i Chrome</translation>
 <translation id="3360895254066713204">Hjælp til Chrome</translation>
+<translation id="3379938682270551431">{0,plural, =0{Chrome genstarter nu}=1{Chrome genstarter om 1 sekund}one{Chrome genstarter om # sekund}other{Chrome genstarter om # sekunder}}</translation>
 <translation id="3395323229510056640">Få hjælp til Chrome OS</translation>
 <translation id="3396977131400919238">Der opstod en fejl ved operativsystemet under installation. Download Google Chrome igen.</translation>
 <translation id="3398288718845740432">Skjul i Chrome-menuen</translation>
 <translation id="3451115285585441894">Føjer til Chrome...</translation>
 <translation id="345171907106878721">Tilføj dig selv i Chrome</translation>
 <translation id="3479552764303398839">Ikke nu</translation>
-<translation id="3481286511616257896"><ph name="FILE_NAME" /> kan være skadelig, så Chrome har blokeret den. Du beskyttes af Avanceret beskyttelse.</translation>
 <translation id="34857402635545079">Ryd også data fra Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome skal have adgang til din placering for at dele din placering med dette website</translation>
 <translation id="3576528680708590453">Din systemadministrator har konfigureret Google Chrome til at åbne en anden browser for at få adgang til <ph name="TARGET_URL_HOSTNAME" />.</translation>
@@ -124,6 +121,7 @@ Gå til din mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejlednin
 <translation id="4143243756087420366">Chrome-navn og -billede</translation>
 <translation id="4147555960264124640">Du er ved at logge ind med en mangerstyret konto og give dens administrator kontrol over din profil i Google Chrome. Dine Chrome-data, f.eks. dine apps, bogmærker, historikdata, adgangskoder og andre indstillinger, knyttes permanent til <ph name="USER_NAME" />. Du kan slette disse data via betjeningspanelet for Google Konti, men du kan ikke knytte disse data til en anden konto. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Installationsprogrammet kunne ikke pakke arkivet ud. Download Google Chrome igen.</translation>
+<translation id="4191857738314598978">{0,plural, =1{Genstart Chrome inden for én dag}one{Genstart Chrome inden for # dag}other{Genstart Chrome inden for # dage}}</translation>
 <translation id="424864128008805179">Vil du logge ud af Chrome?</translation>
 <translation id="4251615635259297716">Vil du linke dine Chrome-data til denne konto?</translation>
 <translation id="4251625577313994583">få Chrome på din iPhone</translation>
@@ -145,11 +143,10 @@ Gå til din mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejlednin
 <translation id="4750550185319565338">Genstart Chrome for at aktivere <ph name="PLUGIN_NAME" /></translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Denne fil kan være farlig, så Chrome har blokeret den.</translation>
-<translation id="4794050651896644714">Gem oplysninger i Chrome</translation>
+<translation id="479167709087336770">Dette anvender den samme stavekontrol, som anvendes i Google Søgning. Tekst, som du angiver i browseren, sendes til Google. Du kan altid ændre denne adfærd i indstillingerne.</translation>
 <translation id="4891791193823137474">Lad Google Chrome køre i baggrunden</translation>
 <translation id="4895437082222824641">Åbn linket i en ny Chrome-&amp;fane</translation>
 <translation id="4921569541910214635">Deler du computer med andre? Nu kan du konfigurere Chrome, præcist som du vil.</translation>
-<translation id="4945319281866068441">{0,plural, =1{Genstart Chrome OS inden for en dag}one{Genstart Chrome OS inden for # dag}other{Genstart Chrome OS inden for # dage}}</translation>
 <translation id="4953650215774548573">Angiv Google Chrome som din standardbrowser</translation>
 <translation id="495931528404527476">I Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -163,8 +160,8 @@ Gå til din mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejlednin
 <translation id="5251420635869119124">Gæster kan bruge Chrome uden at efterlade noget.</translation>
 <translation id="532046782124376502">Advarsel! Google Chrome kan ikke forhindre udvidelser i at registrere din browserhistorik. Fravælg denne indstilling for at deaktivere udvidelsen i inkognitotilstand.</translation>
 <translation id="5386244825306882791">Den styrer også, hvilken side der vises, når du åbner Chrome eller søger via omnifeltet.</translation>
+<translation id="5394833366792865639">Del en Chrome-fane</translation>
 <translation id="5430073640787465221">Din præferencefil er beskadiget eller ugyldig. Google Chrome kan ikke gendanne dine præferencer.</translation>
-<translation id="5483595757826856374">{0,plural, =0{Chrome genstarter nu}=1{Chrome genstarter om 1 sekund}one{Chrome genstarter om # sekund}other{Chrome genstarter om # sekunder}}</translation>
 <translation id="5543953544073077331">Der kører andre kopier af Chrome. Luk dem for at fortsætte opdateringen.</translation>
 <translation id="556024056938947818">Google Chrome forsøger at vise adgangskoder.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
@@ -192,7 +189,6 @@ Gå til din mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejlednin
 <translation id="6291549208091401781">Google Chrome er allerede installeret for alle brugere på computeren.</translation>
 <translation id="6338556085225130112">Opdaterer Google Chrome</translation>
 <translation id="6368958679917195344">Chrome OS er lavet ved hjælp af <ph name="BEGIN_LINK_CROS_OSS" />open source-software<ph name="END_LINK_CROS_OSS" />.</translation>
-<translation id="6468844726266617801">{0,plural, =1{Genstart Chrome inden for en dag}one{Genstart Chrome inden for # dag}other{Genstart Chrome inden for # dage}}</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome for udviklere</translation>
 <translation id="6566149418543181476">Opdaterer Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Du bruger <ph name="PROFILE_EMAIL" /> til at synkronisere dine Chrome-ting med. Gå til <ph name="SETTINGS_LINK" />, hvis du vil opdatere dine synkroniseringspræference, eller hvis du vil bruge Chrome uden en Google-konto.</translation>
@@ -200,17 +196,16 @@ Gå til din mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejlednin
 <translation id="6634887557811630702">Google Chrome er opdateret.</translation>
 <translation id="6676384891291319759">Få adgang til internettet</translation>
 <translation id="6679975945624592337">Lad Google Chrome køre i baggrunden</translation>
+<translation id="6750954913813541382">Chrome sender den tekst, du angiver i browseren, til Google for at rette stavefejl</translation>
 <translation id="677276454032249905">Vil du afslutte Chrome alligevel?</translation>
 <translation id="683440813066116847">Indgående regel for Google Chrome Canary om at tillade mDNS-trafik.</translation>
 <translation id="686561893457936865">Tag Chrome med overalt</translation>
 <translation id="6885412569789873916">Apps i Chrome beta</translation>
 <translation id="6943584222992551122">Brugerens browserdata slettes fra denne enhed. Log ind på Chrome som <ph name="USER_EMAIL" /> for at gendanne dataene.</translation>
-<translation id="6964107240822114422">{0,plural, =0{Der er en tilgængelig Chrome-opdatering}=1{Der er en tilgængelig Chrome-opdatering}one{En Chrome-opdatering har været tilgængelig i # dag}other{En Chrome-opdatering har været tilgængelig i # dage}}</translation>
 <translation id="6967962315388095737">Indgående regel for Google Chrome beta om at tillade mDNS-trafik.</translation>
 <translation id="6970811910055250180">Opdaterer din enhed...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> kræver, at du læser og accepterer følgende servicevilkår, inden du bruger denne enhed. Disse vilkår udvider, ændrer eller begrænser på ingen måde vilkårene for Google Chrome OS.</translation>
 <translation id="6989339256997917931">Google Chrome er blevet opdateret, men du har ikke brugt den i 30 dage.</translation>
-<translation id="7023651421574588884">Din administrator kræver, at du genstarter Chrome OS for at anvende en opdatering</translation>
 <translation id="7098166902387133879">Google Chrome bruger din mikrofon.</translation>
 <translation id="7106741999175697885">Jobliste – Google Chrome</translation>
 <translation id="7164397146364144019">Du kan hjælpe med at gøre Chrome sikrere og nemmere at bruge ved automatisk at rapportere oplysninger om mulige sikkerhedsproblemer til Google.</translation>
@@ -225,15 +220,12 @@ Gå til din mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejlednin
 <translation id="7459554271817304652">Konfigurer synkroniseringen til at gemme dine personlige browserfunktioner på nettet, og få adgang til dem i Google Chrome på en hvilken som helst computer.</translation>
 <translation id="7473136999113284234">Chrome opdateres automatisk, så du altid har den nyeste version.</translation>
 <translation id="7486227612705979895">Chrome har adgang til Drev, så der kan vises forslag i adresselinjen</translation>
-<translation id="748945194546522577">Denne fil er skadelig, så Chrome har blokeret den. Du beskyttes af Avanceret beskyttelse.</translation>
 <translation id="7531671357096394523">Luk alle kopier af Chrome.</translation>
 <translation id="7535429826459677826">Udviklerversionen af Chrome</translation>
 <translation id="7552219221109926349">Vis Chrome OS på dette sprog</translation>
-<translation id="7561940363513215021">{0,plural, =1{Chrome genstarter om 1 minut}one{Chrome genstarter om # minut}other{Chrome genstarter om # minutter}}</translation>
 <translation id="7589360514048265910">Denne computer vil ikke længere modtage Google Chrome-opdateringer, da Mac OS X 10.9 ikke længere understøttes.</translation>
 <translation id="7592736734348559088">Google Chrome kunne ikke synkronisere dine data, fordi loginoplysningerne til din konto er forældede.</translation>
 <translation id="7626032353295482388">Velkommen til Chrome</translation>
-<translation id="7636297873481318396">Denne fil er skadelig, så Chrome har blokeret den. Du beskyttes af Avanceret beskyttelse.</translation>
 <translation id="7641148173327520642">Din systemadministrator har konfigureret Google Chrome til at åbne <ph name="ALTERNATIVE_BROWSER_NAME" /> for at få adgang til <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">Chrome Enterprise-logo</translation>
 <translation id="7747138024166251722">Installationsprogrammet kunne ikke oprette en midlertidig mappe. Tjek, om der er tilstrækkelig diskplads, og om der er tilladelse til at installere software.</translation>
@@ -254,18 +246,14 @@ Gå til din mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejlednin
 <translation id="8013993649590906847">Hvis et billede ikke har en brugbar beskrivelse, forsøger Chrome at angive en for dig. Billederne sendes til Google, så der kan oprettes beskrivelser.</translation>
 <translation id="8030318113982266900">Opdaterer din enhed til kanalen <ph name="CHANNEL_NAME" />...</translation>
 <translation id="8032142183999901390">Når du har fjernet din konto fra Chrome, skal du muligvis indlæse dine åbne faner, før ændringen træder i kraft.</translation>
-<translation id="8077352834923175128">Din administrator anmoder om, at du genstarter Chrome OS for at anvende denne opdatering</translation>
 <translation id="8129812357326543296">Om &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Installer Chrome på din telefon. Vi sender en sms til din telefon.</translation>
-<translation id="8183957050892517584">Chrome gemmer din personlige info på sikker vis, så du ikke behøver at angive den igen.</translation>
-<translation id="8226081633851087288">{0,plural, =0{Chrome OS genstarter nu}=1{Chrome OS genstarter om 1 sekund}one{Chrome OS genstarter om # sekund}other{Chrome OS genstarter om # sekunder}}</translation>
 <translation id="825412236959742607">Denne side anvender for meget hukommelse, så Chrome har fjernet noget indhold.</translation>
 <translation id="8255190535488645436">Google Chrome bruger dit kamera og din mikrofon.</translation>
 <translation id="8286862437124483331">Google Chrome forsøger at vise adgangskoder. Angiv din Windows-adgangskode for at tillade dette.</translation>
 <translation id="8290100596633877290">Hovsa! Google Chrome er gået ned. Vil du genstarte nu?</translation>
 <translation id="8342675569599923794">Denne fil er farlig, så Chrome har blokeret den.</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. Alle rettigheder forbeholdes.</translation>
-<translation id="8380166467911888159">Chrome sender den tekst, du skriver i tekstfelter, til Google for at rette stavefejl</translation>
 <translation id="840084489713044809">Google Chrome anmoder om at eksportere dine adgangskoder.</translation>
 <translation id="8406086379114794905">Hjælp med at forbedre Chrome</translation>
 <translation id="8432724323949790809">Du bør genstarte Google Chrome nu</translation>
@@ -279,22 +267,21 @@ Gå til din mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejlednin
 <translation id="8568392309447938879">Du skal være logget ind på Chrome for at bruge apps. Dette gør det muligt for Chrome at synkronisere din historik, dine apps, bogmærker, adgangskoder og andre indstillinger på alle enheder.</translation>
 <translation id="8606668294522778825">Google Chrome bruger muligvis webtjenester for at forbedre din browseroplevelse. Du kan vælge at deaktivere disse tjenester. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome svarer ikke. Vil du genstarte nu?</translation>
+<translation id="8625237574518804553">{0,plural, =1{Chrome genstarter om 1 minut}one{Chrome genstarter om # minut}other{Chrome genstarter om # minutter}}</translation>
 <translation id="8667808506758191620">Din <ph name="DEVICE_TYPE" /> er opdateret.</translation>
 <translation id="8669527147644353129">Hjælp til Google Chrome</translation>
 <translation id="8679801911857917785">Den styrer også, hvilken side der vises, når du åbner Chrome.</translation>
 <translation id="870251953148363156">Opdater &amp;Google Chrome</translation>
-<translation id="8704255848199359374">Dette anvender den samme stavekontrol, som anvendes i Google Søgning. Tekst, som du angiver i browseren, sendes til Google. Du kan altid ændre dette i indstillingerne.</translation>
 <translation id="873133009373065397">Google Chrome kan ikke fastlægge eller angive standardbrowseren</translation>
 <translation id="8736674169840206667">Din administrator kræver, at du genstarter Chrome for at anvende en opdatering</translation>
 <translation id="8788264404293392165">Dette sprog bruges til at vise Chrome OS-brugerfladen</translation>
-<translation id="8791470158600044404">{0,plural, =1{Chrome OS genstarter om 1 minut}one{Chrome OS genstarter om # minut}other{Chrome OS genstarter om # minutter}}</translation>
 <translation id="8823341990149967727">Chrome er forældet</translation>
 <translation id="884296878221830158">Den styrer også, hvilken side der vises, når du åbner Chrome eller klikker på knappen Startside.</translation>
 <translation id="8862326446509486874">Du har ikke de nødvendige rettigheder til en installation på systemniveau. Prøv at køre installationsprogrammet igen som administrator.</translation>
 <translation id="8914504000324227558">Genstart Chrome</translation>
+<translation id="8999208279178790196">{0,plural, =0{Der er en tilgængelig Chrome-opdatering}=1{Der er en tilgængelig Chrome-opdatering}one{En Chrome-opdatering har været tilgængelig i # dag}other{En Chrome-opdatering har været tilgængelig i # dage}}</translation>
 <translation id="9026991721384951619">Chrome OS kunne ikke synkronisere dine data, fordi loginoplysningerne til din konto er forældede.</translation>
 <translation id="9067395829937117663">Google Chrome kræver Windows 7 eller nyere.</translation>
-<translation id="909149346112452267">{0,plural, =1{Chrome OS genstarter om en time}one{Chrome OS genstarter om # time}other{Chrome OS genstarter om # timer}}</translation>
 <translation id="911206726377975832">Slet også dine browserdata?</translation>
 <translation id="9138603949443464873">Åbn Chrome igen for at anvende ændringerne</translation>
 <translation id="919706545465235479">Opdater Chrome for at starte synkroniseringen</translation>

@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -40,19 +41,22 @@ ScriptPromise KeyboardLayout::GetKeyboardLayoutMap(ScriptState* script_state) {
 
   if (!IsLocalFrameAttached()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
                                            kKeyboardMapFrameDetachedErrorMsg));
   }
 
   if (!CalledFromSupportedContext(ExecutionContext::From(script_state))) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
                                            kKeyboardMapChildFrameErrorMsg));
   }
 
   if (!EnsureServiceConnected()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
                                            kKeyboardMapRequestFailedErrorMsg));
   }
 
@@ -100,9 +104,9 @@ void KeyboardLayout::GotKeyboardLayoutMap(
           MakeGarbageCollected<KeyboardLayoutMap>(result->layout_map));
       break;
     case mojom::blink::GetKeyboardLayoutMapStatus::kFail:
-      script_promise_resolver_->Reject(
-          DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                               kKeyboardMapRequestFailedErrorMsg));
+      script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kInvalidStateError,
+          kKeyboardMapRequestFailedErrorMsg));
       break;
   }
 

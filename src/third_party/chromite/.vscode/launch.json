@@ -10,7 +10,7 @@
                         "request": "launch",
                         "console": "integratedTerminal",
                         "args": ["-c", "import imp; scripts = imp.load_source('scripts', '${workspaceFolder}/scripts/__init__.py'); wrapper = imp.load_source('scripts.wrapper', '${workspaceFolder}/scripts/wrapper.py'); import sys; sys.argv[0] = '${file}'; wrapper.DoMain()"],
-                        "debugStdLib": true,
+                        "justMyCode": false,
                 },
                 {
                         "name": "Python: Current File (Integrated Terminal)",
@@ -18,7 +18,7 @@
                         "request": "launch",
                         "program": "${file}",
                         "console": "integratedTerminal",
-                        "debugStdLib": true,
+                        "justMyCode": false,
                 },
                 {
                         "name": "Python: Attach",

@@ -98,14 +98,14 @@ TEST_F(TreeNodeModelTest, RemoveNode) {
 
   TestNode* child1 = root->Add(std::make_unique<TestNode>(), 0);
 
-  EXPECT_EQ(1, model.GetChildCount(root));
+  EXPECT_FALSE(root->children().empty());
 
   // Now remove |child1| from |root| and release the memory.
   model.Remove(root, child1);
 
   EXPECT_EQ("added=0 removed=1 changed=0", GetObserverCountStateAndClear());
 
-  EXPECT_EQ(0, model.GetChildCount(root));
+  EXPECT_TRUE(root->children().empty());
 }
 
 // Verifies if the nodes added under the root are all deleted when calling
@@ -140,7 +140,7 @@ TEST_F(TreeNodeModelTest, DeleteAllNodes) {
   root.DeleteAll();
 
   EXPECT_EQ(0, root.child_count());
-  EXPECT_TRUE(root.empty());
+  EXPECT_TRUE(root.children().empty());
 }
 
 // Verifies if GetIndexOf() returns the correct index for the specified node.

@@ -64,9 +64,6 @@ const char kAppsGalleryUpdateURL[]          = "apps-gallery-update-url";
 // The URL to use for the gallery link in the app launcher.
 const char kAppsGalleryURL[]                = "apps-gallery-url";
 
-// Enables overriding the path for the default authentication extension.
-const char kAuthExtensionPath[]             = "auth-ext-path";
-
 // Whitelist for Negotiate Auth servers
 const char kAuthServerWhitelist[]           = "auth-server-whitelist";
 
@@ -141,7 +138,7 @@ const char kCreateBrowserOnStartupForTests[] =
     "create-browser-on-startup-for-tests";
 
 // Specifies the HTTP endpoint which will be used to serve
-// chrome-devtools://devtools/custom/<path>
+// devtools://devtools/custom/<path>
 const char kCustomDevtoolsFrontend[] = "custom-devtools-frontend";
 
 // Enables a frame context menu item that toggles the frame in and out of glass
@@ -167,6 +164,9 @@ const char kDiagnosticsFormat[]             = "diagnostics-format";
 
 // Tells the diagnostics mode to do the requested recovery step(s).
 const char kDiagnosticsRecovery[]           = "diagnostics-recovery";
+
+// Disable auto-reload of error pages.
+const char kDisableAutoReload[] = "disable-auto-reload";
 
 // Disable several subsystems which run network requests in the background.
 // This is for use when doing network performance testing to avoid noise in the
@@ -212,13 +212,6 @@ const char kDisableExtensionsExcept[] = "disable-extensions-except";
 const char kDisableExtensionsFileAccessCheck[] =
     "disable-extensions-file-access-check";
 
-// Disable auto-reload of error pages if offline.
-const char kDisableOfflineAutoReload[]      = "disable-offline-auto-reload";
-
-// Disable only auto-reloading error pages when the tab is visible.
-const char kDisableOfflineAutoReloadVisibleOnly[] =
-    "disable-offline-auto-reload-visible-only";
-
 // Disable pop-up blocking.
 const char kDisablePopupBlocking[]          = "disable-popup-blocking";
 
@@ -261,6 +254,9 @@ const char kDumpBrowserHistograms[]         = "dump-browser-histograms";
 // Overrides the path of Easy Unlock component app.
 const char kEasyUnlockAppPath[]             = "easy-unlock-app-path";
 
+// Enable auto-reload of error pages.
+const char kEnableAutoReload[] = "enable-auto-reload";
+
 // If the WebRTC logging private API is active, enables audio debug recordings.
 const char kEnableAudioDebugRecordingsFromExtension[] =
     "enable-audio-debug-recordings-from-extension";
@@ -301,13 +297,6 @@ const char kEnableNavigationTracing[] = "enable-navigation-tracing";
 // Enables the network-related benchmarking extensions.
 const char kEnableNetBenchmarking[]         = "enable-net-benchmarking";
 
-// Enable auto-reload of error pages if offline.
-const char kEnableOfflineAutoReload[]       = "enable-offline-auto-reload";
-
-// Only auto-reload error pages when the tab is visible.
-const char kEnableOfflineAutoReloadVisibleOnly[] =
-    "enable-offline-auto-reload-visible-only";
-
 // Enables a number of potentially annoying security features (strict mixed
 // content mode, powerful feature restrictions, etc.)
 const char kEnablePotentiallyAnnoyingSecurityFeatures[] =
@@ -347,9 +336,6 @@ const char kForceAppMode[]                  = "force-app-mode";
 // Displays the First Run experience when the browser is started, regardless of
 // whether or not it's actually the First Run (this overrides kNoFirstRun).
 const char kForceFirstRun[]                 = "force-first-run";
-
-// Forces Chrome to use localNTP instead of server (GWS) NTP.
-const char kForceLocalNtp[]                 = "force-local-ntp";
 
 // Forces Chrome to use a stacked tab strip layout.
 const char kForceStackedTabStripLayout[]    = "force-stacked-tab-strip-layout";
@@ -410,16 +396,6 @@ const char kMediaCacheSize[]                = "media-cache-size";
 // Allows setting a different destination ID for connection-monitoring GCM
 // messages. Useful when running against a non-prod management server.
 const char kMonitoringDestinationID[]       = "monitoring-destination-id";
-
-// Sets the granularity of events to capture in the network log. The mode can be
-// set to one of the following values:
-//   "Default"
-//   "IncludeCookiesAndCredentials"
-//   "IncludeSocketBytes"
-//
-// See the functions of the corresponding name in net_log_capture_mode.h for a
-// description of their meaning.
-const char kNetLogCaptureMode[]             = "net-log-capture-mode";
 
 // Disables the default browser check. Useful for UI/browser tests where we
 // want to avoid having the default browser info-bar displayed.
@@ -696,6 +672,9 @@ const char kEnableAccessibilityTabSwitcher[] =
 // unresponsive web content.
 const char kEnableHungRendererInfoBar[] = "enable-hung-renderer-infobar";
 
+// Forces the night mode to be enabled.
+const char kForceEnableNightMode[] = "force-enable-night-mode";
+
 // Forces the update menu badge to show.
 const char kForceShowUpdateMenuBadge[] = "force-show-update-menu-badge";
 
@@ -728,14 +707,6 @@ const char kDisableLoggingRedirect[] = "disable-logging-redirect";
 // Disables apps on the login screen. By default, they are allowed and can be
 // installed through policy.
 const char kDisableLoginScreenApps[] = "disable-login-screen-apps";
-
-// Activates various shelf pins layout experiment, must be one from 'default',
-// '7apps', '10apps'.
-// default - [Chrome, Gmail, Docs, YouTube, Play Store].
-// 7apps   - [Chrome, Gmail, Docs, Photos, Files, YouTube, Play Store].
-// 10apps  - [Chrome, Gmail, Calendar, Docs, Sheets, Slides, Files, Camera,
-//            Photos, Play Store].
-const char kPinShelfLayout[] = "pin-shelf-layout";
 
 // Provides the name of the mojo service running in a mash utility process.
 // NOTE: Used by the Chrome OS crash_reporter to identify mash processes. If you
@@ -816,6 +787,10 @@ const char kMakeChromeDefault[] = "make-chrome-default";
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)
+// Disables custom-drawing the window titlebar on Windows 10.
+const char kDisableWindows10CustomTitlebar[] =
+    "disable-windows10-custom-titlebar";
+
 // Fallback to XPS. By default connector uses CDD.
 const char kEnableCloudPrintXps[]           = "enable-cloud-print-xps";
 
@@ -876,11 +851,6 @@ const char kAllowNaClFileHandleAPI[]        = "allow-nacl-file-handle-api";
 // Specifies comma-separated list of extension ids or hosts to grant
 // access to TCP/UDP socket APIs.
 const char kAllowNaClSocketAPI[]            = "allow-nacl-socket-api";
-#endif
-
-#if defined(OS_WIN) || defined(OS_LINUX)
-const char kDisableInputImeAPI[] = "disable-input-ime-api";
-const char kEnableInputImeAPI[] = "enable-input-ime-api";
 #endif
 
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)

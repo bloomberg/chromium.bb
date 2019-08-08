@@ -130,10 +130,8 @@ class CONTENT_EXPORT DownloadManagerDelegate {
       const std::string& mime_type,
       const std::string& request_origin,
       int64_t content_length,
+      bool is_transient,
       WebContents* web_contents);
-
-  // Returns true if we need to generate a binary hash for downloads.
-  virtual bool GenerateFileHash();
 
   // Retrieve the directories to save html pages and downloads to.
   virtual void GetSaveDir(BrowserContext* browser_context,

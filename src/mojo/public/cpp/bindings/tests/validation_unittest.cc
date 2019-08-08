@@ -16,13 +16,13 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/c/system/macros.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/connector.h"
 #include "mojo/public/cpp/bindings/filter_chain.h"
-#include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/lib/validation_errors.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/message_header_validator.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/tests/validation_test_input_parser.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/message.h"
@@ -443,28 +443,29 @@ TEST_F(ValidationTest, ResponseBoundsCheck) {
   RunValidationTests("resp_boundscheck_", &validators);
 }
 
-// Test that InterfacePtr<X> applies the correct validators and they don't
-// conflict with each other:
+// Test that Remote<X> applies the correct validators and they don't conflict
+// with each other:
 //   - MessageHeaderValidator
 //   - X::ResponseValidator_
-TEST_F(ValidationIntegrationTest, InterfacePtr) {
-  IntegrationTestInterfacePtr interface_ptr = MakeProxy(
-      InterfacePtrInfo<IntegrationTestInterface>(testee_endpoint(), 0u));
-  interface_ptr.internal_state()->EnableTestingMode();
+TEST_F(ValidationIntegrationTest, Remote) {
+  Remote<IntegrationTestInterface> remote(
+      PendingRemote<IntegrationTestInterface>(testee_endpoint(), 0u));
+  remote.internal_state()->EnableTestingMode();
 
   RunValidationTests("integration_intf_resp", test_message_receiver());
   RunValidationTests("integration_msghdr", test_message_receiver());
 }
 
-// Test that Binding<X> applies the correct validators and they don't
-// conflict with each other:
+// Test that Receiver<X> applies the correct validators and they don't conflict
+// with each other:
 //   - MessageHeaderValidator
 //   - X::RequestValidator_
-TEST_F(ValidationIntegrationTest, Binding) {
+TEST_F(ValidationIntegrationTest, Receiver) {
   IntegrationTestInterfaceImpl interface_impl;
-  Binding<IntegrationTestInterface> binding(
-      &interface_impl, IntegrationTestInterfaceRequest(testee_endpoint()));
-  binding.EnableTestingMode();
+  Receiver<IntegrationTestInterface> receiver(
+      &interface_impl,
+      PendingReceiver<IntegrationTestInterface>(testee_endpoint()));
+  receiver.internal_state()->EnableTestingMode();
 
   RunValidationTests("integration_intf_rqst", test_message_receiver());
   RunValidationTests("integration_msghdr", test_message_receiver());

@@ -11,10 +11,6 @@
 
 namespace blink {
 
-HTMLImportTreeRoot* HTMLImportTreeRoot::Create(Document* document) {
-  return MakeGarbageCollected<HTMLImportTreeRoot>(document);
-}
-
 HTMLImportTreeRoot::HTMLImportTreeRoot(Document* document)
     : HTMLImport(HTMLImport::kSync),
       document_(document),

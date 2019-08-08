@@ -14,6 +14,7 @@
 
 #include "dawn_native/ShaderModule.h"
 
+#include "common/HashUtils.h"
 #include "dawn_native/BindGroupLayout.h"
 #include "dawn_native/Device.h"
 #include "dawn_native/Pipeline.h"
@@ -65,14 +66,36 @@ namespace dawn_native {
         return {};
     }
 
+    dawn::BindingType NonDynamicBindingType(dawn::BindingType type) {
+        switch (type) {
+            case dawn::BindingType::DynamicUniformBuffer:
+                return dawn::BindingType::UniformBuffer;
+            case dawn::BindingType::DynamicStorageBuffer:
+                return dawn::BindingType::StorageBuffer;
+            default:
+                return type;
+        }
+    }
+
     // ShaderModuleBase
 
-    ShaderModuleBase::ShaderModuleBase(DeviceBase* device, const ShaderModuleDescriptor*)
-        : ObjectBase(device) {
+    ShaderModuleBase::ShaderModuleBase(DeviceBase* device,
+                                       const ShaderModuleDescriptor* descriptor,
+                                       bool blueprint)
+        : ObjectBase(device),
+          mCode(descriptor->code, descriptor->code + descriptor->codeSize),
+          mIsBlueprint(blueprint) {
     }
 
     ShaderModuleBase::ShaderModuleBase(DeviceBase* device, ObjectBase::ErrorTag tag)
         : ObjectBase(device, tag) {
+    }
+
+    ShaderModuleBase::~ShaderModuleBase() {
+        // Do not uncache the actual cached object if we are a blueprint
+        if (!mIsBlueprint && !IsError()) {
+            GetDevice()->UncacheShaderModule(this);
+        }
     }
 
     // static
@@ -271,20 +294,39 @@ namespace dawn_native {
         const auto& layoutInfo = layout->GetBindingInfo();
         for (size_t i = 0; i < kMaxBindingsPerGroup; ++i) {
             const auto& moduleInfo = mBindingInfo[group][i];
+            const auto& layoutBindingType = layoutInfo.types[i];
 
             if (!moduleInfo.used) {
                 continue;
             }
 
-            if (moduleInfo.type != layoutInfo.types[i]) {
+            // DynamicUniformBuffer and DynamicStorageBuffer are uniform buffer and
+            // storage buffer in shader. Need to translate them.
+            if (NonDynamicBindingType(layoutBindingType) != moduleInfo.type) {
                 return false;
             }
+
             if ((layoutInfo.visibilities[i] & StageBit(mExecutionModel)) == 0) {
                 return false;
             }
         }
 
         return true;
+    }
+
+    size_t ShaderModuleBase::HashFunc::operator()(const ShaderModuleBase* module) const {
+        size_t hash = 0;
+
+        for (uint32_t word : module->mCode) {
+            HashCombine(&hash, word);
+        }
+
+        return hash;
+    }
+
+    bool ShaderModuleBase::EqualityFunc::operator()(const ShaderModuleBase* a,
+                                                    const ShaderModuleBase* b) const {
+        return a->mCode == b->mCode;
     }
 
 }  // namespace dawn_native

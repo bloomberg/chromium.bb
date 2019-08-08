@@ -5,27 +5,26 @@
 #ifndef CHROME_BROWSER_UI_ASH_ASSISTANT_ASSISTANT_SETUP_H_
 #define CHROME_BROWSER_UI_ASH_ASSISTANT_ASSISTANT_SETUP_H_
 
-#include "ash/public/interfaces/assistant_setup.mojom.h"
+#include "ash/public/cpp/assistant/assistant_setup.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
 #include "chromeos/services/assistant/public/mojom/settings.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
 
 namespace service_manager {
 class Connector;
 }  // namespace service_manager
 
 // AssistantSetup is the class responsible for start Assistant OptIn flow.
-class AssistantSetup : public ash::mojom::AssistantSetup,
+class AssistantSetup : public ash::AssistantSetup,
                        public arc::VoiceInteractionControllerClient::Observer {
  public:
   explicit AssistantSetup(service_manager::Connector* connector);
   ~AssistantSetup() override;
 
-  // ash::mojom::AssistantSetup:
+  // ash::AssistantSetup:
   void StartAssistantOptInFlow(
-      ash::mojom::FlowType type,
+      ash::FlowType type,
       StartAssistantOptInFlowCallback callback) override;
 
   // If prefs::kVoiceInteractionConsentStatus is nullptr, means the
@@ -41,7 +40,6 @@ class AssistantSetup : public ash::mojom::AssistantSetup,
 
   service_manager::Connector* connector_;
   chromeos::assistant::mojom::AssistantSettingsManagerPtr settings_manager_;
-  mojo::Binding<ash::mojom::AssistantSetup> binding_;
 
   base::WeakPtrFactory<AssistantSetup> weak_factory_;
 

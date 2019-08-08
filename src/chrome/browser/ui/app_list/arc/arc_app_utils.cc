@@ -627,6 +627,28 @@ void GetAndroidId(
   app_instance->GetAndroidId(base::BindOnce(std::move(callback), true));
 }
 
+std::string AppIdToArcPackageName(const std::string& app_id, Profile* profile) {
+  ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile);
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+      arc_prefs->GetApp(app_id);
+
+  if (!app_info) {
+    DLOG(ERROR) << "Couldn't retrieve ARC package name for AppID: " << app_id;
+    return std::string();
+  }
+  return app_info->package_name;
+}
+
+bool IsArcAppSticky(const std::string& app_id, Profile* profile) {
+  ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile);
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+      arc_prefs->GetApp(app_id);
+
+  DCHECK(app_info) << "Couldn't retrieve ARC package name for AppID: "
+                   << app_id;
+  return app_info->sticky;
+}
+
 Intent::Intent() = default;
 
 Intent::~Intent() = default;

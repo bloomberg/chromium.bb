@@ -247,6 +247,7 @@ void URLLoaderImpl::OnCertificateRequested(
 }
 
 void URLLoaderImpl::OnSSLCertificateError(net::URLRequest* request,
+                                          int net_error,
                                           const net::SSLInfo& ssl_info,
                                           bool fatal) {
   NOTIMPLEMENTED();

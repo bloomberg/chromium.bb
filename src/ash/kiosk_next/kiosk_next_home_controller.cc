@@ -6,12 +6,13 @@
 
 #include <memory>
 
+#include "ash/display/screen_orientation_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/screen_util.h"
+#include "ash/shell.h"
 #include "ash/wm/container_finder.h"
 #include "ash/wm/wm_event.h"
 #include "base/logging.h"
-#include "ui/aura/client/window_types.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
@@ -24,10 +25,21 @@ namespace ash {
 
 KioskNextHomeController::KioskNextHomeController() {
   display::Screen::GetScreen()->AddObserver(this);
+
+  home_screen_container_ = Shell::GetPrimaryRootWindow()->GetChildById(
+      kShellWindowId_HomeScreenContainer);
+  home_screen_container_->AddObserver(this);
+  if (!home_screen_container_->children().empty()) {
+    DCHECK_EQ(1u, home_screen_container_->children().size());
+    home_screen_window_ = home_screen_container_->children()[0];
+  }
 }
 
 KioskNextHomeController::~KioskNextHomeController() {
   display::Screen::GetScreen()->RemoveObserver(this);
+
+  if (home_screen_container_)
+    home_screen_container_->RemoveObserver(this);
 }
 
 void KioskNextHomeController::ShowHomeScreenView() {
@@ -37,20 +49,7 @@ void KioskNextHomeController::ShowHomeScreenView() {
 }
 
 aura::Window* KioskNextHomeController::GetHomeScreenWindow() {
-  aura::Window::Windows containers = wm::GetContainersFromAllRootWindows(
-      kShellWindowId_HomeScreenContainer, nullptr);
-  for (aura::Window* container : containers) {
-    if (container->children().empty())
-      continue;
-
-    // Expect only one window (there should be no app list window).
-    DCHECK_EQ(1u, container->children().size());
-    aura::Window* window = container->children()[0];
-    DCHECK_EQ(window->type(), aura::client::WindowType::WINDOW_TYPE_NORMAL);
-    return window;
-  }
-
-  return nullptr;
+  return home_screen_window_;
 }
 
 void KioskNextHomeController::UpdateYPositionAndOpacityForHomeLauncher(
@@ -103,6 +102,25 @@ void KioskNextHomeController::OnDisplayMetricsChanged(
   window->SetBounds(bounds);
   const wm::WMEvent event(wm::WM_EVENT_WORKAREA_BOUNDS_CHANGED);
   wm::GetWindowState(window)->OnWMEvent(&event);
+}
+
+void KioskNextHomeController::OnWindowAdded(aura::Window* new_window) {
+  DCHECK(!home_screen_window_);
+  DCHECK_EQ(new_window->type(), aura::client::WindowType::WINDOW_TYPE_NORMAL);
+  home_screen_window_ = new_window;
+
+  Shell::Get()->screen_orientation_controller()->LockOrientationForWindow(
+      home_screen_window_, OrientationLockType::kLandscape);
+}
+
+void KioskNextHomeController::OnWillRemoveWindow(aura::Window* window) {
+  DCHECK_EQ(home_screen_window_, window);
+  home_screen_window_ = nullptr;
+}
+
+void KioskNextHomeController::OnWindowDestroying(aura::Window* window) {
+  if (window == home_screen_container_)
+    home_screen_container_ = nullptr;
 }
 
 }  // namespace ash

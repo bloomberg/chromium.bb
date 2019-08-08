@@ -17,6 +17,7 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
@@ -260,11 +261,13 @@ class CookieStoreManagerTest
     storage_partition_impl_ = base::WrapUnique(
         new StoragePartitionImpl(worker_test_helper_->browser_context(),
                                  user_data_directory_.GetPath(), nullptr));
-    storage_partition_impl_->SetURLRequestContext(
-        worker_test_helper_->browser_context()
-            ->CreateRequestContextForStoragePartition(
-                user_data_directory_.GetPath(), false, nullptr,
-                URLRequestInterceptorScopedVector()));
+    if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      storage_partition_impl_->SetURLRequestContext(
+          worker_test_helper_->browser_context()
+              ->CreateRequestContextForStoragePartition(
+                  user_data_directory_.GetPath(), false, nullptr,
+                  URLRequestInterceptorScopedVector()));
+    }
     ::network::mojom::NetworkContext* network_context =
         storage_partition_impl_->GetNetworkContext();
     cookie_store_context_->ListenToCookieChanges(

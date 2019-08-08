@@ -597,8 +597,15 @@ int ServiceWorkerCacheWriter::WriteInfoToResponseWriter(
 
 int ServiceWorkerCacheWriter::WriteInfo(
     scoped_refptr<HttpResponseInfoIOBuffer> response_info) {
-  if (write_observer_)
-    write_observer_->WillWriteInfo(response_info);
+  if (!write_observer_)
+    return WriteInfoToResponseWriter(std::move(response_info));
+
+  int result = write_observer_->WillWriteInfo(response_info);
+  if (result != net::OK) {
+    DCHECK_NE(result, net::ERR_IO_PENDING);
+    state_ = STATE_DONE;
+    return result;
+  }
 
   return WriteInfoToResponseWriter(std::move(response_info));
 }

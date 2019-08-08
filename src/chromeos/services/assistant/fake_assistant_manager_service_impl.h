@@ -11,6 +11,7 @@
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "base/timer/timer.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
 #include "chromeos/services/assistant/fake_assistant_settings_manager_impl.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
@@ -57,6 +58,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) FakeAssistantManagerServiceImpl
   void ClearScreenContextCache() override;
   void OnAccessibilityStatusChanged(bool spoken_feedback_enabled) override;
   void SendAssistantFeedback(mojom::AssistantFeedbackPtr feedback) override;
+  void StopAlarmTimerRinging() override;
+  void CreateTimer(base::TimeDelta duration) override;
 
  private:
   State state_ = State::STOPPED;

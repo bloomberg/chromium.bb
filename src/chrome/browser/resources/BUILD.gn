@@ -5,12 +5,15 @@
 import("//chrome/common/features.gni")
 import("//tools/grit/grit_rule.gni")
 
+if (is_chromeos) {
+  import("//chrome/browser/chromeos/kiosk_next_home/kiosk_next.gni")
+}
+
 assert(!is_ios, "Chromium/iOS shouldn't use anything in //chrome")
 
 if (closure_compile) {
   group("closure_compile") {
     deps = [
-      "cryptotoken:closure_compile",
       "engagement:closure_compile",
     ]
     if (is_linux || is_win || is_mac) {
@@ -44,7 +47,6 @@ if (closure_compile) {
     }
     if (is_android) {
       deps += [
-        "eoc_internals:closure_compile",
         "explore_sites_internals:closure_compile",
         "feed_internals:closure_compile",
         "offline_pages:closure_compile",
@@ -54,6 +56,9 @@ if (closure_compile) {
     }
     if (!is_android) {
       deps += [ "app_management:closure_compile" ]
+    }
+    if (is_win || is_mac || is_desktop_linux) {
+      deps += [ "browser_switch:closure_compile" ]
     }
   }
 }
@@ -107,6 +112,10 @@ if (!is_android) {
     }
 
     if (is_chromeos) {
+      if (enable_kiosk_next) {
+        defines += [ "_kiosk_next" ]
+      }
+
       # The .grd contains references to generated files.
       source_is_generated = true
 
@@ -166,6 +175,39 @@ if (!is_android) {
     ]
     output_dir = "$root_gen_dir/chrome"
   }
+
+  grit("downloads_resources") {
+    if (optimize_webui) {
+      source = "downloads/downloads_resources_vulcanized.grd"
+
+      deps = [
+        "//chrome/browser/resources/downloads:build",
+      ]
+    } else {
+      source = "downloads/downloads_resources.grd"
+
+      deps = [
+        "//chrome/browser/ui/webui/downloads:mojo_bindings_js",
+      ]
+    }
+
+    # The .grd contains references to generated files.
+    source_is_generated = true
+
+    grit_flags = [
+      "-E",
+      "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+    ]
+
+    defines = chrome_grit_defines
+    outputs = [
+      "grit/downloads_resources.h",
+      "grit/downloads_resources_map.cc",
+      "grit/downloads_resources_map.h",
+      "downloads_resources.pak",
+    ]
+    output_dir = "$root_gen_dir/chrome"
+  }
 }
 
 if (is_chromeos) {
@@ -196,6 +238,20 @@ if (is_chromeos) {
       "os_settings_resources.pak",
     ]
     output_dir = "$root_gen_dir/chrome"
+  }
+
+  if (enable_kiosk_next && is_chrome_branded) {
+    grit("kiosk_next_internal_resources") {
+      source = "kiosk_next_internal_resources.grd"
+      defines = chrome_grit_defines
+      outputs = [
+        "grit/kiosk_next_internal_resources.h",
+        "grit/kiosk_next_internal_resources_map.cc",
+        "grit/kiosk_next_internal_resources_map.h",
+        "kiosk_next_internal_resources.pak",
+      ]
+      output_dir = "$root_gen_dir/chrome"
+    }
   }
 }
 

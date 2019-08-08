@@ -82,13 +82,6 @@ class MockMojoIndexedDBCallbacks : public blink::mojom::IDBCallbacks {
     MockedSuccessValue(&value);
   }
 
-  MOCK_METHOD1(MockedSuccessArray,
-               void(std::vector<blink::mojom::IDBReturnValuePtr>* values));
-  void SuccessArray(
-      std::vector<blink::mojom::IDBReturnValuePtr> values) override {
-    MockedSuccessArray(&values);
-  }
-
   MOCK_METHOD1(SuccessKey, void(const blink::IndexedDBKey& key));
   MOCK_METHOD1(SuccessInteger, void(int64_t value));
   MOCK_METHOD0(Success, void());

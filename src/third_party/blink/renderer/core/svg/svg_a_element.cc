@@ -65,8 +65,6 @@ void SVGAElement::Trace(blink::Visitor* visitor) {
   SVGURIReference::Trace(visitor);
 }
 
-DEFINE_NODE_FACTORY(SVGAElement)
-
 String SVGAElement::title() const {
   // If the xlink:title is set (non-empty string), use it.
   const AtomicString& title = FastGetAttribute(xlink_names::kTitleAttr);
@@ -101,8 +99,8 @@ void SVGAElement::SvgAttributeChanged(const QualifiedName& attr_name) {
 
 LayoutObject* SVGAElement::CreateLayoutObject(const ComputedStyle&,
                                               LegacyLayout) {
-  if (parentNode() && parentNode()->IsSVGElement() &&
-      ToSVGElement(parentNode())->IsTextContent())
+  auto* svg_element = DynamicTo<SVGElement>(parentNode());
+  if (svg_element && svg_element->IsTextContent())
     return new LayoutSVGInline(this);
 
   return new LayoutSVGTransformableContainer(this);
@@ -134,18 +132,22 @@ void SVGAElement::DefaultEventHandler(Event& event) {
         target = AtomicString("_blank");
       event.SetDefaultHandled();
 
-      LocalFrame* frame = GetDocument().GetFrame();
-      if (!frame)
-        return;
       FrameLoadRequest frame_request(
-          &GetDocument(), ResourceRequest(GetDocument().CompleteURL(url)),
-          target);
+          &GetDocument(), ResourceRequest(GetDocument().CompleteURL(url)));
       frame_request.SetNavigationPolicy(NavigationPolicyFromEvent(&event));
       frame_request.SetTriggeringEventInfo(
           event.isTrusted() ? WebTriggeringEventInfo::kFromTrustedEvent
                             : WebTriggeringEventInfo::kFromUntrustedEvent);
-      frame->Loader().StartNavigation(frame_request,
-                                      WebFrameLoadType::kStandard);
+      if (!GetDocument().GetFrame())
+        return;
+      Frame* frame = GetDocument()
+                         .GetFrame()
+                         ->Tree()
+                         .FindOrCreateFrameForNavigation(frame_request, target)
+                         .frame;
+      if (!frame)
+        return;
+      frame->Navigate(frame_request, WebFrameLoadType::kStandard);
       return;
     }
   }

@@ -5,7 +5,7 @@
 #include "ash/system/unified/quiet_mode_feature_pod_controller.h"
 
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/unified/feature_pod_button.h"
@@ -45,7 +45,7 @@ FeaturePodButton* QuietModeFeaturePodController::CreateButton() {
   button_->ShowDetailedViewArrow();
   OnQuietModeChanged(MessageCenter::Get()->IsQuietMode());
 
-  if (button_->visible()) {
+  if (button_->GetVisible()) {
     Shell::Get()->message_center_controller()->AddNotifierSettingsListener(
         this);
     Shell::Get()->message_center_controller()->RequestNotifierSettingsUpdate();

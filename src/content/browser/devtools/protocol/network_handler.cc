@@ -50,7 +50,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/content_switches.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
@@ -130,17 +130,19 @@ std::unique_ptr<Network::Cookie> BuildCookie(
           .SetSession(!cookie.IsPersistent())
           .Build();
 
-  // TODO(chlily): Add EXTENDED_MODE and UNSPECIFIED to devtools'
-  // Network::CookieSameSiteEnum.
   switch (cookie.SameSite()) {
     case net::CookieSameSite::STRICT_MODE:
       devtools_cookie->SetSameSite(Network::CookieSameSiteEnum::Strict);
       break;
     case net::CookieSameSite::LAX_MODE:
-    case net::CookieSameSite::EXTENDED_MODE:
       devtools_cookie->SetSameSite(Network::CookieSameSiteEnum::Lax);
       break;
+    case net::CookieSameSite::EXTENDED_MODE:
+      devtools_cookie->SetSameSite(Network::CookieSameSiteEnum::Extended);
+      break;
     case net::CookieSameSite::NO_RESTRICTION:
+      devtools_cookie->SetSameSite(Network::CookieSameSiteEnum::None);
+      break;
     case net::CookieSameSite::UNSPECIFIED:
       break;
   }
@@ -444,11 +446,15 @@ std::unique_ptr<net::CanonicalCookie> MakeCookieFromProtocolValues(
         expires ? base::Time::FromDoubleT(expires) : base::Time::UnixEpoch();
   }
 
-  net::CookieSameSite css = net::CookieSameSite::NO_RESTRICTION;
+  net::CookieSameSite css = net::CookieSameSite::UNSPECIFIED;
   if (same_site == Network::CookieSameSiteEnum::Lax)
     css = net::CookieSameSite::LAX_MODE;
   if (same_site == Network::CookieSameSiteEnum::Strict)
     css = net::CookieSameSite::STRICT_MODE;
+  if (same_site == Network::CookieSameSiteEnum::Extended)
+    css = net::CookieSameSite::EXTENDED_MODE;
+  if (same_site == Network::CookieSameSiteEnum::None)
+    css = net::CookieSameSite::NO_RESTRICTION;
 
   return net::CanonicalCookie::CreateSanitizedCookie(
       url, name, value, normalized_domain, path, base::Time(), expiration_date,
@@ -548,8 +554,7 @@ String referrerPolicy(network::mojom::ReferrerPolicy referrer_policy) {
     case network::mojom::ReferrerPolicy::kAlways:
       return Network::Request::ReferrerPolicyEnum::UnsafeUrl;
     case network::mojom::ReferrerPolicy::kDefault:
-      if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kReducedReferrerGranularity)) {
+      if (base::FeatureList::IsEnabled(features::kReducedReferrerGranularity)) {
         return Network::Request::ReferrerPolicyEnum::
             StrictOriginWhenCrossOrigin;
       } else {
@@ -1606,6 +1611,7 @@ std::unique_ptr<Network::Response> BuildResponse(
                                 info.load_timing.request_start_time)
           .Build();
   response->SetFromServiceWorker(info.was_fetched_via_service_worker);
+  response->SetFromPrefetchCache(info.was_in_prefetch_cache);
   network::HttpRawRequestResponseInfo* raw_info =
       info.raw_request_response_info.get();
   if (raw_info) {
@@ -1979,8 +1985,8 @@ void NetworkHandler::ContinueInterceptedRequest(
       LOG(WARNING) << "Can't find headers in raw response";
       header_size = 0;
     } else {
-      raw_headers = net::HttpUtil::AssembleRawHeaders(
-          reinterpret_cast<const char*>(raw.data()), header_size);
+      raw_headers = net::HttpUtil::AssembleRawHeaders(base::StringPiece(
+          reinterpret_cast<const char*>(raw.data()), header_size));
     }
     CHECK_LE(header_size, raw.size());
     response_headers =

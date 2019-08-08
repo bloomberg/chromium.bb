@@ -36,6 +36,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     <!--The polyfill is not needed for browser that have native API support,
         but is linked by these samples for wider compatibility.-->
     <!--script src='https://cdn.jsdelivr.net/npm/webxr-polyfill@latest/build/webxr-polyfill.js'></script-->
+    <script src='js/xrray-polyfill.js' type='module'></script>
     <script src='js/webxr-polyfill.js'></script>
 
     <script src='js/webxr-button.js'></script>
@@ -47,7 +48,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         <p>
           This sample demonstrates a way to fallback to rendering the scene when
           WebXR isn't available.
-          <a class="back" href="./">Back</a>
+          <a class="back" href="./index.html">Back</a>
         </p>
       </details>
     </header>
@@ -141,31 +142,32 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       function onRequestSession() {
         navigator.xr.requestSession('immersive-vr').then((session) => {
+          session.mode = 'immersive-vr';
           xrButton.setSession(session);
           onSessionStarted(session);
         });
       }
 
       function onSessionStarted(session) {
+        if (!session.mode)
+          session.mode = 'inline';
         session.addEventListener('end', onSessionEnded);
 
         initGL();
 
-        let outputCanvas = document.createElement('canvas');
-        document.body.appendChild(outputCanvas);
-
         session.updateRenderState({
-            baseLayer: new XRWebGLLayer(session, gl),
-            outputContext: outputCanvas.getContext('xrpresent')
+            baseLayer: new XRWebGLLayer(session, gl, {
+              compositionDisabled: session.mode == 'inline'
+            })
         });
 
-        session.requestReferenceSpace({ type: 'stationary', subtype: 'eye-level' }).then((refSpace) => {
+        session.requestReferenceSpace('local').then((refSpace) => {
           return refSpace;
         }, (e) => {
           if (!session.mode.startsWith('immersive')) {
             // If we're in inline mode, our underlying platform may not support
             // the stationary reference space, but an identity space is guaranteed.
-            return session.requestReferenceSpace({ type: 'identity' });
+            return session.requestReferenceSpace('viewer');
           } else {
             throw e;
           }
@@ -186,9 +188,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       function onSessionEnded(event) {
         if (event.session.mode.startsWith('immersive')) {
           xrButton.setSession(null);
-        }
-        if (event.session.renderState.outputContext) {
-          document.body.removeChild(event.session.renderState.outputContext.canvas);
         }
       }
 

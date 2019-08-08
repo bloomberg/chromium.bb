@@ -13,12 +13,12 @@ AnimationWorkletInput::AddAndUpdateState::AddAndUpdateState(
     std::string name,
     double current_time,
     std::unique_ptr<AnimationOptions> options,
-    int num_effects)
+    std::unique_ptr<AnimationEffectTimings> effect_timings)
     : worklet_animation_id(worklet_animation_id),
       name(name),
       current_time(current_time),
       options(std::move(options)),
-      num_effects(num_effects) {}
+      effect_timings(std::move(effect_timings)) {}
 AnimationWorkletInput::AddAndUpdateState::AddAndUpdateState(
     AddAndUpdateState&&) = default;
 AnimationWorkletInput::AddAndUpdateState::~AddAndUpdateState() = default;

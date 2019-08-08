@@ -56,7 +56,7 @@ void WakeLockProvider::AddBinding(mojom::WakeLockProviderRequest request) {
 
 void WakeLockProvider::GetWakeLockContextForID(
     int context_id,
-    mojo::InterfaceRequest<mojom::WakeLockContext> request) {
+    mojom::WakeLockContextRequest request) {
   DCHECK_GE(context_id, 0);
   mojo::MakeStrongBinding(
       std::make_unique<WakeLockContext>(context_id, file_task_runner_,

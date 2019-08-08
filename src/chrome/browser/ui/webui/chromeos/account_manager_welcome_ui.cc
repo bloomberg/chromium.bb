@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
@@ -15,13 +16,6 @@
 #include "ui/strings/grit/ui_strings.h"
 
 namespace chromeos {
-
-namespace {
-
-constexpr char kAccountManagerLearnMoreURL[] =
-    "https://support.google.com/chromebook/?p=google_accounts";
-
-}  // namespace
 
 AccountManagerWelcomeUI::AccountManagerWelcomeUI(content::WebUI* web_ui)
     : ui::WebDialogUI(web_ui), weak_factory_(this) {
@@ -37,25 +31,29 @@ AccountManagerWelcomeUI::AccountManagerWelcomeUI(content::WebUI* web_ui)
   // Add localized strings.
   html_source->AddLocalizedString("welcomeTitle",
                                   IDS_ACCOUNT_MANAGER_WELCOME_TITLE);
-  html_source->AddString("welcomeMessage",
-                         l10n_util::GetStringFUTF16(
-                             IDS_ACCOUNT_MANAGER_WELCOME_TEXT,
-                             base::ASCIIToUTF16(kAccountManagerLearnMoreURL)));
-  html_source->AddLocalizedString("okButton", IDS_APP_OK);
+  html_source->AddString(
+      "welcomeMessage",
+      l10n_util::GetStringFUTF16(
+          IDS_ACCOUNT_MANAGER_WELCOME_TEXT,
+          base::ASCIIToUTF16(chrome::kAccountManagerLearnMoreURL)));
+  html_source->AddLocalizedString("okButton",
+                                  IDS_ACCOUNT_MANAGER_WELCOME_BUTTON);
 
   // Add required resources.
-  html_source->AddResourcePath("account_manager_welcome.css",
-                               IDR_ACCOUNT_MANAGER_WELCOME_CSS);
+  html_source->AddResourcePath("account_manager_shared.css",
+                               IDR_ACCOUNT_MANAGER_SHARED_CSS);
   html_source->AddResourcePath("account_manager_welcome.js",
                                IDR_ACCOUNT_MANAGER_WELCOME_JS);
+#if defined(GOOGLE_CHROME_BUILD)
   html_source->AddResourcePath("account_manager_welcome_1x.png",
                                IDR_ACCOUNT_MANAGER_WELCOME_1X_PNG);
   html_source->AddResourcePath("account_manager_welcome_2x.png",
                                IDR_ACCOUNT_MANAGER_WELCOME_2X_PNG);
   html_source->AddResourcePath("googleg.svg",
                                IDR_ACCOUNT_MANAGER_WELCOME_GOOGLE_LOGO_SVG);
+#endif
+
   html_source->SetDefaultResource(IDR_ACCOUNT_MANAGER_WELCOME_HTML);
-  html_source->UseGzip();
 
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, html_source);

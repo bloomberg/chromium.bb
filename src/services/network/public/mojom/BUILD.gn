@@ -88,6 +88,7 @@ mojom("mojom") {
     "network_service.mojom",
     "network_service_test.mojom",
     "network_types.mojom",
+    "origin_policy_manager.mojom",
     "p2p.mojom",
     "p2p_trusted.mojom",
     "proxy_config.mojom",
@@ -95,7 +96,6 @@ mojom("mojom") {
     "proxy_lookup_client.mojom",
     "proxy_resolving_socket.mojom",
     "referrer_policy.mojom",
-    "request_context_frame_type.mojom",
     "restricted_cookie_manager.mojom",
     "ssl_config.mojom",
     "tcp_socket.mojom",
@@ -126,10 +126,7 @@ mojom("mojom") {
 
   if (is_ct_supported) {
     enabled_features += [ "is_ct_supported" ]
-    sources += [
-      "ct_log_info.mojom",
-      "signed_tree_head.mojom",
-    ]
+    sources += [ "ct_log_info.mojom" ]
   }
 
   if (!is_ios) {

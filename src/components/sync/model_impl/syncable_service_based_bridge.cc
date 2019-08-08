@@ -407,17 +407,17 @@ ConflictResolution SyncableServiceBasedBridge::ResolveConflict(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!remote_data.is_deleted()) {
-    return ConflictResolution::UseRemote();
+    return ConflictResolution::kUseRemote;
   }
 
   // Ignore local changes for extensions/apps when server had a delete, to
   // avoid unwanted reinstall of an uninstalled extension.
   if (type_ == EXTENSIONS || type_ == APPS) {
     DVLOG(1) << "Resolving conflict, ignoring local changes for extension/app";
-    return ConflictResolution::UseRemote();
+    return ConflictResolution::kUseRemote;
   }
 
-  return ConflictResolution::UseLocal();
+  return ConflictResolution::kUseLocal;
 }
 
 void SyncableServiceBasedBridge::ApplyStopSyncChanges(

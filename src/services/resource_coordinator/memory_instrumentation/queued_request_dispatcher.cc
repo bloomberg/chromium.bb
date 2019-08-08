@@ -130,7 +130,14 @@ size_t ReportGlobalNativeCodeResidentMemoryKb(
   }
 
   const size_t kPageSize = base::GetPageSize();
-  return accessed_pages_set.size() * kPageSize / 1024;
+  const size_t native_resident_bytes = accessed_pages_set.size() * kPageSize;
+  // TODO(crbug.com/956464) replace adding |NativeCodeResidentMemory| to trace
+  // this way by adding it through |tracing_observer| in Finalize().
+  TRACE_EVENT_INSTANT1(base::trace_event::MemoryDumpManager::kTraceCategory,
+                       "ReportGlobalNativeCodeResidentMemoryKb",
+                       TRACE_EVENT_SCOPE_GLOBAL, "NativeCodeResidentMemory",
+                       native_resident_bytes);
+  return native_resident_bytes / 1024;
 }
 #endif  // #if BUILDFLAG(SUPPORTS_CODE_ORDERING)
 
@@ -140,6 +147,8 @@ memory_instrumentation::mojom::OSMemDumpPtr CreatePublicOSDump(
   mojom::OSMemDumpPtr os_dump = mojom::OSMemDump::New();
 
   os_dump->resident_set_kb = internal_os_dump.resident_set_kb;
+  os_dump->peak_resident_set_kb = internal_os_dump.peak_resident_set_kb;
+  os_dump->is_peak_rss_resettable = internal_os_dump.is_peak_rss_resettable;
   os_dump->private_footprint_kb =
       CalculatePrivateFootprintKb(internal_os_dump, shared_resident_kb);
 #if defined(OS_LINUX) || defined(OS_ANDROID)
@@ -283,6 +292,7 @@ void QueuedRequestDispatcher::SetUpAndDispatch(
 
     request->responses[client].process_id = client_info.pid;
     request->responses[client].process_type = client_info.process_type;
+    request->responses[client].service_names = client_info.service_names;
 
     // Don't request a chrome memory dump at all if the client only wants the
     // a memory footprint.
@@ -447,12 +457,19 @@ void QueuedRequestDispatcher::Finalize(QueuedRequest* request,
   // All the pointers in the maps will continue to be owned by |request|
   // which outlives these containers.
   std::map<base::ProcessId, mojom::ProcessType> pid_to_process_type;
+  std::map<base::ProcessId, std::vector<std::string>> pid_to_service_names;
   std::map<base::ProcessId, const base::trace_event::ProcessMemoryDump*>
       pid_to_pmd;
   std::map<base::ProcessId, mojom::RawOSMemDump*> pid_to_os_dump;
   for (auto& response : request->responses) {
     const base::ProcessId& original_pid = response.second.process_id;
     pid_to_process_type[original_pid] = response.second.process_type;
+
+    std::vector<std::string>& service_names_for_pid =
+        pid_to_service_names[original_pid];
+    service_names_for_pid.insert(service_names_for_pid.begin(),
+                                 response.second.service_names.begin(),
+                                 response.second.service_names.end());
 
     // |chrome_dump| can be nullptr if this was a OS-counters only response.
     pid_to_pmd[original_pid] = response.second.chrome_dump.get();
@@ -587,6 +604,7 @@ void QueuedRequestDispatcher::Finalize(QueuedRequest* request,
     mojom::ProcessMemoryDumpPtr pmd = mojom::ProcessMemoryDump::New();
     pmd->pid = pid;
     pmd->process_type = pid_to_process_type[pid];
+    pmd->service_names = pid_to_service_names[pid];
     pmd->os_dump = std::move(os_dump);
 
     // If we have to return a summary, add all entries for the requested
@@ -676,10 +694,16 @@ bool QueuedRequestDispatcher::AddChromeMemoryDumpToTrace(
   return true;
 }
 
-QueuedRequestDispatcher::ClientInfo::ClientInfo(mojom::ClientProcess* client,
-                                                base::ProcessId pid,
-                                                mojom::ProcessType process_type)
-    : client(client), pid(pid), process_type(process_type) {}
+QueuedRequestDispatcher::ClientInfo::ClientInfo(
+    mojom::ClientProcess* client,
+    base::ProcessId pid,
+    mojom::ProcessType process_type,
+    std::vector<std::string> service_names)
+    : client(client),
+      pid(pid),
+      process_type(process_type),
+      service_names(std::move(service_names)) {}
+QueuedRequestDispatcher::ClientInfo::ClientInfo(ClientInfo&& other) = default;
 QueuedRequestDispatcher::ClientInfo::~ClientInfo() {}
 
 }  // namespace memory_instrumentation

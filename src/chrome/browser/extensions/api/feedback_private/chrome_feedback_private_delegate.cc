@@ -25,6 +25,8 @@
 #include "ui/base/webui/web_ui_util.h"
 
 #if defined(OS_CHROMEOS)
+#include "base/strings/string_split.h"
+#include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/system_logs/iwlwifi_dump_log_source.h"
 #include "chrome/browser/chromeos/system_logs/single_debug_daemon_log_source.h"
@@ -32,6 +34,8 @@
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/kiosk_next_shell_client.h"
+#include "components/feedback/feedback_util.h"
 #include "components/feedback/system_logs/system_logs_source.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
@@ -196,14 +200,12 @@ void ChromeFeedbackPrivateDelegate::FetchExtraLogs(
   constexpr bool scrub = true;
 
   if (system_logs::ContainsIwlwifiLogs(feedback_data->sys_info())) {
-    VLOG(1) << "Fetching WiFi dump logs.";
     system_logs::SystemLogsFetcher* fetcher =
         new system_logs::SystemLogsFetcher(scrub);
     fetcher->AddSource(std::make_unique<system_logs::IwlwifiDumpLogSource>());
     fetcher->Fetch(base::BindOnce(&OnFetchedExtraLogs, feedback_data,
                                   std::move(callback)));
   } else {
-    VLOG(1) << "WiFi dump logs are not present.";
     std::move(callback).Run(feedback_data);
   }
 }
@@ -214,6 +216,25 @@ void ChromeFeedbackPrivateDelegate::UnloadFeedbackExtension(
       ->extension_service()
       ->component_loader()
       ->Remove(extension_misc::kFeedbackExtensionId);
+}
+
+api::feedback_private::LandingPageType
+ChromeFeedbackPrivateDelegate::GetLandingPageType(
+    const feedback::FeedbackData& feedback_data) const {
+  if (KioskNextShellClient::Get() &&
+      KioskNextShellClient::Get()->has_launched()) {
+    return api::feedback_private::LANDING_PAGE_TYPE_NOLANDINGPAGE;
+  }
+
+  // Googlers using eve get a custom landing page.
+  if (!feedback_util::IsGoogleEmail(feedback_data.user_email()))
+    return api::feedback_private::LANDING_PAGE_TYPE_NORMAL;
+
+  const std::vector<std::string> board =
+      base::SplitString(base::SysInfo::GetLsbReleaseBoard(), "-",
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  return board[0] == "eve" ? api::feedback_private::LANDING_PAGE_TYPE_TECHSTOP
+                           : api::feedback_private::LANDING_PAGE_TYPE_NORMAL;
 }
 #endif  // defined(OS_CHROMEOS)
 

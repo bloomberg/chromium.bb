@@ -17,6 +17,11 @@ class Metrics {
   // GENERATED_JAVA_ENUM_PACKAGE: (
   // org.chromium.chrome.browser.autofill_assistant.metrics)
   // GENERATED_JAVA_CLASS_NAME_OVERRIDE: DropOutReason
+  //
+  // This enum is used in histograms, do not remove/renumber entries. Only add
+  // at the end just before NUM_ENTRIES. Also remember to update the
+  // AutofillAssistantDropOutReason enum listing in
+  // tools/metrics/histograms/enums.xml.
   enum DropOutReason {
     AA_START = 0,
     AUTOSTART_TIMEOUT = 1,
@@ -41,6 +46,25 @@ class Metrics {
     DFM_CANCELLED = 19,
 
     NUM_ENTRIES = 21,
+  };
+
+  // The different ways that autofill assistant can stop.
+  //
+  // GENERATED_JAVA_ENUM_PACKAGE: (
+  // org.chromium.chrome.browser.autofill_assistant.metrics)
+  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: OnBoarding
+  //
+  // This enum is used in histograms, do not remove/renumber entries. Only add
+  // at the end just before OB_NUM_ENTRIES. Also remember to update the
+  // AutofillAssistantOnBoarding enum listing in
+  // tools/metrics/histograms/enums.xml.
+  enum OnBoarding {
+    OB_SHOWN = 0,
+    OB_NOT_SHOWN = 1,
+    OB_ACCEPTED = 2,
+    OB_CANCELLED = 3,
+
+    OB_NUM_ENTRIES = 4,
   };
 
   static void RecordDropOut(DropOutReason reason);
@@ -123,6 +147,39 @@ class Metrics {
         out << "NO_INITIAL_SCRIPTS";
         // Intentionally no default case to make compilation fail if a new value
         // was added to the enum but not to this list.
+    }
+    return out;
+#endif  // NDEBUG
+  }
+
+  // Intended for debugging: writes string representation of |metric| to |out|.
+  friend std::ostream& operator<<(std::ostream& out, const OnBoarding& metric) {
+#ifdef NDEBUG
+    // Non-debugging builds write the enum number.
+    out << static_cast<int>(metric);
+    return out;
+#else
+    // Debugging builds write a string representation of |metric|.
+    switch (metric) {
+      case OB_SHOWN:
+        out << "OB_SHOWN";
+        break;
+
+      case OB_NOT_SHOWN:
+        out << "OB_NOT_SHOWN";
+        break;
+
+      case OB_ACCEPTED:
+        out << "OB_ACCEPTED";
+        break;
+
+      case OB_CANCELLED:
+        out << "OB_CANCELLED";
+        break;
+
+      case OB_NUM_ENTRIES:
+        out << "OB_NUM_ENTRIES";
+        break;
     }
     return out;
 #endif  // NDEBUG

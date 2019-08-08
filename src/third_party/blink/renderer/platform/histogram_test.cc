@@ -5,9 +5,8 @@
 #include "third_party/blink/renderer/platform/histogram.h"
 
 #include "base/metrics/histogram_samples.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/platform/testing/wtf/scoped_mock_clock.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -22,25 +21,35 @@ class TestCustomCountHistogram : public CustomCountHistogram {
   base::HistogramBase* Histogram() { return histogram_; }
 };
 
-TEST(ScopedUsHistogramTimerTest, Basic) {
+class ScopedUsHistogramTimerTest : public testing::Test {
+ public:
+  void SetUp() override {
+    test_task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  }
+
+ protected:
+  scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner_;
+};
+
+TEST_F(ScopedUsHistogramTimerTest, Basic) {
   TestCustomCountHistogram scoped_us_counter("ScopedUsHistogramTimerTest.Basic",
                                              0, 10000000, 50);
   {
-    WTF::ScopedMockClock clock;
-    ScopedUsHistogramTimer timer(scoped_us_counter);
-    clock.Advance(TimeDelta::FromMilliseconds(500));
+    ScopedUsHistogramTimer timer(scoped_us_counter,
+                                 test_task_runner_->GetMockTickClock());
+    test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(500));
   }
   // 500ms == 500000us
   EXPECT_EQ(500000, scoped_us_counter.Histogram()->SnapshotSamples()->sum());
 }
 
-TEST(ScopedHighResUsHistogramTimerTest, Basic) {
+TEST_F(ScopedUsHistogramTimerTest, BasicHighRes) {
   TestCustomCountHistogram scoped_us_counter(
       "ScopedHighResUsHistogramTimerTest.Basic", 0, 10000000, 50);
   {
-    WTF::ScopedMockClock clock;
-    ScopedHighResUsHistogramTimer timer(scoped_us_counter);
-    clock.Advance(TimeDelta::FromMilliseconds(500));
+    ScopedHighResUsHistogramTimer timer(scoped_us_counter,
+                                        test_task_runner_->GetMockTickClock());
+    test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(500));
   }
   int64_t expected = TimeTicks::IsHighResolution() ? 500000 : 0;
   EXPECT_EQ(expected, scoped_us_counter.Histogram()->SnapshotSamples()->sum());

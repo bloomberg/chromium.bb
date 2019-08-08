@@ -15,7 +15,7 @@
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/providers/wired_display/wired_display_presentation_receiver_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/media_router/media_source_helper.h"
+#include "chrome/common/media_router/media_source.h"
 #include "chrome/common/media_router/route_request_result.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"

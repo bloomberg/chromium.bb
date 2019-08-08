@@ -264,7 +264,7 @@ class ExternalFileURLLoader : public network::mojom::URLLoader {
 
   void OnStreamObtained(
       const std::string& mime_type,
-      std::unique_ptr<IsolatedFileSystemScope> isolated_file_system_scope,
+      storage::IsolatedContext::ScopedFSHandle isolated_file_system_scope,
       std::unique_ptr<storage::FileStreamReader> stream_reader,
       int64_t size) {
     head_.mime_type = mime_type;
@@ -326,7 +326,7 @@ class ExternalFileURLLoader : public network::mojom::URLLoader {
 
   std::unique_ptr<ExternalFileResolver> resolver_;
   network::ResourceResponseHead head_;
-  std::unique_ptr<IsolatedFileSystemScope> isolated_file_system_scope_;
+  storage::IsolatedContext::ScopedFSHandle isolated_file_system_scope_;
   std::unique_ptr<FileSystemReaderDataPipeProducer> data_producer_;
 
   base::WeakPtrFactory<ExternalFileURLLoader> weak_ptr_factory_;

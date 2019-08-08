@@ -56,7 +56,7 @@ std::string AudioReceiveStream::Config::ToString() const {
   ss << "{rtp: " << rtp.ToString();
   ss << ", rtcp_send_transport: "
      << (rtcp_send_transport ? "(Transport)" : "null");
-  ss << ", media_transport: " << (media_transport ? "(Transport)" : "null");
+  ss << ", media_transport_config: " << media_transport_config.DebugString();
   if (!sync_group.empty()) {
     ss << ", sync_group: " << sync_group;
   }
@@ -77,7 +77,7 @@ std::unique_ptr<voe::ChannelReceiveInterface> CreateChannelReceive(
       static_cast<internal::AudioState*>(audio_state);
   return voe::CreateChannelReceive(
       clock, module_process_thread, internal_audio_state->audio_device_module(),
-      config.media_transport, config.rtcp_send_transport, event_log,
+      config.media_transport_config, config.rtcp_send_transport, event_log,
       config.rtp.remote_ssrc, config.jitter_buffer_max_packets,
       config.jitter_buffer_fast_accelerate, config.jitter_buffer_min_delay_ms,
       config.jitter_buffer_enable_rtx_handling, config.decoder_factory,
@@ -122,7 +122,7 @@ AudioReceiveStream::AudioReceiveStream(
 
   module_process_thread_checker_.Detach();
 
-  if (!config.media_transport) {
+  if (!config.media_transport_config.media_transport) {
     RTC_DCHECK(receiver_controller);
     RTC_DCHECK(packet_router);
     // Configure bandwidth estimation.
@@ -140,7 +140,7 @@ AudioReceiveStream::~AudioReceiveStream() {
   RTC_LOG(LS_INFO) << "~AudioReceiveStream: " << config_.rtp.remote_ssrc;
   Stop();
   channel_receive_->SetAssociatedSendChannel(nullptr);
-  if (!config_.media_transport) {
+  if (!config_.media_transport_config.media_transport) {
     channel_receive_->ResetReceiverCongestionControlObjects();
   }
 }
@@ -206,15 +206,20 @@ webrtc::AudioReceiveStream::Stats AudioReceiveStream::GetStats() const {
 
   // Get jitter buffer and total delay (alg + jitter + playout) stats.
   auto ns = channel_receive_->GetNetworkStatistics();
+  stats.fec_packets_received = ns.fecPacketsReceived;
+  stats.fec_packets_discarded = ns.fecPacketsDiscarded;
   stats.jitter_buffer_ms = ns.currentBufferSize;
   stats.jitter_buffer_preferred_ms = ns.preferredBufferSize;
   stats.total_samples_received = ns.totalSamplesReceived;
   stats.concealed_samples = ns.concealedSamples;
+  stats.silent_concealed_samples = ns.silentConcealedSamples;
   stats.concealment_events = ns.concealmentEvents;
   stats.jitter_buffer_delay_seconds =
       static_cast<double>(ns.jitterBufferDelayMs) /
       static_cast<double>(rtc::kNumMillisecsPerSec);
   stats.jitter_buffer_emitted_count = ns.jitterBufferEmittedCount;
+  stats.inserted_samples_for_deceleration = ns.insertedSamplesForDeceleration;
+  stats.removed_samples_for_acceleration = ns.removedSamplesForAcceleration;
   stats.expand_rate = Q14ToFloat(ns.currentExpandRate);
   stats.speech_expand_rate = Q14ToFloat(ns.currentSpeechExpandRate);
   stats.secondary_decoded_rate = Q14ToFloat(ns.currentSecondaryDecodedRate);
@@ -226,6 +231,8 @@ webrtc::AudioReceiveStream::Stats AudioReceiveStream::GetStats() const {
   stats.relative_packet_arrival_delay_seconds =
       static_cast<double>(ns.relativePacketArrivalDelayMs) /
       static_cast<double>(rtc::kNumMillisecsPerSec);
+  stats.interruption_count = ns.interruptionCount;
+  stats.total_interruption_duration_ms = ns.totalInterruptionDurationMs;
 
   auto ds = channel_receive_->GetDecodingCallStatistics();
   stats.decoding_calls_to_silence_generator = ds.calls_to_silence_generator;

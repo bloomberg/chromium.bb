@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/common/content_switches.h"
@@ -58,10 +59,12 @@ class FeedbackTest : public ExtensionBrowserTest {
 
   void StartFeedbackUI(FeedbackFlow flow,
                        const std::string& extra_diagnostics,
-                       bool from_assistant = false) {
+                       bool from_assistant = false,
+                       bool include_bluetooth_logs = false) {
     base::Closure callback = base::Bind(&StopMessageLoopCallback);
     extensions::FeedbackPrivateGetStringsFunction::set_test_callback(&callback);
-    InvokeFeedbackUI(flow, extra_diagnostics, from_assistant);
+    InvokeFeedbackUI(flow, extra_diagnostics, from_assistant,
+                     include_bluetooth_logs);
     content::RunMessageLoop();
     extensions::FeedbackPrivateGetStringsFunction::set_test_callback(NULL);
   }
@@ -79,13 +82,15 @@ class FeedbackTest : public ExtensionBrowserTest {
  private:
   void InvokeFeedbackUI(FeedbackFlow flow,
                         const std::string& extra_diagnostics,
-                        bool from_assistant) {
+                        bool from_assistant,
+                        bool include_bluetooth_logs) {
     extensions::FeedbackPrivateAPI* api =
         extensions::FeedbackPrivateAPI::GetFactoryInstance()->Get(
             browser()->profile());
-    api->RequestFeedbackForFlow(
-        "Test description", "Test placeholder", "Test tag", extra_diagnostics,
-        GURL("http://www.test.com"), flow, from_assistant);
+    api->RequestFeedbackForFlow("Test description", "Test placeholder",
+                                "Test tag", extra_diagnostics,
+                                GURL("http://www.test.com"), flow,
+                                from_assistant, include_bluetooth_logs);
   }
 };
 
@@ -248,11 +253,62 @@ IN_PROC_BROWSER_TEST_F(FeedbackTest, MAYBE_ShowFeedbackFromAssistant) {
   EXPECT_TRUE(bool_result);
 }
 
+#if defined(OS_CHROMEOS)
+// Ensures that when triggered from a Google account and a Bluetooth related
+// string is entered into the description, that we provide the option for
+// uploading Bluetooth logs as well.
+IN_PROC_BROWSER_TEST_F(FeedbackTest, ProvideBluetoothLogs) {
+  WaitForExtensionViewsToLoad();
+
+  ASSERT_TRUE(IsFeedbackAppAvailable());
+  StartFeedbackUI(FeedbackFlow::FEEDBACK_FLOW_GOOGLEINTERNAL, std::string(),
+                  /*from_assistant*/ false, /*include_bluetooth_logs*/ true);
+  VerifyFeedbackAppLaunch();
+
+  AppWindow* const window =
+      PlatformAppBrowserTest::GetFirstAppWindowForBrowser(browser());
+  ASSERT_TRUE(window);
+  content::WebContents* const content = window->web_contents();
+
+  // It shouldn't be visible until we put the Bluetooth text into the
+  // description.
+  bool bool_result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      content,
+      "domAutomationController.send("
+      "  ((function() {"
+      "      if ($('bluetooth-checkbox-container') != null &&"
+      "          $('bluetooth-checkbox-container').hidden == true) {"
+      "        return true;"
+      "      }"
+      "      return false;"
+      "    })()));",
+      &bool_result));
+  EXPECT_TRUE(bool_result);
+  bool_result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      content,
+      "domAutomationController.send("
+      "  ((function() {"
+      "      var elem = document.getElementById('description-text');"
+      "      elem.value = 'bluetooth';"
+      "      elem.dispatchEvent(new Event('input', {}));"
+      "      if ($('bluetooth-checkbox-container') != null &&"
+      "          $('bluetooth-checkbox-container').hidden == false) {"
+      "        return true;"
+      "      }"
+      "      return false;"
+      "    })()));",
+      &bool_result));
+  EXPECT_TRUE(bool_result);
+}
+#endif  // if defined(CHROME_OS)
+  
 IN_PROC_BROWSER_TEST_F(FeedbackTest, GetTargetTabUrl) {
   const std::pair<std::string, std::string> test_cases[] = {
       {"https://www.google.com/", "https://www.google.com/"},
-      {"about://version/", "chrome://version/"},
-      {"chrome://bookmarks/", "chrome://bookmarks/"},
+      {"about://version/", chrome::kChromeUIVersionURL},
+      {chrome::kChromeUIBookmarksURL, chrome::kChromeUIBookmarksURL},
   };
 
   for (const auto& test_case : test_cases) {

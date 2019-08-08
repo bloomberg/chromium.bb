@@ -103,4 +103,9 @@ bool DownloadItemImplDelegate::IsActiveNetworkMetered() const {
 
 void DownloadItemImplDelegate::ReportBytesWasted(DownloadItemImpl* download) {}
 
+service_manager::Connector*
+DownloadItemImplDelegate::GetServiceManagerConnector() {
+  return nullptr;
+}
+
 }  // namespace download

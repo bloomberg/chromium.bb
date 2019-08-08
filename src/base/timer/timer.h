@@ -7,7 +7,7 @@
 // delay expires.
 // RepeatingTimer on the other hand calls you back periodically with the
 // prescribed time interval.
-// RetainingOneShotTimer doesn't repeat the task itself like OneShotTimer, but
+// RetainingOneShotTimer doesn't repeat the task itself like RepeatingTimer, but
 // retains the given task after the time out. You can restart it with Reset
 // again without giving new task to Start.
 //

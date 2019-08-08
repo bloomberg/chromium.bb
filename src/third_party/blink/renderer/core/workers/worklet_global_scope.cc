@@ -62,6 +62,10 @@ WorkletGlobalScope::WorkletGlobalScope(
     WorkerThread* worker_thread)
     : WorkerOrWorkletGlobalScope(
           isolate,
+          // TODO(tzik): Assign an Agent for Worklets after
+          // NonMainThreadScheduler gets ready to run microtasks.
+          nullptr,
+          creation_params->off_main_thread_fetch_option,
           creation_params->global_scope_name,
           creation_params->parent_devtools_token,
           creation_params->v8_cache_options,
@@ -137,16 +141,17 @@ bool WorkletGlobalScope::IsContextThread() const {
   return worker_thread_->IsCurrentThread();
 }
 
-void WorkletGlobalScope::AddConsoleMessage(ConsoleMessage* console_message) {
+void WorkletGlobalScope::AddConsoleMessageImpl(ConsoleMessage* console_message,
+                                               bool discard_duplicates) {
   if (IsMainThreadWorkletGlobalScope()) {
-    frame_->Console().AddMessage(console_message);
+    frame_->Console().AddMessage(console_message, discard_duplicates);
     return;
   }
   worker_thread_->GetWorkerReportingProxy().ReportConsoleMessage(
       console_message->Source(), console_message->Level(),
       console_message->Message(), console_message->Location());
   worker_thread_->GetConsoleMessageStorage()->AddConsoleMessage(
-      worker_thread_->GlobalScope(), console_message);
+      worker_thread_->GlobalScope(), console_message, discard_duplicates);
 }
 
 void WorkletGlobalScope::ExceptionThrown(ErrorEvent* error_event) {
@@ -184,6 +189,13 @@ scoped_refptr<base::SingleThreadTaskRunner> WorkletGlobalScope::GetTaskRunner(
   return worker_thread_->GetTaskRunner(task_type);
 }
 
+FrameOrWorkerScheduler* WorkletGlobalScope::GetScheduler() {
+  DCHECK(IsContextThread());
+  if (IsMainThreadWorkletGlobalScope())
+    return frame_->GetFrameScheduler();
+  return worker_thread_->GetScheduler();
+}
+
 LocalFrame* WorkletGlobalScope::GetFrame() const {
   DCHECK(IsMainThreadWorkletGlobalScope());
   return frame_;
@@ -196,6 +208,7 @@ void WorkletGlobalScope::FetchAndInvokeScript(
     const KURL& module_url_record,
     network::mojom::FetchCredentialsMode credentials_mode,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
+    WorkerResourceTimingNotifier& outside_resource_timing_notifier,
     scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,
     WorkletPendingTasks* pending_tasks) {
   DCHECK(IsContextThread());
@@ -218,7 +231,8 @@ void WorkletGlobalScope::FetchAndInvokeScript(
   // spec (e.g., "paint worklet", "audio worklet") (https://crbug.com/843980,
   // https://crbug.com/843982)
   auto destination = mojom::RequestContextType::SCRIPT;
-  FetchModuleScript(module_url_record, outside_settings_object, destination,
+  FetchModuleScript(module_url_record, outside_settings_object,
+                    outside_resource_timing_notifier, destination,
                     credentials_mode,
                     ModuleScriptCustomFetchType::kWorkletAddModule, client);
 }

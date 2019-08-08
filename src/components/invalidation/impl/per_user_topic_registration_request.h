@@ -50,6 +50,8 @@ class PerUserTopicRegistrationRequest {
 
     Builder& SetType(RequestType type);
 
+    Builder& SetTopicIsPublic(bool topic_is_public);
+
     enum RegistrationState { REGISTERED, UNREGISTERED };
 
    private:
@@ -68,6 +70,7 @@ class PerUserTopicRegistrationRequest {
     std::string scope_;
     std::string auth_header_;
     RequestType type_;
+    bool topic_is_public_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(Builder);
   };
@@ -90,7 +93,7 @@ class PerUserTopicRegistrationRequest {
                                   std::unique_ptr<std::string> response_body);
 
   void OnJsonParseFailure(const std::string& error);
-  void OnJsonParseSuccess(std::unique_ptr<base::Value> parsed_json);
+  void OnJsonParseSuccess(base::Value parsed_json);
 
   // For tests only. Returns the full URL of the request.
   GURL getUrl() const { return url_; }

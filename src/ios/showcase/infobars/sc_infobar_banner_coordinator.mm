@@ -4,12 +4,14 @@
 
 #import "ios/showcase/infobars/sc_infobar_banner_coordinator.h"
 
+#import "ios/chrome/browser/infobars/infobar_type.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_delegate.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_view_controller.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_delegate.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_view_controller.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_positioner.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_transition_driver.h"
+#import "ios/chrome/browser/ui/infobars/presentation/infobar_modal_positioner.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_modal_transition_driver.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -23,7 +25,8 @@ NSString* const kInfobarBannerPresentedModalLabel = @"Modal Infobar";
 
 #pragma mark - ContainerViewController
 
-@interface ContainerViewController : UIViewController <InfobarBannerPositioner>
+@interface ContainerViewController
+    : UIViewController <InfobarBannerPositioner, InfobarModalPositioner>
 @property(nonatomic, strong) InfobarBannerViewController* bannerViewController;
 @property(nonatomic, strong)
     InfobarBannerTransitionDriver* bannerTransitionDriver;
@@ -51,6 +54,13 @@ NSString* const kInfobarBannerPresentedModalLabel = @"Modal Infobar";
 - (UIView*)bannerView {
   return self.bannerViewController.view;
 }
+
+#pragma mark InfobarBannerPositioner
+
+- (CGFloat)modalHeightForWidth:(CGFloat)width {
+  return 200;
+}
+
 @end
 
 #pragma mark - SCInfobarBannerCoordinator
@@ -73,8 +83,9 @@ NSString* const kInfobarBannerPresentedModalLabel = @"Modal Infobar";
   containerView.backgroundColor = [UIColor whiteColor];
   self.containerViewController.title = @"Infobar Messages";
 
-  self.bannerViewController =
-      [[InfobarBannerViewController alloc] initWithDelegate:self];
+  self.bannerViewController = [[InfobarBannerViewController alloc]
+      initWithDelegate:self
+                  type:InfobarType::kInfobarTypeConfirm];
   self.bannerViewController.titleText = kInfobarBannerTitleLabel;
   self.bannerViewController.subTitleText = kInfobarBannerSubtitleLabel;
   self.bannerViewController.buttonText = kInfobarBannerButtonLabel;
@@ -97,6 +108,7 @@ NSString* const kInfobarBannerPresentedModalLabel = @"Modal Infobar";
 - (void)presentInfobarModalFromBanner {
   self.modalTransitionDriver = [[InfobarModalTransitionDriver alloc]
       initWithTransitionMode:InfobarModalTransitionBanner];
+  self.modalTransitionDriver.modalPositioner = self.containerViewController;
   self.modalViewController =
       [[InfobarModalViewController alloc] initWithModalDelegate:self];
   self.modalViewController.title = kInfobarBannerPresentedModalLabel;
@@ -118,15 +130,24 @@ NSString* const kInfobarBannerPresentedModalLabel = @"Modal Infobar";
                                               completion:nil];
 }
 
+- (void)infobarBannerWasDismissed {
+  self.bannerViewController = nil;
+}
+
 #pragma mark InfobarModalDelegate
 
-- (void)modalInfobarButtonWasPressed:(UIButton*)sender {
-  [self dismissInfobarModal:sender completion:nil];
+- (void)modalInfobarButtonWasAccepted:(id)sender {
+  [self dismissInfobarModal:sender animated:YES completion:nil];
 }
 
 - (void)dismissInfobarModal:(UIButton*)sender
+                   animated:(BOOL)animated
                  completion:(ProceduralBlock)completion {
-  [self.baseViewController dismissViewControllerAnimated:YES completion:nil];
+  [self.baseViewController dismissViewControllerAnimated:animated
+                                              completion:nil];
+}
+
+- (void)modalInfobarWasDismissed:(id)sender {
 }
 
 @end

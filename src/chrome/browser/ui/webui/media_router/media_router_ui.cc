@@ -34,7 +34,6 @@
 #include "chrome/common/media_router/media_route.h"
 #include "chrome/common/media_router/media_sink.h"
 #include "chrome/common/media_router/media_source.h"
-#include "chrome/common/media_router/media_source_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -58,8 +57,7 @@
 namespace media_router {
 
 MediaRouterUI::MediaRouterUI(content::WebUI* web_ui)
-    : ConstrainedWebDialogUI(web_ui),
-      weak_factory_(this) {
+    : ConstrainedWebDialogUI(web_ui), weak_factory_(this) {
   auto handler = std::make_unique<MediaRouterWebUIMessageHandler>(this);
   handler_ = handler.get();
 

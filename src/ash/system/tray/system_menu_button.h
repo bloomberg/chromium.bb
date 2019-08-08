@@ -50,6 +50,7 @@ class SystemMenuButton : public views::ImageButton {
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
+  const char* GetClassName() const override;
 
  private:
   // Returns the size that the ink drop should be constructed with.

@@ -17,8 +17,6 @@ class KURL;
 
 class HTMLImportTreeRoot final : public HTMLImport, public NameClient {
  public:
-  static HTMLImportTreeRoot* Create(Document*);
-
   explicit HTMLImportTreeRoot(Document*);
   ~HTMLImportTreeRoot() final;
   void Dispose();

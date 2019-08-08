@@ -25,6 +25,7 @@
 #include "content/common/navigation_params.h"
 #include "content/common/throttling_url_loader.h"
 #include "content/public/common/navigation_policy.h"
+#include "content/public/common/origin_util.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/renderer/request_peer.h"
@@ -64,7 +65,7 @@ void CheckSchemeForReferrerPolicy(const network::ResourceRequest& request) {
            net::URLRequest::
                CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE) &&
       request.referrer.SchemeIsCryptographic() &&
-      !request.url.SchemeIsCryptographic()) {
+      !IsOriginSecure(request.url)) {
     LOG(FATAL) << "Trying to send secure referrer for insecure request "
                << "without an appropriate referrer policy.\n"
                << "URL = " << request.url << "\n"
@@ -142,7 +143,7 @@ void ResourceDispatcher::OnUploadProgress(int request_id,
 void ResourceDispatcher::OnReceivedResponse(
     int request_id,
     const network::ResourceResponseHead& response_head) {
-  TRACE_EVENT0("loader", "ResourceDispatcher::OnReceivedResponse");
+  TRACE_EVENT0("loading", "ResourceDispatcher::OnReceivedResponse");
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
     return;
@@ -177,14 +178,14 @@ void ResourceDispatcher::OnReceivedResponse(
 
 void ResourceDispatcher::OnReceivedCachedMetadata(
     int request_id,
-    const std::vector<uint8_t>& data) {
+    base::span<const uint8_t> data) {
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
     return;
 
   if (data.size()) {
     request_info->peer->OnReceivedCachedMetadata(
-        reinterpret_cast<const char*>(&data.front()), data.size());
+        reinterpret_cast<const char*>(data.data()), data.size());
   }
 }
 
@@ -203,7 +204,7 @@ void ResourceDispatcher::OnReceivedRedirect(
     const net::RedirectInfo& redirect_info,
     const network::ResourceResponseHead& response_head,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  TRACE_EVENT0("loader", "ResourceDispatcher::OnReceivedRedirect");
+  TRACE_EVENT0("loading", "ResourceDispatcher::OnReceivedRedirect");
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
     return;
@@ -267,7 +268,7 @@ void ResourceDispatcher::FollowPendingRedirect(
 void ResourceDispatcher::OnRequestComplete(
     int request_id,
     const network::URLLoaderCompletionStatus& status) {
-  TRACE_EVENT0("loader", "ResourceDispatcher::OnRequestComplete");
+  TRACE_EVENT0("loading", "ResourceDispatcher::OnRequestComplete");
 
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)

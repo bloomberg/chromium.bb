@@ -144,5 +144,5 @@ interface DevToolsSessionHost {
 // the respective key when its applying the updates in
 // DevToolsSession::ApplySessionStateUpdates.
 struct DevToolsSessionState {
-  map<string, string?> entries;
+  map<string, array<uint8>?> entries;
 };

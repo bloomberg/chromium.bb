@@ -22,7 +22,7 @@ static_assert(sizeof(NGBreakToken) == sizeof(SameSizeAsNGBreakToken),
 
 }  // namespace
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 
 namespace {
 
@@ -62,6 +62,6 @@ void NGBreakToken::ShowBreakTokenTree() const {
   AppendBreakTokenToString(this, &string_builder);
   fprintf(stderr, "%s\n", string_builder.ToString().Utf8().data());
 }
-#endif  // NDEBUG
+#endif  // DCHECK_IS_ON()
 
 }  // namespace blink

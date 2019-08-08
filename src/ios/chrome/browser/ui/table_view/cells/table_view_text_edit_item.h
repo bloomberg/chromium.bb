@@ -22,6 +22,12 @@
 // An icon identifying the text field or its current value, if any.
 @property(nonatomic, copy) UIImage* identifyingIcon;
 
+// If YES the identifyingIcon will be enabled as a button. Disabled by default.
+@property(nonatomic, assign) BOOL identifyingIconEnabled;
+
+// If set the String will be used as the identifyingIcon button A11y label.
+@property(nonatomic, copy) NSString* identifyingIconAccessibilityLabel;
+
 // Whether to hide or display the trailing edit icon.
 @property(nonatomic, assign) BOOL hideEditIcon;
 
@@ -59,6 +65,12 @@
 // Whether the icon showing that the cell is editable should be displayed.
 @property(nonatomic, assign) BOOL editIconDisplayed;
 
+// Identifying button. UIButton containing the icon
+// identifying |textField| or its current value. It is located at the most
+// trailing position of the Cell.
+@property(nonatomic, readonly, strong) UIButton* identifyingIconButton;
+
+// Sets |self.identifyingIconButton| icon.
 - (void)setIdentifyingIcon:(UIImage*)icon;
 
 @end

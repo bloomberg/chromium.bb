@@ -58,7 +58,7 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
                                  LayerTreeHost* layer_tree_host,
                                  base::TimeTicks main_thread_start_time,
                                  bool hold_commit_for_activation);
-  void SetURLForUkm(const GURL& url);
+  void SetSourceURL(ukm::SourceId source_id, const GURL& url);
   void ClearHistory();
   void SetRenderFrameObserver(
       std::unique_ptr<RenderFrameMetadataObserver> observer);
@@ -109,8 +109,6 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
       uint32_t frame_token,
       std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
       const gfx::PresentationFeedback& feedback) override;
-  void DidGenerateLocalSurfaceIdAllocationOnImplThread(
-      const viz::LocalSurfaceIdAllocation& allocation) override;
   void NotifyAnimationWorkletStateChange(
       AnimationWorkletMutationState state,
       ElementListType element_list_type) override;

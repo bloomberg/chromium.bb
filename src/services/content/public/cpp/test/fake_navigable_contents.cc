@@ -43,8 +43,7 @@ void FakeNavigableContents::GoBack(
   std::move(callback).Run(false /* success */);
 }
 
-void FakeNavigableContents::CreateView(bool in_service_process,
-                                       CreateViewCallback callback) {
+void FakeNavigableContents::CreateView(CreateViewCallback callback) {
   auto token = base::UnguessableToken::Create();
   NavigableContentsView::RegisterInProcessEmbedCallback(token,
                                                         base::DoNothing());

@@ -502,6 +502,12 @@ TEST_P(ParameterizedVisibleUnitsWordTest, NextWordCrossingBlock) {
   EXPECT_EQ("<p>abc</p><p>def|</p>", DoNextWord("<p>abc|</p><p>def</p>"));
 }
 
+TEST_P(ParameterizedVisibleUnitsWordTest, NextWordCrossingPlaceholderBR) {
+  // TODO(crbug.com/122304): NextWordPosition should respect paragraph
+  // boundaries. On Windows, it should move to "|abc".
+  EXPECT_EQ("<p><br></p><p>abc|</p>", DoNextWord("<p>|<br></p><p>abc</p>"));
+}
+
 TEST_P(ParameterizedVisibleUnitsWordTest, NextWordMixedEditability) {
   EXPECT_EQ(
       "<p contenteditable>"

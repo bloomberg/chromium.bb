@@ -546,13 +546,25 @@ CSSValue* ComputedStyleUtils::ValueForPositionOffset(
 
   if (offset.IsPercentOrCalc() && layout_object && layout_object->IsBox() &&
       layout_object->IsPositioned()) {
-    LayoutUnit containing_block_size =
-        is_horizontal_property ==
-                layout_object->ContainingBlock()->IsHorizontalWritingMode()
-            ? ToLayoutBox(layout_object)
-                  ->ContainingBlockLogicalWidthForContent()
-            : ToLayoutBox(layout_object)
-                  ->ContainingBlockLogicalHeightForGetComputedStyle();
+    LayoutUnit containing_block_size;
+    if (layout_object->IsStickyPositioned()) {
+      const LayoutBox& enclosing_scrollport_box =
+          ToLayoutBox(layout_object)->EnclosingScrollportBox();
+      bool use_inline_size = is_horizontal_property ==
+                             enclosing_scrollport_box.IsHorizontalWritingMode();
+      containing_block_size =
+          use_inline_size ? enclosing_scrollport_box.ContentLogicalWidth()
+                          : enclosing_scrollport_box.ContentLogicalHeight();
+    } else {
+      containing_block_size =
+          is_horizontal_property ==
+                  layout_object->ContainingBlock()->IsHorizontalWritingMode()
+              ? ToLayoutBox(layout_object)
+                    ->ContainingBlockLogicalWidthForContent()
+              : ToLayoutBox(layout_object)
+                    ->ContainingBlockLogicalHeightForGetComputedStyle();
+    }
+
     return ZoomAdjustedPixelValue(ValueForLength(offset, containing_block_size),
                                   style);
   }
@@ -1529,13 +1541,6 @@ CSSValue* ComputedStyleUtils::CreateTimingFunctionValue(
       return CSSIdentifierValue::Create(value_id);
     }
 
-    case TimingFunction::Type::FRAMES: {
-      const FramesTimingFunction* frames_timing_function =
-          ToFramesTimingFunction(timing_function);
-      int frames = frames_timing_function->NumberOfFrames();
-      return CSSFramesTimingFunctionValue::Create(frames);
-    }
-
     default:
       return CSSIdentifierValue::Create(CSSValueID::kLinear);
   }
@@ -1896,11 +1901,11 @@ CSSValueList* ComputedStyleUtils::ValueForBorderRadiusShorthand(
 CSSValue* ComputedStyleUtils::StrokeDashArrayToCSSValueList(
     const SVGDashArray& dashes,
     const ComputedStyle& style) {
-  if (dashes.IsEmpty())
+  if (dashes.data.IsEmpty())
     return CSSIdentifierValue::Create(CSSValueID::kNone);
 
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
-  for (const Length& dash_length : dashes.GetVector()) {
+  for (const Length& dash_length : dashes.data) {
     list->Append(*ZoomAdjustedPixelValueForLength(dash_length, style));
   }
 
@@ -2078,6 +2083,8 @@ CSSValue* ComputedStyleUtils::ValueForScrollSnapType(
     const cc::ScrollSnapType& type,
     const ComputedStyle& style) {
   if (!type.is_none) {
+    if (type.strictness == cc::SnapStrictness::kProximity)
+      return CSSIdentifierValue::Create(type.axis);
     return MakeGarbageCollected<CSSValuePair>(
         CSSIdentifierValue::Create(type.axis),
         CSSIdentifierValue::Create(type.strictness),
@@ -2104,11 +2111,10 @@ CSSValue* ComputedStyleUtils::ValueForPageBreakBetween(
     case EBreakBetween::kColumn:
     case EBreakBetween::kRecto:
     case EBreakBetween::kVerso:
-      return CSSIdentifierValue::Create(CSSValueID::kAuto);
+    case EBreakBetween::kAvoidPage:
+      return nullptr;
     case EBreakBetween::kPage:
       return CSSIdentifierValue::Create(CSSValueID::kAlways);
-    case EBreakBetween::kAvoidPage:
-      return CSSIdentifierValue::Create(CSSValueID::kAvoid);
     default:
       return CSSIdentifierValue::Create(break_value);
   }
@@ -2126,7 +2132,7 @@ CSSValue* ComputedStyleUtils::ValueForWebkitColumnBreakBetween(
     case EBreakBetween::kRecto:
     case EBreakBetween::kRight:
     case EBreakBetween::kVerso:
-      return CSSIdentifierValue::Create(CSSValueID::kAuto);
+      return nullptr;
     case EBreakBetween::kColumn:
       return CSSIdentifierValue::Create(CSSValueID::kAlways);
     case EBreakBetween::kAvoidColumn:
@@ -2142,7 +2148,7 @@ CSSValue* ComputedStyleUtils::ValueForPageBreakInside(
     EBreakInside break_value) {
   switch (break_value) {
     case EBreakInside::kAvoidColumn:
-      return CSSIdentifierValue::Create(CSSValueID::kAuto);
+      return nullptr;
     case EBreakInside::kAvoidPage:
       return CSSIdentifierValue::Create(CSSValueID::kAvoid);
     default:
@@ -2156,7 +2162,7 @@ CSSValue* ComputedStyleUtils::ValueForWebkitColumnBreakInside(
     EBreakInside break_value) {
   switch (break_value) {
     case EBreakInside::kAvoidPage:
-      return CSSIdentifierValue::Create(CSSValueID::kAuto);
+      return nullptr;
     case EBreakInside::kAvoidColumn:
       return CSSIdentifierValue::Create(CSSValueID::kAvoid);
     default:

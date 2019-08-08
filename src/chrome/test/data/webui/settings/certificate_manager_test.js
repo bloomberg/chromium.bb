@@ -302,8 +302,7 @@ cr.define('certificate_manager', function() {
     test('DeleteSuccess', function() {
       assertTrue(dialog.$.dialog.open);
       // Check that the dialog title includes the certificate name.
-      const titleEl =
-          Polymer.dom(dialog.$.dialog).querySelector('[slot=title]');
+      const titleEl = dialog.$.dialog.querySelector('[slot=title]');
       assertTrue(titleEl.textContent.includes(model.name));
 
       // Simulate clicking 'OK'.
@@ -359,7 +358,7 @@ cr.define('certificate_manager', function() {
 
     test('EncryptSuccess', function() {
       const passwordInputElements =
-          Polymer.dom(dialog.$.dialog).querySelectorAll('cr-input');
+          dialog.$.dialog.querySelectorAll('cr-input');
       const passwordInputElement = passwordInputElements[0];
       const confirmPasswordInputElement = passwordInputElements[1];
 
@@ -394,7 +393,7 @@ cr.define('certificate_manager', function() {
       browserProxy.forceCertificatesError();
 
       const passwordInputElements =
-          Polymer.dom(dialog.$.dialog).querySelectorAll('cr-input');
+          dialog.$.dialog.querySelectorAll('cr-input');
       const passwordInputElement = passwordInputElements[0];
       passwordInputElement.value = 'foopassword';
       const confirmPasswordInputElement = passwordInputElements[1];
@@ -434,8 +433,7 @@ cr.define('certificate_manager', function() {
     });
 
     test('DecryptSuccess', function() {
-      const passwordInputElement =
-          Polymer.dom(dialog.$.dialog).querySelector('cr-input');
+      const passwordInputElement = dialog.$.dialog.querySelector('cr-input');
       assertTrue(dialog.$.dialog.open);
 
       // Test that the 'OK' button is enabled even when the password field is
@@ -459,8 +457,7 @@ cr.define('certificate_manager', function() {
     test('DecryptError', function() {
       browserProxy.forceCertificatesError();
       // Simulate entering some password.
-      const passwordInputElement =
-          Polymer.dom(dialog.$.dialog).querySelector('cr-input');
+      const passwordInputElement = dialog.$.dialog.querySelector('cr-input');
       passwordInputElement.value = 'foopassword';
       triggerInputEvent(passwordInputElement);
 
@@ -651,7 +648,7 @@ cr.define('certificate_manager', function() {
      */
     test('Initialization', function() {
       // Trigger all category tabs to be added to the DOM.
-      const paperTabsElement = page.shadowRoot.querySelector('paper-tabs');
+      const paperTabsElement = page.shadowRoot.querySelector('cr-tabs');
       paperTabsElement.selected = CertificateCategoryIndex.PERSONAL;
       Polymer.dom.flush();
       paperTabsElement.selected = CertificateCategoryIndex.SERVER;

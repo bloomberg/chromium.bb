@@ -30,9 +30,11 @@ WaylandTest::WaylandTest()
   KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
       std::make_unique<StubKeyboardLayoutEngine>());
 #endif
-  connection_.reset(new WaylandConnection);
-  connection_proxy_.reset(
-      new WaylandConnectionProxy(connection_.get(), nullptr));
+  connection_ = std::make_unique<WaylandConnection>();
+  surface_factory_ = std::make_unique<WaylandSurfaceFactory>(connection_.get());
+  buffer_manager_gpu_ =
+      std::make_unique<WaylandBufferManagerGpu>(surface_factory_.get());
+  surface_factory_->SetBufferManager(buffer_manager_gpu_.get());
   window_ = std::make_unique<WaylandWindow>(&delegate_, connection_.get());
 }
 

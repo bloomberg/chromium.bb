@@ -136,7 +136,7 @@ static HTMLElement* AncestorToRetainStructureAndAppearanceForBlock(
     return Traversal<HTMLTableElement>::FirstAncestor(*common_ancestor_block);
 
   if (IsNonTableCellHTMLBlockElement(common_ancestor_block))
-    return ToHTMLElement(common_ancestor_block);
+    return To<HTMLElement>(common_ancestor_block);
 
   return nullptr;
 }
@@ -150,7 +150,7 @@ static inline HTMLElement* AncestorToRetainStructureAndAppearance(
 static inline HTMLElement*
 AncestorToRetainStructureAndAppearanceWithNoLayoutObject(
     const Node& common_ancestor) {
-  HTMLElement* common_ancestor_block = ToHTMLElement(EnclosingNodeOfType(
+  auto* common_ancestor_block = To<HTMLElement>(EnclosingNodeOfType(
       FirstPositionInOrBeforeNode(common_ancestor), IsHTMLBlockElement));
   return AncestorToRetainStructureAndAppearanceForBlock(common_ancestor_block);
 }
@@ -201,7 +201,7 @@ static HTMLElement* HighestAncestorToWrapMarkup(
           ContainerNode* ancestor = parent_list_node->parentNode();
           while (ancestor && !IsHTMLListElement(ancestor))
             ancestor = ancestor->parentNode();
-          special_common_ancestor = ToHTMLElement(ancestor);
+          special_common_ancestor = To<HTMLElement>(ancestor);
         }
       }
 
@@ -226,8 +226,8 @@ static HTMLElement* HighestAncestorToWrapMarkup(
     constraining_ancestor = constraining_ancestor
                                 ? constraining_ancestor
                                 : EnclosingBlock(check_ancestor);
-    HTMLElement* new_special_common_ancestor =
-        ToHTMLElement(HighestEnclosingNodeOfType(
+    auto* new_special_common_ancestor =
+        To<HTMLElement>(HighestEnclosingNodeOfType(
             Position::FirstPositionInNode(*check_ancestor),
             &IsPresentationalHTMLElement, kCanCrossEditingBoundary,
             constraining_ancestor));
@@ -359,12 +359,12 @@ static bool FindNodesSurroundingContext(DocumentFragment* fragment,
   if (!fragment->firstChild())
     return false;
   for (Node& node : NodeTraversal::StartsAt(*fragment->firstChild())) {
-    if (node.getNodeType() == Node::kCommentNode &&
-        ToComment(node).data() == kFragmentMarkerTag) {
+    auto* comment_node = DynamicTo<Comment>(node);
+    if (comment_node && comment_node->data() == kFragmentMarkerTag) {
       if (!node_before_context) {
-        node_before_context = &ToComment(node);
+        node_before_context = comment_node;
       } else {
-        node_after_context = &ToComment(node);
+        node_after_context = comment_node;
         return true;
       }
     }
@@ -423,7 +423,8 @@ DocumentFragment* CreateFragmentFromMarkupWithContext(
                                    node_after_context))
     return nullptr;
 
-  Document* tagged_document = Document::Create(DocumentInit::Create());
+  auto* tagged_document =
+      MakeGarbageCollected<Document>(DocumentInit::Create());
   tagged_document->SetContextFeatures(document.GetContextFeatures());
 
   Element* root = Element::Create(QualifiedName::Null(), tagged_document);
@@ -447,7 +448,7 @@ DocumentFragment* CreateFragmentFromMarkupWithContext(
   if (special_common_ancestor)
     fragment->AppendChild(special_common_ancestor);
   else
-    fragment->ParserTakeAllChildrenFrom(ToContainerNode(common_ancestor));
+    fragment->ParserTakeAllChildrenFrom(To<ContainerNode>(common_ancestor));
 
   TrimFragment(fragment, node_before_context, node_after_context);
 
@@ -694,7 +695,7 @@ DocumentFragment* CreateContextualFragment(
     next_node = node->nextSibling();
     if (IsHTMLHtmlElement(*node) || IsHTMLHeadElement(*node) ||
         IsHTMLBodyElement(*node)) {
-      HTMLElement* element = ToHTMLElement(node);
+      auto* element = To<HTMLElement>(node);
       if (Node* first_child = element->firstChild())
         next_node = first_child;
       RemoveElementPreservingChildren(fragment, element);
@@ -757,11 +758,10 @@ void ReplaceChildrenWithText(ContainerNode* container,
 
 void MergeWithNextTextNode(Text* text_node, ExceptionState& exception_state) {
   DCHECK(text_node);
-  Node* next = text_node->nextSibling();
-  if (!next || !next->IsTextNode())
+  auto* text_next = DynamicTo<Text>(text_node->nextSibling());
+  if (!text_next)
     return;
 
-  Text* text_next = ToText(next);
   text_node->appendData(text_next->data());
   if (text_next->parentNode())  // Might have been removed by mutation event.
     text_next->remove(exception_state);

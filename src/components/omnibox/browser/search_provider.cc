@@ -23,7 +23,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/history/core/browser/in_memory_database.h"
 #include "components/history/core/browser/keyword_search_term.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
@@ -661,7 +660,7 @@ void SearchProvider::DoHistoryQuery(bool minimal_changes) {
   // now, this seems OK compared with the complexity of a real fix, which would
   // require multiple searches and tracking of "single- vs. multi-word" in the
   // database.
-  int num_matches = kMaxMatches * 5;
+  int num_matches = provider_max_matches_ * 5;
   const TemplateURL* default_url = providers_.GetDefaultProviderURL();
   if (default_url) {
     url_db->GetMostRecentKeywordSearchTerms(default_url->id(),
@@ -967,10 +966,6 @@ std::unique_ptr<network::SimpleURLLoader> SearchProvider::CreateSuggestLoader(
                                  : variations::InIncognito::kNo,
       request.get());
 
-  // TODO(https://crbug.com/808498) re-add data use measurement once
-  // SimpleURLLoader supports it.
-  // data_use_measurement::DataUseUserData::OMNIBOX
-
   std::unique_ptr<network::SimpleURLLoader> loader =
       network::SimpleURLLoader::Create(std::move(request), traffic_annotation);
   loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
@@ -1075,13 +1070,13 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
                                   &matches);
   }
 
-  // Now add the most relevant matches to |matches_|.  We take up to kMaxMatches
-  // suggest/navsuggest matches, regardless of origin.  We always include in
-  // that set a legal default match if possible.  If Instant Extended is enabled
-  // and we have server-provided (and thus hopefully more accurate) scores for
-  // some suggestions, we allow more of those, until we reach
-  // AutocompleteResult::GetMaxMatches() total matches (that is, enough to fill
-  // the whole popup).
+  // Now add the most relevant matches to |matches_|.  We take up to
+  // provider_max_matches_ suggest/navsuggest matches, regardless of origin.  We
+  // always include in that set a legal default match if possible.  If Instant
+  // Extended is enabled and we have server-provided (and thus hopefully more
+  // accurate) scores for some suggestions, we allow more of those, until we
+  // reach AutocompleteResult::GetMaxMatches() total matches (that is, enough to
+  // fill the whole popup).
   //
   // We will always return any verbatim matches, no matter how we obtained their
   // scores, unless we have already accepted AutocompleteResult::GetMaxMatches()
@@ -1117,7 +1112,7 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
         (i->type != AutocompleteMatchType::SEARCH_OTHER_ENGINE)) {
       // If we've already hit the limit on non-server-scored suggestions, and
       // this isn't a server-scored suggestion we can add, skip it.
-      if ((num_suggestions >= kMaxMatches) &&
+      if ((num_suggestions >= provider_max_matches_) &&
           (!search::IsInstantExtendedAPIEnabled() ||
            (i->GetAdditionalInfo(kRelevanceFromServerKey) != kTrue))) {
         continue;

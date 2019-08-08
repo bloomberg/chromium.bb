@@ -21,6 +21,12 @@ TestPaymentsClient::TestPaymentsClient(
 
 TestPaymentsClient::~TestPaymentsClient() {}
 
+void TestPaymentsClient::GetUnmaskDetails(GetUnmaskDetailsCallback callback,
+                                          const std::string& app_locale) {
+  std::move(callback).Run(AutofillClient::SUCCESS, auth_method_, offer_opt_in_,
+                          std::move(request_options_), fido_eligible_card_ids_);
+}
+
 void TestPaymentsClient::GetUploadDetails(
     const std::vector<AutofillProfile>& addresses,
     const int detected_values,
@@ -59,6 +65,24 @@ void TestPaymentsClient::MigrateCards(
     MigrateCardsCallback callback) {
   std::move(callback).Run(AutofillClient::SUCCESS, std::move(save_result_),
                           "this is display text");
+}
+
+void TestPaymentsClient::SetAuthenticationMethod(std::string auth_method) {
+  auth_method_ = auth_method;
+}
+
+void TestPaymentsClient::AllowFidoRegistration(bool offer_opt_in) {
+  offer_opt_in_ = offer_opt_in;
+}
+
+void TestPaymentsClient::SetFidoRequestOptions(
+    std::unique_ptr<base::Value> request_options) {
+  request_options_ = std::move(request_options);
+}
+
+void TestPaymentsClient::SetFidoEligibleCardIds(
+    std::set<std::string> fido_eligible_card_ids) {
+  fido_eligible_card_ids_ = fido_eligible_card_ids;
 }
 
 void TestPaymentsClient::SetServerIdForCardUpload(std::string server_id) {

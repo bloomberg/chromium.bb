@@ -29,6 +29,7 @@
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor_monitor.h"
+#include "ui/events/event.h"
 
 namespace IPC {
 class ChannelProxy;
@@ -126,7 +127,8 @@ class DesktopSessionAgent
   // ClientSessionControl interface.
   const std::string& client_jid() const override;
   void DisconnectSession(protocol::ErrorCode error) override;
-  void OnLocalMouseMoved(const webrtc::DesktopVector& position) override;
+  void OnLocalPointerMoved(const webrtc::DesktopVector& position,
+                           ui::EventType type) override;
   void SetDisableInputs(bool disable_inputs) override;
   void OnDesktopDisplayChanged(
       std::unique_ptr<protocol::VideoLayout> layout) override;

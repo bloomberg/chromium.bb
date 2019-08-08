@@ -6,12 +6,15 @@
 #define CHROMEOS_SERVICES_DEVICE_SYNC_CRYPTAUTH_ENROLLMENT_MANAGER_IMPL_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "chromeos/services/device_sync/cryptauth_enrollment_manager.h"
+#include "chromeos/services/device_sync/cryptauth_feature_type.h"
 #include "chromeos/services/device_sync/cryptauth_gcm_manager.h"
 #include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 #include "chromeos/services/device_sync/sync_scheduler.h"
@@ -91,7 +94,8 @@ class CryptAuthEnrollmentManagerImpl : public CryptAuthEnrollmentManager,
   // CryptAuthEnrollmentManager:
   void Start() override;
   void ForceEnrollmentNow(
-      cryptauth::InvocationReason invocation_reason) override;
+      cryptauth::InvocationReason invocation_reason,
+      const base::Optional<std::string>& session_id) override;
   bool IsEnrollmentValid() const override;
   base::Time GetLastEnrollmentTime() const override;
   base::TimeDelta GetTimeToNextAttempt() const override;
@@ -128,7 +132,9 @@ class CryptAuthEnrollmentManagerImpl : public CryptAuthEnrollmentManager,
  private:
   // CryptAuthGCMManager::Observer:
   void OnGCMRegistrationResult(bool success) override;
-  void OnReenrollMessage() override;
+  void OnReenrollMessage(
+      const base::Optional<std::string>& session_id,
+      const base::Optional<CryptAuthFeatureType>& feature_type) override;
 
   // Callback when a new keypair is generated.
   void OnKeyPairGenerated(const std::string& public_key,

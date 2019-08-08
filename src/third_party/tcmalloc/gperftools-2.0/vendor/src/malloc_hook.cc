@@ -46,6 +46,7 @@
 #include <stdint.h>
 #endif
 #include <algorithm>
+#include <atomic>
 #include "base/logging.h"
 #include "base/spinlock.h"
 #include "maybe_threads.h"
@@ -160,7 +161,7 @@ namespace base { namespace internal {
 // The code below is DEPRECATED.
 template<typename PtrT>
 PtrT AtomicPtr<PtrT>::Exchange(PtrT new_val) {
-  base::subtle::MemoryBarrier();  // Release semantics.
+  std::atomic_thread_fence(std::memory_order_seq_cst);  // Release semantics.
   // Depending on the system, NoBarrier_AtomicExchange(AtomicWord*)
   // may have been defined to return an AtomicWord, Atomic32, or
   // Atomic64.  We hide that implementation detail here with an
@@ -169,19 +170,19 @@ PtrT AtomicPtr<PtrT>::Exchange(PtrT new_val) {
       base::subtle::NoBarrier_AtomicExchange(
           &data_,
           reinterpret_cast<AtomicWord>(new_val))));
-  base::subtle::MemoryBarrier();  // And acquire semantics.
+  std::atomic_thread_fence(std::memory_order_seq_cst);  // Acquire semantics.
   return old_val;
 }
 
 template<typename PtrT>
 PtrT AtomicPtr<PtrT>::CompareAndSwap(PtrT old_val, PtrT new_val) {
-  base::subtle::MemoryBarrier();  // Release semantics.
+  std::atomic_thread_fence(std::memory_order_seq_cst);  // Release semantics.
   PtrT retval = reinterpret_cast<PtrT>(static_cast<AtomicWord>(
       base::subtle::NoBarrier_CompareAndSwap(
           &data_,
           reinterpret_cast<AtomicWord>(old_val),
           reinterpret_cast<AtomicWord>(new_val))));
-  base::subtle::MemoryBarrier();  // And acquire semantics.
+  std::atomic_thread_fence(std::memory_order_seq_cst);  // Acquire semantics.
   return retval;
 }
 

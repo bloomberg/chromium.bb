@@ -5,12 +5,12 @@
 #ifndef COMPONENTS_EXO_TEXT_INPUT_H_
 #define COMPONENTS_EXO_TEXT_INPUT_H_
 
+#include "ash/keyboard/ui/keyboard_controller_observer.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_flags.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/keyboard/keyboard_controller_observer.h"
 
 namespace ui {
 class InputMethod;
@@ -134,6 +134,9 @@ class TextInput : public ui::TextInputClient,
   void SetTextEditCommandForNextKeyEvent(ui::TextEditCommand command) override;
   ukm::SourceId GetClientSourceForMetrics() const override;
   bool ShouldDoLearning() override;
+  bool SetCompositionFromExistingText(
+      const gfx::Range& range,
+      const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) override;
 
   // keyboard::KeyboardControllerObserver:
   void OnKeyboardVisibilityStateChanged(bool is_visible) override;

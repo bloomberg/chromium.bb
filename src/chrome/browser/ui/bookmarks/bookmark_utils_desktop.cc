@@ -170,7 +170,7 @@ int OpenCount(gfx::NativeWindow parent,
 
 bool ConfirmDeleteBookmarkNode(const BookmarkNode* node,
                                gfx::NativeWindow window) {
-  DCHECK(node && node->is_folder() && !node->empty());
+  DCHECK(node && node->is_folder() && !node->children().empty());
   return ShowQuestionMessageBox(
              window, l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
              l10n_util::GetPluralStringFUTF16(

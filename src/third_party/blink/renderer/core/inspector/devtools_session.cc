@@ -18,12 +18,16 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
+#include "third_party/inspector_protocol/encoding/encoding.h"
 
 namespace blink {
 
 namespace {
+using ::inspector_protocol_encoding::SpanFrom;
+using ::inspector_protocol_encoding::cbor::IsCBORMessage;
 const char kV8StateKey[] = "v8";
 bool ShouldInterruptForMethod(const String& method) {
   // Keep in sync with DevToolsSession::ShouldSendOnIO.
@@ -34,6 +38,7 @@ bool ShouldInterruptForMethod(const String& method) {
          method == "Debugger.setBreakpointsActive" ||
          method == "Performance.getMetrics" || method == "Page.crash" ||
          method == "Runtime.terminateExecution" ||
+         method == "Debugger.getStackTrace" ||
          method == "Emulation.setScriptExecutionDisabled";
 }
 
@@ -58,18 +63,13 @@ mojom::blink::DevToolsMessagePtr WrapMessage(
 }
 
 protocol::ProtocolMessage ToProtocolMessage(
-    std::unique_ptr<v8_inspector::StringBuffer> buffer,
-    bool binary) {
+    std::unique_ptr<v8_inspector::StringBuffer> buffer) {
   protocol::ProtocolMessage message;
-  if (binary) {
-    const auto& string = buffer->string();
-    DCHECK(string.is8Bit());
-    // TODO: add StringBuffer::takeBytes().
-    message.binary = std::vector<uint8_t>(
-        string.characters8(), string.characters8() + string.length());
-  } else {
-    message.json = ToCoreString(buffer->string());
-  }
+  const auto& string = buffer->string();
+  DCHECK(string.is8Bit());
+  // TODO: add StringBuffer::takeBytes().
+  message.binary = std::vector<uint8_t>(string.characters8(),
+                                        string.characters8() + string.length());
   return message;
 }
 
@@ -87,10 +87,10 @@ class DevToolsSession::IOSession : public mojom::blink::DevToolsSession {
         inspector_task_runner_(inspector_task_runner),
         session_(std::move(session)),
         binding_(this) {
-    io_task_runner->PostTask(
-        FROM_HERE, ConvertToBaseCallback(CrossThreadBind(
-                       &IOSession::BindInterface, CrossThreadUnretained(this),
-                       WTF::Passed(std::move(request)))));
+    PostCrossThreadTask(*io_task_runner, FROM_HERE,
+                        CrossThreadBindOnce(&IOSession::BindInterface,
+                                            CrossThreadUnretained(this),
+                                            WTF::Passed(std::move(request))));
   }
 
   ~IOSession() override {}
@@ -110,9 +110,9 @@ class DevToolsSession::IOSession : public mojom::blink::DevToolsSession {
     // Crash renderer.
     if (method == "Page.crash")
       CHECK(false);
-    inspector_task_runner_->AppendTask(
-        CrossThreadBind(&::blink::DevToolsSession::DispatchProtocolCommandImpl,
-                        session_, call_id, method, UnwrapMessage(message)));
+    inspector_task_runner_->AppendTask(CrossThreadBindOnce(
+        &::blink::DevToolsSession::DispatchProtocolCommandImpl, session_,
+        call_id, method, UnwrapMessage(message)));
   }
 
  private:
@@ -135,8 +135,8 @@ DevToolsSession::DevToolsSession(
       inspector_backend_dispatcher_(new protocol::UberDispatcher(this)),
       session_state_(std::move(reattach_session_state)),
       v8_session_state_(kV8StateKey),
-      v8_session_state_json_(&v8_session_state_, /*default_value=*/String()),
-      uses_binary_protocol_(&v8_session_state_, false) {
+      v8_session_state_cbor_(&v8_session_state_,
+                             /*default_value=*/std::vector<uint8_t>()) {
   io_session_ =
       new IOSession(agent_->io_task_runner_, agent_->inspector_task_runner_,
                     WrapCrossThreadWeakPersistent(this), std::move(io_request));
@@ -161,9 +161,10 @@ DevToolsSession::~DevToolsSession() {
 
 void DevToolsSession::ConnectToV8(v8_inspector::V8Inspector* inspector,
                                   int context_group_id) {
+  const std::vector<uint8_t>& cbor = v8_session_state_cbor_.Get();
   v8_session_ =
       inspector->connect(context_group_id, this,
-                         ToV8InspectorStringView(v8_session_state_json_.Get()));
+                         v8_inspector::StringView(cbor.data(), cbor.size()));
 }
 
 bool DevToolsSession::IsDetached() {
@@ -208,9 +209,7 @@ void DevToolsSession::DispatchProtocolCommand(
 void DevToolsSession::DispatchProtocolCommandImpl(int call_id,
                                                   const String& method,
                                                   std::vector<uint8_t> data) {
-  bool binary_protocol = !data.empty() && data[0] == 0xD8;
-  if (binary_protocol)
-    uses_binary_protocol_.Set(true);
+  DCHECK(IsCBORMessage(SpanFrom(data)));
 
   // IOSession does not provide ordering guarantees relative to
   // Session, so a command may come to IOSession after Session is detached,
@@ -227,24 +226,12 @@ void DevToolsSession::DispatchProtocolCommandImpl(int call_id,
   agent_->client_->DebuggerTaskStarted();
   if (v8_inspector::V8InspectorSession::canDispatchMethod(
           ToV8InspectorStringView(method))) {
-    if (binary_protocol) {
-      // Binary protocol messages are passed using 8-bit StringView.
-      v8_session_->dispatchProtocolMessage(
-          v8_inspector::StringView(data.data(), data.size()));
-    } else {
-      String message = WTF::String::FromUTF8(
-          reinterpret_cast<const char*>(data.data()), data.size());
-      v8_session_->dispatchProtocolMessage(ToV8InspectorStringView(message));
-    }
+    // Binary protocol messages are passed using 8-bit StringView.
+    v8_session_->dispatchProtocolMessage(
+        v8_inspector::StringView(data.data(), data.size()));
   } else {
-    std::unique_ptr<protocol::Value> value;
-    if (binary_protocol) {
-      value = protocol::Value::parseBinary(data.data(), data.size());
-    } else {
-      String message = WTF::String::FromUTF8(
-          reinterpret_cast<const char*>(data.data()), data.size());
-      value = protocol::StringUtil::parseJSON(message);
-    }
+    std::unique_ptr<protocol::Value> value =
+        protocol::Value::parseBinary(data.data(), data.size());
     // Don't pass protocol message further - there is no passthrough.
     inspector_backend_dispatcher_->dispatch(call_id, method, std::move(value),
                                             protocol::ProtocolMessage());
@@ -274,8 +261,7 @@ void DevToolsSession::DidCommitLoad(LocalFrame* frame, DocumentLoader*) {
 void DevToolsSession::sendProtocolResponse(
     int call_id,
     std::unique_ptr<protocol::Serializable> message) {
-  SendProtocolResponse(call_id,
-                       message->serialize(uses_binary_protocol_.Get()));
+  SendProtocolResponse(call_id, message->serialize(/*binary=*/true));
 }
 
 void DevToolsSession::fallThrough(int call_id,
@@ -291,8 +277,7 @@ void DevToolsSession::sendResponse(
   // We can potentially avoid copies if WebString would convert to utf8 right
   // from StringView, but it uses StringImpl itself, so we don't create any
   // extra copies here.
-  SendProtocolResponse(call_id, ToProtocolMessage(std::move(message),
-                                                  uses_binary_protocol_.Get()));
+  SendProtocolResponse(call_id, ToProtocolMessage(std::move(message)));
 }
 
 void DevToolsSession::SendProtocolResponse(
@@ -302,7 +287,7 @@ void DevToolsSession::SendProtocolResponse(
     return;
   flushProtocolNotifications();
   if (v8_session_)
-    v8_session_state_json_.Set(ToCoreString(v8_session_->stateJSON()));
+    v8_session_state_cbor_.Set(v8_session_->state());
   // Make tests more predictable by flushing all sessions before sending
   // protocol response in any of them.
   if (WebTestSupport::IsRunningWebTest())
@@ -332,13 +317,13 @@ class DevToolsSession::Notification {
       std::unique_ptr<v8_inspector::StringBuffer> notification)
       : v8_notification_(std::move(notification)) {}
 
-  mojom::blink::DevToolsMessagePtr Serialize(bool binary) {
+  mojom::blink::DevToolsMessagePtr Serialize() {
     protocol::ProtocolMessage serialized;
     if (blink_notification_) {
-      serialized = blink_notification_->serialize(binary);
+      serialized = blink_notification_->serialize(/*binary=*/true);
       blink_notification_.reset();
     } else if (v8_notification_) {
-      serialized = ToProtocolMessage(std::move(v8_notification_), binary);
+      serialized = ToProtocolMessage(std::move(v8_notification_));
       v8_notification_.reset();
     }
     return WrapMessage(std::move(serialized));
@@ -373,10 +358,9 @@ void DevToolsSession::flushProtocolNotifications() {
   if (!notification_queue_.size())
     return;
   if (v8_session_)
-    v8_session_state_json_.Set(ToCoreString(v8_session_->stateJSON()));
+    v8_session_state_cbor_.Set(v8_session_->state());
   for (wtf_size_t i = 0; i < notification_queue_.size(); ++i) {
-    auto serialized =
-        notification_queue_[i]->Serialize(uses_binary_protocol_.Get());
+    auto serialized = notification_queue_[i]->Serialize();
     host_ptr_->DispatchProtocolNotification(std::move(serialized),
                                             session_state_.TakeUpdates());
   }

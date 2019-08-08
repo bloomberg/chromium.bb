@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/run_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -32,7 +33,8 @@ class CacheStorageSchedulerTest : public testing::Test {
  protected:
   CacheStorageSchedulerTest()
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
-        scheduler_(CacheStorageSchedulerClient::kStorage),
+        scheduler_(CacheStorageSchedulerClient::kStorage,
+                   base::ThreadTaskRunnerHandle::Get()),
         task1_(TestTask(&scheduler_)),
         task2_(TestTask(&scheduler_)) {}
 

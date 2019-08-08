@@ -40,6 +40,7 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/config/gpu_feature_info.h"
+#include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/webgl_image_conversion.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types_3d.h"
@@ -237,7 +238,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
 
   int SampleCount() const { return sample_count_; }
   bool ExplicitResolveOfMultisampleData() const {
-    return anti_aliasing_mode_ == gpu::kAntialiasingModeMSAAExplicitResolve;
+    return anti_aliasing_mode_ == kAntialiasingModeMSAAExplicitResolve;
   }
 
   // Rebind the read and draw framebuffers that WebGL is expecting.
@@ -561,7 +562,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   const gfx::ColorSpace storage_color_space_;
   const gfx::ColorSpace sampler_color_space_;
 
-  gpu::AntialiasingMode anti_aliasing_mode_ = gpu::kAntialiasingModeNone;
+  AntialiasingMode anti_aliasing_mode_ = kAntialiasingModeNone;
 
   bool use_half_float_storage_ = false;
 

@@ -13,6 +13,7 @@
 #include "net/third_party/quiche/src/quic/core/crypto/quic_decrypter.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_encrypter.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
+#include "net/third_party/quiche/src/quic/core/quic_connection_id.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_endian.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
@@ -91,6 +92,12 @@ class QUIC_EXPORT_PRIVATE QuicFramerVisitorInterface {
   // packet has been parsed.
   virtual void OnVersionNegotiationPacket(
       const QuicVersionNegotiationPacket& packet) = 0;
+
+  // Called only when |perspective_| is IS_CLIENT and a retry packet has been
+  // parsed.
+  virtual void OnRetryPacket(QuicConnectionId original_connection_id,
+                             QuicConnectionId new_connection_id,
+                             QuicStringPiece retry_token) = 0;
 
   // Called when all fields except packet number has been parsed, but has not
   // been authenticated. If it returns false, framing for this packet will
@@ -201,12 +208,11 @@ class QUIC_EXPORT_PRIVATE QuicFramerVisitorInterface {
   virtual void OnAuthenticatedIetfStatelessResetPacket(
       const QuicIetfStatelessResetPacket& packet) = 0;
 
-  // Called when an IETF MaxStreamId frame has been parsed.
-  virtual bool OnMaxStreamIdFrame(const QuicMaxStreamIdFrame& frame) = 0;
+  // Called when an IETF MaxStreams frame has been parsed.
+  virtual bool OnMaxStreamsFrame(const QuicMaxStreamsFrame& frame) = 0;
 
-  // Called when an IETF StreamIdBlocked frame has been parsed.
-  virtual bool OnStreamIdBlockedFrame(
-      const QuicStreamIdBlockedFrame& frame) = 0;
+  // Called when an IETF StreamsBlocked frame has been parsed.
+  virtual bool OnStreamsBlockedFrame(const QuicStreamsBlockedFrame& frame) = 0;
 };
 
 // Class for parsing and constructing QUIC packets.  It has a
@@ -220,7 +226,7 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   QuicFramer(const ParsedQuicVersionVector& supported_versions,
              QuicTime creation_time,
              Perspective perspective,
-             uint8_t expected_connection_id_length);
+             uint8_t expected_server_connection_id_length);
   QuicFramer(const QuicFramer&) = delete;
   QuicFramer& operator=(const QuicFramer&) = delete;
 
@@ -264,7 +270,7 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   }
 
   // Pass a UDP packet into the framer for parsing.
-  // Return true if the packet was processed succesfully. |packet| must be a
+  // Return true if the packet was processed successfully. |packet| must be a
   // single, complete UDP packet (not a frame of a packet).  This packet
   // might be null padded past the end of the payload, which will be correctly
   // ignored.
@@ -295,9 +301,9 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // Size in bytes of all reset stream frame fields.
   static size_t GetRstStreamFrameSize(QuicTransportVersion version,
                                       const QuicRstStreamFrame& frame);
-  // Size in bytes of all connection close frame fields without the error
-  // details and the missing packets from the enclosed ack frame.
-  static size_t GetMinConnectionCloseFrameSize(
+  // Size in bytes of all connection close frame fields, including the error
+  // details.
+  static size_t GetConnectionCloseFrameSize(
       QuicTransportVersion version,
       const QuicConnectionCloseFrame& frame);
   // Size in bytes of all GoAway frame fields without the reason phrase.
@@ -309,11 +315,11 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
                                          const QuicWindowUpdateFrame& frame);
   // Size in bytes of all MaxStreams frame fields.
   static size_t GetMaxStreamsFrameSize(QuicTransportVersion version,
-                                       const QuicMaxStreamIdFrame& frame);
+                                       const QuicMaxStreamsFrame& frame);
   // Size in bytes of all StreamsBlocked frame fields.
   static size_t GetStreamsBlockedFrameSize(
       QuicTransportVersion version,
-      const QuicStreamIdBlockedFrame& frame);
+      const QuicStreamsBlockedFrame& frame);
   // Size in bytes of all Blocked frame fields.
   static size_t GetBlockedFrameSize(QuicTransportVersion version,
                                     const QuicBlockedFrame& frame);
@@ -367,6 +373,21 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
       uint64_t retry_token_length,
       QuicVariableLengthIntegerLength length_length);
 
+  // Lightweight parsing of |packet| and populates |format|, |version_flag|,
+  // |version_label|, |destination_connection_id_length|,
+  // |destination_connection_id| and |detailed_error|. Please note,
+  // |expected_connection_id_length| is only used to determine IETF short header
+  // packet's destination connection ID length.
+  static QuicErrorCode ProcessPacketDispatcher(
+      const QuicEncryptedPacket& packet,
+      uint8_t expected_connection_id_length,
+      PacketHeaderFormat* format,
+      bool* version_flag,
+      QuicVersionLabel* version_label,
+      uint8_t* destination_connection_id_length,
+      QuicConnectionId* destination_connection_id,
+      std::string* detailed_error);
+
   // Serializes a packet containing |frames| into |buffer|.
   // Returns the length of the packet, which must not be longer than
   // |packet_length|.  Returns 0 if it fails to serialize.
@@ -414,13 +435,15 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
 
   // Returns a new version negotiation packet.
   static std::unique_ptr<QuicEncryptedPacket> BuildVersionNegotiationPacket(
-      QuicConnectionId connection_id,
+      QuicConnectionId server_connection_id,
+      QuicConnectionId client_connection_id,
       bool ietf_quic,
       const ParsedQuicVersionVector& versions);
 
   // Returns a new IETF version negotiation packet.
   static std::unique_ptr<QuicEncryptedPacket> BuildIetfVersionNegotiationPacket(
-      QuicConnectionId connection_id,
+      QuicConnectionId server_connection_id,
+      QuicConnectionId client_connection_id,
       const ParsedQuicVersionVector& versions);
 
   // If header.version_flag is set, the version in the
@@ -554,18 +577,51 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
 
   // If true, QuicFramer will change its expected connection ID length
   // to the received destination connection ID length of all IETF long headers.
-  void SetShouldUpdateExpectedConnectionIdLength(
-      bool should_update_expected_connection_id_length) {
-    should_update_expected_connection_id_length_ =
-        should_update_expected_connection_id_length;
+  void SetShouldUpdateExpectedServerConnectionIdLength(
+      bool should_update_expected_server_connection_id_length) {
+    should_update_expected_server_connection_id_length_ =
+        should_update_expected_server_connection_id_length;
   }
 
-  // The connection ID length the framer expects on incoming IETF short headers.
-  uint8_t GetExpectedConnectionIdLength() {
-    return expected_connection_id_length_;
+  // The connection ID length the framer expects on incoming IETF short headers
+  // on the server.
+  uint8_t GetExpectedServerConnectionIdLength() {
+    return expected_server_connection_id_length_;
   }
 
   void EnableMultiplePacketNumberSpacesSupport();
+
+  // Writes an array of bytes that, if sent as a UDP datagram, will trigger
+  // IETF QUIC Version Negotiation on servers. The bytes will be written to
+  // |packet_bytes|, which must point to |packet_length| bytes of memory.
+  // |packet_length| must be in the range [1200, 65535].
+  // |destination_connection_id_bytes| will be sent as the destination
+  // connection ID, and must point to |destination_connection_id_length| bytes
+  // of memory. |destination_connection_id_length| must be either 0 or in the
+  // range [4,18]. When targeting Google servers, it is recommended to use a
+  // |destination_connection_id_length| of 8.
+  static bool WriteClientVersionNegotiationProbePacket(
+      char* packet_bytes,
+      QuicByteCount packet_length,
+      const char* destination_connection_id_bytes,
+      uint8_t destination_connection_id_length);
+
+  // Parses a packet which a QUIC server sent in response to a packet sent by
+  // WriteClientVersionNegotiationProbePacket. |packet_bytes| must point to
+  // |packet_length| bytes in memory which represent the response.
+  // |packet_length| must be greater or equal to 6. This method will fill in
+  // |source_connection_id_bytes| which must point to at least 18 bytes in
+  // memory. |source_connection_id_length_out| will contain the length of the
+  // received source connection ID, which on success will match the contents of
+  // the destination connection ID passed in to
+  // WriteClientVersionNegotiationProbePacket. In the case of a failure,
+  // |detailed_error| will be filled in with an explanation of what failed.
+  static bool ParseServerVersionNegotiationProbeResponse(
+      const char* packet_bytes,
+      QuicByteCount packet_length,
+      char* source_connection_id_bytes,
+      uint8_t* source_connection_id_length_out,
+      std::string* detailed_error);
 
  private:
   friend class test::QuicFramerPeer;
@@ -585,6 +641,34 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
     size_t num_ack_blocks;
   };
 
+  // Applies header protection to an IETF QUIC packet header in |buffer| using
+  // the encrypter for level |level|. The buffer has |buffer_len| bytes of data,
+  // with the first protected packet bytes starting at |ad_len|.
+  bool ApplyHeaderProtection(EncryptionLevel level,
+                             char* buffer,
+                             size_t buffer_len,
+                             size_t ad_len);
+
+  // Removes header protection from an IETF QUIC packet header.
+  //
+  // The packet number from the header is read from |reader|, where the packet
+  // number is the next contents in |reader|. |reader| is only advanced by the
+  // length of the packet number, but it is also used to peek the sample needed
+  // for removing header protection.
+  //
+  // Properties needed for removing header protection are read from |header|.
+  // The packet number length and type byte are written to |header|.
+  //
+  // The packet number, after removing header protection and decoding it, is
+  // written to |full_packet_number|. Finally, the header, with header
+  // protection removed, is written to |associated_data| to be used in packet
+  // decryption. |packet| is used in computing the asociated data.
+  bool RemoveHeaderProtection(QuicDataReader* reader,
+                              const QuicEncryptedPacket& packet,
+                              QuicPacketHeader* header,
+                              uint64_t* full_packet_number,
+                              std::vector<char>* associated_data);
+
   bool ProcessDataPacket(QuicDataReader* reader,
                          QuicPacketHeader* header,
                          const QuicEncryptedPacket& packet,
@@ -602,6 +686,9 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
 
   bool ProcessVersionNegotiationPacket(QuicDataReader* reader,
                                        const QuicPacketHeader& header);
+
+  bool ProcessRetryPacket(QuicDataReader* reader,
+                          const QuicPacketHeader& header);
 
   bool MaybeProcessIetfInitialRetryToken(QuicDataReader* encrypted_reader,
                                          QuicPacketHeader* header);
@@ -621,6 +708,21 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // the current QuicDataReader.  Returns true on success, false on failure.
   bool ProcessUnauthenticatedHeader(QuicDataReader* encrypted_reader,
                                     QuicPacketHeader* header);
+
+  // Processes the version label in the packet header.
+  static bool ProcessVersionLabel(QuicDataReader* reader,
+                                  QuicVersionLabel* version_label);
+
+  // Validates and updates |destination_connection_id_length| and
+  // |source_connection_id_length|.
+  static bool ProcessAndValidateIetfConnectionIdLength(
+      QuicDataReader* reader,
+      ParsedQuicVersion version,
+      bool should_update_expected_server_connection_id_length,
+      uint8_t* expected_server_connection_id_length,
+      uint8_t* destination_connection_id_length,
+      uint8_t* source_connection_id_length,
+      std::string* detailed_error);
 
   bool ProcessIetfHeaderTypeByte(QuicDataReader* reader,
                                  QuicPacketHeader* header);
@@ -721,14 +823,6 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
 
   static AckFrameInfo GetAckFrameInfo(const QuicAckFrame& frame);
 
-  static bool AppendIetfConnectionId(
-      bool version_flag,
-      QuicConnectionId destination_connection_id,
-      QuicConnectionIdLength destination_connection_id_length,
-      QuicConnectionId source_connection_id,
-      QuicConnectionIdLength source_connection_id_length,
-      QuicDataWriter* writer);
-
   // The Append* methods attempt to write the provided header or frame using the
   // |writer|, and return true if successful.
 
@@ -809,10 +903,10 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   bool ProcessMaxStreamDataFrame(QuicDataReader* reader,
                                  QuicWindowUpdateFrame* frame);
 
-  bool AppendMaxStreamsFrame(const QuicMaxStreamIdFrame& frame,
+  bool AppendMaxStreamsFrame(const QuicMaxStreamsFrame& frame,
                              QuicDataWriter* writer);
   bool ProcessMaxStreamsFrame(QuicDataReader* reader,
-                              QuicMaxStreamIdFrame* frame,
+                              QuicMaxStreamsFrame* frame,
                               uint64_t frame_type);
 
   bool AppendIetfBlockedFrame(const QuicBlockedFrame& frame,
@@ -824,10 +918,10 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   bool ProcessStreamBlockedFrame(QuicDataReader* reader,
                                  QuicBlockedFrame* frame);
 
-  bool AppendStreamsBlockedFrame(const QuicStreamIdBlockedFrame& frame,
+  bool AppendStreamsBlockedFrame(const QuicStreamsBlockedFrame& frame,
                                  QuicDataWriter* writer);
   bool ProcessStreamsBlockedFrame(QuicDataReader* reader,
-                                  QuicStreamIdBlockedFrame* frame,
+                                  QuicStreamsBlockedFrame* frame,
                                   uint64_t frame_type);
 
   bool AppendNewConnectionIdFrame(const QuicNewConnectionIdFrame& frame,
@@ -867,9 +961,11 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // Largest successfully decrypted packet number per packet number space. Only
   // used when supports_multiple_packet_number_spaces_ is true.
   QuicPacketNumber largest_decrypted_packet_numbers_[NUM_PACKET_NUMBER_SPACES];
-  // Updated by WritePacketHeader.
-  QuicConnectionId last_serialized_connection_id_;
+  // Last server connection ID seen on the wire.
+  QuicConnectionId last_serialized_server_connection_id_;
   // The last QUIC version label received.
+  // TODO(fayang): Remove this when deprecating
+  // quic_no_framer_object_in_dispatcher.
   QuicVersionLabel last_version_label_;
   // Version of the protocol being used.
   ParsedQuicVersion version_;
@@ -924,14 +1020,21 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // encode its length. This variable contains the length we expect to read.
   // This is also used to validate the long header connection ID lengths in
   // older versions of QUIC.
-  uint8_t expected_connection_id_length_;
+  uint8_t expected_server_connection_id_length_;
 
-  // When this is true, QuicFramer will change expected_connection_id_length_
-  // to the received destination connection ID length of all IETF long headers.
-  bool should_update_expected_connection_id_length_;
+  // When this is true, QuicFramer will change
+  // expected_server_connection_id_length_ to the received destination
+  // connection ID length of all IETF long headers.
+  // TODO(fayang): Remove this when deprecating
+  // quic_no_framer_object_in_dispatcher.
+  bool should_update_expected_server_connection_id_length_;
 
   // Indicates whether this framer supports multiple packet number spaces.
   bool supports_multiple_packet_number_spaces_;
+
+  // The length in bytes of the last packet number written to an IETF-framed
+  // packet.
+  size_t last_written_packet_number_length_;
 };
 
 }  // namespace quic

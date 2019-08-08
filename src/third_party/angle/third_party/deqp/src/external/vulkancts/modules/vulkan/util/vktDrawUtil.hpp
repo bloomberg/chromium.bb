@@ -56,8 +56,13 @@ struct DrawState
 	deUint32						numPatchControlPoints;
 	deUint32						numSamples;
 	bool							sampleShadingEnable;
+	int								subpixelBits;
 
-	DrawState (const vk::VkPrimitiveTopology topology_, deUint32 renderWidth_, deUint32 renderHeight_);
+	// VK_EXT_depth_clip_enable
+	bool							explicitDepthClipEnable;
+	bool							depthClipEnable;
+
+	DrawState (const vk::VkPrimitiveTopology topology_, deUint32 renderWidth_, deUint32 renderHeight_, const int subpixelBits);
 };
 
 struct DrawCallData

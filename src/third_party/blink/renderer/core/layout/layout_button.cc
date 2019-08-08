@@ -73,10 +73,10 @@ void LayoutButton::UpdateAnonymousChildStyle(const LayoutObject* child,
   child_style.SetAlignContent(StyleRef().AlignContent());
 }
 
-LayoutRect LayoutButton::ControlClipRect(
-    const LayoutPoint& additional_offset) const {
+PhysicalRect LayoutButton::ControlClipRect(
+    const PhysicalOffset& additional_offset) const {
   // Clip to the padding box to at least give content the extra padding space.
-  LayoutRect rect(additional_offset, Size());
+  PhysicalRect rect(additional_offset, Size());
   rect.Expand(BorderInsets());
   return rect;
 }

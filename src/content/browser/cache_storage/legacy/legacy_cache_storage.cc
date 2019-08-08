@@ -35,10 +35,10 @@
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "content/browser/cache_storage/cache_storage_histogram_utils.h"
 #include "content/browser/cache_storage/cache_storage_index.h"
-#include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/cache_storage/cache_storage_quota_client.h"
 #include "content/browser/cache_storage/cache_storage_scheduler.h"
 #include "content/browser/cache_storage/cache_storage_trace_utils.h"
+#include "content/browser/cache_storage/legacy/legacy_cache_storage_manager.h"
 #include "content/common/background_fetch/background_fetch_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/symmetric_key.h"
@@ -93,12 +93,14 @@ class LegacyCacheStorage::CacheLoader {
       base::OnceCallback<void(std::unique_ptr<CacheStorageIndex>)>;
 
   CacheLoader(base::SequencedTaskRunner* cache_task_runner,
+              scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner,
               storage::QuotaManagerProxy* quota_manager_proxy,
               base::WeakPtr<storage::BlobStorageContext> blob_context,
               LegacyCacheStorage* cache_storage,
               const url::Origin& origin,
               CacheStorageOwner owner)
       : cache_task_runner_(cache_task_runner),
+        scheduler_task_runner_(std::move(scheduler_task_runner)),
         quota_manager_proxy_(quota_manager_proxy),
         blob_context_(blob_context),
         cache_storage_(cache_storage),
@@ -142,7 +144,8 @@ class LegacyCacheStorage::CacheLoader {
   virtual void NotifyCacheDoomed(CacheStorageCacheHandle cache_handle) {}
 
  protected:
-  scoped_refptr<base::SequencedTaskRunner> cache_task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> cache_task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner_;
 
   // Owned by CacheStorage which owns this.
   storage::QuotaManagerProxy* quota_manager_proxy_;
@@ -164,12 +167,14 @@ class LegacyCacheStorage::MemoryLoader
     : public LegacyCacheStorage::CacheLoader {
  public:
   MemoryLoader(base::SequencedTaskRunner* cache_task_runner,
+               scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner,
                storage::QuotaManagerProxy* quota_manager_proxy,
                base::WeakPtr<storage::BlobStorageContext> blob_context,
                LegacyCacheStorage* cache_storage,
                const url::Origin& origin,
                CacheStorageOwner owner)
       : CacheLoader(cache_task_runner,
+                    std::move(scheduler_task_runner),
                     quota_manager_proxy,
                     blob_context,
                     cache_storage,
@@ -182,8 +187,8 @@ class LegacyCacheStorage::MemoryLoader
       int64_t cache_padding,
       std::unique_ptr<SymmetricKey> cache_padding_key) override {
     return LegacyCacheStorageCache::CreateMemoryCache(
-        origin_, owner_, cache_name, cache_storage_, quota_manager_proxy_,
-        blob_context_, storage::CopyDefaultPaddingKey());
+        origin_, owner_, cache_name, cache_storage_, scheduler_task_runner_,
+        quota_manager_proxy_, blob_context_, storage::CopyDefaultPaddingKey());
   }
 
   void PrepareNewCacheDestination(const std::string& cache_name,
@@ -230,14 +235,17 @@ class LegacyCacheStorage::MemoryLoader
 class LegacyCacheStorage::SimpleCacheLoader
     : public LegacyCacheStorage::CacheLoader {
  public:
-  SimpleCacheLoader(const base::FilePath& origin_path,
-                    base::SequencedTaskRunner* cache_task_runner,
-                    storage::QuotaManagerProxy* quota_manager_proxy,
-                    base::WeakPtr<storage::BlobStorageContext> blob_context,
-                    LegacyCacheStorage* cache_storage,
-                    const url::Origin& origin,
-                    CacheStorageOwner owner)
+  SimpleCacheLoader(
+      const base::FilePath& origin_path,
+      base::SequencedTaskRunner* cache_task_runner,
+      scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner,
+      storage::QuotaManagerProxy* quota_manager_proxy,
+      base::WeakPtr<storage::BlobStorageContext> blob_context,
+      LegacyCacheStorage* cache_storage,
+      const url::Origin& origin,
+      CacheStorageOwner owner)
       : CacheLoader(cache_task_runner,
+                    std::move(scheduler_task_runner),
                     quota_manager_proxy,
                     blob_context,
                     cache_storage,
@@ -258,8 +266,8 @@ class LegacyCacheStorage::SimpleCacheLoader
     base::FilePath cache_path = origin_path_.AppendASCII(cache_dir);
     return LegacyCacheStorageCache::CreatePersistentCache(
         origin_, owner_, cache_name, cache_storage_, cache_path,
-        quota_manager_proxy_, blob_context_, cache_size, cache_padding,
-        std::move(cache_padding_key));
+        scheduler_task_runner_, quota_manager_proxy_, blob_context_, cache_size,
+        cache_padding, std::move(cache_padding_key));
   }
 
   void PrepareNewCacheDestination(const std::string& cache_name,
@@ -548,9 +556,10 @@ LegacyCacheStorage::LegacyCacheStorage(
     const base::FilePath& path,
     bool memory_only,
     base::SequencedTaskRunner* cache_task_runner,
+    scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
     base::WeakPtr<storage::BlobStorageContext> blob_context,
-    CacheStorageManager* cache_storage_manager,
+    LegacyCacheStorageManager* cache_storage_manager,
     const url::Origin& origin,
     CacheStorageOwner owner)
     : CacheStorage(origin),
@@ -558,7 +567,8 @@ LegacyCacheStorage::LegacyCacheStorage(
       initializing_(false),
       memory_only_(memory_only),
       scheduler_(
-          new CacheStorageScheduler(CacheStorageSchedulerClient::kStorage)),
+          new CacheStorageScheduler(CacheStorageSchedulerClient::kStorage,
+                                    scheduler_task_runner)),
       origin_path_(path),
       cache_task_runner_(cache_task_runner),
       quota_manager_proxy_(quota_manager_proxy),
@@ -566,12 +576,13 @@ LegacyCacheStorage::LegacyCacheStorage(
       cache_storage_manager_(cache_storage_manager),
       weak_factory_(this) {
   if (memory_only)
-    cache_loader_.reset(new MemoryLoader(cache_task_runner_.get(),
-                                         quota_manager_proxy.get(),
-                                         blob_context, this, origin, owner));
+    cache_loader_.reset(new MemoryLoader(
+        cache_task_runner_.get(), std::move(scheduler_task_runner),
+        quota_manager_proxy.get(), blob_context, this, origin, owner));
   else
     cache_loader_.reset(new SimpleCacheLoader(
-        origin_path_, cache_task_runner_.get(), quota_manager_proxy.get(),
+        origin_path_, cache_task_runner_.get(),
+        std::move(scheduler_task_runner), quota_manager_proxy.get(),
         blob_context, this, origin, owner));
 }
 

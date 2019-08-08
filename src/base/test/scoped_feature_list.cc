@@ -92,7 +92,7 @@ ScopedFeatureList::~ScopedFeatureList() {
     return;
 
   auto* field_trial_param_associator = FieldTrialParamAssociator::GetInstance();
-  for (auto field_trial_override : field_trial_overrides_) {
+  for (const auto& field_trial_override : field_trial_overrides_) {
     if (field_trial_override) {
       field_trial_param_associator->ClearParamsForTesting(
           field_trial_override->trial_name(),

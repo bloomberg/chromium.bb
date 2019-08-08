@@ -70,14 +70,16 @@ class VIZ_SERVICE_EXPORT VizProcessContextProvider
   void AddObserver(ContextLostObserver* obs) override;
   void RemoveObserver(ContextLostObserver* obs) override;
 
-  void SetUpdateVSyncParametersCallback(
-      const gpu::InProcessCommandBuffer::UpdateVSyncParametersCallback&
-          callback);
+  void SetUpdateVSyncParametersCallback(UpdateVSyncParametersCallback callback);
+  void SetGpuVSyncCallback(GpuVSyncCallback callback);
+  void SetGpuVSyncEnabled(bool enabled);
   bool UseRGB565PixelFormat() const;
 
   // Provides the GL internal format that should be used when calling
   // glCopyTexImage2D() on the default framebuffer.
   uint32_t GetCopyTextureInternalFormat();
+
+  base::ScopedClosureRunner GetCacheBackBufferCb();
 
  private:
   friend class base::RefCountedThreadSafe<VizProcessContextProvider>;

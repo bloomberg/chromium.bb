@@ -176,17 +176,22 @@ class CORE_EXPORT NGLineInfo {
   void SetTextIndent(LayoutUnit indent) { text_indent_ = indent; }
   LayoutUnit TextIndent() const { return text_indent_; }
 
+  ETextAlign TextAlign() const { return text_align_; }
+  // Update |TextAlign()| and related fields. This depends on |IsLastLine()| and
+  // that must be called after |SetIsLastLine()|.
+  void UpdateTextAlign();
+
   NGBfcOffset BfcOffset() const { return bfc_offset_; }
   LayoutUnit AvailableWidth() const { return available_width_; }
 
   // The width of this line. Includes trailing spaces if they were preserved.
   // Negative width created by negative 'text-indent' is clamped to zero.
   LayoutUnit Width() const { return width_.ClampNegativeToZero(); }
-  // Same as |Width()| but returns negative value as is.
-  LayoutUnit WidthForAlignment() const { return width_; }
-  // The width of preserved trailing spaces.
-  LayoutUnit ComputeTrailingSpaceWidth(
-      unsigned* end_offset_out = nullptr) const;
+  // Same as |Width()| but returns negative value as is. Preserved trailing
+  // spaces may or may not be included, depends on |ShouldHangTrailingSpaces()|.
+  LayoutUnit WidthForAlignment() const { return width_ - hang_width_; }
+  // Width that hangs over the end of the line; e.g., preserved trailing spaces.
+  LayoutUnit HangWidth() const { return hang_width_; }
   // Compute |Width()| from |Results()|. Used during line breaking, before
   // |Width()| is set. After line breaking, this should match to |Width()|
   // without clamping.
@@ -194,6 +199,7 @@ class CORE_EXPORT NGLineInfo {
 
   bool HasTrailingSpaces() const { return has_trailing_spaces_; }
   void SetHasTrailingSpaces() { has_trailing_spaces_ = true; }
+  bool ShouldHangTrailingSpaces() const;
 
   // True if this line has overflow, excluding preserved trailing spaces.
   bool HasOverflow() const { return has_overflow_; }
@@ -211,6 +217,12 @@ class CORE_EXPORT NGLineInfo {
   // End text offset of this line, excluding out-of-flow objects such as
   // floating or positioned.
   unsigned InflowEndOffset() const;
+  // End text offset for `text-align: justify`. This excludes preserved trailing
+  // spaces. Available only when |TextAlign()| is |kJustify|.
+  unsigned EndOffsetForJustify() const {
+    DCHECK_EQ(text_align_, ETextAlign::kJustify);
+    return end_offset_for_justify_;
+  }
   // End item index of this line.
   unsigned EndItemIndex() const { return end_item_index_; }
   void SetEndItemIndex(unsigned index) { end_item_index_ = index; }
@@ -234,6 +246,10 @@ class CORE_EXPORT NGLineInfo {
  private:
   bool ComputeNeedsAccurateEndPosition() const;
 
+  // The width of preserved trailing spaces.
+  LayoutUnit ComputeTrailingSpaceWidth(
+      unsigned* end_offset_out = nullptr) const;
+
   const NGInlineItemsData* items_data_ = nullptr;
   const ComputedStyle* line_style_ = nullptr;
   NGInlineItemResults results_;
@@ -243,11 +259,14 @@ class CORE_EXPORT NGLineInfo {
 
   LayoutUnit available_width_;
   LayoutUnit width_;
+  LayoutUnit hang_width_;
   LayoutUnit text_indent_;
 
   unsigned start_offset_;
   unsigned end_item_index_;
+  unsigned end_offset_for_justify_;
 
+  ETextAlign text_align_ = ETextAlign::kLeft;
   TextDirection base_direction_ = TextDirection::kLtr;
 
   bool use_first_line_style_ = false;

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
+<script src="../external/wpt/resources/chromium/webxr-test.js"></script>
+<script src="../external/wpt/webxr/resources/webxr_test_constants.js"></script>
+<script src="../xr/resources/xr-internal-device-mocking.js"></script>
+<script src="../xr/resources/xr-test-utils.js"></script>
+<canvas id="webgl-canvas"></canvas>
+
+<script>
+let testName =
+  "XRSession resetpose from a device properly fires off the right events"
+
+let watcherDone = new Event("watcherdone");
+
+let fakeDeviceInitParams = { supportsImmersive:true };
+
+let requestSessionModes = [
+  'inline',
+  'immersive-vr',
+];
+
+let testFunction = function(session, t, fakeDeviceController) {
+  // Session must have a baseLayer or frame requests will be ignored.
+  session.updateRenderState({
+    baseLayer: new XRWebGLLayer(session, gl, {
+        compositionDisabled: session.mode == 'inline' })
+  });
+
+  let resetPromise = session.requestReferenceSpace('local')
+  .then((refSpace) => {
+    let eventWatcher = new EventWatcher(
+        t, refSpace, ["reset", "watcherdone"]);
+    refSpace.addEventListener("reset", (event) => {
+      assert_equals(event.referenceSpace, refSpace);
+      refSpace.dispatchEvent(watcherDone);
+    }, false);
+    return eventWatcher.wait_for(["reset", "watcherdone"]);
+  });
+
+  // Need to have a valid pose or input events don't process.
+  fakeDeviceController.setXRPresentationFrameData(VALID_POSE_MATRIX, [{
+      eye:"left",
+      projectionMatrix: VALID_PROJECTION_MATRIX,
+      viewMatrix: VALID_VIEW_MATRIX
+    }, {
+      eye:"right",
+      projectionMatrix: VALID_PROJECTION_MATRIX,
+      viewMatrix: VALID_VIEW_MATRIX
+    }]);
+  fakeDeviceController.setResetPose(true);
+
+  // Trigger the reset pose.
+  session.requestAnimationFrame(() => {
+    session.requestAnimationFrame(() => {});
+  });
+
+  return resetPromise;
+};
+
+xr_session_promise_test(
+  testFunction, fakeDeviceInitParams, requestSessionModes, testName);
+
+</script>

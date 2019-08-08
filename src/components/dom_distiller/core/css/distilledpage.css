@@ -2,6 +2,10 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+/* This file contains style used across ALL platforms. Platform-specific styling
+ * should be placed in the corresponding file (e.g. desktop style goes in
+ * distilledpage_desktop.css).*/
+
 /* Set the global 'box-sizing' state to 'border-box'.
  * *::after and *::before used to select pseudo-elements not selectable by *. */
 
@@ -287,12 +291,6 @@ video::-webkit-media-controls-fullscreen-button {
   width: 100%;
 }
 
-@media screen {
-  #mainContent {
-    max-width: 35em;
-  }
-}
-
 #articleHeader {
   margin-top: 24px;
   width: 100%;
@@ -402,4 +400,3 @@ body .hidden {
   top: 0px;
   width: 100%;
 }
-

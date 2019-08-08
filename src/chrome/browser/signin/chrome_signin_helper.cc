@@ -29,8 +29,6 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/process_dice_header_delegate_impl.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
@@ -54,6 +52,8 @@
 #include "ui/android/view_android.h"
 #else
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #endif  // defined(OS_ANDROID)
 
@@ -216,8 +216,8 @@ void ProcessMirrorHeaderUIThread(
     if (!chrome::FindBrowserWithWebContents(web_contents))
       return;
 
-    chrome::SettingsWindowManager::GetInstance()->ShowChromePageForProfile(
-        profile, GURL("chrome://settings/accountManager"));
+    chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+        profile, chrome::kAccountManagerSubPage);
     return;
   }
 

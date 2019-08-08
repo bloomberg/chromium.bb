@@ -8,12 +8,9 @@
 
 #include "base/bind.h"
 #include "components/signin/core/browser/account_consistency_method.h"
-#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/identity_manager_wrapper.h"
 #include "components/signin/core/browser/test_signin_client.h"
-#include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/signin/account_tracker_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/signin/profile_oauth2_token_service_ios_provider_impl.h"
 #include "ios/chrome/browser/signin/signin_client_factory.h"
@@ -93,14 +90,9 @@ IdentityTestEnvironmentChromeBrowserStateAdaptor::BuildIdentityManagerForTests(
   ios::ChromeBrowserState* chrome_browser_state =
       ios::ChromeBrowserState::FromBrowserState(browser_state);
 
-  auto fake_token_service = std::make_unique<FakeProfileOAuth2TokenService>(
-      chrome_browser_state->GetPrefs());
-
   return identity::IdentityTestEnvironment::BuildIdentityManagerForTests(
       SigninClientFactory::GetForBrowserState(chrome_browser_state),
-      chrome_browser_state->GetPrefs(), std::move(fake_token_service),
-      ios::AccountTrackerServiceFactory::GetForBrowserState(
-          chrome_browser_state),
+      chrome_browser_state->GetPrefs(), base::FilePath(),
       signin::AccountConsistencyMethod::kMirror);
 }
 
@@ -111,22 +103,14 @@ std::unique_ptr<KeyedService> IdentityTestEnvironmentChromeBrowserStateAdaptor::
   ios::ChromeBrowserState* chrome_browser_state =
       ios::ChromeBrowserState::FromBrowserState(browser_state);
 
-  std::unique_ptr<OAuth2TokenServiceDelegate> delegate =
-      std::make_unique<ProfileOAuth2TokenServiceIOSDelegate>(
-          SigninClientFactory::GetForBrowserState(chrome_browser_state),
-          std::make_unique<ProfileOAuth2TokenServiceIOSProviderImpl>(),
-          ios::AccountTrackerServiceFactory::GetForBrowserState(
-              chrome_browser_state));
-
-  auto fake_token_service = std::make_unique<FakeProfileOAuth2TokenService>(
-      chrome_browser_state->GetPrefs(), std::move(delegate));
+  identity::IdentityTestEnvironment::ExtraParams extra_params;
+  extra_params.token_service_provider =
+      std::make_unique<ProfileOAuth2TokenServiceIOSProviderImpl>();
 
   return identity::IdentityTestEnvironment::BuildIdentityManagerForTests(
       SigninClientFactory::GetForBrowserState(chrome_browser_state),
-      chrome_browser_state->GetPrefs(), std::move(fake_token_service),
-      ios::AccountTrackerServiceFactory::GetForBrowserState(
-          chrome_browser_state),
-      signin::AccountConsistencyMethod::kMirror);
+      chrome_browser_state->GetPrefs(), base::FilePath(),
+      signin::AccountConsistencyMethod::kMirror, std::move(extra_params));
 }
 
 // static

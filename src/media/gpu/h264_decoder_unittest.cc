@@ -47,8 +47,7 @@ const std::string kHighFrame3 = "bear-320x192-high-frame-3.h264";
 // Checks whether the decrypt config in the picture matches the decrypt config
 // passed to this matcher.
 MATCHER_P(DecryptConfigMatches, decrypt_config, "") {
-  const scoped_refptr<H264Picture>& pic = arg;
-  return pic->decrypt_config()->Matches(*decrypt_config);
+  return arg->decrypt_config()->Matches(*decrypt_config);
 }
 
 MATCHER(SubsampleSizeMatches, "Verify subsample sizes match buffer size") {
@@ -107,7 +106,7 @@ class MockH264Accelerator : public H264Decoder::H264Accelerator {
   MockH264Accelerator() = default;
 
   MOCK_METHOD0(CreateH264Picture, scoped_refptr<H264Picture>());
-  MOCK_METHOD1(SubmitDecode, Status(const scoped_refptr<H264Picture>& pic));
+  MOCK_METHOD1(SubmitDecode, Status(scoped_refptr<H264Picture> pic));
   MOCK_METHOD7(SubmitFrameMetadata,
                Status(const H264SPS* sps,
                       const H264PPS* pps,
@@ -115,17 +114,17 @@ class MockH264Accelerator : public H264Decoder::H264Accelerator {
                       const H264Picture::Vector& ref_pic_listp0,
                       const H264Picture::Vector& ref_pic_listb0,
                       const H264Picture::Vector& ref_pic_listb1,
-                      const scoped_refptr<H264Picture>& pic));
+                      scoped_refptr<H264Picture> pic));
   MOCK_METHOD8(SubmitSlice,
                Status(const H264PPS* pps,
                       const H264SliceHeader* slice_hdr,
                       const H264Picture::Vector& ref_pic_list0,
                       const H264Picture::Vector& ref_pic_list1,
-                      const scoped_refptr<H264Picture>& pic,
+                      scoped_refptr<H264Picture> pic,
                       const uint8_t* data,
                       size_t size,
                       const std::vector<SubsampleEntry>& subsamples));
-  MOCK_METHOD1(OutputPicture, bool(const scoped_refptr<H264Picture>& pic));
+  MOCK_METHOD1(OutputPicture, bool(scoped_refptr<H264Picture> pic));
   MOCK_METHOD2(SetStream,
                Status(base::span<const uint8_t> stream,
                       const DecryptConfig* decrypt_config));
@@ -204,12 +203,11 @@ AcceleratedVideoDecoder::DecodeResult H264DecoderTest::Decode() {
 }
 
 // To have better description on mismatch.
-class WithPocMatcher
-    : public MatcherInterface<const scoped_refptr<H264Picture>&> {
+class WithPocMatcher : public MatcherInterface<scoped_refptr<H264Picture>> {
  public:
   explicit WithPocMatcher(int expected_poc) : expected_poc_(expected_poc) {}
 
-  bool MatchAndExplain(const scoped_refptr<H264Picture>& p,
+  bool MatchAndExplain(scoped_refptr<H264Picture> p,
                        MatchResultListener* listener) const override {
     if (p->pic_order_cnt == expected_poc_)
       return true;
@@ -225,7 +223,7 @@ class WithPocMatcher
   int expected_poc_;
 };
 
-inline Matcher<const scoped_refptr<H264Picture>&> WithPoc(int expected_poc) {
+inline Matcher<scoped_refptr<H264Picture>> WithPoc(int expected_poc) {
   return MakeMatcher(new WithPocMatcher(expected_poc));
 }
 

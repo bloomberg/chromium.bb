@@ -70,6 +70,21 @@ crbug.com/12345 [ tag1 ] b1/s1 [ Skip ]
         for i in range(len(parser.expectations)):
             self.assertEqual(parser.expectations[i], expected_outcome[i])
 
+    def testParseExpectationLineAngleProjectNoTags(self):
+        raw_data = '# tags: [ ]\ncrbug.com/angleproject/23456 b1/s2 [ Skip ]'
+        parser = expectations_parser.TaggedTestListParser(raw_data)
+        expected_outcome = [
+            expectations_parser.Expectation('crbug.com/angleproject/23456',
+                                            'b1/s2', [], ['SKIP'], 2)
+        ]
+        for i in range(len(parser.expectations)):
+            self.assertEqual(parser.expectations[i], expected_outcome[i])
+
+    def testParseExpectationLineBadProject(self):
+        raw_data = '# tags: [ ]\ncrbug.com/bad/project/23456 b1/s2 [ Skip ]'
+        with self.assertRaises(expectations_parser.ParseError):
+            expectations_parser.TaggedTestListParser(raw_data)
+
     def testParseExpectationLineBadTag(self):
         raw_data = '# tags: None\ncrbug.com/23456 [ Mac ] b1/s2 [ Skip ]'
         with self.assertRaises(expectations_parser.ParseError):
@@ -340,3 +355,10 @@ crbug.com/12345 [ tag3 tag4 ] b1/s1 [ Skip ]
                          (0, None))
         self.assertEqual(test_expectations.expectations_for('b1/s1'),
                          (set([ResultType.Pass]), True))
+
+    def testGlobsCanOnlyHaveStarInEnd(self):
+        raw_data = (
+            '# tags: [ Linux ]\n'
+            'crbug.com/23456 [ Linux ] b1/*/c [ RetryOnFailure ]\n')
+        with self.assertRaises(expectations_parser.ParseError):
+            expectations_parser.TaggedTestListParser(raw_data)

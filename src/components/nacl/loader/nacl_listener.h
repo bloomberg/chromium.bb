@@ -14,7 +14,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/shared_memory_mapping.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
@@ -50,7 +50,9 @@ class NaClListener : public IPC::Listener {
   }
 #endif
 
-  void* crash_info_shmem_memory() const { return crash_info_shmem_->memory(); }
+  void* crash_info_shmem_memory() const {
+    return crash_info_shmem_mapping_.memory();
+  }
 
   NaClTrustedListener* trusted_listener() const {
     return trusted_listener_.get();
@@ -79,7 +81,7 @@ class NaClListener : public IPC::Listener {
 
   void OnAddPrefetchedResource(
       const nacl::NaClResourcePrefetchResult& prefetched_resource_file);
-  void OnStart(const nacl::NaClStartParams& params);
+  void OnStart(nacl::NaClStartParams params);
 
   // A channel back to the browser.
   std::unique_ptr<IPC::SyncChannel> channel_;
@@ -102,7 +104,7 @@ class NaClListener : public IPC::Listener {
   int number_of_cores_;
 #endif
 
-  std::unique_ptr<base::SharedMemory> crash_info_shmem_;
+  base::WritableSharedMemoryMapping crash_info_shmem_mapping_;
 
   std::unique_ptr<NaClTrustedListener> trusted_listener_;
 

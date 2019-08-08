@@ -45,11 +45,14 @@ class MEDIA_EXPORT LearningHelper {
   std::unique_ptr<learning::LearningSessionImpl> learning_session_;
 
   // Controllers for each task.
-  std::unique_ptr<learning::LearningTaskController> base_table_controller_;
-  std::unique_ptr<learning::LearningTaskController> base_tree_controller_;
-  std::unique_ptr<learning::LearningTaskController> enhanced_tree_controller_;
-  std::unique_ptr<learning::LearningTaskController> unweighted_tree_controller_;
-  std::unique_ptr<learning::LearningTaskController> binary_tree_controller_;
+  std::unique_ptr<learning::LearningTaskController>
+      base_unweighted_table_controller_;
+  std::unique_ptr<learning::LearningTaskController>
+      base_unweighted_tree_controller_;
+  std::unique_ptr<learning::LearningTaskController>
+      base_unweighted_tree_200_controller_;
+  std::unique_ptr<learning::LearningTaskController>
+      enhanced_unweighted_tree_200_controller_;
 };
 
 }  // namespace media

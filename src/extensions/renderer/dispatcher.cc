@@ -53,6 +53,7 @@
 #include "extensions/common/switches.h"
 #include "extensions/common/view_type.h"
 #include "extensions/grit/extensions_renderer_resources.h"
+#include "extensions/renderer/api/automation/automation_internal_custom_bindings.h"
 #include "extensions/renderer/api_activity_logger.h"
 #include "extensions/renderer/api_definitions_natives.h"
 #include "extensions/renderer/app_window_custom_bindings.h"
@@ -98,7 +99,6 @@
 #include "gin/converter.h"
 #include "mojo/public/js/grit/mojo_bindings_resources.h"
 #include "services/network/public/mojom/cors.mojom.h"
-#include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_custom_element.h"
@@ -685,10 +685,13 @@ std::vector<Dispatcher::JsResourceInfo> Dispatcher::GetJsResources() {
       {"webViewInternal", IDR_WEB_VIEW_INTERNAL_CUSTOM_BINDINGS_JS},
 
       {"keep_alive", IDR_KEEP_ALIVE_JS},
-      {"mojo_bindings", IDR_MOJO_MOJO_BINDINGS_JS, true},
+      {"mojo_bindings", IDR_MOJO_MOJO_BINDINGS_JS},
       {"extensions/common/mojo/keep_alive.mojom", IDR_KEEP_ALIVE_MOJOM_JS},
 
       // Custom bindings.
+      {"automation", IDR_AUTOMATION_CUSTOM_BINDINGS_JS},
+      {"automationEvent", IDR_AUTOMATION_EVENT_JS},
+      {"automationNode", IDR_AUTOMATION_NODE_JS},
       {"app.runtime", IDR_APP_RUNTIME_CUSTOM_BINDINGS_JS},
       {"app.window", IDR_APP_WINDOW_CUSTOM_BINDINGS_JS},
       {"declarativeWebRequest", IDR_DECLARATIVE_WEBREQUEST_CUSTOM_BINDINGS_JS},
@@ -785,6 +788,10 @@ void Dispatcher::RegisterNativeHandlers(
   module_system->RegisterNativeHandler(
       "display_source",
       std::make_unique<DisplaySourceCustomBindings>(context, bindings_system));
+  module_system->RegisterNativeHandler(
+      "automationInternal",
+      std::make_unique<extensions::AutomationInternalCustomBindings>(
+          context, bindings_system));
 }
 
 bool Dispatcher::OnControlMessageReceived(const IPC::Message& message) {
@@ -859,30 +866,6 @@ void Dispatcher::OnActivateExtension(const std::string& extension_id) {
   if (activity_logging_enabled_) {
     DOMActivityLogger::AttachToWorld(DOMActivityLogger::kMainWorldId,
                                      extension_id);
-  }
-
-  // TODO(yoichio): This is temporary switch to have chrome internal extensions
-  // use the old web APIs.
-  // After completion of the migration, we should remove this.
-  // See crbug.com/924031 for detail.
-  if (extension_id == extension_misc::kPdfExtensionId) {
-    blink::WebRuntimeFeatures::EnableShadowDOMV0(true);
-    blink::WebRuntimeFeatures::EnableCustomElementsV0(true);
-  }
-  // FilesApp support. crbug.com/924873
-  // For Polymer1, we still need v0 APIs.
-  // Extensions IDs from src/chrome/browser/chromeos/file_manager/app_id.h.
-  if (!base::FeatureList::IsEnabled(features::kWebUIPolymer2) &&
-      (extension_id == "hhaomjibdihmijegdhdafkllkbggdgoj" ||
-       extension_id == "jcgeabjmjgoblfofpppfkcoakmfobdko" ||
-       extension_id == "nlkncpkkdoccmpiclbokaimcnedabhhm" ||
-       extension_id == "cjbfomnbifhcdnihkgipgfcihmgjfhbf" ||
-       extension_id == "mmfbcljfglbokpmkimbfghdkjmjhdgbg" ||
-       extension_id == "pmfjbimdmchhbnneeidfognadeopoehp" ||
-       extension_id == "dmboannefpncccogfdikhmhpmdnddgoe")) {
-    blink::WebRuntimeFeatures::EnableShadowDOMV0(true);
-    blink::WebRuntimeFeatures::EnableCustomElementsV0(true);
-    blink::WebRuntimeFeatures::EnableHTMLImports(true);
   }
 
   InitOriginPermissions(extension);
@@ -1246,19 +1229,15 @@ void Dispatcher::UpdateOriginPermissions(const Extension& extension) {
   for (const auto& entry : allow_list) {
     WebSecurityPolicy::AddOriginAccessAllowListEntry(
         extension.url(), WebString::FromUTF8(entry->protocol),
-        WebString::FromUTF8(entry->domain),
-        entry->mode ==
-            network::mojom::CorsOriginAccessMatchMode::kAllowSubdomains,
-        entry->priority);
+        WebString::FromUTF8(entry->domain), entry->port,
+        entry->domain_match_mode, entry->port_match_mode, entry->priority);
   }
 
   for (const auto& entry : CreateCorsOriginAccessBlockList(extension)) {
     WebSecurityPolicy::AddOriginAccessBlockListEntry(
         extension.url(), WebString::FromUTF8(entry->protocol),
-        WebString::FromUTF8(entry->domain),
-        entry->mode ==
-            network::mojom::CorsOriginAccessMatchMode::kAllowSubdomains,
-        entry->priority);
+        WebString::FromUTF8(entry->domain), entry->port,
+        entry->domain_match_mode, entry->port_match_mode, entry->priority);
   }
 }
 
@@ -1340,7 +1319,7 @@ void Dispatcher::UpdateContentCapabilities(ScriptContext* context) {
 void Dispatcher::PopulateSourceMap() {
   const std::vector<JsResourceInfo> resources = GetJsResources();
   for (const auto& resource : resources)
-    source_map_.RegisterSource(resource.name, resource.id, resource.gzipped);
+    source_map_.RegisterSource(resource.name, resource.id);
   delegate_->PopulateSourceMap(&source_map_);
 }
 

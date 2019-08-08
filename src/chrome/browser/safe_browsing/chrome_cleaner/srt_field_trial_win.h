@@ -52,20 +52,6 @@ enum PromptTypeHistogramValue {
   PROMPT_TYPE_MAX,
 };
 
-// These values are used to record the method used to prompt the user to reboot
-// the machine. Must be in sync with the SoftwareReporterRebootPromptType enum
-// from enums.xml.
-enum RebootPromptType {
-  REBOOT_PROMPT_TYPE_OPEN_SETTINGS_PAGE = 1,
-  REBOOT_PROMPT_TYPE_SHOW_MODAL_DIALOG = 2,
-  REBOOT_PROMPT_TYPE_SHOW_NON_MODAL_DIALOG = 3,
-  REBOOT_PROMPT_TYPE_MAX,
-};
-
-// When enabled, shows a prompt dialog if a cleanup requires a reboot and the
-// Settings page is not the current active tab.
-extern const base::Feature kRebootPromptDialogFeature;
-
 // Feature, parameters of which control which software reporter and cleanup tool
 // versions will be downloaded. When not enabled, default versions will be used.
 extern const base::Feature kChromeCleanupDistributionFeature;
@@ -92,9 +78,6 @@ std::string GetIncomingSRTSeed();
 
 // Returns the group name in the SRTPrompt field trial.
 std::string GetSRTFieldTrialGroupName();
-
-// Returns the method that should be used to prompt the user.
-RebootPromptType GetRebootPromptType();
 
 // Records a value for the SRT Prompt Histogram.
 void RecordSRTPromptHistogram(SRTPromptHistogramValue value);

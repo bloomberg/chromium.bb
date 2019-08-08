@@ -9,6 +9,43 @@
 #include "components/ui_devtools/ui_devtools_unittest_utils.h"
 #include "ui/views/test/views_test_base.h"
 
+namespace {
+
+size_t GetPropertyIndex(ui_devtools::ViewElement* element,
+                        const std::string& property_name) {
+  auto props = element->GetCustomProperties();
+  for (size_t index = 0; index < props.size(); ++index) {
+    if (props[index].first == property_name)
+      return index;
+  }
+  DCHECK(false) << "Property " << property_name << " can not be found.";
+  return 0;
+}
+
+void TestBooleanCustomPropertySetting(ui_devtools::ViewElement* element,
+                                      const std::string& property_name,
+                                      bool init_value) {
+  size_t index = GetPropertyIndex(element, property_name);
+  std::string old_value(init_value ? "true" : "false");
+  auto props = element->GetCustomProperties();
+  EXPECT_EQ(props[index].second, old_value);
+
+  // Check the property can be set accordingly.
+  std::string new_value(init_value ? "false" : "true");
+  std::string separator(":");
+  element->SetPropertiesFromString(property_name + separator + new_value);
+  props = element->GetCustomProperties();
+  EXPECT_EQ(props[index].first, property_name);
+  EXPECT_EQ(props[index].second, new_value);
+
+  element->SetPropertiesFromString(property_name + separator + old_value);
+  props = element->GetCustomProperties();
+  EXPECT_EQ(props[index].first, property_name);
+  EXPECT_EQ(props[index].second, old_value);
+}
+
+}  // namespace
+
 namespace ui_devtools {
 
 using ::testing::_;
@@ -79,26 +116,29 @@ TEST_F(ViewElementTest, SettingsBoundsOnElementSetsOnView) {
   EXPECT_EQ(view()->bounds(), gfx::Rect(1, 2, 3, 4));
 }
 
-TEST_F(ViewElementTest, SettingVisibleOnElementSetsOnView) {
-  DCHECK(view()->visible());
+TEST_F(ViewElementTest, SetPropertiesFromString) {
+  static const char* kEnabledProperty = "Enabled";
+  TestBooleanCustomPropertySetting(element(), kEnabledProperty, true);
 
-  element()->SetVisible(false);
-  EXPECT_FALSE(view()->visible());
+  // Test setting a non-existent property has no effect.
+  element()->SetPropertiesFromString("Enable:false");
+  auto props = element()->GetCustomProperties();
+  size_t index = GetPropertyIndex(element(), kEnabledProperty);
+  EXPECT_EQ(props[index].first, kEnabledProperty);
+  EXPECT_EQ(props[index].second, "true");
 
-  element()->SetVisible(true);
-  EXPECT_TRUE(view()->visible());
+  // Test setting empty string for property value has no effect.
+  element()->SetPropertiesFromString("Enabled:");
+  props = element()->GetCustomProperties();
+  EXPECT_EQ(props[index].first, kEnabledProperty);
+  EXPECT_EQ(props[index].second, "true");
+
+  // Ensure setting pure whitespace doesn't crash.
+  ASSERT_NO_FATAL_FAILURE(element()->SetPropertiesFromString("   \n  "));
 }
 
-TEST_F(ViewElementTest, GetVisible) {
-  bool visible;
-
-  view()->SetVisible(false);
-  element()->GetVisible(&visible);
-  EXPECT_FALSE(visible);
-
-  view()->SetVisible(true);
-  element()->GetVisible(&visible);
-  EXPECT_TRUE(visible);
+TEST_F(ViewElementTest, SettingVisibilityOnView) {
+  TestBooleanCustomPropertySetting(element(), "Visible", true);
 }
 
 TEST_F(ViewElementTest, GetBounds) {
@@ -120,10 +160,25 @@ TEST_F(ViewElementTest, GetAttributes) {
 
 TEST_F(ViewElementTest, GetCustomProperties) {
   auto props = element()->GetCustomProperties();
-  DCHECK_EQ(props.size(), 1U);
+  // There could be a number of properties from metadata.
+  DCHECK_GE(props.size(), 1U);
 
-  EXPECT_EQ(props[0].first, "tooltip");
-  EXPECT_EQ(props[0].second, "This is the tooltip");
+  // The very last property is "tooltip".
+  EXPECT_EQ(props.back().first, "tooltip");
+  EXPECT_EQ(props.back().second, "This is the tooltip");
+}
+
+TEST_F(ViewElementTest, CheckCustomProperties) {
+  auto props = element()->GetCustomProperties();
+  DCHECK_GT(props.size(), 1U);
+
+  // Check visibility information is passed in.
+  bool is_visible_set = false;
+  for (size_t i = 0; i < props.size() - 1; ++i) {
+    if (props[i].first == "Visible")
+      is_visible_set = true;
+  }
+  EXPECT_TRUE(is_visible_set);
 }
 
 TEST_F(ViewElementTest, GetNodeWindowAndScreenBounds) {

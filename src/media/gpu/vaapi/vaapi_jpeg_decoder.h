@@ -11,7 +11,6 @@
 
 #include "base/callback_forward.h"
 #include "base/containers/span.h"
-#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "ui/gfx/geometry/size.h"
@@ -23,9 +22,10 @@ namespace media {
 
 struct JpegFrameHeader;
 class ScopedVAImage;
+class VASurface;
 class VaapiWrapper;
 
-enum class VaapiJpegDecodeStatus {
+enum class VaapiJpegDecodeStatus : uint32_t {
   kSuccess,
   kParseJpegFailed,
   kUnsupportedJpeg,
@@ -49,6 +49,10 @@ constexpr unsigned int kInvalidVaRtFormat = 0u;
 // or 4:4:4, returns kInvalidVaRtFormat.
 unsigned int VaSurfaceFormatForJpeg(const JpegFrameHeader& frame_header);
 
+// Encapsulates a VaapiWrapper for the purpose of performing
+// hardware-accelerated JPEG decodes. Objects of this class are not thread-safe,
+// but they are also not thread-affine, i.e., the caller is free to call the
+// methods on any thread, but calls must be synchronized externally.
 class VaapiJpegDecoder final {
  public:
   VaapiJpegDecoder();
@@ -60,27 +64,22 @@ class VaapiJpegDecoder final {
 
   // Decodes a JPEG picture. It will fill VA-API parameters and call the
   // corresponding VA-API methods according to the JPEG in |encoded_image|.
-  // Decoded data will be returned as a ScopedVAImage. The VAImage's format will
-  // be either |preferred_image_fourcc| if the conversion from the internal
-  // format is supported or a fallback FOURCC (see
+  // The image will be decoded into an internally allocated VA surface. It
+  // will be returned as an unowned VASurface, which remains valid until the
+  // next Decode() call or destruction of this class. Returns nullptr on
+  // failure and sets *|status| to the reason for failure.
+  scoped_refptr<VASurface> Decode(base::span<const uint8_t> encoded_image,
+                                  VaapiJpegDecodeStatus* status);
+
+  // Get the decoded data from the last Decode() call as a ScopedVAImage. The
+  // VAImage's format will be either |preferred_image_fourcc| if the conversion
+  // from the internal format is supported or a fallback FOURCC (see
   // VaapiWrapper::GetJpegDecodeSuitableImageFourCC() for details). Returns
   // nullptr on failure and sets *|status| to the reason for failure.
-  std::unique_ptr<ScopedVAImage> DoDecode(
-      base::span<const uint8_t> encoded_image,
-      uint32_t preferred_image_fourcc,
-      VaapiJpegDecodeStatus* status);
-
-  // Calls DoDecode() above with |preferred_image_fourcc| = VA_FOURCC_I420.
-  std::unique_ptr<ScopedVAImage> DoDecode(
-      base::span<const uint8_t> encoded_image,
-      VaapiJpegDecodeStatus* status);
+  std::unique_ptr<ScopedVAImage> GetImage(uint32_t preferred_image_fourcc,
+                                          VaapiJpegDecodeStatus* status);
 
  private:
-  // TODO(andrescj): move vaapi_utils tests out of vaapi_jpeg_decoder_unittest
-  // and remove this friend declaration.
-  friend class VaapiJpegDecoderTest;
-  FRIEND_TEST_ALL_PREFIXES(VaapiJpegDecoderTest, ScopedVAImage);
-
   scoped_refptr<VaapiWrapper> vaapi_wrapper_;
 
   // The current VA surface for decoding.

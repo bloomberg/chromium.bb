@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -95,17 +96,10 @@ class DataListIndicatorElement final : public HTMLDivElement {
   }
 
  public:
-  static DataListIndicatorElement* Create(Document& document) {
-    DataListIndicatorElement* element =
-        MakeGarbageCollected<DataListIndicatorElement>(document);
-    element->SetShadowPseudoId(
-        AtomicString("-webkit-calendar-picker-indicator"));
-    element->setAttribute(kIdAttr, shadow_element_names::PickerIndicator());
-    return element;
+  DataListIndicatorElement(Document& document) : HTMLDivElement(document) {
+    SetShadowPseudoId(AtomicString("-webkit-calendar-picker-indicator"));
+    setAttribute(kIdAttr, shadow_element_names::PickerIndicator());
   }
-
-  inline DataListIndicatorElement(Document& document)
-      : HTMLDivElement(document) {}
 };
 
 TextFieldInputType::TextFieldInputType(HTMLInputElement& element)
@@ -127,9 +121,10 @@ InputType::ValueMode TextFieldInputType::GetValueMode() const {
 }
 
 SpinButtonElement* TextFieldInputType::GetSpinButtonElement() const {
-  return ToSpinButtonElementOrDie(
-      GetElement().UserAgentShadowRoot()->getElementById(
-          shadow_element_names::SpinButton()));
+  auto* element = GetElement().UserAgentShadowRoot()->getElementById(
+      shadow_element_names::SpinButton());
+  CHECK(!element || IsA<SpinButtonElement>(element));
+  return To<SpinButtonElement>(element);
 }
 
 bool TextFieldInputType::MayTriggerVirtualKeyboard() const {
@@ -226,7 +221,13 @@ void TextFieldInputType::ForwardEvent(Event& event) {
       return;
   }
 
+  // Style and layout may be dirty at this point. E.g. if an event handler for
+  // the input element has modified its type attribute. If so, the LayoutObject
+  // and the input type is out of sync. Avoid accessing the LayoutObject if we
+  // have scheduled a forced re-attach (GetForceReattachLayoutTree()) for the
+  // input element.
   if (GetElement().GetLayoutObject() &&
+      !GetElement().GetForceReattachLayoutTree() &&
       (event.IsMouseEvent() || event.IsDragEvent() ||
        event.HasInterface(event_interface_names::kWheelEvent) ||
        event.type() == event_type_names::kBlur ||
@@ -295,24 +296,29 @@ void TextFieldInputType::CreateShadowSubtree() {
     return;
   }
 
-  TextControlInnerContainer* container =
-      TextControlInnerContainer::Create(document);
+  auto* container = MakeGarbageCollected<TextControlInnerContainer>(document);
   container->SetShadowPseudoId(
       AtomicString("-webkit-textfield-decoration-container"));
   shadow_root->AppendChild(container);
 
-  EditingViewPortElement* editing_view_port =
-      EditingViewPortElement::Create(document);
+  auto* editing_view_port =
+      MakeGarbageCollected<EditingViewPortElement>(document);
   editing_view_port->AppendChild(inner_editor);
   container->AppendChild(editing_view_port);
 
-  if (should_have_data_list_indicator)
-    container->AppendChild(DataListIndicatorElement::Create(document));
+  if (should_have_data_list_indicator) {
+    container->AppendChild(
+        MakeGarbageCollected<DataListIndicatorElement>(document));
+  }
   // FIXME: Because of a special handling for a spin button in
   // LayoutTextControlSingleLine, we need to put it to the last position. It's
   // inconsistent with multiple-fields date/time types.
-  if (should_have_spin_button)
-    container->AppendChild(SpinButtonElement::Create(document, *this));
+  if (should_have_spin_button) {
+    container->AppendChild(
+        MakeGarbageCollected<SpinButtonElement, Document&,
+                             SpinButtonElement::SpinButtonOwner&>(document,
+                                                                  *this));
+  }
 
   // See listAttributeTargetChanged too.
 }
@@ -341,21 +347,25 @@ void TextFieldInputType::ListAttributeTargetChanged() {
   if (will_have_picker_indicator) {
     Document& document = GetElement().GetDocument();
     if (Element* container = ContainerElement()) {
-      container->InsertBefore(DataListIndicatorElement::Create(document),
-                              GetSpinButtonElement());
+      container->InsertBefore(
+          MakeGarbageCollected<DataListIndicatorElement>(document),
+          GetSpinButtonElement());
     } else {
       // FIXME: The following code is similar to createShadowSubtree(),
       // but they are different. We should simplify the code by making
       // containerElement mandatory.
-      Element* rp_container = TextControlInnerContainer::Create(document);
+      auto* rp_container =
+          MakeGarbageCollected<TextControlInnerContainer>(document);
       rp_container->SetShadowPseudoId(
           AtomicString("-webkit-textfield-decoration-container"));
       Element* inner_editor = GetElement().InnerEditorElement();
       inner_editor->parentNode()->ReplaceChild(rp_container, inner_editor);
-      Element* editing_view_port = EditingViewPortElement::Create(document);
+      auto* editing_view_port =
+          MakeGarbageCollected<EditingViewPortElement>(document);
       editing_view_port->AppendChild(inner_editor);
       rp_container->AppendChild(editing_view_port);
-      rp_container->AppendChild(DataListIndicatorElement::Create(document));
+      rp_container->AppendChild(
+          MakeGarbageCollected<DataListIndicatorElement>(document));
       if (GetElement().GetDocument().FocusedElement() == GetElement())
         GetElement().UpdateFocusAppearance(SelectionBehaviorOnFocus::kRestore);
     }
@@ -473,8 +483,8 @@ void TextFieldInputType::UpdatePlaceholderText() {
     return;
   }
   if (!placeholder) {
-    HTMLElement* new_element =
-        HTMLDivElement::Create(GetElement().GetDocument());
+    auto* new_element =
+        MakeGarbageCollected<HTMLDivElement>(GetElement().GetDocument());
     placeholder = new_element;
     placeholder->SetShadowPseudoId(AtomicString("-webkit-input-placeholder"));
     placeholder->SetInlineStyleProperty(CSSPropertyID::kDisplay,

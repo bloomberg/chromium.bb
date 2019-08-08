@@ -68,10 +68,9 @@ struct BackgroundThrottlingSettings {
   base::Optional<base::TimeDelta> initial_budget;
 };
 
-double GetDoubleParameterFromMap(
-    const std::map<std::string, std::string>& settings,
-    const std::string& setting_name,
-    double default_value) {
+double GetDoubleParameterFromMap(const base::FieldTrialParams& settings,
+                                 const std::string& setting_name,
+                                 double default_value) {
   const auto& find_it = settings.find(setting_name);
   if (find_it == settings.end())
     return default_value;
@@ -90,7 +89,7 @@ base::Optional<base::TimeDelta> DoubleToOptionalTime(double value) {
 }
 
 BackgroundThrottlingSettings GetBackgroundThrottlingSettings() {
-  std::map<std::string, std::string> background_throttling_settings;
+  base::FieldTrialParams background_throttling_settings;
   base::GetFieldTrialParams("ExpensiveBackgroundTimerThrottling",
                             &background_throttling_settings);
 

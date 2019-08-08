@@ -69,11 +69,6 @@ enum AAMode {
   USE_AA = 1,
 };
 
-enum SwizzleMode {
-  NO_SWIZZLE = 0,
-  DO_SWIZZLE = 1,
-};
-
 enum PremultipliedAlphaMode {
   PREMULTIPLIED_ALPHA = 0,
   NON_PREMULTIPLIED_ALPHA = 1,
@@ -239,7 +234,6 @@ class VIZ_SERVICE_EXPORT FragmentShader {
   // Settings that are modified by sub-classes.
   AAMode aa_mode_ = NO_AA;
   bool has_varying_alpha_ = false;
-  SwizzleMode swizzle_mode_ = NO_SWIZZLE;
   PremultipliedAlphaMode premultiply_alpha_mode_ = PREMULTIPLIED_ALPHA;
   FragColorMode frag_color_mode_ = FRAG_COLOR_MODE_DEFAULT;
   InputColorSource input_color_type_ = INPUT_COLOR_SOURCE_RGBA_TEXTURE;

@@ -10,11 +10,11 @@
 
 #include "base/base64.h"
 #include "base/hash/sha1.h"
-#include "components/sync/base/cryptographer.h"
 #include "components/sync/base/fake_encryptor.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/unique_position.h"
+#include "components/sync/nigori/cryptographer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -71,7 +71,8 @@ TEST(NonBlockingTypeCommitContributionTest, PopulateCommitProtoDefault) {
   request_data.entity = std::move(data);
 
   SyncEntity entity;
-  NonBlockingTypeCommitContribution::PopulateCommitProto(request_data, &entity);
+  NonBlockingTypeCommitContribution::PopulateCommitProto(PREFERENCES,
+                                                         request_data, &entity);
 
   // Exhaustively verify the populated SyncEntity.
   EXPECT_TRUE(entity.id_string().empty());
@@ -119,7 +120,8 @@ TEST(NonBlockingTypeCommitContributionTest, PopulateCommitProtoBookmark) {
   request_data.entity = std::move(data);
 
   SyncEntity entity;
-  NonBlockingTypeCommitContribution::PopulateCommitProto(request_data, &entity);
+  NonBlockingTypeCommitContribution::PopulateCommitProto(BOOKMARKS,
+                                                         request_data, &entity);
 
   // Exhaustively verify the populated SyncEntity.
   EXPECT_FALSE(entity.id_string().empty());

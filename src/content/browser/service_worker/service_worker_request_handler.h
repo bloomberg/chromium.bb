@@ -20,7 +20,6 @@ namespace content {
 class ResourceContext;
 class ServiceWorkerNavigationHandleCore;
 class ServiceWorkerProviderHost;
-class WebContents;
 struct NavigationRequestInfo;
 
 // Contains factory methods for creating the NavigationLoaderInterceptors for
@@ -36,7 +35,6 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler {
       ResourceContext* resource_context,
       ServiceWorkerNavigationHandleCore* navigation_handle_core,
       const NavigationRequestInfo& request_info,
-      base::RepeatingCallback<WebContents*()> web_contents_getter,
       base::WeakPtr<ServiceWorkerProviderHost>* out_provider_host);
 
   // Same as above but for a dedicated worker or shared worker.

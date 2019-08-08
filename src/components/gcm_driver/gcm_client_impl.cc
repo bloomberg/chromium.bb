@@ -101,7 +101,6 @@ const char kMessageTypeDataMessage[] = "gcm";
 const char kMessageTypeDeletedMessagesKey[] = "deleted_messages";
 const char kMessageTypeKey[] = "message_type";
 const char kMessageTypeSendErrorKey[] = "send_error";
-const char kSendErrorMessageIdKey[] = "google.message_id";
 const char kSubtypeKey[] = "subtype";
 const char kSendMessageFromValue[] = "gcm@chrome.com";
 const int64_t kDefaultUserSerialNumber = 0LL;
@@ -1356,8 +1355,7 @@ void GCMClientImpl::HandleIncomingMessage(const gcm::MCSMessage& message) {
   DCHECK_EQ(data_message_stanza.device_user_id(), kDefaultUserSerialNumber);
 
   // Copy all the data from the stanza to a MessageData object. When present,
-  // keys like kSubtypeKey, kMessageTypeKey or kSendErrorMessageIdKey will be
-  // filtered out later.
+  // keys like kSubtypeKey or kMessageTypeKey will be filtered out later.
   MessageData message_data;
   for (int i = 0; i < data_message_stanza.app_data_size(); ++i) {
     std::string key = data_message_stanza.app_data(i).key();
@@ -1435,6 +1433,7 @@ void GCMClientImpl::HandleIncomingDataMessage(
 
   IncomingMessage incoming_message;
   incoming_message.sender_id = data_message_stanza.from();
+  incoming_message.message_id = data_message_stanza.persistent_id();
   if (data_message_stanza.has_token())
     incoming_message.collapse_key = data_message_stanza.token();
   incoming_message.data = message_data;
@@ -1468,12 +1467,7 @@ void GCMClientImpl::HandleIncomingSendError(
   SendErrorDetails send_error_details;
   send_error_details.additional_data = message_data;
   send_error_details.result = SERVER_ERROR;
-
-  auto iter = send_error_details.additional_data.find(kSendErrorMessageIdKey);
-  if (iter != send_error_details.additional_data.end()) {
-    send_error_details.message_id = iter->second;
-    send_error_details.additional_data.erase(iter);
-  }
+  send_error_details.message_id = data_message_stanza.persistent_id();
 
   recorder_.RecordIncomingSendError(app_id, data_message_stanza.to(),
                                     data_message_stanza.id());

@@ -12,6 +12,7 @@
 #include "base/files/scoped_file.h"
 #include "device/gamepad/abstract_haptic_gamepad.h"
 #include "device/gamepad/dualshock4_controller_linux.h"
+#include "device/gamepad/gamepad_id_list.h"
 #include "device/gamepad/gamepad_standard_mappings.h"
 #include "device/gamepad/hid_haptic_gamepad_linux.h"
 #include "device/gamepad/udev_gamepad_linux.h"
@@ -136,6 +137,9 @@ class GamepadDeviceLinux : public AbstractHapticGamepad {
   // Maps from indices in the Gamepad buttons array to a boolean value
   // indicating whether the button index is already mapped.
   std::vector<bool> button_indices_used_;
+
+  // An identifier for the gamepad device model.
+  GamepadId gamepad_id_ = GamepadId::kUnknownGamepad;
 
   // The vendor ID of the device.
   uint16_t vendor_id_;

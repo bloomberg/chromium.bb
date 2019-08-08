@@ -58,6 +58,8 @@ class EnrollmentScreenHandler
       public EnrollmentScreenView,
       public NetworkStateInformer::NetworkStateInformerObserver {
  public:
+  using TView = EnrollmentScreenView;
+
   EnrollmentScreenHandler(
       JSCallsContainer* js_calls_container,
       const scoped_refptr<NetworkStateInformer>& network_state_informer,

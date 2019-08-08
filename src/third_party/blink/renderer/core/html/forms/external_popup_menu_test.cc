@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/html/forms/external_popup_menu.h"
 
 #include <memory>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
@@ -20,6 +21,7 @@
 #include "third_party/blink/renderer/core/layout/layout_menu_list.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 
@@ -32,7 +34,7 @@ class ExternalPopupMenuDisplayNoneItemsTest : public PageTestBase {
  protected:
   void SetUp() override {
     PageTestBase::SetUp();
-    HTMLSelectElement* element = HTMLSelectElement::Create(GetDocument());
+    auto* element = MakeGarbageCollected<HTMLSelectElement>(GetDocument());
     // Set the 4th an 5th items to have "display: none" property
     element->SetInnerHTMLFromString(
         "<option><option><option><option style='display:none;'><option "
@@ -202,7 +204,7 @@ TEST_F(ExternalPopupMenuTest, DidAcceptIndices) {
   WebVector<int> indices_vector(indices, 1);
   client->DidAcceptIndices(indices_vector);
   EXPECT_FALSE(select->PopupIsVisible());
-  EXPECT_STREQ("2", menu_list->GetText().Utf8().data());
+  EXPECT_EQ("2", menu_list->GetText());
   EXPECT_EQ(2, select->selectedIndex());
 }
 

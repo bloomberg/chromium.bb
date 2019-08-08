@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/accelerators/accelerator_controller.h"
+#include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/frame/header_view.h"
 #include "ash/frame/wide_frame_view.h"
 #include "ash/public/cpp/ash_switches.h"
@@ -21,13 +21,13 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/wm_event.h"
 #include "base/command_line.h"
 #include "base/containers/flat_set.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_targeter.h"
@@ -392,8 +392,9 @@ TEST_F(NonClientFrameViewAshTest, GetPreferredOnScreenHeightInTabletMaximzied) {
 TEST_F(NonClientFrameViewAshTest, MinimizedWindowsInTabletMode) {
   std::unique_ptr<views::Widget> widget =
       CreateTestWidget(new NonClientFrameViewAshTestWidgetDelegate);
-  widget->GetNativeWindow()->SetProperty(aura::client::kResizeBehaviorKey,
-                                         ws::mojom::kResizeBehaviorCanMaximize);
+  widget->GetNativeWindow()->SetProperty(
+      aura::client::kResizeBehaviorKey,
+      aura::client::kResizeBehaviorCanMaximize);
   widget->Maximize();
   widget->Minimize();
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
@@ -424,8 +425,8 @@ TEST_F(NonClientFrameViewAshTest, HeaderVisibilityInSplitview) {
     // Windows need to be resizable and maximizable to be used in splitview.
     widget->GetNativeWindow()->SetProperty(
         aura::client::kResizeBehaviorKey,
-        ws::mojom::kResizeBehaviorCanMaximize |
-            ws::mojom::kResizeBehaviorCanResize);
+        aura::client::kResizeBehaviorCanMaximize |
+            aura::client::kResizeBehaviorCanResize);
     return widget;
   };
 
@@ -457,13 +458,39 @@ TEST_F(NonClientFrameViewAshTest, HeaderVisibilityInSplitview) {
   // the header is again drawn for the snapped window, but not for the unsnapped
   // window.
   Shell::Get()->overview_controller()->ToggleOverview();
-  ASSERT_EQ(SplitViewController::LEFT_SNAPPED,
+  ASSERT_EQ(SplitViewState::kLeftSnapped,
             Shell::Get()->split_view_controller()->state());
   EXPECT_TRUE(delegate1->header_view()->should_paint());
   EXPECT_EQ(0, delegate1->GetNonClientFrameViewTopBorderHeight());
   EXPECT_FALSE(delegate2->header_view()->should_paint());
 
   Shell::Get()->split_view_controller()->EndSplitView();
+}
+
+TEST_F(NonClientFrameViewAshTest, HeaderVisibilityInFullscreen) {
+  auto* delegate = new NonClientFrameViewAshTestWidgetDelegate();
+  std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
+  NonClientFrameViewAsh* non_client_frame_view =
+      delegate->non_client_frame_view();
+  HeaderView* header_view = non_client_frame_view->GetHeaderView();
+  EXPECT_FALSE(header_view->in_immersive_mode());
+  EXPECT_TRUE(header_view->GetVisible());
+  widget->SetFullscreen(true);
+  EXPECT_TRUE(header_view->in_immersive_mode());
+  EXPECT_TRUE(header_view->GetVisible());
+  widget->SetFullscreen(false);
+  EXPECT_FALSE(header_view->in_immersive_mode());
+  EXPECT_TRUE(header_view->GetVisible());
+
+  // Turn immersive off, and make sure that header view is invisible
+  // in fullscreen.
+  widget->SetFullscreen(true);
+  ash::ImmersiveFullscreenController::EnableForWidget(widget.get(), false);
+  EXPECT_FALSE(header_view->in_immersive_mode());
+  EXPECT_FALSE(header_view->GetVisible());
+  widget->SetFullscreen(false);
+  EXPECT_FALSE(header_view->in_immersive_mode());
+  EXPECT_TRUE(header_view->GetVisible());
 }
 
 namespace {
@@ -509,7 +536,7 @@ class TestButtonModel : public CaptionButtonModel {
 }  // namespace
 
 TEST_F(NonClientFrameViewAshTest, BackButton) {
-  ash::AcceleratorController* controller =
+  ash::AcceleratorControllerImpl* controller =
       ash::Shell::Get()->accelerator_controller();
   std::unique_ptr<TestButtonModel> model = std::make_unique<TestButtonModel>();
   TestButtonModel* model_ptr = model.get();
@@ -538,7 +565,7 @@ TEST_F(NonClientFrameViewAshTest, BackButton) {
   model_ptr->SetVisible(views::CAPTION_BUTTON_ICON_BACK, true);
   non_client_frame_view->SizeConstraintsChanged();
   EXPECT_TRUE(header_view->GetBackButton());
-  EXPECT_FALSE(header_view->GetBackButton()->enabled());
+  EXPECT_FALSE(header_view->GetBackButton()->GetEnabled());
 
   // Back button is disabled, so clicking on it should not should
   // generate back key sequence.
@@ -552,7 +579,7 @@ TEST_F(NonClientFrameViewAshTest, BackButton) {
   model_ptr->SetEnabled(views::CAPTION_BUTTON_ICON_BACK, true);
   non_client_frame_view->SizeConstraintsChanged();
   EXPECT_TRUE(header_view->GetBackButton());
-  EXPECT_TRUE(header_view->GetBackButton()->enabled());
+  EXPECT_TRUE(header_view->GetBackButton()->GetEnabled());
 
   // Back button is now enabled, so clicking on it should generate
   // back key sequence.
@@ -587,7 +614,7 @@ TEST_F(NonClientFrameViewAshTest, FrameVisibility) {
   widget->GetRootView()->Layout();
   EXPECT_EQ(gfx::Size(200, 100),
             widget->client_view()->GetLocalBounds().size());
-  EXPECT_FALSE(widget->non_client_view()->frame_view()->visible());
+  EXPECT_FALSE(widget->non_client_view()->frame_view()->GetVisible());
   EXPECT_EQ(
       window_bounds,
       non_client_frame_view->GetClientBoundsForWindowBounds(window_bounds));
@@ -595,7 +622,7 @@ TEST_F(NonClientFrameViewAshTest, FrameVisibility) {
   non_client_frame_view->SetVisible(true);
   widget->GetRootView()->Layout();
   EXPECT_EQ(client_bounds, widget->client_view()->GetLocalBounds().size());
-  EXPECT_TRUE(widget->non_client_view()->frame_view()->visible());
+  EXPECT_TRUE(widget->non_client_view()->frame_view()->GetVisible());
   EXPECT_EQ(32, delegate->GetNonClientFrameViewTopBorderHeight());
   EXPECT_EQ(
       gfx::Rect(gfx::Point(10, 42), client_bounds),
@@ -619,52 +646,52 @@ TEST_F(NonClientFrameViewAshTest, CustomButtonModel) {
 
   // CLOSE buttion is always visible and enabled.
   EXPECT_TRUE(test_api.close_button());
-  EXPECT_TRUE(test_api.close_button()->visible());
-  EXPECT_TRUE(test_api.close_button()->enabled());
+  EXPECT_TRUE(test_api.close_button()->GetVisible());
+  EXPECT_TRUE(test_api.close_button()->GetEnabled());
 
-  EXPECT_FALSE(test_api.minimize_button()->visible());
-  EXPECT_FALSE(test_api.size_button()->visible());
-  EXPECT_FALSE(test_api.menu_button()->visible());
+  EXPECT_FALSE(test_api.minimize_button()->GetVisible());
+  EXPECT_FALSE(test_api.size_button()->GetVisible());
+  EXPECT_FALSE(test_api.menu_button()->GetVisible());
 
   // Back button
   model_ptr->SetVisible(views::CAPTION_BUTTON_ICON_BACK, true);
   non_client_frame_view->SizeConstraintsChanged();
-  EXPECT_TRUE(header_view->GetBackButton()->visible());
-  EXPECT_FALSE(header_view->GetBackButton()->enabled());
+  EXPECT_TRUE(header_view->GetBackButton()->GetVisible());
+  EXPECT_FALSE(header_view->GetBackButton()->GetEnabled());
 
   model_ptr->SetEnabled(views::CAPTION_BUTTON_ICON_BACK, true);
   non_client_frame_view->SizeConstraintsChanged();
-  EXPECT_TRUE(header_view->GetBackButton()->enabled());
+  EXPECT_TRUE(header_view->GetBackButton()->GetEnabled());
 
   // size button
   model_ptr->SetVisible(views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE, true);
   non_client_frame_view->SizeConstraintsChanged();
-  EXPECT_TRUE(test_api.size_button()->visible());
-  EXPECT_FALSE(test_api.size_button()->enabled());
+  EXPECT_TRUE(test_api.size_button()->GetVisible());
+  EXPECT_FALSE(test_api.size_button()->GetEnabled());
 
   model_ptr->SetEnabled(views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE, true);
   non_client_frame_view->SizeConstraintsChanged();
-  EXPECT_TRUE(test_api.size_button()->enabled());
+  EXPECT_TRUE(test_api.size_button()->GetEnabled());
 
   // minimize button
   model_ptr->SetVisible(views::CAPTION_BUTTON_ICON_MINIMIZE, true);
   non_client_frame_view->SizeConstraintsChanged();
-  EXPECT_TRUE(test_api.minimize_button()->visible());
-  EXPECT_FALSE(test_api.minimize_button()->enabled());
+  EXPECT_TRUE(test_api.minimize_button()->GetVisible());
+  EXPECT_FALSE(test_api.minimize_button()->GetEnabled());
 
   model_ptr->SetEnabled(views::CAPTION_BUTTON_ICON_MINIMIZE, true);
   non_client_frame_view->SizeConstraintsChanged();
-  EXPECT_TRUE(test_api.minimize_button()->enabled());
+  EXPECT_TRUE(test_api.minimize_button()->GetEnabled());
 
   // menu button
   model_ptr->SetVisible(views::CAPTION_BUTTON_ICON_MENU, true);
   non_client_frame_view->SizeConstraintsChanged();
-  EXPECT_TRUE(test_api.menu_button()->visible());
-  EXPECT_FALSE(test_api.menu_button()->enabled());
+  EXPECT_TRUE(test_api.menu_button()->GetVisible());
+  EXPECT_FALSE(test_api.menu_button()->GetEnabled());
 
   model_ptr->SetEnabled(views::CAPTION_BUTTON_ICON_MENU, true);
   non_client_frame_view->SizeConstraintsChanged();
-  EXPECT_TRUE(test_api.menu_button()->enabled());
+  EXPECT_TRUE(test_api.menu_button()->GetEnabled());
 
   // zoom button
   EXPECT_STREQ(views::kWindowControlMaximizeIcon.name,
@@ -710,14 +737,16 @@ TEST_F(NonClientFrameViewAshTest, WideFrame) {
   EXPECT_TRUE(wide_header_view->should_paint());
 
   // Test immersive.
-  ImmersiveFullscreenController controller(Shell::Get()->immersive_context());
+  ImmersiveFullscreenController controller;
   wide_frame_view->Init(&controller);
   EXPECT_FALSE(wide_header_view->in_immersive_mode());
   EXPECT_FALSE(header_view->in_immersive_mode());
+  EXPECT_TRUE(header_view->GetVisible());
 
   ImmersiveFullscreenController::EnableForWidget(widget.get(), true);
   EXPECT_TRUE(header_view->in_immersive_mode());
   EXPECT_TRUE(wide_header_view->in_immersive_mode());
+  EXPECT_TRUE(header_view->GetVisible());
   // The height should be ~(33 *.5)
   wide_header_view->SetVisibleFraction(0.5);
   EXPECT_NEAR(16, wide_header_view->GetPreferredOnScreenHeight(), 1);

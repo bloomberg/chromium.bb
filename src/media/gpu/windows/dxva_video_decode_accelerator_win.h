@@ -103,7 +103,7 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
 
   // VideoDecodeAccelerator implementation.
   bool Initialize(const Config& config, Client* client) override;
-  void Decode(const BitstreamBuffer& bitstream) override;
+  void Decode(BitstreamBuffer bitstream) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer,
               int32_t bitstream_id) override;
   void AssignPictureBuffers(const std::vector<PictureBuffer>& buffers) override;
@@ -300,8 +300,8 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
                                  int input_buffer_id);
 
   // Copies the source texture |src_texture| to the destination |dest_texture|.
-  // The copying is done on the decoder thread.
-  void CopyTexture(ID3D11Texture2D* src_texture,
+  // The copying is done on the decoder thread.  Returns true on success.
+  bool CopyTexture(ID3D11Texture2D* src_texture,
                    ID3D11Texture2D* dest_texture,
                    Microsoft::WRL::ComPtr<IDXGIKeyedMutex> dest_keyed_mutex,
                    uint64_t keyed_mutex_value,
@@ -559,8 +559,8 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   // Set to true if we are sharing ANGLE's device.
   bool using_angle_device_;
 
-  // Enables experimental hardware acceleration for VP8/VP9 video decoding.
-  const gpu::GpuPreferences::VpxDecodeVendors enable_accelerated_vpx_decode_;
+  // Enables hardware acceleration for VP9 video decoding.
+  const bool enable_accelerated_vpx_decode_;
 
   // The media foundation H.264 decoder has problems handling changes like
   // resolution change, bitrate change etc. If we reinitialize the decoder

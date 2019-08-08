@@ -60,13 +60,6 @@ class V8PersistentCallbackFunction<V8StringSequenceCallbackFunctionLongSequenceA
   ToV8PersistentCallbackFunction(V8CallbackFunction*);
 };
 
-// V8StringSequenceCallbackFunctionLongSequenceArg is designed to be used with wrapper-tracing.
-// As blink::Persistent does not perform wrapper-tracing, use of
-// |WrapPersistent| for callback functions is likely (if not always) misuse.
-// Thus, this code prohibits such a use case. The call sites should explicitly
-// use WrapPersistent(V8PersistentCallbackFunction<T>*).
-Persistent<V8StringSequenceCallbackFunctionLongSequenceArg> WrapPersistent(V8StringSequenceCallbackFunctionLongSequenceArg*) = delete;
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_V8_STRING_SEQUENCE_CALLBACK_FUNCTION_LONG_SEQUENCE_ARG_H_

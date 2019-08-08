@@ -10,6 +10,11 @@ namespace arc {
 const base::Feature kAvailableForChildAccountFeature{
     "ArcAvailableForChildAccount", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether ARC++ app runtime performance statistics collection is
+// enabled.
+const base::Feature kAppRuntimePerormanceStatistics{
+    "AppRuntimePerormanceStatistics", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Controls ACTION_BOOT_COMPLETED broadcast for third party applications on ARC.
 // When disabled, third party apps will not receive this broadcast.
 const base::Feature kBootCompletedBroadcastFeature {
@@ -56,6 +61,10 @@ const base::Feature kNativeBridgeExperimentFeature {
     "ArcNativeBridgeExperiment", base::FEATURE_ENABLED_BY_DEFAULT
 };
 
+// Controls experimental print spooler feature for ARC.
+const base::Feature kPrintSpoolerExperimentFeature{
+    "ArcPrintSpoolerExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls Smart Text Selection for Chrome.
 // When enabled, the context menu will show contextual quick actions based on
 // the current text selection.
@@ -66,6 +75,12 @@ const base::Feature kSmartTextSelectionFeature{
 // When enabled, Android apps will be able to use usb host features.
 const base::Feature kUsbHostFeature{"ArcUsbHost",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Controls ARC USB Storage UI feature.
+// When enabled, chrome://settings and Files.app will ask if the user wants
+// to expose USB storage devices to ARC.
+const base::Feature kUsbStorageUIFeature{"ArcUsbStorageUI",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls ARC VPN integration.
 // When enabled, Chrome traffic will be routed through VPNs connected in

@@ -27,7 +27,7 @@ class ArcKioskSplashScreenView {
     WAITING_APP_WINDOW,
   };
 
-  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_ARC_KIOSK_SPLASH;
+  constexpr static StaticOobeScreenId kScreenId{"arc-kiosk-splash"};
 
   ArcKioskSplashScreenView() = default;
 
@@ -50,6 +50,8 @@ class ArcKioskSplashScreenView {
 class ArcKioskSplashScreenHandler : public BaseScreenHandler,
                                     public ArcKioskSplashScreenView {
  public:
+  using TView = ArcKioskSplashScreenView;
+
   explicit ArcKioskSplashScreenHandler(JSCallsContainer* js_calls_container);
   ~ArcKioskSplashScreenHandler() override;
 

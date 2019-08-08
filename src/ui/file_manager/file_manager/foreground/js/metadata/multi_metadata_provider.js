@@ -48,6 +48,26 @@ function MultiMetadataProvider(
 MultiMetadataProvider.prototype.__proto__ = MetadataProvider.prototype;
 
 /**
+ * Property names of documents-provider files which we should get from
+ * ExternalMetadataProvider.
+ *
+ * We should NOT use ExternalMetadataProvider.PROPERTY_NAMES for
+ * documents-provider files, since ExternalMetadataProvider zero-fills all
+ * requested properties (e.g. 'size' is initialized to '0 bytes' even when size
+ * is not acquired by chrome.fileManagerPrivate.getEntryProperties) and the
+ * zero-filled property can overwrite a valid property which is already
+ * acquired from FileSystemMetadataProvider.
+ *
+ * @const {!Array<string>}
+ */
+MultiMetadataProvider.DOCUMENTS_PROVIDER_EXTERNAL_PROPERTY_NAMES = [
+  'canCopy',
+  'canDelete',
+  'canRename',
+  'canAddChildren',
+];
+
+/**
  * Obtains metadata for entries.
  * @param {!Array<!MetadataRequest>} requests
  * @return {!Promise<!Array<!MetadataItem>>}
@@ -112,19 +132,22 @@ MultiMetadataProvider.prototype.get = function(requests) {
       addRequests(externalRequests, externalPropertyNames);
       addRequests(contentRequests, contentPropertyNames);
       addRequests(fallbackContentRequests, fallbackContentPropertyNames);
+    } else if (
+        volumeInfo &&
+        volumeInfo.volumeType ===
+            VolumeManagerCommon.VolumeType.DOCUMENTS_PROVIDER) {
+      // We need to discard content requests when using a documents provider
+      // since the content sniffing code can't resolve the file path in the
+      // MediaGallery API. See crbug.com/942417
+      addRequests(fileSystemRequests, fileSystemPropertyNames);
+      addRequests(
+          externalRequests,
+          MultiMetadataProvider.DOCUMENTS_PROVIDER_EXTERNAL_PROPERTY_NAMES);
     } else {
       addRequests(fileSystemRequests, fileSystemPropertyNames);
       addRequests(
           contentRequests,
           contentPropertyNames.concat(fallbackContentPropertyNames));
-    }
-    // We need to discard content requests when using a documents provider
-    // since the content sniffing code can't resolve the file path in the
-    // MediaGallery API. See crbug.com/942417
-    if (volumeInfo &&
-        volumeInfo.volumeType ===
-            VolumeManagerCommon.VolumeType.DOCUMENTS_PROVIDER) {
-      contentRequests.length = 0;
     }
   });
 

@@ -1,5 +1,4 @@
 include_rules = [
-  "+components/data_use_measurement/core",
   "+components/invalidation",
   "+components/keyed_service/core",
   "+components/os_crypt",
@@ -15,11 +14,11 @@ include_rules = [
   "-components/signin/core/browser/signin_manager.h",
   "-components/signin/core/browser/signin_manager_base.h",
   "+components/sync/base",
-  "+components/sync/device_info",
   "+components/sync/engine",
   "+components/sync/js",
   "+components/sync/model",
   "+components/sync/model_impl",
+  "+components/sync/nigori",
   "+components/sync/protocol",
   "+components/sync/syncable",
   "+components/sync/test",

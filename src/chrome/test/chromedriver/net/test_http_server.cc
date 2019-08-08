@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -121,7 +120,7 @@ void TestHttpServer::OnWebSocketMessage(int connection_id, std::string data) {
   {
     base::AutoLock lock(action_lock_);
     action = message_action_;
-    callback = base::ResetAndReturn(&message_callback_);
+    callback = std::move(message_callback_);
   }
   if (!callback.is_null())
     callback.Run();

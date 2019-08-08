@@ -14,6 +14,7 @@
 #include "components/feature_engagement/public/tracker.h"
 #include "components/google/core/common/google_util.h"
 #include "components/history/core/browser/web_history_service.h"
+#include "components/prefs/ios/pref_observer_bridge.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
@@ -24,6 +25,7 @@
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remover.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remover_factory.h"
+#import "ios/chrome/browser/browsing_data/browsing_data_remover_observer_bridge.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #include "ios/chrome/browser/history/web_history_service_factory.h"
@@ -40,7 +42,10 @@
 #import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_item.h"
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_detail_item.h"
 #import "ios/chrome/browser/ui/settings/cells/table_view_clear_browsing_data_item.h"
+#import "ios/chrome/browser/ui/settings/clear_browsing_data/browsing_data_counter_wrapper_producer.h"
+#import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_consumer.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_ui_constants.h"
+#import "ios/chrome/browser/ui/settings/clear_browsing_data/time_range_selector_table_view_controller.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
@@ -64,6 +69,9 @@ namespace {
 const int kMaxTimesHistoryNoticeShown = 1;
 // The tableView button red background color.
 const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
+// TableViewClearBrowsingDataItem's selectedBackgroundViewBackgroundColor.
+const int kSelectedBackgroundColorRGB = 0x4285F4;
+const CGFloat kSelectedBackgroundColorAlpha = 0.05;
 
 // List of flags that have corresponding counters.
 const std::vector<BrowsingDataRemoveMask> _browsingDataRemoveFlags = {
@@ -90,9 +98,14 @@ static NSDictionary* _imageNamesByItemTypes = @{
       @"clear_browsing_data_autofill",
 };
 
-@interface ClearBrowsingDataManager () {
+@interface ClearBrowsingDataManager () <BrowsingDataRemoverObserving,
+                                        PrefObserverDelegate> {
   // Access to the kDeleteTimePeriod preference.
   IntegerPrefMember _timeRangePref;
+  // Pref observer to track changes to prefs.
+  std::unique_ptr<PrefObserverBridge> _prefObserverBridge;
+  // Registrar for pref changes notifications.
+  PrefChangeRegistrar _prefChangeRegistrar;
 
   // Observer for browsing data removal events and associated ScopedObserver
   // used to track registration with BrowsingDataRemover. They both may be
@@ -127,6 +140,9 @@ static NSDictionary* _imageNamesByItemTypes = @{
 
 @property(nonatomic, strong) TableViewDetailIconItem* tableViewTimeRangeItem;
 
+@property(nonatomic, strong)
+    BrowsingDataCounterWrapperProducer* counterWrapperProducer;
+
 @end
 
 @implementation ClearBrowsingDataManager
@@ -141,10 +157,24 @@ static NSDictionary* _imageNamesByItemTypes = @{
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                             listType:(ClearBrowsingDataListType)listType {
+  return [self initWithBrowserState:browserState
+                                listType:listType
+                     browsingDataRemover:BrowsingDataRemoverFactory::
+                                             GetForBrowserState(browserState)
+      browsingDataCounterWrapperProducer:[[BrowsingDataCounterWrapperProducer
+                                             alloc] init]];
+}
+
+- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+                              listType:(ClearBrowsingDataListType)listType
+                   browsingDataRemover:(BrowsingDataRemover*)remover
+    browsingDataCounterWrapperProducer:
+        (BrowsingDataCounterWrapperProducer*)producer {
   self = [super init];
   if (self) {
     _browserState = browserState;
     _listType = listType;
+    _counterWrapperProducer = producer;
 
     _timeRangePref.Init(browsing_data::prefs::kDeleteTimePeriod,
                         _browserState->GetPrefs());
@@ -154,8 +184,12 @@ static NSDictionary* _imageNamesByItemTypes = @{
       scoped_observer_ = std::make_unique<
           ScopedObserver<BrowsingDataRemover, BrowsingDataRemoverObserver>>(
           observer_.get());
-      scoped_observer_->Add(
-          BrowsingDataRemoverFactory::GetForBrowserState(self.browserState));
+      scoped_observer_->Add(remover);
+
+      _prefChangeRegistrar.Init(_browserState->GetPrefs());
+      _prefObserverBridge.reset(new PrefObserverBridge(self));
+      _prefObserverBridge->ObserveChangesForPreference(
+          browsing_data::prefs::kDeleteTimePeriod, &_prefChangeRegistrar);
     }
   }
   return self;
@@ -178,6 +212,7 @@ static NSDictionary* _imageNamesByItemTypes = @{
       DCHECK(self.listType == ClearBrowsingDataListType::kListTypeTableView);
       self.tableViewTimeRangeItem =
           base::mac::ObjCCastStrict<TableViewDetailIconItem>(timeRangeItem);
+      self.tableViewTimeRangeItem.useCustomSeparator = YES;
     }
   }
 
@@ -445,16 +480,20 @@ static NSDictionary* _imageNamesByItemTypes = @{
         __weak ClearBrowsingDataManager* weakSelf = self;
         __weak ClearBrowsingDataItem* weakCollectionClearDataItem =
             collectionClearDataItem;
-        std::unique_ptr<BrowsingDataCounterWrapper> counter =
-            BrowsingDataCounterWrapper::CreateCounterWrapper(
-                prefName, self.browserState, prefs,
-                base::BindRepeating(^(
-                    const browsing_data::BrowsingDataCounter::Result& result) {
+        BrowsingDataCounterWrapper::UpdateUICallback callback =
+            base::BindRepeating(
+                ^(const browsing_data::BrowsingDataCounter::Result& result) {
                   weakCollectionClearDataItem.detailText =
                       [weakSelf counterTextFromResult:result];
                   [weakSelf.consumer
                       updateCellsForItem:weakCollectionClearDataItem];
-                }));
+                });
+        std::unique_ptr<BrowsingDataCounterWrapper> counter =
+            [self.counterWrapperProducer
+                createCounterWrapperWithPrefName:prefName
+                                    browserState:self.browserState
+                                     prefService:prefs
+                                updateUiCallback:callback];
         _countersByMasks.emplace(mask, std::move(counter));
       }
     }
@@ -469,6 +508,9 @@ static NSDictionary* _imageNamesByItemTypes = @{
     tableViewClearDataItem.dataTypeMask = mask;
     tableViewClearDataItem.prefName = prefName;
     if (IsNewClearBrowsingDataUIEnabled()) {
+      tableViewClearDataItem.useCustomSeparator = YES;
+      tableViewClearDataItem.checkedBackgroundColor = UIColorFromRGB(
+          kSelectedBackgroundColorRGB, kSelectedBackgroundColorAlpha);
       tableViewClearDataItem.imageName = [_imageNamesByItemTypes
           objectForKey:[NSNumber numberWithInteger:itemType]];
       if (itemType == ItemTypeDataTypeCookiesSiteData) {
@@ -477,18 +519,25 @@ static NSDictionary* _imageNamesByItemTypes = @{
         tableViewClearDataItem.detailText =
             l10n_util::GetNSString(IDS_DEL_COOKIES_COUNTER);
       } else {
+        // Having a placeholder |detailText| helps reduce the observable
+        // row-height changes induced by the counter callbacks.
+        tableViewClearDataItem.detailText = @"\u00A0";
         __weak ClearBrowsingDataManager* weakSelf = self;
         __weak TableViewClearBrowsingDataItem* weakTableClearDataItem =
             tableViewClearDataItem;
-        std::unique_ptr<BrowsingDataCounterWrapper> counter =
-            BrowsingDataCounterWrapper::CreateCounterWrapper(
-                prefName, self.browserState, prefs,
-                base::BindRepeating(^(
-                    const browsing_data::BrowsingDataCounter::Result& result) {
+        BrowsingDataCounterWrapper::UpdateUICallback callback =
+            base::BindRepeating(
+                ^(const browsing_data::BrowsingDataCounter::Result& result) {
                   weakTableClearDataItem.detailText =
                       [weakSelf counterTextFromResult:result];
                   [weakSelf.consumer updateCellsForItem:weakTableClearDataItem];
-                }));
+                });
+        std::unique_ptr<BrowsingDataCounterWrapper> counter =
+            [self.counterWrapperProducer
+                createCounterWrapperWithPrefName:prefName
+                                    browserState:self.browserState
+                                     prefService:prefs
+                                updateUiCallback:callback];
         _countersByMasks.emplace(mask, std::move(counter));
       }
     }
@@ -781,11 +830,10 @@ static NSDictionary* _imageNamesByItemTypes = @{
   [self.consumer updateCellsForItem:footerItem];
 }
 
-#pragma mark TimeRangeSelectorTableViewControllerDelegate
+#pragma mark - PrefObserverDelegate
 
-- (void)timeRangeSelectorViewController:
-            (TimeRangeSelectorTableViewController*)tableViewController
-                    didSelectTimePeriod:(browsing_data::TimePeriod)timePeriod {
+- (void)onPreferenceChanged:(const std::string&)preferenceName {
+  DCHECK(preferenceName == browsing_data::prefs::kDeleteTimePeriod);
   NSString* detailText = [TimeRangeSelectorTableViewController
       timePeriodLabelForPrefs:self.browserState->GetPrefs()];
   if (self.listType == ClearBrowsingDataListType::kListTypeCollectionView) {

@@ -11,8 +11,8 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/browser/address_i18n.h"
-#include "components/autofill/core/browser/country_data.h"
+#include "components/autofill/core/browser/geo/address_i18n.h"
+#include "components/autofill/core/browser/geo/country_data.h"
 #include "components/autofill/core/browser/validation.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_validator.h"
@@ -31,10 +31,10 @@ using ::i18n::addressinput::POSTAL_CODE;
 using ::i18n::addressinput::STREET_ADDRESS;
 using ::i18n::addressinput::RECIPIENT;
 
-using ::i18n::addressinput::AddressData;
-using ::i18n::addressinput::AddressField;
-using ::i18n::addressinput::AddressProblem;
-using ::i18n::addressinput::FieldProblemMap;
+using i18nAddressData = ::i18n::addressinput::AddressData;
+using i18nAddressField = ::i18n::addressinput::AddressField;
+using i18nAddressProblem = ::i18n::addressinput::AddressProblem;
+using i18nFieldProblemMap = ::i18n::addressinput::FieldProblemMap;
 
 using ::i18n::addressinput::INVALID_FORMAT;
 using ::i18n::addressinput::MISMATCHING_VALUE;
@@ -45,17 +45,17 @@ using ::i18n::addressinput::UNSUPPORTED_FIELD;
 
 using ::i18n::phonenumbers::PhoneNumberUtil;
 
-const AddressField kFields[] = {COUNTRY, ADMIN_AREA, LOCALITY,
-                                DEPENDENT_LOCALITY, POSTAL_CODE};
-const AddressProblem kProblems[] = {UNEXPECTED_FIELD,  MISSING_REQUIRED_FIELD,
-                                    UNKNOWN_VALUE,     INVALID_FORMAT,
-                                    MISMATCHING_VALUE, UNSUPPORTED_FIELD};
+const i18nAddressField kFields[] = {COUNTRY, ADMIN_AREA, LOCALITY,
+                                    DEPENDENT_LOCALITY, POSTAL_CODE};
+const i18nAddressProblem kProblems[] = {
+    UNEXPECTED_FIELD, MISSING_REQUIRED_FIELD, UNKNOWN_VALUE,
+    INVALID_FORMAT,   MISMATCHING_VALUE,      UNSUPPORTED_FIELD};
 
 // If the |address_field| is valid, set the validity state of the
 // |address_field| in the |profile| to the |state| and return true.
 // Otherwise, return false.
 bool SetValidityStateForAddressField(const AutofillProfile* profile,
-                                     AddressField address_field,
+                                     i18nAddressField address_field,
                                      AutofillDataModel::ValidityState state) {
   ServerFieldType server_field = i18n::TypeForField(address_field,
                                                     /*billing=*/false);
@@ -76,8 +76,8 @@ void SetAllAddressValidityStates(const AutofillProfile* profile,
 
 // Returns all relevant pairs of (field, problem), where field is in
 // |kFields|, and problem is in |kProblems|.
-FieldProblemMap* CreateFieldProblemMap() {
-  FieldProblemMap* filter = new FieldProblemMap();
+i18nFieldProblemMap* CreateFieldProblemMap() {
+  i18nFieldProblemMap* filter = new i18nFieldProblemMap();
   for (auto field : kFields) {
     for (auto problem : kProblems) {
       filter->insert(std::make_pair(field, problem));
@@ -88,14 +88,14 @@ FieldProblemMap* CreateFieldProblemMap() {
 
 // GetFilter() will make sure that the validation only returns problems that
 // are relevant.
-const FieldProblemMap* GetFilter() {
-  static const FieldProblemMap* const filter = CreateFieldProblemMap();
+const i18nFieldProblemMap* GetFilter() {
+  static const i18nFieldProblemMap* const filter = CreateFieldProblemMap();
   return filter;
 }
 
 // Initializes |address| data from the address info in the |profile|.
 void InitializeAddressFromProfile(const AutofillProfile& profile,
-                                  AddressData* address) {
+                                  i18nAddressData* address) {
   address->region_code =
       base::UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_COUNTRY));
   address->administrative_area =
@@ -263,9 +263,9 @@ AddressValidator::Status ValidateAddress(const AutofillProfile* profile,
   // The COUNTRY was already listed in the CountryDataMap, therefore it's valid.
   SetValidityStateForAddressField(profile, COUNTRY, AutofillDataModel::VALID);
 
-  AddressData address;
+  i18nAddressData address;
   InitializeAddressFromProfile(*profile, &address);
-  FieldProblemMap problems;
+  i18nFieldProblemMap problems;
   // status denotes if the rule was successfully loaded before validation.
   AddressValidator::Status status =
       address_validator->ValidateAddress(address, GetFilter(), &problems);

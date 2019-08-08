@@ -15,15 +15,14 @@ let testName =
 
 let fakeDeviceInitParams = { supportsImmersive:true };
 
-let requestSessionOptions = [
+let requestSessionModes = [
   'immersive-vr',
 ];
 
 let testFunction = function(session, t, fakeDeviceController) {
   // Session must have a baseLayer or else frame requests will be ignored.
   session.updateRenderState({
-    baseLayer: new XRWebGLLayer(session, gl),
-    outputContext: getOutputContext()
+    baseLayer: new XRWebGLLayer(session, gl)
   });
 
   fakeDeviceController.setStageTransform(VALID_STAGE_TRANSFORM);
@@ -40,7 +39,7 @@ let testFunction = function(session, t, fakeDeviceController) {
   
   return new Promise((resolve, reject) => {
     session.requestAnimationFrame(() => {
-      session.requestReferenceSpace({ type: "bounded" })
+      session.requestReferenceSpace('bounded-floor')
         .then((referenceSpace) => {
           function onFirstFrame(time, xrFrame) {
             t.step(() => {
@@ -95,6 +94,6 @@ let testFunction = function(session, t, fakeDeviceController) {
 };
 
 xr_session_promise_test(
-  testFunction, fakeDeviceInitParams, requestSessionOptions, testName);
+  testFunction, fakeDeviceInitParams, requestSessionModes, testName);
 
 </script>

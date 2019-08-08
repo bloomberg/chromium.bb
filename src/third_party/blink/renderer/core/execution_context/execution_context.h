@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_notifier.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/console_logger.h"
 #include "third_party/blink/renderer/platform/loader/fetch/https_state.h"
@@ -68,6 +69,7 @@ class DocumentInterfaceBroker;
 }  // namespace blink
 }  // namespace mojom
 
+class Agent;
 class ConsoleMessage;
 class ContentSecurityPolicy;
 class ContentSecurityPolicyDelegate;
@@ -84,6 +86,7 @@ class ResourceFetcher;
 class SecurityContext;
 class SecurityOrigin;
 class ScriptState;
+class TrustedTypePolicyFactory;
 
 enum class TaskType : unsigned char;
 
@@ -119,6 +122,7 @@ enum class SecureContextMode { kInsecureContext, kSecureContext };
 class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
                                      public Supplementable<ExecutionContext>,
                                      public ConsoleLogger,
+                                     public UseCounter,
                                      public FeatureContext {
   MERGE_GARBAGE_COLLECTED_MIXINS();
 
@@ -185,6 +189,7 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   virtual ResourceFetcher* Fetcher() const = 0;
 
   virtual SecurityContext& GetSecurityContext() = 0;
+  virtual const SecurityContext& GetSecurityContext() const = 0;
 
   // https://tc39.github.io/ecma262/#sec-agent-clusters
   virtual const base::UnguessableToken& GetAgentClusterID() const = 0;
@@ -211,12 +216,12 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   // FeatureContext override
   bool FeatureEnabled(OriginTrialFeature) const override;
 
-  // ConsoleLogger implementation.
-  void AddConsoleMessage(mojom::ConsoleMessageSource,
-                         mojom::ConsoleMessageLevel,
-                         const String& message) final;
+  using ConsoleLogger::AddConsoleMessage;
 
-  virtual void AddConsoleMessage(ConsoleMessage*) = 0;
+  void AddConsoleMessage(ConsoleMessage* message,
+                         bool discard_duplicates = false) {
+    AddConsoleMessageImpl(message, discard_duplicates);
+  }
 
   // TODO(haraken): Remove these methods by making the customers inherit from
   // ContextLifecycleObserver. ContextLifecycleObserver is a standard way to
@@ -291,12 +296,31 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   InterfaceInvalidator* GetInterfaceInvalidator() { return invalidator_.get(); }
 
   v8::Isolate* GetIsolate() const { return isolate_; }
+  Agent* GetAgent() const { return agent_; }
+
+  virtual TrustedTypePolicyFactory* GetTrustedTypes() const { return nullptr; }
+
+  bool RequireTrustedTypes() const;
 
  protected:
-  explicit ExecutionContext(v8::Isolate* isolate);
+  explicit ExecutionContext(v8::Isolate* isolate, Agent* agent);
   ~ExecutionContext() override;
 
+  void SetAgent(Agent* agent) {
+    DCHECK(agent);
+    agent_ = agent;
+  }
+
  private:
+  // ConsoleLogger implementation.
+  void AddConsoleMessageImpl(mojom::ConsoleMessageSource,
+                             mojom::ConsoleMessageLevel,
+                             const String& message,
+                             bool discard_duplicates) final;
+
+  virtual void AddConsoleMessageImpl(ConsoleMessage*,
+                                     bool discard_duplicates) = 0;
+
   v8::Isolate* const isolate_;
 
   bool DispatchErrorEventInternal(ErrorEvent*, SanitizeScriptErrors);
@@ -313,6 +337,8 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   Member<PublicURLManager> public_url_manager_;
 
   const Member<ContentSecurityPolicyDelegate> csp_delegate_;
+
+  Member<Agent> agent_;
 
   // Counter that keeps track of how many window interaction calls are allowed
   // for this ExecutionContext. Callers are expected to call

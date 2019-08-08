@@ -66,7 +66,7 @@ LockScreenActionBackgroundView::LockScreenActionBackgroundView() {
   auto layout_manager =
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
   layout_manager->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
+      views::BoxLayout::CrossAxisAlignment::kStretch);
   auto* layout_ptr = SetLayoutManager(std::move(layout_manager));
 
   background_ = new NoteBackground(this);

@@ -35,6 +35,7 @@
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
+#include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -161,13 +162,19 @@ class EncryptionChecker : public SingleClientStatusChangeChecker {
   std::string GetDebugMessage() const override { return "Encryption"; }
 };
 
+std::unique_ptr<invalidation::InvalidationService> CreateInvalidationService(
+    const std::string& sender_id) {
+  return std::make_unique<fake_server::FakeServerInvalidationService>();
+}
+
 std::unique_ptr<KeyedService> BuildFakeServerProfileInvalidationProvider(
     content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
   return std::make_unique<invalidation::ProfileInvalidationProvider>(
       std::make_unique<fake_server::FakeServerInvalidationService>(),
       std::make_unique<invalidation::ProfileIdentityProvider>(
-          IdentityManagerFactory::GetForProfile(profile)));
+          IdentityManagerFactory::GetForProfile(profile)),
+      base::BindRepeating(&CreateInvalidationService));
 }
 
 }  // namespace
@@ -396,10 +403,10 @@ Profile* SyncTest::MakeTestProfile(base::FilePath profile_path, int index) {
     }
   }
 
-  Profile* profile =
+  std::unique_ptr<Profile> profile =
       Profile::CreateProfile(profile_path, profile_delegates_[index].get(),
                              Profile::CREATE_MODE_SYNCHRONOUS);
-  return profile;
+  return profile.release();
 }
 
 Profile* SyncTest::GetProfile(int index) {
@@ -694,10 +701,14 @@ void SyncTest::InitializeInvalidations(int index) {
 }
 
 void SyncTest::SetupSyncNoWaitingForCompletion() {
-  SetupSyncInternal(/*wait_for_completion=*/false);
+  SetupSyncInternal(/*setup_mode=*/NO_WAITING);
 }
 
-void SyncTest::SetupSyncInternal(bool wait_for_completion) {
+void SyncTest::SetupSyncOneClientAfterAnother() {
+  SetupSyncInternal(/*setup_mode=*/WAIT_FOR_COMMITS_TO_COMPLETE);
+}
+
+void SyncTest::SetupSyncInternal(SetupSyncMode setup_mode) {
   // Create sync profiles and clients if they haven't already been created.
   if (profiles_.empty()) {
     if (!SetupClients()) {
@@ -747,18 +758,29 @@ void SyncTest::SetupSyncInternal(bool wait_for_completion) {
           syncer::UserSelectableTypeSet::All()))
           << "SetupSync() failed.";
     }
-    if (wait_for_completion) {
-      // It's important to wait for each client before setting up the next one,
-      // otherwise multi-client tests get flaky.
-      // TODO(tschumann): It would be nice to figure out why.
-      client->AwaitSyncSetupCompletion();
+
+    // It's important to wait for each client before setting up the next one,
+    // otherwise multi-client tests get flaky.
+    // TODO(crbug.com/956043): It would be nice to figure out why.
+    switch (setup_mode) {
+      case NO_WAITING:
+        break;
+      case WAIT_FOR_SYNC_SETUP_TO_COMPLETE:
+        client->AwaitSyncSetupCompletion();
+        break;
+      case WAIT_FOR_COMMITS_TO_COMPLETE:
+        DCHECK(TestUsesSelfNotifications())
+            << "We need that for the UpdatedProgressMarkerChecker";
+        UpdatedProgressMarkerChecker checker(GetSyncService(client_index));
+        checker.Wait();
+        break;
     }
   }
 }
 
 bool SyncTest::SetupSync() {
   base::ScopedAllowBlockingForTesting allow_blocking;
-  SetupSyncInternal(/*wait_for_completion=*/true);
+  SetupSyncInternal(/*setup_mode=*/WAIT_FOR_SYNC_SETUP_TO_COMPLETE);
 
   // Because clients may modify sync data as part of startup (for example
   // local session-releated data is rewritten), we need to ensure all

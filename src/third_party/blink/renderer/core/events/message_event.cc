@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer.h"
 #include "third_party/blink/renderer/core/event_interface_names.h"
 #include "third_party/blink/renderer/core/frame/user_activation.h"
+#include "third_party/blink/renderer/core/html/portal/html_portal_element.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
 
@@ -39,7 +40,8 @@ namespace blink {
 
 static inline bool IsValidSource(EventTarget* source) {
   return !source || source->ToLocalDOMWindow() || source->ToMessagePort() ||
-         source->ToServiceWorker() || source->ToPortalHost();
+         source->ToServiceWorker() || source->ToPortalHost() ||
+         ToHTMLPortalElementOrNull(source->ToNode());
 }
 
 MessageEvent::V8GCAwareString::V8GCAwareString(const String& value)

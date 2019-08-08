@@ -32,11 +32,13 @@
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "third_party/blink/public/mojom/loader/mhtml_load_result.mojom-shared.h"
+#include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
 #include "third_party/blink/public/platform/web_navigation_body_loader.h"
-#include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
+#include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
@@ -58,11 +60,16 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/loader/fetch/source_keyed_cached_metadata_handler.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 #include <memory>
+
+namespace base {
+class TickClock;
+}
 
 namespace blink {
 
@@ -75,11 +82,15 @@ class HistoryItem;
 class LocalFrame;
 class LocalFrameClient;
 class MHTMLArchive;
+class PrefetchedSignedExchangeManager;
 class ResourceTimingInfo;
 class SerializedScriptValue;
 class SubresourceFilter;
 class WebServiceWorkerNetworkProvider;
-struct ViewportDescriptionWrapper;
+
+namespace mojom {
+enum class CommitResult : int32_t;
+}
 
 // Indicates whether the global object (i.e. Window instance) associated with
 // the previous document in a browsing context was replaced or reused for the
@@ -90,7 +101,10 @@ enum class GlobalObjectReusePolicy { kCreateNew, kUseExisting };
 // The DocumentLoader fetches a main resource and handles the result.
 class CORE_EXPORT DocumentLoader
     : public GarbageCollectedFinalized<DocumentLoader>,
+      public UseCounter,
       public WebNavigationBodyLoader::Client {
+  USING_GARBAGE_COLLECTED_MIXIN(DocumentLoader);
+
  public:
   DocumentLoader(LocalFrame*,
                  WebNavigationType navigation_type,
@@ -109,7 +123,6 @@ class CORE_EXPORT DocumentLoader
 
   void ReplaceDocumentWhileExecutingJavaScriptURL(const KURL&,
                                                   Document* owner_document,
-                                                  GlobalObjectReusePolicy,
                                                   const String& source);
 
   const AtomicString& MimeType() const;
@@ -148,9 +161,6 @@ class CORE_EXPORT DocumentLoader
                                        Document*);
   const ResourceResponse& GetResponse() const { return response_; }
   bool IsClientRedirect() const { return is_client_redirect_; }
-  void SetIsClientRedirect(bool is_client_redirect) {
-    is_client_redirect_ = is_client_redirect;
-  }
   bool ReplacesCurrentHistoryItem() const {
     return replaces_current_history_item_;
   }
@@ -160,12 +170,6 @@ class CORE_EXPORT DocumentLoader
   }
 
   void FillNavigationParamsForErrorPage(WebNavigationParams*);
-
-  // Without PlzNavigate, this is only false for a narrow window during
-  // navigation start. For PlzNavigate, a navigation sent to the browser will
-  // leave a dummy DocumentLoader in the NotStarted state until the navigation
-  // is actually handled in the renderer.
-  bool DidStart() const { return state_ != kNotStarted; }
 
   void MarkAsCommitted();
   void SetSentDidFinishLoad() { state_ = kSentDidFinishLoad; }
@@ -182,12 +186,21 @@ class CORE_EXPORT DocumentLoader
   void SetItemForHistoryNavigation(HistoryItem* item) { history_item_ = item; }
   HistoryItem* GetHistoryItem() const { return history_item_; }
 
-  // Returns whether the load can proceed. If not, the loader will be detached
-  // already.
-  bool PrepareForLoad();
-
   void StartLoading();
   void StopLoading();
+
+  // Called when the browser process has asked this renderer process to commit a
+  // same document navigation in that frame. Returns false if the navigation
+  // cannot commit, true otherwise.
+  mojom::CommitResult CommitSameDocumentNavigation(
+      const KURL&,
+      WebFrameLoadType,
+      HistoryItem*,
+      ClientRedirectPolicy,
+      Document* origin_document,
+      bool has_event,
+      std::unique_ptr<WebDocumentLoader::ExtraData>);
+
   void SetDefersLoading(bool defers);
 
   DocumentLoadTiming& GetTiming() { return document_load_timing_; }
@@ -212,7 +225,7 @@ class CORE_EXPORT DocumentLoader
 
   bool WasBlockedAfterCSP() { return was_blocked_after_csp_; }
 
-  void DispatchLinkHeaderPreloads(ViewportDescriptionWrapper*,
+  void DispatchLinkHeaderPreloads(const base::Optional<ViewportDescription>&,
                                   PreloadHelper::MediaPreloadPolicy);
 
   void SetServiceWorkerNetworkProvider(
@@ -227,7 +240,7 @@ class CORE_EXPORT DocumentLoader
 
   void LoadFailed(const ResourceError&);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   // For automation driver-initiated navigations over the devtools protocol,
   // |devtools_navigation_token_| is used to tag the navigation. This navigation
@@ -258,10 +271,19 @@ class CORE_EXPORT DocumentLoader
 
   bool IsListingFtpDirectory() const { return listing_ftp_directory_; }
 
-  UseCounter& GetUseCounter() { return use_counter_; }
+  UseCounterHelper& GetUseCounterHelper() { return use_counter_; }
   Dactyloscoper& GetDactyloscoper() { return dactyloscoper_; }
 
   int ErrorCode() const { return error_code_; }
+
+  PrefetchedSignedExchangeManager* GetPrefetchedSignedExchangeManager() const;
+
+  // UseCounter
+  void CountUse(mojom::WebFeature) override;
+  void CountDeprecation(mojom::WebFeature) override;
+
+  // The caller owns the |clock| which must outlive the DocumentLoader.
+  void SetTickClockForTesting(const base::TickClock* clock) { clock_ = clock; }
 
  protected:
   bool had_transient_activation() const { return had_transient_activation_; }
@@ -286,7 +308,6 @@ class CORE_EXPORT DocumentLoader
       const KURL&,
       const scoped_refptr<const SecurityOrigin> initiator_origin,
       Document* owner_document,
-      GlobalObjectReusePolicy,
       const AtomicString& mime_type,
       const AtomicString& encoding,
       InstallNewDocumentReason,
@@ -298,6 +319,15 @@ class CORE_EXPORT DocumentLoader
 
   void CommitNavigation(const AtomicString& mime_type,
                         const KURL& overriding_url = KURL());
+
+  void CommitSameDocumentNavigationInternal(
+      const KURL&,
+      WebFrameLoadType,
+      HistoryItem*,
+      ClientRedirectPolicy,
+      Document*,
+      bool has_event,
+      std::unique_ptr<WebDocumentLoader::ExtraData>);
 
   // Use these method only where it's guaranteed that |m_frame| hasn't been
   // cleared.
@@ -350,6 +380,17 @@ class CORE_EXPORT DocumentLoader
   // the |WebContentSettingsClient| with the list of client hints and the
   // persistence duration.
   void ParseAndPersistClientHints(const ResourceResponse&);
+
+  // For SignedExchangeSubresourcePrefetch feature. If the page was loaded from
+  // a signed exchage which has "allowed-alt-sxg" link headers in the inner
+  // response and PrefetchedSignedExchanges were passed from the previous page,
+  // initializes a PrefetchedSignedExchangeManager which will hold the
+  // subresource signed exchange related headers ("alternate" link header in the
+  // outer response and "allowed-alt-sxg" link header in the inner response of
+  // the page's signed exchange), and the passed PrefetchedSignedExchanges.
+  // The created PrefetchedSignedExchangeManager will be used to load the
+  // prefetched signed exchanges for matching requests.
+  void InitializePrefetchedSignedExchangeManager();
 
   // These fields are copied from WebNavigationParams, see there for definition.
   KURL url_;
@@ -445,15 +486,20 @@ class CORE_EXPORT DocumentLoader
   bool report_timing_info_to_parent_ = false;
   WebScopedVirtualTimePauser virtual_time_pauser_;
   Member<SourceKeyedCachedMetadataHandler> cached_metadata_handler_;
+  Member<PrefetchedSignedExchangeManager> prefetched_signed_exchange_manager_;
 
-  // This UseCounter tracks feature usage associated with the lifetime of the
-  // document load. Features recorded prior to commit will be recorded locally.
-  // Once commited, feature usage will be piped to the browser side page load
-  // metrics that aggregates usage from frames to one page load and report
-  // feature usage to UMA histograms per page load.
-  UseCounter use_counter_;
+  // This UseCounterHelper tracks feature usage associated with the lifetime of
+  // the document load. Features recorded prior to commit will be recorded
+  // locally. Once committed, feature usage will be piped to the browser side
+  // page load metrics that aggregates usage from frames to one page load and
+  // report feature usage to UMA histograms per page load.
+  UseCounterHelper use_counter_;
 
   Dactyloscoper dactyloscoper_;
+
+  const base::TickClock* clock_;
+
+  Vector<OriginTrialFeature> initiator_origin_trial_features_;
 };
 
 DECLARE_WEAK_IDENTIFIER_MAP(DocumentLoader);

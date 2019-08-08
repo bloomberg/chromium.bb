@@ -28,7 +28,7 @@ class IdentityManagerWrapper : public KeyedService,
                                public identity::IdentityManager {
  public:
   IdentityManagerWrapper(
-      AccountTrackerService* account_tracker_service,
+      std::unique_ptr<AccountTrackerService> account_tracker_service,
       std::unique_ptr<ProfileOAuth2TokenService> token_service,
       std::unique_ptr<GaiaCookieManagerService> gaia_cookie_manager_service,
       std::unique_ptr<SigninManagerBase> signin_manager,
@@ -37,9 +37,6 @@ class IdentityManagerWrapper : public KeyedService,
       std::unique_ptr<identity::AccountsMutator> accounts_mutator,
       std::unique_ptr<identity::AccountsCookieMutator> accounts_cookie_mutator,
       std::unique_ptr<identity::DiagnosticsProvider> diagnostics_provider);
-
-  // KeyedService overrides.
-  void Shutdown() override;
 };
 
 #endif  // COMPONENTS_SIGNIN_CORE_BROWSER_IDENTITY_MANAGER_WRAPPER_H_

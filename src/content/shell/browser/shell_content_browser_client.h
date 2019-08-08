@@ -34,26 +34,24 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   ~ShellContentBrowserClient() override;
 
   // ContentBrowserClient overrides.
-  BrowserMainParts* CreateBrowserMainParts(
+  std::unique_ptr<BrowserMainParts> CreateBrowserMainParts(
       const MainFunctionParams& parameters) override;
   bool IsHandledURL(const GURL& url) override;
   void BindInterfaceRequestFromFrame(
       content::RenderFrameHost* render_frame_host,
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle interface_pipe) override;
-  void RegisterOutOfProcessServices(OutOfProcessServiceMap* services) override;
-  void HandleServiceRequest(
-      const std::string& service_name,
-      service_manager::mojom::ServiceRequest request) override;
+  void RunServiceInstance(
+      const service_manager::Identity& identity,
+      mojo::PendingReceiver<service_manager::mojom::Service>* receiver)
+      override;
   bool ShouldTerminateOnServiceQuit(
       const service_manager::Identity& id) override;
   base::Optional<service_manager::Manifest> GetServiceManifestOverlay(
       base::StringPiece name) override;
+  std::vector<service_manager::Manifest> GetExtraServiceManifests() override;
   void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
                                       int child_process_id) override;
-  void AdjustUtilityServiceProcessCommandLine(
-      const service_manager::Identity& identity,
-      base::CommandLine* command_line) override;
   std::string GetAcceptLangs(BrowserContext* context) override;
   void ResourceDispatcherHostCreated() override;
   std::string GetDefaultDownloadName() override;
@@ -75,10 +73,12 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   SpeechRecognitionManagerDelegate* CreateSpeechRecognitionManagerDelegate()
       override;
   net::NetLog* GetNetLog() override;
+  void OverrideWebkitPrefs(RenderViewHost* render_view_host,
+                           WebPreferences* prefs) override;
   DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
   void OpenURL(SiteInstance* site_instance,
                const OpenURLParams& params,
-               const base::Callback<void(WebContents*)>& callback) override;
+               base::OnceCallback<void(WebContents*)> callback) override;
   std::unique_ptr<LoginDelegate> CreateLoginDelegate(
       const net::AuthChallengeInfo& auth_info,
       content::WebContents* web_contents,
@@ -119,16 +119,15 @@ class ShellContentBrowserClient : public ContentBrowserClient {
 
   // Used for content_browsertests.
   void set_select_client_certificate_callback(
-      base::Closure select_client_certificate_callback) {
+      base::OnceClosure select_client_certificate_callback) {
     select_client_certificate_callback_ =
         std::move(select_client_certificate_callback);
   }
   void set_should_terminate_on_service_quit_callback(
-      base::Callback<bool(const service_manager::Identity&)> callback) {
+      base::OnceCallback<bool(const service_manager::Identity&)> callback) {
     should_terminate_on_service_quit_callback_ = std::move(callback);
   }
-  void set_login_request_callback(
-      base::Callback<void()> login_request_callback) {
+  void set_login_request_callback(base::OnceClosure login_request_callback) {
     login_request_callback_ = std::move(login_request_callback);
   }
 
@@ -145,15 +144,16 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   std::unique_ptr<ResourceDispatcherHostDelegate>
       resource_dispatcher_host_delegate_;
 
-  base::Closure select_client_certificate_callback_;
-  base::Callback<bool(const service_manager::Identity&)>
+  base::OnceClosure select_client_certificate_callback_;
+  base::OnceCallback<bool(const service_manager::Identity&)>
       should_terminate_on_service_quit_callback_;
-  base::Callback<void()> login_request_callback_;
+  base::OnceClosure login_request_callback_;
 
   std::unique_ptr<
       service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>>
       frame_interfaces_;
 
+  // Owned by content::BrowserMainLoop.
   ShellBrowserMainParts* shell_browser_main_parts_;
 };
 

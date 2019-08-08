@@ -4,11 +4,17 @@
 
 #import <TestLib/EarlGreyImpl/EarlGrey.h>
 #import <UIKit/UIKit.h>
-#import <XCTest/XCTest.h>
 
+#include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
+#import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
+#import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/chrome/test/earl_grey2/chrome_earl_grey_edo.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -16,19 +22,10 @@
 
 // Test case to verify that EarlGrey tests can be launched and perform basic
 // UI interactions.
-@interface Eg2TestCase : XCTestCase
+@interface SmokeTestCase : ChromeTestCase
 @end
 
-@implementation Eg2TestCase
-
-- (void)setUp {
-  [super setUp];
-  static dispatch_once_t onceToken;
-  dispatch_once(&onceToken, ^{
-    XCUIApplication* application = [[XCUIApplication alloc] init];
-    [application launch];
-  });
-}
+@implementation SmokeTestCase
 
 // Tests that a tab can be opened.
 - (void)testOpenTab {
@@ -84,6 +81,102 @@
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsDoneButton()]
       performAction:grey_tap()];
+}
+
+// Tests that helpers from chrome_earl_grey.h are available for use in tests.
+- (void)testClearBrowsingHistory {
+  [ChromeEarlGrey clearBrowsingHistory];
+}
+
+// Tests that string resources are loaded into the ResourceBundle and available
+// for use in tests.
+- (void)testAppResourcesArePresent {
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ToolsMenuButton()]
+      performAction:grey_tap()];
+
+  NSString* settingsLabel = l10n_util::GetNSString(IDS_IOS_TOOLBAR_SETTINGS);
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(settingsLabel)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Tap a second time to close the menu.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ToolsMenuButton()]
+      performAction:grey_tap()];
+}
+
+// Tests that helpers in chrome_earl_grey_ui.h are available for use in tests.
+- (void)testReload {
+  [ChromeEarlGreyUI reload];
+}
+
+// Tests navigation-related converted helpers in chrome_earl_grey.h.
+- (void)testURLNavigation {
+  [ChromeEarlGrey loadURL:GURL("chrome://terms")];
+  [ChromeEarlGrey reload];
+  [ChromeEarlGrey loadURL:GURL("chrome://version")];
+  [ChromeEarlGrey goBack];
+  [ChromeEarlGrey goForward];
+}
+
+// Tests tab open/close-related converted helpers in chrome_earl_grey.h.
+- (void)testTabOpeningAndClosing {
+  [ChromeEarlGrey closeAllTabsInCurrentMode];
+  [ChromeEarlGrey closeAllIncognitoTabs];
+
+  [ChromeEarlGrey openNewTab];
+  [ChromeEarlGrey openNewIncognitoTab];
+  [ChromeEarlGrey openNewTab];
+  [ChromeEarlGrey waitForMainTabCount:2];
+  [ChromeEarlGrey waitForIncognitoTabCount:1];
+
+  [ChromeEarlGrey closeAllTabsInCurrentMode];
+  [ChromeEarlGrey closeAllIncognitoTabs];
+  [ChromeEarlGrey waitForMainTabCount:0];
+  [ChromeEarlGrey waitForIncognitoTabCount:0];
+
+  [ChromeEarlGrey openNewTab];
+}
+
+// Tests bookmark converted helpers in chrome_earl_grey.h.
+- (void)testBookmarkHelpers {
+  [ChromeEarlGrey waitForBookmarksToFinishLoading];
+  [ChromeEarlGrey clearBookmarks];
+}
+
+// Tests helpers involving fake sync servers and autofill profiles in
+// chrome_earl_grey.h
+- (void)testAutofillProfileSyncToFakeServer {
+  std::string fakeGUID = "b67e5ca1e09345d0aecfc2155c1f6b11";
+  std::string profileName = "testAutofillProfileSyncToFakeServer";
+
+  [ChromeEarlGrey clearAutofillProfileWithGUID:fakeGUID];
+  GREYAssertTrue(![ChromeEarlGrey isAutofillProfilePresentWithGUID:fakeGUID
+                                               autofillProfileName:profileName],
+                 @"Autofill profile should not be present.");
+  [ChromeEarlGrey injectAutofillProfileOnFakeSyncServerWithGUID:fakeGUID
+                                            autofillProfileName:profileName];
+}
+
+// Tests waitForSufficientlyVisibleElementWithMatcher in chrome_earl_grey.h
+- (void)testWaitForSufficientlyVisibleElementWithMatcher {
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
+      performAction:grey_tap()];
+  [ChromeEarlGrey
+      waitForSufficientlyVisibleElementWithMatcher:chrome_test_util::Omnibox()];
+}
+
+// Tests sync server converted helpers in chrome_earl_grey.h.
+- (void)testSyncServerHelpers {
+  [ChromeEarlGrey startSync];
+  [ChromeEarlGrey waitForSyncInitialized:NO syncTimeout:10.0];
+  [ChromeEarlGrey clearSyncServerData];
+}
+
+// Tests executeJavaScript:error: in chrome_earl_grey.h
+- (void)testExecuteJavaScript {
+  id actualResult = [ChromeEarlGrey executeJavaScript:@"0"];
+  GREYAssertEqualObjects(@0, actualResult,
+                         @"Actual JavaScript execution result: %@",
+                         actualResult);
 }
 
 @end

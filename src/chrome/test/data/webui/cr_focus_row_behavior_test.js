@@ -52,29 +52,17 @@ suite('cr-focus-row-behavior-test', function() {
     });
   });
 
-  /**
-   * @param {!HTMLElement} element
-   * @return {!Promise} Promise that resolves when an afterNextRender()
-   *     callback on |element| is run.
-   */
-  function afterNextRender(element) {
-    return new Promise(resolve => {
-      Polymer.RenderStatus.afterNextRender(element, resolve);
-    });
-  }
-
-  setup(function() {
+  setup(async function() {
     PolymerTest.clearBody();
 
     testElement = document.createElement('focus-row-element');
     document.body.appendChild(testElement);
 
     // Block so that FocusRowBehavior.attached can run.
-    return afterNextRender(testElement).then(() => {
-      // Wait one more time to ensure that async setup in FocusRowBehavior has
-      // executed.
-      return afterNextRender(testElement);
-    });
+    await PolymerTest.afterNextRender(testElement);
+    // Wait one more time to ensure that async setup in FocusRowBehavior has
+    // executed.
+    await PolymerTest.afterNextRender(testElement);
   });
 
   test('item passes focus to first focusable child', function() {
@@ -90,8 +78,6 @@ suite('cr-focus-row-behavior-test', function() {
     const lastButton = document.createElement('button');
     lastButton.setAttribute('focus-type', 'fake-btn-two');
     testElement.lastFocused = lastButton;
-    MockInteractions.pressAndReleaseKeyOn(
-        testElement.$.control, '', null, 'ArrowDown');
 
     let focused = false;
     testElement.$.controlTwo.addEventListener('focus', function() {
@@ -119,8 +105,6 @@ suite('cr-focus-row-behavior-test', function() {
     const lastButton = document.createElement('button');
     lastButton.setAttribute('focus-type', 'fake-btn-three');
     testElement.lastFocused = lastButton;
-    MockInteractions.pressAndReleaseKeyOn(
-        testElement.$.control, '', null, 'ArrowDown');
 
     const wait = test_util.eventToPromise('focus', testElement);
     testElement.fire('focus');

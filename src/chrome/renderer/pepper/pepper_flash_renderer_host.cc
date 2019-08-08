@@ -317,7 +317,7 @@ int32_t PepperFlashRendererHost::OnNavigate(
   bool rejected = false;
   while (header_iter.GetNext()) {
     std::string lower_case_header_name =
-        base::ToLowerASCII(header_iter.name());
+        base::ToLowerASCII(header_iter.name_piece());
     if (!IsSimpleHeader(lower_case_header_name, header_iter.values())) {
       rejected = true;
 

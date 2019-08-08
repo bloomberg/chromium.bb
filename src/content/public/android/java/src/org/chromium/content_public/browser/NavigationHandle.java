@@ -6,6 +6,7 @@ package org.chromium.content_public.browser;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.net.NetError;
 
 /**
  * JNI bridge with content::NavigationHandle
@@ -23,7 +24,7 @@ public class NavigationHandle {
     private boolean mIsErrorPage;
     private boolean mIsFragmentNavigation;
     private boolean mIsValidSearchFormUrl;
-    private int mErrorCode;
+    private @NetError int mErrorCode;
     private int mHttpStatusCode;
 
     @CalledByNative
@@ -51,7 +52,7 @@ public class NavigationHandle {
     @CalledByNative
     public void didFinish(String url, boolean isErrorPage, boolean hasCommitted,
             boolean isFragmentNavigation, boolean isDownload, boolean isValidSearchFormUrl,
-            int transition, int errorCode, int httpStatuscode) {
+            int transition, @NetError int errorCode, int httpStatuscode) {
         mUrl = url;
         mIsErrorPage = isErrorPage;
         mHasCommitted = hasCommitted;
@@ -125,7 +126,7 @@ public class NavigationHandle {
         return "";
     }
 
-    public int errorCode() {
+    public @NetError int errorCode() {
         return mErrorCode;
     }
 

@@ -20,44 +20,43 @@
 namespace sw
 {
 	class Blitter;
-};
+}
 
 namespace vk
 {
 
+class PhysicalDevice;
 class Queue;
 
 class Device
 {
 public:
-	struct CreateInfo
-	{
-		const VkDeviceCreateInfo* pCreateInfo;
-		VkPhysicalDevice pPhysicalDevice;
-	};
-
 	static constexpr VkSystemAllocationScope GetAllocationScope() { return VK_SYSTEM_ALLOCATION_SCOPE_DEVICE; }
 
-	Device(const CreateInfo* info, void* mem);
+	Device(const VkDeviceCreateInfo* pCreateInfo, void* mem, PhysicalDevice *physicalDevice);
 	void destroy(const VkAllocationCallbacks* pAllocator);
 
-	static size_t ComputeRequiredAllocationSize(const CreateInfo* info);
+	static size_t ComputeRequiredAllocationSize(const VkDeviceCreateInfo* pCreateInfo);
 
+	bool hasExtension(const char* extensionName) const;
 	VkQueue getQueue(uint32_t queueFamilyIndex, uint32_t queueIndex) const;
-	void waitForFences(uint32_t fenceCount, const VkFence* pFences, VkBool32 waitAll, uint64_t timeout);
-	void waitIdle();
+	VkResult waitForFences(uint32_t fenceCount, const VkFence* pFences, VkBool32 waitAll, uint64_t timeout);
+	VkResult waitIdle();
 	void getDescriptorSetLayoutSupport(const VkDescriptorSetLayoutCreateInfo* pCreateInfo,
 	                                   VkDescriptorSetLayoutSupport* pSupport) const;
-	VkPhysicalDevice getPhysicalDevice() const { return physicalDevice; }
+	PhysicalDevice *getPhysicalDevice() const { return physicalDevice; }
 	void updateDescriptorSets(uint32_t descriptorWriteCount, const VkWriteDescriptorSet* pDescriptorWrites,
 	                          uint32_t descriptorCopyCount, const VkCopyDescriptorSet* pDescriptorCopies);
 	sw::Blitter* getBlitter() const { return blitter; }
 
 private:
-	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+	PhysicalDevice *physicalDevice = nullptr;
 	Queue* queues = nullptr;
 	uint32_t queueCount = 0;
 	sw::Blitter* blitter = nullptr;
+	uint32_t enabledExtensionCount = 0;
+	typedef char ExtensionName[VK_MAX_EXTENSION_NAME_SIZE];
+	ExtensionName* extensions = nullptr;
 };
 
 using DispatchableDevice = DispatchableObject<Device, VkDevice>;

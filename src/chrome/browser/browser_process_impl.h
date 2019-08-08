@@ -35,14 +35,15 @@
 #include "services/network/public/cpp/network_quality_tracker.h"
 #include "services/network/public/mojom/network_service.mojom-forward.h"
 
+class BatteryMetrics;
 class ChromeChildProcessWatcher;
-class ChromeDeviceClient;
 class ChromeFeatureListCreator;
 class ChromeMetricsServicesManagerClient;
 class ChromeResourceDispatcherHostDelegate;
 class DevToolsAutoOpener;
 class RemoteDebuggingServer;
 class PrefRegistrySimple;
+class SecureOriginPrefsObserver;
 class SiteIsolationPrefsObserver;
 class SystemNotificationHelper;
 class StartupData;
@@ -181,6 +182,8 @@ class BrowserProcessImpl : public BrowserProcess,
   optimization_guide::OptimizationGuideService* optimization_guide_service()
       override;
 
+  StartupData* startup_data() override;
+
 #if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   void StartAutoupdateTimer() override;
 #endif
@@ -230,7 +233,6 @@ class BrowserProcessImpl : public BrowserProcess,
   void CreateGCMDriver();
   void CreatePhysicalWebDataSource();
 
-  void ApplyAllowCrossOriginAuthPromptPolicy();
   void ApplyDefaultBrowserPolicy();
 
   void CacheDefaultWebClientState();
@@ -352,12 +354,16 @@ class BrowserProcessImpl : public BrowserProcess,
   // BrowserProcessImpl to create the |local_state_|.
   ChromeFeatureListCreator* chrome_feature_list_creator_;
 
+  StartupData* startup_data_;
+
   // Ensures that the observers of plugin/print disable/enable state
   // notifications are properly added and removed.
   PrefChangeRegistrar pref_change_registrar_;
 
   // Lives here so can safely log events on shutdown.
   std::unique_ptr<net_log::ChromeNetLog> net_log_;
+
+  std::unique_ptr<BatteryMetrics> battery_metrics_;
 
   std::unique_ptr<ChromeResourceDispatcherHostDelegate>
       resource_dispatcher_host_delegate_;
@@ -406,8 +412,6 @@ class BrowserProcessImpl : public BrowserProcess,
 
   std::unique_ptr<ChromeChildProcessWatcher> child_process_watcher_;
 
-  std::unique_ptr<ChromeDeviceClient> device_client_;
-
   shell_integration::DefaultWebClientState cached_default_web_client_state_ =
       shell_integration::UNKNOWN_DEFAULT;
 
@@ -415,6 +419,7 @@ class BrowserProcessImpl : public BrowserProcess,
       resource_coordinator_parts_;
   std::unique_ptr<prefs::InProcessPrefServiceFactory> pref_service_factory_;
 
+  std::unique_ptr<SecureOriginPrefsObserver> secure_origin_prefs_observer_;
   std::unique_ptr<SiteIsolationPrefsObserver> site_isolation_prefs_observer_;
 
 #if !defined(OS_ANDROID)

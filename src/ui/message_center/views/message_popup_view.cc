@@ -4,7 +4,6 @@
 
 #include "ui/message_center/views/message_popup_view.h"
 
-#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -12,11 +11,9 @@
 #include "ui/aura/window_targeter.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
-#include "ui/message_center/public/cpp/features.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/views/message_popup_collection.h"
 #include "ui/message_center/views/message_view.h"
-#include "ui/message_center/views/message_view_context_menu_controller.h"
 #include "ui/message_center/views/message_view_factory.h"
 #include "ui/message_center/views/popup_alignment_delegate.h"
 #include "ui/views/layout/fill_layout.h"
@@ -37,14 +34,6 @@ MessagePopupView::MessagePopupView(const Notification& notification,
       a11y_feedback_on_init_(
           notification.rich_notification_data()
               .should_make_spoken_feedback_for_popup_updates) {
-#if !defined(OS_CHROMEOS)
-  if (!base::FeatureList::IsEnabled(message_center::kNewStyleNotifications)) {
-    context_menu_controller_ =
-        std::make_unique<MessageViewContextMenuController>();
-    message_view_->set_context_menu_controller(context_menu_controller_.get());
-  }
-#endif
-
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   if (!message_view_->IsManuallyExpandedOrCollapsed())

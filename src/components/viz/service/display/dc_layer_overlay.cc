@@ -151,7 +151,7 @@ bool HasOccludingQuads(const gfx::RectF& target_quad,
       continue;
     const DrawQuad* quad = *overlap_iter;
     gfx::RectF overlap_rect = ClippedQuadRectangle(quad);
-    if (quad->material == DrawQuad::SOLID_COLOR) {
+    if (quad->material == DrawQuad::Material::kSolidColor) {
       SkColor color = SolidColorDrawQuad::MaterialCast(quad)->color;
       float alpha = (SkColorGetA(color) * (1.0f / 255.0f)) * opacity;
       if (quad->ShouldDrawWithBlending() &&
@@ -202,9 +202,9 @@ DCLayerOverlay& DCLayerOverlay::operator=(const DCLayerOverlay& other) =
     default;
 DCLayerOverlay::~DCLayerOverlay() = default;
 
-DCLayerOverlayProcessor::DCLayerOverlayProcessor(OutputSurface* surface) {
+DCLayerOverlayProcessor::DCLayerOverlayProcessor(
+    const ContextProvider* context_provider) {
 #if defined(OS_WIN)
-  auto* context_provider = surface->context_provider();
   if (context_provider) {
     has_hw_overlay_support_ =
         context_provider->ContextCapabilities().dc_layers &&
@@ -242,7 +242,7 @@ QuadList::Iterator DCLayerOverlayProcessor::ProcessRenderPassDrawQuad(
     RenderPass* render_pass,
     gfx::Rect* damage_rect,
     QuadList::Iterator it) {
-  DCHECK_EQ(DrawQuad::RENDER_PASS, it->material);
+  DCHECK_EQ(DrawQuad::Material::kRenderPass, it->material);
   const RenderPassDrawQuad* rpdq = RenderPassDrawQuad::MaterialCast(*it);
 
   ++it;
@@ -348,7 +348,7 @@ void DCLayerOverlayProcessor::ProcessRenderPass(
     next_it = it;
     ++next_it;
 
-    if (it->material == DrawQuad::RENDER_PASS) {
+    if (it->material == DrawQuad::Material::kRenderPass) {
       next_it = ProcessRenderPassDrawQuad(render_pass, damage_rect, it);
       continue;
     }
@@ -357,7 +357,7 @@ void DCLayerOverlayProcessor::ProcessRenderPass(
     DCLayerResult result;
     auto uma_protected_video_type = ui::ProtectedVideoType::kClear;
     switch (it->material) {
-      case DrawQuad::YUV_VIDEO_CONTENT:
+      case DrawQuad::Material::kYuvVideoContent:
         result = FromYUVQuad(YUVVideoDrawQuad::MaterialCast(*it),
                              render_pass->transform_to_root_target,
                              has_hw_overlay_support_,

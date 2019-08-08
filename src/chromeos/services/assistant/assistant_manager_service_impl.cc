@@ -62,6 +62,8 @@ namespace chromeos {
 namespace assistant {
 namespace {
 
+static bool is_first_init = true;
+
 constexpr char kWiFiDeviceSettingId[] = "WIFI";
 constexpr char kBluetoothDeviceSettingId[] = "BLUETOOTH";
 constexpr char kVolumeLevelDeviceSettingId[] = "VOLUME_LEVEL";
@@ -134,20 +136,18 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
     network::NetworkConnectionTracker* network_connection_tracker,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
         url_loader_factory_info)
-    : media_session_(std::make_unique<AssistantMediaSession>(connector)),
+    : media_session_(std::make_unique<AssistantMediaSession>(connector, this)),
       action_module_(std::make_unique<action::CrosActionModule>(
           this,
           assistant::features::IsAppSupportEnabled(),
           assistant::features::IsRoutinesEnabled())),
       chromium_api_delegate_(std::move(url_loader_factory_info)),
-      display_connection_(std::make_unique<CrosDisplayConnection>(
-          this,
-          assistant::features::IsFeedbackUiEnabled())),
       assistant_settings_manager_(
           std::make_unique<AssistantSettingsManagerImpl>(service, this)),
       service_(service),
       background_thread_("background thread"),
       media_controller_observer_binding_(this),
+      app_list_subscriber_binding_(this),
       weak_factory_(this) {
   background_thread_.Start();
   platform_api_ = std::make_unique<PlatformApiImpl>(
@@ -210,6 +210,7 @@ void AssistantManagerServiceImpl::Stop() {
 
   assistant_manager_internal_ = nullptr;
   assistant_manager_.reset(nullptr);
+  display_connection_.reset(nullptr);
 }
 
 AssistantManagerService::State AssistantManagerServiceImpl::GetState() const {
@@ -249,6 +250,30 @@ void AssistantManagerServiceImpl::RegisterFallbackMediaHandler() {
           OnMediaControlAction(action_name, media_action_args_proto);
         }
       });
+}
+
+void AssistantManagerServiceImpl::UpdateInternalMediaPlayerStatus(
+    media_session::mojom::MediaSessionAction action) {
+  auto* media_manager = assistant_manager_->GetMediaManager();
+  if (!media_manager)
+    return;
+
+  switch (action) {
+    case media_session::mojom::MediaSessionAction::kPause:
+      media_manager->Pause();
+      break;
+    case media_session::mojom::MediaSessionAction::kPlay:
+      media_manager->Resume();
+      break;
+    case media_session::mojom::MediaSessionAction::kPreviousTrack:
+    case media_session::mojom::MediaSessionAction::kNextTrack:
+    case media_session::mojom::MediaSessionAction::kSeekBackward:
+    case media_session::mojom::MediaSessionAction::kSeekForward:
+    case media_session::mojom::MediaSessionAction::kSkipAd:
+    case media_session::mojom::MediaSessionAction::kStop:
+      NOTIMPLEMENTED();
+      break;
+  }
 }
 
 void AssistantManagerServiceImpl::AddMediaControllerObserver() {
@@ -292,7 +317,8 @@ void AssistantManagerServiceImpl::SetArcPlayStoreEnabled(bool enable) {
   }
   // Both LibAssistant and Chrome threads may access |display_connection_|.
   // |display_connection_| is thread safe.
-  display_connection_->SetArcPlayStoreEnabled(enable);
+  if (assistant::features::IsAppSupportEnabled())
+    display_connection_->SetArcPlayStoreEnabled(enable);
 }
 
 AssistantSettingsManager*
@@ -604,6 +630,8 @@ void AssistantManagerServiceImpl::OnShowNotification(
 void AssistantManagerServiceImpl::OnOpenAndroidApp(
     const action::AndroidAppInfo& app_info,
     const action::InteractionInfo& interaction) {
+  ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnOpenAndroidApp, app_info,
+                     interaction);
   mojom::AndroidAppInfoPtr app_info_ptr = mojom::AndroidAppInfo::New();
   app_info_ptr->package_name = app_info.package_name;
   service_->device_actions()->OpenAndroidApp(
@@ -615,6 +643,8 @@ void AssistantManagerServiceImpl::OnOpenAndroidApp(
 void AssistantManagerServiceImpl::OnVerifyAndroidApp(
     const std::vector<action::AndroidAppInfo>& apps_info,
     const action::InteractionInfo& interaction) {
+  ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnVerifyAndroidApp,
+                     apps_info, interaction);
   std::vector<mojom::AndroidAppInfoPtr> apps_info_list;
   for (auto& app_info : apps_info) {
     mojom::AndroidAppInfoPtr app_info_ptr = mojom::AndroidAppInfo::New();
@@ -937,6 +967,9 @@ void AssistantManagerServiceImpl::StartAssistantInternal(
     const base::Optional<std::string>& access_token) {
   DCHECK(background_thread_.task_runner()->BelongsToCurrentThread());
 
+  display_connection_ = std::make_unique<CrosDisplayConnection>(
+      this, assistant::features::IsFeedbackUiEnabled());
+
   base::AutoLock lock(new_assistant_manager_lock_);
   new_assistant_manager_.reset(assistant_client::AssistantManager::Create(
       platform_api_.get(), CreateLibAssistantConfig()));
@@ -998,9 +1031,22 @@ void AssistantManagerServiceImpl::PostInitAssistant(
   std::move(post_init_callback).Run();
   assistant_settings_manager_->UpdateServerDeviceSettings();
 
-  if (base::FeatureList::IsEnabled(assistant::features::kAssistantVoiceMatch) &&
-      service_->assistant_state()->hotword_enabled().value()) {
-    assistant_settings_manager_->SyncSpeakerIdEnrollmentStatus();
+  if (is_first_init) {
+    is_first_init = false;
+    // Only sync status at the first init to prevent unexpected corner cases.
+    // This still does not handle browser restart.
+    if (base::FeatureList::IsEnabled(
+            assistant::features::kAssistantVoiceMatch) &&
+        service_->assistant_state()->hotword_enabled().value()) {
+      assistant_settings_manager_->SyncSpeakerIdEnrollmentStatus();
+    }
+  }
+
+  if (base::FeatureList::IsEnabled(assistant::features::kAssistantAppSupport)) {
+    mojom::AppListEventSubscriberPtr subscriber_ptr;
+    app_list_subscriber_binding_.Bind(mojo::MakeRequest(&subscriber_ptr));
+    service_->device_actions()->AddAppListEventSubscriber(
+        std::move(subscriber_ptr));
   }
 }
 
@@ -1052,11 +1098,21 @@ void AssistantManagerServiceImpl::HandleVerifyAndroidAppResponse(
 void AssistantManagerServiceImpl::OnStartFinished() {
   ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnStartFinished);
 
+  // It is possible the |assistant_manager_| was destructed before the
+  // rescheduled main thread task got a chance to run. We check this and also
+  // try to avoid double run by check |start_finished_|.
+  if (!assistant_manager_ || start_finished_)
+    return;
+
   // TODO(b/129896357): find a better place for additional setups.
   start_finished_ = true;
 
   RegisterFallbackMediaHandler();
   AddMediaControllerObserver();
+
+  auto* media_manager = assistant_manager_->GetMediaManager();
+  if (media_manager)
+    media_manager->AddListener(this);
 
   if (service_->assistant_state()->arc_play_store_enabled().has_value()) {
     SetArcPlayStoreEnabled(
@@ -1084,6 +1140,17 @@ void AssistantManagerServiceImpl::OnTimerSoundingFinished() {
   ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnTimerSoundingFinished);
   if (service_->assistant_alarm_timer_controller())
     service_->assistant_alarm_timer_controller()->OnTimerSoundingFinished();
+}
+
+void AssistantManagerServiceImpl::OnAndroidAppListRefreshed(
+    std::vector<mojom::AndroidAppInfoPtr> apps_info) {
+  std::vector<action::AndroidAppInfo> android_apps_info;
+  for (const auto& app_info : apps_info) {
+    android_apps_info.push_back({app_info->package_name, app_info->version,
+                                 app_info->localized_app_name,
+                                 app_info->intent});
+  }
+  display_connection_->OnAndroidAppListRefreshed(android_apps_info);
 }
 
 void AssistantManagerServiceImpl::UpdateInternalOptions(
@@ -1245,6 +1312,12 @@ void AssistantManagerServiceImpl::OnOpenUrlOnMainThread(
       [&url](auto* ptr) { ptr->OnOpenUrlResponse(GURL(url)); });
 }
 
+void AssistantManagerServiceImpl::OnPlaybackStateChange(
+    const MediaStatus& status) {
+  if (media_session_)
+    media_session_->NotifyMediaSessionMetadataChanged(status);
+}
+
 void AssistantManagerServiceImpl::OnShowNotificationOnMainThread(
     const mojom::AssistantNotificationPtr& notification) {
   service_->assistant_notification_controller()->AddOrUpdateNotification(
@@ -1363,12 +1436,7 @@ void AssistantManagerServiceImpl::CacheScreenContext(
 
   // Our callback should be run only after both view hierarchy and screenshot
   // data have been cached from their respective providers.
-  auto on_done =
-      base::BarrierClosure(2, base::BindOnce(
-                                  [](CacheScreenContextCallback callback) {
-                                    std::move(callback).Run();
-                                  },
-                                  base::Passed(std::move(callback))));
+  auto on_done = base::BarrierClosure(2, std::move(callback));
 
   service_->client()->RequestAssistantStructure(
       base::BindOnce(&AssistantManagerServiceImpl::CacheAssistantStructure,
@@ -1398,6 +1466,21 @@ void AssistantManagerServiceImpl::OnAccessibilityStatusChanged(
   // options to turn on/off A11Y features in LibAssistant.
   if (assistant_manager_internal_)
     UpdateInternalOptions(assistant_manager_internal_);
+}
+
+void AssistantManagerServiceImpl::StopAlarmTimerRinging() {
+  if (!assistant_manager_internal_)
+    return;
+
+  assistant_manager_internal_->GetAlarmTimerManager()->StopRinging();
+}
+
+void AssistantManagerServiceImpl::CreateTimer(base::TimeDelta duration) {
+  if (!assistant_manager_internal_)
+    return;
+
+  assistant_manager_internal_->GetAlarmTimerManager()->CreateTimer(
+      duration.InSeconds(), /*label=*/std::string());
 }
 
 void AssistantManagerServiceImpl::CacheAssistantStructure(

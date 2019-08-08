@@ -40,7 +40,8 @@ public class MinidumpUploadCallableTest {
     public CrashTestRule mTestRule = new CrashTestRule();
 
     private static final String BOUNDARY = "TESTBOUNDARY";
-    private static final String CRASH_ID = "IMACRASHID";
+    private static final String UPLOAD_CRASH_ID = "IMACRASHID";
+    private static final String LOCAL_CRASH_ID = "123_log";
     private static final String LOG_FILE_NAME = "chromium_renderer-123_log.dmp224";
     private File mTestUpload;
     private File mUploadLog;
@@ -78,7 +79,7 @@ public class MinidumpUploadCallableTest {
 
         @Override
         public InputStream getInputStream() {
-            return new ByteArrayInputStream(ApiCompatibilityUtils.getBytesUtf8(CRASH_ID));
+            return new ByteArrayInputStream(ApiCompatibilityUtils.getBytesUtf8(UPLOAD_CRASH_ID));
         }
 
         @Override
@@ -514,9 +515,16 @@ public class MinidumpUploadCallableTest {
         input.close();
 
         Assert.assertNotNull("We do not have a single entry in uploads.log", lastEntry);
-        int seperator = lastEntry.indexOf(',');
+        String[] components = lastEntry.split(",");
+        Assert.assertTrue(
+                "Log entry is expected to have exactly 3 components <upload-time>,<upload-id>,<local-id>",
+                components.length == 3);
 
-        long time = Long.parseLong(lastEntry.substring(0, seperator));
+        String uploadTimeString = components[0];
+        String uploadId = components[1];
+        String localId = components[2];
+
+        long time = Long.parseLong(uploadTimeString);
         long now = System.currentTimeMillis() / 1000; // Timestamp was in seconds.
 
         // Sanity check on the time stamp (within an hour).
@@ -524,7 +532,7 @@ public class MinidumpUploadCallableTest {
         Assert.assertTrue(time <= now);
         Assert.assertTrue(time > now - 60 * 60);
 
-        String id = lastEntry.substring(seperator + 1, lastEntry.length());
-        Assert.assertEquals(id, CRASH_ID);
+        Assert.assertEquals(uploadId, UPLOAD_CRASH_ID);
+        Assert.assertEquals(localId, LOCAL_CRASH_ID);
     }
 }

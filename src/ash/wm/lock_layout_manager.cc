@@ -4,6 +4,7 @@
 
 #include "ash/wm/lock_layout_manager.h"
 
+#include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/wm/lock_window_state.h"
@@ -12,7 +13,6 @@
 #include "ui/aura/env.h"
 #include "ui/events/event.h"
 #include "ui/events/gestures/gesture_recognizer.h"
-#include "ui/keyboard/keyboard_controller.h"
 
 namespace ash {
 
@@ -52,7 +52,7 @@ void LockLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   wm::WMEvent event(wm::WM_EVENT_ADDED_TO_WORKSPACE);
   window_state->OnWMEvent(&event);
 
-  Shell::Get()->aura_env()->gesture_recognizer()->CancelActiveTouchesExcept(
+  aura::Env::GetInstance()->gesture_recognizer()->CancelActiveTouchesExcept(
       nullptr);
 
   // Disable virtual keyboard overscroll because it interferes with scrolling
@@ -82,7 +82,7 @@ void LockLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
 void LockLayoutManager::SetChildBounds(aura::Window* child,
                                        const gfx::Rect& requested_bounds) {
   wm::WindowState* window_state = wm::GetWindowState(child);
-  wm::SetBoundsEvent event(wm::WM_EVENT_SET_BOUNDS, requested_bounds);
+  wm::SetBoundsEvent event(requested_bounds);
   window_state->OnWMEvent(&event);
 }
 
@@ -117,7 +117,7 @@ void LockLayoutManager::WillChangeVisibilityState(
 }
 
 void LockLayoutManager::OnKeyboardWorkspaceOccludedBoundsChanged(
-    const gfx::Rect& new_bounds) {
+    const gfx::Rect& new_bounds_in_screen) {
   OnWindowResized();
 }
 

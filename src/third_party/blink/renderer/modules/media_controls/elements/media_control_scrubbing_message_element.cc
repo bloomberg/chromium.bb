@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_resource_loader.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace blink {
@@ -28,8 +29,8 @@ void MediaControlScrubbingMessageElement::PopulateChildren() {
   // This stylesheet element will contain rules that are specific to the
   // scrubbing message. The shadow DOM protects these rules from bleeding
   // across to the parent DOM.
-  HTMLStyleElement* style =
-      HTMLStyleElement::Create(GetDocument(), CreateElementFlags());
+  auto* style = MakeGarbageCollected<HTMLStyleElement>(GetDocument(),
+                                                       CreateElementFlags());
   style->setTextContent(
       MediaControlsResourceLoader::GetScrubbingMessageStyleSheet());
   shadow_root->ParserAppendChild(style);

@@ -31,6 +31,7 @@ source_set("eg_tests") {
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/testing/earl_grey:earl_grey_support",
     "//ios/web:earl_grey_test_support",
+    "//ios/web/public/js_messaging",
     "//ios/web/public/test:element_selector",
     "//ios/web/public/test/http_server:http_server",
     "//ui/base",

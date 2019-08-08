@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -134,19 +135,6 @@ Vector<v8::Local<v8::Value>> V8FunctionExecutor::Execute(LocalFrame* frame) {
 
 }  // namespace
 
-PausableScriptExecutor* PausableScriptExecutor::Create(
-    LocalFrame* frame,
-    scoped_refptr<DOMWrapperWorld> world,
-    const HeapVector<ScriptSourceCode>& sources,
-    bool user_gesture,
-    WebScriptExecutionCallback* callback) {
-  ScriptState* script_state = ToScriptState(frame, *world);
-  return MakeGarbageCollected<PausableScriptExecutor>(
-      frame, script_state, callback,
-      MakeGarbageCollected<WebScriptExecutor>(sources, world->GetWorldId(),
-                                              user_gesture));
-}
-
 void PausableScriptExecutor::CreateAndRun(
     LocalFrame* frame,
     v8::Isolate* isolate,
@@ -184,6 +172,20 @@ void PausableScriptExecutor::ContextDestroyed(
   }
   Dispose();
 }
+
+PausableScriptExecutor::PausableScriptExecutor(
+    LocalFrame* frame,
+    scoped_refptr<DOMWrapperWorld> world,
+    const HeapVector<ScriptSourceCode>& sources,
+    bool user_gesture,
+    WebScriptExecutionCallback* callback)
+    : PausableScriptExecutor(
+          frame,
+          ToScriptState(frame, *world),
+          callback,
+          MakeGarbageCollected<WebScriptExecutor>(sources,
+                                                  world->GetWorldId(),
+                                                  user_gesture)) {}
 
 PausableScriptExecutor::PausableScriptExecutor(
     LocalFrame* frame,

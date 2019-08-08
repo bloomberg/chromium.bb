@@ -42,7 +42,6 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static HTMLSlotElement* Create(Document&);
   static HTMLSlotElement* CreateUserAgentDefaultSlot(Document&);
   static HTMLSlotElement* CreateUserAgentCustomAssignSlot(Document&);
 

@@ -81,7 +81,7 @@ void LayerTreeView::Initialize(
   params.main_task_runner = main_thread_;
   params.mutator_host = animation_host_.get();
   params.ukm_recorder_factory = std::move(ukm_recorder_factory);
-  if (base::ThreadPool::GetInstance()) {
+  if (base::ThreadPoolInstance::Get()) {
     // The image worker thread needs to allow waiting since it makes discardable
     // shared memory allocations which need to make synchronous calls to the
     // IO thread.
@@ -230,8 +230,9 @@ void LayerTreeView::StartDeferringCommits(base::TimeDelta timeout) {
   layer_tree_host_->StartDeferringCommits(timeout);
 }
 
-void LayerTreeView::StopDeferringCommits() {
-  layer_tree_host_->StopDeferringCommits();
+void LayerTreeView::StopDeferringCommits(
+    cc::PaintHoldingCommitTrigger trigger) {
+  layer_tree_host_->StopDeferringCommits(trigger);
 }
 
 int LayerTreeView::LayerTreeId() const {
@@ -462,8 +463,8 @@ void LayerTreeView::AddPresentationCallback(
   DCHECK_LE(presentation_callbacks_.size(), 25u);
 }
 
-void LayerTreeView::SetURLForUkm(const GURL& url) {
-  layer_tree_host_->SetURLForUkm(url);
+void LayerTreeView::SetSourceURL(ukm::SourceId source_id, const GURL& url) {
+  layer_tree_host_->SetSourceURL(source_id, url);
 }
 
 void LayerTreeView::ReleaseLayerTreeFrameSink() {

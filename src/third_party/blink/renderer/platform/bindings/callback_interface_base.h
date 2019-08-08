@@ -167,14 +167,6 @@ ToV8PersistentCallbackInterface(V8CallbackInterface* callback_interface) {
              : nullptr;
 }
 
-// CallbackInterfaceBase is designed to be used with wrapper-tracing. As
-// blink::Persistent does not perform wrapper-tracing, use of |WrapPersistent|
-// for callback interfaces is likely (if not always) misuse. Thus, this code
-// prohibits such a use case. The call sites should explicitly use
-// WrapPersistent(V8PersistentCallbackInterface<T>*).
-Persistent<CallbackInterfaceBase> WrapPersistent(CallbackInterfaceBase*) =
-    delete;
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_CALLBACK_INTERFACE_BASE_H_

@@ -222,8 +222,8 @@ TEST_F(PasswordManagerPresenterTest,
 }
 
 TEST_F(PasswordManagerPresenterTest, ChangeSavedPassword_UpdateDuplicates) {
-  AddPasswordEntry(GURL(kExampleCom), "user", "pass");
-  AddPasswordEntry(GURL(kExampleCom), "user", "pass");
+  AddPasswordEntry(GURL(std::string(kExampleCom) + "pathA"), "user", "pass");
+  AddPasswordEntry(GURL(std::string(kExampleCom) + "pathB"), "user", "pass");
   EXPECT_CALL(GetUIController(), SetPasswordList(SizeIs(1)));
   EXPECT_CALL(GetUIController(), SetPasswordExceptionList(IsEmpty()));
   UpdatePasswordLists();

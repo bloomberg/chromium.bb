@@ -13,6 +13,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/autofill_assistant/browser/actions/click_action.h"
 #include "components/autofill_assistant/browser/batch_element_checker.h"
 #include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/devtools/devtools/domains/types_dom.h"
@@ -22,6 +23,7 @@
 #include "components/autofill_assistant/browser/devtools/devtools_client.h"
 #include "components/autofill_assistant/browser/rectf.h"
 #include "components/autofill_assistant/browser/selector.h"
+#include "components/autofill_assistant/browser/top_padding.h"
 #include "third_party/icu/source/common/unicode/umachine.h"
 #include "url/gurl.h"
 
@@ -41,6 +43,7 @@ struct FormFieldData;
 }
 
 namespace autofill_assistant {
+struct ClientSettings;
 
 // Controller to interact with the web pages.
 //
@@ -53,13 +56,16 @@ namespace autofill_assistant {
 // multiple operations, whether in sequence or in parallel.
 class WebController {
  public:
-  // Create web controller for a given |web_contents|.
+  // Create web controller for a given |web_contents|. |settings| must be valid
+  // for the lifetime of the controller.
   static std::unique_ptr<WebController> CreateForWebContents(
-      content::WebContents* web_contents);
+      content::WebContents* web_contents,
+      const ClientSettings* settings);
 
-  // |web_contents| must outlive this web controller.
+  // |web_contents| and |settings| must outlive this web controller.
   WebController(content::WebContents* web_contents,
-                std::unique_ptr<DevtoolsClient> devtools_client);
+                std::unique_ptr<DevtoolsClient> devtools_client,
+                const ClientSettings* settings);
   virtual ~WebController();
 
   // Load |url| in the current tab. Returns immediately, before the new page has
@@ -70,6 +76,7 @@ class WebController {
   // |selector| and return the result through callback.
   virtual void ClickOrTapElement(
       const Selector& selector,
+      ClickAction::ClickType click_type,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
   // Fill the address form given by |selector| with the given address
@@ -99,9 +106,11 @@ class WebController {
       const Selector& selector,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
-  // Focus on element given by |selector|.
+  // Focus on element given by |selector|. |top_padding| specifies the padding
+  // between focused element and the top.
   virtual void FocusElement(
       const Selector& selector,
+      const TopPadding& top_padding,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
   // Get the value of |selector| and return the result through |callback|. The
@@ -147,13 +156,18 @@ class WebController {
       base::OnceCallback<void(const ClientStatus&, const std::string&)>
           callback);
 
+  // Gets the visual viewport coordinates and size.
+  //
+  // The rectangle is expressed in absolute CSS coordinates.
+  virtual void GetVisualViewport(
+      base::OnceCallback<void(bool, const RectF&)> callback);
+
   // Gets the position of the element identified by the selector.
   //
   // If unsuccessful, the callback gets (false, 0, 0, 0, 0).
   //
   // If successful, the callback gets (true, left, top, right, bottom), with
-  // coordinates expressed as numbers between 0 and 1, relative to the width or
-  // height of the visible viewport.
+  // coordinates expressed in absolute CSS coordinates.
   virtual void GetElementPosition(
       const Selector& selector,
       base::OnceCallback<void(bool, const RectF&)> callback);
@@ -174,6 +188,10 @@ class WebController {
   virtual void ElementCheck(const Selector& selector,
                             bool strict,
                             base::OnceCallback<void(bool)> callback);
+
+  // Calls the callback once the main document window has been resized.
+  virtual void WaitForWindowHeightChange(
+      base::OnceCallback<void(const ClientStatus&)> callback);
 
  private:
   friend class WebControllerBrowserTest;
@@ -231,24 +249,14 @@ class WebController {
     base::string16 cvc;
   };
 
-  // Perform a mouse left button click on the element given by |selector| and
-  // return the result through callback.
-  void ClickElement(const Selector& selector,
-                    base::OnceCallback<void(const ClientStatus&)> callback);
-
-  // Perform a touch tap on the element given by |selector| and return the
-  // result through callback.
-  void TapElement(const Selector& selector,
-                  base::OnceCallback<void(const ClientStatus&)> callback);
-
   void OnFindElementForClickOrTap(
       base::OnceCallback<void(const ClientStatus&)> callback,
-      bool is_a_click,
+      ClickAction::ClickType click_type,
       const ClientStatus& status,
       std::unique_ptr<FindElementResult> result);
   void OnWaitDocumentToBecomeInteractiveForClickOrTap(
       base::OnceCallback<void(const ClientStatus&)> callback,
-      bool is_a_click,
+      ClickAction::ClickType click_type,
       std::unique_ptr<FindElementResult> target_element,
       bool result);
   void OnFindElementForTap(
@@ -257,16 +265,18 @@ class WebController {
       std::unique_ptr<FindElementResult> result);
   void ClickOrTapElement(
       std::unique_ptr<FindElementResult> target_element,
-      bool is_a_click,
+      ClickAction::ClickType click_type,
       base::OnceCallback<void(const ClientStatus&)> callback);
+  void OnClickJS(base::OnceCallback<void(const ClientStatus&)> callback,
+                 std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnScrollIntoView(std::unique_ptr<FindElementResult> target_element,
                         base::OnceCallback<void(const ClientStatus&)> callback,
-                        bool is_a_click,
+                        ClickAction::ClickType click_type,
                         std::unique_ptr<runtime::CallFunctionOnResult> result);
   void TapOrClickOnCoordinates(
       ElementPositionGetter* getter_to_release,
       base::OnceCallback<void(const ClientStatus&)> callback,
-      bool is_a_click,
+      ClickAction::ClickType click_type,
       bool has_coordinates,
       int x,
       int y);
@@ -287,6 +297,9 @@ class WebController {
   void OnFindElementForCheck(base::OnceCallback<void(bool)> callback,
                              const ClientStatus& status,
                              std::unique_ptr<FindElementResult> result);
+  void OnWaitForWindowHeightChange(
+      base::OnceCallback<void(const ClientStatus&)> callback,
+      std::unique_ptr<runtime::EvaluateResult> result);
 
   // Find the element given by |selector|. If multiple elements match
   // |selector| and if |strict_mode| is false, return the first one that is
@@ -311,10 +324,12 @@ class WebController {
       const autofill::FormData& form_data,
       const autofill::FormFieldData& form_field);
   void OnFindElementForFocusElement(
+      const TopPadding& top_padding,
       base::OnceCallback<void(const ClientStatus&)> callback,
       const ClientStatus& status,
       std::unique_ptr<FindElementResult> element_result);
   void OnWaitDocumentToBecomeInteractiveForFocusElement(
+      const TopPadding& top_padding,
       base::OnceCallback<void(const ClientStatus&)> callback,
       std::unique_ptr<FindElementResult> target_element,
       bool result);
@@ -402,6 +417,9 @@ class WebController {
       base::OnceCallback<void(bool, const RectF&)> callback,
       const ClientStatus& status,
       std::unique_ptr<FindElementResult> result);
+  void OnGetVisualViewport(
+      base::OnceCallback<void(bool, const RectF&)> callback,
+      std::unique_ptr<runtime::EvaluateResult> result);
   void OnGetElementPositionResult(
       base::OnceCallback<void(bool, const RectF&)> callback,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
@@ -434,6 +452,7 @@ class WebController {
   // is guaranteed by the owner of this object.
   content::WebContents* web_contents_;
   std::unique_ptr<DevtoolsClient> devtools_client_;
+  const ClientSettings* const settings_;
 
   // Workers currently running and using |devtools_client_|.
   std::map<Worker*, std::unique_ptr<Worker>> pending_workers_;

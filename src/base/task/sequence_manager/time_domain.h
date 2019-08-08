@@ -64,7 +64,7 @@ class BASE_EXPORT TimeDomain {
 
   // This is the signal that virtual time should step forward. If
   // RunLoop::QuitWhenIdle has been called then |quit_when_idle_requested| will
-  // be true. Returns true if time advanced and there is now a task to run.
+  // be true. Returns true if there is a task to run now.
   virtual bool MaybeFastForwardToNextTask(bool quit_when_idle_requested) = 0;
 
  protected:

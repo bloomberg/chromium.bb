@@ -44,8 +44,8 @@ namespace blink {
 
 using namespace html_names;
 
-inline SpinButtonElement::SpinButtonElement(Document& document,
-                                            SpinButtonOwner& spin_button_owner)
+SpinButtonElement::SpinButtonElement(Document& document,
+                                     SpinButtonOwner& spin_button_owner)
     : HTMLDivElement(document),
       spin_button_owner_(&spin_button_owner),
       capturing_(false),
@@ -53,16 +53,9 @@ inline SpinButtonElement::SpinButtonElement(Document& document,
       press_starting_state_(kIndeterminate),
       repeating_timer_(document.GetTaskRunner(TaskType::kInternalDefault),
                        this,
-                       &SpinButtonElement::RepeatingTimerFired) {}
-
-SpinButtonElement* SpinButtonElement::Create(
-    Document& document,
-    SpinButtonOwner& spin_button_owner) {
-  SpinButtonElement* element =
-      MakeGarbageCollected<SpinButtonElement>(document, spin_button_owner);
-  element->SetShadowPseudoId(AtomicString("-webkit-inner-spin-button"));
-  element->setAttribute(kIdAttr, shadow_element_names::SpinButton());
-  return element;
+                       &SpinButtonElement::RepeatingTimerFired) {
+  SetShadowPseudoId(AtomicString("-webkit-inner-spin-button"));
+  setAttribute(kIdAttr, shadow_element_names::SpinButton());
 }
 
 void SpinButtonElement::DetachLayoutTree(const AttachContext& context) {
@@ -91,8 +84,8 @@ void SpinButtonElement::DefaultEventHandler(Event& event) {
   }
 
   auto& mouse_event = ToMouseEvent(event);
-  IntPoint local = RoundedIntPoint(box->AbsoluteToLocal(
-      FloatPoint(mouse_event.AbsoluteLocation()), kUseTransforms));
+  IntPoint local = RoundedIntPoint(box->AbsoluteToLocalFloatPoint(
+      FloatPoint(mouse_event.AbsoluteLocation())));
   if (mouse_event.type() == event_type_names::kMousedown &&
       mouse_event.button() ==
           static_cast<int16_t>(WebPointerProperties::Button::kLeft)) {

@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "net/base/load_flags.h"

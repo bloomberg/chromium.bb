@@ -27,15 +27,11 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierFuchsia
   explicit NetworkChangeNotifierFuchsia(uint32_t required_features);
   ~NetworkChangeNotifierFuchsia() override;
 
+  // NetworkChangeNotifier implementation.
+  ConnectionType GetCurrentConnectionType() const override;
+
  private:
   friend class NetworkChangeNotifierFuchsiaTest;
-  FRIEND_TEST_ALL_PREFIXES(NetworkChangeNotifierFuchsiaTest,
-                           FindsInterfaceWithRequiredFeature);
-  FRIEND_TEST_ALL_PREFIXES(NetworkChangeNotifierFuchsiaTest, FoundWiFi);
-  FRIEND_TEST_ALL_PREFIXES(NetworkChangeNotifierFuchsiaTest,
-                           FoundWiFiNonDefault);
-  FRIEND_TEST_ALL_PREFIXES(NetworkChangeNotifierFuchsiaTest,
-                           IgnoresInterfaceWithMissingFeature);
 
   // For testing purposes. Receives a |netstack| pointer for easy mocking.
   // Interfaces can be filtered out by passing in |required_features|, which is
@@ -53,10 +49,8 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierFuchsia
   // connection type changes are detected.
   void OnRouteTableReceived(
       std::vector<fuchsia::netstack::NetInterface> interfaces,
-      std::vector<fuchsia::netstack::RouteTableEntry> table);
-
-  // NetworkChangeNotifier implementation.
-  ConnectionType GetCurrentConnectionType() const override;
+      std::vector<fuchsia::netstack::RouteTableEntry> table,
+      bool notify_observers);
 
   // Bitmap of required features for an interface to be taken into account. The
   // features are defined in fuchsia::hardware::ethernet.

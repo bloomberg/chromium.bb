@@ -58,11 +58,13 @@
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/command_buffer/service/wrapped_sk_image.h"
+#include "gpu/vulkan/buildflags.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDeferredDisplayListRecorder.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkSurfaceProps.h"
 #include "third_party/skia/include/core/SkTypeface.h"
+#include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/GrTypes.h"
@@ -71,6 +73,11 @@
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_version_info.h"
+
+#if BUILDFLAG(ENABLE_VULKAN)
+#include "components/viz/common/gpu/vulkan_context_provider.h"
+#include "gpu/vulkan/vulkan_device_queue.h"
+#endif
 
 // Local versions of the SET_GL_ERROR macros
 #define LOCAL_SET_GL_ERROR(error, function_name, msg) \
@@ -345,6 +352,7 @@ class RasterDecoderImpl final : public RasterDecoder,
 
   // ServiceFontManager::Client implementation.
   scoped_refptr<Buffer> GetShmBuffer(uint32_t shm_id) override;
+  void ReportProgress() override;
 
  private:
   gles2::ContextState* state() const {
@@ -374,6 +382,8 @@ class RasterDecoderImpl final : public RasterDecoder,
 
   void FlushToWorkAroundMacCrashes() {
 #if defined(OS_MACOSX)
+    if (!shared_context_state_->GrContextIsGL())
+      return;
     // This function does aggressive flushes to work around crashes in the
     // macOS OpenGL driver.
     // https://crbug.com/906453
@@ -554,6 +564,7 @@ class RasterDecoderImpl final : public RasterDecoder,
   scoped_refptr<ServiceFontManager> font_manager_;
   std::unique_ptr<SharedImageRepresentationSkia> shared_image_;
   sk_sp<SkSurface> sk_surface_;
+  std::vector<GrBackendSemaphore> end_semaphores_;
   std::unique_ptr<cc::ServicePaintCache> paint_cache_;
 
   std::unique_ptr<SkDeferredDisplayListRecorder> recorder_;
@@ -679,10 +690,7 @@ RasterDecoderImpl::RasterDecoderImpl(
   DCHECK(shared_context_state_);
 }
 
-RasterDecoderImpl::~RasterDecoderImpl() {
-  if (supports_oop_raster_)
-    transfer_cache()->DeleteAllEntriesForDecoder(raster_decoder_id_);
-}
+RasterDecoderImpl::~RasterDecoderImpl() = default;
 
 base::WeakPtr<DecoderContext> RasterDecoderImpl::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
@@ -755,6 +763,10 @@ void RasterDecoderImpl::Destroy(bool have_context) {
   DCHECK(!have_context || shared_context_state_->context()->IsCurrent(nullptr));
 
   if (have_context) {
+    if (supports_oop_raster_) {
+      transfer_cache()->DeleteAllEntriesForDecoder(raster_decoder_id_);
+    }
+
     if (copy_tex_image_blit_.get()) {
       copy_tex_image_blit_->Destroy();
       copy_tex_image_blit_.reset();
@@ -767,8 +779,23 @@ void RasterDecoderImpl::Destroy(bool have_context) {
 
     // Make sure we flush any pending skia work on this context.
     if (sk_surface_) {
-      sk_surface_->flush();
-      sk_surface_.reset();
+      GrFlushInfo flush_info = {
+          .fFlags = kNone_GrFlushFlags,
+          .fNumSemaphores = end_semaphores_.size(),
+          .fSignalSemaphores = end_semaphores_.data(),
+      };
+      AddVulkanCleanupTaskForSkiaFlush(
+          shared_context_state_->vk_context_provider(), &flush_info);
+      auto result = sk_surface_->flush(
+          SkSurface::BackendSurfaceAccess::kPresent, flush_info);
+      DCHECK(result == GrSemaphoresSubmitted::kYes || end_semaphores_.empty());
+      end_semaphores_.clear();
+      if (shared_image_) {
+        shared_image_->EndWriteAccess(std::move(sk_surface_));
+        shared_image_.reset();
+      } else {
+        sk_surface_.reset();
+      }
     }
     if (gr_context()) {
       gr_context()->flush();
@@ -796,7 +823,7 @@ void RasterDecoderImpl::Destroy(bool have_context) {
 
 // Make this decoder's GL context current.
 bool RasterDecoderImpl::MakeCurrent() {
-  if (shared_context_state_->use_vulkan_gr_context())
+  if (!shared_context_state_->GrContextIsGL())
     return true;
 
   if (!context_.get())
@@ -849,7 +876,22 @@ Capabilities RasterDecoderImpl::GetCapabilities() {
   caps.texture_storage_image =
       feature_info()->feature_flags().chromium_texture_storage_image;
   caps.texture_storage = feature_info()->feature_flags().ext_texture_storage;
-  api()->glGetIntegervFn(GL_MAX_TEXTURE_SIZE, &caps.max_texture_size);
+  // TODO(piman): have a consistent limit in shared image backings.
+  // https://crbug.com/960588
+  if (shared_context_state_->GrContextIsGL()) {
+    api()->glGetIntegervFn(GL_MAX_TEXTURE_SIZE, &caps.max_texture_size);
+  } else if (shared_context_state_->GrContextIsVulkan()) {
+#if BUILDFLAG(ENABLE_VULKAN)
+    caps.max_texture_size = shared_context_state_->vk_context_provider()
+                                ->GetDeviceQueue()
+                                ->vk_physical_device_properties()
+                                .limits.maxImageDimension2D;
+#else
+    NOTREACHED();
+#endif
+  } else {
+    NOTIMPLEMENTED();
+  }
   if (feature_info()->workarounds().max_texture_size) {
     caps.max_texture_size = std::min(
         caps.max_texture_size, feature_info()->workarounds().max_texture_size);
@@ -1494,13 +1536,13 @@ error::Error RasterDecoderImpl::HandleEndQueryEXT(
 }
 
 void RasterDecoderImpl::DoFinish() {
-  if (!shared_context_state_->use_vulkan_gr_context())
+  if (shared_context_state_->GrContextIsGL())
     api()->glFinishFn();
   ProcessPendingQueries(true);
 }
 
 void RasterDecoderImpl::DoFlush() {
-  if (!shared_context_state_->use_vulkan_gr_context())
+  if (shared_context_state_->GrContextIsGL())
     api()->glFlushFn();
   ProcessPendingQueries(false);
 }
@@ -2040,8 +2082,17 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(
       gr_context()->maxSurfaceSampleCountForColorType(sk_color_type))
     final_msaa_count = 0;
 
-  sk_surface_ =
-      shared_image_->BeginWriteAccess(final_msaa_count, surface_props);
+  std::vector<GrBackendSemaphore> begin_semaphores;
+  DCHECK(end_semaphores_.empty());
+  sk_surface_ = shared_image_->BeginWriteAccess(
+      final_msaa_count, surface_props, &begin_semaphores, &end_semaphores_);
+
+  if (!begin_semaphores.empty()) {
+    bool result =
+        sk_surface_->wait(begin_semaphores.size(), begin_semaphores.data());
+    DCHECK(result);
+  }
+
   if (!sk_surface_) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
                        "failed to create surface");
@@ -2074,6 +2125,11 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(
 
 scoped_refptr<Buffer> RasterDecoderImpl::GetShmBuffer(uint32_t shm_id) {
   return GetSharedMemoryBuffer(shm_id);
+}
+
+void RasterDecoderImpl::ReportProgress() {
+  if (shared_context_state_->progress_reporter())
+    shared_context_state_->progress_reporter()->ReportProgress();
 }
 
 void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
@@ -2178,7 +2234,24 @@ void RasterDecoderImpl::DoEndRasterCHROMIUM() {
     // hangs.
     gl::ScopedProgressReporter report_progress(
         shared_context_state_->progress_reporter());
-    sk_surface_->flush();
+    GrFlushInfo flush_info = {
+        .fFlags = kNone_GrFlushFlags,
+        .fNumSemaphores = end_semaphores_.size(),
+        .fSignalSemaphores = end_semaphores_.data(),
+    };
+    AddVulkanCleanupTaskForSkiaFlush(
+        shared_context_state_->vk_context_provider(), &flush_info);
+    if (use_ddl_) {
+      // TODO(penghuang): Switch to sk_surface_->flush() when skia flush bug is
+      // fixed. https://crbug.com/958055
+      auto result = gr_context()->flush(flush_info);
+      DCHECK(result == GrSemaphoresSubmitted::kYes || end_semaphores_.empty());
+    } else {
+      auto result = sk_surface_->flush(
+          SkSurface::BackendSurfaceAccess::kPresent, flush_info);
+      DCHECK(result == GrSemaphoresSubmitted::kYes || end_semaphores_.empty());
+    }
+    end_semaphores_.clear();
   }
 
   if (!shared_image_) {

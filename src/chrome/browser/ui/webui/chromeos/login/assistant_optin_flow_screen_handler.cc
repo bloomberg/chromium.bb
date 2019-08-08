@@ -38,7 +38,15 @@ constexpr char kFlowFinished[] = "flow-finished";
 constexpr char kReloadRequested[] = "reload-requested";
 constexpr char kVoiceMatchDone[] = "voice-match-done";
 
+bool IsKnownEnumValue(ash::FlowType flow_type) {
+  return flow_type == ash::FlowType::kConsentFlow ||
+         flow_type == ash::FlowType::kSpeakerIdEnrollment ||
+         flow_type == ash::FlowType::kSpeakerIdRetrain;
+}
+
 }  // namespace
+
+constexpr StaticOobeScreenId AssistantOptInFlowScreenView::kScreenId;
 
 AssistantOptInFlowScreenHandler::AssistantOptInFlowScreenHandler(
     JSCallsContainer* js_calls_container)
@@ -185,13 +193,13 @@ void AssistantOptInFlowScreenHandler::OnProcessingHotword() {
 }
 
 void AssistantOptInFlowScreenHandler::OnSpeakerIdEnrollmentDone() {
-  settings_manager_->StopSpeakerIdEnrollment(base::DoNothing());
+  StopSpeakerIdEnrollment();
   CallJS("login.AssistantOptInFlowScreen.onVoiceMatchUpdate",
          base::Value("done"));
 }
 
 void AssistantOptInFlowScreenHandler::OnSpeakerIdEnrollmentFailure() {
-  settings_manager_->StopSpeakerIdEnrollment(base::DoNothing());
+  StopSpeakerIdEnrollment();
   RecordAssistantOptInStatus(VOICE_MATCH_ENROLLMENT_ERROR);
   CallJS("login.AssistantOptInFlowScreen.onVoiceMatchUpdate",
          base::Value("failure"));
@@ -250,7 +258,8 @@ void AssistantOptInFlowScreenHandler::OnEmailOptInResult(bool opted_in) {
 
 void AssistantOptInFlowScreenHandler::OnDialogClosed() {
   // Disable hotword for user if voice match enrollment has not completed.
-  if (!voice_match_enrollment_done_ && !is_retrain_flow_) {
+  if (!voice_match_enrollment_done_ &&
+      flow_type_ == ash::FlowType::kSpeakerIdEnrollment) {
     ProfileManager::GetActiveUserProfile()->GetPrefs()->SetBoolean(
         arc::prefs::kVoiceInteractionHotwordEnabled, false);
   }
@@ -289,6 +298,12 @@ void AssistantOptInFlowScreenHandler::SendGetSettingsRequest() {
   send_request_time_ = base::TimeTicks::Now();
 }
 
+void AssistantOptInFlowScreenHandler::StopSpeakerIdEnrollment() {
+  settings_manager_->StopSpeakerIdEnrollment(base::DoNothing());
+  // Close the binding so it can be used again if enrollment is retried.
+  client_binding_.Close();
+}
+
 void AssistantOptInFlowScreenHandler::ReloadContent(const base::Value& dict) {
   CallJS("login.AssistantOptInFlowScreen.reloadContent", dict);
 }
@@ -306,8 +321,22 @@ void AssistantOptInFlowScreenHandler::OnGetSettingsResponse(
                       time_since_request_sent);
 
   assistant::SettingsUi settings_ui;
-  if (!settings_ui.ParseFromString(settings))
+  if (!settings_ui.ParseFromString(settings)) {
+    LOG(ERROR) << "Failed to parse get settings response.";
+    HandleFlowFinished();
     return;
+  }
+
+  if (settings_ui.has_gaia_user_context_ui()) {
+    auto gaia_user_context_ui = settings_ui.gaia_user_context_ui();
+    if (gaia_user_context_ui.waa_disabled_by_dasher_domain() ||
+        gaia_user_context_ui.assistant_disabled_by_dasher_domain()) {
+      DVLOG(1) << "Assistant/web & app activity is disabled by dasher domain. "
+                  "Skip Assistant opt-in flow.";
+      HandleFlowFinished();
+      return;
+    }
+  }
 
   DCHECK(settings_ui.has_consent_flow_ui());
 
@@ -335,9 +364,6 @@ void AssistantOptInFlowScreenHandler::OnGetSettingsResponse(
     ::assistant::prefs::SetConsentStatus(
         prefs, consented ? ash::mojom::ConsentStatus::kActivityControlAccepted
                          : ash::mojom::ConsentStatus::kUnknown);
-
-    // Skip activity control and users will be in opted out mode.
-    ShowNextScreen();
   } else {
     AddSettingZippy("settings",
                     CreateZippyData(activity_control_ui.setting_zippy()));
@@ -349,9 +375,7 @@ void AssistantOptInFlowScreenHandler::OnGetSettingsResponse(
   if (third_party_disclosure_ui.disclosures().size()) {
     AddSettingZippy("disclosure", CreateDisclosureData(
                                       third_party_disclosure_ui.disclosures()));
-  } else if (skip_third_party_disclosure) {
-    ShowNextScreen();
-  } else {
+  } else if (!skip_third_party_disclosure) {
     // TODO(llin): Show an error message and log it properly.
     LOG(ERROR) << "Missing third Party disclosure data.";
     return;
@@ -370,9 +394,7 @@ void AssistantOptInFlowScreenHandler::OnGetSettingsResponse(
       skip_third_party_disclosure && !get_more_data.GetList().size();
   if (get_more_data.GetList().size()) {
     AddSettingZippy("get-more", get_more_data);
-  } else if (skip_get_more) {
-    ShowNextScreen();
-  } else {
+  } else if (!skip_get_more) {
     // TODO(llin): Show an error message and log it properly.
     LOG(ERROR) << "Missing get more data.";
     return;
@@ -380,10 +402,28 @@ void AssistantOptInFlowScreenHandler::OnGetSettingsResponse(
 
   // Pass string constants dictionary.
   auto dictionary = GetSettingsUiStrings(settings_ui, activity_control_needed_);
-  dictionary.SetKey("voiceMatchEnabled",
-                    base::Value(IsVoiceMatchEnabled(
-                        ProfileManager::GetActiveUserProfile()->GetPrefs())));
+  const bool voice_match_enabled =
+      IsVoiceMatchEnabled(ProfileManager::GetActiveUserProfile()->GetPrefs());
+  dictionary.SetKey("voiceMatchEnabled", base::Value(voice_match_enabled));
   ReloadContent(dictionary);
+
+  // Now that screen's content has been reloaded, skip screens that can be
+  // skipped - if this is done before content reload, internal screen
+  // transitions might be based on incorrect data. For example, if both activity
+  // control and third party disclosure are skipped, opt in flow might skip
+  // voice match enrollment, thinking that voice match is not enabled.
+
+  // Skip activity control and users will be in opted out mode.
+  if (skip_activity_control)
+    ShowNextScreen();
+
+  if (skip_third_party_disclosure)
+    ShowNextScreen();
+
+  // If voice match is enabled, the screen that follows third party disclosure
+  // is the "voice match" screen, not "get more" screen.
+  if (skip_get_more && !voice_match_enabled)
+    ShowNextScreen();
 }
 
 void AssistantOptInFlowScreenHandler::OnUpdateSettingsResponse(
@@ -459,11 +499,11 @@ void AssistantOptInFlowScreenHandler::HandleVoiceMatchScreenUserAction(
     ShowNextScreen();
   } else if (action == kSkipPressed) {
     RecordAssistantOptInStatus(VOICE_MATCH_ENROLLMENT_SKIPPED);
-    if (!is_retrain_flow_) {
+    if (flow_type_ != ash::FlowType::kSpeakerIdRetrain) {
       // No need to disable hotword for retrain flow since user has a model.
       prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled, false);
     }
-    settings_manager_->StopSpeakerIdEnrollment(base::DoNothing());
+    StopSpeakerIdEnrollment();
     ShowNextScreen();
   } else if (action == kRecordPressed) {
     if (!prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled)) {
@@ -472,8 +512,8 @@ void AssistantOptInFlowScreenHandler::HandleVoiceMatchScreenUserAction(
 
     assistant::mojom::SpeakerIdEnrollmentClientPtr client_ptr;
     client_binding_.Bind(mojo::MakeRequest(&client_ptr));
-    settings_manager_->StartSpeakerIdEnrollment(is_retrain_flow_,
-                                                std::move(client_ptr));
+    settings_manager_->StartSpeakerIdEnrollment(
+        flow_type_ == ash::FlowType::kSpeakerIdRetrain, std::move(client_ptr));
   }
 }
 
@@ -544,13 +584,13 @@ void AssistantOptInFlowScreenHandler::HandleFlowInitialized(
   if (on_initialized_)
     std::move(on_initialized_).Run();
 
+  DCHECK(IsKnownEnumValue(static_cast<ash::FlowType>(flow_type)));
+  flow_type_ = static_cast<ash::FlowType>(flow_type);
+
   if (settings_manager_.is_bound() &&
-      flow_type == static_cast<int>(ash::mojom::FlowType::CONSENT_FLOW)) {
+      flow_type_ == ash::FlowType::kConsentFlow) {
     SendGetSettingsRequest();
   }
-
-  if (flow_type == static_cast<int>(ash::mojom::FlowType::SPEAKER_ID_RETRAIN))
-    is_retrain_flow_ = true;
 }
 
 }  // namespace chromeos

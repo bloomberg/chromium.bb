@@ -165,8 +165,7 @@ void WebGLRenderingContext::RegisterContextExtensions() {
   RegisterExtension<EXTTextureFilterAnisotropic>(
       ext_texture_filter_anisotropic_, kApprovedExtension, kBothPrefixes);
   RegisterExtension<EXTsRGB>(exts_rgb_);
-  RegisterExtension<KHRParallelShaderCompile>(khr_parallel_shader_compile_,
-                                              kDraftExtension);
+  RegisterExtension<KHRParallelShaderCompile>(khr_parallel_shader_compile_);
   RegisterExtension<OESElementIndexUint>(oes_element_index_uint_);
   RegisterExtension<OESStandardDerivatives>(oes_standard_derivatives_);
   RegisterExtension<OESTextureFloat>(oes_texture_float_);

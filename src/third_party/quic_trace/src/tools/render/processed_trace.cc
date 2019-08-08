@@ -223,6 +223,8 @@ const char* EncryptionLevelToString(EncryptionLevel level) {
   switch (level) {
     case ENCRYPTION_INITIAL:
       return "Initial";
+    case ENCRYPTION_HANDSHAKE:
+      return "Handshake";
     case ENCRYPTION_0RTT:
       return "0-RTT";
     case ENCRYPTION_1RTT:
@@ -295,7 +297,7 @@ void ProcessedTrace::FillTableForPacket(Table* table,
   table->AddRow("Time", FormatTime(packet->time_us()));
 
   if (packet->event_type() == PACKET_SENT) {
-    table->AddRow("Size", absl::StrCat(packet->packet_size(), "bytes"));
+    table->AddRow("Size", absl::StrCat(packet->packet_size(), " bytes"));
     table->AddRow("Encryption",
                   EncryptionLevelToString(packet->encryption_level()));
 
@@ -363,6 +365,15 @@ void ProcessedTrace::FillTableForPacket(Table* table,
     if (state.has_pacing_rate_bps()) {
       table->AddRow("Pacing rate",
                     FormatBandwidth(state.pacing_rate_bps(), 8000 * 1000));
+    }
+    if (state.has_congestion_control_state()) {
+      // Truncate CC state strings longer than 80 characters.
+      const int kMaxLen = 80;
+      std::string ccstate = state.congestion_control_state();
+      if (ccstate.length() > kMaxLen) {
+        ccstate = ccstate.substr(0, kMaxLen) + "...";
+      }
+      table->AddRow("CC State", ccstate);
     }
   }
 }

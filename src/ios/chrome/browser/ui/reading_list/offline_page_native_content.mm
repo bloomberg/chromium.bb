@@ -77,7 +77,7 @@
   [super close];
 }
 
-- (GURL)virtualURL {
+- (const GURL&)virtualURL {
   return _virtualURL;
 }
 

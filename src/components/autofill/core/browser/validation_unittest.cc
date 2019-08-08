@@ -10,7 +10,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/strings/grit/components_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -451,11 +451,13 @@ INSTANTIATE_TEST_SUITE_P(
 class AutofillIsUPIVirtualPaymentAddress
     : public testing::TestWithParam<std::string> {};
 
-TEST_P(AutofillIsUPIVirtualPaymentAddress, IsUPIVirtualPaymentAddress) {
+TEST_P(AutofillIsUPIVirtualPaymentAddress, IsUPIVirtualPaymentAddress_Banks) {
   // Expected format is user@bank
-  EXPECT_TRUE(IsUPIVirtualPaymentAddress(ASCIIToUTF16("user@" + GetParam())));
+  EXPECT_TRUE(
+      IsUPIVirtualPaymentAddress(ASCIIToUTF16("user.name-1@" + GetParam())));
 
-  // Deviations should not match: bank, @bank, user@prefixbank, user@banksuffix.
+  // Deviations should not match: bank, @bank, user@prefixbank, user@banksuffix,
+  // disallowed symbols.
   EXPECT_FALSE(IsUPIVirtualPaymentAddress(ASCIIToUTF16(GetParam())));
   EXPECT_FALSE(IsUPIVirtualPaymentAddress(ASCIIToUTF16(GetParam() + "@")));
   EXPECT_FALSE(IsUPIVirtualPaymentAddress(ASCIIToUTF16("@" + GetParam())));
@@ -463,6 +465,7 @@ TEST_P(AutofillIsUPIVirtualPaymentAddress, IsUPIVirtualPaymentAddress) {
       IsUPIVirtualPaymentAddress(ASCIIToUTF16("user@invalid" + GetParam())));
   EXPECT_FALSE(
       IsUPIVirtualPaymentAddress(ASCIIToUTF16("user@" + GetParam() + ".com")));
+  EXPECT_FALSE(IsUPIVirtualPaymentAddress(ASCIIToUTF16("~user@" + GetParam())));
 }
 
 INSTANTIATE_TEST_SUITE_P(UPIVirtualPaymentAddress,
@@ -493,5 +496,16 @@ INSTANTIATE_TEST_SUITE_P(UPIVirtualPaymentAddress,
                                          "united",
                                          "vijb",
                                          "ybl"));
+
+TEST_P(AutofillIsUPIVirtualPaymentAddress, IsUPIVirtualPaymentAddress_Others) {
+  EXPECT_TRUE(
+      IsUPIVirtualPaymentAddress(ASCIIToUTF16("12345@HDFC0000001.ifsc.npci")));
+  EXPECT_TRUE(
+      IsUPIVirtualPaymentAddress(ASCIIToUTF16("234567890123@aadhaar.npci")));
+  EXPECT_TRUE(
+      IsUPIVirtualPaymentAddress(ASCIIToUTF16("9800011111@mobile.npci")));
+  EXPECT_TRUE(
+      IsUPIVirtualPaymentAddress(ASCIIToUTF16("1234123412341234@rupay.npci")));
+}
 
 }  // namespace autofill

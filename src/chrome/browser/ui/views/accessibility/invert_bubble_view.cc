@@ -94,11 +94,12 @@ InvertBubbleView::~InvertBubbleView() {
 }
 
 views::View* InvertBubbleView::CreateExtraView() {
-  views::ImageButton* learn_more = views::CreateVectorImageButton(this);
-  views::SetImageFromVectorIcon(learn_more, vector_icons::kHelpOutlineIcon);
+  auto learn_more = views::CreateVectorImageButton(this);
+  views::SetImageFromVectorIcon(learn_more.get(),
+                                vector_icons::kHelpOutlineIcon);
   learn_more->SetTooltipText(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
   learn_more->set_tag(kLearnMoreButton);
-  return learn_more;
+  return learn_more.release();
 }
 
 int InvertBubbleView::GetDialogButtons() const {
@@ -128,7 +129,7 @@ void InvertBubbleView::Init() {
   views::BoxLayout* layout = SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+      views::BoxLayout::CrossAxisAlignment::kStart);
 
   AddChildView(std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(IDS_HIGH_CONTRAST_HEADER),

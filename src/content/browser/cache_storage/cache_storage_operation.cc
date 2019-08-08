@@ -16,7 +16,7 @@ CacheStorageOperation::CacheStorageOperation(
     base::OnceClosure closure,
     CacheStorageSchedulerClient client_type,
     CacheStorageSchedulerOp op_type,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
     : closure_(std::move(closure)),
       creation_ticks_(base::TimeTicks::Now()),
       client_type_(client_type),

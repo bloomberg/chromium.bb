@@ -7,19 +7,17 @@
 #include <algorithm>
 
 #include "base/metrics/histogram_macros.h"
+#include "chrome/browser/chromeos/printing/cups_print_job.h"
 #include "chrome/browser/chromeos/printing/cups_print_job_notification_manager.h"
 
 namespace chromeos {
 
 CupsPrintJobManager::CupsPrintJobManager(Profile* profile) : profile_(profile) {
-  notification_manager_.reset(
-      new CupsPrintJobNotificationManager(profile, this));
+  notification_manager_ =
+      std::make_unique<CupsPrintJobNotificationManager>(profile, this);
 }
 
-CupsPrintJobManager::~CupsPrintJobManager() {
-  notification_manager_.reset();
-  profile_ = nullptr;
-}
+CupsPrintJobManager::~CupsPrintJobManager() = default;
 
 void CupsPrintJobManager::Shutdown() {}
 

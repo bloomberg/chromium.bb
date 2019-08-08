@@ -15,6 +15,7 @@
 namespace blink {
 
 class HTMLVideoElement;
+class PictureInPictureOptions;
 class PictureInPictureWindow;
 class TreeScope;
 struct WebSize;
@@ -31,7 +32,7 @@ class MODULES_EXPORT PictureInPictureControllerImpl
     : public PictureInPictureController,
       public PageVisibilityObserver,
       public DocumentShutdownObserver,
-      public blink::mojom::blink::PictureInPictureDelegate {
+      public blink::mojom::blink::PictureInPictureSessionObserver {
   USING_GARBAGE_COLLECTED_MIXIN(PictureInPictureControllerImpl);
 
  public:
@@ -69,18 +70,19 @@ class MODULES_EXPORT PictureInPictureControllerImpl
   bool IsExitAutoPictureInPictureAllowed() const;
 
   // Implementation of PictureInPictureController.
-  void EnterPictureInPicture(HTMLVideoElement*,
+  void EnterPictureInPicture(HTMLElement*,
+                             PictureInPictureOptions*,
                              ScriptPromiseResolver*) override;
   void ExitPictureInPicture(HTMLVideoElement*, ScriptPromiseResolver*) override;
   void AddToAutoPictureInPictureElementsList(HTMLVideoElement*) override;
   void RemoveFromAutoPictureInPictureElementsList(HTMLVideoElement*) override;
-  Status IsElementAllowed(const HTMLVideoElement&) const override;
+  Status IsElementAllowed(const HTMLElement&) const override;
   bool IsPictureInPictureElement(const Element*) const override;
-  bool IsPictureInPictureShadowHost(const Element&) const override;
   void OnPictureInPictureStateChange() override;
 
-  // Implementation of PictureInPictureDelegate.
-  void PictureInPictureWindowSizeChanged(const blink::WebSize&) override;
+  // Implementation of PictureInPictureSessionObserver.
+  void OnWindowSizeChanged(const blink::WebSize&) override;
+  void OnStopped() override;
 
   // Implementation of PageVisibilityObserver.
   void PageVisibilityChanged() override;
@@ -90,15 +92,16 @@ class MODULES_EXPORT PictureInPictureControllerImpl
 
   void Trace(blink::Visitor*) override;
 
-  mojo::Binding<mojom::blink::PictureInPictureDelegate>&
-  GetDelegateBindingForTesting() {
-    return delegate_binding_;
+  mojo::Binding<mojom::blink::PictureInPictureSessionObserver>&
+  GetSessionObserverBindingForTesting() {
+    return session_observer_binding_;
   }
 
  private:
   void OnEnteredPictureInPicture(HTMLVideoElement*,
                                  ScriptPromiseResolver*,
-                                 const WebSize& picture_in_picture_window_size);
+                                 mojom::blink::PictureInPictureSessionPtr,
+                                 const WebSize&);
   void OnExitedPictureInPicture(ScriptPromiseResolver*) override;
 
   // Makes sure the `picture_in_picture_service_` is set. Returns whether it was
@@ -119,11 +122,15 @@ class MODULES_EXPORT PictureInPictureControllerImpl
   // The Picture-in-Picture window for the associated document.
   Member<PictureInPictureWindow> picture_in_picture_window_;
 
-  // Mojo bindings for the delegate interface implemented by |this|.
-  mojo::Binding<mojom::blink::PictureInPictureDelegate> delegate_binding_;
+  // Mojo bindings for the session observer interface implemented by |this|.
+  mojo::Binding<mojom::blink::PictureInPictureSessionObserver>
+      session_observer_binding_;
 
   // Picture-in-Picture service living in the browser process.
   mojom::blink::PictureInPictureServicePtr picture_in_picture_service_;
+
+  // Instance of the Picture-in-Picture session sent back by the service.
+  mojom::blink::PictureInPictureSessionPtr picture_in_picture_session_;
 
   DISALLOW_COPY_AND_ASSIGN(PictureInPictureControllerImpl);
 };

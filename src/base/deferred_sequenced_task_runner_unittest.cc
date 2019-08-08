@@ -201,7 +201,7 @@ TEST_F(DeferredSequencedTaskRunnerTest, StartWithTaskRunner) {
   base::RunLoop run_loop;
   runner->PostTask(FROM_HERE,
                    BindOnce(
-                       [](bool* run_called, base::Closure quit_closure) {
+                       [](bool* run_called, base::OnceClosure quit_closure) {
                          *run_called = true;
                          std::move(quit_closure).Run();
                        },

@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "base/unguessable_token.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "chrome/browser/ui/browser.h"
@@ -23,8 +24,9 @@
 #include "chromeos/dbus/cicerone_client.h"
 #include "chromeos/dbus/concierge/service.pb.h"
 #include "chromeos/dbus/concierge_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "device/usb/public/mojom/device_manager.mojom.h"
+#include "services/device/public/mojom/usb_manager.mojom.h"
 
 class Profile;
 
@@ -167,6 +169,14 @@ class LinuxPackageOperationProgressObserver {
                                           int progress_percent) = 0;
 };
 
+class PendingAppListUpdatesObserver : public base::CheckedObserver {
+ public:
+  // Called whenever the kPendingAppListUpdatesMethod signal is sent.
+  virtual void OnPendingAppListUpdates(const std::string& vm_name,
+                                       const std::string& container_name,
+                                       int count) = 0;
+};
+
 class ExportContainerProgressObserver {
  public:
   // A successfully started container export will continually fire progress
@@ -207,8 +217,9 @@ class InstallerViewStatusObserver : public base::CheckedObserver {
 // possible. The existence of Cicerone is abstracted behind this class and
 // only the Concierge name is exposed outside of here.
 class CrostiniManager : public KeyedService,
-                        public chromeos::ConciergeClient::Observer,
-                        public chromeos::CiceroneClient::Observer {
+                        public chromeos::ConciergeClient::ContainerObserver,
+                        public chromeos::CiceroneClient::Observer,
+                        public chromeos::PowerManagerClient::Observer {
  public:
   using CrostiniResultCallback =
       base::OnceCallback<void(CrostiniResult result)>;
@@ -355,8 +366,6 @@ class CrostiniManager : public KeyedService,
       // The path to the disk image, including the name of
       // the image itself.
       const base::FilePath& disk_path,
-      // The storage location of the disk image
-      vm_tools::concierge::StorageLocation storage_location,
       DestroyDiskImageCallback callback);
 
   void ListVmDisks(ListVmDisksCallback callback);
@@ -568,6 +577,12 @@ class CrostiniManager : public KeyedService,
   void RemoveLinuxPackageOperationProgressObserver(
       LinuxPackageOperationProgressObserver* observer);
 
+  // Add/remove observers for pending app list updates.
+  void AddPendingAppListUpdatesObserver(
+      PendingAppListUpdatesObserver* observer);
+  void RemovePendingAppListUpdatesObserver(
+      PendingAppListUpdatesObserver* observer);
+
   // Add/remove observers for container export/import.
   void AddExportContainerProgressObserver(
       ExportContainerProgressObserver* observer);
@@ -609,6 +624,19 @@ class CrostiniManager : public KeyedService,
   void OnImportLxdContainerProgress(
       const vm_tools::cicerone::ImportLxdContainerProgressSignal& signal)
       override;
+  void OnPendingAppListUpdates(
+      const vm_tools::cicerone::PendingAppListUpdatesSignal& signal) override;
+
+  // chromeos::PowerManagerClient::Observer overrides:
+  void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
+  void SuspendDone(const base::TimeDelta& sleep_duration) override;
+
+  // Callback for |RemoveSshfsCrostiniVolume| called from |SuspendImminent| when
+  // the device is allowed to suspend. Removes metadata associated with the
+  // crostini sshfs mount and unblocks a pending suspend.
+  void OnRemoveSshfsCrostiniVolume(
+      base::UnguessableToken power_manager_suspend_token,
+      bool result);
 
   void RemoveCrostini(std::string vm_name, RemoveCrostiniCallback callback);
 
@@ -619,7 +647,8 @@ class CrostiniManager : public KeyedService,
   void AddRunningVmForTesting(std::string vm_name);
 
   void SetContainerSshfsMounted(std::string vm_name,
-                                std::string container_name);
+                                std::string container_name,
+                                bool is_mounted);
   // Returns null if VM or container is not running.
   base::Optional<ContainerInfo> GetContainerInfo(std::string vm_name,
                                                  std::string container_name);
@@ -886,6 +915,9 @@ class CrostiniManager : public KeyedService,
 
   base::ObserverList<LinuxPackageOperationProgressObserver>::Unchecked
       linux_package_operation_progress_observers_;
+
+  base::ObserverList<PendingAppListUpdatesObserver>
+      pending_app_list_updates_observers_;
 
   base::ObserverList<ExportContainerProgressObserver>::Unchecked
       export_container_progress_observers_;

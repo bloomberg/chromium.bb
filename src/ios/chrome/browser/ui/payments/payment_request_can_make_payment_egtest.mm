@@ -6,7 +6,7 @@
 
 #include "base/ios/ios_util.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/payments/core/payment_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -15,6 +15,7 @@
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -55,12 +56,12 @@ const char kCanMakePaymentMethodIdentifierPage[] =
 
 // Tests canMakePayment() when visa is required and user has a visa instrument.
 - (void)testCanMakePaymentIsSupported {
-  NSError* creditCardError =
-      [self addCreditCard:autofill::test::GetCreditCard()];  // visa.
-  GREYAssertNil(creditCardError, creditCardError.localizedDescription);
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kCanMakePaymentPage)];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [self addCreditCard:autofill::test::GetCreditCard()]);  // visa.
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kCanMakePaymentPage)]);
 
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
 
   [self waitForWebViewContainingTexts:{"true"}];
 }
@@ -68,30 +69,32 @@ const char kCanMakePaymentMethodIdentifierPage[] =
 // Tests canMakePayment() when visa is required, user has a visa instrument, and
 // user is in incognito mode.
 - (void)testCanMakePaymentIsSupportedInIncognitoMode {
-  NSError* creditCardError =
-      [self addCreditCard:autofill::test::GetCreditCard()];  // visa.
-  GREYAssertNil(creditCardError, creditCardError.localizedDescription);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [self addCreditCard:autofill::test::GetCreditCard()]);  // visa.
   // Open an Incognito tab.
   [ChromeEarlGreyUI openToolsMenu];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           kToolsMenuNewIncognitoTabId)]
       performAction:grey_tap()];
-  [ChromeEarlGrey waitForIncognitoTabCount:1];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForIncognitoTabCount:1]);
 
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kCanMakePaymentPage)];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kCanMakePaymentPage)]);
 
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kCanMakePaymentPage)];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kCanMakePaymentPage)]);
 
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
 
   [self waitForWebViewContainingTexts:{"true"}];
 }
 
 // Tests canMakePayment() when visa is required, but user doesn't have one.
 - (void)testCanMakePaymentIsNotSupported {
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kCanMakePaymentPage)];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kCanMakePaymentPage)]);
 
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
 
   [self waitForWebViewContainingTexts:{"false"}];
 }
@@ -104,11 +107,12 @@ const char kCanMakePaymentMethodIdentifierPage[] =
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           kToolsMenuNewIncognitoTabId)]
       performAction:grey_tap()];
-  [ChromeEarlGrey waitForIncognitoTabCount:1];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForIncognitoTabCount:1]);
 
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kCanMakePaymentPage)];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kCanMakePaymentPage)]);
 
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
 
   [self waitForWebViewContainingTexts:{"false"}];
 }
@@ -120,13 +124,13 @@ const char kCanMakePaymentMethodIdentifierPage[] =
   PrefService* prefs = chrome_test_util::GetOriginalBrowserState()->GetPrefs();
   prefs->SetBoolean(payments::kCanMakePaymentEnabled, false);
 
-  NSError* creditCardError =
-      [self addCreditCard:autofill::test::GetCreditCard()];  // visa.
-  GREYAssertNil(creditCardError, creditCardError.localizedDescription);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [self addCreditCard:autofill::test::GetCreditCard()]);  // visa.
 
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kCanMakePaymentPage)];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kCanMakePaymentPage)]);
 
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
 
   [self waitForWebViewContainingTexts:{"false"}];
 }
@@ -139,22 +143,23 @@ const char kCanMakePaymentMethodIdentifierPage[] =
   PrefService* prefs = chrome_test_util::GetOriginalBrowserState()->GetPrefs();
   prefs->SetBoolean(payments::kCanMakePaymentEnabled, false);
 
-  NSError* creditCardError =
-      [self addCreditCard:autofill::test::GetCreditCard()];  // visa.
-  GREYAssertNil(creditCardError, creditCardError.localizedDescription);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [self addCreditCard:autofill::test::GetCreditCard()]);  // visa.
 
   // Open an Incognito tab.
   [ChromeEarlGreyUI openToolsMenu];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           kToolsMenuNewIncognitoTabId)]
       performAction:grey_tap()];
-  [ChromeEarlGrey waitForIncognitoTabCount:1];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForIncognitoTabCount:1]);
 
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kCanMakePaymentPage)];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kCanMakePaymentPage)]);
 
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kCanMakePaymentPage)];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kCanMakePaymentPage)]);
 
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
 
   [self waitForWebViewContainingTexts:{"false"}];
 }
@@ -189,35 +194,36 @@ const char kCanMakePaymentMethodIdentifierPage[] =
         @"available.");
   }
 
-  [ChromeEarlGrey
-      loadURL:web::test::HttpServer::MakeUrl(kCanMakePaymentCreditCardPage)];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kCanMakePaymentCreditCardPage)]);
 
   // Query visa payment method.
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
 
   // User does not have a visa card.
   [self waitForWebViewContainingTexts:{"false"}];
 
   // Query Mastercard payment method.
-  [ChromeEarlGrey tapWebViewElementWithID:@"other-buy"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey tapWebStateElementWithID:@"other-buy"]);
 
   // Query quota exceeded.
   [self
       waitForWebViewContainingTexts:
           {"NotAllowedError", "Not allowed to check whether can make payment"}];
 
-  NSError* creditCardError =
-      [self addCreditCard:autofill::test::GetCreditCard()];  // visa.
-  GREYAssertNil(creditCardError, creditCardError.localizedDescription);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [self addCreditCard:autofill::test::GetCreditCard()]);  // visa.
 
   // Query visa payment method.
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
 
   // User has a visa card. While the query is cached, result is always fresh.
   [self waitForWebViewContainingTexts:{"true"}];
 
   // Query Mastercard payment method.
-  [ChromeEarlGrey tapWebViewElementWithID:@"other-buy"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey tapWebStateElementWithID:@"other-buy"]);
 
   // Query quota exceeded.
   [self
@@ -255,37 +261,41 @@ const char kCanMakePaymentMethodIdentifierPage[] =
         @"available.");
   }
 
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(
-                              kCanMakePaymentMethodIdentifierPage)];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(
+                                  kCanMakePaymentMethodIdentifierPage)]);
 
   // Query basic-card payment method with "supportedNetworks": ["visa"] in the
   // payment method specific data.
-  [ChromeEarlGrey tapWebViewElementWithID:@"checkBasicVisa"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey tapWebStateElementWithID:@"checkBasicVisa"]);
 
   // User does not have a visa card.
   [self waitForWebViewContainingTexts:{"false"}];
 
   // Query basic-card payment method without "supportedNetworks" parameter.
-  [ChromeEarlGrey tapWebViewElementWithID:@"checkBasicCard"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey tapWebStateElementWithID:@"checkBasicCard"]);
 
   // Query quota exceeded.
   [self
       waitForWebViewContainingTexts:
           {"NotAllowedError", "Not allowed to check whether can make payment"}];
 
-  NSError* creditCardError =
-      [self addCreditCard:autofill::test::GetCreditCard()];  // visa.
-  GREYAssertNil(creditCardError, creditCardError.localizedDescription);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [self addCreditCard:autofill::test::GetCreditCard()]);  // visa.
 
   // Query basic-card payment method with "supportedNetworks": ["visa"] in the
   // payment method specific data.
-  [ChromeEarlGrey tapWebViewElementWithID:@"checkBasicVisa"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey tapWebStateElementWithID:@"checkBasicVisa"]);
 
   // User has a visa card. While the query is cached, result is always fresh.
   [self waitForWebViewContainingTexts:{"true"}];
 
   // Query basic-card payment method without "supportedNetworks" parameter.
-  [ChromeEarlGrey tapWebViewElementWithID:@"checkBasicCard"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey tapWebStateElementWithID:@"checkBasicCard"]);
 
   // Query quota exceeded.
   [self

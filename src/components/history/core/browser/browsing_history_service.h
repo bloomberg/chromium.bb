@@ -172,7 +172,7 @@ class BrowsingHistoryService : public HistoryServiceObserver,
 
   // Callback from the history system when a history query has completed.
   void QueryComplete(scoped_refptr<QueryHistoryState> state,
-                     QueryResults* results);
+                     QueryResults results);
 
   // Combines the query results from the local history database and the history
   // server, and sends the combined results to the

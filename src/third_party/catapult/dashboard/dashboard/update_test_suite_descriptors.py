@@ -2,6 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+
 import logging
 import time
 
@@ -111,12 +115,20 @@ def _UpdateDescriptor(test_suite, namespace, start_cursor=None,
       keys_only=True, produce_cursors=True, start_cursor=start_cursor,
       use_cache=False, use_memcache=False)
   tags_futures = []
+  parse_error = None
 
   try:
     for key in query_iter:
       test_path = utils.TestPath(key)
       key_count += 1
-      desc = descriptor.Descriptor.FromTestPathSync(test_path)
+
+      try:
+        desc = descriptor.Descriptor.FromTestPathSync(test_path)
+      except ValueError:
+        parse_error = test_path
+        logging.error('DescriptorValueError %s', test_path)
+        break
+
       bots.add(desc.bot)
       if desc.measurement:
         measurements.add(desc.measurement)
@@ -149,8 +161,10 @@ def _UpdateDescriptor(test_suite, namespace, start_cursor=None,
       'measurements': list(sorted(measurements)),
       'bots': list(sorted(bots)),
       'cases': list(sorted(cases)),
-      'caseTags': {tag: sorted(cases) for tag, cases in case_tags.items()}
+      'caseTags': {tag: sorted(cases) for tag, cases in list(case_tags.items())}
   }
+  if parse_error:
+    desc = {'parseError': parse_error}
 
   key = namespaced_stored_object.NamespaceKey(
       CacheKey(test_suite), namespace)

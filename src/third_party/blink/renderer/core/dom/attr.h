@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -84,7 +85,10 @@ class CORE_EXPORT Attr final : public Node {
   AtomicString standalone_value_or_attached_local_name_;
 };
 
-DEFINE_NODE_TYPE_CASTS(Attr, IsAttributeNode());
+template <>
+struct DowncastTraits<Attr> {
+  static bool AllowFrom(const Node& node) { return node.IsAttributeNode(); }
+};
 
 }  // namespace blink
 

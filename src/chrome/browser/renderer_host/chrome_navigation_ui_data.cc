@@ -71,8 +71,7 @@ ChromeNavigationUIData::CreateForMainFrameNavigation(
   return navigation_ui_data;
 }
 
-std::unique_ptr<content::NavigationUIData> ChromeNavigationUIData::Clone()
-    const {
+std::unique_ptr<content::NavigationUIData> ChromeNavigationUIData::Clone() {
   auto copy = std::make_unique<ChromeNavigationUIData>();
 
   copy->disposition_ = disposition_;

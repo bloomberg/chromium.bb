@@ -1,5 +1,14 @@
+# Build Team
 cjmcdonald@chromium.org
 lamontjones@chromium.org
 nednguyen@google.com
 saklein@chromium.org
 vapier@chromium.org
+# CI team; Remove once Parallel CQ is complete
+andrewlamb@chromium.org
+dburger@chromium.org
+dhanyaganesh@chromium.org
+evanhernandez@chromium.org
+jclinton@chromium.org
+mikenichols@chromium.org
+seanabraham@chromium.org

@@ -351,7 +351,8 @@ class LayerTreeHostTestReadyToActivateNonEmpty
 
 // No single thread test because the commit goes directly to the active tree in
 // single thread mode, so notify ready to activate is skipped.
-MULTI_THREAD_TEST_F(LayerTreeHostTestReadyToActivateNonEmpty);
+// Flaky: https://crbug.com/947673
+// MULTI_THREAD_TEST_F(LayerTreeHostTestReadyToActivateNonEmpty);
 
 // Test if the LTHI receives ReadyToDraw notifications from the TileManager when
 // no raster tasks get scheduled.
@@ -1580,7 +1581,8 @@ class LayerTreeHostTestPrepareTilesWithoutDraw : public LayerTreeHostTest {
 
 // This behavior is specific to Android WebView, which only uses
 // multi-threaded compositor.
-MULTI_THREAD_TEST_F(LayerTreeHostTestPrepareTilesWithoutDraw);
+// Flaky: https://crbug.com/947673
+// MULTI_THREAD_TEST_F(LayerTreeHostTestPrepareTilesWithoutDraw);
 
 // Verify CanDraw() is false until first commit.
 class LayerTreeHostTestCantDrawBeforeCommit : public LayerTreeHostTest {
@@ -5661,20 +5663,22 @@ class TestSwapPromise : public SwapPromise {
     base::AutoLock lock(result_->lock);
     EXPECT_FALSE(result_->did_activate_called);
     EXPECT_FALSE(result_->did_swap_called);
-    EXPECT_FALSE(result_->did_not_swap_called);
+    EXPECT_TRUE(!result_->did_not_swap_called ||
+                action_ == SwapPromise::DidNotSwapAction::KEEP_ACTIVE);
     result_->did_activate_called = true;
   }
 
   void WillSwap(viz::CompositorFrameMetadata* metadata) override {
     base::AutoLock lock(result_->lock);
     EXPECT_FALSE(result_->did_swap_called);
-    EXPECT_FALSE(result_->did_not_swap_called);
+    EXPECT_TRUE(!result_->did_not_swap_called ||
+                action_ == SwapPromise::DidNotSwapAction::KEEP_ACTIVE);
     result_->did_swap_called = true;
   }
 
   void DidSwap() override {}
 
-  void DidNotSwap(DidNotSwapReason reason) override {
+  DidNotSwapAction DidNotSwap(DidNotSwapReason reason) override {
     base::AutoLock lock(result_->lock);
     EXPECT_FALSE(result_->did_swap_called);
     EXPECT_FALSE(result_->did_not_swap_called);
@@ -5682,13 +5686,17 @@ class TestSwapPromise : public SwapPromise {
                  reason != DidNotSwapReason::SWAP_FAILS);
     result_->did_not_swap_called = true;
     result_->reason = reason;
+    return action_;
   }
+
+  void set_action(DidNotSwapAction action) { action_ = action; }
 
   int64_t TraceId() const override { return 0; }
 
  private:
   // Not owned.
   TestSwapPromiseResult* result_;
+  DidNotSwapAction action_ = DidNotSwapAction::BREAK_PROMISE;
 };
 
 class PinnedLayerTreeSwapPromise : public LayerTreeHostTest {
@@ -6041,7 +6049,7 @@ class LayerTreeHostTestKeepSwapPromiseMFBA : public LayerTreeHostTest {
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestKeepSwapPromiseMFBA);
 
-class LayerTreeHostTestBreakSwapPromiseForVisibility
+class LayerTreeHostTestDeferSwapPromiseForVisibility
     : public LayerTreeHostTest {
  protected:
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
@@ -6050,6 +6058,7 @@ class LayerTreeHostTestBreakSwapPromiseForVisibility
     layer_tree_host()->SetVisible(false);
     auto swap_promise =
         std::make_unique<TestSwapPromise>(&swap_promise_result_);
+    swap_promise->set_action(SwapPromise::DidNotSwapAction::KEEP_ACTIVE);
     layer_tree_host()->GetSwapPromiseManager()->QueueSwapPromise(
         std::move(swap_promise));
   }
@@ -6060,7 +6069,7 @@ class LayerTreeHostTestBreakSwapPromiseForVisibility
       sent_queue_request_ = true;
       MainThreadTaskRunner()->PostTask(
           FROM_HERE,
-          base::BindOnce(&LayerTreeHostTestBreakSwapPromiseForVisibility::
+          base::BindOnce(&LayerTreeHostTestDeferSwapPromiseForVisibility::
                              SetVisibleFalseAndQueueSwapPromise,
                          base::Unretained(this)));
     }
@@ -6068,25 +6077,42 @@ class LayerTreeHostTestBreakSwapPromiseForVisibility
 
   void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* host_impl,
                                      CommitEarlyOutReason reason) override {
-    EndTest();
+    MainThreadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&LayerTreeHostTestDeferSwapPromiseForVisibility::
+                           CheckSwapPromiseNotCalled,
+                       base::Unretained(this)));
   }
 
-  void AfterTest() override {
+  void CheckSwapPromiseNotCalled() {
     {
       base::AutoLock lock(swap_promise_result_.lock);
       EXPECT_FALSE(swap_promise_result_.did_activate_called);
       EXPECT_FALSE(swap_promise_result_.did_swap_called);
       EXPECT_TRUE(swap_promise_result_.did_not_swap_called);
       EXPECT_EQ(SwapPromise::COMMIT_FAILS, swap_promise_result_.reason);
+      EXPECT_FALSE(swap_promise_result_.dtor_called);
+    }
+    layer_tree_host()->SetVisible(true);
+  }
+
+  void DidCommitAndDrawFrame() override {
+    {
+      base::AutoLock lock(swap_promise_result_.lock);
+      EXPECT_TRUE(swap_promise_result_.did_activate_called);
+      EXPECT_TRUE(swap_promise_result_.did_swap_called);
       EXPECT_TRUE(swap_promise_result_.dtor_called);
     }
+    EndTest();
   }
+
+  void AfterTest() override {}
 
   TestSwapPromiseResult swap_promise_result_;
   bool sent_queue_request_ = false;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestBreakSwapPromiseForVisibility);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestDeferSwapPromiseForVisibility);
 
 class SimpleSwapPromiseMonitor : public SwapPromiseMonitor {
  public:
@@ -7095,7 +7121,7 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
     viz::RenderPass* root_pass = frame_data->render_passes.back().get();
     for (auto* draw_quad : root_pass->quad_list) {
       // Checkerboards mean an incomplete frame.
-      if (draw_quad->material != viz::DrawQuad::TILED_CONTENT)
+      if (draw_quad->material != viz::DrawQuad::Material::kTiledContent)
         return 0.f;
       const viz::TileDrawQuad* quad =
           viz::TileDrawQuad::MaterialCast(draw_quad);
@@ -8315,7 +8341,8 @@ class LayerTreeHostTestQueueImageDecode : public LayerTreeHostTest {
 
     image_ = DrawImage(CreateDiscardablePaintImage(gfx::Size(400, 400)),
                        SkIRect::MakeWH(400, 400), kNone_SkFilterQuality,
-                       SkMatrix::I(), PaintImage::kDefaultFrameIndex);
+                       SkMatrix::I(), PaintImage::kDefaultFrameIndex,
+                       gfx::ColorSpace());
     auto callback = base::BindRepeating(
         &LayerTreeHostTestQueueImageDecode::ImageDecodeFinished,
         base::Unretained(this));
@@ -8656,7 +8683,7 @@ class LayerTreeHostTestImageAnimationSynchronousSchedulingSoftwareDraw
   void InitializeSettings(LayerTreeSettings* settings) override {
     LayerTreeHostTestImageAnimationSynchronousScheduling::InitializeSettings(
         settings);
-    use_software_renderer_ = true;
+    renderer_type_ = RENDERER_SOFTWARE;
   }
 
   void AfterTest() override {
@@ -8732,11 +8759,11 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestImageDecodingHints);
 
 class LayerTreeHostTestCheckerboardUkm : public LayerTreeHostTest {
  public:
-  LayerTreeHostTestCheckerboardUkm() : url_(GURL("https://example.com")) {}
-
+  LayerTreeHostTestCheckerboardUkm() : url_(GURL("https://example.com")),
+                                       ukm_source_id_(123) {}
   void BeginTest() override {
     PostSetNeedsCommitToMainThread();
-    layer_tree_host()->SetURLForUkm(url_);
+    layer_tree_host()->SetSourceURL(ukm_source_id_, url_);
   }
 
   void SetupTree() override {
@@ -8772,6 +8799,9 @@ class LayerTreeHostTestCheckerboardUkm : public LayerTreeHostTest {
 
     auto* recorder = static_cast<ukm::TestUkmRecorder*>(
         impl->ukm_manager()->recorder_for_testing());
+    // Tie the source id to the URL. In production, this is already done in
+    // Document, and the source id is passed down to cc.
+    recorder->UpdateSourceURL(ukm_source_id_, url_);
 
     const auto& entries = recorder->GetEntriesByName(kUserInteraction);
     EXPECT_EQ(1u, entries.size());
@@ -8789,6 +8819,7 @@ class LayerTreeHostTestCheckerboardUkm : public LayerTreeHostTest {
 
  private:
   const GURL url_;
+  const ukm::SourceId ukm_source_id_;
   FakeContentLayerClient content_layer_client_;
 };
 

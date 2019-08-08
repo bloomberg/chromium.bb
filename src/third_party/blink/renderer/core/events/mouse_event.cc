@@ -81,9 +81,9 @@ const LayoutObject* FindTargetLayoutObject(Node*& target_node) {
     layout_object = layout_object->Parent();
   // Update the target node to point to the SVG root.
   target_node = layout_object->GetNode();
+  auto* svg_element = DynamicTo<SVGElement>(target_node);
   DCHECK(!target_node ||
-         (target_node->IsSVGElement() &&
-          ToSVGElement(*target_node).IsOutermostSVGSVGElement()));
+         (svg_element && svg_element->IsOutermostSVGSVGElement()));
   return layout_object;
 }
 
@@ -484,8 +484,8 @@ void MouseEvent::ComputeRelativePosition() {
 
   // Adjust offsetLocation to be relative to the target's padding box.
   if (const LayoutObject* layout_object = FindTargetLayoutObject(target_node)) {
-    FloatPoint local_pos = layout_object->AbsoluteToLocal(
-        FloatPoint(AbsoluteLocation()), kUseTransforms);
+    FloatPoint local_pos = layout_object->AbsoluteToLocalFloatPoint(
+        FloatPoint(AbsoluteLocation()));
 
     // Adding this here to address crbug.com/570666. Basically we'd like to
     // find the local coordinates relative to the padding box not the border
@@ -518,8 +518,8 @@ void MouseEvent::ComputeRelativePosition() {
     // FIXME: Does this differ from PaintLayer::ConvertToLayerCoords?
     for (PaintLayer* layer = n->GetLayoutObject()->EnclosingLayer(); layer;
          layer = layer->ContainingLayer()) {
-      layer_location_ -= DoubleSize(layer->Location().X().ToDouble(),
-                                    layer->Location().Y().ToDouble());
+      layer_location_ -= DoubleSize(layer->Location().left.ToDouble(),
+                                    layer->Location().top.ToDouble());
     }
     if (inverse_zoom_factor != 1.0f)
       layer_location_.Scale(inverse_zoom_factor, inverse_zoom_factor);

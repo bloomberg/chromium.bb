@@ -24,7 +24,7 @@ class ResourceThrottle : public content::ResourceThrottle {
 
   // content::ResourceThrottle implementation:
   void WillProcessResponse(bool* defer) override;
-  const char* GetNameForLogging() const override;
+  const char* GetNameForLogging() override;
 
  private:
   const net::URLRequest* request_;

@@ -191,9 +191,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
     // channel_id_enabled controls whether the server config will indicate
     // support for ChannelIDs.
     bool channel_id_enabled;
-    // token_binding_params contains the list of Token Binding params (e.g.
-    // P256, TB10) that the server config will include.
-    QuicTagVector token_binding_params;
     // id contains the server config id for the resulting config. If empty, a
     // random id is generated.
     std::string id;
@@ -341,6 +338,8 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
       const QuicSocketAddress& client_address,
       ParsedQuicVersion version,
       const ParsedQuicVersionVector& supported_versions,
+      // TODO(wub): Deprecate use_stateless_rejects and
+      // server_designated_connection_id.
       bool use_stateless_rejects,
       QuicConnectionId server_designated_connection_id,
       const QuicClock* clock,

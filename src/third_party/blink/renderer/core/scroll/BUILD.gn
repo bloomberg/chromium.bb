@@ -53,7 +53,7 @@ blink_core_sources("scroll") {
     sources += [ "web_scrollbar_theme.mm" ]
   }
 
-  if (use_default_render_theme) {
+  if (use_aura) {
     sources += [
       "scrollbar_theme_aura.cc",
       "scrollbar_theme_aura.h",

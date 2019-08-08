@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.contextualsearch;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
+import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.content_public.browser.WebContents;
@@ -18,6 +19,7 @@ import org.chromium.content_public.browser.WebContents;
  * or changed.
  */
 public abstract class ContextualSearchContext {
+    private static final String TAG = "TTS Context";
     static final int INVALID_OFFSET = -1;
 
     // Non-visible word-break marker.
@@ -74,6 +76,42 @@ public abstract class ContextualSearchContext {
     private long mPreviousEventId;
     private int mPreviousUserInteractions;
 
+    /** A {@link ContextualSearchContext} that ignores changes to the selection. */
+    private static class ChangeIgnoringContext extends ContextualSearchContext {
+        @Override
+        void onSelectionChanged() {}
+    }
+
+    /**
+     * Returns a {@link ContextualSearchContext} given an insertion point in text.
+     * @param surroundingText The text to use for our context.
+     * @param insertionPointOffset The offset of the insertion point in characters from the start of
+     *        the surrounding text.
+     * @return A {@link ContextualSearchContext} or {@code null} if the insertion point happens to
+     *         miss a word (e.g. it has non-word characters on both sides).
+     */
+    static public @Nullable ContextualSearchContext getContextForInsertionPoint(
+            String surroundingText, int insertionPointOffset) {
+        ContextualSearchContext context = new ChangeIgnoringContext();
+        context.setSurroundingText(
+                "UTF-8", surroundingText, insertionPointOffset, insertionPointOffset);
+        int start = context.findWordStartOffset(insertionPointOffset);
+        int end = context.findWordEndOffset(insertionPointOffset);
+        context.setSurroundingText("UTF-8", surroundingText, start, end, true);
+        if (start < end && start >= 0 && end <= surroundingText.length()) {
+            context.setInitialSelectedWord(surroundingText.substring(start, end));
+        }
+        if (context.hasValidSelection() && !TextUtils.isEmpty(context.getInitialSelectedWord())) {
+            Log.i(TAG, "identified default query: " + context.getWordTapped());
+            // TODO(donnd): figure out which of these parameters should be passed in.
+            context.setResolveProperties("US", true, 0, 0);
+            return context;
+        }
+
+        // TODO(donnd): Consider hunting around for a valid word instead of just giving up.
+        return null;
+    }
+
     /**
      * Constructs a context that tracks the selection and some amount of page content.
      */
@@ -106,7 +144,7 @@ public abstract class ContextualSearchContext {
      * This method should be called to clean up storage when an instance of this class is
      * no longer in use.  The nativeDestroy will call the destructor on the native instance.
      */
-    void destroy() {
+    public void destroy() {
         assert mNativePointer != 0;
         nativeDestroy(mNativePointer);
         mNativePointer = 0;
@@ -124,6 +162,19 @@ public abstract class ContextualSearchContext {
      */
     void setSurroundingText(
             String encoding, String surroundingText, int startOffset, int endOffset) {
+        setSurroundingText(encoding, surroundingText, startOffset, endOffset, false);
+    }
+
+    /**
+     * Sets the surrounding text and selection offsets.
+     * @param encoding The original encoding of the base page.
+     * @param surroundingText The text from the base page surrounding the selection.
+     * @param startOffset The offset of start the selection.
+     * @param endOffset The offset of the end of the selection.
+     * @param setNative Whether to set the native context too by passing it through JNI.
+     */
+    void setSurroundingText(String encoding, String surroundingText, int startOffset, int endOffset,
+            boolean setNative) {
         assert startOffset <= endOffset;
         mEncoding = encoding;
         mSurroundingText = surroundingText;
@@ -134,7 +185,14 @@ public abstract class ContextualSearchContext {
             analyzeTap(startOffset);
         }
         // Notify of an initial selection if it's not empty.
-        if (endOffset > startOffset) onSelectionChanged();
+        if (endOffset > startOffset) {
+            updateInitialSelectedWord();
+            onSelectionChanged();
+        }
+        if (setNative) {
+            nativeSetContent(getNativePointer(), mSurroundingText, mSelectionStartOffset,
+                    mSelectionEndOffset);
+        }
     }
 
     /**
@@ -192,6 +250,13 @@ public abstract class ContextualSearchContext {
     }
 
     /**
+     * @param word The initial word selected.
+     */
+    private void setInitialSelectedWord(String word) {
+        mInitialSelectedWord = word;
+    }
+
+    /**
      * @return The text content that follows the selection (one side of the surrounding text).
      */
     String getTextContentFollowingSelection() {
@@ -211,6 +276,16 @@ public abstract class ContextualSearchContext {
     }
 
     /**
+     * Specifies that this resolve must return a non-expanding result.
+     */
+    void setRestrictedResolve() {
+        mSurroundingText = mInitialSelectedWord;
+        mSelectionStartOffset = 0;
+        mSelectionEndOffset = mSurroundingText.length();
+        nativeRestrictResolve(mNativePointer);
+    }
+
+    /**
      * Notifies of an adjustment that has been applied to the start and end of the selection.
      * @param startAdjust A signed value indicating the direction of the adjustment to the start of
      *        the selection (typically a negative value when the selection expands).
@@ -221,6 +296,14 @@ public abstract class ContextualSearchContext {
         // Fully track the selection as it changes.
         mSelectionStartOffset += startAdjust;
         mSelectionEndOffset += endAdjust;
+        updateInitialSelectedWord();
+        nativeAdjustSelection(getNativePointer(), startAdjust, endAdjust);
+        // Notify of changes.
+        onSelectionChanged();
+    }
+
+    /** Updates the initial selected word if it has not yet been set. */
+    private void updateInitialSelectedWord() {
         if (TextUtils.isEmpty(mInitialSelectedWord) && !TextUtils.isEmpty(mSurroundingText)) {
             // TODO(donnd): investigate the root cause of crbug.com/725027 that requires this
             // additional validation to prevent this substring call from crashing!
@@ -228,13 +311,9 @@ public abstract class ContextualSearchContext {
                     || mSelectionEndOffset > mSurroundingText.length()) {
                 return;
             }
-
             mInitialSelectedWord =
                     mSurroundingText.substring(mSelectionStartOffset, mSelectionEndOffset);
         }
-        nativeAdjustSelection(getNativePointer(), startAdjust, endAdjust);
-        // Notify of changes.
-        onSelectionChanged();
     }
 
     /** @return the current selection, or an empty string if data is invalid or nothing selected. */
@@ -502,5 +581,10 @@ public abstract class ContextualSearchContext {
     protected native void nativeAdjustSelection(
             long nativeContextualSearchContext, int startAdjust, int endAdjust);
     @VisibleForTesting
+    protected native void nativeSetContent(long nativeContextualSearchContext, String content,
+            int selectionStart, int selectionEnd);
+    @VisibleForTesting
     protected native String nativeDetectLanguage(long nativeContextualSearchContext);
+    @VisibleForTesting
+    protected native void nativeRestrictResolve(long nativeContextualSearchContext);
 }

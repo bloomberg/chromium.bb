@@ -9,6 +9,7 @@
 #import "ios/web/public/web_state/web_state_user_data.h"
 
 #include "components/infobars/core/infobar_manager.h"
+#import "ios/chrome/browser/infobars/infobar_type.h"
 
 namespace web {
 class WebState;
@@ -26,18 +27,17 @@ class InfobarBadgeTabHelper
   static void CreateForWebState(web::WebState* web_state);
   // Sets the InfobarBadgeTabHelperDelegate to |delegate|.
   void SetDelegate(id<InfobarBadgeTabHelperDelegate> delegate);
-  // Updates Infobar badge for the case where an InfobarBanner was dismissed.
-  void UpdateBadgeForInfobarBannerDismissed();
-  // Updates Infobar badge for the case where an InfobarModal was presented.
-  void UpdateBadgeForInfobarModalPresented();
-  // Updates Infobar badge for the case where an InfobarModal was dismissed.
-  void UpdateBadgeForInfobarModalDismissed();
   // Updates Infobar badge for the case where an Infobar was accepted.
   void UpdateBadgeForInfobarAccepted();
 
   // Returns wheter an Infobar badge is being displayed for the TabHelper
   // Webstate.
-  bool IsInfobarBadgeDisplaying();
+  bool is_infobar_displaying();
+  // Returns whether the Infobar badge is accepted.
+  bool is_badge_accepted();
+  // Returns the type of the Infobar being displayed.
+  InfobarType infobar_type();
+
   ~InfobarBadgeTabHelper() override;
 
  private:
@@ -58,6 +58,10 @@ class InfobarBadgeTabHelper
   __weak id<InfobarBadgeTabHelperDelegate> delegate_ = nil;
   // Returns wheter an Infobar is being displayed.
   bool is_infobar_displaying_;
+  // The type of the Infobar being displayed.
+  InfobarType infobar_type_;
+  // Returns whether the Infobar badge is accepted.
+  bool is_badge_accepted_ = false;
 
   WEB_STATE_USER_DATA_KEY_DECL();
   DISALLOW_COPY_AND_ASSIGN(InfobarBadgeTabHelper);

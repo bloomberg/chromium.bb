@@ -12,10 +12,10 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "media/filters/vp8_parser.h"
 #include "media/gpu/accelerated_video_decoder.h"
 #include "media/gpu/vp8_picture.h"
 #include "media/gpu/vp8_reference_frame_vector.h"
+#include "media/parsers/vp8_parser.h"
 
 namespace media {
 
@@ -71,6 +71,7 @@ class MEDIA_GPU_EXPORT VP8Decoder : public AcceleratedVideoDecoder {
   void Reset() override;
   DecodeResult Decode() override WARN_UNUSED_RESULT;
   gfx::Size GetPicSize() const override;
+  gfx::Rect GetVisibleRect() const override;
   size_t GetRequiredNumOfPictures() const override;
   size_t GetNumReferenceFrames() const override;
 

@@ -11,7 +11,10 @@ import("//chrome/android/trichrome.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 
 declare_args() {
-  # Package name of the system_webview_apk target.
+  # Android package name to use when compiling the system_webview_apk and
+  # trichrome_webview_apk targets. This should be used if the Android build
+  # on which you are going to install WebView is configured to load a
+  # different package name than the default used in AOSP.
   system_webview_package_name = "com.android.webview"
 }
 
@@ -20,10 +23,9 @@ template("system_webview_apk_tmpl") {
     forward_variables_from(invoker, "*")
 
     deps += [
-      "//android_webview:license_assets",
       "//android_webview:locale_pak_assets",
       "//android_webview:pak_file_assets",
-      "//android_webview/apk:webview_license_activity_java",
+      "//android_webview/apk:apk_java",
       "//android_webview/apk:webview_license_provider_java",
       "//android_webview/glue",
       "//android_webview/support_library:support_lib_glue_java",
@@ -61,9 +63,6 @@ template("system_webview_apk_tmpl") {
       uncompress_shared_libraries = true
 
       app_as_shared_lib = true
-      if (trichrome_synchronized_proguard) {
-        emit_resource_ids = true
-      }
 
       # Include placeholder libraries to ensure we are treated as the desired
       # architecture.

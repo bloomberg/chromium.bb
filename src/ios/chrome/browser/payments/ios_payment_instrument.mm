@@ -98,4 +98,9 @@ bool IOSPaymentInstrument::IsValidForModifier(
   return method_name_ == method;
 }
 
+bool IOSPaymentInstrument::IsValidForPaymentMethodIdentifier(
+    const std::string& payment_method_identifier) const {
+  return method_name_ == payment_method_identifier;
+}
+
 }  // namespace payments

@@ -22,8 +22,8 @@ import org.chromium.chrome.browser.util.ViewUtils;
  * Provider for processed favicons in Tab list.
  */
 public class TabListFaviconProvider {
-    private static Drawable sGlobeDrawable;
-    private static Drawable sChromeDrawable;
+    private static Drawable sRoundedGlobeDrawable;
+    private static Drawable sRoundedChromeDrawable;
     private final int mFaviconSize;
     private final Profile mProfile;
     private final FaviconHelper mFaviconHelper;
@@ -37,7 +37,7 @@ public class TabListFaviconProvider {
         mFaviconSize = context.getResources().getDimensionPixelSize(R.dimen.default_favicon_size);
         mProfile = profile;
         mFaviconHelper = new FaviconHelper();
-        if (sGlobeDrawable == null) {
+        if (sRoundedGlobeDrawable == null) {
             Drawable globeDrawable =
                     AppCompatResources.getDrawable(context, R.drawable.ic_globe_24dp);
             Bitmap globeBitmap =
@@ -45,12 +45,12 @@ public class TabListFaviconProvider {
             Canvas canvas = new Canvas(globeBitmap);
             globeDrawable.setBounds(0, 0, mFaviconSize, mFaviconSize);
             globeDrawable.draw(canvas);
-            sGlobeDrawable = processBitmap(globeBitmap);
+            sRoundedGlobeDrawable = processBitmap(globeBitmap);
         }
-        if (sChromeDrawable == null) {
+        if (sRoundedChromeDrawable == null) {
             Bitmap chromeBitmap =
                     BitmapFactory.decodeResource(context.getResources(), R.drawable.chromelogo16);
-            sChromeDrawable = processBitmap(chromeBitmap);
+            sRoundedChromeDrawable = processBitmap(chromeBitmap);
         }
     }
 
@@ -64,7 +64,7 @@ public class TabListFaviconProvider {
      * @return The scaled rounded Globe Drawable as default favicon.
      */
     public Drawable getDefaultFaviconDrawable() {
-        return sGlobeDrawable;
+        return sRoundedGlobeDrawable;
     }
 
     /**
@@ -76,13 +76,15 @@ public class TabListFaviconProvider {
     public void getFaviconForUrlAsync(
             String url, boolean isIncognito, Callback<Drawable> faviconCallback) {
         if (NativePageFactory.isNativePageUrl(url, isIncognito)) {
-            faviconCallback.onResult(sChromeDrawable);
+            faviconCallback.onResult(sRoundedChromeDrawable);
         } else {
             mFaviconHelper.getLocalFaviconImageForURL(
                     mProfile, url, mFaviconSize, (image, iconUrl) -> {
-                        if (image == null) return;
-                        Drawable drawable = processBitmap(image);
-                        faviconCallback.onResult(drawable);
+                        if (image == null) {
+                            faviconCallback.onResult(sRoundedGlobeDrawable);
+                        } else {
+                            faviconCallback.onResult(processBitmap(image));
+                        }
                     });
         }
     }
@@ -90,14 +92,14 @@ public class TabListFaviconProvider {
     /**
      * Synchronously get the processed favicon Drawable.
      * @param url The URL whose favicon is requested.
-     * @param isIncognito Whether the tab is in cognito or not.
+     * @param isIncognito Whether the tab is incognito or not.
      * @param icon The favicon that was received.
      * @return The processed favicon.
      */
     public Drawable getFaviconForUrlSync(String url, boolean isIncognito, Bitmap icon) {
         if (icon == null) {
             boolean isNativeUrl = NativePageFactory.isNativePageUrl(url, isIncognito);
-            return isNativeUrl ? sChromeDrawable : sGlobeDrawable;
+            return isNativeUrl ? sRoundedChromeDrawable : sRoundedGlobeDrawable;
         } else {
             return processBitmap(icon);
         }

@@ -54,7 +54,7 @@ struct PaintLayerFragment {
 
   // The PaintLayer's size in the space defined by |root_fragment_data|.
   // See PaintLayer::size_ for the exact rectangle.
-  LayoutRect layer_bounds;
+  PhysicalRect layer_bounds;
 
   // The rectangle used to clip the background.
   //

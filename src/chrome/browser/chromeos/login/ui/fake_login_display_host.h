@@ -32,7 +32,7 @@ class FakeLoginDisplayHost : public LoginDisplayHost {
   void BeforeSessionStart() override;
   void Finalize(base::OnceClosure) override;
   void SetStatusAreaVisible(bool visible) override;
-  void StartWizard(chromeos::OobeScreen first_screen) override;
+  void StartWizard(chromeos::OobeScreenId first_screen) override;
   WizardController* GetWizardController() override;
   AppLaunchController* GetAppLaunchController() override;
   void StartUserAdding(base::OnceClosure completion_callback) override;
@@ -53,12 +53,11 @@ class FakeLoginDisplayHost : public LoginDisplayHost {
   void LoadWallpaper(const AccountId& account_id) override;
   void LoadSigninWallpaper() override;
   bool IsUserWhitelisted(const AccountId& account_id) override;
-  void ShowGaiaDialog(
-      bool can_close,
-      const base::Optional<AccountId>& prefilled_account) override;
+  void ShowGaiaDialog(bool can_close,
+                      const AccountId& prefilled_account) override;
   void HideOobeDialog() override;
   void UpdateOobeDialogSize(int width, int height) override;
-  void UpdateOobeDialogState(ash::mojom::OobeDialogState state) override;
+  void UpdateOobeDialogState(ash::OobeDialogState state) override;
   const user_manager::UserList GetUsers() override;
   void CancelPasswordChangedFlow() override;
   void MigrateUserData(const std::string& old_password) override;

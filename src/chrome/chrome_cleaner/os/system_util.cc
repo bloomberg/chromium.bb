@@ -23,63 +23,6 @@ const unsigned int kInitialNumberOfServices = 100;
 
 }  // namespace
 
-bool GetMediumIntegrityToken(base::win::ScopedHandle* medium_integrity_token) {
-  DCHECK(medium_integrity_token);
-
-  // Open the primary access token of the process.
-  HANDLE token = nullptr;
-  if (!::OpenProcessToken(::GetCurrentProcess(),
-                          TOKEN_DUPLICATE | TOKEN_QUERY | TOKEN_ADJUST_DEFAULT |
-                              TOKEN_ASSIGN_PRIMARY,
-                          &token)) {
-    PLOG(WARNING) << "Can't open process token.";
-    return false;
-  }
-  base::win::ScopedHandle process_token(token);
-
-  // Duplicate the primary token of the current process.
-  HANDLE new_token = nullptr;
-  if (!::DuplicateTokenEx(token, 0, nullptr, SecurityImpersonation,
-                          TokenPrimary, &new_token)) {
-    PLOG(WARNING) << "Can't duplicate process token.";
-    return false;
-  }
-  base::win::ScopedHandle new_process_token(new_token);
-  new_token = nullptr;
-
-  // Create a medium integrity SID.
-  PSID medium_integrity_sid = nullptr;
-  if (!::ConvertStringSidToSid(L"S-1-16-8192", &medium_integrity_sid)) {
-    PLOG(WARNING) << "Can't AllocateAndInitializeSid.";
-    return false;
-  }
-  // Don't return until medium_integrity_sid has been freed.
-  BOOL success = FALSE;
-  {
-    TOKEN_MANDATORY_LABEL token_mandatory_label = {0};
-    token_mandatory_label.Label.Attributes = SE_GROUP_INTEGRITY;
-    token_mandatory_label.Label.Sid = medium_integrity_sid;
-    success = ::SetTokenInformation(
-        new_process_token.Get(), TokenIntegrityLevel, &token_mandatory_label,
-        (sizeof(token_mandatory_label) + ::GetLengthSid(medium_integrity_sid)));
-    ::FreeSid(medium_integrity_sid);
-  }
-  if (!success) {
-    PLOG(WARNING) << "Can't SetTokenInformation.";
-    return false;
-  }
-  medium_integrity_token->Set(new_process_token.Take());
-  return true;
-}
-
-void GUIDToString(const GUID& guid, base::string16* output) {
-  DCHECK(output);
-  static const size_t kGUIDStringSize = 39;
-  int result = ::StringFromGUID2(guid, base::WriteInto(output, kGUIDStringSize),
-                                 kGUIDStringSize);
-  DCHECK(result == kGUIDStringSize);
-}
-
 void SetBackgroundMode() {
   // Get the process working set size and flags, so that we can reset them
   // after setting the process to background mode. For some reason Windows sets

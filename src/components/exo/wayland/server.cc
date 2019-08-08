@@ -7,7 +7,6 @@
 #include <alpha-compositing-unstable-v1-server-protocol.h>
 #include <aura-shell-server-protocol.h>
 #include <cursor-shapes-unstable-v1-server-protocol.h>
-#include <gaming-input-unstable-v1-server-protocol.h>
 #include <gaming-input-unstable-v2-server-protocol.h>
 #include <grp.h>
 #include <input-timestamps-unstable-v1-server-protocol.h>
@@ -49,6 +48,7 @@
 #include "components/exo/wayland/zcr_secure_output.h"
 #include "components/exo/wayland/zcr_stylus.h"
 #include "components/exo/wayland/zcr_vsync_feedback.h"
+#include "components/exo/wayland/zwp_linux_explicit_synchronization.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 
@@ -63,7 +63,6 @@
 #include "components/exo/wayland/zcr_remote_shell.h"
 #include "components/exo/wayland/zcr_stylus_tools.h"
 #include "components/exo/wayland/zwp_input_timestamps_manager.h"
-#include "components/exo/wayland/zwp_linux_explicit_synchronization.h"
 #include "components/exo/wayland/zwp_pointer_gestures.h"
 #include "components/exo/wayland/zwp_relative_pointer_manager.h"
 #include "components/exo/wayland/zwp_text_input_manager.h"
@@ -134,6 +133,9 @@ Server::Server(Display* display)
                    bind_stylus_v2);
   wl_global_create(wl_display_.get(), &wl_seat_interface, kWlSeatVersion,
                    display_->seat(), bind_seat);
+  wl_global_create(wl_display_.get(),
+                   &zwp_linux_explicit_synchronization_v1_interface, 1,
+                   display_, bind_linux_explicit_synchronization);
 #if defined(OS_CHROMEOS)
   wl_global_create(wl_display_.get(), &wl_shell_interface, 1, display_,
                    bind_shell);
@@ -166,9 +168,6 @@ Server::Server(Display* display)
                    display_, bind_text_input_manager);
   wl_global_create(wl_display_.get(), &zxdg_shell_v6_interface, 1, display_,
                    bind_xdg_shell_v6);
-  wl_global_create(wl_display_.get(),
-                   &zwp_linux_explicit_synchronization_v1_interface, 1,
-                   display_, bind_linux_explicit_synchronization);
 #endif
 
 #if defined(USE_FULLSCREEN_SHELL)

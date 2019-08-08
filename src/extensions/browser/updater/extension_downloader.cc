@@ -274,7 +274,19 @@ bool ExtensionDownloader::AddPendingExtension(
   // Use a zero version to ensure that a pending extension will always
   // be updated, and thus installed (assuming all extensions have
   // non-zero versions).
-  base::Version version("0.0.0.0");
+  return AddPendingExtensionWithVersion(
+      id, update_url, install_location, is_corrupt_reinstall, request_id,
+      fetch_priority, base::Version("0.0.0.0"));
+}
+
+bool ExtensionDownloader::AddPendingExtensionWithVersion(
+    const std::string& id,
+    const GURL& update_url,
+    Manifest::Location install_location,
+    bool is_corrupt_reinstall,
+    int request_id,
+    ManifestFetchData::FetchPriority fetch_priority,
+    base::Version version) {
   DCHECK(version.IsValid());
   ExtraParams extra;
   if (is_corrupt_reinstall)

@@ -11,10 +11,10 @@
 
 #include "core/fxge/apple/apple_int.h"
 #include "core/fxge/cfx_cliprgn.h"
-#include "core/fxge/cfx_facecache.h"
 #include "core/fxge/cfx_font.h"
 #include "core/fxge/cfx_gemodule.h"
 #include "core/fxge/cfx_glyphbitmap.h"
+#include "core/fxge/cfx_glyphcache.h"
 #include "core/fxge/cfx_renderdevice.h"
 #include "core/fxge/cfx_substfont.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
@@ -50,7 +50,7 @@ bool CGDrawGlyphRun(CGContextRef pContext,
     new_matrix.Concat(*pObject2Device);
 
   CQuartz2D& quartz2d =
-      static_cast<CApplePlatform*>(CFX_GEModule::Get()->GetPlatformData())
+      static_cast<CApplePlatform*>(CFX_GEModule::Get()->GetPlatform())
           ->m_quartz2d;
   if (!pFont->GetPlatformFont()) {
     if (pFont->GetPsName() == "DFHeiStd-W5")
@@ -89,14 +89,14 @@ bool CGDrawGlyphRun(CGContextRef pContext,
 
 void CFX_AggDeviceDriver::InitPlatform() {
   CQuartz2D& quartz2d =
-      static_cast<CApplePlatform*>(CFX_GEModule::Get()->GetPlatformData())
+      static_cast<CApplePlatform*>(CFX_GEModule::Get()->GetPlatform())
           ->m_quartz2d;
   m_pPlatformGraphics = quartz2d.createGraphics(m_pBitmap);
 }
 
 void CFX_AggDeviceDriver::DestroyPlatform() {
   CQuartz2D& quartz2d =
-      static_cast<CApplePlatform*>(CFX_GEModule::Get()->GetPlatformData())
+      static_cast<CApplePlatform*>(CFX_GEModule::Get()->GetPlatform())
           ->m_quartz2d;
   if (m_pPlatformGraphics) {
     quartz2d.destroyGraphics(m_pPlatformGraphics);
@@ -165,11 +165,11 @@ bool CFX_AggDeviceDriver::DrawDeviceText(int nChars,
 
 #endif  // _SKIA_SUPPORT_
 
-void CFX_FaceCache::InitPlatform() {}
+void CFX_GlyphCache::InitPlatform() {}
 
-void CFX_FaceCache::DestroyPlatform() {}
+void CFX_GlyphCache::DestroyPlatform() {}
 
-std::unique_ptr<CFX_GlyphBitmap> CFX_FaceCache::RenderGlyph_Nativetext(
+std::unique_ptr<CFX_GlyphBitmap> CFX_GlyphCache::RenderGlyph_Nativetext(
     const CFX_Font* pFont,
     uint32_t glyph_index,
     const CFX_Matrix& matrix,
@@ -181,7 +181,7 @@ std::unique_ptr<CFX_GlyphBitmap> CFX_FaceCache::RenderGlyph_Nativetext(
 void CFX_Font::ReleasePlatformResource() {
   if (m_pPlatformFont) {
     CQuartz2D& quartz2d =
-        static_cast<CApplePlatform*>(CFX_GEModule::Get()->GetPlatformData())
+        static_cast<CApplePlatform*>(CFX_GEModule::Get()->GetPlatform())
             ->m_quartz2d;
     quartz2d.DestroyFont(m_pPlatformFont);
     m_pPlatformFont = nullptr;

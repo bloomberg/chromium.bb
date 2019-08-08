@@ -8,11 +8,14 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/files/file_path.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
@@ -27,6 +30,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -34,6 +38,7 @@
 #include "content/public/test/test_frame_navigation_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/did_commit_navigation_interceptor.h"
@@ -723,7 +728,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBeforeUnloadBrowserTest,
   DOMMessageQueue msg_queue;
   GURL new_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   TestNavigationManager navigation_manager(web_contents(), new_url);
-  EXPECT_TRUE(ExecuteScript(root, "location.href = '" + new_url.spec() + "';"));
+  // Use ExecuteScriptAsync because a ping may arrive before the script
+  // execution completion notification and confuse our expectations.
+  ExecuteScriptAsync(root, "location.href = '" + new_url.spec() + "';");
   dialog_manager()->Wait();
 
   // Answer the dialog and allow the navigation to proceed.  Note that at this
@@ -768,8 +775,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBeforeUnloadBrowserTest,
   DOMMessageQueue msg_queue;
   GURL new_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   TestNavigationManager navigation_manager(web_contents(), new_url);
-  EXPECT_TRUE(ExecuteScript(root->child_at(0),
-                            "location.href = '" + new_url.spec() + "';"));
+  // Use ExecuteScriptAsync because a ping may arrive before the script
+  // execution completion notification and confuse our expectations.
+  ExecuteScriptAsync(root->child_at(0),
+                     "location.href = '" + new_url.spec() + "';");
   navigation_manager.WaitForNavigationFinished();
   EXPECT_EQ(new_url,
             root->child_at(0)->current_frame_host()->GetLastCommittedURL());
@@ -2323,6 +2332,128 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   run_loop2.Run();
 
   // Pass if this didn't crash.
+}
+
+// Verify that adding an <object> tag which resource is blocked by the network
+// stack does not result in terminating the renderer process.
+// See https://crbug.com/955777.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       ObjectTagBlockedResource) {
+  EXPECT_TRUE(NavigateToURL(shell(), embedded_test_server()->GetURL(
+                                         "/page_with_object_fallback.html")));
+
+  GURL object_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  std::unique_ptr<URLLoaderInterceptor> url_interceptor =
+      URLLoaderInterceptor::SetupRequestFailForURL(object_url,
+                                                   net::ERR_BLOCKED_BY_CLIENT);
+
+  auto* rfh = static_cast<RenderFrameHostImpl*>(
+      shell()->web_contents()->GetMainFrame());
+  TestNavigationObserver observer(shell()->web_contents());
+  EXPECT_TRUE(ExecJs(shell()->web_contents(),
+                     JsReplace("setUrl($1, true);", object_url)));
+  observer.Wait();
+  EXPECT_EQ(rfh->GetLastCommittedOrigin().Serialize(),
+            EvalJs(shell()->web_contents(), "window.origin"));
+}
+
+// Regression test for crbug.com/953934. It shouldn't crash if we quickly remove
+// an object element in the middle of its failing navigation.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       NoCrashOnRemoveObjectElementWithInvalidData) {
+  base::FilePath test_data_dir;
+  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
+  base::FilePath file_repro_path =
+      test_data_dir.Append(GetTestDataFilePath())
+          .Append(FILE_PATH_LITERAL(
+              "remove_object_element_with_invalid_data.html"));
+  GURL url(file_repro_path.value());
+
+  RenderProcessHostWatcher crash_observer(
+      shell()->web_contents(),
+      RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+
+  // This navigates to a page with an object element that will fail to load.
+  // When document load event hits, it'll attempt to remove that object element.
+  // This might happen while the object element's failed commit is underway.
+  // To make sure we hit these conditions and that we don't exit the test too
+  // soon, let's wait until the document.readyState finalizes. We don't really
+  // care if that succeeds since, in the failing case, the renderer is crashing.
+  NavigateToURL(shell(), url);
+  ignore_result(
+      WaitForRenderFrameReady(shell()->web_contents()->GetMainFrame()));
+
+  EXPECT_TRUE(crash_observer.did_exit_normally());
+}
+
+// Test deduplication of SameSite cookie deprecation messages.
+// TODO(crbug.com/976475): This test is flaky.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       DISABLED_SameSiteCookieDeprecationMessages) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kCookieDeprecationMessages);
+
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  ConsoleObserverDelegate console_observer(web_contents, "*");
+  web_contents->SetDelegate(&console_observer);
+
+  // Test deprecation messages for SameSiteByDefault.
+  // Set a cookie without SameSite on b.com, then access it in a cross-site
+  // context.
+  GURL url =
+      embedded_test_server()->GetURL("b.com", "/set-cookie?nosamesite=1");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  ASSERT_EQ(0u, console_observer.messages().size());
+  url = embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b(),b())");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  // Only 1 message even though there are 2 cross-site iframes.
+  EXPECT_EQ(1u, console_observer.messages().size());
+
+  // Test deprecation messages for CookiesWithoutSameSiteMustBeSecure.
+  // Set a cookie with SameSite=None but without Secure.
+  url = embedded_test_server()->GetURL(
+      "c.com", "/set-cookie?samesitenoneinsecure=1;SameSite=None");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  // The 1 message from before, plus the (different) message for setting the
+  // SameSite=None insecure cookie.
+  EXPECT_EQ(2u, console_observer.messages().size());
+  // Another copy of the message appears because we have navigated.
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  EXPECT_EQ(3u, console_observer.messages().size());
+  EXPECT_EQ(console_observer.messages()[1], console_observer.messages()[2]);
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       SchedulerTrackedFeatures) {
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
+  RenderFrameHostImpl* main_frame = reinterpret_cast<RenderFrameHostImpl*>(
+      shell()->web_contents()->GetMainFrame());
+  // Simulate getting 0b1 as a feature vector from the renderer.
+  static_cast<mojom::FrameHost*>(main_frame)
+      ->UpdateActiveSchedulerTrackedFeatures(0b1u);
+  DCHECK_EQ(main_frame->scheduler_tracked_features(), 0b1u);
+  // Simulate the browser side reporting a feature usage.
+  main_frame->OnSchedulerTrackedFeatureUsed(
+      static_cast<blink::scheduler::WebSchedulerTrackedFeature>(1));
+  DCHECK_EQ(main_frame->scheduler_tracked_features(), 0b11u);
+  // Simulate a feature vector being updated from the renderer with some
+  // features being activated and some being deactivated.
+  static_cast<mojom::FrameHost*>(main_frame)
+      ->UpdateActiveSchedulerTrackedFeatures(0b100u);
+  DCHECK_EQ(main_frame->scheduler_tracked_features(), 0b110u);
+
+  // Navigate away and expect that no values persist the navigation.
+  // Note that we are still simulating the renderer call, otherwise features
+  // like "document loaded" will show up here.
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));
+  main_frame = reinterpret_cast<RenderFrameHostImpl*>(
+      shell()->web_contents()->GetMainFrame());
+  static_cast<mojom::FrameHost*>(main_frame)
+      ->UpdateActiveSchedulerTrackedFeatures(0b0u);
 }
 
 }  // namespace content

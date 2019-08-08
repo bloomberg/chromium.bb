@@ -30,6 +30,7 @@ class FakeArcBridgeHost : public mojom::ArcBridgeHost {
       mojom::BluetoothInstancePtr bluetooth_ptr) override;
   void OnBootPhaseMonitorInstanceReady(
       mojom::BootPhaseMonitorInstancePtr boot_phase_monitor_ptr) override;
+  void OnCameraInstanceReady(mojom::CameraInstancePtr camera_ptr) override;
   void OnCastReceiverInstanceReady(
       mojom::CastReceiverInstancePtr cast_receiver_ptr) override;
   void OnCertStoreInstanceReady(
@@ -67,6 +68,8 @@ class FakeArcBridgeHost : public mojom::ArcBridgeHost {
   void OnPolicyInstanceReady(mojom::PolicyInstancePtr policy_ptr) override;
   void OnPowerInstanceReady(mojom::PowerInstancePtr power_ptr) override;
   void OnPrintInstanceReady(mojom::PrintInstancePtr print_ptr) override;
+  void OnPrintSpoolerInstanceReady(
+      mojom::PrintSpoolerInstancePtr print_spooler_ptr) override;
   void OnProcessInstanceReady(mojom::ProcessInstancePtr process_ptr) override;
   void OnPropertyInstanceReady(
       mojom::PropertyInstancePtr property_ptr) override;

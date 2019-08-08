@@ -236,7 +236,7 @@ void AppInfoSummaryPanel::AddSubviews() {
 void AppInfoSummaryPanel::OnPerformAction(views::Combobox* combobox) {
   if (combobox == launch_options_combobox_) {
     SetLaunchType(launch_options_combobox_model_->GetLaunchTypeAtIndex(
-        launch_options_combobox_->selected_index()));
+        launch_options_combobox_->GetSelectedIndex()));
   } else {
     NOTREACHED();
   }
@@ -253,9 +253,14 @@ void AppInfoSummaryPanel::LinkClicked(views::Link* source, int event_flags) {
 }
 
 void AppInfoSummaryPanel::StartCalculatingAppSize() {
-  extensions::path_util::CalculateAndFormatExtensionDirectorySize(
-      app_->path(), IDS_APPLICATION_INFO_SIZE_SMALL_LABEL,
-      base::Bind(&AppInfoSummaryPanel::OnAppSizeCalculated, AsWeakPtr()));
+  // In tests the app may be a dummy app without a path. In this case, avoid
+  // calculating the directory size as it would calculate the size of the
+  // current directory, which is both potentially slow and meaningless.
+  if (!app_->path().empty()) {
+    extensions::path_util::CalculateAndFormatExtensionDirectorySize(
+        app_->path(), IDS_APPLICATION_INFO_SIZE_SMALL_LABEL,
+        base::BindOnce(&AppInfoSummaryPanel::OnAppSizeCalculated, AsWeakPtr()));
+  }
 }
 
 void AppInfoSummaryPanel::OnAppSizeCalculated(const base::string16& size) {

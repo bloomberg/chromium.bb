@@ -43,7 +43,6 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/page_info_commands.h"
-#import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
@@ -59,13 +58,13 @@
 #include "ios/chrome/test/testing_application_context.h"
 #import "ios/net/protocol_handler_util.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
+#import "ios/web/public/deprecated/crw_js_injection_receiver.h"
+#import "ios/web/public/deprecated/crw_native_content_provider.h"
 #include "ios/web/public/referrer.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
-#import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
-#import "ios/web/public/web_state/ui/crw_native_content_provider.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/web_state_impl.h"
 #import "net/base/mac/url_conversions.h"
@@ -93,8 +92,8 @@ using web::WebStateImpl;
                                             TabModelObserver>
 - (void)pageLoadStarted:(NSNotification*)notification;
 - (void)pageLoadComplete:(NSNotification*)notification;
-- (void)tabSelected:(Tab*)tab notifyToolbar:(BOOL)notifyToolbar;
-- (void)tabDeselected:(NSNotification*)notification;
+- (void)webStateSelected:(web::WebState*)webState
+           notifyToolbar:(BOOL)notifyToolbar;
 - (void)tabCountChanged:(NSNotification*)notification;
 @end
 
@@ -226,9 +225,11 @@ class BrowserViewControllerTest : public BlockCleanupTest {
 
     web::WebState::CreateParams params(chrome_browser_state_.get());
     std::unique_ptr<web::WebState> webState = web::WebState::Create(params);
-    webStateImpl_.reset(static_cast<web::WebStateImpl*>(webState.release()));
-    AttachTabHelpers(webStateImpl_.get(), NO);
-    [currentTab setWebState:webStateImpl_.get()];
+    webStateImpl_ = static_cast<web::WebStateImpl*>(webState.get());
+    AttachTabHelpers(webStateImpl_, NO);
+    [currentTab setWebState:webStateImpl_];
+    tabModel_.webStateList->InsertWebState(0, std::move(webState), 0,
+                                           WebStateOpener());
 
     // Load TemplateURLService.
     TemplateURLService* template_url_service =
@@ -281,7 +282,7 @@ class BrowserViewControllerTest : public BlockCleanupTest {
   web::TestWebThreadBundle thread_bundle_;
   IOSChromeScopedTestingLocalState local_state_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  std::unique_ptr<WebStateImpl> webStateImpl_;
+  WebStateImpl* webStateImpl_;
   Tab* tab_;
   TabModel* tabModel_;
   BrowserViewControllerHelper* bvcHelper_;
@@ -292,19 +293,19 @@ class BrowserViewControllerTest : public BlockCleanupTest {
   UIWindow* window_;
 };
 
-TEST_F(BrowserViewControllerTest, TestTabSelected) {
-  [bvc_ tabSelected:tab_ notifyToolbar:YES];
+TEST_F(BrowserViewControllerTest, TestWebStateSelected) {
+  [bvc_ webStateSelected:tab_.webState notifyToolbar:YES];
   EXPECT_EQ([tab_.webState->GetView() superview], [bvc_ contentArea]);
   EXPECT_TRUE(webStateImpl_->IsVisible());
 }
 
-TEST_F(BrowserViewControllerTest, TestTabSelectedIsNewTab) {
+TEST_F(BrowserViewControllerTest, TestWebStateSelectedIsNewWebState) {
   id block = [^{
     return GURL(kChromeUINewTabURL);
   } copy];
   id tabMock = (id)tab_;
   [tabMock onSelector:@selector(url) callBlockExpectation:block];
-  [bvc_ tabSelected:tab_ notifyToolbar:YES];
+  [bvc_ webStateSelected:tab_.webState notifyToolbar:YES];
   EXPECT_EQ([tab_.webState->GetView() superview], [bvc_ contentArea]);
   EXPECT_TRUE(webStateImpl_->IsVisible());
 }

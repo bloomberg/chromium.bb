@@ -91,7 +91,7 @@ class GpuVideoDecodeAccelerator
   ~GpuVideoDecodeAccelerator() override;
 
   // Handlers for IPC messages.
-  void OnDecode(const BitstreamBuffer& bitstream_buffer);
+  void OnDecode(BitstreamBuffer bitstream_buffer);
   void OnAssignPictureBuffers(
       const std::vector<int32_t>& buffer_ids,
       const std::vector<PictureBuffer::TextureIds>& texture_ids);

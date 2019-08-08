@@ -41,7 +41,6 @@ namespace sw
 			bool isDrawTriangle            : 1;
 			bool interpolateZ              : 1;
 			bool interpolateW              : 1;
-			bool perspective               : 1;
 			bool frontFacingCCW            : 1;
 			VkCullModeFlags cullMode       : BITS(VK_CULL_MODE_FLAG_BITS_MAX_ENUM);
 			bool twoSidedStencil           : 1;
@@ -64,19 +63,17 @@ namespace sw
 
 		typedef bool (*RoutinePointer)(Primitive *primitive, const Triangle *triangle, const Polygon *polygon, const DrawData *draw);
 
-		SetupProcessor(Context *context);
+		SetupProcessor();
 
 		~SetupProcessor();
 
 	protected:
-		State update() const;
+		State update(const sw::Context* context) const;
 		Routine *routine(const State &state);
 
 		void setRoutineCacheSize(int cacheSize);
 
 	private:
-		Context *const context;
-
 		RoutineCache<State> *routineCache;
 	};
 }

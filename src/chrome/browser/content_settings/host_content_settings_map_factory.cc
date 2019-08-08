@@ -73,19 +73,18 @@ scoped_refptr<RefcountedKeyedService>
 
   Profile* profile = static_cast<Profile*>(context);
 
-  // If off the record, retrieve the host content settings map of the parent
+  // In incognito mode, retrieve the host content settings map of the parent
   // profile in order to ensure the preferences have been migrated.
   // TODO(crbug.com/277296): Remove check that profile does not equal the
   // original profile once TestingProfile::ForceIncognito is gone.
-  if (profile->GetProfileType() == Profile::INCOGNITO_PROFILE &&
+  if (profile->IsIncognitoProfile() &&
       profile != profile->GetOriginalProfile()) {
     GetForProfile(profile->GetOriginalProfile());
   }
 
   scoped_refptr<HostContentSettingsMap> settings_map(new HostContentSettingsMap(
       profile->GetPrefs(),
-      profile->GetProfileType() == Profile::INCOGNITO_PROFILE,
-      profile->GetProfileType() == Profile::GUEST_PROFILE,
+      profile->IsIncognitoProfile() || profile->IsGuestSession(),
       /*store_last_modified=*/true,
       base::FeatureList::IsEnabled(features::kPermissionDelegation)));
 
@@ -108,7 +107,7 @@ scoped_refptr<RefcountedKeyedService>
 #endif // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 #if defined(OS_ANDROID)
-  if (profile->GetProfileType() != Profile::INCOGNITO_PROFILE) {
+  if (profile->IsRegularProfile()) {
     auto channels_provider =
         std::make_unique<NotificationChannelsProviderAndroid>();
 

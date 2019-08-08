@@ -92,6 +92,8 @@ class CrostiniExportImport : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest, TestExportFail);
   FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest, TestImportSuccess);
   FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest, TestImportFail);
+  FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest,
+                           TestImportFailArchitecture);
 
   // ui::SelectFileDialog::Listener implementation.
   void FileSelected(const base::FilePath& path,

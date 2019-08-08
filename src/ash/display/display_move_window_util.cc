@@ -57,7 +57,7 @@ bool CanHandleMoveActiveWindowBetweenDisplays() {
 
   // The movement target window must be in window cycle list.
   return base::ContainsValue(
-      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(),
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kActiveDesk),
       GetTargetWindow());
 }
 

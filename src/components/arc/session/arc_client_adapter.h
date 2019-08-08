@@ -8,18 +8,12 @@
 #include <memory>
 #include <string>
 
-#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
-#include "chromeos/dbus/login_manager/arc.pb.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 
 namespace arc {
 
-// TODO(yusukes): Move the enum and proto in system_api/ from login_manager's
-// namespace to arc and remove all the type aliases.
-using ArcContainerStopReason = login_manager::ArcContainerStopReason;
 using StartArcMiniContainerRequest =
     login_manager::StartArcMiniContainerRequest;
 using UpgradeArcContainerRequest = login_manager::UpgradeArcContainerRequest;
@@ -30,8 +24,7 @@ class ArcClientAdapter {
   class Observer {
    public:
     virtual ~Observer() = default;
-    virtual void ArcInstanceStopped(ArcContainerStopReason stop_reason,
-                                    const std::string& instance_id) = 0;
+    virtual void ArcInstanceStopped() = 0;
   };
 
   // Creates a default instance of ArcClientAdapter.
@@ -39,24 +32,13 @@ class ArcClientAdapter {
   virtual ~ArcClientAdapter();
 
   // StartMiniArc starts ARC with only a handful of ARC processes for Chrome OS
-  // login screen.  In case of success, callback will be called with
-  // |instance_id| set to a string.  The ID is passed to ArcInstanceStopped()
-  // to identify which instance is stopped. In case of error, |instance_id| will
-  // be nullopt.
-  using StartMiniArcCallback =
-      base::OnceCallback<void(base::Optional<std::string> instance_id)>;
+  // login screen.
   virtual void StartMiniArc(const StartArcMiniContainerRequest& request,
-                            StartMiniArcCallback callback) = 0;
+                            chromeos::VoidDBusMethodCallback callback) = 0;
 
-  // UpgradeArc upgrades a mini ARC instance to a full ARC instance. In case of
-  // success, success_callback is called. In case of error, |error_callback|
-  // will be called with a |low_free_disk_space| signaling whether the failure
-  // was due to low free disk space.
-  using UpgradeErrorCallback =
-      base::OnceCallback<void(bool low_free_disk_space)>;
+  // UpgradeArc upgrades a mini ARC instance to a full ARC instance.
   virtual void UpgradeArc(const UpgradeArcContainerRequest& request,
-                          base::OnceClosure success_callback,
-                          UpgradeErrorCallback error_callback) = 0;
+                          chromeos::VoidDBusMethodCallback callback) = 0;
 
   // Asynchronously stops the ARC instance.
   virtual void StopArcInstance() = 0;

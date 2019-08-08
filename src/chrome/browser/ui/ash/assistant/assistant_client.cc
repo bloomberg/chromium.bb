@@ -75,8 +75,7 @@ void AssistantClient::MaybeInit(Profile* profile) {
   assistant_connection_->Init(std::move(client_ptr),
                               device_actions_.AddBinding());
 
-  assistant_image_downloader_ =
-      std::make_unique<AssistantImageDownloader>(connector);
+  assistant_image_downloader_ = std::make_unique<AssistantImageDownloader>();
   assistant_setup_ = std::make_unique<AssistantSetup>(connector);
 }
 

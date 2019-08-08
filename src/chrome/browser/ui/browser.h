@@ -37,6 +37,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sessions/core/session_id.h"
 #include "components/translate/content/browser/content_translate_driver.h"
+#include "components/zoom/zoom_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/page_navigator.h"
@@ -50,13 +51,12 @@
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
-// #include "chrome/browser/ui/web_app_browser_controller.h"
 
-#if !defined(OS_ANDROID)
-#include "components/zoom/zoom_observer.h"
-#endif  // !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+#error This file should only be included on desktop.
+#endif
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/signin_view_controller.h"
 #endif
 
@@ -107,15 +107,16 @@ class WebContentsModalDialogHost;
 namespace viz {
 class SurfaceId;
 }
-class WebAppBrowserController;
+
+namespace web_app {
+class AppBrowserController;
+}
 
 class Browser : public TabStripModelObserver,
                 public content::WebContentsDelegate,
                 public ChromeWebModalDialogManagerDelegate,
                 public BookmarkTabHelperObserver,
-#if !defined(OS_ANDROID)
                 public zoom::ZoomObserver,
-#endif  // !defined(OS_ANDROID)
                 public content::PageNavigator,
                 public content::NotificationObserver,
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -321,14 +322,14 @@ class Browser : public TabStripModelObserver,
   BrowserInstantController* instant_controller() {
     return instant_controller_.get();
   }
-  const WebAppBrowserController* web_app_controller() const {
-    return web_app_controller_.get();
+  const web_app::AppBrowserController* app_controller() const {
+    return app_controller_.get();
   }
-  WebAppBrowserController* web_app_controller() {
-    return web_app_controller_.get();
+  web_app::AppBrowserController* app_controller() {
+    return app_controller_.get();
   }
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS)
   SigninViewController* signin_view_controller() {
     return &signin_view_controller_;
   }
@@ -541,6 +542,10 @@ class Browser : public TabStripModelObserver,
   std::unique_ptr<content::BluetoothChooser> RunBluetoothChooser(
       content::RenderFrameHost* frame,
       const content::BluetoothChooser::EventHandler& event_handler) override;
+  std::unique_ptr<content::BluetoothScanningPrompt> ShowBluetoothScanningPrompt(
+      content::RenderFrameHost* frame,
+      const content::BluetoothScanningPrompt::EventHandler& event_handler)
+      override;
   void PassiveInsecureContentFound(const GURL& resource_url) override;
   bool ShouldAllowRunningInsecureContent(content::WebContents* web_contents,
                                          bool allowed_per_prefs,
@@ -595,6 +600,8 @@ class Browser : public TabStripModelObserver,
   FRIEND_TEST_ALL_PREFIXES(AppModeTest, EnableAppModeTest);
   FRIEND_TEST_ALL_PREFIXES(BrowserCommandControllerTest,
                            IsReservedCommandOrKeyIsApp);
+  FRIEND_TEST_ALL_PREFIXES(BrowserCloseTest, LastIncognito);
+  FRIEND_TEST_ALL_PREFIXES(BrowserCloseTest, LastRegular);
   FRIEND_TEST_ALL_PREFIXES(BrowserCommandControllerTest, AppFullScreen);
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, OpenAppWindowLikeNtp);
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, AppIdSwitch);
@@ -782,11 +789,9 @@ class Browser : public TabStripModelObserver,
   void URLStarredChanged(content::WebContents* web_contents,
                          bool starred) override;
 
-#if !defined(OS_ANDROID)
   // Overridden from ZoomObserver:
   void OnZoomChanged(
       const zoom::ZoomController::ZoomChangedEventData& data) override;
-#endif  // !defined(OS_ANDROID)
 
   // Overridden from SelectFileDialog::Listener:
   void FileSelected(const base::FilePath& path,
@@ -1079,7 +1084,7 @@ class Browser : public TabStripModelObserver,
   // Helper which handles bookmark app specific browser configuration.
   // This must be initialized before |command_controller_| to ensure the correct
   // set of commands are enabled.
-  std::unique_ptr<WebAppBrowserController> web_app_controller_;
+  std::unique_ptr<web_app::AppBrowserController> app_controller_;
 
   BookmarkBar::State bookmark_bar_state_;
 
@@ -1093,7 +1098,7 @@ class Browser : public TabStripModelObserver,
   // True if the browser window has been shown at least once.
   bool window_has_shown_;
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS)
   SigninViewController signin_view_controller_;
 #endif
 

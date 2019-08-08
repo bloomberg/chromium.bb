@@ -14,7 +14,6 @@
 #include <sstream>
 #include <utility>
 
-#include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/feature_list.h"
@@ -22,8 +21,11 @@
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -31,6 +33,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/task_traits.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -41,12 +44,11 @@
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
-#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
+#include "chrome/browser/chromeos/policy/status_collector/enterprise_activity_storage.h"
+#include "chrome/browser/chromeos/policy/status_collector/status_collector_state.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
@@ -77,7 +79,6 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "components/prefs/scoped_user_pref_update.h"
 #include "components/session_manager/session_manager_types.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
@@ -116,10 +117,6 @@ const char kDeviceDir[] = "device";
 const char kHwmonDirectoryPattern[] = "hwmon*";
 const char kCPUTempFilePattern[] = "temp*_input";
 
-// Activity periods are keyed with day and user in format:
-// '<day_timestamp>:<BASE64 encoded user email>'
-constexpr char kActivityKeySeparator = ':';
-  
 // The location where storage device statistics are read from.
 const char kStorageInfoPath[] = "/var/log/storage_info.txt";
 
@@ -180,69 +177,86 @@ std::string ReadCPUStatistics() {
   return std::string();
 }
 
-// Read system temperature sensors from
+// Read system temperature sensor data into |out_contents| from
 //
-// /sys/class/hwmon/hwmon*/(device/)?temp*_input
+// |sensor_dir|/temp*_input
 //
 // which contains millidegree Celsius temperature and
 //
-// /sys/class/hwmon/hwmon*/(device/)?temp*_label or
-// /sys/class/hwmon/hwmon*/name
+// |sensor_dir|/temp*_label or
+// |sensor_dir|/name
 //
 // which contains an appropriate label name for the given sensor.
+// Returns |true| iff there was at least one sensor value in given |sensor_dir|.
+bool ReadTemperatureSensorInfo(const base::FilePath& sensor_dir,
+                               std::vector<em::CPUTempInfo>& out_contents) {
+  bool has_data = false;
+
+  base::FileEnumerator enumerator(
+      sensor_dir, false, base::FileEnumerator::FILES, kCPUTempFilePattern);
+  for (base::FilePath temperature_path = enumerator.Next();
+       !temperature_path.empty(); temperature_path = enumerator.Next()) {
+    // Get appropriate temp*_label file.
+    std::string label_path = temperature_path.MaybeAsASCII();
+    if (label_path.empty()) {
+      LOG(WARNING) << "Unable to parse a path to temp*_input file as ASCII";
+      continue;
+    }
+    base::ReplaceSubstringsAfterOffset(&label_path, 0, "input", "label");
+    base::FilePath name_path = sensor_dir.Append("name");
+
+    // Get the label describing this temperature. Use temp*_label
+    // if present, fall back on name file or blank.
+    std::string label;
+    if (base::PathExists(base::FilePath(label_path))) {
+      base::ReadFileToString(base::FilePath(label_path), &label);
+    } else if (base::PathExists(base::FilePath(name_path))) {
+      base::ReadFileToString(name_path, &label);
+    } else {
+      label = std::string();
+    }
+
+    // Read temperature in millidegree Celsius.
+    std::string temperature_string;
+    int32_t temperature = 0;
+    if (base::ReadFileToString(temperature_path, &temperature_string) &&
+        sscanf(temperature_string.c_str(), "%d", &temperature) == 1) {
+      has_data = false;
+      // CPU temp in millidegree Celsius to Celsius
+      temperature /= 1000;
+
+      em::CPUTempInfo info;
+      info.set_cpu_label(label);
+      info.set_cpu_temp(temperature);
+      out_contents.push_back(info);
+    } else {
+      LOG(WARNING) << "Unable to read CPU temp from "
+                   << temperature_path.MaybeAsASCII();
+    }
+  }
+  return has_data;
+}
+
+// Read system temperature sensors from
+//
+// /sys/class/hwmon/hwmon*/(device/)?
 std::vector<em::CPUTempInfo> ReadCPUTempInfo() {
   std::vector<em::CPUTempInfo> contents;
   // Get directories /sys/class/hwmon/hwmon*
   base::FileEnumerator hwmon_enumerator(base::FilePath(kHwmonDir), false,
                                         base::FileEnumerator::DIRECTORIES,
                                         kHwmonDirectoryPattern);
-
   for (base::FilePath hwmon_path = hwmon_enumerator.Next(); !hwmon_path.empty();
        hwmon_path = hwmon_enumerator.Next()) {
     // Get temp*_input files in hwmon*/ and hwmon*/device/
-    if (base::PathExists(hwmon_path.Append(kDeviceDir))) {
-      hwmon_path = hwmon_path.Append(kDeviceDir);
-    }
-    base::FileEnumerator enumerator(
-        hwmon_path, false, base::FileEnumerator::FILES, kCPUTempFilePattern);
-    for (base::FilePath temperature_path = enumerator.Next();
-         !temperature_path.empty(); temperature_path = enumerator.Next()) {
-      // Get appropriate temp*_label file.
-      std::string label_path = temperature_path.MaybeAsASCII();
-      if (label_path.empty()) {
-        LOG(WARNING) << "Unable to parse a path to temp*_input file as ASCII";
-        continue;
+    base::FilePath device_path = hwmon_path.Append(kDeviceDir);
+    if (base::PathExists(device_path)) {
+      // We might have hwmon*/device/, but sensor values are still in hwmon*/
+      if (!ReadTemperatureSensorInfo(device_path, contents)) {
+        ReadTemperatureSensorInfo(hwmon_path, contents);
       }
-      base::ReplaceSubstringsAfterOffset(&label_path, 0, "input", "label");
-      base::FilePath name_path = hwmon_path.Append("name");
-
-      // Get the label describing this temperature. Use temp*_label
-      // if present, fall back on name file or blank.
-      std::string label;
-      if (base::PathExists(base::FilePath(label_path))) {
-        base::ReadFileToString(base::FilePath(label_path), &label);
-      } else if (base::PathExists(base::FilePath(name_path))) {
-        base::ReadFileToString(name_path, &label);
-      } else {
-        label = std::string();
-      }
-
-      // Read temperature in millidegree Celsius.
-      std::string temperature_string;
-      int32_t temperature = 0;
-      if (base::ReadFileToString(temperature_path, &temperature_string) &&
-          sscanf(temperature_string.c_str(), "%d", &temperature) == 1) {
-        // CPU temp in millidegree Celsius to Celsius
-        temperature /= 1000;
-
-        em::CPUTempInfo info;
-        info.set_cpu_label(label);
-        info.set_cpu_temp(temperature);
-        contents.push_back(info);
-      } else {
-        LOG(WARNING) << "Unable to read CPU temp from "
-                     << temperature_path.MaybeAsASCII();
-      }
+    } else {
+      ReadTemperatureSensorInfo(hwmon_path, contents);
     }
   }
   return contents;
@@ -403,41 +417,16 @@ std::vector<em::CPUTempInfo> InvokeCpuTempFetcher(
 
 namespace policy {
 
-// Helper class for state tracking of async status queries. Creates device and
-// session status blobs in the constructor and sends them to the the status
-// response callback in the destructor.
-//
-// Some methods like |SampleVolumeInfo| queue async queries to collect data. The
-// response callback of these queries, e.g. |OnVolumeInfoReceived|, holds a
-// reference to the instance of this class, so that the destructor will not be
-// invoked and the status response callback will not be fired until the original
-// owner of the instance releases its reference and all async queries finish.
-//
-// Therefore, if you create an instance of this class, make sure to release your
-// reference after quering all async queries (if any), e.g. by using a local
-// |scoped_refptr<GetStatusState>| and letting it go out of scope.
-class GetStatusState : public base::RefCountedThreadSafe<GetStatusState> {
+class DeviceStatusCollectorState : public StatusCollectorState {
  public:
-  explicit GetStatusState(
+  explicit DeviceStatusCollectorState(
       const scoped_refptr<base::SequencedTaskRunner> task_runner,
-      const policy::StatusCollectorCallback& response)
-      : task_runner_(task_runner), response_(response) {}
-
-  inline em::DeviceStatusReportRequest* device_status() {
-    return response_params_.device_status.get();
-  }
-
-  inline em::SessionStatusReportRequest* session_status() {
-    return response_params_.session_status.get();
-  }
-
-  inline void ResetDeviceStatus() { response_params_.device_status.reset(); }
-
-  inline void ResetSessionStatus() { response_params_.session_status.reset(); }
+      const StatusCollectorCallback& response)
+      : StatusCollectorState(task_runner, response) {}
 
   // Queues an async callback to query disk volume information.
-  void SampleVolumeInfo(const policy::DeviceStatusCollector::VolumeInfoFetcher&
-                            volume_info_fetcher) {
+  void SampleVolumeInfo(
+      const DeviceStatusCollector::VolumeInfoFetcher& volume_info_fetcher) {
     // Create list of mounted disk volumes to query status.
     std::vector<storage::MountPoints::MountPointInfo> external_mount_points;
     storage::ExternalMountPoints::GetSystemInstance()->AddMountPointInfosTo(
@@ -457,36 +446,35 @@ class GetStatusState : public base::RefCountedThreadSafe<GetStatusState> {
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::Bind(volume_info_fetcher, mount_points),
-        base::Bind(&GetStatusState::OnVolumeInfoReceived, this));
+        base::Bind(&DeviceStatusCollectorState::OnVolumeInfoReceived, this));
   }
 
   // Queues an async callback to query CPU temperature information.
   void SampleCPUTempInfo(
-      const policy::DeviceStatusCollector::CPUTempFetcher& cpu_temp_fetcher) {
+      const DeviceStatusCollector::CPUTempFetcher& cpu_temp_fetcher) {
     // Call out to the blocking pool to sample CPU temp.
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         cpu_temp_fetcher,
-        base::Bind(&GetStatusState::OnCPUTempInfoReceived, this));
+        base::Bind(&DeviceStatusCollectorState::OnCPUTempInfoReceived, this));
   }
 
-  bool FetchAndroidStatus(
-      const policy::DeviceStatusCollector::AndroidStatusFetcher&
-          android_status_fetcher) {
+  bool FetchAndroidStatus(const DeviceStatusCollector::AndroidStatusFetcher&
+                              android_status_fetcher) {
     return android_status_fetcher.Run(
-        base::Bind(&GetStatusState::OnAndroidInfoReceived, this));
+        base::Bind(&DeviceStatusCollectorState::OnAndroidInfoReceived, this));
   }
 
-  void FetchTpmStatus(const policy::DeviceStatusCollector::TpmStatusFetcher&
-                          tpm_status_fetcher) {
+  void FetchTpmStatus(
+      const DeviceStatusCollector::TpmStatusFetcher& tpm_status_fetcher) {
     tpm_status_fetcher.Run(
-        base::BindOnce(&GetStatusState::OnTpmStatusReceived, this));
+        base::BindOnce(&DeviceStatusCollectorState::OnTpmStatusReceived, this));
   }
 
   void FetchProbeData(const policy::DeviceStatusCollector::ProbeDataFetcher&
                           probe_data_fetcher) {
     probe_data_fetcher.Run(
-        base::BindOnce(&GetStatusState::OnProbeDataReceived, this));
+        base::BindOnce(&DeviceStatusCollectorState::OnProbeDataReceived, this));
   }
 
   void FetchEMMCLifeTime(
@@ -496,20 +484,12 @@ class GetStatusState : public base::RefCountedThreadSafe<GetStatusState> {
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce(emmc_lifetime_fetcher),
-        base::BindOnce(&GetStatusState::OnEMMCLifetimeReceived,
+        base::BindOnce(&DeviceStatusCollectorState::OnEMMCLifetimeReceived,
                        this));
   }
 
  private:
-  friend class RefCountedThreadSafe<GetStatusState>;
-
-  // Posts the response on the UI thread. As long as there is an outstanding
-  // async query, the query holds a reference to us, so the destructor is
-  // not called.
-  ~GetStatusState() {
-    task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(response_, base::Passed(&response_params_)));
-  }
+  ~DeviceStatusCollectorState() override = default;
 
   void OnVolumeInfoReceived(const std::vector<em::VolumeInfo>& volume_info) {
     response_params_.device_status->clear_volume_infos();
@@ -566,6 +546,8 @@ class GetStatusState : public base::RefCountedThreadSafe<GetStatusState> {
         tpm_status_struct.boot_lockbox_finalized);
   }
 
+  // Note that we use proto3 syntax for ProbeResult, so missing fields will
+  // have default values.
   void OnProbeDataReceived(
       const base::Optional<runtime_probe::ProbeResult>& probe_result,
       const base::circular_deque<std::unique_ptr<SampledData>>& samples) {
@@ -607,6 +589,18 @@ class GetStatusState : public base::RefCountedThreadSafe<GetStatusState> {
         // uV to mV:
         battery_info->set_design_min_voltage(
             battery.values().voltage_min_design() / 1000);
+        if (battery.values().manufacture_date_smart() > 0) {
+          // manufacture_date in (((year-1980) * 16 + month) * 32 + day) format.
+          int remainder = battery.values().manufacture_date_smart();
+          int day = remainder % 32;
+          remainder /= 32;
+          int month = remainder % 16;
+          remainder /= 16;
+          int year = remainder + 1980;
+          // set manufacture_date in yyyy-mm-dd format.
+          battery_info->set_manufacture_date(
+              base::StringPrintf("%04d-%02d-%02d", year, month, day));
+        }
 
         for (const std::unique_ptr<SampledData>& sample_data : samples) {
           auto it = sample_data->battery_samples.find(battery.name());
@@ -628,6 +622,18 @@ class GetStatusState : public base::RefCountedThreadSafe<GetStatusState> {
         disk_info->set_size(storage.values().size());
       }
     }
+    if (probe_result.value().vpd_cached_size() > 0) {
+      em::SystemStatus* const system_status =
+          response_params_.device_status->mutable_system_status();
+      // vpd_cached values are a repeated field in ProbeResult protobuf,
+      // while logically it should be optional. Using iteration + value checks
+      // just for future-proofing code.
+      for (const auto& vpd_values : probe_result.value().vpd_cached()) {
+        const std::string& sku_number = vpd_values.values().vpd_sku_number();
+        if (!sku_number.empty())
+          system_status->set_vpd_sku_number(sku_number);
+      }
+    }
   }
 
   void OnEMMCLifetimeReceived(const em::DiskLifetimeEstimation& est) {
@@ -638,96 +644,6 @@ class GetStatusState : public base::RefCountedThreadSafe<GetStatusState> {
             ->mutable_lifetime_estimation();
     state->CopyFrom(est);
   }
-  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  policy::StatusCollectorCallback response_;
-  StatusCollectorParams response_params_;
-};
-
-// Handles storing activity time periods needed for reporting. Provides
-// filtering of the user identifying data.
-class DeviceStatusCollector::ActivityStorage {
- public:
-  // Stored activity period.
-  struct ActivityPeriod {
-    // Email can be empty.
-    std::string user_email;
-
-    // Timestamp dating the beginning of the captured activity.
-    int64_t start_timestamp;
-
-    // User's activity in milliseconds.
-    int activity_milliseconds;
-  };
-
-  // Creates activity storage. Activity data will be stored in the given
-  // |pref_service| under |pref_name| preference. Activity data are aggregated
-  // by day. The start of the new day is counted from |activity_day_start| that
-  // represents the distance from midnight.
-  ActivityStorage(PrefService* pref_service,
-                  const std::string& pref_name,
-                  TimeDelta activity_day_start,
-                  bool is_enterprise_reporting);
-  ~ActivityStorage();
-
-  // Adds an activity period. Accepts empty |active_user_email| if it should not
-  // be stored.
-  void AddActivityPeriod(Time start,
-                         Time end,
-                         Time now,
-                         const std::string& active_user_email);
-
-  // Clears stored activity periods outside of storage range defined by
-  // |max_past_activity_interval| and |max_future_activity_interval| from
-  // |base_time|.
-  void PruneActivityPeriods(Time base_time,
-                            TimeDelta max_past_activity_interval,
-                            TimeDelta max_future_activity_interval);
-
-  // Trims the store activity periods to only retain data within the
-  // [|min_day_key|, |max_day_key|). The record for |min_day_key| will be
-  // adjusted by subtracting |min_day_trim_duration|.
-  void TrimActivityPeriods(int64_t min_day_key,
-                           int min_day_trim_duration,
-                           int64_t max_day_key);
-
-  // Updates stored activity period according to users' reporting preferences.
-  // Removes user's email and aggregates the activity data if user's information
-  // should no longer be reported.
-  void FilterActivityPeriodsByUsers(
-      const std::vector<std::string>& reporting_users);
-
-  // Returns the list of stored activity periods. Aggregated data are returned
-  // without email addresses if |omit_emails| is set.
-  std::vector<ActivityPeriod> GetFilteredActivityPeriods(bool omit_emails);
-
- private:
-  static std::string MakeActivityPeriodPrefKey(int64_t start,
-                                               const std::string& user_email);
-  static bool ParseActivityPeriodPrefKey(const std::string& key,
-                                         int64_t* start_timestamp,
-                                         std::string* user_email);
-  void ProcessActivityPeriods(const base::DictionaryValue& activity_times,
-                              const std::vector<std::string>& reporting_users,
-                              base::DictionaryValue* const filtered_times);
-  void StoreChildScreenTime(Time activity_day_start,
-                            TimeDelta activity,
-                            Time now);
-
-  // Determine the day key (milliseconds since epoch for corresponding
-  // |day_start_| in UTC) for a given |timestamp|.
-  int64_t TimestampToDayKey(Time timestamp);
-
-  PrefService* const pref_service_ = nullptr;
-  const std::string pref_name_;
-
-  // New day start time used for aggregating data represented by the distance
-  // from midnight.
-  const TimeDelta day_start_;
-
-  // Whether reporting is for enterprise or consumer.
-  bool is_enterprise_reporting_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(ActivityStorage);
 };
 
 TpmStatusInfo::TpmStatusInfo() = default;
@@ -756,237 +672,6 @@ TpmStatusInfo::TpmStatusInfo(
       boot_lockbox_finalized(boot_lockbox_finalized) {}
 TpmStatusInfo::~TpmStatusInfo() = default;
 
-DeviceStatusCollector::ActivityStorage::ActivityStorage(
-    PrefService* pref_service,
-    const std::string& pref_name,
-    TimeDelta activity_day_start,
-    bool is_enterprise_reporting)
-    : pref_service_(pref_service),
-      pref_name_(pref_name),
-      day_start_(activity_day_start),
-      is_enterprise_reporting_(is_enterprise_reporting) {
-  DCHECK(pref_service_);
-  const PrefService::PrefInitializationStatus pref_service_status =
-      pref_service_->GetInitializationStatus();
-  DCHECK(pref_service_status != PrefService::INITIALIZATION_STATUS_WAITING &&
-         pref_service_status != PrefService::INITIALIZATION_STATUS_ERROR);
-}
-
-DeviceStatusCollector::ActivityStorage::~ActivityStorage() = default;
-
-void DeviceStatusCollector::ActivityStorage::AddActivityPeriod(
-    Time start,
-    Time end,
-    Time now,
-    const std::string& active_user_email) {
-  DCHECK(start <= end);
-
-  // Maintain the list of active periods in a local_state pref.
-  DictionaryPrefUpdate update(pref_service_, pref_name_);
-  base::DictionaryValue* activity_times = update.Get();
-
-  // Assign the period to day buckets in local time.
-  Time day_start = start.LocalMidnight() + day_start_;
-  if (start < day_start)
-    day_start -= TimeDelta::FromDays(1);
-  while (day_start < end) {
-    day_start += TimeDelta::FromDays(1);
-    int64_t activity = (std::min(end, day_start) - start).InMilliseconds();
-    const std::string key =
-        MakeActivityPeriodPrefKey(TimestampToDayKey(start), active_user_email);
-    int previous_activity = 0;
-    activity_times->GetInteger(key, &previous_activity);
-    activity_times->SetInteger(key, previous_activity + activity);
-
-    // If the user is a child, the child screen time pref may need to be
-    // updated.
-    if (user_manager::UserManager::Get()->IsLoggedInAsChildUser() &&
-        !is_enterprise_reporting_) {
-      StoreChildScreenTime(day_start - TimeDelta::FromDays(1),
-                           TimeDelta::FromMilliseconds(activity), now);
-    }
-
-    start = day_start;
-  }
-}
-
-void DeviceStatusCollector::ActivityStorage::PruneActivityPeriods(
-    Time base_time,
-    TimeDelta max_past_activity_interval,
-    TimeDelta max_future_activity_interval) {
-  Time min_time = base_time - max_past_activity_interval;
-  Time max_time = base_time + max_future_activity_interval;
-  TrimActivityPeriods(TimestampToDayKey(min_time), 0,
-                      TimestampToDayKey(max_time));
-}
-
-void DeviceStatusCollector::ActivityStorage::TrimActivityPeriods(
-    int64_t min_day_key,
-    int min_day_trim_duration,
-    int64_t max_day_key) {
-  const base::DictionaryValue* activity_times =
-      pref_service_->GetDictionary(pref_name_);
-
-  std::unique_ptr<base::DictionaryValue> copy(activity_times->DeepCopy());
-  for (base::DictionaryValue::Iterator it(*activity_times); !it.IsAtEnd();
-       it.Advance()) {
-    int64_t timestamp;
-    std::string active_user_email;
-    if (ParseActivityPeriodPrefKey(it.key(), &timestamp, &active_user_email)) {
-      // Remove data that is too old, or too far in the future.
-      if (timestamp >= min_day_key && timestamp < max_day_key) {
-        if (timestamp == min_day_key) {
-          int new_activity_duration = 0;
-          if (it.value().GetAsInteger(&new_activity_duration)) {
-            new_activity_duration =
-                std::max(new_activity_duration - min_day_trim_duration, 0);
-          }
-          copy->SetInteger(it.key(), new_activity_duration);
-        }
-        continue;
-      }
-    }
-    // The entry is out of range or couldn't be parsed. Remove it.
-    copy->Remove(it.key(), NULL);
-  }
-  pref_service_->Set(pref_name_, *copy);
-}
-
-void DeviceStatusCollector::ActivityStorage::FilterActivityPeriodsByUsers(
-    const std::vector<std::string>& reporting_users) {
-  const base::DictionaryValue* stored_activity_periods =
-      pref_service_->GetDictionary(pref_name_);
-  base::DictionaryValue filtered_activity_periods;
-  ProcessActivityPeriods(*stored_activity_periods, reporting_users,
-                         &filtered_activity_periods);
-  pref_service_->Set(pref_name_, filtered_activity_periods);
-}
-
-std::vector<DeviceStatusCollector::ActivityStorage::ActivityPeriod>
-DeviceStatusCollector::ActivityStorage::GetFilteredActivityPeriods(
-    bool omit_emails) {
-  DictionaryPrefUpdate update(pref_service_, pref_name_);
-  base::DictionaryValue* stored_activity_periods = update.Get();
-
-  base::DictionaryValue filtered_activity_periods;
-  if (omit_emails) {
-    std::vector<std::string> empty_user_list;
-    ProcessActivityPeriods(*stored_activity_periods, empty_user_list,
-                           &filtered_activity_periods);
-    stored_activity_periods = &filtered_activity_periods;
-  }
-
-  std::vector<ActivityPeriod> activity_periods;
-  for (base::DictionaryValue::Iterator it(*stored_activity_periods);
-       !it.IsAtEnd(); it.Advance()) {
-    ActivityPeriod activity_period;
-    if (ParseActivityPeriodPrefKey(it.key(), &activity_period.start_timestamp,
-                                   &activity_period.user_email) &&
-        it.value().GetAsInteger(&activity_period.activity_milliseconds)) {
-      activity_periods.push_back(activity_period);
-    }
-  }
-  return activity_periods;
-}
-
-// static
-std::string DeviceStatusCollector::ActivityStorage::MakeActivityPeriodPrefKey(
-    int64_t start,
-    const std::string& user_email) {
-  const std::string day_key = base::NumberToString(start);
-  if (user_email.empty())
-    return day_key;
-
-  std::string encoded_email;
-  base::Base64Encode(user_email, &encoded_email);
-  return day_key + kActivityKeySeparator + encoded_email;
-}
-
-// static
-bool DeviceStatusCollector::ActivityStorage::ParseActivityPeriodPrefKey(
-    const std::string& key,
-    int64_t* start_timestamp,
-    std::string* user_email) {
-  auto separator_pos = key.find(kActivityKeySeparator);
-  if (separator_pos == std::string::npos) {
-    user_email->clear();
-    return base::StringToInt64(key, start_timestamp);
-  }
-  return base::StringToInt64(key.substr(0, separator_pos), start_timestamp) &&
-         base::Base64Decode(key.substr(separator_pos + 1), user_email);
-}
-
-void DeviceStatusCollector::ActivityStorage::ProcessActivityPeriods(
-    const base::DictionaryValue& activity_times,
-    const std::vector<std::string>& reporting_users,
-    base::DictionaryValue* const filtered_times) {
-  std::set<std::string> reporting_users_set(reporting_users.begin(),
-                                            reporting_users.end());
-  const std::string empty;
-  for (const auto& it : activity_times.DictItems()) {
-    DCHECK(it.second.is_int());
-    int64_t timestamp;
-    std::string user_email;
-    if (!ParseActivityPeriodPrefKey(it.first, &timestamp, &user_email))
-      continue;
-    if (!user_email.empty() && reporting_users_set.count(user_email) == 0) {
-      int value = 0;
-      std::string timestamp_str = MakeActivityPeriodPrefKey(timestamp, empty);
-      const base::Value* prev_value = filtered_times->FindKeyOfType(
-          timestamp_str, base::Value::Type::INTEGER);
-      if (prev_value)
-        value = prev_value->GetInt();
-      filtered_times->SetKey(timestamp_str,
-                             base::Value(value + it.second.GetInt()));
-    } else {
-      filtered_times->SetKey(it.first, it.second.Clone());
-    }
-  }
-}
-
-int64_t DeviceStatusCollector::ActivityStorage::TimestampToDayKey(
-    Time timestamp) {
-  Time::Exploded exploded;
-  Time day_start = timestamp.LocalMidnight() + day_start_;
-  if (timestamp < day_start)
-    day_start -= TimeDelta::FromDays(1);
-  day_start.LocalExplode(&exploded);
-  Time out_time;
-  bool conversion_success = Time::FromUTCExploded(exploded, &out_time);
-  DCHECK(conversion_success);
-  return out_time.ToJavaTime();
-}
-
-void DeviceStatusCollector::ActivityStorage::StoreChildScreenTime(
-    Time activity_day_start,
-    TimeDelta activity,
-    Time now) {
-  DCHECK(user_manager::UserManager::Get()->IsLoggedInAsChildUser() &&
-         !is_enterprise_reporting_);
-
-  // Today's start time.
-  Time today_start = now.LocalMidnight() + day_start_;
-  if (today_start > now)
-    today_start -= TimeDelta::FromDays(1);
-
-  // The activity windows always start and end on the reset time of two
-  // consecutive days, so it is not possible to have a window starting after
-  // the current day's reset time.
-  DCHECK(activity_day_start <= today_start);
-
-  TimeDelta previous_activity = TimeDelta::FromMilliseconds(
-      pref_service_->GetInteger(prefs::kChildScreenTimeMilliseconds));
-
-  // If this activity window belongs to the current day, the screen time pref
-  // should be updated.
-  if (activity_day_start == today_start) {
-    pref_service_->SetInteger(prefs::kChildScreenTimeMilliseconds,
-                              (previous_activity + activity).InMilliseconds());
-    pref_service_->SetTime(prefs::kLastChildScreenTimeSaved, now);
-  }
-  pref_service_->CommitPendingWrite();
-}
-
 SampledData::SampledData() = default;
 SampledData::~SampledData() = default;
 
@@ -999,30 +684,26 @@ DeviceStatusCollector::DeviceStatusCollector(
     const AndroidStatusFetcher& android_status_fetcher,
     const TpmStatusFetcher& tpm_status_fetcher,
     const EMMCLifetimeFetcher& emmc_lifetime_fetcher,
-    TimeDelta activity_day_start,
     bool is_enterprise_reporting)
-    : max_stored_past_activity_interval_(kMaxStoredPastActivityInterval),
-      max_stored_future_activity_interval_(kMaxStoredFutureActivityInterval),
+    : StatusCollector(provider,
+                      chromeos::CrosSettings::Get(),
+                      chromeos::PowerManagerClient::Get(),
+                      session_manager::SessionManager::Get()),
       pref_service_(pref_service),
-      last_idle_check_(Time()),
-      last_active_check_(base::Time()),
-      last_state_active_(true),
       volume_info_fetcher_(volume_info_fetcher),
       cpu_statistics_fetcher_(cpu_statistics_fetcher),
       cpu_temp_fetcher_(cpu_temp_fetcher),
       android_status_fetcher_(android_status_fetcher),
       tpm_status_fetcher_(tpm_status_fetcher),
       emmc_lifetime_fetcher_(emmc_lifetime_fetcher),
-      statistics_provider_(provider),
-      cros_settings_(chromeos::CrosSettings::Get()),
-      power_manager_(chromeos::PowerManagerClient::Get()),
-      session_manager_(session_manager::SessionManager::Get()),
       runtime_probe_(
           chromeos::DBusThreadManager::Get()->GetRuntimeProbeClient()),
       is_enterprise_reporting_(is_enterprise_reporting),
-      activity_day_start_(activity_day_start),
-      task_runner_(nullptr),
       weak_factory_(this) {
+  // protected fields of `StatusCollector`.
+  max_stored_past_activity_interval_ = kMaxStoredPastActivityInterval;
+  max_stored_future_activity_interval_ = kMaxStoredFutureActivityInterval;
+
   // Get the task runner of the current thread, so we can queue status responses
   // on this thread.
   CHECK(base::SequencedTaskRunnerHandle::IsSet());
@@ -1128,11 +809,8 @@ DeviceStatusCollector::DeviceStatusCollector(
 
   DCHECK(pref_service_->GetInitializationStatus() !=
          PrefService::INITIALIZATION_STATUS_WAITING);
-  activity_storage_ = std::make_unique<ActivityStorage>(
-      pref_service_,
-      (is_enterprise_reporting_ ? prefs::kDeviceActivityTimes
-                                : prefs::kUserActivityTimes),
-      activity_day_start, is_enterprise_reporting_);
+  activity_storage_ = std::make_unique<EnterpriseActivityStorage>(
+      pref_service_, prefs::kDeviceActivityTimes);
 }
 
 DeviceStatusCollector::~DeviceStatusCollector() {
@@ -1147,15 +825,6 @@ DeviceStatusCollector::~DeviceStatusCollector() {
 // static
 void DeviceStatusCollector::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kDeviceActivityTimes);
-}
-
-// static
-void DeviceStatusCollector::RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterBooleanPref(prefs::kReportArcStatusEnabled, false);
-  registry->RegisterDictionaryPref(prefs::kUserActivityTimes);
-  registry->RegisterTimePref(prefs::kLastChildScreenTimeReset, Time());
-  registry->RegisterTimePref(prefs::kLastChildScreenTimeSaved, Time());
-  registry->RegisterIntegerPref(prefs::kChildScreenTimeMilliseconds, 0);
 }
 
 TimeDelta DeviceStatusCollector::GetActiveChildScreenTime() {
@@ -1250,10 +919,6 @@ void DeviceStatusCollector::UpdateReportingSettings() {
   }
 }
 
-Time DeviceStatusCollector::GetCurrentTime() {
-  return Time::Now();
-}
-
 void DeviceStatusCollector::ClearCachedResourceUsage() {
   resource_usage_.clear();
   last_cpu_active_ = 0;
@@ -1281,11 +946,10 @@ void DeviceStatusCollector::ProcessIdleState(ui::IdleState state) {
     if (active_seconds < 0 ||
         active_seconds >= static_cast<int>((2 * kIdlePollIntervalSeconds))) {
       activity_storage_->AddActivityPeriod(
-          now - TimeDelta::FromSeconds(kIdlePollIntervalSeconds), now, now,
+          now - TimeDelta::FromSeconds(kIdlePollIntervalSeconds), now,
           user_email);
     } else {
-      activity_storage_->AddActivityPeriod(last_idle_check_, now, now,
-                                           user_email);
+      activity_storage_->AddActivityPeriod(last_idle_check_, now, user_email);
     }
 
     activity_storage_->PruneActivityPeriods(
@@ -1364,7 +1028,7 @@ void DeviceStatusCollector::UpdateChildUsageTime() {
   CHECK(user_manager::UserManager::Get()->IsLoggedInAsChildUser());
 
   Time now = GetCurrentTime();
-  Time reset_time = now.LocalMidnight() + activity_day_start_;
+  Time reset_time = activity_storage_->GetBeginningOfDay(now);
   if (reset_time > now)
     reset_time -= TimeDelta::FromDays(1);
   // Reset screen time if it has not been reset today.
@@ -1382,10 +1046,9 @@ void DeviceStatusCollector::UpdateChildUsageTime() {
     if (active_seconds < base::TimeDelta::FromSeconds(0) ||
         active_seconds >= (2 * kUpdateChildActiveTimeInterval)) {
       activity_storage_->AddActivityPeriod(now - kUpdateChildActiveTimeInterval,
-                                           now, now,
-                                           GetUserForActivityReporting());
+                                           now, GetUserForActivityReporting());
     } else {
-      activity_storage_->AddActivityPeriod(last_active_check_, now, now,
+      activity_storage_->AddActivityPeriod(last_active_check_, now,
                                            GetUserForActivityReporting());
     }
 
@@ -1583,14 +1246,14 @@ void DeviceStatusCollector::AddDataSample(std::unique_ptr<SampledData> sample,
     std::move(callback).Run();
 }
 
-void DeviceStatusCollector::FetchProbeData(
-    policy::DeviceStatusCollector::ProbeDataReceiver callback) {
+void DeviceStatusCollector::FetchProbeData(ProbeDataReceiver callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   runtime_probe::ProbeRequest request;
   if (report_power_status_)
     request.add_categories(runtime_probe::ProbeRequest::battery);
   if (report_storage_status_)
     request.add_categories(runtime_probe::ProbeRequest::storage);
+  request.add_categories(runtime_probe::ProbeRequest::vpd_cached);
 
   auto sample = std::make_unique<SampledData>();
   sample->timestamp = base::Time::Now();
@@ -1605,7 +1268,7 @@ void DeviceStatusCollector::FetchProbeData(
 }
 
 void DeviceStatusCollector::OnProbeDataFetched(
-    policy::DeviceStatusCollector::ProbeDataReceiver callback,
+    ProbeDataReceiver callback,
     base::Optional<runtime_probe::ProbeResult> reply) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   std::move(callback).Run(reply, sampled_data_);
@@ -1618,6 +1281,7 @@ void DeviceStatusCollector::ReportingUsersChanged() {
     if (value.is_string())
       reporting_users.push_back(value.GetString());
   }
+
   activity_storage_->FilterActivityPeriodsByUsers(reporting_users);
 }
 
@@ -1706,20 +1370,6 @@ bool DeviceStatusCollector::GetVersionInfo(
   return true;
 }
 
-bool DeviceStatusCollector::GetBootMode(em::DeviceStatusReportRequest* status) {
-  std::string dev_switch_mode;
-  bool anything_reported = false;
-  if (statistics_provider_->GetMachineStatistic(
-          chromeos::system::kDevSwitchBootKey, &dev_switch_mode)) {
-    if (dev_switch_mode == chromeos::system::kDevSwitchBootValueDev)
-      status->set_boot_mode("Dev");
-    else if (dev_switch_mode == chromeos::system::kDevSwitchBootValueVerified)
-      status->set_boot_mode("Verified");
-    anything_reported = true;
-  }
-  return anything_reported;
-}
-
 bool DeviceStatusCollector::GetWriteProtectSwitch(
     em::DeviceStatusReportRequest* status) {
   std::string firmware_write_protect;
@@ -1748,11 +1398,26 @@ bool DeviceStatusCollector::GetNetworkInterfaces(
     const char* type_string;
     em::NetworkInterface::NetworkDeviceType type_constant;
   } kDeviceTypeMap[] = {
-    { shill::kTypeEthernet,  em::NetworkInterface::TYPE_ETHERNET,  },
-    { shill::kTypeWifi,      em::NetworkInterface::TYPE_WIFI,      },
-    { shill::kTypeWimax,     em::NetworkInterface::TYPE_WIMAX,     },
-    { shill::kTypeBluetooth, em::NetworkInterface::TYPE_BLUETOOTH, },
-    { shill::kTypeCellular,  em::NetworkInterface::TYPE_CELLULAR,  },
+      {
+          shill::kTypeEthernet,
+          em::NetworkInterface::TYPE_ETHERNET,
+      },
+      {
+          shill::kTypeWifi,
+          em::NetworkInterface::TYPE_WIFI,
+      },
+      {
+          shill::kTypeWimax,
+          em::NetworkInterface::TYPE_WIMAX,
+      },
+      {
+          shill::kTypeBluetooth,
+          em::NetworkInterface::TYPE_BLUETOOTH,
+      },
+      {
+          shill::kTypeCellular,
+          em::NetworkInterface::TYPE_CELLULAR,
+      },
   };
 
   // Maps shill device connection status to proto enum constants.
@@ -1766,6 +1431,9 @@ bool DeviceStatusCollector::GetNetworkInterfaces(
       {shill::kStateConfiguration, em::NetworkState::CONFIGURATION},
       {shill::kStateReady, em::NetworkState::READY},
       {shill::kStatePortal, em::NetworkState::PORTAL},
+      {shill::kStateNoConnectivity, em::NetworkState::PORTAL},
+      {shill::kStateRedirectFound, em::NetworkState::PORTAL},
+      {shill::kStatePortalSuspected, em::NetworkState::PORTAL},
       {shill::kStateOffline, em::NetworkState::OFFLINE},
       {shill::kStateOnline, em::NetworkState::ONLINE},
       {shill::kStateDisconnect, em::NetworkState::DISCONNECT},
@@ -1889,8 +1557,10 @@ bool DeviceStatusCollector::GetUsers(em::DeviceStatusReportRequest* status) {
 }
 
 bool DeviceStatusCollector::GetHardwareStatus(
-    em::DeviceStatusReportRequest* status,
-    scoped_refptr<GetStatusState> state) {
+    scoped_refptr<DeviceStatusCollectorState> state) {
+  em::DeviceStatusReportRequest* status =
+      state->response_params().device_status.get();
+
   // Sample disk volume info in a background thread.
   state->SampleVolumeInfo(volume_info_fetcher_);
 
@@ -2026,8 +1696,8 @@ void DeviceStatusCollector::GetStatusAsync(
   DCHECK(thread_checker_.CalledOnValidThread());
   // Some of the data we're collecting is gathered in background threads.
   // This object keeps track of the state of each async request.
-  scoped_refptr<GetStatusState> state(
-      new GetStatusState(task_runner_, response));
+  scoped_refptr<DeviceStatusCollectorState> state(
+      new DeviceStatusCollectorState(task_runner_, response));
   // Gather device status (might queue some async queries)
   GetDeviceStatus(state);
 
@@ -2041,8 +1711,9 @@ void DeviceStatusCollector::GetStatusAsync(
 }
 
 void DeviceStatusCollector::GetDeviceStatus(
-    scoped_refptr<GetStatusState> state) {
-  em::DeviceStatusReportRequest* status = state->device_status();
+    scoped_refptr<DeviceStatusCollectorState> state) {
+  em::DeviceStatusReportRequest* status =
+      state->response_params().device_status.get();
   bool anything_reported = false;
 
   if (report_activity_times_)
@@ -2051,8 +1722,14 @@ void DeviceStatusCollector::GetDeviceStatus(
   if (report_version_info_)
     anything_reported |= GetVersionInfo(status);
 
-  if (report_boot_mode_)
-    anything_reported |= GetBootMode(status);
+  if (report_boot_mode_) {
+    base::Optional<std::string> boot_mode =
+        StatusCollector::GetBootMode(statistics_provider_);
+    if (boot_mode) {
+      status->set_boot_mode(*boot_mode);
+      anything_reported = true;
+    }
+  }
 
   if (report_network_interfaces_)
     anything_reported |= GetNetworkInterfaces(status);
@@ -2061,7 +1738,7 @@ void DeviceStatusCollector::GetDeviceStatus(
     anything_reported |= GetUsers(status);
 
   if (report_hardware_status_) {
-    anything_reported |= GetHardwareStatus(status, state);
+    anything_reported |= GetHardwareStatus(state);
     anything_reported |= GetWriteProtectSwitch(status);
   }
 
@@ -2073,26 +1750,11 @@ void DeviceStatusCollector::GetDeviceStatus(
 
   // Wipe pointer if we didn't actually add any data.
   if (!anything_reported)
-    state->ResetDeviceStatus();
-}
-
-std::string DeviceStatusCollector::GetDMTokenForProfile(Profile* profile) {
-  CloudPolicyManager* user_cloud_policy_manager =
-      UserPolicyManagerFactoryChromeOS::GetCloudPolicyManagerForProfile(
-          profile);
-  if (!user_cloud_policy_manager) {
-    NOTREACHED();
-    return std::string();
-  }
-
-  auto* cloud_policy_client = user_cloud_policy_manager->core()->client();
-  std::string dm_token = cloud_policy_client->dm_token();
-
-  return dm_token;
+    state->response_params().device_status.reset();
 }
 
 bool DeviceStatusCollector::GetSessionStatusForUser(
-    scoped_refptr<GetStatusState> state,
+    scoped_refptr<DeviceStatusCollectorState> state,
     em::SessionStatusReportRequest* status,
     const user_manager::User* user) {
   Profile* const profile =
@@ -2128,8 +1790,9 @@ bool DeviceStatusCollector::GetSessionStatusForUser(
 }
 
 void DeviceStatusCollector::GetSessionStatus(
-    scoped_refptr<GetStatusState> state) {
-  em::SessionStatusReportRequest* status = state->session_status();
+    scoped_refptr<DeviceStatusCollectorState> state) {
+  em::SessionStatusReportRequest* status =
+      state->response_params().session_status.get();
   bool anything_reported = false;
 
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
@@ -2148,7 +1811,7 @@ void DeviceStatusCollector::GetSessionStatus(
 
   // Wipe pointer if we didn't actually add any data.
   if (!anything_reported)
-    state->ResetSessionStatus();
+    state->response_params().session_status.reset();
 }
 
 bool DeviceStatusCollector::GetKioskSessionStatus(
@@ -2184,7 +1847,7 @@ bool DeviceStatusCollector::GetKioskSessionStatus(
 
 bool DeviceStatusCollector::GetAndroidStatus(
     em::SessionStatusReportRequest* status,
-    const scoped_refptr<GetStatusState>& state) {
+    const scoped_refptr<DeviceStatusCollectorState>& state) {
   return state->FetchAndroidStatus(android_status_fetcher_);
 }
 

@@ -24,11 +24,15 @@
 
 namespace net {
 class URLRequestContextGetter;
-}
+}  // namespace net
 
 namespace network {
 struct ResourceResponse;
-}
+}  // namespace network
+
+namespace service_manager {
+class Connector;
+}  // namespace service_manager
 
 namespace download {
 
@@ -54,13 +58,16 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   // Class to be notified when download starts/stops.
   class COMPONENTS_DOWNLOAD_EXPORT Delegate {
    public:
+    // Called when in-progress downloads are initialized.
+    virtual void OnDownloadsInitialized() {}
+
     // Intercepts the download to another system if applicable. Returns true if
     // the download was intercepted.
     virtual bool InterceptDownload(
-        const DownloadCreateInfo& download_create_info) = 0;
+        const DownloadCreateInfo& download_create_info);
 
     // Gets the default download directory.
-    virtual base::FilePath GetDefaultDownloadDirectory() = 0;
+    virtual base::FilePath GetDefaultDownloadDirectory();
 
     // Gets the download item for the given |download_create_info|.
     // TODO(qinmin): remove this method and let InProgressDownloadManager
@@ -68,23 +75,25 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
     virtual void StartDownloadItem(
         std::unique_ptr<DownloadCreateInfo> info,
         const DownloadUrlParameters::OnStartedCallback& on_started,
-        StartDownloadItemCallback callback) = 0;
+        StartDownloadItemCallback callback) {}
 
     // Gets the URLRequestContextGetter for sending requests.
     // TODO(qinmin): remove this once network service is fully enabled.
     virtual net::URLRequestContextGetter* GetURLRequestContextGetter(
-        const DownloadCreateInfo& download_create_info) = 0;
+        const DownloadCreateInfo& download_create_info);
   };
 
   using IsOriginSecureCallback = base::RepeatingCallback<bool(const GURL&)>;
   InProgressDownloadManager(Delegate* delegate,
                             const base::FilePath& in_progress_db_dir,
                             const IsOriginSecureCallback& is_origin_secure_cb,
-                            const URLSecurityPolicy& url_security_policy);
+                            const URLSecurityPolicy& url_security_policy,
+                            service_manager::Connector* connector);
   ~InProgressDownloadManager() override;
 
   // SimpleDownloadManager implementation.
-  bool DownloadUrl(std::unique_ptr<DownloadUrlParameters> params) override;
+  void DownloadUrl(std::unique_ptr<DownloadUrlParameters> params) override;
+  bool CanDownload(DownloadUrlParameters* params) override;
   void GetAllDownloads(
       SimpleDownloadManager::DownloadVector* downloads) override;
   DownloadItem* GetDownloadByGuid(const std::string& guid) override;
@@ -139,6 +148,15 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
     download_start_observer_ = observer;
   }
 
+  // Callback to generate an intermediate file path from the given target file
+  // path;
+  using IntermediatePathCallback =
+      base::RepeatingCallback<base::FilePath(const base::FilePath&)>;
+  void set_intermediate_path_cb(
+      const IntermediatePathCallback& intermediate_path_cb) {
+    intermediate_path_cb_ = intermediate_path_cb;
+  }
+
   // Called to get all in-progress DownloadItemImpl.
   // TODO(qinmin): remove this method once InProgressDownloadManager owns
   // all in-progress downloads.
@@ -164,7 +182,7 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
     url_loader_factory_getter_ = std::move(url_loader_factory_getter);
   }
 
-  void set_delegate(Delegate* delegate) { delegate_ = delegate; }
+  void SetDelegate(Delegate* delegate);
 
   void set_is_origin_secure_cb(
       const IsOriginSecureCallback& is_origin_secure_cb) {
@@ -205,6 +223,12 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
       DownloadItemImpl* download,
       bool should_persist_new_download);
 
+  // Called when downloads are initialized.
+  void OnDownloadsInitialized();
+
+  // Called to notify |delegate_| that downloads are initialized.
+  void NotifyDownloadsInitialized();
+
   // Active download handlers.
   std::vector<UrlDownloadHandler::UniqueUrlDownloadHandlerPtr>
       url_download_handlers_;
@@ -234,6 +258,9 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   // callback to check if an origin is secure.
   IsOriginSecureCallback is_origin_secure_cb_;
 
+  // callback to generate the intermediate file path.
+  IntermediatePathCallback intermediate_path_cb_;
+
   // A list of in-progress download items, could be null if DownloadManagerImpl
   // is managing all downloads.
   std::vector<std::unique_ptr<DownloadItemImpl>> in_progress_downloads_;
@@ -254,6 +281,9 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
 
   // Whether this object uses an empty database and no history will be saved.
   bool use_empty_db_;
+
+  // Connector to the service manager.
+  service_manager::Connector* connector_;
 
   base::WeakPtrFactory<InProgressDownloadManager> weak_factory_;
 

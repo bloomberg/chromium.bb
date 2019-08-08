@@ -60,9 +60,9 @@ void DedicatedWorkerObjectProxy::PostMessageToWorkerObject(
   PostCrossThreadTask(
       *GetParentExecutionContextTaskRunners()->Get(TaskType::kPostedMessage),
       FROM_HERE,
-      CrossThreadBind(&DedicatedWorkerMessagingProxy::PostMessageToWorkerObject,
-                      messaging_proxy_weak_ptr_,
-                      WTF::Passed(std::move(message))));
+      CrossThreadBindOnce(
+          &DedicatedWorkerMessagingProxy::PostMessageToWorkerObject,
+          messaging_proxy_weak_ptr_, WTF::Passed(std::move(message))));
 }
 
 void DedicatedWorkerObjectProxy::ProcessMessageFromWorkerObject(
@@ -87,41 +87,41 @@ void DedicatedWorkerObjectProxy::ReportException(
   PostCrossThreadTask(
       *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalDefault),
       FROM_HERE,
-      CrossThreadBind(&DedicatedWorkerMessagingProxy::DispatchErrorEvent,
-                      messaging_proxy_weak_ptr_, error_message,
-                      WTF::Passed(location->Clone()), exception_id));
+      CrossThreadBindOnce(&DedicatedWorkerMessagingProxy::DispatchErrorEvent,
+                          messaging_proxy_weak_ptr_, error_message,
+                          WTF::Passed(location->Clone()), exception_id));
 }
 
 void DedicatedWorkerObjectProxy::DidFailToFetchClassicScript() {
   PostCrossThreadTask(
       *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalDefault),
       FROM_HERE,
-      CrossThreadBind(&DedicatedWorkerMessagingProxy::DidFailToFetchScript,
-                      messaging_proxy_weak_ptr_));
+      CrossThreadBindOnce(&DedicatedWorkerMessagingProxy::DidFailToFetchScript,
+                          messaging_proxy_weak_ptr_));
 }
 
 void DedicatedWorkerObjectProxy::DidFailToFetchModuleScript() {
   PostCrossThreadTask(
       *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalDefault),
       FROM_HERE,
-      CrossThreadBind(&DedicatedWorkerMessagingProxy::DidFailToFetchScript,
-                      messaging_proxy_weak_ptr_));
+      CrossThreadBindOnce(&DedicatedWorkerMessagingProxy::DidFailToFetchScript,
+                          messaging_proxy_weak_ptr_));
 }
 
 void DedicatedWorkerObjectProxy::DidEvaluateClassicScript(bool success) {
   PostCrossThreadTask(
       *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalDefault),
       FROM_HERE,
-      CrossThreadBind(&DedicatedWorkerMessagingProxy::DidEvaluateScript,
-                      messaging_proxy_weak_ptr_, success));
+      CrossThreadBindOnce(&DedicatedWorkerMessagingProxy::DidEvaluateScript,
+                          messaging_proxy_weak_ptr_, success));
 }
 
 void DedicatedWorkerObjectProxy::DidEvaluateModuleScript(bool success) {
   PostCrossThreadTask(
       *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalDefault),
       FROM_HERE,
-      CrossThreadBind(&DedicatedWorkerMessagingProxy::DidEvaluateScript,
-                      messaging_proxy_weak_ptr_, success));
+      CrossThreadBindOnce(&DedicatedWorkerMessagingProxy::DidEvaluateScript,
+                          messaging_proxy_weak_ptr_, success));
 }
 
 DedicatedWorkerObjectProxy::DedicatedWorkerObjectProxy(

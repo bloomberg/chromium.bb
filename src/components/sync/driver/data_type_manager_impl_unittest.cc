@@ -1357,7 +1357,8 @@ TEST_F(SyncDataTypeManagerImplTest, UnreadyTypeLaterReady) {
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(
       DataTypeManager::OK,
-      BuildStatusTable(ModelTypeSet(), ModelTypeSet(), ModelTypeSet(BOOKMARKS),
+      BuildStatusTable(ModelTypeSet(), ModelTypeSet(),
+                       /*unready_errors=*/ModelTypeSet(BOOKMARKS),
                        ModelTypeSet()));
   Configure(ModelTypeSet(BOOKMARKS));
   FinishDownload(ModelTypeSet(), ModelTypeSet());
@@ -1370,6 +1371,103 @@ TEST_F(SyncDataTypeManagerImplTest, UnreadyTypeLaterReady) {
   dtm_->ReadyForStartChanged(BOOKMARKS);
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
   EXPECT_NE(DataTypeController::NOT_RUNNING, GetController(BOOKMARKS)->state());
+
+  FinishDownload(ModelTypeSet(), ModelTypeSet());
+  FinishDownload(ModelTypeSet(BOOKMARKS), ModelTypeSet());
+
+  // Set the expectations for the reconfiguration - no unready errors now.
+  SetConfigureDoneExpectation(DataTypeManager::OK, DataTypeStatusTable());
+  GetController(BOOKMARKS)->FinishStart(DataTypeController::OK);
+  EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
+  EXPECT_EQ(1U, configurer_.activated_types().Size());
+}
+
+TEST_F(SyncDataTypeManagerImplTest,
+       MultipleUnreadyTypesLaterReadyAtTheSameTime) {
+  AddController(BOOKMARKS);
+  AddController(PREFERENCES);
+  GetController(BOOKMARKS)->SetReadyForStart(false);
+  GetController(PREFERENCES)->SetReadyForStart(false);
+
+  // Both types are never started due to being unready.
+  SetConfigureStartExpectation();
+  SetConfigureDoneExpectation(
+      DataTypeManager::OK,
+      BuildStatusTable(ModelTypeSet(), ModelTypeSet(),
+                       /*unready_errors=*/ModelTypeSet(BOOKMARKS, PREFERENCES),
+                       ModelTypeSet()));
+  Configure(ModelTypeSet(BOOKMARKS, PREFERENCES));
+  FinishDownload(ModelTypeSet(), ModelTypeSet());
+  ASSERT_EQ(DataTypeController::NOT_RUNNING, GetController(BOOKMARKS)->state());
+  ASSERT_EQ(DataTypeController::NOT_RUNNING,
+            GetController(PREFERENCES)->state());
+  ASSERT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
+  ASSERT_EQ(0U, configurer_.activated_types().Size());
+
+  // Both types should start normally now.
+  GetController(BOOKMARKS)->SetReadyForStart(true);
+  GetController(PREFERENCES)->SetReadyForStart(true);
+
+  // Just triggering state change for one of them causes reconfiguration for all
+  // that are ready to start (which is both BOOKMARKS and PREFERENCES).
+  dtm_->ReadyForStartChanged(BOOKMARKS);
+  EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
+  EXPECT_NE(DataTypeController::NOT_RUNNING, GetController(BOOKMARKS)->state());
+  EXPECT_NE(DataTypeController::NOT_RUNNING,
+            GetController(PREFERENCES)->state());
+
+  FinishDownload(ModelTypeSet(), ModelTypeSet());
+  FinishDownload(ModelTypeSet(BOOKMARKS, PREFERENCES), ModelTypeSet());
+
+  // Set new expectations for the reconfiguration - no unready errors any more.
+  SetConfigureDoneExpectation(DataTypeManager::OK, DataTypeStatusTable());
+  GetController(BOOKMARKS)->FinishStart(DataTypeController::OK);
+  GetController(PREFERENCES)->FinishStart(DataTypeController::OK);
+  EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
+  EXPECT_EQ(2U, configurer_.activated_types().Size());
+}
+
+TEST_F(SyncDataTypeManagerImplTest, MultipleUnreadyTypesLaterOneOfThemReady) {
+  AddController(BOOKMARKS);
+  AddController(PREFERENCES);
+  GetController(BOOKMARKS)->SetReadyForStart(false);
+  GetController(PREFERENCES)->SetReadyForStart(false);
+
+  // Both types are never started due to being unready.
+  SetConfigureStartExpectation();
+  SetConfigureDoneExpectation(
+      DataTypeManager::OK,
+      BuildStatusTable(ModelTypeSet(), ModelTypeSet(),
+                       /*unready_errors=*/ModelTypeSet(BOOKMARKS, PREFERENCES),
+                       ModelTypeSet()));
+  Configure(ModelTypeSet(BOOKMARKS, PREFERENCES));
+  FinishDownload(ModelTypeSet(), ModelTypeSet());
+  ASSERT_EQ(DataTypeController::NOT_RUNNING, GetController(BOOKMARKS)->state());
+  ASSERT_EQ(DataTypeController::NOT_RUNNING,
+            GetController(PREFERENCES)->state());
+  ASSERT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
+  ASSERT_EQ(0U, configurer_.activated_types().Size());
+
+  // Bookmarks should start normally now. Preferences should still not start.
+  GetController(BOOKMARKS)->SetReadyForStart(true);
+  dtm_->ReadyForStartChanged(BOOKMARKS);
+  EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
+  EXPECT_NE(DataTypeController::NOT_RUNNING, GetController(BOOKMARKS)->state());
+  EXPECT_EQ(DataTypeController::NOT_RUNNING,
+            GetController(PREFERENCES)->state());
+
+  FinishDownload(ModelTypeSet(), ModelTypeSet());
+  FinishDownload(ModelTypeSet(BOOKMARKS), ModelTypeSet());
+
+  // Set the expectations for the reconfiguration - just prefs are unready now.
+  SetConfigureDoneExpectation(
+      DataTypeManager::OK,
+      BuildStatusTable(ModelTypeSet(), ModelTypeSet(),
+                       /*unready_errors=*/ModelTypeSet(PREFERENCES),
+                       ModelTypeSet()));
+  GetController(BOOKMARKS)->FinishStart(DataTypeController::OK);
+  EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
+  EXPECT_EQ(1U, configurer_.activated_types().Size());
 }
 
 TEST_F(SyncDataTypeManagerImplTest, NoOpReadyForStartChangedWhileStillUnready) {

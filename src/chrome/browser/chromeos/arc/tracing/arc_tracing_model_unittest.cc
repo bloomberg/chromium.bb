@@ -76,7 +76,7 @@ bool ValidateGrahpicsEvents(const GraphicsEvents& events,
                             const std::set<GraphicsEventType>& allowed_types) {
   if (events.empty())
     return false;
-  int64_t previous_timestamp = 0;
+  uint64_t previous_timestamp = 0;
   std::set<GraphicsEventType> used_types;
   for (const auto& event : events) {
     if (event.timestamp < previous_timestamp) {
@@ -190,7 +190,8 @@ TEST_F(ArcTracingModelTest, TopLevel) {
   // Check trimmed by VSYNC.
   EXPECT_EQ(GraphicsEventType::kVsync,
             graphics_model.android_top_level().global_events()[0].type);
-  EXPECT_EQ(0, graphics_model.android_top_level().global_events()[0].timestamp);
+  EXPECT_EQ(0U,
+            graphics_model.android_top_level().global_events()[0].timestamp);
 
   EXPECT_EQ(2U, graphics_model.chrome_top_level().buffer_events().size());
   for (const auto& chrome_top_level_band :
@@ -256,6 +257,91 @@ TEST_F(ArcTracingModelTest, TopLevel) {
   EnsureGraphicsModelsEqual(graphics_model, graphics_model_loaded);
 }
 
+// Validates basic system event timestamp processing
+TEST_F(ArcTracingModelTest, SystemTraceEventTimestampParsing) {
+  {
+    std::string tracing_data =
+        "{\"traceEvents\":[],\"systemTraceEvents\":\""
+        // clang-format off
+        "  surfaceflinger-9772  [000] ...0 80156.539255: tracing_mark_write: B|15|acquireBuffer\n"
+        // clang-format on
+        "\"}";
+
+    ArcTracingModel model;
+    ASSERT_TRUE(model.Build(tracing_data));
+
+    const ArcTracingModel::TracingEventPtrs events =
+        model.Select("android:acquireBuffer");
+    ASSERT_EQ(1u, events.size());
+    EXPECT_EQ(15, events[0]->GetPid());
+    EXPECT_EQ("android", events[0]->GetCategory());
+    EXPECT_EQ("acquireBuffer", events[0]->GetName());
+    EXPECT_EQ('X', events[0]->GetPhase());
+    EXPECT_EQ(80156539255UL, events[0]->GetTimestamp());
+    EXPECT_EQ(0U, events[0]->GetDuration());
+  }
+
+  {
+    // Too few digits after the timestamp decimal point should be an error
+    std::string bad_tracing_data_1 =
+        "{\"traceEvents\":[],\"systemTraceEvents\":\""
+        // clang-format off
+        "  surfaceflinger-9772  [000] ...0 999.12345: tracing_mark_write: B|15|acquireBuffer\n"
+        // clang-format on
+        "\"}";
+    ArcTracingModel model;
+    EXPECT_FALSE(model.Build(bad_tracing_data_1));
+  }
+
+  {
+    // Too many digits after the timestamp decimal point should be an error
+    std::string bad_tracing_data_2 =
+        "{\"traceEvents\":[],\"systemTraceEvents\":\""
+        // clang-format off
+        "  surfaceflinger-9772  [000] ...0 999.1234567: tracing_mark_write: B|15|acquireBuffer\n"
+        // clang-format on
+        "\"}";
+    ArcTracingModel model;
+    EXPECT_FALSE(model.Build(bad_tracing_data_2));
+  }
+}
+
+TEST_F(ArcTracingModelTest, SystemTraceEventCpuEventProcessing) {
+  std::string tracing_data =
+      "{\"traceEvents\":[],\"systemTraceEvents\":\""
+      // clang-format off
+      "          <idle>-0     [000] d..0 123.000001: cpu_idle: state=0 cpu_id=0\n"
+      "          <idle>-0     [000] dn.0 123.000002: cpu_idle: state=4294967295 cpu_id=0\n"
+      "          <idle>-0     [000] dnh3 123.000003: sched_wakeup: comm=foo pid=15821 prio=115 target_cpu=000\n"
+      "          <idle>-0     [000] d..3 123.000004: sched_switch: prev_comm=bar prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=baz next_pid=15821 next_prio=115\n"
+      // clang-format on
+      "\"}";
+
+  ArcTracingModel model;
+  ASSERT_TRUE(model.Build(tracing_data));
+
+  const AllCpuEvents& cpu_events = model.system_model().all_cpu_events();
+  ASSERT_EQ(1u, cpu_events.size());
+  CpuEvents cpu0_events = cpu_events[0];
+  ASSERT_EQ(4u, cpu0_events.size());
+
+  EXPECT_EQ(123000001UL, cpu0_events[0].timestamp);
+  EXPECT_EQ(ArcCpuEvent::Type::kIdleIn, cpu0_events[0].type);
+  EXPECT_EQ(0u, cpu0_events[0].tid);
+
+  EXPECT_EQ(123000002UL, cpu0_events[1].timestamp);
+  EXPECT_EQ(ArcCpuEvent::Type::kIdleOut, cpu0_events[1].type);
+  EXPECT_EQ(0u, cpu0_events[1].tid);
+
+  EXPECT_EQ(123000003UL, cpu0_events[2].timestamp);
+  EXPECT_EQ(ArcCpuEvent::Type::kWakeUp, cpu0_events[2].type);
+  EXPECT_EQ(15821u, cpu0_events[2].tid);
+
+  EXPECT_EQ(123000004UL, cpu0_events[3].timestamp);
+  EXPECT_EQ(ArcCpuEvent::Type::kActive, cpu0_events[3].type);
+  EXPECT_EQ(15821u, cpu0_events[3].tid);
+}
+
 TEST_F(ArcTracingModelTest, Event) {
   const ArcTracingEvent event(base::JSONReader::Read(kTestEvent).value());
 
@@ -265,9 +351,9 @@ TEST_F(ArcTracingModelTest, Event) {
   EXPECT_EQ(kExo, event.GetCategory());
   EXPECT_EQ(kSurfaceAttach, event.GetName());
   EXPECT_EQ(kPhaseX, event.GetPhase());
-  EXPECT_EQ(14241877057L, event.GetTimestamp());
-  EXPECT_EQ(10, event.GetDuration());
-  EXPECT_EQ(14241877067L, event.GetEndTimestamp());
+  EXPECT_EQ(14241877057UL, event.GetTimestamp());
+  EXPECT_EQ(10U, event.GetDuration());
+  EXPECT_EQ(14241877067UL, event.GetEndTimestamp());
   EXPECT_NE(nullptr, event.GetDictionary());
   EXPECT_EQ(kBufferIdValue, event.GetArgAsString(kBufferId, std::string()));
   EXPECT_EQ(kDefault, event.GetArgAsString(kBufferIdBad, kDefault));
@@ -411,8 +497,8 @@ TEST_F(ArcTracingModelTest, TimeMinMax) {
   model_with_time_filter.SetMinMaxTime(100001L, 100003L);
   EXPECT_TRUE(model_with_time_filter.Build(tracing_data));
   ASSERT_EQ(2U, model_with_time_filter.GetRoots().size());
-  EXPECT_EQ(100001L, model_with_time_filter.GetRoots()[0]->GetTimestamp());
-  EXPECT_EQ(100002L, model_with_time_filter.GetRoots()[1]->GetTimestamp());
+  EXPECT_EQ(100001UL, model_with_time_filter.GetRoots()[0]->GetTimestamp());
+  EXPECT_EQ(100002UL, model_with_time_filter.GetRoots()[1]->GetTimestamp());
 
   ArcTracingModel model_with_empty_time_filter;
   model_with_empty_time_filter.SetMinMaxTime(99999L, 100000L);
@@ -468,10 +554,10 @@ TEST_F(ArcTracingModelTest, EventsContainerTrim) {
       &events, trim_timestamp,
       {ArcTracingGraphicsModel::BufferEventType::kChromeOSDraw});
   ASSERT_EQ(3U, events.global_events().size());
-  EXPECT_EQ(25, events.global_events()[0].timestamp);
+  EXPECT_EQ(25U, events.global_events()[0].timestamp);
   ASSERT_EQ(1U, events.buffer_events().size());
   ASSERT_EQ(2U, events.buffer_events()[0].size());
-  EXPECT_EQ(40, events.buffer_events()[0][0].timestamp);
+  EXPECT_EQ(40U, events.buffer_events()[0][0].timestamp);
   EXPECT_EQ(ArcTracingGraphicsModel::BufferEventType::kChromeOSDraw,
             events.buffer_events()[0][0].type);
 }

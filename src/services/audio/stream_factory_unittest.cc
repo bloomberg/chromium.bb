@@ -9,7 +9,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "media/audio/mock_audio_manager.h"
 #include "media/audio/test_audio_thread.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
 #include "services/audio/traced_service_ref.h"
 #include "services/service_manager/public/cpp/service_keepalive.h"
@@ -27,13 +27,13 @@ TEST(AudioServiceStreamFactoryTest, TakesServiceRef) {
 
   StreamFactory factory(&audio_manager);
 
-  mojom::StreamFactoryPtr factory_ptr;
+  mojo::Remote<mojom::StreamFactory> remote_factory;
 
   factory.Bind(
-      mojo::MakeRequest(&factory_ptr),
+      remote_factory.BindNewPipeAndPassReceiver(),
       TracedServiceRef(keepalive.CreateRef(), "audio::StreamFactory binding"));
   EXPECT_FALSE(keepalive.HasNoRefs());
-  factory_ptr.reset();
+  remote_factory.reset();
   env.RunUntilIdle();
   EXPECT_TRUE(keepalive.HasNoRefs());
   audio_manager.Shutdown();

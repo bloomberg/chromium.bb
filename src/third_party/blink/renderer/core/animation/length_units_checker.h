@@ -24,7 +24,7 @@ class LengthUnitsChecker : public CSSInterpolationType::CSSConversionChecker {
     wtf_size_t last_index = 0;
     for (wtf_size_t i = 0; i < length_array.values.size(); i++) {
       if (i == CSSPrimitiveValue::kUnitTypePercentage ||
-          !length_array.type_flags.Get(i))
+          !length_array.type_flags[i])
         continue;
       length_array.values[i] = LengthUnit(i, state.CssToLengthConversionData());
       create = true;
@@ -40,7 +40,7 @@ class LengthUnitsChecker : public CSSInterpolationType::CSSConversionChecker {
                const InterpolationValue& underlying) const final {
     for (wtf_size_t i = 0; i <= last_index_; i++) {
       if (i == CSSPrimitiveValue::kUnitTypePercentage ||
-          !length_array_.type_flags.Get(i))
+          !length_array_.type_flags[i])
         continue;
       if (length_array_.values[i] !=
           LengthUnit(i, state.CssToLengthConversionData()))

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <atk/atk.h>
+#include <dlfcn.h>
 
 #include "base/bind_helpers.h"
 #include "base/macros.h"
@@ -17,6 +18,19 @@
 #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
 
 namespace content {
+
+namespace {
+
+AtkObject* FindAtkObjectParentFrame(AtkObject* atk_object) {
+  while (atk_object) {
+    if (atk_object_get_role(atk_object) == ATK_ROLE_FRAME)
+      return atk_object;
+    atk_object = atk_object_get_parent(atk_object);
+  }
+  return nullptr;
+}
+
+}  // namespace
 
 class AccessibilityAuraLinuxBrowserTest : public AccessibilityBrowserTest {
  public:
@@ -43,8 +57,9 @@ class AccessibilityAuraLinuxBrowserTest : public AccessibilityBrowserTest {
   AtkText* SetUpInputField();
   AtkText* SetUpTextareaField();
   AtkText* SetUpSampleParagraph();
-  AtkText* SetUpSampleParagraphInScrollableEditable();
+  AtkText* SetUpSampleParagraphInScrollableDocument();
 
+  AtkText* GetSampleParagraph();
   AtkText* GetAtkTextForChild(AtkRole expected_role);
 
  private:
@@ -104,10 +119,7 @@ AtkText* AccessibilityAuraLinuxBrowserTest::SetUpSampleParagraph() {
   return ATK_TEXT(input);
 }
 
-AtkText*
-AccessibilityAuraLinuxBrowserTest::SetUpSampleParagraphInScrollableEditable() {
-  LoadSampleParagraphInScrollableEditable();
-
+AtkText* AccessibilityAuraLinuxBrowserTest::GetSampleParagraph() {
   AtkObject* document = GetRendererAccessible();
   EXPECT_EQ(1, atk_object_get_n_accessible_children(document));
 
@@ -181,6 +193,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   CheckTextAtOffset(atk_text, 0, ATK_TEXT_BOUNDARY_LINE_START, 0,
                     InputContentsString().size(),
                     InputContentsString().c_str());
+
+  g_object_unref(atk_text);
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
@@ -197,6 +211,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   // Last line does not have a trailing newline.
   CheckTextAtOffset(atk_text, 32, ATK_TEXT_BOUNDARY_LINE_START, 32,
                     InputContentsString().size(), "\"KHTML, like\".");
+
+  g_object_unref(atk_text);
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
@@ -224,6 +240,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
         n_characters,
         "cooperation between intelligent rational decision-makers.\"");
   }
+
+  g_object_unref(atk_text);
 }
 
 #if defined(ATK_CHECK_VERSION) && ATK_CHECK_VERSION(2, 30, 0)
@@ -286,6 +304,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   EXPECT_EQ(0, y);
   EXPECT_EQ(0, width);
   EXPECT_EQ(0, height);
+
+  g_object_unref(atk_text);
 }
 
 AtkCoordType kCoordinateTypes[] = {
@@ -388,12 +408,16 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
       EXPECT_EQ(combined_extents.height(), atk_rect.height);
     }
   }
+
+  g_object_unref(atk_text);
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
                        TestCharacterExtentsInScrollableEditable) {
+  LoadSampleParagraphInScrollableEditable();
+
   // By construction, only the first line of the content editable is visible.
-  AtkText* atk_text = SetUpSampleParagraphInScrollableEditable();
+  AtkText* atk_text = GetSampleParagraph();
 
   constexpr int first_line_end = 5;
   constexpr int last_line_start = 8;
@@ -465,6 +489,410 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
       EXPECT_EQ(previous_height, height);
     }
   }
+
+  g_object_unref(atk_text);
+}
+
+#if defined(ATK_230)
+typedef bool (*ScrollToPointFunc)(AtkComponent* component,
+                                  AtkCoordType coords,
+                                  gint x,
+                                  gint y);
+typedef bool (*ScrollToFunc)(AtkComponent* component, AtkScrollType type);
+
+IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestScrollToPoint) {
+  // There's a chance we may be compiled with a newer version of ATK and then
+  // run with an older one, so we need to do a runtime check for this method
+  // that is available in ATK 2.30 instead of linking directly.
+  ScrollToPointFunc scroll_to_point = reinterpret_cast<ScrollToPointFunc>(
+      dlsym(RTLD_DEFAULT, "atk_component_scroll_to_point"));
+  if (!scroll_to_point) {
+    LOG(WARNING)
+        << "Skipping AccessibilityAuraLinuxBrowserTest::TestScrollToPoint"
+           " because ATK version < 2.30 detected.";
+    return;
+  }
+
+  LoadSampleParagraphInScrollableDocument();
+  AtkText* atk_text = GetSampleParagraph();
+  ASSERT_TRUE(ATK_IS_COMPONENT(atk_text));
+  AtkComponent* atk_component = ATK_COMPONENT(atk_text);
+
+  int prev_x, prev_y, x, y;
+  atk_component_get_extents(atk_component, &prev_x, &prev_y, nullptr, nullptr,
+                            ATK_XY_SCREEN);
+
+  AccessibilityNotificationWaiter location_changed_waiter(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kLocationChanged);
+  scroll_to_point(atk_component, ATK_XY_PARENT, 0, 0);
+  location_changed_waiter.WaitForNotification();
+
+  atk_component_get_extents(atk_component, &x, &y, nullptr, nullptr,
+                            ATK_XY_SCREEN);
+  EXPECT_EQ(prev_x, x);
+  EXPECT_GT(prev_y, y);
+
+  constexpr int kScrollToY = 0;
+  scroll_to_point(atk_component, ATK_XY_SCREEN, 0, kScrollToY);
+  location_changed_waiter.WaitForNotification();
+  atk_component_get_extents(atk_component, &x, &y, nullptr, nullptr,
+                            ATK_XY_SCREEN);
+  EXPECT_EQ(kScrollToY, y);
+
+  constexpr int kScrollToY_2 = 243;
+  scroll_to_point(atk_component, ATK_XY_SCREEN, 0, kScrollToY_2);
+  location_changed_waiter.WaitForNotification();
+  atk_component_get_extents(atk_component, nullptr, &y, nullptr, nullptr,
+                            ATK_XY_SCREEN);
+  EXPECT_EQ(kScrollToY_2, y);
+
+  scroll_to_point(atk_component, ATK_XY_SCREEN, 0, 129);
+  location_changed_waiter.WaitForNotification();
+  atk_component_get_extents(atk_component, nullptr, &y, nullptr, nullptr,
+                            ATK_XY_SCREEN);
+
+  AtkObject* frame = FindAtkObjectParentFrame(ATK_OBJECT(atk_component));
+  int frame_y;
+  atk_component_get_extents(ATK_COMPONENT(frame), nullptr, &frame_y, nullptr,
+                            nullptr, ATK_XY_SCREEN);
+  EXPECT_EQ(frame_y, y);
+
+  g_object_unref(atk_text);
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestScrollTo) {
+  // There's a chance we may be compiled with a newer version of ATK and then
+  // run with an older one, so we need to do a runtime check for this method
+  // that is available in ATK 2.30 instead of linking directly.
+  ScrollToFunc scroll_to = reinterpret_cast<ScrollToFunc>(
+      dlsym(RTLD_DEFAULT, "atk_component_scroll_to"));
+  if (!scroll_to) {
+    LOG(WARNING) << "Skipping AccessibilityAuraLinuxBrowserTest::TestScrollTo"
+                    " because ATK version < 2.30 detected.";
+    return;
+  }
+
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(<!DOCTYPE html>
+      <html>
+      <body>
+        <div style="height: 5000px; width: 5000px;"></div>
+        <img style="display: relative; left: 1000px;" alt="Target1">
+        <div style="height: 5000px;"></div>
+        <img style="display: relative; left: 1000px;" alt="Target2">
+        <div style="height: 5000px;"></div>
+        <span>Target 3</span>
+        <div style="height: 5000px;"></div>
+      </body>
+      </html>)HTML");
+
+  // Retrieve the AtkObject interface for the document node.
+  AtkObject* document = GetRendererAccessible();
+  ASSERT_TRUE(ATK_IS_COMPONENT(document));
+
+  // Get the dimensions of the document.
+  int doc_x, doc_y, doc_width, doc_height;
+  atk_component_get_extents(ATK_COMPONENT(document), &doc_x, &doc_y, &doc_width,
+                            &doc_height, ATK_XY_SCREEN);
+
+  // The document should only have three children, two img elements
+  // and a single span element.
+  ASSERT_EQ(3, atk_object_get_n_accessible_children(document));
+
+  AtkObject* target = atk_object_ref_accessible_child(document, 0);
+  AtkObject* target2 = atk_object_ref_accessible_child(document, 1);
+  AtkObject* target3 = atk_object_ref_accessible_child(document, 2);
+
+  ASSERT_TRUE(ATK_IS_COMPONENT(target));
+  ASSERT_TRUE(ATK_IS_COMPONENT(target2));
+  ASSERT_TRUE(ATK_IS_COMPONENT(target3));
+
+  ASSERT_EQ(ATK_ROLE_IMAGE, atk_object_get_role(target));
+  ASSERT_EQ(ATK_ROLE_IMAGE, atk_object_get_role(target2));
+
+  AccessibilityNotificationWaiter waiter(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kScrollPositionChanged);
+  ASSERT_TRUE(scroll_to(ATK_COMPONENT(target), ATK_SCROLL_TOP_EDGE));
+  waiter.WaitForNotification();
+  int x, y;
+  atk_component_get_extents(ATK_COMPONENT(target), &x, &y, nullptr, nullptr,
+                            ATK_XY_SCREEN);
+  EXPECT_EQ(y, doc_y);
+  EXPECT_NE(x, doc_x);
+
+  ASSERT_TRUE(scroll_to(ATK_COMPONENT(target), ATK_SCROLL_TOP_LEFT));
+  waiter.WaitForNotification();
+  atk_component_get_extents(ATK_COMPONENT(target), &x, &y, nullptr, nullptr,
+                            ATK_XY_SCREEN);
+  EXPECT_EQ(y, doc_y);
+  EXPECT_EQ(x, doc_x);
+
+  ASSERT_TRUE(scroll_to(ATK_COMPONENT(target), ATK_SCROLL_BOTTOM_EDGE));
+  waiter.WaitForNotification();
+  atk_component_get_extents(ATK_COMPONENT(target), &x, &y, nullptr, nullptr,
+                            ATK_XY_SCREEN);
+  EXPECT_NE(y, doc_y);
+  EXPECT_EQ(x, doc_x);
+
+  ASSERT_TRUE(scroll_to(ATK_COMPONENT(target), ATK_SCROLL_RIGHT_EDGE));
+  waiter.WaitForNotification();
+  atk_component_get_extents(ATK_COMPONENT(target), &x, &y, nullptr, nullptr,
+                            ATK_XY_SCREEN);
+  EXPECT_NE(y, doc_y);
+  EXPECT_NE(x, doc_x);
+
+  ASSERT_TRUE(scroll_to(ATK_COMPONENT(target2), ATK_SCROLL_LEFT_EDGE));
+  waiter.WaitForNotification();
+  atk_component_get_extents(ATK_COMPONENT(target2), &x, &y, nullptr, nullptr,
+                            ATK_XY_SCREEN);
+  EXPECT_NE(y, doc_y);
+  EXPECT_EQ(x, doc_x);
+
+  ASSERT_TRUE(scroll_to(ATK_COMPONENT(target2), ATK_SCROLL_TOP_LEFT));
+  waiter.WaitForNotification();
+  atk_component_get_extents(ATK_COMPONENT(target2), &x, &y, nullptr, nullptr,
+                            ATK_XY_SCREEN);
+  EXPECT_EQ(y, doc_y);
+  EXPECT_EQ(x, doc_x);
+
+  // Orca expects atk_text_set_caret_offset to operate like scroll to the
+  // target node like atk_component_scroll_to, so we test that here.
+  ASSERT_TRUE(ATK_IS_TEXT(target3));
+  AccessibilityNotificationWaiter waiter3(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kScrollPositionChanged);
+  atk_text_set_caret_offset(ATK_TEXT(target3), 0);
+  waiter3.WaitForNotification();
+
+  // Same as above, make sure the node is roughly centered.
+  int width, height;
+  atk_component_get_extents(ATK_COMPONENT(target3), &x, &y, &width, &height,
+                            ATK_XY_SCREEN);
+  EXPECT_GT(y + height / 2, doc_y + 0.4 * doc_height);
+  EXPECT_LT(y + height / 2, doc_y + 0.6 * doc_height);
+
+  g_object_unref(target);
+  g_object_unref(target2);
+  g_object_unref(target3);
+}
+#endif  //  defined(ATK_230)
+
+IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestSetSelection) {
+  AtkText* atk_text = SetUpInputField();
+
+  int start_offset, end_offset;
+  gchar* selected_text =
+      atk_text_get_selection(atk_text, 0, &start_offset, &end_offset);
+  EXPECT_EQ(nullptr, selected_text);
+  EXPECT_EQ(0, start_offset);
+  EXPECT_EQ(0, end_offset);
+
+  AccessibilityNotificationWaiter waiter(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kTextSelectionChanged);
+  int contents_string_length = int{InputContentsString().size()};
+  start_offset = 0;
+  end_offset = contents_string_length;
+
+  EXPECT_TRUE(atk_text_set_selection(atk_text, 0, start_offset, end_offset));
+  waiter.WaitForNotification();
+  selected_text =
+      atk_text_get_selection(atk_text, 0, &start_offset, &end_offset);
+  EXPECT_NE(nullptr, selected_text);
+  EXPECT_EQ(0, start_offset);
+  EXPECT_EQ(contents_string_length, end_offset);
+  g_free(selected_text);
+
+  start_offset = contents_string_length;
+  end_offset = 1;
+  EXPECT_TRUE(atk_text_set_selection(atk_text, 0, start_offset, end_offset));
+  waiter.WaitForNotification();
+  selected_text =
+      atk_text_get_selection(atk_text, 0, &start_offset, &end_offset);
+  EXPECT_NE(nullptr, selected_text);
+  EXPECT_EQ(1, start_offset);
+  EXPECT_EQ(contents_string_length, end_offset);
+  g_free(selected_text);
+
+  g_object_unref(atk_text);
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestAtkTextListItem) {
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(<!DOCTYPE html>
+      <html>
+      <body>
+        <li>Text 1</li>
+        <li>Text 2</li>
+        <li>Text 3</li>
+      </body>
+      </html>)HTML");
+
+  // Retrieve the AtkObject interface for the document node.
+  AtkObject* document = GetRendererAccessible();
+  EXPECT_EQ(3, atk_object_get_n_accessible_children(document));
+  AtkObject* list_item_1 = atk_object_ref_accessible_child(document, 0);
+  AtkObject* list_item_2 = atk_object_ref_accessible_child(document, 1);
+
+  EXPECT_TRUE(ATK_IS_TEXT(list_item_1));
+
+  const base::string16 string16_embed(
+      1, ui::AXPlatformNodeAuraLinux::kEmbeddedCharacter);
+  std::string expected_string = base::UTF16ToUTF8(string16_embed) + "Text 1";
+
+  // The text of the list item should include the list marker as an embedded
+  // object.
+  gchar* text = atk_text_get_text(ATK_TEXT(list_item_1), 0, -1);
+  ASSERT_STREQ(text, expected_string.c_str());
+  g_free(text);
+  text = atk_text_get_text_at_offset(
+      ATK_TEXT(list_item_2), 0, ATK_TEXT_BOUNDARY_WORD_START, nullptr, nullptr);
+  ASSERT_STREQ(text, base::UTF16ToUTF8(string16_embed).c_str());
+  g_free(text);
+
+  text = atk_text_get_text_at_offset(
+      ATK_TEXT(list_item_2), 1, ATK_TEXT_BOUNDARY_WORD_START, nullptr, nullptr);
+  ASSERT_STREQ(text, "Text ");
+  g_free(text);
+
+  g_object_unref(list_item_1);
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
+                       TestSetCaretSetsSequentialFocusNavigationStartingPoint) {
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(<!DOCTYPE html>
+      <html>
+      <body>
+      <div>
+        0
+        <a href="http://google.com">1</a>
+        2
+        <a href="http://google.com">3</a>
+        4
+        <a href="http://google.com">5</a>
+        6
+        <a href="http://google.com">7</a>
+        8
+      </div>
+      </body>
+      </html>)HTML");
+
+  // Retrieve the AtkObject interface for the document node.
+  AtkObject* document = GetRendererAccessible();
+  ASSERT_TRUE(ATK_IS_COMPONENT(document));
+
+  AtkObject* parent_div = atk_object_ref_accessible_child(document, 0);
+  EXPECT_NE(parent_div, nullptr);
+
+  AtkObject* child_2 = atk_object_ref_accessible_child(parent_div, 2);
+  AtkObject* child_3 = atk_object_ref_accessible_child(parent_div, 3);
+  AtkObject* child_7 = atk_object_ref_accessible_child(parent_div, 7);
+  EXPECT_NE(child_2, nullptr);
+  EXPECT_NE(child_3, nullptr);
+  EXPECT_NE(child_7, nullptr);
+
+  // Move the caret to the "3" div. This should also set the sequential
+  // focus navigation starting point.
+  atk_text_set_caret_offset(ATK_TEXT(child_2), 0);
+
+  auto waiter = std::make_unique<AccessibilityNotificationWaiter>(
+      shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kFocus);
+
+  // Now send two tab presses to advance the focus.
+  // TODO(mrobinson): For some reason, in the test harness two tabs are
+  // necessary to advance focus after setting the selection (caret). This isn't
+  // necessary when running interactively.
+  SimulateKeyPress(shell()->web_contents(), ui::DomKey::TAB, ui::DomCode::TAB,
+                   ui::VKEY_TAB, false, false, false, false);
+  waiter->WaitForNotification();
+
+  SimulateKeyPress(shell()->web_contents(), ui::DomKey::TAB, ui::DomCode::TAB,
+                   ui::VKEY_TAB, false, false, false, false);
+  waiter->WaitForNotification();
+
+  AtkStateSet* state_set = atk_object_ref_state_set(child_3);
+  ASSERT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_FOCUSED));
+  g_object_unref(state_set);
+
+  // Now we repeat a similar test, but this time setting the caret offset
+  // on the parent node. In this case, the sequential navigation starting
+  // point should move to the appropriate child.
+  atk_text_set_caret_offset(ATK_TEXT(parent_div), 13);
+  SimulateKeyPress(shell()->web_contents(), ui::DomKey::TAB, ui::DomCode::TAB,
+                   ui::VKEY_TAB, false, false, false, false);
+  waiter->WaitForNotification();
+
+  SimulateKeyPress(shell()->web_contents(), ui::DomKey::TAB, ui::DomCode::TAB,
+                   ui::VKEY_TAB, false, false, false, false);
+  waiter->WaitForNotification();
+
+  state_set = atk_object_ref_state_set(child_7);
+  ASSERT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_FOCUSED));
+  g_object_unref(state_set);
+
+  // Now test setting the caret in a node that can accept focus. That
+  // node should actually receive focus.
+  atk_text_set_caret_offset(ATK_TEXT(child_3), 0);
+  SimulateKeyPress(shell()->web_contents(), ui::DomKey::TAB, ui::DomCode::TAB,
+                   ui::VKEY_TAB, false, false, false, false);
+  waiter->WaitForNotification();
+  state_set = atk_object_ref_state_set(child_3);
+  ASSERT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_FOCUSED));
+  g_object_unref(state_set);
+
+  g_object_unref(child_2);
+  g_object_unref(child_3);
+  g_object_unref(child_7);
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
+                       TestTextEventsInStaticText) {
+  LoadInitialAccessibilityTreeFromHtml(std::string(
+      R"HTML(<!DOCTYPE html>
+          <html>
+          <body>
+            <div contenteditable="true">Text inside field</div>
+          </body>
+          </html>)HTML"));
+
+  AtkObject* document = GetRendererAccessible();
+  EXPECT_EQ(1, atk_object_get_n_accessible_children(document));
+
+  AtkText* div_element = ATK_TEXT(atk_object_ref_accessible_child(document, 0));
+  EXPECT_EQ(1, atk_object_get_n_accessible_children(ATK_OBJECT(div_element)));
+  AtkText* text =
+      ATK_TEXT(atk_object_ref_accessible_child(ATK_OBJECT(div_element), 0));
+
+  auto callback = G_CALLBACK(+[](AtkText*, gint, bool* flag) { *flag = true; });
+  bool saw_caret_move_in_text = false;
+  bool saw_caret_move_in_div = false;
+  g_signal_connect(text, "text-caret-moved", callback, &saw_caret_move_in_text);
+  g_signal_connect(div_element, "text-caret-moved", callback,
+                   &saw_caret_move_in_div);
+
+  AccessibilityNotificationWaiter selection_waiter(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kTextSelectionChanged);
+  ExecuteScript(base::UTF8ToUTF16(
+      "let selection = document.getSelection();"
+      "let editable = document.querySelector('div[contenteditable=\"true\"]');"
+      "editable.focus();"
+      "let range = document.createRange();"
+      "range.setStart(editable.lastChild, 4);"
+      "range.setEnd(editable.lastChild, 4);"
+      "selection.removeAllRanges();"
+      "selection.addRange(range);"));
+  selection_waiter.WaitForNotification();
+
+  // We should see the event happen in div and not the static text element.
+  EXPECT_TRUE(saw_caret_move_in_div);
+  EXPECT_FALSE(saw_caret_move_in_text);
+
+  g_object_unref(div_element);
+  g_object_unref(text);
 }
 
 }  // namespace content

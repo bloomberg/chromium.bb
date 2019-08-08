@@ -80,7 +80,8 @@ body > main {
   background-color: rgb(250, 250, 250);
 }
 
-.messages.row .value,
+.warnings.row .value,
+.errors.row .value,
 .value.row .value {
   flex-grow: 1;
   max-height: 200px;
@@ -90,7 +91,8 @@ body > main {
 }
 
 <if expr="not is_android">
-.messages.row .name,
+.errors.row .name,
+.warnings.row .name,
 .conflict.row .name,
 .value.row .name {
   text-align: end;

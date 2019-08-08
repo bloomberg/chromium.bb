@@ -707,6 +707,11 @@ bool IsBuiltinFragmentInputVariable(TQualifier qualifier)
     return false;
 }
 
+bool IsShaderOutput(TQualifier qualifier)
+{
+    return IsVaryingOut(qualifier) || IsBuiltinOutputVariable(qualifier);
+}
+
 bool IsOutputESSL(ShShaderOutput output)
 {
     return output == SH_ESSL_OUTPUT;
@@ -811,6 +816,11 @@ GLenum GetImageInternalFormatType(TLayoutImageInternalFormat iifq)
         default:
             return GL_NONE;
     }
+}
+
+bool IsSpecWithFunctionBodyNewScope(ShShaderSpec shaderSpec, int shaderVersion)
+{
+    return (shaderVersion == 100 && !sh::IsWebGLBasedSpec(shaderSpec));
 }
 
 }  // namespace sh

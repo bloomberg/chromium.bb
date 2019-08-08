@@ -60,6 +60,8 @@ class CONTENT_EXPORT NavigationHandle {
   // WebContents::GetVisibleURL and WebContents::GetLastCommittedURL. For
   // example, viewing a page's source navigates to the URL of the page, but the
   // virtual URL is prefixed with "view-source:".
+  // Note: The URL of a NavigationHandle can change over its lifetime.
+  // e.g. URLs might be rewritten by the renderer before being committed.
   virtual const GURL& GetURL() = 0;
 
   // Returns the SiteInstance that started the request.
@@ -160,7 +162,7 @@ class CONTENT_EXPORT NavigationHandle {
   virtual ui::PageTransition GetPageTransition() = 0;
 
   // Returns the NavigationUIData associated with the navigation.
-  virtual const NavigationUIData* GetNavigationUIData() = 0;
+  virtual NavigationUIData* GetNavigationUIData() = 0;
 
   // Whether the target URL cannot be handled by the browser's internal protocol
   // handlers.
@@ -282,6 +284,9 @@ class CONTENT_EXPORT NavigationHandle {
 
   // Returns true if this navigation was initiated by a form submission.
   virtual bool IsFormSubmission() = 0;
+
+  // Returns true if this navigation was initiated by a link click.
+  virtual bool WasInitiatedByLinkClick() = 0;
 
   // Returns true if the target is an inner response of a signed exchange.
   virtual bool IsSignedExchangeInnerResponse() = 0;

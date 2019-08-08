@@ -116,8 +116,9 @@ void OfflineAudioDestinationHandler::StartRendering() {
     is_rendering_started_ = true;
     PostCrossThreadTask(
         *render_thread_task_runner_, FROM_HERE,
-        CrossThreadBind(&OfflineAudioDestinationHandler::StartOfflineRendering,
-                        WrapRefCounted(this)));
+        CrossThreadBindOnce(
+            &OfflineAudioDestinationHandler::StartOfflineRendering,
+            WrapRefCounted(this)));
     return;
   }
 
@@ -125,8 +126,8 @@ void OfflineAudioDestinationHandler::StartRendering() {
   // rendering by calling |doOfflineRendering| on the render thread.
   PostCrossThreadTask(
       *render_thread_task_runner_, FROM_HERE,
-      CrossThreadBind(&OfflineAudioDestinationHandler::DoOfflineRendering,
-                      WrapRefCounted(this)));
+      CrossThreadBindOnce(&OfflineAudioDestinationHandler::DoOfflineRendering,
+                          WrapRefCounted(this)));
 }
 
 void OfflineAudioDestinationHandler::StopRendering() {
@@ -247,8 +248,9 @@ void OfflineAudioDestinationHandler::SuspendOfflineRendering() {
   // The actual rendering has been suspended. Notify the context.
   PostCrossThreadTask(
       *main_thread_task_runner_, FROM_HERE,
-      CrossThreadBind(&OfflineAudioDestinationHandler::NotifySuspend,
-                      WrapRefCounted(this), Context()->CurrentSampleFrame()));
+      CrossThreadBindOnce(&OfflineAudioDestinationHandler::NotifySuspend,
+                          WrapRefCounted(this),
+                          Context()->CurrentSampleFrame()));
 }
 
 void OfflineAudioDestinationHandler::FinishOfflineRendering() {
@@ -257,14 +259,14 @@ void OfflineAudioDestinationHandler::FinishOfflineRendering() {
   // The actual rendering has been completed. Notify the context.
   PostCrossThreadTask(
       *main_thread_task_runner_, FROM_HERE,
-      CrossThreadBind(&OfflineAudioDestinationHandler::NotifyComplete,
-                      WrapRefCounted(this)));
+      CrossThreadBindOnce(&OfflineAudioDestinationHandler::NotifyComplete,
+                          WrapRefCounted(this)));
 }
 
 void OfflineAudioDestinationHandler::NotifySuspend(size_t frame) {
   DCHECK(IsMainThread());
 
-  if (Context() && Context()->GetExecutionContext())
+  if (!IsExecutionContextDestroyed() && Context())
     Context()->ResolveSuspendOnMainThread(frame);
 }
 

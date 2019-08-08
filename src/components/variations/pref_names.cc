@@ -33,12 +33,6 @@ const char kVariationsLastFetchTime[] = "variations_last_fetch_time";
 const char kVariationsPermanentConsistencyCountry[] =
     "variations_permanent_consistency_country";
 
-// Previously used by CachingPermutedEntropyProvider, which has been replaced by
-// NormalizedMurmurHashEntropyProvider. Deleted on startup.
-// TODO(crbug/912368): Remove this after it's been deleted from most installs.
-const char kVariationsPermutedEntropyCache[] =
-    "user_experience_metrics.permuted_entropy_cache";
-
 // String for the restrict parameter to be appended to the variations URL.
 const char kVariationsRestrictParameter[] = "variations_restrict_parameter";
 

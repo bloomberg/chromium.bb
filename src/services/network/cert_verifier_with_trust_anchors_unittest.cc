@@ -17,6 +17,7 @@
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_test_nss_chromeos_user.h"
 #include "net/base/test_completion_callback.h"
+#include "net/cert/cert_net_fetcher.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/nss_cert_database_chromeos.h"
 #include "net/cert/x509_certificate.h"
@@ -80,16 +81,17 @@ class CertVerifierWithTrustAnchorsTest : public testing::Test {
       net::CompletionOnceCallback test_callback,
       net::CertVerifyResult* verify_result,
       std::unique_ptr<net::CertVerifier::Request>* request) {
-    return cert_verifier_->Verify(
-        net::CertVerifier::RequestParams(test_server_cert_.get(), "127.0.0.1",
-                                         0, std::string()),
-        verify_result, std::move(test_callback), request,
-        net::NetLogWithSource());
+    return cert_verifier_->Verify(net::CertVerifier::RequestParams(
+                                      test_server_cert_.get(), "127.0.0.1", 0,
+                                      /*ocsp_response=*/std::string(),
+                                      /*sct_list=*/std::string()),
+                                  verify_result, std::move(test_callback),
+                                  request, net::NetLogWithSource());
   }
 
   bool SupportsAdditionalTrustAnchors() {
     scoped_refptr<net::CertVerifyProc> proc =
-        net::CertVerifyProc::CreateDefault();
+        net::CertVerifyProc::CreateDefault(/*cert_net_fetcher=*/nullptr);
     return proc->SupportsAdditionalTrustAnchors();
   }
 

@@ -7,7 +7,6 @@
 #include <memory>
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_request.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -83,7 +82,8 @@ TEST(ServiceWorkerRequestTest, FromAndToFetchAPIRequest) {
       mojom::blink::Referrer::New(KURL(NullURL(), referrer), kReferrerPolicy);
 
   Request* request =
-      Request::Create(scope.GetScriptState(), *fetch_api_request);
+      Request::Create(scope.GetScriptState(), *fetch_api_request,
+                      Request::ForServiceWorkerFetchEvent::kFalse);
   DCHECK(request);
   EXPECT_EQ(url, request->url());
   EXPECT_EQ(method, request->method());

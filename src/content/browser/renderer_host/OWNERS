@@ -15,7 +15,6 @@ per-file *android*=khushalsagar@chromium.org
 # For touch/gesture specific changes
 rjkroege@chromium.org
 sadrul@chromium.org
-tdresser@chromium.org
 
 # For surface ID propagation and synchronization
 fsamuel@chromium.org

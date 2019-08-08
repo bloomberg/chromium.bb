@@ -101,12 +101,11 @@ namespace blink {
 namespace {
 
 // Generate the default base tag declaration.
-String GenerateBaseTagDeclaration(const WebString& base_target) {
+String GenerateBaseTagDeclaration(const String& base_target) {
   // TODO(yosin) We should call |FrameSerializer::baseTagDeclarationOf()|.
   if (base_target.IsEmpty())
     return String("<base href=\".\">");
-  String base_string = "<base href=\".\" target=\"" +
-                       static_cast<const String&>(base_target) + "\">";
+  String base_string = "<base href=\".\" target=\"" + base_target + "\">";
   return base_string;
 }
 
@@ -398,8 +397,8 @@ void WebFrameSerializerImpl::EndTagToString(Element* element,
     if (param->is_html_document) {
       result.Append('>');
       // FIXME: This code is horribly wrong.  WebFrameSerializerImpl must die.
-      if (!element->IsHTMLElement() ||
-          ToHTMLElement(element)->ShouldSerializeEndTag()) {
+      auto* html_element = DynamicTo<HTMLElement>(element);
+      if (!html_element || html_element->ShouldSerializeEndTag()) {
         // We need to write end tag when it is required.
         result.Append("</");
         result.Append(element->nodeName().DeprecatedLower());

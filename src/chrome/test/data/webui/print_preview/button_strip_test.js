@@ -27,7 +27,7 @@ cr.define('button_strip_test', function() {
           'FooDevice', print_preview.DestinationType.GOOGLE,
           print_preview.DestinationOrigin.COOKIES, 'FooName',
           print_preview.DestinationConnectionStatus.ONLINE);
-      buttonStrip.state = print_preview_new.State.READY;
+      buttonStrip.state = print_preview.State.READY;
       document.body.appendChild(buttonStrip);
     });
 
@@ -37,16 +37,16 @@ cr.define('button_strip_test', function() {
       const printButton = buttonStrip.$$('.action-button');
       assertFalse(printButton.disabled);
 
-      buttonStrip.state = print_preview_new.State.NOT_READY;
+      buttonStrip.state = print_preview.State.NOT_READY;
       assertTrue(printButton.disabled);
 
-      buttonStrip.state = print_preview_new.State.PRINTING;
+      buttonStrip.state = print_preview.State.PRINTING;
       assertTrue(printButton.disabled);
 
-      buttonStrip.state = print_preview_new.State.ERROR;
+      buttonStrip.state = print_preview.State.ERROR;
       assertTrue(printButton.disabled);
 
-      buttonStrip.state = print_preview_new.State.FATAL_ERROR;
+      buttonStrip.state = print_preview.State.FATAL_ERROR;
       assertTrue(printButton.disabled);
     });
 

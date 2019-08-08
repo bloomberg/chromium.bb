@@ -30,7 +30,6 @@ namespace webrtc {
 class AudioDecoder;
 class AudioEncoder;
 class AudioFrame;
-class RTPFragmentationHeader;
 struct RTPHeader;
 
 #define WEBRTC_10MS_PCM_AUDIO 960  // 16 bits super wideband 48 kHz
@@ -44,8 +43,7 @@ class AudioPacketizationCallback {
                            uint8_t payload_type,
                            uint32_t timestamp,
                            const uint8_t* payload_data,
-                           size_t payload_len_bytes,
-                           const RTPFragmentationHeader* fragmentation) = 0;
+                           size_t payload_len_bytes) = 0;
 };
 
 // Callback class used for reporting VAD decision

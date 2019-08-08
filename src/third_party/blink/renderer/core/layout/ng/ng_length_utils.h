@@ -7,11 +7,13 @@
 
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_size.h"
 #include "third_party/blink/renderer/core/layout/min_max_size.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_size.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_fragment_geometry.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_input_node.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
@@ -29,13 +31,6 @@ class NGLayoutInputNode;
 // This changes how lengths are resolved. kIntrinsic must be used during the
 // intrinsic sizes pass, and kLayout must be used during the layout pass.
 enum class LengthResolvePhase { kIntrinsic, kLayout };
-
-// LengthResolveType indicates what type length the function is being passed
-// based on its CSS property. E.g.
-// kMinSize - min-width / min-height
-// kMaxSize - max-width / max-height
-// kMainSize - width / height
-enum class LengthResolveType { kMinSize, kMaxSize, kMainSize };
 
 inline bool NeedMinMaxSize(const ComputedStyle& style) {
   // This check is technically too broad (fill-available does not need intrinsic
@@ -150,7 +145,8 @@ inline LayoutUnit ResolveMinBlockLength(
     LengthResolvePhase phase,
     const LayoutUnit* opt_percentage_resolution_block_size_for_min_max =
         nullptr) {
-  if (LIKELY(length.IsAuto() ||
+  if (LIKELY(length.IsAuto() || length.IsMinContent() ||
+             length.IsMaxContent() || length.IsFitContent() ||
              BlockLengthUnresolvable(
                  constraint_space, length, phase,
                  opt_percentage_resolution_block_size_for_min_max)))
@@ -171,7 +167,8 @@ inline LayoutUnit ResolveMaxBlockLength(
     LengthResolvePhase phase,
     const LayoutUnit* opt_percentage_resolution_block_size_for_min_max =
         nullptr) {
-  if (LIKELY(length.IsMaxSizeNone() ||
+  if (LIKELY(length.IsMaxSizeNone() || length.IsMinContent() ||
+             length.IsMaxContent() || length.IsFitContent() ||
              BlockLengthUnresolvable(
                  constraint_space, length, phase,
                  opt_percentage_resolution_block_size_for_min_max)))
@@ -256,15 +253,14 @@ CORE_EXPORT LayoutUnit ComputeInlineSizeForFragment(
 // Same as ComputeInlineSizeForFragment, but uses height instead of width.
 CORE_EXPORT LayoutUnit
 ComputeBlockSizeForFragment(const NGConstraintSpace&,
-                            const ComputedStyle&,
+                            const NGBlockNode&,
                             const NGBoxStrut& border_padding,
                             LayoutUnit content_size);
 
 // Computes intrinsic size for replaced elements.
-CORE_EXPORT NGLogicalSize
-ComputeReplacedSize(const NGLayoutInputNode&,
-                    const NGConstraintSpace&,
-                    const base::Optional<MinMaxSize>&);
+CORE_EXPORT LogicalSize ComputeReplacedSize(const NGLayoutInputNode&,
+                                            const NGConstraintSpace&,
+                                            const base::Optional<MinMaxSize>&);
 
 // Based on available inline size, CSS computed column-width, CSS computed
 // column-count and CSS used column-gap, return CSS used column-count.
@@ -384,6 +380,9 @@ inline NGLineBoxStrut ComputeLinePadding(
                         style.IsFlippedLinesWritingMode());
 }
 
+CORE_EXPORT NGBoxStrut ComputeScrollbars(const NGConstraintSpace&,
+                                         const NGLayoutInputNode);
+
 // Return true if we need to know the inline size of the fragment in order to
 // calculate its line-left offset. This is the case when we have auto margins,
 // or when block alignment isn't line-left (e.g. with align!=left, and always in
@@ -411,62 +410,43 @@ CORE_EXPORT LayoutUnit LineOffsetForTextAlign(ETextAlign,
                                               TextDirection,
                                               LayoutUnit space_left);
 
-// Same as |LineOffsetForTextAlign| but returns the logical inline offset
-// instead of line-left offset.
-CORE_EXPORT LayoutUnit InlineOffsetForTextAlign(const ComputedStyle&,
-                                                LayoutUnit space_left);
-
 inline LayoutUnit ConstrainByMinMax(LayoutUnit length,
                                     LayoutUnit min,
                                     LayoutUnit max) {
   return std::max(min, std::min(length, max));
 }
 
-// Clamp the inline size of the scrollbar, unless it's larger than the inline
-// size of the content box, in which case we'll return that instead. Scrollbar
-// handling is quite bad in such situations, and this method here is just to
-// make sure that left-hand scrollbars don't mess up scrollWidth. For the full
-// story, visit http://crbug.com/724255.
-bool ClampScrollbarToContentBox(NGBoxStrut* scrollbars,
-                                LayoutUnit content_box_inline_size);
+// Calculates the initial (pre-layout) fragment geometry given a node, and a
+// constraint space.
+// The "pre-layout" block-size may be indefinite, as we'll only have enough
+// information to determine this post-layout.
+CORE_EXPORT NGFragmentGeometry
+CalculateInitialFragmentGeometry(const NGConstraintSpace&, const NGBlockNode&);
 
-NGBoxStrut CalculateBorderScrollbarPadding(
-    const NGConstraintSpace& constraint_space,
-    const NGBlockNode node);
-
-// border_padding can be passed in as an optimization; otherwise this function
-// will compute it itself.
-NGLogicalSize CalculateBorderBoxSize(
-    const NGConstraintSpace& constraint_space,
-    const NGBlockNode& node,
-    const NGBoxStrut& border_padding,
-    LayoutUnit block_content_size = NGSizeIndefinite);
+// Similar to |CalculateInitialFragmentGeometry| however will only calculate
+// the border, scrollbar, and padding (resolving percentages to zero).
+CORE_EXPORT NGFragmentGeometry
+CalculateInitialMinMaxFragmentGeometry(const NGConstraintSpace&,
+                                       const NGBlockNode&);
 
 // Shrink and return the available size by an inset. This may e.g. be used to
 // convert from border-box to content-box size. Indefinite block size is
 // allowed, in which case the inset will be ignored for block size.
-NGLogicalSize ShrinkAvailableSize(NGLogicalSize size, const NGBoxStrut& inset);
-
-// Calculates default content size for html and body elements in quirks mode.
-// Returns NGSizeIndefinite in all other cases.
-LayoutUnit CalculateDefaultBlockSize(
-    const NGConstraintSpace&,
-    const NGBlockNode&,
-    const NGBoxStrut& border_scrollbar_padding);
+LogicalSize ShrinkAvailableSize(LogicalSize size, const NGBoxStrut& inset);
 
 // Calculates the percentage resolution size that children of the node should
 // use.
-NGLogicalSize CalculateChildPercentageSize(
+LogicalSize CalculateChildPercentageSize(
     const NGConstraintSpace&,
     const NGBlockNode node,
-    const NGLogicalSize& child_available_size);
+    const LogicalSize& child_available_size);
 
 // Calculates the percentage resolution size that replaced children of the node
 // should use.
-NGLogicalSize CalculateReplacedChildPercentageSize(
+LogicalSize CalculateReplacedChildPercentageSize(
     const NGConstraintSpace&,
     const NGBlockNode node,
-    NGLogicalSize border_box_size,
+    LogicalSize border_box_size,
     const NGBoxStrut& border_scrollbar_padding,
     const NGBoxStrut& border_padding);
 
@@ -475,6 +455,22 @@ LayoutUnit CalculateChildPercentageBlockSizeForMinMax(
     const NGBlockNode node,
     const NGBoxStrut& border_padding,
     LayoutUnit parent_percentage_block_size);
+
+// The following function clamps the calculated size based on the node
+// requirements. Specifically, this adjusts the size based on size containment
+// and display locking status.
+LayoutUnit ClampIntrinsicBlockSize(const NGBlockNode&,
+                                   const NGBoxStrut& border_scrollbar_padding,
+                                   LayoutUnit current_intrinsic_block_size);
+
+// This function checks if the inline size of this node has to be calculated
+// without considering children. If so, it returns the calculated size.
+// Otherwise, it returns base::nullopt and the caller has to compute the size
+// itself.
+base::Optional<MinMaxSize> CalculateMinMaxSizesIgnoringChildren(
+    const NGBlockNode&,
+    const NGBoxStrut& border_scrollbar_padding,
+    NGMinMaxSizeType);
 
 }  // namespace blink
 

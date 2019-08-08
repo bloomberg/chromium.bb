@@ -44,6 +44,7 @@ bool DownloadManagerDelegate::InterceptDownloadIfApplicable(
     const std::string& mime_type,
     const std::string& request_origin,
     int64_t content_length,
+    bool is_transient,
     WebContents* web_contents) {
   return false;
 }
@@ -51,10 +52,6 @@ bool DownloadManagerDelegate::InterceptDownloadIfApplicable(
 bool DownloadManagerDelegate::IsMostRecentDownloadItemAtFilePath(
     download::DownloadItem* download) {
   return true;
-}
-
-bool DownloadManagerDelegate::GenerateFileHash() {
-  return false;
 }
 
 std::string

@@ -99,7 +99,7 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
     container->AddChildView(textfield_);
 
     textfield_->SetBoundsRect(gfx::Rect(0, 0, 200, 21));
-    textfield_->set_id(1);
+    textfield_->SetID(1);
     textfield_widget_->Show();
 
     textfield_->RequestFocus();
@@ -584,7 +584,7 @@ TEST_F(TouchSelectionControllerImplTest,
     // Make sure that the visible handle is being dragged.
     EXPECT_NE(visible_handle_position, textfield_->GetSelectedRange().end());
     visible_handle_position = textfield_->GetSelectedRange().end();
-    EXPECT_EQ((size_t) 10, textfield_->GetSelectedRange().start());
+    EXPECT_EQ(10u, textfield_->GetSelectedRange().start());
   }
 }
 
@@ -697,7 +697,6 @@ class TestTouchEditable : public ui::TouchEditable {
   gfx::Rect bounds_;
 
   // Cursor position inside the client view.
-  //gfx::Rect cursor_rect_;
   gfx::SelectionBound cursor_bound_;
 
   DISALLOW_COPY_AND_ASSIGN(TestTouchEditable);

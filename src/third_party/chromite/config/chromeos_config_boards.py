@@ -29,10 +29,8 @@ arm_internal_release_boards = frozenset([
     'capri',
     'capri-zfpga',
     'cheza',
+    'cheza64',
     'cobblepot',
-    'daisy',
-    'daisy_skate',
-    'daisy_spring',
     'elm',
     'flapjack',
     'gale',
@@ -163,7 +161,6 @@ x86_internal_release_boards = frozenset([
     'snappy',
     'soraka',
     'squawks',
-    'stout',
     'sumo',
     'swanky',
     'terra',
@@ -175,6 +172,7 @@ x86_internal_release_boards = frozenset([
     'wristpin',
     'wolf',
     'zako',
+    'zork',
 ])
 
 x86_external_boards = frozenset([
@@ -274,4 +272,5 @@ base_layout_boards = lakitu_boards | termina_boards
 
 builder_incompatible_binaries_boards = frozenset([
     'grunt',
+    'zork',
 ])

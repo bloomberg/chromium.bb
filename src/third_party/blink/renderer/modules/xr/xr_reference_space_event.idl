@@ -9,6 +9,6 @@
     OriginTrialEnabled=WebXR,
     Constructor(DOMString type, XRReferenceSpaceEventInit eventInitDict)
 ] interface XRReferenceSpaceEvent : Event {
-  readonly attribute XRReferenceSpace referenceSpace;
-  readonly attribute XRRigidTransform transform;
+  [SameObject] readonly attribute XRReferenceSpace referenceSpace;
+  [SameObject] readonly attribute XRRigidTransform transform;
 };

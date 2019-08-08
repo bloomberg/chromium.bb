@@ -17,6 +17,7 @@ cr.define('cr.ui.table', function() {
    * @extends {cr.EventTarget}
    */
   function TableColumnModel(tableColumns) {
+    /** @type {!Array<cr.ui.table.TableColumn>} */
     this.columns_ = [];
     for (let i = 0; i < tableColumns.length; i++) {
       this.columns_.push(tableColumns[i].clone());
@@ -75,7 +76,7 @@ cr.define('cr.ui.table', function() {
     /**
      * Returns width (in percent) of column at the given index.
      * @param {number} index The index of the column.
-     * @return {string} Column width in pixels.
+     * @return {number} Column width in pixels.
      */
     getWidth: function(index) {
       return this.columns_[index].width;

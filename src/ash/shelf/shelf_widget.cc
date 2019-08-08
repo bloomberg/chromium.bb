@@ -8,12 +8,17 @@
 
 #include "ash/animation/animation_change_type.h"
 #include "ash/focus_cycler.h"
+#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/kiosk_next/kiosk_next_shell_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shelf/app_list_button.h"
+#include "ash/shelf/default_shelf_view.h"
+#include "ash/shelf/kiosk_next_shelf_view.h"
 #include "ash/shelf/login_shelf_view.h"
 #include "ash/shelf/overflow_bubble.h"
 #include "ash/shelf/overflow_bubble_view.h"
@@ -32,7 +37,6 @@
 #include "ui/compositor/layer_owner.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/skbitmap_operations.h"
-#include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/layout/fill_layout.h"
@@ -45,6 +49,9 @@ namespace {
 
 constexpr int kShelfRoundedCornerRadius = 28;
 constexpr int kShelfBlurRadius = 30;
+// The maximum size of the opaque layer during an "overshoot" (drag away from
+// the screen edge).
+constexpr int kShelfMaxOvershootHeight = 32;
 constexpr float kShelfBlurQuality = 0.33f;
 
 // Return the first or last focusable child of |root|.
@@ -226,7 +233,11 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
   // To achieve this, we extend the layer in the same direction where the shelf
   // is aligned (downwards for a bottom shelf, etc.).
   const int radius = kShelfRoundedCornerRadius;
-  const int safety_margin = 3 * radius;
+  // With shader rounded corners, we can easily round only 2 corners out of
+  // 4 which means we don't need as much extra shelf height.
+  const int safety_margin = ash::features::ShouldUseShaderRoundedCorner()
+                                ? kShelfMaxOvershootHeight
+                                : 3 * radius;
   opaque_background_bounds.Inset(
       -shelf->SelectValueForShelfAlignment(0, safety_margin, 0), 0,
       -shelf->SelectValueForShelfAlignment(0, 0, safety_margin),
@@ -276,7 +287,7 @@ views::View* ShelfWidget::DelegateView::GetDefaultFocusableChild() {
   if (!IsUsingViewsShelf())
     return GetFirstFocusableChild();
 
-  if (shelf_widget_->login_shelf_view_->visible()) {
+  if (shelf_widget_->login_shelf_view_->GetVisible()) {
     return FindFirstOrLastFocusableChild(shelf_widget_->login_shelf_view_,
                                          default_last_focusable_child_);
   } else {
@@ -302,7 +313,7 @@ bool ShelfWidget::GetHitTestRects(aura::Window* target,
   // calculated higher up in the class hierarchy by |EasyResizeWindowTargeter|.
   // When in OOBE or locked/login screen, let events pass through empty parts
   // of the shelf.
-  DCHECK(login_shelf_view_->visible());
+  DCHECK(login_shelf_view_->GetVisible());
   gfx::Rect login_view_button_bounds =
       login_shelf_view_->ConvertRectToWidget(login_shelf_view_->GetMirroredRect(
           login_shelf_view_->get_button_union_bounds()));
@@ -321,7 +332,7 @@ ShelfWidget::ShelfWidget(aura::Window* shelf_container, Shelf* shelf)
                            Shell::Get()->wallpaper_controller()),
       shelf_layout_manager_(new ShelfLayoutManager(this, shelf)),
       delegate_view_(new DelegateView(this)),
-      shelf_view_(new ShelfView(Shell::Get()->shelf_model(), shelf_, this)),
+      shelf_view_(new DefaultShelfView(ShelfModel::Get(), shelf_, this)),
       login_shelf_view_(
           new LoginShelfView(RootWindowController::ForWindow(shelf_container)
                                  ->lock_screen_action_background_controller())),
@@ -361,6 +372,14 @@ ShelfWidget::ShelfWidget(aura::Window* shelf_container, Shelf* shelf)
 
   background_animator_.AddObserver(delegate_view_);
   shelf_->AddObserver(this);
+
+  // KioskNextShell controller may have already notified its observers that
+  // it has been enabled by the time this ShelfWidget is being created.
+  if (Shell::Get()->kiosk_next_shell_controller()->IsEnabled()) {
+    OnKioskNextEnabled();
+  } else {
+    Shell::Get()->kiosk_next_shell_controller()->AddObserver(this);
+  }
 }
 
 ShelfWidget::~ShelfWidget() {
@@ -389,6 +408,9 @@ void ShelfWidget::Shutdown() {
   background_animator_.RemoveObserver(delegate_view_);
   shelf_->RemoveObserver(this);
 
+  if (Shell::Get()->kiosk_next_shell_controller())
+    Shell::Get()->kiosk_next_shell_controller()->RemoveObserver(this);
+
   // Don't need to observe focus/activation during shutdown.
   Shell::Get()->focus_cycler()->RemoveWidget(this);
   SetFocusCycler(nullptr);
@@ -404,11 +426,6 @@ void ShelfWidget::CreateStatusAreaWidget(aura::Window* status_container) {
   Shell::Get()->focus_cycler()->AddWidget(status_area_widget_.get());
   background_animator_.AddObserver(status_area_widget_.get());
   status_container->SetLayoutManager(new StatusAreaLayoutManager(this));
-}
-
-void ShelfWidget::SetPaintsBackground(ShelfBackgroundType background_type,
-                                      AnimationChangeType change_type) {
-  background_animator_.PaintBackground(background_type, change_type);
 }
 
 ShelfBackgroundType ShelfWidget::GetBackgroundType() const {
@@ -497,7 +514,7 @@ void ShelfWidget::set_default_last_focusable_child(
 
 void ShelfWidget::FocusFirstOrLastFocusableChild(bool last) {
   // This is only ever called during an active session.
-  if (!shelf_view_->visible())
+  if (!shelf_view_->GetVisible())
     return;
   views::View* to_focus = shelf_view_->FindFirstOrLastFocusableChild(last);
 
@@ -586,6 +603,18 @@ void ShelfWidget::OnSessionStateChanged(session_manager::SessionState state) {
 
 void ShelfWidget::OnUserSessionAdded(const AccountId& account_id) {
   login_shelf_view_->UpdateAfterSessionChange();
+}
+
+void ShelfWidget::OnKioskNextEnabled() {
+  // Hide the shelf view and delete/remove it.
+  shelf_view_->SetVisible(false);
+  delete shelf_view_;
+
+  shelf_view_ = new KioskNextShelfView(
+      Shell::Get()->kiosk_next_shell_controller()->shelf_model(), shelf_, this);
+  shelf_view_->Init();
+  GetContentsView()->AddChildView(shelf_view_);
+  shelf_view_->SetVisible(true);
 }
 
 SkColor ShelfWidget::GetShelfBackgroundColor() const {

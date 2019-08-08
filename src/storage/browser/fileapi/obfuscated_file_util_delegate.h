@@ -48,6 +48,11 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtilDelegate {
       const base::FilePath& dest_path,
       FileSystemOperation::CopyOrMoveOption option,
       NativeFileUtil::CopyOrMoveMode mode) = 0;
+  virtual base::File::Error CopyInForeignFile(
+      const base::FilePath& src_path,
+      const base::FilePath& dest_path,
+      FileSystemOperation::CopyOrMoveOption option,
+      NativeFileUtil::CopyOrMoveMode mode) = 0;
   virtual base::File::Error DeleteFile(const base::FilePath& path) = 0;
 
  private:

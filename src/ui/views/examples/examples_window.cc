@@ -33,6 +33,7 @@
 #include "ui/views/examples/menu_example.h"
 #include "ui/views/examples/message_box_example.h"
 #include "ui/views/examples/multiline_example.h"
+#include "ui/views/examples/native_theme_example.h"
 #include "ui/views/examples/progress_bar_example.h"
 #include "ui/views/examples/radio_button_example.h"
 #include "ui/views/examples/scroll_view_example.h"
@@ -75,6 +76,7 @@ ExampleVector CreateExamples() {
   examples.push_back(std::make_unique<MenuExample>());
   examples.push_back(std::make_unique<MessageBoxExample>());
   examples.push_back(std::make_unique<MultilineExample>());
+  examples.push_back(std::make_unique<NativeThemeExample>());
   examples.push_back(std::make_unique<ProgressBarExample>());
   examples.push_back(std::make_unique<RadioButtonExample>());
   examples.push_back(std::make_unique<ScrollViewExample>());
@@ -142,12 +144,11 @@ class ExamplesWindowContents : public WidgetDelegateView,
         on_close_(std::move(on_close)) {
     auto combobox_model = std::make_unique<ComboboxModelExampleList>();
     combobox_model_ = combobox_model.get();
+    combobox_model_->SetExamples(std::move(examples));
     combobox_ = new Combobox(std::move(combobox_model));
 
     instance_ = this;
     combobox_->set_listener(this);
-    combobox_model_->SetExamples(std::move(examples));
-    combobox_->ModelChanged();
 
     SetBackground(CreateStandardPanelBackground());
     GridLayout* layout =
@@ -202,10 +203,10 @@ class ExamplesWindowContents : public WidgetDelegateView,
   // ComboboxListener:
   void OnPerformAction(Combobox* combobox) override {
     DCHECK_EQ(combobox, combobox_);
-    DCHECK(combobox->selected_index() < combobox_model_->GetItemCount());
+    DCHECK(combobox->GetSelectedIndex());
     example_shown_->RemoveAllChildViews(false);
     example_shown_->AddChildView(
-        combobox_model_->GetItemViewAt(combobox->selected_index()));
+        combobox_model_->GetItemViewAt(combobox->GetSelectedIndex()));
     example_shown_->RequestFocus();
     SetStatus(std::string());
     InvalidateLayout();

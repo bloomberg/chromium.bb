@@ -110,7 +110,9 @@ class WebURLRequest {
     kLazyImageAutoReload = 1 << 11,    // Request the full version of an image
                                        // that was previously fetched as a
                                        // placeholder by lazyload.
-    kPreviewsStateLast = kLazyImageAutoReload
+    kDeferAllScriptOn = 1 << 12,  // Request that script execution be deferred
+                                  // until parsing completes.
+    kPreviewsStateLast = kDeferAllScriptOn
   };
 
   class ExtraData {
@@ -261,8 +263,8 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT void SetPluginChildID(int);
 
   // Allows the request to be matched up with its app cache host.
-  BLINK_PLATFORM_EXPORT int AppCacheHostID() const;
-  BLINK_PLATFORM_EXPORT void SetAppCacheHostID(int);
+  BLINK_PLATFORM_EXPORT const base::UnguessableToken& AppCacheHostID() const;
+  BLINK_PLATFORM_EXPORT void SetAppCacheHostID(const base::UnguessableToken&);
 
   // If true, the client expects to receive the raw response pipe. Similar to
   // UseStreamOnResponse but the stream will be a mojo DataPipe rather than a
@@ -358,6 +360,10 @@ class WebURLRequest {
 
   // Returns true when the request is for revalidation.
   BLINK_PLATFORM_EXPORT bool IsRevalidating() const;
+
+  // Returns true if the CORS module should take into account the origin
+  // attached with the URLLoaderFactory.
+  BLINK_PLATFORM_EXPORT bool ShouldAlsoUseFactoryBoundOriginForCors() const;
 
   // Returns the DevTools ID to throttle the network request.
   BLINK_PLATFORM_EXPORT const base::Optional<base::UnguessableToken>&

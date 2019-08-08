@@ -2,6 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+
+import itertools
 import json
 import mock
 
@@ -13,6 +18,7 @@ from dashboard.common import namespaced_stored_object
 from dashboard.common import testing_common
 from dashboard.common import utils
 from dashboard.models import anomaly
+from dashboard.models import anomaly_config
 from dashboard.models import graph_data
 from dashboard.services import pinpoint_service
 
@@ -79,10 +85,25 @@ class PinpointNewPerfTryRequestHandlerTest(testing_common.TestCase):
     self.assertEqual({'foo': 'bar'}, json.loads(response.body))
 
   @mock.patch.object(
+      utils, 'IsValidSheriffUser', mock.MagicMock(return_value=True))
+  def testPinpointParams_StoryFilterSet(self):
+    params = {
+        'test_path': 'ChromiumPerf/android-webview-nexus5x/system_health/foo',
+        'start_commit': 'abcd1234',
+        'end_commit': 'efgh5678',
+        'extra_test_args': '',
+        'story_filter': 'story',
+    }
+    results = pinpoint_request.PinpointParamsFromPerfTryParams(params)
+
+    self.assertEqual('story', results['story'])
+
+  @mock.patch.object(
       utils, 'IsValidSheriffUser', mock.MagicMock(return_value=False))
   def testPinpointParams_InvalidSheriff_RaisesError(self):
     params = {
-        'test_path': 'ChromiumPerf/foo/blah/foo'
+        'test_path': 'ChromiumPerf/foo/blah/foo',
+        'story_filter': '',
     }
     with self.assertRaises(pinpoint_request.InvalidParamsError):
       pinpoint_request.PinpointParamsFromPerfTryParams(params)
@@ -94,6 +115,7 @@ class PinpointNewPerfTryRequestHandlerTest(testing_common.TestCase):
         'test_path': 'ChromiumPerf/mac/cc_perftests/foo',
         'start_commit': 'abcd1234',
         'end_commit': 'efgh5678',
+        'story_filter': '',
     }
     with self.assertRaises(pinpoint_request.InvalidParamsError):
       pinpoint_request.PinpointParamsFromPerfTryParams(params)
@@ -107,6 +129,7 @@ class PinpointNewPerfTryRequestHandlerTest(testing_common.TestCase):
         'end_commit': 'efgh5678',
         'extra_test_args': json.dumps(
             ['--extra-trace-args', 'abc,123,foo']),
+        'story_filter': '',
     }
     results = pinpoint_request.PinpointParamsFromPerfTryParams(params)
 
@@ -121,6 +144,7 @@ class PinpointNewPerfTryRequestHandlerTest(testing_common.TestCase):
         'end_commit': 'efgh5678',
         'extra_test_args': json.dumps(
             ['--extra-trace-args', 'abc,123,foo']),
+        'story_filter': '',
     }
     results = pinpoint_request.PinpointParamsFromPerfTryParams(params)
 
@@ -143,6 +167,7 @@ class PinpointNewPerfTryRequestHandlerTest(testing_common.TestCase):
         'start_commit': 'abcd1234',
         'end_commit': 'efgh5678',
         'extra_test_args': '',
+        'story_filter': '',
     }
     results = pinpoint_request.PinpointParamsFromPerfTryParams(params)
 
@@ -164,6 +189,7 @@ class PinpointNewPerfTryRequestHandlerTest(testing_common.TestCase):
         'start_commit': '1234',
         'end_commit': '5678',
         'extra_test_args': '',
+        'story_filter': '',
     }
     results = pinpoint_request.PinpointParamsFromPerfTryParams(params)
 
@@ -180,6 +206,7 @@ class PinpointNewPerfTryRequestHandlerTest(testing_common.TestCase):
         'start_commit': 'abcd1234',
         'end_commit': 'efgh5678',
         'extra_test_args': '',
+        'story_filter': '',
     }
     results = pinpoint_request.PinpointParamsFromPerfTryParams(params)
 
@@ -198,6 +225,7 @@ class PinpointNewPerfTryRequestHandlerTest(testing_common.TestCase):
         'start_commit': '1234',
         'end_commit': '5678',
         'extra_test_args': '',
+        'story_filter': '',
     }
     results = pinpoint_request.PinpointParamsFromPerfTryParams(params)
 
@@ -207,6 +235,9 @@ class PinpointNewPerfTryRequestHandlerTest(testing_common.TestCase):
         numbering_type='COMMIT_POSITION', project='chromium', repo='v8/v8')
 
 
+@mock.patch.object(
+    pinpoint_request, 'FindMagnitudeBetweenCommits',
+    mock.MagicMock(return_value=None))
 class PinpointNewBisectRequestHandlerTest(testing_common.TestCase):
 
   def setUp(self):
@@ -642,3 +673,156 @@ class PinpointNewBisectRequestHandlerTest(testing_common.TestCase):
     mock_crrev.assert_any_call(
         number='1234', numbering_identifier='refs/heads/master',
         numbering_type='COMMIT_POSITION', project='chromium', repo='v8/v8')
+
+
+class PinpointNewBisectComparisonMagnitude(testing_common.TestCase):
+
+  def setUp(self):
+    super(PinpointNewBisectComparisonMagnitude, self).setUp()
+
+    self.SetCurrentUser('foo@chromium.org')
+
+    namespaced_stored_object.Set('repositories', {
+        'chromium': {'some': 'params'},
+        'v8': {'more': 'params'}
+    })
+
+  @mock.patch.object(
+      pinpoint_request.crrev_service, 'GetNumbering',
+      mock.MagicMock(return_value={'git_sha': 'abcd'}))
+  @mock.patch.object(
+      utils, 'IsValidSheriffUser', mock.MagicMock(return_value=True))
+  def testPinpointParams_NoAlert(self):
+    params = {
+        'test_path':
+            'ChromiumPerf/Android Nexus5X WebView Perf/system_health/foo',
+        'start_commit': '1051',
+        'end_commit': '1151',
+        'bug_id': 1,
+        'bisect_mode': 'performance',
+        'story_filter': '',
+        'pin': '',
+    }
+    t = graph_data.TestMetadata(id=params['test_path'])
+    t.put()
+
+    rows = dict(
+        itertools.chain(
+            zip(
+                itertools.islice(itertools.count(1000, 2), 50),
+                itertools.repeat({'value': 0.1})),
+            zip(
+                itertools.islice(itertools.count(1101, 2), 50),
+                itertools.repeat({'value': 0.5}))))
+
+    testing_common.AddRows(params['test_path'], rows)
+    results = pinpoint_request.PinpointParamsFromBisectParams(params)
+
+    self.assertEqual(0.4, results['comparison_magnitude'])
+
+  @mock.patch.object(
+      pinpoint_request.crrev_service, 'GetNumbering',
+      mock.MagicMock(return_value={'git_sha': 'abcd'}))
+  @mock.patch.object(
+      pinpoint_request.crrev_service, 'GetCommit')
+  @mock.patch.object(
+      utils, 'IsValidSheriffUser', mock.MagicMock(return_value=True))
+  def testPinpointParams_GitHashes(self, mock_commit):
+    def _MockCommit(git_sha):
+      if git_sha == 'abc':
+        return {'number': 1050}
+      else:
+        return {'number': 1150}
+    mock_commit.side_effect = _MockCommit
+
+    params = {
+        'test_path':
+            'ChromiumPerf/Android Nexus5X WebView Perf/system_health/foo',
+        'start_commit': 'abc',
+        'end_commit': 'def',
+        'bug_id': 1,
+        'bisect_mode': 'performance',
+        'story_filter': '',
+        'pin': '',
+    }
+    t = graph_data.TestMetadata(id=params['test_path'])
+    t.put()
+
+    rows = dict(
+        itertools.chain(
+            zip(
+                itertools.islice(itertools.count(1000, 2), 50),
+                itertools.repeat({'value': 0.1})),
+            zip(
+                itertools.islice(itertools.count(1101, 2), 50),
+                itertools.repeat({'value': 0.5}))))
+
+    testing_common.AddRows(params['test_path'], rows)
+    results = pinpoint_request.PinpointParamsFromBisectParams(params)
+
+    self.assertEqual(0.4, results['comparison_magnitude'])
+
+  @mock.patch.object(
+      pinpoint_request.crrev_service, 'GetNumbering',
+      mock.MagicMock(return_value={'git_sha': 'abcd'}))
+  @mock.patch.object(
+      utils, 'IsValidSheriffUser', mock.MagicMock(return_value=True))
+  def testPinpointParams_NoData(self):
+    params = {
+        'test_path':
+            'ChromiumPerf/Android Nexus5X WebView Perf/system_health/foo',
+        'start_commit': '1050',
+        'end_commit': '1150',
+        'bug_id': 1,
+        'bisect_mode': 'performance',
+        'story_filter': '',
+        'pin': '',
+    }
+    t = graph_data.TestMetadata(id=params['test_path'])
+    t.put()
+
+    results = pinpoint_request.PinpointParamsFromBisectParams(params)
+
+    self.assertFalse('comparison_magnitude' in results)
+
+  @mock.patch.object(
+      pinpoint_request.crrev_service, 'GetNumbering',
+      mock.MagicMock(return_value={'git_sha': 'abcd'}))
+  @mock.patch.object(
+      utils, 'IsValidSheriffUser', mock.MagicMock(return_value=True))
+  def testPinpointParams_OverriddenAnomalyConfig(self):
+    params = {
+        'test_path':
+            'ChromiumPerf/Android Nexus5X WebView Perf/system_health/foo',
+        'start_commit': '1051',
+        'end_commit': '1151',
+        'bug_id': 1,
+        'bisect_mode': 'performance',
+        'story_filter': '',
+        'pin': '',
+    }
+    a = anomaly_config.AnomalyConfig()
+    a.config = {'min_segment_size': 1}
+    a.patterns = ['*/*/*/*']
+    a.put()
+
+    t = graph_data.TestMetadata(id=params['test_path'])
+    t.overridden_anomaly_config = a.key
+    t.put()
+
+    rows = dict(
+        itertools.chain(
+            zip(
+                itertools.islice(itertools.count(1000, 2), 75),
+                itertools.repeat({'value': -100.0})),
+            [(1050, {'value': 0.1})],
+            zip(
+                itertools.islice(itertools.count(1101, 2), 50),
+                itertools.repeat({'value': 0.5}))))
+
+    testing_common.AddRows(params['test_path'], rows)
+    results = pinpoint_request.PinpointParamsFromBisectParams(params)
+
+    # We overrode the anomaly config with a window of 1, and there's only a
+    # single row with value 0.1, the rest are 0.0.
+    self.assertEqual(0.4, results['comparison_magnitude'])

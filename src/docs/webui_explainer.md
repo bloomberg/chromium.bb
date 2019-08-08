@@ -74,7 +74,7 @@ up.
 
 Examples:
 
-* chrome-devtools:
+* devtools:
 * chrome-extensions:
 * chrome:
 * file:

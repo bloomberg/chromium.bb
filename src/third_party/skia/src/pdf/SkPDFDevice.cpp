@@ -5,48 +5,49 @@
  * found in the LICENSE file.
  */
 
-#include "SkPDFDevice.h"
+#include "src/pdf/SkPDFDevice.h"
 
-#include "SkAdvancedTypefaceMetrics.h"
-#include "SkAnnotationKeys.h"
-#include "SkBitmapDevice.h"
-#include "SkBitmapKey.h"
-#include "SkCanvas.h"
-#include "SkClipOpPriv.h"
-#include "SkClusterator.h"
-#include "SkColor.h"
-#include "SkColorFilter.h"
-#include "SkDraw.h"
-#include "SkGlyphRun.h"
-#include "SkImageFilterCache.h"
-#include "SkJpegEncoder.h"
-#include "SkMakeUnique.h"
-#include "SkMaskFilterBase.h"
-#include "SkPDFBitmap.h"
-#include "SkPDFDocument.h"
-#include "SkPDFDocumentPriv.h"
-#include "SkPDFFont.h"
-#include "SkPDFFormXObject.h"
-#include "SkPDFGraphicState.h"
-#include "SkPDFResourceDict.h"
-#include "SkPDFShader.h"
-#include "SkPDFTypes.h"
-#include "SkPDFUtils.h"
-#include "SkPath.h"
-#include "SkPathEffect.h"
-#include "SkPathOps.h"
-#include "SkRRect.h"
-#include "SkRasterClip.h"
-#include "SkScopeExit.h"
-#include "SkStrike.h"
-#include "SkString.h"
-#include "SkSurface.h"
-#include "SkTemplates.h"
-#include "SkTextBlob.h"
-#include "SkTextFormatParams.h"
-#include "SkTo.h"
-#include "SkUTF.h"
-#include "SkXfermodeInterpretation.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkColor.h"
+#include "include/core/SkColorFilter.h"
+#include "include/core/SkPath.h"
+#include "include/core/SkPathEffect.h"
+#include "include/core/SkRRect.h"
+#include "include/core/SkString.h"
+#include "include/core/SkSurface.h"
+#include "include/core/SkTextBlob.h"
+#include "include/docs/SkPDFDocument.h"
+#include "include/encode/SkJpegEncoder.h"
+#include "include/pathops/SkPathOps.h"
+#include "include/private/SkTemplates.h"
+#include "include/private/SkTo.h"
+#include "src/core/SkAdvancedTypefaceMetrics.h"
+#include "src/core/SkAnnotationKeys.h"
+#include "src/core/SkBitmapDevice.h"
+#include "src/core/SkClipOpPriv.h"
+#include "src/core/SkDraw.h"
+#include "src/core/SkGlyphRun.h"
+#include "src/core/SkImageFilterCache.h"
+#include "src/core/SkMakeUnique.h"
+#include "src/core/SkMaskFilterBase.h"
+#include "src/core/SkRasterClip.h"
+#include "src/core/SkScopeExit.h"
+#include "src/core/SkStrike.h"
+#include "src/core/SkStrikeSpec.h"
+#include "src/core/SkTextFormatParams.h"
+#include "src/core/SkXfermodeInterpretation.h"
+#include "src/pdf/SkBitmapKey.h"
+#include "src/pdf/SkClusterator.h"
+#include "src/pdf/SkPDFBitmap.h"
+#include "src/pdf/SkPDFDocumentPriv.h"
+#include "src/pdf/SkPDFFont.h"
+#include "src/pdf/SkPDFFormXObject.h"
+#include "src/pdf/SkPDFGraphicState.h"
+#include "src/pdf/SkPDFResourceDict.h"
+#include "src/pdf/SkPDFShader.h"
+#include "src/pdf/SkPDFTypes.h"
+#include "src/pdf/SkPDFUtils.h"
+#include "src/utils/SkUTF.h"
 
 #include <vector>
 
@@ -787,6 +788,11 @@ static bool needs_new_font(SkPDFFont* font, SkGlyphID gid, SkStrike* cache,
     return convertedToType3 != bitmapOnly;
 }
 
+namespace {
+constexpr int kTypicalGlyphCount = 20;
+using SmallPointsArray = SkAutoSTArray<kTypicalGlyphCount, SkPoint>;
+}
+
 void SkPDFDevice::internalDrawGlyphRun(
         const SkGlyphRun& glyphRun, SkPoint offset, const SkPaint& runPaint) {
 
@@ -823,7 +829,8 @@ void SkPDFDevice::internalDrawGlyphRun(
     SkClusterator clusterator(glyphRun);
 
     int emSize;
-    auto glyphCache = SkPDFFont::MakeVectorCache(typeface, &emSize);
+    SkStrikeSpecStorage strikeSpec = SkStrikeSpecStorage::MakePDFVector(*typeface, &emSize);
+    auto glyphCache = strikeSpec.findOrCreateExclusiveStrike();
 
     SkScalar textSize = glyphRunFont.getSize();
     SkScalar advanceScale = textSize * glyphRunFont.getScaleX() / emSize;
@@ -865,6 +872,9 @@ void SkPDFDevice::internalDrawGlyphRun(
     SK_AT_SCOPE_EXIT(if (clusterator.reversedChars()) { out->writeText("EMC\n"); } );
     GlyphPositioner glyphPositioner(out, glyphRunFont.getSkewX(), offset);
     SkPDFFont* font = nullptr;
+
+    SmallPointsArray advances(glyphRun.runSize());
+    glyphCache->getAdvances(glyphRun.glyphsIDs(), advances.get());
 
     while (SkClusterator::Cluster c = clusterator.next()) {
         int index = c.fGlyphIndex;
@@ -939,7 +949,7 @@ void SkPDFDevice::internalDrawGlyphRun(
             font->noteGlyphUsage(gid);
             SkGlyphID encodedGlyph = font->multiByteGlyphs()
                                    ? gid : font->glyphToPDFFontEncoding(gid);
-            SkScalar advance = advanceScale * glyphCache->getGlyphIDAdvance(gid).fAdvanceX;
+            SkScalar advance = advanceScale * advances[index].x();
             glyphPositioner.writeGlyph(xy, advance, encodedGlyph);
         }
     }
@@ -1705,8 +1715,8 @@ void SkPDFDevice::internalDrawImageRect(SkKeyedImage imageSubset,
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include "SkSpecialImage.h"
-#include "SkImageFilter.h"
+#include "include/core/SkImageFilter.h"
+#include "src/core/SkSpecialImage.h"
 
 void SkPDFDevice::drawSpecial(SkSpecialImage* srcImg, int x, int y, const SkPaint& paint,
                               SkImage* clipImage, const SkMatrix& clipMatrix) {

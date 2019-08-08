@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -75,6 +74,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/browser/plugin_service_impl.h"
@@ -522,8 +522,6 @@ class TestShellDownloadManagerDelegate : public ShellDownloadManagerDelegate {
     return true;
   }
 
-  bool GenerateFileHash() override { return true; }
-
   void SetDelayedOpen(bool delay) {
     delay_download_open_ = delay;
   }
@@ -563,7 +561,7 @@ class DownloadCreateObserver : DownloadManager::Observer {
       item_ = download;
 
     if (!completion_closure_.is_null())
-      base::ResetAndReturn(&completion_closure_).Run();
+      std::move(completion_closure_).Run();
   }
 
   download::DownloadItem* WaitForFinished() {
@@ -597,7 +595,7 @@ class ErrorStreamCountingObserver : download::DownloadItem::Observer {
             "Download.ParallelDownloadAddStreamSuccess");
     if (samples->GetCount(0 /* failure */) == count_ &&
         !completion_closure_.is_null())
-      base::ResetAndReturn(&completion_closure_).Run();
+      std::move(completion_closure_).Run();
   }
 
   void OnDownloadDestroyed(download::DownloadItem* download) override {
@@ -905,6 +903,81 @@ class DownloadContentTest : public ContentBrowserTest {
     return observer->WaitForFinished();
   }
 
+  // Starts a download without strong validators, interrupts it, and resumes it.
+  // If |fail_content_validation| is true, download content will change during
+  // resumption.
+  void InterruptAndResumeDownloadWithoutStrongValidators(
+      bool fail_content_validation) {
+    int validation_length = 1024;
+    base::test::ScopedFeatureList scoped_feature_list;
+    std::map<std::string, std::string> params = {
+        {download::kDownloadContentValidationLengthFinchKey,
+         base::NumberToString(validation_length)}};
+    scoped_feature_list.InitAndEnableFeatureWithParameters(
+        download::features::kAllowDownloadResumptionWithoutStrongValidators,
+        params);
+    SetupErrorInjectionDownloads();
+    GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
+    GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
+    TestDownloadHttpResponse::Parameters parameters =
+        TestDownloadHttpResponse::Parameters::WithSingleInterruption(
+            inject_error_callback());
+    parameters.etag.clear();
+    parameters.last_modified.clear();
+    TestDownloadHttpResponse::StartServing(parameters, server_url);
+
+    int64_t interruption_offset = parameters.injected_errors.front();
+    download::DownloadItem* download =
+        StartDownloadAndReturnItem(shell(), server_url);
+    WaitForInterrupt(download);
+
+    ASSERT_EQ(interruption_offset, download->GetReceivedBytes());
+    ASSERT_EQ(parameters.size, download->GetTotalBytes());
+
+    parameters.ClearInjectedErrors();
+    if (fail_content_validation)
+      ++parameters.pattern_generator_seed;
+    TestDownloadHttpResponse::StartServing(parameters, server_url);
+
+    // Download should complete regardless whether content changes or not.
+    download->Resume(false);
+    WaitForCompletion(download);
+
+    ASSERT_EQ(parameters.size, download->GetReceivedBytes());
+    ASSERT_EQ(parameters.size, download->GetTotalBytes());
+    ASSERT_NO_FATAL_FAILURE(ReadAndVerifyFileContents(
+        parameters.pattern_generator_seed, parameters.size,
+        download->GetTargetFilePath()));
+
+    const TestDownloadResponseHandler::CompletedRequests& requests =
+        test_response_handler()->completed_requests();
+    ASSERT_EQ(fail_content_validation ? 3u : 2u, requests.size());
+
+    // The first request only transferrs bytes up until the interruption point.
+    EXPECT_EQ(interruption_offset, requests[0]->transferred_byte_count);
+
+    // The second request is a range request.
+    std::string value;
+    ASSERT_TRUE(requests[1]->http_request.headers.find(
+                    net::HttpRequestHeaders::kIfRange) ==
+                requests[1]->http_request.headers.end());
+
+    ASSERT_TRUE(requests[1]->http_request.headers.find(
+                    net::HttpRequestHeaders::kRange) !=
+                requests[1]->http_request.headers.end());
+    EXPECT_EQ(
+        base::StringPrintf("bytes=%" PRId64 "-",
+                           interruption_offset - validation_length),
+        requests[1]->http_request.headers.at(net::HttpRequestHeaders::kRange));
+    if (fail_content_validation) {
+      // The third request is a restart request.
+      ASSERT_TRUE(requests[2]->http_request.headers.find(
+                      net::HttpRequestHeaders::kRange) ==
+                  requests[2]->http_request.headers.end());
+      EXPECT_EQ(parameters.size, requests[2]->transferred_byte_count);
+    }
+  }
+
   TestDownloadResponseHandler* test_response_handler() {
     return &test_response_handler_;
   }
@@ -1014,7 +1087,7 @@ class ParallelDownloadTest : public DownloadContentTest {
     download::DownloadItem* download =
         DownloadManagerForShell(shell())->CreateDownloadItem(
             "F7FB1F59-7DE1-4845-AFDB-8A688F70F583", 1, path, base::FilePath(),
-            url_chain, GURL(), GURL(), GURL(), GURL(),
+            url_chain, GURL(), GURL(), GURL(), GURL(), url::Origin(),
             "application/octet-stream", "application/octet-stream",
             base::Time::Now(), base::Time(), parameters.etag,
             parameters.last_modified, total_bytes, parameters.size,
@@ -1510,7 +1583,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ShutdownAtRelease) {
 }
 
 // Test resumption with a response that contains strong validators.
-IN_PROC_BROWSER_TEST_F(DownloadContentTest, StrongValidators) {
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeWithStrongValidators) {
   SetupErrorInjectionDownloads();
   GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
   GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
@@ -1569,6 +1642,18 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, StrongValidators) {
   EXPECT_EQ(
       base::StringPrintf("bytes=%" PRId64 "-", interruption_offset),
       requests[1]->http_request.headers.at(net::HttpRequestHeaders::kRange));
+}
+
+// Test resumption when strong validators are not present in the response.
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeWithoutStrongValidators) {
+  InterruptAndResumeDownloadWithoutStrongValidators(false);
+}
+
+// Test resumption when strong validators are not present in the response and
+// the content of the download changes.
+IN_PROC_BROWSER_TEST_F(DownloadContentTest,
+                       ResumeWithoutStrongValidatorsAndFailValidation) {
+  InterruptAndResumeDownloadWithoutStrongValidators(true);
 }
 
 // Resumption should only attempt to contact the final URL if the download has a
@@ -2469,7 +2554,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_NoFile) {
       DownloadManagerForShell(shell())->CreateDownloadItem(
           "F7FB1F59-7DE1-4845-AFDB-8A688F70F583", 1, intermediate_file_path,
           base::FilePath(), url_chain, GURL(), GURL(), GURL(), GURL(),
-          "application/octet-stream", "application/octet-stream",
+          url::Origin(), "application/octet-stream", "application/octet-stream",
           base::Time::Now(), base::Time(), parameters.etag, std::string(),
           kIntermediateSize, parameters.size, std::string(),
           download::DownloadItem::INTERRUPTED,
@@ -2536,7 +2621,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_NoHash) {
       DownloadManagerForShell(shell())->CreateDownloadItem(
           "F7FB1F59-7DE1-4845-AFDB-8A688F70F583", 1, intermediate_file_path,
           base::FilePath(), url_chain, GURL(), GURL(), GURL(), GURL(),
-          "application/octet-stream", "application/octet-stream",
+          url::Origin(), "application/octet-stream", "application/octet-stream",
           base::Time::Now(), base::Time(), parameters.etag, std::string(),
           kIntermediateSize, parameters.size, std::string(),
           download::DownloadItem::INTERRUPTED,
@@ -2590,7 +2675,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
       DownloadManagerForShell(shell())->CreateDownloadItem(
           "F7FB1F59-7DE1-4845-AFDB-8A688F70F583", 1, intermediate_file_path,
           base::FilePath(), url_chain, GURL(), GURL(), GURL(), GURL(),
-          "application/octet-stream", "application/octet-stream",
+          url::Origin(), "application/octet-stream", "application/octet-stream",
           base::Time::Now(), base::Time(), "fake-etag", std::string(),
           kIntermediateSize, parameters.size, std::string(),
           download::DownloadItem::INTERRUPTED,
@@ -2650,7 +2735,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
       DownloadManagerForShell(shell())->CreateDownloadItem(
           "F7FB1F59-7DE1-4845-AFDB-8A688F70F583", 1, intermediate_file_path,
           base::FilePath(), url_chain, GURL(), GURL(), GURL(), GURL(),
-          "application/octet-stream", "application/octet-stream",
+          url::Origin(), "application/octet-stream", "application/octet-stream",
           base::Time::Now(), base::Time(), parameters.etag, std::string(),
           kIntermediateSize, parameters.size,
           std::string(std::begin(kPartialHash), std::end(kPartialHash)),
@@ -2717,7 +2802,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_WrongHash) {
       DownloadManagerForShell(shell())->CreateDownloadItem(
           "F7FB1F59-7DE1-4845-AFDB-8A688F70F583", 1, intermediate_file_path,
           base::FilePath(), url_chain, GURL(), GURL(), GURL(), GURL(),
-          "application/octet-stream", "application/octet-stream",
+          url::Origin(), "application/octet-stream", "application/octet-stream",
           base::Time::Now(), base::Time(), parameters.etag, std::string(),
           kIntermediateSize, parameters.size,
           std::string(std::begin(kPartialHash), std::end(kPartialHash)),
@@ -2794,7 +2879,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_ShortFile) {
       DownloadManagerForShell(shell())->CreateDownloadItem(
           "F7FB1F59-7DE1-4845-AFDB-8A688F70F583", 1, intermediate_file_path,
           base::FilePath(), url_chain, GURL(), GURL(), GURL(), GURL(),
-          "application/octet-stream", "application/octet-stream",
+          url::Origin(), "application/octet-stream", "application/octet-stream",
           base::Time::Now(), base::Time(), parameters.etag, std::string(),
           kIntermediateSize, parameters.size, std::string(),
           download::DownloadItem::INTERRUPTED,
@@ -2868,7 +2953,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_LongFile) {
       DownloadManagerForShell(shell())->CreateDownloadItem(
           "F7FB1F59-7DE1-4845-AFDB-8A688F70F583", 1, intermediate_file_path,
           base::FilePath(), url_chain, GURL(), GURL(), GURL(), GURL(),
-          "application/octet-stream", "application/octet-stream",
+          url::Origin(), "application/octet-stream", "application/octet-stream",
           base::Time::Now(), base::Time(), parameters.etag, std::string(),
           kIntermediateSize, parameters.size, std::string(),
           download::DownloadItem::INTERRUPTED,
@@ -3800,7 +3885,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, FetchErrorResponseBodyResumption) {
 
 // Verify WebUI download will success with an associated renderer process.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadFromWebUI) {
-  GURL webui_url("chrome://resources/images/apps/blue_button.png");
+  GURL webui_url(GetWebUIURL("resources/images/apps/blue_button.png"));
   NavigateToURL(shell(), webui_url);
   SetupEnsureNoPendingDownloads();
 

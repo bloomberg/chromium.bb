@@ -255,7 +255,7 @@ void SerializeValue(const std::vector<std::unique_ptr<PasswordForm>>& forms,
   pickle->WriteInt(kPickleVersion);
   pickle->WriteUInt64(forms.size());
   for (const auto& form : forms) {
-    pickle->WriteInt(form->scheme);
+    pickle->WriteInt(static_cast<int>(form->scheme));
     pickle->WriteString(form->origin.spec());
     pickle->WriteString(form->action.spec());
     pickle->WriteString16(form->username_element);
@@ -266,7 +266,7 @@ void SerializeValue(const std::vector<std::unique_ptr<PasswordForm>>& forms,
     pickle->WriteBool(form->preferred);
     pickle->WriteBool(form->blacklisted_by_user);
     pickle->WriteInt64(form->date_created.ToInternalValue());
-    pickle->WriteInt(form->type);
+    pickle->WriteInt(static_cast<int>(form->type));
     pickle->WriteInt(form->times_used);
     autofill::SerializeFormData(form->form_data, pickle);
     pickle->WriteInt64(form->date_synced.ToInternalValue());
@@ -278,7 +278,7 @@ void SerializeValue(const std::vector<std::unique_ptr<PasswordForm>>& forms,
                             ? std::string()
                             : form->federation_origin.Serialize());
     pickle->WriteBool(form->skip_zero_click);
-    pickle->WriteInt(form->generation_upload_status);
+    pickle->WriteInt(static_cast<int>(form->generation_upload_status));
   }
 }
 
@@ -413,7 +413,7 @@ password_manager::PasswordStoreChangeList NativeBackendKWallet::AddLogin(
   auto it = std::partition(
       forms.begin(), forms.end(),
       [&form](const std::unique_ptr<PasswordForm>& current_form) {
-        return !ArePasswordFormUniqueKeyEqual(form, *current_form);
+        return !ArePasswordFormUniqueKeysEqual(form, *current_form);
       });
   password_manager::PasswordStoreChangeList changes;
   if (it != forms.end()) {
@@ -449,7 +449,7 @@ bool NativeBackendKWallet::UpdateLogin(
   auto it = std::partition(
       forms.begin(), forms.end(),
       [&form](const std::unique_ptr<PasswordForm>& current_form) {
-        return !ArePasswordFormUniqueKeyEqual(form, *current_form);
+        return !ArePasswordFormUniqueKeysEqual(form, *current_form);
       });
 
   if (it == forms.end())
@@ -481,7 +481,7 @@ bool NativeBackendKWallet::RemoveLogin(
   std::vector<std::unique_ptr<PasswordForm>> kept_forms;
   kept_forms.reserve(all_forms.size());
   for (std::unique_ptr<PasswordForm>& saved_form : all_forms) {
-    if (!ArePasswordFormUniqueKeyEqual(form, *saved_form)) {
+    if (!ArePasswordFormUniqueKeysEqual(form, *saved_form)) {
       kept_forms.push_back(std::move(saved_form));
     }
   }

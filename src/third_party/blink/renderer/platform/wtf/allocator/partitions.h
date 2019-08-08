@@ -33,11 +33,16 @@
 
 #include <string.h>
 #include "base/allocator/partition_allocator/partition_alloc.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/numerics/checked_math.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 namespace WTF {
+
+// Disables decommit in PartitionAlloc. Do not enable, as this regresses memory
+// usage.
+WTF_EXPORT const extern base::Feature kNoPartitionAllocDecommit;
 
 class WTF_EXPORT Partitions {
  public:

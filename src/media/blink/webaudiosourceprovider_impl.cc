@@ -236,6 +236,12 @@ void WebAudioSourceProviderImpl::Pause() {
     sink_->Pause();
 }
 
+void WebAudioSourceProviderImpl::Flush() {
+  base::AutoLock auto_lock(sink_lock_);
+  if (!client_ && sink_)
+    sink_->Flush();
+}
+
 bool WebAudioSourceProviderImpl::SetVolume(double volume) {
   base::AutoLock auto_lock(sink_lock_);
   volume_ = volume;

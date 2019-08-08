@@ -14,6 +14,7 @@ from __future__ import print_function
 
 from ssl import SSLError
 import ast
+import socket
 
 from google.protobuf import field_mask_pb2
 
@@ -62,7 +63,7 @@ def UpdateSelfCommonBuildProperties(
     platform_version=None, full_version=None, toolchain_url=None,
     build_type=None, unibuild=None, suite_scheduling=None,
     killed_child_builds=None, board=None, main_firmware_version=None,
-    ec_firmware_version=None):
+    ec_firmware_version=None, metadata_url=None):
   """Update build.output.properties for the current build.
 
   Sends the property values to buildbucket via
@@ -85,6 +86,7 @@ def UpdateSelfCommonBuildProperties(
     board: (Optional) board of the build.
     main_firmware_version: (Optional) main firmware version of the build.
     ec_firmware_version: (Optional) ec_firmware version of the build.
+    metadata_url: (Optional) google storage url to metadata.json of the build.
   """
   if critical is not None:
     critical = 1 if critical in [1, True] else 0
@@ -118,6 +120,8 @@ def UpdateSelfCommonBuildProperties(
   if ec_firmware_version is not None:
     UpdateSelfBuildPropertiesNonBlocking('ec_firmware_version',
                                          ec_firmware_version)
+  if metadata_url is not None:
+    UpdateSelfBuildPropertiesNonBlocking('metadata_url', metadata_url)
 
 def UpdateBuildMetadata(metadata):
   """Update build.output.properties from a CBuildbotMetadata instance.
@@ -167,6 +171,29 @@ def BuildStepToDict(step, build_values=None):
     step_info.update(build_values)
   return step_info
 
+def DateToTimeRange(start_date=None, end_date=None):
+  """Convert two datetime.date objects into a TimeRange instance.
+
+  Args:
+    start_date: datetime.date instance to mark the start of the TimeRange.
+    end_date: datetime.date instance to mark the end of the TimeRange.
+
+  Returns:
+    A TimeRange object corresponding to the time interval
+    (start_date, end_date).
+  """
+  if not (start_date or end_date):
+    return None
+  if start_date:
+    start_timestamp = utils.DatetimeToTimestamp(start_date)
+  else:
+    start_timestamp = None
+  if end_date:
+    end_timestamp = utils.DatetimeToTimestamp(end_date, end_of_day=True)
+  else:
+    end_timestamp = None
+  return common_pb2.TimeRange(start_time=start_timestamp,
+                              end_time=end_timestamp)
 
 class BuildbucketV2(object):
   """Connection to Buildbucket V2 database."""
@@ -183,6 +210,7 @@ class BuildbucketV2(object):
       self.client = Client(BBV2_URL_ENDPOINT_PROD, BuildsServiceDescription)
 
   @retry_util.WithRetry(max_retry=3, sleep=0.2, exception=SSLError)
+  @retry_util.WithRetry(max_retry=3, sleep=0.2, exception=socket.error)
   def GetBuild(self, buildbucket_id, properties=None):
     """GetBuild call of a specific build with buildbucket_id.
 
@@ -268,6 +296,7 @@ class BuildbucketV2(object):
         'full_version': 'full_version',
         'milestone_version': 'milestone_version',
         'toolchain_url': 'toolchain_url',
+        'metadata_url': 'metadata_url',
         'critical': 'important',
         'build_type': 'build_type',
         'summary': 'summary',
@@ -328,7 +357,6 @@ class BuildbucketV2(object):
     build_status['build_number'] = None
     build_status['buildbot_generation'] = None
     build_status['waterfall'] = None
-    build_status['metadata_url'] = None
     build_status['deadline'] = None
     # Post-processing some properties.
     if (build_status['status'] is not None and
@@ -345,6 +373,7 @@ class BuildbucketV2(object):
     return build_status
 
   @retry_util.WithRetry(max_retry=3, sleep=0.2, exception=SSLError)
+  @retry_util.WithRetry(max_retry=3, sleep=0.2, exception=socket.error)
   def SearchBuild(self, build_predicate, fields=None, page_size=100):
     """SearchBuild RPC call wrapping function.
 
@@ -369,6 +398,61 @@ class BuildbucketV2(object):
           predicate=build_predicate, fields=fields, page_size=page_size)
 
     return self.client.SearchBuilds(search_build_request)
+
+  def GetBuildHistory(self, build_config, num_results, ignore_build_id=None,
+                      start_date=None, end_date=None, branch=None,
+                      ending_build_id=None):
+    """Returns basic information about most recent builds for build config.
+
+    By default this function returns the most recent builds. Some arguments can
+    restrict the result to older builds.
+
+    Args:
+      build_config: config name of the build to get history.
+      num_results: Number of builds to search back. Set this to
+          CIDBConnection.NUM_RESULTS_NO_LIMIT to request no limit on the number
+          of results.
+      ignore_build_id: (Optional) Ignore a specific build. This is most useful
+          to ignore the current build when querying recent past builds from a
+          build in flight.
+      start_date: (Optional, type: datetime.date) Get builds that occured on or
+          after this date.
+      end_date: (Optional, type:datetime.date) Get builds that occured on or
+          before this date.
+      branch: (Optional) Return only results for this branch.
+      ending_build_id: (Optional) The oldest build for which data should
+          be retrieved.
+
+    Returns:
+      A sorted list of dicts containing up to |number| dictionaries for
+      build statuses in descending order (if |reverse| is True, ascending
+      order).
+    """
+    builder = build_pb2.BuilderID(project='chromeos', bucket='general')
+    tags = [common_pb2.StringPair(key='cbb_config',
+                                  value=build_config)]
+    create_time = DateToTimeRange(start_date, end_date)
+    if ignore_build_id:
+      num_results += 1
+    if branch:
+      tags.append(common_pb2.StringPair(key='cbb_branch',
+                                        value=branch))
+    build = None
+    if ending_build_id:
+      build = rpc_pb2.BuildRange(end_build_id=int(ending_build_id))
+    build_predicate = rpc_pb2.BuildPredicate(
+        builder=builder, tags=tags, create_time=create_time, build=build)
+    search_result = self.SearchBuild(build_predicate, page_size=num_results)
+    build_ids = [build.id for build in search_result.builds]
+    if ignore_build_id:
+      if ignore_build_id in build_ids:
+        build_ids = [x for x in build_ids if ignore_build_id != x]
+      else:
+        # If we do not find ignore_build_id, we ignore the last (i.e. oldest)
+        # build in order to return num_results elements.
+        build_ids = build_ids[:-1]
+
+    return [self.GetBuildStatus(x) for x in build_ids]
 
   def GetChildStatuses(self, buildbucket_id):
     """Retrieve statuses of all the child builds.

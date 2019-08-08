@@ -87,12 +87,12 @@ std::unique_ptr<char* []> AlterEnvironment(const char* const* const env,
 
 #elif defined(OS_WIN)
 
-NativeEnvironmentString AlterEnvironment(const wchar_t* env,
+NativeEnvironmentString AlterEnvironment(const char16* env,
                                          const EnvironmentMap& changes) {
   NativeEnvironmentString result;
 
   // First build up all of the unchanged environment strings.
-  const wchar_t* ptr = env;
+  const char16* ptr = env;
   while (*ptr) {
     string16 key;
     size_t line_length = ParseEnvLine(ptr, &key);
@@ -107,8 +107,8 @@ NativeEnvironmentString AlterEnvironment(const wchar_t* env,
   // Now append all modified and new values.
   for (const auto& i : changes) {
     // Windows environment blocks cannot handle keys or values with NULs.
-    CHECK_EQ(string16::npos, i.first.find(static_cast<wchar_t>(0)));
-    CHECK_EQ(string16::npos, i.second.find(static_cast<wchar_t>(0)));
+    CHECK_EQ(string16::npos, i.first.find(STRING16_LITERAL('\0')));
+    CHECK_EQ(string16::npos, i.second.find(STRING16_LITERAL('\0')));
     if (!i.second.empty()) {
       result += i.first;
       result.push_back('=');

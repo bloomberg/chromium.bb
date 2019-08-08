@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_PAYMENTS_PAYMENTS_CLIENT_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_PAYMENTS_PAYMENTS_CLIENT_H_
 
+#include <set>
+#include <string>
 #include <utility>
 
 #include "base/macros.h"
@@ -12,8 +14,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/autofill_client.h"
-#include "components/autofill/core/browser/autofill_profile.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/card_unmask_delegate.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/identity/public/cpp/access_token_fetcher.h"
@@ -45,6 +47,14 @@ typedef base::OnceCallback<void(
     std::unique_ptr<std::unordered_map<std::string, std::string>> save_result,
     const std::string& display_text)>
     MigrateCardsCallback;
+
+// Callback type for GetUnmaskDetails callback.
+typedef base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
+                                std::string,
+                                bool,
+                                std::unique_ptr<base::Value>,
+                                std::set<std::string>)>
+    GetUnmaskDetailsCallback;
 
 // Billable service number is defined in Payments server to distinguish
 // different requests.
@@ -150,6 +160,12 @@ class PaymentsClient {
   // identifying information should not be sent until the user has explicitly
   // accepted an upload prompt.
   void Prepare();
+
+  // The user has interacted with a credit card form and may attempt to unmask a
+  // card. This request returns what method of authentication is required, along
+  // with any information to facilitate the authentication.
+  virtual void GetUnmaskDetails(GetUnmaskDetailsCallback callback,
+                                const std::string& app_locale);
 
   // The user has attempted to unmask a card with the given cvc.
   void UnmaskCard(const UnmaskRequestDetails& request_details,

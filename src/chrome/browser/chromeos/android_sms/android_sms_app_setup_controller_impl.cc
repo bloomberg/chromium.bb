@@ -56,10 +56,6 @@ const extensions::Extension*
 AndroidSmsAppSetupControllerImpl::PwaDelegate::GetPwaForUrl(
     const GURL& install_url,
     Profile* profile) {
-  // PWA windowing is disabled for some browser tests.
-  if (!base::FeatureList::IsEnabled(features::kDesktopPWAWindowing))
-    return nullptr;
-
   return extensions::util::GetInstalledPwaForUrl(profile, install_url);
 }
 

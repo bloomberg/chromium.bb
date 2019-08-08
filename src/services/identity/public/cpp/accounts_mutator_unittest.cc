@@ -621,7 +621,7 @@ TEST_F(AccountsMutatorTest, LegacySetRefreshTokenForSupervisedUser) {
   // IdentityManager::FindAccountInfoForAccountWithRefreshTokenBy*() methods
   // since they won't find any account. Use GetAccountsWithRefreshTokens() and
   // HasAccountWithRefreshToken*() instead, that only relies in the PO2TS.
-  std::vector<AccountInfo> accounts =
+  std::vector<CoreAccountInfo> accounts =
       identity_manager()->GetAccountsWithRefreshTokens();
   EXPECT_EQ(accounts.size(), 1U);
   EXPECT_EQ(accounts[0].account_id, kSupervisedUserPseudoEmail);

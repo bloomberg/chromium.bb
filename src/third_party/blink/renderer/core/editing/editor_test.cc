@@ -113,7 +113,7 @@ TEST_F(EditorTest, UndoWithInvalidSelection) {
   const SelectionInDOMTree selection = SetSelectionTextToBody(
       "<div contenteditable><div></div><b>^abc|</b></div>");
   Selection().SetSelection(selection, SetSelectionOptions());
-  Text& abc = ToText(*selection.Base().ComputeContainerNode());
+  auto& abc = To<Text>(*selection.Base().ComputeContainerNode());
   // Push Text node "abc" into undo stack
   GetDocument().execCommand("italic", false, "", ASSERT_NO_EXCEPTION);
   // Change Text node "abc" in undo stack

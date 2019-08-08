@@ -60,7 +60,7 @@ class SafeConnectionWrapper {
       idb_runner_->PostTask(
           FROM_HERE, base::BindOnce(
                          [](std::unique_ptr<IndexedDBConnection> connection) {
-                           connection->ForceClose();
+                           connection->CloseAndReportForceClose();
                          },
                          std::move(connection_)));
     }
@@ -165,9 +165,7 @@ IndexedDBCallbacks::IndexedDBValueBlob::GetIndexedDBValueBlobs(
 // static
 bool IndexedDBCallbacks::CreateAllBlobs(
     scoped_refptr<ChromeBlobStorageContext> blob_context,
-    scoped_refptr<base::SequencedTaskRunner> idb_runner,
     std::vector<IndexedDBValueBlob> value_blobs) {
-  DCHECK(idb_runner->RunsTasksInCurrentSequence());
   IDB_TRACE("IndexedDBCallbacks::CreateAllBlobs");
 
   if (value_blobs.empty())
@@ -206,7 +204,7 @@ bool IndexedDBCallbacks::CreateAllBlobs(
             }
             *inner_result = true;
           },
-          std::move(blob_context), std::move(idb_runner),
+          std::move(blob_context), base::SequencedTaskRunnerHandle::Get(),
           std::move(value_blobs), &signal_when_finished, &result));
   signal_when_finished.Wait();
   return result;
@@ -395,7 +393,7 @@ void IndexedDBCallbacks::OnSuccess(std::unique_ptr<IndexedDBCursor> cursor,
       std::make_unique<CursorImpl>(std::move(cursor_wrapper.cursor_), origin_,
                                    dispatcher_host_.get(), idb_runner_);
   if (mojo_value && !IndexedDBCallbacks::CreateAllBlobs(
-                        dispatcher_host_->blob_storage_context(), idb_runner_,
+                        dispatcher_host_->blob_storage_context(),
                         IndexedDBValueBlob::GetIndexedDBValueBlobs(
                             blob_info, &mojo_value->blob_or_file_info))) {
     return;
@@ -432,51 +430,13 @@ void IndexedDBCallbacks::OnSuccess(IndexedDBReturnValue* value) {
 
   if (mojo_value &&
       !IndexedDBCallbacks::CreateAllBlobs(
-          dispatcher_host_->blob_storage_context(), idb_runner_,
+          dispatcher_host_->blob_storage_context(),
           IndexedDBValueBlob::GetIndexedDBValueBlobs(
               blob_info, &mojo_value->value->blob_or_file_info))) {
     return;
   }
 
   callbacks_->SuccessValue(std::move(mojo_value));
-  complete_ = true;
-}
-
-void IndexedDBCallbacks::OnSuccessArray(
-    std::vector<IndexedDBReturnValue>* values) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!complete_);
-
-  DCHECK_EQ(blink::mojom::IDBDataLoss::None, data_loss_);
-
-  std::vector<blink::mojom::IDBReturnValuePtr> mojo_values;
-  mojo_values.reserve(values->size());
-  for (size_t i = 0; i < values->size(); ++i) {
-    mojo_values.push_back(
-        IndexedDBReturnValue::ConvertReturnValue(&(*values)[i]));
-  }
-
-  if (!callbacks_)
-    return;
-  if (!dispatcher_host_) {
-    OnConnectionError();
-    return;
-  }
-
-  std::vector<IndexedDBValueBlob> value_blobs;
-  for (size_t i = 0; i < mojo_values.size(); ++i) {
-    IndexedDBValueBlob::GetIndexedDBValueBlobs(
-        &value_blobs, (*values)[i].blob_info,
-        &mojo_values[i]->value->blob_or_file_info);
-  }
-
-  if (!IndexedDBCallbacks::CreateAllBlobs(
-          dispatcher_host_->blob_storage_context(), idb_runner_,
-          std::move(value_blobs))) {
-    return;
-  }
-
-  callbacks_->SuccessArray(std::move(mojo_values));
   complete_ = true;
 }
 

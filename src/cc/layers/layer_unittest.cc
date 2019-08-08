@@ -351,8 +351,7 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
       grand_child->PushPropertiesTo(grand_child_impl.get()));
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
-  const std::array<uint32_t, 4> radii{1, 2, 3, 4};
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetRoundedCorner(radii));
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetRoundedCorner({1, 2, 3, 4}));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
       root->PushPropertiesTo(root_impl.get());
       child->PushPropertiesTo(child_impl.get());
@@ -424,6 +423,40 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(
       root->SetBackdropFilters(arbitrary_filters));
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
+      root->PushPropertiesTo(root_impl.get());
+      child->PushPropertiesTo(child_impl.get());
+      child2->PushPropertiesTo(child2_impl.get());
+      grand_child->PushPropertiesTo(grand_child_impl.get()));
+
+  // Setting the sticky constraints requires a subtree change. It shouldn't be
+  // required if they don't change.
+  LayerStickyPositionConstraint arbitrary_constraint;
+  arbitrary_constraint.is_sticky = true;
+  arbitrary_constraint.is_anchored_top = true;
+  arbitrary_constraint.top_offset = 50;
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(
+      root->SetStickyPositionConstraint(arbitrary_constraint));
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
+      root->PushPropertiesTo(root_impl.get());
+      child->PushPropertiesTo(child_impl.get());
+      child2->PushPropertiesTo(child2_impl.get());
+      grand_child->PushPropertiesTo(grand_child_impl.get());
+      layer_tree_host_->ClearLayersThatShouldPushProperties());
+
+  EXECUTE_AND_VERIFY_SUBTREE_NOT_CHANGED(
+      root->SetStickyPositionConstraint(arbitrary_constraint));
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
+      root->PushPropertiesTo(root_impl.get());
+      child->PushPropertiesTo(child_impl.get());
+      child2->PushPropertiesTo(child2_impl.get());
+      grand_child->PushPropertiesTo(grand_child_impl.get()));
+
+  arbitrary_constraint.top_offset = 10;
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(
+      root->SetStickyPositionConstraint(arbitrary_constraint));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
       root->PushPropertiesTo(root_impl.get());
       child->PushPropertiesTo(child_impl.get());

@@ -56,7 +56,7 @@ let queryArgs = {};
  * The prepopulated data for the form. Includes title, url, and rid.
  * @type {Object}
  */
-let prepopulatedLink = {
+const prepopulatedLink = {
   rid: -1,
   title: '',
   url: '',
@@ -96,7 +96,7 @@ function prepopulateFields(rid) {
   }
 
   // Grab the link data from the embeddedSearch API.
-  let data = chrome.embeddedSearch.newTabPage.getMostVisitedItemData(rid);
+  const data = chrome.embeddedSearch.newTabPage.getMostVisitedItemData(rid);
   if (!data) {
     return;
   }
@@ -117,7 +117,7 @@ function prepopulateFields(rid) {
  */
 function showInvalidUrlUntilTextInput() {
   $(IDS.URL_FIELD_CONTAINER).classList.add('invalid');
-  let reenable = (event) => {
+  const reenable = (event) => {
     $(IDS.URL_FIELD_CONTAINER).classList.remove('invalid');
     $(IDS.URL_FIELD).removeEventListener('input', reenable);
   };
@@ -197,10 +197,7 @@ function closeDialog() {
  */
 function focusBackOnCancel(event) {
   if (event.keyCode === KEYCODES.ENTER || event.keyCode === KEYCODES.SPACE) {
-    let message = {
-      cmd: 'focusMenu',
-      tid: prepopulatedLink.rid
-    };
+    const message = {cmd: 'focusMenu', tid: prepopulatedLink.rid};
     window.parent.postMessage(message, DOMAIN_ORIGIN);
     event.preventDefault();
     closeDialog();
@@ -222,8 +219,8 @@ function updateTheme(info) {
  * @param {Event} event Event received.
  */
 function handlePostMessage(event) {
-  let cmd = event.data.cmd;
-  let args = event.data;
+  const cmd = event.data.cmd;
+  const args = event.data;
   if (cmd === 'linkData') {
     if (args.tid) {  // We are editing a link, prepopulate the link data.
       document.title = editLinkTitle;
@@ -254,10 +251,10 @@ function handlePostMessage(event) {
  */
 function init() {
   // Parse query arguments.
-  let query = window.location.search.substring(1).split('&');
+  const query = window.location.search.substring(1).split('&');
   queryArgs = {};
   for (let i = 0; i < query.length; ++i) {
-    let val = query[i].split('=');
+    const val = query[i].split('=');
     if (val[0] == '') {
       continue;
     }
@@ -302,7 +299,7 @@ function init() {
     event.preventDefault();
     finishEditLink();
   });
-  let finishEditOrClose = (event) => {
+  const finishEditOrClose = (event) => {
     if (event.keyCode === KEYCODES.ENTER) {
       event.preventDefault();
       if (!$(IDS.DONE).disabled) {
@@ -319,7 +316,7 @@ function init() {
   animations.addRippleAnimations();
 
   // Change input field name to blue on input field focus.
-  let changeColor = (fieldTitle) => {
+  const changeColor = (fieldTitle) => {
     $(fieldTitle).classList.toggle('focused');
   };
   $(IDS.TITLE_FIELD)

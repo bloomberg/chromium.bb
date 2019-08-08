@@ -195,21 +195,18 @@ class CORE_EXPORT CSSVariableResolver {
   // The following utilities get/set variables on either StyleInheritedVariables
   // or StyleNonInheritedVariables, according to their PropertyRegistration.
 
-  CSSVariableData* GetVariable(const AtomicString& name,
-                               const PropertyRegistration*);
-  const CSSValue* GetRegisteredVariable(const AtomicString& name,
-                                        const PropertyRegistration&);
-  void SetVariable(const AtomicString& name,
-                   const PropertyRegistration*,
-                   scoped_refptr<CSSVariableData>);
-  void SetRegisteredVariable(const AtomicString& name,
-                             const PropertyRegistration&,
-                             const CSSValue*);
+  CSSVariableData* GetVariableData(const AtomicString& name,
+                                   const PropertyRegistration*);
+  const CSSValue* GetVariableValue(const AtomicString& name,
+                                   const PropertyRegistration&);
+  void SetVariableData(const AtomicString& name,
+                       const PropertyRegistration*,
+                       scoped_refptr<CSSVariableData>);
+  void SetVariableValue(const AtomicString& name,
+                        const PropertyRegistration&,
+                        const CSSValue*);
   void SetInvalidVariable(const AtomicString& name,
                           const PropertyRegistration*);
-  bool IsRegisteredVariableInvalid(const AtomicString& name,
-                                   const PropertyRegistration&);
-
   const StyleResolverState& state_;
   StyleInheritedVariables* inherited_variables_;
   StyleNonInheritedVariables* non_inherited_variables_;

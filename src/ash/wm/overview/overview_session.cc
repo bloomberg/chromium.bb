@@ -11,12 +11,15 @@
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/wm/desks/desk.h"
+#include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_delegate.h"
@@ -94,7 +97,7 @@ gfx::Rect GetGridBoundsInScreen(aura::Window* root_window,
 
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
-  if (!split_view_controller->IsSplitViewModeActive())
+  if (!split_view_controller->InSplitViewMode())
     return work_area;
 
   SplitViewController::SnapPosition opposite_position =
@@ -138,19 +141,6 @@ gfx::Rect GetGridBoundsInScreen(aura::Window* root_window,
   }
 
   return bounds;
-}
-
-bool IsWindowDragInProgress() {
-  auto windows = Shell::Get()->mru_window_tracker()->BuildMruWindowList();
-  for (auto* window : windows) {
-    wm::WindowState* window_state = wm::GetWindowState(window);
-    if (window_state && window_state->is_dragged() &&
-        (window_state->drag_details()->window_component == HTCLIENT ||
-         window_state->drag_details()->window_component == HTCAPTION)) {
-      return true;
-    }
-  }
-  return false;
 }
 
 }  // namespace
@@ -203,9 +193,8 @@ void OverviewSession::Init(const WindowList& windows,
   for (auto* root : root_windows) {
     // Observed switchable containers for newly created windows on all root
     // windows.
-    for (size_t i = 0; i < wm::kSwitchableWindowContainerIdsLength; ++i) {
-      aura::Window* container =
-          root->GetChildById(wm::kSwitchableWindowContainerIds[i]);
+    for (auto* container :
+         wm::GetSwitchableContainersForRoot(root, /*active_desk_only=*/true)) {
       container->AddObserver(this);
       observed_windows_.insert(container);
     }
@@ -242,14 +231,12 @@ void OverviewSession::Init(const WindowList& windows,
       // should not appear here.
       DCHECK_NE(enter_exit_overview_type_,
                 EnterExitOverviewType::kSwipeFromShelf);
-      overview_grid->CalculateWindowListAnimationStates(
-          /*selected_item=*/nullptr, OverviewTransition::kEnter);
       overview_grid->PositionWindows(/*animate=*/true, /*ignored_items=*/{},
                                      OverviewTransition::kEnter);
     }
   }
 
-  MaybeCreateAndPositionNoWindowsWidget();
+  UpdateNoWindowsWidget();
 
   // Create the widget that will receive focus while in overview mode for
   // accessiblity purposes.
@@ -283,6 +270,10 @@ void OverviewSession::Init(const WindowList& windows,
 // may cause other, unrelated classes, to make indirect calls to
 // restoring_minimized_windows() on a partially destructed object.
 void OverviewSession::Shutdown() {
+  // This should have been set already when the process of ending overview mode
+  // began. See OverviewController::OnSelectionEnded().
+  DCHECK(is_shutting_down_);
+
   Shell::Get()->RemovePreTargetHandler(this);
   Shell::Get()->RemoveShellObserver(this);
 
@@ -299,13 +290,14 @@ void OverviewSession::Shutdown() {
   for (std::unique_ptr<OverviewGrid>& overview_grid : grid_list_) {
     // During shutdown, do not animate all windows in overview if we need to
     // animate the snapped window.
-    if (overview_grid->should_animate_when_exiting()) {
+    if (overview_grid->should_animate_when_exiting() &&
+        enter_exit_overview_type_ != EnterExitOverviewType::kImmediateExit) {
       overview_grid->CalculateWindowListAnimationStates(
           selected_item_ &&
                   selected_item_->overview_grid() == overview_grid.get()
               ? selected_item_
               : nullptr,
-          OverviewTransition::kExit);
+          OverviewTransition::kExit, /*target_bounds=*/{});
     }
     for (const auto& overview_item : overview_grid->window_list())
       overview_item->RestoreWindow(/*reset_transform=*/true);
@@ -315,8 +307,10 @@ void OverviewSession::Shutdown() {
   // Setting focus after restoring windows' state avoids unnecessary animations.
   // No need to restore if we are sliding to the home launcher screen, as all
   // windows will be minimized.
-  ResetFocusRestoreWindow(enter_exit_overview_type_ ==
-                          EnterExitOverviewType::kNormal);
+  const bool should_focus =
+      enter_exit_overview_type_ == EnterExitOverviewType::kNormal ||
+      enter_exit_overview_type_ == EnterExitOverviewType::kImmediateExit;
+  ResetFocusRestoreWindow(should_focus);
   RemoveAllObservers();
 
   for (std::unique_ptr<OverviewGrid>& overview_grid : grid_list_)
@@ -331,6 +325,11 @@ void OverviewSession::Shutdown() {
   grid_list_.clear();
 
   if (no_windows_widget_) {
+    if (enter_exit_overview_type_ == EnterExitOverviewType::kImmediateExit) {
+      ImmediatelyCloseWidgetOnExit(std::move(no_windows_widget_));
+      return;
+    }
+
     // Fade out the no windows widget. This animation continues past the
     // lifetime of |this|.
     FadeOutWidgetAndMaybeSlideOnExit(std::move(no_windows_widget_),
@@ -339,7 +338,7 @@ void OverviewSession::Shutdown() {
 }
 
 void OverviewSession::CancelSelection() {
-  delegate_->OnSelectionEnded();
+  delegate_->EndOverview();
 }
 
 void OverviewSession::OnGridEmpty(OverviewGrid* grid) {
@@ -356,7 +355,7 @@ void OverviewSession::OnGridEmpty(OverviewGrid* grid) {
         grid->Shutdown();
       grid_list_.clear();
     } else {
-      MaybeCreateAndPositionNoWindowsWidget();
+      UpdateNoWindowsWidget();
     }
   } else {
     for (auto iter = grid_list_.begin(); iter != grid_list_.end(); ++iter) {
@@ -398,7 +397,7 @@ bool OverviewSession::AcceptSelection() {
 void OverviewSession::SelectWindow(OverviewItem* item) {
   aura::Window* window = item->GetWindow();
   aura::Window::Windows window_list =
-      Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+      Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
   if (!window_list.empty()) {
     // Record WindowSelector_ActiveWindowChanged if the user is selecting a
     // window other than the window that was active prior to entering overview
@@ -418,15 +417,6 @@ void OverviewSession::SelectWindow(OverviewItem* item) {
   }
   item->EnsureVisible();
   ::wm::ActivateWindow(window);
-}
-
-void OverviewSession::RearrangeDuringDrag(aura::Window* dragged_window,
-                                          const gfx::PointF& location_in_screen,
-                                          IndicatorState indicator_state) {
-  for (std::unique_ptr<OverviewGrid>& grid : grid_list_) {
-    grid->RearrangeDuringDrag(dragged_window, location_in_screen,
-                              indicator_state);
-  }
 }
 
 void OverviewSession::SetSplitViewDragIndicatorsIndicatorState(
@@ -461,6 +451,27 @@ void OverviewSession::AddItem(
   grid->AddItem(window, reposition, animate, ignored_items, index);
   ++num_items_;
 
+  UpdateNoWindowsWidget();
+
+  // Transfer focus from |window| to |overview_focus_widget_| to match the
+  // behavior of entering overview mode in the beginning.
+  DCHECK(overview_focus_widget_);
+  ::wm::ActivateWindow(GetOverviewFocusWindow());
+}
+
+void OverviewSession::AppendItem(aura::Window* window,
+                                 bool reposition,
+                                 bool animate) {
+  // Early exit if a grid already contains |window|.
+  OverviewGrid* grid = GetGridWithRootWindow(window->GetRootWindow());
+  if (!grid || grid->GetOverviewItemContaining(window))
+    return;
+
+  grid->AppendItem(window, reposition, animate);
+  ++num_items_;
+
+  UpdateNoWindowsWidget();
+
   // Transfer focus from |window| to |overview_focus_widget_| to match the
   // behavior of entering overview mode in the beginning.
   DCHECK(overview_focus_widget_);
@@ -475,26 +486,17 @@ void OverviewSession::RemoveItem(OverviewItem* overview_item) {
       restore_focus_window_ = nullptr;
   }
 
-  GetGridWithOverviewItem(overview_item)->RemoveItem(overview_item);
+  overview_item->overview_grid()->RemoveItem(overview_item);
   --num_items_;
-}
 
-void OverviewSession::AddDropTargetForDraggingFromOverview(
-    OverviewItem* dragged_item) {
-  GetGridWithOverviewItem(dragged_item)
-      ->AddDropTargetForDraggingFromOverview(dragged_item);
-}
-
-void OverviewSession::RemoveDropTargetForDraggingFromOverview(
-    OverviewItem* dragged_item) {
-  GetGridWithOverviewItem(dragged_item)->RemoveDropTarget();
+  UpdateNoWindowsWidget();
 }
 
 void OverviewSession::InitiateDrag(OverviewItem* item,
                                    const gfx::PointF& location_in_screen) {
   window_drag_controller_ =
-      std::make_unique<OverviewWindowDragController>(this);
-  window_drag_controller_->InitiateDrag(item, location_in_screen);
+      std::make_unique<OverviewWindowDragController>(this, item);
+  window_drag_controller_->InitiateDrag(location_in_screen);
 
   for (std::unique_ptr<OverviewGrid>& grid : grid_list_)
     grid->OnSelectorItemDragStarted(item);
@@ -511,15 +513,16 @@ void OverviewSession::CompleteDrag(OverviewItem* item,
                                    const gfx::PointF& location_in_screen) {
   DCHECK(window_drag_controller_);
   DCHECK_EQ(item, window_drag_controller_->item());
-  window_drag_controller_->CompleteDrag(location_in_screen);
-
+  const bool snap =
+      window_drag_controller_->CompleteDrag(location_in_screen) ==
+      OverviewWindowDragController::DragResult::kSuccessfulDragToSnap;
   for (std::unique_ptr<OverviewGrid>& grid : grid_list_)
-    grid->OnSelectorItemDragEnded();
+    grid->OnSelectorItemDragEnded(snap);
 }
 
-void OverviewSession::StartSplitViewDragMode(
+void OverviewSession::StartNormalDragMode(
     const gfx::PointF& location_in_screen) {
-  window_drag_controller_->StartSplitViewDragMode(location_in_screen);
+  window_drag_controller_->StartNormalDragMode(location_in_screen);
 }
 
 void OverviewSession::Fling(OverviewItem* item,
@@ -531,9 +534,12 @@ void OverviewSession::Fling(OverviewItem* item,
   if (!window_drag_controller_ || item != window_drag_controller_->item())
     return;
 
-  window_drag_controller_->Fling(location_in_screen, velocity_x, velocity_y);
+  const bool snap =
+      window_drag_controller_->Fling(location_in_screen, velocity_x,
+                                     velocity_y) ==
+      OverviewWindowDragController::DragResult::kSuccessfulDragToSnap;
   for (std::unique_ptr<OverviewGrid>& grid : grid_list_)
-    grid->OnSelectorItemDragEnded();
+    grid->OnSelectorItemDragEnded(snap);
 }
 
 void OverviewSession::ActivateDraggedWindow() {
@@ -543,7 +549,7 @@ void OverviewSession::ActivateDraggedWindow() {
 void OverviewSession::ResetDraggedWindowGesture() {
   window_drag_controller_->ResetGesture();
   for (std::unique_ptr<OverviewGrid>& grid : grid_list_)
-    grid->OnSelectorItemDragEnded();
+    grid->OnSelectorItemDragEnded(/*snap=*/false);
 }
 
 void OverviewSession::OnWindowDragStarted(aura::Window* dragged_window,
@@ -568,13 +574,14 @@ void OverviewSession::OnWindowDragContinued(
 }
 void OverviewSession::OnWindowDragEnded(aura::Window* dragged_window,
                                         const gfx::PointF& location_in_screen,
-                                        bool should_drop_window_into_overview) {
+                                        bool should_drop_window_into_overview,
+                                        bool snap) {
   OverviewGrid* target_grid =
       GetGridWithRootWindow(dragged_window->GetRootWindow());
   if (!target_grid)
     return;
   target_grid->OnWindowDragEnded(dragged_window, location_in_screen,
-                                 should_drop_window_into_overview);
+                                 should_drop_window_into_overview, snap);
 }
 
 void OverviewSession::PositionWindows(
@@ -592,6 +599,17 @@ bool OverviewSession::IsWindowInOverview(const aura::Window* window) {
   return false;
 }
 
+OverviewItem* OverviewSession::GetOverviewItemForWindow(
+    const aura::Window* window) {
+  for (const std::unique_ptr<OverviewGrid>& grid : grid_list_) {
+    OverviewItem* item = grid->GetOverviewItemContaining(window);
+    if (item)
+      return item;
+  }
+
+  return nullptr;
+}
+
 void OverviewSession::SetWindowListNotAnimatedWhenExiting(
     aura::Window* root_window) {
   // Find the grid accociated with |root_window|.
@@ -605,7 +623,6 @@ OverviewSession::UpdateGridAtLocationYPositionAndOpacity(
     int64_t display_id,
     int new_y,
     float opacity,
-    const gfx::Rect& work_area,
     UpdateAnimationSettingsCallback callback) {
   OverviewGrid* grid = GetGridWithRootWindow(
       Shell::Get()->GetRootWindowForDisplayId(display_id));
@@ -628,7 +645,7 @@ OverviewSession::UpdateGridAtLocationYPositionAndOpacity(
     return settings;
   }
 
-  return grid->UpdateYPositionAndOpacity(new_y, opacity, work_area, callback);
+  return grid->UpdateYPositionAndOpacity(new_y, opacity, callback);
 }
 
 void OverviewSession::UpdateMaskAndShadow() {
@@ -655,6 +672,15 @@ void OverviewSession::OnWindowActivating(
   if (ignore_activations_ || gained_active == GetOverviewFocusWindow())
     return;
 
+  if (features::IsVirtualDesksEnabled() &&
+      DesksController::Get()->AreDesksBeingModified()) {
+    // Activating a desk from its mini view will activate its most-recently used
+    // window, but this should not result in ending overview mode now.
+    // Overview will be ended explicitly as part of the desk activation
+    // animation.
+    return;
+  }
+
   if (!gained_active) {
     // Cancel overview session and do not restore focus when active window is
     // set to nullptr. This happens when removing a display.
@@ -669,7 +695,7 @@ void OverviewSession::OnWindowActivating(
 
   // Do not cancel overview mode if the window activation was caused by
   // snapping window to one side of the screen.
-  if (Shell::Get()->IsSplitViewModeActive())
+  if (Shell::Get()->split_view_controller()->InSplitViewMode())
     return;
 
   // Do not cancel overview mode if the window activation was caused while
@@ -680,12 +706,13 @@ void OverviewSession::OnWindowActivating(
   // Don't restore focus on exit if a window was just activated.
   ResetFocusRestoreWindow(false);
 
-  // Do not cancel overview mode if the window activation was caused by
-  // dragging a window when overview is active (e.g., it can happen when
-  // dragging a snapped window while overview is opened on the other side
-  // of the screen).
-  if (wm::GetWindowState(gained_active)->is_dragged())
-    return;
+  // Do not cancel overview mode while a window or overview item is being
+  // dragged as evidenced by the presence of a drop target. (Dragging to close
+  // does not count; canceling overview mode is okay then.)
+  for (std::unique_ptr<OverviewGrid>& overview_grid : grid_list_) {
+    if (overview_grid->GetDropTarget())
+      return;
+  }
 
   const auto& windows = grid->window_list();
   auto iter = std::find_if(
@@ -733,7 +760,7 @@ void OverviewSession::OnDisplayMetricsChanged(const display::Display& display,
                                               uint32_t metrics) {
   // For metrics changes that happen when the split view mode is active, the
   // display bounds will be adjusted in OnSplitViewDividerPositionChanged().
-  if (Shell::Get()->IsSplitViewModeActive())
+  if (Shell::Get()->split_view_controller()->InSplitViewMode())
     return;
   OnDisplayBoundsChanged();
 }
@@ -746,6 +773,14 @@ void OverviewSession::OnWindowHierarchyChanged(
     return;
   }
 
+  // Removing a desk while in overview mode results in reparenting the windows
+  // of that desk to the associated container of another desk. This is a window
+  // hierarchy change that shouldn't result in exiting overview mode.
+  if (features::IsVirtualDesksEnabled() &&
+      DesksController::Get()->AreDesksBeingModified()) {
+    return;
+  }
+
   aura::Window* new_window = params.target;
   wm::WindowState* state = wm::GetWindowState(new_window);
   if (!state->IsUserPositionable() || state->IsPip())
@@ -754,7 +789,7 @@ void OverviewSession::OnWindowHierarchyChanged(
   // If the new window is added when splitscreen is active, do nothing.
   // SplitViewController will do the right thing to snap the window or end
   // overview mode.
-  if (Shell::Get()->IsSplitViewModeActive() &&
+  if (Shell::Get()->split_view_controller()->InSplitViewMode() &&
       new_window->GetRootWindow() == Shell::Get()
                                          ->split_view_controller()
                                          ->GetDefaultSnappedWindow()
@@ -762,13 +797,11 @@ void OverviewSession::OnWindowHierarchyChanged(
     return;
   }
 
-  for (size_t i = 0; i < wm::kSwitchableWindowContainerIdsLength; ++i) {
-    if (new_window->parent()->id() == wm::kSwitchableWindowContainerIds[i] &&
-        !::wm::GetTransientParent(new_window)) {
-      // The new window is in one of the switchable containers, abort overview.
-      CancelSelection();
-      return;
-    }
+  if (wm::IsSwitchableContainer(new_window->parent()) &&
+      !::wm::GetTransientParent(new_window)) {
+    // The new window is in one of the switchable containers, abort overview.
+    CancelSelection();
+    return;
   }
 }
 
@@ -786,7 +819,8 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
   // we let the app list to handle the key event.
   // TODO(crbug.com/952315): Explore better ways to handle this splitview +
   // overview + applist case.
-  if (Shell::Get()->app_list_controller()->IsVisible())
+  Shell* shell = Shell::Get();
+  if (shell->app_list_controller() && shell->app_list_controller()->IsVisible())
     return;
 
   if (event->type() != ui::ET_KEY_PRESSED)
@@ -798,7 +832,7 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
     case ui::VKEY_ESCAPE:
       // Cancel overview unless we're in single split mode with no overview
       // windows.
-      if (!(IsEmpty() && Shell::Get()->IsSplitViewModeActive()))
+      if (!(IsEmpty() && shell->split_view_controller()->InSplitViewMode()))
         CancelSelection();
       break;
     case ui::VKEY_UP:
@@ -857,28 +891,26 @@ void OverviewSession::OnShellDestroying() {
   CancelSelection();
 }
 
-void OverviewSession::OnSplitViewStateChanged(
-    SplitViewController::State previous_state,
-    SplitViewController::State state) {
+void OverviewSession::OnSplitViewStateChanged(SplitViewState previous_state,
+                                              SplitViewState state) {
   // Do nothing if overview is being shutdown.
-  if (!Shell::Get()->overview_controller()->IsSelecting())
+  if (!Shell::Get()->overview_controller()->InOverviewSession())
     return;
 
   const bool unsnappable_window_activated =
-      state == SplitViewController::NO_SNAP &&
+      state == SplitViewState::kNoSnap &&
       Shell::Get()->split_view_controller()->end_reason() ==
           SplitViewController::EndReason::kUnsnappableWindowActivated;
 
   // Restore focus unless either a window was just snapped (and activated) or
   // split view mode was ended by activating an unsnappable window.
-  if (state != SplitViewController::NO_SNAP || unsnappable_window_activated)
+  if (state != SplitViewState::kNoSnap || unsnappable_window_activated)
     ResetFocusRestoreWindow(false);
 
   // If two windows were snapped to both sides of the screen or an unsnappable
   // window was just activated, or we're in single split mode in clamshell mode
   // and there is no window in overview, end overview mode and bail out.
-  if (state == SplitViewController::BOTH_SNAPPED ||
-      unsnappable_window_activated ||
+  if (state == SplitViewState::kBothSnapped || unsnappable_window_activated ||
       (Shell::Get()->split_view_controller()->InClamshellSplitViewMode() &&
        IsEmpty())) {
     CancelSelection();
@@ -891,12 +923,12 @@ void OverviewSession::OnSplitViewStateChanged(
     grid->UpdateCannotSnapWarningVisibility();
 
   // Notify |split_view_drag_indicators_| if split view mode ended.
-  if (split_view_drag_indicators_ && state == SplitViewController::NO_SNAP)
+  if (split_view_drag_indicators_ && state == SplitViewState::kNoSnap)
     split_view_drag_indicators_->OnSplitViewModeEnded();
 }
 
 void OverviewSession::OnSplitViewDividerPositionChanged() {
-  DCHECK(Shell::Get()->IsSplitViewModeActive());
+  DCHECK(Shell::Get()->split_view_controller()->InSplitViewMode());
   // Re-calculate the bounds for the window grids and position all the windows.
   for (std::unique_ptr<OverviewGrid>& grid : grid_list_) {
     grid->SetBoundsAndUpdatePositions(
@@ -905,17 +937,18 @@ void OverviewSession::OnSplitViewDividerPositionChanged() {
         /*ignored_items=*/{});
   }
   PositionWindows(/*animate=*/false);
-  MaybeCreateAndPositionNoWindowsWidget();
-}
-
-OverviewGrid* OverviewSession::GetGridWithOverviewItem(OverviewItem* item) {
-  DCHECK(GetGridWithRootWindow(item->GetWindow()->GetRootWindow()));
-  return GetGridWithRootWindow(item->GetWindow()->GetRootWindow());
+  UpdateNoWindowsWidget();
 }
 
 void OverviewSession::ResetFocusRestoreWindow(bool focus) {
   if (!restore_focus_window_)
     return;
+
+  if (features::IsVirtualDesksEnabled()) {
+    // Do not restore focus to a window that exists on an inactive desk.
+    focus &= DesksController::Get()->active_desk()->windows().contains(
+        restore_focus_window_);
+  }
 
   // Ensure the window is still in the window hierarchy and not in the middle
   // of teardown.
@@ -973,18 +1006,14 @@ void OverviewSession::OnDisplayBoundsChanged() {
         /*ignored_items=*/{});
   }
   PositionWindows(/*animate=*/false);
-  MaybeCreateAndPositionNoWindowsWidget();
+  UpdateNoWindowsWidget();
   if (split_view_drag_indicators_)
     split_view_drag_indicators_->OnDisplayBoundsChanged();
 }
 
-void OverviewSession::MaybeCreateAndPositionNoWindowsWidget() {
-  // Hide the widget if there is an item in overview or there are none but there
-  // is a window drag in progress. It is possible for a window drag to be in
-  // progress when we notify that split view has started so check for that case.
-  if (!IsEmpty() ||
-      (IsWindowDragInProgress() &&
-       !Shell::Get()->split_view_controller()->IsSplitViewModeActive())) {
+void OverviewSession::UpdateNoWindowsWidget() {
+  // Hide the widget if there is an item in overview.
+  if (!IsEmpty()) {
     no_windows_widget_.reset();
     return;
   }
@@ -1017,11 +1046,10 @@ void OverviewSession::MaybeCreateAndPositionNoWindowsWidget() {
   gfx::Rect bounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
   auto* split_view_controller = Shell::Get()->split_view_controller();
-  if (split_view_controller->state() == SplitViewController::LEFT_SNAPPED) {
+  if (split_view_controller->state() == SplitViewState::kLeftSnapped) {
     bounds = split_view_controller->GetSnappedWindowBoundsInScreen(
         window, SplitViewController::RIGHT);
-  } else if (split_view_controller->state() ==
-             SplitViewController::RIGHT_SNAPPED) {
+  } else if (split_view_controller->state() == SplitViewState::kRightSnapped) {
     bounds = split_view_controller->GetSnappedWindowBoundsInScreen(
         window, SplitViewController::LEFT);
   }

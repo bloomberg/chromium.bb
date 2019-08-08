@@ -8,9 +8,14 @@ js_type_check("closure_compile") {
   deps = [
     ":about_page",
     ":about_page_browser_proxy",
-    ":channel_switcher_dialog",
-    ":detailed_build_info",
   ]
+
+  if (is_chromeos) {
+    deps += [
+      ":channel_switcher_dialog",
+      ":detailed_build_info",
+    ]
+  }
 }
 
 js_library("about_page") {

@@ -12,6 +12,15 @@ group("all_tests") {
   ]
 }
 
+source_set("nserror_support") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "nserror_util.h",
+    "nserror_util.mm",
+  ]
+}
+
 source_set("embedded_test_server_support") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true

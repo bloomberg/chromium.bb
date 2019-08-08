@@ -9,11 +9,11 @@
 #include <utility>
 
 #include "ash/shell.h"
-#include "ash/ws/window_service_owner.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_targeter.h"
+#include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -48,10 +48,13 @@ void EnumerateSurfaces(aura::Window* window, std::vector<exo::Surface*>* out) {
 
 }  // namespace
 
+ArcCustomTab::ArcCustomTab() = default;
+ArcCustomTab::~ArcCustomTab() = default;
+
 // static
-mojom::ArcCustomTabViewPtr ArcCustomTabView::Create(int32_t task_id,
-                                                    int32_t surface_id,
-                                                    int32_t top_margin) {
+std::unique_ptr<ArcCustomTab> ArcCustomTab::Create(int32_t task_id,
+                                                   int32_t surface_id,
+                                                   int32_t top_margin) {
   const std::string arc_app_id =
       base::StringPrintf("org.chromium.arc.%d", task_id);
   aura::Window* arc_app_window =
@@ -67,24 +70,55 @@ mojom::ArcCustomTabViewPtr ArcCustomTabView::Create(int32_t task_id,
     return nullptr;
   }
   auto* parent = widget->widget_delegate()->GetContentsView();
-  auto* view = new ArcCustomTabView(arc_app_window, surface_id, top_margin);
-  parent->AddChildView(view);
+  auto view = std::make_unique<ArcCustomTabView>(arc_app_window, surface_id,
+                                                 top_margin);
+  parent->AddChildView(view.get());
   parent->SetLayoutManager(std::make_unique<views::FillLayout>());
   parent->Layout();
 
-  view->remote_view_host_->GetNativeViewContainer()->SetEventTargeter(
-      std::make_unique<aura::WindowTargeter>());
-
-  mojom::ArcCustomTabViewPtr ptr;
-  view->Bind(&ptr);
-  return ptr;
+  return std::move(view);
 }
 
-void ArcCustomTabView::EmbedUsingToken(const base::UnguessableToken& token) {
-  remote_view_host_->EmbedUsingToken(token, 0, base::BindOnce([](bool success) {
-                                       LOG_IF(ERROR, !success)
-                                           << "Failed to embed.";
-                                     }));
+ArcCustomTabView::ArcCustomTabView(aura::Window* arc_app_window,
+                                   int32_t surface_id,
+                                   int32_t top_margin)
+    : host_(new views::NativeViewHost()),
+      arc_app_window_(arc_app_window),
+      surface_id_(surface_id),
+      top_margin_(top_margin),
+      weak_ptr_factory_(this) {
+  AddChildView(host_);
+  arc_app_window_->AddObserver(this);
+  set_owned_by_client();
+}
+
+ArcCustomTabView::~ArcCustomTabView() {
+  for (auto* window : observed_surfaces_)
+    window->RemoveObserver(this);
+  arc_app_window_->RemoveObserver(this);
+
+  if (surface_window_)
+    surface_window_->RemoveObserver(this);
+  if (native_view_container_)
+    native_view_container_->RemoveObserver(this);
+}
+
+void ArcCustomTabView::Attach(gfx::NativeView view) {
+  DCHECK(view);
+  DCHECK(!host_->native_view());
+  host_->Attach(view);
+  native_view_container_ = host_->GetNativeViewContainer();
+  native_view_container_->SetEventTargeter(
+      std::make_unique<aura::WindowTargeter>());
+  native_view_container_->parent()->StackChildAtTop(native_view_container_);
+  native_view_container_->AddObserver(this);
+}
+
+void ArcCustomTabView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  if (previous_bounds.size() != size()) {
+    InvalidateLayout();
+    host_->InvalidateLayout();
+  }
 }
 
 void ArcCustomTabView::Layout() {
@@ -93,6 +127,12 @@ void ArcCustomTabView::Layout() {
     return;
   DCHECK(observed_surfaces_.empty());
   aura::Window* surface_window = surface->window();
+  if (surface_window_ != surface_window) {
+    if (surface_window_)
+      surface_window_->RemoveObserver(this);
+    surface_window->AddObserver(this);
+    surface_window_ = surface_window;
+  }
   gfx::Point topleft(0, top_margin_),
       bottomright(surface_window->bounds().width(),
                   surface_window->bounds().height());
@@ -100,11 +140,7 @@ void ArcCustomTabView::Layout() {
   ConvertPointFromWindow(surface_window, &bottomright);
   gfx::Rect bounds(topleft, gfx::Size(bottomright.x() - topleft.x(),
                                       bottomright.y() - topleft.y()));
-  remote_view_host_->SetBoundsRect(bounds);
-
-  // Stack the remote view window at top.
-  aura::Window* window = remote_view_host_->GetNativeViewContainer();
-  window->parent()->StackChildAtTop(window);
+  host_->SetBoundsRect(bounds);
 }
 
 void ArcCustomTabView::OnWindowHierarchyChanged(
@@ -119,6 +155,16 @@ void ArcCustomTabView::OnWindowHierarchyChanged(
   }
 }
 
+void ArcCustomTabView::OnWindowBoundsChanged(aura::Window* window,
+                                             const gfx::Rect& old_bounds,
+                                             const gfx::Rect& new_bounds,
+                                             ui::PropertyChangeReason reason) {
+  if (window == surface_window_ && old_bounds.size() != new_bounds.size()) {
+    InvalidateLayout();
+    host_->InvalidateLayout();
+  }
+}
+
 void ArcCustomTabView::OnWindowPropertyChanged(aura::Window* window,
                                                const void* key,
                                                intptr_t old) {
@@ -130,41 +176,39 @@ void ArcCustomTabView::OnWindowPropertyChanged(aura::Window* window,
   }
 }
 
+void ArcCustomTabView::OnWindowStackingChanged(aura::Window* window) {
+  if (window != host_->GetNativeViewContainer() || reorder_scheduled_)
+    return;
+  reorder_scheduled_ = true;
+  // Reordering should happen asynchronously -- some entity (like
+  // views::WindowReorderer) changes the window orders, and then ensures layer
+  // orders later. Changing order here synchronously leads to inconsistent
+  // window/layer ordering and causes weird graphical effects.
+  // TODO(hashimoto): fix the views ordering and remove this handling.
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&ArcCustomTabView::EnsureWindowOrders,
+                                weak_ptr_factory_.GetWeakPtr()));
+}
+
 void ArcCustomTabView::OnWindowDestroying(aura::Window* window) {
   if (observed_surfaces_.contains(window)) {
     window->RemoveObserver(this);
     observed_surfaces_.erase(window);
   }
-}
-
-ArcCustomTabView::ArcCustomTabView(aura::Window* arc_app_window,
-                                   int32_t surface_id,
-                                   int32_t top_margin)
-    : binding_(this),
-      remote_view_host_(new ws::ServerRemoteViewHost(
-          ash::Shell::Get()->window_service_owner()->window_service())),
-      arc_app_window_(arc_app_window),
-      surface_id_(surface_id),
-      top_margin_(top_margin),
-      weak_ptr_factory_(this) {
-  AddChildView(remote_view_host_);
-  arc_app_window_->AddObserver(this);
-}
-
-ArcCustomTabView::~ArcCustomTabView() {
-  for (auto* window : observed_surfaces_)
+  if (window == surface_window_) {
     window->RemoveObserver(this);
-  arc_app_window_->RemoveObserver(this);
+    surface_window_ = nullptr;
+  }
+  if (window == native_view_container_) {
+    window->RemoveObserver(this);
+    native_view_container_ = nullptr;
+  }
 }
 
-void ArcCustomTabView::Bind(mojom::ArcCustomTabViewPtr* ptr) {
-  binding_.Bind(mojo::MakeRequest(ptr));
-  binding_.set_connection_error_handler(
-      base::BindOnce(&ArcCustomTabView::Close, weak_ptr_factory_.GetWeakPtr()));
-}
-
-void ArcCustomTabView::Close() {
-  delete this;
+void ArcCustomTabView::EnsureWindowOrders() {
+  reorder_scheduled_ = false;
+  if (native_view_container_)
+    native_view_container_->parent()->StackChildAtTop(native_view_container_);
 }
 
 void ArcCustomTabView::ConvertPointFromWindow(aura::Window* window,
@@ -191,8 +235,8 @@ exo::Surface* ArcCustomTabView::FindSurface() {
   // Surface not found. Start observing surfaces for ID updates.
   for (auto* surface : surfaces) {
     if (surface->GetClientSurfaceId() == 0) {
-      observed_surfaces_.insert(surface->window());
-      surface->window()->AddObserver(this);
+      if (observed_surfaces_.insert(surface->window()).second)
+        surface->window()->AddObserver(this);
     }
   }
   return nullptr;

@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/containers/flat_set.h"
-#include "base/feature_list.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
@@ -233,12 +232,9 @@ LanguageSettingsPrivateGetLanguageListFunction::Run() {
     if (entry.supports_translate) {
       language.supports_translate.reset(new bool(true));
     }
-    if (base::FeatureList::IsEnabled(translate::kRegionalLocalesAsDisplayUI)) {
-      std::string temp_locale = entry.code;
-      if (language::ConvertToActualUILocale(&temp_locale)) {
-        language.supports_ui.reset(new bool(true));
-      }
-    } else if (base::ContainsKey(locale_set, entry.code)) {
+
+    std::string temp_locale = entry.code;
+    if (language::ConvertToActualUILocale(&temp_locale)) {
       language.supports_ui.reset(new bool(true));
     }
 #if defined(OS_CHROMEOS)

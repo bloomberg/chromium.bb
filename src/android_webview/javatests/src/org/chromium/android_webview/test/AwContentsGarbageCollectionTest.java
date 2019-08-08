@@ -307,8 +307,7 @@ public class AwContentsGarbageCollectionTest {
             AwActivityTestRule.enableJavaScriptOnUiThread(containerViews[i].getAwContents());
             final AwContents awContents = containerViews[i].getAwContents();
             final Test jsObject = new Test(i, awContents);
-            InstrumentationRegistry.getInstrumentation().runOnMainSync(
-                    () -> awContents.addJavascriptInterface(jsObject, "test"));
+            AwActivityTestRule.addJavascriptInterfaceOnUiThread(awContents, jsObject, "test");
             mActivityTestRule.loadDataSync(
                     awContents, contentsClient.getOnPageFinishedHelper(), html, "text/html", false);
             Assert.assertEquals(String.valueOf(i),

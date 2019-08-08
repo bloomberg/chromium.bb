@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/voice/text_to_speech_parser.h"
 
 #include "base/logging.h"
-#import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
+#import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "third_party/google_toolbox_for_mac/src/Foundation/GTMStringEncoding.h"
 

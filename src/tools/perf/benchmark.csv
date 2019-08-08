@@ -7,6 +7,7 @@ blink_perf.accessibility,dmazzoni@chromium.org,Blink>Accessibility,https://bit.l
 blink_perf.bindings,"jbroman@chromium.org, yukishiino@chromium.org, haraken@chromium.org",Blink>Bindings,https://bit.ly/blink-perf-benchmarks,
 blink_perf.canvas,"aaronhk@chromium.org, fserb@chromium.org",Blink>Canvas,https://bit.ly/blink-perf-benchmarks,
 blink_perf.css,"futhark@chromium.org, andruud@chromium.org",Blink>CSS,https://bit.ly/blink-perf-benchmarks,
+blink_perf.display_locking,vmpstr@chromium.org,Blink>Paint,https://bit.ly/blink-perf-benchmarks,
 blink_perf.dom,hayato@chromium.org,Blink>DOM,https://bit.ly/blink-perf-benchmarks,
 blink_perf.events,hayato@chromium.org,Blink>DOM,https://bit.ly/blink-perf-benchmarks,
 blink_perf.image_decoder,cblume@chromium.org,Internals>Images>Codecs,https://bit.ly/blink-perf-benchmarks,
@@ -37,11 +38,14 @@ passthrough_command_buffer_perftests,net-dev@chromium.org,Internals>Network,,
 performance_browser_tests,miu@chromium.org,Internals>Media>ScreenCapture,,
 power.desktop,brucedawson@chromium.org,,https://bit.ly/power-benchmarks,
 power.typical_10_mobile,perezju@chromium.org,,https://bit.ly/power-benchmarks,
-rasterize_and_record_micro.partial_invalidation,"vmpstr@chromium.org, wkorman@chromium.org",Internals>Compositing>Rasterization,,
-rasterize_and_record_micro.top_25,"vmpstr@chromium.org, wkorman@chromium.org",Internals>Compositing>Rasterization,,
-rendering.desktop,"sadrul@chromium.org, vmiura@chromium.org",Internals>GPU>Metrics,https://bit.ly/rendering-benchmarks,"backdrop_filter,gpu_rasterization,image_decoding,key_desktop_move,maps,repaint_desktop,representative_mac_desktop,representative_win_desktop,required_webgl,top_real_world_desktop,tough_animation,tough_canvas,tough_compositor,tough_filters,tough_image_decode,tough_path_rendering,tough_pinch_zoom,tough_scheduling,tough_scrolling,tough_texture_upload,tough_webgl,use_fake_camera_device"
-rendering.mobile,"sadrul@chromium.org, vmiura@chromium.org",Internals>GPU>Metrics,https://bit.ly/rendering-benchmarks,"backdrop_filter,fastpath,gpu_rasterization,image_decoding,key_hit_test,key_idle_power,key_noop,key_silk,maps,motionmark,pathological_mobile_sites,polymer,representative_mac_desktop,representative_win_desktop,required_webgl,simple_mobile_sites,top_real_world_desktop,top_real_world_mobile,tough_animation,tough_canvas,tough_compositor,tough_filters,tough_image_decode,tough_path_rendering,tough_pinch_zoom_mobile,tough_scheduling,tough_scrolling,tough_texture_upload,tough_webgl,use_fake_camera_device"
-resource_sizes,"agrieve@chromium.org, rnephew@chromium.org, perezju@chromium.org",,,
+rasterize_and_record_micro.partial_invalidation,vmpstr@chromium.org,Internals>Compositing>Rasterization,https://bit.ly/rasterize-and-record-benchmark,
+rasterize_and_record_micro.top_25,vmpstr@chromium.org,Internals>Compositing>Rasterization,https://bit.ly/rasterize-and-record-benchmark,
+rendering.desktop,"sadrul@chromium.org, vmiura@chromium.org",Internals>GPU>Metrics,https://bit.ly/rendering-benchmarks,"backdrop_filter,gpu_rasterization,image_decoding,key_desktop_move,maps,repaint_desktop,representative_mac_desktop,representative_mobile,representative_win_desktop,required_webgl,top_real_world_desktop,tough_animation,tough_canvas,tough_compositor,tough_filters,tough_image_decode,tough_path_rendering,tough_pinch_zoom,tough_scheduling,tough_scrolling,tough_texture_upload,tough_webgl,use_fake_camera_device"
+rendering.mobile,"sadrul@chromium.org, vmiura@chromium.org",Internals>GPU>Metrics,https://bit.ly/rendering-benchmarks,"backdrop_filter,fastpath,gpu_rasterization,image_decoding,key_hit_test,key_idle_power,key_noop,key_silk,maps,motionmark,pathological_mobile_sites,polymer,representative_mac_desktop,representative_mobile,representative_win_desktop,required_webgl,simple_mobile_sites,top_real_world_desktop,top_real_world_mobile,tough_animation,tough_canvas,tough_compositor,tough_filters,tough_image_decode,tough_path_rendering,tough_pinch_zoom_mobile,tough_scheduling,tough_scrolling,tough_texture_upload,tough_webgl,use_fake_camera_device"
+resource_sizes_chrome_modern_public_minimal_apks,"agrieve@chromium.org, jbudorick@chromium.org, perezju@chromium.org",BUILD,https://chromium.googlesource.com/chromium/src/+/HEAD/tools/binary_size/README.md#resource_sizes_py,
+resource_sizes_chrome_public_apk,"agrieve@chromium.org, jbudorick@chromium.org, perezju@chromium.org",BUILD,https://chromium.googlesource.com/chromium/src/+/HEAD/tools/binary_size/README.md#resource_sizes_py,
+resource_sizes_monochrome_public_minimal_apks,"agrieve@chromium.org, jbudorick@chromium.org, perezju@chromium.org",BUILD,https://chromium.googlesource.com/chromium/src/+/HEAD/tools/binary_size/README.md#resource_sizes_py,
+resource_sizes_system_webview_apk,"agrieve@chromium.org, jbudorick@chromium.org, perezju@chromium.org",BUILD,https://chromium.googlesource.com/chromium/src/+/HEAD/tools/binary_size/README.md#resource_sizes_py,
 sizes (linux),thestig@chromium.org,thomasanderson@chromium.org,Internals>PlatformIntegration,
 sizes (mac),tapted@chromium.org,,,
 sizes (win),grt@chromium.org,Internals>PlatformIntegration,,
@@ -66,5 +70,4 @@ v8.browsing_mobile-future,"mythria@chromium.org, ulan@chromium.org",Blink>JavaSc
 v8.runtime_stats.top_25,"mythria@chromium.org, ulan@chromium.org",Blink>JavaScript,,"cold,hot,warm"
 validating_command_buffer_perftests,"piman@chromium.org, chrome-gpu-perf-owners@chromium.org",Internals>GPU,,
 views_perftests,tapted@chromium.org,Internals>Views,,
-wasm,bradnelson@chromium.org,,,
 webrtc,"qiangchen@chromium.org, mbonadei@chromium.org, phoglund@chromium.org",Blink>WebRTC,http://bit.ly/webrtc-benchmark,"datachannel,getusermedia,pauseplay,smoothness,stress,videoConstraints"

@@ -11,6 +11,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/task/task_executor.h"
 #include "build/build_config.h"
+#include "content/browser/scheduler/browser_io_task_environment.h"
+#include "content/browser/scheduler/browser_ui_thread_scheduler.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -18,7 +20,7 @@
 namespace content {
 
 class BrowserTaskExecutorTest;
-class BrowserUIThreadScheduler;
+class BrowserProcessSubThread;
 
 // This class's job is to map base::TaskTraits to actual task queues for the
 // browser process.
@@ -27,11 +29,53 @@ class CONTENT_EXPORT BrowserTaskExecutor : public base::TaskExecutor {
   // Creates and registers a BrowserTaskExecutor on the current thread which
   // owns a BrowserUIThreadScheduler. This facilitates posting tasks to a
   // BrowserThread via //base/task/post_task.h.
+  // All BrowserThread::UI task queues except best effort ones are also enabled.
+  // TODO(carlscab): These queues should be enabled in
+  // BrowserMainLoop::InitializeMainThread() but some Android tests fail if we
+  // do so.
   static void Create();
 
-  // As Create but with the user provided |browser_ui_thread_scheduler|.
-  static void CreateWithBrowserUIThreadSchedulerForTesting(
-      std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler);
+  // Creates the IO thread using the scheduling infrastructure set up in the
+  // Create() method. That means that clients have access to TaskRunners
+  // associated with the IO thread before that thread is even created. In order
+  // to do so this class will own the TaskEnvironment for the IO thread until
+  // the thread is created, at which point ownership will be transferred and the
+  // |BrowserTaskExecutor| will only communicate with it via TaskRunner
+  // instances.
+  //
+  // Browser task queues will initially be disabled, that is tasks posted to
+  // them will not run. But the default task runner of the thread (the one you
+  // get via ThreadTaskRunnerHandle::Get()) will be active. This is the same
+  // task runner you get by calling BrowserProcessSubThread::task_runner(). The
+  // queues can be initialized by calling InitializeIOThread which is done
+  // during Chromium starup in BrowserMainLoop::CreateThreads.
+  //
+  // Early on during Chromium startup we initialize the ServiceManager and it
+  // needs to run tasks immediately. The ServiceManager itself does not know
+  // about the IO thread (it does not use the browser task traits), it only uses
+  // the task runner provided to it during initialization and possibly
+  // ThreadTaskRunnerHandle::Get() from tasks it posts. But we currently run it
+  // on the IO thread so we need the default task runner to be active for its
+  // tasks to run. Note that since tasks posted via the browser task traits will
+  // not run they won't be able to access the default task runner either, so for
+  // those tasks the default task queue is also "disabled".
+  //
+  // Attention: This method can only be called once (as there must be only one
+  // IO thread).
+  static std::unique_ptr<BrowserProcessSubThread> CreateIOThread();
+
+  // Enables non best effort queues on the IO thread. Usually called from
+  // BrowserMainLoop::CreateThreads.
+  static void InitializeIOThread();
+
+  // Enables all queues on all threads.
+  // Can be called multiple times.
+  static void EnableAllQueues();
+
+  // As Create but with the user provided objects.
+  static void CreateForTesting(
+      std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler,
+      std::unique_ptr<BrowserIOTaskEnvironment> browser_io_task_environment);
 
   // This must be called after the FeatureList has been initialized in order
   // for scheduling experiments to function.
@@ -41,8 +85,6 @@ class CONTENT_EXPORT BrowserTaskExecutor : public base::TaskExecutor {
   // and the base::TaskExecutor APIs are non-functional but won't crash if
   // called.
   static void Shutdown();
-
-  static void NotifyBrowserStartupCompleted();
 
   // Unregister and delete the TaskExecutor after a test.
   static void ResetForTesting();
@@ -55,10 +97,16 @@ class CONTENT_EXPORT BrowserTaskExecutor : public base::TaskExecutor {
   // If any of the pending tasks posted a task, these could be run by calling
   // this method again or running a regular RunLoop. But if that were the case
   // you should probably rewrite you tests to wait for a specific event instead.
-  //
-  // NOTE: Can only be called from the UI thread.
   static void RunAllPendingTasksOnThreadForTesting(
       BrowserThread::ID identifier);
+
+  struct ThreadIdAndQueueType {
+    BrowserThread::ID thread_id;
+    BrowserTaskQueues::QueueType queue_type;
+  };
+
+  static ThreadIdAndQueueType GetThreadIdAndQueueType(
+      const base::TaskTraits& traits);
 
   // base::TaskExecutor implementation.
   bool PostDelayedTaskWithTraits(const base::Location& from_here,
@@ -86,6 +134,10 @@ class CONTENT_EXPORT BrowserTaskExecutor : public base::TaskExecutor {
  private:
   friend class BrowserTaskExecutorTest;
 
+  static void CreateInternal(
+      std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler,
+      std::unique_ptr<BrowserIOTaskEnvironment> browser_io_task_environment);
+
   // For GetProxyTaskRunnerForThread().
   FRIEND_TEST_ALL_PREFIXES(BrowserTaskExecutorTest,
                            EnsureUIThreadTraitPointsToExpectedQueue);
@@ -95,23 +147,18 @@ class CONTENT_EXPORT BrowserTaskExecutor : public base::TaskExecutor {
                            BestEffortTasksRunAfterStartup);
 
   explicit BrowserTaskExecutor(
-      std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler);
+      std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler,
+      std::unique_ptr<BrowserIOTaskEnvironment> browser_io_task_environment);
   ~BrowserTaskExecutor() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
-      const base::TaskTraits& traits);
-
-  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
-      const base::TaskTraits& traits,
-      const BrowserTaskTraitsExtension& extension);
-
-  static scoped_refptr<base::SingleThreadTaskRunner>
-  GetProxyTaskRunnerForThread(BrowserThread::ID id);
-
-  static scoped_refptr<base::SingleThreadTaskRunner>
-  GetAfterStartupTaskRunnerForThread(BrowserThread::ID id);
+      const base::TaskTraits& traits) const;
 
   std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler_;
+  BrowserUIThreadScheduler::Handle browser_ui_thread_handle_;
+
+  std::unique_ptr<BrowserIOTaskEnvironment> browser_io_task_environment_;
+  BrowserIOTaskEnvironment::Handle browser_io_thread_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserTaskExecutor);
 };

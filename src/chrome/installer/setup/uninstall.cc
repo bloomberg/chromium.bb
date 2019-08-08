@@ -29,6 +29,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "base/win/shortcut.h"
+#include "chrome/chrome_elf/chrome_elf_constants.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
@@ -56,7 +57,6 @@
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/work_item.h"
-#include "chrome_elf/chrome_elf_constants.h"
 #include "content/public/common/result_codes.h"
 #include "rlz/lib/rlz_lib.h"
 

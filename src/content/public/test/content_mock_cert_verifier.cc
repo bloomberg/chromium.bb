@@ -28,6 +28,13 @@ void ContentMockCertVerifier::CertVerifier::set_default_result(
     int default_result) {
   verifier_->set_default_result(default_result);
 
+  // Set the default result as a flag in case the FeatureList has not been
+  // initialized yet and we don't know if network service will run out of
+  // process.
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kMockCertVerifierDefaultResultForTesting,
+      base::NumberToString(default_result));
+
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
       IsInProcessNetworkService()) {
     return;
@@ -82,13 +89,6 @@ ContentMockCertVerifier::~ContentMockCertVerifier() {}
 
 void ContentMockCertVerifier::SetUpCommandLine(
     base::CommandLine* command_line) {
-  // Check here instead of the constructor since some tests may set the feature
-  // flag in their constructor.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-      IsInProcessNetworkService()) {
-    return;
-  }
-
   // Enable the MockCertVerifier in the network process via a switch. This is
   // because it's too early to call the service manager at this point (it's not
   // created yet), and by the time we can call the service manager in
@@ -97,15 +97,11 @@ void ContentMockCertVerifier::SetUpCommandLine(
 }
 
 void ContentMockCertVerifier::SetUpInProcessBrowserTestFixture() {
-  if (IsInProcessNetworkService()) {
-    network::NetworkContext::SetCertVerifierForTesting(
-        mock_cert_verifier_.get());
-  }
+  network::NetworkContext::SetCertVerifierForTesting(mock_cert_verifier_.get());
 }
 
 void ContentMockCertVerifier::TearDownInProcessBrowserTestFixture() {
-  if (IsInProcessNetworkService())
-    network::NetworkContext::SetCertVerifierForTesting(nullptr);
+  network::NetworkContext::SetCertVerifierForTesting(nullptr);
 }
 
 ContentMockCertVerifier::CertVerifier*

@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/extension_with_management_policy_apitest.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
 #include "chrome/browser/ui/search/local_ntp_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -32,6 +33,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/browsertest_util.h"
 #include "extensions/browser/extension_registry.h"
@@ -42,6 +44,7 @@
 #include "extensions/test/test_extension_dir.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
 namespace extensions {
@@ -978,6 +981,265 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, Test) {
       "content_scripts/other_extensions/message_echoer_denies")));
   ASSERT_TRUE(RunExtensionTest("content_scripts/messaging")) << message_;
 }
+
+// A test suite designed for exercising the behavior of content script
+// injection into opaque URLs (like about:blank).
+class ContentScriptOpaqueOriginTest : public ContentScriptApiTest {
+ public:
+  ContentScriptOpaqueOriginTest() {}
+  ~ContentScriptOpaqueOriginTest() override {}
+
+  void SetUpOnMainThread() override;
+
+  // Returns true if the extension's content script executed in the specified
+  // |frame|.
+  bool DidScriptRunInFrame(content::RenderFrameHost* host);
+
+  // Navigates the current active tab to the specified |url|, ensuring the
+  // navigation succeeds. Returns the active tab's WebContents.
+  content::WebContents* NavigateTab(const GURL& url);
+
+  // Opens a popup to the specified |url| from the given |opener_web_contents|.
+  // Ensures the navigation succeeds, and returns the newly-opened popup's
+  // WebContents.
+  content::WebContents* OpenPopup(content::WebContents* opener_web_contents,
+                                  const GURL& url);
+
+  // Navigates an iframe to the specified |url| from the context of
+  // |navigating_host|. The iframe is retrieved from |navigating_host| by
+  // evaluating |frame_getter| (e.g., `frames[0]`).
+  void NavigateIframe(content::RenderFrameHost* navigating_host,
+                      const std::string& frame_getter,
+                      const GURL& url);
+
+  const GURL& about_blank() const { return about_blank_; }
+  const GURL& allowed_url() const { return allowed_url_; }
+  const GURL& disallowed_url() const { return disallowed_url_; }
+  const GURL& allowed_url_with_iframe() const {
+    return allowed_url_with_iframe_;
+  }
+  const GURL& disallowed_url_with_iframe() const {
+    return disallowed_url_with_iframe_;
+  }
+  const GURL& null_document_url() const { return null_document_url_; }
+
+ private:
+  static constexpr char kMarkerSpanId[] = "content-script-marker";
+
+  // The about:blank URL.
+  GURL about_blank_;
+  // A simple URL the extension is allowed to access.
+  GURL allowed_url_;
+  // A simple URL the extension is not allowed to access.
+  GURL disallowed_url_;
+  // A URL the extension can access with an iframe in the DOM.
+  GURL allowed_url_with_iframe_;
+  // A URL the extension is not allowed to access with an iframe in the DOM.
+  GURL disallowed_url_with_iframe_;
+  // A URL that leads to a page with an that rewrites the parent document to be
+  // null.
+  GURL null_document_url_;
+
+  // The test directory used to load our extension.
+  TestExtensionDir test_extension_dir_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentScriptOpaqueOriginTest);
+};
+
+constexpr char ContentScriptOpaqueOriginTest::kMarkerSpanId[];
+
+void ContentScriptOpaqueOriginTest::SetUpOnMainThread() {
+  ContentScriptApiTest::SetUpOnMainThread();
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  about_blank_ = GURL(url::kAboutBlankURL);
+  allowed_url_ = embedded_test_server()->GetURL("example.com", "/simple.html");
+  disallowed_url_ =
+      embedded_test_server()->GetURL("chromium.org", "/simple.html");
+  allowed_url_with_iframe_ =
+      embedded_test_server()->GetURL("example.com", "/iframe.html");
+  disallowed_url_with_iframe_ =
+      embedded_test_server()->GetURL("chromium.org", "/iframe.html");
+  null_document_url_ = embedded_test_server()->GetURL(
+      "chromium.org", "/extensions/null_document.html");
+
+  constexpr char kManifest[] =
+      R"({
+           "name": "Content Script in opaque URLs",
+           "manifest_version": 2,
+           "version": "0.1",
+           "content_scripts": [{
+             "matches": ["http://example.com/*"],
+             "js": ["script.js"],
+             "run_at": "document_end",
+             "all_frames": true,
+             "match_about_blank": true
+           }]
+         })";
+  test_extension_dir_.WriteManifest(kManifest);
+
+  std::string background_script = base::StringPrintf(
+      R"(let span = document.createElement('span');
+         span.id = '%s';
+         document.body.appendChild(span);)",
+      kMarkerSpanId);
+  test_extension_dir_.WriteFile(FILE_PATH_LITERAL("script.js"),
+                                background_script);
+  ASSERT_TRUE(LoadExtension(test_extension_dir_.UnpackedPath()));
+}
+
+bool ContentScriptOpaqueOriginTest::DidScriptRunInFrame(
+    content::RenderFrameHost* host) {
+  // The WebContents needs to have stopped loading at this point for this check
+  // to be guaranteed. Since the script runs at document_end (which runs
+  // after DOMContentLoaded is fired, before window.onload), this check will be
+  // guaranteed to run after it.
+  EXPECT_FALSE(content::WebContents::FromRenderFrameHost(host)->IsLoading());
+  return content::EvalJs(
+             host,
+             content::JsReplace("!!document.getElementById($1)", kMarkerSpanId))
+      .ExtractBool();
+}
+
+content::WebContents* ContentScriptOpaqueOriginTest::NavigateTab(
+    const GURL& url) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::TestNavigationObserver observer(web_contents);
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+  EXPECT_EQ(url, web_contents->GetLastCommittedURL());
+  return web_contents;
+}
+
+content::WebContents* ContentScriptOpaqueOriginTest::OpenPopup(
+    content::WebContents* opener_web_contents,
+    const GURL& url) {
+  int initial_tab_count = browser()->tab_strip_model()->count();
+  content::TestNavigationObserver popup_observer(nullptr /* web_contents */);
+  popup_observer.StartWatchingNewWebContents();
+  EXPECT_TRUE(content::ExecuteScript(
+      opener_web_contents, content::JsReplace("window.open($1);", url.spec())));
+  popup_observer.Wait();
+  EXPECT_EQ(initial_tab_count + 1, browser()->tab_strip_model()->count());
+  content::WebContents* popup =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(url, popup->GetLastCommittedURL());
+  EXPECT_NE(popup, opener_web_contents);
+  return popup;
+}
+
+void ContentScriptOpaqueOriginTest::NavigateIframe(
+    content::RenderFrameHost* navigating_host,
+    const std::string& frame_getter,
+    const GURL& url) {
+  constexpr char kScriptTemplate[] =
+      R"({
+           let frame = %s;
+           frame.location.href = '%s';
+         })";
+
+  std::string script = base::StringPrintf(kScriptTemplate, frame_getter.c_str(),
+                                          url.spec().c_str());
+  content::TestNavigationObserver navigation_observer(url);
+  navigation_observer.WatchExistingWebContents();
+  EXPECT_TRUE(content::ExecuteScript(navigating_host, script));
+  navigation_observer.Wait();
+  EXPECT_TRUE(navigation_observer.last_navigation_succeeded());
+
+  // Also wait for the full WebContents to stop loading, in case the iframe's
+  // new source has nested iframes.
+  EXPECT_TRUE(content::WaitForLoadStop(
+      content::WebContents::FromRenderFrameHost(navigating_host)));
+}
+
+// Injection should succeed on a popup to about:blank created by an allowed
+// site.
+IN_PROC_BROWSER_TEST_F(ContentScriptOpaqueOriginTest,
+                       MatchAboutBlank_Iframe_Allowed) {
+  content::WebContents* tab = NavigateTab(allowed_url_with_iframe());
+  NavigateIframe(tab->GetMainFrame(), "frames[0]", about_blank());
+  content::RenderFrameHost* render_frame_host =
+      content::ChildFrameAt(tab->GetMainFrame(), 0);
+  ASSERT_TRUE(render_frame_host);
+  EXPECT_EQ(about_blank(), render_frame_host->GetLastCommittedURL());
+  EXPECT_TRUE(DidScriptRunInFrame(render_frame_host));
+}
+
+// Injection should fail on an iframe to about:blank created by a disallowed
+// site.
+IN_PROC_BROWSER_TEST_F(ContentScriptOpaqueOriginTest,
+                       MatchAboutBlank_Iframe_Disallowed) {
+  content::WebContents* tab = NavigateTab(disallowed_url_with_iframe());
+  NavigateIframe(tab->GetMainFrame(), "frames[0]", about_blank());
+  content::RenderFrameHost* render_frame_host =
+      content::ChildFrameAt(tab->GetMainFrame(), 0);
+  ASSERT_TRUE(render_frame_host);
+  EXPECT_EQ(about_blank(), render_frame_host->GetLastCommittedURL());
+  EXPECT_FALSE(DidScriptRunInFrame(render_frame_host));
+}
+
+// Injection should succeed on a popup to about:blank created by an allowed
+// site.
+IN_PROC_BROWSER_TEST_F(ContentScriptOpaqueOriginTest,
+                       MatchAboutBlank_Popup_Allowed) {
+  content::WebContents* tab = NavigateTab(allowed_url());
+  content::WebContents* popup = OpenPopup(tab, about_blank());
+  EXPECT_TRUE(DidScriptRunInFrame(popup->GetMainFrame()));
+}
+
+// Injection should fail on a popup to about:blank created by a disallowed site.
+IN_PROC_BROWSER_TEST_F(ContentScriptOpaqueOriginTest,
+                       MatchAboutBlank_Popup_Disallowed) {
+  content::WebContents* tab = NavigateTab(disallowed_url());
+  content::WebContents* popup = OpenPopup(tab, about_blank());
+  EXPECT_FALSE(DidScriptRunInFrame(popup->GetMainFrame()));
+}
+
+// Browser-initiated navigations do not have a separate precursor tuple, so
+// injection should be disallowed.
+IN_PROC_BROWSER_TEST_F(ContentScriptOpaqueOriginTest,
+                       MatchAboutBlank_BrowserOpened) {
+  content::WebContents* tab = NavigateTab(about_blank());
+  EXPECT_FALSE(DidScriptRunInFrame(tab->GetMainFrame()));
+}
+
+// Tests injecting a content script when the iframe rewrites the parent to be
+// null. This re-write causes the parent to itself become an about:blank frame
+// without a parent. Regression test for https://crbug.com/963347 and
+// https://crbug.com/963420.
+IN_PROC_BROWSER_TEST_F(ContentScriptOpaqueOriginTest,
+                       MatchAboutBlank_NullParent) {
+  content::DOMMessageQueue message_queue;
+  NavigateParams navigate_params(browser(), null_document_url(),
+                                 ui::PAGE_TRANSITION_TYPED);
+  navigate_params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+  Navigate(&navigate_params);
+  std::string result;
+  // We can't rely on the navigation observer logic, because the frame is
+  // destroyed before it finishes loading. Instead, it sends a message through
+  // DOMAutomationController immediately before it (synchronously) re-writes the
+  // parent.
+  ASSERT_TRUE(message_queue.WaitForMessage(&result));
+  EXPECT_EQ(R"("navigated")", result);
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(null_document_url(), tab->GetLastCommittedURL());
+  content::RenderFrameHost* main_frame = tab->GetMainFrame();
+  // Sanity check: The main frame should have been re-written. The test passes
+  // if there's no crash. Since the iframe rewrites the parent synchronously
+  // after sending the "navigated" message, there's no risk of a race here.
+  EXPECT_EQ("null", content::EvalJs(main_frame, "document.body.innerHTML;"));
+  // The test passes if there's no crash. Previously, we didn't handle the
+  // no-parent about:blank case well when there was a non-about:blank
+  // precursor origin, which caused a crash during the document writing.
+}
+
+// TODO(devlin): Similar to the above test, exercise one with a frame that
+// closes its own parent. This needs to use tabs.executeScript (for timing
+// reasons), but is close enough to a content script test to re-use the same
+// suite.
+
+// TODO(devlin): Add support for and exercise behavior of data: URL injection.
 
 // Test fixture which sets a custom NTP Page.
 // TODO(karandeepb): Similar logic to set up a custom NTP is used elsewhere as

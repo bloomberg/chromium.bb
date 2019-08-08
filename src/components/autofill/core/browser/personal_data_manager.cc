@@ -25,24 +25,24 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "components/autofill/core/browser/address_i18n.h"
 #include "components/autofill/core/browser/autofill-inl.h"
-#include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_download_manager.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
-#include "components/autofill/core/browser/autofill_profile_comparator.h"
-#include "components/autofill/core/browser/country_data.h"
-#include "components/autofill/core/browser/country_names.h"
+#include "components/autofill/core/browser/data_model/autofill_profile_comparator.h"
+#include "components/autofill/core/browser/data_model/phone_number.h"
 #include "components/autofill/core/browser/form_structure.h"
-#include "components/autofill/core/browser/label_formatter.h"
-#include "components/autofill/core/browser/label_formatter_utils.h"
+#include "components/autofill/core/browser/geo/address_i18n.h"
+#include "components/autofill/core/browser/geo/autofill_country.h"
+#include "components/autofill/core/browser/geo/country_data.h"
+#include "components/autofill/core/browser/geo/country_names.h"
+#include "components/autofill/core/browser/geo/phone_number_i18n.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
-#include "components/autofill/core/browser/phone_number.h"
-#include "components/autofill/core/browser/phone_number_i18n.h"
-#include "components/autofill/core/browser/suggestion_selection.h"
+#include "components/autofill/core/browser/ui/label_formatter.h"
+#include "components/autofill/core/browser/ui/label_formatter_utils.h"
+#include "components/autofill/core/browser/ui/suggestion_selection.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -513,18 +513,6 @@ void PersonalDataManager::SyncStarted(syncer::ModelType model_type) {
 }
 
 void PersonalDataManager::OnStateChanged(syncer::SyncService* sync_service) {
-  // TODO(mastiz,jkrcal): Once AUTOFILL_WALLET is migrated to USS, it shouldn't
-  // be necessary anymore to implement SyncServiceObserver; instead the
-  // notification should flow through the payments sync bridge.
-  DCHECK_EQ(sync_service_, sync_service);
-  syncer::UploadState upload_state = syncer::GetUploadToGoogleState(
-      sync_service_, syncer::ModelType::AUTOFILL_WALLET_DATA);
-  UMA_HISTOGRAM_ENUMERATION(
-      "Autofill.ResetFullServerCards.SyncServiceStatusOnStateChanged",
-      upload_state);
-  if (upload_state == syncer::UploadState::NOT_ACTIVE) {
-    ResetFullServerCards();
-  }
   if (base::FeatureList::IsEnabled(
           autofill::features::kAutofillEnableAccountWalletStorage)) {
     // Use the ephemeral account storage when the user didn't enable the sync
@@ -1145,7 +1133,7 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
   if (IsInAutofillSuggestionsDisabledExperiment())
     return std::vector<Suggestion>();
 
-  AutofillProfileComparator comparator(app_locale_);
+  const AutofillProfileComparator comparator(app_locale_);
   base::string16 field_contents_canon =
       comparator.NormalizeForComparison(field_contents);
 
@@ -1175,33 +1163,46 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
   // Don't show two suggestions if one is a subset of the other.
   std::vector<AutofillProfile*> unique_matched_profiles;
   std::vector<Suggestion> unique_suggestions =
-      suggestion_selection::GetUniqueSuggestions(field_types, app_locale_,
-                                                 matched_profiles, suggestions,
-                                                 &unique_matched_profiles);
+      suggestion_selection::GetUniqueSuggestions(
+          field_types, comparator, app_locale_, matched_profiles, suggestions,
+          &unique_matched_profiles);
 
   std::unique_ptr<LabelFormatter> formatter;
+  bool use_formatter;
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-  formatter = base::FeatureList::IsEnabled(
-                  autofill::features::kAutofillUseImprovedLabelDisambiguation)
-                  ? LabelFormatter::Create(app_locale_, type.GetStorableType(),
-                                           field_types, unique_matched_profiles)
+  use_formatter = base::FeatureList::IsEnabled(
+      autofill::features::kAutofillUseImprovedLabelDisambiguation);
+#else
+  use_formatter = base::FeatureList::IsEnabled(
+      autofill::features::kAutofillUseMobileLabelDisambiguation);
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+
+  // The formatter stores a constant reference to |unique_matched_profiles|.
+  // This is safe since the formatter is destroyed when this function returns.
+  formatter = use_formatter
+                  ? LabelFormatter::Create(unique_matched_profiles, app_locale_,
+                                           type.GetStorableType(), field_types)
                   : nullptr;
-#endif
 
   // Generate disambiguating labels based on the list of matches.
   std::vector<base::string16> labels;
   if (formatter) {
-    labels = formatter->GetLabels(unique_matched_profiles);
+    labels = formatter->GetLabels();
   } else {
     AutofillProfile::CreateInferredLabels(unique_matched_profiles, &field_types,
                                           type.GetStorableType(), 1,
                                           app_locale_, &labels);
   }
 
-  suggestion_selection::PrepareSuggestions(
-      formatter && data_util::ContainsAddress(formatter->groups()), labels,
-      &unique_suggestions);
+  if (use_formatter && !unique_suggestions.empty()) {
+    AutofillMetrics::LogProfileSuggestionsMadeWithFormatter(formatter !=
+                                                            nullptr);
+  }
+
+  suggestion_selection::PrepareSuggestions(labels, &unique_suggestions,
+                                           comparator);
+
   return unique_suggestions;
 }
 
@@ -1325,11 +1326,7 @@ bool PersonalDataManager::ShouldSuggestServerCards() const {
   }
 
   // Server cards should be suggested if the sync service is active.
-  // We check for persistent auth errors, because we don't want to offer server
-  // cards when the user is in the "sync paused" state.
-  return sync_service_->GetActiveDataTypes().Has(
-             syncer::AUTOFILL_WALLET_DATA) &&
-         !sync_service_->GetAuthError().IsPersistentError();
+  return sync_service_->GetActiveDataTypes().Has(syncer::AUTOFILL_WALLET_DATA);
 }
 
 std::string PersonalDataManager::CountryCodeForCurrentTimezone() const {
@@ -1792,12 +1789,6 @@ std::string PersonalDataManager::OnAcceptedLocalCreditCardSave(
   if (is_off_the_record_)
     return std::string();
 
-  // Log that local credit card save reached the PersonalDataManager. This is a
-  // temporary metric to measure the impact, if any, of CreditCardSaveManager's
-  // destruction before its callbacks are executed.
-  // TODO(crbug.com/892299): Remove this once the overall problem is fixed.
-  AutofillMetrics::LogSaveCardReachedPersonalDataManager(/*is_local=*/true);
-
   return SaveImportedCreditCard(imported_card);
 }
 
@@ -2054,7 +2045,11 @@ void PersonalDataManager::NotifyPersonalDataObserver() {
   bool profile_changes_are_ongoing = ProfileChangesAreOngoing();
   for (PersonalDataManagerObserver& observer : observers_) {
     observer.OnPersonalDataChanged();
-    if (!profile_changes_are_ongoing) {
+  }
+  if (!profile_changes_are_ongoing) {
+    // Call OnPersonalDataFinishedProfileTasks in a separate loop as
+    // the observers might have removed themselves in OnPersonalDataChanged
+    for (PersonalDataManagerObserver& observer : observers_) {
       observer.OnPersonalDataFinishedProfileTasks();
     }
   }
@@ -2066,19 +2061,18 @@ std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
     const std::vector<CreditCard*>& cards_to_suggest) const {
   std::vector<Suggestion> suggestions;
   base::string16 field_contents_lower = base::i18n::ToLower(field_contents);
+
   for (const CreditCard* credit_card : cards_to_suggest) {
     // The value of the stored data for this field type in the |credit_card|.
     base::string16 creditcard_field_value =
         credit_card->GetInfo(type, app_locale_);
     if (creditcard_field_value.empty())
       continue;
-    base::string16 creditcard_field_lower =
-        base::i18n::ToLower(creditcard_field_value);
 
     bool prefix_matched_suggestion;
     if (suggestion_selection::IsValidSuggestionForFieldContents(
-            creditcard_field_lower, field_contents_lower, type,
-            credit_card->record_type() == CreditCard::MASKED_SERVER_CARD,
+            base::i18n::ToLower(creditcard_field_value), field_contents_lower,
+            type, credit_card->record_type() == CreditCard::MASKED_SERVER_CARD,
             &prefix_matched_suggestion)) {
       // Make a new suggestion.
       suggestions.push_back(Suggestion());
@@ -2096,11 +2090,14 @@ std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
       // cardholder name. The label should never repeat the value.
       if (type.GetStorableType() == CREDIT_CARD_NUMBER) {
         suggestion->value = credit_card->NetworkOrBankNameAndLastFourDigits();
+
+#if defined(OS_ANDROID) || defined(OS_IOS)
         suggestion->label = credit_card->GetInfo(
             AutofillType(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR), app_locale_);
-        // The additional label will be used if two-line display is enabled.
-        suggestion->additional_label =
-            credit_card->DescriptiveExpiration(app_locale_);
+#else
+        suggestion->label = credit_card->DescriptiveExpiration(app_locale_);
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
+
       } else if (credit_card->number().empty()) {
         if (type.GetStorableType() != CREDIT_CARD_NAME_FULL) {
           suggestion->label = credit_card->GetInfo(
@@ -2108,16 +2105,15 @@ std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
         }
       } else {
 #if defined(OS_ANDROID)
-        // Since Android places the label on its own row, there's more
-        // horizontal space to work with. Show "Amex - 1234" rather than
-        // desktop's "****1234".
+        // E.g. "Visa  ••••1234".
         suggestion->label = credit_card->NetworkOrBankNameAndLastFourDigits();
-#else
+#elif defined(OS_IOS)
+        // TODO(crbug.com/968267): Use the same format for iOS and Android.
+        // E.g. "••••1234"".
         suggestion->label = credit_card->ObfuscatedLastFourDigits();
-        // Add the card number with expiry information in the additional
-        // label portion so that we an show it when two-line display is
-        // enabled.
-        suggestion->additional_label =
+#else
+        // E.g. "Visa  ••••1234, expires on 01/25".
+        suggestion->label =
             credit_card
                 ->NetworkOrBankNameLastFourDigitsAndDescriptiveExpiration(
                     app_locale_);

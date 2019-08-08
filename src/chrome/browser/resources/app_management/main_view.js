@@ -37,10 +37,15 @@ Polymer({
     },
   },
 
+  listeners: {
+    'click-back-button': 'onClickBackButton',
+  },
+
   attached: function() {
     this.watch('apps_', state => state.apps);
     this.watch('notificationAppIds_', state => state.notifications.allowedIds);
     this.updateFromStore();
+    this.onAppsChanged_();
   },
 
   /**
@@ -48,7 +53,14 @@ Polymer({
    */
   onAppsChanged_: function() {
     this.appsList = Object.values(this.apps_)
-                        .sort((a, b) => a.title.localeCompare(assert(b.title)));
+                        .sort(
+                            (a, b) => app_management.util.alphabeticalSort(
+                                assert(a.title), assert(b.title)));
+  },
+
+  /** @private */
+  onClickBackButton: function() {
+    window.location.href = `chrome://settings`;
   },
 
   /** @private */

@@ -219,6 +219,24 @@ def run_command(argv, env=None, cwd=None, log=True):
   return wait_with_signals(process)
 
 
+def run_command_output_to_handle(argv, file_handle, env=None, cwd=None):
+  """Run command and stream its stdout/stderr both to |file_handle|.
+
+  Also forward_signals to obey
+  https://chromium.googlesource.com/infra/luci/luci-py/+/master/appengine/swarming/doc/Bot.md#graceful-termination_aka-the-sigterm-and-sigkill-dance
+
+  Returns:
+    integer returncode of the subprocess.
+  """
+  print('Running %r in %r (env: %r)' % (argv, cwd, env))
+  process = subprocess.Popen(
+      argv, env=env, cwd=cwd, stderr=file_handle, stdout=file_handle)
+  forward_signals([process])
+  exit_code = wait_with_signals(process)
+  print('Command returned exit code %d' % exit_code)
+  return exit_code
+
+
 def wait_with_signals(process):
   """A version of process.wait() that works cross-platform.
 
@@ -253,6 +271,8 @@ def forward_signals(procs):
   assert all(isinstance(p, subprocess.Popen) for p in procs)
   def _sig_handler(sig, _):
     for p in procs:
+      if p.poll() is not None:
+        continue
       # SIGBREAK is defined only for win32.
       if sys.platform == 'win32' and sig == signal.SIGBREAK:
         p.send_signal(signal.CTRL_BREAK_EVENT)
@@ -262,7 +282,7 @@ def forward_signals(procs):
     signal.signal(signal.SIGBREAK, _sig_handler)
   else:
     signal.signal(signal.SIGTERM, _sig_handler)
-
+    signal.signal(signal.SIGINT, _sig_handler)
 
 def run_executable(cmd, env, stdoutfile=None):
   """Runs an executable with:

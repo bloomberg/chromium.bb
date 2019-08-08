@@ -74,6 +74,8 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
                         IntentPickerCloseReason close_reason,
                         bool should_persist);
 
+  static bool IsGoogleRedirectorUrlForTesting(const GURL& url);
+
   static bool ShouldOverrideUrlLoadingForTesting(const GURL& previous_url,
                                                  const GURL& current_url);
 

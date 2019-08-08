@@ -20,13 +20,13 @@ class MicrotaskQueue;
 }  // namespace v8
 
 namespace blink {
+
+class Agent;
+
 namespace scheduler {
 
-// TODO(tzik): Implement EventLoopGroup that represents a group of reachable
-// browsing contexts.
-
 // Represents an event loop. The instance is held by ExecutionContexts.
-// https://html.spec.whatwg.org/multipage/webappapis.html#event-loop
+// https://html.spec.whatwg.org/C#event-loop
 //
 // Browsing contexts must share the same EventLoop if they have a chance to
 // access each other synchronously.
@@ -39,11 +39,6 @@ class PLATFORM_EXPORT EventLoop final : public WTF::RefCounted<EventLoop> {
   USING_FAST_MALLOC(EventLoop);
 
  public:
-  // An static constructor for Workers and Worklets.
-  // For Document, use EventLoopGroup to get or create the instance.
-  static scoped_refptr<EventLoop> CreateForWorkerOrWorklet(
-      v8::Isolate* isolate);
-
   // Queues |cb| to the backing v8::MicrotaskQueue.
   void EnqueueMicrotask(base::OnceClosure cb);
 
@@ -64,13 +59,12 @@ class PLATFORM_EXPORT EventLoop final : public WTF::RefCounted<EventLoop> {
 
  private:
   friend class WTF::RefCounted<EventLoop>;
+  friend blink::Agent;
 
   explicit EventLoop(v8::Isolate* isolate);
   ~EventLoop();
 
   static void RunPendingMicrotask(void* data);
-
-  // TODO(tzik): Add a back pointer to EventLoopGroup.
 
   v8::Isolate* isolate_;
   bool loop_enabled_ = true;

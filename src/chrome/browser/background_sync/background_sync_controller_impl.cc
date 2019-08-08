@@ -9,7 +9,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
-#include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/metrics/ukm_background_recorder_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/variations/variations_associated_data.h"
@@ -36,6 +36,9 @@ const char BackgroundSyncControllerImpl::kFieldTrialName[] = "BackgroundSync";
 const char BackgroundSyncControllerImpl::kDisabledParameterName[] = "disabled";
 const char BackgroundSyncControllerImpl::kMaxAttemptsParameterName[] =
     "max_sync_attempts";
+const char BackgroundSyncControllerImpl::
+    kMaxAttemptsWithNotificationPermissionParameterName[] =
+        "max_sync_attempts_with_notification_permission";
 const char BackgroundSyncControllerImpl::kInitialRetryParameterName[] =
     "initial_retry_delay_sec";
 const char BackgroundSyncControllerImpl::kRetryDelayFactorParameterName[] =
@@ -48,9 +51,8 @@ const char BackgroundSyncControllerImpl::kMaxSyncEventDurationName[] =
 BackgroundSyncControllerImpl::BackgroundSyncControllerImpl(Profile* profile)
     : profile_(profile),
       site_engagement_service_(SiteEngagementService::Get(profile)),
-      background_sync_metrics_(HistoryServiceFactory::GetForProfile(
-          profile_,
-          ServiceAccessType::EXPLICIT_ACCESS)) {
+      background_sync_metrics_(
+          ukm::UkmBackgroundRecorderFactory::GetForProfile(profile_)) {
   DCHECK(profile_);
   DCHECK(site_engagement_service_);
 }
@@ -74,6 +76,16 @@ void BackgroundSyncControllerImpl::GetParameterOverrides(
   if (base::LowerCaseEqualsASCII(field_params[kDisabledParameterName],
                                  "true")) {
     parameters->disable = true;
+  }
+
+  if (base::ContainsKey(field_params,
+                        kMaxAttemptsWithNotificationPermissionParameterName)) {
+    int max_attempts;
+    if (base::StringToInt(
+            field_params[kMaxAttemptsWithNotificationPermissionParameterName],
+            &max_attempts)) {
+      parameters->max_sync_attempts_with_notification_permission = max_attempts;
+    }
   }
 
   if (base::ContainsKey(field_params, kMaxAttemptsParameterName)) {

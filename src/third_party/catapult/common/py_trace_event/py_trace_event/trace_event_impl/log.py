@@ -7,6 +7,8 @@ import os
 import sys
 import time
 import threading
+import multiprocessing
+import multiprocessing_shim
 
 from py_trace_event.trace_event_impl import perfetto_trace_writer
 from py_trace_event import trace_time
@@ -38,13 +40,14 @@ _enabled = False
 _log_file = None
 
 _cur_events = [] # events that have yet to be buffered
-_metadata = {}
+_benchmark_metadata = {}
 
 _tls = threading.local() # tls used to detect forking/etc
 _atexit_regsitered_for_pid = None
 
 _control_allowed = True
 
+_original_multiprocessing_process = multiprocessing.Process
 
 class TraceException(Exception):
   pass
@@ -162,6 +165,9 @@ def _trace_enable(log_file=None, format=None):
     else:
       _note("trace_event: Opened existing tracelog")
     _log_file.flush()
+  # Monkeypatch in our process replacement for the multiprocessing.Process class
+  if multiprocessing.Process != multiprocessing_shim.ProcessShim:
+      multiprocessing.Process = multiprocessing_shim.ProcessShim
 
 @_locked
 def trace_flush():
@@ -177,6 +183,7 @@ def trace_disable():
     return
   _enabled = False
   _flush(close=True)
+  multiprocessing.Process = _original_multiprocessing_process
 
 def _write_cur_events():
   if _format == PROTOBUF:
@@ -199,18 +206,17 @@ def _write_cur_events():
   del _cur_events[:]
 
 def _write_footer():
-  if _format == PROTOBUF:
-    # TODO: implement writing metadata in PROTOBUF format
-    pass
-  elif _format == JSON:
+  if _format in [JSON, PROTOBUF]:
     # In JSON format we might not be the only process writing to this logfile.
     # So, we will simply close the file rather than writing the trailing ] that
     # it technically requires. The trace viewer understands this and
     # will insert a trailing ] during loading.
+    # In PROTOBUF format there's no need for a footer. The metadata has already
+    # been written in a special proto message.
     pass
   elif _format == JSON_WITH_METADATA:
     _log_file.write('],\n"metadata": ')
-    json.dump(_metadata, _log_file)
+    json.dump(_benchmark_metadata, _log_file)
     _log_file.write('}')
   else:
     raise TraceException("Unknown format: %s" % _format)
@@ -274,14 +280,65 @@ def trace_set_thread_name(thread_name):
   add_trace_event("M", trace_time.Now(), "__metadata", "thread_name",
                   {"name": thread_name})
 
-def trace_add_metadata(metadata):
-  global _metadata
+def trace_add_benchmark_metadata(
+    benchmark_start_time_us,
+    story_run_time_us,
+    benchmark_name,
+    benchmark_description,
+    story_name,
+    story_tags,
+    story_run_index,
+    label=None,
+    had_failures=None,
+):
+  global _benchmark_metadata
   if _format == PROTOBUF:
-    raise NotImplementedError("Metadata in protobuf format not implemented")
+    # Write metadata immediately.
+    perfetto_trace_writer.write_metadata(
+        benchmark_start_time_us=benchmark_start_time_us,
+        story_run_time_us=story_run_time_us,
+        benchmark_name=benchmark_name,
+        benchmark_description=benchmark_description,
+        story_name=story_name,
+        story_tags=story_tags,
+        story_run_index=story_run_index,
+        label=label,
+        had_failures=had_failures,
+    )
+  elif _format == JSON_WITH_METADATA:
+    # Store metadata to write it in the footer.
+    telemetry_metadata_for_json = {
+        "benchmarkStart": benchmark_start_time_us / 1000.0,
+        "traceStart": story_run_time_us / 1000.0,
+        "benchmarks": [benchmark_name],
+        "benchmarkDescriptions": [benchmark_description],
+        "stories": [story_name],
+        "storyTags": story_tags,
+        "storysetRepeats": [story_run_index],
+    }
+    if label:
+      telemetry_metadata_for_json["labels"] = [label]
+    if had_failures:
+      telemetry_metadata_for_json["hadFailures"] = [had_failures]
+
+    _benchmark_metadata = {
+        # TODO(crbug.com/948633): For right now, we use "TELEMETRY" as the
+        # clock domain to guarantee that Telemetry is given its own clock
+        # domain. Telemetry isn't really a clock domain, though: it's a
+        # system that USES a clock domain like LINUX_CLOCK_MONOTONIC or
+        # WIN_QPC. However, there's a chance that a Telemetry controller
+        # running on Linux (using LINUX_CLOCK_MONOTONIC) is interacting
+        # with an Android phone (also using LINUX_CLOCK_MONOTONIC, but
+        # on a different machine). The current logic collapses clock
+        # domains based solely on the clock domain string, but we really
+        # should to collapse based on some (device ID, clock domain ID)
+        # tuple. Giving Telemetry its own clock domain is a work-around
+        # for this.
+        "clock-domain": "TELEMETRY",
+        "telemetry": telemetry_metadata_for_json,
+    }
   elif _format == JSON:
     raise TraceException("Can't write metadata in JSON format")
-  elif _format == JSON_WITH_METADATA:
-    _metadata = metadata
   else:
     raise TraceException("Unknown format: %s" % _format)
 

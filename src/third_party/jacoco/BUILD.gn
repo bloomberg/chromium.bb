@@ -18,7 +18,8 @@ java_group("jacoco_all_java") {
 }
 
 java_prebuilt("jacocoagent_java") {
-  testonly = true
+  include_java_resources = true
+  supports_android = true
   jar_path = "lib/jacocoagent.jar"
 }
 

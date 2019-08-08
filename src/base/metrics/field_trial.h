@@ -36,8 +36,8 @@
 // //       8 July, 2015, and after that all instances will be in "StandardMem".
 // scoped_refptr<base::FieldTrial> trial(
 //     base::FieldTrialList::FactoryGetFieldTrial(
-//         "MemoryExperiment", 1000, "StandardMem", 2015, 7, 8,
-//         base::FieldTrial::ONE_TIME_RANDOMIZED, NULL));
+//         "MemoryExperiment", 1000, "StandardMem",
+//         base::FieldTrial::ONE_TIME_RANDOMIZED, nullptr));
 //
 // const int high_mem_group =
 //     trial->AppendGroup("HighMem", 20);  // 2% in HighMem group.
@@ -79,7 +79,6 @@
 #include "base/process/launch.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
-#include "base/time/time.h"
 #include "build/build_config.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
@@ -324,12 +323,11 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
 
   // Returns the trial name and selected group name for this field trial via
   // the output parameter |field_trial_state| for all the studies when
-  // |bool include_expired| is true. In case when |bool include_expired| is
-  // false, if the trial has not been disabled true is returned and
-  // |field_trial_state| is filled in; otherwise, the result is false and
-  // |field_trial_state| is left untouched.
-  // This function is deadlock-free if the caller is holding a lock.
-  bool GetStateWhileLocked(State* field_trial_state, bool include_expired);
+  // |include_disabled| is true. In case when |include_disabled| is false, if
+  // the trial has not been disabled true is returned and |field_trial_state|
+  // is filled in; otherwise, the result is false and |field_trial_state| is
+  // left untouched.
+  bool GetStateWhileLocked(State* field_trial_state, bool include_disabled);
 
   // Returns the group_name. A winner need not have been chosen.
   std::string group_name_internal() const { return group_name_; }
@@ -401,10 +399,6 @@ class BASE_EXPORT FieldTrialList {
   // special characters from |input|.
   typedef std::string (*EscapeDataFunc)(const std::string& input);
 
-  // Year that is guaranteed to not be expired when instantiating a field trial
-  // via |FactoryGetFieldTrial()|.  Set to two years from the build date.
-  static int kNoExpirationYear;
-
   // Observer is notified when a FieldTrial's group is selected.
   class BASE_EXPORT Observer {
    public:
@@ -437,12 +431,10 @@ class BASE_EXPORT FieldTrialList {
   // |default_group_number| can receive the group number of the default group as
   // AppendGroup returns the number of the subsequence groups. |trial_name| and
   // |default_group_name| may not be empty but |default_group_number| can be
-  // NULL if the value is not needed.
+  // null if the value is not needed.
   //
   // Group probabilities that are later supplied must sum to less than or equal
-  // to the |total_probability|. Arguments |year|, |month| and |day_of_month|
-  // specify the expiration time. If the build time is after the expiration time
-  // then the field trial reverts to the 'default' group.
+  // to the |total_probability|.
   //
   // Use this static method to get a startup-randomized FieldTrial or a
   // previously created forced FieldTrial.
@@ -450,9 +442,6 @@ class BASE_EXPORT FieldTrialList {
       const std::string& trial_name,
       FieldTrial::Probability total_probability,
       const std::string& default_group_name,
-      const int year,
-      const int month,
-      const int day_of_month,
       FieldTrial::RandomizationType randomization_type,
       int* default_group_number);
 
@@ -471,9 +460,6 @@ class BASE_EXPORT FieldTrialList {
       const std::string& trial_name,
       FieldTrial::Probability total_probability,
       const std::string& default_group_name,
-      const int year,
-      const int month,
-      const int day_of_month,
       FieldTrial::RandomizationType randomization_type,
       uint32_t randomization_seed,
       int* default_group_number,
@@ -515,20 +501,20 @@ class BASE_EXPORT FieldTrialList {
   // resurrection in another process. This allows randomization to be done in
   // one process, and secondary processes can be synchronized on the result.
   // The resulting string contains the name and group name pairs of all
-  // registered FieldTrials including disabled based on |include_expired|,
+  // registered FieldTrials including disabled based on |include_disabled|,
   // with "/" used to separate all names and to terminate the string. All
   // activated trials have their name prefixed with "*". This string is parsed
   // by |CreateTrialsFromString()|.
-  static void AllStatesToString(std::string* output, bool include_expired);
+  static void AllStatesToString(std::string* output, bool include_disabled);
 
   // Creates a persistent representation of all FieldTrial params for
   // resurrection in another process. The returned string contains the trial
   // name and group name pairs of all registered FieldTrials including disabled
-  // based on |include_expired| separated by '.'. The pair is followed by ':'
+  // based on |include_disabled| separated by '.'. The pair is followed by ':'
   // separator and list of param name and values separated by '/'. It also takes
   // |encode_data_func| function pointer for encodeing special charactors.
   // This string is parsed by |AssociateParamsFromString()|.
-  static std::string AllParamsToString(bool include_expired,
+  static std::string AllParamsToString(bool include_disabled,
                                        EscapeDataFunc encode_data_func);
 
   // Fills in the supplied vector |active_groups| (which must be empty when

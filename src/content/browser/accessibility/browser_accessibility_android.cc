@@ -192,7 +192,7 @@ bool BrowserAccessibilityAndroid::PlatformIsLeaf() const {
       static_cast<BrowserAccessibilityManagerAndroid*>(manager());
   if (manager_android->prune_tree_for_screen_reader()) {
     // Headings with text can drop their children.
-    base::string16 name = GetText();
+    base::string16 name = GetInnerText();
     if (GetRole() == ax::mojom::Role::kHeading && !name.empty())
       return true;
 
@@ -367,7 +367,7 @@ bool BrowserAccessibilityAndroid::IsVisibleToUser() const {
 bool BrowserAccessibilityAndroid::IsInterestingOnAndroid() const {
   // The root is not interesting if it doesn't have a title, even
   // though it's focusable.
-  if (GetRole() == ax::mojom::Role::kRootWebArea && GetText().empty())
+  if (GetRole() == ax::mojom::Role::kRootWebArea && GetInnerText().empty())
     return false;
 
   // Mark as uninteresting if it's hidden, even if it is focusable.
@@ -394,7 +394,7 @@ bool BrowserAccessibilityAndroid::IsInterestingOnAndroid() const {
 
   // Otherwise, the interesting nodes are leaf nodes with non-whitespace text.
   return PlatformIsLeaf() &&
-         !base::ContainsOnlyChars(GetText(), base::kWhitespaceUTF16);
+         !base::ContainsOnlyChars(GetInnerText(), base::kWhitespaceUTF16);
 }
 
 const BrowserAccessibilityAndroid*
@@ -450,7 +450,7 @@ const char* BrowserAccessibilityAndroid::GetClassName() const {
   return ui::AXRoleToAndroidClassName(role, PlatformGetParent() != nullptr);
 }
 
-base::string16 BrowserAccessibilityAndroid::GetText() const {
+base::string16 BrowserAccessibilityAndroid::GetInnerText() const {
   if (IsIframe() || GetRole() == ax::mojom::Role::kWebArea) {
     return base::string16();
   }
@@ -490,7 +490,7 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
                        (IsFocusable() && HasOnlyTextAndImageChildren()))) {
     for (uint32_t i = 0; i < InternalChildCount(); i++) {
       BrowserAccessibility* child = InternalGetChild(i);
-      text += static_cast<BrowserAccessibilityAndroid*>(child)->GetText();
+      text += static_cast<BrowserAccessibilityAndroid*>(child)->GetInnerText();
     }
   }
 
@@ -1511,9 +1511,9 @@ void BrowserAccessibilityAndroid::GetLineBoundaries(
     std::vector<int32_t>* line_ends,
     int offset) {
   // If this node has no children, treat it as all one line.
-  if (GetText().size() > 0 && !InternalChildCount()) {
+  if (GetInnerText().size() > 0 && !InternalChildCount()) {
     line_starts->push_back(offset);
-    line_ends->push_back(offset + GetText().size());
+    line_ends->push_back(offset + GetInnerText().size());
   }
 
   // If this is a static text node, get the line boundaries from the
@@ -1533,7 +1533,7 @@ void BrowserAccessibilityAndroid::GetLineBoundaries(
         line_ends->push_back(offset);
         line_starts->push_back(offset);
       }
-      offset += child->GetText().size();
+      offset += child->GetInnerText().size();
       last_y = y;
     }
     line_ends->push_back(offset);
@@ -1545,7 +1545,7 @@ void BrowserAccessibilityAndroid::GetLineBoundaries(
     BrowserAccessibilityAndroid* child =
         static_cast<BrowserAccessibilityAndroid*>(InternalGetChild(i));
     child->GetLineBoundaries(line_starts, line_ends, offset);
-    offset += child->GetText().size();
+    offset += child->GetInnerText().size();
   }
 }
 
@@ -1569,11 +1569,11 @@ void BrowserAccessibilityAndroid::GetWordBoundaries(
   for (uint32_t i = 0; i < InternalChildCount(); i++) {
     BrowserAccessibilityAndroid* child =
         static_cast<BrowserAccessibilityAndroid*>(InternalGetChild(i));
-    base::string16 child_text = child->GetText();
-    concatenated_text += child->GetText();
+    base::string16 child_text = child->GetInnerText();
+    concatenated_text += child->GetInnerText();
   }
 
-  base::string16 text = GetText();
+  base::string16 text = GetInnerText();
   if (text.empty() || concatenated_text == text) {
     // Great - this node is just the concatenation of its children, so
     // we can get the word boundaries recursively.
@@ -1581,7 +1581,7 @@ void BrowserAccessibilityAndroid::GetWordBoundaries(
       BrowserAccessibilityAndroid* child =
           static_cast<BrowserAccessibilityAndroid*>(InternalGetChild(i));
       child->GetWordBoundaries(word_starts, word_ends, offset);
-      offset += child->GetText().size();
+      offset += child->GetInnerText().size();
     }
   } else {
     // This node has its own accessible text that doesn't match its

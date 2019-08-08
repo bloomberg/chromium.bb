@@ -3,10 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/optional.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_service.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_service_factory.h"
 #include "chrome/browser/search/search_suggest/search_suggest_service.h"
@@ -66,12 +64,6 @@ class MockSearchSuggestService : public SearchSuggestService {
 
 class LocalNTPSearchSuggestTest : public InProcessBrowserTest {
  protected:
-  LocalNTPSearchSuggestTest() {
-    feature_list_.InitWithFeatures(
-        {features::kUseGoogleLocalNtp, features::kSearchSuggestionsOnLocalNtp},
-        {});
-  }
-
   MockSearchSuggestService* search_suggest_service() {
     return static_cast<MockSearchSuggestService*>(
         SearchSuggestServiceFactory::GetForProfile(browser()->profile()));
@@ -98,8 +90,6 @@ class LocalNTPSearchSuggestTest : public InProcessBrowserTest {
         context, base::BindRepeating(
                      &LocalNTPSearchSuggestTest::CreateSearchSuggestService));
   }
-
-  base::test::ScopedFeatureList feature_list_;
 
   std::unique_ptr<
       base::CallbackList<void(content::BrowserContext*)>::Subscription>

@@ -7,12 +7,14 @@ package org.chromium.chrome.browser.feed;
 import android.app.Activity;
 import android.support.annotation.IntDef;
 
-import com.google.android.libraries.feed.api.lifecycle.AppLifecycleListener;
+import com.google.android.libraries.feed.api.client.lifecycle.AppLifecycleListener;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.signin.SigninManager;
 
 import java.lang.annotation.Retention;
@@ -50,6 +52,7 @@ public class FeedAppLifecycle
 
     private int mTabbedActivityCount;
     private boolean mInitializeCalled;
+    private boolean mDelayedInitializeStarted;
 
     /**
      * Create a FeedAppLifecycle instance. In normal use, this should only be called by {@link
@@ -58,6 +61,7 @@ public class FeedAppLifecycle
      *        interface that we will call into.
      * @param lifecycleBridge FeedLifecycleBridge JNI bridge over which native lifecycle events are
      *        delivered.
+     * @param feedScheduler Scheduler to be notified of several events.
      */
     public FeedAppLifecycle(AppLifecycleListener appLifecycleListener,
             FeedLifecycleBridge lifecycleBridge, FeedScheduler feedScheduler) {
@@ -170,6 +174,22 @@ public class FeedAppLifecycle
     private void onEnterForeground() {
         reportEvent(AppLifecycleEvent.ENTER_FOREGROUND);
         mAppLifecycleListener.onEnterForeground();
+
+        if (!mDelayedInitializeStarted) {
+            mDelayedInitializeStarted = true;
+            boolean initFeed = ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                    ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, "init_feed_after_startup",
+                    false);
+            if (initFeed) {
+                DeferredStartupHandler.getInstance().addDeferredTask(() -> {
+                    // Since this is being run asynchronously, it's possible #destroy() is called
+                    // before the delay finishes. Must guard against this.
+                    if (mLifecycleBridge != null) {
+                        initialize();
+                    }
+                });
+            }
+        }
     }
 
     private void onEnterBackground() {

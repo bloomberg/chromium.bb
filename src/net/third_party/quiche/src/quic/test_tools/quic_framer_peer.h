@@ -22,8 +22,9 @@ class QuicFramerPeer {
       QuicPacketNumberLength packet_number_length,
       QuicPacketNumber last_packet_number,
       uint64_t packet_number);
-  static void SetLastSerializedConnectionId(QuicFramer* framer,
-                                            QuicConnectionId connection_id);
+  static void SetLastSerializedServerConnectionId(
+      QuicFramer* framer,
+      QuicConnectionId server_connection_id);
   static void SetLargestPacketNumber(QuicFramer* framer,
                                      QuicPacketNumber packet_number);
   static void SetPerspective(QuicFramer* framer, Perspective perspective);
@@ -111,11 +112,11 @@ class QuicFramerPeer {
                                         QuicDataReader* reader,
                                         QuicWindowUpdateFrame* frame);
   static bool AppendMaxStreamsFrame(QuicFramer* framer,
-                                    const QuicMaxStreamIdFrame& frame,
+                                    const QuicMaxStreamsFrame& frame,
                                     QuicDataWriter* writer);
   static bool ProcessMaxStreamsFrame(QuicFramer* framer,
                                      QuicDataReader* reader,
-                                     QuicMaxStreamIdFrame* frame,
+                                     QuicMaxStreamsFrame* frame,
                                      uint64_t frame_type);
   static bool AppendIetfBlockedFrame(QuicFramer* framer,
                                      const QuicBlockedFrame& frame,
@@ -132,11 +133,11 @@ class QuicFramerPeer {
                                         QuicBlockedFrame* frame);
 
   static bool AppendStreamsBlockedFrame(QuicFramer* framer,
-                                        const QuicStreamIdBlockedFrame& frame,
+                                        const QuicStreamsBlockedFrame& frame,
                                         QuicDataWriter* writer);
   static bool ProcessStreamsBlockedFrame(QuicFramer* framer,
                                          QuicDataReader* reader,
-                                         QuicStreamIdBlockedFrame* frame,
+                                         QuicStreamsBlockedFrame* frame,
                                          uint64_t frame_type);
 
   static bool AppendNewConnectionIdFrame(QuicFramer* framer,
@@ -159,9 +160,9 @@ class QuicFramerPeer {
                                    QuicPacketNumberLength packet_number_length);
   static void SetFirstSendingPacketNumber(QuicFramer* framer,
                                           uint64_t packet_number);
-  static void SetExpectedConnectionIDLength(
+  static void SetExpectedServerConnectionIDLength(
       QuicFramer* framer,
-      uint8_t expected_connection_id_length);
+      uint8_t expected_server_connection_id_length);
   static QuicPacketNumber GetLargestDecryptedPacketNumber(
       QuicFramer* framer,
       PacketNumberSpace packet_number_space);

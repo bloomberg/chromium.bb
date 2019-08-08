@@ -18,7 +18,6 @@
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/mojom/cors.mojom-shared.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
-#include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -34,6 +33,8 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   ~ResourceRequest();
 
   bool EqualsForTesting(const ResourceRequest& request) const;
+  bool SendsCookies() const;
+  bool SavesCookies() const;
 
   std::string method = "GET";
   GURL url;
@@ -53,13 +54,15 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   int plugin_child_id = -1;
   int resource_type = 0;
   net::RequestPriority priority = net::IDLE;
-  int appcache_host_id = 0;
+  base::Optional<base::UnguessableToken> appcache_host_id;
   bool should_reset_appcache = false;
   bool is_external_request = false;
   mojom::CorsPreflightPolicy cors_preflight_policy =
       mojom::CorsPreflightPolicy::kConsiderPreflight;
   bool originated_from_service_worker = false;
   bool skip_service_worker = false;
+  bool corb_detachable = false;
+  bool corb_excluded = false;
   mojom::FetchRequestMode fetch_request_mode = mojom::FetchRequestMode::kNoCors;
   mojom::FetchCredentialsMode fetch_credentials_mode =
       mojom::FetchCredentialsMode::kInclude;
@@ -67,8 +70,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
       mojom::FetchRedirectMode::kFollow;
   std::string fetch_integrity;
   int fetch_request_context_type = 0;
-  mojom::RequestContextFrameType fetch_frame_type =
-      mojom::RequestContextFrameType::kAuxiliary;
   scoped_refptr<ResourceRequestBody> request_body;
   bool keepalive = false;
   bool has_user_gesture = false;
@@ -84,6 +85,7 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   bool initiated_in_secure_context = false;
   bool upgrade_if_insecure = false;
   bool is_revalidating = false;
+  bool should_also_use_factory_bound_origin_for_cors = false;
   base::Optional<base::UnguessableToken> throttling_profile_id;
   net::HttpRequestHeaders custom_proxy_pre_cache_headers;
   net::HttpRequestHeaders custom_proxy_post_cache_headers;

@@ -29,6 +29,7 @@
 #include "ui/compositor/layer_delegate.h"
 #include "ui/compositor/layer_type.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/transform.h"
 
@@ -81,7 +82,12 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // content is only mirrored if painted by a delegate or backed by a surface.
   std::unique_ptr<Layer> Mirror();
 
-  void set_sync_bounds(bool sync_bounds) { sync_bounds_ = sync_bounds; }
+  // This method is relevant only if this layer is a mirror destination layer.
+  // Sets whether this mirror layer's bounds are synchronized with the source
+  // layer's bounds.
+  void set_sync_bounds_with_source(bool sync_bounds) {
+    sync_bounds_with_source_ = sync_bounds;
+  }
 
   // Retrieves the Layer's compositor. The Layer will walk up its parent chain
   // to locate it. Returns NULL if the Layer is not attached to a compositor.
@@ -274,11 +280,9 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   void SetAcceptEvents(bool accept_events);
   bool accept_events() const { return accept_events_; }
 
-  // Sets a rounded corner clip radius on the layer. This will clip the layer to
-  // bounds. The ordering for the array is:
-  //    top left, top right, bottom right, bottom left
-  void SetRoundedCornerRadius(const std::array<uint32_t, 4>& corner_radii);
-  const std::array<uint32_t, 4>& rounded_corner_radii() const {
+  // Sets a rounded corner clip on the layer.
+  void SetRoundedCornerRadius(const gfx::RoundedCornersF& corner_radii);
+  const gfx::RoundedCornersF& rounded_corner_radii() const {
     return cc_layer_->corner_radii();
   }
 
@@ -438,7 +442,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
 
   // LayerClient implementation.
   std::unique_ptr<base::trace_event::TracedValue> TakeDebugInfo(
-      cc::Layer* layer) override;
+      const cc::Layer* layer) override;
   void DidChangeScrollbarsHiddenIfOverlay(bool) override;
 
   // Triggers a call to SwitchToLayer.
@@ -490,6 +494,8 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // for proper scaling if the embedder is resized and the |surface_layer_| is
   // set to stretch to fill bounds.
   void SetSurfaceSize(gfx::Size surface_size_in_dip);
+
+  bool ContainsMirrorForTest(Layer* mirror) const;
 
  private:
   friend class LayerOwner;
@@ -570,8 +576,9 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
 
   std::vector<std::unique_ptr<LayerMirror>> mirrors_;
 
-  // If true, changes to the bounds of this layer are propagated to mirrors.
-  bool sync_bounds_ = false;
+  // If true, and this is a destination mirror layer, changes to the bounds of
+  // the source layer are propagated to this mirror layer.
+  bool sync_bounds_with_source_ = false;
 
   gfx::Rect bounds_;
   gfx::Vector2dF subpixel_position_offset_;

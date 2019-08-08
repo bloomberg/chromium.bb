@@ -1,9 +1,12 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 """Generate fake repositories for testing."""
+
+from __future__ import print_function
 
 import atexit
 import datetime
@@ -105,7 +108,9 @@ def wait_for_port_to_bind(host, port, process):
     sock.close()
   # The process failed to bind. Kill it and dump its ouput.
   process.kill()
-  logging.error('%s' % process.communicate()[0])
+  stdout, stderr = process.communicate()
+  logging.debug('%s' % stdout)
+  logging.error('%s' % stderr)
   assert False, '%d is still not bound' % port
 
 
@@ -138,7 +143,7 @@ class FakeReposBase(object):
   # Hostname
   NB_GIT_REPOS = 1
   USERS = [
-      ('user1@example.com', 'foo'),
+      ('user1@example.com', 'foo Fuß'),
       ('user2@example.com', 'bar'),
   ]
 
@@ -151,7 +156,7 @@ class FakeReposBase(object):
     # It is 1-based too.
     self.git_hashes = {}
     self.gitdaemon = None
-    self.git_pid_file = None
+    self.git_pid_file_name = None
     self.git_root = None
     self.git_dirty = False
     self.git_port = None
@@ -191,16 +196,16 @@ class FakeReposBase(object):
       logging.debug('Killing git-daemon pid %s' % self.gitdaemon.pid)
       self.gitdaemon.kill()
       self.gitdaemon = None
-      if self.git_pid_file:
-        pid = int(self.git_pid_file.read())
-        self.git_pid_file.close()
+      if self.git_pid_file_name:
+        pid = int(open(self.git_pid_file_name).read())
         logging.debug('Killing git daemon pid %s' % pid)
         try:
           subprocess2.kill_pid(pid)
         except OSError as e:
           if e.errno != errno.ESRCH:  # no such process
             raise
-        self.git_pid_file = None
+        os.remove(self.git_pid_file_name)
+        self.git_pid_file_name = None
       wait_for_port_to_free(self.host, self.git_port)
       self.git_port = None
       self.git_base = None
@@ -233,7 +238,7 @@ class FakeReposBase(object):
     self.set_up()
     if self.gitdaemon:
       return True
-    assert self.git_pid_file == None
+    assert self.git_pid_file_name == None
     try:
       subprocess2.check_output(['git', '--version'])
     except (OSError, subprocess2.CalledProcessError):
@@ -244,12 +249,14 @@ class FakeReposBase(object):
     self.git_port = find_free_port(self.host, 20000)
     self.git_base = 'git://%s:%d/git/' % (self.host, self.git_port)
     # Start the daemon.
-    self.git_pid_file = tempfile.NamedTemporaryFile()
+    git_pid_file = tempfile.NamedTemporaryFile(delete=False)
+    self.git_pid_file_name = git_pid_file.name
+    git_pid_file.close()
     cmd = ['git', 'daemon',
         '--export-all',
         '--reuseaddr',
         '--base-path=' + self.root_dir,
-        '--pid-file=' + self.git_pid_file.name,
+        '--pid-file=' + self.git_pid_file_name,
         '--port=%d' % self.git_port]
     if self.host == '127.0.0.1':
       cmd.append('--listen=' + self.host)
@@ -931,7 +938,7 @@ class FakeReposTestBase(trial_dir.TestCase):
         result = result[1:]
       # The exception trace makes it hard to read so dump it too.
       if '\n' in result:
-        print result
+        print(result)
     self.assertEquals(expected, result, msg)
 
   def check(self, expected, results):
@@ -978,7 +985,7 @@ class FakeReposTestBase(trial_dir.TestCase):
 
 def main(argv):
   fake = FakeRepos()
-  print 'Using %s' % fake.root_dir
+  print('Using %s' % fake.root_dir)
   try:
     fake.set_up_git()
     print('Fake setup, press enter to quit or Ctrl-C to keep the checkouts.')

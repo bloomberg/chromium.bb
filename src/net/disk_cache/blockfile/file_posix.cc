@@ -136,7 +136,7 @@ void File::WaitForPendingIO(int* num_pending_io) {
   // We are running unit tests so we should wait for all callbacks.
 
   // This waits for callbacks running on worker threads.
-  base::ThreadPool::GetInstance()->FlushForTesting();
+  base::ThreadPoolInstance::Get()->FlushForTesting();
   // This waits for the "Reply" tasks running on the current MessageLoop.
   base::RunLoop().RunUntilIdle();
 }

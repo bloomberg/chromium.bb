@@ -91,13 +91,6 @@ cursors.Cursor = function(node, index) {
       node = nextNode;
       index = 0;
     }
-  } else if (
-      node.role == RoleType.GENERIC_CONTAINER && node.state.richlyEditable &&
-      (node.firstChild &&
-       (node.firstChild.role == RoleType.LINE_BREAK ||
-        node.firstChild.role == RoleType.STATIC_TEXT))) {
-    // Re-interpret this case as pointing to the text under the div.
-    node = node.find({role: RoleType.INLINE_TEXT_BOX}) || node;
   }
 
   /** @type {number} @private */
@@ -406,10 +399,7 @@ cursors.Cursor.prototype = {
           case Movement.DIRECTIONAL:
             var pred = unit == Unit.TEXT ? AutomationPredicate.leaf :
                                            AutomationPredicate.object;
-            const explicitFocus = dir == Dir.FORWARD ?
-                originalNode.nextFocus :
-                originalNode.previousFocus;
-            newNode = explicitFocus ||
+            newNode =
                 AutomationUtil.findNextNode(newNode, dir, pred) || originalNode;
             newIndex = cursors.NODE_INDEX;
             break;
@@ -446,10 +436,12 @@ cursors.Cursor.prototype = {
   get deepEquivalent() {
     var newNode = this.node;
     var newIndex = this.index_;
+    var isTextIndex = false;
     while (newNode.firstChild) {
       if (newNode.role == RoleType.STATIC_TEXT) {
         // Text offset.
         // Re-interpret the index as an offset into an inlineTextBox.
+        isTextIndex = true;
         var target = newNode.firstChild;
         var length = 0;
         while (target && length < newIndex) {
@@ -470,13 +462,20 @@ cursors.Cursor.prototype = {
         break;
       } else if (
           newNode.role != RoleType.INLINE_TEXT_BOX &&
-          !newNode.state[StateType.EDITABLE] && newNode.children[newIndex]) {
-        // Valid node offset.
+          // An index inside a content editable or a descendant of a content
+          // editable should be treated as a child offset.
+          // However, an index inside a simple editable, such as an input
+          // element, should be treated as a character offset.
+          (!newNode.state[StateType.EDITABLE] ||
+           newNode.state[StateType.RICHLY_EDITABLE]) &&
+          newNode.children[newIndex]) {
+        // Valid child node offset.
         newNode = newNode.children[newIndex];
         newIndex = 0;
       } else {
         // This offset is a text offset into the descendant visible
         // text. Approximate this by indexing into the inline text boxes.
+        isTextIndex = true;
         var lines = this.getAllLeaves_(newNode);
         if (!lines.length)
           break;
@@ -506,6 +505,8 @@ cursors.Cursor.prototype = {
         break;
       }
     }
+    if (!isTextIndex)
+      newIndex = cursors.NODE_INDEX;
 
     return new cursors.Cursor(newNode, newIndex);
   },
@@ -601,7 +602,6 @@ cursors.WrappingCursor.prototype = {
       var directedFocus;
       while (!AutomationPredicate.root(endpoint) && endpoint.parent) {
         if (directedFocus = getDirectedFocus(endpoint)) {
-          window.last = directedFocus;
           break;
         }
         endpoint = endpoint.parent;

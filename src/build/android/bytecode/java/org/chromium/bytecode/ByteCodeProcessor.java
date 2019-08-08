@@ -63,6 +63,7 @@ class ByteCodeProcessor {
     private static ClassLoader sDirectClassPathClassLoader;
     private static ClassLoader sFullClassPathClassLoader;
     private static Set<String> sFullClassPathJarPaths;
+    private static String sGenerateClassDepsPath;
     private static Set<String> sSplitCompatClassNames;
     private static ClassPathValidator sValidator;
 
@@ -256,6 +257,7 @@ class ByteCodeProcessor {
         sShouldUseCustomResources = args[currIndex++].equals("--enable-custom-resources");
         sShouldUseThreadAnnotations = args[currIndex++].equals("--enable-thread-annotations");
         sShouldCheckClassPath = args[currIndex++].equals("--enable-check-class-path");
+        sGenerateClassDepsPath = args[currIndex++];
         int sdkJarsLength = Integer.parseInt(args[currIndex++]);
         List<String> sdkJarPaths =
                 Arrays.asList(Arrays.copyOfRange(args, currIndex, currIndex + sdkJarsLength));
@@ -284,6 +286,14 @@ class ByteCodeProcessor {
         sFullClassPathJarPaths.addAll(sdkJarPaths);
         sFullClassPathJarPaths.addAll(
                 Arrays.asList(Arrays.copyOfRange(args, currIndex, args.length)));
+
+        // Write list of references from Java class constant pools to specified output file
+        // sGenerateClassDepsPath. This is needed for keep rule generation for async DFMs.
+        if (!sGenerateClassDepsPath.isEmpty()) {
+            ConstantPoolReferenceReader.writeConstantPoolRefsToFile(
+                    sFullClassPathJarPaths, sGenerateClassDepsPath);
+        }
+
         sFullClassPathClassLoader = loadJars(sFullClassPathJarPaths);
         sFullClassPathJarPaths.removeAll(directClassPathJarPaths);
 

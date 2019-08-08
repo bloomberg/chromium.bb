@@ -76,12 +76,15 @@ public class AwVariationsSeedFetcher extends JobService {
 
     private static JobScheduler getScheduler() {
         if (sMockJobScheduler != null) return sMockJobScheduler;
+
+        // This may be null due to vendor framework bugs. https://crbug.com/968636
         return (JobScheduler) ContextUtils.getApplicationContext().getSystemService(
                 Context.JOB_SCHEDULER_SERVICE);
     }
 
     public static void scheduleIfNeeded() {
         JobScheduler scheduler = getScheduler();
+        if (scheduler == null) return;
 
         // Check if it's already scheduled.
         if (getPendingJob(scheduler, JOB_ID) != null) {

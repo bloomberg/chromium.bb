@@ -65,15 +65,9 @@ public class DataReductionPromoScreen extends PromoDialog {
     protected DialogParams getDialogParams() {
         PromoDialog.DialogParams params = new PromoDialog.DialogParams();
         params.vectorDrawableResource = R.drawable.data_reduction_illustration;
-        params.headerStringResource =
-                DataReductionBrandingResourceProvider.getDataSaverBrandedString(
-                        R.string.data_reduction_promo_title);
-        params.subheaderStringResource =
-                DataReductionBrandingResourceProvider.getDataSaverBrandedString(
-                        R.string.data_reduction_promo_summary);
-        params.primaryButtonStringResource =
-                DataReductionBrandingResourceProvider.getDataSaverBrandedString(
-                        R.string.data_reduction_enable_button);
+        params.headerStringResource = R.string.data_reduction_promo_title_lite_mode;
+        params.subheaderStringResource = R.string.data_reduction_promo_summary_lite_mode;
+        params.primaryButtonStringResource = R.string.data_reduction_enable_button_lite_mode;
         params.secondaryButtonStringResource = R.string.no_thanks;
         return params;
     }
@@ -101,9 +95,7 @@ public class DataReductionPromoScreen extends PromoDialog {
         DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(getContext(), true);
         dismiss();
         Toast.makeText(getContext(),
-                     getContext().getString(
-                             DataReductionBrandingResourceProvider.getDataSaverBrandedString(
-                                     R.string.data_reduction_enabled_toast)),
+                     getContext().getString(R.string.data_reduction_enabled_toast_lite_mode),
                      Toast.LENGTH_LONG)
                 .show();
     }

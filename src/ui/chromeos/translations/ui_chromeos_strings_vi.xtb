@@ -5,6 +5,7 @@
 <translation id="1023220960495960452">Chuyển ngữ (vanakkam → வணக்கம்)</translation>
 <translation id="1035094536595558507">Chế độ xem trang trình bày</translation>
 <translation id="1045157690796831147">Chuyển ngữ (namaskar → നമസ്കാരം)</translation>
+<translation id="1046068652463704410">Nhập bằng tiếng Nhật (dành cho bàn phím Anh-Mỹ)</translation>
 <translation id="1047956942837015229">Đang xóa <ph name="COUNT" /> mục...</translation>
 <translation id="1049926623896334335">Tài liệu Word</translation>
 <translation id="1062407476771304334">Thay thế</translation>
@@ -36,7 +37,6 @@
 <translation id="1346748346194534595">Phải</translation>
 <translation id="1351692861129622852">Đang nhập <ph name="FILE_COUNT" /> tệp...</translation>
 <translation id="1352103415082130575">Bàn phím tiếng Thái (Pattachote)</translation>
-<translation id="1358032944105037487">Bàn phím tiếng Nhật</translation>
 <translation id="1358735829858566124">Không thể sử dụng được tệp hoặc thư mục.</translation>
 <translation id="1363028406613469049">Số theo dõi</translation>
 <translation id="1378727793141957596">Chào mừng bạn đến với Google Drive!</translation>
@@ -129,7 +129,7 @@
 <translation id="247772113373397749">Bàn phím đa ngôn ngữ của Canada</translation>
 <translation id="2494837236724268445">Bàn phím tiếng Gujarat (Ngữ âm)</translation>
 <translation id="2515586267016047495">Alt</translation>
-<translation id="2529133382850673012">Bàn phím Hoa Kỳ</translation>
+<translation id="2529133382850673012">Bàn phím Anh-Mỹ</translation>
 <translation id="2542049655219295786">Bảng Google</translation>
 <translation id="2547921442987553570">Thêm vào <ph name="EXTENSION_NAME" /></translation>
 <translation id="255937426064304553">Bàn phím quốc tế Hoa Kỳ</translation>
@@ -205,13 +205,13 @@
 <translation id="3468522857997926824">Đã sao lưu <ph name="FILE_COUNT" /> ảnh vào <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">Đang sao chép...</translation>
 <translation id="3475447146579922140">Bảng tính Google</translation>
-<translation id="3494768541638400973">Phương pháp Nhập tiếng Nhật của Google (dành cho bàn phím Nhật)</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> lỗi.</translation>
 <translation id="3519867315646775981">Chuyển ngữ (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Tiếng Bồ Đào Nha</translation>
 <translation id="3527085408025491307">Thư mục</translation>
 <translation id="3549797760399244642">Truy cập drive.google.com...</translation>
 <translation id="357479282490346887">Tiếng Lithuania</translation>
+<translation id="3583509704582854624">Nhập bằng chữ và số (dành cho bàn phím tiếng Nhật)</translation>
 <translation id="3603385196401704894">Tiếng Pháp ở Canada</translation>
 <translation id="3606220979431771195">Tiếng Thổ Nhĩ Kỳ-F</translation>
 <translation id="3609785682760573515">Đang đồng bộ hóa...</translation>
@@ -262,6 +262,7 @@
 <translation id="421017592316736757">Bạn phải trực tuyến để truy cập tệp này.</translation>
 <translation id="4212740939091998969">Thư mục có tên "<ph name="FOLDER_NAME" />" đã tồn tại. Hãy chọn một tên khác.</translation>
 <translation id="4215448920900139318">Đang sao lưu <ph name="FILE_COUNT" /></translation>
+<translation id="4242533952199664413">Mở cài đặt</translation>
 <translation id="426015154560005552">Bàn phím tiếng Ả Rập</translation>
 <translation id="4261901459838235729">Bản trình bày Google</translation>
 <translation id="4290535918735525311">Đã chia sẻ 1 thư mục với Linux</translation>
@@ -285,13 +286,13 @@
 <translation id="4572815280350369984">Tệp <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Thêm...</translation>
 <translation id="4582497162516204941">Cài đặt bằng Linux (Beta)</translation>
-<translation id="4584780943629874245">Chia sẻ với máy chủ ảo plugin</translation>
 <translation id="4631887759990505102">Nghệ sĩ</translation>
 <translation id="4656293982926141856">Máy tính này</translation>
 <translation id="4669606053856530811">Thành viên của '<ph name="SOURCE_NAME" />' sẽ mất quyền truy cập trừ khi bạn chia sẻ các mục này với họ.</translation>
 <translation id="4690246192099372265">Tiếng Thuỵ Điển</translation>
 <translation id="4693155481716051732">Sushi</translation>
 <translation id="4694604912444486114">Khỉ</translation>
+<translation id="4697043402264950621">Danh sách tệp được sắp xếp tăng dần theo <ph name="COLUMN_NAME" />.</translation>
 <translation id="4711094779914110278">Tiếng Thổ Nhĩ Kỳ</translation>
 <translation id="4713544552769165154">Tệp này được thiết kế cho máy tính sử dụng phần mềm Macintosh. Tệp này không tương thích với thiết bị chạy Chrome OS của bạn. Hãy tìm kiếm ứng dụng thay thế phù hợp trên <ph name="BEGIN_LINK" />Cửa hàng Chrome trực tuyến<ph name="END_LINK" />. <ph name="BEGIN_LINK_HELP" />Tìm hiểu thêm<ph name="END_LINK_HELP" /></translation>
 <translation id="4724850507808590449">Đã sao lưu <ph name="FILE_COUNT" /> ảnh</translation>
@@ -312,6 +313,7 @@
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> mục được chọn</translation>
 <translation id="4850886885716139402">Xem</translation>
 <translation id="485316830061041779">Tiếng Đức</translation>
+<translation id="4867079195717347957">Nhấp để sắp xếp cột theo thứ tự giảm dần.</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> byte</translation>
 <translation id="4880214202172289027">Thanh trượt âm lượng</translation>
 <translation id="4880520557730313061">Tự động sửa</translation>
@@ -352,6 +354,7 @@
 <translation id="5167131699331641907">Bàn phím Hà Lan</translation>
 <translation id="5170477580121653719">Dung lượng Google Drive còn lại: <ph name="SPACE_AVAILABLE" />.</translation>
 <translation id="5177526793333269655">Chế độ xem hình thu nhỏ</translation>
+<translation id="5194713942430106590">Nhấp để sắp xếp cột theo thứ tự tăng dần.</translation>
 <translation id="5218183485292899140">Tiếng Pháp ở Thụy Sĩ</translation>
 <translation id="5234764350956374838">Loại bỏ</translation>
 <translation id="5241298539944515331">Bàn phím tiếng Việt (VIQR)</translation>
@@ -411,6 +414,7 @@
 <translation id="5818003990515275822">Tiếng Hàn</translation>
 <translation id="5819442873484330149">Hangul 3 bộ (Cuối cùng)</translation>
 <translation id="5833610766403489739">Tệp này đã thất lạc ở đâu đó. Vui lòng kiểm tra cài đặt vị trí tải xuống của bạn và thử lại.</translation>
+<translation id="5838051104334203064">Các ứng dụng trên Cửa hàng Play không thể truy cập vào thiết bị này</translation>
 <translation id="5838825566232597749">Bàn phím quốc tế Workman Hoa Kỳ</translation>
 <translation id="5850516540536751549">Loại tệp này không được hỗ trợ. Vui lòng truy cập <ph name="BEGIN_LINK" />Cửa hàng Chrome trực tuyến<ph name="END_LINK" /> để tìm ứng dụng có thể mở loại tệp này.
     <ph name="BEGIN_LINK_HELP" />Tìm hiểu thêm<ph name="END_LINK_HELP" /></translation>
@@ -419,6 +423,7 @@
 <translation id="5892290200158927959">Bàn phím BÉPO tiếng Pháp</translation>
 <translation id="5911887972742538906">Đã xảy ra lỗi trong quá trình cài đặt ứng dụng Linux.</translation>
 <translation id="5913638992615760742">Không sao chép được, lỗi ngoài mong đợi: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5923484009666796948">Nhập bằng tiếng Nhật (dành cho bàn phím tiếng Nhật)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Cấp cho các ứng dụng Linux quyền sửa đổi tệp trong Google Drive. Các mục thay đổi sẽ đồng bộ hóa với những thiết bị khác của bạn.</translation>
 <translation id="5982621672636444458">Tùy chọn sắp xếp</translation>
@@ -497,7 +502,6 @@
     <ph name="LINE_BREAK1" />
     Đã tìm thấy <ph name="FILE_COUNT" /></translation>
 <translation id="6935521024859866267">Lộn ngược</translation>
-<translation id="6937152069980083337">Phương pháp Nhập tiếng Nhật của Google (dành cho bàn phím Hoa Kỳ)</translation>
 <translation id="6939777852457331078">Bàn phím Workman Hoa Kỳ</translation>
 <translation id="696203921837389374">Bật đồng bộ hóa qua dữ liệu di động</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -527,7 +531,7 @@
 <translation id="7339898014177206373">Cửa sổ mới</translation>
 <translation id="7348749398828259943">Bàn phím quốc tế Workman Hoa Kỳ</translation>
 <translation id="7359359531237882347">Đang sao chép <ph name="NUMBER_OF_ITEMS" /> mục...</translation>
-<translation id="7379734276381389090">Đã chia sẻ <ph name="NUMBER_OF_ITEMS" /> thư mục với máy chủ ảo plugin</translation>
+<translation id="7375951387215729722">Danh sách tệp được sắp xếp giảm dần theo <ph name="COLUMN_NAME" />.</translation>
 <translation id="7389722738210761877">Bàn phím tiếng Thái (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Bàn phím tiếng Hindi (Phiên âm)</translation>
 <translation id="7417453074306512035">Bàn phím tiếng Ethiopic</translation>
@@ -590,7 +594,6 @@
 <translation id="7969525169268594403">Tiếng Sloven</translation>
 <translation id="7982283708762922719">Chiều cao</translation>
 <translation id="7987485481246785146">Bàn phím tiếng Kurd Sorani dựa trên tiếng Ả Rập</translation>
-<translation id="7990715602172183602">1 thư mục được chia sẻ với máy chủ ảo plugin</translation>
 <translation id="799547531016638432">Xóa lối tắt</translation>
 <translation id="799923393800005025">Có thể xem</translation>
 <translation id="8008366997883261463">Chó</translation>
@@ -631,7 +634,6 @@
 <translation id="8342318071240498787">Tệp hoặc thư mục có cùng tên đã tồn tại.</translation>
 <translation id="8391950649760071442">Chuyển ngữ (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Kích thước</translation>
-<translation id="8400874747056634633">Quản lý việc chia sẻ với máy chủ ảo plugin</translation>
 <translation id="8412586565681117057">Phương thức nhập nhanh</translation>
 <translation id="8418113698656761985">Bàn phím tiếng Rumani</translation>
 <translation id="8432745813735585631">Bàn phím Colemak Hoa Kỳ</translation>

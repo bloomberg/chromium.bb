@@ -38,7 +38,7 @@
     reset.
   </description>
 
-  <interface name="zcr_remote_shell_v1" version="20">
+  <interface name="zcr_remote_shell_v1" version="21">
     <description summary="remote_shell">
       The global interface that allows clients to turn a wl_surface into a
       "real window" which is remotely managed but can be stacked, activated
@@ -694,6 +694,7 @@
 	     summary="the window bounds is moved due to other WM operations"/>
       <entry name="resize" value="6"
 	     summary="the window bounds is reiszed due to other WM operations"/>
+      <entry name="move_pip" value="7" summary="the window bounds is resized for PIP"/>
     </enum>
 
     <event name="bounds_changed" since="10">

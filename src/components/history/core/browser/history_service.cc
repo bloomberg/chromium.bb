@@ -70,27 +70,24 @@ const base::Feature kHistoryServiceUsesTaskScheduler{
 static const char* kHistoryThreadName = "Chrome_HistoryThread";
 
 void RunWithFaviconResults(
-    const favicon_base::FaviconResultsCallback& callback,
+    favicon_base::FaviconResultsCallback callback,
     std::vector<favicon_base::FaviconRawBitmapResult>* bitmap_results) {
   TRACE_EVENT0("browser", "RunWithFaviconResults");
-  callback.Run(*bitmap_results);
+  std::move(callback).Run(*bitmap_results);
 }
 
-void RunWithFaviconResult(
-    const favicon_base::FaviconRawBitmapCallback& callback,
-    favicon_base::FaviconRawBitmapResult* bitmap_result) {
-  callback.Run(*bitmap_result);
-}
-
-void RunWithQueryURLResult(HistoryService::QueryURLCallback callback,
-                           const QueryURLResult* result) {
-  std::move(callback).Run(result->success, result->row, result->visits);
+void RunWithFaviconResult(favicon_base::FaviconRawBitmapCallback callback,
+                          favicon_base::FaviconRawBitmapResult* bitmap_result) {
+  std::move(callback).Run(*bitmap_result);
 }
 
 void RunWithVisibleVisitCountToHostResult(
+    base::OnceClosure origin_queried_closure,
     const HistoryService::GetVisibleVisitCountToHostCallback& callback,
     const VisibleVisitCountToHostResult* result) {
   callback.Run(result->success, result->count, result->first_visit);
+  if (origin_queried_closure)
+    std::move(origin_queried_closure).Run();
 }
 
 // Callback from WebHistoryService::ExpireWebHistory().
@@ -332,14 +329,14 @@ void HistoryService::SetOnBackendDestroyTask(const base::Closure& task) {
 
 void HistoryService::GetCountsAndLastVisitForOriginsForTesting(
     const std::set<GURL>& origins,
-    const GetCountsAndLastVisitForOriginsCallback& callback) const {
+    GetCountsAndLastVisitForOriginsCallback callback) const {
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
   PostTaskAndReplyWithResult(
       backend_task_runner_.get(), FROM_HERE,
-      base::Bind(&HistoryBackend::GetCountsAndLastVisitForOrigins,
-                 history_backend_, origins),
-      callback);
+      base::BindOnce(&HistoryBackend::GetCountsAndLastVisitForOrigins,
+                     history_backend_, origins),
+      std::move(callback));
 }
 
 void HistoryService::AddPage(const GURL& url,
@@ -480,7 +477,7 @@ base::CancelableTaskTracker::TaskId HistoryService::GetFavicon(
     const GURL& icon_url,
     favicon_base::IconType icon_type,
     const std::vector<int>& desired_sizes,
-    const favicon_base::FaviconResultsCallback& callback,
+    favicon_base::FaviconResultsCallback callback,
     base::CancelableTaskTracker* tracker) {
   TRACE_EVENT0("browser", "HistoryService::GetFavicons");
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
@@ -491,7 +488,8 @@ base::CancelableTaskTracker::TaskId HistoryService::GetFavicon(
       backend_task_runner_.get(), FROM_HERE,
       base::BindOnce(&HistoryBackend::GetFavicon, history_backend_, icon_url,
                      icon_type, desired_sizes, results),
-      base::BindOnce(&RunWithFaviconResults, callback, base::Owned(results)));
+      base::BindOnce(&RunWithFaviconResults, std::move(callback),
+                     base::Owned(results)));
 }
 
 base::CancelableTaskTracker::TaskId HistoryService::GetFaviconsForURL(
@@ -499,7 +497,7 @@ base::CancelableTaskTracker::TaskId HistoryService::GetFaviconsForURL(
     const favicon_base::IconTypeSet& icon_types,
     const std::vector<int>& desired_sizes,
     bool fallback_to_host,
-    const favicon_base::FaviconResultsCallback& callback,
+    favicon_base::FaviconResultsCallback callback,
     base::CancelableTaskTracker* tracker) {
   TRACE_EVENT0("browser", "HistoryService::GetFaviconsForURL");
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
@@ -511,14 +509,15 @@ base::CancelableTaskTracker::TaskId HistoryService::GetFaviconsForURL(
       base::BindOnce(&HistoryBackend::GetFaviconsForURL, history_backend_,
                      page_url, icon_types, desired_sizes, fallback_to_host,
                      results),
-      base::BindOnce(&RunWithFaviconResults, callback, base::Owned(results)));
+      base::BindOnce(&RunWithFaviconResults, std::move(callback),
+                     base::Owned(results)));
 }
 
 base::CancelableTaskTracker::TaskId HistoryService::GetLargestFaviconForURL(
     const GURL& page_url,
     const std::vector<favicon_base::IconTypeSet>& icon_types,
     int minimum_size_in_pixels,
-    const favicon_base::FaviconRawBitmapCallback& callback,
+    favicon_base::FaviconRawBitmapCallback callback,
     base::CancelableTaskTracker* tracker) {
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -528,13 +527,14 @@ base::CancelableTaskTracker::TaskId HistoryService::GetLargestFaviconForURL(
       backend_task_runner_.get(), FROM_HERE,
       base::BindOnce(&HistoryBackend::GetLargestFaviconForURL, history_backend_,
                      page_url, icon_types, minimum_size_in_pixels, result),
-      base::BindOnce(&RunWithFaviconResult, callback, base::Owned(result)));
+      base::BindOnce(&RunWithFaviconResult, std::move(callback),
+                     base::Owned(result)));
 }
 
 base::CancelableTaskTracker::TaskId HistoryService::GetFaviconForID(
     favicon_base::FaviconID favicon_id,
     int desired_size,
-    const favicon_base::FaviconResultsCallback& callback,
+    favicon_base::FaviconResultsCallback callback,
     base::CancelableTaskTracker* tracker) {
   TRACE_EVENT0("browser", "HistoryService::GetFaviconForID");
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
@@ -545,7 +545,8 @@ base::CancelableTaskTracker::TaskId HistoryService::GetFaviconForID(
       backend_task_runner_.get(), FROM_HERE,
       base::BindOnce(&HistoryBackend::GetFaviconForID, history_backend_,
                      favicon_id, desired_size, results),
-      base::BindOnce(&RunWithFaviconResults, callback, base::Owned(results)));
+      base::BindOnce(&RunWithFaviconResults, std::move(callback),
+                     base::Owned(results)));
 }
 
 base::CancelableTaskTracker::TaskId
@@ -554,7 +555,7 @@ HistoryService::UpdateFaviconMappingsAndFetch(
     const GURL& icon_url,
     favicon_base::IconType icon_type,
     const std::vector<int>& desired_sizes,
-    const favicon_base::FaviconResultsCallback& callback,
+    favicon_base::FaviconResultsCallback callback,
     base::CancelableTaskTracker* tracker) {
   TRACE_EVENT0("browser", "HistoryService::UpdateFaviconMappingsAndFetch");
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
@@ -566,7 +567,8 @@ HistoryService::UpdateFaviconMappingsAndFetch(
       base::BindOnce(&HistoryBackend::UpdateFaviconMappingsAndFetch,
                      history_backend_, page_urls, icon_url, icon_type,
                      desired_sizes, results),
-      base::BindOnce(&RunWithFaviconResults, callback, base::Owned(results)));
+      base::BindOnce(&RunWithFaviconResults, std::move(callback),
+                     base::Owned(results)));
 }
 
 void HistoryService::DeleteFaviconMappings(
@@ -704,13 +706,11 @@ base::CancelableTaskTracker::TaskId HistoryService::QueryURL(
     base::CancelableTaskTracker* tracker) {
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
-  QueryURLResult* query_url_result = new QueryURLResult();
-  return tracker->PostTaskAndReply(
+  return tracker->PostTaskAndReplyWithResult(
       backend_task_runner_.get(), FROM_HERE,
       base::BindOnce(&HistoryBackend::QueryURL, history_backend_, url,
-                     want_visits, base::Unretained(query_url_result)),
-      base::BindOnce(&RunWithQueryURLResult, std::move(callback),
-                     base::Owned(query_url_result)));
+                     want_visits),
+      std::move(callback));
 }
 
 // Statistics ------------------------------------------------------------------
@@ -806,44 +806,41 @@ void HistoryService::RemoveDownloads(const std::set<uint32_t>& ids) {
 base::CancelableTaskTracker::TaskId HistoryService::QueryHistory(
     const base::string16& text_query,
     const QueryOptions& options,
-    const QueryHistoryCallback& callback,
+    QueryHistoryCallback callback,
     base::CancelableTaskTracker* tracker) {
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
-  QueryResults* query_results = new QueryResults();
-  return tracker->PostTaskAndReply(
+  return tracker->PostTaskAndReplyWithResult(
       backend_task_runner_.get(), FROM_HERE,
       base::BindOnce(&HistoryBackend::QueryHistory, history_backend_,
-                     text_query, options, base::Unretained(query_results)),
-      base::BindOnce(callback, base::Owned(query_results)));
+                     text_query, options),
+      std::move(callback));
 }
 
 base::CancelableTaskTracker::TaskId HistoryService::QueryRedirectsFrom(
     const GURL& from_url,
-    const QueryRedirectsCallback& callback,
+    QueryRedirectsCallback callback,
     base::CancelableTaskTracker* tracker) {
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
-  RedirectList* result = new RedirectList();
-  return tracker->PostTaskAndReply(
+  return tracker->PostTaskAndReplyWithResult(
       backend_task_runner_.get(), FROM_HERE,
       base::BindOnce(&HistoryBackend::QueryRedirectsFrom, history_backend_,
-                     from_url, base::Unretained(result)),
-      base::BindOnce(callback, base::Owned(result)));
+                     from_url),
+      std::move(callback));
 }
 
 base::CancelableTaskTracker::TaskId HistoryService::QueryRedirectsTo(
     const GURL& to_url,
-    const QueryRedirectsCallback& callback,
+    QueryRedirectsCallback callback,
     base::CancelableTaskTracker* tracker) {
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
-  RedirectList* result = new RedirectList();
-  return tracker->PostTaskAndReply(
+  return tracker->PostTaskAndReplyWithResult(
       backend_task_runner_.get(), FROM_HERE,
       base::BindOnce(&HistoryBackend::QueryRedirectsTo, history_backend_,
-                     to_url, base::Unretained(result)),
-      base::BindOnce(callback, base::Owned(result)));
+                     to_url),
+      std::move(callback));
 }
 
 base::CancelableTaskTracker::TaskId HistoryService::GetVisibleVisitCountToHost(
@@ -857,7 +854,8 @@ base::CancelableTaskTracker::TaskId HistoryService::GetVisibleVisitCountToHost(
       backend_task_runner_.get(), FROM_HERE,
       base::BindOnce(&HistoryBackend::GetVisibleVisitCountToHost,
                      history_backend_, url, base::Unretained(result)),
-      base::BindOnce(&RunWithVisibleVisitCountToHostResult, callback,
+      base::BindOnce(&RunWithVisibleVisitCountToHostResult,
+                     std::move(origin_queried_closure_for_testing_), callback,
                      base::Owned(result)));
 }
 
@@ -958,11 +956,11 @@ bool HistoryService::Init(
 }
 
 void HistoryService::ScheduleAutocomplete(
-    const base::Callback<void(HistoryBackend*, URLDatabase*)>& callback) {
+    base::OnceCallback<void(HistoryBackend*, URLDatabase*)> callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   ScheduleTask(PRIORITY_UI,
                base::BindOnce(&HistoryBackend::ScheduleAutocomplete,
-                              history_backend_, callback));
+                              history_backend_, std::move(callback)));
 }
 
 void HistoryService::ScheduleTask(SchedulePriority priority,

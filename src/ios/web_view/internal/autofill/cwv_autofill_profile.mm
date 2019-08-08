@@ -5,8 +5,8 @@
 #import "ios/web_view/internal/autofill/cwv_autofill_profile_internal.h"
 
 #include "base/strings/sys_string_conversions.h"
-#include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "ios/web_view/internal/app/application_context.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

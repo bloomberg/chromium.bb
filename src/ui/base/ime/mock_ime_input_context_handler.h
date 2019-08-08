@@ -36,6 +36,14 @@ class COMPONENT_EXPORT(UI_BASE_IME) MockIMEInputContextHandler
   void UpdateCompositionText(const CompositionText& text,
                              uint32_t cursor_pos,
                              bool visible) override;
+
+#if defined(OS_CHROMEOS)
+  bool SetCompositionRange(
+      uint32_t before,
+      uint32_t after,
+      const std::vector<ui::ImeTextSpan>& text_spans) override;
+#endif
+
   void DeleteSurroundingText(int32_t offset, uint32_t length) override;
   SurroundingTextInfo GetSurroundingTextInfo() override;
   void SendKeyEvent(KeyEvent* event) override;

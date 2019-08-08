@@ -17,9 +17,11 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/test_timeouts.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -87,9 +89,9 @@ class DragAndDropSimulator {
   // |location| is relative to |web_contents|.
   // Returns true upon success.
   bool SimulateDragEnter(gfx::Point location, const std::string& text) {
-    ui::OSExchangeData data;
-    data.SetString(base::UTF8ToUTF16(text));
-    return SimulateDragEnter(location, data);
+    os_exchange_data_ = std::make_unique<ui::OSExchangeData>();
+    os_exchange_data_->SetString(base::UTF8ToUTF16(text));
+    return SimulateDragEnter(location, *os_exchange_data_);
   }
 
   // Simulates dropping of the drag-and-dropped item.
@@ -168,6 +170,7 @@ class DragAndDropSimulator {
 
   content::WebContents* web_contents_;
   std::unique_ptr<ui::DropTargetEvent> active_drag_event_;
+  std::unique_ptr<ui::OSExchangeData> os_exchange_data_;
 
   DISALLOW_COPY_AND_ASSIGN(DragAndDropSimulator);
 };
@@ -409,6 +412,10 @@ class DOMDragEventVerifier {
     expected_page_position_ = value;
   }
 
+  void set_expected_screen_position(const std::string& value) {
+    expected_screen_position_ = value;
+  }
+
   // Returns a matcher that will match a std::string (drag event data - e.g.
   // one returned by DOMDragEventWaiter::WaitForNextMatchingEvent) if it matches
   // the expectations of this DOMDragEventVerifier.
@@ -418,7 +425,8 @@ class DOMDragEventVerifier {
         FieldMatches("drop_effect", expected_drop_effect_),
         FieldMatches("effect_allowed", expected_effect_allowed_),
         FieldMatches("mime_types", expected_mime_types_),
-        FieldMatches("page_position", expected_page_position_));
+        FieldMatches("page_position", expected_page_position_),
+        FieldMatches("screen_position", expected_screen_position_));
   }
 
  private:
@@ -437,6 +445,7 @@ class DOMDragEventVerifier {
   std::string expected_mime_types_ = "<no expectation>";
   std::string expected_client_position_ = "<no expectation>";
   std::string expected_page_position_ = "<no expectation>";
+  std::string expected_screen_position_ = "<no expectation>";
 
   DISALLOW_COPY_AND_ASSIGN(DOMDragEventVerifier);
 };
@@ -540,6 +549,11 @@ class DragAndDropBrowserTest : public InProcessBrowserTest,
     content::SetupCrossSiteRedirector(embedded_test_server());
     ASSERT_TRUE(embedded_test_server()->Start());
     drag_simulator_.reset(new DragAndDropSimulator(web_contents()));
+  }
+
+  void TearDownOnMainThread() override {
+    // For X11 need to tear down before UI goes away.
+    drag_simulator_.reset();
   }
 
   bool use_cross_site_subframe() {
@@ -652,6 +666,16 @@ class DragAndDropBrowserTest : public InProcessBrowserTest,
   bool SimulateDropInRightFrame() {
     AssertTestPageIsLoaded();
     return drag_simulator_->SimulateDrop(kMiddleOfRightFrame);
+  }
+
+  gfx::Point GetMiddleOfRightFrameInScreenCoords() {
+    aura::Window* window = web_contents()->GetNativeView();
+    aura::client::ScreenPositionClient* screen_position_client =
+        aura::client::GetScreenPositionClient(window->GetRootWindow());
+    gfx::Point screen_position(kMiddleOfRightFrame);
+    if (screen_position_client)
+      screen_position_client->ConvertPointToScreen(window, &screen_position);
+    return screen_position;
   }
 
  private:
@@ -1278,6 +1302,42 @@ void DragAndDropBrowserTest::CrossSiteDrag_Step3(
   EXPECT_EQ(0, state->right_frame_events_counter->GetNumberOfReceivedEvents(
                    {"dragstart", "dragleave", "dragenter", "dragover", "drop",
                     "dragend"}));
+}
+
+// Test that screenX/screenY for drag updates are in screen coordinates.
+// See https://crbug.com/600402 where we mistook the root window coordinate
+// space for the screen coordinate space.
+IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, DragUpdateScreenCoordinates) {
+  // Reposition the window so that the root window coordinate space and the
+  // screen coordinate space are clearly distinct. Otherwise this test would
+  // be inconclusive.
+  // In addition to offsetting the window, use a small window size to avoid
+  // rejection of the new bounds by the system.
+  browser()->window()->SetBounds(gfx::Rect(200, 100, 700, 500));
+  do {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+  } while (browser()->window()->GetBounds().origin() != gfx::Point(200, 100));
+
+  std::string frame_site = use_cross_site_subframe() ? "b.com" : "a.com";
+  ASSERT_TRUE(NavigateToTestPage("a.com"));
+  ASSERT_TRUE(NavigateRightFrame(frame_site, "drop_target.html"));
+
+  const gfx::Point screen_position = GetMiddleOfRightFrameInScreenCoords();
+
+  DOMDragEventVerifier expected_dom_event_data;
+  expected_dom_event_data.set_expected_client_position("(155, 150)");
+  expected_dom_event_data.set_expected_screen_position(
+      base::StringPrintf("(%d, %d)", screen_position.x(), screen_position.y()));
+
+  DOMDragEventWaiter dragover_waiter("dragover", right_frame());
+  ASSERT_TRUE(SimulateDragEnterToRightFrame("Dragged test text"));
+
+  std::string dragover_event;
+  ASSERT_TRUE(dragover_waiter.WaitForNextMatchingEvent(&dragover_event));
+  EXPECT_THAT(dragover_event, expected_dom_event_data.Matches());
 }
 
 // TODO(paulmeyer): Should test the case of navigation happening in the middle

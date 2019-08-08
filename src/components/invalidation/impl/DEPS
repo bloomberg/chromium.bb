@@ -1,7 +1,6 @@
 include_rules = [
   "+components/invalidation/public",
 
-  "+components/data_use_measurement/core",
   "+components/gcm_driver",
   "+components/keyed_service",
   "+components/pref_registry",
@@ -21,6 +20,7 @@ include_rules = [
   "+net/url_request",
   "+net/base/load_flags.h",
 
+  "+services/data_decoder/public/cpp/testing_json_parser.h",
   "+services/identity/public",
   "+services/network/public",
   "+services/network/test",

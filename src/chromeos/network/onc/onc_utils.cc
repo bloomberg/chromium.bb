@@ -1031,7 +1031,8 @@ bool ResolveServerCertRefsInNetworks(const CertPEMsByGUIDMap& certs_by_guid,
     it->GetAsDictionary(&network);
     if (!ResolveServerCertRefsInNetwork(certs_by_guid, network)) {
       std::string guid;
-      network->GetStringWithoutPathExpansion(network_config::kGUID, &guid);
+      network->GetStringWithoutPathExpansion(::onc::network_config::kGUID,
+                                             &guid);
       // This might happen even with correct validation, if the referenced
       // certificate couldn't be imported.
       LOG(ERROR) << "Couldn't resolve some certificate reference of network "

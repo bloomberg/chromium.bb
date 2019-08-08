@@ -64,8 +64,7 @@ class CORE_EXPORT WorkerClassicScriptLoader final
   void LoadSynchronously(ExecutionContext&,
                          ResourceFetcher* fetch_client_settings_object_fetcher,
                          const KURL&,
-                         mojom::RequestContextType,
-                         mojom::IPAddressSpace);
+                         mojom::RequestContextType);
 
   // Note that callbacks could be invoked before
   // LoadTopLevelScriptAsynchronously() returns.
@@ -79,7 +78,6 @@ class CORE_EXPORT WorkerClassicScriptLoader final
       mojom::RequestContextType,
       network::mojom::FetchRequestMode,
       network::mojom::FetchCredentialsMode,
-      mojom::IPAddressSpace,
       base::OnceClosure response_callback,
       base::OnceClosure finished_callback);
 
@@ -158,7 +156,6 @@ class CORE_EXPORT WorkerClassicScriptLoader final
   std::unique_ptr<Vector<String>> origin_trial_tokens_;
   String referrer_policy_;
 
-  bool is_worker_global_scope_ = false;
   Member<ResourceFetcher> fetch_client_settings_object_fetcher_;
 };
 

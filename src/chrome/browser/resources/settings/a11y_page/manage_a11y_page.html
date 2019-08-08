@@ -10,7 +10,6 @@
 <link rel="import" href="../i18n_setup.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_shared_css.html">
-<link rel="import" href="tts_subpage.html">
 
 <dom-module id="settings-manage-a11y-page">
   <template>
@@ -116,7 +115,8 @@
     </settings-toggle-button>
     <settings-toggle-button
         pref="{{prefs.settings.a11y.virtual_keyboard}}"
-        label="$i18n{onScreenKeyboardLabel}">
+        label="$i18n{onScreenKeyboardLabel}"
+        hidden$="[[prefs.ash.kiosk_next_shell.enabled.value]]">
     </settings-toggle-button>
     <settings-toggle-button
         pref="{{prefs.settings.a11y.dictation}}"
@@ -167,27 +167,25 @@
         label="$i18n{autoclickStabilizeCursorPosition}">
       </settings-toggle-button>
     </div>
-    <template is="dom-if" if="[[showExperimentalAutoclick_]]">
-      <div class="sub-item">
-        <settings-toggle-button class="continuation sub-item"
-          hidden$="[[!prefs.settings.a11y.autoclick.value]]"
-          pref="{{prefs.settings.a11y.autoclick_revert_to_left_click}}"
-          label="$i18n{autoclickRevertToLeftClick}">
-        </settings-toggle-button>
+    <div class="sub-item">
+      <settings-toggle-button class="continuation sub-item"
+        hidden$="[[!prefs.settings.a11y.autoclick.value]]"
+        pref="{{prefs.settings.a11y.autoclick_revert_to_left_click}}"
+        label="$i18n{autoclickRevertToLeftClick}">
+      </settings-toggle-button>
+    </div>
+    <div class="settings-box continuation"
+        hidden$="[[!prefs.settings.a11y.autoclick.value]]">
+      <div class="start sub-item" id="autoclickMovementThresholdLabel">
+        $i18n{autoclickMovementThresholdLabel}
       </div>
-      <div class="settings-box continuation"
-          hidden$="[[!prefs.settings.a11y.autoclick.value]]">
-        <div class="start sub-item" id="autoclickMovementThresholdLabel">
-          $i18n{autoclickMovementThresholdLabel}
-        </div>
-        <settings-dropdown-menu
-            aria-labelledby="autoclickMovementThresholdLabel"
-            pref="{{prefs.settings.a11y.autoclick_movement_threshold}}"
-            menu-options="[[autoClickMovementThresholdOptions_]]"
-            disabled="[[!prefs.settings.a11y.autoclick.value]]">
-        </settings-dropdown-menu>
-      </div>
-    </template>
+      <settings-dropdown-menu
+          aria-labelledby="autoclickMovementThresholdLabel"
+          pref="{{prefs.settings.a11y.autoclick_movement_threshold}}"
+          menu-options="[[autoClickMovementThresholdOptions_]]"
+          disabled="[[!prefs.settings.a11y.autoclick.value]]">
+      </settings-dropdown-menu>
+    </div>
     <settings-toggle-button
         pref="{{prefs.settings.a11y.large_cursor_enabled}}"
         label="$i18n{largeMouseCursorLabel}">

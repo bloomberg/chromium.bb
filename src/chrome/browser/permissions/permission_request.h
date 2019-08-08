@@ -94,10 +94,9 @@ class PermissionRequest {
   virtual base::string16 GetMessageText() const = 0;
 #endif
 
-  // Returns the shortened prompt text for this permission.  Must be phrased
-  // as a heading, e.g. "Location", or "Camera". The permission bubble may
-  // coalesce different requests, and if it does, this text will be displayed
-  // next to an image and indicate the user grants the permission.
+  // Returns the shortened prompt text for this permission. The permission
+  // bubble may coalesce different requests, and if it does, this text will
+  // be displayed next to an image and indicate the user grants the permission.
   virtual base::string16 GetMessageTextFragment() const = 0;
 
   // Get the origin on whose behalf this permission request is being made.

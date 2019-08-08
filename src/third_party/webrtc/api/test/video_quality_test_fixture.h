@@ -19,7 +19,9 @@
 #include "api/bitrate_constraints.h"
 #include "api/fec_controller.h"
 #include "api/media_types.h"
+#include "api/network_state_predictor.h"
 #include "api/test/simulated_network.h"
+#include "api/transport/network_control.h"
 #include "api/video_codecs/video_encoder_config.h"
 
 namespace webrtc {
@@ -120,6 +122,10 @@ class VideoQualityTestFixtureInterface {
     std::unique_ptr<NetworkBehaviorInterface> receiver_network;
 
     std::unique_ptr<FecControllerFactoryInterface> fec_controller_factory;
+    std::unique_ptr<NetworkStatePredictorFactoryInterface>
+        network_state_predictor_factory;
+    std::unique_ptr<NetworkControllerFactoryInterface>
+        network_controller_factory;
   };
 
   virtual ~VideoQualityTestFixtureInterface() = default;

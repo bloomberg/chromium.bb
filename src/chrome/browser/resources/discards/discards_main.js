@@ -6,6 +6,14 @@ Polymer({
   is: 'discards-main',
 
   properties: {
-    selected: {type: Number, value: 0},
+    selected: {
+      type: Number,
+      value: 0,
+    },
+
+    tabs: {
+      type: Array,
+      value: () => ['Discards', 'Database', 'Graph'],
+    },
   },
 });

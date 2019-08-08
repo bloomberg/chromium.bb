@@ -20,6 +20,7 @@
 #include "components/viz/common/resources/return_callback.h"
 #include "components/viz/common/resources/shared_bitmap.h"
 #include "components/viz/common/resources/transferable_resource.h"
+#include "components/viz/service/display/external_use_client.h"
 #include "components/viz/service/display/overlay_candidate.h"
 #include "components/viz/service/display/resource_fence.h"
 #include "components/viz/service/display/resource_metadata.h"
@@ -44,7 +45,6 @@ namespace viz {
 
 class ContextProvider;
 class SharedBitmapManager;
-class SkiaOutputSurface;
 
 // This class provides abstractions for receiving and using resources from other
 // modules/threads/processes. It abstracts away GL textures vs GpuMemoryBuffers
@@ -200,7 +200,7 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     // |resource_provider|. Both |resource_provider| and |client| outlive this
     // class.
     LockSetForExternalUse(DisplayResourceProvider* resource_provider,
-                          SkiaOutputSurface* client);
+                          ExternalUseClient* client);
     ~LockSetForExternalUse();
 
     // Lock a resource for external use.
@@ -239,7 +239,6 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     // ResourceFence implementation.
     void Set() override;
     bool HasPassed() override;
-    void Wait() override;
 
     // Returns true if fence has been set but not yet synchornized.
     bool has_synchronized() const { return has_synchronized_; }
@@ -482,8 +481,8 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
   ResourceMap resources_;
   ChildMap children_;
   base::flat_map<ResourceId, sk_sp<SkImage>> resource_sk_images_;
-  // If set, all |resource_sk_images_| were created with this client.
-  SkiaOutputSurface* external_use_client_ = nullptr;
+  // Used to release resources held by an external consumer.
+  ExternalUseClient* external_use_client_ = nullptr;
 
   base::flat_map<int, std::vector<ResourceId>> batched_returning_resources_;
   scoped_refptr<ResourceFence> current_read_lock_fence_;

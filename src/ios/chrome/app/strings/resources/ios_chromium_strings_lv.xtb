@@ -5,6 +5,7 @@
 <translation id="1185134272377778587">Par Chromium</translation>
 <translation id="1289966288285062467">Chromium konfidencialitātes paziņojums</translation>
 <translation id="1472013873724362412">Jūsu konts nedarbojas pārlūkā Chromium. Sazinieties ar savu domēna administratoru vai pierakstieties, izmantojot parastu Google kontu.</translation>
+<translation id="1507010443238049608">Palīdzēt uzlabot Chromium funkcijas un veiktspēju</translation>
 <translation id="1617663976202781617">Chromium sinhronizācijas dati</translation>
 <translation id="1736662517232558588">Chromium dati dzēsti</translation>
 <translation id="1838412507805038478">Chromium apstiprināja, ka <ph name="ISSUER" /> izsniedza šīs vietnes sertifikātu.</translation>
@@ -14,7 +15,7 @@
 <translation id="2168108852149185974">Daži papildinājumi var izraisīt pārlūka Chromium avarēšanu. Lūdzu, atinstalējiet šos papildinājumus:</translation>
 <translation id="2178608107313874732">Chromium pašlaik nevar izmantot jūsu kameru.</translation>
 <translation id="2195025571279539885">Vai vēlaties, lai Chromium nākamreiz piedāvātu šīs vietnes lapas, kuru saturs ir šādā valodā: <ph name="LANGUAGE_NAME" />?</translation>
-<translation id="2517624234762908348">Sinhronizēt jūsu Chromium datus</translation>
+<translation id="2590893390871230428">Sinhronizēt jūsu Chromium datus</translation>
 <translation id="2647554856022461007">Chromium var izmantot tīmekļa pakalpojumus, lai uzlabotu jūsu pārlūkošanas pieredzi. Varat arī atspējot šos pakalpojumus. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
 <translation id="2730884209570016437">Chromium nevar izmantot kameru, jo to izmanto cita lietojumprogramma.</translation>
 <translation id="2915596697727466327">Chromium izmanto Face ID, lai jūsu parolēm varētu piekļūt tikai pilnvarotas personas.</translation>
@@ -26,7 +27,6 @@
 <translation id="4024541897090868497">Pierakstieties pārlūkā Chromium, lai jūsu cilnes būtu pieejamas visās jūsu ierīcēs.</translation>
 <translation id="4157467675761413638">Chromium padoms. Lai iegūtu vairāk ciļņu iespēju, rīkjoslā, kas atrodas ekrāna apakšdaļā vai augšdaļā, nospiediet un turiet pogu Rādīt cilnes.</translation>
 <translation id="4241912885070669028">Jūs izrakstāties no konta, kas tiek pārvaldīts domēnā <ph name="SIGNOUT_MANAGED_DOMAIN" />. Izrakstoties Chromium dati tiks dzēsti no šīs ierīces, taču tie paliks jūsu Google kontā.</translation>
-<translation id="4272892696084633551">Palīdzēt uzlabot Chromium funkcijas un veiktspēju</translation>
 <translation id="4555020257205549924">Ja šī funkcija ir ieslēgta, Chromium piedāvā tulkot citās valodās rakstītas lapas, izmantojot Google tulkotāju. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
 <translation id="4787850887676698916">Šeit būs redzamas cilnes, kuras esat atvēris pārlūkā Chromium citās ierīcēs.</translation>
 <translation id="495292094137889840">Darba sākšana ar Chromium QR skeneri</translation>

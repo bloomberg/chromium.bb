@@ -37,10 +37,6 @@ extern const base::Feature kPasswordProtectionForSignedInUsers;
 // Controls the daily quota for the suspicious site trigger.
 extern const base::Feature kSuspiciousSiteTriggerQuotaFeature;
 
-// Controls whether we collect and send the referrer chain and other information
-// for APK downloads on Android.
-extern const base::Feature kTelemetryForApkDownloads;
-
 // Specifies which non-resource HTML Elements to collect based on their tag and
 // attributes. It's a single param containing a comma-separated list of pairs.
 // For example: "tag1,id,tag1,height,tag2,foo" - this will collect elements with
@@ -62,10 +58,6 @@ extern const base::Feature kTriggerThrottlerDailyQuotaFeature;
 // Controls whether Chrome on Android uses locally cached blacklists.
 extern const base::Feature kUseLocalBlacklistsV2;
 
-// Controls whether we inspect the content of RAR files, or just report the
-// filenames contained in the archive.
-extern const base::Feature kInspectRarContentFeature;
-
 // Controls whether we use AP download protection.
 extern const base::Feature kUseAPDownloadProtection;
 
@@ -73,6 +65,11 @@ extern const base::Feature kUseAPDownloadProtection;
 extern const base::Feature kForceUseAPDownloadProtection;
 
 base::ListValue GetFeatureStatusList();
+
+// Returns whether or not to stop filling in the SyncAccountType and
+// ReusedPasswordType enums. This is used in the
+// kPasswordProtectionForSignedInUsers experiment.
+bool GetShouldFillOldPhishGuardProto();
 
 }  // namespace safe_browsing
 #endif  // COMPONENTS_SAFE_BROWSING_FEATURES_H_

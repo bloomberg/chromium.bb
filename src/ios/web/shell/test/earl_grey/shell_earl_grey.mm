@@ -21,35 +21,51 @@ using base::test::ios::WaitUntilConditionOrTimeout;
 GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ShellEarlGreyAppInterface)
 #endif
 
-namespace shell_test_util {
+@implementation ShellEarlGreyImpl
 
-bool LoadUrl(const GURL& url) {
-  [ShellEarlGreyAppInterface loadURL:base::SysUTF8ToNSString(url.spec())];
+- (void)loadURL:(const GURL&)URL {
+  NSString* spec = base::SysUTF8ToNSString(URL.spec());
+  [ShellEarlGreyAppInterface startLoadingURL:spec];
 
-  bool load_success = WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
-    return ![ShellEarlGreyAppInterface isCurrentWebStateLoading];
-  });
-  if (!load_success) {
-    return false;
-  }
+  NSString* loadingErrorDescription = [NSString
+      stringWithFormat:@"Current WebState did not finish loading %@ URL", spec];
+  GREYCondition* condition = [GREYCondition
+      conditionWithName:loadingErrorDescription
+                  block:^{
+                    return !
+                        [ShellEarlGreyAppInterface isCurrentWebStateLoading];
+                  }];
+  BOOL pageLoaded = [condition waitWithTimeout:kWaitForPageLoadTimeout];
+  EG_TEST_HELPER_ASSERT_TRUE(pageLoaded, loadingErrorDescription);
 
-  bool injection_success =
-      [ShellEarlGreyAppInterface waitForWindowIDInjectedInCurrentWebState];
-  if (!injection_success) {
-    return false;
-  }
+  EG_TEST_HELPER_ASSERT_NO_ERROR(
+      [ShellEarlGreyAppInterface waitForWindowIDInjectedInCurrentWebState]);
 
   // Ensure any UI elements handled by EarlGrey become idle for any subsequent
   // EarlGrey steps.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-  return true;
 }
 
-bool WaitForWebViewContainingText(const std::string& text) {
-  return WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
-    return [ShellEarlGreyAppInterface
-        currentWebStateContainsText:base::SysUTF8ToNSString(text)];
-  });
+- (void)waitForWebStateContainingText:(NSString*)text {
+  NSString* description = [NSString
+      stringWithFormat:@"Current WebState does not contain: '%@'", text];
+  GREYCondition* condition =
+      [GREYCondition conditionWithName:description
+                                 block:^{
+                                   return [ShellEarlGreyAppInterface
+                                       currentWebStateContainsText:text];
+                                 }];
+
+  BOOL containsText = [condition waitWithTimeout:kWaitForPageLoadTimeout];
+  EG_TEST_HELPER_ASSERT_TRUE(containsText, description);
 }
 
-}  // namespace shell_test_util
+- (BOOL)webUsageEnabledForCurrentWebState {
+  return [ShellEarlGreyAppInterface webUsageEnabledForCurrentWebState];
+}
+
+- (NSString*)instanceGroupForCurrentBrowserState {
+  return [ShellEarlGreyAppInterface instanceGroupForCurrentBrowserState];
+}
+
+@end

@@ -134,7 +134,15 @@ class Match {
 __gCrWeb.findInPage.matches = [];
 
 /**
- * Index of the current highlighted choice.  -1 means none.
+ * Index of the currently selected match relative to all visible matches
+ * on the frame. -1 if there is no currently selected match.
+ * @type {number}
+ */
+let selectedVisibleMatchIndex_ = -1;
+
+/**
+ * Index of the currently selected match relative to
+ * __gCrWeb.findInPage.matches. -1 if there is no currently selected match.
  * @type {number}
  */
 let selectedMatchIndex_ = -1;
@@ -237,7 +245,13 @@ let replacementsIndex_ = 0;
  * The total number of visible matches found.
  * @type {Number}
  */
-let visibleFound_ = 0;
+let visibleMatchCount_ = 0;
+
+/**
+ * The last index from which the match counting process left off.
+ * This is necessary since the counting might be interrupted by pumping.
+ */
+let visibleMatchesCountIndexIterator_ = 0;
 
 
 /**
@@ -412,11 +426,11 @@ __gCrWeb.findInPage.findString = function(string, timeout) {
   // Holds what nodes we have not processed yet.
   __gCrWeb.findInPage.stack = [document.body];
 
-  // Number of visible elements found.
-  visibleFound_ = 0;
+  // Number of visible matches found.
+  visibleMatchCount_ = 0;
 
   // Index tracking variables so search can be broken up into multiple calls.
-  visibleIndex_ = 0;
+  visibleMatchesCountIndexIterator_ = 0;
 
   __gCrWeb.findInPage.regex = getRegex_(string);
 
@@ -534,31 +548,42 @@ __gCrWeb.findInPage.pumpSearch = function(timeout) {
     replacements_[i].doSwap();
   }
 
-  // Count visible elements.
+  let visibleMatchCount = countVisibleMatches_(timer);
+
+  searchInProgress_ = false;
+
+  return visibleMatchCount;
+};
+
+/**
+ * Counts the total number of visible matches.
+ * @param {Timer} used to pause the counting if overall search
+ * has taken too long.
+ * @return {Number} of visible matches.
+ */
+function countVisibleMatches_(timer) {
   let max = __gCrWeb.findInPage.matches.length;
   let maxVisible = MAX_VISIBLE_ELEMENTS;
-  for (let index = visibleIndex_; index < max; index++) {
+  var currentlyVisibleMatchCount = 0;
+  for (let index = visibleMatchesCountIndexIterator_; index < max; index++) {
     let match = __gCrWeb.findInPage.matches[index];
-    if (timer.overtime()) {
-      visibleIndex_ = index;
+    if (timer && timer.overtime()) {
+      visibleMatchesCountIndexIterator_ = index;
       return TIMEOUT;
     }
 
     // Stop after |maxVisible| elements.
-    if (visibleFound_ > maxVisible) {
-      match.visibleIndex = maxVisible;
+    if (currentlyVisibleMatchCount > maxVisible) {
       continue;
     }
 
     if (match.visible()) {
-      visibleFound_++;
-      match.visibleIndex = visibleFound_;
+      currentlyVisibleMatchCount++;
     }
   }
-
-  searchInProgress_ = false;
-
-  return visibleFound_;
+  visibleMatchCount_ = currentlyVisibleMatchCount;
+  visibleMatchesCountIndexIterator_ = 0;
+  return currentlyVisibleMatchCount;
 };
 
 /**
@@ -576,6 +601,7 @@ function cleanUp_() {
 
   __gCrWeb.findInPage.matches = [];
   selectedMatchIndex_ = -1;
+  selectedVisibleMatchIndex_ = -1;
   matchId_ = 0;
   partialMatches_ = [];
 
@@ -584,14 +610,22 @@ function cleanUp_() {
 };
 
 /**
- * Highlights the match at |index| and scrolls to that match. Clears currently
- * highlighted match if one exists.
- * @param {Number} index of match to highlight.
+ * Selects the |index|-th visible matchand scrolls to that match. The total
+ * visible matches count is also recalculated.
+ * If there is no longer an |index|-th visible match, then the last visible
+ * match will be selected if |index| is less than the currently selected
+ * match or the first visible match will be selected if |index| is greater.
+ * If there are currently no visible matches, sets
+ * |selectedVisibleMatchIndex_| to -1.
+ * No-op if invalid |index| is passed.
+ * @param {Number} index of visible match to highlight.
+ * @return {Dictionary} of currently visible matches and currently selected
+ * match index.
  */
-__gCrWeb.findInPage.selectAndScrollToMatch = function(index) {
-  if (index >= __gCrWeb.findInPage.matches.length || index < 0) {
-    // Do nothing if invalid index is passed.
-    return;
+__gCrWeb.findInPage.selectAndScrollToVisibleMatch = function(index) {
+  if (index >= visibleMatchCount_ || index < 0) {
+    // Do nothing if invalid index is passed or if there are no matches.
+    return {matches: visibleMatchCount_, index: selectedMatchIndex_};
   }
 
   // Remove previous highlight.
@@ -600,10 +634,44 @@ __gCrWeb.findInPage.selectAndScrollToMatch = function(index) {
     match.removeSelectHighlight();
   }
 
-  selectedMatchIndex_ = index;
+  let previouslySelectedMatchIndex = selectedMatchIndex_;
+
+  // Recalculate total visible matches in case it has changed.
+  let visibleMatchCount = countVisibleMatches_(null);
+
+  if (visibleMatchCount == 0) {
+    selectedMatchIndex_ = -1;
+    selectedVisibleMatchIndex_ = -1;
+    return {matches: visibleMatchCount, index: -1};
+  }
+
+  if (index >= visibleMatchCount) {
+    // There are no longer that many visible matches.
+    // Select the last match if moving to previous match.
+    // Select the first currently visible match if moving to next match.
+    index = index > selectedVisibleMatchIndex_ ? 0 : visibleMatchCount-1;
+  }
+
+  let total_match_index = 0;
+  var visible_match_count = index;
+  // Select the |index|-th visible match.
+  while (total_match_index < __gCrWeb.findInPage.matches.length) {
+    if (__gCrWeb.findInPage.matches[total_match_index].visible()) {
+      visible_match_count--;
+      if (visible_match_count < 0) {
+        break;
+      }
+    }
+    total_match_index++;
+  }
+
+  selectedMatchIndex_ = total_match_index;
+  selectedVisibleMatchIndex_ = index;
 
   getCurrentSelectedMatch_().addSelectHighlight();
   scrollToCurrentlySelectedMatch_();
+
+  return {matches: visibleMatchCount, index: index};
 };
 
 /**
@@ -615,7 +683,7 @@ function scrollToCurrentlySelectedMatch_() {
     return;
   }
 
-  match.nodes[0].scrollIntoView();
+  match.nodes[0].scrollIntoView({block: "center", inline: "center"});
 };
 
 /**

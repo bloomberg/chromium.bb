@@ -8,9 +8,12 @@ namespace quic {
 
 QuicMemSliceSpanImpl::QuicMemSliceSpanImpl(
     const scoped_refptr<net::IOBuffer>* buffers,
-    const int* lengths,
+    const size_t* lengths,
     size_t num_buffers)
     : buffers_(buffers), lengths_(lengths), num_buffers_(num_buffers) {}
+
+QuicMemSliceSpanImpl::QuicMemSliceSpanImpl(QuicMemSliceImpl* slice)
+    : QuicMemSliceSpanImpl(slice->impl(), slice->impl_length(), 1) {}
 
 QuicMemSliceSpanImpl::QuicMemSliceSpanImpl(const QuicMemSliceSpanImpl& other) =
     default;

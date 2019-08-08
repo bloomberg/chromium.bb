@@ -141,10 +141,9 @@ static inline bool CollectChildrenAndRemoveFromOldParent(
     Node& node,
     NodeVector& nodes,
     ExceptionState& exception_state) {
-  if (node.IsDocumentFragment()) {
-    DocumentFragment& fragment = ToDocumentFragment(node);
-    GetChildNodes(fragment, nodes);
-    fragment.RemoveChildren();
+  if (auto* fragment = DynamicTo<DocumentFragment>(node)) {
+    GetChildNodes(*fragment, nodes);
+    fragment->RemoveChildren();
     return !nodes.IsEmpty();
   }
   nodes.push_back(&node);
@@ -168,10 +167,11 @@ ContainerNode::~ContainerNode() {
 
 DISABLE_CFI_PERF
 bool ContainerNode::IsChildTypeAllowed(const Node& child) const {
-  if (!child.IsDocumentFragment())
+  auto* child_fragment = DynamicTo<DocumentFragment>(child);
+  if (!child_fragment)
     return ChildTypeAllowed(child.getNodeType());
 
-  for (Node* node = ToDocumentFragment(child).firstChild(); node;
+  for (Node* node = child_fragment->firstChild(); node;
        node = node->nextSibling()) {
     if (!ChildTypeAllowed(node->getNodeType()))
       return false;
@@ -194,8 +194,8 @@ bool ContainerNode::IsHostIncludingInclusiveAncestorOfThis(
     child_contains_parent = new_child.ContainsIncludingHostElements(*this);
   } else {
     const Node& root = TreeRoot();
-    if (root.IsDocumentFragment() &&
-        ToDocumentFragment(root).IsTemplateContent()) {
+    auto* fragment = DynamicTo<DocumentFragment>(root);
+    if (fragment && fragment->IsTemplateContent()) {
       child_contains_parent = new_child.ContainsIncludingHostElements(*this);
     } else {
       child_contains_parent = new_child.contains(this);
@@ -633,8 +633,8 @@ void ContainerNode::WillRemoveChild(Node& child) {
   // e.g. mutation event listener can create a new range.
   GetDocument().NodeWillBeRemoved(child);
 
-  if (child.IsElementNode()) {
-    if (auto* context = ToElement(child).GetDisplayLockContext())
+  if (auto* child_element = DynamicTo<Element>(child)) {
+    if (auto* context = child_element->GetDisplayLockContext())
       context->NotifyWillDisconnect();
   }
 }
@@ -1022,7 +1022,9 @@ void ContainerNode::CloneChildNodesFrom(const ContainerNode& node) {
 LayoutRect ContainerNode::BoundingBox() const {
   if (!GetLayoutObject())
     return LayoutRect();
-  return GetLayoutObject()->AbsoluteBoundingBoxRectHandlingEmptyAnchor();
+  return GetLayoutObject()
+      ->AbsoluteBoundingBoxRectHandlingEmptyInline()
+      .ToLayoutRect();
 }
 
 // This is used by FrameSelection to denote when the active-state of the page
@@ -1042,8 +1044,9 @@ void ContainerNode::FocusStateChanged() {
       StyleChangeReasonForTracing::CreateWithExtraData(
           style_change_reason::kPseudoClass, style_change_extra_data::g_focus));
 
-  if (IsElementNode() && ToElement(this)->ChildrenOrSiblingsAffectedByFocus())
-    ToElement(this)->PseudoStateChanged(CSSSelector::kPseudoFocus);
+  auto* this_element = DynamicTo<Element>(this);
+  if (this_element && this_element->ChildrenOrSiblingsAffectedByFocus())
+    this_element->PseudoStateChanged(CSSSelector::kPseudoFocus);
 
   GetLayoutObject()->InvalidateIfControlStateChanged(kFocusControlState);
   FocusVisibleStateChanged();
@@ -1062,9 +1065,9 @@ void ContainerNode::FocusVisibleStateChanged() {
                           style_change_reason::kPseudoClass,
                           style_change_extra_data::g_focus_visible));
 
-  if (IsElementNode() &&
-      ToElement(this)->ChildrenOrSiblingsAffectedByFocusVisible())
-    ToElement(this)->PseudoStateChanged(CSSSelector::kPseudoFocusVisible);
+  auto* this_element = DynamicTo<Element>(this);
+  if (this_element && this_element->ChildrenOrSiblingsAffectedByFocusVisible())
+    this_element->PseudoStateChanged(CSSSelector::kPseudoFocusVisible);
 }
 
 void ContainerNode::FocusWithinStateChanged() {
@@ -1078,9 +1081,9 @@ void ContainerNode::FocusWithinStateChanged() {
                             style_change_reason::kPseudoClass,
                             style_change_extra_data::g_focus_within));
   }
-  if (IsElementNode() &&
-      ToElement(this)->ChildrenOrSiblingsAffectedByFocusWithin())
-    ToElement(this)->PseudoStateChanged(CSSSelector::kPseudoFocusWithin);
+  auto* this_element = DynamicTo<Element>(this);
+  if (this_element && this_element->ChildrenOrSiblingsAffectedByFocusWithin())
+    this_element->PseudoStateChanged(CSSSelector::kPseudoFocusWithin);
 }
 
 void ContainerNode::SetFocused(bool received, WebFocusType focus_type) {
@@ -1094,11 +1097,12 @@ void ContainerNode::SetFocused(bool received, WebFocusType focus_type) {
 
   // If this is an author shadow host and indirectly focused (has focused
   // element within its shadow root), update focus.
-  if (IsElementNode() && GetDocument().FocusedElement() &&
+  auto* this_element = DynamicTo<Element>(this);
+  if (this_element && GetDocument().FocusedElement() &&
       GetDocument().FocusedElement() != this) {
-    if (ToElement(this)->AuthorShadowRoot())
-      received =
-          received && ToElement(this)->AuthorShadowRoot()->delegatesFocus();
+    if (this_element->AuthorShadowRoot()) {
+      received = received && this_element->AuthorShadowRoot()->delegatesFocus();
+    }
   }
 
   if (IsFocused() == received)
@@ -1113,8 +1117,8 @@ void ContainerNode::SetFocused(bool received, WebFocusType focus_type) {
 
   // If :focus sets display: none, we lose focus but still need to recalc our
   // style.
-  if (IsElementNode() && ToElement(this)->ChildrenOrSiblingsAffectedByFocus()) {
-    ToElement(this)->PseudoStateChanged(CSSSelector::kPseudoFocus);
+  if (this_element && this_element->ChildrenOrSiblingsAffectedByFocus()) {
+    this_element->PseudoStateChanged(CSSSelector::kPseudoFocus);
   } else {
     SetNeedsStyleRecalc(kLocalStyleChange,
                         StyleChangeReasonForTracing::CreateWithExtraData(
@@ -1123,9 +1127,9 @@ void ContainerNode::SetFocused(bool received, WebFocusType focus_type) {
   }
 
   if (RuntimeEnabledFeatures::CSSFocusVisibleEnabled()) {
-    if (IsElementNode() &&
-        ToElement(this)->ChildrenOrSiblingsAffectedByFocusVisible()) {
-      ToElement(this)->PseudoStateChanged(CSSSelector::kPseudoFocusVisible);
+    if (this_element &&
+        this_element->ChildrenOrSiblingsAffectedByFocusVisible()) {
+      this_element->PseudoStateChanged(CSSSelector::kPseudoFocusVisible);
     } else {
       SetNeedsStyleRecalc(kLocalStyleChange,
                           StyleChangeReasonForTracing::CreateWithExtraData(
@@ -1134,9 +1138,8 @@ void ContainerNode::SetFocused(bool received, WebFocusType focus_type) {
     }
   }
 
-  if (IsElementNode() &&
-      ToElement(this)->ChildrenOrSiblingsAffectedByFocusWithin()) {
-    ToElement(this)->PseudoStateChanged(CSSSelector::kPseudoFocusWithin);
+  if (this_element && this_element->ChildrenOrSiblingsAffectedByFocusWithin()) {
+    this_element->PseudoStateChanged(CSSSelector::kPseudoFocusWithin);
   } else {
     SetNeedsStyleRecalc(kLocalStyleChange,
                         StyleChangeReasonForTracing::CreateWithExtraData(
@@ -1160,9 +1163,9 @@ void ContainerNode::SetActive(bool down) {
   Node::SetActive(down);
 
   if (!GetLayoutObject()) {
-    if (IsElementNode() &&
-        ToElement(this)->ChildrenOrSiblingsAffectedByActive()) {
-      ToElement(this)->PseudoStateChanged(CSSSelector::kPseudoActive);
+    auto* this_element = DynamicTo<Element>(this);
+    if (this_element && this_element->ChildrenOrSiblingsAffectedByActive()) {
+      this_element->PseudoStateChanged(CSSSelector::kPseudoActive);
     } else {
       SetNeedsStyleRecalc(kLocalStyleChange,
                           StyleChangeReasonForTracing::CreateWithExtraData(
@@ -1182,8 +1185,9 @@ void ContainerNode::SetActive(bool down) {
                             style_change_reason::kPseudoClass,
                             style_change_extra_data::g_active));
   }
-  if (IsElementNode() && ToElement(this)->ChildrenOrSiblingsAffectedByActive())
-    ToElement(this)->PseudoStateChanged(CSSSelector::kPseudoActive);
+  auto* this_element = DynamicTo<Element>(this);
+  if (this_element && this_element->ChildrenOrSiblingsAffectedByActive())
+    this_element->PseudoStateChanged(CSSSelector::kPseudoActive);
 
   GetLayoutObject()->InvalidateIfControlStateChanged(kPressedControlState);
 }
@@ -1199,9 +1203,9 @@ void ContainerNode::SetDragged(bool new_value) {
   if (!GetLayoutObject()) {
     if (new_value)
       return;
-    if (IsElementNode() &&
-        ToElement(this)->ChildrenOrSiblingsAffectedByDrag()) {
-      ToElement(this)->PseudoStateChanged(CSSSelector::kPseudoDrag);
+    auto* this_element = DynamicTo<Element>(this);
+    if (this_element && this_element->ChildrenOrSiblingsAffectedByDrag()) {
+      this_element->PseudoStateChanged(CSSSelector::kPseudoDrag);
 
     } else {
       SetNeedsStyleRecalc(kLocalStyleChange,
@@ -1222,8 +1226,9 @@ void ContainerNode::SetDragged(bool new_value) {
                             style_change_reason::kPseudoClass,
                             style_change_extra_data::g_drag));
   }
-  if (IsElementNode() && ToElement(this)->ChildrenOrSiblingsAffectedByDrag())
-    ToElement(this)->PseudoStateChanged(CSSSelector::kPseudoDrag);
+  auto* this_element = DynamicTo<Element>(this);
+  if (this_element && this_element->ChildrenOrSiblingsAffectedByDrag())
+    this_element->PseudoStateChanged(CSSSelector::kPseudoDrag);
 }
 
 void ContainerNode::SetHovered(bool over) {
@@ -1242,8 +1247,9 @@ void ContainerNode::SetHovered(bool over) {
                             style_change_reason::kPseudoClass,
                             style_change_extra_data::g_hover));
   }
-  if (IsElementNode() && ToElement(this)->ChildrenOrSiblingsAffectedByHover())
-    ToElement(this)->PseudoStateChanged(CSSSelector::kPseudoHover);
+  auto* this_element = DynamicTo<Element>(this);
+  if (this_element && this_element->ChildrenOrSiblingsAffectedByHover())
+    this_element->PseudoStateChanged(CSSSelector::kPseudoHover);
 
   if (LayoutObject* o = GetLayoutObject())
     o->InvalidateIfControlStateChanged(kHoverControlState);
@@ -1268,7 +1274,7 @@ Element* ContainerNode::QuerySelector(const AtomicString& selectors,
     return nullptr;
   Element* element = selector_query->QueryFirst(*this);
   if (element && element->GetDocument().InDOMNodeRemovedHandler()) {
-    if (NodeChildRemovalTracker::IsBeingRemoved(element))
+    if (NodeChildRemovalTracker::IsBeingRemoved(*element))
       GetDocument().CountDetachingNodeAccessInDOMNodeRemovedHandler();
   }
   return element;
@@ -1399,29 +1405,29 @@ void ContainerNode::RecalcDescendantStyles(const StyleRecalcChange change) {
   for (Node* child = firstChild(); child; child = child->nextSibling()) {
     if (!change.TraverseChild(*child))
       continue;
-    if (child->IsTextNode())
-      ToText(child)->RecalcTextStyle(change);
-    else if (child->IsElementNode())
-      ToElement(child)->RecalcStyle(change);
+    if (auto* child_text_node = DynamicTo<Text>(child))
+      child_text_node->RecalcTextStyle(change);
+
+    if (auto* child_element = DynamicTo<Element>(child))
+      child_element->RecalcStyle(change);
   }
 }
 
 void ContainerNode::RebuildLayoutTreeForChild(
     Node* child,
     WhitespaceAttacher& whitespace_attacher) {
-  if (child->IsTextNode()) {
-    Text* text_node = ToText(child);
+  if (auto* child_text_node = DynamicTo<Text>(child)) {
     if (child->NeedsReattachLayoutTree())
-      text_node->RebuildTextLayoutTree(whitespace_attacher);
+      child_text_node->RebuildTextLayoutTree(whitespace_attacher);
     else
-      whitespace_attacher.DidVisitText(text_node);
+      whitespace_attacher.DidVisitText(child_text_node);
     return;
   }
 
-  if (!child->IsElementNode())
+  auto* element = DynamicTo<Element>(child);
+  if (!element)
     return;
 
-  Element* element = ToElement(child);
   if (element->NeedsRebuildLayoutTree(whitespace_attacher))
     element->RebuildLayoutTree(whitespace_attacher);
   else
@@ -1454,7 +1460,7 @@ void ContainerNode::RebuildChildrenLayoutTrees(
     if (auto* slot = ToHTMLSlotElementOrNull(this)) {
       slot->RebuildDistributedChildrenLayoutTrees(whitespace_attacher);
     } else {
-      ToV0InsertionPoint(this)->RebuildDistributedChildrenLayoutTrees(
+      To<V0InsertionPoint>(this)->RebuildDistributedChildrenLayoutTrees(
           whitespace_attacher);
     }
     RebuildNonDistributedChildren();
@@ -1481,14 +1487,14 @@ void ContainerNode::CheckForSiblingStyleChanges(SiblingCheckType change_type,
   if (!HasRestyleFlag(DynamicRestyleFlags::kChildrenAffectedByStructuralRules))
     return;
 
-  Element* element_after_change =
-      !node_after_change || node_after_change->IsElementNode()
-          ? ToElement(node_after_change)
-          : ElementTraversal::NextSibling(*node_after_change);
-  Element* element_before_change =
-      !node_before_change || node_before_change->IsElementNode()
-          ? ToElement(node_before_change)
-          : ElementTraversal::PreviousSibling(*node_before_change);
+  auto* element_after_change = DynamicTo<Element>(node_after_change);
+  if (node_after_change && !element_after_change)
+    element_after_change = ElementTraversal::NextSibling(*node_after_change);
+  auto* element_before_change = DynamicTo<Element>(node_before_change);
+  if (node_before_change && !element_before_change) {
+    element_before_change =
+        ElementTraversal::PreviousSibling(*node_before_change);
+  }
 
   // TODO(futhark@chromium.org): move this code into StyleEngine and collect the
   // various invalidation sets into a single InvalidationLists object and

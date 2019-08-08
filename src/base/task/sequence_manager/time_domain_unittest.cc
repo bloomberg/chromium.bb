@@ -392,13 +392,15 @@ TEST_F(TimeDomainTest, HighResolutionWakeUps) {
 }
 
 TEST_F(TimeDomainTest, SetNextWakeUpForQueueInThePast) {
-  constexpr auto kType = MessageLoop::TYPE_DEFAULT;
+  constexpr auto kType = MessagePump::Type::DEFAULT;
   constexpr auto kDelay = TimeDelta::FromMilliseconds(20);
   SimpleTestTickClock clock;
   auto sequence_manager = sequence_manager::CreateUnboundSequenceManager(
-      SequenceManager::Settings{.message_loop_type = kType, .clock = &clock});
-  sequence_manager->BindToMessagePump(
-      MessageLoop::CreateMessagePumpForType(kType));
+      SequenceManager::Settings::Builder()
+          .SetMessagePumpType(kType)
+          .SetTickClock(&clock)
+          .Build());
+  sequence_manager->BindToMessagePump(MessagePump::Create(kType));
   auto high_prio_queue =
       sequence_manager->CreateTaskQueue(TaskQueue::Spec("high_prio_queue"));
   high_prio_queue->SetQueuePriority(TaskQueue::kHighestPriority);

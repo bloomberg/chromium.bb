@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_WIN)
@@ -36,28 +35,23 @@ const char kUserDataDir[] = "user-data-dir";
 
 }  // namespace
 
-FileSystemApp::FileSystemApp(service_manager::mojom::ServiceRequest request)
-    : service_binding_(this, std::move(request)), lock_table_(new LockTable) {
-  registry_.AddInterface<mojom::FileSystem>(
-      base::Bind(&FileSystemApp::Create, base::Unretained(this)));
-}
+FileSystemApp::FileSystemApp(
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver)
+    : service_binding_(this, std::move(receiver)),
+      lock_table_(base::MakeRefCounted<LockTable>()) {}
 
 FileSystemApp::~FileSystemApp() = default;
 
-void FileSystemApp::OnBindInterface(
-    const service_manager::BindSourceInfo& source_info,
+void FileSystemApp::OnConnect(
+    const service_manager::ConnectSourceInfo& source_info,
     const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle interface_pipe) {
-  registry_.BindInterface(interface_name, std::move(interface_pipe),
-                          source_info);
-}
-
-void FileSystemApp::Create(mojom::FileSystemRequest request,
-                           const service_manager::BindSourceInfo& source_info) {
-  mojo::MakeStrongBinding(
-      std::make_unique<FileSystemImpl>(source_info.identity, GetUserDataDir(),
-                                       lock_table_),
-      std::move(request));
+    mojo::ScopedMessagePipeHandle receiver_pipe) {
+  if (interface_name == mojom::FileSystem::Name_) {
+    file_systems_.Add(
+        std::make_unique<FileSystemImpl>(source_info.identity, GetUserDataDir(),
+                                         lock_table_),
+        mojo::PendingReceiver<mojom::FileSystem>(std::move(receiver_pipe)));
+  }
 }
 
 // static

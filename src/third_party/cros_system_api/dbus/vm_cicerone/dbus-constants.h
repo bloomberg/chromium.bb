@@ -50,6 +50,7 @@ const char kLxdContainerStartingSignal[] = "LxdContainerStarting";
 const char kTremplinStartedSignal[] = "TremplinStarted";
 const char kExportLxdContainerProgressSignal[] = "ExportLxdContainerProgress";
 const char kImportLxdContainerProgressSignal[] = "ImportLxdContainerProgress";
+const char kPendingAppListUpdatesSignal[] = "PendingAppListUpdates";
 
 }  // namespace cicerone
 }  // namespace vm_tools

@@ -3,10 +3,12 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/animation/scroll_timeline_util.h"
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/html/html_div_element.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -68,7 +70,7 @@ TEST_F(ScrollTimelineUtilTest, ToCompositorScrollTimelineNullParameter) {
 TEST_F(ScrollTimelineUtilTest,
        ToCompositorScrollTimelineDocumentTimelineParameter) {
   DocumentTimeline* timeline =
-      DocumentTimeline::Create(Document::CreateForTest());
+      DocumentTimeline::Create(MakeGarbageCollected<Document>());
   EXPECT_EQ(ToCompositorScrollTimeline(timeline), nullptr);
 }
 
@@ -90,7 +92,7 @@ TEST_F(ScrollTimelineUtilTest, ToCompositorScrollTimelineNullScrollSource) {
 }
 
 TEST_F(ScrollTimelineUtilTest, ToCompositorScrollTimelineNullLayoutBox) {
-  Element* div = HTMLDivElement::Create(GetDocument());
+  auto* div = MakeGarbageCollected<HTMLDivElement>(GetDocument());
   ASSERT_FALSE(div->GetLayoutBox());
 
   ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
@@ -202,7 +204,7 @@ TEST_F(ScrollTimelineUtilTest, GetCompositorScrollElementIdNullNode) {
 }
 
 TEST_F(ScrollTimelineUtilTest, GetCompositorScrollElementIdNullLayoutObject) {
-  Element* div = HTMLDivElement::Create(GetDocument());
+  auto* div = MakeGarbageCollected<HTMLDivElement>(GetDocument());
   ASSERT_FALSE(div->GetLayoutObject());
   EXPECT_EQ(GetCompositorScrollElementId(nullptr), base::nullopt);
 }

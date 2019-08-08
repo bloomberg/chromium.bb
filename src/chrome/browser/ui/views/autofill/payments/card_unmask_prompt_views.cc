@@ -234,9 +234,9 @@ void CardUnmaskPromptViews::AddedToWidget() {
       std::make_unique<TitleWithIconAndSeparatorView>(GetWindowTitle()));
 }
 
-void CardUnmaskPromptViews::OnNativeThemeChanged(const ui::NativeTheme* theme) {
-  SkColor bg_color =
-      theme->GetSystemColor(ui::NativeTheme::kColorId_DialogBackground);
+void CardUnmaskPromptViews::OnThemeChanged() {
+  SkColor bg_color = GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_DialogBackground);
   overlay_->SetBackground(views::CreateSolidBackground(bg_color));
   if (overlay_label_)
     overlay_label_->SetBackgroundColor(bg_color);
@@ -281,7 +281,7 @@ bool CardUnmaskPromptViews::IsDialogButtonEnabled(
 
   DCHECK_EQ(ui::DIALOG_BUTTON_OK, button);
 
-  return cvc_input_->enabled() &&
+  return cvc_input_->GetEnabled() &&
          controller_->InputCvcIsValid(cvc_input_->text()) &&
          ExpirationDateIsValid();
 }
@@ -304,13 +304,13 @@ bool CardUnmaskPromptViews::Accept() {
 
   controller_->OnUnmaskResponse(
       cvc_input_->text(),
-      month_input_->visible()
-          ? month_input_->GetTextForRow(month_input_->selected_index())
+      month_input_->GetVisible()
+          ? month_input_->GetTextForRow(month_input_->GetSelectedIndex())
           : base::string16(),
-      year_input_->visible()
-          ? year_input_->GetTextForRow(year_input_->selected_index())
+      year_input_->GetVisible()
+          ? year_input_->GetTextForRow(year_input_->GetSelectedIndex())
           : base::string16(),
-      storage_checkbox_ ? storage_checkbox_->checked() : false);
+      storage_checkbox_ ? storage_checkbox_->GetChecked() : false);
   return false;
 }
 
@@ -325,14 +325,14 @@ void CardUnmaskPromptViews::ContentsChanged(
 
 void CardUnmaskPromptViews::OnPerformAction(views::Combobox* combobox) {
   if (ExpirationDateIsValid()) {
-    if (month_input_->invalid()) {
+    if (month_input_->GetInvalid()) {
       month_input_->SetInvalid(false);
       year_input_->SetInvalid(false);
       SetRetriableErrorMessage(base::string16());
     }
-  } else if (month_input_->selected_index() !=
+  } else if (month_input_->GetSelectedIndex() !=
                  month_combobox_model_.GetDefaultIndex() &&
-             year_input_->selected_index() !=
+             year_input_->GetSelectedIndex() !=
                  year_combobox_model_.GetDefaultIndex()) {
     month_input_->SetInvalid(true);
     year_input_->SetInvalid(true);
@@ -420,7 +420,7 @@ void CardUnmaskPromptViews::InitIfNecessary() {
           provider->GetDistanceMetric(
               views::DISTANCE_RELATED_LABEL_HORIZONTAL)));
   temporary_error_layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
 
   const SkColor warning_text_color = views::style::GetColor(
       *instructions_, ChromeTextContext::CONTEXT_BODY_TEXT_SMALL, STYLE_RED);
@@ -463,8 +463,8 @@ bool CardUnmaskPromptViews::ExpirationDateIsValid() const {
     return true;
 
   return controller_->InputExpirationIsValid(
-      month_input_->GetTextForRow(month_input_->selected_index()),
-      year_input_->GetTextForRow(year_input_->selected_index()));
+      month_input_->GetTextForRow(month_input_->GetSelectedIndex()),
+      year_input_->GetTextForRow(year_input_->GetSelectedIndex()));
 }
 
 void CardUnmaskPromptViews::ClosePrompt() {

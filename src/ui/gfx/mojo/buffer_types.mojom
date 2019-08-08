@@ -5,6 +5,7 @@
 module gfx.mojom;
 
 import "mojo/public/mojom/base/shared_memory.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
 
 // gfx::BufferFormat
 enum BufferFormat {
@@ -23,8 +24,6 @@ enum BufferFormat {
   YVU_420,
   YUV_420_BIPLANAR,
   UYVY_422,
-
-  LAST = UYVY_422
 };
 
 // gfx::BufferUsage
@@ -36,8 +35,6 @@ enum BufferUsage {
   SCANOUT_CPU_READ_WRITE,
   SCANOUT_VDA_WRITE,
   GPU_READ_CPU_READ_WRITE,
-
-  LAST = GPU_READ_CPU_READ_WRITE
 };
 
 struct BufferUsageAndFormat {
@@ -56,7 +53,6 @@ struct NativePixmapPlane {
   uint32 stride;
   int32 offset;
   uint64 size;
-  uint64 modifier;
 
   // A platform-specific handle the underlying memory object.
   handle buffer_handle;
@@ -66,6 +62,12 @@ struct NativePixmapPlane {
 [EnableIf=supports_native_pixmap]
 struct NativePixmapHandle {
   array<NativePixmapPlane> planes;
+  uint64 modifier;
+
+  [EnableIf=is_fuchsia]
+  mojo_base.mojom.UnguessableToken? buffer_collection_id;
+  [EnableIf=is_fuchsia]
+  uint32 buffer_index;
 };
 
 [EnableIf=is_android]

@@ -270,6 +270,8 @@ std::unique_ptr<ProxyBypassRules::Rule> ParseRule(
 
 }  // namespace
 
+constexpr char net::ProxyBypassRules::kBypassListDelimeter[];
+
 ProxyBypassRules::Rule::Rule() = default;
 
 ProxyBypassRules::Rule::~Rule() = default;
@@ -403,7 +405,7 @@ std::string ProxyBypassRules::ToString() const {
   std::string result;
   for (auto rule(rules_.begin()); rule != rules_.end(); ++rule) {
     result += (*rule)->ToString();
-    result += ";";
+    result += kBypassListDelimeter;
   }
   return result;
 }

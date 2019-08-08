@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.autofill_assistant;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayCoordinator;
+import org.chromium.chrome.browser.help.HelpAndFeedback;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 
 /**
@@ -21,6 +23,9 @@ class AssistantCoordinator {
         // TODO(crbug.com/806868): Move onboarding and snackbar out of this class and remove the
         // delegate.
     }
+
+    private static final String FEEDBACK_CATEGORY_TAG =
+            "com.android.chrome.USER_INITIATED_FEEDBACK_REPORT_AUTOFILL_ASSISTANT";
 
     private final ChromeActivity mActivity;
     private final Delegate mDelegate;
@@ -84,5 +89,14 @@ class AssistantCoordinator {
 
     public AssistantBottomBarCoordinator getBottomBarCoordinator() {
         return mBottomBarCoordinator;
+    }
+
+    /**
+     * Show the Chrome feedback form.
+     */
+    public void showFeedback(String debugContext) {
+        HelpAndFeedback.getInstance(mActivity).showFeedback(mActivity, Profile.getLastUsedProfile(),
+                mActivity.getActivityTab().getUrl(), FEEDBACK_CATEGORY_TAG,
+                FeedbackContext.buildContextString(mActivity, debugContext, 4));
     }
 }

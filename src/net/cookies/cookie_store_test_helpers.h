@@ -91,8 +91,6 @@ class DelayedCookieMonster : public CookieStore {
   void SetCookieableSchemes(const std::vector<std::string>& schemes,
                             SetCookieableSchemesCallback callback) override;
 
-  bool IsEphemeral() override;
-
  private:
   // Be called immediately from CookieMonster.
 

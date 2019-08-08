@@ -32,10 +32,11 @@ void WindowOperatorTable::RegisterTable(sqlite3* db,
   Table::Register<WindowOperatorTable>(db, storage, "window", true);
 }
 
-base::Optional<Table::Schema> WindowOperatorTable::Init(int,
-                                                        const char* const*) {
+util::Status WindowOperatorTable::Init(int,
+                                       const char* const*,
+                                       Schema* schema) {
   const bool kHidden = true;
-  return Schema(
+  *schema = Schema(
       {
           // These are the operator columns:
           Table::Column(Column::kRowId, "rowid", ColumnType::kLong, kHidden),
@@ -51,15 +52,11 @@ base::Optional<Table::Schema> WindowOperatorTable::Init(int,
           Table::Column(Column::kQuantumTs, "quantum_ts", ColumnType::kLong),
       },
       {Column::kRowId});
+  return util::OkStatus();
 }
 
-std::unique_ptr<Table::Cursor> WindowOperatorTable::CreateCursor(
-    const QueryConstraints& qc,
-    sqlite3_value** argv) {
-  int64_t window_end = window_start_ + window_dur_;
-  int64_t step_size = quantum_ == 0 ? window_dur_ : quantum_;
-  return std::unique_ptr<Table::Cursor>(
-      new Cursor(this, window_start_, window_end, step_size, qc, argv));
+std::unique_ptr<Table::Cursor> WindowOperatorTable::CreateCursor() {
+  return std::unique_ptr<Table::Cursor>(new Cursor(this));
 }
 
 int WindowOperatorTable::BestIndex(const QueryConstraints& qc,
@@ -97,16 +94,16 @@ int WindowOperatorTable::Update(int argc,
   return SQLITE_OK;
 }
 
-WindowOperatorTable::Cursor::Cursor(const WindowOperatorTable* table,
-                                    int64_t window_start,
-                                    int64_t window_end,
-                                    int64_t step_size,
-                                    const QueryConstraints& qc,
-                                    sqlite3_value** argv)
-    : window_start_(window_start),
-      window_end_(window_end),
-      step_size_(step_size),
-      table_(table) {
+WindowOperatorTable::Cursor::Cursor(WindowOperatorTable* table)
+    : Table::Cursor(table), table_(table) {}
+
+int WindowOperatorTable::Cursor::Filter(const QueryConstraints& qc,
+                                        sqlite3_value** argv) {
+  *this = Cursor(table_);
+  window_start_ = table_->window_start_;
+  window_end_ = table_->window_start_ + table_->window_dur_;
+  step_size_ = table_->quantum_ == 0 ? table_->window_dur_ : table_->quantum_;
+
   current_ts_ = window_start_;
 
   // Set return first if there is a equals constraint on the row id asking to
@@ -120,6 +117,7 @@ WindowOperatorTable::Cursor::Cursor(const WindowOperatorTable* table,
   } else {
     filter_type_ = FilterType::kReturnAll;
   }
+  return SQLITE_OK;
 }
 
 int WindowOperatorTable::Cursor::Column(sqlite3_context* context, int N) {

@@ -46,9 +46,6 @@ enum OverviewAnimationType {
   // arrow keys.
   OVERVIEW_ANIMATION_SELECTION_WINDOW_SHADOW,
   OVERVIEW_ANIMATION_SELECTION_WINDOW,
-  // Used to animate the overview items header visibility.
-  OVERVIEW_ANIMATION_OVERVIEW_TITLE_FADE_IN,
-  OVERVIEW_ANIMATION_OVERVIEW_TITLE_FADE_OUT,
 };
 
 }  // namespace ash

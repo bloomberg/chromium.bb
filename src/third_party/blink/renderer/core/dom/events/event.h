@@ -344,8 +344,6 @@ class CORE_EXPORT Event : public ScriptWrappable {
   // https://dom.spec.whatwg.org/#concept-event-listener-inner-invoke
   unsigned legacy_did_listeners_throw_flag_ : 1;
 
-  // This fields are effective only when
-  // CallCaptureListenersAtCapturePhaseAtShadowHosts runtime flag is enabled.
   unsigned fire_only_capture_listeners_at_target_ : 1;
   unsigned fire_only_non_capture_listeners_at_target_ : 1;
 

@@ -29,7 +29,6 @@ class SwapchainKHR : public Object<SwapchainKHR, VkSwapchainKHR>
 {
 public:
 	SwapchainKHR(const VkSwapchainCreateInfoKHR* pCreateInfo, void* mem);
-	~SwapchainKHR() = delete;
 
 	void destroy(const VkAllocationCallbacks* pAllocator);
 
@@ -56,7 +55,7 @@ private:
 
 static inline SwapchainKHR* Cast(VkSwapchainKHR object)
 {
-	return reinterpret_cast<SwapchainKHR*>(object);
+	return reinterpret_cast<SwapchainKHR*>(object.get());
 }
 
 }

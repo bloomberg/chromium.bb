@@ -4,6 +4,7 @@
 
 #include "ash/wm/window_animations.h"
 
+#include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_animation_types.h"
 #include "ash/shell.h"
@@ -20,7 +21,6 @@
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/keyboard/public/keyboard_switches.h"
 
 using aura::Window;
 using ui::Layer;

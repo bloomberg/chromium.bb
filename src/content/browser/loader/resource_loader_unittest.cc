@@ -1773,4 +1773,37 @@ TEST_F(ResourceLoaderTest, MultiplePauseResumeReadingBodyFromNet) {
   StopMonitorBodyReadFromNetBeforePausedHistogram();
 }
 
+// Tests that AuthChallengeInfo is present on a request that requests
+// authentication.
+TEST_F(ResourceLoaderTest, AuthChallengeInfo) {
+  net::EmbeddedTestServer server;
+  server.AddDefaultHandlers(base::FilePath());
+  ASSERT_TRUE(server.Start());
+  SetUpResourceLoaderForUrl(server.GetURL("/auth-basic"));
+  loader_->StartRequest();
+  raw_ptr_resource_handler_->WaitUntilResponseComplete();
+  const base::Optional<net::AuthChallengeInfo>& auth_info =
+      raw_ptr_resource_handler_->resource_response()->head.auth_challenge_info;
+  ASSERT_TRUE(auth_info.has_value());
+  EXPECT_FALSE(auth_info->is_proxy);
+  EXPECT_EQ(url::Origin::Create(server.GetURL("/")), auth_info->challenger);
+  EXPECT_EQ("basic", auth_info->scheme);
+  EXPECT_EQ("testrealm", auth_info->realm);
+  EXPECT_EQ("Basic realm=\"testrealm\"", auth_info->challenge);
+  EXPECT_EQ("/auth-basic", auth_info->path);
+}
+
+// Tests that no AuthChallengeInfo is present on a request that doesn't request
+// authentication.
+TEST_F(ResourceLoaderTest, NoAuthChallengeInfo) {
+  net::EmbeddedTestServer server;
+  server.AddDefaultHandlers(base::FilePath());
+  ASSERT_TRUE(server.Start());
+  SetUpResourceLoaderForUrl(server.GetURL("/"));
+  loader_->StartRequest();
+  raw_ptr_resource_handler_->WaitUntilResponseComplete();
+  EXPECT_FALSE(raw_ptr_resource_handler_->resource_response()
+                   ->head.auth_challenge_info.has_value());
+}
+
 }  // namespace content

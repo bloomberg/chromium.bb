@@ -193,7 +193,7 @@ class CrOSOAuthDelegateTest : public testing::Test {
   }
 
   void AddSuccessfulOAuthTokenResponse() {
-    client_->test_url_loader_factory()->AddResponse(
+    client_->GetTestURLLoaderFactory()->AddResponse(
         GaiaUrls::GetInstance()->oauth2_token_url().spec(),
         GetValidTokenResponse("token", 3600));
   }

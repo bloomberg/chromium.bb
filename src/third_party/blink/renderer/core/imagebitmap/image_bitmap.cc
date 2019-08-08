@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/memory/scoped_refptr.h"
 #include "base/numerics/checked_math.h"
@@ -958,11 +959,12 @@ void ImageBitmap::RasterizeImageOnBackgroundThread(
   }
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       Thread::MainThread()->GetTaskRunner();
-  PostCrossThreadTask(*task_runner, FROM_HERE,
-                      CrossThreadBind(&ResolvePromiseOnOriginalThread,
-                                      WrapCrossThreadPersistent(resolver),
-                                      std::move(skia_image), origin_clean,
-                                      WTF::Passed(std::move(parsed_options))));
+  PostCrossThreadTask(
+      *task_runner, FROM_HERE,
+      CrossThreadBindOnce(&ResolvePromiseOnOriginalThread,
+                          WrapCrossThreadPersistent(resolver),
+                          std::move(skia_image), origin_clean,
+                          WTF::Passed(std::move(parsed_options))));
 }
 
 ScriptPromise ImageBitmap::CreateAsync(ImageElementBase* image,
@@ -977,9 +979,9 @@ ScriptPromise ImageBitmap::CreateAsync(ImageElementBase* image,
   ParsedOptions parsed_options =
       ParseOptions(options, crop_rect, image->BitmapSourceSize());
   if (DstBufferSizeHasOverflow(parsed_options)) {
-    resolver->Reject(
-        DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                             "The ImageBitmap could not be allocated."));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError,
+        "The ImageBitmap could not be allocated."));
     return promise;
   }
 
@@ -996,9 +998,9 @@ ScriptPromise ImageBitmap::CreateAsync(ImageElementBase* image,
       bitmap->BitmapImage()->SetOriginClean(!image->WouldTaintOrigin());
       resolver->Resolve(bitmap);
     } else {
-      resolver->Reject(
-          DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                               "The ImageBitmap could not be allocated."));
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kInvalidStateError,
+          "The ImageBitmap could not be allocated."));
     }
     return promise;
   }
@@ -1013,11 +1015,11 @@ ScriptPromise ImageBitmap::CreateAsync(ImageElementBase* image,
       std::make_unique<ParsedOptions>(parsed_options);
   worker_pool::PostTask(
       FROM_HERE,
-      CrossThreadBind(&RasterizeImageOnBackgroundThread,
-                      WrapCrossThreadPersistent(resolver),
-                      std::move(paint_record), draw_dst_rect,
-                      !image->WouldTaintOrigin(),
-                      WTF::Passed(std::move(passed_parsed_options))));
+      CrossThreadBindOnce(&RasterizeImageOnBackgroundThread,
+                          WrapCrossThreadPersistent(resolver),
+                          std::move(paint_record), draw_dst_rect,
+                          !image->WouldTaintOrigin(),
+                          WTF::Passed(std::move(passed_parsed_options))));
   return promise;
 }
 

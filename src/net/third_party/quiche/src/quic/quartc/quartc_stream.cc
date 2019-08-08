@@ -25,7 +25,7 @@ QuartcStream::QuartcStream(QuicStreamId id, QuicSession* session)
 }
 
 QuartcStream::QuartcStream(PendingStream pending)
-    : QuicStream(std::move(pending), BIDIRECTIONAL) {
+    : QuicStream(std::move(pending), BIDIRECTIONAL, /*is_static=*/false) {
   sequencer()->set_level_triggered(true);
 }
 
@@ -161,8 +161,8 @@ void QuartcStream::FinishWriting() {
 
 void QuartcStream::SetDelegate(Delegate* delegate) {
   if (delegate_) {
-    LOG(WARNING) << "The delegate for Stream " << id()
-                 << " has already been set.";
+    QUIC_LOG(WARNING) << "The delegate for Stream " << id()
+                      << " has already been set.";
   }
   delegate_ = delegate;
   DCHECK(delegate_);

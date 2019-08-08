@@ -9,9 +9,12 @@
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/keyboard/ash_keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_util.h"
+#include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -26,9 +29,6 @@
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/input_device_manager.h"
 #include "ui/events/devices/touchscreen_device.h"
-#include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_util.h"
-#include "ui/keyboard/public/keyboard_switches.h"
 
 namespace ash {
 namespace {

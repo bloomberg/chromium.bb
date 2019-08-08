@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/css/style_rule.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -20,8 +21,8 @@ class CSSPropertyValueSetTest : public PageTestBase {
 };
 
 TEST_F(CSSPropertyValueSetTest, MergeAndOverrideOnConflictCustomProperty) {
-  CSSParserContext* context = CSSParserContext::Create(GetDocument());
-  StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
+  auto* context = MakeGarbageCollected<CSSParserContext>(GetDocument());
+  auto* style_sheet = MakeGarbageCollected<StyleSheetContents>(context);
 
   String sheet_text = R"CSS(
     #first {

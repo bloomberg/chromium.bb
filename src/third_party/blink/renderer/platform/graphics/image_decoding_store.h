@@ -29,8 +29,6 @@
 #include <memory>
 #include <utility>
 
-#include "SkSize.h"
-#include "SkTypes.h"
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ptr_util.h"
@@ -43,6 +41,8 @@
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "third_party/skia/include/core/SkSize.h"
+#include "third_party/skia/include/core/SkTypes.h"
 
 namespace blink {
 

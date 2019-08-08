@@ -12,18 +12,22 @@
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "ui/gfx/geometry/size_f.h"
 
+namespace gfx {
+class GpuFence;
+}  // namespace gfx
+
 namespace gpu {
 struct MailboxHolder;
+struct SyncToken;
 }  // namespace gpu
 
 namespace vr {
 class MailboxToSurfaceBridge;
+class WebXrPresentationState;
+struct WebXrSharedBuffer;
 }  // namespace vr
 
 namespace device {
-
-struct SharedFrameBuffer;
-struct SharedFrameBufferSwapChain;
 
 // This class copies the camera texture to a shared image and returns a mailbox
 // holder which is suitable for mojo transport to the Renderer.
@@ -34,7 +38,7 @@ class ArImageTransport {
   virtual ~ArImageTransport();
 
   // Initialize() must be called on a valid GL thread.
-  virtual bool Initialize();
+  virtual bool Initialize(vr::WebXrPresentationState* webxr);
 
   virtual GLuint GetCameraTextureId();
 
@@ -43,22 +47,32 @@ class ArImageTransport {
   // a gpu::MailboxHolder with that texture copied to a shared buffer.
   virtual gpu::MailboxHolder TransferFrame(const gfx::Size& frame_size,
                                            const gfx::Transform& uv_transform);
+  virtual void CreateGpuFenceForSyncToken(
+      const gpu::SyncToken& sync_token,
+      base::OnceCallback<void(std::unique_ptr<gfx::GpuFence>)>);
+  virtual void CopyCameraImageToFramebuffer(const gfx::Size& frame_size,
+                                            const gfx::Transform& uv_transform);
+  virtual void CopyDrawnImageToFramebuffer(const gfx::Size& frame_size,
+                                           const gfx::Transform& uv_transform);
+  virtual void CopyTextureToFramebuffer(GLuint texture,
+                                        const gfx::Size& frame_size,
+                                        const gfx::Transform& uv_transform);
+  virtual void WaitSyncToken(const gpu::SyncToken& sync_token);
 
  private:
-  void SetupHardwareBuffers();
-  void ResizeSharedBuffer(const gfx::Size& size, SharedFrameBuffer* buffer);
+  std::unique_ptr<vr::WebXrSharedBuffer> CreateBuffer();
+  void ResizeSharedBuffer(const gfx::Size& size, vr::WebXrSharedBuffer* buffer);
   bool IsOnGlThread() const;
   std::unique_ptr<ArRenderer> ar_renderer_;
   // samplerExternalOES texture data for WebXR content image.
   GLuint camera_texture_id_arcore_ = 0;
   GLuint camera_fbo_ = 0;
-  GLuint transfer_fbo_ = 0;
-  bool transfer_fbo_completeness_checked_ = false;
 
   scoped_refptr<base::SingleThreadTaskRunner> gl_thread_task_runner_;
 
   std::unique_ptr<vr::MailboxToSurfaceBridge> mailbox_bridge_;
-  std::unique_ptr<SharedFrameBufferSwapChain> swap_chain_;
+
+  vr::WebXrPresentationState* webxr_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ArImageTransport);
 };

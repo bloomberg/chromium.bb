@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "content/browser/serial/serial_test_utils.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_switches.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
 #include "services/device/public/cpp/test/fake_serial_port_manager.h"
@@ -27,6 +29,8 @@ class SerialTest : public RenderViewHostImplTestHarness {
   ~SerialTest() override = default;
 
   void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
     original_client_ = SetBrowserClientForTesting(&test_client_);
     RenderViewHostTestHarness::SetUp();
   }

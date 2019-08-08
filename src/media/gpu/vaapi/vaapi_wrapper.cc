@@ -31,6 +31,7 @@
 #include "build/build_config.h"
 
 #include "media/base/media_switches.h"
+#include "media/base/video_frame.h"
 #include "media/base/video_types.h"
 
 // Auto-generated for dlopen libva libraries
@@ -103,23 +104,6 @@ uint32_t BufferFormatToVAFourCC(gfx::BufferFormat fmt) {
       return VA_FOURCC_YV12;
     case gfx::BufferFormat::YUV_420_BIPLANAR:
       return VA_FOURCC_NV12;
-    default:
-      NOTREACHED();
-      return 0;
-  }
-}
-
-uint32_t BufferFormatToVARTFormat(gfx::BufferFormat fmt) {
-  switch (fmt) {
-    case gfx::BufferFormat::UYVY_422:
-      return VA_RT_FORMAT_YUV422;
-    case gfx::BufferFormat::BGRX_8888:
-    case gfx::BufferFormat::BGRA_8888:
-    case gfx::BufferFormat::RGBX_8888:
-      return VA_RT_FORMAT_RGB32;
-    case gfx::BufferFormat::YVU_420:
-    case gfx::BufferFormat::YUV_420_BIPLANAR:
-      return VA_RT_FORMAT_YUV420;
     default:
       NOTREACHED();
       return 0;
@@ -1206,6 +1190,24 @@ VaapiWrapper::GetSupportedImageFormatsForTesting() {
   return VASupportedImageFormats::Get().GetSupportedImageFormats();
 }
 
+// static
+uint32_t VaapiWrapper::BufferFormatToVARTFormat(gfx::BufferFormat fmt) {
+  switch (fmt) {
+    case gfx::BufferFormat::UYVY_422:
+      return VA_RT_FORMAT_YUV422;
+    case gfx::BufferFormat::BGRX_8888:
+    case gfx::BufferFormat::BGRA_8888:
+    case gfx::BufferFormat::RGBX_8888:
+      return VA_RT_FORMAT_RGB32;
+    case gfx::BufferFormat::YVU_420:
+    case gfx::BufferFormat::YUV_420_BIPLANAR:
+      return VA_RT_FORMAT_YUV420;
+    default:
+      NOTREACHED();
+      return 0;
+  }
+}
+
 bool VaapiWrapper::CreateContextAndSurfaces(
     unsigned int va_format,
     const gfx::Size& size,
@@ -1287,19 +1289,16 @@ void VaapiWrapper::DestroyContextAndSurfaces() {
 
 scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForPixmap(
     const scoped_refptr<gfx::NativePixmap>& pixmap) {
-  // Create a VASurface for a NativePixmap by importing the underlying dmabufs.
-  VASurfaceAttribExternalBuffers va_attrib_extbuf;
-  memset(&va_attrib_extbuf, 0, sizeof(va_attrib_extbuf));
+  const gfx::BufferFormat buffer_format = pixmap->GetBufferFormat();
 
-  va_attrib_extbuf.pixel_format =
-      BufferFormatToVAFourCC(pixmap->GetBufferFormat());
-  gfx::Size size = pixmap->GetBufferSize();
+  // Create a VASurface for a NativePixmap by importing the underlying dmabufs.
+  const gfx::Size size = pixmap->GetBufferSize();
+  VASurfaceAttribExternalBuffers va_attrib_extbuf{};
+  va_attrib_extbuf.pixel_format = BufferFormatToVAFourCC(buffer_format);
   va_attrib_extbuf.width = size.width();
   va_attrib_extbuf.height = size.height();
 
-  size_t num_planes =
-      gfx::NumberOfPlanesForBufferFormat(pixmap->GetBufferFormat());
-  std::vector<uintptr_t> fds(num_planes);
+  const size_t num_planes = gfx::NumberOfPlanesForBufferFormat(buffer_format);
   for (size_t i = 0; i < num_planes; ++i) {
     va_attrib_extbuf.pitches[i] = pixmap->GetDmaBufPitch(i);
     va_attrib_extbuf.offsets[i] = pixmap->GetDmaBufOffset(i);
@@ -1318,8 +1317,8 @@ scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForPixmap(
   va_attrib_extbuf.buffers = &fd;
   va_attrib_extbuf.num_buffers = 1u;
 
-  va_attrib_extbuf.flags = 0;
-  va_attrib_extbuf.private_data = NULL;
+  DCHECK_EQ(va_attrib_extbuf.flags, 0u);
+  DCHECK_EQ(va_attrib_extbuf.private_data, nullptr);
 
   std::vector<VASurfaceAttrib> va_attribs(2);
 
@@ -1333,8 +1332,7 @@ scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForPixmap(
   va_attribs[1].value.type = VAGenericValueTypePointer;
   va_attribs[1].value.value.p = &va_attrib_extbuf;
 
-  const unsigned int va_format =
-      BufferFormatToVARTFormat(pixmap->GetBufferFormat());
+  const unsigned int va_format = BufferFormatToVARTFormat(buffer_format);
 
   VASurfaceID va_surface_id = VA_INVALID_ID;
   {
@@ -1345,11 +1343,8 @@ scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForPixmap(
     VA_SUCCESS_OR_RETURN(va_res, "Failed to create unowned VASurface", nullptr);
   }
 
-  // It's safe to use Unretained() here, because the caller takes care of the
-  // destruction order. All the surfaces will be destroyed before VaapiWrapper.
-  return new VASurface(
-      va_surface_id, size, va_format,
-      base::Bind(&VaapiWrapper::DestroySurface, base::Unretained(this)));
+  return new VASurface(va_surface_id, size, va_format,
+                       base::BindOnce(&VaapiWrapper::DestroySurface, this));
 }
 
 bool VaapiWrapper::SubmitBuffer(VABufferType va_buffer_type,
@@ -1476,12 +1471,11 @@ std::unique_ptr<ScopedVAImage> VaapiWrapper::CreateVaImage(
   return scoped_image->IsValid() ? std::move(scoped_image) : nullptr;
 }
 
-bool VaapiWrapper::UploadVideoFrameToSurface(
-    const scoped_refptr<VideoFrame>& frame,
-    VASurfaceID va_surface_id) {
+bool VaapiWrapper::UploadVideoFrameToSurface(const VideoFrame& frame,
+                                             VASurfaceID va_surface_id) {
   base::AutoLock auto_lock(*va_lock_);
 
-  const gfx::Size size = frame->coded_size();
+  const gfx::Size size = frame.coded_size();
   bool va_create_put_fallback = false;
   VAImage image;
   VAStatus va_res = vaDeriveImage(va_display_, va_surface_id, &image);
@@ -1518,30 +1512,28 @@ bool VaapiWrapper::UploadVideoFrameToSurface(
   int ret = 0;
   {
     base::AutoUnlock auto_unlock(*va_lock_);
-    switch (frame->format()) {
+    switch (frame.format()) {
       case PIXEL_FORMAT_I420:
-        ret = libyuv::I420ToNV12(frame->data(VideoFrame::kYPlane),
-                                 frame->stride(VideoFrame::kYPlane),
-                                 frame->data(VideoFrame::kUPlane),
-                                 frame->stride(VideoFrame::kUPlane),
-                                 frame->data(VideoFrame::kVPlane),
-                                 frame->stride(VideoFrame::kVPlane),
-                                 image_ptr + image.offsets[0], image.pitches[0],
-                                 image_ptr + image.offsets[1], image.pitches[1],
-                                 image.width, image.height);
+        ret = libyuv::I420ToNV12(
+            frame.data(VideoFrame::kYPlane), frame.stride(VideoFrame::kYPlane),
+            frame.data(VideoFrame::kUPlane), frame.stride(VideoFrame::kUPlane),
+            frame.data(VideoFrame::kVPlane), frame.stride(VideoFrame::kVPlane),
+            image_ptr + image.offsets[0], image.pitches[0],
+            image_ptr + image.offsets[1], image.pitches[1], image.width,
+            image.height);
         break;
       case PIXEL_FORMAT_NV12:
-        libyuv::CopyPlane(frame->data(VideoFrame::kYPlane),
-                          frame->stride(VideoFrame::kYPlane),
+        libyuv::CopyPlane(frame.data(VideoFrame::kYPlane),
+                          frame.stride(VideoFrame::kYPlane),
                           image_ptr + image.offsets[0], image.pitches[0],
                           image.width, image.height);
-        libyuv::CopyPlane(frame->data(VideoFrame::kUVPlane),
-                          frame->stride(VideoFrame::kUVPlane),
+        libyuv::CopyPlane(frame.data(VideoFrame::kUVPlane),
+                          frame.stride(VideoFrame::kUVPlane),
                           image_ptr + image.offsets[1], image.pitches[1],
                           image.width, image.height / 2);
         break;
       default:
-        LOG(ERROR) << "Unsupported pixel format: " << frame->format();
+        LOG(ERROR) << "Unsupported pixel format: " << frame.format();
         return false;
     }
   }

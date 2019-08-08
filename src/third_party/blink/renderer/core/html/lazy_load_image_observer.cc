@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
 
@@ -58,10 +59,11 @@ Document* GetRootDocumentOrNull(Element* element) {
 
 }  // namespace
 
-void LazyLoadImageObserver::StartMonitoring(Element* element) {
+void LazyLoadImageObserver::StartMonitoring(Element* element,
+                                            DeferralMessage deferral_message) {
   if (Document* document = GetRootDocumentOrNull(element)) {
     document->EnsureLazyLoadImageObserver().StartMonitoringNearViewport(
-        document, element);
+        document, element, deferral_message);
   }
 }
 
@@ -93,16 +95,13 @@ void LazyLoadImageObserver::RecordMetricsOnLoadFinished(
 
 LazyLoadImageObserver::LazyLoadImageObserver() = default;
 
-void LazyLoadImageObserver::StartMonitoringNearViewport(Document* root_document,
-                                                        Element* element) {
+void LazyLoadImageObserver::StartMonitoringNearViewport(
+    Document* root_document,
+    Element* element,
+    DeferralMessage deferral_message) {
   DCHECK(RuntimeEnabledFeatures::LazyImageLoadingEnabled());
 
   if (!lazy_load_intersection_observer_) {
-    root_document->AddConsoleMessage(ConsoleMessage::Create(
-        mojom::ConsoleMessageSource::kIntervention,
-        mojom::ConsoleMessageLevel::kInfo,
-        "Images loaded lazily and replaced with placeholders. Load events are "
-        "deferred. See https://crbug.com/846170"));
     lazy_load_intersection_observer_ = IntersectionObserver::Create(
         {Length::Fixed(
             GetLazyImageLoadingViewportDistanceThresholdPx(*root_document))},
@@ -111,6 +110,28 @@ void LazyLoadImageObserver::StartMonitoringNearViewport(Document* root_document,
                            WrapWeakPersistent(this)));
   }
   lazy_load_intersection_observer_->observe(element);
+
+  if (deferral_message == DeferralMessage::kLoadEventsDeferred &&
+      !is_load_event_deferred_intervention_shown_) {
+    is_load_event_deferred_intervention_shown_ = true;
+    root_document->AddConsoleMessage(ConsoleMessage::Create(
+        mojom::ConsoleMessageSource::kIntervention,
+        mojom::ConsoleMessageLevel::kInfo,
+        "Images loaded lazily and replaced with placeholders. Load events are "
+        "deferred. See https://crbug.com/954323"));
+  }
+  if (deferral_message == DeferralMessage::kMissingDimensionForLazy &&
+      !is_missing_dimension_intervention_shown_) {
+    is_missing_dimension_intervention_shown_ = true;
+    root_document->AddConsoleMessage(ConsoleMessage::Create(
+        mojom::ConsoleMessageSource::kIntervention,
+        mojom::ConsoleMessageLevel::kInfo,
+        "An <img> element was lazyloaded with loading=lazy, but had no "
+        "dimensions specified. Specifying dimensions improves performance. See "
+        "https://crbug.com/954323"));
+    UseCounter::Count(root_document,
+                      WebFeature::kLazyLoadImageMissingDimensionsForLazy);
+  }
 }
 
 void LazyLoadImageObserver::LoadIfNearViewport(

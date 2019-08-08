@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
-#include "chrome/browser/chromeos/login/screens/terms_of_service_screen_view.h"
 
 namespace network {
 class SimpleURLLoader;
@@ -20,12 +19,13 @@ class SimpleURLLoader;
 
 namespace chromeos {
 
+class TermsOfServiceScreenView;
+
 // A screen that shows Terms of Service which have been configured through
 // policy. The screen is shown during login and requires the user to accept the
 // Terms of Service before proceeding. Currently, Terms of Service are available
 // for public sessions only.
-class TermsOfServiceScreen : public BaseScreen,
-                             public TermsOfServiceScreenView::Delegate {
+class TermsOfServiceScreen : public BaseScreen {
  public:
   enum class Result { ACCEPTED, DECLINED };
 
@@ -34,14 +34,18 @@ class TermsOfServiceScreen : public BaseScreen,
                        const ScreenExitCallback& exit_callback);
   ~TermsOfServiceScreen() override;
 
+  // Called when the user declines the Terms of Service.
+  void OnDecline();
+
+  // Called when the user accepts the Terms of Service.
+  void OnAccept();
+
+  // Called when view is destroyed so there is no dead reference to it.
+  void OnViewDestroyed(TermsOfServiceScreenView* view);
+
   // BaseScreen:
   void Show() override;
   void Hide() override;
-
-  // TermsOfServiceScreenActor::Delegate:
-  void OnDecline() override;
-  void OnAccept() override;
-  void OnViewDestroyed(TermsOfServiceScreenView* view) override;
 
  private:
   // Start downloading the Terms of Service.

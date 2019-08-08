@@ -78,7 +78,7 @@ class MojoAudioDecoderTest : public ::testing::Test {
 
   // Completion callbacks.
   MOCK_METHOD1(OnInitialized, void(bool));
-  MOCK_METHOD1(OnOutput, void(const scoped_refptr<AudioBuffer>&));
+  MOCK_METHOD1(OnOutput, void(scoped_refptr<AudioBuffer>));
   MOCK_METHOD1(OnWaiting, void(WaitingReason));
   MOCK_METHOD1(OnDecoded, void(DecodeStatus));
   MOCK_METHOD0(OnReset, void());
@@ -110,15 +110,15 @@ class MojoAudioDecoderTest : public ::testing::Test {
         new StrictMock<MockAudioDecoder>());
     mock_audio_decoder_ = mock_audio_decoder.get();
 
-    EXPECT_CALL(*mock_audio_decoder_, Initialize(_, _, _, _, _))
+    EXPECT_CALL(*mock_audio_decoder_, Initialize_(_, _, _, _, _))
         .WillRepeatedly(DoAll(SaveArg<3>(&output_cb_), SaveArg<4>(&waiting_cb_),
-                              RunCallback<2>(true)));
+                              RunOnceCallback<2>(true)));
     EXPECT_CALL(*mock_audio_decoder_, Decode(_, _))
         .WillRepeatedly(
             DoAll(InvokeWithoutArgs(this, &MojoAudioDecoderTest::ReturnOutput),
                   RunCallback<1>(DecodeStatus::OK)));
-    EXPECT_CALL(*mock_audio_decoder_, Reset(_))
-        .WillRepeatedly(RunCallback<0>());
+    EXPECT_CALL(*mock_audio_decoder_, Reset_(_))
+        .WillRepeatedly(RunOnceCallback<0>());
 
     mojo::MakeStrongBinding(
         std::make_unique<MojoAudioDecoderService>(

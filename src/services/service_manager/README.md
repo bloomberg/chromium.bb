@@ -197,7 +197,7 @@ class StorageService : public service_manager::Service,
 
  private:
   // service_manager::Service:
-  void OnBindInterface(const service_mangaer::BindSourceInfo& source,
+  void OnBindInterface(const service_manager::BindSourceInfo& source,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override {
     if (interface_name == mojom::BlockAllocator::Name_) {

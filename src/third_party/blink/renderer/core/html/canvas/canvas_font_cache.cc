@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/memory_pressure_listener.h"
 
 namespace {
@@ -89,7 +90,8 @@ MutableCSSPropertyValueSet* CanvasFontCache::ParseFont(
     DCHECK(!add_result.is_new_entry);
     parsed_style = i->value;
   } else {
-    parsed_style = MutableCSSPropertyValueSet::Create(kHTMLStandardMode);
+    parsed_style =
+        MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode);
     CSSParser::ParseValue(parsed_style, CSSPropertyID::kFont, font_string, true,
                           document_->GetSecureContextMode());
     if (parsed_style->IsEmpty())

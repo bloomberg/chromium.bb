@@ -12,7 +12,7 @@
 
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
-#include "chrome/browser/performance_manager/graph/graph.h"
+#include "chrome/browser/performance_manager/graph/graph_impl.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
@@ -21,18 +21,13 @@
 
 namespace performance_manager {
 
-class SystemNodeImpl;
-
 template <class NodeClass>
 class TestNodeWrapper {
  public:
+  struct Factory;
+
   template <typename... Args>
-  static TestNodeWrapper<NodeClass> Create(Graph* graph, Args&&... args) {
-    std::unique_ptr<NodeClass> node =
-        std::make_unique<NodeClass>(graph, std::forward<Args>(args)...);
-    graph->AddNewNode(node.get());
-    return TestNodeWrapper<NodeClass>(std::move(node));
-  }
+  static TestNodeWrapper<NodeClass> Create(GraphImpl* graph, Args&&... args);
 
   TestNodeWrapper() {}
 
@@ -63,13 +58,64 @@ class TestNodeWrapper {
   std::unique_ptr<NodeClass> impl_;
 };
 
+template <class NodeClass>
+struct TestNodeWrapper<NodeClass>::Factory {
+  template <typename... Args>
+  static std::unique_ptr<NodeClass> Create(GraphImpl* graph, Args&&... args) {
+    return std::make_unique<NodeClass>(graph, std::forward<Args>(args)...);
+  }
+};
+
+// A specialized factory function for frame nodes that helps fill out some
+// common values.
+template <>
+struct TestNodeWrapper<FrameNodeImpl>::Factory {
+  static std::unique_ptr<FrameNodeImpl> Create(
+      GraphImpl* graph,
+      ProcessNodeImpl* process_node,
+      PageNodeImpl* page_node,
+      FrameNodeImpl* parent_frame_node = nullptr,
+      int frame_tree_node_id = 0,
+      const base::UnguessableToken& token = base::UnguessableToken::Create(),
+      int32_t browsing_instance_id = 0,
+      int32_t site_instance_id = 0) {
+    return std::make_unique<FrameNodeImpl>(
+        graph, process_node, page_node, parent_frame_node, frame_tree_node_id,
+        token, browsing_instance_id, site_instance_id);
+  }
+};
+
+// A specialized factory function for page nodes that helps fill out some
+// common values.
+template <>
+struct TestNodeWrapper<PageNodeImpl>::Factory {
+  static std::unique_ptr<PageNodeImpl> Create(
+      GraphImpl* graph,
+      const WebContentsProxy& wc_proxy = WebContentsProxy(),
+      bool is_visible = false) {
+    return std::make_unique<PageNodeImpl>(graph, wc_proxy, is_visible);
+  }
+};
+
+// static
+template <typename NodeClass>
+template <typename... Args>
+TestNodeWrapper<NodeClass> TestNodeWrapper<NodeClass>::Create(GraphImpl* graph,
+                                                              Args&&... args) {
+  // Dispatch to a helper so that we can use partial specialization.
+  std::unique_ptr<NodeClass> node =
+      Factory::Create(graph, std::forward<Args>(args)...);
+  graph->AddNewNode(node.get());
+  return TestNodeWrapper<NodeClass>(std::move(node));
+}
+
 // This specialization is necessary because the graph has ownership of the
 // system node as it's a singleton. For the other node types the test wrapper
 // manages the node lifetime.
 template <>
 class TestNodeWrapper<SystemNodeImpl> {
  public:
-  static TestNodeWrapper<SystemNodeImpl> Create(Graph* graph) {
+  static TestNodeWrapper<SystemNodeImpl> Create(GraphImpl* graph) {
     return TestNodeWrapper<SystemNodeImpl>(graph->FindOrCreateSystemNode());
   }
 
@@ -93,13 +139,17 @@ class GraphTestHarness : public ::testing::Test {
   GraphTestHarness();
   ~GraphTestHarness() override;
 
+  // Optional constructor for directly configuring the ScopedTaskEnvironment.
+  template <class... ArgTypes>
+  explicit GraphTestHarness(ArgTypes... args) : task_env_(args...) {}
+
   template <class NodeClass, typename... Args>
   TestNodeWrapper<NodeClass> CreateNode(Args&&... args) {
     return TestNodeWrapper<NodeClass>::Create(graph(),
                                               std::forward<Args>(args)...);
   }
 
-  TestNodeWrapper<SystemNodeImpl> GetSystemCoordinationUnit() {
+  TestNodeWrapper<SystemNodeImpl> GetSystemNode() {
     return TestNodeWrapper<SystemNodeImpl>(graph()->FindOrCreateSystemNode());
   }
 
@@ -108,11 +158,11 @@ class GraphTestHarness : public ::testing::Test {
 
  protected:
   base::test::ScopedTaskEnvironment& task_env() { return task_env_; }
-  Graph* graph() { return &graph_; }
+  GraphImpl* graph() { return &graph_; }
 
  private:
   base::test::ScopedTaskEnvironment task_env_;
-  Graph graph_;
+  GraphImpl graph_;
 };
 
 }  // namespace performance_manager

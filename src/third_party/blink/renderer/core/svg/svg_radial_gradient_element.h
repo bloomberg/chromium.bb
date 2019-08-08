@@ -33,8 +33,6 @@ class SVGRadialGradientElement final : public SVGGradientElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_NODE_FACTORY(SVGRadialGradientElement);
-
   explicit SVGRadialGradientElement(Document&);
 
   bool CollectGradientAttributes(RadialGradientAttributes&);

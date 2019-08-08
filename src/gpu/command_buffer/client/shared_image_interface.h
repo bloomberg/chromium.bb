@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/containers/span.h"
+#include "build/build_config.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
@@ -20,11 +21,11 @@ class Size;
 namespace gpu {
 class GpuMemoryBufferManager;
 
-// An interface to create shared images that can be imported into other APIs.
-// This interface is thread-safe and (essentially) stateless. It is asynchronous
-// in the same sense as GLES2Interface or RasterInterface in that commands are
-// executed asynchronously on the service side, but can be synchronized using
-// SyncTokens. See //docs/design/gpu_synchronization.md.
+// An interface to create shared images and swap chains that can be imported
+// into other APIs. This interface is thread-safe and (essentially) stateless.
+// It is asynchronous in the same sense as GLES2Interface or RasterInterface in
+// that commands are executed asynchronously on the service side, but can be
+// synchronized using SyncTokens. See //docs/design/gpu_synchronization.md.
 class SharedImageInterface {
  public:
   virtual ~SharedImageInterface() {}
@@ -89,6 +90,32 @@ class SharedImageInterface {
   // those may keep a reference to the underlying data.
   virtual void DestroySharedImage(const SyncToken& sync_token,
                                   const Mailbox& mailbox) = 0;
+
+#if defined(OS_WIN)
+  struct SwapChainMailboxes {
+    Mailbox front_buffer;
+    Mailbox back_buffer;
+  };
+
+  // Creates a swap chain.
+  // Returns mailboxes for front and back buffers of a DXGI Swap Chain that can
+  // be imported into GL command buffer using shared image functions (e.g.
+  // GLES2Interface::CreateAndTexStorage2DSharedImageCHROMIUM) or (deprecated)
+  // mailbox functions (e.g. GLES2Interface::CreateAndConsumeTextureCHROMIUM).
+  virtual SwapChainMailboxes CreateSwapChain(viz::ResourceFormat format,
+                                             const gfx::Size& size,
+                                             const gfx::ColorSpace& color_space,
+                                             uint32_t usage) = 0;
+
+  // Swaps front and back buffer of a swap chain. Back buffer mailbox still
+  // refers to the back buffer of the swap chain after calling PresentSwapChain.
+  // The mailbox argument should be back buffer mailbox. Sync token is required
+  // for synchronization between shared image stream and command buffer stream,
+  // to ensure that all the rendering commands to a frame are executed before
+  // presenting the swap chain.
+  virtual void PresentSwapChain(const SyncToken& sync_token,
+                                const Mailbox& mailbox) = 0;
+#endif  // OS_WIN
 
   // Generates an unverified SyncToken that is released after all previous
   // commands on this interface have executed on the service side.

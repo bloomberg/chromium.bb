@@ -11,15 +11,17 @@
 #include "ash/assistant/test/test_assistant_service.h"
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/highlighter/highlighter_controller_test_api.h"
+#include "ash/kiosk_next/kiosk_next_shell_test_util.h"
+#include "ash/kiosk_next/mock_kiosk_next_shell_client.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/stylus_utils.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/root_window_controller.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
-#include "ash/shell_test_api.h"
 #include "ash/system/palette/palette_tray_test_api.h"
 #include "ash/system/palette/palette_utils.h"
 #include "ash/system/palette/palette_welcome_bubble.h"
@@ -32,6 +34,7 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
@@ -81,6 +84,8 @@ class PaletteTrayTest : public AshTestBase {
     test_api_ = std::make_unique<PaletteTrayTestApi>(palette_tray_);
   }
 
+  PaletteTray* palette_tray() { return palette_tray_; }
+
  protected:
   PrefService* active_user_pref_service() {
     return Shell::Get()->session_controller()->GetActivePrefService();
@@ -101,13 +106,13 @@ class PaletteTrayTest : public AshTestBase {
 // Verify the palette tray button exists and but is not visible initially.
 TEST_F(PaletteTrayTest, PaletteTrayIsInvisible) {
   ASSERT_TRUE(palette_tray_);
-  EXPECT_FALSE(palette_tray_->visible());
+  EXPECT_FALSE(palette_tray_->GetVisible());
 }
 
 // Verify if the has seen stylus pref is not set initially, the palette tray
 // should become visible after seeing a stylus event.
 TEST_F(PaletteTrayTest, PaletteTrayVisibleAfterStylusSeen) {
-  ASSERT_FALSE(palette_tray_->visible());
+  ASSERT_FALSE(palette_tray_->GetVisible());
   ASSERT_FALSE(local_state_pref_service()->GetBoolean(prefs::kHasSeenStylus));
 
   // Send a stylus event.
@@ -117,16 +122,16 @@ TEST_F(PaletteTrayTest, PaletteTrayVisibleAfterStylusSeen) {
   generator->ReleaseTouch();
   generator->ExitPenPointerMode();
 
-  EXPECT_TRUE(palette_tray_->visible());
+  EXPECT_TRUE(palette_tray_->GetVisible());
 }
 
 // Verify if the has seen stylus pref is initially set, the palette tray is
 // visible.
 TEST_F(PaletteTrayTest, StylusSeenPrefInitiallySet) {
-  ASSERT_FALSE(palette_tray_->visible());
+  ASSERT_FALSE(palette_tray_->GetVisible());
   local_state_pref_service()->SetBoolean(prefs::kHasSeenStylus, true);
 
-  EXPECT_TRUE(palette_tray_->visible());
+  EXPECT_TRUE(palette_tray_->GetVisible());
 }
 
 // Verify taps on the palette tray button results in expected behaviour.
@@ -204,15 +209,15 @@ TEST_F(PaletteTrayTest, EnableStylusPref) {
   // kEnableStylusTools is true by default
   ASSERT_TRUE(
       active_user_pref_service()->GetBoolean(prefs::kEnableStylusTools));
-  EXPECT_TRUE(palette_tray_->visible());
+  EXPECT_TRUE(palette_tray_->GetVisible());
 
   // Resetting the pref hides the palette tray.
   active_user_pref_service()->SetBoolean(prefs::kEnableStylusTools, false);
-  EXPECT_FALSE(palette_tray_->visible());
+  EXPECT_FALSE(palette_tray_->GetVisible());
 
   // Setting the pref again shows the palette tray.
   active_user_pref_service()->SetBoolean(prefs::kEnableStylusTools, true);
-  EXPECT_TRUE(palette_tray_->visible());
+  EXPECT_TRUE(palette_tray_->GetVisible());
 }
 
 TEST_F(PaletteTrayTest, WelcomeBubbleVisibility) {
@@ -510,7 +515,7 @@ TEST_F(PaletteTrayTestWithVoiceInteraction,
 
   // The barrel button should not work on the lock screen.
   highlighter_test_api_->DestroyPointerView();
-  GetSessionControllerClient()->RequestLockScreen();
+  GetSessionControllerClient()->LockScreen();
   EXPECT_FALSE(test_api_->palette_tool_manager()->IsToolActive(
       PaletteToolId::METALAYER));
   WaitDragAndAssertMetalayer("screen locked", origin, ui::EF_LEFT_MOUSE_BUTTON,
@@ -554,13 +559,13 @@ class PaletteTrayTestWithInternalStylus : public PaletteTrayTest {
 // internal stylus.
 TEST_F(PaletteTrayTestWithInternalStylus, Visible) {
   ASSERT_TRUE(palette_tray_);
-  EXPECT_TRUE(palette_tray_->visible());
+  EXPECT_TRUE(palette_tray_->GetVisible());
 }
 
 // Verify that when entering or exiting the lock screen, the behavior of the
 // palette tray button is as expected.
 TEST_F(PaletteTrayTestWithInternalStylus, PaletteTrayOnLockScreenBehavior) {
-  ASSERT_TRUE(palette_tray_->visible());
+  ASSERT_TRUE(palette_tray_->GetVisible());
 
   PaletteToolManager* manager = test_api_->palette_tool_manager();
   manager->ActivateTool(PaletteToolId::LASER_POINTER);
@@ -568,21 +573,21 @@ TEST_F(PaletteTrayTestWithInternalStylus, PaletteTrayOnLockScreenBehavior) {
 
   // Verify that when entering the lock screen, the palette tray button is
   // hidden, and the tool that was active is no longer active.
-  GetSessionControllerClient()->RequestLockScreen();
+  GetSessionControllerClient()->LockScreen();
   EXPECT_FALSE(manager->IsToolActive(PaletteToolId::LASER_POINTER));
-  EXPECT_FALSE(palette_tray_->visible());
+  EXPECT_FALSE(palette_tray_->GetVisible());
 
   // Verify that when logging back in the tray is visible, but the tool that was
   // active before locking the screen is still inactive.
   GetSessionControllerClient()->UnlockScreen();
-  EXPECT_TRUE(palette_tray_->visible());
+  EXPECT_TRUE(palette_tray_->GetVisible());
   EXPECT_FALSE(manager->IsToolActive(PaletteToolId::LASER_POINTER));
 }
 
 // Verify a tool deactivates when the palette bubble is opened while the tool
 // is active.
 TEST_F(PaletteTrayTestWithInternalStylus, ToolDeactivatesWhenOpeningBubble) {
-  ASSERT_TRUE(palette_tray_->visible());
+  ASSERT_TRUE(palette_tray_->GetVisible());
 
   palette_tray_->ShowBubble(false /* show_by_click */);
   EXPECT_TRUE(test_api_->tray_bubble_wrapper());
@@ -747,8 +752,8 @@ TEST_F(PaletteTrayNoSessionTestWithInternalStylus,
       controllers[1]->GetStatusAreaWidget()->palette_tray();
 
   // The palette tray on the external monitor is not visible.
-  EXPECT_TRUE(main_tray->visible());
-  EXPECT_FALSE(external_tray->visible());
+  EXPECT_TRUE(main_tray->GetVisible());
+  EXPECT_FALSE(external_tray->GetVisible());
 
   // Removing the stylus shows the bubble only on the main palette tray.
   fake_stylus_event_on_all_trays(ui::StylusState::REMOVED);
@@ -759,6 +764,31 @@ TEST_F(PaletteTrayNoSessionTestWithInternalStylus,
   fake_stylus_event_on_all_trays(ui::StylusState::INSERTED);
   EXPECT_FALSE(main_tray->GetBubbleView());
   EXPECT_FALSE(external_tray->GetBubbleView());
+}
+
+class KioskNextPaletteTrayTest : public PaletteTrayTest {
+ public:
+  KioskNextPaletteTrayTest() {
+    scoped_feature_list_.InitAndEnableFeature(features::kKioskNextShell);
+  }
+
+  void SetUp() override {
+    set_start_session(false);
+    PaletteTrayTest::SetUp();
+    client_ = BindMockKioskNextShellClient();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  std::unique_ptr<MockKioskNextShellClient> client_;
+
+  DISALLOW_COPY_AND_ASSIGN(KioskNextPaletteTrayTest);
+};
+
+TEST_F(KioskNextPaletteTrayTest, PaletteTrayHidden) {
+  LogInKioskNextUser(GetSessionControllerClient());
+  local_state_pref_service()->SetBoolean(prefs::kHasSeenStylus, true);
+  EXPECT_FALSE(palette_tray()->GetVisible());
 }
 
 }  // namespace ash

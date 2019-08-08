@@ -12,6 +12,7 @@
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#import "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
 #import "ui/base/clipboard/clipboard_util_mac.h"
 #include "ui/gfx/image/image_unittest_util.h"
 #import "ui/views/cocoa/bridged_native_widget_host_impl.h"
@@ -19,7 +20,6 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/widget/widget.h"
-#import "ui/views_bridge_mac/bridged_native_widget_impl.h"
 
 using base::ASCIIToUTF16;
 

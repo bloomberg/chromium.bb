@@ -26,6 +26,8 @@ absl_cc_library(
     "internal/spinlock_posix.inc"
     "internal/spinlock_wait.cc"
     "internal/spinlock_win32.inc"
+  COPTS
+    ${ABSL_DEFAULT_COPTS}
   DEPS
     absl::core_headers
 )
@@ -88,6 +90,7 @@ absl_cc_library(
     absl::core_headers
     absl::dynamic_annotations
     absl::spinlock_wait
+    Threads::Threads
 )
 
 absl_cc_library(
@@ -126,6 +129,7 @@ absl_cc_library(
     "internal/sysinfo.cc"
     "internal/thread_identity.cc"
     "internal/unscaledcycleclock.cc"
+    "log_severity.cc"
   COPTS
     ${ABSL_DEFAULT_COPTS}
   DEPS
@@ -134,6 +138,8 @@ absl_cc_library(
     absl::core_headers
     absl::dynamic_annotations
     absl::spinlock_wait
+    absl::type_traits
+    Threads::Threads
   PUBLIC
 )
 
@@ -217,6 +223,8 @@ absl_cc_test(
     atomic_hook_test
   SRCS
     "internal/atomic_hook_test.cc"
+  COPTS
+    ${ABSL_TEST_COPTS}
   DEPS
     absl::base
     absl::core_headers
@@ -228,6 +236,8 @@ absl_cc_test(
     bit_cast_test
   SRCS
     "bit_cast_test.cc"
+  COPTS
+    ${ABSL_TEST_COPTS}
   DEPS
     absl::base
     absl::core_headers
@@ -239,6 +249,8 @@ absl_cc_test(
     throw_delegate_test
   SRCS
     "throw_delegate_test.cc"
+  COPTS
+    ${ABSL_TEST_COPTS}
   DEPS
     absl::base
     absl::throw_delegate
@@ -253,6 +265,8 @@ absl_cc_test(
     "inline_variable_test.cc"
     "inline_variable_test_a.cc"
     "inline_variable_test_b.cc"
+  COPTS
+    ${ABSL_TEST_COPTS}
   DEPS
     absl::base_internal
     gtest_main
@@ -263,6 +277,8 @@ absl_cc_test(
     invoke_test
   SRCS
     "invoke_test.cc"
+  COPTS
+    ${ABSL_TEST_COPTS}
   DEPS
     absl::base_internal
     absl::memory
@@ -293,6 +309,8 @@ absl_cc_test(
     spinlock_test
   SRCS
     "spinlock_test_common.cc"
+  COPTS
+    ${ABSL_TEST_COPTS}
   DEPS
     absl::base
     absl::core_headers
@@ -320,6 +338,8 @@ absl_cc_test(
     endian_test
   SRCS
     "internal/endian_test.cc"
+  COPTS
+    ${ABSL_TEST_COPTS}
   DEPS
     absl::base
     absl::config
@@ -332,6 +352,8 @@ absl_cc_test(
     config_test
   SRCS
     "config_test.cc"
+  COPTS
+    ${ABSL_TEST_COPTS}
   DEPS
     absl::config
     absl::synchronization
@@ -343,6 +365,8 @@ absl_cc_test(
     call_once_test
   SRCS
     "call_once_test.cc"
+  COPTS
+    ${ABSL_TEST_COPTS}
   DEPS
     absl::base
     absl::core_headers
@@ -355,6 +379,8 @@ absl_cc_test(
     raw_logging_test
   SRCS
     "raw_logging_test.cc"
+  COPTS
+    ${ABSL_TEST_COPTS}
   DEPS
     absl::base
     absl::strings
@@ -366,6 +392,8 @@ absl_cc_test(
     sysinfo_test
   SRCS
     "internal/sysinfo_test.cc"
+  COPTS
+    ${ABSL_TEST_COPTS}
   DEPS
     absl::base
     absl::synchronization
@@ -377,6 +405,8 @@ absl_cc_test(
     low_level_alloc_test
   SRCS
     "internal/low_level_alloc_test.cc"
+  COPTS
+    ${ABSL_TEST_COPTS}
   DEPS
     absl::malloc_internal
     Threads::Threads
@@ -387,6 +417,8 @@ absl_cc_test(
     thread_identity_test
   SRCS
     "internal/thread_identity_test.cc"
+  COPTS
+    ${ABSL_TEST_COPTS}
   DEPS
     absl::base
     absl::core_headers
@@ -411,6 +443,8 @@ absl_cc_test(
     bits_test
   SRCS
     "internal/bits_test.cc"
+  COPTS
+    ${ABSL_TEST_COPTS}
   DEPS
     absl::bits
     gtest_main
@@ -434,7 +468,31 @@ absl_cc_test(
     scoped_set_env_test
   SRCS
     "internal/scoped_set_env_test.cc"
+  COPTS
+    ${ABSL_TEST_COPTS}
   DEPS
     absl::scoped_set_env
+    gtest_main
+)
+
+absl_cc_test(
+  NAME
+    cmake_thread_test
+  SRCS
+    "internal/cmake_thread_test.cc"
+  COPTS
+    ${ABSL_TEST_COPTS}
+  DEPS
+    absl::base
+)
+
+absl_cc_test(
+  NAME
+    log_severity_test
+  SRCS
+    "log_severity_test.cc"
+  DEPS
+    absl::base
+    gmock
     gtest_main
 )

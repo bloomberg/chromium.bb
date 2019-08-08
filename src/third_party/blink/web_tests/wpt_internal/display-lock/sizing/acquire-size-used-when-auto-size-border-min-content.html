@@ -1,0 +1,49 @@
+<!doctype HTML>
+<html class="reftest-wait">
+<meta charset="utf8">
+<title>Display Locking: acquire() size + border, with min-content</title>
+<link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
+<link rel="help" href="https://github.com/WICG/display-locking">
+<link rel="match" href="acquire-size-used-when-auto-size-border-ref.html">
+<script src="/common/reftest-wait.js"></script>
+
+<style>
+#border {
+  width: min-content;
+  border: 1px solid green;
+}
+#container {
+  contain: style layout;
+  background: lightblue;
+  border: 10px solid black;
+}
+#child {
+  width: 500px;
+  height: 500px;
+  background: red;
+}
+</style>
+
+<div id="border">
+  <div id="container">
+    <div id="child"></div>
+  </div>
+</div>
+
+<script>
+if (window.testRunner)
+  window.testRunner.waitUntilDone();
+
+function finishTest() {
+  if (window.testRunner)
+    window.testRunner.notifyDone();
+}
+
+function runTest() {
+  let container = document.getElementById("container");
+  container.displayLock.acquire({ timeout: Infinity, size: [123, 456] }).then(finishTest);
+}
+
+window.onload = runTest;
+</script>
+</html>

@@ -10,7 +10,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
@@ -31,8 +30,7 @@ public class PartnerBookmarksFaviconThrottleTest {
 
     @Before
     public void setUp() throws Exception {
-        mFaviconThrottle = new PartnerBookmarksFaviconThrottle(
-                RuntimeEnvironment.application, TEST_PREFERENCES_NAME);
+        mFaviconThrottle = new PartnerBookmarksFaviconThrottle(TEST_PREFERENCES_NAME);
     }
 
     @After

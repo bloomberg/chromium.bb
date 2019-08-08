@@ -110,6 +110,8 @@ cast_source_set("browser") {
     "media/media_caps_impl.h",
     "media/supported_codec_finder.cc",
     "media/supported_codec_finder.h",
+    "queryable_data_host_cast.cc",
+    "queryable_data_host_cast.h",
     "renderer_prelauncher.cc",
     "renderer_prelauncher.h",
     "service/cast_service_simple.cc",
@@ -137,6 +139,7 @@ cast_source_set("browser") {
     ":prefs",
     ":public",
     "//chromecast/browser/metrics",
+    "//chromecast/metrics",
   ]
 
   deps = [
@@ -145,15 +148,17 @@ cast_source_set("browser") {
     "//base:i18n",
     "//cc",
     "//chromecast:chromecast_buildflags",
+    "//chromecast/activity",
     "//chromecast/app:cast_crash_client",
     "//chromecast/app:chromecast_settings",
     "//chromecast/app:resources",
     "//chromecast/base",
-    "//chromecast/base:cast_sys_info",
+    "//chromecast/base:cast_sys_info_util",
     "//chromecast/base:cast_version",
     "//chromecast/browser/bluetooth/public/mojom",
     "//chromecast/browser/general_audience_browsing/mojom",
     "//chromecast/common",
+    "//chromecast/common:queryable_data",
     "//chromecast/common/media",
     "//chromecast/common/mojom",
     "//chromecast/graphics",
@@ -240,6 +245,8 @@ cast_source_set("browser") {
       "cast_content_window_aura.cc",
       "cast_content_window_aura.h",
     ]
+
+    deps += [ "//ui/views:views" ]
   }
 
   if (!is_fuchsia) {
@@ -288,11 +295,8 @@ cast_source_set("browser") {
       "extension_request_protocol_handler.h",
       "extensions/api/accessibility_private/accessibility_extension_api.cc",
       "extensions/api/accessibility_private/accessibility_extension_api.h",
-      "extensions/api/automation_internal/automation_event_router.cc",
-      "extensions/api/automation_internal/automation_event_router.h",
-      "extensions/api/automation_internal/automation_event_router_interface.h",
-      "extensions/api/automation_internal/automation_internal_api.cc",
-      "extensions/api/automation_internal/automation_internal_api.h",
+      "extensions/api/automation_internal/chromecast_automation_internal_api_delegate.cc",
+      "extensions/api/automation_internal/chromecast_automation_internal_api_delegate.h",
       "extensions/api/bookmarks/bookmarks_api.cc",
       "extensions/api/bookmarks/bookmarks_api.h",
       "extensions/api/braille_display_private/braille_display_private_api.cc",
@@ -383,6 +387,7 @@ cast_source_set("browser") {
     deps += [
       "//components/exo",
       "//components/exo/wayland",
+      "//services/viz/privileged/interfaces/compositing",
       "//ui/display/manager",
     ]
   }

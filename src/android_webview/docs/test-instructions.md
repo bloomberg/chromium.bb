@@ -5,7 +5,7 @@
 ## Android Instructions
 
 Please follow the instructions at
-[android_test_instructions.md](/docs/android_test_instructions.md).
+[android_test_instructions.md](/docs/testing/android_test_instructions.md).
 This guide is an extension with WebView-specific content.
 
 *** note

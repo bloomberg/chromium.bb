@@ -4,23 +4,33 @@
 
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 
+#include "chrome/browser/performance_manager/graph/graph_impl.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
-#include "chrome/browser/performance_manager/observers/graph_observer.h"
 #include "chrome/browser/performance_manager/performance_manager_clock.h"
 
 namespace performance_manager {
 
-FrameNodeImpl::FrameNodeImpl(Graph* graph,
+FrameNodeImplObserver::FrameNodeImplObserver() = default;
+FrameNodeImplObserver::~FrameNodeImplObserver() = default;
+
+FrameNodeImpl::FrameNodeImpl(GraphImpl* graph,
                              ProcessNodeImpl* process_node,
                              PageNodeImpl* page_node,
                              FrameNodeImpl* parent_frame_node,
-                             int frame_tree_node_id)
-    : CoordinationUnitInterface(graph),
+                             int frame_tree_node_id,
+                             const base::UnguessableToken& dev_tools_token,
+                             int32_t browsing_instance_id,
+                             int32_t site_instance_id)
+    : TypedNodeBase(graph),
+      binding_(this),
       parent_frame_node_(parent_frame_node),
       page_node_(page_node),
       process_node_(process_node),
-      frame_tree_node_id_(frame_tree_node_id) {
+      frame_tree_node_id_(frame_tree_node_id),
+      dev_tools_token_(dev_tools_token),
+      browsing_instance_id_(browsing_instance_id),
+      site_instance_id_(site_instance_id) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(process_node);
   DCHECK(page_node);
@@ -30,8 +40,22 @@ FrameNodeImpl::~FrameNodeImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void FrameNodeImpl::SetNetworkAlmostIdle(bool network_almost_idle) {
-  network_almost_idle_.SetAndMaybeNotify(this, network_almost_idle);
+void FrameNodeImpl::Bind(
+    resource_coordinator::mojom::DocumentCoordinationUnitRequest request) {
+  // It is possible to receive a DocumentCoordinationUnitRequest when |binding_|
+  // is already bound in these cases:
+  // - Navigation from the initial empty document to the first real document.
+  // - Navigation rejected by RenderFrameHostImpl::ValidateDidCommitParams().
+  // See discussion:
+  // https://chromium-review.googlesource.com/c/chromium/src/+/1572459/6#message-bd31f3e73f96bd9f7721be81ba6ac0076d053147
+  if (binding_.is_bound())
+    binding_.Close();
+
+  binding_.Bind(std::move(request));
+}
+
+void FrameNodeImpl::SetNetworkAlmostIdle() {
+  document_.network_almost_idle.SetAndMaybeNotify(this, true);
 }
 
 void FrameNodeImpl::SetLifecycleState(
@@ -42,7 +66,7 @@ void FrameNodeImpl::SetLifecycleState(
 
 void FrameNodeImpl::SetHasNonEmptyBeforeUnload(bool has_nonempty_beforeunload) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  has_nonempty_beforeunload_ = has_nonempty_beforeunload;
+  document_.has_nonempty_beforeunload = has_nonempty_beforeunload;
 }
 
 void FrameNodeImpl::SetInterventionPolicy(
@@ -72,6 +96,10 @@ void FrameNodeImpl::SetInterventionPolicy(
                                                policy);
 }
 
+void FrameNodeImpl::SetIsAdFrame() {
+  is_ad_frame_ = true;
+}
+
 void FrameNodeImpl::OnNonPersistentNotificationCreated() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : observers())
@@ -94,6 +122,18 @@ int FrameNodeImpl::frame_tree_node_id() const {
   return frame_tree_node_id_;
 }
 
+const base::UnguessableToken& FrameNodeImpl::dev_tools_token() const {
+  return dev_tools_token_;
+}
+
+int32_t FrameNodeImpl::browsing_instance_id() const {
+  return browsing_instance_id_;
+}
+
+int32_t FrameNodeImpl::site_instance_id() const {
+  return site_instance_id_;
+}
+
 const base::flat_set<FrameNodeImpl*>& FrameNodeImpl::child_frame_nodes() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return child_frame_nodes_;
@@ -107,12 +147,12 @@ resource_coordinator::mojom::LifecycleState FrameNodeImpl::lifecycle_state()
 
 bool FrameNodeImpl::has_nonempty_beforeunload() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return has_nonempty_beforeunload_;
+  return document_.has_nonempty_beforeunload;
 }
 
 const GURL& FrameNodeImpl::url() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return url_;
+  return document_.url.value();
 }
 
 bool FrameNodeImpl::is_current() const {
@@ -122,12 +162,11 @@ bool FrameNodeImpl::is_current() const {
 
 bool FrameNodeImpl::network_almost_idle() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return network_almost_idle_.value();
+  return document_.network_almost_idle.value();
 }
 
-void FrameNodeImpl::set_url(const GURL& url) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  url_ = url;
+bool FrameNodeImpl::is_ad_frame() const {
+  return is_ad_frame_;
 }
 
 void FrameNodeImpl::SetIsCurrent(bool is_current) {
@@ -159,6 +198,41 @@ void FrameNodeImpl::SetIsCurrent(bool is_current) {
 
 bool FrameNodeImpl::IsMainFrame() const {
   return !parent_frame_node_;
+}
+
+void FrameNodeImpl::OnNavigationCommitted(const GURL& url, bool same_document) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (same_document) {
+    document_.url.SetAndMaybeNotify(this, url);
+    return;
+  }
+
+  // Close |binding_| to ensure that messages queued by the previous document
+  // before the navigation commit are dropped.
+  //
+  // Note: It is guaranteed that |binding_| isn't yet bound to the new document.
+  //       This is important because it would be incorrect to close the new
+  //       document's binding.
+  //
+  //       Renderer: blink::DocumentLoader::DidCommitNavigation
+  //                   ... content::RenderFrameImpl::DidCommitProvisionalLoad
+  //                     ... mojom::FrameHost::DidCommitProvisionalLoad
+  //       Browser:  RenderFrameHostImpl::DidCommitNavigation
+  //                   Bind the new document's interface provider [A]
+  //                   PMTabHelper::DidFinishNavigation
+  //                     (async) FrameNodeImpl::OnNavigationCommitted [B]
+  //       Renderer: Request DocumentCoordinationUnit interface
+  //       Browser:  PMTabHelper::OnInterfaceRequestFromFrame [C]
+  //                   (async) FrameNodeImpl::Bind [D]
+  //
+  //       A happens before C, because no interface request can be processed
+  //       before the interface provider is bound. A posts B to PM sequence and
+  //       C posts D to PM sequence, therefore B happens before D.
+  binding_.Close();
+
+  // Reset properties.
+  document_.Reset(this, url);
 }
 
 bool FrameNodeImpl::AreAllInterventionPoliciesSet() const {
@@ -202,7 +276,7 @@ void FrameNodeImpl::AddChildFrame(FrameNodeImpl* child_frame_node) {
   DCHECK(child_frame_node);
   DCHECK_EQ(this, child_frame_node->parent_frame_node());
   DCHECK_NE(this, child_frame_node);
-  DCHECK(NodeInGraph(child_frame_node));
+  DCHECK(graph()->NodeInGraph(child_frame_node));
   DCHECK(!HasFrameNodeInAncestors(child_frame_node) &&
          !child_frame_node->HasFrameNodeInDescendants(this));
 
@@ -215,7 +289,7 @@ void FrameNodeImpl::RemoveChildFrame(FrameNodeImpl* child_frame_node) {
   DCHECK(child_frame_node);
   DCHECK_EQ(this, child_frame_node->parent_frame_node());
   DCHECK_NE(this, child_frame_node);
-  DCHECK(NodeInGraph(child_frame_node));
+  DCHECK(graph()->NodeInGraph(child_frame_node));
 
   size_t removed = child_frame_nodes_.erase(child_frame_node);
   DCHECK_EQ(1u, removed);
@@ -244,17 +318,17 @@ void FrameNodeImpl::LeaveGraph() {
   DCHECK(child_frame_nodes_.empty());
 
   // Leave the page.
-  DCHECK(NodeInGraph(page_node_));
+  DCHECK(graph()->NodeInGraph(page_node_));
   page_node_->RemoveFrame(this);
 
   // Leave the frame hierarchy.
   if (parent_frame_node_) {
-    DCHECK(NodeInGraph(parent_frame_node_));
+    DCHECK(graph()->NodeInGraph(parent_frame_node_));
     parent_frame_node_->RemoveChildFrame(this);
   }
 
   // And leave the process.
-  DCHECK(NodeInGraph(process_node_));
+  DCHECK(graph()->NodeInGraph(process_node_));
   process_node_->RemoveFrame(this);
 }
 
@@ -277,5 +351,19 @@ bool FrameNodeImpl::HasFrameNodeInDescendants(FrameNodeImpl* frame_node) const {
   }
   return false;
 }
+
+FrameNodeImpl::DocumentProperties::DocumentProperties() = default;
+FrameNodeImpl::DocumentProperties::~DocumentProperties() = default;
+
+void FrameNodeImpl::DocumentProperties::Reset(FrameNodeImpl* frame_node,
+                                              const GURL& url_in) {
+  url.SetAndMaybeNotify(frame_node, url_in);
+  has_nonempty_beforeunload = false;
+  // Network is busy on navigation.
+  network_almost_idle.SetAndMaybeNotify(frame_node, false);
+}
+
+FrameNodeImpl::ObserverDefaultImpl::ObserverDefaultImpl() = default;
+FrameNodeImpl::ObserverDefaultImpl::~ObserverDefaultImpl() = default;
 
 }  // namespace performance_manager

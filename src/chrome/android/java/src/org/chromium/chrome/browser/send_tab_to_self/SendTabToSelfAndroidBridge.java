@@ -48,7 +48,9 @@ public class SendTabToSelfAndroidBridge {
         allGuids.add(newGuid);
     }
 
-    /** Deletes all SendTabToSelf entries. This is called when the user disables sync. */
+    /**
+     * Deletes all SendTabToSelf entries. This is called when the user disables sync.
+     */
     public static void deleteAllEntries(Profile profile) {
         // TODO(https://crbug.com/942549): Add this assertion back in once the code to load is in
         // place. assert mIsNativeSendTabToSelfModelLoaded;
@@ -105,6 +107,15 @@ public class SendTabToSelfAndroidBridge {
     public static void dismissEntry(Profile profile, String guid) {
         SendTabToSelfAndroidBridgeJni.get().dismissEntry(profile, guid);
     }
+    /**
+     * Mark the entry associated with the GUID as opened.
+     *
+     * @param profile Profile of the user to mark entry as opened.
+     * @param guid The GUID of the entry to mark as opened.
+     */
+    public static void markEntryOpened(Profile profile, String guid) {
+        SendTabToSelfAndroidBridgeJni.get().markEntryOpened(profile, guid);
+    }
 
     /**
      * Return whether the feature is available for the current user Profile and
@@ -115,6 +126,51 @@ public class SendTabToSelfAndroidBridge {
      */
     public static boolean isFeatureAvailable(WebContents webContents) {
         return SendTabToSelfAndroidBridgeJni.get().isFeatureAvailable(webContents);
+    }
+
+    /**
+     * Return whether the sending component of the feature is available. One of the uses of this
+     * function is to determine whether the bottom sheet should be initialized on startup.
+     *
+     * @return Whether the sending component is available.
+     */
+    public static boolean isSendingEnabled() {
+        return SendTabToSelfAndroidBridgeJni.get().isSendingEnabled();
+    }
+
+    /**
+     * Shows an infobar for the webcontents passed in.
+     *
+     * @param entry Contains the URL to open when the user taps on the infobar.
+     * @param webContents Where to create the infobar.
+     */
+    public static void showInfoBar(SendTabToSelfEntry entry, WebContents webContents) {
+        SendTabToSelfAndroidBridgeJni.get().showInfoBar(
+                webContents, entry.guid, entry.url, entry.targetDeviceSyncCacheGuid);
+    }
+
+    /**
+     * @param profile Profile of the user for whom to retrieve the targetDeviceInfos.
+     * @returns All {@link TargetDeviceInfo} for the user.
+     */
+    public static List<TargetDeviceInfo> getAllTargetDeviceInfos(Profile profile) {
+        // TODO(https://crbug.com/942549): Add this assertion back in once the
+        // code to load is in place. assert mIsNativeSendTabToSelfModelLoaded;
+        List<TargetDeviceInfo> toPopulate = new ArrayList<TargetDeviceInfo>();
+        SendTabToSelfAndroidBridgeJni.get().getAllTargetDeviceInfos(profile, toPopulate);
+        return toPopulate;
+    }
+
+    /**
+     * Called by the native code in order to populate the list.
+     *
+     * @param allInfos List to populate provided by getAllTargetDeviceInfos.
+     * @param newInfo The DeviceInfo to add to the list.
+     */
+    @CalledByNative
+    private static void addToTargetDeviceInfoList(
+            List<TargetDeviceInfo> allInfos, TargetDeviceInfo newInfo) {
+        allInfos.add(newInfo);
     }
 
     @NativeMethods
@@ -130,8 +186,17 @@ public class SendTabToSelfAndroidBridge {
 
         void dismissEntry(Profile profile, String guid);
 
+        void markEntryOpened(Profile profile, String guid);
+
         SendTabToSelfEntry getEntryByGUID(Profile profile, String guid);
 
         boolean isFeatureAvailable(WebContents webContents);
+
+        boolean isSendingEnabled();
+
+        void showInfoBar(
+                WebContents webContents, String guid, String url, String targetDeviceSyncCacheGuid);
+
+        void getAllTargetDeviceInfos(Profile profile, List<TargetDeviceInfo> guids);
     }
 }

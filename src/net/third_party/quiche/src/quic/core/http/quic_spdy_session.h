@@ -28,6 +28,12 @@ namespace test {
 class QuicSpdySessionPeer;
 }  // namespace test
 
+// Unidirectional stream types define by IETF HTTP/3 draft in section 3.2.
+const uint64_t kControlStream = 0;
+const uint64_t kServerPushStream = 1;
+const uint64_t kQpackEncoderStream = 2;
+const uint64_t kQpackDecoderStream = 3;
+
 // QuicHpackDebugVisitor gathers data used for understanding HPACK HoL
 // dynamics.  Specifically, it is to help predict the compression
 // penalty of avoiding HoL by chagning how the dynamic table is used.
@@ -135,11 +141,19 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
                                   spdy::SpdyHeaderBlock headers);
 
   // Sends SETTINGS_MAX_HEADER_LIST_SIZE SETTINGS frame.
-  size_t SendMaxHeaderListSize(size_t value);
+  void SendMaxHeaderListSize(size_t value);
 
   QpackEncoder* qpack_encoder();
   QpackDecoder* qpack_decoder();
-  QuicHeadersStream* headers_stream() { return headers_stream_.get(); }
+  QuicHeadersStream* headers_stream() {
+    return eliminate_static_stream_map() ? unowned_headers_stream_
+                                         : headers_stream_.get();
+  }
+
+  const QuicHeadersStream* headers_stream() const {
+    return eliminate_static_stream_map() ? unowned_headers_stream_
+                                         : headers_stream_.get();
+  }
 
   bool server_push_enabled() const { return server_push_enabled_; }
 
@@ -187,8 +201,13 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
   // Returns true if there are open HTTP requests.
   bool ShouldKeepConnectionAlive() const override;
 
-  // Overridden to buffer incoming streams for version 99.
-  bool ShouldBufferIncomingStream(QuicStreamId id) const override;
+  // Overridden to buffer incoming unidirectional streams for version 99.
+  bool UsesPendingStreams() const override;
+
+  // Overridden to Process HTTP/3 stream types. H/3 streams will be created from
+  // pending streams accordingly if the stream type can be read. Returns true if
+  // unidirectional streams are created.
+  bool ProcessPendingStream(PendingStream* pending) override;
 
   size_t WriteHeadersOnHeadersStreamImpl(
       QuicStreamId id,
@@ -261,6 +280,13 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
 
   // TODO(123528590): Remove this member.
   std::unique_ptr<QuicHeadersStream> headers_stream_;
+
+  // Unowned headers stream pointer that points to the stream
+  // in dynamic_stream_map.
+  // TODO(renjietang): Merge this with headers_stream_ and clean up other
+  // static_stream_map logic when flag eliminate_static_stream_map
+  // is deprecated.
+  QuicHeadersStream* unowned_headers_stream_;
 
   // The maximum size of a header block that will be accepted from the peer,
   // defined per spec as key + value + overhead per field (uncompressed).

@@ -20,6 +20,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.concurrent.GuardedBy;
+
 /** Support for early tracing, before the native library is loaded.
  *
  * This is limited, as:
@@ -43,8 +45,7 @@ public class EarlyTraceEvent {
     private static final String TRACE_CONFIG_FILENAME = "/data/local/chrome-trace-config.json";
 
     /** Single trace event. */
-    @VisibleForTesting
-    static final class Event {
+    public static final class Event {
         final String mName;
         final int mThreadId;
         final long mBeginTimeNanos;
@@ -52,14 +53,14 @@ public class EarlyTraceEvent {
         long mEndTimeNanos;
         long mEndThreadTimeMillis;
 
-        Event(String name) {
+        public Event(String name) {
             mName = name;
             mThreadId = Process.myTid();
             mBeginTimeNanos = elapsedRealtimeNanos();
             mBeginThreadTimeMillis = SystemClock.currentThreadTimeMillis();
         }
 
-        void end() {
+        public void end() {
             assert mEndTimeNanos == 0;
             assert mEndThreadTimeMillis == 0;
             mEndTimeNanos = elapsedRealtimeNanos();
@@ -109,11 +110,18 @@ public class EarlyTraceEvent {
 
     @VisibleForTesting static volatile int sState = STATE_DISABLED;
     // Not final as these object are not likely to be used at all.
-    @VisibleForTesting static List<Event> sCompletedEvents;
+    @GuardedBy("sLock")
+    @VisibleForTesting
+    static List<Event> sCompletedEvents;
+    @GuardedBy("sLock")
     @VisibleForTesting
     static Map<String, Event> sPendingEventByKey;
-    @VisibleForTesting static List<AsyncEvent> sAsyncEvents;
-    @VisibleForTesting static List<String> sPendingAsyncEvents;
+    @GuardedBy("sLock")
+    @VisibleForTesting
+    static List<AsyncEvent> sAsyncEvents;
+    @GuardedBy("sLock")
+    @VisibleForTesting
+    static List<String> sPendingAsyncEvents;
 
     /** @see TraceEvent#MaybeEnableEarlyTracing().
      */
@@ -244,6 +252,15 @@ public class EarlyTraceEvent {
         }
     }
 
+    /** Add events that were captured before {@link TraceEvent#maybeEnableEarlyTracing()}. */
+    public static void addEvent(Event e) {
+        if (!enabled()) return;
+        synchronized (sLock) {
+            if (!enabled()) return;
+            sCompletedEvents.add(e);
+        }
+    }
+
     /** @see {@link TraceEvent#startAsync()}. */
     public static void startAsync(String name, long id) {
         if (!enabled()) return;
@@ -269,13 +286,16 @@ public class EarlyTraceEvent {
 
     @VisibleForTesting
     static void resetForTesting() {
-        sState = EarlyTraceEvent.STATE_DISABLED;
-        sCompletedEvents = null;
-        sPendingEventByKey = null;
-        sAsyncEvents = null;
-        sPendingAsyncEvents = null;
+        synchronized (sLock) {
+            sState = EarlyTraceEvent.STATE_DISABLED;
+            sCompletedEvents = null;
+            sPendingEventByKey = null;
+            sAsyncEvents = null;
+            sPendingAsyncEvents = null;
+        }
     }
 
+    @GuardedBy("sLock")
     private static void maybeFinishLocked() {
         if (!sCompletedEvents.isEmpty()) {
             dumpEvents(sCompletedEvents);

@@ -1567,7 +1567,7 @@ xmlDocPtr XmlDocPtrForString(Document* document,
   // document results in good error messages.
   XMLDocumentParserScope scope(document, ErrorFunc, nullptr);
   XMLParserInput input(source);
-  return xmlReadMemory(input.Data(), input.size(), url.Latin1().data(),
+  return xmlReadMemory(input.Data(), input.size(), url.Latin1().c_str(),
                        input.Encoding(), XSLT_PARSE_OPTIONS);
 }
 
@@ -1619,6 +1619,9 @@ void XMLDocumentParser::ResumeParsing() {
   // In any case, the XML parser runs on the main thread and it's OK if
   // the passed string has more than one reference.
   Append(rest.ToString().Impl());
+
+  if (IsDetached())
+    return;
 
   // Finally, if finish() has been called and write() didn't result
   // in any further callbacks being queued, call end()

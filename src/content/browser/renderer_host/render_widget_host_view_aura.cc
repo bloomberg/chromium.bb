@@ -23,7 +23,6 @@
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/surfaces/local_surface_id_allocation.h"
-#include "components/viz/host/host_frame_sink_manager.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/bad_message.h"
@@ -47,7 +46,6 @@
 #include "content/browser/renderer_host/render_widget_host_view_event_handler.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/input_messages.h"
-#include "content/common/render_widget_window_tree_client_factory.mojom.h"
 #include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
@@ -56,8 +54,6 @@
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "services/ws/common/switches.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/web/web_ime_text_span.h"
 #include "ui/accessibility/accessibility_switches.h"
@@ -71,7 +67,6 @@
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
@@ -79,11 +74,9 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/compositor/compositor_vsync_manager.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/display/screen.h"
 #include "ui/events/blink/blink_event_util.h"
@@ -145,16 +138,6 @@ using blink::WebGestureEvent;
 using blink::WebTouchEvent;
 
 namespace content {
-
-namespace {
-
-// Callback from embedding the renderer.
-void EmbedCallback(bool result) {
-  if (!result)
-    DVLOG(1) << "embed failed";
-}
-
-}  // namespace
 
 #if defined(OS_WIN)
 
@@ -347,10 +330,8 @@ class RenderWidgetHostViewAura::WindowAncestorObserver
 
 RenderWidgetHostViewAura::RenderWidgetHostViewAura(
     RenderWidgetHost* widget_host,
-    bool is_guest_view_hack,
-    bool is_mus_browser_plugin_guest)
+    bool is_guest_view_hack)
     : RenderWidgetHostViewBase(widget_host),
-      is_mus_browser_plugin_guest_(is_mus_browser_plugin_guest),
       window_(nullptr),
       in_shutdown_(false),
       in_bounds_changed_(false),
@@ -370,14 +351,10 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(
       is_guest_view_hack_(is_guest_view_hack),
       device_scale_factor_(0.0f),
       event_handler_(new RenderWidgetHostViewEventHandler(host(), this, this)),
-      frame_sink_id_(features::IsMultiProcessMash()
-                         ? viz::FrameSinkId()
-                         : is_guest_view_hack_
-                               ? AllocateFrameSinkIdForGuestViewHack()
-                               : host()->GetFrameSinkId()),
+      frame_sink_id_(is_guest_view_hack_ ? AllocateFrameSinkIdForGuestViewHack()
+                                         : host()->GetFrameSinkId()),
       weak_ptr_factory_(this) {
-  if (!is_mus_browser_plugin_guest_)
-    CreateDelegatedFrameHostClient();
+  CreateDelegatedFrameHostClient();
 
   if (!is_guest_view_hack_)
     host()->SetView(this);
@@ -411,8 +388,6 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(
 
 void RenderWidgetHostViewAura::InitAsChild(gfx::NativeView parent_view) {
   DCHECK_EQ(widget_type_, WidgetType::kFrame);
-  if (is_mus_browser_plugin_guest_)
-    return;
   CreateAuraWindow(aura::client::WINDOW_TYPE_CONTROL);
 
   if (parent_view)
@@ -425,8 +400,6 @@ void RenderWidgetHostViewAura::InitAsPopup(
     RenderWidgetHostView* parent_host_view,
     const gfx::Rect& bounds_in_screen) {
   DCHECK_EQ(widget_type_, WidgetType::kPopup);
-  // Popups never have |is_mus_browser_plugin_guest_| set to true.
-  DCHECK(!is_mus_browser_plugin_guest_);
 
   popup_parent_host_view_ =
       static_cast<RenderWidgetHostViewAura*>(parent_host_view);
@@ -476,9 +449,6 @@ void RenderWidgetHostViewAura::InitAsPopup(
 void RenderWidgetHostViewAura::InitAsFullscreen(
     RenderWidgetHostView* reference_host_view) {
   DCHECK_EQ(widget_type_, WidgetType::kFrame);
-  // Webview Fullscreen doesn't go through InitAsFullscreen(), so
-  // |is_mus_browser_plugin_guest_| is always false.
-  DCHECK(!is_mus_browser_plugin_guest_);
   is_fullscreen_ = true;
   CreateAuraWindow(aura::client::WINDOW_TYPE_NORMAL);
   window_->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
@@ -502,9 +472,6 @@ void RenderWidgetHostViewAura::InitAsFullscreen(
 }
 
 void RenderWidgetHostViewAura::Show() {
-  if (is_mus_browser_plugin_guest_)
-    return;
-
   // If the viz::LocalSurfaceIdAllocation is invalid, we may have been evicted,
   // and no other visual properties have since been changed. Allocate a new id
   // and start synchronizing.
@@ -519,15 +486,11 @@ void RenderWidgetHostViewAura::Show() {
 }
 
 void RenderWidgetHostViewAura::Hide() {
-  if (is_mus_browser_plugin_guest_)
-    return;
-
   window_->Hide();
   WasOccluded();
 }
 
 void RenderWidgetHostViewAura::SetSize(const gfx::Size& size) {
-  DCHECK(!is_mus_browser_plugin_guest_);
   // For a SetSize operation, we don't care what coordinate system the origin
   // of the window is in, it's only important to make sure that the origin
   // remains constant after the operation.
@@ -535,7 +498,6 @@ void RenderWidgetHostViewAura::SetSize(const gfx::Size& size) {
 }
 
 void RenderWidgetHostViewAura::SetBounds(const gfx::Rect& rect) {
-  DCHECK(!is_mus_browser_plugin_guest_);
   gfx::Point relative_origin(rect.origin());
 
   // RenderWidgetHostViewAura::SetBounds() takes screen coordinates, but
@@ -554,7 +516,6 @@ void RenderWidgetHostViewAura::SetBounds(const gfx::Rect& rect) {
 }
 
 gfx::NativeView RenderWidgetHostViewAura::GetNativeView() {
-  DCHECK(!is_mus_browser_plugin_guest_);
   return window_;
 }
 
@@ -677,13 +638,11 @@ void RenderWidgetHostViewAura::WasUnOccluded() {
   if (!host_->is_hidden())
     return;
 
-  auto tab_switch_start_time = GetAndResetLastTabChangeStartTime();
+  auto tab_switch_start_state = TakeRecordTabSwitchTimeRequest();
   bool has_saved_frame =
       delegated_frame_host_ ? delegated_frame_host_->HasSavedFrame() : false;
 
-  const bool renderer_should_record_presentation_time = !has_saved_frame;
-  host()->WasShown(renderer_should_record_presentation_time,
-                   tab_switch_start_time);
+  host()->WasShown(has_saved_frame ? base::nullopt : tab_switch_start_state);
 
   aura::Window* root = window_->GetRootWindow();
   if (root) {
@@ -696,11 +655,10 @@ void RenderWidgetHostViewAura::WasUnOccluded() {
   if (delegated_frame_host_) {
     // If the frame for the renderer is already available, then the
     // tab-switching time is the presentation time for the browser-compositor.
-    const bool record_presentation_time = has_saved_frame;
     delegated_frame_host_->WasShown(
         GetLocalSurfaceIdAllocation().local_surface_id(),
-        window_->bounds().size(), record_presentation_time,
-        tab_switch_start_time);
+        window_->bounds().size(),
+        has_saved_frame ? tab_switch_start_state : base::nullopt);
   }
 
 #if defined(OS_WIN)
@@ -822,8 +780,7 @@ void RenderWidgetHostViewAura::SetIsLoading(bool is_loading) {
   UpdateCursorIfOverSelf();
 }
 
-void RenderWidgetHostViewAura::RenderProcessGone(base::TerminationStatus status,
-                                                 int error_code) {
+void RenderWidgetHostViewAura::RenderProcessGone() {
   UpdateCursorIfOverSelf();
   Destroy();
 }
@@ -958,20 +915,6 @@ void RenderWidgetHostViewAura::TransformPointToRootSurface(gfx::PointF* point) {
   aura::Window* root = window_->GetRootWindow();
   aura::Window::ConvertPointToTarget(window_, root, point);
   root->GetRootWindow()->transform().TransformPoint(point);
-
-// On ChromeOS, the root surface is the whole desktop. When using the
-// window-service converting to screen coordinates gives us that.
-#if defined(OS_CHROMEOS)
-  if (features::IsUsingWindowService()) {
-    aura::client::ScreenPositionClient* screen_client =
-        aura::client::GetScreenPositionClient(root);
-    if (screen_client) {
-      gfx::Point rounded_point(point->x(), point->y());
-      screen_client->ConvertPointToScreen(root, &rounded_point);
-      *point = gfx::PointF(rounded_point);
-    }
-  }
-#endif
 }
 
 gfx::Rect RenderWidgetHostViewAura::GetBoundsInRootWindow() {
@@ -1055,7 +998,7 @@ void RenderWidgetHostViewAura::GestureEventAck(
     // https://crbug.com/797855
     if (event_type == blink::WebInputEvent::kGestureScrollUpdate &&
         event.data.scroll_update.inertial_phase ==
-            blink::WebGestureEvent::kMomentumPhase &&
+            blink::WebGestureEvent::InertialPhaseState::kMomentum &&
         overscroll_controller_->overscroll_mode() != OVERSCROLL_NONE) {
       StopFling();
     }
@@ -1316,7 +1259,7 @@ void RenderWidgetHostViewAura::InsertChar(const ui::KeyEvent& event) {
     // Send a blink::WebInputEvent::Char event to |host_|.
     ForwardKeyboardEventWithLatencyInfo(
         NativeWebKeyboardEvent(event, event.GetCharacter()), *event.latency(),
-        nullptr, nullptr);
+        nullptr);
   }
 }
 
@@ -1578,8 +1521,8 @@ bool RenderWidgetHostViewAura::ShouldDoLearning() {
   return GetTextInputManager() && GetTextInputManager()->should_do_learning();
 }
 
-#if defined(OS_WIN)
-void RenderWidgetHostViewAura::SetCompositionFromExistingText(
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+bool RenderWidgetHostViewAura::SetCompositionFromExistingText(
     const gfx::Range& range,
     const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {
   RenderFrameHostImpl* frame = GetFocusedFrame();
@@ -1588,8 +1531,12 @@ void RenderWidgetHostViewAura::SetCompositionFromExistingText(
         range.start(), range.end(), ui_ime_text_spans);
     has_composition_text_ = true;
   }
+  return true;
 }
 
+#endif
+
+#if defined(OS_WIN)
 void RenderWidgetHostViewAura::SetActiveCompositionForAccessibility(
     const gfx::Range& range,
     const base::string16& active_composition_text,
@@ -1821,14 +1768,6 @@ viz::FrameSinkId RenderWidgetHostViewAura::GetRootFrameSinkId() {
   if (!window_ || !window_->GetHost() || !window_->GetHost()->compositor())
     return viz::FrameSinkId();
 
-  // In single-process mash the root is provided by Ash. Have
-  // HostFrameSinkManager walk the tree to find the right root.
-  if (features::IsSingleProcessMash()) {
-    base::Optional<viz::FrameSinkId> root =
-        GetHostFrameSinkManager()->FindRootFrameSinkId(frame_sink_id_);
-    return root ? *root : viz::FrameSinkId();
-  }
-
   return window_->GetHost()->compositor()->frame_sink_id();
 }
 
@@ -1868,14 +1807,6 @@ void RenderWidgetHostViewAura::FocusedNodeChanged(
     }
   }
 #endif
-}
-
-void RenderWidgetHostViewAura::ScheduleEmbed(
-    ws::mojom::WindowTreeClientPtr client,
-    base::OnceCallback<void(const base::UnguessableToken&)> callback) {
-  DCHECK(features::IsMultiProcessMash());
-  aura::Env::GetInstance()->ScheduleEmbed(std::move(client),
-                                          std::move(callback));
 }
 
 void RenderWidgetHostViewAura::OnScrollEvent(ui::ScrollEvent* event) {
@@ -2088,7 +2019,6 @@ RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
 
 void RenderWidgetHostViewAura::CreateAuraWindow(aura::client::WindowType type) {
   DCHECK(!window_);
-  DCHECK(!is_mus_browser_plugin_guest_);
   window_ = new aura::Window(this);
   window_->SetName("RenderWidgetHostViewAura");
   event_handler_->set_window(window_);
@@ -2107,18 +2037,6 @@ void RenderWidgetHostViewAura::CreateAuraWindow(aura::client::WindowType type) {
   // Init(), because it needs to have the layer.
   if (frame_sink_id_.is_valid())
     window_->SetEmbedFrameSinkId(frame_sink_id_);
-
-  if (!features::IsMultiProcessMash())
-    return;
-
-  // Embed the renderer into the Window.
-  // Use kEmbedFlagEmbedderControlsVisibility so that the renderer can't change
-  // the visibility of |window_|.
-  aura::WindowPortMus::Get(window_)->Embed(
-      GetWindowTreeClientFromRenderer(),
-      ws::mojom::kEmbedFlagEmbedderInterceptsEvents |
-          ws::mojom::kEmbedFlagEmbedderControlsVisibility,
-      base::BindOnce(&EmbedCallback));
 }
 
 void RenderWidgetHostViewAura::CreateDelegatedFrameHostClient() {
@@ -2140,9 +2058,6 @@ void RenderWidgetHostViewAura::CreateDelegatedFrameHostClient() {
 }
 
 void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
-  if (is_mus_browser_plugin_guest_)
-    return;
-
   if (host()->GetProcess()->FastShutdownStarted())
     return;
 
@@ -2239,8 +2154,6 @@ void RenderWidgetHostViewAura::OnDidUpdateVisualPropertiesComplete(
     // viz::LocalSurfaceId. However we do not want to embed surfaces while
     // hidden. Nor do we want to embed invalid ids when we are evicted. Becoming
     // visible will generate a new id, if necessary, and begin embedding.
-    // TODO(ejoe): Change the LocalSurfaceIdAllocation so that it can pause the
-    // elpased time for surface embedding. crbug/949967.
     window_->UpdateLocalSurfaceIdFromEmbeddedClient(
         metadata.local_surface_id_allocation);
   } else {
@@ -2474,7 +2387,6 @@ void RenderWidgetHostViewAura::DetachFromInputMethod() {
 void RenderWidgetHostViewAura::ForwardKeyboardEventWithLatencyInfo(
     const NativeWebKeyboardEvent& event,
     const ui::LatencyInfo& latency,
-    ui::KeyEvent* original_key_event,
     bool* update_event) {
   RenderWidgetHostImpl* target_host = host();
 
@@ -2501,14 +2413,14 @@ void RenderWidgetHostViewAura::ForwardKeyboardEventWithLatencyInfo(
                                           it->argument()));
     }
 
-    target_host->ForwardKeyboardEventWithCommands(
-        event, latency, &edit_commands, original_key_event, update_event);
+    target_host->ForwardKeyboardEventWithCommands(event, latency,
+                                                  &edit_commands, update_event);
     return;
   }
 #endif
 
-  target_host->ForwardKeyboardEventWithCommands(
-      event, latency, nullptr, original_key_event, update_event);
+  target_host->ForwardKeyboardEventWithCommands(event, latency, nullptr,
+                                                update_event);
 }
 
 void RenderWidgetHostViewAura::CreateSelectionController() {
@@ -2523,7 +2435,7 @@ void RenderWidgetHostViewAura::CreateSelectionController() {
 }
 
 void RenderWidgetHostViewAura::OnDidNavigateMainFrameToNewPage() {
-  window_->env()->gesture_recognizer()->CancelActiveTouches(window_);
+  aura::Env::GetInstance()->gesture_recognizer()->CancelActiveTouches(window_);
 }
 
 const viz::FrameSinkId& RenderWidgetHostViewAura::GetFrameSinkId() const {

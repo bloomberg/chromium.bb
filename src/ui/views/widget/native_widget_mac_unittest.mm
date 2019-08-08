@@ -19,6 +19,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
+#import "components/remote_cocoa/app_shim/bridged_content_view.h"
+#import "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
+#import "components/remote_cocoa/app_shim/native_widget_mac_nswindow.h"
 #import "testing/gtest_mac.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -42,9 +45,6 @@
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/dialog_delegate.h"
-#import "ui/views_bridge_mac/bridged_content_view.h"
-#import "ui/views_bridge_mac/bridged_native_widget_impl.h"
-#import "ui/views_bridge_mac/native_widget_mac_nswindow.h"
 
 // Donates an implementation of -[NSAnimation stopAnimation] which calls the
 // original implementation, then quits a nested run loop.
@@ -131,7 +131,7 @@ class TestWindowNativeWidgetMac : public NativeWidgetMac {
   // NativeWidgetMac:
   void PopulateCreateWindowParams(
       const views::Widget::InitParams& widget_params,
-      views_bridge_mac::mojom::CreateWindowParams* params) override {
+      remote_cocoa::mojom::CreateWindowParams* params) override {
     params->style_mask = NSBorderlessWindowMask;
     if (widget_params.type == Widget::InitParams::TYPE_WINDOW) {
       params->style_mask = NSTexturedBackgroundWindowMask | NSTitledWindowMask |
@@ -140,7 +140,7 @@ class TestWindowNativeWidgetMac : public NativeWidgetMac {
     }
   }
   NativeWidgetMacNSWindow* CreateNSWindow(
-      const views_bridge_mac::mojom::CreateWindowParams* params) override {
+      const remote_cocoa::mojom::CreateWindowParams* params) override {
     return [[[NativeWidgetMacTestWindow alloc]
         initWithContentRect:ui::kWindowSizeDeterminedLater
                   styleMask:params->style_mask
@@ -1422,6 +1422,9 @@ TEST_F(NativeWidgetMacTest, WindowModalSheet) {
   ASSERT_EQ(2u, children.size());
   EXPECT_TRUE(children.count(sheet_widget));
 
+  // Sheets are not child windows of their parent NSWindow, though.
+  ASSERT_EQ(0u, [native_parent childWindows].count);
+
   // Modal, so the close button in the parent window should get disabled.
   EXPECT_FALSE([parent_close_button isEnabled]);
 
@@ -1443,6 +1446,7 @@ TEST_F(NativeWidgetMacTest, WindowModalSheet) {
   widget_observer.WaitForVisibleCounts(1, 1);
   EXPECT_FALSE(sheet_widget->IsVisible());
   [native_parent makeKeyAndOrderFront:nil];
+  ASSERT_EQ(0u, [native_parent childWindows].count);
   widget_observer.WaitForVisibleCounts(2, 1);
   EXPECT_TRUE(sheet_widget->IsVisible());
 

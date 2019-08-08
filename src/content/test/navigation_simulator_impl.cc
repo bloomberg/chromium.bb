@@ -271,6 +271,13 @@ NavigationSimulatorImpl::CreateFromPending(WebContents* contents) {
 
   FrameTreeNode* frame_tree_node =
       GetFrameTreeNodeForPendingEntry(contents_impl);
+  return NavigationSimulatorImpl::CreateFromPendingInFrame(frame_tree_node);
+}
+
+// static
+std::unique_ptr<NavigationSimulatorImpl>
+NavigationSimulatorImpl::CreateFromPendingInFrame(
+    FrameTreeNode* frame_tree_node) {
   CHECK(frame_tree_node);
   TestRenderFrameHost* test_frame_host =
       static_cast<TestRenderFrameHost*>(frame_tree_node->current_frame_host());
@@ -288,11 +295,8 @@ NavigationSimulatorImpl::CreateFromPending(WebContents* contents) {
     test_frame_host->SendBeforeUnloadACK(true /*proceed */);
 
   auto simulator = base::WrapUnique(new NavigationSimulatorImpl(
-      GURL(),
-      !contents_impl->GetController()
-           .GetPendingEntry()
-           ->is_renderer_initiated(),
-      static_cast<WebContentsImpl*>(contents), test_frame_host));
+      GURL(), request->browser_initiated(),
+      WebContentsImpl::FromFrameTreeNode(frame_tree_node), test_frame_host));
   simulator->frame_tree_node_ = frame_tree_node;
   simulator->InitializeFromStartedRequest(request);
   return simulator;
@@ -348,6 +352,11 @@ NavigationSimulatorImpl::NavigationSimulatorImpl(
 }
 
 NavigationSimulatorImpl::~NavigationSimulatorImpl() {}
+
+void NavigationSimulatorImpl::SetIsPostWithId(int64_t post_id) {
+  post_id_ = post_id;
+  SetMethod("POST");
+}
 
 void NavigationSimulatorImpl::InitializeFromStartedRequest(
     NavigationRequest* request) {
@@ -788,12 +797,22 @@ void NavigationSimulatorImpl::CommitSameDocument() {
 }
 
 void NavigationSimulatorImpl::SetTransition(ui::PageTransition transition) {
-  CHECK_EQ(INITIALIZATION, state_)
-      << "The transition cannot be set after the navigation has started";
-  CHECK_EQ(ReloadType::NONE, reload_type_)
-      << "The transition cannot be specified for reloads";
-  CHECK_EQ(0, session_history_offset_)
-      << "The transition cannot be specified for back/forward navigations";
+  if (frame_tree_node_ && !frame_tree_node_->IsMainFrame()) {
+    // Subframe case. The subframe page transition is only set at commit time in
+    // the navigation code, so it can be modified later in time.
+    CHECK(PageTransitionCoreTypeIs(transition,
+                                   ui::PAGE_TRANSITION_AUTO_SUBFRAME) ||
+          PageTransitionCoreTypeIs(transition,
+                                   ui::PAGE_TRANSITION_MANUAL_SUBFRAME))
+        << "The transition type is not appropriate for a subframe";
+  } else {
+    CHECK_EQ(INITIALIZATION, state_)
+        << "The transition cannot be set after the navigation has started";
+    CHECK_EQ(ReloadType::NONE, reload_type_)
+        << "The transition cannot be specified for reloads";
+    CHECK_EQ(0, session_history_offset_)
+        << "The transition cannot be specified for back/forward navigations";
+  }
   transition_ = transition;
 }
 
@@ -826,6 +845,13 @@ void NavigationSimulatorImpl::SetIsFormSubmission(bool is_form_submission) {
   CHECK_EQ(INITIALIZATION, state_) << "The form submission parameter cannot "
                                       "be set after the navigation has started";
   is_form_submission_ = is_form_submission;
+}
+
+void NavigationSimulatorImpl::SetWasInitiatedByLinkClick(
+    bool was_initiated_by_link_click) {
+  CHECK_EQ(INITIALIZATION, state_) << "The form submission parameter cannot "
+                                      "be set after the navigation has started";
+  was_initiated_by_link_click_ = was_initiated_by_link_click;
 }
 
 void NavigationSimulatorImpl::SetReferrer(const Referrer& referrer) {
@@ -879,6 +905,10 @@ void NavigationSimulatorImpl::SetAutoAdvance(bool auto_advance) {
   auto_advance_ = auto_advance;
 }
 
+void NavigationSimulatorImpl::SetSSLInfo(const net::SSLInfo& ssl_info) {
+  ssl_info_ = ssl_info;
+}
+
 NavigationThrottle::ThrottleCheckResult
 NavigationSimulatorImpl::GetLastThrottleCheckResult() {
   return last_throttle_check_result_.value();
@@ -907,8 +937,13 @@ void NavigationSimulatorImpl::BrowserInitiatedStartAndWaitBeforeUnload() {
       web_contents_->GetController().LoadURLWithParams(*load_url_params_);
       load_url_params_ = nullptr;
     } else {
-      web_contents_->GetController().LoadURL(navigation_url_, referrer_,
-                                             transition_, std::string());
+      NavigationController::LoadURLParams load_url_params(navigation_url_);
+      load_url_params.referrer = referrer_;
+      load_url_params.transition_type = transition_;
+      if (initial_method_ == "POST")
+        load_url_params.load_type = NavigationController::LOAD_TYPE_HTTP_POST;
+
+      web_contents_->GetController().LoadURLWithParams(load_url_params);
     }
   }
 
@@ -1049,7 +1084,7 @@ bool NavigationSimulatorImpl::SimulateRendererInitiatedStart() {
           false /* skip_service_worker */,
           blink::mojom::RequestContextType::HYPERLINK,
           blink::WebMixedContentContextType::kBlockable, is_form_submission_,
-          GURL() /* searchable_form_url */,
+          was_initiated_by_link_click_, GURL() /* searchable_form_url */,
           std::string() /* searchable_form_encoding */,
           GURL() /* client_side_redirect_url */,
           base::nullopt /* detools_initiator_info */);
@@ -1240,6 +1275,7 @@ NavigationSimulatorImpl::BuildDidCommitProvisionalLoadParams(
   params->navigation_token = request_
                                  ? request_->commit_params().navigation_token
                                  : base::UnguessableToken::Create();
+  params->post_id = post_id_;
 
   if (intended_as_new_entry_.has_value())
     params->intended_as_new_entry = intended_as_new_entry_.value();
@@ -1248,7 +1284,7 @@ NavigationSimulatorImpl::BuildDidCommitProvisionalLoadParams(
     // Note: Error pages must commit in a unique origin. So it is left unset.
     params->url_is_unreachable = true;
   } else {
-    params->origin = url::Origin::Create(navigation_url_);
+    params->origin = origin_.value_or(url::Origin::Create(navigation_url_));
     params->redirects.push_back(navigation_url_);
     params->method = request_ ? request_->common_params().method : "GET";
     params->http_status_code = 200;
@@ -1271,9 +1307,10 @@ NavigationSimulatorImpl::BuildDidCommitProvisionalLoadParams(
     params->document_sequence_number = ++g_unique_identifier;
   }
 
-  params->page_state = PageState::CreateForTestingWithSequenceNumbers(
-      navigation_url_, params->item_sequence_number,
-      params->document_sequence_number);
+  params->page_state =
+      page_state_.value_or(PageState::CreateForTestingWithSequenceNumbers(
+          navigation_url_, params->item_sequence_number,
+          params->document_sequence_number));
 
   return params;
 }

@@ -313,9 +313,8 @@ void MojoVideoDecoderService::OnDecoderReset() {
   std::move(reset_cb_).Run();
 }
 
-void MojoVideoDecoderService::OnDecoderOutput(
-    const scoped_refptr<VideoFrame>& frame) {
-  DVLOG(3) << __func__;
+void MojoVideoDecoderService::OnDecoderOutput(scoped_refptr<VideoFrame> frame) {
+  DVLOG(3) << __func__ << " pts=" << frame->timestamp().InMilliseconds();
   DCHECK(client_);
   DCHECK(decoder_);
   TRACE_EVENT1("media", "MojoVideoDecoderService::OnDecoderOutput",
@@ -336,7 +335,8 @@ void MojoVideoDecoderService::OnDecoderOutput(
     release_token = releaser->RegisterVideoFrame(frame);
   }
 
-  client_->OnVideoFrameDecoded(frame, decoder_->CanReadWithoutStalling(),
+  client_->OnVideoFrameDecoded(std::move(frame),
+                               decoder_->CanReadWithoutStalling(),
                                std::move(release_token));
 }
 

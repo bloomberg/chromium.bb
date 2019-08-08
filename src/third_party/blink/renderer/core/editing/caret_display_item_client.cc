@@ -68,8 +68,8 @@ LayoutBlock* CaretLayoutBlock(const Node* node,
                           : layout_object->ContainingBlock();
 }
 
-LayoutRect MapCaretRectToCaretPainter(const LayoutBlock* caret_block,
-                                      const LocalCaretRect& caret_rect) {
+PhysicalRect MapCaretRectToCaretPainter(const LayoutBlock* caret_block,
+                                        const LocalCaretRect& caret_rect) {
   // FIXME: This shouldn't be called on un-rooted subtrees.
   // FIXME: This should probably just use mapLocalToAncestor.
   // Compute an offset between the caretLayoutItem and the caretPainterItem.
@@ -78,12 +78,11 @@ LayoutRect MapCaretRectToCaretPainter(const LayoutBlock* caret_block,
       const_cast<LayoutObject*>(caret_rect.layout_object);
   DCHECK(caret_layout_object->IsDescendantOf(caret_block));
 
-  LayoutRect result_rect = caret_rect.rect;
-  caret_block->FlipForWritingMode(result_rect);
+  PhysicalRect result_rect = caret_rect.rect;
   while (caret_layout_object != caret_block) {
     LayoutObject* container_object = caret_layout_object->Container();
     if (!container_object)
-      return LayoutRect();
+      return PhysicalRect();
     result_rect.Move(
         caret_layout_object->OffsetFromContainer(container_object));
     caret_layout_object = container_object;
@@ -164,7 +163,7 @@ void CaretDisplayItemClient::UpdateStyleAndLayoutIfNeeded(
 
   if (!new_layout_block) {
     color_ = Color();
-    local_rect_ = LayoutRect();
+    local_rect_ = PhysicalRect();
     return;
   }
 
@@ -178,7 +177,7 @@ void CaretDisplayItemClient::UpdateStyleAndLayoutIfNeeded(
     color_ = new_color;
   }
 
-  LayoutRect new_local_rect = rect_and_block.caret_rect;
+  auto new_local_rect = rect_and_block.caret_rect;
   if (new_local_rect != local_rect_) {
     needs_paint_invalidation_ = true;
     local_rect_ = new_local_rect;
@@ -256,14 +255,14 @@ void CaretDisplayItemClient::InvalidatePaintInCurrentLayoutBlock(
 
 void CaretDisplayItemClient::PaintCaret(
     GraphicsContext& context,
-    const LayoutPoint& paint_offset,
+    const PhysicalOffset& paint_offset,
     DisplayItem::Type display_item_type) const {
   if (DrawingRecorder::UseCachedDrawingIfPossible(context, *this,
                                                   display_item_type))
     return;
 
-  LayoutRect drawing_rect = local_rect_;
-  drawing_rect.MoveBy(paint_offset);
+  PhysicalRect drawing_rect = local_rect_;
+  drawing_rect.Move(paint_offset);
 
   DrawingRecorder recorder(context, *this, display_item_type);
   IntRect paint_rect = PixelSnappedIntRect(drawing_rect);

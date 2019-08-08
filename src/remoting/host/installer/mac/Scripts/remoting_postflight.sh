@@ -15,6 +15,8 @@ PLIST=/Library/LaunchAgents/org.chromium.chromoting.plist
 PAM_CONFIG=/etc/pam.d/chrome-remote-desktop
 ENABLED_FILE="$HELPERTOOLS/$SERVICE_NAME.me2me_enabled"
 ENABLED_FILE_BACKUP="$ENABLED_FILE.backup"
+HOST_BUNDLE_NAME=@@HOST_BUNDLE_NAME@@
+HOST_EXE="$HELPERTOOLS/$HOST_BUNDLE_NAME/Contents/MacOS/remoting_me2me_host"
 
 KSADMIN=/Library/Google/GoogleSoftwareUpdate/GoogleSoftwareUpdate.bundle/Contents/MacOS/ksadmin
 KSUPDATE=https://tools.google.com/service/update2
@@ -89,6 +91,9 @@ EOF
 else
   logger PAM config has local edits. Not updating.
 fi
+
+# Run the config-upgrade tool.
+"$HOST_EXE" --upgrade-token --host-config="$CONFIG_FILE" || true
 
 # Load the service for each user for whom the service was unloaded in the
 # preflight script (this includes the root user, in case only the login screen

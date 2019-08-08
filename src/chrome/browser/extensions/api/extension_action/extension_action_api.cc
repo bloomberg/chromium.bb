@@ -76,15 +76,6 @@ void ExtensionActionAPI::Observer::OnExtensionActionUpdated(
     content::BrowserContext* browser_context) {
 }
 
-void ExtensionActionAPI::Observer::OnExtensionActionVisibilityChanged(
-    const std::string& extension_id,
-    bool is_now_visible) {
-}
-
-void ExtensionActionAPI::Observer::OnPageActionsUpdated(
-    content::WebContents* web_contents) {
-}
-
 void ExtensionActionAPI::Observer::OnExtensionActionAPIShuttingDown() {
 }
 
@@ -171,8 +162,6 @@ void ExtensionActionAPI::SetBrowserActionVisibility(
   GetExtensionPrefs()->UpdateExtensionPref(
       extension_id, kBrowserActionVisible,
       std::make_unique<base::Value>(visible));
-  for (auto& observer : observers_)
-    observer.OnExtensionActionVisibilityChanged(extension_id, visible);
 }
 
 bool ExtensionActionAPI::ShowExtensionActionPopup(
@@ -203,9 +192,6 @@ void ExtensionActionAPI::NotifyChange(ExtensionAction* extension_action,
                                       content::BrowserContext* context) {
   for (auto& observer : observers_)
     observer.OnExtensionActionUpdated(extension_action, web_contents, context);
-
-  if (extension_action->action_type() == ActionInfo::TYPE_PAGE)
-    NotifyPageActionsChanged(web_contents);
 }
 
 void ExtensionActionAPI::DispatchExtensionActionClicked(
@@ -215,6 +201,12 @@ void ExtensionActionAPI::DispatchExtensionActionClicked(
   events::HistogramValue histogram_value = events::UNKNOWN;
   const char* event_name = NULL;
   switch (extension_action.action_type()) {
+    case ActionInfo::TYPE_ACTION:
+      // TODO(https://crbug.com/893373): Add testing for this API (currently
+      // restricted to trunk).
+      histogram_value = events::ACTION_ON_CLICKED;
+      event_name = "action.onClicked";
+      break;
     case ActionInfo::TYPE_BROWSER:
       histogram_value = events::BROWSER_ACTION_ON_CLICKED;
       event_name = "browserAction.onClicked";
@@ -222,10 +214,6 @@ void ExtensionActionAPI::DispatchExtensionActionClicked(
     case ActionInfo::TYPE_PAGE:
       histogram_value = events::PAGE_ACTION_ON_CLICKED;
       event_name = "pageAction.onClicked";
-      break;
-    case ActionInfo::TYPE_SYSTEM_INDICATOR:
-      // The System Indicator handles its own clicks.
-      NOTREACHED();
       break;
   }
 
@@ -287,16 +275,6 @@ void ExtensionActionAPI::DispatchEventToExtension(
       ->DispatchEventToExtension(extension_id, std::move(event));
 }
 
-void ExtensionActionAPI::NotifyPageActionsChanged(
-    content::WebContents* web_contents) {
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  if (!browser)
-    return;
-
-  for (auto& observer : observers_)
-    observer.OnPageActionsUpdated(web_contents);
-}
-
 void ExtensionActionAPI::Shutdown() {
   for (auto& observer : observers_)
     observer.OnExtensionActionAPIShuttingDown();
@@ -319,15 +297,7 @@ ExtensionActionFunction::~ExtensionActionFunction() {
 ExtensionFunction::ResponseAction ExtensionActionFunction::Run() {
   ExtensionActionManager* manager =
       ExtensionActionManager::Get(browser_context());
-  if (base::StartsWith(name(), "systemIndicator.",
-                       base::CompareCase::INSENSITIVE_ASCII)) {
-    extension_action_ = manager->GetSystemIndicator(*extension());
-  } else {
-    extension_action_ = manager->GetBrowserAction(*extension());
-    if (!extension_action_) {
-      extension_action_ = manager->GetPageAction(*extension());
-    }
-  }
+  extension_action_ = manager->GetExtensionAction(*extension());
   if (!extension_action_) {
     // TODO(kalman): ideally the browserAction/pageAction APIs wouldn't event
     // exist for extensions that don't have one declared. This should come as
@@ -346,11 +316,9 @@ ExtensionFunction::ResponseAction ExtensionActionFunction::Run() {
     if (!contents_)
       return RespondNow(Error(kNoTabError, base::NumberToString(tab_id_)));
   } else {
-    // Only browser actions and system indicators have a default tabId.
-    ActionInfo::Type action_type = extension_action_->action_type();
-    EXTENSION_FUNCTION_VALIDATE(
-        action_type == ActionInfo::TYPE_BROWSER ||
-        action_type == ActionInfo::TYPE_SYSTEM_INDICATOR);
+    // Only browser actions have a default tabId.
+    EXTENSION_FUNCTION_VALIDATE(extension_action_->action_type() ==
+                                ActionInfo::TYPE_BROWSER);
   }
   return RunExtensionAction();
 }

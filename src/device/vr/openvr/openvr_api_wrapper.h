@@ -45,8 +45,10 @@ class OpenVRWrapper {
   static bool any_initialized_;
 };
 
-std::string GetOpenVRString(vr::IVRSystem* vr_system,
-                            vr::TrackedDeviceProperty prop);
+std::string GetOpenVRString(
+    vr::IVRSystem* vr_system,
+    vr::TrackedDeviceProperty prop,
+    uint32_t device_index = vr::k_unTrackedDeviceIndex_Hmd);
 
 }  // namespace device
 

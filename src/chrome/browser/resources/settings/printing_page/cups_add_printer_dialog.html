@@ -117,7 +117,7 @@
         </div>
         <div class="settings-box two-line">
           <cr-input id="printerAddressInput" label="$i18n{printerAddress}"
-              value="{{newPrinter.printerAddress}}" maxlength=128>
+              value="{{newPrinter.printerAddress}}" maxlength=63>
           </cr-input>
         </div>
         <div class="settings-box two-line">
@@ -170,30 +170,53 @@
 <dom-module id="add-printer-manufacturer-model-dialog">
   <template>
     <style include="cups-printer-shared">
+      .subtext {
+        margin-bottom: 10px;
+        padding-inline-end: 20px;
+        padding-inline-start: 20px;
+      }
     </style>
     <add-printer-dialog>
-      <div slot="dialog-title">$i18n{selectManufacturerAndModelTitle}</div>
+      <div slot="dialog-title">$i18n{manufacturerAndModelDialogTitle}</div>
       <div slot="dialog-body">
+        <div class="subtext" id="makeModelTextInfo">
+          <span>[[getManufacturerAndModelSubtext_(activePrinter.*)]]
+          </span>
+          <a href="$i18n{printingCUPSPrintLearnMoreUrl}" target="_blank">
+            $i18n{learnMore}
+          </a>
+        </div>
         <div class="settings-box two-line">
-          <cr-searchable-drop-down items="[[manufacturerList]]"
+          <cr-searchable-drop-down id="manufacturerDropdown"
+              items="[[manufacturerList]]"
               label="$i18n{printerManufacturer}"
               value="{{activePrinter.ppdManufacturer}}">
           </cr-searchable-drop-down>
         </div>
         <div class="settings-box two-line">
-          <cr-searchable-drop-down items="[[modelList]]"
+          <cr-searchable-drop-down id="modelDropdown"
+              items="[[modelList]]"
               label="$i18n{printerModel}"
               value="{{activePrinter.ppdModel}}">
           </cr-searchable-drop-down>
         </div>
+        <div id="ppdLabel" class="field-label">
+          <span>$i18n{selectDriver}</span>
+          <a href="$i18n{printingCUPSPrintPpdLearnMoreUrl}" target="_blank">
+              $i18n{learnMore}
+          </a>
+        </div>
         <div class="settings-box two-line">
           <cr-input class="browse-file-input" readonly value="[[newUserPPD_]]"
-              label="$i18n{selectDriver}" invalid="[[invalidPPD_]]"
+              aria-labelledby="ppdLabel" invalid="[[invalidPPD_]]"
               error-message="$i18n{selectDriverErrorMessage}" tabindex="-1">
           </cr-input>
           <paper-button class="browse-button" on-click="onBrowseFile_">
             $i18n{selectDriverButtonText}
           </paper-button>
+        </div>
+        <div class="eula" id="eulaUrl" hidden="[[!eulaUrl_]]">
+          <a href="[[eulaUrl_]]" target="_blank">$i18n{printerEulaNotice}</a>
         </div>
       </div>
       <div slot="dialog-buttons">

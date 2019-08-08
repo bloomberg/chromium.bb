@@ -38,6 +38,9 @@ class ImeModeView : public TrayItemView,
   // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;
 
+  // views::TrayItemView:
+  const char* GetClassName() const override;
+
  private:
   void Update();
 

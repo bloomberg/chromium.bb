@@ -32,7 +32,6 @@ namespace test {
 class WindowOcclusionTrackerTestApi;
 }
 
-class Env;
 class WindowOcclusionChangeBuilder;
 
 // Notifies tracked Windows when their occlusion state change.
@@ -55,20 +54,21 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
   // that could cause window occlusion states to change occurs within the scope
   // of a ScopedPause, window occlusion state computations are delayed until all
   // ScopedPause objects have been destroyed.
-  // TODO(crbug.com/867150): Pause the tracker in Window Service under mus.
   class AURA_EXPORT ScopedPause {
    public:
-    explicit ScopedPause(Env* env);
+    ScopedPause();
     ~ScopedPause();
 
    private:
-    Env* const env_;
     DISALLOW_COPY_AND_ASSIGN(ScopedPause);
   };
 
-  // Forces the occlusion state of a window and all its descendants to VISIBLE.
-  // Ignores the window that is forced VISIBLE and its descendants when
-  // computing the occlusion state of other windows is the tree.
+  // Used to exclude a window and all descendants from occlusion calculation.
+  // The occlusion state of the window and all descendants is set from the
+  // the drawn state of the window, *not* based on what windows may be stacked
+  // above them. Further, ignores the window that is excluded and its
+  // descendants when computing the occlusion state of other windows in the
+  // tree.
   //
   // This is useful for a window being dragged or resized to avoid unnecessary
   // occlusion state change triggered by these operation, because the window
@@ -92,11 +92,12 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
     DISALLOW_COPY_AND_ASSIGN(ScopedExclude);
   };
 
-  // Forces the occlusion state of a window to VISIBLE. Causes the occlusion
-  // state of descendants of the window that is forced VISIBLE to be computed
-  // as if they were in an isolated tree with a root that is drawn. Ignores the
-  // window that is forced VISIBLE and its descendants when computing the
-  // occlusion state of other windows is the tree.
+  // Forces the occlusion state of a window to VISIBLE regardless of the drawn
+  // state of the window. Causes the occlusion state of descendants of the
+  // window that is forced VISIBLE to be computed as if they were in an
+  // isolated tree with a root that is drawn. Ignores the window that is forced
+  // VISIBLE and its descendants when computing the occlusion state of other
+  // windows in the tree.
   //
   // This function is primarily useful for situations that show the contents of
   // a hidden window, such as overview mode on ChromeOS.
@@ -192,9 +193,10 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
       const SkIRect* clipped_bounds,
       SkRegion* occluded_region);
 
-  // Returns true if |window| opaquely fills its bounds. |window| must be
-  // visible.
-  bool VisibleWindowIsOpaque(Window* window) const;
+  // Returns true if |window| can occlude other windows (e.g. because it is
+  // not transparent or has opaque regions for occlusion).
+  // |window| must be visible.
+  bool VisibleWindowCanOccludeOtherWindows(Window* window) const;
 
   // Returns true if |window| has content.
   bool WindowHasContent(Window* window) const;
@@ -261,14 +263,15 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
   // |tracked_windows_| and visible.
   bool WindowOrDescendantIsTrackedAndVisible(Window* window) const;
 
-  // Returns true if |window| or one of its descendants is visible, opaquely
-  // fills its bounds and is not in |animated_windows_|. If
-  // |assume_parent_opaque| is true, the function assumes that the combined
-  // opacity of window->parent() is 1.0f. If |assume_window_opaque|, the
-  // function assumes that the opacity of |window| is 1.0f.
-  bool WindowOrDescendantIsOpaque(Window* window,
-                                  bool assume_parent_opaque = false,
-                                  bool assume_window_opaque = false) const;
+  // Returns true if |window| or one of its descendants is visible, has some
+  // opaque region and is not in |animated_windows_|. If |assume_parent_opaque|
+  // is true, the function assumes that the combined opacity of window->parent()
+  // is 1.0f. If |assume_window_opaque|, the function assumes that the opacity
+  // of |window| is 1.0f.
+  bool WindowOrDescendantCanOccludeOtherWindows(
+      Window* window,
+      bool assume_parent_opaque = false,
+      bool assume_window_opaque = false) const;
 
   // Returns true if changing the opacity or alpha state of |window| could
   // affect the occlusion state of a tracked window.
@@ -327,6 +330,7 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
   void OnWindowOpacitySet(Window* window,
                           ui::PropertyChangeReason reason) override;
   void OnWindowAlphaShapeSet(Window* window) override;
+  void OnWindowTransparentChanged(Window* window) override;
   void OnWindowTransformed(Window* window,
                            ui::PropertyChangeReason reason) override;
   void OnWindowStackingChanged(Window* window) override;
@@ -335,6 +339,7 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
   void OnWindowRemovingFromRootWindow(Window* window,
                                       Window* new_root) override;
   void OnWindowLayerRecreated(Window* window) override;
+  void OnWindowOpaqueRegionsForOcclusionChanged(Window* window) override;
 
   // WindowTreeHostObserver
   void OnOcclusionStateChanged(WindowTreeHost* host,

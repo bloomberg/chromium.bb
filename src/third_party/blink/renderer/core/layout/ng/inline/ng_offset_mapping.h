@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_caret_navigator.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -73,6 +72,8 @@ class CORE_EXPORT NGOffsetMappingUnit {
   unsigned ConvertTextContentToFirstDOMOffset(unsigned) const;
   unsigned ConvertTextContentToLastDOMOffset(unsigned) const;
 
+  void AssertValid() const;
+
  private:
   NGOffsetMappingUnitType type_ = NGOffsetMappingUnitType::kIdentity;
 
@@ -82,6 +83,10 @@ class CORE_EXPORT NGOffsetMappingUnit {
   // offset in |LayoutText::text_| instead of DOM node.
   unsigned dom_start_;
   unsigned dom_end_;
+
+  // |text_content_start_| and |text_content_end_| are offsets in
+  // |NGOffsetMapping::text_|. These values are in [0, |text_.length()] to
+  // represent collapsed spaces at the end of block.
   unsigned text_content_start_;
   unsigned text_content_end_;
 
@@ -218,13 +223,6 @@ class CORE_EXPORT NGOffsetMapping {
   // the layout order, aka the flat tree order.
   Position GetFirstPosition(unsigned) const;
   Position GetLastPosition(unsigned) const;
-
-  // Converts the given caret position on text content to a PositionWithAffinity
-  // in DOM. If |position| is before a character, the function creates a
-  // downstream position before |GetLastPosition()| of the character; otherwise,
-  // it returns an upstream position after |GetFirstPosition()| of the character
-  PositionWithAffinity GetPositionWithAffinity(
-      const NGCaretNavigator::Position& position) const;
 
   // Returns all NGOffsetMappingUnits whose text content ranges has non-empty
   // (but possibly collapsed) intersection with (start, end). Note that units

@@ -69,11 +69,10 @@ class FakeTransportFactory : public cricket::TransportFactoryInterface {
   }
 
   std::unique_ptr<cricket::DtlsTransportInternal> CreateDtlsTransport(
-      std::unique_ptr<cricket::IceTransportInternal> ice,
+      cricket::IceTransportInternal* ice,
       const webrtc::CryptoOptions& crypto_options) override {
-    std::unique_ptr<cricket::FakeIceTransport> fake_ice(
-        static_cast<cricket::FakeIceTransport*>(ice.release()));
-    return absl::make_unique<FakeDtlsTransport>(std::move(fake_ice));
+    return absl::make_unique<FakeDtlsTransport>(
+        static_cast<cricket::FakeIceTransport*>(ice));
   }
 };
 
@@ -175,8 +174,9 @@ class JsepTransportControllerTest : public JsepTransportController::Observer,
                       cricket::IceMode ice_mode,
                       cricket::ConnectionRole conn_role,
                       rtc::scoped_refptr<rtc::RTCCertificate> cert) {
-    std::unique_ptr<cricket::DataContentDescription> data(
-        new cricket::DataContentDescription());
+    RTC_CHECK(protocol_type == cricket::MediaProtocolType::kSctp);
+    std::unique_ptr<cricket::SctpDataContentDescription> data(
+        new cricket::SctpDataContentDescription());
     data->set_rtcp_mux(true);
     description->AddContent(mid, protocol_type,
                             /*rejected=*/false, data.release());
@@ -441,7 +441,7 @@ TEST_F(JsepTransportControllerTest,
                   .ok());
 
   FakeMediaTransport* media_transport = static_cast<FakeMediaTransport*>(
-      transport_controller_->GetMediaTransport(kAudioMid1));
+      transport_controller_->GetMediaTransportForDataChannel(kAudioMid1));
 
   ASSERT_NE(nullptr, media_transport);
 
@@ -450,7 +450,8 @@ TEST_F(JsepTransportControllerTest,
   EXPECT_TRUE(media_transport->pre_shared_key().has_value());
 
   // Return nullptr for non-existing mids.
-  EXPECT_EQ(nullptr, transport_controller_->GetMediaTransport(kVideoMid2));
+  EXPECT_EQ(nullptr,
+            transport_controller_->GetMediaTransportForDataChannel(kVideoMid2));
 
   EXPECT_EQ(cricket::ICE_CANDIDATE_COMPONENT_RTP,
             transport_controller_->GetDtlsTransport(kAudioMid1)->component())
@@ -562,8 +563,6 @@ TEST_F(JsepTransportControllerTest, GetMediaTransportInCallee) {
   EXPECT_EQ(absl::nullopt, media_transport->settings().pre_shared_key);
   EXPECT_TRUE(media_transport->is_connected());
 
-  EXPECT_EQ("fake-remote-settings",
-            media_transport->remote_transport_parameters());
   // Return nullptr for non-existing mids.
   EXPECT_EQ(nullptr, transport_controller_->GetMediaTransport(kVideoMid2));
 
@@ -1662,7 +1661,6 @@ TEST_F(JsepTransportControllerTest, MultipleMediaSectionsOfSameTypeWithBundle) {
   // Verify the DtlsTransport for the SCTP data channel is reset correctly.
   auto it2 = changed_dtls_transport_by_mid_.find(kDataMid1);
   ASSERT_TRUE(it2 != changed_dtls_transport_by_mid_.end());
-  EXPECT_EQ(transport1->rtp_packet_transport(), it2->second);
 }
 
 // Tests that only a subset of all the m= sections are bundled.

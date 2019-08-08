@@ -35,7 +35,7 @@ public class BookmarkPage extends BasicNativePage {
         mManager = new BookmarkManager(
                 activity, false, ((SnackbarManageable) activity).getSnackbarManager());
         mManager.setBasicNativePage(this);
-        mManager.setTab(host.getActiveTab());
+        mManager.setHistoryNavigationDelegate(host.createHistoryNavigationDelegate());
         mTitle = activity.getString(R.string.bookmarks);
     }
 

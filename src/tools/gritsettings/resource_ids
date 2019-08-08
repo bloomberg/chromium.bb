@@ -81,29 +81,36 @@
   # START chrome/browser section.
   "chrome/browser/browser_resources.grd": {
     "includes": [11000],
-    "structures": [12000],
+    "structures": [11900],
   },
   "chrome/browser/resources/chromeos/cellular_setup/cellular_setup_resources.grd": {
-    "structures": [12040],
+    "structures": [11940],
   },
   "chrome/browser/resources/chromeos/multidevice_setup/multidevice_setup_resources.grd": {
-    "structures": [12045],
+    "structures": [11945],
   },
   "chrome/browser/resources/component_extension_resources.grd": {
-    "includes": [12100],
-    "structures": [12350],
+    "includes": [12000],
+    "structures": [12250],
   },
-  "chrome/browser/resources/invalidations_resources.grd": {
-    "includes": [12400],
+  "chrome/browser/resources/downloads/downloads_resources_vulcanized.grd": {
+    "includes": [12300],
   },
-  "chrome/browser/resources/local_ntp/local_ntp_resources.grd": {
-    "includes": [12440],
+  "chrome/browser/resources/downloads/downloads_resources.grd": {
+    "includes": [12310],
+    "structures": [12320],
   },
   "chrome/browser/resources/extensions/extensions_resources_vulcanized.grd": {
-    "includes": [12500],
+    "includes": [12400],
   },
   "chrome/browser/resources/extensions/extensions_resources.grd": {
-    "structures": [12510],
+    "structures": [12410],
+  },
+  "chrome/browser/resources/invalidations_resources.grd": {
+    "includes": [12500],
+  },
+  "chrome/browser/resources/local_ntp/local_ntp_resources.grd": {
+    "includes": [12540],
   },
   "chrome/browser/resources/net_internals/net_internals_resources.grd": {
     "includes": [12600],
@@ -144,6 +151,9 @@
   },
   "chrome/browser/vr/testapp/vr_testapp_resources.grd": {
     "includes": [13990],
+  },
+  "chrome/browser/resources/kiosk_next_internal_resources.grd": {
+    "includes": [14040],
   },
   # END chrome/browser section.
 
@@ -194,6 +204,9 @@
   },
   "components/components_strings.grd": {
     "messages": [15100],
+  },
+  "components/omnibox/resources/omnibox_resources.grd": {
+    "includes": [17190],
   },
   "components/policy/resources/policy_templates.grd": {
     "structures": [17200],
@@ -309,6 +322,9 @@
   "ash/components/resources/ash_components_resources.grd": {
     "structures": [24350],
   },
+  "ash/keyboard/ui/keyboard_resources.grd": {
+    "includes": [26800],
+  },
   "ash/login/resources/login_resources.grd": {
     "structures": [24360],
   },
@@ -365,11 +381,15 @@
   },
 
   "net/base/net_resources.grd": {
-    "includes": [24860],
+    "includes": [24890],
   },
 
   "remoting/resources/remoting_strings.grd": {
     "messages": [24900],
+  },
+
+  "services/services_strings.grd": {
+    "messages": [25300],
   },
 
   "third_party/blink/public/blink_image_resources.grd": {
@@ -403,9 +423,6 @@
   },
   "ui/file_manager/file_manager_resources.grd": {
     "includes": [26550],
-  },
-  "ui/keyboard/keyboard_resources.grd": {
-    "includes": [26800],
   },
   "ui/login/login_resources.grd": {
     "includes": [26900],

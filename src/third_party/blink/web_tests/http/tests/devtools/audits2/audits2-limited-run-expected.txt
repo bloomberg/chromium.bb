@@ -31,8 +31,10 @@ network-requests
 network-rtt
 network-server-latency
 offscreen-images
+performance-budget
 redirects
 render-blocking-resources
+resource-summary
 screenshot-thumbnails
 speed-index
 time-to-first-byte

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
+<translation id="1028699632127661925">Se trimite la <ph name="DEVICE_NAME" />...</translation>
 <translation id="111910763555783249">Setări pentru notificări</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Acum o zi}few{Acum # zile}other{Acum # de zile}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{Acum 1 minut}few{Acum # minute}other{Acum # de minute}}</translation>
@@ -15,13 +16,11 @@
 <translation id="1383876407941801731">Caută</translation>
 <translation id="1398853756734560583">Maximizează</translation>
 <translation id="1409544243779336081">Recomandarea aplicației</translation>
-<translation id="1413622004203049571">Dezactivați notificările de la <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{Un minut și  }few{# minute și  }other{# de minute și  }}</translation>
 <translation id="1643823602425662293">Notificare</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">acum</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{un minut}few{# minute}other{# de minute}}</translation>
-<translation id="1756116796893109054">Se trimite fila...</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1801827354178857021">Punct</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 lună}few{# luni}other{# de luni}}</translation>
@@ -135,6 +134,7 @@
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6156262341071374681">Extinde la toate aplicațiile</translation>
+<translation id="6165508094623778733">Află mai multe</translation>
 <translation id="6264365405983206840">Select&amp;ează tot</translation>
 <translation id="6351032674660237738">SUGESTII DE APLICAȚII</translation>
 <translation id="6364916375976753737">Derulează spre stânga</translation>
@@ -180,8 +180,10 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Mai mult de o notificare necitită}few{Mai mult de # notificări necitite}other{Mai mult de # de notificări necitite}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{în 1 m}few{în # m}other{în # m}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8098075892845277643">Începe interogarea vocală a Asistentului Google</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Acum o oră}few{Acum # ore}other{Acum # de ore}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{O sec. rămasă}few{# sec. rămase}other{# sec. rămase}}</translation>
+<translation id="8144660977431427332">Căutările tale funcționează cu Asistentul Google. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, completare automată</translation>
 <translation id="815598010540052116">Derulează în jos</translation>
 <translation id="8170087467028567933">Dacă elimini sugestia, nu se va mai afișa în cont pe niciun dispozitiv.</translation>

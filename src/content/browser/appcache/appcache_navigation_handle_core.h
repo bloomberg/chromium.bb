@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/unguessable_token.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 
@@ -32,7 +33,7 @@ class ChromeAppCacheService;
 class AppCacheNavigationHandleCore {
  public:
   AppCacheNavigationHandleCore(ChromeAppCacheService* appcache_service,
-                               int appcache_host_id,
+                               const base::UnguessableToken& appcache_host_id,
                                int process_id);
   ~AppCacheNavigationHandleCore();
 
@@ -44,7 +45,8 @@ class AppCacheNavigationHandleCore {
 
   // Returns the precreated AppCacheHost pointer. Ownership of the host is
   // released here.
-  static std::unique_ptr<AppCacheHost> GetPrecreatedHost(int host_id);
+  static std::unique_ptr<AppCacheHost> GetPrecreatedHost(
+      const base::UnguessableToken& host_id);
 
   AppCacheServiceImpl* GetAppCacheService();
 
@@ -57,7 +59,7 @@ class AppCacheNavigationHandleCore {
  private:
   std::unique_ptr<AppCacheHost> precreated_host_;
   scoped_refptr<ChromeAppCacheService> appcache_service_;
-  int appcache_host_id_;
+  const base::UnguessableToken appcache_host_id_;
   int process_id_;
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheNavigationHandleCore);

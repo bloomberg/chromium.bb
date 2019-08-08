@@ -5,6 +5,7 @@
 <translation id="1185134272377778587">Chromium সম্পর্কে</translation>
 <translation id="1289966288285062467">Chromium এর গোপনীয়তা বিজ্ঞপ্তি</translation>
 <translation id="1472013873724362412">আপনার অ্যাকাউন্ট Chromium-এ কাজ করে না৷ সাইন-ইন করার জন্য আপনার ডোমেন অ্যাডমিনিস্ট্রেটরের সঙ্গে যোগাযোগ করুন বা কোন সাধারণ Google অ্যাকাউন্ট ব্যবহার করুন৷</translation>
+<translation id="1507010443238049608">Chromium-এর ফিচার এবং পারফর্ম্যান্স উন্নত করতে সাহায্য করুন</translation>
 <translation id="1617663976202781617">Chromium সিঙ্ক থেকে ডেটা</translation>
 <translation id="1736662517232558588">Chromium ডেটা সাফ করা হয়েছে</translation>
 <translation id="1838412507805038478"><ph name="ISSUER" /> যে এই ওয়েবসাইটের শংসাপত্র প্রকাশ করেছে Chromium তা যাচাই করেছে।</translation>
@@ -14,7 +15,7 @@
 <translation id="2168108852149185974">কিছু অ্যাড-অনের কারণে Chromium ক্র্যাশ করতে পারে৷ দয়া করে আনইনস্টল করুন:</translation>
 <translation id="2178608107313874732">Chromium এই মুহূর্তে আপনার ক্যামেরা ব্যবহার করতে পারছে না</translation>
 <translation id="2195025571279539885">আপনি কি এরপর থেকে এই সাইটের <ph name="LANGUAGE_NAME" /> পৃষ্ঠাগুলিকে অনুবাদ করে দেওয়ার জন্য Chromium থেকে প্রম্পট পেতে চান?</translation>
-<translation id="2517624234762908348">আপনার Chromium ডেটা সিঙ্ক করুন</translation>
+<translation id="2590893390871230428">আপনার Chromium ডেটা সিঙ্ক করুন</translation>
 <translation id="2647554856022461007">Chromium আপনার ব্রাউজিংয়ের অভিজ্ঞতাকে উন্নত করতে ওয়েব পরিষেবাগুলি ব্যবহার করতে পারে৷ আপনি ইচ্ছা অনুযায়ী এই পরিষেবাগুলিকে বন্ধ করতে পারেন৷ <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
 <translation id="2730884209570016437">Chromium আপনার ক্যামেরা ব্যবহার করতে পারছে না কারণ এটি অন্য একটি অ্যাপ্লিকেশান দ্বারা ব্যবহার করা হচ্ছে</translation>
 <translation id="2915596697727466327">Chromium আপনার পাসওয়ার্ডে অনুমোদিত অ্যাক্সেস নিশ্চিত করতে Face ID ব্যবহার করে।</translation>
@@ -26,7 +27,6 @@
 <translation id="4024541897090868497">আপনার সব ডিভাইসে আপনার ট্যাবগুলি পেতে, Chromium-এ সাইন-ইন করুন।</translation>
 <translation id="4157467675761413638">Chromium টিপ। ট্যাবে আরও বিকল্পের জন্য, আপনার স্ক্রিনের নিচে অথবা উপরে থাকা টুলবারে দেখানো ট্যাবটি প্রেস করে ধরে থাকুন।</translation>
 <translation id="4241912885070669028"><ph name="SIGNOUT_MANAGED_DOMAIN" /> পরিচালিত একটি অ্যাকাউন্ট থেকে আপনি সাইন-আউট করছেন৷ এটি এই ডিভাইস থেকে আপনার Chromium ডেটা মুছে ফেলবে, কিন্তু আপনার Google অ্যাকাউন্টে ডেটা থেকে যাবে৷</translation>
-<translation id="4272892696084633551">Chromium-এর ফিচার এবং পারফরম্যান্স উন্নত করতে সাহায্য করুন</translation>
 <translation id="4555020257205549924">যখন এই বৈশিষ্ট্যটি চালু করা হয় তখন Chromium, Google অনুবাদ ব্যবহার করে অন্যান্য ভাষায় লিখিত পৃষ্ঠাগুলি অনুবাদ করার অফার করবে৷ <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
 <translation id="4787850887676698916">আপনার অন্য ডিভাইসগুলিতে Chromium এ আপনি যে ট্যাবগুলি খুলেছেন সেগুলি এখানে দেখা যাবে।</translation>
 <translation id="495292094137889840">Chromium QR স্ক্যানার ব্যবহার করা শুরু করুন</translation>

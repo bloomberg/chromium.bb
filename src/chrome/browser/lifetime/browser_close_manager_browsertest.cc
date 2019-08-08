@@ -1135,7 +1135,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
 IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
                        TestWithDownloadsFromDifferentProfiles) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  Profile* other_profile = nullptr;
+  std::unique_ptr<Profile> other_profile;
   {
     base::FilePath path =
         profile_manager->user_data_dir().AppendASCII("test_profile");
@@ -1145,8 +1145,9 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
     other_profile =
         Profile::CreateProfile(path, NULL, Profile::CREATE_MODE_SYNCHRONOUS);
   }
-  profile_manager->RegisterTestingProfile(other_profile, true, false);
-  Browser* other_profile_browser = CreateBrowser(other_profile);
+  Profile* other_profile_ptr = other_profile.get();
+  profile_manager->RegisterTestingProfile(other_profile.release(), true, false);
+  Browser* other_profile_browser = CreateBrowser(other_profile_ptr);
 
   ASSERT_NO_FATAL_FAILURE(CreateStalledDownload(browser()));
   {

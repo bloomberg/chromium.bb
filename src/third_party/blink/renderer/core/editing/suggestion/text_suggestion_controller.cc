@@ -74,18 +74,16 @@ bool ShouldDeleteNextCharacter(const Node& marker_text_node,
 
 EphemeralRangeInFlatTree ComputeRangeSurroundingCaret(
     const PositionInFlatTree& caret_position) {
-  const Node* const position_node = caret_position.ComputeContainerNode();
-  const bool is_text_node = position_node->IsTextNode();
   const unsigned position_offset_in_node =
       caret_position.ComputeOffsetInContainerNode();
-
+  auto* text_node = DynamicTo<Text>(caret_position.ComputeContainerNode());
   // If we're in the interior of a text node, we can avoid calling
   // PreviousPositionOf/NextPositionOf for better efficiency.
-  if (is_text_node && position_offset_in_node != 0 &&
-      position_offset_in_node != ToText(position_node)->length()) {
+  if (text_node && position_offset_in_node != 0 &&
+      position_offset_in_node != text_node->length()) {
     return EphemeralRangeInFlatTree(
-        PositionInFlatTree(position_node, position_offset_in_node - 1),
-        PositionInFlatTree(position_node, position_offset_in_node + 1));
+        PositionInFlatTree(text_node, position_offset_in_node - 1),
+        PositionInFlatTree(text_node, position_offset_in_node + 1));
   }
 
   const PositionInFlatTree& previous_position =
@@ -551,18 +549,18 @@ TextSuggestionController::FirstMarkerIntersectingRange(
       range.EndPosition().ComputeOffsetInContainerNode();
 
   for (const Node& node : range.Nodes()) {
-    if (!node.IsTextNode())
+    auto* text_node = DynamicTo<Text>(node);
+    if (!text_node)
       continue;
 
     const unsigned start_offset =
         node == range_start_container ? range_start_offset : 0;
-    const unsigned end_offset = node == range_end_container
-                                    ? range_end_offset
-                                    : ToText(node).length();
+    const unsigned end_offset =
+        node == range_end_container ? range_end_offset : text_node->length();
 
     const DocumentMarker* const found_marker =
         GetFrame().GetDocument()->Markers().FirstMarkerIntersectingOffsetRange(
-            ToText(node), start_offset, end_offset, types);
+            *text_node, start_offset, end_offset, types);
     if (found_marker)
       return std::make_pair(&node, found_marker);
   }

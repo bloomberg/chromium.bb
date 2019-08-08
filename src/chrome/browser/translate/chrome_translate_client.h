@@ -128,12 +128,14 @@ class ChromeTranslateClient
   // content::WebContentsObserver implementation.
   void WebContentsDestroyed() override;
 
+#if !defined(OS_ANDROID)
   // Shows the translate bubble.
   ShowTranslateBubbleResult ShowBubble(
       translate::TranslateStep step,
       const std::string& source_language,
       const std::string& target_language,
       translate::TranslateErrors::Type error_type);
+#endif
 
   translate::ContentTranslateDriver translate_driver_;
   std::unique_ptr<translate::TranslateManager> translate_manager_;

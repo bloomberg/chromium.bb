@@ -168,6 +168,10 @@ gfx::Size VP8Decoder::GetPicSize() const {
   return pic_size_;
 }
 
+gfx::Rect VP8Decoder::GetVisibleRect() const {
+  return gfx::Rect(pic_size_);
+}
+
 size_t VP8Decoder::GetRequiredNumOfPictures() const {
   constexpr size_t kPicsInPipeline = limits::kMaxVideoFrames + 1;
   return kVP8NumFramesActive + kPicsInPipeline;

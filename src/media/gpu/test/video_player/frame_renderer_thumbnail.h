@@ -56,6 +56,7 @@ class FrameRendererThumbnail : public FrameRenderer {
   // Get the active GL context. This requires holding |gl_context_lock_|.
   gl::GLContext* GetGLContext() override;
   void RenderFrame(scoped_refptr<VideoFrame> video_frame) override;
+  void WaitUntilRenderingDone() override;
   scoped_refptr<VideoFrame> CreateVideoFrame(VideoPixelFormat pixel_format,
                                              const gfx::Size& texture_size,
                                              uint32_t texture_target,

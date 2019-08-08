@@ -12,12 +12,13 @@
 #include <utility>
 #include <vector>
 
+#include "build/build_config.h"
 #include "core/fxcrt/fx_codepage.h"
 #include "core/fxcrt/fx_stream.h"
-#include "core/fxge/cfx_facecache.h"
 #include "core/fxge/cfx_fontcache.h"
 #include "core/fxge/cfx_fontmgr.h"
 #include "core/fxge/cfx_gemodule.h"
+#include "core/fxge/cfx_glyphcache.h"
 #include "core/fxge/cfx_pathdata.h"
 #include "core/fxge/cfx_substfont.h"
 #include "core/fxge/fx_font.h"
@@ -220,7 +221,7 @@ const CFX_Font::CharsetFontMap CFX_Font::defaultTTFMap[] = {
     {FX_CHARSET_ShiftJIS, "MS Gothic"},
     {FX_CHARSET_Hangul, "Batang"},
     {FX_CHARSET_MSWin_Cyrillic, "Arial"},
-#if _FX_PLATFORM_ == _FX_PLATFORM_LINUX_ || _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+#if _FX_PLATFORM_ == _FX_PLATFORM_LINUX_ || defined(OS_MACOSX)
     {FX_CHARSET_MSWin_EasternEuropean, "Arial"},
 #else
     {FX_CHARSET_MSWin_EasternEuropean, "Tahoma"},
@@ -319,16 +320,16 @@ bool CFX_Font::LoadFile(const RetainPtr<IFX_SeekableReadStream>& pFile,
   return true;
 }
 
-#if _FX_PLATFORM_ != _FX_PLATFORM_WINDOWS_
+#if !defined(OS_WIN)
 void CFX_Font::SetFace(FXFT_Face face) {
-  ClearFaceCache();
+  ClearGlyphCache();
   m_Face = face;
 }
 
 void CFX_Font::SetSubstFont(std::unique_ptr<CFX_SubstFont> subst) {
   m_pSubstFont = std::move(subst);
 }
-#endif  // _FX_PLATFORM_ != _FX_PLATFORM_WINDOWS_
+#endif  // !defined(OS_WIN)
 #endif  // PDF_ENABLE_XFA
 
 CFX_Font::~CFX_Font() {
@@ -336,13 +337,13 @@ CFX_Font::~CFX_Font() {
   if (m_Face)
     DeleteFace();
 
-#if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+#if defined(OS_MACOSX)
   ReleasePlatformResource();
 #endif
 }
 
 void CFX_Font::DeleteFace() {
-  ClearFaceCache();
+  ClearGlyphCache();
   if (m_bEmbedded)
     FXFT_Done_Face(m_Face.Release());
   else
@@ -580,18 +581,14 @@ bool CFX_Font::GetBBox(FX_RECT* pBBox) {
   return true;
 }
 
-CFX_FaceCache* CFX_Font::GetFaceCache() const {
-  if (!m_FaceCache)
-    m_FaceCache = CFX_GEModule::Get()->GetFontCache()->GetCachedFace(this);
-  return m_FaceCache.Get();
+RetainPtr<CFX_GlyphCache> CFX_Font::GetOrCreateGlyphCache() const {
+  if (!m_GlyphCache)
+    m_GlyphCache = CFX_GEModule::Get()->GetFontCache()->GetGlyphCache(this);
+  return m_GlyphCache;
 }
 
-void CFX_Font::ClearFaceCache() {
-  if (!m_FaceCache)
-    return;
-
-  m_FaceCache = nullptr;
-  CFX_GEModule::Get()->GetFontCache()->ReleaseCachedFace(this);
+void CFX_Font::ClearGlyphCache() {
+  m_GlyphCache = nullptr;
 }
 
 void CFX_Font::AdjustMMParams(int glyph_index,
@@ -711,18 +708,19 @@ const CFX_GlyphBitmap* CFX_Font::LoadGlyphBitmap(uint32_t glyph_index,
                                                  const CFX_Matrix& matrix,
                                                  uint32_t dest_width,
                                                  int anti_alias,
-                                                 int& text_flags) const {
-  return GetFaceCache()->LoadGlyphBitmap(this, glyph_index, bFontStyle, matrix,
-                                         dest_width, anti_alias, text_flags);
+                                                 int* pTextFlags) const {
+  return GetOrCreateGlyphCache()->LoadGlyphBitmap(this, glyph_index, bFontStyle,
+                                                  matrix, dest_width,
+                                                  anti_alias, pTextFlags);
 }
 
 const CFX_PathData* CFX_Font::LoadGlyphPath(uint32_t glyph_index,
                                             uint32_t dest_width) const {
-  return GetFaceCache()->LoadGlyphPath(this, glyph_index, dest_width);
+  return GetOrCreateGlyphCache()->LoadGlyphPath(this, glyph_index, dest_width);
 }
 
 #if defined _SKIA_SUPPORT_ || _SKIA_SUPPORT_PATHS_
 CFX_TypeFace* CFX_Font::GetDeviceCache() const {
-  return GetFaceCache()->GetDeviceCache(this);
+  return GetOrCreateGlyphCache()->GetDeviceCache(this);
 }
 #endif

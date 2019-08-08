@@ -26,7 +26,6 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.services.AndroidEduAndChildAccountHelper;
 import org.chromium.chrome.browser.signin.SigninManager;
-import org.chromium.chrome.browser.signin.SigninPromoController;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
@@ -106,11 +105,6 @@ public abstract class FirstRunFlowSequencer  {
     }
 
     @VisibleForTesting
-    protected boolean isSigninPromoAllowed() {
-        return SigninPromoController.isSignInPromoAllowed();
-    }
-
-    @VisibleForTesting
     protected List<Account> getGoogleAccounts() {
         return AccountManagerFacade.get().tryGetGoogleAccounts();
     }
@@ -131,10 +125,6 @@ public abstract class FirstRunFlowSequencer  {
     }
 
     protected boolean shouldShowDataReductionPage() {
-        // See http://crbug.com/946357
-        if (LocaleManager.getInstance().isSpecialUser()) {
-            return false;
-        }
         return !DataReductionProxySettings.getInstance().isDataReductionProxyManaged()
                 && DataReductionProxySettings.getInstance().isDataReductionProxyFREPromoAllowed();
     }
@@ -205,7 +195,6 @@ public abstract class FirstRunFlowSequencer  {
         // - no "skip the first use hints" is set, or
         // - "skip the first use hints" is set, but there is at least one account.
         boolean offerSignInOk = isSyncAllowed() && !isSignedIn() && !mForceEduSignIn
-                && isSigninPromoAllowed()
                 && (!shouldSkipFirstUseHints() || !mGoogleAccounts.isEmpty());
         freProperties.putBoolean(FirstRunActivity.SHOW_SIGNIN_PAGE, offerSignInOk);
         if (mForceEduSignIn || ChildAccountStatus.isChild(mChildAccountStatus)) {

@@ -51,9 +51,10 @@ void BoxPainter::PaintChildren(const PaintInfo& paint_info) {
   }
 }
 
-void BoxPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info,
-                                              const LayoutPoint& paint_offset) {
-  LayoutRect paint_rect;
+void BoxPainter::PaintBoxDecorationBackground(
+    const PaintInfo& paint_info,
+    const PhysicalOffset& paint_offset) {
+  PhysicalRect paint_rect;
   const DisplayItemClient* background_client = nullptr;
   base::Optional<ScopedBoxContentsPaintState> contents_paint_state;
   if (BoxDecorationData::IsPaintingScrollingBackground(paint_info,
@@ -63,7 +64,7 @@ void BoxPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info,
     // overflow rect.
     paint_rect = layout_box_.PhysicalLayoutOverflowRect();
     contents_paint_state.emplace(paint_info, paint_offset, layout_box_);
-    paint_rect.MoveBy(contents_paint_state->PaintOffset());
+    paint_rect.Move(contents_paint_state->PaintOffset());
 
     // The background painting code assumes that the borders are part of the
     // paint_rect so we expand the paint_rect by the border size when painting
@@ -73,8 +74,8 @@ void BoxPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info,
     background_client = &layout_box_.GetScrollableArea()
                              ->GetScrollingBackgroundDisplayItemClient();
   } else {
-    paint_rect = layout_box_.BorderBoxRect();
-    paint_rect.MoveBy(paint_offset);
+    paint_rect = layout_box_.PhysicalBorderBoxRect();
+    paint_rect.Move(paint_offset);
     background_client = &layout_box_;
   }
 
@@ -99,16 +100,16 @@ bool BoxPainter::BackgroundIsKnownToBeOpaque(const PaintInfo& paint_info) {
   if (layout_box_.FirstFragment().NextFragment())
     return false;
 
-  LayoutRect bounds =
+  PhysicalRect bounds =
       BoxDecorationData::IsPaintingScrollingBackground(paint_info, layout_box_)
-          ? layout_box_.LayoutOverflowRect()
-          : layout_box_.SelfVisualOverflowRect();
+          ? layout_box_.PhysicalLayoutOverflowRect()
+          : layout_box_.PhysicalSelfVisualOverflowRect();
   return layout_box_.BackgroundIsKnownToBeOpaqueInRect(bounds);
 }
 
 void BoxPainter::PaintBoxDecorationBackgroundWithRect(
     const PaintInfo& paint_info,
-    const LayoutRect& paint_rect,
+    const PhysicalRect& paint_rect,
     const DisplayItemClient& background_client) {
   const ComputedStyle& style = layout_box_.StyleRef();
 
@@ -139,7 +140,7 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
   GraphicsContextStateSaver state_saver(paint_info.context, false);
 
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-      LayoutRect(EnclosingIntRect(paint_rect)) == paint_rect &&
+      paint_rect.EdgesOnPixelBoundaries() &&
       BackgroundIsKnownToBeOpaque(paint_info))
     recorder.SetKnownToBeOpaque();
 
@@ -156,7 +157,8 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
   if (BleedAvoidanceIsClipping(
           box_decoration_data.GetBackgroundBleedAvoidance())) {
     state_saver.Save();
-    FloatRoundedRect border = style.GetRoundedBorderFor(paint_rect);
+    FloatRoundedRect border =
+        style.GetRoundedBorderFor(paint_rect.ToLayoutRect());
     paint_info.context.ClipRoundedRect(border);
 
     if (box_decoration_data.GetBackgroundBleedAvoidance() ==
@@ -214,7 +216,7 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
 }
 
 void BoxPainter::PaintBackground(const PaintInfo& paint_info,
-                                 const LayoutRect& paint_rect,
+                                 const PhysicalRect& paint_rect,
                                  const Color& background_color,
                                  BackgroundBleedAvoidance bleed_avoidance) {
   if (layout_box_.BackgroundTransfersToView())
@@ -229,7 +231,7 @@ void BoxPainter::PaintBackground(const PaintInfo& paint_info,
 }
 
 void BoxPainter::PaintMask(const PaintInfo& paint_info,
-                           const LayoutPoint& paint_offset) {
+                           const PhysicalOffset& paint_offset) {
   DCHECK_EQ(PaintPhase::kMask, paint_info.phase);
 
   if (!layout_box_.HasMask() ||
@@ -241,12 +243,12 @@ void BoxPainter::PaintMask(const PaintInfo& paint_info,
     return;
 
   DrawingRecorder recorder(paint_info.context, layout_box_, paint_info.phase);
-  LayoutRect paint_rect = LayoutRect(paint_offset, layout_box_.Size());
+  PhysicalRect paint_rect(paint_offset, layout_box_.Size());
   PaintMaskImages(paint_info, paint_rect);
 }
 
 void BoxPainter::PaintMaskImages(const PaintInfo& paint_info,
-                                 const LayoutRect& paint_rect) {
+                                 const PhysicalRect& paint_rect) {
   // For mask images legacy layout painting handles multi-line boxes by giving
   // the full width of the element, not the current line box, thereby clipping
   // the offending edges.
@@ -261,7 +263,7 @@ void BoxPainter::PaintMaskImages(const PaintInfo& paint_info,
 }
 
 void BoxPainter::RecordHitTestData(const PaintInfo& paint_info,
-                                   const LayoutRect& paint_rect,
+                                   const PhysicalRect& paint_rect,
                                    const DisplayItemClient& background_client) {
   // Hit test display items are only needed for compositing. This flag is used
   // for for printing and drag images which do not need hit testing.
@@ -276,8 +278,9 @@ void BoxPainter::RecordHitTestData(const PaintInfo& paint_info,
   if (touch_action == TouchAction::kTouchActionAuto)
     return;
 
-  HitTestDisplayItem::Record(paint_info.context, background_client,
-                             HitTestRect(paint_rect, touch_action));
+  HitTestDisplayItem::Record(
+      paint_info.context, background_client,
+      HitTestRect(paint_rect.ToLayoutRect(), touch_action));
 }
 
 }  // namespace blink

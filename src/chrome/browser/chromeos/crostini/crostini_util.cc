@@ -72,7 +72,7 @@ void OnLaunchFailed(const std::string& app_id) {
   ChromeLauncherController* chrome_controller =
       ChromeLauncherController::instance();
   DCHECK(chrome_controller);
-  chrome_controller->GetShelfSpinnerController()->Close(app_id);
+  chrome_controller->GetShelfSpinnerController()->CloseSpinner(app_id);
 }
 
 void OnCrostiniRestarted(Profile* profile,

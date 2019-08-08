@@ -66,7 +66,7 @@ class BlobBuilderFromStreamTestWithDelayedLimits
   void TearDown() override {
     // Make sure we clean up files.
     base::RunLoop().RunUntilIdle();
-    base::ThreadPool::GetInstance()->FlushForTesting();
+    base::ThreadPoolInstance::Get()->FlushForTesting();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -94,14 +94,14 @@ class BlobBuilderFromStreamTestWithDelayedLimits
     uint64_t length_hint = GetLengthHint(data.length());
     BlobBuilderFromStream* finished_builder = nullptr;
     BlobBuilderFromStream builder(
-        context_->AsWeakPtr(), kContentType, kContentDisposition, length_hint,
-        std::move(pipe.consumer_handle), nullptr,
+        context_->AsWeakPtr(), kContentType, kContentDisposition,
         base::BindLambdaForTesting([&](BlobBuilderFromStream* result_builder,
                                        std::unique_ptr<BlobDataHandle> blob) {
           finished_builder = result_builder;
           result = std::move(blob);
           loop.Quit();
         }));
+    builder.Start(length_hint, std::move(pipe.consumer_handle), nullptr);
 
     // Make sure the initial memory allocation done by the builder matches the
     // length hint passed in.
@@ -195,8 +195,7 @@ TEST_P(BlobBuilderFromStreamTest, CallbackCalledOnAbortBeforeDeletion) {
   base::RunLoop loop;
   BlobBuilderFromStream* builder_ptr = nullptr;
   auto builder = std::make_unique<BlobBuilderFromStream>(
-      context_->AsWeakPtr(), "", "", GetLengthHint(16),
-      std::move(pipe.consumer_handle), nullptr,
+      context_->AsWeakPtr(), "", "",
       base::BindLambdaForTesting([&](BlobBuilderFromStream* result_builder,
                                      std::unique_ptr<BlobDataHandle> blob) {
         EXPECT_EQ(builder_ptr, result_builder);
@@ -204,6 +203,7 @@ TEST_P(BlobBuilderFromStreamTest, CallbackCalledOnAbortBeforeDeletion) {
         loop.Quit();
       }));
   builder_ptr = builder.get();
+  builder->Start(GetLengthHint(16), std::move(pipe.consumer_handle), nullptr);
   builder->Abort();
   builder.reset();
   loop.Run();
@@ -332,7 +332,7 @@ TEST_P(BlobBuilderFromStreamTest, TooLargeForQuota) {
 
   // Make sure we clean up files.
   base::RunLoop().RunUntilIdle();
-  base::ThreadPool::GetInstance()->FlushForTesting();
+  base::ThreadPoolInstance::Get()->FlushForTesting();
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(0u, context_->memory_controller().memory_usage());
@@ -361,13 +361,13 @@ TEST_F(BlobBuilderFromStreamTest, HintTooLargeForQuota) {
   base::RunLoop loop;
   std::unique_ptr<BlobDataHandle> result;
   BlobBuilderFromStream builder(
-      context_->AsWeakPtr(), "", "", kLengthHint,
-      std::move(pipe.consumer_handle), nullptr,
+      context_->AsWeakPtr(), "", "",
       base::BindLambdaForTesting(
           [&](BlobBuilderFromStream*, std::unique_ptr<BlobDataHandle> blob) {
             result = std::move(blob);
             loop.Quit();
           }));
+  builder.Start(kLengthHint, std::move(pipe.consumer_handle), nullptr);
   pipe.producer_handle.reset();
   loop.Run();
 
@@ -384,13 +384,13 @@ TEST_F(BlobBuilderFromStreamTest, HintTooLargeForQuotaAndNoDisk) {
   base::RunLoop loop;
   std::unique_ptr<BlobDataHandle> result;
   BlobBuilderFromStream builder(
-      context_->AsWeakPtr(), "", "", kLengthHint,
-      std::move(pipe.consumer_handle), nullptr,
+      context_->AsWeakPtr(), "", "",
       base::BindLambdaForTesting(
           [&](BlobBuilderFromStream*, std::unique_ptr<BlobDataHandle> blob) {
             result = std::move(blob);
             loop.Quit();
           }));
+  builder.Start(kLengthHint, std::move(pipe.consumer_handle), nullptr);
   pipe.producer_handle.reset();
   loop.Run();
 
@@ -413,13 +413,14 @@ TEST_P(BlobBuilderFromStreamTest, ProgressEvents) {
   base::RunLoop loop;
   std::unique_ptr<BlobDataHandle> result;
   BlobBuilderFromStream builder(
-      context_->AsWeakPtr(), "", "", GetLengthHint(kData.size()),
-      std::move(pipe.consumer_handle), progress_client_ptr.PassInterface(),
+      context_->AsWeakPtr(), "", "",
       base::BindLambdaForTesting(
           [&](BlobBuilderFromStream*, std::unique_ptr<BlobDataHandle> blob) {
             result = std::move(blob);
             loop.Quit();
           }));
+  builder.Start(GetLengthHint(kData.size()), std::move(pipe.consumer_handle),
+                progress_client_ptr.PassInterface());
   mojo::BlockingCopyFromString(kData, pipe.producer_handle);
   pipe.producer_handle.reset();
 
@@ -447,13 +448,13 @@ TEST_F(BlobBuilderFromStreamTestWithDelayedLimits, LargeStream) {
   base::RunLoop loop;
   std::unique_ptr<BlobDataHandle> result;
   BlobBuilderFromStream builder(
-      context_->AsWeakPtr(), kContentType, kContentDisposition, kData.size(),
-      std::move(pipe.consumer_handle), nullptr,
+      context_->AsWeakPtr(), kContentType, kContentDisposition,
       base::BindLambdaForTesting([&](BlobBuilderFromStream* result_builder,
                                      std::unique_ptr<BlobDataHandle> blob) {
         result = std::move(blob);
         loop.Quit();
       }));
+  builder.Start(kData.size(), std::move(pipe.consumer_handle), nullptr);
 
   context_->set_limits_for_testing(limits_);
   auto data_producer = std::make_unique<mojo::StringDataPipeProducer>(

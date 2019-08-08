@@ -16,10 +16,10 @@
 #include "ash/system/unified/unified_system_tray_view.h"
 #include "ash/wm/container_finder.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "ash/wm/widget_finder.h"
 #include "ash/wm/work_area_insets.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/aura/window.h"
+#include "ui/native_theme/native_theme_dark_aura.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -42,6 +42,7 @@ class ContainerView : public views::View {
 
   // views::View:
   void Layout() override { unified_view_->SetBoundsRect(GetContentsBounds()); }
+  const char* GetClassName() const override { return "ContainerView"; }
 
   gfx::Size CalculatePreferredSize() const override {
     // If transform is used, always return the maximum expanded height.
@@ -267,7 +268,7 @@ void UnifiedSystemTrayBubble::OnWindowActivated(ActivationReason reason,
 
   // Don't close the bubble if a transient child is gaining or losing
   // activation.
-  if (bubble_widget_ == GetInternalWidgetForWindow(gained_active) ||
+  if (bubble_widget_ == views::Widget::GetWidgetForNativeView(gained_active) ||
       ::wm::HasTransientAncestor(gained_active,
                                  bubble_widget_->GetNativeWindow()) ||
       (lost_active && ::wm::HasTransientAncestor(

@@ -55,7 +55,7 @@ class BookmarkBarViewTest : public BrowserWithTestWindowTest {
   std::string GetStringForVisibleButtons() {
     std::string result;
     for (int i = 0; i < test_helper_->GetBookmarkButtonCount() &&
-                        test_helper_->GetBookmarkButton(i)->visible();
+                    test_helper_->GetBookmarkButton(i)->GetVisible();
          ++i) {
       if (i != 0)
         result += " ";
@@ -74,7 +74,7 @@ class BookmarkBarViewTest : public BrowserWithTestWindowTest {
     const int height = bookmark_bar_view_->GetPreferredSize().height();
     for (int i = 0;
          i < 100 && (test_helper_->GetBookmarkButtonCount() < count ||
-                     !test_helper_->GetBookmarkButton(count - 1)->visible());
+                     !test_helper_->GetBookmarkButton(count - 1)->GetVisible());
          ++i) {
       bookmark_bar_view_->SetBounds(0, 0, start_width + i * 10, height);
       bookmark_bar_view_->Layout();
@@ -144,50 +144,50 @@ TEST_F(BookmarkBarViewTest, AppsShortcutVisibility) {
   CreateBookmarkModelAndBookmarkBarView();
   browser()->profile()->GetPrefs()->SetBoolean(
       bookmarks::prefs::kShowAppsShortcutInBookmarkBar, false);
-  EXPECT_FALSE(test_helper_->apps_page_shortcut()->visible());
+  EXPECT_FALSE(test_helper_->apps_page_shortcut()->GetVisible());
 
   // Try to make the Apps shortcut visible. Its visibility depends on whether
   // the app launcher is enabled.
   browser()->profile()->GetPrefs()->SetBoolean(
       bookmarks::prefs::kShowAppsShortcutInBookmarkBar, true);
   if (IsAppLauncherEnabled()) {
-    EXPECT_FALSE(test_helper_->apps_page_shortcut()->visible());
+    EXPECT_FALSE(test_helper_->apps_page_shortcut()->GetVisible());
   } else {
-    EXPECT_TRUE(test_helper_->apps_page_shortcut()->visible());
+    EXPECT_TRUE(test_helper_->apps_page_shortcut()->GetVisible());
   }
 
   // Make sure we can also properly transition from true to false.
   browser()->profile()->GetPrefs()->SetBoolean(
       bookmarks::prefs::kShowAppsShortcutInBookmarkBar, false);
-  EXPECT_FALSE(test_helper_->apps_page_shortcut()->visible());
+  EXPECT_FALSE(test_helper_->apps_page_shortcut()->GetVisible());
 }
 
 // Various assertions around visibility of the overflow_button.
 TEST_F(BookmarkBarViewTest, OverflowVisibility) {
   profile()->CreateBookmarkModel(true);
   CreateBookmarkBarView();
-  EXPECT_FALSE(test_helper_->overflow_button()->visible());
+  EXPECT_FALSE(test_helper_->overflow_button()->GetVisible());
 
   WaitForBookmarkModelToLoad();
   AddNodesToBookmarkBarFromModelString("a b c d e f ");
-  EXPECT_TRUE(test_helper_->overflow_button()->visible());
+  EXPECT_TRUE(test_helper_->overflow_button()->GetVisible());
 
   SizeUntilButtonsVisible(1);
   EXPECT_EQ(2, test_helper_->GetBookmarkButtonCount());
   const int width_for_one = bookmark_bar_view_->bounds().width();
-  EXPECT_TRUE(test_helper_->overflow_button()->visible());
+  EXPECT_TRUE(test_helper_->overflow_button()->GetVisible());
 
   // Go really big, which should force all buttons to be added.
   bookmark_bar_view_->SetBounds(
       0, 0, 5000, bookmark_bar_view_->bounds().height());
   bookmark_bar_view_->Layout();
   EXPECT_EQ(6, test_helper_->GetBookmarkButtonCount());
-  EXPECT_FALSE(test_helper_->overflow_button()->visible());
+  EXPECT_FALSE(test_helper_->overflow_button()->GetVisible());
 
   bookmark_bar_view_->SetBounds(
       0, 0, width_for_one, bookmark_bar_view_->bounds().height());
   bookmark_bar_view_->Layout();
-  EXPECT_TRUE(test_helper_->overflow_button()->visible());
+  EXPECT_TRUE(test_helper_->overflow_button()->GetVisible());
 }
 
 // Verifies buttons get added correctly when BookmarkBarView is created after
@@ -339,8 +339,8 @@ TEST_F(BookmarkBarViewTest, ChangeTitle) {
   // created.
   model->SetTitle(bookmark_bar_node->GetChild(0), base::ASCIIToUTF16("a1"));
   ASSERT_LE(2, test_helper_->GetBookmarkButtonCount());
-  EXPECT_TRUE(test_helper_->GetBookmarkButton(0)->visible());
-  EXPECT_TRUE(test_helper_->GetBookmarkButton(1)->visible());
+  EXPECT_TRUE(test_helper_->GetBookmarkButton(0)->GetVisible());
+  EXPECT_TRUE(test_helper_->GetBookmarkButton(1)->GetVisible());
 
   bookmark_bar_view_->SetBounds(
       0, 0, 5000, bookmark_bar_view_->bounds().height());
@@ -358,17 +358,17 @@ TEST_F(BookmarkBarViewTest, ManagedShowAppsShortcutInBookmarksBar) {
       profile()->GetTestingPrefService();
   EXPECT_FALSE(prefs->IsManagedPreference(
       bookmarks::prefs::kShowAppsShortcutInBookmarkBar));
-  EXPECT_TRUE(test_helper_->apps_page_shortcut()->visible());
+  EXPECT_TRUE(test_helper_->apps_page_shortcut()->GetVisible());
 
   // Hide the apps shortcut by policy, via the managed pref.
   prefs->SetManagedPref(bookmarks::prefs::kShowAppsShortcutInBookmarkBar,
                         std::make_unique<base::Value>(false));
-  EXPECT_FALSE(test_helper_->apps_page_shortcut()->visible());
+  EXPECT_FALSE(test_helper_->apps_page_shortcut()->GetVisible());
 
   // And try showing it via policy too.
   prefs->SetManagedPref(bookmarks::prefs::kShowAppsShortcutInBookmarkBar,
                         std::make_unique<base::Value>(true));
-  EXPECT_TRUE(test_helper_->apps_page_shortcut()->visible());
+  EXPECT_TRUE(test_helper_->apps_page_shortcut()->GetVisible());
 }
 #endif
 

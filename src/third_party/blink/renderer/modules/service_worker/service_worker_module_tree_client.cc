@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/service_worker/service_worker_module_tree_client.h"
 
+#include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
@@ -38,15 +39,13 @@ void ServiceWorkerModuleTreeClient::NotifyModuleTreeLoadFinished(
     worker_global_scope->close();
     return;
   }
-  worker_reporting_proxy.DidFetchScript();
+  worker_reporting_proxy.DidFetchScript(mojom::blink::kAppCacheNoCacheId);
 
   // (In the update case) Step 9: "Else, continue the rest of these steps after
   // the algorithm's asynchronous completion, with script being the asynchronous
   // completion value."
-  worker_reporting_proxy.WillEvaluateModuleScript();
-  ScriptValue error = modulator_->ExecuteModule(
-      module_script, Modulator::CaptureEvalErrorFlag::kReport);
-  worker_reporting_proxy.DidEvaluateModuleScript(error.IsEmpty());
+  worker_global_scope->WorkerScriptFetchFinished(
+      *module_script, base::nullopt /* v8_inspector::V8StackTraceId */);
 }
 
 void ServiceWorkerModuleTreeClient::Trace(blink::Visitor* visitor) {

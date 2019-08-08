@@ -258,22 +258,24 @@ void BookmarkAppNavigationBrowserTest::SetUpOnMainThread() {
 }
 
 void BookmarkAppNavigationBrowserTest::InstallTestBookmarkApp() {
-  test_bookmark_app_ = InstallTestBookmarkApp(GetAppUrlHost());
+  test_bookmark_app_ =
+      InstallTestBookmarkApp(GetAppUrlHost(), GetAppScopePath());
 }
 
 void BookmarkAppNavigationBrowserTest::InstallOtherTestBookmarkApp() {
-  InstallTestBookmarkApp(GetOtherAppUrlHost());
+  InstallTestBookmarkApp(GetOtherAppUrlHost(), GetAppScopePath());
 }
 
 const Extension* BookmarkAppNavigationBrowserTest::InstallTestBookmarkApp(
-    const std::string& app_host) {
+    const std::string& app_host,
+    const std::string& app_scope) {
   if (!https_server_.Started()) {
     CHECK(https_server_.Start());
   }
 
   WebApplicationInfo web_app_info;
   web_app_info.app_url = https_server_.GetURL(app_host, GetAppUrlPath());
-  web_app_info.scope = https_server_.GetURL(app_host, GetAppScopePath());
+  web_app_info.scope = https_server_.GetURL(app_host, app_scope);
   web_app_info.title = base::UTF8ToUTF16(GetAppName());
   web_app_info.description = base::UTF8ToUTF16("Test description");
   web_app_info.open_as_window = true;

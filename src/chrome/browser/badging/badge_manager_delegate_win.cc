@@ -73,8 +73,8 @@ void BadgeManagerDelegateWin::OnBadgeCleared(const std::string& app_id) {
 
 bool BadgeManagerDelegateWin::IsAppBrowser(Browser* browser,
                                            const std::string& app_id) {
-  return browser->web_app_controller() &&
-         browser->web_app_controller()->GetAppId() == app_id &&
+  return browser->app_controller() &&
+         browser->app_controller()->GetAppId() == app_id &&
          browser->profile() == profile_;
 }
 

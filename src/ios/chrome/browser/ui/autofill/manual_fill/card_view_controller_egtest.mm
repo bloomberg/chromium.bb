@@ -10,7 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/keyed_service/core/service_access_type.h"
@@ -24,11 +24,11 @@
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "ios/web/public/test/element_selector.h"
-#import "ios/web/public/test/web_view_interaction_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
@@ -140,8 +140,9 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   const GURL URL = self.testServer->GetURL(kFormHTMLFile);
-  [ChromeEarlGrey loadURL:URL];
-  [ChromeEarlGrey waitForWebViewContainingText:"hello!"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebStateContainingText:"hello!"]);
 
   _personalDataManager =
       autofill::PersonalDataManagerFactory::GetForBrowserState(

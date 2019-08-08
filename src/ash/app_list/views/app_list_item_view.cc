@@ -12,10 +12,11 @@
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_item.h"
+#include "ash/app_list/views/app_list_menu_model_adapter.h"
 #include "ash/app_list/views/apps_grid_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
-#include "ash/public/interfaces/app_list.mojom.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
@@ -67,6 +68,13 @@ constexpr SkColor kFolderGridTitleColor = SK_ColorBLACK;
 
 // The color of the focus ring within a folder.
 constexpr SkColor kFolderGridFocusRingColor = gfx::kGoogleBlue600;
+
+// The color of an item selected via right-click context menu.
+constexpr SkColor kContextSelection = SkColorSetA(gfx::kGoogleGrey100, 31);
+
+// The color of an item selected via right-click context menu in a folder.
+constexpr SkColor kContextSelectionFolder =
+    SkColorSetA(gfx::kGoogleGrey900, 21);
 
 // The width of the focus ring within a folder.
 constexpr int kFocusRingWidth = 2;
@@ -126,7 +134,7 @@ class AppListItemView::IconImageView : public views::ImageView {
  public:
   IconImageView() {
     set_can_process_events_within_subtree(false);
-    SetVerticalAlignment(views::ImageView::LEADING);
+    SetVerticalAlignment(views::ImageView::Alignment::kLeading);
   }
   ~IconImageView() override = default;
 
@@ -223,7 +231,7 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
     // shadow is behind the icon.
     icon_shadow_ = new views::ImageView;
     icon_shadow_->set_can_process_events_within_subtree(false);
-    icon_shadow_->SetVerticalAlignment(views::ImageView::LEADING);
+    icon_shadow_->SetVerticalAlignment(views::ImageView::Alignment::kLeading);
     AddChildView(icon_shadow_);
   }
 
@@ -448,9 +456,9 @@ void AppListItemView::SetItemPercentDownloaded(int percent_downloaded) {
 void AppListItemView::OnContextMenuModelReceived(
     const gfx::Point& point,
     ui::MenuSourceType source_type,
-    std::vector<ash::mojom::MenuItemPtr> menu) {
+    std::unique_ptr<ui::SimpleMenuModel> menu_model) {
   waiting_for_context_menu_options_ = false;
-  if (menu.empty() || (context_menu_ && context_menu_->IsShowingMenu()))
+  if (!menu_model || (context_menu_ && context_menu_->IsShowingMenu()))
     return;
 
   // GetContextMenuModel is asynchronous and takes a nontrivial amount of time
@@ -479,13 +487,16 @@ void AppListItemView::OnContextMenuModelReceived(
   AdaptBoundsForSelectionHighlight(&anchor_rect);
   views::View::ConvertRectToScreen(apps_grid_view_, &anchor_rect);
 
+  AppLaunchedMetricParams metric_params = {
+      ash::AppListLaunchedFrom::kLaunchedFromGrid};
+  delegate_->GetAppLaunchedMetricParams(&metric_params);
+
   context_menu_ = std::make_unique<AppListMenuModelAdapter>(
-      item_weak_->GetMetadata()->id, GetWidget(), source_type, this,
-      AppListMenuModelAdapter::FULLSCREEN_APP_GRID,
+      item_weak_->GetMetadata()->id, std::move(menu_model), GetWidget(),
+      source_type, metric_params, AppListMenuModelAdapter::FULLSCREEN_APP_GRID,
       base::BindOnce(&AppListItemView::OnMenuClosed,
                      weak_ptr_factory_.GetWeakPtr()),
       apps_grid_view_->IsTabletMode());
-  context_menu_->Build(std::move(menu));
   context_menu_->Run(anchor_rect, views::MenuAnchorPosition::kBubbleRight,
                      run_types);
   apps_grid_view_->SetSelectedView(this);
@@ -508,14 +519,6 @@ void AppListItemView::ShowContextMenuForViewImpl(
       item_weak_->id(),
       base::BindOnce(&AppListItemView::OnContextMenuModelReceived,
                      weak_ptr_factory_.GetWeakPtr(), point, source_type));
-}
-
-void AppListItemView::ExecuteCommand(int command_id, int event_flags) {
-  if (item_weak_) {
-    delegate_->ContextMenuItemSelected(
-        item_weak_->id(), command_id, event_flags,
-        ash::mojom::AppListLaunchedFrom::kLaunchedFromGrid);
-  }
 }
 
 bool AppListItemView::ShouldEnterPushedState(const ui::Event& event) {
@@ -545,7 +548,8 @@ void AppListItemView::PaintButtonContents(gfx::Canvas* canvas) {
       flags.setStrokeWidth(kFocusRingWidth);
     } else {
       // If a context menu is open, we should instead use a grey selection.
-      flags.setColor(SkColorSetA(gfx::kGoogleGrey100, 31));
+      flags.setColor(apps_grid_view_->is_in_folder() ? kContextSelectionFolder
+                                                     : kContextSelection);
       flags.setStyle(cc::PaintFlags::kFill_Style);
     }
     gfx::Rect selection_highlight_bounds = GetContentsBounds();
@@ -788,6 +792,10 @@ void AppListItemView::AnimationProgressed(const gfx::Animation* animation) {
 }
 
 void AppListItemView::OnMenuClosed() {
+  // Release menu since its menu model delegate (AppContextMenu) could be
+  // released as a result of menu command execution.
+  context_menu_.reset();
+
   if (!menu_close_initiated_from_drag_) {
     // If the menu was not closed due to a drag sequence(e.g. multi touch) reset
     // the drag state.

@@ -56,7 +56,7 @@
       "--output_json",
       "/path/to/tmp/json",
       "--patch_ref",
-      "https://chromium.googlesource.com/chromium/src@refs/changes/56/123456/7",
+      "https://chromium.googlesource.com/chromium/src@refs/heads/master:refs/changes/56/123456/7",
       "--revision",
       "src@HEAD",
       "--disable-syntax-validation"
@@ -141,6 +141,13 @@
     ]
   },
   {
+    "cmd": [],
+    "name": "set_output_gitiles_commit",
+    "~followup_annotations": [
+      "@@@SET_BUILD_PROPERTY@$recipe_engine/buildbucket/output_gitiles_commit@{\"host\": \"fake.org\", \"id\": \"f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9\", \"position\": 170242, \"project\": \"src\", \"ref\": \"refs/heads/master\"}@@@"
+    ]
+  },
+  {
     "cmd": [
       "python",
       "-u",
@@ -168,12 +175,7 @@
   },
   {
     "failure": {
-      "exception": {
-        "traceback": [
-          "<omitted by recipe engine>"
-        ]
-      },
-      "humanReason": "Infra Failure: Step('Patch failure') returned 1"
+      "humanReason": "Infra Failure: Step('Patch failure') (retcode: 1)"
     },
     "name": "$result"
   }

@@ -11,12 +11,12 @@
 
 #include "base/macros.h"
 #include "content/public/browser/browser_thread.h"
-#include "device/usb/public/mojom/device_manager.mojom.h"
-#include "device/usb/public/mojom/device_manager_client.mojom.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/common/api/usb.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "services/device/public/mojom/usb_manager.mojom.h"
+#include "services/device/public/mojom/usb_manager_client.mojom.h"
 
 namespace extensions {
 

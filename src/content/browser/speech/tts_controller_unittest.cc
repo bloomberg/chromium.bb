@@ -22,12 +22,13 @@ class MockTtsPlatformImpl : public TtsPlatform {
   MockTtsPlatformImpl() {}
   virtual ~MockTtsPlatformImpl() {}
   bool PlatformImplAvailable() override { return true; }
-  bool Speak(int utterance_id,
+  void Speak(int utterance_id,
              const std::string& utterance,
              const std::string& lang,
              const VoiceData& voice,
-             const UtteranceContinuousParameters& params) override {
-    return true;
+             const UtteranceContinuousParameters& params,
+             base::OnceCallback<void(bool)> on_speak_finished) override {
+    std::move(on_speak_finished).Run(true);
   }
   bool IsSpeaking() override { return false; }
   bool StopSpeaking() override { return true; }

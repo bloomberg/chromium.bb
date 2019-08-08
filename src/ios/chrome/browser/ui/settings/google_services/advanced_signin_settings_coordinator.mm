@@ -10,8 +10,12 @@
 #include "base/metrics/user_metrics.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/sync/driver/sync_service.h"
+#include "components/unified_consent/unified_consent_metrics.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
@@ -26,6 +30,11 @@
 #endif
 
 using l10n_util::GetNSString;
+
+NSString* const kSyncSettingsConfirmButtonId =
+    @"kAdvancedSyncSettingsConfirmButtonId";
+NSString* const kSyncSettingsCancelButtonId =
+    @"kAdvancedSyncSettingsCancelButtonId";
 
 // Advanced sign-in settings result.
 typedef NS_ENUM(NSInteger, AdvancedSigninSettingsCoordinatorResult) {
@@ -78,18 +87,28 @@ typedef NS_ENUM(NSInteger, AdvancedSigninSettingsCoordinatorResult) {
                  completion:nil];
 }
 
-- (void)abortWithDismiss:(BOOL)dismiss {
+- (void)abortWithDismiss:(BOOL)dismiss
+                animated:(BOOL)animated
+              completion:(ProceduralBlock)completion {
   if (!self.advancedSigninSettingsNavigationController) {
+    if (completion) {
+      completion();
+    }
     return;
   }
   DCHECK_EQ(self.advancedSigninSettingsNavigationController,
             self.baseViewController.presentedViewController);
   if (dismiss) {
     [self dismissViewControllerAndFinishWithResult:
-              AdvancedSigninSettingsCoordinatorResultInterrupted];
+              AdvancedSigninSettingsCoordinatorResultInterrupted
+                                          animated:animated
+                                        completion:completion];
   } else {
     [self
         finishedWithResult:AdvancedSigninSettingsCoordinatorResultInterrupted];
+    if (completion) {
+      completion();
+    }
   }
 }
 
@@ -102,9 +121,13 @@ typedef NS_ENUM(NSInteger, AdvancedSigninSettingsCoordinatorResult) {
   SyncSetupService* syncSetupService =
       SyncSetupServiceFactory::GetForBrowserState(self.browserState);
   switch (result) {
-    case AdvancedSyncSettingsCoordinatorResultConfirm:
+    case AdvancedSyncSettingsCoordinatorResultConfirm: {
       base::RecordAction(
           base::UserMetricsAction("Signin_Signin_ConfirmAdvancedSyncSettings"));
+      syncer::SyncService* syncService =
+          ProfileSyncServiceFactory::GetForBrowserState(self.browserState);
+      unified_consent::metrics::RecordSyncSetupDataTypesHistrogam(
+          syncService->GetUserSettings(), self.browserState->GetPrefs());
       if (syncSetupService->IsSyncEnabled()) {
         // FirstSetupComplete flag should be only turned on when the user agrees
         // to start Sync.
@@ -112,6 +135,7 @@ typedef NS_ENUM(NSInteger, AdvancedSigninSettingsCoordinatorResult) {
         syncSetupService->SetFirstSetupComplete();
       }
       break;
+    }
     case AdvancedSigninSettingsCoordinatorResultCancel:
       base::RecordAction(base::UserMetricsAction(
           "Signin_Signin_ConfirmCancelAdvancedSyncSettings"));
@@ -142,6 +166,7 @@ typedef NS_ENUM(NSInteger, AdvancedSigninSettingsCoordinatorResult) {
       initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
                            target:self
                            action:@selector(navigationCancelButtonAction)];
+  cancelButton.accessibilityIdentifier = kSyncSettingsCancelButtonId;
   return cancelButton;
 }
 
@@ -153,6 +178,7 @@ typedef NS_ENUM(NSInteger, AdvancedSigninSettingsCoordinatorResult) {
               style:UIBarButtonItemStyleDone
              target:self
              action:@selector(navigationConfirmButtonAction)];
+  confirmButton.accessibilityIdentifier = kSyncSettingsConfirmButtonId;
   return confirmButton;
 }
 
@@ -196,7 +222,9 @@ typedef NS_ENUM(NSInteger, AdvancedSigninSettingsCoordinatorResult) {
   DCHECK_EQ(self.advancedSigninSettingsNavigationController,
             self.baseViewController.presentedViewController);
   [self dismissViewControllerAndFinishWithResult:
-            AdvancedSyncSettingsCoordinatorResultConfirm];
+            AdvancedSyncSettingsCoordinatorResultConfirm
+                                        animated:YES
+                                      completion:nil];
 }
 
 // Called when a button of |self.cancelConfirmationAlertCoordinator| is pressed.
@@ -206,7 +234,9 @@ typedef NS_ENUM(NSInteger, AdvancedSigninSettingsCoordinatorResult) {
   self.cancelConfirmationAlertCoordinator = nil;
   if (cancelSync) {
     [self dismissViewControllerAndFinishWithResult:
-              AdvancedSigninSettingsCoordinatorResultCancel];
+              AdvancedSigninSettingsCoordinatorResultCancel
+                                          animated:YES
+                                        completion:nil];
   } else {
     base::RecordAction(base::UserMetricsAction(
         "Signin_Signin_CancelCancelAdvancedSyncSettings"));
@@ -216,14 +246,20 @@ typedef NS_ENUM(NSInteger, AdvancedSigninSettingsCoordinatorResult) {
 // Dismisses the current view controller with animation, and calls
 // -[self finishedWithResult:] with |result|.
 - (void)dismissViewControllerAndFinishWithResult:
-    (AdvancedSigninSettingsCoordinatorResult)result {
+            (AdvancedSigninSettingsCoordinatorResult)result
+                                        animated:(BOOL)animated
+                                      completion:(ProceduralBlock)completion {
   DCHECK_EQ(self.advancedSigninSettingsNavigationController,
             self.baseViewController.presentedViewController);
-  [self.baseViewController
-      dismissViewControllerAnimated:YES
-                         completion:^{
-                           [self finishedWithResult:result];
-                         }];
+  __weak __typeof(self) weakSelf = self;
+  ProceduralBlock dismissCompletion = ^() {
+    [weakSelf finishedWithResult:result];
+    if (completion) {
+      completion();
+    }
+  };
+  [self.baseViewController dismissViewControllerAnimated:animated
+                                              completion:dismissCompletion];
 }
 
 @end

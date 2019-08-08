@@ -19,6 +19,7 @@
 #include "base/command_line.h"
 #include "base/containers/circular_deque.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -102,6 +103,10 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelMessageFilter
 
   void AddChannelFilter(scoped_refptr<IPC::MessageFilter> filter);
   void RemoveChannelFilter(scoped_refptr<IPC::MessageFilter> filter);
+
+  ImageDecodeAcceleratorStub* image_decode_accelerator_stub() const {
+    return image_decode_accelerator_stub_.get();
+  }
 
  private:
   ~GpuChannelMessageFilter() override;
@@ -571,6 +576,11 @@ void GpuChannel::HandleMessage(const IPC::Message& msg) {
 void GpuChannel::HandleMessageForTesting(const IPC::Message& msg) {
   // Message filter gets message first on IO thread.
   filter_->OnMessageReceived(msg);
+}
+
+ImageDecodeAcceleratorStub* GpuChannel::GetImageDecodeAcceleratorStub() const {
+  DCHECK(filter_);
+  return filter_->image_decode_accelerator_stub();
 }
 
 bool GpuChannel::CreateSharedImageStub() {

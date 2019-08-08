@@ -7,17 +7,16 @@
 
 #include <stddef.h>
 
-#include <bitset>
 #include <memory>
 #include <set>
-#include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
 #include "base/memory/memory_pressure_listener.h"
+#include "base/memory/shared_memory_mapping.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "cc/base/synced_property.h"
@@ -42,6 +41,7 @@
 #include "cc/trees/layer_tree_settings.h"
 #include "cc/trees/managed_memory_policy.h"
 #include "cc/trees/mutator_host_client.h"
+#include "cc/trees/presentation_time_callback_buffer.h"
 #include "cc/trees/render_frame_metadata.h"
 #include "cc/trees/task_runner_provider.h"
 #include "cc/trees/ukm_manager.h"
@@ -156,9 +156,6 @@ class LayerTreeHostImplClient {
       std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
       const gfx::PresentationFeedback& feedback) = 0;
 
-  virtual void DidGenerateLocalSurfaceIdAllocationOnImplThread(
-      const viz::LocalSurfaceIdAllocation& allocation) = 0;
-
   virtual void NotifyAnimationWorkletStateChange(
       AnimationWorkletMutationState state,
       ElementListType tree_type) = 0;
@@ -169,16 +166,14 @@ class LayerTreeHostImplClient {
 
 // LayerTreeHostImpl owns the LayerImpl trees as well as associated rendering
 // state.
-class CC_EXPORT LayerTreeHostImpl
-    : public InputHandler,
-      public TileManagerClient,
-      public LayerTreeFrameSinkClient,
-      public BrowserControlsOffsetManagerClient,
-      public ScrollbarAnimationControllerClient,
-      public VideoFrameControllerClient,
-      public MutatorHostClient,
-      public ImageAnimationController::Client,
-      public base::SupportsWeakPtr<LayerTreeHostImpl> {
+class CC_EXPORT LayerTreeHostImpl : public InputHandler,
+                                    public TileManagerClient,
+                                    public LayerTreeFrameSinkClient,
+                                    public BrowserControlsOffsetManagerClient,
+                                    public ScrollbarAnimationControllerClient,
+                                    public VideoFrameControllerClient,
+                                    public MutatorHostClient,
+                                    public ImageAnimationController::Client {
  public:
   // This structure is used to build all the state required for producing a
   // single CompositorFrame. The |render_passes| list becomes the set of
@@ -219,7 +214,7 @@ class CC_EXPORT LayerTreeHostImpl
 
     // Backing for software compositing.
     viz::SharedBitmapId shared_bitmap_id;
-    std::unique_ptr<base::SharedMemory> shared_memory;
+    base::WritableSharedMemoryMapping shared_mapping;
     // Backing for gpu compositing.
     gpu::Mailbox mailbox;
 
@@ -259,13 +254,14 @@ class CC_EXPORT LayerTreeHostImpl
   InputHandlerScrollResult ScrollBy(ScrollState* scroll_state) override;
   void RequestUpdateForSynchronousInputHandler() override;
   void SetSynchronousInputHandlerRootScrollOffset(
-      const gfx::ScrollOffset& root_offset) override;
+      const gfx::ScrollOffset& root_content_offset) override;
   void ScrollEnd(ScrollState* scroll_state, bool should_snap = false) override;
 
   InputHandlerPointerResult MouseDown(
       const gfx::PointF& viewport_point) override;
   InputHandlerPointerResult MouseUp(const gfx::PointF& viewport_point) override;
-  void MouseMoveAt(const gfx::Point& viewport_point) override;
+  InputHandlerPointerResult MouseMoveAt(
+      const gfx::Point& viewport_point) override;
   void MouseLeave() override;
 
   void PinchGestureBegin() override;
@@ -311,6 +307,8 @@ class CC_EXPORT LayerTreeHostImpl
   void RequestBeginFrameForAnimatedImages() override;
   void RequestInvalidationForAnimatedImages() override;
 
+  base::WeakPtr<LayerTreeHostImpl> AsWeakPtr();
+
   void UpdateViewportContainerSizes();
 
   void set_resourceless_software_draw_for_testing() {
@@ -338,6 +336,10 @@ class CC_EXPORT LayerTreeHostImpl
   void SetFullViewportDamage();
   void SetViewportDamage(const gfx::Rect& damage_rect);
 
+  // Updates registered ElementIds present in |changed_list|. Call this after
+  // changing the property trees for the |changed_list| trees.
+  void UpdateElements(ElementListType changed_list);
+
   // Analogous to a commit, this function is used to create a sync tree and
   // add impl-side invalidations to it.
   // virtual for testing.
@@ -353,13 +355,17 @@ class CC_EXPORT LayerTreeHostImpl
   }
 
   // MutatorHostClient implementation.
-  bool IsElementInList(ElementId element_id,
-                       ElementListType list_type) const override;
+  bool IsElementInPropertyTrees(ElementId element_id,
+                                ElementListType list_type) const override;
   void SetMutatorsNeedCommit() override;
   void SetMutatorsNeedRebuildPropertyTrees() override;
   void SetElementFilterMutated(ElementId element_id,
                                ElementListType list_type,
                                const FilterOperations& filters) override;
+  void SetElementBackdropFilterMutated(
+      ElementId element_id,
+      ElementListType list_type,
+      const FilterOperations& backdrop_filters) override;
   void SetElementOpacityMutated(ElementId element_id,
                                 ElementListType list_type,
                                 float opacity) override;
@@ -746,13 +752,7 @@ class CC_EXPORT LayerTreeHostImpl
   void SetRenderFrameObserver(
       std::unique_ptr<RenderFrameMetadataObserver> observer);
 
-  void SetActiveURL(const GURL& url);
-
-  // Called when LayerTreeImpl's LocalSurfaceIdAllocation changes.
-  void OnLayerTreeLocalSurfaceIdAllocationChanged();
-
-  // See SyncSurfaceIdAllocator for details.
-  uint32_t GenerateChildSurfaceSequenceNumberSync();
+  void SetActiveURL(const GURL& url, ukm::SourceId source_id);
 
   CompositorFrameReportingController* compositor_frame_reporting_controller()
       const {
@@ -826,7 +826,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   // Returns true if status changed.
   bool UpdateGpuRasterizationStatus();
-  void UpdateTreeResourcesIfNeeded();
+  void UpdateTreeResourcesForGpuRasterizationIfNeeded();
 
   Viewport* viewport() const { return viewport_.get(); }
 
@@ -1160,39 +1160,11 @@ class CC_EXPORT LayerTreeHostImpl
   base::Optional<RenderFrameMetadata> last_draw_render_frame_metadata_;
   viz::ChildLocalSurfaceIdAllocator child_local_surface_id_allocator_;
 
-  // Set to true if waiting to receive a LocalSurfaceIdAllocation that matches
-  // that of |child_local_surface_id_allocator_|.
-  bool waiting_for_local_surface_id_ = false;
-
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
-  // Stores information needed once we get a response for a particular
-  // presentation token.
-  struct FrameTokenInfo {
-    FrameTokenInfo(
-        uint32_t token,
-        base::TimeTicks cc_frame_time,
-        std::vector<LayerTreeHost::PresentationTimeCallback> callbacks);
-    FrameTokenInfo(const FrameTokenInfo&) = delete;
-    FrameTokenInfo(FrameTokenInfo&&);
-    ~FrameTokenInfo();
-
-    FrameTokenInfo& operator=(const FrameTokenInfo&) = delete;
-    FrameTokenInfo& operator=(FrameTokenInfo&&) = default;
-
-    uint32_t token;
-
-    // The compositor frame time used to produce the frame.
-    base::TimeTicks cc_frame_time;
-
-    // The callbacks to send back to the main thread.
-    std::vector<LayerTreeHost::PresentationTimeCallback> callbacks;
-  };
-
-  base::circular_deque<FrameTokenInfo> frame_token_infos_;
+  PresentationTimeCallbackBuffer presentation_time_callbacks_;
   ui::FrameMetrics frame_metrics_;
   ui::SkippedFrameTracker skipped_frame_tracker_;
-  int last_color_space_id_ = -1;
   bool is_animating_for_snap_;
 
   const PaintImage::GeneratorClientId paint_image_generator_client_id_;
@@ -1214,6 +1186,10 @@ class CC_EXPORT LayerTreeHostImpl
   // animation completion. ScrollEnd will get called with this deferred state
   // once the animation is over.
   base::Optional<ScrollState> deferred_scroll_end_state_;
+
+  // Must be the last member to ensure this is destroyed first in the
+  // destruction order and invalidates all weak pointers.
+  base::WeakPtrFactory<LayerTreeHostImpl> weak_factory_;
 };
 
 }  // namespace cc

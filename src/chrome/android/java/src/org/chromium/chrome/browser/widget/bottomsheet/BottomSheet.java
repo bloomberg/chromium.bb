@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.TabLoadStatus;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
+import org.chromium.chrome.browser.gesturenav.HistoryNavigationDelegate;
 import org.chromium.chrome.browser.native_page.NativePageHost;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBrowserControlsState;
@@ -754,6 +755,12 @@ public class BottomSheet
     @Override
     public boolean isVisible() {
         return mCurrentState != SheetState.PEEK;
+    }
+
+    @Override
+    public HistoryNavigationDelegate createHistoryNavigationDelegate() {
+        assert false : "BottomSheet does not need HistoryNavigationDelegate";
+        return null;
     }
 
     @Override

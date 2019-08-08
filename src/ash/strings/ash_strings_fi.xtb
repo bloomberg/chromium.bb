@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">Tiivistä valikko</translation>
 <translation id="1383876407941801731">Haku</translation>
 <translation id="1419738280318246476">Avaa laitteen lukitus, niin voit käyttää ilmoitustoimintoa</translation>
+<translation id="1426410128494586442">Kyllä</translation>
 <translation id="1455242230282523554">Näytä kieliasetukset</translation>
 <translation id="1467432559032391204">Vasemmalle</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -47,7 +48,6 @@
 <translation id="1570871743947603115">Ota Bluetooth käyttöön tai poista se käytöstä. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">nähdä kaikki tämän käyttökerran toimintosi</translation>
 <translation id="1608626060424371292">Poista tämä käyttäjä</translation>
-<translation id="1621499497873603021">Akku on tyhjä <ph name="TIME_LEFT" /> kuluttua</translation>
 <translation id="1654477262762802994">Aloita puhekysely</translation>
 <translation id="1658406695958299976">Salasanan vahvistaminen ei onnistunut vieläkään. Huom. Jos vaihdoit salasanasi äskettäin, uusi salasana otetaan käyttöön kirjauduttuasi ulos. Käytä tässä vanhaa salasanaasi.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> jäljellä</translation>
@@ -72,7 +72,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Lue lisää uusimmasta <ph name="SYSTEM_APP_NAME" /> ‑päivityksestä.</translation>
 <translation id="1995660704900986789">Virta pois</translation>
-<translation id="1999763610967697511">Vedä ja pudota</translation>
 <translation id="2012624427112548395">Ctrl + haku + H</translation>
 <translation id="2016340657076538683">Kirjoita viesti</translation>
 <translation id="2050339315714019657">Pystysuunta</translation>
@@ -100,7 +99,6 @@
 <translation id="239188844683466770">Ota Älä häiritse ‑tila käyttöön tai poista se käytöstä</translation>
 <translation id="2412593942846481727">Päivitys saatavilla</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> on hallinnoitu istunto, jota hallinnoi <ph name="DOMAIN" /></translation>
-<translation id="2416346634399901812">Yhdistetty: <ph name="NETWORK_NAME" /></translation>
 <translation id="2427507373259914951">Ykköspainikkeen klikkaus</translation>
 <translation id="2429753432712299108">Bluetooth-laite <ph name="DEVICE_NAME" /> pyytää lupaa laiteparin muodostamiseen. Ennen kuin hyväksyt pyynnön, varmista, että laitteella näkyy tämä avain: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Ilmoitukset</translation>
@@ -114,11 +112,11 @@
 <translation id="2597972630681408282">Yövalo: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM-kortti on lukittu.</translation>
 <translation id="2653659639078652383">Lähetä</translation>
+<translation id="2658778018866295321">Klikkaa ja vedä</translation>
 <translation id="2700493154570097719">Määritä näppäimistö</translation>
 <translation id="2718395828230677721">Yövalo</translation>
 <translation id="2727977024730340865">Pienitehoinen laturi kytketty. Akku ei ehkä lataudu luotettavasti.</translation>
 <translation id="2761704814324807722">Tila-alue, aika <ph name="TIME" />, <ph name="BATTERY" /></translation>
-<translation id="277257480934873581">Yhdistetään uudelleen verkkoon <ph name="NAME" /></translation>
 <translation id="2792498699870441125">Alt + haku</translation>
 <translation id="2803734122639935495">Avaa lukitus antamalla salasana</translation>
 <translation id="2819276065543622893">Sinut kirjataan ulos nyt.</translation>
@@ -139,7 +137,6 @@
 <translation id="2996462380875591307">Kiinnitetty suurennus on käytössä. Poista se käytöstä painamalla uudelleen Ctrl + haku + D.</translation>
 <translation id="3000461861112256445">Monoääni</translation>
 <translation id="3009178788565917040">Äänentoisto</translation>
-<translation id="3019353588588144572">Akku on ladattu <ph name="TIME_REMAINING" /> kuluttua</translation>
 <translation id="3051128274746680507">Valvottu käyttäjäprofiilisi poistetaan pian. Kirjaudu sisään nähdäksesi lisätietoja.</translation>
 <translation id="3055162170959710888">Olet käyttänyt tätä laitetta tänään <ph name="USED_TIME" /></translation>
 <translation id="3077734595579995578">shift</translation>
@@ -175,6 +172,7 @@
 <translation id="3510164367642747937">Korosta hiiren osoitin</translation>
 <translation id="3513798432020909783"><ph name="MANAGER_EMAIL" /> hallinnoi tiliä</translation>
 <translation id="3573179567135747900">Vaihda takaisin kieleksi <ph name="FROM_LOCALE" /> (vaatii uudelleenkäynnistyksen)</translation>
+<translation id="3576141592585647168">Muuta aikavyöhykettä</translation>
 <translation id="3595596368722241419">Akku täynnä</translation>
 <translation id="3606978283550408104">Pistekirjoitusnäyttö on yhdistetty.</translation>
 <translation id="3621202678540785336">Äänitulo:</translation>
@@ -202,6 +200,7 @@
 <translation id="394485226368336402">Ääniasetukset</translation>
 <translation id="3962859241508114581">Edellinen kappale</translation>
 <translation id="397105322502079400">Lasketaan...</translation>
+<translation id="3977512764614765090">Akkua ladataan, varaus nyt <ph name="PERCENTAGE" /> %</translation>
 <translation id="3995138139523574647">C-tyypin USB-laite (oikean sivun taaimmainen portti)</translation>
 <translation id="4017989525502048489">Laserosoitin</translation>
 <translation id="4042660782729322247">Jaat näyttösi</translation>
@@ -218,7 +217,7 @@
 <translation id="4269883910223712419">Tämän laitteen ylläpitäjä voi</translation>
 <translation id="4279490309300973883">Peilaus päällä</translation>
 <translation id="4281007048406351813">Lisää 1 min ajastimeen</translation>
-<translation id="4292681942966152062">Aktivoidaan <ph name="NETWORK_NAME" /></translation>
+<translation id="4296136865091727875">Poista kaikki <ph name="COUNT" /> ilmoitusta</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Painoit suuren kontrastin pikanäppäintä. Haluatko ottaa sen käyttöön?</translation>
 <translation id="4331809312908958774">Chrome OS
@@ -235,7 +234,6 @@
 <translation id="4477350412780666475">Seuraava kappale</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Laitteet ilman paria</translation>
-<translation id="4508225577814909926"><ph name="NAME" />: Yhdistetään…</translation>
 <translation id="4513946894732546136">Palaute</translation>
 <translation id="4527045527269911712">Bluetooth-laite <ph name="DEVICE_NAME" /> pyytää lupaa laiteparin muodostamiseen.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> jäljellä, kunnes akku on täynnä</translation>
@@ -248,12 +246,12 @@
 <translation id="4696813013609194136">Avaa lukitus vanhemman koodilla</translation>
 <translation id="4731797938093519117">Avaus vanhemmille</translation>
 <translation id="4734965478015604180">Vaakasuora</translation>
-<translation id="476166673298332917">Laitteen järjestelmänvalvoja voi valvoa selaustoimintaasi.</translation>
 <translation id="4774338217796918551">Palaa huomenna kello <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Osoitteen <ph name="USER_EMAIL_ADDRESS" /> salasana</translation>
 <translation id="4778095205580009397">Google Assistantia ei voi käyttää demo-käyttökerralla.</translation>
 <translation id="479989351350248267">haku</translation>
 <translation id="4804818685124855865">Katkaise yhteys</translation>
+<translation id="4831034276697007977">Haluatko varmasti lopettaa automaattisen klikkaamisen?</translation>
 <translation id="4849058404725798627">Korosta tekstin syöttökohde</translation>
 <translation id="485592688953820832">Ei toimenpiteitä (keskeytä)</translation>
 <translation id="4872237917498892622">Alt + haku tai Shift</translation>
@@ -358,9 +356,9 @@
 <translation id="6537270692134705506">Tallenna kuvakaappaus koko näkymästä</translation>
 <translation id="6542521951477560771">Suoratoistetaan: <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Pyydä apua järjestelmänvalvojalta</translation>
-<translation id="6574601967010742428">Laitteen järjestelmänvalvoja voi ehkä seurata toimintaasi.</translation>
 <translation id="6585808820553845416">Istunnon loppumiseen on <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Haku+Vaihto+K</translation>
+<translation id="6637729079642709226">Muuta aikaa</translation>
 <translation id="6650933572246256093">Bluetooth-laite <ph name="DEVICE_NAME" /> pyytää lupaa laiteparin muodostamiseen. Anna tämä avain kyseisellä laitteella: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Salasana</translation>
 <translation id="6665545700722362599">Anna verkkosivustoille, sovelluksille ja laajennuksille oikeus käyttää sijaintipalveluita, laitteen mikrofonia, kameraa ja muita ominaisuuksia</translation>
@@ -372,7 +370,6 @@
 <translation id="6715542151869432661">Mobiililaitteita ei löytynyt.</translation>
 <translation id="6723839937902243910">Virta</translation>
 <translation id="6751826523481687655">Tehokkuuden seuranta on käytössä</translation>
-<translation id="6785414152754474415">Akussa on virtaa <ph name="PERCENTAGE" /> %, ja laite on kytketty laturiin.</translation>
 <translation id="6790428901817661496">Toista</translation>
 <translation id="6803622936009808957">Näyttöjen peilaaminen ei onnistunut, sillä tuettua resoluutiota ei löytynyt. Sen sijaan valittiin työpöydän laajennus.</translation>
 <translation id="6820676911989879663">Pidä tauko</translation>
@@ -406,6 +403,7 @@
 <translation id="7348093485538360975">Virtuaalinäppäimistö</translation>
 <translation id="735745346212279324">VPN-yhteys katkaistu</translation>
 <translation id="7377169924702866686">Caps Lock on päällä.</translation>
+<translation id="7378594059915113390">Mediaohjaimet</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />. <ph name="SECONDS_REMAINING" /> s</translation>
 <translation id="7398254312354928459">Verkko vaihdettu</translation>
 <translation id="7405710164030118432">Avaa laitteen lukitus vanhemman Family Link ‑käyttökoodilla</translation>
@@ -419,6 +417,7 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> ei tue resoluutiota <ph name="SPECIFIED_RESOLUTION" />. Resoluutioksi valittiin <ph name="FALLBACK_RESOLUTION" />.</translation>
 <translation id="7562368315689366235">Emojipaletti</translation>
 <translation id="7564874036684306347">Ikkunan siirtämisellä toiselle työpöydälle voi olla odottamattomia seurauksia. Myöhemmät ilmoitukset, ikkunat ja valintaikkunat voidaan jakaa työpöytien välillä.</translation>
+<translation id="7568294522609223312">Lopeta automaattinen klikkaaminen</translation>
 <translation id="7569509451529460200">Pistekirjoitus ja ChromeVox käytössä</translation>
 <translation id="7593891976182323525">Haku tai Shift</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (omistaja)</translation>
@@ -435,7 +434,6 @@
 <translation id="7814236020522506259"><ph name="HOUR" /> <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Vahva signaali</translation>
 <translation id="7837740436429729974">Aika loppui</translation>
-<translation id="7842211907556571265">Yhdistetään: <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Varoitus: Kokeellinen ominaisuus</translation>
 <translation id="7846634333498149051">Näppäimistö</translation>
 <translation id="7868900307798234037">Avataan sormenjäljellä</translation>
@@ -507,6 +505,7 @@
 <translation id="8877788021141246043">Aseta muistutus</translation>
 <translation id="8878886163241303700">Laajennettu näyttö</translation>
 <translation id="890616557918890486">Vaihda lähdettä</translation>
+<translation id="8909138438987180327">Akun varaus on <ph name="PERCENTAGE" /> prosenttia.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Assistant ei ole käytettävissä tällä kielellä.</translation>
 <translation id="8938800817013097409">C-tyypin USB-laite (oikeanpuoleinen takaportti)</translation>
@@ -515,9 +514,11 @@
 <translation id="8990809378771970590"><ph name="IME_NAME" /> käytössä</translation>
 <translation id="899350903320462459">Avaa laitteen lukitus tunnuksella <ph name="LOGIN_ID" />, niin voit käyttää ilmoitustoimintoa</translation>
 <translation id="8995603266996330174">Hallinnoija: <ph name="DOMAIN" /></translation>
+<translation id="9017320285115481645">Syötä vanhemman Family Link ‑käyttökoodi</translation>
 <translation id="9029474291399787231">Adobe Flash Playerin päivitys saatavilla</translation>
 <translation id="9056839673611986238">Laite palautetaan</translation>
 <translation id="9070640332319875144">Assistantin asetukset</translation>
+<translation id="9072519059834302790">Akku loppuu <ph name="TIME_LEFT" /> päästä</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofoni on käytössä.</translation>
@@ -528,8 +529,8 @@
 <translation id="9179259655489829027">Tämän ominaisuuden avulla kaikkia kirjautuneita käyttäjätilejä voi käyttää ilman salasanaa. Käytä tätä ominaisuutta vain luotettavien tilien kanssa.</translation>
 <translation id="9193626018745640770">Suoratoistetaan tuntemattomaan vastaanottimeen</translation>
 <translation id="9194617393863864469">Kirjaa sisään toinen käyttäjä…</translation>
-<translation id="9201131092683066720">Akussa on virtaa <ph name="PERCENTAGE" /> %.</translation>
 <translation id="9210037371811586452">Poistutaan yhtenäisen työpöydän tilasta</translation>
+<translation id="9211681782751733685">Akku on ladattu täyteen <ph name="TIME_REMAINING" /> kuluttua.</translation>
 <translation id="9215934040295798075">Aseta taustakuva</translation>
 <translation id="921989828232331238">Vanhempasi lukitsi laitteen loppupäivän ajaksi</translation>
 <translation id="923686485342484400">Kirjaudu ulos painamalla Control Shift Q kahdesti.</translation>

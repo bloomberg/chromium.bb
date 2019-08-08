@@ -167,6 +167,7 @@ class CORE_EXPORT InputMethodController final
       int selection_end,
       size_t text_length) const;
   int TextInputFlags() const;
+  ui::TextInputAction InputActionOfFocusedElement() const;
   WebTextInputMode InputModeOfFocusedElement() const;
 
   // Implements |DocumentShutdownObserver|.

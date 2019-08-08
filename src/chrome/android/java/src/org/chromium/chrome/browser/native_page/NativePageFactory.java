@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.bookmarks.BookmarkPage;
 import org.chromium.chrome.browser.download.DownloadPage;
 import org.chromium.chrome.browser.explore_sites.ExploreSitesPage;
 import org.chromium.chrome.browser.feed.FeedNewTabPage;
+import org.chromium.chrome.browser.gesturenav.HistoryNavigationDelegate;
 import org.chromium.chrome.browser.history.HistoryPage;
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPage;
@@ -79,7 +80,7 @@ public class NativePageFactory {
         protected NativePage buildRecentTabsPage(ChromeActivity activity, Tab tab) {
             RecentTabsManager recentTabsManager =
                     new RecentTabsManager(tab, tab.getProfile(), activity);
-            return new RecentTabsPage(activity, recentTabsManager);
+            return new RecentTabsPage(activity, recentTabsManager, new TabShim(tab));
         }
     }
 
@@ -238,6 +239,11 @@ public class NativePageFactory {
         @Override
         public boolean isVisible() {
             return mTab == TabModelSelector.from(mTab).getCurrentTab();
+        }
+
+        @Override
+        public HistoryNavigationDelegate createHistoryNavigationDelegate() {
+            return HistoryNavigationDelegate.createForNativePage(mTab);
         }
     }
 }

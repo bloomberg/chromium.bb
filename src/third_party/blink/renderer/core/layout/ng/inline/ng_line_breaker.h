@@ -47,7 +47,7 @@ class CORE_EXPORT NGLineBreaker {
   // Compute the next line break point and produces NGInlineItemResults for
   // the line.
   inline void NextLine(NGLineInfo* line_info) {
-    NextLine(NGSizeIndefinite, nullptr, line_info);
+    NextLine(kIndefiniteSize, nullptr, line_info);
   }
 
   // During the min/max size calculation we need a special percentage
@@ -72,9 +72,11 @@ class CORE_EXPORT NGLineBreaker {
 
   // Compute NGInlineItemResult for an open tag item.
   // Returns true if this item has edge and may have non-zero inline size.
-  static bool ComputeOpenTagResult(const NGInlineItem&,
-                                   const NGConstraintSpace&,
-                                   NGInlineItemResult*);
+  static bool ComputeOpenTagResult(
+      const NGInlineItem&,
+      const NGConstraintSpace&,
+      NGInlineItemResult*,
+      base::Optional<NGLineBoxStrut> margins = base::nullopt);
 
   // This enum is private, except for |WhitespaceStateForTesting()|. See
   // |whitespace_| member.
@@ -98,8 +100,8 @@ class CORE_EXPORT NGLineBreaker {
                               unsigned end_offset,
                               NGLineInfo*);
   NGInlineItemResult* AddItem(const NGInlineItem&, NGLineInfo*);
-  void SetLineEndFragment(scoped_refptr<const NGPhysicalTextFragment>,
-                          NGLineInfo*);
+  LayoutUnit SetLineEndFragment(scoped_refptr<const NGPhysicalTextFragment>,
+                                NGLineInfo*);
 
   void BreakLine(LayoutUnit percentage_resolution_block_size_for_min_max,
                  Vector<LayoutObject*>* out_floats_for_min_max,
@@ -126,11 +128,12 @@ class CORE_EXPORT NGLineBreaker {
     HandleText(item, *item.TextShapeResult(), line_info);
   }
   void HandleText(const NGInlineItem& item, const ShapeResult&, NGLineInfo*);
-  void BreakText(NGInlineItemResult*,
-                 const NGInlineItem&,
-                 const ShapeResult&,
-                 LayoutUnit available_width,
-                 NGLineInfo*);
+  enum BreakResult { kSuccess, kOverflow };
+  BreakResult BreakText(NGInlineItemResult*,
+                        const NGInlineItem&,
+                        const ShapeResult&,
+                        LayoutUnit available_width,
+                        NGLineInfo*);
   bool HandleTextForFastMinContent(NGInlineItemResult*,
                                    const NGInlineItem&,
                                    const ShapeResult&,
@@ -163,7 +166,7 @@ class CORE_EXPORT NGLineBreaker {
                    Vector<LayoutObject*>* out_floats_for_min_max,
                    NGLineInfo*);
 
-  void HandleOpenTag(const NGInlineItem&, NGLineInfo*);
+  bool HandleOpenTag(const NGInlineItem&, NGLineInfo*);
   void HandleCloseTag(const NGInlineItem&, NGLineInfo*);
 
   void HandleOverflow(NGLineInfo*);
@@ -179,11 +182,13 @@ class CORE_EXPORT NGLineBreaker {
   void ComputeBaseDirection();
 
   LayoutUnit AvailableWidth() const {
-    return line_opportunity_.AvailableInlineSize();
+    DCHECK_EQ(available_width_, ComputeAvailableWidth());
+    return available_width_;
   }
   LayoutUnit AvailableWidthToFit() const {
     return AvailableWidth().AddEpsilon();
   }
+  LayoutUnit ComputeAvailableWidth() const;
 
   // Represents the current offset of the input.
   LineBreakState state_;
@@ -197,6 +202,7 @@ class CORE_EXPORT NGLineBreaker {
   // The current position from inline_start. Unlike NGInlineLayoutAlgorithm
   // that computes position in visual order, this position in logical order.
   LayoutUnit position_;
+  LayoutUnit available_width_;
   NGLineLayoutOpportunity line_opportunity_;
 
   NGInlineNode node_;
@@ -260,6 +266,9 @@ class CORE_EXPORT NGLineBreaker {
     scoped_refptr<const ShapeResultView> collapsed_shape_result;
   };
   base::Optional<TrailingCollapsibleSpace> trailing_collapsible_space_;
+
+  // Keep track of item index where overflow occurrred.
+  unsigned overflow_item_index_;
 
   // Keep track of handled float items. See HandleFloat().
   const NGPositionedFloatVector& leading_floats_;

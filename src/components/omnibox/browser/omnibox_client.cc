@@ -33,27 +33,11 @@ gfx::Image OmniboxClient::GetFavicon() const {
   return gfx::Image();
 }
 
-bool OmniboxClient::IsInstantNTP() const {
-  return false;
-}
-
-bool OmniboxClient::IsSearchResultsPage() const {
-  return false;
-}
-
 bool OmniboxClient::IsLoading() const {
   return false;
 }
 
 bool OmniboxClient::IsPasteAndGoEnabled() const {
-  return false;
-}
-
-bool OmniboxClient::IsNewTabPage(const GURL& url) const {
-  return false;
-}
-
-bool OmniboxClient::IsHomePage(const GURL& url) const {
   return false;
 }
 

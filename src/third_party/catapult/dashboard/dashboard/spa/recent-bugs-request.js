@@ -3,21 +3,25 @@
    found in the LICENSE file.
 */
 'use strict';
-tr.exportTo('cp', () => {
-  class RecentBugsRequest extends cp.RequestBase {
-    constructor() {
-      super({});
-      this.method_ = 'POST';
-    }
 
-    get url_() {
-      return RecentBugsRequest.URL;
-    }
+import RequestBase from './request-base.js';
 
-    postProcess_(json) {
-      return json.bugs;
-    }
+export default class RecentBugsRequest extends RequestBase {
+  constructor() {
+    super({});
+    this.method_ = 'POST';
   }
-  RecentBugsRequest.URL = '/api/bugs/recent';
-  return {RecentBugsRequest};
-});
+
+  get url_() {
+    return RecentBugsRequest.URL;
+  }
+
+  get description_() {
+    return `loading recent bugs`;
+  }
+
+  postProcess_(json) {
+    return json.bugs;
+  }
+}
+RecentBugsRequest.URL = '/api/bugs/recent';

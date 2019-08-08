@@ -24,13 +24,13 @@
 
 #include "third_party/blink/renderer/core/script/script_loader.h"
 
+#include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/scriptable_document_parser.h"
 #include "third_party/blink/renderer/core/dom/text.h"
-#include "third_party/blink/renderer/core/feature_policy/feature_policy.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/script/classic_pending_script.h"
 #include "third_party/blink/renderer/core/script/classic_script.h"
 #include "third_party/blink/renderer/core/script/import_map.h"
+#include "third_party/blink/renderer/core/script/js_module_script.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/script/module_pending_script.h"
 #include "third_party/blink/renderer/core/script/script.h"
@@ -212,8 +213,7 @@ ShouldFireErrorEvent ParseAndRegisterImportMap(ScriptElementBase& element,
     return ShouldFireErrorEvent::kShouldFire;
 
   // https://github.com/WICG/import-maps/issues/105
-  if (!ContentSecurityPolicy::ShouldBypassMainWorld(&element_document) &&
-      !element.AllowInlineScriptForCSP(element.GetNonceForElement(),
+  if (!element.AllowInlineScriptForCSP(element.GetNonceForElement(),
                                        position.line_, import_map_text)) {
     return ShouldFireErrorEvent::kShouldFire;
   }
@@ -658,7 +658,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
         const KURL& source_url = element_document.Url();
         Modulator* modulator = Modulator::From(
             ToScriptStateForMainWorld(context_document->GetFrame()));
-        ModuleScript* module_script = ModuleScript::Create(
+        ModuleScript* module_script = JSModuleScript::Create(
             ParkableString(element_->TextFromChildren().Impl()), nullptr,
             ScriptSourceLocationType::kInline, modulator, source_url, base_url,
             options, position);
@@ -943,14 +943,14 @@ bool ScriptLoader::IsScriptForEventSupported() const {
   for_attribute = for_attribute.StripWhiteSpace();
   // <spec step="14.4">If for is not an ASCII case-insensitive match for the
   // string "window", then return. The script is not executed.</spec>
-  if (!DeprecatedEqualIgnoringCase(for_attribute, "window"))
+  if (!EqualIgnoringASCIICase(for_attribute, "window"))
     return false;
   event_attribute = event_attribute.StripWhiteSpace();
   // <spec step="14.5">If event is not an ASCII case-insensitive match for
   // either the string "onload" or the string "onload()", then return. The
   // script is not executed.</spec>
-  return DeprecatedEqualIgnoringCase(event_attribute, "onload") ||
-         DeprecatedEqualIgnoringCase(event_attribute, "onload()");
+  return EqualIgnoringASCIICase(event_attribute, "onload") ||
+         EqualIgnoringASCIICase(event_attribute, "onload()");
 }
 
 PendingScript*

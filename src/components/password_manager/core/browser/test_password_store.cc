@@ -48,10 +48,25 @@ TestPasswordStore::CreateBackgroundTaskRunner() const {
 }
 
 PasswordStoreChangeList TestPasswordStore::AddLoginImpl(
-    const autofill::PasswordForm& form) {
+    const autofill::PasswordForm& form,
+    AddLoginError* error) {
   PasswordStoreChangeList changes;
-  stored_passwords_[form.signon_realm].push_back(form);
-  changes.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form));
+  auto& passwords_for_signon_realm = stored_passwords_[form.signon_realm];
+  auto iter = std::find_if(
+      passwords_for_signon_realm.begin(), passwords_for_signon_realm.end(),
+      [&form](const auto& password) {
+        return ArePasswordFormUniqueKeysEqual(form, password);
+      });
+
+  if (iter != passwords_for_signon_realm.end()) {
+    changes.emplace_back(PasswordStoreChange::REMOVE, *iter);
+    changes.emplace_back(PasswordStoreChange::ADD, form);
+    *iter = form;
+    return changes;
+  }
+
+  changes.emplace_back(PasswordStoreChange::ADD, form);
+  passwords_for_signon_realm.push_back(form);
   return changes;
 }
 
@@ -61,7 +76,7 @@ PasswordStoreChangeList TestPasswordStore::UpdateLoginImpl(
   std::vector<autofill::PasswordForm>& forms =
       stored_passwords_[form.signon_realm];
   for (auto it = forms.begin(); it != forms.end(); ++it) {
-    if (ArePasswordFormUniqueKeyEqual(form, *it)) {
+    if (ArePasswordFormUniqueKeysEqual(form, *it)) {
       *it = form;
       changes.push_back(PasswordStoreChange(PasswordStoreChange::UPDATE, form));
     }
@@ -76,7 +91,7 @@ PasswordStoreChangeList TestPasswordStore::RemoveLoginImpl(
       stored_passwords_[form.signon_realm];
   auto it = forms.begin();
   while (it != forms.end()) {
-    if (ArePasswordFormUniqueKeyEqual(form, *it)) {
+    if (ArePasswordFormUniqueKeysEqual(form, *it)) {
       it = forms.erase(it);
       changes.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE, form));
     } else {
@@ -97,13 +112,13 @@ TestPasswordStore::FillMatchingLogins(const FormDigest& form) {
     const bool realm_psl_matches =
         IsPublicSuffixDomainMatch(elements.first, form.signon_realm);
     if (realm_matches || realm_psl_matches ||
-        (form.scheme == autofill::PasswordForm::SCHEME_HTML &&
+        (form.scheme == autofill::PasswordForm::Scheme::kHtml &&
          password_manager::IsFederatedRealm(elements.first, form.origin))) {
       const bool is_psl = !realm_matches && realm_psl_matches;
       for (const auto& stored_form : elements.second) {
         // Repeat the condition above with an additional check for origin.
         if (realm_matches || realm_psl_matches ||
-            (form.scheme == autofill::PasswordForm::SCHEME_HTML &&
+            (form.scheme == autofill::PasswordForm::Scheme::kHtml &&
              stored_form.origin.GetOrigin() == form.origin.GetOrigin() &&
              password_manager::IsFederatedRealm(stored_form.signon_realm,
                                                 form.origin))) {

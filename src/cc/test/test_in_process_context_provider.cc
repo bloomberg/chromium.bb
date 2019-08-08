@@ -12,6 +12,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/viz/common/gpu/context_cache_controller.h"
 #include "components/viz/common/resources/platform_color.h"
+#include "components/viz/service/gl/gpu_service_impl.h"
+#include "components/viz/test/test_gpu_service_holder.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/raster_implementation_gles.h"
@@ -50,8 +52,8 @@ std::unique_ptr<gpu::GLInProcessContext> CreateGLInProcessContext(
 
   auto context = std::make_unique<gpu::GLInProcessContext>();
   auto result = context->Initialize(
-      gpu::GetTestGpuThreadHolder()->GetTaskExecutor(), nullptr, is_offscreen,
-      gpu::kNullSurfaceHandle, attribs, gpu::SharedMemoryLimits(),
+      viz::TestGpuServiceHolder::GetInstance()->task_executor(), nullptr,
+      is_offscreen, gpu::kNullSurfaceHandle, attribs, gpu::SharedMemoryLimits(),
       gpu_memory_buffer_manager, image_factory, std::move(task_runner));
 
   DCHECK_EQ(result, gpu::ContextResult::kSuccess);
@@ -71,7 +73,6 @@ TestInProcessContextProvider::TestInProcessContextProvider(
     gpu::raster::GrShaderCache* gr_shader_cache,
     gpu::GpuProcessActivityFlags* activity_flags)
     : enable_oop_rasterization_(enable_oop_rasterization),
-      gr_shader_cache_(gr_shader_cache),
       activity_flags_(activity_flags) {
   if (support_locking)
     context_lock_.emplace();
@@ -96,11 +97,12 @@ gpu::ContextResult TestInProcessContextProvider::BindToCurrentThread() {
     attribs.enable_gles2_interface = false;
 
     raster_context_ = std::make_unique<gpu::RasterInProcessContext>();
+    auto* holder = viz::TestGpuServiceHolder::GetInstance();
     auto result = raster_context_->Initialize(
-        gpu::GetTestGpuThreadHolder()->GetTaskExecutor(), attribs,
-        gpu::SharedMemoryLimits(), &gpu_memory_buffer_manager_, &image_factory_,
-        /*gpu_channel_manager_delegate=*/nullptr, gr_shader_cache_,
-        activity_flags_);
+        holder->task_executor(), attribs, gpu::SharedMemoryLimits(),
+        &gpu_memory_buffer_manager_, &image_factory_,
+        /*gpu_channel_manager_delegate=*/nullptr,
+        holder->gpu_service()->gr_shader_cache(), activity_flags_);
     DCHECK_EQ(result, gpu::ContextResult::kSuccess);
 
     cache_controller_.reset(

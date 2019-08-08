@@ -85,7 +85,8 @@ class CollectedCookiesViews : public views::DialogDelegateView,
   std::unique_ptr<views::View> CreateButtonsPane();
 
   // Creates and returns a containing ScrollView around the given tree view.
-  views::View* CreateScrollView(std::unique_ptr<views::TreeView> pane);
+  std::unique_ptr<views::View> CreateScrollView(
+      std::unique_ptr<views::TreeView> pane);
 
   void EnableControls();
 

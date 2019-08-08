@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_button.h"
 #include "chrome/grit/generated_resources.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -39,20 +40,21 @@ gfx::ImageSkia CreateVectorIcon(const gfx::VectorIcon& icon) {
 
 }  // namespace
 
-ExtensionsMenuView::ExtensionsMenuView(views::View* anchor_view,
-                                       Browser* browser,
-                                       ToolbarActionsBar* toolbar_actions_bar)
+ExtensionsMenuView::ExtensionsMenuView(
+    views::View* anchor_view,
+    Browser* browser,
+    ExtensionsContainer* extensions_container)
     : BubbleDialogDelegateView(anchor_view,
                                views::BubbleBorder::Arrow::TOP_RIGHT),
       browser_(browser),
-      toolbar_actions_bar_(toolbar_actions_bar),
+      extensions_container_(extensions_container),
       model_(ToolbarActionsModel::Get(browser_->profile())),
       model_observer_(this) {
   model_observer_.Add(model_);
   set_margins(gfx::Insets(0));
 
-  AddAccelerator(ui::Accelerator(ui::VKEY_DOWN, ui::EF_NONE));
-  AddAccelerator(ui::Accelerator(ui::VKEY_UP, ui::EF_NONE));
+  EnableUpDownKeyboardAccelerators();
+
   SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   Repopulate();
@@ -65,7 +67,7 @@ ExtensionsMenuView::~ExtensionsMenuView() {
 
 void ExtensionsMenuView::ButtonPressed(views::Button* sender,
                                        const ui::Event& event) {
-  DCHECK_EQ(sender->id(), EXTENSIONS_SETTINGS_ID);
+  DCHECK_EQ(sender->GetID(), EXTENSIONS_SETTINGS_ID);
   chrome::ShowExtensions(browser_, std::string());
 }
 
@@ -74,17 +76,6 @@ base::string16 ExtensionsMenuView::GetWindowTitle() const {
 }
 
 bool ExtensionsMenuView::ShouldShowCloseButton() const {
-  return true;
-}
-
-bool ExtensionsMenuView::AcceleratorPressed(
-    const ui::Accelerator& accelerator) {
-  if (accelerator.key_code() != ui::VKEY_DOWN &&
-      accelerator.key_code() != ui::VKEY_UP)
-    return BubbleDialogDelegateView::AcceleratorPressed(accelerator);
-
-  // Move the focus up or down.
-  GetFocusManager()->AdvanceFocus(accelerator.key_code() != ui::VKEY_DOWN);
   return true;
 }
 
@@ -99,15 +90,7 @@ bool ExtensionsMenuView::ShouldSnapFrameWidth() const {
 void ExtensionsMenuView::Repopulate() {
   RemoveAllChildViews(true);
 
-  auto extension_buttons = std::make_unique<views::View>();
-  extension_menu_button_container_for_testing_ = extension_buttons.get();
-  extension_buttons->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
-  for (auto action_id : model_->action_ids()) {
-    extension_buttons->AddChildView(std::make_unique<ExtensionsMenuButton>(
-        browser_, model_->CreateActionForId(browser_, toolbar_actions_bar_,
-                                            false, action_id)));
-  }
+  auto extension_buttons = CreateExtensionButtonsContainer();
 
   constexpr int kMaxExtensionButtonsHeightDp = 600;
   auto scroll_view = std::make_unique<views::ScrollView>();
@@ -123,9 +106,91 @@ void ExtensionsMenuView::Repopulate() {
   auto footer = std::make_unique<HoverButton>(
       this, std::move(icon_view),
       l10n_util::GetStringUTF16(IDS_MANAGE_EXTENSION), base::string16());
-  footer->set_id(EXTENSIONS_SETTINGS_ID);
+  footer->SetID(EXTENSIONS_SETTINGS_ID);
   manage_extensions_button_for_testing_ = footer.get();
   AddChildView(std::move(footer));
+}
+
+std::unique_ptr<views::View>
+ExtensionsMenuView::CreateExtensionButtonsContainer() {
+  content::WebContents* const web_contents =
+      browser_->tab_strip_model()->GetActiveWebContents();
+
+  // Group actions by access levels.
+  std::vector<std::unique_ptr<ToolbarActionViewController>> cant_access;
+  std::vector<std::unique_ptr<ToolbarActionViewController>> wants_access;
+  std::vector<std::unique_ptr<ToolbarActionViewController>> accessing_site_data;
+  for (auto action_id : model_->action_ids()) {
+    auto action = model_->CreateActionForId(browser_, extensions_container_,
+                                            false, action_id);
+    switch (action->GetPageInteractionStatus(web_contents)) {
+      case ToolbarActionViewController::PageInteractionStatus::kNone:
+        cant_access.push_back(std::move(action));
+        break;
+      case ToolbarActionViewController::PageInteractionStatus::kPending:
+        wants_access.push_back(std::move(action));
+        break;
+      case ToolbarActionViewController::PageInteractionStatus::kActive:
+        accessing_site_data.push_back(std::move(action));
+        break;
+    }
+    // Action should be moved into one of the groups.
+    DCHECK(!action);
+  }
+
+  auto extension_buttons = std::make_unique<views::View>();
+  extension_menu_button_container_for_testing_ = extension_buttons.get();
+  extension_buttons->SetLayoutManager(
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+
+  auto add_group =
+      [this, &extension_buttons](
+          std::vector<std::unique_ptr<ToolbarActionViewController>>*
+              controller_group,
+          int label_string_id) {
+        if (controller_group->empty())
+          return;
+
+        // Add a label as header for non-empty groups of items.
+        auto label = std::make_unique<views::Label>(
+            l10n_util::GetStringUTF16(label_string_id),
+            ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
+            ChromeTextStyle::STYLE_SECONDARY);
+        label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+        const int horizontal_spacing =
+            ChromeLayoutProvider::Get()->GetDistanceMetric(
+                views::DISTANCE_BUTTON_HORIZONTAL_PADDING);
+        label->SetBorder(views::CreateEmptyBorder(
+            ChromeLayoutProvider::Get()->GetDistanceMetric(
+                DISTANCE_CONTROL_LIST_VERTICAL),
+            horizontal_spacing,
+            ChromeLayoutProvider::Get()->GetDistanceMetric(
+                DISTANCE_RELATED_CONTROL_VERTICAL_SMALL),
+            horizontal_spacing));
+
+        extension_buttons->AddChildView(std::move(label));
+
+        // Sort the actions on action name.
+        std::sort(
+            controller_group->begin(), controller_group->end(),
+            [](const std::unique_ptr<ToolbarActionViewController>& a,
+               const std::unique_ptr<ToolbarActionViewController>& b) -> bool {
+              return a->GetActionName() < b->GetActionName();
+            });
+
+        for (auto& controller : *controller_group) {
+          extension_buttons->AddChildView(
+              std::make_unique<ExtensionsMenuButton>(browser_,
+                                                     std::move(controller)));
+        }
+        controller_group->clear();
+      };
+
+  add_group(&accessing_site_data, IDS_EXTENSIONS_MENU_ACCESSING_SITE_DATA);
+  add_group(&wants_access, IDS_EXTENSIONS_MENU_WANTS_TO_ACCESS_SITE_DATA);
+  add_group(&cant_access, IDS_EXTENSIONS_MENU_CANT_ACCESS_SITE_DATA);
+
+  return extension_buttons;
 }
 
 // TODO(pbos): Revisit observed events below.
@@ -163,10 +228,10 @@ void ExtensionsMenuView::OnToolbarModelInitialized() {
 // static
 void ExtensionsMenuView::ShowBubble(views::View* anchor_view,
                                     Browser* browser,
-                                    ToolbarActionsBar* toolbar_actions_bar) {
+                                    ExtensionsContainer* extensions_container) {
   DCHECK(!g_extensions_dialog);
   g_extensions_dialog =
-      new ExtensionsMenuView(anchor_view, browser, toolbar_actions_bar);
+      new ExtensionsMenuView(anchor_view, browser, extensions_container);
   views::BubbleDialogDelegateView::CreateBubble(g_extensions_dialog)->Show();
 }
 

@@ -41,9 +41,10 @@ void PrefetchInstanceIDProxy::GetGCMToken(
   DCHECK(IsPrefetchingOfflinePagesEnabled());
   if (!token_.empty()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&PrefetchInstanceIDProxy::GotGCMToken,
-                                  weak_factory_.GetWeakPtr(), callback, token_,
-                                  InstanceID::SUCCESS));
+        FROM_HERE,
+        base::BindOnce(&PrefetchInstanceIDProxy::GotGCMToken,
+                       weak_factory_.GetWeakPtr(), std::move(callback), token_,
+                       InstanceID::SUCCESS));
     return;
   }
 
@@ -54,10 +55,11 @@ void PrefetchInstanceIDProxy::GetGCMToken(
   InstanceID* instance_id = service->driver()->GetInstanceID(app_id_);
   DCHECK(instance_id);
 
-  instance_id->GetToken(kProdSenderId, kScopeGCM,
-                        std::map<std::string, std::string>(), /*is_lazy=*/false,
-                        base::Bind(&PrefetchInstanceIDProxy::GotGCMToken,
-                                   weak_factory_.GetWeakPtr(), callback));
+  instance_id->GetToken(
+      kProdSenderId, kScopeGCM, std::map<std::string, std::string>(),
+      /*is_lazy=*/false,
+      base::BindOnce(&PrefetchInstanceIDProxy::GotGCMToken,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void PrefetchInstanceIDProxy::GotGCMToken(InstanceID::GetTokenCallback callback,
@@ -65,7 +67,7 @@ void PrefetchInstanceIDProxy::GotGCMToken(InstanceID::GetTokenCallback callback,
                                           InstanceID::Result result) {
   DVLOG(1) << "Got an Instance ID token for GCM: " << token
            << " with result: " << result;
-  callback.Run(token, result);
+  std::move(callback).Run(token, result);
 }
 
 }  // namespace offline_pages

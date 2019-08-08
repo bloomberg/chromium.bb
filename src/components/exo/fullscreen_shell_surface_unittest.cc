@@ -8,7 +8,7 @@
 #include "components/exo/buffer.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
-#include "components/exo/test/exo_test_base_aura.h"
+#include "components/exo/test/exo_test_base_views.h"
 #include "components/exo/wm_helper.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,13 +21,12 @@
 namespace exo {
 namespace {
 
-using FullscreenShellSurfaceTest = test::ExoTestBaseAura;
+using FullscreenShellSurfaceTest = test::ExoTestBaseViews;
 
 std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format) {
-  return WMHelper::GetInstance()
-      ->env()
+  return aura::Env::GetInstance()
       ->context_factory()
       ->GetGpuMemoryBufferManager()
       ->CreateGpuMemoryBuffer(size, format, gfx::BufferUsage::GPU_READ,

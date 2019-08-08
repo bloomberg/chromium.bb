@@ -481,12 +481,14 @@ HttpHandler::HttpHandler(
                                    base::BindRepeating(&ExecuteElementEquals),
                                    false /*w3c_standard_command*/)),
 
-      // No W3C equivalent.
+      // No W3C equivalent. Allowed in W3C mode due to active usage by some APIs
+      // and the difficulty for clients to provide an equivalent implementation.
+      // This endpoint is mentioned in an appendix of W3C spec
+      // (https://www.w3.org/TR/webdriver/#element-displayedness).
       CommandMapping(
           kGet, "session/:sessionId/element/:id/displayed",
           WrapToCommand("IsElementDisplayed",
-                        base::BindRepeating(&ExecuteIsElementDisplayed),
-                        false /*w3c_standard_command*/)),
+                        base::BindRepeating(&ExecuteIsElementDisplayed))),
 
       // No W3C equivalent.
       CommandMapping(
@@ -1111,7 +1113,7 @@ HttpHandler::PrepareStandardResponse(
       break;
     case kScriptTimeout:
       response.reset(
-          new net::HttpServerResponseInfo(net::HTTP_REQUEST_TIMEOUT));
+          new net::HttpServerResponseInfo(net::HTTP_INTERNAL_SERVER_ERROR));
       break;
     case kSessionNotCreated:
       response.reset(
@@ -1178,6 +1180,17 @@ HttpHandler::PrepareStandardResponse(
     inner_params->SetString("error", StatusCodeToString(status.code()));
     inner_params->SetString("message", status.message());
     inner_params->SetString("stacktrace", status.stack_trace());
+    // According to
+    // https://www.w3.org/TR/2018/REC-webdriver1-20180605/#dfn-annotated-unexpected-alert-open-error
+    // error UnexpectedAlertOpen should contain 'data.text' with alert text
+    if (status.code() == kUnexpectedAlertOpen) {
+      const std::string& message = status.message();
+      unsigned first = message.find("{");
+      unsigned last = message.find_last_of("}");
+      std::string alertText = message.substr(first, last-first);
+      alertText = alertText.substr(alertText.find(":") + 2);
+      inner_params->SetString("data.text", alertText);
+    }
     body_params.SetDictionary("value", std::move(inner_params));
   } else {
     body_params.Set("value", std::move(value));

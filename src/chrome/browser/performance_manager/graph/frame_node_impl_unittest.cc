@@ -36,11 +36,17 @@ class FrameNodeImplTest : public GraphTestHarness {
 
 }  // namespace
 
+TEST_F(FrameNodeImplTest, GetIndexingKey) {
+  auto process = CreateNode<ProcessNodeImpl>();
+  auto page = CreateNode<PageNodeImpl>();
+  auto frame = CreateNode<FrameNodeImpl>(process.get(), page.get());
+  EXPECT_EQ(frame->GetIndexingKey(), static_cast<const NodeBase*>(frame.get()));
+}
+
 TEST_F(FrameNodeImplTest, AddFrameHierarchyBasic) {
   auto process = CreateNode<ProcessNodeImpl>();
-  auto page = CreateNode<PageNodeImpl>(nullptr);
-  auto parent_node =
-      CreateNode<FrameNodeImpl>(process.get(), page.get(), nullptr, 0);
+  auto page = CreateNode<PageNodeImpl>();
+  auto parent_node = CreateNode<FrameNodeImpl>(process.get(), page.get());
   auto child2_node = CreateNode<FrameNodeImpl>(process.get(), page.get(),
                                                parent_node.get(), 1);
   auto child3_node = CreateNode<FrameNodeImpl>(process.get(), page.get(),
@@ -52,22 +58,30 @@ TEST_F(FrameNodeImplTest, AddFrameHierarchyBasic) {
   EXPECT_EQ(parent_node.get(), child3_node->parent_frame_node());
 }
 
-TEST_F(FrameNodeImplTest, Url) {
+TEST_F(FrameNodeImplTest, NavigationCommitted_SameDocument) {
   auto process = CreateNode<ProcessNodeImpl>();
-  auto page = CreateNode<PageNodeImpl>(nullptr);
-  auto frame_node =
-      CreateNode<FrameNodeImpl>(process.get(), page.get(), nullptr, 0);
+  auto page = CreateNode<PageNodeImpl>();
+  auto frame_node = CreateNode<FrameNodeImpl>(process.get(), page.get());
   EXPECT_TRUE(frame_node->url().is_empty());
   const GURL url("http://www.foo.com/");
-  frame_node->set_url(url);
+  frame_node->OnNavigationCommitted(url, /* same_document */ true);
+  EXPECT_EQ(url, frame_node->url());
+}
+
+TEST_F(FrameNodeImplTest, NavigationCommitted_DifferentDocument) {
+  auto process = CreateNode<ProcessNodeImpl>();
+  auto page = CreateNode<PageNodeImpl>();
+  auto frame_node = CreateNode<FrameNodeImpl>(process.get(), page.get());
+  EXPECT_TRUE(frame_node->url().is_empty());
+  const GURL url("http://www.foo.com/");
+  frame_node->OnNavigationCommitted(url, /* same_document */ false);
   EXPECT_EQ(url, frame_node->url());
 }
 
 TEST_F(FrameNodeImplTest, RemoveChildFrame) {
   auto process = CreateNode<ProcessNodeImpl>();
-  auto page = CreateNode<PageNodeImpl>(nullptr);
-  auto parent_frame_node =
-      CreateNode<FrameNodeImpl>(process.get(), page.get(), nullptr, 0);
+  auto page = CreateNode<PageNodeImpl>();
+  auto parent_frame_node = CreateNode<FrameNodeImpl>(process.get(), page.get());
   auto child_frame_node = CreateNode<FrameNodeImpl>(process.get(), page.get(),
                                                     parent_frame_node.get(), 1);
 
@@ -82,6 +96,17 @@ TEST_F(FrameNodeImplTest, RemoveChildFrame) {
   // Parent-child relationships should no longer exist.
   EXPECT_EQ(0u, parent_frame_node->child_frame_nodes().size());
   EXPECT_TRUE(!parent_frame_node->parent_frame_node());
+}
+
+TEST_F(FrameNodeImplTest, IsAdFrame) {
+  auto process = CreateNode<ProcessNodeImpl>();
+  auto page = CreateNode<PageNodeImpl>();
+  auto frame_node = CreateNode<FrameNodeImpl>(process.get(), page.get());
+  EXPECT_FALSE(frame_node->is_ad_frame());
+  frame_node->SetIsAdFrame();
+  EXPECT_TRUE(frame_node->is_ad_frame());
+  frame_node->SetIsAdFrame();
+  EXPECT_TRUE(frame_node->is_ad_frame());
 }
 
 }  // namespace performance_manager

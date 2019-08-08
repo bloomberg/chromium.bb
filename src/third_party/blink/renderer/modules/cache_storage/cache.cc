@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <utility>
+
 #include "base/feature_list.h"
 #include "base/optional.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
@@ -38,6 +39,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
@@ -295,7 +297,8 @@ class Cache::BarrierCallbackForPut final
       return;
     completed_ = true;
     ScriptState::Scope scope(resolver_->GetScriptState());
-    resolver_->Reject(DOMException::Create(DOMExceptionCode::kAbortError));
+    resolver_->Reject(
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError));
   }
 
   virtual void Trace(blink::Visitor* visitor) {
@@ -1110,8 +1113,9 @@ ScriptPromise Cache::KeysImpl(ScriptState* script_state,
               HeapVector<Member<Request>> requests;
               requests.ReserveInitialCapacity(result->get_keys().size());
               for (auto& request : result->get_keys()) {
-                requests.push_back(
-                    Request::Create(resolver->GetScriptState(), *request));
+                requests.push_back(Request::Create(
+                    resolver->GetScriptState(), *request,
+                    Request::ForServiceWorkerFetchEvent::kFalse));
               }
               resolver->Resolve(requests);
             }

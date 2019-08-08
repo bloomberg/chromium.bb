@@ -70,7 +70,8 @@ def _MapKind(kind):
     base_kind = _MapKind(kind[0:-1])
     # NOTE: This doesn't rule out enum types. Those will be detected later, when
     # cross-reference is established.
-    reference_kinds = ('m', 's', 'h', 'a', 'r', 'x', 'asso', 'rmt', 'rcv')
+    reference_kinds = ('m', 's', 'h', 'a', 'r', 'x', 'asso', 'rmt', 'rcv',
+                       'rma', 'rca')
     if re.split('[^a-z]', base_kind, 1)[0] not in reference_kinds:
       raise Exception(
           'A type (spec "%s") cannot be made nullable' % base_kind)
@@ -94,6 +95,12 @@ def _MapKind(kind):
   if kind.startswith('rcv<'):
     assert kind.endswith('>')
     return 'rcv:' + _MapKind(kind[4:-1])
+  if kind.startswith('rma<'):
+    assert kind.endswith('>')
+    return 'rma:' + _MapKind(kind[4:-1])
+  if kind.startswith('rca<'):
+    assert kind.endswith('>')
+    return 'rca:' + _MapKind(kind[4:-1])
   if kind in map_to_kind:
     return map_to_kind[kind]
   return 'x:' + kind
@@ -213,6 +220,10 @@ def _Kind(kinds, spec, scope):
     kind = mojom.PendingRemote(_Kind(kinds, spec[4:], scope))
   elif spec.startswith('rcv:'):
     kind = mojom.PendingReceiver(_Kind(kinds, spec[4:], scope))
+  elif spec.startswith('rma:'):
+    kind = mojom.PendingAssociatedRemote(_Kind(kinds, spec[4:], scope))
+  elif spec.startswith('rca:'):
+    kind = mojom.PendingAssociatedReceiver(_Kind(kinds, spec[4:], scope))
   elif spec.startswith('m['):
     # Isolate the two types from their brackets.
 
@@ -236,12 +247,12 @@ def _Kind(kinds, spec, scope):
 def _Import(module, import_module):
   # Copy the struct kinds from our imports into the current module.
   importable_kinds = (mojom.Struct, mojom.Union, mojom.Enum, mojom.Interface)
-  for kind in import_module.kinds.itervalues():
+  for kind in import_module.kinds.values():
     if (isinstance(kind, importable_kinds) and
         kind.module.path == import_module.path):
       module.kinds[kind.spec] = kind
   # Ditto for values.
-  for value in import_module.values.itervalues():
+  for value in import_module.values.values():
     if value.module.path == import_module.path:
       module.values[value.GetSpec()] = value
 

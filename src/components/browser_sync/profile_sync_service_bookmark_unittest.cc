@@ -667,7 +667,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
       EXPECT_EQ(gnode.GetSuccessorId(), gnext.GetId());
       EXPECT_EQ(gnode.GetParentId(), gnext.GetParentId());
     }
-    if (!bnode->empty())
+    if (!bnode->children().empty())
       EXPECT_TRUE(gnode.GetFirstChildId());
   }
 

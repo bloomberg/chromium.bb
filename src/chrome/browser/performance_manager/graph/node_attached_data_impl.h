@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/performance_manager/graph/node_attached_data.h"
-#include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
 
 namespace performance_manager {
 
@@ -72,10 +71,11 @@ namespace performance_manager {
 //   // storage providers.
 //   friend class ::performance_manager::NodeAttachedDataImpl<DataType>;
 //
-//   // A default constructor must be provided. It should be protected or
-//   // private so that only the NodeAttachedDataImpl<Foo> can access it.
-//   Foo();
-//   ...
+//   // For each node type that is supported a matching constructor must be
+//   // available.
+//   explicit Foo(const PageNodeImpl* page_node);
+//   explicit Foo(const FrameNodeImpl* frame_node);
+//   explicit Foo(const ProcessNodeImpl* process_node);
 //
 //   // Provides access to the std::unique_ptr storage in frame nodes.
 //   // See NodeAttachedDataOwnedByNodeType<>.
@@ -111,8 +111,6 @@ namespace performance_manager {
 // DHCECK_EQ(foo, Foo::Get(page_node));
 // DCHECK(Foo::Destroy(page_node));
 // -- user_of_foo.cc --
-
-using NodeTypeEnum = resource_coordinator::CoordinationUnitType;
 
 // Implementation of NodeAttachedData intended to be used as the base class for
 // derived types. Provides the basic plumbing for accessing the node attached
@@ -186,22 +184,8 @@ class NodeAttachedDataImpl : public NodeAttachedData {
 
   static const void* UserDataKey() { return &DataType::kUserDataKey; }
 
-  static bool CanAttachToNodeType(
-      resource_coordinator::CoordinationUnitType node_type);
-
-  template <typename NodeType>
-  static bool CanAttachToNodeType() {
-    static_assert(std::is_base_of<NodeBase, NodeType>::value,
-                  "NodeType must be descended from NodeBase");
-    return CanAttachToNodeType(NodeType::Type());
-  }
-
   // NodeAttachedData implementation:
-  const void* key() const override { return UserDataKey(); }
-  bool CanAttach(
-      resource_coordinator::CoordinationUnitType node_type) const override {
-    return CanAttachToNodeType(node_type);
-  }
+  const void* GetKey() const override { return UserDataKey(); }
 
  private:
   // Uses implicit conversion of the traits to get the appropriate mixin class
@@ -256,39 +240,6 @@ constexpr int NodeAttachedDataImpl<DataType>::kUserDataKey;
 // Everything below this point is implementation detail! //
 ///////////////////////////////////////////////////////////
 
-// Implementation of NodeAttachedDataImpl.
-
-// static
-template <typename DataType>
-bool NodeAttachedDataImpl<DataType>::CanAttachToNodeType(
-    resource_coordinator::CoordinationUnitType node_type) {
-  switch (node_type) {
-    case NodeTypeEnum::kInvalidType: {
-      return false;
-    }
-    case NodeTypeEnum::kFrame: {
-      return std::is_base_of<
-          NodeAttachedDataPermittedByNodeTypeEnum<NodeTypeEnum::kFrame>,
-          typename DataType::Traits>::value;
-    }
-    case NodeTypeEnum::kPage: {
-      return std::is_base_of<
-          NodeAttachedDataPermittedByNodeTypeEnum<NodeTypeEnum::kPage>,
-          typename DataType::Traits>::value;
-    }
-    case NodeTypeEnum::kProcess: {
-      return std::is_base_of<
-          NodeAttachedDataPermittedByNodeTypeEnum<NodeTypeEnum::kProcess>,
-          typename DataType::Traits>::value;
-    }
-    case NodeTypeEnum::kSystem: {
-      return std::is_base_of<
-          NodeAttachedDataPermittedByNodeTypeEnum<NodeTypeEnum::kSystem>,
-          typename DataType::Traits>::value;
-    }
-  }
-}
-
 // Helper class allowing access to internals of
 // InternalNodeAttachedDataStorage<>.
 class InternalNodeAttachedDataStorageAccess {
@@ -310,15 +261,11 @@ template <typename NodeType>
 DataType*
 NodeAttachedDataImpl<DataType>::NodeAttachedDataInMap<NodeType>::GetOrCreate(
     const NodeType* node) {
-  NodeAttachedData* base_data =
-      NodeAttachedData::GetFromMap(node, DataType::UserDataKey());
-  if (base_data) {
-    DCHECK_EQ(DataType::UserDataKey(), base_data->key());
-    return static_cast<DataType*>(base_data);
-  }
-  std::unique_ptr<DataType> data = base::WrapUnique(new DataType());
+  if (auto* data = Get(node))
+    return data;
+  std::unique_ptr<DataType> data = base::WrapUnique(new DataType(node));
   DataType* raw_data = data.get();
-  NodeAttachedData::AttachInMap(node, std::move(data));
+  NodeAttachedDataMapHelper::AttachInMap(node, std::move(data));
   return raw_data;
 }
 
@@ -327,8 +274,9 @@ template <typename DataType>
 template <typename NodeType>
 DataType* NodeAttachedDataImpl<DataType>::NodeAttachedDataInMap<NodeType>::Get(
     const NodeType* node) {
-  auto* data = NodeAttachedData::GetFromMap(node, DataType::UserDataKey());
-  DCHECK(!data || DataType::UserDataKey() == data->key());
+  auto* data =
+      NodeAttachedDataMapHelper::GetFromMap(node, DataType::UserDataKey());
+  DCHECK(!data || DataType::UserDataKey() == data->GetKey());
   return static_cast<DataType*>(data);
 }
 
@@ -338,7 +286,7 @@ template <typename NodeType>
 bool NodeAttachedDataImpl<DataType>::NodeAttachedDataInMap<NodeType>::Destroy(
     const NodeType* node) {
   std::unique_ptr<NodeAttachedData> data =
-      NodeAttachedData::DetachFromMap(node, DataType::UserDataKey());
+      NodeAttachedDataMapHelper::DetachFromMap(node, DataType::UserDataKey());
   return data.get();
 }
 
@@ -352,8 +300,8 @@ DataType* NodeAttachedDataImpl<DataType>::NodeAttachedDataOwnedByNodeType<
   std::unique_ptr<NodeAttachedData>* storage =
       DataType::GetUniquePtrStorage(const_cast<NodeType*>(node));
   if (!storage->get())
-    *storage = base::WrapUnique(new DataType());
-  DCHECK_EQ(DataType::UserDataKey(), storage->get()->key());
+    *storage = base::WrapUnique(new DataType(node));
+  DCHECK_EQ(DataType::UserDataKey(), storage->get()->GetKey());
   return static_cast<DataType*>(storage->get());
 }
 
@@ -366,7 +314,7 @@ NodeAttachedDataImpl<DataType>::NodeAttachedDataOwnedByNodeType<NodeType>::Get(
   std::unique_ptr<NodeAttachedData>* storage =
       DataType::GetUniquePtrStorage(const_cast<NodeType*>(node));
   if (storage->get())
-    DCHECK_EQ(DataType::UserDataKey(), storage->get()->key());
+    DCHECK_EQ(DataType::UserDataKey(), storage->get()->GetKey());
   return static_cast<DataType*>(storage->get());
 }
 
@@ -394,10 +342,10 @@ DataType* NodeAttachedDataImpl<DataType>::NodeAttachedDataInternalOnNodeType<
   InternalNodeAttachedDataStorage<sizeof(DataType)>* storage =
       DataType::GetInternalStorage(const_cast<NodeType*>(node));
   if (!storage->Get()) {
-    NodeAttachedData* data = new (storage->buffer()) DataType();
+    NodeAttachedData* data = new (storage->buffer()) DataType(node);
     InternalNodeAttachedDataStorageAccess::Set(storage, data);
   }
-  DCHECK_EQ(DataType::UserDataKey(), storage->Get()->key());
+  DCHECK_EQ(DataType::UserDataKey(), storage->Get()->GetKey());
   return static_cast<DataType*>(storage->Get());
 }
 
@@ -409,7 +357,7 @@ DataType* NodeAttachedDataImpl<DataType>::NodeAttachedDataInternalOnNodeType<
   InternalNodeAttachedDataStorage<sizeof(DataType)>* storage =
       DataType::GetInternalStorage(const_cast<NodeType*>(node));
   if (storage->Get())
-    DCHECK_EQ(DataType::UserDataKey(), storage->Get()->key());
+    DCHECK_EQ(DataType::UserDataKey(), storage->Get()->GetKey());
   return static_cast<DataType*>(storage->Get());
 }
 

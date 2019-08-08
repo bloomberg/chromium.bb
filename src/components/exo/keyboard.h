@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "ash/keyboard/ui/keyboard_controller_observer.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
@@ -16,7 +17,6 @@
 #include "components/exo/surface_observer.h"
 #include "ui/events/event.h"
 #include "ui/events/event_handler.h"
-#include "ui/keyboard/keyboard_controller_observer.h"
 
 namespace ui {
 enum class DomCode;

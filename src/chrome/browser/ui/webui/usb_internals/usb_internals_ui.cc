@@ -24,19 +24,18 @@ UsbInternalsUI::UsbInternalsUI(content::WebUI* web_ui)
   source->AddResourcePath("descriptor_panel.js",
                           IDR_USB_INTERNALS_DESCRIPTOR_PANEL_JS);
   source->AddResourcePath("devices_page.js", IDR_USB_INTERNALS_DEVICES_PAGE_JS);
-  source->AddResourcePath("device.mojom-lite.js", IDR_USB_DEVICE_MOJOM_LITE_JS);
-  source->AddResourcePath("device_enumeration_options.mojom-lite.js",
-                          IDR_USB_DEVICE_ENUMERATION_OPTIONS_MOJOM_LITE_JS);
-  source->AddResourcePath("device_manager.mojom-lite.js",
+  source->AddResourcePath("usb_device.mojom-lite.js",
+                          IDR_USB_DEVICE_MOJOM_LITE_JS);
+  source->AddResourcePath("usb_enumeration_options.mojom-lite.js",
+                          IDR_USB_ENUMERATION_OPTIONS_MOJOM_LITE_JS);
+  source->AddResourcePath("usb_manager.mojom-lite.js",
                           IDR_USB_DEVICE_MANAGER_MOJOM_LITE_JS);
-  source->AddResourcePath("device_manager_client.mojom-lite.js",
+  source->AddResourcePath("usb_manager_client.mojom-lite.js",
                           IDR_USB_DEVICE_MANAGER_CLIENT_MOJOM_LITE_JS);
-  source->AddResourcePath("device_manager_test.mojom-lite.js",
+  source->AddResourcePath("usb_manager_test.mojom-lite.js",
                           IDR_USB_DEVICE_MANAGER_TEST_MOJOM_LITE_JS);
-  source->AddResourcePath("url.mojom-lite.js", IDR_URL_MOJOM_LITE_JS);
 
   source->SetDefaultResource(IDR_USB_INTERNALS_HTML);
-  source->UseGzip();
 
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
   AddHandlerToRegistry(base::BindRepeating(

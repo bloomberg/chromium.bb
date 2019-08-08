@@ -30,7 +30,7 @@
 
 namespace blink {
 
-inline SVGFilterElement::SVGFilterElement(Document& document)
+SVGFilterElement::SVGFilterElement(Document& document)
     : SVGElement(svg_names::kFilterTag, document),
       SVGURIReference(this),
       // Spec: If the x/y attribute is not specified, the effect is as if a
@@ -76,8 +76,6 @@ inline SVGFilterElement::SVGFilterElement(Document& document)
 }
 
 SVGFilterElement::~SVGFilterElement() = default;
-
-DEFINE_NODE_FACTORY(SVGFilterElement)
 
 void SVGFilterElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(x_);

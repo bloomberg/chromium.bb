@@ -52,6 +52,7 @@ class PrefRegistrySyncable;
 namespace extensions {
 
 class AppSorting;
+class EarlyExtensionPrefsObserver;
 class ExtensionPrefsObserver;
 class URLPatternSet;
 
@@ -140,16 +141,16 @@ class ExtensionPrefs : public KeyedService {
   // Creates an ExtensionPrefs object.
   // Does not take ownership of |prefs| or |extension_pref_value_map|.
   // If |extensions_disabled| is true, extension controlled preferences and
-  // content settings do not become effective. ExtensionPrefsObservers should be
-  // included in |early_observers| if they need to observe events which occur
-  // during initialization of the ExtensionPrefs object.
+  // content settings do not become effective. EarlyExtensionPrefsObservers
+  // should be included in |early_observers| if they need to observe events
+  // which occur during initialization of the ExtensionPrefs object.
   static ExtensionPrefs* Create(
       content::BrowserContext* browser_context,
       PrefService* prefs,
       const base::FilePath& root_dir,
       ExtensionPrefValueMap* extension_pref_value_map,
       bool extensions_disabled,
-      const std::vector<ExtensionPrefsObserver*>& early_observers);
+      const std::vector<EarlyExtensionPrefsObserver*>& early_observers);
 
   // A version of Create which allows injection of a custom base::Time provider.
   // Use this as needed for testing.
@@ -159,7 +160,7 @@ class ExtensionPrefs : public KeyedService {
       const base::FilePath& root_dir,
       ExtensionPrefValueMap* extension_pref_value_map,
       bool extensions_disabled,
-      const std::vector<ExtensionPrefsObserver*>& early_observers,
+      const std::vector<EarlyExtensionPrefsObserver*>& early_observers,
       base::Clock* clock);
 
   ~ExtensionPrefs() override;
@@ -585,7 +586,7 @@ class ExtensionPrefs : public KeyedService {
 
   // Returns false if there is no dynamic ruleset corresponding to
   // |extension_id|. On success, returns true and populates the checksum.
-  // TODO(crbug.com/930961): Use a single dictionary to store checksums for
+  // TODO(crbug.com/696822): Use a single dictionary to store checksums for
   // static and dynamic rulesets. This will be more relevant if and when we do
   // support multiple static rulesets.
   bool GetDNRDynamicRulesetChecksum(const ExtensionId& extension_id,
@@ -618,13 +619,14 @@ class ExtensionPrefs : public KeyedService {
   };
 
   // See the Create methods.
-  ExtensionPrefs(content::BrowserContext* browser_context,
-                 PrefService* prefs,
-                 const base::FilePath& root_dir,
-                 ExtensionPrefValueMap* extension_pref_value_map,
-                 base::Clock* clock,
-                 bool extensions_disabled,
-                 const std::vector<ExtensionPrefsObserver*>& early_observers);
+  ExtensionPrefs(
+      content::BrowserContext* browser_context,
+      PrefService* prefs,
+      const base::FilePath& root_dir,
+      ExtensionPrefValueMap* extension_pref_value_map,
+      base::Clock* clock,
+      bool extensions_disabled,
+      const std::vector<EarlyExtensionPrefsObserver*>& early_observers);
 
   // Converts absolute paths in the pref to paths relative to the
   // install_directory_.

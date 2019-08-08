@@ -78,6 +78,10 @@ void DictationButtonTray::HideBubbleWithView(
   // This class has no bubbles to hide.
 }
 
+const char* DictationButtonTray::GetClassName() const {
+  return "DictationButtonTray";
+}
+
 void DictationButtonTray::UpdateIcon(bool dictation_active) {
   if (dictation_active) {
     icon_->SetImage(on_image_);

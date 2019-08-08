@@ -5,14 +5,15 @@
 #ifndef BASE_TASK_THREAD_POOL_TEST_UTILS_H_
 #define BASE_TASK_THREAD_POOL_TEST_UTILS_H_
 
+#include "base/task/common/checked_lock.h"
+#include "base/task/task_features.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool/delayed_task_manager.h"
-#include "base/task/thread_pool/scheduler_lock.h"
-#include "base/task/thread_pool/scheduler_task_runner_delegate.h"
-#include "base/task/thread_pool/scheduler_worker_observer.h"
-#include "base/task/thread_pool/scheduler_worker_pool.h"
+#include "base/task/thread_pool/pooled_task_runner_delegate.h"
 #include "base/task/thread_pool/sequence.h"
 #include "base/task/thread_pool/task_tracker.h"
+#include "base/task/thread_pool/thread_group.h"
+#include "base/task/thread_pool/worker_thread_observer.h"
 #include "base/task_runner.h"
 #include "base/thread_annotations.h"
 #include "build/build_config.h"
@@ -25,59 +26,56 @@ struct Task;
 
 namespace test {
 
-class MockSchedulerWorkerObserver : public SchedulerWorkerObserver {
+class MockWorkerThreadObserver : public WorkerThreadObserver {
  public:
-  MockSchedulerWorkerObserver();
-  ~MockSchedulerWorkerObserver();
+  MockWorkerThreadObserver();
+  ~MockWorkerThreadObserver();
 
   void AllowCallsOnMainExit(int num_calls);
   void WaitCallsOnMainExit();
 
-  // SchedulerWorkerObserver:
-  MOCK_METHOD0(OnSchedulerWorkerMainEntry, void());
+  // WorkerThreadObserver:
+  MOCK_METHOD0(OnWorkerThreadMainEntry, void());
   // This doesn't use MOCK_METHOD0 because some tests need to wait for all calls
   // to happen, which isn't possible with gmock.
-  void OnSchedulerWorkerMainExit() override;
+  void OnWorkerThreadMainExit() override;
 
  private:
-  SchedulerLock lock_;
+  CheckedLock lock_;
   std::unique_ptr<ConditionVariable> on_main_exit_cv_ GUARDED_BY(lock_);
   int allowed_calls_on_main_exit_ GUARDED_BY(lock_) = 0;
 
-  DISALLOW_COPY_AND_ASSIGN(MockSchedulerWorkerObserver);
+  DISALLOW_COPY_AND_ASSIGN(MockWorkerThreadObserver);
 };
 
-class MockSchedulerTaskRunnerDelegate : public SchedulerTaskRunnerDelegate {
+class MockPooledTaskRunnerDelegate : public PooledTaskRunnerDelegate {
  public:
-  MockSchedulerTaskRunnerDelegate(TrackedRef<TaskTracker> task_tracker,
-                                  DelayedTaskManager* delayed_task_manager);
-  ~MockSchedulerTaskRunnerDelegate() override;
+  MockPooledTaskRunnerDelegate(TrackedRef<TaskTracker> task_tracker,
+                               DelayedTaskManager* delayed_task_manager);
+  ~MockPooledTaskRunnerDelegate() override;
 
-  // SchedulerTaskRunnerDelegate:
+  // PooledTaskRunnerDelegate:
   bool PostTaskWithSequence(Task task,
                             scoped_refptr<Sequence> sequence) override;
   bool IsRunningPoolWithTraits(const TaskTraits& traits) const override;
-  void UpdatePriority(scoped_refptr<Sequence> sequence,
+  void UpdatePriority(scoped_refptr<TaskSource> task_source,
                       TaskPriority priority) override;
 
-  void SetWorkerPool(SchedulerWorkerPool* worker_pool);
+  void SetThreadGroup(ThreadGroup* thread_group);
+
+  void PostTaskWithSequenceNow(Task task, scoped_refptr<Sequence> sequence);
 
  private:
   const TrackedRef<TaskTracker> task_tracker_;
   DelayedTaskManager* const delayed_task_manager_;
-  SchedulerWorkerPool* worker_pool_ = nullptr;
+  ThreadGroup* thread_group_ = nullptr;
 };
 
-// An enumeration of possible thread pool TaskRunner types. Used to
-// parametrize relevant thread_pool tests.
-// TODO(etiennep): Migrate to TaskSourceExecutionMode.
-enum class ExecutionMode { PARALLEL, SEQUENCED, SINGLE_THREADED };
-
-// An enumeration of possible pool types. Used to parametrize relevant
+// An enumeration of possible thread pool types. Used to parametrize relevant
 // thread_pool tests.
 enum class PoolType {
   GENERIC,
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if HAS_NATIVE_THREAD_POOL()
   NATIVE,
 #endif
 };
@@ -92,24 +90,27 @@ scoped_refptr<Sequence> CreateSequenceWithTask(
     TaskSourceExecutionMode execution_mode =
         TaskSourceExecutionMode::kParallel);
 
-// Creates a TaskRunner that posts tasks to the worker pool owned by
-// |scheduler_task_runner_delegate| with the |execution_mode| execution mode
-// and the WithBaseSyncPrimitives() trait.
-// Caveat: this does not support ExecutionMode::SINGLE_THREADED.
+// Creates a TaskRunner that posts tasks to the thread group owned by
+// |pooled_task_runner_delegate| with the |execution_mode|.
+// Caveat: this does not support TaskSourceExecutionMode::kSingleThread.
 scoped_refptr<TaskRunner> CreateTaskRunnerWithExecutionMode(
-    test::ExecutionMode execution_mode,
-    MockSchedulerTaskRunnerDelegate* mock_scheduler_task_runner_delegate,
+    TaskSourceExecutionMode execution_mode,
+    MockPooledTaskRunnerDelegate* mock_pooled_task_runner_delegate,
     const TaskTraits& traits = TaskTraits());
 
 scoped_refptr<TaskRunner> CreateTaskRunnerWithTraits(
     const TaskTraits& traits,
-    MockSchedulerTaskRunnerDelegate* mock_scheduler_task_runner_delegate);
+    MockPooledTaskRunnerDelegate* mock_pooled_task_runner_delegate);
 
 scoped_refptr<SequencedTaskRunner> CreateSequencedTaskRunnerWithTraits(
     const TaskTraits& traits,
-    MockSchedulerTaskRunnerDelegate* mock_scheduler_task_runner_delegate);
+    MockPooledTaskRunnerDelegate* mock_pooled_task_runner_delegate);
 
 void WaitWithoutBlockingObserver(WaitableEvent* event);
+
+RegisteredTaskSource QueueAndRunTaskSource(
+    TaskTracker* task_tracker,
+    scoped_refptr<TaskSource> task_source);
 
 // Calls StartShutdown() and CompleteShutdown() on |task_tracker|.
 void ShutdownTaskTracker(TaskTracker* task_tracker);

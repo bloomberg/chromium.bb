@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/identity/identity_api.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
@@ -298,22 +299,18 @@ IdentityInternalsUI::IdentityInternalsUI(content::WebUI* web_ui)
     content::WebUIDataSource::Create(chrome::kChromeUIIdentityInternalsHost);
 
   // Localized strings
-  html_source->AddLocalizedString("tokenCacheHeader",
-      IDS_IDENTITY_INTERNALS_TOKEN_CACHE_TEXT);
-  html_source->AddLocalizedString("accessToken",
-      IDS_IDENTITY_INTERNALS_ACCESS_TOKEN);
-  html_source->AddLocalizedString("extensionName",
-      IDS_IDENTITY_INTERNALS_EXTENSION_NAME);
-  html_source->AddLocalizedString("extensionId",
-      IDS_IDENTITY_INTERNALS_EXTENSION_ID);
-  html_source->AddLocalizedString("tokenStatus",
-      IDS_IDENTITY_INTERNALS_TOKEN_STATUS);
-  html_source->AddLocalizedString("expirationTime",
-      IDS_IDENTITY_INTERNALS_EXPIRATION_TIME);
-  html_source->AddLocalizedString("scopes",
-      IDS_IDENTITY_INTERNALS_SCOPES);
-  html_source->AddLocalizedString("revoke",
-      IDS_IDENTITY_INTERNALS_REVOKE);
+  static constexpr LocalizedString kStrings[] = {
+      {"tokenCacheHeader", IDS_IDENTITY_INTERNALS_TOKEN_CACHE_TEXT},
+      {"accessToken", IDS_IDENTITY_INTERNALS_ACCESS_TOKEN},
+      {"extensionName", IDS_IDENTITY_INTERNALS_EXTENSION_NAME},
+      {"extensionId", IDS_IDENTITY_INTERNALS_EXTENSION_ID},
+      {"tokenStatus", IDS_IDENTITY_INTERNALS_TOKEN_STATUS},
+      {"expirationTime", IDS_IDENTITY_INTERNALS_EXPIRATION_TIME},
+      {"scopes", IDS_IDENTITY_INTERNALS_SCOPES},
+      {"revoke", IDS_IDENTITY_INTERNALS_REVOKE},
+  };
+  AddLocalizedStringsBulk(html_source, kStrings, base::size(kStrings));
+
   html_source->SetJsonPath("strings.js");
 
   // Required resources

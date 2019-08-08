@@ -213,7 +213,7 @@ void Tab::OnStateChanged() {
 }
 
 bool Tab::OnMousePressed(const ui::MouseEvent& event) {
-  if (enabled() && event.IsOnlyLeftMouseButton())
+  if (GetEnabled() && event.IsOnlyLeftMouseButton())
     tabbed_pane_->SelectTab(this);
   return true;
 }
@@ -422,16 +422,16 @@ TabStrip::TabStrip(TabbedPane::Orientation orientation,
     constexpr int kTabStripLeadingEdgePadding = 9;
     layout = std::make_unique<BoxLayout>(
         BoxLayout::kHorizontal, gfx::Insets(0, kTabStripLeadingEdgePadding));
-    layout->set_cross_axis_alignment(BoxLayout::CROSS_AXIS_ALIGNMENT_END);
+    layout->set_cross_axis_alignment(BoxLayout::CrossAxisAlignment::kEnd);
   } else {
     constexpr int kTabStripEdgePadding = 8;
     constexpr int kTabSpacing = 8;
     layout = std::make_unique<BoxLayout>(
         BoxLayout::kVertical, gfx::Insets(kTabStripEdgePadding, 0, 0, 0),
         kTabSpacing);
-    layout->set_cross_axis_alignment(BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+    layout->set_cross_axis_alignment(BoxLayout::CrossAxisAlignment::kStart);
   }
-  layout->set_main_axis_alignment(BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+  layout->set_main_axis_alignment(BoxLayout::MainAxisAlignment::kStart);
   layout->SetDefaultFlex(0);
   SetLayoutManager(std::move(layout));
 
@@ -546,8 +546,8 @@ MdTabStrip::MdTabStrip(TabbedPane::Orientation orientation,
     : TabStrip(orientation, style) {
   if (orientation == TabbedPane::Orientation::kHorizontal) {
     auto layout = std::make_unique<BoxLayout>(BoxLayout::kHorizontal);
-    layout->set_main_axis_alignment(BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
-    layout->set_cross_axis_alignment(BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
+    layout->set_main_axis_alignment(BoxLayout::MainAxisAlignment::kCenter);
+    layout->set_cross_axis_alignment(BoxLayout::CrossAxisAlignment::kStretch);
     layout->SetDefaultFlex(1);
     SetLayoutManager(std::move(layout));
   }
@@ -601,7 +601,7 @@ void MdTabStrip::OnPaintBorder(gfx::Canvas* canvas) {
   // underneath or on the right of the selected tab will be overdrawn later.
   gfx::Rect rect;
   if (is_horizontal) {
-    max_cross_axis = child_at(0)->y() + child_at(0)->height();
+    max_cross_axis = children().front()->bounds().bottom();
     rect = gfx::Rect(0, max_cross_axis - kUnselectedBorderThickness, width(),
                      kUnselectedBorderThickness);
   } else {

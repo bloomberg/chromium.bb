@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "build/build_config.h"
 #include "core/fpdfapi/cpdf_modulemgr.h"
 #include "core/fpdfapi/font/cpdf_fontencoding.h"
 #include "core/fpdfapi/font/cpdf_tounicodemap.h"
@@ -116,7 +117,7 @@ size_t CPDF_Font::CountChar(ByteStringView pString) const {
   return pString.GetLength();
 }
 
-#if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+#if defined(OS_MACOSX)
 int CPDF_Font::GlyphFromCharCodeExt(uint32_t charcode) {
   return GlyphFromCharCode(charcode, nullptr);
 }
@@ -296,12 +297,13 @@ CPDF_Font* CPDF_Font::GetStockFont(CPDF_Document* pDoc, ByteStringView name) {
   if (pFont)
     return pFont;
 
-  CPDF_Dictionary* pDict = pDoc->New<CPDF_Dictionary>().release();
+  auto pDict = pDoc->New<CPDF_Dictionary>();
   pDict->SetNewFor<CPDF_Name>("Type", "Font");
   pDict->SetNewFor<CPDF_Name>("Subtype", "Type1");
   pDict->SetNewFor<CPDF_Name>("BaseFont", fontname);
   pDict->SetNewFor<CPDF_Name>("Encoding", "WinAnsiEncoding");
-  return pFontGlobals->Set(pDoc, font_id, CPDF_Font::Create(nullptr, pDict));
+  return pFontGlobals->Set(pDoc, font_id,
+                           CPDF_Font::Create(nullptr, pDict.Get()));
 }
 
 // static

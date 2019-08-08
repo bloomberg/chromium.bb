@@ -23,7 +23,7 @@ namespace quick_unlock {
 enum class PasswordConfirmationFrequency {
   SIX_HOURS = 0,
   TWELVE_HOURS = 1,
-  DAY = 2,
+  TWO_DAYS = 2,
   WEEK = 3
 };
 

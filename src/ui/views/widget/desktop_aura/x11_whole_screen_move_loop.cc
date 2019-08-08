@@ -224,9 +224,8 @@ void X11WholeScreenMoveLoop::EndMoveLoop() {
 
   XDisplay* display = gfx::GetXDisplay();
   unsigned int esc_keycode = XKeysymToKeycode(display, XK_Escape);
-  for (size_t i = 0; i < base::size(kModifiersMasks); ++i) {
-    XUngrabKey(display, esc_keycode, kModifiersMasks[i], grab_input_window_);
-  }
+  for (auto mask : kModifiersMasks)
+    XUngrabKey(display, esc_keycode, mask, grab_input_window_);
 
   // Restore the previous dispatcher.
   nested_dispatcher_.reset();
@@ -256,9 +255,9 @@ bool X11WholeScreenMoveLoop::GrabPointer(gfx::NativeCursor cursor) {
 void X11WholeScreenMoveLoop::GrabEscKey() {
   XDisplay* display = gfx::GetXDisplay();
   unsigned int esc_keycode = XKeysymToKeycode(display, XK_Escape);
-  for (size_t i = 0; i < base::size(kModifiersMasks); ++i) {
-    XGrabKey(display, esc_keycode, kModifiersMasks[i], grab_input_window_,
-             x11::False, GrabModeAsync, GrabModeAsync);
+  for (auto mask : kModifiersMasks) {
+    XGrabKey(display, esc_keycode, mask, grab_input_window_, x11::False,
+             GrabModeAsync, GrabModeAsync);
   }
 }
 

@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/fetch/fetch_request_data.h"
 
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_request.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_http_body.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -19,7 +19,55 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 
+namespace mojo {
+
+template <>
+struct TypeConverter<::blink::ResourceLoadPriority,
+                     network::mojom::blink::RequestPriority> {
+  static ::blink::ResourceLoadPriority Convert(
+      network::mojom::blink::RequestPriority priority) {
+    switch (priority) {
+      case network::mojom::blink::RequestPriority::kThrottled:
+        break;
+      case network::mojom::blink::RequestPriority::kIdle:
+        return ::blink::ResourceLoadPriority::kVeryLow;
+      case network::mojom::blink::RequestPriority::kLowest:
+        return ::blink::ResourceLoadPriority::kLow;
+      case network::mojom::blink::RequestPriority::kLow:
+        return ::blink::ResourceLoadPriority::kMedium;
+      case network::mojom::blink::RequestPriority::kMedium:
+        return ::blink::ResourceLoadPriority::kHigh;
+      case network::mojom::blink::RequestPriority::kHighest:
+        return ::blink::ResourceLoadPriority::kVeryHigh;
+    }
+
+    NOTREACHED() << priority;
+    return blink::ResourceLoadPriority::kUnresolved;
+  }
+};
+
+}  // namespace mojo
+
 namespace blink {
+
+namespace {
+
+bool IsExcludedHeaderForServiceWorkerFetchEvent(const String& header_name) {
+  // Excluding Sec-Fetch-... headers as suggested in
+  // https://crbug.com/949997#c4.
+  if (header_name.StartsWithIgnoringASCIICase("sec-fetch-")) {
+    return true;
+  }
+
+  if (Platform::Current()->IsExcludedHeaderForServiceWorkerFetchEvent(
+          header_name)) {
+    return true;
+  }
+
+  return false;
+}
+
+}  // namespace
 
 FetchRequestData* FetchRequestData::Create() {
   return MakeGarbageCollected<FetchRequestData>();
@@ -27,40 +75,8 @@ FetchRequestData* FetchRequestData::Create() {
 
 FetchRequestData* FetchRequestData::Create(
     ScriptState* script_state,
-    const WebServiceWorkerRequest& web_request) {
-  FetchRequestData* request = FetchRequestData::Create();
-  request->url_ = web_request.Url();
-  request->method_ = web_request.Method();
-  for (HTTPHeaderMap::const_iterator it = web_request.Headers().begin();
-       it != web_request.Headers().end(); ++it)
-    request->header_list_->Append(it->key, it->value);
-  if (scoped_refptr<EncodedFormData> body = web_request.Body()) {
-    request->SetBuffer(MakeGarbageCollected<BodyStreamBuffer>(
-        script_state,
-        MakeGarbageCollected<FormDataBytesConsumer>(
-            ExecutionContext::From(script_state), std::move(body)),
-        nullptr /* AbortSignal */));
-  }
-  request->SetContext(web_request.GetRequestContext());
-  request->SetReferrerString(web_request.ReferrerUrl().GetString());
-  request->SetReferrerPolicy(web_request.GetReferrerPolicy());
-  request->SetMode(web_request.Mode());
-  request->SetCredentials(web_request.CredentialsMode());
-  request->SetCacheMode(web_request.CacheMode());
-  request->SetRedirect(web_request.RedirectMode());
-  request->SetMimeType(request->header_list_->ExtractMIMEType());
-  request->SetIntegrity(web_request.Integrity());
-  request->SetPriority(
-      static_cast<ResourceLoadPriority>(web_request.Priority()));
-  request->SetKeepalive(web_request.Keepalive());
-  request->SetIsHistoryNavigation(web_request.IsHistoryNavigation());
-  request->SetWindowId(web_request.GetWindowId());
-  return request;
-}
-
-FetchRequestData* FetchRequestData::Create(
-    ScriptState* script_state,
-    const mojom::blink::FetchAPIRequest& fetch_api_request) {
+    const mojom::blink::FetchAPIRequest& fetch_api_request,
+    ForServiceWorkerFetchEvent for_service_worker_fetch_event) {
   FetchRequestData* request = FetchRequestData::Create();
   request->url_ = fetch_api_request.url;
   request->method_ = AtomicString(fetch_api_request.method);
@@ -69,15 +85,28 @@ FetchRequestData* FetchRequestData::Create(
     // whether we really need this filter.
     if (DeprecatedEqualIgnoringCase(pair.key, "referer"))
       continue;
+    if (for_service_worker_fetch_event == ForServiceWorkerFetchEvent::kTrue &&
+        IsExcludedHeaderForServiceWorkerFetchEvent(pair.key)) {
+      continue;
+    }
     request->header_list_->Append(pair.key, pair.value);
   }
+
   if (fetch_api_request.blob) {
+    DCHECK(!fetch_api_request.body);
     request->SetBuffer(MakeGarbageCollected<BodyStreamBuffer>(
         script_state,
         MakeGarbageCollected<BlobBytesConsumer>(
             ExecutionContext::From(script_state), fetch_api_request.blob),
         nullptr /* AbortSignal */));
+  } else if (fetch_api_request.body) {
+    request->SetBuffer(MakeGarbageCollected<BodyStreamBuffer>(
+        script_state,
+        MakeGarbageCollected<FormDataBytesConsumer>(
+            ExecutionContext::From(script_state), fetch_api_request.body),
+        nullptr /* AbortSignal */));
   }
+
   request->SetContext(fetch_api_request.request_context_type);
   request->SetReferrerString(AtomicString(Referrer::NoReferrer()));
   if (fetch_api_request.referrer) {
@@ -93,6 +122,10 @@ FetchRequestData* FetchRequestData::Create(
   request->SetIntegrity(fetch_api_request.integrity);
   request->SetKeepalive(fetch_api_request.keepalive);
   request->SetIsHistoryNavigation(fetch_api_request.is_history_navigation);
+  request->SetPriority(
+      mojo::ConvertTo<ResourceLoadPriority>(fetch_api_request.priority));
+  if (fetch_api_request.fetch_window_id)
+    request->SetWindowId(fetch_api_request.fetch_window_id.value());
   return request;
 }
 
@@ -118,6 +151,8 @@ FetchRequestData* FetchRequestData::CloneExceptBody() {
   request->keepalive_ = keepalive_;
   request->is_history_navigation_ = is_history_navigation_;
   request->window_id_ = window_id_;
+  request->should_also_use_factory_bound_origin_for_cors_ =
+      should_also_use_factory_bound_origin_for_cors_;
   return request;
 }
 

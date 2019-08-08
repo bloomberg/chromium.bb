@@ -60,28 +60,12 @@ void CPDF_ModuleMgr::Init() {
   LoadCodecModules();
 }
 
-CCodec_FaxModule* CPDF_ModuleMgr::GetFaxModule() {
-  return m_pCodecModule->GetFaxModule();
-}
-
 CCodec_JpegModule* CPDF_ModuleMgr::GetJpegModule() {
   return m_pCodecModule->GetJpegModule();
 }
 
-CCodec_JpxModule* CPDF_ModuleMgr::GetJpxModule() {
-  return m_pCodecModule->GetJpxModule();
-}
-
 CCodec_Jbig2Module* CPDF_ModuleMgr::GetJbig2Module() {
   return m_pCodecModule->GetJbig2Module();
-}
-
-CCodec_IccModule* CPDF_ModuleMgr::GetIccModule() {
-  return m_pCodecModule->GetIccModule();
-}
-
-CCodec_FlateModule* CPDF_ModuleMgr::GetFlateModule() {
-  return m_pCodecModule->GetFlateModule();
 }
 
 void CPDF_ModuleMgr::InitPageModule() {

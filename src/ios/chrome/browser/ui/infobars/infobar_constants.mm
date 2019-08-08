@@ -15,3 +15,5 @@ NSString* const kConfirmInfobarButton1AccessibilityIdentifier =
     @"confirmInfobarButton1AXID";
 NSString* const kConfirmInfobarButton2AccessibilityIdentifier =
     @"confirmInfobarButton2AXID";
+
+const NSTimeInterval kInfobarBannerPresentationDurationInSeconds = 8.0;

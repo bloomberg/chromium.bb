@@ -44,6 +44,8 @@
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/gfx/geometry/vector2d_f.h"
+#include "url/gurl.h"
+#include "url/url_constants.h"
 
 using base::ASCIIToUTF16;
 using base::UTF16ToUTF8;
@@ -384,14 +386,9 @@ bool BlinkAXTreeSource::GetTreeData(AXContentTreeData* tree_data) const {
   WebAXObject anchor_object, focus_object;
   int anchor_offset, focus_offset;
   ax::mojom::TextAffinity anchor_affinity, focus_affinity;
-  if (base::FeatureList::IsEnabled(features::kNewAccessibilitySelection)) {
     root().Selection(is_selection_backward, anchor_object, anchor_offset,
                      anchor_affinity, focus_object, focus_offset,
                      focus_affinity);
-  } else {
-    root().SelectionDeprecated(anchor_object, anchor_offset, anchor_affinity,
-                               focus_object, focus_offset, focus_affinity);
-  }
   if (!anchor_object.IsNull() && !focus_object.IsNull() && anchor_offset >= 0 &&
       focus_offset >= 0) {
     int32_t anchor_id = anchor_object.AxID();
@@ -659,11 +656,6 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
       dst->AddFloatAttribute(ax::mojom::FloatAttribute::kFontWeight,
                              src.FontWeight());
     }
-
-    if (src.HasPopup() != ax::mojom::HasPopup::kFalse)
-      dst->SetHasPopup(src.HasPopup());
-    else if (src.Role() == ax::mojom::Role::kPopUpButton)
-      dst->SetHasPopup(ax::mojom::HasPopup::kMenu);
 
     if (src.AriaCurrentState() != ax::mojom::AriaCurrentState::kNone) {
       dst->AddIntAttribute(ax::mojom::IntAttribute::kAriaCurrentState,
@@ -1037,18 +1029,10 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
 
       if (src.IsControl() && !src.IsRichlyEditable()) {
         // Only for simple input controls -- rich editable areas use AXTreeData.
-        if (base::FeatureList::IsEnabled(
-                features::kNewAccessibilitySelection)) {
           dst->AddIntAttribute(ax::mojom::IntAttribute::kTextSelStart,
                                src.SelectionStart());
           dst->AddIntAttribute(ax::mojom::IntAttribute::kTextSelEnd,
                                src.SelectionEnd());
-        } else {
-          dst->AddIntAttribute(ax::mojom::IntAttribute::kTextSelStart,
-                               src.SelectionStartDeprecated());
-          dst->AddIntAttribute(ax::mojom::IntAttribute::kTextSelEnd,
-                               src.SelectionEndDeprecated());
-        }
       }
     }
 
@@ -1122,6 +1106,15 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
     dst->AddStringAttribute(ax::mojom::StringAttribute::kImageDataUrl,
                             src.ImageDataUrl(max_image_data_size_).Utf8());
   }
+
+  // aria-dropeffect is deprecated in WAI-ARIA 1.1.
+  WebVector<ax::mojom::Dropeffect> src_dropeffects;
+  src.Dropeffects(src_dropeffects);
+  if (!src_dropeffects.empty()) {
+    for (auto&& dropeffect : src_dropeffects) {
+      dst->AddDropeffect(dropeffect);
+    }
+  }
 }
 
 blink::WebDocument BlinkAXTreeSource::GetMainDocument() const {
@@ -1157,7 +1150,7 @@ void BlinkAXTreeSource::TruncateAndAddStringAttribute(
   }
 }
 
-void BlinkAXTreeSource::AddImageAnnotations(blink::WebAXObject src,
+void BlinkAXTreeSource::AddImageAnnotations(blink::WebAXObject& src,
                                             AXContentNodeData* dst) const {
   if (!base::FeatureList::IsEnabled(features::kExperimentalAccessibilityLabels))
     return;
@@ -1214,7 +1207,6 @@ void BlinkAXTreeSource::AddImageAnnotations(blink::WebAXObject src,
 
   // Skip images that are too small to label. This also catches
   // unloaded images where the size is unknown.
-
   WebAXObject offset_container;
   WebFloatRect bounds;
   SkMatrix44 container_transform;
@@ -1228,9 +1220,25 @@ void BlinkAXTreeSource::AddImageAnnotations(blink::WebAXObject src,
     return;
   }
 
-  if (!image_annotator_) {
+  // Skip images in documents which are not http, https, file and data schemes.
+  GURL gurl = document().Url();
+  if (!(gurl.SchemeIsHTTPOrHTTPS() || gurl.SchemeIsFile() ||
+        gurl.SchemeIs(url::kDataScheme))) {
     dst->SetImageAnnotationStatus(
-        ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation);
+        ax::mojom::ImageAnnotationStatus::kWillNotAnnotateDueToScheme);
+    return;
+  }
+
+  if (!image_annotator_) {
+    if (!first_unlabeled_image_id_.has_value() ||
+        first_unlabeled_image_id_.value() == src.AxID()) {
+      dst->SetImageAnnotationStatus(
+          ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation);
+      first_unlabeled_image_id_ = src.AxID();
+    } else {
+      dst->SetImageAnnotationStatus(
+          ax::mojom::ImageAnnotationStatus::kSilentlyEligibleForAnnotation);
+    }
     return;
   }
 

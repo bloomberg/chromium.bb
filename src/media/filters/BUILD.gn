@@ -24,7 +24,6 @@ jumbo_source_set("filters") {
     "audio_timestamp_validator.h",
     "chunk_demuxer.cc",
     "chunk_demuxer.h",
-    "context_3d.h",
     "decoder_selector.cc",
     "decoder_selector.h",
     "decoder_stream.cc",
@@ -56,10 +55,6 @@ jumbo_source_set("filters") {
     "source_buffer_parse_warnings.h",
     "source_buffer_range.cc",
     "source_buffer_range.h",
-    "source_buffer_range_by_dts.cc",
-    "source_buffer_range_by_dts.h",
-    "source_buffer_range_by_pts.cc",
-    "source_buffer_range_by_pts.h",
     "source_buffer_state.cc",
     "source_buffer_state.h",
     "source_buffer_stream.cc",
@@ -70,10 +65,6 @@ jumbo_source_set("filters") {
     "video_cadence_estimator.h",
     "video_renderer_algorithm.cc",
     "video_renderer_algorithm.h",
-    "vp8_bool_decoder.cc",
-    "vp8_bool_decoder.h",
-    "vp8_parser.cc",
-    "vp8_parser.h",
     "vp9_bool_decoder.cc",
     "vp9_bool_decoder.h",
     "vp9_compressed_header_parser.cc",
@@ -92,10 +83,6 @@ jumbo_source_set("filters") {
     # TODO(crbug.com/167187): Fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",
     "//media:subcomponent_config",
-  ]
-
-  public_deps = [
-    ":jpeg_parser",
   ]
 
   deps = [
@@ -231,34 +218,6 @@ jumbo_source_set("filters") {
   }
 }
 
-# This component allows other targets to use the JPEG parser as a standalone,
-# general-purpose utility without having to pull all of //media as a dependency
-# (which could potentially result in cycles).
-component("jpeg_parser") {
-  output_name = "media_filters_jpeg_parser"
-  sources = [
-    "jpeg_parser.cc",
-    "jpeg_parser.h",
-  ]
-  defines = [ "IS_JPEG_PARSER_IMPL" ]
-  deps = [
-    "//base",
-  ]
-}
-
-source_set("jpeg_parser_unit_tests") {
-  testonly = true
-  sources = [
-    "jpeg_parser_unittest.cc",
-  ]
-  deps = [
-    ":jpeg_parser",
-    "//base",
-    "//media:test_support",
-    "//testing/gtest",
-  ]
-}
-
 source_set("perftests") {
   testonly = true
   sources = []
@@ -326,14 +285,11 @@ source_set("unit_tests") {
     "video_cadence_estimator_unittest.cc",
     "video_decoder_stream_unittest.cc",
     "video_renderer_algorithm_unittest.cc",
-    "vp8_bool_decoder_unittest.cc",
-    "vp8_parser_unittest.cc",
     "vp9_parser_unittest.cc",
     "vp9_raw_bits_reader_unittest.cc",
   ]
 
   deps = [
-    ":jpeg_parser_unit_tests",
     "//base/test:test_support",
     "//media:test_support",
     "//testing/gmock",

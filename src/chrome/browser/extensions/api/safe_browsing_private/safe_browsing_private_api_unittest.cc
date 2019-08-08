@@ -114,6 +114,12 @@ void SafeBrowsingPrivateApiUnitTest::TearDown() {
     browser()->tab_strip_model()->DetachWebContentsAt(0);
   browser_window_.reset();
   content::BrowserSideNavigationTearDown();
+
+  // Make sure the NetworkContext owned by SafeBrowsingService is destructed
+  // before the NetworkService object..
+  TestingBrowserProcess::GetGlobal()->safe_browsing_service()->ShutDown();
+  TestingBrowserProcess::GetGlobal()->SetSafeBrowsingService(nullptr);
+
   ExtensionServiceTestBase::TearDown();
 }
 

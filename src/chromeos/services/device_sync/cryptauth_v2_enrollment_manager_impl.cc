@@ -6,20 +6,20 @@
 
 #include <utility>
 
-#include "base/base64url.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/time/clock.h"
 #include "base/timer/timer.h"
+#include "base/values.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/device_sync/cryptauth_constants.h"
 #include "chromeos/services/device_sync/cryptauth_key_registry.h"
 #include "chromeos/services/device_sync/cryptauth_v2_enroller_impl.h"
-#include "chromeos/services/device_sync/network_aware_enrollment_scheduler.h"
 #include "chromeos/services/device_sync/pref_names.h"
 #include "chromeos/services/device_sync/public/cpp/client_app_metadata_provider.h"
+#include "chromeos/services/device_sync/value_string_encoding.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
@@ -148,10 +148,6 @@ void CryptAuthV2EnrollmentManagerImpl::Factory::SetFactoryForTesting(
 // static
 void CryptAuthV2EnrollmentManagerImpl::RegisterPrefs(
     PrefRegistrySimple* registry) {
-  registry->RegisterIntegerPref(
-      prefs::kCryptAuthEnrollmentFailureRecoveryInvocationReason,
-      cryptauthv2::ClientMetadata::INVOCATION_REASON_UNSPECIFIED);
-
   // TODO(nohle): Remove when v1 Enrollment is deprecated.
   registry->RegisterStringPref(prefs::kCryptAuthEnrollmentUserPublicKey,
                                std::string());
@@ -197,12 +193,13 @@ CryptAuthV2EnrollmentManagerImpl::Factory::BuildInstance(
     CryptAuthKeyRegistry* key_registry,
     CryptAuthClientFactory* client_factory,
     CryptAuthGCMManager* gcm_manager,
+    CryptAuthScheduler* scheduler,
     PrefService* pref_service,
     base::Clock* clock,
     std::unique_ptr<base::OneShotTimer> timer) {
   return base::WrapUnique(new CryptAuthV2EnrollmentManagerImpl(
       client_app_metadata_provider, key_registry, client_factory, gcm_manager,
-      pref_service, clock, std::move(timer)));
+      scheduler, pref_service, clock, std::move(timer)));
 }
 
 CryptAuthV2EnrollmentManagerImpl::CryptAuthV2EnrollmentManagerImpl(
@@ -210,6 +207,7 @@ CryptAuthV2EnrollmentManagerImpl::CryptAuthV2EnrollmentManagerImpl(
     CryptAuthKeyRegistry* key_registry,
     CryptAuthClientFactory* client_factory,
     CryptAuthGCMManager* gcm_manager,
+    CryptAuthScheduler* scheduler,
     PrefService* pref_service,
     base::Clock* clock,
     std::unique_ptr<base::OneShotTimer> timer)
@@ -217,12 +215,16 @@ CryptAuthV2EnrollmentManagerImpl::CryptAuthV2EnrollmentManagerImpl(
       key_registry_(key_registry),
       client_factory_(client_factory),
       gcm_manager_(gcm_manager),
+      scheduler_(scheduler),
       pref_service_(pref_service),
       clock_(clock),
       timer_(std::move(timer)),
-      weak_ptr_factory_(this) {
+      callback_weak_ptr_factory_(this),
+      scheduler_weak_ptr_factory_(this) {
   // TODO(nohle): Remove when v1 Enrollment is deprecated.
   AddV1UserKeyPairToRegistryIfNecessary();
+
+  gcm_manager_->AddObserver(this);
 }
 
 CryptAuthV2EnrollmentManagerImpl::~CryptAuthV2EnrollmentManagerImpl() {
@@ -230,27 +232,27 @@ CryptAuthV2EnrollmentManagerImpl::~CryptAuthV2EnrollmentManagerImpl() {
 }
 
 void CryptAuthV2EnrollmentManagerImpl::Start() {
-  // Ensure that Start() is only called once.
-  DCHECK(!scheduler_);
+  scheduler_->StartEnrollmentScheduling(
+      scheduler_weak_ptr_factory_.GetWeakPtr());
 
-  scheduler_ = NetworkAwareEnrollmentScheduler::Factory::Get()->BuildInstance(
-      this, pref_service_);
-
-  gcm_manager_->AddObserver(this);
+  // It is possible, though unlikely, that |scheduler_| has previously enrolled
+  // successfully but |key_registry_| no longer holds the enrolled keys, for
+  // example, if keys are deleted from the key registry or if the persisted key
+  // registry pref cannot be parsed due to an encoding change. In this case,
+  // force a re-enrollment.
+  if (scheduler_->GetLastSuccessfulEnrollmentTime() &&
+      (GetUserPublicKey().empty() || GetUserPrivateKey().empty())) {
+    ForceEnrollmentNow(
+        cryptauth::InvocationReason::INVOCATION_REASON_FAILURE_RECOVERY,
+        base::nullopt /* session_id */);
+  }
 }
 
 void CryptAuthV2EnrollmentManagerImpl::ForceEnrollmentNow(
-    cryptauth::InvocationReason invocation_reason) {
-  if (state_ != State::kIdle) {
-    PA_LOG(WARNING) << "ForceEnrollmentNow() called while an enrollment is in "
-                    << "progress. No action taken.";
-    return;
-  }
-
-  current_enrollment_invocation_reason_ =
-      ConvertInvocationReasonV1ToV2(invocation_reason);
-
-  scheduler_->RequestEnrollmentNow();
+    cryptauth::InvocationReason invocation_reason,
+    const base::Optional<std::string>& session_id) {
+  scheduler_->RequestEnrollment(
+      ConvertInvocationReasonV1ToV2(invocation_reason), session_id);
 }
 
 bool CryptAuthV2EnrollmentManagerImpl::IsEnrollmentValid() const {
@@ -258,6 +260,9 @@ bool CryptAuthV2EnrollmentManagerImpl::IsEnrollmentValid() const {
       scheduler_->GetLastSuccessfulEnrollmentTime();
 
   if (!last_successful_enrollment_time)
+    return false;
+
+  if (GetUserPublicKey().empty() || GetUserPrivateKey().empty())
     return false;
 
   return (clock_->Now() - *last_successful_enrollment_time) <
@@ -275,7 +280,8 @@ base::Time CryptAuthV2EnrollmentManagerImpl::GetLastEnrollmentTime() const {
 }
 
 base::TimeDelta CryptAuthV2EnrollmentManagerImpl::GetTimeToNextAttempt() const {
-  return scheduler_->GetTimeToNextEnrollmentRequest();
+  return scheduler_->GetTimeToNextEnrollmentRequest().value_or(
+      base::TimeDelta::Max());
 }
 
 bool CryptAuthV2EnrollmentManagerImpl::IsEnrollmentInProgress() const {
@@ -283,7 +289,7 @@ bool CryptAuthV2EnrollmentManagerImpl::IsEnrollmentInProgress() const {
 }
 
 bool CryptAuthV2EnrollmentManagerImpl::IsRecoveringFromFailure() const {
-  return scheduler_->GetNumConsecutiveFailures() > 0;
+  return scheduler_->GetNumConsecutiveEnrollmentFailures() > 0;
 }
 
 std::string CryptAuthV2EnrollmentManagerImpl::GetUserPublicKey() const {
@@ -320,37 +326,19 @@ std::string CryptAuthV2EnrollmentManagerImpl::GetUserPrivateKey() const {
 }
 
 void CryptAuthV2EnrollmentManagerImpl::OnEnrollmentRequested(
+    const cryptauthv2::ClientMetadata& client_metadata,
     const base::Optional<cryptauthv2::PolicyReference>&
         client_directive_policy_reference) {
   DCHECK(state_ == State::kIdle);
 
   NotifyEnrollmentStarted();
 
+  current_client_metadata_ = client_metadata;
   client_directive_policy_reference_ = client_directive_policy_reference;
-
-  base::Optional<cryptauthv2::ClientMetadata::InvocationReason>
-      failure_recovery_invocation_reason =
-          GetFailureRecoveryInvocationReasonFromPref();
-
-  if (current_enrollment_invocation_reason_) {
-    // The invocation reason has already been set by ForceEnrollmentNow().
-  } else if (failure_recovery_invocation_reason) {
-    DCHECK(IsRecoveringFromFailure());
-    current_enrollment_invocation_reason_ = *failure_recovery_invocation_reason;
-  } else if (GetLastEnrollmentTime().is_null()) {
-    current_enrollment_invocation_reason_ =
-        cryptauthv2::ClientMetadata::INITIALIZATION;
-  } else if (!IsEnrollmentValid()) {
-    current_enrollment_invocation_reason_ =
-        cryptauthv2::ClientMetadata::PERIODIC;
-  } else {
-    current_enrollment_invocation_reason_ =
-        cryptauthv2::ClientMetadata::INVOCATION_REASON_UNSPECIFIED;
-  }
 
   base::UmaHistogramExactLinear(
       "CryptAuth.EnrollmentV2.InvocationReason",
-      *current_enrollment_invocation_reason_,
+      current_client_metadata_->invocation_reason(),
       cryptauthv2::ClientMetadata::InvocationReason_ARRAYSIZE);
 
   AttemptEnrollment();
@@ -370,8 +358,10 @@ void CryptAuthV2EnrollmentManagerImpl::OnGCMRegistrationResult(bool success) {
   AttemptEnrollment();
 }
 
-void CryptAuthV2EnrollmentManagerImpl::OnReenrollMessage() {
-  ForceEnrollmentNow(cryptauth::INVOCATION_REASON_SERVER_INITIATED);
+void CryptAuthV2EnrollmentManagerImpl::OnReenrollMessage(
+    const base::Optional<std::string>& session_id,
+    const base::Optional<CryptAuthFeatureType>& feature_type) {
+  ForceEnrollmentNow(cryptauth::INVOCATION_REASON_SERVER_INITIATED, session_id);
 }
 
 void CryptAuthV2EnrollmentManagerImpl::OnClientAppMetadataFetched(
@@ -404,7 +394,7 @@ void CryptAuthV2EnrollmentManagerImpl::AttemptEnrollment() {
         gcm_manager_->GetRegistrationId(),
         base::BindOnce(
             &CryptAuthV2EnrollmentManagerImpl::OnClientAppMetadataFetched,
-            weak_ptr_factory_.GetWeakPtr()));
+            callback_weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
@@ -412,9 +402,8 @@ void CryptAuthV2EnrollmentManagerImpl::AttemptEnrollment() {
 }
 
 void CryptAuthV2EnrollmentManagerImpl::Enroll() {
-  cryptauthv2::ClientMetadata client_metadata;
-  client_metadata.set_retry_count(scheduler_->GetNumConsecutiveFailures());
-  client_metadata.set_invocation_reason(*current_enrollment_invocation_reason_);
+  DCHECK(current_client_metadata_);
+  DCHECK(client_app_metadata_);
 
   enroller_ = CryptAuthV2EnrollerImpl::Factory::Get()->BuildInstance(
       key_registry_, client_factory_);
@@ -422,41 +411,32 @@ void CryptAuthV2EnrollmentManagerImpl::Enroll() {
   SetState(State::kWaitingForEnrollment);
 
   enroller_->Enroll(
-      client_metadata, *client_app_metadata_,
+      *current_client_metadata_, *client_app_metadata_,
       client_directive_policy_reference_,
       base::BindOnce(&CryptAuthV2EnrollmentManagerImpl::OnEnrollmentFinished,
-                     base::Unretained(this)));
+                     callback_weak_ptr_factory_.GetWeakPtr()));
 }
 
 void CryptAuthV2EnrollmentManagerImpl::OnEnrollmentFinished(
     const CryptAuthEnrollmentResult& enrollment_result) {
   // Once an enrollment attempt finishes, no other callbacks should be
   // invoked. This is particularly relevant for timeout failures.
-  weak_ptr_factory_.InvalidateWeakPtrs();
+  callback_weak_ptr_factory_.InvalidateWeakPtrs();
   enroller_.reset();
 
   if (enrollment_result.IsSuccess()) {
     PA_LOG(INFO) << "Enrollment attempt with invocation reason "
-                 << *current_enrollment_invocation_reason_
+                 << current_client_metadata_->invocation_reason()
                  << " succeeded with result code "
                  << enrollment_result.result_code();
-
-    pref_service_->SetInteger(
-        prefs::kCryptAuthEnrollmentFailureRecoveryInvocationReason,
-        cryptauthv2::ClientMetadata::INVOCATION_REASON_UNSPECIFIED);
-
   } else {
     PA_LOG(WARNING) << "Enrollment attempt with invocation reason "
-                    << *current_enrollment_invocation_reason_
+                    << current_client_metadata_->invocation_reason()
                     << " failed with result code "
                     << enrollment_result.result_code();
-
-    pref_service_->SetInteger(
-        prefs::kCryptAuthEnrollmentFailureRecoveryInvocationReason,
-        *current_enrollment_invocation_reason_);
   }
 
-  current_enrollment_invocation_reason_.reset();
+  current_client_metadata_.reset();
 
   RecordEnrollmentResult(enrollment_result);
 
@@ -466,8 +446,8 @@ void CryptAuthV2EnrollmentManagerImpl::OnEnrollmentFinished(
                << GetTimeToNextAttempt();
 
   if (!enrollment_result.IsSuccess()) {
-    PA_LOG(INFO) << "Number of consecutive failures: "
-                 << scheduler_->GetNumConsecutiveFailures();
+    PA_LOG(INFO) << "Number of consecutive Enrollment failures: "
+                 << scheduler_->GetNumConsecutiveEnrollmentFailures();
   }
 
   SetState(State::kIdle);
@@ -497,54 +477,31 @@ void CryptAuthV2EnrollmentManagerImpl::SetState(State state) {
   timer_->Start(
       FROM_HERE, *timeout_for_state,
       base::BindOnce(&CryptAuthV2EnrollmentManagerImpl::OnEnrollmentFinished,
-                     base::Unretained(this),
+                     callback_weak_ptr_factory_.GetWeakPtr(),
                      CryptAuthEnrollmentResult(
                          *error_code, base::nullopt /*client_directive */)));
 }
 
-base::Optional<cryptauthv2::ClientMetadata::InvocationReason>
-CryptAuthV2EnrollmentManagerImpl::GetFailureRecoveryInvocationReasonFromPref()
-    const {
-  int reason_stored_in_prefs = pref_service_->GetInteger(
-      prefs::kCryptAuthEnrollmentFailureRecoveryInvocationReason);
-
-  if (!cryptauthv2::ClientMetadata::InvocationReason_IsValid(
-          reason_stored_in_prefs)) {
-    PA_LOG(WARNING) << "Unknown invocation reason, " << reason_stored_in_prefs
-                    << ", stored in pref.";
-
-    return base::nullopt;
-  }
-
-  if (reason_stored_in_prefs ==
-      cryptauthv2::ClientMetadata::INVOCATION_REASON_UNSPECIFIED) {
-    return base::nullopt;
-  }
-
-  return static_cast<cryptauthv2::ClientMetadata::InvocationReason>(
-      reason_stored_in_prefs);
-}
-
 std::string CryptAuthV2EnrollmentManagerImpl::GetV1UserPublicKey() const {
-  std::string public_key;
-  if (!base::Base64UrlDecode(
-          pref_service_->GetString(prefs::kCryptAuthEnrollmentUserPublicKey),
-          base::Base64UrlDecodePolicy::REQUIRE_PADDING, &public_key)) {
+  base::Optional<std::string> public_key = util::DecodeFromValueString(
+      pref_service_->Get(prefs::kCryptAuthEnrollmentUserPublicKey));
+  if (!public_key) {
     PA_LOG(ERROR) << "Invalid public key stored in user prefs.";
     return std::string();
   }
-  return public_key;
+
+  return *public_key;
 }
 
 std::string CryptAuthV2EnrollmentManagerImpl::GetV1UserPrivateKey() const {
-  std::string private_key;
-  if (!base::Base64UrlDecode(
-          pref_service_->GetString(prefs::kCryptAuthEnrollmentUserPrivateKey),
-          base::Base64UrlDecodePolicy::REQUIRE_PADDING, &private_key)) {
+  base::Optional<std::string> private_key = util::DecodeFromValueString(
+      pref_service_->Get(prefs::kCryptAuthEnrollmentUserPrivateKey));
+  if (!private_key) {
     PA_LOG(ERROR) << "Invalid private key stored in user prefs.";
     return std::string();
   }
-  return private_key;
+
+  return *private_key;
 }
 
 void CryptAuthV2EnrollmentManagerImpl::AddV1UserKeyPairToRegistryIfNecessary() {
@@ -553,7 +510,7 @@ void CryptAuthV2EnrollmentManagerImpl::AddV1UserKeyPairToRegistryIfNecessary() {
   const CryptAuthKey* key_v2 =
       key_registry_->GetActiveKey(CryptAuthKeyBundle::Name::kUserKeyPair);
 
-  RecordUserKeyPairState(public_key_v1, public_key_v1, key_v2);
+  RecordUserKeyPairState(public_key_v1, private_key_v1, key_v2);
 
   // If the v1 user key pair does not exist, no action is needed.
   if (public_key_v1.empty() || private_key_v1.empty())
@@ -565,7 +522,7 @@ void CryptAuthV2EnrollmentManagerImpl::AddV1UserKeyPairToRegistryIfNecessary() {
     return;
   }
 
-  key_registry_->AddEnrolledKey(
+  key_registry_->AddKey(
       CryptAuthKeyBundle::Name::kUserKeyPair,
       CryptAuthKey(public_key_v1, private_key_v1, CryptAuthKey::Status::kActive,
                    cryptauthv2::KeyType::P256,

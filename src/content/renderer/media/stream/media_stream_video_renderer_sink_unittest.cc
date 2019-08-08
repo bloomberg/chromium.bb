@@ -53,8 +53,6 @@ class MediaStreamVideoRendererSinkTest : public testing::Test {
 
     media_stream_video_renderer_sink_ = new MediaStreamVideoRendererSink(
         blink_track_,
-        base::Bind(&MediaStreamVideoRendererSinkTest::ErrorCallback,
-                   base::Unretained(this)),
         base::Bind(&MediaStreamVideoRendererSinkTest::RepaintCallback,
                    base::Unretained(this)),
         child_process_->io_task_runner(),
@@ -75,7 +73,6 @@ class MediaStreamVideoRendererSinkTest : public testing::Test {
   }
 
   MOCK_METHOD1(RepaintCallback, void(scoped_refptr<media::VideoFrame>));
-  MOCK_METHOD0(ErrorCallback, void(void));
 
   bool IsInStartedState() const {
     RunIOUntilIdle();
@@ -165,8 +162,6 @@ class MediaStreamVideoRendererSinkTransparencyTest
   MediaStreamVideoRendererSinkTransparencyTest() {
     media_stream_video_renderer_sink_ = new MediaStreamVideoRendererSink(
         blink_track_,
-        base::Bind(&MediaStreamVideoRendererSinkTest::ErrorCallback,
-                   base::Unretained(this)),
         base::Bind(&MediaStreamVideoRendererSinkTransparencyTest::
                        VerifyTransparentFrame,
                    base::Unretained(this)),

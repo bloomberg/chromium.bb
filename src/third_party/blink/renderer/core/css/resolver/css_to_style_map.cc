@@ -457,12 +457,6 @@ scoped_refptr<TimingFunction> CSSToStyleMap::MapAnimationTimingFunction(
   if (value.IsInitialValue())
     return CSSTimingData::InitialTimingFunction();
 
-  if (const auto* frames_timing_function =
-          DynamicTo<cssvalue::CSSFramesTimingFunctionValue>(value)) {
-    return FramesTimingFunction::Create(
-        frames_timing_function->NumberOfFrames());
-  }
-
   const auto& steps_timing_function =
       To<cssvalue::CSSStepsTimingFunctionValue>(value);
   return StepsTimingFunction::Create(steps_timing_function.NumberOfSteps(),

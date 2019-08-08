@@ -18,7 +18,6 @@ class FilePath;
 }
 
 namespace net {
-class ChannelIDService;
 class CookieStore;
 class HostResolver;
 class HostResolverManager;
@@ -115,7 +114,6 @@ class URLRequestContextFactory {
   // instance of URLRequestContext only.
   bool system_dependencies_initialized_;
   std::unique_ptr<net::HostResolverManager> host_resolver_manager_;
-  std::unique_ptr<net::ChannelIDService> channel_id_service_;
   std::unique_ptr<net::CertVerifier> cert_verifier_;
   std::unique_ptr<net::SSLConfigService> ssl_config_service_;
   std::unique_ptr<net::TransportSecurityState> transport_security_state_;

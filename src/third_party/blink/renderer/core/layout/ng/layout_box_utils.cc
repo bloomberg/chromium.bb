@@ -138,7 +138,7 @@ NGStaticPosition LayoutBoxUtils::ComputeStaticPositionFromLegacy(
           .ToConstraintSpace();
   NGBoxStrut border_scrollbar =
       ComputeBorders(non_anonymous_space, container_node) +
-      container_node.GetScrollbarSizes();
+      ComputeScrollbars(non_anonymous_space, container_node);
 
   // Now make it relative to the left or top border edge of the containing
   // block.
@@ -170,10 +170,10 @@ NGStaticPosition LayoutBoxUtils::ComputeStaticPositionFromLegacy(
           ? container_border_box_logical_height - static_block
           : static_block;
 
-  NGPhysicalOffset static_location =
+  PhysicalOffset static_location =
       container_style->IsHorizontalWritingMode()
-          ? NGPhysicalOffset(inline_left_or_top, block_top_or_left)
-          : NGPhysicalOffset(block_top_or_left, inline_left_or_top);
+          ? PhysicalOffset(inline_left_or_top, block_top_or_left)
+          : PhysicalOffset(block_top_or_left, inline_left_or_top);
 
   return NGStaticPosition::Create(writing_mode, parent_style->Direction(),
                                   static_location);

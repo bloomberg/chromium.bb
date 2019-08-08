@@ -40,12 +40,14 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/mime_handler_view_mode.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
@@ -444,15 +446,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest,
   update_tab_function->set_extension(extension.get());
   update_tab_function->set_include_incognito_information(true);
 
-  static const char kArgsWithNonIncognitoUrl[] =
-      "[null, {\"url\": \"chrome://extensions/configureCommands\"}]";
   std::string error = extension_function_test_utils::RunFunctionAndReturnError(
-      update_tab_function.get(), kArgsWithNonIncognitoUrl,
+      update_tab_function.get(),
+      std::string("[null, {\"url\": \"") + chrome::kChromeUIExtensionsURL +
+          chrome::kExtensionConfigureCommandsSubPage + "\"}]",
       incognito,  // incognito doesn't have any tabs.
       api_test_utils::NONE);
   EXPECT_EQ(ErrorUtils::FormatErrorMessage(
                 tabs_constants::kURLsNotAllowedInIncognitoError,
-                "chrome://extensions/configureCommands"),
+                std::string(chrome::kChromeUIExtensionsURL) +
+                    chrome::kExtensionConfigureCommandsSubPage),
             error);
 
   // Ensure the tab was not updated. It should stay as the new tab page.
@@ -946,8 +949,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWindowLastFocusedTest,
   CloseAppWindow(app_window);
 }
 
+// https://crbug.com/956870
 IN_PROC_BROWSER_TEST_F(ExtensionWindowLastFocusedTest,
-                       NoTabIdForDevToolsAndAppWindows) {
+                       DISABLED_NoTabIdForDevToolsAndAppWindows) {
   Browser* normal_browser = CreateBrowserWithEmptyTab(false);
   {
     ActivateBrowserWindow(normal_browser);
@@ -2084,10 +2088,18 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_TemporaryAddressSpoof) {
       pdf_extension_test_util::EnsurePDFHasLoaded(second_web_contents);
   EXPECT_TRUE(load_success);
 
+  auto* web_contents_for_click = second_web_contents;
+  if (content::MimeHandlerViewMode::UsesCrossProcessFrame()) {
+    auto inner_web_contents = web_contents_for_click->GetInnerWebContents();
+    ASSERT_EQ(1U, inner_web_contents.size());
+    // With MimeHandlerViewInCrossProcessFrame input should directly route to
+    // the guest WebContents as there is no longer a BrowserPlugin involved.
+    web_contents_for_click = inner_web_contents[0];
+  }
   // The actual PDF page coordinates that this click goes to is (346, 333),
   // after several space transformations, not (400, 400). This clicks on a link
   // to "http://www.facebook.com:83".
-  content::SimulateMouseClickAt(second_web_contents, 0,
+  content::SimulateMouseClickAt(web_contents_for_click, 0,
                                 blink::WebMouseEvent::Button::kLeft,
                                 gfx::Point(400, 400));
 

@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/numerics/ranges.h"
+#include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -27,6 +28,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
+#include "chrome/browser/ui/tabs/tab_group_data.h"
 #include "chrome/browser/ui/tabs/tab_style.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -111,6 +113,42 @@ int Center(int size, int item_size) {
 
 }  // namespace
 
+// Helper class that observes the tab's close button.
+class Tab::TabCloseButtonObserver : public views::ViewObserver {
+ public:
+  explicit TabCloseButtonObserver(Tab* tab,
+                                  views::View* close_button,
+                                  TabController* controller)
+      : tab_(tab), close_button_(close_button), controller_(controller) {
+    DCHECK(close_button_);
+    tab_close_button_observer_.Add(close_button_);
+  }
+
+  ~TabCloseButtonObserver() override {
+    tab_close_button_observer_.Remove(close_button_);
+  }
+
+ private:
+  void OnViewFocused(views::View* observed_view) override {
+    controller_->UpdateHoverCard(tab_, /* should_show */ true);
+  }
+
+  void OnViewBlurred(views::View* observed_view) override {
+    // Only hide hover card if not keyboard navigating.
+    if (!controller_->IsFocusInTabs())
+      controller_->UpdateHoverCard(nullptr, /* should_show */ false);
+  }
+
+  ScopedObserver<views::View, views::ViewObserver> tab_close_button_observer_{
+      this};
+
+  Tab* tab_;
+  views::View* close_button_;
+  TabController* controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(TabCloseButtonObserver);
+};
+
 // Tab -------------------------------------------------------------------------
 
 // static
@@ -128,7 +166,7 @@ Tab::Tab(TabController* controller)
   // hover.
   set_notify_enter_exit_on_child(true);
 
-  set_id(VIEW_ID_TAB);
+  SetID(VIEW_ID_TAB);
 
   // This will cause calls to GetContentsBounds to return only the rectangle
   // inside the tab shape, rather than to its extents.
@@ -156,6 +194,9 @@ Tab::Tab(TabController* controller)
                                 base::Unretained(controller_)));
   AddChildView(close_button_);
 
+  tab_close_button_observer_ = std::make_unique<TabCloseButtonObserver>(
+      this, close_button_, controller_);
+
   set_context_menu_controller(this);
 
   title_animation_.SetDuration(base::TimeDelta::FromMilliseconds(100));
@@ -165,7 +206,12 @@ Tab::Tab(TabController* controller)
   focus_ring_ = views::FocusRing::Install(this);
 }
 
-Tab::~Tab() = default;
+Tab::~Tab() {
+  // Observer must be unregistered before child views are destroyed.
+  tab_close_button_observer_.reset();
+  if (controller_->HoverCardIsShowingForTab(this))
+    controller_->UpdateHoverCard(this, /* should_show */ false);
+}
 
 void Tab::AnimationEnded(const gfx::Animation* animation) {
   DCHECK_EQ(animation, &title_animation_);
@@ -181,17 +227,17 @@ void Tab::AnimationProgressed(const gfx::Animation* animation) {
 }
 
 void Tab::ButtonPressed(views::Button* sender, const ui::Event& event) {
-  if (!alert_indicator_ || !alert_indicator_->visible())
+  if (!alert_indicator_ || !alert_indicator_->GetVisible())
     base::RecordAction(UserMetricsAction("CloseTab_NoAlertIndicator"));
   else if (data_.alert_state == TabAlertState::AUDIO_PLAYING)
     base::RecordAction(UserMetricsAction("CloseTab_AudioIndicator"));
   else
     base::RecordAction(UserMetricsAction("CloseTab_RecordingIndicator"));
 
-  const CloseTabSource source =
-      (event.type() == ui::ET_MOUSE_RELEASED &&
-       !(event.flags() & ui::EF_FROM_TOUCH)) ? CLOSE_TAB_FROM_MOUSE
-                                             : CLOSE_TAB_FROM_TOUCH;
+  const CloseTabSource source = (event.type() == ui::ET_MOUSE_RELEASED &&
+                                 !(event.flags() & ui::EF_FROM_TOUCH))
+                                    ? CLOSE_TAB_FROM_MOUSE
+                                    : CLOSE_TAB_FROM_TOUCH;
   DCHECK_EQ(close_button_, sender);
   controller_->CloseTab(this, source);
   if (event.type() == ui::ET_GESTURE_TAP)
@@ -372,7 +418,6 @@ void Tab::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 }
 
 bool Tab::OnKeyPressed(const ui::KeyEvent& event) {
-  controller_->UpdateHoverCard(this, false);
   if (event.key_code() == ui::VKEY_SPACE && !IsSelected()) {
     controller_->SelectTab(this, event);
     return true;
@@ -392,7 +437,7 @@ bool IsSelectionModifierDown(const ui::MouseEvent& event) {
 }  // namespace
 
 bool Tab::OnMousePressed(const ui::MouseEvent& event) {
-  controller_->UpdateHoverCard(this, false);
+  controller_->UpdateHoverCard(this, /* should_show */ false);
   controller_->OnMouseEventInTab(this, event);
 
   // Allow a right click from touch to drag, which corresponds to a long click.
@@ -480,14 +525,31 @@ void Tab::OnMouseCaptureLost() {
 void Tab::OnMouseMoved(const ui::MouseEvent& event) {
   tab_style_->SetHoverLocation(event.location());
   controller_->OnMouseEventInTab(this, event);
+#if defined(OS_LINUX)
+  MaybeUpdateHoverStatus(event);
+#endif
 }
 
 void Tab::OnMouseEntered(const ui::MouseEvent& event) {
+  MaybeUpdateHoverStatus(event);
+}
+
+void Tab::MaybeUpdateHoverStatus(const ui::MouseEvent& event) {
+#if defined(OS_LINUX)
+  // Move the hit test area for hovering up so that it is not overlapped by tab
+  // hover cards when they are shown.
+  // TODO(crbug/978134): Once Linux/CrOS widget transparency is solved, remove
+  // this case.
+  constexpr int kHoverCardOverlap = 6;
+  if (event.location().y() >= height() - kHoverCardOverlap)
+    return;
+#endif
+
   mouse_hovered_ = true;
   tab_style_->ShowHover(TabStyle::ShowHoverStyle::kSubtle);
   UpdateForegroundColors();
   Layout();
-  controller_->UpdateHoverCard(this, true);
+  controller_->UpdateHoverCard(this, /* should_show */ true);
 }
 
 void Tab::OnMouseExited(const ui::MouseEvent& event) {
@@ -498,7 +560,7 @@ void Tab::OnMouseExited(const ui::MouseEvent& event) {
 }
 
 void Tab::OnGestureEvent(ui::GestureEvent* event) {
-  controller_->UpdateHoverCard(this, false);
+  controller_->UpdateHoverCard(this, /* should_show */ false);
   switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN: {
       // TAP_DOWN is only dispatched for the first touch point.
@@ -592,6 +654,16 @@ void Tab::AddedToWidget() {
   UpdateForegroundColors();
 }
 
+void Tab::OnFocus() {
+  View::OnFocus();
+  controller_->UpdateHoverCard(this, /* should_show */ true);
+}
+
+void Tab::OnBlur() {
+  View::OnBlur();
+  controller_->UpdateHoverCard(nullptr, /* should_show */ false);
+}
+
 void Tab::OnThemeChanged() {
   UpdateForegroundColors();
 }
@@ -607,6 +679,21 @@ void Tab::SetClosing(bool closing) {
     // this happens.
     focus_ring_.reset();
   }
+}
+
+void Tab::SetGroup(base::Optional<TabGroupId> group) {
+  if (group_ == group)
+    return;
+  group_ = group;
+  UpdateForegroundColors();
+  SchedulePaint();
+}
+
+base::Optional<SkColor> Tab::GetGroupColor() const {
+  return group_.has_value()
+             ? base::make_optional(
+                   controller_->GetDataForGroup(group_.value())->color())
+             : base::nullopt;
 }
 
 SkColor Tab::GetAlertIndicatorColor(TabAlertState state) const {

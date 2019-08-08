@@ -23,6 +23,8 @@
 #include "components/previews/core/previews_experiments.h"
 #include "url/gurl.h"
 
+class PrefService;
+
 namespace base {
 class FilePath;
 }  // namespace base
@@ -56,6 +58,8 @@ class PreviewsOptimizationGuide
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
       const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
       const base::FilePath& profile_path,
+      PrefService* pref_service,
+      leveldb_proto::ProtoDatabaseProvider* database_provider,
       PreviewsTopHostProvider* previews_top_host_provider,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
@@ -112,6 +116,9 @@ class PreviewsOptimizationGuide
   void UpdateHints(base::OnceClosure update_closure,
                    std::unique_ptr<PreviewsHints> hints);
 
+  // Clear all fetched hints known to |this|, including those persisted on disk.
+  void ClearFetchedHints();
+
   bool has_hints() const { return !!hints_; }
 
   // Set |time_clock_| for testing.
@@ -127,7 +134,6 @@ class PreviewsOptimizationGuide
   // should be fetched and schedules the |hints_fetch_timer_| to fire based on:
   // 1. The update time for the fetched hints in the store and
   // 2. The last time a fetch attempt was made, |last_fetch_attempt_|.
-  // TODONOW(mcrouse) : confirm is this is ok or not.
   void ScheduleHintsFetch();
 
  protected:
@@ -200,6 +206,9 @@ class PreviewsOptimizationGuide
   const base::Clock* time_clock_;
 
   base::Time last_fetch_attempt_;
+
+  // A reference to the PrefService for this profile. Not owned.
+  PrefService* pref_service_ = nullptr;
 
   // Used for fetching Hints by the Hints Fetcher.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;

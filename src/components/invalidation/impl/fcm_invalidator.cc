@@ -20,10 +20,12 @@ FCMInvalidator::FCMInvalidator(
     PrefService* pref_service,
     network::mojom::URLLoaderFactory* loader_factory,
     const ParseJSONCallback& parse_json,
-    const std::string& project_id)
+    const std::string& project_id,
+    bool migrate_prefs)
     : invalidation_listener_(std::move(network_channel)) {
   auto registration_manager = std::make_unique<PerUserTopicRegistrationManager>(
-      identity_provider, pref_service, loader_factory, parse_json, project_id);
+      identity_provider, pref_service, loader_factory, parse_json, project_id,
+      migrate_prefs);
   invalidation_listener_.Start(this, std::move(registration_manager));
 }
 
@@ -35,11 +37,11 @@ void FCMInvalidator::RegisterHandler(InvalidationHandler* handler) {
 
 bool FCMInvalidator::UpdateRegisteredIds(InvalidationHandler* handler,
                                          const ObjectIdSet& ids) {
-  return UpdateRegisteredIds(handler, ConvertIdsToTopics(ids));
+  return UpdateRegisteredIds(handler, ConvertIdsToTopics(ids, handler));
 }
 
 bool FCMInvalidator::UpdateRegisteredIds(InvalidationHandler* handler,
-                                         const TopicSet& topics) {
+                                         const Topics& topics) {
   if (!registrar_.UpdateRegisteredTopics(handler, topics))
     return false;
 

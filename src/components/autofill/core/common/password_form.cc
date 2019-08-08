@@ -18,10 +18,19 @@ namespace autofill {
 
 namespace {
 
+// Utility function that creates a std::string from an object supporting the
+// ostream operator<<.
+template <typename T>
+std::string ToString(const T& obj) {
+  std::ostringstream ostream;
+  ostream << obj;
+  return ostream.str();
+}
+
 // Serializes a PasswordForm to a JSON object. Used only for logging in tests.
 void PasswordFormToJSON(const PasswordForm& form,
                         base::DictionaryValue* target) {
-  target->SetInteger("scheme", form.scheme);
+  target->SetString("scheme", ToString(form.scheme));
   target->SetString("signon_realm", form.signon_realm);
   target->SetBoolean("is_public_suffix_match", form.is_public_suffix_match);
   target->SetBoolean("is_affiliation_based_match",
@@ -57,12 +66,11 @@ void PasswordFormToJSON(const PasswordForm& form,
   target->SetBoolean("preferred", form.preferred);
   target->SetDouble("date_created", form.date_created.ToDoubleT());
   target->SetDouble("date_synced", form.date_synced.ToDoubleT());
-  target->SetInteger("type", form.type);
+  target->SetString("type", ToString(form.type));
   target->SetInteger("times_used", form.times_used);
-  std::ostringstream form_data_string_stream;
-  form_data_string_stream << form.form_data;
-  target->SetString("form_data", form_data_string_stream.str());
-  target->SetInteger("generation_upload_status", form.generation_upload_status);
+  target->SetString("form_data", ToString(form.form_data));
+  target->SetString("generation_upload_status",
+                    ToString(form.generation_upload_status));
   target->SetString("display_name", form.display_name);
   target->SetString("icon_url", form.icon_url.possibly_invalid_spec());
   target->SetString("federation_origin", form.federation_origin.Serialize());
@@ -72,9 +80,7 @@ void PasswordFormToJSON(const PasswordForm& form,
   target->SetString("affiliated_web_realm", form.affiliated_web_realm);
   target->SetString("app_display_name", form.app_display_name);
   target->SetString("app_icon_url", form.app_icon_url.possibly_invalid_spec());
-  std::ostringstream submission_event_string_stream;
-  submission_event_string_stream << form.submission_event;
-  target->SetString("submission_event", submission_event_string_stream.str());
+  target->SetString("submission_event", ToString(form.submission_event));
   target->SetBoolean("only_for_fallback", form.only_for_fallback);
   target->SetBoolean("is_gaia_with_skip_save_password_form",
                      form.is_gaia_with_skip_save_password_form);
@@ -83,23 +89,7 @@ void PasswordFormToJSON(const PasswordForm& form,
 
 }  // namespace
 
-PasswordForm::PasswordForm()
-    : scheme(SCHEME_HTML),
-      username_marked_by_site(false),
-      form_has_autofilled_value(false),
-      new_password_marked_by_site(false),
-      preferred(false),
-      blacklisted_by_user(false),
-      type(TYPE_MANUAL),
-      times_used(0),
-      generation_upload_status(NO_SIGNAL_SENT),
-      skip_zero_click(false),
-      was_parsed_using_autofill_predictions(false),
-      is_public_suffix_match(false),
-      is_affiliation_based_match(false),
-      submission_event(SubmissionIndicatorEvent::NONE),
-      only_for_fallback(false),
-      is_gaia_with_skip_save_password_form(false) {}
+PasswordForm::PasswordForm() = default;
 
 PasswordForm::PasswordForm(const PasswordForm& other) = default;
 
@@ -181,8 +171,8 @@ bool PasswordForm::operator!=(const PasswordForm& form) const {
   return !operator==(form);
 }
 
-bool ArePasswordFormUniqueKeyEqual(const PasswordForm& left,
-                                   const PasswordForm& right) {
+bool ArePasswordFormUniqueKeysEqual(const PasswordForm& left,
+                                    const PasswordForm& right) {
   return (left.signon_realm == right.signon_realm &&
           left.origin == right.origin &&
           left.username_element == right.username_element &&
@@ -223,9 +213,9 @@ base::string16 ValueElementVectorToString(
 }
 
 bool IsHttpAuthScheme(PasswordForm::Scheme scheme) {
-  return scheme == PasswordForm::SCHEME_BASIC ||
-         scheme == PasswordForm::SCHEME_DIGEST ||
-         scheme == PasswordForm::SCHEME_OTHER;
+  return scheme == PasswordForm::Scheme::kBasic ||
+         scheme == PasswordForm::Scheme::kDigest ||
+         scheme == PasswordForm::Scheme::kOther;
 }
 
 std::ostream& operator<<(std::ostream& os, const PasswordForm& form) {

@@ -5,9 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_BOX_FRAGMENT_BUILDER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_BOX_FRAGMENT_BUILDER_H_
 
+#include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_border_edges.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset_rect.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_fragment_geometry.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_baseline.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_container_fragment_builder.h"
@@ -36,9 +37,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
                                    writing_mode,
                                    direction),
         box_type_(NGPhysicalFragment::NGBoxType::kNormalBox),
-        did_break_(false) {
-    layout_object_ = node.GetLayoutBox();
-  }
+        did_break_(false) {}
 
   // Build a fragment for LayoutObject without NGLayoutInputNode. LayoutInline
   // has NGInlineItem but does not have corresponding NGLayoutInputNode.
@@ -56,30 +55,35 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     layout_object_ = layout_object;
   }
 
+  NGBoxFragmentBuilder& SetInitialFragmentGeometry(
+      const NGFragmentGeometry& initial_fragment_geometry) {
+    initial_fragment_geometry_ = &initial_fragment_geometry;
+    size_ = initial_fragment_geometry_->border_box_size;
+    is_initial_block_size_indefinite_ = size_.block_size == kIndefiniteSize;
+    return *this;
+  }
+
   NGBoxFragmentBuilder& SetIntrinsicBlockSize(LayoutUnit intrinsic_block_size) {
     intrinsic_block_size_ = intrinsic_block_size;
     return *this;
   }
-  NGBoxFragmentBuilder& SetBorders(const NGBoxStrut& border) {
+  const NGBoxStrut& Borders() const {
+    DCHECK(initial_fragment_geometry_);
     DCHECK_NE(BoxType(), NGPhysicalFragment::kInlineBox);
-    borders_ = border;
-    return *this;
+    return initial_fragment_geometry_->border;
   }
-  const NGBoxStrut& Borders() const { return borders_; }
-  NGBoxFragmentBuilder& SetPadding(const NGBoxStrut& padding) {
-    DCHECK_NE(BoxType(), NGPhysicalFragment::kInlineBox);
-    padding_ = padding;
-    return *this;
+  const NGBoxStrut& Scrollbar() const {
+    DCHECK(initial_fragment_geometry_);
+    return initial_fragment_geometry_->scrollbar;
   }
-  NGBoxFragmentBuilder& SetPadding(const NGLineBoxStrut& padding) {
-    DCHECK_EQ(BoxType(), NGPhysicalFragment::kInlineBox);
-    // Convert to flow-relative, because ToInlineBoxFragment() will convert
-    // the padding to physical coordinates using flow-relative writing-mode.
-    padding_ = NGBoxStrut(padding, IsFlippedLinesWritingMode(GetWritingMode()));
-    return *this;
+  const NGBoxStrut& Padding() const {
+    DCHECK(initial_fragment_geometry_);
+    return initial_fragment_geometry_->padding;
   }
-  const NGBoxStrut& Padding() const { return padding_; }
-
+  const LogicalSize& InitialBorderBoxSize() const {
+    DCHECK(initial_fragment_geometry_);
+    return initial_fragment_geometry_->border_box_size;
+  }
   // Remove all children.
   void RemoveChildren();
 
@@ -93,11 +97,11 @@ class CORE_EXPORT NGBoxFragmentBuilder final
 
   // Update if we have fragmented in this flow.
   NGBoxFragmentBuilder& PropagateBreak(const NGLayoutResult&);
-  NGBoxFragmentBuilder& PropagateBreak(const NGPhysicalFragment&);
+  NGBoxFragmentBuilder& PropagateBreak(const NGPhysicalContainerFragment&);
 
   void AddOutOfFlowLegacyCandidate(NGBlockNode,
                                    const NGStaticPosition&,
-                                   LayoutObject* inline_container);
+                                   const LayoutInline* inline_container);
 
   // Set how much of the block size we've used so far for this box.
   NGBoxFragmentBuilder& SetUsedBlockSize(LayoutUnit used_block_size) {
@@ -168,9 +172,6 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   scoped_refptr<const NGLayoutResult> Abort(
       NGLayoutResult::NGLayoutResultStatus);
 
-  // A vector of child offsets. Initially set by AddChild().
-  const OffsetVector& Offsets() const { return offsets_; }
-
   NGPhysicalFragment::NGBoxType BoxType() const;
   NGBoxFragmentBuilder& SetBoxType(NGPhysicalFragment::NGBoxType box_type) {
     box_type_ = box_type;
@@ -180,8 +181,8 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     is_fieldset_container_ = true;
     return *this;
   }
-  NGBoxFragmentBuilder& SetIsOldLayoutRoot() {
-    is_old_layout_root_ = true;
+  NGBoxFragmentBuilder& SetIsLegacyLayoutRoot() {
+    is_legacy_layout_root_ = true;
     return *this;
   }
 
@@ -213,26 +214,32 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   struct InlineContainingBlockGeometry {
     DISALLOW_NEW();
     // Union of fragments generated on the first line.
-    NGPhysicalOffsetRect start_fragment_union_rect;
+    PhysicalRect start_fragment_union_rect;
     // Union of fragments generated on the last line.
-    NGPhysicalOffsetRect end_fragment_union_rect;
+    PhysicalRect end_fragment_union_rect;
   };
 
   using InlineContainingBlockMap =
       HashMap<const LayoutObject*,
               base::Optional<InlineContainingBlockGeometry>>;
   void ComputeInlineContainerFragments(
-      InlineContainingBlockMap* inline_container_fragments);
+      InlineContainingBlockMap* inline_containing_block_map);
+
+#if DCHECK_IS_ON()
+  // If we don't participate in a fragmentation context, this method can check
+  // that all block fragmentation related fields have their initial value.
+  void CheckNoBlockFragmentation() const;
+#endif
 
  private:
   scoped_refptr<const NGLayoutResult> ToBoxFragment(WritingMode);
 
+  const NGFragmentGeometry* initial_fragment_geometry_ = nullptr;
   LayoutUnit intrinsic_block_size_;
-  NGBoxStrut borders_;
-  NGBoxStrut padding_;
 
   NGPhysicalFragment::NGBoxType box_type_;
   bool is_fieldset_container_ = false;
+  bool is_initial_block_size_indefinite_ = false;
   bool did_break_;
   bool has_forced_break_ = false;
   bool is_new_fc_ = false;

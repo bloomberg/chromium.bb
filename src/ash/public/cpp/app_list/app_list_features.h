@@ -41,9 +41,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableZeroStateSuggestions;
 // Enables the feature to autocomplete text typed in the AppList search box.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppListSearchAutocomplete;
 
-// Enable an adaptive model that tweaks search result scores.
-ASH_PUBLIC_EXPORT extern const base::Feature kEnableAdaptiveResultRanker;
-
 // Enable an model that ranks query based apps search result.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableQueryBasedAppsRanker;
 
@@ -52,6 +49,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableZeroStateAppsRanker;
 
 // Enable an model that ranks query based non-apps result.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableQueryBasedMixedTypesRanker;
+
+// Enable a model that ranks zero-state files and recent queries.
+ASH_PUBLIC_EXPORT extern const base::Feature kEnableZeroStateMixedTypesRanker;
 
 // Enables the feature to include a single reinstallation candidate in
 // zero-state.
@@ -63,6 +63,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableEmbeddedAssistantUI;
 // Enables ghosting in any AppsGridView (folder or root) when dragging an item.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppGridGhost;
 
+// Enables hashed recording of a app list launches.
+ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppListLaunchRecording;
+
 bool ASH_PUBLIC_EXPORT IsAnswerCardEnabled();
 bool ASH_PUBLIC_EXPORT IsBackgroundBlurEnabled();
 bool ASH_PUBLIC_EXPORT IsPlayStoreAppSearchEnabled();
@@ -70,13 +73,14 @@ bool ASH_PUBLIC_EXPORT IsAppDataSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsSettingsShortcutSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsZeroStateSuggestionsEnabled();
 bool ASH_PUBLIC_EXPORT IsAppListSearchAutocompleteEnabled();
-bool ASH_PUBLIC_EXPORT IsAdaptiveResultRankerEnabled();
 bool ASH_PUBLIC_EXPORT IsQueryBasedAppsRankerEnabled();
 bool ASH_PUBLIC_EXPORT IsZeroStateAppsRankerEnabled();
 bool ASH_PUBLIC_EXPORT IsQueryBasedMixedTypesRankerEnabled();
+bool ASH_PUBLIC_EXPORT IsZeroStateMixedTypesRankerEnabled();
 bool ASH_PUBLIC_EXPORT IsAppReinstallZeroStateEnabled();
 bool ASH_PUBLIC_EXPORT IsEmbeddedAssistantUIEnabled();
 bool ASH_PUBLIC_EXPORT IsAppGridGhostEnabled();
+bool ASH_PUBLIC_EXPORT IsAppListLaunchRecordingEnabled();
 
 std::string ASH_PUBLIC_EXPORT AnswerServerUrl();
 std::string ASH_PUBLIC_EXPORT AnswerServerQuerySuffix();

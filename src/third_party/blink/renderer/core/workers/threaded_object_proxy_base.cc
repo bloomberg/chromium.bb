@@ -19,16 +19,16 @@ void ThreadedObjectProxyBase::CountFeature(WebFeature feature) {
   PostCrossThreadTask(
       *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalDefault),
       FROM_HERE,
-      CrossThreadBind(&ThreadedMessagingProxyBase::CountFeature,
-                      MessagingProxyWeakPtr(), feature));
+      CrossThreadBindOnce(&ThreadedMessagingProxyBase::CountFeature,
+                          MessagingProxyWeakPtr(), feature));
 }
 
 void ThreadedObjectProxyBase::CountDeprecation(WebFeature feature) {
   PostCrossThreadTask(
       *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalDefault),
       FROM_HERE,
-      CrossThreadBind(&ThreadedMessagingProxyBase::CountDeprecation,
-                      MessagingProxyWeakPtr(), feature));
+      CrossThreadBindOnce(&ThreadedMessagingProxyBase::CountDeprecation,
+                          MessagingProxyWeakPtr(), feature));
 }
 
 void ThreadedObjectProxyBase::ReportConsoleMessage(
@@ -39,17 +39,17 @@ void ThreadedObjectProxyBase::ReportConsoleMessage(
   PostCrossThreadTask(
       *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalDefault),
       FROM_HERE,
-      CrossThreadBind(&ThreadedMessagingProxyBase::ReportConsoleMessage,
-                      MessagingProxyWeakPtr(), source, level, message,
-                      WTF::Passed(location->Clone())));
+      CrossThreadBindOnce(&ThreadedMessagingProxyBase::ReportConsoleMessage,
+                          MessagingProxyWeakPtr(), source, level, message,
+                          WTF::Passed(location->Clone())));
 }
 
 void ThreadedObjectProxyBase::DidCloseWorkerGlobalScope() {
   PostCrossThreadTask(
       *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalDefault),
       FROM_HERE,
-      CrossThreadBind(&ThreadedMessagingProxyBase::TerminateGlobalScope,
-                      MessagingProxyWeakPtr()));
+      CrossThreadBindOnce(&ThreadedMessagingProxyBase::TerminateGlobalScope,
+                          MessagingProxyWeakPtr()));
 }
 
 void ThreadedObjectProxyBase::DidTerminateWorkerThread() {
@@ -57,8 +57,8 @@ void ThreadedObjectProxyBase::DidTerminateWorkerThread() {
   PostCrossThreadTask(
       *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalDefault),
       FROM_HERE,
-      CrossThreadBind(&ThreadedMessagingProxyBase::WorkerThreadTerminated,
-                      MessagingProxyWeakPtr()));
+      CrossThreadBindOnce(&ThreadedMessagingProxyBase::WorkerThreadTerminated,
+                          MessagingProxyWeakPtr()));
 }
 
 ParentExecutionContextTaskRunners*

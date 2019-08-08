@@ -19,6 +19,7 @@
 class GURL;
 @class OpenNewTabCommand;
 @class ReadingListAddCommand;
+@class SendTabToSelfCommand;
 
 // Protocol for commands that will generally be handled by the "current tab",
 // which in practice is the BrowserViewController instance displaying the tab.
@@ -105,6 +106,9 @@ class GURL;
 
 // Searches for an image in the current tab.
 - (void)searchByImage:(UIImage*)image;
+
+// Sends the tab to another of the user's devices using the data in |command|.
+- (void)sendTabToSelf:(SendTabToSelfCommand*)command;
 
 @end
 

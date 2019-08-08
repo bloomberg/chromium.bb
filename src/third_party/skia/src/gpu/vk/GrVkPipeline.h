@@ -8,9 +8,9 @@
 #ifndef GrVkPipeline_DEFINED
 #define GrVkPipeline_DEFINED
 
-#include "GrTypesPriv.h"
-#include "GrVkResource.h"
-#include "vk/GrVkTypes.h"
+#include "include/gpu/vk/GrVkTypes.h"
+#include "include/private/GrTypesPriv.h"
+#include "src/gpu/vk/GrVkResource.h"
 
 class GrPipeline;
 class GrPrimitiveProcessor;
@@ -29,6 +29,7 @@ public:
                                 const GrPrimitiveProcessor&,
                                 const GrPipeline& pipeline,
                                 const GrStencilSettings&,
+                                GrSurfaceOrigin,
                                 VkPipelineShaderStageCreateInfo* shaderStageInfo,
                                 int shaderStageCount,
                                 GrPrimitiveType primitiveType,

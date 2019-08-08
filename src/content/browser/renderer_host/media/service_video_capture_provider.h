@@ -27,20 +27,24 @@ class CONTENT_EXPORT ServiceVideoCaptureProvider
     : public VideoCaptureProvider,
       public service_manager::mojom::ServiceManagerListener {
  public:
-  using CreateAcceleratorFactoryCallback = base::RepeatingCallback<
-      std::unique_ptr<video_capture::mojom::AcceleratorFactory>()>;
 
   // This constructor uses a default factory for instances of
   // ws::mojom::Gpu which produces instances of class content::GpuClient.
   ServiceVideoCaptureProvider(
       service_manager::Connector* connector,
       base::RepeatingCallback<void(const std::string&)> emit_log_message_cb);
+
+#if defined(OS_CHROMEOS)
+  using CreateAcceleratorFactoryCallback = base::RepeatingCallback<
+      std::unique_ptr<video_capture::mojom::AcceleratorFactory>()>;
   // Lets clients provide a custom mojo::Connector and factory method for
   // creating instances of ws::mojom::Gpu.
   ServiceVideoCaptureProvider(
       CreateAcceleratorFactoryCallback create_accelerator_factory_cb,
       service_manager::Connector* connector,
       base::RepeatingCallback<void(const std::string&)> emit_log_message_cb);
+#endif  // defined(OS_CHROMEOS)
+
   ~ServiceVideoCaptureProvider() override;
 
   // VideoCaptureProvider implementation.
@@ -89,7 +93,9 @@ class CONTENT_EXPORT ServiceVideoCaptureProvider
   void OnServiceConnectionClosed(ReasonForDisconnect reason);
 
   std::unique_ptr<service_manager::Connector> connector_;
+#if defined(OS_CHROMEOS)
   CreateAcceleratorFactoryCallback create_accelerator_factory_cb_;
+#endif  // defined(OS_CHROMEOS)
   base::RepeatingCallback<void(const std::string&)> emit_log_message_cb_;
 
   base::WeakPtr<RefCountedVideoSourceProvider> weak_service_connection_;

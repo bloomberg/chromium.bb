@@ -4,9 +4,47 @@
 */
 'use strict';
 
-export default class ReportSection extends cp.ElementBase {
+import './cp-dialog.js';
+import './cp-loading.js';
+import '@polymer/polymer/lib/elements/dom-if.js';
+import '@polymer/polymer/lib/elements/dom-repeat.js';
+import * as PolymerAsync from '@polymer/polymer/lib/utils/async.js';
+import ReportControls from './report-controls.js';
+import ReportNamesRequest from './report-names-request.js';
+import ReportRequest from './report-request.js';
+import ReportTable from './report-table.js';
+import ReportTemplate from './report-template.js';
+import TimeseriesDescriptor from './timeseries-descriptor.js';
+import {BatchIterator} from './utils.js';
+import {ElementBase, STORE} from './element-base.js';
+import {UPDATE} from './simple-redux.js';
+import {get} from '@polymer/polymer/lib/utils/path.js';
+import {html} from '@polymer/polymer/polymer-element.js';
+
+const DEBOUNCE_LOAD_MS = 200;
+
+export default class ReportSection extends ElementBase {
+  static get is() { return 'report-section'; }
+
+  static get properties() {
+    return {
+      statePath: String,
+      isLoading: Boolean,
+      tables: Array,
+    };
+  }
+
+  static buildState(options = {}) {
+    return {
+      ...ReportControls.buildState(options),
+      isLoading: false,
+      tables: [ReportTable.placeholderTable(
+          ReportControls.DEFAULT_NAME)],
+    };
+  }
+
   static get template() {
-    return Polymer.html`
+    return html`
       <style>
         #tables {
           align-items: center;
@@ -51,96 +89,94 @@ export default class ReportSection extends cp.ElementBase {
   }
 
   async onSave_(event) {
-    await this.dispatch('loadReports', this.statePath);
+    await ReportSection.loadReports(this.statePath);
   }
 
-  observeSources_() {
-    this.debounce('loadReports', () => {
-      this.dispatch('loadReports', this.statePath);
-    }, Polymer.Async.timeOut.after(200));
+  stateChanged(rootState) {
+    if (!this.statePath) return;
+    const state = get(rootState, this.statePath);
+
+    const sourcesChanged = (
+      state && this.source && state.source && (
+        (this.minRevision !== state.minRevision) ||
+        (this.maxRevision !== state.maxRevision) ||
+        !tr.b.setsEqual(
+            new Set(this.source.selectedOptions),
+            new Set(state.source.selectedOptions))));
+
+    this.setProperties(state);
+
+    if (sourcesChanged) {
+      this.debounce('loadReports', () => {
+        ReportSection.loadReports(this.statePath);
+      }, PolymerAsync.timeOut.after(DEBOUNCE_LOAD_MS));
+    }
   }
-}
 
-ReportSection.State = {
-  ...cp.ReportControls.State,
-  isLoading: options => false,
-  tables: options => [cp.ReportTable.placeholderTable(
-      cp.ReportControls.DEFAULT_NAME)],
-};
-
-ReportSection.buildState = options => cp.buildState(
-    ReportSection.State, options);
-
-ReportSection.properties = {
-  ...cp.buildProperties('state', ReportSection.State),
-  userEmail: {statePath: 'userEmail'},
-};
-ReportSection.observers = [
-  'observeSources_(source.selectedOptions, minRevision, maxRevision)',
-];
-
-ReportSection.actions = {
-  restoreState: (statePath, options) => async(dispatch, getState) => {
-    dispatch({
+  static async restoreState(statePath, options) {
+    STORE.dispatch({
       type: ReportSection.reducers.restoreState.name,
       statePath,
       options,
     });
-    const state = Polymer.Path.get(getState(), statePath);
+    const state = get(STORE.getState(), statePath);
     if (state.minRevision === undefined ||
         state.maxRevision === undefined) {
-      cp.ReportControls.actions.selectMilestone(
-          statePath, state.milestone)(dispatch, getState);
+      STORE.dispatch({
+        type: ReportControls.reducers.selectMilestone.name,
+        statePath,
+        milestone: state.milestone,
+      });
     }
-  },
+  }
 
-  loadReports: statePath => async(dispatch, getState) => {
-    let state = Polymer.Path.get(getState(), statePath);
-    if (!state.minRevision || !state.maxRevision) return;
+  static async loadReports(statePath) {
+    let state = get(STORE.getState(), statePath);
+    if (!state || !state.minRevision || !state.maxRevision) return;
 
-    dispatch({
+    STORE.dispatch({
       type: ReportSection.reducers.requestReports.name,
       statePath,
     });
 
     const names = state.source.selectedOptions.filter(name =>
-      name !== cp.ReportControls.CREATE);
+      name !== ReportControls.CREATE);
     const requestedReports = new Set(state.source.selectedOptions);
     const revisions = [state.minRevision, state.maxRevision];
-    const reportTemplateInfos = await new cp.ReportNamesRequest().response;
+    const reportTemplateInfos = await new ReportNamesRequest().response;
     const readers = [];
 
     for (const name of names) {
       for (const templateInfo of reportTemplateInfos) {
         if (templateInfo.name === name) {
-          readers.push(new cp.ReportRequest(
+          readers.push(new ReportRequest(
               {...templateInfo, revisions}).reader());
         }
       }
     }
 
-    for await (const {results, errors} of new cp.BatchIterator(readers)) {
-      state = Polymer.Path.get(getState(), statePath);
+    for await (const {results, errors} of new BatchIterator(readers)) {
+      state = get(STORE.getState(), statePath);
       if (!tr.b.setsEqual(requestedReports, new Set(
           state.source.selectedOptions)) ||
           (state.minRevision !== revisions[0]) ||
           (state.maxRevision !== revisions[1])) {
         return;
       }
-      dispatch({
+      STORE.dispatch({
         type: ReportSection.reducers.receiveReports.name,
         statePath,
         reports: results,
       });
     }
 
-    dispatch(Redux.UPDATE(statePath, {isLoading: false}));
-  },
-};
+    STORE.dispatch(UPDATE(statePath, {isLoading: false}));
+  }
+}
 
 ReportSection.reducers = {
   restoreState: (state, action, rootState) => {
-    if (!action.options) return state;
+    if (!action.options || !state) return state;
     const source = {
       ...state.source,
       selectedOptions: action.options.sources,
@@ -149,7 +185,7 @@ ReportSection.reducers = {
       ...state,
       source,
       milestone: parseInt(action.options.milestone ||
-        cp.ReportControls.CURRENT_MILESTONE),
+        ReportControls.CURRENT_MILESTONE),
       minRevision: action.options.minRevision,
       maxRevision: action.options.maxRevision,
       minRevisionInput: action.options.minRevision,
@@ -171,10 +207,10 @@ ReportSection.reducers = {
     for (const name of selectedNames) {
       // Add placeholderTables for missing names.
       if (!tableNames.has(name)) {
-        if (name === cp.ReportControls.CREATE) {
+        if (name === ReportControls.CREATE) {
           tables.push(ReportSection.newTemplate(rootState.userEmail));
         } else {
-          tables.push(cp.ReportTable.placeholderTable(name));
+          tables.push(ReportTable.placeholderTable(name));
         }
       }
     }
@@ -234,6 +270,7 @@ ReportSection.reducers = {
         internal: report.internal,
         canEdit: false,
         isEditing: false,
+        isPlaceholder: false,
         rows,
         tooltip: {},
         maxLabelParts,
@@ -265,11 +302,12 @@ ReportSection.reducers = {
 ReportSection.newTemplate = userEmail => {
   return {
     isEditing: true,
+    isPlaceholder: false,
     name: '',
     owners: userEmail,
     url: '',
     statistics: [],
-    rows: [cp.ReportTemplate.newTemplateRow({})],
+    rows: [ReportTemplate.newTemplateRow({})],
     statistic: {
       label: 'Statistics',
       query: '',
@@ -311,7 +349,7 @@ ReportSection.newStateOptionsFromQueryParams = queryParams => {
       options.minRevision !== undefined &&
       options.maxRevision !== undefined) {
     for (const [milestone, milestoneRevision] of Object.entries(
-        cp.ReportControls.CHROMIUM_MILESTONES)) {
+        ReportControls.CHROMIUM_MILESTONES)) {
       if ((milestoneRevision >= options.minRevision) &&
           ((options.maxRevision === 'latest') ||
             (options.maxRevision >= milestoneRevision))) {
@@ -335,11 +373,11 @@ ReportSection.getRouteParams = state => {
   const selectedOptions = state.source.selectedOptions;
   if (state.containsDefaultSection &&
       selectedOptions.length === 1 &&
-      selectedOptions[0] === cp.ReportControls.DEFAULT_NAME) {
+      selectedOptions[0] === ReportControls.DEFAULT_NAME) {
     return routeParams;
   }
   for (const option of selectedOptions) {
-    if (option === cp.ReportControls.CREATE) continue;
+    if (option === ReportControls.CREATE) continue;
     routeParams.append('report', option);
   }
   routeParams.set('minRev', state.minRevision);
@@ -471,7 +509,7 @@ ReportSection.transformReportRow = (
     scalars,
     label: row.label,
     actualDescriptors,
-    ...cp.buildState(cp.TimeseriesDescriptor.State, {
+    ...TimeseriesDescriptor.buildState({
       suite: {
         selectedOptions: row.suites,
         isAggregated: true,
@@ -495,4 +533,4 @@ ReportSection.transformReportRow = (
   };
 };
 
-cp.ElementBase.register(ReportSection);
+ElementBase.register(ReportSection);

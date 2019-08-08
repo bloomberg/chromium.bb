@@ -56,8 +56,10 @@ class QUIC_EXPORT_PRIVATE QuicIpAddressImpl {
   bool FromString(std::string str);
   bool IsIPv4() const;
   bool IsIPv6() const;
-
   bool InSameSubnet(const QuicIpAddressImpl& other, int subnet_length);
+
+  in_addr GetIPv4() const;
+  in6_addr GetIPv6() const;
   const net::IPAddress& ip_address() const { return ip_address_; }
 
  private:

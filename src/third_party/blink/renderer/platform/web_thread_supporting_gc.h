@@ -34,26 +34,7 @@ class PLATFORM_EXPORT WebThreadSupportingGC final {
   explicit WebThreadSupportingGC(const ThreadCreationParams&);
   ~WebThreadSupportingGC();
 
-  void PostTask(const base::Location& location, base::OnceClosure task) {
-    thread_->GetTaskRunner()->PostTask(location, std::move(task));
-  }
-
-  void PostDelayedTask(const base::Location& location,
-                       base::OnceClosure task,
-                       TimeDelta delay) {
-    thread_->GetTaskRunner()->PostDelayedTask(location, std::move(task), delay);
-  }
-
-  void PostTask(const base::Location& location, CrossThreadClosure task) {
-    PostCrossThreadTask(*thread_->GetTaskRunner(), location, std::move(task));
-  }
-
-  void PostDelayedTask(const base::Location& location,
-                       CrossThreadClosure task,
-                       TimeDelta delay) {
-    PostDelayedCrossThreadTask(*thread_->GetTaskRunner(), location,
-                               std::move(task), delay);
-  }
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() const;
 
   bool IsCurrentThread() const { return thread_->IsCurrentThread(); }
 

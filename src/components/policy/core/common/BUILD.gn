@@ -156,7 +156,6 @@ jumbo_source_set("internal") {
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
     "//components/account_id",
-    "//components/data_use_measurement/core",
     "//components/prefs",
     "//components/strings",
     "//components/version_info",
@@ -332,7 +331,6 @@ source_set("common_constants") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "//extensions/buildflags",
     "cloud/cloud_policy_client_unittest.cc",
     "cloud/cloud_policy_core_unittest.cc",
     "cloud/cloud_policy_manager_unittest.cc",

@@ -33,9 +33,8 @@ class MEDIA_GPU_EXPORT VTVideoEncodeAccelerator
   // VideoEncodeAccelerator implementation.
   VideoEncodeAccelerator::SupportedProfiles GetSupportedProfiles() override;
   bool Initialize(const Config& config, Client* client) override;
-  void Encode(const scoped_refptr<VideoFrame>& frame,
-              bool force_keyframe) override;
-  void UseOutputBitstreamBuffer(const BitstreamBuffer& buffer) override;
+  void Encode(scoped_refptr<VideoFrame> frame, bool force_keyframe) override;
+  void UseOutputBitstreamBuffer(BitstreamBuffer buffer) override;
   void RequestEncodingParametersChange(uint32_t bitrate,
                                        uint32_t framerate) override;
   void Destroy() override;
@@ -51,7 +50,7 @@ class MEDIA_GPU_EXPORT VTVideoEncodeAccelerator
   struct BitstreamBufferRef;
 
   // Encoding tasks to be run on |encoder_thread_|.
-  void EncodeTask(const scoped_refptr<VideoFrame>& frame, bool force_keyframe);
+  void EncodeTask(scoped_refptr<VideoFrame> frame, bool force_keyframe);
   void UseOutputBitstreamBufferTask(
       std::unique_ptr<BitstreamBufferRef> buffer_ref);
   void RequestEncodingParametersChangeTask(uint32_t bitrate,

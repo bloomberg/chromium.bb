@@ -176,21 +176,6 @@ void QualityAnalyzingVideoDecoder::DecoderCallback::Decoded(
 }
 
 int32_t
-QualityAnalyzingVideoDecoder::DecoderCallback::ReceivedDecodedReferenceFrame(
-    const uint64_t pictureId) {
-  rtc::CritScope crit(&callback_lock_);
-  RTC_DCHECK(delegate_callback_);
-  return delegate_callback_->ReceivedDecodedReferenceFrame(pictureId);
-}
-
-int32_t QualityAnalyzingVideoDecoder::DecoderCallback::ReceivedDecodedFrame(
-    const uint64_t pictureId) {
-  rtc::CritScope crit(&callback_lock_);
-  RTC_DCHECK(delegate_callback_);
-  return delegate_callback_->ReceivedDecodedFrame(pictureId);
-}
-
-int32_t
 QualityAnalyzingVideoDecoder::DecoderCallback::IrrelevantSimulcastStreamDecoded(
     uint16_t frame_id,
     int64_t timestamp_ms) {

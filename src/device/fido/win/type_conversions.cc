@@ -71,7 +71,7 @@ ToAuthenticatorMakeCredentialResponse(
       AttestationObject(
           std::move(*authenticator_data),
           std::make_unique<OpaqueAttestationStatement>(
-              base::UTF16ToUTF8(credential_attestation.pwszFormatType),
+              base::WideToUTF8(credential_attestation.pwszFormatType),
               std::move(*cbor_attestation_statement))));
 }
 
@@ -158,11 +158,7 @@ static uint32_t ToWinTransportsMask(
 }
 
 std::vector<WEBAUTHN_CREDENTIAL> ToWinCredentialVector(
-    const base::Optional<std::vector<PublicKeyCredentialDescriptor>>&
-        credentials) {
-  if (!credentials) {
-    return {};
-  }
+    const std::vector<PublicKeyCredentialDescriptor>* credentials) {
   std::vector<WEBAUTHN_CREDENTIAL> result;
   for (const auto& credential : *credentials) {
     if (credential.credential_type() != CredentialType::kPublicKey) {
@@ -179,11 +175,7 @@ std::vector<WEBAUTHN_CREDENTIAL> ToWinCredentialVector(
 }
 
 std::vector<WEBAUTHN_CREDENTIAL_EX> ToWinCredentialExVector(
-    const base::Optional<std::vector<PublicKeyCredentialDescriptor>>&
-        credentials) {
-  if (!credentials) {
-    return {};
-  }
+    const std::vector<PublicKeyCredentialDescriptor>* credentials) {
   std::vector<WEBAUTHN_CREDENTIAL_EX> result;
   for (const auto& credential : *credentials) {
     if (credential.credential_type() != CredentialType::kPublicKey) {
@@ -208,18 +200,19 @@ CtapDeviceResponseCode WinErrorNameToCtapDeviceResponseCode(
   // See WebAuthNGetErrorName in <webauthn.h> for these string values.
   static base::flat_map<base::string16, CtapDeviceResponseCode>
       kResponseCodeMap({
-          {L"Success", CtapDeviceResponseCode::kSuccess},
+          {STRING16_LITERAL("Success"), CtapDeviceResponseCode::kSuccess},
           // This should be something else for GetAssertion but that currently
           // doesn't make a difference.
-          {L"InvalidStateError",
+          {STRING16_LITERAL("InvalidStateError"),
            CtapDeviceResponseCode::kCtap2ErrCredentialExcluded},
-          {L"ConstraintError",
+          {STRING16_LITERAL("ConstraintError"),
            CtapDeviceResponseCode::kCtap2ErrUnsupportedOption},
-          {L"NotSupportedError",
+          {STRING16_LITERAL("NotSupportedError"),
            CtapDeviceResponseCode::kCtap2ErrUnsupportedAlgorithm},
-          {L"NotAllowedError",
+          {STRING16_LITERAL("NotAllowedError"),
            CtapDeviceResponseCode::kCtap2ErrOperationDenied},
-          {L"UnknownError", CtapDeviceResponseCode::kCtap2ErrOther},
+          {STRING16_LITERAL("UnknownError"),
+           CtapDeviceResponseCode::kCtap2ErrOther},
       });
   return base::ContainsKey(kResponseCodeMap, error_name)
              ? kResponseCodeMap[error_name]

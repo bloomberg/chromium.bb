@@ -78,13 +78,17 @@ class WebSecurityPolicy {
       const WebURL& source_origin,
       const WebString& destination_protocol,
       const WebString& destination_host,
-      bool allow_destination_subdomains,
+      const uint16_t destination_port,
+      network::mojom::CorsDomainMatchMode domain_match_mode,
+      network::mojom::CorsPortMatchMode port_match_mode,
       const network::mojom::CorsOriginAccessMatchPriority priority);
   BLINK_EXPORT static void AddOriginAccessBlockListEntry(
       const WebURL& source_origin,
       const WebString& destination_protocol,
       const WebString& destination_host,
-      bool disallow_destination_subdomains,
+      const uint16_t destination_port,
+      network::mojom::CorsDomainMatchMode domain_match_mode,
+      network::mojom::CorsPortMatchMode port_match_mode,
       const network::mojom::CorsOriginAccessMatchPriority priority);
   BLINK_EXPORT static void ClearOriginAccessListForOrigin(
       const WebURL& source_origin);

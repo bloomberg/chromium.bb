@@ -39,12 +39,19 @@ class AXPlatformNodeTest : public testing::Test, public AXTreeManager {
             const ui::AXNodeData& node12 = ui::AXNodeData());
 
   // AXTreeManager implementation.
-  AXNode* GetNodeFromTree(ui::AXTreeID tree_id, int32_t node_id) override;
-  AXPlatformNodeDelegate* GetDelegate(AXTreeID tree_id,
-                                      int32_t node_id) override;
+  AXNode* GetNodeFromTree(const ui::AXTreeID tree_id,
+                          const int32_t node_id) const override;
+  AXPlatformNodeDelegate* GetDelegate(const AXTreeID tree_id,
+                                      const int32_t node_id) const override;
+  AXPlatformNodeDelegate* GetRootDelegate(
+      const AXTreeID tree_id) const override;
+  AXTreeID GetTreeID() const override;
+  AXTreeID GetParentTreeID() const override;
+  ui::AXNode* GetRootAsAXNode() const override;
+  ui::AXNode* GetParentNodeFromParentTreeAsAXNode() const override;
 
  protected:
-  AXNode* GetRootNode() { return tree_->root(); }
+  AXNode* GetRootNode() const { return tree_->root(); }
 
   AXTreeUpdate BuildTextField();
   AXTreeUpdate BuildTextFieldWithSelectionRange(int32_t start, int32_t stop);

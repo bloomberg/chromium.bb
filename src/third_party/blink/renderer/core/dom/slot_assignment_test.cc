@@ -68,7 +68,7 @@ void ConvertDeclarativeShadowDOMToShadowRoot(Element& element) {
 void RemoveWhiteSpaceOnlyTextNode(ContainerNode& container) {
   for (Node* descendant :
        CollectFromIterable(NodeTraversal::InclusiveDescendantsOf(container))) {
-    if (Text* text = ToTextOrNull(descendant)) {
+    if (auto* text = DynamicTo<Text>(descendant)) {
       if (text->ContainsOnlyWhitespaceOrEmpty())
         text->remove();
     } else if (Element* element = ToElementOrNull(descendant)) {

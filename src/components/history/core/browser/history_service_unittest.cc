@@ -59,8 +59,7 @@ class HistoryServiceTest : public testing::Test {
  public:
   HistoryServiceTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
-        query_url_success_(false) {}
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
   ~HistoryServiceTest() override {}
 
@@ -105,34 +104,19 @@ class HistoryServiceTest : public testing::Test {
     run_loop.Run();
   }
 
-  // Fills the query_url_row_ and query_url_visits_ structures with the
-  // information about the given URL and returns true. If the URL was not
-  // found, this will return false and those structures will not be changed.
+  // Fills the query_url_result_ structures with the information about the given
+  // URL and whether the operation succeeded or not.
   bool QueryURL(history::HistoryService* history, const GURL& url) {
     base::RunLoop run_loop;
     history_service_->QueryURL(
         url, true,
-        base::BindOnce(&HistoryServiceTest::SaveURLAndQuit,
-                       base::Unretained(this), run_loop.QuitClosure()),
+        base::BindLambdaForTesting([&](history::QueryURLResult result) {
+          query_url_result_ = std::move(result);
+          run_loop.Quit();
+        }),
         &tracker_);
     run_loop.Run();  // Will be exited in SaveURLAndQuit.
-    return query_url_success_;
-  }
-
-  // Callback for HistoryService::QueryURL.
-  void SaveURLAndQuit(base::OnceClosure done,
-                      bool success,
-                      const URLRow& url_row,
-                      const VisitVector& visits) {
-    query_url_success_ = success;
-    if (query_url_success_) {
-      query_url_row_ = url_row;
-      query_url_visits_ = visits;
-    } else {
-      query_url_row_ = URLRow();
-      query_url_visits_.clear();
-    }
-    std::move(done).Run();
+    return query_url_result_.success;
   }
 
   // Fills in saved_redirects_ with the redirect information for the given URL,
@@ -141,20 +125,16 @@ class HistoryServiceTest : public testing::Test {
     base::RunLoop run_loop;
     history_service_->QueryRedirectsFrom(
         url,
-        base::BindRepeating(&HistoryServiceTest::OnRedirectQueryComplete,
-                            base::Unretained(this), run_loop.QuitClosure()),
+        base::BindOnce(&HistoryServiceTest::OnRedirectQueryComplete,
+                       base::Unretained(this), run_loop.QuitClosure()),
         &tracker_);
     run_loop.Run();  // Will be exited in *QueryComplete.
   }
 
   // Callback for QueryRedirects.
   void OnRedirectQueryComplete(base::OnceClosure done,
-                               const history::RedirectList* redirects) {
-    saved_redirects_.clear();
-    if (!redirects->empty()) {
-      saved_redirects_.insert(
-          saved_redirects_.end(), redirects->begin(), redirects->end());
-    }
+                               history::RedirectList redirects) {
+    saved_redirects_ = std::move(redirects);
     std::move(done).Run();
   }
 
@@ -199,9 +179,7 @@ class HistoryServiceTest : public testing::Test {
   base::CancelableTaskTracker tracker_;
 
   // For saving URL info after a call to QueryURL
-  bool query_url_success_;
-  URLRow query_url_row_;
-  VisitVector query_url_visits_;
+  history::QueryURLResult query_url_result_;
 };
 
 TEST_F(HistoryServiceTest, AddPage) {
@@ -212,18 +190,20 @@ TEST_F(HistoryServiceTest, AddPage) {
       test_url, base::Time::Now(), nullptr, 0, GURL(), history::RedirectList(),
       ui::PAGE_TRANSITION_MANUAL_SUBFRAME, history::SOURCE_BROWSED, false);
   EXPECT_TRUE(QueryURL(history_service_.get(), test_url));
-  EXPECT_EQ(1, query_url_row_.visit_count());
-  EXPECT_EQ(0, query_url_row_.typed_count());
-  EXPECT_TRUE(query_url_row_.hidden());  // Hidden because of child frame.
+  EXPECT_EQ(1, query_url_result_.row.visit_count());
+  EXPECT_EQ(0, query_url_result_.row.typed_count());
+  EXPECT_TRUE(
+      query_url_result_.row.hidden());  // Hidden because of child frame.
 
   // Add the page once from the main frame (should unhide it).
   history_service_->AddPage(test_url, base::Time::Now(), nullptr, 0, GURL(),
                             history::RedirectList(), ui::PAGE_TRANSITION_LINK,
                             history::SOURCE_BROWSED, false);
   EXPECT_TRUE(QueryURL(history_service_.get(), test_url));
-  EXPECT_EQ(2, query_url_row_.visit_count());  // Added twice.
-  EXPECT_EQ(0, query_url_row_.typed_count());  // Never typed.
-  EXPECT_FALSE(query_url_row_.hidden());  // Because loaded in main frame.
+  EXPECT_EQ(2, query_url_result_.row.visit_count());  // Added twice.
+  EXPECT_EQ(0, query_url_result_.row.typed_count());  // Never typed.
+  EXPECT_FALSE(
+      query_url_result_.row.hidden());  // Because loaded in main frame.
 }
 
 TEST_F(HistoryServiceTest, AddRedirect) {
@@ -241,26 +221,26 @@ TEST_F(HistoryServiceTest, AddRedirect) {
   // The first page should be added once with a link visit type (because we set
   // LINK when we added the original URL, and a referrer of nowhere (0).
   EXPECT_TRUE(QueryURL(history_service_.get(), first_redirects[0]));
-  EXPECT_EQ(1, query_url_row_.visit_count());
-  ASSERT_EQ(1U, query_url_visits_.size());
-  int64_t first_visit = query_url_visits_[0].visit_id;
+  EXPECT_EQ(1, query_url_result_.row.visit_count());
+  ASSERT_EQ(1U, query_url_result_.visits.size());
+  int64_t first_visit = query_url_result_.visits[0].visit_id;
   EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
-      query_url_visits_[0].transition,
+      query_url_result_.visits[0].transition,
       ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
                                 ui::PAGE_TRANSITION_CHAIN_START)));
-  EXPECT_EQ(0, query_url_visits_[0].referring_visit);  // No referrer.
+  EXPECT_EQ(0, query_url_result_.visits[0].referring_visit);  // No referrer.
 
   // The second page should be a server redirect type with a referrer of the
   // first page.
   EXPECT_TRUE(QueryURL(history_service_.get(), first_redirects[1]));
-  EXPECT_EQ(1, query_url_row_.visit_count());
-  ASSERT_EQ(1U, query_url_visits_.size());
-  int64_t second_visit = query_url_visits_[0].visit_id;
+  EXPECT_EQ(1, query_url_result_.row.visit_count());
+  ASSERT_EQ(1U, query_url_result_.visits.size());
+  int64_t second_visit = query_url_result_.visits[0].visit_id;
   EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
-      query_url_visits_[0].transition,
+      query_url_result_.visits[0].transition,
       ui::PageTransitionFromInt(ui::PAGE_TRANSITION_SERVER_REDIRECT |
                                 ui::PAGE_TRANSITION_CHAIN_END)));
-  EXPECT_EQ(first_visit, query_url_visits_[0].referring_visit);
+  EXPECT_EQ(first_visit, query_url_result_.visits[0].referring_visit);
 
   // Check that the redirect finding function successfully reports it.
   saved_redirects_.clear();
@@ -285,17 +265,17 @@ TEST_F(HistoryServiceTest, AddRedirect) {
   // additional visit added, because it was a client redirect (normally it
   // would). We should only have 1 left over from the first sequence.
   EXPECT_TRUE(QueryURL(history_service_.get(), second_redirects[0]));
-  EXPECT_EQ(1, query_url_row_.visit_count());
+  EXPECT_EQ(1, query_url_result_.row.visit_count());
 
   // The final page should be set as a client redirect from the previous visit.
   EXPECT_TRUE(QueryURL(history_service_.get(), second_redirects[1]));
-  EXPECT_EQ(1, query_url_row_.visit_count());
-  ASSERT_EQ(1U, query_url_visits_.size());
+  EXPECT_EQ(1, query_url_result_.row.visit_count());
+  ASSERT_EQ(1U, query_url_result_.visits.size());
   EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
-      query_url_visits_[0].transition,
+      query_url_result_.visits[0].transition,
       ui::PageTransitionFromInt(ui::PAGE_TRANSITION_CLIENT_REDIRECT |
                                 ui::PAGE_TRANSITION_CHAIN_END)));
-  EXPECT_EQ(second_visit, query_url_visits_[0].referring_visit);
+  EXPECT_EQ(second_visit, query_url_result_.visits[0].referring_visit);
 }
 
 TEST_F(HistoryServiceTest, MakeIntranetURLsTyped) {
@@ -308,11 +288,11 @@ TEST_F(HistoryServiceTest, MakeIntranetURLsTyped) {
                             history::RedirectList(), ui::PAGE_TRANSITION_LINK,
                             history::SOURCE_BROWSED, false);
   EXPECT_TRUE(QueryURL(history_service_.get(), test_url));
-  EXPECT_EQ(1, query_url_row_.visit_count());
-  EXPECT_EQ(1, query_url_row_.typed_count());
-  ASSERT_EQ(1U, query_url_visits_.size());
-  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(query_url_visits_[0].transition,
-                                           ui::PAGE_TRANSITION_TYPED));
+  EXPECT_EQ(1, query_url_result_.row.visit_count());
+  EXPECT_EQ(1, query_url_result_.row.typed_count());
+  ASSERT_EQ(1U, query_url_result_.visits.size());
+  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(
+      query_url_result_.visits[0].transition, ui::PAGE_TRANSITION_TYPED));
 
   // Add more visits on the same host.  None of these should be promoted since
   // there is already a typed visit.
@@ -323,11 +303,11 @@ TEST_F(HistoryServiceTest, MakeIntranetURLsTyped) {
                             history::RedirectList(), ui::PAGE_TRANSITION_LINK,
                             history::SOURCE_BROWSED, false);
   EXPECT_TRUE(QueryURL(history_service_.get(), test_url2));
-  EXPECT_EQ(1, query_url_row_.visit_count());
-  EXPECT_EQ(0, query_url_row_.typed_count());
-  ASSERT_EQ(1U, query_url_visits_.size());
-  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(query_url_visits_[0].transition,
-                                           ui::PAGE_TRANSITION_LINK));
+  EXPECT_EQ(1, query_url_result_.row.visit_count());
+  EXPECT_EQ(0, query_url_result_.row.typed_count());
+  ASSERT_EQ(1U, query_url_result_.visits.size());
+  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(
+      query_url_result_.visits[0].transition, ui::PAGE_TRANSITION_LINK));
 
   // No path.
   const GURL test_url3("http://intranet_host/");
@@ -335,11 +315,11 @@ TEST_F(HistoryServiceTest, MakeIntranetURLsTyped) {
                             history::RedirectList(), ui::PAGE_TRANSITION_LINK,
                             history::SOURCE_BROWSED, false);
   EXPECT_TRUE(QueryURL(history_service_.get(), test_url3));
-  EXPECT_EQ(1, query_url_row_.visit_count());
-  EXPECT_EQ(0, query_url_row_.typed_count());
-  ASSERT_EQ(1U, query_url_visits_.size());
-  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(query_url_visits_[0].transition,
-                                           ui::PAGE_TRANSITION_LINK));
+  EXPECT_EQ(1, query_url_result_.row.visit_count());
+  EXPECT_EQ(0, query_url_result_.row.typed_count());
+  ASSERT_EQ(1U, query_url_result_.visits.size());
+  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(
+      query_url_result_.visits[0].transition, ui::PAGE_TRANSITION_LINK));
 
   // Different scheme.
   const GURL test_url4("https://intranet_host/");
@@ -347,11 +327,11 @@ TEST_F(HistoryServiceTest, MakeIntranetURLsTyped) {
                             history::RedirectList(), ui::PAGE_TRANSITION_LINK,
                             history::SOURCE_BROWSED, false);
   EXPECT_TRUE(QueryURL(history_service_.get(), test_url4));
-  EXPECT_EQ(1, query_url_row_.visit_count());
-  EXPECT_EQ(0, query_url_row_.typed_count());
-  ASSERT_EQ(1U, query_url_visits_.size());
-  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(query_url_visits_[0].transition,
-                                           ui::PAGE_TRANSITION_LINK));
+  EXPECT_EQ(1, query_url_result_.row.visit_count());
+  EXPECT_EQ(0, query_url_result_.row.typed_count());
+  ASSERT_EQ(1U, query_url_result_.visits.size());
+  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(
+      query_url_result_.visits[0].transition, ui::PAGE_TRANSITION_LINK));
 
   // Different transition.
   const GURL test_url5("http://intranet_host/another_path");
@@ -359,22 +339,23 @@ TEST_F(HistoryServiceTest, MakeIntranetURLsTyped) {
       test_url5, base::Time::Now(), nullptr, 0, GURL(), history::RedirectList(),
       ui::PAGE_TRANSITION_AUTO_BOOKMARK, history::SOURCE_BROWSED, false);
   EXPECT_TRUE(QueryURL(history_service_.get(), test_url5));
-  EXPECT_EQ(1, query_url_row_.visit_count());
-  EXPECT_EQ(0, query_url_row_.typed_count());
-  ASSERT_EQ(1U, query_url_visits_.size());
-  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(query_url_visits_[0].transition,
-                                           ui::PAGE_TRANSITION_AUTO_BOOKMARK));
+  EXPECT_EQ(1, query_url_result_.row.visit_count());
+  EXPECT_EQ(0, query_url_result_.row.typed_count());
+  ASSERT_EQ(1U, query_url_result_.visits.size());
+  EXPECT_TRUE(
+      ui::PageTransitionCoreTypeIs(query_url_result_.visits[0].transition,
+                                   ui::PAGE_TRANSITION_AUTO_BOOKMARK));
 
   // Original URL.
   history_service_->AddPage(test_url, base::Time::Now(), nullptr, 0, GURL(),
                             history::RedirectList(), ui::PAGE_TRANSITION_LINK,
                             history::SOURCE_BROWSED, false);
   EXPECT_TRUE(QueryURL(history_service_.get(), test_url));
-  EXPECT_EQ(2, query_url_row_.visit_count());
-  EXPECT_EQ(1, query_url_row_.typed_count());
-  ASSERT_EQ(2U, query_url_visits_.size());
-  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(query_url_visits_[1].transition,
-                                           ui::PAGE_TRANSITION_LINK));
+  EXPECT_EQ(2, query_url_result_.row.visit_count());
+  EXPECT_EQ(1, query_url_result_.row.typed_count());
+  ASSERT_EQ(2U, query_url_result_.visits.size());
+  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(
+      query_url_result_.visits[1].transition, ui::PAGE_TRANSITION_LINK));
 
   // A redirect chain with an intranet URL at the head should be promoted.
   history::RedirectList redirects1 = {GURL("http://intranet1/path"),
@@ -384,11 +365,11 @@ TEST_F(HistoryServiceTest, MakeIntranetURLsTyped) {
                             GURL(), redirects1, ui::PAGE_TRANSITION_LINK,
                             history::SOURCE_BROWSED, false);
   EXPECT_TRUE(QueryURL(history_service_.get(), redirects1.front()));
-  EXPECT_EQ(1, query_url_row_.visit_count());
-  EXPECT_EQ(1, query_url_row_.typed_count());
-  ASSERT_EQ(1U, query_url_visits_.size());
-  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(query_url_visits_[0].transition,
-                                           ui::PAGE_TRANSITION_TYPED));
+  EXPECT_EQ(1, query_url_result_.row.visit_count());
+  EXPECT_EQ(1, query_url_result_.row.typed_count());
+  ASSERT_EQ(1U, query_url_result_.visits.size());
+  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(
+      query_url_result_.visits[0].transition, ui::PAGE_TRANSITION_TYPED));
 
   // As should one with an intranet URL at the tail.
   history::RedirectList redirects2 = {GURL("http://first2.com/"),
@@ -398,11 +379,11 @@ TEST_F(HistoryServiceTest, MakeIntranetURLsTyped) {
                             GURL(), redirects2, ui::PAGE_TRANSITION_LINK,
                             history::SOURCE_BROWSED, false);
   EXPECT_TRUE(QueryURL(history_service_.get(), redirects2.back()));
-  EXPECT_EQ(1, query_url_row_.visit_count());
-  EXPECT_EQ(0, query_url_row_.typed_count());
-  ASSERT_EQ(1U, query_url_visits_.size());
-  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(query_url_visits_[0].transition,
-                                           ui::PAGE_TRANSITION_TYPED));
+  EXPECT_EQ(1, query_url_result_.row.visit_count());
+  EXPECT_EQ(0, query_url_result_.row.typed_count());
+  ASSERT_EQ(1U, query_url_result_.visits.size());
+  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(
+      query_url_result_.visits[0].transition, ui::PAGE_TRANSITION_TYPED));
 
   // But not one with an intranet URL in the middle.
   history::RedirectList redirects3 = {GURL("http://first3.com/"),
@@ -412,11 +393,11 @@ TEST_F(HistoryServiceTest, MakeIntranetURLsTyped) {
                             GURL(), redirects3, ui::PAGE_TRANSITION_LINK,
                             history::SOURCE_BROWSED, false);
   EXPECT_TRUE(QueryURL(history_service_.get(), redirects3[1]));
-  EXPECT_EQ(1, query_url_row_.visit_count());
-  EXPECT_EQ(0, query_url_row_.typed_count());
-  ASSERT_EQ(1U, query_url_visits_.size());
-  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(query_url_visits_[0].transition,
-                                           ui::PAGE_TRANSITION_LINK));
+  EXPECT_EQ(1, query_url_result_.row.visit_count());
+  EXPECT_EQ(0, query_url_result_.row.typed_count());
+  ASSERT_EQ(1U, query_url_result_.visits.size());
+  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(
+      query_url_result_.visits[0].transition, ui::PAGE_TRANSITION_LINK));
 }
 
 TEST_F(HistoryServiceTest, Typed) {
@@ -433,8 +414,8 @@ TEST_F(HistoryServiceTest, Typed) {
   EXPECT_TRUE(QueryURL(history_service_.get(), test_url));
 
   // We should have the same typed & visit count.
-  EXPECT_EQ(1, query_url_row_.visit_count());
-  EXPECT_EQ(1, query_url_row_.typed_count());
+  EXPECT_EQ(1, query_url_result_.row.visit_count());
+  EXPECT_EQ(1, query_url_result_.row.typed_count());
 
   // Add the page again not typed.
   history_service_->AddPage(
@@ -444,8 +425,8 @@ TEST_F(HistoryServiceTest, Typed) {
   EXPECT_TRUE(QueryURL(history_service_.get(), test_url));
 
   // The second time should not have updated the typed count.
-  EXPECT_EQ(2, query_url_row_.visit_count());
-  EXPECT_EQ(1, query_url_row_.typed_count());
+  EXPECT_EQ(2, query_url_result_.row.visit_count());
+  EXPECT_EQ(1, query_url_result_.row.typed_count());
 
   // Add the page again as a generated URL.
   history_service_->AddPage(
@@ -455,8 +436,8 @@ TEST_F(HistoryServiceTest, Typed) {
   EXPECT_TRUE(QueryURL(history_service_.get(), test_url));
 
   // This should have worked like a link click.
-  EXPECT_EQ(3, query_url_row_.visit_count());
-  EXPECT_EQ(1, query_url_row_.typed_count());
+  EXPECT_EQ(3, query_url_result_.row.visit_count());
+  EXPECT_EQ(1, query_url_result_.row.typed_count());
 
   // Add the page again as a reload.
   history_service_->AddPage(
@@ -466,8 +447,8 @@ TEST_F(HistoryServiceTest, Typed) {
   EXPECT_TRUE(QueryURL(history_service_.get(), test_url));
 
   // This should not have incremented any visit counts.
-  EXPECT_EQ(3, query_url_row_.visit_count());
-  EXPECT_EQ(1, query_url_row_.typed_count());
+  EXPECT_EQ(3, query_url_result_.row.visit_count());
+  EXPECT_EQ(1, query_url_result_.row.typed_count());
 }
 
 TEST_F(HistoryServiceTest, SetTitle) {
@@ -484,7 +465,7 @@ TEST_F(HistoryServiceTest, SetTitle) {
 
   // Make sure the title got set.
   EXPECT_TRUE(QueryURL(history_service_.get(), existing_url));
-  EXPECT_EQ(existing_title, query_url_row_.title());
+  EXPECT_EQ(existing_title, query_url_result_.row.title());
 
   // set a title on a nonexistent page
   const GURL nonexistent_url("http://news.google.com/");
@@ -493,7 +474,7 @@ TEST_F(HistoryServiceTest, SetTitle) {
 
   // Make sure nothing got written.
   EXPECT_FALSE(QueryURL(history_service_.get(), nonexistent_url));
-  EXPECT_EQ(base::string16(), query_url_row_.title());
+  EXPECT_EQ(base::string16(), query_url_result_.row.title());
 
   // TODO(brettw) this should also test redirects, which get the title of the
   // destination page.

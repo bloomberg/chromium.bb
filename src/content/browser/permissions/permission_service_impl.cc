@@ -88,6 +88,9 @@ bool PermissionDescriptorToPermissionType(
     case PermissionName::IDLE_DETECTION:
       *permission_type = PermissionType::IDLE_DETECTION;
       return true;
+    case PermissionName::PERIODIC_BACKGROUND_SYNC:
+      *permission_type = PermissionType::PERIODIC_BACKGROUND_SYNC;
+      return true;
   }
 
   NOTREACHED();

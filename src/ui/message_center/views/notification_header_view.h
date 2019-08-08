@@ -6,6 +6,7 @@
 #define UI_MESSAGE_CENTER_VIEWS_NOTIFICATION_HEADER_VIEW_H_
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/timer/timer.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/message_center/message_center_export.h"
@@ -22,6 +23,7 @@ namespace message_center {
 class MESSAGE_CENTER_EXPORT NotificationHeaderView : public views::Button {
  public:
   explicit NotificationHeaderView(views::ButtonListener* listener);
+  ~NotificationHeaderView() override;
   void SetAppIcon(const gfx::ImageSkia& img);
   void SetAppName(const base::string16& name);
   void SetAppNameElideBehavior(gfx::ElideBehavior elide_behavior);
@@ -33,6 +35,7 @@ class MESSAGE_CENTER_EXPORT NotificationHeaderView : public views::Button {
   void SetOverflowIndicator(int count);
 
   void SetTimestamp(base::Time timestamp);
+  void SetTimestampVisible(bool visible);
   void SetExpandButtonEnabled(bool enabled);
   void SetExpanded(bool expanded);
   void SetSettingsButtonEnabled(bool enabled);
@@ -49,7 +52,6 @@ class MESSAGE_CENTER_EXPORT NotificationHeaderView : public views::Button {
 
   void ClearAppIcon();
   void ClearProgress();
-  void ClearTimestamp();
   bool IsExpandButtonEnabled();
   void SetSubpixelRenderingEnabled(bool enabled);
 
@@ -81,6 +83,7 @@ class MESSAGE_CENTER_EXPORT NotificationHeaderView : public views::Button {
 
   // Timer that updates the timestamp over time.
   base::OneShotTimer timestamp_update_timer_;
+  base::Optional<base::Time> timestamp_;
 
   views::Label* app_name_view_ = nullptr;
   views::Label* summary_text_divider_ = nullptr;
@@ -92,7 +95,7 @@ class MESSAGE_CENTER_EXPORT NotificationHeaderView : public views::Button {
 
   bool settings_button_enabled_ = false;
   bool has_progress_ = false;
-  bool has_timestamp_ = false;
+  bool timestamp_visible_ = true;
   bool is_expanded_ = false;
   bool using_default_app_icon_ = false;
 

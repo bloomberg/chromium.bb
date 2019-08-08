@@ -60,18 +60,11 @@ cr.define('downloads', function() {
       'itemsChanged_(items_.*)',
     ],
 
-    listeners: {
-      'restore-focus-after-remove': 'onRestoreFocusAfterRemove_',
-    },
-
     /** @private {downloads.mojom.PageCallbackRouter} */
     mojoEventTarget_: null,
 
     /** @private {downloads.mojom.PageHandlerInterface} */
     mojoHandler_: null,
-
-    /** @private {boolean} */
-    restoreFocusAfterRemove_: false,
 
     /** @private {?downloads.SearchService} */
     searchService_: null,
@@ -88,6 +81,14 @@ cr.define('downloads', function() {
       this.mojoEventTarget_ = browserProxy.callbackRouter;
       this.mojoHandler_ = browserProxy.handler;
       this.searchService_ = downloads.SearchService.getInstance();
+
+      // Regular expression that captures the leading slash, the content and the
+      // trailing slash in three different groups.
+      const CANONICAL_PATH_REGEX = /(^\/)([\/-\w]+)(\/$)/;
+      const path = location.pathname.replace(CANONICAL_PATH_REGEX, '$1$2');
+      if (path !== '/') {  // There are no subpages in chrome://downloads.
+        window.history.replaceState(undefined /* stateObject */, '', '/');
+      }
     },
 
     /** @override */
@@ -102,12 +103,6 @@ cr.define('downloads', function() {
         this.mojoEventTarget_.updateItem.addListener(
             this.updateItem_.bind(this)),
       ];
-
-      // TODO(aee): Remove this conditional when the Polymer 2 migration
-      // is completed. Polymer.DomIf exists in Polymer 2 and not in Polymer 1.
-      if (typeof Polymer.DomIf == 'undefined') {
-        this.$.downloadsList.preserveFocus = false;
-      }
     },
 
     /** @override */
@@ -123,10 +118,6 @@ cr.define('downloads', function() {
 
     /** @private */
     hasDownloadsChanged_: function() {
-      if (loadTimeData.getBoolean('allowDeletingHistory')) {
-        this.$.toolbar.downloadsShowing = this.hasDownloads_;
-      }
-
       if (this.hasDownloads_) {
         this.$.downloadsList.fire('iron-resize');
       }
@@ -162,6 +153,12 @@ cr.define('downloads', function() {
     /** @private */
     itemsChanged_: function() {
       this.hasDownloads_ = this.items_.length > 0;
+      this.$.toolbar.hasClearableDownloads =
+          loadTimeData.getBoolean('allowDeletingHistory') &&
+          this.items_.some(
+              ({state}) => state != downloads.States.DANGEROUS &&
+                  state != downloads.States.IN_PROGRESS &&
+                  state != downloads.States.PAUSED);
 
       if (this.inSearchMode_) {
         Polymer.IronA11yAnnouncer.requestAvailability();
@@ -253,7 +250,6 @@ cr.define('downloads', function() {
      */
     removeItem_: function(index) {
       const removed = this.items_.splice(index, 1);
-      const removedFileName = removed[0].fileName;
       this.updateHideDates_(index, index);
       this.notifySplices('items_', [{
                            index: index,
@@ -262,31 +258,7 @@ cr.define('downloads', function() {
                            type: 'splice',
                            removed: removed,
                          }]);
-      const pieces = loadTimeData.getSubstitutedStringPieces(
-          loadTimeData.getString('toastRemovedFromList'), removedFileName);
-      pieces.forEach(p => {
-        // Make the file name collapsible.
-        p.collapsible = !!p.arg;
-      });
-      cr.toastManager.getInstance().showForStringPieces(pieces, true);
-      if (this.restoreFocusAfterRemove_) {
-        this.restoreFocusAfterRemove_ = false;
-        if (this.items_.length > 0) {
-          setTimeout(() => {
-            this.$.downloadsList.focusItem(index);
-            const item = getDeepActiveElement();
-            if (item) {
-              item.focusOnRemoveButton();
-            }
-          });
-        }
-      }
       this.onScroll_();
-    },
-
-    /** @private */
-    onRestoreFocusAfterRemove_: function() {
-      this.restoreFocusAfterRemove_ = true;
     },
 
     /** @private */
@@ -323,19 +295,7 @@ cr.define('downloads', function() {
       this.items_[index] = data;
       this.updateHideDates_(index, index);
 
-      // TODO(aee): Remove this conditional when the Polymer 2 migration
-      // is completed. Polymer.DomIf exists in Polymer 2 and not in Polymer 1.
-      if (Polymer.DomIf) {
-        this.notifyPath(`items_.${index}`);
-      } else {
-        this.notifySplices('items_', [{
-                             index: index,
-                             addedCount: 0,
-                             object: this.items_,
-                             type: 'splice',
-                             removed: [],
-                           }]);
-      }
+      this.notifyPath(`items_.${index}`);
       this.async(() => {
         const list = /** @type {!IronListElement} */ (this.$.downloadsList);
         list.updateSizeForIndex(index);

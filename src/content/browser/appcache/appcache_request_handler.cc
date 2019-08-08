@@ -19,7 +19,7 @@
 #include "content/browser/appcache/appcache_url_loader_job.h"
 #include "content/browser/appcache/appcache_url_loader_request.h"
 #include "content/browser/appcache/appcache_url_request_job.h"
-#include "content/common/navigation_subresource_loader_params.h"
+#include "content/browser/navigation_subresource_loader_params.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
 #include "services/network/public/cpp/features.h"

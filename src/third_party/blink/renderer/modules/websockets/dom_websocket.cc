@@ -363,9 +363,9 @@ void DOMWebSocket::Connect(const String& url,
     return;
   }
 
-  if (!ContentSecurityPolicy::ShouldBypassMainWorld(GetExecutionContext()) &&
-      !GetExecutionContext()->GetContentSecurityPolicy()->AllowConnectToSource(
-          url_)) {
+  if (!GetExecutionContext()
+           ->GetContentSecurityPolicyForWorld()
+           ->AllowConnectToSource(url_)) {
     state_ = kClosed;
 
     // Delay the event dispatch until after the current task by suspending and
@@ -680,7 +680,9 @@ void DOMWebSocket::ContextDestroyed(ExecutionContext*) {
   NETWORK_DVLOG(1) << "WebSocket " << this << " contextDestroyed()";
   event_queue_->ContextDestroyed();
   if (channel_) {
-    channel_->Close(WebSocketChannel::kCloseEventCodeGoingAway, String());
+    if (state_ == kOpen) {
+      channel_->Close(WebSocketChannel::kCloseEventCodeGoingAway, String());
+    }
     ReleaseChannel();
   }
   if (state_ != kClosed)

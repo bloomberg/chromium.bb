@@ -12,7 +12,8 @@
 
 namespace blink {
 
-void TransitionKeyframe::SetCompositorValue(AnimatableValue* compositor_value) {
+void TransitionKeyframe::SetCompositorValue(
+    CompositorKeyframeValue* compositor_value) {
   DCHECK_EQ(property_.GetCSSProperty().IsCompositableProperty(),
             static_cast<bool>(compositor_value));
   compositor_value_ = compositor_value;

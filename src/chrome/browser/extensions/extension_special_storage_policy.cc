@@ -15,6 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/task_traits.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -70,9 +71,8 @@ void LogHostedAppUnlimitedStorageUsage(
     // We only have to query for kStorageTypePersistent data usage, because apps
     // cannot ask for any more temporary storage, according to
     // https://developers.google.com/chrome/whitepapers/storage.
-    BrowserThread::PostAfterStartupTask(
-        FROM_HERE,
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO, base::TaskPriority::BEST_EFFORT},
         base::BindOnce(&storage::QuotaManager::GetUsageAndQuotaForWebApps,
                        partition->GetQuotaManager(),
                        url::Origin::Create(launch_url),

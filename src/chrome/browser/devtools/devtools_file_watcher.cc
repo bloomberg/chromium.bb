@@ -94,7 +94,7 @@ bool DevToolsFileWatcher::SharedFileWatcher::OnMemoryDump(
                          sizeof(base::FilePath::StringType::value_type);
     }
     auto* dump = process_memory_dump->CreateAllocatorDump(
-        base::StringPrintf("devtools/file_watcher_%d", index++));
+        base::StringPrintf("devtools/file_watcher_0x%x", index++));
     dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameObjectCount,
                     base::trace_event::MemoryAllocatorDump::kUnitsObjects,
                     file_path.second.size());

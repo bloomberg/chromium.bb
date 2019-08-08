@@ -95,7 +95,7 @@ class DialInternalMessageUtil final {
   ~DialInternalMessageUtil();
 
   // Returns |true| if |message| is a valid STOP_SESSION message.
-  bool IsStopSessionMessage(const DialInternalMessage& message) const;
+  static bool IsStopSessionMessage(const DialInternalMessage& message);
 
   // Returns a NEW_SESSION message to be sent to the page when the user requests
   // an app launch.

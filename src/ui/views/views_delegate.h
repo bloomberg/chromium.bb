@@ -40,8 +40,6 @@ class NonClientFrameView;
 class Widget;
 
 #if defined(USE_AURA)
-class DesktopNativeWidgetAura;
-class DesktopWindowTreeHost;
 class TouchSelectionMenuRunnerViews;
 #endif
 
@@ -60,14 +58,6 @@ class VIEWS_EXPORT ViewsDelegate {
   using NativeWidgetFactory =
       base::RepeatingCallback<NativeWidget*(const Widget::InitParams&,
                                             internal::NativeWidgetDelegate*)>;
-#if defined(USE_AURA)
-  using DesktopWindowTreeHostFactory =
-      base::RepeatingCallback<std::unique_ptr<DesktopWindowTreeHost>(
-          const Widget::InitParams&,
-          internal::NativeWidgetDelegate*,
-          DesktopNativeWidgetAura*)>;
-#endif
-
 #if defined(OS_WIN)
   enum AppbarAutohideEdge {
     EDGE_TOP    = 1 << 0,
@@ -89,7 +79,9 @@ class VIEWS_EXPORT ViewsDelegate {
 
   virtual ~ViewsDelegate();
 
-  // Returns the ViewsDelegate instance if there is one, or nullptr otherwise.
+  // Returns the ViewsDelegate instance.  This should never return non-null
+  // unless the binary has not yet initialized the delegate, so callers should
+  // not generally null-check.
   static ViewsDelegate* GetInstance();
 
   // Call this method to set a factory callback that will be used to construct
@@ -101,15 +93,6 @@ class VIEWS_EXPORT ViewsDelegate {
     return native_widget_factory_;
   }
 
-#if defined(USE_AURA)
-  void set_desktop_window_tree_host_factory(
-      DesktopWindowTreeHostFactory factory) {
-    desktop_window_tree_host_factory_ = std::move(factory);
-  }
-  const DesktopWindowTreeHostFactory& desktop_window_tree_host_factory() const {
-    return desktop_window_tree_host_factory_;
-  }
-#endif
   // Saves the position, size and "show" state for the window with the
   // specified name.
   virtual void SaveWindowPlacement(const Widget* widget,
@@ -160,6 +143,9 @@ class VIEWS_EXPORT ViewsDelegate {
   // ensure we don't attempt to exit while a menu is showing.
   virtual void AddRef();
   virtual void ReleaseRef();
+  // Returns true if the application is shutting down. AddRef/Release should not
+  // be called in this situation.
+  virtual bool IsShuttingDown() const;
 
   // Gives the platform a chance to modify the properties of a Widget.
   virtual void OnBeforeWidgetInit(Widget::InitParams* params,
@@ -205,8 +191,6 @@ class VIEWS_EXPORT ViewsDelegate {
 
 #if defined(USE_AURA)
   std::unique_ptr<TouchSelectionMenuRunnerViews> touch_selection_menu_runner_;
-
-  DesktopWindowTreeHostFactory desktop_window_tree_host_factory_;
 #endif
 
   NativeWidgetFactory native_widget_factory_;

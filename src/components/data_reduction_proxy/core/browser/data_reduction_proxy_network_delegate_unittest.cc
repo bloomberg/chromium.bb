@@ -245,23 +245,6 @@ class TestLoFiDecider : public LoFiDecider {
   bool ignore_is_using_data_reduction_proxy_check_;
 };
 
-class TestLoFiUIService : public LoFiUIService {
- public:
-  TestLoFiUIService() : on_lofi_response_(false) {}
-  ~TestLoFiUIService() override {}
-
-  bool DidNotifyLoFiResponse() const { return on_lofi_response_; }
-
-  void OnLoFiReponseReceived(const net::URLRequest& request) override {
-    on_lofi_response_ = true;
-  }
-
-  void ClearResponse() { on_lofi_response_ = false; }
-
- private:
-  bool on_lofi_response_;
-};
-
 class TestResourceTypeProvider : public ResourceTypeProvider {
  public:
   void SetContentType(const net::URLRequest& request) override {}
@@ -290,7 +273,6 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
  public:
   DataReductionProxyNetworkDelegateTest()
       : lofi_decider_(nullptr),
-        lofi_ui_service_(nullptr),
         ssl_socket_data_provider_(net::ASYNC, net::OK) {
     ssl_socket_data_provider_.next_proto = net::kProtoHTTP11;
     ssl_socket_data_provider_.ssl_info.cert = net::ImportCertFromFile(
@@ -338,10 +320,6 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     std::unique_ptr<TestLoFiDecider> lofi_decider(new TestLoFiDecider());
     lofi_decider_ = lofi_decider.get();
     test_context_->io_data()->set_lofi_decider(std::move(lofi_decider));
-
-    std::unique_ptr<TestLoFiUIService> lofi_ui_service(new TestLoFiUIService());
-    lofi_ui_service_ = lofi_ui_service.get();
-    test_context_->io_data()->set_lofi_ui_service(std::move(lofi_ui_service));
 
     context_->Init();
 
@@ -431,12 +409,6 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     EXPECT_EQ(expected_data_reduction_proxy_used && expected_lofi_used,
               header_value.find("empty-image") != std::string::npos);
   }
-
-  void VerifyDidNotifyLoFiResponse(bool lofi_response) const {
-    EXPECT_EQ(lofi_response, lofi_ui_service_->DidNotifyLoFiResponse());
-  }
-
-  void ClearLoFiUIService() { lofi_ui_service_->ClearResponse(); }
 
   void VerifyDataReductionProxyData(const net::URLRequest& request,
                                     bool data_reduction_proxy_used,
@@ -690,7 +662,6 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
   std::unique_ptr<net::URLRequestContextStorage> context_storage_;
 
   TestLoFiDecider* lofi_decider_;
-  TestLoFiUIService* lofi_ui_service_;
   std::unique_ptr<DataReductionProxyTestContext> test_context_;
 
   net::SSLSocketDataProvider ssl_socket_data_provider_;
@@ -1321,7 +1292,6 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
        NonServerLoFiResponseDoesNotTriggerInfobar) {
   Init(USE_INSECURE_PROXY);
 
-  ClearLoFiUIService();
   lofi_decider()->SetIsUsingClientLoFi(false);
   std::string response_headers =
       "HTTP/1.1 200 OK\r\n"
@@ -1334,14 +1304,12 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
       FetchURLRequest(GURL(kTestURL), nullptr, response_headers, 140, 0);
 
   EXPECT_FALSE(DataReductionProxyData::GetData(*request)->lofi_received());
-  VerifyDidNotifyLoFiResponse(false);
 }
 
 TEST_F(DataReductionProxyNetworkDelegateTest,
        ServerLoFiResponseDoesTriggerInfobar) {
   Init(USE_INSECURE_PROXY);
 
-  ClearLoFiUIService();
   lofi_decider()->SetIsUsingClientLoFi(false);
   std::string response_headers =
       "HTTP/1.1 200 OK\r\n"
@@ -1355,86 +1323,6 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
       FetchURLRequest(GURL(kTestURL), nullptr, response_headers, 140, 0);
 
   EXPECT_TRUE(DataReductionProxyData::GetData(*request)->lofi_received());
-  VerifyDidNotifyLoFiResponse(true);
-}
-
-TEST_F(DataReductionProxyNetworkDelegateTest,
-       NonClientLoFiResponseDoesNotTriggerInfobar) {
-  Init(USE_INSECURE_PROXY);
-
-  ClearLoFiUIService();
-  lofi_decider()->SetIsUsingClientLoFi(false);
-
-  FetchURLRequest(GURL(kTestURL), nullptr,
-                  "HTTP/1.1 206 Partial Content\r\n"
-                  "Date: Wed, 28 Nov 2007 09:40:09 GMT\r\n"
-                  "Expires: Mon, 24 Nov 2014 12:45:26 GMT\r\n"
-                  "Via: 1.1 Chrome-Compression-Proxy\r\n"
-                  "Content-Range: bytes 0-139/2048\r\n\r\n",
-                  140, 0);
-
-  VerifyDidNotifyLoFiResponse(false);
-}
-
-TEST_F(DataReductionProxyNetworkDelegateTest,
-       ClientLoFiCompleteResponseDoesNotTriggerInfobar) {
-  Init(USE_INSECURE_PROXY);
-
-  const char* const test_response_headers[] = {
-      "HTTP/1.1 200 OK\r\n"
-      "Date: Wed, 28 Nov 2007 09:40:09 GMT\r\n"
-      "Expires: Mon, 24 Nov 2014 12:45:26 GMT\r\n"
-      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-
-      "HTTP/1.1 204 No Content\r\n"
-      "Date: Wed, 28 Nov 2007 09:40:09 GMT\r\n"
-      "Expires: Mon, 24 Nov 2014 12:45:26 GMT\r\n"
-      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-
-      "HTTP/1.1 404 Not Found\r\n"
-      "Date: Wed, 28 Nov 2007 09:40:09 GMT\r\n"
-      "Expires: Mon, 24 Nov 2014 12:45:26 GMT\r\n"
-      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-
-      "HTTP/1.1 206 Partial Content\r\n"
-      "Date: Wed, 28 Nov 2007 09:40:09 GMT\r\n"
-      "Expires: Mon, 24 Nov 2014 12:45:26 GMT\r\n"
-      "Via: 1.1 Chrome-Compression-Proxy\r\n"
-      "Content-Range: bytes 0-139/140\r\n\r\n",
-  };
-
-  for (const char* headers : test_response_headers) {
-    ClearLoFiUIService();
-    lofi_decider()->SetIsUsingClientLoFi(true);
-    FetchURLRequest(GURL(kTestURL), nullptr, headers, 140, 0);
-    VerifyDidNotifyLoFiResponse(false);
-  }
-}
-
-TEST_F(DataReductionProxyNetworkDelegateTest,
-       ClientLoFiPartialRangeDoesTriggerInfobar) {
-  Init(USE_INSECURE_PROXY);
-
-  const char* const test_response_headers[] = {
-      "HTTP/1.1 206 Partial Content\r\n"
-      "Date: Wed, 28 Nov 2007 09:40:09 GMT\r\n"
-      "Expires: Mon, 24 Nov 2014 12:45:26 GMT\r\n"
-      "Via: 1.1 Chrome-Compression-Proxy\r\n"
-      "Content-Range: bytes 0-139/2048\r\n\r\n",
-
-      "HTTP/1.1 206 Partial Content\r\n"
-      "Date: Wed, 28 Nov 2007 09:40:09 GMT\r\n"
-      "Expires: Mon, 24 Nov 2014 12:45:26 GMT\r\n"
-      "Via: 1.1 Chrome-Compression-Proxy\r\n"
-      "Content-Range: bytes 5-144/145\r\n\r\n",
-  };
-
-  for (const char* headers : test_response_headers) {
-    ClearLoFiUIService();
-    lofi_decider()->SetIsUsingClientLoFi(true);
-    FetchURLRequest(GURL(kTestURL), nullptr, headers, 140, 0);
-    VerifyDidNotifyLoFiResponse(true);
-  }
 }
 
 TEST_F(DataReductionProxyNetworkDelegateTest,
@@ -1860,11 +1748,10 @@ TEST_F(DataReductionProxyNetworkDelegateClientLoFiTest, DataSavingsThroughDRP) {
 
   // Since the Data Reduction Proxy is enabled, the length of the raw headers
   // should be used in the estimated original size. The X-OCL should be ignored.
-  EXPECT_EQ(static_cast<int64_t>(net::HttpUtil::AssembleRawHeaders(
-                                     kHeaders, sizeof(kHeaders) - 1)
-                                     .size() +
-                                 10000 - request->GetTotalReceivedBytes()),
-            GetSavings());
+  EXPECT_EQ(
+      static_cast<int64_t>(net::HttpUtil::AssembleRawHeaders(kHeaders).size() +
+                           10000 - request->GetTotalReceivedBytes()),
+      GetSavings());
 }
 
 TEST_F(DataReductionProxyNetworkDelegateTest, TestAcceptTransformHistogram) {

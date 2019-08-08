@@ -83,7 +83,6 @@ class VIZ_SERVICE_EXPORT ProgramKey {
   static ProgramKey Tile(TexCoordPrecision precision,
                          SamplerType sampler,
                          AAMode aa_mode,
-                         SwizzleMode swizzle_mode,
                          PremultipliedAlphaMode premultiplied_alpha,
                          bool is_opaque,
                          bool has_tex_clamp_rect,
@@ -136,7 +135,6 @@ class VIZ_SERVICE_EXPORT ProgramKey {
   SamplerType sampler_ = SAMPLER_TYPE_NA;
   BlendMode blend_mode_ = BLEND_MODE_NONE;
   AAMode aa_mode_ = NO_AA;
-  SwizzleMode swizzle_mode_ = NO_SWIZZLE;
   bool is_opaque_ = false;
 
   PremultipliedAlphaMode premultiplied_alpha_ = PREMULTIPLIED_ALPHA;
@@ -166,7 +164,6 @@ struct ProgramKeyHash {
            (static_cast<size_t>(key.sampler_) << 6) ^
            (static_cast<size_t>(key.blend_mode_) << 9) ^
            (static_cast<size_t>(key.aa_mode_) << 15) ^
-           (static_cast<size_t>(key.swizzle_mode_) << 16) ^
            (static_cast<size_t>(key.is_opaque_) << 17) ^
            (static_cast<size_t>(key.premultiplied_alpha_) << 19) ^
            (static_cast<size_t>(key.has_background_color_) << 20) ^
@@ -194,7 +191,6 @@ class VIZ_SERVICE_EXPORT Program : public ProgramBindingBase {
     fragment_shader_.blend_mode_ = key.blend_mode_;
     fragment_shader_.tex_coord_precision_ = key.precision_;
     fragment_shader_.sampler_type_ = key.sampler_;
-    fragment_shader_.swizzle_mode_ = key.swizzle_mode_;
     fragment_shader_.premultiply_alpha_mode_ = key.premultiplied_alpha_;
     fragment_shader_.mask_mode_ = key.mask_mode_;
     fragment_shader_.mask_for_background_ = key.mask_for_background_;
@@ -372,7 +368,7 @@ class VIZ_SERVICE_EXPORT Program : public ProgramBindingBase {
     } else {
       // TODO(ccameron): This branch shouldn't be needed (this is always
       // BLEND_MODE_NONE).
-      if (key.aa_mode_ == NO_AA && key.swizzle_mode_ == NO_SWIZZLE)
+      if (key.aa_mode_ == NO_AA)
         fragment_shader_.frag_color_mode_ = FRAG_COLOR_MODE_APPLY_BLEND_MODE;
       fragment_shader_.has_uniform_alpha_ = true;
     }

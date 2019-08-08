@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
 
 namespace autofill {

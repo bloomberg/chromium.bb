@@ -556,3 +556,41 @@ testcase.transferDragAndHover = async () => {
           'fakeDragAndDrop', appId, [src, dst1, skipDrop]),
       'fakeDragAndDrop failed');
 };
+
+/**
+ * Tests that copying a deleted file shows an error.
+ */
+testcase.transferDeletedFile = async () => {
+  const entry = ENTRIES.hello;
+
+  // Open files app.
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, [entry], []);
+
+  // Select the file.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'selectFile', appId, [entry.nameText]));
+
+  // Copy the file.
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('execCommand', appId, ['copy']));
+
+  // Delete the file.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'deleteFile', appId, [entry.nameText]));
+
+  // Confirm deletion.
+  await waitAndAcceptDialog(appId);
+
+  // Paste the file.
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('execCommand', appId, ['paste']));
+
+  // Wait for the progress center to display.
+  await remoteCall.waitForElement(appId, '#progress-center:not([hidden])');
+
+  // Check that the error appears in the progress center.
+  const element =
+      await remoteCall.waitForElement(appId, '.progress-frame label');
+  chrome.test.assertEq(
+      `Whoops, ${entry.nameText} no longer exists.`, element.text);
+};

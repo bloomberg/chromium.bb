@@ -16,7 +16,7 @@ namespace blink {
 
 class TaskWorkletMessagingProxy final : public ThreadedWorkletMessagingProxy {
  public:
-  TaskWorkletMessagingProxy(ExecutionContext* context)
+  explicit TaskWorkletMessagingProxy(ExecutionContext* context)
       : ThreadedWorkletMessagingProxy(context) {}
   ~TaskWorkletMessagingProxy() override = default;
 
@@ -52,6 +52,12 @@ Task* TaskWorklet::postTask(ScriptState* script_state,
                             V8Function* function,
                             const Vector<ScriptValue>& arguments,
                             ExceptionState& exception_state) {
+  if (!GetExecutionContext() || GetExecutionContext()->IsContextDestroyed()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "This frame is already detached");
+    return nullptr;
+  }
+
   // TODO(japhet): Here and below: it's unclear what task type should be used,
   // and whether the API should allow it to be configured. Using kIdleTask as a
   // placeholder for now.
@@ -67,6 +73,12 @@ Task* TaskWorklet::postTask(ScriptState* script_state,
                             const String& function_name,
                             const Vector<ScriptValue>& arguments,
                             ExceptionState& exception_state) {
+  if (!GetExecutionContext() || GetExecutionContext()->IsContextDestroyed()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "This frame is already detached");
+    return nullptr;
+  }
+
   Task* task =
       MakeGarbageCollected<Task>(script_state, this, function_name, arguments,
                                  TaskType::kIdleTask, exception_state);

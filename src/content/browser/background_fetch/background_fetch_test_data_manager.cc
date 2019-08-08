@@ -7,6 +7,7 @@
 #include "base/run_loop.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
+#include "content/browser/cache_storage/legacy/legacy_cache_storage_manager.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -69,9 +70,10 @@ void BackgroundFetchTestDataManager::InitializeOnIOThread() {
   quota_manager_proxy_ =
       base::MakeRefCounted<MockBGFQuotaManagerProxy>(mock_quota_manager_.get());
 
-  cache_manager_ = CacheStorageManager::Create(
+  cache_manager_ = LegacyCacheStorageManager::Create(
       storage_partition_->GetPath(), base::ThreadTaskRunnerHandle::Get(),
-      quota_manager_proxy_);
+      base::ThreadTaskRunnerHandle::Get(), quota_manager_proxy_,
+      base::MakeRefCounted<CacheStorageContextImpl::ObserverList>());
   DCHECK(cache_manager_);
 
   cache_manager_->SetBlobParametersForCache(

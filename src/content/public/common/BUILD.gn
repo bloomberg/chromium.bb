@@ -178,7 +178,6 @@ jumbo_source_set("common_sources") {
     "process_type.h",
     "profiling.cc",
     "profiling.h",
-    "push_subscription_options.h",
     "referrer.cc",
     "referrer.h",
     "referrer_type_converters.cc",
@@ -244,7 +243,7 @@ jumbo_source_set("common_sources") {
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
     "//third_party/blink/public:blink_headers",
-    "//third_party/blink/public:mojo_bindings",
+    "//third_party/blink/public/mojom:mojom_platform_headers",
     "//ui/accessibility",
     "//ui/surface",
     "//url/ipc:url_ipc",
@@ -365,7 +364,6 @@ mojom("interfaces") {
     "drop_data.mojom",
     "fullscreen_video_element.mojom",
     "load_timing_info.mojom",
-    "push_messaging_status.mojom",
     "resource_load_info.mojom",
     "resource_usage_reporter.mojom",
     "transferrable_url_loader.mojom",
@@ -383,22 +381,10 @@ mojom("interfaces") {
     "//services/network/public/mojom",
     "//services/network/public/mojom:mojom_ip_address",
     "//services/network/public/mojom:websocket_mojom",
-    "//third_party/blink/public:mojo_bindings",
     "//ui/accessibility:ax_enums_mojo",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",
   ]
-
-  if (is_mac) {
-    sources += [
-      "ns_view_bridge_factory.mojom",
-      "web_contents_ns_view_bridge.mojom",
-    ]
-    public_deps += [
-      "//ui/gfx/geometry/mojo",
-      "//ui/gfx/image/mojo:interfaces",
-    ]
-  }
 
   component_output_prefix = "content_public_common_mojo_bindings"
   export_class_attribute = "CONTENT_EXPORT"

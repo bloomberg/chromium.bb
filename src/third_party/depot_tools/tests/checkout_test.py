@@ -5,6 +5,8 @@
 
 """Unit tests for checkout.py."""
 
+from __future__ import print_function
+
 import logging
 import os
 import shutil
@@ -129,7 +131,7 @@ class BaseTest(fake_repos.FakeReposTestBase):
     try:
       co.apply_patch([patch.FilePatchDiff('chrome/file.cc', BAD_PATCH, [])])
       self.fail()
-    except checkout.PatchApplicationFailed, e:
+    except checkout.PatchApplicationFailed as e:
       self.assertEquals(e.filename, 'chrome/file.cc')
       self.assertEquals(e.status, err_msg)
 
@@ -275,7 +277,7 @@ class GitBaseTest(BaseTest):
     return tree
 
   def _test_prepare(self, co):
-    print co.prepare(None)
+    print(co.prepare(None))
 
 
 class GitCheckout(GitBaseTest):

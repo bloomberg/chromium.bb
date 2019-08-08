@@ -136,7 +136,7 @@ void Surface::postSwap(const gl::Context *context)
     if (mRobustResourceInitialization && mSwapBehavior != EGL_BUFFER_PRESERVED)
     {
         mInitState = gl::InitState::MayNeedInit;
-        onStateChange(context, angle::SubjectMessage::STORAGE_CHANGED);
+        onStateChange(context, angle::SubjectMessage::SubjectChanged);
     }
 }
 
@@ -177,14 +177,17 @@ Error Surface::initialize(const Display *display)
     return NoError();
 }
 
-Error Surface::setIsCurrent(const gl::Context *context, bool isCurrent)
+Error Surface::makeCurrent(const gl::Context *context)
 {
-    if (isCurrent)
-    {
-        mRefCount++;
-        return NoError();
-    }
+    ANGLE_TRY(mImplementation->makeCurrent(context));
 
+    mRefCount++;
+    return NoError();
+}
+
+Error Surface::unMakeCurrent(const gl::Context *context)
+{
+    ANGLE_TRY(mImplementation->unMakeCurrent(context));
     return releaseRef(context->getDisplay());
 }
 

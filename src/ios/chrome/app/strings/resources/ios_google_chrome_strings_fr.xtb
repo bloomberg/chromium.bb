@@ -1,11 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr">
+<translation id="1282031177488366470">Contribuer à l'amélioration des fonctionnalités et des performances de Chrome</translation>
 <translation id="1326317727527857210">Connectez-vous à Chrome pour accéder à vos onglets sur vos autres appareils.</translation>
+<translation id="1682483655351012182">Synchroniser vos données Chrome</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Avis de confidentialité Google Chrome</translation>
 <translation id="1863312987075920112">En utilisant cette application, vous acceptez les <ph name="BEGIN_LINK_TOS" />Conditions d'utilisation<ph name="END_LINK_TOS" /> et l'<ph name="BEGIN_LINK_PRIVACY" />Avis de confidentialité<ph name="END_LINK_PRIVACY" /> de Chrome.</translation>
-<translation id="1984705450038014246">Synchroniser vos données Chrome</translation>
 <translation id="2147651015520127414">Chrome a confirmé que le certificat de ce site Web a bien été émis par <ph name="ISSUER" />.</translation>
 <translation id="2199719347983604670">Données de la synchronisation Chrome</translation>
 <translation id="2342981853652716282">Connectez-vous à Chrome pour accéder à vos favoris, mots de passe et bien plus sur tous vos appareils.</translation>
@@ -26,7 +27,6 @@
 <translation id="4099578267706723511">Envoyer des statistiques d'utilisation et des rapports d'erreur pour améliorer Chrome</translation>
 <translation id="415767770115540173">Améliorez votre expérience Google dans Chrome grâce à votre position.</translation>
 <translation id="424864128008805179">Se déconnecter de Chrome ?</translation>
-<translation id="447252321002412580">Contribuer à l'amélioration des fonctionnalités et des performances de Chrome</translation>
 <translation id="4523886039239821078">Certains modules complémentaires entraînent le plantage de Chrome. Veuillez les désinstaller.</translation>
 <translation id="4615174829807303908">Vous vous déconnectez d'un compte géré par <ph name="SIGNOUT_MANAGED_DOMAIN" />. Cette opération entraînera la suppression de vos données Chrome de cet appareil, mais celles-ci seront conservées dans votre compte Google.</translation>
 <translation id="5389212809648216794">Google Chrome ne peut pas utiliser l'appareil photo, car celui-ci est utilisé par une autre application</translation>

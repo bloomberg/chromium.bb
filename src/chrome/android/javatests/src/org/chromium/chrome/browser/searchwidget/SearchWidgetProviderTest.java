@@ -108,7 +108,7 @@ public class SearchWidgetProviderTest {
 
     @Before
     public void setUp() throws Exception {
-        ApplicationTestUtils.setUp(InstrumentationRegistry.getTargetContext(), true);
+        ApplicationTestUtils.setUp(InstrumentationRegistry.getTargetContext());
         SearchActivity.setDelegateForTests(new TestSearchDelegate());
 
         mContext = new TestContext();

@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -105,7 +104,7 @@ class PrefStoreReadObserver : public PrefStore::Observer {
 
   void OnInitializationCompleted(bool succeeded) override {
     if (!stop_waiting_.is_null()) {
-      base::ResetAndReturn(&stop_waiting_).Run();
+      std::move(stop_waiting_).Run();
     }
   }
 

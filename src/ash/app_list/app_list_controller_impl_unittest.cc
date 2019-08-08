@@ -17,14 +17,17 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
+#include "ash/system/unified/unified_system_tray_test_api.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "base/strings/string16.cc"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/message_center/message_center.h"
+#include "ui/message_center/views/message_popup_view.h"
 
 namespace ash {
 
@@ -49,7 +52,7 @@ bool GetExpandArrowViewVisibility() {
       ->app_list_main_view()
       ->contents_view()
       ->expand_arrow_view()
-      ->visible();
+      ->GetVisible();
 }
 
 app_list::SearchBoxView* GetSearchBoxView() {
@@ -79,6 +82,11 @@ void DismissAppListNow() {
 
 aura::Window* GetAppListViewNativeWindow() {
   return GetAppListView()->get_fullscreen_widget_for_test()->GetNativeView();
+}
+
+void SetSearchText(AppListControllerImpl* controller, const std::string& text) {
+  controller->GetSearchModel()->search_box()->Update(base::ASCIIToUTF16(text),
+                                                     false);
 }
 
 }  // namespace
@@ -116,7 +124,7 @@ TEST_F(AppListControllerImplTest, UpdateExpandArrowViewVisibility) {
       ->home_screen_controller()
       ->home_launcher_gesture_handler()
       ->ShowHomeLauncher(display::Screen::GetScreen()->GetPrimaryDisplay());
-  EXPECT_EQ(mojom::WindowStateType::MINIMIZED,
+  EXPECT_EQ(WindowStateType::kMinimized,
             wm::GetWindowState(w1.get())->GetStateType());
   EXPECT_TRUE(GetExpandArrowViewVisibility());
 
@@ -154,8 +162,7 @@ TEST_F(AppListControllerImplTest, HideRoundingCorners) {
       GetAppListView()->get_fullscreen_widget_for_test()->GetNativeView();
   gfx::Rect app_list_screen_bounds = native_window->GetBoundsInScreen();
   EXPECT_EQ(0, app_list_screen_bounds.y());
-  EXPECT_EQ(ash::mojom::AppListViewState::kHalf,
-            GetAppListView()->app_list_state());
+  EXPECT_EQ(ash::AppListViewState::kHalf, GetAppListView()->app_list_state());
   gfx::Transform expected_transform;
   expected_transform.Translate(0, -app_list::kAppListBackgroundRadius);
   EXPECT_EQ(
@@ -200,11 +207,11 @@ TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenVKeyboardEnabled) {
   // the PEEKING state.
   ShowAppListNow();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(ash::mojom::AppListViewState::kPeeking,
+  EXPECT_EQ(ash::AppListViewState::kPeeking,
             GetAppListView()->app_list_state());
   EXPECT_EQ(nullptr, GetVirtualKeyboardWindow());
   EXPECT_EQ(GetAppListView()->GetPreferredWidgetBoundsForState(
-                ash::mojom::AppListViewState::kPeeking),
+                ash::AppListViewState::kPeeking),
             GetAppListViewNativeWindow()->bounds());
 }
 
@@ -236,11 +243,52 @@ TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenDismissVKeyboard) {
   // (1) AppListView's state is FULLSCREEN_SEARCH
   // (2) AppListView's bounds are the same as the preferred bounds for
   // the FULLSCREEN_SEARCH state.
-  EXPECT_EQ(ash::mojom::AppListViewState::kFullscreenSearch,
+  EXPECT_EQ(ash::AppListViewState::kFullscreenSearch,
             GetAppListView()->app_list_state());
   EXPECT_EQ(GetAppListView()->GetPreferredWidgetBoundsForState(
-                ash::mojom::AppListViewState::kFullscreenSearch),
+                ash::AppListViewState::kFullscreenSearch),
             GetAppListViewNativeWindow()->bounds());
+}
+
+// Verifies that closing notification by gesture should not dismiss the AppList.
+// (see https://crbug.com/948344)
+TEST_F(AppListControllerImplTest, CloseNotificationWithAppListShown) {
+  ShowAppListNow();
+
+  // Add one notification.
+  ASSERT_EQ(
+      0u, message_center::MessageCenter::Get()->GetPopupNotifications().size());
+  const std::string notification_id("id");
+  const std::string notification_title("title");
+  message_center::MessageCenter::Get()->AddNotification(
+      std::make_unique<message_center::Notification>(
+          message_center::NOTIFICATION_TYPE_BASE_FORMAT, notification_id,
+          base::UTF8ToUTF16(notification_title),
+          base::UTF8ToUTF16("test message"), gfx::Image(),
+          base::string16() /* display_source */, GURL(),
+          message_center::NotifierId(), message_center::RichNotificationData(),
+          new message_center::NotificationDelegate()));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(
+      1u, message_center::MessageCenter::Get()->GetPopupNotifications().size());
+
+  // Calculate the drag start point and end point.
+  UnifiedSystemTrayTestApi test_api(GetPrimaryUnifiedSystemTray());
+  message_center::MessagePopupView* popup_view =
+      test_api.GetPopupViewForNotificationID(notification_id);
+  ASSERT_TRUE(popup_view);
+  gfx::Rect bounds_in_screen = popup_view->GetBoundsInScreen();
+  const gfx::Point drag_start = bounds_in_screen.left_center();
+  const gfx::Point drag_end = bounds_in_screen.right_center();
+
+  // Swipe away notification by gesture. Verifies that AppListView still shows.
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
+  event_generator->GestureScrollSequence(
+      drag_start, drag_end, base::TimeDelta::FromMicroseconds(500), 10);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(GetAppListView());
+  EXPECT_EQ(
+      0u, message_center::MessageCenter::Get()->GetPopupNotifications().size());
 }
 
 class AppListControllerImplMetricsTest : public AshTestBase {
@@ -271,7 +319,7 @@ class AppListControllerImplMetricsTest : public AshTestBase {
 TEST_F(AppListControllerImplMetricsTest, LogSingleResultListClick) {
   histogram_tester_.ExpectTotalCount(kAppListResultLaunchIndexAndQueryLength,
                                      0);
-  controller_->StartSearch(base::string16());
+  SetSearchText(controller_, "");
   controller_->LogResultLaunchHistogram(SearchResultLaunchLocation::kResultList,
                                         4);
   histogram_tester_.ExpectUniqueSample(kAppListResultLaunchIndexAndQueryLength,
@@ -280,7 +328,7 @@ TEST_F(AppListControllerImplMetricsTest, LogSingleResultListClick) {
 
 TEST_F(AppListControllerImplMetricsTest, LogSingleTileListClick) {
   histogram_tester_.ExpectTotalCount(kAppListTileLaunchIndexAndQueryLength, 0);
-  controller_->StartSearch(base::ASCIIToUTF16("aaaa"));
+  SetSearchText(controller_, "aaaa");
   controller_->LogResultLaunchHistogram(SearchResultLaunchLocation::kTileList,
                                         4);
   histogram_tester_.ExpectUniqueSample(kAppListTileLaunchIndexAndQueryLength,
@@ -291,10 +339,9 @@ TEST_F(AppListControllerImplMetricsTest, LogOneClickInEveryBucket) {
   histogram_tester_.ExpectTotalCount(kAppListResultLaunchIndexAndQueryLength,
                                      0);
   for (int query_length = 0; query_length < 11; ++query_length) {
-    const base::string16 query =
-        base::ASCIIToUTF16(std::string(query_length, 'a'));
+    const std::string query(query_length, 'a');
     for (int click_index = 0; click_index < 7; ++click_index) {
-      controller_->StartSearch(query);
+      SetSearchText(controller_, query);
       controller_->LogResultLaunchHistogram(
           SearchResultLaunchLocation::kResultList, click_index);
     }
@@ -313,7 +360,7 @@ TEST_F(AppListControllerImplMetricsTest, LogOneClickInEveryBucket) {
 
 TEST_F(AppListControllerImplMetricsTest, LogManyClicksInOneBucket) {
   histogram_tester_.ExpectTotalCount(kAppListTileLaunchIndexAndQueryLength, 0);
-  controller_->StartSearch(base::ASCIIToUTF16("aaaa"));
+  SetSearchText(controller_, "aaaa");
   for (int i = 0; i < 50; ++i)
     controller_->LogResultLaunchHistogram(SearchResultLaunchLocation::kTileList,
                                           4);
@@ -341,7 +388,7 @@ TEST_F(AppListControllerImplMetricsTest,
       ->home_launcher_gesture_handler()
       ->ShowHomeLauncher(display::Screen::GetScreen()->GetPrimaryDisplay());
   EXPECT_FALSE(w->IsVisible());
-  EXPECT_EQ(mojom::AppListViewState::kFullscreenAllApps,
+  EXPECT_EQ(AppListViewState::kFullscreenAllApps,
             GetAppListView()->app_list_state());
 
   int delta_y = 1;
@@ -416,7 +463,7 @@ TEST_F(AppListControllerImplMetricsTest,
       ->home_launcher_gesture_handler()
       ->ShowHomeLauncher(display::Screen::GetScreen()->GetPrimaryDisplay());
   EXPECT_FALSE(w->IsVisible());
-  EXPECT_EQ(mojom::AppListViewState::kFullscreenAllApps,
+  EXPECT_EQ(AppListViewState::kFullscreenAllApps,
             GetAppListView()->app_list_state());
 
   gfx::Point start = GetAppListView()
@@ -458,7 +505,7 @@ TEST_F(AppListControllerImplMetricsTest,
   generator->GestureScrollSequence(shelf_center, target_point,
                                    base::TimeDelta::FromMicroseconds(500), 1);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(mojom::AppListViewState::kFullscreenAllApps,
+  EXPECT_EQ(AppListViewState::kFullscreenAllApps,
             GetAppListView()->app_list_state());
   histogram_tester_.ExpectTotalCount(
       "Apps.StateTransition.Drag.PresentationTime.TabletMode", 0);

@@ -97,7 +97,7 @@ void ExtensionsTest::SetUp() {
       browser_context(), pref_service_.get(),
       browser_context()->GetPath().AppendASCII("Extensions"),
       extension_pref_value_map_.get(), false /* extensions_disabled */,
-      std::vector<ExtensionPrefsObserver*>()));
+      std::vector<EarlyExtensionPrefsObserver*>()));
 
   ExtensionPrefsFactory::GetInstance()->SetInstanceForTesting(
       browser_context(), std::move(extension_prefs));

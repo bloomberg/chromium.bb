@@ -9,7 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chromeos/services/device_sync/cryptauth_gcm_manager.h"
-#include "components/gcm_driver/common/gcm_messages.h"
+#include "components/gcm_driver/common/gcm_message.h"
 #include "components/gcm_driver/gcm_app_handler.h"
 #include "components/gcm_driver/gcm_client.h"
 

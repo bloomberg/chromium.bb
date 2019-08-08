@@ -75,10 +75,10 @@ class LayoutSVGInlineText final : public LayoutText {
       const InlineBox*,
       int caret_offset,
       LayoutUnit* extra_width_to_end_of_line = nullptr) const override;
-  LayoutRect LinesBoundingBox() const override;
+  PhysicalRect PhysicalLinesBoundingBox() const override;
   InlineTextBox* CreateTextBox(int start, uint16_t length) override;
 
-  LayoutRect VisualRectInDocument(VisualRectFlags) const final;
+  PhysicalRect VisualRectInDocument(VisualRectFlags) const final;
   FloatRect VisualRectInLocalSVGCoordinates() const final;
 
   float scaling_factor_;

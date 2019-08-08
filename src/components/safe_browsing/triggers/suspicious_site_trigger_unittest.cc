@@ -4,6 +4,8 @@
 
 #include "components/safe_browsing/triggers/suspicious_site_trigger.h"
 
+#include <string>
+
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/prefs/testing_pref_service.h"
@@ -28,6 +30,12 @@ namespace safe_browsing {
 namespace {
 const char kSuspiciousUrl[] = "https://suspicious.com/";
 const char kCleanUrl[] = "https://foo.com/";
+const char kCleanUrl2[] = "https://bar.com/";
+
+// A matcher for the VisibleURLChangeMidLoad_Suspicious test.
+MATCHER_P(ResourceHasUrl, gurl, "") {
+  return arg.url == gurl;
+}
 }  // namespace
 
 class SuspiciousSiteTriggerTest : public content::RenderViewHostTestHarness {
@@ -77,6 +85,14 @@ class SuspiciousSiteTriggerTest : public content::RenderViewHostTestHarness {
     RenderFrameHost* subframe =
         RenderFrameHostTester::For(parent)->AppendChild("subframe");
     return NavigateFrame(url, subframe);
+  }
+
+  // Changes the visible URL (in the URL bar) without committing a navigation.
+  void ChangeVisibleURLWithoutNavigation(const std::string& url) {
+    GURL gurl(url);
+    auto navigation_simulator =
+        NavigationSimulator::CreateBrowserInitiated(gurl, web_contents());
+    navigation_simulator->Start();
   }
 
   void StartNewFakeLoad() {
@@ -420,6 +436,83 @@ TEST_F(SuspiciousSiteTriggerTest, MonitorMode_SuspiciousHitDuringLoad) {
   ExpectEventHistogramCount(SuspiciousSiteTriggerEvent::REPORT_STARTED, 0);
   ExpectEventHistogramCount(SuspiciousSiteTriggerEvent::REPORT_FINISHED, 0);
   ExpectEventHistogramCount(SuspiciousSiteTriggerEvent::REPORT_DELAY_TIMER, 0);
+  ExpectNoReportRejection();
+}
+
+TEST_F(SuspiciousSiteTriggerTest, VisibleURLChangeMidLoad_NotSuspicious) {
+  // Exercise what happens when the visible URL changes during load and no
+  // suspicious site was detected.
+  CreateTrigger(/*monitor_mode=*/false);
+
+  EXPECT_CALL(*get_trigger_manager(),
+              StartCollectingThreatDetailsWithReason(_, _, _, _, _, _, _))
+      .Times(0);
+  EXPECT_CALL(*get_trigger_manager(),
+              FinishCollectingThreatDetails(_, _, _, _, _, _))
+      .Times(0);
+
+  NavigateMainFrame(kCleanUrl);
+  // Change visible URL by starting a new navigation without committing it.
+  // Sanity check the visible URL changed.
+  ChangeVisibleURLWithoutNavigation(kCleanUrl2);
+  GURL expected_clean_url_2(kCleanUrl2);
+  EXPECT_EQ(expected_clean_url_2, web_contents()->GetVisibleURL());
+  FinishAllNavigations();
+
+  WaitForTaskRunnerIdle();
+
+  // One page load start and finish. No suspicious sites and no reports sent.
+  ExpectEventHistogramCount(SuspiciousSiteTriggerEvent::PAGE_LOAD_START, 1);
+  ExpectEventHistogramCount(SuspiciousSiteTriggerEvent::PAGE_LOAD_FINISH, 1);
+  ExpectEventHistogramCount(
+      SuspiciousSiteTriggerEvent::SUSPICIOUS_SITE_DETECTED, 0);
+  ExpectEventHistogramCount(SuspiciousSiteTriggerEvent::REPORT_STARTED, 0);
+  ExpectNoReportRejection();
+}
+
+TEST_F(SuspiciousSiteTriggerTest, VisibleURLChangeMidLoad_Suspicious) {
+  // Exercise what happens when the visible URL changes after a suspicious site
+  // has already been detected.
+  CreateTrigger(/*monitor_mode=*/false);
+
+  NavigateMainFrame(kSuspiciousUrl);
+
+  // The resource eventually sent to the trigger manager should include the
+  // original (suspicious) URL.
+  GURL suspicious_url(kSuspiciousUrl);
+  EXPECT_CALL(*get_trigger_manager(),
+              StartCollectingThreatDetailsWithReason(
+                  _, _, ResourceHasUrl(suspicious_url), _, _, _, _))
+      .Times(1)
+      .WillOnce(Return(true));
+  EXPECT_CALL(*get_trigger_manager(),
+              FinishCollectingThreatDetails(_, _, _, _, _, _))
+      .Times(1)
+      .WillOnce(Return(true));
+
+  // Change visible URL by starting a new navigation without committing it.
+  // Sanity check the visible URL changed.
+  ChangeVisibleURLWithoutNavigation(kCleanUrl);
+  GURL expected_clean_url(kCleanUrl);
+  EXPECT_EQ(expected_clean_url, web_contents()->GetVisibleURL());
+  TriggerSuspiciousSite();
+  FinishAllNavigations();
+
+  WaitForTaskRunnerIdle();
+
+  // One page load start and finish. One suspicious site detected and one
+  // report started and sent after the page finished loading.
+  ExpectEventHistogramCount(SuspiciousSiteTriggerEvent::PAGE_LOAD_START, 1);
+  ExpectEventHistogramCount(SuspiciousSiteTriggerEvent::PAGE_LOAD_FINISH, 1);
+  ExpectEventHistogramCount(
+      SuspiciousSiteTriggerEvent::SUSPICIOUS_SITE_DETECTED, 1);
+  ExpectEventHistogramCount(SuspiciousSiteTriggerEvent::REPORT_STARTED, 1);
+
+  // Ensure the delay timer fired and it happened in the REPORT_STARTED state
+  ExpectEventHistogramCount(SuspiciousSiteTriggerEvent::REPORT_DELAY_TIMER, 1);
+  ExpectDelayStateHistogramCount(
+      SuspiciousSiteTrigger::TriggerState::REPORT_STARTED, 1);
+  ExpectEventHistogramCount(SuspiciousSiteTriggerEvent::REPORT_FINISHED, 1);
   ExpectNoReportRejection();
 }
 }  // namespace safe_browsing

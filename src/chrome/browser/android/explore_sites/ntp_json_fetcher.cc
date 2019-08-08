@@ -100,21 +100,19 @@ void NTPJsonFetcher::OnSimpleLoaderComplete(
   data_decoder::SafeJsonParser::Parse(
       content::ServiceManagerConnection::GetForProcess()->GetConnector(),
       *response_body,
-      base::BindRepeating(&NTPJsonFetcher::OnJsonParseSuccess,
-                          weak_factory_.GetWeakPtr()),
-      base::BindRepeating(&NTPJsonFetcher::OnJsonParseError,
-                          weak_factory_.GetWeakPtr()));
+      base::BindOnce(&NTPJsonFetcher::OnJsonParseSuccess,
+                     weak_factory_.GetWeakPtr()),
+      base::BindOnce(&NTPJsonFetcher::OnJsonParseError,
+                     weak_factory_.GetWeakPtr()));
 }
 
-void NTPJsonFetcher::OnJsonParseSuccess(
-    std::unique_ptr<base::Value> parsed_json) {
-  if (!parsed_json || !parsed_json->is_dict()) {
+void NTPJsonFetcher::OnJsonParseSuccess(base::Value parsed_json) {
+  if (!parsed_json.is_dict()) {
     OnJsonParseError("Parsed JSON is not a dictionary.");
     return;
   }
 
-  auto catalog = NTPCatalog::create(
-      static_cast<base::DictionaryValue*>(parsed_json.get()));
+  auto catalog = NTPCatalog::create(parsed_json);
   std::move(callback_).Run(std::move(catalog));
 }
 

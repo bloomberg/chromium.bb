@@ -63,12 +63,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 
   void SetFrameConnectorDelegate(FrameConnectorDelegate* frame_connector);
 
-#if defined(USE_AURA)
-  // When the viz::FrameSinkId for this child frame is created and registered
-  // remotely, it can be set here.
-  void SetFrameSinkId(const viz::FrameSinkId& frame_sink_id);
-#endif  // defined(USE_AURA)
-
   // This functions registers single-use callbacks that want to be notified when
   // the next frame is swapped. The callback is triggered by
   // SubmitCompositorFrame, which is the appropriate time to request pixel
@@ -120,8 +114,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void InitAsFullscreen(RenderWidgetHostView* reference_host_view) override;
   void UpdateCursor(const WebCursor& cursor) override;
   void SetIsLoading(bool is_loading) override;
-  void RenderProcessGone(base::TerminationStatus status,
-                         int error_code) override;
+  void RenderProcessGone() override;
   void Destroy() override;
   void SetTooltipText(const base::string16& tooltip_text) override;
   void GestureEventAck(const blink::WebGestureEvent& event,

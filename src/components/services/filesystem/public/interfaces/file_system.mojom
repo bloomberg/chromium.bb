@@ -11,11 +11,11 @@ interface FileSystem {
   // Opens a temporary filesystem. Will return a different directory each time
   // it is called.
   [Sync]
-  OpenTempDirectory(Directory& directory)
+  OpenTempDirectory(pending_receiver<Directory> directory)
       => (mojo_base.mojom.FileError error);
 
   // Returns a directory which will persist to disk.
   [Sync]
-  OpenPersistentFileSystem(Directory& directory)
+  OpenPersistentFileSystem(pending_receiver<Directory> directory)
       => (mojo_base.mojom.FileError error);
 };

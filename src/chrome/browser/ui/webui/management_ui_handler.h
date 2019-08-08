@@ -12,12 +12,14 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "chrome/common/url_constants.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "extensions/buildflags/buildflags.h"
+#include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "components/policy/core/common/policy_service.h"
@@ -84,9 +86,11 @@ class Profile;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 class ManagementUIHandler : public content::WebUIMessageHandler,
                             public extensions::ExtensionRegistryObserver,
-                            public policy::PolicyService::Observer {
+                            public policy::PolicyService::Observer,
+                            public BitmapFetcherDelegate {
 #else
-class ManagementUIHandler : public content::WebUIMessageHandler {
+class ManagementUIHandler : public content::WebUIMessageHandler,
+                            public BitmapFetcherDelegate {
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
  public:
   ManagementUIHandler();
@@ -106,8 +110,10 @@ class ManagementUIHandler : public content::WebUIMessageHandler {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   void OnJavascriptAllowed() override;
   void OnJavascriptDisallowed() override;
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
  protected:
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   // Protected for testing.
   static void InitializeInternal(content::WebUI* web_ui,
                                  content::WebUIDataSource* source,
@@ -139,6 +145,11 @@ class ManagementUIHandler : public content::WebUIMessageHandler {
 
   void HandleGetContextualManagedData(const base::ListValue* args);
   void HandleInitBrowserReportingInfo(const base::ListValue* args);
+
+  void AsyncUpdateLogo();
+
+  // BitmapFetcherDelegate
+  void OnFetchComplete(const GURL& url, const SkBitmap* bitmap) override;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   void NotifyBrowserReportingInfoUpdated();
@@ -172,6 +183,9 @@ class ManagementUIHandler : public content::WebUIMessageHandler {
 
   std::set<extensions::ExtensionId> reporting_extension_ids_;
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+  GURL logo_url_;
+  std::string fetched_image_;
+  std::unique_ptr<BitmapFetcher> icon_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagementUIHandler);
 };

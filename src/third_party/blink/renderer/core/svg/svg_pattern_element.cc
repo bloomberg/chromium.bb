@@ -34,7 +34,7 @@
 
 namespace blink {
 
-inline SVGPatternElement::SVGPatternElement(Document& document)
+SVGPatternElement::SVGPatternElement(Document& document)
     : SVGElement(svg_names::kPatternTag, document),
       SVGURIReference(this),
       SVGTests(this),
@@ -96,8 +96,6 @@ void SVGPatternElement::Trace(blink::Visitor* visitor) {
   SVGTests::Trace(visitor);
   SVGFitToViewBox::Trace(visitor);
 }
-
-DEFINE_NODE_FACTORY(SVGPatternElement)
 
 void SVGPatternElement::BuildPendingResource() {
   ClearResourceReferences();

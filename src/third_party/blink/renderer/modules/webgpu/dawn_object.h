@@ -8,8 +8,8 @@
 #include <dawn/dawn.h>
 
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/renderer/modules/webgpu/dawn_control_client_holder.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/dawn_control_client_holder.h"
 
 namespace gpu {
 namespace webgpu {

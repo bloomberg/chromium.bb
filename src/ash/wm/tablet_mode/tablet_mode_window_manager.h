@@ -20,6 +20,7 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/display/display_observer.h"
 
 namespace aura {
@@ -46,8 +47,18 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
                                            public ShellObserver,
                                            public SessionObserver {
  public:
-  // This should only be deleted by the creator (ash::Shell).
+  // This should only be deleted by the creator (TabletModeController).
   ~TabletModeWindowManager() override;
+
+  void Init();
+
+  // Stops tracking windows and returns them to their clamshell mode state. Work
+  // is done here instead of the destructor because TabletModeController may
+  // still need this object alive during shutdown.
+  void Shutdown();
+
+  // True if |window| is in |window_state_map_|.
+  bool IsTrackingWindow(aura::Window* window);
 
   // Returns the number of maximized & tracked windows by this manager.
   int GetNumberOfManagedWindows();
@@ -60,6 +71,8 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
 
   // Called from a window state object when it gets destroyed.
   void WindowStateDestroyed(aura::Window* window);
+
+  aura::Window* GetTopWindow();
 
   // OverviewObserver:
   void OnOverviewModeEndingAnimationComplete(bool canceled) override;
@@ -92,7 +105,7 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
  protected:
   friend class TabletModeController;
 
-  // The object should only be created by the ash::Shell.
+  // The object should only be created by TabletModeController.
   TabletModeWindowManager();
 
  private:
@@ -100,7 +113,7 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
 
   // Returns the state type that |window| had before tablet mode started. If
   // |window| is not yet tracked, returns the current state type of |window|.
-  mojom::WindowStateType GetDesktopWindowStateType(aura::Window* window) const;
+  WindowStateType GetDesktopWindowStateType(aura::Window* window) const;
 
   // Returns a std::vector of up to two split view snap positions, parallel to
   // |windows|, implementing the logic for carrying over snapped window states

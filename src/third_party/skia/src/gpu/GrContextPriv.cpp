@@ -5,31 +5,31 @@
  * found in the LICENSE file.
  */
 
-#include "GrContextPriv.h"
+#include "src/gpu/GrContextPriv.h"
 
-#include "GrClip.h"
-#include "GrContextThreadSafeProxy.h"
-#include "GrContextThreadSafeProxyPriv.h"
-#include "GrDrawingManager.h"
-#include "GrGpu.h"
-#include "GrMemoryPool.h"
-#include "GrRenderTargetContext.h"
-#include "GrSkSLFPFactoryCache.h"
-#include "GrSurfacePriv.h"
-#include "GrTexture.h"
-#include "GrTextureContext.h"
-#include "SkAutoPixmapStorage.h"
-#include "SkImage_Base.h"
-#include "SkImage_Gpu.h"
-#include "SkGr.h"
-#include "text/GrTextBlobCache.h"
+#include "include/gpu/GrContextThreadSafeProxy.h"
+#include "include/gpu/GrTexture.h"
+#include "include/private/GrSkSLFPFactoryCache.h"
+#include "src/core/SkAutoPixmapStorage.h"
+#include "src/gpu/GrClip.h"
+#include "src/gpu/GrContextThreadSafeProxyPriv.h"
+#include "src/gpu/GrDrawingManager.h"
+#include "src/gpu/GrGpu.h"
+#include "src/gpu/GrMemoryPool.h"
+#include "src/gpu/GrRenderTargetContext.h"
+#include "src/gpu/GrSurfacePriv.h"
+#include "src/gpu/GrTextureContext.h"
+#include "src/gpu/SkGr.h"
+#include "src/gpu/text/GrTextBlobCache.h"
+#include "src/image/SkImage_Base.h"
+#include "src/image/SkImage_Gpu.h"
 
-#define ASSERT_OWNED_PROXY_PRIV(P) \
+#define ASSERT_OWNED_PROXY(P) \
     SkASSERT(!(P) || !((P)->peekTexture()) || (P)->peekTexture()->getContext() == fContext)
-#define ASSERT_SINGLE_OWNER_PRIV \
+#define ASSERT_SINGLE_OWNER \
     SkDEBUGCODE(GrSingleOwner::AutoEnforce debug_SingleOwner(fContext->singleOwner());)
-#define RETURN_IF_ABANDONED_PRIV if (fContext->abandoned()) { return; }
-#define RETURN_FALSE_IF_ABANDONED_PRIV if (fContext->abandoned()) { return false; }
+#define RETURN_VALUE_IF_ABANDONED(value) if (fContext->abandoned()) { return (value); }
+#define RETURN_IF_ABANDONED RETURN_VALUE_IF_ABANDONED(void)
 
 sk_sp<const GrCaps> GrContextPriv::refCaps() const {
     return fContext->refCaps();
@@ -103,7 +103,7 @@ sk_sp<GrRenderTargetContext> GrContextPriv::makeDeferredRenderTargetContextWithF
 sk_sp<GrTextureContext> GrContextPriv::makeBackendTextureContext(const GrBackendTexture& tex,
                                                                  GrSurfaceOrigin origin,
                                                                  sk_sp<SkColorSpace> colorSpace) {
-    ASSERT_SINGLE_OWNER_PRIV
+    ASSERT_SINGLE_OWNER
 
     sk_sp<GrSurfaceProxy> proxy = this->proxyProvider()->wrapBackendTexture(
             tex, origin, kBorrow_GrWrapOwnership, GrWrapCacheable::kNo, kRW_GrIOType);
@@ -122,7 +122,7 @@ sk_sp<GrRenderTargetContext> GrContextPriv::makeBackendTextureRenderTargetContex
                                                                    const SkSurfaceProps* props,
                                                                    ReleaseProc releaseProc,
                                                                    ReleaseContext releaseCtx) {
-    ASSERT_SINGLE_OWNER_PRIV
+    ASSERT_SINGLE_OWNER
     SkASSERT(sampleCnt > 0);
 
     sk_sp<GrTextureProxy> proxy(this->proxyProvider()->wrapRenderableBackendTexture(
@@ -143,7 +143,7 @@ sk_sp<GrRenderTargetContext> GrContextPriv::makeBackendRenderTargetRenderTargetC
                                                 const SkSurfaceProps* surfaceProps,
                                                 ReleaseProc releaseProc,
                                                 ReleaseContext releaseCtx) {
-    ASSERT_SINGLE_OWNER_PRIV
+    ASSERT_SINGLE_OWNER
 
     sk_sp<GrSurfaceProxy> proxy = this->proxyProvider()->wrapBackendRenderTarget(
             backendRT, origin, releaseProc, releaseCtx);
@@ -162,7 +162,7 @@ sk_sp<GrRenderTargetContext> GrContextPriv::makeBackendTextureAsRenderTargetRend
                                                      int sampleCnt,
                                                      sk_sp<SkColorSpace> colorSpace,
                                                      const SkSurfaceProps* props) {
-    ASSERT_SINGLE_OWNER_PRIV
+    ASSERT_SINGLE_OWNER
     SkASSERT(sampleCnt > 0);
     sk_sp<GrSurfaceProxy> proxy(
             this->proxyProvider()->wrapBackendTextureAsRenderTarget(tex, origin, sampleCnt));
@@ -177,7 +177,7 @@ sk_sp<GrRenderTargetContext> GrContextPriv::makeBackendTextureAsRenderTargetRend
 
 sk_sp<GrRenderTargetContext> GrContextPriv::makeVulkanSecondaryCBRenderTargetContext(
         const SkImageInfo& imageInfo, const GrVkDrawableInfo& vkInfo, const SkSurfaceProps* props) {
-    ASSERT_SINGLE_OWNER_PRIV
+    ASSERT_SINGLE_OWNER
     sk_sp<GrSurfaceProxy> proxy(
             this->proxyProvider()->wrapVulkanSecondaryCBAsRenderTarget(imageInfo, vkInfo));
     if (!proxy) {
@@ -189,22 +189,23 @@ sk_sp<GrRenderTargetContext> GrContextPriv::makeVulkanSecondaryCBRenderTargetCon
                                                            props);
 }
 
-void GrContextPriv::flush(GrSurfaceProxy* proxy) {
-    ASSERT_SINGLE_OWNER_PRIV
-    RETURN_IF_ABANDONED_PRIV
-    ASSERT_OWNED_PROXY_PRIV(proxy);
-
-    fContext->drawingManager()->flush(proxy, SkSurface::BackendSurfaceAccess::kNoAccess,
-                                      GrFlushInfo());
+GrSemaphoresSubmitted GrContextPriv::flushSurfaces(GrSurfaceProxy* proxies[], int numProxies,
+                                                   const GrFlushInfo& info) {
+    ASSERT_SINGLE_OWNER
+    RETURN_VALUE_IF_ABANDONED(GrSemaphoresSubmitted::kNo)
+    GR_CREATE_TRACE_MARKER_CONTEXT("GrContextPriv", "flushSurfaces", fContext);
+    SkASSERT(numProxies >= 0);
+    SkASSERT(!numProxies || proxies);
+    for (int i = 0; i < numProxies; ++i) {
+        SkASSERT(proxies[i]);
+        ASSERT_OWNED_PROXY(proxies[i]);
+    }
+    return fContext->drawingManager()->flushSurfaces(
+            proxies, numProxies, SkSurface::BackendSurfaceAccess::kNoAccess, info);
 }
 
 void GrContextPriv::flushSurface(GrSurfaceProxy* proxy) {
-    ASSERT_SINGLE_OWNER_PRIV
-    RETURN_IF_ABANDONED_PRIV
-    SkASSERT(proxy);
-    ASSERT_OWNED_PROXY_PRIV(proxy);
-    fContext->drawingManager()->flushSurface(proxy,
-            SkSurface::BackendSurfaceAccess::kNoAccess, GrFlushInfo());
+    this->flushSurfaces(proxy ? &proxy : nullptr, proxy ? 1 : 0, {});
 }
 
 static bool valid_premul_color_type(GrColorType ct) {
@@ -277,11 +278,11 @@ bool GrContextPriv::readSurfacePixels(GrSurfaceContext* src, int left, int top, 
                                       int height, GrColorType dstColorType,
                                       SkColorSpace* dstColorSpace, void* buffer, size_t rowBytes,
                                       uint32_t pixelOpsFlags) {
-    ASSERT_SINGLE_OWNER_PRIV
-    RETURN_FALSE_IF_ABANDONED_PRIV
+    ASSERT_SINGLE_OWNER
+    RETURN_VALUE_IF_ABANDONED(false)
     SkASSERT(src);
     SkASSERT(buffer);
-    ASSERT_OWNED_PROXY_PRIV(src->asSurfaceProxy());
+    ASSERT_OWNED_PROXY(src->asSurfaceProxy());
     GR_CREATE_TRACE_MARKER_CONTEXT("GrContextPriv", "readSurfacePixels", fContext);
 
     GrSurfaceProxy* srcProxy = src->asSurfaceProxy();
@@ -326,63 +327,50 @@ bool GrContextPriv::readSurfacePixels(GrSurfaceContext* src, int left, int top, 
 
     if (!fContext->priv().caps()->surfaceSupportsReadPixels(srcSurface) ||
         canvas2DFastPath) {
-        GrSurfaceDesc desc;
-        desc.fWidth = width;
-        desc.fHeight = height;
-        desc.fSampleCnt = 1;
-
         GrBackendFormat format;
+        GrPixelConfig config;
         if (canvas2DFastPath) {
-            desc.fFlags = kRenderTarget_GrSurfaceFlag;
-            desc.fConfig = kRGBA_8888_GrPixelConfig;
+            config = kRGBA_8888_GrPixelConfig;
             format = this->caps()->getBackendFormatFromColorType(kRGBA_8888_SkColorType);
         } else {
-            desc.fFlags = kNone_GrSurfaceFlags;
-            desc.fConfig = srcProxy->config();
+            config = srcProxy->config();
             format = srcProxy->backendFormat().makeTexture2D();
             if (!format.isValid()) {
                 return false;
             }
         }
+        sk_sp<SkColorSpace> cs = canvas2DFastPath ? nullptr : src->colorSpaceInfo().refColorSpace();
 
-        auto tempProxy = this->proxyProvider()->createProxy(
-                format, desc, kTopLeft_GrSurfaceOrigin, SkBackingFit::kApprox, SkBudgeted::kYes);
-        if (!tempProxy) {
-            return false;
-        }
-        sk_sp<GrSurfaceContext> tempCtx;
-        if (canvas2DFastPath) {
-            tempCtx = this->drawingManager()->makeRenderTargetContext(std::move(tempProxy), nullptr,
-                                                                      nullptr);
-            SkASSERT(tempCtx->asRenderTargetContext());
-            tempCtx->asRenderTargetContext()->discard();
-        } else {
-            tempCtx = this->drawingManager()->makeTextureContext(
-                    std::move(tempProxy), src->colorSpaceInfo().refColorSpace());
-        }
+        sk_sp<GrRenderTargetContext> tempCtx = this->makeDeferredRenderTargetContext(
+                format, SkBackingFit::kApprox, width, height, config, std::move(cs), 1,
+                GrMipMapped::kNo, kTopLeft_GrSurfaceOrigin, nullptr, SkBudgeted::kYes);
         if (!tempCtx) {
             return false;
         }
+
+        std::unique_ptr<GrFragmentProcessor> fp;
         if (canvas2DFastPath) {
-            GrPaint paint;
-            paint.setPorterDuffXPFactory(SkBlendMode::kSrc);
-            auto fp = fContext->createPMToUPMEffect(
+            fp = fContext->createPMToUPMEffect(
                     GrSimpleTextureEffect::Make(sk_ref_sp(srcProxy->asTextureProxy()),
                                                 SkMatrix::I()));
             if (dstColorType == GrColorType::kBGRA_8888) {
                 fp = GrFragmentProcessor::SwizzleOutput(std::move(fp), GrSwizzle::BGRA());
                 dstColorType = GrColorType::kRGBA_8888;
             }
-            if (!fp) {
-                return false;
-            }
-            paint.addColorFragmentProcessor(std::move(fp));
-            tempCtx->asRenderTargetContext()->fillRectToRect(
-                    GrNoClip(), std::move(paint), GrAA::kNo, SkMatrix::I(),
-                    SkRect::MakeWH(width, height), SkRect::MakeXYWH(left, top, width, height));
-        } else if (!tempCtx->copy(srcProxy, SkIRect::MakeXYWH(left, top, width, height), {0, 0})) {
+        } else {
+            fp = GrSimpleTextureEffect::Make(sk_ref_sp(srcProxy->asTextureProxy()), SkMatrix::I());
+        }
+        if (!fp) {
             return false;
         }
+        GrPaint paint;
+        paint.setPorterDuffXPFactory(SkBlendMode::kSrc);
+        paint.addColorFragmentProcessor(std::move(fp));
+
+        tempCtx->asRenderTargetContext()->fillRectToRect(
+                GrNoClip(), std::move(paint), GrAA::kNo, SkMatrix::I(),
+                SkRect::MakeWH(width, height), SkRect::MakeXYWH(left, top, width, height));
+
         uint32_t flags = canvas2DFastPath ? 0 : pixelOpsFlags;
         return this->readSurfacePixels(tempCtx.get(), 0, 0, width, height, dstColorType,
                                        dstColorSpace, buffer, rowBytes, flags);
@@ -431,7 +419,7 @@ bool GrContextPriv::readSurfacePixels(GrSurfaceContext* src, int left, int top, 
         sk_bzero(buffer, tempPixmap.computeByteSize());
     }
 
-    this->flush(srcProxy);
+    this->flushSurface(srcProxy);
 
     if (!fContext->fGpu->readPixels(srcSurface, left, top, width, height, allowedColorType, buffer,
                                     rowBytes)) {
@@ -461,11 +449,11 @@ bool GrContextPriv::writeSurfacePixels(GrSurfaceContext* dst, int left, int top,
                                        int height, GrColorType srcColorType,
                                        SkColorSpace* srcColorSpace, const void* buffer,
                                        size_t rowBytes, uint32_t pixelOpsFlags) {
-    ASSERT_SINGLE_OWNER_PRIV
-    RETURN_FALSE_IF_ABANDONED_PRIV
+    ASSERT_SINGLE_OWNER
+    RETURN_VALUE_IF_ABANDONED(false)
     SkASSERT(dst);
     SkASSERT(buffer);
-    ASSERT_OWNED_PROXY_PRIV(dst->asSurfaceProxy());
+    ASSERT_OWNED_PROXY(dst->asSurfaceProxy());
     GR_CREATE_TRACE_MARKER_CONTEXT("GrContextPriv", "writeSurfacePixels", fContext);
 
     if (GrColorType::kUnknown == srcColorType) {
@@ -544,27 +532,36 @@ bool GrContextPriv::writeSurfacePixels(GrSurfaceContext* dst, int left, int top,
                                       srcColorSpace, buffer, rowBytes, flags)) {
             return false;
         }
-        if (canvas2DFastPath) {
-            GrPaint paint;
-            paint.setPorterDuffXPFactory(SkBlendMode::kSrc);
-            auto fp = fContext->createUPMToPMEffect(
-                    GrSimpleTextureEffect::Make(std::move(tempProxy), SkMatrix::I()));
-            if (srcColorType == GrColorType::kBGRA_8888) {
-                fp = GrFragmentProcessor::SwizzleOutput(std::move(fp), GrSwizzle::BGRA());
+
+        if (dst->asRenderTargetContext()) {
+        std::unique_ptr<GrFragmentProcessor> fp;
+            if (canvas2DFastPath) {
+                fp = fContext->createUPMToPMEffect(
+                        GrSimpleTextureEffect::Make(std::move(tempProxy), SkMatrix::I()));
+                if (srcColorType == GrColorType::kBGRA_8888) {
+                    fp = GrFragmentProcessor::SwizzleOutput(std::move(fp), GrSwizzle::BGRA());
+                }
+            } else {
+                fp = GrSimpleTextureEffect::Make(std::move(tempProxy), SkMatrix::I());
             }
             if (!fp) {
                 return false;
             }
+            GrPaint paint;
+            paint.setPorterDuffXPFactory(SkBlendMode::kSrc);
             paint.addColorFragmentProcessor(std::move(fp));
             dst->asRenderTargetContext()->fillRectToRect(
                     GrNoClip(), std::move(paint), GrAA::kNo, SkMatrix::I(),
                     SkRect::MakeXYWH(left, top, width, height), SkRect::MakeWH(width, height));
         } else {
-            if (!dst->copy(tempProxy.get(), SkIRect::MakeWH(width, height), {left, top})) {
+            SkIRect srcRect = SkIRect::MakeWH(width, height);
+            SkIPoint dstPoint = SkIPoint::Make(left, top);
+            if (!this->caps()->canCopySurface(dst->asSurfaceProxy(), tempProxy.get(), srcRect,
+                                              dstPoint)) {
                 return false;
             }
+            SkAssertResult(dst->copy(tempProxy.get(), srcRect, dstPoint));
         }
-
         return true;
     }
 
@@ -632,7 +629,7 @@ bool GrContextPriv::writeSurfacePixels(GrSurfaceContext* dst, int left, int top,
     // giving the drawing manager the chance of skipping the flush (i.e., by passing in the
     // destination proxy)
     // TODO: should this policy decision just be moved into the drawing manager?
-    this->flush(caps->preferVRAMUseOverFlushes() ? dstProxy : nullptr);
+    this->flushSurface(caps->preferVRAMUseOverFlushes() ? dstProxy : nullptr);
 
     return this->getGpu()->writePixels(dstSurface, left, top, width, height, srcColorType, buffer,
                                        rowBytes);
@@ -649,7 +646,7 @@ void GrContextPriv::copyOpListsFromDDL(const SkDeferredDisplayList* ddl,
 
 //////////////////////////////////////////////////////////////////////////////
 #ifdef SK_ENABLE_DUMP_GPU
-#include "SkJSONWriter.h"
+#include "src/utils/SkJSONWriter.h"
 SkString GrContextPriv::dump() const {
     SkDynamicMemoryWStream stream;
     SkJSONWriter writer(&stream, SkJSONWriter::Mode::kPretty);
@@ -763,3 +760,48 @@ void GrContextPriv::testingOnly_flushAndRemoveOnFlushCallbackObject(GrOnFlushCal
     fContext->drawingManager()->testingOnly_removeOnFlushCallbackObject(cb);
 }
 #endif
+
+//////////////////////////////////////////////////////////////////////////////
+GrBackendTexture GrContextPriv::createBackendTexture(int width, int height,
+                                                     GrBackendFormat backendFormat,
+                                                     const SkColor4f& color,
+                                                     GrMipMapped mipMapped,
+                                                     GrRenderable renderable) {
+    if (!fContext->asDirectContext()) {
+        return GrBackendTexture();
+    }
+
+    if (this->abandoned()) {
+        return GrBackendTexture();
+    }
+
+    if (!backendFormat.isValid()) {
+        return GrBackendTexture();
+    }
+
+    GrGpu* gpu = fContext->fGpu.get();
+
+    return gpu->createBackendTexture(width, height, backendFormat,
+                                     mipMapped, renderable, nullptr, 0, color);
+}
+
+GrBackendTexture GrContextPriv::createBackendTexture(int width, int height,
+                                                     SkColorType colorType,
+                                                     const SkColor4f& color,
+                                                     GrMipMapped mipMapped,
+                                                     GrRenderable renderable) {
+    if (!fContext->asDirectContext()) {
+        return GrBackendTexture();
+    }
+
+    if (this->abandoned()) {
+        return GrBackendTexture();
+    }
+
+    GrBackendFormat format = fContext->caps()->getBackendFormatFromColorType(colorType);
+    if (!format.isValid()) {
+        return GrBackendTexture();
+    }
+
+    return this->createBackendTexture(width, height, format, color, mipMapped, renderable);
+}

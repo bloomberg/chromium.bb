@@ -62,6 +62,9 @@ public final class ChildProcessLauncherHelperImpl {
     private static final String PRIVILEGED_SERVICES_NAME =
             "org.chromium.content.app.PrivilegedProcessService";
 
+    // Flag to check features after native is initialized.
+    private static boolean sCheckedFeatures;
+
     // A warmed-up connection to a sandboxed service.
     private static SpareChildConnection sSpareSandboxedConnection;
 
@@ -165,6 +168,7 @@ public final class ChildProcessLauncherHelperImpl {
                     sLauncherByPid.remove(connection.getPid());
                     if (mBindingManager != null) mBindingManager.removeConnection(connection);
                     if (mRanking != null) {
+                        setReverseRankWhenConnectionLost(mRanking.getReverseRank(connection));
                         mRanking.removeConnection(connection);
                         if (mBindingManager != null) mBindingManager.rankingChanged();
                     }
@@ -179,6 +183,10 @@ public final class ChildProcessLauncherHelperImpl {
     // The initial value is MODERATE since a newly created connection has moderate bindings.
     private @ChildProcessImportance int mEffectiveImportance = ChildProcessImportance.MODERATE;
     private boolean mVisible;
+
+    // Protects fields below that are accessed on client thread as well.
+    private final Object mLock = new Object();
+    private int mReverseRankWhenConnectionLost;
 
     @CalledByNative
     private static FileDescriptorInfo makeFdInfo(
@@ -230,6 +238,14 @@ public final class ChildProcessLauncherHelperImpl {
         ChildProcessLauncherHelperImpl helper = new ChildProcessLauncherHelperImpl(nativePointer,
                 commandLine, filesToBeMapped, sandboxed, canUseWarmUpConnection, binderCallback);
         helper.start();
+
+        if (!sCheckedFeatures) {
+            sCheckedFeatures = true;
+            if (sSandboxedChildConnectionRanking != null
+                    && ContentFeatureList.isEnabled(ContentFeatureList.SERVICE_GROUP_IMPORTANCE)) {
+                sSandboxedChildConnectionRanking.enableServiceGroupImportance();
+            }
+        }
         return helper;
     }
 
@@ -273,8 +289,12 @@ public final class ChildProcessLauncherHelperImpl {
             public void run() {
                 ChildConnectionAllocator allocator =
                         getConnectionAllocator(context, true /* sandboxed */);
-                sBindingManager = new BindingManager(
-                        context, allocator.getNumberOfServices(), sSandboxedChildConnectionRanking);
+                if (ChildProcessConnection.supportVariableConnections()) {
+                    sBindingManager = new BindingManager(context, sSandboxedChildConnectionRanking);
+                } else {
+                    sBindingManager = new BindingManager(context, allocator.getNumberOfServices(),
+                            sSandboxedChildConnectionRanking);
+                }
             }
         });
 
@@ -360,9 +380,14 @@ public final class ChildProcessLauncherHelperImpl {
                 String serviceName = !TextUtils.isEmpty(sSandboxedServicesNameForTesting)
                         ? sSandboxedServicesNameForTesting
                         : SandboxedProcessService.class.getName();
-                connectionAllocator = ChildConnectionAllocator.createForTest(freeSlotRunnable,
-                        packageName, serviceName, sSandboxedServicesCountForTesting, bindToCaller,
-                        bindAsExternalService, false /* useStrongBinding */);
+                connectionAllocator =
+                        ChildConnectionAllocator.createFixedForTesting(freeSlotRunnable,
+                                packageName, serviceName, sSandboxedServicesCountForTesting,
+                                bindToCaller, bindAsExternalService, false /* useStrongBinding */);
+            } else if (ChildProcessConnection.supportVariableConnections()) {
+                connectionAllocator = ChildConnectionAllocator.createVariableSize(context,
+                        LauncherThread.getHandler(), packageName, SANDBOXED_SERVICES_NAME,
+                        bindToCaller, bindAsExternalService, false /* useStrongBinding */);
             } else {
                 connectionAllocator = ChildConnectionAllocator.create(context,
                         LauncherThread.getHandler(), freeSlotRunnable, packageName,
@@ -374,8 +399,12 @@ public final class ChildProcessLauncherHelperImpl {
                         sSandboxedServiceFactoryForTesting);
             }
             sSandboxedChildConnectionAllocator = connectionAllocator;
-            sSandboxedChildConnectionRanking = new ChildProcessRanking(
-                    sSandboxedChildConnectionAllocator.getNumberOfServices());
+            if (ChildProcessConnection.supportVariableConnections()) {
+                sSandboxedChildConnectionRanking = new ChildProcessRanking();
+            } else {
+                sSandboxedChildConnectionRanking = new ChildProcessRanking(
+                        sSandboxedChildConnectionAllocator.getNumberOfServices());
+            }
         }
         return sSandboxedChildConnectionAllocator;
     }
@@ -399,9 +428,12 @@ public final class ChildProcessLauncherHelperImpl {
         if (sandboxed) {
             mRanking = sSandboxedChildConnectionRanking;
             mBindingManager = sBindingManager;
+            mReverseRankWhenConnectionLost = -1;
         } else {
             mRanking = null;
             mBindingManager = null;
+            // -2 means not applicable.
+            mReverseRankWhenConnectionLost = -2;
         }
     }
 
@@ -417,6 +449,18 @@ public final class ChildProcessLauncherHelperImpl {
         return TextUtils.isEmpty(mProcessType) ? "" : mProcessType;
     }
 
+    private void setReverseRankWhenConnectionLost(int reverseRank) {
+        synchronized (mLock) {
+            mReverseRankWhenConnectionLost = reverseRank;
+        }
+    }
+
+    private int getReverseRankWhenConnectionLost() {
+        synchronized (mLock) {
+            return mReverseRankWhenConnectionLost;
+        }
+    }
+
     // Called on client (UI or IO) thread.
     @CalledByNative
     private void getTerminationInfoAndStop(long terminationInfoPtr) {
@@ -426,11 +470,14 @@ public final class ChildProcessLauncherHelperImpl {
         // access it afterwards.
         if (connection == null) return;
 
+        // Note there is no guarantee that connection lost has happened. However ChildProcessRanking
+        // is not thread safe, so this is the best we can do.
+        int reverseRank = getReverseRankWhenConnectionLost();
         int bindingCounts[] = connection.remainingBindingStateCountsCurrentOrWhenDied();
         nativeSetTerminationInfo(terminationInfoPtr, connection.bindingStateCurrentOrWhenDied(),
                 connection.isKilledByUs(), connection.hasCleanExit(),
                 bindingCounts[ChildBindingState.STRONG], bindingCounts[ChildBindingState.MODERATE],
-                bindingCounts[ChildBindingState.WAIVED]);
+                bindingCounts[ChildBindingState.WAIVED], reverseRank);
         LauncherThread.post(() -> mLauncher.stop());
     }
 
@@ -454,9 +501,6 @@ public final class ChildProcessLauncherHelperImpl {
         boolean mediaRendererHasModerate = ContentFeatureList.isEnabled(
                 ContentFeatureList.BACKGROUND_MEDIA_RENDERER_HAS_MODERATE_BINDING);
 
-        boolean serviceWorkerForegroundPriority =
-                ContentFeatureList.isEnabled(ContentFeatureList.SERVICE_WORKER_FOREGROUND_PRIORITY);
-
         @ChildProcessImportance
         int newEffectiveImportance;
         if ((visible && frameDepth == 0) || importance == ChildProcessImportance.IMPORTANT
@@ -464,8 +508,7 @@ public final class ChildProcessLauncherHelperImpl {
             newEffectiveImportance = ChildProcessImportance.IMPORTANT;
         } else if ((visible && frameDepth > 0 && intersectsViewport) || boostForPendingViews
                 || importance == ChildProcessImportance.MODERATE
-                || (hasMediaStream && mediaRendererHasModerate)
-                || (hasForegroundServiceWorker && serviceWorkerForegroundPriority)) {
+                || (hasMediaStream && mediaRendererHasModerate) || hasForegroundServiceWorker) {
             newEffectiveImportance = ChildProcessImportance.MODERATE;
         } else {
             newEffectiveImportance = ChildProcessImportance.NORMAL;
@@ -676,5 +719,5 @@ public final class ChildProcessLauncherHelperImpl {
 
     private static native void nativeSetTerminationInfo(long termiantionInfoPtr,
             @ChildBindingState int bindingState, boolean killedByUs, boolean cleanExit,
-            int remainingStrong, int remainingModerate, int remainingWaived);
+            int remainingStrong, int remainingModerate, int remainingWaived, int reverseRank);
 }

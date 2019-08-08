@@ -74,17 +74,17 @@
 1028 : dEQP-GLES2.functional.fbo.completeness.renderable.texture.stencil.srgb8 = FAIL
 1028 : dEQP-GLES2.functional.fbo.completeness.renderable.texture.depth.srgb8 = FAIL
 
-// Bind aliasing is not working currently
-3252 : dEQP-GLES2.functional.attribute_location.bind_aliasing.cond* = FAIL
-3252 : dEQP-GLES2.functional.attribute_location.bind_aliasing.max_cond* = FAIL
+// Vertex attribute aliasing is not supported on D3D
+3467 D3D9 : dEQP-GLES2.functional.attribute_location.bind_aliasing.cond* = FAIL
+3467 D3D9 : dEQP-GLES2.functional.attribute_location.bind_aliasing.max_cond* = FAIL
+3467 D3D11 : dEQP-GLES2.functional.attribute_location.bind_aliasing.cond* = FAIL
+3467 D3D11 : dEQP-GLES2.functional.attribute_location.bind_aliasing.max_cond* = FAIL
 
 // Half float OES either has an implementation bug or a dEQP bug.
 3283 : dEQP-GLES2.functional.fbo.completeness.renderable.texture.color0.rgba_half_float_oes = FAIL
 
 // Shader failures.
-3285 : dEQP-GLES2.functional.shaders.preprocessor.pragmas.pragma_fragment = FAIL
-3287 : dEQP-GLES2.functional.shaders.scoping.valid.local_variable_hides_function_parameter_vertex = FAIL
-3287 : dEQP-GLES2.functional.shaders.scoping.valid.local_variable_hides_function_parameter_fragment = FAIL
+3434 NEXUS5X GLES : dEQP-GLES2.functional.shaders.preprocessor.pragmas.pragma_* = FAIL
 
 // The fragment_ops.depth_stencil.random tests all seem to fail on D3D11.
 3282 D3D11 : dEQP-GLES2.functional.fragment_ops.depth_stencil.random.* = FAIL
@@ -173,6 +173,9 @@
 3303 OPENGL NVIDIA LINUX : dEQP-GLES2.functional.texture.mipmap.cube.projected.nearest_linear = FAIL
 
 // Mac OpenGL specific failures
+3466 MAC OPENGL : dEQP-GLES2.functional.attribute_location.bind_aliasing.cond* = SKIP
+3466 MAC OPENGL : dEQP-GLES2.functional.attribute_location.bind_aliasing.max_cond* = SKIP
+3433 MAC OPENGL : dEQP-GLES2.functional.shaders.preprocessor.pragmas.pragma_vertex = FAIL
 1143 MAC OPENGL : dEQP-GLES2.functional.shaders.scoping.valid.local_int_variable_hides_struct_type_* = FAIL
 1143 MAC OPENGL : dEQP-GLES2.functional.shaders.scoping.valid.local_struct_variable_hides_struct_type_* = FAIL
 1143 MAC OPENGL : dEQP-GLES2.functional.shaders.scoping.valid.function_parameter_hides_struct_type_* = FAIL
@@ -251,6 +254,8 @@
 2630 GLES ANDROID : dEQP-GLES2.functional.shaders.struct.uniform.sampler_in_function_arg_* = FAIL
 
 // Nexus 5x failures
+3309 NEXUS5X GLES : dEQP-GLES2.functional.attribute_location.bind_aliasing.cond* = FAIL
+3309 NEXUS5X GLES : dEQP-GLES2.functional.attribute_location.bind_aliasing.max_cond* = FAIL
 3309 NEXUS5X GLES : dEQP-GLES2.functional.fbo.render.texsubimage.after_render_tex2d_rgb = FAIL
 3309 NEXUS5X GLES : dEQP-GLES2.functional.polygon_offset.default_result_depth_clamp = FAIL
 3309 NEXUS5X GLES : dEQP-GLES2.functional.shaders.return.output_write_in_func_always_vertex = FAIL
@@ -272,14 +277,6 @@
 // Wide point clipping
 3253 VULKAN : dEQP-GLES2.functional.clipping.point.wide_point_clip_viewport_center = FAIL
 3253 VULKAN : dEQP-GLES2.functional.clipping.point.wide_point_clip_viewport_corner = FAIL
-
-// Other clipping
-3254 VULKAN : dEQP-GLES2.functional.clipping.line.line_clip_viewport_center = FAIL
-3254 VULKAN : dEQP-GLES2.functional.clipping.line.line_clip_viewport_corner = FAIL
-
-// Only seems to be an issue on NVIDIA
-3254 VULKAN NVIDIA : dEQP-GLES2.functional.clipping.point.point_clip_viewport_center = FAIL
-3254 VULKAN NVIDIA : dEQP-GLES2.functional.clipping.point.point_clip_viewport_corner = FAIL
 
 // These seem to fail on both D3D11 and Vulkan
 3243 VULKAN : dEQP-GLES2.functional.texture.mipmap.cube.basic.linear_nearest = FAIL
@@ -324,6 +321,11 @@
 3240 D3D11 : dEQP-GLES2.functional.texture.vertex.cube.wrap.mirror_repeat = FAIL
 3240 D3D11 : dEQP-GLES2.functional.texture.vertex.cube.wrap.mirror_mirror = FAIL
 
+// Vulkan multisampling bugs
+3204 VULKAN : dEQP-GLES2.functional.multisample.sample_coverage_invert = FAIL
+3204 VULKAN : dEQP-GLES2.functional.multisample.proportionality_sample_coverage = FAIL
+3204 VULKAN : dEQP-GLES2.functional.multisample.proportionality_sample_coverage_inverted = FAIL
+
 // Android Vulkan backend only failures
 2549 VULKAN ANDROID : dEQP-GLES2.functional.fragment_ops.depth_stencil.stencil* = SKIP
 
@@ -332,9 +334,6 @@
 
 // Passes on Pixel XL. Fails on 5x and Pixel 2. Might be fixed in latest driver.
 2609 VULKAN ANDROID : dEQP-GLES2.functional.texture.mipmap.cube.generate.* = SKIP
-
-// Fails on Nexus 5x only. TODO(jmadill): Remove suppression when possible. http://anglebug.com/2791
-2791 VULKAN ANDROID : dEQP-GLES2.functional.clipping.* = SKIP
 
 // Failing on the Pixel 2.
 2727 VULKAN ANDROID : dEQP-GLES2.functional.shaders.builtin_variable.pointcoord = FAIL

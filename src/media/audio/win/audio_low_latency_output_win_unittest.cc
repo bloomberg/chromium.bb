@@ -49,10 +49,6 @@ using ::testing::Return;
 
 namespace media {
 
-static const char kSpeechFile_16b_s_48k[] = "speech_16b_stereo_48kHz.raw";
-static const char kSpeechFile_16b_s_44k[] = "speech_16b_stereo_44kHz.raw";
-static const size_t kFileDurationMs = 20000;
-static const size_t kNumFileSegments = 2;
 static const int kBitsPerSample = 16;
 static const size_t kMaxDeltaSamples = 1000;
 static const char kDeltaTimeMsFileName[] = "delta_times_ms.txt";
@@ -389,56 +385,6 @@ TEST_F(WASAPIAudioOutputStreamTest, ValidPacketSize) {
       TestTimeouts::action_timeout());
   base::RunLoop().Run();
   aos->Stop();
-  aos->Close();
-}
-
-// This test is intended for manual tests and should only be enabled
-// when it is required to play out data from a local PCM file.
-// By default, GTest will print out YOU HAVE 1 DISABLED TEST.
-// To include disabled tests in test execution, just invoke the test program
-// with --gtest_also_run_disabled_tests or set the GTEST_ALSO_RUN_DISABLED_TESTS
-// environment variable to a value greater than 0.
-// The test files are approximately 20 seconds long.
-TEST_F(WASAPIAudioOutputStreamTest, DISABLED_ReadFromStereoFile) {
-  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndOutputDevices(audio_manager_.get()));
-
-  AudioOutputStreamWrapper aosw(audio_manager_.get());
-  AudioOutputStream* aos = aosw.Create();
-  EXPECT_TRUE(aos->Open());
-
-  std::string file_name;
-  if (aosw.sample_rate() == 48000) {
-    file_name = kSpeechFile_16b_s_48k;
-  } else if (aosw.sample_rate() == 44100) {
-    file_name = kSpeechFile_16b_s_44k;
-  } else if (aosw.sample_rate() == 96000) {
-    // Use 48kHz file at 96kHz as well. Will sound like Donald Duck.
-    file_name = kSpeechFile_16b_s_48k;
-  } else {
-    FAIL() << "This test supports 44.1, 48kHz and 96kHz only.";
-    return;
-  }
-  ReadFromFileAudioSource file_source(file_name);
-
-  DVLOG(0) << "File name      : " << file_name.c_str();
-  DVLOG(0) << "Sample rate    : " << aosw.sample_rate();
-  DVLOG(0) << "#channels      : " << aosw.channels();
-  DVLOG(0) << "File size      : " << file_source.file_size();
-  DVLOG(0) << "#file segments : " << kNumFileSegments;
-  DVLOG(0) << ">> Listen to the stereo file while playing...";
-
-  for (size_t i = 0; i < kNumFileSegments; i++) {
-    // Each segment will start with a short (~20ms) block of zeros, hence
-    // some short glitches might be heard in this test if kNumFileSegments
-    // is larger than one. The exact length of the silence period depends on
-    // the selected sample rate.
-    aos->Start(&file_source);
-    base::PlatformThread::Sleep(
-        base::TimeDelta::FromMilliseconds(kFileDurationMs / kNumFileSegments));
-    aos->Stop();
-  }
-
-  DVLOG(0) << ">> Stereo file playout has stopped.";
   aos->Close();
 }
 

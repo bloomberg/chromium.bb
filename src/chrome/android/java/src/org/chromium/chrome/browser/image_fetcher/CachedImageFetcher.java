@@ -112,6 +112,9 @@ public class CachedImageFetcher extends ImageFetcher {
     }
 
     @Override
+    public void clear() {}
+
+    @Override
     public @ImageFetcherConfig int getConfig() {
         return ImageFetcherConfig.DISK_CACHE_ONLY;
     }

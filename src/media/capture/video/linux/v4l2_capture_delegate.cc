@@ -891,9 +891,15 @@ void V4L2CaptureDelegate::DoCapture() {
       client_->OnFrameDropped(
           VideoCaptureFrameDropReason::kV4L2InvalidNumberOfBytesInBuffer);
     } else {
+      // TODO(julien.isorce): build gfx color space from v4l2 color space.
+      // primary = v4l2_format->fmt.pix.colorspace;
+      // range = v4l2_format->fmt.pix.quantization;
+      // matrix = v4l2_format->fmt.pix.ycbcr_enc;
+      // transfer = v4l2_format->fmt.pix.xfer_func;
+      // See http://crbug.com/959919.
       client_->OnIncomingCapturedData(
           buffer_tracker->start(), buffer_tracker->payload_size(),
-          capture_format_, rotation_, now, timestamp);
+          capture_format_, gfx::ColorSpace(), rotation_, now, timestamp);
     }
 
     while (!take_photo_callbacks_.empty()) {

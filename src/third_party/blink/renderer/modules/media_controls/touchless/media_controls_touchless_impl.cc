@@ -471,7 +471,8 @@ MediaControlsTouchlessImpl::ControlsState MediaControlsTouchlessImpl::State() {
     case HTMLMediaElement::kNetworkLoading:
       if (ready_state == HTMLMediaElement::kHaveNothing)
         return ControlsState::kPreReady;
-      return ControlsState::kReady;
+      else
+        return ControlsState::kReady;
     case HTMLMediaElement::kNetworkIdle:
       if (ready_state == HTMLMediaElement::kHaveNothing)
         return ControlsState::kPreReady;

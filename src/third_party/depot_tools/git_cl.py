@@ -68,6 +68,41 @@ import watchlists
 
 __version__ = '2.0'
 
+# Traces for git push will be stored in a traces directory inside the
+# depot_tools checkout.
+DEPOT_TOOLS = os.path.dirname(os.path.abspath(__file__))
+TRACES_DIR = os.path.join(DEPOT_TOOLS, 'traces')
+
+# When collecting traces, Git hashes will be reduced to 6 characters to reduce
+# the size after compression.
+GIT_HASH_RE = re.compile(r'\b([a-f0-9]{6})[a-f0-9]{34}\b', flags=re.I)
+# Used to redact the cookies from the gitcookies file.
+GITCOOKIES_REDACT_RE = re.compile(r'1/.*')
+
+# The maximum number of traces we will keep. Multiplied by 3 since we store
+# 3 files per trace.
+MAX_TRACES = 3 * 10
+# Message to be displayed to the user to inform where to find the traces for a
+# git-cl upload execution.
+TRACES_MESSAGE = (
+'\n'
+'The traces of this git-cl execution have been recorded at:\n'
+'  %(trace_name)s-traces.zip\n'
+'Copies of your gitcookies file and git config have been recorded at:\n'
+'  %(trace_name)s-git-info.zip\n')
+# Format of the message to be stored as part of the traces to give developers a
+# better context when they go through traces.
+TRACES_README_FORMAT = (
+'Date: %(now)s\n'
+'\n'
+'Change: https://%(gerrit_host)s/q/%(change_id)s\n'
+'Title: %(title)s\n'
+'\n'
+'%(description)s\n'
+'\n'
+'Execution time: %(execution_time)s\n'
+'Exit code: %(exit_code)s\n') + TRACES_MESSAGE
+
 COMMIT_BOT_EMAIL = 'commit-bot@chromium.org'
 POSTUPSTREAM_HOOK = '.git/hooks/post-cl-land'
 DESCRIPTION_BACKUP_FILE = '~/.git_cl_description_backup'
@@ -185,6 +220,12 @@ def time_time():
   # Use this so that it can be mocked in tests without interfering with python
   # system machinery.
   return time.time()
+
+
+def datetime_now():
+  # Use this so that it can be mocked in tests without interfering with python
+  # system machinery.
+  return datetime.datetime.now()
 
 
 def ask_for_data(prompt):
@@ -1244,7 +1285,7 @@ class Changelist(object):
   def GetUpstreamBranch(self):
     if self.upstream_branch is None:
       remote, upstream_branch = self.FetchUpstreamTuple(self.GetBranch())
-      if remote is not '.':
+      if remote != '.':
         upstream_branch = upstream_branch.replace('refs/heads/',
                                                   'refs/remotes/%s/' % remote)
         upstream_branch = upstream_branch.replace('refs/branch-heads/',
@@ -1969,6 +2010,11 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     if not isinstance(cookie_auth, gerrit_util.CookiesAuthenticator):
       return
 
+    if urlparse.urlparse(self.GetRemoteUrl()).scheme != 'https':
+      print('WARNING: Ignoring branch %s with non-https remote %s' %
+            (self._changelist.branch, self.GetRemoteUrl()))
+      return
+
     # Lazy-loader to identify Gerrit and Git hosts.
     self.GetCodereviewServer()
     git_host = self._GetGitHost()
@@ -1980,14 +2026,14 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       if gerrit_auth == git_auth:
         return
       all_gsrc = cookie_auth.get_auth_header('d0esN0tEx1st.googlesource.com')
-      print((
+      print(
           'WARNING: You have different credentials for Gerrit and git hosts:\n'
           '           %s\n'
           '           %s\n'
           '        Consider running the following command:\n'
           '          git cl creds-check\n'
           '        %s\n'
-          '        %s') %
+          '        %s' %
           (git_host, self._gerrit_host,
            ('Hint: delete creds for .googlesource.com' if all_gsrc else ''),
            cookie_auth.get_new_password_message(git_host)))
@@ -2449,7 +2495,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       part = parsed_url.fragment
     else:
       part = parsed_url.path
-    match = re.match('(/c(/.*/\+)?)?/(\d+)(/(\d+)?/?)?$', part)
+    match = re.match(r'(/c(/.*/\+)?)?/(\d+)(/(\d+)?/?)?$', part)
     if match:
       return _ParsedIssueNumberArgument(
           issue=int(match.group(3)),
@@ -2477,6 +2523,131 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
         print('Gerrit commit-msg hook removed.')
       else:
         print('OK, will keep Gerrit commit-msg hook in place.')
+
+  def _CleanUpOldTraces(self):
+    """Keep only the last |MAX_TRACES| traces."""
+    try:
+      traces = sorted([
+        os.path.join(TRACES_DIR, f)
+        for f in os.listdir(TRACES_DIR)
+        if (os.path.isfile(os.path.join(TRACES_DIR, f))
+            and not f.startswith('tmp'))
+      ])
+      traces_to_delete = traces[:-MAX_TRACES]
+      for trace in traces_to_delete:
+        os.remove(trace)
+    except OSError:
+      print('WARNING: Failed to remove old git traces from\n'
+            '  %s'
+            'Consider removing them manually.' % TRACES_DIR)
+
+  def _WriteGitPushTraces(self, trace_name, traces_dir, git_push_metadata):
+    """Zip and write the git push traces stored in traces_dir."""
+    gclient_utils.safe_makedirs(TRACES_DIR)
+    traces_zip = trace_name + '-traces'
+    traces_readme = trace_name + '-README'
+    # Create a temporary dir to store git config and gitcookies in. It will be
+    # compressed and stored next to the traces.
+    git_info_dir = tempfile.mkdtemp()
+    git_info_zip = trace_name + '-git-info'
+
+    git_push_metadata['now'] = datetime_now().strftime('%c')
+    if sys.stdin.encoding and sys.stdin.encoding != 'utf-8':
+      git_push_metadata['now'] = git_push_metadata['now'].decode(
+          sys.stdin.encoding)
+
+    git_push_metadata['trace_name'] = trace_name
+    gclient_utils.FileWrite(
+        traces_readme, TRACES_README_FORMAT % git_push_metadata)
+
+    # Keep only the first 6 characters of the git hashes on the packet
+    # trace. This greatly decreases size after compression.
+    packet_traces = os.path.join(traces_dir, 'trace-packet')
+    if os.path.isfile(packet_traces):
+      contents = gclient_utils.FileRead(packet_traces)
+      gclient_utils.FileWrite(
+          packet_traces, GIT_HASH_RE.sub(r'\1', contents))
+    shutil.make_archive(traces_zip, 'zip', traces_dir)
+
+    # Collect and compress the git config and gitcookies.
+    git_config = RunGit(['config', '-l'])
+    gclient_utils.FileWrite(
+        os.path.join(git_info_dir, 'git-config'),
+        git_config)
+
+    cookie_auth = gerrit_util.Authenticator.get()
+    if isinstance(cookie_auth, gerrit_util.CookiesAuthenticator):
+      gitcookies_path = cookie_auth.get_gitcookies_path()
+      if os.path.isfile(gitcookies_path):
+        gitcookies = gclient_utils.FileRead(gitcookies_path)
+        gclient_utils.FileWrite(
+            os.path.join(git_info_dir, 'gitcookies'),
+            GITCOOKIES_REDACT_RE.sub('REDACTED', gitcookies))
+    shutil.make_archive(git_info_zip, 'zip', git_info_dir)
+
+    gclient_utils.rmtree(git_info_dir)
+
+  def _RunGitPushWithTraces(
+      self, change_desc, refspec, refspec_opts, git_push_metadata):
+    """Run git push and collect the traces resulting from the execution."""
+    # Create a temporary directory to store traces in. Traces will be compressed
+    # and stored in a 'traces' dir inside depot_tools.
+    traces_dir = tempfile.mkdtemp()
+    trace_name = os.path.join(
+        TRACES_DIR, datetime_now().strftime('%Y%m%dT%H%M%S.%f'))
+
+    env = os.environ.copy()
+    env['GIT_REDACT_COOKIES'] = 'o,SSO,GSSO_Uberproxy'
+    env['GIT_TR2_EVENT'] = os.path.join(traces_dir, 'tr2-event')
+    env['GIT_TRACE2_EVENT'] = os.path.join(traces_dir, 'tr2-event')
+    env['GIT_TRACE_CURL'] = os.path.join(traces_dir, 'trace-curl')
+    env['GIT_TRACE_CURL_NO_DATA'] = '1'
+    env['GIT_TRACE_PACKET'] = os.path.join(traces_dir, 'trace-packet')
+
+    try:
+      push_returncode = 0
+      remote_url = self.GetRemoteUrl()
+      before_push = time_time()
+      push_stdout = gclient_utils.CheckCallAndFilter(
+          ['git', 'push', remote_url, refspec],
+          env=env,
+          print_stdout=True,
+          # Flush after every line: useful for seeing progress when running as
+          # recipe.
+          filter_fn=lambda _: sys.stdout.flush())
+    except subprocess2.CalledProcessError as e:
+      push_returncode = e.returncode
+      DieWithError('Failed to create a change. Please examine output above '
+                   'for the reason of the failure.\n'
+                   'Hint: run command below to diagnose common Git/Gerrit '
+                   'credential problems:\n'
+                   '  git cl creds-check\n'
+                   '\n'
+                   'If git-cl is not working correctly, file a bug under the '
+                   'Infra>SDK component including the files below.\n'
+                   'Review the files before upload, since they might contain '
+                   'sensitive information.\n'
+                   'Set the Restrict-View-Google label so that they are not '
+                   'publicly accessible.\n'
+                   + TRACES_MESSAGE % {'trace_name': trace_name},
+                   change_desc)
+    finally:
+      execution_time = time_time() - before_push
+      metrics.collector.add_repeated('sub_commands', {
+        'command': 'git push',
+        'execution_time': execution_time,
+        'exit_code': push_returncode,
+        'arguments': metrics_utils.extract_known_subcommand_args(refspec_opts),
+      })
+
+      git_push_metadata['execution_time'] = execution_time
+      git_push_metadata['exit_code'] = push_returncode
+      self._WriteGitPushTraces(trace_name, traces_dir, git_push_metadata)
+
+      self._CleanUpOldTraces()
+      gclient_utils.rmtree(traces_dir)
+
+    return push_stdout
 
   def CMDUploadChange(self, options, git_diff_args, custom_cl_base, change):
     """Upload the current branch to Gerrit."""
@@ -2727,30 +2898,14 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
           'spaces not allowed in refspec: "%s"' % refspec_suffix)
     refspec = '%s:refs/for/%s%s' % (ref_to_push, branch, refspec_suffix)
 
-    try:
-      push_returncode = 0
-      before_push = time_time()
-      push_stdout = gclient_utils.CheckCallAndFilter(
-          ['git', 'push', self.GetRemoteUrl(), refspec],
-          print_stdout=True,
-          # Flush after every line: useful for seeing progress when running as
-          # recipe.
-          filter_fn=lambda _: sys.stdout.flush())
-    except subprocess2.CalledProcessError as e:
-      push_returncode = e.returncode
-      DieWithError('Failed to create a change. Please examine output above '
-                   'for the reason of the failure.\n'
-                   'Hint: run command below to diagnose common Git/Gerrit '
-                   'credential problems:\n'
-                   '  git cl creds-check\n',
-                   change_desc)
-    finally:
-      metrics.collector.add_repeated('sub_commands', {
-        'command': 'git push',
-        'execution_time': time_time() - before_push,
-        'exit_code': push_returncode,
-        'arguments': metrics_utils.extract_known_subcommand_args(refspec_opts),
-      })
+    git_push_metadata = {
+        'gerrit_host': self._GetGerritHost(),
+        'title': title or '<untitled>',
+        'change_id': change_id,
+        'description': change_desc.description,
+    }
+    push_stdout = self._RunGitPushWithTraces(
+        change_desc, refspec, refspec_opts, git_push_metadata)
 
     if options.squash:
       regex = re.compile(r'remote:\s+https?://[\w\-\.\+\/#]*/(\d+)\s.*')

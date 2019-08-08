@@ -105,11 +105,11 @@ class DeviceChooserContentViewTest : public ChromeViewsTestBase {
   bool IsDeviceSelected() { return !table_view()->selection_model().empty(); }
 
   void ExpectNoDevices() {
-    EXPECT_TRUE(no_options_label()->visible());
+    EXPECT_TRUE(no_options_label()->GetVisible());
     EXPECT_EQ(0, table_view()->RowCount());
     // The table should be disabled since there are no (real) options.
-    EXPECT_FALSE(table_parent()->visible());
-    EXPECT_FALSE(table_view()->enabled());
+    EXPECT_FALSE(table_parent()->GetVisible());
+    EXPECT_FALSE(table_view()->GetEnabled());
     EXPECT_FALSE(IsDeviceSelected());
   }
 
@@ -128,11 +128,11 @@ TEST_F(DeviceChooserContentViewTest, InitialState) {
   EXPECT_CALL(table_observer(), OnSelectionChanged()).Times(0);
 
   ExpectNoDevices();
-  EXPECT_FALSE(adapter_off_help_link()->visible());
-  EXPECT_FALSE(throbber()->visible());
-  EXPECT_FALSE(scanning_label()->visible());
-  EXPECT_TRUE(re_scan_button()->visible());
-  EXPECT_TRUE(re_scan_button()->enabled());
+  EXPECT_FALSE(adapter_off_help_link()->GetVisible());
+  EXPECT_FALSE(throbber()->GetVisible());
+  EXPECT_FALSE(scanning_label()->GetVisible());
+  EXPECT_TRUE(re_scan_button()->GetVisible());
+  EXPECT_TRUE(re_scan_button()->GetEnabled());
 }
 
 TEST_F(DeviceChooserContentViewTest, AddOption) {
@@ -142,13 +142,13 @@ TEST_F(DeviceChooserContentViewTest, AddOption) {
   EXPECT_EQ(1, table_view()->RowCount());
   EXPECT_EQ(GetPairedDeviceTextAtRow(0), table_model()->GetText(0, 0));
   // The table should be enabled now that there's an option.
-  EXPECT_TRUE(table_view()->enabled());
+  EXPECT_TRUE(table_view()->GetEnabled());
   EXPECT_FALSE(IsDeviceSelected());
 
   AddUnpairedDevice();
   EXPECT_EQ(2, table_view()->RowCount());
   EXPECT_EQ(GetUnpairedDeviceTextAtRow(1), table_model()->GetText(1, 0));
-  EXPECT_TRUE(table_view()->enabled());
+  EXPECT_TRUE(table_view()->GetEnabled());
   EXPECT_FALSE(IsDeviceSelected());
 }
 
@@ -164,7 +164,7 @@ TEST_F(DeviceChooserContentViewTest, RemoveOption) {
   EXPECT_EQ(2, table_view()->RowCount());
   EXPECT_EQ(GetUnpairedDeviceTextAtRow(0), table_model()->GetText(0, 0));
   EXPECT_EQ(GetUnpairedDeviceTextAtRow(1), table_model()->GetText(1, 0));
-  EXPECT_TRUE(table_view()->enabled());
+  EXPECT_TRUE(table_view()->GetEnabled());
   EXPECT_FALSE(IsDeviceSelected());
 
   // Remove everything.
@@ -209,43 +209,43 @@ TEST_F(DeviceChooserContentViewTest, TurnBluetoothOffAndOn) {
   controller()->SetBluetoothStatus(
       FakeBluetoothChooserController::BluetoothStatus::UNAVAILABLE);
 
-  EXPECT_FALSE(table_parent()->visible());
-  EXPECT_FALSE(no_options_label()->visible());
-  EXPECT_TRUE(adapter_off_help_link()->visible());
-  EXPECT_FALSE(throbber()->visible());
-  EXPECT_FALSE(scanning_label()->visible());
-  EXPECT_TRUE(re_scan_button()->visible());
-  EXPECT_FALSE(re_scan_button()->enabled());
+  EXPECT_FALSE(table_parent()->GetVisible());
+  EXPECT_FALSE(no_options_label()->GetVisible());
+  EXPECT_TRUE(adapter_off_help_link()->GetVisible());
+  EXPECT_FALSE(throbber()->GetVisible());
+  EXPECT_FALSE(scanning_label()->GetVisible());
+  EXPECT_TRUE(re_scan_button()->GetVisible());
+  EXPECT_FALSE(re_scan_button()->GetEnabled());
 
   controller()->RemoveDevice(0);
   controller()->SetBluetoothStatus(
       FakeBluetoothChooserController::BluetoothStatus::IDLE);
   ExpectNoDevices();
-  EXPECT_FALSE(adapter_off_help_link()->visible());
-  EXPECT_FALSE(throbber()->visible());
-  EXPECT_FALSE(scanning_label()->visible());
-  EXPECT_TRUE(re_scan_button()->visible());
-  EXPECT_TRUE(re_scan_button()->enabled());
+  EXPECT_FALSE(adapter_off_help_link()->GetVisible());
+  EXPECT_FALSE(throbber()->GetVisible());
+  EXPECT_FALSE(scanning_label()->GetVisible());
+  EXPECT_TRUE(re_scan_button()->GetVisible());
+  EXPECT_TRUE(re_scan_button()->GetEnabled());
 }
 
 TEST_F(DeviceChooserContentViewTest, ScanForDevices) {
   controller()->SetBluetoothStatus(
       FakeBluetoothChooserController::BluetoothStatus::SCANNING);
   EXPECT_EQ(0, table_view()->RowCount());
-  EXPECT_FALSE(table_view()->enabled());
-  EXPECT_FALSE(adapter_off_help_link()->visible());
-  EXPECT_TRUE(throbber()->visible());
-  EXPECT_TRUE(scanning_label()->visible());
-  EXPECT_FALSE(re_scan_button()->visible());
+  EXPECT_FALSE(table_view()->GetEnabled());
+  EXPECT_FALSE(adapter_off_help_link()->GetVisible());
+  EXPECT_TRUE(throbber()->GetVisible());
+  EXPECT_TRUE(scanning_label()->GetVisible());
+  EXPECT_FALSE(re_scan_button()->GetVisible());
 
   AddUnpairedDevice();
   EXPECT_EQ(1, table_view()->RowCount());
-  EXPECT_TRUE(table_view()->enabled());
-  EXPECT_FALSE(adapter_off_help_link()->visible());
-  EXPECT_TRUE(throbber()->visible());
-  EXPECT_TRUE(scanning_label()->visible());
+  EXPECT_TRUE(table_view()->GetEnabled());
+  EXPECT_FALSE(adapter_off_help_link()->GetVisible());
+  EXPECT_TRUE(throbber()->GetVisible());
+  EXPECT_TRUE(scanning_label()->GetVisible());
   EXPECT_FALSE(IsDeviceSelected());
-  EXPECT_FALSE(re_scan_button()->visible());
+  EXPECT_FALSE(re_scan_button()->GetVisible());
 }
 
 TEST_F(DeviceChooserContentViewTest, ClickAdapterOffHelpLink) {
@@ -266,8 +266,8 @@ TEST_F(DeviceChooserContentViewTest, ClickHelpButton) {
   EXPECT_CALL(*controller(), OpenHelpCenterUrl()).Times(1);
   // The content view doesn't have a direct reference to the help button, so we
   // need to find it. It's on the left (in LTR) so it should be the first child.
-  views::ImageButton* help_button =
-      static_cast<views::ImageButton*>(extra_views_container_->child_at(0));
+  auto* help_button = static_cast<views::ImageButton*>(
+      extra_views_container_->children().front());
   const gfx::Point point(10, 10);
   const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, point, point,
                              ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,

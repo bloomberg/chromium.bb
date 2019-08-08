@@ -20,11 +20,11 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "components/autofill/core/browser/autofill_metadata.h"
-#include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/autofill_metadata.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
@@ -818,33 +818,9 @@ TEST_F(AutofillTableTest,
   changes.clear();
 }
 
-// Tests that we set the change type to REMOVE for expired elements when the
-// Autocomplete Retention Policy feature flag is off.
-TEST_F(AutofillTableTest, RemoveExpiredFormElements_FlagOff_Removes) {
-  scoped_feature_list_.InitAndDisableFeature(
-      features::kAutocompleteRetentionPolicyEnabled);
-  auto kNow = AutofillClock::Now();
-  auto k4MonthsOld = kNow - base::TimeDelta::FromDays(4 * 30);
-
-  AutofillChangeList changes;
-  FormFieldData field;
-  field.name = ASCIIToUTF16("Name");
-  field.value = ASCIIToUTF16("Superman");
-  EXPECT_TRUE(table_->AddFormFieldValueTime(field, &changes, k4MonthsOld));
-  changes.clear();
-
-  EXPECT_TRUE(table_->RemoveExpiredFormElements(&changes));
-
-  EXPECT_EQ(AutofillChange(AutofillChange::REMOVE,
-                           AutofillKey(field.name, field.value)),
-            changes[0]);
-}
-
-// Tests that we set the change type to EXPIRE for expired elements when the
-// Autocomplete Retention Policy feature flag is on.
-TEST_F(AutofillTableTest, RemoveExpiredFormElements_FlagOn_Expires) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutocompleteRetentionPolicyEnabled);
+// Tests that we set the change type to EXPIRE for expired elements and we
+// delete an old entry.
+TEST_F(AutofillTableTest, RemoveExpiredFormElements_Expires_DeleteEntry) {
   auto kNow = AutofillClock::Now();
   auto k2YearsOld = kNow - base::TimeDelta::FromDays(
                                2 * kAutocompleteRetentionPolicyPeriodInDays);
@@ -863,11 +839,9 @@ TEST_F(AutofillTableTest, RemoveExpiredFormElements_FlagOn_Expires) {
             changes[0]);
 }
 
-// Tests that, with the Autocomplete Retention Policy feature flag on, we don't
+// Tests that we don't
 // delete non-expired entries' data from the SQLite table.
-TEST_F(AutofillTableTest, RemoveExpiredFormElements_FlagOn_NotOldEnough) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutocompleteRetentionPolicyEnabled);
+TEST_F(AutofillTableTest, RemoveExpiredFormElements_NotOldEnough) {
   auto kNow = AutofillClock::Now();
   auto k2DaysOld = kNow - base::TimeDelta::FromDays(2);
 

@@ -138,7 +138,7 @@ class RtpRtcpRtxNackTest : public ::testing::Test {
     rtp_rtcp_module_ = RtpRtcp::Create(configuration);
     rtp_sender_video_ = absl::make_unique<RTPSenderVideo>(
         &fake_clock, rtp_rtcp_module_->RtpSender(), nullptr,
-        &playout_delay_oracle_, nullptr, false, FieldTrialBasedConfig());
+        &playout_delay_oracle_, nullptr, false, false, FieldTrialBasedConfig());
     rtp_rtcp_module_->SetSSRC(kTestSsrc);
     rtp_rtcp_module_->SetRTCPStatus(RtcpMode::kCompound);
     rtp_rtcp_module_->SetStorePacketsStatus(true, 600);
@@ -151,7 +151,8 @@ class RtpRtcpRtxNackTest : public ::testing::Test {
     // single rtp_rtcp module for both send and receive side.
     rtp_rtcp_module_->SetRemoteSSRC(kTestSsrc);
 
-    rtp_sender_video_->RegisterPayloadType(kPayloadType, "video");
+    rtp_sender_video_->RegisterPayloadType(kPayloadType, "video",
+                                           /*raw_payload=*/false);
     rtp_rtcp_module_->SetRtxSendPayloadType(kRtxPayloadType, kPayloadType);
     transport_.SetSendModule(rtp_rtcp_module_.get());
     media_receiver_ = transport_.stream_receiver_controller_.CreateReceiver(

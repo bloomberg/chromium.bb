@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_block_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_compositor.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
@@ -21,12 +22,11 @@ namespace blink {
 class NGInlineLayoutTest : public SimTest {
  public:
   NGConstraintSpace ConstraintSpaceForElement(LayoutBlockFlow* block_flow) {
-    return NGConstraintSpaceBuilder(
-               block_flow->Style()->GetWritingMode(),
-               block_flow->Style()->GetWritingMode(),
-               /* is_new_fc */ false)
-        .SetAvailableSize(NGLogicalSize(LayoutUnit(), LayoutUnit()))
-        .SetPercentageResolutionSize(NGLogicalSize(LayoutUnit(), LayoutUnit()))
+    return NGConstraintSpaceBuilder(block_flow->Style()->GetWritingMode(),
+                                    block_flow->Style()->GetWritingMode(),
+                                    /* is_new_fc */ false)
+        .SetAvailableSize(LogicalSize(LayoutUnit(), LayoutUnit()))
+        .SetPercentageResolutionSize(LogicalSize(LayoutUnit(), LayoutUnit()))
         .SetTextDirection(block_flow->Style()->Direction())
         .ToConstraintSpace();
   }
@@ -48,8 +48,11 @@ TEST_F(NGInlineLayoutTest, BlockWithSingleTextNode) {
   NGConstraintSpace constraint_space = ConstraintSpaceForElement(block_flow);
   NGBlockNode node(block_flow);
 
+  NGFragmentGeometry fragment_geometry =
+      CalculateInitialFragmentGeometry(constraint_space, node);
   scoped_refptr<const NGLayoutResult> result =
-      NGBlockLayoutAlgorithm(node, constraint_space).Layout();
+      NGBlockLayoutAlgorithm({node, fragment_geometry, constraint_space})
+          .Layout();
   EXPECT_TRUE(result);
 
   String expected_text("Hello World!");
@@ -73,8 +76,11 @@ TEST_F(NGInlineLayoutTest, BlockWithTextAndAtomicInline) {
   NGConstraintSpace constraint_space = ConstraintSpaceForElement(block_flow);
   NGBlockNode node(block_flow);
 
+  NGFragmentGeometry fragment_geometry =
+      CalculateInitialFragmentGeometry(constraint_space, node);
   scoped_refptr<const NGLayoutResult> result =
-      NGBlockLayoutAlgorithm(node, constraint_space).Layout();
+      NGBlockLayoutAlgorithm({node, fragment_geometry, constraint_space})
+          .Layout();
   EXPECT_TRUE(result);
 
   StringBuilder expected_text;

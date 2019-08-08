@@ -802,7 +802,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
         if (mMetrics != null) {
             final RequestFinishedInfo requestInfo = new RequestFinishedInfoImpl(mInitialUrl,
                     mRequestAnnotations, mMetrics, mFinishedReason, mResponseInfo, mException);
-            mRequestContext.reportFinished(requestInfo);
+            mRequestContext.reportRequestFinished(requestInfo);
             if (mRequestFinishedListener != null) {
                 try {
                     mRequestFinishedListener.getExecutor().execute(new Runnable() {

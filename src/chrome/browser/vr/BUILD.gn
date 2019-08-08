@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/buildflag_header.gni")
+import("//chrome/android/features/dynamic_feature_modules.gni")
 import("//chrome/browser/vr/features.gni")
 import("//chrome/common/features.gni")
 import("//device/vr/buildflags/buildflags.gni")
@@ -124,11 +125,6 @@ component("vr_ui") {
     "elements/vector_icon_button.h",
     "elements/viewport_aware_root.cc",
     "elements/viewport_aware_root.h",
-    "font_fallback.cc",
-    "font_fallback.h",
-    "font_fallback_android.cc",
-    "font_fallback_linux.cc",
-    "font_fallback_win.cc",
     "frame_lifecycle.cc",
     "frame_lifecycle.h",
     "model/color_scheme.cc",
@@ -186,13 +182,23 @@ component("vr_ui") {
     "//base",
     "//cc/animation",
     "//chrome/app:generated_resources",
+    "//chrome/app/vector_icons",
+    "//chrome/browser/vr/vector_icons",
     "//chrome/common:constants",
+    "//components/omnibox/browser:vector_icons",
     "//components/url_formatter",
+    "//components/vector_icons",
     "//device/vr/buildflags:buildflags",
     "//media",
     "//net",
     "//skia",
   ]
+
+  if (use_native_modules && modularize_vr_native) {
+    # Mark symbols in this library as belonging to the VR partition. Only
+    # exported symbols (module entrypoints) are affected.
+    cflags = [ "-fsymbol-partition=libvr.so" ]
+  }
 
   defines = [ "VR_UI_IMPLEMENTATION" ]
 
@@ -235,6 +241,9 @@ component("vr_common") {
     "scheduler_delegate.h",
     "service/browser_xr_runtime.cc",
     "service/browser_xr_runtime.h",
+    "service/gvr_consent_helper.cc",
+    "service/gvr_consent_helper.h",
+    "service/interface_set.h",
     "service/vr_service_impl.cc",
     "service/vr_service_impl.h",
     "service/xr_device_impl.cc",
@@ -242,6 +251,8 @@ component("vr_common") {
     "service/xr_runtime_manager.cc",
     "service/xr_runtime_manager.h",
     "service/xr_runtime_manager_observer.h",
+    "service/xr_session_request_consent_manager.cc",
+    "service/xr_session_request_consent_manager.h",
     "sounds_manager_audio_delegate.cc",
     "sounds_manager_audio_delegate.h",
     "vr_export.h",
@@ -336,6 +347,8 @@ component("vr_base") {
     "keyboard_delegate.h",
     "keyboard_ui_interface.h",
     "macros.h",
+    "metrics/consent_flow_metrics_helper.cc",
+    "metrics/consent_flow_metrics_helper.h",
     "metrics/metrics_helper.cc",
     "metrics/metrics_helper.h",
     "metrics/session_metrics_helper.cc",
@@ -405,20 +418,21 @@ component("vr_base") {
   deps = [
     "//base",
     "//chrome/app:generated_resources",
-    "//chrome/app/vector_icons",
-    "//chrome/browser/vr/vector_icons",
-    "//components/omnibox/browser:vector_icons",
     "//components/rappor:rappor",
     "//components/security_state/core",
     "//components/ukm/content",
     "//components/url_formatter",
-    "//components/vector_icons",
-    "//content/public/browser:browser",
+    "//content/public/browser",
+    "//device/vr/public/mojom:mojom",
     "//media",
     "//net",
     "//services/metrics/public/cpp:ukm_builders",
     "//skia",
   ]
+
+  if (is_android) {
+    deps += [ "//chrome/android/features/vr:jni_headers" ]
+  }
 }
 
 source_set("vr_gl_bindings") {
@@ -463,7 +477,6 @@ test("vr_common_unittests") {
     "elements/throbber_unittest.cc",
     "elements/transient_element_unittest.cc",
     "elements/ui_element_unittest.cc",
-    "elements/url_text_unittest.cc",
     "elements/vector_icon_button_unittest.cc",
     "elements/vector_icon_unittest.cc",
     "elements/viewport_aware_root_unittest.cc",
@@ -571,7 +584,7 @@ source_set("vr_test_support") {
     ":vr_ui",
     "//base/test:test_support",
     "//cc:test_support",
-    "//components/omnibox/browser:browser",
+    "//components/omnibox/browser",
     "//components/omnibox/browser:vector_icons",
     "//components/security_state/core",
     "//content/test:test_support",
@@ -671,8 +684,15 @@ if (!is_android) {
 
     # Common infrastructure.
     sources = [
+      "test/conditional_skipping.cc",
+      "test/conditional_skipping.h",
+      "test/fake_xr_session_request_consent_manager.cc",
+      "test/fake_xr_session_request_consent_manager.h",
       "test/mock_xr_device_hook_base.cc",
       "test/mock_xr_device_hook_base.h",
+      "test/mock_xr_session_request_consent_manager.cc",
+      "test/mock_xr_session_request_consent_manager.h",
+      "test/multi_class_browser_test.h",
       "test/webvr_browser_test.cc",
       "test/webvr_browser_test.h",
       "test/webxr_browser_test.cc",
@@ -700,7 +720,7 @@ if (!is_android) {
       "//device/base",
       "//device/vr:vr",
       "//device/vr/buildflags:buildflags",
-      "//device/vr/public/mojom:mojom",
+      "//device/vr/public/mojom",
       "//device/vr/public/mojom:test_mojom",
       "//services/service_manager/sandbox",
     ]
@@ -728,6 +748,7 @@ if (!is_android) {
 
       # Tests.
       sources += [
+        "webxr_vr_consent_dialog_browser_test.cc",
         "webxr_vr_frame_pose_browser_test.cc",
         "webxr_vr_indicators_browser_test.cc",
         "webxr_vr_input_browser_test.cc",
@@ -738,8 +759,9 @@ if (!is_android) {
       ]
 
       deps += [
-        "//components/content_settings/core/browser:browser",
-        "//third_party/openvr:openvr",
+        "//components/content_settings/core/browser",
+        "//device/vr:directx_helpers",
+        "//third_party/openvr",
       ]
 
       data_deps += [ "//device/vr:openvr_mock" ]

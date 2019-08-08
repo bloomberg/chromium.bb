@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -211,12 +212,15 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   const base::string16& GetDisplayText() override;
   Size GetStringSize() override;
   SizeF GetStringSizeF() override;
+  Size GetLineSize(const SelectionModel& caret) override;
+  float TotalLineWidth() override;
   SelectionModel FindCursorPosition(const Point& point,
                                     const Point& drag_origin) override;
   bool IsSelectionSupported() const override;
   std::vector<FontSpan> GetFontSpansForTesting() override;
   std::vector<Rect> GetSubstringBounds(const Range& range) override;
-  Range GetCursorSpan(const Range& text_range) override;
+  RangeF GetCursorSpan(const Range& text_range) override;
+  size_t GetLineContainingCaret(const SelectionModel& caret) override;
 
   // ICU grapheme iterator for the layout text. Can be null in case of an error.
   base::i18n::BreakIterator* GetGraphemeIterator();
@@ -228,6 +232,9 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
       const SelectionModel& selection,
       VisualCursorDirection direction) override;
   SelectionModel AdjacentWordSelectionModel(
+      const SelectionModel& selection,
+      VisualCursorDirection direction) override;
+  SelectionModel AdjacentLineSelectionModel(
       const SelectionModel& selection,
       VisualCursorDirection direction) override;
   size_t TextIndexToDisplayIndex(size_t index) override;
@@ -298,7 +305,6 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   const internal::TextRunList* GetRunList() const override;
   bool GetDecoratedTextForRange(const Range& range,
                                 DecoratedText* decorated_text) override;
-  void SetGlyphWidthForTest(float test_width) override;
 
   // Text run list for |layout_text_| and |display_text_|.
   // |display_run_list_| is created only when the text is elided.
@@ -317,8 +323,8 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   // The total size of the layouted text.
   SizeF total_size_;
 
-  // Fixed width of glyphs. This should only be set in test environments.
-  float glyph_width_for_test_;
+  // The process application locale used to configure text rendering.
+  std::string locale_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderTextHarfBuzz);
 };

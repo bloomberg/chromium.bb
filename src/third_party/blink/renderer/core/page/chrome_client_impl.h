@@ -66,10 +66,10 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   void Focus(LocalFrame*) override;
   bool CanTakeFocus(WebFocusType) override;
   void TakeFocus(WebFocusType) override;
-  void FocusedNodeChanged(Node* from_node, Node* to_node) override;
+  void FocusedElementChanged(Element* from_node, Element* to_node) override;
   void BeginLifecycleUpdates() override;
   void StartDeferringCommits(base::TimeDelta timeout) override;
-  void StopDeferringCommits() override;
+  void StopDeferringCommits(cc::PaintHoldingCommitTrigger) override;
   bool HadFormInteraction() const override;
   void StartDragging(LocalFrame*,
                      const WebDragData&,
@@ -79,6 +79,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   bool AcceptsLoadDrops() const override;
   Page* CreateWindowDelegate(LocalFrame*,
                              const FrameLoadRequest&,
+                             const AtomicString& name,
                              const WebWindowFeatures&,
                              WebSandboxFlags,
                              const FeaturePolicy::FeatureState&,
@@ -90,6 +91,12 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
                      const FloatSize& velocity_in_viewport) override;
   void SetOverscrollBehavior(LocalFrame& main_frame,
                              const cc::OverscrollBehavior&) override;
+  void InjectGestureScrollEvent(LocalFrame& local_frame,
+                                WebGestureDevice device,
+                                const WebFloatSize& delta,
+                                ScrollGranularity granularity,
+                                CompositorElementId scrollable_area_element_id,
+                                WebInputEvent::Type injected_type) override;
   bool ShouldReportDetailedMessageForSource(LocalFrame&,
                                             const String&) override;
   void AddMessageToConsole(LocalFrame*,
@@ -135,8 +142,10 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
                                  ColorChooserClient*,
                                  const Color&) override;
   DateTimeChooser* OpenDateTimeChooser(
+      LocalFrame* frame,
       DateTimeChooserClient*,
       const DateTimeChooserParameters&) override;
+  ExternalDateTimeChooser* GetExternalDateTimeChooserForTesting() override;
   void OpenFileChooser(LocalFrame*, scoped_refptr<FileChooser>) override;
   void SetCursor(const Cursor&, LocalFrame*) override;
   void SetCursorOverridden(bool) override;
@@ -245,8 +254,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
                      const PaintImage&,
                      base::OnceCallback<void(bool)>) override;
 
-  void NotifySwapTime(LocalFrame& frame,
-                      WebWidgetClient::ReportTimeCallback callback) override;
+  void NotifySwapTime(LocalFrame& frame, ReportTimeCallback callback) override;
 
   void FallbackCursorModeLockCursor(LocalFrame* frame,
                                     bool left,
@@ -271,6 +279,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   Vector<scoped_refptr<FileChooser>> file_chooser_queue_;
   Cursor last_set_mouse_cursor_for_testing_;
   bool cursor_overridden_;
+  Member<ExternalDateTimeChooser> external_date_time_chooser_;
   bool did_request_non_empty_tool_tip_;
 
   FRIEND_TEST_ALL_PREFIXES(FileChooserQueueTest, DerefQueuedChooser);

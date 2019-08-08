@@ -8,15 +8,15 @@
 
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shelf_prefs.h"
+#include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
-#include "ash/shell_test_api.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -34,7 +34,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
@@ -160,12 +159,14 @@ class TabletModeWindowManagerTest : public AshTestBase {
     }
     aura::Window* window = aura::test::CreateTestWindowWithDelegateAndType(
         delegate, params.type, 0, params.bounds, NULL, params.show_on_creation);
-    int32_t behavior = ws::mojom::kResizeBehaviorNone;
-    behavior |= params.can_resize ? ws::mojom::kResizeBehaviorCanResize : 0;
-    behavior |= params.can_maximize ? ws::mojom::kResizeBehaviorCanMaximize : 0;
+    int32_t behavior = aura::client::kResizeBehaviorNone;
+    behavior |= params.can_resize ? aura::client::kResizeBehaviorCanResize : 0;
+    behavior |=
+        params.can_maximize ? aura::client::kResizeBehaviorCanMaximize : 0;
     window->SetProperty(aura::client::kResizeBehaviorKey, behavior);
-    aura::Window* container = Shell::GetContainer(
-        Shell::GetPrimaryRootWindow(), wm::kSwitchableWindowContainerIds[0]);
+    aura::Window* container =
+        wm::GetSwitchableContainersForRoot(Shell::GetPrimaryRootWindow(),
+                                           /*active_desk_only=*/true)[0];
     container->AddChild(window);
     return window;
   }
@@ -431,7 +432,7 @@ TEST_F(TabletModeWindowManagerTest, CreateWindows) {
 // Test that a window which got created while the tablet mode window manager
 // is active gets restored to a usable (non tiny) size upon switching back.
 TEST_F(TabletModeWindowManagerTest,
-       CreateWindowInMaximizedModeRestoresToUsefulSize) {
+       CreateWindowInTabletModeRestoresToUsefulSize) {
   TabletModeWindowManager* manager = CreateTabletModeWindowManager();
   ASSERT_TRUE(manager);
   EXPECT_EQ(0, manager->GetNumberOfManagedWindows());
@@ -768,7 +769,7 @@ TEST_F(TabletModeWindowManagerTest, ModeChangeKeepsMRUOrder) {
   // The windows should be in the reverse order of creation in the MRU list.
   {
     aura::Window::Windows windows =
-        Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+        Shell::Get()->mru_window_tracker()->BuildMruWindowList(kAllDesks);
 
     EXPECT_EQ(w1.get(), windows[4]);
     EXPECT_EQ(w2.get(), windows[3]);
@@ -783,7 +784,7 @@ TEST_F(TabletModeWindowManagerTest, ModeChangeKeepsMRUOrder) {
   EXPECT_EQ(5, manager->GetNumberOfManagedWindows());
   {
     aura::Window::Windows windows =
-        Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+        Shell::Get()->mru_window_tracker()->BuildMruWindowList(kAllDesks);
     // We do not test maximization here again since that was done already.
     EXPECT_EQ(w1.get(), windows[4]);
     EXPECT_EQ(w2.get(), windows[3]);
@@ -796,7 +797,7 @@ TEST_F(TabletModeWindowManagerTest, ModeChangeKeepsMRUOrder) {
   DestroyTabletModeWindowManager();
   {
     aura::Window::Windows windows =
-        Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+        Shell::Get()->mru_window_tracker()->BuildMruWindowList(kAllDesks);
     // We do not test maximization here again since that was done already.
     EXPECT_EQ(w1.get(), windows[4]);
     EXPECT_EQ(w2.get(), windows[3]);
@@ -1191,7 +1192,7 @@ TEST_F(TabletModeWindowManagerTest, AllowFullScreenMode) {
 // Check that the full screen mode will stay active when the tablet mode is
 // ended.
 TEST_F(TabletModeWindowManagerTest,
-       FullScreenModeRemainsWhenCreatedInMaximizedMode) {
+       FullScreenModeRemainsWhenCreatedInTabletMode) {
   CreateTabletModeWindowManager();
 
   gfx::Rect rect(20, 140, 100, 100);
@@ -1316,17 +1317,17 @@ TEST_F(TabletModeWindowManagerTest, ExitsOverview) {
 
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   ASSERT_TRUE(overview_controller->ToggleOverview());
-  ASSERT_TRUE(overview_controller->IsSelecting());
+  ASSERT_TRUE(overview_controller->InOverviewSession());
   TabletModeWindowManager* manager = CreateTabletModeWindowManager();
   ASSERT_TRUE(manager);
-  EXPECT_FALSE(overview_controller->IsSelecting());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
 
   ASSERT_TRUE(overview_controller->ToggleOverview());
-  ASSERT_TRUE(overview_controller->IsSelecting());
+  ASSERT_TRUE(overview_controller->InOverviewSession());
   // Destroy the manager again and check that the windows return to their
   // previous state.
   DestroyTabletModeWindowManager();
-  EXPECT_FALSE(overview_controller->IsSelecting());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
 }
 
 // Test that an edge swipe from the top will end full screen mode.
@@ -1642,13 +1643,13 @@ class TestObserver : public wm::WindowStateObserver {
 
   // wm::WindowStateObserver:
   void OnPreWindowStateTypeChange(wm::WindowState* window_state,
-                                  mojom::WindowStateType old_type) override {
+                                  WindowStateType old_type) override {
     pre_count_++;
     last_old_state_ = old_type;
   }
 
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
-                                   mojom::WindowStateType old_type) override {
+                                   WindowStateType old_type) override {
     post_count_++;
     post_layer_visibility_ = window_state->window()->layer()->visible();
     EXPECT_EQ(last_old_state_, old_type);
@@ -1672,9 +1673,9 @@ class TestObserver : public wm::WindowStateObserver {
     return r;
   }
 
-  mojom::WindowStateType GetLastOldStateAndReset() {
-    mojom::WindowStateType r = last_old_state_;
-    last_old_state_ = mojom::WindowStateType::DEFAULT;
+  WindowStateType GetLastOldStateAndReset() {
+    WindowStateType r = last_old_state_;
+    last_old_state_ = WindowStateType::kDefault;
     return r;
   }
 
@@ -1682,7 +1683,7 @@ class TestObserver : public wm::WindowStateObserver {
   int pre_count_ = 0;
   int post_count_ = 0;
   bool post_layer_visibility_ = false;
-  mojom::WindowStateType last_old_state_ = mojom::WindowStateType::DEFAULT;
+  WindowStateType last_old_state_ = WindowStateType::kDefault;
 
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
@@ -1715,28 +1716,24 @@ TEST_F(TabletModeWindowManagerTest, StateTypeChange) {
   window_state->OnWMEvent(&fullscreen_event);
   EXPECT_EQ(1, observer.GetPreCountAndReset());
   EXPECT_EQ(1, observer.GetPostCountAndReset());
-  EXPECT_EQ(mojom::WindowStateType::MAXIMIZED,
-            observer.GetLastOldStateAndReset());
+  EXPECT_EQ(WindowStateType::kMaximized, observer.GetLastOldStateAndReset());
 
   window_state->OnWMEvent(&maximize_event);
   EXPECT_EQ(1, observer.GetPreCountAndReset());
   EXPECT_EQ(1, observer.GetPostCountAndReset());
-  EXPECT_EQ(mojom::WindowStateType::FULLSCREEN,
-            observer.GetLastOldStateAndReset());
+  EXPECT_EQ(WindowStateType::kFullscreen, observer.GetLastOldStateAndReset());
 
   wm::WMEvent minimize_event(wm::WM_EVENT_MINIMIZE);
   window_state->OnWMEvent(&minimize_event);
   EXPECT_EQ(1, observer.GetPreCountAndReset());
   EXPECT_EQ(1, observer.GetPostCountAndReset());
-  EXPECT_EQ(mojom::WindowStateType::MAXIMIZED,
-            observer.GetLastOldStateAndReset());
+  EXPECT_EQ(WindowStateType::kMaximized, observer.GetLastOldStateAndReset());
 
   wm::WMEvent restore_event(wm::WM_EVENT_NORMAL);
   window_state->OnWMEvent(&restore_event);
   EXPECT_EQ(1, observer.GetPreCountAndReset());
   EXPECT_EQ(1, observer.GetPostCountAndReset());
-  EXPECT_EQ(mojom::WindowStateType::MINIMIZED,
-            observer.GetLastOldStateAndReset());
+  EXPECT_EQ(WindowStateType::kMinimized, observer.GetLastOldStateAndReset());
   EXPECT_EQ(true, observer.GetPostLayerVisibilityAndReset());
 
   window_state->RemoveObserver(&observer);

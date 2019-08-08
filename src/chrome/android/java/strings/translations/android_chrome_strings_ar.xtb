@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
 <translation id="1006017844123154345">فتح على الإنترنت</translation>
+<translation id="1028699632127661925">جارٍ الإرسال إلى <ph name="DEVICE_NAME" />...</translation>
 <translation id="1036727731225946849">جارٍ إضافة <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">من المواقع الإلكترونية</translation>
 <translation id="1049743911850919806">التصفح المتخفي</translation>
@@ -9,22 +10,30 @@
 <translation id="1067922213147265141">‏خدمات Google الأخرى</translation>
 <translation id="1068672505746868501">عدم ترجمة الصفحات باللغة <ph name="SOURCE_LANGUAGE" /> مُطلقًا</translation>
 <translation id="1080790410959514870">‏أنت بصدد الخروج من حساب تحت إدارة <ph name="DOMAIN_NAME" />. سيؤدي هذا إلى حذف بيانات Chrome المخزنة على هذا الجهاز، إلا أن البيانات ستظل في حسابك على Google.</translation>
-<translation id="1099080783256647258">‏عند تفعيل أداة "توفير البيانات"، يستخدم Chrome خوادم Google لزيادة سرعة تحميل الصفحات وضغطها. وفي الصفحات البطيئة، تعيد أداة "توفير البيانات" كتابة الصفحة لتحميل المحتوى الأساسي فقط. ولا تعمل الأداة على تحسين الصفحات المحمَّلة في وضع التصفُّح المتخفي.</translation>
 <translation id="1100066534610197918">فتح في علامة تبويب جديدة في مجموعة</translation>
 <translation id="1105960400813249514">التقاط الشاشة</translation>
 <translation id="1111673857033749125">ستظهر هنا الإشارات التي تم حفظها على أجهزتك الأخرى.</translation>
 <translation id="1113597929977215864">إظهار العرض المبسَّط</translation>
 <translation id="1121094540300013208">تقارير الاستخدام والأعطال</translation>
+<translation id="1124772482545689468">المستخدم</translation>
 <translation id="1129510026454351943">التفاصيل: <ph name="ERROR_DESCRIPTION" /></translation>
+<translation id="1140872012279790904">لن تتم مشاركة بيانات جهاز الاستشعار إلا أثناء الدخول في تجربة الواقع الافتراضي هذه. قد يتمكن الموقع من التعرف عليك من خلال معلومات معينة، مثل:
+     - موقعك الجغرافي
+    - سماتك البدنية، مثل موضع العين
+    - حركاتك، مثل طريقة المشي
+
+يُرجى التأكد من أنك تثق بهذا الموقع قبل منحه الإذن بالوصول.</translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{هناك عملية تنزيل واحدة مُعلَّقة.}zero{هناك # عملية تنزيل مُعلَّقة.}two{هناك عمليتا تنزيل (#) مُعلَّقتان.}few{هناك # عمليات تنزيل مُعلَّقة.}many{هناك # عملية تنزيل مُعلَّقة.}other{هناك # عملية تنزيل مُعلَّقة.}}</translation>
 <translation id="1145536944570833626">يمكنك حذف البيانات الحالية.</translation>
 <translation id="1146678959555564648">‏إدخال VR</translation>
 <translation id="116280672541001035">المستخدَمة</translation>
+<translation id="1171770572613082465">عرض مواقع الويب الشائعة من خلال النقر على الزر "أهم المواقع"</translation>
 <translation id="1172593791219290334">صفحة بدء التشغيل</translation>
 <translation id="1173894706177603556">إعادة تسمية</translation>
 <translation id="1175310183703641346">‏لن تتم مزامنة الإشارات المرجعية والسجلّ وكلمات المرور والإعدادات الأخرى مع حسابك على Google بعد الآن.</translation>
 <translation id="1178581264944972037">الإيقاف مؤقتًا</translation>
 <translation id="1181037720776840403">إزالة</translation>
+<translation id="1188239144602654184">إطلاق الواقع المعزّز</translation>
 <translation id="1197267115302279827">نقل الإشارات المرجعية</translation>
 <translation id="119944043368869598">محو الكل</translation>
 <translation id="1201402288615127009">التالي</translation>
@@ -57,6 +66,7 @@
 <translation id="138361230106469022">مرحبًا، <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">البحث</translation>
 <translation id="1384959399684842514">تم إيقاف التنزيل مؤقتًا</translation>
+<translation id="1386674309198842382">نشط قبل <ph name="LAST_UPDATED" /> من الأيام</translation>
 <translation id="1389974829397082527">ما مِن إشارات مرجعية هنا</translation>
 <translation id="1397811292916898096">البحث باستخدام <ph name="PRODUCT_NAME" /></translation>
 <translation id="1404122904123200417">متضمّن في <ph name="WEBSITE_URL" /></translation>
@@ -78,6 +88,7 @@
 <translation id="1513352483775369820">الإشارات المرجعية وسجلّ الويب</translation>
 <translation id="1513858653616922153">حذف كلمة المرور</translation>
 <translation id="1516229014686355813">‏تعمل ميزة "البحث بالنقر" على إرسال الكلمة المُحدَّدة والصفحة الحالية كسياق إلى بحث Google. يمكنك إيقافها في <ph name="BEGIN_LINK" />الإعدادات<ph name="END_LINK" />.</translation>
+<translation id="1521774566618522728">نشط اليوم</translation>
 <translation id="1539064842193522527">‏تم فتح الرابط في Chrome</translation>
 <translation id="1549000191223877751">الانتقال إلى نافذة أخرى</translation>
 <translation id="1553358976309200471">‏تحديث Chrome‏</translation>
@@ -94,9 +105,9 @@
 <translation id="1670399744444387456">الإعدادات الأساسية</translation>
 <translation id="1671236975893690980">التنزيل معلّق...</translation>
 <translation id="1672586136351118594">عدم العرض مرة أخرى</translation>
+<translation id="1679068421605151609">أدوات مطوّري البرامج</translation>
 <translation id="1692118695553449118">المزامنة ممكنة</translation>
 <translation id="169515064810179024">حظر مواقع الويب من الوصول إلى مستشعرات الحركة</translation>
-<translation id="1709438864123551175">توفير البيانات</translation>
 <translation id="1717218214683051432">مستشعرات الحركة</translation>
 <translation id="1718835860248848330">آخر ساعة</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - تم تحديثه منذ <ph name="TIME_SINCE_UPDATE" /> دقائق</translation>
@@ -174,8 +185,8 @@
 <translation id="2154484045852737596">تعديل البطاقة</translation>
 <translation id="2154710561487035718">‏نسخ عنوان URL</translation>
 <translation id="2156074688469523661">المواقع المتبقية (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="2170088579611075216">السماح بالواقع الافتراضي والدخول إليه</translation>
 <translation id="218608176142494674">المشاركة</translation>
-<translation id="2206488550163399966"><ph name="APP_NAME" />، تطبيق ويب. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">المتابعة باسم <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">‏خدمات Google والمزامنة</translation>
 <translation id="2259659629660284697">تصدير كلمات المرور...</translation>
@@ -214,7 +225,6 @@
 <translation id="2501278716633472235">الرجوع</translation>
 <translation id="2513403576141822879">‏لعرض مزيد من الإعدادات المتعلِّقة بالخصوصية والأمان وجمع البيانات، يُرجى الاطِّلاع على <ph name="BEGIN_LINK" />خدمات Google والمزامنة<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">‏يتم إرسال عناوين URL للصفحات التي تزورها إلى Google.</translation>
-<translation id="2526148617758225454">تم تشغيل توفير البيانات. يمكنك إدارته في الإعدادات.</translation>
 <translation id="2532336938189706096">عرض الويب</translation>
 <translation id="2534155362429831547">تم حذف <ph name="NUMBER_OF_ITEMS" /> من العناصر</translation>
 <translation id="2536728043171574184">عرض نسخة بلا اتصال من هذه الصفحة</translation>
@@ -222,12 +232,12 @@
 <translation id="2567385386134582609">صورة</translation>
 <translation id="257088987046510401">المظاهر</translation>
 <translation id="2570922361219980984">‏الوصول إلى الموقع الجغرافي متوقف لهذا الجهاز أيضًا. يمكنك تفعليه في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
+<translation id="257674075312929031">مجموعة</translation>
 <translation id="257931822824936280">تم التوسيع - انقر للتصغير.</translation>
 <translation id="2581165646603367611">‏سيؤدي هذا إلى مسح ملفات تعريف الارتباط وذاكرة التخزين المؤقت والبيانات الأخرى للمواقع التي لا يعتقد Chrome أنها مهمة.</translation>
 <translation id="2586657967955657006">الحافظة</translation>
 <translation id="2587052924345400782">يتوفر إصدار أحدث</translation>
 <translation id="2593272815202181319">أحادي المسافة</translation>
-<translation id="2610239185026711824">اقتراح كلمة مرور</translation>
 <translation id="2612676031748830579">رقم البطاقة</translation>
 <translation id="2613747923081026172">إنشاء مجموعة</translation>
 <translation id="2621115761605608342">السماح لموقع ويب معيّن بتشغيل جافا سكريبت</translation>
@@ -251,7 +261,6 @@
 <translation id="2779651927720337254">تعذَّر التنزيل</translation>
 <translation id="2781151931089541271">يتبقى ثانية واحدة</translation>
 <translation id="2801022321632964776">‏يمكنك إجراء التحديث للحصول على لغتك في أحدث إصدار من Chrome.</translation>
-<translation id="2803478378562657435">عرض كلمات المرور المحفوظة وخيارات كلمة المرور</translation>
 <translation id="2810645512293415242">صفحة مبسَّطة لحفظ البيانات والاستمتاع بتحميل أسرع.</translation>
 <translation id="281504910091592009">‏بإمكانك عرض كلمات المرور المحفوظة وإدارتها في <ph name="BEGIN_LINK" />حسابك على Google<ph name="END_LINK" />.</translation>
 <translation id="2818669890320396765">للحصول على الإشارات المرجعية على جميع أجهزتك، يُرجى تسجيل الدخول وتفعيل المزامنة.</translation>
@@ -259,16 +268,17 @@
 <translation id="2836148919159985482">المس زر الرجوع للخروج من وضع ملء الشاشة.</translation>
 <translation id="2842985007712546952">المجلد الرئيسي</translation>
 <translation id="2845873210977809562">تم إغلاق علامات التبويب المفتوحة</translation>
+<translation id="2858138569776157458">أهم المواقع</translation>
 <translation id="2870560284913253234">الموقع</translation>
 <translation id="2874939134665556319">المقطع الصوتي السابق</translation>
 <translation id="2876369937070532032">‏يتم إرسال عناوين URL لبعض الصفحات التي تزورها إلى Google، عندما يكون أمانك في خطر</translation>
-<translation id="2876764156902388290">‏يستخدم Chrome بيانات أقل لعرض هذه الصفحة لك</translation>
 <translation id="2888126860611144412">‏لمحة عن Chrome</translation>
 <translation id="2891154217021530873">إيقاف تحميل الصفحة</translation>
 <translation id="2893180576842394309">‏قد تستخدم Google سجلّك لتخصيص البحث وخدمات Google الأخرى.</translation>
 <translation id="2900528713135656174">إنشاء حدث</translation>
 <translation id="2902702728133930130">‏تعذّر Chrome أثناء بدء التشغيل بسبب خطأ غير متوقع.</translation>
 <translation id="290376772003165898">أليست الصفحة باللغة <ph name="LANGUAGE" />؟</translation>
+<translation id="2904414404539560095">قائمة بالأجهزة التي يمكن مشاركة علامة تبويب معها، مفتوحة على طول الشاشة.</translation>
 <translation id="2910701580606108292">السؤال قبل السماح لمواقع الويب بتشغيل المحتوى المحمي</translation>
 <translation id="2913331724188855103">السماح لمواقع الويب بحفظ بيانات ملفات تعريف الارتباط وقراءتها (موصى به)</translation>
 <translation id="2923908459366352541">الاسم غير صحيح</translation>
@@ -276,6 +286,7 @@
 <translation id="2956410042958133412">تتم إدارة هذا الحساب بواسطة <ph name="PARENT_NAME_1" /> و <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">تم التبديل إلى علامات تبويب التصفح المتخفي</translation>
 <translation id="2968755619301702150">عارض الشهادات</translation>
+<translation id="2977480621796371840">الإزالة من مجموعة</translation>
 <translation id="2979025552038692506">علامة تبويب محددة للتصفح المتخفي</translation>
 <translation id="2989523299700148168">تم الانتقال إليها مؤخرًا</translation>
 <translation id="2996291259634659425">إنشاء عبارة المرور</translation>
@@ -284,7 +295,6 @@
 <translation id="3029613699374795922">تم التنزيل بحجم <ph name="KBS" /> كيلوبايت</translation>
 <translation id="3029704984691124060">عبارات المرور غير متطابقة</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />الحصول على مساعدة<ph name="END_LINK" /></translation>
-<translation id="3045654778214005718">‏الاطِّلاع على مزيد من الاقتراحات المشابهة من Google</translation>
 <translation id="305593374596241526">‏تحديد الموقع الجغرافي متوقف، يمكنك تفعيله من <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">يمكنك تفعيل المزامنة في أي وقت في الإعدادات.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{إشارة مرجعية <ph name="BOOKMARKS_COUNT_ONE" />}zero{<ph name="BOOKMARKS_COUNT_MANY" /> إشارات مرجعية}two{إشارتان مرجعيتان (<ph name="BOOKMARKS_COUNT_MANY" />)}few{<ph name="BOOKMARKS_COUNT_MANY" /> إشارات مرجعية}many{<ph name="BOOKMARKS_COUNT_MANY" /> إشارةً مرجعيةً}other{<ph name="BOOKMARKS_COUNT_MANY" /> إشارة مرجعية}}</translation>
@@ -357,14 +367,13 @@
 <translation id="3599863153486145794">‏يمسح السجل من كل الأجهزة التي تم تسجيل الدخول عليها. وقد يتضمن حسابك في Google نماذج أخرى من سجل التصفح في <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">كتم صوت مواقع الويب التي تشغّل الصوت</translation>
 <translation id="3616113530831147358">المقاطع الصوتية</translation>
-<translation id="3620176948598597475">تؤدي إعادة الضبط إلى محو سجلّ توفير البيانات، بما في ذلك قائمة المواقع الإلكترونية التي تمت زيارتها.</translation>
 <translation id="3632295766818638029">كشف كلمة المرور</translation>
 <translation id="363596933471559332">يمكنك تسجيل الدخول تلقائيًا إلى مواقع الويب باستخدام بيانات الاعتماد المخزّنة. وعندما تكون هذه الميزة غير مفعّلة، سيُطلب منك التحقّق من بيانات الاعتماد في كل مرة قبل تسجيل الدخول إلى موقع ويب.</translation>
 <translation id="3658159451045945436">تؤدي إعادة الضبط إلى محو سِجلّ البيانات المحفوظة، بما في ذلك قائمة المواقع الإلكترونية التي تمت زيارتها.</translation>
 <translation id="3662546969139119822">لا يوجد سجلّ هنا</translation>
+<translation id="3663367437272849150">دمج <ph name="NUM_SELECTED" /> علامة تبويب</translation>
 <translation id="3672452749423051839">اقتراحات عن الأخطاء في التنقل</translation>
 <translation id="3692944402865947621">تعذّر تنزيل <ph name="FILE_NAME" /> نظرًا لعدم إمكانية الوصول إلى موقع مساحة التخزين.</translation>
-<translation id="3712575778697986964">هل تريد إعادة ضبط أداة "توفير البيانات"؟</translation>
 <translation id="3714981814255182093">فتح شريط البحث</translation>
 <translation id="3716182511346448902">‏تستهلك هذه الصفحة مساحة كبيرة من الذاكرة، لذلك أوقفها Chrome مؤقتًا.</translation>
 <translation id="3730075448226062617">‏للسماح لمتصفِّح Chrome بالوصول إلى الميكروفون، يُرجى أيضًا تشغيل الميكروفون في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
@@ -376,7 +385,6 @@
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />تشغيل البلوتوث<ph name="END_LINK" /> للسماح بالإقران</translation>
 <translation id="3775705724665058594">إرسال إلى أجهزتك</translation>
 <translation id="3778956594442850293">تمت الإضافة إلى الشاشة الرئيسية</translation>
-<translation id="3781011235031427080">يتم فتح "المزيد من النتائج المشابهة" بنصف ارتفاع</translation>
 <translation id="3789841737615482174">تثبيت</translation>
 <translation id="3810838688059735925">الفيديوهات</translation>
 <translation id="3810973564298564668">إدارة محرّكات البحث</translation>
@@ -422,8 +430,10 @@
 <translation id="4099578267706723511">‏يمكنك المساعدة في تحسين Chrome عن طريق إرسال إحصاءات الاستخدام وتقارير الأعطال إلى Google.</translation>
 <translation id="410351446219883937">التشغيل التلقائي</translation>
 <translation id="4116038641877404294">تنزيل الصفحات لاستخدامها بلا اتصال بالإنترنت</translation>
+<translation id="4135200667068010335">قائمة الأجهزة التي يمكن مشاركة علامة تبويب معها مغلقة.</translation>
 <translation id="4149994727733219643">عرض مبسَّط لصفحات الويب</translation>
 <translation id="4165986682804962316">إعدادات المواقع</translation>
+<translation id="4169535189173047238">عدم السماح</translation>
 <translation id="4170011742729630528">الخدمة غير متاحة، أعد المحاولة لاحقًا.</translation>
 <translation id="4179980317383591987">تم استخدام <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">اللغات</translation>
@@ -448,10 +458,10 @@
 <translation id="4351244548802238354">إغلاق مربع الحوار</translation>
 <translation id="4378154925671717803">هاتف</translation>
 <translation id="4384468725000734951">‏استخدام محرك Sogou للبحث</translation>
-<translation id="4398088515904522762">لاستخدام هذه الميزة، يمكنك تفعيل <ph name="BEGIN_LINK" />النشاط والتفاعلات<ph name="END_LINK" />.</translation>
 <translation id="4404568932422911380">ليست هناك إشارات مرجعية</translation>
 <translation id="4409723563706114196">استخدام ميزة توقّع الصفحات</translation>
 <translation id="4411535500181276704">الوضع البسيط</translation>
+<translation id="4415276339145661267">‏إدارة حسابك على Google</translation>
 <translation id="4432792777822557199">ستتم ترجمة الصفحات باللغة <ph name="SOURCE_LANGUAGE" /> إلى اللغة <ph name="TARGET_LANGUAGE" /> من الآن فصاعدًا</translation>
 <translation id="4433925000917964731">‏نسخة خفيفة تقدِّمها Google</translation>
 <translation id="4434045419905280838">النوافذ المنبثقة وإعادة التوجيه</translation>
@@ -489,7 +499,6 @@
 <translation id="4645575059429386691">يديره والداك</translation>
 <translation id="4648718555153979859">يتم جمع علامات التبويب معًا هنا</translation>
 <translation id="4650364565596261010">الإعداد التلقائي للنظام</translation>
-<translation id="4660011489602794167">عرض لوحة المفاتيح</translation>
 <translation id="4663756553811254707">تم حذف <ph name="NUMBER_OF_BOOKMARKS" /> من الإشارات المرجعية</translation>
 <translation id="4665282149850138822">تمت إضافة <ph name="NAME" /> إلى صفحتك الرئيسية</translation>
 <translation id="4684427112815847243">مزامنة كل شيء</translation>
@@ -508,13 +517,11 @@
 <translation id="4751476147751820511">أجهزة استشعار الإضاءة أو الحركة</translation>
 <translation id="4759238208242260848">التنزيلات</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{اكتملت عملية تنزيل واحدة.}zero{اكتملت # عملية تنزيل.}two{اكتملت عمليتا تنزيل (#).}few{اكتملت # عمليات تنزيل.}many{اكتملت # عملية تنزيل.}other{اكتملت # عملية تنزيل.}}</translation>
-<translation id="4766369052440583386">تفعيل "توفير البيانات"</translation>
 <translation id="4797039098279997504">المس  للعودة إلى <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">‏لا يتضمّن التشفير باستخدام عبارة المرور طرق الدفع والعناوين من Google Pay.
 
 لتغيير هذا الإعداد، يُرجى <ph name="BEGIN_LINK" />إعادة ضبط المزامنة<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">الاسم كما على البطاقة</translation>
-<translation id="4807963036345170158">ميزة "توفير البيانات" غير مفعّلة</translation>
 <translation id="4816465935029283692">أنواع البيانات</translation>
 <translation id="4824958205181053313">هل تريد إلغاء المزامنة؟</translation>
 <translation id="4837753911714442426">فتح الخيارات لطباعة الصفحة</translation>
@@ -573,6 +580,7 @@
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{تعذَّر إتمام عملية تنزيل واحدة.}zero{تعذَّر إتمام # عملية تنزيل.}two{تعذَّر إتمام عمليتي تنزيل (#).}few{تعذَّر إتمام # عمليات تنزيل.}many{تعذَّر إتمام # عملية تنزيل.}other{تعذَّر إتمام # عملية تنزيل.}}</translation>
 <translation id="5184329579814168207">‏فتح في Chrome</translation>
 <translation id="5199929503336119739">الملف الشخصي للعمل</translation>
+<translation id="5202089186707505116">‏هل تريد السماح لهذا الموقع بالوصول إلى أجهزة استشعار الواقع الافتراضي (VR)؟</translation>
 <translation id="5210286577605176222">الانتقال السريع إلى علامة التبويب السابقة</translation>
 <translation id="5210365745912300556">إغلاق علامة التبويب</translation>
 <translation id="5222676887888702881">تسجيل الخروج</translation>
@@ -582,6 +590,7 @@
 <translation id="5271967389191913893">لا يمكن للجهاز فتح المحتوى لتنزيله</translation>
 <translation id="528192093759286357">اسحب من الجزء العلوي والمس زر الرجوع للخروج من وضع ملء الشاشة.</translation>
 <translation id="5284584623296338184">‏لن تتم بعد الآن مزامنة التغييرات التي تطرأ على الإشارات المرجعية والسجلّ وكلمات المرور وغيرها من الإعدادات مع حسابك على Google، ولكن ستظل بياناتك الحالية مخزّنة في حسابك على Google.</translation>
+<translation id="5292796745632149097">إرسال إلى</translation>
 <translation id="5300589172476337783">عرض</translation>
 <translation id="5301954838959518834">حسنًا</translation>
 <translation id="5304593522240415983">لا يمكن ترك هذا الحقل فارغًا</translation>
@@ -592,6 +601,7 @@
 <translation id="5324858694974489420">الإعدادات الأبوية</translation>
 <translation id="5327248766486351172">الاسم</translation>
 <translation id="5335288049665977812">السماح لمواقع الويب بتشغيل جافا سكريبت (موصى به)</translation>
+<translation id="5357811892247919462">تم تلقي علامة تبويب</translation>
 <translation id="5363230136052241468">انقر على زر "الشاشة الرئيسية" لتحميل صفحة علامة التبويب الجديدة</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> علامة تبويب مفتوحة، يُرجى النقر لتبديل علامات التبويب}zero{<ph name="OPEN_TABS_MANY" /> علامات تبويب مفتوحة، يُرجى النقر لتبديل علامات التبويب}two{علامتا تبويب مفتوحتان<ph name="OPEN_TABS_MANY" />، يُرجى النقر لتبديل علامات التبويب}few{<ph name="OPEN_TABS_MANY" /> علامات تبويب مفتوحة، يُرجى النقر لتبديل علامات التبويب}many{<ph name="OPEN_TABS_MANY" /> علامة تبويب مفتوحة، يُرجى النقر لتبديل علامات التبويب}other{<ph name="OPEN_TABS_MANY" /> علامة تبويب مفتوحة، يُرجى النقر لتبديل علامات التبويب}}</translation>
 <translation id="5391532827096253100">إن اتصالك بهذا الموقع الإلكتروني غير آمن. معلومات موقع الويب</translation>
@@ -607,14 +617,13 @@
 <translation id="5447765697759493033">لن تتم ترجمة هذا الموقع</translation>
 <translation id="545042621069398927">جارٍ تسريع التنزيل.</translation>
 <translation id="5456381639095306749">تنزيل الصفحة</translation>
-<translation id="5466407412363861127">تستخدم هذه الميزة <ph name="BEGIN_LINK" />المزامنة<ph name="END_LINK" />.</translation>
+<translation id="5475862044948910901">هل تريد بدء جلسة الواقع المعزّز؟</translation>
 <translation id="5481942164684849270">تمت إضافة <ph name="APP_NAME" /> إلى تطبيقاتي</translation>
 <translation id="548278423535722844">فتح في تطبيق الخرائط</translation>
 <translation id="5487521232677179737">محو البيانات</translation>
 <translation id="5494752089476963479">حظر الإعلانات في المواقع الإلكترونية التي تعرض إعلانات مضلِّلة أو غير مرغوب فيها</translation>
 <translation id="5497272504048921382">علامات تبويب مفتوحة</translation>
 <translation id="5500777121964041360">قد لا تتوفَّر هذه الميزة في موقعك الجغرافي</translation>
-<translation id="550684401320795253">‏جارٍ تحديث Chrome...</translation>
 <translation id="5512137114520586844">تتم إدارة هذا الحساب بواسطة <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">تم الإيقاف من قبل مشرف هذا الجهاز</translation>
 <translation id="5515439363601853141">إلغاء القفل لعرض كلمة المرور</translation>
@@ -631,6 +640,7 @@
 <translation id="557283862590186398">‏يحتاج Chrome إلى إذن لاستخدام الميكروفون لموقع الويب هذا.</translation>
 <translation id="55737423895878184">مسموح بالإشعارات وتحديد الموقع الجغرافي</translation>
 <translation id="5578795271662203820">البحث في <ph name="SEARCH_ENGINE" /> عن هذه الصورة</translation>
+<translation id="5580090775658607195">تم دمج <ph name="TAB_COUNT" /> علامة تبويب.</translation>
 <translation id="5581519193887989363">يمكنك دائمًا اختيار ما تريد مزامنته في <ph name="BEGIN_LINK1" />الإعدادات<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">تعديل العنوان</translation>
 <translation id="5596627076506792578">خيارات إضافية</translation>
@@ -651,7 +661,6 @@
 <translation id="569536719314091526">ترجمة هذه الصفحة إلى أي لغة من خلال الزر "مزيد من الخيارات"</translation>
 <translation id="572328651809341494">علامات التبويب الأخيرة</translation>
 <translation id="5726692708398506830">تكبير كل محتويات الصفحة</translation>
-<translation id="5734520971562437809">يمكنك خفض استخدام البيانات بنسبة تصل إلى 60 بالمائة، بالإضافة إلى زيادة سرعة الويب.</translation>
 <translation id="5748802427693696783">تم التبديل إلى علامات التبويب القياسية</translation>
 <translation id="5749068826913805084">‏يحتاج Chrome للوصول إلى مساحة التخزين لتنزيل الملفات.</translation>
 <translation id="5763382633136178763">علامات تبويب التصفح المتخفي</translation>
@@ -709,11 +718,10 @@
 <translation id="6159335304067198720">توفير البيانات بنسبة <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">مزيد من المعلومات</translation>
 <translation id="6177111841848151710">تم حظره لمحرك البحث الحالي</translation>
-<translation id="6177390657002841081">تشغيل إضافة "توفير البيانات"</translation>
 <translation id="6181444274883918285">إضافة موقع ويب إلى قائمة الاستثناءات</translation>
-<translation id="618993374665929060">يتم فتح "المزيد من النتائج المشابهة" بارتفاع كامل</translation>
 <translation id="6192333916571137726">ملف تحميل</translation>
 <translation id="6192792657125177640">الاستثناءات</translation>
+<translation id="6193448654517602979">اختيار علامات التبويب</translation>
 <translation id="6194112207524046168">‏للسماح لمتصفِّح Chrome بالوصول إلى الكاميرا، يُرجى أيضًا تشغيل الكاميرا في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">حظر ملفات تعريف الارتباط للجهات الخارجية</translation>
 <translation id="6206551242102657620">يُعدُّ اتصالك آمنًا. معلومات موقع الويب</translation>
@@ -743,7 +751,6 @@
 <translation id="6378173571450987352">التفاصيل: تم الترتيب بحسب مقدار البيانات المُستخدَمة</translation>
 <translation id="6383961787135158834">محو مساحة تخزين المواقع...</translation>
 <translation id="6388207532828177975">المحو وإعادة الضبط</translation>
-<translation id="6393156038355142111">اقتراح كلمة مرور قوية</translation>
 <translation id="6393863479814692971">‏يحتاج Chrome إلى إذن لاستخدام الكاميرا والميكروفون لموقع الويب هذا.</translation>
 <translation id="6395288395575013217">رابط</translation>
 <translation id="6404511346730675251">تعديل الإشارة المرجعية</translation>
@@ -796,12 +803,12 @@
 <translation id="6699370405921460408">‏ستعمل خوادم Google على تحسين الصفحات التي تزورها.</translation>
 <translation id="6709133671862442373">الأخبار</translation>
 <translation id="6710213216561001401">السابق</translation>
-<translation id="6712388303105732168">‏الاطِّلاع على المزيد من النتائج المشابهة من Google باستخدام الزر "المزيد من النتائج المشابهة"</translation>
 <translation id="671481426037969117">انقضى وقت موقّت <ph name="FQDN" />، وسيبدأ عمله مرّةً أخرى غدًا.</translation>
 <translation id="6738867403308150051">جارٍ التنزيل…</translation>
 <translation id="6746124502594467657">الانتقال إلى أسفل</translation>
 <translation id="6766622839693428701">يمكنك التمرير السريع للأسفل للإغلاق.</translation>
 <translation id="6766758767654711248">انقر للانتقال إلى موقع الويب</translation>
+<translation id="6767294960381293877">قائمة الأجهزة التي يمكن مشاركة علامة تبويب معها، مفتوحة على طول النصف السفلي من الشاشة.</translation>
 <translation id="6782111308708962316">منع مواقع الويب التابعة لجهات خارجية من حفظ بيانات ملفات تعريف الارتباط وقراءتها</translation>
 <translation id="6790428901817661496">التشغيل</translation>
 <translation id="679325081238418596">يمكنك الحصول على الإشارات المرجعية والسِجل وكلمات المرور والإعدادات الأخرى على جميع أجهزتك</translation>
@@ -843,22 +850,22 @@
 <translation id="702463548815491781">‏يُوصى به عند تفعيل TalkBack أو الوصول عبر مفتاح التحويل</translation>
 <translation id="7029809446516969842">كلمات المرور</translation>
 <translation id="7031882061095297553">مزامنة لـ</translation>
-<translation id="7032663816368481562">‏عند النقر على "المزيد من النتائج المشابهة" <ph name="ICON" /> في شريط العناوين، تظهر روابط سريعة للصفحات ذات الصلة. ويُرسِل المتصفّح عناوين URL للصفحات التي تزورها إلى Google.</translation>
 <translation id="7034608350006174882">‏البطاقات والعناوين باستخدام Google Pay</translation>
 <translation id="7053983685419859001">حظر</translation>
 <translation id="7055152154916055070">تم حظر إعادة توجيه:</translation>
 <translation id="7062545763355031412">قبول الحسابات وتبديلها</translation>
 <translation id="7063006564040364415">تعذر الاتصال بخادم المزامنة.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{تم تحديد عنصر واحد}zero{تم تحديد # عنصر}two{تم تحديد عنصرين (#)}few{تم تحديد # عناصر}many{تم تحديد # عنصرًا}other{تم تحديد # عنصر}}</translation>
+<translation id="7071521146534760487">إدارة الحساب</translation>
 <translation id="7077143737582773186">‏بطاقة SD</translation>
 <translation id="7087918508125750058">تم تحديد <ph name="ITEM_COUNT" /> عنصر، ويمكنك الاطّلاع على الخيارات في الجزء العلوي من الشاشة.</translation>
 <translation id="7121362699166175603">‏يتم محو السجلّ وعمليات الإكمال التلقائي في شريط العناوين. وقد يتضمّن حسابك على Google نماذج أخرى من سجلّ التصفّح في <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">السماح لمحرّك البحث الحالي</translation>
 <translation id="7138678301420049075">أخرى</translation>
-<translation id="7139148793369023665">تم إغلاق "المزيد من النتائج المشابهة"</translation>
 <translation id="7141896414559753902">منع مواقع الويب من عرض النوافذ المنبثقة وعمليات إعادة التوجيه (مُوصى به)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />تحميل الصفحة الأصلية<ph name="END_LINK" /> من <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">آخر 24 ساعة</translation>
+<translation id="7161892015146974550">اختيار علامة التبويب <ph name="TAB_TITLE" /></translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> كيلوبايت</translation>
 <translation id="7177466738963138057">يمكنك تغيير ذلك لاحقًا من "الإعدادات"</translation>
 <translation id="7180611975245234373">إعادة التحميل</translation>
@@ -880,12 +887,18 @@
 <translation id="7352939065658542140">فيديو</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{مشاركة عنصر واحد محدد}zero{مشاركة # عنصر محدد}two{مشاركة عنصرين (#) محددين}few{مشاركة # عناصر محددة}many{مشاركة # عنصرًا محددًا}other{مشاركة # عنصر محدد}}</translation>
 <translation id="7359002509206457351">الوصول إلى طرق الدفع</translation>
+<translation id="7365126855094612066">طوال مدة هذه الجلسة، سيتمكَّن موقع الويب من تنفيذ ما يلي:
+• إنشاء خريطة ثلاثية الأبعاد لبيئتك
+• تتبّع حركة الكاميرا
+
+لا يمكن لموقع الويب الحصول على إذن بالوصول إلى الكاميرا. لا تكون الصور المُلتقطة بالكاميرا مرئية إلا لك.</translation>
 <translation id="7375125077091615385">النوع:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" /></translation>
 <translation id="7400418766976504921">‏عنوان URL</translation>
 <translation id="7403691278183511381">‏أول تجربة تشغيل لمتصفح Chrome</translation>
 <translation id="741204030948306876">نعم، موافق</translation>
 <translation id="7413229368719586778">تاريخ البدء: <ph name="DATE" /></translation>
+<translation id="7418565925463285788">دمج علامات التبويب...</translation>
 <translation id="7423098979219808738">السؤال أولاً</translation>
 <translation id="7423538860840206698">تم الحظر من قراءة الحافظة</translation>
 <translation id="7431991332293347422">التحكُّم في كيفية استخدامنا لسِجل التصفُّح لتخصيص البحث والمزيد</translation>
@@ -902,9 +915,7 @@
 <translation id="7475688122056506577">‏لم يتم العثور على بطاقة SD. قد يكون بعض الملفات مفقودًا.</translation>
 <translation id="7479104141328977413">إدارة علامات التبويب</translation>
 <translation id="7481312909269577407">إلى الأمام</translation>
-<translation id="7482697587265222445">تم إرسال علامة التبويب إلى أجهزتك</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (تم التحديث منذ <ph name="TIME_SINCE_UPDATE" />)</translation>
-<translation id="7494879913343971937">عرض كلمات المرور</translation>
 <translation id="7494974237137038751">حجم البيانات التي تم توفيرها</translation>
 <translation id="7498271377022651285">يُرجى الانتظار...</translation>
 <translation id="7514365320538308">تنزيل</translation>
@@ -957,7 +968,6 @@
 <translation id="7846076177841592234">إلغاء التحديد</translation>
 <translation id="784934925303690534">النطاق الزمني</translation>
 <translation id="7851858861565204677">أجهزة أخرى</translation>
-<translation id="7854964836418414587">إغلاق "المزيد من النتائج المشابهة"</translation>
 <translation id="7875915731392087153">إنشاء بريد إلكتروني</translation>
 <translation id="7876243839304621966">إزالة الكل</translation>
 <translation id="7882131421121961860">لم يتم العثور على أي سجلّ</translation>
@@ -968,6 +978,7 @@
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> قديم.</translation>
 <translation id="7947953824732555851">قبول وتسجيل الدخول</translation>
 <translation id="7963646190083259054">المورّد:</translation>
+<translation id="7971136598759319605">نشط قبل يوم واحد</translation>
 <translation id="7975379999046275268">معاينة صفحة <ph name="BEGIN_NEW" />ميزة جديدة<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">التحميل المُسبق للصفحات للحصول على أداء أسرع أثناء التصفّح والبحث</translation>
 <translation id="79859296434321399">‏لعرض محتوى الواقع المُعزَّز، يُرجى تثبيت ARCore</translation>
@@ -981,7 +992,6 @@
 <translation id="802154636333426148">تعذّر التنزيل</translation>
 <translation id="8026334261755873520">محو بيانات التصفُّح</translation>
 <translation id="8035133914807600019">مجلد جديد...</translation>
-<translation id="8037686209485537503">المزيد من النتائج المشابهة</translation>
 <translation id="8037750541064988519">عدد الأيام المتبقية: <ph name="DAYS" /></translation>
 <translation id="804335162455518893">‏لم يتم العثور على بطاقة SD.</translation>
 <translation id="805047784848435650">استنادًا إلى سجلّ التصفُّح</translation>
@@ -989,6 +999,7 @@
 <translation id="8058746566562539958">‏فتح بعلامة تبويب Chrome جديدة</translation>
 <translation id="8063895661287329888">تعذّرت إضافة الإشارة المرجعية.</translation>
 <translation id="806745655614357130">الحفاظ على البيانات التابعة لي منفصلة</translation>
+<translation id="8067883171444229417">تشغيل الفيديو</translation>
 <translation id="8068648041423924542">يتعذر تحديد الشهادة.</translation>
 <translation id="8073388330009372546">فتح الصورة بعلامة تبويب جديدة</translation>
 <translation id="8076492880354921740">علامات التبويب</translation>
@@ -996,7 +1007,6 @@
 <translation id="8087000398470557479">‏هذا المحتوى من <ph name="DOMAIN_NAME" />، وتم عرضه من قبل Google.</translation>
 <translation id="8103578431304235997">علامة تبويب للتصفح المتخفي</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
-<translation id="8105951947646329362">اقتراح الصفحات ذات الصلة</translation>
 <translation id="8109613176066109935">للحصول على الإشارات المرجعية على جميع أجهزتك، يُرجى تفعيل المزامنة.</translation>
 <translation id="8110087112193408731">‏هل تريد عرض نشاط Chrome في الرفاهية الرقمية؟</translation>
 <translation id="8116925261070264013">مواقع الويب التي تم كتم الصوت فيها</translation>
@@ -1026,6 +1036,8 @@
 <translation id="8327155640814342956">‏للحصول على أفضل تجربة للتصفّح، يُرجى الفتح لتحديث Chrome.</translation>
 <translation id="8339163506404995330">لن تتم ترجمة الصفحات باللغة <ph name="LANGUAGE" /></translation>
 <translation id="8349013245300336738">الترتيب حسب مقدار البيانات المُستخدَمة</translation>
+<translation id="8364299278605033898">عرض مواقع الويب الشائعة</translation>
+<translation id="8364603787714420828">إلغاء اختيار علامة التبويب <ph name="TAB_TITLE" /></translation>
 <translation id="8372893542064058268">السماح لموقع ويب معيّن بتشغيل "المزامنة في الخلفية"</translation>
 <translation id="8374821112118309944">‏يلزمك تحديث TalkBack إلى إصدار جديد.</translation>
 <translation id="8378714024927312812">بإدارة مؤسستك</translation>
@@ -1046,8 +1058,6 @@
 <translation id="8497726226069778601">لا يوجد شيء هنا... حتى الآن</translation>
 <translation id="8503559462189395349">‏كلمات المرور في Chrome</translation>
 <translation id="8503813439785031346">اسم المستخدم</translation>
-<translation id="8504988642345501642">‏عند التمرير للأعلى، تظهر روابط سريعة للصفحات ذات الصلة. ويُرسِل المتصفّح عناوين URL للصفحات التي تزورها إلى Google.</translation>
-<translation id="8507520749471379845">كلمات المرور متاحة</translation>
 <translation id="8514477925623180633">‏تصدير كلمات المرور المخزنة من خلال Chrome</translation>
 <translation id="8514577642972634246">الدخول إلى وضع التصفح المتخفي</translation>
 <translation id="851751545965956758">حظر مواقع الويب من الاتصال بأجهزة</translation>
@@ -1110,11 +1120,11 @@
 <translation id="8986494364107987395">‏إرسال إحصاءات الاستخدام وتقارير الأعطال إلى Google تلقائيًا</translation>
 <translation id="8993760627012879038">فتح علامة تبويب جديدة في وضع التصفّح المتخفّي</translation>
 <translation id="8998729206196772491">‏يتم تسجيل دخولك باستخدام حساب تتم إدارته من خلال <ph name="MANAGED_DOMAIN" /> ومنح مشرفه الحق في التحكم في بياناتك على Chrome. سيؤدي ذلك إلى جعل بياناتك مرتبطة دائمًا بهذا الحساب. كما سيؤدي الخروج من Chrome إلى حذف بياناتك من هذا الجهاز، ولكن ستظل هذه البيانات مخزَّنة على حسابك في Google.</translation>
+<translation id="9005637476204108703">انقر هنا لإدارة حساباتك.</translation>
 <translation id="9019902583201351841">يديره والداك</translation>
 <translation id="9040142327097499898">الإشعارات مسموح بها. وتحديد الموقع الجغرافي متوقف لهذا الجهاز.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{فيديو واحد (#)}zero{# فيديو}two{فيديوهان (#)}few{# فيديوهات}many{# فيديو}other{# فيديو}}</translation>
 <translation id="9050666287014529139">عبارة المرور</translation>
-<translation id="9060538597317784206">‏عرض تطبيق <ph name="APP_NAME" /> في متجر Play.  التقييم: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">إيقاف طلب موقع الويب لسطح المكتب</translation>
 <translation id="9065203028668620118">تعديل</translation>
 <translation id="9070377983101773829">بدء البحث الصوتي</translation>
@@ -1124,6 +1134,7 @@
 <translation id="9099018167121903954">تم تنزيل <ph name="KILOBYTES" /> كيلوبايت</translation>
 <translation id="9100505651305367705">اقتراح مشاهدة المقالات في العرض المبسَّط إذا كان ذلك متاحًا</translation>
 <translation id="9100610230175265781">عبارة المرور مطلوبة</translation>
+<translation id="9104217018994036254">قائمة الأجهزة التي يمكن مشاركة علامة تبويب معها.</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">إظهار الصفحة الأصلية</translation>
 <translation id="9139068048179869749">السؤال قبل السماح لمواقع الويب بإرسال الإشعارات (موصى به)</translation>
@@ -1132,15 +1143,13 @@
 <translation id="9155898266292537608">يمكنك أيضًا البحث بنقرة سريعة على كلمة</translation>
 <translation id="9169594135889675189">إضافة علامة تبويب جديدة للمجموعة</translation>
 <translation id="9188680907066685419">تسجيل الخروج من الحساب المُدار</translation>
+<translation id="9190112541605496997">انقر على الزر "إدارة الحساب" لإدارة حساباتك.</translation>
 <translation id="9204836675896933765">ملف واحد متبقٍ</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9215534869786664672">‏يمكنك خفض استخدام البيانات بنسبة تصل إلى 60 بالمائة، بالإضافة إلى زيادة سرعة الويب. وستعمل خوادم Google على تحسين الصفحات التي تزورها.</translation>
 <translation id="9219103736887031265">الصور</translation>
 <translation id="926205370408745186">‏إزالة نشاط Chrome من الرفاهية الرقمية</translation>
 <translation id="932327136139879170">الصفحة الرئيسية</translation>
-<translation id="932599481871055447">حفظ البيانات والاستمتاع بتصفح أسرع</translation>
 <translation id="938850635132480979">الخطأ: <ph name="ERROR_CODE" /></translation>
-<translation id="945522503751344254">إرسال تعليقات</translation>
 <translation id="945632385593298557">الدخول إلى الميكروفون</translation>
 <translation id="951339005376969845">يمكنك حذف البيانات الحالية. يمكنك استرداد هذه البيانات بالتبديل مرة أخرى إلى <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="95817756606698420">‏يمكن لـ Chrome استخدام <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> للبحث في الصين. ويمكنك تغيير هذا في <ph name="BEGIN_LINK" />الإعدادات<ph name="END_LINK" />.</translation>

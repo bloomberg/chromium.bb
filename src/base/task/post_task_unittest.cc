@@ -5,6 +5,7 @@
 #include "base/task/post_task.h"
 
 #include "base/bind_helpers.h"
+#include "base/task/scoped_set_task_priority_for_current_thread.h"
 #include "base/task/task_executor.h"
 #include "base/task/test_task_traits_extension.h"
 #include "base/test/gtest_util.h"
@@ -105,6 +106,9 @@ TEST_F(PostTaskTestWithExecutor, PostTaskToThreadPool) {
   EXPECT_TRUE(PostTaskWithTraits(FROM_HERE, {MayBlock()}, DoNothing()));
   EXPECT_FALSE(executor_.runner()->HasPendingTask());
 
+  EXPECT_TRUE(PostTaskWithTraits(FROM_HERE, {ThreadPool()}, DoNothing()));
+  EXPECT_FALSE(executor_.runner()->HasPendingTask());
+
   // Task runners without extension should not be the executor's.
   auto task_runner = CreateTaskRunnerWithTraits({});
   EXPECT_NE(executor_.runner(), task_runner);
@@ -116,16 +120,26 @@ TEST_F(PostTaskTestWithExecutor, PostTaskToThreadPool) {
   auto comsta_task_runner = CreateCOMSTATaskRunnerWithTraits({});
   EXPECT_NE(executor_.runner(), comsta_task_runner);
 #endif  // defined(OS_WIN)
+
+  // Thread pool task runners should not be the executor's.
+  task_runner = CreateTaskRunnerWithTraits({ThreadPool()});
+  EXPECT_NE(executor_.runner(), task_runner);
+  sequenced_task_runner = CreateSequencedTaskRunnerWithTraits({ThreadPool()});
+  EXPECT_NE(executor_.runner(), sequenced_task_runner);
+  single_thread_task_runner =
+      CreateSingleThreadTaskRunnerWithTraits({ThreadPool()});
+  EXPECT_NE(executor_.runner(), single_thread_task_runner);
+#if defined(OS_WIN)
+  comsta_task_runner = CreateCOMSTATaskRunnerWithTraits({ThreadPool()});
+  EXPECT_NE(executor_.runner(), comsta_task_runner);
+#endif  // defined(OS_WIN)
 }
 
 TEST_F(PostTaskTestWithExecutor, PostTaskToTaskExecutor) {
   // Tasks with extension should go to the executor.
   {
     TaskTraits traits = {TestExtensionBoolTrait()};
-    TaskTraits traits_with_explicit_priority = traits;
-    traits_with_explicit_priority.UpdatePriority(TaskPriority::USER_VISIBLE);
-    EXPECT_CALL(executor_, PostDelayedTaskWithTraitsMock(
-                               _, traits_with_explicit_priority, _, _))
+    EXPECT_CALL(executor_, PostDelayedTaskWithTraitsMock(_, traits, _, _))
         .Times(1);
     EXPECT_TRUE(PostTaskWithTraits(FROM_HERE, traits, DoNothing()));
     EXPECT_TRUE(executor_.runner()->HasPendingTask());
@@ -134,10 +148,7 @@ TEST_F(PostTaskTestWithExecutor, PostTaskToTaskExecutor) {
 
   {
     TaskTraits traits = {MayBlock(), TestExtensionBoolTrait()};
-    TaskTraits traits_with_explicit_priority = traits;
-    traits_with_explicit_priority.UpdatePriority(TaskPriority::USER_VISIBLE);
-    EXPECT_CALL(executor_, PostDelayedTaskWithTraitsMock(
-                               _, traits_with_explicit_priority, _, _))
+    EXPECT_CALL(executor_, PostDelayedTaskWithTraitsMock(_, traits, _, _))
         .Times(1);
     EXPECT_TRUE(PostTaskWithTraits(FROM_HERE, traits, DoNothing()));
     EXPECT_TRUE(executor_.runner()->HasPendingTask());
@@ -146,10 +157,7 @@ TEST_F(PostTaskTestWithExecutor, PostTaskToTaskExecutor) {
 
   {
     TaskTraits traits = {TestExtensionEnumTrait::kB, TestExtensionBoolTrait()};
-    TaskTraits traits_with_explicit_priority = traits;
-    traits_with_explicit_priority.UpdatePriority(TaskPriority::USER_VISIBLE);
-    EXPECT_CALL(executor_, PostDelayedTaskWithTraitsMock(
-                               _, traits_with_explicit_priority, _, _))
+    EXPECT_CALL(executor_, PostDelayedTaskWithTraitsMock(_, traits, _, _))
         .Times(1);
     EXPECT_TRUE(PostTaskWithTraits(FROM_HERE, traits, DoNothing()));
     EXPECT_TRUE(executor_.runner()->HasPendingTask());
@@ -159,27 +167,20 @@ TEST_F(PostTaskTestWithExecutor, PostTaskToTaskExecutor) {
   // Task runners with extension should be the executor's.
   {
     TaskTraits traits = {TestExtensionBoolTrait()};
-    TaskTraits traits_with_explicit_priority = traits;
-    traits_with_explicit_priority.UpdatePriority(TaskPriority::USER_VISIBLE);
-    EXPECT_CALL(executor_,
-                CreateTaskRunnerWithTraits(traits_with_explicit_priority))
-        .Times(1);
+    EXPECT_CALL(executor_, CreateTaskRunnerWithTraits(traits)).Times(1);
     auto task_runner = CreateTaskRunnerWithTraits(traits);
     EXPECT_EQ(executor_.runner(), task_runner);
-    EXPECT_CALL(executor_, CreateSequencedTaskRunnerWithTraits(
-                               traits_with_explicit_priority))
+    EXPECT_CALL(executor_, CreateSequencedTaskRunnerWithTraits(traits))
         .Times(1);
     auto sequenced_task_runner = CreateSequencedTaskRunnerWithTraits(traits);
     EXPECT_EQ(executor_.runner(), sequenced_task_runner);
-    EXPECT_CALL(executor_, CreateSingleThreadTaskRunnerWithTraits(
-                               traits_with_explicit_priority, _))
+    EXPECT_CALL(executor_, CreateSingleThreadTaskRunnerWithTraits(traits, _))
         .Times(1);
     auto single_thread_task_runner =
         CreateSingleThreadTaskRunnerWithTraits(traits);
     EXPECT_EQ(executor_.runner(), single_thread_task_runner);
 #if defined(OS_WIN)
-    EXPECT_CALL(executor_, CreateCOMSTATaskRunnerWithTraits(
-                               traits_with_explicit_priority, _))
+    EXPECT_CALL(executor_, CreateCOMSTATaskRunnerWithTraits(traits, _))
         .Times(1);
     auto comsta_task_runner = CreateCOMSTATaskRunnerWithTraits(traits);
     EXPECT_EQ(executor_.runner(), comsta_task_runner);
@@ -191,6 +192,20 @@ TEST_F(PostTaskTestWithExecutor, RegisterExecutorTwice) {
   testing::FLAGS_gtest_death_test_style = "threadsafe";
   EXPECT_DCHECK_DEATH(
       RegisterTaskExecutor(TestTaskTraitsExtension::kExtensionId, &executor_));
+}
+
+TEST_F(PostTaskTestWithExecutor, PriorityInherited) {
+  internal::ScopedSetTaskPriorityForCurrentThread scoped_priority(
+      TaskPriority::BEST_EFFORT);
+  TaskTraits traits = {TestExtensionBoolTrait()};
+  TaskTraits traits_with_inherited_priority = traits;
+  traits_with_inherited_priority.InheritPriority(TaskPriority::BEST_EFFORT);
+  EXPECT_CALL(executor_, PostDelayedTaskWithTraitsMock(
+                             _, traits_with_inherited_priority, _, _))
+      .Times(1);
+  EXPECT_TRUE(PostTaskWithTraits(FROM_HERE, traits, DoNothing()));
+  EXPECT_TRUE(executor_.runner()->HasPendingTask());
+  executor_.runner()->ClearPendingTasks();
 }
 
 }  // namespace base

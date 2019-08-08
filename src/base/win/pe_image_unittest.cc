@@ -88,18 +88,41 @@ bool ExportsCallback(const PEImage& image,
   return true;
 }
 
+base::FilePath GetPEImageTestPath() {
+  base::FilePath pe_image_test_path;
+  EXPECT_TRUE(PathService::Get(DIR_TEST_DATA, &pe_image_test_path));
+  pe_image_test_path = pe_image_test_path.Append(FILE_PATH_LITERAL("pe_image"));
+#if defined(ARCH_CPU_ARM64)
+  pe_image_test_path =
+      pe_image_test_path.Append(FILE_PATH_LITERAL("pe_image_test_arm64.dll"));
+#elif defined(ARCH_CPU_X86_64)
+  pe_image_test_path =
+      pe_image_test_path.Append(FILE_PATH_LITERAL("pe_image_test_64.dll"));
+#elif defined(ARCH_CPU_X86)
+  pe_image_test_path =
+      pe_image_test_path.Append(FILE_PATH_LITERAL("pe_image_test_32.dll"));
+#else
+#error This platform is not supported.
+#endif
+  return pe_image_test_path;
+}
+
 }  // namespace
 
 // Tests that we are able to enumerate stuff from a PE file, and that
 // the actual number of items found matches an expected value.
 TEST(PEImageTest, EnumeratesPE) {
-  base::FilePath pe_image_test_path;
-  ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &pe_image_test_path));
-  pe_image_test_path = pe_image_test_path.Append(FILE_PATH_LITERAL("pe_image"));
+  base::FilePath pe_image_test_path = GetPEImageTestPath();
 
-#if defined(ARCH_CPU_64_BITS)
-  pe_image_test_path =
-      pe_image_test_path.Append(FILE_PATH_LITERAL("pe_image_test_64.dll"));
+#if defined(ARCH_CPU_ARM64)
+  const int sections = 7;
+  const int imports_dlls = 3;
+  const int delay_dlls = 2;
+  const int exports = 3;
+  const int imports = 72;
+  const int delay_imports = 2;
+  const int relocs = 740;
+#elif defined(ARCH_CPU_64_BITS)
   const int sections = 6;
   const int imports_dlls = 2;
   const int delay_dlls = 2;
@@ -108,8 +131,6 @@ TEST(PEImageTest, EnumeratesPE) {
   const int delay_imports = 2;
   const int relocs = 976;
 #else
-  pe_image_test_path =
-      pe_image_test_path.Append(FILE_PATH_LITERAL("pe_image_test_32.dll"));
   const int sections = 5;
   const int imports_dlls = 2;
   const int delay_dlls = 2;
@@ -173,17 +194,7 @@ TEST(PEImageTest, RetrievesExports) {
 
 // Tests that we can locate a forwarded export.
 TEST(PEImageTest, ForwardedExport) {
-  base::FilePath pe_image_test_path;
-  ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &pe_image_test_path));
-  pe_image_test_path = pe_image_test_path.Append(FILE_PATH_LITERAL("pe_image"));
-
-#if defined(ARCH_CPU_64_BITS)
-  pe_image_test_path =
-      pe_image_test_path.Append(FILE_PATH_LITERAL("pe_image_test_64.dll"));
-#else
-  pe_image_test_path =
-      pe_image_test_path.Append(FILE_PATH_LITERAL("pe_image_test_32.dll"));
-#endif
+  base::FilePath pe_image_test_path = GetPEImageTestPath();
 
   ScopedNativeLibrary module(pe_image_test_path);
 

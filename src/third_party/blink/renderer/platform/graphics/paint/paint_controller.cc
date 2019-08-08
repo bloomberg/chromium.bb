@@ -509,46 +509,52 @@ void PaintController::CommitNewDisplayItems() {
 }
 
 void PaintController::FinishCycle() {
-  if (usage_ == kTransient)
-    return;
-
+  if (usage_ != kTransient) {
 #if DCHECK_IS_ON()
-  DCHECK(new_display_item_list_.IsEmpty());
-  DCHECK(new_paint_chunks_.IsInInitialState());
+    DCHECK(new_display_item_list_.IsEmpty());
+    DCHECK(new_paint_chunks_.IsInInitialState());
 #endif
 
-  if (committed_) {
-    committed_ = false;
+    if (committed_) {
+      committed_ = false;
 
-    // Validate display item clients that have validly cached subsequence or
-    // display items in this PaintController.
-    for (auto& item : current_cached_subsequences_) {
-      if (item.key->IsCacheable())
-        item.key->Validate();
+      // Validate display item clients that have validly cached subsequence or
+      // display items in this PaintController.
+      for (auto& item : current_cached_subsequences_) {
+        if (item.key->IsCacheable())
+          item.key->Validate();
+      }
+      for (const auto& item : current_paint_artifact_->GetDisplayItemList()) {
+        const auto& client = item.Client();
+        client.ClearPartialInvalidationVisualRect();
+        if (client.IsCacheable())
+          client.Validate();
+      }
+      for (const auto& chunk : current_paint_artifact_->PaintChunks()) {
+        if (chunk.id.client.IsCacheable())
+          chunk.id.client.Validate();
+      }
     }
-    for (const auto& item : current_paint_artifact_->GetDisplayItemList()) {
-      const auto& client = item.Client();
-      client.ClearPartialInvalidationVisualRect();
-      if (client.IsCacheable())
-        client.Validate();
-    }
-    for (const auto& chunk : current_paint_artifact_->PaintChunks()) {
-      if (chunk.id.client.IsCacheable())
-        chunk.id.client.Validate();
-    }
+
+    current_paint_artifact_->FinishCycle();
   }
 
-  current_paint_artifact_->FinishCycle();
-
+  if (VLOG_IS_ON(1)) {
+    // Only log for non-transient paint controllers. There is an additional
+    // paint controller used by BlinkGenPropertyTrees to collect foreign layers,
+    // and this can be logged by removing the "usage_ != kTransient" condition.
+    if (usage_ != kTransient) {
+      LOG(ERROR) << "PaintController::FinishCycle() completed";
 #if DCHECK_IS_ON()
-  if (VLOG_IS_ON(2)) {
-    LOG(ERROR) << "PaintController::FinishCycle() done";
-    if (VLOG_IS_ON(3))
-      ShowDebugDataWithRecords();
-    else
-      ShowDebugData();
-  }
+      if (VLOG_IS_ON(3))
+        ShowDebugDataWithPaintRecords();
+      else if (VLOG_IS_ON(2))
+        ShowDebugData();
+      else if (VLOG_IS_ON(1))
+        ShowCompactDebugData();
 #endif
+    }
+  }
 }
 
 void PaintController::ClearPropertyTreeChangedStateTo(

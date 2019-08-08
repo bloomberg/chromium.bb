@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "build/build_config.h"
 #include "core/fxcrt/fx_extension.h"
 #include "core/fxcrt/fx_safe_types.h"
 
@@ -31,7 +32,7 @@ void MatchFloatRange(float f1, float f2, int* i1, int* i2) {
   }
 }
 
-#if _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#if defined(OS_WIN)
 static_assert(sizeof(FX_RECT) == sizeof(RECT), "FX_RECT vs. RECT mismatch");
 static_assert(offsetof(FX_RECT, left) == offsetof(RECT, left),
               "FX_RECT vs. RECT mismatch");
@@ -73,12 +74,9 @@ void FX_RECT::Intersect(const FX_RECT& src) {
   }
 }
 
-CFX_FloatRect::CFX_FloatRect(const FX_RECT& rect) {
-  left = rect.left;
-  top = rect.bottom;
-  right = rect.right;
-  bottom = rect.top;
-}
+// Y-axis runs the opposite way in FX_RECT.
+CFX_FloatRect::CFX_FloatRect(const FX_RECT& rect)
+    : left(rect.left), bottom(rect.top), right(rect.right), top(rect.bottom) {}
 
 // static
 CFX_FloatRect CFX_FloatRect::GetBBox(const CFX_PointF* pPoints, int nPoints) {

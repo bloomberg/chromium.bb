@@ -57,37 +57,6 @@
 
 namespace blink {
 
-class CombinedImageDecodeCache {
-  USING_FAST_MALLOC(CombinedImageDecodeCache);
-
- public:
-  CombinedImageDecodeCache(size_t locked_memory_limit_bytes)
-      : locked_memory_limit_bytes_(locked_memory_limit_bytes) {
-    constexpr int kMaxIndex =
-        (kMaxCanvasPixelFormat + 1) * (kMaxCanvasColorSpace + 1);
-    decode_caches_.resize(kMaxIndex);
-  }
-
-  cc::ImageDecodeCache* GetCache(CanvasColorSpace color_space,
-                                 CanvasPixelFormat pixel_format) {
-    base::AutoLock lock(lock_);
-    int index = (kMaxCanvasColorSpace + 1) * pixel_format + color_space;
-    if (!decode_caches_[index]) {
-      decode_caches_[index] = std::make_unique<cc::SoftwareImageDecodeCache>(
-          CanvasColorParams::PixelFormatToSkColorType(pixel_format),
-          locked_memory_limit_bytes_, PaintImage::kDefaultGeneratorClientId,
-          blink::CanvasColorParams::CanvasColorSpaceToSkColorSpace(
-              color_space));
-    }
-    return decode_caches_[index].get();
-  }
-
- private:
-  std::vector<std::unique_ptr<cc::SoftwareImageDecodeCache>> decode_caches_;
-  const size_t locked_memory_limit_bytes_;
-  base::Lock lock_;
-};
-
 Image::Image(ImageObserver* observer, bool is_multipart)
     : image_observer_disabled_(false),
       image_observer_(observer),
@@ -103,16 +72,24 @@ Image* Image::NullImage() {
 }
 
 // static
-cc::ImageDecodeCache* Image::SharedCCDecodeCache(
-    CanvasColorSpace color_space,
-    CanvasPixelFormat pixel_format) {
+cc::ImageDecodeCache& Image::SharedCCDecodeCache(SkColorType color_type) {
   // This denotes the allocated locked memory budget for the cache used for
   // book-keeping. The cache indicates when the total memory locked exceeds this
   // budget in cc::DecodedDrawImage.
+  DCHECK(color_type == kN32_SkColorType || color_type == kRGBA_F16_SkColorType);
   static const size_t kLockedMemoryLimitBytes = 64 * 1024 * 1024;
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(CombinedImageDecodeCache, combined_cache,
-                                  (kLockedMemoryLimitBytes));
-  return combined_cache.GetCache(color_space, pixel_format);
+  if (color_type == kRGBA_F16_SkColorType) {
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(
+        cc::SoftwareImageDecodeCache, image_decode_cache,
+        (kRGBA_F16_SkColorType, kLockedMemoryLimitBytes,
+         PaintImage::kDefaultGeneratorClientId));
+    return image_decode_cache;
+  }
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(cc::SoftwareImageDecodeCache,
+                                  image_decode_cache,
+                                  (kN32_SkColorType, kLockedMemoryLimitBytes,
+                                   PaintImage::kDefaultGeneratorClientId));
+  return image_decode_cache;
 }
 
 scoped_refptr<Image> Image::LoadPlatformResource(const char* name) {
@@ -375,12 +352,11 @@ DarkModeClassification Image::GetDarkModeClassification(
   // size, only the top left corner coordinates of the src_rect are used to
   // generate the key for caching and retrieving the classification.
   ClassificationKey key(src_rect.X(), src_rect.Y());
-  std::map<ClassificationKey, DarkModeClassification>::iterator result =
-      dark_mode_classifications_.find(key);
+  auto result = dark_mode_classifications_.find(key);
   if (result == dark_mode_classifications_.end())
     return DarkModeClassification::kNotClassified;
 
-  return result->second;
+  return result->value;
 }
 
 void Image::AddDarkModeClassification(
@@ -390,7 +366,7 @@ void Image::AddDarkModeClassification(
   DCHECK(GetDarkModeClassification(src_rect) ==
          DarkModeClassification::kNotClassified);
   ClassificationKey key(src_rect.X(), src_rect.Y());
-  dark_mode_classifications_[key] = dark_mode_classification;
+  dark_mode_classifications_.insert(key, dark_mode_classification);
 }
 
 bool Image::ShouldApplyDarkModeFilter(const FloatRect& src_rect) {

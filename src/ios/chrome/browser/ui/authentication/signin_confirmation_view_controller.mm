@@ -59,8 +59,7 @@ UIImage* GetImageForIdentity(ChromeIdentity* identity) {
     // (including the corresponding AccountViewBase).
     ios::GetChromeBrowserProvider()
         ->GetChromeIdentityService()
-        ->GetAvatarForIdentity(identity, ^(UIImage*){
-                               });
+        ->GetAvatarForIdentity(identity, nil);
   }
   return image;
 }

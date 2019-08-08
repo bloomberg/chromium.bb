@@ -111,7 +111,7 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
   void* operator new(size_t);
   void operator delete(void*);
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   void ShowTreeForThis() const;
   void ShowLineTreeForThis() const;
 
@@ -357,8 +357,6 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
 
   // TODO(szager): The Rect versions should return a rect, not modify the
   // argument.
-  void FlipForWritingMode(FloatRect&) const;
-  FloatPoint FlipForWritingMode(const FloatPoint&) const;
   void FlipForWritingMode(LayoutRect&) const;
   LayoutPoint FlipForWritingMode(const LayoutPoint&) const;
 
@@ -535,8 +533,8 @@ bool CanUseInlineBox(const LayoutObject&);
 
 }  // namespace blink
 
-#ifndef NDEBUG
-// Outside the WebCore namespace for ease of invocation from gdb.
+#if DCHECK_IS_ON()
+// Outside the blink namespace for ease of invocation from gdb.
 void showTree(const blink::InlineBox*);
 void showLineTree(const blink::InlineBox*);
 #endif

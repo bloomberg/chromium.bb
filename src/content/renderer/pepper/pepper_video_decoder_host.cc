@@ -248,8 +248,11 @@ int32_t PepperVideoDecoderHost::OnHostMsgDecode(
                                            context->MakeReplyMessageContext()));
 
   shm_buffer_busy_[shm_id] = true;
-  decoder_->Decode(
-      media::BitstreamBuffer(decode_id, shm_buffers_[shm_id]->handle(), size));
+  // TODO(crbug.com/844456): The decode buffer should probably be read-only, but
+  // then shm_buffers_ will need to be refactored to use a
+  // ReadOnlySharedMemoryRegion with an associated writable mapping.
+  decoder_->Decode(media::BitstreamBuffer(
+      decode_id, shm_buffers_[shm_id]->handle(), false /* read_only */, size));
 
   return PP_OK_COMPLETIONPENDING;
 }
@@ -545,8 +548,11 @@ bool PepperVideoDecoderHost::TryFallbackToSoftwareDecoder() {
   // Resubmit all pending decodes.
   for (const PendingDecode& decode : pending_decodes_) {
     DCHECK(shm_buffer_busy_[decode.shm_id]);
+    // TODO(crbug.com/844456): As with OnHostMsgDecode, the decode buffer should
+    // probably be read-only (see the todo there for more details).
     decoder_->Decode(media::BitstreamBuffer(
-        decode.decode_id, shm_buffers_[decode.shm_id]->handle(), decode.size));
+        decode.decode_id, shm_buffers_[decode.shm_id]->handle(),
+        false /* read_only */, decode.size));
   }
 
   // Flush the new decoder if Flush() was pending.

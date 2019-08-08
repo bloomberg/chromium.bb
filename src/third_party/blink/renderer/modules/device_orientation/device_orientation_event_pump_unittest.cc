@@ -59,8 +59,8 @@ class MockDeviceOrientationController final
     // before DeviceOrientationEventPump::Start is called. As a workaround,
     // Start is called manually by each test case.
     // TODO(crbug.com/850619): Ensure a non-null LocalFrame is passed, and use
-    // AddController/RemoveController to start and stop the event pump.
-    orientation_pump_->AddController(this, /*frame=*/nullptr);
+    // SetController/RemoveController to start and stop the event pump.
+    orientation_pump_->SetController(this);
   }
 
   bool HasLastData() override {
@@ -68,7 +68,7 @@ class MockDeviceOrientationController final
   }
 
   void UnregisterWithDispatcher() override {
-    orientation_pump_->RemoveController(this);
+    orientation_pump_->RemoveController();
   }
 
   const DeviceOrientationData* data() {

@@ -52,17 +52,14 @@ class DiceTestSigninClient : public TestSigninClient, public GaiaAuthConsumer {
 
   std::unique_ptr<GaiaAuthFetcher> CreateGaiaAuthFetcher(
       GaiaAuthConsumer* consumer,
-      gaia::GaiaSource source,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-      override {
+      gaia::GaiaSource source) override {
     DCHECK(!consumer_ || (consumer_ == consumer));
     consumer_ = consumer;
 
     // Pass |this| as a dummy consumer to CreateGaiaAuthFetcher().
     // Since DiceTestSigninClient does not overrides any consumer method,
     // everything will be dropped on the floor.
-    return TestSigninClient::CreateGaiaAuthFetcher(this, source,
-                                                   url_loader_factory);
+    return TestSigninClient::CreateGaiaAuthFetcher(this, source);
   }
 
   GaiaAuthConsumer* consumer_;

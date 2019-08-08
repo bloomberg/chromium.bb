@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
+#include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
@@ -88,7 +89,7 @@ base::string16 AutoSigninFirstRunDialogView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK
                                        ? IDS_AUTO_SIGNIN_FIRST_RUN_OK
-                                       : IDS_AUTO_SIGNIN_FIRST_RUN_TURN_OFF);
+                                       : IDS_TURN_OFF);
 }
 
 void AutoSigninFirstRunDialogView::InitWindow() {

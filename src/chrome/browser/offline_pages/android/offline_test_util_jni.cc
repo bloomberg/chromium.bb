@@ -12,11 +12,13 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/json/json_writer.h"
+#include "chrome/browser/android/profile_key_util.h"
 #include "chrome/browser/offline_pages/android/offline_page_bridge.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/offline_pages/prefetch/prefetch_service_factory.h"
 #include "chrome/browser/offline_pages/request_coordinator_factory.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
 #include "components/offline_pages/core/offline_page_model.h"
@@ -194,12 +196,15 @@ void JNI_OfflineTestUtil_DeletePagesByOfflineId(
     const JavaParamRef<jlongArray>& j_offline_ids_array,
     const JavaParamRef<jobject>& j_callback_obj) {
   ScopedJavaGlobalRef<jobject> j_callback_ref(env, j_callback_obj);
+
   std::vector<int64_t> offline_ids;
   base::android::JavaLongArrayToInt64Vector(env, j_offline_ids_array,
                                             &offline_ids);
-  GetOfflinePageModel()->DeletePagesByOfflineId(
-      offline_ids,
-      base::BindOnce(&OnDeletePageDone, std::move(j_callback_ref)));
+
+  PageCriteria criteria;
+  criteria.offline_ids = std::move(offline_ids);
+  GetOfflinePageModel()->DeletePagesWithCriteria(
+      criteria, base::BindOnce(&OnDeletePageDone, std::move(j_callback_ref)));
 }
 
 JNI_EXPORT void JNI_OfflineTestUtil_StartRequestCoordinatorProcessing(
@@ -252,15 +257,12 @@ void JNI_OfflineTestUtil_WaitForConnectivityState(
 
 void JNI_OfflineTestUtil_SetPrefetchingEnabledByServer(
     JNIEnv* env,
-    const JavaParamRef<jobject>& jprofile,
     const jboolean enabled) {
-  Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
-  if (!profile)
-    return;
+  ProfileKey* key = ::android::GetMainProfileKey();
 
-  prefetch_prefs::SetEnabledByServer(profile->GetPrefs(), enabled);
+  prefetch_prefs::SetEnabledByServer(key->GetPrefs(), enabled);
   if (!enabled) {
-    prefetch_prefs::ResetForbiddenStateForTesting(profile->GetPrefs());
+    prefetch_prefs::ResetForbiddenStateForTesting(key->GetPrefs());
   }
 }
 

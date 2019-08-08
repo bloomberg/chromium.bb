@@ -40,6 +40,20 @@ FakeSignalStrategy::~FakeSignalStrategy() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
+void FakeSignalStrategy::SetState(State state) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (state == state_) {
+    return;
+  }
+  state_ = state;
+  for (auto& observer : listeners_)
+    observer.OnSignalStrategyStateChange(state_);
+}
+
+void FakeSignalStrategy::SetPeerCallback(const PeerCallback& peer_callback) {
+  peer_callback_ = peer_callback;
+}
+
 void FakeSignalStrategy::ConnectTo(FakeSignalStrategy* peer) {
   PeerCallback peer_callback =
       base::Bind(&FakeSignalStrategy::DeliverMessageOnThread,
@@ -64,18 +78,34 @@ void FakeSignalStrategy::SimulateMessageReordering() {
   simulate_reorder_ = true;
 }
 
+void FakeSignalStrategy::OnIncomingMessage(
+    std::unique_ptr<jingle_xmpp::XmlElement> stanza) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!simulate_reorder_) {
+    NotifyListeners(std::move(stanza));
+    return;
+  }
+
+  // Simulate IQ messages re-ordering by swapping the delivery order of
+  // next pair of messages.
+  if (pending_stanza_) {
+    NotifyListeners(std::move(stanza));
+    NotifyListeners(std::move(pending_stanza_));
+    pending_stanza_.reset();
+  } else {
+    pending_stanza_ = std::move(stanza);
+  }
+}
+
 void FakeSignalStrategy::Connect() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  state_ = CONNECTED;
-  for (auto& observer : listeners_)
-    observer.OnSignalStrategyStateChange(CONNECTED);
+  SetState(CONNECTED);
 }
 
 void FakeSignalStrategy::Disconnect() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  state_ = DISCONNECTED;
-  for (auto& observer : listeners_)
-    observer.OnSignalStrategyStateChange(DISCONNECTED);
+  SetState(DISCONNECTED);
 }
 
 SignalStrategy::State FakeSignalStrategy::GetState() const {
@@ -134,26 +164,6 @@ void FakeSignalStrategy::DeliverMessageOnThread(
                                 std::move(stanza)));
 }
 
-void FakeSignalStrategy::OnIncomingMessage(
-    std::unique_ptr<jingle_xmpp::XmlElement> stanza) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (!simulate_reorder_) {
-    NotifyListeners(std::move(stanza));
-    return;
-  }
-
-  // Simulate IQ messages re-ordering by swapping the delivery order of
-  // next pair of messages.
-  if (pending_stanza_) {
-    NotifyListeners(std::move(stanza));
-    NotifyListeners(std::move(pending_stanza_));
-    pending_stanza_.reset();
-  } else {
-    pending_stanza_ = std::move(stanza);
-  }
-}
-
 void FakeSignalStrategy::NotifyListeners(
     std::unique_ptr<jingle_xmpp::XmlElement> stanza) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -175,10 +185,6 @@ void FakeSignalStrategy::NotifyListeners(
     if (listener.OnSignalStrategyIncomingStanza(stanza_ptr))
       break;
   }
-}
-
-void FakeSignalStrategy::SetPeerCallback(const PeerCallback& peer_callback) {
-  peer_callback_ = peer_callback;
 }
 
 }  // namespace remoting

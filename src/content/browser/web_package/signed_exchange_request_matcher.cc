@@ -68,7 +68,7 @@ class ContentNegotiationAlgorithm {
       item.value = name_value_pairs.name();
       item.weight = 1.0;
       while (name_value_pairs.GetNext()) {
-        if (base::LowerCaseEqualsASCII(name_value_pairs.name(), "q")) {
+        if (base::LowerCaseEqualsASCII(name_value_pairs.name_piece(), "q")) {
           if (auto value = GetQValue(name_value_pairs.value()))
             item.weight = *value;
         } else {

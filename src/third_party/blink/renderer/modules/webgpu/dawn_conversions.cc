@@ -513,6 +513,33 @@ DawnFilterMode AsDawnEnum<DawnFilterMode>(const WTF::String& webgpu_enum) {
   return DAWN_FILTER_MODE_FORCE32;
 }
 
+template <>
+DawnCullMode AsDawnEnum<DawnCullMode>(const WTF::String& webgpu_enum) {
+  if (webgpu_enum == "none") {
+    return DAWN_CULL_MODE_NONE;
+  }
+  if (webgpu_enum == "front") {
+    return DAWN_CULL_MODE_FRONT;
+  }
+  if (webgpu_enum == "back") {
+    return DAWN_CULL_MODE_BACK;
+  }
+  NOTREACHED();
+  return DAWN_CULL_MODE_FORCE32;
+}
+
+template <>
+DawnFrontFace AsDawnEnum<DawnFrontFace>(const WTF::String& webgpu_enum) {
+  if (webgpu_enum == "ccw") {
+    return DAWN_FRONT_FACE_CCW;
+  }
+  if (webgpu_enum == "cw") {
+    return DAWN_FRONT_FACE_CW;
+  }
+  NOTREACHED();
+  return DAWN_FRONT_FACE_FORCE32;
+}
+
 DawnColor AsDawnType(const GPUColor* webgpu_color) {
   DCHECK(webgpu_color);
 

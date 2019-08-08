@@ -57,7 +57,7 @@ namespace sw
 		return memcmp(static_cast<const States*>(this), static_cast<const States*>(&state), sizeof(States)) == 0;
 	}
 
-	SetupProcessor::SetupProcessor(Context *context) : context(context)
+	SetupProcessor::SetupProcessor()
 	{
 		routineCache = nullptr;
 		setRoutineCacheSize(1024);
@@ -69,18 +69,17 @@ namespace sw
 		routineCache = nullptr;
 	}
 
-	SetupProcessor::State SetupProcessor::update() const
+	SetupProcessor::State SetupProcessor::update(const sw::Context* context) const
 	{
 		State state;
 
-		bool vPosZW = (context->pixelShader && context->pixelShader->hasBuiltinInput(spv::BuiltInPosition));
+		bool vPosZW = (context->pixelShader && context->pixelShader->hasBuiltinInput(spv::BuiltInFragCoord));
 
 		state.isDrawPoint = context->isDrawPoint();
 		state.isDrawLine = context->isDrawLine();
 		state.isDrawTriangle = context->isDrawTriangle();
 		state.interpolateZ = context->depthBufferActive() || vPosZW;
-		state.interpolateW = context->perspectiveActive() || vPosZW;
-		state.perspective = context->perspectiveActive();
+		state.interpolateW = context->pixelShader != nullptr;
 		state.frontFacingCCW = context->frontFacingCCW;
 		state.cullMode = context->cullMode;
 		state.twoSidedStencil = context->stencilActive() && context->twoSidedStencil;
@@ -90,9 +89,12 @@ namespace sw
 		state.multiSample = context->sampleCount;
 		state.rasterizerDiscard = context->rasterizerDiscard;
 
-		for (int interpolant = 0; interpolant < MAX_INTERFACE_COMPONENTS; interpolant++)
+		if (context->pixelShader)
 		{
-			state.gradient[interpolant] = context->pixelShader->inputs[interpolant];
+			for (int interpolant = 0; interpolant < MAX_INTERFACE_COMPONENTS; interpolant++)
+			{
+				state.gradient[interpolant] = context->pixelShader->inputs[interpolant];
+			}
 		}
 
 		state.hash = state.computeHash();

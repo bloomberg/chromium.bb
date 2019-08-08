@@ -13,7 +13,10 @@
 // limitations under the License.
 
 #include "VkDescriptorPool.hpp"
+
+#include "VkDescriptorSet.hpp"
 #include "VkDescriptorSetLayout.hpp"
+
 #include <algorithm>
 #include <memory>
 
@@ -21,7 +24,7 @@ namespace vk
 {
 
 DescriptorPool::DescriptorPool(const VkDescriptorPoolCreateInfo* pCreateInfo, void* mem) :
-	pool(reinterpret_cast<VkDescriptorSet>(mem)),
+	pool(static_cast<uint8_t*>(mem)),
 	poolSize(ComputeRequiredAllocationSize(pCreateInfo))
 {
 }
@@ -33,13 +36,12 @@ void DescriptorPool::destroy(const VkAllocationCallbacks* pAllocator)
 
 size_t DescriptorPool::ComputeRequiredAllocationSize(const VkDescriptorPoolCreateInfo* pCreateInfo)
 {
-	size_t size = 0;
+	size_t size = pCreateInfo->maxSets * sizeof(DescriptorSetHeader);
 
 	for(uint32_t i = 0; i < pCreateInfo->poolSizeCount; i++)
 	{
 		size += pCreateInfo->pPoolSizes[i].descriptorCount *
-		        (sizeof(DescriptorSetLayout*) +
-		         DescriptorSetLayout::GetDescriptorSize(pCreateInfo->pPoolSizes[i].type));
+		        DescriptorSetLayout::GetDescriptorSize(pCreateInfo->pPoolSizes[i].type);
 	}
 
 	return size;
@@ -75,17 +77,17 @@ VkDescriptorSet DescriptorPool::findAvailableMemory(size_t size)
 
 	// First, look for space at the end of the pool
 	const auto itLast = nodes.rbegin();
-	ptrdiff_t itemStart = reinterpret_cast<char*>(itLast->set) - reinterpret_cast<char*>(pool);
+	ptrdiff_t itemStart = itLast->set - pool;
 	ptrdiff_t nextItemStart = itemStart + itLast->size;
 	size_t freeSpace = poolSize - nextItemStart;
 	if(freeSpace >= size)
 	{
-		return reinterpret_cast<VkDescriptorSet>(reinterpret_cast<char*>(pool) + nextItemStart);
+		return pool + nextItemStart;
 	}
 
 	// Second, look for space at the beginning of the pool
 	const auto itBegin = nodes.end();
-	freeSpace = reinterpret_cast<char*>(itBegin->set) - reinterpret_cast<char*>(pool);
+	freeSpace = itBegin->set - pool;
 	if(freeSpace >= size)
 	{
 		return pool;
@@ -97,8 +99,8 @@ VkDescriptorSet DescriptorPool::findAvailableMemory(size_t size)
 	++nextIt;
 	for(auto it = itBegin; nextIt != itEnd; ++it, ++nextIt)
 	{
-		VkDescriptorSet freeSpaceStart = reinterpret_cast<VkDescriptorSet>(reinterpret_cast<char*>(it->set) + it->size);
-		freeSpace = reinterpret_cast<char*>(nextIt->set) - reinterpret_cast<char*>(freeSpaceStart);
+		VkDescriptorSet freeSpaceStart(it->set + it->size);
+		freeSpace = nextIt->set - freeSpaceStart;
 		if(freeSpace >= size)
 		{
 			return freeSpaceStart;
@@ -130,7 +132,7 @@ VkResult DescriptorPool::allocateSets(size_t* sizes, uint32_t numAllocs, VkDescr
 			{
 				pDescriptorSets[i] = memory;
 				nodes.insert(Node(pDescriptorSets[i], sizes[i]));
-				memory = reinterpret_cast<VkDescriptorSet>(reinterpret_cast<char*>(memory) + sizes[i]);
+				memory += sizes[i];
 			}
 
 			return VK_SUCCESS;
@@ -191,11 +193,11 @@ size_t DescriptorPool::computeTotalFreeSize() const
 
 	// Compute space at the end of the pool
 	const auto itLast = nodes.rbegin();
-	totalFreeSize += poolSize - ((reinterpret_cast<char*>(itLast->set) - reinterpret_cast<char*>(pool)) + itLast->size);
+	totalFreeSize += poolSize - (itLast->set - pool) + itLast->size;
 
 	// Compute space at the beginning of the pool
 	const auto itBegin = nodes.end();
-	totalFreeSize += reinterpret_cast<char*>(itBegin->set) - reinterpret_cast<char*>(pool);
+	totalFreeSize += itBegin->set - pool;
 
 	// Finally, look between existing pool items
 	const auto itEnd = nodes.end();
@@ -203,7 +205,7 @@ size_t DescriptorPool::computeTotalFreeSize() const
 	++nextIt;
 	for(auto it = itBegin; nextIt != itEnd; ++it, ++nextIt)
 	{
-		totalFreeSize += (reinterpret_cast<char*>(nextIt->set) - reinterpret_cast<char*>(it->set)) - it->size;
+		totalFreeSize += (nextIt->set - it->set) - it->size;
 	}
 
 	return totalFreeSize;

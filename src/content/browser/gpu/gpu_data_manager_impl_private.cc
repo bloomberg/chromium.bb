@@ -80,7 +80,7 @@ int GetGpuBlacklistHistogramValueWin(gpu::GpuFeatureStatus status) {
   //   Enabled VERSION_XP = 5,
   //   ...
   static const base::win::Version version = base::win::GetVersion();
-  if (version == base::win::VERSION_WIN_LAST)
+  if (version == base::win::Version::WIN_LAST)
     return -1;
   DCHECK_NE(gpu::kGpuFeatureStatusMax, status);
   int entry_index = static_cast<int>(version) * gpu::kGpuFeatureStatusMax;
@@ -163,7 +163,7 @@ void UpdateFeatureStats(const gpu::GpuFeatureInfo& gpu_feature_info) {
 #if defined(OS_WIN)
     int value_win = GetGpuBlacklistHistogramValueWin(value);
     if (value_win >= 0) {
-      int32_t max_sample = static_cast<int32_t>(base::win::VERSION_WIN_LAST) *
+      int32_t max_sample = static_cast<int32_t>(base::win::Version::WIN_LAST) *
                            gpu::kGpuFeatureStatusMax;
       histogram_pointer = base::LinearHistogram::FactoryGet(
           kGpuBlacklistFeatureHistogramNamesWin[i], 1, max_sample,
@@ -290,7 +290,7 @@ GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(GpuDataManagerImpl* owner)
 
   if (command_line->HasSwitch(switches::kSingleProcess) ||
       command_line->HasSwitch(switches::kInProcessGPU)) {
-    AppendGpuCommandLine(command_line);
+    AppendGpuCommandLine(command_line, GPU_PROCESS_KIND_SANDBOXED);
   }
 
 #if defined(OS_MACOSX)
@@ -386,7 +386,7 @@ void GpuDataManagerImplPrivate::RequestCompleteGpuInfoIfNeeded() {
 
 #if defined(OS_WIN)
   complete_gpu_info_already_requested_ = true;
-  GpuProcessHost::CallOnIO(GpuProcessHost::GPU_PROCESS_KIND_UNSANDBOXED_NO_GL,
+  GpuProcessHost::CallOnIO(GPU_PROCESS_KIND_UNSANDBOXED_NO_GL,
                            true /* force_create */,
                            base::BindOnce([](GpuProcessHost* host) {
                              if (!host)
@@ -404,9 +404,8 @@ void GpuDataManagerImplPrivate::RequestCompleteGpuInfoIfNeeded() {
 void GpuDataManagerImplPrivate::RequestGpuSupportedRuntimeVersion() {
 #if defined(OS_WIN)
   base::OnceClosure task = base::BindOnce([]() {
-    GpuProcessHost* host =
-        GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_UNSANDBOXED_NO_GL,
-                            true /* force_create */);
+    GpuProcessHost* host = GpuProcessHost::Get(
+        GPU_PROCESS_KIND_UNSANDBOXED_NO_GL, true /* force_create */);
     if (!host)
       return;
     host->gpu_service()->GetGpuSupportedRuntimeVersion(
@@ -440,7 +439,7 @@ gpu::GpuFeatureStatus GpuDataManagerImplPrivate::GetFeatureStatus(
 void GpuDataManagerImplPrivate::RequestVideoMemoryUsageStatsUpdate(
     GpuDataManager::VideoMemoryUsageStatsCallback callback) const {
   GpuProcessHost::CallOnIO(
-      GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED, false /* force_create */,
+      GPU_PROCESS_KIND_SANDBOXED, false /* force_create */,
       base::BindOnce(&RequestVideoMemoryUsageStats, std::move(callback)));
 }
 
@@ -561,13 +560,15 @@ gpu::GpuFeatureInfo GpuDataManagerImplPrivate::GetGpuFeatureInfoForHardwareGpu()
 }
 
 void GpuDataManagerImplPrivate::AppendGpuCommandLine(
-    base::CommandLine* command_line) const {
+    base::CommandLine* command_line,
+    GpuProcessKind kind) const {
   DCHECK(command_line);
   const base::CommandLine* browser_command_line =
       base::CommandLine::ForCurrentProcess();
 
   gpu::GpuPreferences gpu_prefs = GetGpuPreferencesFromCommandLine();
-  UpdateGpuPreferences(&gpu_prefs);
+  UpdateGpuPreferences(&gpu_prefs, kind);
+
   command_line->AppendSwitchASCII(switches::kGpuPreferences,
                                   gpu_prefs.ToSwitchValue());
 
@@ -598,7 +599,8 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
 }
 
 void GpuDataManagerImplPrivate::UpdateGpuPreferences(
-    gpu::GpuPreferences* gpu_preferences) const {
+    gpu::GpuPreferences* gpu_preferences,
+    GpuProcessKind kind) const {
   DCHECK(gpu_preferences);
 
   // For performance reasons, discourage storing VideoFrames in a biplanar
@@ -618,6 +620,9 @@ void GpuDataManagerImplPrivate::UpdateGpuPreferences(
       gpu::CreateBufferUsageAndFormatExceptionList();
 
   gpu_preferences->watchdog_starts_backgrounded = !application_is_visible_;
+
+  if (kind == GPU_PROCESS_KIND_UNSANDBOXED_NO_GL)
+    gpu_preferences->gpu_startup_dialog = false;
 }
 
 void GpuDataManagerImplPrivate::DisableHardwareAcceleration() {
@@ -688,8 +693,7 @@ void GpuDataManagerImplPrivate::HandleGpuSwitch() {
   // Notify observers in the browser process.
   ui::GpuSwitchingManager::GetInstance()->NotifyGpuSwitched();
   // Pass the notification to the GPU process to notify observers there.
-  GpuProcessHost::CallOnIO(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
-                           false /* force_create */,
+  GpuProcessHost::CallOnIO(GPU_PROCESS_KIND_SANDBOXED, false /* force_create */,
                            base::BindOnce([](GpuProcessHost* host) {
                              if (host)
                                host->gpu_service()->GpuSwitched();
@@ -878,14 +882,7 @@ void GpuDataManagerImplPrivate::FallBackToNextGpuMode() {
 #else
   // TODO(kylechar): Use GpuMode to store the current mode instead of
   // multiple bools.
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableSoftwareCompositingFallback)) {
-    // Some tests only want to run with a functional GPU Process. Fail out here
-    // rather than falling back to software compositing and silently passing.
-    LOG(FATAL) << "The GPU Process Crash Limit was reached, and falling back "
-               << "to software compositing is disabled.";
-  } else if (!card_disabled_) {
+  if (!card_disabled_) {
     DisableHardwareAcceleration();
   } else if (SwiftShaderAllowed()) {
     swiftshader_blocked_ = true;

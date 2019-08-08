@@ -9,7 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/home_screen/home_screen_presenter.h"
-#include "ash/wallpaper/wallpaper_controller_observer.h"
+#include "ash/public/cpp/wallpaper_controller_observer.h"
 #include "ash/wm/overview/overview_observer.h"
 #include "base/macros.h"
 

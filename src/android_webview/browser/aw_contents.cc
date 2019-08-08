@@ -94,21 +94,22 @@
 #include "ui/gfx/image/image.h"
 struct AwDrawSWFunctionTable;
 
-using autofill::ContentAutofillDriverFactory;
 using autofill::AutofillManager;
+using autofill::ContentAutofillDriverFactory;
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
+using base::android::HasException;
 using base::android::JavaParamRef;
 using base::android::JavaRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
-using navigation_interception::InterceptNavigationDelegate;
 using content::BrowserThread;
 using content::RenderFrameHost;
 using content::WebContents;
+using navigation_interception::InterceptNavigationDelegate;
 
 namespace android_webview {
 
@@ -176,19 +177,6 @@ class ScopedAllowInitGLBindings {
 AwContents* AwContents::FromWebContents(WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return AwContentsUserData::GetContents(web_contents);
-}
-
-// static
-AwContents* AwContents::FromID(int render_process_id, int render_view_id) {
-  content::RenderViewHost* rvh =
-      content::RenderViewHost::FromID(render_process_id, render_view_id);
-  if (!rvh)
-    return NULL;
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderViewHost(rvh);
-  if (!web_contents)
-    return NULL;
-  return FromWebContents(web_contents);
 }
 
 // static
@@ -1505,25 +1493,23 @@ void AwContents::RendererResponsive(
                                        aw_render_process->GetJavaObject());
 }
 
-void AwContents::OnRenderProcessGone(int child_process_id) {
+AwContents::RenderProcessGoneResult AwContents::OnRenderProcessGone(
+    int child_process_id,
+    bool crashed) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
-    return;
+    return RenderProcessGoneResult::kHandled;
 
-  Java_AwContents_onRenderProcessGone(env, obj, child_process_id);
-}
+  bool result =
+      Java_AwContents_onRenderProcessGone(env, obj, child_process_id, crashed);
 
-bool AwContents::OnRenderProcessGoneDetail(int child_process_id, bool crashed) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return false;
+  if (HasException(env))
+    return RenderProcessGoneResult::kException;
 
-  return Java_AwContents_onRenderProcessGoneDetail(env, obj, child_process_id,
-                                                   crashed);
+  return result ? RenderProcessGoneResult::kHandled
+                : RenderProcessGoneResult::kUnhandled;
 }
 
 }  // namespace android_webview

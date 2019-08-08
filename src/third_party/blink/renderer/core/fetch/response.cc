@@ -9,7 +9,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_response.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
@@ -462,11 +461,6 @@ bool Response::HasPendingActivity() const {
   if (InternalBodyBuffer()->HasPendingActivity())
     return true;
   return Body::HasPendingActivity();
-}
-
-void Response::PopulateWebServiceWorkerResponse(
-    WebServiceWorkerResponse& response) {
-  response_->PopulateWebServiceWorkerResponse(response);
 }
 
 mojom::blink::FetchAPIResponsePtr Response::PopulateFetchAPIResponse() {

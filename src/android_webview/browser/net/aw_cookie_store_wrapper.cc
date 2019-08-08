@@ -197,10 +197,6 @@ void AwCookieStoreWrapper::SetCookieableSchemes(
                      CreateWrappedCallback<bool>(std::move(callback))));
 }
 
-bool AwCookieStoreWrapper::IsEphemeral() {
-  return GetCookieStore()->IsEphemeral();
-}
-
 base::OnceClosure AwCookieStoreWrapper::CreateWrappedClosureCallback(
     base::OnceClosure callback) {
   if (callback.is_null())

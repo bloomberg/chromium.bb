@@ -74,8 +74,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
     : public blink::WebMediaStreamObserver,
       public blink::WebMediaPlayer,
       public media::WebMediaPlayerDelegate::Observer,
-      public blink::WebSurfaceLayerBridgeObserver,
-      public base::SupportsWeakPtr<WebMediaPlayerMS> {
+      public blink::WebSurfaceLayerBridgeObserver {
  public:
   // Construct a WebMediaPlayerMS with reference to the client, and
   // a MediaStreamClient which provides blink::WebMediaStreamVideoRenderer.
@@ -182,7 +181,6 @@ class CONTENT_EXPORT WebMediaPlayerMS
   void OnSeekBackward(double seconds) override;
   void OnVolumeMultiplierUpdate(double multiplier) override;
   void OnBecamePersistentVideo(bool value) override;
-  void OnPictureInPictureModeEnded() override;
 
   void OnFirstFrameReceived(media::VideoRotation video_rotation,
                             bool is_opaque);
@@ -236,6 +234,8 @@ class CONTENT_EXPORT WebMediaPlayerMS
   int GetDelegateId() override;
   base::Optional<viz::SurfaceId> GetSurfaceId() override;
 
+  base::WeakPtr<blink::WebMediaPlayer> AsWeakPtr() override;
+
   void OnDisplayTypeChanged(WebMediaPlayer::DisplayType) override;
 
  private:
@@ -252,9 +252,6 @@ class CONTENT_EXPORT WebMediaPlayerMS
 
   // Need repaint due to state change.
   void RepaintInternal();
-
-  // The callback for source to report error.
-  void OnSourceError();
 
   // Helpers that set the network/ready state and notifies the client if
   // they've changed.
@@ -309,7 +306,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
   media::PaintCanvasVideoRenderer video_renderer_;
 
   bool paused_;
-  media::VideoRotation video_rotation_;
+  media::VideoTransformation video_transformation_;
 
   std::unique_ptr<media::MediaLog> media_log_;
 
@@ -359,6 +356,9 @@ class CONTENT_EXPORT WebMediaPlayerMS
 
   // Whether the video is known to be opaque or not.
   bool opaque_ = true;
+
+  base::WeakPtr<WebMediaPlayerMS> weak_this_;
+  base::WeakPtrFactory<WebMediaPlayerMS> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerMS);
 };

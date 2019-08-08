@@ -155,7 +155,7 @@ ResultCode TargetProcess::Create(
   if (startup_info.has_extended_startup_info())
     flags |= EXTENDED_STARTUPINFO_PRESENT;
 
-  if (job_ && base::win::GetVersion() < base::win::VERSION_WIN8) {
+  if (job_ && base::win::GetVersion() < base::win::Version::WIN8) {
     // Windows 8 implements nested jobs, but for older systems we need to
     // break out of any job we're in to enforce our restrictions.
     flags |= CREATE_BREAKAWAY_FROM_JOB;

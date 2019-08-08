@@ -46,7 +46,6 @@ import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.WindowDelegate;
-import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.LocationBar;
@@ -80,8 +79,7 @@ import java.util.regex.Pattern;
 /**
  * The Toolbar layout to be used for a custom tab. This is used for both phone and tablet UIs.
  */
-public class CustomTabToolbar
-        extends ToolbarLayout implements LocationBar, View.OnLongClickListener {
+public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickListener {
     private static final Object ORIGIN_SPAN = new Object();
 
     /**
@@ -153,6 +151,7 @@ public class CustomTabToolbar
     private String mFirstUrl;
 
     protected ToolbarDataProvider mToolbarDataProvider;
+    private LocationBar mLocationBar;
 
     private Runnable mTitleAnimationStarter = new Runnable() {
         @Override
@@ -183,7 +182,8 @@ public class CustomTabToolbar
         mLiteStatusView = findViewById(R.id.url_bar_lite_status);
         mLiteStatusSeparatorView = findViewById(R.id.url_bar_lite_status_separator);
         mUrlCoordinator = new UrlBarCoordinator((UrlBar) mUrlBar);
-        mUrlCoordinator.setDelegate(this);
+        mLocationBar = new LocationBarImpl();
+        mUrlCoordinator.setDelegate(mLocationBar);
         mUrlCoordinator.setAllowFocus(false);
         mTitleBar = findViewById(R.id.title_bar);
         mLocationBarFrameLayout = findViewById(R.id.location_bar_frame_layout);
@@ -198,23 +198,15 @@ public class CustomTabToolbar
     }
 
     @Override
-    void initialize(ToolbarDataProvider toolbarDataProvider, ToolbarTabController tabController,
-            AppMenuButtonHelper appMenuButtonHelper) {
-        super.initialize(toolbarDataProvider, tabController, appMenuButtonHelper);
-        updateVisualsForState();
+    void initialize(ToolbarDataProvider toolbarDataProvider, ToolbarTabController tabController) {
+        super.initialize(toolbarDataProvider, tabController);
+        mLocationBar.updateVisualsForState();
     }
 
     @Override
     public void onNativeLibraryReady() {
         super.onNativeLibraryReady();
-        mSecurityButton.setOnClickListener(v -> {
-            Tab currentTab = getToolbarDataProvider().getTab();
-            if (currentTab == null || currentTab.getWebContents() == null) return;
-            Activity activity = currentTab.getWindowAndroid().getActivity().get();
-            if (activity == null) return;
-            PageInfoController.show(activity, currentTab, getContentPublisher(),
-                    PageInfoController.OpenedFromSource.TOOLBAR);
-        });
+        mLocationBar.onNativeLibraryReady();
     }
 
     @Override
@@ -293,33 +285,6 @@ public class CustomTabToolbar
     }
 
     @Override
-    public View getViewForUrlBackFocus() {
-        Tab tab = getCurrentTab();
-        if (tab == null) return null;
-        return tab.getView();
-    }
-
-    @Override
-    public boolean allowKeyboardLearning() {
-        return !super.isIncognito();
-    }
-
-    @Override
-    public boolean shouldCutCopyVerbatim() {
-        return false;
-    }
-
-    @Override
-    public void setShowTitle(boolean showTitle) {
-        if (showTitle) {
-            mState = STATE_DOMAIN_AND_TITLE;
-            mAnimDelegate.prepareTitleAnim(mUrlBar, mTitleBar);
-        } else {
-            mState = STATE_DOMAIN_ONLY;
-        }
-    }
-
-    @Override
     public void setUrlBarHidden(boolean hideUrlBar) {
         // Urlbar visibility cannot be toggled if it is the only visible element.
         if (mState == STATE_DOMAIN_ONLY) return;
@@ -346,7 +311,7 @@ public class CustomTabToolbar
             mTitleBar.setLayoutParams(lp);
             mTitleBar.setTextSize(TypedValue.COMPLEX_UNIT_PX,
                     getResources().getDimension(R.dimen.custom_tabs_title_text_size));
-            updateStatusIcon();
+            mLocationBar.updateStatusIcon();
         } else {
             assert false : "Unreached state";
         }
@@ -367,31 +332,9 @@ public class CustomTabToolbar
     }
 
     @Override
-    public void setTitleToPageTitle() {
-        String title = getToolbarDataProvider().getTitle();
-        if (!getToolbarDataProvider().hasTab() || TextUtils.isEmpty(title)) {
-            mTitleBar.setText("");
-            return;
-        }
-
-        // It takes some time to parse the title of the webcontent, and before that
-        // ToolbarDataProvider#getTitle always returns the url. We postpone the title animation
-        // until the title is authentic.
-        if ((mState == STATE_DOMAIN_AND_TITLE || mState == STATE_TITLE_ONLY)
-                && !title.equals(getToolbarDataProvider().getCurrentUrl())
-                && !title.equals(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL)) {
-            // Delay the title animation until security icon animation finishes.
-            PostTask.postDelayedTask(
-                    UiThreadTaskTraits.DEFAULT, mTitleAnimationStarter, TITLE_ANIM_DELAY_MS);
-        }
-
-        mTitleBar.setText(title);
-    }
-
-    @Override
     void onNavigatedToDifferentPage() {
         super.onNavigatedToDifferentPage();
-        setTitleToPageTitle();
+        mLocationBar.setTitleToPageTitle();
         if (mState == STATE_TITLE_ONLY) {
             if (TextUtils.isEmpty(mFirstUrl)) {
                 mFirstUrl = getToolbarDataProvider().getTab().getUrl();
@@ -400,7 +343,7 @@ public class CustomTabToolbar
                 setUrlBarHidden(false);
             }
         }
-        updateStatusIcon();
+        mLocationBar.updateStatusIcon();
     }
 
     @VisibleForTesting
@@ -410,107 +353,6 @@ public class CustomTabToolbar
 
         String trimmedPublisher = HOSTNAME_PREFIX_PATTERN.matcher(publisher).replaceFirst("");
         return BidiFormatter.getInstance().unicodeWrap(trimmedPublisher);
-    }
-
-    @Override
-    public void setUrlToPageUrl() {
-        Tab tab = getCurrentTab();
-        if (tab == null) {
-            mUrlCoordinator.setUrlBarData(
-                    UrlBarData.EMPTY, UrlBar.ScrollType.NO_SCROLL, SelectionState.SELECT_ALL);
-            return;
-        }
-
-        String publisherUrl = TrustedCdn.getPublisherUrl(tab);
-        String url = publisherUrl != null ? publisherUrl : tab.getUrl().trim();
-        if (mState == STATE_TITLE_ONLY) {
-            if (!TextUtils.isEmpty(getToolbarDataProvider().getTitle())) setTitleToPageTitle();
-        }
-
-        // Don't show anything for Chrome URLs and "about:blank".
-        // If we have taken a pre-initialized WebContents, then the starting URL
-        // is "about:blank". We should not display it.
-        if (NativePageFactory.isNativePageUrl(url, getCurrentTab().isIncognito())
-                || ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL.equals(url)) {
-            mUrlCoordinator.setUrlBarData(
-                    UrlBarData.EMPTY, UrlBar.ScrollType.NO_SCROLL, SelectionState.SELECT_ALL);
-            return;
-        }
-        final CharSequence displayText;
-        final int originStart;
-        final int originEnd;
-        if (publisherUrl != null) {
-            // TODO(bauerb): Move this into the ToolbarDataProvider as well?
-            String plainDisplayText = getContext().getString(R.string.custom_tab_amp_publisher_url,
-                    extractPublisherFromPublisherUrl(publisherUrl));
-            ColorStateList tint = mUseDarkColors ? mDarkModeTint : mLightModeTint;
-            SpannableString formattedDisplayText = SpanApplier.applySpans(plainDisplayText,
-                    new SpanInfo("<pub>", "</pub>", ORIGIN_SPAN),
-                    new SpanInfo("<bg>", "</bg>", new ForegroundColorSpan(tint.getDefaultColor())));
-            originStart = formattedDisplayText.getSpanStart(ORIGIN_SPAN);
-            originEnd = formattedDisplayText.getSpanEnd(ORIGIN_SPAN);
-            formattedDisplayText.removeSpan(ORIGIN_SPAN);
-            displayText = formattedDisplayText;
-        } else {
-            UrlBarData urlBarData = getToolbarDataProvider().getUrlBarData();
-            displayText = urlBarData.displayText.subSequence(
-                    urlBarData.originStartIndex, urlBarData.originEndIndex);
-            originStart = 0;
-            originEnd = displayText.length();
-        }
-
-        // The Lite Status view visibility should be updated on every new URL and only be displayed
-        // along with the URL bar.
-        final boolean liteStatusIsVisible =
-                getToolbarDataProvider().isPreview() && mUrlBar.getVisibility() == View.VISIBLE;
-        mLiteStatusView.setVisibility(liteStatusIsVisible ? View.VISIBLE : View.GONE);
-        mLiteStatusSeparatorView.setVisibility(liteStatusIsVisible ? View.VISIBLE : View.GONE);
-
-        mUrlCoordinator.setUrlBarData(
-                UrlBarData.create(url, displayText, originStart, originEnd, url),
-                UrlBar.ScrollType.SCROLL_TO_TLD, SelectionState.SELECT_ALL);
-    }
-
-    @Override
-    public void updateLoadingState(boolean updateUrl) {
-        if (updateUrl) setUrlToPageUrl();
-        updateStatusIcon();
-    }
-
-    @Override
-    public void setToolbarDataProvider(ToolbarDataProvider model) {
-        mToolbarDataProvider = model;
-    }
-
-    @Override
-    public ToolbarDataProvider getToolbarDataProvider() {
-        return mToolbarDataProvider;
-    }
-
-    @Override
-    public void updateVisualsForState() {
-        Resources resources = getResources();
-        updateStatusIcon();
-        updateButtonsTint();
-        if (mUrlCoordinator.setUseDarkTextColors(mUseDarkColors)) {
-            setUrlToPageUrl();
-        }
-
-        mTitleBar.setTextColor(ApiCompatibilityUtils.getColor(resources,
-                mUseDarkColors ? R.color.default_text_color_dark
-                               : R.color.default_text_color_light));
-
-        if (getProgressBar() != null) {
-            if (!ColorUtils.isUsingDefaultToolbarColor(
-                        getResources(), false, getBackground().getColor())) {
-                getProgressBar().setThemeColor(getBackground().getColor(), false);
-            } else {
-                getProgressBar().setBackgroundColor(
-                        ApiCompatibilityUtils.getColor(resources, R.color.progress_bar_background));
-                getProgressBar().setForegroundColor(
-                        ApiCompatibilityUtils.getColor(resources, R.color.progress_bar_foreground));
-            }
-        }
     }
 
     private void updateButtonsTint() {
@@ -536,44 +378,13 @@ public class CustomTabToolbar
     @Override
     protected void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        setTitleToPageTitle();
-        setUrlToPageUrl();
+        mLocationBar.setTitleToPageTitle();
+        mLocationBar.setUrlToPageUrl();
     }
 
     @Override
     public ColorDrawable getBackground() {
         return (ColorDrawable) super.getBackground();
-    }
-
-    @Override
-    public void initializeControls(WindowDelegate windowDelegate, WindowAndroid windowAndroid,
-            ActivityTabProvider provider) {}
-
-    @Override
-    public void updateStatusIcon() {
-        if (mState == STATE_TITLE_ONLY) return;
-
-        int securityIconResource = getToolbarDataProvider().getSecurityIconResource(
-                DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext()));
-        if (securityIconResource == 0) {
-            // Hide the button if we don't have an actual icon to display.
-            mSecurityButton.setImageDrawable(null);
-            mAnimDelegate.hideSecurityButton();
-        } else {
-            // ImageView#setImageResource is no-op if given resource is the current one.
-            mSecurityButton.setImageResource(securityIconResource);
-            ColorStateList colorStateList = AppCompatResources.getColorStateList(
-                    getContext(), getToolbarDataProvider().getSecurityIconColorStateList());
-            ApiCompatibilityUtils.setImageTintList(mSecurityButton, colorStateList);
-            mAnimDelegate.showSecurityButton();
-        }
-
-        int contentDescriptionId = getToolbarDataProvider().getSecurityIconContentDescription();
-        String contentDescription = getContext().getString(contentDescriptionId);
-        mSecurityButton.setContentDescription(contentDescription);
-
-        setUrlToPageUrl();
-        mUrlBar.invalidate();
     }
 
     /**
@@ -616,27 +427,12 @@ public class CustomTabToolbar
                 // color.
                 mUseDarkColors =
                         !ColorUtils.shouldUseLightForegroundOnBackground(background.getColor());
-                updateVisualsForState();
+                mLocationBar.updateVisualsForState();
             }
         });
         mBrandColorTransitionAnimation.start();
         mBrandColorTransitionActive = true;
         if (!shouldAnimate) mBrandColorTransitionAnimation.end();
-    }
-
-    @Override
-    public View getContainerView() {
-        return this;
-    }
-
-    @Override
-    public View getSecurityIconView() {
-        return mSecurityButton;
-    }
-
-    @Override
-    public void setDefaultTextEditActionModeCallback(ToolbarActionModeCallback callback) {
-        mUrlCoordinator.setActionModeCallback(callback);
     }
 
     private void updateLayoutParams() {
@@ -718,7 +514,7 @@ public class CustomTabToolbar
 
     @Override
     public LocationBar getLocationBar() {
-        return this;
+        return mLocationBar;
     }
 
     @Override
@@ -748,44 +544,6 @@ public class CustomTabToolbar
         }
         return url;
     }
-
-    // Toolbar and LocationBar calls that are not relevant here.
-
-    @Override
-    public void backKeyPressed() {
-        assert false : "The URL bar should never take focus in CCTs.";
-    }
-
-    @Override
-    public boolean shouldForceLTR() {
-        return true;
-    }
-
-    @Override
-    public void setUrlBarFocus(boolean shouldBeFocused) {}
-
-    @Override
-    public void showUrlBarCursorWithoutFocusAnimations() {}
-
-    @Override
-    public boolean isUrlBarFocused() {
-        return false;
-    }
-
-    @Override
-    public void selectAll() {}
-
-    @Override
-    public void revertChanges() {}
-
-    @Override
-    public void updateMicButtonState() {}
-
-    @Override
-    public void onTabLoadingNTP(NewTabPage ntp) {}
-
-    @Override
-    public void setAutocompleteProfile(Profile profile) {}
 
     @Override
     void showAppMenuUpdateBadge(boolean animate) {}
@@ -823,11 +581,262 @@ public class CustomTabToolbar
         }
     }
 
-    @Override
-    public int getUrlContainerMarginEnd() {
-        return 0;
-    }
+    private class LocationBarImpl implements LocationBar {
+        @Override
+        public void onNativeLibraryReady() {
+            mSecurityButton.setOnClickListener(v -> {
+                Tab currentTab = getToolbarDataProvider().getTab();
+                if (currentTab == null || currentTab.getWebContents() == null) return;
+                Activity activity = currentTab.getWindowAndroid().getActivity().get();
+                if (activity == null) return;
+                PageInfoController.show(activity, currentTab, getContentPublisher(),
+                        PageInfoController.OpenedFromSource.TOOLBAR);
+            });
+        }
 
-    @Override
-    public void setUnfocusedWidth(int unfocusedWidth) {}
+        @Override
+        public View getViewForUrlBackFocus() {
+            Tab tab = getCurrentTab();
+            if (tab == null) return null;
+            return tab.getView();
+        }
+
+        @Override
+        public boolean allowKeyboardLearning() {
+            return !CustomTabToolbar.this.isIncognito();
+        }
+
+        @Override
+        public boolean shouldCutCopyVerbatim() {
+            return false;
+        }
+
+        @Override
+        public void setShowTitle(boolean showTitle) {
+            if (showTitle) {
+                mState = STATE_DOMAIN_AND_TITLE;
+                mAnimDelegate.prepareTitleAnim(mUrlBar, mTitleBar);
+            } else {
+                mState = STATE_DOMAIN_ONLY;
+            }
+        }
+
+        @Override
+        public void setTitleToPageTitle() {
+            String title = getToolbarDataProvider().getTitle();
+            if (!getToolbarDataProvider().hasTab() || TextUtils.isEmpty(title)) {
+                mTitleBar.setText("");
+                return;
+            }
+
+            // It takes some time to parse the title of the webcontent, and before that
+            // ToolbarDataProvider#getTitle always returns the url. We postpone the title animation
+            // until the title is authentic.
+            if ((mState == STATE_DOMAIN_AND_TITLE || mState == STATE_TITLE_ONLY)
+                    && !title.equals(getToolbarDataProvider().getCurrentUrl())
+                    && !title.equals(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL)) {
+                // Delay the title animation until security icon animation finishes.
+                PostTask.postDelayedTask(
+                        UiThreadTaskTraits.DEFAULT, mTitleAnimationStarter, TITLE_ANIM_DELAY_MS);
+            }
+
+            mTitleBar.setText(title);
+        }
+
+        @Override
+        public void setUrlToPageUrl() {
+            Tab tab = getCurrentTab();
+            if (tab == null) {
+                mUrlCoordinator.setUrlBarData(
+                        UrlBarData.EMPTY, UrlBar.ScrollType.NO_SCROLL, SelectionState.SELECT_ALL);
+                return;
+            }
+
+            String publisherUrl = TrustedCdn.getPublisherUrl(tab);
+            String url = publisherUrl != null ? publisherUrl : tab.getUrl().trim();
+            if (mState == STATE_TITLE_ONLY) {
+                if (!TextUtils.isEmpty(getToolbarDataProvider().getTitle())) setTitleToPageTitle();
+            }
+
+            // Don't show anything for Chrome URLs and "about:blank".
+            // If we have taken a pre-initialized WebContents, then the starting URL
+            // is "about:blank". We should not display it.
+            if (NativePageFactory.isNativePageUrl(url, getCurrentTab().isIncognito())
+                    || ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL.equals(url)) {
+                mUrlCoordinator.setUrlBarData(
+                        UrlBarData.EMPTY, UrlBar.ScrollType.NO_SCROLL, SelectionState.SELECT_ALL);
+                return;
+            }
+            final CharSequence displayText;
+            final int originStart;
+            final int originEnd;
+            if (publisherUrl != null) {
+                // TODO(bauerb): Move this into the ToolbarDataProvider as well?
+                String plainDisplayText =
+                        getContext().getString(R.string.custom_tab_amp_publisher_url,
+                                extractPublisherFromPublisherUrl(publisherUrl));
+                ColorStateList tint = mUseDarkColors ? mDarkModeTint : mLightModeTint;
+                SpannableString formattedDisplayText = SpanApplier.applySpans(plainDisplayText,
+                        new SpanInfo("<pub>", "</pub>", ORIGIN_SPAN),
+                        new SpanInfo(
+                                "<bg>", "</bg>", new ForegroundColorSpan(tint.getDefaultColor())));
+                originStart = formattedDisplayText.getSpanStart(ORIGIN_SPAN);
+                originEnd = formattedDisplayText.getSpanEnd(ORIGIN_SPAN);
+                formattedDisplayText.removeSpan(ORIGIN_SPAN);
+                displayText = formattedDisplayText;
+            } else {
+                UrlBarData urlBarData = getToolbarDataProvider().getUrlBarData();
+                displayText = urlBarData.displayText.subSequence(
+                        urlBarData.originStartIndex, urlBarData.originEndIndex);
+                originStart = 0;
+                originEnd = displayText.length();
+            }
+
+            // The Lite Status view visibility should be updated on every new URL and only be
+            // displayed along with the URL bar.
+            final boolean liteStatusIsVisible =
+                    getToolbarDataProvider().isPreview() && mUrlBar.getVisibility() == View.VISIBLE;
+            mLiteStatusView.setVisibility(liteStatusIsVisible ? View.VISIBLE : View.GONE);
+            mLiteStatusSeparatorView.setVisibility(liteStatusIsVisible ? View.VISIBLE : View.GONE);
+
+            mUrlCoordinator.setUrlBarData(
+                    UrlBarData.create(url, displayText, originStart, originEnd, url),
+                    UrlBar.ScrollType.SCROLL_TO_TLD, SelectionState.SELECT_ALL);
+        }
+
+        @Override
+        public void updateLoadingState(boolean updateUrl) {
+            if (updateUrl) setUrlToPageUrl();
+            updateStatusIcon();
+        }
+
+        @Override
+        public void setToolbarDataProvider(ToolbarDataProvider model) {
+            mToolbarDataProvider = model;
+        }
+
+        @Override
+        public ToolbarDataProvider getToolbarDataProvider() {
+            return mToolbarDataProvider;
+        }
+
+        @Override
+        public void updateVisualsForState() {
+            Resources resources = getResources();
+            updateStatusIcon();
+            updateButtonsTint();
+            if (mUrlCoordinator.setUseDarkTextColors(mUseDarkColors)) {
+                setUrlToPageUrl();
+            }
+
+            mTitleBar.setTextColor(ApiCompatibilityUtils.getColor(resources,
+                    mUseDarkColors ? R.color.default_text_color_dark
+                                   : R.color.default_text_color_light));
+
+            if (getProgressBar() != null) {
+                if (!ColorUtils.isUsingDefaultToolbarColor(
+                            getResources(), false, getBackground().getColor())) {
+                    getProgressBar().setThemeColor(getBackground().getColor(), false);
+                } else {
+                    getProgressBar().setBackgroundColor(ApiCompatibilityUtils.getColor(
+                            resources, R.color.progress_bar_background));
+                    getProgressBar().setForegroundColor(ApiCompatibilityUtils.getColor(
+                            resources, R.color.progress_bar_foreground));
+                }
+            }
+        }
+
+        @Override
+        public void initializeControls(WindowDelegate windowDelegate, WindowAndroid windowAndroid,
+                ActivityTabProvider provider) {}
+
+        @Override
+        public void updateStatusIcon() {
+            if (mState == STATE_TITLE_ONLY) return;
+
+            int securityIconResource = getToolbarDataProvider().getSecurityIconResource(
+                    DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext()));
+            if (securityIconResource == 0) {
+                // Hide the button if we don't have an actual icon to display.
+                mSecurityButton.setImageDrawable(null);
+                mAnimDelegate.hideSecurityButton();
+            } else {
+                // ImageView#setImageResource is no-op if given resource is the current one.
+                mSecurityButton.setImageResource(securityIconResource);
+                ColorStateList colorStateList = AppCompatResources.getColorStateList(
+                        getContext(), getToolbarDataProvider().getSecurityIconColorStateList());
+                ApiCompatibilityUtils.setImageTintList(mSecurityButton, colorStateList);
+                mAnimDelegate.showSecurityButton();
+            }
+
+            int contentDescriptionId = getToolbarDataProvider().getSecurityIconContentDescription();
+            String contentDescription = getContext().getString(contentDescriptionId);
+            mSecurityButton.setContentDescription(contentDescription);
+
+            setUrlToPageUrl();
+            mUrlBar.invalidate();
+        }
+
+        @Override
+        public View getContainerView() {
+            return CustomTabToolbar.this;
+        }
+
+        @Override
+        public View getSecurityIconView() {
+            return mSecurityButton;
+        }
+
+        @Override
+        public void setDefaultTextEditActionModeCallback(ToolbarActionModeCallback callback) {
+            mUrlCoordinator.setActionModeCallback(callback);
+        }
+
+        @Override
+        public void backKeyPressed() {
+            assert false : "The URL bar should never take focus in CCTs.";
+        }
+
+        @Override
+        public void destroy() {}
+
+        @Override
+        public boolean shouldForceLTR() {
+            return true;
+        }
+
+        @Override
+        public void setUrlBarFocus(boolean shouldBeFocused) {}
+
+        @Override
+        public void showUrlBarCursorWithoutFocusAnimations() {}
+
+        @Override
+        public boolean isUrlBarFocused() {
+            return false;
+        }
+
+        @Override
+        public void selectAll() {}
+
+        @Override
+        public void revertChanges() {}
+
+        @Override
+        public void updateMicButtonState() {}
+
+        @Override
+        public void onTabLoadingNTP(NewTabPage ntp) {}
+
+        @Override
+        public void setAutocompleteProfile(Profile profile) {}
+
+        @Override
+        public int getUrlContainerMarginEnd() {
+            return 0;
+        }
+
+        @Override
+        public void setUnfocusedWidth(int unfocusedWidth) {}
+    }
 }

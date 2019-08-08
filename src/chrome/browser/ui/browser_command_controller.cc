@@ -34,6 +34,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -41,7 +42,7 @@
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/web_app_browser_controller.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/webui/inspect_ui.h"
 #include "chrome/common/content_restriction.h"
 #include "chrome/common/pref_names.h"
@@ -100,6 +101,40 @@ using content::NavigationEntry;
 using content::WebContents;
 
 namespace chrome {
+
+namespace {
+
+// Ensures that - if we have not popped up an infobar to prompt the user to e.g.
+// reload the current page - that the content pane of the browser is refocused.
+void AppInfoDialogClosedCallback(content::WebContents* web_contents,
+                                 views::Widget::ClosedReason closed_reason,
+                                 bool reload_prompt) {
+  if (reload_prompt)
+    return;
+
+  // If the user clicked on something specific or focus was changed, don't
+  // override the focus.
+  if (closed_reason != views::Widget::ClosedReason::kEscKeyPressed &&
+      closed_reason != views::Widget::ClosedReason::kCloseButtonClicked) {
+    return;
+  }
+
+  // Ensure that the web contents handle we have is still valid. It's possible
+  // (though unlikely) that either the browser or web contents has been pulled
+  // out from underneath us.
+  Browser* const browser = chrome::FindBrowserWithWebContents(web_contents);
+  if (!browser)
+    return;
+
+  // We want to focus the active web contents, which again, might not be the
+  // original web contents (though it should be the vast majority of the time).
+  content::WebContents* const active_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  if (active_contents)
+    active_contents->Focus();
+}
+
+}  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserCommandController, public:
@@ -509,6 +544,9 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_MANAGE_PASSWORDS_FOR_PAGE:
       ManagePasswordsForPage(browser_);
       break;
+    case IDC_SEND_TAB_TO_SELF:
+      SendTabToSelfFromPageAction(browser_);
+      break;
 
     // Clipboard commands
     case IDC_CUT:
@@ -702,11 +740,17 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
           browser_,
           browser_->tab_strip_model()->GetActiveWebContents()->GetVisibleURL());
       break;
-    case IDC_HOSTED_APP_MENU_APP_INFO:
-      ShowPageInfoDialog(browser_->tab_strip_model()->GetActiveWebContents(),
-                         bubble_anchor_util::kAppMenuButton);
+    case IDC_HOSTED_APP_MENU_APP_INFO: {
+      content::WebContents* const web_contents =
+          browser_->tab_strip_model()->GetActiveWebContents();
+      if (web_contents) {
+        ShowPageInfoDialog(web_contents,
+                           base::BindOnce(&AppInfoDialogClosedCallback,
+                                          base::Unretained(web_contents)),
+                           bubble_anchor_util::kAppMenuButton);
+      }
       break;
-
+    }
     default:
       LOG(WARNING) << "Received Unimplemented Command: " << id;
       break;
@@ -754,28 +798,32 @@ void BrowserCommandController::OnTabStripModelChanged(
     TabStripModel* tab_strip_model,
     const TabStripModelChange& change,
     const TabStripSelectionChange& selection) {
-  if (change.type() != TabStripModelChange::kInserted &&
-      change.type() != TabStripModelChange::kReplaced &&
-      change.type() != TabStripModelChange::kRemoved)
-    return;
+  std::vector<content::WebContents*> new_contents;
+  std::vector<content::WebContents*> old_contents;
 
-  for (const auto& delta : change.deltas()) {
-    content::WebContents* new_contents = nullptr;
-    content::WebContents* old_contents = nullptr;
-    if (change.type() == TabStripModelChange::kInserted) {
-      new_contents = delta.insert.contents;
-    } else if (change.type() == TabStripModelChange::kReplaced) {
-      new_contents = delta.replace.new_contents;
-      old_contents = delta.replace.old_contents;
-    } else {
-      old_contents = delta.remove.contents;
+  switch (change.type()) {
+    case TabStripModelChange::kInserted:
+      for (const auto& contents : change.GetInsert()->contents)
+        new_contents.push_back(contents.contents);
+      break;
+    case TabStripModelChange::kReplaced: {
+      auto* replace = change.GetReplace();
+      new_contents.push_back(replace->new_contents);
+      old_contents.push_back(replace->old_contents);
+      break;
     }
-
-    if (old_contents)
-      RemoveInterstitialObservers(old_contents);
-    if (new_contents)
-      AddInterstitialObservers(new_contents);
+    case TabStripModelChange::kRemoved:
+      for (const auto& contents : change.GetRemove()->contents)
+        old_contents.push_back(contents.contents);
+      break;
+    default:
+      break;
   }
+
+  for (auto* contents : old_contents)
+    RemoveInterstitialObservers(contents);
+  for (auto* contents : new_contents)
+    AddInterstitialObservers(contents);
 }
 
 void BrowserCommandController::TabBlockedStateChanged(
@@ -912,7 +960,7 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_TAKE_SCREENSHOT, true);
   // Chrome OS uses the system tray menu to handle multi-profiles. Avatar menu
   // is only required in incognito mode.
-  if (profile()->IsIncognito())
+  if (profile()->IsIncognitoProfile())
     command_updater_.UpdateCommandEnabled(IDC_SHOW_AVATAR_MENU, true);
 #else
   if (normal_window)
@@ -925,17 +973,14 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_HOME,
                                         normal_window || browser_->is_app());
 
-  const bool is_experimental_hosted_app =
-      WebAppBrowserController::IsForExperimentalWebAppBrowser(browser_);
+  const bool is_web_app =
+      web_app::AppBrowserController::IsForWebAppBrowser(browser_);
   // Hosted app browser commands.
-  command_updater_.UpdateCommandEnabled(IDC_COPY_URL,
-                                        is_experimental_hosted_app);
-  command_updater_.UpdateCommandEnabled(IDC_OPEN_IN_CHROME,
-                                        is_experimental_hosted_app);
-  command_updater_.UpdateCommandEnabled(IDC_SITE_SETTINGS,
-                                        is_experimental_hosted_app);
+  command_updater_.UpdateCommandEnabled(IDC_COPY_URL, is_web_app);
+  command_updater_.UpdateCommandEnabled(IDC_OPEN_IN_CHROME, is_web_app);
+  command_updater_.UpdateCommandEnabled(IDC_SITE_SETTINGS, is_web_app);
   command_updater_.UpdateCommandEnabled(IDC_HOSTED_APP_MENU_APP_INFO,
-                                        is_experimental_hosted_app);
+                                        is_web_app);
 
   // Window management commands
   command_updater_.UpdateCommandEnabled(IDC_SELECT_NEXT_TAB, normal_window);
@@ -1198,6 +1243,8 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
   command_updater_.UpdateCommandEnabled(IDC_ABOUT, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_APP_MENU, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_SEND_TAB_TO_SELF, show_main_ui);
+  command_updater_.UpdateCommandEnabled(IDC_SEND_TAB_TO_SELF_SINGLE_TARGET,
+                                        show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_MANAGEMENT_PAGE, true);
 
   if (base::debug::IsProfilingSupported())
@@ -1224,7 +1271,7 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
 void BrowserCommandController::UpdateCommandsForHostedAppAvailability() {
   bool has_toolbar =
       browser_->is_type_tabbed() ||
-      WebAppBrowserController::IsForExperimentalWebAppBrowser(browser_);
+      web_app::AppBrowserController::IsForWebAppBrowser(browser_);
   if (window() && window()->ShouldHideUIForFullscreen())
     has_toolbar = false;
   command_updater_.UpdateCommandEnabled(IDC_FOCUS_TOOLBAR, has_toolbar);

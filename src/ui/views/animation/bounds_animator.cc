@@ -10,11 +10,14 @@
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/animation/bounds_animator_observer.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 
 namespace views {
 
 BoundsAnimator::BoundsAnimator(View* parent)
-    : parent_(parent), container_(new gfx::AnimationContainer()) {
+    : AnimationDelegateViews(parent),
+      parent_(parent),
+      container_(new gfx::AnimationContainer()) {
   container_->set_observer(this);
 }
 

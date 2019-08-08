@@ -42,7 +42,7 @@ interface Directory {
   // optional, mainly for consistency with |OpenDirectory()| (but may be useful,
   // together with |kOpenFlagCreate|, for "touching" a file).
   [Sync]
-  OpenFile(string path, File&? file, uint32 open_flags)
+  OpenFile(string path, pending_receiver<File>? file, uint32 open_flags)
       => (mojo_base.mojom.FileError error);
 
   // Opens the file specified by |path| with the given |open_flags|. Returns a
@@ -61,7 +61,7 @@ interface Directory {
   // this may be used as a simple "mkdir()" with |kOpenFlagCreate|.
   [Sync]
   OpenDirectory(string path,
-                Directory&? directory,
+                pending_receiver<Directory>? directory,
                 uint32 open_flags) => (mojo_base.mojom.FileError error);
 
   // Renames/moves the file/directory given by |path| to |new_path|.
@@ -102,7 +102,7 @@ interface Directory {
       => (mojo_base.mojom.FileError error, FileInformation? file_information);
 
   // Creates a copy of this directory.
-  Clone(Directory& directory);
+  Clone(pending_receiver<Directory> directory);
 
   // Reads the contents of an entire file.
   [Sync]

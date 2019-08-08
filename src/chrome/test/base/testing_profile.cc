@@ -38,9 +38,8 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/policy/schema_registry_service.h"
-#include "chrome/browser/policy/schema_registry_service_profile_builder.h"
+#include "chrome/browser/policy/schema_registry_service_builder.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -129,6 +128,8 @@
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/browser/web_applications/bookmark_apps/test_web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_provider_factory.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "extensions/browser/event_router_factory.h"
 #include "extensions/browser/extension_pref_value_map.h"
@@ -320,7 +321,7 @@ TestingProfile::TestingProfile(
       user_cloud_policy_manager_(std::move(policy_manager)),
       delegate_(delegate),
       profile_name_(profile_name),
-      policy_service_(policy_service.release()) {
+      policy_service_(std::move(policy_service)) {
   if (parent)
     parent->SetOffTheRecordProfile(std::unique_ptr<Profile>(this));
 
@@ -488,7 +489,7 @@ void TestingProfile::Init() {
           this, GetPrefs(), extensions_path_,
           ExtensionPrefValueMapFactory::GetForBrowserContext(this),
           extensions_disabled,
-          std::vector<extensions::ExtensionPrefsObserver*>()));
+          std::vector<extensions::EarlyExtensionPrefsObserver*>()));
   extensions::ExtensionPrefsFactory::GetInstance()->SetInstanceForTesting(
       this, std::move(extension_prefs));
 
@@ -497,6 +498,9 @@ void TestingProfile::Init() {
 
   extensions::EventRouterFactory::GetInstance()->SetTestingFactory(
       this, BrowserContextKeyedServiceFactory::TestingFactory());
+
+  web_app::WebAppProviderFactory::GetInstance()->SetTestingFactory(
+      this, base::BindRepeating(&web_app::TestWebAppProvider::BuildDefault));
 #endif
 
   // Prefs for incognito profiles are set in CreateIncognitoPrefService() by
@@ -562,6 +566,9 @@ TestingProfile::~TestingProfile() {
   key_.reset();
 
   SimpleKeyMap::GetInstance()->Dissociate(this);
+
+  if (profile_policy_connector_)
+    profile_policy_connector_->Shutdown();
 
   if (user_cloud_policy_manager_)
     user_cloud_policy_manager_->Shutdown();
@@ -703,10 +710,8 @@ std::string TestingProfile::GetProfileUserName() const {
 }
 
 Profile::ProfileType TestingProfile::GetProfileType() const {
-  if (guest_session_)
-    return GUEST_PROFILE;
   if (original_profile_)
-    return INCOGNITO_PROFILE;
+    return guest_session_ ? GUEST_PROFILE : INCOGNITO_PROFILE;
   return REGULAR_PROFILE;
 }
 
@@ -841,10 +846,6 @@ void TestingProfile::CreateProfilePolicyConnector() {
   }
   profile_policy_connector_.reset(new policy::ProfilePolicyConnector());
   profile_policy_connector_->InitForTesting(std::move(policy_service_));
-  policy::ProfilePolicyConnectorFactory::GetInstance()->SetServiceForTesting(
-      this, profile_policy_connector_.get());
-  CHECK_EQ(profile_policy_connector_.get(),
-           policy::ProfilePolicyConnectorFactory::GetForBrowserContext(this));
 }
 
 PrefService* TestingProfile::GetPrefs() {
@@ -935,8 +936,29 @@ TestingProfile::GetPolicySchemaRegistryService() {
   return schema_registry_service_.get();
 }
 
+#if defined(OS_CHROMEOS)
+policy::UserCloudPolicyManagerChromeOS*
+TestingProfile::GetUserCloudPolicyManagerChromeOS() {
+  return nullptr;
+}
+
+policy::ActiveDirectoryPolicyManager*
+TestingProfile::GetActiveDirectoryPolicyManager() {
+  return nullptr;
+}
+#else
 policy::UserCloudPolicyManager* TestingProfile::GetUserCloudPolicyManager() {
   return user_cloud_policy_manager_.get();
+}
+#endif  // defined(OS_CHROMEOS)
+
+policy::ProfilePolicyConnector* TestingProfile::GetProfilePolicyConnector() {
+  return profile_policy_connector_.get();
+}
+
+const policy::ProfilePolicyConnector*
+TestingProfile::GetProfilePolicyConnector() const {
+  return profile_policy_connector_.get();
 }
 
 base::FilePath TestingProfile::last_selected_directory() {

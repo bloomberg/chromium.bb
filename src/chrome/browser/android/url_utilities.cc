@@ -55,6 +55,8 @@ net::registry_controlled_domains::PrivateRegistryFilter GetRegistryFilter(
 
 }  // namespace
 
+// Returns whether the given URLs have the same domain or host.
+// See net::registry_controlled_domains::SameDomainOrHost for details.
 static jboolean JNI_UrlUtilities_SameDomainOrHost(
     JNIEnv* env,
     const JavaParamRef<jstring>& url_1_str,
@@ -71,6 +73,8 @@ static jboolean JNI_UrlUtilities_SameDomainOrHost(
                                                             filter);
 }
 
+// Returns the Domain and Registry of the given URL.
+// See net::registry_controlled_domains::GetDomainAndRegistry for details.
 static ScopedJavaLocalRef<jstring> JNI_UrlUtilities_GetDomainAndRegistry(
     JNIEnv* env,
     const JavaParamRef<jstring>& url,
@@ -88,6 +92,8 @@ static ScopedJavaLocalRef<jstring> JNI_UrlUtilities_GetDomainAndRegistry(
       net::registry_controlled_domains::GetDomainAndRegistry(gurl, filter));
 }
 
+// Return whether the given URL uses the Google.com domain.
+// See google_util::IsGoogleDomainUrl for details.
 static jboolean JNI_UrlUtilities_IsGoogleDomainUrl(
     JNIEnv* env,
     const JavaParamRef<jstring>& url,
@@ -102,6 +108,21 @@ static jboolean JNI_UrlUtilities_IsGoogleDomainUrl(
           : google_util::DISALLOW_NON_STANDARD_PORTS);
 }
 
+// Returns whether the given URL is a Google.com domain or sub-domain.
+// See google_util::IsGoogleDomainUrl for details.
+static jboolean JNI_UrlUtilities_IsGoogleSubDomainUrl(
+    JNIEnv* env,
+    const JavaParamRef<jstring>& url) {
+  GURL gurl = JNI_UrlUtilities_ConvertJavaStringToGURL(env, url);
+  if (gurl.is_empty())
+    return false;
+  return google_util::IsGoogleDomainUrl(
+      gurl, google_util::ALLOW_SUBDOMAIN,
+      google_util::DISALLOW_NON_STANDARD_PORTS);
+}
+
+// Returns whether the given URL is a Google.com Search URL.
+// See google_util::IsGoogleSearchUrl for details.
 static jboolean JNI_UrlUtilities_IsGoogleSearchUrl(
     JNIEnv* env,
     const JavaParamRef<jstring>& url) {
@@ -111,6 +132,8 @@ static jboolean JNI_UrlUtilities_IsGoogleSearchUrl(
   return google_util::IsGoogleSearchUrl(gurl);
 }
 
+// Returns whether the given URL is the Google Web Search URL.
+// See google_util::IsGoogleHomePageUrl for details.
 static jboolean JNI_UrlUtilities_IsGoogleHomePageUrl(
     JNIEnv* env,
     const JavaParamRef<jstring>& url) {
@@ -131,6 +154,8 @@ static jboolean JNI_UrlUtilities_IsUrlWithinScope(
                           base::CompareCase::SENSITIVE);
 }
 
+// Returns whether the given URLs match, ignoring the fragment portions of the
+// URLs.
 static jboolean JNI_UrlUtilities_UrlsMatchIgnoringFragments(
     JNIEnv* env,
     const JavaParamRef<jstring>& url,
@@ -148,6 +173,7 @@ static jboolean JNI_UrlUtilities_UrlsMatchIgnoringFragments(
          gurl2.ReplaceComponents(replacements);
 }
 
+// Returns whether the given URLs have fragments that differ.
 static jboolean JNI_UrlUtilities_UrlsFragmentsDiffer(
     JNIEnv* env,
     const JavaParamRef<jstring>& url,

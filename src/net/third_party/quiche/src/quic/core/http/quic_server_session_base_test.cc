@@ -105,10 +105,8 @@ class TestServerSession : public QuicServerSessionBase {
   QuicCryptoServerStreamBase* CreateQuicCryptoServerStream(
       const QuicCryptoServerConfig* crypto_config,
       QuicCompressedCertsCache* compressed_certs_cache) override {
-    return new QuicCryptoServerStream(
-        crypto_config, compressed_certs_cache,
-        GetQuicReloadableFlag(enable_quic_stateless_reject_support), this,
-        stream_helper());
+    return new QuicCryptoServerStream(crypto_config, compressed_certs_cache,
+                                      this, stream_helper());
   }
 
  private:
@@ -131,9 +129,12 @@ class QuicServerSessionBaseTest : public QuicTestWithParam<ParsedQuicVersion> {
                        TlsServerHandshaker::CreateSslCtx()),
         compressed_certs_cache_(
             QuicCompressedCertsCache::kQuicCompressedCertsCacheSize) {
-    config_.SetMaxIncomingDynamicStreamsToSend(kMaxStreamsForTest);
-    QuicConfigPeer::SetReceivedMaxIncomingDynamicStreams(&config_,
-                                                         kMaxStreamsForTest);
+    config_.SetMaxIncomingBidirectionalStreamsToSend(kMaxStreamsForTest);
+    config_.SetMaxIncomingUnidirectionalStreamsToSend(kMaxStreamsForTest);
+    QuicConfigPeer::SetReceivedMaxIncomingBidirectionalStreams(
+        &config_, kMaxStreamsForTest);
+    QuicConfigPeer::SetReceivedMaxIncomingUnidirectionalStreams(
+        &config_, kMaxStreamsForTest);
     config_.SetInitialStreamFlowControlWindowToSend(
         kInitialStreamFlowControlWindowForTest);
     config_.SetInitialSessionFlowControlWindowToSend(
@@ -460,12 +461,10 @@ class MockQuicCryptoServerStream : public QuicCryptoServerStream {
       QuicCompressedCertsCache* compressed_certs_cache,
       QuicServerSessionBase* session,
       QuicCryptoServerStream::Helper* helper)
-      : QuicCryptoServerStream(
-            crypto_config,
-            compressed_certs_cache,
-            GetQuicReloadableFlag(enable_quic_stateless_reject_support),
-            session,
-            helper) {}
+      : QuicCryptoServerStream(crypto_config,
+                               compressed_certs_cache,
+                               session,
+                               helper) {}
   MockQuicCryptoServerStream(const MockQuicCryptoServerStream&) = delete;
   MockQuicCryptoServerStream& operator=(const MockQuicCryptoServerStream&) =
       delete;
@@ -693,13 +692,11 @@ TEST_P(StreamMemberLifetimeTest, Basic) {
     // TODO(nharper): Fix this test so it doesn't rely on QUIC crypto.
     return;
   }
-  SetQuicReloadableFlag(enable_quic_stateless_reject_support, true);
-  SetQuicReloadableFlag(quic_use_cheap_stateless_rejects, true);
 
   const QuicClock* clock = helper_.GetClock();
   CryptoHandshakeMessage chlo = crypto_test_utils::GenerateDefaultInchoateCHLO(
       clock, GetParam().transport_version, &crypto_config_);
-  chlo.SetVector(kCOPT, QuicTagVector{kSREJ});
+  chlo.SetVector(kCOPT, QuicTagVector{kREJ});
   std::vector<ParsedQuicVersion> packet_version_list = {GetParam()};
   std::unique_ptr<QuicEncryptedPacket> packet(ConstructEncryptedPacket(
       TestConnectionId(1), EmptyQuicConnectionId(), true, false, 1,
@@ -708,8 +705,6 @@ TEST_P(StreamMemberLifetimeTest, Basic) {
 
   EXPECT_CALL(stream_helper_, CanAcceptClientHello(_, _, _, _, _))
       .WillOnce(testing::Return(true));
-  EXPECT_CALL(stream_helper_, GenerateConnectionIdForReject(_, _))
-      .WillOnce(testing::Return(TestConnectionId(12345)));
 
   // Set the current packet
   QuicConnectionPeer::SetCurrentPacket(session_->connection(),

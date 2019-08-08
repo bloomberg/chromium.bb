@@ -369,13 +369,13 @@ blink::mojom::DWriteFontProxy& DWriteFontCollectionProxy::GetFontProxy() {
     blink::mojom::DWriteFontProxyPtrInfo dwrite_font_proxy;
     if (main_task_runner_->RunsTasksInCurrentSequence()) {
       ChildThread::Get()->GetConnector()->BindInterface(
-          mojom::kBrowserServiceName, mojo::MakeRequest(&dwrite_font_proxy));
+          mojom::kSystemServiceName, mojo::MakeRequest(&dwrite_font_proxy));
     } else {
       main_task_runner_->PostTask(
           FROM_HERE, base::BindOnce(
                          [](blink::mojom::DWriteFontProxyRequest request) {
                            ChildThread::Get()->GetConnector()->BindInterface(
-                               mojom::kBrowserServiceName, std::move(request));
+                               mojom::kSystemServiceName, std::move(request));
                          },
                          mojo::MakeRequest(&dwrite_font_proxy)));
     }

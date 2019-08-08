@@ -45,7 +45,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * End-to-end tests for native UI presentation in VR Browser mode.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-webvr"})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        "enable-features=LogJsConsoleMessages", "enable-webvr"})
 @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
 public class VrBrowserNativeUiTest {
     // We need to make sure the port is constant, otherwise the URL changes between test runs, which

@@ -37,6 +37,8 @@ class FakeArCore : public ArCore {
   bool RequestHitTest(const mojom::XRRayPtr& ray,
                       std::vector<mojom::XRHitResultPtr>* hit_results) override;
 
+  std::vector<mojom::XRPlaneDataPtr> GetDetectedPlanes() override;
+
   void SetCameraAspect(float aspect) { camera_aspect_ = aspect; }
 
  private:

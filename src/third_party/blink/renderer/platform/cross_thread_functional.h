@@ -14,6 +14,8 @@ namespace blink {
 
 // CrossThreadBind() is Bind() for cross-thread task posting.
 // CrossThreadBind() applies CrossThreadCopier to the arguments.
+// Analogously, CrossThreadBindOnce is BindOnce for cross-thread
+// task posting. It also applies CrossThreadCopier to the arguments.
 //
 // Example:
 //     void Func1(int, const String&);
@@ -38,6 +40,19 @@ CrossThreadBind(FunctionType&& function, Ps&&... parameters) {
   using UnboundRunType = base::MakeUnboundRunType<FunctionType, Ps...>;
   return WTF::CrossThreadFunction<UnboundRunType>(
       base::Bind(function, CrossThreadCopier<std::decay_t<Ps>>::Copy(
+                               std::forward<Ps>(parameters))...));
+}
+
+template <typename FunctionType, typename... Ps>
+WTF::CrossThreadOnceFunction<base::MakeUnboundRunType<FunctionType, Ps...>>
+CrossThreadBindOnce(FunctionType&& function, Ps&&... parameters) {
+  static_assert(
+      WTF::internal::CheckGCedTypeRestrictions<std::index_sequence_for<Ps...>,
+                                               std::decay_t<Ps>...>::ok,
+      "A bound argument uses a bad pattern.");
+  using UnboundRunType = base::MakeUnboundRunType<FunctionType, Ps...>;
+  return WTF::CrossThreadOnceFunction<UnboundRunType>(base::BindOnce(
+      std::move(function), CrossThreadCopier<std::decay_t<Ps>>::Copy(
                                std::forward<Ps>(parameters))...));
 }
 

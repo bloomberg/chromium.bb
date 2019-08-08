@@ -115,7 +115,7 @@ void BlockPainter::Paint(const PaintInfo& paint_info) {
 
 void BlockPainter::PaintOverflowControlsIfNeeded(
     const PaintInfo& paint_info,
-    const LayoutPoint& paint_offset) {
+    const PhysicalOffset& paint_offset) {
   if (layout_block_.HasOverflowClip() &&
       layout_block_.StyleRef().Visibility() == EVisibility::kVisible &&
       ShouldPaintSelfBlockBackground(paint_info.phase)) {
@@ -228,7 +228,7 @@ void BlockPainter::PaintScrollHitTestDisplayItem(const PaintInfo& paint_info) {
 
 DISABLE_CFI_PERF
 void BlockPainter::PaintObject(const PaintInfo& paint_info,
-                               const LayoutPoint& paint_offset) {
+                               const PhysicalOffset& paint_offset) {
   const PaintPhase paint_phase = paint_info.phase;
   // This function implements some of the painting order algorithm (described
   // within the description of stacking context, here
@@ -285,7 +285,7 @@ void BlockPainter::PaintObject(const PaintInfo& paint_info,
 }
 
 void BlockPainter::PaintBlockFlowContents(const PaintInfo& paint_info,
-                                          const LayoutPoint& paint_offset) {
+                                          const PhysicalOffset& paint_offset) {
   DCHECK(layout_block_.IsLayoutBlockFlow());
   if (!layout_block_.ChildrenInline()) {
     PaintContents(paint_info, paint_offset);
@@ -293,7 +293,7 @@ void BlockPainter::PaintBlockFlowContents(const PaintInfo& paint_info,
     ObjectPainter(layout_block_).PaintInlineChildrenOutlines(paint_info);
   } else {
     LineBoxListPainter(To<LayoutBlockFlow>(layout_block_).LineBoxes())
-        .Paint(layout_block_, paint_info, paint_offset);
+        .Paint(layout_block_, paint_info, paint_offset.ToLayoutPoint());
   }
 
   // If we don't have any floats to paint, or we're in the wrong paint phase,
@@ -333,7 +333,7 @@ void BlockPainter::PaintBlockFlowContents(const PaintInfo& paint_info,
 }
 
 void BlockPainter::PaintCarets(const PaintInfo& paint_info,
-                               const LayoutPoint& paint_offset) {
+                               const PhysicalOffset& paint_offset) {
   LocalFrame* frame = layout_block_.GetFrame();
 
   if (layout_block_.ShouldPaintCursorCaret())
@@ -345,9 +345,9 @@ void BlockPainter::PaintCarets(const PaintInfo& paint_info,
   }
 }
 
-LayoutRect BlockPainter::OverflowRectForCullRectTesting(
+PhysicalRect BlockPainter::OverflowRectForCullRectTesting(
     bool is_printing) const {
-  LayoutRect overflow_rect;
+  PhysicalRect overflow_rect;
   if (is_printing && layout_block_.IsAnonymousBlock() &&
       layout_block_.ChildrenInline()) {
     // For case <a href="..."><div>...</div></a>, when layout_block_ is the
@@ -355,11 +355,11 @@ LayoutRect BlockPainter::OverflowRectForCullRectTesting(
     // empty, but we need to continue painting to output <a>'s PDF URL rect
     // which covers the continuations, as if we included <a>'s PDF URL rect into
     // layout_block_'s visual overflow.
-    auto rects = layout_block_.PhysicalOutlineRects(
-        LayoutPoint(), NGOutlineType::kIncludeBlockVisualOverflow);
+    auto rects = layout_block_.OutlineRects(
+        PhysicalOffset(), NGOutlineType::kIncludeBlockVisualOverflow);
     overflow_rect = UnionRect(rects);
   }
-  overflow_rect.Unite(layout_block_.VisualOverflowRect());
+  overflow_rect.Unite(layout_block_.PhysicalVisualOverflowRect());
 
   bool include_layout_overflow =
       layout_block_.ScrollsOverflow() &&
@@ -367,12 +367,8 @@ LayoutRect BlockPainter::OverflowRectForCullRectTesting(
        RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
 
   if (include_layout_overflow) {
-    LayoutRect layout_overflow_rect = layout_block_.LayoutOverflowRect();
-    overflow_rect.Unite(layout_overflow_rect);
-    layout_block_.FlipForWritingMode(overflow_rect);
-    overflow_rect.Move(-layout_block_.ScrolledContentOffset());
-  } else {
-    layout_block_.FlipForWritingMode(overflow_rect);
+    overflow_rect.Unite(layout_block_.PhysicalLayoutOverflowRect());
+    overflow_rect.Move(-PhysicalOffset(layout_block_.ScrolledContentOffset()));
   }
   return overflow_rect;
 }
@@ -392,7 +388,7 @@ bool BlockPainter::ShouldPaint(const ScopedPaintState& paint_state) const {
 }
 
 void BlockPainter::PaintContents(const PaintInfo& paint_info,
-                                 const LayoutPoint& paint_offset) {
+                                 const PhysicalOffset& paint_offset) {
   DCHECK(!layout_block_.ChildrenInline());
   PaintInfo paint_info_for_descendants = paint_info.ForDescendants();
   layout_block_.PaintChildren(paint_info_for_descendants, paint_offset);

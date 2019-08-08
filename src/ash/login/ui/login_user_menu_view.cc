@@ -246,7 +246,7 @@ LoginUserMenuView::LoginUserMenuView(
         kRemoveUserInitialColor);
     remove_user_button_ = new RemoveUserButton(this, remove_user_label_, this);
     remove_user_button_->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
-    remove_user_button_->set_id(kUserMenuRemoveUserButtonIdForTest);
+    remove_user_button_->SetID(kUserMenuRemoveUserButtonIdForTest);
     remove_user_button_->SetAccessibleName(remove_user_label_->text());
     container->AddChildView(remove_user_button_);
   }
@@ -269,7 +269,7 @@ void LoginUserMenuView::ButtonPressed(views::Button* sender,
                                       const ui::Event& event) {
   // Show confirmation warning. The user has to click the button again before
   // we actually allow the exit.
-  if (!remove_user_confirm_data_->visible()) {
+  if (!remove_user_confirm_data_->GetVisible()) {
     remove_user_confirm_data_->SetVisible(true);
     remove_user_label_->SetEnabledColor(kRemoveUserConfirmColor);
 

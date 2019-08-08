@@ -8,7 +8,7 @@
 #ifndef GrTessellatingPathRenderer_DEFINED
 #define GrTessellatingPathRenderer_DEFINED
 
-#include "GrPathRenderer.h"
+#include "src/gpu/GrPathRenderer.h"
 
 /**
  *  Subclass that renders the path by converting to screen-space trapezoids plus
@@ -17,6 +17,9 @@
 class SK_API GrTessellatingPathRenderer : public GrPathRenderer {
 public:
     GrTessellatingPathRenderer();
+#if GR_TEST_UTILS
+    void setMaxVerbCount(int maxVerbCount) { fMaxVerbCount = maxVerbCount; }
+#endif
 
 private:
     CanDrawPath onCanDrawPath(const CanDrawPathArgs&) const override;
@@ -26,6 +29,7 @@ private:
     }
 
     bool onDrawPath(const DrawPathArgs&) override;
+    int fMaxVerbCount;
 
     typedef GrPathRenderer INHERITED;
 };

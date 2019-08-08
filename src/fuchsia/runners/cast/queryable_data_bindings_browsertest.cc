@@ -25,7 +25,7 @@ class QueryableDataBindingsTest : public cr_fuchsia::WebEngineBrowserTest {
     set_test_server_root(base::FilePath("fuchsia/runners/cast/testdata"));
   }
 
-  ~QueryableDataBindingsTest() override = default;
+  ~QueryableDataBindingsTest() override { connector_->Unregister("testQuery"); }
 
   void SetUpOnMainThread() override {
     cr_fuchsia::WebEngineBrowserTest::SetUpOnMainThread();
@@ -38,11 +38,11 @@ class QueryableDataBindingsTest : public cr_fuchsia::WebEngineBrowserTest {
     navigation_listener_.SetBeforeAckHook(base::BindRepeating(
         &QueryableDataBindingsTest::OnBeforeAckHook, base::Unretained(this)));
 
-    connector_.Register(
+    connector_ = std::make_unique<NamedMessagePortConnector>(frame_.get());
+    connector_->Register(
         "testQuery",
         base::BindRepeating(&QueryableDataBindingsTest::ReceiveMessagePort,
-                            base::Unretained(this)),
-        frame_.get());
+                            base::Unretained(this)));
   }
 
   // Blocks test execution until the page has indicated that it's processed the
@@ -59,7 +59,7 @@ class QueryableDataBindingsTest : public cr_fuchsia::WebEngineBrowserTest {
           ASSERT_TRUE(result.is_response());
         });
 
-    navigation_listener_.RunUntilNavigationEquals(test_url_, unique_title);
+    navigation_listener_.RunUntilUrlAndTitleEquals(test_url_, unique_title);
   }
 
   // Communicates with the page to read an entry from its QueryableData store.
@@ -97,8 +97,9 @@ class QueryableDataBindingsTest : public cr_fuchsia::WebEngineBrowserTest {
     return response_string;
   }
 
-  void ReceiveMessagePort(fuchsia::web::MessagePortPtr port) {
-    query_port_ = std::move(port);
+  void ReceiveMessagePort(
+      fidl::InterfaceHandle<fuchsia::web::MessagePort> port) {
+    query_port_ = port.Bind();
     if (on_query_port_received_cb_)
       std::move(on_query_port_received_cb_).Run();
   }
@@ -108,8 +109,9 @@ class QueryableDataBindingsTest : public cr_fuchsia::WebEngineBrowserTest {
       const fuchsia::web::NavigationState& change,
       fuchsia::web::NavigationEventListener::OnNavigationStateChangedCallback
           callback) {
-    if (change.has_url())
-      connector_.NotifyPageLoad(frame_.get());
+    if (change.has_is_main_document_loaded() &&
+        change.is_main_document_loaded())
+      connector_->OnPageLoad();
 
     callback();
   }
@@ -117,7 +119,7 @@ class QueryableDataBindingsTest : public cr_fuchsia::WebEngineBrowserTest {
   fuchsia::web::FramePtr frame_;
 
   GURL test_url_;
-  NamedMessagePortConnector connector_;
+  std::unique_ptr<NamedMessagePortConnector> connector_;
   FakeQueryableData queryable_data_service_;
   cr_fuchsia::TestNavigationListener navigation_listener_;
   fidl::Binding<chromium::cast::QueryableData> queryable_data_service_binding_;
@@ -147,8 +149,8 @@ IN_PROC_BROWSER_TEST_F(QueryableDataBindingsTest, VariousTypes) {
   frame_->GetNavigationController(controller.NewRequest());
   frame_->SetJavaScriptLogLevel(fuchsia::web::ConsoleLogLevel::INFO);
   EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      &controller, fuchsia::web::LoadUrlParams(), test_url_.spec()));
-  navigation_listener_.RunUntilNavigationEquals(test_url_, {});
+      controller.get(), fuchsia::web::LoadUrlParams(), test_url_.spec()));
+  navigation_listener_.RunUntilUrlEquals(test_url_);
 
   EXPECT_EQ(CallQueryPlatformValue("string"), "\"foo\"");
   EXPECT_EQ(CallQueryPlatformValue("number"), "123");
@@ -166,8 +168,8 @@ IN_PROC_BROWSER_TEST_F(QueryableDataBindingsTest, NoValues) {
   frame_->GetNavigationController(controller.NewRequest());
   frame_->SetJavaScriptLogLevel(fuchsia::web::ConsoleLogLevel::INFO);
   EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      &controller, fuchsia::web::LoadUrlParams(), test_url_.spec()));
-  navigation_listener_.RunUntilNavigationEquals(test_url_, {});
+      controller.get(), fuchsia::web::LoadUrlParams(), test_url_.spec()));
+  navigation_listener_.RunUntilUrlEquals(test_url_);
 
   EXPECT_EQ(CallQueryPlatformValue("string"), "null");
 }
@@ -186,8 +188,8 @@ IN_PROC_BROWSER_TEST_F(QueryableDataBindingsTest, AtPageRuntime) {
   frame_->GetNavigationController(controller.NewRequest());
   frame_->SetJavaScriptLogLevel(fuchsia::web::ConsoleLogLevel::INFO);
   EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      &controller, fuchsia::web::LoadUrlParams(), test_url_.spec()));
-  navigation_listener_.RunUntilNavigationEquals(test_url_, {});
+      controller.get(), fuchsia::web::LoadUrlParams(), test_url_.spec()));
+  navigation_listener_.RunUntilUrlEquals(test_url_);
 
   SynchronizeWithPage();
 
@@ -224,8 +226,8 @@ IN_PROC_BROWSER_TEST_F(QueryableDataBindingsTest, AtPageLoad) {
   frame_->GetNavigationController(controller.NewRequest());
   frame_->SetJavaScriptLogLevel(fuchsia::web::ConsoleLogLevel::INFO);
   EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      &controller, fuchsia::web::LoadUrlParams(), test_url_.spec()));
-  navigation_listener_.RunUntilNavigationEquals(test_url_, {});
+      controller.get(), fuchsia::web::LoadUrlParams(), test_url_.spec()));
+  navigation_listener_.RunUntilUrlEquals(test_url_);
 
   SynchronizeWithPage();
 

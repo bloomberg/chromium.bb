@@ -702,7 +702,8 @@ IN_PROC_BROWSER_TEST_F(AppControllerMainMenuBrowserTest,
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::FilePath path2 = profile_manager->GenerateNextProfileDirectoryPath();
   Profile* profile2 =
-      Profile::CreateProfile(path2, NULL, Profile::CREATE_MODE_SYNCHRONOUS);
+      Profile::CreateProfile(path2, NULL, Profile::CREATE_MODE_SYNCHRONOUS)
+          .release();
   profile_manager->RegisterTestingProfile(profile2, false, true);
   bookmarks::test::WaitForBookmarkModelToLoad(
       BookmarkModelFactory::GetForBrowserContext(profile2));

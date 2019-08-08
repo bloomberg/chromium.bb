@@ -10,9 +10,11 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
+#include "components/autofill_assistant/browser/client_settings.h"
 #include "components/autofill_assistant/browser/service.pb.h"
+#include "components/autofill_assistant/browser/top_padding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill_assistant {
@@ -22,8 +24,7 @@ class MockActionDelegate : public ActionDelegate {
   MockActionDelegate();
   ~MockActionDelegate() override;
 
-  MOCK_METHOD2(RunElementChecks,
-               void(BatchElementChecker*, base::OnceCallback<void()>));
+  MOCK_METHOD1(RunElementChecks, void(BatchElementChecker*));
 
   void ShortWaitForElement(const Selector& selector,
                            base::OnceCallback<void(bool)> callback) override {
@@ -36,24 +37,26 @@ class MockActionDelegate : public ActionDelegate {
   void WaitForDom(
       base::TimeDelta max_wait_time,
       bool allow_interrupt,
-      ActionDelegate::SelectorPredicate selector_predicate,
-      const Selector& selector,
+      base::RepeatingCallback<void(BatchElementChecker*,
+                                   base::OnceCallback<void(bool)>)>
+          check_elements,
       base::OnceCallback<void(ProcessedActionStatusProto)> callback) override {
-    OnWaitForDom(max_wait_time, allow_interrupt, selector_predicate, selector,
-                 callback);
+    OnWaitForDom(max_wait_time, allow_interrupt, check_elements, callback);
   }
 
-  MOCK_METHOD5(OnWaitForDom,
-               void(base::TimeDelta,
-                    bool,
-                    ActionDelegate::SelectorPredicate,
-                    const Selector&,
-                    base::OnceCallback<void(ProcessedActionStatusProto)>&));
+  MOCK_METHOD4(
+      OnWaitForDom,
+      void(base::TimeDelta,
+           bool,
+           base::RepeatingCallback<void(BatchElementChecker*,
+                                        base::OnceCallback<void(bool)>)>&,
+           base::OnceCallback<void(ProcessedActionStatusProto)>&));
 
   MOCK_METHOD1(SetStatusMessage, void(const std::string& message));
   MOCK_METHOD0(GetStatusMessage, std::string());
-  MOCK_METHOD2(ClickOrTapElement,
+  MOCK_METHOD3(ClickOrTapElement,
                void(const Selector& selector,
+                    ClickAction::ClickType click_type,
                     base::OnceCallback<void(const ClientStatus&)> callback));
 
   MOCK_METHOD1(Prompt, void(std::unique_ptr<std::vector<Chip>> chips));
@@ -87,8 +90,9 @@ class MockActionDelegate : public ActionDelegate {
                void(const Selector& selector,
                     const std::string& selected_option,
                     base::OnceCallback<void(const ClientStatus&)> callback));
-  MOCK_METHOD2(FocusElement,
+  MOCK_METHOD3(FocusElement,
                void(const Selector& selector,
+                    const TopPadding& top_padding,
                     base::OnceCallback<void(const ClientStatus&)> callback));
   MOCK_METHOD1(SetTouchableElementArea,
                void(const ElementAreaProto& touchable_element_area));
@@ -159,8 +163,26 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD1(SetProgressVisible, void(bool visible));
   MOCK_METHOD1(SetChips, void(std::unique_ptr<std::vector<Chip>> chips));
   MOCK_METHOD1(SetResizeViewport, void(bool resize_viewport));
+  MOCK_METHOD0(GetResizeViewport, bool());
   MOCK_METHOD1(SetPeekMode,
                void(ConfigureBottomSheetProto::PeekMode peek_mode));
+  MOCK_METHOD0(GetPeekMode, ConfigureBottomSheetProto::PeekMode());
+  MOCK_METHOD2(
+      SetForm,
+      bool(std::unique_ptr<FormProto> form,
+           base::RepeatingCallback<void(const FormProto::Result*)> callback));
+
+  void WaitForWindowHeightChange(
+      base::OnceCallback<void(const ClientStatus&)> callback) {
+    OnWaitForWindowHeightChange(callback);
+  }
+
+  MOCK_METHOD1(OnWaitForWindowHeightChange,
+               void(base::OnceCallback<void(const ClientStatus&)>& callback));
+
+  const ClientSettings& GetSettings() override { return client_settings_; }
+
+  ClientSettings client_settings_;
 };
 
 }  // namespace autofill_assistant

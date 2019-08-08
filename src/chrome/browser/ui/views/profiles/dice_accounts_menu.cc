@@ -14,6 +14,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/view.h"
@@ -67,8 +68,8 @@ void DiceAccountsMenu::Show(views::View* anchor_view,
   else
     anchor_bounds.Inset(anchor_bounds.width(), 0, 0, 0);
 
-  runner_->RunMenuAt(anchor_view->GetWidget(), menu_button, anchor_bounds,
-                     views::MenuAnchorPosition::kTopRight,
+  runner_->RunMenuAt(anchor_view->GetWidget(), menu_button->button_controller(),
+                     anchor_bounds, views::MenuAnchorPosition::kTopRight,
                      ui::MENU_SOURCE_MOUSE);
 }
 

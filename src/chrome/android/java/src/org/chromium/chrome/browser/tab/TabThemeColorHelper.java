@@ -113,6 +113,8 @@ public class TabThemeColorHelper extends EmptyTabObserver implements UserData {
         if (securityLevel == ConnectionSecurityLevel.DANGEROUS
                 || securityLevel == ConnectionSecurityLevel.SECURE_WITH_POLICY_INSTALLED_CERT
                 || (mTab.getActivity() != null && mTab.getActivity().isTablet())
+                || (mTab.getActivity() != null
+                        && mTab.getActivity().getNightModeStateProvider().isInNightMode())
                 || mTab.isNativePage() || mTab.isShowingInterstitialPage()
                 || themeColor == TabState.UNSPECIFIED_THEME_COLOR || mTab.isIncognito()
                 || mTab.isPreview()) {

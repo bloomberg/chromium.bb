@@ -25,7 +25,6 @@
 namespace sw
 {
 	extern TransparencyAntialiasing transparencyAntialiasing;
-	extern bool perspectiveCorrection;
 
 	bool precachePixel = false;
 
@@ -57,7 +56,7 @@ namespace sw
 		return memcmp(static_cast<const States*>(this), static_cast<const States*>(&state), sizeof(States)) == 0;
 	}
 
-	PixelProcessor::PixelProcessor(Context *context) : context(context)
+	PixelProcessor::PixelProcessor()
 	{
 		routineCache = nullptr;
 		setRoutineCacheSize(1024);
@@ -67,55 +66,6 @@ namespace sw
 	{
 		delete routineCache;
 		routineCache = nullptr;
-	}
-
-	void PixelProcessor::setRenderTarget(int index, vk::ImageView* renderTarget, unsigned int layer)
-	{
-		context->renderTarget[index] = renderTarget;
-		context->renderTargetLayer[index] = layer;
-	}
-
-	void PixelProcessor::setDepthBuffer(vk::ImageView *depthBuffer, unsigned int layer)
-	{
-		context->depthBuffer = depthBuffer;
-		context->depthBufferLayer = layer;
-	}
-
-	void PixelProcessor::setStencilBuffer(vk::ImageView *stencilBuffer, unsigned int layer)
-	{
-		context->stencilBuffer = stencilBuffer;
-		context->stencilBufferLayer = layer;
-	}
-
-	void PixelProcessor::setWriteSRGB(bool sRGB)
-	{
-		context->setWriteSRGB(sRGB);
-	}
-
-	void PixelProcessor::setDepthBufferEnable(bool depthBufferEnable)
-	{
-		context->setDepthBufferEnable(depthBufferEnable);
-	}
-
-	void PixelProcessor::setDepthCompare(VkCompareOp depthCompareMode)
-	{
-		context->depthCompareMode = depthCompareMode;
-	}
-
-	void PixelProcessor::setDepthWriteEnable(bool depthWriteEnable)
-	{
-		context->depthWriteEnable = depthWriteEnable;
-	}
-
-	void PixelProcessor::setCullMode(CullMode cullMode, bool frontFacingCCW)
-	{
-		context->cullMode = cullMode;
-		context->frontFacingCCW = frontFacingCCW;
-	}
-
-	void PixelProcessor::setColorWriteMask(int index, int rgbaMask)
-	{
-		context->setColorWriteMask(index, rgbaMask);
 	}
 
 	void PixelProcessor::setBlendConstant(const Color<float> &blendConstant)
@@ -213,63 +163,13 @@ namespace sw
 		factor.invBlendConstant4F[3][3] = 1 - blendConstant.a;
 	}
 
-	void PixelProcessor::setAlphaBlendEnable(bool alphaBlendEnable)
-	{
-		context->setAlphaBlendEnable(alphaBlendEnable);
-	}
-
-	void PixelProcessor::setSourceBlendFactor(VkBlendFactor sourceBlendFactor)
-	{
-		context->setSourceBlendFactor(sourceBlendFactor);
-	}
-
-	void PixelProcessor::setDestBlendFactor(VkBlendFactor destBlendFactor)
-	{
-		context->setDestBlendFactor(destBlendFactor);
-	}
-
-	void PixelProcessor::setBlendOperation(VkBlendOp blendOperation)
-	{
-		context->setBlendOperation(blendOperation);
-	}
-
-	void PixelProcessor::setSeparateAlphaBlendEnable(bool separateAlphaBlendEnable)
-	{
-		context->setSeparateAlphaBlendEnable(separateAlphaBlendEnable);
-	}
-
-	void PixelProcessor::setSourceBlendFactorAlpha(VkBlendFactor sourceBlendFactorAlpha)
-	{
-		context->setSourceBlendFactorAlpha(sourceBlendFactorAlpha);
-	}
-
-	void PixelProcessor::setDestBlendFactorAlpha(VkBlendFactor destBlendFactorAlpha)
-	{
-		context->setDestBlendFactorAlpha(destBlendFactorAlpha);
-	}
-
-	void PixelProcessor::setBlendOperationAlpha(VkBlendOp blendOperationAlpha)
-	{
-		context->setBlendOperationAlpha(blendOperationAlpha);
-	}
-
-	void PixelProcessor::setPerspectiveCorrection(bool perspectiveEnable)
-	{
-		perspectiveCorrection = perspectiveEnable;
-	}
-
-	void PixelProcessor::setOcclusionEnabled(bool enable)
-	{
-		context->occlusionEnabled = enable;
-	}
-
 	void PixelProcessor::setRoutineCacheSize(int cacheSize)
 	{
 		delete routineCache;
 		routineCache = new RoutineCache<State>(clamp(cacheSize, 1, 65536));
 	}
 
-	const PixelProcessor::State PixelProcessor::update() const
+	const PixelProcessor::State PixelProcessor::update(const Context* context) const
 	{
 		State state;
 
@@ -282,11 +182,7 @@ namespace sw
 			state.shaderID = 0;
 		}
 
-		if(context->alphaTestActive())
-		{
-			state.transparencyAntialiasing = context->sampleCount > 1 ? transparencyAntialiasing : TRANSPARENCY_NONE;
-		}
-
+		state.alphaToCoverage = context->alphaToCoverage;
 		state.depthWriteEnable = context->depthWriteActive();
 
 		if(context->stencilActive())
@@ -306,8 +202,6 @@ namespace sw
 		}
 
 		state.occlusionEnabled = context->occlusionEnabled;
-
-		state.perspective = context->perspectiveActive();
 		state.depthClamp = (context->depthBias != 0.0f) || (context->slopeDepthBias != 0.0f);
 
 		if(context->alphaBlendActive())
@@ -327,8 +221,7 @@ namespace sw
 			state.targetFormat[i] = context->renderTargetInternalFormat(i);
 		}
 
-		state.writeSRGB	= context->writeSRGB && context->renderTarget[0] && context->renderTarget[0]->getFormat().isSRGBwritable();
-		state.multiSample = context->sampleCount;
+		state.multiSample = static_cast<unsigned int>(context->sampleCount);
 		state.multiSampleMask = context->multiSampleMask;
 
 		if(state.multiSample > 1 && context->pixelShader)
@@ -343,13 +236,16 @@ namespace sw
 		return state;
 	}
 
-	Routine *PixelProcessor::routine(const State &state)
+	Routine *PixelProcessor::routine(const State &state,
+		vk::PipelineLayout const *pipelineLayout,
+		SpirvShader const *pixelShader,
+		const vk::DescriptorSet::Bindings &descriptorSets)
 	{
 		Routine *routine = routineCache->query(state);
 
 		if(!routine)
 		{
-			QuadRasterizer *generator = new PixelProgram(state, context->pipelineLayout, context->pixelShader, context->descriptorSets);
+			QuadRasterizer *generator = new PixelProgram(state, pipelineLayout, pixelShader, descriptorSets);
 			generator->generate();
 			routine = (*generator)("PixelRoutine_%0.8X", state.shaderID);
 			delete generator;

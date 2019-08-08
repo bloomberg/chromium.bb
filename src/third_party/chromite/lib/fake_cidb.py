@@ -186,22 +186,6 @@ class FakeCIDBConnection(object):
     # TODO(akeshet): Fill this placeholder.
     pass
 
-  def InsertFailure(self, build_stage_id, exception_type, exception_message,
-                    exception_category=constants.EXCEPTION_CATEGORY_UNKNOWN,
-                    outer_failure_id=None,
-                    extra_info=None):
-    failure_id = len(self.failureTable)
-    values = {'id': failure_id,
-              'build_stage_id': build_stage_id,
-              'exception_type': exception_type,
-              'exception_message': exception_message,
-              'exception_category': exception_category,
-              'outer_failure_id': outer_failure_id,
-              'extra_info': extra_info,
-              'timestamp': None}
-    self.failureTable[failure_id] = values
-    return failure_id
-
   def InsertBuildMessage(self, build_id,
                          message_type=None, message_subtype=None,
                          message_value=None, board=None):
@@ -423,18 +407,6 @@ class FakeCIDBConnection(object):
               if b['master_build_id'] == master_build_id and
               b['buildbucket_id'] in buildbucket_ids]
 
-  def GetBuildStage(self, build_stage_id):
-    """Get build stage given the build_stage_id.
-
-    Args:
-      build_stage_id: The build_stage_id to get the stage.
-
-    Returns:
-      A dict prensenting the stage if the build_stage_id exists in
-      the buildStageTable; else, None.
-    """
-    return self.buildStageTable.get(build_stage_id)
-
   def GetBuildsStages(self, build_ids):
     """Quick implementation of fake GetBuildsStages."""
     build_stages = []
@@ -489,7 +461,7 @@ class FakeCIDBConnection(object):
     if build_configs:
       builds = [b for b in builds if b['build_config'] in build_configs]
     if ignore_build_id is not None:
-      builds = [b for b in builds if b['id'] != ignore_build_id]
+      builds = [b for b in builds if b['buildbucket_id'] != ignore_build_id]
     if start_date is not None:
       builds = [b for b in builds
                 if b['start_time'].date() >= start_date]
@@ -675,23 +647,6 @@ class FakeCIDBConnection(object):
             value['request_reason'], value['timestamp']))
 
     return results
-
-  def HasFailureMsgForStage(self, build_stage_id):
-    """Determine whether a build stage has failure messages in failureTable.
-
-    Args:
-      build_stage_id: The id of the build_stage to query for.
-
-    Returns:
-      True if there're failures reported to failureTable for this build stage
-      to cidb; else, False.
-    """
-    stages = self.failureTable.values()
-    for stage in stages:
-      if stage['build_stage_id'] == build_stage_id:
-        return True
-
-    return False
 
   def GetPreCQFlakeCounts(self, start_date=None, end_date=None):
     """Queries pre-CQ config flake & run counts.

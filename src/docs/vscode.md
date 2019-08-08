@@ -313,7 +313,6 @@ might want to disable git status autorefresh as well.
 ```
 "git.autorefresh": false,
 "C_Cpp.autocomplete": "Disabled",
-"C_Cpp.addWorkspaceRootToIncludePath": false
 ```
 
 ### Unable to open $File resource is not available when debugging Chromium on Linux

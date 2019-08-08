@@ -21,7 +21,7 @@ that Daydream controller input is registered when using Daydream View.
       var finishAfterEachInput = true;
 
       function onSelectStart() {
-        // selectstart should always be fired first, so check that
+        // selectstart should always be fired first, so check that.
         assert_true(selectStartCount == selectEndCount,
                     'selectstart fired before selectend');
         assert_true(selectStartCount == selectCount,
@@ -29,22 +29,22 @@ that Daydream controller input is registered when using Daydream View.
         selectStartCount++;
       }
 
-      function onSelectEnd() {
-        // selectend should always be fired between selectstart and select
-        assert_true(selectEndCount + 1 == selectStartCount,
-                    'selectend fired after selectstart');
-        assert_true(selectEndCount == selectCount,
-                    'selectend fired before select');
-        selectEndCount++;
-      }
-
       function onSelect() {
-        // select should always be fired last
-        selectCount++;
-        assert_true(selectCount == selectStartCount,
+        // select should always be fired between selectstart and selectend.
+        assert_true(selectCount + 1 == selectStartCount,
                     'select fired after selectstart');
         assert_true(selectCount == selectEndCount,
                     'select fired after selectend');
+        selectCount++;
+      }
+
+      function onSelectEnd() {
+        // selectend should always be fired last.
+        selectEndCount++;
+        assert_true(selectEndCount == selectStartCount,
+                    'selectend fired after selectstart');
+        assert_true(selectEndCount == selectCount,
+                    'selectend fired before select');
         currentIteration++;
         if (currentIteration == iterations) {
           done();

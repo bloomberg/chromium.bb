@@ -8,16 +8,13 @@
 
 namespace remoting {
 
-GrpcAsyncRequest::GrpcAsyncRequest(std::unique_ptr<grpc::ClientContext> context)
-    : grpc_async_request_weak_factory_(this) {
-  context_ = std::move(context);
-}
+GrpcAsyncRequest::GrpcAsyncRequest() : grpc_async_request_weak_factory_(this) {}
 
 GrpcAsyncRequest::~GrpcAsyncRequest() = default;
 
 void GrpcAsyncRequest::CancelRequest() {
   VLOG(1) << "Canceling request: " << this;
-  context_->TryCancel();
+  context_.TryCancel();
   OnRequestCanceled();
 }
 

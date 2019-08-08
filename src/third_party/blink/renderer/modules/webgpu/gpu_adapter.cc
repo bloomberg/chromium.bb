@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_adapter.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/modules/webgpu/dawn_control_client_holder.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
 
 namespace blink {
@@ -31,8 +30,9 @@ ScriptPromise GPUAdapter::requestDevice(ScriptState* script_state,
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  GPUDevice* device =
-      GPUDevice::Create(GetDawnControlClient(), this, descriptor);
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  GPUDevice* device = GPUDevice::Create(
+      execution_context, GetDawnControlClient(), this, descriptor);
 
   resolver->Resolve(device);
   return promise;

@@ -41,6 +41,9 @@ class WebContents;
 // https://crbug.com/437277
 class PushMessagingNotificationManager {
  public:
+  using EnforceRequirementsCallback =
+      base::OnceCallback<void(bool did_show_generic_notification)>;
+
   explicit PushMessagingNotificationManager(Profile* profile);
   ~PushMessagingNotificationManager();
 
@@ -49,7 +52,7 @@ class PushMessagingNotificationManager {
   void EnforceUserVisibleOnlyRequirements(
       const GURL& origin,
       int64_t service_worker_registration_id,
-      base::OnceClosure message_handled_closure);
+      EnforceRequirementsCallback message_handled_callback);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PushMessagingNotificationManagerTest, IsTabVisible);
@@ -62,7 +65,7 @@ class PushMessagingNotificationManager {
   void DidGetNotificationsFromDatabase(
       const GURL& origin,
       int64_t service_worker_registration_id,
-      base::OnceClosure message_handled_closure,
+      EnforceRequirementsCallback message_handled_callback,
       bool success,
       const std::vector<content::NotificationDatabaseData>& data);
 
@@ -75,12 +78,13 @@ class PushMessagingNotificationManager {
 
   void ProcessSilentPush(const GURL& origin,
                          int64_t service_worker_registration_id,
-                         base::OnceClosure message_handled_closure,
+                         EnforceRequirementsCallback message_handled_callback,
                          bool silent_push_allowed);
 
-  void DidWriteNotificationData(base::OnceClosure message_handled_closure,
-                                bool success,
-                                const std::string& notification_id);
+  void DidWriteNotificationData(
+      EnforceRequirementsCallback message_handled_callback,
+      bool success,
+      const std::string& notification_id);
 
 #if defined(OS_CHROMEOS)
   bool ShouldSkipUserVisibleOnlyRequirements(const GURL& origin);

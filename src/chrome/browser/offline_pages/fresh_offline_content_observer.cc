@@ -43,6 +43,6 @@ void FreshOfflineContentObserver::OfflinePageAdded(
 }
 
 void FreshOfflineContentObserver::OfflinePageDeleted(
-    const OfflinePageModel::DeletedPageInfo& page_info) {}
+    const OfflinePageItem& item) {}
 
 }  // namespace offline_pages

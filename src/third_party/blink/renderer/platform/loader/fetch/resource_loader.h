@@ -31,6 +31,7 @@
 
 #include <memory>
 #include <vector>
+#include "base/containers/span.h"
 #include "base/gtest_prod_util.h"
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -124,8 +125,6 @@ class PLATFORM_EXPORT ResourceLoader final
   void DidSendData(uint64_t bytes_sent,
                    uint64_t total_bytes_to_be_sent) override;
   void DidReceiveResponse(const WebURLResponse&) override;
-  void DidReceiveResponse(const WebURLResponse&,
-                          std::unique_ptr<WebDataConsumerHandle>) override;
   void DidReceiveCachedMetadata(const char* data, int length) override;
   void DidReceiveData(const char*, int) override;
   void DidReceiveTransferSizeUpdate(int transfer_size_diff) override;
@@ -144,7 +143,7 @@ class PLATFORM_EXPORT ResourceLoader final
                int64_t decoded_body_length) override;
 
   blink::mojom::CodeCacheType GetCodeCacheType() const;
-  void SendCachedCodeToResource(const char* data, int size);
+  void SendCachedCodeToResource(base::span<const uint8_t> data);
   void ClearCachedCode();
 
   void HandleError(const ResourceError&);
@@ -192,8 +191,7 @@ class PLATFORM_EXPORT ResourceLoader final
   void RequestAsynchronously(const ResourceRequest&);
   void Dispose();
 
-  void DidReceiveResponseInternal(const ResourceResponse&,
-                                  std::unique_ptr<WebDataConsumerHandle>);
+  void DidReceiveResponseInternal(const ResourceResponse&);
 
   void CancelTimerFired(TimerBase*);
 

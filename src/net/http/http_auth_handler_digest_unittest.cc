@@ -44,7 +44,7 @@ bool RespondToChallenge(HttpAuth::Target target,
                         std::string* token) {
   // Input validation.
   if (token == nullptr) {
-    ADD_FAILURE() << "|token| must be non-NULL";
+    ADD_FAILURE() << "|token| must be valid";
     return false;
   }
   EXPECT_TRUE(target != HttpAuth::AUTH_PROXY || !proxy_name.empty());

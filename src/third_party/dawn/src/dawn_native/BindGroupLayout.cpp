@@ -87,6 +87,11 @@ namespace dawn_native {
             mBindingInfo.visibilities[index] = binding.visibility;
             mBindingInfo.types[index] = binding.type;
 
+            if (binding.type == dawn::BindingType::DynamicUniformBuffer ||
+                binding.type == dawn::BindingType::DynamicStorageBuffer) {
+                mDynamicBufferCount++;
+            }
+
             ASSERT(!mBindingInfo.mask[index]);
             mBindingInfo.mask.set(index);
         }
@@ -98,8 +103,7 @@ namespace dawn_native {
 
     BindGroupLayoutBase::~BindGroupLayoutBase() {
         // Do not uncache the actual cached object if we are a blueprint
-        if (!mIsBlueprint) {
-            ASSERT(!IsError());
+        if (!mIsBlueprint && !IsError()) {
             GetDevice()->UncacheBindGroupLayout(this);
         }
     }
@@ -114,15 +118,17 @@ namespace dawn_native {
         return mBindingInfo;
     }
 
-    // BindGroupLayoutCacheFuncs
-
-    size_t BindGroupLayoutCacheFuncs::operator()(const BindGroupLayoutBase* bgl) const {
-        return HashBindingInfo(bgl->GetBindingInfo());
+    size_t BindGroupLayoutBase::HashFunc::operator()(const BindGroupLayoutBase* bgl) const {
+        return HashBindingInfo(bgl->mBindingInfo);
     }
 
-    bool BindGroupLayoutCacheFuncs::operator()(const BindGroupLayoutBase* a,
-                                               const BindGroupLayoutBase* b) const {
-        return a->GetBindingInfo() == b->GetBindingInfo();
+    bool BindGroupLayoutBase::EqualityFunc::operator()(const BindGroupLayoutBase* a,
+                                                       const BindGroupLayoutBase* b) const {
+        return a->mBindingInfo == b->mBindingInfo;
+    }
+
+    uint32_t BindGroupLayoutBase::GetDynamicBufferCount() const {
+        return mDynamicBufferCount;
     }
 
 }  // namespace dawn_native

@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/ash/system_tray_client.h"
 
-#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/cpp/system_tray.h"
+#include "ash/public/interfaces/locale.mojom.h"
+#include "ash/public/interfaces/update.mojom.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
@@ -48,12 +50,9 @@
 #include "components/arc/session/connection_holder.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
-#include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/api/vpn_provider/vpn_service.h"
 #include "extensions/browser/api/vpn_provider/vpn_service_factory.h"
 #include "net/base/escape.h"
-#include "services/service_manager/public/cpp/connector.h"
-#include "services/ws/public/cpp/property_type_converters.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 #include "ui/events/event_constants.h"
 
@@ -108,15 +107,9 @@ bool IsArcVpn(const std::string& network_id) {
 
 }  // namespace
 
-SystemTrayClient::SystemTrayClient() : binding_(this) {
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &system_tray_);
-  // Register this object as the client interface implementation.
-  ash::mojom::SystemTrayClientPtr client;
-  binding_.Bind(mojo::MakeRequest(&client));
-  system_tray_->SetClient(std::move(client));
-
+SystemTrayClient::SystemTrayClient()
+    : system_tray_(ash::SystemTray::Get()),
+      update_notification_style_(ash::mojom::NotificationStyle::DEFAULT) {
   // If this observes clock setting changes before ash comes up the IPCs will
   // be queued on |system_tray_|.
   g_browser_process->platform_part()->GetSystemClock()->AddObserver(this);
@@ -134,6 +127,8 @@ SystemTrayClient::SystemTrayClient() : binding_(this) {
     policy_manager->core()->store()->AddObserver(this);
   UpdateEnterpriseDisplayDomain();
 
+  system_tray_->SetClient(this);
+
   DCHECK(!g_system_tray_client_instance);
   g_system_tray_client_instance = this;
   UpgradeDetector::GetInstance()->AddObserver(this);
@@ -142,6 +137,8 @@ SystemTrayClient::SystemTrayClient() : binding_(this) {
 SystemTrayClient::~SystemTrayClient() {
   DCHECK_EQ(this, g_system_tray_client_instance);
   g_system_tray_client_instance = nullptr;
+
+  system_tray_->SetClient(nullptr);
 
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();

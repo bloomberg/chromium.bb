@@ -369,7 +369,7 @@ Polymer({
    */
   showOverflowMenu_: function(e) {
     this.fire('open-menu', {
-      target: Polymer.dom(e).localTarget,
+      target: e.target,
       index: this.listIndex,
       item: this.siteGroup,
     });

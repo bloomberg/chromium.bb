@@ -136,10 +136,6 @@ cvox.TableShifter.prototype.makeMoreGranular = function() {
   this.currentWalker_ = this.columnWalker_;
 };
 
-
-/**
- * @override
- */
 cvox.TableShifter.create = function(sel) {
   var ancestors = cvox.DomUtil.getAncestors(sel.start.node);
   if (cvox.DomPredicates.tablePredicate(ancestors) &&

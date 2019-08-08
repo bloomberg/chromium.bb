@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "device/usb/public/mojom/device.mojom-blink.h"
-#include "device/usb/public/mojom/device_enumeration_options.mojom-blink.h"
+#include "services/device/public/mojom/usb_device.mojom-blink.h"
+#include "services/device/public/mojom/usb_enumeration_options.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/modules/webusb/usb_device.h"
 #include "third_party/blink/renderer/modules/webusb/usb_device_filter.h"
 #include "third_party/blink/renderer/modules/webusb/usb_device_request_options.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -108,8 +109,8 @@ void USB::Dispose() {
 ScriptPromise USB::getDevices(ScriptState* script_state) {
   if (!IsContextSupported()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(DOMExceptionCode::kNotSupportedError));
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kNotSupportedError));
   }
 
   FeatureEnabledState state = GetFeatureEnabledState();
@@ -125,7 +126,8 @@ ScriptPromise USB::getDevices(ScriptState* script_state) {
   }
   if (state == FeatureEnabledState::kDisabled) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kSecurityError,
                                            kFeaturePolicyBlocked));
   }
 
@@ -142,14 +144,15 @@ ScriptPromise USB::requestDevice(ScriptState* script_state,
   LocalFrame* frame = GetFrame();
   if (!frame || !frame->GetDocument()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(DOMExceptionCode::kNotSupportedError));
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kNotSupportedError));
   }
 
   if (!frame->GetDocument()->IsFeatureEnabled(
           mojom::FeaturePolicyFeature::kUsb, ReportOptions::kReportOnFailure)) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kSecurityError,
                                            kFeaturePolicyBlocked));
   }
 
@@ -158,7 +161,7 @@ ScriptPromise USB::requestDevice(ScriptState* script_state,
   if (!LocalFrame::HasTransientUserActivation(frame)) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
-        DOMException::Create(
+        MakeGarbageCollected<DOMException>(
             DOMExceptionCode::kSecurityError,
             "Must be handling a user gesture to show a permission request."));
   }
@@ -232,8 +235,8 @@ void USB::OnGetPermission(ScriptPromiseResolver* resolver,
   if (service_ && device_info) {
     resolver->Resolve(GetOrCreateDevice(std::move(device_info)));
   } else {
-    resolver->Reject(DOMException::Create(DOMExceptionCode::kNotFoundError,
-                                          kNoDeviceSelected));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kNotFoundError, kNoDeviceSelected));
   }
   get_permission_requests_.erase(resolver);
 }
@@ -266,8 +269,8 @@ void USB::OnServiceConnectionError() {
   get_devices_requests_.clear();
 
   for (ScriptPromiseResolver* resolver : get_permission_requests_) {
-    resolver->Reject(DOMException::Create(DOMExceptionCode::kNotFoundError,
-                                          kNoDeviceSelected));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kNotFoundError, kNoDeviceSelected));
   }
   get_permission_requests_.clear();
 }

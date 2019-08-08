@@ -22,18 +22,23 @@ SafeJsonParser::Factory g_factory = nullptr;
 
 SafeJsonParser* Create(service_manager::Connector* connector,
                        const std::string& unsafe_json,
-                       const SafeJsonParser::SuccessCallback& success_callback,
-                       const SafeJsonParser::ErrorCallback& error_callback,
+                       SafeJsonParser::SuccessCallback success_callback,
+                       SafeJsonParser::ErrorCallback error_callback,
                        const base::Optional<base::Token>& batch_id) {
   if (g_factory)
-    return g_factory(unsafe_json, success_callback, error_callback);
+    return g_factory(unsafe_json, std::move(success_callback),
+                     std::move(error_callback));
 
-#if defined(OS_ANDROID)
-  return new SafeJsonParserAndroid(unsafe_json, success_callback,
-                                   error_callback);
+#if defined(OS_IOS)
+  NOTREACHED() << "SafeJsonParser is not supported on iOS (except in tests)";
+  return nullptr;
+#elif defined(OS_ANDROID)
+  return new SafeJsonParserAndroid(unsafe_json, std::move(success_callback),
+                                   std::move(error_callback));
 #else
-  return new SafeJsonParserImpl(connector, unsafe_json, success_callback,
-                                error_callback, batch_id);
+  return new SafeJsonParserImpl(connector, unsafe_json,
+                                std::move(success_callback),
+                                std::move(error_callback), batch_id);
 #endif
 }
 
@@ -47,21 +52,23 @@ void SafeJsonParser::SetFactoryForTesting(Factory factory) {
 // static
 void SafeJsonParser::Parse(service_manager::Connector* connector,
                            const std::string& unsafe_json,
-                           const SuccessCallback& success_callback,
-                           const ErrorCallback& error_callback) {
-  SafeJsonParser* parser = Create(connector, unsafe_json, success_callback,
-                                  error_callback, base::nullopt);
+                           SuccessCallback success_callback,
+                           ErrorCallback error_callback) {
+  SafeJsonParser* parser =
+      Create(connector, unsafe_json, std::move(success_callback),
+             std::move(error_callback), base::nullopt);
   parser->Start();
 }
 
 // static
 void SafeJsonParser::ParseBatch(service_manager::Connector* connector,
                                 const std::string& unsafe_json,
-                                const SuccessCallback& success_callback,
-                                const ErrorCallback& error_callback,
+                                SuccessCallback success_callback,
+                                ErrorCallback error_callback,
                                 const base::Token& batch_id) {
-  SafeJsonParser* parser = Create(connector, unsafe_json, success_callback,
-                                  error_callback, batch_id);
+  SafeJsonParser* parser =
+      Create(connector, unsafe_json, std::move(success_callback),
+             std::move(error_callback), batch_id);
   parser->Start();
 }
 

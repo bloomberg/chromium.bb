@@ -83,11 +83,15 @@ TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURLForMDSettings) {
 }
 
 TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURLForHistory) {
+  GURL::Replacements replace_foo_query;
+  replace_foo_query.SetQueryStr("foo");
+  GURL history_foo_url(
+      GURL(chrome::kChromeUIHistoryURL).ReplaceComponents(replace_foo_query));
   TestWillHandleBrowserAboutURL(std::vector<AboutURLTestCase>({
-      {GURL("about:history"), GURL("chrome://history/")},
-      {GURL("chrome://history"), GURL("chrome://history/")},
-      {GURL("chrome://history/"), GURL("chrome://history/")},
-      {GURL("chrome://history/?q=foo"), GURL("chrome://history/?q=foo")},
+      {GURL("about:history"), GURL(chrome::kChromeUIHistoryURL)},
+      {GURL(chrome::kChromeUIHistoryURL), GURL(chrome::kChromeUIHistoryURL)},
+      {GURL(chrome::kChromeUIHistoryURL), GURL(chrome::kChromeUIHistoryURL)},
+      {history_foo_url, history_foo_url},
   }));
 }
 

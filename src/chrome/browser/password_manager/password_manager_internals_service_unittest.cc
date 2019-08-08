@@ -68,8 +68,8 @@ TEST_F(PasswordManagerInternalsServiceTest, ServiceNotActiveIncognito) {
   PasswordManagerInternalsService* service =
       PasswordManagerInternalsServiceFactory::GetForBrowserContext(
           incognito_profile);
-  // BrowserContextKeyedBaseFactory::GetBrowserContextToUse should return NULL
-  // for |profile|, because |profile| is incognito. Therefore the returned
+  // BrowserContextKeyedServiceFactory::GetBrowserContextToUse should return
+  // NULL for |profile|, because |profile| is incognito. Therefore the returned
   // |service| should also be NULL.
   EXPECT_FALSE(service);
 }

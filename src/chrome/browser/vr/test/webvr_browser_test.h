@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_VR_TEST_WEBVR_BROWSER_TEST_H_
 
 #include "build/build_config.h"
+#include "chrome/browser/vr/test/conditional_skipping.h"
 #include "chrome/browser/vr/test/webxr_vr_browser_test.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/web_contents.h"
@@ -14,6 +15,7 @@
 #include "device/vr/buildflags/buildflags.h"
 
 #if defined(OS_WIN)
+#include "chrome/browser/vr/test/mock_xr_session_request_consent_manager.h"
 #include "services/service_manager/sandbox/features.h"
 #endif
 
@@ -39,17 +41,13 @@ class WebVrBrowserTestBase : public WebXrVrBrowserTestBase {
 };
 
 // Test class with OpenVR support disabled.
-class WebVrBrowserTestOpenVrDisabled : public WebVrBrowserTestBase {
+class WebVrRuntimelessBrowserTest : public WebVrBrowserTestBase {
  public:
-  WebVrBrowserTestOpenVrDisabled() {
+  WebVrRuntimelessBrowserTest() {
     append_switches_.push_back(switches::kEnableWebVR);
 
 #if BUILDFLAG(ENABLE_WINDOWS_MR)
     disable_features_.push_back(features::kWindowsMixedReality);
-#endif
-
-#if defined(OS_WIN)
-    disable_features_.push_back(service_manager::features::kXRSandbox);
 #endif
   }
 };
@@ -57,11 +55,13 @@ class WebVrBrowserTestOpenVrDisabled : public WebVrBrowserTestBase {
 // OpenVR feature only defined on Windows.
 #ifdef OS_WIN
 // Test class with standard features enabled: WebVR and OpenVR support.
-class WebVrBrowserTestStandard : public WebVrBrowserTestBase {
+class WebVrOpenVrBrowserTest : public WebVrBrowserTestBase {
  public:
-  WebVrBrowserTestStandard() {
+  WebVrOpenVrBrowserTest() {
     append_switches_.push_back(switches::kEnableWebVR);
     enable_features_.push_back(features::kOpenVR);
+
+    runtime_requirements_.push_back(XrTestRequirement::DIRECTX_11_1);
 
 #if BUILDFLAG(ENABLE_WINDOWS_MR)
     disable_features_.push_back(features::kWindowsMixedReality);
@@ -70,9 +70,9 @@ class WebVrBrowserTestStandard : public WebVrBrowserTestBase {
 };
 
 // Test class with WebVR disabled.
-class WebVrBrowserTestWebVrDisabled : public WebVrBrowserTestBase {
+class WebVrOpenVrBrowserTestWebVrDisabled : public WebVrBrowserTestBase {
  public:
-  WebVrBrowserTestWebVrDisabled() {
+  WebVrOpenVrBrowserTestWebVrDisabled() {
     enable_features_.push_back(features::kOpenVR);
 
 #if BUILDFLAG(ENABLE_WINDOWS_MR)

@@ -7,6 +7,7 @@
 #include <set>
 #include <string>
 
+#include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model_observer.h"
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,7 +29,9 @@ class TestShelfModelObserver : public ShelfModelObserver {
     AddToResult("removed=%d", removed_count_, &result);
     AddToResult("changed=%d", changed_count_, &result);
     AddToResult("moved=%d", moved_count_, &result);
-    added_count_ = removed_count_ = changed_count_ = moved_count_ = 0;
+    AddToResult("delegate_changed=%d", delegate_changed_count_, &result);
+    added_count_ = removed_count_ = changed_count_ = moved_count_ =
+        delegate_changed_count_ = 0;
     return result;
   }
 
@@ -37,6 +40,11 @@ class TestShelfModelObserver : public ShelfModelObserver {
   void ShelfItemRemoved(int, const ShelfItem&) override { removed_count_++; }
   void ShelfItemChanged(int, const ShelfItem&) override { changed_count_++; }
   void ShelfItemMoved(int, int) override { moved_count_++; }
+  void ShelfItemDelegateChanged(const ShelfID&,
+                                ShelfItemDelegate*,
+                                ShelfItemDelegate*) override {
+    delegate_changed_count_++;
+  }
 
  private:
   void AddToResult(const std::string& format, int count, std::string* result) {
@@ -51,8 +59,25 @@ class TestShelfModelObserver : public ShelfModelObserver {
   int removed_count_ = 0;
   int changed_count_ = 0;
   int moved_count_ = 0;
+  int delegate_changed_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestShelfModelObserver);
+};
+
+class TestShelfItemDelegate : public ShelfItemDelegate {
+ public:
+  TestShelfItemDelegate(const ShelfID& shelf_id)
+      : ShelfItemDelegate(shelf_id) {}
+
+  void ItemSelected(std::unique_ptr<ui::Event> event,
+                    int64_t display_id,
+                    ash::ShelfLaunchSource source,
+                    ItemSelectedCallback callback) override {}
+  void ExecuteCommand(bool from_context_menu,
+                      int64_t command_id,
+                      int32_t event_flags,
+                      int64_t display_id) override {}
+  void Close() override {}
 };
 
 }  // namespace
@@ -507,6 +532,34 @@ TEST_F(ShelfModelTest, MultipleNotificationsPerAppBasic) {
   // Remove the last notification.
   model_->RemoveNotificationRecord(notification_id_0);
   EXPECT_FALSE(model_->items()[index].has_notification);
+}
+
+// Test that RemoveItemAndTakeShelfItemDelegate has the same effect as
+// RemoveItemAt and returns the correct delegate.
+TEST_F(ShelfModelTest, RemoveItemAndTakeShelfItemDelegate) {
+  // Add an item.
+  ShelfItem item1;
+  item1.id = ShelfID("item1");
+  item1.type = TYPE_PINNED_APP;
+  model_->Add(item1);
+  EXPECT_EQ(3, model_->item_count());
+  EXPECT_LE(0, model_->ItemIndexByID(item1.id));
+  EXPECT_NE(model_->items().end(), model_->ItemByID(item1.id));
+  EXPECT_EQ("added=1", observer_->StateStringAndClear());
+
+  // Set item delegate.
+  auto* delegate = new TestShelfItemDelegate(item1.id);
+  model_->SetShelfItemDelegate(item1.id,
+                               std::unique_ptr<ShelfItemDelegate>(delegate));
+  EXPECT_EQ("delegate_changed=1", observer_->StateStringAndClear());
+
+  // Remove the item.
+  auto taken_delegate = model_->RemoveItemAndTakeShelfItemDelegate(item1.id);
+  EXPECT_EQ(2, model_->item_count());
+  EXPECT_EQ(-1, model_->ItemIndexByID(item1.id));
+  EXPECT_EQ(model_->items().end(), model_->ItemByID(item1.id));
+  EXPECT_EQ("removed=1", observer_->StateStringAndClear());
+  EXPECT_EQ(delegate, taken_delegate.get());
 }
 
 }  // namespace ash

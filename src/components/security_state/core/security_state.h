@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 #include <memory>
+#include <string>
 
 #include "base/callback.h"
 #include "base/feature_list.h"
@@ -159,6 +160,11 @@ SecurityLevel GetSecurityLevel(
     const VisibleSecurityState& visible_security_state,
     bool used_policy_installed_certificate,
     IsOriginSecureCallback is_origin_secure_callback);
+
+// Returns true if the current page was loaded using a cryptographic protocol
+// and its certificate has any major errors.
+bool HasMajorCertificateError(
+    const VisibleSecurityState& visible_security_state);
 
 // Returns true for a valid |url| with a cryptographic scheme, e.g., HTTPS, WSS.
 bool IsSchemeCryptographic(const GURL& url);

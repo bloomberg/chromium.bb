@@ -7,6 +7,20 @@
 
 namespace notifications {
 
+// Enum to describe the time to process scheduled notification data.
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: (
+//   org.chromium.chrome.browser.notifications.scheduler)
+enum class SchedulerTaskTime {
+  // The system is started from normal user launch or other background
+  // tasks.
+  kUnknown = 0,
+  // Background task runs in the morning.
+  kMorning = 1,
+  // Background task runs in the evening.
+  kEvening = 2,
+};
+
 // The type of a list of clients using the notification scheduler system.
 enum class SchedulerClientType {
   // Test only values.
@@ -38,7 +52,8 @@ enum class UserFeedback {
   kMaxValue = kIgnore
 };
 
-// The user impression of a particular notification.
+// The user impression of a particular notification, which may impact the
+// notification display frenquency.
 enum class ImpressionResult {
   // Invalid user impression.
   kInvalid = 0,
@@ -49,6 +64,19 @@ enum class ImpressionResult {
   // The feedback is neutral to the user.
   kNeutral = 3,
   kMaxValue = kNeutral
+};
+
+// Categorizes type of notification buttons. Different type of button clicks
+// may result in change of notification shown frequency.
+enum class ActionButtonType {
+  // The action button is not categorized.
+  kUnknownAction = 0,
+
+  // Helpful button indicates the user likes to interact with the notification.
+  kHelpful = 1,
+
+  // Unhelpful button indicates dislike of the notification.
+  kUnhelpful = 2,
 };
 
 }  // namespace notifications

@@ -97,6 +97,8 @@ public class PrefServiceBridge {
         if (sInstance == null) {
             sInstance = new PrefServiceBridge();
 
+            // TODO(wnwen): Check while refactoring TemplateUrlService whether this belongs here.
+            // This is necessary as far as ensuring that TemplateUrlService is loaded at some point.
             // Put initialization here to make instantiation in unit tests easier.
             TemplateUrlService.getInstance().load();
         }

@@ -44,9 +44,7 @@ void CreateFirstRunFieldTrial(base::FeatureList* feature_list) {
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrial(
           kInstantTetheringTrialName, 100 /* total_probability */,
-          kInstantTetheringGroupName, base::FieldTrialList::kNoExpirationYear,
-          1 /* month */, 1 /* day_of_month */,
-          base::FieldTrial::ONE_TIME_RANDOMIZED,
+          kInstantTetheringGroupName, base::FieldTrial::ONE_TIME_RANDOMIZED,
           nullptr /* default_group_number */));
   feature_list->RegisterFieldTrialOverride(
       features::kInstantTethering.name,

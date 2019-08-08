@@ -34,6 +34,7 @@ class DiskMounterImpl : public DiskMounter,
 
   void Mount(const base::UnguessableToken& token,
              const base::FilePath& data_path,
+             const base::FilePath& my_files_path,
              const std::string& desired_mount_dir_name,
              base::OnceCallback<void(base::FilePath)> callback) override {
     DCHECK(mount_path_.empty());
@@ -100,6 +101,7 @@ DriveFsSession::DriveFsSession(base::OneShotTimer* timer,
                                std::unique_ptr<DiskMounter> disk_mounter,
                                std::unique_ptr<DriveFsConnection> connection,
                                const base::FilePath& data_path,
+                               const base::FilePath& my_files_path,
                                const std::string& desired_mount_dir_name,
                                MountObserver* observer)
     : timer_(timer),
@@ -111,7 +113,7 @@ DriveFsSession::DriveFsSession(base::OneShotTimer* timer,
                            base::Unretained(this)));
   CHECK(token);
   drivefs_ = &connection_->GetDriveFs();
-  disk_mounter_->Mount(token, data_path, desired_mount_dir_name,
+  disk_mounter_->Mount(token, data_path, my_files_path, desired_mount_dir_name,
                        base::BindOnce(&DriveFsSession::OnDiskMountCompleted,
                                       base::Unretained(this)));
   timer_->Start(

@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/filesystem_policy.h"
 #include "sandbox/win/src/interception.h"
@@ -215,7 +216,7 @@ ResultCode PolicyBase::CreateAlternateDesktop(bool alternate_winstation) {
 
     // Verify that everything is fine.
     if (!alternate_winstation_handle_ ||
-        GetWindowObjectName(alternate_winstation_handle_).empty())
+        base::win::GetWindowObjectName(alternate_winstation_handle_).empty())
       return SBOX_ERROR_CANNOT_CREATE_DESKTOP;
 
     // Create the destkop.
@@ -226,7 +227,7 @@ ResultCode PolicyBase::CreateAlternateDesktop(bool alternate_winstation) {
 
     // Verify that everything is fine.
     if (!alternate_desktop_handle_ ||
-        GetWindowObjectName(alternate_desktop_handle_).empty()) {
+        base::win::GetWindowObjectName(alternate_desktop_handle_).empty()) {
       return SBOX_ERROR_CANNOT_CREATE_DESKTOP;
     }
   } else {
@@ -242,7 +243,8 @@ ResultCode PolicyBase::CreateAlternateDesktop(bool alternate_winstation) {
 
     // Verify that everything is fine.
     if (!alternate_desktop_local_winstation_handle_ ||
-        GetWindowObjectName(alternate_desktop_local_winstation_handle_)
+        base::win::GetWindowObjectName(
+            alternate_desktop_local_winstation_handle_)
             .empty()) {
       return SBOX_ERROR_CANNOT_CREATE_DESKTOP;
     }
@@ -288,7 +290,7 @@ ResultCode PolicyBase::SetDelayedIntegrityLevel(
 }
 
 ResultCode PolicyBase::SetLowBox(const wchar_t* sid) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+  if (base::win::GetVersion() < base::win::Version::WIN8)
     return SBOX_ERROR_UNSUPPORTED;
 
   DCHECK(sid);
@@ -554,7 +556,7 @@ ResultCode PolicyBase::SetDisconnectCsrss() {
 // CreateThread EAT patch used when this is enabled.
 // See https://crbug.com/783296#c27.
 #if defined(_WIN64) && !defined(ADDRESS_SANITIZER)
-  if (base::win::GetVersion() >= base::win::VERSION_WIN10) {
+  if (base::win::GetVersion() >= base::win::Version::WIN10) {
     is_csrss_connected_ = false;
     return AddKernelObjectToClose(L"ALPC Port", nullptr);
   }
@@ -606,7 +608,7 @@ bool PolicyBase::GetEnableOPMRedirection() {
 
 ResultCode PolicyBase::AddAppContainerProfile(const wchar_t* package_name,
                                               bool create_profile) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+  if (base::win::GetVersion() < base::win::Version::WIN8)
     return SBOX_ERROR_UNSUPPORTED;
 
   DCHECK(package_name);

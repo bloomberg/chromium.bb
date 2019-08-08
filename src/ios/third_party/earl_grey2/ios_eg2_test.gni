@@ -69,6 +69,7 @@ template("ios_eg2_test") {
     forward_variables_from(invoker,
                            [
                              "xcode_test_application_name",
+                             "xctest_bundle_principal_class",
                              "bundle_deps",
                              "deps",
                            ])

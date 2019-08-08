@@ -184,9 +184,8 @@ void GlobalConfirmInfoBar::OnTabStripModelChanged(
     const TabStripSelectionChange& selection) {
   if (change.type() != TabStripModelChange::kInserted)
     return;
-
-  for (const auto& delta : change.deltas())
-    MaybeAddInfoBar(delta.insert.contents);
+  for (const auto& contents : change.GetInsert()->contents)
+    MaybeAddInfoBar(contents.contents);
 }
 
 void GlobalConfirmInfoBar::TabChangedAt(content::WebContents* web_contents,

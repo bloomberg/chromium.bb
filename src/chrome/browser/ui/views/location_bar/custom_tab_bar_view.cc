@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
+#include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/navigation_controller.h"
@@ -58,12 +59,13 @@ SkColor GetDefaultFrameColor() {
 #endif
 }
 
-views::ImageButton* CreateCloseButton(views::ButtonListener* listener,
-                                      SkColor color) {
-  views::ImageButton* close_button = CreateVectorImageButton(listener);
-  SetImageFromVectorIconWithColor(close_button, vector_icons::kCloseRoundedIcon,
-                                  GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
-                                  color);
+std::unique_ptr<views::ImageButton> CreateCloseButton(
+    views::ButtonListener* listener,
+    SkColor color) {
+  auto close_button = CreateVectorImageButton(listener);
+  SetImageFromVectorIconWithColor(
+      close_button.get(), vector_icons::kCloseRoundedIcon,
+      GetLayoutConstant(LOCATION_BAR_ICON_SIZE), color);
   close_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_APP_CLOSE));
   close_button->SetBorder(views::CreateEmptyBorder(
       gfx::Insets(GetLayoutConstant(LOCATION_BAR_CHILD_INTERIOR_PADDING))));
@@ -75,6 +77,15 @@ views::ImageButton* CreateCloseButton(views::ButtonListener* listener,
   close_button->SetProperty(views::kHighlightPathKey, highlight_path.release());
 
   return close_button;
+}
+
+bool ShouldDisplayUrl(content::WebContents* contents) {
+  auto* tab_helper =
+      security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
+          contents);
+  if (tab_helper && tab_helper->IsDisplayingInterstitial())
+    return tab_helper->ShouldDisplayURL();
+  return true;
 }
 
 }  // namespace
@@ -119,6 +130,7 @@ class CustomTabBarTitleOriginView : public views::View {
   void Update(base::string16 title, base::string16 location) {
     title_label_->SetText(title);
     location_label_->SetText(location);
+    location_label_->SetVisible(!location.empty());
   }
 
   int GetMinimumWidth() const {
@@ -147,6 +159,10 @@ class CustomTabBarTitleOriginView : public views::View {
     return preferred_size;
   }
 
+  bool IsShowingOriginForTesting() const {
+    return location_label_ != nullptr && location_label_->GetVisible();
+  }
+
  private:
   views::Label* title_label_;
   views::Label* location_label_;
@@ -162,7 +178,7 @@ CustomTabBarView::CustomTabBarView(BrowserView* browser_view,
       tab_strip_model_observer_(this) {
   Browser* browser = browser_view->browser();
   base::Optional<SkColor> optional_theme_color =
-      browser->web_app_controller()->GetThemeColor();
+      browser->app_controller()->GetThemeColor();
 
   // If we have a theme color, use that, otherwise fall back to the default
   // frame color.
@@ -175,8 +191,7 @@ CustomTabBarView::CustomTabBarView(BrowserView* browser_view,
   const gfx::FontList& font_list = views::style::GetFont(
       CONTEXT_OMNIBOX_PRIMARY, views::style::STYLE_PRIMARY);
 
-  close_button_ = CreateCloseButton(this, foreground_color);
-  AddChildView(close_button_);
+  close_button_ = AddChildView(CreateCloseButton(this, foreground_color));
 
   location_icon_view_ = new LocationIconView(font_list, this);
   AddChildView(location_icon_view_);
@@ -215,14 +230,18 @@ void CustomTabBarView::TabChangedAt(content::WebContents* contents,
   base::string16 title, location;
   if (entry) {
     title = Browser::FormatTitleForDisplay(entry->GetTitleForDisplay());
-    location = url_formatter::FormatUrl(entry->GetVirtualURL().GetOrigin(),
-                                        url_formatter::kFormatUrlOmitDefaults,
-                                        net::UnescapeRule::NORMAL, nullptr,
-                                        nullptr, nullptr);
+    if (ShouldDisplayUrl(contents))
+      location = url_formatter::FormatUrl(entry->GetVirtualURL().GetOrigin(),
+                                          url_formatter::kFormatUrlOmitDefaults,
+                                          net::UnescapeRule::NORMAL, nullptr,
+                                          nullptr, nullptr);
   }
 
   title_origin_view_->Update(title, location);
   location_icon_view_->Update(/*suppress animations = */ false);
+
+  // Hide location icon if we're already hiding the origin.
+  location_icon_view_->SetVisible(!location.empty());
 
   last_title_ = title;
   last_location_ = location;
@@ -231,7 +250,7 @@ void CustomTabBarView::TabChangedAt(content::WebContents* contents,
   // scope (it doesn't make sense to show a 'back-to-scope' button in scope).
   close_button_->SetVisible(!extensions::IsSameScope(
       chrome::FindBrowserWithWebContents(contents)
-          ->web_app_controller()
+          ->app_controller()
           ->GetAppLaunchURL(),
       contents->GetVisibleURL(), contents->GetBrowserContext()));
 
@@ -301,8 +320,11 @@ void CustomTabBarView::OnLocationIconPressed(const ui::MouseEvent& event) {}
 void CustomTabBarView::OnLocationIconDragged(const ui::MouseEvent& event) {}
 
 bool CustomTabBarView::ShowPageInfoDialog() {
-  return ::ShowPageInfoDialog(GetWebContents(),
-                              bubble_anchor_util::Anchor::kCustomTabBar);
+  return ::ShowPageInfoDialog(
+      GetWebContents(),
+      base::BindOnce(&CustomTabBarView::AppInfoClosedCallback,
+                     weak_factory_.GetWeakPtr()),
+      bubble_anchor_util::Anchor::kCustomTabBar);
 }
 
 SkColor CustomTabBarView::GetSecurityChipColor(
@@ -339,7 +361,7 @@ void CustomTabBarView::GoBackToAppForTesting() {
 void CustomTabBarView::GoBackToApp() {
   content::WebContents* web_contents = GetWebContents();
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  GURL launch_url = browser->web_app_controller()->GetAppLaunchURL();
+  GURL launch_url = browser->app_controller()->GetAppLaunchURL();
   content::NavigationController& controller = web_contents->GetController();
   content::BrowserContext* context = web_contents->GetBrowserContext();
 
@@ -363,4 +385,27 @@ void CustomTabBarView::GoBackToApp() {
 
   // Otherwise, go back to the first in scope url.
   controller.GoToOffset(offset);
+}
+
+void CustomTabBarView::AppInfoClosedCallback(
+    views::Widget::ClosedReason closed_reason,
+    bool reload_prompt) {
+  // If we're closing the bubble because the user pressed ESC or because the
+  // user clicked Close (rather than the user clicking directly on something
+  // else), we should refocus the location bar. This lets the user tab into the
+  // "You should reload this page" infobar rather than dumping them back out
+  // into a stale webpage.
+  if (!reload_prompt)
+    return;
+  if (closed_reason != views::Widget::ClosedReason::kEscKeyPressed &&
+      closed_reason != views::Widget::ClosedReason::kCloseButtonClicked) {
+    return;
+  }
+
+  GetFocusManager()->SetFocusedView(location_icon_view_);
+}
+
+bool CustomTabBarView::IsShowingOriginForTesting() const {
+  return title_origin_view_ != nullptr &&
+         title_origin_view_->IsShowingOriginForTesting();
 }

@@ -10,6 +10,7 @@
 
 #include <memory>
 
+#include "build/build_config.h"
 #include "core/fpdfapi/cpdf_modulemgr.h"
 #include "testing/fx_string_testhelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,7 +32,7 @@ class CFGAS_StringFormatterTest : public testing::Test {
   }
 
   void SetTZ(const char* tz) {
-#if _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#if defined(OS_WIN)
     _putenv_s("TZ", tz);
     _tzset();
 #else
@@ -465,6 +466,9 @@ TEST_F(CFGAS_StringFormatterTest, NumParse) {
 
       // https://crbug.com/945836
       {L"en", L"9.E99999999999", L"EdEE.E999", L""},
+
+      // https://crbug.com/947188
+      {L"en", L"-3.E98998998 ", L" 35EEEE.EE98", L""},
   };
 
   for (const auto& test : tests) {

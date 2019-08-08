@@ -148,20 +148,20 @@ class MockSnippetsAvailableCallback {
 };
 
 void ParseJson(const std::string& json,
-               const SuccessCallback& success_callback,
-               const ErrorCallback& error_callback) {
+               SuccessCallback success_callback,
+               ErrorCallback error_callback) {
   base::JSONReader json_reader;
-  std::unique_ptr<base::Value> value = json_reader.ReadToValueDeprecated(json);
+  base::Optional<base::Value> value = json_reader.ReadToValue(json);
   if (value) {
-    success_callback.Run(std::move(value));
+    std::move(success_callback).Run(std::move(*value));
   } else {
-    error_callback.Run(json_reader.GetErrorMessage());
+    std::move(error_callback).Run(json_reader.GetErrorMessage());
   }
 }
 
 void ParseJsonDelayed(const std::string& json,
-                      const SuccessCallback& success_callback,
-                      const ErrorCallback& error_callback) {
+                      SuccessCallback success_callback,
+                      ErrorCallback error_callback) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&ParseJson, json, std::move(success_callback),
@@ -248,8 +248,8 @@ class RemoteSuggestionsFetcherImplTest : public testing::Test {
     std::string headers(base::StringPrintf(
         "HTTP/1.1 %d %s\nContent-type: application/json\n\n",
         static_cast<int>(response_code), GetHttpReasonPhrase(response_code)));
-    head.headers = new net::HttpResponseHeaders(
-        net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+    head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+        net::HttpUtil::AssembleRawHeaders(headers));
     head.mime_type = "application/json";
     network::URLLoaderCompletionStatus status(error);
     status.decoded_body_length = response_data.size();

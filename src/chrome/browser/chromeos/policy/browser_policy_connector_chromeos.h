@@ -112,6 +112,9 @@ class BrowserPolicyConnectorChromeOS
   // Returns the cloud directory API ID or an empty string if it is not set.
   std::string GetDirectoryApiID() const;
 
+  // Returns the organization logo URL or an empty string if it is not set.
+  std::string GetCustomerLogoURL() const;
+
   // Returns the device mode. For Chrome OS this function will return the mode
   // stored in the lockbox, or DEVICE_MODE_CONSUMER if the lockbox has been
   // locked empty, or DEVICE_MODE_UNKNOWN if the device has not been owned yet.

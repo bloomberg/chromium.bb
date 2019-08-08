@@ -163,6 +163,11 @@ void V8PerIsolateData::WillBeDestroyed(v8::Isolate* isolate) {
   // prior to calling ThreadState::detach().
   data->ClearEndOfScopeTasks();
 
+  if (data->profiler_group_) {
+    data->profiler_group_->WillBeDestroyed();
+    data->profiler_group_ = nullptr;
+  }
+
   data->active_script_wrappables_.Clear();
 
   // Detach V8's garbage collector.
@@ -375,6 +380,15 @@ void V8PerIsolateData::SetThreadDebugger(
 
 V8PerIsolateData::Data* V8PerIsolateData::ThreadDebugger() {
   return thread_debugger_.get();
+}
+
+void V8PerIsolateData::SetProfilerGroup(
+    V8PerIsolateData::GarbageCollectedData* profiler_group) {
+  profiler_group_ = profiler_group;
+}
+
+V8PerIsolateData::GarbageCollectedData* V8PerIsolateData::ProfilerGroup() {
+  return profiler_group_;
 }
 
 void V8PerIsolateData::AddActiveScriptWrappable(

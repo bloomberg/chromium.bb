@@ -42,10 +42,11 @@ bool ParseRealm(const HttpAuthChallengeTokenizer& tokenizer,
   realm->clear();
   HttpUtil::NameValuePairsIterator parameters = tokenizer.param_pairs();
   while (parameters.GetNext()) {
-    if (!base::LowerCaseEqualsASCII(parameters.name(), "realm"))
+    if (!base::LowerCaseEqualsASCII(parameters.name_piece(), "realm"))
       continue;
 
-    if (!ConvertToUtf8AndNormalize(parameters.value(), kCharsetLatin1, realm)) {
+    if (!ConvertToUtf8AndNormalize(parameters.value_piece(), kCharsetLatin1,
+                                   realm)) {
       return false;
     }
   }
@@ -76,19 +77,6 @@ bool HttpAuthHandlerBasic::ParseChallenge(
   return true;
 }
 
-HttpAuth::AuthorizationResult HttpAuthHandlerBasic::HandleAnotherChallenge(
-    HttpAuthChallengeTokenizer* challenge) {
-  // Basic authentication is always a single round, so any responses
-  // should be treated as a rejection.  However, if the new challenge
-  // is for a different realm, then indicate the realm change.
-  std::string realm;
-  if (!ParseRealm(*challenge, &realm))
-    return HttpAuth::AUTHORIZATION_RESULT_INVALID;
-  return (realm_ != realm)?
-      HttpAuth::AUTHORIZATION_RESULT_DIFFERENT_REALM:
-      HttpAuth::AUTHORIZATION_RESULT_REJECT;
-}
-
 int HttpAuthHandlerBasic::GenerateAuthTokenImpl(
     const AuthCredentials* credentials,
     const HttpRequestInfo*,
@@ -102,6 +90,18 @@ int HttpAuthHandlerBasic::GenerateAuthTokenImpl(
                      &base64_username_password);
   *auth_token = "Basic " + base64_username_password;
   return OK;
+}
+
+HttpAuth::AuthorizationResult HttpAuthHandlerBasic::HandleAnotherChallengeImpl(
+    HttpAuthChallengeTokenizer* challenge) {
+  // Basic authentication is always a single round, so any responses
+  // should be treated as a rejection.  However, if the new challenge
+  // is for a different realm, then indicate the realm change.
+  std::string realm;
+  if (!ParseRealm(*challenge, &realm))
+    return HttpAuth::AUTHORIZATION_RESULT_INVALID;
+  return (realm_ != realm) ? HttpAuth::AUTHORIZATION_RESULT_DIFFERENT_REALM
+                           : HttpAuth::AUTHORIZATION_RESULT_REJECT;
 }
 
 HttpAuthHandlerBasic::Factory::Factory() = default;

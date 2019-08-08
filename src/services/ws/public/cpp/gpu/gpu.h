@@ -42,8 +42,10 @@ class Gpu : public gpu::GpuChannelEstablishFactory {
   scoped_refptr<ws::ContextProviderCommandBuffer> CreateContextProvider(
       scoped_refptr<gpu::GpuChannelHost> gpu_channel);
 
+#if defined(OS_CHROMEOS)
   void CreateJpegDecodeAccelerator(
-      media::mojom::MjpegDecodeAcceleratorRequest jda_request);
+      chromeos_camera::mojom::MjpegDecodeAcceleratorRequest jda_request);
+#endif  // defined(OS_CHROMEOS)
   void CreateVideoEncodeAcceleratorProvider(
       media::mojom::VideoEncodeAcceleratorProviderRequest vea_provider_request);
 

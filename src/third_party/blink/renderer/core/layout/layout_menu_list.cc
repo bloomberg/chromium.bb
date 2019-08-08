@@ -292,19 +292,19 @@ String LayoutMenuList::GetText() const {
   return button_text_ && !is_empty_ ? button_text_->GetText() : String();
 }
 
-LayoutRect LayoutMenuList::ControlClipRect(
-    const LayoutPoint& additional_offset) const {
+PhysicalRect LayoutMenuList::ControlClipRect(
+    const PhysicalOffset& additional_offset) const {
   // Clip to the intersection of the content box and the content box for the
   // inner box. This will leave room for the arrows which sit in the inner box
   // padding, and if the inner box ever spills out of the outer box, that will
   // get clipped too.
-  LayoutRect outer_box = PhysicalContentBoxRect();
-  outer_box.MoveBy(additional_offset);
+  PhysicalRect outer_box = PhysicalContentBoxRect();
+  outer_box.offset += additional_offset;
 
-  LayoutRect inner_box(
-      additional_offset + inner_block_->Location() +
-          LayoutSize(inner_block_->PaddingLeft(), inner_block_->PaddingTop()),
-      inner_block_->ContentSize());
+  PhysicalRect inner_box(additional_offset + inner_block_->PhysicalLocation() +
+                             PhysicalOffset(inner_block_->PaddingLeft(),
+                                            inner_block_->PaddingTop()),
+                         inner_block_->ContentSize());
 
   return Intersection(outer_box, inner_box);
 }

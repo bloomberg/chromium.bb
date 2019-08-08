@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/hid/hid_connection_event.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -19,14 +20,16 @@ HID::~HID() = default;
 
 ScriptPromise HID::getDevices(ScriptState* script_state) {
   return ScriptPromise::RejectWithDOMException(
-      script_state, DOMException::Create(DOMExceptionCode::kNotSupportedError,
+      script_state,
+      MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
                                          "Not supported."));
 }
 
 ScriptPromise HID::requestDevice(ScriptState* script_state,
                                  const HIDDeviceRequestOptions* options) {
   return ScriptPromise::RejectWithDOMException(
-      script_state, DOMException::Create(DOMExceptionCode::kNotSupportedError,
+      script_state,
+      MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
                                          "Not supported."));
 }
 

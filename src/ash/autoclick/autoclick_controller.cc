@@ -10,14 +10,15 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
+#include "ash/system/accessibility/accessibility_feature_disable_dialog.h"
 #include "ash/system/accessibility/autoclick_menu_bubble_controller.h"
+#include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/root_window_finder.h"
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/timer/timer.h"
-#include "ui/accessibility/accessibility_switches.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event.h"
 #include "ui/events/event_sink.h"
@@ -58,6 +59,7 @@ AutoclickController::AutoclickController()
       drag_event_rewriter_(std::make_unique<AutoclickDragEventRewriter>()) {
   Shell::GetPrimaryRootWindow()->GetHost()->GetEventSource()->AddEventRewriter(
       drag_event_rewriter_.get());
+  Shell::Get()->cursor_manager()->AddObserver(this);
   InitClickTimers();
   UpdateRingSize();
 }
@@ -67,6 +69,7 @@ AutoclickController::~AutoclickController() {
   menu_bubble_controller_ = nullptr;
   CancelAutoclickAction();
 
+  Shell::Get()->cursor_manager()->RemoveObserver(this);
   Shell::Get()->RemovePreTargetHandler(this);
   SetTapDownTarget(nullptr);
   Shell::GetPrimaryRootWindow()
@@ -90,26 +93,49 @@ void AutoclickController::SetTapDownTarget(aura::Window* target) {
     tap_down_target_->AddObserver(this);
 }
 
-void AutoclickController::SetEnabled(bool enabled) {
+void AutoclickController::SetEnabled(bool enabled,
+                                     bool show_confirmation_dialog) {
   if (enabled_ == enabled)
     return;
-  enabled_ = enabled;
 
-  if (enabled_) {
-    Shell::Get()->AddPreTargetHandler(this);
+  if (enabled) {
+    Shell::Get()->AddPreTargetHandler(this, ui::EventTarget::Priority::kSystem);
 
     // Only create the bubble controller when needed. Most users will not enable
     // automatic clicks, so there's no need to use these unless the feature
     // is on.
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableExperimentalAccessibilityAutoclick)) {
-      menu_bubble_controller_ =
-          std::make_unique<AutoclickMenuBubbleController>();
-      menu_bubble_controller_->ShowBubble(event_type_, menu_position_);
-    }
+    menu_bubble_controller_ = std::make_unique<AutoclickMenuBubbleController>();
+    menu_bubble_controller_->ShowBubble(event_type_, menu_position_);
+    enabled_ = enabled;
   } else {
-    Shell::Get()->RemovePreTargetHandler(this);
-    menu_bubble_controller_ = nullptr;
+    if (show_confirmation_dialog) {
+      // If a dialog exists already, no need to show it again.
+      if (disable_dialog_)
+        return;
+      // Show a confirmation dialog before disabling autoclick.
+      auto* dialog = new AccessibilityFeatureDisableDialog(
+          IDS_ASH_AUTOCLICK_DISABLE_CONFIRMATION_TITLE,
+          IDS_ASH_AUTOCLICK_DISABLE_CONFIRMATION_BODY,
+          // Callback for if the user accepts the dialog
+          base::BindOnce([]() {
+            // If they accept, actually disable autoclick.
+            Shell::Get()->autoclick_controller()->SetEnabled(
+                false, false /* do not show the dialog */);
+          }),
+          // Callback for if the user cancels the dialog - marks the
+          // feature as enabled again in prefs.
+          base::BindOnce([]() {
+            AccessibilityController* controller =
+                Shell::Get()->accessibility_controller();
+            // If they cancel, ensure autoclick is enabled.
+            controller->SetAutoclickEnabled(true);
+          }));
+      disable_dialog_ = dialog->GetWeakPtr();
+    } else {
+      Shell::Get()->RemovePreTargetHandler(this);
+      menu_bubble_controller_ = nullptr;
+      enabled_ = enabled;
+    }
   }
 
   CancelAutoclickAction();
@@ -147,6 +173,10 @@ void AutoclickController::SetMovementThreshold(int movement_threshold) {
 void AutoclickController::SetMenuPosition(
     mojom::AutoclickMenuPosition menu_position) {
   menu_position_ = menu_position;
+  UpdateAutoclickMenuBoundsIfNeeded();
+}
+
+void AutoclickController::UpdateAutoclickMenuBoundsIfNeeded() {
   if (menu_bubble_controller_)
     menu_bubble_controller_->SetPosition(menu_position_);
 }
@@ -352,14 +382,7 @@ void AutoclickController::UpdateRingWidget(const gfx::Point& point_in_screen) {
 }
 
 void AutoclickController::UpdateRingSize() {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalAccessibilityAutoclick)) {
-    return;
-  }
-  // In V2, size doesn't need two inputs.
-  // TODO(katie): Re-write this function to take one parameter when fully
-  // upgrading to V2.
-  autoclick_ring_handler_->SetSize(movement_threshold_, movement_threshold_);
+  autoclick_ring_handler_->SetSize(movement_threshold_);
 }
 
 bool AutoclickController::DragInProgress() const {
@@ -405,14 +428,16 @@ void AutoclickController::RecordUserAction(
 
 void AutoclickController::OnMouseEvent(ui::MouseEvent* event) {
   DCHECK(event->target());
-  gfx::Point point_in_screen = event->target()->GetScreenLocation(*event);
+  if (event->type() == ui::ET_MOUSE_CAPTURE_CHANGED)
+    return;
+  last_mouse_location_ = event->target()->GetScreenLocation(*event);
   if (!(event->flags() & ui::EF_IS_SYNTHESIZED) &&
       (event->type() == ui::ET_MOUSE_MOVED ||
        (event->type() == ui::ET_MOUSE_DRAGGED &&
         drag_event_rewriter_->IsEnabled()))) {
     mouse_event_flags_ = event->flags();
     // Update the point even if the animation is not currently being shown.
-    UpdateRingWidget(point_in_screen);
+    UpdateRingWidget(last_mouse_location_);
 
     // The distance between the mouse location and the anchor location
     // must exceed a certain threshold to initiate a new autoclick countdown.
@@ -420,10 +445,10 @@ void AutoclickController::OnMouseEvent(ui::MouseEvent* event) {
     // 1. initiate an unwanted autoclick from rest
     // 2. prevent the autoclick from ever occurring when the mouse
     //    arrives at the target.
-    gfx::Vector2d delta = point_in_screen - anchor_location_;
+    gfx::Vector2d delta = last_mouse_location_ - anchor_location_;
     if (delta.LengthSquared() >= movement_threshold_ * movement_threshold_) {
-      anchor_location_ = point_in_screen;
-      gesture_anchor_location_ = point_in_screen;
+      anchor_location_ = last_mouse_location_;
+      gesture_anchor_location_ = last_mouse_location_;
       // Stop all the timers, restarting the gesture timer only. This keeps
       // the animation from being drawn while the user is still moving quickly.
       start_gesture_timer_->Reset();
@@ -433,24 +458,18 @@ void AutoclickController::OnMouseEvent(ui::MouseEvent* event) {
       autoclick_ring_handler_->StopGesture();
     } else if (start_gesture_timer_->IsRunning()) {
       // Keep track of where the gesture will be anchored.
-      gesture_anchor_location_ = point_in_screen;
+      gesture_anchor_location_ = last_mouse_location_;
     } else if (autoclick_timer_->IsRunning() && !stabilize_click_position_) {
       // If we are not stabilizing the click position, update the gesture
       // center with each mouse move event.
-      gesture_anchor_location_ = point_in_screen;
-      autoclick_ring_handler_->SetGestureCenter(point_in_screen, widget_.get());
+      gesture_anchor_location_ = last_mouse_location_;
+      autoclick_ring_handler_->SetGestureCenter(last_mouse_location_,
+                                                widget_.get());
     }
   } else if (event->type() == ui::ET_MOUSE_PRESSED ||
-             event->type() == ui::ET_MOUSE_RELEASED) {
+             event->type() == ui::ET_MOUSE_RELEASED ||
+             event->type() == ui::ET_MOUSEWHEEL) {
     CancelAutoclickAction();
-  } else if (event->type() == ui::ET_MOUSEWHEEL) {
-    anchor_location_ = point_in_screen;
-    gesture_anchor_location_ = point_in_screen;
-    start_gesture_timer_->Reset();
-    if (autoclick_timer_) {
-      autoclick_timer_->Stop();
-    }
-    autoclick_ring_handler_->StopGesture();
   }
 }
 
@@ -486,6 +505,22 @@ void AutoclickController::OnScrollEvent(ui::ScrollEvent* event) {
 void AutoclickController::OnWindowDestroying(aura::Window* window) {
   DCHECK_EQ(tap_down_target_, window);
   CancelAutoclickAction();
+}
+
+void AutoclickController::OnCursorVisibilityChanged(bool is_visible) {
+  if (!menu_bubble_controller_)
+    return;
+  // TODO(katie): Check that the display which is fullscreen is the same as the
+  // one containing the bubble, to determine whether to hide the bubble.
+  // Currently just checking if the display under the mouse is fullscreen.
+  aura::Window* window = wm::GetWindowForFullscreenModeInRoot(
+      wm::GetRootWindowAt(last_mouse_location_));
+  bool is_fullscreen = window != nullptr;
+
+  // Hide the bubble when the cursor is gone in fullscreen mode.
+  // Always show it otherwise.
+  menu_bubble_controller_->SetBubbleVisibility(is_fullscreen ? is_visible
+                                                             : true);
 }
 
 }  // namespace ash

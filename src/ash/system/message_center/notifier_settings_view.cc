@@ -117,6 +117,7 @@ class NotifierButtonWrapperView : public views::View {
   bool OnKeyReleased(const ui::KeyEvent& event) override;
   void OnPaint(gfx::Canvas* canvas) override;
   void OnBlur() override;
+  const char* GetClassName() const override;
 
  private:
   // Initialize |disabled_filter_|. Should be called once.
@@ -151,7 +152,7 @@ void NotifierButtonWrapperView::Layout() {
   contents_->SetBounds(0, y, contents_width, contents_height);
 
   // Since normally we don't show |disabled_filter_|, initialize it lazily.
-  if (!contents_->enabled()) {
+  if (!contents_->GetEnabled()) {
     if (!disabled_filter_)
       CreateDisabledFilter();
     disabled_filter_->SetVisible(true);
@@ -162,8 +163,8 @@ void NotifierButtonWrapperView::Layout() {
     disabled_filter_->SetVisible(false);
   }
 
-  SetFocusBehavior(contents_->enabled() ? FocusBehavior::ALWAYS
-                                        : FocusBehavior::NEVER);
+  SetFocusBehavior(contents_->GetEnabled() ? FocusBehavior::ALWAYS
+                                           : FocusBehavior::NEVER);
 }
 
 gfx::Size NotifierButtonWrapperView::CalculatePreferredSize() const {
@@ -201,6 +202,10 @@ void NotifierButtonWrapperView::OnBlur() {
   SchedulePaint();
 }
 
+const char* NotifierButtonWrapperView::GetClassName() const {
+  return "NotifierButtonWrapperView";
+}
+
 void NotifierButtonWrapperView::CreateDisabledFilter() {
   DCHECK(!disabled_filter_);
   disabled_filter_ = new views::View;
@@ -215,6 +220,9 @@ void NotifierButtonWrapperView::CreateDisabledFilter() {
 class ScrollContentsView : public views::View {
  public:
   ScrollContentsView() = default;
+
+  // views::View:
+  const char* GetClassName() const override { return "ScrollContentsView"; }
 
  private:
   void PaintChildren(const views::PaintInfo& paint_info) override {
@@ -253,9 +261,9 @@ class EmptyNotifierView : public views::View {
     auto layout = std::make_unique<views::BoxLayout>(
         views::BoxLayout::kVertical, gfx::Insets(), 0);
     layout->set_main_axis_alignment(
-        views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+        views::BoxLayout::MainAxisAlignment::kCenter);
     layout->set_cross_axis_alignment(
-        views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+        views::BoxLayout::CrossAxisAlignment::kCenter);
     SetLayoutManager(std::move(layout));
 
     views::ImageView* icon = new views::ImageView();
@@ -276,6 +284,9 @@ class EmptyNotifierView : public views::View {
         gfx::FontList().DeriveWithWeight(gfx::Font::Weight::MEDIUM));
     AddChildView(label);
   }
+
+  // views::View:
+  const char* GetClassName() const override { return "EmptyNotifierView"; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EmptyNotifierView);
@@ -332,8 +343,12 @@ void NotifierSettingsView::NotifierButton::SetChecked(bool checked) {
   checkbox_->SetChecked(checked);
 }
 
-bool NotifierSettingsView::NotifierButton::checked() const {
-  return checkbox_->checked();
+bool NotifierSettingsView::NotifierButton::GetChecked() const {
+  return checkbox_->GetChecked();
+}
+
+const char* NotifierSettingsView::NotifierButton::GetClassName() const {
+  return "NotifierButton";
 }
 
 void NotifierSettingsView::NotifierButton::ButtonPressed(
@@ -343,7 +358,7 @@ void NotifierSettingsView::NotifierButton::ButtonPressed(
   // The checkbox state has already changed at this point, but we'll update
   // the state on NotifierSettingsView::ButtonPressed() too, so here change
   // back to the previous state.
-  checkbox_->SetChecked(!checkbox_->checked());
+  checkbox_->SetChecked(!checkbox_->GetChecked());
   Button::NotifyClick(event);
 }
 
@@ -381,7 +396,7 @@ void NotifierSettingsView::NotifierButton::GridChanged() {
   layout->AddView(icon_view_);
   layout->AddView(name_view_);
 
-  if (!enabled()) {
+  if (!GetEnabled()) {
     views::ImageView* policy_enforced_icon = new views::ImageView();
     policy_enforced_icon->SetImage(gfx::CreateVectorIcon(
         kSystemMenuBusinessIcon, kEntryIconSize, kUnifiedMenuIconColor));
@@ -486,7 +501,7 @@ bool NotifierSettingsView::IsScrollable() {
 }
 
 void NotifierSettingsView::SetQuietModeState(bool is_quiet_mode) {
-  quiet_mode_toggle_->SetIsOn(is_quiet_mode, false /* animate */);
+  quiet_mode_toggle_->SetIsOn(is_quiet_mode);
   if (is_quiet_mode) {
     quiet_mode_icon_->SetImage(
         gfx::CreateVectorIcon(kNotificationCenterDoNotDisturbOnIcon,
@@ -502,6 +517,10 @@ void NotifierSettingsView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kList;
   node_data->SetName(l10n_util::GetStringUTF16(
       IDS_ASH_MESSAGE_CENTER_SETTINGS_DIALOG_DESCRIPTION));
+}
+
+const char* NotifierSettingsView::GetClassName() const {
+  return "NotifierSettingsView";
 }
 
 void NotifierSettingsView::OnNotifierListUpdated(
@@ -578,7 +597,7 @@ gfx::Size NotifierSettingsView::CalculatePreferredSize() const {
   gfx::Size header_size = header_view_->GetPreferredSize();
   gfx::Size content_size = scroller_->contents()->GetPreferredSize();
   int no_notifiers_height = 0;
-  if (no_notifiers_view_->visible())
+  if (no_notifiers_view_->GetVisible())
     no_notifiers_height = no_notifiers_view_->GetPreferredSize().height();
   return gfx::Size(
       std::max(header_size.width(), content_size.width()),
@@ -602,7 +621,7 @@ bool NotifierSettingsView::OnMouseWheel(const ui::MouseWheelEvent& event) {
 void NotifierSettingsView::ButtonPressed(views::Button* sender,
                                          const ui::Event& event) {
   if (sender == quiet_mode_toggle_) {
-    MessageCenter::Get()->SetQuietMode(quiet_mode_toggle_->is_on());
+    MessageCenter::Get()->SetQuietMode(quiet_mode_toggle_->GetIsOn());
     return;
   }
 
@@ -611,9 +630,9 @@ void NotifierSettingsView::ButtonPressed(views::Button* sender,
     return;
 
   NotifierButton* button = *iter;
-  button->SetChecked(!button->checked());
+  button->SetChecked(!button->GetChecked());
   Shell::Get()->message_center_controller()->SetNotifierEnabled(
-      button->notifier_id(), button->checked());
+      button->notifier_id(), button->GetChecked());
   Shell::Get()->message_center_controller()->RequestNotifierSettingsUpdate();
 }
 

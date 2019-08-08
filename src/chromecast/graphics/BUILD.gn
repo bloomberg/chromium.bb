@@ -147,6 +147,7 @@ if (use_aura && !is_cast_audio_only) {
       "//ui/gl:test_support",
       "//ui/platform_window",
       "//ui/views",
+      "//ui/views:test_support",
       "//ui/wm",
     ]
   }

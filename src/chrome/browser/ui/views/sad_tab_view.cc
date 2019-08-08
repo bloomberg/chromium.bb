@@ -124,7 +124,8 @@ SadTabView::SadTabView(content::WebContents* web_contents, SadTabKind kind)
   }
 
   action_button_ = views::MdTextButton::CreateSecondaryUiBlueButton(
-      this, l10n_util::GetStringUTF16(GetButtonTitle()));
+                       this, l10n_util::GetStringUTF16(GetButtonTitle()))
+                       .release();
   help_link_ = new views::Link(l10n_util::GetStringUTF16(GetHelpLinkTitle()));
   help_link_->set_listener(this);
   layout->StartRowWithPadding(views::GridLayout::kFixedSize, column_set_id,

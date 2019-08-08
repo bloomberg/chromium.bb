@@ -11,6 +11,8 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
+#include "chrome/browser/android/autofill_assistant/assistant_form_delegate.h"
+#include "chrome/browser/android/autofill_assistant/assistant_header_delegate.h"
 #include "chrome/browser/android/autofill_assistant/assistant_overlay_delegate.h"
 #include "chrome/browser/android/autofill_assistant/assistant_payment_request_delegate.h"
 #include "components/autofill_assistant/browser/chip.h"
@@ -63,20 +65,29 @@ class UiControllerAndroid : public UiController {
   void WillShutdown(Metrics::DropOutReason reason) override;
   void OnSuggestionsChanged(const std::vector<Chip>& suggestions) override;
   void OnActionsChanged(const std::vector<Chip>& actions) override;
-  void OnPaymentRequestChanged(const PaymentRequestOptions* options) override;
+  void OnPaymentRequestOptionsChanged(
+      const PaymentRequestOptions* options) override;
+  void OnPaymentRequestInformationChanged(
+      const PaymentInformation* state) override;
   void OnDetailsChanged(const Details* details) override;
   void OnInfoBoxChanged(const InfoBox* info_box) override;
   void OnProgressChanged(int progress) override;
   void OnProgressVisibilityChanged(bool visible) override;
-  void OnTouchableAreaChanged(const std::vector<RectF>& areas) override;
+  void OnTouchableAreaChanged(const RectF& visual_viewport,
+                              const std::vector<RectF>& areas) override;
   void OnResizeViewportChanged(bool resize_viewport) override;
   void OnPeekModeChanged(
       ConfigureBottomSheetProto::PeekMode peek_mode) override;
+  void OnOverlayColorsChanged(const UiDelegate::OverlayColors& colors) override;
+  void OnFormChanged(const FormProto* form) override;
 
   // Called by AssistantOverlayDelegate:
   void OnUnexpectedTaps();
   void UpdateTouchableArea();
   void OnUserInteractionInsideTouchableArea();
+
+  // Called by AssistantHeaderDelegate:
+  void OnFeedbackButtonClicked();
 
   // Called by AssistantPaymentRequestDelegate:
   void OnShippingAddressChanged(
@@ -88,6 +99,12 @@ class UiControllerAndroid : public UiController {
                             std::string email);
   void OnCreditCardChanged(std::unique_ptr<autofill::CreditCard> card);
   void OnTermsAndConditionsChanged(TermsAndConditionsState state);
+
+  // Called by AssistantFormDelegate:
+  void OnCounterChanged(int input_index, int counter_index, int value);
+  void OnChoiceSelectionChanged(int input_index,
+                                int choice_index,
+                                bool selected);
 
   // Called by Java.
   void SnackbarResult(JNIEnv* env,
@@ -127,7 +144,9 @@ class UiControllerAndroid : public UiController {
   // A pointer to the ui_delegate. nullptr until Attach() is called.
   UiDelegate* ui_delegate_ = nullptr;
   AssistantOverlayDelegate overlay_delegate_;
+  AssistantHeaderDelegate header_delegate_;
   AssistantPaymentRequestDelegate payment_request_delegate_;
+  AssistantFormDelegate form_delegate_;
 
   // What to do if undo is not pressed on the current snackbar.
   base::OnceCallback<void()> snackbar_action_;
@@ -138,11 +157,13 @@ class UiControllerAndroid : public UiController {
   base::android::ScopedJavaLocalRef<jobject> GetDetailsModel();
   base::android::ScopedJavaLocalRef<jobject> GetInfoBoxModel();
   base::android::ScopedJavaLocalRef<jobject> GetPaymentRequestModel();
+  base::android::ScopedJavaLocalRef<jobject> GetFormModel();
 
   void SetOverlayState(OverlayState state);
   void AllowShowingSoftKeyboard(bool enabled);
   void ExpandBottomSheet();
   void SetSpinPoodle(bool enabled);
+  std::string GetDebugContext();
   void DestroySelf();
   void Shutdown(Metrics::DropOutReason reason);
   void UpdateActions();
@@ -161,9 +182,14 @@ class UiControllerAndroid : public UiController {
   // Makes the whole of AA invisible or visible again.
   void SetVisible(bool visible);
 
+  // Debug context captured previously. If non-empty, GetDebugContext() returns
+  // this context.
+  std::string captured_debug_context_;
+
   // Java-side AutofillAssistantUiController object.
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
 
+  OverlayState desired_overlay_state_ = OverlayState::FULL;
   base::WeakPtrFactory<UiControllerAndroid> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UiControllerAndroid);

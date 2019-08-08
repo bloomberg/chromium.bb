@@ -116,6 +116,7 @@ class NET_EXPORT_PRIVATE WebSocketStream {
     virtual void OnSSLCertificateError(
         std::unique_ptr<WebSocketEventInterface::SSLErrorCallbacks>
             ssl_error_callbacks,
+        int net_error,
         const SSLInfo& ssl_info,
         bool fatal) = 0;
 

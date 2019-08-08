@@ -20,12 +20,12 @@ import org.chromium.chrome.browser.download.home.list.ListItem;
 import org.chromium.chrome.browser.download.home.snackbars.DeleteUndoCoordinator;
 import org.chromium.chrome.browser.download.home.toolbar.ToolbarCoordinator;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
+import org.chromium.chrome.browser.gesturenav.HistoryNavigationDelegate;
 import org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.download.DownloadPreferences;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.chrome.download.R;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -155,6 +155,11 @@ class DownloadManagerCoordinatorImpl
         mObservers.removeObserver(observer);
     }
 
+    @Override
+    public void setHistoryNavigationDelegate(HistoryNavigationDelegate delegate) {
+        mMainView.setNavigationDelegate(delegate);
+    }
+
     // ToolbarActionDelegate implementation.
     @Override
     public void close() {
@@ -165,11 +170,6 @@ class DownloadManagerCoordinatorImpl
     public void openSettings() {
         RecordUserAction.record("Android.DownloadManager.Settings");
         PreferencesLauncher.launchSettingsPage(mActivity, DownloadPreferences.class);
-    }
-
-    @Override
-    public void setTab(Tab tab) {
-        mMainView.setTab(tab);
     }
 
     private void notifyFilterChanged(@FilterType int filter) {

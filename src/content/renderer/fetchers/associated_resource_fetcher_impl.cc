@@ -34,8 +34,8 @@ AssociatedResourceFetcher* AssociatedResourceFetcher::Create(const GURL& url) {
 class AssociatedResourceFetcherImpl::ClientImpl
     : public blink::WebAssociatedURLLoaderClient {
  public:
-  explicit ClientImpl(const Callback& callback)
-      : completed_(false), status_(LOADING), callback_(callback) {}
+  explicit ClientImpl(StartCallback callback)
+      : completed_(false), status_(LOADING), callback_(std::move(callback)) {}
 
   ~ClientImpl() override {}
 
@@ -59,11 +59,7 @@ class AssociatedResourceFetcherImpl::ClientImpl
 
     if (callback_.is_null())
       return;
-
-    // Take a reference to the callback as running the callback may lead to our
-    // destruction.
-    Callback callback = callback_;
-    std::move(callback).Run(
+    std::move(callback_).Run(
         status_ == LOAD_FAILED ? blink::WebURLResponse() : response_,
         status_ == LOAD_FAILED ? std::string() : data_);
   }
@@ -110,7 +106,7 @@ class AssociatedResourceFetcherImpl::ClientImpl
   LoadStatus status_;
 
   // Callback when we're done.
-  Callback callback_;
+  StartCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientImpl);
 };
@@ -157,7 +153,7 @@ void AssociatedResourceFetcherImpl::Start(
     blink::mojom::RequestContextType request_context,
     network::mojom::FetchRequestMode fetch_request_mode,
     network::mojom::FetchCredentialsMode fetch_credentials_mode,
-    const Callback& callback) {
+    StartCallback callback) {
   DCHECK(!loader_);
   DCHECK(!client_);
   DCHECK(!request_.IsNull());
@@ -169,7 +165,7 @@ void AssociatedResourceFetcherImpl::Start(
   request_.SetFetchRequestMode(fetch_request_mode);
   request_.SetFetchCredentialsMode(fetch_credentials_mode);
 
-  client_.reset(new ClientImpl(callback));
+  client_.reset(new ClientImpl(std::move(callback)));
 
   loader_.reset(frame->CreateAssociatedURLLoader(options_));
   loader_->LoadAsynchronously(request_, client_.get());

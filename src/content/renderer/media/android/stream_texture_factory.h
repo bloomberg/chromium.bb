@@ -44,7 +44,7 @@ class StreamTextureProxy : public StreamTextureHost::Listener {
   // provided callback will be run on. This can be called on any thread, but
   // must be called with the same |task_runner| every time.
   void BindToTaskRunner(
-      const base::Closure& received_frame_cb,
+      const base::RepeatingClosure& received_frame_cb,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // StreamTextureHost::Listener implementation:
@@ -76,7 +76,7 @@ class StreamTextureProxy : public StreamTextureHost::Listener {
 
   // Protects access to |received_frame_cb_| and |task_runner_|.
   base::Lock lock_;
-  base::Closure received_frame_cb_;
+  base::RepeatingClosure received_frame_cb_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(StreamTextureProxy);

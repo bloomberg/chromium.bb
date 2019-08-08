@@ -9,6 +9,7 @@
 #include "content/browser/download/download_request_core.h"
 #include "content/browser/download/url_downloader.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace content {
 
@@ -24,6 +25,7 @@ UrlDownloaderFactory::CreateUrlDownloadHandler(
         url_loader_factory_getter,
     const download::URLSecurityPolicy& url_security_policy,
     scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
+    std::unique_ptr<service_manager::Connector> connector,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   std::unique_ptr<net::URLRequest> url_request =
       DownloadRequestCore::CreateRequestOnIOThread(

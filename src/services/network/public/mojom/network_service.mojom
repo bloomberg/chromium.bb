@@ -24,9 +24,6 @@ import "services/network/public/mojom/url_loader_factory.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
-[EnableIf=is_ct_supported]
-import "services/network/public/mojom/signed_tree_head.mojom";
-
 [EnableIf=is_android]
 import "mojo/public/mojom/base/application_state.mojom";
 
@@ -52,6 +49,37 @@ interface AuthChallengeResponder {
    OnAuthCredentials(AuthCredentials? credentials);
 };
 
+// This interface enables the UI to send client certificate selections back to
+// the network service.
+//
+// Defining an interface for this purpose, rather than using a union in the
+// response of OnCertificateRequested, enables the NetworkServiceClient to learn
+// of the URLLoader destruction via the connection error handler.
+interface ClientCertificateResponder {
+  // Use the selected certificate and continue the URLRequest.
+  //
+  // - |provider_name| corresponds to the return value of
+  //   net::SSLPrivateKey::GetProviderName().
+  // - |algorithm_preferences| corresponds to the return value of
+  //   net::SSLPrivateKey::GetAlgorithmPreferences().
+  ContinueWithCertificate(network.mojom.X509Certificate x509_certificate,
+                          string provider_name,
+                          array<uint16> algorithm_preferences,
+                          SSLPrivateKey ssl_private_key);
+
+  // Affirmatively select no certificate (this is cached and can affect future
+  // URLRequests). Does not cancel the URLRequest.
+  //
+  // The connection is continued with no client cert.
+  // net::URLRequest::ContinueWithCertificate(nullptr, nullptr) needs to be
+  // called.
+  ContinueWithoutCertificate();
+
+  // Cancel the URLRequest. The request is aborted.
+  // net::URLRequest::CancelWithError() needs to be called.
+  CancelRequest();
+};
+
 struct LoadInfo {
   uint32 process_id;
   uint32 routing_id;
@@ -72,48 +100,33 @@ interface NetworkServiceClient {
                  uint32 routing_id,
                  uint32 request_id,
                  url.mojom.Url url,
-                 url.mojom.Url site_for_cookies,
                  bool first_auth_attempt,
                  AuthChallengeInfo auth_info,
-                 int32 resource_type,
                  URLResponseHead? head,
                  AuthChallengeResponder auth_challenge_responder);
+
   // Called when an SSL certificate requested message is received for client
   // authentication.
-  // The |provider_name| parameter corresponses to the return value of
-  // net::SSLPrivateKey::GetProviderName().
-  // The |algorithm_preferences| parameter corresponds to the return value
-  // of net::SSLPrivateKey::GetAlgorithmPreferences().
-  // The |cancel_certificate_selection| parameter is used to distinguish
-  // between the following two cases because the |x509_certificate| will be
-  // nullptr in both cases:
-  // 1. The connection is continued with no client cert,
-  // net::URLRequest::ContinueWithCertificate(nullptr, nullptr) needs to be
-  // called.
-  // 2. The request is aborted, net::URLRequest::CancelWithError() needs to be
-  // called.
   //
-  // |window_id| or else |process_id| and |routing_id| indicates
-  // the frame making the request, see
-  // network::ResourceRequest::fetch_window_id.
+  // Rather than using one response for multiple purposes, the caller expects
+  // exactly one response (or disconnect) to be sent back via |cert_responder|.
+  //
+  // |window_id| or else |process_id| and |routing_id| indicates the frame
+  // making the request, see network::ResourceRequest::fetch_window_id.
   OnCertificateRequested(mojo_base.mojom.UnguessableToken? window_id,
                          uint32 process_id,
                          uint32 routing_id,
                          uint32 request_id,
-                         network.mojom.SSLCertRequestInfo cert_info) => (
-                             network.mojom.X509Certificate x509_certificate,
-                             string provider_name,
-                             array<uint16> algorithm_preferences,
-                             SSLPrivateKey ssl_private_key,
-                             bool cancel_certificate_selection);
+                         network.mojom.SSLCertRequestInfo cert_info,
+                         ClientCertificateResponder cert_responder);
+
   // Called when an SSL certificate is encountered.
   // The callback argument is a net::ERROR value. If it's net::OK, then the
   // request is resumed. Otherwise it's cancelled with the given error.
   OnSSLCertificateError(uint32 process_id,
                         uint32 routing_id,
-                        uint32 request_id,
-                        int32 resource_type,
                         url.mojom.Url url,
+                        int32 net_error,
                         SSLInfo ssl_info,
                         bool fatal) => (int32 net_error);
 
@@ -151,17 +164,6 @@ interface NetworkServiceClient {
   // receive the next update.
   OnLoadingStateUpdate(array<LoadInfo> infos) => ();
 
-  // Called when the Clear-Site-Data header has been received. The callback
-  // should be run after the data is deleted.
-  // https://www.w3.org/TR/clear-site-data/
-  // TODO(crbug.com/876931): We might want to move header parsing work to
-  // Network Service for security concerns (e.g. |header_value| => booleans).
-  OnClearSiteData(int32 process_id,
-                  int32 routing_id,
-                  url.mojom.Url url,
-                  string header_value,
-                  int32 load_flags) => ();
-
   // Called on every request completion to update the network traffic annotation
   // ID, and the total bytes received and sent.
   // |network_traffic_annotation_id_hash| represents the hash of unique tag that
@@ -175,6 +177,20 @@ interface NetworkServiceClient {
                                    string auth_negotiate_android_account_type,
                                    string spn) =>
                                    (int32 result, string auth_token);
+
+  // Called to send information about cookies flagged to be excluded or as a
+  // warning as it's sent in the request.
+  OnFlaggedRequestCookies(
+    int32 process_id,
+    int32 routing_id,
+    array<CookieWithStatus> excluded_cookies);
+
+  // Called to send information about cookies flagged to be excluded from
+  // storage or as a warning from a received response.
+  OnFlaggedResponseCookies(
+    int32 process_id,
+    int32 routing_id,
+    array<CookieAndLineWithStatus> excluded_cookies);
 };
 
 // Values for configuring HTTP authentication that can only be set once.
@@ -187,10 +203,6 @@ struct HttpAuthStaticParams {
   // File name the GSSAPI library to load. Only supported on
   // (OS_POSIX && !OS_ANDROID && !OS_CHROMEOS && OS_IOS) platforms.
   string gssapi_library_name;
-
-  // Indicates whether the GSSAPI library should be loaded. Only supported on
-  // ChromeOS.
-  bool allow_gssapi_library_load = true;
 };
 
 // Values for configurating HTTP authentication that can be changed as needed.
@@ -221,6 +233,10 @@ struct HttpAuthDynamicParams {
   // The AccountManager AccountManagerget.AccountsByTypeAndFeatures on Android
   // when using Negotiate authentication.
   string android_negotiate_account_type;
+
+  // Indicates whether the GSSAPI library should be loaded. Only supported on
+  // Chrome OS.
+  bool allow_gssapi_library_load = true;
 };
 
 // Values for configuring OSCrypt.
@@ -255,12 +271,26 @@ struct NetworkServiceParams {
   array<EnvironmentVariable> environment;
 };
 
+// Information about how logging should be configured.
+// Corresponds to logging::LoggingSettings.
+[EnableIf=is_chromeos]
+struct LoggingSettings {
+  uint32 logging_dest;
+  mojo_base.mojom.FilePath log_file;
+};
+
 // Browser interface to the network service.
 interface NetworkService {
   // Sets client used by all |NetworkContext|s creating by |NetworkService|.
   // Pending requests may hang if the |client| pipe is closed before they
   // complete.
   SetClient(NetworkServiceClient client, NetworkServiceParams params);
+
+  // Reinitializes the Network Service's logging with the given settings. This
+  // is needed on Chrome OS, which switches to a log file in the user's home
+  // directory once they log in.
+  [EnableIf=is_chromeos]
+  ReinitializeLogging(LoggingSettings settings);
 
   // Starts observing the NetLog event stream and writing entries to |file|.
   // |constants| is a legend used for decoding constant values in the log; it
@@ -333,6 +363,12 @@ interface NetworkService {
   // (e.g. DevTools attached).
   SetRawHeadersAccess(uint32 process_id, array<url.mojom.Origin> origins);
 
+  // Sets the maximum number of connections for a proxy server.
+  //   * Negative values will set the default proxy connection limit (32)
+  //   * Values larger than 99 will saturate to 99.
+  //   * Values smaller than 6 will saturate to 6.
+  SetMaxConnectionsPerProxy(int32 max_connections);
+
   // Gets the NetworkChangeManager.
   GetNetworkChangeManager(
       NetworkChangeManager& network_change_manager);
@@ -351,12 +387,6 @@ interface NetworkService {
   // The |policy| parameter is a flag that specifies whether to include/exclude
   // network interfaces. Corresponds to enum net::HostAddressSelectionPolicy.
   GetNetworkList(uint32 policy) => (array<NetworkInterface>? networks);
-
-  // Updates Signed Tree Heads (STH) used in the handling of Certificate
-  // Transparency. Broadcast to each NetworkContext using the NetworkService.
-  // NetworkContextes ignore STHs from unrecognized logs.
-  [EnableIf=is_ct_supported]
-  UpdateSignedTreeHead(SignedTreeHead signed_tree_head);
 
   // Updates the CRLSet used in the verification of certificates. CRLSets that
   // cannot be parsed using net::CRLSet::Parse will be ignored, as will older
@@ -388,6 +418,13 @@ interface NetworkService {
 
   // Reverts AddCorbExceptionForPlugin.
   RemoveCorbExceptionForPlugin(uint32 process_id);
+
+  // Registers additional MIME types that can be protected by CORB (without any
+  // confirmation sniffing).
+  //
+  // TODO(lukasza): https://crbug.com/944162: Remove the method below once
+  // kMimeHandlerViewInCrossProcessFrame feature ships.
+  AddExtraMimeTypesForCorb(array<string> mime_types);
 
   // Called when the system is low on memory.
   OnMemoryPressure(mojo_base.mojom.MemoryPressureLevel memory_pressure_level);

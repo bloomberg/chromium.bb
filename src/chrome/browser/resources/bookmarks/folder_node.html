@@ -12,33 +12,44 @@
   <template>
     <style include="shared-style">
       :host {
-        --padding-start-per-depth: 36px;
         display: block;
       }
 
-      .v-centered {
+      #container {
         align-items: center;
-        display: flex;
-        flex-direction: row;
+        cursor: pointer;
+        display: grid;
+        grid-template-areas: 'arrow folder label';
+        grid-template-columns: 24px 24px auto;
+        height: 40px;
+        min-width: fit-content;
+        overflow: hidden;
+        padding-inline-start: calc(var(--node-depth, 0) * 10px);
+      }
+
+      #arrow {
+        grid-area: arrow;
+        justify-self: center;
+        margin: 0;
+        --cr-icon-button-size: 40px;
+      }
+
+      #arrow:not([is-open]) {
+        transform: rotate(-90deg);
+        transition: transform 150ms;
+      }
+
+      .folder-icon {
+        grid-area: folder;
+        justify-self: center;
       }
 
       .menu-label {
         color: var(--folder-inactive-color);
         font-weight: 500;
-        margin-inline-start: 16px;
-      }
-
-      #container {
-        cursor: pointer;
-        height: 40px;
-        padding-inline-start:
-            calc(var(--node-depth, 0) * var(--padding-start-per-depth));
-        position: relative;
-      }
-
-      #folder-label {
-        flex-grow: 1;
-        padding-inline-end: 8px;
+        grid-area: label;
+        padding: 0 6px;
+        white-space: nowrap;
       }
 
       :host([is-selected-folder_]) .menu-label,
@@ -52,15 +63,6 @@
         color: var(--google-grey-refresh-700);
       }
 
-      #arrow {
-        margin: 0 8px;
-      }
-
-      #arrow:not([is-open]) {
-        transform: rotate(-90deg);
-        transition: transform 150ms;
-      }
-
       :host-context([dir='rtl']) #arrow:not([is-open]) {
         transform: rotate(90deg);
       }
@@ -68,14 +70,9 @@
       #arrow[is-open] {
         transform: initial;
       }
-
-      [no-children] {
-        margin-inline-start: 52px; /* The width of the arrow and its margin */
-      }
     </style>
 
     <div id="container"
-        class="v-centered"
         on-click="selectFolder_"
         on-dblclick="toggleFolder_"
         on-contextmenu="onContextMenu_"
@@ -89,14 +86,12 @@
             tabindex="-1" is-open$="[[isOpen]]" noink aria-hidden="true">
         </cr-icon-button>
       </template>
-      <div id="folder-label" class="v-centered">
-        <div class="folder-icon"
-            open$="[[isSelectedFolder_]]"
-            no-children$="[[!hasChildFolder_]]">
-        </div>
-        <div class="menu-label elided-text" title="[[item_.title]]">
-          [[item_.title]]
-        </div>
+      <div class="folder-icon"
+          open$="[[isSelectedFolder_]]"
+          no-children$="[[!hasChildFolder_]]">
+      </div>
+      <div class="menu-label" title="[[item_.title]]">
+        [[item_.title]]
       </div>
     </div>
     <div id="descendants" role="group">

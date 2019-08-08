@@ -36,6 +36,9 @@ class HomeLauncherGestureHandlerTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
 
+    // Wait for TabletModeController::Ctor to finish.
+    base::RunLoop().RunUntilIdle();
+
     Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   }
 
@@ -221,7 +224,7 @@ TEST_F(HomeLauncherGestureHandlerTest, OverviewMode) {
   // Tests that after releasing at below the halfway point, we remain in
   // overview mode.
   GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 300));
-  EXPECT_TRUE(controller->IsSelecting());
+  EXPECT_TRUE(controller->InOverviewSession());
   EXPECT_EQ(window1_initial_translation,
             window1->transform().To2dTranslation().y());
   EXPECT_EQ(window2_initial_translation,
@@ -231,7 +234,7 @@ TEST_F(HomeLauncherGestureHandlerTest, OverviewMode) {
   // exited, and the two windows have been minimized to show the home launcher.
   DoPress(Mode::kSlideUpToShow);
   GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 100));
-  EXPECT_FALSE(controller->IsSelecting());
+  EXPECT_FALSE(controller->InOverviewSession());
   EXPECT_TRUE(wm::GetWindowState(window1.get())->IsMinimized());
   EXPECT_TRUE(wm::GetWindowState(window2.get())->IsMinimized());
 }
@@ -257,13 +260,13 @@ TEST_F(HomeLauncherGestureHandlerTest, OverviewModeNoWindows) {
   // Tests that after releasing at below the halfway point, we remain in
   // overview mode.
   GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 300));
-  EXPECT_TRUE(controller->IsSelecting());
+  EXPECT_TRUE(controller->InOverviewSession());
 
   // Tests that after releasing on the top half, overview mode has been
   // exited.
   DoPress(Mode::kSlideUpToShow);
   GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 100));
-  EXPECT_FALSE(controller->IsSelecting());
+  EXPECT_FALSE(controller->InOverviewSession());
 }
 
 // Tests that there is no crash if entering overview mode while home launcher is
@@ -293,8 +296,8 @@ TEST_F(HomeLauncherGestureHandlerTest, SplitviewOneSnappedWindow) {
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
   split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
-  ASSERT_TRUE(overview_controller->IsSelecting());
-  ASSERT_TRUE(split_view_controller->IsSplitViewModeActive());
+  ASSERT_TRUE(overview_controller->InOverviewSession());
+  ASSERT_TRUE(split_view_controller->InSplitViewMode());
 
   const int window2_initial_translation =
       window2->transform().To2dTranslation().y();
@@ -313,15 +316,15 @@ TEST_F(HomeLauncherGestureHandlerTest, SplitviewOneSnappedWindow) {
   EXPECT_EQ(window1->transform(), gfx::Transform());
   EXPECT_EQ(window2_initial_translation,
             window2->transform().To2dTranslation().y());
-  EXPECT_TRUE(overview_controller->IsSelecting());
-  EXPECT_TRUE(split_view_controller->IsSplitViewModeActive());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_TRUE(split_view_controller->InSplitViewMode());
 
   // Tests that after releasing on the top half, overivew and splitview have
   // both been exited, and both windows are minimized to show the home launcher.
   DoPress(Mode::kSlideUpToShow);
   GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 100));
-  EXPECT_FALSE(overview_controller->IsSelecting());
-  EXPECT_FALSE(split_view_controller->IsSplitViewModeActive());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  EXPECT_FALSE(split_view_controller->InSplitViewMode());
   EXPECT_TRUE(wm::GetWindowState(window1.get())->IsMinimized());
   EXPECT_TRUE(wm::GetWindowState(window2.get())->IsMinimized());
 }
@@ -339,7 +342,7 @@ TEST_F(HomeLauncherGestureHandlerTest, SplitviewTwoSnappedWindows) {
       Shell::Get()->split_view_controller();
   split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
   split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
-  ASSERT_TRUE(split_view_controller->IsSplitViewModeActive());
+  ASSERT_TRUE(split_view_controller->InSplitViewMode());
 
   // Make |window1| the most recent used window. It should be the main window in
   // HomeLauncherGestureHandler.
@@ -358,13 +361,13 @@ TEST_F(HomeLauncherGestureHandlerTest, SplitviewTwoSnappedWindows) {
   GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 300));
   EXPECT_EQ(window1->transform(), gfx::Transform());
   EXPECT_EQ(window2->transform(), gfx::Transform());
-  EXPECT_TRUE(split_view_controller->IsSplitViewModeActive());
+  EXPECT_TRUE(split_view_controller->InSplitViewMode());
 
   // Tests that after releasing on the bottom half, splitview has been ended,
   // and the two windows have been minimized to show the home launcher.
   DoPress(Mode::kSlideUpToShow);
   GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 100));
-  EXPECT_FALSE(split_view_controller->IsSplitViewModeActive());
+  EXPECT_FALSE(split_view_controller->InSplitViewMode());
   EXPECT_TRUE(wm::GetWindowState(window1.get())->IsMinimized());
   EXPECT_TRUE(wm::GetWindowState(window2.get())->IsMinimized());
 }

@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/offline_pages/prefetch/prefetch_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/keyed_service/core/simple_key_map.h"
 #include "components/offline_pages/core/model/offline_page_model_utils.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/prefetch/offline_metrics_collector.h"
@@ -69,8 +70,7 @@ class TestMetricsCollector : public OfflineMetricsCollector {
 };
 
 // This is used by KeyedServiceFactory::SetTestingFactoryAndUse.
-std::unique_ptr<KeyedService> BuildTestPrefetchService(
-    content::BrowserContext*) {
+std::unique_ptr<KeyedService> BuildTestPrefetchService(SimpleFactoryKey*) {
   auto taco = std::make_unique<PrefetchServiceTestTaco>();
   taco->SetOfflineMetricsCollector(std::make_unique<TestMetricsCollector>());
   return taco->CreateAndReturnPrefetchService();
@@ -116,10 +116,12 @@ OfflinePageTabHelperTest::OfflinePageTabHelperTest()
 void OfflinePageTabHelperTest::SetUp() {
   content::RenderViewHostTestHarness::SetUp();
 
+  SimpleFactoryKey* key =
+      SimpleKeyMap::GetInstance()->GetForBrowserContext(browser_context());
+
   PrefetchServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-      browser_context(), base::BindRepeating(&BuildTestPrefetchService));
-  prefetch_service_ =
-      PrefetchServiceFactory::GetForBrowserContext(browser_context());
+      key, base::BindRepeating(&BuildTestPrefetchService));
+  prefetch_service_ = PrefetchServiceFactory::GetForKey(key);
 
   OfflinePageTabHelper::CreateForWebContents(web_contents());
   tab_helper_ = OfflinePageTabHelper::FromWebContents(web_contents());

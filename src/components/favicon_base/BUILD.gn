@@ -11,8 +11,6 @@ static_library("favicon_base") {
     "fallback_icon_style.cc",
     "fallback_icon_style.h",
     "favicon_callback.h",
-    "favicon_request_metrics.cc",
-    "favicon_request_metrics.h",
     "favicon_types.cc",
     "favicon_types.h",
     "favicon_url_parser.cc",

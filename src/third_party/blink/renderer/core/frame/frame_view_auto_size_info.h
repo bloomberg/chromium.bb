@@ -18,10 +18,6 @@ class LocalFrameView;
 class FrameViewAutoSizeInfo final
     : public GarbageCollected<FrameViewAutoSizeInfo> {
  public:
-  static FrameViewAutoSizeInfo* Create(LocalFrameView* frame_view) {
-    return MakeGarbageCollected<FrameViewAutoSizeInfo>(frame_view);
-  }
-
   explicit FrameViewAutoSizeInfo(LocalFrameView*);
 
   void ConfigureAutoSizeMode(const IntSize& min_size, const IntSize& max_size);

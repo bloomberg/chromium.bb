@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
@@ -146,8 +147,7 @@ void TestRenderWidgetHostView::WasOccluded() {
   is_occluded_ = true;
 }
 
-void TestRenderWidgetHostView::RenderProcessGone(base::TerminationStatus status,
-                                                 int error_code) {
+void TestRenderWidgetHostView::RenderProcessGone() {
   delete this;
 }
 
@@ -301,7 +301,7 @@ void TestRenderViewHost::SimulateWasHidden() {
 }
 
 void TestRenderViewHost::SimulateWasShown() {
-  GetWidget()->WasShown(false /* record_presentation_time */);
+  GetWidget()->WasShown(base::nullopt /* record_tab_switch_time_request */);
 }
 
 WebPreferences TestRenderViewHost::TestComputeWebPreferences() {

@@ -44,10 +44,10 @@ void MediaStreamDevicePermissionContext::DecidePermission(
     const GURL& requesting_origin,
     const GURL& embedding_origin,
     bool user_gesture,
-    const BrowserPermissionCallback& callback) {
+    BrowserPermissionCallback callback) {
   PermissionContextBase::DecidePermission(web_contents, id, requesting_origin,
                                           embedding_origin, user_gesture,
-                                          callback);
+                                          std::move(callback));
 }
 
 ContentSetting MediaStreamDevicePermissionContext::GetPermissionStatusInternal(

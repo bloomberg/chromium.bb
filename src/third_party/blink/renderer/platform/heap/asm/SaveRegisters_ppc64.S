@@ -1,6 +1,6 @@
 /*
- * typedef void (*PushAllRegistersCallback)(SafePointBarrier*, ThreadState*, intptr_t*);
- * extern "C" void PushAllRegisters(SafePointBarrier*, ThreadState*, PushAllRegistersCallback)
+ * typedef void (*PushAllRegistersCallback)(ThreadState*, intptr_t*);
+ * extern "C" void PushAllRegisters(ThreadState*, PushAllRegistersCallback)
  */
 
 .type PushAllRegisters, %function
@@ -36,12 +36,12 @@ PushAllRegisters:
         // Note: the callee-saved floating point registers do not need to be
         // copied to the stack, because fp registers never hold heap pointers
         // and so do not need to be kept visible to the garbage collector.
-        // Pass the two first arguments untouched in r3 and r4 and the
+        // Pass the first argument untouched in r3 and the
         // stack pointer to the callback.
         std 2, 24(1)
-        mtctr 5
-        mr 12, 5
-        mr 5, 1
+        mtctr 4
+        mr 12, 4
+        mr 4, 1
         bctrl
         ld 2, 24(1)
 

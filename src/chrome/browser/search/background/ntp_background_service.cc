@@ -99,7 +99,7 @@ void NtpBackgroundService::FetchCollectionInfo() {
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = collections_api_url_;
   resource_request->method = "POST";
-  resource_request->load_flags = net::LOAD_DO_NOT_SEND_AUTH_DATA;
+  resource_request->allow_credentials = false;
 
   collections_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
@@ -265,6 +265,23 @@ void NtpBackgroundService::AddValidBackdropUrlForTesting(const GURL& url) {
   CollectionImage image;
   image.image_url = url;
   collection_images_.push_back(image);
+}
+
+void NtpBackgroundService::AddValidBackdropUrlWithThumbnailForTesting(
+    const GURL& url,
+    const GURL& thumbnail_url) {
+  CollectionImage image;
+  image.image_url = url;
+  image.thumbnail_image_url = thumbnail_url;
+  collection_images_.push_back(image);
+}
+
+const GURL& NtpBackgroundService::GetThumbnailUrl(const GURL& image_url) {
+  for (auto& image : collection_images_) {
+    if (image.image_url == image_url)
+      return image.thumbnail_image_url;
+  }
+  return GURL::EmptyGURL();
 }
 
 void NtpBackgroundService::NotifyObservers(FetchComplete fetch_complete) {

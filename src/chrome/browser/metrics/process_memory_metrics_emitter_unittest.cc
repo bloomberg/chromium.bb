@@ -118,13 +118,21 @@ OSMemDumpPtr GetFakeOSMemDump(uint32_t resident_set_kb,
   using memory_instrumentation::mojom::VmRegion;
 
   return memory_instrumentation::mojom::OSMemDump::New(
-      resident_set_kb, private_footprint_kb, shared_footprint_kb
+      resident_set_kb, resident_set_kb /* peak_resident_set_kb */,
+      true /* is_peak_rss_resettable */, private_footprint_kb,
+      shared_footprint_kb
 #if defined(OS_LINUX) || defined(OS_ANDROID)
       ,
       private_swap_footprint_kb
 #endif
-      );
+  );
 }
+
+constexpr uint64_t kGpuSharedImagesSizeMB = 32;
+constexpr uint64_t kGpuSkiaGpuResourcesMB = 87;
+constexpr uint64_t kGpuCommandBufferMB = 240;
+constexpr uint64_t kGpuTotalMemory =
+    kGpuCommandBufferMB + kGpuSharedImagesSizeMB + kGpuSkiaGpuResourcesMB;
 
 void PopulateBrowserMetrics(GlobalMemoryDumpPtr& global_dump,
                             MetricMap& metrics_mb) {
@@ -133,6 +141,14 @@ void PopulateBrowserMetrics(GlobalMemoryDumpPtr& global_dump,
   pmd->process_type = ProcessType::BROWSER;
   SetAllocatorDumpMetric(pmd, "malloc", "effective_size",
                          metrics_mb["Malloc"] * 1024 * 1024);
+  // These three categories are required for total gpu memory, but do not
+  // have a UKM value set for them, so don't appear in metrics_mb.
+  SetAllocatorDumpMetric(pmd, "gpu/gl", "effective_size",
+                         kGpuCommandBufferMB * 1024 * 1024);
+  SetAllocatorDumpMetric(pmd, "gpu/shared-images", "effective_size",
+                         kGpuSharedImagesSizeMB * 1024 * 1024);
+  SetAllocatorDumpMetric(pmd, "skia/gpu_resources", "effective_size",
+                         kGpuSkiaGpuResourcesMB * 1024 * 1024);
   OSMemDumpPtr os_dump =
       GetFakeOSMemDump(GetResidentValue(metrics_mb) * 1024,
                        metrics_mb["PrivateMemoryFootprint"] * 1024,
@@ -159,6 +175,7 @@ MetricMap GetExpectedBrowserMetrics() {
 #endif
             {"Malloc", 20}, {"PrivateMemoryFootprint", 30},
             {"SharedMemoryFootprint", 35}, {"Uptime", 42},
+            {"GpuMemory", kGpuTotalMemory * 1024 * 1024},
 #if defined(OS_LINUX) || defined(OS_ANDROID)
             {"PrivateSwapFootprint", 50},
 #endif
@@ -375,6 +392,12 @@ void PopulateGpuMetrics(GlobalMemoryDumpPtr& global_dump,
                          metrics_mb["Malloc"] * 1024 * 1024);
   SetAllocatorDumpMetric(pmd, "gpu/gl", "effective_size",
                          metrics_mb["CommandBuffer"] * 1024 * 1024);
+  // These two categories are required for total gpu memory, but do not
+  // have a UKM value set for them, so don't appear in metrics_mb.
+  SetAllocatorDumpMetric(pmd, "gpu/shared-images", "effective_size",
+                         kGpuSharedImagesSizeMB * 1024 * 1024);
+  SetAllocatorDumpMetric(pmd, "skia/gpu_resources", "effective_size",
+                         kGpuSkiaGpuResourcesMB * 1024 * 1024);
   OSMemDumpPtr os_dump =
       GetFakeOSMemDump(GetResidentValue(metrics_mb) * 1024,
                        metrics_mb["PrivateMemoryFootprint"] * 1024,
@@ -400,8 +423,9 @@ MetricMap GetExpectedGpuMetrics() {
             {"Resident", 210},
 #endif
             {"Malloc", 220}, {"PrivateMemoryFootprint", 230},
-            {"SharedMemoryFootprint", 235}, {"CommandBuffer", 240},
-            {"Uptime", 42},
+            {"SharedMemoryFootprint", 235},
+            {"CommandBuffer", kGpuCommandBufferMB}, {"Uptime", 42},
+            {"GpuMemory", kGpuTotalMemory * 1024 * 1024},
 #if defined(OS_LINUX) || defined(OS_ANDROID)
             {"PrivateSwapFootprint", 50},
 #endif

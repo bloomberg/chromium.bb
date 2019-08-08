@@ -226,7 +226,7 @@ GLManager::Options::Options() = default;
 
 GLManager::GLManager()
     : gpu_memory_buffer_factory_(
-          gpu::GpuMemoryBufferFactory::CreateNativeType()) {
+          gpu::GpuMemoryBufferFactory::CreateNativeType(nullptr)) {
   SetupBaseContext();
 }
 
@@ -609,6 +609,10 @@ void GLManager::WaitSyncToken(const gpu::SyncToken& sync_token) {
 bool GLManager::CanWaitUnverifiedSyncToken(const gpu::SyncToken& sync_token) {
   NOTREACHED();
   return false;
+}
+
+void GLManager::SetDisplayTransform(gfx::OverlayTransform transform) {
+  NOTREACHED();
 }
 
 ContextType GLManager::GetContextType() const {

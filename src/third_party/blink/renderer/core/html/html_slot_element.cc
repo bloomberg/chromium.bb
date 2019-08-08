@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
 
 #include <array>
+
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -57,10 +58,6 @@ namespace {
 constexpr size_t kLCSTableSizeLimit = 16;
 }
 
-HTMLSlotElement* HTMLSlotElement::Create(Document& document) {
-  return MakeGarbageCollected<HTMLSlotElement>(document);
-}
-
 HTMLSlotElement* HTMLSlotElement::CreateUserAgentDefaultSlot(
     Document& document) {
   HTMLSlotElement* slot = MakeGarbageCollected<HTMLSlotElement>(document);
@@ -75,7 +72,7 @@ HTMLSlotElement* HTMLSlotElement::CreateUserAgentCustomAssignSlot(
   return slot;
 }
 
-inline HTMLSlotElement::HTMLSlotElement(Document& document)
+HTMLSlotElement::HTMLSlotElement(Document& document)
     : HTMLElement(kSlotTag, document) {
   UseCounter::Count(document, WebFeature::kHTMLSlotElement);
   SetHasCustomStyleCallbacks();
@@ -417,8 +414,8 @@ void HTMLSlotElement::DidRecalcStyle(const StyleRecalcChange change) {
       continue;
     if (node->IsElementNode())
       ToElement(node)->RecalcStyle(change);
-    else if (node->IsTextNode())
-      ToText(node)->RecalcTextStyle(change);
+    else if (auto* text_node = DynamicTo<Text>(node.Get()))
+      text_node->RecalcTextStyle(change);
   }
 }
 

@@ -98,8 +98,8 @@ class ChromeDownloadManagerDelegate
       const std::string& mime_type,
       const std::string& request_origin,
       int64_t content_length,
+      bool is_transient,
       content::WebContents* web_contents) override;
-  bool GenerateFileHash() override;
   void GetSaveDir(content::BrowserContext* browser_context,
                   base::FilePath* website_save_dir,
                   base::FilePath* download_save_dir,
@@ -144,6 +144,10 @@ class ChromeDownloadManagerDelegate
       const DownloadTargetDeterminerDelegate::ConfirmationCallback& callback);
 
   // DownloadTargetDeterminerDelegate. Protected for testing.
+  void ShouldBlockDownload(
+      download::DownloadItem* download,
+      const base::FilePath& virtual_path,
+      const ShouldBlockDownloadCallback& callback) override;
   void NotifyExtensions(download::DownloadItem* download,
                         const base::FilePath& suggested_virtual_path,
                         const NotifyExtensionsCallback& callback) override;

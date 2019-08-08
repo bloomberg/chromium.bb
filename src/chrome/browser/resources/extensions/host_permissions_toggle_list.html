@@ -12,6 +12,11 @@
 <dom-module id="extensions-host-permissions-toggle-list">
   <template>
     <style include="cr-shared-style shared-style">
+      iron-icon {
+        --iron-icon-height: var(--cr-icon-size);
+        --iron-icon-width: var(--cr-icon-size);
+      }
+
       #section-heading {
         align-items: center;
         color: var(--cr-primary-text-color);
@@ -36,7 +41,7 @@
       <span>$i18n{hostPermissionsDescription}</span>
       <a id="link-icon-button" aria-label="$i18n{learnMore}"
           href="$i18n{hostPermissionsLearnMoreLink}" target="_blank">
-        <iron-icon icon="cr:info-outline"></iron-icon>
+        <iron-icon icon="cr:help-outline"></iron-icon>
       </a>
     </div>
     <div class="toggle-section">

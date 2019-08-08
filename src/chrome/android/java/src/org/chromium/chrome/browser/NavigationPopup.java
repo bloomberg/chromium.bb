@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
+import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -290,6 +291,14 @@ public class NavigationPopup implements AdapterView.OnItemClickListener {
             NavigationEntry entry = (NavigationEntry) getItem(position);
             setViewText(entry, viewHolder.mTextView);
             viewHolder.mImageView.setImageBitmap(entry.getFavicon());
+
+            if (entry.getIndex() == FULL_HISTORY_ENTRY_INDEX) {
+                ApiCompatibilityUtils.setImageTintList(viewHolder.mImageView,
+                        AppCompatResources.getColorStateList(
+                                mContext, R.color.default_icon_color_blue));
+            } else {
+                ApiCompatibilityUtils.setImageTintList(viewHolder.mImageView, null);
+            }
 
             if (mType == Type.ANDROID_SYSTEM_BACK) {
                 View container = viewHolder.mContainer;

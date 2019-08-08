@@ -5,8 +5,12 @@
 #include <tuple>
 
 #include "base/bind.h"
+#include "base/metrics/field_trial_param_associator.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -34,20 +38,28 @@
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
+#include "components/variations/variations_associated_data.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/content_browser_test.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "net/base/host_port_pair.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_request_headers.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/default_handlers.h"
+#include "net/test/embedded_test_server/embedded_test_server_connection_listener.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -73,6 +85,18 @@ std::unique_ptr<net::test_server::HttpResponse> BasicResponse(
   return response;
 }
 
+std::unique_ptr<net::test_server::HttpResponse> CreateDRPResponseWithHeader(
+    const net::test_server::HttpRequest& request) {
+  auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+  const auto chrome_proxy_header = request.headers.find("chrome-proxy");
+  if (chrome_proxy_header != request.headers.end())
+    response->set_content(chrome_proxy_header->second);
+  response->set_content_type("text/html");
+  response->AddCustomHeader("chrome-proxy", "ofcl=10");
+  response->AddCustomHeader("via", "1.1 Chrome-Compression-Proxy");
+  return response;
+}
+
 std::unique_ptr<net::test_server::HttpResponse> IncrementRequestCount(
     const std::string& relative_url,
     int* request_count,
@@ -80,6 +104,14 @@ std::unique_ptr<net::test_server::HttpResponse> IncrementRequestCount(
   if (request.relative_url == relative_url)
     (*request_count)++;
   return std::make_unique<net::test_server::BasicHttpResponse>();
+}
+
+// Given a |request| to a proxy server, returns the destination host name.
+std::string GetDestinationHost(const net::test_server::HttpRequest& request) {
+  const auto it = request.headers.find("Host");
+  if (it == request.headers.end())
+    return {};
+  return it->second;
 }
 
 void SimulateNetworkChange(network::mojom::ConnectionType type) {
@@ -105,6 +137,10 @@ ClientConfig CreateConfigForServer(const net::EmbeddedTestServer& server) {
                       host_port_pair.host(), host_port_pair.port(),
                       ProxyServer_ProxyScheme_HTTP, "fallback.net", 80, 0.5f,
                       false);
+}
+
+ClientConfig CreateEmptyConfig() {
+  return CreateEmptyProxyConfig(kSessionKey, 1000, 0, 0.5f, false);
 }
 
 }  // namespace
@@ -155,12 +191,81 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
     host_resolver()->AddRule(kMockHost, "127.0.0.1");
 
     EnableDataSaver(true);
-    // Make sure initial config has been loaded.
-    WaitForConfig();
+    // Make sure initial config has been loaded. Config is fetched only if
+    // network service is not enabled, or if both network service and
+    // kDataReductionProxyEnabledWithNetworkService are enabled.
+    if (!IsNetworkServiceEnabled() ||
+        base::FeatureList::IsEnabled(
+            data_reduction_proxy::features::
+                kDataReductionProxyEnabledWithNetworkService)) {
+      WaitForConfig();
+    }
   }
 
   bool IsNetworkServiceEnabled() const {
     return base::FeatureList::IsEnabled(network::features::kNetworkService);
+  }
+
+  // Verifies that the |request| has the Chrome-Proxy headers, and caches the
+  // URL of |request| in a local container. This can be added to any test that
+  // needs to verify if the proxy server is receiving the correct set of
+  // headers.
+  void MonitorAndVerifyRequestsToProxyServer(
+      const net::test_server::HttpRequest& request) {
+    ++count_proxy_server_requests_received_;
+    // All requests to proxy server should have at least these headers.
+    EXPECT_NE(request.headers.end(),
+              request.headers.find(data_reduction_proxy::chrome_proxy_header()))
+        << " url=" << request.GetURL() << " path=" << request.GetURL().path();
+
+    VerifyChromeProxyRequestHeader(
+        request.headers.at(data_reduction_proxy::chrome_proxy_header()));
+
+    EXPECT_NE(
+        request.headers.end(),
+        request.headers.find(data_reduction_proxy::chrome_proxy_ect_header()))
+        << " url=" << request.GetURL() << " path=" << request.GetURL().path();
+
+    base::AutoLock lock(lock_);
+    monitored_urls_.push_back(request.GetURL());
+  }
+
+  void VerifyChromeProxyRequestHeader(
+      const std::string& chrome_proxy_header_value) const {
+    bool exp_found = false;
+    for (const auto& attributes : base::SplitStringPiece(
+             chrome_proxy_header_value, ",", base::TRIM_WHITESPACE,
+             base::SPLIT_WANT_NONEMPTY)) {
+      if (base::StartsWith(attributes,
+                           "exp=", base::CompareCase::INSENSITIVE_ASCII)) {
+        const auto attribute_split = base::SplitStringPiece(
+            attributes, "=", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+        EXPECT_EQ(2u, attribute_split.size());
+        EXPECT_EQ(expect_exp_value_in_request_header_, attribute_split[1]);
+        exp_found = true;
+      }
+    }
+    EXPECT_EQ(!expect_exp_value_in_request_header_.empty(), exp_found)
+        << " expect_exp_value_in_request_header_="
+        << expect_exp_value_in_request_header_;
+  }
+
+  // Returns true if a request for URL with path |url_path| was observed by
+  // |this|. The method only compares the path instead of the full URL since the
+  // hostname may be different due to the use of mock host in the browsertests
+  // below.
+  bool WasUrlPathMonitored(const std::string& url_path) {
+    base::AutoLock lock(lock_);
+    for (const auto monitored_url : monitored_urls_)
+      if (monitored_url.path() == url_path)
+        return true;
+
+    return false;
+  }
+
+  void ResetMonitoredUrls() {
+    base::AutoLock lock(lock_);
+    monitored_urls_.clear();
   }
 
  protected:
@@ -198,6 +303,12 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
 
   void WaitForConfig() { config_run_loop_->Run(); }
 
+  std::string expect_exp_value_in_request_header_;
+
+  size_t count_proxy_server_requests_received_ = 0u;
+
+  base::test::ScopedFeatureList scoped_feature_list_;
+
  private:
   std::unique_ptr<net::test_server::HttpResponse> GetConfigResponse(
       const net::test_server::HttpRequest& request) {
@@ -211,11 +322,15 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
 
   ClientConfig config_;
   std::unique_ptr<base::RunLoop> config_run_loop_;
-  base::test::ScopedFeatureList scoped_feature_list_;
   base::test::ScopedFeatureList param_feature_list_;
   net::EmbeddedTestServer secure_proxy_check_server_;
   net::EmbeddedTestServer config_server_;
   std::unique_ptr<net::test_server::ControllableHttpResponse> favicon_catcher_;
+
+  std::vector<GURL> monitored_urls_;
+
+  // |lock_| guards access to |monitored_urls_|.
+  base::Lock lock_;
 };
 
 class DataReductionProxyBrowsertest : public DataReductionProxyBrowsertestBase {
@@ -238,7 +353,9 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, UpdateConfig) {
   SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_3G);
   WaitForConfig();
 
-  ui_test_utils::NavigateToURL(browser(), GURL("http://does.not.resolve/foo"));
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GetURLWithMockHost(original_server, "/echoheader?Chrome-Proxy"));
 
   EXPECT_EQ(GetBody(), kPrimaryResponse);
 
@@ -252,9 +369,56 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, UpdateConfig) {
   SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_2G);
   WaitForConfig();
 
-  ui_test_utils::NavigateToURL(browser(), GURL("http://does.not.resolve/foo"));
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GetURLWithMockHost(original_server, "/echoheader?Chrome-Proxy"));
 
   EXPECT_EQ(GetBody(), kSecondaryResponse);
+}
+
+// Verify that when a client config with no proxies is provided to Chrome,
+// then usage of proxy is disabled. Later, when the client config with valid
+// proxies is fetched, then the specified proxies are used.
+IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, EmptyConfig) {
+  net::EmbeddedTestServer origin_server;
+  origin_server.RegisterRequestHandler(
+      base::BindRepeating(&BasicResponse, kDummyBody));
+  ASSERT_TRUE(origin_server.Start());
+
+  // Set config to empty, and verify that the response comes from the
+  // |origin_server|.
+  SetConfig(CreateEmptyConfig());
+  // A network change forces the config to be fetched.
+  SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_2G);
+  WaitForConfig();
+  ui_test_utils::NavigateToURL(
+      browser(), GetURLWithMockHost(origin_server, "/echoheader?Chrome-Proxy"));
+  ASSERT_EQ(GetBody(), kDummyBody);
+
+  net::EmbeddedTestServer proxy_server;
+  proxy_server.RegisterRequestHandler(
+      base::BindRepeating(&BasicResponse, kPrimaryResponse));
+  ASSERT_TRUE(proxy_server.Start());
+
+  // Set config to |proxy_server|, and verify that the response comes from
+  // |proxy_server|.
+  SetConfig(CreateConfigForServer(proxy_server));
+  // A network change forces the config to be fetched.
+  SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_3G);
+  WaitForConfig();
+  ui_test_utils::NavigateToURL(
+      browser(), GetURLWithMockHost(origin_server, "/echoheader?Chrome-Proxy"));
+  EXPECT_EQ(GetBody(), kPrimaryResponse);
+
+  // Set config to empty again, and verify that the response comes from the
+  // |origin_server|.
+  SetConfig(CreateEmptyConfig());
+  // A network change forces the config to be fetched.
+  SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_2G);
+  WaitForConfig();
+  ui_test_utils::NavigateToURL(
+      browser(), GetURLWithMockHost(origin_server, "/echoheader?Chrome-Proxy"));
+  ASSERT_EQ(GetBody(), kDummyBody);
 }
 
 IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, ChromeProxyHeaderSet) {
@@ -265,6 +429,7 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, ChromeProxyHeaderSet) {
   std::string body = GetBody();
   EXPECT_THAT(body, HasSubstr(kSessionKey));
   EXPECT_THAT(body, HasSubstr("pid="));
+  EXPECT_THAT(body, Not(HasSubstr("pid=0")));
   EXPECT_THAT(body, HasSubstr("s="));
   EXPECT_THAT(body, HasSubstr("c="));
   EXPECT_THAT(body, HasSubstr("b="));
@@ -272,17 +437,27 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, ChromeProxyHeaderSet) {
 }
 
 // Gets the response body for an XHR to |url| (as seen by the renderer).
-std::string ReadSubresourceFromRenderer(Browser* browser, const GURL& url) {
-  std::string script = R"((url => {
+std::string ReadSubresourceFromRenderer(Browser* browser,
+                                        const GURL& url,
+                                        bool asynchronous_xhr = true) {
+  static const char asynchronous_script[] = R"((url => {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', url, true);
     xhr.onload = () => domAutomationController.send(xhr.responseText);
     xhr.send();
   }))";
+  static const char synchronous_script[] = R"((url => {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, false);
+    xhr.send();
+    domAutomationController.send(xhr.responseText);
+  }))";
   std::string result;
   EXPECT_TRUE(ExecuteScriptAndExtractString(
       browser->tab_strip_model()->GetActiveWebContents(),
-      script + "('" + url.spec() + "')", &result));
+      base::StrCat({asynchronous_xhr ? asynchronous_script : synchronous_script,
+                    "('", url.spec(), "')"}),
+      &result));
   return result;
 }
 
@@ -316,6 +491,29 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest,
 
   std::string result = ReadSubresourceFromRenderer(
       browser(), GetURLWithMockHost(test_server, "/echoheader?Chrome-Proxy"));
+
+  EXPECT_THAT(result, HasSubstr(kSessionKey));
+  EXPECT_THAT(result, Not(HasSubstr("pid=")));
+  EXPECT_THAT(result, HasSubstr("s="));
+  EXPECT_THAT(result, HasSubstr("c="));
+  EXPECT_THAT(result, HasSubstr("b="));
+  EXPECT_THAT(result, HasSubstr("p="));
+}
+
+IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest,
+                       ChromeProxyHeaderSetForSubresourceSync) {
+  net::EmbeddedTestServer test_server;
+  test_server.RegisterRequestHandler(
+      base::BindRepeating(&BasicResponse, kDummyBody));
+  ASSERT_TRUE(test_server.Start());
+
+  ui_test_utils::NavigateToURL(browser(),
+                               GetURLWithMockHost(test_server, "/echo"));
+
+  const bool asynchronous_xhr = false;
+  std::string result = ReadSubresourceFromRenderer(
+      browser(), GetURLWithMockHost(test_server, "/echoheader?Chrome-Proxy"),
+      asynchronous_xhr);
 
   EXPECT_THAT(result, HasSubstr(kSessionKey));
   EXPECT_THAT(result, Not(HasSubstr("pid=")));
@@ -474,6 +672,9 @@ class DataReductionProxyWithHoldbackBrowsertest
 IN_PROC_BROWSER_TEST_P(DataReductionProxyWithHoldbackBrowsertest,
                        UpdateConfig) {
   net::EmbeddedTestServer proxy_server;
+  proxy_server.RegisterRequestMonitor(base::BindRepeating(
+      &DataReductionProxyBrowsertest::MonitorAndVerifyRequestsToProxyServer,
+      base::Unretained(this)));
   proxy_server.RegisterRequestHandler(
       base::BindRepeating(&BasicResponse, kPrimaryResponse));
   ASSERT_TRUE(proxy_server.Start());
@@ -496,6 +697,80 @@ IN_PROC_BROWSER_TEST_P(DataReductionProxyWithHoldbackBrowsertest,
 INSTANTIATE_TEST_SUITE_P(,
                          DataReductionProxyWithHoldbackBrowsertest,
                          ::testing::Values(false, true));
+
+class DataReductionProxyExpBrowsertest : public DataReductionProxyBrowsertest {
+ public:
+  void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        data_reduction_proxy::switches::kDataReductionProxyExperiment,
+        "foo_experiment");
+
+    DataReductionProxyBrowsertest::SetUp();
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(DataReductionProxyExpBrowsertest,
+                       ChromeProxyExpHeaderSet) {
+  expect_exp_value_in_request_header_ = "foo_experiment";
+
+  net::EmbeddedTestServer proxy_server;
+  proxy_server.RegisterRequestMonitor(base::BindRepeating(
+      &DataReductionProxyBrowsertest::MonitorAndVerifyRequestsToProxyServer,
+      base::Unretained(this)));
+  proxy_server.RegisterRequestHandler(
+      base::BindRepeating(&BasicResponse, kPrimaryResponse));
+  ASSERT_TRUE(proxy_server.Start());
+  SetConfig(CreateConfigForServer(proxy_server));
+  // A network change forces the config to be fetched.
+  SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_3G);
+  WaitForConfig();
+
+  ui_test_utils::NavigateToURL(browser(), GURL("http://does.not.resolve/foo"));
+  EXPECT_LE(1u, count_proxy_server_requests_received_);
+}
+
+class DataReductionProxyExpFeatureBrowsertest
+    : public DataReductionProxyBrowsertest {
+ public:
+  void SetUp() override {
+    std::map<std::string, std::string> field_trial_params;
+    field_trial_params[data_reduction_proxy::params::
+                           GetDataSaverServerExperimentsOptionName()] =
+        experiment_name;
+
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {{data_reduction_proxy::features::kDataReductionProxyServerExperiments,
+          {field_trial_params}},
+         {data_reduction_proxy::features::
+              kDataReductionProxyEnabledWithNetworkService,
+          {}}},
+        {});
+
+    InProcessBrowserTest::SetUp();
+  }
+
+  const std::string experiment_name = "foo_feature_experiment";
+};
+
+IN_PROC_BROWSER_TEST_F(DataReductionProxyExpFeatureBrowsertest,
+                       ChromeProxyExpHeaderSet) {
+  expect_exp_value_in_request_header_ = experiment_name;
+
+  net::EmbeddedTestServer proxy_server;
+  proxy_server.RegisterRequestMonitor(base::BindRepeating(
+      &DataReductionProxyBrowsertest::MonitorAndVerifyRequestsToProxyServer,
+      base::Unretained(this)));
+  proxy_server.RegisterRequestHandler(
+      base::BindRepeating(&BasicResponse, kPrimaryResponse));
+  ASSERT_TRUE(proxy_server.Start());
+  SetConfig(CreateConfigForServer(proxy_server));
+  // A network change forces the config to be fetched.
+  SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_3G);
+  WaitForConfig();
+
+  ui_test_utils::NavigateToURL(browser(), GURL("http://does.not.resolve/foo"));
+  EXPECT_LE(1u, count_proxy_server_requests_received_);
+}
 
 class DataReductionProxyBrowsertestWithNetworkService
     : public DataReductionProxyBrowsertest {
@@ -541,10 +816,16 @@ class DataReductionProxyFallbackBrowsertest
     primary_server_.RegisterRequestHandler(base::BindRepeating(
         &DataReductionProxyFallbackBrowsertest::AddChromeProxyHeader,
         base::Unretained(this)));
+    primary_server_.RegisterRequestMonitor(base::BindRepeating(
+        &DataReductionProxyBrowsertest::MonitorAndVerifyRequestsToProxyServer,
+        base::Unretained(this)));
     ASSERT_TRUE(primary_server_.Start());
 
     secondary_server_.RegisterRequestHandler(
         base::BindRepeating(&BasicResponse, kSecondaryResponse));
+    secondary_server_.RegisterRequestMonitor(base::BindRepeating(
+        &DataReductionProxyBrowsertest::MonitorAndVerifyRequestsToProxyServer,
+        base::Unretained(this)));
     ASSERT_TRUE(secondary_server_.Start());
 
     net::HostPortPair primary_host_port_pair = primary_server_.host_port_pair();
@@ -587,6 +868,12 @@ class DataReductionProxyFallbackBrowsertest
   void SetLocationHeader(const std::string& header) {
     base::AutoLock auto_lock(lock_);
     location_header_ = header;
+  }
+
+  void TearDown() override {
+    if (IsNetworkServiceEnabled()) {
+      EXPECT_LE(1u, count_proxy_server_requests_received_);
+    }
   }
 
  private:
@@ -647,26 +934,35 @@ class DataReductionProxyFallbackBrowsertest
 class TestDataReductionProxyPingbackClient
     : public DataReductionProxyPingbackClient {
  public:
-  bool received_valid_pingback() { return received_valid_pingback_; }
+  bool received_valid_pingback() const { return received_valid_pingback_; }
+  uint64_t received_page_id() const { return received_page_id_; }
 
  private:
   void SendPingback(const DataReductionProxyData& data,
                     const DataReductionProxyPageLoadTiming& timing) override {
-    ASSERT_TRUE(data.used_data_reduction_proxy());
-    ASSERT_EQ(kSessionKey, data.session_key());
-    ASSERT_GT(data.page_id(), 0U);
+    EXPECT_TRUE(data.used_data_reduction_proxy());
+    EXPECT_EQ(kSessionKey, data.session_key());
+    EXPECT_GT(*data.page_id(), 0U);
     received_valid_pingback_ = true;
+    received_page_id_ = *data.page_id();
   }
 
   void SetPingbackReportingFraction(
       float pingback_reporting_fraction) override {}
 
   bool received_valid_pingback_ = false;
+  uint64_t received_page_id_ = 0;
 };
 
 IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, PingbackSent) {
   net::EmbeddedTestServer primary_server;
+  primary_server.RegisterRequestHandler(
+      base::BindRepeating(&CreateDRPResponseWithHeader));
+  ASSERT_TRUE(primary_server.Start());
   SetConfig(CreateConfigForServer(primary_server));
+  // A network change forces the config to be fetched.
+  SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_3G);
+  WaitForConfig();
 
   // Pingback client is owned by the DRP service.
   TestDataReductionProxyPingbackClient* pingback_client =
@@ -677,13 +973,29 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, PingbackSent) {
       ->SetPingbackClientForTesting(pingback_client);
 
   // Proxy will be used, so it shouldn't matter if the host cannot be resolved.
-  ui_test_utils::NavigateToURL(browser(), GURL("http://does.not.resolve/echo"));
-  // EXPECT_THAT(GetBody(), kPrimaryResponse);
+  ui_test_utils::NavigateToURL(
+      browser(), GURL("http://does.not.resolve.com/echo_chromeproxy_header"));
+  std::string body = GetBody();
 
   // Navigate away for the metrics to be recorded.
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
 
-  ASSERT_TRUE(pingback_client->received_valid_pingback());
+  EXPECT_TRUE(pingback_client->received_valid_pingback());
+  EXPECT_THAT(body, HasSubstr(base::StringPrintf("s=%s,", kSessionKey)));
+  EXPECT_THAT(body, HasSubstr("pid="));
+
+  // Parse the page ID from chrom-proxy request header and compare with page ID
+  // sent in pingback.
+  uint64_t request_page_id = 0;
+  base::StringPairs kv_pairs;
+  EXPECT_TRUE(base::SplitStringIntoKeyValuePairs(body, '=', ',', &kv_pairs));
+  for (const auto& kv_pair : kv_pairs) {
+    if (kv_pair.first == "pid")
+      EXPECT_TRUE(base::HexStringToUInt64(kv_pair.second, &request_page_id));
+  }
+
+  EXPECT_NE(0u, request_page_id);
+  EXPECT_EQ(pingback_client->received_page_id(), request_page_id);
 }
 
 IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
@@ -745,8 +1057,9 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
   EXPECT_THAT(GetBody(), kSecondaryResponse);
 }
 
-IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
-                       BadProxiesResetWhenDisabled) {
+IN_PROC_BROWSER_TEST_F(
+    DataReductionProxyFallbackBrowsertest,
+    DISABLE_ON_WIN_MAC_CHROMEOS(BadProxiesResetWhenDisabled)) {
   base::HistogramTester histogram_tester;
   SetHeader("bypass=100");
   ui_test_utils::NavigateToURL(
@@ -1020,12 +1333,18 @@ class DataReductionProxyWarmupURLBrowsertest
     primary_server_.RegisterRequestHandler(base::BindRepeating(
         &DataReductionProxyWarmupURLBrowsertest::WaitForWarmupRequest,
         base::Unretained(this), primary_server_loop_.get()));
+    primary_server_.RegisterRequestMonitor(base::BindRepeating(
+        &DataReductionProxyBrowsertest::MonitorAndVerifyRequestsToProxyServer,
+        base::Unretained(this)));
     ASSERT_TRUE(primary_server_.Start());
 
     secondary_server_loop_ = std::make_unique<base::RunLoop>();
     secondary_server_.RegisterRequestHandler(base::BindRepeating(
         &DataReductionProxyWarmupURLBrowsertest::WaitForWarmupRequest,
         base::Unretained(this), secondary_server_loop_.get()));
+    secondary_server_.RegisterRequestMonitor(base::BindRepeating(
+        &DataReductionProxyBrowsertest::MonitorAndVerifyRequestsToProxyServer,
+        base::Unretained(this)));
     ASSERT_TRUE(secondary_server_.Start());
 
     net::HostPortPair primary_host_port_pair = primary_server_.host_port_pair();
@@ -1147,6 +1466,7 @@ IN_PROC_BROWSER_TEST_P(
       EXPECT_THAT(body, HasSubstr(kSessionKey));
     }
   }
+  EXPECT_TRUE(WasUrlPathMonitored("/e2e_probe"));
 }
 
 // First parameter indicate proxy scheme for proxies that are being tested.
@@ -1213,6 +1533,127 @@ std::unique_ptr<net::test_server::HttpResponse> RespondWithRequestPathHandler(
   response->set_code(net::HTTP_OK);
   response->set_content(request.relative_url);
   return response;
+}
+
+// Verify that requests initiated by SimpleURLLoader use the proxy only if
+// render frame ID is set.
+IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, SimpleURLLoader) {
+  if (!IsNetworkServiceEnabled())
+    return;
+
+  net::EmbeddedTestServer origin_server;
+  origin_server.RegisterRequestHandler(
+      base::BindRepeating(&BasicResponse, kDummyBody));
+  ASSERT_TRUE(origin_server.Start());
+
+  net::EmbeddedTestServer proxy_server;
+  proxy_server.RegisterRequestMonitor(base::BindRepeating(
+      &DataReductionProxyBrowsertest::MonitorAndVerifyRequestsToProxyServer,
+      base::Unretained(this)));
+  proxy_server.RegisterRequestHandler(
+      base::BindRepeating(&BasicResponse, kPrimaryResponse));
+  ASSERT_TRUE(proxy_server.Start());
+
+  for (const bool set_render_frame_id : {false, true}) {
+    // Set config to |proxy_server|.
+    SetConfig(CreateConfigForServer(proxy_server));
+    // A network change forces the config to be fetched.
+    SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_3G);
+    WaitForConfig();
+
+    auto resource_request = std::make_unique<network::ResourceRequest>();
+    if (set_render_frame_id)
+      resource_request->render_frame_id = MSG_ROUTING_CONTROL;
+    // Change the URL for different test cases because a bypassed URL may be
+    // added to the local cache by network service proxy delegate.
+    if (set_render_frame_id) {
+      resource_request->url = GetURLWithMockHost(
+          origin_server, "/echoheader?Chrome-Proxy&random=1");
+    } else {
+      resource_request->url = GetURLWithMockHost(
+          origin_server, "/echoheader?Chrome-Proxy&random=2");
+    }
+
+    auto simple_loader = network::SimpleURLLoader::Create(
+        std::move(resource_request), TRAFFIC_ANNOTATION_FOR_TESTS);
+
+    auto* storage_partition =
+        content::BrowserContext::GetDefaultStoragePartition(
+            browser()->profile());
+    auto url_loader_factory =
+        storage_partition->GetURLLoaderFactoryForBrowserProcess();
+
+    base::RunLoop loop;
+    simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+        url_loader_factory.get(),
+        base::BindLambdaForTesting(
+            [&](std::unique_ptr<std::string> response_body) {
+              loop.Quit();
+              ASSERT_TRUE(response_body);
+              EXPECT_EQ(set_render_frame_id ? kPrimaryResponse : kDummyBody,
+                        *response_body);
+            }));
+    loop.Run();
+  }
+}
+
+// Ensure that renderer initiated same-site navigations work.
+IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest,
+                       RendererInitiatedSameSiteNavigation) {
+  // Perform a browser-initiated navigation.
+  net::EmbeddedTestServer origin_server;
+  origin_server.ServeFilesFromSourceDirectory(
+      base::FilePath(FILE_PATH_LITERAL("content/test/data")));
+  ASSERT_TRUE(origin_server.Start());
+
+  net::EmbeddedTestServer proxy_server;
+  proxy_server.ServeFilesFromSourceDirectory(
+      base::FilePath(FILE_PATH_LITERAL("content/test/data")));
+  proxy_server.RegisterRequestMonitor(base::BindRepeating(
+      &DataReductionProxyBrowsertest::MonitorAndVerifyRequestsToProxyServer,
+      base::Unretained(this)));
+  ASSERT_TRUE(proxy_server.Start());
+  // Set config to |proxy_server|.
+  SetConfig(CreateConfigForServer(proxy_server));
+  // A network change forces the config to be fetched.
+  SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_3G);
+  WaitForConfig();
+
+  {
+    content::TestNavigationObserver observer(
+        browser()->tab_strip_model()->GetActiveWebContents());
+    GURL url(GetURLWithMockHost(origin_server, "/simple_links.html"));
+    ui_test_utils::NavigateToURL(browser(), url);
+    EXPECT_EQ(url, observer.last_navigation_url());
+    EXPECT_TRUE(observer.last_navigation_succeeded());
+    EXPECT_FALSE(observer.last_initiator_origin().has_value());
+    EXPECT_TRUE(WasUrlPathMonitored(url.path()));
+  }
+
+  ResetMonitoredUrls();
+
+  // Simulate clicking on a same-site link.
+  {
+    content::TestNavigationObserver observer(
+        browser()->tab_strip_model()->GetActiveWebContents());
+    GURL url(GetURLWithMockHost(origin_server, "/title2.html"));
+    bool success = false;
+    EXPECT_TRUE(ExecuteScriptAndExtractBool(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        "window.domAutomationController.send(clickSameSiteLink());", &success));
+    EXPECT_TRUE(success);
+    EXPECT_TRUE(
+        WaitForLoadStop(browser()->tab_strip_model()->GetActiveWebContents()));
+    EXPECT_EQ(url, observer.last_navigation_url());
+    EXPECT_TRUE(observer.last_navigation_succeeded());
+    EXPECT_EQ(browser()
+                  ->tab_strip_model()
+                  ->GetActiveWebContents()
+                  ->GetMainFrame()
+                  ->GetLastCommittedOrigin(),
+              observer.last_initiator_origin());
+    EXPECT_TRUE(WasUrlPathMonitored(url.path()));
+  }
 }
 
 // Tests that Chrome-Proxy response headers are respected after the
@@ -1290,5 +1731,132 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest,
   EXPECT_EQ("/x2", ReadSubresourceFromRenderer(browser(), x2_url));
   EXPECT_EQ(kExpectedLog2, event_log.GetAndReset());
 }
+
+IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, NestedWebWorker) {
+  // Nested Web Workers exercise URLLoaderThrottles in interesting ways. Each
+  // worker runs on a separate thread and each one has an associated
+  // URLLoaderThrottleProvider. When spawning a nested worker, the outer
+  // worker's throttle provider is cloned on the outer worker's thread and then
+  // used on the inner worker's thread. This test verifies that the mojo
+  // connections between the throttles and DRP are set up correctly given the
+  // non-trivial threading scenario.
+  constexpr char kHtml[] = R"(
+    <html><body><script language="javascript">
+      function workerImpl() {
+        function nestedWorkerImpl() {
+          postMessage('done');
+        }
+        var blob = new Blob(['(' + nestedWorkerImpl.toString() + ')()'],
+                            { type: 'application/javascript' });
+        var nestedWorker = new Worker(URL.createObjectURL(blob));
+        nestedWorker.onmessage = (event) => postMessage(event.data);
+      }
+      var blob = new Blob(['(' + workerImpl.toString() + ')()'],
+                          { type: 'application/javascript' });
+      var worker = new Worker(URL.createObjectURL(blob));
+      worker.onmessage = (event) => document.title = event.data;
+    </script></body></html>
+  )";
+  constexpr char kDestinationHost[] = "some.host";
+
+  net::EmbeddedTestServer drp_server;
+  drp_server.RegisterRequestHandler(base::BindLambdaForTesting(
+      [&kHtml, &kDestinationHost](const net::test_server::HttpRequest& request)
+          -> std::unique_ptr<net::test_server::HttpResponse> {
+        if (GetDestinationHost(request) != kDestinationHost)
+          return nullptr;
+
+        auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+        response->set_content(kHtml);
+        return response;
+      }));
+  ASSERT_TRUE(drp_server.Start());
+
+  // Change the DRP configuration so that |drp_server| is the current DRP.
+  SetConfig(CreateConfigForServer(drp_server));
+  SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_3G);
+  WaitForConfig();
+
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(std::string("http://") + kDestinationHost));
+
+  const auto kExpectedTitle = base::ASCIIToUTF16("done");
+  content::TitleWatcher title_watcher(
+      browser()->tab_strip_model()->GetActiveWebContents(), kExpectedTitle);
+  EXPECT_EQ(title_watcher.WaitAndGetTitle(), kExpectedTitle);
+}
+
+// Test that disabling the kDataReductionProxyEnabledWithNetworkService disables
+// the proxy.
+class DataReductionProxyEnabledWithNetworkServiceHoldbackBrowserTest
+    : public ::testing::WithParamInterface<bool>,
+      public DataReductionProxyBrowsertest {
+ public:
+  void SetUp() override {
+    if (GetParam()) {
+      // Enable NetworkService, and disable
+      // kDataReductionProxyEnabledWithNetworkService.
+      scoped_feature_list_.InitWithFeatures(
+          {network::features::kNetworkService},
+          {data_reduction_proxy::features::
+               kDataReductionProxyEnabledWithNetworkService});
+    } else {
+      // Enable both NetworkService and
+      // kDataReductionProxyEnabledWithNetworkService.
+      scoped_feature_list_.InitWithFeatures(
+          {network::features::kNetworkService,
+           data_reduction_proxy::features::
+               kDataReductionProxyEnabledWithNetworkService},
+          {});
+    }
+
+    InProcessBrowserTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(
+    DataReductionProxyEnabledWithNetworkServiceHoldbackBrowserTest,
+    ProxyUsed) {
+  const bool holdback_enabled = GetParam();
+
+  net::EmbeddedTestServer origin_server;
+  origin_server.RegisterRequestHandler(
+      base::BindRepeating(&BasicResponse, kDummyBody));
+  ASSERT_TRUE(origin_server.Start());
+
+  net::EmbeddedTestServer proxy_server;
+  proxy_server.RegisterRequestHandler(
+      base::BindRepeating(&BasicResponse, kPrimaryResponse));
+  ASSERT_TRUE(proxy_server.Start());
+
+  SetConfig(CreateConfigForServer(proxy_server));
+  // A network change forces the config to be fetched.
+  SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_3G);
+  if (!holdback_enabled) {
+    WaitForConfig();
+  }
+
+  ui_test_utils::NavigateToURL(
+      browser(), GetURLWithMockHost(origin_server, "/echoheader?Chrome-Proxy"));
+
+  if (holdback_enabled) {
+    // Proxy should not be used.
+    EXPECT_EQ(GetBody(), kDummyBody);
+  } else {
+    // Proxy should be used.
+    EXPECT_EQ(GetBody(), kPrimaryResponse);
+  }
+}
+
+// Parameter is true if kDataReductionProxyEnabledWithNetworkService is
+// disabled. Disabling kDataReductionProxyEnabledWithNetworkService should
+// disable data reduction proxy when network servicification is enabled.
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    DataReductionProxyEnabledWithNetworkServiceHoldbackBrowserTest,
+    ::testing::Bool());
 
 }  // namespace data_reduction_proxy

@@ -82,7 +82,6 @@ class CONTENT_EXPORT IndexedDBCallbacks
 
   static bool CreateAllBlobs(
       scoped_refptr<ChromeBlobStorageContext> blob_context,
-      scoped_refptr<base::SequencedTaskRunner> idb_runner,
       std::vector<IndexedDBValueBlob> value_blobs);
 
   IndexedDBCallbacks(base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
@@ -119,9 +118,6 @@ class CONTENT_EXPORT IndexedDBCallbacks
   // IndexedDBDatabase::Get
   // IndexedDBCursor::Advance
   virtual void OnSuccess(IndexedDBReturnValue* value);
-
-  // IndexedDBDatabase::GetAll
-  virtual void OnSuccessArray(std::vector<IndexedDBReturnValue>* values);
 
   // IndexedDBDatabase::Put / IndexedDBCursor::Update
   virtual void OnSuccess(const blink::IndexedDBKey& key);

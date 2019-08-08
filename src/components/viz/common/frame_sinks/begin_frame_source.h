@@ -159,6 +159,11 @@ class VIZ_COMMON_EXPORT BeginFrameSource {
 
   virtual void AsValueInto(base::trace_event::TracedValue* state) const;
 
+  void AllowOneBeginFrameAfterGpuBusy() {
+    DCHECK(!is_gpu_busy_);
+    allow_one_begin_frame_after_gpu_busy_ = true;
+  }
+
  protected:
   // Returns whether begin-frames to clients should be withheld (because the gpu
   // is still busy, for example). If this returns true, then OnGpuNoLongerBusy()
@@ -176,9 +181,23 @@ class VIZ_COMMON_EXPORT BeginFrameSource {
   // The BeginFrameSource should not send the begin-frame messages to clients if
   // gpu is busy.
   bool is_gpu_busy_ = false;
+
   // Keeps track of whether a begin-frame was paused, and whether
   // OnGpuNoLongerBusy() should be invoked when the gpu is no longer busy.
-  bool request_notification_on_gpu_availability_ = false;
+  enum class GpuBusyThrottlingState {
+    // No BeginFrames ticks were received since gpu was marked busy.
+    kIdle,
+    // One BeginFrame has been dispatched since gpu was marked busy.
+    kOneBeginFrameAfterBusySent,
+    // At least one BeginFrame was throttled since gpu was marked busy. If set
+    // to throttled state, the sub-class is informed to send the throttled
+    // BeginFrame once gpu is marked not busy.
+    kThrottled
+  };
+  GpuBusyThrottlingState gpu_busy_response_state_ =
+      GpuBusyThrottlingState::kIdle;
+
+  bool allow_one_begin_frame_after_gpu_busy_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(BeginFrameSource);
 };
@@ -264,6 +283,11 @@ class VIZ_COMMON_EXPORT DelayBasedBeginFrameSource
   void OnTimerTick() override;
 
  private:
+  // The created BeginFrameArgs' sequence_number is calculated based on what
+  // interval |frame_time| is in. For example, if |last_frame_time_| is 100,
+  // |next_sequence_number_| is 5, |last_timebase_| is 110 and the interval is
+  // 20, then a |frame_time| of 175 would result in the sequence number being 8
+  // (3 intervals since 110).
   BeginFrameArgs CreateBeginFrameArgs(base::TimeTicks frame_time);
   void IssueBeginFrameToObserver(BeginFrameObserver* obs,
                                  const BeginFrameArgs& args);
@@ -272,6 +296,16 @@ class VIZ_COMMON_EXPORT DelayBasedBeginFrameSource
   base::flat_set<BeginFrameObserver*> observers_;
   base::TimeTicks last_timebase_;
   BeginFrameArgs last_begin_frame_args_;
+
+  // Used for determining what the sequence number should be on
+  // CreateBeginFrameArgs.
+  base::TimeTicks next_expected_frame_time_;
+
+  // This is what the sequence number should be for any args created between
+  // |next_expected_frame_time_| to |next_expected_frame_time_| + vsync
+  // interval. Args created outside of this range will have their sequence
+  // number assigned relative to this, based on how many intervals the frame
+  // time is off.
   uint64_t next_sequence_number_;
 
   DISALLOW_COPY_AND_ASSIGN(DelayBasedBeginFrameSource);

@@ -26,7 +26,7 @@ cr.define('restore_state_test', function() {
     });
 
     /**
-     * @param {!print_preview_new.SerializedSettings} stickySettings Settings
+     * @param {!print_preview.SerializedSettings} stickySettings Settings
      *     to verify.
      */
     function verifyStickySettingsApplied(stickySettings) {
@@ -66,7 +66,7 @@ cr.define('restore_state_test', function() {
     }
 
     /**
-     * @param {!print_preview_new.SerializedSettings} stickySettings
+     * @param {!print_preview.SerializedSettings} stickySettings
      * @return {!Promise} Promise that resolves when initialization is done and
      *     settings have been verified.
      */
@@ -78,7 +78,7 @@ cr.define('restore_state_test', function() {
           print_preview_test_utils.getCddTemplateWithAdvancedSettings(
               2, initialSettings.printerName));
       const pluginProxy = new print_preview.PDFPluginStub();
-      print_preview_new.PluginProxy.setInstance(pluginProxy);
+      print_preview.PluginProxy.setInstance(pluginProxy);
 
       page = document.createElement('print-preview-app');
       document.body.appendChild(page);

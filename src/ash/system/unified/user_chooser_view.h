@@ -16,7 +16,7 @@ class Label;
 
 namespace ash {
 
-class UnifiedSystemTrayController;
+class UserChooserDetailedViewController;
 
 // Circular image view with user's icon of |user_index|.
 views::View* CreateUserAvatarView(int user_index);
@@ -28,7 +28,7 @@ base::string16 GetUserItemAccessibleString(int user_index);
 class UserItemButton : public views::Button, public views::ButtonListener {
  public:
   UserItemButton(int user_index,
-                 UnifiedSystemTrayController* controller,
+                 UserChooserDetailedViewController* controller,
                  bool has_close_button);
   ~UserItemButton() override = default;
 
@@ -42,7 +42,7 @@ class UserItemButton : public views::Button, public views::ButtonListener {
 
  private:
   const int user_index_;
-  UnifiedSystemTrayController* const controller_;
+  UserChooserDetailedViewController* const controller_;
   views::ImageView* const capture_icon_;
   views::Label* const name_;
   views::Label* const email_;
@@ -53,13 +53,16 @@ class UserItemButton : public views::Button, public views::ButtonListener {
 // A detailed view of user chooser.
 class UserChooserView : public views::View, public MediaCaptureObserver {
  public:
-  UserChooserView(UnifiedSystemTrayController* controller);
+  explicit UserChooserView(UserChooserDetailedViewController* controller);
   ~UserChooserView() override;
 
   // MediaCaptureObserver:
   void OnMediaCaptureChanged(
       const base::flat_map<AccountId, mojom::MediaCaptureState>& capture_states)
       override;
+
+  // views::View:
+  const char* GetClassName() const override;
 
  private:
   std::vector<UserItemButton*> user_item_buttons_;

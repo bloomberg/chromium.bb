@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "base/macros.h"
+#include "base/unguessable_token.h"
 
 namespace content {
 
@@ -57,7 +58,9 @@ class AppCacheNavigationHandle {
                            int process_id);
   ~AppCacheNavigationHandle();
 
-  int appcache_host_id() const { return appcache_host_id_; }
+  const base::UnguessableToken& appcache_host_id() const {
+    return appcache_host_id_;
+  }
   AppCacheNavigationHandleCore* core() const { return core_.get(); }
 
   // Called by NavigationHandleImpl::ReadyToCommitNavigation, because this is
@@ -71,7 +74,7 @@ class AppCacheNavigationHandle {
   void SetProcessId(int process_id);
 
  private:
-  const int appcache_host_id_;
+  const base::UnguessableToken appcache_host_id_;
   std::unique_ptr<AppCacheNavigationHandleCore> core_;
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheNavigationHandle);

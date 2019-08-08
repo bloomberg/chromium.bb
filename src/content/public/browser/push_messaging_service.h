@@ -16,31 +16,28 @@
 namespace blink {
 namespace mojom {
 enum class PermissionStatus;
-}
-}  // namespace blink
-
-namespace content {
-
-namespace mojom {
 enum class PushRegistrationStatus;
 enum class PushUnregistrationReason;
 enum class PushUnregistrationStatus;
 }  // namespace mojom
+struct WebPushSubscriptionOptions;
+}  // namespace blink
+
+namespace content {
 
 class BrowserContext;
-struct PushSubscriptionOptions;
 
 // A push service-agnostic interface that the Push API uses for talking to
 // push messaging services like GCM. Must only be used on the UI thread.
 class CONTENT_EXPORT PushMessagingService {
  public:
   using RegisterCallback =
-      base::Callback<void(const std::string& registration_id,
-                          const std::vector<uint8_t>& p256dh,
-                          const std::vector<uint8_t>& auth,
-                          mojom::PushRegistrationStatus status)>;
+      base::OnceCallback<void(const std::string& registration_id,
+                              const std::vector<uint8_t>& p256dh,
+                              const std::vector<uint8_t>& auth,
+                              blink::mojom::PushRegistrationStatus status)>;
   using UnregisterCallback =
-      base::Callback<void(mojom::PushUnregistrationStatus)>;
+      base::OnceCallback<void(blink::mojom::PushUnregistrationStatus)>;
   using SubscriptionInfoCallback =
       base::Callback<void(bool is_valid,
                           const std::vector<uint8_t>& p256dh,
@@ -61,23 +58,25 @@ class CONTENT_EXPORT PushMessagingService {
   // displayed to the user. It's safe to call this method multiple times for
   // the same registration information, in which case the existing subscription
   // will be returned by the server.
-  virtual void SubscribeFromDocument(const GURL& requesting_origin,
-                                     int64_t service_worker_registration_id,
-                                     int renderer_id,
-                                     int render_frame_id,
-                                     const PushSubscriptionOptions& options,
-                                     bool user_gesture,
-                                     const RegisterCallback& callback) = 0;
+  virtual void SubscribeFromDocument(
+      const GURL& requesting_origin,
+      int64_t service_worker_registration_id,
+      int renderer_id,
+      int render_frame_id,
+      const blink::WebPushSubscriptionOptions& options,
+      bool user_gesture,
+      RegisterCallback callback) = 0;
 
   // Subscribe the given |options.sender_info| with the push messaging service.
   // The frame is not known so if permission was not previously granted by the
   // user this request should fail. It's safe to call this method multiple times
   // for the same registration information, in which case the existing
   // subscription will be returned by the server.
-  virtual void SubscribeFromWorker(const GURL& requesting_origin,
-                                   int64_t service_worker_registration_id,
-                                   const PushSubscriptionOptions& options,
-                                   const RegisterCallback& callback) = 0;
+  virtual void SubscribeFromWorker(
+      const GURL& requesting_origin,
+      int64_t service_worker_registration_id,
+      const blink::WebPushSubscriptionOptions& options,
+      RegisterCallback callback) = 0;
 
   // Retrieves the subscription associated with |origin| and
   // |service_worker_registration_id|, validates that the provided
@@ -95,11 +94,11 @@ class CONTENT_EXPORT PushMessagingService {
   // Unsubscribe the given |sender_id| from the push messaging service. Locally
   // deactivates the subscription, then runs |callback|, then asynchronously
   // attempts to unsubscribe with the push service.
-  virtual void Unsubscribe(mojom::PushUnregistrationReason reason,
+  virtual void Unsubscribe(blink::mojom::PushUnregistrationReason reason,
                            const GURL& requesting_origin,
                            int64_t service_worker_registration_id,
                            const std::string& sender_id,
-                           const UnregisterCallback& callback) = 0;
+                           UnregisterCallback callback) = 0;
 
   // Returns whether subscriptions that do not mandate user visible UI upon
   // receiving a push message are supported. Influences permission request and
@@ -127,7 +126,7 @@ class CONTENT_EXPORT PushMessagingService {
   static void ClearPushSubscriptionId(BrowserContext* browser_context,
                                       const GURL& origin,
                                       int64_t service_worker_registration_id,
-                                      const base::Closure& callback);
+                                      base::OnceClosure callback);
 
   // Stores a push subscription in the service worker for the given |origin|.
   // Must only be used by tests.

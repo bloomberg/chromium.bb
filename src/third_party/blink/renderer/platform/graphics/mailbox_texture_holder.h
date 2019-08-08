@@ -41,7 +41,8 @@ class PLATFORM_EXPORT MailboxTextureHolder final : public TextureHolder {
                        const gpu::SyncToken&,
                        unsigned texture_id_to_delete_after_mailbox_consumed,
                        base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&,
-                       IntSize mailbox_size);
+                       IntSize mailbox_size,
+                       bool is_origin_top_left);
   // This function turns a texture-backed SkImage into a mailbox and a
   // syncToken.
   MailboxTextureHolder(std::unique_ptr<TextureHolder>, GLenum filter);

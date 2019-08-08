@@ -122,12 +122,11 @@ IN_PROC_BROWSER_TEST_F(ChromeNewWindowClientBrowserTest, IncognitoDisabled) {
                                       IncognitoModePrefs::ENABLED);
   ChromeNewWindowClient::Get()->NewWindow(true /* incognito */);
   EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
-  EXPECT_EQ(Profile::INCOGNITO_PROFILE,
-            GetLastActiveBrowser()->profile()->GetProfileType());
+  EXPECT_TRUE(GetLastActiveBrowser()->profile()->IsIncognitoProfile());
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeNewWindowClientWebAppBrowserTest, OpenWebApp) {
-  InstallTestBookmarkApp(GetAppUrlHost());
+  InstallTestBookmarkApp();
   const GURL app_url = https_server().GetURL(GetAppUrlHost(), GetAppUrlPath());
   const char* key =
       arc::ArcWebContentsData::ArcWebContentsData::kArcTransitionFlag;

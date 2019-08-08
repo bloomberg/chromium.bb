@@ -32,7 +32,6 @@ extern const char kSecureSessionHeaderOption[];
 extern const char kBuildNumberHeaderOption[];
 extern const char kPatchNumberHeaderOption[];
 extern const char kClientHeaderOption[];
-extern const char kExperimentsOption[];
 
 #if defined(OS_ANDROID)
 extern const char kAndroidWebViewProtocolVersion[];
@@ -126,13 +125,6 @@ class DataReductionProxyRequestOptions {
   // session info. crbug.com/709624
   void ResetPageId();
 
-  // Updates the value of the experiments to be run and regenerate the header if
-  // necessary.
-  void UpdateExperiments();
-
-  // Adds the server-side experiment from the field trial.
-  void AddServerExperimentFromFieldTrial();
-
   // Generates and updates the session ID and credentials.
   void UpdateCredentials();
 
@@ -147,11 +139,11 @@ class DataReductionProxyRequestOptions {
   std::string key_;
 
   // Name of the client and version of the data reduction proxy protocol to use.
-  std::string client_;
+  const std::string client_;
   std::string secure_session_;
   std::string build_;
   std::string patch_;
-  std::vector<std::string> experiments_;
+  const std::string server_experiments_;
 
   // Must outlive |this|.
   DataReductionProxyConfig* data_reduction_proxy_config_;

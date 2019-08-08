@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/synchronization/waitable_event.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
 namespace chrome_cleaner {
@@ -17,7 +18,7 @@ namespace {
 void SaveFindFirstFileCallback(uint32_t* out_result,
                                LPWIN32_FIND_DATAW lpFindFileData,
                                FindFileHandle* out_handle,
-                               base::OnceClosure quit_closure,
+                               base::WaitableEvent* async_call_done_event,
                                uint32_t result,
                                mojom::FindFileDataPtr data,
                                mojom::FindHandlePtr handle) {
@@ -26,33 +27,30 @@ void SaveFindFirstFileCallback(uint32_t* out_result,
   // processes.
   memcpy(lpFindFileData, data->data.data(), sizeof(WIN32_FIND_DATAW));
   *out_handle = handle->find_handle;
-
-  std::move(quit_closure).Run();
+  async_call_done_event->Signal();
 }
 
 void SaveFindNextFileCallback(uint32_t* out_result,
                               LPWIN32_FIND_DATAW lpFindFileData,
-                              base::OnceClosure quit_closure,
+                              base::WaitableEvent* async_call_done_event,
                               uint32_t result,
                               mojom::FindFileDataPtr data) {
   *out_result = result;
   // The layout for WIN32_FIND_DATAW is the same in the broker and the target
   // processes.
   memcpy(lpFindFileData, data->data.data(), sizeof(WIN32_FIND_DATAW));
-
-  std::move(quit_closure).Run();
+  async_call_done_event->Signal();
 }
 
 void SaveFindCloseCallback(uint32_t* out_result,
-                           base::OnceClosure quit_closure,
+                           base::WaitableEvent* async_call_done_event,
                            uint32_t result) {
   *out_result = result;
-
-  std::move(quit_closure).Run();
+  async_call_done_event->Signal();
 }
 
 void SaveOpenReadOnlyFileCallback(base::win::ScopedHandle* result_holder,
-                                  base::OnceClosure quit_closure,
+                                  base::WaitableEvent* async_call_done_event,
                                   mojo::ScopedHandle handle) {
   HANDLE raw_handle = INVALID_HANDLE_VALUE;
   MojoResult mojo_result =
@@ -60,7 +58,7 @@ void SaveOpenReadOnlyFileCallback(base::win::ScopedHandle* result_holder,
   LOG_IF(ERROR, mojo_result != MOJO_RESULT_OK)
       << "UnwrapPlatformFile failed " << mojo_result;
   result_holder->Set(raw_handle);
-  std::move(quit_closure).Run();
+  async_call_done_event->Signal();
 }
 
 }  // namespace

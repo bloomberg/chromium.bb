@@ -53,7 +53,7 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
     CompositorFilterOperations filter;
     float opacity = 1;
     CompositorFilterOperations backdrop_filter;
-    gfx::RRectF backdrop_filter_bounds;
+    base::Optional<gfx::RRectF> backdrop_filter_bounds;
     SkBlendMode blend_mode = SkBlendMode::kSrcOver;
     // === End of effects ===
     CompositingReasons direct_compositing_reasons = CompositingReason::kNone;
@@ -186,7 +186,7 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
     return state_.backdrop_filter;
   }
 
-  const gfx::RRectF& BackdropFilterBounds() const {
+  const base::Optional<gfx::RRectF>& BackdropFilterBounds() const {
     return state_.backdrop_filter_bounds;
   }
 
@@ -198,6 +198,12 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
   FloatPoint FiltersOrigin() const {
     DCHECK(!Parent() || !IsParentAlias());
     return state_.filters_origin;
+  }
+
+  bool HasRealEffects() const {
+    return Opacity() != 1.0f || GetColorFilter() != kColorFilterNone ||
+           BlendMode() != SkBlendMode::kSrcOver || !Filter().IsEmpty() ||
+           !BackdropFilter().IsEmpty();
   }
 
   // Returns a rect covering the pixels that can be affected by pixels in

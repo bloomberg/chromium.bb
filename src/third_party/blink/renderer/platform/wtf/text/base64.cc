@@ -259,6 +259,17 @@ bool Base64Decode(const String& in,
                                      should_ignore_character, policy);
 }
 
+bool Base64UnpaddedURLDecode(const String& in,
+                             Vector<char>& out,
+                             CharacterMatchFunctionPtr should_ignore_character,
+                             Base64DecodePolicy policy) {
+  if (in.Contains('+') || in.Contains('/') || in.Contains('='))
+    return false;
+
+  return Base64Decode(NormalizeToBase64(in), out, should_ignore_character,
+                      policy);
+}
+
 String Base64URLEncode(const char* data,
                        unsigned length,
                        Base64EncodePolicy policy) {

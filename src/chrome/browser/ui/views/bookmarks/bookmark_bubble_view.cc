@@ -144,9 +144,10 @@ base::string16 BookmarkBubbleView::GetDialogButtonLabel(
 }
 
 views::View* BookmarkBubbleView::CreateExtraView() {
-  edit_button_ = views::MdTextButton::CreateSecondaryUiButton(
+  auto edit_button = views::MdTextButton::CreateSecondaryUiButton(
       this, l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_OPTIONS));
-  edit_button_->AddAccelerator(ui::Accelerator(ui::VKEY_E, ui::EF_ALT_DOWN));
+  edit_button->AddAccelerator(ui::Accelerator(ui::VKEY_E, ui::EF_ALT_DOWN));
+  edit_button_ = edit_button.release();
   return edit_button_;
 }
 
@@ -223,7 +224,7 @@ void BookmarkBubbleView::ButtonPressed(views::Button* sender,
 // views::ComboboxListener -----------------------------------------------------
 
 void BookmarkBubbleView::OnPerformAction(views::Combobox* combobox) {
-  if (combobox->selected_index() + 1 == folder_model()->GetItemCount()) {
+  if (combobox->GetSelectedIndex() + 1 == folder_model()->GetItemCount()) {
     base::RecordAction(UserMetricsAction("BookmarkBubble_EditFromCombobox"));
     ShowEditor();
   }
@@ -324,6 +325,7 @@ void BookmarkBubbleView::ApplyEdits() {
       base::RecordAction(
           UserMetricsAction("BookmarkBubble_ChangeTitleInBubble"));
     }
-    folder_model()->MaybeChangeParent(node, parent_combobox_->selected_index());
+    folder_model()->MaybeChangeParent(node,
+                                      parent_combobox_->GetSelectedIndex());
   }
 }

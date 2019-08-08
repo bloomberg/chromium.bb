@@ -590,7 +590,7 @@ TEST_F(SQLitePersistentCookieStoreTest, FilterBadCookiesAndFixupDb) {
   sql::Statement stmt(db->GetUniqueStatement(
       "INSERT INTO cookies (creation_utc, host_key, name, value, "
       "encrypted_value, path, expires_utc, is_secure, is_httponly, "
-      "firstpartyonly, last_access_utc, has_expires, is_persistent, priority) "
+      "samesite, last_access_utc, has_expires, is_persistent, priority) "
       "VALUES (?,?,?,?,'',?,0,0,0,0,0,1,1,0)"));
   ASSERT_TRUE(stmt.is_valid());
 
@@ -1405,11 +1405,186 @@ TEST_F(SQLitePersistentCookieStoreTest, NoCoalesceUnrelated) {
                                 base::Unretained(this)));
 
   store_->AddCookie(*cookie1);
-  store_->AddCookie(*cookie2);
+  store_->DeleteCookie(*cookie2);
   // delete on cookie2 shouldn't cancel op on unrelated cookie1.
   EXPECT_EQ(2u, store_->GetQueueLengthForTesting());
 
   db_thread_event_.Signal();
+}
+
+bool CreateV10Schema(sql::Database* db) {
+  sql::MetaTable meta_table;
+  if (!meta_table.Init(db, /* version = */ 10,
+                       /* compatible version = */ 10)) {
+    return false;
+  }
+
+  std::string stmt(
+      "CREATE TABLE cookies ("
+      "creation_utc INTEGER NOT NULL,"
+      "host_key TEXT NOT NULL,"
+      "name TEXT NOT NULL,"
+      "value TEXT NOT NULL,"
+      "path TEXT NOT NULL,"
+      "expires_utc INTEGER NOT NULL,"
+      "is_secure INTEGER NOT NULL,"
+      "is_httponly INTEGER NOT NULL,"
+      "last_access_utc INTEGER NOT NULL, "
+      "has_expires INTEGER NOT NULL DEFAULT 1, "
+      "is_persistent INTEGER NOT NULL DEFAULT 1,"
+      "priority INTEGER NOT NULL DEFAULT 1,"  // COOKIE_PRIORITY_DEFAULT
+      "encrypted_value BLOB DEFAULT '',"
+      "firstpartyonly INTEGER NOT NULL DEFAULT 0 "  // NO_RESTRICTION
+      ")");
+  if (!db->Execute(stmt.c_str()))
+    return false;
+
+  return true;
+}
+
+bool AddV10CookiesToDBImpl(sql::Database* db,
+                           const std::vector<CanonicalCookie>& cookies);
+
+// Add a selection of cookies to the DB.
+bool AddV10CookiesToDB(sql::Database* db) {
+  static base::Time time = base::Time::Now();
+
+  std::vector<CanonicalCookie> cookies;
+  cookies.push_back(CanonicalCookie(
+      "A", "B", "example.com", "/", time, time, time, false, false,
+      CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT));
+  cookies.push_back(CanonicalCookie(
+      "C", "B", "example.com", "/", time, time, time, false, false,
+      CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT));
+  cookies.push_back(CanonicalCookie(
+      "A", "B", "example2.com", "/", time, time, time, false, false,
+      CookieSameSite::LAX_MODE, COOKIE_PRIORITY_DEFAULT));
+  cookies.push_back(CanonicalCookie(
+      "C", "B", "example2.com", "/", time, time, time, false, false,
+      CookieSameSite::LAX_MODE, COOKIE_PRIORITY_DEFAULT));
+  cookies.push_back(CanonicalCookie(
+      "A", "B", "example.com", "/path", time, time, time, false, false,
+      CookieSameSite::STRICT_MODE, COOKIE_PRIORITY_DEFAULT));
+  cookies.push_back(CanonicalCookie(
+      "C", "B", "example.com", "/path", time, time, time, false, false,
+      CookieSameSite::STRICT_MODE, COOKIE_PRIORITY_DEFAULT));
+  return AddV10CookiesToDBImpl(db, cookies);
+}
+
+bool AddV10CookiesToDBImpl(sql::Database* db,
+                           const std::vector<CanonicalCookie>& cookies) {
+  sql::Statement add_smt(db->GetCachedStatement(
+      SQL_FROM_HERE,
+      "INSERT INTO cookies (creation_utc, host_key, name, value, "
+      "encrypted_value, path, expires_utc, is_secure, is_httponly, "
+      "firstpartyonly, last_access_utc, has_expires, is_persistent, priority) "
+      "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)"));
+  if (!add_smt.is_valid())
+    return false;
+  sql::Transaction transaction(db);
+  transaction.Begin();
+  for (size_t i = 0; i < cookies.size(); ++i) {
+    add_smt.Reset(true);
+    add_smt.BindInt64(
+        0,
+        cookies[i].CreationDate().ToDeltaSinceWindowsEpoch().InMicroseconds());
+    add_smt.BindString(1, cookies[i].Domain());
+    add_smt.BindString(2, cookies[i].Name());
+    add_smt.BindString(3, cookies[i].Value());
+    add_smt.BindBlob(4, "", 0);  // encrypted_value
+    add_smt.BindString(5, cookies[i].Path());
+    add_smt.BindInt64(
+        6, cookies[i].ExpiryDate().ToDeltaSinceWindowsEpoch().InMicroseconds());
+    add_smt.BindInt(7, cookies[i].IsSecure());
+    add_smt.BindInt(8, cookies[i].IsHttpOnly());
+    // Note that this and Priority() below nominally rely on the enums in
+    // sqlite_persistent_cookie_store.cc having the same values as the
+    // ones in ../../cookies/cookie_constants.h.  But nothing in this test
+    // relies on that equivalence, so it's not worth the hassle to guarantee
+    // that.
+    add_smt.BindInt(9, static_cast<int>(cookies[i].SameSite()));
+    add_smt.BindInt64(10, cookies[i]
+                              .LastAccessDate()
+                              .ToDeltaSinceWindowsEpoch()
+                              .InMicroseconds());
+    add_smt.BindInt(11, cookies[i].IsPersistent());
+    add_smt.BindInt(12, cookies[i].IsPersistent());
+    add_smt.BindInt(13, static_cast<int>(cookies[i].Priority()));
+    if (!add_smt.Run())
+      return false;
+  }
+  if (!transaction.Commit())
+    return false;
+
+  return true;
+}
+
+// Confirm the cookie list passed in has the above cookies in it.
+void ConfirmV10CookiesFromDB(
+    std::vector<std::unique_ptr<CanonicalCookie>> read_in_cookies) {
+  std::sort(read_in_cookies.begin(), read_in_cookies.end(), &CompareCookies);
+  int i = 0;
+  EXPECT_EQ("A", read_in_cookies[i]->Name());
+  EXPECT_EQ("B", read_in_cookies[i]->Value());
+  EXPECT_EQ("example.com", read_in_cookies[i]->Domain());
+  EXPECT_EQ("/", read_in_cookies[i]->Path());
+  // NO_RESTRICTION gets changed to UNSPECIFIED upon DB migration from V10.
+  EXPECT_EQ(CookieSameSite::UNSPECIFIED, read_in_cookies[i]->SameSite());
+
+  i++;
+  EXPECT_EQ("A", read_in_cookies[i]->Name());
+  EXPECT_EQ("B", read_in_cookies[i]->Value());
+  EXPECT_EQ("example.com", read_in_cookies[i]->Domain());
+  EXPECT_EQ("/path", read_in_cookies[i]->Path());
+  // STRICT_MODE stays the same.
+  EXPECT_EQ(CookieSameSite::STRICT_MODE, read_in_cookies[i]->SameSite());
+
+  i++;
+  EXPECT_EQ("A", read_in_cookies[i]->Name());
+  EXPECT_EQ("B", read_in_cookies[i]->Value());
+  EXPECT_EQ("example2.com", read_in_cookies[i]->Domain());
+  EXPECT_EQ("/", read_in_cookies[i]->Path());
+  // LAX_MODE stays the same.
+  EXPECT_EQ(CookieSameSite::LAX_MODE, read_in_cookies[i]->SameSite());
+
+  i++;
+  EXPECT_EQ("C", read_in_cookies[i]->Name());
+  EXPECT_EQ("B", read_in_cookies[i]->Value());
+  EXPECT_EQ("example.com", read_in_cookies[i]->Domain());
+  EXPECT_EQ("/", read_in_cookies[i]->Path());
+  // NO_RESTRICTION gets changed to UNSPECIFIED upon DB migration from V10.
+  EXPECT_EQ(CookieSameSite::UNSPECIFIED, read_in_cookies[i]->SameSite());
+
+  i++;
+  EXPECT_EQ("C", read_in_cookies[i]->Name());
+  EXPECT_EQ("B", read_in_cookies[i]->Value());
+  EXPECT_EQ("example.com", read_in_cookies[i]->Domain());
+  EXPECT_EQ("/path", read_in_cookies[i]->Path());
+  // STRICT_MODE stays the same.
+  EXPECT_EQ(CookieSameSite::STRICT_MODE, read_in_cookies[i]->SameSite());
+
+  i++;
+  EXPECT_EQ("C", read_in_cookies[i]->Name());
+  EXPECT_EQ("B", read_in_cookies[i]->Value());
+  EXPECT_EQ("example2.com", read_in_cookies[i]->Domain());
+  EXPECT_EQ("/", read_in_cookies[i]->Path());
+  // LAX_MODE stays the same.
+  EXPECT_EQ(CookieSameSite::LAX_MODE, read_in_cookies[i]->SameSite());
+}
+
+// Confirm that cookies with SameSite equal to NO_RESTRICTION get changed to
+// UNSPECIFIED.
+TEST_F(SQLitePersistentCookieStoreTest, UpgradeToSchemaVersion11) {
+  // Open db
+  sql::Database connection;
+  ASSERT_TRUE(connection.Open(temp_dir_.GetPath().Append(kCookieFilename)));
+  ASSERT_TRUE(CreateV10Schema(&connection));
+  ASSERT_TRUE(AddV10CookiesToDB(&connection));
+  connection.Close();
+
+  std::vector<std::unique_ptr<CanonicalCookie>> read_in_cookies;
+  CreateAndLoad(false, false, &read_in_cookies);
+  ConfirmV10CookiesFromDB(std::move(read_in_cookies));
 }
 
 }  // namespace net

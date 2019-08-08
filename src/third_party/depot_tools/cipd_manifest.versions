@@ -2,56 +2,56 @@
 # Do not modify manually. All changes will be overwritten.
 
 infra/tools/bb/linux-386
-	git_revision:080c945efd74d45e9edac5d5b6cc598bbe106593
-	fdciGVssAXvDr0HvgQKT2TLsYyrTcdwRwk44pyb0Id4C
+	git_revision:c29f1c1e28655bfaf385c3b11d31ddb917081d22
+	cpeuz5KrzcEIZ-4O66SVZFbWxrRYhdwCNHGdnMOKzDYC
 
 infra/tools/bb/linux-amd64
-	git_revision:080c945efd74d45e9edac5d5b6cc598bbe106593
-	6sM6knGGJJgRtQkuwHUvh1c0S_izy43PdQSERPdUedYC
+	git_revision:c29f1c1e28655bfaf385c3b11d31ddb917081d22
+	2fIivIkZkltdsj4VENVgAGYF8pHNTE8fFmPbhwZDORYC
 
 infra/tools/bb/linux-arm64
-	git_revision:080c945efd74d45e9edac5d5b6cc598bbe106593
-	nf61pf7VbAJFXF16LMEJm0_03C4ddODnoe6iKA7LhfIC
+	git_revision:c29f1c1e28655bfaf385c3b11d31ddb917081d22
+	B6X2_FgnoztZpb_MUxIdSLR9fzfpw1bjyCjp9UbpygMC
 
 infra/tools/bb/linux-armv6l
-	git_revision:080c945efd74d45e9edac5d5b6cc598bbe106593
-	959E62T5yolri6gKaE61ToFXMDdwDdaNOZTQpPjI_NQC
+	git_revision:c29f1c1e28655bfaf385c3b11d31ddb917081d22
+	W17LjZaqqxqDjoWPiy72DEnTp84PB6FdVGjFJvJTZ7gC
 
 infra/tools/bb/linux-mips64
-	git_revision:080c945efd74d45e9edac5d5b6cc598bbe106593
-	7R90YbsSC58qU6A-bw2VQimuObLCPx47Qdxu-A9ahUsC
+	git_revision:c29f1c1e28655bfaf385c3b11d31ddb917081d22
+	GqG_HxTx_p0m6YRHMC5DTtKS1K2332IVcO7CtW-0W5cC
 
 infra/tools/bb/linux-mips64le
-	git_revision:080c945efd74d45e9edac5d5b6cc598bbe106593
-	YvA529eJIIOpBGCtR6ukFJW8iwivI_6QiuD1lIKHW7AC
+	git_revision:c29f1c1e28655bfaf385c3b11d31ddb917081d22
+	wjFmuKp9hO4YAGdhuWJK-FLGqC2x03mlPYWHeVH7U9kC
 
 infra/tools/bb/linux-mipsle
-	git_revision:080c945efd74d45e9edac5d5b6cc598bbe106593
-	dRUDkkV8QdrBy2sqqmd1JkZ99EItzuzUuvhwQDsfHJYC
+	git_revision:c29f1c1e28655bfaf385c3b11d31ddb917081d22
+	QIrxL6nYt-mf5kiyHM0wmkstJ5UDxGt0iqf4HuqtG0YC
 
 infra/tools/bb/linux-ppc64
-	git_revision:080c945efd74d45e9edac5d5b6cc598bbe106593
-	0LVjahpJgft-BxAzzw-3Po4ol4kHVbzDTVo87q5Yy2sC
+	git_revision:c29f1c1e28655bfaf385c3b11d31ddb917081d22
+	s4-OFGYXMsmBdCWYZTGo4qi31MhQwrJghb05oFv6srcC
 
 infra/tools/bb/linux-ppc64le
-	git_revision:080c945efd74d45e9edac5d5b6cc598bbe106593
-	VHm9AhQQ4TvfVCRmKTR3efk3gPrFgY0QMy26oMmSFs4C
+	git_revision:c29f1c1e28655bfaf385c3b11d31ddb917081d22
+	0c3ctZ4kjEDwoFAcyxLpDaZKJkj36pSel-M1Pu1ATFgC
 
 infra/tools/bb/linux-s390x
-	git_revision:080c945efd74d45e9edac5d5b6cc598bbe106593
-	8pr-CZr8-VtstOg5j8_GNrwR5npg-_ehgx2cmegd3jMC
+	git_revision:c29f1c1e28655bfaf385c3b11d31ddb917081d22
+	Ecp66VoECd-1cEUuLbP2ZnKXnQjWrM256ynD2X8EEaMC
 
 infra/tools/bb/mac-amd64
-	git_revision:080c945efd74d45e9edac5d5b6cc598bbe106593
-	dJ3Ichyo64zrOAu4OUta9RV2xqMCgZH2_Pvj6scvRMAC
+	git_revision:c29f1c1e28655bfaf385c3b11d31ddb917081d22
+	HtWkNv0bx9OdKxETk-1JEAaTt7usHefXzSFOacMkxswC
 
 infra/tools/bb/windows-386
-	git_revision:080c945efd74d45e9edac5d5b6cc598bbe106593
-	pyc5WnBzHkr4jV2-GEUmndS5z5P4YrQLsKGe0LjroLUC
+	git_revision:c29f1c1e28655bfaf385c3b11d31ddb917081d22
+	Xcvo1eebw2dhpAI9lQVMR-2BUdoUjMJXRkSgRQGwvakC
 
 infra/tools/bb/windows-amd64
-	git_revision:080c945efd74d45e9edac5d5b6cc598bbe106593
-	-JYvGoq3ij5K77096hPj4ldwj1t9tYvYuMJ7MW-zRsAC
+	git_revision:c29f1c1e28655bfaf385c3b11d31ddb917081d22
+	nfOD3xLmeaN0tliuhYMmlDxmUYld4dCBq5nAYtqNuYsC
 
 infra/tools/luci-auth/linux-386
 	git_revision:edd5644be66d37cdf82978efb0e5d6504d0d552f
@@ -106,164 +106,164 @@ infra/tools/luci-auth/windows-amd64
 	GBs8p3OBQPPVvztd0oS5qFhvEy5JVvPZFnbod0DZ-FAC
 
 infra/tools/luci/led/linux-386
-	git_revision:e4631c9c5c5abf39ac8247aaf647a95563714ec1
-	WmLhGAU8dI-OUoQFtns-pa4cwdmPsgEi0ifsEsgXGIoC
+	git_revision:6d8f5e1d5857481abe0ce48f972ab5421fe244be
+	AarP2GPxHpP81bJOElE9kCu74L5371kLTVIPxjJbPe0C
 
 infra/tools/luci/led/linux-amd64
-	git_revision:e4631c9c5c5abf39ac8247aaf647a95563714ec1
-	bIXofUbVs48AlVC4Wg8EQILoOonaYPPX1uSXgiy_sP8C
+	git_revision:6d8f5e1d5857481abe0ce48f972ab5421fe244be
+	-o8ipGy6evtmfklql8TMfBn9E2LvSJUlIm0NTy5xEjAC
 
 infra/tools/luci/led/linux-arm64
-	git_revision:e4631c9c5c5abf39ac8247aaf647a95563714ec1
-	PEzkMzBHP2aQXCByroOgjlbO_RHg9uKLqKK7_5EFvUkC
+	git_revision:6d8f5e1d5857481abe0ce48f972ab5421fe244be
+	mVCsY5VC7PojddKfeG9G969pDUeE8zUzNWx4MXgLElEC
 
 infra/tools/luci/led/linux-armv6l
-	git_revision:e4631c9c5c5abf39ac8247aaf647a95563714ec1
-	iuHuYjaoRnUa1DtgIW_VqutuVVDScDeRGFlMvG_F4oEC
+	git_revision:6d8f5e1d5857481abe0ce48f972ab5421fe244be
+	m12D0T20WdtlWCykqXqCKbfHKpUs3sqscZGzAZPIPvIC
 
 infra/tools/luci/led/linux-mips64
-	git_revision:e4631c9c5c5abf39ac8247aaf647a95563714ec1
-	9nte8TLuUUpDqdGurb5YQ5_yrIIHAe8QC7nlsqZv8eIC
+	git_revision:6d8f5e1d5857481abe0ce48f972ab5421fe244be
+	uyAJmnzQMZ8bcgV_tslIMowVB7APvyboFg7jclOkpwcC
 
 infra/tools/luci/led/linux-mips64le
-	git_revision:e4631c9c5c5abf39ac8247aaf647a95563714ec1
-	qiJ8qoUmPPmfq-Fkox0cFtPEVhFRuw5EMTdNjVIMtT8C
+	git_revision:6d8f5e1d5857481abe0ce48f972ab5421fe244be
+	IAdfi6fY4VyeCEukbPNES9qhQ7uaMaRFdlFuXl1NyyoC
 
 infra/tools/luci/led/linux-mipsle
-	git_revision:e4631c9c5c5abf39ac8247aaf647a95563714ec1
-	RtausZx16fkl65FgESrLvYX12FWJwnZGRket5j8n7p4C
+	git_revision:6d8f5e1d5857481abe0ce48f972ab5421fe244be
+	hCCO7B9Q2tZZh5I3kxSnZbhuqgHN6m_ro9SXny8Aq0UC
 
 infra/tools/luci/led/linux-ppc64
-	git_revision:e4631c9c5c5abf39ac8247aaf647a95563714ec1
-	yVttYbuzyiJWgWPf6tEoV80EtuOLiNvuRwJSoYoQrp4C
+	git_revision:6d8f5e1d5857481abe0ce48f972ab5421fe244be
+	2uXJIcL5KzoH5H3H012SIh5FsewTZjMNJdwWhCsCP7sC
 
 infra/tools/luci/led/linux-ppc64le
-	git_revision:e4631c9c5c5abf39ac8247aaf647a95563714ec1
-	N4VNZVNlmIUYTyBleWG3M8-Lz0j9B8fyi8h6GIjawCMC
+	git_revision:6d8f5e1d5857481abe0ce48f972ab5421fe244be
+	dIj_L5Kn7SnhUkShBgkGl4tXoHUYz5wl9J4chPCmCUgC
 
 infra/tools/luci/led/linux-s390x
-	git_revision:e4631c9c5c5abf39ac8247aaf647a95563714ec1
-	lDaipKpuK69E3jDZesWdQmeW5McLDesvSqhRumCcP14C
+	git_revision:6d8f5e1d5857481abe0ce48f972ab5421fe244be
+	AGjKXrpWJOP2UtTr0iKYdVAXV_bgOVemef8ylfKhzsMC
 
 infra/tools/luci/led/mac-amd64
-	git_revision:e4631c9c5c5abf39ac8247aaf647a95563714ec1
-	yFn0BLG3ZK1vIwcbWuniqi7w3gsOED7-BWvdAPfh8_4C
+	git_revision:6d8f5e1d5857481abe0ce48f972ab5421fe244be
+	dXON1fpZ9lri_QPhOEqJ_HwIgbY8H8NfjFnpHUWWzdoC
 
 infra/tools/luci/led/windows-386
-	git_revision:e4631c9c5c5abf39ac8247aaf647a95563714ec1
-	EFthyJJIkZJfC52-d8jd0vVmZibzDbrvGqDwsuRD7hsC
+	git_revision:6d8f5e1d5857481abe0ce48f972ab5421fe244be
+	RE2OWuLUVW-CQWfBWnoyowucvWmmRk1_ZRfq9CExZVgC
 
 infra/tools/luci/led/windows-amd64
-	git_revision:e4631c9c5c5abf39ac8247aaf647a95563714ec1
-	VlDL4g6pdFTxz61iQdlA55IWS2Gx8421BcXm92H5iLEC
+	git_revision:6d8f5e1d5857481abe0ce48f972ab5421fe244be
+	dGqMQ4q4h-XVsocz3xSoNtm4IJIxG54QQlLO0NNBJNsC
 
 infra/tools/luci/lucicfg/linux-386
-	git_revision:ed4191113affb38ba0fb5765f6d24ced0fafb3fd
-	m15cG_38A3BIlY_VRsyRYelm74Pq-UjNcfoZPqFY6lwC
+	git_revision:becd16c499c93cdf4490f0380f7c1b77c1dc0088
+	BzgSoFcNgI4oaQkdNucVNeyAbPgX5MwSQm3Pr15zOrMC
 
 infra/tools/luci/lucicfg/linux-amd64
-	git_revision:ed4191113affb38ba0fb5765f6d24ced0fafb3fd
-	7-r9xAgN6bODw8tyo4G8Sqqt8SS4I6QW8mMmoVyaY3IC
+	git_revision:becd16c499c93cdf4490f0380f7c1b77c1dc0088
+	jV3dVtNVp9VBmfj6TxNQ5dz8L4ukDpaeV1ZZKMclPrUC
 
 infra/tools/luci/lucicfg/linux-arm64
-	git_revision:ed4191113affb38ba0fb5765f6d24ced0fafb3fd
-	1dd6jrHVif8zQT4xTK-UWUB9ETWR0eKPzT9j_HbW0-8C
+	git_revision:becd16c499c93cdf4490f0380f7c1b77c1dc0088
+	SiMlsZNYzCtD9k2-kL4RMWmSUD4vr8lhi3W50GammEMC
 
 infra/tools/luci/lucicfg/linux-armv6l
-	git_revision:ed4191113affb38ba0fb5765f6d24ced0fafb3fd
-	CcW5QmEXI2YFsWgbJB-oilg7IJzLLW-aumZfvHy_KHEC
+	git_revision:becd16c499c93cdf4490f0380f7c1b77c1dc0088
+	IqKEYQ-lUrMDzjAXTRA6wEmhDaMb98FpPxd1FIhpXz8C
 
 infra/tools/luci/lucicfg/linux-mips64
-	git_revision:ed4191113affb38ba0fb5765f6d24ced0fafb3fd
-	RhzTVZBycXMseaQQfxYlmSjRIu3iEaBEBydLnRlDsBoC
+	git_revision:becd16c499c93cdf4490f0380f7c1b77c1dc0088
+	VCGl8cn1_8XY8eg_P93h7QmQlGPVqYSzSE2_Ut5DiV4C
 
 infra/tools/luci/lucicfg/linux-mips64le
-	git_revision:ed4191113affb38ba0fb5765f6d24ced0fafb3fd
-	rj2Kc4lfypyHyv5iJvFJBB51jxftH9tT_SBa8TiNi-EC
+	git_revision:becd16c499c93cdf4490f0380f7c1b77c1dc0088
+	oa5PU0XxeVn1dn690WS9-j92mUtwU6jIq-X5wg81DF4C
 
 infra/tools/luci/lucicfg/linux-mipsle
-	git_revision:ed4191113affb38ba0fb5765f6d24ced0fafb3fd
-	eehROHSiLY7OTs8YFunv4WS0kX5XEidjGnOzgo9vfUgC
+	git_revision:becd16c499c93cdf4490f0380f7c1b77c1dc0088
+	ZWqq8dYozwyFWkcjveWKoBKoQ4au8bzfbBXoVKqAYvMC
 
 infra/tools/luci/lucicfg/linux-ppc64
-	git_revision:ed4191113affb38ba0fb5765f6d24ced0fafb3fd
-	OqT4Z7J3jHgD8NP4agD7QgVk6BgSUPcWw-ri_jtZaiQC
+	git_revision:becd16c499c93cdf4490f0380f7c1b77c1dc0088
+	BFDFCKyke8ym1Cwa-vVKJ3WhSC5HXvgSdjlJOoo-R_EC
 
 infra/tools/luci/lucicfg/linux-ppc64le
-	git_revision:ed4191113affb38ba0fb5765f6d24ced0fafb3fd
-	RNZpLAaEQhozH5qkB9L6p6nT2cukVlAMZ-cV9AAE1tUC
+	git_revision:becd16c499c93cdf4490f0380f7c1b77c1dc0088
+	Uniir8dtcjJ6SjPHw8RyUnjsfsXGt2iCxpULL_7g-XQC
 
 infra/tools/luci/lucicfg/linux-s390x
-	git_revision:ed4191113affb38ba0fb5765f6d24ced0fafb3fd
-	FOxuct4pB20OK7TIa3jbofNj6gDnMgUadMO2nNJuXtwC
+	git_revision:becd16c499c93cdf4490f0380f7c1b77c1dc0088
+	DUFTBCXKpGwOu19bzfJwVtg5mOFyocFjAobBOSTupiEC
 
 infra/tools/luci/lucicfg/mac-amd64
-	git_revision:ed4191113affb38ba0fb5765f6d24ced0fafb3fd
-	wgSmwK3cbBY33MJl3FxiBj-udpbSF_ZzvwBvP_Ki6eEC
+	git_revision:becd16c499c93cdf4490f0380f7c1b77c1dc0088
+	_RyNxjILsxVL2tWr5dIthECnHCzPpjbgR2udsMECTpIC
 
 infra/tools/luci/lucicfg/windows-386
-	git_revision:ed4191113affb38ba0fb5765f6d24ced0fafb3fd
-	9cXI_Bc1qd_eUPhe19w8QMoiJIlOuO2TxKFc4BzHcDkC
+	git_revision:becd16c499c93cdf4490f0380f7c1b77c1dc0088
+	C5T30Q1pQ_NVJvRcTV08SVoYgw2BPZJeyU5tGmU-UtoC
 
 infra/tools/luci/lucicfg/windows-amd64
-	git_revision:ed4191113affb38ba0fb5765f6d24ced0fafb3fd
-	mvgeDYo8kcWpivWahDfdM2hv-dC3VTJWcQ10M0py6YIC
+	git_revision:becd16c499c93cdf4490f0380f7c1b77c1dc0088
+	bCZ1SVtxc6FeXc9KqHpXqibS5nJGmmAf90EZfFzUz4gC
 
 infra/tools/luci/vpython/linux-386
-	git_revision:0bff6ebf817352838b0e6f65fd6460b38c505c9c
-	hDxqETS31-yTo7GwC2HqaApd0iJet2SY4OiJEsUyNCMC
+	git_revision:7c436dff846e5ad40ead55e392ce03b701727b29
+	wMuAVc7aZN1H6AeNJir5sHnQedTnYSxNC0xSZ7bhsAUC
 
 infra/tools/luci/vpython/linux-amd64
-	git_revision:0bff6ebf817352838b0e6f65fd6460b38c505c9c
-	7qzFcNYLB1D_BGFy6fpzh0P-DsZYBUVCP9ZtAB0uxnsC
+	git_revision:7c436dff846e5ad40ead55e392ce03b701727b29
+	d4cRoeyLHZhmoLnTQsjMhXfbN227X8cqTAZxORdIbesC
 
 infra/tools/luci/vpython/linux-arm64
-	git_revision:0bff6ebf817352838b0e6f65fd6460b38c505c9c
-	zq5Hwaq-RokAF7bce8Cmlx8YOtewy3JMwXdLHWk_rjcC
+	git_revision:7c436dff846e5ad40ead55e392ce03b701727b29
+	Tu1dUIKzjard2qn2Uf4lM_xcKpuXcsHVZpmU6VofV50C
 
 infra/tools/luci/vpython/linux-armv6l
-	git_revision:0bff6ebf817352838b0e6f65fd6460b38c505c9c
-	yYgRbOGEPXfub9AFWdsilgQbCgwRLtGUcUpzpJkCFngC
+	git_revision:7c436dff846e5ad40ead55e392ce03b701727b29
+	wXrus3zFcrTr2s4j6RYtRyY_3b_UCr8ZR9_HHanvJnIC
 
 infra/tools/luci/vpython/linux-mips64
-	git_revision:0bff6ebf817352838b0e6f65fd6460b38c505c9c
-	N4HgXrUQw8IZFlexxaKE2a-jH8zIwPP9sHeqoVFEIo4C
+	git_revision:7c436dff846e5ad40ead55e392ce03b701727b29
+	GITDTSLRm99lunYavGlofnYq-QO-AYtbxbl24k-Q44oC
 
 infra/tools/luci/vpython/linux-mips64le
-	git_revision:0bff6ebf817352838b0e6f65fd6460b38c505c9c
-	0aQ-DKIWmmmrxyd8MmzDzA9x3XM-o8eI0C1wXdBIumgC
+	git_revision:7c436dff846e5ad40ead55e392ce03b701727b29
+	b5Urfr_luEPyzrHN_0A-oUS-1KVLNKKX1-f0jxe9LmMC
 
 infra/tools/luci/vpython/linux-mipsle
-	git_revision:0bff6ebf817352838b0e6f65fd6460b38c505c9c
-	n6ZukkiBoX5BKNMKKoCCiGtW09uX_a0Ij01zTptnBycC
+	git_revision:7c436dff846e5ad40ead55e392ce03b701727b29
+	ES1ntb4yrlovrovoSSWwepJhrB9HL-oYBzfoBB7In_UC
 
 infra/tools/luci/vpython/linux-ppc64
-	git_revision:0bff6ebf817352838b0e6f65fd6460b38c505c9c
-	fVxtIcvV7DW4xZWiRuQgCaTxrDUKyJxslwXR8KEVcVoC
+	git_revision:7c436dff846e5ad40ead55e392ce03b701727b29
+	JOHcDH4Tgwe5-KmqBYoyg7dbLMV1XT3Y18ocbBfW3i8C
 
 infra/tools/luci/vpython/linux-ppc64le
-	git_revision:0bff6ebf817352838b0e6f65fd6460b38c505c9c
-	yibQZZJ880xjI2yLgnWlFqHx-LyeF2vMHxtoNYNnKnoC
+	git_revision:7c436dff846e5ad40ead55e392ce03b701727b29
+	CzyLXWHx_mMmh4U6yaeBV4g7X7b5IpliqyRo-gICMbYC
 
 infra/tools/luci/vpython/linux-s390x
-	git_revision:0bff6ebf817352838b0e6f65fd6460b38c505c9c
-	aFYWGtD5op5kPmLd3762oTd47lK4mNipD3HH2CBp248C
+	git_revision:7c436dff846e5ad40ead55e392ce03b701727b29
+	x0Wc1idq-TXTT7YRcMokr91Dls2SZbJkpYsb1EzGpdIC
 
 infra/tools/luci/vpython/mac-amd64
-	git_revision:0bff6ebf817352838b0e6f65fd6460b38c505c9c
-	PuCG_gwsNxvgGPY3GCHh6r_YN4cFW41S_r8gDWwDWDQC
+	git_revision:7c436dff846e5ad40ead55e392ce03b701727b29
+	Ua-1HtP3NobgI3GfEeGAGoRy45L6575VQ96M9SCV9mEC
 
 infra/tools/luci/vpython/windows-386
-	git_revision:0bff6ebf817352838b0e6f65fd6460b38c505c9c
-	BnTSl9Kg9mym5puBG0rsbnMhnrOZASlnjEdzR4u01JgC
+	git_revision:7c436dff846e5ad40ead55e392ce03b701727b29
+	Y7XBraus3dpohfR_o-YBfRHcjL1BKttkZEHh2MWwKV4C
 
 infra/tools/luci/vpython/windows-amd64
-	git_revision:0bff6ebf817352838b0e6f65fd6460b38c505c9c
-	Iyp60AaJ1mWp8wKg_EYpvvre6pdrLUhGSfhzI2_ILQ4C
+	git_revision:7c436dff846e5ad40ead55e392ce03b701727b29
+	URdASxHunCnTpWYCexYLrUvW8ifbWByq9CG1epMe4j4C
 
 infra/tools/mac_toolchain/mac-amd64
-	git_revision:edd5644be66d37cdf82978efb0e5d6504d0d552f
-	WvNxqV3SDEsYZovJkXsk17k5B70pSV7QAe6XjFEupb0C
+	git_revision:47354a337f7eb444f2cb1e1b5d30ac3940f1d097
+	qeuJWCEG8k8sDHF66tpTllhiWuGcl1m_TtpuhuwhrFsC
 
 infra/tools/prpc/linux-386
 	git_revision:edd5644be66d37cdf82978efb0e5d6504d0d552f

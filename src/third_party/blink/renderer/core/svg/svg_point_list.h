@@ -44,8 +44,6 @@ class SVGPointList final
  public:
   typedef SVGPointListTearOff TearOffType;
 
-  static SVGPointList* Create() { return MakeGarbageCollected<SVGPointList>(); }
-
   SVGPointList();
   ~SVGPointList() override;
 

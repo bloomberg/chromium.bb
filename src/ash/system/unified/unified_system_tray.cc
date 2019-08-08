@@ -6,7 +6,7 @@
 
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/public/cpp/ash_features.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -15,7 +15,6 @@
 #include "ash/system/message_center/message_center_ui_delegate.h"
 #include "ash/system/model/clock_model.h"
 #include "ash/system/model/system_tray_model.h"
-#include "ash/system/network/network_icon_purger.h"
 #include "ash/system/network/network_tray_view.h"
 #include "ash/system/power/tray_power.h"
 #include "ash/system/status_area_widget.h"
@@ -57,6 +56,11 @@ class UnifiedSystemTray::UiDelegate : public MessageCenterUiDelegate {
 
   void SetTrayBubbleHeight(int height) {
     popup_alignment_delegate_->SetTrayBubbleHeight(height);
+  }
+  message_center::MessagePopupView* GetPopupViewForNotificationID(
+      const std::string& notification_id) {
+    return message_popup_collection_->GetPopupViewForNotificationID(
+        notification_id);
   }
 
  private:
@@ -123,7 +127,6 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
       model_(std::make_unique<UnifiedSystemTrayModel>()),
       slider_bubble_controller_(
           std::make_unique<UnifiedSliderBubbleController>(this)),
-      network_icon_purger_(std::make_unique<NetworkIconPurger>()),
       current_locale_view_(new CurrentLocaleView(shelf)),
       ime_mode_view_(new ImeModeView(shelf)),
       managed_device_view_(new ManagedDeviceView(shelf)),
@@ -137,17 +140,14 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
   tray_container()->AddChildView(notification_counter_item_);
   tray_container()->AddChildView(quiet_mode_view_);
 
-  // It is possible in unit tests that it's missing.
-  if (chromeos::NetworkHandler::IsInitialized()) {
-    if (features::IsSeparateNetworkIconsEnabled()) {
-      tray_container()->AddChildView(
-          tray::NetworkTrayView::CreateForDefault(shelf));
-      tray_container()->AddChildView(
-          tray::NetworkTrayView::CreateForMobile(shelf));
-    } else {
-      tray_container()->AddChildView(
-          tray::NetworkTrayView::CreateForSingleIcon(shelf));
-    }
+  if (features::IsSeparateNetworkIconsEnabled()) {
+    tray_container()->AddChildView(
+        new tray::NetworkTrayView(shelf, ActiveNetworkIcon::Type::kPrimary));
+    tray_container()->AddChildView(
+        new tray::NetworkTrayView(shelf, ActiveNetworkIcon::Type::kCellular));
+  } else {
+    tray_container()->AddChildView(
+        new tray::NetworkTrayView(shelf, ActiveNetworkIcon::Type::kSingle));
   }
 
   tray_container()->AddChildView(new tray::PowerTrayView(shelf));
@@ -330,6 +330,12 @@ void UnifiedSystemTray::UpdateNotificationInternal() {
 void UnifiedSystemTray::UpdateNotificationAfterDelay() {
   notification_counter_item_->Update();
   quiet_mode_view_->Update();
+}
+
+message_center::MessagePopupView*
+UnifiedSystemTray::GetPopupViewForNotificationID(
+    const std::string& notification_id) {
+  return ui_delegate_->GetPopupViewForNotificationID(notification_id);
 }
 
 }  // namespace ash

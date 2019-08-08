@@ -22,6 +22,7 @@ extern const base::Feature kOmniboxMaxURLMatches;
 extern const base::Feature kOmniboxRichEntitySuggestions;
 extern const base::Feature kOmniboxNewAnswerLayout;
 extern const base::Feature kOmniboxReverseAnswers;
+extern const base::Feature kOmniboxShortBookmarkSuggestions;
 extern const base::Feature kOmniboxTailSuggestions;
 extern const base::Feature kOmniboxTabSwitchSuggestions;
 extern const base::Feature kOmniboxReverseTabSwitchLogic;
@@ -34,7 +35,6 @@ extern const base::Feature kOmniboxPreserveDefaultMatchScore;
 extern const base::Feature kEnableClipboardProviderTextSuggestions;
 extern const base::Feature kEnableClipboardProviderImageSuggestions;
 extern const base::Feature kSearchProviderWarmUpOnFocus;
-extern const base::Feature kZeroSuggestRedirectToChrome;
 extern const base::Feature kDisplayTitleForCurrentUrl;
 extern const base::Feature kQueryInOmnibox;
 extern const base::Feature kUIExperimentMaxAutocompleteMatches;
@@ -42,20 +42,16 @@ extern const base::Feature kUIExperimentShowSuggestionFavicons;
 extern const base::Feature kUIExperimentSwapTitleAndUrl;
 extern const base::Feature kUIExperimentVerticalMargin;
 extern const base::Feature kUIExperimentVerticalMarginLimitToNonTouchOnly;
-extern const base::Feature kUIExperimentBlueSearchLoopAndSearchQuery;
-extern const base::Feature kUIExperimentBlueTitlesAndGrayUrlsOnPageSuggestions;
-extern const base::Feature kUIExperimentBlueTitlesOnPageSuggestions;
-extern const base::Feature kUIExperimentShowSuffixOnAllSearchSuggestions;
-extern const base::Feature kUIExperimentBoldUserTextOnSearchSuggestions;
-extern const base::Feature kUIExperimentWhiteBackgroundOnBlur;
-extern const base::Feature kUIExperimentUseGenericSearchEngineIcon;
-extern const base::Feature kUIExperimentUnboldSuggestionText;
 extern const base::Feature kUIExperimentShowPlaceholderWhenCaretShowing;
 extern const base::Feature kSpeculativeServiceWorkerStartOnQueryInput;
 extern const base::Feature kDocumentProvider;
 extern const base::Feature kDedupeGoogleDriveURLs;
 extern const base::Feature kOmniboxPopupShortcutIconsInZeroState;
 extern const base::Feature kOmniboxMaterialDesignWeatherIcons;
+
+// On-Focus Suggestions a.k.a. ZeroSuggest.
+extern const base::Feature kOnFocusSuggestions;
+extern const base::Feature kZeroSuggestRedirectToChrome;
 extern const base::Feature kZeroSuggestionsOnNTP;
 
 }  // namespace omnibox

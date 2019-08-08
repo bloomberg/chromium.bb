@@ -79,7 +79,7 @@ class ProxiedServiceConnector : public mojom::Connector {
   void RegisterServiceInstance(
       const Identity& identity,
       mojo::ScopedMessagePipeHandle service,
-      mojom::PIDReceiverRequest pid_receiver_request,
+      mojo::PendingReceiver<mojom::ProcessMetadata> metadata_receiver,
       RegisterServiceInstanceCallback callback) override {
     NOTREACHED();
   }

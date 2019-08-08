@@ -10,18 +10,21 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/process/process_handle.h"
-
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
+#include "chrome/browser/performance_manager/graph/graph_impl.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 
 namespace performance_manager {
 
+SystemNodeImplObserver::SystemNodeImplObserver() = default;
+SystemNodeImplObserver::~SystemNodeImplObserver() = default;
+
 ProcessResourceMeasurement::ProcessResourceMeasurement() = default;
 ProcessResourceMeasurementBatch::ProcessResourceMeasurementBatch() = default;
 ProcessResourceMeasurementBatch::~ProcessResourceMeasurementBatch() = default;
 
-SystemNodeImpl::SystemNodeImpl(Graph* graph) : TypedNodeBase(graph) {}
+SystemNodeImpl::SystemNodeImpl(GraphImpl* graph) : TypedNodeBase(graph) {}
 
 SystemNodeImpl::~SystemNodeImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -154,5 +157,8 @@ void SystemNodeImpl::DistributeMeasurementBatch(
   for (auto& observer : observers())
     observer.OnProcessCPUUsageReady(this);
 }
+
+SystemNodeImpl::ObserverDefaultImpl::ObserverDefaultImpl() = default;
+SystemNodeImpl::ObserverDefaultImpl::~ObserverDefaultImpl() = default;
 
 }  // namespace performance_manager

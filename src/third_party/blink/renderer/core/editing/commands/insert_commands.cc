@@ -115,7 +115,7 @@ bool InsertCommands::ExecuteInsertImage(LocalFrame& frame,
   auto* const image =
       MakeGarbageCollected<HTMLImageElement>(*frame.GetDocument());
   if (!value.IsEmpty())
-    image->SetSrc(value);
+    image->setAttribute(html_names::kSrcAttr, AtomicString(value));
   return ExecuteInsertElement(frame, image);
 }
 

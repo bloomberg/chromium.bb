@@ -23,8 +23,6 @@
 # directory's "git describe" output enclosed in double quotes and appropriately
 # escaped.
 
-from __future__ import print_function
-
 import datetime
 import os.path
 import re
@@ -53,8 +51,8 @@ def command_output(cmd, directory):
 
 
 def deduce_software_version(directory):
-    """Returns a software version number parsed from the CHANGES file
-    in the given directory.
+    """Returns a software version number parsed from the CHANGES file in the
+    given directory.
 
     The CHANGES file describes most recent versions first.
     """
@@ -74,11 +72,13 @@ def deduce_software_version(directory):
 
 
 def describe(directory):
-    """Returns a string describing the current Git HEAD version as descriptively
-    as possible.
+    """Returns a string describing the current Git HEAD version as
+    descriptively as possible.
 
-    Runs 'git describe', or alternately 'git rev-parse HEAD', in directory.  If
-    successful, returns the output; otherwise returns 'unknown hash, <date>'."""
+    Runs 'git describe', or alternately 'git rev-parse HEAD', in
+    directory.  If successful, returns the output; otherwise returns
+    'unknown hash, <date>'.
+    """
     try:
         # decode() is needed here for Python3 compatibility. In Python2,
         # str and bytes are the same type, but not in Python3.
@@ -103,8 +103,9 @@ def describe(directory):
 
 
 def get_version_string(project, directory):
-    """Returns a detailed version string for a given project with its directory,
-    which consists of software version string and git description string."""
+    """Returns a detailed version string for a given project with its
+    directory, which consists of software version string and git description
+    string."""
     detailed_version_string_lst = [project]
     if project != 'glslang':
         detailed_version_string_lst.append(deduce_software_version(directory))

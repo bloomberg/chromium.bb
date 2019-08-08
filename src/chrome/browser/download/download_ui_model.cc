@@ -19,6 +19,10 @@
 #include "ui/base/text/bytes_formatting.h"
 #include "ui/gfx/text_elider.h"
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/browser.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/note_taking_helper.h"
 #endif  // defined(OS_CHROMEOS)
@@ -250,18 +254,9 @@ base::string16 DownloadUIModel::GetWarningText(const gfx::FontList& font_list,
       gfx::ElideFilename(GetFileNameToReportUser(), font_list, base_width,
                          gfx::Typesetter::BROWSER);
 
-  bool request_ap_verdicts = false;
-#if defined(FULL_SAFE_BROWSING)
-  request_ap_verdicts = safe_browsing::AdvancedProtectionStatusManager::
-      RequestsAdvancedProtectionVerdicts(profile());
-#endif
-
   switch (GetDangerType()) {
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL: {
-      return l10n_util::GetStringUTF16(
-          request_ap_verdicts
-              ? IDS_PROMPT_MALICIOUS_DOWNLOAD_URL_IN_ADVANCED_PROTECTION
-              : IDS_PROMPT_MALICIOUS_DOWNLOAD_URL);
+      return l10n_util::GetStringUTF16(IDS_PROMPT_MALICIOUS_DOWNLOAD_URL);
     }
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE: {
       if (IsExtensionDownload()) {
@@ -274,13 +269,15 @@ base::string16 DownloadUIModel::GetWarningText(const gfx::FontList& font_list,
     }
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST: {
-      return l10n_util::GetStringFUTF16(
-          request_ap_verdicts
-              ? IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT_IN_ADVANCED_PROTECTION
-              : IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT,
-          elided_filename);
+      return l10n_util::GetStringFUTF16(IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT,
+                                        elided_filename);
     }
     case download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT: {
+      bool request_ap_verdicts = false;
+#if defined(FULL_SAFE_BROWSING)
+      request_ap_verdicts = safe_browsing::AdvancedProtectionStatusManager::
+          RequestsAdvancedProtectionVerdicts(profile());
+#endif
       return l10n_util::GetStringFUTF16(
           request_ap_verdicts
               ? IDS_PROMPT_UNCOMMON_DOWNLOAD_CONTENT_IN_ADVANCED_PROTECTION
@@ -288,11 +285,8 @@ base::string16 DownloadUIModel::GetWarningText(const gfx::FontList& font_list,
           elided_filename);
     }
     case download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED: {
-      return l10n_util::GetStringFUTF16(
-          request_ap_verdicts
-              ? IDS_PROMPT_DOWNLOAD_CHANGES_SETTINGS_IN_ADVANCED_PROTECTION
-              : IDS_PROMPT_DOWNLOAD_CHANGES_SETTINGS,
-          elided_filename);
+      return l10n_util::GetStringFUTF16(IDS_PROMPT_DOWNLOAD_CHANGES_SETTINGS,
+                                        elided_filename);
     }
     case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
     case download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:

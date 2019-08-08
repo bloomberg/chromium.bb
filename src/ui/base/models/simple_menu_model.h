@@ -90,9 +90,9 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
   void AddCheckItemWithStringId(int command_id, int string_id);
   void AddRadioItem(int command_id, const base::string16& label, int group_id);
   void AddRadioItemWithStringId(int command_id, int string_id, int group_id);
-  void AddHighlightedItemWithStringIdAndIcon(int command_id,
-                                             int string_id,
-                                             const gfx::ImageSkia& icon);
+  void AddHighlightedItemWithIcon(int command_id,
+                                  const base::string16& label,
+                                  const gfx::ImageSkia& icon);
 
   // Adds a separator of the specified type to the model.
   // - Adding a separator after another separator is always invalid if they
@@ -108,6 +108,10 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
                   const base::string16& label,
                   MenuModel* model);
   void AddSubMenuWithStringId(int command_id, int string_id, MenuModel* model);
+  void AddSubMenuWithStringIdAndIcon(int command_id,
+                                     int string_id,
+                                     MenuModel* model,
+                                     const gfx::ImageSkia& icon);
   void AddActionableSubMenu(int command_id,
                             const base::string16& label,
                             MenuModel* model);

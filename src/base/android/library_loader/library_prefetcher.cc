@@ -169,7 +169,7 @@ void DumpResidency(size_t start,
   }
 
   // First line: start-end of text range.
-  CHECK(IsOrderingSane());
+  CHECK(AreAnchorsSane());
   CHECK_LE(start, kStartOfText);
   CHECK_LE(kEndOfText, end);
   auto start_end = base::StringPrintf("%" PRIuS " %" PRIuS "\n",
@@ -299,7 +299,7 @@ int NativeLibraryPrefetcher::PercentageOfResidentCode(size_t start,
 
 // static
 int NativeLibraryPrefetcher::PercentageOfResidentNativeLibraryCode() {
-  if (!IsOrderingSane()) {
+  if (!AreAnchorsSane()) {
     LOG(WARNING) << "Incorrect code ordering";
     return -1;
   }
@@ -338,7 +338,7 @@ void NativeLibraryPrefetcher::MadviseForOrderfile() {
 
 // static
 void NativeLibraryPrefetcher::MadviseForResidencyCollection() {
-  if (!IsOrderingSane()) {
+  if (!AreAnchorsSane()) {
     LOG(WARNING) << "Code not ordered, cannot madvise";
     return;
   }

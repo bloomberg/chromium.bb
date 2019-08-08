@@ -9,6 +9,8 @@
 #include "base/memory/ptr_util.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/gpu/macros.h"
+#include "media/gpu/video_frame_mapper.h"
+#include "media/gpu/video_frame_mapper_factory.h"
 #include "third_party/libyuv/include/libyuv/convert.h"
 #include "third_party/libyuv/include/libyuv/convert_from.h"
 #include "third_party/libyuv/include/libyuv/convert_from_argb.h"
@@ -57,6 +59,7 @@ LibYUVImageProcessor::LibYUVImageProcessor(
     const VideoFrameLayout& output_layout,
     const gfx::Size& output_visible_size,
     VideoFrame::StorageType output_storage_type,
+    std::unique_ptr<VideoFrameMapper> video_frame_mapper,
     ErrorCB error_cb)
     : ImageProcessor(input_layout,
                      input_storage_type,
@@ -65,6 +68,7 @@ LibYUVImageProcessor::LibYUVImageProcessor(
                      OutputMode::IMPORT),
       input_visible_rect_(input_visible_size),
       output_visible_rect_(output_visible_size),
+      video_frame_mapper_(std::move(video_frame_mapper)),
       error_cb_(error_cb),
       process_thread_("LibYUVImageProcessorThread") {}
 
@@ -82,9 +86,22 @@ std::unique_ptr<LibYUVImageProcessor> LibYUVImageProcessor::Create(
     const ImageProcessor::OutputMode output_mode,
     ErrorCB error_cb) {
   VLOGF(2);
+
+  std::unique_ptr<VideoFrameMapper> video_frame_mapper;
   // LibYUVImageProcessor supports only memory-based video frame for input.
   VideoFrame::StorageType input_storage_type = VideoFrame::STORAGE_UNKNOWN;
   for (auto input_type : input_config.preferred_storage_types) {
+#if defined(OS_LINUX)
+    if (input_type == VideoFrame::STORAGE_DMABUFS) {
+      video_frame_mapper = VideoFrameMapperFactory::CreateMapper(
+          input_config.layout.format(), true);
+      if (video_frame_mapper) {
+        input_storage_type = input_type;
+        break;
+      }
+    }
+#endif  // defined(OS_LINUX)
+
     if (VideoFrame::IsStorageTypeMappable(input_type)) {
       input_storage_type = input_type;
       break;
@@ -124,6 +141,7 @@ std::unique_ptr<LibYUVImageProcessor> LibYUVImageProcessor::Create(
   auto processor = base::WrapUnique(new LibYUVImageProcessor(
       input_config.layout, input_config.visible_size, input_storage_type,
       output_config.layout, output_config.visible_size, output_storage_type,
+      std::move(video_frame_mapper),
       media::BindToCurrentLoop(std::move(error_cb))));
   if (res == SupportResult::SupportedWithPivot) {
     processor->intermediate_frame_ =
@@ -166,7 +184,8 @@ bool LibYUVImageProcessor::ProcessInternal(
   DCHECK(input_frame->layout().coded_size() == input_layout_.coded_size());
   DCHECK_EQ(output_frame->layout().format(), output_layout_.format());
   DCHECK(output_frame->layout().coded_size() == output_layout_.coded_size());
-  DCHECK(VideoFrame::IsStorageTypeMappable(input_frame->storage_type()));
+  DCHECK(input_storage_type_ == input_frame->storage_type() ||
+         VideoFrame::IsStorageTypeMappable(input_frame->storage_type()));
   DCHECK(VideoFrame::IsStorageTypeMappable(output_frame->storage_type()));
 
   // Since process_thread_ is owned by this class. base::Unretained(this) and
@@ -184,6 +203,17 @@ void LibYUVImageProcessor::ProcessTask(scoped_refptr<VideoFrame> input_frame,
                                        FrameReadyCB cb) {
   DCHECK(process_thread_.task_runner()->BelongsToCurrentThread());
   DVLOGF(4);
+#if defined(OS_LINUX)
+  if (input_frame->storage_type() == VideoFrame::STORAGE_DMABUFS) {
+    DCHECK_NE(video_frame_mapper_.get(), nullptr);
+    input_frame = video_frame_mapper_->Map(std::move(input_frame));
+    if (!input_frame) {
+      VLOGF(1) << "Failed to map input VideoFrame";
+      NotifyError();
+      return;
+    }
+  }
+#endif  // defined(OS_LINUX)
 
   int res = DoConversion(input_frame.get(), output_frame.get());
   if (res != 0) {

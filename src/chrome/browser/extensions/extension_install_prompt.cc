@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -67,33 +66,6 @@ SkBitmap GetDefaultIconBitmapForMaxScaleFactor(bool is_app) {
       extensions::util::GetDefaultExtensionIcon();
   return image.GetRepresentation(gfx::ImageSkia::GetMaxSupportedScale())
       .GetBitmap();
-}
-
-// If auto confirm is enabled then posts a task to proceed with or cancel the
-// install and returns true. Otherwise returns false.
-bool AutoConfirmPrompt(ExtensionInstallPrompt::DoneCallback* callback) {
-  switch (extensions::ScopedTestDialogAutoConfirm::GetAutoConfirmValue()) {
-    case extensions::ScopedTestDialogAutoConfirm::NONE:
-      return false;
-    // We use PostTask instead of calling the callback directly here, because in
-    // the real implementations it's highly likely the message loop will be
-    // pumping a few times before the user clicks accept or cancel.
-    case extensions::ScopedTestDialogAutoConfirm::ACCEPT:
-    case extensions::ScopedTestDialogAutoConfirm::ACCEPT_AND_OPTION:
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(base::ResetAndReturn(callback),
-                                    ExtensionInstallPrompt::Result::ACCEPTED));
-      return true;
-    case extensions::ScopedTestDialogAutoConfirm::CANCEL:
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(base::ResetAndReturn(callback),
-                         ExtensionInstallPrompt::Result::USER_CANCELED));
-      return true;
-  }
-
-  NOTREACHED();
-  return false;
 }
 
 }  // namespace
@@ -574,7 +546,7 @@ void ExtensionInstallPrompt::ShowDialog(
   // immediately installed, and then we show an infobar (see OnInstallSuccess)
   // to allow the user to revert if they don't like it.
   if (extension->is_theme() && extension->from_webstore()) {
-    base::ResetAndReturn(&done_callback_).Run(Result::ACCEPTED);
+    std::move(done_callback_).Run(Result::ACCEPTED);
     return;
   }
 
@@ -679,19 +651,47 @@ void ExtensionInstallPrompt::ShowConfirmation() {
   prompt_->set_icon(gfx::Image::CreateFrom1xBitmap(icon_));
 
   if (show_params_->WasParentDestroyed()) {
-    base::ResetAndReturn(&done_callback_).Run(Result::ABORTED);
+    std::move(done_callback_).Run(Result::ABORTED);
     return;
   }
 
   g_last_prompt_type_for_tests = prompt_->type();
   did_call_show_dialog_ = true;
 
-  if (AutoConfirmPrompt(&done_callback_))
+  // If true, auto confirm is enabled and already handled the result.
+  if (AutoConfirmPromptIfEnabled())
     return;
 
   if (show_dialog_callback_.is_null())
     show_dialog_callback_ = GetDefaultShowDialogCallback();
-  base::ResetAndReturn(&show_dialog_callback_)
-      .Run(show_params_.get(), base::ResetAndReturn(&done_callback_),
-           std::move(prompt_));
+  // TODO(https://crbug.com/957713): Use OnceCallback and eliminate the need for
+  // a callback on the stack.
+  auto cb = std::move(done_callback_);
+  std::move(show_dialog_callback_)
+      .Run(show_params_.get(), cb, std::move(prompt_));
+}
+
+bool ExtensionInstallPrompt::AutoConfirmPromptIfEnabled() {
+  switch (extensions::ScopedTestDialogAutoConfirm::GetAutoConfirmValue()) {
+    case extensions::ScopedTestDialogAutoConfirm::NONE:
+      return false;
+    // We use PostTask instead of calling the callback directly here, because in
+    // the real implementations it's highly likely the message loop will be
+    // pumping a few times before the user clicks accept or cancel.
+    case extensions::ScopedTestDialogAutoConfirm::ACCEPT:
+    case extensions::ScopedTestDialogAutoConfirm::ACCEPT_AND_OPTION:
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(done_callback_),
+                                    ExtensionInstallPrompt::Result::ACCEPTED));
+      return true;
+    case extensions::ScopedTestDialogAutoConfirm::CANCEL:
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::BindOnce(std::move(done_callback_),
+                         ExtensionInstallPrompt::Result::USER_CANCELED));
+      return true;
+  }
+
+  NOTREACHED();
+  return false;
 }

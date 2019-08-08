@@ -121,9 +121,9 @@ class MockStreamFactory : public audio::FakeStreamFactory {
 
  private:
   void CreateLoopbackStream(
-      media::mojom::AudioInputStreamRequest stream_request,
-      media::mojom::AudioInputStreamClientPtr client,
-      media::mojom::AudioInputStreamObserverPtr observer,
+      mojo::PendingReceiver<media::mojom::AudioInputStream> receiver,
+      mojo::PendingRemote<media::mojom::AudioInputStreamClient> client,
+      mojo::PendingRemote<media::mojom::AudioInputStreamObserver> observer,
       const media::AudioParameters& params,
       uint32_t shared_memory_count,
       const base::UnguessableToken& group_id,
@@ -133,16 +133,17 @@ class MockStreamFactory : public audio::FakeStreamFactory {
     EXPECT_EQ(stream_request_data_->group_id, group_id);
     EXPECT_TRUE(stream_request_data_->params.Equals(params));
     stream_request_data_->requested = true;
-    stream_request_data_->stream_request = std::move(stream_request);
-    stream_request_data_->client = std::move(client);
-    stream_request_data_->observer = std::move(observer);
+    stream_request_data_->stream_request = std::move(receiver);
+    stream_request_data_->client.Bind(std::move(client));
+    stream_request_data_->observer.Bind(std::move(observer));
     stream_request_data_->shared_memory_count = shared_memory_count;
     stream_request_data_->created_callback = std::move(created_callback);
   }
 
-  void BindMuter(audio::mojom::LocalMuterAssociatedRequest request,
-                 const base::UnguessableToken& group_id) final {
-    stream_request_data_->muter_request = std::move(request);
+  void BindMuter(
+      mojo::PendingAssociatedReceiver<audio::mojom::LocalMuter> receiver,
+      const base::UnguessableToken& group_id) final {
+    stream_request_data_->muter_request = std::move(receiver);
     IsMuting(group_id);
   }
 
@@ -171,7 +172,7 @@ struct TestEnvironment {
   StrictMock<MockRendererAudioInputStreamFactoryClient> renderer_factory_client;
   std::unique_ptr<AudioLoopbackStreamBroker> broker;
   MockStreamFactory stream_factory;
-  audio::mojom::StreamFactoryPtr factory_ptr = stream_factory.MakePtr();
+  audio::mojom::StreamFactoryPtr factory_ptr{stream_factory.MakeRemote()};
 };
 
 }  // namespace

@@ -11,6 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "build/build_config.h"
+#include "chrome/browser/apps/intent_helper/apps_navigation_types.h"
 #include "chrome/browser/lifetime/browser_close_manager.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
@@ -27,13 +28,13 @@
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/native_widget_types.h"
 
+#if defined(OS_ANDROID)
+#error This file should only be included on desktop.
+#endif
+
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 #include "chrome/browser/ui/in_product_help/in_product_help.h"
 #endif  // BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
-
-#if !defined(OS_ANDROID)
-#include "chrome/browser/apps/intent_helper/apps_navigation_types.h"
-#endif  //  !defined(OS_ANDROID)
 
 class Browser;
 class DownloadShelf;
@@ -70,6 +71,11 @@ class Size;
 namespace signin_metrics {
 enum class AccessPoint;
 }
+
+namespace send_tab_to_self {
+class SendTabToSelfBubbleController;
+class SendTabToSelfBubbleView;
+}  // namespace send_tab_to_self
 
 namespace web_modal {
 class WebContentsModalDialogHost;
@@ -236,6 +242,10 @@ class BrowserWindow : public ui::BaseWindow {
   // the TabStripModel has an active tab.
   virtual gfx::Size GetContentsSize() const = 0;
 
+  // Resizes the window to fit a WebContents of a certain size. This should only
+  // be called after the TabStripModel has an active tab.
+  virtual void SetContentsSize(const gfx::Size& size) = 0;
+
   // Returns the container of page action icons.
   virtual PageActionIconContainer* GetOmniboxPageActionIconContainer() = 0;
 
@@ -317,7 +327,6 @@ class BrowserWindow : public ui::BaseWindow {
   // Shows the Update Recommended dialog box.
   virtual void ShowUpdateChromeDialog() = 0;
 
-#if !defined(OS_ANDROID)
   // Shows the intent picker bubble. |app_info| contains the app candidates to
   // display, |show_stay_in_chrome| allows to show or hide 'Stay in Chrome'
   // (used for non-http(s) queries), if |show_remember_selection| is false, the
@@ -329,8 +338,6 @@ class BrowserWindow : public ui::BaseWindow {
       bool show_stay_in_chrome,
       bool show_remember_selection,
       IntentPickerResponse callback) = 0;
-  virtual void SetIntentPickerViewVisibility(bool visible) = 0;
-#endif  //  !defined(OS_ANDROID)
 
   // Shows the Bookmark bubble. |url| is the URL being bookmarked,
   // |already_bookmarked| is true if the url is already bookmarked.
@@ -340,6 +347,12 @@ class BrowserWindow : public ui::BaseWindow {
   virtual autofill::SaveCardBubbleView* ShowSaveCreditCardBubble(
       content::WebContents* contents,
       autofill::SaveCardBubbleController* controller,
+      bool is_user_gesture) = 0;
+
+  // Shows the "send tab to self" bubble.
+  virtual send_tab_to_self::SendTabToSelfBubbleView* ShowSendTabToSelfBubble(
+      content::WebContents* contents,
+      send_tab_to_self::SendTabToSelfBubbleController* controller,
       bool is_user_gesture) = 0;
 
   // Shows the local card migration bubble.

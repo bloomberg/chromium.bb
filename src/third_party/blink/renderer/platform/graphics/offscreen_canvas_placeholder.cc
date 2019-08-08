@@ -100,11 +100,11 @@ void OffscreenCanvasPlaceholder::ReleasePlaceholderFrame() {
   if (placeholder_frame_) {
     DCHECK(frame_dispatcher_task_runner_);
     placeholder_frame_->Transfer();
-    PostCrossThreadTask(
-        *frame_dispatcher_task_runner_, FROM_HERE,
-        CrossThreadBind(releaseFrameToDispatcher, std::move(frame_dispatcher_),
-                        std::move(placeholder_frame_),
-                        placeholder_frame_resource_id_));
+    PostCrossThreadTask(*frame_dispatcher_task_runner_, FROM_HERE,
+                        CrossThreadBindOnce(releaseFrameToDispatcher,
+                                            std::move(frame_dispatcher_),
+                                            std::move(placeholder_frame_),
+                                            placeholder_frame_resource_id_));
   }
 }
 
@@ -150,7 +150,7 @@ bool OffscreenCanvasPlaceholder::PostSetSuspendAnimationToOffscreenCanvasThread(
     return false;
   PostCrossThreadTask(
       *frame_dispatcher_task_runner_, FROM_HERE,
-      CrossThreadBind(SetSuspendAnimation, frame_dispatcher_, suspend));
+      CrossThreadBindOnce(SetSuspendAnimation, frame_dispatcher_, suspend));
   return true;
 }
 

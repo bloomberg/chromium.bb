@@ -20,6 +20,7 @@
 #include "chrome/browser/previews/previews_lite_page_decider.h"
 #include "chrome/browser/previews/previews_lite_page_navigation_throttle.h"
 #include "chrome/browser/previews/previews_lite_page_navigation_throttle_manager.h"
+#include "chrome/browser/previews/previews_offline_helper.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
@@ -63,6 +64,11 @@ bool ShouldAllowRedirectPreview(content::NavigationHandle* navigation_handle) {
   if (!navigation_handle)
     return true;
 
+  // This should only occur in unit tests; this behavior is tested in browser
+  // tests.
+  if (navigation_handle->GetWebContents() == nullptr)
+    return true;
+
   const GURL& url = navigation_handle->GetURL();
   content::WebContents* web_contents = navigation_handle->GetWebContents();
   auto* previews_service = PreviewsServiceFactory::GetForProfile(
@@ -97,6 +103,11 @@ bool ShouldAllowRedirectPreview(content::NavigationHandle* navigation_handle) {
         PreviewsLitePageNavigationThrottle::IneligibleReason::kCookiesBlocked);
   }
 
+  if (!decider->has_drp_headers()) {
+    ineligible_reasons.push_back(PreviewsLitePageNavigationThrottle::
+                                     IneligibleReason::kInvalidProxyHeaders);
+  }
+
   // Record UMA.
   for (PreviewsLitePageNavigationThrottle::IneligibleReason reason :
        ineligible_reasons) {
@@ -113,17 +124,6 @@ bool ShouldAllowRedirectPreview(content::NavigationHandle* navigation_handle) {
     blacklist_reasons.push_back(
         PreviewsLitePageNavigationThrottle::BlacklistReason::
             kNavigationToPrivateDomain);
-  }
-
-  std::vector<std::string> blacklisted_path_suffixes =
-      previews::params::LitePagePreviewsBlacklistedPathSuffixes();
-  for (const std::string& suffix : blacklisted_path_suffixes) {
-    if (base::EndsWith(url.path(), suffix,
-                       base::CompareCase::INSENSITIVE_ASCII)) {
-      blacklist_reasons.push_back(PreviewsLitePageNavigationThrottle::
-                                      BlacklistReason::kPathSuffixBlacklisted);
-      break;
-    }
   }
 
   if (decider->HostBlacklistedFromBypass(url.host())) {
@@ -166,6 +166,9 @@ CreateServerLitePageInfoFromNavigationHandle(
     content::NavigationHandle* navigation_handle) {
   auto server_lite_page_info =
       std::make_unique<PreviewsUserData::ServerLitePageInfo>();
+  // This is only for unit testing.
+  if (!navigation_handle->GetWebContents())
+    return nullptr;
 
   server_lite_page_info->original_navigation_start =
       navigation_handle->NavigationStart();
@@ -210,13 +213,15 @@ bool HasEnabledPreviews(content::PreviewsState previews_state) {
 
 content::PreviewsState DetermineAllowedClientPreviewsState(
     previews::PreviewsUserData* previews_data,
-    const GURL& url,
-    bool is_reload,
-    bool is_redirect,
+    bool previews_triggering_logic_already_ran,
     bool is_data_saver_user,
     previews::PreviewsDecider* previews_decider,
     content::NavigationHandle* navigation_handle) {
   content::PreviewsState previews_state = content::PREVIEWS_UNSPECIFIED;
+
+  const GURL& url = navigation_handle->GetURL();
+  bool is_reload =
+      navigation_handle->GetReloadType() != content::ReloadType::NONE;
 
   // Either this is a navigation to the lite page via the redirect mechanism and
   // only Lite Page redirect should be served, or this is a reload in which case
@@ -240,20 +245,31 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
   if (!is_data_saver_user)
     return previews_state;
 
-  // Offline previews state should not be updated during a redirect. The Offline
-  // Previews URLLoader will not receive an updated PreviewsState, so the state
-  // should stay consistent throughout the navigation.
-  if (is_redirect) {
+  auto* previews_service =
+      navigation_handle && navigation_handle->GetWebContents()
+          ? PreviewsServiceFactory::GetForProfile(Profile::FromBrowserContext(
+                navigation_handle->GetWebContents()->GetBrowserContext()))
+          : nullptr;
+
+  if (previews_triggering_logic_already_ran) {
     // Record that the navigation was redirected.
     previews_data->set_is_redirect(true);
-    // Keep the same OFFLINE previews bit as the original URL.
-    previews_state |=
-        (previews_data->allowed_previews_state() & content::OFFLINE_PAGE_ON);
-  } else if (previews_decider->ShouldAllowPreviewAtNavigationStart(
-                 previews_data, url, is_reload,
-                 previews::PreviewsType::OFFLINE)) {
-    previews_state |= content::OFFLINE_PAGE_ON;
   }
+
+  bool allow_offline = true;
+  // If |previews_service| is null, skip the previews offline helper check.
+  // This only happens in testing.
+  if (previews_service) {
+    allow_offline = previews_service->previews_offline_helper()
+                        ->ShouldAttemptOfflinePreview(url);
+  }
+  allow_offline =
+      allow_offline &&
+      previews_decider->ShouldAllowPreviewAtNavigationStart(
+          previews_data, url, is_reload, previews::PreviewsType::OFFLINE);
+
+  if (allow_offline)
+    previews_state |= content::OFFLINE_PAGE_ON;
 
   // Check PageHint preview types first.
   bool should_load_page_hints = false;
@@ -426,8 +442,7 @@ content::PreviewsState MaybeCoinFlipHoldbackBeforeCommit(
   if (!HasEnabledPreviews(initial_state & kPreCommitPreviews))
     return initial_state;
 
-  if (previews_data->random_coin_flip_for_navigation() ||
-      params::ShouldOverrideCoinFlipHoldbackResult()) {
+  if (previews_data->CoinFlipForNavigation()) {
     // Holdback all previews. It is possible that some number of client previews
     // will also be held back here. However, since a before-commit preview was
     // likely, we turn off all of them to make analysis simpler and this code
@@ -458,12 +473,10 @@ content::PreviewsState MaybeCoinFlipHoldbackAfterCommit(
   if (!previews_data)
     return initial_state;
 
-  if (!HasEnabledPreviews(initial_state)) {
+  if (!HasEnabledPreviews(initial_state))
     return initial_state;
-  }
 
-  if (previews_data->random_coin_flip_for_navigation() ||
-      params::ShouldOverrideCoinFlipHoldbackResult()) {
+  if (previews_data->CoinFlipForNavigation()) {
     // No pre-commit previews should be set, since such a preview would have
     // already committed and we don't want to incorrectly clear that state. If
     // it did, at least make everything functionally correct.

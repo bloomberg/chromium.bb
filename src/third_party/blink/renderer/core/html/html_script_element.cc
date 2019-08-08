@@ -51,11 +51,6 @@ HTMLScriptElement::HTMLScriptElement(Document& document,
       loader_(InitializeScriptLoader(flags.IsCreatedByParser(),
                                      flags.WasAlreadyStarted())) {}
 
-HTMLScriptElement* HTMLScriptElement::Create(Document& document,
-                                             const CreateElementFlags flags) {
-  return MakeGarbageCollected<HTMLScriptElement>(document, flags);
-}
-
 const AttrNameToTrustedType& HTMLScriptElement::GetCheckedAttributeTypes()
     const {
   DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
@@ -244,7 +239,7 @@ bool HTMLScriptElement::AllowInlineScriptForCSP(
     const AtomicString& nonce,
     const WTF::OrdinalNumber& context_line,
     const String& script_content) {
-  return GetDocument().GetContentSecurityPolicy()->AllowInline(
+  return GetDocument().GetContentSecurityPolicyForWorld()->AllowInline(
       ContentSecurityPolicy::InlineType::kScript, this, script_content, nonce,
       GetDocument().Url(), context_line);
 }

@@ -5,6 +5,7 @@
 #include "content/browser/worker_host/worker_script_fetcher.h"
 
 #include "base/feature_list.h"
+#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/worker_host/worker_script_loader.h"
 #include "content/browser/worker_host/worker_script_loader_factory.h"
 #include "content/common/throttling_url_loader.h"
@@ -90,8 +91,9 @@ void WorkerScriptFetcher::Start(
   // workers (https://crbug.com/906991).
   int32_t routing_id = MSG_ROUTING_NONE;
 
-  // NetworkService is not interested in the request ID.
-  int request_id = -1;
+  // Use NavigationURLLoaderImpl to get a unique request id across
+  // browser-initiated navigations and worker script fetch.
+  int request_id = NavigationURLLoaderImpl::MakeGlobalRequestID().request_id;
 
   url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
       std::move(shared_url_loader_factory), std::move(throttles), routing_id,
@@ -175,8 +177,7 @@ void WorkerScriptFetcher::OnUploadProgress(int64_t current_position,
   NOTREACHED();
 }
 
-void WorkerScriptFetcher::OnReceiveCachedMetadata(
-    const std::vector<uint8_t>& data) {
+void WorkerScriptFetcher::OnReceiveCachedMetadata(mojo_base::BigBuffer data) {
   NOTREACHED();
 }
 

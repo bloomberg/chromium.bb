@@ -123,6 +123,7 @@
 #include "third_party/blink/renderer/core/page/scrolling/scroll_state.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator_context.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation_controller.h"
+#include "third_party/blink/renderer/core/page/validation_message_client.h"
 #include "third_party/blink/renderer/core/page/viewport_description.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/compositing/graphics_layer_tree_as_text.h"
@@ -163,6 +164,7 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instance_counters.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/language.h"
@@ -185,10 +187,10 @@ using ui::mojom::ImeTextSpanThickness;
 
 namespace {
 
-class UseCounterObserverImpl final : public UseCounter::Observer {
-
+class UseCounterHelperObserverImpl final : public UseCounterHelper::Observer {
  public:
-  UseCounterObserverImpl(ScriptPromiseResolver* resolver, WebFeature feature)
+  UseCounterHelperObserverImpl(ScriptPromiseResolver* resolver,
+                               WebFeature feature)
       : resolver_(resolver), feature_(feature) {}
 
   bool OnCountFeature(WebFeature feature) final {
@@ -199,14 +201,14 @@ class UseCounterObserverImpl final : public UseCounter::Observer {
   }
 
   void Trace(blink::Visitor* visitor) override {
-    UseCounter::Observer::Trace(visitor);
+    UseCounterHelper::Observer::Trace(visitor);
     visitor->Trace(resolver_);
   }
 
  private:
   Member<ScriptPromiseResolver> resolver_;
   WebFeature feature_;
-  DISALLOW_COPY_AND_ASSIGN(UseCounterObserverImpl);
+  DISALLOW_COPY_AND_ASSIGN(UseCounterHelperObserverImpl);
 };
 
 }  // namespace
@@ -478,17 +480,22 @@ bool Internals::isLoadingFromMemoryCache(const String& url) {
   return resource && resource->GetStatus() == ResourceStatus::kCached;
 }
 
-int Internals::getResourcePriority(const String& url, Document* document) {
-  if (!document)
-    return static_cast<int>(ResourceLoadPriority::kUnresolved);
+ScriptPromise Internals::getResourcePriority(ScriptState* script_state,
+                                             const String& url,
+                                             Document* document) {
+  ScriptPromiseResolver* resolver =
+      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = resolver->Promise();
+  KURL resource_url = url_test_helpers::ToKURL(url.Utf8().data());
+  DCHECK(document);
 
-  Resource* resource = document->Fetcher()->AllResources().at(
-      url_test_helpers::ToKURL(url.Utf8().data()));
+  auto callback = WTF::Bind(&Internals::ResolveResourcePriority,
+                            WTF::Passed(WrapPersistent(this)),
+                            WTF::Passed(WrapPersistent(resolver)));
+  ResourceFetcher::AddPriorityObserverForTesting(resource_url,
+                                                 std::move(callback));
 
-  if (!resource)
-    return static_cast<int>(ResourceLoadPriority::kUnresolved);
-
-  return static_cast<int>(resource->GetResourceRequest().Priority());
+  return promise;
 }
 
 bool Internals::doesWindowHaveUrlFragment(DOMWindow* window) {
@@ -813,8 +820,11 @@ String Internals::visiblePlaceholder(Element* element) {
 
 bool Internals::isValidationMessageVisible(Element* element) {
   DCHECK(element);
-  return IsHTMLFormControlElement(element) &&
-         ToHTMLFormControlElement(element)->IsValidationMessageVisible();
+  if (auto* page = element->GetDocument().GetPage()) {
+    return page->GetValidationMessageClient().IsValidationMessageVisible(
+        *element);
+  }
+  return false;
 }
 
 void Internals::selectColorInColorChooser(Element* element,
@@ -921,8 +931,7 @@ DOMRectReadOnly* Internals::boundingBox(Element* element) {
   LayoutObject* layout_object = element->GetLayoutObject();
   if (!layout_object)
     return DOMRectReadOnly::Create(0, 0, 0, 0);
-  return DOMRectReadOnly::FromIntRect(
-      layout_object->AbsoluteBoundingBoxRectIgnoringTransforms());
+  return DOMRectReadOnly::FromIntRect(layout_object->AbsoluteBoundingBoxRect());
 }
 
 void Internals::setMarker(Document* document,
@@ -974,7 +983,7 @@ unsigned Internals::markerCountForNode(Node* node,
 
   return node->GetDocument()
       .Markers()
-      .MarkersFor(ToText(*node), marker_types.value())
+      .MarkersFor(To<Text>(*node), marker_types.value())
       .size();
 }
 
@@ -983,7 +992,7 @@ unsigned Internals::activeMarkerCountForNode(Node* node) {
 
   // Only TextMatch markers can be active.
   DocumentMarkerVector markers = node->GetDocument().Markers().MarkersFor(
-      ToText(*node), DocumentMarker::MarkerTypes::TextMatch());
+      To<Text>(*node), DocumentMarker::MarkerTypes::TextMatch());
 
   unsigned active_marker_count = 0;
   for (const auto& marker : markers) {
@@ -1009,7 +1018,7 @@ DocumentMarker* Internals::MarkerAt(Node* node,
   }
 
   DocumentMarkerVector markers = node->GetDocument().Markers().MarkersFor(
-      ToText(*node), marker_types.value());
+      To<Text>(*node), marker_types.value());
   if (markers.size() <= index)
     return nullptr;
   return markers[index];
@@ -1023,8 +1032,9 @@ Range* Internals::markerRangeForNode(Node* node,
   DocumentMarker* marker = MarkerAt(node, marker_type, index, exception_state);
   if (!marker)
     return nullptr;
-  return Range::Create(node->GetDocument(), node, marker->StartOffset(), node,
-                       marker->EndOffset());
+  return MakeGarbageCollected<Range>(node->GetDocument(), node,
+                                     marker->StartOffset(), node,
+                                     marker->EndOffset());
 }
 
 String Internals::markerDescriptionForNode(Node* node,
@@ -1230,7 +1240,7 @@ void Internals::setTextMatchMarkersActive(Node* node,
                                           bool active) {
   DCHECK(node);
   node->GetDocument().Markers().SetTextMatchMarkersActive(
-      ToText(*node), start_offset, end_offset, active);
+      To<Text>(*node), start_offset, end_offset, active);
 }
 
 void Internals::setMarkedTextMatchesAreHighlighted(Document* document,
@@ -1742,116 +1752,6 @@ unsigned Internals::touchEndOrCancelEventHandlerCount(
 unsigned Internals::pointerEventHandlerCount(Document* document) const {
   DCHECK(document);
   return EventHandlerCount(*document, EventHandlerRegistry::kPointerEvent);
-}
-
-static PaintLayer* FindLayerForGraphicsLayer(PaintLayer* search_root,
-                                             GraphicsLayer* graphics_layer,
-                                             IntSize* layer_offset,
-                                             String* layer_type) {
-  *layer_offset = IntSize();
-  if (search_root->HasCompositedLayerMapping() &&
-      graphics_layer ==
-          search_root->GetCompositedLayerMapping()->MainGraphicsLayer()) {
-    // If the |graphicsLayer| sets the scrollingContent layer as its
-    // scroll parent, consider it belongs to the scrolling layer and
-    // mark the layer type as "scrolling".
-    if (!search_root->GetLayoutObject().HasTransformRelatedProperty() &&
-        search_root->ScrollParent() &&
-        search_root->Parent() == search_root->ScrollParent()) {
-      *layer_type = "scrolling";
-      // For hit-test rect visualization to work, the hit-test rect should
-      // be relative to the scrolling layer and in this case the hit-test
-      // rect is relative to the element's own GraphicsLayer. So we will have
-      // to adjust the rect to be relative to the scrolling layer here.
-      // Only when the element's offsetParent == scroller's offsetParent we
-      // can compute the element's relative position to the scrolling content
-      // in this way.
-      if (search_root->GetLayoutObject().OffsetParent() ==
-          search_root->Parent()->GetLayoutObject().OffsetParent()) {
-        LayoutBoxModelObject& current = search_root->GetLayoutObject();
-        LayoutBoxModelObject& parent = search_root->Parent()->GetLayoutObject();
-        layer_offset->SetWidth((parent.OffsetLeft(parent.OffsetParent()) -
-                                current.OffsetLeft(parent.OffsetParent()))
-                                   .ToInt());
-        layer_offset->SetHeight((parent.OffsetTop(parent.OffsetParent()) -
-                                 current.OffsetTop(parent.OffsetParent()))
-                                    .ToInt());
-        return search_root->Parent();
-      }
-    }
-
-    LayoutRect rect;
-    PaintLayer::MapRectInPaintInvalidationContainerToBacking(
-        search_root->GetLayoutObject(), rect);
-    rect.Move(search_root->GetCompositedLayerMapping()
-                  ->ContentOffsetInCompositingLayer());
-
-    *layer_offset = IntSize(rect.X().ToInt(), rect.Y().ToInt());
-    return search_root;
-  }
-
-  // If the |graphicsLayer| is a scroller's scrollingContent layer,
-  // consider this is a scrolling layer.
-  GraphicsLayer* layer_for_scrolling =
-      search_root->GetScrollableArea()
-          ? search_root->GetScrollableArea()->LayerForScrolling()
-          : nullptr;
-  if (graphics_layer == layer_for_scrolling) {
-    *layer_type = "scrolling";
-    return search_root;
-  }
-
-  if (search_root->GetCompositingState() == kPaintsIntoGroupedBacking) {
-    GraphicsLayer* squashing_layer =
-        search_root->GroupedMapping()->SquashingLayer();
-    if (graphics_layer == squashing_layer) {
-      *layer_type = "squashing";
-      LayoutRect rect;
-      PaintLayer::MapRectInPaintInvalidationContainerToBacking(
-          search_root->GetLayoutObject(), rect);
-      *layer_offset = IntSize(rect.X().ToInt(), rect.Y().ToInt());
-      return search_root;
-    }
-  }
-
-  GraphicsLayer* layer_for_horizontal_scrollbar =
-      search_root->GetScrollableArea()
-          ? search_root->GetScrollableArea()->LayerForHorizontalScrollbar()
-          : nullptr;
-  if (graphics_layer == layer_for_horizontal_scrollbar) {
-    *layer_type = "horizontalScrollbar";
-    return search_root;
-  }
-
-  GraphicsLayer* layer_for_vertical_scrollbar =
-      search_root->GetScrollableArea()
-          ? search_root->GetScrollableArea()->LayerForVerticalScrollbar()
-          : nullptr;
-  if (graphics_layer == layer_for_vertical_scrollbar) {
-    *layer_type = "verticalScrollbar";
-    return search_root;
-  }
-
-  GraphicsLayer* layer_for_scroll_corner =
-      search_root->GetScrollableArea()
-          ? search_root->GetScrollableArea()->LayerForScrollCorner()
-          : nullptr;
-  if (graphics_layer == layer_for_scroll_corner) {
-    *layer_type = "scrollCorner";
-    return search_root;
-  }
-
-  // Search right to left to increase the chances that we'll choose the top-most
-  // layers in a grouped mapping for squashing.
-  for (PaintLayer* child = search_root->LastChild(); child;
-       child = child->PreviousSibling()) {
-    PaintLayer* found_layer = FindLayerForGraphicsLayer(
-        child, graphics_layer, layer_offset, layer_type);
-    if (found_layer)
-      return found_layer;
-  }
-
-  return nullptr;
 }
 
 // Given a vector of rects, merge those that are adjacent, leaving empty rects
@@ -3298,23 +3198,25 @@ void Internals::setVisualViewportOffset(int x, int y) {
 bool Internals::isUseCounted(Document* document, uint32_t feature) {
   if (feature >= static_cast<int32_t>(WebFeature::kNumberOfFeatures))
     return false;
-  return UseCounter::IsCounted(*document, static_cast<WebFeature>(feature));
+  return document->IsUseCounted(static_cast<WebFeature>(feature));
 }
 
 bool Internals::isCSSPropertyUseCounted(Document* document,
                                         const String& property_name) {
-  return UseCounter::IsCounted(*document, property_name);
+  return document->IsUseCounted(unresolvedCSSPropertyID(property_name),
+                                UseCounterHelper::CSSPropertyType::kDefault);
 }
 
 bool Internals::isAnimatedCSSPropertyUseCounted(Document* document,
                                                 const String& property_name) {
-  return UseCounter::IsCountedAnimatedCSS(*document, property_name);
+  return document->IsUseCounted(unresolvedCSSPropertyID(property_name),
+                                UseCounterHelper::CSSPropertyType::kAnimation);
 }
 
 void Internals::clearUseCounter(Document* document, uint32_t feature) {
   if (feature >= static_cast<int32_t>(WebFeature::kNumberOfFeatures))
     return;
-  UseCounter::ClearCountForTesting(*document, static_cast<WebFeature>(feature));
+  document->ClearUseCounterForTesting(static_cast<WebFeature>(feature));
 }
 
 Vector<String> Internals::getCSSPropertyLonghands() const {
@@ -3360,7 +3262,7 @@ ScriptPromise Internals::observeUseCounter(ScriptState* script_state,
   }
 
   WebFeature use_counter_feature = static_cast<WebFeature>(feature);
-  if (UseCounter::IsCounted(*document, use_counter_feature)) {
+  if (document->IsUseCounted(use_counter_feature)) {
     resolver->Resolve();
     return promise;
   }
@@ -3371,8 +3273,8 @@ ScriptPromise Internals::observeUseCounter(ScriptState* script_state,
     return promise;
   }
 
-  loader->GetUseCounter().AddObserver(
-      MakeGarbageCollected<UseCounterObserverImpl>(
+  loader->GetUseCounterHelper().AddObserver(
+      MakeGarbageCollected<UseCounterHelperObserverImpl>(
           resolver, static_cast<WebFeature>(use_counter_feature)));
   return promise;
 }
@@ -3545,6 +3447,11 @@ void Internals::setDeviceEmulationScale(float scale,
   }
   page->GetChromeClient().GetWebView()->SetDeviceEmulationTransform(
       TransformationMatrix().Scale(scale));
+}
+
+void Internals::ResolveResourcePriority(ScriptPromiseResolver* resolver,
+                                        int resource_load_priority) {
+  resolver->Resolve(resource_load_priority);
 }
 
 }  // namespace blink

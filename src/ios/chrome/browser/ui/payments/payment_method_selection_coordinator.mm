@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/payments/core/autofill_payment_instrument.h"
 #include "components/payments/core/payment_instrument.h"
 #include "components/strings/grit/components_strings.h"

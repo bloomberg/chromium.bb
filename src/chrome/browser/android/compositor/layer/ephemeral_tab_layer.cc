@@ -4,12 +4,50 @@
 
 #include "chrome/browser/android/compositor/layer/ephemeral_tab_layer.h"
 
+#include "base/task/cancelable_task_tracker.h"
 #include "cc/layers/layer.h"
-#include "cc/layers/nine_patch_layer.h"
-#include "cc/resources/scoped_ui_resource.h"
-#include "content/public/browser/android/compositor.h"
-#include "ui/android/resources/nine_patch_resource.h"
+#include "cc/layers/ui_resource_layer.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
+#include "components/favicon/core/favicon_service.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/android/resources/resource_manager.h"
+#include "ui/base/l10n/l10n_util_android.h"
+#include "ui/gfx/codec/png_codec.h"
+#include "url/gurl.h"
+
+namespace {
+
+void OnLocalFaviconAvailable(
+    scoped_refptr<cc::UIResourceLayer> layer,
+    scoped_refptr<cc::UIResourceLayer> icon_layer,
+    const float dp_to_px,
+    const float panel_width,
+    const float bar_height,
+    const float padding,
+    const favicon_base::FaviconRawBitmapResult& result) {
+  if (!result.is_valid())
+    return;
+  SkBitmap favicon_bitmap;
+  gfx::PNGCodec::Decode(result.bitmap_data->front(), result.bitmap_data->size(),
+                        &favicon_bitmap);
+  if (favicon_bitmap.isNull())
+    return;
+  const float icon_width =
+      android::OverlayPanelLayer::kDefaultIconWidthDp * dp_to_px;
+  favicon_bitmap.setImmutable();
+  layer->SetBitmap(favicon_bitmap);
+  layer->SetBounds(gfx::Size(icon_width, icon_width));
+
+  bool is_rtl = l10n_util::IsLayoutRtl();
+  float icon_x = is_rtl ? panel_width - icon_width - padding : padding;
+  float icon_y = (bar_height - layer->bounds().height()) / 2;
+  icon_layer->SetIsDrawable(false);
+  layer->SetIsDrawable(true);
+  layer->SetPosition(gfx::PointF(icon_x, icon_y));
+}
+
+}  // namespace
 
 namespace android {
 // static
@@ -35,12 +73,14 @@ void EphemeralTabLayer::SetProperties(
     float panel_height,
     int bar_background_color,
     float bar_margin_side,
+    float bar_margin_top,
     float bar_height,
     bool bar_border_visible,
     float bar_border_height,
     bool bar_shadow_visible,
     float bar_shadow_opacity,
     int icon_color,
+    int drag_handlebar_color,
     bool progress_bar_visible,
     float progress_bar_height,
     float progress_bar_opacity,
@@ -50,14 +90,13 @@ void EphemeralTabLayer::SetProperties(
   float bar_top = 0.f;
   float bar_bottom = bar_top + bar_height;
 
-  // Title needs no rendering in the base layer as it can be rendered
-  // together with caption below. Make it invisible.
   float title_opacity = 0.f;
   OverlayPanelLayer::SetProperties(
       dp_to_px, content_layer, bar_height, panel_x, panel_y, panel_width,
-      panel_height, bar_background_color, bar_margin_side, bar_height, 0.0f,
-      title_opacity, bar_border_visible, bar_border_height, bar_shadow_visible,
-      bar_shadow_opacity, icon_color, 1.0f /* icon opacity */);
+      panel_height, bar_background_color, bar_margin_side, bar_margin_top,
+      bar_height, 0.0f, title_opacity, bar_border_visible, bar_border_height,
+      bar_shadow_visible, bar_shadow_opacity, icon_color, drag_handlebar_color,
+      1.0f /* icon opacity */);
 
   SetupTextLayer(bar_top, bar_height, text_layer_min_height,
                  caption_view_resource_id, caption_animation_percentage,
@@ -68,6 +107,10 @@ void EphemeralTabLayer::SetProperties(
       progress_bar_background_resource_id, progress_bar_resource_id,
       progress_bar_visible, bar_bottom, progress_bar_height,
       progress_bar_opacity, progress_bar_completion, panel_width);
+  dp_to_px_ = dp_to_px;
+  panel_width_ = panel_width;
+  bar_height_ = bar_height;
+  bar_margin_side_ = bar_margin_side;
 }
 
 void EphemeralTabLayer::SetupTextLayer(float bar_top,
@@ -117,10 +160,8 @@ void EphemeralTabLayer::SetupTextLayer(float bar_top,
   // ---------------------------------------------------------------------------
   // Calculate Text Layer Size
   // ---------------------------------------------------------------------------
-  // The caption_ may not have had its resource set by this point, if so
-  // the bounds will be zero and everything will still work.
   float title_height = title_->bounds().height();
-  float caption_height = caption_->bounds().height();
+  float caption_height = caption_visible ? caption_->bounds().height() : 0.f;
 
   float layer_height =
       std::max(text_layer_min_height,
@@ -140,18 +181,11 @@ void EphemeralTabLayer::SetupTextLayer(float bar_top,
   //
   // ---Top of Text Layer--- <- layer_top
   //                         } remaining_height / 2
-  // Title                   } title_height
-  //                         } title_caption_spacing
-  // Caption                 } caption_height
-  //                         } remaining_height / 2
+  //      Title              } title_height
   // --Bottom of Text Layer-
   //
   // --Bottom of Panel Bar-
-  // If the Caption is not visible the Title is centered in this space, when
-  // the Caption becomes visible it is animated sliding up into it's position
-  // with the spacings determined by UI.
 
-  // If there is no caption, just vertically center the title.
   float title_top = (layer_height - title_height) / 2;
 
   // If we aren't displaying the caption we're done.
@@ -181,19 +215,51 @@ void EphemeralTabLayer::SetupTextLayer(float bar_top,
   caption_->SetPosition(gfx::PointF(0.f, caption_top));
 }
 
+void EphemeralTabLayer::GetLocalFaviconImageForURL(Profile* profile,
+                                                   const std::string& url,
+                                                   int size) {
+  panel_icon_->SetIsDrawable(true);
+  favicon_layer_->SetIsDrawable(false);
+  favicon::FaviconService* favicon_service =
+      FaviconServiceFactory::GetForProfile(profile,
+                                           ServiceAccessType::EXPLICIT_ACCESS);
+  DCHECK(favicon_service);
+  if (!favicon_service)
+    return;
+
+  favicon_base::FaviconRawBitmapCallback callback_runner =
+      base::BindOnce(&OnLocalFaviconAvailable, favicon_layer_, panel_icon_,
+                     dp_to_px_, panel_width_, bar_height_, bar_margin_side_);
+
+  // Set |fallback_to_host|=true so the favicon database will fall back to
+  // matching only the hostname to have the best chance of finding a favicon.
+  const bool fallback_to_host = true;
+  favicon_service->GetRawFaviconForPageURL(
+      GURL(url),
+      {favicon_base::IconType::kFavicon, favicon_base::IconType::kTouchIcon,
+       favicon_base::IconType::kTouchPrecomposedIcon,
+       favicon_base::IconType::kWebManifestIcon},
+      size, fallback_to_host, std::move(callback_runner),
+      cancelable_task_tracker_.get());
+}
+
 EphemeralTabLayer::EphemeralTabLayer(ui::ResourceManager* resource_manager)
     : OverlayPanelLayer(resource_manager),
       title_(cc::UIResourceLayer::Create()),
       caption_(cc::UIResourceLayer::Create()),
+      favicon_layer_(cc::UIResourceLayer::Create()),
       text_layer_(cc::UIResourceLayer::Create()) {
   // Content layer
   text_layer_->SetIsDrawable(true);
-
   title_->SetIsDrawable(true);
   caption_->SetIsDrawable(true);
 
   AddBarTextLayer(text_layer_);
   text_layer_->AddChild(title_);
+
+  favicon_layer_->SetIsDrawable(true);
+  layer_->AddChild(favicon_layer_);
+  cancelable_task_tracker_.reset(new base::CancelableTaskTracker());
 }
 
 EphemeralTabLayer::~EphemeralTabLayer() {}

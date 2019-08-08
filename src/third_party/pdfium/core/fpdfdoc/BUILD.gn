@@ -26,6 +26,8 @@ jumbo_source_set("fpdfdoc") {
     "cpdf_bookmark.h",
     "cpdf_bookmarktree.cpp",
     "cpdf_bookmarktree.h",
+    "cpdf_color_utils.cpp",
+    "cpdf_color_utils.h",
     "cpdf_defaultappearance.cpp",
     "cpdf_defaultappearance.h",
     "cpdf_dest.cpp",
@@ -52,8 +54,6 @@ jumbo_source_set("fpdfdoc") {
     "cpdf_nametree.h",
     "cpdf_numbertree.cpp",
     "cpdf_numbertree.h",
-    "cpdf_occontext.cpp",
-    "cpdf_occontext.h",
     "cpdf_pagelabel.cpp",
     "cpdf_pagelabel.h",
     "cpdf_structelement.cpp",
@@ -92,12 +92,6 @@ jumbo_source_set("fpdfdoc") {
     "../fpdfapi/render",
     "../fxcrt",
     "../fxge",
-  ]
-  allow_circular_includes_from = [
-    "../fxge",
-    "../fpdfapi/parser",
-    "../fpdfapi/page",
-    "../fpdfapi/render",
   ]
   visibility = [ "../../*" ]
 }

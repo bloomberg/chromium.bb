@@ -22,7 +22,8 @@ int main(int argc, char const* argv[]) {
     return 0;
   }
 
-  base::ThreadPool::CreateAndStartWithDefaultParams("FtlServicesPlayground");
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams(
+      "FtlServicesPlayground");
   mojo::core::Init();
 
   playground.StartAndAuthenticate();

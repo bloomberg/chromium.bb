@@ -126,7 +126,6 @@ PermissionCombobox::PermissionCombobox(ComboboxModelAdapter* model,
   SetEnabled(enabled);
   UpdateSelectedIndex(use_default);
   set_size_to_largest_label(false);
-  ModelChanged();
 }
 
 PermissionCombobox::~PermissionCombobox() {}
@@ -146,7 +145,7 @@ gfx::Size PermissionCombobox::CalculatePreferredSize() const {
 }
 
 void PermissionCombobox::OnPerformAction(Combobox* combobox) {
-  model_->OnPerformAction(combobox->selected_index());
+  model_->OnPerformAction(combobox->GetSelectedIndex());
 }
 
 }  // namespace internal

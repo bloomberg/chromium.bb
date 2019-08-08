@@ -65,8 +65,8 @@ void ServiceWorkerLoaderHelpers::SaveResponseHeaders(
   }
   buf.append("\r\n");
 
-  out_head->headers = new net::HttpResponseHeaders(
-      net::HttpUtil::AssembleRawHeaders(buf.c_str(), buf.size()));
+  out_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(buf));
 
   // Populate |out_head|'s MIME type with the value from the HTTP response
   // headers.

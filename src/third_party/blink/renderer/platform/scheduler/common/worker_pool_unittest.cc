@@ -25,8 +25,8 @@ TEST(BackgroundSchedulerTest, RunOnBackgroundThread) {
   std::unique_ptr<base::WaitableEvent> done_event =
       std::make_unique<base::WaitableEvent>();
   worker_pool::PostTask(
-      FROM_HERE,
-      CrossThreadBind(&PingPongTask, CrossThreadUnretained(done_event.get())));
+      FROM_HERE, CrossThreadBindOnce(&PingPongTask,
+                                     CrossThreadUnretained(done_event.get())));
   // Test passes by not hanging on the following wait().
   done_event->Wait();
 }

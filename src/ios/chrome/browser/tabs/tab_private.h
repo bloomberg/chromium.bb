@@ -5,8 +5,6 @@
 #ifndef IOS_CHROME_BROWSER_TABS_TAB_PRIVATE_H_
 #define IOS_CHROME_BROWSER_TABS_TAB_PRIVATE_H_
 
-#include "ios/net/request_tracker.h"
-
 @class CRWWebController;
 
 // Exposed private methods for testing purpose.

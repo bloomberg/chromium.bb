@@ -26,6 +26,7 @@ namespace sw
 {
 	class Context;
 	class Renderer;
+	class TaskEvents;
 }
 
 namespace vk
@@ -132,6 +133,7 @@ public:
 		};
 
 		sw::Renderer* renderer = nullptr;
+		sw::TaskEvents* events = nullptr;
 		RenderPass* renderPass = nullptr;
 		Framebuffer* renderPassFramebuffer = nullptr;
 		std::array<PipelineState, VK_PIPELINE_BIND_POINT_RANGE_SIZE> pipelineState;
@@ -164,7 +166,7 @@ public:
 		VertexInputBinding indexBufferBinding;
 		VkIndexType indexType;
 
-		void bindAttachments();
+		void bindAttachments(sw::Context& context);
 		void bindVertexInputs(sw::Context& context, int firstVertex, int firstInstance);
 	};
 

@@ -13,7 +13,7 @@
 #include "base/stl_util.h"
 #include "chrome/browser/media/router/data_decoder_util.h"
 #include "chrome/browser/media/router/providers/dial/dial_media_route_provider_metrics.h"
-#include "chrome/common/media_router/media_source_helper.h"
+#include "chrome/common/media_router/media_source.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "url/origin.h"
 
@@ -214,10 +214,10 @@ void DialMediaRouteProvider::SendRouteMessage(const std::string& media_route_id,
 
 void DialMediaRouteProvider::HandleParsedRouteMessage(
     const MediaRoute::Id& route_id,
-    std::unique_ptr<base::Value> message) {
+    base::Value message) {
   std::string error;
   std::unique_ptr<DialInternalMessage> internal_message =
-      DialInternalMessage::From(std::move(*message), &error);
+      DialInternalMessage::From(std::move(message), &error);
   if (!internal_message) {
     ReportParseError(DialParseMessageResult::kInvalidMessage, error);
     return;
@@ -249,7 +249,7 @@ void DialMediaRouteProvider::HandleParsedRouteMessage(
   } else if (internal_message->type ==
              DialInternalMessageType::kCustomDialLaunch) {
     HandleCustomDialLaunchResponse(*activity, *internal_message);
-  } else if (internal_message_util_.IsStopSessionMessage(*internal_message)) {
+  } else if (DialInternalMessageUtil::IsStopSessionMessage(*internal_message)) {
     DoTerminateRoute(*activity, *sink, base::DoNothing());
   }
 }
@@ -345,14 +345,21 @@ void DialMediaRouteProvider::DoTerminateRoute(const DialActivity& activity,
                                               TerminateRouteCallback callback) {
   const MediaRoute::Id& route_id = activity.route.media_route_id();
   DVLOG(2) << "Terminating route " << route_id;
-  std::vector<mojom::RouteMessagePtr> messages;
-  messages.emplace_back(internal_message_util_.CreateReceiverActionStopMessage(
-      activity.launch_info, sink));
-  message_sender_->SendMessages(route_id, std::move(messages));
-  activity_manager_->StopApp(
-      route_id,
-      base::BindOnce(&DialMediaRouteProvider::HandleStopAppResult,
-                     base::Unretained(this), route_id, std::move(callback)));
+  std::pair<base::Optional<std::string>, RouteRequestResult::ResultCode>
+      can_stop_app = activity_manager_->CanStopApp(route_id);
+  if (can_stop_app.second == RouteRequestResult::OK) {
+    std::vector<mojom::RouteMessagePtr> messages;
+    messages.emplace_back(
+        internal_message_util_.CreateReceiverActionStopMessage(
+            activity.launch_info, sink));
+    message_sender_->SendMessages(route_id, std::move(messages));
+    activity_manager_->StopApp(
+        route_id,
+        base::BindOnce(&DialMediaRouteProvider::HandleStopAppResult,
+                       base::Unretained(this), route_id, std::move(callback)));
+  } else {
+    std::move(callback).Run(can_stop_app.first, can_stop_app.second);
+  }
 }
 
 void DialMediaRouteProvider::HandleStopAppResult(
@@ -408,10 +415,10 @@ void DialMediaRouteProvider::StartObservingMediaSinks(
   }
 
   MediaSource dial_source(media_source);
-  if (!IsDialMediaSource(dial_source))
+  if (!dial_source.IsDialSource())
     return;
 
-  std::string app_name = AppNameFromDialMediaSource(dial_source);
+  std::string app_name = dial_source.AppNameFromDialSource();
   if (app_name.empty())
     return;
 
@@ -437,7 +444,7 @@ void DialMediaRouteProvider::StopObservingMediaSinks(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   MediaSource dial_source(media_source);
-  std::string app_name = AppNameFromDialMediaSource(dial_source);
+  std::string app_name = dial_source.AppNameFromDialSource();
   if (!dial_source.id().empty() && app_name.empty())
     return;
 

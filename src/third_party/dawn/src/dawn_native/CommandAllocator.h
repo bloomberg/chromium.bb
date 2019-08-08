@@ -76,11 +76,11 @@ namespace dawn_native {
         }
         template <typename T>
         T* NextCommand() {
-            return reinterpret_cast<T*>(NextCommand(sizeof(T), alignof(T)));
+            return static_cast<T*>(NextCommand(sizeof(T), alignof(T)));
         }
         template <typename T>
         T* NextData(size_t count) {
-            return reinterpret_cast<T*>(NextData(sizeof(T) * count, alignof(T)));
+            return static_cast<T*>(NextData(sizeof(T) * count, alignof(T)));
         }
 
         // Needs to be called if iteration was stopped early.
@@ -113,14 +113,26 @@ namespace dawn_native {
             static_assert(sizeof(E) == sizeof(uint32_t), "");
             static_assert(alignof(E) == alignof(uint32_t), "");
             static_assert(alignof(T) <= kMaxSupportedAlignment, "");
-            return reinterpret_cast<T*>(
+            T* result = reinterpret_cast<T*>(
                 Allocate(static_cast<uint32_t>(commandId), sizeof(T), alignof(T)));
+            if (!result) {
+                return nullptr;
+            }
+            new (result) T;
+            return result;
         }
 
         template <typename T>
         T* AllocateData(size_t count) {
             static_assert(alignof(T) <= kMaxSupportedAlignment, "");
-            return reinterpret_cast<T*>(AllocateData(sizeof(T) * count, alignof(T)));
+            T* result = reinterpret_cast<T*>(AllocateData(sizeof(T) * count, alignof(T)));
+            if (!result) {
+                return nullptr;
+            }
+            for (size_t i = 0; i < count; i++) {
+                new (result + i) T;
+            }
+            return result;
         }
 
       private:

@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/display_lock/display_lock_budget.h"
+
+#include "base/test/test_mock_time_task_runner.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
@@ -12,7 +14,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/testing/wtf/scoped_mock_clock.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
 
@@ -22,6 +24,7 @@ class DisplayLockBudgetTest : public RenderingTest {
     RenderingTest::SetUp();
     features_backup_.emplace();
     RuntimeEnabledFeatures::SetDisplayLockingEnabled(true);
+    test_task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
   }
 
   void TearDown() override {
@@ -45,6 +48,9 @@ class DisplayLockBudgetTest : public RenderingTest {
     ASSERT_TRUE(context->update_budget_);
     context->update_budget_ = std::move(budget);
   }
+
+ protected:
+  scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner_;
 
  private:
   base::Optional<RuntimeEnabledFeatures::Backup> features_backup_;
@@ -295,8 +301,7 @@ TEST_F(DisplayLockBudgetTest, YieldingBudget) {
 
   ASSERT_TRUE(element->GetDisplayLockContext());
   YieldingDisplayLockBudget budget(element->GetDisplayLockContext());
-
-  WTF::ScopedMockClock clock;
+  budget.SetTickClockForTesting(test_task_runner_->GetMockTickClock());
 
   // When acquiring, we need to update the layout with the locked size, so we
   // need an update.
@@ -314,13 +319,16 @@ TEST_F(DisplayLockBudgetTest, YieldingBudget) {
   EXPECT_TRUE(budget.NeedsLifecycleUpdates());
 
   // Advancing the clock a bit will make us still want to the phases.
-  clock.Advance(TimeDelta::FromMillisecondsD(GetBudgetMs(budget) / 2));
+  test_task_runner_->FastForwardBy(
+      TimeDelta::FromMillisecondsD(GetBudgetMs(budget) / 2));
   EXPECT_TRUE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kStyle));
   EXPECT_TRUE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kLayout));
   EXPECT_TRUE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kPrePaint));
 
   // However, once we're out of budget, we will only do the next phase.
-  clock.Advance(TimeDelta::FromMillisecondsD(GetBudgetMs(budget)));
+  test_task_runner_->FastForwardBy(
+      TimeDelta::FromMillisecondsD(GetBudgetMs(budget)));
+
   EXPECT_TRUE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kStyle));
   EXPECT_FALSE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kLayout));
   EXPECT_FALSE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kPrePaint));
@@ -340,7 +348,8 @@ TEST_F(DisplayLockBudgetTest, YieldingBudget) {
 
   // Now that we're out of budget, phases performed previously should remain
   // true.
-  clock.Advance(TimeDelta::FromMillisecondsD(GetBudgetMs(budget) * 2));
+  test_task_runner_->FastForwardBy(
+      TimeDelta::FromMillisecondsD(GetBudgetMs(budget) * 2));
   EXPECT_TRUE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kStyle));
   EXPECT_FALSE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kLayout));
   EXPECT_FALSE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kPrePaint));
@@ -354,7 +363,8 @@ TEST_F(DisplayLockBudgetTest, YieldingBudget) {
   EXPECT_TRUE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kStyle));
   EXPECT_TRUE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kLayout));
   EXPECT_TRUE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kPrePaint));
-  clock.Advance(TimeDelta::FromMillisecondsD(GetBudgetMs(budget) * 2));
+  test_task_runner_->FastForwardBy(
+      TimeDelta::FromMillisecondsD(GetBudgetMs(budget) * 2));
   EXPECT_TRUE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kStyle));
   EXPECT_TRUE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kLayout));
   EXPECT_FALSE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kPrePaint));
@@ -368,7 +378,7 @@ TEST_F(DisplayLockBudgetTest, YieldingBudget) {
     EXPECT_TRUE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kStyle));
     EXPECT_TRUE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kLayout));
     EXPECT_TRUE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kPrePaint));
-    clock.Advance(TimeDelta::FromMillisecondsD(10000));
+    test_task_runner_->FastForwardBy(TimeDelta::FromMillisecondsD(10000));
   }
 }
 
@@ -400,14 +410,13 @@ TEST_F(DisplayLockBudgetTest, YieldingBudgetMarksNextPhase) {
       new YieldingDisplayLockBudget(element->GetDisplayLockContext()));
   ;
   auto* budget = budget_owned.get();
+  budget->SetTickClockForTesting(test_task_runner_->GetMockTickClock());
   {
     auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
     ScriptState::Scope scope(script_state);
     element->getDisplayLockForBindings()->update(script_state);
     ResetBudget(std::move(budget_owned), element->GetDisplayLockContext());
   }
-
-  WTF::ScopedMockClock clock;
 
   // When acquiring, we need to update the layout with the locked size, so we
   // need an update.
@@ -419,7 +428,9 @@ TEST_F(DisplayLockBudgetTest, YieldingBudgetMarksNextPhase) {
   auto* parent = GetDocument().getElementById("parent");
   EXPECT_TRUE(budget->NeedsLifecycleUpdates());
 
-  budget->WillStartLifecycleUpdate();
+  element->GetDisplayLockContext()->WillStartLifecycleUpdate(
+      *GetDocument().GetFrame()->View());
+
   // Initially all of the phase checks should return true, since we don't know
   // which phase the system wants to process next.
   EXPECT_TRUE(budget->ShouldPerformPhase(DisplayLockBudget::Phase::kStyle));
@@ -429,7 +440,8 @@ TEST_F(DisplayLockBudgetTest, YieldingBudgetMarksNextPhase) {
   EXPECT_TRUE(parent->NeedsStyleRecalc() || parent->ChildNeedsStyleRecalc());
   EXPECT_TRUE(element->NeedsStyleRecalc() || element->ChildNeedsStyleRecalc());
 
-  clock.Advance(TimeDelta::FromMillisecondsD(GetBudgetMs(*budget) * 2));
+  test_task_runner_->FastForwardBy(
+      TimeDelta::FromMillisecondsD(GetBudgetMs(*budget) * 2));
   EXPECT_TRUE(budget->ShouldPerformPhase(DisplayLockBudget::Phase::kStyle));
   EXPECT_FALSE(budget->ShouldPerformPhase(DisplayLockBudget::Phase::kLayout));
 
@@ -449,5 +461,70 @@ TEST_F(DisplayLockBudgetTest, YieldingBudgetMarksNextPhase) {
 
   EXPECT_TRUE(parent->GetLayoutObject()->NeedsLayout());
   EXPECT_TRUE(element->GetLayoutObject()->NeedsLayout());
+}
+
+TEST_F(DisplayLockBudgetTest, UpdateHappensInLifecycleOnly) {
+  // Note that we're not testing the display lock here, just the budget so we
+  // can do minimal work to ensure we have a context, ignoring containment and
+  // other requirements.
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      #container {
+        contain: style layout;
+      }
+    </style>
+    <div id="parent"><div id="container"><div id="child"></div></div></div>
+  )HTML");
+
+  auto* element = GetDocument().getElementById("container");
+  {
+    auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
+    ScriptState::Scope scope(script_state);
+    element->getDisplayLockForBindings()->acquire(script_state, nullptr);
+  }
+  UpdateAllLifecyclePhasesForTest();
+
+  ASSERT_TRUE(element->GetDisplayLockContext());
+  ASSERT_TRUE(element->GetDisplayLockContext()->IsLocked());
+
+  auto budget_owned = base::WrapUnique(
+      new UnyieldingDisplayLockBudget(element->GetDisplayLockContext()));
+  auto* budget = budget_owned.get();
+  {
+    auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
+    ScriptState::Scope scope(script_state);
+    element->getDisplayLockForBindings()->update(script_state);
+    ResetBudget(std::move(budget_owned), element->GetDisplayLockContext());
+  }
+
+  // When acquiring, we need to update the layout with the locked size, so we
+  // need an update.
+  EXPECT_TRUE(budget->NeedsLifecycleUpdates());
+
+  auto* context = element->GetDisplayLockContext();
+  EXPECT_TRUE(budget->ShouldPerformPhase(DisplayLockBudget::Phase::kStyle));
+  EXPECT_TRUE(budget->ShouldPerformPhase(DisplayLockBudget::Phase::kLayout));
+  EXPECT_TRUE(budget->ShouldPerformPhase(DisplayLockBudget::Phase::kPrePaint));
+
+  // Since we're not in a lifecycle, the budget itself should not want to do any
+  // phases, even though the budget allows it.
+  EXPECT_FALSE(context->ShouldStyle(DisplayLockContext::kChildren));
+  EXPECT_FALSE(context->ShouldLayout(DisplayLockContext::kChildren));
+  EXPECT_FALSE(context->ShouldPrePaint());
+
+  context->WillStartLifecycleUpdate(*GetDocument().GetFrame()->View());
+
+  EXPECT_TRUE(context->ShouldStyle(DisplayLockContext::kChildren));
+  EXPECT_TRUE(context->ShouldLayout(DisplayLockContext::kChildren));
+  EXPECT_TRUE(context->ShouldPrePaint());
+
+  context->DidFinishLifecycleUpdate(*GetDocument().GetFrame()->View());
+
+  EXPECT_FALSE(context->ShouldStyle(DisplayLockContext::kChildren));
+  EXPECT_FALSE(context->ShouldLayout(DisplayLockContext::kChildren));
+  EXPECT_FALSE(context->ShouldPrePaint());
+
+  // Ensure to flush any tasks scheduled by context calls.
+  test::RunPendingTasks();
 }
 }  // namespace blink

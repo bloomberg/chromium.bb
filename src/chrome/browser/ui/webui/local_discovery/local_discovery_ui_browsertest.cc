@@ -17,9 +17,11 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/local_discovery/test_service_discovery_client.h"
+#include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/providers/cast/dual_media_sink_service.h"
 #include "chrome/browser/media/router/test/noop_dual_media_sink_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -41,10 +43,12 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/printing/cups_printers_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/components/account_manager/account_manager.h"
 #include "chromeos/components/account_manager/account_manager_factory.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/prefs/pref_service.h"
 #endif
 
@@ -345,11 +349,22 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
     // a DCHECK during TestServiceDiscoveryClient construction.
     media_router::DualMediaSinkService::SetInstanceForTest(
         new media_router::NoopDualMediaSinkService());
+    feature_list_.InitAndDisableFeature(media_router::kDialMediaRouteProvider);
     WebUIBrowserTest::SetUp();
   }
 
   void SetUpOnMainThread() override {
     WebUIBrowserTest::SetUpOnMainThread();
+
+#if defined(OS_CHROMEOS)
+    // On Chrome OS, we need to stub out CupsPrintersManager, because the
+    // profile setup instatiates a ZeroConfPrinterDetector, which in turn sets
+    // |g_service_discovery_client| with a real instance. This causes a DCHECK
+    // during TestServiceDiscoveryClient construction.
+    chromeos::CupsPrintersManagerFactory::GetInstance()->SetTestingFactory(
+        ProfileManager::GetActiveUserProfile(),
+        BrowserContextKeyedServiceFactory::TestingFactory());
+#endif
 
     test_service_discovery_client_ = new TestServiceDiscoveryClient();
     test_service_discovery_client_->Start();
@@ -432,6 +447,7 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
   network::TestURLLoaderFactory test_url_loader_factory_;
   local_discovery::LocalDiscoveryUIHandler::SetURLLoaderFactoryForTesting
       set_url_loader_factory_;
+  base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalDiscoveryUITest);
 };

@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_manager.h"
 
+#include <utility>
+
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "third_party/blink/renderer/bindings/core/v8/request_or_usv_string.h"
@@ -26,6 +28,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_utils.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
@@ -332,7 +335,7 @@ void BackgroundFetchManager::DidFetch(
           "There is no service worker available to service the fetch."));
       return;
     case mojom::blink::BackgroundFetchError::QUOTA_EXCEEDED:
-      resolver->Reject(DOMException::Create(
+      resolver->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kQuotaExceededError, "Quota exceeded."));
       return;
     case mojom::blink::BackgroundFetchError::REGISTRATION_LIMIT_EXCEEDED:
@@ -474,12 +477,12 @@ void BackgroundFetchManager::DidGetRegistration(
       return;
     case mojom::blink::BackgroundFetchError::STORAGE_ERROR:
       DCHECK(!registration);
-      resolver->Reject(
-          DOMException::Create(DOMExceptionCode::kAbortError,
-                               "Failed to get registration due to I/O error."));
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kAbortError,
+          "Failed to get registration due to I/O error."));
       return;
     case mojom::blink::BackgroundFetchError::SERVICE_WORKER_UNAVAILABLE:
-      resolver->Reject(DOMException::Create(
+      resolver->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kInvalidStateError,
           "There's no service worker available to service the fetch."));
       return;
@@ -529,7 +532,7 @@ void BackgroundFetchManager::DidGetDeveloperIds(
       return;
     case mojom::blink::BackgroundFetchError::STORAGE_ERROR:
       DCHECK(developer_ids.IsEmpty());
-      resolver->Reject(DOMException::Create(
+      resolver->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kAbortError,
           "Failed to get registration IDs due to I/O error."));
       return;

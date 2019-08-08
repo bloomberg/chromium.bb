@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "components/payments/content/utility/fingerprint_parser.h"
 #include "components/payments/core/error_logger.h"
+#include "components/payments/core/url_util.h"
 #include "content/public/common/service_manager_connection.h"
 #include "net/base/url_util.h"
 #include "services/data_decoder/public/cpp/safe_json_parser.h"
@@ -85,9 +86,7 @@ bool ParseDefaultApplications(base::DictionaryValue* dict,
     }
 
     GURL url(item);
-    if (!url.is_valid() ||
-        !(url.SchemeIs(url::kHttpsScheme) ||
-          (url.SchemeIs(url::kHttpScheme) && net::IsLocalhost(url)))) {
+    if (!UrlUtil::IsValidManifestUrl(url)) {
       log.Error(base::StringPrintf(
           "\"%s\" entry in \"%s\" is not a valid URL with HTTPS scheme and is "
           "not a valid localhost URL with HTTP scheme.",
@@ -162,11 +161,7 @@ bool ParseSupportedOrigins(base::DictionaryValue* dict,
     }
 
     GURL url(item);
-    if (!url.is_valid() ||
-        !(url.SchemeIs(url::kHttpsScheme) ||
-          (url.SchemeIs(url::kHttpScheme) && net::IsLocalhost(url))) ||
-        url.path() != "/" || url.has_query() || url.has_ref() ||
-        url.has_username() || url.has_password()) {
+    if (!UrlUtil::IsValidSupportedOrigin(url)) {
       supported_origins->clear();
       log.Error(base::StringPrintf(
           "\"%s\" entry in \"%s\" is not a valid origin with HTTPS scheme and "
@@ -335,9 +330,10 @@ class JsonParserCallback
       : parser_callback_(std::move(parser_callback)),
         client_callback_(std::move(client_callback)) {}
 
-  void OnSuccess(std::unique_ptr<base::Value> value) {
+  void OnSuccess(base::Value value) {
     std::move(parser_callback_)
-        .Run(std::move(client_callback_), std::move(value),
+        .Run(std::move(client_callback_),
+             base::Value::ToUniquePtrValue(std::move(value)),
              /*error_message=*/std::string());
   }
 
@@ -384,10 +380,10 @@ void PaymentManifestParser::ParsePaymentMethodManifest(
   data_decoder::SafeJsonParser::Parse(
       content::ServiceManagerConnection::GetForProcess()->GetConnector(),
       content,
-      base::Bind(&JsonParserCallback<PaymentMethodCallback>::OnSuccess,
-                 json_callback),
-      base::Bind(&JsonParserCallback<PaymentMethodCallback>::OnError,
-                 json_callback));
+      base::BindOnce(&JsonParserCallback<PaymentMethodCallback>::OnSuccess,
+                     json_callback),
+      base::BindOnce(&JsonParserCallback<PaymentMethodCallback>::OnError,
+                     json_callback));
 }
 
 void PaymentManifestParser::ParseWebAppManifest(const std::string& content,
@@ -404,10 +400,10 @@ void PaymentManifestParser::ParseWebAppManifest(const std::string& content,
   data_decoder::SafeJsonParser::Parse(
       content::ServiceManagerConnection::GetForProcess()->GetConnector(),
       content,
-      base::Bind(&JsonParserCallback<WebAppCallback>::OnSuccess,
-                 parser_callback),
-      base::Bind(&JsonParserCallback<WebAppCallback>::OnError,
-                 parser_callback));
+      base::BindOnce(&JsonParserCallback<WebAppCallback>::OnSuccess,
+                     parser_callback),
+      base::BindOnce(&JsonParserCallback<WebAppCallback>::OnError,
+                     parser_callback));
 }
 
 void PaymentManifestParser::ParseWebAppInstallationInfo(
@@ -423,10 +419,12 @@ void PaymentManifestParser::ParseWebAppInstallationInfo(
   data_decoder::SafeJsonParser::Parse(
       content::ServiceManagerConnection::GetForProcess()->GetConnector(),
       content,
-      base::Bind(&JsonParserCallback<WebAppInstallationInfoCallback>::OnSuccess,
-                 sw_parser_callback),
-      base::Bind(&JsonParserCallback<WebAppInstallationInfoCallback>::OnError,
-                 sw_parser_callback));
+      base::BindOnce(
+          &JsonParserCallback<WebAppInstallationInfoCallback>::OnSuccess,
+          sw_parser_callback),
+      base::BindOnce(
+          &JsonParserCallback<WebAppInstallationInfoCallback>::OnError,
+          sw_parser_callback));
 }
 
 // static

@@ -31,8 +31,9 @@ DarkResumeController::~DarkResumeController() {
 
 void DarkResumeController::DarkSuspendImminent() {
   DVLOG(1) << __func__;
-  suspend_readiness_cb_ =
-      PowerManagerClient::Get()->GetSuspendReadinessCallback(FROM_HERE);
+  block_suspend_token_ = base::UnguessableToken::Create();
+  PowerManagerClient::Get()->BlockSuspend(block_suspend_token_,
+                                          "DarkResumeController");
   // Schedule task that will check for any wake locks acquired in dark resume.
   DCHECK(!wake_lock_check_timer_.IsRunning());
   wake_lock_check_timer_.Start(
@@ -59,20 +60,20 @@ void DarkResumeController::OnWakeLockDeactivated(
   // with dark resume.
   DVLOG(1) << __func__;
   // The observer is only registered once dark resume starts.
-  DCHECK(suspend_readiness_cb_);
-  std::move(suspend_readiness_cb_).Run();
+  DCHECK(block_suspend_token_);
+  PowerManagerClient::Get()->UnblockSuspend(block_suspend_token_);
+  block_suspend_token_ = {};
   ClearDarkResumeState();
 }
 
 bool DarkResumeController::IsDarkResumeStateSetForTesting() const {
-  return !suspend_readiness_cb_.is_null() &&
-         wake_lock_observer_binding_.is_bound();
+  return block_suspend_token_ && wake_lock_observer_binding_.is_bound();
 }
 
 bool DarkResumeController::IsDarkResumeStateClearedForTesting() const {
   return !weak_ptr_factory_.HasWeakPtrs() &&
          !wake_lock_check_timer_.IsRunning() &&
-         !hard_timeout_timer_.IsRunning() && suspend_readiness_cb_.is_null() &&
+         !hard_timeout_timer_.IsRunning() && !block_suspend_token_ &&
          !wake_lock_observer_binding_.is_bound();
 }
 
@@ -104,16 +105,17 @@ void DarkResumeController::HandleDarkResumeHardTimeout() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(dark_resume_tasks_sequence_checker_);
   hard_timeout_timer_.Stop();
   // Enough is enough. Tell power daemon it's okay to suspend.
-  DCHECK(suspend_readiness_cb_);
-  std::move(suspend_readiness_cb_).Run();
+  DCHECK(block_suspend_token_);
+  PowerManagerClient::Get()->UnblockSuspend(block_suspend_token_);
+  block_suspend_token_ = {};
   ClearDarkResumeState();
 }
 
 void DarkResumeController::ClearDarkResumeState() {
   DVLOG(1) << __func__;
-  // Reset the callback that is used to trigger a re-suspend. Won't be needed
+  // Reset the token that is used to trigger a re-suspend. Won't be needed
   // if the dark resume state machine is ending.
-  suspend_readiness_cb_.Reset();
+  block_suspend_token_ = {};
 
   // This automatically invalidates any WakeLockObserver and associated callback
   // in this case OnDeactivation.

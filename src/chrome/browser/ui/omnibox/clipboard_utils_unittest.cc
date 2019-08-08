@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/omnibox/clipboard_utils.h"
 
+#include <string>
+
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -13,6 +15,7 @@
 #include "testing/platform_test.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "ui/base/clipboard/test/test_clipboard.h"
 
 using base::ASCIIToUTF16;
 
@@ -24,7 +27,13 @@ class ClipboardUtilsTest : public PlatformTest {
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
+  void SetUp() override {
+    PlatformTest::SetUp();
+    ui::TestClipboard::CreateForCurrentThread();
+  }
+
   void TearDown() override {
+    PlatformTest::TearDown();
     ui::Clipboard::DestroyClipboardForCurrentThread();
   }
 

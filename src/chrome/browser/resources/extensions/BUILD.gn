@@ -14,10 +14,10 @@ optimize_webui("build") {
   host = "extensions"
   html_in_files = [ "extensions.html" ]
   html_out_files = [ "vulcanized.html" ]
-  html_out_files_polymer2 = [ "vulcanized.p2.html" ]
   insert_in_head = "<base href=\"chrome://extensions\">"
   input = rebase_path("$target_gen_dir/$unpak_folder", root_build_dir)
   js_out_files = [ "crisper.js" ]
+  replace_for_html_imports_polyfill = "crisper.js"
 
   deps = [
     ":unpak",
@@ -261,6 +261,7 @@ js_library("manager") {
     "//ui/webui/resources/cr_elements/cr_view_manager:cr_view_manager",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js:load_time_data",
   ]
   externs_list = [ "$externs_path/developer_private.js" ]
 }

@@ -75,8 +75,9 @@ void DevToolsProtocolTestBindings::ReadyToCommitNavigation(
   if (frame->GetParent())
     return;
   frontend_host_ = DevToolsFrontendHost::Create(
-      frame, base::Bind(&DevToolsProtocolTestBindings::HandleMessageFromTest,
-                        base::Unretained(this)));
+      frame,
+      base::BindRepeating(&DevToolsProtocolTestBindings::HandleMessageFromTest,
+                          base::Unretained(this)));
 #endif
 }
 

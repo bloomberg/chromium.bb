@@ -190,7 +190,7 @@ void StickyKeysOverlayView::SetModifierVisible(ui::EventFlags modifier,
 bool StickyKeysOverlayView::GetModifierVisible(ui::EventFlags modifier) {
   ModifierLabelMap::iterator it = modifier_label_map_.find(modifier);
   DCHECK(it != modifier_label_map_.end());
-  return it->second->visible();
+  return it->second->GetVisible();
 }
 
 void StickyKeysOverlayView::AddKeyLabel(ui::EventFlags modifier,

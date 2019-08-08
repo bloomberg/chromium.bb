@@ -214,6 +214,8 @@ TEST_F(WebViewUnitTest, TestWebViewAttachDetachWebContents) {
   EXPECT_FALSE(observer1.was_shown());
 
   web_view()->SetWebContents(web_contents1.get());
+  // Layout() is normally async, call it now to ensure visibility is updated.
+  web_view()->Layout();
   EXPECT_TRUE(observer1.was_shown());
 #if defined(USE_AURA)
   EXPECT_TRUE(web_contents1->GetNativeView()->IsVisible());
@@ -232,6 +234,8 @@ TEST_F(WebViewUnitTest, TestWebViewAttachDetachWebContents) {
 
   // Setting the new WebContents should hide the existing one.
   web_view()->SetWebContents(web_contents2.get());
+  // Layout() is normally async, call it now to ensure visibility is updated.
+  web_view()->Layout();
   EXPECT_FALSE(observer1.was_shown());
   EXPECT_TRUE(observer2.was_shown());
   EXPECT_TRUE(observer2.valid_root_while_shown());
@@ -249,6 +253,8 @@ TEST_F(WebViewUnitTest, TestWebViewAttachDetachWebContents) {
 
   EXPECT_EQ(1, observer1.shown_count());
   web_view()->SetWebContents(web_contents1.get());
+  // Layout() is normally async, call it now to ensure visibility is updated.
+  web_view()->Layout();
   EXPECT_EQ(1, observer1.shown_count());
 
   // Nothing else should change.

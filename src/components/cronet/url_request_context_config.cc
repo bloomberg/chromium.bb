@@ -203,9 +203,9 @@ ParseNetworkErrorLoggingHeaders(
   return result;
 }
 
-quic::QuicTransportVersionVector ParseQuicVersions(
+quic::ParsedQuicVersionVector ParseQuicVersions(
     const std::string& quic_versions) {
-  quic::QuicTransportVersionVector supported_versions;
+  quic::ParsedQuicVersionVector supported_versions;
   quic::QuicTransportVersionVector all_supported_versions =
       quic::AllSupportedTransportVersions();
 
@@ -214,7 +214,8 @@ quic::QuicTransportVersionVector ParseQuicVersions(
     auto it = all_supported_versions.begin();
     while (it != all_supported_versions.end()) {
       if (quic::QuicVersionToString(*it) == version) {
-        supported_versions.push_back(*it);
+        supported_versions.push_back(
+            quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO, *it));
         // Remove the supported version to deduplicate versions extracted from
         // |quic_versions|.
         all_supported_versions.erase(it);
@@ -336,7 +337,7 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
 
       std::string quic_version_string;
       if (quic_args->GetString(kQuicVersion, &quic_version_string)) {
-        quic::QuicTransportVersionVector supported_versions =
+        quic::ParsedQuicVersionVector supported_versions =
             ParseQuicVersions(quic_version_string);
         if (!supported_versions.empty())
           session_params->quic_supported_versions = supported_versions;
@@ -672,20 +673,21 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
       disable_ipv6_on_wifi) {
     CHECK(net_log) << "All DNS-related experiments require NetLog.";
     std::unique_ptr<net::HostResolver> host_resolver;
+    net::HostResolver::ManagerOptions host_resolver_manager_options;
+    host_resolver_manager_options.dns_client_enabled = async_dns_enable;
+    host_resolver_manager_options.check_ipv6_on_wifi = !disable_ipv6_on_wifi;
     // TODO(crbug.com/934402): Consider using a shared HostResolverManager for
     // Cronet HostResolvers.
     if (stale_dns_enable) {
       DCHECK(!disable_ipv6_on_wifi);
       host_resolver.reset(new StaleHostResolver(
-          net::HostResolver::CreateStandaloneContextResolver(net_log),
+          net::HostResolver::CreateStandaloneContextResolver(
+              net_log, std::move(host_resolver_manager_options)),
           stale_dns_options));
     } else {
-      host_resolver = net::HostResolver::CreateStandaloneResolver(net_log);
+      host_resolver = net::HostResolver::CreateStandaloneResolver(
+          net_log, std::move(host_resolver_manager_options));
     }
-    if (disable_ipv6_on_wifi)
-      host_resolver->SetNoIPv6OnWifi(true);
-    if (async_dns_enable)
-      host_resolver->SetDnsClientEnabled(true);
     if (host_resolver_rules_enable) {
       std::unique_ptr<net::MappedHostResolver> remapped_resolver(
           new net::MappedHostResolver(std::move(host_resolver)));

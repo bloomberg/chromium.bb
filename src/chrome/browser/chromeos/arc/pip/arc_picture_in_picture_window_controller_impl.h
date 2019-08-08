@@ -31,7 +31,7 @@ class ArcPictureInPictureWindowControllerImpl
 
   // PictureInPictureWindowController:
   gfx::Size Show() override;
-  void Close(bool should_pause_video, bool should_reset_pip_player) override;
+  void Close(bool should_pause_video) override;
   void CloseAndFocusInitiator() override;
   void OnWindowDestroyed() override;
   void EmbedSurface(const viz::SurfaceId& surface_id,

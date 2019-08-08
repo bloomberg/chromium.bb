@@ -28,16 +28,12 @@
 
 #include "third_party/blink/renderer/modules/accessibility/ax_object.h"
 
-#include "SkMatrix44.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/renderer/core/aom/accessible_node.h"
 #include "third_party/blink/renderer/core/aom/accessible_node_list.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
-#include "third_party/blink/renderer/core/editing/editing_utilities.h"
-#include "third_party/blink/renderer/core/editing/visible_position.h"
-#include "third_party/blink/renderer/core/editing/visible_units.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -64,6 +60,7 @@
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
+#include "third_party/skia/include/core/SkMatrix44.h"
 
 using blink::WebLocalizedString;
 
@@ -649,12 +646,12 @@ void AXObject::GetSparseAXAttributes(
   AXSparseAttributeAOMPropertyClient property_client(*ax_object_cache_,
                                                      sparse_attribute_client);
   HashSet<QualifiedName> shadowed_aria_attributes;
-
   AccessibleNode* accessible_node = GetAccessibleNode();
-  if (accessible_node) {
+
+  // Virtual nodes for AOM are still tied to the AXTree.
+  if (accessible_node && IsVirtualObject())
     accessible_node->GetAllAOMProperties(&property_client,
                                          shadowed_aria_attributes);
-  }
 
   Element* element = GetElement();
   if (!element)
@@ -1530,21 +1527,31 @@ String AXObject::AriaTextAlternative(bool recursive,
   if (!in_aria_labelled_by_traversal && !already_visited) {
     name_from = ax::mojom::NameFrom::kRelatedElement;
 
-    // Check AOM property first.
-    HeapVector<Member<Element>> elements;
-    if (HasAOMProperty(AOMRelationListProperty::kLabeledBy, elements)) {
-      if (name_sources) {
-        name_sources->push_back(
-            NameSource(*found_text_alternative, kAriaLabelledbyAttr));
-        name_sources->back().type = name_from;
-      }
+    // Check ARIA attributes.
+    const QualifiedName& attr =
+        HasAttribute(kAriaLabeledbyAttr) && !HasAttribute(kAriaLabelledbyAttr)
+            ? kAriaLabeledbyAttr
+            : kAriaLabelledbyAttr;
+
+    if (name_sources) {
+      name_sources->push_back(NameSource(*found_text_alternative, attr));
+      name_sources->back().type = name_from;
+    }
+
+    const AtomicString& aria_labelledby = GetAttribute(attr);
+    if (!aria_labelledby.IsNull()) {
+      if (name_sources)
+        name_sources->back().attribute_value = aria_labelledby;
 
       // Operate on a copy of |visited| so that if |nameSources| is not null,
       // the set of visited objects is preserved unmodified for future
       // calculations.
       AXObjectSet visited_copy = visited;
+      Vector<String> ids;
       text_alternative =
-          TextFromElements(true, visited_copy, elements, related_objects);
+          TextFromAriaLabelledby(visited_copy, related_objects, ids);
+      if (!ids.IsEmpty())
+        AXObjectCache().UpdateReverseRelations(this, ids);
       if (!text_alternative.IsNull()) {
         if (name_sources) {
           NameSource& source = name_sources->back();
@@ -1558,47 +1565,6 @@ String AXObject::AriaTextAlternative(bool recursive,
         }
       } else if (name_sources) {
         name_sources->back().invalid = true;
-      }
-    } else {
-      // Now check ARIA attribute
-      const QualifiedName& attr =
-          HasAttribute(kAriaLabeledbyAttr) && !HasAttribute(kAriaLabelledbyAttr)
-              ? kAriaLabeledbyAttr
-              : kAriaLabelledbyAttr;
-
-      if (name_sources) {
-        name_sources->push_back(NameSource(*found_text_alternative, attr));
-        name_sources->back().type = name_from;
-      }
-
-      const AtomicString& aria_labelledby = GetAttribute(attr);
-      if (!aria_labelledby.IsNull()) {
-        if (name_sources)
-          name_sources->back().attribute_value = aria_labelledby;
-
-        // Operate on a copy of |visited| so that if |nameSources| is not null,
-        // the set of visited objects is preserved unmodified for future
-        // calculations.
-        AXObjectSet visited_copy = visited;
-        Vector<String> ids;
-        text_alternative =
-            TextFromAriaLabelledby(visited_copy, related_objects, ids);
-        if (!ids.IsEmpty())
-          AXObjectCache().UpdateReverseRelations(this, ids);
-        if (!text_alternative.IsNull()) {
-          if (name_sources) {
-            NameSource& source = name_sources->back();
-            source.type = name_from;
-            source.related_objects = *related_objects;
-            source.text = text_alternative;
-            *found_text_alternative = true;
-          } else {
-            *found_text_alternative = true;
-            return text_alternative;
-          }
-        } else if (name_sources) {
-          name_sources->back().invalid = true;
-        }
       }
     }
   }
@@ -2902,10 +2868,6 @@ bool AXObject::RequestSetSelectedAction(bool selected) {
   return OnNativeSetSelectedAction(selected);
 }
 
-bool AXObject::RequestSetSelectionAction(const AXSelection& selection) {
-  return OnNativeSetSelectionAction(selection);
-}
-
 bool AXObject::RequestSetSequentialFocusNavigationStartingPointAction() {
   return OnNativeSetSequentialFocusNavigationStartingPointAction();
 }
@@ -2954,9 +2916,8 @@ bool AXObject::OnNativeScrollToMakeVisibleWithSubFocusAction(
   LayoutObject* layout_object = node ? node->GetLayoutObject() : nullptr;
   if (!layout_object || !node->isConnected())
     return false;
-  LayoutRect target_rect(
-      layout_object->LocalToAbsoluteQuad(FloatQuad(FloatRect(rect)))
-          .BoundingBox());
+  PhysicalRect target_rect =
+      layout_object->LocalToAbsoluteRect(PhysicalRect(rect));
   // TODO(szager): This scroll alignment is intended to preserve existing
   // behavior to the extent possible, but it's not clear that this behavior is
   // well-spec'ed or optimal.  In particular, it favors centering things in
@@ -2965,7 +2926,7 @@ bool AXObject::OnNativeScrollToMakeVisibleWithSubFocusAction(
   ScrollAlignment scroll_alignment = {
       kScrollAlignmentNoScroll, kScrollAlignmentCenter, kScrollAlignmentCenter};
   layout_object->ScrollRectToVisible(
-      target_rect,
+      target_rect.ToLayoutRect(),
       WebScrollIntoViewParams(scroll_alignment, scroll_alignment,
                               kProgrammaticScroll, false, kScrollBehaviorAuto));
   AXObjectCache().PostNotification(
@@ -3020,10 +2981,6 @@ bool AXObject::OnNativeSetValueAction(const String&) {
 }
 
 bool AXObject::OnNativeSetSelectedAction(bool) {
-  return false;
-}
-
-bool AXObject::OnNativeSetSelectionAction(const AXSelection& selection) {
   return false;
 }
 
@@ -3416,10 +3373,6 @@ String AXObject::ToString() const {
              .GetString()
              .EncodeForDebugging() +
          ": " + ComputedName().EncodeForDebugging();
-}
-
-VisiblePosition AXObject::VisiblePositionForIndex(int) const {
-  return VisiblePosition();
 }
 
 bool operator==(const AXObject& first, const AXObject& second) {

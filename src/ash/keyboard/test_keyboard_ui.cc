@@ -4,6 +4,7 @@
 
 #include "ash/keyboard/test_keyboard_ui.h"
 
+#include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/shell.h"
 #include "ash/window_factory.h"
 #include "ash/wm/window_util.h"
@@ -11,7 +12,6 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/mock_input_method.h"
-#include "ui/keyboard/test/keyboard_test_util.h"
 
 namespace ash {
 

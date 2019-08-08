@@ -112,9 +112,7 @@ class HistoryDeleteDirectiveHandlerTest : public testing::Test {
   }
 
   QueryURLResult QueryURL(const GURL& url) {
-    QueryURLResult query_url_result;
-    history_backend_->QueryURL(url, /*want_visits=*/true, &query_url_result);
-    return query_url_result;
+    return history_backend_->QueryURL(url, /*want_visits=*/true);
   }
 
   ~HistoryDeleteDirectiveHandlerTest() override { history_backend_->Closing(); }

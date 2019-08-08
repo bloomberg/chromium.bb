@@ -44,7 +44,6 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/test/mock_overscroll_observer.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/display/display_switches.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
@@ -927,8 +926,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessInternalsHitTestBrowserTest,
   EXPECT_NE(div_scroll_top_start, div_scroll_top);
 }
 
+// TODO(https://crbug.com/961135): disabled because tests are flaky
 IN_PROC_BROWSER_TEST_P(SitePerProcessInternalsHitTestBrowserTest,
-                       NestedLocalNonFastScrollableDivCoordsAreLocal) {
+                       DISABLED_NestedLocalNonFastScrollableDivCoordsAreLocal) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -1191,8 +1191,16 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 // release in (15, 10) same as the touch move in root frame. Before the fix the
 // touch end would pass (15, 10) to subframe which should be (15, 15) in
 // subframe.
+// https://crbug.com/959848: Flaky on Linux MSAN bots
+#if defined(OS_LINUX)
+#define MAYBE_TouchAndGestureEventPositionChange \
+  DISABLED_TouchAndGestureEventPositionChange
+#else
+#define MAYBE_TouchAndGestureEventPositionChange \
+  TouchAndGestureEventPositionChange
+#endif
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       TouchAndGestureEventPositionChange) {
+                       MAYBE_TouchAndGestureEventPositionChange) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_tall_positioned_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -1339,7 +1347,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
         blink::WebGestureDevice::kTouchscreen);
     gesture_scroll_begin.unique_touch_event_id = 2;
     gesture_scroll_begin.data.scroll_begin.delta_hint_units =
-        blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
+        ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
     gesture_scroll_begin.data.scroll_begin.delta_x_hint = 0.f;
     gesture_scroll_begin.data.scroll_begin.delta_y_hint = -5.f * scale_factor;
     gesture_scroll_begin.SetPositionInWidget(touch_start_point);
@@ -1351,7 +1359,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
         blink::WebGestureDevice::kTouchscreen);
     gesture_scroll_update.unique_touch_event_id = 2;
     gesture_scroll_update.data.scroll_update.delta_units =
-        blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
+        ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
     gesture_scroll_update.data.scroll_update.delta_x = 0.f;
     gesture_scroll_update.data.scroll_update.delta_y = -5.f * scale_factor;
     gesture_scroll_update.SetPositionInWidget(touch_start_point);
@@ -1409,7 +1417,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
         blink::WebGestureDevice::kTouchscreen);
     gesture_scroll_end.unique_touch_event_id = 3;
     gesture_scroll_end.data.scroll_end.delta_units =
-        blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
+        ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
     gesture_scroll_end.SetPositionInWidget(touch_move_point);
 
     InputEventAckWaiter await_scroll_end_in_child(
@@ -1803,14 +1811,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   MainThreadFrameObserver synchronize_threads(
       rwhv_nested->GetRenderWidgetHost());
   synchronize_threads.Wait();
-
-#if defined(USE_AURA)
-  // Allow the scroll gesture through under mash.
-  base::Optional<SystemEventRewriter::ScopedAllow> maybe_scoped_allow_events;
-  if (features::IsSingleProcessMash()) {
-    maybe_scoped_allow_events.emplace(&event_rewriter_);
-  }
-#endif
 
   SyntheticSmoothScrollGestureParams params;
   params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
@@ -2238,8 +2238,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
       blink::WebInputEvent::kGestureScrollEnd);
 
 #if defined(USE_AURA)
-  const float overscroll_threshold = OverscrollConfig::GetThreshold(
-      OverscrollConfig::Threshold::kStartTouchscreen);
+  const float overscroll_threshold =
+      OverscrollConfig::kStartTouchscreenThresholdDips;
 #elif defined(OS_ANDROID)
   const float overscroll_threshold = 0.f;
 #endif
@@ -2253,7 +2253,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
       blink::WebGestureDevice::kTouchscreen);
   gesture_scroll_begin.unique_touch_event_id = 1;
   gesture_scroll_begin.data.scroll_begin.delta_hint_units =
-      blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
+      ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
   gesture_scroll_begin.data.scroll_begin.delta_x_hint = 0.f;
   gesture_scroll_begin.data.scroll_begin.delta_y_hint = 0.f;
 #if defined(USE_AURA)
@@ -2278,7 +2278,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
       blink::WebGestureDevice::kTouchscreen);
   gesture_scroll_update.unique_touch_event_id = 1;
   gesture_scroll_update.data.scroll_update.delta_units =
-      blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
+      ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
   gesture_scroll_update.data.scroll_update.delta_x = 0.f;
   gesture_scroll_update.data.scroll_update.delta_y = 0.f;
 #if defined(USE_AURA)
@@ -2319,7 +2319,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
       blink::WebGestureDevice::kTouchscreen);
   gesture_scroll_end.unique_touch_event_id = 1;
   gesture_scroll_end.data.scroll_end.delta_units =
-      blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
+      ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
   mock_overscroll_observer->Reset();
   router->RouteGestureEvent(rwhv_root, &gesture_scroll_end,
                             ui::LatencyInfo(ui::SourceEventType::TOUCH));
@@ -6216,25 +6216,7 @@ class SitePerProcessHitTestDataGenerationBrowserTest
     device_scale_factor_ = rwhv_root->GetDeviceScaleFactor();
     DCHECK_GT(device_scale_factor_, 0);
 
-    auto hit_test_data = observer.GetHitTestData();
-    MaybeStripHitTestData(&hit_test_data);
-    return hit_test_data;
-  }
-
-  // Strip the ClientRoot frame sink id from |hit_test_data| when Window
-  // Service is used because tests are written without considering it and
-  // using a constant number index to access the data of the interested frame.
-  // Related to http://crbug.com/895029.
-  // Note the stripped data has wrong child count and should only be used to
-  // verify test expectations.
-  void MaybeStripHitTestData(
-      std::vector<viz::AggregatedHitTestRegion>* hit_test_data) {
-    if (!features::IsUsingWindowService())
-      return;
-
-    // There must be at least two frame sink ids: one root and one ClientRoot.
-    ASSERT_GE(hit_test_data->size(), 2u);
-    hit_test_data->erase(hit_test_data->begin() + 1);
+    return observer.GetHitTestData();
   }
 
   float current_device_scale_factor() const { return device_scale_factor_; }
@@ -6657,9 +6639,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
   HitTestRegionObserver observer(rwhv_root->GetRootFrameSinkId());
   observer.WaitForHitTestData();
   hit_test_data = observer.GetHitTestData();
-  MaybeStripHitTestData(&hit_test_data);
-
-  DCHECK(hit_test_data.size() == 4);
+  ASSERT_EQ(4u, hit_test_data.size());
   EXPECT_EQ(expected_region.ToString(), hit_test_data[2].rect.ToString());
   EXPECT_TRUE(
       expected_transform.ApproximatelyEqual(hit_test_data[2].transform()));
@@ -6706,6 +6686,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
   EXPECT_EQ(kSlowHitTestFlags, hit_test_data[2].flags);
 }
 
+// All tests are flaky on MSAN. https://crbug.com/959924
+#if !defined(MEMORY_SANITIZER)
+
 static const int kHitTestOption[] = {0, 1, 2};
 static const float kOneScale[] = {1.f};
 
@@ -6749,6 +6732,7 @@ INSTANTIATE_TEST_SUITE_P(/* no prefix */,
                          SitePerProcessGestureHitTestBrowserTest,
                          testing::Combine(testing::ValuesIn(kHitTestOption),
                                           testing::ValuesIn(kOneScale)));
-#endif
+#endif  // defined(USE_AURA)
+#endif  // defined(MEMORY_SANITIZER)
 
 }  // namespace content

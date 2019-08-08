@@ -19,6 +19,8 @@ class VIEWS_EXPORT ButtonController {
                    std::unique_ptr<ButtonControllerDelegate> delegate);
   virtual ~ButtonController();
 
+  Button* button() { return button_; }
+
   // Methods that parallel View::On<Event> handlers:
   virtual bool OnMousePressed(const ui::MouseEvent& event);
   virtual void OnMouseReleased(const ui::MouseEvent& event);
@@ -27,6 +29,7 @@ class VIEWS_EXPORT ButtonController {
   virtual void OnMouseExited(const ui::MouseEvent& event);
   virtual bool OnKeyPressed(const ui::KeyEvent& event);
   virtual bool OnKeyReleased(const ui::KeyEvent& event);
+  virtual void OnGestureEvent(ui::GestureEvent* event);
 
   // Updates |node_data| for a button based on the functionality.
   virtual void UpdateAccessibleNodeData(ui::AXNodeData* node_data);
@@ -36,7 +39,6 @@ class VIEWS_EXPORT ButtonController {
   virtual bool IsTriggerableEvent(const ui::Event& event);
 
  protected:
-  Button* button() { return button_; }
   ButtonControllerDelegate* delegate() {
     return button_controller_delegate_.get();
   }

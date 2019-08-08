@@ -32,7 +32,7 @@ const Command = {
   OPEN_INCOGNITO: 6,
   UNDO: 7,
   REDO: 8,
-  // OPEN triggers when you double-click an item.
+  // OPEN triggers when you double-click an item. NOT USED FOR METRICS.
   OPEN: 9,
   SELECT_ALL: 10,
   DESELECT_ALL: 11,
@@ -46,8 +46,12 @@ const Command = {
   EXPORT: 19,
   HELP_CENTER: 20,
 
+  // Added for more precise metrics purposes. OPEN is re-mapped to one of these.
+  OPEN_BOOKMARK: 21,
+  OPEN_FOLDER: 22,
+
   // Append new values to the end of the enum.
-  MAX_VALUE: 21,
+  MAX_VALUE: 23,
 };
 
 /**

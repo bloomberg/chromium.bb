@@ -67,10 +67,6 @@ class CONTENT_EXPORT ResourceDispatcherHost {
   // delegate have a longer lifetime than the ResourceDispatcherHost.
   virtual void SetDelegate(ResourceDispatcherHostDelegate* delegate) = 0;
 
-  // Controls whether third-party sub-content can pop-up HTTP basic auth
-  // dialog boxes.
-  virtual void SetAllowCrossOriginAuthPrompt(bool value) = 0;
-
   // Registers the |interceptor| for the |http_header| passed in.
   // The |starts_with| parameter is used to match the prefix of the
   // |http_header| in the response and the interceptor will be invoked if there

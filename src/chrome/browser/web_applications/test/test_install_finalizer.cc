@@ -7,6 +7,7 @@
 #include "chrome/browser/web_applications/test/test_install_finalizer.h"
 
 #include "base/callback.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
@@ -34,15 +35,28 @@ void TestInstallFinalizer::FinalizeInstall(
     next_result_code_.reset();
   }
 
-  // Store a copy for inspecting in tests.
+  // Store input data copies for inspecting in tests.
   web_app_info_copy_ = std::make_unique<WebApplicationInfo>(web_app_info);
-  finalized_policy_install_ = false;
+  finalize_options_list_.push_back(options);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), app_id, code));
+}
 
-  if (options.policy_installed)
-    finalized_policy_install_ = true;
+void TestInstallFinalizer::UninstallExternalWebApp(
+    const GURL& app_url,
+    UninstallExternalWebAppCallback callback) {
+  DCHECK(base::ContainsKey(next_uninstall_external_web_app_results_, app_url));
+  uninstall_external_web_app_urls_.push_back(app_url);
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindLambdaForTesting(
+                     [this, app_url, callback = std::move(callback)]() mutable {
+                       bool result =
+                           next_uninstall_external_web_app_results_[app_url];
+                       next_uninstall_external_web_app_results_.erase(app_url);
+                       std::move(callback).Run(result);
+                     }));
 }
 
 bool TestInstallFinalizer::CanCreateOsShortcuts() const {
@@ -85,11 +99,24 @@ void TestInstallFinalizer::RevealAppShim(const AppId& app_id) {
   ++num_reveal_appshim_calls_;
 }
 
+bool TestInstallFinalizer::CanSkipAppUpdateForSync(
+    const AppId& app_id,
+    const WebApplicationInfo& web_app_info) const {
+  return false;
+}
+
 void TestInstallFinalizer::SetNextFinalizeInstallResult(
     const AppId& app_id,
     InstallResultCode code) {
   next_app_id_ = app_id;
   next_result_code_ = code;
+}
+
+void TestInstallFinalizer::SetNextUninstallExternalWebAppResult(
+    const GURL& app_url,
+    bool uninstalled) {
+  DCHECK(!base::ContainsKey(next_uninstall_external_web_app_results_, app_url));
+  next_uninstall_external_web_app_results_[app_url] = uninstalled;
 }
 
 }  // namespace web_app

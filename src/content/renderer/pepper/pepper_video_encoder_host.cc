@@ -168,7 +168,8 @@ PepperVideoEncoderHost::ShmBuffer::ShmBuffer(
 PepperVideoEncoderHost::ShmBuffer::~ShmBuffer() {}
 
 media::BitstreamBuffer PepperVideoEncoderHost::ShmBuffer::ToBitstreamBuffer() {
-  return media::BitstreamBuffer(id, shm->handle(), shm->mapped_size());
+  return media::BitstreamBuffer(id, shm->handle(), false /* read_only */,
+                                shm->mapped_size());
 }
 
 PepperVideoEncoderHost::PepperVideoEncoderHost(RendererPpapiHost* host,

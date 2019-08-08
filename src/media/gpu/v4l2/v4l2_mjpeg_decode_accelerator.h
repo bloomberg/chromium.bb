@@ -17,17 +17,17 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
+#include "components/chromeos_camera/mjpeg_decode_accelerator.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/unaligned_shared_memory.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/v4l2/v4l2_device.h"
-#include "media/video/mjpeg_decode_accelerator.h"
 
 namespace media {
 
 class MEDIA_GPU_EXPORT V4L2MjpegDecodeAccelerator
-    : public MjpegDecodeAccelerator {
+    : public chromeos_camera::MjpegDecodeAccelerator {
  public:
   V4L2MjpegDecodeAccelerator(
       const scoped_refptr<V4L2Device>& device,
@@ -35,9 +35,10 @@ class MEDIA_GPU_EXPORT V4L2MjpegDecodeAccelerator
   ~V4L2MjpegDecodeAccelerator() override;
 
   // MjpegDecodeAccelerator implementation.
-  bool Initialize(Client* client) override;
-  void Decode(const BitstreamBuffer& bitstream_buffer,
-              const scoped_refptr<VideoFrame>& video_frame) override;
+  bool Initialize(
+      chromeos_camera::MjpegDecodeAccelerator::Client* client) override;
+  void Decode(BitstreamBuffer bitstream_buffer,
+              scoped_refptr<VideoFrame> video_frame) override;
   bool IsSupported() override;
 
  private:
@@ -59,7 +60,7 @@ class MEDIA_GPU_EXPORT V4L2MjpegDecodeAccelerator
   // the time of submission we may not have one available (and don't need one
   // to submit input to the device).
   struct JobRecord {
-    JobRecord(const BitstreamBuffer& bitstream_buffer,
+    JobRecord(BitstreamBuffer bitstream_buffer,
               scoped_refptr<VideoFrame> video_frame);
     ~JobRecord();
 
@@ -89,7 +90,7 @@ class MEDIA_GPU_EXPORT V4L2MjpegDecodeAccelerator
   //   - V4L2_PIX_FMT_YUV_420M
   //   - V4L2_PIX_FMT_YUV_422M
   bool ConvertOutputImage(const BufferRecord& output_buffer,
-                          const scoped_refptr<VideoFrame>& dst_frame);
+                          VideoFrame* dst_frame);
 
   // Return the number of input/output buffers enqueued to the device.
   size_t InputBufferQueuedCount();
@@ -146,7 +147,7 @@ class MEDIA_GPU_EXPORT V4L2MjpegDecodeAccelerator
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // The client of this class.
-  Client* client_;
+  chromeos_camera::MjpegDecodeAccelerator::Client* client_;
 
   // The V4L2Device this class is operating upon.
   scoped_refptr<V4L2Device> device_;

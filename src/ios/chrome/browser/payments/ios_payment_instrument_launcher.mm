@@ -18,7 +18,7 @@
 #import "ios/chrome/browser/payments/payment_request_constants.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/navigation_manager.h"
-#include "ios/web/public/ssl_status.h"
+#include "ios/web/public/security/ssl_status.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "net/base/mac/url_conversions.h"
 #include "net/base/url_util.h"

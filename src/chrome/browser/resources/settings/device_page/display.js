@@ -182,6 +182,12 @@ Polymer({
 
     /** @private */
     logicalResolutionText_: String,
+
+    /** @private {!Array<string>} */
+    displayTabNames_: Array,
+
+    /** @private */
+    selectedTab_: Number,
   },
 
   observers: [
@@ -275,6 +281,7 @@ Polymer({
   displayLayoutFetched_: function(displays, layouts) {
     this.layouts = layouts;
     this.displays = displays;
+    this.displayTabNames_ = displays.map(({name}) => name);
     this.updateDisplayInfo_();
   },
 
@@ -458,6 +465,7 @@ Polymer({
     // Set |selectedDisplay| first since only the resolution slider depends
     // on |selectedModePref_|.
     this.selectedDisplay = selectedDisplay;
+    this.selectedTab_ = this.displays.indexOf(this.selectedDisplay);
 
     // Now that everything is in sync, set the selected mode to its correct
     // value right before updating the pref.
@@ -711,14 +719,17 @@ Polymer({
   /**
    * Handles the event where the display size slider is being dragged, i.e. the
    * mouse or tap has not been released.
-   * @param {!Event} e
    * @private
    */
-  onDisplaySizeSliderDrag_: function(e) {
+  onDisplaySizeSliderDrag_: function() {
     if (!this.selectedDisplay) {
       return;
     }
-    this.updateLogicalResolutionText_(/** @type {number} */ (e.detail.value));
+
+    const sliderValue = this.$.displaySizeSlider.$$('#slider').value;
+    const zoomFactor = this.$.displaySizeSlider.ticks[sliderValue].value;
+    this.updateLogicalResolutionText_(
+        /** @type {number} */ (zoomFactor));
   },
 
   /**
@@ -739,14 +750,12 @@ Polymer({
     }
   },
 
-  /**
-   * Handles event when a display tab is selected.
-   * @param {!CustomEvent<!{item: !{displayId: string}}>} e
-   * @private
-   */
-  onSelectDisplayTab_: function(e) {
-    this.onSelectDisplay_(
-        new CustomEvent('select-display', {detail: e.detail.item.displayId}));
+  /** @private */
+  onSelectDisplayTab_: function() {
+    const {selected} = this.$$('cr-tabs');
+    if (this.selectedTab_ != selected) {
+      this.setSelectedDisplay_(this.displays[selected]);
+    }
   },
 
   /**

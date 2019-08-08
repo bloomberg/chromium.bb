@@ -10,8 +10,6 @@
 
 #include "test/pc/e2e/analyzer/audio/default_audio_quality_analyzer.h"
 
-#include <string.h>
-
 #include "api/stats_types.h"
 #include "rtc_base/logging.h"
 #include "test/testsupport/perf_test.h"
@@ -32,7 +30,7 @@ void DefaultAudioQualityAnalyzer::Start(
 }
 
 void DefaultAudioQualityAnalyzer::OnStatsReports(
-    absl::string_view pc_label,
+    const std::string& pc_label,
     const StatsReports& stats_reports) {
   for (const StatsReport* stats_report : stats_reports) {
     // NetEq stats are only present in kStatsReportTypeSsrc reports, so all
@@ -47,16 +45,10 @@ void DefaultAudioQualityAnalyzer::OnStatsReports(
     if (strcmp(media_type->static_string_val(), kStatsAudioMediaType) != 0) {
       continue;
     }
-    const webrtc::StatsReport::Value* packets_received =
-        stats_report->FindValue(
-            StatsReport::StatsValueName::kStatsValueNamePacketsReceived);
-    if (!packets_received || packets_received->int_val() == 0) {
-      // Discarding stats in the following situations:
-      // - When packets_received is not present, because NetEq stats are only
-      //   available in recv-side SSRC.
-      // - When packets_received is present but its value is 0. This means
-      //   that media is not yet flowing so there is no need to keep this
-      //   stats report into account (since all its fields would be 0).
+    if (stats_report->FindValue(
+            webrtc::StatsReport::kStatsValueNameBytesSent)) {
+      // If kStatsValueNameBytesSent is present, it means it's a send stream,
+      // but we need audio metrics for receive stream, so skip it.
       continue;
     }
 
@@ -80,6 +72,8 @@ void DefaultAudioQualityAnalyzer::OnStatsReports(
 
     const std::string& stream_label =
         GetStreamLabelFromStatsReport(stats_report);
+
+    rtc::CritScope crit(&lock_);
     AudioStreamStats& audio_stream_stats = streams_stats_[stream_label];
     audio_stream_stats.expand_rate.AddSample(expand_rate->float_val());
     audio_stream_stats.accelerate_rate.AddSample(accelerate_rate->float_val());
@@ -106,6 +100,7 @@ std::string DefaultAudioQualityAnalyzer::GetTestCaseName(
 }
 
 void DefaultAudioQualityAnalyzer::Stop() {
+  rtc::CritScope crit(&lock_);
   for (auto& item : streams_stats_) {
     ReportResult("expand_rate", item.first, item.second.expand_rate,
                  "unitless");
@@ -118,6 +113,12 @@ void DefaultAudioQualityAnalyzer::Stop() {
     ReportResult("preferred_buffer_size_ms", item.first,
                  item.second.preferred_buffer_size_ms, "ms");
   }
+}
+
+std::map<std::string, AudioStreamStats>
+DefaultAudioQualityAnalyzer::GetAudioStreamsStats() const {
+  rtc::CritScope crit(&lock_);
+  return streams_stats_;
 }
 
 void DefaultAudioQualityAnalyzer::ReportResult(

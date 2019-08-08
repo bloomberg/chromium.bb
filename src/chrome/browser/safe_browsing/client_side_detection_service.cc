@@ -25,7 +25,6 @@
 #include "chrome/common/constants.mojom.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/client_model.pb.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"

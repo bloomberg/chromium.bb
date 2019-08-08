@@ -38,6 +38,7 @@
 #include "remoting/protocol/video_stream.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_types.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
+#include "ui/events/event.h"
 
 namespace remoting {
 
@@ -133,7 +134,8 @@ class ClientSession : public protocol::HostStub,
   // ClientSessionControl interface.
   const std::string& client_jid() const override;
   void DisconnectSession(protocol::ErrorCode error) override;
-  void OnLocalMouseMoved(const webrtc::DesktopVector& position) override;
+  void OnLocalPointerMoved(const webrtc::DesktopVector& position,
+                           ui::EventType type) override;
   void SetDisableInputs(bool disable_inputs) override;
   void OnDesktopDisplayChanged(
       std::unique_ptr<protocol::VideoLayout> layout) override;
@@ -159,9 +161,15 @@ class ClientSession : public protocol::HostStub,
       scoped_refptr<protocol::InputEventTimestampsSource>
           event_timestamp_source);
 
+  // Public for tests.
+  void UpdateMouseClampingFilterOffset();
+
  private:
   // Creates a proxy for sending clipboard events to the client.
   std::unique_ptr<protocol::ClipboardStub> CreateClipboardProxy();
+
+  void SetMouseClampingFilter(const webrtc::DesktopSize& size,
+                              const webrtc::DesktopVector& dpi);
 
   // protocol::VideoStream::Observer implementation.
   void OnVideoSizeChanged(protocol::VideoStream* stream,
@@ -249,6 +257,10 @@ class ClientSession : public protocol::HostStub,
 
   // Contains the most recently gathered info about the desktop displays;
   DesktopDisplayInfo desktop_display_info_;
+
+  // Default DPI values to use if a display reports 0 for DPI.
+  int default_x_dpi_;
+  int default_y_dpi_;
 
   // The id of the desktop display to show to the user.
   // Default is webrtc::kFullDesktopScreenId which shows all displays.

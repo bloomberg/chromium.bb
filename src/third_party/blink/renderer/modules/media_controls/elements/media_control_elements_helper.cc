@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_div_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_input_element.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -74,7 +75,7 @@ const HTMLMediaElement* MediaControlElementsHelper::ToParentMediaElement(
 HTMLDivElement* MediaControlElementsHelper::CreateDiv(const AtomicString& id,
                                                       ContainerNode* parent) {
   DCHECK(parent);
-  HTMLDivElement* element = HTMLDivElement::Create(parent->GetDocument());
+  auto* element = MakeGarbageCollected<HTMLDivElement>(parent->GetDocument());
   element->SetShadowPseudoId(id);
   parent->ParserAppendChild(element);
   return element;
@@ -104,7 +105,7 @@ HTMLDivElement* MediaControlElementsHelper::CreateDivWithId(
     const AtomicString& id,
     ContainerNode* parent) {
   DCHECK(parent);
-  HTMLDivElement* element = HTMLDivElement::Create(parent->GetDocument());
+  auto* element = MakeGarbageCollected<HTMLDivElement>(parent->GetDocument());
   element->setAttribute("id", id);
   parent->ParserAppendChild(element);
   return element;

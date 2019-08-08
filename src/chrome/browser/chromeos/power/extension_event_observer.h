@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "base/unguessable_token.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
@@ -122,9 +123,12 @@ class ExtensionEventObserver : public content::NotificationObserver,
   std::set<Profile*> active_profiles_;
 
   bool should_delay_suspend_;
-  bool suspend_is_pending_;
   int suspend_keepalive_count_;
-  base::OnceClosure power_manager_callback_;
+
+  // |this| blocks Power Manager suspend with this token. When the token is
+  // empty, |this| isn't blocking suspend.
+  base::UnguessableToken block_suspend_token_;
+
   base::CancelableClosure suspend_readiness_callback_;
 
   content::NotificationRegistrar registrar_;

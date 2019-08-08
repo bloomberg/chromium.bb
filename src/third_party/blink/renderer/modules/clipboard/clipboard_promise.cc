@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/clipboard/clipboard_reader.h"
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -112,7 +113,7 @@ void ClipboardPromise::WriteNextRepresentation() {
 
 void ClipboardPromise::RejectFromReadOrDecodeFailure() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  script_promise_resolver_->Reject(DOMException::Create(
+  script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
       DOMExceptionCode::kDataError,
       "Failed to read or decode Blob for clipboard item type " +
           clipboard_item_data_[clipboard_representation_index_].first + "."));
@@ -136,7 +137,7 @@ void ClipboardPromise::HandleWrite(
   DCHECK(clipboard_items);
 
   if (clipboard_items->size() > 1) {
-    script_promise_resolver_->Reject(DOMException::Create(
+    script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotAllowedError,
         "Support for multiple ClipboardItems is not implemented."));
     return;
@@ -165,7 +166,7 @@ void ClipboardPromise::HandleWriteText(const String& data) {
 void ClipboardPromise::HandleReadWithPermission(PermissionStatus status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (status != PermissionStatus::GRANTED) {
-    script_promise_resolver_->Reject(DOMException::Create(
+    script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotAllowedError, "Read permission denied."));
     return;
   }
@@ -182,7 +183,7 @@ void ClipboardPromise::HandleReadWithPermission(PermissionStatus status) {
   }
 
   if (!items.size()) {
-    script_promise_resolver_->Reject(DOMException::Create(
+    script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kDataError, "No valid data on clipboard."));
     return;
   }
@@ -194,7 +195,7 @@ void ClipboardPromise::HandleReadWithPermission(PermissionStatus status) {
 
 void ClipboardPromise::HandleReadTextWithPermission(PermissionStatus status) {
   if (status != PermissionStatus::GRANTED) {
-    script_promise_resolver_->Reject(DOMException::Create(
+    script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotAllowedError, "Read permission denied."));
     return;
   }
@@ -207,7 +208,7 @@ void ClipboardPromise::HandleReadTextWithPermission(PermissionStatus status) {
 void ClipboardPromise::HandleWriteWithPermission(PermissionStatus status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (status != PermissionStatus::GRANTED) {
-    script_promise_resolver_->Reject(DOMException::Create(
+    script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotAllowedError, "Write permission denied."));
     return;
   }
@@ -220,13 +221,13 @@ void ClipboardPromise::HandleWriteWithPermission(PermissionStatus status) {
     String type = type_and_blob.first;
     String type_with_args = type_and_blob.second->type();
     if (!ClipboardWriter::IsValidType(type)) {
-      script_promise_resolver_->Reject(
-          DOMException::Create(DOMExceptionCode::kNotAllowedError,
-                               "Write type " + type + " not supported."));
+      script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotAllowedError,
+          "Write type " + type + " not supported."));
       return;
     }
     if (!type_with_args.Contains(type)) {
-      script_promise_resolver_->Reject(DOMException::Create(
+      script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotAllowedError,
           "MIME type " + type + " does not match the blob type's MIME type " +
               type_with_args));
@@ -241,7 +242,7 @@ void ClipboardPromise::HandleWriteWithPermission(PermissionStatus status) {
 void ClipboardPromise::HandleWriteTextWithPermission(PermissionStatus status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (status != PermissionStatus::GRANTED) {
-    script_promise_resolver_->Reject(DOMException::Create(
+    script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotAllowedError, "Write permission denied."));
     return;
   }
@@ -266,14 +267,14 @@ void ClipboardPromise::RequestReadPermission(
   DCHECK(script_promise_resolver_);
 
   if (!IsFocusedDocument(ExecutionContext::From(script_state_))) {
-    script_promise_resolver_->Reject(DOMException::Create(
+    script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotAllowedError, "Document is not focused."));
     return;
   }
   if (!GetPermissionService()) {
-    script_promise_resolver_->Reject(
-        DOMException::Create(DOMExceptionCode::kNotAllowedError,
-                             "Permission Service could not connect."));
+    script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kNotAllowedError,
+        "Permission Service could not connect."));
     return;
   }
 
@@ -291,14 +292,14 @@ void ClipboardPromise::CheckWritePermission(
   DCHECK(script_promise_resolver_);
 
   if (!IsFocusedDocument(ExecutionContext::From(script_state_))) {
-    script_promise_resolver_->Reject(DOMException::Create(
+    script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotAllowedError, "Document is not focused."));
     return;
   }
   if (!GetPermissionService()) {
-    script_promise_resolver_->Reject(
-        DOMException::Create(DOMExceptionCode::kNotAllowedError,
-                             "Permission Service could not connect."));
+    script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kNotAllowedError,
+        "Permission Service could not connect."));
     return;
   }
 
@@ -319,6 +320,7 @@ scoped_refptr<base::SingleThreadTaskRunner> ClipboardPromise::GetTaskRunner() {
 
 bool ClipboardPromise::IsFocusedDocument(ExecutionContext* context) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(context);
   DCHECK(context->IsSecureContext());  // [SecureContext] in IDL
   Document* doc = To<Document>(context);
   return doc && doc->hasFocus();

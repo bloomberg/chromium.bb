@@ -67,6 +67,11 @@ struct SystemInfo;
 #define EXPECT_EGLENUM_EQ(expected, actual) \
     EXPECT_EQ(static_cast<EGLenum>(expected), static_cast<EGLenum>(actual))
 
+#define ASSERT_GL_FRAMEBUFFER_COMPLETE(framebuffer) \
+    ASSERT_GLENUM_EQ(GL_FRAMEBUFFER_COMPLETE, glCheckFramebufferStatus(framebuffer))
+#define EXPECT_GL_FRAMEBUFFER_COMPLETE(framebuffer) \
+    EXPECT_GLENUM_EQ(GL_FRAMEBUFFER_COMPLETE, glCheckFramebufferStatus(framebuffer))
+
 namespace angle
 {
 struct GLColorRGB
@@ -74,6 +79,9 @@ struct GLColorRGB
     GLColorRGB();
     GLColorRGB(GLubyte r, GLubyte g, GLubyte b);
     GLColorRGB(const angle::Vector3 &floatColor);
+
+    const GLubyte *data() const { return &R; }
+    GLubyte *data() { return &R; }
 
     GLubyte R, G, B;
 
@@ -278,7 +286,6 @@ class ANGLETestBase
 
   public:
     void setWindowVisible(bool isVisible);
-    static bool eglDisplayExtensionEnabled(EGLDisplay display, const std::string &extName);
 
     virtual void overrideWorkaroundsD3D(angle::WorkaroundsD3D *workaroundsD3D) {}
     virtual void overrideFeaturesVk(angle::FeaturesVk *workaroundsVulkan) {}
@@ -344,12 +351,6 @@ class ANGLETestBase
                             bool useVertexBuffer,
                             float layer);
 
-    static bool extensionEnabled(const std::string &extName);
-    static bool extensionRequestable(const std::string &extName);
-    static bool ensureExtensionEnabled(const std::string &extName);
-    static bool eglClientExtensionEnabled(const std::string &extName);
-    static bool eglDeviceExtensionEnabled(EGLDeviceEXT device, const std::string &extName);
-
     void setWindowWidth(int width);
     void setWindowHeight(int height);
     void setConfigRedBits(int bits);
@@ -367,11 +368,9 @@ class ANGLETestBase
     void setExtensionsEnabled(bool extensionsEnabled);
     void setRobustAccess(bool enabled);
     void setBindGeneratesResource(bool bindGeneratesResource);
-    void setDebugLayersEnabled(bool enabled);
     void setClientArraysEnabled(bool enabled);
     void setRobustResourceInit(bool enabled);
-    void setContextProgramCacheEnabled(bool enabled, angle::CacheProgramFunc cacheProgramFunc);
-    void setContextVirtualization(bool enabled);
+    void setContextProgramCacheEnabled(bool enabled);
     void setContextResetStrategy(EGLenum resetStrategy);
     void forceNewDisplay();
 
@@ -394,7 +393,7 @@ class ANGLETestBase
     // Allows a test to be more restrictive about platform warnings.
     void treatPlatformWarningsAsErrors();
 
-    OSWindow *getOSWindow() { return mCurrentPlatform->osWindow; }
+    OSWindow *getOSWindow() { return mFixture->osWindow; }
 
     GLuint get2DTexturedQuadProgram();
 
@@ -408,6 +407,17 @@ class ANGLETestBase
         ~ScopedIgnorePlatformMessages();
     };
 
+    // Can be used before we get a GL context.
+    bool isGLRenderer() const
+    {
+        return mCurrentParams->getRenderer() == EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE;
+    }
+
+    bool isD3D11Renderer() const
+    {
+        return mCurrentParams->getRenderer() == EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE;
+    }
+
   private:
     void checkD3D11SDKLayersMessages();
 
@@ -419,10 +429,12 @@ class ANGLETestBase
                   bool useInstancedDrawCalls,
                   GLuint numInstances);
 
-    struct Platform
+    void initOSWindow();
+
+    struct TestFixture
     {
-        Platform();
-        ~Platform();
+        TestFixture();
+        ~TestFixture();
 
         EGLWindow *eglWindow = nullptr;
         WGLWindow *wglWindow = nullptr;
@@ -448,13 +460,17 @@ class ANGLETestBase
     bool mAlwaysForceNewDisplay;
     bool mForceNewDisplay;
 
+    bool mSetUpCalled;
+    bool mTearDownCalled;
+
     // On most systems we force a new display on every test instance. For these configs we can
     // share a single OSWindow instance. With display reuse we need a separate OSWindow for each
     // different config. This OSWindow sharing seemed to lead to driver bugs on some platforms.
     static OSWindow *mOSWindowSingleton;
 
-    static std::map<angle::PlatformParameters, Platform> gPlatforms;
-    Platform *mCurrentPlatform;
+    static std::map<angle::PlatformParameters, TestFixture> gFixtures;
+    const angle::PlatformParameters *mCurrentParams;
+    TestFixture *mFixture;
 
     // Workaround for NVIDIA not being able to share a window with OpenGL and Vulkan.
     static Optional<EGLint> mLastRendererType;
@@ -466,10 +482,27 @@ class ANGLETestWithParam : public ANGLETestBase, public ::testing::TestWithParam
   protected:
     ANGLETestWithParam();
 
-  public:
-    void SetUp() override { ANGLETestBase::ANGLETestSetUp(); }
+    virtual void testSetUp() {}
+    virtual void testTearDown() {}
 
-    void TearDown() override { ANGLETestBase::ANGLETestTearDown(); }
+    void recreateTestFixture()
+    {
+        TearDown();
+        SetUp();
+    }
+
+  private:
+    void SetUp() final
+    {
+        ANGLETestBase::ANGLETestSetUp();
+        testSetUp();
+    }
+
+    void TearDown() final
+    {
+        testTearDown();
+        ANGLETestBase::ANGLETestTearDown();
+    }
 };
 
 template <typename Params>
@@ -501,16 +534,6 @@ class ANGLETestEnvironment : public testing::Environment
     static std::unique_ptr<angle::Library> gWGLLibrary;
 };
 
-// This base fixture loads the EGL entry points.
-class EGLTest : public testing::Test
-{
-  public:
-    EGLTest();
-    ~EGLTest();
-
-    void SetUp() override;
-};
-
 // Driver vendors
 bool IsIntel();
 bool IsAdreno();
@@ -535,9 +558,15 @@ bool IsVulkan();
 bool IsDebug();
 bool IsRelease();
 
-bool IsDisplayExtensionEnabled(EGLDisplay display, const std::string &extName);
+bool EnsureGLExtensionEnabled(const std::string &extName);
+bool IsEGLClientExtensionEnabled(const std::string &extName);
+bool IsEGLDeviceExtensionEnabled(EGLDeviceEXT device, const std::string &extName);
+bool IsEGLDisplayExtensionEnabled(EGLDisplay display, const std::string &extName);
+bool IsGLExtensionEnabled(const std::string &extName);
+bool IsGLExtensionRequestable(const std::string &extName);
 
-// Note: git cl format messes up this formatting.
+extern angle::PlatformMethods gDefaultPlatformMethods;
+
 #define ANGLE_SKIP_TEST_IF(COND)                                  \
     do                                                            \
     {                                                             \

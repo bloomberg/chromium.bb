@@ -58,6 +58,7 @@ void AutoFetchCancellationComplete() {
 }
 
 void ShowAutoFetchCompleteNotification(const base::string16& pageTitle,
+                                       const std::string& original_url,
                                        const std::string& final_url,
                                        int android_tab_id,
                                        int64_t offline_id) {
@@ -65,6 +66,7 @@ void ShowAutoFetchCompleteNotification(const base::string16& pageTitle,
   Java_AutoFetchNotifier_showCompleteNotification(
       env,
       base::android::ConvertUTF8ToJavaString(env, base::UTF16ToUTF8(pageTitle)),
+      base::android::ConvertUTF8ToJavaString(env, original_url),
       base::android::ConvertUTF8ToJavaString(env, final_url), android_tab_id,
       offline_id);
 }

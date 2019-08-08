@@ -11,8 +11,6 @@ source_set("signin") {
     "account_consistency_service_factory.mm",
     "account_reconcilor_factory.cc",
     "account_reconcilor_factory.h",
-    "account_tracker_service_factory.cc",
-    "account_tracker_service_factory.h",
     "authentication_service.h",
     "authentication_service.mm",
     "authentication_service_delegate.h",
@@ -99,6 +97,7 @@ source_set("feature_flags") {
   ]
   deps = [
     "//base",
+    "//components/unified_consent",
   ]
 }
 
@@ -151,9 +150,10 @@ source_set("unit_tests") {
     "//components/signin/core/browser:internals_test_support",
     "//components/signin/ios/browser",
     "//components/signin/ios/browser:test_support",
-    "//components/sync:test_support_driver",
+    "//components/sync:test_support",
     "//components/sync_preferences",
     "//components/sync_preferences:test_support",
+    "//components/unified_consent",
     "//google_apis",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state:browser_state_impl",

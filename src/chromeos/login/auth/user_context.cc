@@ -138,6 +138,11 @@ UserContext::GetSyncPasswordData() const {
   return sync_password_data_;
 }
 
+const base::Optional<SamlPasswordAttributes>&
+UserContext::GetSamlPasswordAttributes() const {
+  return saml_password_attributes_;
+}
+
 bool UserContext::HasCredentials() const {
   return (account_id_.is_valid() && !key_.GetSecret().empty()) ||
          !auth_code_.empty();
@@ -210,6 +215,11 @@ void UserContext::SetGAPSCookie(const std::string& gaps_cookie) {
 void UserContext::SetSyncPasswordData(
     const password_manager::PasswordHashData& sync_password_data) {
   sync_password_data_ = {sync_password_data};
+}
+
+void UserContext::SetSamlPasswordAttributes(
+    const SamlPasswordAttributes& saml_password_attributes) {
+  saml_password_attributes_ = saml_password_attributes;
 }
 
 void UserContext::SetIsUnderAdvancedProtection(

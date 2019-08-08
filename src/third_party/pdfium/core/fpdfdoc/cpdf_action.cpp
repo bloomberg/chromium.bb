@@ -94,8 +94,11 @@ ByteString CPDF_Action::GetURI(const CPDF_Document* pDoc) const {
   const CPDF_Dictionary* pURI = pRoot->GetDictFor("URI");
   if (pURI) {
     auto result = csURI.Find(":");
-    if (!result.has_value() || result.value() == 0)
-      csURI = pURI->GetStringFor("Base") + csURI;
+    if (!result.has_value() || result.value() == 0) {
+      auto* pBase = pURI->GetDirectObjectFor("Base");
+      if (pBase && (pBase->IsString() || pBase->IsStream()))
+        csURI = pBase->GetString() + csURI;
+    }
   }
   return csURI;
 }
@@ -113,12 +116,12 @@ uint32_t CPDF_Action::GetFlags() const {
 }
 
 WideString CPDF_Action::GetJavaScript() const {
-  WideString csJS;
   if (!m_pDict)
-    return csJS;
+    return WideString();
 
   const CPDF_Object* pJS = m_pDict->GetDirectObjectFor("JS");
-  return pJS ? pJS->GetUnicodeText() : csJS;
+  return (pJS && (pJS->IsString() || pJS->IsStream())) ? pJS->GetUnicodeText()
+                                                       : WideString();
 }
 
 size_t CPDF_Action::GetSubActionsCount() const {

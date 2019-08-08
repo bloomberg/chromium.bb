@@ -15,7 +15,11 @@ const char kFindInPageSearch[] = "findInPage.findString";
 const char kFindInPagePump[] = "findInPage.pumpSearch";
 
 const char kFindInPageSelectAndScrollToMatch[] =
-    "findInPage.selectAndScrollToMatch";
+    "findInPage.selectAndScrollToVisibleMatch";
+
+const char kSelectAndScrollResultMatches[] = "matches";
+
+const char kSelectAndScrollResultIndex[] = "index";
 
 const char kFindInPageStop[] = "findInPage.stop";
 

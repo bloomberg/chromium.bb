@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "net/base/ip_endpoint.h"
@@ -100,7 +101,8 @@ TransportConnectJob::TransportConnectJob(
                  NetLogEventType::TRANSPORT_CONNECT_JOB_CONNECT),
       params_(params),
       next_state_(STATE_NONE),
-      resolve_result_(OK) {
+      resolve_result_(OK),
+      weak_ptr_factory_(this) {
   // This is only set for WebSockets.
   DCHECK(!common_connect_job_params->websocket_endpoint_lock_manager);
 }
@@ -278,15 +280,22 @@ int TransportConnectJob::DoResolveHostComplete(int result) {
     return result;
   DCHECK(request_->GetAddressResults());
 
-  // Invoke callback, and abort if it fails.
+  next_state_ = STATE_TRANSPORT_CONNECT;
+
+  // Invoke callback.  If it indicates |this| may be slated for deletion, then
+  // only continue after a PostTask.
   if (!params_->host_resolution_callback().is_null()) {
-    result = params_->host_resolution_callback().Run(
-        request_->GetAddressResults().value(), net_log());
-    if (result != OK)
-      return result;
+    OnHostResolutionCallbackResult callback_result =
+        params_->host_resolution_callback().Run(
+            params_->destination(), request_->GetAddressResults().value());
+    if (callback_result == OnHostResolutionCallbackResult::kMayBeDeletedAsync) {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(&TransportConnectJob::OnIOComplete,
+                                    weak_ptr_factory_.GetWeakPtr(), OK));
+      return ERR_IO_PENDING;
+    }
   }
 
-  next_state_ = STATE_TRANSPORT_CONNECT;
   return result;
 }
 

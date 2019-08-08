@@ -13,11 +13,11 @@
 #include <utility>
 #include <vector>
 
+#include "build/build_config.h"
 #include "core/fpdfapi/page/cpdf_image.h"
 #include "core/fpdfapi/page/cpdf_page.h"
 #include "core/fpdfapi/parser/cpdf_object.h"
 #include "core/fpdfapi/parser/cpdf_parser.h"
-#include "core/fpdfdoc/cpdf_linklist.h"
 #include "core/fxcrt/observable.h"
 #include "core/fxcrt/retain_ptr.h"
 
@@ -55,6 +55,12 @@ class CPDF_Document : public Observable<CPDF_Document>,
     virtual uint32_t GetUserPermissions() const = 0;
   };
 
+  class LinkListIface {
+   public:
+    // CPDF_Document merely helps manage the lifetime.
+    virtual ~LinkListIface() = default;
+  };
+
   static const int kPageMaxNum = 0xFFFFF;
 
   CPDF_Document();
@@ -84,14 +90,17 @@ class CPDF_Document : public Observable<CPDF_Document>,
   std::unique_ptr<JBig2_DocumentContext>* CodecContext() {
     return &m_pCodecContext;
   }
-  std::unique_ptr<CPDF_LinkList>* LinksContext() { return &m_pLinksContext; }
+  LinkListIface* GetLinksContext() const { return m_pLinksContext.get(); }
+  void SetLinksContext(std::unique_ptr<LinkListIface> pContext) {
+    m_pLinksContext = std::move(pContext);
+  }
 
   CPDF_DocRenderData* GetRenderData() const { return m_pDocRender.get(); }
 
   // |pFontDict| must not be null.
   CPDF_Font* LoadFont(CPDF_Dictionary* pFontDict);
-  CPDF_ColorSpace* LoadColorSpace(const CPDF_Object* pCSObj,
-                                  const CPDF_Dictionary* pResources);
+  RetainPtr<CPDF_ColorSpace> LoadColorSpace(const CPDF_Object* pCSObj,
+                                            const CPDF_Dictionary* pResources);
 
   CPDF_Pattern* LoadPattern(CPDF_Object* pObj,
                             bool bShading,
@@ -125,7 +134,7 @@ class CPDF_Document : public Observable<CPDF_Document>,
                              const CPDF_FontEncoding* pEncoding);
   CPDF_Font* AddFont(CFX_Font* pFont, int charset);
 
-#if _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#if defined(OS_WIN)
   CPDF_Font* AddWindowsFont(LOGFONTA* pLogFont);
 #endif
 
@@ -148,7 +157,7 @@ class CPDF_Document : public Observable<CPDF_Document>,
                     uint32_t objnum,
                     int* index,
                     int level) const;
-  std::unique_ptr<CPDF_Object> ParseIndirectObject(uint32_t objnum) override;
+  RetainPtr<CPDF_Object> ParseIndirectObject(uint32_t objnum) override;
   size_t CalculateEncodingDict(int charset, CPDF_Dictionary* pBaseDict);
   const CPDF_Dictionary* GetPagesDict() const;
   CPDF_Dictionary* GetPagesDict();
@@ -168,8 +177,8 @@ class CPDF_Document : public Observable<CPDF_Document>,
   CPDF_Parser::Error HandleLoadResult(CPDF_Parser::Error error);
 
   std::unique_ptr<CPDF_Parser> m_pParser;
-  UnownedPtr<CPDF_Dictionary> m_pRootDict;
-  UnownedPtr<CPDF_Dictionary> m_pInfoDict;
+  RetainPtr<CPDF_Dictionary> m_pRootDict;
+  RetainPtr<CPDF_Dictionary> m_pInfoDict;
 
   // Vector of pairs to know current position in the page tree. The index in the
   // vector corresponds to the level being described. The pair contains a
@@ -191,7 +200,7 @@ class CPDF_Document : public Observable<CPDF_Document>,
   std::unique_ptr<CPDF_DocPageData> m_pDocPage;
 
   std::unique_ptr<JBig2_DocumentContext> m_pCodecContext;
-  std::unique_ptr<CPDF_LinkList> m_pLinksContext;
+  std::unique_ptr<LinkListIface> m_pLinksContext;
   std::vector<uint32_t> m_PageList;  // Page number to page's dict objnum.
 
   // Must be second to last.

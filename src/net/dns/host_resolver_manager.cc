@@ -44,6 +44,8 @@
 #include "base/rand_util.h"
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_piece.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -60,6 +62,7 @@
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
+#include "net/base/request_priority.h"
 #include "net/base/trace_constants.h"
 #include "net/base/url_util.h"
 #include "net/dns/address_sorter.h"
@@ -268,19 +271,18 @@ bool HaveOnlyLoopbackAddresses() {
 }
 
 // Creates NetLog parameters when the resolve failed.
-std::unique_ptr<base::Value> NetLogProcTaskFailedCallback(
-    uint32_t attempt_number,
-    int net_error,
-    int os_error,
-    NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+base::Value NetLogProcTaskFailedCallback(uint32_t attempt_number,
+                                         int net_error,
+                                         int os_error,
+                                         NetLogCaptureMode /* capture_mode */) {
+  base::DictionaryValue dict;
   if (attempt_number)
-    dict->SetInteger("attempt_number", attempt_number);
+    dict.SetInteger("attempt_number", attempt_number);
 
-  dict->SetInteger("net_error", net_error);
+  dict.SetInteger("net_error", net_error);
 
   if (os_error) {
-    dict->SetInteger("os_error", os_error);
+    dict.SetInteger("os_error", os_error);
 #if defined(OS_WIN)
     // Map the error code to a human-readable string.
     LPWSTR error_string = nullptr;
@@ -291,10 +293,10 @@ std::unique_ptr<base::Value> NetLogProcTaskFailedCallback(
                   (LPWSTR)&error_string,
                   0,         // Buffer size.
                   nullptr);  // Arguments (unused).
-    dict->SetString("os_error_string", base::WideToUTF8(error_string));
+    dict.SetString("os_error_string", base::WideToUTF8(error_string));
     LocalFree(error_string);
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
-    dict->SetString("os_error_string", gai_strerror(os_error));
+    dict.SetString("os_error_string", gai_strerror(os_error));
 #endif
   }
 
@@ -302,71 +304,66 @@ std::unique_ptr<base::Value> NetLogProcTaskFailedCallback(
 }
 
 // Creates NetLog parameters when the DnsTask failed.
-std::unique_ptr<base::Value> NetLogDnsTaskFailedCallback(
+base::Value NetLogDnsTaskFailedCallback(
     int net_error,
     int dns_error,
     NetLogParametersCallback results_callback,
     NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetInteger("net_error", net_error);
+  base::DictionaryValue dict;
+  dict.SetInteger("net_error", net_error);
   if (dns_error)
-    dict->SetInteger("dns_error", dns_error);
+    dict.SetInteger("dns_error", dns_error);
   if (results_callback)
-    dict->Set("resolve_results", results_callback.Run(capture_mode));
+    dict.SetKey("resolve_results", results_callback.Run(capture_mode));
   return std::move(dict);
 }
 
 // Creates NetLog parameters containing the information of the request. Use
 // NetLogRequestInfoCallback if the request is specified via RequestInfo.
-std::unique_ptr<base::Value> NetLogRequestCallback(
-    const HostPortPair& host,
-    NetLogCaptureMode /* capture_mode */) {
-  auto dict = std::make_unique<base::DictionaryValue>();
+base::Value NetLogRequestCallback(const HostPortPair& host,
+                                  NetLogCaptureMode /* capture_mode */) {
+  base::DictionaryValue dict;
 
-  dict->SetString("host", host.ToString());
-  dict->SetInteger("address_family",
-                   static_cast<int>(ADDRESS_FAMILY_UNSPECIFIED));
-  dict->SetBoolean("allow_cached_response", true);
-  dict->SetBoolean("is_speculative", false);
+  dict.SetString("host", host.ToString());
+  dict.SetInteger("address_family",
+                  static_cast<int>(ADDRESS_FAMILY_UNSPECIFIED));
+  dict.SetBoolean("allow_cached_response", true);
+  dict.SetBoolean("is_speculative", false);
   return std::move(dict);
 }
 
 // Creates NetLog parameters for the creation of a HostResolverManager::Job.
-std::unique_ptr<base::Value> NetLogJobCreationCallback(
-    const NetLogSource& source,
-    const std::string* host,
-    NetLogCaptureMode /* capture_mode */) {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  source.AddToEventParameters(dict.get());
-  dict->SetString("host", *host);
+base::Value NetLogJobCreationCallback(const NetLogSource& source,
+                                      const std::string* host,
+                                      NetLogCaptureMode /* capture_mode */) {
+  base::DictionaryValue dict;
+  source.AddToEventParameters(&dict);
+  dict.SetString("host", *host);
   return std::move(dict);
 }
 
 // Creates NetLog parameters for HOST_RESOLVER_IMPL_JOB_ATTACH/DETACH events.
-std::unique_ptr<base::Value> NetLogJobAttachCallback(
-    const NetLogSource& source,
-    RequestPriority priority,
-    NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  source.AddToEventParameters(dict.get());
-  dict->SetString("priority", RequestPriorityToString(priority));
+base::Value NetLogJobAttachCallback(const NetLogSource& source,
+                                    RequestPriority priority,
+                                    NetLogCaptureMode /* capture_mode */) {
+  base::DictionaryValue dict;
+  source.AddToEventParameters(&dict);
+  dict.SetString("priority", RequestPriorityToString(priority));
   return std::move(dict);
 }
 
 // Creates NetLog parameters for the DNS_CONFIG_CHANGED event.
-std::unique_ptr<base::Value> NetLogDnsConfigCallback(
-    const DnsConfig* config,
-    NetLogCaptureMode /* capture_mode */) {
-  return config->ToValue();
+base::Value NetLogDnsConfigCallback(const DnsConfig* config,
+                                    NetLogCaptureMode /* capture_mode */) {
+  return base::Value::FromUniquePtrValue(config->ToValue());
 }
 
-std::unique_ptr<base::Value> NetLogIPv6AvailableCallback(
-    bool ipv6_available,
-    bool cached,
-    NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetBoolean("ipv6_available", ipv6_available);
-  dict->SetBoolean("cached", cached);
+base::Value NetLogIPv6AvailableCallback(bool ipv6_available,
+                                        bool cached,
+                                        NetLogCaptureMode /* capture_mode */) {
+  base::DictionaryValue dict;
+  dict.SetBoolean("ipv6_available", ipv6_available);
+  dict.SetBoolean("cached", cached);
   return std::move(dict);
 }
 
@@ -394,6 +391,70 @@ void LogCancelRequest(const NetLogWithSource& source_net_log) {
 }
 
 //-----------------------------------------------------------------------------
+
+// Maximum of 6 concurrent resolver threads (excluding retries).
+// Some routers (or resolvers) appear to start to provide host-not-found if
+// too many simultaneous resolutions are pending.  This number needs to be
+// further optimized, but 8 is what FF currently does. We found some routers
+// that limit this to 6, so we're temporarily holding it at that level.
+const size_t kDefaultMaxProcTasks = 6u;
+
+PrioritizedDispatcher::Limits GetDispatcherLimits(
+    const HostResolver::ManagerOptions& options) {
+  PrioritizedDispatcher::Limits limits(NUM_PRIORITIES,
+                                       options.max_concurrent_resolves);
+
+  // If not using default, do not use the field trial.
+  if (limits.total_jobs != HostResolver::ManagerOptions::kDefaultParallelism)
+    return limits;
+
+  // Default, without trial is no reserved slots.
+  limits.total_jobs = kDefaultMaxProcTasks;
+
+  // Parallelism is determined by the field trial.
+  std::string group =
+      base::FieldTrialList::FindFullName("HostResolverDispatch");
+
+  if (group.empty())
+    return limits;
+
+  // The format of the group name is a list of non-negative integers separated
+  // by ':'. Each of the elements in the list corresponds to an element in
+  // |reserved_slots|, except the last one which is the |total_jobs|.
+  std::vector<base::StringPiece> group_parts = base::SplitStringPiece(
+      group, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  if (group_parts.size() != NUM_PRIORITIES + 1) {
+    NOTREACHED();
+    return limits;
+  }
+
+  std::vector<size_t> parsed(group_parts.size());
+  size_t total_reserved_slots = 0;
+
+  for (size_t i = 0; i < group_parts.size(); ++i) {
+    if (!base::StringToSizeT(group_parts[i], &parsed[i])) {
+      NOTREACHED();
+      return limits;
+    }
+  }
+
+  size_t total_jobs = parsed.back();
+  parsed.pop_back();
+  for (size_t i = 0; i < parsed.size(); ++i) {
+    total_reserved_slots += parsed[i];
+  }
+
+  // There must be some unreserved slots available for the all priorities.
+  if (total_reserved_slots > total_jobs ||
+      (total_reserved_slots == total_jobs && parsed[MINIMUM_PRIORITY] == 0)) {
+    NOTREACHED();
+    return limits;
+  }
+
+  limits.total_jobs = total_jobs;
+  limits.reserved_slots = parsed;
+  return limits;
+}
 
 // Keeps track of the highest priority.
 class PriorityTracker {
@@ -958,7 +1019,6 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
         num_completed_transactions_(0),
         tick_clock_(tick_clock),
         task_start_time_(tick_clock_->NowTicks()) {
-    DCHECK(client);
     DCHECK(delegate_);
   }
 
@@ -973,6 +1033,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
   }
 
   void StartFirstTransaction() {
+    DCHECK(client_);
     DCHECK_EQ(0u, num_completed_transactions_);
     DCHECK(!transaction1_);
 
@@ -986,6 +1047,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
   }
 
   void StartSecondTransaction() {
+    DCHECK(client_);
     DCHECK(needs_another_transaction());
     transaction2_ = CreateTransaction(DnsQueryType::AAAA);
     transaction2_->Start();
@@ -1000,8 +1062,10 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
 
   std::unique_ptr<DnsTransaction> CreateTransaction(
       DnsQueryType dns_query_type) {
+    DCHECK(client_);
     DCHECK_NE(DnsQueryType::UNSPECIFIED, dns_query_type);
-    SecureDnsMode secure_dns_mode = SecureDnsMode::AUTOMATIC;
+    DnsConfig::SecureDnsMode secure_dns_mode =
+        DnsConfig::SecureDnsMode::AUTOMATIC;
     // Downgrade to OFF mode if the query name for this attempt matches one of
     // the DoH server names. This is needed to prevent infinite recursion.
     DCHECK(client_->GetConfig());
@@ -1009,7 +1073,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
       if (hostname_.compare(GURL(GetURLFromTemplateWithoutParameters(
                                      doh_server.server_template))
                                 .host()) == 0) {
-        secure_dns_mode = SecureDnsMode::OFF;
+        secure_dns_mode = DnsConfig::SecureDnsMode::OFF;
       }
     }
     std::unique_ptr<DnsTransaction> trans =
@@ -2119,8 +2183,22 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
 
     bool did_complete = (results.error() != ERR_NETWORK_CHANGED) &&
                         (results.error() != ERR_HOST_RESOLVER_QUEUE_TOO_LARGE);
-    if (did_complete && allow_cache)
-      resolver_->CacheResult(GenerateCacheKey(secure), results, ttl);
+
+    // Handle all caching before completing requests as completing requests may
+    // start new requests that rely on cached results.
+    if (did_complete && allow_cache) {
+      // Multiple requests will usually share caches, so avoid duplicate cache
+      // adds.
+      std::set<HostCache*> caches;
+      for (auto* node = requests_.head(); node != requests_.end();
+           node = node->next()) {
+        if (node->value()->host_cache())
+          caches.insert(node->value()->host_cache());
+      }
+      HostCache::Key cache_key = GenerateCacheKey(secure);
+      for (HostCache* cache : caches)
+        resolver_->CacheResult(cache, cache_key, results, ttl);
+    }
 
     RecordJobHistograms(results.error());
 
@@ -2227,26 +2305,29 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
 
 //-----------------------------------------------------------------------------
 
-HostResolverManager::HostResolverManager(const Options& options,
-                                         NetLog* net_log)
+HostResolverManager::HostResolverManager(
+    const HostResolver::ManagerOptions& options,
+    NetLog* net_log,
+    DnsClientFactory dns_client_factory_for_testing)
     : max_queued_jobs_(0),
-      proc_params_(nullptr, options.max_retry_attempts),
+      proc_params_(nullptr, options.max_system_retry_attempts),
       net_log_(net_log),
+      dns_client_factory_for_testing_(
+          std::move(dns_client_factory_for_testing)),
       received_dns_config_(false),
+      dns_config_overrides_(options.dns_config_overrides),
       num_dns_failures_(0),
-      assume_ipv6_failure_on_wifi_(false),
+      check_ipv6_on_wifi_(options.check_ipv6_on_wifi),
       use_local_ipv6_(false),
       last_ipv6_probe_result_(true),
       additional_resolver_flags_(0),
       use_proctask_by_default_(false),
       allow_fallback_to_proctask_(true),
       tick_clock_(base::DefaultTickClock::GetInstance()),
+      invalidation_in_progress_(false),
       weak_ptr_factory_(this),
       probe_weak_ptr_factory_(this) {
-  if (options.enable_caching)
-    cache_ = HostCache::CreateDefaultCache();
-
-  PrioritizedDispatcher::Limits job_limits = options.GetDispatcherLimits();
+  PrioritizedDispatcher::Limits job_limits = GetDispatcherLimits(options);
   dispatcher_.reset(new PrioritizedDispatcher(job_limits));
   max_queued_jobs_ = job_limits.total_jobs * 100u;
 
@@ -2273,6 +2354,8 @@ HostResolverManager::HostResolverManager(const Options& options,
 
   OnConnectionTypeChanged(NetworkChangeNotifier::GetConnectionType());
 
+  SetDnsClientEnabled(options.dns_client_enabled);
+
   {
     DnsConfig dns_config = GetBaseDnsConfig(false);
     // Conservatively assume local IPv6 is needed when DnsConfig is not valid.
@@ -2296,27 +2379,6 @@ HostResolverManager::~HostResolverManager() {
   NetworkChangeNotifier::RemoveDNSObserver(this);
 }
 
-void HostResolverManager::SetDnsClient(std::unique_ptr<DnsClient> dns_client) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  // DnsClient and config must be updated before aborting DnsTasks, since doing
-  // so may start new jobs.
-  dns_client_ = std::move(dns_client);
-  if (dns_client_ && !dns_client_->GetConfig() &&
-      num_dns_failures_ < kMaximumDnsFailures) {
-    dns_client_->SetConfig(GetBaseDnsConfig(false));
-    num_dns_failures_ = 0;
-  }
-
-  AbortDnsTasks(ERR_NETWORK_CHANGED, false /* fallback_only */);
-  DnsConfig dns_config;
-  if (!HaveDnsConfig())
-    // UpdateModeForHistogram() needs to know the DnsConfig when
-    // !HaveDnsConfig()
-    dns_config = GetBaseDnsConfig(false);
-  UpdateModeForHistogram(dns_config);
-}
-
 std::unique_ptr<HostResolverManager::CancellableRequest>
 HostResolverManager::CreateRequest(
     const HostPortPair& host,
@@ -2325,6 +2387,13 @@ HostResolverManager::CreateRequest(
     URLRequestContext* request_context,
     HostCache* host_cache) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(!invalidation_in_progress_);
+
+  // HostCaches must add invalidators (via AddHostCacheInvalidator()) before use
+  // to ensure they are invalidated on network and configuration changes.
+  if (host_cache)
+    DCHECK(host_cache_invalidators_.HasObserver(host_cache->invalidator()));
+
   return std::make_unique<RequestImpl>(net_log, host, optional_parameters,
                                        request_context, host_cache,
                                        weak_ptr_factory_.GetWeakPtr());
@@ -2354,34 +2423,21 @@ HostResolverManager::CreateMdnsListener(const HostPortPair& host,
 
 void HostResolverManager::SetDnsClientEnabled(bool enabled) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-#if defined(ENABLE_BUILT_IN_DNS)
+
   if (enabled && !dns_client_) {
-    SetDnsClient(DnsClient::CreateClient(net_log_));
-  } else if (!enabled && dns_client_) {
+    if (dns_client_factory_for_testing_) {
+      SetDnsClient(dns_client_factory_for_testing_.Run(net_log_));
+    } else {
+#if defined(ENABLE_BUILT_IN_DNS)
+      SetDnsClient(DnsClient::CreateClient(net_log_));
+#endif
+    }
+    return;
+  }
+
+  if (!enabled && dns_client_) {
     SetDnsClient(nullptr);
   }
-#endif
-}
-
-HostCache* HostResolverManager::GetHostCache() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return cache_.get();
-}
-
-bool HostResolverManager::HasCached(base::StringPiece hostname,
-                                    HostCache::Entry::Source* source_out,
-                                    HostCache::EntryStaleness* stale_out,
-                                    bool* secure_out) const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  if (!cache_)
-    return false;
-
-  const HostCache::Key* key =
-      cache_->GetMatchingKey(hostname, source_out, stale_out);
-  if (key && secure_out != nullptr)
-    *secure_out = key->secure;
-  return !!key;
 }
 
 std::unique_ptr<base::Value> HostResolverManager::GetDnsConfigAsValue() const {
@@ -2400,28 +2456,6 @@ std::unique_ptr<base::Value> HostResolverManager::GetDnsConfigAsValue() const {
   return dns_config->ToValue();
 }
 
-size_t HostResolverManager::LastRestoredCacheSize() const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  return cache_ ? cache_->last_restore_size() : 0;
-}
-
-size_t HostResolverManager::CacheSize() const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  return cache_ ? cache_->size() : 0;
-}
-
-void HostResolverManager::SetNoIPv6OnWifi(bool no_ipv6_on_wifi) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  assume_ipv6_failure_on_wifi_ = no_ipv6_on_wifi;
-}
-
-bool HostResolverManager::GetNoIPv6OnWifi() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return assume_ipv6_failure_on_wifi_;
-}
-
 void HostResolverManager::SetDnsConfigOverrides(
     const DnsConfigOverrides& overrides) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -2432,6 +2466,16 @@ void HostResolverManager::SetDnsConfigOverrides(
   dns_config_overrides_ = overrides;
   if (dns_client_.get())
     UpdateDNSConfig(true);
+}
+
+void HostResolverManager::AddHostCacheInvalidator(
+    HostCache::Invalidator* invalidator) {
+  host_cache_invalidators_.AddObserver(invalidator);
+}
+
+void HostResolverManager::RemoveHostCacheInvalidator(
+    const HostCache::Invalidator* invalidator) {
+  host_cache_invalidators_.RemoveObserver(invalidator);
 }
 
 const std::vector<DnsConfig::DnsOverHttpsServerConfig>*
@@ -2446,7 +2490,6 @@ HostResolverManager::GetDnsOverHttpsServersForTesting() const {
 void HostResolverManager::SetTickClockForTesting(
     const base::TickClock* tick_clock) {
   tick_clock_ = tick_clock;
-  cache_->set_tick_clock_for_testing(tick_clock);
 }
 
 void HostResolverManager::SetMaxQueuedJobsForTesting(size_t value) {
@@ -2480,6 +2523,14 @@ void HostResolverManager::SetBaseDnsConfigForTesting(
   UpdateDNSConfig(true);
 }
 
+void HostResolverManager::SetDnsClientForTesting(
+    std::unique_ptr<DnsClient> dns_client) {
+  // Use SetDnsClientEnabled(false) to disable.
+  DCHECK(dns_client);
+
+  SetDnsClient(std::move(dns_client));
+}
+
 void HostResolverManager::SetTaskRunnerForTesting(
     scoped_refptr<base::TaskRunner> task_runner) {
   proc_task_runner_ = std::move(task_runner);
@@ -2497,6 +2548,7 @@ int HostResolverManager::Resolve(RequestImpl* request) {
   DCHECK(request->parameters().source != HostResolverSource::MULTICAST_DNS ||
          request->parameters().cache_usage ==
              ResolveHostParameters::CacheUsage::ALLOWED);
+  DCHECK(!invalidation_in_progress_);
 
   request->set_request_time(tick_clock_->NowTicks());
 
@@ -2509,7 +2561,8 @@ int HostResolverManager::Resolve(RequestImpl* request) {
       request->request_host().host(), request->parameters().dns_query_type,
       request->parameters().source, request->host_resolver_flags(),
       request->parameters().cache_usage, request->source_net_log(),
-      &effective_query_type, &effective_host_resolver_flags, &stale_info);
+      request->host_cache(), &effective_query_type,
+      &effective_host_resolver_flags, &stale_info);
   if (results.error() != ERR_DNS_CACHE_MISS ||
       request->parameters().source == HostResolverSource::LOCAL_ONLY) {
     if (results.error() == OK && !request->parameters().is_speculative) {
@@ -2539,6 +2592,7 @@ HostCache::Entry HostResolverManager::ResolveLocally(
     HostResolverFlags flags,
     ResolveHostParameters::CacheUsage cache_usage,
     const NetLogWithSource& source_net_log,
+    HostCache* cache,
     DnsQueryType* out_effective_query_type,
     HostResolverFlags* out_effective_host_resolver_flags,
     base::Optional<HostCache::EntryStaleness>* out_stale_info) {
@@ -2597,7 +2651,8 @@ HostCache::Entry HostResolverManager::ResolveLocally(
     HostCache::Key key(hostname, *out_effective_query_type,
                        *out_effective_host_resolver_flags, source);
     resolved = ServeFromCache(
-        key, cache_usage == ResolveHostParameters::CacheUsage::STALE_ALLOWED,
+        cache, key,
+        cache_usage == ResolveHostParameters::CacheUsage::STALE_ALLOWED,
         out_stale_info);
     if (resolved) {
       DCHECK(out_stale_info->has_value());
@@ -2695,13 +2750,14 @@ base::Optional<HostCache::Entry> HostResolverManager::ResolveAsIP(
 }
 
 base::Optional<HostCache::Entry> HostResolverManager::ServeFromCache(
+    HostCache* cache,
     const HostCache::Key& key,
     bool allow_stale,
     base::Optional<HostCache::EntryStaleness>* out_stale_info) {
   DCHECK(out_stale_info);
   *out_stale_info = base::nullopt;
 
-  if (!cache_.get())
+  if (!cache)
     return base::nullopt;
 
   // Local-only requests search the cache for non-local-only results.
@@ -2712,11 +2768,11 @@ base::Optional<HostCache::Entry> HostResolverManager::ServeFromCache(
   const std::pair<const HostCache::Key, HostCache::Entry>* cache_result;
   HostCache::EntryStaleness staleness;
   if (allow_stale) {
-    cache_result = cache_->LookupStale(effective_key, tick_clock_->NowTicks(),
-                                       &staleness, true /* ignore_secure */);
+    cache_result = cache->LookupStale(effective_key, tick_clock_->NowTicks(),
+                                      &staleness, true /* ignore_secure */);
   } else {
-    cache_result = cache_->Lookup(effective_key, tick_clock_->NowTicks(),
-                                  true /* ignore_secure */);
+    cache_result = cache->Lookup(effective_key, tick_clock_->NowTicks(),
+                                 true /* ignore_secure */);
     staleness = HostCache::kNotStale;
   }
   if (!cache_result)
@@ -2803,12 +2859,13 @@ base::Optional<HostCache::Entry> HostResolverManager::ServeLocalhost(
                           HostCache::Entry::SOURCE_UNKNOWN);
 }
 
-void HostResolverManager::CacheResult(const HostCache::Key& key,
+void HostResolverManager::CacheResult(HostCache* cache,
+                                      const HostCache::Key& key,
                                       const HostCache::Entry& entry,
                                       base::TimeDelta ttl) {
   // Don't cache an error unless it has a positive TTL.
-  if (cache_.get() && (entry.error() == OK || ttl > base::TimeDelta()))
-    cache_->Set(key, entry, tick_clock_->NowTicks(), ttl);
+  if (cache && (entry.error() == OK || ttl > base::TimeDelta()))
+    cache->Set(key, entry, tick_clock_->NowTicks(), ttl);
 }
 
 // Record time from Request creation until a valid DNS response.
@@ -2885,9 +2942,8 @@ void HostResolverManager::GetEffectiveParametersForRequest(
 bool HostResolverManager::IsIPv6Reachable(const NetLogWithSource& net_log) {
   // Don't bother checking if the device is on WiFi and IPv6 is assumed to not
   // work on WiFi.
-  if (assume_ipv6_failure_on_wifi_ &&
-      NetworkChangeNotifier::GetConnectionType() ==
-          NetworkChangeNotifier::CONNECTION_WIFI) {
+  if (!check_ipv6_on_wifi_ && NetworkChangeNotifier::GetConnectionType() ==
+                                  NetworkChangeNotifier::CONNECTION_WIFI) {
     return false;
   }
 
@@ -2979,6 +3035,28 @@ void HostResolverManager::AbortAllInProgressJobs() {
     dispatcher_->SetLimits(limits);
 }
 
+void HostResolverManager::SetDnsClient(std::unique_ptr<DnsClient> dns_client) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // DnsClient and config must be updated before aborting DnsTasks, since doing
+  // so may start new jobs.
+  dns_client_ = std::move(dns_client);
+  if (dns_client_ && !dns_client_->GetConfig() &&
+      num_dns_failures_ < kMaximumDnsFailures) {
+    dns_client_->SetConfig(GetBaseDnsConfig(false));
+    num_dns_failures_ = 0;
+  }
+
+  AbortDnsTasks(ERR_NETWORK_CHANGED, false /* fallback_only */);
+  DnsConfig dns_config;
+  if (!HaveDnsConfig()) {
+    // UpdateModeForHistogram() needs to know the DnsConfig when
+    // !HaveDnsConfig()
+    dns_config = GetBaseDnsConfig(false);
+  }
+  UpdateModeForHistogram(dns_config);
+}
+
 void HostResolverManager::AbortDnsTasks(int error, bool fallback_only) {
   // Aborting jobs potentially modifies |jobs_| and may even delete some jobs.
   // Create safe closures of all current jobs.
@@ -3023,8 +3101,7 @@ void HostResolverManager::OnIPAddressChanged() {
   last_ipv6_probe_time_ = base::TimeTicks();
   // Abandon all ProbeJobs.
   probe_weak_ptr_factory_.InvalidateWeakPtrs();
-  if (cache_.get())
-    cache_->OnNetworkChange();
+  InvalidateCaches();
 #if (defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)) || \
     defined(OS_FUCHSIA)
   RunLoopbackProbeJob();
@@ -3098,12 +3175,7 @@ void HostResolverManager::UpdateDNSConfig(bool config_changed) {
   use_proctask_by_default_ = false;
 
   if (config_changed) {
-    // If the DNS server has changed, existing cached info could be wrong so we
-    // have to expire our internal cache :( Note that OS level DNS caches, such
-    // as NSCD's cache should be dropped automatically by the OS when
-    // resolv.conf changes so we don't need to do anything to clear that cache.
-    if (cache_.get())
-      cache_->OnNetworkChange();
+    InvalidateCaches();
 
     // Life check to bail once |this| is deleted.
     base::WeakPtr<HostResolverManager> self = weak_ptr_factory_.GetWeakPtr();
@@ -3205,6 +3277,27 @@ void HostResolverManager::UpdateModeForHistogram(const DnsConfig& dns_config) {
     }
 #endif  // defined(OS_ANDROID)
   }
+}
+
+void HostResolverManager::InvalidateCaches() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(!invalidation_in_progress_);
+
+#if DCHECK_IS_ON()
+  base::WeakPtr<HostResolverManager> self_ptr = weak_ptr_factory_.GetWeakPtr();
+  size_t num_jobs = jobs_.size();
+#endif
+
+  invalidation_in_progress_ = true;
+  for (auto& invalidator : host_cache_invalidators_)
+    invalidator.Invalidate();
+  invalidation_in_progress_ = false;
+
+#if DCHECK_IS_ON()
+  // Sanity checks that invalidation does not have reentrancy issues.
+  DCHECK(self_ptr);
+  DCHECK_EQ(num_jobs, jobs_.size());
+#endif
 }
 
 void HostResolverManager::RequestImpl::Cancel() {

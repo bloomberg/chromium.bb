@@ -13,10 +13,10 @@
 #include "base/values.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/web_applications/bookmark_apps/test_web_app_provider.h"
+#include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/test_pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
 #include "chrome/browser/web_applications/test/test_system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
@@ -25,6 +25,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,12 +35,12 @@ namespace web_app {
 
 namespace {
 
-const char kAppUrl1[] = "chrome://system-app1";
-const char kAppUrl2[] = "chrome://system-app2";
-const char kAppUrl3[] = "chrome://system-app3";
+const GURL kAppUrl1(content::GetWebUIURL("system-app1"));
+const GURL kAppUrl2(content::GetWebUIURL("system-app2"));
+const GURL kAppUrl3(content::GetWebUIURL("system-app3"));
 
 InstallOptions GetWindowedInstallOptions() {
-  InstallOptions options(GURL(kAppUrl1), LaunchContainer::kWindow,
+  InstallOptions options(kAppUrl1, LaunchContainer::kWindow,
                          InstallSource::kSystemInstalled);
   options.add_to_applications_menu = false;
   options.add_to_desktop = false;
@@ -85,8 +86,8 @@ class SystemWebAppManagerTest : public ChromeRenderViewHostTestHarness {
     extensions::ExtensionRegistry::Get(profile())->AddEnabled(
         extensions::ExtensionBuilder("Dummy Name").SetID(id).Build());
 
-    ExtensionIdsMap extension_ids_map(profile()->GetPrefs());
-    extension_ids_map.Insert(url, id, install_source);
+    ExternallyInstalledWebAppPrefs(profile()->GetPrefs())
+        .Insert(url, id, install_source);
 
     pending_app_manager()->SimulatePreviouslyInstalledApp(url, install_source);
   }
@@ -114,11 +115,10 @@ TEST_F(SystemWebAppManagerTest, Disabled) {
   base::test::ScopedFeatureList disable_feature_list;
   disable_feature_list.InitWithFeatures({}, {features::kSystemWebApps});
 
-  SimulatePreviouslyInstalledApp(GURL(kAppUrl1),
-                                 InstallSource::kSystemInstalled);
+  SimulatePreviouslyInstalledApp(kAppUrl1, InstallSource::kSystemInstalled);
 
   base::flat_map<SystemAppType, GURL> system_apps;
-  system_apps[SystemAppType::SETTINGS] = GURL(kAppUrl1);
+  system_apps[SystemAppType::SETTINGS] = kAppUrl1;
 
   system_web_app_manager()->SetSystemApps(std::move(system_apps));
   system_web_app_manager()->Start();
@@ -129,15 +129,15 @@ TEST_F(SystemWebAppManagerTest, Disabled) {
 
   // We should try to uninstall the app that is no longer in the System App
   // list.
-  EXPECT_EQ(std::vector<GURL>({GURL(kAppUrl1)}),
+  EXPECT_EQ(std::vector<GURL>({kAppUrl1}),
             pending_app_manager()->uninstall_requests());
 }
 
 // Test that System Apps do install with the feature enabled.
 TEST_F(SystemWebAppManagerTest, Enabled) {
   base::flat_map<SystemAppType, GURL> system_apps;
-  system_apps[SystemAppType::SETTINGS] = GURL(kAppUrl1);
-  system_apps[SystemAppType::DISCOVER] = GURL(kAppUrl2);
+  system_apps[SystemAppType::SETTINGS] = kAppUrl1;
+  system_apps[SystemAppType::DISCOVER] = kAppUrl2;
 
   system_web_app_manager()->SetSystemApps(std::move(system_apps));
   system_web_app_manager()->Start();
@@ -151,13 +151,11 @@ TEST_F(SystemWebAppManagerTest, Enabled) {
 TEST_F(SystemWebAppManagerTest, UninstallAppInstalledInPreviousSession) {
   // Simulate System Apps and a regular app that were installed in the
   // previous session.
-  SimulatePreviouslyInstalledApp(GURL(kAppUrl1),
-                                 InstallSource::kSystemInstalled);
-  SimulatePreviouslyInstalledApp(GURL(kAppUrl2),
-                                 InstallSource::kSystemInstalled);
-  SimulatePreviouslyInstalledApp(GURL(kAppUrl3), InstallSource::kInternal);
+  SimulatePreviouslyInstalledApp(kAppUrl1, InstallSource::kSystemInstalled);
+  SimulatePreviouslyInstalledApp(kAppUrl2, InstallSource::kSystemInstalled);
+  SimulatePreviouslyInstalledApp(kAppUrl3, InstallSource::kInternal);
   base::flat_map<SystemAppType, GURL> system_apps;
-  system_apps[SystemAppType::SETTINGS] = GURL(kAppUrl1);
+  system_apps[SystemAppType::SETTINGS] = kAppUrl1;
 
   system_web_app_manager()->SetSystemApps(std::move(system_apps));
   system_web_app_manager()->Start();
@@ -172,7 +170,7 @@ TEST_F(SystemWebAppManagerTest, UninstallAppInstalledInPreviousSession) {
 
   // We should try to uninstall the app that is no longer in the System App
   // list.
-  EXPECT_EQ(std::vector<GURL>({GURL(kAppUrl2)}),
+  EXPECT_EQ(std::vector<GURL>({kAppUrl2}),
             pending_app_manager()->uninstall_requests());
 }
 
@@ -181,7 +179,7 @@ TEST_F(SystemWebAppManagerTest, AlwaysUpdate) {
       SystemWebAppManager::UpdatePolicy::kAlwaysUpdate);
 
   base::flat_map<SystemAppType, GURL> system_apps;
-  system_apps[SystemAppType::SETTINGS] = GURL(kAppUrl1);
+  system_apps[SystemAppType::SETTINGS] = kAppUrl1;
   system_web_app_manager()->SetSystemApps(system_apps);
 
   system_web_app_manager()->set_current_version(base::Version("1.0.0.0"));
@@ -192,7 +190,7 @@ TEST_F(SystemWebAppManagerTest, AlwaysUpdate) {
 
   // Create another app. The version hasn't changed but the app should still
   // install.
-  system_apps[SystemAppType::DISCOVER] = GURL(kAppUrl2);
+  system_apps[SystemAppType::DISCOVER] = kAppUrl2;
   system_web_app_manager()->SetSystemApps(system_apps);
   system_web_app_manager()->Start();
 
@@ -222,7 +220,7 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
       SystemWebAppManager::UpdatePolicy::kOnVersionChange);
 
   base::flat_map<SystemAppType, GURL> system_apps;
-  system_apps[SystemAppType::SETTINGS] = GURL(kAppUrl1);
+  system_apps[SystemAppType::SETTINGS] = kAppUrl1;
   system_web_app_manager()->SetSystemApps(system_apps);
 
   system_web_app_manager()->set_current_version(base::Version("1.0.0.0"));
@@ -233,7 +231,7 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
 
   // Create another app. The version hasn't changed so the install won't
   // process.
-  system_apps[SystemAppType::DISCOVER] = GURL(kAppUrl2);
+  system_apps[SystemAppType::DISCOVER] = kAppUrl2;
   system_web_app_manager()->SetSystemApps(system_apps);
   system_web_app_manager()->Start();
 

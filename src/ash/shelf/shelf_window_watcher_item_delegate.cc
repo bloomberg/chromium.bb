@@ -16,8 +16,10 @@
 #include "components/strings/grit/components_strings.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event_constants.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/controls/menu/menu_config.h"
+#include "ui/views/vector_icons.h"
 #include "ui/wm/core/window_animations.h"
 
 namespace ash {
@@ -25,7 +27,7 @@ namespace ash {
 namespace {
 
 // Close command id; avoids colliding with ShelfContextMenuModel command ids.
-const int kCloseCommandId = ShelfContextMenuModel::MENU_LOCAL_END + 1;
+const int kCloseCommandId = ShelfContextMenuModel::MENU_ASH_END + 1;
 
 }  // namespace
 
@@ -47,29 +49,28 @@ void ShelfWindowWatcherItemDelegate::ItemSelected(
   if (wm::IsActiveWindow(window_)) {
     if (event && event->type() == ui::ET_KEY_RELEASED) {
       ::wm::AnimateWindow(window_, ::wm::WINDOW_ANIMATION_TYPE_BOUNCE);
-      std::move(callback).Run(SHELF_ACTION_NONE, base::nullopt);
+      std::move(callback).Run(SHELF_ACTION_NONE, {});
       return;
     }
     window_->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
-    std::move(callback).Run(SHELF_ACTION_WINDOW_MINIMIZED, base::nullopt);
+    std::move(callback).Run(SHELF_ACTION_WINDOW_MINIMIZED, {});
     return;
   }
   wm::ActivateWindow(window_);
-  std::move(callback).Run(SHELF_ACTION_WINDOW_ACTIVATED, base::nullopt);
+  std::move(callback).Run(SHELF_ACTION_WINDOW_ACTIVATED, {});
 }
 
-void ShelfWindowWatcherItemDelegate::GetContextMenuItems(
+void ShelfWindowWatcherItemDelegate::GetContextMenu(
     int64_t display_id,
-    GetContextMenuItemsCallback callback) {
-  // Show a default context menu with just an extra close item and separator.
-  ash::MenuItemList items;
-  ash::mojom::MenuItemPtr close(ash::mojom::MenuItem::New());
-  close->type = ui::MenuModel::TYPE_COMMAND;
-  close->command_id = kCloseCommandId;
-  close->label = l10n_util::GetStringUTF16(IDS_CLOSE);
-  close->enabled = true;
-  items.push_back(std::move(close));
-  std::move(callback).Run(std::move(items));
+    GetContextMenuCallback callback) {
+  auto menu = std::make_unique<ShelfContextMenuModel>(this, display_id);
+  // Show a default context menu with just an extra close item.
+  const views::MenuConfig& menu_config = views::MenuConfig::instance();
+  menu->AddItemWithStringIdAndIcon(
+      kCloseCommandId, IDS_CLOSE,
+      gfx::CreateVectorIcon(views::kCloseIcon, menu_config.touchable_icon_size,
+                            menu_config.touchable_icon_color));
+  std::move(callback).Run(std::move(menu));
 }
 
 void ShelfWindowWatcherItemDelegate::ExecuteCommand(bool from_context_menu,

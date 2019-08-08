@@ -6,12 +6,16 @@
 
 #include "base/logging.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
+#include "chrome/browser/performance_manager/graph/graph_impl.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 
 namespace performance_manager {
 
-ProcessNodeImpl::ProcessNodeImpl(Graph* graph)
-    : CoordinationUnitInterface(graph) {
+ProcessNodeImplObserver::ProcessNodeImplObserver() = default;
+ProcessNodeImplObserver::~ProcessNodeImplObserver() = default;
+
+ProcessNodeImpl::ProcessNodeImpl(GraphImpl* graph)
+    : TypedNodeBase(graph), binding_(this) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -35,6 +39,13 @@ void ProcessNodeImpl::SetCPUUsage(double cpu_usage) {
   cpu_usage_ = cpu_usage;
 }
 
+void ProcessNodeImpl::Bind(
+    resource_coordinator::mojom::ProcessCoordinationUnitRequest request) {
+  if (binding_.is_bound())
+    binding_.Close();
+  binding_.Bind(std::move(request));
+}
+
 void ProcessNodeImpl::SetExpectedTaskQueueingDuration(
     base::TimeDelta duration) {
   expected_task_queueing_duration_.SetAndNotify(this, duration);
@@ -54,13 +65,16 @@ void ProcessNodeImpl::SetProcessExitStatus(int32_t exit_status) {
 
   // Close the process handle to kill the zombie.
   process_.Close();
+
+  // No more message should be received from this process.
+  binding_.Close();
 }
 
 void ProcessNodeImpl::SetProcess(base::Process process,
                                  base::Time launch_time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(process.IsValid());
-  // Either this is the initial process associated with this process CU,
+  // Either this is the initial process associated with this process node,
   // or it's a subsequent process. In the latter case, there must have been
   // an exit status associated with the previous process.
   DCHECK(!process_.IsValid() || exit_status_.has_value());
@@ -129,5 +143,8 @@ void ProcessNodeImpl::LeaveGraph() {
   // All child frames should have been removed before the process is removed.
   DCHECK(frame_nodes_.empty());
 }
+
+ProcessNodeImpl::ObserverDefaultImpl::ObserverDefaultImpl() = default;
+ProcessNodeImpl::ObserverDefaultImpl::~ObserverDefaultImpl() = default;
 
 }  // namespace performance_manager

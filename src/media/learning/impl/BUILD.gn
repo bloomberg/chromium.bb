@@ -50,6 +50,7 @@ component("impl") {
   deps = [
     "//base",
     "//services/metrics/public/cpp:metrics_cpp",
+    "//services/metrics/public/cpp:ukm_builders",
   ]
 
   public_deps = [
@@ -80,6 +81,7 @@ source_set("unit_tests") {
   deps = [
     ":impl",
     "//base/test:test_support",
+    "//components/ukm:test_support",
     "//media:test_support",
     "//media/learning/impl",
     "//testing/gtest",

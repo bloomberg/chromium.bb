@@ -35,13 +35,13 @@ bool TabletModeBackdropDelegateImpl::HasBackdrop(aura::Window* window) {
   if (wm::GetWindowState(window)->IsPip())
     return false;
 
-  if (!Shell::Get()->IsSplitViewModeActive())
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  if (!split_view_controller->InSplitViewMode())
     return true;
 
   // If the split view mode is active, we should place the backdrop below the
   // snapped window whose window stacking order is lower.
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
   aura::Window* left_window = split_view_controller->left_window();
   aura::Window* right_window = split_view_controller->right_window();
   if (window == left_window && IsWindowAbove(window, right_window))

@@ -22,18 +22,16 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_match_classification.h"
 #include "components/omnibox/browser/history_provider.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/scored_history_match.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/url_formatter/url_fixer.h"
 #include "url/gurl.h"
 
-// static
-const size_t AutocompleteProvider::kMaxMatches = 3;
-
 AutocompleteProvider::AutocompleteProvider(Type type)
-    : done_(true),
-      type_(type) {
-}
+    : provider_max_matches_(OmniboxFieldTrial::GetProviderMaxMatches(type)),
+      done_(true),
+      type_(type) {}
 
 // static
 const char* AutocompleteProvider::TypeToString(Type type) {
@@ -87,7 +85,7 @@ ACMatchClassifications AutocompleteProvider::ClassifyAllMatchesInString(
   if (text.empty())
     return original_class;
 
-  TermMatches term_matches = FindTermMatches(find_text, text, true, false);
+  TermMatches term_matches = FindTermMatches(find_text, text);
 
   ACMatchClassifications classifications;
   if (text_is_search_query) {
@@ -214,10 +212,17 @@ AutocompleteProvider::FixupReturn AutocompleteProvider::FixupUserInput(
   const size_t num_output_slashes =
       (last_output_nonslash == base::string16::npos) ?
       output.length() : (output.length() - 1 - last_output_nonslash);
-  if (num_output_slashes < num_input_slashes)
+  if (num_output_slashes < num_input_slashes) {
     output.append(num_input_slashes - num_output_slashes, '/');
-  else if (num_output_slashes > num_input_slashes)
+    // If we already have double-slash(//), do not append to double-slash.
+    // Restrict to case of "chrome://version" until we find other cases.
+    if (base::StartsWith(output, base::ASCIIToUTF16("chrome://version"),
+                         base::CompareCase::SENSITIVE) &&
+        output.substr(output.length() - 2) == base::ASCIIToUTF16("//"))
+      output.erase(output.length() - 1);
+  } else if (num_output_slashes > num_input_slashes) {
     output.erase(output.length() - num_output_slashes + num_input_slashes);
+  }
   if (output.empty())
     return failed;
 
@@ -250,15 +255,16 @@ bool AutocompleteProvider::InExplicitExperimentalKeywordMode(
   // keyword mode intentionally, as we use this routine to e.g. filter
   // all but keyword results. Currently we assume that the user entered
   // keyword mode intentionally with all entry methods except with a
-  // space. However, if the user has typed a char past the space, we
-  // again assume keyword mode.
+  // space (and disregard entry method during a backspace). However, if the
+  // user has typed a char past the space, we again assume keyword mode.
   return OmniboxFieldTrial::IsExperimentalKeywordModeEnabled() &&
          input.prefer_keyword() &&
          base::StartsWith(input.text(), keyword,
                           base::CompareCase::SENSITIVE) &&
-         ((input.keyword_mode_entry_method() !=
-               metrics::OmniboxEventProto::SPACE_AT_END &&
-           input.keyword_mode_entry_method() !=
-               metrics::OmniboxEventProto::SPACE_IN_MIDDLE) ||
+         (((input.keyword_mode_entry_method() !=
+                metrics::OmniboxEventProto::SPACE_AT_END &&
+            input.keyword_mode_entry_method() !=
+                metrics::OmniboxEventProto::SPACE_IN_MIDDLE) &&
+           !input.prevent_inline_autocomplete()) ||
           input.text().size() > keyword.size() + 1);
 }

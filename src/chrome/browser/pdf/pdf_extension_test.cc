@@ -19,8 +19,10 @@
 #include "base/run_loop.h"
 #include "base/strings/pattern.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
 #include "base/test/test_timeouts.h"
+#include "base/thread_annotations.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -41,6 +43,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/download/public/common/download_item.h"
@@ -65,10 +68,12 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
+#include "content/public/common/mime_handler_view_mode.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/hit_test_region_observer.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/manifest_handlers/mime_types_handler.h"
 #include "extensions/test/result_catcher.h"
@@ -98,6 +103,19 @@ const int kDefaultKeyModifier = blink::WebInputEvent::kMetaKey;
 #else
 const int kDefaultKeyModifier = blink::WebInputEvent::kControlKey;
 #endif
+
+// Calling PluginService::GetPlugins ensures that LoadPlugins is called
+// internally. This is an asynchronous task and this method uses a run loop to
+// wait for the loading task to complete.
+void WaitForPluginServiceToLoad() {
+  base::RunLoop run_loop;
+  content::PluginService::GetPluginsCallback callback = base::BindOnce(
+      [](base::RepeatingClosure quit,
+         const std::vector<content::WebPluginInfo>& unused) { quit.Run(); },
+      run_loop.QuitClosure());
+  content::PluginService::GetInstance()->GetPlugins(std::move(callback));
+  run_loop.Run();
+}
 
 // Check if the |actual| string matches the string or the string pattern in
 // |pattern| and print a readable message if it does not match.
@@ -825,8 +843,9 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkPermissions) {
 
   // chrome://favicon links should be allowed for PDFs, while chrome://settings
   // links should not.
-  GURL valid_link_url("chrome://favicon/https://www.google.ca/");
-  GURL invalid_link_url("chrome://settings");
+  GURL valid_link_url(std::string(chrome::kChromeUIFaviconURL) +
+                      "https://www.google.ca/");
+  GURL invalid_link_url(chrome::kChromeUISettingsURL);
 
   GURL unfiltered_valid_link_url(valid_link_url);
   content::RenderProcessHost* rph =
@@ -1236,6 +1255,12 @@ class PDFExtensionLinkClickTest : public PDFExtensionTest {
     guest_contents_ = guest_contents;
   }
 
+  content::WebContents* GetWebContentsForInputRouting() {
+    return content::MimeHandlerViewMode::UsesCrossProcessFrame()
+               ? guest_contents_
+               : GetActiveWebContents();
+  }
+
  private:
   WebContents* guest_contents_;
 };
@@ -1248,9 +1273,9 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, CtrlLeft) {
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_TAB_ADDED,
       content::NotificationService::AllSources());
-  content::SimulateMouseClickAt(web_contents, kDefaultKeyModifier,
-                                blink::WebMouseEvent::Button::kLeft,
-                                GetLinkPosition());
+  content::SimulateMouseClickAt(
+      GetWebContentsForInputRouting(), kDefaultKeyModifier,
+      blink::WebMouseEvent::Button::kLeft, GetLinkPosition());
   observer.Wait();
 
   int tab_count = browser()->tab_strip_model()->count();
@@ -1276,7 +1301,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, Middle) {
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_TAB_ADDED,
       content::NotificationService::AllSources());
-  content::SimulateMouseClickAt(web_contents, 0,
+  content::SimulateMouseClickAt(GetWebContentsForInputRouting(), 0,
                                 blink::WebMouseEvent::Button::kMiddle,
                                 GetLinkPosition());
   observer.Wait();
@@ -1306,7 +1331,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, CtrlShiftLeft) {
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_TAB_ADDED,
       content::NotificationService::AllSources());
-  content::SimulateMouseClickAt(web_contents, modifiers,
+  content::SimulateMouseClickAt(GetWebContentsForInputRouting(), modifiers,
                                 blink::WebMouseEvent::Button::kLeft,
                                 GetLinkPosition());
   observer.Wait();
@@ -1329,9 +1354,9 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, ShiftMiddle) {
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_TAB_ADDED,
       content::NotificationService::AllSources());
-  content::SimulateMouseClickAt(web_contents, blink::WebInputEvent::kShiftKey,
-                                blink::WebMouseEvent::Button::kMiddle,
-                                GetLinkPosition());
+  content::SimulateMouseClickAt(
+      GetWebContentsForInputRouting(), blink::WebInputEvent::kShiftKey,
+      blink::WebMouseEvent::Button::kMiddle, GetLinkPosition());
   observer.Wait();
 
   int tab_count = browser()->tab_strip_model()->count();
@@ -1354,9 +1379,9 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, ShiftLeft) {
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_BROWSER_OPENED,
       content::NotificationService::AllSources());
-  content::SimulateMouseClickAt(web_contents, blink::WebInputEvent::kShiftKey,
-                                blink::WebMouseEvent::Button::kLeft,
-                                GetLinkPosition());
+  content::SimulateMouseClickAt(
+      GetWebContentsForInputRouting(), blink::WebInputEvent::kShiftKey,
+      blink::WebMouseEvent::Button::kLeft, GetLinkPosition());
   observer.Wait();
 
   ASSERT_EQ(2U, chrome::GetTotalBrowserCount());
@@ -1400,9 +1425,9 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, OpenPDFWithReplaceState) {
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_TAB_ADDED,
       content::NotificationService::AllSources());
-  content::SimulateMouseClickAt(web_contents, kDefaultKeyModifier,
-                                blink::WebMouseEvent::Button::kLeft,
-                                GetLinkPosition());
+  content::SimulateMouseClickAt(
+      GetWebContentsForInputRouting(), kDefaultKeyModifier,
+      blink::WebMouseEvent::Button::kLeft, GetLinkPosition());
   observer.Wait();
 
   // We should have two tabs now. One with the PDF and the second for
@@ -1442,6 +1467,12 @@ class PDFExtensionInternalLinkClickTest : public PDFExtensionTest {
     return link_position;
   }
 
+  content::WebContents* GetWebContentsForInputRouting() {
+    return content::MimeHandlerViewMode::UsesCrossProcessFrame()
+               ? guest_contents_
+               : GetActiveWebContents();
+  }
+
  private:
   WebContents* guest_contents_;
 };
@@ -1454,9 +1485,9 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionInternalLinkClickTest, CtrlLeft) {
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_TAB_ADDED,
       content::NotificationService::AllSources());
-  content::SimulateMouseClickAt(web_contents, kDefaultKeyModifier,
-                                blink::WebMouseEvent::Button::kLeft,
-                                GetLinkPosition());
+  content::SimulateMouseClickAt(
+      GetWebContentsForInputRouting(), kDefaultKeyModifier,
+      blink::WebMouseEvent::Button::kLeft, GetLinkPosition());
   observer.Wait();
 
   int tab_count = browser()->tab_strip_model()->count();
@@ -1483,7 +1514,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionInternalLinkClickTest, Middle) {
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_TAB_ADDED,
       content::NotificationService::AllSources());
-  content::SimulateMouseClickAt(web_contents, 0,
+  content::SimulateMouseClickAt(GetWebContentsForInputRouting(), 0,
                                 blink::WebMouseEvent::Button::kMiddle,
                                 GetLinkPosition());
   observer.Wait();
@@ -1514,9 +1545,9 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionInternalLinkClickTest, ShiftLeft) {
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_BROWSER_OPENED,
       content::NotificationService::AllSources());
-  content::SimulateMouseClickAt(web_contents, blink::WebInputEvent::kShiftKey,
-                                blink::WebMouseEvent::Button::kLeft,
-                                GetLinkPosition());
+  content::SimulateMouseClickAt(
+      GetWebContentsForInputRouting(), blink::WebInputEvent::kShiftKey,
+      blink::WebMouseEvent::Button::kLeft, GetLinkPosition());
   observer.Wait();
 
   ASSERT_EQ(2U, chrome::GetTotalBrowserCount());
@@ -1566,13 +1597,13 @@ class PDFExtensionClipboardTest : public PDFExtensionTest {
   }
 
   void ClickLeftSideOfEditableComboBox() {
-    content::SimulateMouseClickAt(GetActiveWebContents(), 0,
+    content::SimulateMouseClickAt(GetWebContentsForInputRouting(), 0,
                                   blink::WebMouseEvent::Button::kLeft,
                                   GetEditableComboBoxLeftPosition());
   }
 
   void TypeHello() {
-    auto* web_contents = GetActiveWebContents();
+    auto* web_contents = GetWebContentsForInputRouting();
     content::SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('H'),
                               ui::DomCode::US_H, ui::VKEY_H, false, false,
                               false, false);
@@ -1593,28 +1624,29 @@ class PDFExtensionClipboardTest : public PDFExtensionTest {
   // Presses the left arrow key.
   void PressLeftArrow() {
     content::SimulateKeyPressWithoutChar(
-        GetActiveWebContents(), ui::DomKey::ARROW_LEFT, ui::DomCode::ARROW_LEFT,
-        ui::VKEY_LEFT, false, false, false, false);
+        GetWebContentsForInputRouting(), ui::DomKey::ARROW_LEFT,
+        ui::DomCode::ARROW_LEFT, ui::VKEY_LEFT, false, false, false, false);
   }
 
   // Presses down shift, presses the left arrow, and lets go of shift.
   void PressShiftLeftArrow() {
-    content::SimulateKeyPressWithoutChar(
-        GetActiveWebContents(), ui::DomKey::ARROW_LEFT, ui::DomCode::ARROW_LEFT,
-        ui::VKEY_LEFT, false, /*shift=*/true, false, false);
+    content::SimulateKeyPressWithoutChar(GetWebContentsForInputRouting(),
+                                         ui::DomKey::ARROW_LEFT,
+                                         ui::DomCode::ARROW_LEFT, ui::VKEY_LEFT,
+                                         false, /*shift=*/true, false, false);
   }
 
   // Presses the right arrow key.
   void PressRightArrow() {
     content::SimulateKeyPressWithoutChar(
-        GetActiveWebContents(), ui::DomKey::ARROW_RIGHT,
+        GetWebContentsForInputRouting(), ui::DomKey::ARROW_RIGHT,
         ui::DomCode::ARROW_RIGHT, ui::VKEY_RIGHT, false, false, false, false);
   }
 
   // Presses down shift, presses the right arrow, and lets go of shift.
   void PressShiftRightArrow() {
     content::SimulateKeyPressWithoutChar(
-        GetActiveWebContents(), ui::DomKey::ARROW_RIGHT,
+        GetWebContentsForInputRouting(), ui::DomKey::ARROW_RIGHT,
         ui::DomCode::ARROW_RIGHT, ui::VKEY_RIGHT, false, /*shift=*/true, false,
         false);
   }
@@ -1631,8 +1663,14 @@ class PDFExtensionClipboardTest : public PDFExtensionTest {
   // SimulateKeyPress(). Using IDC_COPY does not work on Mac in browser_tests.
   void SendCopyCommandAndCheckCopyPasteClipboard(const std::string& expected) {
     content::RunAllPendingInMessageLoop();
-    GetActiveWebContents()->Copy();
+    GetWebContentsForInputRouting()->Copy();
     CheckClipboard(ui::CLIPBOARD_TYPE_COPY_PASTE, expected);
+  }
+
+  content::WebContents* GetWebContentsForInputRouting() {
+    return content::MimeHandlerViewMode::UsesCrossProcessFrame()
+               ? guest_contents_
+               : GetActiveWebContents();
   }
 
  private:
@@ -1743,7 +1781,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionClipboardTest,
   // Press shift + right arrow 3 times. Holding down shift in between.
   {
     content::ScopedSimulateModifierKeyPress hold_shift(
-        GetActiveWebContents(), false, true, false, false);
+        GetWebContentsForInputRouting(), false, true, false, false);
     hold_shift.KeyPressWithoutChar(ui::DomKey::ARROW_RIGHT,
                                    ui::DomCode::ARROW_RIGHT, ui::VKEY_RIGHT);
     CheckSelectionClipboard("H");
@@ -1774,7 +1812,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionClipboardTest, CombinedShiftArrowPresses) {
   // Press shift + left arrow 3 times. Holding down shift in between.
   {
     content::ScopedSimulateModifierKeyPress hold_shift(
-        GetActiveWebContents(), false, true, false, false);
+        GetWebContentsForInputRouting(), false, true, false, false);
     hold_shift.KeyPressWithoutChar(ui::DomKey::ARROW_LEFT,
                                    ui::DomCode::ARROW_LEFT, ui::VKEY_LEFT);
     CheckSelectionClipboard("L");
@@ -1790,7 +1828,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionClipboardTest, CombinedShiftArrowPresses) {
   // Press shift + right arrow 2 times. Holding down shift in between.
   {
     content::ScopedSimulateModifierKeyPress hold_shift(
-        GetActiveWebContents(), false, true, false, false);
+        GetWebContentsForInputRouting(), false, true, false, false);
     hold_shift.KeyPressWithoutChar(ui::DomKey::ARROW_RIGHT,
                                    ui::DomCode::ARROW_RIGHT, ui::VKEY_RIGHT);
     CheckSelectionClipboard("EL");
@@ -2038,6 +2076,13 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionHitTestTest, ContextMenuCoordinates) {
 // The plugin document and the mime handler should both use the same background
 // color.
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, BackgroundColor) {
+  if (content::MimeHandlerViewMode::UsesCrossProcessFrame()) {
+    // The background color for plugins is injected when the first response
+    // is intercepted, at which point not all the plugins have loaded. This line
+    // ensures that the PDF plugin has loaded and the right background color is
+    // beign used.
+    WaitForPluginServiceToLoad();
+  }
   WebContents* guest_contents =
       LoadPdfGetGuestContents(embedded_test_server()->GetURL("/pdf/test.pdf"));
   ASSERT_TRUE(guest_contents);
@@ -2083,6 +2128,11 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, ServiceWorkerInterception) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, MAYBE_EmbeddedPdfGetsFocus) {
+  if (content::MimeHandlerViewMode::UsesCrossProcessFrame()) {
+    // This test verifies focus for a BrowserPlugin and is not relevant with
+    // MHVICPF since no BrowserPlugin is created with this flag.
+    return;
+  }
   GURL test_iframe_url(embedded_test_server()->GetURL(
       "/pdf/test-offset-cross-site-iframe.html"));
   ui_test_utils::NavigateToURL(browser(), test_iframe_url);
@@ -2127,4 +2177,93 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, MAYBE_EmbeddedPdfGetsFocus) {
         FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
     run_loop.Run();
   }
+}
+
+// A helper for waiting for the first request for |url_to_intercept|.
+class RequestWaiter {
+ public:
+  // Start intercepting requests to |url_to_intercept|.
+  explicit RequestWaiter(const GURL& url_to_intercept)
+      : url_to_intercept_(url_to_intercept),
+        interceptor_(base::BindRepeating(&RequestWaiter::InterceptorCallback,
+                                         base::Unretained(this))) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    DCHECK(url_to_intercept.is_valid());
+  }
+
+  void WaitForRequest() {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    if (!IsAlreadyIntercepted())
+      run_loop_.Run();
+    DCHECK(IsAlreadyIntercepted());
+  }
+
+ private:
+  bool InterceptorCallback(
+      content::URLLoaderInterceptor::RequestParams* params) {
+    // This method may be called either on the IO or UI thread.
+    DCHECK(params);
+
+    base::AutoLock lock(lock_);
+    if (url_to_intercept_ != params->url_request.url || already_intercepted_)
+      return false;
+
+    already_intercepted_ = true;
+    run_loop_.Quit();
+    return false;
+  }
+
+  bool IsAlreadyIntercepted() {
+    base::AutoLock lock(lock_);
+    return already_intercepted_;
+  }
+
+  const GURL url_to_intercept_;
+  content::URLLoaderInterceptor interceptor_;
+  base::RunLoop run_loop_;
+
+  base::Lock lock_;
+  bool already_intercepted_ GUARDED_BY(lock_) = false;
+
+  DISALLOW_COPY_AND_ASSIGN(RequestWaiter);
+};
+
+// This is a regression test for a problem where DidStopLoading didn't get
+// propagated from a remote frame into the main frame.  See also
+// https://crbug.com/964364.
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DidStopLoading) {
+  // Prepare to wait for requests for the main page of the MimeHandlerView for
+  // PDFs.
+  RequestWaiter interceptor(
+      GURL("chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/index.html"));
+
+  // Navigate to a page with:
+  //   <embed type="application/pdf" src="test.pdf"></embed>
+  //   <iframe src="/hung"></iframe>
+  // Afterwards, the main page should be still loading because of the hung
+  // subframe (but the subframe for the OOPIF-based PDF MimeHandlerView might or
+  // might not be created at this point).
+  GURL url = embedded_test_server()->GetURL(
+      "/pdf/pdf_embed_with_hung_sibling_subframe.html");
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url, WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);  // Don't wait for completion.
+
+  // Wait for the request for the MimeHandlerView extension.  Afterwards, the
+  // main page should be still loading because of
+  // 1) the MimeHandlerView frame is loading
+  // 2) the hung subframe is loading.
+  interceptor.WaitForRequest();
+
+  // Remove the hung subframe.  Afterwards the main page should stop loading as
+  // soon as the MimeHandlerView frame stops loading (assumming we have not bugs
+  // similar to https://crbug.com/964364).
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(content::ExecJs(
+      web_contents, "document.getElementById('hung_subframe').remove();"));
+
+  // MAIN VERIFICATION: Wait for the main frame to report that is has stopped
+  // loading.
+  content::WaitForLoadStop(web_contents);
 }

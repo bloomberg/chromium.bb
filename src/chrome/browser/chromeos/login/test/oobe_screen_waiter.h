@@ -23,15 +23,15 @@ class OobeUI;
 class OobeScreenWaiter : public OobeUI::Observer,
                          public test::TestConditionWaiter {
  public:
-  explicit OobeScreenWaiter(OobeScreen target_screen);
+  explicit OobeScreenWaiter(OobeScreenId target_screen);
   ~OobeScreenWaiter() override;
 
   void set_no_assert_last_screen() { assert_last_screen_ = false; }
   void set_assert_next_screen() { assert_next_screen_ = true; }
 
   // OobeUI::Observer implementation:
-  void OnCurrentScreenChanged(OobeScreen current_screen,
-                              OobeScreen new_screen) override;
+  void OnCurrentScreenChanged(OobeScreenId current_screen,
+                              OobeScreenId new_screen) override;
   void OnDestroyingOobeUI() override;
 
   // TestConditionWaiter;
@@ -43,7 +43,7 @@ class OobeScreenWaiter : public OobeUI::Observer,
   OobeUI* GetOobeUI();
   void EndWait();
 
-  const OobeScreen target_screen_;
+  const OobeScreenId target_screen_;
 
   State state_ = State::IDLE;
 

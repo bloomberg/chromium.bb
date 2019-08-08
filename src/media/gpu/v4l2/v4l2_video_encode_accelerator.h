@@ -50,9 +50,8 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   // VideoEncodeAccelerator implementation.
   VideoEncodeAccelerator::SupportedProfiles GetSupportedProfiles() override;
   bool Initialize(const Config& config, Client* client) override;
-  void Encode(const scoped_refptr<VideoFrame>& frame,
-              bool force_keyframe) override;
-  void UseOutputBitstreamBuffer(const BitstreamBuffer& buffer) override;
+  void Encode(scoped_refptr<VideoFrame> frame, bool force_keyframe) override;
+  void UseOutputBitstreamBuffer(BitstreamBuffer buffer) override;
   void RequestEncodingParametersChange(uint32_t bitrate,
                                        uint32_t framerate) override;
   void Destroy() override;
@@ -127,7 +126,7 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   // Encoding tasks, to be run on encode_thread_.
   //
 
-  void EncodeTask(const scoped_refptr<VideoFrame>& frame, bool force_keyframe);
+  void EncodeTask(scoped_refptr<VideoFrame> frame, bool force_keyframe);
 
   // Add a BitstreamBuffer to the queue of buffers ready to be used for encoder
   // output.

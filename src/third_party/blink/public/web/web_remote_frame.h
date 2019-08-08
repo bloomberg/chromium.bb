@@ -14,6 +14,7 @@
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/platform/web_scroll_types.h"
 #include "third_party/blink/public/web/web_frame.h"
+#include "ui/events/types/scroll_types.h"
 #include "v8/include/v8.h"
 
 namespace cc {
@@ -148,8 +149,9 @@ class WebRemoteFrame : public WebFrame {
 
   // Continues to bubble logical scroll that reached the local root in the child
   // frame's process. Scroll bubbling continues from the frame owner element.
-  virtual void BubbleLogicalScroll(WebScrollDirection direction,
-                                   WebScrollGranularity granularity) = 0;
+  virtual void BubbleLogicalScroll(
+      WebScrollDirection direction,
+      ui::input_types::ScrollGranularity granularity) = 0;
 
   virtual void IntrinsicSizingInfoChanged(const WebIntrinsicSizingInfo&) = 0;
 

@@ -8,6 +8,7 @@
 #include "ios/chrome/browser/main/browser.h"
 
 #include "base/macros.h"
+#include "base/observer_list.h"
 
 class TestBrowser : public Browser {
  public:
@@ -26,11 +27,14 @@ class TestBrowser : public Browser {
   ios::ChromeBrowserState* GetBrowserState() const override;
   TabModel* GetTabModel() const override;
   WebStateList* GetWebStateList() const override;
+  void AddObserver(BrowserObserver* observer) override;
+  void RemoveObserver(BrowserObserver* observer) override;
 
  private:
   ios::ChromeBrowserState* browser_state_ = nullptr;
   TabModel* tab_model_ = nil;
   WebStateList* web_state_list_ = nullptr;
+  base::ObserverList<BrowserObserver, /* check_empty= */ true> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowser);
 };

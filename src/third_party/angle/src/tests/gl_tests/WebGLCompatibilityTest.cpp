@@ -67,9 +67,8 @@ class WebGLCompatibilityTest : public ANGLETest
         setWebGLCompatibilityEnabled(true);
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
         glRequestExtensionANGLE = reinterpret_cast<PFNGLREQUESTEXTENSIONANGLEPROC>(
             eglGetProcAddress("glRequestExtensionANGLE"));
     }
@@ -120,11 +119,12 @@ void main()
         glUseProgram(samplingProgram.get());
 
         // Need RGBA8 renderbuffers for enough precision on the readback
-        if (extensionRequestable("GL_OES_rgb8_rgba8"))
+        if (IsGLExtensionRequestable("GL_OES_rgb8_rgba8"))
         {
             glRequestExtensionANGLE("GL_OES_rgb8_rgba8");
         }
-        ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_OES_rgb8_rgba8") && getClientMajorVersion() < 3);
+        ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_OES_rgb8_rgba8") &&
+                           getClientMajorVersion() < 3);
         ASSERT_GL_NO_ERROR();
 
         GLRenderbuffer rbo;
@@ -150,7 +150,7 @@ void main()
             }
             else
             {
-                ASSERT_TRUE(extensionEnabled("GL_EXT_texture_storage"));
+                ASSERT_TRUE(IsGLExtensionEnabled("GL_EXT_texture_storage"));
                 glTexStorage2DEXT(GL_TEXTURE_2D, 1, internalFormat, 1, 1);
             }
             glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 1, 1, format, type, textureData);
@@ -295,13 +295,13 @@ class WebGL2CompatibilityTest : public WebGLCompatibilityTest
 // the GL extension should always be present
 TEST_P(WebGLCompatibilityTest, ExtensionStringExposed)
 {
-    EXPECT_TRUE(extensionEnabled("GL_ANGLE_webgl_compatibility"));
+    EXPECT_TRUE(IsGLExtensionEnabled("GL_ANGLE_webgl_compatibility"));
 }
 
 // Verify that all extension entry points are available
 TEST_P(WebGLCompatibilityTest, EntryPoints)
 {
-    if (extensionEnabled("GL_ANGLE_request_extension"))
+    if (IsGLExtensionEnabled("GL_ANGLE_request_extension"))
     {
         EXPECT_NE(nullptr, eglGetProcAddress("glRequestExtensionANGLE"));
     }
@@ -339,7 +339,7 @@ TEST_P(WebGLCompatibilityTest, EnableExtensionUintIndices)
         return;
     }
 
-    EXPECT_FALSE(extensionEnabled("GL_OES_element_index_uint"));
+    EXPECT_FALSE(IsGLExtensionEnabled("GL_OES_element_index_uint"));
 
     GLBuffer indexBuffer;
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer.get());
@@ -354,11 +354,11 @@ TEST_P(WebGLCompatibilityTest, EnableExtensionUintIndices)
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
     EXPECT_GL_ERROR(GL_INVALID_ENUM);
 
-    if (extensionRequestable("GL_OES_element_index_uint"))
+    if (IsGLExtensionRequestable("GL_OES_element_index_uint"))
     {
         glRequestExtensionANGLE("GL_OES_element_index_uint");
         EXPECT_GL_NO_ERROR();
-        EXPECT_TRUE(extensionEnabled("GL_OES_element_index_uint"));
+        EXPECT_TRUE(IsGLExtensionEnabled("GL_OES_element_index_uint"));
 
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
         EXPECT_GL_NO_ERROR();
@@ -368,18 +368,18 @@ TEST_P(WebGLCompatibilityTest, EnableExtensionUintIndices)
 // Test enabling the GL_OES_standard_derivatives extension
 TEST_P(WebGLCompatibilityTest, EnableExtensionStandardDerivitives)
 {
-    EXPECT_FALSE(extensionEnabled("GL_OES_standard_derivatives"));
+    EXPECT_FALSE(IsGLExtensionEnabled("GL_OES_standard_derivatives"));
 
     constexpr char kFS[] =
         R"(#extension GL_OES_standard_derivatives : require
 void main() { gl_FragColor = vec4(dFdx(vec2(1.0, 1.0)).x, 1, 0, 1); })";
     ASSERT_EQ(0u, CompileShader(GL_FRAGMENT_SHADER, kFS));
 
-    if (extensionRequestable("GL_OES_standard_derivatives"))
+    if (IsGLExtensionRequestable("GL_OES_standard_derivatives"))
     {
         glRequestExtensionANGLE("GL_OES_standard_derivatives");
         EXPECT_GL_NO_ERROR();
-        EXPECT_TRUE(extensionEnabled("GL_OES_standard_derivatives"));
+        EXPECT_TRUE(IsGLExtensionEnabled("GL_OES_standard_derivatives"));
 
         GLuint shader = CompileShader(GL_FRAGMENT_SHADER, kFS);
         ASSERT_NE(0u, shader);
@@ -390,7 +390,7 @@ void main() { gl_FragColor = vec4(dFdx(vec2(1.0, 1.0)).x, 1, 0, 1); })";
 // Test enabling the GL_EXT_shader_texture_lod extension
 TEST_P(WebGLCompatibilityTest, EnableExtensionTextureLOD)
 {
-    EXPECT_FALSE(extensionEnabled("GL_EXT_shader_texture_lod"));
+    EXPECT_FALSE(IsGLExtensionEnabled("GL_EXT_shader_texture_lod"));
 
     constexpr char kFS[] =
         R"(#extension GL_EXT_shader_texture_lod : require
@@ -401,11 +401,11 @@ void main() {
 })";
     ASSERT_EQ(0u, CompileShader(GL_FRAGMENT_SHADER, kFS));
 
-    if (extensionRequestable("GL_EXT_shader_texture_lod"))
+    if (IsGLExtensionRequestable("GL_EXT_shader_texture_lod"))
     {
         glRequestExtensionANGLE("GL_EXT_shader_texture_lod");
         EXPECT_GL_NO_ERROR();
-        EXPECT_TRUE(extensionEnabled("GL_EXT_shader_texture_lod"));
+        EXPECT_TRUE(IsGLExtensionEnabled("GL_EXT_shader_texture_lod"));
 
         GLuint shader = CompileShader(GL_FRAGMENT_SHADER, kFS);
         ASSERT_NE(0u, shader);
@@ -416,7 +416,7 @@ void main() {
 // Test enabling the GL_EXT_frag_depth extension
 TEST_P(WebGLCompatibilityTest, EnableExtensionFragDepth)
 {
-    EXPECT_FALSE(extensionEnabled("GL_EXT_frag_depth"));
+    EXPECT_FALSE(IsGLExtensionEnabled("GL_EXT_frag_depth"));
 
     constexpr char kFS[] =
         R"(#extension GL_EXT_frag_depth : require
@@ -426,11 +426,11 @@ void main() {
 })";
     ASSERT_EQ(0u, CompileShader(GL_FRAGMENT_SHADER, kFS));
 
-    if (extensionRequestable("GL_EXT_frag_depth"))
+    if (IsGLExtensionRequestable("GL_EXT_frag_depth"))
     {
         glRequestExtensionANGLE("GL_EXT_frag_depth");
         EXPECT_GL_NO_ERROR();
-        EXPECT_TRUE(extensionEnabled("GL_EXT_frag_depth"));
+        EXPECT_TRUE(IsGLExtensionEnabled("GL_EXT_frag_depth"));
 
         GLuint shader = CompileShader(GL_FRAGMENT_SHADER, kFS);
         ASSERT_NE(0u, shader);
@@ -441,7 +441,7 @@ void main() {
 // Test enabling the GL_EXT_texture_filter_anisotropic extension
 TEST_P(WebGLCompatibilityTest, EnableExtensionTextureFilterAnisotropic)
 {
-    EXPECT_FALSE(extensionEnabled("GL_EXT_texture_filter_anisotropic"));
+    EXPECT_FALSE(IsGLExtensionEnabled("GL_EXT_texture_filter_anisotropic"));
 
     GLfloat maxAnisotropy = 0.0f;
     glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAnisotropy);
@@ -458,11 +458,11 @@ TEST_P(WebGLCompatibilityTest, EnableExtensionTextureFilterAnisotropic)
     glGetTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, &currentAnisotropy);
     EXPECT_GL_ERROR(GL_INVALID_ENUM);
 
-    if (extensionRequestable("GL_EXT_texture_filter_anisotropic"))
+    if (IsGLExtensionRequestable("GL_EXT_texture_filter_anisotropic"))
     {
         glRequestExtensionANGLE("GL_EXT_texture_filter_anisotropic");
         EXPECT_GL_NO_ERROR();
-        EXPECT_TRUE(extensionEnabled("GL_EXT_texture_filter_anisotropic"));
+        EXPECT_TRUE(IsGLExtensionEnabled("GL_EXT_texture_filter_anisotropic"));
 
         glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAnisotropy);
         ASSERT_GL_NO_ERROR();
@@ -480,10 +480,10 @@ TEST_P(WebGLCompatibilityTest, EnableExtensionTextureFilterAnisotropic)
 // Test enabling the EGL image extensions
 TEST_P(WebGLCompatibilityTest, EnableExtensionEGLImage)
 {
-    EXPECT_FALSE(extensionEnabled("GL_OES_EGL_image"));
-    EXPECT_FALSE(extensionEnabled("GL_OES_EGL_image_external"));
-    EXPECT_FALSE(extensionEnabled("GL_OES_EGL_image_external_essl3"));
-    EXPECT_FALSE(extensionEnabled("NV_EGL_stream_consumer_external"));
+    EXPECT_FALSE(IsGLExtensionEnabled("GL_OES_EGL_image"));
+    EXPECT_FALSE(IsGLExtensionEnabled("GL_OES_EGL_image_external"));
+    EXPECT_FALSE(IsGLExtensionEnabled("GL_OES_EGL_image_external_essl3"));
+    EXPECT_FALSE(IsGLExtensionEnabled("NV_EGL_stream_consumer_external"));
 
     constexpr char kFSES2[] =
         R"(#extension GL_OES_EGL_image_external : require
@@ -516,11 +516,11 @@ void main()
     glGetIntegerv(GL_TEXTURE_BINDING_EXTERNAL_OES, &result);
     EXPECT_GL_ERROR(GL_INVALID_ENUM);
 
-    if (extensionRequestable("GL_OES_EGL_image_external"))
+    if (IsGLExtensionRequestable("GL_OES_EGL_image_external"))
     {
         glRequestExtensionANGLE("GL_OES_EGL_image_external");
         EXPECT_GL_NO_ERROR();
-        EXPECT_TRUE(extensionEnabled("GL_OES_EGL_image_external"));
+        EXPECT_TRUE(IsGLExtensionEnabled("GL_OES_EGL_image_external"));
 
         EXPECT_NE(0u, CompileShader(GL_FRAGMENT_SHADER, kFSES2));
 
@@ -530,11 +530,12 @@ void main()
         glGetIntegerv(GL_TEXTURE_BINDING_EXTERNAL_OES, &result);
         EXPECT_GL_NO_ERROR();
 
-        if (getClientMajorVersion() > 3 && extensionRequestable("GL_OES_EGL_image_external_essl3"))
+        if (getClientMajorVersion() > 3 &&
+            IsGLExtensionRequestable("GL_OES_EGL_image_external_essl3"))
         {
             glRequestExtensionANGLE("GL_OES_EGL_image_external_essl3");
             EXPECT_GL_NO_ERROR();
-            EXPECT_TRUE(extensionEnabled("GL_OES_EGL_image_external_essl3"));
+            EXPECT_TRUE(IsGLExtensionEnabled("GL_OES_EGL_image_external_essl3"));
 
             EXPECT_NE(0u, CompileShader(GL_FRAGMENT_SHADER, kFSES3));
         }
@@ -548,7 +549,7 @@ void main()
 // Verify that shaders are of a compatible spec when the extension is enabled.
 TEST_P(WebGLCompatibilityTest, ExtensionCompilerSpec)
 {
-    EXPECT_TRUE(extensionEnabled("GL_ANGLE_webgl_compatibility"));
+    EXPECT_TRUE(IsGLExtensionEnabled("GL_ANGLE_webgl_compatibility"));
 
     // Use of reserved _webgl prefix should fail when the shader specification is for WebGL.
     constexpr char kVS[] =
@@ -575,9 +576,9 @@ void main()
 // Test enabling the GL_NV_pixel_buffer_object extension
 TEST_P(WebGLCompatibilityTest, EnablePixelBufferObjectExtensions)
 {
-    EXPECT_FALSE(extensionEnabled("GL_NV_pixel_buffer_object"));
-    EXPECT_FALSE(extensionEnabled("GL_OES_mapbuffer"));
-    EXPECT_FALSE(extensionEnabled("GL_EXT_map_buffer_range"));
+    EXPECT_FALSE(IsGLExtensionEnabled("GL_NV_pixel_buffer_object"));
+    EXPECT_FALSE(IsGLExtensionEnabled("GL_OES_mapbuffer"));
+    EXPECT_FALSE(IsGLExtensionEnabled("GL_EXT_map_buffer_range"));
 
     // These extensions become core in in ES3/WebGL2.
     ANGLE_SKIP_TEST_IF(getClientMajorVersion() >= 3);
@@ -586,7 +587,7 @@ TEST_P(WebGLCompatibilityTest, EnablePixelBufferObjectExtensions)
     glBindBuffer(GL_PIXEL_PACK_BUFFER, buffer);
     EXPECT_GL_ERROR(GL_INVALID_ENUM);
 
-    if (extensionRequestable("GL_NV_pixel_buffer_object"))
+    if (IsGLExtensionRequestable("GL_NV_pixel_buffer_object"))
     {
         glRequestExtensionANGLE("GL_NV_pixel_buffer_object");
         EXPECT_GL_NO_ERROR();
@@ -603,7 +604,7 @@ TEST_P(WebGLCompatibilityTest, EnablePixelBufferObjectExtensions)
 // Test enabling the GL_EXT_texture_storage extension
 TEST_P(WebGLCompatibilityTest, EnableTextureStorage)
 {
-    EXPECT_FALSE(extensionEnabled("GL_EXT_texture_storage"));
+    EXPECT_FALSE(IsGLExtensionEnabled("GL_EXT_texture_storage"));
 
     GLTexture texture;
     glBindTexture(GL_TEXTURE_2D, texture);
@@ -619,11 +620,11 @@ TEST_P(WebGLCompatibilityTest, EnableTextureStorage)
         EXPECT_GL_ERROR(GL_INVALID_ENUM);
     }
 
-    if (extensionRequestable("GL_EXT_texture_storage"))
+    if (IsGLExtensionRequestable("GL_EXT_texture_storage"))
     {
         glRequestExtensionANGLE("GL_EXT_texture_storage");
         EXPECT_GL_NO_ERROR();
-        EXPECT_TRUE(extensionEnabled("GL_EXT_texture_storage"));
+        EXPECT_TRUE(IsGLExtensionEnabled("GL_EXT_texture_storage"));
 
         glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_IMMUTABLE_FORMAT, &result);
         EXPECT_GL_NO_ERROR();
@@ -646,8 +647,8 @@ TEST_P(WebGLCompatibilityTest, EnableTextureStorage)
 // Test enabling the GL_OES_mapbuffer and GL_EXT_map_buffer_range extensions
 TEST_P(WebGLCompatibilityTest, EnableMapBufferExtensions)
 {
-    EXPECT_FALSE(extensionEnabled("GL_OES_mapbuffer"));
-    EXPECT_FALSE(extensionEnabled("GL_EXT_map_buffer_range"));
+    EXPECT_FALSE(IsGLExtensionEnabled("GL_OES_mapbuffer"));
+    EXPECT_FALSE(IsGLExtensionEnabled("GL_EXT_map_buffer_range"));
 
     // These extensions become core in in ES3/WebGL2.
     ANGLE_SKIP_TEST_IF(getClientMajorVersion() >= 3);
@@ -666,7 +667,7 @@ TEST_P(WebGLCompatibilityTest, EnableMapBufferExtensions)
     glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_ACCESS_OES, &access);
     EXPECT_GL_ERROR(GL_INVALID_ENUM);
 
-    if (extensionRequestable("GL_OES_mapbuffer"))
+    if (IsGLExtensionRequestable("GL_OES_mapbuffer"))
     {
         glRequestExtensionANGLE("GL_OES_mapbuffer");
         EXPECT_GL_NO_ERROR();
@@ -677,7 +678,7 @@ TEST_P(WebGLCompatibilityTest, EnableMapBufferExtensions)
         EXPECT_GL_NO_ERROR();
     }
 
-    if (extensionRequestable("GL_EXT_map_buffer_range"))
+    if (IsGLExtensionRequestable("GL_EXT_map_buffer_range"))
     {
         glRequestExtensionANGLE("GL_EXT_map_buffer_range");
         EXPECT_GL_NO_ERROR();
@@ -692,7 +693,7 @@ TEST_P(WebGLCompatibilityTest, EnableMapBufferExtensions)
 // Test enabling the GL_OES_fbo_render_mipmap extension
 TEST_P(WebGLCompatibilityTest, EnableRenderMipmapExtension)
 {
-    EXPECT_FALSE(extensionEnabled("GL_OES_fbo_render_mipmap"));
+    EXPECT_FALSE(IsGLExtensionEnabled("GL_OES_fbo_render_mipmap"));
 
     // This extensions become core in in ES3/WebGL2.
     ANGLE_SKIP_TEST_IF(getClientMajorVersion() >= 3);
@@ -710,7 +711,7 @@ TEST_P(WebGLCompatibilityTest, EnableRenderMipmapExtension)
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 1);
     EXPECT_GL_ERROR(GL_INVALID_VALUE);
 
-    if (extensionRequestable("GL_OES_fbo_render_mipmap"))
+    if (IsGLExtensionRequestable("GL_OES_fbo_render_mipmap"))
     {
         glRequestExtensionANGLE("GL_OES_fbo_render_mipmap");
         EXPECT_GL_NO_ERROR();
@@ -723,7 +724,7 @@ TEST_P(WebGLCompatibilityTest, EnableRenderMipmapExtension)
 // Test enabling the GL_EXT_blend_minmax extension
 TEST_P(WebGLCompatibilityTest, EnableBlendMinMaxExtension)
 {
-    EXPECT_FALSE(extensionEnabled("GL_EXT_blend_minmax"));
+    EXPECT_FALSE(IsGLExtensionEnabled("GL_EXT_blend_minmax"));
 
     // This extensions become core in in ES3/WebGL2.
     ANGLE_SKIP_TEST_IF(getClientMajorVersion() >= 3);
@@ -734,7 +735,7 @@ TEST_P(WebGLCompatibilityTest, EnableBlendMinMaxExtension)
     glBlendEquation(GL_MAX);
     EXPECT_GL_ERROR(GL_INVALID_ENUM);
 
-    if (extensionRequestable("GL_EXT_blend_minmax"))
+    if (IsGLExtensionRequestable("GL_EXT_blend_minmax"))
     {
         glRequestExtensionANGLE("GL_EXT_blend_minmax");
         EXPECT_GL_NO_ERROR();
@@ -751,9 +752,9 @@ TEST_P(WebGLCompatibilityTest, EnableQueryExtensions)
     // Seems to be causing a device lost. http://anglebug.com/2423
     ANGLE_SKIP_TEST_IF(IsAMD() && IsWindows() && IsOpenGL());
 
-    EXPECT_FALSE(extensionEnabled("GL_EXT_occlusion_query_boolean"));
-    EXPECT_FALSE(extensionEnabled("GL_EXT_disjoint_timer_query"));
-    EXPECT_FALSE(extensionEnabled("GL_CHROMIUM_sync_query"));
+    EXPECT_FALSE(IsGLExtensionEnabled("GL_EXT_occlusion_query_boolean"));
+    EXPECT_FALSE(IsGLExtensionEnabled("GL_EXT_disjoint_timer_query"));
+    EXPECT_FALSE(IsGLExtensionEnabled("GL_CHROMIUM_sync_query"));
 
     // This extensions become core in in ES3/WebGL2.
     ANGLE_SKIP_TEST_IF(getClientMajorVersion() >= 3);
@@ -775,7 +776,7 @@ TEST_P(WebGLCompatibilityTest, EnableQueryExtensions)
     glBeginQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM, badQuery);
     EXPECT_GL_ERROR(GL_INVALID_OPERATION);
 
-    if (extensionRequestable("GL_EXT_occlusion_query_boolean"))
+    if (IsGLExtensionRequestable("GL_EXT_occlusion_query_boolean"))
     {
         glRequestExtensionANGLE("GL_EXT_occlusion_query_boolean");
         EXPECT_GL_NO_ERROR();
@@ -786,7 +787,7 @@ TEST_P(WebGLCompatibilityTest, EnableQueryExtensions)
         EXPECT_GL_NO_ERROR();
     }
 
-    if (extensionRequestable("GL_EXT_disjoint_timer_query"))
+    if (IsGLExtensionRequestable("GL_EXT_disjoint_timer_query"))
     {
         glRequestExtensionANGLE("GL_EXT_disjoint_timer_query");
         EXPECT_GL_NO_ERROR();
@@ -801,7 +802,7 @@ TEST_P(WebGLCompatibilityTest, EnableQueryExtensions)
         EXPECT_GL_NO_ERROR();
     }
 
-    if (extensionRequestable("GL_CHROMIUM_sync_query"))
+    if (IsGLExtensionRequestable("GL_CHROMIUM_sync_query"))
     {
         glRequestExtensionANGLE("GL_CHROMIUM_sync_query");
         EXPECT_GL_NO_ERROR();
@@ -816,7 +817,7 @@ TEST_P(WebGLCompatibilityTest, EnableQueryExtensions)
 // Test enabling the GL_ANGLE_framebuffer_multisample extension
 TEST_P(WebGLCompatibilityTest, EnableFramebufferMultisampleExtension)
 {
-    EXPECT_FALSE(extensionEnabled("GL_ANGLE_framebuffer_multisample"));
+    EXPECT_FALSE(IsGLExtensionEnabled("GL_ANGLE_framebuffer_multisample"));
 
     // This extensions become core in in ES3/WebGL2.
     ANGLE_SKIP_TEST_IF(getClientMajorVersion() >= 3);
@@ -830,7 +831,7 @@ TEST_P(WebGLCompatibilityTest, EnableFramebufferMultisampleExtension)
     glRenderbufferStorageMultisampleANGLE(GL_RENDERBUFFER, 1, GL_RGBA4, 1, 1);
     EXPECT_GL_ERROR(GL_INVALID_OPERATION);
 
-    if (extensionRequestable("GL_ANGLE_framebuffer_multisample"))
+    if (IsGLExtensionRequestable("GL_ANGLE_framebuffer_multisample"))
     {
         glRequestExtensionANGLE("GL_ANGLE_framebuffer_multisample");
         EXPECT_GL_NO_ERROR();
@@ -846,7 +847,7 @@ TEST_P(WebGLCompatibilityTest, EnableFramebufferMultisampleExtension)
 // Test enabling the GL_ANGLE_instanced_arrays extension
 TEST_P(WebGLCompatibilityTest, EnableInstancedArraysExtensionANGLE)
 {
-    EXPECT_FALSE(extensionEnabled("GL_ANGLE_instanced_arrays"));
+    EXPECT_FALSE(IsGLExtensionEnabled("GL_ANGLE_instanced_arrays"));
 
     // This extensions become core in in ES3/WebGL2.
     ANGLE_SKIP_TEST_IF(getClientMajorVersion() >= 3);
@@ -858,7 +859,7 @@ TEST_P(WebGLCompatibilityTest, EnableInstancedArraysExtensionANGLE)
     glVertexAttribDivisorANGLE(0, 1);
     EXPECT_GL_ERROR(GL_INVALID_OPERATION);
 
-    if (extensionRequestable("GL_ANGLE_instanced_arrays"))
+    if (IsGLExtensionRequestable("GL_ANGLE_instanced_arrays"))
     {
         glRequestExtensionANGLE("GL_ANGLE_instanced_arrays");
         EXPECT_GL_NO_ERROR();
@@ -872,7 +873,7 @@ TEST_P(WebGLCompatibilityTest, EnableInstancedArraysExtensionANGLE)
 // Test enabling the GL_EXT_instanced_arrays extension
 TEST_P(WebGLCompatibilityTest, EnableInstancedArraysExtensionEXT)
 {
-    EXPECT_FALSE(extensionEnabled("GL_EXT_instanced_arrays"));
+    EXPECT_FALSE(IsGLExtensionEnabled("GL_EXT_instanced_arrays"));
 
     // This extensions become core in in ES3/WebGL2.
     ANGLE_SKIP_TEST_IF(getClientMajorVersion() >= 3);
@@ -884,7 +885,7 @@ TEST_P(WebGLCompatibilityTest, EnableInstancedArraysExtensionEXT)
     glVertexAttribDivisorEXT(0, 1);
     EXPECT_GL_ERROR(GL_INVALID_OPERATION);
 
-    if (extensionRequestable("GL_EXT_instanced_arrays"))
+    if (IsGLExtensionRequestable("GL_EXT_instanced_arrays"))
     {
         glRequestExtensionANGLE("GL_EXT_instanced_arrays");
         EXPECT_GL_NO_ERROR();
@@ -898,7 +899,7 @@ TEST_P(WebGLCompatibilityTest, EnableInstancedArraysExtensionEXT)
 // Test enabling the GL_ANGLE_pack_reverse_row_order extension
 TEST_P(WebGLCompatibilityTest, EnablePackReverseRowOrderExtension)
 {
-    EXPECT_FALSE(extensionEnabled("GL_ANGLE_pack_reverse_row_order"));
+    EXPECT_FALSE(IsGLExtensionEnabled("GL_ANGLE_pack_reverse_row_order"));
 
     GLint result = 0;
     glGetIntegerv(GL_PACK_REVERSE_ROW_ORDER_ANGLE, &result);
@@ -907,7 +908,7 @@ TEST_P(WebGLCompatibilityTest, EnablePackReverseRowOrderExtension)
     glPixelStorei(GL_PACK_REVERSE_ROW_ORDER_ANGLE, GL_TRUE);
     EXPECT_GL_ERROR(GL_INVALID_ENUM);
 
-    if (extensionRequestable("GL_ANGLE_pack_reverse_row_order"))
+    if (IsGLExtensionRequestable("GL_ANGLE_pack_reverse_row_order"))
     {
         glRequestExtensionANGLE("GL_ANGLE_pack_reverse_row_order");
         EXPECT_GL_NO_ERROR();
@@ -921,7 +922,7 @@ TEST_P(WebGLCompatibilityTest, EnablePackReverseRowOrderExtension)
 // Test enabling the GL_EXT_unpack_subimage extension
 TEST_P(WebGLCompatibilityTest, EnablePackUnpackSubImageExtension)
 {
-    EXPECT_FALSE(extensionEnabled("GL_EXT_unpack_subimage"));
+    EXPECT_FALSE(IsGLExtensionEnabled("GL_EXT_unpack_subimage"));
 
     // This extensions become core in in ES3/WebGL2.
     ANGLE_SKIP_TEST_IF(getClientMajorVersion() >= 3);
@@ -946,7 +947,7 @@ TEST_P(WebGLCompatibilityTest, EnablePackUnpackSubImageExtension)
         EXPECT_GL_ERROR(GL_INVALID_ENUM);
     }
 
-    if (extensionRequestable("GL_EXT_unpack_subimage"))
+    if (IsGLExtensionRequestable("GL_EXT_unpack_subimage"))
     {
         glRequestExtensionANGLE("GL_EXT_unpack_subimage");
         EXPECT_GL_NO_ERROR();
@@ -968,7 +969,7 @@ TEST_P(WebGLCompatibilityTest, EnablePackUnpackSubImageExtension)
 
 TEST_P(WebGLCompatibilityTest, EnableTextureRectangle)
 {
-    EXPECT_FALSE(extensionEnabled("GL_ANGLE_texture_rectangle"));
+    EXPECT_FALSE(IsGLExtensionEnabled("GL_ANGLE_texture_rectangle"));
 
     GLTexture texture;
     glBindTexture(GL_TEXTURE_RECTANGLE_ANGLE, texture);
@@ -978,12 +979,12 @@ TEST_P(WebGLCompatibilityTest, EnableTextureRectangle)
     glGetTexParameteriv(GL_TEXTURE_RECTANGLE_ANGLE, GL_TEXTURE_MIN_FILTER, &minFilter);
     EXPECT_GL_ERROR(GL_INVALID_ENUM);
 
-    if (extensionRequestable("GL_ANGLE_texture_rectangle"))
+    if (IsGLExtensionRequestable("GL_ANGLE_texture_rectangle"))
     {
         glRequestExtensionANGLE("GL_ANGLE_texture_rectangle");
         EXPECT_GL_NO_ERROR();
 
-        EXPECT_TRUE(extensionEnabled("GL_ANGLE_texture_rectangle"));
+        EXPECT_TRUE(IsGLExtensionEnabled("GL_ANGLE_texture_rectangle"));
 
         glBindTexture(GL_TEXTURE_RECTANGLE_ANGLE, texture);
         EXPECT_GL_NO_ERROR();
@@ -997,7 +998,7 @@ TEST_P(WebGLCompatibilityTest, EnableTextureRectangle)
 // Test enabling the GL_NV_pack_subimage extension
 TEST_P(WebGLCompatibilityTest, EnablePackPackSubImageExtension)
 {
-    EXPECT_FALSE(extensionEnabled("GL_NV_pack_subimage"));
+    EXPECT_FALSE(IsGLExtensionEnabled("GL_NV_pack_subimage"));
 
     // This extensions become core in in ES3/WebGL2.
     ANGLE_SKIP_TEST_IF(getClientMajorVersion() >= 3);
@@ -1022,7 +1023,7 @@ TEST_P(WebGLCompatibilityTest, EnablePackPackSubImageExtension)
         EXPECT_GL_ERROR(GL_INVALID_ENUM);
     }
 
-    if (extensionRequestable("GL_NV_pack_subimage"))
+    if (IsGLExtensionRequestable("GL_NV_pack_subimage"))
     {
         glRequestExtensionANGLE("GL_NV_pack_subimage");
         EXPECT_GL_NO_ERROR();
@@ -1044,7 +1045,7 @@ TEST_P(WebGLCompatibilityTest, EnablePackPackSubImageExtension)
 
 TEST_P(WebGLCompatibilityTest, EnableRGB8RGBA8Extension)
 {
-    EXPECT_FALSE(extensionEnabled("GL_OES_rgb8_rgba8"));
+    EXPECT_FALSE(IsGLExtensionEnabled("GL_OES_rgb8_rgba8"));
 
     // This extensions become core in in ES3/WebGL2.
     ANGLE_SKIP_TEST_IF(getClientMajorVersion() >= 3);
@@ -1059,12 +1060,12 @@ TEST_P(WebGLCompatibilityTest, EnableRGB8RGBA8Extension)
     glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8_OES, 1, 1);
     EXPECT_GL_ERROR(GL_INVALID_ENUM);
 
-    if (extensionRequestable("GL_OES_rgb8_rgba8"))
+    if (IsGLExtensionRequestable("GL_OES_rgb8_rgba8"))
     {
         glRequestExtensionANGLE("GL_OES_rgb8_rgba8");
         EXPECT_GL_NO_ERROR();
 
-        EXPECT_TRUE(extensionEnabled("GL_OES_rgb8_rgba8"));
+        EXPECT_TRUE(IsGLExtensionEnabled("GL_OES_rgb8_rgba8"));
 
         glRenderbufferStorage(GL_RENDERBUFFER, GL_RGB8_OES, 1, 1);
         EXPECT_GL_NO_ERROR();
@@ -1077,7 +1078,7 @@ TEST_P(WebGLCompatibilityTest, EnableRGB8RGBA8Extension)
 // Test enabling the GL_ANGLE_framebuffer_blit extension
 TEST_P(WebGLCompatibilityTest, EnableFramebufferBlitExtension)
 {
-    EXPECT_FALSE(extensionEnabled("GL_ANGLE_framebuffer_blit"));
+    EXPECT_FALSE(IsGLExtensionEnabled("GL_ANGLE_framebuffer_blit"));
 
     // This extensions become core in in ES3/WebGL2.
     ANGLE_SKIP_TEST_IF(getClientMajorVersion() >= 3);
@@ -1094,7 +1095,7 @@ TEST_P(WebGLCompatibilityTest, EnableFramebufferBlitExtension)
     glBlitFramebufferANGLE(0, 0, 1, 1, 0, 0, 1, 1, GL_COLOR_BUFFER_BIT, GL_NEAREST);
     EXPECT_GL_ERROR(GL_INVALID_OPERATION);
 
-    if (extensionRequestable("GL_ANGLE_framebuffer_blit"))
+    if (IsGLExtensionRequestable("GL_ANGLE_framebuffer_blit"))
     {
         glRequestExtensionANGLE("GL_ANGLE_framebuffer_blit");
         EXPECT_GL_NO_ERROR();
@@ -1108,7 +1109,7 @@ TEST_P(WebGLCompatibilityTest, EnableFramebufferBlitExtension)
 // Test enabling the GL_OES_get_program_binary extension
 TEST_P(WebGLCompatibilityTest, EnableProgramBinaryExtension)
 {
-    EXPECT_FALSE(extensionEnabled("GL_OES_get_program_binary"));
+    EXPECT_FALSE(IsGLExtensionEnabled("GL_OES_get_program_binary"));
 
     // This extensions become core in in ES3/WebGL2.
     ANGLE_SKIP_TEST_IF(getClientMajorVersion() >= 3);
@@ -1143,7 +1144,7 @@ void main()
                           &tempFormat, tempArray);
     EXPECT_GL_ERROR(GL_INVALID_OPERATION);
 
-    if (extensionRequestable("GL_OES_get_program_binary"))
+    if (IsGLExtensionRequestable("GL_OES_get_program_binary"))
     {
         glRequestExtensionANGLE("GL_OES_get_program_binary");
         EXPECT_GL_NO_ERROR();
@@ -1170,7 +1171,7 @@ void main()
 // Test enabling the GL_OES_vertex_array_object extension
 TEST_P(WebGLCompatibilityTest, EnableVertexArrayExtension)
 {
-    EXPECT_FALSE(extensionEnabled("GL_OES_vertex_array_object"));
+    EXPECT_FALSE(IsGLExtensionEnabled("GL_OES_vertex_array_object"));
 
     // This extensions become core in in ES3/WebGL2.
     ANGLE_SKIP_TEST_IF(getClientMajorVersion() >= 3);
@@ -1181,12 +1182,12 @@ TEST_P(WebGLCompatibilityTest, EnableVertexArrayExtension)
 
     // Expect that GL_OES_vertex_array_object is always available.  It is implemented in the GL
     // frontend.
-    EXPECT_TRUE(extensionRequestable("GL_OES_vertex_array_object"));
+    EXPECT_TRUE(IsGLExtensionRequestable("GL_OES_vertex_array_object"));
 
     glRequestExtensionANGLE("GL_OES_vertex_array_object");
     EXPECT_GL_NO_ERROR();
 
-    EXPECT_TRUE(extensionEnabled("GL_OES_vertex_array_object"));
+    EXPECT_TRUE(IsGLExtensionEnabled("GL_OES_vertex_array_object"));
 
     glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &result);
     EXPECT_GL_NO_ERROR();
@@ -1226,11 +1227,11 @@ TEST_P(WebGLCompatibilityTest, FramebufferAttachmentSizeMismatch)
     ASSERT_GLENUM_EQ(GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS,
                      glCheckFramebufferStatus(GL_FRAMEBUFFER));
 
-    if (extensionRequestable("GL_EXT_draw_buffers"))
+    if (IsGLExtensionRequestable("GL_EXT_draw_buffers"))
     {
         glRequestExtensionANGLE("GL_EXT_draw_buffers");
         EXPECT_GL_NO_ERROR();
-        EXPECT_TRUE(extensionEnabled("GL_EXT_draw_buffers"));
+        EXPECT_TRUE(IsGLExtensionEnabled("GL_EXT_draw_buffers"));
 
         glBindTexture(GL_TEXTURE_2D, textures[1]);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
@@ -1557,7 +1558,7 @@ void main()
 // Test that index values outside of the 32-bit integer range do not read out of bounds
 TEST_P(WebGLCompatibilityTest, LargeIndexRange)
 {
-    ANGLE_SKIP_TEST_IF(!ensureExtensionEnabled("GL_OES_element_index_uint"));
+    ANGLE_SKIP_TEST_IF(!EnsureGLExtensionEnabled("GL_OES_element_index_uint"));
 
     constexpr char kVS[] =
         R"(attribute vec4 a_Position;
@@ -1687,7 +1688,7 @@ void main()
 // Test the checks for OOB reads in the vertex buffers, ANGLE_instanced_arrays version
 TEST_P(WebGLCompatibilityTest, DrawArraysBufferOutOfBoundsInstancedANGLE)
 {
-    ANGLE_SKIP_TEST_IF(!extensionRequestable("GL_ANGLE_instanced_arrays"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionRequestable("GL_ANGLE_instanced_arrays"));
     glRequestExtensionANGLE("GL_ANGLE_instanced_arrays");
     EXPECT_GL_NO_ERROR();
 
@@ -2099,7 +2100,7 @@ void main()
 // Tests that NPOT is not enabled by default in WebGL 1 and that it can be enabled
 TEST_P(WebGLCompatibilityTest, NPOT)
 {
-    EXPECT_FALSE(extensionEnabled("GL_OES_texture_npot"));
+    EXPECT_FALSE(IsGLExtensionEnabled("GL_OES_texture_npot"));
 
     // Create a texture and set an NPOT mip 0, should always be acceptable.
     GLTexture texture;
@@ -2118,7 +2119,7 @@ TEST_P(WebGLCompatibilityTest, NPOT)
         ASSERT_GL_NO_ERROR();
     }
 
-    if (extensionRequestable("GL_OES_texture_npot"))
+    if (IsGLExtensionRequestable("GL_OES_texture_npot"))
     {
         glRequestExtensionANGLE("GL_OES_texture_npot");
         ASSERT_GL_NO_ERROR();
@@ -2270,11 +2271,11 @@ TEST_P(WebGLCompatibilityTest, MaxDrawBuffersAttachmentPoints)
 
     // Test that enabling the draw buffers extension will allow us to bind with a non-zero
     // attachment point.
-    if (extensionRequestable("GL_EXT_draw_buffers"))
+    if (IsGLExtensionRequestable("GL_EXT_draw_buffers"))
     {
         glRequestExtensionANGLE("GL_EXT_draw_buffers");
         EXPECT_GL_NO_ERROR();
-        EXPECT_TRUE(extensionEnabled("GL_EXT_draw_buffers"));
+        EXPECT_TRUE(IsGLExtensionEnabled("GL_EXT_draw_buffers"));
 
         glBindFramebuffer(GL_FRAMEBUFFER, fbo[1].get());
 
@@ -2403,7 +2404,7 @@ void main() {
     // This shader cannot be run in ES3, because WebGL 2 does not expose the draw buffers
     // extension and gl_FragData semantics are changed to enforce indexing by zero always.
     // TODO(jmadill): This extension should be disabled in WebGL 2 contexts.
-    if (/*!extensionEnabled("GL_EXT_draw_buffers")*/ getClientMajorVersion() != 2)
+    if (/*!IsGLExtensionEnabled("GL_EXT_draw_buffers")*/ getClientMajorVersion() != 2)
     {
         // No WEBGL_draw_buffers support -- this is legal.
         return;
@@ -2582,12 +2583,12 @@ void main()
 // Test dimension and image size validation of compressed textures
 TEST_P(WebGLCompatibilityTest, CompressedTextureS3TC)
 {
-    if (extensionRequestable("GL_EXT_texture_compression_dxt1"))
+    if (IsGLExtensionRequestable("GL_EXT_texture_compression_dxt1"))
     {
         glRequestExtensionANGLE("GL_EXT_texture_compression_dxt1");
     }
 
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_texture_compression_dxt1"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_texture_compression_dxt1"));
 
     constexpr uint8_t CompressedImageDXT1[] = {0x00, 0xf8, 0x00, 0xf8, 0xaa, 0xaa, 0xaa, 0xaa};
 
@@ -2671,7 +2672,7 @@ TEST_P(WebGLCompatibilityTest, L32FTextures)
 
     for (auto extension : FloatingPointTextureExtensions)
     {
-        if (strlen(extension) > 0 && extensionRequestable(extension))
+        if (strlen(extension) > 0 && IsGLExtensionRequestable(extension))
         {
             glRequestExtensionANGLE(extension);
             ASSERT_GL_NO_ERROR();
@@ -2679,19 +2680,19 @@ TEST_P(WebGLCompatibilityTest, L32FTextures)
 
         // Unsized L 32F
         {
-            bool texture = extensionEnabled("GL_OES_texture_float");
-            bool filter  = extensionEnabled("GL_OES_texture_float_linear");
+            bool texture = IsGLExtensionEnabled("GL_OES_texture_float");
+            bool filter  = IsGLExtensionEnabled("GL_OES_texture_float_linear");
             bool render  = false;
             TestFloatTextureFormat(GL_LUMINANCE, GL_LUMINANCE, GL_FLOAT, texture, filter, render,
                                    textureData, readPixelData);
         }
 
-        if (getClientMajorVersion() >= 3 || extensionEnabled("GL_EXT_texture_storage"))
+        if (getClientMajorVersion() >= 3 || IsGLExtensionEnabled("GL_EXT_texture_storage"))
         {
             // Sized L 32F
-            bool texture = extensionEnabled("GL_OES_texture_float") &&
-                           extensionEnabled("GL_EXT_texture_storage");
-            bool filter = extensionEnabled("GL_OES_texture_float_linear");
+            bool texture = IsGLExtensionEnabled("GL_OES_texture_float") &&
+                           IsGLExtensionEnabled("GL_EXT_texture_storage");
+            bool filter = IsGLExtensionEnabled("GL_OES_texture_float_linear");
             bool render = false;
             TestFloatTextureFormat(GL_LUMINANCE32F_EXT, GL_LUMINANCE, GL_FLOAT, texture, filter,
                                    render, textureData, readPixelData);
@@ -2706,7 +2707,7 @@ TEST_P(WebGLCompatibilityTest, A32FTextures)
 
     for (auto extension : FloatingPointTextureExtensions)
     {
-        if (strlen(extension) > 0 && extensionRequestable(extension))
+        if (strlen(extension) > 0 && IsGLExtensionRequestable(extension))
         {
             glRequestExtensionANGLE(extension);
             ASSERT_GL_NO_ERROR();
@@ -2714,19 +2715,19 @@ TEST_P(WebGLCompatibilityTest, A32FTextures)
 
         // Unsized A 32F
         {
-            bool texture = extensionEnabled("GL_OES_texture_float");
-            bool filter  = extensionEnabled("GL_OES_texture_float_linear");
+            bool texture = IsGLExtensionEnabled("GL_OES_texture_float");
+            bool filter  = IsGLExtensionEnabled("GL_OES_texture_float_linear");
             bool render  = false;
             TestFloatTextureFormat(GL_ALPHA, GL_ALPHA, GL_FLOAT, texture, filter, render,
                                    textureData, readPixelData);
         }
 
-        if (getClientMajorVersion() >= 3 || extensionEnabled("GL_EXT_texture_storage"))
+        if (getClientMajorVersion() >= 3 || IsGLExtensionEnabled("GL_EXT_texture_storage"))
         {
             // Sized A 32F
-            bool texture = extensionEnabled("GL_OES_texture_float") &&
-                           extensionEnabled("GL_EXT_texture_storage");
-            bool filter = extensionEnabled("GL_OES_texture_float_linear");
+            bool texture = IsGLExtensionEnabled("GL_OES_texture_float") &&
+                           IsGLExtensionEnabled("GL_EXT_texture_storage");
+            bool filter = IsGLExtensionEnabled("GL_OES_texture_float_linear");
             bool render = false;
             TestFloatTextureFormat(GL_ALPHA32F_EXT, GL_ALPHA, GL_FLOAT, texture, filter, render,
                                    textureData, readPixelData);
@@ -2742,7 +2743,7 @@ TEST_P(WebGLCompatibilityTest, LA32FTextures)
 
     for (auto extension : FloatingPointTextureExtensions)
     {
-        if (strlen(extension) > 0 && extensionRequestable(extension))
+        if (strlen(extension) > 0 && IsGLExtensionRequestable(extension))
         {
             glRequestExtensionANGLE(extension);
             ASSERT_GL_NO_ERROR();
@@ -2750,19 +2751,19 @@ TEST_P(WebGLCompatibilityTest, LA32FTextures)
 
         // Unsized LA 32F
         {
-            bool texture = extensionEnabled("GL_OES_texture_float");
-            bool filter  = extensionEnabled("GL_OES_texture_float_linear");
+            bool texture = IsGLExtensionEnabled("GL_OES_texture_float");
+            bool filter  = IsGLExtensionEnabled("GL_OES_texture_float_linear");
             bool render  = false;
             TestFloatTextureFormat(GL_LUMINANCE_ALPHA, GL_LUMINANCE_ALPHA, GL_FLOAT, texture,
                                    filter, render, textureData, readPixelData);
         }
 
-        if (getClientMajorVersion() >= 3 || extensionEnabled("GL_EXT_texture_storage"))
+        if (getClientMajorVersion() >= 3 || IsGLExtensionEnabled("GL_EXT_texture_storage"))
         {
             // Sized LA 32F
-            bool texture = extensionEnabled("GL_OES_texture_float") &&
-                           extensionEnabled("GL_EXT_texture_storage");
-            bool filter = extensionEnabled("GL_OES_texture_float_linear");
+            bool texture = IsGLExtensionEnabled("GL_OES_texture_float") &&
+                           IsGLExtensionEnabled("GL_EXT_texture_storage");
+            bool filter = IsGLExtensionEnabled("GL_OES_texture_float_linear");
             bool render = false;
             TestFloatTextureFormat(GL_LUMINANCE_ALPHA32F_EXT, GL_LUMINANCE_ALPHA, GL_FLOAT, texture,
                                    filter, render, textureData, readPixelData);
@@ -2776,7 +2777,7 @@ TEST_P(WebGLCompatibilityTest, R32FTextures)
 
     for (auto extension : FloatingPointTextureExtensions)
     {
-        if (strlen(extension) > 0 && extensionRequestable(extension))
+        if (strlen(extension) > 0 && IsGLExtensionRequestable(extension))
         {
             glRequestExtensionANGLE(extension);
             ASSERT_GL_NO_ERROR();
@@ -2784,22 +2785,22 @@ TEST_P(WebGLCompatibilityTest, R32FTextures)
 
         // Unsized R 32F
         {
-            bool texture =
-                extensionEnabled("GL_OES_texture_float") && extensionEnabled("GL_EXT_texture_rg");
-            bool filter = extensionEnabled("GL_OES_texture_float_linear");
-            bool render = extensionEnabled("GL_EXT_color_buffer_float");
+            bool texture = IsGLExtensionEnabled("GL_OES_texture_float") &&
+                           IsGLExtensionEnabled("GL_EXT_texture_rg");
+            bool filter = IsGLExtensionEnabled("GL_OES_texture_float_linear");
+            bool render = IsGLExtensionEnabled("GL_EXT_color_buffer_float");
             TestFloatTextureFormat(GL_RED, GL_RED, GL_FLOAT, texture, filter, render, data, data);
         }
 
-        if (getClientMajorVersion() >= 3 || extensionEnabled("GL_EXT_texture_storage"))
+        if (getClientMajorVersion() >= 3 || IsGLExtensionEnabled("GL_EXT_texture_storage"))
         {
             // Sized R 32F
             bool texture =
-                (getClientMajorVersion() >= 3) || (extensionEnabled("GL_OES_texture_float") &&
-                                                   extensionEnabled("GL_EXT_texture_rg") &&
-                                                   extensionEnabled("GL_EXT_texture_storage"));
-            bool filter = extensionEnabled("GL_OES_texture_float_linear");
-            bool render = extensionEnabled("GL_EXT_color_buffer_float");
+                (getClientMajorVersion() >= 3) || (IsGLExtensionEnabled("GL_OES_texture_float") &&
+                                                   IsGLExtensionEnabled("GL_EXT_texture_rg") &&
+                                                   IsGLExtensionEnabled("GL_EXT_texture_storage"));
+            bool filter = IsGLExtensionEnabled("GL_OES_texture_float_linear");
+            bool render = IsGLExtensionEnabled("GL_EXT_color_buffer_float");
             TestFloatTextureFormat(GL_R32F, GL_RED, GL_FLOAT, texture, filter, render, data, data);
         }
     }
@@ -2811,7 +2812,7 @@ TEST_P(WebGLCompatibilityTest, RG32FTextures)
 
     for (auto extension : FloatingPointTextureExtensions)
     {
-        if (strlen(extension) > 0 && extensionRequestable(extension))
+        if (strlen(extension) > 0 && IsGLExtensionRequestable(extension))
         {
             glRequestExtensionANGLE(extension);
             ASSERT_GL_NO_ERROR();
@@ -2819,22 +2820,22 @@ TEST_P(WebGLCompatibilityTest, RG32FTextures)
 
         // Unsized RG 32F
         {
-            bool texture =
-                (extensionEnabled("GL_OES_texture_float") && extensionEnabled("GL_EXT_texture_rg"));
-            bool filter = extensionEnabled("GL_OES_texture_float_linear");
-            bool render = extensionEnabled("GL_EXT_color_buffer_float");
+            bool texture = (IsGLExtensionEnabled("GL_OES_texture_float") &&
+                            IsGLExtensionEnabled("GL_EXT_texture_rg"));
+            bool filter  = IsGLExtensionEnabled("GL_OES_texture_float_linear");
+            bool render  = IsGLExtensionEnabled("GL_EXT_color_buffer_float");
             TestFloatTextureFormat(GL_RG, GL_RG, GL_FLOAT, texture, filter, render, data, data);
         }
 
-        if (getClientMajorVersion() >= 3 || extensionEnabled("GL_EXT_texture_storage"))
+        if (getClientMajorVersion() >= 3 || IsGLExtensionEnabled("GL_EXT_texture_storage"))
         {
             // Sized RG 32F
             bool texture =
-                (getClientMajorVersion() >= 3) || (extensionEnabled("GL_OES_texture_float") &&
-                                                   extensionEnabled("GL_EXT_texture_rg") &&
-                                                   extensionEnabled("GL_EXT_texture_storage"));
-            bool filter = extensionEnabled("GL_OES_texture_float_linear");
-            bool render = extensionEnabled("GL_EXT_color_buffer_float");
+                (getClientMajorVersion() >= 3) || (IsGLExtensionEnabled("GL_OES_texture_float") &&
+                                                   IsGLExtensionEnabled("GL_EXT_texture_rg") &&
+                                                   IsGLExtensionEnabled("GL_EXT_texture_storage"));
+            bool filter = IsGLExtensionEnabled("GL_OES_texture_float_linear");
+            bool render = IsGLExtensionEnabled("GL_EXT_color_buffer_float");
             TestFloatTextureFormat(GL_RG32F, GL_RG, GL_FLOAT, texture, filter, render, data, data);
         }
     }
@@ -2842,13 +2843,16 @@ TEST_P(WebGLCompatibilityTest, RG32FTextures)
 
 TEST_P(WebGLCompatibilityTest, RGB32FTextures)
 {
+    // TODO(syoussefi): Missing format support.  http://anglebug.com/2898
+    ANGLE_SKIP_TEST_IF(IsVulkan());
+
     ANGLE_SKIP_TEST_IF(IsLinux() && IsIntel());
 
     constexpr float data[] = {1000.0f, -500.0f, 10.0f, 1.0f};
 
     for (auto extension : FloatingPointTextureExtensions)
     {
-        if (strlen(extension) > 0 && extensionRequestable(extension))
+        if (strlen(extension) > 0 && IsGLExtensionRequestable(extension))
         {
             glRequestExtensionANGLE(extension);
             ASSERT_GL_NO_ERROR();
@@ -2856,20 +2860,20 @@ TEST_P(WebGLCompatibilityTest, RGB32FTextures)
 
         // Unsized RGB 32F
         {
-            bool texture = extensionEnabled("GL_OES_texture_float");
-            bool filter  = extensionEnabled("GL_OES_texture_float_linear");
+            bool texture = IsGLExtensionEnabled("GL_OES_texture_float");
+            bool filter  = IsGLExtensionEnabled("GL_OES_texture_float_linear");
             bool render  = false;
             TestFloatTextureFormat(GL_RGB, GL_RGB, GL_FLOAT, texture, filter, render, data, data);
         }
 
-        if (getClientMajorVersion() >= 3 || extensionEnabled("GL_EXT_texture_storage"))
+        if (getClientMajorVersion() >= 3 || IsGLExtensionEnabled("GL_EXT_texture_storage"))
         {
             // Sized RGB 32F
             bool texture =
-                (getClientMajorVersion() >= 3) || (extensionEnabled("GL_OES_texture_float") &&
-                                                   extensionEnabled("GL_EXT_texture_storage"));
-            bool filter = extensionEnabled("GL_OES_texture_float_linear");
-            bool render = extensionEnabled("GL_CHROMIUM_color_buffer_float_rgb");
+                (getClientMajorVersion() >= 3) || (IsGLExtensionEnabled("GL_OES_texture_float") &&
+                                                   IsGLExtensionEnabled("GL_EXT_texture_storage"));
+            bool filter = IsGLExtensionEnabled("GL_OES_texture_float_linear");
+            bool render = IsGLExtensionEnabled("GL_CHROMIUM_color_buffer_float_rgb");
             TestFloatTextureFormat(GL_RGB32F, GL_RGB, GL_FLOAT, texture, filter, render, data,
                                    data);
         }
@@ -2878,11 +2882,14 @@ TEST_P(WebGLCompatibilityTest, RGB32FTextures)
 
 TEST_P(WebGLCompatibilityTest, RGBA32FTextures)
 {
+    // TODO(syoussefi): Missing format support.  http://anglebug.com/2898
+    ANGLE_SKIP_TEST_IF(IsVulkan());
+
     constexpr float data[] = {7000.0f, 100.0f, 33.0f, -1.0f};
 
     for (auto extension : FloatingPointTextureExtensions)
     {
-        if (strlen(extension) > 0 && extensionRequestable(extension))
+        if (strlen(extension) > 0 && IsGLExtensionRequestable(extension))
         {
             glRequestExtensionANGLE(extension);
             ASSERT_GL_NO_ERROR();
@@ -2890,21 +2897,21 @@ TEST_P(WebGLCompatibilityTest, RGBA32FTextures)
 
         // Unsized RGBA 32F
         {
-            bool texture = extensionEnabled("GL_OES_texture_float");
-            bool filter  = extensionEnabled("GL_OES_texture_float_linear");
+            bool texture = IsGLExtensionEnabled("GL_OES_texture_float");
+            bool filter  = IsGLExtensionEnabled("GL_OES_texture_float_linear");
             bool render  = false;
             TestFloatTextureFormat(GL_RGBA, GL_RGBA, GL_FLOAT, texture, filter, render, data, data);
         }
 
-        if (getClientMajorVersion() >= 3 || extensionEnabled("GL_EXT_texture_storage"))
+        if (getClientMajorVersion() >= 3 || IsGLExtensionEnabled("GL_EXT_texture_storage"))
         {
             // Sized RGBA 32F
             bool texture =
-                (getClientMajorVersion() >= 3) || (extensionEnabled("GL_OES_texture_float") &&
-                                                   extensionEnabled("GL_EXT_texture_storage"));
-            bool filter = extensionEnabled("GL_OES_texture_float_linear");
-            bool render = extensionEnabled("GL_EXT_color_buffer_float") ||
-                          extensionEnabled("GL_CHROMIUM_color_buffer_float_rgba");
+                (getClientMajorVersion() >= 3) || (IsGLExtensionEnabled("GL_OES_texture_float") &&
+                                                   IsGLExtensionEnabled("GL_EXT_texture_storage"));
+            bool filter = IsGLExtensionEnabled("GL_OES_texture_float_linear");
+            bool render = IsGLExtensionEnabled("GL_EXT_color_buffer_float") ||
+                          IsGLExtensionEnabled("GL_CHROMIUM_color_buffer_float_rgba");
             TestFloatTextureFormat(GL_RGBA32F, GL_RGBA, GL_FLOAT, texture, filter, render, data,
                                    data);
         }
@@ -2917,12 +2924,12 @@ TEST_P(WebGLCompatibilityTest, FramebufferFloatColorAttachment)
 {
     if (getClientMajorVersion() >= 3)
     {
-        ANGLE_SKIP_TEST_IF(!ensureExtensionEnabled("GL_EXT_color_buffer_float"));
+        ANGLE_SKIP_TEST_IF(!EnsureGLExtensionEnabled("GL_EXT_color_buffer_float"));
     }
     else
     {
-        ANGLE_SKIP_TEST_IF(!ensureExtensionEnabled("GL_OES_texture_float"));
-        ANGLE_SKIP_TEST_IF(!ensureExtensionEnabled("GL_CHROMIUM_color_buffer_float_rgba"));
+        ANGLE_SKIP_TEST_IF(!EnsureGLExtensionEnabled("GL_OES_texture_float"));
+        ANGLE_SKIP_TEST_IF(!EnsureGLExtensionEnabled("GL_CHROMIUM_color_buffer_float_rgba"));
     }
 
     constexpr char kVS[] =
@@ -2999,7 +3006,7 @@ TEST_P(WebGLCompatibilityTest, FramebufferFloatColorAttachmentMRT)
     bool isWebGL2 = getClientMajorVersion() >= 3;
     if (isWebGL2)
     {
-        ANGLE_SKIP_TEST_IF(!ensureExtensionEnabled("GL_EXT_color_buffer_float"));
+        ANGLE_SKIP_TEST_IF(!EnsureGLExtensionEnabled("GL_EXT_color_buffer_float"));
 
         constexpr char kVS[] =
             R"(#version 300 es
@@ -3024,9 +3031,9 @@ void main()
     }
     else
     {
-        ANGLE_SKIP_TEST_IF(!ensureExtensionEnabled("GL_OES_texture_float"));
-        ANGLE_SKIP_TEST_IF(!ensureExtensionEnabled("GL_CHROMIUM_color_buffer_float_rgba"));
-        ANGLE_SKIP_TEST_IF(!ensureExtensionEnabled("GL_EXT_draw_buffers"));
+        ANGLE_SKIP_TEST_IF(!EnsureGLExtensionEnabled("GL_OES_texture_float"));
+        ANGLE_SKIP_TEST_IF(!EnsureGLExtensionEnabled("GL_CHROMIUM_color_buffer_float_rgba"));
+        ANGLE_SKIP_TEST_IF(!EnsureGLExtensionEnabled("GL_EXT_draw_buffers"));
 
         constexpr char kVS[] =
             R"(void main()
@@ -3120,15 +3127,15 @@ void main()
 // GL_EXT_float_blend is not enabled
 TEST_P(WebGLCompatibilityTest, FloatBlend)
 {
-    ANGLE_SKIP_TEST_IF(!extensionRequestable("GL_EXT_float_blend"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionRequestable("GL_EXT_float_blend"));
     if (getClientMajorVersion() >= 3)
     {
-        ANGLE_SKIP_TEST_IF(!ensureExtensionEnabled("GL_EXT_color_buffer_float"));
+        ANGLE_SKIP_TEST_IF(!EnsureGLExtensionEnabled("GL_EXT_color_buffer_float"));
     }
     else
     {
-        ANGLE_SKIP_TEST_IF(!ensureExtensionEnabled("GL_OES_texture_float"));
-        ANGLE_SKIP_TEST_IF(!ensureExtensionEnabled("GL_CHROMIUM_color_buffer_float_rgba"));
+        ANGLE_SKIP_TEST_IF(!EnsureGLExtensionEnabled("GL_OES_texture_float"));
+        ANGLE_SKIP_TEST_IF(!EnsureGLExtensionEnabled("GL_CHROMIUM_color_buffer_float_rgba"));
     }
 
     TestExtFloatBlend(false);
@@ -3148,7 +3155,7 @@ TEST_P(WebGLCompatibilityTest, R16FTextures)
 
     for (auto extension : FloatingPointTextureExtensions)
     {
-        if (strlen(extension) > 0 && extensionRequestable(extension))
+        if (strlen(extension) > 0 && IsGLExtensionRequestable(extension))
         {
             glRequestExtensionANGLE(extension);
             ASSERT_GL_NO_ERROR();
@@ -3156,9 +3163,9 @@ TEST_P(WebGLCompatibilityTest, R16FTextures)
 
         // Unsized R 16F (OES)
         {
-            bool texture = extensionEnabled("GL_OES_texture_half_float") &&
-                           extensionEnabled("GL_EXT_texture_rg");
-            bool filter = extensionEnabled("GL_OES_texture_half_float_linear");
+            bool texture = IsGLExtensionEnabled("GL_OES_texture_half_float") &&
+                           IsGLExtensionEnabled("GL_EXT_texture_rg");
+            bool filter = IsGLExtensionEnabled("GL_OES_texture_half_float_linear");
             bool render = false;
             TestFloatTextureFormat(GL_RED, GL_RED, GL_HALF_FLOAT_OES, texture, filter, render,
                                    textureData, readPixelsData);
@@ -3178,17 +3185,17 @@ TEST_P(WebGLCompatibilityTest, R16FTextures)
             // Sized R 16F
             bool texture = true;
             bool filter  = true;
-            bool render  = extensionEnabled("GL_EXT_color_buffer_float");
+            bool render  = IsGLExtensionEnabled("GL_EXT_color_buffer_float");
             TestFloatTextureFormat(GL_R16F, GL_RED, GL_HALF_FLOAT, texture, filter, render,
                                    textureData, readPixelsData);
         }
-        else if (extensionEnabled("GL_EXT_texture_storage"))
+        else if (IsGLExtensionEnabled("GL_EXT_texture_storage"))
         {
             // Sized R 16F (OES)
-            bool texture = extensionEnabled("GL_OES_texture_half_float") &&
-                           extensionEnabled("GL_EXT_texture_rg");
-            bool filter = extensionEnabled("GL_OES_texture_half_float_linear");
-            bool render = extensionEnabled("GL_EXT_color_buffer_half_float");
+            bool texture = IsGLExtensionEnabled("GL_OES_texture_half_float") &&
+                           IsGLExtensionEnabled("GL_EXT_texture_rg");
+            bool filter = IsGLExtensionEnabled("GL_OES_texture_half_float_linear");
+            bool render = IsGLExtensionEnabled("GL_EXT_color_buffer_half_float");
             TestFloatTextureFormat(GL_R16F, GL_RED, GL_HALF_FLOAT_OES, texture, filter, render,
                                    textureData, readPixelsData);
         }
@@ -3204,7 +3211,7 @@ TEST_P(WebGLCompatibilityTest, RG16FTextures)
 
     for (auto extension : FloatingPointTextureExtensions)
     {
-        if (strlen(extension) > 0 && extensionRequestable(extension))
+        if (strlen(extension) > 0 && IsGLExtensionRequestable(extension))
         {
             glRequestExtensionANGLE(extension);
             ASSERT_GL_NO_ERROR();
@@ -3212,9 +3219,9 @@ TEST_P(WebGLCompatibilityTest, RG16FTextures)
 
         // Unsized RG 16F (OES)
         {
-            bool texture = extensionEnabled("GL_OES_texture_half_float") &&
-                           extensionEnabled("GL_EXT_texture_rg");
-            bool filter = extensionEnabled("GL_OES_texture_half_float_linear");
+            bool texture = IsGLExtensionEnabled("GL_OES_texture_half_float") &&
+                           IsGLExtensionEnabled("GL_EXT_texture_rg");
+            bool filter = IsGLExtensionEnabled("GL_OES_texture_half_float_linear");
             bool render = false;
             TestFloatTextureFormat(GL_RG, GL_RG, GL_HALF_FLOAT_OES, texture, filter, render,
                                    textureData, readPixelsData);
@@ -3234,17 +3241,17 @@ TEST_P(WebGLCompatibilityTest, RG16FTextures)
             // Sized RG 16F
             bool texture = true;
             bool filter  = true;
-            bool render  = extensionEnabled("GL_EXT_color_buffer_float");
+            bool render  = IsGLExtensionEnabled("GL_EXT_color_buffer_float");
             TestFloatTextureFormat(GL_RG16F, GL_RG, GL_HALF_FLOAT, texture, filter, render,
                                    textureData, readPixelsData);
         }
-        else if (extensionEnabled("GL_EXT_texture_storage"))
+        else if (IsGLExtensionEnabled("GL_EXT_texture_storage"))
         {
             // Sized RG 16F (OES)
-            bool texture = extensionEnabled("GL_OES_texture_half_float") &&
-                           extensionEnabled("GL_EXT_texture_rg");
-            bool filter = extensionEnabled("GL_OES_texture_half_float_linear");
-            bool render = extensionEnabled("GL_EXT_color_buffer_half_float");
+            bool texture = IsGLExtensionEnabled("GL_OES_texture_half_float") &&
+                           IsGLExtensionEnabled("GL_EXT_texture_rg");
+            bool filter = IsGLExtensionEnabled("GL_OES_texture_half_float_linear");
+            bool render = IsGLExtensionEnabled("GL_EXT_color_buffer_half_float");
             TestFloatTextureFormat(GL_RG16F, GL_RG, GL_HALF_FLOAT_OES, texture, filter, render,
                                    textureData, readPixelsData);
         }
@@ -3253,6 +3260,9 @@ TEST_P(WebGLCompatibilityTest, RG16FTextures)
 
 TEST_P(WebGLCompatibilityTest, RGB16FTextures)
 {
+    // TODO(syoussefi): Missing format support.  http://anglebug.com/2898
+    ANGLE_SKIP_TEST_IF(IsVulkan());
+
     ANGLE_SKIP_TEST_IF(IsOzone() && IsIntel());
 
     constexpr float readPixelsData[] = {7000.0f, 100.0f, 33.0f, 1.0f};
@@ -3262,7 +3272,7 @@ TEST_P(WebGLCompatibilityTest, RGB16FTextures)
 
     for (auto extension : FloatingPointTextureExtensions)
     {
-        if (strlen(extension) > 0 && extensionRequestable(extension))
+        if (strlen(extension) > 0 && IsGLExtensionRequestable(extension))
         {
             glRequestExtensionANGLE(extension);
             ASSERT_GL_NO_ERROR();
@@ -3270,11 +3280,11 @@ TEST_P(WebGLCompatibilityTest, RGB16FTextures)
 
         // Unsized RGB 16F (OES)
         {
-            bool texture = extensionEnabled("GL_OES_texture_half_float");
-            bool filter  = extensionEnabled("GL_OES_texture_half_float_linear");
+            bool texture = IsGLExtensionEnabled("GL_OES_texture_half_float");
+            bool filter  = IsGLExtensionEnabled("GL_OES_texture_half_float_linear");
             // WebGL says that Unsized RGB 16F (OES) can be renderable with
             // GL_EXT_color_buffer_half_float.
-            bool render = extensionEnabled("GL_EXT_color_buffer_half_float");
+            bool render = IsGLExtensionEnabled("GL_EXT_color_buffer_half_float");
             TestFloatTextureFormat(GL_RGB, GL_RGB, GL_HALF_FLOAT_OES, texture, filter, render,
                                    textureData, readPixelsData);
         }
@@ -3296,16 +3306,16 @@ TEST_P(WebGLCompatibilityTest, RGB16FTextures)
             // It is unclear how EXT_color_buffer_half_float applies to ES3.0 and above, however,
             // dEQP GLES3 es3fFboColorbufferTests.cpp verifies that texture attachment of GL_RGB16F
             // is possible, so assume that all GLES implementations support it.
-            bool render = extensionEnabled("GL_EXT_color_buffer_half_float");
+            bool render = IsGLExtensionEnabled("GL_EXT_color_buffer_half_float");
             TestFloatTextureFormat(GL_RGB16F, GL_RGB, GL_HALF_FLOAT, texture, filter, render,
                                    textureData, readPixelsData);
         }
-        else if (extensionEnabled("GL_EXT_texture_storage"))
+        else if (IsGLExtensionEnabled("GL_EXT_texture_storage"))
         {
             // Sized RGB 16F (OES)
-            bool texture = extensionEnabled("GL_OES_texture_half_float");
-            bool filter  = extensionEnabled("GL_OES_texture_half_float_linear");
-            bool render  = extensionEnabled("GL_EXT_color_buffer_half_float");
+            bool texture = IsGLExtensionEnabled("GL_OES_texture_half_float");
+            bool filter  = IsGLExtensionEnabled("GL_OES_texture_half_float_linear");
+            bool render  = IsGLExtensionEnabled("GL_EXT_color_buffer_half_float");
             TestFloatTextureFormat(GL_RGB16F, GL_RGB, GL_HALF_FLOAT_OES, texture, filter, render,
                                    textureData, readPixelsData);
         }
@@ -3323,7 +3333,7 @@ TEST_P(WebGLCompatibilityTest, RGBA16FTextures)
 
     for (auto extension : FloatingPointTextureExtensions)
     {
-        if (strlen(extension) > 0 && extensionRequestable(extension))
+        if (strlen(extension) > 0 && IsGLExtensionRequestable(extension))
         {
             glRequestExtensionANGLE(extension);
             ASSERT_GL_NO_ERROR();
@@ -3331,9 +3341,9 @@ TEST_P(WebGLCompatibilityTest, RGBA16FTextures)
 
         // Unsized RGBA 16F (OES)
         {
-            bool texture = extensionEnabled("GL_OES_texture_half_float");
-            bool filter  = extensionEnabled("GL_OES_texture_half_float_linear");
-            bool render  = extensionEnabled("GL_EXT_color_buffer_half_float");
+            bool texture = IsGLExtensionEnabled("GL_OES_texture_half_float");
+            bool filter  = IsGLExtensionEnabled("GL_OES_texture_half_float_linear");
+            bool render  = IsGLExtensionEnabled("GL_EXT_color_buffer_half_float");
             TestFloatTextureFormat(GL_RGBA, GL_RGBA, GL_HALF_FLOAT_OES, texture, filter, render,
                                    textureData, readPixelsData);
         }
@@ -3352,16 +3362,16 @@ TEST_P(WebGLCompatibilityTest, RGBA16FTextures)
             // Sized RGBA 16F
             bool texture = true;
             bool filter  = true;
-            bool render  = extensionEnabled("GL_EXT_color_buffer_float");
+            bool render  = IsGLExtensionEnabled("GL_EXT_color_buffer_float");
             TestFloatTextureFormat(GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT, texture, filter, render,
                                    textureData, readPixelsData);
         }
-        else if (extensionEnabled("GL_EXT_texture_storage"))
+        else if (IsGLExtensionEnabled("GL_EXT_texture_storage"))
         {
             // Sized RGBA 16F (OES)
-            bool texture = extensionEnabled("GL_OES_texture_half_float");
-            bool filter  = extensionEnabled("GL_OES_texture_half_float_linear");
-            bool render  = extensionEnabled("GL_EXT_color_buffer_half_float");
+            bool texture = IsGLExtensionEnabled("GL_OES_texture_half_float");
+            bool filter  = IsGLExtensionEnabled("GL_OES_texture_half_float_linear");
+            bool render  = IsGLExtensionEnabled("GL_EXT_color_buffer_half_float");
             TestFloatTextureFormat(GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT_OES, texture, filter, render,
                                    textureData, readPixelsData);
         }
@@ -3375,7 +3385,7 @@ TEST_P(WebGLCompatibilityTest, SizedRGBA32FFormats)
     // Test skipped because it is only valid for WebGL1 contexts.
     ANGLE_SKIP_TEST_IF(getClientMajorVersion() != 2);
 
-    ANGLE_SKIP_TEST_IF(!extensionRequestable("GL_OES_texture_float"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionRequestable("GL_OES_texture_float"));
 
     glRequestExtensionANGLE("GL_OES_texture_float");
     ASSERT_GL_NO_ERROR();
@@ -3391,7 +3401,7 @@ TEST_P(WebGLCompatibilityTest, SizedRGBA32FFormats)
     // dEQP implicitly defines error code ordering
     EXPECT_GL_ERROR(GL_INVALID_ENUM);
 
-    if (extensionRequestable("GL_CHROMIUM_color_buffer_float_rgba"))
+    if (IsGLExtensionRequestable("GL_CHROMIUM_color_buffer_float_rgba"))
     {
         glRequestExtensionANGLE("GL_CHROMIUM_color_buffer_float_rgba");
         ASSERT_GL_NO_ERROR();
@@ -3400,7 +3410,7 @@ TEST_P(WebGLCompatibilityTest, SizedRGBA32FFormats)
         EXPECT_GL_NO_ERROR();
     }
 
-    if (extensionRequestable("GL_CHROMIUM_color_buffer_float_rgb"))
+    if (IsGLExtensionRequestable("GL_CHROMIUM_color_buffer_float_rgb"))
     {
         glRequestExtensionANGLE("GL_CHROMIUM_color_buffer_float_rgb");
         ASSERT_GL_NO_ERROR();
@@ -3756,12 +3766,12 @@ TEST_P(WebGL2CompatibilityTest, ClearBufferTypeCompatibity)
     EXPECT_GL_ERROR(GL_INVALID_OPERATION);
 
     // Float buffer
-    if (extensionRequestable("GL_EXT_color_buffer_float"))
+    if (IsGLExtensionRequestable("GL_EXT_color_buffer_float"))
     {
         glRequestExtensionANGLE("GL_EXT_color_buffer_float");
     }
 
-    if (extensionEnabled("GL_EXT_color_buffer_float"))
+    if (IsGLExtensionEnabled("GL_EXT_color_buffer_float"))
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 1, 1, 0, GL_RGBA, GL_FLOAT, nullptr);
         ASSERT_GL_NO_ERROR();
@@ -4047,7 +4057,7 @@ void main() {
 TEST_P(WebGLCompatibilityTest, FramebufferAttachmentQuery)
 {
     ANGLE_SKIP_TEST_IF(getClientMajorVersion() > 2);
-    ANGLE_SKIP_TEST_IF(extensionEnabled("GL_EXT_draw_buffers"));
+    ANGLE_SKIP_TEST_IF(IsGLExtensionEnabled("GL_EXT_draw_buffers"));
 
     GLFramebuffer fbo;
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
@@ -4065,14 +4075,14 @@ TEST_P(WebGLCompatibilityTest, FramebufferAttachmentQuery)
     EXPECT_GL_ERROR(GL_INVALID_ENUM);
 }
 
-// Tests the WebGL removal of undefined behavior when attachments aren't written to.
+// Tests WebGL reports INVALID_OPERATION for mismatch of drawbuffers and fragment output
 TEST_P(WebGLCompatibilityTest, DrawBuffers)
 {
     // Make sure we can use at least 4 attachments for the tests.
     bool useEXT = false;
     if (getClientMajorVersion() < 3)
     {
-        ANGLE_SKIP_TEST_IF(!extensionRequestable("GL_EXT_draw_buffers"));
+        ANGLE_SKIP_TEST_IF(!IsGLExtensionRequestable("GL_EXT_draw_buffers"));
 
         glRequestExtensionANGLE("GL_EXT_draw_buffers");
         useEXT = true;
@@ -4152,12 +4162,12 @@ TEST_P(WebGLCompatibilityTest, DrawBuffers)
 
     GLenum halfDrawBuffers[] = {
         GL_NONE,
+        GL_COLOR_ATTACHMENT1,
         GL_NONE,
-        GL_COLOR_ATTACHMENT2,
         GL_COLOR_ATTACHMENT3,
     };
 
-    // Test that when using gl_FragColor, only the first attachment is written to.
+    // Test that when using gl_FragColor with no-array
     const char *fragESSL1 =
         R"(precision highp float;
 void main()
@@ -4167,28 +4177,10 @@ void main()
     ANGLE_GL_PROGRAM(programESSL1, essl1_shaders::vs::Simple(), fragESSL1);
 
     {
-        ClearEverythingToRed(renderbuffers);
-
         glBindFramebuffer(GL_FRAMEBUFFER, drawFBO);
         DrawBuffers(useEXT, 4, allDrawBuffers);
         drawQuad(programESSL1, essl1_shaders::PositionAttrib(), 0.5, 1.0, true);
-        ASSERT_GL_NO_ERROR();
-
-        CheckColors(renderbuffers, 0b0001, GLColor::green);
-        CheckColors(renderbuffers, 0b1110, GLColor::red);
-    }
-
-    // Test that when using gl_FragColor, but the first draw buffer is 0, then no attachment is
-    // written to.
-    {
-        ClearEverythingToRed(renderbuffers);
-
-        glBindFramebuffer(GL_FRAMEBUFFER, drawFBO);
-        DrawBuffers(useEXT, 4, halfDrawBuffers);
-        drawQuad(programESSL1, essl1_shaders::PositionAttrib(), 0.5, 1.0, true);
-        ASSERT_GL_NO_ERROR();
-
-        CheckColors(renderbuffers, 0b1111, GLColor::red);
+        EXPECT_GL_ERROR(GL_INVALID_OPERATION);
     }
 
     // Test what happens when rendering to a subset of the outputs. There is a behavior difference
@@ -4199,11 +4191,8 @@ void main()
     const char *positionAttrib;
     const char *writeOddOutputsVert;
     const char *writeOddOutputsFrag;
-    GLColor unwrittenColor;
     if (useEXT)
     {
-        // In the extension, when an attachment isn't written to, it should get 0's
-        unwrittenColor      = GLColor(0, 0, 0, 0);
         positionAttrib      = essl1_shaders::PositionAttrib();
         writeOddOutputsVert = essl1_shaders::vs::Simple();
         writeOddOutputsFrag =
@@ -4217,9 +4206,6 @@ void main()
     }
     else
     {
-        // In ES3 if an attachment isn't declared, it shouldn't get written and should be red
-        // because of the preceding clears.
-        unwrittenColor      = GLColor::red;
         positionAttrib      = essl3_shaders::PositionAttrib();
         writeOddOutputsVert = essl3_shaders::vs::Simple();
         writeOddOutputsFrag =
@@ -4235,21 +4221,34 @@ void main()
     }
     ANGLE_GL_PROGRAM(writeOddOutputsProgram, writeOddOutputsVert, writeOddOutputsFrag);
 
-    // Test that attachments not written to get the "unwritten" color
+    // Test that attachments not written to get the "unwritten" color (useEXT)
+    // Or INVALID_OPERATION is generated if there's active draw buffer receive no output
     {
         ClearEverythingToRed(renderbuffers);
 
         glBindFramebuffer(GL_FRAMEBUFFER, drawFBO);
         DrawBuffers(useEXT, 4, allDrawBuffers);
         drawQuad(writeOddOutputsProgram, positionAttrib, 0.5, 1.0, true);
-        ASSERT_GL_NO_ERROR();
 
-        CheckColors(renderbuffers, 0b1010, GLColor::green);
-        CheckColors(renderbuffers, 0b0101, unwrittenColor);
+        if (useEXT)
+        {
+            ASSERT_GL_NO_ERROR();
+            CheckColors(renderbuffers, 0b1010, GLColor::green);
+            // In the extension, when an attachment isn't written to, it should get 0's
+            CheckColors(renderbuffers, 0b0101, GLColor(0, 0, 0, 0));
+        }
+        else
+        {
+            EXPECT_GL_ERROR(GL_INVALID_OPERATION);
+        }
     }
 
-    // Test that attachments not written to get the "unwritten" color but that even when the
-    // extension is used, disabled attachments are not written at all and stay red.
+    // TODO(syoussefi): Qualcomm driver crashes in the presence of VK_ATTACHMENT_UNUSED.
+    // http://anglebug.com/3423
+    ANGLE_SKIP_TEST_IF(IsVulkan() && IsAndroid());
+
+    // Test that attachments written to get the correct color from shader output but that even when
+    // the extension is used, disabled attachments are not written at all and stay red.
     {
         ClearEverythingToRed(renderbuffers);
 
@@ -4258,9 +4257,8 @@ void main()
         drawQuad(writeOddOutputsProgram, positionAttrib, 0.5, 1.0, true);
         ASSERT_GL_NO_ERROR();
 
-        CheckColors(renderbuffers, 0b1000, GLColor::green);
-        CheckColors(renderbuffers, 0b0100, unwrittenColor);
-        CheckColors(renderbuffers, 0b0011, GLColor::red);
+        CheckColors(renderbuffers, 0b1010, GLColor::green);
+        CheckColors(renderbuffers, 0b0101, GLColor::red);
     }
 }
 
@@ -4268,11 +4266,11 @@ void main()
 // extensions have been enabled
 TEST_P(WebGLCompatibilityTest, GenerateMipmapUnsizedFloatingPointTexture)
 {
-    if (extensionRequestable("GL_OES_texture_float"))
+    if (IsGLExtensionRequestable("GL_OES_texture_float"))
     {
         glRequestExtensionANGLE("GL_OES_texture_float");
     }
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_OES_texture_float"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_OES_texture_float"));
 
     GLTexture texture;
     glBindTexture(GL_TEXTURE_2D, texture);
@@ -4293,17 +4291,17 @@ TEST_P(WebGLCompatibilityTest, GenerateMipmapUnsizedFloatingPointTexture)
 // extensions have been enabled
 TEST_P(WebGLCompatibilityTest, GenerateMipmapSizedFloatingPointTexture)
 {
-    if (extensionRequestable("GL_OES_texture_float"))
+    if (IsGLExtensionRequestable("GL_OES_texture_float"))
     {
         glRequestExtensionANGLE("GL_OES_texture_float");
     }
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_OES_texture_float"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_OES_texture_float"));
 
-    if (extensionRequestable("GL_EXT_texture_storage"))
+    if (IsGLExtensionRequestable("GL_EXT_texture_storage"))
     {
         glRequestExtensionANGLE("GL_EXT_texture_storage");
     }
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_texture_storage"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_texture_storage"));
 
     GLTexture texture;
     glBindTexture(GL_TEXTURE_2D, texture);
@@ -4321,7 +4319,7 @@ TEST_P(WebGLCompatibilityTest, GenerateMipmapSizedFloatingPointTexture)
     glGenerateMipmap(GL_TEXTURE_2D);
     EXPECT_GL_ERROR(GL_INVALID_OPERATION);
 
-    if (extensionRequestable("GL_EXT_color_buffer_float"))
+    if (IsGLExtensionRequestable("GL_EXT_color_buffer_float"))
     {
         // Format is renderable but not filterable
         glRequestExtensionANGLE("GL_EXT_color_buffer_float");
@@ -4329,12 +4327,12 @@ TEST_P(WebGLCompatibilityTest, GenerateMipmapSizedFloatingPointTexture)
         EXPECT_GL_ERROR(GL_INVALID_OPERATION);
     }
 
-    if (extensionRequestable("GL_EXT_color_buffer_float_linear"))
+    if (IsGLExtensionRequestable("GL_EXT_color_buffer_float_linear"))
     {
         // Format is renderable but not filterable
         glRequestExtensionANGLE("GL_EXT_color_buffer_float_linear");
 
-        if (extensionEnabled("GL_EXT_color_buffer_float"))
+        if (IsGLExtensionEnabled("GL_EXT_color_buffer_float"))
         {
             // Format is filterable and renderable
             glGenerateMipmap(GL_TEXTURE_2D);
@@ -4357,11 +4355,11 @@ void WebGLCompatibilityTest::validateTexImageExtensionFormat(GLenum format,
     glTexImage2D(GL_TEXTURE_2D, 0, format, 1, 1, 0, format, GL_UNSIGNED_BYTE, nullptr);
     EXPECT_GL_ERROR(GL_INVALID_ENUM);
 
-    if (extensionRequestable(extName))
+    if (IsGLExtensionRequestable(extName))
     {
         // Verify texture format is allowed once extension is enabled.
         glRequestExtensionANGLE(extName.c_str());
-        EXPECT_TRUE(extensionEnabled(extName));
+        EXPECT_TRUE(IsGLExtensionEnabled(extName));
 
         glTexImage2D(GL_TEXTURE_2D, 0, format, 1, 1, 0, format, GL_UNSIGNED_BYTE, nullptr);
         ASSERT_GL_NO_ERROR();
@@ -4411,11 +4409,11 @@ void WebGLCompatibilityTest::validateCompressedTexImageExtensionFormat(GLenum fo
     glCompressedTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, blockSize, data.data());
     EXPECT_GL_ERROR(GL_INVALID_ENUM);
 
-    if (extensionRequestable(extName))
+    if (IsGLExtensionRequestable(extName))
     {
         // Verify texture format is allowed once extension is enabled.
         glRequestExtensionANGLE(extName.c_str());
-        EXPECT_TRUE(extensionEnabled(extName));
+        EXPECT_TRUE(IsGLExtensionEnabled(extName));
 
         glCompressedTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, blockSize, data.data());
         EXPECT_GL_NO_ERROR();
@@ -4640,7 +4638,8 @@ ANGLE_INSTANTIATE_TEST(WebGLCompatibilityTest,
                        ES3_OPENGL(),
                        ES2_OPENGLES(),
                        ES3_OPENGLES(),
-                       ES2_VULKAN());
+                       ES2_VULKAN(),
+                       ES3_VULKAN());
 
 ANGLE_INSTANTIATE_TEST(WebGL2CompatibilityTest, ES3_D3D11(), ES3_OPENGL(), ES3_OPENGLES());
 }  // namespace angle

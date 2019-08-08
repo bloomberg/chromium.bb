@@ -29,7 +29,6 @@ static_library("core") {
   ]
   public_deps = [
     "//base",
-    "//components/data_use_measurement/core",
     "//components/keyed_service/core",
     "//net",
     "//services/network/public/cpp",

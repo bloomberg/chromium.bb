@@ -11,9 +11,12 @@
 #include <utility>
 #include <vector>
 
+#include "build/build_config.h"
 #include "core/fxcodec/codec/cfx_codec_memory.h"
 #include "core/fxcodec/fx_codec.h"
+#include "core/fxcrt/fx_safe_types.h"
 #include "core/fxcrt/fx_stream.h"
+#include "core/fxge/dib/cfx_cmyk_to_srgb.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
 #include "core/fxge/fx_dib.h"
 #include "third_party/base/logging.h"
@@ -25,11 +28,11 @@
 namespace {
 
 #ifdef PDF_ENABLE_XFA_PNG
-#if _FX_OS_ == _FX_OS_MACOSX_
+#if defined(OS_MACOSX)
 const double kPngGamma = 1.7;
-#else   // _FX_OS_ == _FX_OS_MACOSX_
+#else
 const double kPngGamma = 2.2;
-#endif  // _FX_OS_ == _FX_OS_MACOSX_
+#endif  // defined(OS_MACOSX)
 #endif  // PDF_ENABLE_XFA_PNG
 
 void RGB2BGR(uint8_t* buffer, int width = 1) {
@@ -1522,8 +1525,11 @@ FXCODEC_STATUS CCodec_ProgressiveDecoder::TiffContinueDecode() {
     m_status = FXCODEC_STATUS_ERR_MEMORY;
     return m_status;
   }
-  RetainPtr<CFX_DIBitmap> pStrechBitmap = pFormatBitmap->StretchTo(
-      m_sizeX, m_sizeY, kBilinearInterpolation, nullptr);
+
+  FXDIB_ResampleOptions options;
+  options.bInterpolateBilinear = true;
+  RetainPtr<CFX_DIBitmap> pStrechBitmap =
+      pFormatBitmap->StretchTo(m_sizeX, m_sizeY, options, nullptr);
   pFormatBitmap = nullptr;
   if (!pStrechBitmap) {
     m_pDeviceBitmap = nullptr;

@@ -343,7 +343,25 @@ struct IntTable
     : raw_hash_set<IntPolicy, container_internal::hash_default_hash<int64_t>,
                    std::equal_to<int64_t>, std::allocator<int64_t>> {
   using Base = typename IntTable::raw_hash_set;
-  IntTable() {}
+  using Base::Base;
+};
+
+template <typename T>
+struct CustomAlloc : std::allocator<T> {
+  CustomAlloc() {}
+
+  template <typename U>
+  CustomAlloc(const CustomAlloc<U>& other) {}
+
+  template<class U> struct rebind {
+    using other = CustomAlloc<U>;
+  };
+};
+
+struct CustomAllocIntTable
+    : raw_hash_set<IntPolicy, container_internal::hash_default_hash<int64_t>,
+                   std::equal_to<int64_t>, CustomAlloc<int64_t>> {
+  using Base = typename CustomAllocIntTable::raw_hash_set;
   using Base::Base;
 };
 
@@ -414,10 +432,11 @@ TEST(Table, Prefetch) {
   t.prefetch(2);
 
   // Do not run in debug mode, when prefetch is not implemented, or when
-  // sanitizers are enabled.
-#if defined(NDEBUG) && defined(__GNUC__) && !defined(ADDRESS_SANITIZER) && \
-    !defined(MEMORY_SANITIZER) && !defined(THREAD_SANITIZER) &&            \
-    !defined(UNDEFINED_BEHAVIOR_SANITIZER)
+  // sanitizers are enabled, or on WebAssembly.
+#if defined(NDEBUG) && defined(__GNUC__) && defined(__x86_64__) &&          \
+    !defined(ADDRESS_SANITIZER) && !defined(MEMORY_SANITIZER) &&            \
+    !defined(THREAD_SANITIZER) && !defined(UNDEFINED_BEHAVIOR_SANITIZER) && \
+    !defined(__EMSCRIPTEN__)
   const auto now = [] { return absl::base_internal::CycleClock::Now(); };
 
   // Make size enough to not fit in L2 cache (16.7 Mb)
@@ -1062,7 +1081,7 @@ ProbeStats CollectProbeStatsOnKeysXoredWithSeed(const std::vector<int64_t>& keys
 
 ExpectedStats XorSeedExpectedStats() {
   constexpr bool kRandomizesInserts =
-#if NDEBUG
+#ifdef NDEBUG
       false;
 #else   // NDEBUG
       true;
@@ -1156,7 +1175,7 @@ ProbeStats CollectProbeStatsOnLinearlyTransformedKeys(
 
 ExpectedStats LinearTransformExpectedStats() {
   constexpr bool kRandomizesInserts =
-#if NDEBUG
+#ifdef NDEBUG
       false;
 #else   // NDEBUG
       true;
@@ -1346,37 +1365,31 @@ TEST(Table, ConstructFromInitList) {
 
 TEST(Table, CopyConstruct) {
   IntTable t;
-  t.max_load_factor(.321f);
   t.emplace(0);
   EXPECT_EQ(1, t.size());
   {
     IntTable u(t);
     EXPECT_EQ(1, u.size());
-    EXPECT_EQ(t.max_load_factor(), u.max_load_factor());
     EXPECT_THAT(*u.find(0), 0);
   }
   {
     IntTable u{t};
     EXPECT_EQ(1, u.size());
-    EXPECT_EQ(t.max_load_factor(), u.max_load_factor());
     EXPECT_THAT(*u.find(0), 0);
   }
   {
     IntTable u = t;
     EXPECT_EQ(1, u.size());
-    EXPECT_EQ(t.max_load_factor(), u.max_load_factor());
     EXPECT_THAT(*u.find(0), 0);
   }
 }
 
 TEST(Table, CopyConstructWithAlloc) {
   StringTable t;
-  t.max_load_factor(.321f);
   t.emplace("a", "b");
   EXPECT_EQ(1, t.size());
   StringTable u(t, Alloc<std::pair<std::string, std::string>>());
   EXPECT_EQ(1, u.size());
-  EXPECT_EQ(t.max_load_factor(), u.max_load_factor());
   EXPECT_THAT(*u.find("a"), Pair("a", "b"));
 }
 
@@ -1394,88 +1407,68 @@ TEST(Table, AllocWithExplicitCtor) {
 TEST(Table, MoveConstruct) {
   {
     StringTable t;
-    t.max_load_factor(.321f);
-    const float lf = t.max_load_factor();
     t.emplace("a", "b");
     EXPECT_EQ(1, t.size());
 
     StringTable u(std::move(t));
     EXPECT_EQ(1, u.size());
-    EXPECT_EQ(lf, u.max_load_factor());
     EXPECT_THAT(*u.find("a"), Pair("a", "b"));
   }
   {
     StringTable t;
-    t.max_load_factor(.321f);
-    const float lf = t.max_load_factor();
     t.emplace("a", "b");
     EXPECT_EQ(1, t.size());
 
     StringTable u{std::move(t)};
     EXPECT_EQ(1, u.size());
-    EXPECT_EQ(lf, u.max_load_factor());
     EXPECT_THAT(*u.find("a"), Pair("a", "b"));
   }
   {
     StringTable t;
-    t.max_load_factor(.321f);
-    const float lf = t.max_load_factor();
     t.emplace("a", "b");
     EXPECT_EQ(1, t.size());
 
     StringTable u = std::move(t);
     EXPECT_EQ(1, u.size());
-    EXPECT_EQ(lf, u.max_load_factor());
     EXPECT_THAT(*u.find("a"), Pair("a", "b"));
   }
 }
 
 TEST(Table, MoveConstructWithAlloc) {
   StringTable t;
-  t.max_load_factor(.321f);
-  const float lf = t.max_load_factor();
   t.emplace("a", "b");
   EXPECT_EQ(1, t.size());
   StringTable u(std::move(t), Alloc<std::pair<std::string, std::string>>());
   EXPECT_EQ(1, u.size());
-  EXPECT_EQ(lf, u.max_load_factor());
   EXPECT_THAT(*u.find("a"), Pair("a", "b"));
 }
 
 TEST(Table, CopyAssign) {
   StringTable t;
-  t.max_load_factor(.321f);
   t.emplace("a", "b");
   EXPECT_EQ(1, t.size());
   StringTable u;
   u = t;
   EXPECT_EQ(1, u.size());
-  EXPECT_EQ(t.max_load_factor(), u.max_load_factor());
   EXPECT_THAT(*u.find("a"), Pair("a", "b"));
 }
 
 TEST(Table, CopySelfAssign) {
   StringTable t;
-  t.max_load_factor(.321f);
-  const float lf = t.max_load_factor();
   t.emplace("a", "b");
   EXPECT_EQ(1, t.size());
   t = *&t;
   EXPECT_EQ(1, t.size());
-  EXPECT_EQ(lf, t.max_load_factor());
   EXPECT_THAT(*t.find("a"), Pair("a", "b"));
 }
 
 TEST(Table, MoveAssign) {
   StringTable t;
-  t.max_load_factor(.321f);
-  const float lf = t.max_load_factor();
   t.emplace("a", "b");
   EXPECT_EQ(1, t.size());
   StringTable u;
   u = std::move(t);
   EXPECT_EQ(1, u.size());
-  EXPECT_EQ(lf, u.max_load_factor());
   EXPECT_THAT(*u.find("a"), Pair("a", "b"));
 }
 
@@ -1785,7 +1778,7 @@ TEST(Table, IterationOrderChangesByInstance) {
 
     std::vector<IntTable> tables;
     bool found_difference = false;
-    for (int i = 0; !found_difference && i < 500; ++i) {
+    for (int i = 0; !found_difference && i < 5000; ++i) {
       tables.push_back(MakeSimpleTable(size));
       found_difference = OrderOfIteration(tables.back()) != reference;
     }
@@ -1799,7 +1792,7 @@ TEST(Table, IterationOrderChangesByInstance) {
 
 TEST(Table, IterationOrderChangesOnRehash) {
   std::vector<IntTable> garbage;
-  for (int i = 0; i < 500; ++i) {
+  for (int i = 0; i < 5000; ++i) {
     auto t = MakeSimpleTable(20);
     const auto reference = OrderOfIteration(t);
     // Force rehash to the same size.
@@ -1867,6 +1860,27 @@ TEST(RawHashSamplerTest, Sample) {
 
   EXPECT_NEAR((end_size - start_size) / static_cast<double>(tables.size()),
               0.01, 0.005);
+}
+
+TEST(RawHashSamplerTest, DoNotSampleCustomAllocators) {
+  // Enable the feature even if the prod default is off.
+  SetHashtablezEnabled(true);
+  SetHashtablezSampleParameter(100);
+
+  auto& sampler = HashtablezSampler::Global();
+  size_t start_size = 0;
+  start_size += sampler.Iterate([&](const HashtablezInfo&) { ++start_size; });
+
+  std::vector<CustomAllocIntTable> tables;
+  for (int i = 0; i < 1000000; ++i) {
+    tables.emplace_back();
+    tables.back().insert(1);
+  }
+  size_t end_size = 0;
+  end_size += sampler.Iterate([&](const HashtablezInfo&) { ++end_size; });
+
+  EXPECT_NEAR((end_size - start_size) / static_cast<double>(tables.size()),
+              0.00, 0.001);
 }
 
 #ifdef ADDRESS_SANITIZER

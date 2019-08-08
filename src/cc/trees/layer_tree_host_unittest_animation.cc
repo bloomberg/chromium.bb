@@ -1537,9 +1537,11 @@ class LayerTreeHostAnimationTestAnimatedLayerRemovedAndAdded
         EXPECT_FALSE(animation_->keyframe_effect()
                          ->element_animations()
                          ->has_element_in_pending_list());
-        EXPECT_FALSE(animation_host()->NeedsTickAnimations());
+        // Animations still need one more tick to deliver finished event.
+        EXPECT_TRUE(animation_host()->NeedsTickAnimations());
         break;
       case 2:
+        EXPECT_FALSE(animation_host()->NeedsTickAnimations());
         layer_tree_host()->root_layer()->AddChild(layer_);
         EXPECT_TRUE(animation_->keyframe_effect()
                         ->element_animations()
@@ -1570,6 +1572,8 @@ class LayerTreeHostAnimationTestAnimatedLayerRemovedAndAdded
         EXPECT_FALSE(animation_impl->keyframe_effect()
                          ->element_animations()
                          ->has_element_in_active_list());
+        // Having updated state on the host_impl during the commit, we no longer
+        // need to tick animations.
         EXPECT_FALSE(GetImplAnimationHost(host_impl)->NeedsTickAnimations());
         break;
       case 2:

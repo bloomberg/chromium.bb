@@ -163,6 +163,7 @@ DeferredGpuCommandService::DeferredGpuCommandService(
                                      nullptr,
                                      gl::GLSurfaceFormat(),
                                      shared_image_manager.get(),
+                                     nullptr,
                                      nullptr),
       sync_point_manager_(std::move(sync_point_manager)),
       mailbox_manager_(std::move(mailbox_manager)),

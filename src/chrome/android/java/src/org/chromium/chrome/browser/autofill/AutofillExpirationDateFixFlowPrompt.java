@@ -85,17 +85,20 @@ public class AutofillExpirationDateFixFlowPrompt
             mDidFocusOnYear |= hasFocus;
         });
 
-        mDialogModel = new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
-                               .with(ModalDialogProperties.CONTROLLER, this)
-                               .with(ModalDialogProperties.TITLE, title)
-                               .with(ModalDialogProperties.TITLE_ICON, context, drawableId)
-                               .with(ModalDialogProperties.CUSTOM_VIEW, mDialogView)
-                               .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, confirmButtonLabel)
-                               .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT,
-                                       context.getResources(), R.string.cancel)
-                               .with(ModalDialogProperties.CANCEL_ON_TOUCH_OUTSIDE, false)
-                               .with(ModalDialogProperties.POSITIVE_BUTTON_DISABLED, true)
-                               .build();
+        PropertyModel.Builder builder =
+                new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
+                        .with(ModalDialogProperties.CONTROLLER, this)
+                        .with(ModalDialogProperties.TITLE, title)
+                        .with(ModalDialogProperties.CUSTOM_VIEW, mDialogView)
+                        .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, confirmButtonLabel)
+                        .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, context.getResources(),
+                                R.string.cancel)
+                        .with(ModalDialogProperties.CANCEL_ON_TOUCH_OUTSIDE, false)
+                        .with(ModalDialogProperties.POSITIVE_BUTTON_DISABLED, true);
+        if (drawableId != 0) {
+            builder.with(ModalDialogProperties.TITLE_ICON, context, drawableId);
+        }
+        mDialogModel = builder.build();
     }
 
     /**

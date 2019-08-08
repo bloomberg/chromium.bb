@@ -56,6 +56,7 @@ NetworkChangeNotifierMac::NetworkChangeNotifierMac()
 }
 
 NetworkChangeNotifierMac::~NetworkChangeNotifierMac() {
+  ClearGlobalPointer();
   // Delete the ConfigWatcher to join the notifier thread, ensuring that
   // StartReachabilityNotifications() has an opportunity to run to completion.
   config_watcher_.reset();

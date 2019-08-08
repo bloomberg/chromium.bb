@@ -5,6 +5,7 @@ include_rules = [
   "+components/viz/common",
   "+components/viz/host",
   "+components/viz/test",
+  "+services/viz/public/cpp",
   "+services/viz/public/interfaces",
   "+third_party/skia/include",
   "+ui",

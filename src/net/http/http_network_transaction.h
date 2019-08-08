@@ -49,16 +49,6 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
     : public HttpTransaction,
       public HttpStreamRequest::Delegate {
  public:
-  // Enumeration used by Net.Proxy.RedirectDuringConnect. Exposed here for
-  // sharing by unit-tests.
-  enum TunnelRedirectHistogramValue {
-    kSubresourceByExplicitProxy = 0,
-    kMainFrameByExplicitProxy = 1,
-    kSubresourceByAutoDetectedProxy = 2,
-    kMainFrameByAutoDetectedProxy = 3,
-    kMaxValue = kMainFrameByAutoDetectedProxy
-  };
-
   HttpNetworkTransaction(RequestPriority priority,
                          HttpNetworkSession* session);
 
@@ -127,11 +117,6 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
                         HttpAuthController* auth_controller) override;
   void OnNeedsClientAuth(const SSLConfig& used_ssl_config,
                          SSLCertRequestInfo* cert_info) override;
-  void OnHttpsProxyTunnelResponseRedirect(
-      const HttpResponseInfo& response_info,
-      const SSLConfig& used_ssl_config,
-      const ProxyInfo& used_proxy_info,
-      std::unique_ptr<HttpStream> stream) override;
 
   void OnQuicBroken() override;
   void GetConnectionAttempts(ConnectionAttempts* out) const override;
@@ -319,10 +304,6 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   // "Accept-Encoding".
   bool ContentEncodingsValid() const;
 
-  // Logic for handling ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT seen during
-  // DoCreateStreamCompletedTunnel().
-  int DoCreateStreamCompletedTunnelResponseRedirect();
-
   scoped_refptr<HttpAuthController>
       auth_controllers_[HttpAuth::AUTH_NUM_TARGETS];
 
@@ -452,10 +433,6 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
 
   // Number of times the transaction was restarted via a RestartWith* call.
   size_t num_restarts_;
-
-  // The net::Error which triggered a TLS 1.3 version interference probe, or OK
-  // if none was triggered.
-  int ssl_version_interference_error_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpNetworkTransaction);
 };

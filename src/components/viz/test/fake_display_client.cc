@@ -25,4 +25,8 @@ void FakeDisplayClient::CreateLayeredWindowUpdater(
     mojom::LayeredWindowUpdaterRequest request) {}
 #endif
 
+#if defined(USE_X11)
+void FakeDisplayClient::DidCompleteSwapWithNewSize(const gfx::Size& size) {}
+#endif
+
 }  // namespace viz

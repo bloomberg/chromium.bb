@@ -14,11 +14,13 @@
 #include "base/time/time.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_export.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_auth.h"
 #include "net/quic/quic_chromium_client_session.h"
 #include "net/socket/connect_job.h"
 #include "net/socket/ssl_client_socket.h"
+#include "net/spdy/spdy_session_key.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
@@ -48,7 +50,8 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
                         const HostPortPair& endpoint,
                         bool is_trusted_proxy,
                         bool tunnel,
-                        const NetworkTrafficAnnotationTag traffic_annotation);
+                        const NetworkTrafficAnnotationTag traffic_annotation,
+                        const NetworkIsolationKey& network_isolation_key);
 
   const scoped_refptr<TransportSocketParams>& transport_params() const {
     return transport_params_;
@@ -60,6 +63,9 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
   const HostPortPair& endpoint() const { return endpoint_; }
   bool is_trusted_proxy() const { return is_trusted_proxy_; }
   bool tunnel() const { return tunnel_; }
+  const NetworkIsolationKey& network_isolation_key() const {
+    return network_isolation_key_;
+  }
   const NetworkTrafficAnnotationTag traffic_annotation() const {
     return traffic_annotation_;
   }
@@ -74,6 +80,7 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
   const HostPortPair endpoint_;
   const bool is_trusted_proxy_;
   const bool tunnel_;
+  const NetworkIsolationKey network_isolation_key_;
   const NetworkTrafficAnnotationTag traffic_annotation_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpProxySocketParams);
@@ -199,6 +206,8 @@ class NET_EXPORT_PRIVATE HttpProxyConnectJob : public ConnectJob,
   const HostPortPair& GetDestination();
 
   std::string GetUserAgent() const;
+
+  SpdySessionKey CreateSpdySessionKey() const;
 
   scoped_refptr<HttpProxySocketParams> params_;
 

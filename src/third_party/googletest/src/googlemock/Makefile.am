@@ -1,3 +1,6 @@
+# Note: automake support is community-based. The maintainers do not use automake
+# internally.
+
 # Automake file
 
 ACLOCAL_AMFLAGS = -I m4
@@ -156,10 +159,6 @@ EXTRA_DIST += \
   scripts/generator/cpp/tokenize.py \
   scripts/generator/cpp/utils.py \
   scripts/generator/gmock_gen.py
-
-# Script for diagnosing compiler errors in programs that use Google
-# Mock.
-EXTRA_DIST += scripts/gmock_doctor.py
 
 # CMake scripts.
 EXTRA_DIST += \

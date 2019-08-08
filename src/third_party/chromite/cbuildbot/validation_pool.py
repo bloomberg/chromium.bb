@@ -15,7 +15,6 @@ import cPickle
 import functools
 import httplib
 import os
-import random
 import time
 from xml.dom import minidom
 
@@ -34,8 +33,8 @@ from chromite.lib import metrics
 from chromite.lib import parallel
 from chromite.lib import patch as cros_patch
 from chromite.lib import timeout_util
-from chromite.lib import tree_status
 from chromite.lib import triage_lib
+from chromite.lib import uri_lib
 from chromite.lib.buildstore import BuildStore
 
 
@@ -60,28 +59,6 @@ COMPUTE_DEPENDENCY_MAP_TIMEOUT = 5 * 60
 
 # The url prefix of the CL status page.
 CL_STATUS_URL_PREFIX = 'https://chromeos-cl-viewer-ui.googleplex.com/cl_status'
-
-class TreeIsClosedException(Exception):
-  """Raised when the tree is closed and we wanted to submit changes."""
-
-  def __init__(self, closed_or_throttled=False):
-    """Initialization.
-
-    Args:
-      closed_or_throttled: True if the exception is being thrown on a
-                           possibly 'throttled' tree. False if only
-                           thrown on a 'closed' tree. Default: False
-    """
-    if closed_or_throttled:
-      status_text = 'closed or throttled'
-      opposite_status_text = 'open'
-    else:
-      status_text = 'closed'
-      opposite_status_text = 'throttled or open'
-
-    super(TreeIsClosedException, self).__init__(
-        'Tree is %s.  Please set tree status to %s to '
-        'proceed.' % (status_text, opposite_status_text))
 
 
 class FailedToSubmitAllChangesException(failures_lib.StepFailure):
@@ -168,12 +145,6 @@ class ValidationPool(object):
   method that grabs the commits that are ready for validation.
   """
 
-  # Global variable to control whether or not we should allow CL's to get tried
-  # and/or committed when the tree is throttled.
-  # TODO(sosa): Remove this global once metrics show that this is the direction
-  # we want to go (and remove all additional throttled_ok logic from this
-  # module.
-  THROTTLED_OK = True
   GLOBAL_DRYRUN = False
   DEFAULT_TIMEOUT = 60 * 60 * 4
   SLEEP_TIMEOUT = 30
@@ -219,6 +190,8 @@ class ValidationPool(object):
       pre_cq_trybot: If set to True, this is a Pre-CQ trybot. (Note: The Pre-CQ
         launcher is NOT considered a Pre-CQ trybot.)
       tree_was_open: Whether the tree was open when the pool was created.
+        IMPORTANT: This field does nothing but cannot be removed due to
+        pickling. Because this class is deprecated, we leave it.
       applied: List of CLs that have been applied to the current repo.
       buildbucket_id: Buildbucket id of the current build as a string or int.
                       None if not buildbucket scheduled.
@@ -301,10 +274,11 @@ class ValidationPool(object):
     self._buildbucket_id = buildbucket_id
 
     # Set to False if the tree was not open when we acquired changes.
+    # Unused except for picking.
     self.tree_was_open = tree_was_open
 
-    # A set of changes filtered by throttling, default to None.
-    self.filtered_set = None
+    # A set of changes filtered by throttling, default to empty set.
+    self.filtered_set = set()
 
   def GetAppliedPatches(self):
     """Get the applied_patches instance.
@@ -323,7 +297,7 @@ class ValidationPool(object):
 
   @property
   def build_log(self):
-    return tree_status.ConstructLegolandBuildURL(self._buildbucket_id)
+    return uri_lib.ConstructMiloBuildUri(self._buildbucket_id)
 
   @staticmethod
   def GetGerritHelpersForOverlays(overlays):
@@ -362,7 +336,6 @@ class ValidationPool(object):
   @failures_lib.SetFailureType(failures_lib.BuilderFailure)
   def AcquirePreCQPool(cls, *args, **kwargs):
     """See ValidationPool.__init__ for arguments."""
-    kwargs.setdefault('tree_was_open', True)
     kwargs.setdefault('pre_cq_trybot', True)
     kwargs.setdefault('is_master', True)
     kwargs.setdefault('applied', [])
@@ -397,6 +370,11 @@ class ValidationPool(object):
       logging.info('Queried changes: %s', cros_patch.GetChangesAsString(
           changes))
 
+      # Start by filtering to only CrOS changes, so that we don't try to update
+      # Chromium browser CLs.
+      changes, non_manifest_changes = ValidationPool._FilterNonLcqProjects(
+          changes, git.ManifestCheckout.Cached(self.build_root))
+
       # Tell users to publish drafts/privates before marking them commit ready.
       # Do this before we filter out via the ready function below.
       for change in changes:
@@ -416,8 +394,6 @@ class ValidationPool(object):
         logging.info('Ready changes: %s', cros_patch.GetChangesAsString(
             changes))
 
-      changes, non_manifest_changes = ValidationPool._FilterNonCrosProjects(
-          changes, git.ManifestCheckout.Cached(self.build_root))
       self.candidates.extend(changes)
       self.non_manifest_changes.extend(non_manifest_changes)
 
@@ -434,7 +410,7 @@ class ValidationPool(object):
 
   @classmethod
   def AcquirePool(cls, overlays, repo, build_number, builder_name,
-                  buildbucket_id, query, dryrun=False, check_tree_open=True,
+                  buildbucket_id, query, dryrun=False,
                   change_filter=None, builder_run=None):
     """Acquires the current pool from Gerrit.
 
@@ -452,17 +428,12 @@ class ValidationPool(object):
       query: constants.CQ_READY_QUERY, PRECQ_READY_QUERY, or a custom
         query description of the form (<query_str>, None).
       dryrun: Don't submit anything to gerrit.
-      check_tree_open: If True, only return when the tree is open.
       change_filter: If set, use change_filter(pool, changes,
         non_manifest_changes) to filter out unwanted patches.
       builder_run: instance used to record CL actions to metadata and cidb.
 
     Returns:
       ValidationPool object.
-
-    Raises:
-      TreeIsClosedException: if the tree is closed (or throttled, if not
-                             |THROTTLED_OK|).
     """
     if change_filter is None:
       change_filter = lambda _, x, y: (x, y)
@@ -482,36 +453,15 @@ class ValidationPool(object):
                       exc_info=True)
 
     end_time = time.time() + timeout
-    status = constants.TREE_OPEN
 
     while True:
       current_time = time.time()
       time_left = end_time - current_time
-      # Wait until the tree becomes open.
-      if check_tree_open:
-        try:
-          status = tree_status.WaitForTreeStatus(
-              period=cls.SLEEP_TIMEOUT, timeout=time_left,
-              throttled_ok=cls.THROTTLED_OK)
-        except timeout_util.TimeoutError:
-          raise TreeIsClosedException(
-              closed_or_throttled=not cls.THROTTLED_OK)
 
       # Sync so that we are up-to-date on what is committed.
       repo.Sync()
 
       gerrit_query, ready_fn = query
-      tree_was_open = (status == constants.TREE_OPEN)
-
-      try:
-        experimental_builders = tree_status.GetExperimentalBuilders()
-        builder_run.attrs.metadata.UpdateWithDict({
-            constants.METADATA_EXPERIMENTAL_BUILDERS: experimental_builders
-        })
-      except timeout_util.TimeoutError:
-        logging.error('Timeout getting experimental builders from the tree'
-                      'status.')
-
       pool = ValidationPool(
           overlays=overlays,
           build_root=repo.directory,
@@ -520,7 +470,6 @@ class ValidationPool(object):
           is_master=True,
           dryrun=dryrun,
           builder_run=builder_run,
-          tree_was_open=tree_was_open,
           applied=[],
           buildbucket_id=buildbucket_id)
 
@@ -536,33 +485,6 @@ class ValidationPool(object):
       time.sleep(cls.SLEEP_TIMEOUT)
 
     return pool
-
-  def _GetFailStreak(self):
-    """Returns the fail streak for the validation pool.
-
-    Queries CIDB for the last CQ_SEARCH_HISTORY builds from the current build_id
-    and returns how many of them haven't passed in a row. This is used for
-    tree throttled validation pool logic.
-    """
-    # TODO(sosa): Remove Google Storage Fail Streak Counter.
-    build_identifier, _ = self._run.GetCIDBHandle()
-    build_id = build_identifier.cidb_id
-    if not self.buildstore.AreClientsReady():
-      return 0
-
-    builds = self.buildstore.GetBuildHistory(self._run.config.name,
-                                             ValidationPool.CQ_SEARCH_HISTORY,
-                                             ignore_build_id=build_id)
-    number_of_failures = 0
-    # Iterate through the ordered list of builds until you get one that is
-    # passed.
-    for build in builds:
-      if build['status'] != constants.BUILDER_STATUS_PASSED:
-        number_of_failures += 1
-      else:
-        break
-
-    return number_of_failures
 
   def AddPendingCommitsIntoPool(self, manifest):
     """Add the pending commits from |manifest| into pool.
@@ -629,8 +551,8 @@ class ValidationPool(object):
     return False
 
   @staticmethod
-  def _FilterNonCrosProjects(changes, manifest):
-    """Filters changes to a tuple of relevant changes.
+  def _FilterNonLcqProjects(changes, manifest):
+    """Filters changes not handled by the Legacy CQ; returns relevant changes.
 
     There are many code reviews that are not part of Chromium OS and/or
     only relevant on a different branch. This method returns a tuple of (
@@ -655,6 +577,9 @@ class ValidationPool(object):
     # First we filter to only Chromium OS repositories.
     changes = [c for c in changes if IsCrosReview(c)]
 
+    # Next, filter out Parallel CQ CL's that aren't delegated to us
+    changes = [c for c in changes if c.HasApproval('LCQ', ('1'))]
+
     changes_in_manifest = []
     changes_not_in_manifest = []
     for change in changes:
@@ -678,12 +603,10 @@ class ValidationPool(object):
     we only complain after REJECTION_GRACE_PERIOD has passed since the patch
     was uploaded.
 
-    This helps in three situations:
-      1) crbug.com/705023: if the error is a DependencyError, and the dependent
-         CL was filtered by a throttled tree, do not reject the CL set.
-      2) If the developer is in the middle of marking a stack of changes as
+    This helps in two situations:
+      1) If the developer is in the middle of marking a stack of changes as
          ready, we won't reject their work until the grace period has passed.
-      3) If the developer marks a big circular stack of changes as ready, and
+      2) If the developer marks a big circular stack of changes as ready, and
          some change in the middle of the stack doesn't apply, the user will
          get a chance to rebase their change before we mark all the changes as
          'not ready'.
@@ -774,34 +697,6 @@ class ValidationPool(object):
             change.commit_message, 80)
 
       logging.PrintBuildbotLink(s, change.url)
-
-  def FilterChangesForThrottledTree(self):
-    """Apply Throttled Tree logic to select patch candidates.
-
-    This should be called before any CLs are applied.
-
-    If the tree is throttled, we only test a random subset of our candidate
-    changes. Call this to select that subset, and throw away unrelated changes.
-
-    If the three was open when this pool was created, it does nothing.
-    """
-    if self.tree_was_open:
-      return
-
-    # By filtering the candidates before any calls to Apply, we can make sure
-    # that repeated calls to Apply always consider the same list of candidates.
-    fail_streak = self._GetFailStreak()
-    test_pool_size = max(1, int(len(self.candidates) / (1.5**fail_streak)))
-    random.shuffle(self.candidates)
-
-    removed = self.candidates[test_pool_size:]
-    if removed:
-      self.filtered_set = set(removed)
-      logging.info('As the tree is throttled, it only picks a random subset of '
-                   'candidate changes. Changes not picked up in this run: %s ',
-                   cros_patch.GetChangesAsString(removed))
-
-    self.candidates = self.candidates[:test_pool_size]
 
   def ApplyPoolIntoRepo(self, manifest=None, filter_fn=lambda p: True):
     """Applies changes from pool into the directory specified by the buildroot.
@@ -1144,38 +1039,20 @@ class ValidationPool(object):
 
     return errors
 
-  def SubmitChanges(self, verified_cls, check_tree_open=True,
-                    throttled_ok=True):
+  def SubmitChanges(self, verified_cls):
     """Submits the given changes to Gerrit.
 
     Args:
       verified_cls: A dictionary mapping the fully verified changes to their
         string reasons for submission.
-      check_tree_open: Whether to check that the tree is open before submitting
-        changes. If this is False, TreeIsClosedException will never be raised.
-      throttled_ok: if |check_tree_open|, treat a throttled tree as open
 
     Returns:
       (submitted, errors) where submitted is a set of changes that were
       submitted, and errors is a map {change: error} containing changes that
       failed to submit.
-
-    Raises:
-      TreeIsClosedException: if the tree is closed.
     """
     assert self.is_master, 'Non-master builder calling SubmitPool'
     assert not self.pre_cq_trybot, 'Trybot calling SubmitPool'
-
-    # TODO(pprabhu) It is bad form for master-paladin to do work after its
-    # deadline has passed. Extend the deadline after waiting for slave
-    # completion and ensure that none of the follow up stages go beyond the
-    # deadline.
-    if (check_tree_open and not self.dryrun and not
-        tree_status.IsTreeOpen(period=self.SLEEP_TIMEOUT,
-                               timeout=self.DEFAULT_TIMEOUT,
-                               throttled_ok=throttled_ok)):
-      raise TreeIsClosedException(
-          closed_or_throttled=not throttled_ok)
 
     changes = verified_cls.keys()
     # Filter out changes that were modified during the CQ run.
@@ -1608,34 +1485,24 @@ class ValidationPool(object):
           build_id,
           [clactions.CLAction.FromGerritPatchAndAction(change, action, reason)])
 
-  def SubmitNonManifestChanges(self, check_tree_open=True, reason=None):
+  def SubmitNonManifestChanges(self, reason=None):
     """Commits changes to Gerrit from Pool that aren't part of the checkout.
 
     Args:
-      check_tree_open: Whether to check that the tree is open before submitting
-        changes. If this is False, TreeIsClosedException will never be raised.
       reason: string reason for submission to be recorded in cidb. (Should be
         None or constant with name STRATEGY_* from constants.py)
-
-    Raises:
-      TreeIsClosedException: if the tree is closed.
     """
     verified_cls = {c:reason for c in self.non_manifest_changes}
-    self.SubmitChanges(verified_cls,
-                       check_tree_open=check_tree_open)
+    self.SubmitChanges(verified_cls)
 
-  def SubmitPool(self, check_tree_open=True, throttled_ok=True, reason=None):
+  def SubmitPool(self, reason=None):
     """Commits changes to Gerrit from Pool.  This is only called by a master.
 
     Args:
-      check_tree_open: Whether to check that the tree is open before submitting
-        changes. If this is False, TreeIsClosedException will never be raised.
-      throttled_ok: if |check_tree_open|, treat a throttled tree as open
       reason: string reason for submission to be recorded in cidb. (Should be
         None or constant with name STRATEGY_* from constants.py)
 
     Raises:
-      TreeIsClosedException: if the tree is closed.
       FailedToSubmitAllChangesException: if we can't submit a change.
     """
     # Note that SubmitChanges can throw an exception if it can't
@@ -1645,9 +1512,7 @@ class ValidationPool(object):
     # knowing).  They *likely* will still fail, but this approach tries
     # to minimize wasting the developers time.
     verified_cls = {c:reason for c in self.applied}
-    submitted, errors = self.SubmitChanges(verified_cls,
-                                           check_tree_open=check_tree_open,
-                                           throttled_ok=throttled_ok)
+    submitted, errors = self.SubmitChanges(verified_cls)
     if errors:
       logging.PrintBuildbotStepText(
           'Submitted %d of %d verified CLs.'

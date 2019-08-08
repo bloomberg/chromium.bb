@@ -42,7 +42,7 @@ NSString* kChromeActionsErrorDomain = @"ChromeActionsError";
           // EG2 executes actions on a background thread by default. Since this
           // action interacts with UI, kick it over to the main thread.
           __block BOOL success = NO;
-          grey_execute_sync_on_main_thread(^{
+          grey_dispatch_sync_on_main_thread(^{
             SettingsSwitchCell* switchCell =
                 base::mac::ObjCCast<SettingsSwitchCell>(collectionViewCell);
             if (!switchCell) {
@@ -79,7 +79,7 @@ NSString* kChromeActionsErrorDomain = @"ChromeActionsError";
           // EG2 executes actions on a background thread by default. Since this
           // action interacts with UI, kick it over to the main thread.
           __block BOOL success = NO;
-          grey_execute_sync_on_main_thread(^{
+          grey_dispatch_sync_on_main_thread(^{
             SettingsSwitchCell* switchCell =
                 base::mac::ObjCCastStrict<SettingsSwitchCell>(syncSwitchCell);
             UISwitch* switchView = switchCell.switchView;

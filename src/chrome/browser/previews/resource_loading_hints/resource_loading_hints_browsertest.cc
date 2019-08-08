@@ -36,10 +36,12 @@
 #include "components/previews/core/previews_constants.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
 
 namespace {
@@ -49,7 +51,7 @@ void RetryForHistogramUntilCountReached(base::HistogramTester* histogram_tester,
                                         const std::string& histogram_name,
                                         size_t count) {
   while (true) {
-    base::ThreadPool::GetInstance()->FlushForTesting();
+    base::ThreadPoolInstance::Get()->FlushForTesting();
     base::RunLoop().RunUntilIdle();
 
     content::FetchHistogramsFromChildProcesses();
@@ -402,7 +404,7 @@ IN_PROC_BROWSER_TEST_F(
       "Previews.EligibilityReason.ResourceLoadingHints",
       static_cast<int>(previews::PreviewsEligibilityReason::ALLOWED), 1);
   histogram_tester.ExpectBucketCount(
-      "Previews.InfoBarAction.ResourceLoadingHints", 0, 1);
+      "Previews.PreviewShown.ResourceLoadingHints", true, 1);
   // SetDefaultOnlyResourceLoadingHints sets 3 resource loading hints patterns.
   histogram_tester.ExpectBucketCount(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns", 3, 1);
@@ -427,7 +429,7 @@ IN_PROC_BROWSER_TEST_F(
       "Previews.EligibilityReason.ResourceLoadingHints",
       static_cast<int>(previews::PreviewsEligibilityReason::ALLOWED), 2);
   histogram_tester.ExpectBucketCount(
-      "Previews.InfoBarAction.ResourceLoadingHints", 0, 2);
+      "Previews.PreviewShown.ResourceLoadingHints", true, 2);
   // SetDefaultOnlyResourceLoadingHints sets 3 resource loading hints patterns.
   histogram_tester.ExpectBucketCount(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns", 3, 2);
@@ -457,7 +459,7 @@ IN_PROC_BROWSER_TEST_F(
       "Previews.EligibilityReason.ResourceLoadingHints",
       static_cast<int>(previews::PreviewsEligibilityReason::ALLOWED), 1);
   histogram_tester.ExpectTotalCount(
-      "Previews.InfoBarAction.ResourceLoadingHints", 0);
+      "Previews.PreviewShown.ResourceLoadingHints", 0);
   histogram_tester.ExpectTotalCount(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns", 0);
   EXPECT_FALSE(resource_loading_hint_intervention_header_seen());
@@ -498,7 +500,7 @@ IN_PROC_BROWSER_TEST_F(
       "Previews.EligibilityReason.ResourceLoadingHints",
       static_cast<int>(previews::PreviewsEligibilityReason::ALLOWED), 1);
   histogram_tester.ExpectBucketCount(
-      "Previews.InfoBarAction.ResourceLoadingHints", 0, 1);
+      "Previews.PreviewShown.ResourceLoadingHints", true, 1);
   // SetDefaultOnlyResourceLoadingHints sets 3 resource loading hints patterns.
   histogram_tester.ExpectBucketCount(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns", 3, 1);
@@ -542,7 +544,7 @@ IN_PROC_BROWSER_TEST_F(
       "Previews.EligibilityReason.ResourceLoadingHints",
       static_cast<int>(previews::PreviewsEligibilityReason::ALLOWED), 1);
   histogram_tester.ExpectBucketCount(
-      "Previews.InfoBarAction.ResourceLoadingHints", 0, 1);
+      "Previews.PreviewShown.ResourceLoadingHints", true, 1);
   // SetDefaultOnlyResourceLoadingHints sets 3 resource loading hints patterns.
   histogram_tester.ExpectBucketCount(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns", 3, 1);
@@ -583,7 +585,7 @@ IN_PROC_BROWSER_TEST_F(
   // Infobar would still be shown since there were at least one resource
   // loading hints available, even though none of them matched.
   RetryForHistogramUntilCountReached(
-      &histogram_tester, "Previews.InfoBarAction.ResourceLoadingHints", 1);
+      &histogram_tester, "Previews.PreviewShown.ResourceLoadingHints", 1);
   EXPECT_TRUE(resource_loading_hint_intervention_header_seen());
 }
 
@@ -616,7 +618,7 @@ IN_PROC_BROWSER_TEST_F(
       "Previews.EligibilityReason.ResourceLoadingHints",
       static_cast<int>(previews::PreviewsEligibilityReason::ALLOWED), 2);
   RetryForHistogramUntilCountReached(
-      &histogram_tester, "Previews.InfoBarAction.ResourceLoadingHints", 1);
+      &histogram_tester, "Previews.PreviewShown.ResourceLoadingHints", 1);
   // SetDefaultOnlyResourceLoadingHints sets 3 resource loading hints patterns.
   histogram_tester.ExpectBucketCount(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns", 3, 1);
@@ -645,7 +647,7 @@ IN_PROC_BROWSER_TEST_F(
           previews::PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
       1);
   histogram_tester.ExpectTotalCount(
-      "Previews.InfoBarAction.ResourceLoadingHints", 0);
+      "Previews.PreviewShown.ResourceLoadingHints", 0);
   histogram_tester.ExpectTotalCount(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns", 0);
   EXPECT_FALSE(resource_loading_hint_intervention_header_seen());
@@ -671,7 +673,7 @@ IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
       "Previews.EligibilityReason.ResourceLoadingHints",
       static_cast<int>(previews::PreviewsEligibilityReason::ALLOWED), 1);
   histogram_tester.ExpectTotalCount(
-      "Previews.InfoBarAction.ResourceLoadingHints", 0);
+      "Previews.PreviewShown.ResourceLoadingHints", 0);
   histogram_tester.ExpectTotalCount(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns", 0);
   EXPECT_FALSE(resource_loading_hint_intervention_header_seen());
@@ -698,8 +700,49 @@ IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
       "Previews.EligibilityReason.ResourceLoadingHints",
       static_cast<int>(previews::PreviewsEligibilityReason::ALLOWED), 1);
   histogram_tester.ExpectTotalCount(
-      "Previews.InfoBarAction.ResourceLoadingHints", 0);
+      "Previews.PreviewShown.ResourceLoadingHints", 0);
   histogram_tester.ExpectTotalCount(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns", 0);
   EXPECT_FALSE(resource_loading_hint_intervention_header_seen());
+}
+
+IN_PROC_BROWSER_TEST_F(
+    ResourceLoadingHintsBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(
+        ResourceLoadingHintsHttpsWhitelistedButShouldNotApplyBecauseCoinFlipHoldback)) {
+  // Holdback the page load from previews and also disable offline previews to
+  // ensure that only post-commit previews are enabled.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeaturesAndParameters(
+      {{previews::features::kCoinFlipHoldback,
+        {{"force_coin_flip_always_holdback", "true"}}}},
+      {previews::features::kOfflinePreviews});
+
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+
+  GURL url = https_url();
+
+  // Whitelist resource loading hints for https_hint_setup_url()'s' host.
+  SetDefaultOnlyResourceLoadingHints(https_hint_setup_url());
+
+  SetExpectedFooJpgRequest(true);
+  SetExpectedBarJpgRequest(true);
+  ResetResourceLoadingHintInterventionHeaderSeen();
+
+  base::HistogramTester histogram_tester;
+
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  histogram_tester.ExpectBucketCount(
+      "Previews.EligibilityReason.ResourceLoadingHints",
+      static_cast<int>(previews::PreviewsEligibilityReason::COMMITTED), 1);
+  histogram_tester.ExpectTotalCount(
+      "Previews.PreviewShown.ResourceLoadingHints", 0);
+  histogram_tester.ExpectTotalCount(
+      "ResourceLoadingHints.CountBlockedSubresourcePatterns", 0);
+  EXPECT_FALSE(resource_loading_hint_intervention_header_seen());
+  // Make sure we did not record a PreviewsResourceLoadingHints UKM for it.
+  auto rlh_ukm_entries = test_ukm_recorder.GetEntriesByName(
+      ukm::builders::PreviewsResourceLoadingHints::kEntryName);
+  ASSERT_EQ(0u, rlh_ukm_entries.size());
 }

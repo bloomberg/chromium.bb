@@ -2368,7 +2368,9 @@ const CSSValue* OverscrollBehavior::CSSValueFromComputedStyleInternal(
     bool allow_visited_style) const {
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   list->Append(*CSSIdentifierValue::Create(style.OverscrollBehaviorX()));
-  list->Append(*CSSIdentifierValue::Create(style.OverscrollBehaviorY()));
+  if (style.OverscrollBehaviorX() != style.OverscrollBehaviorY())
+    list->Append(*CSSIdentifierValue::Create(style.OverscrollBehaviorY()));
+
   return list;
 }
 

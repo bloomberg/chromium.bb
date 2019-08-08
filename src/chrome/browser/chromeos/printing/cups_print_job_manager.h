@@ -12,13 +12,13 @@
 
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/printing/cups_print_job.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class Profile;
 
 namespace chromeos {
 
+class CupsPrintJob;
 class CupsPrintJobNotificationManager;
 
 class CupsPrintJobManager : public KeyedService {
@@ -75,11 +75,12 @@ class CupsPrintJobManager : public KeyedService {
   void NotifyJobDone(base::WeakPtr<CupsPrintJob> job);
 
   Profile* profile_;
-  std::unique_ptr<CupsPrintJobNotificationManager> notification_manager_;
-  base::ObserverList<Observer>::Unchecked observers_;
 
  private:
   void RecordJobDuration(base::WeakPtr<CupsPrintJob> job);
+
+  std::unique_ptr<CupsPrintJobNotificationManager> notification_manager_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   // Keyed by CupsPrintJob's unique ID
   std::map<std::string, base::TimeTicks> print_job_start_times_;

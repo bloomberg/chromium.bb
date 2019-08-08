@@ -6,10 +6,10 @@
 
 #include "base/logging.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
-#include "chrome/browser/chromeos/login/screens/discover_screen_view.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
+#include "chrome/browser/ui/webui/chromeos/login/discover_screen_handler.h"
 #include "components/prefs/pref_service.h"
 
 namespace chromeos {
@@ -20,7 +20,7 @@ const char kFinished[] = "finished";
 
 DiscoverScreen::DiscoverScreen(DiscoverScreenView* view,
                                const base::RepeatingClosure& exit_callback)
-    : BaseScreen(OobeScreen::SCREEN_DISCOVER),
+    : BaseScreen(DiscoverScreenView::kScreenId),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);

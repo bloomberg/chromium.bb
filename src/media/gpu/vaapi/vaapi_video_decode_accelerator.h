@@ -67,7 +67,7 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
 
   // VideoDecodeAccelerator implementation.
   bool Initialize(const Config& config, Client* client) override;
-  void Decode(const BitstreamBuffer& bitstream_buffer) override;
+  void Decode(BitstreamBuffer bitstream_buffer) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer,
               int32_t bitstream_id) override;
   void AssignPictureBuffers(const std::vector<PictureBuffer>& buffers) override;
@@ -183,7 +183,8 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   // by |decoder_|.
   void InitiateSurfaceSetChange(size_t num_pics,
                                 gfx::Size size,
-                                size_t num_reference_frames);
+                                size_t num_reference_frames,
+                                const gfx::Rect& visible_rect);
 
   // Check if the surfaces have been released or post ourselves for later.
   void TryFinishSurfaceSetChange();
@@ -289,7 +290,7 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   base::WeakPtr<VaapiVideoDecodeAccelerator> weak_this_;
 
   // Callback used when creating VASurface objects. Only used on |task_runner_|.
-  VASurface::ReleaseCB va_surface_release_cb_;
+  base::RepeatingCallback<void(VASurfaceID)> va_surface_release_cb_;
 
   // To expose client callbacks from VideoDecodeAccelerator. Used only on
   // |task_runner_|.
@@ -313,9 +314,11 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   // to be returned before we can free them. Only used on |task_runner_|.
   bool awaiting_va_surfaces_recycle_;
 
-  // Last requested number/resolution of output PictureBuffers.
+  // Last requested number/resolution/visible rectangle of output
+  // PictureBuffers.
   size_t requested_num_pics_;
   gfx::Size requested_pic_size_;
+  gfx::Rect requested_visible_rect_;
   // Potential extra PictureBuffers to request, used only on
   // BufferAllocationMode::kNone, see DecideBufferAllocationMode().
   size_t num_extra_pics_ = 0;

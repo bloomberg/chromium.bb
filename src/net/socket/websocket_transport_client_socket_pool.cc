@@ -23,14 +23,17 @@
 #include "net/socket/connect_job.h"
 #include "net/socket/websocket_endpoint_lock_manager.h"
 #include "net/socket/websocket_transport_connect_job.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
 
 WebSocketTransportClientSocketPool::WebSocketTransportClientSocketPool(
     int max_sockets,
     int max_sockets_per_group,
+    const ProxyServer& proxy_server,
     const CommonConnectJobParams* common_connect_job_params)
-    : common_connect_job_params_(common_connect_job_params),
+    : proxy_server_(proxy_server),
+      common_connect_job_params_(common_connect_job_params),
       max_sockets_(max_sockets),
       handed_out_socket_count_(0),
       flushing_(false),
@@ -61,6 +64,7 @@ void WebSocketTransportClientSocketPool::UnlockEndpoint(
 int WebSocketTransportClientSocketPool::RequestSocket(
     const GroupId& group_id,
     scoped_refptr<SocketParams> params,
+    const base::Optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
     RequestPriority priority,
     const SocketTag& socket_tag,
     RespectLimits respect_limits,
@@ -79,8 +83,8 @@ int WebSocketTransportClientSocketPool::RequestSocket(
   if (ReachedMaxSocketsLimit() &&
       respect_limits == ClientSocketPool::RespectLimits::ENABLED) {
     request_net_log.AddEvent(NetLogEventType::SOCKET_POOL_STALLED_MAX_SOCKETS);
-    stalled_request_queue_.emplace_back(group_id, params, priority, handle,
-                                        std::move(callback),
+    stalled_request_queue_.emplace_back(group_id, params, proxy_annotation_tag,
+                                        priority, handle, std::move(callback),
                                         proxy_auth_callback, request_net_log);
     auto iterator = stalled_request_queue_.end();
     --iterator;
@@ -99,14 +103,10 @@ int WebSocketTransportClientSocketPool::RequestSocket(
       std::make_unique<ConnectJobDelegate>(this, std::move(callback), handle,
                                            request_net_log);
 
-  // For WebSockets, only the main socket pool uses a
-  // WebSocketTransportClientSocketPool, so there's no need to pass in any
-  // nested socket pools for the proxy case, which use standard proxy socket
-  // pool types on top of a standard TransportClientSocketPool.
   std::unique_ptr<ConnectJob> connect_job =
-      params->create_connect_job_callback().Run(priority, SocketTag(),
-                                                common_connect_job_params_,
-                                                connect_job_delegate.get());
+      CreateConnectJob(group_id, params, proxy_server_, proxy_annotation_tag,
+                       true /* is_for_websockets */, common_connect_job_params_,
+                       priority, SocketTag(), connect_job_delegate.get());
 
   int result = connect_job_delegate->Connect(std::move(connect_job));
 
@@ -131,6 +131,7 @@ int WebSocketTransportClientSocketPool::RequestSocket(
 void WebSocketTransportClientSocketPool::RequestSockets(
     const GroupId& group_id,
     scoped_refptr<SocketParams> params,
+    const base::Optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
     int num_sockets,
     const NetLogWithSource& net_log) {
   NOTIMPLEMENTED();
@@ -150,7 +151,8 @@ void WebSocketTransportClientSocketPool::SetPriority(const GroupId& group_id,
 
 void WebSocketTransportClientSocketPool::CancelRequest(
     const GroupId& group_id,
-    ClientSocketHandle* handle) {
+    ClientSocketHandle* handle,
+    bool cancel_connect_job) {
   DCHECK(!handle->is_initialized());
   if (DeleteStalledRequest(handle))
     return;
@@ -423,7 +425,8 @@ void WebSocketTransportClientSocketPool::ActivateStalledRequest() {
         base::AdaptCallbackForRepeating(std::move(request.callback));
 
     int rv = RequestSocket(
-        request.group_id, request.params, request.priority, SocketTag(),
+        request.group_id, request.params, request.proxy_annotation_tag,
+        request.priority, SocketTag(),
         // Stalled requests can't have |respect_limits|
         // DISABLED.
         RespectLimits::ENABLED, request.handle, copyable_callback,
@@ -490,6 +493,7 @@ WebSocketTransportClientSocketPool::ConnectJobDelegate::connect_job_net_log() {
 WebSocketTransportClientSocketPool::StalledRequest::StalledRequest(
     const GroupId& group_id,
     const scoped_refptr<SocketParams>& params,
+    const base::Optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
     RequestPriority priority,
     ClientSocketHandle* handle,
     CompletionOnceCallback callback,
@@ -497,6 +501,7 @@ WebSocketTransportClientSocketPool::StalledRequest::StalledRequest(
     const NetLogWithSource& net_log)
     : group_id(group_id),
       params(params),
+      proxy_annotation_tag(proxy_annotation_tag),
       priority(priority),
       handle(handle),
       callback(std::move(callback)),

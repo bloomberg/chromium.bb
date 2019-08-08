@@ -31,7 +31,7 @@ class UiDevToolsServer;
 }  // namespace ui_devtools
 
 namespace viz {
-class DisplayProvider;
+class OutputSurfaceProvider;
 class FrameSinkManagerImpl;
 class GpuServiceImpl;
 class ServerSharedBitmapManager;
@@ -93,7 +93,7 @@ class VizCompositorThreadRunner {
 
   // Start variables to be accessed only on |task_runner_|.
   std::unique_ptr<ServerSharedBitmapManager> server_shared_bitmap_manager_;
-  std::unique_ptr<DisplayProvider> display_provider_;
+  std::unique_ptr<OutputSurfaceProvider> output_surface_provider_;
   std::unique_ptr<FrameSinkManagerImpl> frame_sink_manager_;
 #if defined(USE_VIZ_DEVTOOLS)
   std::unique_ptr<ui_devtools::UiDevToolsServer> devtools_server_;

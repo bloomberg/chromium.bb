@@ -106,7 +106,7 @@ if (safe_browsing_mode == 1) {
     ]
 
     deps = [
-      "//base:base",
+      "//base",
     ]
   }
 

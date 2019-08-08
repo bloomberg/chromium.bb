@@ -48,11 +48,6 @@ ACTION_P4(CheckCountAndPostQuitTask, count, limit, task_runner, quit_closure) {
     task_runner->PostTask(FROM_HERE, quit_closure);
 }
 
-const char kSpeechFile_16b_s_48k[] = "speech_16b_stereo_48kHz.raw";
-const char kSpeechFile_16b_m_48k[] = "speech_16b_mono_48kHz.raw";
-const char kSpeechFile_16b_s_44k[] = "speech_16b_stereo_44kHz.raw";
-const char kSpeechFile_16b_m_44k[] = "speech_16b_mono_44kHz.raw";
-
 const float kCallbackTestTimeMs = 2000.0;
 const int kBytesPerSample = 2;
 const SampleFormat kSampleFormat = kSampleFormatS16;
@@ -838,40 +833,6 @@ TEST_F(AudioAndroidOutputTest, StartOutputStreamCallbacksNonDefaultParameters) {
                          audio_output_parameters().sample_rate(),
                          audio_output_parameters().sample_rate() / 100);
   StartOutputStreamCallbacks(params);
-}
-
-// Play out a PCM file segment in real time and allow the user to verify that
-// the rendered audio sounds OK.
-// NOTE: this test requires user interaction and is not designed to run as an
-// automatized test on bots.
-TEST_F(AudioAndroidOutputTest, DISABLED_RunOutputStreamWithFileAsSource) {
-  GetDefaultOutputStreamParametersOnAudioThread();
-  DVLOG(1) << audio_output_parameters();
-  MakeAudioOutputStreamOnAudioThread(audio_output_parameters());
-
-  std::string file_name;
-  const AudioParameters params = audio_output_parameters();
-  if (params.sample_rate() == 48000 && params.channels() == 2) {
-    file_name = kSpeechFile_16b_s_48k;
-  } else if (params.sample_rate() == 48000 && params.channels() == 1) {
-    file_name = kSpeechFile_16b_m_48k;
-  } else if (params.sample_rate() == 44100 && params.channels() == 2) {
-    file_name = kSpeechFile_16b_s_44k;
-  } else if (params.sample_rate() == 44100 && params.channels() == 1) {
-    file_name = kSpeechFile_16b_m_44k;
-  } else {
-    FAIL() << "This test supports 44.1kHz and 48kHz mono/stereo only.";
-    return;
-  }
-
-  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                            base::WaitableEvent::InitialState::NOT_SIGNALED);
-  FileAudioSource source(&event, file_name);
-
-  OpenAndStartAudioOutputStreamOnAudioThread(&source);
-  DVLOG(0) << ">> Verify that the file is played out correctly...";
-  EXPECT_TRUE(event.TimedWait(TestTimeouts::action_max_timeout()));
-  StopAndCloseAudioOutputStreamOnAudioThread();
 }
 
 // Start input streaming and run it for ten seconds while recording to a

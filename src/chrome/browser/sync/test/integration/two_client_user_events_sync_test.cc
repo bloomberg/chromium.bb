@@ -8,10 +8,11 @@
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "chrome/browser/sync/test/integration/user_events_helper.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
 #include "components/sync/protocol/user_event_specifics.pb.h"
-#include "components/sync/user_events/user_event_service.h"
+#include "components/sync_user_events/user_event_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -61,8 +62,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientUserEventsSyncTest,
   GetSyncService(kEncryptingClientId)
       ->GetUserSettings()
       ->SetEncryptionPassphrase("hunter2");
+  UpdatedProgressMarkerChecker update_checker(
+      GetSyncService(kEncryptingClientId));
   ASSERT_TRUE(
       PassphraseAcceptedChecker(GetSyncService(kEncryptingClientId)).Wait());
+  // Make sure the updates are committed before proceeding with the test.
+  ASSERT_TRUE(update_checker.Wait());
 
   // Record a user event on the second client before setting up sync (before
   // knowing it will be encrypted). This event should not get recorded while

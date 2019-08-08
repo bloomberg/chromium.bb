@@ -37,12 +37,12 @@
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_manager_test_delegate.h"
-#include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/geo/state_names.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
-#include "components/autofill/core/browser/state_names.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
@@ -250,8 +250,10 @@ class AutofillCapturedSitesInteractiveTest
     // feature forces input elements on a form to display their autofill type
     // prediction. Test will check this attribute on all the relevant input
     // elements in a form to determine if the form is ready for interaction.
-    feature_list_.InitWithFeatures({features::kAutofillShowTypePredictions},
-                                   {features::kAutofillCacheQueryResponses});
+    feature_list_.InitWithFeatures(
+        /*enabled_features=*/{features::kAutofillShowTypePredictions},
+        /*disabled_features=*/{features::kAutofillCacheQueryResponses,
+                               features::kAutofillUseApi});
     command_line->AppendSwitch(switches::kShowAutofillTypePredictions);
     command_line->AppendSwitchASCII(::switches::kForceFieldTrials,
                                     "AutofillFieldMetadata/Enabled/");

@@ -129,9 +129,7 @@ class HistoryGetVisitsFunction : public HistoryFunctionWithCallback {
   ResponseAction Run() override;
 
   // Callback for the history function to provide results.
-  void QueryComplete(bool success,
-                     const history::URLRow& url_row,
-                     const history::VisitVector& visits);
+  void QueryComplete(history::QueryURLResult result);
 };
 
 class HistorySearchFunction : public HistoryFunctionWithCallback {
@@ -145,7 +143,7 @@ class HistorySearchFunction : public HistoryFunctionWithCallback {
   ResponseAction Run() override;
 
   // Callback for the history function to provide results.
-  void SearchComplete(history::QueryResults* results);
+  void SearchComplete(history::QueryResults results);
 };
 
 class HistoryAddUrlFunction : public HistoryFunction {

@@ -62,6 +62,9 @@ class WindowAndroid::WindowBeginFrameSource : public viz::BeginFrameSource {
   viz::BeginFrameArgs last_begin_frame_args_;
   uint64_t next_sequence_number_;
   bool paused_;
+  // Used for determining what the sequence number should be on
+  // CreateBeginFrameArgs.
+  base::TimeTicks next_expected_frame_time_;
 
   // Set by ScopedOnBeginFrame.
   std::vector<base::OnceClosure>* vsync_complete_callbacks_ptr_ = nullptr;
@@ -130,13 +133,30 @@ void WindowAndroid::WindowBeginFrameSource::OnGpuNoLongerBusy() {
 void WindowAndroid::WindowBeginFrameSource::OnVSync(
     base::TimeTicks frame_time,
     base::TimeDelta vsync_period) {
+  uint64_t sequence_number = next_sequence_number_;
+  // We expect |sequence_number| to be the number for the frame at
+  // |expected_frame_time|. We adjust this sequence number according to the
+  // actual frame time in case it is later than expected.
+  if (next_expected_frame_time_ != base::TimeTicks()) {
+    // Add |error_margin| to round |frame_time| up to the next tick if it is
+    // close to the end of an interval. This happens when a timebase is a bit
+    // off because of an imperfect presentation timestamp that may be a bit
+    // later than the beginning of the next interval.
+    constexpr double kErrorMarginIntervalPct = 0.05;
+    base::TimeDelta error_margin = vsync_period * kErrorMarginIntervalPct;
+    int ticks_since_estimated_frame_time =
+        (frame_time + error_margin - next_expected_frame_time_) / vsync_period;
+    sequence_number += std::max(0, ticks_since_estimated_frame_time);
+  }
+
   // frame time is in the past, so give the next vsync period as the deadline.
   base::TimeTicks deadline = frame_time + vsync_period;
   last_begin_frame_args_ = viz::BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, source_id(), next_sequence_number_, frame_time,
-      deadline, vsync_period, viz::BeginFrameArgs::NORMAL);
+      BEGINFRAME_FROM_HERE, source_id(), sequence_number, frame_time, deadline,
+      vsync_period, viz::BeginFrameArgs::NORMAL);
   DCHECK(last_begin_frame_args_.IsValid());
-  next_sequence_number_++;
+  next_sequence_number_ = sequence_number + 1;
+  next_expected_frame_time_ = deadline;
   if (RequestCallbackOnGpuAvailable())
     return;
   OnGpuNoLongerBusy();
@@ -180,6 +200,26 @@ WindowAndroid::ScopedOnBeginFrame::~ScopedOnBeginFrame() {
   begin_frame_source_->vsync_complete_callbacks_ptr_ = nullptr;
   for (base::OnceClosure& callback : vsync_complete_callbacks_)
     std::move(callback).Run();
+}
+
+WindowAndroid::ScopedSelectionHandles::ScopedSelectionHandles(
+    WindowAndroid* window)
+    : window_(window) {
+  if (++window_->selection_handles_active_count_ == 1) {
+    JNIEnv* env = AttachCurrentThread();
+    Java_WindowAndroid_onSelectionHandlesStateChanged(
+        env, window_->GetJavaObject(), true /* active */);
+  }
+}
+
+WindowAndroid::ScopedSelectionHandles::~ScopedSelectionHandles() {
+  DCHECK_GT(window_->selection_handles_active_count_, 0);
+
+  if (--window_->selection_handles_active_count_ == 0) {
+    JNIEnv* env = AttachCurrentThread();
+    Java_WindowAndroid_onSelectionHandlesStateChanged(
+        env, window_->GetJavaObject(), false /* active */);
+  }
 }
 
 // static
@@ -281,6 +321,9 @@ float WindowAndroid::GetRefreshRate() {
 }
 
 std::vector<float> WindowAndroid::GetSupportedRefreshRates() {
+  if (test_hooks_)
+    return test_hooks_->GetSupportedRates();
+
   JNIEnv* env = AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jfloatArray> j_supported_refresh_rates =
       Java_WindowAndroid_getSupportedRefreshRates(env, GetJavaObject());
@@ -295,6 +338,11 @@ std::vector<float> WindowAndroid::GetSupportedRefreshRates() {
 void WindowAndroid::SetPreferredRefreshRate(float refresh_rate) {
   if (force_60hz_refresh_rate_)
     return;
+
+  if (test_hooks_) {
+    test_hooks_->SetPreferredRate(refresh_rate);
+    return;
+  }
 
   JNIEnv* env = AttachCurrentThread();
   Java_WindowAndroid_setPreferredRefreshRate(env, GetJavaObject(),
@@ -459,6 +507,17 @@ display::Display WindowAndroid::GetDisplayWithWindowColorSpace() {
       display.RotationAsDegree(), display.color_depth(),
       display.depth_per_component(), window_is_wide_color_gamut_);
   return display;
+}
+
+void WindowAndroid::SetTestHooks(TestHooks* hooks) {
+  test_hooks_ = hooks;
+  if (!test_hooks_)
+    return;
+
+  if (compositor_) {
+    compositor_->OnUpdateSupportedRefreshRates(
+        test_hooks_->GetSupportedRates());
+  }
 }
 
 // ----------------------------------------------------------------------------

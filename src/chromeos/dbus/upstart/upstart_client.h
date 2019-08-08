@@ -59,9 +59,6 @@ class COMPONENT_EXPORT(UPSTART_CLIENT) UpstartClient {
   // Restarts authpolicyd.
   virtual void RestartAuthPolicyService() = 0;
 
-  // Starts kerberosd.
-  virtual void StartKerberosService(VoidDBusMethodCallback callback) = 0;
-
   // Starts the media analytics process.
   // |upstart_env|: List of upstart environment variables to be passed to the
   // upstart service.

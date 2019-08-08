@@ -62,7 +62,7 @@ class MAYBE_MetricsCollectorTest : public GraphTestHarness {
 };
 
 TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstTitleUpdatedUMA) {
-  auto page_node = CreateNode<PageNodeImpl>(nullptr);
+  auto page_node = CreateNode<PageNodeImpl>();
 
   page_node->OnMainFrameNavigationCommitted(PerformanceManagerClock::NowTicks(),
                                             kDummyID, kDummyUrl);
@@ -95,7 +95,7 @@ TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstTitleUpdatedUMA) {
 
 TEST_F(MAYBE_MetricsCollectorTest,
        FromBackgroundedToFirstTitleUpdatedUMA5MinutesTimeout) {
-  auto page_node = CreateNode<PageNodeImpl>(nullptr);
+  auto page_node = CreateNode<PageNodeImpl>();
 
   page_node->OnMainFrameNavigationCommitted(PerformanceManagerClock::NowTicks(),
                                             kDummyID, kDummyUrl);
@@ -114,9 +114,9 @@ TEST_F(MAYBE_MetricsCollectorTest,
 TEST_F(MAYBE_MetricsCollectorTest,
        FromBackgroundedToFirstNonPersistentNotificationCreatedUMA) {
   auto process_node = CreateNode<ProcessNodeImpl>();
-  auto page_node = CreateNode<PageNodeImpl>(nullptr);
-  auto frame_node = CreateNode<FrameNodeImpl>(process_node.get(),
-                                              page_node.get(), nullptr, 0);
+  auto page_node = CreateNode<PageNodeImpl>();
+  auto frame_node =
+      CreateNode<FrameNodeImpl>(process_node.get(), page_node.get());
 
   page_node->OnMainFrameNavigationCommitted(PerformanceManagerClock::NowTicks(),
                                             kDummyID, kDummyUrl);
@@ -151,9 +151,9 @@ TEST_F(
     MAYBE_MetricsCollectorTest,
     FromBackgroundedToFirstNonPersistentNotificationCreatedUMA5MinutesTimeout) {
   auto process_node = CreateNode<ProcessNodeImpl>();
-  auto page_node = CreateNode<PageNodeImpl>(nullptr);
-  auto frame_node = CreateNode<FrameNodeImpl>(process_node.get(),
-                                              page_node.get(), nullptr, 0);
+  auto page_node = CreateNode<PageNodeImpl>();
+  auto frame_node =
+      CreateNode<FrameNodeImpl>(process_node.get(), page_node.get());
 
   page_node->OnMainFrameNavigationCommitted(PerformanceManagerClock::NowTicks(),
                                             kDummyID, kDummyUrl);
@@ -170,7 +170,7 @@ TEST_F(
 }
 
 TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstFaviconUpdatedUMA) {
-  auto page_node = CreateNode<PageNodeImpl>(nullptr);
+  auto page_node = CreateNode<PageNodeImpl>();
 
   page_node->OnMainFrameNavigationCommitted(PerformanceManagerClock::NowTicks(),
                                             kDummyID, kDummyUrl);
@@ -203,7 +203,7 @@ TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstFaviconUpdatedUMA) {
 
 TEST_F(MAYBE_MetricsCollectorTest,
        FromBackgroundedToFirstFaviconUpdatedUMA5MinutesTimeout) {
-  auto page_node = CreateNode<PageNodeImpl>(nullptr);
+  auto page_node = CreateNode<PageNodeImpl>();
 
   page_node->OnMainFrameNavigationCommitted(PerformanceManagerClock::NowTicks(),
                                             kDummyID, kDummyUrl);
@@ -222,9 +222,9 @@ TEST_F(MAYBE_MetricsCollectorTest,
 // Flaky test: https://crbug.com/833028
 TEST_F(MAYBE_MetricsCollectorTest, ResponsivenessMetric) {
   auto process_node = CreateNode<ProcessNodeImpl>();
-  auto page_node = CreateNode<PageNodeImpl>(nullptr);
-  auto frame_node = CreateNode<FrameNodeImpl>(process_node.get(),
-                                              page_node.get(), nullptr, 0);
+  auto page_node = CreateNode<PageNodeImpl>();
+  auto frame_node =
+      CreateNode<FrameNodeImpl>(process_node.get(), page_node.get());
 
   ukm::TestUkmRecorder ukm_recorder;
   graph()->set_ukm_recorder(&ukm_recorder);

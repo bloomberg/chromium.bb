@@ -15,7 +15,7 @@
 #include "content/browser/background_fetch/background_fetch_job_controller.h"
 #include "content/browser/background_fetch/background_fetch_registration_notifier.h"
 #include "content/browser/background_fetch/background_fetch_registration_service_impl.h"
-#include "content/browser/devtools/devtools_background_services_context.h"
+#include "content/browser/devtools/devtools_background_services_context_impl.h"
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/common/content_features.h"
@@ -63,7 +63,7 @@ BackgroundFetchScheduler::BackgroundFetchScheduler(
     BackgroundFetchDataManager* data_manager,
     BackgroundFetchRegistrationNotifier* registration_notifier,
     BackgroundFetchDelegateProxy* delegate_proxy,
-    DevToolsBackgroundServicesContext* devtools_context,
+    DevToolsBackgroundServicesContextImpl* devtools_context,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
     : data_manager_(data_manager),
       registration_notifier_(registration_notifier),
@@ -351,8 +351,8 @@ void BackgroundFetchScheduler::OnRegistrationCreated(
   LogBackgroundFetchEventForDevTools(
       Event::kFetchRegistered, registration_id,
       /* request_info= */ nullptr,
-      {{"total requests", base::NumberToString(num_requests)},
-       {"start paused", start_paused ? "yes" : "no"}});
+      {{"Total Requests", base::NumberToString(num_requests)},
+       {"Start Paused", start_paused ? "Yes" : "No"}});
 
   registration_notifier_->NoteTotalRequests(registration_id.unique_id(),
                                             num_requests);
@@ -387,8 +387,8 @@ void BackgroundFetchScheduler::OnRegistrationLoadedAtStartup(
   LogBackgroundFetchEventForDevTools(
       Event::kFetchResumedOnStartup, registration_id,
       /* request_info= */ nullptr,
-      {{"completed requests", base::NumberToString(num_completed_requests)},
-       {"active requests",
+      {{"Completed Requests", base::NumberToString(num_completed_requests)},
+       {"Active Requests",
         base::NumberToString(active_fetch_requests.size())}});
 
   auto controller = CreateInitializedController(
@@ -513,8 +513,10 @@ void BackgroundFetchScheduler::LogBackgroundFetchEventForDevTools(
     const BackgroundFetchRegistrationId& registration_id,
     const BackgroundFetchRequestInfo* request_info,
     std::map<std::string, std::string> metadata) {
-  if (!devtools_context_->IsRecording(devtools::proto::BACKGROUND_FETCH))
+  if (!devtools_context_->IsRecording(
+          DevToolsBackgroundService::kBackgroundFetch)) {
     return;
+  }
 
   std::string event_name;
 
@@ -522,24 +524,24 @@ void BackgroundFetchScheduler::LogBackgroundFetchEventForDevTools(
   // any additional data to |metadata|.
   switch (event) {
     case Event::kFetchRegistered:
-      event_name = "background fetch registered";
+      event_name = "Background Fetch registered";
       break;
     case Event::kFetchResumedOnStartup:
-      event_name = "background fetch resuming after browser restart";
+      event_name = "Background Fetch resuming after browser restart";
       break;
     case Event::kFetchScheduled:
-      event_name = "background fetch started";
+      event_name = "Background Fetch started";
       break;
     case Event::kRequestStarted:
-      event_name = "request processing started";
+      event_name = "Request processing started";
       DCHECK(request_info);
       break;
     case Event::kRequestCompleted:
-      event_name = "request processing completed";
+      event_name = "Request processing completed";
       DCHECK(request_info);
-      metadata["response status"] =
+      metadata["Response Status"] =
           base::NumberToString(request_info->GetResponseCode());
-      metadata["response size (bytes)"] =
+      metadata["Response Size (bytes)"] =
           base::NumberToString(request_info->GetResponseSize());
       break;
   }
@@ -548,17 +550,17 @@ void BackgroundFetchScheduler::LogBackgroundFetchEventForDevTools(
 
   // Include common request metadata.
   if (request_info) {
-    metadata["url"] = request_info->fetch_request()->url.spec();
-    metadata["request index"] =
+    metadata["URL"] = request_info->fetch_request()->url.spec();
+    metadata["Request Index"] =
         base::NumberToString(request_info->request_index());
     if (request_info->request_body_size())
-      metadata["upload size (bytes)"] =
+      metadata["Upload Size (bytes)"] =
           base::NumberToString(request_info->request_body_size());
   }
 
-  devtools_context_->LogBackgroundServiceEvent(
+  devtools_context_->LogBackgroundServiceEventOnIO(
       registration_id.service_worker_registration_id(),
-      registration_id.origin(), devtools::proto::BACKGROUND_FETCH,
+      registration_id.origin(), DevToolsBackgroundService::kBackgroundFetch,
       std::move(event_name),
       /* instance_id= */ registration_id.developer_id(), metadata);
 }

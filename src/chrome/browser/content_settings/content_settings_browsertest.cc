@@ -106,19 +106,21 @@ class ContentSettingsTest : public InProcessBrowserTest {
   net::EmbeddedTestServer https_server_;
 };
 
-// Test the combination of different ways of accessing cookies.
-// Cookies can be read by JS or http request headers.
-// Cookies can be written by JS or http response headers.
+// Test the combination of different ways of accessing cookies --- JS, HTML,
+// or the new async cookie-store API.
 enum class CookieMode {
-  kJSReadJSWrite,
-  kJSReadHttpWrite,
-  kHttpReadJSWrite,
-  kHttpReadHttpWrite
+  kJS,
+  kHttp,
+  kJSAsync,
 };
 
-class CookieSettingsTest : public ContentSettingsTest,
-                           public testing::WithParamInterface<CookieMode> {
+class CookieSettingsTest
+    : public ContentSettingsTest,
+      public testing::WithParamInterface<std::pair<CookieMode, CookieMode>> {
  public:
+  CookieMode ReadMode() const { return GetParam().first; }
+  CookieMode WriteMode() const { return GetParam().second; }
+
   void SetUpOnMainThread() override {
     embedded_test_server()->RegisterRequestMonitor(base::BindRepeating(
         &CookieSettingsTest::MonitorRequest, base::Unretained(this)));
@@ -126,26 +128,41 @@ class CookieSettingsTest : public ContentSettingsTest,
         &CookieSettingsTest::MonitorRequest, base::Unretained(this)));
     ASSERT_TRUE(embedded_test_server()->Start());
     ASSERT_TRUE(https_server_.Start());
+
+    // Async API is for https only.
+    if (ReadMode() == CookieMode::kJSAsync ||
+        WriteMode() == CookieMode::kJSAsync)
+      set_secure_scheme();
+  }
+
+  void SetUpCommandLine(base::CommandLine* cmd) override {
+    // Get access to CookieStore API.
+    cmd->AppendSwitch(switches::kEnableExperimentalWebPlatformFeatures);
+    ContentSettingsTest::SetUpCommandLine(cmd);
   }
 
   void set_secure_scheme() { secure_scheme_ = true; }
 
   std::string ReadCookie(Browser* browser) {
-    if (GetParam() == CookieMode::kJSReadJSWrite ||
-        GetParam() == CookieMode::kJSReadHttpWrite) {
-      return JSReadCookie(browser);
+    switch (ReadMode()) {
+      case CookieMode::kJS:
+        return JSReadCookie(browser);
+      case CookieMode::kHttp:
+        return HttpReadCookie(browser);
+      case CookieMode::kJSAsync:
+        return JSAsyncReadCookie(browser);
     }
-
-    return HttpReadCookie(browser);
   }
 
   void WriteCookie(Browser* browser) {
-    if (GetParam() == CookieMode::kJSReadJSWrite ||
-        GetParam() == CookieMode::kHttpReadJSWrite) {
-      return JSWriteCookie(browser);
+    switch (WriteMode()) {
+      case CookieMode::kJS:
+        return JSWriteCookie(browser);
+      case CookieMode::kHttp:
+        return HttpWriteCookie(browser);
+      case CookieMode::kJSAsync:
+        return JSAsyncWriteCookie(browser);
     }
-
-    return HttpWriteCookie(browser);
   }
 
   // Check the cookie in an incognito window.
@@ -191,6 +208,10 @@ class CookieSettingsTest : public ContentSettingsTest,
     return GetServer()->GetURL("/set_cookie_header.html");
   }
 
+  net::EmbeddedTestServer* GetOtherServer() {
+    return secure_scheme_ ? embedded_test_server() : &https_server_;
+  }
+
  private:
   net::EmbeddedTestServer* GetServer() {
     return secure_scheme_ ? &https_server_ : embedded_test_server();
@@ -204,6 +225,21 @@ class CookieSettingsTest : public ContentSettingsTest,
         "window.domAutomationController.send(document.cookie)", &cookies);
     CHECK(rv);
     return cookies;
+  }
+
+  // Read a cookie with JavaScript cookie-store API
+  std::string JSAsyncReadCookie(Browser* browser) {
+    return content::EvalJsWithManualReply(
+               browser->tab_strip_model()->GetActiveWebContents(),
+               "async function doGet() {"
+               "  const cookies = await window.cookieStore.getAll();"
+               "  let cookie_str = '';"
+               "  for (const cookie of cookies)"
+               "    cookie_str += `${cookie.name}=${cookie.value};`;"
+               "  window.domAutomationController.send(cookie_str);"
+               "}"
+               "doGet()")
+        .ExtractString();
   }
 
   // Read a cookie by fetching a url on the appropriate test server and checking
@@ -233,6 +269,22 @@ class CookieSettingsTest : public ContentSettingsTest,
         browser->tab_strip_model()->GetActiveWebContents(),
         "document.cookie = 'name=Good;Max-Age=3600'");
     CHECK(rv);
+  }
+
+  // Set a cookie with JavaScript cookie-store api.
+  void JSAsyncWriteCookie(Browser* browser) {
+    content::EvalJsResult result = content::EvalJsWithManualReply(
+        browser->tab_strip_model()->GetActiveWebContents(),
+        "async function doSet() {"
+        "  await window.cookieStore.set("
+        "      'name', 'Good', "
+        "       { expires: Date.now() + 3600*1000,"
+        "         sameSite: 'unrestricted' });"
+        "  window.domAutomationController.send(true);"
+        "}"
+        "doSet()");
+    // Failure ignored here since some tests purposefully try to set disallowed
+    // cookies.
   }
 
   // Set a cookie by visiting a page that has a Set-Cookie header.
@@ -320,7 +372,7 @@ IN_PROC_BROWSER_TEST_P(CookieSettingsTest, BlockCookiesUsingExceptions) {
   WriteCookie(browser());
   ASSERT_TRUE(ReadCookie(browser()).empty());
 
-  GURL unblocked_url = https_server_.GetURL("/cookie1.html");
+  GURL unblocked_url = GetOtherServer()->GetURL("/cookie1.html");
 
   ui_test_utils::NavigateToURL(browser(), unblocked_url);
   ASSERT_FALSE(GetCookies(browser()->profile(), unblocked_url).empty());
@@ -368,10 +420,12 @@ IN_PROC_BROWSER_TEST_P(CookieSettingsTest, BlockCookiesAlsoBlocksCacheStorage) {
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     CookieSettingsTest,
-    ::testing::Values(CookieMode::kJSReadJSWrite,
-                      CookieMode::kJSReadHttpWrite,
-                      CookieMode::kHttpReadJSWrite,
-                      CookieMode::kHttpReadHttpWrite));
+    ::testing::Values(std::make_pair(CookieMode::kJS, CookieMode::kJS),
+                      std::make_pair(CookieMode::kJS, CookieMode::kHttp),
+                      std::make_pair(CookieMode::kHttp, CookieMode::kJS),
+                      std::make_pair(CookieMode::kHttp, CookieMode::kHttp),
+                      std::make_pair(CookieMode::kHttp, CookieMode::kJSAsync),
+                      std::make_pair(CookieMode::kJSAsync, CookieMode::kJS)));
 
 // This fails on ChromeOS because kRestoreOnStartup is ignored and the startup
 // preference is always "continue where I left off.

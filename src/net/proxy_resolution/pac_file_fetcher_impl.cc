@@ -265,6 +265,7 @@ void PacFileFetcherImpl::OnAuthRequired(URLRequest* request,
 }
 
 void PacFileFetcherImpl::OnSSLCertificateError(URLRequest* request,
+                                               int net_error,
                                                const SSLInfo& ssl_info,
                                                bool fatal) {
   DCHECK_EQ(request, cur_request_.get());
@@ -275,7 +276,7 @@ void PacFileFetcherImpl::OnSSLCertificateError(URLRequest* request,
   }
   LOG(WARNING) << "SSL certificate error when fetching PAC script, aborting.";
   // Certificate errors are in same space as net errors.
-  result_code_ = MapCertStatusToNetError(ssl_info.cert_status);
+  result_code_ = net_error;
   request->Cancel();
 }
 

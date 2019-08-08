@@ -8,9 +8,9 @@
 #include <utility>
 
 #include "ash/public/cpp/notification_utils.h"
+#include "ash/public/cpp/system_tray_client.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
-#include "ash/public/interfaces/session_controller.mojom.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/model/system_tray_model.h"
@@ -60,15 +60,12 @@ MultiDeviceNotificationPresenter::OpenUiDelegate::~OpenUiDelegate() = default;
 
 void MultiDeviceNotificationPresenter::OpenUiDelegate::
     OpenMultiDeviceSetupUi() {
-  Shell::Get()->system_tray_model()->client_ptr()->ShowMultiDeviceSetup();
+  Shell::Get()->system_tray_model()->client()->ShowMultiDeviceSetup();
 }
 
 void MultiDeviceNotificationPresenter::OpenUiDelegate::
     OpenConnectedDevicesSettings() {
-  Shell::Get()
-      ->system_tray_model()
-      ->client_ptr()
-      ->ShowConnectedDevicesSettings();
+  Shell::Get()->system_tray_model()->client()->ShowConnectedDevicesSettings();
 }
 
 // static
@@ -214,7 +211,7 @@ void MultiDeviceNotificationPresenter::ObserveMultiDeviceSetupIfPossible() {
   if (multidevice_setup_ptr_)
     return;
 
-  const SessionController* session_controller =
+  const SessionControllerImpl* session_controller =
       Shell::Get()->session_controller();
 
   // If no active user is logged in, there is nothing to do.
@@ -223,15 +220,14 @@ void MultiDeviceNotificationPresenter::ObserveMultiDeviceSetupIfPossible() {
     return;
   }
 
-  const mojom::UserSession* user_session =
-      session_controller->GetPrimaryUserSession();
+  const UserSession* user_session = session_controller->GetPrimaryUserSession();
 
   // The primary user session may be unavailable (e.g., for test/guest users).
   if (!user_session)
     return;
 
   base::Optional<base::Token> service_instance_group =
-      user_session->user_info->service_instance_group;
+      user_session->user_info.service_instance_group;
 
   // Cannot proceed if there is no known service instance group.
   if (!service_instance_group)

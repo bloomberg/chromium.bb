@@ -41,14 +41,16 @@ QuartcStream* QuartcSession::CreateOutgoingBidirectionalStream() {
       GetNextOutgoingBidirectionalStreamId(), QuicStream::kDefaultPriority));
 }
 
-bool QuartcSession::SendOrQueueMessage(std::string message) {
+bool QuartcSession::SendOrQueueMessage(QuicMemSliceSpan message,
+                                       int64_t datagram_id) {
   if (!CanSendMessage()) {
     QUIC_LOG(ERROR) << "Quic session does not support SendMessage";
     return false;
   }
 
-  if (message.size() > GetCurrentLargestMessagePayload()) {
-    QUIC_LOG(ERROR) << "Message is too big, message_size=" << message.size()
+  if (message.total_length() > GetCurrentLargestMessagePayload()) {
+    QUIC_LOG(ERROR) << "Message is too big, message_size="
+                    << message.total_length()
                     << ", GetCurrentLargestMessagePayload="
                     << GetCurrentLargestMessagePayload();
     return false;
@@ -56,7 +58,9 @@ bool QuartcSession::SendOrQueueMessage(std::string message) {
 
   // There may be other messages in send queue, so we have to add message
   // to the queue and call queue processing helper.
-  send_message_queue_.emplace_back(std::move(message));
+  message.ConsumeAll([this, datagram_id](QuicMemSlice slice) {
+    send_message_queue_.emplace_back(std::move(slice), datagram_id);
+  });
 
   ProcessSendMessageQueue();
 
@@ -64,21 +68,22 @@ bool QuartcSession::SendOrQueueMessage(std::string message) {
 }
 
 void QuartcSession::ProcessSendMessageQueue() {
+  QuicConnection::ScopedPacketFlusher flusher(
+      connection(), QuicConnection::AckBundling::NO_ACK);
   while (!send_message_queue_.empty()) {
-    struct iovec iov = {const_cast<char*>(send_message_queue_.front().data()),
-                        send_message_queue_.front().length()};
-    QuicMemSliceStorage storage(
-        &iov, 1, connection()->helper()->GetStreamSendBufferAllocator(),
-        send_message_queue_.front().length());
-    MessageResult result = SendMessage(storage.ToSpan());
-
-    const size_t message_size = send_message_queue_.front().size();
+    QueuedMessage& it = send_message_queue_.front();
+    const size_t message_size = it.message.length();
+    MessageResult result = SendMessage(QuicMemSliceSpan(&it.message));
 
     // Handle errors.
     switch (result.status) {
       case MESSAGE_STATUS_SUCCESS:
         QUIC_VLOG(1) << "Quartc message sent, message_id=" << result.message_id
                      << ", message_size=" << message_size;
+
+        // Notify that datagram was sent.
+        session_delegate_->OnMessageSent(it.datagram_id);
+
         break;
 
       // If connection is congestion controlled or not writable yet, stop
@@ -118,6 +123,20 @@ void QuartcSession::OnCanWrite() {
   ProcessSendMessageQueue();
 
   QuicSession::OnCanWrite();
+}
+
+bool QuartcSession::SendProbingData() {
+  if (QuicSession::SendProbingData()) {
+    return true;
+  }
+
+  // Set transmission type to PROBING_RETRANSMISSION such that the packets will
+  // be padded to full.
+  SetTransmissionType(PROBING_RETRANSMISSION);
+  // TODO(mellem): this sent PING will be retransmitted if it is lost which is
+  // not ideal. Consider to send stream data as probing data instead.
+  SendPing();
+  return true;
 }
 
 void QuartcSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
@@ -192,12 +211,12 @@ void QuartcSession::OnConnectionClosed(QuicErrorCode error,
 void QuartcSession::CloseConnection(const std::string& details) {
   connection_->CloseConnection(
       QuicErrorCode::QUIC_CONNECTION_CANCELLED, details,
-      ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET_WITH_NO_ACK);
+      ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
 }
 
 void QuartcSession::SetDelegate(Delegate* session_delegate) {
   if (session_delegate_) {
-    LOG(WARNING) << "The delegate for the session has already been set.";
+    QUIC_LOG(WARNING) << "The delegate for the session has already been set.";
   }
   session_delegate_ = session_delegate;
   DCHECK(session_delegate_);
@@ -337,7 +356,7 @@ void QuartcClientSession::StartCryptoHandshake() {
           std::vector<std::string>{kDummyCertName}, /*cert_sct=*/"",
           /*chlo_hash=*/"", /*signature=*/"anything");
     } else {
-      LOG(DFATAL) << "Unable to set server config, error=" << error;
+      QUIC_LOG(DFATAL) << "Unable to set server config, error=" << error;
     }
   }
 
@@ -389,8 +408,7 @@ QuicCryptoStream* QuartcServerSession::GetMutableCryptoStream() {
 
 void QuartcServerSession::StartCryptoHandshake() {
   crypto_stream_ = QuicMakeUnique<QuicCryptoServerStream>(
-      server_crypto_config_, compressed_certs_cache_,
-      /*use_stateless_rejects_if_peer_supported=*/false, this, stream_helper_);
+      server_crypto_config_, compressed_certs_cache_, this, stream_helper_);
   Initialize();
 }
 

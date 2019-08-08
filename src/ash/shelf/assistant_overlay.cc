@@ -979,4 +979,8 @@ void AssistantOverlay::HideAnimation() {
   }
 }
 
+const char* AssistantOverlay::GetClassName() const {
+  return "AssistantOverlay";
+}
+
 }  // namespace ash

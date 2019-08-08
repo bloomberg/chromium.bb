@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_PROPERTIES_H_
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_PROPERTIES_H_
 
-#include "chrome/browser/performance_manager/observers/graph_observer.h"
-
 namespace performance_manager {
 
 // Helper classes for setting properties and invoking observer callbacks based
@@ -37,7 +35,7 @@ class ObservedPropertyImpl {
         ((observer).*(NotifyFunctionPtr))(node);
     }
 
-    PropertyType value() const { return value_; }
+    const PropertyType& value() const { return value_; }
 
    private:
     PropertyType value_;
@@ -68,7 +66,7 @@ class ObservedPropertyImpl {
       return true;
     }
 
-    PropertyType value() const { return value_; }
+    const PropertyType& value() const { return value_; }
 
    private:
     PropertyType value_;

@@ -11,7 +11,6 @@
 <translation id="1206693055195146388">شريط تمرير</translation>
 <translation id="1211441953136645838">تعليق ختامي</translation>
 <translation id="1281252709823657822">مربع حوار</translation>
-<translation id="1289247557029249093">الخروج من وضع "نافذة ضمن النافذة"</translation>
 <translation id="1335095011850992622">إسهامات</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">إعلان بانر</translation>
@@ -37,6 +36,7 @@
 <translation id="2148716181193084225">اليوم</translation>
 <translation id="2158401438286456825">قائمة صفحات</translation>
 <translation id="2226276347425096477">يُرجى اختصار هذا النص حتى يصل إلى <ph name="MAX_CHARACTERS" /> من الحروف أو أقل (أنت الآن تستخدم <ph name="CURRENT_LENGTH" /> من الحروف).</translation>
+<translation id="2246498165605549352">ملف محلي</translation>
 <translation id="2247351761944213033">الأسبوع <ph name="WEEKNUMBER" />، <ph name="YEAR" /></translation>
 <translation id="2277199496770840904">المقطع الصوتي <ph name="NUMBER" /></translation>
 <translation id="2291999235780842123">مربع اختيار</translation>
@@ -75,6 +75,7 @@
 <translation id="3685101356851116974">صورة غير مُصنَّفة</translation>
 <translation id="3706100364254443312">تبديل</translation>
 <translation id="3732799496749320381">شهر</translation>
+<translation id="3754210790023674521">الخروج من وضع "نافذة ضمن نافذة"</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> غيغابايت</translation>
 <translation id="3808586225841795776">عبارة</translation>
 <translation id="3822383571486410024">يُرجى إطالة هذا النص إلى <ph name="MIN_CHARACTERS" /> من الحروف أو أكثر (أنت تستخدم حاليًا <ph name="CURRENT_LENGTH" /> من الحروف).</translation>
@@ -102,6 +103,7 @@
 <translation id="4661075872484491155">متفرع</translation>
 <translation id="4664250907885839816">يجب ألا يشتمل الجزء الذي يلي العلامة "<ph name="ATSIGN" />" على الرمز "<ph name="INVALIDCHARACTER" />".</translation>
 <translation id="4668956016107839909">ملحق</translation>
+<translation id="4718048029184481307">تشغيل في وضع "نافذة ضمن النافذة"</translation>
 <translation id="4742539557769756338">غلاف</translation>
 <translation id="4748357248530471599">تبديل صورة مقطوعة للشاشة إلى وضع ملء الشاشة</translation>
 <translation id="4757246831282535685">لوحة علامة التبويب</translation>
@@ -150,7 +152,7 @@
 <translation id="6166809985690652833">كلمة ختامية</translation>
 <translation id="6209276755895393898">يبدو أن: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">مسرد مصطلحات</translation>
-<translation id="628938136236500310">التشغيل في وضع "نافذة ضمن النافذة"</translation>
+<translation id="6310801910862476708">الخروج من وضع "نافذة ضمن نافذة"</translation>
 <translation id="6398862346408813489">عرض لوحة تحديد الشهر</translation>
 <translation id="6404546809543547843">شريط تمرير وقت الصوت</translation>
 <translation id="6443871981718447451">عرض قائمة مقاطع الترجمة والشرح</translation>

@@ -31,6 +31,8 @@ class IndexedDBFakeBackingStore : public IndexedDBBackingStore {
   IndexedDBFakeBackingStore();
   IndexedDBFakeBackingStore(IndexedDBFactory* factory,
                             base::SequencedTaskRunner* task_runner);
+  ~IndexedDBFakeBackingStore() override;
+
   leveldb::Status DeleteDatabase(const base::string16& name) override;
 
   leveldb::Status PutRecord(IndexedDBBackingStore::Transaction* transaction,
@@ -112,7 +114,7 @@ class IndexedDBFakeBackingStore : public IndexedDBBackingStore {
    public:
     explicit FakeTransaction(leveldb::Status phase_two_result);
     void Begin() override;
-    leveldb::Status CommitPhaseOne(scoped_refptr<BlobWriteCallback>) override;
+    leveldb::Status CommitPhaseOne(BlobWriteCallback) override;
     leveldb::Status CommitPhaseTwo() override;
     uint64_t GetTransactionSize() override;
     void Rollback() override;
@@ -122,10 +124,6 @@ class IndexedDBFakeBackingStore : public IndexedDBBackingStore {
 
     DISALLOW_COPY_AND_ASSIGN(FakeTransaction);
   };
-
- protected:
-  friend class base::RefCounted<IndexedDBFakeBackingStore>;
-  ~IndexedDBFakeBackingStore() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(IndexedDBFakeBackingStore);

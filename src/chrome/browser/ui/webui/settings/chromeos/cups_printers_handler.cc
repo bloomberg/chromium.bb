@@ -353,6 +353,9 @@ void CupsPrintersHandler::RegisterMessages() {
       "cancelPrinterSetUp",
       base::BindRepeating(&CupsPrintersHandler::HandleSetUpCancel,
                           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getEulaUrl", base::BindRepeating(&CupsPrintersHandler::HandleGetEulaUrl,
+                                        base::Unretained(this)));
 }
 
 void CupsPrintersHandler::OnJavascriptAllowed() {
@@ -378,7 +381,7 @@ void CupsPrintersHandler::HandleGetCupsPrintersList(
   CHECK(args->GetString(0, &callback_id));
 
   std::vector<Printer> printers =
-      printers_manager_->GetPrinters(CupsPrintersManager::kSaved);
+      printers_manager_->GetPrinters(PrinterClass::kSaved);
 
   auto response = BuildCupsPrintersList(printers);
   ResolveJavascriptCallback(base::Value(callback_id), response);
@@ -574,7 +577,8 @@ void CupsPrintersHandler::OnAutoconfQueried(
 void CupsPrintersHandler::OnPpdResolved(const std::string& callback_id,
                                         base::Value info,
                                         PpdProvider::CallbackResultCode res,
-                                        const Printer::PpdReference& ppd_ref) {
+                                        const Printer::PpdReference& ppd_ref,
+                                        const std::string& usb_manufacturer) {
   if (res != PpdProvider::CallbackResultCode::SUCCESS) {
     info.SetKey("ppdReferenceResolved", base::Value(false));
     ResolveJavascriptCallback(base::Value(callback_id), info);
@@ -724,6 +728,7 @@ void CupsPrintersHandler::OnAddedOrEditedPrinterCommon(
                                 printer.GetProtocol(), Printer::kProtocolMax);
       PRINTER_LOG(USER) << "Performing printer setup";
       printers_manager_->PrinterInstalled(printer, is_automatic);
+      printers_manager_->SavePrinter(printer);
       if (printer.IsUsbProtocol()) {
         // Record UMA for USB printer setup source.
         PrinterConfigurer::RecordUsbPrinterSetupSource(
@@ -732,7 +737,7 @@ void CupsPrintersHandler::OnAddedOrEditedPrinterCommon(
       return;
     case PrinterSetupResult::kEditSuccess:
       PRINTER_LOG(USER) << "Printer updated";
-      printers_manager_->UpdateSavedPrinter(printer);
+      printers_manager_->SavePrinter(printer);
       return;
     case PrinterSetupResult::kPpdNotFound:
       PRINTER_LOG(ERROR) << "Could not locate requested PPD";
@@ -933,12 +938,10 @@ void CupsPrintersHandler::VerifyPpdContents(const base::FilePath& path,
 void CupsPrintersHandler::HandleStartDiscovery(const base::ListValue* args) {
   PRINTER_LOG(DEBUG) << "Start printer discovery";
   discovery_active_ = true;
-  OnPrintersChanged(
-      CupsPrintersManager::kAutomatic,
-      printers_manager_->GetPrinters(CupsPrintersManager::kAutomatic));
-  OnPrintersChanged(
-      CupsPrintersManager::kDiscovered,
-      printers_manager_->GetPrinters(CupsPrintersManager::kDiscovered));
+  OnPrintersChanged(PrinterClass::kAutomatic,
+                    printers_manager_->GetPrinters(PrinterClass::kAutomatic));
+  OnPrintersChanged(PrinterClass::kDiscovered,
+                    printers_manager_->GetPrinters(PrinterClass::kDiscovered));
   UMA_HISTOGRAM_COUNTS_100(
       "Printing.CUPS.PrintersDiscovered",
       discovered_printers_.size() + automatic_printers_.size());
@@ -969,24 +972,23 @@ void CupsPrintersHandler::HandleSetUpCancel(const base::ListValue* args) {
 }
 
 void CupsPrintersHandler::OnPrintersChanged(
-    CupsPrintersManager::PrinterClass printer_class,
+    PrinterClass printer_class,
     const std::vector<Printer>& printers) {
   switch (printer_class) {
-    case CupsPrintersManager::kAutomatic:
+    case PrinterClass::kAutomatic:
       automatic_printers_ = printers;
       UpdateDiscoveredPrinters();
       break;
-    case CupsPrintersManager::kDiscovered:
+    case PrinterClass::kDiscovered:
       discovered_printers_ = printers;
       UpdateDiscoveredPrinters();
       break;
-    case CupsPrintersManager::kSaved: {
+    case PrinterClass::kSaved: {
       auto printers_list = BuildCupsPrintersList(printers);
       FireWebUIListener("on-printers-changed", printers_list);
       break;
     }
-    case CupsPrintersManager::kEnterprise:
-    case CupsPrintersManager::kNumPrinterClasses:
+    case PrinterClass::kEnterprise:
       // These classes are not shown.
       return;
   }
@@ -1094,6 +1096,21 @@ void CupsPrintersHandler::OnGetPrinterPpdManufacturerAndModel(
   info.SetString("ppdManufacturer", manufacturer);
   info.SetString("ppdModel", model);
   ResolveJavascriptCallback(base::Value(callback_id), info);
+}
+
+void CupsPrintersHandler::HandleGetEulaUrl(const base::ListValue* args) {
+  std::string callback_id;
+  std::string ppdManufacturer;
+  std::string ppdModel;
+  CHECK_EQ(3U, args->GetSize());
+  CHECK(args->GetString(0, &callback_id));
+  CHECK(args->GetString(1, &ppdManufacturer));
+  CHECK(args->GetString(2, &ppdModel));
+
+  // TODO(crbug/958272): Implement this function to check if a |ppdModel| has an
+  // EULA.
+  ResolveJavascriptCallback(base::Value(callback_id),
+                            base::Value("" /* eulaUrl */));
 }
 
 void CupsPrintersHandler::FireManuallyAddDiscoveredPrinter(

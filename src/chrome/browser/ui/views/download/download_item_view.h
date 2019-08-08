@@ -76,7 +76,7 @@ class DownloadItemView : public views::InkDropHostView,
   // Returns the base color for text on this download item, based on |theme|.
   static SkColor GetTextColorForThemeProvider(const ui::ThemeProvider* theme);
 
-  void OnExtractIconComplete(gfx::Image* icon);
+  void OnExtractIconComplete(gfx::Image icon);
 
   // Returns the DownloadUIModel object belonging to this item.
   DownloadUIModel* model() { return model_.get(); }
@@ -169,6 +169,9 @@ class DownloadItemView : public views::InkDropHostView,
   // Height/width of the warning icon, also in dp.
   static constexpr int kWarningIconSize = 24;
 
+  // Height/width of the erro icon, also in dp.
+  static constexpr int kErrorIconSize = 27;
+
   // How long the 'download complete' animation should last for.
   static constexpr int kCompleteAnimationDurationMs = 2500;
 
@@ -197,11 +200,7 @@ class DownloadItemView : public views::InkDropHostView,
   // relative to local bounds.
   int GetYForFilenameText() const;
 
-  // Painting of various download item bits.
-  void DrawStatusText(gfx::Canvas* canvas);
-  void DrawFilename(gfx::Canvas* canvas);
   void DrawIcon(gfx::Canvas* canvas);
-
   void LoadIcon();
   void LoadIconIfItemPathChanged();
 
@@ -300,11 +299,12 @@ class DownloadItemView : public views::InkDropHostView,
   // Returns the base text color.
   SkColor GetTextColor() const;
 
-  // Returns a slightly dimmed version of the base text color.
-  SkColor GetDimmedTextColor() const;
-
   // Returns the status text to show in the notification.
   base::string16 GetStatusText() const;
+
+  // Returns the file name to report to user. It might be elided to fit into
+  // the text width.
+  base::string16 ElidedFilename();
 
   // The download shelf that owns us.
   DownloadShelfView* shelf_;
@@ -363,17 +363,20 @@ class DownloadItemView : public views::InkDropHostView,
   views::MdTextButton* save_button_;
   views::MdTextButton* discard_button_;
 
+  // The file name label.
+  views::Label* file_name_label_;
+
+  // The status text label.
+  views::Label* status_label_;
+
   // The drop down button.
-  views::ImageButton* dropdown_button_;
+  views::ImageButton* dropdown_button_ = nullptr;
 
   // Dangerous mode label.
   views::Label* dangerous_download_label_;
 
   // Whether the dangerous mode label has been sized yet.
   bool dangerous_download_label_sized_;
-
-  // Whether we are currently disabled as part of opening the downloaded file.
-  bool disabled_while_opening_;
 
   // The time at which this view was created.
   base::Time creation_time_;

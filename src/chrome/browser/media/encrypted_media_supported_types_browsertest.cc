@@ -449,6 +449,10 @@ class EncryptedMediaSupportedTypesExternalClearKeyNotEnabledTest
 class EncryptedMediaSupportedTypesWidevineTest
     : public EncryptedMediaSupportedTypesTest {
  protected:
+  EncryptedMediaSupportedTypesWidevineTest() {
+    scoped_feature_list_.InitAndEnableFeature(media::kWidevineAv1);
+  }
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EncryptedMediaSupportedTypesTest::SetUpCommandLine(command_line);
     // Persistent license is supported on ChromeOS when protected media
@@ -458,6 +462,11 @@ class EncryptedMediaSupportedTypesWidevineTest
     command_line->AppendSwitchASCII(
         switches::kUnsafelyAllowProtectedMediaIdentifierForDomain, "127.0.0.1");
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(EncryptedMediaSupportedTypesWidevineTest);
 };
 
 class EncryptedMediaSupportedTypesWidevineHwSecureTest

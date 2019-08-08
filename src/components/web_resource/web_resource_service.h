@@ -37,10 +37,10 @@ namespace web_resource {
 class WebResourceService : public ResourceRequestAllowedNotifier::Observer {
  public:
   // Callbacks for JSON parsing.
-  using SuccessCallback = base::Callback<void(std::unique_ptr<base::Value>)>;
-  using ErrorCallback = base::Callback<void(const std::string&)>;
-  using ParseJSONCallback = base::Callback<
-      void(const std::string&, const SuccessCallback&, const ErrorCallback&)>;
+  using SuccessCallback = base::OnceCallback<void(base::Value)>;
+  using ErrorCallback = base::OnceCallback<void(const std::string&)>;
+  using ParseJSONCallback = base::RepeatingCallback<
+      void(const std::string&, SuccessCallback, ErrorCallback)>;
 
   // Creates a new WebResourceService.
   // If |application_locale| is not empty, it will be appended as a locale
@@ -93,7 +93,7 @@ class WebResourceService : public ResourceRequestAllowedNotifier::Observer {
   void EndFetch();
 
   // Callbacks from the JSON parser.
-  void OnUnpackFinished(std::unique_ptr<base::Value> value);
+  void OnUnpackFinished(base::Value value);
   void OnUnpackError(const std::string& error_message);
 
   // Implements ResourceRequestAllowedNotifier::Observer.

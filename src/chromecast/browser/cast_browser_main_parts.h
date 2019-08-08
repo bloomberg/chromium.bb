@@ -31,6 +31,12 @@ namespace net {
 class NetLog;
 }
 
+#if defined(USE_AURA)
+namespace views {
+class ViewsDelegate;
+}  // namespace views
+#endif  // defined(USE_AURA)
+
 namespace chromecast {
 class CastMemoryPressureMonitor;
 class WaylandServerController;
@@ -96,6 +102,7 @@ class CastBrowserMainParts : public content::BrowserMainParts {
   std::unique_ptr<media::MediaCapsImpl> media_caps_;
 
 #if defined(USE_AURA)
+  std::unique_ptr<views::ViewsDelegate> views_delegate_;
   std::unique_ptr<CastWindowManagerAura> window_manager_;
 #else
   std::unique_ptr<CastWindowManager> window_manager_;

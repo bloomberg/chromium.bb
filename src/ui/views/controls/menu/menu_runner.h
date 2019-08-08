@@ -31,7 +31,7 @@ class MenuModel;
 
 namespace views {
 
-class MenuButton;
+class MenuButtonController;
 class MenuItemView;
 class MenuRunnerHandler;
 class Widget;
@@ -129,7 +129,7 @@ class VIEWS_EXPORT MenuRunner {
   // If |anchor| uses a |BUBBLE_..| type, the bounds will get determined by
   // using |bounds| as the thing to point at in screen coordinates.
   void RunMenuAt(Widget* parent,
-                 MenuButton* button,
+                 MenuButtonController* button_controller,
                  const gfx::Rect& bounds,
                  MenuAnchorPosition anchor,
                  ui::MenuSourceType source_type);

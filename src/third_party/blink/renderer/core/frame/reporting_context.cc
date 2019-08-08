@@ -141,17 +141,16 @@ void ReportingContext::SendToReportingAPI(Report* report,
         url,
         endpoint,
         body->documentURL() ? body->documentURL() : "",
-        body->referrer() ? body->referrer() : "",
-        body->effectiveDirective() ? body->effectiveDirective() : "",
+        body->referrer(),
+        body->blockedURL(),
         body->effectiveDirective() ? body->effectiveDirective() : "",
         body->originalPolicy() ? body->originalPolicy() : "",
+        body->sourceFile(),
+        body->sample(),
         body->disposition() ? body->disposition() : "",
-        body->blockedURL() ? body->blockedURL() : "",
-        line_number,
-        column_number,
-        body->sourceFile() ? body->sourceFile() : "",
         body->statusCode(),
-        body->sample() ? body->sample() : "");
+        line_number,
+        column_number);
   } else if (type == "deprecation") {
     // Send the deprecation report.
     const DeprecationReportBody* body =
@@ -175,7 +174,8 @@ void ReportingContext::SendToReportingAPI(Report* report,
     const InterventionReportBody* body =
         static_cast<InterventionReportBody*>(report->body());
     GetReportingService()->QueueInterventionReport(
-        url, body->message(), body->sourceFile(), line_number, column_number);
+        url, body->id(), body->message(), body->sourceFile(), line_number,
+        column_number);
   }
 }
 

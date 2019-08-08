@@ -117,10 +117,6 @@ struct RadialGradientAttributes final : GradientAttributes {
 class RadialGradientAttributesWrapper
     : public GarbageCollectedFinalized<RadialGradientAttributesWrapper> {
  public:
-  static RadialGradientAttributesWrapper* Create() {
-    return MakeGarbageCollected<RadialGradientAttributesWrapper>();
-  }
-
   RadialGradientAttributesWrapper() = default;
 
   RadialGradientAttributes& Attributes() { return attributes_; }

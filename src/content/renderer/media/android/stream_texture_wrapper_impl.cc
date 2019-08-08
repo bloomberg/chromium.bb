@@ -93,7 +93,7 @@ void StreamTextureWrapperImpl::ReallocateVideoFrame(
       media::VideoFrame::WrapNativeTextures(
           media::PIXEL_FORMAT_ARGB, holders,
           media::BindToCurrentLoop(
-              base::Bind(&OnReleaseTexture, factory_, texture_id_ref)),
+              base::BindOnce(&OnReleaseTexture, factory_, texture_id_ref)),
           natural_size, gfx::Rect(natural_size), natural_size,
           base::TimeDelta());
 
@@ -117,9 +117,9 @@ void StreamTextureWrapperImpl::ClearReceivedFrameCBOnAnyThread() {
 }
 
 void StreamTextureWrapperImpl::SetCurrentFrameInternal(
-    const scoped_refptr<media::VideoFrame>& video_frame) {
+    scoped_refptr<media::VideoFrame> video_frame) {
   base::AutoLock auto_lock(current_frame_lock_);
-  current_frame_ = video_frame;
+  current_frame_ = std::move(video_frame);
 }
 
 void StreamTextureWrapperImpl::UpdateTextureSize(const gfx::Size& new_size) {
@@ -146,7 +146,7 @@ void StreamTextureWrapperImpl::UpdateTextureSize(const gfx::Size& new_size) {
 }
 
 void StreamTextureWrapperImpl::Initialize(
-    const base::Closure& received_frame_cb,
+    const base::RepeatingClosure& received_frame_cb,
     const gfx::Size& natural_size,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
     const StreamTextureWrapperInitCB& init_cb) {
@@ -163,7 +163,7 @@ void StreamTextureWrapperImpl::Initialize(
 }
 
 void StreamTextureWrapperImpl::InitializeOnMainThread(
-    const base::Closure& received_frame_cb,
+    const base::RepeatingClosure& received_frame_cb,
     const StreamTextureWrapperInitCB& init_cb) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DVLOG(2) << __func__;

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
@@ -51,6 +52,7 @@
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
+#include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble_controller.h"
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_dialogs.h"
@@ -60,6 +62,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/content_restriction.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
@@ -95,6 +98,7 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/commands/command_service.h"
@@ -130,7 +134,7 @@
 
 namespace {
 
-const char kOsOverrideForTabletSite[] = "Linux; Android 4.0.3";
+const char kOsOverrideForTabletSite[] = "Linux; Android 9; Chrome tablet";
 
 translate::TranslateBubbleUiEvent TranslateBubbleResultToUiEvent(
     ShowTranslateBubbleResult result) {
@@ -532,6 +536,11 @@ void Home(Browser* browser, WindowOpenDisposition disposition) {
     extensions::MaybeShowExtensionControlledHomeNotification(browser);
 #endif
 
+  bool is_chrome_internal = url.SchemeIs(url::kAboutScheme) ||
+                            url.SchemeIs(content::kChromeUIScheme) ||
+                            url.SchemeIs(chrome::kChromeNativeScheme);
+  base::UmaHistogramBoolean("Navigation.Home.IsChromeInternal",
+                            is_chrome_internal);
   OpenURLParams params(
       url, Referrer(), disposition,
       ui::PageTransitionFromInt(ui::PAGE_TRANSITION_AUTO_BOOKMARK |
@@ -942,6 +951,15 @@ void ManagePasswordsForPage(Browser* browser) {
       ->ShowManagePasswordsBubble(!controller->IsAutomaticallyOpeningBubble());
 }
 
+void SendTabToSelfFromPageAction(Browser* browser) {
+  WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  send_tab_to_self::SendTabToSelfBubbleController* controller =
+      send_tab_to_self::SendTabToSelfBubbleController::
+          CreateOrGetFromWebContents(web_contents);
+  controller->ShowBubble();
+}
+
 void SavePage(Browser* browser) {
   base::RecordAction(UserMetricsAction("SavePage"));
   WebContents* current_tab = browser->tab_strip_model()->GetActiveWebContents();
@@ -1225,16 +1243,24 @@ void ToggleRequestTabletSite(Browser* browser) {
   NavigationEntry* entry = controller.GetLastCommittedEntry();
   if (!entry)
     return;
-  if (entry->GetIsOverridingUserAgent()) {
+  if (entry->GetIsOverridingUserAgent())
     entry->SetIsOverridingUserAgent(false);
-  } else {
+  else
+    SetAndroidOsForTabletSite(current_tab);
+  controller.Reload(content::ReloadType::ORIGINAL_REQUEST_URL, true);
+}
+
+void SetAndroidOsForTabletSite(content::WebContents* current_tab) {
+  DCHECK(current_tab);
+  NavigationEntry* entry = current_tab->GetController().GetLastCommittedEntry();
+  if (entry) {
     entry->SetIsOverridingUserAgent(true);
-    std::string product = version_info::GetProductNameAndVersionForUserAgent();
+    std::string product =
+        version_info::GetProductNameAndVersionForUserAgent() + " Mobile";
     current_tab->SetUserAgentOverride(content::BuildUserAgentFromOSAndProduct(
                                           kOsOverrideForTabletSite, product),
                                       false);
   }
-  controller.Reload(content::ReloadType::ORIGINAL_REQUEST_URL, true);
 }
 
 void ToggleFullscreenMode(Browser* browser) {
@@ -1268,7 +1294,7 @@ void CopyURL(Browser* browser) {
 }
 
 Browser* OpenInChrome(Browser* hosted_app_browser) {
-  DCHECK(hosted_app_browser->web_app_controller());
+  DCHECK(hosted_app_browser->app_controller());
   // Find a non-incognito browser.
   Browser* target_browser =
       chrome::FindTabbedBrowser(hosted_app_browser->profile(), false);
@@ -1297,7 +1323,8 @@ bool CanViewSource(const Browser* browser) {
 void CreateBookmarkAppFromCurrentWebContents(Browser* browser,
                                              bool force_shortcut_app) {
   base::RecordAction(UserMetricsAction("CreateHostedApp"));
-  web_app::CreateWebAppFromCurrentWebContents(browser, force_shortcut_app);
+  web_app::CreateWebAppFromCurrentWebContents(browser, force_shortcut_app,
+                                              base::DoNothing());
 }
 
 bool CanCreateBookmarkApp(const Browser* browser) {

@@ -42,8 +42,6 @@ class CORE_EXPORT HTMLContentElement final : public V0InsertionPoint {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_NODE_FACTORY(HTMLContentElement);
-
   HTMLContentElement(Document&);
   ~HTMLContentElement() override;
 

@@ -23,6 +23,7 @@
 #include "services/network/public/mojom/cors_origin_pattern.mojom-forward.h"
 #include "services/service_manager/public/mojom/service.mojom-forward.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom-forward.h"
+#include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom-forward.h"
 
 #if !defined(OS_ANDROID)
 #include "content/public/browser/zoom_level_delegate.h"
@@ -85,6 +86,7 @@ class PermissionControllerDelegate;
 class PushMessagingService;
 class ResourceContext;
 class ServiceManagerConnection;
+class SmsService;
 class SharedCorsOriginAccessList;
 class SiteInstance;
 class StoragePartition;
@@ -180,8 +182,9 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       BrowserContext* browser_context,
       const GURL& origin,
       int64_t service_worker_registration_id,
+      const std::string& message_id,
       base::Optional<std::string> payload,
-      const base::Callback<void(mojom::PushDeliveryStatus)>& callback);
+      const base::Callback<void(blink::mojom::PushDeliveryStatus)>& callback);
 
   static void NotifyWillBeDestroyed(BrowserContext* browser_context);
 
@@ -363,6 +366,10 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // available
   virtual download::InProgressDownloadManager*
   RetriveInProgressDownloadManager();
+
+  // Returns the SmsService associated with this context if any,
+  // nullptr otherwise.
+  virtual SmsService* GetSmsService();
 
  private:
   const std::string unique_id_;

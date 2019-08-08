@@ -71,8 +71,9 @@ const CGFloat kTextCellLinkColor = 0x1A73E8;
     _textLabel.numberOfLines = 0;
     _textLabel.lineBreakMode = NSLineBreakByWordWrapping;
     _textLabel.font =
-        [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
-    _textLabel.textColor = [UIColor grayColor];
+        [UIFont preferredFontForTextStyle:kTableViewSublabelFontStyle];
+    _textLabel.textColor =
+        UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
 
     // Add subviews to View Hierarchy.
     [self.contentView addSubview:_textLabel];

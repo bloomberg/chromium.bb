@@ -421,13 +421,12 @@ void DecoderStream<StreamType>::OnDecoderSelected(
 }
 
 template <DemuxerStream::Type StreamType>
-void DecoderStream<StreamType>::SatisfyRead(
-    Status status,
-    const scoped_refptr<Output>& output) {
+void DecoderStream<StreamType>::SatisfyRead(Status status,
+                                            scoped_refptr<Output> output) {
   DCHECK(read_cb_);
   TRACE_EVENT_ASYNC_END1("media", GetReadTraceString<StreamType>(), this,
                          "status", GetStatusString<StreamType>(status));
-  std::move(read_cb_).Run(status, output);
+  std::move(read_cb_).Run(status, std::move(output));
 }
 
 template <DemuxerStream::Type StreamType>
@@ -590,7 +589,7 @@ void DecoderStream<StreamType>::OnDecodeDone(
 
 template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::OnDecodeOutputReady(
-    const scoped_refptr<Output>& output) {
+    scoped_refptr<Output> output) {
   FUNCTION_DVLOG(3) << ": " << output->timestamp().InMilliseconds() << " ms";
   DCHECK(output);
   DCHECK(state_ == STATE_NORMAL || state_ == STATE_FLUSHING_DECODER ||
@@ -618,12 +617,12 @@ void DecoderStream<StreamType>::OnDecodeOutputReady(
   }
 
   // If the frame should be dropped, exit early and decode another frame.
-  if (traits_->OnDecodeDone(output) == PostDecodeAction::DROP)
+  if (traits_->OnDecodeDone(output.get()) == PostDecodeAction::DROP)
     return;
 
   if (prepare_cb_ && output->timestamp() + AverageDuration() >=
                          skip_prepare_until_timestamp_) {
-    unprepared_outputs_.push_back(output);
+    unprepared_outputs_.push_back(std::move(output));
     MaybePrepareAnotherOutput();
     return;
   }
@@ -632,12 +631,12 @@ void DecoderStream<StreamType>::OnDecodeOutputReady(
     // If |ready_outputs_| was non-empty, the read would have already been
     // satisifed by Read().
     DCHECK(ready_outputs_.empty());
-    SatisfyRead(OK, output);
+    SatisfyRead(OK, std::move(output));
     return;
   }
 
   // Store decoded output.
-  ready_outputs_.push_back(output);
+  ready_outputs_.push_back(std::move(output));
 }
 
 template <DemuxerStream::Type StreamType>
@@ -971,7 +970,7 @@ void DecoderStream<StreamType>::MaybePrepareAnotherOutput() {
 
 template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::OnPreparedOutputReady(
-    const scoped_refptr<Output>& output) {
+    scoped_refptr<Output> output) {
   FUNCTION_DVLOG(2);
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -988,9 +987,9 @@ void DecoderStream<StreamType>::OnPreparedOutputReady(
   CompletePrepare(output.get());
   unprepared_outputs_.pop_front();
   if (!read_cb_)
-    ready_outputs_.emplace_back(output);
+    ready_outputs_.emplace_back(std::move(output));
   else
-    SatisfyRead(OK, output);
+    SatisfyRead(OK, std::move(output));
 
   MaybePrepareAnotherOutput();
 

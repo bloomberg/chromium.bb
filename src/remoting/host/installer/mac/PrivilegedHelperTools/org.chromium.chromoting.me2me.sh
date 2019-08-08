@@ -45,6 +45,12 @@ handle_signal() {
 }
 
 run_host() {
+  # Run the config-upgrade tool, but only if running as root, as normal users
+  # don't have permission to write the config file.
+  if [[ "$EUID" -eq 0 ]]; then
+    "$HOST_EXE" --upgrade-token --host-config="$CONFIG_FILE"
+  fi
+
   local host_failure_count=0
   local host_start_time=0
 

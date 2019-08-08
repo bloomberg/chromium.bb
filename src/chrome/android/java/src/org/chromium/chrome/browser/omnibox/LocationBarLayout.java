@@ -45,12 +45,14 @@ import org.chromium.chrome.browser.omnibox.UrlBarCoordinator.SelectionState;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
 import org.chromium.chrome.browser.omnibox.status.StatusViewCoordinator;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
-import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator.AutocompleteDelegate;
-import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsList;
+import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinatorFactory;
+import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteDelegate;
+import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionListEmbedder;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.toolbar.top.ToolbarActionModeCallback;
@@ -158,8 +160,8 @@ public class LocationBarLayout extends FrameLayout
         mUrlCoordinator = new UrlBarCoordinator((UrlBar) mUrlBar);
         mUrlCoordinator.setDelegate(this);
 
-        OmniboxSuggestionsList.OmniboxSuggestionListEmbedder embedder =
-                new OmniboxSuggestionsList.OmniboxSuggestionListEmbedder() {
+        OmniboxSuggestionListEmbedder embedder =
+                new OmniboxSuggestionListEmbedder() {
                     @Override
                     public boolean isTablet() {
                         return mIsTablet;
@@ -180,8 +182,8 @@ public class LocationBarLayout extends FrameLayout
                         return mIsTablet ? LocationBarLayout.this : null;
                     }
                 };
-        mAutocompleteCoordinator =
-                new AutocompleteCoordinator(this, this, embedder, mUrlCoordinator);
+        mAutocompleteCoordinator = AutocompleteCoordinatorFactory.createAutocompleteCoordinator(
+                this, this, embedder, mUrlCoordinator);
         addUrlFocusChangeListener(mAutocompleteCoordinator);
         mUrlCoordinator.setUrlTextChangeListener(mAutocompleteCoordinator);
 
@@ -190,6 +192,13 @@ public class LocationBarLayout extends FrameLayout
         mUrlActionContainer = (LinearLayout) findViewById(R.id.url_action_container);
 
         mVoiceRecognitionHandler = new LocationBarVoiceRecognitionHandler(this);
+    }
+
+    @Override
+    public void destroy() {
+        removeUrlFocusChangeListener(mAutocompleteCoordinator);
+        mAutocompleteCoordinator.destroy();
+        mAutocompleteCoordinator = null;
     }
 
     @Override
@@ -912,6 +921,8 @@ public class LocationBarLayout extends FrameLayout
         // The code of the rest of this class ensures that this can't be called until the native
         // side is initialized
         assert mNativeInitialized : "Loading URL before native side initialized";
+
+        if (ReturnToChromeExperimentsUtil.willHandleLoadUrlFromLocationBar(url, transition)) return;
 
         if (currentTab != null
                 && (currentTab.isNativePage() || NewTabPage.isNTPUrl(currentTab.getUrl()))) {

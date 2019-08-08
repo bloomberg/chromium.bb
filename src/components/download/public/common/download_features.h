@@ -33,6 +33,18 @@ COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature
 COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature kRefreshExpirationDate;
 #endif
 
+// Whether concurrent downloads to the same target path should be allowed.
+COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature
+    kPreventDownloadsWithSamePath;
+
+// Whether in-progress download manager will be used to initialize download
+// service.
+COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature
+    kUseInProgressDownloadManagerForDownloadService;
+
+// Whether download resumption is allowed when there are no strong validators.
+COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature
+    kAllowDownloadResumptionWithoutStrongValidators;
 }  // namespace features
 }  // namespace download
 

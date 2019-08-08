@@ -68,6 +68,7 @@ enum SourceEventType {
   KEY_PRESS,
   TOUCHPAD,
   FRAME,
+  SCROLLBAR,
   OTHER,
 };
 

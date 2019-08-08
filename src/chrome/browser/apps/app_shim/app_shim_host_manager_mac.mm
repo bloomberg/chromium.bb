@@ -110,6 +110,15 @@ void AppShimHostManager::InitOnBackgroundThread() {
   if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
     return;
 
+  // Create a symlink containing the current version string. This allows the
+  // shim to load the same framework version as the currently running Chrome
+  // process.
+  base::FilePath version_path =
+      user_data_dir.Append(app_mode::kRunningChromeVersionSymlinkName);
+  base::DeleteFile(version_path, false);
+  base::CreateSymbolicLink(base::FilePath(version_info::GetVersionNumber()),
+                           version_path);
+
   base::FilePath mojo_channel_mac_signal_file =
       user_data_dir.Append(app_mode::kMojoChannelMacSignalFile);
   if (base::FeatureList::IsEnabled(mojo::features::kMojoChannelMac)) {
@@ -166,15 +175,6 @@ void AppShimHostManager::InitOnBackgroundThread() {
       user_data_dir.Append(app_mode::kAppShimSocketSymlinkName);
   base::DeleteFile(symlink_path, false);
   base::CreateSymbolicLink(socket_path, symlink_path);
-
-  // Create a symlink containing the current version string. This allows the
-  // shim to load the same framework version as the currently running Chrome
-  // process.
-  base::FilePath version_path =
-      user_data_dir.Append(app_mode::kRunningChromeVersionSymlinkName);
-  base::DeleteFile(version_path, false);
-  base::CreateSymbolicLink(base::FilePath(version_info::GetVersionNumber()),
-                           version_path);
 
   base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::IO})
       ->PostTask(FROM_HERE,

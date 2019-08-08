@@ -10,65 +10,52 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
 
-namespace {
-
-// Returns true iff |Start| on |timer| succeeds and timer expiration occurs too.
-// The underlying fake power manager implementation expires the timer
-// immediately and the test doesn't sleep.
-bool CheckStartTimerAndExpiration(NativeTimer* timer,
-                                  base::TimeTicks absolute_expiration_ticks) {
-  base::RunLoop start_timer_loop;
-  base::RunLoop expiration_loop;
-  bool start_timer_result = false;
-  bool expiration_result = false;
-  timer->Start(
-      absolute_expiration_ticks,
-      base::BindOnce(
-          [](bool* result_out, base::OnceClosure quit_closure) {
-            *result_out = true;
-            std::move(quit_closure).Run();
-          },
-          &expiration_result, expiration_loop.QuitClosure()),
-      base::BindOnce(
-          [](bool* result_out, base::OnceClosure quit_closure, bool result) {
-            *result_out = result;
-            std::move(quit_closure).Run();
-          },
-          &start_timer_result, start_timer_loop.QuitClosure()));
-  start_timer_loop.Run();
-  if (!start_timer_result) {
-    return false;
-  }
-
-  // Run until timer expiration and check for the result.
-  expiration_loop.Run();
-  if (!expiration_result) {
-    return false;
-  }
-  return true;
-}
-
-}  // namespace
-
 class NativeTimerTest : public testing::Test {
  public:
   NativeTimerTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
+            base::test::ScopedTaskEnvironment::MainThreadType::IO_MOCK_TIME) {}
 
   ~NativeTimerTest() override = default;
 
   // testing::Test:
-  void SetUp() override { PowerManagerClient::InitializeFake(); }
+  void SetUp() override {
+    PowerManagerClient::InitializeFake();
+    FakePowerManagerClient::Get()->set_tick_clock(
+        scoped_task_environment_.GetMockTickClock());
+  }
 
   void TearDown() override { PowerManagerClient::Shutdown(); }
 
  protected:
+  // Returns true iff |Start| on |timer| succeeds and timer expiration occurs
+  // too. The underlying fake power manager implementation expires the timer
+  bool CheckStartTimerAndExpiration(NativeTimer* timer, base::TimeDelta delay) {
+    base::RunLoop start_timer_loop;
+    base::RunLoop expiration_loop;
+    bool start_timer_result = false;
+    bool expiration_result = false;
+    timer->Start(
+        scoped_task_environment_.GetMockTickClock()->NowTicks() + delay,
+        base::BindOnce([](bool* result_out) { *result_out = true; },
+                       &expiration_result),
+        base::BindOnce(
+            [](bool* result_out, bool result) { *result_out = result; },
+            &start_timer_result));
+
+    // Both starting the timer and timer firing should succeed.
+    scoped_task_environment_.FastForwardBy(delay);
+    if (!start_timer_result)
+      return false;
+    return expiration_result;
+  }
+
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
  private:
@@ -84,7 +71,7 @@ TEST_F(NativeTimerTest, CheckCreateFailure) {
 
   // Starting the timer should fail as timer creation failed.
   EXPECT_FALSE(CheckStartTimerAndExpiration(
-      &timer, base::TimeTicks() + base::TimeDelta::FromMilliseconds(1000)));
+      &timer, base::TimeDelta::FromMilliseconds(1000)));
 }
 
 TEST_F(NativeTimerTest, CheckCreateAndStartTimer) {
@@ -95,12 +82,12 @@ TEST_F(NativeTimerTest, CheckCreateAndStartTimer) {
 
   // Start timer and check if starting the timer and its expiration succeeded.
   EXPECT_TRUE(CheckStartTimerAndExpiration(
-      &timer, base::TimeTicks() + base::TimeDelta::FromMilliseconds(1000)));
+      &timer, base::TimeDelta::FromMilliseconds(1000)));
 
   // Start another timer and check if starting the timer and its expiration
   // succeeded.
   EXPECT_TRUE(CheckStartTimerAndExpiration(
-      &timer, base::TimeTicks() + base::TimeDelta::FromMilliseconds(1000)));
+      &timer, base::TimeDelta::FromMilliseconds(1000)));
 }
 
 }  // namespace chromeos

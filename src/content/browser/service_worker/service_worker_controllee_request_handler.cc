@@ -10,12 +10,12 @@
 #include "base/bind.h"
 #include "base/trace_event/trace_event.h"
 #include "components/offline_pages/buildflags/buildflags.h"
+#include "content/browser/navigation_subresource_loader_params.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_navigation_loader.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
-#include "content/common/navigation_subresource_loader_params.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
@@ -98,7 +98,6 @@ ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
     bool keepalive,
     ResourceType resource_type,
     blink::mojom::RequestContextType request_context_type,
-    network::mojom::RequestContextFrameType frame_type,
     scoped_refptr<network::ResourceRequestBody> body)
     : context_(std::move(context)),
       provider_host_(std::move(provider_host)),
@@ -109,7 +108,6 @@ ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
       integrity_(integrity),
       keepalive_(keepalive),
       request_context_type_(request_context_type),
-      frame_type_(frame_type),
       body_(std::move(body)),
       force_update_started_(false),
       weak_factory_(this) {
@@ -255,6 +253,7 @@ void ServiceWorkerControlleeRequestHandler::PrepareForMainResource(
 
   stripped_url_ = net::SimplifyUrlForRequest(url);
   provider_host_->UpdateUrls(stripped_url_, site_for_cookies);
+  registration_lookup_start_time_ = base::TimeTicks::Now();
   context_->storage()->FindRegistrationForDocument(
       stripped_url_, base::BindOnce(&ServiceWorkerControlleeRequestHandler::
                                         DidLookupRegistrationForMainResource,
@@ -271,6 +270,9 @@ void ServiceWorkerControlleeRequestHandler::
   // The job may have been destroyed before this was invoked.
   if (!loader())
     return;
+
+  ServiceWorkerMetrics::RecordLookupRegistrationTime(
+      status, base::TimeTicks::Now() - registration_lookup_start_time_);
 
   if (status != blink::ServiceWorkerStatusCode::kOk) {
     loader()->FallbackToNetwork();

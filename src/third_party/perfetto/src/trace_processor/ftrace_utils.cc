@@ -36,6 +36,14 @@ struct FtraceTime {
 };
 }  // namespace
 
+TaskState::TaskState(uint16_t raw_state) {
+  if (raw_state > kMaxState) {
+    state_ = 0;
+  } else {
+    state_ = raw_state | kValid;
+  }
+}
+
 TaskState::TaskState(const char* state_str) {
   bool invalid_char = false;
   bool is_runnable = false;
@@ -96,7 +104,7 @@ TaskState::TaskState(const char* state_str) {
   }
 
   bool no_state = !is_runnable && state_ == 0;
-  if (invalid_char || no_state) {
+  if (invalid_char || no_state || state_ > kMaxState) {
     state_ = 0;
   } else {
     state_ |= kValid;
@@ -155,6 +163,8 @@ void FormatSystracePrefix(int64_t timestamp,
   FtraceTime ftrace_time(timestamp);
   if (pid == 0) {
     name = "<idle>";
+  } else if (name == "") {
+    name = "<unknown>";
   }
 
   int64_t padding = 16 - static_cast<int64_t>(name.size());

@@ -16,6 +16,7 @@
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "components/viz/common/gpu/metal_context_provider.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
@@ -43,10 +44,6 @@
 #include "media/gpu/gpu_video_encode_accelerator_factory.h"
 #include "media/gpu/ipc/service/gpu_video_decode_accelerator.h"
 #include "media/gpu/ipc/service/media_gpu_channel_manager.h"
-#if defined(OS_CHROMEOS)
-#include "media/mojo/services/cros_mojo_jpeg_encode_accelerator_service.h"
-#endif  // defined(OS_CHROMEOS)
-#include "media/mojo/services/mojo_mjpeg_decode_accelerator_service.h"
 #include "media/mojo/services/mojo_video_encode_accelerator_provider.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/skia/include/gpu/GrContext.h"
@@ -71,10 +68,13 @@
 #include "components/arc/video_accelerator/gpu_arc_video_protected_buffer_allocator.h"
 #include "components/arc/video_accelerator/protected_buffer_manager.h"
 #include "components/arc/video_accelerator/protected_buffer_manager_proxy.h"
+#include "components/chromeos_camera/gpu_mjpeg_decode_accelerator_factory.h"
+#include "components/chromeos_camera/mojo_jpeg_encode_accelerator_service.h"
+#include "components/chromeos_camera/mojo_mjpeg_decode_accelerator_service.h"
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
-#include "gpu/ipc/service/direct_composition_surface_win.h"
+#include "ui/gl/direct_composition_surface_win.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -88,6 +88,15 @@ namespace {
 static base::LazyInstance<base::RepeatingCallback<
     void(int severity, size_t message_start, const std::string& message)>>::
     Leaky g_log_callback = LAZY_INSTANCE_INITIALIZER;
+
+bool IsAcceleratedJpegDecodeSupported() {
+#if defined(OS_CHROMEOS)
+  return chromeos_camera::GpuMjpegDecodeAcceleratorFactory::
+      IsAcceleratedJpegDecodeSupported();
+#else
+  return false;
+#endif  // defined(OS_CHROMEOS)
+}
 
 bool GpuLogMessageHandler(int severity,
                           const char* file,
@@ -136,8 +145,6 @@ GpuServiceImpl::GpuServiceImpl(
     : main_runner_(base::ThreadTaskRunnerHandle::Get()),
       io_runner_(std::move(io_runner)),
       watchdog_thread_(std::move(watchdog_thread)),
-      gpu_memory_buffer_factory_(
-          gpu::GpuMemoryBufferFactory::CreateNativeType()),
       gpu_preferences_(gpu_preferences),
       gpu_info_(gpu_info),
       gpu_feature_info_(gpu_feature_info),
@@ -160,10 +167,26 @@ GpuServiceImpl::GpuServiceImpl(
   if (vulkan_implementation_) {
     vulkan_context_provider_ =
         VulkanInProcessContextProvider::Create(vulkan_implementation_);
-    if (!vulkan_context_provider_)
+    if (vulkan_context_provider_) {
+      // If Vulkan is supported, then OOP-R is supported.
+      gpu_info_.oop_rasterization_supported = true;
+      gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
+          gpu::kGpuFeatureStatusEnabled;
+    } else {
       DLOG(WARNING) << "Failed to create Vulkan context provider.";
+    }
   }
 #endif
+
+#if defined(OS_MACOSX)
+  if (gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_METAL] ==
+      gpu::kGpuFeatureStatusEnabled) {
+    metal_context_provider_ = MetalContextProvider::Create();
+  }
+#endif
+
+  gpu_memory_buffer_factory_ =
+      gpu::GpuMemoryBufferFactory::CreateNativeType(vulkan_context_provider());
 
   weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
 }
@@ -213,8 +236,8 @@ void GpuServiceImpl::UpdateGPUInfo() {
       media::GpuVideoAcceleratorUtil::ConvertMediaToGpuEncodeProfiles(
           media::GpuVideoEncodeAcceleratorFactory::GetSupportedProfiles(
               gpu_preferences_));
-  gpu_info_.jpeg_decode_accelerator_supported = media::
-      GpuMjpegDecodeAcceleratorFactory::IsAcceleratedJpegDecodeSupported();
+  gpu_info_.jpeg_decode_accelerator_supported =
+      IsAcceleratedJpegDecodeSupported();
   // Record initialization only after collecting the GPU info because that can
   // take a significant amount of time.
   gpu_info_.initialization_time = base::Time::Now() - start_time_;
@@ -277,7 +300,8 @@ void GpuServiceImpl::InitializeWithHost(
       scheduler_.get(), sync_point_manager, shared_image_manager,
       gpu_memory_buffer_factory_.get(), gpu_feature_info_,
       std::move(activity_flags), std::move(default_offscreen_surface),
-      nullptr /* image_decode_accelerator_worker */, vulkan_context_provider());
+      nullptr /* image_decode_accelerator_worker */, vulkan_context_provider(),
+      metal_context_provider_.get());
 
   media_gpu_channel_manager_.reset(
       new media::MediaGpuChannelManager(gpu_channel_manager_.get()));
@@ -400,18 +424,20 @@ void GpuServiceImpl::CreateArcProtectedBufferManagerOnMainThread(
       std::move(pbm_request));
 }
 
-void GpuServiceImpl::CreateJpegEncodeAccelerator(
-    media::mojom::JpegEncodeAcceleratorRequest jea_request) {
+void GpuServiceImpl::CreateJpegDecodeAccelerator(
+    chromeos_camera::mojom::MjpegDecodeAcceleratorRequest jda_request) {
   DCHECK(io_runner_->BelongsToCurrentThread());
-  media::CrOSMojoJpegEncodeAcceleratorService::Create(std::move(jea_request));
+  chromeos_camera::MojoMjpegDecodeAcceleratorService::Create(
+      std::move(jda_request));
+}
+
+void GpuServiceImpl::CreateJpegEncodeAccelerator(
+    chromeos_camera::mojom::JpegEncodeAcceleratorRequest jea_request) {
+  DCHECK(io_runner_->BelongsToCurrentThread());
+  chromeos_camera::MojoJpegEncodeAcceleratorService::Create(
+      std::move(jea_request));
 }
 #endif  // defined(OS_CHROMEOS)
-
-void GpuServiceImpl::CreateJpegDecodeAccelerator(
-    media::mojom::MjpegDecodeAcceleratorRequest jda_request) {
-  DCHECK(io_runner_->BelongsToCurrentThread());
-  media::MojoMjpegDecodeAcceleratorService::Create(std::move(jda_request));
-}
 
 void GpuServiceImpl::CreateVideoEncodeAcceleratorProvider(
     media::mojom::VideoEncodeAcceleratorProviderRequest vea_provider_request) {
@@ -524,7 +550,7 @@ void GpuServiceImpl::RequestHDRStatusOnMainThread(
   DCHECK(main_runner_->BelongsToCurrentThread());
   bool hdr_enabled = false;
 #if defined(OS_WIN)
-  hdr_enabled = gpu::DirectCompositionSurfaceWin::IsHDRSupported();
+  hdr_enabled = gl::DirectCompositionSurfaceWin::IsHDRSupported();
 #endif
   io_runner_->PostTask(FROM_HERE,
                        base::BindOnce(std::move(callback), hdr_enabled));

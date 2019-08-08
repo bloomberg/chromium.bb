@@ -68,8 +68,8 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
     // There is no pointermove at this point in the queue.
     DCHECK(event().GetType() != WebInputEvent::kPointerMove &&
            other_event->event().GetType() != WebInputEvent::kPointerMove);
-    return event().GetType() == WebInputEvent::kPointerRawMove &&
-           other_event->event().GetType() == WebInputEvent::kPointerRawMove;
+    return event().GetType() == WebInputEvent::kPointerRawUpdate &&
+           other_event->event().GetType() == WebInputEvent::kPointerRawUpdate;
   }
 
   FilterResult FilterNewEvent(MainThreadEventQueueTask* other_task) override {
@@ -88,7 +88,7 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
 
     if (!ScopedWebInputEventWithLatencyInfo::CanCoalesceWith(*other_event)) {
       // Two pointerevents may not be able to coalesce but we should continue
-      // looking further down the queue if both of them were rawmove or move
+      // looking further down the queue if both of them were rawupdate or move
       // events and only their pointer_type, id, or event_type was different.
       if (ArePointerMoveEventTypes(other_event))
         return FilterResult::KeepIterating;
@@ -323,10 +323,10 @@ void MainThreadEventQueue::HandleEvent(
     event_callback = std::move(callback);
   }
 
-  if (has_pointerrawmove_handlers_) {
+  if (has_pointerrawupdate_handlers_) {
     if (event->GetType() == WebInputEvent::kMouseMove) {
       ui::WebScopedInputEvent raw_event(new blink::WebPointerEvent(
-          WebInputEvent::kPointerRawMove,
+          WebInputEvent::kPointerRawUpdate,
           *(static_cast<blink::WebMouseEvent*>(event.get()))));
       std::unique_ptr<QueuedWebInputEvent> raw_queued_event(
           new QueuedWebInputEvent(std::move(raw_event), latency, false,
@@ -341,7 +341,7 @@ void MainThreadEventQueue::HandleEvent(
         if (touch_point.state == blink::WebTouchPoint::kStateMoved) {
           ui::WebScopedInputEvent raw_event(
               new blink::WebPointerEvent(touch_event, touch_point));
-          raw_event->SetType(WebInputEvent::kPointerRawMove);
+          raw_event->SetType(WebInputEvent::kPointerRawUpdate);
           std::unique_ptr<QueuedWebInputEvent> raw_queued_event(
               new QueuedWebInputEvent(std::move(raw_event), latency, false,
                                       HandledEventCallback(), false));
@@ -443,7 +443,7 @@ void MainThreadEventQueue::DispatchEvents() {
       if (current_task_index >= queue_size ||
           current_task_index >= shared_state_.events_.size())
         break;
-      if (IsRawMoveEvent(shared_state_.events_.at(current_task_index))) {
+      if (IsRawUpdateEvent(shared_state_.events_.at(current_task_index))) {
         task = shared_state_.events_.remove(current_task_index);
         --queue_size;
         --current_task_index;
@@ -571,17 +571,17 @@ void MainThreadEventQueue::QueueEvent(
     SetNeedsMainFrame();
 }
 
-bool MainThreadEventQueue::IsRawMoveEvent(
+bool MainThreadEventQueue::IsRawUpdateEvent(
     const std::unique_ptr<MainThreadEventQueueTask>& item) const {
   return item->IsWebInputEvent() &&
          static_cast<const QueuedWebInputEvent*>(item.get())
                  ->event()
-                 .GetType() == blink::WebInputEvent::kPointerRawMove;
+                 .GetType() == blink::WebInputEvent::kPointerRawUpdate;
 }
 
 bool MainThreadEventQueue::ShouldFlushQueue(
     const std::unique_ptr<MainThreadEventQueueTask>& item) const {
-  if (IsRawMoveEvent(item))
+  if (IsRawUpdateEvent(item))
     return false;
   return !IsRafAlignedEvent(item);
 }
@@ -676,8 +676,8 @@ void MainThreadEventQueue::SetNeedsUnbufferedInputForDebugger(bool unbuffered) {
   needs_unbuffered_input_for_debugger_ = unbuffered;
 }
 
-void MainThreadEventQueue::HasPointerRawMoveEventHandlers(bool has_handlers) {
-  has_pointerrawmove_handlers_ = has_handlers;
+void MainThreadEventQueue::HasPointerRawUpdateEventHandlers(bool has_handlers) {
+  has_pointerrawupdate_handlers_ = has_handlers;
 }
 
 void MainThreadEventQueue::RequestUnbufferedInputEvents() {

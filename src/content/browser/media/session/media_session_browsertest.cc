@@ -9,6 +9,7 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/lock.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -132,6 +133,7 @@ class MediaSessionBrowserTest : public ContentBrowserTest {
   }
 
   bool WasURLVisited(const GURL& url) {
+    base::AutoLock lock(visited_urls_lock_);
     return base::ContainsKey(visited_urls_, url);
   }
 
@@ -201,9 +203,15 @@ class MediaSessionBrowserTest : public ContentBrowserTest {
   };
 
   void OnServerRequest(const net::test_server::HttpRequest& request) {
+    // Note this method is called on the EmbeddedTestServer's background thread.
+    base::AutoLock lock(visited_urls_lock_);
     visited_urls_.insert(request.GetURL());
   }
 
+  // visited_urls_ is accessed both on the main thread and on the
+  // EmbeddedTestServer's background thread via OnServerRequest(), so it must be
+  // locked.
+  base::Lock visited_urls_lock_;
   std::set<GURL> visited_urls_;
 
   base::test::ScopedFeatureList disabled_feature_list_;

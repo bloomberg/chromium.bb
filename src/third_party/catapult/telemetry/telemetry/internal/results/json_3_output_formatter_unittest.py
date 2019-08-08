@@ -5,6 +5,7 @@ import json
 import os
 import shutil
 import StringIO
+import tempfile
 import time
 import unittest
 
@@ -165,69 +166,86 @@ class Json3OutputFormatterTest(unittest.TestCase):
     self.assertEquals(d['num_failures_by_type'], {'SKIP': 2, 'PASS': 2})
 
 
-  def testAsDictWithSkippedAndFailedTests(self):
-    results = page_test_results.PageTestResults()
-    results.telemetry_info.benchmark_start_epoch = 1501773200
-    results.telemetry_info.benchmark_name = 'benchmark_name'
+  def testAsDictWithSkippedAndFailedTests_AlsoShardIndex(self):
+    # Set up shard index. If already running on a shard or fake it
+    # if not running on a shard.
+    delete_env_var_after = False
+    expected_shard_index = 0
+    if 'GTEST_SHARD_INDEX' in os.environ:
+      expected_shard_index = int(os.environ['GTEST_SHARD_INDEX'])
+    else:
+      os.environ['GTEST_SHARD_INDEX'] = str(expected_shard_index)
+      delete_env_var_after = True
+    try:
+      results = page_test_results.PageTestResults()
+      results.telemetry_info.benchmark_start_epoch = 1501773200
+      results.telemetry_info.benchmark_name = 'benchmark_name'
 
-    results.WillRunPage(self._story_set[0])
-    v0 = scalar.ScalarValue(results.current_page, 'foo', 'seconds', 3,
-                            improvement_direction=improvement_direction.DOWN)
-    results.AddValue(v0)
-    results.DidRunPage(self._story_set[0])
+      results.WillRunPage(self._story_set[0])
+      v0 = scalar.ScalarValue(results.current_page, 'foo', 'seconds', 3,
+                              improvement_direction=improvement_direction.DOWN)
+      results.AddValue(v0)
+      results.DidRunPage(self._story_set[0])
 
-    results.WillRunPage(self._story_set[1])
-    v1 = scalar.ScalarValue(results.current_page, 'bar', 'seconds', 4,
-                            improvement_direction=improvement_direction.DOWN)
-    results.AddValue(v1)
-    results.DidRunPage(self._story_set[1])
+      results.WillRunPage(self._story_set[1])
+      v1 = scalar.ScalarValue(results.current_page, 'bar', 'seconds', 4,
+                              improvement_direction=improvement_direction.DOWN)
+      results.AddValue(v1)
+      results.DidRunPage(self._story_set[1])
 
-    results.WillRunPage(self._story_set[0])
-    results.Skip('fake_skip')
-    results.DidRunPage(self._story_set[0])
+      results.WillRunPage(self._story_set[0])
+      results.Skip('fake_skip')
+      results.DidRunPage(self._story_set[0])
 
-    results.WillRunPage(self._story_set[0])
-    results.Skip('unexpected_skip', False)
-    results.DidRunPage(self._story_set[0])
+      results.WillRunPage(self._story_set[0])
+      results.Skip('unexpected_skip', False)
+      results.DidRunPage(self._story_set[0])
 
-    results.WillRunPage(self._story_set[1])
-    results.Fail('fake_failure')
-    results.DidRunPage(self._story_set[1])
+      results.WillRunPage(self._story_set[1])
+      results.Fail('fake_failure')
+      results.DidRunPage(self._story_set[1])
 
-    d = json_3_output_formatter.ResultsAsDict(results)
+      d = json_3_output_formatter.ResultsAsDict(results)
 
-    foo_story_result = d['tests']['benchmark_name']['Foo']
-    self.assertEquals(foo_story_result['actual'], 'PASS SKIP SKIP')
-    self.assertEquals(foo_story_result['expected'], 'PASS SKIP')
-    self.assertTrue(foo_story_result['is_unexpected'])
+      foo_story_result = d['tests']['benchmark_name']['Foo']
+      self.assertEquals(foo_story_result['actual'], 'PASS SKIP SKIP')
+      self.assertEquals(foo_story_result['expected'], 'PASS SKIP')
+      self.assertTrue(foo_story_result['is_unexpected'])
 
-    bar_story_result = d['tests']['benchmark_name']['Bar']
-    self.assertEquals(bar_story_result['actual'], 'PASS FAIL')
-    self.assertEquals(bar_story_result['expected'], 'PASS')
-    self.assertTrue(bar_story_result['is_unexpected'])
+      bar_story_result = d['tests']['benchmark_name']['Bar']
+      self.assertEquals(bar_story_result['actual'], 'PASS FAIL')
+      self.assertEquals(bar_story_result['expected'], 'PASS')
+      self.assertEquals(bar_story_result['shard'], expected_shard_index)
+      self.assertTrue(bar_story_result['is_unexpected'])
 
-    self.assertEquals(
-        d['num_failures_by_type'], {'PASS': 2, 'FAIL': 1, 'SKIP': 2})
+      self.assertEquals(
+          d['num_failures_by_type'], {'PASS': 2, 'FAIL': 1, 'SKIP': 2})
+    finally:
+      if delete_env_var_after:
+        del os.environ['GTEST_SHARD_INDEX']
+
 
   def testIntegrationCreateJsonTestResultsWithDisabledBenchmark(self):
     benchmark_metadata = benchmark.BenchmarkMetadata('test_benchmark')
     options = options_for_unittests.GetCopy()
     options.output_formats = ['json-test-results']
     options.upload_results = False
-    tempfile_dir = 'unittest_results'
-    options.output_dir = tempfile_dir
-    options.suppress_gtest_report = False
-    options.results_label = None
-    results_options.ProcessCommandLineArgs(options)
-    results = results_options.CreateResults(
-        benchmark_metadata, options, benchmark_enabled=False)
-    results.PrintSummary()
-    results.CloseOutputFormatters()
+    tempfile_dir = tempfile.mkdtemp(prefix='unittest_results')
+    try:
+      options.output_dir = tempfile_dir
+      options.suppress_gtest_report = False
+      options.results_label = None
+      results_options.ProcessCommandLineArgs(options)
+      results = results_options.CreateResults(
+          benchmark_metadata, options, benchmark_enabled=False)
+      results.PrintSummary()
+      results.CloseOutputFormatters()
 
-    tempfile_name = os.path.join(tempfile_dir, 'test-results.json')
-    with open(tempfile_name) as f:
-      json_test_results = json.load(f)
-    shutil.rmtree(tempfile_dir)
+      tempfile_name = os.path.join(tempfile_dir, 'test-results.json')
+      with open(tempfile_name) as f:
+        json_test_results = json.load(f)
+    finally:
+      shutil.rmtree(tempfile_dir)
 
     self.assertEquals(json_test_results['interrupted'], False)
     self.assertEquals(json_test_results['num_failures_by_type'], {})
@@ -242,33 +260,35 @@ class Json3OutputFormatterTest(unittest.TestCase):
     options = options_for_unittests.GetCopy()
     options.output_formats = ['json-test-results']
     options.upload_results = False
-    tempfile_dir = 'unittest_results'
-    options.output_dir = tempfile_dir
-    options.suppress_gtest_report = False
-    options.results_label = None
-    results_options.ProcessCommandLineArgs(options)
-    results = results_options.CreateResults(benchmark_metadata, options)
+    tempfile_dir = tempfile.mkdtemp(prefix='unittest_results')
+    try:
+      options.output_dir = tempfile_dir
+      options.suppress_gtest_report = False
+      options.results_label = None
+      results_options.ProcessCommandLineArgs(options)
+      results = results_options.CreateResults(benchmark_metadata, options)
 
-    story_set = story.StorySet(base_dir=os.path.dirname(__file__))
-    test_page = page_module.Page(
-        'http://www.foo.com/', story_set, story_set.base_dir, name='Foo')
-    results.WillRunPage(test_page)
-    v0 = scalar.ScalarValue(
-        results.current_page,
-        'foo',
-        'seconds',
-        3,
-        improvement_direction=improvement_direction.DOWN)
-    results.AddValue(v0)
-    results.current_page_run.SetDuration(5.0123)
-    results.DidRunPage(test_page)
-    results.PrintSummary()
-    results.CloseOutputFormatters()
+      story_set = story.StorySet(base_dir=os.path.dirname(__file__))
+      test_page = page_module.Page(
+          'http://www.foo.com/', story_set, story_set.base_dir, name='Foo')
+      results.WillRunPage(test_page)
+      v0 = scalar.ScalarValue(
+          results.current_page,
+          'foo',
+          'seconds',
+          3,
+          improvement_direction=improvement_direction.DOWN)
+      results.AddValue(v0)
+      results.current_page_run.SetDuration(5.0123)
+      results.DidRunPage(test_page)
+      results.PrintSummary()
+      results.CloseOutputFormatters()
 
-    tempfile_name = os.path.join(tempfile_dir, 'test-results.json')
-    with open(tempfile_name) as f:
-      json_test_results = json.load(f)
-    shutil.rmtree(tempfile_dir)
+      tempfile_name = os.path.join(tempfile_dir, 'test-results.json')
+      with open(tempfile_name) as f:
+        json_test_results = json.load(f)
+    finally:
+      shutil.rmtree(tempfile_dir)
 
     self.assertEquals(json_test_results['interrupted'], False)
     self.assertEquals(json_test_results['num_failures_by_type'], {'PASS': 1})

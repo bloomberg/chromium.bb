@@ -532,16 +532,24 @@ LayoutUnit LayoutTable::LogicalHeightFromStyle() const {
   }
 
   const Length& logical_max_height_length = StyleRef().LogicalMaxHeight();
-  if (logical_max_height_length.IsIntrinsic() ||
+  if (logical_max_height_length.IsFillAvailable() ||
       (logical_max_height_length.IsSpecified() &&
-       !logical_max_height_length.IsNegative())) {
+       !logical_max_height_length.IsNegative() &&
+       !logical_max_height_length.IsMinContent() &&
+       !logical_max_height_length.IsMaxContent() &&
+       !logical_max_height_length.IsFitContent())) {
     LayoutUnit computed_max_logical_height =
         ConvertStyleLogicalHeightToComputedHeight(logical_max_height_length);
     computed_logical_height =
         std::min(computed_logical_height, computed_max_logical_height);
   }
 
-  const Length& logical_min_height_length = StyleRef().LogicalMinHeight();
+  Length logical_min_height_length = StyleRef().LogicalMinHeight();
+  if (logical_min_height_length.IsMinContent() ||
+      logical_min_height_length.IsMaxContent() ||
+      logical_min_height_length.IsFitContent())
+    logical_min_height_length = Length::Auto();
+
   if (logical_min_height_length.IsIntrinsic() ||
       (logical_min_height_length.IsSpecified() &&
        !logical_min_height_length.IsNegative())) {
@@ -1012,11 +1020,11 @@ void LayoutTable::AddLayoutOverflowFromChildren() {
 }
 
 void LayoutTable::PaintObject(const PaintInfo& paint_info,
-                              const LayoutPoint& paint_offset) const {
+                              const PhysicalOffset& paint_offset) const {
   TablePainter(*this).PaintObject(paint_info, paint_offset);
 }
 
-void LayoutTable::SubtractCaptionRect(LayoutRect& rect) const {
+void LayoutTable::SubtractCaptionRect(PhysicalRect& rect) const {
   for (unsigned i = 0; i < captions_.size(); i++) {
     LayoutUnit caption_logical_height = captions_[i]->LogicalHeight() +
                                         captions_[i]->MarginBefore() +
@@ -1025,13 +1033,13 @@ void LayoutTable::SubtractCaptionRect(LayoutRect& rect) const {
         (captions_[i]->StyleRef().CaptionSide() != ECaptionSide::kBottom) ^
         StyleRef().IsFlippedBlocksWritingMode();
     if (StyleRef().IsHorizontalWritingMode()) {
-      rect.SetHeight(rect.Height() - caption_logical_height);
+      rect.size.height -= caption_logical_height;
       if (caption_is_before)
-        rect.Move(LayoutUnit(), caption_logical_height);
+        rect.offset.top += caption_logical_height;
     } else {
-      rect.SetWidth(rect.Width() - caption_logical_height);
+      rect.size.width -= caption_logical_height;
       if (caption_is_before)
-        rect.Move(caption_logical_height, LayoutUnit());
+        rect.offset.left += caption_logical_height;
     }
   }
 }
@@ -1049,12 +1057,12 @@ void LayoutTable::MarkAllCellsWidthsDirtyAndOrNeedsLayout(
 
 void LayoutTable::PaintBoxDecorationBackground(
     const PaintInfo& paint_info,
-    const LayoutPoint& paint_offset) const {
+    const PhysicalOffset& paint_offset) const {
   TablePainter(*this).PaintBoxDecorationBackground(paint_info, paint_offset);
 }
 
 void LayoutTable::PaintMask(const PaintInfo& paint_info,
-                            const LayoutPoint& paint_offset) const {
+                            const PhysicalOffset& paint_offset) const {
   TablePainter(*this).PaintMask(paint_info, paint_offset);
 }
 
@@ -1571,18 +1579,18 @@ LayoutUnit LayoutTable::FirstLineBoxBaseline() const {
   return LayoutUnit(-1);
 }
 
-LayoutRect LayoutTable::OverflowClipRect(
-    const LayoutPoint& location,
+PhysicalRect LayoutTable::OverflowClipRect(
+    const PhysicalOffset& location,
     OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior) const {
   if (ShouldCollapseBorders()) {
     // Though the outer halves of the collapsed borders are considered as the
     // the border area of the table by means of the box model, they are actually
     // contents of the table and should not be clipped off. The overflow clip
     // rect is BorderBoxRect() + location.
-    return LayoutRect(location, Size());
+    return PhysicalRect(location, Size());
   }
 
-  LayoutRect rect =
+  PhysicalRect rect =
       LayoutBlock::OverflowClipRect(location, overlay_scrollbar_clip_behavior);
 
   // If we have a caption, expand the clip to include the caption.
@@ -1594,11 +1602,11 @@ LayoutRect LayoutTable::OverflowClipRect(
   // (depending on what order we do these bug fixes in).
   if (!captions_.IsEmpty()) {
     if (StyleRef().IsHorizontalWritingMode()) {
-      rect.SetHeight(Size().Height());
-      rect.SetY(location.Y());
+      rect.size.height = Size().Height();
+      rect.offset.top = location.top;
     } else {
-      rect.SetWidth(Size().Width());
-      rect.SetX(location.X());
+      rect.size.width = Size().Width();
+      rect.offset.left = location.left;
     }
   }
 
@@ -1615,7 +1623,9 @@ bool LayoutTable::NodeAtPoint(HitTestResult& result,
   bool skip_children = (result.GetHitTestRequest().GetStopNode() == this);
   if (!skip_children &&
       (!HasOverflowClip() ||
-       location_in_container.Intersects(OverflowClipRect(adjusted_location)))) {
+       location_in_container.Intersects(
+           OverflowClipRect(PhysicalOffsetToBeNoop(adjusted_location))
+               .ToLayoutRect()))) {
     for (LayoutObject* child = LastChild(); child;
          child = child->PreviousSibling()) {
       if (child->IsBox() && !ToLayoutBox(child)->HasSelfPaintingLayer() &&
@@ -1639,9 +1649,9 @@ bool LayoutTable::NodeAtPoint(HitTestResult& result,
       (action == kHitTestBlockBackground ||
        action == kHitTestChildBlockBackground) &&
       location_in_container.Intersects(bounds_rect)) {
-    UpdateHitTestResult(result,
-                        FlipForWritingMode(location_in_container.Point() -
-                                           ToLayoutSize(adjusted_location)));
+    UpdateHitTestResult(
+        result, DeprecatedFlipForWritingMode(location_in_container.Point() -
+                                             ToLayoutSize(adjusted_location)));
     if (result.AddNodeToListBasedTestResult(GetNode(), location_in_container,
                                             bounds_rect) == kStopHitTesting)
       return true;

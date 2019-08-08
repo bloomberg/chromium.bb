@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/callback.h"
@@ -104,6 +105,11 @@ class SmbService : public KeyedService,
                        const std::string& share_path,
                        StartReadDirIfSuccessfulCallback reply);
 
+  // Disable share discovery in test.
+  static void DisableShareDiscoveryForTesting() {
+    disable_share_discovery_for_testing_ = true;
+  }
+
  private:
   friend class SmbServiceTest;
 
@@ -117,10 +123,13 @@ class SmbService : public KeyedService,
                  bool should_open_file_manager_after_mount,
                  MountResponse callback);
 
+  // Retrieves the mount_id for |file_system_info|.
+  int32_t GetMountId(const ProvidedFileSystemInfo& info) const;
+
   // Calls file_system_provider::Service::UnmountFileSystem().
   base::File::Error Unmount(
       const std::string& file_system_id,
-      file_system_provider::Service::UnmountReason reason) const;
+      file_system_provider::Service::UnmountReason reason);
 
   Service* GetProviderService() const;
 
@@ -148,7 +157,8 @@ class SmbService : public KeyedService,
   // remounting fails, this logs and removes the file_system from the volume
   // manager.
   void OnRemountResponse(const std::string& file_system_id,
-                         smbprovider::ErrorType error);
+                         smbprovider::ErrorType error,
+                         int32_t mount_id);
 
   // Calls SmbProviderClient::Premount(). |temp_file_manager_| must be
   // initialized before this is called.
@@ -197,6 +207,9 @@ class SmbService : public KeyedService,
 
   // Whether NTLM should be used. Controlled via policy.
   bool IsNTLMAuthenticationEnabled() const;
+
+  // Whether |share| is already mounted.
+  bool IsShareMounted(const SmbUrl& share) const;
 
   // Gets the list of all shares preconfigured via policy with mode
   // |policy_mode|. If |policy_mode| is "unknown", returns a list of all shares
@@ -258,6 +271,8 @@ class SmbService : public KeyedService,
   void RecordMountCount() const;
 
   static bool service_should_run_;
+  static bool disable_share_discovery_for_testing_;
+
   base::TimeTicks previous_host_discovery_time_;
   const ProviderId provider_id_;
   Profile* profile_;
@@ -266,6 +281,8 @@ class SmbService : public KeyedService,
   std::unique_ptr<SmbShareFinder> share_finder_;
   // |mount_id| -> |reply|. Stored callbacks to run after updating credential.
   std::map<int32_t, base::OnceClosure> update_credential_replies_;
+  // |file_system_id| -> |mount_id|
+  std::unordered_map<std::string, int32_t> mount_id_map_;
 
   DISALLOW_COPY_AND_ASSIGN(SmbService);
 };

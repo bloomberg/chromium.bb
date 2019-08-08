@@ -52,6 +52,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -870,8 +871,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   }
 }
 
-// Tests allowing rules.
-IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, Allow) {
+// Tests allowing rules for blocks.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, AllowBlock) {
   const int kNumRequests = 6;
 
   TestRule rule = CreateGenericRule();
@@ -912,6 +913,103 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, Allow) {
     content::PageType expected_page_type =
         page_should_load ? content::PAGE_TYPE_NORMAL : content::PAGE_TYPE_ERROR;
     EXPECT_EQ(expected_page_type, GetPageType());
+  }
+}
+
+// Tests allowing rules for redirects.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, AllowRedirect) {
+  set_has_background_script(true);
+
+  const GURL static_redirect_url = embedded_test_server()->GetURL(
+      "example.com", base::StringPrintf("/pages_with_script/page2.html"));
+
+  const GURL dynamic_redirect_url = embedded_test_server()->GetURL(
+      "abc.com", base::StringPrintf("/pages_with_script/page.html"));
+
+  // Create 2 static and 2 dynamic rules.
+  struct {
+    std::string url_filter;
+    int id;
+    std::string action_type;
+    base::Optional<std::string> redirect_url;
+  } rules_data[] = {
+      {"google.com", 1, "redirect", static_redirect_url.spec()},
+      {"num=1|", 2, "allow", base::nullopt},
+      {"1|", 3, "redirect", dynamic_redirect_url.spec()},
+      {"num=21|", 4, "allow", base::nullopt},
+  };
+
+  std::vector<TestRule> rules;
+  for (const auto& rule_data : rules_data) {
+    TestRule rule = CreateGenericRule();
+    rule.id = rule_data.id;
+    rule.priority = kMinValidPriority;
+    rule.condition->url_filter = rule_data.url_filter;
+    rule.condition->resource_types = std::vector<std::string>({"main_frame"});
+    rule.action->type = rule_data.action_type;
+    rule.action->redirect_url = rule_data.redirect_url;
+    rules.push_back(rule);
+  }
+
+  std::vector<TestRule> static_rules;
+  static_rules.push_back(rules[0]);
+  static_rules.push_back(rules[1]);
+
+  std::vector<TestRule> dynamic_rules;
+  dynamic_rules.push_back(rules[2]);
+  dynamic_rules.push_back(rules[3]);
+
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
+      static_rules, "test_extension", {URLPattern::kAllUrlsPattern}));
+
+  auto get_url = [this](int i) {
+    return embedded_test_server()->GetURL(
+        "google.com",
+        base::StringPrintf("/pages_with_script/page.html?num=%d", i));
+  };
+
+  struct {
+    GURL initial_url;
+    GURL expected_final_url;
+  } static_test_cases[] = {
+      {get_url(0), static_redirect_url},
+      {get_url(1), get_url(1)},
+  };
+
+  for (const auto& test_case : static_test_cases) {
+    GURL url = test_case.initial_url;
+    SCOPED_TRACE(base::StringPrintf("Testing %s", url.spec().c_str()));
+
+    ui_test_utils::NavigateToURL(browser(), url);
+    EXPECT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
+
+    GURL final_url = web_contents()->GetLastCommittedURL();
+    EXPECT_EQ(test_case.expected_final_url, final_url);
+  }
+
+  // Now add dynamic rules. These should override static rules in priority.
+  const ExtensionId& extension_id = last_loaded_extension_id();
+  ASSERT_NO_FATAL_FAILURE(AddDynamicRules(extension_id, dynamic_rules));
+
+  // Test that rules follow the priority of: dynamic allow > dynamic redirect >
+  // static allow > static redirect.
+  struct {
+    GURL initial_url;
+    GURL expected_final_url;
+  } dynamic_test_cases[] = {
+      {get_url(1), dynamic_redirect_url},
+      {get_url(21), get_url(21)},
+  };
+
+  for (const auto& test_case : dynamic_test_cases) {
+    GURL url = test_case.initial_url;
+    SCOPED_TRACE(base::StringPrintf("Testing %s", url.spec().c_str()));
+
+    ui_test_utils::NavigateToURL(browser(), url);
+    EXPECT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
+
+    GURL final_url = web_contents()->GetLastCommittedURL();
+    EXPECT_EQ(test_case.expected_final_url, final_url);
   }
 }
 
@@ -1104,6 +1202,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, BlockAndRedirect) {
       {"abc.com", 3, "redirect", get_url_for_host("def.com")},
       {"def.com", 4, "block", base::nullopt},
       {"def.com", 5, "redirect", get_url_for_host("xyz.com")},
+      {"ghi*", 6, "redirect", get_url_for_host("ghijk.com")},
+      {"ijk*", 7, "redirect", "/manifest.json"},
   };
 
   // Load the extension.
@@ -1124,37 +1224,46 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, BlockAndRedirect) {
   struct {
     std::string hostname;
     bool expected_main_frame_loaded;
-    base::Optional<std::string> expected_final_hostname;
+    base::Optional<GURL> expected_final_url;
     base::Optional<size_t> expected_redirect_chain_length;
   } test_cases[] = {
       // example.com -> yahoo.com -> google.com.
-      {"example.com", true, std::string("google.com"), 3},
+      {"example.com", true, GURL(get_url_for_host("google.com")), 3},
       // yahoo.com -> google.com.
-      {"yahoo.com", true, std::string("google.com"), 2},
+      {"yahoo.com", true, GURL(get_url_for_host("google.com")), 2},
       // abc.com -> def.com (blocked).
       // Note def.com won't be redirected since blocking rules are given
       // priority over redirect rules.
       {"abc.com", false, base::nullopt, base::nullopt},
       // def.com (blocked).
       {"def.com", false, base::nullopt, base::nullopt},
-  };
+      // ghi.com -> ghijk.com.
+      // Though ghijk.com still matches the redirect rule for |ghi*|, it will
+      // not redirect to itself.
+      {"ghi.com", true, GURL(get_url_for_host("ghijk.com")), 2},
+      // ijklm.com -> chrome-extension://<extension_id>/manifest.json.
+      // Since this redirects to a manifest.json, don't expect the frame with
+      // script to load.
+      {"ijklm.com", false,
+       GURL("chrome-extension://" + last_loaded_extension_id() +
+            "/manifest.json"),
+       2}};
 
   for (const auto& test_case : test_cases) {
     std::string url = get_url_for_host(test_case.hostname);
     SCOPED_TRACE(base::StringPrintf("Testing %s", url.c_str()));
 
     ui_test_utils::NavigateToURL(browser(), GURL(url));
+    EXPECT_EQ(test_case.expected_main_frame_loaded,
+              WasFrameWithScriptLoaded(GetMainFrame()));
 
-    if (!test_case.expected_main_frame_loaded) {
-      EXPECT_FALSE(WasFrameWithScriptLoaded(GetMainFrame()));
+    if (!test_case.expected_final_url) {
       EXPECT_EQ(content::PAGE_TYPE_ERROR, GetPageType());
     } else {
-      EXPECT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
       EXPECT_EQ(content::PAGE_TYPE_NORMAL, GetPageType());
 
       GURL final_url = web_contents()->GetLastCommittedURL();
-      EXPECT_EQ(GURL(get_url_for_host(*test_case.expected_final_hostname)),
-                final_url);
+      EXPECT_EQ(*test_case.expected_final_url, final_url);
 
       EXPECT_EQ(*test_case.expected_redirect_chain_length,
                 web_contents()
@@ -1292,7 +1401,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, ChromeURLS) {
   // Have the extension block all chrome:// urls.
   TestRule rule = CreateGenericRule();
-  rule.condition->url_filter = std::string("chrome://");
+  rule.condition->url_filter =
+      std::string(content::kChromeUIScheme) + url::kStandardSchemeSeparator;
   ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules({rule}));
 
   std::vector<const char*> test_urls = {

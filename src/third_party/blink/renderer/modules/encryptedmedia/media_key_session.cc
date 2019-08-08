@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/content_decryption_module_result.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instance_counters.h"
 #include "third_party/blink/renderer/platform/network/mime/content_type.h"
 #include "third_party/blink/renderer/platform/timer.h"
@@ -76,9 +77,11 @@ static bool IsValidSessionId(const String& session_id) {
   if (!session_id.ContainsOnlyASCIIOrEmpty())
     return false;
 
-  // Check that the sessionId only contains alphanumeric characters.
+  // Check that |session_id| only contains non-space printable characters for
+  // easier logging. Note that checking alphanumeric is too strict because there
+  // are key systems using Base64 session IDs. See https://crbug.com/902828.
   for (unsigned i = 0; i < session_id.length(); ++i) {
-    if (!IsASCIIAlphanumeric(session_id[i]))
+    if (!IsASCIIPrintable(session_id[i]) || session_id[i] == ' ')
       return false;
   }
 
@@ -106,23 +109,25 @@ static bool IsPersistentSessionType(WebEncryptedMediaSessionType session_type) {
 static ScriptPromise CreateRejectedPromiseNotCallable(
     ScriptState* script_state) {
   return ScriptPromise::RejectWithDOMException(
-      script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+      script_state,
+      MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
                                          "The session is not callable."));
 }
 
 static ScriptPromise CreateRejectedPromiseAlreadyClosed(
     ScriptState* script_state) {
   return ScriptPromise::RejectWithDOMException(
-      script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+      script_state,
+      MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
                                          "The session is already closed."));
 }
 
 static ScriptPromise CreateRejectedPromiseAlreadyInitialized(
     ScriptState* script_state) {
   return ScriptPromise::RejectWithDOMException(
-      script_state,
-      DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                           "The session is already initialized."));
+      script_state, MakeGarbageCollected<DOMException>(
+                        DOMExceptionCode::kInvalidStateError,
+                        "The session is already initialized."));
 }
 
 // A class holding a pending action.
@@ -477,10 +482,10 @@ ScriptPromise MediaKeySession::generateRequest(
       EncryptedMediaUtils::ConvertToInitDataType(init_data_type_string);
   if (init_data_type == WebEncryptedMediaInitDataType::kUnknown) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                                           "The initialization data type '" +
-                                               init_data_type_string +
-                                               "' is not supported."));
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kNotSupportedError,
+                          "The initialization data type '" +
+                              init_data_type_string + "' is not supported."));
   }
 
   // 7. Let init data be a copy of the contents of the initData parameter.

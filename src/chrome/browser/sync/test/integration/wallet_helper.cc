@@ -14,8 +14,8 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
-#include "components/autofill/core/browser/autofill_metadata.h"
-#include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/autofill_metadata.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
@@ -584,29 +584,17 @@ AutofillWalletMetadataSizeChecker::~AutofillWalletMetadataSizeChecker() {
 }
 
 bool AutofillWalletMetadataSizeChecker::IsExitConditionSatisfied() {
-  // Make sure we do not nest IsExitConditionSatisfiedImpl() (as it can happen
-  // that OnPersonalDataChanged() gets notified while we're inside
-  // IsExitConditionSatisfiedImpl(), waiting for the DB task that loads metadata
-  // to finish).
-  switch (state_) {
-    case IDLE:
-      do {
-        state_ = CHECKING;
-        if (IsExitConditionSatisfiedImpl()) {
-          return true;
-        }
-      } while (state_ == SHOULD_RECHECK);
-      state_ = IDLE;
-      return false;
-    case CHECKING:
-      // Make sure that each IsExitConditionSatisfied() call is followed by a
-      // IsExitConditionSatisfiedImpl() call so that we do not miss any updates
-      // to the DB.
-      state_ = SHOULD_RECHECK;
-      return false;
-    case SHOULD_RECHECK:
-      return false;
-  }
+  // This checker used to be flaky (crbug.com/921386) because of using RunLoops
+  // to load synchronously data from the DB in IsExitConditionSatisfiedImpl.
+  // Such a waiting RunLoop often processed another OnPersonalDataChanged() call
+  // resulting in nested RunLoops. This should be avoided now by blocking using
+  // WaitableEvent, instead. This check enforces that we do not nest it anymore.
+  DCHECK(!checking_exit_condition_in_flight_)
+      << "There should be no nested calls for IsExitConditionSatisfied()";
+  checking_exit_condition_in_flight_ = true;
+  bool exit_condition_is_satisfied = IsExitConditionSatisfiedImpl();
+  checking_exit_condition_in_flight_ = false;
+  return exit_condition_is_satisfied;
 }
 
 std::string AutofillWalletMetadataSizeChecker::GetDebugMessage() const {

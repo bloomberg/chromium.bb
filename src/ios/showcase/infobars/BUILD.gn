@@ -8,6 +8,7 @@ source_set("infobars") {
     "sc_infobar_banner_coordinator.mm",
   ]
   deps = [
+    "//ios/chrome/browser/infobars:public",
     "//ios/chrome/browser/ui/infobars/banners",
     "//ios/chrome/browser/ui/infobars/coordinators",
     "//ios/chrome/browser/ui/infobars/modals",

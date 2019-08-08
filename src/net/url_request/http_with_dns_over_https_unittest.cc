@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "net/base/privacy_mode.h"
 #include "net/base/proxy_server.h"
 #include "net/dns/context_host_resolver.h"
 #include "net/dns/dns_client.h"
@@ -73,7 +74,8 @@ class HttpWithDnsOverHttpsTest : public TestWithScopedTaskEnvironment {
     resolver_->SetRequestContext(&request_context_);
     resolver_->SetProcParamsForTesting(
         ProcTaskParams(new TestHostResolverProc(), 1));
-    resolver_->SetDnsClientForTesting(std::move(dns_client));
+    resolver_->GetManagerForTesting()->SetDnsClientForTesting(
+        std::move(dns_client));
     request_context_.set_host_resolver(resolver_.get());
     request_context_.Init();
   }
@@ -168,12 +170,6 @@ class TestHttpDelegate : public HttpStreamRequest::Delegate {
   void OnNeedsClientAuth(const SSLConfig& used_ssl_config,
                          SSLCertRequestInfo* cert_info) override {}
 
-  void OnHttpsProxyTunnelResponseRedirect(
-      const HttpResponseInfo& response_info,
-      const SSLConfig& used_ssl_config,
-      const ProxyInfo& used_proxy_info,
-      std::unique_ptr<HttpStream> stream) override {}
-
   void OnQuicBroken() override {}
 
  private:
@@ -210,7 +206,7 @@ TEST_F(HttpWithDnsOverHttpsTest, EndToEnd) {
 
   ClientSocketPool::GroupId group_id(
       HostPortPair(request_info.url.host(), request_info.url.IntPort()),
-      ClientSocketPool::SocketType::kHttp, false /* privacy_mode */);
+      ClientSocketPool::SocketType::kHttp, PrivacyMode::PRIVACY_MODE_DISABLED);
   EXPECT_EQ(network_session
                 ->GetSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL,
                                 ProxyServer::Direct())

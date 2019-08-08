@@ -112,6 +112,10 @@ gfx::Size LogoutConfirmationDialog::CalculatePreferredSize() const {
       GetLayoutManager()->GetPreferredHeightForWidth(this, kDefaultWidth));
 }
 
+const char* LogoutConfirmationDialog::GetClassName() const {
+  return "LogoutConfirmationDialog";
+}
+
 void LogoutConfirmationDialog::UpdateLabel() {
   const base::TimeDelta time_remaining =
       logout_time_ - controller_->clock()->NowTicks();

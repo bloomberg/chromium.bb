@@ -116,13 +116,13 @@ WebInsecureRequestPolicy DocumentInit::GetInsecureRequestPolicy() const {
   return parent_frame->GetSecurityContext()->GetInsecureRequestPolicy();
 }
 
-SecurityContext::InsecureNavigationsSet*
+const SecurityContext::InsecureNavigationsSet*
 DocumentInit::InsecureNavigationsToUpgrade() const {
   DCHECK(MasterDocumentLoader());
   Frame* parent_frame = MasterDocumentLoader()->GetFrame()->Tree().Parent();
   if (!parent_frame)
     return nullptr;
-  return parent_frame->GetSecurityContext()->InsecureNavigationsToUpgrade();
+  return &parent_frame->GetSecurityContext()->InsecureNavigationsToUpgrade();
 }
 
 bool DocumentInit::IsHostedInReservedIPRange() const {
@@ -163,6 +163,25 @@ DocumentInit& DocumentInit::WithURL(const KURL& url) {
   DCHECK(url_.IsNull());
   url_ = url;
   return *this;
+}
+
+scoped_refptr<SecurityOrigin> DocumentInit::GetDocumentOrigin() const {
+  // Origin to commit is specified by the browser process, it must be taken
+  // and used directly. It is currently supplied only for session history
+  // navigations, where the origin was already calcuated previously and
+  // stored on the session history entry.
+  if (origin_to_commit_)
+    return origin_to_commit_;
+
+  if (owner_document_)
+    return owner_document_->GetMutableSecurityOrigin();
+
+  // Otherwise, create an origin that propagates precursor information
+  // as needed. For non-opaque origins, this creates a standard tuple
+  // origin, but for opaque origins, it creates an origin with the
+  // initiator origin as the precursor.
+  return SecurityOrigin::CreateWithReferenceOrigin(url_,
+                                                   initiator_origin_.get());
 }
 
 DocumentInit& DocumentInit::WithOwnerDocument(Document* owner_document) {

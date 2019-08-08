@@ -52,7 +52,6 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kCellularFirst[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kChildWallpaperLarge[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kChildWallpaperSmall[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kConservativeThreshold[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kCrosGaiaApiV1[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kCrosRegion[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kCrosRegionsMode[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kCrosRegionsModeHide[];
@@ -73,8 +72,6 @@ extern const char kDisableDeviceDisabling[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kDisableEncryptionMigration[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const char kDisableEolNotification[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kDisableFineGrainedTimeZoneDetection[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kDisableGaiaServices[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
@@ -84,16 +81,10 @@ extern const char kDisableLoginAnimations[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kDisableMachineCertRequest[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const char kDisableMtpWriteSupport[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kDisableMultiDisplayLayout[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kDisableNewZIPUnpacker[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const char kDisableOfficeEditingComponentApp[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kDisablePerUserTimezone[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const char kDisablePhysicalKeyboardAutocorrect[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kDisableRollbackOption[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kDisableSigninFrameClientCerts[];
@@ -118,8 +109,6 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kEnableFirstRunUITransitions[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kEnableMarketingOptInScreen[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const char kEnablePhysicalKeyboardAutocorrect[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kEnableRequestTabletSite[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
@@ -166,13 +155,9 @@ extern const char kHideAndroidFilesInFilesApp[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kHomedir[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kIgnoreUserProfileMappingForTests[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const char kKioskNextHomeUrlPrefix[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kLoginManager[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kLoginProfile[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kLoginUser[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const char kMemoryPressureThresholds[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kNaturalScrollDefault[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kNeedArcMigrationPolicyCheck[];
@@ -193,6 +178,8 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kSamlPasswordChangeUrl[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kShelfHoverPreviews[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kShowAndroidFilesInFilesApp[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const char kSupervisionOnboardingUrlPrefix[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kShowLoginDevOverlay[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kTestEncryptionMigrationUI[];
@@ -206,6 +193,9 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kWakeOnWifiPacket[];
 
 // Controls whether to enable Chrome OS Account Manager.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kAccountManager;
+
+// Controls whether to enable Chrome OS Add Child Account Supervision flow.
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kAddSupervision;
 
 // Controls whether to enable Google Assistant feature.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
@@ -248,6 +238,9 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsCellularFirstDevice();
 
 // Returns true if Chrome OS Account Manager is enabled.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsAccountManagerEnabled();
+
+// Returns true if Chrome OS Add Child Supervision flow is enabled.
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsAddSupervisionEnabled();
 
 // Returns true if Google Assistant flags are enabled.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsAssistantFlagsEnabled();

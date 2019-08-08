@@ -249,6 +249,7 @@ class PortTestCase(LoggingTestCase):
         port = self.make_port()
         self.assertEqual(port.expectations_files(), [
             port.path_to_generic_test_expectations_file(),
+            port.path_to_webdriver_expectations_file(),
             port.host.filesystem.join(port.web_tests_dir(), 'NeverFixTests'),
             port.host.filesystem.join(port.web_tests_dir(), 'StaleTestExpectations'),
             port.host.filesystem.join(port.web_tests_dir(), 'SlowTests'),

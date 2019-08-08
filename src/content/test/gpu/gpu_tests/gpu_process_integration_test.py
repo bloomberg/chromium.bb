@@ -59,10 +59,6 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       '--no-first-run'] + browser_args
 
   @classmethod
-  def _CreateExpectations(cls):
-    raise NotImplementedError
-
-  @classmethod
   def GenerateGpuTests(cls, options):
     # The browser test runner synthesizes methods with the exact name
     # given in GenerateGpuTests, so in order to hand-write our tests but

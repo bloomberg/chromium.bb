@@ -27,6 +27,7 @@
       "chrome/android/java/strings/android_chrome_strings.grd",
       "chrome/android/features/vr/java/strings/android_chrome_vr_strings.grd",
       "chrome/android/features/media_router/java/strings/android_chrome_media_router_strings.grd",
+      "chrome/android/features/keyboard_accessory/internal/java/strings/android_keyboard_accessory_strings.grd",
       "chrome/android/features/autofill_assistant/java/strings/android_chrome_autofill_assistant_strings.grd",
       "chrome/android/touchless/java/strings/touchless_strings.grd",
       "chrome/android/webapk/strings/android_webapk_strings.grd",
@@ -36,6 +37,7 @@
       "chrome/browser/resources/chromeos/camera/src/strings/camera_strings.grd",
       "chrome/browser/resources/chromeos/chromevox/strings/chromevox_strings.grd",
       "chrome/browser/resources/chromeos/select_to_speak/strings/select_to_speak_strings.grd",
+      "chrome/browser/resources/chromeos/switch_access/strings/switch_access_strings.grd",
       "chrome/credential_provider/gaiacp/gaia_resources.grd",
       "chromeos/chromeos_strings.grd",
       "components/autofill/android/java/strings/autofill_strings.grd",
@@ -59,6 +61,7 @@
       "ios/chrome/search_widget_extension/strings/ios_search_widget_extension_google_chrome_strings.grd",
       "ios/chrome/share_extension/strings/ios_share_extension_strings.grd",
       "remoting/resources/remoting_strings.grd",
+      "services/services_strings.grd",
       "third_party/libaddressinput/chromium/address_input_strings.grd",
       "ui/accessibility/extensions/strings/accessibility_extensions_strings.grd",
       "ui/android/java/strings/android_ui_strings.grd",
@@ -79,6 +82,8 @@
     "chromecast/app/resources/chromecast_settings.grd": "Not UI strings; localized separately",
     "cloud_print/virtual_driver/win/install/virtual_driver_setup_resources.grd": "Separate release process",
     "components/components_locale_settings.grd": "Not UI strings; localized separately",
+    "components/omnibox/resources/omnibox_resources.grd": "Not UI strings; localized separately",
+    "third_party/blink/renderer/devtools/front_end/langpacks/devtools_ui_strings.grd" : "Devtools UI strings that are optionally enabled by browser.",
     "tools/grit/grit/testdata/buildinfo.grd": "Test data",
     "tools/grit/grit/testdata/chrome/app/generated_resources.grd": "Test data",
     "tools/grit/grit/testdata/substitute.grd": "Test data",
@@ -91,4 +96,11 @@
     "ui/base/test/ui_base_test_resources.grd": "Test data",
     "ui/strings/app_locale_settings.grd": "Not UI strings; localized separately",
   },
+  # Internal grds that contain parts not available publicly and thus should
+  # not be checked by translation script.
+  "internal_grds": [
+    "chrome/browser/resources/kiosk_next_internal_resources.grd",
+    # Test grd that contains a part file that doesn't exist.
+    "tools/translation/testdata/internal.grd",
+  ],
 }

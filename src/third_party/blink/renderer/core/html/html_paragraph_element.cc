@@ -33,8 +33,6 @@ using namespace html_names;
 HTMLParagraphElement::HTMLParagraphElement(Document& document)
     : HTMLElement(kPTag, document) {}
 
-DEFINE_NODE_FACTORY(HTMLParagraphElement)
-
 void HTMLParagraphElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,

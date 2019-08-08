@@ -47,7 +47,7 @@ TEST_F(LayoutTableSectionTest,
   auto* section = GetSectionByElementId("section");
   EXPECT_TRUE(section);
   EXPECT_FALSE(
-      section->BackgroundIsKnownToBeOpaqueInRect(LayoutRect(0, 0, 1, 1)));
+      section->BackgroundIsKnownToBeOpaqueInRect(PhysicalRect(0, 0, 1, 1)));
 }
 
 TEST_F(LayoutTableSectionTest, BackgroundIsKnownToBeOpaqueWithBorderSpacing) {
@@ -62,7 +62,7 @@ TEST_F(LayoutTableSectionTest, BackgroundIsKnownToBeOpaqueWithBorderSpacing) {
   auto* section = GetSectionByElementId("section");
   EXPECT_TRUE(section);
   EXPECT_FALSE(
-      section->BackgroundIsKnownToBeOpaqueInRect(LayoutRect(0, 0, 1, 1)));
+      section->BackgroundIsKnownToBeOpaqueInRect(PhysicalRect(0, 0, 1, 1)));
 }
 
 TEST_F(LayoutTableSectionTest, BackgroundIsKnownToBeOpaqueWithEmptyCell) {
@@ -78,7 +78,7 @@ TEST_F(LayoutTableSectionTest, BackgroundIsKnownToBeOpaqueWithEmptyCell) {
   auto* section = GetSectionByElementId("section");
   EXPECT_TRUE(section);
   EXPECT_FALSE(
-      section->BackgroundIsKnownToBeOpaqueInRect(LayoutRect(0, 0, 1, 1)));
+      section->BackgroundIsKnownToBeOpaqueInRect(PhysicalRect(0, 0, 1, 1)));
 }
 
 TEST_F(LayoutTableSectionTest, EmptySectionDirtiedRowsAndEffeciveColumns) {

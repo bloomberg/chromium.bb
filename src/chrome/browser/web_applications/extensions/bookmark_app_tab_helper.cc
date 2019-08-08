@@ -10,6 +10,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "url/gurl.h"
 
@@ -17,8 +18,6 @@ namespace extensions {
 
 BookmarkAppTabHelper::BookmarkAppTabHelper(content::WebContents* web_contents)
     : WebAppTabHelperBase(web_contents) {
-  scoped_observer_.Add(
-      ExtensionRegistry::Get(web_contents->GetBrowserContext()));
 }
 
 BookmarkAppTabHelper::~BookmarkAppTabHelper() = default;
@@ -45,10 +44,8 @@ web_app::AppId BookmarkAppTabHelper::FindAppIdInScopeOfUrl(const GURL& url) {
   content::BrowserContext* browser_context =
       web_contents()->GetBrowserContext();
 
-  const Extension* extension = nullptr;
-
-  if (base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing))
-    extension = util::GetInstalledPwaForUrl(browser_context, url);
+  const Extension* extension =
+      util::GetInstalledPwaForUrl(browser_context, url);
 
   if (!extension) {
     // Check if there is a shortcut app for this |url|.
@@ -68,32 +65,10 @@ bool BookmarkAppTabHelper::IsUserInstalled() const {
 }
 
 bool BookmarkAppTabHelper::IsFromInstallButton() const {
-  const bool pwa_windowing =
-      base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing);
   const Extension* app = GetExtension();
   // TODO(loyso): Use something better to record apps installed from promoted
   // UIs. crbug.com/774918.
-  return app && app->is_hosted_app() && pwa_windowing &&
-         UrlHandlers::GetUrlHandlers(app);
-}
-
-void BookmarkAppTabHelper::OnExtensionInstalled(
-    content::BrowserContext* browser_context,
-    const extensions::Extension* extension,
-    bool is_update) {
-  OnWebAppInstalled(extension->id());
-}
-
-void BookmarkAppTabHelper::OnExtensionUninstalled(
-    content::BrowserContext* browser_context,
-    const extensions::Extension* extension,
-    extensions::UninstallReason reason) {
-  OnWebAppUninstalled(extension->id());
-}
-
-void BookmarkAppTabHelper::OnShutdown(ExtensionRegistry* registry) {
-  OnWebAppRegistryShutdown();
-  scoped_observer_.RemoveAll();
+  return app && app->is_hosted_app() && UrlHandlers::GetUrlHandlers(app);
 }
 
 const Extension* BookmarkAppTabHelper::GetExtension() const {

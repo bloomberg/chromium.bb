@@ -20,16 +20,26 @@
 #include "test/gtest.h"
 #include "test/pc/e2e/analyzer/audio/default_audio_quality_analyzer.h"
 #include "test/pc/e2e/analyzer/video/default_video_quality_analyzer.h"
+#include "test/pc/e2e/network_quality_metrics_reporter.h"
 #include "test/testsupport/file_utils.h"
 
 namespace webrtc {
 namespace webrtc_pc_e2e {
 
-TEST(PeerConnectionE2EQualityTestSmokeTest, RunWithEmulatedNetwork) {
+// IOS debug builds can be quite slow, disabling to avoid issues with timeouts.
+#if defined(WEBRTC_IOS) && defined(WEBRTC_ARCH_ARM64) && !defined(NDEBUG)
+#define MAYBE_RunWithEmulatedNetwork DISABLED_RunWithEmulatedNetwork
+#else
+#define MAYBE_RunWithEmulatedNetwork RunWithEmulatedNetwork
+#endif
+TEST(PeerConnectionE2EQualityTestSmokeTest, MAYBE_RunWithEmulatedNetwork) {
   using PeerConfigurer = PeerConnectionE2EQualityTestFixture::PeerConfigurer;
   using RunParams = PeerConnectionE2EQualityTestFixture::RunParams;
   using VideoConfig = PeerConnectionE2EQualityTestFixture::VideoConfig;
   using AudioConfig = PeerConnectionE2EQualityTestFixture::AudioConfig;
+  using ScreenShareConfig =
+      PeerConnectionE2EQualityTestFixture::ScreenShareConfig;
+  using ScrollingParams = PeerConnectionE2EQualityTestFixture::ScrollingParams;
 
   // Setup emulated network
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
@@ -80,37 +90,57 @@ TEST(PeerConnectionE2EQualityTestSmokeTest, RunWithEmulatedNetwork) {
           {alice_endpoint});
   fixture->AddPeer(alice_network->network_thread(),
                    alice_network->network_manager(), [](PeerConfigurer* alice) {
-                     VideoConfig video_config(640, 360, 30);
-                     video_config.stream_label = "alice-video";
-                     alice->AddVideoConfig(std::move(video_config));
-                     AudioConfig audio_config;
-                     audio_config.stream_label = "alice-audio";
-                     audio_config.mode = AudioConfig::Mode::kFile;
-                     audio_config.input_file_name = test::ResourcePath(
+                     VideoConfig video(640, 360, 30);
+                     video.stream_label = "alice-video";
+                     alice->AddVideoConfig(std::move(video));
+
+                     AudioConfig audio;
+                     audio.stream_label = "alice-audio";
+                     audio.mode = AudioConfig::Mode::kFile;
+                     audio.input_file_name = test::ResourcePath(
                          "pc_quality_smoke_test_alice_source", "wav");
-                     alice->SetAudioConfig(std::move(audio_config));
+                     alice->SetAudioConfig(std::move(audio));
                    });
 
   EmulatedNetworkManagerInterface* bob_network =
       network_emulation_manager->CreateEmulatedNetworkManagerInterface(
           {bob_endpoint});
-  fixture->AddPeer(bob_network->network_thread(),
-                   bob_network->network_manager(), [](PeerConfigurer* bob) {
-                     VideoConfig video_config(640, 360, 30);
-                     video_config.stream_label = "bob-video";
-                     bob->AddVideoConfig(std::move(video_config));
-                     AudioConfig audio_config;
-                     audio_config.stream_label = "bob-audio";
-                     audio_config.mode = AudioConfig::Mode::kFile;
-                     audio_config.input_file_name = test::ResourcePath(
-                         "pc_quality_smoke_test_bob_source", "wav");
-                     bob->SetAudioConfig(std::move(audio_config));
-                   });
+  fixture->AddPeer(
+      bob_network->network_thread(), bob_network->network_manager(),
+      [](PeerConfigurer* bob) {
+        VideoConfig video(640, 360, 30);
+        video.stream_label = "bob-video";
+        bob->AddVideoConfig(std::move(video));
+
+        VideoConfig screenshare(640, 360, 30);
+        screenshare.stream_label = "bob-screenshare";
+        screenshare.screen_share_config =
+            ScreenShareConfig(TimeDelta::seconds(2));
+        screenshare.screen_share_config->scrolling_params = ScrollingParams(
+            TimeDelta::ms(1800), kDefaultSlidesWidth, kDefaultSlidesHeight);
+        bob->AddVideoConfig(screenshare);
+
+        AudioConfig audio;
+        audio.stream_label = "bob-audio";
+        audio.mode = AudioConfig::Mode::kFile;
+        audio.input_file_name =
+            test::ResourcePath("pc_quality_smoke_test_bob_source", "wav");
+        bob->SetAudioConfig(std::move(audio));
+      });
+
+  fixture->AddQualityMetricsReporter(
+      absl::make_unique<NetworkQualityMetricsReporter>(alice_network,
+                                                       bob_network));
 
   RunParams run_params(TimeDelta::seconds(7));
+  run_params.video_codec_name = cricket::kVp9CodecName;
+  run_params.video_codec_required_params = {{"profile-id", "0"}};
+  run_params.use_flex_fec = true;
+  run_params.use_ulp_fec = true;
   run_params.video_encoder_bitrate_multiplier = 1.1;
   fixture->Run(run_params);
 
+  EXPECT_GE(fixture->GetRealTestDuration(), run_params.run_duration);
   for (auto stream_label : video_analyzer_ptr->GetKnownVideoStreams()) {
     FrameCounters stream_conters =
         video_analyzer_ptr->GetPerStreamCounters().at(stream_label);

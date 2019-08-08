@@ -39,30 +39,24 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/content_renderer_client.h"
-#include "content/public/renderer/media_stream_utils.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/blob_storage/webblobregistry_impl.h"
 #include "content/renderer/dom_storage/local_storage_cached_areas.h"
 #include "content/renderer/dom_storage/local_storage_namespace.h"
 #include "content/renderer/dom_storage/session_web_storage_namespace_impl.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
-#include "content/renderer/image_capture/image_capture_frame_grabber.h"
 #include "content/renderer/loader/child_url_loader_factory_bundle.h"
 #include "content/renderer/loader/code_cache_loader_impl.h"
 #include "content/renderer/loader/resource_dispatcher.h"
-#include "content/renderer/loader/web_data_consumer_handle_impl.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
 #include "content/renderer/media/audio/audio_device_factory.h"
 #include "content/renderer/media/audio_decoder.h"
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
 #include "content/renderer/media/webrtc/transmission_encoding_info_handler.h"
-#include "content/renderer/media_capture_from_element/canvas_capture_handler.h"
 #include "content/renderer/media_capture_from_element/html_audio_element_capturer_source.h"
-#include "content/renderer/media_capture_from_element/html_video_element_capturer_source.h"
 #include "content/renderer/media_recorder/media_recorder_handler.h"
 #include "content/renderer/mojo/blink_interface_provider_impl.h"
 #include "content/renderer/p2p/port_allocator.h"
-#include "content/renderer/push_messaging/push_provider.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/storage_util.h"
 #include "content/renderer/web_database_observer_impl.h"
@@ -76,6 +70,7 @@
 #include "media/audio/audio_output_device.h"
 #include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/filters/stream_parser_factory.h"
+#include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -129,9 +124,7 @@ using blink::Platform;
 using blink::WebAudioDevice;
 using blink::WebAudioLatencyHint;
 using blink::WebBlobRegistry;
-using blink::WebCanvasCaptureHandler;
 using blink::WebDatabaseObserver;
-using blink::WebImageCaptureFrameGrabber;
 using blink::WebMediaPlayer;
 using blink::WebMediaRecorderHandler;
 using blink::WebMediaStream;
@@ -290,12 +283,6 @@ RendererBlinkPlatformImpl::WrapSharedURLLoaderFactory(
       std::move(factory));
 }
 
-std::unique_ptr<blink::WebDataConsumerHandle>
-RendererBlinkPlatformImpl::CreateDataConsumerHandle(
-    mojo::ScopedDataPipeConsumerHandle handle) {
-  return std::make_unique<WebDataConsumerHandleImpl>(std::move(handle));
-}
-
 scoped_refptr<ChildURLLoaderFactoryBundle>
 RendererBlinkPlatformImpl::CreateDefaultURLLoaderFactoryBundle() {
   return base::MakeRefCounted<ChildURLLoaderFactoryBundle>(
@@ -343,11 +330,6 @@ blink::WebSandboxSupport* RendererBlinkPlatformImpl::GetSandboxSupport() {
   // These platforms do not require sandbox support.
   return nullptr;
 #endif
-}
-
-blink::WebCookieJar* RendererBlinkPlatformImpl::CookieJar() {
-  NOTREACHED() << "Use WebLocalFrameClient::cookieJar() instead!";
-  return nullptr;
 }
 
 blink::WebThemeEngine* RendererBlinkPlatformImpl::ThemeEngine() {
@@ -413,18 +395,24 @@ void RendererBlinkPlatformImpl::CacheMetadata(
     // Let the browser know we generated cacheable metadata for this resource.
     // The browser may cache it and return it on subsequent responses to speed
     // the processing of this resource.
-    std::vector<uint8_t> copy(data, data + size);
-    GetCodeCacheHost().DidGenerateCacheableMetadata(cache_type, url,
-                                                    response_time, copy);
+    GetCodeCacheHost().DidGenerateCacheableMetadata(
+        cache_type, url, response_time,
+        mojo_base::BigBuffer(base::make_span(data, size)));
   }
 }
 
 void RendererBlinkPlatformImpl::FetchCachedCode(
     blink::mojom::CodeCacheType cache_type,
     const GURL& url,
-    base::OnceCallback<void(base::Time, const std::vector<uint8_t>&)>
-        callback) {
-  GetCodeCacheHost().FetchCachedCode(cache_type, url, std::move(callback));
+    FetchCachedCodeCallback callback) {
+  GetCodeCacheHost().FetchCachedCode(
+      cache_type, url,
+      base::BindOnce(
+          [](FetchCachedCodeCallback callback, base::Time time,
+             mojo_base::BigBuffer data) {
+            std::move(callback).Run(time, data);
+          },
+          std::move(callback)));
 }
 
 void RendererBlinkPlatformImpl::ClearCodeCacheEntry(
@@ -443,10 +431,9 @@ void RendererBlinkPlatformImpl::CacheMetadataInCacheStorage(
   // Let the browser know we generated cacheable metadata for this resource in
   // CacheStorage. The browser may cache it and return it on subsequent
   // responses to speed the processing of this resource.
-  std::vector<uint8_t> copy(data, data + size);
   GetCodeCacheHost().DidGenerateCacheableMetadataInCacheStorage(
-      url, response_time, copy, cacheStorageOrigin,
-      cacheStorageCacheName.Utf8());
+      url, response_time, mojo_base::BigBuffer(base::make_span(data, size)),
+      cacheStorageOrigin, cacheStorageCacheName.Utf8());
 }
 
 WebString RendererBlinkPlatformImpl::DefaultLocale() {
@@ -755,31 +742,6 @@ RendererBlinkPlatformImpl::CreateWebRtcAsyncResolverFactory() {
 
 //------------------------------------------------------------------------------
 
-std::unique_ptr<WebCanvasCaptureHandler>
-RendererBlinkPlatformImpl::CreateCanvasCaptureHandler(
-    const WebSize& size,
-    double frame_rate,
-    WebMediaStreamTrack* track) {
-  return CanvasCaptureHandler::CreateCanvasCaptureHandler(
-      size, frame_rate, RenderThread::Get()->GetIOTaskRunner(), track);
-}
-
-//------------------------------------------------------------------------------
-
-void RendererBlinkPlatformImpl::CreateHTMLVideoElementCapturer(
-    WebMediaStream* web_media_stream,
-    WebMediaPlayer* web_media_player,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  DCHECK(web_media_stream);
-  DCHECK(web_media_player);
-  AddVideoTrackToMediaStream(
-      HtmlVideoElementCapturerSource::CreateFromWebMediaPlayerImpl(
-          web_media_player, content::RenderThread::Get()->GetIOTaskRunner(),
-          std::move(task_runner)),
-      false,  // is_remote
-      web_media_stream);
-}
-
 void RendererBlinkPlatformImpl::CreateHTMLAudioElementCapturer(
     WebMediaStream* web_media_stream,
     WebMediaPlayer* web_media_player,
@@ -817,13 +779,6 @@ void RendererBlinkPlatformImpl::CreateHTMLAudioElementCapturer(
 
   media_stream_source->ConnectToTrack(web_media_stream_track);
   web_media_stream->AddTrack(web_media_stream_track);
-}
-
-//------------------------------------------------------------------------------
-
-std::unique_ptr<WebImageCaptureFrameGrabber>
-RendererBlinkPlatformImpl::CreateImageCaptureFrameGrabber() {
-  return std::make_unique<ImageCaptureFrameGrabber>();
 }
 
 //------------------------------------------------------------------------------
@@ -932,9 +887,9 @@ RendererBlinkPlatformImpl::CreateOffscreenGraphicsContext3DProvider(
   attributes.bind_generates_resource = false;
   attributes.enable_raster_interface = web_attributes.enable_raster_interface;
 
-  attributes.gpu_preference = web_attributes.prefer_integrated_gpu
-                                  ? gl::PreferIntegratedGpu
-                                  : gl::PreferDiscreteGpu;
+  attributes.gpu_preference = web_attributes.prefer_low_power_gpu
+                                  ? gl::GpuPreference::kLowPower
+                                  : gl::GpuPreference::kHighPerformance;
 
   attributes.fail_if_major_perf_caveat =
       web_attributes.fail_if_major_performance_caveat;
@@ -1003,7 +958,7 @@ RendererBlinkPlatformImpl::CreateWebGPUGraphicsContext3DProvider(
 
   gpu::ContextCreationAttribs attributes;
   // TODO(kainino): It's not clear yet how GPU preferences work for WebGPU.
-  attributes.gpu_preference = gl::PreferDiscreteGpu;
+  attributes.gpu_preference = gl::GpuPreference::kHighPerformance;
   attributes.enable_gles2_interface = false;
   attributes.context_type = gpu::CONTEXT_TYPE_WEBGPU;
 
@@ -1062,12 +1017,6 @@ blink::InterfaceProvider* RendererBlinkPlatformImpl::GetInterfaceProvider() {
 
 //------------------------------------------------------------------------------
 
-blink::WebPushProvider* RendererBlinkPlatformImpl::PushProvider() {
-  return PushProvider::ThreadSpecificInstance(default_task_runner_);
-}
-
-//------------------------------------------------------------------------------
-
 blink::WebTransmissionEncodingInfoHandler*
 RendererBlinkPlatformImpl::TransmissionEncodingInfoHandler() {
   if (!web_transmission_encoding_info_handler_) {
@@ -1099,6 +1048,13 @@ void RendererBlinkPlatformImpl::WorkerContextCreated(
     const v8::Local<v8::Context>& worker) {
   GetContentClient()->renderer()->DidInitializeWorkerContextOnWorkerThread(
       worker);
+}
+
+bool RendererBlinkPlatformImpl::IsExcludedHeaderForServiceWorkerFetchEvent(
+    const blink::WebString& header_name) {
+  return GetContentClient()
+      ->renderer()
+      ->IsExcludedHeaderForServiceWorkerFetchEvent(header_name.Ascii());
 }
 
 //------------------------------------------------------------------------------

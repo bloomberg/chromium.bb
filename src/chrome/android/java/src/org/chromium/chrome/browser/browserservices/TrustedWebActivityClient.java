@@ -21,7 +21,6 @@ import android.support.customtabs.trusted.TrustedWebActivityService;
 import android.support.customtabs.trusted.TrustedWebActivityServiceConnectionManager;
 import android.support.customtabs.trusted.TrustedWebActivityServiceWrapper;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -219,7 +218,6 @@ public class TrustedWebActivityClient {
         intent.setData(Uri.parse(url));
         intent.setAction(Intent.ACTION_VIEW);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                | ApiCompatibilityUtils.getActivityNewDocumentFlag()
                 | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.setComponent(new ComponentName(twaPackageName, twaActivityName));
         return intent;

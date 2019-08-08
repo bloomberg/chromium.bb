@@ -55,7 +55,7 @@ enum class PrefetchRequestStatus {
   // Request failed with error indicating that the client is forbidden. The
   // caller will prevent network requests for the period of 1 day.
   kShouldSuspendForbidden = 4,
-  // The request was blocked by a URL blacklist configured by the domain
+  // The request failed because the service URL was blocked by the domain
   // administrator.
   kShouldSuspendBlockedByAdministrator = 5,
   // The request was answered with a 403 Forbidden response including a message

@@ -21,14 +21,19 @@ namespace gl {
 
 namespace {
 
-class GLSurfaceEGLTest : public testing::Test {};
+class GLSurfaceEGLTest : public testing::Test {
+ protected:
+  void SetUp() override {
+    GLSurfaceTestSupport::InitializeOneOffImplementation(
+        GLImplementation::kGLImplementationEGLGLES2, true);
+  }
+
+  void TearDown() override { gl::init::ShutdownGL(false); }
+};
 
 #if !defined(MEMORY_SANITIZER)
 // Fails under MSAN: crbug.com/886995
-TEST(GLSurfaceEGLTest, SurfaceFormatTest) {
-  GLSurfaceTestSupport::InitializeOneOffImplementation(
-      GLImplementation::kGLImplementationEGLGLES2, true);
-
+TEST_F(GLSurfaceEGLTest, SurfaceFormatTest) {
   GLSurfaceFormat surface_format = GLSurfaceFormat();
   surface_format.SetDepthBits(24);
   surface_format.SetStencilBits(8);
@@ -67,9 +72,7 @@ class TestPlatformDelegate : public ui::PlatformWindowDelegate {
   void OnActivationChanged(bool active) override {}
 };
 
-TEST(GLSurfaceEGLTest, FixedSizeExtension) {
-  GLSurfaceTestSupport::InitializeOneOffImplementation(
-      GLImplementation::kGLImplementationEGLGLES2, true);
+TEST_F(GLSurfaceEGLTest, FixedSizeExtension) {
   TestPlatformDelegate platform_delegate;
   gfx::Size window_size(400, 500);
   ui::WinWindow window(&platform_delegate, gfx::Rect(window_size));

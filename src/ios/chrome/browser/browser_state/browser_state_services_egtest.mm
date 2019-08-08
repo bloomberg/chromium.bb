@@ -28,7 +28,7 @@ namespace {
 // invoked.
 void OnGotPrimaryAccountInfo(
     bool* get_primary_account_info_callback_called_flag,
-    const base::Optional<AccountInfo>& account_info,
+    const base::Optional<CoreAccountInfo>& account_info,
     const identity::AccountState& account_state) {
   GREYAssert(!account_info, @"AccountInfo has unexpected value");
   *get_primary_account_info_callback_called_flag = true;

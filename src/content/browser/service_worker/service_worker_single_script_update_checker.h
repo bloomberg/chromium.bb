@@ -10,6 +10,7 @@
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
 namespace network {
 class MojoToNetPendingBuffer;
@@ -75,6 +76,9 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
   ServiceWorkerSingleScriptUpdateChecker(
       const GURL& url,
       bool is_main_script,
+      bool force_bypass_cache,
+      blink::mojom::ServiceWorkerUpdateViaCache update_via_cache,
+      base::TimeDelta time_since_last_check,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
       std::unique_ptr<ServiceWorkerResponseReader> compare_reader,
       std::unique_ptr<ServiceWorkerResponseReader> copy_reader,
@@ -92,11 +96,13 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         OnUploadProgressCallback ack_callback) override;
-  void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override;
+  void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override;
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle consumer) override;
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
+
+  bool network_accessed() const { return network_accessed_; }
 
  private:
   void WriteHeaders(scoped_refptr<HttpResponseInfoIOBuffer> info_buffer);
@@ -115,6 +121,10 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
   void Finish(Result result);
 
   const GURL script_url_;
+  const bool force_bypass_cache_;
+  const blink::mojom::ServiceWorkerUpdateViaCache update_via_cache_;
+  const base::TimeDelta time_since_last_check_;
+  bool network_accessed_ = false;
 
   network::mojom::URLLoaderPtr network_loader_;
   mojo::Binding<network::mojom::URLLoaderClient> network_client_binding_;

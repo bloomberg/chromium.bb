@@ -550,8 +550,8 @@ bool BookmarkModel::HasBookmarks() {
 }
 
 bool BookmarkModel::HasNoUserCreatedBookmarksOrFolders() {
-  return bookmark_bar_node_->empty() && other_node_->empty() &&
-         mobile_node_->empty();
+  return bookmark_bar_node_->children().empty() &&
+         other_node_->children().empty() && mobile_node_->children().empty();
 }
 
 bool BookmarkModel::IsBookmarked(const GURL& url) {
@@ -643,8 +643,7 @@ void BookmarkModel::SortChildren(const BookmarkNode* parent) {
   if (U_FAILURE(error))
     collator.reset(nullptr);
   BookmarkNode* mutable_parent = AsMutable(parent);
-  std::sort(mutable_parent->children().begin(),
-            mutable_parent->children().end(),
+  std::sort(mutable_parent->children_.begin(), mutable_parent->children_.end(),
             SortComparator(collator.get()));
 
   if (store_)
@@ -675,11 +674,11 @@ void BookmarkModel::ReorderChildren(
     std::vector<std::unique_ptr<BookmarkNode>> new_children(
         ordered_nodes.size());
     BookmarkNode* mutable_parent = AsMutable(parent);
-    for (auto& child : mutable_parent->children()) {
+    for (auto& child : mutable_parent->children_) {
       size_t new_location = order[child.get()];
       new_children[new_location] = std::move(child);
     }
-    mutable_parent->children().swap(new_children);
+    mutable_parent->children_.swap(new_children);
 
     if (store_)
       store_->ScheduleSave();
@@ -806,7 +805,7 @@ void BookmarkModel::DoneLoading(std::unique_ptr<BookmarkLoadDetails> details) {
   index_->SetNodeSorter(std::make_unique<TypedCountSorter>(client_.get()));
   // Sorting the permanent nodes has to happen on the main thread, so we do it
   // here, after loading completes.
-  std::stable_sort(root_->children().begin(), root_->children().end(),
+  std::stable_sort(root_->children_.begin(), root_->children_.end(),
                    VisibilityComparator(client_.get()));
 
   root_->SetMetaInfoMap(details->model_meta_info_map());

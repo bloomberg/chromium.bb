@@ -14,17 +14,13 @@ namespace blink {
 
 class NGBlockNode;
 class NGBlockBreakToken;
-class NGBreakToken;
-class NGConstraintSpace;
 
 class CORE_EXPORT NGFlexLayoutAlgorithm
     : public NGLayoutAlgorithm<NGBlockNode,
                                NGBoxFragmentBuilder,
                                NGBlockBreakToken> {
  public:
-  NGFlexLayoutAlgorithm(NGBlockNode,
-                        const NGConstraintSpace&,
-                        const NGBreakToken*);
+  NGFlexLayoutAlgorithm(const NGLayoutAlgorithmParams& params);
 
   scoped_refptr<const NGLayoutResult> Layout() override;
 
@@ -45,13 +41,11 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
   // not reimplement.
   bool IsMultiline() const;
 
-  const NGBoxStrut border_scrollbar_padding_;
-  const NGBoxStrut borders_;
-  const NGBoxStrut padding_;
   const NGBoxStrut border_padding_;
+  const NGBoxStrut border_scrollbar_padding_;
   const bool is_column_;
-  NGLogicalSize border_box_size_;
-  NGLogicalSize content_box_size_;
+  LogicalSize border_box_size_;
+  LogicalSize content_box_size_;
   // This is populated at the top of Layout(), so isn't available in
   // ComputeMinMaxSize() or anything it calls.
   base::Optional<FlexLayoutAlgorithm> algorithm_;

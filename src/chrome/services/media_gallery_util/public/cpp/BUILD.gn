@@ -42,6 +42,7 @@ source_set("manifest") {
 
   deps = [
     "//base",
+    "//chrome:strings",
     "//chrome/services/media_gallery_util/public/mojom",
     "//services/service_manager/public/cpp",
   ]

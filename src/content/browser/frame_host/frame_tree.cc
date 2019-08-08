@@ -408,6 +408,15 @@ void FrameTree::ReleaseRenderViewHostRef(RenderViewHostImpl* rvh) {
     render_view_host_map_.erase(it);
 }
 
+void FrameTree::FrameUnloading(FrameTreeNode* frame) {
+  if (frame->frame_tree_node_id() == focused_frame_tree_node_id_)
+    focused_frame_tree_node_id_ = FrameTreeNode::kFrameTreeNodeInvalidId;
+
+  // Ensure frames that are about to be deleted aren't visible from the other
+  // processes anymore.
+  frame->render_manager()->ResetProxyHosts();
+}
+
 void FrameTree::FrameRemoved(FrameTreeNode* frame) {
   if (frame->frame_tree_node_id() == focused_frame_tree_node_id_)
     focused_frame_tree_node_id_ = FrameTreeNode::kFrameTreeNodeInvalidId;

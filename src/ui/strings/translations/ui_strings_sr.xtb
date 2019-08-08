@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sr">
+<translation id="1028699632127661925">Шаље се на уређај <ph name="DEVICE_NAME" />...</translation>
 <translation id="111910763555783249">Подешавања обавештења</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Пре 1 дан}one{Пре # дан}few{Пре # дана}other{Пре # дана}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{Пре 1 минут}one{Пре # минут}few{Пре # минута}other{Пре # минута}}</translation>
@@ -15,13 +16,11 @@
 <translation id="1383876407941801731">Претражи</translation>
 <translation id="1398853756734560583">Увећај</translation>
 <translation id="1409544243779336081">Препорука за апликацију</translation>
-<translation id="1413622004203049571">Онемогући обавештења од <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 минут и }one{# минут и }few{# минута и }other{# минута и }}</translation>
 <translation id="1643823602425662293">Обавештење</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">сада</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 минут}one{# минут}few{# минута}other{# минута}}</translation>
-<translation id="1756116796893109054">Картица се шаље...</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1801827354178857021">Тачка</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 месец}one{# месец}few{# месеца}other{# месеци}}</translation>
@@ -135,6 +134,7 @@
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6156262341071374681">Проширите на све апликације</translation>
+<translation id="6165508094623778733">Сазнајте више</translation>
 <translation id="6264365405983206840">Изабери &amp;све</translation>
 <translation id="6351032674660237738">ПРЕДЛОЗИ АПЛИКАЦИЈА</translation>
 <translation id="6364916375976753737">Помери налево</translation>
@@ -180,8 +180,10 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Више од 1 непрочитаног обавештења}one{Више од # непрочитаног обавештења}few{Више од # непрочитана обавештења}other{Више од # непрочитаних обавештења}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{за 1 мин}one{за # мин}few{за # мин}other{за # мин}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8098075892845277643">Започните гласовну претрагу у Google помоћнику</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Пре 1 сат}one{Пре # сат}few{Пре # сата}other{Пре # сати}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Још 1 сек}one{Још # сек}few{Још # сек}other{Још # сек}}</translation>
+<translation id="8144660977431427332">Претраге омогућава Google помоћник. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, аутоматско довршавање</translation>
 <translation id="815598010540052116">Помери надоле</translation>
 <translation id="8170087467028567933">Уклањањем овог предлога сакрићете га за свој налог на свим уређајима.</translation>

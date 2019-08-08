@@ -85,7 +85,7 @@ UsageReportsBufferService::~UsageReportsBufferService() {
   // Unregister should happen on task runner.
   task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&UsageReportsBufferServiceDoUnregisterMDP,
-                                base::Passed(std::move(backend_))));
+                                std::move(backend_)));
 }
 
 void UsageReportsBufferService::Init() {

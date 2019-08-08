@@ -15,6 +15,8 @@
 
 namespace chrome_cleaner {
 
+struct ParsedLnkFile;
+
 namespace internal {
 
 // Auxiliary structures for the shortcut parsing.
@@ -60,6 +62,9 @@ const LnkHeader* ParseLnkHeader(std::vector<BYTE>* file_buffer);
 LnkInfoPartialHeader* LocateAndParseLnkInfoPartialHeader(
     std::vector<BYTE>* file_buffer,
     DWORD* output_offset);
+
+mojom::LnkParsingResult ParseLnkBytes(std::vector<BYTE> file_buffer,
+                                      ParsedLnkFile* parsed_shortcut);
 
 }  // namespace internal
 

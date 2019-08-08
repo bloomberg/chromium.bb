@@ -99,7 +99,8 @@ class DeclareDefaultUniformsTraverser : public TIntermTraverser
 
         TIntermTyped *variable = sequence.front()->getAsTyped();
         const TType &type      = variable->getType();
-        bool isUniform = (type.getQualifier() == EvqUniform) && !IsOpaqueType(type.getBasicType());
+        bool isUniform         = type.getQualifier() == EvqUniform && !type.isInterfaceBlock() &&
+                         !IsOpaqueType(type.getBasicType());
 
         if (visit == PreVisit)
         {
@@ -667,7 +668,7 @@ void TranslatorVulkan::translate(TIntermBlock *root,
 
     if (defaultUniformCount > 0)
     {
-        sink << "\nlayout(@@ DEFAULT-UNIFORMS-SET-BINDING @@) uniform defaultUniforms\n{\n";
+        sink << "\n@@ LAYOUT-defaultUniforms(std140) @@ uniform defaultUniforms\n{\n";
 
         DeclareDefaultUniformsTraverser defaultTraverser(&sink, getHashFunction(), &getNameMap());
         root->traverse(&defaultTraverser);

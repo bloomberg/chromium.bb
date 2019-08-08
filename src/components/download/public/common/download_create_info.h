@@ -27,6 +27,7 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace net {
 class HttpResponseHeaders;
@@ -66,6 +67,9 @@ struct COMPONENTS_DOWNLOAD_EXPORT DownloadCreateInfo {
 
   // The referrer URL of the tab that started us.
   GURL tab_referrer_url;
+
+  // The origin of the requester that originally initiated the download.
+  base::Optional<url::Origin> request_initiator;
 
   // The time when the download started.
   base::Time start_time;

@@ -74,6 +74,11 @@ class DumpAccessibilityEventsTest : public DumpAccessibilityTestBase {
     property_filters->push_back(
         PropertyFilter(base::ASCIIToUTF16("AutomationFocusChanged*document*"),
                        PropertyFilter::DENY));
+    // Implementing IRawElementProviderAdviseEvents causes Win7 to fire
+    // spurious focus events (regardless of what the implementation does).
+    property_filters->push_back(PropertyFilter(
+        base::ASCIIToUTF16("AutomationFocusChanged on role=region"),
+        PropertyFilter::DENY));
   }
 
   std::vector<std::string> Dump(std::vector<std::string>& run_until) override;
@@ -226,6 +231,11 @@ INSTANTIATE_TEST_SUITE_P(
     DumpAccessibilityEventsTestPassToString());
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaAtomicChanged) {
+  RunEventTest(FILE_PATH_LITERAL("aria-atomic-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsAriaBusyChanged) {
   RunEventTest(FILE_PATH_LITERAL("aria-busy-changed.html"));
 }
@@ -243,6 +253,71 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsAriaControlsChanged) {
   RunEventTest(FILE_PATH_LITERAL("aria-controls-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaDisabledChanged) {
+  RunEventTest(FILE_PATH_LITERAL("aria-disabled-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaDropeffectChanged) {
+  RunEventTest(FILE_PATH_LITERAL("aria-dropeffect-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaGrabbedChanged) {
+  RunEventTest(FILE_PATH_LITERAL("aria-grabbed-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaHasPopupChanged) {
+  RunEventTest(FILE_PATH_LITERAL("aria-haspopup-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaInvalidChanged) {
+  RunEventTest(FILE_PATH_LITERAL("aria-invalid-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaLevelChanged) {
+  RunEventTest(FILE_PATH_LITERAL("aria-level-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaLiveChanged) {
+  RunEventTest(FILE_PATH_LITERAL("aria-live-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaMultilineChanged) {
+  RunEventTest(FILE_PATH_LITERAL("aria-multiline-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaPosinsetChanged) {
+  RunEventTest(FILE_PATH_LITERAL("aria-posinset-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaReadonlyChanged) {
+  RunEventTest(FILE_PATH_LITERAL("aria-readonly-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaRelevantChanged) {
+  RunEventTest(FILE_PATH_LITERAL("aria-relevant-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaSetSizeChanged) {
+  RunEventTest(FILE_PATH_LITERAL("aria-setsize-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaSortChanged) {
+  RunEventTest(FILE_PATH_LITERAL("aria-sort-changed.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
@@ -315,6 +390,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        DISABLED_AccessibilityEventsAddAlert) {
   RunEventTest(FILE_PATH_LITERAL("add-alert.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAddChild) {
+  RunEventTest(FILE_PATH_LITERAL("add-child.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
@@ -405,11 +485,6 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
-                       AccessibilityEventsInvalidStatusChange) {
-  RunEventTest(FILE_PATH_LITERAL("invalid-status-change.html"));
-}
-
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsListboxFocus) {
   RunEventTest(FILE_PATH_LITERAL("listbox-focus.html"));
 }
@@ -492,6 +567,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        DISABLED_AccessibilityEventsMenuListPopup) {
   RunEventTest(FILE_PATH_LITERAL("menulist-popup.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsMultipleAriaPropertiesChanged) {
+  RunEventTest(FILE_PATH_LITERAL("multiple-aria-properties-changed.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
@@ -680,6 +760,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsAriaFlowToChange) {
   RunEventTest(FILE_PATH_LITERAL("aria-flow-to.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsSelectAddRemove) {
+  RunEventTest(FILE_PATH_LITERAL("select-selected-add-remove.html"));
 }
 
 }  // namespace content

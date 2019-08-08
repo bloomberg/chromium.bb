@@ -52,6 +52,7 @@ class URLLoaderImpl : public ::fuchsia::net::oldhttp::URLLoader,
       net::URLRequest* request,
       net::SSLCertRequestInfo* cert_request_info) override;
   void OnSSLCertificateError(net::URLRequest* request,
+                             int net_error,
                              const net::SSLInfo& ssl_info,
                              bool fatal) override;
   void OnResponseStarted(net::URLRequest* request, int net_error) override;

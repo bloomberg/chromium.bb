@@ -181,15 +181,19 @@ TEST_F(StructTraitsTest, GpuMemoryBufferHandle) {
   base::ScopedFD buffer_handle;
 #elif defined(OS_FUCHSIA)
   zx::vmo buffer_handle;
+  handle2.native_pixmap_handle.buffer_collection_id =
+      gfx::SysmemBufferCollectionId::Create();
+  handle2.native_pixmap_handle.buffer_index = 0;
 #endif
-  handle2.native_pixmap_handle.planes.emplace_back(
-      kOffset, kStride, kSize, std::move(buffer_handle), kModifier);
+  handle2.native_pixmap_handle.modifier = kModifier;
+  handle2.native_pixmap_handle.planes.emplace_back(kOffset, kStride, kSize,
+                                                   std::move(buffer_handle));
   proxy->EchoGpuMemoryBufferHandle(std::move(handle2), &output);
   EXPECT_EQ(gfx::NATIVE_PIXMAP, output.type);
+  EXPECT_EQ(kModifier, output.native_pixmap_handle.modifier);
   EXPECT_EQ(kId, output.id);
   ASSERT_EQ(1u, output.native_pixmap_handle.planes.size());
   EXPECT_EQ(kSize, output.native_pixmap_handle.planes.back().size);
-  EXPECT_EQ(kModifier, output.native_pixmap_handle.planes.back().modifier);
 #endif
 }
 
@@ -267,6 +271,12 @@ TEST_F(StructTraitsTest, RRectF) {
   EXPECT_EQ(input, output);
   input = RRectF(40, 50, 60, 70, 30, 35);
   EXPECT_EQ(input.GetType(), RRectF::Type::kOval);
+  proxy->EchoRRectF(input, &output);
+  EXPECT_EQ(input, output);
+  input.SetCornerRadii(RRectF::Corner::kUpperLeft, 50, 50);
+  input.SetCornerRadii(RRectF::Corner::kUpperRight, 20, 20);
+  input.SetCornerRadii(RRectF::Corner::kLowerRight, 0, 0);
+  input.SetCornerRadii(RRectF::Corner::kLowerLeft, 0, 0);
   proxy->EchoRRectF(input, &output);
   EXPECT_EQ(input, output);
 }

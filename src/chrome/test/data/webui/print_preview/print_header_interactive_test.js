@@ -29,7 +29,7 @@ cr.define('print_header_interactive_test', function() {
           'FooDevice', print_preview.DestinationType.GOOGLE,
           print_preview.DestinationOrigin.COOKIES, 'FooName',
           print_preview.DestinationConnectionStatus.ONLINE);
-      header.state = print_preview_new.State.NOT_READY;
+      header.state = print_preview.State.NOT_READY;
       test_util.fakeDataBind(model, header, 'settings');
       document.body.appendChild(header);
     });
@@ -42,7 +42,7 @@ cr.define('print_header_interactive_test', function() {
       const whenFocusDone = test_util.eventToPromise('focus', printButton);
 
       // Simulate initialization finishing.
-      header.state = print_preview_new.State.READY;
+      header.state = print_preview.State.READY;
       return whenFocusDone;
     });
   });

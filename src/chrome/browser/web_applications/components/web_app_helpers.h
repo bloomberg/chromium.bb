@@ -46,8 +46,11 @@ AppId GetAppIdFromApplicationName(const std::string& app_name);
 AppId GenerateAppIdFromURL(const GURL& url);
 std::string GenerateAppKeyFromURL(const GURL& url);
 
-// Returns whether the given |app_url| is a valid bookmark app url.
+// Returns whether the given |app_url| is a valid web app url.
 bool IsValidWebAppUrl(const GURL& app_url);
+
+// Returns whether the given |app_url| is a valid extension url.
+bool IsValidExtensionUrl(const GURL& app_url);
 
 }  // namespace web_app
 

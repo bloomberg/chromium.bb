@@ -194,10 +194,10 @@ TEST_P(BlockPainterTest, OverflowRectForCullRectTesting) {
   )HTML");
   auto* scroller = To<LayoutBlock>(GetLayoutObjectByElementId("scroller"));
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    EXPECT_EQ(LayoutRect(0, 0, 50, 5000),
+    EXPECT_EQ(PhysicalRect(0, 0, 50, 5000),
               BlockPainter(*scroller).OverflowRectForCullRectTesting(false));
   } else {
-    EXPECT_EQ(LayoutRect(0, 0, 50, 50),
+    EXPECT_EQ(PhysicalRect(0, 0, 50, 50),
               BlockPainter(*scroller).OverflowRectForCullRectTesting(false));
   }
 }
@@ -209,7 +209,7 @@ TEST_P(BlockPainterTest, OverflowRectCompositedScrollingForCullRectTesting) {
     </div>
   )HTML");
   auto* scroller = To<LayoutBlock>(GetLayoutObjectByElementId("scroller"));
-  EXPECT_EQ(LayoutRect(0, 0, 50, 5000),
+  EXPECT_EQ(PhysicalRect(0, 0, 50, 5000),
             BlockPainter(*scroller).OverflowRectForCullRectTesting(false));
 }
 

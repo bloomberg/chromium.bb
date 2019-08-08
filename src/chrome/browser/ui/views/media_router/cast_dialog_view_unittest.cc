@@ -226,7 +226,7 @@ TEST_F(CastDialogViewTest, ShowSourcesMenu) {
   // When there are no sinks, the sources button should be disabled.
   model.set_media_sinks({});
   dialog_->OnModelUpdated(model);
-  EXPECT_FALSE(sources_button()->enabled());
+  EXPECT_FALSE(sources_button()->GetEnabled());
 }
 
 TEST_F(CastDialogViewTest, CastAlternativeSources) {
@@ -325,22 +325,22 @@ TEST_F(CastDialogViewTest, DisableUnsupportedSinks) {
   sources_menu_model()->ActivatedAt(1);
   // Sink at index 0 doesn't support desktop mirroring, so it should be
   // disabled.
-  EXPECT_FALSE(sink_buttons().at(0)->enabled());
-  EXPECT_TRUE(sink_buttons().at(1)->enabled());
+  EXPECT_FALSE(sink_buttons().at(0)->GetEnabled());
+  EXPECT_TRUE(sink_buttons().at(1)->GetEnabled());
 
   dialog_->ButtonPressed(sources_button(), CreateMouseEvent());
   EXPECT_EQ(CastDialogView::kTab, sources_menu_model()->GetCommandIdAt(0));
   sources_menu_model()->ActivatedAt(0);
   // Both sinks support tab or presentation casting, so they should be enabled.
-  EXPECT_TRUE(sink_buttons().at(0)->enabled());
-  EXPECT_TRUE(sink_buttons().at(1)->enabled());
+  EXPECT_TRUE(sink_buttons().at(0)->GetEnabled());
+  EXPECT_TRUE(sink_buttons().at(1)->GetEnabled());
 }
 
 TEST_F(CastDialogViewTest, ShowNoDeviceView) {
   CastDialogModel model;
   InitializeDialogWithModel(model);
   // The no-device view should be shown when there are no sinks.
-  EXPECT_TRUE(no_sinks_view()->visible());
+  EXPECT_TRUE(no_sinks_view()->GetVisible());
   EXPECT_FALSE(scroll_view());
 
   std::vector<UIMediaSink> media_sinks = {CreateConnectedSink()};
@@ -348,20 +348,20 @@ TEST_F(CastDialogViewTest, ShowNoDeviceView) {
   dialog_->OnModelUpdated(model);
   // The scroll view should be shown when there are sinks.
   EXPECT_FALSE(no_sinks_view());
-  EXPECT_TRUE(scroll_view()->visible());
+  EXPECT_TRUE(scroll_view()->GetVisible());
 }
 
 TEST_F(CastDialogViewTest, SwitchToNoDeviceView) {
   // Start with one sink. The sink list scroll view should be shown.
   CastDialogModel model = CreateModelWithSinks({CreateAvailableSink()});
   InitializeDialogWithModel(model);
-  EXPECT_TRUE(scroll_view()->visible());
+  EXPECT_TRUE(scroll_view()->GetVisible());
   EXPECT_FALSE(no_sinks_view());
 
   // Remove the sink. The no-device view should be shown.
   model.set_media_sinks({});
   dialog_->OnModelUpdated(model);
-  EXPECT_TRUE(no_sinks_view()->visible());
+  EXPECT_TRUE(no_sinks_view()->GetVisible());
   EXPECT_FALSE(scroll_view());
 }
 

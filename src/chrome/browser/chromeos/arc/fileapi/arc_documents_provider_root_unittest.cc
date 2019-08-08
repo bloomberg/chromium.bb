@@ -43,6 +43,9 @@ struct DocumentSpec {
   const char* mime_type;
   int64_t size;
   uint64_t last_modified;
+  bool supports_delete;
+  bool supports_rename;
+  bool dir_supports_create;
 };
 
 // Fake file system hierarchy:
@@ -52,43 +55,85 @@ struct DocumentSpec {
 //   dir/            dir         dir-id
 //     photo.jpg     image/jpeg  photo-id
 //     music.bin     audio/mp3   music-id
+//     no-delete.jpg image/jpeg  no-delete-id  // Non-deletable file
+//     no-rename.jpg image/jpeg  no-rename-id  // Non-renamable file
 //   dups/           dir         dups-id
 //     dup.mp4       video/mp4   dup1-id
 //     dup.mp4       video/mp4   dup2-id
 //     dup.mp4       video/mp4   dup3-id
 //     dup.mp4       video/mp4   dup4-id
+//   ro-dir/         dir         ro-dir-id     // Read-only directory
 constexpr char kAuthority[] = "org.chromium.test";
-constexpr DocumentSpec kRootSpec{"root-id", "", "", kAndroidDirectoryMimeType,
-                                 -1,        0};
-constexpr DocumentSpec kDirSpec{
-    "dir-id", kRootSpec.document_id, "dir", kAndroidDirectoryMimeType, -1, 22};
-constexpr DocumentSpec kPhotoSpec{
-    "photo-id", kDirSpec.document_id, "photo.jpg", "image/jpeg", 3, 33};
-constexpr DocumentSpec kMusicSpec{
-    "music-id", kDirSpec.document_id, "music.bin", "audio/mp3", 4, 44};
+constexpr DocumentSpec kRootSpec{
+    "root-id", "", "", kAndroidDirectoryMimeType, -1, 0, false, false, true};
+constexpr DocumentSpec kDirSpec{"dir-id", kRootSpec.document_id,
+                                "dir",    kAndroidDirectoryMimeType,
+                                -1,       22,
+                                true,     true,
+                                true};
+constexpr DocumentSpec kPhotoSpec{"photo-id",  kDirSpec.document_id,
+                                  "photo.jpg", "image/jpeg",
+                                  3,           33,
+                                  true,        true,
+                                  true};
+constexpr DocumentSpec kMusicSpec{"music-id",  kDirSpec.document_id,
+                                  "music.bin", "audio/mp3",
+                                  4,           44,
+                                  true,        true,
+                                  true};
+constexpr DocumentSpec kNoDeleteSpec{"no-delete-id",
+                                     kDirSpec.document_id,
+                                     "no-delete.jpg",
+                                     "image/jpeg",
+                                     3,
+                                     45,
+                                     false,
+                                     true,
+                                     true};
+constexpr DocumentSpec kNoRenameSpec{"no-rename-id",
+                                     kDirSpec.document_id,
+                                     "no-rename.jpg",
+                                     "image/jpeg",
+                                     3,
+                                     46,
+                                     true,
+                                     false,
+                                     true};
 constexpr DocumentSpec kDupsSpec{"dups-id", kRootSpec.document_id,
                                  "dups",    kAndroidDirectoryMimeType,
-                                 -1,        55};
+                                 -1,        55,
+                                 true,      true,
+                                 true};
 constexpr DocumentSpec kDup1Spec{
-    "dup1-id", kDupsSpec.document_id, "dup.mp4", "video/mp4", 6, 66};
+    "dup1-id", kDupsSpec.document_id, "dup.mp4", "video/mp4", 6, 66, true, true,
+    true};
 constexpr DocumentSpec kDup2Spec{
-    "dup2-id", kDupsSpec.document_id, "dup.mp4", "video/mp4", 7, 77};
+    "dup2-id", kDupsSpec.document_id, "dup.mp4", "video/mp4", 7, 77, true, true,
+    true};
 constexpr DocumentSpec kDup3Spec{
-    "dup3-id", kDupsSpec.document_id, "dup.mp4", "video/mp4", 8, 88};
+    "dup3-id", kDupsSpec.document_id, "dup.mp4", "video/mp4", 8, 88, true, true,
+    true};
 constexpr DocumentSpec kDup4Spec{
-    "dup4-id", kDupsSpec.document_id, "dup.mp4", "video/mp4", 9, 99};
+    "dup4-id", kDupsSpec.document_id, "dup.mp4", "video/mp4", 9, 99, true, true,
+    true};
+constexpr DocumentSpec kRoDirSpec{"ro-dir-id", kRootSpec.document_id,
+                                  "ro-dir",    kAndroidDirectoryMimeType,
+                                  -1,          56,
+                                  false,       false,
+                                  false};
 
 // The order is intentionally shuffled here so that
 // FileSystemInstance::GetChildDocuments() returns documents in shuffled order.
 // See ResolveToContentUrlDups test below.
-constexpr DocumentSpec kAllSpecs[] = {kRootSpec,  kDirSpec,  kPhotoSpec,
-                                      kMusicSpec, kDupsSpec, kDup2Spec,
-                                      kDup1Spec,  kDup4Spec, kDup3Spec};
+constexpr DocumentSpec kAllSpecs[] = {
+    kRootSpec, kDirSpec,  kPhotoSpec, kMusicSpec, kNoDeleteSpec, kNoRenameSpec,
+    kDupsSpec, kDup2Spec, kDup1Spec,  kDup4Spec,  kDup3Spec,     kRoDirSpec};
 
 Document ToDocument(const DocumentSpec& spec) {
   return Document(kAuthority, spec.document_id, spec.parent_document_id,
                   spec.display_name, spec.mime_type, spec.size,
-                  spec.last_modified);
+                  spec.last_modified, spec.supports_delete,
+                  spec.supports_rename, spec.dir_supports_create);
 }
 
 void ExpectMatchesSpec(const base::File::Info& info, const DocumentSpec& spec) {
@@ -139,7 +184,8 @@ class ArcDocumentsProviderRootTest : public testing::Test {
 
     root_ = std::make_unique<ArcDocumentsProviderRoot>(
         ArcFileSystemOperationRunner::GetForBrowserContext(profile_.get()),
-        kAuthority, kRootSpec.document_id, "", std::vector<std::string>());
+        kAuthority, kRootSpec.document_id, "", false,
+        std::vector<std::string>());
   }
 
   void TearDown() override {
@@ -308,15 +354,23 @@ TEST_F(ArcDocumentsProviderRootTest, ReadDirectory) {
              std::vector<ArcDocumentsProviderRoot::ThinFileInfo> file_list) {
             run_loop->Quit();
             EXPECT_EQ(base::File::FILE_OK, error);
-            ASSERT_EQ(2u, file_list.size());
+            ASSERT_EQ(4u, file_list.size());
             EXPECT_EQ(FILE_PATH_LITERAL("music.bin.mp3"), file_list[0].name);
             EXPECT_EQ("music-id", file_list[0].document_id);
             EXPECT_FALSE(file_list[0].is_directory);
             EXPECT_EQ(base::Time::FromJavaTime(44), file_list[0].last_modified);
-            EXPECT_EQ(FILE_PATH_LITERAL("photo.jpg"), file_list[1].name);
-            EXPECT_EQ("photo-id", file_list[1].document_id);
+            EXPECT_EQ(FILE_PATH_LITERAL("no-delete.jpg"), file_list[1].name);
+            EXPECT_EQ("no-delete-id", file_list[1].document_id);
             EXPECT_FALSE(file_list[1].is_directory);
-            EXPECT_EQ(base::Time::FromJavaTime(33), file_list[1].last_modified);
+            EXPECT_EQ(base::Time::FromJavaTime(45), file_list[1].last_modified);
+            EXPECT_EQ(FILE_PATH_LITERAL("no-rename.jpg"), file_list[2].name);
+            EXPECT_EQ("no-rename-id", file_list[2].document_id);
+            EXPECT_FALSE(file_list[2].is_directory);
+            EXPECT_EQ(base::Time::FromJavaTime(46), file_list[2].last_modified);
+            EXPECT_EQ(FILE_PATH_LITERAL("photo.jpg"), file_list[3].name);
+            EXPECT_EQ("photo-id", file_list[3].document_id);
+            EXPECT_FALSE(file_list[3].is_directory);
+            EXPECT_EQ(base::Time::FromJavaTime(33), file_list[3].last_modified);
           },
           &run_loop));
   run_loop.Run();
@@ -331,7 +385,7 @@ TEST_F(ArcDocumentsProviderRootTest, ReadDirectoryRoot) {
              std::vector<ArcDocumentsProviderRoot::ThinFileInfo> file_list) {
             run_loop->Quit();
             EXPECT_EQ(base::File::FILE_OK, error);
-            ASSERT_EQ(2u, file_list.size());
+            ASSERT_EQ(3u, file_list.size());
             EXPECT_EQ(FILE_PATH_LITERAL("dir"), file_list[0].name);
             EXPECT_EQ("dir-id", file_list[0].document_id);
             EXPECT_TRUE(file_list[0].is_directory);
@@ -340,6 +394,10 @@ TEST_F(ArcDocumentsProviderRootTest, ReadDirectoryRoot) {
             EXPECT_EQ("dups-id", file_list[1].document_id);
             EXPECT_TRUE(file_list[1].is_directory);
             EXPECT_EQ(base::Time::FromJavaTime(55), file_list[1].last_modified);
+            EXPECT_EQ(FILE_PATH_LITERAL("ro-dir"), file_list[2].name);
+            EXPECT_EQ("ro-dir-id", file_list[2].document_id);
+            EXPECT_TRUE(file_list[2].is_directory);
+            EXPECT_EQ(base::Time::FromJavaTime(56), file_list[2].last_modified);
           },
           &run_loop));
   run_loop.Run();
@@ -531,6 +589,28 @@ TEST_F(ArcDocumentsProviderRootTest, DeleteFileNonExist) {
   run_loop.Run();
 }
 
+TEST_F(ArcDocumentsProviderRootTest, DeleteFileNonDeletable) {
+  base::RunLoop run_loop;
+  root_->DeleteFile(base::FilePath(FILE_PATH_LITERAL("dir/no-delete.jpg")),
+                    base::BindOnce(
+                        [](base::RunLoop* run_loop, base::File::Error error) {
+                          run_loop->Quit();
+                          // This operation fails not because of the tested
+                          // class but because the FakeFileSystemInstance is
+                          // handling it.
+                          // TODO(fukino): Handle this failure in the
+                          // ArcDocumentsProviderRoot class to avoid unnecessary
+                          // Mojo calls. crbug.com/956852.
+                          EXPECT_EQ(base::File::FILE_ERROR_FAILED, error);
+                        },
+                        &run_loop));
+  run_loop.Run();
+  // dir/no-delete.jpg shouldn't have been deleted
+  EXPECT_TRUE(fake_file_system_.DocumentExists(
+      kAuthority, kRootSpec.document_id,
+      base::FilePath(FILE_PATH_LITERAL("dir/no-delete.jpg"))));
+}
+
 TEST_F(ArcDocumentsProviderRootTest, DeleteDirectory) {
   // Make sure that dir (directory) exists.
   ASSERT_TRUE(fake_file_system_.DocumentExists(
@@ -644,6 +724,28 @@ TEST_F(ArcDocumentsProviderRootTest, CreateFileParentNotFound) {
                         },
                         &run_loop));
   run_loop.Run();
+  EXPECT_FALSE(fake_file_system_.DocumentExists(
+      kAuthority, kRootSpec.document_id,
+      base::FilePath(FILE_PATH_LITERAL("dir3/photo.jpg"))));
+}
+
+TEST_F(ArcDocumentsProviderRootTest, CreateFileInReadOnlyDirectory) {
+  base::RunLoop run_loop;
+  root_->CreateFile(base::FilePath(FILE_PATH_LITERAL("ro-dir/photo.jpg")),
+                    base::BindOnce(
+                        [](base::RunLoop* run_loop, base::File::Error error) {
+                          run_loop->Quit();
+                          // This operation fails not because of the tested
+                          // class but because the FakeFileSystemInstance is
+                          // handling it.
+                          // TODO(fukino): Handle this failure in the
+                          // ArcDocumentsProviderRoot class to avoid unnecessary
+                          // Mojo calls. crbug.com/956852.
+                          EXPECT_EQ(base::File::FILE_ERROR_FAILED, error);
+                        },
+                        &run_loop));
+  run_loop.Run();
+  // ro-dir/photo.jpg shouldn't have been created.
   EXPECT_FALSE(fake_file_system_.DocumentExists(
       kAuthority, kRootSpec.document_id,
       base::FilePath(FILE_PATH_LITERAL("dir3/photo.jpg"))));
@@ -818,6 +920,32 @@ TEST_F(ArcDocumentsProviderRootTest, RenameFile) {
           .GetDocument(kAuthority, kRootSpec.document_id,
                        base::FilePath(FILE_PATH_LITERAL("dir/photo2.jpg")))
           .document_id);
+}
+
+TEST_F(ArcDocumentsProviderRootTest, RenameFileNotRenamable) {
+  base::RunLoop run_loop;
+  root_->MoveFileLocal(
+      base::FilePath(FILE_PATH_LITERAL("dir/no-rename.jpg")),
+      base::FilePath(FILE_PATH_LITERAL("dir/no-rename2.jpg")),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, base::File::Error error) {
+            run_loop->Quit();
+            // This operation fails not because of the tested class but because
+            // the FakeFileSystemInstance is handling it.
+            // TODO(fukino): Handle this failure in the ArcDocumentsProviderRoot
+            // class to avoid unnecessary Mojo calls. crbug.com/956852.
+            EXPECT_EQ(base::File::FILE_ERROR_FAILED, error);
+          },
+          &run_loop));
+  run_loop.Run();
+  // dir/no-rename.jpg should still be there.
+  EXPECT_TRUE(fake_file_system_.DocumentExists(
+      kAuthority, kRootSpec.document_id,
+      base::FilePath(FILE_PATH_LITERAL("dir/no-rename.jpg"))));
+  // dir/no-rename2.jpg shouldn't be there".
+  EXPECT_FALSE(fake_file_system_.DocumentExists(
+      kAuthority, kRootSpec.document_id,
+      base::FilePath(FILE_PATH_LITERAL("dir/no-rename2.jpg"))));
 }
 
 TEST_F(ArcDocumentsProviderRootTest, MoveFile) {
@@ -1057,6 +1185,74 @@ TEST_F(ArcDocumentsProviderRootTest, ResolveToContentUrlDups) {
             run_loop->Quit();
             EXPECT_EQ(GURL("content://org.chromium.test/document/dup3-id"),
                       url);
+          },
+          &run_loop));
+  run_loop.Run();
+}
+
+TEST_F(ArcDocumentsProviderRootTest, GetMetadataNonDeletable) {
+  base::RunLoop run_loop;
+  root_->GetMetadata(
+      base::FilePath(FILE_PATH_LITERAL("dir/no-delete.jpg")),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, base::File::Error error,
+             const ArcDocumentsProviderRoot::ExtraFileMetadata& metadata) {
+            run_loop->Quit();
+            EXPECT_EQ(base::File::FILE_OK, error);
+            EXPECT_FALSE(metadata.supports_delete);
+            EXPECT_TRUE(metadata.supports_rename);
+            EXPECT_TRUE(metadata.dir_supports_create);
+          },
+          &run_loop));
+  run_loop.Run();
+}
+
+TEST_F(ArcDocumentsProviderRootTest, GetMetadataNonRenamable) {
+  base::RunLoop run_loop;
+  root_->GetMetadata(
+      base::FilePath(FILE_PATH_LITERAL("dir/no-rename.jpg")),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, base::File::Error error,
+             const ArcDocumentsProviderRoot::ExtraFileMetadata& metadata) {
+            run_loop->Quit();
+            EXPECT_EQ(base::File::FILE_OK, error);
+            EXPECT_TRUE(metadata.supports_delete);
+            EXPECT_FALSE(metadata.supports_rename);
+            EXPECT_TRUE(metadata.dir_supports_create);
+          },
+          &run_loop));
+  run_loop.Run();
+}
+
+TEST_F(ArcDocumentsProviderRootTest, GetMetadataReadOnlyDirectory) {
+  base::RunLoop run_loop;
+  root_->GetMetadata(
+      base::FilePath(FILE_PATH_LITERAL("ro-dir")),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, base::File::Error error,
+             const ArcDocumentsProviderRoot::ExtraFileMetadata& metadata) {
+            run_loop->Quit();
+            EXPECT_EQ(base::File::FILE_OK, error);
+            EXPECT_FALSE(metadata.supports_delete);
+            EXPECT_FALSE(metadata.supports_rename);
+            EXPECT_FALSE(metadata.dir_supports_create);
+          },
+          &run_loop));
+  run_loop.Run();
+}
+
+TEST_F(ArcDocumentsProviderRootTest, GetMetadataNonExist) {
+  base::RunLoop run_loop;
+  root_->GetMetadata(
+      base::FilePath(FILE_PATH_LITERAL("dir/no-exist-file")),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, base::File::Error error,
+             const ArcDocumentsProviderRoot::ExtraFileMetadata& metadata) {
+            run_loop->Quit();
+            EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, error);
+            EXPECT_FALSE(metadata.supports_delete);
+            EXPECT_FALSE(metadata.supports_rename);
+            EXPECT_FALSE(metadata.dir_supports_create);
           },
           &run_loop));
   run_loop.Run();

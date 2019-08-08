@@ -75,7 +75,7 @@ class MEDIA_MOJO_EXPORT MojoVideoDecoderService final
   void OnReaderFlushed();
 
   void OnDecoderReset();
-  void OnDecoderOutput(const scoped_refptr<VideoFrame>& frame);
+  void OnDecoderOutput(scoped_refptr<VideoFrame> frame);
 
   void OnDecoderWaiting(WaitingReason reason);
 

@@ -90,10 +90,10 @@ class ChromeContentRendererClient
   void RenderViewCreated(content::RenderView* render_view) override;
   SkBitmap* GetSadPluginBitmap() override;
   SkBitmap* GetSadWebViewBitmap() override;
-  bool MaybeCreateMimeHandlerView(content::RenderFrame* render_frame,
-                                  const blink::WebElement& plugin_element,
-                                  const GURL& original_url,
-                                  const std::string& mime_type) override;
+  bool IsPluginHandledExternally(content::RenderFrame* render_frame,
+                                 const blink::WebElement& plugin_element,
+                                 const GURL& original_url,
+                                 const std::string& mime_type) override;
   v8::Local<v8::Object> GetScriptableObject(
       const blink::WebElement& plugin_element,
       v8::Isolate* isolate) override;
@@ -182,6 +182,7 @@ class ChromeContentRendererClient
   void RunScriptsAtDocumentEnd(content::RenderFrame* render_frame) override;
   void RunScriptsAtDocumentIdle(content::RenderFrame* render_frame) override;
   void SetRuntimeFeaturesDefaultsBeforeBlinkInitialization() override;
+  void WillInitializeServiceWorkerContextOnWorkerThread() override;
   void DidInitializeServiceWorkerContextOnWorkerThread(
       v8::Local<v8::Context> context,
       int64_t service_worker_version_id,
@@ -200,8 +201,6 @@ class ChromeContentRendererClient
       const std::string& header_name) override;
   bool ShouldEnforceWebRTCRoutingPreferences() override;
   GURL OverrideFlashEmbedWithHTML(const GURL& url) override;
-  std::unique_ptr<base::ThreadPool::InitParams> GetThreadPoolInitParams()
-      override;
   void CreateRendererService(
       service_manager::mojom::ServiceRequest service_request) override;
   std::unique_ptr<content::URLLoaderThrottleProvider>
@@ -211,6 +210,7 @@ class ChromeContentRendererClient
                              const std::string& name) override;
   bool IsSafeRedirectTarget(const GURL& url) override;
   void DidSetUserAgent(const std::string& user_agent) override;
+  bool RequiresHtmlImports(const GURL& url) override;
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   static chrome::mojom::PluginInfoHostAssociatedPtr& GetPluginInfoHost();
@@ -235,7 +235,7 @@ class ChromeContentRendererClient
     return prerender_dispatcher_.get();
   }
 
-  base::WeakPtr<ChromeRenderThreadObserver> GetChromeObserver() const;
+  ChromeRenderThreadObserver* GetChromeObserver() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromeContentRendererClientTest, NaClRestriction);
@@ -259,12 +259,11 @@ class ChromeContentRendererClient
   base::TimeTicks main_entry_time_;
 
 #if BUILDFLAG(ENABLE_NACL)
-  // Determines if a NaCl app is allowed, and modifies params to pass the app's
-  // permissions to the trusted NaCl plugin.
-  static bool IsNaClAllowed(const GURL& app_url,
-                            bool is_nacl_unrestricted,
-                            const extensions::Extension* extension,
-                            blink::WebPluginParams* params);
+  // Determines if a page/app/extension is allowed to run native (non-PNaCl)
+  // NaCl modules.
+  static bool IsNativeNaClAllowed(const GURL& app_url,
+                                  bool is_nacl_unrestricted,
+                                  const extensions::Extension* extension);
 #endif
 
   service_manager::Connector* GetConnector();

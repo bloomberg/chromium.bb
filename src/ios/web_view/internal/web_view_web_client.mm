@@ -12,7 +12,7 @@
 #include "base/task/post_task.h"
 #include "components/ssl_errors/error_info.h"
 #include "components/strings/grit/components_strings.h"
-#include "ios/web/public/ssl_status.h"
+#include "ios/web/public/security/ssl_status.h"
 #include "ios/web/public/user_agent.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
@@ -77,6 +77,10 @@ base::RefCountedMemory* WebViewWebClient::GetDataResourceBytes(
     int resource_id) const {
   return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
       resource_id);
+}
+
+bool WebViewWebClient::IsDataResourceGzipped(int resource_id) const {
+  return ui::ResourceBundle::GetSharedInstance().IsGzipped(resource_id);
 }
 
 NSString* WebViewWebClient::GetDocumentStartScriptForMainFrame(

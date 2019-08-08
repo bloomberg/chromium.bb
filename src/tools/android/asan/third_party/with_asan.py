@@ -10,6 +10,15 @@ import os
 import subprocess
 import sys
 
+_SRC_ROOT = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))
+
+sys.path.append(os.path.join(_SRC_ROOT, 'third_party', 'catapult', 'devil'))
+from devil.android import device_utils
+from devil.android.sdk import version_codes
+
+sys.path.append(os.path.join(_SRC_ROOT, 'build', 'android'))
+import devil_chromium
 
 _SCRIPT_PATH = os.path.abspath(
     os.path.join(
@@ -22,7 +31,13 @@ def Asan(args):
   env = os.environ.copy()
   env['ADB'] = args.adb
 
+  device = device_utils.DeviceUtils.HealthyDevices(
+      device_arg=args.device)[0]
+  disable_verity = device.build_version_sdk >= version_codes.MARSHMALLOW
   try:
+    if disable_verity:
+      device.adb.DisableVerity()
+      device.Reboot()
     setup_cmd = [_SCRIPT_PATH, '--lib', args.lib]
     if args.device:
       setup_cmd += ['--device', args.device]
@@ -33,6 +48,9 @@ def Asan(args):
     if args.device:
       teardown_cmd += ['--device', args.device]
     subprocess.check_call(teardown_cmd, env=env)
+    if disable_verity:
+      device.adb.EnableVerity()
+      device.Reboot()
 
 
 def main(raw_args):
@@ -50,6 +68,8 @@ def main(raw_args):
       'command', nargs='*',
       help='Command to run with ASAN installed.')
   args = parser.parse_args()
+
+  devil_chromium.Initialize(adb_path=args.adb)
 
   with Asan(args):
     if args.command:

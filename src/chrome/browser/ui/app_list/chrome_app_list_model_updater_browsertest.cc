@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -73,6 +74,9 @@ IN_PROC_BROWSER_TEST_F(OemAppPositionTest, ValidOemAppPosition) {
   ASSERT_TRUE(client);
   client->UpdateProfile();
   AppListModelUpdater* model_updater = test::GetModelUpdater(client);
+
+  // Ensure async callbacks are run.
+  base::RunLoop().RunUntilIdle();
 
   const ChromeAppListItem* oem_app = model_updater->FindItem(kOemAppId);
   EXPECT_TRUE(oem_app);

@@ -82,7 +82,6 @@ class WebRenderWidgetSchedulingState;
 struct WebDeviceEmulationParams;
 class WebDragData;
 class WebFrameWidget;
-class WebGestureEvent;
 class WebInputMethodController;
 class WebLocalFrame;
 class WebMouseEvent;
@@ -102,6 +101,9 @@ class Range;
 
 namespace ui {
 struct DidOverscrollParams;
+namespace input_types {
+enum class ScrollGranularity;
+}
 }
 
 namespace content {
@@ -409,6 +411,12 @@ class CONTENT_EXPORT RenderWidget
                      const blink::WebFloatSize& accumulated_overscroll,
                      const blink::WebFloatPoint& position,
                      const blink::WebFloatSize& velocity) override;
+  void InjectGestureScrollEvent(
+      blink::WebGestureDevice device,
+      const blink::WebFloatSize& delta,
+      ui::input_types::ScrollGranularity granularity,
+      cc::ElementId scrollable_area_element_id,
+      blink::WebInputEvent::Type injected_type) override;
   void SetOverscrollBehavior(const cc::OverscrollBehavior&) override;
   void ShowVirtualKeyboardOnElementFocus() override;
   void ConvertViewportToWindow(blink::WebRect* rect) override;
@@ -423,7 +431,7 @@ class CONTENT_EXPORT RenderWidget
                      const gfx::Point& image_offset) override;
   void SetTouchAction(cc::TouchAction touch_action) override;
   void RequestUnbufferedInputEvents() override;
-  void HasPointerRawMoveEventHandlers(bool has_handlers) override;
+  void HasPointerRawUpdateEventHandlers(bool has_handlers) override;
   void HasTouchEventHandlers(bool has_handlers) override;
   void SetNeedsLowLatencyInput(bool) override;
   void SetNeedsUnbufferedInputForDebugger(bool) override;
@@ -440,9 +448,10 @@ class CONTENT_EXPORT RenderWidget
                                     bool down) override;
   void FallbackCursorModeSetCursorVisibility(bool visible) override;
   void SetAllowGpuRasterization(bool allow_gpu_raster) override;
-  void SetPageScaleFactorAndLimits(float page_scale_factor,
-                                   float minimum,
-                                   float maximum) override;
+  void SetPageScaleStateAndLimits(float page_scale_factor,
+                                  bool is_pinch_gesture_active,
+                                  float minimum,
+                                  float maximum) override;
   void StartPageScaleAnimation(const gfx::Vector2d& destination,
                                bool use_anchor,
                                float new_page_scale,
@@ -619,9 +628,6 @@ class CONTENT_EXPORT RenderWidget
 
   bool IsSurfaceSynchronizationEnabled() const;
 
-  void PageScaleFactorChanged(float page_scale_factor,
-                              bool is_pinch_gesture_active);
-
   void UseSynchronousResizeModeForTesting(bool enable);
   void SetDeviceScaleFactorForTesting(float factor);
   void SetDeviceColorSpaceForTesting(const gfx::ColorSpace& color_space);
@@ -739,7 +745,8 @@ class CONTENT_EXPORT RenderWidget
   void OnWasHidden();
   void OnWasShown(base::TimeTicks show_request_timestamp,
                   bool was_evicted,
-                  base::TimeTicks tab_switch_start_time);
+                  const base::Optional<content::RecordTabSwitchTimeRequest>&
+                      record_tab_switch_time_request);
   void OnCreateVideoAck(int32_t video_id);
   void OnUpdateVideoAck(int32_t video_id);
   void OnRequestSetBoundsAck();
@@ -826,11 +833,6 @@ class CONTENT_EXPORT RenderWidget
   // GetWindowRect() we'll use this pending window rect as the size.
   void SetPendingWindowRect(const blink::WebRect& r);
 
-  // TODO(ekaramad): This method should not be confused with its RenderView
-  // variant, GetWebFrameWidget(). Currently Cast and AndroidWebview's
-  // ContentRendererClients are the only users of the public variant. The public
-  // method will eventually be removed from RenderView and uses of the method
-  // will obtain WebFrameWidget from WebLocalFrame.
   // Returns the WebFrameWidget associated with this RenderWidget if any.
   // Returns nullptr if GetWebWidget() returns nullptr or returns a WebWidget
   // that is not a WebFrameWidget. A WebFrameWidget only makes sense when there

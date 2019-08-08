@@ -321,7 +321,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   // Similar to |ContentsSize| but snapped considering |paint_offset| which can
   // have subpixel accumulation.
-  IntSize PixelSnappedContentsSize(const LayoutPoint& paint_offset) const;
+  IntSize PixelSnappedContentsSize(const PhysicalOffset& paint_offset) const;
 
   void ContentsResized() override;
   IntPoint LastKnownMousePosition() const override;
@@ -538,7 +538,9 @@ class CORE_EXPORT PaintLayerScrollableArea final
   // Should be called when the previous visual rects are no longer valid.
   void ClearPreviousVisualRects();
 
-  void DidScrollWithScrollbar(ScrollbarPart, ScrollbarOrientation) override;
+  void DidScrollWithScrollbar(ScrollbarPart,
+                              ScrollbarOrientation,
+                              WebInputEvent::Type) override;
   CompositorElementId GetCompositorElementId() const override;
 
   bool VisualViewportSuppliesScrollbars() const override;

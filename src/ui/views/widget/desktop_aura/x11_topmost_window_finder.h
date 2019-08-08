@@ -50,6 +50,6 @@ class VIEWS_EXPORT X11TopmostWindowFinder
   DISALLOW_COPY_AND_ASSIGN(X11TopmostWindowFinder);
 };
 
-}  // namespace
+}  // namespace views
 
 #endif  // UI_VIEWS_WIDGET_DESKTOP_AURA_X11_TOPMOST_WINDOW_FINDER_H_

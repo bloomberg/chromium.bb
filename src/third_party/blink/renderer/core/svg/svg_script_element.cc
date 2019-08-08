@@ -33,17 +33,12 @@
 
 namespace blink {
 
-inline SVGScriptElement::SVGScriptElement(Document& document,
-                                          const CreateElementFlags flags)
+SVGScriptElement::SVGScriptElement(Document& document,
+                                   const CreateElementFlags flags)
     : SVGElement(svg_names::kScriptTag, document),
       SVGURIReference(this),
       loader_(InitializeScriptLoader(flags.IsCreatedByParser(),
                                      flags.WasAlreadyStarted())) {}
-
-SVGScriptElement* SVGScriptElement::Create(Document& document,
-                                           const CreateElementFlags flags) {
-  return MakeGarbageCollected<SVGScriptElement>(document, flags);
-}
 
 void SVGScriptElement::ParseAttribute(
     const AttributeModificationParams& params) {
@@ -137,7 +132,7 @@ bool SVGScriptElement::AllowInlineScriptForCSP(
     const AtomicString& nonce,
     const WTF::OrdinalNumber& context_line,
     const String& script_content) {
-  return GetDocument().GetContentSecurityPolicy()->AllowInline(
+  return GetDocument().GetContentSecurityPolicyForWorld()->AllowInline(
       ContentSecurityPolicy::InlineType::kScript, this, script_content, nonce,
       GetDocument().Url(), context_line);
 }

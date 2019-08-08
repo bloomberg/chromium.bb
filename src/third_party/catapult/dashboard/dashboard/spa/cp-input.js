@@ -4,11 +4,14 @@
 */
 'use strict';
 
-export default class CpInput extends Polymer.Element {
+import {PolymerElement, html} from '@polymer/polymer/polymer-element.js';
+import {getActiveElement, timeout} from './utils.js';
+
+export default class CpInput extends PolymerElement {
   static get is() { return 'cp-input'; }
 
   static get template() {
-    return Polymer.html`
+    return html`
       <style>
         :host {
           align-items: center;
@@ -99,8 +102,8 @@ export default class CpInput extends Polymer.Element {
     // Sometimes there can be so much rendering happening around
     // connectedCallback and other state updates that the first focus()
     // doesn't take. Try, try again.
-    while (cp.getActiveElement() !== this.nativeInput) {
-      await cp.timeout(50);
+    while (getActiveElement() !== this.nativeInput) {
+      await timeout(50);
       this.nativeInput.focus();
     }
 
@@ -113,8 +116,8 @@ export default class CpInput extends Polymer.Element {
 
   async blur() {
     this.nativeInput.blur();
-    while (cp.getActiveElement() === this.nativeInput) {
-      await cp.timeout(50);
+    while (getActiveElement() === this.nativeInput) {
+      await timeout(50);
       this.nativeInput.blur();
     }
   }

@@ -26,10 +26,16 @@ namespace network {
 class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
  public:
   Listener(net::CookieStore* cookie_store,
+           const RestrictedCookieManager* restricted_cookie_manager,
            const GURL& url,
+           const GURL& site_for_cookies,
            net::CookieOptions options,
            mojom::CookieChangeListenerPtr mojo_listener)
-      : url_(url), options_(options), mojo_listener_(std::move(mojo_listener)) {
+      : restricted_cookie_manager_(restricted_cookie_manager),
+        url_(url),
+        site_for_cookies_(site_for_cookies),
+        options_(options),
+        mojo_listener_(std::move(mojo_listener)) {
     // TODO(pwnall): add a constructor w/options to net::CookieChangeDispatcher.
     cookie_store_subscription_ =
         cookie_store->GetChangeDispatcher().AddCallbackForUrl(
@@ -58,14 +64,31 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
     if (cookie.IncludeForRequestURL(url_, options_) !=
         net::CanonicalCookie::CookieInclusionStatus::INCLUDE)
       return;
+
+    // When a user blocks a site's access to cookies, the existing cookies are
+    // not deleted. This check prevents the site from observing their cookies
+    // being deleted at a later time, which can happen due to eviction or due to
+    // the user explicitly deleting all cookies.
+    if (!restricted_cookie_manager_->cookie_settings()->IsCookieAccessAllowed(
+            url_, site_for_cookies_))
+      return;
+
     mojo_listener_->OnCookieChange(cookie, ToCookieChangeCause(cause));
   }
 
   // The CookieChangeDispatcher subscription used by this listener.
   std::unique_ptr<net::CookieChangeSubscription> cookie_store_subscription_;
 
+  // Raw pointer usage is safe because RestrictedCookieManager owns this
+  // instance and is guaranteed to outlive it.
+  const RestrictedCookieManager* const restricted_cookie_manager_;
+
   // The URL whose cookies this listener is interested in.
   const GURL url_;
+
+  // Site context in which we're used; used for permission-checking.
+  const GURL site_for_cookies_;
+
   // CanonicalCookie::IncludeForRequestURL options for this listener's interest.
   const net::CookieOptions options_;
 
@@ -121,8 +144,8 @@ void RestrictedCookieManager::GetAllForUrl(
   // TODO(https://crbug.com/925311): Wire initiator here.
   net::CookieOptions net_options;
   net_options.set_same_site_cookie_context(
-      net::cookie_util::ComputeSameSiteContext(url, site_for_cookies,
-                                               base::nullopt /*initiator*/));
+      net::cookie_util::ComputeSameSiteContextForScriptGet(
+          url, site_for_cookies, base::nullopt /*initiator*/));
 
   cookie_store_->GetCookieListWithOptionsAsync(
       url, net_options,
@@ -191,9 +214,9 @@ void RestrictedCookieManager::SetCanonicalCookie(
 
   // TODO(pwnall): source_scheme might depend on the renderer.
   net::CookieOptions options;
-  // TODO(https://crbug.com/925311): Wire initiator here.
-  options.set_same_site_cookie_context(net::cookie_util::ComputeSameSiteContext(
-      url, site_for_cookies, base::nullopt /*initiator*/));
+  options.set_same_site_cookie_context(
+      net::cookie_util::ComputeSameSiteContextForScriptSet(url,
+                                                           site_for_cookies));
   options.set_exclude_httponly();  // Default, but make it explicit here.
   cookie_store_->SetCanonicalCookieAsync(
       std::move(sanitized_cookie), origin_.scheme(), options,
@@ -214,11 +237,12 @@ void RestrictedCookieManager::AddChangeListener(
   // TODO(https://crbug.com/925311): Wire initiator here.
   net::CookieOptions net_options;
   net_options.set_same_site_cookie_context(
-      net::cookie_util::ComputeSameSiteContext(url, site_for_cookies,
-                                               base::nullopt /*initiator*/));
+      net::cookie_util::ComputeSameSiteContextForScriptGet(
+          url, site_for_cookies, base::nullopt /*initiator*/));
 
-  auto listener = std::make_unique<Listener>(cookie_store_, url, net_options,
-                                             std::move(mojo_listener));
+  auto listener =
+      std::make_unique<Listener>(cookie_store_, this, url, site_for_cookies,
+                                 net_options, std::move(mojo_listener));
 
   listener->mojo_listener().set_connection_error_handler(
       base::BindOnce(&RestrictedCookieManager::RemoveChangeListener,

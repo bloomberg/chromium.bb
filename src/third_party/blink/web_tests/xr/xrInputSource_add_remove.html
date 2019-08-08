@@ -16,7 +16,7 @@ let testName = "XRInputSources can be properly added and removed from the "
 
 let fakeDeviceInitParams = { supportsImmersive:true };
 
-let requestSessionOptions = ['immersive-vr'];
+let requestSessionModes = ['immersive-vr'];
 
 let testFunction = (session, t, fakeDeviceController) => new Promise((resolve) => {
     // Session must have a baseLayer or frame requests will be ignored.
@@ -33,7 +33,7 @@ let testFunction = (session, t, fakeDeviceController) => new Promise((resolve) =
         viewMatrix: VALID_VIEW_MATRIX
       }]);
 
-    let input_sources = session.getInputSources();
+    let input_sources = session.inputSources;
 
     t.step( () => {
       assert_equals(input_sources.length, 0);
@@ -46,7 +46,7 @@ let testFunction = (session, t, fakeDeviceController) => new Promise((resolve) =
     fakeDeviceController.addInputSource(input_source_1);
 
     session.requestAnimationFrame((time, xrFrame) => {
-      let input_sources = session.getInputSources();
+      let input_sources = session.inputSources;
 
       t.step( () => {
         assert_equals(input_sources.length, 1);
@@ -60,7 +60,7 @@ let testFunction = (session, t, fakeDeviceController) => new Promise((resolve) =
       fakeDeviceController.addInputSource(input_source_2);
 
       session.requestAnimationFrame((time, xrFrame) => {
-        let input_sources = session.getInputSources();
+        let input_sources = session.inputSources;
 
         t.step( () => {
           assert_equals(input_sources.length, 2);
@@ -71,7 +71,7 @@ let testFunction = (session, t, fakeDeviceController) => new Promise((resolve) =
         fakeDeviceController.removeInputSource(input_source_1);
 
         session.requestAnimationFrame((time, xrFrame) => {
-          let input_sources = session.getInputSources();
+          let input_sources = session.inputSources;
 
           t.step( () => {
             assert_equals(input_sources.length, 1);
@@ -86,6 +86,6 @@ let testFunction = (session, t, fakeDeviceController) => new Promise((resolve) =
   });
 
 xr_session_promise_test(
-  testFunction, fakeDeviceInitParams, requestSessionOptions, testName);
+  testFunction, fakeDeviceInitParams, requestSessionModes, testName);
 
 </script>

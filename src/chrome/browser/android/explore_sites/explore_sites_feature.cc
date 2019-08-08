@@ -17,6 +17,14 @@ const char kExploreSitesVariationParameterName[] = "variation";
 const char kExploreSitesVariationExperimental[] = "experiment";
 const char kExploreSitesVariationPersonalized[] = "personalized";
 const char kExploreSitesVariationCondensed[] = "condensed";
+const char kExploreSitesVariationMostLikelyTile[] = "mostLikelyTile";
+
+const char kExploreSitesMostLikelyVariationParameterName[] =
+    "mostLikelyVariation";
+
+const char kExploreSitesMostLikelyVariationIconArrow[] = "arrowIcon";
+const char kExploreSitesMostLikelyVariationIconDots[] = "dotsIcon";
+const char kExploreSitesMostLikelyVariationIconGrouped[] = "groupedIcon";
 
 ExploreSitesVariation GetExploreSitesVariation() {
   if (base::FeatureList::IsEnabled(kExploreSites)) {
@@ -35,9 +43,38 @@ ExploreSitesVariation GetExploreSitesVariation() {
         kExploreSitesVariationCondensed) {
       return ExploreSitesVariation::CONDENSED;
     }
+    if (base::GetFieldTrialParamValueByFeature(
+            kExploreSites, kExploreSitesVariationParameterName) ==
+        kExploreSitesVariationMostLikelyTile) {
+      return ExploreSitesVariation::MOST_LIKELY;
+    }
     return ExploreSitesVariation::ENABLED;
   }
   return ExploreSitesVariation::DISABLED;
+}
+
+MostLikelyVariation GetMostLikelyVariation() {
+  if (base::FeatureList::IsEnabled(kExploreSites) &&
+      base::GetFieldTrialParamValueByFeature(
+          kExploreSites, kExploreSitesVariationParameterName) ==
+          kExploreSitesVariationMostLikelyTile) {
+    if (base::GetFieldTrialParamValueByFeature(
+            kExploreSites, kExploreSitesMostLikelyVariationParameterName) ==
+        kExploreSitesMostLikelyVariationIconArrow) {
+      return MostLikelyVariation::ICON_ARROW;
+    }
+    if (base::GetFieldTrialParamValueByFeature(
+            kExploreSites, kExploreSitesMostLikelyVariationParameterName) ==
+        kExploreSitesMostLikelyVariationIconDots) {
+      return MostLikelyVariation::ICON_DOTS;
+    }
+    if (base::GetFieldTrialParamValueByFeature(
+            kExploreSites, kExploreSitesMostLikelyVariationParameterName) ==
+        kExploreSitesMostLikelyVariationIconGrouped) {
+      return MostLikelyVariation::ICON_GROUPED;
+    }
+  }
+  return MostLikelyVariation::NONE;
 }
 
 }  // namespace explore_sites

@@ -178,11 +178,10 @@ cc_defaults {
         "Reactor/LLVMReactor.cpp",
         "Reactor/Routine.cpp",
         "Reactor/LLVMRoutine.cpp",
-        "Reactor/LLVMRoutineManager.cpp",
+        "Reactor/Debug.cpp",
     ],
 
     cflags: [
-        "-DREACTOR_LLVM_VERSION=7",
         "-Wno-unused-parameter",
         "-Wno-implicit-fallthrough",
     ],
@@ -200,11 +199,10 @@ cc_defaults {
         "Reactor/LLVMReactor.cpp",
         "Reactor/Routine.cpp",
         "Reactor/LLVMRoutine.cpp",
-        "Reactor/LLVMRoutineManager.cpp",
+        "Reactor/Debug.cpp",
     ],
 
     cflags: [
-    	"-DREACTOR_LLVM_VERSION=7",
         "-Wno-unused-parameter",
         "-Wno-implicit-fallthrough",
     ],
@@ -229,6 +227,7 @@ cc_defaults {
         "Reactor/SubzeroReactor.cpp",
         "Reactor/Routine.cpp",
         "Reactor/Optimizer.cpp",
+        "Reactor/Debug.cpp",
     ],
 
     static_libs: [
@@ -627,6 +626,7 @@ cc_defaults {
             header_libs: [
                 "swiftshader_platform_headers",
 				"vulkan_headers",
+                "hwvulkan_headers",
             ],
             shared_libs: [
                 "libnativewindow",
@@ -647,16 +647,16 @@ cc_defaults {
     ],
 
     srcs: [
-        "Common/CPUID.cpp",
-        "Common/Configurator.cpp",
-        "Common/Half.cpp",
-        "Common/Math.cpp",
-        "Common/Memory.cpp",
-        "Common/Resource.cpp",
-        "Common/Socket.cpp",
-        "Common/Thread.cpp",
-        "Common/Timer.cpp",
-        "Common/DebugAndroid.cpp",
+        "System/CPUID.cpp",
+        "System/Configurator.cpp",
+        "System/Half.cpp",
+        "System/Math.cpp",
+        "System/Memory.cpp",
+        "System/Resource.cpp",
+        "System/Socket.cpp",
+        "System/Timer.cpp",
+        "System/DebugAndroid.cpp",
+        "System/GrallocAndroid.cpp",
         "Device/*.cpp",
         "Pipeline/*.cpp",
         "Vulkan/*.cpp",
@@ -675,12 +675,6 @@ cc_defaults {
 cc_library_shared {
     name: "vulkan.pastel",
 
-    target: {
-        android_arm: {
-            enabled: false
-        },
-    },
-
     static_libs: [
         "libswiftshadervk_llvm_debug",
         "libLLVM7_swiftshader",
@@ -696,12 +690,6 @@ cc_library_shared {
 
 cc_library_shared {
     name: "vulkan.pastel.debug",
-
-    target: {
-        android_arm: {
-            enabled: false
-        },
-    },
 
     static_libs: [
         "libswiftshadervk_llvm_debug",

@@ -177,12 +177,6 @@ void OmniboxMetricsProvider::RecordOmniboxOpenedURL(const OmniboxLog& log) {
     provider_info->CopyFrom(*i);
   }
   omnibox_event->set_in_keyword_mode(log.in_keyword_mode);
-  if (log.in_keyword_mode) {
-    if (metrics::OmniboxEventProto_KeywordModeEntryMethod_IsValid(
-            log.keyword_mode_entry_method))
-      omnibox_event->set_keyword_mode_entry_method(
-          log.keyword_mode_entry_method);
-    else
-      omnibox_event->set_keyword_mode_entry_method(OmniboxEventProto::INVALID);
-  }
+  if (log.in_keyword_mode)
+    omnibox_event->set_keyword_mode_entry_method(log.keyword_mode_entry_method);
 }

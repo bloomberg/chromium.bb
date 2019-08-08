@@ -12,10 +12,12 @@
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
+#include "chrome/browser/ui/views/tabs/tab_close_button.h"
 #include "chrome/browser/ui/views/tabs/tab_hover_card_bubble_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "ui/gfx/animation/animation_test_api.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
@@ -75,7 +77,9 @@ class HoverCardVisibleWaiter : public views::WidgetObserver {
 
 class TabHoverCardBubbleViewBrowserTest : public DialogBrowserTest {
  public:
-  TabHoverCardBubbleViewBrowserTest() {
+  TabHoverCardBubbleViewBrowserTest()
+      : animation_mode_reset_(gfx::AnimationTestApi::SetRichAnimationRenderMode(
+            gfx::Animation::RichAnimationRenderMode::FORCE_DISABLED)) {
     TabHoverCardBubbleView::disable_animations_for_testing_ = true;
   }
   ~TabHoverCardBubbleViewBrowserTest() override = default;
@@ -112,10 +116,10 @@ class TabHoverCardBubbleViewBrowserTest : public DialogBrowserTest {
     tab_strip->OnMouseExited(stop_hover_event);
   }
 
-  void ClickMouseOnTab() {
+  void ClickMouseOnTab(int index) {
     TabStrip* tab_strip =
         BrowserView::GetBrowserViewForBrowser(browser())->tabstrip();
-    Tab* tab = tab_strip->tab_at(0);
+    Tab* tab = tab_strip->tab_at(index);
     ui::MouseEvent click_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                                base::TimeTicks(), ui::EF_NONE, 0);
     tab->OnMousePressed(click_event);
@@ -128,6 +132,10 @@ class TabHoverCardBubbleViewBrowserTest : public DialogBrowserTest {
     ui::MouseEvent hover_event(ui::ET_MOUSE_ENTERED, gfx::Point(), gfx::Point(),
                                base::TimeTicks(), ui::EF_NONE, 0);
     tab->OnMouseEntered(hover_event);
+  }
+
+  int GetHoverCardsSeenCount(const TabHoverCardBubbleView* hover_card) {
+    return hover_card->hover_cards_seen_count_;
   }
 
   // DialogBrowserTest:
@@ -145,9 +153,12 @@ class TabHoverCardBubbleViewBrowserTest : public DialogBrowserTest {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TabHoverCardBubbleViewBrowserTest);
+  std::unique_ptr<base::AutoReset<gfx::Animation::RichAnimationRenderMode>>
+      animation_mode_reset_;
 
   base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(TabHoverCardBubbleViewBrowserTest);
 };
 
 // Fails on win7 (dbg): http://crbug.com/932402.
@@ -177,6 +188,79 @@ IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
   EXPECT_FALSE(widget->IsVisible());
 }
 
+// Verify hover card is visible when tab is focused.
+IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
+                       WidgetVisibleOnTabFocus) {
+  TabStrip* tab_strip =
+      BrowserView::GetBrowserViewForBrowser(browser())->tabstrip();
+  Tab* tab = tab_strip->tab_at(0);
+  tab_strip->GetFocusManager()->SetFocusedView(tab);
+  TabHoverCardBubbleView* hover_card = GetHoverCard(tab_strip);
+  Widget* widget = GetHoverCardWidget(hover_card);
+  HoverCardVisibleWaiter waiter(widget);
+  waiter.Wait();
+  EXPECT_TRUE(widget != nullptr);
+  EXPECT_TRUE(widget->IsVisible());
+}
+
+// Verify hover card is visible when focus moves from the tab to tab close
+// button.
+IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
+                       WidgetVisibleOnTabCloseButtonFocusAfterTabFocus) {
+  TabStrip* tab_strip =
+      BrowserView::GetBrowserViewForBrowser(browser())->tabstrip();
+  Tab* tab = tab_strip->tab_at(0);
+  tab_strip->GetFocusManager()->SetFocusedView(tab);
+  TabHoverCardBubbleView* hover_card = GetHoverCard(tab_strip);
+  Widget* widget = GetHoverCardWidget(hover_card);
+  HoverCardVisibleWaiter waiter(widget);
+  waiter.Wait();
+  EXPECT_TRUE(widget != nullptr);
+  EXPECT_TRUE(widget->IsVisible());
+  tab_strip->GetFocusManager()->SetFocusedView(tab->close_button_);
+  waiter.Wait();
+  EXPECT_TRUE(widget != nullptr);
+  EXPECT_TRUE(widget->IsVisible());
+}
+
+// Verify hover card is visible when tab is focused and a key is pressed.
+IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
+                       WidgetVisibleOnKeyPressAfterTabFocus) {
+  TabStrip* tab_strip =
+      BrowserView::GetBrowserViewForBrowser(browser())->tabstrip();
+  Tab* tab = tab_strip->tab_at(0);
+  tab_strip->GetFocusManager()->SetFocusedView(tab);
+  TabHoverCardBubbleView* hover_card = GetHoverCard(tab_strip);
+  Widget* widget = GetHoverCardWidget(hover_card);
+  HoverCardVisibleWaiter waiter(widget);
+  waiter.Wait();
+  EXPECT_TRUE(widget != nullptr);
+  EXPECT_TRUE(widget->IsVisible());
+
+  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_SPACE, 0);
+  tab->OnKeyPressed(key_event);
+  EXPECT_TRUE(widget->IsVisible());
+}
+
+// Verify hover card is not visible when tab is focused and the mouse is
+// pressed.
+IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
+                       WidgetNotVisibleOnMousePressAfterTabFocus) {
+  TabStrip* tab_strip =
+      BrowserView::GetBrowserViewForBrowser(browser())->tabstrip();
+  Tab* tab = tab_strip->tab_at(0);
+  tab_strip->GetFocusManager()->SetFocusedView(tab);
+  TabHoverCardBubbleView* hover_card = GetHoverCard(tab_strip);
+  Widget* widget = GetHoverCardWidget(hover_card);
+  HoverCardVisibleWaiter waiter(widget);
+  waiter.Wait();
+  EXPECT_TRUE(widget != nullptr);
+  EXPECT_TRUE(widget->IsVisible());
+
+  ClickMouseOnTab(0);
+  EXPECT_FALSE(widget->IsVisible());
+}
+
 // Verify hover card is not visible after clicking on a tab.
 IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
                        WidgetNotVisibleOnClick) {
@@ -188,7 +272,7 @@ IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
 
   EXPECT_TRUE(widget != nullptr);
   EXPECT_TRUE(widget->IsVisible());
-  ClickMouseOnTab();
+  ClickMouseOnTab(0);
   EXPECT_FALSE(widget->IsVisible());
 }
 
@@ -197,10 +281,11 @@ IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
 IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest, WidgetDataUpdate) {
   TabStrip* tab_strip =
       BrowserView::GetBrowserViewForBrowser(browser())->tabstrip();
-  TabRendererData newTabData = TabRendererData();
-  newTabData.title = base::UTF8ToUTF16("Test Tab 2");
-  newTabData.url = GURL("http://example.com/this/should/not/be/seen");
-  tab_strip->AddTabAt(1, newTabData, false);
+  TabRendererData new_tab_data = TabRendererData();
+  new_tab_data.title = base::UTF8ToUTF16("Test Tab 2");
+  new_tab_data.last_committed_url =
+      GURL("http://example.com/this/should/not/be/seen");
+  tab_strip->AddTabAt(1, new_tab_data, false);
 
   ShowUi("default");
   TabHoverCardBubbleView* hover_card = GetHoverCard(tab_strip);
@@ -247,4 +332,36 @@ IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
   tab->OnMouseEntered(hover_event);
   ASSERT_FALSE(
       BrowserView::GetBrowserViewForBrowser(inactive_window)->IsActive());
+}
+
+// Verify counter for tab hover cards seen ratio metric increases as hover
+// cards are shown and is reset when a tab is selected.
+IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
+                       HoverCardsSeenRatioMetric) {
+  TabStrip* tab_strip =
+      BrowserView::GetBrowserViewForBrowser(browser())->tabstrip();
+  tab_strip->AddTabAt(1, TabRendererData(), false);
+  tab_strip->AddTabAt(2, TabRendererData(), false);
+
+  HoverMouseOverTabAt(0);
+
+  TabHoverCardBubbleView* hover_card = GetHoverCard(tab_strip);
+  Widget* widget = GetHoverCardWidget(hover_card);
+  HoverCardVisibleWaiter waiter(widget);
+  waiter.Wait();
+
+  EXPECT_EQ(GetHoverCardsSeenCount(hover_card), 1);
+  EXPECT_TRUE(widget != nullptr);
+  EXPECT_TRUE(widget->IsVisible());
+
+  HoverMouseOverTabAt(1);
+  EXPECT_EQ(GetHoverCardsSeenCount(hover_card), 2);
+  EXPECT_TRUE(widget != nullptr);
+  EXPECT_TRUE(widget->IsVisible());
+
+  ui::ListSelectionModel selection;
+  selection.SetSelectedIndex(1);
+  tab_strip->SetSelection(selection);
+  EXPECT_EQ(GetHoverCardsSeenCount(hover_card), 0);
+  EXPECT_FALSE(widget->IsVisible());
 }

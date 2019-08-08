@@ -60,19 +60,8 @@ bool CanvasColorParams::NeedsColorConversion(
 }
 
 SkColorType CanvasColorParams::GetSkColorType() const {
-  return PixelFormatToSkColorType(pixel_format_);
-}
-
-// static
-SkColorType CanvasColorParams::PixelFormatToSkColorType(
-    CanvasPixelFormat pixel_format) {
-  switch (pixel_format) {
-    case kF16CanvasPixelFormat:
-      return kRGBA_F16_SkColorType;
-    case kRGBA8CanvasPixelFormat:
-      return kN32_SkColorType;
-  }
-  NOTREACHED();
+  if (pixel_format_ == kF16CanvasPixelFormat)
+    return kRGBA_F16_SkColorType;
   return kN32_SkColorType;
 }
 
@@ -118,14 +107,9 @@ gfx::ColorSpace CanvasColorParams::GetStorageGfxColorSpace() const {
 }
 
 sk_sp<SkColorSpace> CanvasColorParams::GetSkColorSpace() const {
-  return CanvasColorSpaceToSkColorSpace(color_space_);
-}
-
-sk_sp<SkColorSpace> CanvasColorParams::CanvasColorSpaceToSkColorSpace(
-    CanvasColorSpace color_space) {
   skcms_Matrix3x3 gamut = SkNamedGamut::kSRGB;
   skcms_TransferFunction transferFn = SkNamedTransferFn::kSRGB;
-  switch (color_space) {
+  switch (color_space_) {
     case kSRGBCanvasColorSpace:
       break;
     case kLinearRGBCanvasColorSpace:

@@ -52,6 +52,9 @@ void AppUpdate::Merge(apps::mojom::App* state, const apps::mojom::App* delta) {
   if (delta->short_name.has_value()) {
     state->short_name = delta->short_name;
   }
+  if (delta->description.has_value()) {
+    state->description = delta->description;
+  }
   if (!delta->additional_search_terms.empty()) {
     DCHECK(state->permissions.empty() ||
            (delta->permissions.size() == state->permissions.size()));
@@ -74,11 +77,17 @@ void AppUpdate::Merge(apps::mojom::App* state, const apps::mojom::App* delta) {
     state->permissions.clear();
     ClonePermissions(delta->permissions, &state->permissions);
   }
-  if (delta->installed_internally != apps::mojom::OptionalBool::kUnknown) {
-    state->installed_internally = delta->installed_internally;
+  if (delta->install_source != apps::mojom::InstallSource::kUnknown) {
+    state->install_source = delta->install_source;
   }
   if (delta->is_platform_app != apps::mojom::OptionalBool::kUnknown) {
     state->is_platform_app = delta->is_platform_app;
+  }
+  if (delta->recommendable != apps::mojom::OptionalBool::kUnknown) {
+    state->recommendable = delta->recommendable;
+  }
+  if (delta->searchable != apps::mojom::OptionalBool::kUnknown) {
+    state->searchable = delta->searchable;
   }
   if (delta->show_in_launcher != apps::mojom::OptionalBool::kUnknown) {
     state->show_in_launcher = delta->show_in_launcher;
@@ -161,6 +170,21 @@ bool AppUpdate::ShortNameChanged() const {
          (!state_ || (delta_->short_name != state_->short_name));
 }
 
+const std::string& AppUpdate::Description() const {
+  if (delta_ && delta_->description.has_value()) {
+    return delta_->description.value();
+  }
+  if (state_ && state_->description.has_value()) {
+    return state_->description.value();
+  }
+  return base::EmptyString();
+}
+
+bool AppUpdate::DescriptionChanged() const {
+  return delta_ && delta_->description.has_value() &&
+         (!state_ || (delta_->description != state_->description));
+}
+
 std::vector<std::string> AppUpdate::AdditionalSearchTerms() const {
   std::vector<std::string> additional_search_terms;
 
@@ -241,23 +265,35 @@ bool AppUpdate::PermissionsChanged() const {
          (!state_ || (delta_->permissions != state_->permissions));
 }
 
-apps::mojom::OptionalBool AppUpdate::InstalledInternally() const {
+apps::mojom::InstallSource AppUpdate::InstallSource() const {
   if (delta_ &&
-      (delta_->installed_internally != apps::mojom::OptionalBool::kUnknown)) {
-    return delta_->installed_internally;
+      (delta_->install_source != apps::mojom::InstallSource::kUnknown)) {
+    return delta_->install_source;
   }
   if (state_) {
-    return state_->installed_internally;
+    return state_->install_source;
   }
-  return apps::mojom::OptionalBool::kUnknown;
+  return apps::mojom::InstallSource::kUnknown;
 }
 
-bool AppUpdate::InstalledInternallyChanged() const {
+bool AppUpdate::InstallSourceChanged() const {
   return delta_ &&
-         (delta_->installed_internally !=
-          apps::mojom::OptionalBool::kUnknown) &&
-         (!state_ ||
-          (delta_->installed_internally != state_->installed_internally));
+         (delta_->install_source != apps::mojom::InstallSource::kUnknown) &&
+         (!state_ || (delta_->install_source != state_->install_source));
+}
+
+apps::mojom::OptionalBool AppUpdate::InstalledInternally() const {
+  switch (InstallSource()) {
+    case apps::mojom::InstallSource::kUnknown:
+      return apps::mojom::OptionalBool::kUnknown;
+    case apps::mojom::InstallSource::kSystem:
+    case apps::mojom::InstallSource::kPolicy:
+    case apps::mojom::InstallSource::kOem:
+    case apps::mojom::InstallSource::kDefault:
+      return apps::mojom::OptionalBool::kTrue;
+    default:
+      return apps::mojom::OptionalBool::kFalse;
+  }
 }
 
 apps::mojom::OptionalBool AppUpdate::IsPlatformApp() const {
@@ -275,6 +311,39 @@ bool AppUpdate::IsPlatformAppChanged() const {
   return delta_ &&
          (delta_->is_platform_app != apps::mojom::OptionalBool::kUnknown) &&
          (!state_ || (delta_->is_platform_app != state_->is_platform_app));
+}
+
+apps::mojom::OptionalBool AppUpdate::Recommendable() const {
+  if (delta_ &&
+      (delta_->recommendable != apps::mojom::OptionalBool::kUnknown)) {
+    return delta_->recommendable;
+  }
+  if (state_) {
+    return state_->recommendable;
+  }
+  return apps::mojom::OptionalBool::kUnknown;
+}
+
+bool AppUpdate::RecommendableChanged() const {
+  return delta_ &&
+         (delta_->recommendable != apps::mojom::OptionalBool::kUnknown) &&
+         (!state_ || (delta_->recommendable != state_->recommendable));
+}
+
+apps::mojom::OptionalBool AppUpdate::Searchable() const {
+  if (delta_ && (delta_->searchable != apps::mojom::OptionalBool::kUnknown)) {
+    return delta_->searchable;
+  }
+  if (state_) {
+    return state_->searchable;
+  }
+  return apps::mojom::OptionalBool::kUnknown;
+}
+
+bool AppUpdate::SearchableChanged() const {
+  return delta_ &&
+         (delta_->searchable != apps::mojom::OptionalBool::kUnknown) &&
+         (!state_ || (delta_->searchable != state_->searchable));
 }
 
 apps::mojom::OptionalBool AppUpdate::ShowInLauncher() const {

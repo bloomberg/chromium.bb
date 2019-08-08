@@ -752,6 +752,7 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
           "GL_ANGLE_framebuffer_multisample",
           "GL_ANGLE_instanced_arrays",
           "GL_ANGLE_pack_reverse_row_order",
+          "GL_ANGLE_texture_compression_dxt1",
           "GL_ANGLE_texture_compression_dxt3",
           "GL_ANGLE_texture_compression_dxt5",
           "GL_ANGLE_texture_usage",
@@ -1368,6 +1369,7 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
   caps.commit_overlay_planes = surface_->SupportsCommitOverlayPlanes();
   caps.use_dc_overlays_for_video = surface_->UseOverlaysForVideo();
   caps.protected_video_swap_chain = surface_->SupportsProtectedVideo();
+  caps.gpu_vsync = surface_->SupportsGpuVSync();
   caps.texture_npot = feature_info_->feature_flags().npot_ok;
   caps.chromium_gpu_fence = feature_info_->feature_flags().chromium_gpu_fence;
   caps.chromium_nonblocking_readback = true;
@@ -1696,6 +1698,9 @@ void GLES2DecoderPassthroughImpl::BindOnePendingImage(
   // If copy / bind fail, then we could keep the bind state the same.
   // However, for now, we only try once.
   texture->set_is_bind_pending(false);
+
+  // Update any binding points that are currently bound for this texture.
+  RebindTexture(texture);
 
   // No client ID available here, can this texture already be discardable?
   UpdateTextureSizeFromTexturePassthrough(texture, 0);
@@ -2055,6 +2060,7 @@ bool GLES2DecoderPassthroughImpl::IsEmulatedQueryTarget(GLenum target) const {
     case GL_LATENCY_QUERY_CHROMIUM:
     case GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM:
     case GL_GET_ERROR_QUERY_CHROMIUM:
+    case GL_PROGRAM_COMPLETION_QUERY_CHROMIUM:
       return true;
 
     default:
@@ -2062,9 +2068,18 @@ bool GLES2DecoderPassthroughImpl::IsEmulatedQueryTarget(GLenum target) const {
   }
 }
 
+bool GLES2DecoderPassthroughImpl::OnlyHasPendingProgramCompletionQueries() {
+  return std::find_if(pending_queries_.begin(), pending_queries_.end(),
+                      [](const auto& query) {
+                        return query.target !=
+                               GL_PROGRAM_COMPLETION_QUERY_CHROMIUM;
+                      }) == pending_queries_.end();
+}
+
 error::Error GLES2DecoderPassthroughImpl::ProcessQueries(bool did_finish) {
+  bool program_completion_query_deferred = false;
   while (!pending_queries_.empty()) {
-    const PendingQuery& query = pending_queries_.front();
+    PendingQuery& query = pending_queries_.front();
     GLuint result_available = GL_FALSE;
     GLuint64 result = 0;
     switch (query.target) {
@@ -2124,6 +2139,35 @@ error::Error GLES2DecoderPassthroughImpl::ProcessQueries(bool did_finish) {
         result = PopError();
         break;
 
+      case GL_PROGRAM_COMPLETION_QUERY_CHROMIUM:
+        GLint status;
+        if (!api()->glIsProgramFn(query.program_service_id)) {
+          status = GL_TRUE;
+        } else {
+          api()->glGetProgramivFn(query.program_service_id,
+                                  GL_COMPLETION_STATUS_KHR, &status);
+        }
+        result_available = (status == GL_TRUE);
+        if (!result_available) {
+          // Move the query to the end of queue, so that other queries may have
+          // chance to be processed.
+          auto temp = std::move(query);
+          pending_queries_.pop_front();
+          pending_queries_.emplace_back(std::move(temp));
+          if (did_finish && !OnlyHasPendingProgramCompletionQueries()) {
+            continue;
+          } else {
+            program_completion_query_deferred = true;
+          }
+          result = 0;
+        } else {
+          GLint link_status = 0;
+          api()->glGetProgramivFn(query.program_service_id, GL_LINK_STATUS,
+                                  &link_status);
+          result = link_status;
+        }
+        break;
+
       default:
         DCHECK(!IsEmulatedQueryTarget(query.target));
         if (did_finish) {
@@ -2158,7 +2202,8 @@ error::Error GLES2DecoderPassthroughImpl::ProcessQueries(bool did_finish) {
 
   // If api()->glFinishFn() has been called, all of our queries should be
   // completed.
-  DCHECK(!did_finish || pending_queries_.empty());
+  DCHECK(!did_finish || pending_queries_.empty() ||
+         program_completion_query_deferred);
   return error::kNoError;
 }
 
@@ -2342,6 +2387,35 @@ void GLES2DecoderPassthroughImpl::UpdateTextureBinding(
       // Update the texture binding
       api()->glBindTextureFn(target, texture_service_id);
       target_bound_textures[bound_texture_index].texture = texture;
+    }
+  }
+
+  // Reset the active texture unit if it was changed
+  if (cur_texture_unit != active_texture_unit_) {
+    api()->glActiveTextureFn(
+        static_cast<GLenum>(GL_TEXTURE0 + active_texture_unit_));
+  }
+}
+
+void GLES2DecoderPassthroughImpl::RebindTexture(TexturePassthrough* texture) {
+  DCHECK(texture != nullptr);
+  size_t cur_texture_unit = active_texture_unit_;
+  GLenum target = texture->target();
+  auto& target_bound_textures =
+      bound_textures_[static_cast<size_t>(GLenumToTextureTarget(target))];
+  for (size_t bound_texture_index = 0;
+       bound_texture_index < target_bound_textures.size();
+       bound_texture_index++) {
+    if (target_bound_textures[bound_texture_index].texture == texture) {
+      // Update the active texture unit if needed
+      if (bound_texture_index != cur_texture_unit) {
+        api()->glActiveTextureFn(
+            static_cast<GLenum>(GL_TEXTURE0 + bound_texture_index));
+        cur_texture_unit = bound_texture_index;
+      }
+
+      // Update the texture binding
+      api()->glBindTextureFn(target, texture->service_id());
     }
   }
 

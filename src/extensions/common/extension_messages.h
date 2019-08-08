@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/values.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/socket_permission_request.h"
@@ -579,8 +579,8 @@ IPC_MESSAGE_ROUTED1(ExtensionMsg_ExecuteCode,
                     ExtensionMsg_ExecuteCode_Params)
 
 // Notification that the user scripts have been updated. It has one
-// SharedMemoryHandle argument consisting of the pickled script data. This
-// handle is valid in the context of the renderer.
+// ReadOnlySharedMemoryRegion argument consisting of the pickled script data.
+// This memory region is valid in the context of the renderer.
 // If |owner| is not empty, then the shared memory handle refers to |owner|'s
 // programmatically-defined scripts. Otherwise, the handle refers to all
 // hosts' statically defined scripts. So far, only extension-hosts support
@@ -593,7 +593,7 @@ IPC_MESSAGE_ROUTED1(ExtensionMsg_ExecuteCode,
 // If |whitelisted_only| is true, this process should only run whitelisted
 // scripts and not all user scripts.
 IPC_MESSAGE_CONTROL4(ExtensionMsg_UpdateUserScripts,
-                     base::SharedMemoryHandle,
+                     base::ReadOnlySharedMemoryRegion,
                      HostID /* owner */,
                      std::set<HostID> /* changed hosts */,
                      bool /* whitelisted_only */)

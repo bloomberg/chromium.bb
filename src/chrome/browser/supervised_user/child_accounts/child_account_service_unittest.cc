@@ -43,7 +43,7 @@ class ChildAccountServiceTest : public ::testing::Test {
     auto* signin_client =
         ChromeSigninClientFactory::GetForProfile(profile_.get());
     return static_cast<TestSigninClient*>(signin_client)
-        ->test_url_loader_factory();
+        ->GetTestURLLoaderFactory();
   }
 
   identity::AccountsCookieMutator* GetAccountsCookieMutator() {

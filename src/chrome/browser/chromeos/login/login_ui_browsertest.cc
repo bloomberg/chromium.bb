@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -82,7 +83,7 @@ IN_PROC_BROWSER_TEST_F(LoginUITest, PRE_InterruptedAutoStartEnrollment) {
 // Tests that the default first screen is the welcome screen after OOBE
 // when auto enrollment is enabled and device is not yet enrolled.
 IN_PROC_BROWSER_TEST_F(LoginUITest, InterruptedAutoStartEnrollment) {
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_WELCOME).Wait();
+  OobeScreenWaiter(WelcomeView::kScreenId).Wait();
 }
 
 IN_PROC_BROWSER_TEST_F(LoginUITest, OobeNoExceptions) {

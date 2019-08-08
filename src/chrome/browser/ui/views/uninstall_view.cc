@@ -126,11 +126,11 @@ void UninstallView::SetupControls() {
 
 bool UninstallView::Accept() {
   user_selection_ = service_manager::RESULT_CODE_NORMAL_EXIT;
-  if (delete_profile_->checked())
+  if (delete_profile_->GetChecked())
     user_selection_ = chrome::RESULT_CODE_UNINSTALL_DELETE_PROFILE;
-  if (change_default_browser_ && change_default_browser_->checked()) {
+  if (change_default_browser_ && change_default_browser_->GetChecked()) {
     BrowsersMap::const_iterator i = browsers_->begin();
-    std::advance(i, browsers_combo_->selected_index());
+    std::advance(i, browsers_combo_->GetSelectedIndex());
     base::LaunchOptions options;
     options.start_hidden = true;
     base::LaunchProcess(i->second, options);
@@ -156,7 +156,7 @@ void UninstallView::ButtonPressed(views::Button* sender,
   if (change_default_browser_ == sender) {
     // Disable the browsers combobox if the user unchecks the checkbox.
     DCHECK(browsers_combo_);
-    browsers_combo_->SetEnabled(change_default_browser_->checked());
+    browsers_combo_->SetEnabled(change_default_browser_->GetChecked());
   }
 }
 

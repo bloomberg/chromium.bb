@@ -13,10 +13,10 @@
 
 let testName = "Outstanding promises get rejected if environmentProvider disconencts";
 
-let fakeDeviceInitParams = { supportsImmersive: false,
+let fakeDeviceInitParams = { supportsImmersive: true,
                              supportsEnvironmentIntegration: true };
 
-let requestSessionOptions = ['legacy-inline-ar'];
+let requestSessionModes = ['immersive-ar'];
 let refSpace = undefined;
 
 let ray = new XRRay({x : 0.0, y : 0.0, z : 0.0}, {x : 1.0, y : 0.0, z: 0.0});
@@ -38,7 +38,7 @@ MockRuntime.prototype.requestHitTest = function(Ray) {
 }
 
 let testFunction = function(session, t, controller) {
-  return session.requestReferenceSpace({ type: "stationary", subtype: "eye-level" })
+  return session.requestReferenceSpace('local')
     .then((referenceSpace) => {
       refSpace = referenceSpace;
 
@@ -61,6 +61,6 @@ let testFunction = function(session, t, controller) {
 };
 
 xr_session_promise_test(
-  testFunction, fakeDeviceInitParams, requestSessionOptions, testName);
+  testFunction, fakeDeviceInitParams, requestSessionModes, testName);
 
 </script>

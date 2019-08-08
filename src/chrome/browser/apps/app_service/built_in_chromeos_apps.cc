@@ -45,8 +45,14 @@ apps::mojom::AppPtr Convert(const app_list::InternalApp& internal_app) {
   app->last_launch_time = base::Time();
   app->install_time = base::Time();
 
-  app->installed_internally = apps::mojom::OptionalBool::kTrue;
+  app->install_source = apps::mojom::InstallSource::kSystem;
+
   app->is_platform_app = apps::mojom::OptionalBool::kFalse;
+  app->recommendable = internal_app.recommendable
+                           ? apps::mojom::OptionalBool::kTrue
+                           : apps::mojom::OptionalBool::kFalse;
+  app->searchable = internal_app.searchable ? apps::mojom::OptionalBool::kTrue
+                                            : apps::mojom::OptionalBool::kFalse;
   app->show_in_launcher = internal_app.show_in_launcher
                               ? apps::mojom::OptionalBool::kTrue
                               : apps::mojom::OptionalBool::kFalse;
@@ -137,6 +143,7 @@ void BuiltInChromeOsApps::Launch(const std::string& app_id,
   switch (launch_source) {
     case apps::mojom::LaunchSource::kUnknown:
     case apps::mojom::LaunchSource::kFromKioskNextHome:
+    case apps::mojom::LaunchSource::kFromParentalControls:
       break;
     case apps::mojom::LaunchSource::kFromAppListGrid:
     case apps::mojom::LaunchSource::kFromAppListGridContextMenu:

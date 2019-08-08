@@ -49,9 +49,7 @@ class PendingReceiver {
 
   // Constructs a valid PendingReceiver from a valid raw message pipe handle.
   explicit PendingReceiver(ScopedMessagePipeHandle pipe)
-      : pipe_(std::move(pipe)) {
-    DCHECK(pipe_.is_valid());
-  }
+      : pipe_(std::move(pipe)) {}
 
   ~PendingReceiver() = default;
 
@@ -67,12 +65,19 @@ class PendingReceiver {
   // bind a Receiver that wants to begin dispatching method calls made by the
   // entangled Remote.
   bool is_valid() const { return pipe_.is_valid(); }
+  explicit operator bool() const { return is_valid(); }
 
   // Resets this PendingReceiver to an invalid state. If it was entangled with a
   // Remote or PendingRemote, that object remains in a valid state and will
   // eventually detect that its receiver is gone. Any calls it makes will
   // effectively be dropped.
   void reset() { pipe_.reset(); }
+
+  // Like above but provides a reason for the disconnection.
+  void ResetWithReason(uint32_t reason, const std::string& description) {
+    InterfaceRequest<Interface>(PassPipe())
+        .ResetWithReason(reason, description);
+  }
 
   // Passes ownership of this PendingReceiver's message pipe handle. After this
   // call, the PendingReceiver is no longer in a valid state and can no longer
@@ -85,6 +90,14 @@ class PendingReceiver {
   ScopedMessagePipeHandle pipe_;
 
   DISALLOW_COPY_AND_ASSIGN(PendingReceiver);
+};
+
+class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) NullReceiver {
+ public:
+  template <typename Interface>
+  operator PendingReceiver<Interface>() const {
+    return PendingReceiver<Interface>();
+  }
 };
 
 }  // namespace mojo

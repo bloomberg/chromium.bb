@@ -61,11 +61,104 @@ if subprocess.mswindows:
   # control of this script. See Popen docstring for more details.
   STOP_SIGNALS = (signal.SIGBREAK, signal.SIGTERM)
 
+  # Windows processes constants.
+
+  # Subset of process priority classes.
+  # https://docs.microsoft.com/windows/desktop/api/processthreadsapi/nf-processthreadsapi-getpriorityclass
+  BELOW_NORMAL_PRIORITY_CLASS = 0x4000
+  IDLE_PRIORITY_CLASS = 0x40
+
+  # Constants passed to CreateProcess creationflags argument.
+  # https://docs.microsoft.com/windows/desktop/api/processthreadsapi/nf-processthreadsapi-createprocessw
+  CREATE_SUSPENDED = 0x4
+
+
+  # Job Objects constants and structs.
+  JobObjectBasicLimitInformation = 2
+  JobObjectBasicUIRestrictions = 4
+  JobObjectExtendedLimitInformation = 9
+
+  # https://docs.microsoft.com/windows/desktop/api/winnt/ns-winnt-_jobobject_basic_limit_information
+  JOB_OBJECT_LIMIT_ACTIVE_PROCESS = 0x8
+  JOB_OBJECT_LIMIT_AFFINITY = 0x10
+  JOB_OBJECT_LIMIT_BREAKAWAY_OK = 0x800
+  JOB_OBJECT_LIMIT_DIE_ON_UNHANDLED_EXCEPTION = 0x400
+  JOB_OBJECT_LIMIT_JOB_MEMORY = 0x200
+  JOB_OBJECT_LIMIT_JOB_TIME = 0x4
+  JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE = 0x2000
+  JOB_OBJECT_LIMIT_PRESERVE_JOB_TIME = 0x40
+  JOB_OBJECT_LIMIT_PRIORITY_CLASS = 0x20
+  JOB_OBJECT_LIMIT_PROCESS_MEMORY = 0x100
+  JOB_OBJECT_LIMIT_PROCESS_TIME = 0x2
+  JOB_OBJECT_LIMIT_SCHEDULING_CLASS = 0x80
+  JOB_OBJECT_LIMIT_SILENT_BREAKAWAY_OK = 0x1000
+  JOB_OBJECT_LIMIT_SUBSET_AFFINITY = 0x4000
+  JOB_OBJECT_LIMIT_WORKINGSET = 0x1
+  class JOBOBJECT_BASIC_LIMIT_INFORMATION(ctypes.Structure):
+    _fields_ = [
+      ('PerProcessUserTimeLimit', ctypes.wintypes.LARGE_INTEGER),
+      ('PerJobUserTimeLimit', ctypes.wintypes.LARGE_INTEGER),
+      ('LimitFlags', ctypes.wintypes.DWORD),
+      ('MinimumWorkingSetSize', ctypes.c_size_t),
+      ('MaximumWorkingSetSize', ctypes.c_size_t),
+      ('ActiveProcessLimit', ctypes.wintypes.DWORD),
+      ('Affinity', ctypes.POINTER(ctypes.wintypes.ULONG)),
+      ('PriorityClass', ctypes.wintypes.DWORD),
+      ('SchedulingClass', ctypes.wintypes.DWORD),
+    ]
+
+    @property
+    def info_type(self):
+      return JobObjectBasicLimitInformation
+
+
+  # https://docs.microsoft.com/windows/desktop/api/winnt/ns-winnt-io_counters
+  class IO_COUNTERS(ctypes.Structure):
+    _fields_ = [
+      ('ReadOperationCount', ctypes.c_ulonglong),
+      ('WriteOperationCount', ctypes.c_ulonglong),
+      ('OtherOperationCount', ctypes.c_ulonglong),
+      ('ReadTransferCount', ctypes.c_ulonglong),
+      ('WriteTransferCount', ctypes.c_ulonglong),
+      ('OtherTransferCount', ctypes.c_ulonglong),
+    ]
+
+
+  # https://docs.microsoft.com/windows/desktop/api/winnt/ns-winnt-_jobobject_extended_limit_information
+  class JOBOBJECT_EXTENDED_LIMIT_INFORMATION(ctypes.Structure):
+    _fields_ = [
+      ('BasicLimitInformation', JOBOBJECT_BASIC_LIMIT_INFORMATION),
+      ('IoInfo', IO_COUNTERS),
+      ('ProcessMemoryLimit', ctypes.c_size_t),
+      ('JobMemoryLimit', ctypes.c_size_t),
+      ('PeakProcessMemoryUsed', ctypes.c_size_t),
+      ('PeakJobMemoryUsed', ctypes.c_size_t),
+    ]
+
+    @property
+    def info_type(self):
+      return JobObjectExtendedLimitInformation
+
+
+  # https://docs.microsoft.com/en-us/windows/desktop/api/winnt/ns-winnt-jobobject_basic_ui_restrictions
+  JOB_OBJECT_UILIMIT_DESKTOP = 0x40
+  JOB_OBJECT_UILIMIT_DISPLAYSETTINGS = 0x10
+  JOB_OBJECT_UILIMIT_EXITWINDOWS = 0x80
+  JOB_OBJECT_UILIMIT_GLOBALATOMS = 0x20
+  JOB_OBJECT_UILIMIT_HANDLES = 0x1
+  class JOBOBJECT_BASIC_UI_RESTRICTIONS(ctypes.Structure):
+    _fields_ = [('UIRestrictionsClass', ctypes.wintypes.DWORD)]
+
+    @property
+    def info_type(self):
+      return JobObjectBasicUIRestrictions
+
 
   def ReadFile(handle, desired_bytes):
     """Calls kernel32.ReadFile()."""
     c_read = wintypes.DWORD()
     buff = wintypes.create_string_buffer(desired_bytes+1)
+    # If it fails, the buffer will probably(?) not be affected.
     windll.kernel32.ReadFile(
         handle, buff, desired_bytes, wintypes.byref(c_read), None)
     # NULL terminate it.
@@ -126,6 +219,89 @@ if subprocess.mswindows:
         return None, None, False
       # Polling rocks.
       time.sleep(0.001)
+
+
+  class _JobObject(object):
+    """Manages a job object."""
+    def __init__(self, containment):
+      # The first process to be added to the job object.
+      self._proc = None
+      # https://docs.microsoft.com/windows/desktop/api/jobapi2/nf-jobapi2-createjobobjectw
+      self._hjob = ctypes.windll.kernel32.CreateJobObjectW(None, None)
+      if not self._hjob:
+        # pylint: disable=undefined-variable
+        raise WindowsError(
+            'Failed to create job object: %s' % ctypes.GetLastError())
+
+      # TODO(maruel): Use a completion port to listen to messages as described
+      # at
+      # https://docs.microsoft.com/windows/desktop/api/winnt/ns-winnt-_jobobject_associate_completion_port
+
+      # TODO(maruel): Enable configuring the limit, like maximum number of
+      # processes, working set size.
+      obj = JOBOBJECT_EXTENDED_LIMIT_INFORMATION()
+      obj.BasicLimitInformation.LimitFlags = (
+          JOB_OBJECT_LIMIT_DIE_ON_UNHANDLED_EXCEPTION|
+          JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE)
+      if containment.limit_processes:
+        obj.BasicLimitInformation.ActiveProcessLimit = (
+            containment.limit_processes)
+        obj.BasicLimitInformation.LimitFlags |= JOB_OBJECT_LIMIT_ACTIVE_PROCESS
+      if containment.limit_total_committed_memory:
+        obj.BasicLimitInformation.LimitFlags |= JOB_OBJECT_LIMIT_JOB_MEMORY
+        obj.JobMemoryLimit = containment.limit_total_committed_memory
+      self._set_information(obj)
+
+      # Add UI limitations.
+      # TODO(maruel): The limitations currently used are based on Chromium's
+      # testing needs. For example many unit tests use the clipboard, or change
+      # the display settings (!)
+      obj = JOBOBJECT_BASIC_UI_RESTRICTIONS(
+          UIRestrictionsClass=
+              JOB_OBJECT_UILIMIT_DESKTOP|
+              JOB_OBJECT_UILIMIT_EXITWINDOWS|
+              JOB_OBJECT_UILIMIT_GLOBALATOMS|
+              JOB_OBJECT_UILIMIT_HANDLES)
+      self._set_information(obj)
+
+    def close(self):
+      if self._hjob:
+        ctypes.windll.kernel32.CloseHandle(self._hjob)
+        self._hjob = None
+
+    def kill(self, exit_code):
+      """Return True if the TerminateJobObject call succeeded, or not operation
+      was done.
+      """
+      if not self._hjob:
+        return True
+      # "Kill" the job object instead of the process.
+      # https://docs.microsoft.com/windows/desktop/api/jobapi2/nf-jobapi2-terminatejobobject
+      return bool(
+          ctypes.windll.kernel32.TerminateJobObject(self._hjob, exit_code))
+
+    def assign_proc(self, proc):
+      """Assigns the process handle to the job object."""
+      if not ctypes.windll.kernel32.AssignProcessToJobObject(
+          self._hjob, int(proc._handle)):
+        # pylint: disable=undefined-variable
+        raise WindowsError(
+            'Failed to assign job object: %s' % ctypes.GetLastError())
+      if not ctypes.windll.kernel32.ResumeThread(int(proc._handle_thread)):
+        # pylint: disable=undefined-variable
+        raise WindowsError(
+            'Failed to resume child process thread: %s' %
+            ctypes.GetLastError())
+
+    def _set_information(self, obj):
+      # https://docs.microsoft.com/windows/desktop/api/jobapi2/nf-jobapi2-setinformationjobobject
+      if not ctypes.windll.kernel32.SetInformationJobObject(
+          self._hjob, obj.info_type, ctypes.byref(obj), ctypes.sizeof(obj)):
+        # pylint: disable=undefined-variable
+        raise WindowsError(
+            'Failed to adjust job object with type %s: %s' %
+            (obj.info_type, ctypes.GetLastError()))
+
 
 else:
   import fcntl  # pylint: disable=F0401
@@ -204,6 +380,57 @@ class TimeoutExpired(Exception):
     return "Command '%s' timed out after %s seconds" % (self.cmd, self.timeout)
 
 
+class Containment(object):
+  """Defines the containment used to run the process.
+
+  On Windows, this is done via a Job Object.
+  https://docs.microsoft.com/en-us/windows/desktop/procthread/job-objects
+  """
+  # AUTO will use containment if possible, but will not fail if not adequate on
+  # this operating system.
+  #
+  # For example, job objects cannot be nested on Windows 7 / Windows Server 2008
+  # and earlier, thus AUTO means NONE on these platforms. Windows 8 and Window
+  # Server 2012 and later support nest job objects, thus AUTO means ENABLED on
+  # these platforms.
+  # See https://docs.microsoft.com/en-us/windows/desktop/procthread/job-objects
+  # cgroups will be added.
+  NONE, AUTO, JOB_OBJECT = range(3)
+
+  NAMES = {
+    NONE: 'NONE',
+    AUTO: 'AUTO',
+    JOB_OBJECT: 'JOB_OBJECT',
+  }
+
+  def __init__(
+      self,
+      containment_type=NONE,
+      limit_processes=0,
+      limit_total_committed_memory=0):
+    self.containment_type = containment_type
+    # Limit on the number of active processes.
+    self.limit_processes = limit_processes
+    self.limit_total_committed_memory = limit_total_committed_memory
+
+  def __eq__(self, rhs):
+    if not rhs:
+      return False
+    return (
+        self.containment_type == rhs.containment_type and
+        self.limit_processes == rhs.limit_processes and
+        self.limit_total_committed_memory == rhs.limit_total_committed_memory)
+
+  def __str__(self):
+    return 'Containment<%s, %s, %s>' % (
+        self.NAMES[self.containment_type],
+        self.limit_processes,
+        self.limit_total_committed_memory)
+
+  def __repr__(self):
+    return self.__str__()
+
+
 class Popen(subprocess.Popen):
   """Adds timeout support on stdout and stderr.
 
@@ -221,6 +448,10 @@ class Popen(subprocess.Popen):
   Additional arguments:
   - detached: If True, the process is created in a new process group. On
     Windows, use CREATE_NEW_PROCESS_GROUP. On posix, use os.setpgid(0, 0).
+  - lower_priority: reduce the process priority a bit.
+  - containment: Containment instance or None. When using containment, one of
+        communicate(), poll(), wait(), yield_any(), yield_any_line() must be
+        used otherwise a kernel handle may leak.
 
   Additional members:
   - start: timestamp when this process started.
@@ -243,9 +474,6 @@ class Popen(subprocess.Popen):
   popen_lock = threading.Lock()
 
   def __init__(self, args, **kwargs):
-    assert 'creationflags' not in kwargs
-    assert 'preexec_fn' not in kwargs, 'Use detached=True instead'
-
     # Windows version of subprocess.Popen() really doens't like unicode. In
     # practice we should use the current ANSI code page, but settle for utf-8
     # across all OSes for consistency.
@@ -258,17 +486,83 @@ class Popen(subprocess.Popen):
         to_str(k): to_str(v) for k, v in kwargs['env'].iteritems()
       }
 
-    self.start = time.time()
-    self.end = None
-    self.gid = None
+    # Set via contrived monkey patching below, because stdlib doesn't expose
+    # thread handle. Only set on Windows.
+    self._handle_thread = None
+    # Will be set by super constructor but may be accessed in failure modes by
+    # _cleanup().
+    self._handle = None
+    self._job = None
+
     self.detached = kwargs.pop('detached', False)
     if self.detached:
       if subprocess.mswindows:
-        kwargs['creationflags'] = subprocess.CREATE_NEW_PROCESS_GROUP
+        prev = kwargs.get('creationflags') or 0
+        kwargs['creationflags'] = prev | subprocess.CREATE_NEW_PROCESS_GROUP
       else:
-        kwargs['preexec_fn'] = lambda: os.setpgid(0, 0)
-    with self.popen_lock:
-      super(Popen, self).__init__(args, **kwargs)
+        old_preexec_fn_1 = kwargs.get('preexec_fn')
+        def new_preexec_fn_1():
+          if old_preexec_fn_1:
+            old_preexec_fn_1()
+          os.setpgid(0, 0)
+        kwargs['preexec_fn'] = new_preexec_fn_1
+
+    if kwargs.pop('lower_priority', False):
+      if subprocess.mswindows:
+        # TODO(maruel): If already in this class, it should use
+        # IDLE_PRIORITY_CLASS.
+        prev = kwargs.get('creationflags') or 0
+        kwargs['creationflags'] = prev | BELOW_NORMAL_PRIORITY_CLASS
+      else:
+        old_preexec_fn_2 = kwargs.get('preexec_fn')
+        def new_preexec_fn_2():
+          if old_preexec_fn_2:
+            old_preexec_fn_2()
+          os.nice(1)
+        kwargs['preexec_fn'] = new_preexec_fn_2
+
+    self.containment = kwargs.pop('containment', None) or Containment()
+    if self.containment.containment_type != Containment.NONE:
+      if self.containment.containment_type == Containment.JOB_OBJECT:
+        if not subprocess.mswindows:
+          raise NotImplementedError(
+              'containment is not implemented on this platform')
+      if subprocess.mswindows:
+        # May throw an WindowsError.
+        # pylint: disable=undefined-variable
+        self._job = _JobObject(self.containment)
+        # In this case, start the process suspended, so we can assign the job
+        # object, then resume it.
+        prev = kwargs.get('creationflags') or 0
+        kwargs['creationflags'] = prev | CREATE_SUSPENDED
+
+    self.end = None
+    self.gid = None
+    self.start = time.time()
+    try:
+      with self.popen_lock:
+        if subprocess.mswindows:
+          # We need the thread handle, save it.
+          old = subprocess._subprocess.CreateProcess
+          class FakeHandle(object):
+            def Close(self):
+              pass
+          def patch_CreateProcess(*args, **kwargs):
+             hp, ht, pid, tid = old(*args, **kwargs)
+             # Save the thread handle, and return a fake one that
+             # _execute_child() will close indiscriminally.
+             self._handle_thread = ht
+             return hp, FakeHandle(), pid, tid
+          subprocess._subprocess.CreateProcess = patch_CreateProcess
+        try:
+          super(Popen, self).__init__(args, **kwargs)
+        finally:
+          if subprocess.mswindows:
+            subprocess._subprocess.CreateProcess = old
+    except:
+      self._cleanup()
+      raise
+
     self.args = args
     if self.detached and not subprocess.mswindows:
       try:
@@ -276,6 +570,13 @@ class Popen(subprocess.Popen):
       except OSError:
         # sometimes the process can run+finish before we collect its pgid. fun.
         pass
+
+    if self._job:
+      try:
+        self._job.assign_proc(self)
+      except OSError:
+        self.kill()
+        self.wait()
 
   def duration(self):
     """Duration of the child process.
@@ -291,6 +592,9 @@ class Popen(subprocess.Popen):
     """Implements python3's timeout support.
 
     Unlike wait(), timeout=0 is considered the same as None.
+
+    Returns:
+      tuple of (stdout, stderr).
 
     Raises:
     - TimeoutExpired when more than timeout seconds were spent waiting for the
@@ -398,12 +702,15 @@ class Popen(subprocess.Popen):
     if not self.end:
       # communicate() uses wait() internally.
       self.end = time.time()
+    self._cleanup()
     return self.returncode
 
   def poll(self):
     ret = super(Popen, self).poll()
     if ret is not None and not self.end:
       self.end = time.time()
+      # This may kill all children processes.
+      self._cleanup()
     return ret
 
   def yield_any_line(self, **kwargs):
@@ -550,7 +857,20 @@ class Popen(subprocess.Popen):
     """Kills the process and its children if possible.
 
     Swallows exceptions and return True on success.
+
+    This process may be asynchronous. The user should still call wait() to
+    ensure the process is indeed terminated.
     """
+    if self._job:
+      # Use the equivalent of SIGKILL on linux. signal.SIGKILL is not available
+      # on Windows.
+      return self._job.kill(-9)
+
+    if self.returncode is not None:
+      # If a return code was recorded, it means there's nothing to kill as there
+      # was no containment.
+      return True
+
     if self.gid:
       try:
         os.killpg(self.gid, signal.SIGKILL)
@@ -567,6 +887,21 @@ class Popen(subprocess.Popen):
     """Closes either stdout or stderr."""
     getattr(self, which).close()
     setattr(self, which, None)
+
+  def _cleanup(self):
+    """Makes sure resources are not leaked."""
+    if self._job:
+      # This may kill all children processes.
+      self._job.close()
+      self._job = None
+    if self._handle_thread:
+      self._handle_thread.Close()
+      self._handle_thread = None
+    if self._handle:
+      # self._handle is deleted via __del__ but when it happens is
+      # non-deterministic, so do it earlier.
+      self._handle.Close()
+      self._handle = None
 
   def _recv(self, which, maxsize, timeout):
     """Reads from one of stdout or stderr synchronously with timeout."""

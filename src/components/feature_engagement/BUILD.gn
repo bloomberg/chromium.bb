@@ -31,6 +31,7 @@ group("unit_tests") {
 
   deps = [
     "//components/feature_engagement/internal:unit_tests",
+    "//components/feature_engagement/public:unit_tests",
   ]
 
   data_deps = [

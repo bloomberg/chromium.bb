@@ -19,11 +19,9 @@
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 
-namespace base {
-class UnguessableToken;
-}  // namespace base
-
 namespace media_session {
+
+class AudioFocusRequest;
 
 // MediaController provides a control surface over Mojo for controlling a
 // specific MediaSession. If |session_| is nullptr then all commands will be
@@ -60,8 +58,7 @@ class MediaController : public mojom::MediaController,
       const base::flat_map<mojom::MediaSessionImageType,
                            std::vector<MediaImage>>& images) override;
 
-  void SetMediaSession(mojom::MediaSession* session,
-                       const base::UnguessableToken& request_id);
+  void SetMediaSession(AudioFocusRequest* session);
   void ClearMediaSession();
 
   void BindToInterface(mojom::MediaControllerRequest request);
@@ -93,9 +90,8 @@ class MediaController : public mojom::MediaController,
   base::flat_map<mojom::MediaSessionImageType, std::vector<MediaImage>>
       session_images_;
 
-  // Raw pointer to the local proxy. This is used for sending control events to
-  // the underlying MediaSession.
-  mojom::MediaSession* session_ = nullptr;
+  // Raw pointer to the media session we are controlling.
+  AudioFocusRequest* session_ = nullptr;
 
   // Observers that are observing |this|.
   mojo::InterfacePtrSet<mojom::MediaControllerObserver> observers_;
@@ -105,9 +101,6 @@ class MediaController : public mojom::MediaController,
 
   // Manages individual image observers.
   std::vector<std::unique_ptr<ImageObserverHolder>> image_observers_;
-
-  // The request id for the bound media session.
-  base::Optional<base::UnguessableToken> request_id_;
 
   // Protects |session_| as it is not thread safe.
   SEQUENCE_CHECKER(sequence_checker_);

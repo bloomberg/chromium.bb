@@ -13,7 +13,6 @@
 #include <utility>
 #include <vector>
 
-#include "net/third_party/quiche/src/quic/core/quic_connection_close_delegate_interface.h"
 #include "net/third_party/quiche/src/quic/core/quic_framer.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quic/core/quic_pending_retransmission.h"
@@ -28,10 +27,9 @@ class QuicPacketCreatorPeer;
 class QUIC_EXPORT_PRIVATE QuicPacketCreator {
  public:
   // A delegate interface for further processing serialized packet.
-  class QUIC_EXPORT_PRIVATE DelegateInterface
-      : public QuicConnectionCloseDelegateInterface {
+  class QUIC_EXPORT_PRIVATE DelegateInterface {
    public:
-    ~DelegateInterface() override {}
+    virtual ~DelegateInterface() {}
     // Get a buffer of kMaxOutgoingPacketSize bytes to serialize the next
     // packet. If return nullptr, QuicPacketCreator will serialize on a stack
     // buffer.
@@ -40,6 +38,10 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
     // of |serialized_packet|, but takes ownership of any frames it removes
     // from |packet.retransmittable_frames|.
     virtual void OnSerializedPacket(SerializedPacket* serialized_packet) = 0;
+
+    // Called when an unrecoverable error is encountered.
+    virtual void OnUnrecoverableError(QuicErrorCode error,
+                                      const std::string& error_details) = 0;
   };
 
   // Interface which gets callbacks from the QuicPacketCreator at interesting
@@ -53,10 +55,10 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
     virtual void OnFrameAddedToPacket(const QuicFrame& frame) {}
   };
 
-  QuicPacketCreator(QuicConnectionId connection_id,
+  QuicPacketCreator(QuicConnectionId server_connection_id,
                     QuicFramer* framer,
                     DelegateInterface* delegate);
-  QuicPacketCreator(QuicConnectionId connection_id,
+  QuicPacketCreator(QuicConnectionId server_connection_id,
                     QuicFramer* framer,
                     QuicRandom* random,
                     DelegateInterface* delegate);
@@ -109,6 +111,7 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   bool ConsumeCryptoData(EncryptionLevel level,
                          size_t write_length,
                          QuicStreamOffset offset,
+                         bool needs_full_padding,
                          TransmissionType transmission_type,
                          QuicFrame* frame);
 
@@ -206,17 +209,24 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   // Returns a dummy packet that is valid but contains no useful information.
   static SerializedPacket NoPacket();
 
+  // Returns the destination connection ID to send over the wire.
+  QuicConnectionId GetDestinationConnectionId() const;
+
+  // Returns the source connection ID to send over the wire.
+  QuicConnectionId GetSourceConnectionId() const;
+
   // Returns length of destination connection ID to send over the wire.
   QuicConnectionIdLength GetDestinationConnectionIdLength() const;
 
   // Returns length of source connection ID to send over the wire.
   QuicConnectionIdLength GetSourceConnectionIdLength() const;
 
-  // Sets whether the connection ID should be sent over the wire.
-  void SetConnectionIdIncluded(QuicConnectionIdIncluded connection_id_included);
+  // Sets whether the server connection ID should be sent over the wire.
+  void SetServerConnectionIdIncluded(
+      QuicConnectionIdIncluded server_connection_id_included);
 
-  // Update the connection ID used in outgoing packets.
-  void SetConnectionId(QuicConnectionId connection_id);
+  // Update the server connection ID used in outgoing packets.
+  void SetServerConnectionId(QuicConnectionId server_connection_id);
 
   // Sets the encryption level that will be applied to new packets.
   void set_encryption_level(EncryptionLevel level) {
@@ -252,7 +262,7 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   // Sets transmission type of next constructed packets.
   void SetTransmissionType(TransmissionType type);
 
-  // Sets the retry token to be sent over the wire in v99 IETF Initial packets.
+  // Sets the retry token to be sent over the wire in IETF Initial packets.
   void SetRetryToken(QuicStringPiece retry_token);
 
   // Returns the largest payload that will fit into a single MESSAGE frame.
@@ -262,6 +272,9 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   // connection ID lengths do not change.
   QuicPacketLength GetGuaranteedLargestMessagePayload() const;
 
+  // Packet number of next created packet.
+  QuicPacketNumber NextSendingPacketNumber() const;
+
   void set_debug_delegate(DebugDelegate* debug_delegate) {
     debug_delegate_ = debug_delegate;
   }
@@ -270,15 +283,16 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
     can_set_transmission_type_ = can_set_transmission_type;
   }
 
-  bool ShouldSetTransmissionTypeForNextFrame() const {
-    return can_set_transmission_type_ && set_transmission_type_for_next_frame_;
-  }
+  bool can_set_transmission_type() const { return can_set_transmission_type_; }
 
   QuicByteCount pending_padding_bytes() const { return pending_padding_bytes_; }
 
   QuicTransportVersion transport_version() const {
     return framer_->transport_version();
   }
+
+  // Returns the minimum size that the plaintext of a packet must be.
+  static size_t MinPlaintextPacketSize(const ParsedQuicVersion& version);
 
  private:
   friend class test::QuicPacketCreatorPeer;
@@ -338,6 +352,9 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   // function instead.
   QuicPacketNumberLength GetPacketNumberLength() const;
 
+  // Returns the size in bytes of the packet header.
+  size_t PacketHeaderSize() const;
+
   // Returns whether the destination connection ID is sent over the wire.
   QuicConnectionIdIncluded GetDestinationConnectionIdIncluded() const;
 
@@ -379,8 +396,8 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   // Maximum length including headers and encryption (UDP payload length.)
   QuicByteCount max_packet_length_;
   size_t max_plaintext_size_;
-  // Whether the connection_id is sent over the wire.
-  QuicConnectionIdIncluded connection_id_included_;
+  // Whether the server_connection_id is sent over the wire.
+  QuicConnectionIdIncluded server_connection_id_included_;
 
   // Frames to be added to the next SerializedPacket
   QuicFrames queued_frames_;
@@ -389,7 +406,7 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   // TODO(ianswett): Move packet_size_ into SerializedPacket once
   // QuicEncryptedPacket has been flattened into SerializedPacket.
   size_t packet_size_;
-  QuicConnectionId connection_id_;
+  QuicConnectionId server_connection_id_;
 
   // Packet used to invoke OnSerializedPacket.
   SerializedPacket packet_;
@@ -410,10 +427,6 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   // If true, packet_'s transmission type is only set by
   // SetPacketTransmissionType and does not get cleared in ClearPacket.
   bool can_set_transmission_type_;
-
-  // Latched value of --quic_set_transmission_type_for_next_frame. Don't use
-  // this variable directly, use ShouldSetTransmissionTypeForNextFrame instead.
-  bool set_transmission_type_for_next_frame_;
 };
 
 }  // namespace quic

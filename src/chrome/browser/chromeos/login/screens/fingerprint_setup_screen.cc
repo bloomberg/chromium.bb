@@ -6,6 +6,7 @@
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/webui/chromeos/login/fingerprint_setup_screen_handler.h"
 
 namespace chromeos {
 namespace {
@@ -17,7 +18,7 @@ constexpr char kUserActionClose[] = "fingerprint-setup-done";
 FingerprintSetupScreen::FingerprintSetupScreen(
     FingerprintSetupScreenView* view,
     const base::RepeatingClosure& exit_callback)
-    : BaseScreen(OobeScreen::SCREEN_FINGERPRINT_SETUP),
+    : BaseScreen(FingerprintSetupScreenView::kScreenId),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);

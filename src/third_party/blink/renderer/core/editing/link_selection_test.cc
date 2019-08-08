@@ -150,8 +150,8 @@ class LinkSelectionTest : public LinkSelectionTestBase {
     ASSERT_NE(nullptr, link_to_select);
     // We get larger range that we actually want to select, because we need a
     // slightly larger rect to include the last character to the selection.
-    auto* const range_to_select =
-        Range::Create(*document, link_to_select, 5, link_to_select, 16);
+    auto* const range_to_select = MakeGarbageCollected<Range>(
+        *document, link_to_select, 5, link_to_select, 16);
 
     const auto& selection_rect = range_to_select->BoundingBox();
     const auto& selection_rect_center_y = selection_rect.Center().Y();
@@ -254,8 +254,8 @@ TEST_F(LinkSelectionTest, SingleClickWithAltStartsDownloadWhenTextSelected) {
   ASSERT_NE(nullptr, text_to_select);
 
   // Select some page text outside the link element.
-  const Range* range_to_select =
-      Range::Create(*document, text_to_select, 1, text_to_select, 20);
+  const auto* range_to_select = MakeGarbageCollected<Range>(
+      *document, text_to_select, 1, text_to_select, 20);
   const auto& selection_rect = range_to_select->BoundingBox();
   main_frame_->MoveRangeSelection(selection_rect.MinXMinYCorner(),
                                   selection_rect.MaxXMaxYCorner());

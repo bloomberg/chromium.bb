@@ -428,7 +428,7 @@ bool GetPasswordForm(
     case PasswordContents::kOnlyDisabled:
       // The current parser gives up, but returns a fallback form so that the
       // newer parser can try parsing as well.
-      password_form->scheme = PasswordForm::SCHEME_HTML;
+      password_form->scheme = PasswordForm::Scheme::kHtml;
       password_form->origin = form_origin;
       password_form->signon_realm = GetSignOnRealm(password_form->origin);
       return true;
@@ -781,10 +781,10 @@ bool GetPasswordForm(
 
   password_form->origin = std::move(form_origin);
   password_form->signon_realm = GetSignOnRealm(password_form->origin);
-  password_form->scheme = PasswordForm::SCHEME_HTML;
+  password_form->scheme = PasswordForm::Scheme::kHtml;
   password_form->preferred = false;
   password_form->blacklisted_by_user = false;
-  password_form->type = PasswordForm::TYPE_MANUAL;
+  password_form->type = PasswordForm::Type::kManual;
 
   return true;
 }

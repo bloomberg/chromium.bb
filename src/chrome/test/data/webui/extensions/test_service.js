@@ -10,6 +10,7 @@ cr.define('extensions', function() {
         'addRuntimeHostPermission',
         'deleteActivitiesById',
         'deleteActivitiesFromExtension',
+        'downloadActivities',
         'getExtensionActivityLog',
         'getExtensionsInfo',
         'getExtensionSize',
@@ -42,7 +43,7 @@ cr.define('extensions', function() {
       this.forceReloadItemError_ = false;
 
       /** @type {!chrome.activityLogPrivate.ActivityResultSet|undefined} */
-      this.testActivities = undefined;
+      this.testActivities;
     }
 
     /**
@@ -210,6 +211,11 @@ cr.define('extensions', function() {
     /** @override */
     getOnExtensionActivity() {
       return this.extensionActivityTarget;
+    }
+
+    /** @override */
+    downloadActivities(rawActivityData, fileName) {
+      this.methodCalled('downloadActivities', [rawActivityData, fileName]);
     }
   }
 

@@ -36,7 +36,7 @@ class SpellCheckProvider
       public blink::WebTextCheckClient {
  public:
   using WebTextCheckCompletions =
-      base::IDMap<blink::WebTextCheckingCompletion*>;
+      base::IDMap<std::unique_ptr<blink::WebTextCheckingCompletion>>;
 
   SpellCheckProvider(
       content::RenderFrame* render_frame,
@@ -48,8 +48,9 @@ class SpellCheckProvider
   // available in the browser process. The function does not have special
   // handling for partial words, as Blink guarantees that no request is made
   // when typing in the middle of a word.
-  void RequestTextChecking(const base::string16& text,
-                           blink::WebTextCheckingCompletion* completion);
+  void RequestTextChecking(
+      const base::string16& text,
+      std::unique_ptr<blink::WebTextCheckingCompletion> completion);
 
   // The number of ongoing spell check host requests.
   size_t pending_text_request_size() const {
@@ -60,7 +61,7 @@ class SpellCheckProvider
   void set_spellcheck(SpellCheck* spellcheck) { spellcheck_ = spellcheck; }
 
   // content::RenderFrameObserver:
-  void FocusedNodeChanged(const blink::WebNode& node) override;
+  void FocusedElementChanged(const blink::WebElement& element) override;
 
  private:
   friend class TestingSpellCheckProvider;
@@ -95,7 +96,7 @@ class SpellCheckProvider
       blink::WebVector<blink::WebString>* optional_suggestions) override;
   void RequestCheckingOfText(
       const blink::WebString& text,
-      blink::WebTextCheckingCompletion* completion) override;
+      std::unique_ptr<blink::WebTextCheckingCompletion> completion) override;
 
 #if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   void OnRespondSpellingService(int identifier,

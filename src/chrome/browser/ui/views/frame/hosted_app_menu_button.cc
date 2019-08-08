@@ -39,16 +39,21 @@ HostedAppMenuButton::HostedAppMenuButton(BrowserView* browser_view)
   // Get the app name only, aka "Google Docs" instead of "My Doc - Google Docs",
   // because the menu applies to the entire app.
   base::string16 app_name = base::UTF8ToUTF16(
-      browser_view->browser()->web_app_controller()->GetAppShortName());
+      browser_view->browser()->app_controller()->GetAppShortName());
   SetAccessibleName(app_name);
   SetTooltipText(
       l10n_util::GetStringFUTF16(IDS_HOSTED_APPMENU_TOOLTIP, app_name));
-  int size = GetLayoutConstant(HOSTED_APP_MENU_BUTTON_SIZE);
+
+  constexpr int focus_mode_app_menu_button_size = 34;
+  bool is_focus_mode = browser_view->browser()->is_focus_mode();
+  int size = is_focus_mode ? focus_mode_app_menu_button_size
+                           : GetLayoutConstant(HOSTED_APP_MENU_BUTTON_SIZE);
   SetMinSize(gfx::Size(size, size));
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
-
-  constexpr gfx::Insets kInkDropInsets(2);
-  *GetProperty(views::kInternalPaddingKey) = kInkDropInsets;
+  if (!is_focus_mode) {
+    constexpr gfx::Insets kInkDropInsets(2);
+    *GetProperty(views::kInternalPaddingKey) = kInkDropInsets;
+  }
 }
 
 HostedAppMenuButton::~HostedAppMenuButton() {}

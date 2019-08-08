@@ -120,6 +120,8 @@ class MoreButton : public views::Button {
                                                          kTrayItemSize / 2);
   }
 
+  const char* GetClassName() const override { return "MoreButton"; }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MoreButton);
 };
@@ -138,6 +140,10 @@ UnifiedVolumeView::UnifiedVolumeView(UnifiedVolumeSliderController* controller)
 
 UnifiedVolumeView::~UnifiedVolumeView() {
   CrasAudioHandler::Get()->RemoveAudioObserver(this);
+}
+
+const char* UnifiedVolumeView::GetClassName() const {
+  return "UnifiedVolumeView";
 }
 
 void UnifiedVolumeView::Update(bool by_user) {

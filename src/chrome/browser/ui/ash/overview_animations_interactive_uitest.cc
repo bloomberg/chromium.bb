@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/public/cpp/test/shell_test_api.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "chrome/browser/ui/ash/ash_test_util.h"
-#include "chrome/browser/ui/ash/tablet_mode_client_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -35,7 +34,7 @@ class OverviewAnimationsTest
     tablet_mode_ = std::get<2>(GetParam());
 
     if (tablet_mode_)
-      test::SetAndWaitForTabletMode(true);
+      ash::ShellTestApi().EnableTabletModeWindowManager(true);
 
     GURL ntp_url("chrome://newtab");
     // The default is blank page.
@@ -82,16 +81,16 @@ IN_PROC_BROWSER_TEST_P(OverviewAnimationsTest, EnterExit) {
                             /*control=*/false,
                             /*shift=*/false,
                             /*alt=*/false,
-                            /* command = */ false);
-  test::WaitForOverviewAnimationState(
-      ash::mojom::OverviewAnimationState::kEnterAnimationComplete);
+                            /*command=*/false);
+  ash::ShellTestApi().WaitForOverviewAnimationState(
+      ash::OverviewAnimationState::kEnterAnimationComplete);
   ui_controls::SendKeyPress(browser_window, ui::VKEY_MEDIA_LAUNCH_APP1,
                             /*control=*/false,
                             /*shift=*/false,
                             /*alt=*/false,
-                            /* command = */ false);
-  test::WaitForOverviewAnimationState(
-      ash::mojom::OverviewAnimationState::kExitAnimationComplete);
+                            /*command=*/false);
+  ash::ShellTestApi().WaitForOverviewAnimationState(
+      ash::OverviewAnimationState::kExitAnimationComplete);
 }
 
 INSTANTIATE_TEST_SUITE_P(,

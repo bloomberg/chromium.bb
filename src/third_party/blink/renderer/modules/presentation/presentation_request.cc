@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/modules/presentation/presentation_controller.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_error.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -145,7 +146,7 @@ ScriptPromise PresentationRequest::start(ScriptState* script_state) {
       !LocalFrame::HasTransientUserActivation(doc->GetFrame()))
     return ScriptPromise::RejectWithDOMException(
         script_state,
-        DOMException::Create(
+        MakeGarbageCollected<DOMException>(
             DOMExceptionCode::kInvalidAccessError,
             "PresentationRequest::start() requires user gesture."));
 
@@ -154,7 +155,7 @@ ScriptPromise PresentationRequest::start(ScriptState* script_state) {
   if (!controller)
     return ScriptPromise::RejectWithDOMException(
         script_state,
-        DOMException::Create(
+        MakeGarbageCollected<DOMException>(
             DOMExceptionCode::kInvalidStateError,
             "The PresentationRequest is no longer associated to a frame."));
 
@@ -175,7 +176,7 @@ ScriptPromise PresentationRequest::reconnect(ScriptState* script_state,
   if (!controller)
     return ScriptPromise::RejectWithDOMException(
         script_state,
-        DOMException::Create(
+        MakeGarbageCollected<DOMException>(
             DOMExceptionCode::kInvalidStateError,
             "The PresentationRequest is no longer associated to a frame."));
 
@@ -205,7 +206,7 @@ ScriptPromise PresentationRequest::getAvailability(ScriptState* script_state) {
   if (!controller)
     return ScriptPromise::RejectWithDOMException(
         script_state,
-        DOMException::Create(
+        MakeGarbageCollected<DOMException>(
             DOMExceptionCode::kInvalidStateError,
             "The PresentationRequest is no longer associated to a frame."));
 
@@ -216,7 +217,7 @@ ScriptPromise PresentationRequest::getAvailability(ScriptState* script_state) {
             PresentationAvailabilityProperty::kReady);
 
     controller->GetAvailabilityState()->RequestAvailability(
-        urls_, std::make_unique<PresentationAvailabilityCallbacks>(
+        urls_, MakeGarbageCollected<PresentationAvailabilityCallbacks>(
                    availability_property_, urls_));
   }
   return availability_property_->Promise(script_state->World());

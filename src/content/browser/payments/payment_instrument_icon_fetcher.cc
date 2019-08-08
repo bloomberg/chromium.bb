@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/task/post_task.h"
+#include "components/payments/content/icon/icon_size.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -22,13 +23,6 @@
 
 namespace content {
 namespace {
-
-// TODO(zino): Choose appropriate icon size dynamically on different platforms.
-// Here we choose a large ideal icon size to be big enough for all platforms.
-// Note that we only scale down for this icon size but not scale up.
-// Please see: https://crbug.com/763886
-const int kPaymentAppIdealIconSize = 0xFFFF;
-const int kPaymentAppMinimumIconSize = 0;
 
 void DownloadBestMatchingIcon(
     WebContents* web_contents,
@@ -75,11 +69,20 @@ void DownloadBestMatchingIcon(
         callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  if (web_contents == nullptr) {
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(std::move(callback), std::string()));
+    return;
+  }
+
+  gfx::NativeView native_view = web_contents->GetNativeView();
   GURL icon_url = blink::ManifestIconSelector::FindBestMatchingIcon(
-      icons, kPaymentAppIdealIconSize, kPaymentAppMinimumIconSize,
+      icons, payments::IconSizeCalculator::IdealIconHeight(native_view),
+      payments::IconSizeCalculator::MinimumIconHeight(),
       ManifestIconDownloader::kMaxWidthToHeightRatio,
       blink::Manifest::ImageResource::Purpose::ANY);
-  if (web_contents == nullptr || !icon_url.is_valid()) {
+  if (!icon_url.is_valid()) {
     // If the icon url is invalid, it's better to give the information to
     // developers in advance unlike when fetching or decoding fails. We already
     // checked whether they are valid in renderer side. So, if the icon url is
@@ -98,8 +101,9 @@ void DownloadBestMatchingIcon(
   }
 
   bool can_download_icon = ManifestIconDownloader::Download(
-      web_contents, icon_url, kPaymentAppIdealIconSize,
-      kPaymentAppMinimumIconSize,
+      web_contents, icon_url,
+      payments::IconSizeCalculator::IdealIconHeight(native_view),
+      payments::IconSizeCalculator::MinimumIconHeight(),
       base::BindOnce(&OnIconFetched, web_contents, copy_icons,
                      std::move(callback)),
       false /* square_only */);

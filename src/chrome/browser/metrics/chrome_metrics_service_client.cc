@@ -43,7 +43,6 @@
 #include "chrome/browser/metrics/https_engagement_metrics_provider.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/metrics/network_quality_estimator_provider_impl.h"
-#include "chrome/browser/metrics/persistent_histograms.h"
 #include "chrome/browser/metrics/process_memory_metrics_emitter.h"
 #include "chrome/browser/metrics/sampling_metrics_provider.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
@@ -78,6 +77,7 @@
 #include "components/metrics/net/cellular_logic_helper.h"
 #include "components/metrics/net/net_metrics_log_uploader.h"
 #include "components/metrics/net/network_metrics_provider.h"
+#include "components/metrics/persistent_histograms.h"
 #include "components/metrics/stability_metrics_helper.h"
 #include "components/metrics/ui/screen_info_metrics_provider.h"
 #include "components/metrics/url_constants.h"
@@ -85,8 +85,8 @@
 #include "components/omnibox/browser/omnibox_metrics_provider.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "components/sync/device_info/device_count_metrics_provider.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/sync_device_info/device_count_metrics_provider.h"
 #include "components/ukm/ukm_service.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -100,7 +100,6 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_ANDROID)
-#include "base/android/build_info.h"
 #include "chrome/browser/metrics/android_metrics_provider.h"
 #include "chrome/browser/metrics/page_load_metrics_provider.h"
 #endif
@@ -129,6 +128,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
 #include "chrome/browser/signin/signin_status_metrics_provider_chromeos.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/app_list_launch_metrics_provider.h"
 #include "chromeos/assistant/buildflags.h"
 
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
@@ -680,6 +680,10 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
 
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<chromeos::PrinterMetricsProvider>());
+
+  // Using WrapUnique to access a private constructor.
+  metrics_service_->RegisterMetricsProvider(
+      base::WrapUnique(new app_list::AppListLaunchMetricsProvider()));
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_CHROMEOS)
@@ -1060,10 +1064,7 @@ bool ChromeMetricsServiceClient::
 }
 
 std::string ChromeMetricsServiceClient::GetAppPackageName() {
-#if defined(OS_ANDROID)
-  return base::android::BuildInfo::GetInstance()->package_name();
-#endif
-  return std::string();
+  return metrics::GetAppPackageName();
 }
 
 std::string ChromeMetricsServiceClient::GetUploadSigningKey() {

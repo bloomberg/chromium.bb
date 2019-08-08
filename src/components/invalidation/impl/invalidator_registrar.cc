@@ -30,7 +30,7 @@ void InvalidatorRegistrar::RegisterHandler(InvalidationHandler* handler) {
 }
 
 bool InvalidatorRegistrar::UpdateRegisteredTopics(InvalidationHandler* handler,
-                                                  const TopicSet& topics) {
+                                                  const Topics& topics) {
   DCHECK(thread_checker_.CalledOnValidThread());
   CHECK(handler);
   CHECK(handlers_.HasObserver(handler));
@@ -40,15 +40,10 @@ bool InvalidatorRegistrar::UpdateRegisteredTopics(InvalidationHandler* handler,
       continue;
     }
 
-    std::vector<Topic> intersection;
-    std::set_intersection(handler_and_topics.second.begin(),
-                          handler_and_topics.second.end(), topics.begin(),
-                          topics.end(),
-                          std::inserter(intersection, intersection.end()));
-    if (!intersection.empty()) {
-      DVLOG(1) << "Duplicate registration: trying to register "
-               << *intersection.begin() << " for " << handler
-               << " when it's already registered for "
+    if (auto* duplicate =
+            FindMatchingTopic(topics, handler_and_topics.second)) {
+      DVLOG(1) << "Duplicate registration: trying to register " << *duplicate
+               << " for " << handler << " when it's already registered for "
                << handler_and_topics.first;
       return false;
     }
@@ -70,16 +65,16 @@ void InvalidatorRegistrar::UnregisterHandler(InvalidationHandler* handler) {
   handler_to_topics_map_.erase(handler);
 }
 
-TopicSet InvalidatorRegistrar::GetRegisteredTopics(
+Topics InvalidatorRegistrar::GetRegisteredTopics(
     InvalidationHandler* handler) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   auto lookup = handler_to_topics_map_.find(handler);
-  return lookup != handler_to_topics_map_.end() ? lookup->second : TopicSet();
+  return lookup != handler_to_topics_map_.end() ? lookup->second : Topics();
 }
 
-TopicSet InvalidatorRegistrar::GetAllRegisteredIds() const {
+Topics InvalidatorRegistrar::GetAllRegisteredIds() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  TopicSet registered_ids;
+  Topics registered_ids;
   for (auto it = handler_to_topics_map_.begin();
        it != handler_to_topics_map_.end(); ++it) {
     registered_ids.insert(it->second.begin(), it->second.end());
@@ -129,13 +124,13 @@ InvalidatorState InvalidatorRegistrar::GetInvalidatorState() const {
   return state_;
 }
 
-std::map<std::string, TopicSet>
+std::map<std::string, Topics>
 InvalidatorRegistrar::GetSanitizedHandlersIdsMap() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  std::map<std::string, TopicSet> clean_handlers_to_topics;
+  std::map<std::string, Topics> clean_handlers_to_topics;
   for (const auto& handler_and_topics : handler_to_topics_map_)
     clean_handlers_to_topics[handler_and_topics.first->GetOwnerName()] =
-        TopicSet(handler_and_topics.second);
+        Topics(handler_and_topics.second);
   return clean_handlers_to_topics;
 }
 

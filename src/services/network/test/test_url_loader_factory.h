@@ -76,10 +76,11 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
                    net::HttpStatusCode status = net::HTTP_OK);
 
   // Returns true if there is a request for a given URL with a living client
-  // that did not produce a response yet. If |load_flags_out| is non-null,
-  // it will reports load flags used for the request
+  // that did not produce a response yet. If |request_out| is non-null,
+  // it will give a const pointer to the request.
   // WARNING: This does RunUntilIdle() first.
-  bool IsPending(const std::string& url, int* load_flags_out = nullptr);
+  bool IsPending(const std::string& url,
+                 const ResourceRequest** request_out = nullptr);
 
   // Returns the total # of pending requests.
   // WARNING: This does RunUntilIdle() first.

@@ -24,12 +24,6 @@ login.createScreen('UpdateScreen', 'update', function() {
     /** @param {boolean} enabled */
     setCancelUpdateShortcutEnabled: function(enabled) {
       $('oobe-update-md').cancelAllowed = enabled;
-      var configuration = Oobe.getInstance().getOobeConfiguration();
-      if (!configuration)
-        return;
-      if (configuration.updateSkipNonCritical && enabled) {
-        this.cancel();
-      }
     },
 
     /**

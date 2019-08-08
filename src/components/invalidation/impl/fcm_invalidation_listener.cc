@@ -56,7 +56,7 @@ void FCMInvalidationListener::Start(
   DoRegistrationUpdate();
 }
 
-void FCMInvalidationListener::UpdateRegisteredTopics(const TopicSet& topics) {
+void FCMInvalidationListener::UpdateRegisteredTopics(const Topics& topics) {
   ids_update_requested_ = true;
   registered_topics_ = topics;
   DoRegistrationUpdate();
@@ -75,12 +75,24 @@ void FCMInvalidationListener::Invalidate(const std::string& payload,
     // TODO(melandory): Report error and consider not to process with the
     // invalidation.
   }
+  // Note: |public_topic| is empty for some invalidations (e.g. Drive). Prefer
+  // using |*expected_public_topic| over |public_topic|.
+  base::Optional<std::string> expected_public_topic =
+      per_user_topic_registration_manager_
+          ->LookupRegisteredPublicTopicByPrivateTopic(private_topic);
+  if (!expected_public_topic ||
+      (!public_topic.empty() && public_topic != *expected_public_topic)) {
+    DVLOG(1) << "Unexpected invalidation for " << private_topic
+             << " with public topic " << public_topic << ". Expected "
+             << expected_public_topic.value_or("<None>");
+    return;
+  }
   TopicInvalidationMap invalidations;
   Invalidation inv =
-      Invalidation::Init(ConvertTopicToId(public_topic), v, payload);
+      Invalidation::Init(ConvertTopicToId(*expected_public_topic), v, payload);
   inv.SetAckHandler(AsWeakPtr(), base::ThreadTaskRunnerHandle::Get());
   DVLOG(1) << "Received invalidation with version " << inv.version() << " for "
-           << public_topic;
+           << *expected_public_topic;
 
   invalidations.Insert(inv);
   DispatchInvalidations(invalidations);
@@ -179,7 +191,7 @@ void FCMInvalidationListener::StopForTest() {
   Stop();
 }
 
-TopicSet FCMInvalidationListener::GetRegisteredIdsForTest() const {
+Topics FCMInvalidationListener::GetRegisteredIdsForTest() const {
   return registered_topics_;
 }
 
@@ -239,9 +251,9 @@ base::DictionaryValue FCMInvalidationListener::CollectDebugData() const {
   status.SetString(
       "InvalidationListener.Subscription-channel-state",
       SubscriptionChannelStateToString(subscription_channel_state_));
-  for (const Topic& topic : registered_topics_) {
-    if (!status.HasKey(topic)) {
-      status.SetString(topic, "Unregistered");
+  for (const auto& topic : registered_topics_) {
+    if (!status.HasKey(topic.first)) {
+      status.SetString(topic.first, "Unregistered");
     }
   }
   return status;

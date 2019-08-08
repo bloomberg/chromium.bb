@@ -350,6 +350,14 @@ class BaseSymbol(object):
   def IsStringLiteral(self):
     return self.full_name == STRING_LITERAL_NAME
 
+  # Used for diffs to know whether or not it is accurate to consider two symbols
+  # with the same name as being the same.
+  def IsNameUnique(self):
+    return not (self.IsStringLiteral() or  # "string literal"
+                self.IsOverhead() or  # "Overhead: APK File"
+                self.full_name.startswith('*') or  # "** outlined symbol"
+                '.' in self.full_name)  # ".L__unnamed_1195"
+
   def IterLeafSymbols(self):
     yield self
 
@@ -1128,7 +1136,7 @@ class DeltaSymbolGroup(SymbolGroup):
     ret = [0, 0, 0, 0]
     for sym in self:
       ret[sym.diff_status] += 1
-    return ret
+    return tuple(ret)
 
   def CountUniqueSymbols(self):
     """Returns (num_unique_before_symbols, num_unique_after_symbols)."""

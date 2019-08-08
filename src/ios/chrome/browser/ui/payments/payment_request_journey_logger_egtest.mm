@@ -5,13 +5,14 @@
 #import <EarlGrey/EarlGrey.h>
 
 #include "base/ios/ios_util.h"
-#include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/payments/core/journey_logger.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/payments/payment_request_egtest_base.h"
 #import "ios/chrome/test/app/histogram_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -37,26 +38,22 @@ using payments::JourneyLogger;
 
 - (void)addProfiles {
   _profile1 = autofill::test::GetFullProfile();
-  NSError* profile1Error = [self addAutofillProfile:_profile1];
-  GREYAssertNil(profile1Error, profile1Error.localizedDescription);
+  CHROME_EG_ASSERT_NO_ERROR([self addAutofillProfile:_profile1]);
 
   _profile2 = autofill::test::GetFullProfile2();
-  NSError* profile2Error = [self addAutofillProfile:_profile2];
-  GREYAssertNil(profile2Error, profile2Error.localizedDescription);
+  CHROME_EG_ASSERT_NO_ERROR([self addAutofillProfile:_profile2]);
 }
 
 - (void)addCard1 {
   _creditCard1 = autofill::test::GetCreditCard();
   _creditCard1.set_billing_address_id(_profile1.guid());
-  NSError* creditCardError = [self addCreditCard:_creditCard1];
-  GREYAssertNil(creditCardError, creditCardError.localizedDescription);
+  CHROME_EG_ASSERT_NO_ERROR([self addCreditCard:_creditCard1]);
 }
 
 - (void)addCard2 {
   _creditCard2 = autofill::test::GetCreditCard2();
   _creditCard2.set_billing_address_id(_profile2.guid());
-  NSError* creditCardError = [self addCreditCard:_creditCard2];
-  GREYAssertNil(creditCardError, creditCardError.localizedDescription);
+  CHROME_EG_ASSERT_NO_ERROR([self addCreditCard:_creditCard2]);
 }
 
 #pragma mark - Tests
@@ -76,7 +73,7 @@ using payments::JourneyLogger;
   [self addCard1];
 
   [self loadTestPage:"payment_request_no_shipping_test.html"];
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
   [self payWithCreditCardUsingCVC:@"123"];
 
   // Make sure the correct events were logged.
@@ -117,6 +114,7 @@ using payments::JourneyLogger;
                  @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_GOOGLE, @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_COULD_NOT_SHOW, @"");
 }
 
 - (void)testOnlyBobpaySupported {
@@ -132,7 +130,7 @@ using payments::JourneyLogger;
   [self addCard1];
 
   [self loadTestPage:"payment_request_bobpay_test.html"];
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
   [self waitForWebViewContainingTexts:{"rejected"}];
 
   FailureBlock failureBlock = ^(NSString* error) {
@@ -154,7 +152,7 @@ using payments::JourneyLogger;
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SKIPPED_SHOW, @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_COMPLETED, @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_USER_ABORTED, @"");
-  GREYAssertTrue(buckets[0].min & JourneyLogger::EVENT_OTHER_ABORTED, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_OTHER_ABORTED, @"");
   GREYAssertFalse(
       buckets[0].min & JourneyLogger::EVENT_HAD_INITIAL_FORM_OF_PAYMENT, @"");
   GREYAssertFalse(
@@ -181,6 +179,7 @@ using payments::JourneyLogger;
                   @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_GOOGLE, @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER, @"");
+  GREYAssertTrue(buckets[0].min & JourneyLogger::EVENT_COULD_NOT_SHOW, @"");
 }
 
 // TODO(crbug.com/795663): Fails on iphone11 devices.
@@ -196,8 +195,9 @@ using payments::JourneyLogger;
   [self addCard1];
 
   [self loadTestPage:"payment_request_multiple_show_test.html"];
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
-  [ChromeEarlGrey tapWebViewElementWithID:@"showAgain"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey tapWebStateElementWithID:@"showAgain"]);
   [self payWithCreditCardUsingCVC:@"123"];
 
   // Trying to show the same request twice is not considered a concurrent
@@ -245,6 +245,7 @@ using payments::JourneyLogger;
                  @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_GOOGLE, @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_COULD_NOT_SHOW, @"");
 }
 
 // TODO(crbug.com/602666): add a test to verify that the correct metrics get
@@ -270,7 +271,7 @@ using payments::JourneyLogger;
 
   [self loadTestPage:
             "payment_request_contact_details_and_free_shipping_test.html"];
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
   [self payWithCreditCardUsingCVC:@"123"];
 
   FailureBlock failureBlock = ^(NSString* error) {
@@ -325,6 +326,7 @@ using payments::JourneyLogger;
                  @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_GOOGLE, @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_COULD_NOT_SHOW, @"");
 }
 
 // Tests that the correct number of suggestions shown for each section is logged
@@ -343,7 +345,7 @@ using payments::JourneyLogger;
 
   [self loadTestPage:
             "payment_request_contact_details_and_free_shipping_test.html"];
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_CANCEL)] performAction:grey_tap()];
@@ -401,6 +403,7 @@ using payments::JourneyLogger;
                   @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_GOOGLE, @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_COULD_NOT_SHOW, @"");
 }
 
 // Tests that the correct number of suggestions shown for each section is logged
@@ -420,7 +423,7 @@ using payments::JourneyLogger;
   [self addCard1];
 
   [self loadTestPage:"payment_request_contact_details_test.html"];
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
   [self payWithCreditCardUsingCVC:@"123"];
 
   FailureBlock failureBlock = ^(NSString* error) {
@@ -477,6 +480,7 @@ using payments::JourneyLogger;
                  @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_GOOGLE, @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_COULD_NOT_SHOW, @"");
 }
 
 // Tests that the correct number of suggestions shown for each section is logged
@@ -494,7 +498,7 @@ using payments::JourneyLogger;
   [self addCard1];
 
   [self loadTestPage:"payment_request_contact_details_test.html"];
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_CANCEL)] performAction:grey_tap()];
@@ -554,6 +558,7 @@ using payments::JourneyLogger;
                   @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_GOOGLE, @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_COULD_NOT_SHOW, @"");
 }
 
 // Tests that the correct number of suggestions shown for each section is logged
@@ -574,7 +579,7 @@ using payments::JourneyLogger;
   [self addCard1];
 
   [self loadTestPage:"payment_request_free_shipping_test.html"];
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
   [self payWithCreditCardUsingCVC:@"123"];
 
   FailureBlock failureBlock = ^(NSString* error) {
@@ -632,6 +637,7 @@ using payments::JourneyLogger;
                  @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_GOOGLE, @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_COULD_NOT_SHOW, @"");
 }
 
 // Tests that the correct number of suggestions shown for each section is logged
@@ -649,7 +655,7 @@ using payments::JourneyLogger;
   [self addCard1];
 
   [self loadTestPage:"payment_request_free_shipping_test.html"];
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_CANCEL)] performAction:grey_tap()];
@@ -714,6 +720,7 @@ using payments::JourneyLogger;
                   @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_GOOGLE, @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_COULD_NOT_SHOW, @"");
 }
 
 // Tests that the correct number of suggestions shown for each section is logged
@@ -722,7 +729,8 @@ using payments::JourneyLogger;
   chrome_test_util::HistogramTester histogramTester;
 
   [self loadTestPage:"payment_request_can_make_payment_metrics_test.html"];
-  [ChromeEarlGrey tapWebViewElementWithID:@"queryNoShow"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey tapWebStateElementWithID:@"queryNoShow"]);
 
   // Navigate away to abort the Payment Request and trigger the logs.
   [self loadTestPage:"payment_request_email_test.html"];
@@ -731,9 +739,10 @@ using payments::JourneyLogger;
     GREYFail(error);
   };
 
-  // Abort should not be logged.
-  histogramTester.ExpectTotalCount("PaymentRequest.CheckoutFunnel.Aborted", 0,
-                                   failureBlock);
+  // Abort should be logged.
+  histogramTester.ExpectBucketCount("PaymentRequest.CheckoutFunnel.Aborted",
+                                    JourneyLogger::ABORT_REASON_USER_NAVIGATION,
+                                    1, failureBlock);
 
   // Some events should be logged.
   std::vector<chrome_test_util::Bucket> buckets =
@@ -768,7 +777,7 @@ using payments::JourneyLogger;
   [self addCard1];
 
   [self loadTestPage:"payment_request_email_test.html"];
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
 
   // Navigate away to abort the Payment Request and trigger the logs.
   [self loadTestPage:"payment_request_email_test.html"];
@@ -811,6 +820,7 @@ using payments::JourneyLogger;
                   @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_GOOGLE, @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_COULD_NOT_SHOW, @"");
 }
 
 - (void)testUserHadIncompleteSuggestionsForEverything_NoCard {
@@ -819,7 +829,7 @@ using payments::JourneyLogger;
   [self addProfiles];  // The user has no form of payment on file.
 
   [self loadTestPage:"payment_request_email_test.html"];
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
 
   // Navigate away to abort the Payment Request and trigger the logs.
   [self loadTestPage:"payment_request_email_test.html"];
@@ -862,6 +872,7 @@ using payments::JourneyLogger;
                   @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_GOOGLE, @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_COULD_NOT_SHOW, @"");
 }
 
 - (void)testUserHadIncompleteSuggestionsForEverything_CardNetworkNotSupported {
@@ -871,7 +882,7 @@ using payments::JourneyLogger;
   [self addCard2];  // AMEX is not supported by the merchant.
 
   [self loadTestPage:"payment_request_email_test.html"];
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
 
   // Navigate away to abort the Payment Request and trigger the logs.
   [self loadTestPage:"payment_request_email_test.html"];
@@ -914,6 +925,7 @@ using payments::JourneyLogger;
                   @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_GOOGLE, @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_COULD_NOT_SHOW, @"");
 }
 
 @end

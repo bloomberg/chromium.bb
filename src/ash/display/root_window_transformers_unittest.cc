@@ -168,7 +168,7 @@ TEST_F(RootWindowTransformersTest, RotateAndMagnify) {
   generator1.MoveMouseToInHost(40, 80);
   EXPECT_EQ("50,90", event_handler.GetLocationAndReset());
   EXPECT_EQ("50,90",
-            Shell::Get()->aura_env()->last_mouse_location().ToString());
+            aura::Env::GetInstance()->last_mouse_location().ToString());
   EXPECT_EQ(display::Display::ROTATE_0,
             GetActiveDisplayRotation(display1.id()));
   EXPECT_EQ(display::Display::ROTATE_0, GetActiveDisplayRotation(display2_id));
@@ -189,7 +189,7 @@ TEST_F(RootWindowTransformersTest, RotateAndMagnify) {
   generator1.MoveMouseToInHost(39, 120);
   EXPECT_EQ("110,70", event_handler.GetLocationAndReset());
   EXPECT_EQ("110,70",
-            Shell::Get()->aura_env()->last_mouse_location().ToString());
+            aura::Env::GetInstance()->last_mouse_location().ToString());
   EXPECT_EQ(display::Display::ROTATE_90,
             GetActiveDisplayRotation(display1.id()));
   EXPECT_EQ(display::Display::ROTATE_0, GetActiveDisplayRotation(display2_id));
@@ -215,7 +215,7 @@ TEST_F(RootWindowTransformersTest, RotateAndMagnify) {
   generator2.MoveMouseToInHost(172, 219);
   EXPECT_EQ("95,80", event_handler.GetLocationAndReset());
   EXPECT_EQ("145,200",
-            Shell::Get()->aura_env()->last_mouse_location().ToString());
+            aura::Env::GetInstance()->last_mouse_location().ToString());
   EXPECT_EQ(display::Display::ROTATE_90,
             GetActiveDisplayRotation(display1.id()));
   EXPECT_EQ(display::Display::ROTATE_270,

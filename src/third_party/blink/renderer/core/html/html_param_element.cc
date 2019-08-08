@@ -30,10 +30,8 @@ namespace blink {
 
 using namespace html_names;
 
-inline HTMLParamElement::HTMLParamElement(Document& document)
+HTMLParamElement::HTMLParamElement(Document& document)
     : HTMLElement(kParamTag, document) {}
-
-DEFINE_NODE_FACTORY(HTMLParamElement)
 
 const AtomicString& HTMLParamElement::GetName() const {
   if (HasName())

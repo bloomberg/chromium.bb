@@ -81,11 +81,9 @@ bool ShellDownloadManagerDelegate::DetermineDownloadTarget(
     return true;
   }
 
-  FilenameDeterminedCallback filename_determined_callback =
-      base::Bind(&ShellDownloadManagerDelegate::OnDownloadPathGenerated,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 download->GetId(),
-                 callback);
+  FilenameDeterminedCallback filename_determined_callback = base::BindOnce(
+      &ShellDownloadManagerDelegate::OnDownloadPathGenerated,
+      weak_ptr_factory_.GetWeakPtr(), download->GetId(), callback);
 
   PostTaskWithTraits(
       FROM_HERE,
@@ -118,7 +116,7 @@ void ShellDownloadManagerDelegate::GenerateFilename(
     const std::string& suggested_filename,
     const std::string& mime_type,
     const base::FilePath& suggested_directory,
-    const FilenameDeterminedCallback& callback) {
+    FilenameDeterminedCallback callback) {
   base::FilePath generated_name = net::GenerateFileName(url,
                                                         content_disposition,
                                                         std::string(),
@@ -131,7 +129,7 @@ void ShellDownloadManagerDelegate::GenerateFilename(
 
   base::FilePath suggested_path(suggested_directory.Append(generated_name));
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(callback, suggested_path));
+                           base::BindOnce(std::move(callback), suggested_path));
 }
 
 void ShellDownloadManagerDelegate::OnDownloadPathGenerated(

@@ -23,6 +23,8 @@ using testing::Return;
 namespace offline_items_collection {
 namespace {
 
+using GetVisualsOptions = OfflineContentProvider::GetVisualsOptions;
+
 struct CompareOfflineItemsById {
   bool operator()(const OfflineItem& a, const OfflineItem& b) const {
     return a.id < b.id;
@@ -186,8 +188,8 @@ TEST_F(OfflineContentAggregatorTest, ActionPropagatesToRightProvider) {
   EXPECT_CALL(provider2, ResumeDownload(id2, true)).Times(1);
   EXPECT_CALL(provider1, PauseDownload(id1)).Times(1);
   EXPECT_CALL(provider2, PauseDownload(id2)).Times(1);
-  EXPECT_CALL(provider1, GetVisualsForItem_(id1, _)).Times(1);
-  EXPECT_CALL(provider2, GetVisualsForItem_(id2, _)).Times(1);
+  EXPECT_CALL(provider1, GetVisualsForItem_(id1, _, _)).Times(1);
+  EXPECT_CALL(provider2, GetVisualsForItem_(id2, _, _)).Times(1);
   EXPECT_CALL(provider1, GetShareInfoForItem(id1, _)).Times(1);
   EXPECT_CALL(provider2, GetShareInfoForItem(id2, _)).Times(1);
   aggregator_.OpenItem(LaunchLocation::DOWNLOAD_HOME, id1);
@@ -200,8 +202,10 @@ TEST_F(OfflineContentAggregatorTest, ActionPropagatesToRightProvider) {
   aggregator_.ResumeDownload(id2, true);
   aggregator_.PauseDownload(id1);
   aggregator_.PauseDownload(id2);
-  aggregator_.GetVisualsForItem(id1, OfflineContentProvider::VisualsCallback());
-  aggregator_.GetVisualsForItem(id2, OfflineContentProvider::VisualsCallback());
+  aggregator_.GetVisualsForItem(id1, GetVisualsOptions::IconOnly(),
+                                OfflineContentProvider::VisualsCallback());
+  aggregator_.GetVisualsForItem(id2, GetVisualsOptions::IconOnly(),
+                                OfflineContentProvider::VisualsCallback());
   aggregator_.GetShareInfoForItem(id1, OfflineContentProvider::ShareCallback());
   aggregator_.GetShareInfoForItem(id2, OfflineContentProvider::ShareCallback());
 }

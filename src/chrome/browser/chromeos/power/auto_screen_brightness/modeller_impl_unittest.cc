@@ -50,7 +50,7 @@ MonotoneCubicSpline CreateTestCurveFromTrainingData(
     ys.push_back(ys[i - 1] + 1);
   }
 
-  return MonotoneCubicSpline(xs, ys);
+  return *MonotoneCubicSpline::CreateMonotoneCubicSpline(xs, ys);
 }
 
 void CheckOptionalCurves(
@@ -80,9 +80,8 @@ class FakeTrainer : public Trainer {
   bool SetInitialCurves(const MonotoneCubicSpline& global_curve,
                         const MonotoneCubicSpline& current_curve) override {
     DCHECK(is_configured_);
-    global_curve_.emplace(global_curve);
-    current_curve_.emplace(is_personal_curve_valid_ ? current_curve
-                                                    : global_curve);
+    global_curve_ = global_curve;
+    current_curve_ = is_personal_curve_valid_ ? current_curve : global_curve;
     return is_personal_curve_valid_;
   }
 
@@ -109,7 +108,7 @@ class FakeTrainer : public Trainer {
     if (data.size() == 1) {
       used_data.push_back(data[0]);
     }
-    current_curve_.emplace(CreateTestCurveFromTrainingData(used_data));
+    current_curve_ = CreateTestCurveFromTrainingData(used_data);
     return *current_curve_;
   }
 
@@ -129,44 +128,31 @@ class TestObserver : public Modeller::Observer {
 
   // Modeller::Observer overrides:
   void OnModelTrained(const MonotoneCubicSpline& brightness_curve) override {
-    personal_curve_.emplace(brightness_curve);
-    trained_curve_received_ = true;
+    model_.personal_curve = brightness_curve;
+    ++model_.iteration_count;
   }
 
-  void OnModelInitialized(
-      const base::Optional<MonotoneCubicSpline>& global_curve,
-      const base::Optional<MonotoneCubicSpline>& personal_curve) override {
+  void OnModelInitialized(const Model& model) override {
     model_initialized_ = true;
-    if (global_curve)
-      global_curve_.emplace(*global_curve);
-
-    if (personal_curve)
-      personal_curve_.emplace(*personal_curve);
-  }
-
-  base::Optional<MonotoneCubicSpline> global_curve() const {
-    return global_curve_;
+    model_ = model;
   }
 
   base::Optional<MonotoneCubicSpline> personal_curve() const {
-    return personal_curve_;
+    return model_.personal_curve;
   }
 
-  void CheckStatus(bool is_model_initialized,
-                   const base::Optional<MonotoneCubicSpline>& global_curve,
-                   const base::Optional<MonotoneCubicSpline>& personal_curve) {
+  int iteration_count() const { return model_.iteration_count; }
+
+  void CheckStatus(bool is_model_initialized, const Model& expected_model) {
     EXPECT_EQ(is_model_initialized, model_initialized_);
-    CheckOptionalCurves(global_curve, global_curve_);
-    CheckOptionalCurves(personal_curve, personal_curve_);
+    CheckOptionalCurves(expected_model.global_curve, model_.global_curve);
+    CheckOptionalCurves(expected_model.personal_curve, model_.personal_curve);
+    EXPECT_EQ(expected_model.iteration_count, model_.iteration_count);
   }
-
-  bool trained_curve_received() { return trained_curve_received_; }
 
  private:
   bool model_initialized_ = false;
-  base::Optional<MonotoneCubicSpline> global_curve_;
-  base::Optional<MonotoneCubicSpline> personal_curve_;
-  bool trained_curve_received_ = false;
+  Model model_;
 
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
@@ -183,10 +169,14 @@ class ModellerImplTest : public testing::Test {
     profile_builder.SetProfileName("testuser@gmail.com");
     profile_builder.SetPath(temp_dir_.GetPath().AppendASCII("TestProfile"));
     profile_ = profile_builder.Build();
+    test_model_config_ = GetTestModelConfig();
+    test_initial_global_curve_ = MonotoneCubicSpline::CreateMonotoneCubicSpline(
+        test_model_config_.log_lux, test_model_config_.brightness);
+    DCHECK(test_initial_global_curve_);
   }
 
   ~ModellerImplTest() override {
-    base::ThreadPool::GetInstance()->FlushForTesting();
+    base::ThreadPoolInstance::Get()->FlushForTesting();
   }
 
   // Sets up |modeller_| with a FakeTrainer.
@@ -225,17 +215,15 @@ class ModellerImplTest : public testing::Test {
   }
 
  protected:
-  void WriteCurveToFile(const MonotoneCubicSpline& curve) {
-    const base::FilePath curve_path =
-        ModellerImpl::ModellerImpl::GetCurvePathFromProfile(profile_.get());
-    CHECK(!curve_path.empty());
-
-    const std::string data = curve.ToString();
-    const int bytes_written =
-        base::WriteFile(curve_path, data.data(), data.size());
-    ASSERT_EQ(bytes_written, static_cast<int>(data.size()))
-        << "Wrote " << bytes_written << " byte(s) instead of " << data.size()
-        << " to " << curve_path;
+  void WriteModelToFile(const Model& model) {
+    const ModellerImpl::ModelSavingSpec& model_saving_spec =
+        ModellerImpl::ModellerImpl::GetModelSavingSpecFromProfile(
+            profile_.get());
+    CHECK(!model_saving_spec.global_curve.empty());
+    CHECK(!model_saving_spec.personal_curve.empty());
+    CHECK(!model_saving_spec.iteration_count.empty());
+    SaveModelToDisk(model_saving_spec, model, true /* save_global_curve */,
+                    true /* save_personal_curve */, true /* is_testing */);
   }
 
   // Returns a valid ModelConfig.
@@ -262,6 +250,9 @@ class ModellerImplTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<TestingProfile> profile_;
 
+  ModelConfig test_model_config_;
+  base::Optional<MonotoneCubicSpline> test_initial_global_curve_;
+
   FakeAlsReader fake_als_reader_;
   FakeBrightnessMonitor fake_brightness_monitor_;
   FakeModelConfigLoader fake_model_config_loader_;
@@ -277,21 +268,19 @@ class ModellerImplTest : public testing::Test {
 // AlsReader is |kDisabled| when Modeller is created.
 TEST_F(ModellerImplTest, AlsReaderDisabledOnInit) {
   Init(AlsReader::AlsInitStatus::kDisabled, BrightnessMonitor::Status::kSuccess,
-       GetTestModelConfig());
+       test_model_config_);
 
-  test_observer_->CheckStatus(true /* is_model_initialized */,
-                              base::nullopt /* global_curve */,
-                              base::nullopt /* personal_curve */);
+  // Model should be empty if modeller is disabled.
+  test_observer_->CheckStatus(true /* is_model_initialized */, Model());
 }
 
 // BrightnessMonitor is |kDisabled| when Modeller is created.
 TEST_F(ModellerImplTest, BrightnessMonitorDisabledOnInit) {
   Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kDisabled,
-       GetTestModelConfig());
+       test_model_config_);
 
-  test_observer_->CheckStatus(true /* is_model_initialized */,
-                              base::nullopt /* global_curve */,
-                              base::nullopt /* personal_curve */);
+  // Model should be empty if modeller is disabled.
+  test_observer_->CheckStatus(true /* is_model_initialized */, Model());
 }
 
 // ModelConfigLoader has an invalid config, hence Modeller is disabled.
@@ -299,80 +288,67 @@ TEST_F(ModellerImplTest, ModelConfigLoaderDisabledOnInit) {
   Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
        ModelConfig());
 
-  test_observer_->CheckStatus(true /* is_model_initialized */,
-                              base::nullopt /* global_curve */,
-                              base::nullopt /* personal_curve */);
+  // Model should be empty if modeller is disabled.
+  test_observer_->CheckStatus(true /* is_model_initialized */, Model());
 }
 
 // AlsReader is |kDisabled| on later notification.
 TEST_F(ModellerImplTest, AlsReaderDisabledOnNotification) {
   Init(AlsReader::AlsInitStatus::kInProgress,
-       BrightnessMonitor::Status::kSuccess, GetTestModelConfig());
+       BrightnessMonitor::Status::kSuccess, test_model_config_);
 
-  test_observer_->CheckStatus(false /* is_model_initialized */,
-                              base::nullopt /* global_curve */,
-                              base::nullopt /* personal_curve */);
+  test_observer_->CheckStatus(false /* is_model_initialized */, Model());
 
   fake_als_reader_.set_als_init_status(AlsReader::AlsInitStatus::kDisabled);
   fake_als_reader_.ReportReaderInitialized();
   thread_bundle_.RunUntilIdle();
 
-  test_observer_->CheckStatus(true /* is_model_initialized */,
-                              base::nullopt /* global_curve */,
-                              base::nullopt /* personal_curve */);
+  // Model should be empty if modeller is disabled.
+  test_observer_->CheckStatus(true /* is_model_initialized */, Model());
 }
 
 // AlsReader is |kSuccess| on later notification.
 TEST_F(ModellerImplTest, AlsReaderEnabledOnNotification) {
   Init(AlsReader::AlsInitStatus::kInProgress,
-       BrightnessMonitor::Status::kSuccess, GetTestModelConfig());
+       BrightnessMonitor::Status::kSuccess, test_model_config_);
 
-  test_observer_->CheckStatus(false /* is_model_initialized */,
-                              base::nullopt /* global_curve */,
-                              base::nullopt /* personal_curve */);
+  test_observer_->CheckStatus(false /* is_model_initialized */, Model());
 
   fake_als_reader_.set_als_init_status(AlsReader::AlsInitStatus::kSuccess);
   fake_als_reader_.ReportReaderInitialized();
   thread_bundle_.RunUntilIdle();
 
-  test_observer_->CheckStatus(true /* is_model_initialized */,
-                              modeller_->GetGlobalCurveForTesting(),
-                              base::nullopt /* personal_curve */);
+  const Model expected_model(test_initial_global_curve_, base::nullopt, 0);
+  test_observer_->CheckStatus(true /* is_model_initialized */, expected_model);
 }
 
 // BrightnessMonitor is |kDisabled| on later notification.
 TEST_F(ModellerImplTest, BrightnessMonitorDisabledOnNotification) {
   Init(AlsReader::AlsInitStatus::kSuccess,
-       BrightnessMonitor::Status::kInitializing, GetTestModelConfig());
+       BrightnessMonitor::Status::kInitializing, test_model_config_);
 
-  test_observer_->CheckStatus(false /* is_model_initialized */,
-                              base::nullopt /* global_curve */,
-                              base::nullopt /* personal_curve */);
+  test_observer_->CheckStatus(false /* is_model_initialized */, Model());
 
   fake_brightness_monitor_.set_status(BrightnessMonitor::Status::kDisabled);
   fake_brightness_monitor_.ReportBrightnessMonitorInitialized();
 
-  test_observer_->CheckStatus(true /* is_model_initialized */,
-                              base::nullopt /* global_curve */,
-                              base::nullopt /* personal_curve */);
+  // Model should be empty if modeller is disabled.
+  test_observer_->CheckStatus(true /* is_model_initialized */, Model());
 }
 
 // BrightnessMonitor is |kSuccess| on later notification.
 TEST_F(ModellerImplTest, BrightnessMonitorEnabledOnNotification) {
   Init(AlsReader::AlsInitStatus::kSuccess,
-       BrightnessMonitor::Status::kInitializing, GetTestModelConfig());
+       BrightnessMonitor::Status::kInitializing, test_model_config_);
 
-  test_observer_->CheckStatus(false /* is_model_initialized */,
-                              base::nullopt /* global_curve */,
-                              base::nullopt /* personal_curve */);
+  test_observer_->CheckStatus(false /* is_model_initialized */, Model());
 
   fake_brightness_monitor_.set_status(BrightnessMonitor::Status::kSuccess);
   fake_brightness_monitor_.ReportBrightnessMonitorInitialized();
   thread_bundle_.RunUntilIdle();
 
-  test_observer_->CheckStatus(true /* is_model_initialized */,
-                              modeller_->GetGlobalCurveForTesting(),
-                              base::nullopt /* personal_curve */);
+  const Model expected_model(test_initial_global_curve_, base::nullopt, 0);
+  test_observer_->CheckStatus(true /* is_model_initialized */, expected_model);
 }
 
 // ModelConfigLoader reports an invalid config on later notification.
@@ -380,18 +356,14 @@ TEST_F(ModellerImplTest, InvalidModelConfigOnNotification) {
   Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
        base::nullopt /* model_config */);
 
-  test_observer_->CheckStatus(false /* is_model_initialized */,
-                              base::nullopt /* global_curve */,
-                              base::nullopt /* personal_curve */);
+  test_observer_->CheckStatus(false /* is_model_initialized */, Model());
 
   // ModelConfig() creates an invalid config.
   DCHECK(!IsValidModelConfig(ModelConfig()));
   fake_model_config_loader_.set_model_config(ModelConfig());
   fake_model_config_loader_.ReportModelConfigLoaded();
   thread_bundle_.RunUntilIdle();
-  test_observer_->CheckStatus(true /* is_model_initialized */,
-                              base::nullopt /* global_curve */,
-                              base::nullopt /* personal_curve */);
+  test_observer_->CheckStatus(true /* is_model_initialized */, Model());
 }
 
 // ModelConfigLoader reports a valid config on later notification.
@@ -399,66 +371,81 @@ TEST_F(ModellerImplTest, ValidModelConfigOnNotification) {
   Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
        base::nullopt /* model_config */);
 
-  test_observer_->CheckStatus(false /* is_model_initialized */,
-                              base::nullopt /* global_curve */,
-                              base::nullopt /* personal_curve */);
+  test_observer_->CheckStatus(false /* is_model_initialized */, Model());
 
-  fake_model_config_loader_.set_model_config(GetTestModelConfig());
+  fake_model_config_loader_.set_model_config(test_model_config_);
   fake_model_config_loader_.ReportModelConfigLoaded();
   thread_bundle_.RunUntilIdle();
 
-  test_observer_->CheckStatus(true /* is_model_initialized */,
-                              modeller_->GetGlobalCurveForTesting(),
-                              base::nullopt /* personal_curve */);
-}
-// There is no saved curve, hence a global curve is created.
-TEST_F(ModellerImplTest, NoSavedCurve) {
-  Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
-       GetTestModelConfig());
-
-  test_observer_->CheckStatus(true /* is_model_initialized */,
-                              modeller_->GetGlobalCurveForTesting(),
-                              base::nullopt /* personal_curve */);
+  const Model expected_model(test_initial_global_curve_, base::nullopt, 0);
+  test_observer_->CheckStatus(true /* is_model_initialized */, expected_model);
 }
 
-// A curve is loaded from disk, this is a personal curve.
-TEST_F(ModellerImplTest, CurveLoadedFromProfilePath) {
+// A model is loaded from disk, this is a personal curve, and the saved global
+// curve is the same as initial global curve set from model config, hence there
+// is no need to reset the model.
+TEST_F(ModellerImplTest, ModelLoadedFromProfilePath) {
   const std::vector<double> xs = {0, 10, 20, 40, 60, 80, 90, 100};
   const std::vector<double> ys = {0, 5, 10, 15, 20, 25, 30, 40};
-  MonotoneCubicSpline curve(xs, ys);
+  const base::Optional<MonotoneCubicSpline> personal_curve =
+      MonotoneCubicSpline::CreateMonotoneCubicSpline(xs, ys);
+  DCHECK(personal_curve);
 
-  WriteCurveToFile(curve);
+  // Use |test_initial_global_curve_| as the saved global curve.
+  const Model model(test_initial_global_curve_, personal_curve,
+                    1 /* iteration_count */);
+  WriteModelToFile(model);
 
   thread_bundle_.RunUntilIdle();
 
   Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
-       GetTestModelConfig());
+       test_model_config_);
+  thread_bundle_.RunUntilIdle();
 
-  test_observer_->CheckStatus(true /* is_model_initialized */,
-                              modeller_->GetGlobalCurveForTesting(), curve);
+  test_observer_->CheckStatus(true /* is_model_initialized */, model);
   histogram_tester_.ExpectUniqueSample(
       "AutoScreenBrightness.PersonalCurveValid", true, 1);
 }
 
-// A curve is loaded from disk, this is a personal curve. This personal curve
-// doesn't satisfy Trainer slope constraint, hence it's ignored and the global
-// curve is used instead.
-TEST_F(ModellerImplTest, PersonalCurveError) {
+// A model is loaded from disk, this is a personal curve, and the saved global
+// curve is different from the initial global curve set from model config, hence
+// there the model is reset.
+TEST_F(ModellerImplTest, ModelLoadedFromProfilePathWithReset) {
   const std::vector<double> xs = {0, 10, 20, 40, 60, 80, 90, 100};
   const std::vector<double> ys = {0, 5, 10, 15, 20, 25, 30, 40};
-  MonotoneCubicSpline curve(xs, ys);
+  const base::Optional<MonotoneCubicSpline> saved_global_curve =
+      MonotoneCubicSpline::CreateMonotoneCubicSpline(xs, ys);
+  DCHECK(saved_global_curve);
 
-  WriteCurveToFile(curve);
+  const Model model(saved_global_curve, saved_global_curve,
+                    2 /* iteration_count */);
+  WriteModelToFile(model);
 
   thread_bundle_.RunUntilIdle();
 
   Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
-       GetTestModelConfig(), true /* is_trainer_configured */,
+       test_model_config_);
+
+  const Model expected_model(test_initial_global_curve_, base::nullopt, 0);
+  test_observer_->CheckStatus(true /* is_model_initialized */, expected_model);
+
+  histogram_tester_.ExpectUniqueSample(
+      "AutoScreenBrightness.PersonalCurveValid", true, 1);
+}
+
+// A model is loaded from disk but the personal curve doesn't satisfy Trainer
+// slope constraint, hence it's ignored and the global curve is used instead.
+TEST_F(ModellerImplTest, PersonalCurveError) {
+  const Model model(test_initial_global_curve_, test_initial_global_curve_, 2);
+  WriteModelToFile(model);
+  thread_bundle_.RunUntilIdle();
+
+  Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
+       test_model_config_, true /* is_trainer_configured */,
        false /* is_personal_curve_valid */);
 
-  test_observer_->CheckStatus(true /* is_model_initialized */,
-                              modeller_->GetGlobalCurveForTesting(),
-                              base::nullopt /* personal_curve */);
+  const Model expected_model(test_initial_global_curve_, base::nullopt, 0);
+  test_observer_->CheckStatus(true /* is_model_initialized */, expected_model);
 
   histogram_tester_.ExpectUniqueSample(
       "AutoScreenBrightness.PersonalCurveValid", false, 1);
@@ -467,20 +454,18 @@ TEST_F(ModellerImplTest, PersonalCurveError) {
 // Ambient light values are received. We check average ambient light has been
 // calculated from the recent samples only.
 TEST_F(ModellerImplTest, OnAmbientLightUpdated) {
-  const ModelConfig model_config = GetTestModelConfig();
-  // Set a horizon different from model_config.
-  const int horizon_in_seconds = 4;
+  const int horizon_in_seconds = test_model_config_.model_als_horizon_seconds;
+
   Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
-       model_config, true /* is_trainer_configured */,
-       true /* is_personal_curve_valid */,
-       {{"model_als_horizon_seconds",
-         base::NumberToString(horizon_in_seconds)}});
+       test_model_config_, true /* is_trainer_configured */,
+       true /* is_personal_curve_valid */);
 
-  test_observer_->CheckStatus(true /* is_model_initialized */,
-                              modeller_->GetGlobalCurveForTesting(),
-                              base::nullopt /* personal_curve */);
+  // No model is saved to disk, hence the initial model only has the global
+  // curve set from the config.
+  const Model expected_model(test_initial_global_curve_, base::nullopt, 0);
+  test_observer_->CheckStatus(true /* is_model_initialized */, expected_model);
 
-  EXPECT_EQ(modeller_->GetModelConfigForTesting(), model_config);
+  EXPECT_EQ(modeller_->GetModelConfigForTesting(), test_model_config_);
 
   const int first_lux = 1000;
   double running_sum = 0.0;
@@ -493,6 +478,7 @@ TEST_F(ModellerImplTest, OnAmbientLightUpdated) {
         modeller_->AverageAmbientForTesting(thread_bundle_.NowTicks()).value(),
         running_sum / (i + 1));
   }
+  EXPECT_EQ(test_observer_->iteration_count(), 0);
 
   // Add another one should push the oldest |first_lux| out of the horizon.
   thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
@@ -501,6 +487,7 @@ TEST_F(ModellerImplTest, OnAmbientLightUpdated) {
   EXPECT_DOUBLE_EQ(
       modeller_->AverageAmbientForTesting(thread_bundle_.NowTicks()).value(),
       running_sum / horizon_in_seconds);
+  EXPECT_EQ(test_observer_->iteration_count(), 0);
 }
 
 // User brightness changes are received, training example cache reaches
@@ -508,13 +495,12 @@ TEST_F(ModellerImplTest, OnAmbientLightUpdated) {
 // within a small window shorter than |training_delay_|.
 TEST_F(ModellerImplTest, OnUserBrightnessChanged) {
   Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
-       GetTestModelConfig(), true /* is_trainer_configured */,
+       test_model_config_, true /* is_trainer_configured */,
        true /* is_personal_curve_valid */,
        {{"training_delay_in_seconds", base::NumberToString(60)}});
 
-  test_observer_->CheckStatus(true /* is_model_initialized */,
-                              modeller_->GetGlobalCurveForTesting(),
-                              base::nullopt /* personal_curve */);
+  const Model expected_model(test_initial_global_curve_, base::nullopt, 0);
+  test_observer_->CheckStatus(true /* is_model_initialized */, expected_model);
 
   std::vector<TrainingDataPoint> expected_data;
 
@@ -531,6 +517,7 @@ TEST_F(ModellerImplTest, OnUserBrightnessChanged) {
     expected_data.push_back({brightness_old, brightness_new,
                              modeller_->AverageAmbientForTesting(now).value(),
                              now});
+    EXPECT_EQ(test_observer_->iteration_count(), 0);
   }
 
   // Training should not have started.
@@ -549,6 +536,7 @@ TEST_F(ModellerImplTest, OnUserBrightnessChanged) {
   thread_bundle_.RunUntilIdle();
 
   EXPECT_EQ(0u, modeller_->NumberTrainingDataPointsForTesting());
+  EXPECT_EQ(test_observer_->iteration_count(), 1);
 
   const base::Optional<MonotoneCubicSpline>& result_curve =
       test_observer_->personal_curve();
@@ -562,13 +550,12 @@ TEST_F(ModellerImplTest, OnUserBrightnessChanged) {
 // User activities resets timer used to start training.
 TEST_F(ModellerImplTest, MultipleUserActivities) {
   Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
-       GetTestModelConfig(), true /* is_trainer_configured */,
+       test_model_config_, true /* is_trainer_configured */,
        true /* is_personal_curve_valid */,
        {{"training_delay_in_seconds", base::NumberToString(60)}});
 
-  test_observer_->CheckStatus(true /* is_model_initialized */,
-                              modeller_->GetGlobalCurveForTesting(),
-                              base::nullopt /* personal_curve */);
+  const Model expected_model(test_initial_global_curve_, base::nullopt, 0);
+  test_observer_->CheckStatus(true /* is_model_initialized */, expected_model);
 
   thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
   fake_als_reader_.ReportAmbientLightUpdate(30);
@@ -585,6 +572,7 @@ TEST_F(ModellerImplTest, MultipleUserActivities) {
     expected_data.push_back({brightness_old, brightness_new,
                              modeller_->AverageAmbientForTesting(now).value(),
                              now});
+    EXPECT_EQ(test_observer_->iteration_count(), 0);
   }
 
   EXPECT_EQ(modeller_->NumberTrainingDataPointsForTesting(), 10u);
@@ -597,6 +585,7 @@ TEST_F(ModellerImplTest, MultipleUserActivities) {
 
   thread_bundle_.FastForwardBy(modeller_->GetTrainingDelayForTesting() / 3);
   EXPECT_EQ(modeller_->NumberTrainingDataPointsForTesting(), 10u);
+  EXPECT_EQ(test_observer_->iteration_count(), 0);
 
   // Another user event is received.
   modeller_->OnUserActivity(&mouse_event);
@@ -604,11 +593,13 @@ TEST_F(ModellerImplTest, MultipleUserActivities) {
   // After |training_delay_|/2, no training has started.
   thread_bundle_.FastForwardBy(modeller_->GetTrainingDelayForTesting() / 2);
   EXPECT_EQ(modeller_->NumberTrainingDataPointsForTesting(), 10u);
+  EXPECT_EQ(test_observer_->iteration_count(), 0);
 
   // After another |training_delay_|/2, training is scheduled.
   thread_bundle_.FastForwardBy(modeller_->GetTrainingDelayForTesting() / 2);
 
   EXPECT_EQ(0u, modeller_->NumberTrainingDataPointsForTesting());
+  EXPECT_EQ(test_observer_->iteration_count(), 1);
   const base::Optional<MonotoneCubicSpline>& result_curve =
       test_observer_->personal_curve();
   DCHECK(result_curve);
@@ -621,15 +612,14 @@ TEST_F(ModellerImplTest, MultipleUserActivities) {
 // Training delay is 0, hence we train as soon as we have 1 data point.
 TEST_F(ModellerImplTest, ZeroTrainingDelay) {
   Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
-       GetTestModelConfig(), true /* is_trainer_configured */,
+       test_model_config_, true /* is_trainer_configured */,
        true /* is_personal_curve_valid  */,
        {
            {"training_delay_in_seconds", "0"},
        });
 
-  test_observer_->CheckStatus(true /* is_model_initialized */,
-                              modeller_->GetGlobalCurveForTesting(),
-                              base::nullopt /* personal_curve */);
+  const Model expected_model(test_initial_global_curve_, base::nullopt, 0);
+  test_observer_->CheckStatus(true /* is_model_initialized */, expected_model);
 
   fake_als_reader_.ReportAmbientLightUpdate(30);
   const ui::MouseEvent mouse_event(ui::ET_MOUSE_EXITED, gfx::Point(0, 0),
@@ -639,7 +629,7 @@ TEST_F(ModellerImplTest, ZeroTrainingDelay) {
   modeller_->OnUserBrightnessChanged(10, 20);
   thread_bundle_.RunUntilIdle();
   EXPECT_EQ(0u, modeller_->NumberTrainingDataPointsForTesting());
-  EXPECT_TRUE(test_observer_->trained_curve_received());
+  EXPECT_EQ(test_observer_->iteration_count(), 1);
 }
 
 }  // namespace auto_screen_brightness

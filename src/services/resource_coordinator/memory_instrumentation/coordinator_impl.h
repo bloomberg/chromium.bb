@@ -87,6 +87,9 @@ class CoordinatorImpl : public Coordinator,
   // virtual for testing.
   virtual base::ProcessId GetProcessIdForClientIdentity(
       service_manager::Identity identity) const;
+  // virtual for testing.
+  virtual std::map<base::ProcessId, std::vector<std::string>>
+  ComputePidToServiceNamesMap() const;
   ~CoordinatorImpl() override;
 
  private:
@@ -136,7 +139,7 @@ class CoordinatorImpl : public Coordinator,
   // Callback of DumpProcessesForTracing.
   void OnDumpProcessesForTracing(
       uint64_t dump_guid,
-      std::vector<mojom::SharedBufferWithSizePtr> buffers);
+      std::vector<mojom::HeapProfileResultPtr> heap_profile_results);
 
   void RemovePendingResponse(mojom::ClientProcess*,
                              QueuedRequest::PendingResponse::Type);

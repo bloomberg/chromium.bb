@@ -17,11 +17,11 @@ class BaseScreen;
 // to a particular OobeScreen.
 class BaseScreenHandler : public BaseWebUIHandler {
  public:
-  BaseScreenHandler(OobeScreen oobe_screen,
+  BaseScreenHandler(OobeScreenId oobe_screen,
                     JSCallsContainer* js_calls_container);
   ~BaseScreenHandler() override;
 
-  OobeScreen oobe_screen() const { return oobe_screen_; }
+  OobeScreenId oobe_screen() const { return oobe_screen_; }
 
   void SetBaseScreen(BaseScreen* base_screen);
 
@@ -48,7 +48,7 @@ class BaseScreenHandler : public BaseWebUIHandler {
   std::string user_acted_method_path_;
 
   // OobeScreen that this handler corresponds to.
-  OobeScreen oobe_screen_ = OobeScreen::SCREEN_UNKNOWN;
+  OobeScreenId oobe_screen_ = OobeScreen::SCREEN_UNKNOWN;
 
   BaseScreen* base_screen_ = nullptr;
 

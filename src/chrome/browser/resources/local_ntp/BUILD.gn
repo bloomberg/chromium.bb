@@ -16,7 +16,6 @@ js_library("local_ntp") {
     "custom_backgrounds.js",
     "custom_links_edit.js",
     "doodles.js",
-    "instant_iframe_validation.js",
     "local_ntp.js",
     "most_visited_single.js",
     "most_visited_title.js",

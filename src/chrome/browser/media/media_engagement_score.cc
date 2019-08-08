@@ -43,13 +43,14 @@ const double kHighScoreUpperThresholdParamDefault = 0.3;
 
 std::unique_ptr<base::DictionaryValue> GetMediaEngagementScoreDictForSettings(
     const HostContentSettingsMap* settings,
-    const GURL& origin_url) {
+    const url::Origin& origin) {
   if (!settings)
     return std::make_unique<base::DictionaryValue>();
 
   std::unique_ptr<base::DictionaryValue> value =
       base::DictionaryValue::From(settings->GetWebsiteSetting(
-          origin_url, origin_url, CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT,
+          origin.GetURL(), origin.GetURL(),
+          CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT,
           content_settings::ResourceIdentifier(), nullptr));
 
   if (value.get())
@@ -88,7 +89,7 @@ int MediaEngagementScore::GetScoreMinVisits() {
 }
 
 MediaEngagementScore::MediaEngagementScore(base::Clock* clock,
-                                           const GURL& origin,
+                                           const url::Origin& origin,
                                            HostContentSettingsMap* settings)
     : MediaEngagementScore(
           clock,
@@ -98,7 +99,7 @@ MediaEngagementScore::MediaEngagementScore(base::Clock* clock,
 
 MediaEngagementScore::MediaEngagementScore(
     base::Clock* clock,
-    const GURL& origin,
+    const url::Origin& origin,
     std::unique_ptr<base::DictionaryValue> score_dict,
     HostContentSettingsMap* settings)
     : origin_(origin),
@@ -107,6 +108,13 @@ MediaEngagementScore::MediaEngagementScore(
       settings_map_(settings) {
   if (!score_dict_)
     return;
+
+  // This is to prevent using previously saved data to mark an HTTP website as
+  // allowed to autoplay.
+  if (base::FeatureList::IsEnabled(media::kMediaEngagementHTTPSOnly) &&
+      origin_.scheme() != url::kHttpsScheme) {
+    return;
+  }
 
   GetIntegerFromScore(score_dict_.get(), kVisitsKey, &visits_);
   GetIntegerFromScore(score_dict_.get(), kMediaPlaybacksKey, &media_playbacks_);
@@ -176,11 +184,15 @@ MediaEngagementScore& MediaEngagementScore::operator=(MediaEngagementScore&&) =
 
 void MediaEngagementScore::Commit() {
   DCHECK(settings_map_);
+
+  if (origin_.opaque())
+    return;
+
   if (!UpdateScoreDict())
     return;
 
   settings_map_->SetWebsiteSettingDefaultScope(
-      origin_, GURL(), CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT,
+      origin_.GetURL(), GURL(), CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT,
       content_settings::ResourceIdentifier(), std::move(score_dict_));
 }
 
@@ -203,6 +215,12 @@ bool MediaEngagementScore::UpdateScoreDict() {
 
   if (!score_dict_)
     return false;
+
+  // This is to prevent saving data that we would otherwise not use.
+  if (base::FeatureList::IsEnabled(media::kMediaEngagementHTTPSOnly) &&
+      origin_.scheme() != url::kHttpsScheme) {
+    return false;
+  }
 
   if (base::Value* value = score_dict_->FindKeyOfType(
           kHasHighScoreKey, base::Value::Type::BOOLEAN)) {

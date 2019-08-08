@@ -84,14 +84,9 @@ class CORE_EXPORT TimeRanges final : public ScriptWrappable {
     }
   };
 
-  static TimeRanges* Create() { return MakeGarbageCollected<TimeRanges>(); }
-  static TimeRanges* Create(double start, double end) {
-    return MakeGarbageCollected<TimeRanges>(start, end);
-  }
-  static TimeRanges* Create(const WebTimeRanges&);
-
   TimeRanges() = default;
   TimeRanges(double start, double end);
+  TimeRanges(const WebTimeRanges&);
 
   TimeRanges* Copy() const;
   void IntersectWith(const TimeRanges*);

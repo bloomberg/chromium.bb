@@ -35,6 +35,9 @@ cr.define('destination_settings_test', function() {
     /** @type {!Array<!print_preview.Destination>} */
     let destinations = [];
 
+    /** @type {!Array<string>} */
+    let initialAccounts = [];
+
     /** @type {string} */
     const defaultUser = 'foo@chromium.org';
 
@@ -62,7 +65,7 @@ cr.define('destination_settings_test', function() {
       destinationSettings =
           document.createElement('print-preview-destination-settings');
       destinationSettings.settings = model.settings;
-      destinationSettings.state = print_preview_new.State.NOT_READY;
+      destinationSettings.state = print_preview.State.NOT_READY;
       destinationSettings.disabled = true;
       test_util.fakeDataBind(model, destinationSettings, 'settings');
       document.body.appendChild(destinationSettings);
@@ -75,12 +78,14 @@ cr.define('destination_settings_test', function() {
       // Initial state: No destination store means that there is no destination
       // yet, so the dropdown is hidden.
       assertTrue(dropdown.hidden);
+      destinationSettings.cloudPrintInterface = cloudPrintInterface;
 
       // Set up the destination store, but no destination yet. Dropdown is still
       // hidden.
-      destinationSettings.initDestinationStore(
+      destinationSettings.init(
           'FooDevice' /* printerName */,
-          '' /* serializedDefaultDestinationSelectionRulesStr */);
+          '' /* serializedDefaultDestinationSelectionRulesStr */,
+          [] /* userAccounts */, true /* syncAvailable */);
       assertTrue(dropdown.hidden);
 
       return test_util
@@ -95,19 +100,19 @@ cr.define('destination_settings_test', function() {
             // prevent brief losses of focus when the destination changes.
             assertFalse(dropdown.disabled);
             assertFalse(dropdown.hidden);
-            destinationSettings.state = print_preview_new.State.READY;
+            destinationSettings.state = print_preview.State.READY;
             destinationSettings.disabled = false;
 
             // Simulate setting a setting to an invalid value. Dropdown is
             // disabled due to validation error on another control.
-            destinationSettings.state = print_preview_new.State.ERROR;
+            destinationSettings.state = print_preview.State.ERROR;
             destinationSettings.disabled = true;
             assertTrue(dropdown.disabled);
 
             // Simulate the user fixing the validation error, and then selecting
             // an invalid printer. Dropdown is enabled, so that the user can fix
             // the error.
-            destinationSettings.state = print_preview_new.State.READY;
+            destinationSettings.state = print_preview.State.READY;
             destinationSettings.disabled = false;
             destinationSettings.destinationStore_.dispatchEvent(new CustomEvent(
                 print_preview.DestinationStore.EventType.ERROR,
@@ -118,9 +123,8 @@ cr.define('destination_settings_test', function() {
                 print_preview.DestinationState.ERROR,
                 destinationSettings.destinationState);
             assertEquals(
-                print_preview_new.Error.INVALID_PRINTER,
-                destinationSettings.error);
-            destinationSettings.state = print_preview_new.State.ERROR;
+                print_preview.Error.INVALID_PRINTER, destinationSettings.error);
+            destinationSettings.state = print_preview.State.ERROR;
             destinationSettings.disabled = true;
             assertFalse(dropdown.disabled);
 
@@ -138,9 +142,9 @@ cr.define('destination_settings_test', function() {
                   print_preview.DestinationState.ERROR,
                   destinationSettings.destinationState);
               assertEquals(
-                  print_preview_new.Error.NO_DESTINATIONS,
+                  print_preview.Error.NO_DESTINATIONS,
                   destinationSettings.error);
-              destinationSettings.state = print_preview_new.State.FATAL_ERROR;
+              destinationSettings.state = print_preview.State.FATAL_ERROR;
               destinationSettings.disabled = true;
               assertTrue(dropdown.disabled);
             }
@@ -162,10 +166,11 @@ cr.define('destination_settings_test', function() {
       destinationSettings.cloudPrintInterface = cloudPrintInterface;
       destinationSettings.setSetting('recentDestinations', recentDestinations);
       destinationSettings.appKioskMode = false;
-      destinationSettings.initDestinationStore(
+      destinationSettings.init(
           '' /* printerName */,
-          '' /* serializedDefaultDestinationSelectionRulesStr */);
-      destinationSettings.state = print_preview_new.State.READY;
+          '' /* serializedDefaultDestinationSelectionRulesStr */,
+          initialAccounts, true /* syncAvailable */);
+      destinationSettings.state = print_preview.State.READY;
       destinationSettings.disabled = false;
     }
 
@@ -173,7 +178,7 @@ cr.define('destination_settings_test', function() {
     function signIn() {
       cloudPrintInterface.setPrinter(
           print_preview_test_utils.getGoogleDriveDestination(defaultUser));
-      cr.webUIListenerCallback('reload-printer-list');
+      cr.webUIListenerCallback('user-accounts-updated', [defaultUser]);
       Polymer.dom.flush();
     }
 
@@ -534,12 +539,13 @@ cr.define('destination_settings_test', function() {
         cloudPrinterUser1, cloudPrinterUser2, destinations[0]
       ].map(destination => print_preview.makeRecentDestination(destination));
 
+      initialAccounts = [defaultUser, account2];
       initialize();
       Polymer.dom.flush();
 
       const dropdown = destinationSettings.$.destinationSelect;
 
-      return nativeLayer.whenCalled('getPrinterCapabilities')
+      return cloudPrintInterface.whenCalled('printer')
           .then(() => {
             // This will result in the destination store setting the most recent
             // destination.
@@ -563,10 +569,13 @@ cr.define('destination_settings_test', function() {
             const dialog =
                 destinationSettings.$$('print-preview-destination-dialog');
             assertTrue(dialog.isOpen());
+            const whenAdded = test_util.eventToPromise(
+                print_preview.DestinationStore.EventType.DESTINATIONS_INSERTED,
+                destinationSettings.destinationStore_);
             // Simulate setting a new account.
             dialog.fire('account-change', account2);
             Polymer.dom.flush();
-            return test_util.waitForRender(destinationSettings);
+            return whenAdded;
           })
           .then(() => {
             assertDropdownItems([
@@ -603,30 +612,54 @@ cr.define('destination_settings_test', function() {
     test(assert(TestNames.UpdateRecentDestinations), function() {
       // Recent destinations start out empty.
       assertRecentDestinations([]);
+      assertEquals(0, nativeLayer.getCallCount('getPrinterCapabilities'));
 
       initialize();
 
-      // Recent destinations start out empty.
-      assertRecentDestinations(['Save as PDF']);
+      return nativeLayer.whenCalled('getPrinterCapabilities')
+          .then(() => {
+            assertRecentDestinations(['Save as PDF']);
+            assertEquals(1, nativeLayer.getCallCount('getPrinterCapabilities'));
 
-      // Simulate setting a destination.
-      selectDestination(destinations[0]);
-      assertRecentDestinations(['ID1', 'Save as PDF']);
+            // Simulate setting a destination.
+            nativeLayer.resetResolver('getPrinterCapabilities');
+            selectDestination(destinations[0]);
+            return nativeLayer.whenCalled('getPrinterCapabilities');
+          })
+          .then(() => {
+            assertRecentDestinations(['ID1', 'Save as PDF']);
+            assertEquals(1, nativeLayer.getCallCount('getPrinterCapabilities'));
 
-      // Reselect a recent destination. Still 2 destinations, but in a
-      // different order.
-      selectDestination(
-          destinationSettings.destinationStore_.getDestinationByKey(
-              'Save as PDF/local/')),
-          assertRecentDestinations(['Save as PDF', 'ID1']);
+            // Reselect a recent destination. Still 2 destinations, but in a
+            // different order.
+            nativeLayer.resetResolver('getPrinterCapabilities');
+            destinationSettings.$.destinationSelect.dispatchEvent(
+                new CustomEvent('selected-option-change', {
+                  detail: 'Save as PDF/local/',
+                }));
+            Polymer.dom.flush();
+            assertRecentDestinations(['Save as PDF', 'ID1']);
+            // No additional capabilities call, since the destination was
+            // previously selected.
+            assertEquals(0, nativeLayer.getCallCount('getPrinterCapabilities'));
 
-      // Select a third destination
-      selectDestination(destinations[1]);
-      assertRecentDestinations(['ID2', 'Save as PDF', 'ID1']);
+            // Select a third destination
+            selectDestination(destinations[1]);
+            return nativeLayer.whenCalled('getPrinterCapabilities');
+          })
+          .then(() => {
+            assertRecentDestinations(['ID2', 'Save as PDF', 'ID1']);
+            assertEquals(1, nativeLayer.getCallCount('getPrinterCapabilities'));
 
-      // Select a fourth destination. List does not grow.
-      selectDestination(destinations[2]);
-      assertRecentDestinations(['ID3', 'ID2', 'Save as PDF']);
+            // Select a fourth destination. List does not grow.
+            nativeLayer.resetResolver('getPrinterCapabilities');
+            selectDestination(destinations[2]);
+            return nativeLayer.whenCalled('getPrinterCapabilities');
+          })
+          .then(() => {
+            assertRecentDestinations(['ID3', 'ID2', 'Save as PDF']);
+            assertEquals(1, nativeLayer.getCallCount('getPrinterCapabilities'));
+          });
     });
   });
 

@@ -502,8 +502,15 @@ void TextureManager::Destroy() {
   DCHECK_EQ(0u, memory_type_tracker_->GetMemRepresented());
 }
 
+TexturePassthrough::LevelInfo::LevelInfo() = default;
+
+TexturePassthrough::LevelInfo::LevelInfo(const LevelInfo& rhs) = default;
+
+TexturePassthrough::LevelInfo::~LevelInfo() = default;
+
 TexturePassthrough::TexturePassthrough(GLuint service_id, GLenum target)
     : TextureBase(service_id),
+      owned_service_id_(service_id),
       have_context_(true),
       level_images_(target == GL_TEXTURE_CUBE_MAP ? 6 : 1) {
   TextureBase::SetTarget(target);
@@ -512,7 +519,7 @@ TexturePassthrough::TexturePassthrough(GLuint service_id, GLenum target)
 TexturePassthrough::~TexturePassthrough() {
   DeleteFromMailboxManager();
   if (have_context_) {
-    glDeleteTextures(1, &service_id_);
+    glDeleteTextures(1, &owned_service_id_);
   }
 }
 
@@ -537,6 +544,70 @@ void TexturePassthrough::MarkContextLost() {
 void TexturePassthrough::SetLevelImage(GLenum target,
                                        GLint level,
                                        gl::GLImage* image) {
+  SetLevelImageInternal(target, level, image, nullptr, owned_service_id_);
+}
+
+gl::GLImage* TexturePassthrough::GetLevelImage(GLenum target,
+                                               GLint level) const {
+  size_t face_idx = 0;
+  if (!LevelInfoExists(target, level, &face_idx)) {
+    return nullptr;
+  }
+
+  return level_images_[face_idx][level].image.get();
+}
+
+void TexturePassthrough::SetStreamLevelImage(
+    GLenum target,
+    GLint level,
+    GLStreamTextureImage* stream_texture_image,
+    GLuint service_id) {
+  SetLevelImageInternal(target, level, stream_texture_image,
+                        stream_texture_image, service_id);
+}
+
+GLStreamTextureImage* TexturePassthrough::GetStreamLevelImage(
+    GLenum target,
+    GLint level) const {
+  size_t face_idx = 0;
+  if (!LevelInfoExists(target, level, &face_idx)) {
+    return nullptr;
+  }
+
+  return level_images_[face_idx][level].stream_texture_image.get();
+}
+
+void TexturePassthrough::SetEstimatedSize(size_t size) {
+  estimated_size_ = size;
+}
+
+bool TexturePassthrough::LevelInfoExists(GLenum target,
+                                         GLint level,
+                                         size_t* out_face_idx) const {
+  DCHECK(out_face_idx);
+
+  if (GLES2Util::GLFaceTargetToTextureTarget(target) != target_) {
+    return false;
+  }
+
+  size_t face_idx = GLES2Util::GLTargetToFaceIndex(target);
+  DCHECK(face_idx < level_images_.size());
+  DCHECK(level >= 0);
+
+  if (static_cast<GLint>(level_images_[face_idx].size()) <= level) {
+    return false;
+  }
+
+  *out_face_idx = face_idx;
+  return true;
+}
+
+void TexturePassthrough::SetLevelImageInternal(
+    GLenum target,
+    GLint level,
+    gl::GLImage* image,
+    GLStreamTextureImage* stream_texture_image,
+    GLuint service_id) {
   size_t face_idx = GLES2Util::GLTargetToFaceIndex(target);
   DCHECK(face_idx < level_images_.size());
   DCHECK(level >= 0);
@@ -546,28 +617,12 @@ void TexturePassthrough::SetLevelImage(GLenum target,
     level_images_[face_idx].resize(level + 1);
   }
 
-  level_images_[face_idx][level] = image;
-}
+  level_images_[face_idx][level].image = image;
+  level_images_[face_idx][level].stream_texture_image = stream_texture_image;
 
-gl::GLImage* TexturePassthrough::GetLevelImage(GLenum target,
-                                               GLint level) const {
-  if (GLES2Util::GLFaceTargetToTextureTarget(target) != target_) {
-    return nullptr;
+  if (service_id != 0 && service_id != service_id_) {
+    service_id_ = service_id;
   }
-
-  size_t face_idx = GLES2Util::GLTargetToFaceIndex(target);
-  DCHECK(face_idx < level_images_.size());
-  DCHECK(level >= 0);
-
-  if (static_cast<GLint>(level_images_[face_idx].size()) <= level) {
-    return nullptr;
-  }
-
-  return level_images_[face_idx][level].get();
-}
-
-void TexturePassthrough::SetEstimatedSize(size_t size) {
-  estimated_size_ = size;
 }
 
 Texture::Texture(GLuint service_id)
@@ -690,18 +745,15 @@ Texture::CanRenderCondition Texture::GetCanRenderCondition() const {
   if (target_ == 0)
     return CAN_RENDER_ALWAYS;
 
-  if (target_ != GL_TEXTURE_EXTERNAL_OES) {
-    if (face_infos_.empty() ||
-        static_cast<size_t>(base_level_) >= face_infos_[0].level_infos.size()) {
-      return CAN_RENDER_NEVER;
-    }
-    const Texture::LevelInfo& first_face =
-        face_infos_[0].level_infos[base_level_];
-    if (first_face.width == 0 ||
-        first_face.height == 0 ||
-        first_face.depth == 0) {
-      return CAN_RENDER_NEVER;
-    }
+  if (face_infos_.empty() ||
+      static_cast<size_t>(base_level_) >= face_infos_[0].level_infos.size()) {
+    return CAN_RENDER_NEVER;
+  }
+  const Texture::LevelInfo& first_face =
+      face_infos_[0].level_infos[base_level_];
+  if (first_face.width == 0 || first_face.height == 0 ||
+      first_face.depth == 0) {
+    return CAN_RENDER_NEVER;
   }
 
   if (target_ == GL_TEXTURE_CUBE_MAP && !cube_complete())
@@ -1144,6 +1196,40 @@ void Texture::UpdateMaxLevel(GLint max_level) {
   UpdateNumMipLevels();
 }
 
+void Texture::UpdateFaceNumMipLevels(size_t face_index,
+                                     GLint width,
+                                     GLint height,
+                                     GLint depth) {
+  DCHECK_LT(face_index, face_infos_.size());
+  DCHECK_LE(0, base_level_);
+  Texture::FaceInfo& face_info = face_infos_[face_index];
+  if (static_cast<size_t>(base_level_) >= face_info.level_infos.size()) {
+    face_info.num_mip_levels = 0;
+  } else {
+    DCHECK_LE(1u, face_info.level_infos.size());
+    GLint safe_max_level = std::min(
+        max_level_, static_cast<GLint>(face_info.level_infos.size() - 1));
+    GLint max_num_mip_levels = std::max(0, safe_max_level - base_level_ + 1);
+    face_info.num_mip_levels = std::min(
+        max_num_mip_levels,
+        TextureManager::ComputeMipMapCount(target_, width, height, depth));
+  }
+}
+
+void Texture::UpdateFaceNumMipLevels(size_t face_index) {
+  DCHECK_LT(face_index, face_infos_.size());
+  DCHECK_LE(0, base_level_);
+  Texture::FaceInfo& face_info = face_infos_[face_index];
+  GLint width = 0, height = 0, depth = 0;
+  if (static_cast<size_t>(base_level_) < face_info.level_infos.size()) {
+    const Texture::LevelInfo& info = face_info.level_infos[base_level_];
+    width = info.width;
+    height = info.height;
+    depth = info.depth;
+  }
+  UpdateFaceNumMipLevels(face_index, width, height, depth);
+}
+
 void Texture::UpdateNumMipLevels() {
   if (face_infos_.empty())
     return;
@@ -1160,16 +1246,8 @@ void Texture::UpdateNumMipLevels() {
     base_level_ = unclamped_base_level_;
     max_level_ = unclamped_max_level_;
   }
-  GLint max_num_mip_levels = std::max(0, max_level_ - base_level_ + 1);
-  for (size_t ii = 0; ii < face_infos_.size(); ++ii) {
-    Texture::FaceInfo& face_info = face_infos_[ii];
-    if (static_cast<size_t>(base_level_) >= face_info.level_infos.size())
-      continue;
-    const Texture::LevelInfo& info = face_info.level_infos[base_level_];
-    face_info.num_mip_levels = std::min(
-        max_num_mip_levels, TextureManager::ComputeMipMapCount(
-                                target_, info.width, info.height, info.depth));
-  }
+  for (size_t ii = 0; ii < face_infos_.size(); ++ii)
+    UpdateFaceNumMipLevels(ii);
 
   // mipmap-completeness needs to be re-evaluated.
   completeness_dirty_ = true;
@@ -1214,10 +1292,7 @@ void Texture::SetLevelInfo(GLenum target,
       info.width != width || info.height != height || info.depth != depth ||
       info.format != format || info.type != type || info.internal_workaround) {
     if (level == base_level_) {
-      // Calculate the mip level count.
-      face_infos_[face_index].num_mip_levels = std::min(
-          std::max(0, max_level_ - base_level_ + 1),
-          TextureManager::ComputeMipMapCount(target_, width, height, depth));
+      UpdateFaceNumMipLevels(face_index, width, height, depth);
 
       // Update NPOT face count for the first level.
       bool prev_npot = TextureIsNPOT(info.width, info.height, info.depth);
@@ -4024,7 +4099,8 @@ bool Texture::CompatibleWithSamplerUniformType(
       level_info->format == GL_DEPTH_STENCIL ||
       level_info->format == GL_LUMINANCE_ALPHA ||
       level_info->format == GL_LUMINANCE || level_info->format == GL_ALPHA ||
-      level_info->format == GL_BGRA_EXT || level_info->format == GL_SRGB_EXT;
+      level_info->format == GL_BGRA_EXT || level_info->format == GL_SRGB_EXT ||
+      level_info->format == GL_SRGB_ALPHA_EXT;
   if (normalized) {
     // All normalized texture formats are sampled as float.
     return category == SAMPLER_FLOAT;

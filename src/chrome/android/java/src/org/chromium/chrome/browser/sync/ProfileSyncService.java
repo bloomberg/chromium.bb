@@ -374,7 +374,7 @@ public class ProfileSyncService {
                 syncEverything ? ALL_SELECTABLE_TYPES : modelTypeSetToArray(enabledTypes));
     }
 
-    public void triggerSync() {
+    public void triggerRefresh() {
         nativeTriggerRefresh(mNativeProfileSyncServiceAndroid);
     }
 

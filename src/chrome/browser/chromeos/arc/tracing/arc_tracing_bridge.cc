@@ -24,6 +24,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/system/platform_handle.h"
+#include "services/tracing/public/cpp/perfetto/perfetto_producer.h"
+#include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_writer.h"
@@ -69,8 +71,9 @@ class ArcTracingBridgeFactory
 };
 
 // Perfetto data source which coordinates ARC tracing sessions with perfetto's
-// ProducerClient when perfetto is used as the tracing backend.
-class ArcTracingDataSource : public tracing::ProducerClient::DataSourceBase {
+// PerfettoProducer when perfetto is used as the tracing backend.
+class ArcTracingDataSource
+    : public tracing::PerfettoTracedProcess::DataSourceBase {
  public:
   static ArcTracingDataSource* GetInstance() {
     static base::NoDestructor<ArcTracingDataSource> instance;
@@ -84,7 +87,7 @@ class ArcTracingDataSource : public tracing::ProducerClient::DataSourceBase {
     bool success = bridges_.insert(bridge).second;
     DCHECK(success);
 
-    if (producer_client_ && !stop_complete_callback_) {
+    if (producer_ && !stop_complete_callback_) {
       // We're currently tracing, so start the new bridge, too.
       // |this| never gets destructed, so it's OK to bind an unretained pointer.
       bridge->StartTracing(
@@ -110,25 +113,25 @@ class ArcTracingDataSource : public tracing::ProducerClient::DataSourceBase {
 
   ArcTracingDataSource()
       : DataSourceBase(tracing::mojom::kArcTraceDataSourceName),
-        perfetto_task_runner_(
-            tracing::ProducerClient::Get()->GetTaskRunner()->task_runner()) {
-    tracing::ProducerClient::Get()->AddDataSource(this);
+        perfetto_task_runner_(tracing::PerfettoTracedProcess::Get()
+                                  ->GetTaskRunner()
+                                  ->GetOrCreateTaskRunner()) {
+    tracing::PerfettoTracedProcess::Get()->AddDataSource(this);
   }
 
   // Note that ArcTracingDataSource is a singleton that's never destroyed.
   ~ArcTracingDataSource() override = default;
 
-  // tracing::ProducerClient::DataSourceBase.
+  // tracing::PerfettoProducer::DataSourceBase.
   void StartTracing(
-      tracing::ProducerClient* producer_client,
+      tracing::PerfettoProducer* producer,
       const perfetto::DataSourceConfig& data_source_config) override {
     // |this| never gets destructed, so it's OK to bind an unretained pointer.
-    // |producer_client| is a singleton that is never destroyed.
+    // |producer| is a singleton that is never destroyed.
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&ArcTracingDataSource::StartTracingOnUI,
-                       base::Unretained(this), producer_client,
-                       data_source_config));
+                       base::Unretained(this), producer, data_source_config));
   }
 
   void StopTracing(base::OnceClosure stop_complete_callback) override {
@@ -146,12 +149,12 @@ class ArcTracingDataSource : public tracing::ProducerClient::DataSourceBase {
   }
 
   // Starts all registered bridges.
-  void StartTracingOnUI(tracing::ProducerClient* producer_client,
+  void StartTracingOnUI(tracing::PerfettoProducer* producer,
                         const perfetto::DataSourceConfig& data_source_config) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-    DCHECK(!producer_client_);
-    producer_client_ = producer_client;
+    DCHECK(!producer_);
+    producer_ = producer;
     data_source_config_ = data_source_config;
 
     for (ArcTracingBridge* bridge : bridges_) {
@@ -169,7 +172,7 @@ class ArcTracingDataSource : public tracing::ProducerClient::DataSourceBase {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
     // We may receive a StopTracing without StartTracing.
-    if (!producer_client_)
+    if (!producer_)
       return;
 
     // We may still be in startup. In this case, store a callback to rerun
@@ -210,7 +213,7 @@ class ArcTracingDataSource : public tracing::ProducerClient::DataSourceBase {
 
   // Called by each bridge when it has stopped tracing. Also called when a
   // bridge is unregisted. Records the supplied |data| into the
-  // |producer_client_|'s buffer.
+  // |producer_|'s buffer.
   void OnTraceDataOnUI(const std::string& data) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -218,12 +221,11 @@ class ArcTracingDataSource : public tracing::ProducerClient::DataSourceBase {
     if (!stop_complete_callback_)
       return;
 
-    DCHECK(producer_client_);
+    DCHECK(producer_);
 
     if (!data.empty()) {
       std::unique_ptr<perfetto::TraceWriter> trace_writer =
-          producer_client_->CreateTraceWriter(
-              data_source_config_.target_buffer());
+          producer_->CreateTraceWriter(data_source_config_.target_buffer());
       DCHECK(trace_writer);
       perfetto::TraceWriter::TracePacketHandle trace_packet_handle =
           trace_writer->NewTracePacket();
@@ -236,7 +238,7 @@ class ArcTracingDataSource : public tracing::ProducerClient::DataSourceBase {
     }
 
     if (AreAllBridgesStopped()) {
-      producer_client_ = nullptr;
+      producer_ = nullptr;
       perfetto_task_runner_->PostTask(FROM_HERE,
                                       std::move(stop_complete_callback_));
     }
@@ -258,15 +260,16 @@ class ArcTracingDataSource : public tracing::ProducerClient::DataSourceBase {
     return true;
   }
 
-  base::SequencedTaskRunner* perfetto_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> perfetto_task_runner_;
   std::set<ArcTracingBridge*> bridges_;
   // In case StopTracing() is called before tracing was started for all bridges,
   // this stores a callback to StopTracing() that's executed when all bridges
   // have started.
   base::OnceClosure pending_stop_tracing_;
-  // Called when all bridges have completed stopping, notifying ProducerClient.
+  // Called when all bridges have completed stopping, notifying
+  // PerfettoProducer.
   base::OnceClosure stop_complete_callback_;
-  tracing::ProducerClient* producer_client_ = nullptr;
+  tracing::PerfettoProducer* producer_ = nullptr;
   perfetto::DataSourceConfig data_source_config_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcTracingDataSource);

@@ -273,14 +273,17 @@ class ClankCompiler(object):
         '{}.so'.format(self._libname))
     self.chrome_apk = os.path.join(self._out_dir, 'Release', 'apks', self._apk)
 
-  def Build(self, instrumented, target):
+  def Build(self, instrumented, use_call_graph, target):
     """Builds the provided ninja target with or without order_profiling on.
 
     Args:
       instrumented: (bool) Whether we want to build an instrumented binary.
+      use_call_graph: (bool) Whether to use the call graph instrumentation.
       target: (str) The name of the ninja target to build.
     """
     self._step_recorder.BeginStep('Compile %s' % target)
+    assert not use_call_graph or instrumented, ('You can not enable call graph '
+                                                'without instrumentation!')
 
     # Set the "Release Official" flavor, the parts affecting performance.
     args = [
@@ -291,6 +294,7 @@ class ClankCompiler(object):
         'target_os="android"',
         'use_goma=' + str(self._use_goma).lower(),
         'use_order_profiling=' + str(instrumented).lower(),
+        'use_call_graph=' + str(use_call_graph).lower(),
     ]
     args += _ARCH_GN_ARGS[self._arch]
     if self._goma_dir:
@@ -313,27 +317,29 @@ class ClankCompiler(object):
         ['ninja', '-C', os.path.join(self._out_dir, 'Release'),
          '-j' + str(self._jobs), '-l' + str(self._max_load), target])
 
-  def CompileChromeApk(self, instrumented, force_relink=False):
+  def CompileChromeApk(self, instrumented, use_call_graph, force_relink=False):
     """Builds a Chrome.apk either with or without order_profiling on.
 
     Args:
       instrumented: (bool) Whether to build an instrumented apk.
+      use_call_graph: (bool) Whether to use the call graph instrumentation.
       force_relink: Whether libchromeview.so should be re-created.
     """
     if force_relink:
       self._step_recorder.RunCommand(['rm', '-rf', self.lib_chrome_so])
-    self.Build(instrumented, self._apk_target)
+    self.Build(instrumented, use_call_graph, self._apk_target)
 
-  def CompileLibchrome(self, instrumented, force_relink=False):
+  def CompileLibchrome(self, instrumented, use_call_graph, force_relink=False):
     """Builds a libchrome.so either with or without order_profiling on.
 
     Args:
       instrumented: (bool) Whether to build an instrumented apk.
+      use_call_graph: (bool) Whether to use the call graph instrumentation.
       force_relink: (bool) Whether libchrome.so should be re-created.
     """
     if force_relink:
       self._step_recorder.RunCommand(['rm', '-rf', self.lib_chrome_so])
-    self.Build(instrumented, self._libchrome_target)
+    self.Build(instrumented, use_call_graph, self._libchrome_target)
 
 
 class OrderfileUpdater(object):
@@ -557,8 +563,8 @@ class OrderfileGenerator(object):
     preferred_device = None
     for device in devices:
       if device.build_version_sdk >= version_codes.NOUGAT:
-       preferred_device = device
-       break
+        preferred_device = device
+        break
 
     self._monochrome = preferred_device is not None
 
@@ -567,11 +573,15 @@ class OrderfileGenerator(object):
 
   def __init__(self, options, orderfile_updater_class):
     self._options = options
-
     self._instrumented_out_dir = os.path.join(
         self._BUILD_ROOT, self._options.arch + '_instrumented_out')
+    if self._options.use_call_graph:
+        self._instrumented_out_dir += '_call_graph'
+
     self._uninstrumented_out_dir = os.path.join(
         self._BUILD_ROOT, self._options.arch + '_uninstrumented_out')
+    self._no_orderfile_out_dir = os.path.join(
+        self._BUILD_ROOT, self._options.arch + '_no_orderfile_out')
 
     self._PrepareOrderfilePaths()
 
@@ -675,7 +685,8 @@ class OrderfileGenerator(object):
     profiles = process_profiles.ProfileManager(files)
     processor = process_profiles.SymbolOffsetProcessor(
         self._compiler.lib_chrome_so)
-    ordered_symbols = cluster.ClusterOffsets(profiles, processor)
+    ordered_symbols = cluster.ClusterOffsets(profiles, processor,
+        call_graph=self._options.use_call_graph)
     if not ordered_symbols:
       raise Exception('Failed to get ordered symbols')
     for sym in ordered_symbols:
@@ -807,6 +818,161 @@ class OrderfileGenerator(object):
       self._orderfile_updater.UploadToCloudStorage(
           file_name, use_debug_location=False)
 
+  def _NativeCodeMemoryBenchmark(self, apk):
+    """Runs system_health.memory_mobile to assess native code memory footprint.
+
+    Args:
+      apk: (str) Path to the apk.
+
+    Returns:
+      results: ([int]) Values of native code memory footprint in bytes from the
+                       benchmark results.
+    """
+    self._step_recorder.BeginStep("Running orderfile.memory_mobile")
+    try:
+      out_dir = tempfile.mkdtemp()
+      self._profiler._RunCommand(['tools/perf/run_benchmark',
+                                  '--device={}'.format(
+                                      self._profiler._device.serial),
+                                  '--browser=exact',
+                                  '--output-format=chartjson',
+                                  '--output-dir={}'.format(out_dir),
+                                  '--reset-results',
+                                  '--browser-executable={}'.format(apk),
+                                  'orderfile.memory_mobile'])
+
+      out_file_path = os.path.join(out_dir, 'results-chart.json')
+      if not os.path.exists(out_file_path):
+        raise Exception('Results file not found!')
+
+      with open(out_file_path, 'r') as f:
+        json_results = json.load(f)
+
+      if not json_results:
+        raise Exception('Results file is empty')
+
+      if not 'charts' in json_results:
+        raise Exception('charts can not be found in results!')
+
+      charts = json_results['charts']
+      results = dict()
+      for story in charts:
+        if not story.endswith("NativeCodeResidentMemory_avg"):
+          continue
+
+        results[story] = dict()
+        for substory in charts[story]:
+          if substory == 'summary':
+            continue
+          if not 'values' in charts[story][substory]:
+            raise Exception(
+              'Values can not be found in charts:%s:%s' % (story, substory))
+
+          results[story][substory] = charts[story][substory]['values']
+      return results
+
+    except Exception as e:
+      return 'Error: ' + str(e)
+
+    finally:
+      shutil.rmtree(out_dir)
+
+
+  def _PerformanceBenchmark(self, apk):
+    """Runs Speedometer2.0 to assess performance.
+
+    Args:
+      apk: (str) Path to the apk.
+
+    Returns:
+      results: ([float]) Speedometer2.0 results samples in milliseconds.
+    """
+    self._step_recorder.BeginStep("Running Speedometer2.0.")
+    try:
+      out_dir = tempfile.mkdtemp()
+      self._profiler._RunCommand(['tools/perf/run_benchmark',
+                                  '--device={}'.format(
+                                      self._profiler._device.serial),
+                                  '--browser=exact',
+                                  '--output-format=histograms',
+                                  '--output-dir={}'.format(out_dir),
+                                  '--reset-results',
+                                  '--browser-executable={}'.format(apk),
+                                  'speedometer2'])
+
+      out_file_path = os.path.join(out_dir, 'histograms.json')
+      if not os.path.exists(out_file_path):
+        raise Exception('Results file not found!')
+
+      with open(out_file_path, 'r') as f:
+        results = json.load(f)
+
+      if not results:
+        raise Exception('Results file is empty.')
+
+      for el in results:
+        if 'name' in el and el['name'] == 'Total' and 'sampleValues' in el:
+          return el['sampleValues']
+
+      raise Exception('Unexpected results format.')
+
+    except Exception as e:
+      return 'Error: ' + str(e)
+
+    finally:
+      shutil.rmtree(out_dir)
+
+
+  def RunBenchmark(self, out_directory, no_orderfile=False):
+    """Builds chrome apk and runs performance and memory benchmarks.
+
+    Builds a non-instrumented version of chrome.
+    Installs chrome apk on the device.
+    Runs Speedometer2.0 benchmark to assess performance.
+    Runs system_health.memory_mobile to evaluate memory footprint.
+
+    Args:
+      out_directory: (str) Path to out directory for this build.
+      no_orderfile: (bool) True if chrome to be built without orderfile.
+
+    Returns:
+      benchmark_results: (dict) Results extracted from benchmarks.
+    """
+    try:
+      _UnstashOutputDirectory(out_directory)
+      self._compiler = ClankCompiler(
+          out_directory, self._step_recorder,
+          self._options.arch, self._options.jobs, self._options.max_load,
+          self._options.use_goma, self._options.goma_dir,
+          self._options.system_health_orderfile, self._monochrome,
+          self._options.public, self._GetPathToOrderfile())
+
+      if no_orderfile:
+        orderfile_path = self._GetPathToOrderfile()
+        backup_orderfile = orderfile_path + '.backup'
+        shutil.move(orderfile_path, backup_orderfile)
+        open(orderfile_path, 'w').close()
+
+      # Build APK to be installed on the device.
+      self._compiler.CompileChromeApk(instrumented=False,
+                                      use_call_graph=False,
+                                      force_relink=True)
+      benchmark_results = dict()
+      benchmark_results['Speedometer2.0'] = self._PerformanceBenchmark(
+          self._compiler.chrome_apk)
+      benchmark_results['orderfile.memory_mobile'] = (
+          self._NativeCodeMemoryBenchmark(self._compiler.chrome_apk))
+
+    except Exception as e:
+      benchmark_results['Error'] = str(e)
+
+    finally:
+      if no_orderfile and os.path.exists(backup_orderfile):
+        shutil.move(backup_orderfile, orderfile_path)
+      _StashOutputDirectory(out_directory)
+
+    return benchmark_results
+
   def Generate(self):
     """Generates and maybe upload an order."""
     profile_uploaded = False
@@ -836,7 +1002,9 @@ class OrderfileGenerator(object):
           # If there are pregenerated profiles, the instrumented build should
           # not be changed to avoid invalidating the pregenerated profile
           # offsets.
-          self._compiler.CompileChromeApk(True)
+          self._compiler.CompileChromeApk(instrumented=True,
+                                          use_call_graph=
+                                          self._options.use_call_graph)
         self._GenerateAndProcessProfile()
         self._MaybeArchiveOrderfile(self._GetUnpatchedOrderfileFilename())
         profile_uploaded = True
@@ -871,19 +1039,28 @@ class OrderfileGenerator(object):
             self._options.system_health_orderfile, self._monochrome,
             self._options.public, self._GetPathToOrderfile())
 
-        self._compiler.CompileLibchrome(False)
+        self._compiler.CompileLibchrome(instrumented=False,
+                                        use_call_graph=False)
         self._PatchOrderfile()
         # Because identical code folding is a bit different with and without
         # the orderfile build, we need to re-patch the orderfile with code
         # folding as close to the final version as possible.
-        self._compiler.CompileLibchrome(False, force_relink=True)
+        self._compiler.CompileLibchrome(instrumented=False,
+                                        use_call_graph=False, force_relink=True)
         self._PatchOrderfile()
-        self._compiler.CompileLibchrome(False, force_relink=True)
+        self._compiler.CompileLibchrome(instrumented=False,
+                                        use_call_graph=False, force_relink=True)
         self._VerifySymbolOrder()
         self._MaybeArchiveOrderfile(self._GetPathToOrderfile())
       finally:
         _StashOutputDirectory(self._uninstrumented_out_dir)
       orderfile_uploaded = True
+
+    if self._options.benchmark:
+      self._output_data['orderfile_benchmark_results'] = self.RunBenchmark(
+          self._uninstrumented_out_dir)
+      self._output_data['no_orderfile_benchmark_results'] = self.RunBenchmark(
+          self._no_orderfile_out_dir, no_orderfile=True)
 
     if self._options.new_commit_flow:
       self._orderfile_updater._GitStash()
@@ -924,6 +1101,8 @@ class OrderfileGenerator(object):
 def CreateArgumentParser():
   """Creates and returns the argument parser."""
   parser = argparse.ArgumentParser()
+  parser.add_argument('--no-benchmark', action='store_false', dest='benchmark',
+                      default=True, help='Disables running benchmarks.')
   parser.add_argument(
       '--buildbot', action='store_true',
       help='If true, the script expects to be run on a buildbot')
@@ -1012,7 +1191,8 @@ def CreateArgumentParser():
                             'checkout; performs no other action'))
   parser.add_argument('--new-commit-flow', action='store_true',
                       help='Use the new two-step commit flow.')
-
+  parser.add_argument('--use-call-graph', action='store_true', default=False,
+                      help='Use call graph instrumentation.')
   profile_android_startup.AddProfileCollectionArguments(parser)
   return parser
 

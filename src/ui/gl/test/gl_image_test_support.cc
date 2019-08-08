@@ -74,6 +74,15 @@ void GLImageTestSupport::SetBufferDataToColor(int width,
         }
       }
       return;
+    case gfx::BufferFormat::RGBA_4444:
+      DCHECK_EQ(0, plane);
+      for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+          data[y * stride + x * 2 + 0] = (color[1] << 4) | (color[0] & 0xf);
+          data[y * stride + x * 2 + 1] = (color[3] << 4) | (color[2] & 0xf);
+        }
+      }
+      return;
     case gfx::BufferFormat::BGR_565:
       DCHECK_EQ(0, plane);
       for (int y = 0; y < height; ++y) {
@@ -226,7 +235,6 @@ void GLImageTestSupport::SetBufferDataToColor(int width,
       }
       return;
     }
-    case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::UYVY_422:
       NOTREACHED() << gfx::BufferFormatToString(format);
       return;

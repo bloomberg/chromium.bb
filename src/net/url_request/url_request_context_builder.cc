@@ -59,6 +59,7 @@
 
 #if BUILDFLAG(ENABLE_REPORTING)
 #include "net/network_error_logging/network_error_logging_service.h"
+#include "net/network_error_logging/persistent_reporting_and_nel_store.h"
 #include "net/reporting/reporting_policy.h"
 #include "net/reporting/reporting_service.h"
 #endif  // BUILDFLAG(ENABLE_REPORTING)
@@ -441,16 +442,14 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
                                                     true /* enable_caching */);
     }
   } else {
-    // TODO(crbug.com/934402): Make setting a resolver or manager required, so
-    // the builder should never have to create a standalone resolver.
     if (host_resolver_factory_) {
       host_resolver_ = host_resolver_factory_->CreateStandaloneResolver(
-          context->net_log(), HostResolver::Options(), host_mapping_rules_,
-          true /* enable_caching */);
+          context->net_log(), HostResolver::ManagerOptions(),
+          host_mapping_rules_, true /* enable_caching */);
     } else {
       host_resolver_ = HostResolver::CreateStandaloneResolver(
-          context->net_log(), HostResolver::Options(), host_mapping_rules_,
-          true /* enable_caching */);
+          context->net_log(), HostResolver::ManagerOptions(),
+          host_mapping_rules_, true /* enable_caching */);
     }
   }
   host_resolver_->SetRequestContext(context.get());
@@ -511,7 +510,9 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   } else if (shared_cert_verifier_) {
     context->set_cert_verifier(shared_cert_verifier_);
   } else {
-    storage->set_cert_verifier(CertVerifier::CreateDefault());
+    // TODO(mattm): Should URLRequestContextBuilder create a CertNetFetcherImpl?
+    storage->set_cert_verifier(
+        CertVerifier::CreateDefault(/*cert_net_fetcher=*/nullptr));
   }
 
   if (ct_verifier_) {
@@ -558,15 +559,18 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   // Note: ReportingService::Create and NetworkErrorLoggingService::Create can
   // both return nullptr if the corresponding base::Feature is disabled.
 
+  // TODO(chlily): Use a real one to enable persistent storage. (This is just a
+  // placeholder for now.)
+  PersistentReportingAndNelStore* store = nullptr;
+
   if (reporting_policy_) {
     storage->set_reporting_service(
-        ReportingService::Create(*reporting_policy_, context.get()));
+        ReportingService::Create(*reporting_policy_, context.get(), store));
   }
 
   if (network_error_logging_enabled_) {
-    // TODO(chlily): Create this with an actual PersistentNELStore*.
     storage->set_network_error_logging_service(
-        NetworkErrorLoggingService::Create(nullptr /* store */));
+        NetworkErrorLoggingService::Create(store));
   }
 
   // If both Reporting and Network Error Logging are actually enabled, then

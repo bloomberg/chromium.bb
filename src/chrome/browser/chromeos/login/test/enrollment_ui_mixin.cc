@@ -7,6 +7,7 @@
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/test_predicate_waiter.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
@@ -120,6 +121,36 @@ void EnrollmentUIMixin::SubmitDeviceAttributes(const std::string& asset_id,
   OobeJS().TypeIntoPath(asset_id, {"oauth-enroll-asset-id"});
   OobeJS().TypeIntoPath(location, {"oauth-enroll-location"});
   OobeJS().TapOn("enroll-attributes-submit-button");
+}
+
+void EnrollmentUIMixin::SetExitHandler() {
+  ASSERT_NE(WizardController::default_controller(), nullptr);
+  EnrollmentScreen* enrollment_screen = EnrollmentScreen::Get(
+      WizardController::default_controller()->screen_manager());
+  ASSERT_NE(enrollment_screen, nullptr);
+  enrollment_screen->set_exit_callback_for_testing(base::BindRepeating(
+      &EnrollmentUIMixin::HandleScreenExit, base::Unretained(this)));
+}
+
+EnrollmentScreen::Result EnrollmentUIMixin::WaitForScreenExit() {
+  if (screen_result_.has_value())
+    return screen_result_.value();
+
+  DCHECK(!screen_exit_waiter_.has_value());
+  screen_exit_waiter_.emplace();
+  screen_exit_waiter_->Run();
+  DCHECK(screen_result_.has_value());
+  EnrollmentScreen::Result result = screen_result_.value();
+  screen_result_.reset();
+  screen_exit_waiter_.reset();
+  return result;
+}
+
+void EnrollmentUIMixin::HandleScreenExit(EnrollmentScreen::Result result) {
+  EXPECT_FALSE(screen_result_.has_value());
+  screen_result_ = result;
+  if (screen_exit_waiter_)
+    screen_exit_waiter_->Quit();
 }
 
 }  // namespace test

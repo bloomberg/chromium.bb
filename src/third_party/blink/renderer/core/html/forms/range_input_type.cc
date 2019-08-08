@@ -33,6 +33,7 @@
 
 #include <algorithm>
 #include <limits>
+
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
@@ -53,6 +54,7 @@
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/layout_slider.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
@@ -68,10 +70,6 @@ static const int kRangeStepScaleFactor = 1;
 static Decimal EnsureMaximum(const Decimal& proposed_value,
                              const Decimal& minimum) {
   return proposed_value >= minimum ? proposed_value : minimum;
-}
-
-InputType* RangeInputType::Create(HTMLInputElement& element) {
-  return MakeGarbageCollected<RangeInputType>(element);
 }
 
 RangeInputType::RangeInputType(HTMLInputElement& element)
@@ -244,11 +242,11 @@ void RangeInputType::CreateShadowSubtree() {
   DCHECK(IsShadowHost(GetElement()));
 
   Document& document = GetElement().GetDocument();
-  HTMLDivElement* track = HTMLDivElement::Create(document);
+  auto* track = MakeGarbageCollected<HTMLDivElement>(document);
   track->SetShadowPseudoId(AtomicString("-webkit-slider-runnable-track"));
   track->setAttribute(kIdAttr, shadow_element_names::SliderTrack());
-  track->AppendChild(SliderThumbElement::Create(document));
-  HTMLElement* container = SliderContainerElement::Create(document);
+  track->AppendChild(MakeGarbageCollected<SliderThumbElement>(document));
+  auto* container = MakeGarbageCollected<SliderContainerElement>(document);
   container->AppendChild(track);
   GetElement().UserAgentShadowRoot()->AppendChild(container);
 }
@@ -330,7 +328,7 @@ bool RangeInputType::ShouldRespectListAttribute() {
 }
 
 inline SliderThumbElement* RangeInputType::GetSliderThumbElement() const {
-  return ToSliderThumbElementOrDie(
+  return To<SliderThumbElement>(
       GetElement().UserAgentShadowRoot()->getElementById(
           shadow_element_names::SliderThumb()));
 }

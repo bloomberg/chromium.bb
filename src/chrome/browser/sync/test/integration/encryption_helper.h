@@ -9,7 +9,7 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
-#include "components/sync/base/cryptographer.h"
+#include "components/sync/nigori/cryptographer.h"
 #include "components/sync/protocol/nigori_specifics.pb.h"
 #include "components/sync/test/fake_server/fake_server.h"
 

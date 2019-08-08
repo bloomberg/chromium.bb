@@ -4,5 +4,10 @@ specific_include_rules = {
   ],
   "worker_thread.h": [
     "+base/threading/simple_thread.h",
+    "+third_party/blink/renderer/platform/heap/gc_task_runner.h",
+  ],
+  "worker_thread.cc": [
+    "+third_party/blink/renderer/platform/memory_pressure_listener.h",
+    "+third_party/blink/renderer/platform/heap/gc_task_runner.h",
   ],
 }

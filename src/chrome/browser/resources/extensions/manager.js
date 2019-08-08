@@ -100,7 +100,8 @@ cr.define('extensions', function() {
       /**
        * The item that provides some information about the current extension
        * for the activity log view subpage. See also errorPageItem_.
-       * @private {!chrome.developerPrivate.ExtensionInfo|undefined}
+       * @private {!chrome.developerPrivate.ExtensionInfo|undefined|
+       *           !extensions.ActivityLogExtensionPlaceholder}
        */
       activityLogItem_: Object,
 
@@ -407,6 +408,10 @@ cr.define('extensions', function() {
           this.errorPageItem_ && this.errorPageItem_.id == item.id &&
           this.currentPage_.page == Page.ERRORS) {
         this.errorPageItem_ = item;
+      } else if (
+          this.activityLogItem_ && this.activityLogItem_.id == item.id &&
+          this.currentPage_.page == Page.ACTIVITY_LOG) {
+        this.activityLogItem_ = item;
       }
     },
 
@@ -465,12 +470,24 @@ cr.define('extensions', function() {
       const fromPage = this.currentPage_ ? this.currentPage_.page : null;
       const toPage = newPage.page;
       let data;
+      let activityLogPlaceholder;
       if (newPage.extensionId) {
         data = this.getData_(newPage.extensionId);
         if (!data) {
-          // Attempting to view an invalid (removed?) app or extension ID.
-          extensions.navigation.replaceWith({page: Page.LIST});
-          return;
+          // Allow the user to navigate to the activity log page even if the
+          // extension ID is not valid. This enables the use case of seeing an
+          // extension's install-time activities by navigating to an extension's
+          // activity log page, then installing the extension.
+          if (this.showActivityLog && toPage == Page.ACTIVITY_LOG) {
+            activityLogPlaceholder = {
+              id: newPage.extensionId,
+              isPlaceholder: true,
+            };
+          } else {
+            // Attempting to view an invalid (removed?) app or extension ID.
+            extensions.navigation.replaceWith({page: Page.LIST});
+            return;
+          }
         }
       }
 
@@ -487,7 +504,7 @@ cr.define('extensions', function() {
           return;
         }
 
-        this.activityLogItem_ = assert(data);
+        this.activityLogItem_ = data ? assert(data) : activityLogPlaceholder;
       }
 
       if (fromPage != toPage) {

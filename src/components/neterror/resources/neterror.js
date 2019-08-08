@@ -217,18 +217,25 @@ function getSuggestedContentDiv(item, index) {
   // for the data contained in an |item|.
   // TODO(carlosk): Present |snippet_base64| when that content becomes
   // available.
-  var visual = '';
+  var thumbnail = '';
   var extraContainerClasses = [];
   // html_inline.py will try to replace src attributes with data URIs using a
   // simple regex. The following is obfuscated slightly to avoid that.
   var src = 'src';
   if (item.thumbnail_data_uri) {
     extraContainerClasses.push('suggestion-with-image');
-    visual = `<img ${src}="${item.thumbnail_data_uri}">`;
+    thumbnail = `<img ${src}="${item.thumbnail_data_uri}">`;
   } else {
     extraContainerClasses.push('suggestion-with-icon');
     iconClass = getIconForSuggestedItem(item);
-    visual = `<div><img class="${iconClass}"></div>`;
+    thumbnail = `<div><img class="${iconClass}"></div>`;
+  }
+
+  var favicon = '';
+  if (item.favicon_data_uri) {
+    favicon = `<img ${src}="${item.favicon_data_uri}">`;
+  } else {
+    extraContainerClasses.push('no-favicon');
   }
 
   if (!item.attribution_base64)
@@ -242,6 +249,10 @@ function getSuggestedContentDiv(item, index) {
              class="offline-content-suggestion-title">
         </div>
         <div class="offline-content-suggestion-attribution-freshness">
+          <div id="offline-content-suggestion-favicon-${index}"
+               class="offline-content-suggestion-favicon">
+            ${favicon}
+          </div>
           <div id="offline-content-suggestion-attribution-${index}"
                class="offline-content-suggestion-attribution">
           </div>
@@ -252,8 +263,8 @@ function getSuggestedContentDiv(item, index) {
           <div class="offline-content-suggestion-pin"></div>
         </div>
       </div>
-      <div class="offline-content-suggestion-visual">
-        ${visual}
+      <div class="offline-content-suggestion-thumbnail">
+        ${thumbnail}
       </div>
   </div>`;
 }

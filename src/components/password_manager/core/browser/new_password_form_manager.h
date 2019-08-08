@@ -6,6 +6,7 @@
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_NEW_PASSWORD_FORM_MANAGER_H_
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -29,6 +30,7 @@ namespace password_manager {
 
 class FormSaver;
 class PasswordFormMetricsRecorder;
+class PasswordGenerationState;
 class PasswordManagerClient;
 class PasswordManagerDriver;
 
@@ -55,7 +57,7 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
 
   // Constructor for http authentication (aka basic authentication).
   NewPasswordFormManager(PasswordManagerClient* client,
-                         const autofill::PasswordForm& http_auth_observed_form,
+                         PasswordStore::FormDigest observed_http_auth_digest,
                          FormFetcher* form_fetcher,
                          std::unique_ptr<FormSaver> form_saver);
 
@@ -94,7 +96,7 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   // If |submitted_form| is managed by *this then saves |submitted_form| to
   // |submitted_form_| field, sets |is_submitted| = true and returns true.
   // Otherwise returns false.
-  bool ProvisionallySaveHttpAuthFormIfIsManaged(
+  bool ProvisionallySaveHttpAuthForm(
       const autofill::PasswordForm& submitted_form);
 
   bool is_submitted() { return is_submitted_; }
@@ -209,7 +211,7 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
       FormFetcher* form_fetcher,
       std::unique_ptr<FormSaver> form_saver,
       scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder,
-      const PasswordStore::FormDigest& form_digest);
+      PasswordStore::FormDigest form_digest);
 
   // Compares |parsed_form| with |old_parsing_result_| and records UKM metric.
   // TODO(https://crbug.com/831123): Remove it when the old form parsing is
@@ -252,13 +254,6 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   // Sends fill data to the http auth popup.
   void FillHttpAuth();
 
-  // Goes through |not_best_matches_|, updates the password of those which share
-  // the old password and username with |pending_credentials_| to the new
-  // password of |pending_credentials_|, and returns copies of all such modified
-  // credentials.
-  // TODO(crbug/831123): remove. FormSaver should do the job.
-  std::vector<autofill::PasswordForm> FindOtherCredentialsToUpdate();
-
   // Helper function for calling form parsing and logging results if logging is
   // active.
   std::unique_ptr<autofill::PasswordForm> ParseFormAndMakeLogging(
@@ -277,6 +272,9 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   // Returns all the credentials for the origin (essentially, |best_matches_|
   // and |not_best_matches_|).
   std::vector<const autofill::PasswordForm*> GetAllMatches() const;
+
+  // Save/update |pending_credentials_| to the password store.
+  void SavePendingToStore(bool update);
 
   // The client which implements embedder-specific PasswordManager operations.
   PasswordManagerClient* client_;
@@ -353,15 +351,8 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   // dependencies on it.
   bool is_new_login_ = true;
 
-  // Contains a generated password, empty if no password generation happened or
-  // a generated password removed by the user.
-  base::string16 generated_password_;
-
-#if defined(OS_IOS)
-  // Contains a generated password, empty if no password generation happened or
-  // a generated password removed by the user.
-  base::string16 generation_element_;
-#endif
+  // Handles the user flows related to the generation.
+  std::unique_ptr<PasswordGenerationState> generation_state_;
 
   // Whether a saved password was overridden. The flag is true when there is a
   // credential in the store that will get a new password value.

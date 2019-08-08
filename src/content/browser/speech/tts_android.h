@@ -15,11 +15,12 @@ class TtsPlatformImplAndroid : public TtsPlatformImpl {
  public:
   // TtsPlatform overrides.
   bool PlatformImplAvailable() override;
-  bool Speak(int utterance_id,
+  void Speak(int utterance_id,
              const std::string& utterance,
              const std::string& lang,
              const VoiceData& voice,
-             const UtteranceContinuousParameters& params) override;
+             const UtteranceContinuousParameters& params,
+             base::OnceCallback<void(bool)> on_speak_finished) override;
   bool StopSpeaking() override;
   void Pause() override;
   void Resume() override;
@@ -52,9 +53,18 @@ class TtsPlatformImplAndroid : public TtsPlatformImpl {
                          TtsEventType event_type,
                          int char_index);
 
+  void ProcessSpeech(int utterance_id,
+                     const std::string& lang,
+                     const VoiceData& voice,
+                     const UtteranceContinuousParameters& params,
+                     base::OnceCallback<void(bool)> on_speak_finished,
+                     const std::string& parsed_utterance);
+
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
   int utterance_id_;
   std::string utterance_;
+
+  base::WeakPtrFactory<TtsPlatformImplAndroid> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TtsPlatformImplAndroid);
 };

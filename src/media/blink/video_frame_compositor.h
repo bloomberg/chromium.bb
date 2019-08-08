@@ -93,6 +93,7 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   bool HasCurrentFrame() override;
   scoped_refptr<VideoFrame> GetCurrentFrame() override;
   void PutCurrentFrame() override;
+  base::TimeDelta GetPreferredRenderInterval() override;
 
   // Returns |current_frame_|, without offering a guarantee as to how recently
   // it was updated. In certain applications, one might need to periodically
@@ -104,7 +105,7 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   // same thread (typically the media thread).
   void Start(RenderCallback* callback) override;
   void Stop() override;
-  void PaintSingleFrame(const scoped_refptr<VideoFrame>& frame,
+  void PaintSingleFrame(scoped_refptr<VideoFrame> frame,
                         bool repaint_duplicate_frame = false) override;
 
   // If |client_| is not set, |callback_| is set, and |is_background_rendering_|
@@ -170,10 +171,10 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   void OnRendererStateUpdate(bool new_state);
 
   // Handles setting of |current_frame_|.
-  bool ProcessNewFrame(const scoped_refptr<VideoFrame>& frame,
+  bool ProcessNewFrame(scoped_refptr<VideoFrame> frame,
                        bool repaint_duplicate_frame);
 
-  void SetCurrentFrame(const scoped_refptr<VideoFrame>& frame);
+  void SetCurrentFrame(scoped_refptr<VideoFrame> frame);
 
   // Called by |background_rendering_timer_| when enough time elapses where we
   // haven't seen a Render() call.

@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/modules/service_worker/service_worker_window_client.h"
 
-#include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
@@ -17,6 +16,7 @@
 #include "third_party/blink/renderer/modules/service_worker/service_worker_error.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope_client.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -41,22 +41,10 @@ void DidFocus(ScriptPromiseResolver* resolver,
 }  // namespace
 
 ServiceWorkerWindowClient* ServiceWorkerWindowClient::Create(
-    const WebServiceWorkerClientInfo& info) {
-  DCHECK_EQ(mojom::blink::ServiceWorkerClientType::kWindow, info.client_type);
-  return MakeGarbageCollected<ServiceWorkerWindowClient>(info);
-}
-
-ServiceWorkerWindowClient* ServiceWorkerWindowClient::Create(
     const mojom::blink::ServiceWorkerClientInfo& info) {
   DCHECK_EQ(mojom::blink::ServiceWorkerClientType::kWindow, info.client_type);
   return MakeGarbageCollected<ServiceWorkerWindowClient>(info);
 }
-
-ServiceWorkerWindowClient::ServiceWorkerWindowClient(
-    const WebServiceWorkerClientInfo& info)
-    : ServiceWorkerClient(info),
-      page_hidden_(info.page_hidden),
-      is_focused_(info.is_focused) {}
 
 ServiceWorkerWindowClient::ServiceWorkerWindowClient(
     const mojom::blink::ServiceWorkerClientInfo& info)
@@ -75,8 +63,9 @@ ScriptPromise ServiceWorkerWindowClient::focus(ScriptState* script_state) {
   ScriptPromise promise = resolver->Promise();
 
   if (!ExecutionContext::From(script_state)->IsWindowInteractionAllowed()) {
-    resolver->Reject(DOMException::Create(DOMExceptionCode::kInvalidAccessError,
-                                          "Not allowed to focus a window."));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidAccessError,
+        "Not allowed to focus a window."));
     return promise;
   }
   ExecutionContext::From(script_state)->ConsumeWindowInteraction();

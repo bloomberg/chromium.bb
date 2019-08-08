@@ -7,25 +7,38 @@
 
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 
+#import "ios/chrome/browser/infobars/infobar_type.h"
+
 @protocol InfobarPasswordModalDelegate;
 
 // InfobarPasswordTableViewController represents the content for the Passwords
 // InfobarModal.
 @interface InfobarPasswordTableViewController : ChromeTableViewController
 
-// InfobarPasswordModalDelegate for this ViewController.
-@property(nonatomic, strong) id<InfobarPasswordModalDelegate>
-    infobarModalDelegate;
+- (instancetype)initWithDelegate:(id<InfobarPasswordModalDelegate>)modalDelegate
+                            type:(InfobarType)infobarType
+    NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithTableViewStyle:(UITableViewStyle)style
+                           appBarStyle:
+                               (ChromeTableViewControllerStyle)appBarStyle
+    NS_UNAVAILABLE;
+
 // The username being displayed in the InfobarModal.
 @property(nonatomic, copy) NSString* username;
 // The masked password being displayed in the InfobarModal.
 @property(nonatomic, copy) NSString* maskedPassword;
 // The unmasked password for the InfobarModal.
 @property(nonatomic, copy) NSString* unmaskedPassword;
+// The details text message being displayed in the InfobarModal.
+@property(nonatomic, copy) NSString* detailsTextMessage;
 // The URL being displayed in the InfobarModal.
 @property(nonatomic, copy) NSString* URL;
-// The text used for the save credentials button.
+// The text used for the save/update credentials button.
 @property(nonatomic, copy) NSString* saveButtonText;
+// The text used for the cancel button.
+@property(nonatomic, copy) NSString* cancelButtonText;
+// YES if the current set of credentials has already been saved.
+@property(nonatomic, assign) BOOL currentCredentialsSaved;
 
 @end
 

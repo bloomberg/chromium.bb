@@ -37,6 +37,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/test_launcher.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -149,7 +150,7 @@ void RunAllTasksUntilIdle() {
     base::MessageLoopCurrent::Get()->AddTaskObserver(&task_observer);
 
     base::RunLoop run_loop;
-    base::ThreadPool::GetInstance()->FlushAsyncForTesting(
+    base::ThreadPoolInstance::Get()->FlushAsyncForTesting(
         run_loop.QuitWhenIdleClosure());
     run_loop.Run();
 
@@ -196,6 +197,15 @@ void ResetSchemesAndOriginsWhitelist() {
   url::Shutdown();
   RegisterContentSchemes(false);
   url::Initialize();
+}
+
+GURL GetWebUIURL(const std::string& host) {
+  return GURL(GetWebUIURLString(host));
+}
+
+std::string GetWebUIURLString(const std::string& host) {
+  return std::string(content::kChromeUIScheme) + url::kStandardSchemeSeparator +
+         host;
 }
 
 void DeprecatedEnableFeatureWithParam(const base::Feature& feature,
@@ -324,34 +334,49 @@ void WindowedNotificationObserver::Observe(int type,
 }
 
 InProcessUtilityThreadHelper::InProcessUtilityThreadHelper()
-    : child_thread_count_(0), shell_context_(new TestServiceManagerContext) {
+    : shell_context_(new TestServiceManagerContext) {
   RenderProcessHost::SetRunRendererInProcess(true);
-  BrowserChildProcessObserver::Add(this);
 }
 
 InProcessUtilityThreadHelper::~InProcessUtilityThreadHelper() {
-  if (child_thread_count_) {
-    DCHECK(BrowserThread::IsThreadInitialized(BrowserThread::UI));
-    DCHECK(BrowserThread::IsThreadInitialized(BrowserThread::IO));
-    run_loop_.reset(new base::RunLoop);
-    run_loop_->Run();
-  }
-  BrowserChildProcessObserver::Remove(this);
+  JoinAllUtilityThreads();
   RenderProcessHost::SetRunRendererInProcess(false);
 }
 
-void InProcessUtilityThreadHelper::BrowserChildProcessHostConnected(
-    const ChildProcessData& data) {
-  child_thread_count_++;
+void InProcessUtilityThreadHelper::JoinAllUtilityThreads() {
+  base::RunLoop run_loop;
+  quit_closure_ = run_loop.QuitClosure();
+
+  BrowserChildProcessObserver::Add(this);
+  CheckHasRunningChildProcess();
+  run_loop.Run();
+  BrowserChildProcessObserver::Remove(this);
+}
+
+void InProcessUtilityThreadHelper::CheckHasRunningChildProcess() {
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(
+          &InProcessUtilityThreadHelper::CheckHasRunningChildProcessOnIO,
+          quit_closure_));
+}
+
+// static
+void InProcessUtilityThreadHelper::CheckHasRunningChildProcessOnIO(
+    const base::RepeatingClosure& quit_closure) {
+  BrowserChildProcessHostIterator it;
+  if (!it.Done()) {
+    // Have some running child processes -> need to wait.
+    return;
+  }
+
+  DCHECK(quit_closure);
+  quit_closure.Run();
 }
 
 void InProcessUtilityThreadHelper::BrowserChildProcessHostDisconnected(
     const ChildProcessData& data) {
-  if (--child_thread_count_)
-    return;
-
-  if (run_loop_)
-    run_loop_->Quit();
+  CheckHasRunningChildProcess();
 }
 
 RenderFrameDeletedObserver::RenderFrameDeletedObserver(RenderFrameHost* rfh)

@@ -46,6 +46,7 @@ class MEDIA_MOJO_EXPORT MojoAudioOutputStream
   // mojom::AudioOutputStream implementation.
   void Play() override;
   void Pause() override;
+  void Flush() override;
   void SetVolume(double volume) override;
 
   // AudioOutputDelegate::EventHandler implementation.

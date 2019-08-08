@@ -13,6 +13,7 @@ import("//build/util/version.gni")
 import("//testing/test.gni")
 import("//third_party/netty4/netty4.gni")
 import("//third_party/protobuf/proto_library.gni")
+import("//tools/binary_size/sizes.gni")
 import("//url/features.gni")
 
 _jni_registration_header = "$target_gen_dir/cronet_jni_registration.h"
@@ -47,6 +48,7 @@ generate_jni_registration("cronet_jni_registration") {
   header_output = _jni_registration_header
   sources_blacklist = [
     "//base/android/java/src/org/chromium/base/library_loader/LibraryLoader.java",
+    "//base/android/java/src/org/chromium/base/library_loader/LibraryPrefetcher.java",
     "//base/android/java/src/org/chromium/base/process_launcher/ChildProcessService.java",
     "//base/android/java/src/org/chromium/base/SysUtils.java",
   ]
@@ -220,6 +222,19 @@ shared_library("cronet") {
   ]
   configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
   configs += [ ":hide_all_but_jni_onload_and_cronet" ]
+}
+
+sizes_test("cronet_sizes") {
+  data_deps = [
+    ":cronet",
+  ]
+  data = [
+    "${root_out_dir}/lib${_cronet_shared_lib_name}.so",
+  ]
+  executable_args = [
+    "--platform",
+    "android-cronet",
+  ]
 }
 
 # cronet_api_java.jar defines Cronet API.
@@ -430,7 +445,10 @@ android_apk("cronet_sample_apk") {
 }
 
 android_resource_sizes_test("resource_sizes_cronet_sample_apk") {
-  apk = ":cronet_sample_apk"
+  apk_name = "CronetSample"
+  data_deps = [
+    ":cronet_sample_apk",
+  ]
 }
 
 action("cronet_combine_proguard_flags") {
@@ -1359,7 +1377,7 @@ if (!is_component_build) {
     ]
   }
 
-  group("cronet_package") {
+  group("cronet_package_android") {
     # Marked as testonly as it contains test-only targets too.
     testonly = true
 
@@ -1374,6 +1392,7 @@ if (!is_component_build) {
         ":cronet_package_copy_native_lib",
         ":cronet_package_copy_native_lib_unstripped",
         ":cronet_package_copy_resources",
+        ":cronet_sizes",
         ":cronet_test_package",
         ":generate_javadoc",
         ":generate_licenses",

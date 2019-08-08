@@ -35,7 +35,7 @@ class MockMediaStreamVideoSource : public blink::MediaStreamVideoSource {
   // Delivers |frame| to all registered tracks on the IO thread. Its up to the
   // call to make sure MockMediaStreamVideoSource is not destroyed before the
   // frame has been delivered.
-  void DeliverVideoFrame(const scoped_refptr<media::VideoFrame>& frame);
+  void DeliverVideoFrame(scoped_refptr<media::VideoFrame> frame);
 
   const media::VideoCaptureFormat& start_format() const { return format_; }
   int max_requested_height() const { return max_requested_height_; }

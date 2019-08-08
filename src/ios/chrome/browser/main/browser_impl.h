@@ -9,6 +9,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 
 @class TabModel;
 class WebStateList;
@@ -32,6 +33,8 @@ class BrowserImpl : public Browser {
   ios::ChromeBrowserState* GetBrowserState() const override;
   TabModel* GetTabModel() const override;
   WebStateList* GetWebStateList() const override;
+  void AddObserver(BrowserObserver* observer) override;
+  void RemoveObserver(BrowserObserver* observer) override;
 
  private:
   // Exposed to allow unittests to pass in a mock TabModel.
@@ -41,6 +44,7 @@ class BrowserImpl : public Browser {
   ios::ChromeBrowserState* browser_state_;
   __strong TabModel* tab_model_;
   WebStateList* web_state_list_;
+  base::ObserverList<BrowserObserver, /* check_empty= */ true> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserImpl);
 };

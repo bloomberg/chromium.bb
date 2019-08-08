@@ -47,14 +47,6 @@ class SVGAnimatedTransformList final
   USING_GARBAGE_COLLECTED_MIXIN(SVGAnimatedTransformList);
 
  public:
-  static SVGAnimatedTransformList* Create(
-      SVGElement* context_element,
-      const QualifiedName& attribute_name,
-      CSSPropertyID css_property_id = CSSPropertyID::kInvalid) {
-    return MakeGarbageCollected<SVGAnimatedTransformList>(
-        context_element, attribute_name, css_property_id);
-  }
-
   SVGAnimatedTransformList(SVGElement* context_element,
                            const QualifiedName& attribute_name,
                            CSSPropertyID css_property_id)

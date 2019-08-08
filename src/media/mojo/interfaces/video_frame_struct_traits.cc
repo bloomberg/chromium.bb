@@ -18,15 +18,15 @@ namespace mojo {
 namespace {
 
 media::mojom::VideoFrameDataPtr MakeVideoFrameData(
-    const scoped_refptr<media::VideoFrame>& input) {
+    const media::VideoFrame* input) {
   if (input->metadata()->IsTrue(media::VideoFrameMetadata::END_OF_STREAM)) {
     return media::mojom::VideoFrameData::NewEosData(
         media::mojom::EosVideoFrameData::New());
   }
 
   if (input->storage_type() == media::VideoFrame::STORAGE_MOJO_SHARED_BUFFER) {
-    media::MojoSharedBufferVideoFrame* mojo_frame =
-        static_cast<media::MojoSharedBufferVideoFrame*>(input.get());
+    const media::MojoSharedBufferVideoFrame* mojo_frame =
+        static_cast<const media::MojoSharedBufferVideoFrame*>(input);
 
     // TODO(https://crbug.com/803136): This should duplicate as READ_ONLY, but
     // can't because there is no guarantee that the input handle is sharable as
@@ -53,7 +53,8 @@ media::mojom::VideoFrameDataPtr MakeVideoFrameData(
     for (size_t i = 0; i < num_planes; i++)
       mailbox_holder[i] = input->mailbox_holder(i);
     return media::mojom::VideoFrameData::NewMailboxData(
-        media::mojom::MailboxVideoFrameData::New(std::move(mailbox_holder)));
+        media::mojom::MailboxVideoFrameData::New(
+            std::move(mailbox_holder), std::move(input->ycbcr_info())));
   }
 
   NOTREACHED() << "Unsupported VideoFrame conversion";
@@ -66,7 +67,7 @@ media::mojom::VideoFrameDataPtr MakeVideoFrameData(
 media::mojom::VideoFrameDataPtr StructTraits<media::mojom::VideoFrameDataView,
                                              scoped_refptr<media::VideoFrame>>::
     data(const scoped_refptr<media::VideoFrame>& input) {
-  return media::mojom::VideoFrameDataPtr(MakeVideoFrameData(input));
+  return media::mojom::VideoFrameDataPtr(MakeVideoFrameData(input.get()));
 }
 
 // static
@@ -133,9 +134,14 @@ bool StructTraits<media::mojom::VideoFrameDataView,
     for (size_t i = 0; i < media::VideoFrame::kMaxPlanes; i++)
       mailbox_holder_array[i] = mailbox_holder[i];
 
+    base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info;
+    if (!mailbox_data.ReadYcbcrData(&ycbcr_info))
+      return false;
+
     frame = media::VideoFrame::WrapNativeTextures(
         format, mailbox_holder_array, media::VideoFrame::ReleaseMailboxCB(),
         coded_size, visible_rect, natural_size, timestamp);
+    frame->set_ycbcr_info(ycbcr_info);
   } else {
     // TODO(sandersd): Switch on the union tag to avoid this ugliness?
     NOTREACHED();

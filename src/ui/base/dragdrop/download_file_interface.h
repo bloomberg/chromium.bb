@@ -32,7 +32,7 @@ class UI_BASE_EXPORT DownloadFileObserver
 
  protected:
   friend class base::RefCountedThreadSafe<DownloadFileObserver>;
-  virtual ~DownloadFileObserver() {}
+  virtual ~DownloadFileObserver() = default;
 };
 
 // Defines the interface to control how a file is downloaded.
@@ -51,7 +51,7 @@ class UI_BASE_EXPORT DownloadFileProvider
 
  protected:
   friend class base::RefCountedThreadSafe<DownloadFileProvider>;
-  virtual ~DownloadFileProvider() {}
+  virtual ~DownloadFileProvider() = default;
 };
 
 }  // namespace ui

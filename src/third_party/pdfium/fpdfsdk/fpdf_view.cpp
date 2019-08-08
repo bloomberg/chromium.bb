@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "build/build_config.h"
 #include "core/fpdfapi/cpdf_modulemgr.h"
 #include "core/fpdfapi/cpdf_pagerendercontext.h"
 #include "core/fpdfapi/page/cpdf_page.h"
@@ -19,12 +20,12 @@
 #include "core/fpdfapi/parser/cpdf_name.h"
 #include "core/fpdfapi/parser/cpdf_parser.h"
 #include "core/fpdfapi/parser/fpdf_parser_decode.h"
+#include "core/fpdfapi/render/cpdf_occontext.h"
 #include "core/fpdfapi/render/cpdf_progressiverenderer.h"
 #include "core/fpdfapi/render/cpdf_rendercontext.h"
 #include "core/fpdfapi/render/cpdf_renderoptions.h"
 #include "core/fpdfdoc/cpdf_annotlist.h"
 #include "core/fpdfdoc/cpdf_nametree.h"
-#include "core/fpdfdoc/cpdf_occontext.h"
 #include "core/fpdfdoc/cpdf_viewerpreferences.h"
 #include "core/fxcrt/cfx_readonlymemorystream.h"
 #include "core/fxcrt/fx_stream.h"
@@ -49,7 +50,7 @@
 #include "fxbarcode/BC_Library.h"
 #endif  // PDF_ENABLE_XFA
 
-#if _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#if defined(OS_WIN)
 #include "core/fxge/cfx_windowsrenderdevice.h"
 #include "public/fpdf_edit.h"
 
@@ -68,7 +69,7 @@ static_assert(WindowsPrintMode::kModePostScript2PassThrough ==
 static_assert(WindowsPrintMode::kModePostScript3PassThrough ==
                   FPDF_PRINTMODE_POSTSCRIPT3_PASSTHROUGH,
               "WindowsPrintMode::kModePostScript3PassThrough value mismatch");
-#endif  // _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#endif  // defined(OS_WIN)
 
 namespace {
 
@@ -544,8 +545,7 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_RenderPage(HDC dc,
       pContext->m_pOptions->GetOptions().bBreakForMasks = true;
     }
   } else {
-    pContext->m_pDevice = pdfium::MakeUnique<CFX_WindowsRenderDevice>(
-        CPDF_ModuleMgr::Get()->GetCodecModule(), dc);
+    pContext->m_pDevice = pdfium::MakeUnique<CFX_WindowsRenderDevice>(dc);
   }
 
   RenderPageWithContext(pContext, page, start_x, start_y, size_x, size_y,
@@ -572,8 +572,7 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_RenderPage(HDC dc,
     // pause after each image mask.
     pPage->SetRenderContext(pdfium::MakeUnique<CPDF_PageRenderContext>());
     pContext = pPage->GetRenderContext();
-    pContext->m_pDevice = pdfium::MakeUnique<CFX_WindowsRenderDevice>(
-        CPDF_ModuleMgr::Get()->GetCodecModule(), dc);
+    pContext->m_pDevice = pdfium::MakeUnique<CFX_WindowsRenderDevice>(dc);
     pContext->m_pOptions = pdfium::MakeUnique<CPDF_RenderOptions>();
     pContext->m_pOptions->GetOptions().bBreakForMasks = true;
 
@@ -590,7 +589,7 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_RenderPage(HDC dc,
       pContext->m_pRenderer->Continue(nullptr);
     }
   } else if (bNewBitmap) {
-    CFX_WindowsRenderDevice WinDC(CPDF_ModuleMgr::Get()->GetCodecModule(), dc);
+    CFX_WindowsRenderDevice WinDC(dc);
     bool bitsStretched = false;
     if (WinDC.GetDeviceCaps(FXDC_DEVICE_CLASS) == FXDC_PRINTER) {
       auto pDst = pdfium::MakeRetain<CFX_DIBitmap>();
@@ -1153,7 +1152,7 @@ FPDF_EXPORT FPDF_DEST FPDF_CALLCONV FPDF_GetNamedDest(FPDF_DOCUMENT document,
     CPDF_DictionaryLocker locker(pDest);
     for (const auto& it : locker) {
       bsName = it.first.AsStringView();
-      pDestObj = it.second.get();
+      pDestObj = it.second.Get();
       if (!pDestObj)
         continue;
       if (i == index)

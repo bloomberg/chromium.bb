@@ -23,9 +23,9 @@
 
 #include "third_party/blink/renderer/platform/graphics/filters/fe_flood.h"
 
-#include "SkColorFilter.h"
-#include "SkColorFilterImageFilter.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
+#include "third_party/skia/include/core/SkColorFilter.h"
+#include "third_party/skia/include/effects/SkColorFilterImageFilter.h"
 
 namespace blink {
 

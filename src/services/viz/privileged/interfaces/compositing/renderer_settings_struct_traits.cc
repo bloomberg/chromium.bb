@@ -41,8 +41,6 @@ bool StructTraits<viz::mojom::RendererSettingsDataView, viz::RendererSettings>::
 
   if (!data.ReadColorSpace(&out->color_space))
     return false;
-
-  out->backed_by_surface_texture = data.backed_by_surface_texture();
 #endif
 
 #if defined(USE_OZONE)

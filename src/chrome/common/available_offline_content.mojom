@@ -41,8 +41,10 @@ struct AvailableOfflineContent {
   string date_modified;
   // A brief description of the source. May be empty.
   string attribution;
-  // A data URI for a thumbnail that is related to the content.
+  // Data URI containing thumbnail image data.
   url.mojom.Url thumbnail_data_uri;
+  // Data URI containing favicon image data.
+  url.mojom.Url favicon_data_uri;
   // Type of this content.
   AvailableContentType content_type;
 };

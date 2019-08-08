@@ -64,7 +64,7 @@ QuicServer::QuicServer(
     const QuicCryptoServerConfig::ConfigOptions& crypto_config_options,
     const ParsedQuicVersionVector& supported_versions,
     QuicSimpleServerBackend* quic_simple_server_backend,
-    uint8_t expected_connection_id_length)
+    uint8_t expected_server_connection_id_length)
     : port_(0),
       fd_(-1),
       packets_dropped_(0),
@@ -80,7 +80,9 @@ QuicServer::QuicServer(
       version_manager_(supported_versions),
       packet_reader_(new QuicPacketReader()),
       quic_simple_server_backend_(quic_simple_server_backend),
-      expected_connection_id_length_(expected_connection_id_length) {
+      expected_server_connection_id_length_(
+          expected_server_connection_id_length) {
+  DCHECK(quic_simple_server_backend_);
   Initialize();
 }
 
@@ -90,12 +92,12 @@ void QuicServer::Initialize() {
   const uint32_t kInitialSessionFlowControlWindow = 1 * 1024 * 1024;  // 1 MB
   const uint32_t kInitialStreamFlowControlWindow = 64 * 1024;         // 64 KB
   if (config_.GetInitialStreamFlowControlWindowToSend() ==
-      kMinimumFlowControlSendWindow) {
+      kDefaultFlowControlSendWindow) {
     config_.SetInitialStreamFlowControlWindowToSend(
         kInitialStreamFlowControlWindow);
   }
   if (config_.GetInitialSessionFlowControlWindowToSend() ==
-      kMinimumFlowControlSendWindow) {
+      kDefaultFlowControlSendWindow) {
     config_.SetInitialSessionFlowControlWindowToSend(
         kInitialSessionFlowControlWindow);
   }
@@ -158,7 +160,13 @@ QuicDispatcher* QuicServer::CreateQuicDispatcher() {
           new QuicSimpleCryptoServerStreamHelper(QuicRandom::GetInstance())),
       std::unique_ptr<QuicEpollAlarmFactory>(
           new QuicEpollAlarmFactory(&epoll_server_)),
-      quic_simple_server_backend_, expected_connection_id_length_);
+      quic_simple_server_backend_, expected_server_connection_id_length_);
+}
+
+void QuicServer::HandleEventsForever() {
+  while (true) {
+    WaitForEvents();
+  }
 }
 
 void QuicServer::WaitForEvents() {

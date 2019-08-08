@@ -59,7 +59,7 @@ void InitializeDWriteFontProxy(service_manager::Connector* connector) {
     if (g_connection_callback_override) {
       dwrite_font_proxy = g_connection_callback_override->Run();
     } else if (connector) {
-      connector->BindInterface(mojom::kBrowserServiceName,
+      connector->BindInterface(mojom::kSystemServiceName,
                                mojo::MakeRequest(&dwrite_font_proxy));
     }
     // If |connector| is not provided, the connection to the browser will be
@@ -91,7 +91,7 @@ void InitializeDWriteFontProxy(service_manager::Connector* connector) {
   // This flag can be removed when Win8.0 and earlier are no longer supported.
   bool fallback_available = g_font_fallback != nullptr;
   DCHECK_EQ(fallback_available,
-            base::win::GetVersion() > base::win::VERSION_WIN8);
+            base::win::GetVersion() > base::win::Version::WIN8);
   blink::WebFontRendering::SetUseSkiaFontFallback(fallback_available);
 }
 

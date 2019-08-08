@@ -20,7 +20,7 @@ namespace ui {
 AXNode::AXNode(AXNode::OwnerTree* tree,
                AXNode* parent,
                int32_t id,
-               int32_t index_in_parent)
+               size_t index_in_parent)
     : tree_(tree),
       index_in_parent_(index_in_parent),
       parent_(parent),
@@ -30,14 +30,12 @@ AXNode::AXNode(AXNode::OwnerTree* tree,
 
 AXNode::~AXNode() = default;
 
-int AXNode::GetUnignoredChildCount() const {
-  int count = 0;
-  for (int i = 0; i < child_count(); i++) {
-    AXNode* child = children_[i];
-    if (child->data().HasState(ax::mojom::State::kIgnored))
-      count += child->GetUnignoredChildCount();
-    else
-      count++;
+size_t AXNode::GetUnignoredChildCount() const {
+  size_t count = 0;
+  for (const AXNode* child : children_) {
+    count += (child->data().HasState(ax::mojom::State::kIgnored))
+                 ? child->GetUnignoredChildCount()
+                 : 1;
   }
   return count;
 }
@@ -46,22 +44,19 @@ AXNodeData&& AXNode::TakeData() {
   return std::move(data_);
 }
 
-AXNode* AXNode::GetUnignoredChildAtIndex(int index) const {
-  int count = 0;
-  for (int i = 0; i < child_count(); i++) {
-    AXNode* child = children_[i];
+AXNode* AXNode::GetUnignoredChildAtIndex(size_t index) const {
+  size_t count = 0;
+  for (AXNode* child : children_) {
+    DCHECK_LE(count, index);
+    size_t child_count = 1;
     if (child->data().HasState(ax::mojom::State::kIgnored)) {
-      int nested_child_count = child->GetUnignoredChildCount();
-      if (index < count + nested_child_count)
+      child_count = child->GetUnignoredChildCount();
+      if (index < count + child_count)
         return child->GetUnignoredChildAtIndex(index - count);
-      else
-        count += nested_child_count;
-    } else {
-      if (count == index)
-        return child;
-      else
-        count++;
+    } else if (count == index) {
+      return child;
     }
+    count += child_count;
   }
 
   return nullptr;
@@ -74,10 +69,10 @@ AXNode* AXNode::GetUnignoredParent() const {
   return result;
 }
 
-int AXNode::GetUnignoredIndexInParent() const {
+size_t AXNode::GetUnignoredIndexInParent() const {
   AXNode* parent = GetUnignoredParent();
   if (parent) {
-    for (int i = 0; i < parent->GetUnignoredChildCount(); ++i) {
+    for (size_t i = 0; i < parent->GetUnignoredChildCount(); ++i) {
       if (parent->GetUnignoredChildAtIndex(i) == this)
         return i;
     }
@@ -113,7 +108,7 @@ void AXNode::SetLocation(int32_t offset_container_id,
     data_.relative_bounds.transform.reset(nullptr);
 }
 
-void AXNode::SetIndexInParent(int index_in_parent) {
+void AXNode::SetIndexInParent(size_t index_in_parent) {
   index_in_parent_ = index_in_parent;
 }
 
@@ -153,7 +148,7 @@ void AXNode::ComputeLineStartOffsets(std::vector<int>* line_offsets,
   DCHECK(start_offset);
   for (const AXNode* child : children()) {
     DCHECK(child);
-    if (child->child_count()) {
+    if (!child->children().empty()) {
       child->ComputeLineStartOffsets(line_offsets, start_offset);
       continue;
     }
@@ -193,8 +188,8 @@ AXLanguageInfo* AXNode::GetLanguageInfo() {
   return language_info_.get();
 }
 
-void AXNode::SetLanguageInfo(AXLanguageInfo* lang_info) {
-  language_info_.reset(lang_info);
+void AXNode::SetLanguageInfo(std::unique_ptr<AXLanguageInfo> lang_info) {
+  language_info_ = std::move(lang_info);
 }
 
 std::string AXNode::GetLanguage() {
@@ -222,7 +217,7 @@ int32_t AXNode::GetTableColCount() const {
   if (!table_info)
     return 0;
 
-  return table_info->col_count;
+  return int32_t{table_info->col_count};
 }
 
 int32_t AXNode::GetTableRowCount() const {
@@ -230,23 +225,23 @@ int32_t AXNode::GetTableRowCount() const {
   if (!table_info)
     return 0;
 
-  return table_info->row_count;
+  return int32_t{table_info->row_count};
 }
 
 base::Optional<int32_t> AXNode::GetTableAriaColCount() const {
   AXTableInfo* table_info = tree_->GetTableInfo(this);
-  if (!table_info)
+  if (!table_info || !table_info->aria_col_count)
     return base::nullopt;
 
-  return table_info->aria_col_count;
+  return int32_t{table_info->aria_col_count.value()};
 }
 
 base::Optional<int32_t> AXNode::GetTableAriaRowCount() const {
   AXTableInfo* table_info = tree_->GetTableInfo(this);
-  if (!table_info)
+  if (!table_info || !table_info->aria_row_count)
     return base::nullopt;
 
-  return table_info->aria_row_count;
+  return int32_t{table_info->aria_row_count.value()};
 }
 
 int32_t AXNode::GetTableCellCount() const {
@@ -262,11 +257,10 @@ AXNode* AXNode::GetTableCellFromIndex(int32_t index) const {
   if (!table_info)
     return nullptr;
 
-  if (index < 0 ||
-      index >= static_cast<int32_t>(table_info->unique_cell_ids.size()))
+  if (index < 0 || size_t{index} >= table_info->unique_cell_ids.size())
     return nullptr;
 
-  return tree_->GetFromId(table_info->unique_cell_ids[index]);
+  return tree_->GetFromId(table_info->unique_cell_ids[size_t{index}]);
 }
 
 AXNode* AXNode::GetTableCaption() const {
@@ -283,11 +277,12 @@ AXNode* AXNode::GetTableCellFromCoords(int32_t row_index,
   if (!table_info)
     return nullptr;
 
-  if (row_index < 0 || row_index >= table_info->row_count || col_index < 0 ||
-      col_index >= table_info->col_count)
+  if (row_index < 0 || size_t{row_index} >= table_info->row_count ||
+      col_index < 0 || size_t{col_index} >= table_info->col_count)
     return nullptr;
 
-  return tree_->GetFromId(table_info->cell_ids[row_index][col_index]);
+  return tree_->GetFromId(
+      table_info->cell_ids[size_t{row_index}][size_t{col_index}]);
 }
 
 void AXNode::GetTableColHeaderNodeIds(
@@ -298,11 +293,11 @@ void AXNode::GetTableColHeaderNodeIds(
   if (!table_info)
     return;
 
-  if (col_index < 0 || col_index >= table_info->col_count)
+  if (col_index < 0 || size_t{col_index} >= table_info->col_count)
     return;
 
-  for (size_t i = 0; i < table_info->col_headers[col_index].size(); i++)
-    col_header_ids->push_back(table_info->col_headers[col_index][i]);
+  for (size_t i = 0; i < table_info->col_headers[size_t{col_index}].size(); i++)
+    col_header_ids->push_back(table_info->col_headers[size_t{col_index}][i]);
 }
 
 void AXNode::GetTableRowHeaderNodeIds(
@@ -313,11 +308,11 @@ void AXNode::GetTableRowHeaderNodeIds(
   if (!table_info)
     return;
 
-  if (row_index < 0 || row_index >= table_info->row_count)
+  if (row_index < 0 || size_t{row_index} >= table_info->row_count)
     return;
 
-  for (size_t i = 0; i < table_info->row_headers[row_index].size(); i++)
-    row_header_ids->push_back(table_info->row_headers[row_index][i]);
+  for (size_t i = 0; i < table_info->row_headers[size_t{row_index}].size(); i++)
+    row_header_ids->push_back(table_info->row_headers[size_t{row_index}][i]);
 }
 
 void AXNode::GetTableUniqueCellIds(std::vector<int32_t>* cell_ids) const {
@@ -356,7 +351,7 @@ int32_t AXNode::GetTableRowRowIndex() const {
 
   const auto& iter = table_info->row_id_to_index.find(id());
   if (iter != table_info->row_id_to_index.end())
-    return iter->second;
+    return int32_t{iter->second};
   return 0;
 }
 
@@ -407,7 +402,7 @@ int32_t AXNode::GetTableCellIndex() const {
 
   const auto& iter = table_info->cell_id_to_index.find(id());
   if (iter != table_info->cell_id_to_index.end())
-    return iter->second;
+    return int32_t{iter->second};
 
   return -1;
 }
@@ -421,7 +416,7 @@ int32_t AXNode::GetTableCellColIndex() const {
   if (index == -1)
     return 0;
 
-  return table_info->cell_data_vector[index].col_index;
+  return int32_t{table_info->cell_data_vector[index].col_index};
 }
 
 int32_t AXNode::GetTableCellRowIndex() const {
@@ -433,7 +428,7 @@ int32_t AXNode::GetTableCellRowIndex() const {
   if (index == -1)
     return 0;
 
-  return table_info->cell_data_vector[index].row_index;
+  return int32_t{table_info->cell_data_vector[index].row_index};
 }
 
 int32_t AXNode::GetTableCellColSpan() const {
@@ -472,7 +467,7 @@ int32_t AXNode::GetTableCellAriaColIndex() const {
   if (index == -1)
     return 0;
 
-  return table_info->cell_data_vector[index].aria_col_index;
+  return int32_t{table_info->cell_data_vector[index].aria_col_index};
 }
 
 int32_t AXNode::GetTableCellAriaRowIndex() const {
@@ -484,7 +479,7 @@ int32_t AXNode::GetTableCellAriaRowIndex() const {
   if (index == -1)
     return -1;
 
-  return table_info->cell_data_vector[index].aria_row_index;
+  return int32_t{table_info->cell_data_vector[index].aria_row_index};
 }
 
 void AXNode::GetTableCellColHeaderNodeIds(
@@ -495,11 +490,11 @@ void AXNode::GetTableCellColHeaderNodeIds(
     return;
 
   int32_t col_index = GetTableCellColIndex();
-  if (col_index < 0 || col_index >= table_info->col_count)
+  if (col_index < 0 || size_t{col_index} >= table_info->col_count)
     return;
 
-  for (size_t i = 0; i < table_info->col_headers[col_index].size(); i++)
-    col_header_ids->push_back(table_info->col_headers[col_index][i]);
+  for (size_t i = 0; i < table_info->col_headers[size_t{col_index}].size(); i++)
+    col_header_ids->push_back(table_info->col_headers[size_t{col_index}][i]);
 }
 
 void AXNode::GetTableCellColHeaders(std::vector<AXNode*>* col_headers) const {
@@ -518,11 +513,11 @@ void AXNode::GetTableCellRowHeaderNodeIds(
     return;
 
   int32_t row_index = GetTableCellRowIndex();
-  if (row_index < 0 || row_index >= table_info->row_count)
+  if (row_index < 0 || size_t{row_index} >= table_info->row_count)
     return;
 
-  for (size_t i = 0; i < table_info->row_headers[row_index].size(); i++)
-    row_header_ids->push_back(table_info->row_headers[row_index][i]);
+  for (size_t i = 0; i < table_info->row_headers[size_t{row_index}].size(); i++)
+    row_header_ids->push_back(table_info->row_headers[size_t{row_index}][i]);
 }
 
 void AXNode::GetTableCellRowHeaders(std::vector<AXNode*>* row_headers) const {

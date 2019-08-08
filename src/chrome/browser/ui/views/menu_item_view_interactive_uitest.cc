@@ -243,7 +243,7 @@ class MenuItemViewTestRemove : public MenuTestBase {
     ASSERT_EQ(3u, submenu->GetMenuItems().size());
 
     // remove
-    menu()->RemoveMenuItemAt(REMOVE_INDEX);
+    menu()->RemoveMenuItem(submenu->GetMenuItemAt(REMOVE_INDEX));
     menu()->ChildrenChanged();
 
     // click
@@ -331,7 +331,7 @@ class MenuItemViewTestRemoveWithSubmenu : public MenuTestBase {
     ASSERT_EQ(2u, submenu->GetMenuItems().size());
 
     // remove
-    menu()->RemoveMenuItemAt(REMOVE_INDEX);
+    menu()->RemoveMenuItem(submenu->GetMenuItemAt(REMOVE_INDEX));
     menu()->ChildrenChanged();
 
     // click

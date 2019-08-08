@@ -5,35 +5,35 @@
  * found in the LICENSE file.
  */
 
-#include "SkPaint.h"
+#include "include/core/SkPaint.h"
 
-#include "SkColorFilter.h"
-#include "SkColorSpacePriv.h"
-#include "SkColorSpaceXformSteps.h"
-#include "SkData.h"
-#include "SkDraw.h"
-#include "SkGraphics.h"
-#include "SkImageFilter.h"
-#include "SkMaskFilter.h"
-#include "SkMaskGamma.h"
-#include "SkMutex.h"
-#include "SkOpts.h"
-#include "SkPaintDefaults.h"
-#include "SkPaintPriv.h"
-#include "SkPathEffect.h"
-#include "SkReadBuffer.h"
-#include "SkSafeRange.h"
-#include "SkScalar.h"
-#include "SkShader.h"
-#include "SkShaderBase.h"
-#include "SkStringUtils.h"
-#include "SkStroke.h"
-#include "SkStrokeRec.h"
-#include "SkSurfacePriv.h"
-#include "SkTLazy.h"
-#include "SkTo.h"
-#include "SkTypeface.h"
-#include "SkWriteBuffer.h"
+#include "include/core/SkColorFilter.h"
+#include "include/core/SkData.h"
+#include "include/core/SkGraphics.h"
+#include "include/core/SkImageFilter.h"
+#include "include/core/SkMaskFilter.h"
+#include "include/core/SkPathEffect.h"
+#include "include/core/SkScalar.h"
+#include "include/core/SkShader.h"
+#include "include/core/SkStrokeRec.h"
+#include "include/core/SkTypeface.h"
+#include "include/private/SkMutex.h"
+#include "include/private/SkTo.h"
+#include "src/core/SkColorSpacePriv.h"
+#include "src/core/SkColorSpaceXformSteps.h"
+#include "src/core/SkDraw.h"
+#include "src/core/SkMaskGamma.h"
+#include "src/core/SkOpts.h"
+#include "src/core/SkPaintDefaults.h"
+#include "src/core/SkPaintPriv.h"
+#include "src/core/SkReadBuffer.h"
+#include "src/core/SkSafeRange.h"
+#include "src/core/SkStringUtils.h"
+#include "src/core/SkStroke.h"
+#include "src/core/SkSurfacePriv.h"
+#include "src/core/SkTLazy.h"
+#include "src/core/SkWriteBuffer.h"
+#include "src/shaders/SkShaderBase.h"
 
 // define this to get a printf for out-of-range parameter in setters
 // e.g. setTextSize(-1)
@@ -54,6 +54,10 @@ SkPaint::SkPaint()
                  0}                                 // fPadding
 {
     static_assert(sizeof(fBitfields) == sizeof(fBitfieldsUInt), "");
+}
+
+SkPaint::SkPaint(const SkColor4f& color, SkColorSpace* colorSpace) : SkPaint() {
+    this->setColor(color, colorSpace);
 }
 
 SkPaint::SkPaint(const SkPaint& src) = default;
@@ -111,7 +115,7 @@ void SkPaint::setColor(SkColor color) {
     fColor4f = SkColor4f::FromColor(color);
 }
 
-void SkPaint::setColor4f(const SkColor4f& color, SkColorSpace* colorSpace) {
+void SkPaint::setColor(const SkColor4f& color, SkColorSpace* colorSpace) {
     SkASSERT(fColor4f.fA >= 0 && fColor4f.fA <= 1.0f);
 
     SkColorSpaceXformSteps steps{colorSpace,          kUnpremul_SkAlphaType,
@@ -183,7 +187,7 @@ void SkPaint::setLooper(sk_sp<SkDrawLooper> looper) { fDrawLooper = std::move(lo
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "SkStream.h"
+#include "include/core/SkStream.h"
 
 #ifdef SK_DEBUG
     static void ASSERT_FITS_IN(uint32_t value, int bitCount) {
@@ -358,7 +362,7 @@ SkReadPaintResult SkPaintPriv::Unflatten_PreV68(SkPaint* paint, SkReadBuffer& bu
     } else {
         SkColor4f color;
         buffer.readColor4f(&color);
-        paint->setColor4f(color, sk_srgb_singleton());
+        paint->setColor(color, sk_srgb_singleton());
     }
 
     unsigned flatFlags = unpack_paint_flags(paint, buffer.readUInt(), font);
@@ -413,7 +417,7 @@ SkReadPaintResult SkPaintPriv::Unflatten(SkPaint* paint, SkReadBuffer& buffer, S
     {
         SkColor4f color;
         buffer.readColor4f(&color);
-        paint->setColor4f(color, sk_srgb_singleton());
+        paint->setColor(color, sk_srgb_singleton());
     }
 
     unsigned flatFlags = unpack_v68(paint, buffer.readUInt(), safe);

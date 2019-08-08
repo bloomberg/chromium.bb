@@ -59,7 +59,7 @@ TEST_F(StorageNamespaceTest, BasicStorageAreas) {
   mojom::blink::StoragePartitionServicePtr storage_partition_service_ptr;
   PostCrossThreadTask(
       *base::CreateSequencedTaskRunnerWithTraits({}), FROM_HERE,
-      CrossThreadBind(
+      CrossThreadBindOnce(
           [](mojom::blink::StoragePartitionServiceRequest request) {
             mojo::MakeStrongBinding(
                 std::make_unique<NoopStoragePartitionService>(),

@@ -13,9 +13,9 @@ import android.support.annotation.DrawableRes;
 import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 
+import com.google.android.libraries.feed.api.host.imageloader.BundledAssets;
+import com.google.android.libraries.feed.api.host.imageloader.ImageLoaderApi;
 import com.google.android.libraries.feed.common.functional.Consumer;
-import com.google.android.libraries.feed.host.imageloader.BundledAssets;
-import com.google.android.libraries.feed.host.imageloader.ImageLoaderApi;
 
 import org.chromium.base.Callback;
 import org.chromium.base.DiscardableReferencePool;
@@ -143,9 +143,13 @@ public class FeedImageLoader implements ImageLoaderApi {
     private @DrawableRes int lookupDrawableIdentifier(String resourceName) {
         switch (resourceName) {
             case BundledAssets.OFFLINE_INDICATOR_BADGE:
-                return R.drawable.offline_pin_round;
+                return R.drawable.ic_offline_pin_24dp_on_light_bg;
+            case BundledAssets.OFFLINE_INDICATOR_BADGE_DARK_BG:
+                return R.drawable.ic_offline_pin_24dp_on_dark_bg;
             case BundledAssets.VIDEO_INDICATOR_BADGE:
-                return R.drawable.ic_play_circle_filled_grey;
+                return R.drawable.ic_play_circle_filled_24dp_on_light_bg;
+            case BundledAssets.VIDEO_INDICATOR_BADGE_DARK_BG:
+                return R.drawable.ic_play_circle_filled_24dp_on_dark_bg;
         }
 
         return 0;

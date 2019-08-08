@@ -124,7 +124,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // Warning: This will re-sort profiles and thus may change indices!
   void SetGAIAGivenNameOfProfileAtIndex(size_t index,
                                         const base::string16& name);
-  void SetGAIAPictureOfProfileAtIndex(size_t index, const gfx::Image* image);
+  void SetGAIAPictureOfProfileAtIndex(size_t index, gfx::Image image);
   void SetIsUsingGAIAPictureOfProfileAtIndex(size_t index, bool value);
   void SetProfileSigninRequiredAtIndex(size_t index, bool value);
   void SetProfileIsUsingDefaultNameAtIndex(size_t index, bool value);

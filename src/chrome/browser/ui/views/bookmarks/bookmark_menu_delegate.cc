@@ -108,7 +108,7 @@ void BookmarkMenuDelegate::Init(views::MenuDelegate* real_delegate,
     bool show_forced_folders = show_options == SHOW_PERMANENT_FOLDERS &&
                                node == model->bookmark_bar_node();
     bool show_managed =
-        show_forced_folders && !managed->managed_node()->empty();
+        show_forced_folders && !managed->managed_node()->children().empty();
     bool has_children =
         (start_child_index < node->child_count()) || show_managed;
     if (has_children && parent->GetSubmenu() &&
@@ -332,9 +332,10 @@ bool BookmarkMenuDelegate::ShowContextMenu(MenuItemView* source,
   DCHECK(menu_id_to_node_map_.find(id) != menu_id_to_node_map_.end());
   const BookmarkNode* node = menu_id_to_node_map_[id];
   std::vector<const BookmarkNode*> nodes(1, node);
-  context_menu_.reset(new BookmarkContextMenu(
-      parent_, browser_, profile_, page_navigator_, node->parent(), nodes,
-      ShouldCloseOnRemove(node)));
+  context_menu_.reset(
+      new BookmarkContextMenu(parent_, browser_, profile_, page_navigator_,
+                              BOOKMARK_LAUNCH_LOCATION_APP_MENU, node->parent(),
+                              nodes, ShouldCloseOnRemove(node)));
   context_menu_->set_observer(this);
   context_menu_->RunMenuAt(p, source_type);
   return true;
@@ -409,7 +410,7 @@ void BookmarkMenuDelegate::WillRemoveBookmarks(
       // to delete an empty folder.
       if (parent) {
         changed_parent_menus.insert(parent);
-        parent->RemoveMenuItemAt(menu->parent()->GetIndexOf(menu));
+        parent->RemoveMenuItem(menu);
       }
       node_to_menu_map_.erase(node_to_menu);
       menu_id_to_node_map_.erase(menu->GetCommand());
@@ -534,7 +535,8 @@ void BookmarkMenuDelegate::BuildMenuForManagedNode(MenuItemView* menu) {
 void BookmarkMenuDelegate::BuildMenu(const BookmarkNode* parent,
                                      int start_child_index,
                                      MenuItemView* menu) {
-  DCHECK(parent->empty() || start_child_index < parent->child_count());
+  DCHECK(parent->children().empty() ||
+         start_child_index < parent->child_count());
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   const gfx::ImageSkia folder_icon =
       chrome::GetBookmarkFolderIcon(TextColorForMenu(menu, parent_));

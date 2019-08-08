@@ -36,7 +36,8 @@
               '$i18nPolymer{shortcutTooManyModifiers}',
               '$i18nPolymer{shortcutNeedCharacter}')]]"
           value="[[computeText_(capturing_, shortcut, pendingShortcut_)]]">
-        <cr-icon-button id="clear" slot="suffix" class="icon-cancel no-overlap"
+        <cr-icon-button id="clear" aria-label="$i18nPolymer{clear}"
+            slot="suffix" class="icon-cancel no-overlap"
             hidden$="[[computeClearHidden_(capturing_, shortcut)]]"
             on-click="onClearTap_"></cr-icon-button>
       </cr-input>

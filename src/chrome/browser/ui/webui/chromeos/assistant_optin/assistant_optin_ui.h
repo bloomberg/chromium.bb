@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "ash/public/interfaces/assistant_controller.mojom.h"
+#include "ash/public/cpp/assistant/assistant_setup.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/macros.h"
@@ -44,34 +44,31 @@ class AssistantOptInUI : public ui::WebDialogUI {
 class AssistantOptInDialog : public SystemWebDialogDelegate {
  public:
   // Shows the assistant optin dialog.
-  static void Show(
-      ash::mojom::FlowType type = ash::mojom::FlowType::CONSENT_FLOW,
-      ash::mojom::AssistantSetup::StartAssistantOptInFlowCallback callback =
-          base::DoNothing());
-
-  // Returns whether the dialog is being shown.
-  static bool IsActive();
+  static void Show(ash::FlowType type = ash::FlowType::kConsentFlow,
+                   ash::AssistantSetup::StartAssistantOptInFlowCallback
+                       callback = base::DoNothing());
 
  protected:
   AssistantOptInDialog(
-      ash::mojom::FlowType type,
-      ash::mojom::AssistantSetup::StartAssistantOptInFlowCallback callback);
+      ash::FlowType type,
+      ash::AssistantSetup::StartAssistantOptInFlowCallback callback);
   ~AssistantOptInDialog() override;
+
+  // SystemWebDialogDelegate
+  void AdjustWidgetInitParams(views::Widget::InitParams* params) override;
 
   // ui::WebDialogDelegate
   void GetDialogSize(gfx::Size* size) const override;
   std::string GetDialogArgs() const override;
-  bool ShouldShowDialogTitle() const override;
   void OnDialogShown(content::WebUI* webui,
                      content::RenderViewHost* render_view_host) override;
   void OnDialogClosed(const std::string& json_retval) override;
-  bool CanCloseDialog() const override;
 
  private:
   AssistantOptInUI* assistant_ui_ = nullptr;
 
   // Callback to run if the flow is completed.
-  ash::mojom::AssistantSetup::StartAssistantOptInFlowCallback callback_;
+  ash::AssistantSetup::StartAssistantOptInFlowCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantOptInDialog);
 };

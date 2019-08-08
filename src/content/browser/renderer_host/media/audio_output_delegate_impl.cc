@@ -197,6 +197,11 @@ void AudioOutputDelegateImpl::OnPauseStream() {
   audio_log_->OnStopped();
 }
 
+void AudioOutputDelegateImpl::OnFlushStream() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  controller_->Flush();
+}
+
 void AudioOutputDelegateImpl::OnSetVolume(double volume) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_GE(volume, 0);

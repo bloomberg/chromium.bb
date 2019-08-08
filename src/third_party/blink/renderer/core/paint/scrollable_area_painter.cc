@@ -38,8 +38,9 @@ void ScrollableAreaPainter::PaintResizer(GraphicsContext& context,
   if (const auto* resizer = GetScrollableArea().Resizer()) {
     if (!cull_rect.Intersects(abs_rect))
       return;
-    ScrollbarPainter::PaintIntoRect(*resizer, context, paint_offset,
-                                    LayoutRect(abs_rect));
+    ScrollbarPainter::PaintIntoRect(*resizer, context,
+                                    PhysicalOffset(paint_offset),
+                                    PhysicalRect(abs_rect));
     return;
   }
 
@@ -245,8 +246,9 @@ void ScrollableAreaPainter::PaintScrollCorner(
   if (const auto* scroll_corner = GetScrollableArea().ScrollCorner()) {
     if (!adjusted_cull_rect.Intersects(abs_rect))
       return;
-    ScrollbarPainter::PaintIntoRect(*scroll_corner, context, paint_offset,
-                                    LayoutRect(abs_rect));
+    ScrollbarPainter::PaintIntoRect(*scroll_corner, context,
+                                    PhysicalOffset(paint_offset),
+                                    PhysicalRect(abs_rect));
     return;
   }
 

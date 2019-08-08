@@ -17,8 +17,10 @@
 #ifndef SRC_PROFILING_MEMORY_HEAPPROFD_PRODUCER_H_
 #define SRC_PROFILING_MEMORY_HEAPPROFD_PRODUCER_H_
 
+#include <array>
 #include <functional>
 #include <map>
+#include <vector>
 
 #include "perfetto/base/optional.h"
 #include "perfetto/base/task_runner.h"
@@ -32,6 +34,8 @@
 #include "perfetto/tracing/core/tracing_service.h"
 
 #include "src/profiling/memory/bookkeeping.h"
+#include "src/profiling/memory/heapprofd_config.h"
+#include "src/profiling/memory/page_idle_checker.h"
 #include "src/profiling/memory/proc_utils.h"
 #include "src/profiling/memory/system_property.h"
 #include "src/profiling/memory/unwinding.h"
@@ -115,6 +119,8 @@ class HeapprofdProducer : public Producer, public UnwindingWorker::Delegate {
   void Flush(FlushRequestID,
              const DataSourceInstanceID* data_source_ids,
              size_t num_data_sources) override;
+  void ClearIncrementalState(const DataSourceInstanceID* /*data_source_ids*/,
+                             size_t /*num_data_sources*/) override {}
 
   // TODO(fmayer): Refactor once/if we have generic reconnect logic.
   void ConnectWithRetries(const char* socket_name);
@@ -169,6 +175,8 @@ class HeapprofdProducer : public Producer, public UnwindingWorker::Delegate {
     uint64_t total_unwinding_time_us = 0;
     LogHistogram unwinding_time_us;
     HeapTracker heap_tracker;
+
+    base::Optional<PageIdleChecker> page_idle_checker;
   };
 
   struct DataSource {
@@ -208,6 +216,9 @@ class HeapprofdProducer : public Producer, public UnwindingWorker::Delegate {
   bool IsPidProfiled(pid_t);
   DataSource* GetDataSourceForProcess(const Process& proc);
   void RecordOtherSourcesAsRejected(DataSource* active_ds, const Process& proc);
+
+  void SetStartupProperties(DataSource* data_source);
+  void SignalRunningProcesses(DataSource* data_source);
 
   // Specific to mode_ == kCentral
   std::unique_ptr<base::UnixSocket> MakeListeningSocket();

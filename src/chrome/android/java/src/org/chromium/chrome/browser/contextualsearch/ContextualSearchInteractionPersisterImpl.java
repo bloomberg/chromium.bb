@@ -4,11 +4,11 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
+import android.support.annotation.Nullable;
+
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchInteractionRecorder.Feature;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -20,23 +20,18 @@ import java.util.Map;
  * persisted value.
  */
 class ContextualSearchInteractionPersisterImpl implements ContextualSearchInteractionPersister {
-    static final int BITMASK_PANEL_OPENED = 1 << 0;
-    static final int BITMASK_QUICK_ACTION_CLICKED = 1 << 1;
-    static final int BITMASK_QUICK_ANSWER_SEEN = 1 << 2;
-    static final int BITMASK_CARDS_DATA_SHOWN = 1 << 3;
-    static final Map<Integer, Integer> OUTCOME_ENCODING_BIT_MAP;
-    static {
-        // Map keys should contain @Feature int values only.
-        // Map values should be int powers of 2 only.
-        Map<Integer, Integer> outcome_encoding_bit_map = new HashMap<Integer, Integer>();
-        outcome_encoding_bit_map.put(Feature.OUTCOME_WAS_PANEL_OPENED, BITMASK_PANEL_OPENED);
-        outcome_encoding_bit_map.put(
-                Feature.OUTCOME_WAS_QUICK_ACTION_CLICKED, BITMASK_QUICK_ACTION_CLICKED);
-        outcome_encoding_bit_map.put(
-                Feature.OUTCOME_WAS_QUICK_ANSWER_SEEN, BITMASK_QUICK_ANSWER_SEEN);
-        outcome_encoding_bit_map.put(
-                Feature.OUTCOME_WAS_CARDS_DATA_SHOWN, BITMASK_CARDS_DATA_SHOWN);
-        OUTCOME_ENCODING_BIT_MAP = Collections.unmodifiableMap(outcome_encoding_bit_map);
+    private static final @Nullable Integer getOutcomeBitMask(@Feature int feature) {
+        switch (feature) {
+            case Feature.OUTCOME_WAS_PANEL_OPENED:
+                return 1 << 0;
+            case Feature.OUTCOME_WAS_QUICK_ACTION_CLICKED:
+                return 1 << 1;
+            case Feature.OUTCOME_WAS_QUICK_ANSWER_SEEN:
+                return 1 << 2;
+            case Feature.OUTCOME_WAS_CARDS_DATA_SHOWN:
+                return 1 << 3;
+        }
+        return null;
     }
 
     @Override
@@ -64,7 +59,7 @@ class ContextualSearchInteractionPersisterImpl implements ContextualSearchIntera
         for (Map.Entry<Integer, Object> entry : outcomesMap.entrySet()) {
             // Bit-wise encode into an int with all the boolean outcomes.
             if ((boolean) entry.getValue()) {
-                encodedInteractionResults |= OUTCOME_ENCODING_BIT_MAP.get(entry.getKey());
+                encodedInteractionResults |= getOutcomeBitMask(entry.getKey());
             }
         }
         writeOutcomesToPersistantStorage(encodedInteractionResults);

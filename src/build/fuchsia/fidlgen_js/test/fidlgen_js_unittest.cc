@@ -88,7 +88,10 @@ TEST_F(FidlGenJsTest, BasicJSSetup) {
 
   std::string result;
   EXPECT_TRUE(gin::Converter<std::string>::FromV8(
-      isolate, runner.global()->Get(gin::StringToV8(isolate, "stuff")),
+      isolate,
+      runner.global()
+          ->Get(isolate->GetCurrentContext(), gin::StringToV8(isolate, "stuff"))
+          .ToLocalChecked(),
       &result));
   EXPECT_EQ("HAI", result);
 }
@@ -119,15 +122,23 @@ class BindingsSetupHelper {
     zx_status_t status = zx::channel::create(0, &server_, &client_);
     EXPECT_EQ(status, ZX_OK);
 
-    runner_.global()->Set(gin::StringToSymbol(isolate, "testHandle"),
-                          gin::ConvertToV8(isolate, client_.get()));
+    runner_.global()
+        ->Set(isolate->GetCurrentContext(),
+              gin::StringToSymbol(isolate, "testHandle"),
+              gin::ConvertToV8(isolate, client_.get()))
+        .Check();
   }
 
   template <class T>
   T Get(const std::string& name) {
     T t;
-    EXPECT_TRUE(gin::Converter<T>::FromV8(
-        isolate_, runner_.global()->Get(gin::StringToV8(isolate_, name)), &t));
+    EXPECT_TRUE(
+        gin::Converter<T>::FromV8(isolate_,
+                                  runner_.global()
+                                      ->Get(isolate_->GetCurrentContext(),
+                                            gin::StringToV8(isolate_, name))
+                                      .ToLocalChecked(),
+                                  &t));
     return t;
   }
 
@@ -150,8 +161,11 @@ class BindingsSetupHelper {
   // gin::Converter is quite tied to Number.
   template <class T>
   std::vector<T> GetBigIntVector(const std::string& name) {
+    v8::Local<v8::Context> context = isolate_->GetCurrentContext();
     v8::Local<v8::Value> val =
-        runner_.global()->Get(gin::StringToV8(isolate_, name));
+        runner_.global()
+            ->Get(context, gin::StringToV8(isolate_, name))
+            .ToLocalChecked();
     EXPECT_TRUE(val->IsArray());
 
     std::vector<T> result;
@@ -159,8 +173,7 @@ class BindingsSetupHelper {
     uint32_t length = array->Length();
     for (uint32_t i = 0; i < length; ++i) {
       v8::Local<v8::Value> v8_item;
-      EXPECT_TRUE(
-          array->Get(isolate_->GetCurrentContext(), i).ToLocal(&v8_item));
+      EXPECT_TRUE(array->Get(context, i).ToLocal(&v8_item));
       T item;
       if (v8_item->IsNumber()) {
         EXPECT_TRUE(gin::Converter<T>::FromV8(isolate_, v8_item, &item));
@@ -176,7 +189,10 @@ class BindingsSetupHelper {
   }
 
   bool IsNull(const std::string& name) {
-    return runner_.global()->Get(gin::StringToV8(isolate_, name))->IsNull();
+    return runner_.global()
+        ->Get(isolate_->GetCurrentContext(), gin::StringToV8(isolate_, name))
+        .ToLocalChecked()
+        ->IsNull();
   }
 
   void DestroyBindingsForTesting() { zx_bindings_.reset(); }
@@ -544,7 +560,7 @@ TEST_F(FidlGenJsTest, RawReceiveFidlMessage) {
   zx_handle_t handles[1];
   uint32_t actual_bytes, actual_handles;
   ASSERT_EQ(
-      helper.server().rea2(0, data, handles, base::size(data),
+      helper.server().read(0, data, handles, base::size(data),
                            base::size(handles), &actual_bytes, &actual_handles),
       ZX_OK);
   EXPECT_EQ(actual_bytes, 16u);
@@ -577,7 +593,7 @@ TEST_F(FidlGenJsTest, RawReceiveFidlMessageWithSimpleArg) {
   zx_handle_t handles[1];
   uint32_t actual_bytes, actual_handles;
   ASSERT_EQ(
-      helper.server().rea2(0, data, handles, base::size(data),
+      helper.server().read(0, data, handles, base::size(data),
                            base::size(handles), &actual_bytes, &actual_handles),
       ZX_OK);
   // 24 rather than 20 because everything's 8 aligned.
@@ -611,7 +627,7 @@ TEST_F(FidlGenJsTest, RawReceiveFidlMessageWithStringArg) {
   zx_handle_t handles[1];
   uint32_t actual_bytes, actual_handles;
   ASSERT_EQ(
-      helper.server().rea2(0, data, handles, base::size(data),
+      helper.server().read(0, data, handles, base::size(data),
                            base::size(handles), &actual_bytes, &actual_handles),
       ZX_OK);
   EXPECT_EQ(actual_handles, 0u);
@@ -643,7 +659,7 @@ TEST_F(FidlGenJsTest, RawReceiveFidlMessageWithMultipleArgs) {
   zx_handle_t handles[1];
   uint32_t actual_bytes, actual_handles;
   ASSERT_EQ(
-      helper.server().rea2(0, data, handles, base::size(data),
+      helper.server().read(0, data, handles, base::size(data),
                            base::size(handles), &actual_bytes, &actual_handles),
       ZX_OK);
   EXPECT_EQ(actual_handles, 0u);
@@ -857,9 +873,12 @@ TEST_F(FidlGenJsTest, HandlePassing) {
   ASSERT_EQ(zx::job::default_job()->duplicate(ZX_RIGHT_SAME_RIGHTS,
                                               &default_job_copy),
             ZX_OK);
-  helper.runner().global()->Set(
-      gin::StringToSymbol(isolate, "testJobHandle"),
-      gin::ConvertToV8(isolate, default_job_copy.get()));
+  helper.runner()
+      .global()
+      ->Set(isolate->GetCurrentContext(),
+            gin::StringToSymbol(isolate, "testJobHandle"),
+            gin::ConvertToV8(isolate, default_job_copy.get()))
+      .Check();
 
   // TODO(crbug.com/883496): Handles wrapped in Transferrable once MessagePort
   // is sorted out, and then stop treating handles as unmanaged |uint32_t|s.
@@ -988,15 +1007,27 @@ TEST_F(FidlGenJsTest, VariousDefaults) {
 
   EXPECT_EQ(helper.Get<int>("result_blorp"),
             static_cast<int>(fidljstest::Blorp::BETA));
-  EXPECT_EQ(helper.FromV8BigInt<int64_t>(helper.runner().global()->Get(
-                gin::StringToV8(isolate, "result_timestamp"))),
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
+  EXPECT_EQ(helper.FromV8BigInt<int64_t>(
+                helper.runner()
+                    .global()
+                    ->Get(context, gin::StringToV8(isolate, "result_timestamp"))
+                    .ToLocalChecked()),
             fidljstest::NO_TIMESTAMP);
-  EXPECT_EQ(helper.FromV8BigInt<int64_t>(helper.runner().global()->Get(
-                gin::StringToV8(isolate, "result_another_copy"))),
-            fidljstest::ANOTHER_COPY);
-  EXPECT_EQ(helper.FromV8BigInt<int64_t>(helper.runner().global()->Get(
-                gin::StringToV8(isolate, "result_int64_const"))),
-            0x7fffffffffffff11LL);
+  EXPECT_EQ(
+      helper.FromV8BigInt<int64_t>(
+          helper.runner()
+              .global()
+              ->Get(context, gin::StringToV8(isolate, "result_another_copy"))
+              .ToLocalChecked()),
+      fidljstest::ANOTHER_COPY);
+  EXPECT_EQ(
+      helper.FromV8BigInt<int64_t>(
+          helper.runner()
+              .global()
+              ->Get(context, gin::StringToV8(isolate, "result_int64_const"))
+              .ToLocalChecked()),
+      0x7fffffffffffff11LL);
   EXPECT_EQ(helper.Get<std::string>("result_string_const"),
             "a 你好 thing\" containing ' quotes");
   EXPECT_EQ(helper.Get<std::string>("result_string_in_struct"), "stuff");
@@ -1257,10 +1288,16 @@ TEST_F(FidlGenJsTest, VectorOfHandle) {
   zx_koid_t koid_of_vmo0 = GetKoidForHandle(test_vmo0);
   zx_koid_t koid_of_vmo1 = GetKoidForHandle(test_vmo1);
 
-  helper.runner().global()->Set(gin::StringToSymbol(isolate, "vmo0"),
-                                gin::ConvertToV8(isolate, test_vmo0.release()));
-  helper.runner().global()->Set(gin::StringToSymbol(isolate, "vmo1"),
-                                gin::ConvertToV8(isolate, test_vmo1.release()));
+  helper.runner()
+      .global()
+      ->Set(isolate->GetCurrentContext(), gin::StringToSymbol(isolate, "vmo0"),
+            gin::ConvertToV8(isolate, test_vmo0.release()))
+      .Check();
+  helper.runner()
+      .global()
+      ->Set(isolate->GetCurrentContext(), gin::StringToSymbol(isolate, "vmo1"),
+            gin::ConvertToV8(isolate, test_vmo1.release()))
+      .Check();
 
   std::string source = R"(
     var proxy = new TestolaProxy();

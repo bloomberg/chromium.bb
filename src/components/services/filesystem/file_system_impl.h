@@ -27,17 +27,17 @@ class LockTable;
 class FileSystemImpl : public mojom::FileSystem {
  public:
   // |persistent_dir| is the directory served to callers of
-  // |OpenPersistentFileSystem().
+  // |OpenPersistentFileSystem()|.
   FileSystemImpl(const service_manager::Identity& remote_identity,
                  base::FilePath persistent_dir,
                  scoped_refptr<LockTable> lock_table);
   ~FileSystemImpl() override;
 
-  // |Files| implementation:
-  void OpenTempDirectory(mojom::DirectoryRequest directory,
+  // mojom::FileSystem:
+  void OpenTempDirectory(mojo::PendingReceiver<mojom::Directory> receiver,
                          OpenTempDirectoryCallback callback) override;
   void OpenPersistentFileSystem(
-      mojom::DirectoryRequest directory,
+      mojo::PendingReceiver<mojom::Directory> receiver,
       OpenPersistentFileSystemCallback callback) override;
 
  private:

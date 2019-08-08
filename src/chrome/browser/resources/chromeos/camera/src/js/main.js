@@ -32,24 +32,39 @@ cca.App = function() {
    */
   this.browserView_ = new cca.views.Browser(this.model_);
 
+  /**
+   * @type {cca.ResolutionEventBroker}
+   * @private
+   */
+  this.resolBroker_ = new cca.ResolutionEventBroker();
+
+  /**
+   * @type {cca.views.ResolutionSettings}
+   * @private
+   */
+  this.resolSettingsView_ = new cca.views.ResolutionSettings(this.resolBroker_);
+
   // End of properties. Seal the object.
   Object.seal(this);
 
   document.body.addEventListener('keydown', this.onKeyPressed_.bind(this));
 
   document.title = chrome.i18n.getMessage('name');
-  this.setupI18nElements_();
+  cca.util.setupI18nElements(document);
   this.setupToggles_();
 
   // Set up views navigation by their DOM z-order.
   cca.nav.setup([
-    new cca.views.Camera(this.model_),
+    new cca.views.Camera(this.model_, this.resolBroker_),
     new cca.views.MasterSettings(),
-    new cca.views.GridSettings(),
-    new cca.views.TimerSettings(),
+    new cca.views.BaseSettings('#gridsettings'),
+    new cca.views.BaseSettings('#timersettings'),
+    this.resolSettingsView_,
+    new cca.views.BaseSettings('#photoresolutionsettings'),
+    new cca.views.BaseSettings('#videoresolutionsettings'),
     this.browserView_,
     new cca.views.Warning(),
-    new cca.views.Dialog(),
+    new cca.views.Dialog('#message-dialog'),
   ]);
 };
 
@@ -59,25 +74,6 @@ cca.App = function() {
  */
 cca.App.useGalleryApp = function() {
   return chrome.fileManagerPrivate && cca.state.get('ext-fs');
-};
-
-/**
- * Sets up i18n messages on elements by i18n attributes.
- * @private
- */
-cca.App.prototype.setupI18nElements_ = function() {
-  var getElements = (attr) => document.querySelectorAll('[' + attr + ']');
-  var getMessage = (element, attr) => chrome.i18n.getMessage(
-      element.getAttribute(attr));
-  var setAriaLabel = (element, attr) => element.setAttribute(
-      'aria-label', getMessage(element, attr));
-
-  getElements('i18n-content').forEach(
-      (element) => element.textContent = getMessage(element, 'i18n-content'));
-  getElements('i18n-aria').forEach(
-      (element) => setAriaLabel(element, 'i18n-aria'));
-  cca.tooltip.setup(getElements('i18n-label')).forEach(
-      (element) => setAriaLabel(element, 'i18n-label'));
 };
 
 /**
@@ -133,12 +129,13 @@ cca.App.prototype.start = function() {
   cca.models.FileSystem.initialize(() => {
     // Prompt to migrate pictures if needed.
     var message = chrome.i18n.getMessage('migrate_pictures_msg');
-    return cca.nav.open('dialog', message, false).then((acked) => {
-      if (!acked) {
-        throw new Error('no-migrate');
-      }
-      ackMigrate = true;
-    });
+    return cca.nav.open('message-dialog', {message, cancellable: false})
+        .then((acked) => {
+          if (!acked) {
+            throw new Error('no-migrate');
+          }
+          ackMigrate = true;
+        });
   }).then((external) => {
     cca.state.set('ext-fs', external);
     this.model_.addObserver(this.galleryButton_);

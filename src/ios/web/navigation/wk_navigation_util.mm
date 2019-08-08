@@ -32,6 +32,7 @@ const int kMaxSessionSize = 75;
 const char kRestoreSessionSessionHashPrefix[] = "session=";
 const char kRestoreSessionTargetUrlHashPrefix[] = "targetUrl=";
 const char kOriginalUrlKey[] = "for";
+NSString* const kReferrerHeaderName = @"Referer";
 
 namespace {
 // Returns begin and end iterators and an updated last committed index for the
@@ -135,13 +136,7 @@ void CreateRestoreSessionUrl(
   restored_titles.GetList().reserve(new_size);
   for (auto it = begin; it != end; ++it) {
     NavigationItem* item = (*it).get();
-    GURL original_url = item->GetURL();
-    GURL restored_url = original_url;
-    if (!web::features::WebUISchemeHandlingEnabled() &&
-        web::GetWebClient()->IsAppSpecificURL(original_url)) {
-      restored_url = CreatePlaceholderUrlForUrl(original_url);
-    }
-    restored_urls.GetList().push_back(base::Value(restored_url.spec()));
+    restored_urls.GetList().push_back(base::Value(item->GetURL().spec()));
     restored_titles.GetList().push_back(base::Value(item->GetTitle()));
   }
   base::Value session(base::Value::Type::DICTIONARY);
@@ -184,11 +179,7 @@ bool ExtractTargetURL(const GURL& restore_session_url, GURL* target_url) {
   if (success) {
     std::string encoded_target_url = restore_session_url.ref().substr(
         strlen(kRestoreSessionTargetUrlHashPrefix));
-    net::UnescapeRule::Type unescape_rules =
-        net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS |
-        net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS;
-    *target_url =
-        GURL(net::UnescapeURLComponent(encoded_target_url, unescape_rules));
+    *target_url = GURL(net::UnescapeBinaryURLComponent(encoded_target_url));
   }
 
   return success;

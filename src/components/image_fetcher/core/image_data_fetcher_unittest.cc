@@ -80,19 +80,16 @@ TEST_F(ImageDataFetcherTest, FetchImageData) {
 
   // Check to make sure the request is pending with proper flags, and
   // provide a response.
-  int pending_load_flags = 0;
-  EXPECT_TRUE(
-      test_url_loader_factory_.IsPending(kImageURL, &pending_load_flags));
-  EXPECT_TRUE(pending_load_flags & net::LOAD_DO_NOT_SEND_COOKIES);
-  EXPECT_TRUE(pending_load_flags & net::LOAD_DO_NOT_SAVE_COOKIES);
-  EXPECT_TRUE(pending_load_flags & net::LOAD_DO_NOT_SEND_AUTH_DATA);
+  const network::ResourceRequest* pending_request;
+  EXPECT_TRUE(test_url_loader_factory_.IsPending(kImageURL, &pending_request));
+  EXPECT_FALSE(pending_request->allow_credentials);
 
   network::ResourceResponseHead head;
   std::string raw_header =
       "HTTP/1.1 200 OK\n"
       "Content-type: image/png\n\n";
-  head.headers = new net::HttpResponseHeaders(
-      net::HttpUtil::AssembleRawHeaders(raw_header.c_str(), raw_header.size()));
+  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(raw_header));
   head.mime_type = "image/png";
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = content.size();
@@ -116,19 +113,16 @@ TEST_F(ImageDataFetcherTest, FetchImageDataWithCookies) {
 
   // Check to make sure the request is pending with proper flags, and
   // provide a response.
-  int pending_load_flags = 0;
-  EXPECT_TRUE(
-      test_url_loader_factory_.IsPending(kImageURL, &pending_load_flags));
-  EXPECT_FALSE(pending_load_flags & net::LOAD_DO_NOT_SEND_COOKIES);
-  EXPECT_FALSE(pending_load_flags & net::LOAD_DO_NOT_SAVE_COOKIES);
-  EXPECT_FALSE(pending_load_flags & net::LOAD_DO_NOT_SEND_AUTH_DATA);
+  const network::ResourceRequest* pending_request;
+  EXPECT_TRUE(test_url_loader_factory_.IsPending(kImageURL, &pending_request));
+  EXPECT_TRUE(pending_request->allow_credentials);
 
   network::ResourceResponseHead head;
   std::string raw_header =
       "HTTP/1.1 200 OK\n"
       "Content-type: image/png\n\n";
-  head.headers = new net::HttpResponseHeaders(
-      net::HttpUtil::AssembleRawHeaders(raw_header.c_str(), raw_header.size()));
+  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(raw_header));
   head.mime_type = "image/png";
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = content.size();
@@ -158,8 +152,8 @@ TEST_F(ImageDataFetcherTest, FetchImageData_NotFound) {
   std::string raw_header =
       "HTTP/1.1 404 Not Found\n"
       "Content-type: image/png\n\n";
-  head.headers = new net::HttpResponseHeaders(
-      net::HttpUtil::AssembleRawHeaders(raw_header.c_str(), raw_header.size()));
+  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(raw_header));
   head.mime_type = "image/png";
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = content.size();
@@ -191,8 +185,8 @@ TEST_F(ImageDataFetcherTest, FetchImageData_WithContentLocation) {
       "HTTP/1.1 404 Not Found\n"
       "Content-type: image/png\n"
       "Content-location: http://test-location/image.png\n\n";
-  head.headers = new net::HttpResponseHeaders(
-      net::HttpUtil::AssembleRawHeaders(raw_header.c_str(), raw_header.size()));
+  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(raw_header));
   head.mime_type = "image/png";
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = content.size();

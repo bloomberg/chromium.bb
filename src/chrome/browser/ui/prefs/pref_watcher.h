@@ -37,7 +37,8 @@ class PrefWatcher : public KeyedService {
   void OnWebPrefChanged(const std::string& pref_name);
 
   Profile* profile_;
-  PrefChangeRegistrar pref_change_registrar_;
+  PrefChangeRegistrar profile_pref_change_registrar_;
+  PrefChangeRegistrar local_state_pref_change_registrar_;
 
   // |tab_helpers_| observe changes in WebKitPreferences and
   // blink::mojom::RendererPreferences.

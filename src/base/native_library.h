@@ -85,10 +85,20 @@ BASE_EXPORT NativeLibrary LoadNativeLibrary(const FilePath& library_path,
 #if defined(OS_WIN)
 // Loads a native library from the system directory using the appropriate flags.
 // The function first checks to see if the library is already loaded and will
-// get a handle if so. Blocking may occur if the library is not loaded and
-// LoadLibrary must be called.
-BASE_EXPORT NativeLibrary LoadSystemLibrary(FilePath::StringPieceType name,
-                                            NativeLibraryLoadError* error);
+// get a handle if so. This method results in a lock that may block the calling
+// thread.
+BASE_EXPORT NativeLibrary
+LoadSystemLibrary(FilePath::StringPieceType name,
+                  NativeLibraryLoadError* error = nullptr);
+
+// Gets the module handle for the specified system library and pins it to
+// ensure it never gets unloaded. If the module is not loaded, it will first
+// call LoadSystemLibrary to load it. If the module cannot be pinned, this
+// method returns null and includes the error. This method results in a lock
+// that may block the calling thread.
+BASE_EXPORT NativeLibrary
+PinSystemLibrary(FilePath::StringPieceType name,
+                 NativeLibraryLoadError* error = nullptr);
 #endif
 
 // Loads a native library from disk.  Release it with UnloadNativeLibrary when

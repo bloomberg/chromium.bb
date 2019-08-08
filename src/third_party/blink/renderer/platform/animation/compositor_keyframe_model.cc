@@ -10,10 +10,7 @@
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_curve.h"
-#include "third_party/blink/renderer/platform/animation/compositor_filter_animation_curve.h"
 #include "third_party/blink/renderer/platform/animation/compositor_float_animation_curve.h"
-#include "third_party/blink/renderer/platform/animation/compositor_scroll_offset_animation_curve.h"
-#include "third_party/blink/renderer/platform/animation/compositor_transform_animation_curve.h"
 
 using cc::KeyframeModel;
 using cc::AnimationIdProvider;

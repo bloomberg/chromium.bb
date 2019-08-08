@@ -9,6 +9,31 @@ import json
 from telemetry.internal.results import output_formatter
 from telemetry.value import trace
 
+
+def _GetChartAndTraceName(value):
+  # Telemetry names values using a chart_name.trace_name convention, wheras
+  # chartjson uses a (measurement_name, trace_name) convention. This maps from
+  # the Telemetry to the chartjson convention.
+  if '.' in value.name:
+    chart_name, trace_name = value.name.split('.')
+  else:
+    chart_name, trace_name = value.name, value.name
+  if value.page:
+    trace_name = value.page.name  # Summary values for a single page.
+  elif chart_name == trace_name:
+    trace_name = 'summary'  # Summary values for a metric on all pages.
+
+  # Dashboard handles the chart_name of trace values specially: it
+  # strips out the field with chart_name 'trace'. Hence in case trace
+  # value has tir_label, we preserve the chart_name.
+  # For relevant section code of dashboard code that handles this, see:
+  # https://github.com/catapult-project/catapult/blob/25e660b/dashboard/dashboard/add_point.py#L199#L216
+  if value.tir_label and not isinstance(value, trace.TraceValue):
+    chart_name = value.tir_label + '@@' + chart_name
+
+  return chart_name, trace_name
+
+
 def ResultsAsChartDict(benchmark_metadata, results):
   """Produces a dict for serialization to Chart JSON format from raw values.
 
@@ -34,21 +59,7 @@ def ResultsAsChartDict(benchmark_metadata, results):
   charts = collections.defaultdict(dict)
 
   for value in values:
-    if value.page:
-      chart_name, trace_name = (value.GetChartAndTraceNameForPerPageResult())
-    else:
-      chart_name, trace_name = (
-          value.GetChartAndTraceNameForComputedSummaryResult(None))
-      if chart_name == trace_name:
-        trace_name = 'summary'
-
-    # Dashboard handles the chart_name of trace values specially: it
-    # strips out the field with chart_name 'trace'. Hence in case trace
-    # value has tir_label, we preserve the chart_name.
-    # For relevant section code of dashboard code that handles this, see:
-    # https://github.com/catapult-project/catapult/blob/25e660b/dashboard/dashboard/add_point.py#L199#L216
-    if value.tir_label and not isinstance(value, trace.TraceValue):
-      chart_name = value.tir_label + '@@' + chart_name
+    chart_name, trace_name = _GetChartAndTraceName(value)
 
     # This intentionally overwrites the trace if it already exists because this
     # is expected of output from the buildbots currently.
@@ -60,12 +71,10 @@ def ResultsAsChartDict(benchmark_metadata, results):
   result_dict = {
       'format_version': '0.1',
       'next_version': '0.2',
-      # TODO(sullivan): benchmark_name, benchmark_description, and
-      # trace_rerun_options should be removed when incrementing format_version
-      # to 0.1.
+      # TODO(sullivan): benchmark_name and benchmark_description should be
+      # removed when incrementing format_version to 0.1.
       'benchmark_name': benchmark_metadata.name,
       'benchmark_description': benchmark_metadata.description,
-      'trace_rerun_options': benchmark_metadata.rerun_options,
       'benchmark_metadata': benchmark_metadata.AsDict(),
       'charts': charts,
       # Need to add this in for compatibility with disabled chartjson results.

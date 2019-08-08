@@ -67,9 +67,11 @@ std::unique_ptr<test_server::HttpResponse> HandleRequest(
   std::unique_ptr<test_server::BasicHttpResponse> http_response(
       new test_server::BasicHttpResponse());
   http_response->AddCustomHeader(
-      "Alt-Svc", base::StringPrintf(
-                     "quic=\"%s:%d\"; v=\"%u\"", kAltSvcHost, kAltSvcPort,
-                     HttpNetworkSession::Params().quic_supported_versions[0]));
+      "Alt-Svc",
+      base::StringPrintf("quic=\"%s:%d\"; v=\"%u\"", kAltSvcHost, kAltSvcPort,
+                         HttpNetworkSession::Params()
+                             .quic_supported_versions[0]
+                             .transport_version));
   http_response->set_code(HTTP_OK);
   http_response->set_content(kHelloOriginResponse);
   http_response->set_content_type("text/plain");

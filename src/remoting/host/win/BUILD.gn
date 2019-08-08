@@ -199,6 +199,7 @@ midl("remoting_lib_idl") {
   deps = [
     ":generate_idl",
   ]
+  writes_tlb = true
 }
 
 config("MIDL_config") {

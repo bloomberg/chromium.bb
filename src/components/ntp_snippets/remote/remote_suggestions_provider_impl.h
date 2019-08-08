@@ -25,7 +25,6 @@
 #include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
-#include "components/ntp_snippets/logger.h"
 #include "components/ntp_snippets/remote/cached_image_fetcher.h"
 #include "components/ntp_snippets/remote/json_to_categories.h"
 #include "components/ntp_snippets/remote/prefetched_pages_tracker.h"
@@ -71,7 +70,6 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
       std::unique_ptr<RemoteSuggestionsDatabase> database,
       std::unique_ptr<RemoteSuggestionsStatusService> status_service,
       std::unique_ptr<PrefetchedPagesTracker> prefetched_pages_tracker,
-      Logger* debug_logger,
       std::unique_ptr<base::OneShotTimer> fetch_timeout_timer);
 
   ~RemoteSuggestionsProviderImpl() override;
@@ -456,9 +454,6 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
   // Prefetched pages tracker to query which urls have been prefetched.
   // |nullptr| is handled gracefully and just disables the functionality.
   std::unique_ptr<PrefetchedPagesTracker> prefetched_pages_tracker_;
-
-  // Additional logging, accesible through snippets-internals.
-  Logger* debug_logger_;
 
   // A Timer for canceling too long fetches.
   std::unique_ptr<base::OneShotTimer> fetch_timeout_timer_;

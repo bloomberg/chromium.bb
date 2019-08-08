@@ -38,8 +38,7 @@
     <app-management-expandable-app-list
         apps="[[appsList_]]"
         collapsed-size="[[getCollapsedSize_(appsList_)]]">
-      <template is="dom-repeat" items="[[appsList_]]"
-                as="app" notify-dom-change>
+      <template is="dom-repeat" items="[[appsList_]]" as="app">
         <app-management-app-item app="[[app]]">
           <app-management-permission-toggle slot="right-content"
               app="[[app]]"

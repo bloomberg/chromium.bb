@@ -49,8 +49,7 @@ class ServiceTestHelper : public service_manager::Service {
       service_ = std::make_unique<audio::Service>(
           std::make_unique<InProcessAudioManagerAccessor>(audio_manager_),
           service_quit_timeout_, false /* device_notifications_enabled */,
-          std::make_unique<service_manager::BinderRegistry>(),
-          std::move(request));
+          std::make_unique<service_manager::BinderMap>(), std::move(request));
       service_->set_termination_closure(base::BindOnce(
           &AudioThreadContext::QuitOnAudioThread, base::Unretained(this)));
     }
@@ -131,7 +130,9 @@ class InProcessServiceTest : public testing::Test {
                  .RequireCapability(mojom::kServiceName, "info")
                  .RequireCapability(service_manager::mojom::kServiceName,
                                     "service_manager:service_manager")
-                 .PackageService(GetManifest())
+                 .PackageService(
+                     GetManifest(service_manager::Manifest::ExecutionMode ::
+                                     kInProcessBuiltin))
                  .Build()}),
         audio_manager_(
             std::make_unique<media::TestAudioThread>(use_audio_thread)),

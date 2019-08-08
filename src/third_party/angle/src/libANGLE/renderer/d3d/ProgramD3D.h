@@ -122,6 +122,7 @@ class ProgramD3DMetadata final : angle::NonCopyable
 
     int getRendererMajorShaderModel() const;
     bool usesBroadcast(const gl::State &data) const;
+    bool usesSecondaryColor() const;
     bool usesFragDepth() const;
     bool usesPointCoord() const;
     bool usesFragCoord() const;
@@ -454,8 +455,6 @@ class ProgramD3D : public ProgramImpl
                              std::vector<Image> &outImages,
                              gl::RangeUI *outUsedRange);
 
-    void getAtomicCounterBufferSizeMap(std::map<int, unsigned int> &sizeMapOut) const;
-
     template <typename DestT>
     void getUniformInternal(GLint location, DestT *dataOut) const;
 
@@ -480,7 +479,7 @@ class ProgramD3D : public ProgramImpl
     std::unique_ptr<LinkEvent> compileComputeExecutable(const gl::Context *context,
                                                         gl::InfoLog &infoLog);
 
-    angle::Result loadBinaryShaderExecutables(const gl::Context *context,
+    angle::Result loadBinaryShaderExecutables(d3d::Context *contextD3D,
                                               gl::BinaryInputStream *stream,
                                               gl::InfoLog &infoLog);
 

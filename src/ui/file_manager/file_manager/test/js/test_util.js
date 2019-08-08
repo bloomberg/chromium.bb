@@ -8,7 +8,8 @@
 var test = test || {};
 
 // Update paths for testing.
-constants.FILES_QUICK_VIEW_HTML = 'test/gen/foreground/elements/files_quick_view.html';
+constants.FILES_QUICK_VIEW_HTML =
+    'test/gen/foreground/elements/files_quick_view.html';
 constants.DRIVE_WELCOME_CSS = FILE_MANAGER_ROOT + constants.DRIVE_WELCOME_CSS;
 
 test.FILE_MANAGER_EXTENSION_ID = 'hhaomjibdihmijegdhdafkllkbggdgoj';
@@ -78,15 +79,9 @@ test.SharedOption = {
  * @param {string} typeText Type name to be shown in the type column.
  * @constructor
  */
-test.TestEntryInfo = function(type,
-                       sourceFileName,
-                       targetPath,
-                       mimeType,
-                       sharedOption,
-                       lastModifiedTime,
-                       nameText,
-                       sizeText,
-                       typeText) {
+test.TestEntryInfo = function(
+    type, sourceFileName, targetPath, mimeType, sharedOption, lastModifiedTime,
+    nameText, sizeText, typeText) {
   this.type = type;
   this.sourceFileName = sourceFileName || '';
   this.targetPath = targetPath;
@@ -127,7 +122,7 @@ test.TestEntryInfo.prototype.getMockFileSystemPopulateRow = function(prefix) {
   var content = test.DATA[this.sourceFileName];
   var size = content && content.size || 0;
   return {
-    fullPath: prefix + this.nameText + suffix,
+    fullPath: prefix + this.targetPath + suffix,
     metadata: {
       size: size,
       modificationTime: new Date(Date.parse(this.lastModifiedTime)),
@@ -188,12 +183,12 @@ test.ENTRIES = {
       'Jan 1, 1980, 11:59 PM', 'photos', '--', 'Folder'),
 
   testDocument: new test.TestEntryInfo(
-      test.EntryType.FILE, '', 'Test Document',
+      test.EntryType.FILE, '', 'Test Document.gdoc',
       'application/vnd.google-apps.document', test.SharedOption.NONE,
       'Apr 10, 2013, 4:20 PM', 'Test Document.gdoc', '--', 'Google document'),
 
   testSharedDocument: new test.TestEntryInfo(
-      test.EntryType.FILE, '', 'Test Shared Document',
+      test.EntryType.FILE, '', 'Test Shared Document.gdoc',
       'application/vnd.google-apps.document', test.SharedOption.SHARED,
       'Mar 20, 2013, 10:40 PM', 'Test Shared Document.gdoc', '--',
       'Google document'),
@@ -206,26 +201,6 @@ test.ENTRIES = {
   directoryA: new test.TestEntryInfo(
       test.EntryType.DIRECTORY, '', 'A', '', test.SharedOption.NONE,
       'Jan 1, 2000, 1:00 AM', 'A', '--', 'Folder'),
-
-  directoryB: new test.TestEntryInfo(
-      test.EntryType.DIRECTORY, '', 'A/B', '', test.SharedOption.NONE,
-      'Jan 1, 2000, 1:00 AM', 'B', '--', 'Folder'),
-
-  directoryC: new test.TestEntryInfo(
-      test.EntryType.DIRECTORY, '', 'A/B/C', '', test.SharedOption.NONE,
-      'Jan 1, 2000, 1:00 AM', 'C', '--', 'Folder'),
-
-  directoryD: new test.TestEntryInfo(
-      test.EntryType.DIRECTORY, '', 'D', '', test.SharedOption.NONE,
-      'Jan 1, 2000, 1:00 AM', 'D', '--', 'Folder'),
-
-  directoryE: new test.TestEntryInfo(
-      test.EntryType.DIRECTORY, '', 'D/E', '', test.SharedOption.NONE,
-      'Jan 1, 2000, 1:00 AM', 'E', '--', 'Folder'),
-
-  directoryF: new test.TestEntryInfo(
-      test.EntryType.DIRECTORY, '', 'D/E/F', '', test.SharedOption.NONE,
-      'Jan 1, 2000, 1:00 AM', 'F', '--', 'Folder'),
 
   zipArchive: new test.TestEntryInfo(
       test.EntryType.FILE, 'archive.zip', 'archive.zip', 'application/x-zip',
@@ -243,23 +218,49 @@ test.ENTRIES = {
       '51 bytes', 'Plain text'),
 
   helloInA: new test.TestEntryInfo(
-      test.EntryType.FILE, 'text.txt', 'hello.txt', 'text/plain',
-      test.SharedOption.NONE, 'Sep 4, 1998, 12:34 PM', 'A/hello.txt',
-      '51 bytes', 'Plain text'),
+      test.EntryType.FILE, 'text.txt', 'A/hello.txt', 'text/plain',
+      test.SharedOption.NONE, 'Sep 4, 1998, 12:34 PM', 'hello.txt', '51 bytes',
+      'Plain text'),
+
+  downloads: new test.TestEntryInfo(
+      test.EntryType.DIRECTORY, '', 'Downloads', '', test.SharedOption.NONE,
+      'Jan 1, 2000, 1:00 AM', 'Downloads', '--', 'Folder'),
+
+  linuxFiles: new test.TestEntryInfo(
+      test.EntryType.DIRECTORY, '', 'Linux files', '', test.SharedOption.NONE,
+      '...', 'Linux files', '--', 'Folder'),
+
+  pluginVm: new test.TestEntryInfo(
+      test.EntryType.DIRECTORY, '', 'PvmDefault', '', test.SharedOption.NONE,
+      'Jan 1, 2000, 1:00 AM', 'Plugin VM', '--', 'Folder'),
+
+  photosInPluginVm: new test.TestEntryInfo(
+      test.EntryType.DIRECTORY, '', 'PvmDefault/photos', '',
+      test.SharedOption.NONE, 'Jan 1, 1980, 11:59 PM', 'photos', '--',
+      'Folder'),
 };
 
 /**
- * Basic entry set for the local volume.
+ * Basic entry set for the MyFiles volume.
  * @type {!Array<!test.TestEntryInfo>}
  * @const
  */
-test.BASIC_LOCAL_ENTRY_SET = [
+test.BASIC_MY_FILES_ENTRY_SET = [
+  test.ENTRIES.downloads,
   test.ENTRIES.hello,
   test.ENTRIES.world,
   test.ENTRIES.desktop,
   test.ENTRIES.beautiful,
-  test.ENTRIES.photos
+  test.ENTRIES.photos,
 ];
+
+/**
+ * MyFiles plus the fake item 'Linux files'.
+ * @type {!Array<!test.TestEntryInfo>}
+ * @const
+ */
+test.BASIC_MY_FILES_ENTRY_SET_WITH_LINUX_FILES =
+    test.BASIC_MY_FILES_ENTRY_SET.concat([test.ENTRIES.linuxFiles]);
 
 /**
  * Basic entry set for the drive volume.
@@ -278,7 +279,7 @@ test.BASIC_DRIVE_ENTRY_SET = [
   test.ENTRIES.photos,
   test.ENTRIES.unsupported,
   test.ENTRIES.testDocument,
-  test.ENTRIES.testSharedDocument
+  test.ENTRIES.testSharedDocument,
 ];
 
 /**
@@ -327,11 +328,15 @@ test.pending = function(message, var_args) {
   var args = arguments;
   var formattedMessage = message.replace(/%[sdj]/g, function(pattern) {
     var arg = args[index++];
-    switch(pattern) {
-      case '%s': return String(arg);
-      case '%d': return Number(arg);
-      case '%j': return JSON.stringify(arg);
-      default: return pattern;
+    switch (pattern) {
+      case '%s':
+        return String(arg);
+      case '%d':
+        return Number(arg);
+      case '%j':
+        return JSON.stringify(arg);
+      default:
+        return pattern;
     }
   });
   var pendingMarker = Object.create(test.pending.prototype);
@@ -442,42 +447,55 @@ test.addEntries = function(downloads, drive, crostini) {
               'MyUSB')
           .fileSystem);
   fsRemovable.populate([], true);
+
+  const fsAndroidFiles = /** @type {MockFileSystem} */ (
+      mockVolumeManager
+          .createVolumeInfo(
+              VolumeManagerCommon.VolumeType.ANDROID_FILES, 'android_files',
+              str('ANDROID_FILES_ROOT_LABEL'))
+          .fileSystem);
+  fsAndroidFiles.populate([], true);
+};
+
+/**
+ * Sends mount event.
+ * @param {!VolumeManagerCommon.VolumeType} volumeType
+ * @param {string} volumeId
+ */
+test.mount = function(volumeType, volumeId) {
+  chrome.fileManagerPrivate.onMountCompleted.dispatchEvent({
+    status: 'success',
+    eventType: 'mount',
+    volumeMetadata: {
+      volumeType: volumeType,
+      volumeId: volumeId,
+      isReadOnly: false,
+      iconSet: {},
+      profile: {isCurrentProfile: true, displayName: ''},
+      mountContext: 'user',
+    },
+  });
 };
 
 /**
  * Sends mount event for crostini volume.
  */
 test.mountCrostini = function() {
-  chrome.fileManagerPrivate.onMountCompleted.dispatchEvent({
-    status: 'success',
-    eventType: 'mount',
-    volumeMetadata: {
-      volumeType: VolumeManagerCommon.VolumeType.CROSTINI,
-      volumeId: 'crostini',
-      isReadOnly: false,
-      iconSet: {},
-      profile: {isCurrentProfile: true, displayName: ''},
-      mountContext: 'user',
-    },
-  });
+  test.mount(VolumeManagerCommon.VolumeType.CROSTINI, 'crostini');
 };
 
 /**
- * Sends mount event for crostini volume.
+ * Sends mount event for removable volume.
  */
 test.mountRemovable = function() {
-  chrome.fileManagerPrivate.onMountCompleted.dispatchEvent({
-    status: 'success',
-    eventType: 'mount',
-    volumeMetadata: {
-      volumeType: VolumeManagerCommon.VolumeType.REMOVABLE,
-      volumeId: 'removable:MyUSB',
-      isReadOnly: false,
-      iconSet: {},
-      profile: {isCurrentProfile: true, displayName: ''},
-      mountContext: 'user',
-    },
-  });
+  test.mount(VolumeManagerCommon.VolumeType.REMOVABLE, 'removable:MyUSB');
+};
+
+/**
+ * Sends mount event for android files volume.
+ */
+test.mountAndroidFiles = function() {
+  test.mount(VolumeManagerCommon.VolumeType.ANDROID_FILES, 'android_files');
 };
 
 /**
@@ -532,14 +550,15 @@ test.waitForFiles = function(expected, opt_options) {
  * Opens a Files app's main window and waits until it is initialized. Fills
  * the window with initial files. Should be called for the first window only.
  *
- * @param {Array<!test.TestEntryInfo>=} opt_downloads Entries for downloads.
+ * @param {Array<!test.TestEntryInfo>=} opt_myFiles Entries for MyFiles.
  * @param {Array<!test.TestEntryInfo>=} opt_drive Entries for drive.
  * @param {Array<!test.TestEntryInfo>=} opt_crostini Entries for crostini.
  * @return {Promise} Promise to be fulfilled with the result object, which
  *     contains the file list.
  */
-test.setupAndWaitUntilReady = function(opt_downloads, opt_drive, opt_crostini) {
-  const entriesDownloads = opt_downloads || test.BASIC_LOCAL_ENTRY_SET;
+test.setupAndWaitUntilReady =
+    async function(opt_myFiles, opt_drive, opt_crostini) {
+  const entriesMyFiles = opt_myFiles || test.BASIC_MY_FILES_ENTRY_SET;
   const entriesDrive = opt_drive || test.BASIC_DRIVE_ENTRY_SET;
   const entriesCrostini = opt_crostini || test.BASIC_CROSTINI_ENTRY_SET;
 
@@ -555,22 +574,19 @@ test.setupAndWaitUntilReady = function(opt_downloads, opt_drive, opt_crostini) {
   test.inputText = test.util.sync.inputText.bind(null, window);
   test.selectFile = test.util.sync.selectFile.bind(null, window);
 
-  const downloadsElement = '#directory-tree [volume-type-icon="downloads"]';
+  const myFilesElement = '#directory-tree [root-type-icon="my_files"]';
 
-  return test.loadData()
-      .then(() => {
-        test.addEntries(entriesDownloads, entriesDrive, entriesCrostini);
-        return test.waitForElement(downloadsElement);
-      })
-      .then((downloadsIcon) => {
-        // Click Downloads if not already on Downloads, then refresh button.
-        if (!downloadsIcon.parentElement.hasAttribute('selected')) {
-          assertTrue(test.fakeMouseClick(downloadsElement), 'click downloads');
-        }
-        assertTrue(test.fakeMouseClick('#refresh-button'), 'click refresh');
-        return test.waitForFiles(
-            test.TestEntryInfo.getExpectedRows(entriesDownloads));
-      });
+  await test.loadData();
+  test.addEntries(entriesMyFiles, entriesDrive, entriesCrostini);
+  const myFiles = await test.waitForElement(myFilesElement);
+
+  // Click MyFiles if not already on MyFiles, then refresh button.
+  if (!myFiles.parentElement.hasAttribute('selected')) {
+    assertTrue(test.fakeMouseClick(myFilesElement), 'click MyFiles');
+  }
+  test.refreshFileList();
+  const filesShown = entriesMyFiles.concat([test.ENTRIES.linuxFiles]);
+  return test.waitForFiles(test.TestEntryInfo.getExpectedRows(filesShown));
 };
 
 /**
@@ -582,27 +598,11 @@ test.done = function(opt_failed) {
 };
 
 /**
- * @return {number} Maximum listitem-? id from #file-list.
+ * Forces current directory to rescan the entries, which refreshes the file
+ * list.
  */
-test.maxListItemId = function() {
-  var listItems = document.querySelectorAll('#file-list .table-row');
-  if (!listItems) {
-    return 0;
-  }
-  return Math.max(...Array.from(listItems).map(e => {
-    return e.id.replace('listitem-', '');
-  }));
-};
-
-/**
- * @return {number} Minium listitem-? id from #file-list.
- */
-test.minListItemId = function() {
-  var listItems = document.querySelectorAll('#file-list .table-row');
-  if (!listItems) {
-    return 0;
-  }
-  return Math.min(...Array.from(listItems).map(e => {
-    return e.id.replace('listitem-', '');
-  }));
+test.refreshFileList = function() {
+  assertTrue(
+      test.fakeKeyDown('#file-list', 'b', true, false, false),
+      'refresh file list failed');
 };

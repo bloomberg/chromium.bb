@@ -14,7 +14,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/containers/circular_deque.h"
 #include "base/containers/queue.h"
 #include "base/files/file_util.h"
@@ -242,7 +241,7 @@ class DownloadItemTest : public testing::Test {
   DownloadItemTest()
       : task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI,
-            base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED),
+            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED),
         next_download_id_(DownloadItem::kInvalidId + 1) {
     create_info_.reset(new DownloadCreateInfo());
     create_info_->save_info =
@@ -849,10 +848,10 @@ TEST_F(DownloadItemTest, AutomaticResumption_AttemptLimit) {
     EXPECT_CALL(*mock_download_file_ref, RenameAndUniquify(_, _)).Times(i == 0);
 
     ASSERT_FALSE(callback.is_null());
-    base::ResetAndReturn(&callback).Run(
-        target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-        DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, intermediate_path,
-        DOWNLOAD_INTERRUPT_REASON_NONE);
+    std::move(callback).Run(target_path,
+                            DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+                            DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+                            intermediate_path, DOWNLOAD_INTERRUPT_REASON_NONE);
     task_environment_.RunUntilIdle();
 
     // Use a continuable interrupt.

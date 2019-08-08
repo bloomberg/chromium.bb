@@ -71,6 +71,7 @@ assistant::SettingsUiSelector GetSettingsUiSelector() {
   consent_flow_ui->set_flow_id(assistant::ActivityControlSettingsUiSelector::
                                    ASSISTANT_SUW_ONBOARDING_ON_CHROME_OS);
   selector.set_email_opt_in(true);
+  selector.set_gaia_user_context_ui(true);
   return selector;
 }
 

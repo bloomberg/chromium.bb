@@ -9,7 +9,7 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/message_center/arc_notification_manager_delegate_impl.h"
@@ -195,7 +195,7 @@ void MessageCenterController::SetArcNotificationsInstance(
         Shell::Get()
             ->session_controller()
             ->GetPrimaryUserSession()
-            ->user_info->account_id,
+            ->user_info.account_id,
         message_center::MessageCenter::Get());
   }
   arc_notification_manager_->SetInstance(std::move(arc_notification_instance));

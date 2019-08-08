@@ -19,7 +19,6 @@
 #include "components/user_manager/user_names.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 

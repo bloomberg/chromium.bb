@@ -182,6 +182,7 @@ class SiteSuggestionsAdapter extends ForwardingListObservable<PropertyKey>
                     (view)
                             -> mNavDelegate.navigateToSuggestionUrl(
                                     WindowOpenDisposition.CURRENT_TAB, UrlConstants.EXPLORE_URL));
+            tile.setContentDescription(tile.getResources().getString(R.string.ntp_all_apps));
             ContextMenuManager.registerViewForTouchlessContextMenu(
                     tile, new ContextMenuManager.EmptyDelegate() {
                         @Override
@@ -189,7 +190,6 @@ class SiteSuggestionsAdapter extends ForwardingListObservable<PropertyKey>
                             return menuItemId == ContextMenuManager.ContextMenuItemId.SEARCH;
                         }
                     });
-            tile.setContentDescription(tile.getResources().getString(R.string.ntp_all_apps));
         } else if (holder.getItemViewType() == ViewType.SUGGESTION_TYPE) {
             // If site suggestion, attach context menu handler; clicks navigate to site url.
             int itemCount = mModel.get(ITEM_COUNT_KEY);

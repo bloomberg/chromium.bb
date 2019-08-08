@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import base64
+import collections
 import datetime as dt
 import json
 import hashlib
@@ -175,196 +176,160 @@ class ChromeSDKTest(cros_test_lib.RunCommandTempDirTestCase):
                                 'chromiumos_preflight'])
 
 
-# pylint: disable=protected-access
-class SkylabHWLabCommandsTest(cros_test_lib.RunCommandTestCase,
-                              cros_test_lib.OutputTestCase,
-                              cros_test_lib.MockTempDirTestCase):
-  """Test commands related to HWLab tests with Skylab via swarming proxy."""
-  SWARMING_TIMEOUT_DEFAULT = str(
-      commands._DEFAULT_HWTEST_TIMEOUT_MINS * 60 +
-      commands._SWARMING_ADDITIONAL_TIMEOUT)
-  SWARMING_EXPIRATION = str(commands._SWARMING_EXPIRATION)
+class SkylabHWLabCommandsTest(cros_test_lib.RunCommandTestCase):
+  """Test commands that launch Skylab suites."""
 
-  WAIT_OUTPUT = '''
-WAIT OUTPUT: Finished.
-'''
-
-  CREATE_OUTPUT = '''
-FAKE OUTPUT. Will be filled in later.
-'''
+  _SKYLAB_TOOL = '/opt/skylab'
 
   def setUp(self):
-    self._build = 'test-build'
-    self._board = 'test-board'
-    self._suite = 'test-suite'
-    self.temp_json_path = os.path.join(self.tempdir, 'temp_summary.json')
+    self.PatchObject(commands, '_InstallSkylabTool',
+                     return_value=self._SKYLAB_TOOL)
 
-    self.create_cmd = None
-    self.wait_cmd = None
+  @staticmethod
+  def _fakeWaitJson(state, failure, stdout=''):
+    """Return a fake json serialized suite report, in wait-task format."""
+    report = {
+        'task-result': {
+            'state': state,
+            'success': not failure,
+        },
+        'stdout': stdout,
+    }
+    return json.dumps(report)
 
-  def SetCmdResults(self, swarming_cli_cmd='run',
-                    create_return_code=0,
-                    wait_return_code=0,
-                    args=(),
-                    swarming_timeout_secs=SWARMING_TIMEOUT_DEFAULT,
-                    swarming_io_timeout_secs=SWARMING_TIMEOUT_DEFAULT,
-                    swarming_hard_timeout_secs=SWARMING_TIMEOUT_DEFAULT,
-                    swarming_expiration_secs=SWARMING_EXPIRATION):
-    """Set the expected results from the specified commands.
+  @staticmethod
+  def _fakeCreateJson(task_id, task_url):
+    """Return a fake json serialized suite report, in create-suite format."""
+    report = {
+        'task_id': task_id,
+        'task_url': task_url,
+    }
+    return json.dumps(report)
 
-    Args:
-      swarming_cli_cmd: The swarming client command to kick off.
-      create_return_code: Return code from create command.
-      wait_return_code: Return code from wait command.
-      args: Additional args to pass to create and wait commands.
-      swarming_timeout_secs: swarming client timeout.
-      swarming_io_timeout_secs: swarming client io timeout.
-      swarming_hard_timeout_secs: swarming client hard timeout.
-      swarming_expiration_secs: swarming task expiration.
-    """
-    # Pull out the test priority for the swarming tag.
-    priority = None
-    priority_flag = '--priority'
-    if priority_flag in args:
-      priority = args[args.index(priority_flag) + 1]
+  def testCreateSuiteNoPoolRaisesError(self):
+    """Attempting to create a suite without specifying a pool should raise."""
+    build = 'foo-bar/R1234'
+    suite = 'foo-suite'
+    board = 'foo-board'
+    with self.assertRaises(ValueError):
+      commands.RunSkylabHWTestSuite(build, suite, board)
 
-    base_cmd = [swarming_lib._SWARMING_PROXY_CLIENT, swarming_cli_cmd,
-                '--swarming', topology.topology.get(
-                    topology.CHROME_SWARMING_PROXY_HOST_KEY)]
-    if swarming_cli_cmd == 'run':
-      base_cmd += ['--task-summary-json', self.temp_json_path,
-                   '--print-status-updates',
-                   '--timeout', swarming_timeout_secs]
-    elif swarming_cli_cmd == 'trigger':
-      base_cmd += ['--dump-json', self.temp_json_path]
+  def testCreateSuite(self):
+    """Test that function call args are mapped correctly to commandline args."""
+    build = 'foo-bar/R1234'
+    suite = 'foo-suite'
+    board = 'foo-board'
+    pool = 'foo-pool'
+    # An OrderedDict is used to make the keyval order on the command line
+    # deterministic for testing purposes.
+    keyvals = collections.OrderedDict([('k1', 'v1'), ('k2', 'v2')])
+    priority = constants.HWTEST_DEFAULT_PRIORITY
+    quota_account = 'foo-account'
+    max_retries = 10
+    timeout_mins = 10
 
-    base_cmd += ['--raw-cmd',
-                 '--task-name', 'test-build-test-suite',
-                 '--dimension', 'os', 'Ubuntu-14.04',
-                 '--dimension', 'pool', commands.SKYLAB_SUITE_BOT_POOL,
-                 '--io-timeout', swarming_io_timeout_secs,
-                 '--hard-timeout', swarming_hard_timeout_secs,
-                 '--expiration', swarming_expiration_secs,
-                 '--tags=skylab:run_suite',
-                 '--tags=priority:%s' % priority,
-                 '--tags=build:test-build',
-                 '--tags=task_name:test-build-test-suite',
-                 '--tags=luci_project:chromeos',
-                 '--tags=suite:test-suite',
-                 '--tags=board:test-board',
-                 '--auth-service-account-json',
-                 constants.CHROMEOS_SERVICE_ACCOUNT,
-                 '--', commands.SKYLAB_RUN_SUITE_PATH,
-                 '--build', self._build, '--board', self._board,
-                 '--suite_name', self._suite,
-                 '--use_fallback']
-    args = list(args)
-    base_cmd = base_cmd + args
+    task_id = 'foo-task_id'
 
-    self.create_cmd = base_cmd + ['--create_and_return',
-                                  '--passed_mins', '0']
-    create_results = iter([
-        self.rc.CmdResult(returncode=create_return_code,
-                          output=self.CREATE_OUTPUT,
-                          error=''),
-    ])
+    create_cmd = [
+        self._SKYLAB_TOOL, 'create-suite',
+        '-image', build,
+        '-board', board,
+        '-pool', pool,
+        '-priority', '140',
+        '-timeout-mins', str(timeout_mins),
+        '-max-retries', str(max_retries),
+        '-keyval', 'k1:v1',
+        '-keyval', 'k2:v2',
+        '-qs-account', quota_account,
+        '-json',
+        '-service-account-json', constants.CHROMEOS_SERVICE_ACCOUNT,
+        suite
+    ]
+
     self.rc.AddCmdResult(
-        self.create_cmd,
-        side_effect=lambda *args, **kwargs: create_results.next(),
-    )
+        create_cmd, output=self._fakeCreateJson(task_id, 'foo://foo'))
 
-    self.wait_cmd = base_cmd + ['--suite_id', 'fake_parent_id',
-                                '--passed_mins', '0']
-    wait_results = iter([
-        self.rc.CmdResult(returncode=wait_return_code,
-                          output=self.WAIT_OUTPUT,
-                          error=''),
-    ])
+    result = commands.RunSkylabHWTestSuite(
+        build, suite, board, pool=pool, job_keyvals=keyvals, priority=priority,
+        quota_account=quota_account, max_retries=max_retries,
+        timeout_mins=timeout_mins)
+
+    self.assertTrue(isinstance(result, commands.HWTestSuiteResult))
+    self.assertEqual(result.to_raise, None)
+    self.assertEqual(result.json_dump_result, None)
+
+    self.rc.assertCommandCalled(create_cmd, redirect_stdout=True)
+    self.assertEqual(self.rc.call_count, 1)
+
+  def testCreateSuiteAndWait(self):
+    """Test that suite can be created and then waited for."""
+    build = 'foo-bar/R1234'
+    suite = 'foo-suite'
+    board = 'foo-board'
+    pool = 'foo-pool'
+
+    task_id = 'foo-task_id'
+
+    create_cmd = [
+        self._SKYLAB_TOOL, 'create-suite',
+        '-image', build,
+        '-board', board,
+        '-pool', pool,
+        '-json',
+        '-service-account-json', constants.CHROMEOS_SERVICE_ACCOUNT,
+        suite,
+    ]
+    wait_cmd = [
+        self._SKYLAB_TOOL, 'wait-task',
+        '-service-account-json', constants.CHROMEOS_SERVICE_ACCOUNT,
+        task_id
+    ]
     self.rc.AddCmdResult(
-        self.wait_cmd,
-        side_effect=lambda *args, **kwargs: wait_results.next(),
-    )
+        create_cmd, output=self._fakeCreateJson(task_id, 'foo://foo'))
+    self.rc.AddCmdResult(
+        wait_cmd, output=self._fakeWaitJson('COMPLETED', False))
 
-  def PatchJson(self, task_outputs):
-    """Mock out the code that loads from json.
+    result = commands.RunSkylabHWTestSuite(
+        build, suite, board, pool=pool, wait_for_results=True)
+    self.assertEqual(result.to_raise, None)
+    self.assertEqual(result.json_dump_result, None)
 
-    Args:
-      task_outputs: See explaination in PatchJson of HWLabCommandsTest.
-    """
-    orig_func = commands._CreateSwarmingArgs
+    self.rc.assertCommandCalled(create_cmd, redirect_stdout=True)
+    self.rc.assertCommandCalled(wait_cmd, redirect_stdout=True)
+    self.assertEqual(self.rc.call_count, 2)
 
-    def replacement(*args, **kargs):
-      swarming_args = orig_func(*args, **kargs)
-      swarming_args['temp_json_path'] = self.temp_json_path
-      return swarming_args
+  def testSuiteFailure(self):
+    """Test that nonzero return code is reported as suite failure."""
+    build = 'foo-bar/R1234'
+    suite = 'foo-suite'
+    board = 'foo-board'
+    pool = 'foo-pool'
 
-    self.PatchObject(commands, '_CreateSwarmingArgs', side_effect=replacement)
+    task_id = 'foo-task_id'
 
-    if task_outputs:
-      return_values = []
-      for s in task_outputs:
-        j = {'shards':[{'name': 'fake_name', 'bot_id': 'chromeos-server990',
-                        'created_ts': '2015-06-12 12:00:00',
-                        'internal_failure': s[1],
-                        'state': s[2],
-                        'outputs': [s[0]],
-                        'run_id': s[3]}]}
-        return_values.append(j)
-      return_values_iter = iter(return_values)
-      self.PatchObject(swarming_lib.SwarmingCommandResult, 'LoadJsonSummary',
-                       side_effect=lambda json_file: return_values_iter.next())
-    else:
-      self.PatchObject(swarming_lib.SwarmingCommandResult, 'LoadJsonSummary',
-                       return_value=None)
+    create_cmd = [
+        self._SKYLAB_TOOL, 'create-suite',
+        '-image', build,
+        '-board', board,
+        '-pool', pool,
+        '-json',
+        '-service-account-json', constants.CHROMEOS_SERVICE_ACCOUNT,
+        suite,
+    ]
+    wait_cmd = [
+        self._SKYLAB_TOOL, 'wait-task',
+        '-service-account-json', constants.CHROMEOS_SERVICE_ACCOUNT,
+        task_id,
+    ]
+    self.rc.AddCmdResult(
+        create_cmd, output=self._fakeCreateJson(task_id, 'foo://foo'))
+    self.rc.AddCmdResult(wait_cmd, output=self._fakeWaitJson('COMPLETED', True))
 
-  def RunSkylabHWTestSuite(self, *args, **kwargs):
-    """Run the hardware test suite, printing logs to stdout."""
-    with cros_test_lib.LoggingCapturer() as logs:
-      try:
-        cmd_result = commands.RunSkylabHWTestSuite(self._build, self._suite,
-                                                   self._board, *args, **kwargs)
-        return cmd_result
-      finally:
-        print(logs.messages)
-
-  def testRemoveSeededSteps(self):
-    output = ('2018-xx-xx info | kicked off a test\n'
-              '@@@SEED_STEP Scheduled Tests@@@\n'
-              '@@@STEP_CURSOR Scheduled Tests@@@\n'
-              '@@@STEP_STARTED@@@\n'
-              '@@@STEP_LINK@[Test-logs]: test 1'
-              '@https://chrome-swarming.appspot.com/user/task/123@@@\n'
-              '@@@STEP_CLOSED@@@\n'
-              '@@@SEED_STEP Scheduled Tests 2@@@\n'
-              '@@@STEP_CURSOR Scheduled Tests 2@@@\n'
-              '@@@STEP_STARTED@@@\n'
-              '@@@STEP_LINK@[Test-logs]: test 2'
-              '@https://chrome-swarming.appspot.com/user/task/456@@@\n'
-              '@@@STEP_CLOSED@@@\n'
-              '@@@STEP_LINK@[Test-logs]: test 3'
-              '@https://chrome-swarming.appspot.com/user/task/789@@@\n')
-    expected_output = (
-        '2018-xx-xx info | kicked off a test\n'
-        '@@@STEP_LINK@[Test-logs]: test 3'
-        '@https://chrome-swarming.appspot.com/user/task/789@@@\n')
-    self.assertEqual(commands._remove_seeded_steps(output), expected_output)
-
-  def testRunSkylabHWTestSuiteWithWait(self):
-    """Test RunSkylabHWTestSuite with waiting for results."""
-    self.SetCmdResults(swarming_cli_cmd='run')
-    # When run without optional arguments, wait and dump_json cmd will not run.
-    self.PatchJson([(self.CREATE_OUTPUT, False, None, 'fake_parent_id'),
-                    (self.WAIT_OUTPUT, False, None, 'fake_wait_id')])
-
-    with self.OutputCapturer() as output:
-      cmd_result = self.RunSkylabHWTestSuite(wait_for_results=True)
-    self.assertEqual(cmd_result, (None, None))
-    self.assertCommandCalled(self.create_cmd, capture_output=True,
-                             combine_stdout_stderr=True, env=mock.ANY)
-    self.assertCommandCalled(self.wait_cmd, capture_output=True,
-                             combine_stdout_stderr=True, env=mock.ANY)
-    self.assertIn(self.CREATE_OUTPUT, '\n'.join(output.GetStdoutLines()))
-    self.assertIn(self.WAIT_OUTPUT, '\n'.join(output.GetStdoutLines()))
+    result = commands.RunSkylabHWTestSuite(
+        build, suite, board, pool=pool, wait_for_results=True)
+    error = result.to_raise
+    self.assertTrue(isinstance(error, failures_lib.TestFailure))
+    self.assertTrue('Suite failed' in error.message)
 
 
 class HWLabCommandsTest(cros_test_lib.RunCommandTestCase,

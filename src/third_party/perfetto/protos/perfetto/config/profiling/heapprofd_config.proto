@@ -46,7 +46,19 @@ message HeapprofdConfig {
 
   // For watermark based triggering or local debugging.
   repeated uint64 pid = 4;
+
+  // Profile all processes eligible for profiling on the system.
+  // See https://docs.perfetto.dev/#/heapprofd?id=target-processes for which
+  // processes are eligible.
+  //
+  // On unmodified userdebug builds, this will lead to system crashes. Zygote
+  // will crash when trying to launch a new process as it will have an
+  // unexpected open socket to heapprofd.
+  //
+  // heapprofd will likely be overloaded by the amount of data for low
+  // sampling intervals.
   optional bool all = 5;
+
   // Do not emit function names for mappings starting with this prefix.
   // E.g. /system to not emit symbols for any system libraries.
   repeated string skip_symbol_prefix = 7;
@@ -67,4 +79,32 @@ message HeapprofdConfig {
   // * a power of two,
   // * a multiple of 4096.
   optional uint64 shmem_size_bytes = 8;
+
+  // When the shmem buffer is full, block the client instead of ending the
+  // trace. Use with caution as this will significantly slow down the target
+  // process.
+  optional bool block_client = 9;
+
+  // Do not profile processes from startup, only match already running
+  // processes.
+  //
+  // Can not be set at the same time as no_running.
+  optional bool no_startup = 10;
+
+  // Do not profile running processes. Only match processes on startup.
+  //
+  // Can not be set at the same time as no_startup.
+  optional bool no_running = 11;
+
+  // Gather information on how many bytes of allocations are on non-referenced
+  // pages. The way to use this generally is:
+  // 1. Start profile of app.
+  // 2. Start app.
+  // 3. echo 1 > /proc/$APP_PID/clear_refs.
+  // 4. Do operations.
+  // 5. End profile.
+  //
+  // You can then find the allocations that were not used for the operations you
+  // did in step 4.
+  optional bool idle_allocations = 12;
 }

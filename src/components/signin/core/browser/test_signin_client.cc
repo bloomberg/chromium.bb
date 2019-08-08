@@ -12,8 +12,11 @@
 #include "services/network/test/test_cookie_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-TestSigninClient::TestSigninClient(PrefService* pref_service)
-    : pref_service_(pref_service),
+TestSigninClient::TestSigninClient(
+    PrefService* pref_service,
+    network::TestURLLoaderFactory* test_url_loader_factory)
+    : test_url_loader_factory_(test_url_loader_factory),
+      pref_service_(pref_service),
       are_signin_cookies_allowed_(true),
       network_calls_delayed_(false),
       is_signout_allowed_(true),
@@ -37,13 +40,32 @@ void TestSigninClient::PreSignOut(
 
 scoped_refptr<network::SharedURLLoaderFactory>
 TestSigninClient::GetURLLoaderFactory() {
-  return test_url_loader_factory_.GetSafeWeakWrapper();
+  return GetTestURLLoaderFactory()->GetSafeWeakWrapper();
 }
 
 network::mojom::CookieManager* TestSigninClient::GetCookieManager() {
   if (!cookie_manager_)
     cookie_manager_ = std::make_unique<network::TestCookieManager>();
   return cookie_manager_.get();
+}
+
+network::TestURLLoaderFactory* TestSigninClient::GetTestURLLoaderFactory() {
+  if (test_url_loader_factory_)
+    return test_url_loader_factory_;
+
+  if (!default_test_url_loader_factory_) {
+    default_test_url_loader_factory_ =
+        std::make_unique<network::TestURLLoaderFactory>();
+  }
+
+  return default_test_url_loader_factory_.get();
+}
+
+void TestSigninClient::OverrideTestUrlLoaderFactory(
+    network::TestURLLoaderFactory* factory) {
+  DCHECK(!default_test_url_loader_factory_);
+  DCHECK(!test_url_loader_factory_);
+  test_url_loader_factory_ = factory;
 }
 
 std::string TestSigninClient::GetProductVersion() { return ""; }
@@ -70,6 +92,10 @@ bool TestSigninClient::AreSigninCookiesAllowed() {
   return are_signin_cookies_allowed_;
 }
 
+bool TestSigninClient::AreSigninCookiesDeletedOnExit() {
+  return false;
+}
+
 void TestSigninClient::AddContentSettingsObserver(
     content_settings::Observer* observer) {
 }
@@ -88,10 +114,9 @@ void TestSigninClient::DelayNetworkCall(base::OnceClosure callback) {
 
 std::unique_ptr<GaiaAuthFetcher> TestSigninClient::CreateGaiaAuthFetcher(
     GaiaAuthConsumer* consumer,
-    gaia::GaiaSource source,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+    gaia::GaiaSource source) {
   return std::make_unique<GaiaAuthFetcher>(consumer, source,
-                                           url_loader_factory);
+                                           GetURLLoaderFactory());
 }
 
 void TestSigninClient::PreGaiaLogout(base::OnceClosure callback) {

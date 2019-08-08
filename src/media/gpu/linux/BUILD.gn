@@ -10,6 +10,8 @@ assert(is_linux)
 source_set("linux") {
   defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
   sources = [
+    "mailbox_video_frame_converter.cc",
+    "mailbox_video_frame_converter.h",
     "platform_video_frame_utils.cc",
     "platform_video_frame_utils.h",
   ]
@@ -17,9 +19,11 @@ source_set("linux") {
   deps = [
     "//base",
     "//media",
+    "//media/gpu:command_buffer_helper",
     "//media/gpu:common",
     "//ui/gfx:buffer_types",
     "//ui/gfx:memory_buffer",
+    "//ui/gl",
   ]
 
   if (use_ozone) {
@@ -37,6 +41,7 @@ source_set("video_frame_mapper") {
   deps = [
     "//base",
     "//media",
+    "//media/gpu:command_buffer_helper",
     "//media/gpu:common",
     "//media/gpu:video_frame_mapper_common",
   ]

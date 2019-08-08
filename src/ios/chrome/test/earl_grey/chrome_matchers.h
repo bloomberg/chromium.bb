@@ -153,6 +153,10 @@ id<GREYMatcher> SettingsMenuButton();
 // Returns matcher for the "Done" button in the settings' navigation bar.
 id<GREYMatcher> SettingsDoneButton();
 
+// Returns matcher for the "Confirm" button in the Sync and Google Services
+// settings' navigation bar.
+id<GREYMatcher> SyncSettingsConfirmButton();
+
 // Returns matcher for the tools menu table view.
 id<GREYMatcher> ToolsMenuView();
 
@@ -180,6 +184,12 @@ id<GREYMatcher> SettingsImportDataImportButton();
 
 // Returns matcher for the Keep Data Separate cell in switch sync account view.
 id<GREYMatcher> SettingsImportDataKeepSeparateButton();
+
+// Returns matcher for the Keep Data Separate cell in switch sync account view.
+id<GREYMatcher> SettingsImportDataContinueButton();
+
+// Returns matcher for the privacy settings table view.
+id<GREYMatcher> SettingsPrivacyTableView();
 
 // Returns matcher for the Manage Synced Data button in sync setting view.
 id<GREYMatcher> SettingsSyncManageSyncedDataButton();
@@ -259,9 +269,17 @@ id<GREYMatcher> ContextMenuCopyButton();
 // Returns matcher for defoucesed omnibox on a new tab.
 id<GREYMatcher> NewTabPageOmnibox();
 
+// Returns matcher for a fake omnibox on a new tab page.
+id<GREYMatcher> FakeOmnibox();
+
 // Returns a matcher for the current WebView.
 id<GREYMatcher> WebViewMatcher();
 
+// Returns a matcher for the current WebState's scroll view.
+id<GREYMatcher> WebStateScrollViewMatcher();
+
+// Returns a matcher for the Clear Browsing Data button in the History UI.
+id<GREYMatcher> HistoryClearBrowsingDataButton();
 }
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_MATCHERS_H_

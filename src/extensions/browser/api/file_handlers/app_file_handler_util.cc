@@ -285,9 +285,11 @@ GrantedFileEntry CreateFileEntry(content::BrowserContext* context,
       storage::IsolatedContext::GetInstance();
   DCHECK(isolated_context);
 
-  result.filesystem_id = isolated_context->RegisterFileSystemForPath(
-      storage::kFileSystemTypeNativeForPlatformApp, std::string(), path,
-      &result.registered_name);
+  storage::IsolatedContext::ScopedFSHandle filesystem =
+      isolated_context->RegisterFileSystemForPath(
+          storage::kFileSystemTypeNativeForPlatformApp, std::string(), path,
+          &result.registered_name);
+  result.filesystem_id = filesystem.id();
 
   content::ChildProcessSecurityPolicy* policy =
       content::ChildProcessSecurityPolicy::GetInstance();

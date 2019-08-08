@@ -114,6 +114,11 @@ struct StructTraits<viz::mojom::CompositorFrameMetadataDataView,
     return metadata.local_surface_id_allocation_time;
   }
 
+  static base::Optional<base::TimeDelta> preferred_frame_interval(
+      const viz::CompositorFrameMetadata& metadata) {
+    return metadata.preferred_frame_interval;
+  }
+
 #if defined(OS_ANDROID)
   static float max_page_scale_factor(
       const viz::CompositorFrameMetadata& metadata) {

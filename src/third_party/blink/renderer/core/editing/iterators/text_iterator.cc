@@ -238,11 +238,11 @@ TextIteratorAlgorithm<Strategy>::~TextIteratorAlgorithm() {
     return;
   const Document& document = OwnerDocument();
   if (behavior_.ForInnerText())
-    UseCounter::Count(document, WebFeature::kInnerTextWithShadowTree);
+    document.CountUse(WebFeature::kInnerTextWithShadowTree);
   if (behavior_.ForSelectionToString())
-    UseCounter::Count(document, WebFeature::kSelectionToStringWithShadowTree);
+    document.CountUse(WebFeature::kSelectionToStringWithShadowTree);
   if (behavior_.ForWindowFind())
-    UseCounter::Count(document, WebFeature::kWindowFindWithShadowTree);
+    document.CountUse(WebFeature::kWindowFindWithShadowTree);
 }
 
 template <typename Strategy>
@@ -359,6 +359,7 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
       // Handle the current node according to its type.
       if (iteration_progress_ < kHandledNode) {
         if (!SkipsUnselectableContent() || layout_object->IsSelectable()) {
+          auto* html_element = DynamicTo<HTMLElement>(*node_);
           if (layout_object->IsText() &&
               node_->getNodeType() ==
                   Node::kTextNode) {  // FIXME: What about kCdataSectionNode?
@@ -367,12 +368,12 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
           } else if (layout_object &&
                      (layout_object->IsImage() ||
                       layout_object->IsLayoutEmbeddedContent() ||
-                      (node_ && node_->IsHTMLElement() &&
-                       (IsHTMLFormControlElement(ToHTMLElement(*node_)) ||
-                        IsHTMLLegendElement(ToHTMLElement(*node_)) ||
-                        IsHTMLImageElement(ToHTMLElement(*node_)) ||
-                        IsHTMLMeterElement(ToHTMLElement(*node_)) ||
-                        IsHTMLProgressElement(ToHTMLElement(*node_)))))) {
+                      (html_element &&
+                       (IsHTMLFormControlElement(html_element) ||
+                        IsHTMLLegendElement(html_element) ||
+                        IsHTMLImageElement(html_element) ||
+                        IsHTMLMeterElement(html_element) ||
+                        IsHTMLProgressElement(html_element))))) {
             HandleReplacedElement();
           } else {
             HandleNonTextNode();
@@ -477,7 +478,7 @@ void TextIteratorAlgorithm<Strategy>::HandleTextNode() {
 
   DCHECK_NE(last_text_node_, node_)
       << "We should never call HandleTextNode on the same node twice";
-  const Text* text = ToText(node_);
+  const auto* text = To<Text>(node_.Get());
   last_text_node_ = text;
 
   // TODO(editing-dev): Introduce a |DOMOffsetRange| class so that we can pass
@@ -498,14 +499,14 @@ void TextIteratorAlgorithm<Strategy>::HandleTextNode() {
 
 template <typename Strategy>
 bool TextIteratorAlgorithm<Strategy>::SupportsAltText(const Node& node) {
-  if (!node.IsHTMLElement())
+  const auto* element = DynamicTo<HTMLElement>(node);
+  if (!element)
     return false;
-  const HTMLElement& element = ToHTMLElement(node);
 
   // FIXME: Add isSVGImageElement.
-  if (IsHTMLImageElement(element))
+  if (IsHTMLImageElement(*element))
     return true;
-  if (IsHTMLInputElement(element) &&
+  if (IsHTMLInputElement(*element) &&
       ToHTMLInputElement(node).type() == input_type_names::kImage)
     return true;
   return false;
@@ -551,7 +552,7 @@ void TextIteratorAlgorithm<Strategy>::HandleReplacedElement() {
   }
 
   if (EmitsImageAltText() && TextIterator::SupportsAltText(*node_)) {
-    text_state_.EmitAltText(ToHTMLElement(*node_));
+    text_state_.EmitAltText(To<HTMLElement>(*node_));
     return;
   }
   // TODO(editing-dev): We can remove |UpdateForReplacedElement()| call when
@@ -919,9 +920,9 @@ PositionTemplate<Strategy> TextIteratorAlgorithm<Strategy>::GetPositionBefore(
     return PositionTemplate<Strategy>(
         node, text_state_.PositionStartOffset() + char16_offset);
   }
-  if (node.IsTextNode()) {
+  if (auto* text_node = DynamicTo<Text>(node)) {
     if (text_state_.IsAfterPositionNode())
-      return PositionTemplate<Strategy>(node, ToText(node).length());
+      return PositionTemplate<Strategy>(node, text_node->length());
     return PositionTemplate<Strategy>(node, 0);
   }
   if (text_state_.IsAfterPositionNode())
@@ -950,10 +951,10 @@ PositionTemplate<Strategy> TextIteratorAlgorithm<Strategy>::GetPositionAfter(
     return PositionTemplate<Strategy>(
         node, text_state_.PositionStartOffset() + char16_offset + 1);
   }
-  if (node.IsTextNode()) {
+  if (auto* text_node = DynamicTo<Text>(node)) {
     if (text_state_.IsBeforePositionNode())
       return PositionTemplate<Strategy>(node, 0);
-    return PositionTemplate<Strategy>(node, ToText(node).length());
+    return PositionTemplate<Strategy>(node, text_node->length());
   }
   if (text_state_.IsBeforePositionNode())
     return PositionTemplate<Strategy>::BeforeNode(node);

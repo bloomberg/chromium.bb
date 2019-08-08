@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/payments/core/payment_instrument.h"
 #include "components/payments/core/payment_response.h"
 #include "components/payments/core/web_payment_request.h"

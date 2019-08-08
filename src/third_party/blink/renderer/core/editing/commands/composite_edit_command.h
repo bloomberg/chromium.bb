@@ -130,6 +130,11 @@ class CORE_EXPORT CompositeEditCommand : public EditCommand {
   bool CanRebalance(const Position&) const;
   void RemoveCSSProperty(Element*, CSSPropertyID);
   void RemoveElementAttribute(Element*, const QualifiedName& attribute);
+  // Remove all children if possible
+  void RemoveAllChildrenIfPossible(ContainerNode*,
+                                   EditingState*,
+                                   ShouldAssumeContentIsAlwaysEditable =
+                                       kDoNotAssumeContentIsAlwaysEditable);
   void RemoveChildrenInRange(Node*, unsigned from, unsigned to, EditingState*);
   virtual void RemoveNode(Node*,
                           EditingState*,

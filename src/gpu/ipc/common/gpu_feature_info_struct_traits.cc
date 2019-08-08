@@ -20,7 +20,6 @@ bool StructTraits<gpu::mojom::GpuFeatureInfoDataView, gpu::GpuFeatureInfo>::
              &out->enabled_gpu_driver_bug_workarounds) &&
          data.ReadDisabledExtensions(&out->disabled_extensions) &&
          data.ReadDisabledWebglExtensions(&out->disabled_webgl_extensions) &&
-         data.ReadWebglPreferences(&out->webgl_preferences) &&
          data.ReadAppliedGpuBlacklistEntries(
              &out->applied_gpu_blacklist_entries) &&
          gpu::GpuBlacklist::AreEntryIndicesValid(
@@ -28,7 +27,9 @@ bool StructTraits<gpu::mojom::GpuFeatureInfoDataView, gpu::GpuFeatureInfo>::
          data.ReadAppliedGpuDriverBugListEntries(
              &out->applied_gpu_driver_bug_list_entries) &&
          gpu::GpuDriverBugList::AreEntryIndicesValid(
-             out->applied_gpu_driver_bug_list_entries);
+             out->applied_gpu_driver_bug_list_entries) &&
+         data.ReadSupportedBufferFormatsForAllocationAndTexturing(
+             &out->supported_buffer_formats_for_allocation_and_texturing);
 }
 
 }  // namespace mojo

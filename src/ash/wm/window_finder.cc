@@ -10,7 +10,6 @@
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/root_window_finder.h"
-#include "services/ws/window_service.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_targeter.h"
@@ -20,10 +19,7 @@ namespace {
 
 // Returns true if |window| is considered to be a toplevel window.
 bool IsTopLevelWindow(aura::Window* window) {
-  // ui::LAYER_TEXTURED is for non-mash environment. For Mash, browser windows
-  // are not with LAYER_TEXTURED but have a remote client.
-  return window->layer()->type() == ui::LAYER_TEXTURED ||
-         ws::WindowService::IsProxyWindow(window);
+  return window->layer()->type() == ui::LAYER_TEXTURED;
 }
 
 // Returns true if |window| can be a target at |screen_point| by |targeter|.
@@ -96,7 +92,7 @@ aura::Window* GetToplevelWindowInOverviewAtPoint(
     const std::set<aura::Window*>& ignore) {
   ash::OverviewController* overview_controller =
       ash::Shell::Get()->overview_controller();
-  if (!overview_controller->IsSelecting())
+  if (!overview_controller->InOverviewSession())
     return nullptr;
 
   ash::OverviewGrid* grid =

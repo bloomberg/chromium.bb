@@ -63,7 +63,7 @@ absl::optional<bool> WebRtcVideoTrackSource::needs_denoising() const {
 }
 
 void WebRtcVideoTrackSource::OnFrameCaptured(
-    const scoped_refptr<media::VideoFrame>& frame) {
+    scoped_refptr<media::VideoFrame> frame) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   TRACE_EVENT0("media", "WebRtcVideoSource::OnFrameCaptured");
   if (!(frame->IsMappable() &&
@@ -126,11 +126,11 @@ void WebRtcVideoTrackSource::OnFrameCaptured(
   // Return |frame| directly if it is texture backed, because there is no
   // cropping support for texture yet. See http://crbug/503653.
   if (frame->HasTextures()) {
-    DeliverFrame(frame,
-                 // The webrtc::VideoFrame::UpdateRect expected by WebRTC must
-                 // be relative to the |visible_rect()|. We need to translate.
-                 CropRectangle(accumulated_update_rect_, frame->visible_rect()),
-                 translated_camera_time_us);
+    // The webrtc::VideoFrame::UpdateRect expected by WebRTC must
+    // be relative to the |visible_rect()|. We need to translate.
+    const auto cropped_rect =
+        CropRectangle(accumulated_update_rect_, frame->visible_rect());
+    DeliverFrame(std::move(frame), cropped_rect, translated_camera_time_us);
     return;
   }
 
@@ -159,26 +159,27 @@ void WebRtcVideoTrackSource::OnFrameCaptured(
                                frame_adaptation_params.scale_to_height);
   // Soft-apply the new (combined) cropping and scaling.
   scoped_refptr<media::VideoFrame> video_frame =
-      media::VideoFrame::WrapVideoFrame(frame, frame->format(),
+      media::VideoFrame::WrapVideoFrame(*frame, frame->format(),
                                         cropped_visible_rect, adapted_size);
   if (!video_frame)
     return;
 
   // Attach shared ownership of the wrapped |frame| to the wrapping
   // |video_frame|.
-  video_frame->AddDestructionObserver(base::BindOnce(
-      base::DoNothing::Once<scoped_refptr<media::VideoFrame>>(), frame));
+  video_frame->AddDestructionObserver(
+      base::BindOnce(base::DoNothing::Once<scoped_refptr<media::VideoFrame>>(),
+                     std::move(frame)));
 
   // If no scaling is needed, return a wrapped version of |frame| directly.
   // The soft-applied cropping will be taken into account by the remainder
   // of the pipeline.
   if (video_frame->natural_size() == video_frame->visible_rect().size()) {
-    DeliverFrame(
-        video_frame,
-        // The webrtc::VideoFrame::UpdateRect expected by WebRTC must be
-        // relative to the |visible_rect()|. We need to translate.
-        CropRectangle(accumulated_update_rect_, video_frame->visible_rect()),
-        translated_camera_time_us);
+    // The webrtc::VideoFrame::UpdateRect expected by WebRTC must be
+    // relative to the |visible_rect()|. We need to translate.
+    const auto cropped_rect =
+        CropRectangle(accumulated_update_rect_, video_frame->visible_rect());
+    DeliverFrame(std::move(video_frame), cropped_rect,
+                 translated_camera_time_us);
     return;
   }
 
@@ -189,7 +190,7 @@ void WebRtcVideoTrackSource::OnFrameCaptured(
       scaled_frame_pool_.CreateFrame(
           has_alpha ? media::PIXEL_FORMAT_I420A : media::PIXEL_FORMAT_I420,
           adapted_size, gfx::Rect(adapted_size), adapted_size,
-          frame->timestamp());
+          video_frame->timestamp());
   libyuv::I420Scale(
       video_frame->visible_data(media::VideoFrame::kYPlane),
       video_frame->stride(media::VideoFrame::kYPlane),
@@ -218,7 +219,7 @@ void WebRtcVideoTrackSource::OnFrameCaptured(
   // When scaling is applied and any part of the frame has changed, we mark the
   // whole frame as changed.
   DeliverFrame(
-      scaled_frame,
+      std::move(scaled_frame),
       accumulated_update_rect_.IsEmpty()
           ? gfx::Rect()
           : gfx::Rect(0, 0, adapted_size.width(), adapted_size.height()),

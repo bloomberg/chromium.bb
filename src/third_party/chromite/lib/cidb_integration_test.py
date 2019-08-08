@@ -606,38 +606,14 @@ class BuildStagesAndFailureTest(CIDBIntegrationTest):
     build_stage_id = bot_db.InsertBuildStage(build_id,
                                              'My Stage',
                                              board='bunny')
-    values = bot_db.GetBuildStage(build_stage_id)
-    self.assertEqual(None, values['start_time'])
-
     bot_db.WaitBuildStage(build_stage_id)
-    values = bot_db.GetBuildStage(build_stage_id)
-    self.assertEqual(None, values['start_time'])
-    self.assertEqual(constants.BUILDER_STATUS_WAITING, values['status'])
 
     bot_db.StartBuildStage(build_stage_id)
-    values = bot_db.GetBuildStage(build_stage_id)
-    self.assertNotEqual(None, values['start_time'])
-    self.assertEqual(constants.BUILDER_STATUS_INFLIGHT, values['status'])
 
     bot_db.FinishBuildStage(build_stage_id, constants.BUILDER_STATUS_PASSED)
-    values = bot_db.GetBuildStage(build_stage_id)
-    self.assertNotEqual(None, values['finish_time'])
-    self.assertEqual(True, values['final'])
-    self.assertEqual(constants.BUILDER_STATUS_PASSED, values['status'])
-
-    self.assertFalse(bot_db.HasFailureMsgForStage(build_stage_id))
-    for category in constants.EXCEPTION_CATEGORY_ALL_CATEGORIES:
-      e = ValueError('The value was erroneous.')
-      bot_db.InsertFailure(build_stage_id, type(e).__name__, str(e), category)
-      self.assertTrue(bot_db.HasFailureMsgForStage(build_stage_id))
 
     child_ids = [c['buildbucket_id']
                  for c in bot_db.GetSlaveStatuses(master_build_id)]
-    failures = bot_db.GetBuildsFailures(child_ids)
-    self.assertEqual(len(failures),
-                     len(constants.EXCEPTION_CATEGORY_ALL_CATEGORIES))
-    for f in failures:
-      self.assertEqual(f.build_id, build_id)
 
     slave_stages = bot_db.GetBuildsStagesWithBuildbucketIds(child_ids)
     self.assertEqual(len(slave_stages), 1)

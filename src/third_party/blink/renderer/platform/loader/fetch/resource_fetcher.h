@@ -50,7 +50,8 @@ namespace blink {
 
 enum class ResourceType : uint8_t;
 class CodeCacheLoader;
-class ConsoleLogger;
+class DetachableConsoleLogger;
+class DetachableResourceFetcherProperties;
 class FetchContext;
 class FrameScheduler;
 class MHTMLArchive;
@@ -58,7 +59,6 @@ class KURL;
 class PreflightTimingInfo;
 class Resource;
 class ResourceError;
-class ResourceFetcherProperties;
 class ResourceLoadObserver;
 class ResourceTimingInfo;
 class WebURLLoader;
@@ -108,11 +108,9 @@ class PLATFORM_EXPORT ResourceFetcher
   // - This function returns the same object throughout this fetcher's
   //   entire life.
   // - The returned object remains valid after ClearContext() is called.
-  // - This function returns a different object from the corresponding
-  //   argument in the constructor.
-  // - This function should be used rather than the properties given
-  //   to the ResourceFetcher constructor.
-  const ResourceFetcherProperties& GetProperties() const;
+  const DetachableResourceFetcherProperties& GetProperties() const {
+    return *properties_;
+  }
 
   // Returns whether this fetcher is detached from the associated context.
   bool IsDetached() const;
@@ -152,6 +150,8 @@ class PLATFORM_EXPORT ResourceFetcher
   std::unique_ptr<CodeCacheLoader> CreateCodeCacheLoader();
 
   Resource* CachedResource(const KURL&) const;
+  static void AddPriorityObserverForTesting(const KURL&,
+                                            base::OnceCallback<void(int)>);
 
   using DocumentResourceMap = HeapHashMap<String, WeakMember<Resource>>;
   const DocumentResourceMap& AllResources() const {
@@ -170,7 +170,7 @@ class PLATFORM_EXPORT ResourceFetcher
 
   FetchContext& Context() const;
   void ClearContext();
-  ConsoleLogger& GetConsoleLogger();
+  DetachableConsoleLogger& GetConsoleLogger() { return *console_logger_; }
 
   int BlockingRequestCount() const;
   int NonblockingRequestCount() const;
@@ -253,10 +253,21 @@ class PLATFORM_EXPORT ResourceFetcher
 
   FrameScheduler* GetFrameScheduler();
 
+  ResourceLoadPriority ComputeLoadPriorityForTesting(
+      ResourceType type,
+      const ResourceRequest& request,
+      ResourcePriority::VisibilityStatus visibility_statue,
+      FetchParameters::DeferOption defer_option,
+      FetchParameters::SpeculativePreloadType speculative_preload_type,
+      bool is_link_preload,
+      bool is_stale_revalidation) {
+    return ComputeLoadPriority(type, request, visibility_statue, defer_option,
+                               speculative_preload_type, is_link_preload,
+                               is_stale_revalidation);
+  }
+
  private:
   friend class ResourceCacheValidationSuppressor;
-  class DetachableConsoleLogger;
-  class DetachableProperties;
   enum class StopFetchingTarget {
     kExcludingKeepaliveLoaders,
     kIncludingKeepaliveLoaders,
@@ -360,7 +371,7 @@ class PLATFORM_EXPORT ResourceFetcher
   void ScheduleStaleRevalidate(Resource* stale_resource);
   void RevalidateStaleResource(Resource* stale_resource);
 
-  Member<DetachableProperties> properties_;
+  Member<DetachableResourceFetcherProperties> properties_;
   Member<ResourceLoadObserver> resource_load_observer_;
   Member<FetchContext> context_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
@@ -442,17 +453,16 @@ struct PLATFORM_EXPORT ResourceFetcherInit final {
  public:
   // |context| and |task_runner| must not be null.
   // |loader_factory| can be null if |properties.IsDetached()| is true.
-  // The given ResourceFetcherProperties is kept until ClearContext() is called.
-  ResourceFetcherInit(const ResourceFetcherProperties& properties,
+  ResourceFetcherInit(DetachableResourceFetcherProperties& properties,
                       FetchContext* context,
                       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                       ResourceFetcher::LoaderFactory* loader_factory);
 
-  const Member<const ResourceFetcherProperties> properties;
+  const Member<DetachableResourceFetcherProperties> properties;
   const Member<FetchContext> context;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner;
   const Member<ResourceFetcher::LoaderFactory> loader_factory;
-  Member<ConsoleLogger> console_logger;
+  Member<DetachableConsoleLogger> console_logger;
   ResourceLoadScheduler::ThrottlingPolicy initial_throttling_policy =
       ResourceLoadScheduler::ThrottlingPolicy::kNormal;
   Member<MHTMLArchive> archive;

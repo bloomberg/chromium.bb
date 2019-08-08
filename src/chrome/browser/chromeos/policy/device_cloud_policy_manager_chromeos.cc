@@ -21,7 +21,9 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/attestation/attestation_policy_observer.h"
+#include "chrome/browser/chromeos/attestation/enrollment_certificate_uploader_impl.h"
 #include "chrome/browser/chromeos/attestation/enrollment_policy_observer.h"
+#include "chrome/browser/chromeos/attestation/machine_certificate_uploader_impl.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
@@ -75,9 +77,6 @@ const char kZeroTouchEnrollmentHandsOff[] = "hands-off";
 // by Device Policy.
 constexpr base::TimeDelta kDeviceStatusUploadFrequency =
     base::TimeDelta::FromHours(3);
-
-// Start of the day for activity data aggregation. Defaults to midnight.
-constexpr base::TimeDelta kActivityDayStart;
 
 // Fetches a machine statistic value from StatisticsProvider, returns an empty
 // string on failure.
@@ -296,24 +295,31 @@ void DeviceCloudPolicyManagerChromeOS::StartConnection(
   core()->Connect(std::move(client_to_connect));
   core()->StartRefreshScheduler();
   core()->RefreshSoon();
-  core()->StartRemoteCommandsService(std::unique_ptr<RemoteCommandsFactory>(
-      new DeviceCommandsFactoryChromeOS()));
   core()->TrackRefreshDelayPref(local_state_,
                                 prefs::kDevicePolicyRefreshRate);
 
   external_data_manager_->Connect(
       g_browser_process->shared_url_loader_factory());
 
+  enrollment_certificate_uploader_.reset(
+      new chromeos::attestation::EnrollmentCertificateUploaderImpl(client()));
   enrollment_policy_observer_.reset(
       new chromeos::attestation::EnrollmentPolicyObserver(client()));
 
-  // Don't start the AttestationPolicyObserver if machine cert requests
-  // are disabled.
+  // Don't create a MachineCertificateUploader or start the
+  // AttestationPolicyObserver if machine cert requests are disabled.
   if (!(base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kDisableMachineCertRequest))) {
+    machine_certificate_uploader_.reset(
+        new chromeos::attestation::MachineCertificateUploaderImpl(client()));
     attestation_policy_observer_.reset(
-        new chromeos::attestation::AttestationPolicyObserver(client()));
+        new chromeos::attestation::AttestationPolicyObserver(
+            machine_certificate_uploader_.get()));
   }
+
+  // Start remote commands services now that we have setup everything they need.
+  core()->StartRemoteCommandsService(
+      std::make_unique<DeviceCommandsFactoryChromeOS>(this));
 
   // Enable device reporting and status monitoring for cloud managed devices. We
   // want to create these objects even if monitoring is currently inactive, in
@@ -420,7 +426,7 @@ void DeviceCloudPolicyManagerChromeOS::CreateStatusUploader() {
           DeviceStatusCollector::CPUTempFetcher(),
           DeviceStatusCollector::AndroidStatusFetcher(),
           DeviceStatusCollector::TpmStatusFetcher(),
-          DeviceStatusCollector::EMMCLifetimeFetcher(), kActivityDayStart,
+          DeviceStatusCollector::EMMCLifetimeFetcher(),
           true /* is_enterprise_device */),
       task_runner_, kDeviceStatusUploadFrequency));
 }

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/nfc/nfc_error.h"
 
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 using device::mojom::blink::NFCErrorType;
 
@@ -14,34 +15,37 @@ DOMException* NFCError::Take(ScriptPromiseResolver*,
                              const NFCErrorType& error_type) {
   switch (error_type) {
     case NFCErrorType::SECURITY:
-      return DOMException::Create(DOMExceptionCode::kSecurityError,
-                                  "NFC operation not allowed.");
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kSecurityError, "NFC operation not allowed.");
     case NFCErrorType::NOT_SUPPORTED:
     case NFCErrorType::DEVICE_DISABLED:
-      return DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                                  "NFC operation not supported.");
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError, "NFC operation not supported.");
     case NFCErrorType::NOT_FOUND:
-      return DOMException::Create(DOMExceptionCode::kNotFoundError,
-                                  "Invalid NFC watch Id was provided.");
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotFoundError,
+          "Invalid NFC watch Id was provided.");
     case NFCErrorType::INVALID_MESSAGE:
-      return DOMException::Create(DOMExceptionCode::kSyntaxError,
-                                  "Invalid NFC message was provided.");
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kSyntaxError, "Invalid NFC message was provided.");
     case NFCErrorType::OPERATION_CANCELLED:
-      return DOMException::Create(DOMExceptionCode::kAbortError,
-                                  "The NFC operation was cancelled.");
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kAbortError, "The NFC operation was cancelled.");
     case NFCErrorType::TIMER_EXPIRED:
-      return DOMException::Create(DOMExceptionCode::kTimeoutError,
-                                  "NFC operation has timed-out.");
+      return MakeGarbageCollected<DOMException>(DOMExceptionCode::kTimeoutError,
+                                                "NFC operation has timed-out.");
     case NFCErrorType::CANNOT_CANCEL:
-      return DOMException::Create(DOMExceptionCode::kNoModificationAllowedError,
-                                  "NFC operation cannot be canceled.");
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNoModificationAllowedError,
+          "NFC operation cannot be canceled.");
     case NFCErrorType::IO_ERROR:
-      return DOMException::Create(DOMExceptionCode::kNetworkError,
-                                  "NFC data transfer error has occurred.");
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNetworkError,
+          "NFC data transfer error has occurred.");
   }
   NOTREACHED();
-  return DOMException::Create(DOMExceptionCode::kUnknownError,
-                              "An unknown NFC error has occurred.");
+  return MakeGarbageCollected<DOMException>(
+      DOMExceptionCode::kUnknownError, "An unknown NFC error has occurred.");
 }
 
 }  // namespace blink

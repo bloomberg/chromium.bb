@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "ui/views/widget/widget.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 #include "url/gurl.h"
 
@@ -28,6 +29,9 @@ class SystemWebDialogDelegate : public ui::WebDialogDelegate {
   // matches, the first matching instance created is returned.
   static SystemWebDialogDelegate* FindInstance(const std::string& id);
 
+  // Returns true if there is a system dialog with |url| loaded.
+  static bool HasInstance(const GURL& url);
+
   // |gurl| is the HTML file path for the dialog content and must be set.
   // |title| may be empty in which case ShouldShowDialogTitle() returns false.
   SystemWebDialogDelegate(const GURL& gurl, const base::string16& title);
@@ -37,6 +41,9 @@ class SystemWebDialogDelegate : public ui::WebDialogDelegate {
   // By default returns gurl_.spec() which should be sufficient for dialogs
   // that only support a single instance.
   virtual const std::string& Id();
+
+  // Adjust the init params for the widget. By default makes no change.
+  virtual void AdjustWidgetInitParams(views::Widget::InitParams* params) {}
 
   // Focuses the dialog window. Note: No-op for modal dialogs, see
   // implementation for details.

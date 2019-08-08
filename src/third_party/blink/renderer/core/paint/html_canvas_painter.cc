@@ -30,11 +30,11 @@ InterpolationQuality InterpolationQualityForCanvas(const ComputedStyle& style) {
 }  // namespace
 
 void HTMLCanvasPainter::PaintReplaced(const PaintInfo& paint_info,
-                                      const LayoutPoint& paint_offset) {
+                                      const PhysicalOffset& paint_offset) {
   GraphicsContext& context = paint_info.context;
 
-  LayoutRect paint_rect = layout_html_canvas_.ReplacedContentRect();
-  paint_rect.MoveBy(paint_offset);
+  PhysicalRect paint_rect = layout_html_canvas_.ReplacedContentRect();
+  paint_rect.Move(paint_offset);
 
   HTMLCanvasElement* canvas =
       ToHTMLCanvasElement(layout_html_canvas_.GetNode());

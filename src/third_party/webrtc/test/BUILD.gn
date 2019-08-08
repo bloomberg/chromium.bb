@@ -55,7 +55,6 @@ rtc_source_set("video_test_common") {
     "../api:libjingle_peerconnection_api",
     "../api:scoped_refptr",
     "../api/task_queue",
-    "../api/task_queue:global_task_queue_factory",
     "../api/video:video_frame",
     "../api/video:video_frame_i010",
     "../api/video:video_frame_i420",
@@ -644,7 +643,6 @@ rtc_source_set("fake_video_codecs") {
     "../modules/video_coding:codec_globals_headers",
     "../modules/video_coding:video_codec_interface",
     "../modules/video_coding:video_coding_utility",
-    "../modules/video_coding:webrtc_h264",
     "../modules/video_coding:webrtc_vp8",
     "../modules/video_coding:webrtc_vp9",
     "../rtc_base:checks",
@@ -657,6 +655,33 @@ rtc_source_set("fake_video_codecs") {
   ]
 }
 
+rtc_source_set("null_transport") {
+  testonly = true
+  sources = [
+    "null_transport.cc",
+    "null_transport.h",
+  ]
+  deps = [
+    "../api:transport_api",
+  ]
+}
+
+rtc_source_set("encoder_settings") {
+  testonly = true
+  sources = [
+    "encoder_settings.cc",
+    "encoder_settings.h",
+  ]
+  deps = [
+    "../api:scoped_refptr",
+    "../api/video_codecs:video_codecs_api",
+    "../call:rtp_interfaces",
+    "../call:video_stream_api",
+    "../rtc_base:checks",
+    "../rtc_base:refcount",
+  ]
+}
+
 rtc_source_set("test_common") {
   testonly = true
   sources = [
@@ -664,15 +689,11 @@ rtc_source_set("test_common") {
     "call_test.h",
     "drifting_clock.cc",
     "drifting_clock.h",
-    "encoder_settings.cc",
-    "encoder_settings.h",
     "fake_videorenderer.h",
     "layer_filtering_transport.cc",
     "layer_filtering_transport.h",
     "mock_transport.cc",
     "mock_transport.h",
-    "null_transport.cc",
-    "null_transport.h",
     "rtp_rtcp_observer.h",
     "video_decoder_proxy_factory.h",
     "video_encoder_proxy_factory.h",
@@ -693,6 +714,7 @@ rtc_source_set("test_common") {
 
   deps = [
     ":direct_transport",
+    ":encoder_settings",
     ":fake_video_codecs",
     ":fileutils",
     ":rtp_test_utils",
@@ -705,6 +727,8 @@ rtc_source_set("test_common") {
     "../api:transport_api",
     "../api/audio_codecs:builtin_audio_decoder_factory",
     "../api/audio_codecs:builtin_audio_encoder_factory",
+    "../api/task_queue",
+    "../api/task_queue:default_task_queue_factory",
     "../api/test/video:function_video_factory",
     "../api/video:builtin_video_bitrate_allocator_factory",
     "../api/video:video_bitrate_allocator_factory",
@@ -714,7 +738,6 @@ rtc_source_set("test_common") {
     "../call",
     "../call:call_interfaces",
     "../call:fake_network",
-    "../call:rtp_interfaces",
     "../call:rtp_sender",
     "../call:simulated_network",
     "../call:simulated_packet_receiver",

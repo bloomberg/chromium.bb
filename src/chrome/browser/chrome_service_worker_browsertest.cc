@@ -557,6 +557,13 @@ class ChromeServiceWorkerFetchPPAPITest : public ChromeServiceWorkerFetchTest {
   ChromeServiceWorkerFetchPPAPITest() {}
   ~ChromeServiceWorkerFetchPPAPITest() override {}
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ChromeServiceWorkerFetchTest::SetUpCommandLine(command_line);
+    // Use --enable-nacl flag to ensure the PNaCl module can load (without
+    // needing to use an OT token)
+    command_line->AppendSwitch(switches::kEnableNaCl);
+  }
+
   void SetUpOnMainThread() override {
     base::FilePath document_root;
     ASSERT_TRUE(ui_test_utils::GetRelativeBuildDirectory(&document_root));

@@ -83,11 +83,11 @@ class MockRtpRtcp : public RtpRtcp {
                      int(uint32_t* available_bandwidth));
   MOCK_METHOD4(OnSendingRtpFrame, bool(uint32_t, int64_t, int, bool));
   MOCK_METHOD5(TimeToSendPacket,
-               bool(uint32_t ssrc,
-                    uint16_t sequence_number,
-                    int64_t capture_time_ms,
-                    bool retransmission,
-                    const PacedPacketInfo& pacing_info));
+               RtpPacketSendResult(uint32_t ssrc,
+                                   uint16_t sequence_number,
+                                   int64_t capture_time_ms,
+                                   bool retransmission,
+                                   const PacedPacketInfo& pacing_info));
   MOCK_METHOD2(TimeToSendPadding,
                size_t(size_t bytes, const PacedPacketInfo& pacing_info));
   MOCK_METHOD2(RegisterRtcpObservers,
@@ -126,6 +126,7 @@ class MockRtpRtcp : public RtpRtcp {
                      void(bool, uint32_t, struct RtpPacketLossStats*));
   MOCK_CONST_METHOD1(RemoteRTCPStat,
                      int32_t(std::vector<RTCPReportBlock>* receive_blocks));
+  MOCK_CONST_METHOD0(GetLatestReportBlockData, std::vector<ReportBlockData>());
   MOCK_METHOD4(SetRTCPApplicationSpecificData,
                int32_t(uint8_t sub_type,
                        uint32_t name,
@@ -145,6 +146,7 @@ class MockRtpRtcp : public RtpRtcp {
   MOCK_CONST_METHOD0(StorePackets, bool());
   MOCK_METHOD1(RegisterRtcpStatisticsCallback, void(RtcpStatisticsCallback*));
   MOCK_METHOD0(GetRtcpStatisticsCallback, RtcpStatisticsCallback*());
+  MOCK_METHOD1(SetReportBlockDataObserver, void(ReportBlockDataObserver*));
   MOCK_METHOD1(SendFeedbackPacket, bool(const rtcp::TransportFeedback& packet));
   MOCK_METHOD1(SetTargetSendBitrate, void(uint32_t bitrate_bps));
   MOCK_METHOD1(SetKeyFrameRequestMethod, int32_t(KeyFrameRequestMethod method));
@@ -157,7 +159,7 @@ class MockRtpRtcp : public RtpRtcp {
   MOCK_METHOD1(RegisterSendChannelRtpStatisticsCallback,
                void(StreamDataCountersCallback*));
   MOCK_CONST_METHOD0(GetSendChannelRtpStatisticsCallback,
-                     StreamDataCountersCallback*(void));
+                     StreamDataCountersCallback*());
   MOCK_METHOD1(SetVideoBitrateAllocation, void(const VideoBitrateAllocation&));
   MOCK_METHOD0(RtpSender, RTPSender*());
   MOCK_CONST_METHOD0(RtpSender, const RTPSender*());

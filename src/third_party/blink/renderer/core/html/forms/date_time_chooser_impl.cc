@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/html/forms/date_time_chooser_impl.h"
 
+#include "third_party/blink/public/mojom/choosers/date_time_chooser.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/forms/date_time_chooser_client.h"
@@ -50,12 +51,13 @@ DateTimeChooserImpl::DateTimeChooserImpl(
     : chrome_client_(chrome_client),
       client_(client),
       popup_(nullptr),
-      parameters_(parameters),
+      parameters_(&parameters),
       locale_(Locale::Create(parameters.locale)) {
   DCHECK(RuntimeEnabledFeatures::InputMultipleFieldsUIEnabled());
   DCHECK(chrome_client_);
   DCHECK(client_);
   popup_ = chrome_client_->OpenPagePopup(this);
+  parameters_ = nullptr;
 }
 
 DateTimeChooserImpl::~DateTimeChooserImpl() = default;
@@ -96,16 +98,16 @@ static String ValueToDateTimeString(double value, AtomicString type) {
 }
 
 void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
-  String step_string = String::Number(parameters_.step);
-  String step_base_string = String::Number(parameters_.step_base, 11);
+  String step_string = String::Number(parameters_->step);
+  String step_base_string = String::Number(parameters_->step_base, 11);
   String today_label_string;
   String other_date_label_string;
-  if (parameters_.type == input_type_names::kMonth) {
+  if (parameters_->type == input_type_names::kMonth) {
     today_label_string =
         GetLocale().QueryString(WebLocalizedString::kThisMonthButtonLabel);
     other_date_label_string =
         GetLocale().QueryString(WebLocalizedString::kOtherMonthLabel);
-  } else if (parameters_.type == input_type_names::kWeek) {
+  } else if (parameters_->type == input_type_names::kWeek) {
     today_label_string =
         GetLocale().QueryString(WebLocalizedString::kThisWeekButtonLabel);
     other_date_label_string =
@@ -126,22 +128,23 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
       "</style></head><body><div id=main>Loading...</div><script>\n"
       "window.dialogArguments = {\n",
       data);
-  AddProperty("anchorRectInScreen", parameters_.anchor_rect_in_screen, data);
+  AddProperty("anchorRectInScreen", parameters_->anchor_rect_in_screen, data);
   float scale_factor = chrome_client_->WindowToViewportScalar(1.0f);
   AddProperty("zoomFactor", ZoomFactor() / scale_factor, data);
   AddProperty("min",
-              ValueToDateTimeString(parameters_.minimum, parameters_.type),
+              ValueToDateTimeString(parameters_->minimum, parameters_->type),
               data);
   AddProperty("max",
-              ValueToDateTimeString(parameters_.maximum, parameters_.type),
+              ValueToDateTimeString(parameters_->maximum, parameters_->type),
               data);
   AddProperty("step", step_string, data);
   AddProperty("stepBase", step_base_string, data);
-  AddProperty("required", parameters_.required, data);
-  AddProperty("currentValue",
-              ValueToDateTimeString(parameters_.double_value, parameters_.type),
-              data);
-  AddProperty("locale", parameters_.locale.GetString(), data);
+  AddProperty("required", parameters_->required, data);
+  AddProperty(
+      "currentValue",
+      ValueToDateTimeString(parameters_->double_value, parameters_->type),
+      data);
+  AddProperty("locale", parameters_->locale.GetString(), data);
   AddProperty("todayLabel", today_label_string, data);
   AddProperty("clearLabel",
               GetLocale().QueryString(WebLocalizedString::kCalendarClear),
@@ -165,28 +168,30 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
   AddProperty("shortMonthLabels", locale_->ShortMonthLabels(), data);
   AddProperty("dayLabels", locale_->WeekDayShortLabels(), data);
   AddProperty("isLocaleRTL", locale_->IsRTL(), data);
-  AddProperty("isRTL", parameters_.is_anchor_element_rtl, data);
-  AddProperty("mode", parameters_.type.GetString(), data);
-  if (parameters_.suggestions.size()) {
+  AddProperty("isRTL", parameters_->is_anchor_element_rtl, data);
+  AddProperty("mode", parameters_->type.GetString(), data);
+  if (parameters_->suggestions.size()) {
     Vector<String> suggestion_values;
     Vector<String> localized_suggestion_values;
     Vector<String> suggestion_labels;
-    for (unsigned i = 0; i < parameters_.suggestions.size(); i++) {
+    for (unsigned i = 0; i < parameters_->suggestions.size(); i++) {
       suggestion_values.push_back(ValueToDateTimeString(
-          parameters_.suggestions[i].value, parameters_.type));
+          parameters_->suggestions[i]->value, parameters_->type));
       localized_suggestion_values.push_back(
-          parameters_.suggestions[i].localized_value);
-      suggestion_labels.push_back(parameters_.suggestions[i].label);
+          parameters_->suggestions[i]->localized_value);
+      suggestion_labels.push_back(parameters_->suggestions[i]->label);
     }
     AddProperty("suggestionValues", suggestion_values, data);
     AddProperty("localizedSuggestionValues", localized_suggestion_values, data);
     AddProperty("suggestionLabels", suggestion_labels, data);
     AddProperty(
         "inputWidth",
-        static_cast<unsigned>(parameters_.anchor_rect_in_screen.Width()), data);
+        static_cast<unsigned>(parameters_->anchor_rect_in_screen.Width()),
+        data);
     AddProperty(
         "showOtherDateEntry",
-        LayoutTheme::GetTheme().SupportsCalendarPicker(parameters_.type), data);
+        LayoutTheme::GetTheme().SupportsCalendarPicker(parameters_->type),
+        data);
     AddProperty("otherDateLabel", other_date_label_string, data);
     AddProperty("suggestionHighlightColor",
                 LayoutTheme::GetTheme()

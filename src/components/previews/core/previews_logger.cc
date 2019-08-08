@@ -91,6 +91,10 @@ std::string GetReasonDescription(PreviewsEligibilityReason reason,
     case PreviewsEligibilityReason::OPTIMIZATION_HINTS_NOT_AVAILABLE:
       return want_inverse_description ? "Optimization hints are available"
                                       : "Optimization hints are not available";
+    case PreviewsEligibilityReason::EXCLUDED_BY_MEDIA_SUFFIX:
+      return want_inverse_description
+                 ? "URL suffix is not an excluded media suffix previews"
+                 : "URL suffix is an excluded media suffix";
     case PreviewsEligibilityReason::LAST:
       break;
   }
@@ -128,8 +132,7 @@ PreviewsLogger::MessageLog::MessageLog(const MessageLog& other)
       page_id(other.page_id) {}
 
 PreviewsLogger::PreviewsLogger()
-    : blacklist_ignored_(base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kIgnorePreviewsBlacklist)) {}
+    : blacklist_ignored_(switches::ShouldIgnorePreviewsBlacklist()) {}
 
 PreviewsLogger::~PreviewsLogger() {}
 

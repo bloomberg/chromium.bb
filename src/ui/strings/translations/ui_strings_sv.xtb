@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
+<translation id="1028699632127661925">Skickar till <ph name="DEVICE_NAME" /> …</translation>
 <translation id="111910763555783249">Aviseringsinställningar</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{för 1 dag sedan}other{för # dagar sedan}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 minut sedan}other{# minuter sedan}}</translation>
@@ -15,13 +16,11 @@
 <translation id="1383876407941801731">Sök</translation>
 <translation id="1398853756734560583">Maximera</translation>
 <translation id="1409544243779336081">Apprekommendation</translation>
-<translation id="1413622004203049571">Inaktivera aviseringar från <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minut och }other{# minuter och }}</translation>
 <translation id="1643823602425662293">Avisering</translation>
 <translation id="169515659049020177">Skift</translation>
 <translation id="1710340000377843106">nu</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minut}other{# minuter}}</translation>
-<translation id="1756116796893109054">Fliken skickas …</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1801827354178857021">Period</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 månad}other{# månader}}</translation>
@@ -135,6 +134,7 @@
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/sek</translation>
 <translation id="6156262341071374681">Utöka till alla appar</translation>
+<translation id="6165508094623778733">Läs mer</translation>
 <translation id="6264365405983206840">Markera &amp;alla</translation>
 <translation id="6351032674660237738">APPFÖRSLAG</translation>
 <translation id="6364916375976753737">Rulla åt vänster</translation>
@@ -180,8 +180,10 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Fler än en oläst avisering}other{Fler än # olästa aviseringar}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{om 1 min}other{om # min}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8098075892845277643">Aktivera röstfråga till Google-assistenten</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{för 1 timme sedan}other{för # timmar sedan}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 sek kvar}other{# sek kvar}}</translation>
+<translation id="8144660977431427332">Sökningarna görs med Google Assistent. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, autoslutför</translation>
 <translation id="815598010540052116">Rulla nedåt</translation>
 <translation id="8170087467028567933">Om du tar bort förslaget döljs det i ditt konto på alla enheter.</translation>

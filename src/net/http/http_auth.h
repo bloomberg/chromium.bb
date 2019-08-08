@@ -12,6 +12,7 @@
 #include "net/base/auth.h"
 #include "net/base/net_export.h"
 #include "net/http/http_util.h"
+#include "net/log/net_log_parameters_callback.h"
 
 template <class T> class scoped_refptr;
 
@@ -140,10 +141,20 @@ class NET_EXPORT_PRIVATE HttpAuth {
   // Returns a string representation of an authentication Scheme.
   static const char* SchemeToString(Scheme scheme);
 
+  // Returns a string representation of an authorization result.
+  static const char* AuthorizationResultToString(
+      AuthorizationResult authorization_result);
+
+  // Use with BoundNetLog to log an authorization result. The returned callback
+  // is valid as long as |name| is valid.
+  static NetLogParametersCallback NetLogAuthorizationResultCallback(
+      const char* name,
+      AuthorizationResult authorization_result);
+
   // Iterate through |response_headers|, and pick the best one that we support.
   // Obtains the implementation class for handling the challenge, and passes it
   // back in |*handler|. If no supported challenge was found, |*handler| is set
-  // to NULL.
+  // to nullptr.
   //
   // |disabled_schemes| is the set of schemes that we should not use.
   //
@@ -170,7 +181,7 @@ class NET_EXPORT_PRIVATE HttpAuth {
   // rejection of the previous challenge, except in the Digest case when a
   // "stale" attribute is present.
   //
-  // |handler| must be non-NULL, and is the HttpAuthHandler from the previous
+  // |handler| must be non-nullptr, and is the HttpAuthHandler from the previous
   // authentication round.
   //
   // |response_headers| must contain the new HTTP response.

@@ -59,8 +59,8 @@ class AuthenticatorRequestDialogModel {
     kTimedOut,
     kKeyNotRegistered,
     kKeyAlreadyRegistered,
-    kMissingResidentKeys,
-    kMissingUserVerification,
+    kMissingCapability,
+    kStorageFull,
 
     // The request is completed, and the dialog should be closed.
     kClosed,
@@ -94,6 +94,11 @@ class AuthenticatorRequestDialogModel {
     kClientPinErrorHardBlock,
     kClientPinErrorAuthenticatorRemoved,
 
+    // Confirm user consent to create a resident credential. Used prior to
+    // triggering Windows-native APIs when Windows itself won't show any
+    // notice about resident credentials.
+    kResidentCredentialConfirmation,
+
     // Account selection,
     kSelectAccount,
 
@@ -124,7 +129,7 @@ class AuthenticatorRequestDialogModel {
     virtual void OnCancelRequest() {}
   };
 
-  AuthenticatorRequestDialogModel(const std::string& relying_party_id);
+  explicit AuthenticatorRequestDialogModel(const std::string& relying_party_id);
   ~AuthenticatorRequestDialogModel();
 
   void SetCurrentStep(Step step);
@@ -140,8 +145,7 @@ class AuthenticatorRequestDialogModel {
     return current_step() == Step::kTimedOut ||
            current_step() == Step::kKeyNotRegistered ||
            current_step() == Step::kKeyAlreadyRegistered ||
-           current_step() == Step::kMissingResidentKeys ||
-           current_step() == Step::kMissingUserVerification ||
+           current_step() == Step::kMissingCapability ||
            current_step() == Step::kClosed;
   }
 
@@ -313,6 +317,10 @@ class AuthenticatorRequestDialogModel {
   // user verification capability.
   void OnAuthenticatorMissingUserVerification();
 
+  // To be called when the selected authenticator cannot create a resident
+  // credential because of insufficient storage.
+  void OnAuthenticatorStorageFull();
+
   // To be called when the Bluetooth adapter powered state changes.
   void OnBluetoothPoweredStateChanged(bool powered);
 
@@ -330,6 +338,10 @@ class AuthenticatorRequestDialogModel {
 
   // OnHavePIN is called when the user enters a PIN in the UI.
   void OnHavePIN(const std::string& pin);
+
+  // OnResidentCredentialConfirmed is called when a user accepts a dialog
+  // confirming that they're happy to create a resident credential.
+  void OnResidentCredentialConfirmed();
 
   // OnAttestationPermissionResponse is called when the user either allows or
   // disallows an attestation permission request.

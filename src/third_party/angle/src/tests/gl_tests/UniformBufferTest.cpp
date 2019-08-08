@@ -25,10 +25,8 @@ class UniformBufferTest : public ANGLETest
         setConfigAlphaBits(8);
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
-
         mkFS = R"(#version 300 es
 precision highp float;
 uniform uni { vec4 color; };
@@ -49,11 +47,10 @@ void main()
         ASSERT_GL_NO_ERROR();
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
         glDeleteBuffers(1, &mUniformBuffer);
         glDeleteProgram(mProgram);
-        ANGLETest::TearDown();
     }
 
     const char *mkFS;
@@ -1518,11 +1515,7 @@ TEST_P(UniformBufferTest, DependentBufferChange)
 
 // Use this to select which configurations (e.g. which renderer, which GLES major version) these
 // tests should be run against.
-ANGLE_INSTANTIATE_TEST(UniformBufferTest,
-                       ES3_D3D11(),
-                       ES3_D3D11_FL11_1(),
-                       ES3_OPENGL(),
-                       ES3_OPENGLES());
+ANGLE_INSTANTIATE_TEST(UniformBufferTest, ES3_D3D11(), ES3_OPENGL(), ES3_OPENGLES(), ES3_VULKAN());
 ANGLE_INSTANTIATE_TEST(UniformBufferTest31, ES31_D3D11(), ES31_OPENGL(), ES31_OPENGLES());
 
 }  // namespace

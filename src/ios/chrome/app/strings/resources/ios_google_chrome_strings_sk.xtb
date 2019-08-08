@@ -1,11 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sk">
+<translation id="1282031177488366470">Pomoc so zlepšovaním funkcií a výkonu Chromu</translation>
 <translation id="1326317727527857210">Ak chcete získať karty z ďalších svojich zariadení, prihláste sa do Chromu.</translation>
+<translation id="1682483655351012182">Synchronizácia údajov Chromu</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Upozornenie o ochrane súkromia v prehliadači Google Chrome</translation>
 <translation id="1863312987075920112">Používaním tejto aplikácie vyjadrujete súhlas so <ph name="BEGIN_LINK_TOS" />zmluvnými podmienkami<ph name="END_LINK_TOS" /> a <ph name="BEGIN_LINK_PRIVACY" />upozornením o ochrane súkromia<ph name="END_LINK_PRIVACY" /> prehliadača Chrome.</translation>
-<translation id="1984705450038014246">Synchronizovať údaje Chromu</translation>
 <translation id="2147651015520127414">Chrome overil, že certifikát tohto webu vydal vydavateľ <ph name="ISSUER" />.</translation>
 <translation id="2199719347983604670">Údaje zo synchronizácie Chromu</translation>
 <translation id="2342981853652716282">Prihláste sa do Chromu a získajte svoje záložky, heslá a ďalšie nastavenia na všetkých zariadeniach.</translation>
@@ -26,7 +27,6 @@
 <translation id="4099578267706723511">Odosielať štatistiky používania a prehľady chýb Googlu a pomáhať tak zlepšovať Chrome</translation>
 <translation id="415767770115540173">Služby Google môžu v prehliadači Chrome vďaka údajom o polohe fungovať lepšie.</translation>
 <translation id="424864128008805179">Odhlásiť sa z Chromu?</translation>
-<translation id="447252321002412580">Pomáhať s vylepšovaním funkcií a výkonu Chromu</translation>
 <translation id="4523886039239821078">Niektoré doplnky spôsobujú zlyhanie prehliadača Chrome. Odinštalujte ich.</translation>
 <translation id="4615174829807303908">Odhlasujete sa z účtu spravovaného doménou <ph name="SIGNOUT_MANAGED_DOMAIN" />. Týmto odstránite údaje prehliadača Chrome z príslušného zariadenia, avšak zostanú naďalej vo vašom účte Google.</translation>
 <translation id="5389212809648216794">Google Chrome nemôže použiť váš fotoaparát, pretože ho práve používa iná aplikácia</translation>

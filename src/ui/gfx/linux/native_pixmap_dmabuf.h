@@ -32,7 +32,7 @@ class GFX_EXPORT NativePixmapDmaBuf : public gfx::NativePixmap {
   int GetDmaBufFd(size_t plane) const override;
   int GetDmaBufPitch(size_t plane) const override;
   int GetDmaBufOffset(size_t plane) const override;
-  uint64_t GetDmaBufModifier(size_t plane) const override;
+  uint64_t GetBufferFormatModifier() const override;
   gfx::BufferFormat GetBufferFormat() const override;
   gfx::Size GetBufferSize() const override;
   uint32_t GetUniqueId() const override;
@@ -51,7 +51,7 @@ class GFX_EXPORT NativePixmapDmaBuf : public gfx::NativePixmap {
  private:
   gfx::Size size_;
   gfx::BufferFormat format_;
-  std::vector<gfx::NativePixmapPlane> planes_;
+  gfx::NativePixmapHandle handle_;
 
   DISALLOW_COPY_AND_ASSIGN(NativePixmapDmaBuf);
 };

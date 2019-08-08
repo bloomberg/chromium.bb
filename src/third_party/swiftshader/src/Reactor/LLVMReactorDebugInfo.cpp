@@ -19,11 +19,7 @@
 #include "Reactor.hpp"
 #include "LLVMReactor.hpp"
 
-#if REACTOR_LLVM_VERSION < 7
-#error "ENABLE_RR_DEBUG_INFO can currently only be used with LLVM 7+"
-#endif
-
-#include "backtrace.h"
+#include "boost/stacktrace.hpp"
 
 #include "llvm/Demangle/Demangle.h"
 #include "llvm/ExecutionEngine/JITEventListener.h"
@@ -33,6 +29,7 @@
 
 #include <cctype>
 #include <fstream>
+#include <mutex>
 #include <regex>
 #include <sstream>
 #include <string>
@@ -49,6 +46,12 @@ namespace
 	{
 		return llvm::StringRef(path).rsplit('/');
 	}
+
+	// Note: createGDBRegistrationListener() returns a pointer to a singleton.
+	// Nothing is actually created.
+	auto jitEventListener = llvm::JITEventListener::createGDBRegistrationListener(); // guarded by jitEventListenerMutex
+	std::mutex jitEventListenerMutex;
+
 } // anonymous namespaces
 
 namespace rr
@@ -65,14 +68,13 @@ namespace rr
 		auto location = getCallerLocation();
 
 		auto fileAndDir = splitPath(location.function.file.c_str());
-		diBuilder = new llvm::DIBuilder(*module);
+		diBuilder.reset(new llvm::DIBuilder(*module));
 		diCU = diBuilder->createCompileUnit(
 			llvm::dwarf::DW_LANG_C,
 			diBuilder->createFile(fileAndDir.first, fileAndDir.second),
 			"Reactor",
 			0, "", 0);
 
-		jitEventListener = llvm::JITEventListener::createGDBRegistrationListener();
 		registerBasicTypes();
 
 		SmallVector<Metadata *, 8> EltTys;
@@ -98,11 +100,13 @@ namespace rr
 		builder->SetCurrentDebugLocation(diRootLocation);
 	}
 
+	DebugInfo::~DebugInfo() = default;
+
 	void DebugInfo::Finalize()
 	{
 		while (diScope.size() > 0)
 		{
-			emitPending(diScope.back(), builder, diBuilder);
+			emitPending(diScope.back(), builder);
 			diScope.pop_back();
 		}
 		diBuilder->finalize();
@@ -113,11 +117,25 @@ namespace rr
 		auto const& backtrace = getCallerBacktrace();
 		syncScope(backtrace);
 		builder->SetCurrentDebugLocation(getLocation(backtrace, backtrace.size() - 1));
+
+#ifdef ENABLE_RR_EMIT_PRINT_LOCATION
+		static Location lastLocation;
+		if (backtrace.size() == 0)
+		{
+			return;
+		}
+		Location currLocation = backtrace[backtrace.size() - 1];
+		if (currLocation != lastLocation)
+		{
+			rr::Print("rr> {0} [{1}:{2}]\n", currLocation.function.name.c_str(), currLocation.function.file.c_str(), currLocation.line);
+			lastLocation = std::move(currLocation);
+		}
+#endif // ENABLE_RR_EMIT_PRINT_LOCATION
 	}
 
 	void DebugInfo::Flush()
 	{
-		emitPending(diScope.back(), builder, diBuilder);
+		emitPending(diScope.back(), builder);
 	}
 
 	void DebugInfo::syncScope(Backtrace const& backtrace)
@@ -131,7 +149,7 @@ namespace rr
 					int(diScope.size() - 1), scope.di,
 					scope.location.function.file.c_str(),
 					int(scope.location.line));
-				emitPending(scope, builder, diBuilder);
+				emitPending(scope, builder);
 				diScope.pop_back();
 			}
 		};
@@ -162,7 +180,7 @@ namespace rr
 				auto di = diBuilder->createLexicalBlock(scope.di, file, newLocation.line, 0);
 				LOG("  STACK(%d): Jumped backwards %d -> %d. di: %p -> %p", int(i),
 					oldLocation.line, newLocation.line, scope.di, di);
-				emitPending(scope, builder, diBuilder);
+				emitPending(scope, builder);
 				scope = {newLocation, di};
 				shrink(i+1);
 				break;
@@ -182,7 +200,7 @@ namespace rr
 			size_t size = sizeof(buf);
 			int status = 0;
 			llvm::itaniumDemangle(location.function.name.c_str(), buf, &size, &status);
-			auto name = status == 0 ? buf : location.function.name.c_str();
+			auto name = "jit!" + (status == 0 ? std::string(buf) : location.function.name);
 
 			auto func = diBuilder->createFunction(
 				file,                           // scope
@@ -253,7 +271,7 @@ namespace rr
 			auto &scope = diScope[i];
 			if (scope.pending.location != location)
 			{
-				emitPending(scope, builder, diBuilder);
+				emitPending(scope, builder);
 			}
 
 			auto value = V(variable);
@@ -287,7 +305,7 @@ namespace rr
 		}
 	}
 
-	void DebugInfo::emitPending(Scope &scope, IRBuilder *builder, llvm::DIBuilder *diBuilder)
+	void DebugInfo::emitPending(Scope &scope, IRBuilder *builder)
 	{
 		auto const &pending = scope.pending;
 		if (pending.value == nullptr)
@@ -363,11 +381,13 @@ namespace rr
 
 	void DebugInfo::NotifyObjectEmitted(const llvm::object::ObjectFile &Obj, const llvm::LoadedObjectInfo &L)
 	{
+		std::unique_lock<std::mutex> lock(jitEventListenerMutex);
 		jitEventListener->NotifyObjectEmitted(Obj, static_cast<const llvm::RuntimeDyld::LoadedObjectInfo&>(L));
 	}
 
 	void DebugInfo::NotifyFreeingObject(const llvm::object::ObjectFile &Obj)
 	{
+		std::unique_lock<std::mutex> lock(jitEventListenerMutex);
 		jitEventListener->NotifyFreeingObject(Obj);
 	}
 
@@ -418,48 +438,41 @@ namespace rr
 
 	DebugInfo::Backtrace DebugInfo::getCallerBacktrace(size_t limit /* = 0 */) const
 	{
-		struct callbacks
-		{
-			static void onError(void *data, const char *msg, int errnum)
-			{
-				fprintf(stderr, "BACKTRACE ERROR %d: %s\n", errnum, msg);
-			}
-
-			static int onPCInfo(void *data, uintptr_t pc, const char *file, int line, const char *function)
-			{
-				if (file == nullptr) { return 0; }
-
-				auto const &fileSR = llvm::StringRef(file);
-				if (fileSR.endswith("ReactorDebugInfo.cpp") ||
-					fileSR.endswith("Reactor.cpp") ||
-					fileSR.endswith("Reactor.hpp"))
-				{
-					return 0;
-				}
-
-				auto cb = reinterpret_cast<callbacks*>(data);
-
-				Location location;
-				location.function.file = file;
-				location.function.name = function;
-				location.line = line;
-
-				cb->locations.push_back(location);
-				return (cb->limit == 0 || sizeof(cb->locations) < cb->limit) ? 0 : 1;
-			}
-
-			size_t limit;
-			std::vector<DebugInfo::Location> locations;
+		auto shouldSkipFile = [](llvm::StringRef fileSR) {
+				return fileSR.empty() ||
+					fileSR.endswith_lower("ReactorDebugInfo.cpp") ||
+					fileSR.endswith_lower("Reactor.cpp") ||
+					fileSR.endswith_lower("Reactor.hpp") ||
+					fileSR.endswith_lower("stacktrace.hpp");
 		};
 
-		callbacks callbacks;
-		callbacks.limit = limit;
-		static auto state = backtrace_create_state(nullptr, 0, &callbacks::onError, nullptr);
-		backtrace_full(state, 1, &callbacks::onPCInfo, &callbacks::onError, &callbacks);
+		std::vector<DebugInfo::Location> locations;
 
-		std::reverse(callbacks.locations.begin(), callbacks.locations.end());
+		// Note that bs::stacktrace() effectively returns a vector of addresses; bs::frame construction is where
+		// the heavy lifting is done: resolving the function name, file and line number.
+		namespace bs = boost::stacktrace;
+		for (bs::frame frame : bs::stacktrace())
+		{
+			if (shouldSkipFile(frame.source_file()))
+			{
+				continue;
+			}
 
-		return callbacks.locations;
+			DebugInfo::Location location;
+			location.function.file = frame.source_file();
+			location.function.name = frame.name();
+			location.line = frame.source_line();
+			locations.push_back(location);
+
+			if (limit > 0 && locations.size() >= limit)
+			{
+				break;
+			}
+		}
+
+		std::reverse(locations.begin(), locations.end());
+
+		return locations;
 	}
 
 	llvm::DIType *DebugInfo::getOrCreateType(llvm::Type* type)
@@ -477,6 +490,7 @@ namespace rr
 		}
 		llvm::errs() << "Unimplemented debug type: " << type << "\n";
 		assert(false);
+		return nullptr;
 	}
 
 	llvm::DIFile *DebugInfo::getOrCreateFile(const char* path)

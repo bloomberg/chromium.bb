@@ -478,10 +478,10 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
       const KeyDerivationParams& key_derivation_params,
       const std::string& passphrase) {
     sync_pb::NigoriKey key;
-    Nigori nigori;
-    nigori.InitByDerivation(key_derivation_params, passphrase);
-    nigori.ExportKeys(key.mutable_user_key(), key.mutable_encryption_key(),
-                      key.mutable_mac_key());
+    std::unique_ptr<Nigori> nigori =
+        Nigori::CreateByDerivation(key_derivation_params, passphrase);
+    nigori->ExportKeys(key.mutable_user_key(), key.mutable_encryption_key(),
+                       key.mutable_mac_key());
     return key.SerializeAsString();
   }
 
@@ -658,8 +658,9 @@ TEST_F(SyncEncryptionHandlerImplTest, EncryptEverythingExplicit) {
   EXPECT_FALSE(encryption_handler()->IsEncryptEverythingEnabled());
   ModelTypeSet encrypted_types =
       encryption_handler()->GetEncryptedTypesUnsafe();
-  EXPECT_EQ(ModelTypeSet(PASSWORDS, DEPRECATED_WIFI_CREDENTIALS),
-            encrypted_types);
+  EXPECT_EQ(
+      ModelTypeSet(PASSWORDS, DEPRECATED_WIFI_CREDENTIALS, WIFI_CONFIGURATIONS),
+      encrypted_types);
 
   {
     WriteTransaction trans(FROM_HERE, user_share());
@@ -692,8 +693,9 @@ TEST_F(SyncEncryptionHandlerImplTest, EncryptEverythingImplicit) {
   EXPECT_FALSE(encryption_handler()->IsEncryptEverythingEnabled());
   ModelTypeSet encrypted_types =
       encryption_handler()->GetEncryptedTypesUnsafe();
-  EXPECT_EQ(ModelTypeSet(PASSWORDS, DEPRECATED_WIFI_CREDENTIALS),
-            encrypted_types);
+  EXPECT_EQ(
+      ModelTypeSet(PASSWORDS, DEPRECATED_WIFI_CREDENTIALS, WIFI_CONFIGURATIONS),
+      encrypted_types);
 
   {
     WriteTransaction trans(FROM_HERE, user_share());
@@ -734,8 +736,9 @@ TEST_F(SyncEncryptionHandlerImplTest, UnknownSensitiveTypes) {
   EXPECT_FALSE(encryption_handler()->IsEncryptEverythingEnabled());
   ModelTypeSet encrypted_types =
       encryption_handler()->GetEncryptedTypesUnsafe();
-  EXPECT_EQ(ModelTypeSet(PASSWORDS, DEPRECATED_WIFI_CREDENTIALS),
-            encrypted_types);
+  EXPECT_EQ(
+      ModelTypeSet(PASSWORDS, DEPRECATED_WIFI_CREDENTIALS, WIFI_CONFIGURATIONS),
+      encrypted_types);
 
   {
     WriteTransaction trans(FROM_HERE, user_share());
@@ -745,7 +748,8 @@ TEST_F(SyncEncryptionHandlerImplTest, UnknownSensitiveTypes) {
 
   EXPECT_FALSE(encryption_handler()->IsEncryptEverythingEnabled());
   encrypted_types = encryption_handler()->GetEncryptedTypesUnsafe();
-  EXPECT_EQ(ModelTypeSet(BOOKMARKS, PASSWORDS, DEPRECATED_WIFI_CREDENTIALS),
+  EXPECT_EQ(ModelTypeSet(BOOKMARKS, PASSWORDS, DEPRECATED_WIFI_CREDENTIALS,
+                         WIFI_CONFIGURATIONS),
             encrypted_types);
 }
 
@@ -1011,7 +1015,8 @@ TEST_F(SyncEncryptionHandlerImplTest, MigrateOnDecryptCustomPass) {
   EXPECT_FALSE(encryption_handler()->MigratedToKeystore());
   encryption_handler()->SetDecryptionPassphrase(kOtherKey);
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
-  const base::Time migration_time = encryption_handler()->migration_time();
+  const base::Time migration_time =
+      encryption_handler()->GetKeystoreMigrationTime();
   VerifyPassphraseType(PassphraseType::CUSTOM_PASSPHRASE);
   VerifyMigratedNigori(PassphraseType::CUSTOM_PASSPHRASE, kOtherKey,
                        {KeyDerivationParams::CreateForPbkdf2()});
@@ -1084,7 +1089,8 @@ TEST_F(SyncEncryptionHandlerImplTest,
   Mock::VerifyAndClearExpectations(observer());
 
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
-  const base::Time migration_time = encryption_handler()->migration_time();
+  const base::Time migration_time =
+      encryption_handler()->GetKeystoreMigrationTime();
   VerifyPassphraseType(PassphraseType::FROZEN_IMPLICIT_PASSPHRASE);
   EXPECT_TRUE(encryption_handler()->IsEncryptEverythingEnabled());
   VerifyMigratedNigori(PassphraseType::FROZEN_IMPLICIT_PASSPHRASE, kCurKey,
@@ -1142,7 +1148,8 @@ TEST_F(SyncEncryptionHandlerImplTest,
   Mock::VerifyAndClearExpectations(observer());
 
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
-  const base::Time migration_time = encryption_handler()->migration_time();
+  const base::Time migration_time =
+      encryption_handler()->GetKeystoreMigrationTime();
   VerifyPassphraseType(PassphraseType::CUSTOM_PASSPHRASE);
   EXPECT_TRUE(encryption_handler()->IsEncryptEverythingEnabled());
   VerifyMigratedNigori(PassphraseType::CUSTOM_PASSPHRASE, kCurKey,
@@ -1190,7 +1197,8 @@ TEST_F(SyncEncryptionHandlerImplTest,
   // The actual migration gets posted, so run all pending tasks.
   PumpLoop();
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
-  const base::Time migration_time = encryption_handler()->migration_time();
+  const base::Time migration_time =
+      encryption_handler()->GetKeystoreMigrationTime();
   VerifyPassphraseType(PassphraseType::CUSTOM_PASSPHRASE);
   EXPECT_TRUE(encryption_handler()->IsEncryptEverythingEnabled());
   VerifyMigratedNigori(PassphraseType::CUSTOM_PASSPHRASE, kCurKey,
@@ -2276,7 +2284,8 @@ TEST_F(SyncEncryptionHandlerImplTest, RotateKeysUnmigratedCustomPassphrase) {
   VerifyMigratedNigori(PassphraseType::CUSTOM_PASSPHRASE, kCustomPass,
                        {KeyDerivationParams::CreateForPbkdf2()});
 
-  const base::Time migration_time = encryption_handler()->migration_time();
+  const base::Time migration_time =
+      encryption_handler()->GetKeystoreMigrationTime();
   VerifyRestoreAfterExplicitPaspshrase(
       TimeToProtoTime(migration_time), kCustomPass, captured_bootstrap_token,
       captured_nigori_state, PassphraseType::CUSTOM_PASSPHRASE,

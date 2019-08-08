@@ -53,7 +53,6 @@ static_library("ntp_tiles") {
     "//components/suggestions",
   ]
   deps = [
-    "//components/data_use_measurement/core",
     "//components/favicon/core",
     "//components/favicon_base",
     "//components/google/core/browser",
@@ -72,22 +71,6 @@ static_library("ntp_tiles") {
   ]
 }
 
-# If you want to use this, let us (ntp-dev@chromium.org) know. In that case, it
-# should be moved to a more common location as it has 2+ callers already.
-# Note that you probably shouldn't be using it outside of ios or tests.
-source_set("json_unsafe_parser") {
-  testonly = !is_ios
-
-  sources = [
-    "json_unsafe_parser.cc",
-    "json_unsafe_parser.h",
-  ]
-
-  public_deps = [
-    "//base",
-  ]
-}
-
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -100,7 +83,6 @@ source_set("unit_tests") {
   ]
 
   deps = [
-    ":json_unsafe_parser",
     ":ntp_tiles",
     "//base/test:test_support",
     "//components/favicon/core",
@@ -112,6 +94,7 @@ source_set("unit_tests") {
     "//components/rappor:test_support",
     "//components/sync_preferences:test_support",
     "//net:test_support",
+    "//services/data_decoder/public/cpp:test_support",
     "//services/network:test_support",
     "//services/network/public/cpp",
     "//testing/gmock",

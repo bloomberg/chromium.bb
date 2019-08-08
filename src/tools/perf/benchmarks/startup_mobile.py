@@ -46,10 +46,17 @@ from devil.android.sdk import intent # pylint: disable=import-error
 #               --output-dir=/tmp/avoid-polluting-chrome-tree \
 #               --also-run-disabled-tests
 #
-# The "--also-run-disabled-tests" is necessary because the benchmark is disabled
-# in expectations.config to avoid failures on Android versions below M. This
-# override is also used on internal bots. See: http://crbug.com/894744 and
-# http://crbug.com/849907.
+# Important notes on the flags:
+# --also-run-disabled-tests - is necessary because the benchmark is disabled in
+#     expectations.config to avoid failures on Android versions below M. This
+#     override is also used on internal bots. See: http://crbug.com/894744 and
+#     http://crbug.com/849907.
+# --browser=android-chrome - *must* be used *instead* of "android-chromium". The
+#     latter may silently produce subtly incorrect results. This is because
+#     MonohromePublic initialization path is less optimized than Monochrome
+#     (no orderfile, no library prefetch, etc.)
+# -v - in some cases the benchmark does not run in non-verbose mode, details
+#     unknown.
 #
 # Recording a WPR archive and uploading it:
 # shell> CHROMIUM_OUTPUT_DIR=gn_android/Release tools/perf/record_wpr \
@@ -83,8 +90,12 @@ class _MobileStartupSharedState(story_module.SharedState):
         '--skip-webapk-verification')
     self.platform.Initialize()
     self.platform.SetFullPerformanceModeEnabled(True)
-    self.platform.InstallApplication(core_util.FindLatestApkOnHost(
-        finder_options.chrome_root, 'MapsWebApk.apk'))
+    maps_webapk = core_util.FindLatestApkOnHost(
+        finder_options.chrome_root, 'MapsWebApk.apk')
+    if not maps_webapk:
+      raise Exception('MapsWebApk not found! Follow the Mini-HOWTO in '
+                      'startup_mobile.py')
+    self.platform.InstallApplication(maps_webapk)
     wpr_mode = wpr_modes.WPR_REPLAY
     self._number_of_iterations = _NUMBER_OF_ITERATIONS
     if finder_options.use_live_sites:

@@ -29,47 +29,14 @@ class Connector;
 }  // namespace service_manager
 
 namespace chromeos {
-class AppDownloadingScreenView;
-class AppLaunchSplashScreenView;
-class ArcKioskSplashScreenView;
-class ArcTermsOfServiceScreenView;
-class AssistantOptInFlowScreenView;
-class AutoEnrollmentCheckScreenView;
-class BaseScreenHandler;
-class CoreOobeView;
-class DemoPreferencesScreenView;
-class DemoSetupScreenView;
-class DeviceDisabledScreenView;
-class EnableDebuggingScreenView;
-class EncryptionMigrationScreenView;
-class EnrollmentScreenView;
-class EulaView;
+
 class ErrorScreen;
-class DiscoverScreenView;
-class FingerprintSetupScreenView;
-class GaiaView;
-class HIDDetectionView;
-class KioskAutolaunchScreenView;
-class KioskEnableScreenView;
 class LoginScreenContext;
-class MarketingOptInScreenView;
-class MultiDeviceSetupScreenView;
 class NativeWindowDelegate;
-class NetworkScreenView;
 class NetworkStateInformer;
 class OobeDisplayChooser;
-class RecommendAppsScreenView;
-class ResetView;
 class SigninScreenHandler;
 class SigninScreenHandlerDelegate;
-class SyncConsentScreenView;
-class TermsOfServiceScreenView;
-class UserBoardView;
-class UpdateView;
-class UpdateRequiredView;
-class SupervisionTransitionScreenView;
-class WelcomeView;
-class WrongHWIDScreenView;
 
 // A custom WebUI that defines datasource for out-of-box-experience (OOBE) UI:
 // - welcome screen (setup language/keyboard/network).
@@ -91,8 +58,8 @@ class OobeUI : public ui::MojoWebUIController {
   class Observer {
    public:
     Observer() {}
-    virtual void OnCurrentScreenChanged(OobeScreen current_screen,
-                                        OobeScreen new_screen) = 0;
+    virtual void OnCurrentScreenChanged(OobeScreenId current_screen,
+                                        OobeScreenId new_screen) = 0;
 
     virtual void OnDestroyingOobeUI() = 0;
 
@@ -105,39 +72,7 @@ class OobeUI : public ui::MojoWebUIController {
   ~OobeUI() override;
 
   CoreOobeView* GetCoreOobeView();
-  WelcomeView* GetWelcomeView();
-  EulaView* GetEulaView();
-  UpdateView* GetUpdateView();
-  EnableDebuggingScreenView* GetEnableDebuggingScreenView();
-  EnrollmentScreenView* GetEnrollmentScreenView();
-  ResetView* GetResetView();
-  DemoSetupScreenView* GetDemoSetupScreenView();
-  DemoPreferencesScreenView* GetDemoPreferencesScreenView();
-  FingerprintSetupScreenView* GetFingerprintSetupScreenView();
-  KioskAutolaunchScreenView* GetKioskAutolaunchScreenView();
-  KioskEnableScreenView* GetKioskEnableScreenView();
-  TermsOfServiceScreenView* GetTermsOfServiceScreenView();
-  SyncConsentScreenView* GetSyncConsentScreenView();
-  ArcTermsOfServiceScreenView* GetArcTermsOfServiceScreenView();
-  RecommendAppsScreenView* GetRecommendAppsScreenView();
-  AppDownloadingScreenView* GetAppDownloadingScreenView();
   ErrorScreen* GetErrorScreen();
-  WrongHWIDScreenView* GetWrongHWIDScreenView();
-  AutoEnrollmentCheckScreenView* GetAutoEnrollmentCheckScreenView();
-  AppLaunchSplashScreenView* GetAppLaunchSplashScreenView();
-  ArcKioskSplashScreenView* GetArcKioskSplashScreenView();
-  HIDDetectionView* GetHIDDetectionView();
-  DeviceDisabledScreenView* GetDeviceDisabledScreenView();
-  EncryptionMigrationScreenView* GetEncryptionMigrationScreenView();
-  SupervisionTransitionScreenView* GetSupervisionTransitionScreenView();
-  UpdateRequiredView* GetUpdateRequiredScreenView();
-  AssistantOptInFlowScreenView* GetAssistantOptInFlowScreenView();
-  MultiDeviceSetupScreenView* GetMultiDeviceSetupScreenView();
-  GaiaView* GetGaiaScreenView();
-  UserBoardView* GetUserBoardView();
-  DiscoverScreenView* GetDiscoverScreenView();
-  NetworkScreenView* GetNetworkScreenView();
-  MarketingOptInScreenView* GetMarketingOptInScreenView();
 
   // Collects localized strings from the owned handlers.
   void GetLocalizedStrings(base::DictionaryValue* localized_strings);
@@ -146,9 +81,9 @@ class OobeUI : public ui::MojoWebUIController {
   void InitializeHandlers();
 
   // Called when the screen has changed.
-  void CurrentScreenChanged(OobeScreen screen);
+  void CurrentScreenChanged(OobeScreenId screen);
 
-  bool IsScreenInitialized(OobeScreen screen);
+  bool IsScreenInitialized(OobeScreenId screen);
 
   bool IsJSReady(const base::Closure& display_is_ready_callback);
 
@@ -170,9 +105,9 @@ class OobeUI : public ui::MojoWebUIController {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  OobeScreen current_screen() const { return current_screen_; }
+  OobeScreenId current_screen() const { return current_screen_; }
 
-  OobeScreen previous_screen() const { return previous_screen_; }
+  OobeScreenId previous_screen() const { return previous_screen_; }
 
   const std::string& display_type() const { return display_type_; }
 
@@ -190,21 +125,29 @@ class OobeUI : public ui::MojoWebUIController {
   // Notify WebUI of the user count on the views login screen.
   void SetLoginUserCount(int user_count);
 
- private:
-  // Lookup a view by its statically registered OobeScreen.
-  template <typename TView>
-  TView* GetView() {
-    OobeScreen expected_screen = TView::kScreenId;
+  // Find a *View instance provided by a given *Handler type.
+  //
+  // This is the same as GetHandler() except the return type is limited to the
+  // view.
+  template <typename THandler>
+  typename THandler::TView* GetView() {
+    return GetHandler<THandler>();
+  }
+
+  // Find a handler instance.
+  template <typename THandler>
+  THandler* GetHandler() {
+    OobeScreenId expected_screen = THandler::kScreenId;
     for (BaseScreenHandler* handler : screen_handlers_) {
       if (expected_screen == handler->oobe_screen())
-        return static_cast<TView*>(handler);
+        return static_cast<THandler*>(handler);
     }
 
-    NOTREACHED() << "Unable to find handler for screen "
-                 << GetOobeScreenName(expected_screen);
+    NOTREACHED() << "Unable to find handler for screen " << expected_screen;
     return nullptr;
   }
 
+ private:
   void AddWebUIHandler(std::unique_ptr<BaseWebUIHandler> handler);
   void AddScreenHandler(std::unique_ptr<BaseScreenHandler> handler);
 
@@ -240,10 +183,10 @@ class OobeUI : public ui::MojoWebUIController {
   std::unique_ptr<ErrorScreen> error_screen_;
 
   // Id of the current oobe/login screen.
-  OobeScreen current_screen_ = OobeScreen::SCREEN_UNKNOWN;
+  OobeScreenId current_screen_ = OobeScreen::SCREEN_UNKNOWN;
 
   // Id of the previous oobe/login screen.
-  OobeScreen previous_screen_ = OobeScreen::SCREEN_UNKNOWN;
+  OobeScreenId previous_screen_ = OobeScreen::SCREEN_UNKNOWN;
 
   // Flag that indicates whether JS part is fully loaded and ready to accept
   // calls.

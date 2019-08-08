@@ -494,7 +494,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     TRACE_EVENT0("blink", "CanvasResourceProviderSharedImage::CreateResource");
     return CanvasResourceSharedImage::Create(
         Size(), ContextProviderWrapper(), CreateWeakPtr(), FilterQuality(),
-        ColorParams(), is_overlay_candidate_);
+        ColorParams(), is_overlay_candidate_, is_origin_top_left_);
   }
 
  protected:
@@ -502,6 +502,19 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     TRACE_EVENT0("blink",
                  "CanvasResourceProviderSharedImage::ProduceCanvasResource");
     FlushSkia();
+
+    scoped_refptr<CanvasResource> resource = resource_;
+    if (ContextProviderWrapper()
+            ->ContextProvider()
+            ->GetCapabilities()
+            .disable_2d_canvas_copy_on_write) {
+      // A readback operation may alter the texture parameters, which may affect
+      // the compositor's behavior. Therefore, we must trigger copy-on-write
+      // even though we are not technically writing to the texture, only to its
+      // parameters. This issue is Android-WebView specific: crbug.com/585250.
+      WillDraw();
+    }
+
     return resource_;
   }
 
@@ -828,6 +841,7 @@ class CanvasResourceProvider::CanvasImageProvider : public cc::ImageProvider {
  public:
   CanvasImageProvider(cc::ImageDecodeCache* cache_n32,
                       cc::ImageDecodeCache* cache_f16,
+                      const gfx::ColorSpace& target_color_space,
                       SkColorType target_color_type,
                       bool is_hardware_decode_cache);
   ~CanvasImageProvider() override = default;
@@ -856,17 +870,19 @@ class CanvasResourceProvider::CanvasImageProvider : public cc::ImageProvider {
 CanvasResourceProvider::CanvasImageProvider::CanvasImageProvider(
     cc::ImageDecodeCache* cache_n32,
     cc::ImageDecodeCache* cache_f16,
+    const gfx::ColorSpace& target_color_space,
     SkColorType canvas_color_type,
     bool is_hardware_decode_cache)
     : is_hardware_decode_cache_(is_hardware_decode_cache),
       playback_image_provider_n32_(cache_n32,
+                                   target_color_space,
                                    cc::PlaybackImageProvider::Settings()),
       weak_factory_(this) {
   // If the image provider may require to decode to half float instead of
   // uint8, create a f16 PlaybackImageProvider with the passed cache.
   if (canvas_color_type == kRGBA_F16_SkColorType) {
     DCHECK(cache_f16);
-    playback_image_provider_f16_.emplace(cache_f16,
+    playback_image_provider_f16_.emplace(cache_f16, target_color_space,
                                          cc::PlaybackImageProvider::Settings());
   }
 }
@@ -974,11 +990,11 @@ void CanvasResourceProvider::InitializePaintCanvas() {
   // Create an ImageDecodeCache for half float images only if the canvas is
   // using half float back storage.
   cc::ImageDecodeCache* cache_f16 = nullptr;
-  if (ColorParams().PixelFormat() == kF16CanvasPixelFormat)
+  if (ColorParams().GetSkColorType() == kRGBA_F16_SkColorType)
     cache_f16 = ImageDecodeCacheF16();
   canvas_image_provider_ = std::make_unique<CanvasImageProvider>(
-      ImageDecodeCacheRGBA8(), cache_f16, color_params_.GetSkColorType(),
-      use_hardware_decode_cache());
+      ImageDecodeCacheRGBA8(), cache_f16, gfx::ColorSpace::CreateSRGB(),
+      color_params_.GetSkColorType(), use_hardware_decode_cache());
 
   cc::SkiaPaintCanvas::ContextFlushes context_flushes;
   if (IsAccelerated() &&
@@ -1109,26 +1125,22 @@ scoped_refptr<CanvasResource> CanvasResourceProvider::CreateResource() {
 }
 
 cc::ImageDecodeCache* CanvasResourceProvider::ImageDecodeCacheRGBA8() {
-  auto color_space = kSRGBCanvasColorSpace;
 
   if (use_hardware_decode_cache()) {
     return context_provider_wrapper_->ContextProvider()->ImageDecodeCache(
-        kN32_SkColorType,
-        blink::CanvasColorParams::CanvasColorSpaceToSkColorSpace(color_space));
+        kN32_SkColorType);
   }
 
-  return Image::SharedCCDecodeCache(color_space, kRGBA8CanvasPixelFormat);
+  return &Image::SharedCCDecodeCache(kN32_SkColorType);
 }
 
 cc::ImageDecodeCache* CanvasResourceProvider::ImageDecodeCacheF16() {
-  auto color_space = kSRGBCanvasColorSpace;
 
   if (use_hardware_decode_cache()) {
     return context_provider_wrapper_->ContextProvider()->ImageDecodeCache(
-        kRGBA_F16_SkColorType,
-        blink::CanvasColorParams::CanvasColorSpaceToSkColorSpace(color_space));
+        kRGBA_F16_SkColorType);
   }
-  return Image::SharedCCDecodeCache(color_space, kF16CanvasPixelFormat);
+  return &Image::SharedCCDecodeCache(kRGBA_F16_SkColorType);
 }
 
 void CanvasResourceProvider::RecycleResource(

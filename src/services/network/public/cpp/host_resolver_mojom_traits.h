@@ -25,6 +25,11 @@
 
 namespace mojo {
 
+// This is made visible for use by network::HostResolver. Not intended to be
+// used elsewhere.
+base::Optional<net::DnsConfig::SecureDnsMode> FromOptionalSecureDnsMode(
+    network::mojom::OptionalSecureDnsMode mode);
+
 template <>
 struct StructTraits<network::mojom::DnsConfigOverridesDataView,
                     net::DnsConfigOverrides> {
@@ -66,6 +71,9 @@ struct StructTraits<network::mojom::DnsConfigOverridesDataView,
 
   static base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>
   dns_over_https_servers(const net::DnsConfigOverrides& overrides);
+
+  static network::mojom::OptionalSecureDnsMode secure_dns_mode(
+      const net::DnsConfigOverrides& overrides);
 
   static bool Read(network::mojom::DnsConfigOverridesDataView data,
                    net::DnsConfigOverrides* out);

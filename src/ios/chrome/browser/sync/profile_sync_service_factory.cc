@@ -11,6 +11,7 @@
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
@@ -203,5 +204,11 @@ ProfileSyncServiceFactory::BuildServiceInstanceFor(
   auto pss =
       std::make_unique<syncer::ProfileSyncService>(std::move(init_params));
   pss->Initialize();
+
+  // Hook PSS into PersonalDataManager (a circular dependency).
+  autofill::PersonalDataManager* pdm =
+      autofill::PersonalDataManagerFactory::GetForBrowserState(browser_state);
+  pdm->OnSyncServiceInitialized(pss.get());
+
   return pss;
 }

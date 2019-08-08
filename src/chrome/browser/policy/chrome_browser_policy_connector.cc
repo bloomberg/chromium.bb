@@ -104,11 +104,6 @@ void ChromeBrowserPolicyConnector::Init(
       kServiceInitializationStartupDelay);
 
   InitInternal(local_state, std::move(device_management_service));
-
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-  machine_level_user_cloud_policy_controller_->Init(local_state,
-                                                    url_loader_factory);
-#endif
 }
 
 bool ChromeBrowserPolicyConnector::IsEnterpriseManaged() const {

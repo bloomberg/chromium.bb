@@ -50,8 +50,8 @@ void InspectorTaskRunner::AppendTask(Task task) {
   condition_.Signal();
   PostCrossThreadTask(
       *isolate_task_runner_, FROM_HERE,
-      CrossThreadBind(&InspectorTaskRunner::PerformSingleTaskDontWait,
-                      WrapRefCounted(this)));
+      CrossThreadBindOnce(&InspectorTaskRunner::PerformSingleTaskDontWait,
+                          WrapRefCounted(this)));
   if (isolate_)
     isolate_->RequestInterrupt(&V8InterruptCallback, this);
 }

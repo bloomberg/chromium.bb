@@ -168,8 +168,8 @@ var exportKey_ = function(callback) {
   try {
     getFrameSymmetricKey_(function(key) {
       window.crypto.subtle.exportKey('raw', key)
-          .then(function(/** @type {ArrayBuffer} */ k) {
-        var keyBytes = new Uint8Array(k);
+          .then(function(/** @type {!ArrayBuffer|!webCrypto.JsonWebKey} */ k) {
+        var keyBytes = new Uint8Array(/** @type {!ArrayBuffer} */ (k));
         var key64 = btoa(String.fromCharCode.apply(null, keyBytes));
         callback(key64);
       });
@@ -198,8 +198,9 @@ var getFrameSymmetricKey_ = function(callback) {
     {'name': 'AES-GCM', 'length': 256},
     true,
     ['decrypt', 'encrypt']
-  ).then(function(/** @type {!webCrypto.CryptoKey} */ key) {
-    frameSymmetricKey_ = key;
+  ).then(function(
+      /** @type {!webCrypto.CryptoKey|!webCrypto.CryptoKeyPair} */ key) {
+    frameSymmetricKey_ = /** @type {!webCrypto.CryptoKey} */ (key);
     callback(frameSymmetricKey_);
   });
 };

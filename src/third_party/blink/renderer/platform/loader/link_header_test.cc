@@ -209,11 +209,11 @@ TEST_P(DoubleLinkHeaderTest, Double) {
   ASSERT_EQ(2u, header_set.size());
   LinkHeader& header1 = header_set[0];
   LinkHeader& header2 = header_set[1];
-  EXPECT_STREQ(test_case.url, header1.Url().Ascii().data());
-  EXPECT_STREQ(test_case.rel, header1.Rel().Ascii().data());
+  EXPECT_EQ(test_case.url, header1.Url());
+  EXPECT_EQ(test_case.rel, header1.Rel());
   EXPECT_EQ(test_case.valid, header1.Valid());
-  EXPECT_STREQ(test_case.url2, header2.Url().Ascii().data());
-  EXPECT_STREQ(test_case.rel2, header2.Rel().Ascii().data());
+  EXPECT_EQ(test_case.url2, header2.Url());
+  EXPECT_EQ(test_case.rel2, header2.Rel());
   EXPECT_EQ(test_case.valid2, header2.Valid());
 }
 

@@ -21,7 +21,6 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
@@ -37,6 +36,7 @@
 #include "cc/trees/render_frame_metadata.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/quads/compositor_frame.h"
+#include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
@@ -336,70 +336,6 @@ base::LazyInstance<UnboundWidgetInputHandler>::Leaky g_unbound_input_handler =
 
 }  // namespace
 
-// KeyEventResultTracker is used to update the status of the KeyEvent. If the
-// event is sent to the renderer, the status is updated asynchronously.
-// KeyEventResultTracker is owned by the callback supplied to
-// InputRouter::SendKeyboardEvent() and passed to the callback function
-// (OnKeyboardEventAck()).
-class RenderWidgetHostImpl::KeyEventResultTracker {
- public:
-  explicit KeyEventResultTracker(ui::KeyEvent* key_event)
-      : key_event_(key_event) {
-    DCHECK(key_event_);
-  }
-
-  ~KeyEventResultTracker() {
-    if (is_async_ && async_callback_) {
-      std::move(async_callback_)
-          .Run(/* handled */ false,
-               /* stopped_propagation */ false);
-    }
-  }
-
-  base::WeakPtr<KeyEventResultTracker> GetWeakPtr() {
-    return weak_factory_.GetWeakPtr();
-  }
-
-  // Called if the event is being sent to the renderer.
-  void PrepareForAsync() {
-    DCHECK(!is_async_);
-    is_async_ = true;
-    async_callback_ = key_event_->WillHandleAsync();
-    // Null out |key_event_| as KeyEvent is not owned by this, and generally
-    // owned higher up the stack. Because the processing is async, |key_event_|
-    // will be deleted *before* OnEventProcessingDone() or the destructor is
-    // called.
-    key_event_ = nullptr;
-  }
-
-  // Called when processing is complete. This may never be called, in which case
-  // the destructor is responsible for updating the callback from the event.
-  void OnEventProcessingDone(bool handled) {
-    if (is_async_ && async_callback_) {
-      // This supplies false for |stopped_propagation| so that InsertChar() gets
-      // called. Content never calls StopPropagation().
-      std::move(async_callback_).Run(handled, /* stopped_propagation */ false);
-    } else if (!is_async_ && handled) {
-      key_event_->SetHandled();
-    }
-  }
-
- private:
-  // The event. This is set to null if the event is sent to the renderer.
-  ui::KeyEvent* key_event_;
-
-  // Set to true if the event is sent to the renderer.
-  bool is_async_ = false;
-
-  // Callback from the event. This is obtained from |key_event_| if the event is
-  // handled async.
-  base::OnceCallback<void(bool, bool)> async_callback_;
-
-  base::WeakPtrFactory<KeyEventResultTracker> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(KeyEventResultTracker);
-};
-
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostImpl
 
@@ -439,7 +375,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
 #endif
   CHECK(delegate_);
   CHECK_NE(MSG_ROUTING_NONE, routing_id_);
-  DCHECK(base::ThreadPool::GetInstance())
+  DCHECK(base::ThreadPoolInstance::Get())
       << "Ref. Prerequisite section of post_task.h";
 
   std::pair<RoutingIDWidgetMap::iterator, bool> result =
@@ -447,6 +383,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
           RenderWidgetHostID(process->GetID(), routing_id_), this));
   CHECK(result.second) << "Inserting a duplicate item!";
   process_->AddRoute(routing_id_, this);
+  process_->AddObserver(this);
   render_process_blocked_state_changed_subscription_ =
       process_->RegisterBlockStateChangedCallback(base::BindRepeating(
           &RenderWidgetHostImpl::RenderProcessBlockedStateChanged,
@@ -679,7 +616,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostImpl, msg)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_RenderProcessGone, OnRenderProcessGone)
     IPC_MESSAGE_HANDLER(FrameHostMsg_HittestData, OnHittestData)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_Close, OnClose)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_UpdateScreenRects_ACK,
@@ -764,8 +700,9 @@ void RenderWidgetHostImpl::WasHidden() {
     observer.RenderWidgetHostVisibilityChanged(this, false);
 }
 
-void RenderWidgetHostImpl::WasShown(bool record_presentation_time,
-                                    base::TimeTicks tab_switch_start_time) {
+void RenderWidgetHostImpl::WasShown(
+    const base::Optional<RecordTabSwitchTimeRequest>&
+        record_tab_switch_time_request) {
   if (!is_hidden_)
     return;
 
@@ -782,8 +719,9 @@ void RenderWidgetHostImpl::WasShown(bool record_presentation_time,
 
   Send(new WidgetMsg_WasShown(
       routing_id_,
-      record_presentation_time ? base::TimeTicks::Now() : base::TimeTicks(),
-      view_->is_evicted(), tab_switch_start_time));
+      record_tab_switch_time_request ? base::TimeTicks::Now()
+                                     : base::TimeTicks(),
+      view_->is_evicted(), record_tab_switch_time_request));
   view_->reset_is_evicted();
 
   process_->UpdateClientPriority(this);
@@ -1318,6 +1256,15 @@ void RenderWidgetHostImpl::WaitForInputProcessed(
     SyntheticGestureParams::GestureType type,
     SyntheticGestureParams::GestureSourceType source,
     base::OnceClosure callback) {
+  // TODO(bokan): Input can be queued and delayed in InputRouterImpl based on
+  // the kind of events we're getting. To be truly robust, we should wait until
+  // those queues are flushed before issuing this message. This will be done in
+  // a follow-up and is the reason for the currently unused type and source
+  // params. https://crbug.com/902446.
+  WaitForInputProcessed(std::move(callback));
+}
+
+void RenderWidgetHostImpl::WaitForInputProcessed(base::OnceClosure callback) {
   // TODO(bokan): The RequestPresentationCallback mechanism doesn't seem to
   // work in OOPIFs. For now, just callback immediately. Remove when fixed.
   // https://crbug.com/924646.
@@ -1326,11 +1273,6 @@ void RenderWidgetHostImpl::WaitForInputProcessed(
     return;
   }
 
-  // TODO(bokan): Input can be queued and delayed in InputRouterImpl based on
-  // the kind of events we're getting. To be truly robust, we should wait until
-  // those queues are flushed before issuing this message. This will be done in
-  // a follow-up and is the reason for the currently unused type and source
-  // params. https://crbug.com/902446.
   input_router_->WaitForInputProcessed(std::move(callback));
 }
 
@@ -1497,15 +1439,13 @@ void RenderWidgetHostImpl::ForwardKeyboardEvent(
 void RenderWidgetHostImpl::ForwardKeyboardEventWithLatencyInfo(
     const NativeWebKeyboardEvent& key_event,
     const ui::LatencyInfo& latency) {
-  ForwardKeyboardEventWithCommands(key_event, latency, nullptr, nullptr,
-                                   nullptr);
+  ForwardKeyboardEventWithCommands(key_event, latency, nullptr, nullptr);
 }
 
 void RenderWidgetHostImpl::ForwardKeyboardEventWithCommands(
     const NativeWebKeyboardEvent& key_event,
     const ui::LatencyInfo& latency,
     const std::vector<EditCommand>* commands,
-    ui::KeyEvent* original_key_event,
     bool* update_event) {
   TRACE_EVENT0("input", "RenderWidgetHostImpl::ForwardKeyboardEvent");
   if (owner_delegate_ &&
@@ -1594,26 +1534,10 @@ void RenderWidgetHostImpl::ForwardKeyboardEventWithCommands(
   if (commands && !commands->empty())
     GetWidgetInputHandler()->SetEditCommandsForNextKeyEvent(*commands);
 
-  std::unique_ptr<KeyEventResultTracker> result_tracker;
-  base::WeakPtr<KeyEventResultTracker> result_tracker_weak_ptr;
-  // Some tests and/or platforms supply null.
-  if (original_key_event) {
-    result_tracker =
-        std::make_unique<KeyEventResultTracker>(original_key_event);
-    result_tracker_weak_ptr = result_tracker->GetWeakPtr();
-  }
-  auto weak_ref = weak_factory_.GetWeakPtr();
   input_router_->SendKeyboardEvent(
       key_event_with_latency,
-      base::BindOnce(&RenderWidgetHostImpl::OnKeyboardEventAck, weak_ref,
-                     std::move(result_tracker)));
-
-  // Ownership of |result_tracker| is moved to the callback. If the callback was
-  // run synchronously, |result_tracker| has been destroyed. OTOH, if the event
-  // was sent to the renderer, then |result_tarcker| is still alive and needs
-  // to be told the result will be obtained later on.
-  if (result_tracker_weak_ptr)
-    result_tracker_weak_ptr->PrepareForAsync();
+      base::BindOnce(&RenderWidgetHostImpl::OnKeyboardEventAck,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void RenderWidgetHostImpl::CreateSyntheticGestureControllerIfNecessary() {
@@ -1829,6 +1753,16 @@ RenderProcessHost::Priority RenderWidgetHostImpl::GetPriority() {
   return priority;
 }
 
+void RenderWidgetHostImpl::RenderProcessExited(
+    RenderProcessHost* host,
+    const ChildProcessTerminationInfo& info) {
+  // When the RenderViewHost or the RenderFrameHost own this instance, they
+  // manage its destruction. Otherwise it is owned by the renderer process and
+  // must self-destroy when it exits.
+  if (!owner_delegate_ && !owned_by_render_frame_host_)
+    Destroy(true);
+}
+
 mojom::WidgetInputHandler* RenderWidgetHostImpl::GetWidgetInputHandler() {
   if (associated_widget_input_handler_)
     return associated_widget_input_handler_.get();
@@ -1994,8 +1928,7 @@ void RenderWidgetHostImpl::OnCommitAndDrawCompositorFrame() {
     owner_delegate_->RenderWidgetDidCommitAndDrawCompositorFrame();
 }
 
-void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
-                                          int exit_code) {
+void RenderWidgetHostImpl::RendererExited() {
   if (!renderer_initialized_)
     return;
 
@@ -2034,7 +1967,7 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
   StopInputEventAckTimeout();
 
   if (view_) {
-    view_->RenderProcessGone(status, exit_code);
+    view_->RenderProcessGone();
     view_.reset();  // The View should be deleted by RenderProcessGone.
   }
 
@@ -2178,6 +2111,7 @@ void RenderWidgetHostImpl::Destroy(bool also_delete) {
 
   render_process_blocked_state_changed_subscription_.reset();
   process_->RemovePriorityClient(this);
+  process_->RemoveObserver(this);
   process_->RemoveRoute(routing_id_);
   g_routing_id_widget_map.Get().erase(
       RenderWidgetHostID(process_->GetID(), routing_id_));
@@ -2235,7 +2169,6 @@ void RenderWidgetHostImpl::ClearDisplayedGraphics() {
 }
 
 void RenderWidgetHostImpl::OnKeyboardEventAck(
-    std::unique_ptr<KeyEventResultTracker> result_tracker,
     const NativeWebKeyboardEventWithLatencyInfo& event,
     InputEventAckSource ack_source,
     InputEventAckState ack_result) {
@@ -2252,27 +2185,10 @@ void RenderWidgetHostImpl::OnKeyboardEventAck(
   // because the user has moved away from us and no longer expect any effect
   // of this key event.
   if (delegate_ && !processed && !is_hidden() && !event.event.skip_in_browser)
-    processed = delegate_->HandleKeyboardEvent(event.event);
+    delegate_->HandleKeyboardEvent(event.event);
   // WARNING: This RenderWidgetHostImpl can be deallocated at this point
   // (i.e.  in the case of Ctrl+W, where the call to
   // HandleKeyboardEvent destroys this RenderWidgetHostImpl).
-
-  if (result_tracker)
-    result_tracker->OnEventProcessingDone(processed ||
-                                          event.event.skip_in_browser);
-}
-
-void RenderWidgetHostImpl::OnRenderProcessGone(int status, int exit_code) {
-  // RenderFrameHost owns a RenderWidgetHost when it needs one, in which case
-  // it handles destruction.
-  if (!owned_by_render_frame_host_) {
-    // TODO(evanm): This synchronously ends up calling "delete this".
-    // Is that really what we want in response to this message?  I'm matching
-    // previous behavior of the code here.
-    Destroy(true);
-  } else {
-    RendererExited(static_cast<base::TerminationStatus>(status), exit_code);
-  }
 }
 
 void RenderWidgetHostImpl::OnHittestData(
@@ -2357,8 +2273,9 @@ void RenderWidgetHostImpl::DidNotProduceFrame(const viz::BeginFrameAck& ack) {
 void RenderWidgetHostImpl::DidAllocateSharedBitmap(
     mojo::ScopedSharedBufferHandle buffer,
     const viz::SharedBitmapId& id) {
-  if (!shared_bitmap_manager_->ChildAllocatedSharedBitmap(std::move(buffer),
-                                                          id)) {
+  if (!shared_bitmap_manager_->ChildAllocatedSharedBitmap(
+          viz::bitmap_allocation::FromMojoHandle(std::move(buffer)).Map(),
+          id)) {
     bad_message::ReceivedBadMessage(GetProcess(),
                                     bad_message::RWH_SHARED_BITMAP);
   }

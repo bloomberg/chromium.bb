@@ -48,9 +48,6 @@ KioskNextShellClient* KioskNextShellClient::Get() {
 }
 
 void KioskNextShellClient::LaunchKioskNextShell(const AccountId& account_id) {
-  // TODO(michaelpg): Create a dummy app for non-internal builds.
-
-#if defined(GOOGLE_CHROME_BUILD)
   has_launched_ = true;
   Profile* profile =
       chromeos::ProfileHelper::Get()->GetProfileByAccountId(account_id);
@@ -60,5 +57,4 @@ void KioskNextShellClient::LaunchKioskNextShell(const AccountId& account_id) {
   DCHECK(app);
   apps::LaunchPlatformApp(profile, app,
                           extensions::AppLaunchSource::SOURCE_CHROME_INTERNAL);
-#endif
 }

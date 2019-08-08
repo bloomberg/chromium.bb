@@ -23,8 +23,6 @@ class SearchBoxExtension {
                                                 const base::string16& identity,
                                                 bool identity_match);
   static void DispatchFocusChange(blink::WebLocalFrame* frame);
-  static void DispatchHistorySyncCheckResult(blink::WebLocalFrame* frame,
-                                             bool sync_history);
   static void DispatchAddCustomLinkResult(blink::WebLocalFrame* frame,
                                           bool success);
   static void DispatchUpdateCustomLinkResult(blink::WebLocalFrame* frame,

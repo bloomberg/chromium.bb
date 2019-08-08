@@ -46,9 +46,6 @@
   <include name="IDR_WEBUI_IMAGES_DARK_ICON_TOOLBAR_CANCEL"
            file="images/dark/icon_toolbar_cancel.svg" type="BINDATA"
            compress="gzip" />
-  <include name="IDR_WEBUI_IMAGES_DARK_ICON_TOOLBAR_MENU"
-           file="images/dark/icon_toolbar_menu.svg" type="BINDATA"
-           compress="gzip" />
   <include name="IDR_WEBUI_IMAGES_DARK_ICON_VISIBILITY"
            file="images/dark/icon_visibility.svg" type="BINDATA"
            compress="gzip" />
@@ -86,8 +83,6 @@
   <include name="IDR_WEBUI_IMAGES_ICON_TOOLBAR_CANCEL"
            file="images/icon_toolbar_cancel.svg" type="BINDATA"
            compress="gzip" />
-  <include name="IDR_WEBUI_IMAGES_ICON_TOOLBAR_MENU"
-           file="images/icon_toolbar_menu.svg" type="BINDATA" compress="gzip" />
   <include name="IDR_WEBUI_IMAGES_ICON_VISIBILITY"
            file="images/icon_visibility.svg" type="BINDATA" compress="gzip" />
   <include name="IDR_WEBUI_IMAGES_ICON_VISIBILITY_OFF"

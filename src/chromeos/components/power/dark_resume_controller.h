@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
+#include "base/unguessable_token.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
@@ -68,11 +69,11 @@ class COMPONENT_EXPORT(CHROMEOS_POWER) DarkResumeController
   void OnWakeLockDeactivated(device::mojom::WakeLockType type) override;
 
   // Return true iff all dark resume related state is set i.e the suspend
-  // readiness callback is set and wake lock release event has observers.
+  // readiness token is set and wake lock release event has observers.
   bool IsDarkResumeStateSetForTesting() const;
 
   // Return true iff all dark resume related state is reset i.e. suspend
-  // readiness callback is null, wake lock release event has no observers,
+  // readiness token is empty, wake lock release event has no observers,
   // wake lock check timer is reset, hard timeout timer is reset and there are
   // no in flight tasks. This should be true when device exits dark resume
   // either by re-suspending or transitioning to full resume.
@@ -98,9 +99,9 @@ class COMPONENT_EXPORT(CHROMEOS_POWER) DarkResumeController
   // Not owned by this instance.
   service_manager::Connector* const connector_;
 
-  // Called when system is ready to supend after a DarkSupendImminent i.e.
+  // Used when system is ready to suspend after a DarkSupendImminent i.e.
   // after a dark resume.
-  base::OnceClosure suspend_readiness_cb_;
+  base::UnguessableToken block_suspend_token_;
 
   // The binding used to implement device::mojom::WakeLockObserver.
   mojo::Binding<device::mojom::WakeLockObserver> wake_lock_observer_binding_;

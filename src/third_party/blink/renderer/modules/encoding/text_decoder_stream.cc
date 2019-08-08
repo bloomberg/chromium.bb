@@ -73,6 +73,8 @@ class TextDecoderStream::Transformer final : public TransformStreamTransformer {
                      exception_state);
   }
 
+  ScriptState* GetScriptState() override { return script_state_; }
+
   void Trace(Visitor* visitor) override {
     visitor->Trace(script_state_);
     TransformStreamTransformer::Trace(visitor);

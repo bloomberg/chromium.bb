@@ -9,9 +9,9 @@
 
 namespace blink {
 
-struct PaintInfo;
-class LayoutPoint;
 class LayoutEmbeddedContent;
+struct PaintInfo;
+struct PhysicalOffset;
 
 class EmbeddedContentPainter {
   STACK_ALLOCATED();
@@ -20,7 +20,7 @@ class EmbeddedContentPainter {
   EmbeddedContentPainter(const LayoutEmbeddedContent& layout_embedded_content)
       : layout_embedded_content_(layout_embedded_content) {}
 
-  void PaintReplaced(const PaintInfo&, const LayoutPoint& paint_offset);
+  void PaintReplaced(const PaintInfo&, const PhysicalOffset& paint_offset);
 
  private:
   const LayoutEmbeddedContent& layout_embedded_content_;

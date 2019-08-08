@@ -26,6 +26,8 @@
 
 namespace media {
 
+class VideoFrameMapper;
+
 // A software image processor which uses libyuv to perform format conversion.
 // It expects input VideoFrame is mapped into CPU space, and output VideoFrame
 // is allocated in user space.
@@ -53,6 +55,7 @@ class MEDIA_GPU_EXPORT LibYUVImageProcessor : public ImageProcessor {
                        const VideoFrameLayout& output_layout,
                        const gfx::Size& output_visible_size,
                        VideoFrame::StorageType output_storage_type,
+                       std::unique_ptr<VideoFrameMapper> video_frame_mapper,
                        ErrorCB error_cb);
 
   // ImageProcessor override
@@ -75,6 +78,8 @@ class MEDIA_GPU_EXPORT LibYUVImageProcessor : public ImageProcessor {
 
   const gfx::Rect input_visible_rect_;
   const gfx::Rect output_visible_rect_;
+
+  std::unique_ptr<VideoFrameMapper> video_frame_mapper_;
 
   // A VideoFrame for intermediate format conversion when there is no direct
   // conversion method in libyuv, e.g., RGBA -> I420 (pivot) -> NV12.

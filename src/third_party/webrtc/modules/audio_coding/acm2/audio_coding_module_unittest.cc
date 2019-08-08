@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <atomic>
 #include <memory>
 #include <vector>
 
@@ -19,6 +20,7 @@
 #include "api/audio_codecs/builtin_audio_encoder_factory.h"
 #include "api/audio_codecs/opus/audio_decoder_multi_channel_opus.h"
 #include "api/audio_codecs/opus/audio_decoder_opus.h"
+#include "api/audio_codecs/opus/audio_encoder_multi_channel_opus.h"
 #include "api/audio_codecs/opus/audio_encoder_opus.h"
 #include "modules/audio_coding/acm2/acm_receive_test.h"
 #include "modules/audio_coding/acm2/acm_send_test.h"
@@ -26,8 +28,6 @@
 #include "modules/audio_coding/codecs/g711/audio_decoder_pcm.h"
 #include "modules/audio_coding/codecs/g711/audio_encoder_pcm.h"
 #include "modules/audio_coding/codecs/isac/main/include/audio_encoder_isac.h"
-#include "modules/audio_coding/codecs/opus/audio_decoder_opus.h"
-#include "modules/audio_coding/codecs/opus/audio_encoder_opus.h"
 #include "modules/audio_coding/include/audio_coding_module.h"
 #include "modules/audio_coding/include/audio_coding_module_typedefs.h"
 #include "modules/audio_coding/neteq/tools/audio_checksum.h"
@@ -109,8 +109,7 @@ class PacketizationCallbackStubOldApi : public AudioPacketizationCallback {
                    uint8_t payload_type,
                    uint32_t timestamp,
                    const uint8_t* payload_data,
-                   size_t payload_len_bytes,
-                   const RTPFragmentationHeader* fragmentation) override {
+                   size_t payload_len_bytes) override {
     rtc::CritScope lock(&crit_sect_);
     ++num_calls_;
     last_frame_type_ = frame_type;
@@ -486,9 +485,15 @@ class AudioCodingModuleMtTestOldApi : public AudioCodingModuleTestOldApi {
 
   AudioCodingModuleMtTestOldApi()
       : AudioCodingModuleTestOldApi(),
-        send_thread_(CbSendThread, this, "send"),
-        insert_packet_thread_(CbInsertPacketThread, this, "insert_packet"),
-        pull_audio_thread_(CbPullAudioThread, this, "pull_audio"),
+        send_thread_(CbSendThread, this, "send", rtc::kRealtimePriority),
+        insert_packet_thread_(CbInsertPacketThread,
+                              this,
+                              "insert_packet",
+                              rtc::kRealtimePriority),
+        pull_audio_thread_(CbPullAudioThread,
+                           this,
+                           "pull_audio",
+                           rtc::kRealtimePriority),
         send_count_(0),
         insert_packet_count_(0),
         pull_audio_count_(0),
@@ -504,16 +509,15 @@ class AudioCodingModuleMtTestOldApi : public AudioCodingModuleTestOldApi {
   }
 
   void StartThreads() {
+    quit_.store(false);
     send_thread_.Start();
-    send_thread_.SetPriority(rtc::kRealtimePriority);
     insert_packet_thread_.Start();
-    insert_packet_thread_.SetPriority(rtc::kRealtimePriority);
     pull_audio_thread_.Start();
-    pull_audio_thread_.SetPriority(rtc::kRealtimePriority);
   }
 
   void TearDown() {
     AudioCodingModuleTestOldApi::TearDown();
+    quit_.store(true);
     pull_audio_thread_.Stop();
     send_thread_.Stop();
     insert_packet_thread_.Stop();
@@ -534,14 +538,17 @@ class AudioCodingModuleMtTestOldApi : public AudioCodingModuleTestOldApi {
     return false;
   }
 
-  static bool CbSendThread(void* context) {
-    return reinterpret_cast<AudioCodingModuleMtTestOldApi*>(context)
-        ->CbSendImpl();
+  static void CbSendThread(void* context) {
+    AudioCodingModuleMtTestOldApi* fixture =
+        reinterpret_cast<AudioCodingModuleMtTestOldApi*>(context);
+    while (!fixture->quit_.load()) {
+      fixture->CbSendImpl();
+    }
   }
 
   // The send thread doesn't have to care about the current simulated time,
   // since only the AcmReceiver is using the clock.
-  bool CbSendImpl() {
+  void CbSendImpl() {
     SleepMs(1);
     if (HasFatalFailure()) {
       // End the test early if a fatal failure (ASSERT_*) has occurred.
@@ -552,53 +559,59 @@ class AudioCodingModuleMtTestOldApi : public AudioCodingModuleTestOldApi {
     if (TestDone()) {
       test_complete_.Set();
     }
-    return true;
   }
 
-  static bool CbInsertPacketThread(void* context) {
-    return reinterpret_cast<AudioCodingModuleMtTestOldApi*>(context)
-        ->CbInsertPacketImpl();
+  static void CbInsertPacketThread(void* context) {
+    AudioCodingModuleMtTestOldApi* fixture =
+        reinterpret_cast<AudioCodingModuleMtTestOldApi*>(context);
+    while (!fixture->quit_.load()) {
+      fixture->CbInsertPacketImpl();
+    }
   }
 
-  bool CbInsertPacketImpl() {
+  void CbInsertPacketImpl() {
     SleepMs(1);
     {
       rtc::CritScope lock(&crit_sect_);
       if (clock_->TimeInMilliseconds() < next_insert_packet_time_ms_) {
-        return true;
+        return;
       }
       next_insert_packet_time_ms_ += 10;
     }
     // Now we're not holding the crit sect when calling ACM.
     ++insert_packet_count_;
     InsertPacket();
-    return true;
   }
 
-  static bool CbPullAudioThread(void* context) {
-    return reinterpret_cast<AudioCodingModuleMtTestOldApi*>(context)
-        ->CbPullAudioImpl();
+  static void CbPullAudioThread(void* context) {
+    AudioCodingModuleMtTestOldApi* fixture =
+        reinterpret_cast<AudioCodingModuleMtTestOldApi*>(context);
+    while (!fixture->quit_.load()) {
+      fixture->CbPullAudioImpl();
+    }
   }
 
-  bool CbPullAudioImpl() {
+  void CbPullAudioImpl() {
     SleepMs(1);
     {
       rtc::CritScope lock(&crit_sect_);
       // Don't let the insert thread fall behind.
       if (next_insert_packet_time_ms_ < clock_->TimeInMilliseconds()) {
-        return true;
+        return;
       }
       ++pull_audio_count_;
     }
     // Now we're not holding the crit sect when calling ACM.
     PullAudio();
     fake_clock_->AdvanceTimeMilliseconds(10);
-    return true;
   }
 
   rtc::PlatformThread send_thread_;
   rtc::PlatformThread insert_packet_thread_;
   rtc::PlatformThread pull_audio_thread_;
+  // Used to force worker threads to stop looping.
+  std::atomic<bool> quit_;
+
   rtc::Event test_complete_;
   int send_count_;
   int insert_packet_count_;
@@ -736,10 +749,14 @@ class AcmReRegisterIsacMtTestOldApi : public AudioCodingModuleTestOldApi {
 
   AcmReRegisterIsacMtTestOldApi()
       : AudioCodingModuleTestOldApi(),
-        receive_thread_(CbReceiveThread, this, "receive"),
+        receive_thread_(CbReceiveThread,
+                        this,
+                        "receive",
+                        rtc::kRealtimePriority),
         codec_registration_thread_(CbCodecRegistrationThread,
                                    this,
-                                   "codec_registration"),
+                                   "codec_registration",
+                                   rtc::kRealtimePriority),
         codec_registered_(false),
         receive_packet_count_(0),
         next_insert_packet_time_ms_(0),
@@ -770,14 +787,14 @@ class AcmReRegisterIsacMtTestOldApi : public AudioCodingModuleTestOldApi {
   }
 
   void StartThreads() {
+    quit_.store(false);
     receive_thread_.Start();
-    receive_thread_.SetPriority(rtc::kRealtimePriority);
     codec_registration_thread_.Start();
-    codec_registration_thread_.SetPriority(rtc::kRealtimePriority);
   }
 
   void TearDown() override {
     AudioCodingModuleTestOldApi::TearDown();
+    quit_.store(true);
     receive_thread_.Stop();
     codec_registration_thread_.Stop();
   }
@@ -786,9 +803,11 @@ class AcmReRegisterIsacMtTestOldApi : public AudioCodingModuleTestOldApi {
     return test_complete_.Wait(10 * 60 * 1000);  // 10 minutes' timeout.
   }
 
-  static bool CbReceiveThread(void* context) {
-    return reinterpret_cast<AcmReRegisterIsacMtTestOldApi*>(context)
-        ->CbReceiveImpl();
+  static void CbReceiveThread(void* context) {
+    AcmReRegisterIsacMtTestOldApi* fixture =
+        reinterpret_cast<AcmReRegisterIsacMtTestOldApi*>(context);
+    while (!fixture->quit_.load() && fixture->CbReceiveImpl()) {
+    }
   }
 
   bool CbReceiveImpl() {
@@ -836,12 +855,15 @@ class AcmReRegisterIsacMtTestOldApi : public AudioCodingModuleTestOldApi {
     return true;
   }
 
-  static bool CbCodecRegistrationThread(void* context) {
-    return reinterpret_cast<AcmReRegisterIsacMtTestOldApi*>(context)
-        ->CbCodecRegistrationImpl();
+  static void CbCodecRegistrationThread(void* context) {
+    AcmReRegisterIsacMtTestOldApi* fixture =
+        reinterpret_cast<AcmReRegisterIsacMtTestOldApi*>(context);
+    while (!fixture->quit_.load()) {
+      fixture->CbCodecRegistrationImpl();
+    }
   }
 
-  bool CbCodecRegistrationImpl() {
+  void CbCodecRegistrationImpl() {
     SleepMs(1);
     if (HasFatalFailure()) {
       // End the test early if a fatal failure (ASSERT_*) has occurred.
@@ -858,11 +880,13 @@ class AcmReRegisterIsacMtTestOldApi : public AudioCodingModuleTestOldApi {
     if (codec_registered_ && receive_packet_count_ > kNumPackets) {
       test_complete_.Set();
     }
-    return true;
   }
 
   rtc::PlatformThread receive_thread_;
   rtc::PlatformThread codec_registration_thread_;
+  // Used to force worker threads to stop looping.
+  std::atomic<bool> quit_;
+
   rtc::Event test_complete_;
   rtc::CriticalSection crit_sect_;
   bool codec_registered_ RTC_GUARDED_BY(crit_sect_);
@@ -1516,34 +1540,28 @@ TEST_F(AcmSenderBitExactnessNewApi, MAYBE_OpusFromFormat_stereo_20ms) {
 TEST_F(AcmSenderBitExactnessNewApi, DISABLED_OpusManyChannels) {
   constexpr int kNumChannels = 4;
   constexpr int kOpusPayloadType = 120;
-  constexpr int kBitrateBps = 128000;
 
   // Read a 4 channel file at 48kHz.
   ASSERT_TRUE(SetUpSender(kTestFileQuad48kHz, 48000));
 
-  // TODO(webrtc:8649): change to higher level
-  // AudioEncoderOpus::MakeAudioEncoder once a multistream encoder can be set up
-  // from SDP. - This is now done for the Decoder.
+  const auto sdp_format = SdpAudioFormat("multiopus", 48000, kNumChannels,
+                                         {{"channel_mapping", "0,1,2,3"},
+                                          {"coupled_streams", "2"},
+                                          {"num_streams", "2"}});
+  const auto encoder_config =
+      AudioEncoderMultiChannelOpus::SdpToConfig(sdp_format);
 
-  // The Encoder and Decoder are set up differently (and the test is disabled)
-  // until the changes from
-  // https://webrtc-review.googlesource.com/c/src/+/121764 land.
-  AudioEncoderOpusConfig config = *AudioEncoderOpus::SdpToConfig(
-      SdpAudioFormat("opus", 48000, 2, {{"stereo", "1"}}));
-  config.num_channels = kNumChannels;
-  config.bitrate_bps = kBitrateBps;
+  ASSERT_TRUE(encoder_config.has_value());
 
-  const auto sdp_format = SdpAudioFormat(
-      "multiopus", 48000, kNumChannels,
-      {{"channel_mapping", "0,1,2,3"}, {"coupled_streams", "2"}});
+  ASSERT_NO_FATAL_FAILURE(
+      SetUpTestExternalEncoder(AudioEncoderMultiChannelOpus::MakeAudioEncoder(
+                                   *encoder_config, kOpusPayloadType),
+                               kOpusPayloadType));
+
   const auto decoder_config =
       AudioDecoderMultiChannelOpus::SdpToConfig(sdp_format);
   const auto opus_decoder =
       AudioDecoderMultiChannelOpus::MakeAudioDecoder(*decoder_config);
-
-  ASSERT_NO_FATAL_FAILURE(SetUpTestExternalEncoder(
-      absl::make_unique<AudioEncoderOpusImpl>(config, kOpusPayloadType),
-      kOpusPayloadType));
 
   rtc::scoped_refptr<AudioDecoderFactory> decoder_factory =
       new rtc::RefCountedObject<test::AudioDecoderProxyFactory>(
@@ -1551,16 +1569,16 @@ TEST_F(AcmSenderBitExactnessNewApi, DISABLED_OpusManyChannels) {
 
   // Set up an EXTERNAL DECODER to parse 4 channels.
   Run(AcmReceiverBitExactnessOldApi::PlatformChecksum(  // audio checksum
-          "b70470884d9a8613eff019b0d1c8876e|d0a73d377e0ca1be6b06e989e0ad2c35",
-          "d0a73d377e0ca1be6b06e989e0ad2c35",
-          "b45d2ce5fc4723e9eb41350af9c68f56", "android arm64 audio checksum",
-          "1c9a3c9dacdd4b8fc9ff608227e531f2"),
+          "audio checksum check downstream|8051617907766bec5f4e4a4f7c6d5291",
+          "8051617907766bec5f4e4a4f7c6d5291",
+          "6183752a62dc1368f959eb3a8c93b846", "android arm64 audio checksum",
+          "48bf1f3ca0b72f3c9cdfbe79956122b1"),
       // payload_checksum,
       AcmReceiverBitExactnessOldApi::PlatformChecksum(  // payload checksum
-          "c2e7d40f8269ef754bd86d6be9623fa7|76de0f4992e3937ca60d35bbb0d308d6",
-          "76de0f4992e3937ca60d35bbb0d308d6",
-          "2a310aca965c16c2dfd61a9f9fc0c877", "android arm64 payload checksum",
-          "2294f4b61fb8f174f5196776a0a49be7"),
+          "payload checksum check downstream|b09c52e44b2bdd9a0809e3a5b1623a76",
+          "b09c52e44b2bdd9a0809e3a5b1623a76",
+          "2ea535ef60f7d0c9d89e3002d4c2124f", "android arm64 payload checksum",
+          "e87995a80f50a0a735a230ca8b04a67d"),
       50, test::AcmReceiveTestOldApi::kQuadOutput, decoder_factory);
 }
 

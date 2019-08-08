@@ -13,9 +13,8 @@ import android.support.customtabs.trusted.TrustedWebActivityServiceConnectionMan
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionStore;
-import org.chromium.chrome.browser.contextual_suggestions.EnabledStateMonitor;
-import org.chromium.chrome.browser.contextual_suggestions.EnabledStateMonitorImpl;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -40,13 +39,6 @@ public class ChromeAppModule {
     public Profile provideLastUsedProfile() {
         return Profile.getLastUsedProfile();
     }
-
-    @Provides
-    @Singleton
-    public EnabledStateMonitor provideEnabledStateMonitor() {
-        return new EnabledStateMonitorImpl();
-    }
-
     @Provides
     public ChromePreferenceManager providesChromePreferenceManager() {
         return ChromePreferenceManager.getInstance();
@@ -86,5 +78,10 @@ public class ChromeAppModule {
         // TrustedWebActivityServiceConnectionManager comes from the Custom Tabs Support Library
         // so we can't make it injectable.
         return new TrustedWebActivityServiceConnectionManager(context);
+    }
+
+    @Provides
+    public SystemNightModeMonitor provideSystemNightModeMonitor() {
+        return SystemNightModeMonitor.getInstance();
     }
 }

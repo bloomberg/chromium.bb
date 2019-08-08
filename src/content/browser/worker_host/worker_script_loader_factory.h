@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_WORKER_HOST_WORKER_SCRIPT_LOADER_FACTORY_H_
 
 #include "base/macros.h"
-#include "content/common/navigation_subresource_loader_params.h"
+#include "content/browser/navigation_subresource_loader_params.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace network {

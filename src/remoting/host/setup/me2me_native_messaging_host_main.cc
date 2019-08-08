@@ -88,7 +88,7 @@ int Me2MeNativeMessagingHostMain(int argc, char** argv) {
   }
 #endif  // defined(REMOTING_ENABLE_BREAKPAD)
 
-  base::ThreadPool::CreateAndStartWithDefaultParams("Me2Me");
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams("Me2Me");
 
   mojo::core::Init();
 
@@ -268,7 +268,7 @@ int Me2MeNativeMessagingHostMain(int argc, char** argv) {
   run_loop.Run();
 
   // Block until tasks blocking shutdown have completed their execution.
-  base::ThreadPool::GetInstance()->Shutdown();
+  base::ThreadPoolInstance::Get()->Shutdown();
 
   return kSuccessExitCode;
 }

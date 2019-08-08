@@ -57,6 +57,10 @@ class ASH_PUBLIC_EXPORT AssistantStateBase {
     return arc_play_store_enabled_;
   }
 
+  const base::Optional<bool>& locked_full_screen_enabled() const {
+    return locked_full_screen_enabled_;
+  }
+
  protected:
   base::Optional<mojom::VoiceInteractionState> voice_interaction_state_;
 
@@ -86,6 +90,10 @@ class ASH_PUBLIC_EXPORT AssistantStateBase {
 
   // Whether play store is enabled. nullopt if the data is not available yet.
   base::Optional<bool> arc_play_store_enabled_;
+
+  // Whether locked full screen state is enabled. nullopt if the data is not
+  // available yet.
+  base::Optional<bool> locked_full_screen_enabled_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AssistantStateBase);

@@ -4,7 +4,7 @@
 
 #import "ios/web/public/test/error_test_util.h"
 
-#import "ios/web/web_state/error_translation_util.h"
+#import "ios/web/web_view/error_translation_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

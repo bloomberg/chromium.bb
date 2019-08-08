@@ -86,6 +86,10 @@ class CiceroneClientImpl : public CiceroneClient {
     return is_import_lxd_container_progress_signal_connected_;
   }
 
+  bool IsPendingAppListUpdatesSignalConnected() override {
+    return is_pending_app_list_updates_signal_connected_;
+  }
+
   void LaunchContainerApplication(
       const vm_tools::cicerone::LaunchContainerApplicationRequest& request,
       DBusMethodCallback<vm_tools::cicerone::LaunchContainerApplicationResponse>
@@ -479,6 +483,13 @@ class CiceroneClientImpl : public CiceroneClient {
             weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&CiceroneClientImpl::OnSignalConnected,
                        weak_ptr_factory_.GetWeakPtr()));
+    cicerone_proxy_->ConnectToSignal(
+        vm_tools::cicerone::kVmCiceroneInterface,
+        vm_tools::cicerone::kPendingAppListUpdatesSignal,
+        base::BindRepeating(&CiceroneClientImpl::OnPendingAppListUpdatesSignal,
+                            weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&CiceroneClientImpl::OnSignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:
@@ -631,6 +642,18 @@ class CiceroneClientImpl : public CiceroneClient {
     }
   }
 
+  void OnPendingAppListUpdatesSignal(dbus::Signal* signal) {
+    vm_tools::cicerone::PendingAppListUpdatesSignal proto;
+    dbus::MessageReader reader(signal);
+    if (!reader.PopArrayOfBytesAsProto(&proto)) {
+      LOG(ERROR) << "Failed to parse proto from DBus Signal";
+      return;
+    }
+    for (auto& observer : observer_list_) {
+      observer.OnPendingAppListUpdates(proto);
+    }
+  }
+
   void OnSignalConnected(const std::string& interface_name,
                          const std::string& signal_name,
                          bool is_connected) {
@@ -666,6 +689,9 @@ class CiceroneClientImpl : public CiceroneClient {
     } else if (signal_name ==
                vm_tools::cicerone::kImportLxdContainerProgressSignal) {
       is_import_lxd_container_progress_signal_connected_ = is_connected;
+    } else if (signal_name ==
+               vm_tools::cicerone::kPendingAppListUpdatesSignal) {
+      is_pending_app_list_updates_signal_connected_ = is_connected;
     } else {
       NOTREACHED();
     }
@@ -686,6 +712,7 @@ class CiceroneClientImpl : public CiceroneClient {
   bool is_lxd_container_starting_signal_connected_ = false;
   bool is_export_lxd_container_progress_signal_connected_ = false;
   bool is_import_lxd_container_progress_signal_connected_ = false;
+  bool is_pending_app_list_updates_signal_connected_ = false;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

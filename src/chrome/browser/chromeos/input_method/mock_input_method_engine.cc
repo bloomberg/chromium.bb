@@ -28,10 +28,6 @@ void MockInputMethodEngine::Disable() {
 
 void MockInputMethodEngine::Reset() {}
 
-bool MockInputMethodEngine::IsInterestedInKeyEvent() const {
-  return true;
-}
-
 void MockInputMethodEngine::ProcessKeyEvent(const ui::KeyEvent& key_event,
                                             KeyEventDoneCallback callback) {}
 

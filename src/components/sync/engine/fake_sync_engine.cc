@@ -106,11 +106,6 @@ void FakeSyncEngine::OnCookieJarChanged(bool account_mismatch,
   }
 }
 
-std::unique_ptr<ModelTypeControllerDelegate>
-FakeSyncEngine::GetNigoriControllerDelegate() {
-  return nullptr;
-}
-
 void FakeSyncEngine::SetInvalidationsForSessionsEnabled(bool enabled) {}
 
 }  // namespace syncer

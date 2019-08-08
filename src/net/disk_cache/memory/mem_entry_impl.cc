@@ -70,10 +70,10 @@ std::string GenerateChildName(const std::string& base_name, int64_t child_id) {
 
 // Returns NetLog parameters for the creation of a MemEntryImpl. A separate
 // function is needed because child entries don't store their key().
-std::unique_ptr<base::Value> NetLogEntryCreationCallback(
+base::Value NetLogEntryCreationCallback(
     const MemEntryImpl* entry,
     net::NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  base::Value dict(base::Value::Type::DICTIONARY);
   std::string key;
   switch (entry->type()) {
     case MemEntryImpl::PARENT_ENTRY:
@@ -83,9 +83,9 @@ std::unique_ptr<base::Value> NetLogEntryCreationCallback(
       key = GenerateChildName(entry->parent()->key(), entry->child_id());
       break;
   }
-  dict->SetString("key", key);
-  dict->SetBoolean("created", true);
-  return std::move(dict);
+  dict.SetStringKey("key", key);
+  dict.SetBoolKey("created", true);
+  return dict;
 }
 
 }  // namespace

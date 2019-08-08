@@ -76,11 +76,15 @@ scoped_refptr<storage::FileSystemContext> GetFileSystemContext(
 // Converts the given URL to a FileSystemURL.
 storage::FileSystemURL GetFileSystemURL(
     scoped_refptr<storage::FileSystemContext> context,
-    const GURL& url) {
+    const GURL& url,
+    storage::IsolatedContext::ScopedFSHandle* file_system) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  return file_manager::util::CreateIsolatedURLFromVirtualPath(
-      *context, /* empty origin */ GURL(),
-      chromeos::ExternalFileURLToVirtualPath(url));
+  storage::FileSystemURL result;
+  std::tie(result, *file_system) =
+      file_manager::util::CreateIsolatedURLFromVirtualPath(
+          *context, /* empty origin */ GURL(),
+          chromeos::ExternalFileURLToVirtualPath(url));
+  return result;
 }
 
 // Retrieves the file size on the IO thread, and runs the callback on the UI
@@ -219,15 +223,18 @@ void ArcFileSystemBridge::GetFileName(const std::string& url,
                                       GetFileNameCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   GURL url_decoded = DecodeFromChromeContentProviderUrl(GURL(url));
-  if (url_decoded.is_empty() || !IsUrlAllowed(url_decoded)) {
+  std::string unescaped_file_name;
+  // It's generally not safe to unescape path separators in strings to be used
+  // in file paths.
+  if (url_decoded.is_empty() || !IsUrlAllowed(url_decoded) ||
+      !net::UnescapeBinaryURLComponentSafe(url_decoded.ExtractFileName(),
+                                           true /* fail_on_path_separators */,
+                                           &unescaped_file_name)) {
     LOG(ERROR) << "Invalid URL: " << url << " " << url_decoded;
     std::move(callback).Run(base::nullopt);
     return;
   }
-  std::move(callback).Run(net::UnescapeURLComponent(
-      url_decoded.ExtractFileName(),
-      net::UnescapeRule::SPACES |
-          net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS));
+  std::move(callback).Run(unescaped_file_name);
 }
 
 void ArcFileSystemBridge::GetFileSize(const std::string& url,
@@ -241,11 +248,18 @@ void ArcFileSystemBridge::GetFileSize(const std::string& url,
   }
   scoped_refptr<storage::FileSystemContext> context =
       GetFileSystemContext(profile_, url_decoded);
+  storage::IsolatedContext::ScopedFSHandle isolated_file_system;
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&GetFileSizeOnIOThread, context,
-                     GetFileSystemURL(context, url_decoded),
-                     std::move(callback)));
+      base::BindOnce(
+          &GetFileSizeOnIOThread, context,
+          GetFileSystemURL(context, url_decoded, &isolated_file_system),
+          std::move(callback)));
+  // TODO(https://crbug.com/963027): This is currently leaking the isolated
+  // file system, the file system should somehow be revoked when the url
+  // returned by GetFileSystemURL is no longer needed.
+  storage::IsolatedContext::GetInstance()->AddReference(
+      isolated_file_system.id());
 }
 
 void ArcFileSystemBridge::GetFileType(const std::string& url,
@@ -259,8 +273,9 @@ void ArcFileSystemBridge::GetFileType(const std::string& url,
   }
   scoped_refptr<storage::FileSystemContext> context =
       GetFileSystemContext(profile_, url_decoded);
+  storage::IsolatedContext::ScopedFSHandle file_system;
   storage::FileSystemURL file_system_url =
-      GetFileSystemURL(context, url_decoded);
+      GetFileSystemURL(context, url_decoded, &file_system);
   extensions::app_file_handler_util::GetMimeTypeForLocalPath(
       profile_, file_system_url.path(),
       base::Bind(
@@ -402,11 +417,16 @@ bool ArcFileSystemBridge::HandleReadRequest(const std::string& id,
   const GURL& url = it_url->second;
   scoped_refptr<storage::FileSystemContext> context =
       GetFileSystemContext(profile_, url);
+  storage::IsolatedContext::ScopedFSHandle file_system;
   *it_forwarder = FileStreamForwarderPtr(new FileStreamForwarder(
-      context, GetFileSystemURL(context, url), offset, size,
+      context, GetFileSystemURL(context, url, &file_system), offset, size,
       std::move(pipe_write_end),
       base::BindOnce(&ArcFileSystemBridge::OnReadRequestCompleted,
                      weak_ptr_factory_.GetWeakPtr(), id, it_forwarder)));
+  // TODO(https://crbug.com/963027): This is currently leaking the isolated
+  // file system, the file system should somehow be revoked when the url
+  // returned by GetFileSystemURL is no longer needed.
+  storage::IsolatedContext::GetInstance()->AddReference(file_system.id());
   return true;
 }
 

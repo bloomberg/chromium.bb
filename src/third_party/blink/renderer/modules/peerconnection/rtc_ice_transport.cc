@@ -194,10 +194,15 @@ bool RTCIceTransport::HasConsumer() const {
   return consumer_;
 }
 
+bool RTCIceTransport::IsFromPeerConnection() const {
+  return peer_connection_;
+}
+
 IceTransportProxy* RTCIceTransport::ConnectConsumer(
     RTCQuicTransport* consumer) {
   DCHECK(consumer);
   DCHECK(proxy_);
+  DCHECK(!peer_connection_);
   if (!consumer_) {
     consumer_ = consumer;
   } else {
@@ -490,6 +495,13 @@ void RTCIceTransport::OnCandidateGathered(
 }
 
 void RTCIceTransport::OnStateChanged(webrtc::IceTransportState new_state) {
+  // MONKEY PATCH:
+  // Due to crbug.com/957487, the lower layers signal kFailed when they
+  // should have been sending kDisconnected. Remap the state.
+  if (new_state == webrtc::IceTransportState::kFailed) {
+    LOG(INFO) << "crbug/957487: Remapping ICE state failed to disconnected";
+    new_state = webrtc::IceTransportState::kDisconnected;
+  }
   if (new_state == state_) {
     return;
   }

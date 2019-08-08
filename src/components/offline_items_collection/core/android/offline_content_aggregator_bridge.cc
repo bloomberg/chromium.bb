@@ -27,6 +27,9 @@ using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace offline_items_collection {
+
+using GetVisualsOptions = OfflineContentProvider::GetVisualsOptions;
+
 namespace android {
 
 namespace {
@@ -207,6 +210,7 @@ void OfflineContentAggregatorBridge::GetVisualsForItem(
   provider_->GetVisualsForItem(
       JNI_OfflineContentAggregatorBridge_CreateContentId(env, j_namespace,
                                                          j_id),
+      GetVisualsOptions::IconOnly(),
       base::BindOnce(&GetVisualsForItemHelperCallback,
                      ScopedJavaGlobalRef<jobject>(env, j_callback)));
 }

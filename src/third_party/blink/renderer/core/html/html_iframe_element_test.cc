@@ -6,7 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/feature_policy/feature_policy.h"
+#include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 
@@ -22,7 +22,7 @@ class HTMLIFrameElementTest : public testing::Test {
   }
 
   void SetUp() final {
-    document_ = Document::CreateForTest();
+    document_ = MakeGarbageCollected<Document>();
     const KURL document_url("http://example.com");
     document_->SetURL(document_url);
     document_->UpdateSecurityOrigin(SecurityOrigin::Create(document_url));

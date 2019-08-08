@@ -14,15 +14,17 @@
 #import "ios/chrome/browser/sessions/session_ios.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
-#import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
-#import "ios/chrome/browser/tabs/tab_model_observer.h"
+#import "ios/chrome/browser/ui/browser_view/browser_coordinator.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller_dependency_factory.h"
-#import "ios/chrome/browser/ui/main/browser_coordinator.h"
 #import "ios/chrome/browser/url_loading/app_url_loading_service.h"
+#import "ios/chrome/browser/web_state_list/active_web_state_observation_forwarder.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state_observer_bridge.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -83,9 +85,8 @@
 
 @end
 
-@interface BrowserViewWrangler ()<TabModelObserver> {
+@interface BrowserViewWrangler () <WebStateListObserving, CRWWebStateObserver> {
   ios::ChromeBrowserState* _browserState;
-  __weak id<TabModelObserver> _tabModelObserver;
   __weak id<ApplicationCommands> _applicationCommandEndpoint;
   __weak id<BrowserStateStorageSwitching> _storageSwitcher;
   AppUrlLoadingService* _appURLLoadingService;
@@ -93,6 +94,15 @@
 
   std::unique_ptr<Browser> _mainBrowser;
   std::unique_ptr<Browser> _otrBrowser;
+  std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
+  std::unique_ptr<WebStateListObserverBridge> _webStateListForwardingObserver;
+  // Bridge to observe WebState from Objective-C. This observer will be used to
+  // only monitor active webStates.
+  std::unique_ptr<web::WebStateObserverBridge> _activeWebStateObserver;
+  // Forwards observer methods for The active WebState in each WebStateList
+  // monitored by the BrowserViewWrangler.
+  std::map<WebStateList*, std::unique_ptr<ActiveWebStateObservationForwarder>>
+      _activeWebStateObservationForwarders;
 }
 
 @property(nonatomic, strong, readwrite) WrangledBrowser* mainInterface;
@@ -136,7 +146,7 @@
 @synthesize currentInterface = _currentInterface;
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                    tabModelObserver:(id<TabModelObserver>)tabModelObserver
+                webStateListObserver:(id<WebStateListObserving>)observer
           applicationCommandEndpoint:
               (id<ApplicationCommands>)applicationCommandEndpoint
                 appURLLoadingService:(AppUrlLoadingService*)appURLLoadingService
@@ -144,10 +154,14 @@
                          (id<BrowserStateStorageSwitching>)storageSwitcher {
   if ((self = [super init])) {
     _browserState = browserState;
-    _tabModelObserver = tabModelObserver;
     _applicationCommandEndpoint = applicationCommandEndpoint;
     _appURLLoadingService = appURLLoadingService;
     _storageSwitcher = storageSwitcher;
+    _webStateListObserver = std::make_unique<WebStateListObserverBridge>(self);
+    _webStateListForwardingObserver =
+        std::make_unique<WebStateListObserverBridge>(observer);
+    _activeWebStateObserver =
+        std::make_unique<web::WebStateObserverBridge>(self);
   }
   return self;
 }
@@ -164,7 +178,7 @@
 
   // Follow loaded URLs in the main tab model to send those in case of
   // crashes.
-  breakpad::MonitorURLsForTabModel(self.mainBrowser->GetTabModel());
+  breakpad::MonitorURLsForWebStateList(self.mainBrowser->GetWebStateList());
   ios::GetChromeBrowserProvider()->InitializeCastService(
       self.mainBrowser->GetTabModel());
 
@@ -238,13 +252,13 @@
 - (void)setMainBrowser:(std::unique_ptr<Browser>)mainBrowser {
   if (_mainBrowser.get()) {
     TabModel* tabModel = self.mainBrowser->GetTabModel();
-    breakpad::StopMonitoringTabStateForTabModel(tabModel);
-    breakpad::StopMonitoringURLsForTabModel(tabModel);
+    breakpad::StopMonitoringTabStateForWebStateList(tabModel.webStateList);
+    breakpad::StopMonitoringURLsForWebStateList(tabModel.webStateList);
     [tabModel browserStateDestroyed];
-    if (_tabModelObserver) {
-      [tabModel removeObserver:_tabModelObserver];
-    }
-    [tabModel removeObserver:self];
+    _activeWebStateObservationForwarders[tabModel.webStateList] = nullptr;
+    tabModel.webStateList->RemoveObserver(_webStateListObserver.get());
+    tabModel.webStateList->RemoveObserver(
+        _webStateListForwardingObserver.get());
   }
 
   _mainBrowser = std::move(mainBrowser);
@@ -253,12 +267,12 @@
 - (void)setOtrBrowser:(std::unique_ptr<Browser>)otrBrowser {
   if (_otrBrowser.get()) {
     TabModel* tabModel = self.otrBrowser->GetTabModel();
-    breakpad::StopMonitoringTabStateForTabModel(tabModel);
+    breakpad::StopMonitoringTabStateForWebStateList(tabModel.webStateList);
     [tabModel browserStateDestroyed];
-    if (_tabModelObserver) {
-      [tabModel removeObserver:_tabModelObserver];
-    }
-    [tabModel removeObserver:self];
+    _activeWebStateObservationForwarders[tabModel.webStateList] = nullptr;
+    tabModel.webStateList->RemoveObserver(_webStateListObserver.get());
+    tabModel.webStateList->RemoveObserver(
+        _webStateListForwardingObserver.get());
   }
 
   _otrBrowser = std::move(otrBrowser);
@@ -275,16 +289,25 @@
   [self.deviceSharingManager updateBrowserState:NULL];
 }
 
-#pragma mark - TabModelObserver
+#pragma mark - WebStateListObserving
 
-- (void)tabModel:(TabModel*)model
-    didChangeActiveTab:(Tab*)newTab
-           previousTab:(Tab*)previousTab
-               atIndex:(NSUInteger)index {
+- (void)webStateList:(WebStateList*)webStateList
+    didChangeActiveWebState:(web::WebState*)newWebState
+                oldWebState:(web::WebState*)oldWebState
+                    atIndex:(int)atIndex
+                     reason:(int)reason {
+  if (_isShutdown)
+    return;
+
   [self updateDeviceSharingManager];
 }
 
-- (void)tabModel:(TabModel*)model didChangeTab:(Tab*)tab {
+#pragma mark - CRWWebStateObserver
+
+- (void)webState:(web::WebState*)webState
+    didFinishNavigation:(web::NavigationContext*)navigation {
+  // Active WebState has update the active URL. Update the DeviceSharingManager
+  // state.
   [self updateDeviceSharingManager];
 }
 
@@ -297,10 +320,12 @@
   [self.deviceSharingManager updateBrowserState:_browserState];
 
   GURL activeURL;
-  Tab* currentTab = self.currentInterface.tabModel.currentTab;
-  // Set the active URL if there's a current tab and the current BVC is not OTR.
-  if (currentTab.webState && !self.currentInterface.incognito) {
-    activeURL = currentTab.webState->GetVisibleURL();
+  web::WebState* activeWebState =
+      self.currentInterface.tabModel.webStateList->GetActiveWebState();
+  // Set the active URL if there's an active webstate and the current BVC is not
+  // OTR.
+  if (activeWebState && !self.currentInterface.incognito) {
+    activeURL = activeWebState->GetVisibleURL();
   }
   [self.deviceSharingManager updateActiveURL:activeURL];
 }
@@ -312,8 +337,9 @@
   DCHECK(![self.otrBrowser->GetTabModel() count]);
   DCHECK(_browserState);
 
-  // Stop watching the OTR tab model's state for crashes.
-  breakpad::StopMonitoringTabStateForTabModel(self.otrBrowser->GetTabModel());
+  // Stop watching the OTR webStateList's state for crashes.
+  breakpad::StopMonitoringTabStateForWebStateList(
+      self.otrBrowser->GetWebStateList());
 
   // At this stage, a new incognitoBrowserCoordinator shouldn't be lazily
   // constructed by calling the property getter.
@@ -406,11 +432,13 @@
   }
 
   // Add observers.
-  if (_tabModelObserver) {
-    [tabModel addObserver:_tabModelObserver];
-    [tabModel addObserver:self];
-  }
-  breakpad::MonitorTabStateForTabModel(tabModel);
+  _activeWebStateObservationForwarders[tabModel.webStateList] =
+      std::make_unique<ActiveWebStateObservationForwarder>(
+          tabModel.webStateList, _activeWebStateObserver.get());
+  tabModel.webStateList->AddObserver(_webStateListObserver.get());
+  tabModel.webStateList->AddObserver(_webStateListForwardingObserver.get());
+
+  breakpad::MonitorTabStateForWebStateList(tabModel.webStateList);
 }
 
 - (BrowserCoordinator*)coordinatorForBrowser:(Browser*)browser {

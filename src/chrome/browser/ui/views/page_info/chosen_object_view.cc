@@ -76,7 +76,7 @@ ChosenObjectView::ChosenObjectView(
   layout->AddView(label);
 
   // Create the delete button.
-  delete_button_ = views::CreateVectorImageButton(this);
+  delete_button_ = views::CreateVectorImageButton(this).release();
   views::SetImageFromVectorIcon(
       delete_button_, vector_icons::kCloseRoundedIcon,
       views::style::GetColor(*this, CONTEXT_BODY_TEXT_LARGE,
@@ -139,7 +139,7 @@ void ChosenObjectView::ButtonPressed(views::Button* sender,
       views::style::GetColor(*this, views::style::CONTEXT_LABEL,
                              views::style::STYLE_PRIMARY)));
 
-  DCHECK(delete_button_->visible());
+  DCHECK(delete_button_->GetVisible());
   delete_button_->SetVisible(false);
 
   for (ChosenObjectViewObserver& observer : observer_list_) {

@@ -214,7 +214,7 @@ def MergeApk(args, tmp_apk, tmp_dir_32, tmp_dir_64):
 
   ignores = ['META-INF', 'AndroidManifest.xml']
   if args.ignore_classes_dex:
-    ignores += ['classes.dex', 'classes2.dex']
+    ignores += ['classes.dex', 'classes2.dex', 'classes3.dex']
   if args.debug:
     # see http://crbug.com/648720
     ignores += ['webview_licenses.notice']

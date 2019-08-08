@@ -83,9 +83,9 @@ assert(!is_cfi || use_thin_lto, "CFI requires ThinLTO")
 # For unofficial (e.g. development) builds and non-Chrome branded (e.g. Cronet
 # which doesn't use Crashpad, crbug.com/479283) builds it's useful to be able
 # to unwind at runtime.
-exclude_unwind_tables = (is_chrome_branded && is_official_build) ||
-                        (is_chromecast && !is_cast_desktop_build && !is_debug &&
-                         !cast_is_debug && !is_fuchsia)
+exclude_unwind_tables =
+    is_official_build || (is_chromecast && !is_cast_desktop_build &&
+                          !is_debug && !cast_is_debug && !is_fuchsia)
 
 # If true, optimize for size. Does not affect windows builds.
 # Linux & Mac favor speed over size.
@@ -128,7 +128,10 @@ if (is_mac || is_ios || is_linux) {
       # but overall shrinks binaries considerably by avoiding huge unwind
       # tables.
       (current_cpu == "x86" && !exclude_unwind_tables && optimize_for_size) ||
-      using_sanitizer
+      using_sanitizer ||
+      # For caller-callee instrumentation version which needs frame pointers to
+      # get the caller address.
+      use_call_graph
 } else {
   # Explicitly ask for frame pointers, otherwise:
   # * Stacks may be missing for sanitizer and profiling builds.
@@ -170,12 +173,7 @@ declare_args() {
 
 declare_args() {
   # Set to true to use lld, the LLVM linker.
-  # https://crbug.com/911658 for using lld on 32-bit linux.
-  # https://crbug.com/917504 for arm chromeos
-  use_lld = is_clang &&
-            (is_win || is_fuchsia || is_android ||
-             (is_linux && target_os != "chromeos" && current_cpu != "x86") ||
-             (target_os == "chromeos" && current_cpu != "arm"))
+  use_lld = is_clang && (!is_ios && !is_mac)
 }
 
 declare_args() {

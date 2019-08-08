@@ -25,7 +25,7 @@
 
 namespace blink {
 
-inline SVGFEMergeNodeElement::SVGFEMergeNodeElement(Document& document)
+SVGFEMergeNodeElement::SVGFEMergeNodeElement(Document& document)
     : SVGElement(svg_names::kFEMergeNodeTag, document),
       in1_(MakeGarbageCollected<SVGAnimatedString>(this, svg_names::kInAttr)) {
   AddToPropertyMap(in1_);
@@ -35,8 +35,6 @@ void SVGFEMergeNodeElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(in1_);
   SVGElement::Trace(visitor);
 }
-
-DEFINE_NODE_FACTORY(SVGFEMergeNodeElement)
 
 void SVGFEMergeNodeElement::SvgAttributeChanged(
     const QualifiedName& attr_name) {

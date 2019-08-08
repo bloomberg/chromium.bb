@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/frame/glass_browser_frame_view.h"
 
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
@@ -13,7 +12,6 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
 #include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -28,7 +26,6 @@ class HostedAppGlassBrowserFrameViewTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
 
-    scoped_feature_list_.InitAndEnableFeature(features::kDesktopPWAWindowing);
     HostedAppButtonContainer::DisableAnimationForTesting();
   }
 
@@ -63,7 +60,7 @@ class HostedAppGlassBrowserFrameViewTest : public InProcessBrowserTest {
     hosted_app_button_container_ =
         glass_frame_view_->hosted_app_button_container_for_testing();
     DCHECK(hosted_app_button_container_);
-    DCHECK(hosted_app_button_container_->visible());
+    DCHECK(hosted_app_button_container_->GetVisible());
     return true;
   }
 
@@ -74,8 +71,6 @@ class HostedAppGlassBrowserFrameViewTest : public InProcessBrowserTest {
   HostedAppButtonContainer* hosted_app_button_container_ = nullptr;
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(HostedAppGlassBrowserFrameViewTest);
 };
 

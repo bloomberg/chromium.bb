@@ -4,7 +4,7 @@
 
 #include "ash/display/display_move_window_util.h"
 
-#include "ash/accelerators/accelerator_controller.h"
+#include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
@@ -62,7 +62,7 @@ views::Widget* CreateTestWidgetWithParent(views::Widget::InitParams::Type type,
 
 void PerformMoveWindowAccel() {
   Shell::Get()->accelerator_controller()->PerformActionIfEnabled(
-      MOVE_ACTIVE_WINDOW_BETWEEN_DISPLAYS);
+      MOVE_ACTIVE_WINDOW_BETWEEN_DISPLAYS, {});
 }
 
 }  // namespace
@@ -230,7 +230,7 @@ TEST_F(DisplayMoveWindowUtilTest, NoMovementIfNotInCycleWindowList) {
             screen->GetDisplayNearestWindow(window.get()).id());
 
   MruWindowTracker::WindowList cycle_window_list =
-      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kActiveDesk);
   EXPECT_TRUE(cycle_window_list.empty());
   PerformMoveWindowAccel();
   EXPECT_EQ(display_manager()->GetDisplayAt(0).id(),

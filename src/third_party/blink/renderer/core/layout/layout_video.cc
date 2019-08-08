@@ -122,7 +122,7 @@ bool LayoutVideo::ShouldDisplayVideo() const {
 }
 
 void LayoutVideo::PaintReplaced(const PaintInfo& paint_info,
-                                const LayoutPoint& paint_offset) const {
+                                const PhysicalOffset& paint_offset) const {
   VideoPainter(*this).PaintReplaced(paint_info, paint_offset);
 }
 
@@ -170,7 +170,7 @@ LayoutUnit LayoutVideo::MinimumReplacedHeight() const {
   return LayoutReplaced::MinimumReplacedHeight();
 }
 
-LayoutRect LayoutVideo::ReplacedContentRect() const {
+PhysicalRect LayoutVideo::ReplacedContentRect() const {
   if (ShouldDisplayVideo()) {
     // Video codecs may need to restart from an I-frame when the output is
     // resized. Round size in advance to avoid 1px snap difference.

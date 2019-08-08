@@ -13,8 +13,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/run_loop.h"
-#include "base/sampling_heap_profiler/sampling_heap_profiler.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/time/time.h"
 #include "base/trace_event/heap_profiler_allocation_context_tracker.h"
@@ -57,7 +55,7 @@ BrowserMainRunnerImpl::BrowserMainRunnerImpl()
     : initialization_started_(false),
       is_shutdown_(false),
       scoped_execution_fence_(
-          std::make_unique<base::ThreadPool::ScopedExecutionFence>()) {}
+          std::make_unique<base::ThreadPoolInstance::ScopedExecutionFence>()) {}
 
 BrowserMainRunnerImpl::~BrowserMainRunnerImpl() {
   if (initialization_started_ && !is_shutdown_)
@@ -77,19 +75,6 @@ int BrowserMainRunnerImpl::Initialize(const MainFunctionParams& parameters) {
     initialization_started_ = true;
 
     const base::TimeTicks start_time_step1 = base::TimeTicks::Now();
-
-    base::SamplingHeapProfiler::Init();
-    if (parameters.command_line.HasSwitch(switches::kSamplingHeapProfiler)) {
-      base::SamplingHeapProfiler* profiler = base::SamplingHeapProfiler::Get();
-      unsigned sampling_interval = 0;
-      bool parsed =
-          base::StringToUint(parameters.command_line.GetSwitchValueASCII(
-                                 switches::kSamplingHeapProfiler),
-                             &sampling_interval);
-      if (parsed && sampling_interval > 0)
-        profiler->SetSamplingInterval(sampling_interval * 1024);
-      profiler->Start();
-    }
 
     SkGraphics::Init();
 

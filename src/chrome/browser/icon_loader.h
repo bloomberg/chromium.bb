@@ -41,10 +41,10 @@ class IconLoader {
   };
 
   // The callback invoked when an icon has been read. The parameters are:
-  // - The icon that was loaded, or null if there was a failure to load it.
+  // - The icon that was loaded (IsEmpty() will be true on failure to load).
   // - The determined group from the original requested path.
   using IconLoadedCallback =
-      base::OnceCallback<void(std::unique_ptr<gfx::Image>, const IconGroup&)>;
+      base::OnceCallback<void(gfx::Image, const IconGroup&)>;
 
   // Creates an IconLoader, which owns itself. If the IconLoader might outlive
   // the caller, be sure to use a weak pointer in the |callback|.

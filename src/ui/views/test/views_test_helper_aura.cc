@@ -30,11 +30,6 @@ ViewsTestHelperAura::ViewsTestHelperAura(
 
 ViewsTestHelperAura::~ViewsTestHelperAura() = default;
 
-void ViewsTestHelperAura::EnableMusWithWindowTreeClient(
-    aura::WindowTreeClient* window_tree_client) {
-  aura_test_helper_->EnableMusWithWindowTreeClient(window_tree_client);
-}
-
 void ViewsTestHelperAura::SetUp() {
   aura_test_helper_->SetUp(context_factory_, context_factory_private_);
 

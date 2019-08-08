@@ -45,7 +45,8 @@ class TabContentManager : public ThumbnailCacheObserver {
                     jint approximation_cache_size,
                     jint compression_queue_max_size,
                     jint write_queue_max_size,
-                    jboolean use_approximation_thumbnail);
+                    jboolean use_approximation_thumbnail,
+                    jboolean save_jpeg_thumbnails);
 
   virtual ~TabContentManager();
 
@@ -81,11 +82,12 @@ class TabContentManager : public ThumbnailCacheObserver {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       jint tab_id);
-  void CacheTab(JNIEnv* env,
-                const base::android::JavaParamRef<jobject>& obj,
-                const base::android::JavaParamRef<jobject>& tab,
-                jfloat thumbnail_scale,
-                const base::android::JavaParamRef<jobject>& j_callback);
+  void CaptureThumbnail(JNIEnv* env,
+                        const base::android::JavaParamRef<jobject>& obj,
+                        const base::android::JavaParamRef<jobject>& tab,
+                        jfloat thumbnail_scale,
+                        jboolean write_to_cache,
+                        const base::android::JavaParamRef<jobject>& j_callback);
   void CacheTabWithBitmap(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj,
                           const base::android::JavaParamRef<jobject>& tab,
@@ -104,7 +106,7 @@ class TabContentManager : public ThumbnailCacheObserver {
                           const base::android::JavaParamRef<jobject>& obj,
                           jint tab_id);
   void OnUIResourcesWereEvicted();
-  void GetTabThumbnailWithCallback(
+  void GetEtc1TabThumbnail(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       jint tab_id,
@@ -126,14 +128,15 @@ class TabContentManager : public ThumbnailCacheObserver {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& tab);
-  void PutThumbnailIntoCache(
-      int tab_id,
-      base::android::ScopedJavaGlobalRef<jobject> j_callback,
-      float thumbnail_scale,
-      const SkBitmap& bitmap);
+  void OnTabReadback(int tab_id,
+                     base::android::ScopedJavaGlobalRef<jobject> j_callback,
+                     bool write_to_cache,
+                     float thumbnail_scale,
+                     const SkBitmap& bitmap);
 
-  void TabThumbnailAvailable(
+  void SendThumbnailToJava(
       base::android::ScopedJavaGlobalRef<jobject> j_callback,
+      bool need_downsampling,
       bool result,
       SkBitmap bitmap);
 

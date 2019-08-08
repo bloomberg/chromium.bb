@@ -22,7 +22,6 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "chrome/browser/android/feed/feed_host_service_factory.h"
-#include "chrome/browser/autofill/legacy_strike_database_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/strike_database_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -62,7 +61,6 @@
 #include "chrome/common/buildflags.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "components/autofill/core/browser/payments/legacy_strike_database.h"
 #include "components/autofill/core/browser/payments/strike_database.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
@@ -276,7 +274,7 @@ ChromeBrowsingDataRemoverDelegate::ChromeBrowsingDataRemoverDelegate(
       weak_ptr_factory_(this) {
   domain_reliability_clearer_ = base::BindRepeating(
       [](BrowserContext* browser_context,
-         const content::BrowsingDataFilterBuilder& filter_builder,
+         content::BrowsingDataFilterBuilder* filter_builder,
          network::mojom::NetworkContext_DomainReliabilityClearMode mode,
          network::mojom::NetworkContext::ClearDomainReliabilityCallback
              callback) {
@@ -284,7 +282,7 @@ ChromeBrowsingDataRemoverDelegate::ChromeBrowsingDataRemoverDelegate(
             BrowserContext::GetDefaultStoragePartition(browser_context)
                 ->GetNetworkContext();
         network_context->ClearDomainReliability(
-            filter_builder.BuildNetworkServiceFilter(), mode,
+            filter_builder->BuildNetworkServiceFilter(), mode,
             std::move(callback));
       },
       browser_context);
@@ -298,12 +296,11 @@ void ChromeBrowsingDataRemoverDelegate::Shutdown() {
 }
 
 content::BrowsingDataRemoverDelegate::EmbedderOriginTypeMatcher
-ChromeBrowsingDataRemoverDelegate::GetOriginTypeMatcher() const {
+ChromeBrowsingDataRemoverDelegate::GetOriginTypeMatcher() {
   return base::BindRepeating(&DoesOriginMatchEmbedderMask);
 }
 
-
-bool ChromeBrowsingDataRemoverDelegate::MayRemoveDownloadHistory() const {
+bool ChromeBrowsingDataRemoverDelegate::MayRemoveDownloadHistory() {
   return profile_->GetPrefs()->GetBoolean(prefs::kAllowDeletingBrowserHistory);
 }
 
@@ -311,13 +308,13 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     const base::Time& delete_begin,
     const base::Time& delete_end,
     int remove_mask,
-    const BrowsingDataFilterBuilder& filter_builder,
+    BrowsingDataFilterBuilder* filter_builder,
     int origin_type_mask,
     base::OnceClosure callback) {
   DCHECK(((remove_mask &
            ~content::BrowsingDataRemover::DATA_TYPE_AVOID_CLOSING_CONNECTIONS &
            ~FILTERABLE_DATA_TYPES) == 0) ||
-         filter_builder.IsEmptyBlacklist());
+         filter_builder->IsEmptyBlacklist());
 
   TRACE_EVENT0("browsing_data",
                "ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData");
@@ -375,17 +372,17 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   delete_end_ = delete_end;
 
   base::RepeatingCallback<bool(const GURL& url)> filter =
-      filter_builder.BuildGeneralFilter();
+      filter_builder->BuildGeneralFilter();
 
   // Some backends support a filter that |is_null()| to make complete deletion
   // more efficient.
   base::RepeatingCallback<bool(const GURL&)> nullable_filter =
-      filter_builder.IsEmptyBlacklist()
+      filter_builder->IsEmptyBlacklist()
           ? base::RepeatingCallback<bool(const GURL&)>()
           : filter;
 
   HostContentSettingsMap::PatternSourcePredicate website_settings_filter =
-      filter_builder.IsEmptyBlacklist()
+      filter_builder->IsEmptyBlacklist()
           ? HostContentSettingsMap::PatternSourcePredicate()
           : base::BindRepeating(&WebsiteSettingsFilterAdapter, filter);
 
@@ -451,7 +448,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     // Therefore, clearing history for a small set of origins (WHITELIST) should
     // never delete any extension launch times, while clearing for almost all
     // origins (BLACKLIST) should always delete all of extension launch times.
-    if (filter_builder.IsEmptyBlacklist()) {
+    if (filter_builder->IsEmptyBlacklist()) {
       extensions::ExtensionPrefs* extension_prefs =
           extensions::ExtensionPrefs::Get(profile_);
       extension_prefs->ClearLastLaunchTimes();
@@ -464,7 +461,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     BrowserContext::GetDefaultStoragePartition(profile_)
         ->GetNetworkContext()
         ->ClearHostCache(
-            filter_builder.BuildNetworkServiceFilter(),
+            filter_builder->BuildNetworkServiceFilter(),
             CreateTaskCompletionClosureForMojo(TracingDataType::kHostCache));
 
     // As part of history deletion we also delete the auto-generated keywords.
@@ -579,9 +576,9 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     // Rename the method to indicate its more general usage.
     if (profile_->GetSSLHostStateDelegate()) {
       profile_->GetSSLHostStateDelegate()->Clear(
-          filter_builder.IsEmptyBlacklist()
+          filter_builder->IsEmptyBlacklist()
               ? base::RepeatingCallback<bool(const std::string&)>()
-              : filter_builder.BuildPluginFilter());
+              : filter_builder->BuildPluginFilter());
     }
 
     // Clear VideoDecodePerfHistory only if asked to clear from the beginning of
@@ -654,7 +651,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
         network::mojom::CookieManager* manager_ptr = cookie_manager.get();
 
         network::mojom::CookieDeletionFilterPtr deletion_filter =
-            filter_builder.BuildCookieDeletionFilter();
+            filter_builder->BuildCookieDeletionFilter();
         if (!delete_begin_.is_null())
           deletion_filter->created_after_time = delete_begin_;
         if (!delete_end_.is_null())
@@ -703,6 +700,10 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 
     host_content_settings_map_->ClearSettingsForOneTypeWithPredicate(
         CONTENT_SETTINGS_TYPE_SERIAL_CHOOSER_DATA, delete_begin_, delete_end_,
+        HostContentSettingsMap::PatternSourcePredicate());
+
+    host_content_settings_map_->ClearSettingsForOneTypeWithPredicate(
+        CONTENT_SETTINGS_TYPE_HID_CHOOSER_DATA, delete_begin_, delete_end_,
         HostContentSettingsMap::PatternSourcePredicate());
 #else
     // Reset the Default Search Engine permissions to their default.
@@ -843,34 +844,14 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
           delete_end_);
       web_data_service->RemoveAutofillDataModifiedBetween(
           delete_begin_, delete_end_);
-
-      // Clear out the Autofill LegacyStrikeDatabase in its entirety.
-      // Both StrikeDatabase and LegacyStrikeDatabase use data from the same
-      // ProtoDatabase, so only one of them needs to call ClearAllStrikes(~).
+      // Clear out the Autofill StrikeDatabase in its entirety.
       // TODO(crbug.com/884817): Respect |delete_begin_| and |delete_end_| and
       // only clear out entries whose last strikes were created in that
       // timeframe.
-      if (base::FeatureList::IsEnabled(
-              autofill::features::kAutofillSaveCreditCardUsesStrikeSystemV2) ||
-          base::FeatureList::IsEnabled(
-              autofill::features::
-                  kAutofillLocalCardMigrationUsesStrikeSystemV2)) {
-        autofill::StrikeDatabase* strike_database =
-            autofill::StrikeDatabaseFactory::GetForProfile(profile_);
-        if (strike_database)
-          strike_database->ClearAllStrikes();
-      } else if (base::FeatureList::IsEnabled(
-                     autofill::features::
-                         kAutofillSaveCreditCardUsesStrikeSystem)) {
-        autofill::LegacyStrikeDatabase* legacy_strike_database =
-            autofill::LegacyStrikeDatabaseFactory::GetForProfile(profile_);
-        if (legacy_strike_database) {
-          legacy_strike_database->ClearAllStrikes(
-              base::AdaptCallbackForRepeating(
-                  IgnoreArgument<bool>(CreateTaskCompletionClosure(
-                      TracingDataType::kLegacyStrikes))));
-        }
-      }
+      autofill::StrikeDatabase* strike_database =
+          autofill::StrikeDatabaseFactory::GetForProfile(profile_);
+      if (strike_database)
+        strike_database->ClearAllStrikes();
 
       // Ask for a call back when the above calls are finished.
       web_data_service->GetDBTaskRunner()->PostTaskAndReply(
@@ -938,7 +919,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     // Skip notification if the user clears cache for only a finite set of
     // sites.
     if (data_reduction_proxy_settings &&
-        filter_builder.GetMode() != BrowsingDataFilterBuilder::WHITELIST) {
+        filter_builder->GetMode() != BrowsingDataFilterBuilder::WHITELIST) {
       data_reduction_proxy::DataReductionProxyService*
           data_reduction_proxy_service =
               data_reduction_proxy_settings->data_reduction_proxy_service();
@@ -993,7 +974,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
        content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB)) {
     base::RecordAction(UserMetricsAction("ClearBrowsingData_LSOData"));
 
-    if (filter_builder.IsEmptyBlacklist()) {
+    if (filter_builder->IsEmptyBlacklist()) {
       DCHECK(!plugin_data_remover_);
       plugin_data_remover_.reset(
           content::PluginDataRemover::Create(profile_));
@@ -1012,7 +993,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
       // object to avoid having to copy them to callback methods.
       flash_lso_helper_->StartFetching(base::BindOnce(
           &ChromeBrowsingDataRemoverDelegate::OnSitesWithFlashDataFetched,
-          weak_ptr_factory_.GetWeakPtr(), filter_builder.BuildPluginFilter(),
+          weak_ptr_factory_.GetWeakPtr(), filter_builder->BuildPluginFilter(),
           CreateTaskCompletionClosure(TracingDataType::kFlashLsoHelper)));
     }
   }
@@ -1028,7 +1009,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 #if BUILDFLAG(ENABLE_PLUGINS)
     // Flash does not support filtering by domain, so skip this if clearing only
     // a specified set of sites.
-    if (filter_builder.GetMode() != BrowsingDataFilterBuilder::WHITELIST) {
+    if (filter_builder->GetMode() != BrowsingDataFilterBuilder::WHITELIST) {
       // Will be completed in OnDeauthorizeFlashContentLicensesCompleted()
       OnTaskStarted(TracingDataType::kFlashDeauthorization);
       if (!pepper_flash_settings_manager_.get()) {
@@ -1044,7 +1025,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     // On Chrome OS, delete any content protection platform keys.
     // Platform keys do not support filtering by domain, so skip this if
     // clearing only a specified set of sites.
-    if (filter_builder.GetMode() != BrowsingDataFilterBuilder::WHITELIST) {
+    if (filter_builder->GetMode() != BrowsingDataFilterBuilder::WHITELIST) {
       const user_manager::User* user =
           chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
       if (!user) {
@@ -1125,10 +1106,10 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
         BrowserContext::GetDefaultStoragePartition(profile_)
             ->GetNetworkContext();
     network_context->ClearReportingCacheReports(
-        filter_builder.BuildNetworkServiceFilter(),
+        filter_builder->BuildNetworkServiceFilter(),
         CreateTaskCompletionClosureForMojo(TracingDataType::kReportingCache));
     network_context->ClearNetworkErrorLogging(
-        filter_builder.BuildNetworkServiceFilter(),
+        filter_builder->BuildNetworkServiceFilter(),
         CreateTaskCompletionClosureForMojo(
             TracingDataType::kNetworkErrorLogging));
   }

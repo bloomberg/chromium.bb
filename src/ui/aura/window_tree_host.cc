@@ -114,7 +114,7 @@ void WindowTreeHost::InitHost() {
 
   UpdateRootWindowSizeInPixels();
   InitCompositor();
-  window()->env()->NotifyHostInitialized(this);
+  Env::GetInstance()->NotifyHostInitialized(this);
 }
 
 void WindowTreeHost::AddObserver(WindowTreeHostObserver* observer) {
@@ -387,10 +387,8 @@ void WindowTreeHost::CreateCompositor(
     bool force_software_compositor,
     ui::ExternalBeginFrameClient* external_begin_frame_client,
     bool are_events_in_pixels,
-    const char* trace_environment_name,
-    bool automatically_allocate_surface_ids) {
-  DCHECK(window()->env());
-  Env* env = window()->env();
+    const char* trace_environment_name) {
+  Env* env = Env::GetInstance();
   ui::ContextFactory* context_factory = env->context_factory();
   DCHECK(context_factory);
   ui::ContextFactoryPrivate* context_factory_private =
@@ -402,7 +400,7 @@ void WindowTreeHost::CreateCompositor(
       context_factory, context_factory_private,
       base::ThreadTaskRunnerHandle::Get(), ui::IsPixelCanvasRecordingEnabled(),
       external_begin_frame_client, force_software_compositor,
-      trace_environment_name, automatically_allocate_surface_ids);
+      trace_environment_name);
 #if defined(OS_CHROMEOS)
   compositor_->AddObserver(this);
 #endif
@@ -423,7 +421,8 @@ void WindowTreeHost::InitCompositor() {
 
   display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window());
-  compositor_->SetDisplayColorSpace(display.color_space());
+  compositor_->SetDisplayColorSpace(display.color_space(),
+                                    display.sdr_white_level());
 }
 
 void WindowTreeHost::OnAcceleratedWidgetAvailable() {
@@ -442,30 +441,17 @@ void WindowTreeHost::OnHostMovedInPixels(
 }
 
 void WindowTreeHost::OnHostResizedInPixels(
-    const gfx::Size& new_size_in_pixels,
-    const viz::LocalSurfaceIdAllocation& new_local_surface_id_allocation) {
-  // TODO(jonross) Unify all OnHostResizedInPixels to have both
-  // viz::LocalSurfaceId and allocation time as optional parameters.
+    const gfx::Size& new_size_in_pixels) {
   display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window());
   device_scale_factor_ = display.device_scale_factor();
   UpdateRootWindowSizeInPixels();
 
   // Allocate a new LocalSurfaceId for the new state.
-  viz::LocalSurfaceIdAllocation local_surface_id_allocation(
-      new_local_surface_id_allocation);
-  if (ShouldAllocateLocalSurfaceIdOnResize() &&
-      !new_local_surface_id_allocation.IsValid()) {
-    window_->AllocateLocalSurfaceId();
-    local_surface_id_allocation = window_->GetLocalSurfaceIdAllocation();
-  }
-  std::unique_ptr<ScopedLocalSurfaceIdValidator> lsi_validator;
-  // With mus |local_surface_id_allocation|, may be applied to Window by way of
-  // Compositor::SetScaleAndSize() so that we can't check here.
-  if (window()->env()->mode() == Env::Mode::LOCAL)
-    lsi_validator = std::make_unique<ScopedLocalSurfaceIdValidator>(window());
+  window_->AllocateLocalSurfaceId();
+  ScopedLocalSurfaceIdValidator lsi_validator(window());
   compositor_->SetScaleAndSize(device_scale_factor_, new_size_in_pixels,
-                               local_surface_id_allocation);
+                               window_->GetLocalSurfaceIdAllocation());
 
   for (WindowTreeHostObserver& observer : observers_)
     observer.OnHostResized(this);
@@ -481,7 +467,8 @@ void WindowTreeHost::OnHostDisplayChanged() {
     return;
   display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window());
-  compositor_->SetDisplayColorSpace(display.color_space());
+  compositor_->SetDisplayColorSpace(display.color_space(),
+                                    display.sdr_white_level());
 }
 
 void WindowTreeHost::OnHostCloseRequested() {
@@ -507,7 +494,8 @@ void WindowTreeHost::OnDisplayMetricsChanged(const display::Display& display,
     display::Screen* screen = display::Screen::GetScreen();
     if (compositor_ &&
         display.id() == screen->GetDisplayNearestView(window()).id()) {
-      compositor_->SetDisplayColorSpace(display.color_space());
+      compositor_->SetDisplayColorSpace(display.color_space(),
+                                        display.sdr_white_level());
     }
   }
 }
@@ -519,10 +507,6 @@ gfx::Rect WindowTreeHost::GetTransformedRootWindowBoundsInPixels(
       gfx::ScaleRect(gfx::RectF(bounds), 1.0f / device_scale_factor_);
   window()->layer()->transform().TransformRect(&new_bounds);
   return gfx::ToEnclosingRect(new_bounds);
-}
-
-bool WindowTreeHost::ShouldAllocateLocalSurfaceIdOnResize() {
-  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -553,7 +537,7 @@ void WindowTreeHost::OnCompositingEnded(ui::Compositor* compositor) {
 }
 
 void WindowTreeHost::OnCompositingChildResizing(ui::Compositor* compositor) {
-  if (!window()->env()->throttle_input_on_resize() || holding_pointer_moves_)
+  if (!Env::GetInstance()->throttle_input_on_resize() || holding_pointer_moves_)
     return;
   synchronization_start_time_ = base::TimeTicks::Now();
   dispatcher_->HoldPointerMoves();

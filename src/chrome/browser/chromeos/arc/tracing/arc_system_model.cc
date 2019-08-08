@@ -86,7 +86,7 @@ void ArcSystemModel::Reset() {
   memory_events_.clear();
 }
 
-void ArcSystemModel::Trim(int64_t trim_timestamp) {
+void ArcSystemModel::Trim(uint64_t trim_timestamp) {
   const ArcCpuEvent cpu_trim_point(
       trim_timestamp, ArcCpuEvent::Type::kActive /* does not matter */,
       0 /* tid, does not matter */);

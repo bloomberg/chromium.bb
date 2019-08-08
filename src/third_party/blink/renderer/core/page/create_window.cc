@@ -29,10 +29,10 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
-#include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/frame/from_ad_state.h"
+#include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/public/web/web_window_features.h"
 #include "third_party/blink/renderer/core/core_initializer.h"
@@ -50,6 +50,9 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/text/number_parsing_options.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_to_number.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 
 namespace blink {
 
@@ -73,7 +76,7 @@ WebWindowFeatures GetWindowFeaturesFromString(const String& feature_string) {
   unsigned key_begin, key_end;
   unsigned value_begin, value_end;
 
-  String buffer = feature_string.DeprecatedLower();
+  String buffer = feature_string.LowerASCII();
   unsigned length = buffer.length();
   for (unsigned i = 0; i < length;) {
     // skip to first non-separator (start of key name), but don't skip
@@ -126,20 +129,24 @@ WebWindowFeatures GetWindowFeaturesFromString(const String& feature_string) {
       value_end = i;
     }
 
-    String key_string(
-        buffer.Substring(key_begin, key_end - key_begin).LowerASCII());
-    String value_string(
-        buffer.Substring(value_begin, value_end - value_begin).LowerASCII());
+    if (key_begin == key_end)
+      continue;
+
+    StringView key_string(buffer, key_begin, key_end - key_begin);
+    StringView value_string(buffer, value_begin, value_end - value_begin);
 
     // Listing a key with no value is shorthand for key=yes
     int value;
-    if (value_string.IsEmpty() || value_string == "yes")
+    if (value_string.IsEmpty() || value_string == "yes") {
       value = 1;
-    else
-      value = value_string.ToInt();
-
-    if (key_string.IsEmpty())
-      continue;
+    } else if (value_string.Is8Bit()) {
+      value = CharactersToInt(value_string.Characters8(), value_string.length(),
+                              WTF::NumberParsingOptions::kLoose, nullptr);
+    } else {
+      value =
+          CharactersToInt(value_string.Characters16(), value_string.length(),
+                          WTF::NumberParsingOptions::kLoose, nullptr);
+    }
 
     if (!ui_features_were_disabled && key_string != "noopener" &&
         key_string != "noreferrer") {
@@ -213,7 +220,9 @@ static void MaybeLogWindowOpen(LocalFrame& opener_frame) {
   }
 }
 
-Frame* CreateNewWindow(LocalFrame& opener_frame, FrameLoadRequest& request) {
+Frame* CreateNewWindow(LocalFrame& opener_frame,
+                       FrameLoadRequest& request,
+                       const AtomicString& frame_name) {
   DCHECK(request.GetResourceRequest().RequestorOrigin() ||
          opener_frame.GetDocument()->Url().IsEmpty());
   DCHECK_EQ(kNavigationPolicyCurrentTab, request.GetNavigationPolicy());
@@ -247,8 +256,7 @@ Frame* CreateNewWindow(LocalFrame& opener_frame, FrameLoadRequest& request) {
 
   const WebWindowFeatures& features = request.GetWindowFeatures();
   request.SetNavigationPolicy(NavigationPolicyForCreateWindow(features));
-  probe::WindowOpen(opener_frame.GetDocument(), url, request.FrameName(),
-                    features,
+  probe::WindowOpen(opener_frame.GetDocument(), url, frame_name, features,
                     LocalFrame::HasTransientUserActivation(&opener_frame));
 
   // Sandboxed frames cannot open new auxiliary browsing contexts.
@@ -289,8 +297,8 @@ Frame* CreateNewWindow(LocalFrame& opener_frame, FrameLoadRequest& request) {
   }
 
   Page* page = old_page->GetChromeClient().CreateWindow(
-      &opener_frame, request, features, sandbox_flags, opener_feature_state,
-      new_namespace_id);
+      &opener_frame, request, frame_name, features, sandbox_flags,
+      opener_feature_state, new_namespace_id);
   if (!page)
     return nullptr;
 

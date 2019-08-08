@@ -8,6 +8,7 @@
 
 #include "base/bits.h"
 #include "base/process/process_metrics.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 
@@ -27,23 +28,34 @@ AllocatorState::GetMetadataReturnType AllocatorState::GetMetadataForAddress(
     uintptr_t exception_address,
     const SlotMetadata* metadata_arr,
     const MetadataIdx* slot_to_metadata,
-    MetadataIdx* metadata_idx) const {
+    MetadataIdx* metadata_idx,
+    std::string* error) const {
   CHECK(IsValid());
   CHECK(PointerIsMine(exception_address));
 
   AllocatorState::SlotIdx slot_idx = GetNearestSlot(exception_address);
-  if (slot_idx >= total_pages)
+  if (slot_idx >= total_pages) {
+    *error =
+        base::StringPrintf("Bad slot index %u >= %zu", slot_idx, total_pages);
     return GetMetadataReturnType::kErrorBadSlot;
+  }
 
-  size_t index = slot_to_metadata[slot_idx];
+  AllocatorState::MetadataIdx index = slot_to_metadata[slot_idx];
   if (index == kInvalidMetadataIdx)
     return GetMetadataReturnType::kGwpAsanCrashWithMissingMetadata;
 
-  if (index >= num_metadata)
+  if (index >= num_metadata) {
+    *error =
+        base::StringPrintf("Bad metadata index %u >= %zu", index, num_metadata);
     return GetMetadataReturnType::kErrorBadMetadataIndex;
+  }
 
-  if (GetNearestSlot(metadata_arr[index].alloc_ptr) != slot_idx)
+  if (GetNearestSlot(metadata_arr[index].alloc_ptr) != slot_idx) {
+    *error = base::StringPrintf(
+        "Outdated metadata index %u: slot for %zx does not match %zx", index,
+        metadata_arr[index].alloc_ptr, exception_address);
     return GetMetadataReturnType::kErrorOutdatedMetadataIndex;
+  }
 
   *metadata_idx = index;
   return GetMetadataReturnType::kGwpAsanCrash;

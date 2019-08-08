@@ -51,7 +51,7 @@ CreateThreadAndProvidePaintWorkletProxyClient(
     WorkerReportingProxy* reporting_proxy,
     PaintWorkletProxyClient* proxy_client) {
   if (!proxy_client)
-    proxy_client = MakeGarbageCollected<PaintWorkletProxyClient>(1, nullptr);
+    proxy_client = PaintWorkletProxyClient::Create(document, 1);
   WorkerClients* clients = MakeGarbageCollected<WorkerClients>();
   ProvidePaintWorkletProxyClientTo(clients, proxy_client);
 

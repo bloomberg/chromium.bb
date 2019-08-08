@@ -129,7 +129,13 @@ void AuthenticatorRequestDialogModel::
   // Windows UI.
   if (transport_availability_.has_win_native_api_authenticator &&
       transport_availability_.available_transports.empty()) {
-    HideDialogAndDispatchToNativeWindowsApi();
+    if (might_create_resident_credential_ &&
+        !transport_availability_
+             .win_native_ui_shows_resident_credential_notice) {
+      SetCurrentStep(Step::kResidentCredentialConfirmation);
+    } else {
+      HideDialogAndDispatchToNativeWindowsApi();
+    }
     return;
   }
 
@@ -403,11 +409,15 @@ void AuthenticatorRequestDialogModel::OnAuthenticatorRemovedDuringPINEntry() {
 }
 
 void AuthenticatorRequestDialogModel::OnAuthenticatorMissingResidentKeys() {
-  SetCurrentStep(Step::kMissingResidentKeys);
+  SetCurrentStep(Step::kMissingCapability);
 }
 
 void AuthenticatorRequestDialogModel::OnAuthenticatorMissingUserVerification() {
-  SetCurrentStep(Step::kMissingUserVerification);
+  SetCurrentStep(Step::kMissingCapability);
+}
+
+void AuthenticatorRequestDialogModel::OnAuthenticatorStorageFull() {
+  SetCurrentStep(Step::kStorageFull);
 }
 
 void AuthenticatorRequestDialogModel::OnBluetoothPoweredStateChanged(
@@ -470,6 +480,11 @@ void AuthenticatorRequestDialogModel::OnHavePIN(const std::string& pin) {
   }
   std::move(pin_callback_).Run(pin);
   has_attempted_pin_entry_ = true;
+}
+
+void AuthenticatorRequestDialogModel::OnResidentCredentialConfirmed() {
+  DCHECK_EQ(current_step(), Step::kResidentCredentialConfirmation);
+  HideDialogAndDispatchToNativeWindowsApi();
 }
 
 void AuthenticatorRequestDialogModel::OnAttestationPermissionResponse(

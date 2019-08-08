@@ -96,11 +96,11 @@ FakeBluetoothGattDescriptorClient::GetProperties(
 
 void FakeBluetoothGattDescriptorClient::ReadValue(
     const dbus::ObjectPath& object_path,
-    const ValueCallback& callback,
-    const ErrorCallback& error_callback) {
+    ValueCallback callback,
+    ErrorCallback error_callback) {
   auto iter = properties_.find(object_path);
   if (iter == properties_.end()) {
-    error_callback.Run(kUnknownDescriptorError, "");
+    std::move(error_callback).Run(kUnknownDescriptorError, "");
     return;
   }
 
@@ -122,24 +122,25 @@ void FakeBluetoothGattDescriptorClient::ReadValue(
     }
   }
 
-  callback.Run(iter->second->properties->value.value());
+  std::move(callback).Run(iter->second->properties->value.value());
 }
 
 void FakeBluetoothGattDescriptorClient::WriteValue(
     const dbus::ObjectPath& object_path,
     const std::vector<uint8_t>& value,
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+    base::OnceClosure callback,
+    ErrorCallback error_callback) {
   if (properties_.find(object_path) == properties_.end()) {
-    error_callback.Run(kUnknownDescriptorError, "");
+    std::move(error_callback).Run(kUnknownDescriptorError, "");
     return;
   }
 
   // Since the only fake descriptor is "Client Characteristic Configuration"
   // and BlueZ doesn't allow writing to it, return failure.
-  error_callback.Run(bluetooth_gatt_service::kErrorNotPermitted,
-                     "Writing to the Client Characteristic Configuration "
-                     "descriptor not allowed");
+  std::move(error_callback)
+      .Run(bluetooth_gatt_service::kErrorNotPermitted,
+           "Writing to the Client Characteristic Configuration "
+           "descriptor not allowed");
 }
 
 dbus::ObjectPath FakeBluetoothGattDescriptorClient::ExposeDescriptor(

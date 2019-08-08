@@ -20,7 +20,6 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/disks/disk.h"
 #include "chromeos/disks/disk_mount_manager.h"
@@ -118,8 +117,7 @@ AppInstallEventLogger::AppInstallEventLogger(Delegate* delegate,
   }
 
   policy::PolicyService* const policy_service =
-      policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile_)
-          ->policy_service();
+      profile_->GetProfilePolicyConnector()->policy_service();
   EvaluatePolicy(policy_service->GetPolicies(policy::PolicyNamespace(
                      policy::POLICY_DOMAIN_CHROME, std::string())),
                  true /* initial */);
@@ -137,9 +135,8 @@ AppInstallEventLogger::~AppInstallEventLogger() {
   }
   if (observing_) {
     arc::ArcPolicyBridge::GetForBrowserContext(profile_)->RemoveObserver(this);
-    policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile_)
-        ->policy_service()
-        ->RemoveObserver(policy::POLICY_DOMAIN_CHROME, this);
+    profile_->GetProfilePolicyConnector()->policy_service()->RemoveObserver(
+        policy::POLICY_DOMAIN_CHROME, this);
   }
 }
 

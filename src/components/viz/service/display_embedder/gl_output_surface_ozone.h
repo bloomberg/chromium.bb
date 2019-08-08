@@ -20,13 +20,13 @@ class GLOutputSurfaceOzone : public GLOutputSurfaceBufferQueue {
   GLOutputSurfaceOzone(
       scoped_refptr<VizProcessContextProvider> context_provider,
       gpu::SurfaceHandle surface_handle,
-      UpdateVSyncParametersCallback update_vsync_callback,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       std::vector<OverlayStrategy> strategies);
   ~GLOutputSurfaceOzone() override;
 
   // OutputSurface implementation.
-  OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
+  std::unique_ptr<OverlayCandidateValidator> TakeOverlayCandidateValidator()
+      override;
 
  private:
   std::unique_ptr<OverlayCandidateValidator> overlay_candidate_validator_;

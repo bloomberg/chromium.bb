@@ -5,9 +5,9 @@
 #include "chrome/browser/chromeos/login/screens/demo_preferences_screen.h"
 
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/screens/demo_preferences_screen_view.h"
 #include "chrome/browser/chromeos/login/screens/welcome_screen.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/ui/webui/chromeos/login/demo_preferences_screen_handler.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
@@ -40,7 +40,7 @@ void SetApplicationLocaleAndInputMethod(const std::string& locale,
 DemoPreferencesScreen::DemoPreferencesScreen(
     DemoPreferencesScreenView* view,
     const ScreenExitCallback& exit_callback)
-    : BaseScreen(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES),
+    : BaseScreen(DemoPreferencesScreenView::kScreenId),
       input_manager_observer_(this),
       view_(view),
       exit_callback_(exit_callback) {

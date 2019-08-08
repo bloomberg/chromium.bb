@@ -17,7 +17,7 @@
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
-class TextAutosizerClient : public EmptyChromeClient {
+class TextAutosizerClient : public RenderingTestChromeClient {
  public:
   float WindowToViewportScalar(const float value) const override {
     return value * device_scale_factor_;
@@ -38,7 +38,7 @@ class TextAutosizerClient : public EmptyChromeClient {
 
 class TextAutosizerTest : public RenderingTest {
  public:
-  ChromeClient& GetChromeClient() const override {
+  RenderingTestChromeClient& GetChromeClient() const override {
     return GetTextAutosizerClient();
   }
   TextAutosizerClient& GetTextAutosizerClient() const {
@@ -1111,8 +1111,8 @@ TEST_F(TextAutosizerSimTest, CrossSiteUseCounter) {
   auto* child_frame = To<WebLocalFrameImpl>(MainFrame().FirstChild());
   auto* child_doc = child_frame->GetFrame()->GetDocument();
 
-  EXPECT_TRUE(UseCounter::IsCounted(*child_doc,
-                                    WebFeature::kTextAutosizedCrossSiteIframe));
+  EXPECT_TRUE(
+      child_doc->IsUseCounted(WebFeature::kTextAutosizedCrossSiteIframe));
 }
 
 }  // namespace blink

@@ -92,7 +92,7 @@ class MEDIA_MOJO_EXPORT MojoDecryptorService : public mojom::Decryptor {
                       const media::Decryptor::AudioFrames& frames);
   void OnVideoDecoded(DecryptAndDecodeVideoCallback callback,
                       Status status,
-                      const scoped_refptr<VideoFrame>& frame);
+                      scoped_refptr<VideoFrame> frame);
 
   // Returns audio/video buffer reader according to the |stream_type|.
   MojoDecoderBufferReader* GetBufferReader(StreamType stream_type) const;

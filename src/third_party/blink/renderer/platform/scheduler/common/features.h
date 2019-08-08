@@ -50,6 +50,18 @@ const base::Feature kUseWillBeginMainFrameForCompositingPrioritization{
     "BlinkSchedulerUseWillBeginMainFrameForCompositingPrioritization",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, the compositor will always be set to kVeryHighPriority if it
+// is not already set to kHighestPriority.
+const base::Feature kVeryHighPriorityForCompositingAlways{
+    "BlinkSchedulerVeryHighPriorityForCompositingAlways",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If enabled, compositor priority will be set to kVeryHighPriority if it will
+// be fast and is not already set to kHighestPriority.
+const base::Feature kVeryHighPriorityForCompositingWhenFast{
+    "BlinkSchedulerVeryHighPriorityForCompositingWhenFast",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // LOAD PRIORITY EXPERIMENT CONTROLS
 
 // Enables setting the priority of background (with no audio) pages'

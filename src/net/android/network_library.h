@@ -86,6 +86,11 @@ NET_EXPORT bool GetIsCaptivePortal();
 // point or its SSID is unavailable, an empty string is returned.
 NET_EXPORT_PRIVATE std::string GetWifiSSID();
 
+// Returns the signal strength level (between 0 and 4, both inclusive) of the
+// currently registered Wifi connection. If the value is unavailable, an
+// empty value is returned.
+NET_EXPORT_PRIVATE base::Optional<int32_t> GetWifiSignalLevel();
+
 // Gets the DNS servers and puts them in |dns_servers|.
 // Only callable on Marshmallow and newer releases.
 // Returns CONFIG_PARSE_POSIX_OK upon success,

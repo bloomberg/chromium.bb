@@ -10,7 +10,8 @@
 namespace {
 
 blink::EUserSelect UsedValueOfUserSelect(const blink::Node& node) {
-  if (node.IsHTMLElement() && ToHTMLElement(node).IsTextControl())
+  auto* html_element = blink::DynamicTo<blink::HTMLElement>(node);
+  if (html_element && html_element->IsTextControl())
     return blink::EUserSelect::kText;
   if (!node.GetLayoutObject())
     return blink::EUserSelect::kNone;
@@ -45,8 +46,8 @@ int EditingAlgorithm<Traversal>::LastOffsetForEditing(const Node* node) {
   DCHECK(node);
   if (!node)
     return 0;
-  if (node->IsCharacterDataNode())
-    return static_cast<int>(ToCharacterData(node)->length());
+  if (auto* character_data = DynamicTo<CharacterData>(node))
+    return static_cast<int>(character_data->length());
 
   if (Traversal::HasChildren(*node))
     return Traversal::CountChildren(*node);

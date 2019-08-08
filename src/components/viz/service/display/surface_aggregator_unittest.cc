@@ -134,10 +134,16 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
     testing::Test::TearDown();
   }
 
+  CompositorFrame AggregateFrame(const SurfaceId& surface_id) {
+    return aggregator_.Aggregate(
+        surface_id, GetNextDisplayTimeAndIncrement(),
+        gfx::OVERLAY_TRANSFORM_NONE /* display_transform */);
+  }
+
   struct Quad {
     static Quad SolidColorQuad(SkColor color, const gfx::Rect& rect) {
       Quad quad;
-      quad.material = DrawQuad::SOLID_COLOR;
+      quad.material = DrawQuad::Material::kSolidColor;
       quad.color = color;
       quad.rect = rect;
       return quad;
@@ -145,7 +151,7 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
 
     static Quad YUVVideoQuad(const gfx::Rect& rect) {
       Quad quad;
-      quad.material = DrawQuad::YUV_VIDEO_CONTENT;
+      quad.material = DrawQuad::Material::kYuvVideoContent;
       quad.rect = rect;
       return quad;
     }
@@ -158,7 +164,7 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
                             bool stretch_content_to_fill_bounds,
                             bool ignores_input_event) {
       Quad quad;
-      quad.material = DrawQuad::SURFACE_CONTENT;
+      quad.material = DrawQuad::Material::kSurfaceContent;
       quad.primary_surface_rect = primary_surface_rect;
       quad.surface_range = surface_range;
       quad.default_background_color = default_background_color;
@@ -173,9 +179,11 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
                             float opacity,
                             const gfx::Transform& transform,
                             bool stretch_content_to_fill_bounds,
-                            bool ignores_input_event) {
+                            bool ignores_input_event,
+                            const gfx::RRectF& rounded_corner_bounds,
+                            bool is_fast_rounded_corner) {
       Quad quad;
-      quad.material = DrawQuad::SURFACE_CONTENT;
+      quad.material = DrawQuad::Material::kSurfaceContent;
       quad.primary_surface_rect = primary_surface_rect;
       quad.opacity = opacity;
       quad.to_target_transform = transform;
@@ -183,18 +191,20 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
       quad.default_background_color = default_background_color;
       quad.stretch_content_to_fill_bounds = stretch_content_to_fill_bounds;
       quad.ignores_input_event = ignores_input_event;
+      quad.rounded_corner_bounds = rounded_corner_bounds;
+      quad.is_fast_rounded_corner = is_fast_rounded_corner;
       return quad;
     }
 
     static Quad RenderPassQuad(int id) {
       Quad quad;
-      quad.material = DrawQuad::RENDER_PASS;
+      quad.material = DrawQuad::Material::kRenderPass;
       quad.render_pass_id = id;
       return quad;
     }
 
     DrawQuad::Material material;
-    // Set when material==DrawQuad::SURFACE_CONTENT.
+    // Set when material==DrawQuad::Material::kSurfaceContent.
     SurfaceRange surface_range;
     SkColor default_background_color;
     bool stretch_content_to_fill_bounds;
@@ -202,14 +212,19 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
     gfx::Rect primary_surface_rect;
     float opacity;
     gfx::Transform to_target_transform;
-    // Set when material==DrawQuad::SOLID_COLOR.
+    // Set when material==DrawQuad::Material::kSolidColor.
     SkColor color;
     gfx::Rect rect;
-    // Set when material==DrawQuad::RENDER_PASS.
+    // Set when material==DrawQuad::Material::kRenderPass.
     RenderPassId render_pass_id;
+    gfx::RRectF rounded_corner_bounds;
+    bool is_fast_rounded_corner;
 
    private:
-    Quad() : material(DrawQuad::INVALID), opacity(1.f), color(SK_ColorWHITE) {}
+    Quad()
+        : material(DrawQuad::Material::kInvalid),
+          opacity(1.f),
+          color(SK_ColorWHITE) {}
   };
 
   struct Pass {
@@ -234,21 +249,22 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
                             RenderPass* pass,
                             std::vector<SurfaceRange>* referenced_surfaces) {
     switch (desc.material) {
-      case DrawQuad::SOLID_COLOR:
+      case DrawQuad::Material::kSolidColor:
         cc::AddQuad(pass, desc.rect, desc.color);
         break;
-      case DrawQuad::SURFACE_CONTENT:
+      case DrawQuad::Material::kSurfaceContent:
         referenced_surfaces->emplace_back(desc.surface_range);
         AddSurfaceQuad(pass, desc.primary_surface_rect, desc.opacity,
                        desc.to_target_transform, desc.surface_range,
                        desc.default_background_color,
                        desc.stretch_content_to_fill_bounds,
-                       desc.ignores_input_event);
+                       desc.ignores_input_event, desc.rounded_corner_bounds,
+                       desc.is_fast_rounded_corner);
         break;
-      case DrawQuad::RENDER_PASS:
+      case DrawQuad::Material::kRenderPass:
         AddRenderPassQuad(pass, desc.render_pass_id);
         break;
-      case DrawQuad::YUV_VIDEO_CONTENT:
+      case DrawQuad::Material::kYuvVideoContent:
         AddYUVVideoQuad(pass, desc.rect);
         break;
       default:
@@ -272,8 +288,8 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
   static void TestQuadMatchesExpectations(Quad expected_quad,
                                           const DrawQuad* quad) {
     switch (expected_quad.material) {
-      case DrawQuad::SOLID_COLOR: {
-        ASSERT_EQ(DrawQuad::SOLID_COLOR, quad->material);
+      case DrawQuad::Material::kSolidColor: {
+        ASSERT_EQ(DrawQuad::Material::kSolidColor, quad->material);
 
         const auto* solid_color_quad = SolidColorDrawQuad::MaterialCast(quad);
 
@@ -281,8 +297,8 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
         EXPECT_EQ(expected_quad.rect, solid_color_quad->rect);
         break;
       }
-      case DrawQuad::RENDER_PASS: {
-        ASSERT_EQ(DrawQuad::RENDER_PASS, quad->material);
+      case DrawQuad::Material::kRenderPass: {
+        ASSERT_EQ(DrawQuad::Material::kRenderPass, quad->material);
 
         const auto* render_pass_quad = RenderPassDrawQuad::MaterialCast(quad);
 
@@ -326,11 +342,12 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
                              const SurfaceRange& surface_range,
                              SkColor default_background_color,
                              bool stretch_content_to_fill_bounds,
-                             bool ignores_input_event) {
+                             bool ignores_input_event,
+                             const gfx::RRectF& rounded_corner_bounds,
+                             bool is_fast_rounded_corner) {
     gfx::Transform layer_to_target_transform = transform;
     gfx::Rect layer_bounds(primary_surface_rect);
     gfx::Rect visible_layer_rect(primary_surface_rect);
-    gfx::RRectF rounded_corner_bounds = gfx::RRectF();
     gfx::Rect clip_rect(primary_surface_rect);
     bool is_clipped = false;
     bool are_contents_opaque = false;
@@ -341,6 +358,7 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
                               visible_layer_rect, rounded_corner_bounds,
                               clip_rect, is_clipped, are_contents_opaque,
                               opacity, blend_mode, 0);
+    shared_quad_state->is_fast_rounded_corner = is_fast_rounded_corner;
 
     SurfaceDrawQuad* surface_quad =
         pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
@@ -434,9 +452,9 @@ class SurfaceAggregatorValidSurfaceTest : public SurfaceAggregatorTest {
 
   void AggregateAndVerify(const std::vector<Pass>& expected_passes,
                           const std::vector<SurfaceId>& expected_surface_ids) {
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        SurfaceId(root_sink_->frame_sink_id(), root_local_surface_id_),
-        GetNextDisplayTimeAndIncrement());
+    SurfaceId root_surface_id(root_sink_->frame_sink_id(),
+                              root_local_surface_id_);
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
 
     TestPassesMatchExpectations(expected_passes,
                                 &aggregated_frame.render_pass_list);
@@ -501,7 +519,8 @@ class SurfaceAggregatorValidSurfaceTest : public SurfaceAggregatorTest {
       quads.push_back(Quad::SurfaceQuad(
           range, SK_ColorWHITE, gfx::Rect(5, 5), 1.f, gfx::Transform(),
           /*stretch_content_to_fill_bounds=*/false,
-          /*ignores_input_event=*/false));
+          /*ignores_input_event=*/false, gfx::RRectF(),
+          /*is_fast_border_radius*/ false));
     }
     std::vector<Pass> passes = {Pass(quads, SurfaceSize())};
     RenderPassList pass_list;
@@ -593,14 +612,14 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, OpacityCopied) {
         Quad::SurfaceQuad(SurfaceRange(base::nullopt, embedded_surface_id),
                           SK_ColorWHITE, gfx::Rect(5, 5), .5f, gfx::Transform(),
                           /*stretch_content_to_fill_bounds=*/false,
-                          /*ignores_input_event=*/false)};
+                          /*ignores_input_event=*/false, gfx::RRectF(),
+                          /*is_fast_border_radius*/ false)};
     std::vector<Pass> passes = {Pass(quads, SurfaceSize())};
 
     SubmitCompositorFrame(root_sink_.get(), passes, root_local_surface_id_,
                           device_scale_factor);
 
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        root_surface_id, GetNextDisplayTimeAndIncrement());
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
 
     auto& render_pass_list = aggregated_frame.render_pass_list;
     EXPECT_EQ(2u, render_pass_list.size());
@@ -617,14 +636,14 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, OpacityCopied) {
         SurfaceRange(base::nullopt, embedded_surface_id), SK_ColorWHITE,
         gfx::Rect(5, 5), .9999f, gfx::Transform(),
         /*stretch_content_to_fill_bounds=*/false,
-        /*ignores_input_event=*/false)};
+        /*ignores_input_event=*/false, gfx::RRectF(),
+        /*is_fast_border_radius*/ false)};
     std::vector<Pass> passes = {Pass(quads, SurfaceSize())};
 
     SubmitCompositorFrame(root_sink_.get(), passes, root_local_surface_id_,
                           device_scale_factor);
 
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        root_surface_id, GetNextDisplayTimeAndIncrement());
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
 
     auto& render_pass_list = aggregated_frame.render_pass_list;
     EXPECT_EQ(1u, render_pass_list.size());
@@ -658,7 +677,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, RotatedClip) {
   std::vector<Quad> quads = {Quad::SurfaceQuad(
       SurfaceRange(base::nullopt, embedded_surface_id), SK_ColorWHITE,
       gfx::Rect(5, 5), 1.f, rotate, /*stretch_content_to_fill_bounds=*/false,
-      /*ignores_input_event=*/false)};
+      /*ignores_input_event=*/false, gfx::RRectF(),
+      /*is_fast_border_radius*/ false)};
   std::vector<Pass> passes = {Pass(quads, SurfaceSize())};
 
   SubmitCompositorFrame(root_sink_.get(), passes, root_local_surface_id_,
@@ -666,8 +686,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, RotatedClip) {
 
   SurfaceId root_surface_id(root_sink_->frame_sink_id(),
                             root_local_surface_id_);
-  CompositorFrame aggregated_frame =
-      aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement());
+  CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
 
   auto& render_pass_list = aggregated_frame.render_pass_list;
   EXPECT_EQ(2u, render_pass_list.size());
@@ -714,15 +733,13 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, MultiPassDeallocation) {
   SurfaceId surface_id(root_sink_->frame_sink_id(), root_local_surface_id_);
 
   CompositorFrame aggregated_frame;
-  aggregated_frame =
-      aggregator_.Aggregate(surface_id, GetNextDisplayTimeAndIncrement());
+  aggregated_frame = AggregateFrame(surface_id);
   auto id0 = aggregated_frame.render_pass_list[0]->id;
   auto id1 = aggregated_frame.render_pass_list[1]->id;
   EXPECT_NE(id1, id0);
 
   // Aggregated RenderPass ids should remain the same between frames.
-  aggregated_frame =
-      aggregator_.Aggregate(surface_id, GetNextDisplayTimeAndIncrement());
+  aggregated_frame = AggregateFrame(surface_id);
   EXPECT_EQ(id0, aggregated_frame.render_pass_list[0]->id);
   EXPECT_EQ(id1, aggregated_frame.render_pass_list[1]->id);
 
@@ -733,8 +750,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, MultiPassDeallocation) {
                         device_scale_factor);
 
   // The RenderPass that still exists should keep the same ID.
-  aggregated_frame =
-      aggregator_.Aggregate(surface_id, GetNextDisplayTimeAndIncrement());
+  aggregated_frame = AggregateFrame(surface_id);
   auto id2 = aggregated_frame.render_pass_list[0]->id;
   EXPECT_NE(id2, id1);
   EXPECT_NE(id2, id0);
@@ -745,8 +761,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, MultiPassDeallocation) {
 
   // |id1| didn't exist in the previous frame, so it should be
   // mapped to a new ID.
-  aggregated_frame =
-      aggregator_.Aggregate(surface_id, GetNextDisplayTimeAndIncrement());
+  aggregated_frame = AggregateFrame(surface_id);
   auto id3 = aggregated_frame.render_pass_list[0]->id;
   EXPECT_NE(id3, id2);
   EXPECT_NE(id3, id1);
@@ -1254,8 +1269,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, StretchContentToFillBounds) {
       aggregated_damage_callback,
       OnAggregatedDamage(root_local_surface_id_, SurfaceSize(),
                          gfx::Rect(SurfaceSize()), next_display_time()));
-  CompositorFrame frame =
-      aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement());
+  CompositorFrame frame = AggregateFrame(root_surface_id);
   testing::Mock::VerifyAndClearExpectations(&aggregated_damage_callback);
 
   EXPECT_EQ(1u, frame.render_pass_list.size());
@@ -1264,7 +1278,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, StretchContentToFillBounds) {
 
   auto* output_quad = render_pass->quad_list.back();
 
-  EXPECT_EQ(DrawQuad::SOLID_COLOR, output_quad->material);
+  EXPECT_EQ(DrawQuad::Material::kSolidColor, output_quad->material);
   gfx::RectF output_rect(100.f, 100.f);
 
   // SurfaceAggregator should stretch the SolidColorDrawQuad to fit the bounds
@@ -1326,8 +1340,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, StretchContentToFillStretchedBounds) {
       aggregated_damage_callback,
       OnAggregatedDamage(root_local_surface_id_, SurfaceSize(),
                          gfx::Rect(SurfaceSize()), next_display_time()));
-  CompositorFrame frame =
-      aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement());
+  CompositorFrame frame = AggregateFrame(root_surface_id);
 
   testing::Mock::VerifyAndClearExpectations(&aggregated_damage_callback);
 
@@ -1337,7 +1350,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, StretchContentToFillStretchedBounds) {
 
   auto* output_quad = render_pass->quad_list.back();
 
-  EXPECT_EQ(DrawQuad::SOLID_COLOR, output_quad->material);
+  EXPECT_EQ(DrawQuad::Material::kSolidColor, output_quad->material);
   gfx::RectF output_rect(200.f, 200.f);
 
   // SurfaceAggregator should stretch the SolidColorDrawQuad to fit the bounds
@@ -1399,8 +1412,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, StretchContentToFillSquashedBounds) {
       aggregated_damage_callback,
       OnAggregatedDamage(root_local_surface_id_, SurfaceSize(),
                          gfx::Rect(SurfaceSize()), next_display_time()));
-  CompositorFrame frame =
-      aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement());
+  CompositorFrame frame = AggregateFrame(root_surface_id);
   testing::Mock::VerifyAndClearExpectations(&aggregated_damage_callback);
 
   EXPECT_EQ(1u, frame.render_pass_list.size());
@@ -1409,7 +1421,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, StretchContentToFillSquashedBounds) {
 
   auto* output_quad = render_pass->quad_list.back();
 
-  EXPECT_EQ(DrawQuad::SOLID_COLOR, output_quad->material);
+  EXPECT_EQ(DrawQuad::Material::kSolidColor, output_quad->material);
   gfx::RectF output_rect(50.f, 50.f);
 
   // SurfaceAggregator should stretch the SolidColorDrawQuad to fit the bounds
@@ -1418,6 +1430,169 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, StretchContentToFillSquashedBounds) {
       &output_rect);
 
   EXPECT_EQ(gfx::RectF(25.f, 12.5f), output_rect);
+}
+
+// Verify that a reflected SurfaceDrawQuad with scaling won't have the surfaces
+// root RenderPass merged with the RenderPass that embeds it. This ensures the
+// reflected pixels can be scaled with AA enabled.
+TEST_F(SurfaceAggregatorValidSurfaceTest, ReflectedSurfaceDrawQuadScaled) {
+  const SurfaceId root_surface_id(root_sink_->frame_sink_id(),
+                                  root_local_surface_id_);
+
+  // Submit a CompositorFrame for the primary display. This will get mirrored
+  // by the second display through surface embedding.
+  const gfx::Rect display_rect(0, 0, 100, 100);
+  {
+    auto pass = RenderPass::Create();
+    pass->SetNew(1, display_rect, display_rect, gfx::Transform());
+    auto* sqs = pass->CreateAndAppendSharedQuadState();
+    sqs->opacity = 1.f;
+
+    auto* solid_color_quad =
+        pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+    solid_color_quad->SetNew(sqs, display_rect, display_rect, SK_ColorRED,
+                             false);
+
+    CompositorFrame frame =
+        CompositorFrameBuilder().AddRenderPass(std::move(pass)).Build();
+    root_sink_->SubmitCompositorFrame(root_surface_id.local_surface_id(),
+                                      std::move(frame));
+  }
+
+  auto mirror_display_sink = std::make_unique<CompositorFrameSinkSupport>(
+      nullptr, &manager_, kArbitraryFrameSinkId1, true, kNeedsSyncPoints);
+
+  ParentLocalSurfaceIdAllocator lsi_allocator;
+  lsi_allocator.GenerateId();
+  LocalSurfaceId mirror_display_local_surface_id =
+      lsi_allocator.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
+
+  // The mirroring display size is smaller than the primary display. The
+  // mirrored content would be scaled to fit.
+  const gfx::Rect mirror_display_rect(80, 80);
+  gfx::Transform scale_transform;
+  scale_transform.Scale(0.8, 0.8);
+
+  {
+    auto pass = RenderPass::Create();
+    pass->SetNew(1, mirror_display_rect, mirror_display_rect, gfx::Transform());
+    auto* sqs = pass->CreateAndAppendSharedQuadState();
+    sqs->quad_to_target_transform = scale_transform;
+    sqs->opacity = 1.f;
+
+    auto* surface_quad = pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
+    surface_quad->SetAll(sqs, display_rect, display_rect,
+                         /*needs_blending=*/false,
+                         SurfaceRange(base::nullopt, root_surface_id),
+                         SK_ColorBLACK,
+                         /*stretch_content_to_fill_bounds=*/true,
+                         /*ignores_input_event=*/false, /*is_reflection=*/true);
+
+    CompositorFrame frame =
+        CompositorFrameBuilder().AddRenderPass(std::move(pass)).Build();
+    mirror_display_sink->SubmitCompositorFrame(mirror_display_local_surface_id,
+                                               std::move(frame));
+  }
+
+  const SurfaceId mirror_display_surface_id(
+      mirror_display_sink->frame_sink_id(), mirror_display_local_surface_id);
+  CompositorFrame frame = AggregateFrame(mirror_display_surface_id);
+
+  // The reflected surface should be a separate RenderPass as it's scaled. The
+  // root RenderPass should have a single RenderPassDrawQuad.
+  EXPECT_EQ(2u, frame.render_pass_list.size());
+
+  auto* root_render_pass = frame.render_pass_list.back().get();
+  EXPECT_EQ(1u, root_render_pass->quad_list.size());
+
+  auto* output_quad = root_render_pass->quad_list.back();
+  EXPECT_EQ(DrawQuad::Material::kRenderPass, output_quad->material);
+
+  // The RenderPassDrawQuad should have the same scale transform that was
+  // applied to the SurfaceDrawQuad.
+  EXPECT_EQ(output_quad->shared_quad_state->quad_to_target_transform,
+            scale_transform);
+}
+
+// Verify that a reflected SurfaceDrawQuad with no scaling has the surfaces root
+// RenderPass merged with the RenderPass that embeds it.
+TEST_F(SurfaceAggregatorValidSurfaceTest, ReflectedSurfaceDrawQuadNotScaled) {
+  const SurfaceId root_surface_id(root_sink_->frame_sink_id(),
+                                  root_local_surface_id_);
+
+  // Submit a CompositorFrame for the primary display. This will get mirrored
+  // by the second display through surface embedding.
+  const gfx::Rect display_rect(0, 0, 100, 100);
+  {
+    auto pass = RenderPass::Create();
+    pass->SetNew(1, display_rect, display_rect, gfx::Transform());
+    auto* sqs = pass->CreateAndAppendSharedQuadState();
+    sqs->opacity = 1.f;
+
+    auto* solid_color_quad =
+        pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+    solid_color_quad->SetNew(sqs, display_rect, display_rect, SK_ColorRED,
+                             false);
+
+    CompositorFrame frame =
+        CompositorFrameBuilder().AddRenderPass(std::move(pass)).Build();
+    root_sink_->SubmitCompositorFrame(root_surface_id.local_surface_id(),
+                                      std::move(frame));
+  }
+
+  auto mirror_display_sink = std::make_unique<CompositorFrameSinkSupport>(
+      nullptr, &manager_, kArbitraryFrameSinkId1, true, kNeedsSyncPoints);
+
+  ParentLocalSurfaceIdAllocator lsi_allocator;
+  lsi_allocator.GenerateId();
+  LocalSurfaceId mirror_display_local_surface_id =
+      lsi_allocator.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
+
+  // The mirroring display is the same width but different height. The mirrored
+  // content would be letterboxed by translating it.
+  const gfx::Rect mirror_display_rect(120, 100);
+  gfx::Transform translate_transform;
+  translate_transform.Translate(10, 0);
+
+  {
+    auto pass = RenderPass::Create();
+    pass->SetNew(1, mirror_display_rect, mirror_display_rect, gfx::Transform());
+    auto* sqs = pass->CreateAndAppendSharedQuadState();
+    sqs->quad_to_target_transform = translate_transform;
+    sqs->opacity = 1.f;
+
+    auto* surface_quad = pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
+    surface_quad->SetAll(sqs, display_rect, display_rect,
+                         /*needs_blending=*/false,
+                         SurfaceRange(base::nullopt, root_surface_id),
+                         SK_ColorBLACK,
+                         /*stretch_content_to_fill_bounds=*/true,
+                         /*ignores_input_event=*/false, /*is_reflection=*/true);
+
+    CompositorFrame frame =
+        CompositorFrameBuilder().AddRenderPass(std::move(pass)).Build();
+    mirror_display_sink->SubmitCompositorFrame(mirror_display_local_surface_id,
+                                               std::move(frame));
+  }
+
+  const SurfaceId mirror_display_surface_id(
+      mirror_display_sink->frame_sink_id(), mirror_display_local_surface_id);
+  CompositorFrame frame = AggregateFrame(mirror_display_surface_id);
+
+  // The reflected surfaces RenderPass should be merged into the root RenderPass
+  // since it's not being scaled.
+  EXPECT_EQ(1u, frame.render_pass_list.size());
+
+  auto* root_render_pass = frame.render_pass_list.back().get();
+  EXPECT_EQ(1u, root_render_pass->quad_list.size());
+
+  auto* output_quad = root_render_pass->quad_list.back();
+  EXPECT_EQ(DrawQuad::Material::kSolidColor, output_quad->material);
+
+  // The quad from the embedded surface merged into the root RenderPass should
+  // have the same translate transform that was applied to the SurfaceDrawQuad.
+  EXPECT_EQ(output_quad->shared_quad_state->quad_to_target_transform,
+            translate_transform);
 }
 
 // This test verifies that in the presence of both primary Surface and fallback
@@ -1558,8 +1733,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, CopyRequest) {
 
   SurfaceId root_surface_id(root_sink_->frame_sink_id(),
                             root_local_surface_id_);
-  CompositorFrame aggregated_frame =
-      aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement());
+  CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
 
   std::vector<Quad> expected_quads = {
       Quad::SolidColorQuad(SK_ColorWHITE, gfx::Rect(5, 5)),
@@ -1633,8 +1807,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, RootCopyRequest) {
 
   SurfaceId root_surface_id(root_sink_->frame_sink_id(),
                             root_local_surface_id_);
-  CompositorFrame aggregated_frame =
-      aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement());
+  CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
 
   std::vector<Quad> expected_quads = {
       Quad::SolidColorQuad(SK_ColorWHITE, gfx::Rect(5, 5)),
@@ -1749,8 +1922,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, UnreferencedSurface) {
 
   SurfaceId root_surface_id(root_sink_->frame_sink_id(),
                             root_local_surface_id_);
-  CompositorFrame aggregated_frame =
-      aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement());
+  CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
 
   // First pass should come from surface that had a copy request but was not
   // referenced directly. The second pass comes from the root surface.
@@ -1824,8 +1996,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, MultiPassSurfaceReference) {
 
   SurfaceId root_surface_id(root_sink_->frame_sink_id(),
                             root_local_surface_id_);
-  CompositorFrame aggregated_frame =
-      aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement());
+  CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
 
   const auto& aggregated_pass_list = aggregated_frame.render_pass_list;
 
@@ -1867,7 +2038,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, MultiPassSurfaceReference) {
 
     // This render pass pass quad will reference the first pass from the
     // embedded surface, which is the second pass in the aggregated frame.
-    ASSERT_EQ(DrawQuad::RENDER_PASS,
+    ASSERT_EQ(DrawQuad::Material::kRenderPass,
               third_pass_quad_list.ElementAt(1)->material);
     const auto* third_pass_render_pass_draw_quad =
         RenderPassDrawQuad::MaterialCast(third_pass_quad_list.ElementAt(1));
@@ -1889,7 +2060,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, MultiPassSurfaceReference) {
 
     // The next quad will be a render pass quad referencing the second pass from
     // the embedded surface, which is the third pass in the aggregated frame.
-    ASSERT_EQ(DrawQuad::RENDER_PASS,
+    ASSERT_EQ(DrawQuad::Material::kRenderPass,
               fourth_pass_quad_list.ElementAt(1)->material);
     const auto* fourth_pass_first_render_pass_draw_quad =
         RenderPassDrawQuad::MaterialCast(fourth_pass_quad_list.ElementAt(1));
@@ -1898,7 +2069,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, MultiPassSurfaceReference) {
 
     // The last quad will be a render pass quad referencing the first pass from
     // the root surface, which is the first pass overall.
-    ASSERT_EQ(DrawQuad::RENDER_PASS,
+    ASSERT_EQ(DrawQuad::Material::kRenderPass,
               fourth_pass_quad_list.ElementAt(2)->material);
     const auto* fourth_pass_second_render_pass_draw_quad =
         RenderPassDrawQuad::MaterialCast(fourth_pass_quad_list.ElementAt(2));
@@ -1917,7 +2088,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, MultiPassSurfaceReference) {
     // The last quad in the last pass will reference the second pass from the
     // root surface, which after aggregating is the fourth pass in the overall
     // list.
-    ASSERT_EQ(DrawQuad::RENDER_PASS,
+    ASSERT_EQ(DrawQuad::Material::kRenderPass,
               fifth_pass_quad_list.ElementAt(1)->material);
     const auto* fifth_pass_render_pass_draw_quad =
         RenderPassDrawQuad::MaterialCast(fifth_pass_quad_list.ElementAt(1));
@@ -2128,8 +2299,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, RenderPassIdMapping) {
 
   SurfaceId root_surface_id(root_sink_->frame_sink_id(),
                             root_local_surface_id_);
-  CompositorFrame aggregated_frame =
-      aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement());
+  CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
 
   const auto& aggregated_pass_list = aggregated_frame.render_pass_list;
 
@@ -2148,12 +2318,12 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, RenderPassIdMapping) {
   // Make sure the render pass quads reference the remapped pass IDs.
   DrawQuad* render_pass_quads[] = {aggregated_pass_list[1]->quad_list.front(),
                                    aggregated_pass_list[2]->quad_list.front()};
-  ASSERT_EQ(render_pass_quads[0]->material, DrawQuad::RENDER_PASS);
+  ASSERT_EQ(render_pass_quads[0]->material, DrawQuad::Material::kRenderPass);
   EXPECT_EQ(
       actual_pass_ids[0],
       RenderPassDrawQuad::MaterialCast(render_pass_quads[0])->render_pass_id);
 
-  ASSERT_EQ(render_pass_quads[1]->material, DrawQuad::RENDER_PASS);
+  ASSERT_EQ(render_pass_quads[1]->material, DrawQuad::Material::kRenderPass);
   EXPECT_EQ(
       actual_pass_ids[1],
       RenderPassDrawQuad::MaterialCast(render_pass_quads[1])->render_pass_id);
@@ -2323,8 +2493,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateSharedQuadStateProperties) {
 
   SurfaceId root_surface_id(root_sink_->frame_sink_id(),
                             root_local_surface_id_);
-  CompositorFrame aggregated_frame =
-      aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement());
+  CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
 
   const auto& aggregated_pass_list = aggregated_frame.render_pass_list;
 
@@ -2518,8 +2687,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest,
 
   SurfaceId root_surface_id(root_sink_->frame_sink_id(),
                             root_local_surface_id_);
-  CompositorFrame aggregated_frame =
-      aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement());
+  CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
 
   const auto& aggregated_pass_list = aggregated_frame.render_pass_list;
 
@@ -2669,8 +2837,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateMultiplePassWithTransform) {
 
   SurfaceId root_surface_id(root_sink_->frame_sink_id(),
                             root_local_surface_id_);
-  CompositorFrame aggregated_frame =
-      aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement());
+  CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
 
   const auto& aggregated_pass_list = aggregated_frame.render_pass_list;
 
@@ -2825,8 +2992,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateDamageRect) {
       aggregated_damage_callback,
       OnAggregatedDamage(root_local_surface_id_, SurfaceSize(),
                          gfx::Rect(0, 0, 100, 110), next_display_time()));
-  CompositorFrame aggregated_frame =
-      aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement());
+  CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
   testing::Mock::VerifyAndClearExpectations(&aggregated_damage_callback);
   const auto& aggregated_pass_list = aggregated_frame.render_pass_list;
   ASSERT_EQ(2u, aggregated_pass_list.size());
@@ -2853,8 +3019,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateDamageRect) {
     EXPECT_CALL(aggregated_damage_callback,
                 OnAggregatedDamage(root_local_surface_id_, SurfaceSize(),
                                    expected_damage_rect, next_display_time()));
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        root_surface_id, GetNextDisplayTimeAndIncrement());
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
     const auto& aggregated_pass_list = aggregated_frame.render_pass_list;
     ASSERT_EQ(2u, aggregated_pass_list.size());
     EXPECT_EQ(expected_damage_rect.ToString(),
@@ -2896,8 +3061,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateDamageRect) {
         aggregated_damage_callback,
         OnAggregatedDamage(root_local_surface_id_, SurfaceSize(),
                            gfx::Rect(SurfaceSize()), next_display_time()));
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        root_surface_id, GetNextDisplayTimeAndIncrement());
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
     const auto& aggregated_pass_list = aggregated_frame.render_pass_list;
     ASSERT_EQ(2u, aggregated_pass_list.size());
     EXPECT_EQ(gfx::Rect(SurfaceSize()), aggregated_pass_list[1]->damage_rect);
@@ -2909,8 +3073,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateDamageRect) {
                               root_local_surface_id_);
     EXPECT_CALL(aggregated_damage_callback, OnAggregatedDamage(_, _, _, _))
         .Times(0);
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        root_surface_id, GetNextDisplayTimeAndIncrement());
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
     const auto& aggregated_pass_list = aggregated_frame.render_pass_list;
     ASSERT_EQ(2u, aggregated_pass_list.size());
     EXPECT_TRUE(aggregated_pass_list[1]->damage_rect.IsEmpty());
@@ -2924,8 +3087,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateDamageRect) {
         aggregated_damage_callback,
         OnAggregatedDamage(root_local_surface_id_, SurfaceSize(),
                            gfx::Rect(SurfaceSize()), next_display_time()));
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        root_surface_id, GetNextDisplayTimeAndIncrement());
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
     const auto& aggregated_pass_list = aggregated_frame.render_pass_list;
     ASSERT_EQ(2u, aggregated_pass_list.size());
     EXPECT_TRUE(aggregated_pass_list[1]->damage_rect.Contains(
@@ -3007,8 +3169,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateDamageRectWithSquashToFit) {
       aggregated_damage_callback,
       OnAggregatedDamage(root_local_surface_id_, SurfaceSize(),
                          gfx::Rect(SurfaceSize()), next_display_time()));
-  CompositorFrame aggregated_frame =
-      aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement());
+  CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
   testing::Mock::VerifyAndClearExpectations(&aggregated_damage_callback);
   const auto& aggregated_pass_list = aggregated_frame.render_pass_list;
   ASSERT_EQ(2u, aggregated_pass_list.size());
@@ -3035,8 +3196,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateDamageRectWithSquashToFit) {
     EXPECT_CALL(aggregated_damage_callback,
                 OnAggregatedDamage(root_local_surface_id_, SurfaceSize(),
                                    expected_damage_rect, next_display_time()));
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        root_surface_id, GetNextDisplayTimeAndIncrement());
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
     const auto& aggregated_pass_list = aggregated_frame.render_pass_list;
     ASSERT_EQ(2u, aggregated_pass_list.size());
     EXPECT_EQ(expected_damage_rect.ToString(),
@@ -3119,8 +3279,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateDamageRectWithStretchToFit) {
       aggregated_damage_callback,
       OnAggregatedDamage(root_local_surface_id_, SurfaceSize(),
                          gfx::Rect(0, 0, 200, 200), next_display_time()));
-  CompositorFrame aggregated_frame =
-      aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement());
+  CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
   testing::Mock::VerifyAndClearExpectations(&aggregated_damage_callback);
   const auto& aggregated_pass_list = aggregated_frame.render_pass_list;
   ASSERT_EQ(2u, aggregated_pass_list.size());
@@ -3147,8 +3306,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateDamageRectWithStretchToFit) {
     EXPECT_CALL(aggregated_damage_callback,
                 OnAggregatedDamage(root_local_surface_id_, SurfaceSize(),
                                    expected_damage_rect, next_display_time()));
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        root_surface_id, GetNextDisplayTimeAndIncrement());
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
     const auto& aggregated_pass_list = aggregated_frame.render_pass_list;
     ASSERT_EQ(2u, aggregated_pass_list.size());
     EXPECT_EQ(expected_damage_rect.ToString(),
@@ -3176,8 +3334,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, SwitchSurfaceDamage) {
   {
     SurfaceId root_surface_id(root_sink_->frame_sink_id(),
                               root_local_surface_id_);
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        root_surface_id, GetNextDisplayTimeAndIncrement());
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
 
     const auto& aggregated_pass_list = aggregated_frame.render_pass_list;
 
@@ -3209,8 +3366,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, SwitchSurfaceDamage) {
                                       std::move(root_frame));
   }
   {
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        second_root_surface_id, GetNextDisplayTimeAndIncrement());
+    CompositorFrame aggregated_frame = AggregateFrame(second_root_surface_id);
 
     const auto& aggregated_pass_list = aggregated_frame.render_pass_list;
 
@@ -3219,8 +3375,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, SwitchSurfaceDamage) {
     EXPECT_EQ(gfx::Rect(1, 2, 3, 4), aggregated_pass_list[0]->damage_rect);
   }
   {
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        second_root_surface_id, GetNextDisplayTimeAndIncrement());
+    CompositorFrame aggregated_frame = AggregateFrame(second_root_surface_id);
 
     const auto& aggregated_pass_list = aggregated_frame.render_pass_list;
 
@@ -3270,8 +3425,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, SurfaceDamageSameFrameSinkId) {
 
   SurfaceId root_surface_id(root_sink_->frame_sink_id(),
                             root_local_surface_id_);
-  CompositorFrame aggregated_frame =
-      aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement());
+  CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
 
   // |id1| is before the fallback id so it shouldn't damage the display.
   EXPECT_FALSE(aggregator_.NotifySurfaceDamageAndCheckForDisplayDamage(
@@ -3337,8 +3491,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, SurfaceDamageDifferentFrameSinkId) {
 
   SurfaceId root_surface_id(root_sink_->frame_sink_id(),
                             root_local_surface_id_);
-  CompositorFrame aggregated_frame =
-      aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement());
+  CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
 
   // |id1| is before the fallback id so it shouldn't damage the display.
   EXPECT_FALSE(aggregator_.NotifySurfaceDamageAndCheckForDisplayDamage(
@@ -3388,8 +3541,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, SurfaceDamagePrimarySurfaceOnly) {
 
   SurfaceId root_surface_id(root_sink_->frame_sink_id(),
                             root_local_surface_id_);
-  CompositorFrame aggregated_frame =
-      aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement());
+  CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
 
   // |id1| is inside the range so it should damage the display.
   EXPECT_TRUE(aggregator_.NotifySurfaceDamageAndCheckForDisplayDamage(
@@ -3446,8 +3598,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest,
 
   SurfaceId root_surface_id(root_sink_->frame_sink_id(),
                             root_local_surface_id_);
-  CompositorFrame aggregated_frame =
-      aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement());
+  CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
 
   // |id1| is before the fallback id so it shouldn't damage the display.
   EXPECT_FALSE(aggregator_.NotifySurfaceDamageAndCheckForDisplayDamage(
@@ -3547,8 +3698,7 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
 
   SurfaceId root_surface_id(root_sink_->frame_sink_id(),
                             root_local_surface_id_);
-  CompositorFrame aggregated_frame =
-      aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement());
+  CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
 
   const auto& aggregated_pass_list = aggregated_frame.render_pass_list;
 
@@ -3583,8 +3733,7 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
   }
 
   {
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        root_surface_id, GetNextDisplayTimeAndIncrement());
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
 
     const auto& aggregated_pass_list = aggregated_frame.render_pass_list;
 
@@ -3634,8 +3783,7 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
   }
 
   {
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        root_surface_id, GetNextDisplayTimeAndIncrement());
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
 
     const auto& aggregated_pass_list = aggregated_frame.render_pass_list;
 
@@ -3655,8 +3803,7 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
   }
 
   {
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        root_surface_id, GetNextDisplayTimeAndIncrement());
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
 
     const auto& aggregated_pass_list = aggregated_frame.render_pass_list;
     // There were no changes since last aggregation, so output should be empty
@@ -3697,8 +3844,7 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
   }
 
   {
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        root_surface_id, GetNextDisplayTimeAndIncrement());
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
 
     const auto& aggregated_pass_list = aggregated_frame.render_pass_list;
 
@@ -3750,8 +3896,7 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
   }
 
   {
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        root_surface_id, GetNextDisplayTimeAndIncrement());
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
     const auto& aggregated_pass_list = aggregated_frame.render_pass_list;
 
     ASSERT_EQ(3u, aggregated_pass_list.size());
@@ -3806,8 +3951,7 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
   }
 
   {
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        root_surface_id, GetNextDisplayTimeAndIncrement());
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
 
     const auto& aggregated_pass_list = aggregated_frame.render_pass_list;
 
@@ -3863,8 +4007,7 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
   }
 
   {
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        root_surface_id, GetNextDisplayTimeAndIncrement());
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
 
     const auto& aggregated_pass_list = aggregated_frame.render_pass_list;
 
@@ -3896,6 +4039,11 @@ class SurfaceAggregatorWithResourcesTest : public testing::Test,
     aggregator_ = std::make_unique<SurfaceAggregator>(
         manager_.surface_manager(), resource_provider_.get(), false, false);
     aggregator_->set_output_is_secure(true);
+  }
+
+  CompositorFrame AggregateFrame(const SurfaceId& surface_id) {
+    return aggregator_->Aggregate(surface_id, GetNextDisplayTimeAndIncrement(),
+                                  gfx::OVERLAY_TRANSFORM_NONE);
   }
 
  protected:
@@ -3970,8 +4118,7 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TakeResourcesOneSurface) {
   SubmitCompositorFrameWithResources(ids, true, SurfaceId(), support.get(),
                                      surface_id);
 
-  CompositorFrame frame =
-      aggregator_->Aggregate(surface_id, GetNextDisplayTimeAndIncrement());
+  CompositorFrame frame = AggregateFrame(surface_id);
 
   // Nothing should be available to be returned yet.
   EXPECT_TRUE(client.returned_resources().empty());
@@ -3979,7 +4126,7 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TakeResourcesOneSurface) {
   SubmitCompositorFrameWithResources({}, true, SurfaceId(), support.get(),
                                      surface_id);
 
-  frame = aggregator_->Aggregate(surface_id, GetNextDisplayTimeAndIncrement());
+  frame = AggregateFrame(surface_id);
 
   ASSERT_EQ(3u, client.returned_resources().size());
   ResourceId returned_ids[3];
@@ -4007,8 +4154,7 @@ TEST_F(SurfaceAggregatorWithResourcesTest, ReturnResourcesAsSurfacesChange) {
   SubmitCompositorFrameWithResources(ids, true, SurfaceId(), support.get(),
                                      surface_id1);
 
-  CompositorFrame frame =
-      aggregator_->Aggregate(surface_id1, GetNextDisplayTimeAndIncrement());
+  CompositorFrame frame = AggregateFrame(surface_id1);
 
   // Nothing should be available to be returned yet.
   EXPECT_TRUE(client.returned_resources().empty());
@@ -4019,7 +4165,7 @@ TEST_F(SurfaceAggregatorWithResourcesTest, ReturnResourcesAsSurfacesChange) {
                                      surface_id2);
   manager_.surface_manager()->GarbageCollectSurfaces();
 
-  frame = aggregator_->Aggregate(surface_id2, GetNextDisplayTimeAndIncrement());
+  frame = AggregateFrame(surface_id2);
 
   ASSERT_EQ(3u, client.returned_resources().size());
   ResourceId returned_ids[3];
@@ -4050,8 +4196,7 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TakeInvalidResources) {
                               .Build();
   support->SubmitCompositorFrame(local_surface_id, std::move(frame));
 
-  CompositorFrame returned_frame =
-      aggregator_->Aggregate(surface_id, GetNextDisplayTimeAndIncrement());
+  CompositorFrame returned_frame = AggregateFrame(surface_id);
 
   // Nothing should be available to be returned yet.
   EXPECT_TRUE(client.returned_resources().empty());
@@ -4081,8 +4226,7 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TwoSurfaces) {
   SubmitCompositorFrameWithResources(ids2, true, SurfaceId(), support2.get(),
                                      surface2_id);
 
-  CompositorFrame frame =
-      aggregator_->Aggregate(surface1_id, GetNextDisplayTimeAndIncrement());
+  CompositorFrame frame = AggregateFrame(surface1_id);
 
   SubmitCompositorFrameWithResources({}, true, SurfaceId(), support1.get(),
                                      surface1_id);
@@ -4090,7 +4234,7 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TwoSurfaces) {
   // Nothing should be available to be returned yet.
   EXPECT_TRUE(client.returned_resources().empty());
 
-  frame = aggregator_->Aggregate(surface2_id, GetNextDisplayTimeAndIncrement());
+  frame = AggregateFrame(surface2_id);
 
   // surface1_id wasn't referenced, so its resources should be returned.
   ASSERT_EQ(3u, client.returned_resources().size());
@@ -4138,8 +4282,7 @@ TEST_F(SurfaceAggregatorWithResourcesTest, InvalidChildSurface) {
                                      root_support.get(), root_surface_id);
 
   CompositorFrame frame;
-  frame =
-      aggregator_->Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement());
+  frame = AggregateFrame(root_surface_id);
 
   auto* pass_list = &frame.render_pass_list;
   ASSERT_EQ(1u, pass_list->size());
@@ -4148,8 +4291,7 @@ TEST_F(SurfaceAggregatorWithResourcesTest, InvalidChildSurface) {
   SubmitCompositorFrameWithResources(ids2, true, child_surface_id,
                                      middle_support.get(), middle_surface_id);
 
-  frame =
-      aggregator_->Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement());
+  frame = AggregateFrame(root_surface_id);
 
   pass_list = &frame.render_pass_list;
   ASSERT_EQ(1u, pass_list->size());
@@ -4173,12 +4315,12 @@ TEST_F(SurfaceAggregatorWithResourcesTest, SecureOutputTexture) {
   SubmitCompositorFrameWithResources(ids, true, SurfaceId(), support1.get(),
                                      surface1_id);
 
-  CompositorFrame frame =
-      aggregator_->Aggregate(surface1_id, GetNextDisplayTimeAndIncrement());
+  CompositorFrame frame = AggregateFrame(surface1_id);
 
   auto* render_pass = frame.render_pass_list.back().get();
 
-  EXPECT_EQ(DrawQuad::TEXTURE_CONTENT, render_pass->quad_list.back()->material);
+  EXPECT_EQ(DrawQuad::Material::kTextureContent,
+            render_pass->quad_list.back()->material);
 
   {
     auto pass = RenderPass::Create();
@@ -4200,28 +4342,30 @@ TEST_F(SurfaceAggregatorWithResourcesTest, SecureOutputTexture) {
     support2->SubmitCompositorFrame(local_frame2_id, std::move(frame));
   }
 
-  frame = aggregator_->Aggregate(surface2_id, GetNextDisplayTimeAndIncrement());
+  frame = AggregateFrame(surface2_id);
   EXPECT_EQ(1u, frame.render_pass_list.size());
   render_pass = frame.render_pass_list.front().get();
 
   // Parent has copy request, so texture should not be drawn.
-  EXPECT_EQ(DrawQuad::SOLID_COLOR, render_pass->quad_list.back()->material);
+  EXPECT_EQ(DrawQuad::Material::kSolidColor,
+            render_pass->quad_list.back()->material);
 
-  frame = aggregator_->Aggregate(surface2_id, GetNextDisplayTimeAndIncrement());
+  frame = AggregateFrame(surface2_id);
   EXPECT_EQ(1u, frame.render_pass_list.size());
   render_pass = frame.render_pass_list.front().get();
 
   // Copy request has been executed earlier, so texture should be drawn.
-  EXPECT_EQ(DrawQuad::TEXTURE_CONTENT,
+  EXPECT_EQ(DrawQuad::Material::kTextureContent,
             render_pass->quad_list.front()->material);
 
   aggregator_->set_output_is_secure(false);
 
-  frame = aggregator_->Aggregate(surface2_id, GetNextDisplayTimeAndIncrement());
+  frame = AggregateFrame(surface2_id);
   render_pass = frame.render_pass_list.back().get();
 
   // Output is insecure, so texture should be drawn.
-  EXPECT_EQ(DrawQuad::SOLID_COLOR, render_pass->quad_list.back()->material);
+  EXPECT_EQ(DrawQuad::Material::kSolidColor,
+            render_pass->quad_list.back()->material);
 }
 
 // Ensure that the render passes have correct color spaces.
@@ -4245,22 +4389,19 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, ColorSpaceTest) {
 
   CompositorFrame aggregated_frame;
   aggregator_.SetOutputColorSpace(color_space1, color_space1);
-  aggregated_frame =
-      aggregator_.Aggregate(surface_id, GetNextDisplayTimeAndIncrement());
+  aggregated_frame = AggregateFrame(surface_id);
   EXPECT_EQ(2u, aggregated_frame.render_pass_list.size());
   EXPECT_EQ(color_space1, aggregated_frame.render_pass_list[0]->color_space);
   EXPECT_EQ(color_space1, aggregated_frame.render_pass_list[1]->color_space);
 
   aggregator_.SetOutputColorSpace(color_space2, color_space2);
-  aggregated_frame =
-      aggregator_.Aggregate(surface_id, GetNextDisplayTimeAndIncrement());
+  aggregated_frame = AggregateFrame(surface_id);
   EXPECT_EQ(2u, aggregated_frame.render_pass_list.size());
   EXPECT_EQ(color_space2, aggregated_frame.render_pass_list[0]->color_space);
   EXPECT_EQ(color_space2, aggregated_frame.render_pass_list[1]->color_space);
 
   aggregator_.SetOutputColorSpace(color_space1, color_space3);
-  aggregated_frame =
-      aggregator_.Aggregate(surface_id, GetNextDisplayTimeAndIncrement());
+  aggregated_frame = AggregateFrame(surface_id);
   EXPECT_EQ(3u, aggregated_frame.render_pass_list.size());
   EXPECT_EQ(color_space1, aggregated_frame.render_pass_list[0]->color_space);
   EXPECT_EQ(color_space1, aggregated_frame.render_pass_list[1]->color_space);
@@ -4304,13 +4445,11 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, HasDamageByChangingChildSurface) {
 
   // On first frame there is no existing cache texture to worry about re-using,
   // so we don't worry what this bool is set to.
-  CompositorFrame aggregated_frame =
-      aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement());
+  CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
 
   // No Surface changed, so no damage should be given.
   {
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        root_surface_id, GetNextDisplayTimeAndIncrement());
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
     EXPECT_FALSE(aggregated_frame.render_pass_list[0]
                      ->has_damage_from_contributing_content);
   }
@@ -4323,8 +4462,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, HasDamageByChangingChildSurface) {
     child_sink_->SubmitCompositorFrame(child_local_surface_id,
                                        std::move(child_surface_frame));
 
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        root_surface_id, GetNextDisplayTimeAndIncrement());
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
     // True for new child_frame with damage.
     EXPECT_TRUE(aggregated_frame.render_pass_list[0]
                     ->has_damage_from_contributing_content);
@@ -4339,8 +4477,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, HasDamageByChangingChildSurface) {
     child_sink_->SubmitCompositorFrame(child_local_surface_id,
                                        std::move(child_surface_frame));
 
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        root_surface_id, GetNextDisplayTimeAndIncrement());
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
     // False for new child_frame without damage.
     EXPECT_FALSE(aggregated_frame.render_pass_list[0]
                      ->has_damage_from_contributing_content);
@@ -4389,13 +4526,11 @@ TEST_F(SurfaceAggregatorValidSurfaceTest,
 
   // On first frame there is no existing cache texture to worry about re-using,
   // so we don't worry what this bool is set to.
-  CompositorFrame aggregated_frame =
-      aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement());
+  CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
 
   // No Surface changed, so no damage should be given.
   {
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        root_surface_id, GetNextDisplayTimeAndIncrement());
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
     EXPECT_FALSE(aggregated_frame.render_pass_list[0]
                      ->has_damage_from_contributing_content);
   }
@@ -4433,8 +4568,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest,
     child_sink_->SubmitCompositorFrame(child_local_surface_id,
                                        std::move(child_surface_frame));
 
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        root_surface_id, GetNextDisplayTimeAndIncrement());
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
     // True for new grand_child_frame.
     EXPECT_TRUE(aggregated_frame.render_pass_list[0]
                     ->has_damage_from_contributing_content);
@@ -4442,8 +4576,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest,
 
   // No Surface changed, so no damage should be given.
   {
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        root_surface_id, GetNextDisplayTimeAndIncrement());
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
     EXPECT_FALSE(aggregated_frame.render_pass_list[0]
                      ->has_damage_from_contributing_content);
   }
@@ -4456,8 +4589,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest,
     grand_child_support->SubmitCompositorFrame(grand_child_local_surface_id,
                                                std::move(grand_child_frame));
 
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        root_surface_id, GetNextDisplayTimeAndIncrement());
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
     // True for new grand_child_frame with damage.
     EXPECT_TRUE(aggregated_frame.render_pass_list[0]
                     ->has_damage_from_contributing_content);
@@ -4472,8 +4604,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest,
     grand_child_support->SubmitCompositorFrame(grand_child_local_surface_id,
                                                std::move(grand_child_frame));
 
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        root_surface_id, GetNextDisplayTimeAndIncrement());
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
     // False for new grand_child_frame without damage.
     EXPECT_FALSE(aggregated_frame.render_pass_list[0]
                      ->has_damage_from_contributing_content);
@@ -4518,8 +4649,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, HasDamageFromRenderPassQuads) {
 
   SurfaceId root_surface_id(root_sink_->frame_sink_id(),
                             root_local_surface_id_);
-  CompositorFrame aggregated_frame =
-      aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement());
+  CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
 
   // On first frame there is no existing cache texture to worry about re-using,
   // so we don't worry what this bool is set to.
@@ -4529,8 +4659,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, HasDamageFromRenderPassQuads) {
 
   // No Surface changed, so no damage should be given.
   {
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        root_surface_id, GetNextDisplayTimeAndIncrement());
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
     EXPECT_FALSE(aggregated_frame.render_pass_list[0]
                      ->has_damage_from_contributing_content);
     EXPECT_FALSE(aggregated_frame.render_pass_list[1]
@@ -4545,8 +4674,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, HasDamageFromRenderPassQuads) {
     child_sink_->SubmitCompositorFrame(child_local_surface_id,
                                        std::move(child_frame));
 
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        root_surface_id, GetNextDisplayTimeAndIncrement());
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
     // True for new child_frame.
     EXPECT_TRUE(aggregated_frame.render_pass_list[0]
                     ->has_damage_from_contributing_content);
@@ -4576,8 +4704,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, DamageRectOfCachedRenderPass) {
 
   SurfaceId root_surface_id(root_sink_->frame_sink_id(),
                             root_local_surface_id_);
-  CompositorFrame aggregated_frame =
-      aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement());
+  CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
 
   const auto& aggregated_pass_list = aggregated_frame.render_pass_list;
 
@@ -4608,8 +4735,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, DamageRectOfCachedRenderPass) {
     root_sink_->SubmitCompositorFrame(root_local_surface_id_,
                                       std::move(root_frame));
 
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        root_surface_id, GetNextDisplayTimeAndIncrement());
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
     const auto& aggregated_pass_list = aggregated_frame.render_pass_list;
 
     // Only the visible area is damaged.
@@ -4636,8 +4762,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, DamageRectOfCachedRenderPass) {
     root_sink_->SubmitCompositorFrame(root_local_surface_id_,
                                       std::move(root_frame));
 
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        root_surface_id, GetNextDisplayTimeAndIncrement());
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
     const auto& aggregated_pass_list = aggregated_frame.render_pass_list;
 
     // Should have full damage.
@@ -4688,8 +4813,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest,
 
   SurfaceId root_surface_id(root_sink_->frame_sink_id(),
                             root_local_surface_id_);
-  CompositorFrame aggregated_frame =
-      aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement());
+  CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
 
   const auto& aggregated_pass_list = aggregated_frame.render_pass_list;
 
@@ -4720,8 +4844,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest,
     child_sink_->SubmitCompositorFrame(child_local_surface_id,
                                        std::move(child_frame));
 
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        root_surface_id, GetNextDisplayTimeAndIncrement());
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
     const auto& aggregated_pass_list = aggregated_frame.render_pass_list;
 
     // Only the visible area is damaged.
@@ -4748,8 +4871,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest,
     child_sink_->SubmitCompositorFrame(child_local_surface_id,
                                        std::move(child_frame));
 
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        root_surface_id, GetNextDisplayTimeAndIncrement());
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
     const auto& aggregated_pass_list = aggregated_frame.render_pass_list;
 
     // Should have full damage.
@@ -4795,8 +4917,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, DamageRectWithClippedChildSurface) {
   root_sink_->SubmitCompositorFrame(root_local_surface_id_,
                                     std::move(root_frame));
   // The damage rect of the very first frame is always the full rect
-  CompositorFrame aggregated_frame =
-      aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement());
+  CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
 
   // Parameters used for damage rect testing
   gfx::Transform transform(0.5, 0, 0, 0.5, 20, 0);
@@ -4822,8 +4943,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, DamageRectWithClippedChildSurface) {
     root_sink_->SubmitCompositorFrame(root_local_surface_id_,
                                       std::move(root_frame));
 
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        root_surface_id, GetNextDisplayTimeAndIncrement());
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
 
     // The root damage rect should be the size of the child surface damage rect
     gfx::Rect expected_damage_rect(20, 0, 50, 50);
@@ -4850,8 +4970,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, DamageRectWithClippedChildSurface) {
     root_sink_->SubmitCompositorFrame(root_local_surface_id_,
                                       std::move(root_frame));
 
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        root_surface_id, GetNextDisplayTimeAndIncrement());
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
 
     // The root damage rect should be the size of the clipped child surface
     // damage rect
@@ -4896,7 +5015,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, OverlayOccludingDamageRect) {
                         /*primary_surface_rect*/ gfx::Rect(0, 0, 100, 100),
                         /*opacity*/ 1.f, video_transform,
                         /*stretch_content_to_fill_bounds=*/false,
-                        /*ignores_input_event=*/false)};
+                        /*ignores_input_event=*/false, gfx::RRectF(),
+                        /*is_fast_border_radius*/ false)};
 
   std::vector<Pass> root_passes = {
       Pass(root_surface_quads,
@@ -4912,8 +5032,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, OverlayOccludingDamageRect) {
   root_sink_->SubmitCompositorFrame(root_local_surface_id_,
                                     std::move(root_frame));
 
-  CompositorFrame aggregated_frame =
-      aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement());
+  CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
 
   // Frame # 0 - Full occluding damage rect
   // The damage rect of the very first frame is always the full rect
@@ -4943,8 +5062,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, OverlayOccludingDamageRect) {
     root_sink_->SubmitCompositorFrame(root_local_surface_id_,
                                       std::move(root_frame));
 
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        root_surface_id, GetNextDisplayTimeAndIncrement());
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
 
     auto* output_root_pass = aggregated_frame.render_pass_list.back().get();
     // The video quad (10, 0, 80, 80) unions the solid quad on top (60, 0, 40,
@@ -4967,8 +5085,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, OverlayOccludingDamageRect) {
                                        std::move(child_surface_frame));
 
     // No change in root frame
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        root_surface_id, GetNextDisplayTimeAndIncrement());
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
 
     auto* output_root_pass = aggregated_frame.render_pass_list.back().get();
     // Only the video quad (10, 0, 80, 80) is damaged
@@ -4993,7 +5110,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, OverlayOccludingDamageRect) {
         /*primary_surface_rect*/ gfx::Rect(0, 0, 100, 100),
         /*opacity*/ 1.f, video_transform,
         /*stretch_content_to_fill_bounds=*/false,
-        /*ignores_input_event=*/false)};
+        /*ignores_input_event=*/false, gfx::RRectF(),
+        /*is_fast_border_radius*/ false)};
 
     std::vector<Pass> root_passes = {
         Pass(root_surface_quads,
@@ -5007,8 +5125,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, OverlayOccludingDamageRect) {
     root_sink_->SubmitCompositorFrame(root_local_surface_id_,
                                       std::move(root_frame));
 
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        root_surface_id, GetNextDisplayTimeAndIncrement());
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
 
     auto* output_root_pass = aggregated_frame.render_pass_list.back().get();
     // The video quad (10, 0, 80, 80) unions the expose damage from removing
@@ -5096,8 +5213,7 @@ TEST_F(SurfaceAggregatorPartialSwapTest, NotIgnoreOutsideForCachedRenderPass) {
 
   SurfaceId root_surface_id(root_sink_->frame_sink_id(),
                             root_local_surface_id_);
-  CompositorFrame aggregated_frame =
-      aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement());
+  CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
 
   const auto& aggregated_pass_list = aggregated_frame.render_pass_list;
 
@@ -5138,8 +5254,7 @@ TEST_F(SurfaceAggregatorPartialSwapTest, NotIgnoreOutsideForCachedRenderPass) {
   }
 
   {
-    CompositorFrame aggregated_frame = aggregator_.Aggregate(
-        root_surface_id, GetNextDisplayTimeAndIncrement());
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
     const auto& aggregated_pass_list = aggregated_frame.render_pass_list;
 
     ASSERT_EQ(3u, aggregated_pass_list.size());
@@ -5158,5 +5273,367 @@ TEST_F(SurfaceAggregatorPartialSwapTest, NotIgnoreOutsideForCachedRenderPass) {
     EXPECT_EQ(1u, aggregated_pass_list[2]->quad_list.size());
   }
 }
+
+// Validates that while the display transform is applied to the aggregated frame
+// and its damage, its not applied to the callback to the root frame sink.
+TEST_F(SurfaceAggregatorValidSurfaceTest, DisplayTransformDamageCallback) {
+  auto primary_child_support = std::make_unique<CompositorFrameSinkSupport>(
+      nullptr, &manager_, kArbitraryFrameSinkId1, kChildIsRoot,
+      kNeedsSyncPoints);
+  ParentLocalSurfaceIdAllocator child_allocator;
+  child_allocator.GenerateId();
+  LocalSurfaceId primary_child_local_surface_id =
+      child_allocator.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
+  SurfaceId primary_child_surface_id(primary_child_support->frame_sink_id(),
+                                     primary_child_local_surface_id);
+
+  {
+    auto pass = RenderPass::Create();
+    pass->SetNew(1, gfx::Rect(0, 0, 20, 20), gfx::Rect(), gfx::Transform());
+    auto* sqs = pass->CreateAndAppendSharedQuadState();
+    auto* solid_color_quad =
+        pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+
+    solid_color_quad->SetNew(sqs, gfx::Rect(0, 0, 20, 20),
+                             gfx::Rect(0, 0, 20, 20), SK_ColorRED, false);
+
+    CompositorFrame frame =
+        CompositorFrameBuilder().AddRenderPass(std::move(pass)).Build();
+
+    primary_child_support->SubmitCompositorFrame(primary_child_local_surface_id,
+                                                 std::move(frame));
+  }
+
+  constexpr gfx::Rect surface_quad_rect(10, 5);
+  std::vector<Quad> root_quads = {Quad::SurfaceQuad(
+      SurfaceRange(primary_child_surface_id), SK_ColorWHITE, surface_quad_rect,
+      /*stretch_content_to_fill_bounds=*/true, /*ignores_input_event=*/false)};
+  std::vector<Pass> root_passes = {Pass(root_quads, SurfaceSize())};
+
+  MockAggregatedDamageCallback aggregated_damage_callback;
+  root_sink_->SetAggregatedDamageCallbackForTesting(
+      aggregated_damage_callback.GetCallback());
+
+  SurfaceId root_surface_id(root_sink_->frame_sink_id(),
+                            root_local_surface_id_);
+  SubmitCompositorFrame(root_sink_.get(), root_passes, root_local_surface_id_,
+                        0.5f);
+
+  EXPECT_CALL(
+      aggregated_damage_callback,
+      OnAggregatedDamage(root_local_surface_id_, SurfaceSize(),
+                         gfx::Rect(SurfaceSize()), next_display_time()));
+
+  gfx::Rect transformed_rect(SurfaceSize().height(), SurfaceSize().width());
+  CompositorFrame frame =
+      aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement(),
+                            gfx::OVERLAY_TRANSFORM_ROTATE_90);
+  EXPECT_EQ(frame.render_pass_list.back()->output_rect, transformed_rect);
+  EXPECT_EQ(frame.render_pass_list.back()->damage_rect, transformed_rect);
+}
+
+// Tests that a rounded_corner_bounds field on a quad in a child
+// surface gets mapped up to the space of the parent surface, due to
+// change of target render surface. (rounded corner bounds are in the space
+// of the render surface).
+TEST_F(SurfaceAggregatorValidSurfaceTest, RoundedCornerTransformChange) {
+  auto middle_support = std::make_unique<CompositorFrameSinkSupport>(
+      nullptr, &manager_, kArbitraryMiddleFrameSinkId, kChildIsRoot,
+      kNeedsSyncPoints);
+  // Child surface.
+  ParentLocalSurfaceIdAllocator child_allocator;
+  child_allocator.GenerateId();
+  LocalSurfaceId child_local_surface_id =
+      child_allocator.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
+  SurfaceId child_surface_id(child_sink_->frame_sink_id(),
+                             child_local_surface_id);
+  {
+    std::vector<Quad> child_quads[1] = {
+        {Quad::SolidColorQuad(SK_ColorGREEN, gfx::Rect(5, 5))},
+    };
+    std::vector<Pass> child_passes = {Pass(child_quads[0], 1, SurfaceSize())};
+
+    CompositorFrame child_frame = MakeEmptyCompositorFrame();
+    AddPasses(&child_frame.render_pass_list, child_passes,
+              &child_frame.metadata.referenced_surfaces);
+
+    child_frame.render_pass_list[0]
+        ->shared_quad_state_list.front()
+        ->rounded_corner_bounds = gfx::RRectF(0, 0, 100, 10, 5);
+
+    child_sink_->SubmitCompositorFrame(child_local_surface_id,
+                                       std::move(child_frame));
+  }
+
+  // Root surface.
+  std::vector<Quad> surface_quads = {
+      Quad::SurfaceQuad(SurfaceRange(base::nullopt, child_surface_id),
+                        SK_ColorWHITE, gfx::Rect(5, 5), false, false)};
+  std::vector<Pass> root_passes = {Pass(surface_quads, SurfaceSize())};
+
+  CompositorFrame root_frame = MakeEmptyCompositorFrame();
+  AddPasses(&root_frame.render_pass_list, root_passes,
+            &root_frame.metadata.referenced_surfaces);
+
+  root_frame.render_pass_list[0]
+      ->shared_quad_state_list.front()
+      ->quad_to_target_transform.Translate(0, 7);
+  root_sink_->SubmitCompositorFrame(root_local_surface_id_,
+                                    std::move(root_frame));
+
+  SurfaceId root_surface_id(root_sink_->frame_sink_id(),
+                            root_local_surface_id_);
+
+  CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
+  auto* aggregated_first_pass_sqs =
+      aggregated_frame.render_pass_list[0]->shared_quad_state_list.front();
+
+  EXPECT_EQ(gfx::RRectF(0, 7, 100, 10, 5),
+            aggregated_first_pass_sqs->rounded_corner_bounds);
+}
+
+// Tests that the rounded corner bounds of a surface quad that gets transformed
+// when drawing into an ancestor surface get properly mapped to the new
+// coordinate space of its final render surface. It also tests the specific case
+// where the surface is embedded in a parent surface that itself can't be
+// merged into the root surface (due to opacity).
+TEST_F(SurfaceAggregatorValidSurfaceTest, RoundedCornerTransformedSurfaceQuad) {
+  auto middle_support = std::make_unique<CompositorFrameSinkSupport>(
+      nullptr, &manager_, kArbitraryMiddleFrameSinkId, kChildIsRoot,
+      kNeedsSyncPoints);
+  // Grandchild surface.
+  ParentLocalSurfaceIdAllocator child_allocator;
+  child_allocator.GenerateId();
+
+  LocalSurfaceId grandchild_local_surface_id =
+      child_allocator.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
+  SurfaceId grandchild_surface_id(child_sink_->frame_sink_id(),
+                                  grandchild_local_surface_id);
+  {
+    std::vector<Quad> child_quads[1] = {
+        {Quad::SolidColorQuad(SK_ColorGREEN, gfx::Rect(5, 5))},
+    };
+    std::vector<Pass> child_passes = {Pass(child_quads[0], 1, SurfaceSize())};
+
+    CompositorFrame child_frame = MakeEmptyCompositorFrame();
+    AddPasses(&child_frame.render_pass_list, child_passes,
+              &child_frame.metadata.referenced_surfaces);
+
+    child_sink_->SubmitCompositorFrame(grandchild_local_surface_id,
+                                       std::move(child_frame));
+  }
+
+  // Child surface.
+  child_allocator.GenerateId();
+  LocalSurfaceId child_local_surface_id =
+      child_allocator.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
+  SurfaceId child_surface_id(child_sink_->frame_sink_id(),
+                             child_local_surface_id);
+  {
+    // Set an opacity in order to prevent merging into the root render pass.
+    std::vector<Quad> child_quads = {Quad::SurfaceQuad(
+        SurfaceRange(base::nullopt, grandchild_surface_id), SK_ColorWHITE,
+        gfx::Rect(5, 5), 0.5f, gfx::Transform(), false, false,
+        gfx::RRectF(0, 0, 96, 10, 5),
+        /*is_fast_border_radius*/ false)};
+
+    std::vector<Pass> child_passes = {Pass(child_quads, 1, SurfaceSize())};
+
+    CompositorFrame child_frame = MakeEmptyCompositorFrame();
+    AddPasses(&child_frame.render_pass_list, child_passes,
+              &child_frame.metadata.referenced_surfaces);
+
+    child_sink_->SubmitCompositorFrame(child_local_surface_id,
+                                       std::move(child_frame));
+  }
+
+  // Root surface.
+  gfx::Transform surface_transform;
+  surface_transform.Translate(3, 4);
+  std::vector<Quad> secondary_quads = {
+      Quad::SurfaceQuad(SurfaceRange(base::nullopt, child_surface_id),
+                        SK_ColorWHITE, gfx::Rect(5, 5), 1.f, surface_transform,
+                        false, false, gfx::RRectF(), false)};
+
+  std::vector<Pass> root_passes = {Pass(secondary_quads, SurfaceSize())};
+
+  CompositorFrame root_frame =
+      CompositorFrameBuilder().SetDeviceScaleFactor(2.0f).Build();
+  AddPasses(&root_frame.render_pass_list, root_passes,
+            &root_frame.metadata.referenced_surfaces);
+
+  root_frame.render_pass_list[0]
+      ->shared_quad_state_list.front()
+      ->quad_to_target_transform.Translate(0, 7);
+  root_sink_->SubmitCompositorFrame(root_local_surface_id_,
+                                    std::move(root_frame));
+
+  SurfaceId root_surface_id(root_sink_->frame_sink_id(),
+                            root_local_surface_id_);
+
+  CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
+  auto* aggregated_first_pass_sqs =
+      aggregated_frame.render_pass_list[1]->shared_quad_state_list.front();
+
+  // Original rounded rect is (0, 0, 96, 10, 5). This then gets multiplied
+  // by a device scale factor of 2 to (0, 0, 192, 20, 10), then moved
+  // by a (3, 4) translation followed by a (0, 7) translation.
+  EXPECT_EQ(gfx::RRectF(3, 11, 192, 20, 10),
+            aggregated_first_pass_sqs->rounded_corner_bounds);
+}
+
+// This is a variant of RoundedCornerTransformedSurfaceQuad that does not
+// have opacity, and therefore can be merged into the root render pass.
+TEST_F(SurfaceAggregatorValidSurfaceTest,
+       RoundedCornerTransformedMergedSurfaceQuad) {
+  auto middle_support = std::make_unique<CompositorFrameSinkSupport>(
+      nullptr, &manager_, kArbitraryMiddleFrameSinkId, kChildIsRoot,
+      kNeedsSyncPoints);
+  // Grandchild surface.
+  ParentLocalSurfaceIdAllocator child_allocator;
+  child_allocator.GenerateId();
+
+  LocalSurfaceId grandchild_local_surface_id =
+      child_allocator.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
+  SurfaceId grandchild_surface_id(child_sink_->frame_sink_id(),
+                                  grandchild_local_surface_id);
+  {
+    std::vector<Quad> child_quads[1] = {
+        {Quad::SolidColorQuad(SK_ColorGREEN, gfx::Rect(5, 5))},
+    };
+    std::vector<Pass> child_passes = {Pass(child_quads[0], 1, SurfaceSize())};
+
+    CompositorFrame child_frame = MakeEmptyCompositorFrame();
+    AddPasses(&child_frame.render_pass_list, child_passes,
+              &child_frame.metadata.referenced_surfaces);
+
+    child_sink_->SubmitCompositorFrame(grandchild_local_surface_id,
+                                       std::move(child_frame));
+  }
+
+  // Child surface.
+  child_allocator.GenerateId();
+  LocalSurfaceId child_local_surface_id =
+      child_allocator.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
+  SurfaceId child_surface_id(child_sink_->frame_sink_id(),
+                             child_local_surface_id);
+  {
+    std::vector<Quad> child_quads = {
+        Quad::SurfaceQuad(SurfaceRange(base::nullopt, grandchild_surface_id),
+                          SK_ColorWHITE, gfx::Rect(5, 5), 1.f, gfx::Transform(),
+                          false, false, gfx::RRectF(0, 0, 96, 10, 5),
+                          /*is_fast_border_radius*/ false)};
+
+    std::vector<Pass> child_passes = {Pass(child_quads, 1, SurfaceSize())};
+
+    CompositorFrame child_frame = MakeEmptyCompositorFrame();
+    AddPasses(&child_frame.render_pass_list, child_passes,
+              &child_frame.metadata.referenced_surfaces);
+
+    child_sink_->SubmitCompositorFrame(child_local_surface_id,
+                                       std::move(child_frame));
+  }
+
+  // Root surface.
+  gfx::Transform surface_transform;
+  surface_transform.Translate(3, 4);
+  std::vector<Quad> secondary_quads = {Quad::SurfaceQuad(
+      SurfaceRange(base::nullopt, child_surface_id), SK_ColorWHITE,
+      gfx::Rect(5, 5), 1.f, surface_transform, false, false, gfx::RRectF(),
+      /*is_fast_border_radius*/ false)};
+
+  std::vector<Pass> root_passes = {Pass(secondary_quads, SurfaceSize())};
+
+  CompositorFrame root_frame =
+      CompositorFrameBuilder().SetDeviceScaleFactor(2.0f).Build();
+  AddPasses(&root_frame.render_pass_list, root_passes,
+            &root_frame.metadata.referenced_surfaces);
+
+  root_frame.render_pass_list[0]
+      ->shared_quad_state_list.front()
+      ->quad_to_target_transform.Translate(0, 7);
+  root_sink_->SubmitCompositorFrame(root_local_surface_id_,
+                                    std::move(root_frame));
+
+  SurfaceId root_surface_id(root_sink_->frame_sink_id(),
+                            root_local_surface_id_);
+
+  CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
+  auto* aggregated_first_pass_sqs =
+      aggregated_frame.render_pass_list[1]->shared_quad_state_list.front();
+
+  // Original rounded rect is (0, 0, 96, 10, 5). This then gets multiplied
+  // by a device scale factor of 2 to (0, 0, 192, 20, 10), then moved
+  // by a (3, 4) translation followed by a (0, 7) translation.
+  EXPECT_EQ(gfx::RRectF(3, 11, 192, 20, 10),
+            aggregated_first_pass_sqs->rounded_corner_bounds);
+}
+
+TEST_F(SurfaceAggregatorValidSurfaceTest, TransformedRoundedSurfaceQuad) {
+  auto middle_support = std::make_unique<CompositorFrameSinkSupport>(
+      nullptr, &manager_, kArbitraryMiddleFrameSinkId, kChildIsRoot,
+      kNeedsSyncPoints);
+  // Child surface.
+  ParentLocalSurfaceIdAllocator child_allocator;
+  child_allocator.GenerateId();
+
+  // Child surface.
+  child_allocator.GenerateId();
+  LocalSurfaceId child_local_surface_id =
+      child_allocator.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
+  SurfaceId child_surface_id(child_sink_->frame_sink_id(),
+                             child_local_surface_id);
+  {
+    std::vector<Quad> child_quads[1] = {
+        {Quad::SolidColorQuad(SK_ColorGREEN, gfx::Rect(5, 5))},
+    };
+    std::vector<Pass> child_passes = {Pass(child_quads[0], 1, SurfaceSize())};
+
+    CompositorFrame child_frame = MakeEmptyCompositorFrame();
+    AddPasses(&child_frame.render_pass_list, child_passes,
+              &child_frame.metadata.referenced_surfaces);
+
+    child_sink_->SubmitCompositorFrame(child_local_surface_id,
+                                       std::move(child_frame));
+  }
+
+  // Root surface.
+  gfx::Transform surface_transform;
+  surface_transform.Translate(3, 4);
+  std::vector<Quad> secondary_quads = {
+      Quad::SurfaceQuad(SurfaceRange(base::nullopt, child_surface_id),
+                        SK_ColorWHITE, gfx::Rect(5, 5), 1.f, surface_transform,
+                        false, false, gfx::RRectF(0, 0, 96, 10, 5),
+                        /* is_fast_border_radius */ true)};
+
+  std::vector<Pass> root_passes = {Pass(secondary_quads, SurfaceSize())};
+
+  CompositorFrame root_frame =
+      CompositorFrameBuilder().SetDeviceScaleFactor(2.0f).Build();
+  AddPasses(&root_frame.render_pass_list, root_passes,
+            &root_frame.metadata.referenced_surfaces);
+
+  root_frame.render_pass_list[0]
+      ->shared_quad_state_list.front()
+      ->quad_to_target_transform.Translate(0, 7);
+  root_sink_->SubmitCompositorFrame(root_local_surface_id_,
+                                    std::move(root_frame));
+
+  SurfaceId root_surface_id(root_sink_->frame_sink_id(),
+                            root_local_surface_id_);
+
+  CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
+  // Only one aggregated quad will result, because the use of
+  // is_fast_border_radius will result in the child surface being merged
+  // into the parent.
+  auto* aggregated_first_pass_sqs =
+      aggregated_frame.render_pass_list[0]->shared_quad_state_list.front();
+
+  // The rounded rect on the surface quad is already in the space of the root
+  // surface, so the (3, 4) translation should not apply to it.
+  EXPECT_EQ(gfx::RRectF(0, 0, 96, 10, 5),
+            aggregated_first_pass_sqs->rounded_corner_bounds);
+}
+
 }  // namespace
 }  // namespace viz

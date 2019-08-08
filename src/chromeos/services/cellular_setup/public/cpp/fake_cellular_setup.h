@@ -23,14 +23,9 @@ class FakeCellularSetup : public CellularSetupBase {
  public:
   class StartActivationInvocation {
    public:
-    StartActivationInvocation(const std::string& cellular_network_guid,
-                              mojom::ActivationDelegatePtr activation_delegate,
+    StartActivationInvocation(mojom::ActivationDelegatePtr activation_delegate,
                               StartActivationCallback callback);
     ~StartActivationInvocation();
-
-    const std::string& cellular_network_guid() const {
-      return cellular_network_guid_;
-    }
 
     mojom::ActivationDelegatePtr& activation_delegate() {
       return activation_delegate_;
@@ -42,7 +37,6 @@ class FakeCellularSetup : public CellularSetupBase {
     FakeCarrierPortalHandler* ExecuteCallback();
 
    private:
-    std::string cellular_network_guid_;
     mojom::ActivationDelegatePtr activation_delegate_;
     StartActivationCallback callback_;
 
@@ -62,8 +56,7 @@ class FakeCellularSetup : public CellularSetupBase {
 
  private:
   // mojom::CellularSetup:
-  void StartActivation(const std::string& cellular_network_guid,
-                       mojom::ActivationDelegatePtr activation_delegate,
+  void StartActivation(mojom::ActivationDelegatePtr activation_delegate,
                        StartActivationCallback callback) override;
 
   std::vector<std::unique_ptr<StartActivationInvocation>>

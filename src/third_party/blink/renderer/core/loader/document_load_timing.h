@@ -32,6 +32,11 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
+namespace base {
+class Clock;
+class TickClock;
+}  // namespace base
+
 namespace blink {
 
 class DocumentLoader;
@@ -95,6 +100,9 @@ class CORE_EXPORT DocumentLoadTiming final {
 
   void Trace(blink::Visitor*);
 
+  void SetTickClockForTesting(const base::TickClock* tick_clock);
+  void SetClockForTesting(const base::Clock* clock);
+
  private:
   void MarkRedirectEnd();
   void NotifyDocumentTimingChanged();
@@ -117,6 +125,9 @@ class CORE_EXPORT DocumentLoadTiming final {
   TimeTicks load_event_end_;
   bool has_cross_origin_redirect_;
   bool has_same_origin_as_previous_document_;
+
+  const base::Clock* clock_;
+  const base::TickClock* tick_clock_;
 
   Member<DocumentLoader> document_loader_;
 };

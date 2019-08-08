@@ -265,7 +265,7 @@ cr.define('print_preview_test_utils', function() {
 
   /**
    * Returns a media size capability with custom and localized names.
-   * @return {!{ option: Array<!print_preview_new.SelectOption> }}
+   * @return {!{ option: Array<!print_preview.SelectOption> }}
    */
   function getMediaSizeCapabilityWithCustomNames() {
     const customLocalizedMediaName = 'Vendor defined localized media name';

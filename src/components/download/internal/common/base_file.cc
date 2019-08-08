@@ -154,9 +154,10 @@ DownloadInterruptReason BaseFile::WriteDataToFile(int64_t offset,
   if (detached_)
     RecordDownloadCount(APPEND_TO_DETACHED_FILE_COUNT);
 
-  if (!file_.IsValid())
+  if (!file_.IsValid()) {
     return LogInterruptReason("No file stream on append", 0,
                               DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
+  }
 
   // TODO(phajdan.jr): get rid of this check.
   if (data_len == 0)
@@ -202,6 +203,27 @@ DownloadInterruptReason BaseFile::WriteDataToFile(int64_t offset,
     secure_hash_->Update(data, data_len);
 
   return DOWNLOAD_INTERRUPT_REASON_NONE;
+}
+
+bool BaseFile::ValidateDataInFile(int64_t offset,
+                                  const char* data,
+                                  size_t data_len) {
+  if (!file_.IsValid())
+    return false;
+
+  // Only validate the first chunk of the file. So |offset| cannot be
+  // larger than bytes received.
+  if (offset > bytes_so_far_)
+    return false;
+
+  if (data_len <= 0)
+    return true;
+
+  std::unique_ptr<char[]> buffer(new char[data_len]);
+  if (file_.Read(offset, buffer.get(), data_len) <= 0)
+    return false;
+
+  return memcmp(data, buffer.get(), data_len) == 0;
 }
 
 DownloadInterruptReason BaseFile::Rename(const base::FilePath& new_path) {

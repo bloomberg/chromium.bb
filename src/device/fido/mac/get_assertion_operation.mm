@@ -42,7 +42,7 @@ GetAssertionOperation::GetAssertionOperation(CtapGetAssertionRequest request,
 GetAssertionOperation::~GetAssertionOperation() = default;
 
 const std::string& GetAssertionOperation::RpId() const {
-  return request().rp_id();
+  return request().rp_id;
 }
 
 void GetAssertionOperation::Run() {
@@ -64,41 +64,37 @@ void GetAssertionOperation::PromptTouchIdDone(bool success) {
     return;
   }
 
-  // Collect the credential ids from allowList. If allowList is absent, we will
-  // pick the first available credential for the RP.
   std::set<std::vector<uint8_t>> allowed_credential_ids;
-  if (request().allow_list()) {
-    for (const PublicKeyCredentialDescriptor& desc : *request().allow_list()) {
-      if (desc.credential_type() != CredentialType::kPublicKey)
-        continue;
-
-      if (!desc.transports().empty() &&
-          !base::ContainsKey(desc.transports(),
-                             FidoTransportProtocol::kInternal))
-        continue;
-
+  for (const PublicKeyCredentialDescriptor& desc : request().allow_list) {
+    if (desc.credential_type() == CredentialType::kPublicKey &&
+        (desc.transports().empty() ||
+         base::ContainsKey(desc.transports(),
+                           FidoTransportProtocol::kInternal))) {
       allowed_credential_ids.insert(desc.id());
     }
   }
+  if (allowed_credential_ids.empty()) {
+    // TODO(martinkr): Implement resident keys for Touch ID.
+    std::move(callback())
+        .Run(CtapDeviceResponseCode::kCtap2ErrNoCredentials, base::nullopt);
+    return;
+  }
 
-  // Fetch credentials for RP from the request and current user profile.
   base::Optional<Credential> credential = FindCredentialInKeychain(
       keychain_access_group(), metadata_secret(), RpId(),
       allowed_credential_ids, authentication_context());
   if (!credential) {
-    // For now, don't show a Touch ID prompt if no credential exists.
-    // TODO(martinkr): Prompt for the fingerprint anyway, once dispatch to this
-    // authenticator is moved behind user interaction with the authenticator
-    // selection UI.
+    // TouchIdAuthenticator::HasCredentialForGetAssertionRequest() is invoked
+    // first to ensure this doesn't occur.
+    NOTREACHED();
     std::move(callback())
         .Run(CtapDeviceResponseCode::kCtap2ErrNoCredentials, base::nullopt);
     return;
   }
 
   // Decrypt the user entity from the credential ID.
-  base::Optional<CredentialMetadata::UserEntity> credential_user =
-      CredentialMetadata::UnsealCredentialId(metadata_secret(), RpId(),
-                                             credential->credential_id);
+  base::Optional<UserEntity> credential_user =
+      UnsealCredentialId(metadata_secret(), RpId(), credential->credential_id);
   if (!credential_user) {
     // The keychain query already filtered for the RP ID encoded under this
     // operation's metadata secret, so the credential id really should have
@@ -111,9 +107,8 @@ void GetAssertionOperation::PromptTouchIdDone(bool success) {
 
   AuthenticatorData authenticator_data =
       MakeAuthenticatorData(RpId(), /*attested_credential_data=*/base::nullopt);
-  base::Optional<std::vector<uint8_t>> signature =
-      GenerateSignature(authenticator_data, request().client_data_hash(),
-                        credential->private_key);
+  base::Optional<std::vector<uint8_t>> signature = GenerateSignature(
+      authenticator_data, request().client_data_hash, credential->private_key);
   if (!signature) {
     FIDO_LOG(ERROR) << "GenerateSignature failed";
     std::move(callback())

@@ -12,6 +12,7 @@
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
 #include "content/public/browser/render_frame_host.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace page_load_metrics {
 
@@ -42,6 +43,10 @@ class PageLoadMetricsTestWaiter
   // Add a subframe-level expectation.
   void AddSubFrameExpectation(TimingField field);
 
+  // Add a frame size expectation. Expects that at least one frame receives a
+  // size update of |size|.
+  void AddFrameSizeExpectation(const gfx::Size& size);
+
   // Add a single WebFeature expectation.
   void AddWebFeatureExpectation(blink::mojom::WebFeature web_feature);
 
@@ -54,6 +59,9 @@ class PageLoadMetricsTestWaiter
 
   // Add aggregate received resource bytes expectation.
   void AddMinimumNetworkBytesExpectation(int expected_minimum_network_bytes);
+
+  // Add aggregate time spent in cpu for page expectation.
+  void AddMinimumAggregateCpuTimeExpectation(base::TimeDelta minimum);
 
   // Whether the given TimingField was observed in the page.
   bool DidObserveInPage(TimingField field) const;
@@ -98,6 +106,10 @@ class PageLoadMetricsTestWaiter
         const page_load_metrics::mojom::PageLoadTiming& timing,
         const page_load_metrics::PageLoadExtraInfo& extra_info) override;
 
+    void OnCpuTimingUpdate(
+        content::RenderFrameHost* subframe_rfh,
+        const page_load_metrics::mojom::CpuTiming& timing) override;
+
     void OnLoadedResource(const page_load_metrics::ExtraRequestCompleteInfo&
                               extra_request_complete_info) override;
 
@@ -114,6 +126,8 @@ class PageLoadMetricsTestWaiter
     void OnDidFinishSubFrameNavigation(
         content::NavigationHandle* navigation_handle,
         const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+    void FrameSizeChanged(content::RenderFrameHost* render_frame_host,
+                          const gfx::Size& frame_size) override;
 
    private:
     const base::WeakPtr<PageLoadMetricsTestWaiter> waiter_;
@@ -150,6 +164,10 @@ class PageLoadMetricsTestWaiter
     int bitmask_ = 0;
   };
 
+  struct FrameSizeComparator {
+    bool operator()(const gfx::Size a, const gfx::Size b) const;
+  };
+
   static bool IsPageLevelField(TimingField field);
 
   static TimingFieldBitSet GetMatchedBits(
@@ -162,6 +180,12 @@ class PageLoadMetricsTestWaiter
   void OnTimingUpdated(content::RenderFrameHost* subframe_rfh,
                        const page_load_metrics::mojom::PageLoadTiming& timing,
                        const page_load_metrics::PageLoadExtraInfo& extra_info);
+
+  // Updates observed page fields when a timing update is received by the
+  // MetricsWebContentsObserver. Stops waiting if expectations are satsfied
+  // after update.
+  void OnCpuTimingUpdated(content::RenderFrameHost* subframe_rfh,
+                          const page_load_metrics::mojom::CpuTiming& timing);
 
   // Updates observed page fields when a resource load is observed by
   // MetricsWebContentsObserver.  Stops waiting if expectations are satsfied
@@ -182,6 +206,9 @@ class PageLoadMetricsTestWaiter
                                const mojom::PageLoadFeatures& features,
                                const PageLoadExtraInfo& extra_info);
 
+  void FrameSizeChanged(content::RenderFrameHost* render_frame_host,
+                        const gfx::Size& frame_size);
+
   void OnDidFinishSubFrameNavigation(
       content::NavigationHandle* navigation_handle,
       const page_load_metrics::PageLoadExtraInfo& extra_info);
@@ -189,6 +216,8 @@ class PageLoadMetricsTestWaiter
   void OnTrackerCreated(page_load_metrics::PageLoadTracker* tracker) override;
 
   void OnCommit(page_load_metrics::PageLoadTracker* tracker) override;
+
+  bool CpuTimeExpectationsSatisfied() const;
 
   bool ResourceUseExpectationsSatisfied() const;
 
@@ -209,6 +238,9 @@ class PageLoadMetricsTestWaiter
       observed_web_features_;
   size_t observed_subframe_navigations_ = 0;
 
+  std::set<gfx::Size, FrameSizeComparator> expected_frame_sizes_;
+  std::set<gfx::Size, FrameSizeComparator> observed_frame_sizes_;
+
   int current_complete_resources_ = 0;
   int64_t current_network_bytes_ = 0;
 
@@ -216,6 +248,10 @@ class PageLoadMetricsTestWaiter
   int64_t current_network_body_bytes_ = 0;
   int expected_minimum_complete_resources_ = 0;
   int expected_minimum_network_bytes_ = 0;
+
+  // Total time spent int the cpu aggregated across the frames on the page.
+  base::TimeDelta current_aggregate_cpu_time_;
+  base::TimeDelta expected_minimum_aggregate_cpu_time_;
 
   bool attach_on_tracker_creation_ = false;
   bool did_add_observer_ = false;

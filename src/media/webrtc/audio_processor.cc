@@ -75,8 +75,6 @@ AudioProcessor::AudioProcessor(const AudioParameters& audio_parameters,
 
 AudioProcessor::~AudioProcessor() {
   StopEchoCancellationDump();
-  if (audio_processing_)
-    audio_processing_->UpdateHistogramsOnCallEnd();
 }
 
 // Process the audio from source and return a pointer to the processed data.
@@ -240,22 +238,6 @@ void AudioProcessor::InitializeAPM() {
   // Audio processing module construction.
   audio_processing_ = base::WrapUnique(ap_builder.Create(ap_config));
 
-  // Noise suppression setup part 2.
-  if (settings_.noise_suppression != NoiseSuppressionType::kDisabled) {
-    int err = audio_processing_->noise_suppression()->set_level(
-        webrtc::NoiseSuppression::kHigh);
-    err |= audio_processing_->noise_suppression()->Enable(true);
-    DCHECK_EQ(err, 0);
-  }
-
-  // AGC setup part 2.
-  if (settings_.automatic_gain_control != AutomaticGainControlType::kDisabled) {
-    int err = audio_processing_->gain_control()->set_mode(
-        webrtc::GainControl::kAdaptiveAnalog);
-    err |= audio_processing_->gain_control()->Enable(true);
-    DCHECK_EQ(err, 0);
-  }
-
   webrtc::AudioProcessing::Config apm_config = audio_processing_->GetConfig();
 
   // Typing detection setup.
@@ -275,7 +257,17 @@ void AudioProcessor::InitializeAPM() {
   // High-pass filter setup.
   apm_config.high_pass_filter.enabled = settings_.high_pass_filter;
 
-  // AGC setup part 3.
+  // Noise suppression setup part 2.
+  apm_config.noise_suppression.enabled =
+      settings_.noise_suppression != NoiseSuppressionType::kDisabled;
+  apm_config.noise_suppression.level =
+      webrtc::AudioProcessing::Config::NoiseSuppression::kHigh;
+
+  // AGC setup part 2.
+  apm_config.gain_controller1.enabled =
+      settings_.automatic_gain_control != AutomaticGainControlType::kDisabled;
+  apm_config.gain_controller1.mode =
+      webrtc::AudioProcessing::Config::GainController1::kAdaptiveAnalog;
   if (settings_.automatic_gain_control ==
           AutomaticGainControlType::kExperimental ||
       settings_.automatic_gain_control ==
@@ -324,9 +316,7 @@ void AudioProcessor::UpdateAnalogLevel(double volume) {
   DCHECK_LE(volume, 1.0);
   constexpr double kWebRtcMaxVolume = 255;
   const int webrtc_volume = volume * kWebRtcMaxVolume;
-  int err =
-      audio_processing_->gain_control()->set_stream_analog_level(webrtc_volume);
-  DCHECK_EQ(err, 0) << "set_stream_analog_level() error: " << err;
+  audio_processing_->set_stream_analog_level(webrtc_volume);
 }
 
 void AudioProcessor::FeedDataToAPM(const AudioBus& source) {
@@ -360,7 +350,7 @@ base::Optional<double> AudioProcessor::GetNewVolumeFromAGC(double volume) {
   constexpr double kWebRtcMaxVolume = 255;
   const int webrtc_volume = volume * kWebRtcMaxVolume;
   const int new_webrtc_volume =
-      audio_processing_->gain_control()->stream_analog_level();
+      audio_processing_->recommended_stream_analog_level();
 
   return new_webrtc_volume == webrtc_volume
              ? base::nullopt

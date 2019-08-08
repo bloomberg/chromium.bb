@@ -29,8 +29,6 @@ class SVGTextElement final : public SVGTextPositioningElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_NODE_FACTORY(SVGTextElement);
-
   explicit SVGTextElement(Document&);
 
  private:

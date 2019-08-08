@@ -143,7 +143,7 @@ void LayerImpl::PopulateSharedQuadState(viz::SharedQuadState* state,
                 draw_properties_.rounded_corner_bounds,
                 draw_properties_.clip_rect, draw_properties_.is_clipped,
                 contents_opaque, draw_properties_.opacity,
-                effect_node->has_render_surface ? SkBlendMode::kSrcOver
+                effect_node->HasRenderSurface() ? SkBlendMode::kSrcOver
                                                 : effect_node->blend_mode,
                 GetSortingContextId());
   state->is_fast_rounded_corner = draw_properties_.is_fast_rounded_corner;
@@ -169,7 +169,7 @@ void LayerImpl::PopulateScaledSharedQuadState(viz::SharedQuadState* state,
                 draw_properties().rounded_corner_bounds,
                 draw_properties().clip_rect, draw_properties().is_clipped,
                 contents_opaque, draw_properties().opacity,
-                effect_node->has_render_surface ? SkBlendMode::kSrcOver
+                effect_node->HasRenderSurface() ? SkBlendMode::kSrcOver
                                                 : effect_node->blend_mode,
                 GetSortingContextId());
   state->is_fast_rounded_corner = draw_properties().is_fast_rounded_corner;
@@ -524,6 +524,12 @@ bool LayerImpl::IsActive() const {
 }
 
 gfx::Size LayerImpl::bounds() const {
+  // As an optimization, we do not need to include the viewport bounds delta if
+  // the layer is not a viewport layer.
+  if (viewport_layer_type_ == NOT_VIEWPORT_LAYER) {
+    DCHECK(ViewportBoundsDelta().IsZero());
+    return bounds_;
+  }
   auto viewport_bounds_delta = gfx::ToCeiledVector2d(ViewportBoundsDelta());
   return gfx::Size(bounds_.width() + viewport_bounds_delta.x(),
                    bounds_.height() + viewport_bounds_delta.y());

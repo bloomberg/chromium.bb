@@ -254,7 +254,7 @@ void OnScreenKeyboardDetector::HandleKeyboardHidden() {
 OnScreenKeyboardDisplayManagerTabTip::OnScreenKeyboardDisplayManagerTabTip(
     HWND hwnd)
     : hwnd_(hwnd) {
-  DCHECK_GE(base::win::GetVersion(), base::win::VERSION_WIN8);
+  DCHECK_GE(base::win::GetVersion(), base::win::Version::WIN8);
 }
 
 OnScreenKeyboardDisplayManagerTabTip::~OnScreenKeyboardDisplayManagerTabTip() {}

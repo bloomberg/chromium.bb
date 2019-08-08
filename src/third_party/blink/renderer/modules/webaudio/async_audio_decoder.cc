@@ -57,13 +57,13 @@ void AsyncAudioDecoder::DecodeAsync(
 
   worker_pool::PostTask(
       FROM_HERE,
-      CrossThreadBind(&AsyncAudioDecoder::DecodeOnBackgroundThread,
-                      WrapCrossThreadPersistent(audio_data), sample_rate,
-                      WrapCrossThreadPersistent(success_callback),
-                      WrapCrossThreadPersistent(error_callback),
-                      WrapCrossThreadPersistent(resolver),
-                      WrapCrossThreadPersistent(context),
-                      std::move(task_runner)));
+      CrossThreadBindOnce(&AsyncAudioDecoder::DecodeOnBackgroundThread,
+                          WrapCrossThreadPersistent(audio_data), sample_rate,
+                          WrapCrossThreadPersistent(success_callback),
+                          WrapCrossThreadPersistent(error_callback),
+                          WrapCrossThreadPersistent(resolver),
+                          WrapCrossThreadPersistent(context),
+                          std::move(task_runner)));
 }
 
 void AsyncAudioDecoder::DecodeOnBackgroundThread(
@@ -87,13 +87,13 @@ void AsyncAudioDecoder::DecodeOnBackgroundThread(
   if (context) {
     PostCrossThreadTask(
         *task_runner, FROM_HERE,
-        CrossThreadBind(&AsyncAudioDecoder::NotifyComplete,
-                        WrapCrossThreadPersistent(audio_data),
-                        WrapCrossThreadPersistent(success_callback),
-                        WrapCrossThreadPersistent(error_callback),
-                        WTF::RetainedRef(std::move(bus)),
-                        WrapCrossThreadPersistent(resolver),
-                        WrapCrossThreadPersistent(context)));
+        CrossThreadBindOnce(&AsyncAudioDecoder::NotifyComplete,
+                            WrapCrossThreadPersistent(audio_data),
+                            WrapCrossThreadPersistent(success_callback),
+                            WrapCrossThreadPersistent(error_callback),
+                            WTF::RetainedRef(std::move(bus)),
+                            WrapCrossThreadPersistent(resolver),
+                            WrapCrossThreadPersistent(context)));
   }
 }
 

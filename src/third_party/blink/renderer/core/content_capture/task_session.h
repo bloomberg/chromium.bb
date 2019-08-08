@@ -54,10 +54,13 @@ class TaskSession : public GarbageCollectedFinalized<TaskSession> {
     ~DocumentSession();
     void AddNodeHolder(cc::NodeHolder node_holder);
     void AddDetachedNode(int64_t id);
+    void AddChangedNodeHolder(cc::NodeHolder node);
     bool HasUnsentData() const {
-      return HasUnsentCapturedContent() || HasUnsentDetachedNodes();
+      return HasUnsentCapturedContent() || HasUnsentChangedContent() ||
+             HasUnsentDetachedNodes();
     }
     bool HasUnsentCapturedContent() const { return !captured_content_.empty(); }
+    bool HasUnsentChangedContent() const { return !changed_content_.empty(); }
     bool HasUnsentDetachedNodes() const { return !detached_nodes_.empty(); }
     std::vector<int64_t> MoveDetachedNodes();
     const Document* GetDocument() const { return document_; }
@@ -67,6 +70,8 @@ class TaskSession : public GarbageCollectedFinalized<TaskSession> {
     // Removes the unsent node from |captured_content_|, and returns it as
     // ContentHolder.
     scoped_refptr<ContentHolder> GetNextUnsentContentHolder();
+
+    scoped_refptr<ContentHolder> GetNextChangedContentHolder();
 
     // Resets the |captured_content_| and the |detached_nodes_|, shall only be
     // used if those data doesn't need to be sent, e.g. there is no
@@ -83,6 +88,9 @@ class TaskSession : public GarbageCollectedFinalized<TaskSession> {
     std::vector<int64_t> detached_nodes_;
     WeakMember<const Document> document_;
     Member<SentNodes> sent_nodes_;
+    // The list of changed nodes that needs to be sent.
+    std::vector<cc::NodeHolder> changed_content_;
+
     bool first_data_has_sent_ = false;
     // This is for the metrics to record the total node that has been sent.
     size_t total_sent_nodes_ = 0;
@@ -102,6 +110,8 @@ class TaskSession : public GarbageCollectedFinalized<TaskSession> {
 
   void OnNodeDetached(const cc::NodeHolder& node_holder);
 
+  void OnNodeChanged(const cc::NodeHolder& node_holder);
+
   bool HasUnsentData() const { return has_unsent_data_; }
 
   void SetSentNodeCountCallback(
@@ -119,8 +129,12 @@ class TaskSession : public GarbageCollectedFinalized<TaskSession> {
   DocumentSession& EnsureDocumentSession(const Document& doc);
   DocumentSession* GetDocumentSession(const Document& document) const;
   const Node* GetNodeIf(bool sent, const cc::NodeHolder& node_holder) const;
+  const Node* GetNode(const cc::NodeHolder& node_holder) const;
 
   Member<SentNodes> sent_nodes_;
+
+  // The list of node whose value has changed.
+  HeapHashSet<WeakMember<const Node>> changed_nodes_;
 
   // This owns the DocumentSession which is released along with Document.
   HeapHashMap<WeakMember<const Document>, Member<DocumentSession>>

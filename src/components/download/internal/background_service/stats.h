@@ -159,10 +159,6 @@ void LogServiceApiAction(DownloadClient client, ServiceApiAction action);
 void LogStartDownloadResult(DownloadClient client,
                             DownloadParams::StartResult result);
 
-// Logs the client response to StartDownload() attempt on the service.
-void LogStartDownloadResponse(DownloadClient client,
-                              download::Client::ShouldDownload should_download);
-
 // Logs the download parameters when StartDownload() is called.
 void LogDownloadParams(const DownloadParams& params);
 
@@ -229,6 +225,10 @@ void LogHasUploadData(DownloadClient client, bool has_upload_data);
 
 // Records whether or not a completed entry has a hash value.
 void LogHashPresence(bool hash_exists);
+
+// Records count of reduced mode to full browser transitions requested by each
+// client.
+void LogDownloadClientInflatedFullBrowser(DownloadClient client);
 
 }  // namespace stats
 }  // namespace download

@@ -42,8 +42,6 @@ class CORE_EXPORT HTMLTemplateElement final : public HTMLElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_NODE_FACTORY(HTMLTemplateElement);
-
   explicit HTMLTemplateElement(Document&);
   ~HTMLTemplateElement() override;
 

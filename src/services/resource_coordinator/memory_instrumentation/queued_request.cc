@@ -32,6 +32,7 @@ bool QueuedRequest::PendingResponse::operator<(
 }
 
 QueuedRequest::Response::Response() {}
+QueuedRequest::Response::Response(Response&& other) = default;
 QueuedRequest::Response::~Response() = default;
 
 QueuedRequest::QueuedRequest(const Args& args,

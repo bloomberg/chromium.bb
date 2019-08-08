@@ -15,6 +15,7 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "storage/browser/fileapi/file_system_operation_runner.h"
+#include "storage/browser/fileapi/isolated_context.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "url/gurl.h"
 
@@ -172,10 +173,10 @@ void GetMetadataForPath(
 
 // Obtains isolated file system URL from |virtual_path| pointing a file in the
 // external file system.
-storage::FileSystemURL CreateIsolatedURLFromVirtualPath(
-    const storage::FileSystemContext& context,
-    const GURL& origin,
-    const base::FilePath& virtual_path);
+std::pair<storage::FileSystemURL, storage::IsolatedContext::ScopedFSHandle>
+CreateIsolatedURLFromVirtualPath(const storage::FileSystemContext& context,
+                                 const GURL& origin,
+                                 const base::FilePath& virtual_path);
 
 }  // namespace util
 }  // namespace file_manager

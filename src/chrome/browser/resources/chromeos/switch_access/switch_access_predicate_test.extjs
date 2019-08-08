@@ -169,6 +169,7 @@ TEST_F('SwitchAccessPredicateTest', 'IsActionable', function() {
       '<a href="https://www.google.com/" aria-label="link1">link1</a>' +
       '<input type="text" aria-label="input1">input1</input>' +
       '<button>button3</button>' +
+      '<input type="range" aria-label="slider" value="5" min="0" max="10">' +
       '<div aria-label="listitem" role="listitem" onclick="2+2"></div>' +
       '<div aria-label="div1"><p>p1</p></div>';
   this.runWithLoadedTree('data:text/html;charset=utf-8,' + treeString,
@@ -201,6 +202,10 @@ TEST_F('SwitchAccessPredicateTest', 'IsActionable', function() {
         // Buttons are generally actionable.
         const button3 = this.getNodeByName('button3');
         assertTrue(SwitchAccessPredicate.isActionable(button3));
+
+        // Sliders are generally actionable.
+        const slider = this.getNodeByName('slider');
+        assertTrue(SwitchAccessPredicate.isActionable(slider));
 
         // List items with a default action of click are actionable.
         const listitem = this.getNodeByName('listitem');

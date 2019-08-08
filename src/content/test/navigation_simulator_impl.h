@@ -58,6 +58,11 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   static std::unique_ptr<NavigationSimulatorImpl> CreateFromPending(
       WebContents* contents);
 
+  // Creates a NavigationSimulator for an already-started navigation happening
+  // in |frame_tree_node|. Can be used to drive the navigation to completion.
+  static std::unique_ptr<NavigationSimulatorImpl> CreateFromPendingInFrame(
+      FrameTreeNode* frame_tree_node);
+
   // NavigationSimulator implementation.
   void Start() override;
   void Redirect(const GURL& new_url) override;
@@ -79,6 +84,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   void SetReloadType(ReloadType reload_type) override;
   void SetMethod(const std::string& method) override;
   void SetIsFormSubmission(bool is_form_submission) override;
+  void SetWasInitiatedByLinkClick(bool was_initiated_by_link_click) override;
   void SetReferrer(const Referrer& referrer) override;
   void SetSocketAddress(const net::IPEndPoint& remote_endpoint) override;
   void SetWasFetchedViaCache(bool was_fetched_via_cache) override;
@@ -88,6 +94,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
       service_manager::mojom::InterfaceProviderRequest request) override;
   void SetContentsMimeType(const std::string& contents_mime_type) override;
   void SetAutoAdvance(bool auto_advance) override;
+  void SetSSLInfo(const net::SSLInfo& ssl_info) override;
 
   NavigationThrottle::ThrottleCheckResult GetLastThrottleCheckResult() override;
   NavigationHandleImpl* GetNavigationHandle() const override;
@@ -131,8 +138,6 @@ class NavigationSimulatorImpl : public NavigationSimulator,
     http_connection_info_ = info;
   }
 
-  void set_ssl_info(net::SSLInfo ssl_info) { ssl_info_ = ssl_info; }
-
   // Whether to drop the swap out ack of the previous RenderFrameHost during
   // cross-process navigations. By default this is false, set to true if you
   // want the old RenderFrameHost to be left in a pending swap out state.
@@ -146,6 +151,12 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   void set_block_on_before_unload_ack(bool block_on_before_unload_ack) {
     block_on_before_unload_ack_ = block_on_before_unload_ack;
   }
+
+  void set_page_state(const PageState& page_state) { page_state_ = page_state; }
+
+  void set_origin(const url::Origin& origin) { origin_ = origin; }
+
+  void SetIsPostWithId(int64_t post_id);
 
  private:
   NavigationSimulatorImpl(const GURL& original_url,
@@ -254,6 +265,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   bool is_signed_exchange_inner_response_ = false;
   std::string initial_method_;
   bool is_form_submission_ = false;
+  bool was_initiated_by_link_click_ = false;
   bool browser_initiated_;
   bool same_document_ = false;
   Referrer referrer_;
@@ -271,6 +283,9 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   net::HttpResponseInfo::ConnectionInfo http_connection_info_ =
       net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN;
   base::Optional<net::SSLInfo> ssl_info_;
+  base::Optional<PageState> page_state_;
+  base::Optional<url::Origin> origin_;
+  int64_t post_id_ = -1;
 
   bool auto_advance_ = true;
   bool drop_swap_out_ack_ = false;

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/metrics/power_metrics_provider_mac.h"
 
+#import <Foundation/Foundation.h>
 #include <IOKit/IOKitLib.h>
 #include <libkern/OSByteOrder.h>
 
@@ -165,6 +166,30 @@ class SMCKey {
   SMCParamStruct::SMCKeyInfoData keyInfo_{};
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class ThermalStateUMA {
+  kNominal = 0,
+  kFair = 1,
+  kSerious = 2,
+  kCritical = 3,
+  kMaxValue = kCritical,
+};
+
+ThermalStateUMA ThermalStateToUmaEnumValue(NSProcessInfoThermalState state)
+    API_AVAILABLE(macos(10.10.3)) {
+  switch (state) {
+    case NSProcessInfoThermalStateNominal:
+      return ThermalStateUMA::kNominal;
+    case NSProcessInfoThermalStateFair:
+      return ThermalStateUMA::kFair;
+    case NSProcessInfoThermalStateSerious:
+      return ThermalStateUMA::kSerious;
+    case NSProcessInfoThermalStateCritical:
+      return ThermalStateUMA::kCritical;
+  }
+}
+
 }  // namespace
 
 class PowerMetricsProvider::Impl : public base::RefCountedThreadSafe<Impl> {
@@ -180,15 +205,13 @@ class PowerMetricsProvider::Impl : public base::RefCountedThreadSafe<Impl> {
   friend class base::RefCountedThreadSafe<Impl>;
   Impl(base::mac::ScopedIOObject<io_object_t> connect)
       : task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+            {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
              base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
         system_total_power_key_(connect, SMCParamStruct::SMCKey::TotalPower),
         cpu_package_cpu_power_key_(connect, SMCParamStruct::SMCKey::CPUPower),
         cpu_package_gpu_power_key_(connect, SMCParamStruct::SMCKey::iGPUPower),
         gpu_0_power_key_(connect, SMCParamStruct::SMCKey::GPU0Power),
-        gpu_1_power_key_(connect, SMCParamStruct::SMCKey::GPU0Power)
-
-  {}
+        gpu_1_power_key_(connect, SMCParamStruct::SMCKey::GPU0Power) {}
 
   ~Impl() = default;
 
@@ -212,13 +235,17 @@ class PowerMetricsProvider::Impl : public base::RefCountedThreadSafe<Impl> {
   void Collect() {
     ScheduleCollection();
 
-    if (IsInStartup())
-      Record("DuringStartup");
-    else
-      Record("All");
+    if (IsInStartup()) {
+      RecordSMC("DuringStartup");
+    } else {
+      RecordSMC("All");
+      if (@available(macOS 10.10.3, *)) {
+        RecordThermal();
+      }
+    }
   }
 
-  void Record(const std::string& name) {
+  void RecordSMC(const std::string& name) {
     const struct {
       const char* uma_prefix;
       SMCKey& smc_key;
@@ -235,6 +262,12 @@ class PowerMetricsProvider::Impl : public base::RefCountedThreadSafe<Impl> {
           base::UmaHistogramCounts100000(sensor.uma_prefix + name, power_mw);
       }
     }
+  }
+
+  void RecordThermal() API_AVAILABLE(macos(10.10.3)) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Power.Mac.ThermalState",
+        ThermalStateToUmaEnumValue([[NSProcessInfo processInfo] thermalState]));
   }
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;

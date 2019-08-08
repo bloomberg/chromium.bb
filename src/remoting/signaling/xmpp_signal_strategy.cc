@@ -336,7 +336,8 @@ void XmppSignalStrategy::Core::StartTls() {
 
   DCHECK(!read_pending_);
 
-  cert_verifier_ = net::CertVerifier::CreateDefault();
+  cert_verifier_ =
+      net::CertVerifier::CreateDefault(/*cert_net_fetcher=*/nullptr);
   transport_security_state_.reset(new net::TransportSecurityState());
   cert_transparency_verifier_.reset(new net::MultiLogCTVerifier());
   ct_policy_enforcer_.reset(new net::DefaultCTPolicyEnforcer());

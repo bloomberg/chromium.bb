@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html lang="$i18n{language}"><!-- TODO(dbeam): dir="$i18n{textdirection}"? -->
 <!-- Copyright 2015 The Chromium Authors. All rights reserved.
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
@@ -11,20 +11,21 @@
   <link rel="stylesheet" href="chrome-search://local-ntp/local-ntp.css"></link>
   <link rel="stylesheet" href="chrome-search://local-ntp/theme.css"></link>
   <link rel="stylesheet" href="chrome-search://local-ntp/voice.css"></link>
+  $i18nRaw{bgPreloader}
   <meta http-equiv="Content-Security-Policy"
-      content="{{CONTENT_SECURITY_POLICY}}">
+      content="$i18nRaw{contentSecurityPolicy}">
   <script src="chrome-search://local-ntp/animations.js"
-      {{ANIMATIONS_INTEGRITY}}></script>
+      integrity="$i18n{animationsIntegrity}"></script>
   <script src="chrome-search://local-ntp/config.js"
-      {{CONFIG_DATA_INTEGRITY}}></script>
+      integrity="$i18n{configDataIntegrity}"></script>
   <script src="chrome-search://local-ntp/custom-backgrounds.js"
-      {{LOCAL_NTP_CUSTOM_BG_INTEGRITY}}></script>
+      integrity="$i18n{localNtpCustomBgIntegrity}"></script>
   <script src="chrome-search://local-ntp/doodles.js"
-      {{DOODLES_INTEGRITY}}></script>
+      integrity="$i18n{doodlesIntegrity}"></script>
   <script src="chrome-search://local-ntp/local-ntp.js"
-      {{LOCAL_NTP_INTEGRITY}}></script>
+      integrity="$i18n{localNtpIntegrity}"></script>
   <script src="chrome-search://local-ntp/utils.js"
-      {{UTILS_INTEGRITY}}></script>
+      integrity="$i18n{utilsIntegrity}"></script>
   <meta charset="utf-8">
   <meta name="google" value="notranslate">
   <meta name="referrer" content="strict-origin">
@@ -32,7 +33,7 @@
 <body>
   <div id="custom-bg"></div>
   <!-- Container for the OneGoogleBar HTML. -->
-  <div id="one-google" class="hidden"></div>
+  <div id="one-google"></div>
 
   <div id="ntp-contents">
     <div id="logo">
@@ -108,7 +109,7 @@
       <span id="edit-bg-text"></span>
     </div>
 
-    <div id="custom-bg-attr"></div>
+    <a id="custom-bg-attr"></a>
   </div>
 
   <dialog div id="edit-bg-dialog">
@@ -161,15 +162,98 @@
     </div>
     <div id="bg-sel-tiles" tabindex="0"></div>
     <div id="bg-sel-footer">
-      <label id="bg-daily-refresh" class="switch">
-        <input type="checkbox">
-        <span class="toggle"></span>
-      </label>
-      <div id="bg-sel-refresh-text"></div>
       <button id="bg-sel-footer-cancel" class="bg-sel-footer-button paper secondary ripple"
           tabindex="0"></button>
       <button id="bg-sel-footer-done" class="bg-sel-footer-button paper primary ripple"
           tabindex="-1"></button>
+    </div>
+  </dialog>
+
+  <dialog id="customization-menu" class="customize-dialog">
+    <div id="menu-header">
+      <div id="menu-back-wrapper">
+        <div id="menu-back-circle" tabindex="0">
+          <div id="menu-back"></div>
+        </div>
+      </div>
+      <div id="menu-title-wrapper">
+        <div id="menu-title">$i18n{customizeMenuTitle}</div>
+      </div>
+    </div>
+    <div id="menu-nav-panel">
+      <div id="backgrounds-button" class="menu-option selected" tabindex="0">
+        <div class="menu-option-icon-wrapper">
+          <div id="backgrounds-icon" class="menu-option-icon"></div>
+        </div>
+        <div class="menu-option-label">$i18n{backgroundsOption}</div>
+      </div>
+      <div id="shortcuts-button" class="menu-option" tabindex="0">
+        <div class="menu-option-icon-wrapper">
+          <div id="shortcuts-icon" class="menu-option-icon"></div>
+        </div>
+        <div class="menu-option-label">$i18n{shortcutsOption}</div>
+      </div>
+      <div id="colors-button" class="menu-option" tabindex="0">
+        <div class="menu-option-icon-wrapper">
+          <div id="colors-icon" class="menu-option-icon"></div>
+        </div>
+        <div class="menu-option-label">$i18n{colorsOption}</div>
+      </div>
+    </div>
+    <div id="menu-contents">
+      <div id="backgrounds-menu" class="menu-panel">
+        <div id="backgrounds-upload" class="bg-sel-tile-bg">
+          <div id="backgrounds-upload-icon"></div>
+          <div id="backgrounds-upload-text">$i18n{uploadImage}</div>
+        </div>
+        <div id="backgrounds-default" class="bg-sel-tile-bg">
+          <div id="backgrounds-default-icon" class="bg-sel-tile">
+            <div id="backgrounds-default-icon-header"></div>
+            <div id="backgrounds-default-icon-shortcuts"></div>
+          </div>
+          <div class="bg-sel-tile-title">$i18n{noBackground}</div>
+        </div>
+      </div>
+      <div id="backgrounds-image-menu" class="menu-panel"></div>
+      <div id="shortcuts-menu" class="menu-panel">
+        <div id="sh-options">
+          <div id="sh-option-cl" class="sh-option">
+            <div class="sh-option-image">
+              <div class="sh-option-icon"></div>
+              <div class="sh-option-mini"></div>
+              <div class="sh-option-select"></div>
+            </div>
+            <div class="sh-title">$i18n{myShortcuts}</div>
+              $i18n{shortcutsCurated}
+          </div>
+          <div id="sh-option-mv" class="sh-option">
+            <div class="sh-option-image">
+              <div class="sh-option-icon"></div>
+              <div class="sh-option-mini"></div>
+              <div class="sh-option-select"></div>
+            </div>
+            <div class="sh-title">$i18n{mostVisited}</div>
+              $i18n{shortcutsSuggested}
+          </div>
+        </div>
+        <div id="sh-hide">
+          <div id="sh-hide-icon"></div>
+          <div>
+            <div id="sh-hide-title">$i18n{hideShortcuts}</div>
+            $i18n{hideShortcutsDesc}
+          </div>
+          <div id="sh-hide-toggle">
+            <input type="checkbox"></input>
+          </div>
+        </div>
+      </div>
+      <div id="colors-menu" class="menu-panel"></div>
+    </div>
+    <div id="menu-footer">
+      <button id="menu-cancel" class="bg-sel-footer-button paper secondary
+                               ripple">$i18n{cancelButton}</button>
+      <button id="menu-done" class="bg-sel-footer-button paper primary ripple"
+                             disabled>$i18n{doneButton}</button>
     </div>
   </dialog>
 
@@ -207,6 +291,6 @@
   <div id="one-google-end-of-body"></div>
 
   <script defer src="chrome-search://local-ntp/voice.js"
-      {{LOCAL_NTP_VOICE_INTEGRITY}}></script>
+      integrity="$i18n{localNtpVoiceIntegrity}"></script>
 </body>
 </html>

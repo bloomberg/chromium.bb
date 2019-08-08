@@ -305,7 +305,7 @@ net::Error CreateCacheBackend(net::CacheType type,
 void FlushCacheThreadForTesting() {
   // For simple backend.
   SimpleBackendImpl::FlushWorkerPoolForTesting();
-  base::ThreadPool::GetInstance()->FlushForTesting();
+  base::ThreadPoolInstance::Get()->FlushForTesting();
 
   // Block backend.
   BackendImpl::FlushForTesting();

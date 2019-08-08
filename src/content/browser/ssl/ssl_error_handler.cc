@@ -44,16 +44,17 @@ void CompleteContinueRequest(
 SSLErrorHandler::SSLErrorHandler(WebContents* web_contents,
                                  const base::WeakPtr<Delegate>& delegate,
                                  BrowserThread::ID delegate_thread,
-                                 ResourceType resource_type,
+                                 bool is_main_frame_request,
                                  const GURL& url,
+                                 int net_error,
                                  const net::SSLInfo& ssl_info,
                                  bool fatal)
     : delegate_(delegate),
       delegate_thread_(delegate_thread),
       request_url_(url),
-      resource_type_(resource_type),
+      is_main_frame_request_(is_main_frame_request),
       ssl_info_(ssl_info),
-      cert_error_(net::MapCertStatusToNetError(ssl_info.cert_status)),
+      cert_error_(net_error),
       fatal_(fatal),
       web_contents_(web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

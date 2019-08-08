@@ -16,6 +16,9 @@ Section .rodata: has 44.6% of 2641540 bytes accounted for from 9 symbols. 328611
 * 4 placeholders exist (symbols that start with **). Accounts for 1965412 bytes (74.4%).
 * 0 string literals exist. Accounts for 0 bytes (0.0%) padding is 0 bytes.
 * 0 symbols have shared ownership.
+Large padding of 675992 between:
+  A) .rodata@284e398(size_without_padding=32,padding=0,full_name=chrome::mojom::FilePatcher::Name_,object_path=third_party/sub/ContiguousContainer.o,source_path=third_party/container/container.c,flags={},num_aliases=1,component=UI>Browser)
+  B) .rodata@28f3450(size_without_padding=48,padding=675992,full_name=kAnimationFrameTimeHistogramClassPath,object_path=third_party/sub/PaintChunker.o,source_path=third_party/paint.cc,flags={anon},num_aliases=1,component=Internal>Android)
 Section .data.rel.ro: has 0.0% of 92 bytes accounted for from 3 symbols. 1065132 bytes are unaccounted for.
 * Padding accounts for 0 bytes (0.0%)
 * 3 have source paths. Accounts for 92 bytes (100.0%).

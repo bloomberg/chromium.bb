@@ -26,63 +26,58 @@
 #undef min
 #undef max
 
-#if REACTOR_LLVM_VERSION < 7
-	#include "llvm/Analysis/LoopPass.h"
-	#include "llvm/Constants.h"
-	#include "llvm/Function.h"
-	#include "llvm/GlobalVariable.h"
-	#include "llvm/Intrinsics.h"
-	#include "llvm/LLVMContext.h"
-	#include "llvm/Module.h"
-	#include "llvm/PassManager.h"
-	#include "llvm/Support/IRBuilder.h"
-	#include "llvm/Support/TargetSelect.h"
-	#include "llvm/Target/TargetData.h"
-	#include "llvm/Target/TargetOptions.h"
-	#include "llvm/Transforms/Scalar.h"
-	#include "../lib/ExecutionEngine/JIT/JIT.h"
+#if defined(__clang__)
+// LLVM has occurances of the extra-semi warning in its headers, which will be
+// treated as an error in SwiftShader targets.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wextra-semi"
+#endif  // defined(__clang__)
 
-	#include "LLVMRoutine.hpp"
-	#include "LLVMRoutineManager.hpp"
+#include "llvm/Analysis/LoopPass.h"
+#include "llvm/ExecutionEngine/ExecutionEngine.h"
+#include "llvm/ExecutionEngine/JITSymbol.h"
+#include "llvm/ExecutionEngine/Orc/CompileUtils.h"
+#include "llvm/ExecutionEngine/Orc/IRCompileLayer.h"
+#include "llvm/ExecutionEngine/Orc/LambdaResolver.h"
+#include "llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h"
+#include "llvm/ExecutionEngine/RTDyldMemoryManager.h"
+#include "llvm/ExecutionEngine/SectionMemoryManager.h"
+#include "llvm/IR/Constants.h"
+#include "llvm/IR/DataLayout.h"
+#include "llvm/IR/Function.h"
+#include "llvm/IR/GlobalVariable.h"
+#include "llvm/IR/Intrinsics.h"
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/LegacyPassManager.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Mangler.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/Verifier.h"
+#include "llvm/Support/Error.h"
+#include "llvm/Support/TargetSelect.h"
+#include "llvm/Target/TargetOptions.h"
+#include "llvm/Transforms/Coroutines.h"
+#include "llvm/Transforms/InstCombine/InstCombine.h"
+#include "llvm/Transforms/IPO.h"
+#include "llvm/Transforms/IPO/PassManagerBuilder.h"
+#include "llvm/Transforms/Scalar.h"
+#include "llvm/Transforms/Scalar/GVN.h"
 
-	#define ARGS(...) __VA_ARGS__
-#else
-	#include "llvm/Analysis/LoopPass.h"
-	#include "llvm/ExecutionEngine/ExecutionEngine.h"
-	#include "llvm/ExecutionEngine/JITSymbol.h"
-	#include "llvm/ExecutionEngine/Orc/CompileUtils.h"
-	#include "llvm/ExecutionEngine/Orc/IRCompileLayer.h"
-	#include "llvm/ExecutionEngine/Orc/LambdaResolver.h"
-	#include "llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h"
-	#include "llvm/ExecutionEngine/RTDyldMemoryManager.h"
-	#include "llvm/ExecutionEngine/SectionMemoryManager.h"
-	#include "llvm/IR/Constants.h"
-	#include "llvm/IR/DataLayout.h"
-	#include "llvm/IR/Function.h"
-	#include "llvm/IR/GlobalVariable.h"
-	#include "llvm/IR/IRBuilder.h"
-	#include "llvm/IR/Intrinsics.h"
-	#include "llvm/IR/LLVMContext.h"
-	#include "llvm/IR/LegacyPassManager.h"
-	#include "llvm/IR/Mangler.h"
-	#include "llvm/IR/Module.h"
-	#include "llvm/Support/Error.h"
-	#include "llvm/Support/TargetSelect.h"
-	#include "llvm/Target/TargetOptions.h"
-	#include "llvm/Transforms/InstCombine/InstCombine.h"
-	#include "llvm/Transforms/Scalar.h"
-	#include "llvm/Transforms/Scalar/GVN.h"
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif // defined(__clang__)
 
-	#include "LLVMRoutine.hpp"
+#include "LLVMRoutine.hpp"
 
-	#define ARGS(...) {__VA_ARGS__}
-	#define CreateCall2 CreateCall
-	#define CreateCall3 CreateCall
+#define ARGS(...) {__VA_ARGS__}
+#define CreateCall2 CreateCall
+#define CreateCall3 CreateCall
 
-	#include <unordered_map>
-#endif
+#include <unordered_map>
 
 #include <fstream>
+#include <iostream>
+#include <mutex>
 #include <numeric>
 #include <thread>
 
@@ -96,13 +91,6 @@
 extern "C" void X86CompilationCallback()
 {
 	UNIMPLEMENTED("X86CompilationCallback");
-}
-#endif
-
-#if REACTOR_LLVM_VERSION < 7
-namespace llvm
-{
-	extern bool JITEmitDebugInfo;
 }
 #endif
 
@@ -137,7 +125,6 @@ namespace
 	}
 #endif // ENABLE_RR_PRINT
 
-#if REACTOR_LLVM_VERSION >= 7
 	llvm::Value *lowerPAVG(llvm::Value *x, llvm::Value *y)
 	{
 		llvm::VectorType *ty = llvm::cast<llvm::VectorType>(x->getType());
@@ -429,7 +416,6 @@ namespace
 		return ret;
 	}
 #endif  // !defined(__i386__) && !defined(__x86_64__)
-#endif  // REACTOR_LLVM_VERSION >= 7
 
 	llvm::Value *lowerMulHigh(llvm::Value *x, llvm::Value *y, bool sext)
 	{
@@ -461,97 +447,57 @@ namespace rr
 	const Capabilities Caps =
 	{
 		true, // CallSupported
+		true, // CoroutinesSupported
 	};
 
-
-#if REACTOR_LLVM_VERSION < 7
-	class LLVMReactorJIT
+	static std::memory_order atomicOrdering(llvm::AtomicOrdering memoryOrder)
 	{
-	private:
-		std::string arch;
-		llvm::SmallVector<std::string, 16> mattrs;
-		llvm::ExecutionEngine *executionEngine;
-		LLVMRoutineManager *routineManager;
-
-	public:
-		LLVMReactorJIT(const std::string &arch_,
-		               const llvm::SmallVectorImpl<std::string> &mattrs_) :
-			arch(arch_),
-			mattrs(mattrs_.begin(), mattrs_.end()),
-			executionEngine(nullptr),
-			routineManager(nullptr)
+		switch(memoryOrder)
 		{
+		case llvm::AtomicOrdering::Monotonic: return std::memory_order_relaxed;  // https://llvm.org/docs/Atomics.html#monotonic
+		case llvm::AtomicOrdering::Acquire: return std::memory_order_acquire;
+		case llvm::AtomicOrdering::Release: return std::memory_order_release;
+		case llvm::AtomicOrdering::AcquireRelease: return std::memory_order_acq_rel;
+		case llvm::AtomicOrdering::SequentiallyConsistent: return std::memory_order_seq_cst;
+		default:
+			UNREACHABLE("memoryOrder: %d", int(memoryOrder));
+			return std::memory_order_acq_rel;
+		}
+	}
+
+	static llvm::AtomicOrdering atomicOrdering(bool atomic, std::memory_order memoryOrder)
+	{
+		if(!atomic)
+		{
+			return llvm::AtomicOrdering::NotAtomic;
 		}
 
-		void startSession()
+		switch(memoryOrder)
 		{
-			std::string error;
-
-			::module = new llvm::Module("", *::context);
-
-			routineManager = new LLVMRoutineManager();
-
-			llvm::TargetMachine *targetMachine =
-				llvm::EngineBuilder::selectTarget(
-					::module, arch, "", mattrs, llvm::Reloc::Default,
-					llvm::CodeModel::JITDefault, &error);
-
-			executionEngine = llvm::JIT::createJIT(
-				::module, &error, routineManager, llvm::CodeGenOpt::Aggressive,
-				true, targetMachine);
+		case std::memory_order_relaxed: return llvm::AtomicOrdering::Monotonic;  // https://llvm.org/docs/Atomics.html#monotonic
+		case std::memory_order_consume: return llvm::AtomicOrdering::Acquire;    // https://llvm.org/docs/Atomics.html#acquire: "It should also be used for C++11/C11 memory_order_consume."
+		case std::memory_order_acquire: return llvm::AtomicOrdering::Acquire;
+		case std::memory_order_release: return llvm::AtomicOrdering::Release;
+		case std::memory_order_acq_rel: return llvm::AtomicOrdering::AcquireRelease;
+		case std::memory_order_seq_cst: return llvm::AtomicOrdering::SequentiallyConsistent;
+		default:
+			UNREACHABLE("memoryOrder: %d", int(memoryOrder));
+			return llvm::AtomicOrdering::AcquireRelease;
 		}
+	}
 
-		void endSession()
-		{
-			delete executionEngine;
-			executionEngine = nullptr;
-			routineManager = nullptr;
+	template <typename T>
+	static void atomicLoad(void *ptr, void *ret, llvm::AtomicOrdering ordering)
+	{
+		*reinterpret_cast<T*>(ret) = std::atomic_load_explicit<T>(reinterpret_cast<std::atomic<T>*>(ptr), atomicOrdering(ordering));
+	}
 
-			::function = nullptr;
-			::module = nullptr;
-		}
+	template <typename T>
+	static void atomicStore(void *ptr, void *val, llvm::AtomicOrdering ordering)
+	{
+		std::atomic_store_explicit<T>(reinterpret_cast<std::atomic<T>*>(ptr), *reinterpret_cast<T*>(val), atomicOrdering(ordering));
+	}
 
-		LLVMRoutine *acquireRoutine(llvm::Function *func)
-		{
-			void *entry = executionEngine->getPointerToFunction(::function);
-			return routineManager->acquireRoutine(entry);
-		}
-
-		void optimize(llvm::Module *module)
-		{
-			static llvm::PassManager *passManager = nullptr;
-
-			if(!passManager)
-			{
-				passManager = new llvm::PassManager();
-
-				passManager->add(new llvm::TargetData(*executionEngine->getTargetData()));
-				passManager->add(llvm::createScalarReplAggregatesPass());
-
-				for(int pass = 0; pass < 10 && optimization[pass] != Disabled; pass++)
-				{
-					switch(optimization[pass])
-					{
-					case Disabled:                                                                       break;
-					case CFGSimplification:    passManager->add(llvm::createCFGSimplificationPass());    break;
-					case LICM:                 passManager->add(llvm::createLICMPass());                 break;
-					case AggressiveDCE:        passManager->add(llvm::createAggressiveDCEPass());        break;
-					case GVN:                  passManager->add(llvm::createGVNPass());                  break;
-					case InstructionCombining: passManager->add(llvm::createInstructionCombiningPass()); break;
-					case Reassociate:          passManager->add(llvm::createReassociatePass());          break;
-					case DeadStoreElimination: passManager->add(llvm::createDeadStoreEliminationPass()); break;
-					case SCCP:                 passManager->add(llvm::createSCCPPass());                 break;
-					case ScalarReplAggregates: passManager->add(llvm::createScalarReplAggregatesPass()); break;
-					default:
-						UNREACHABLE("optimization[pass]: %d, pass: %d", int(optimization[pass]), int(pass));
-					}
-				}
-			}
-
-			passManager->run(*::module);
-		}
-	};
-#else
 	class ExternalFunctionSymbolResolver
 	{
 	private:
@@ -561,9 +507,36 @@ namespace rr
 	public:
 		ExternalFunctionSymbolResolver()
 		{
+			struct Atomic
+			{
+				static void load(size_t size, void *ptr, void *ret, llvm::AtomicOrdering ordering)
+				{
+					switch (size)
+					{
+						case 1: atomicLoad<uint8_t>(ptr, ret, ordering); break;
+						case 2: atomicLoad<uint16_t>(ptr, ret, ordering); break;
+						case 4: atomicLoad<uint32_t>(ptr, ret, ordering); break;
+						case 8: atomicLoad<uint64_t>(ptr, ret, ordering); break;
+						default:
+							UNIMPLEMENTED("Atomic::load(size: %d)", int(size));
+					}
+				}
+				static void store(size_t size, void *ptr, void *ret, llvm::AtomicOrdering ordering)
+				{
+					switch (size)
+					{
+						case 1: atomicStore<uint8_t>(ptr, ret, ordering); break;
+						case 2: atomicStore<uint16_t>(ptr, ret, ordering); break;
+						case 4: atomicStore<uint32_t>(ptr, ret, ordering); break;
+						case 8: atomicStore<uint64_t>(ptr, ret, ordering); break;
+						default:
+							UNIMPLEMENTED("Atomic::store(size: %d)", int(size));
+					}
+				}
+			};
 			struct F { static void nop() {} };
-			func_.emplace("nop", reinterpret_cast<void*>(F::nop));
 
+			func_.emplace("nop", reinterpret_cast<void*>(F::nop));
 			func_.emplace("floorf", reinterpret_cast<void*>(floorf));
 			func_.emplace("nearbyintf", reinterpret_cast<void*>(nearbyintf));
 			func_.emplace("truncf", reinterpret_cast<void*>(truncf));
@@ -587,9 +560,14 @@ namespace rr
 			func_.emplace("logf", reinterpret_cast<void*>(logf));
 			func_.emplace("exp2f", reinterpret_cast<void*>(exp2f));
 			func_.emplace("log2f", reinterpret_cast<void*>(log2f));
+			func_.emplace("atomic_load", reinterpret_cast<void*>(Atomic::load));
+			func_.emplace("atomic_store", reinterpret_cast<void*>(Atomic::store));
+
+			// FIXME (b/119409619): use an allocator here so we can control all memory allocations
+			func_.emplace("coroutine_alloc_frame", reinterpret_cast<void*>(malloc));
+			func_.emplace("coroutine_free_frame", reinterpret_cast<void*>(free));
 
 #ifdef __APPLE__
-			// LLVM uses this function on macOS for tan.
 			func_.emplace("sincosf_stret", reinterpret_cast<void*>(__sincosf_stret));
 #elif defined(__linux__)
 			func_.emplace("sincosf", reinterpret_cast<void*>(sincosf));
@@ -622,7 +600,8 @@ namespace rr
 		std::unique_ptr<llvm::TargetMachine> targetMachine;
 		const llvm::DataLayout dataLayout;
 		ObjLayer objLayer;
-		CompileLayer compileLayer;
+		CompileLayer compileLayer; // guarded by mutex
+		std::mutex mutex;
 		size_t emittedFunctionsNum;
 
 	public:
@@ -666,18 +645,12 @@ namespace rr
 				ObjLayer::NotifyLoadedFtor(),
 				[](llvm::orc::VModuleKey, const llvm::object::ObjectFile &Obj, const llvm::RuntimeDyld::LoadedObjectInfo &L) {
 #ifdef ENABLE_RR_DEBUG_INFO
-					if (debugInfo != nullptr)
-					{
-						debugInfo->NotifyObjectEmitted(Obj, L);
-					}
+					DebugInfo::NotifyObjectEmitted(Obj, L);
 #endif // ENABLE_RR_DEBUG_INFO
 				},
 				[](llvm::orc::VModuleKey, const llvm::object::ObjectFile &Obj) {
 #ifdef ENABLE_RR_DEBUG_INFO
-					if (debugInfo != nullptr)
-					{
-						debugInfo->NotifyFreeingObject(Obj);
-					}
+					DebugInfo::NotifyFreeingObject(Obj);
 #endif // ENABLE_RR_DEBUG_INFO
 				}
 	  		),
@@ -697,36 +670,52 @@ namespace rr
 			::module = nullptr;
 		}
 
-		LLVMRoutine *acquireRoutine(llvm::Function *func)
+		LLVMRoutine *acquireRoutine(llvm::Function **funcs, size_t count)
 		{
-			std::string name = "f" + llvm::Twine(emittedFunctionsNum++).str();
-			func->setName(name);
-			func->setLinkage(llvm::GlobalValue::ExternalLinkage);
-			func->setDoesNotThrow();
+			std::vector<std::string> mangledNames(count);
+			for (size_t i = 0; i < count; i++)
+			{
+				auto func = funcs[i];
+				std::string name = "f" + llvm::Twine(emittedFunctionsNum++).str();
+				func->setName(name);
+				func->setLinkage(llvm::GlobalValue::ExternalLinkage);
+				func->setDoesNotThrow();
 
+				llvm::raw_string_ostream mangledNameStream(mangledNames[i]);
+				llvm::Mangler::getNameWithPrefix(mangledNameStream, name, dataLayout);
+			}
+
+			// Compile the module - after this the llvm::Functions will have
+			// been freed.
 			std::unique_ptr<llvm::Module> mod(::module);
 			::module = nullptr;
 			mod->setDataLayout(dataLayout);
 
 			auto moduleKey = session.allocateVModule();
-			llvm::cantFail(compileLayer.addModule(moduleKey, std::move(mod)));
 
-			std::string mangledName;
+			// Resolve the function symbols - needs to be performed under mutex lock.
+			std::vector<llvm::JITSymbol> symbols;
 			{
-				llvm::raw_string_ostream mangledNameStream(mangledName);
-				llvm::Mangler::getNameWithPrefix(mangledNameStream, name, dataLayout);
+				std::unique_lock<std::mutex> lock(mutex);
+				llvm::cantFail(compileLayer.addModule(moduleKey, std::move(mod)));
+				funcs = nullptr; // Now points to released memory.
+				for (size_t i = 0; i < count; i++)
+				{
+					symbols.push_back(compileLayer.findSymbolIn(moduleKey, mangledNames[i], false));
+				}
 			}
 
-			llvm::JITSymbol symbol = compileLayer.findSymbolIn(moduleKey, mangledName, false);
-
-			llvm::Expected<llvm::JITTargetAddress> expectAddr = symbol.getAddress();
-			if(!expectAddr)
+			// Resolve the function addresses.
+			std::vector<void*> addresses(count);
+			for (size_t i = 0; i < count; i++)
 			{
-				return nullptr;
+				if(auto expectAddr = symbols[i].getAddress())
+				{
+					addresses[i] = reinterpret_cast<void *>(static_cast<intptr_t>(expectAddr.get()));
+				}
 			}
 
-			void *addr = reinterpret_cast<void *>(static_cast<intptr_t>(expectAddr.get()));
-			return new LLVMRoutine(addr, releaseRoutineCallback, this, moduleKey);
+			return new LLVMRoutine(addresses.data(), count, releaseRoutineCallback, this, moduleKey);
 		}
 
 		void optimize(llvm::Module *module)
@@ -768,6 +757,7 @@ namespace rr
 	private:
 		void releaseRoutineModule(llvm::orc::VModuleKey moduleKey)
 		{
+			std::unique_lock<std::mutex> lock(mutex);
 			llvm::cantFail(compileLayer.removeModule(moduleKey));
 		}
 
@@ -776,7 +766,6 @@ namespace rr
 			jit->releaseRoutineModule(moduleKey);
 		}
 	};
-#endif
 
 	Optimization optimization[10] = {InstructionCombining, Disabled};
 
@@ -896,41 +885,13 @@ namespace rr
 		}
 	}
 
-	static llvm::AtomicOrdering atomicOrdering(bool atomic, std::memory_order memoryOrder)
-	{
-		#if REACTOR_LLVM_VERSION < 7
-			return llvm::AtomicOrdering::NotAtomic;
-		#endif
-
-		if(!atomic)
-		{
-			return llvm::AtomicOrdering::NotAtomic;
-		}
-
-		switch(memoryOrder)
-		{
-		case std::memory_order_relaxed: return llvm::AtomicOrdering::Monotonic;  // https://llvm.org/docs/Atomics.html#monotonic
-		case std::memory_order_consume: return llvm::AtomicOrdering::Acquire;    // https://llvm.org/docs/Atomics.html#acquire: "It should also be used for C++11/C11 memory_order_consume."
-		case std::memory_order_acquire: return llvm::AtomicOrdering::Acquire;
-		case std::memory_order_release: return llvm::AtomicOrdering::Release;
-		case std::memory_order_acq_rel: return llvm::AtomicOrdering::AcquireRelease;
-		case std::memory_order_seq_cst: return llvm::AtomicOrdering::SequentiallyConsistent;
-		default:
-			UNREACHABLE("memoryOrder: %d", int(memoryOrder));
-			return llvm::AtomicOrdering::AcquireRelease;
-		}
-	}
-
 	Nucleus::Nucleus()
 	{
 		::codegenMutex.lock();   // Reactor and LLVM are currently not thread safe
 
 		llvm::InitializeNativeTarget();
-
-#if REACTOR_LLVM_VERSION >= 7
 		llvm::InitializeNativeTargetAsmPrinter();
 		llvm::InitializeNativeTargetAsmParser();
-#endif
 
 		if(!::context)
 		{
@@ -955,7 +916,17 @@ namespace rr
 		#error "unknown architecture"
 		#endif
 
-		llvm::SmallVector<std::string, 1> mattrs;
+		llvm::SmallVector<std::string, 8> mattrs;
+
+		llvm::StringMap<bool> features;
+		bool ok = llvm::sys::getHostCPUFeatures(features);
+		ASSERT_MSG(ok, "llvm::sys::getHostCPUFeatures returned false");
+		for (auto &feature : features)
+		{
+			if (feature.second) { mattrs.push_back(feature.first()); }
+		}
+
+#if 0
 #if defined(__i386__) || defined(__x86_64__)
 		mattrs.push_back(CPUID::supportsMMX()    ? "+mmx"    : "-mmx");
 		mattrs.push_back(CPUID::supportsCMOV()   ? "+cmov"   : "-cmov");
@@ -963,11 +934,7 @@ namespace rr
 		mattrs.push_back(CPUID::supportsSSE2()   ? "+sse2"   : "-sse2");
 		mattrs.push_back(CPUID::supportsSSE3()   ? "+sse3"   : "-sse3");
 		mattrs.push_back(CPUID::supportsSSSE3()  ? "+ssse3"  : "-ssse3");
-#if REACTOR_LLVM_VERSION < 7
-		mattrs.push_back(CPUID::supportsSSE4_1() ? "+sse41"  : "-sse41");
-#else
 		mattrs.push_back(CPUID::supportsSSE4_1() ? "+sse4.1" : "-sse4.1");
-#endif
 #elif defined(__arm__)
 #if __ARM_ARCH >= 8
 		mattrs.push_back("+armv8-a");
@@ -976,26 +943,16 @@ namespace rr
 		// might fail to link.
 #endif
 #endif
+#endif
 
-#if REACTOR_LLVM_VERSION < 7
-		llvm::JITEmitDebugInfo = false;
-		llvm::UnsafeFPMath = true;
-		// llvm::NoInfsFPMath = true;
-		// llvm::NoNaNsFPMath = true;
-#else
 		llvm::TargetOptions targetOpts;
 		targetOpts.UnsafeFPMath = false;
 		// targetOpts.NoInfsFPMath = true;
 		// targetOpts.NoNaNsFPMath = true;
-#endif
 
 		if(!::reactorJIT)
 		{
-#if REACTOR_LLVM_VERSION < 7
-			::reactorJIT = new LLVMReactorJIT(arch, mattrs);
-#else
 			::reactorJIT = new LLVMReactorJIT(arch, mattrs, targetOpts);
-#endif
 		}
 
 		::reactorJIT->startSession();
@@ -1008,6 +965,10 @@ namespace rr
 
 	Nucleus::~Nucleus()
 	{
+#ifdef ENABLE_RR_DEBUG_INFO
+		debugInfo.reset(nullptr);
+#endif // ENABLE_RR_DEBUG_INFO
+
 		::reactorJIT->endSession();
 
 		::codegenMutex.unlock();
@@ -1029,17 +990,27 @@ namespace rr
 			}
 		}
 
+#ifdef ENABLE_RR_DEBUG_INFO
+		if (debugInfo != nullptr)
+		{
+			debugInfo->Finalize();
+		}
+#endif // ENABLE_RR_DEBUG_INFO
+
 		if(false)
 		{
-			#if REACTOR_LLVM_VERSION < 7
-				std::string error;
-				llvm::raw_fd_ostream file((std::string(name) + "-llvm-dump-unopt.txt").c_str(), error);
-			#else
-				std::error_code error;
-				llvm::raw_fd_ostream file(std::string(name) + "-llvm-dump-unopt.txt", error);
-			#endif
-
+			std::error_code error;
+			llvm::raw_fd_ostream file(std::string(name) + "-llvm-dump-unopt.txt", error);
 			::module->print(file, 0);
+		}
+
+		// FIXME: Disable for release builds once heavy development is over.
+		bool verifyIR = true;
+		if(verifyIR)
+		{
+			llvm::legacy::PassManager pm;
+			pm.add(llvm::createVerifierPass());
+			pm.run(*::module);
 		}
 
 		if(runOptimizations)
@@ -1049,25 +1020,12 @@ namespace rr
 
 		if(false)
 		{
-			#if REACTOR_LLVM_VERSION < 7
-				std::string error;
-				llvm::raw_fd_ostream file((std::string(name) + "-llvm-dump-opt.txt").c_str(), error);
-			#else
-				std::error_code error;
-				llvm::raw_fd_ostream file(std::string(name) + "-llvm-dump-opt.txt", error);
-			#endif
-
+			std::error_code error;
+			llvm::raw_fd_ostream file(std::string(name) + "-llvm-dump-opt.txt", error);
 			::module->print(file, 0);
 		}
 
-#ifdef ENABLE_RR_DEBUG_INFO
-		if (debugInfo != nullptr)
-		{
-			debugInfo->Finalize();
-		}
-#endif // ENABLE_RR_DEBUG_INFO
-
-		LLVMRoutine *routine = ::reactorJIT->acquireRoutine(::function);
+		LLVMRoutine *routine = ::reactorJIT->acquireRoutine(&::function, 1);
 
 		return routine;
 	}
@@ -1086,19 +1044,11 @@ namespace rr
 
 		if(arraySize)
 		{
-#if REACTOR_LLVM_VERSION < 7
-			declaration = new llvm::AllocaInst(T(type), V(Nucleus::createConstantInt(arraySize)));
-#else
 			declaration = new llvm::AllocaInst(T(type), 0, V(Nucleus::createConstantInt(arraySize)));
-#endif
 		}
 		else
 		{
-#if REACTOR_LLVM_VERSION < 7
-			declaration = new llvm::AllocaInst(T(type), (llvm::Value*)nullptr);
-#else
 			declaration = new llvm::AllocaInst(T(type), 0, (llvm::Value*)nullptr);
-#endif
 		}
 
 		entryBlock.getInstList().push_front(declaration);
@@ -1131,7 +1081,7 @@ namespace rr
 		::function = llvm::Function::Create(functionType, llvm::GlobalValue::InternalLinkage, "", ::module);
 		::function->setCallingConv(llvm::CallingConv::C);
 
-		#if defined(_WIN32) && REACTOR_LLVM_VERSION >= 7
+		#if defined(_WIN32)
 			// FIXME(capn):
 			// On Windows, stack memory is committed in increments of 4 kB pages, with the last page
 			// having a trap which allows the OS to grow the stack. For functions with a stack frame
@@ -1166,6 +1116,8 @@ namespace rr
 	{
 		RR_DEBUG_INFO_UPDATE_LOC();
 
+		ASSERT_MSG(::function->getReturnType() == T(Void::getType()), "Return type mismatch");
+
 		// Code generated after this point is unreachable, so any variables
 		// being read can safely return an undefined value. We have to avoid
 		// materializing variables after the terminator ret instruction.
@@ -1177,6 +1129,8 @@ namespace rr
 	void Nucleus::createRet(Value *v)
 	{
 		RR_DEBUG_INFO_UPDATE_LOC();
+
+		ASSERT_MSG(::function->getReturnType() == V(v)->getType(), "Return type mismatch");
 
 		// Code generated after this point is unreachable, so any variables
 		// being read can safely return an undefined value. We have to avoid
@@ -1355,11 +1309,36 @@ namespace rr
 			// Fallthrough to non-emulated case.
 		case Type_LLVM:
 			{
-				ASSERT(V(ptr)->getType()->getContainedType(0) == T(type));
-				auto load = new llvm::LoadInst(V(ptr), "", isVolatile, alignment);
-				load->setAtomic(atomicOrdering(atomic, memoryOrder));
-
-				return V(::builder->Insert(load));
+				auto elTy = T(type);
+				ASSERT(V(ptr)->getType()->getContainedType(0) == elTy);
+				if (atomic && !(elTy->isIntegerTy() || elTy->isPointerTy() || elTy->isFloatTy()))
+				{
+					// atomic load operand must have integer, pointer, or floating point type
+					// Fall back to using:
+					//   void __atomic_load(size_t size, void *ptr, void *ret, int ordering)
+					auto sizetTy = ::llvm::IntegerType::get(*::context, sizeof(size_t) * 8);
+					auto intTy = ::llvm::IntegerType::get(*::context, sizeof(int) * 8);
+					auto i8Ty = ::llvm::Type::getInt8Ty(*::context);
+					auto i8PtrTy = i8Ty->getPointerTo();
+					auto voidTy = ::llvm::Type::getVoidTy(*::context);
+					auto funcTy = ::llvm::FunctionType::get(voidTy, {sizetTy, i8PtrTy, i8PtrTy, intTy}, false);
+					auto func = ::module->getOrInsertFunction("__atomic_load", funcTy);
+  					auto size = ::module->getDataLayout().getTypeStoreSize(elTy);
+					auto out = allocateStackVariable(type);
+					::builder->CreateCall(func, {
+						::llvm::ConstantInt::get(sizetTy, size),
+						::builder->CreatePointerCast(V(ptr), i8PtrTy),
+						::builder->CreatePointerCast(V(out), i8PtrTy),
+						::llvm::ConstantInt::get(intTy, uint64_t(atomicOrdering(true, memoryOrder))),
+					 });
+					 return V(::builder->CreateLoad(V(out)));
+				}
+				else
+				{
+					auto load = new llvm::LoadInst(V(ptr), "", isVolatile, alignment);
+					load->setAtomic(atomicOrdering(atomic, memoryOrder));
+					return V(::builder->Insert(load));
+				}
 			}
 		default:
 			UNREACHABLE("asInternalType(type): %d", int(asInternalType(type)));
@@ -1395,9 +1374,35 @@ namespace rr
 			// Fallthrough to non-emulated case.
 		case Type_LLVM:
 			{
-				ASSERT(V(ptr)->getType()->getContainedType(0) == T(type));
-				auto store = ::builder->Insert(new llvm::StoreInst(V(value), V(ptr), isVolatile, alignment));
-				store->setAtomic(atomicOrdering(atomic, memoryOrder));
+				auto elTy = T(type);
+				ASSERT(V(ptr)->getType()->getContainedType(0) == elTy);
+				if (atomic && !(elTy->isIntegerTy() || elTy->isPointerTy() || elTy->isFloatTy()))
+				{
+					// atomic store operand must have integer, pointer, or floating point type
+					// Fall back to using:
+					//   void __atomic_store(size_t size, void *ptr, void *val, int ordering)
+					auto sizetTy = ::llvm::IntegerType::get(*::context, sizeof(size_t) * 8);
+					auto intTy = ::llvm::IntegerType::get(*::context, sizeof(int) * 8);
+					auto i8Ty = ::llvm::Type::getInt8Ty(*::context);
+					auto i8PtrTy = i8Ty->getPointerTo();
+					auto voidTy = ::llvm::Type::getVoidTy(*::context);
+					auto funcTy = ::llvm::FunctionType::get(voidTy, {sizetTy, i8PtrTy, i8PtrTy, intTy}, false);
+					auto func = ::module->getOrInsertFunction("__atomic_store", funcTy);
+  					auto size = ::module->getDataLayout().getTypeStoreSize(elTy);
+					auto copy = allocateStackVariable(type);
+					::builder->CreateStore(V(value), V(copy));
+					::builder->CreateCall(func, {
+						::llvm::ConstantInt::get(sizetTy, size),
+						::builder->CreatePointerCast(V(ptr), i8PtrTy),
+						::builder->CreatePointerCast(V(copy), i8PtrTy),
+						::llvm::ConstantInt::get(intTy, uint64_t(atomicOrdering(true, memoryOrder))),
+					 });
+				}
+				else
+				{
+					auto store = ::builder->Insert(new llvm::StoreInst(V(value), V(ptr), isVolatile, alignment));
+					store->setAtomic(atomicOrdering(atomic, memoryOrder));
+				}
 
 				return value;
 			}
@@ -1405,6 +1410,60 @@ namespace rr
 			UNREACHABLE("asInternalType(type): %d", int(asInternalType(type)));
 			return nullptr;
 		}
+	}
+
+	Value *Nucleus::createGather(Value *base, Type *elTy, Value *offsets, Value *mask, unsigned int alignment)
+	{
+		ASSERT(V(base)->getType()->isPointerTy());
+		ASSERT(V(offsets)->getType()->isVectorTy());
+		ASSERT(V(mask)->getType()->isVectorTy());
+
+		auto numEls = V(mask)->getType()->getVectorNumElements();
+		auto i1Ty = ::llvm::Type::getInt1Ty(*::context);
+		auto i32Ty = ::llvm::Type::getInt32Ty(*::context);
+		auto i8Ty = ::llvm::Type::getInt8Ty(*::context);
+		auto i8PtrTy = i8Ty->getPointerTo();
+		auto elPtrTy = T(elTy)->getPointerTo();
+		auto elVecTy = ::llvm::VectorType::get(T(elTy), numEls);
+		auto elPtrVecTy = ::llvm::VectorType::get(elPtrTy, numEls);
+		auto i8Base = ::builder->CreatePointerCast(V(base), i8PtrTy);
+		auto i8Ptrs = ::builder->CreateGEP(i8Base, V(offsets));
+		auto elPtrs = ::builder->CreatePointerCast(i8Ptrs, elPtrVecTy);
+		auto i8Mask = ::builder->CreateIntCast(V(mask), ::llvm::VectorType::get(i1Ty, numEls), false); // vec<int, int, ...> -> vec<bool, bool, ...>
+		auto passthrough = ::llvm::Constant::getNullValue(elVecTy);
+		auto align = ::llvm::ConstantInt::get(i32Ty, alignment);
+		auto func = ::llvm::Intrinsic::getDeclaration(::module, llvm::Intrinsic::masked_gather, { elVecTy, elPtrVecTy } );
+		return V(::builder->CreateCall(func, { elPtrs, align, i8Mask, passthrough }));
+	}
+
+	void Nucleus::createScatter(Value *base, Value *val, Value *offsets, Value *mask, unsigned int alignment)
+	{
+		ASSERT(V(base)->getType()->isPointerTy());
+		ASSERT(V(val)->getType()->isVectorTy());
+		ASSERT(V(offsets)->getType()->isVectorTy());
+		ASSERT(V(mask)->getType()->isVectorTy());
+
+		auto numEls = V(mask)->getType()->getVectorNumElements();
+		auto i1Ty = ::llvm::Type::getInt1Ty(*::context);
+		auto i32Ty = ::llvm::Type::getInt32Ty(*::context);
+		auto i8Ty = ::llvm::Type::getInt8Ty(*::context);
+		auto i8PtrTy = i8Ty->getPointerTo();
+		auto elVecTy = V(val)->getType();
+		auto elTy = elVecTy->getVectorElementType();
+		auto elPtrTy = elTy->getPointerTo();
+		auto elPtrVecTy = ::llvm::VectorType::get(elPtrTy, numEls);
+		auto i8Base = ::builder->CreatePointerCast(V(base), i8PtrTy);
+		auto i8Ptrs = ::builder->CreateGEP(i8Base, V(offsets));
+		auto elPtrs = ::builder->CreatePointerCast(i8Ptrs, elPtrVecTy);
+		auto i8Mask = ::builder->CreateIntCast(V(mask), ::llvm::VectorType::get(i1Ty, numEls), false); // vec<int, int, ...> -> vec<bool, bool, ...>
+		auto align = ::llvm::ConstantInt::get(i32Ty, alignment);
+		auto func = ::llvm::Intrinsic::getDeclaration(::module, llvm::Intrinsic::masked_scatter, { elVecTy, elPtrVecTy } );
+		::builder->CreateCall(func, { V(val), elPtrs, align, i8Mask });
+	}
+
+	void Nucleus::createFence(std::memory_order memoryOrder)
+	{
+		::builder->CreateFence(atomicOrdering(true, memoryOrder));
 	}
 
 	Value *Nucleus::createGEP(Value *ptr, Type *type, Value *index, bool unsignedIndex)
@@ -1451,10 +1510,74 @@ namespace rr
 			T(llvm::PointerType::get(T(type), 0)));
 	}
 
-	Value *Nucleus::createAtomicAdd(Value *ptr, Value *value)
+	Value *Nucleus::createAtomicAdd(Value *ptr, Value *value, std::memory_order memoryOrder)
 	{
 		RR_DEBUG_INFO_UPDATE_LOC();
-		return V(::builder->CreateAtomicRMW(llvm::AtomicRMWInst::Add, V(ptr), V(value), llvm::AtomicOrdering::SequentiallyConsistent));
+		return V(::builder->CreateAtomicRMW(llvm::AtomicRMWInst::Add, V(ptr), V(value), atomicOrdering(true, memoryOrder)));
+	}
+
+	Value *Nucleus::createAtomicSub(Value *ptr, Value *value, std::memory_order memoryOrder)
+	{
+		RR_DEBUG_INFO_UPDATE_LOC();
+		return V(::builder->CreateAtomicRMW(llvm::AtomicRMWInst::Sub, V(ptr), V(value), atomicOrdering(true, memoryOrder)));
+	}
+
+	Value *Nucleus::createAtomicAnd(Value *ptr, Value *value, std::memory_order memoryOrder)
+	{
+		RR_DEBUG_INFO_UPDATE_LOC();
+		return V(::builder->CreateAtomicRMW(llvm::AtomicRMWInst::And, V(ptr), V(value), atomicOrdering(true, memoryOrder)));
+	}
+
+	Value *Nucleus::createAtomicOr(Value *ptr, Value *value, std::memory_order memoryOrder)
+	{
+		RR_DEBUG_INFO_UPDATE_LOC();
+		return V(::builder->CreateAtomicRMW(llvm::AtomicRMWInst::Or, V(ptr), V(value), atomicOrdering(true, memoryOrder)));
+	}
+
+	Value *Nucleus::createAtomicXor(Value *ptr, Value *value, std::memory_order memoryOrder)
+	{
+		RR_DEBUG_INFO_UPDATE_LOC();
+		return V(::builder->CreateAtomicRMW(llvm::AtomicRMWInst::Xor, V(ptr), V(value), atomicOrdering(true, memoryOrder)));
+	}
+
+	Value *Nucleus::createAtomicMin(Value *ptr, Value *value, std::memory_order memoryOrder)
+	{
+		RR_DEBUG_INFO_UPDATE_LOC();
+		return V(::builder->CreateAtomicRMW(llvm::AtomicRMWInst::Min, V(ptr), V(value), atomicOrdering(true, memoryOrder)));
+	}
+
+	Value *Nucleus::createAtomicMax(Value *ptr, Value *value, std::memory_order memoryOrder)
+	{
+		RR_DEBUG_INFO_UPDATE_LOC();
+		return V(::builder->CreateAtomicRMW(llvm::AtomicRMWInst::Max, V(ptr), V(value), atomicOrdering(true, memoryOrder)));
+	}
+
+	Value *Nucleus::createAtomicUMin(Value *ptr, Value *value, std::memory_order memoryOrder)
+	{
+		RR_DEBUG_INFO_UPDATE_LOC();
+		return V(::builder->CreateAtomicRMW(llvm::AtomicRMWInst::UMin, V(ptr), V(value), atomicOrdering(true, memoryOrder)));
+	}
+
+	Value *Nucleus::createAtomicUMax(Value *ptr, Value *value, std::memory_order memoryOrder)
+	{
+		RR_DEBUG_INFO_UPDATE_LOC();
+		return V(::builder->CreateAtomicRMW(llvm::AtomicRMWInst::UMax, V(ptr), V(value), atomicOrdering(true, memoryOrder)));
+	}
+
+
+	Value *Nucleus::createAtomicExchange(Value *ptr, Value *value, std::memory_order memoryOrder)
+	{
+		RR_DEBUG_INFO_UPDATE_LOC();
+		return V(::builder->CreateAtomicRMW(llvm::AtomicRMWInst::Xchg, V(ptr), V(value), atomicOrdering(true, memoryOrder)));
+	}
+
+	Value *Nucleus::createAtomicCompareExchange(Value *ptr, Value *value, Value *compare, std::memory_order memoryOrderEqual, std::memory_order memoryOrderUnequal)
+	{
+		RR_DEBUG_INFO_UPDATE_LOC();
+		// Note: AtomicCmpXchgInstruction returns a 2-member struct containing {result, success-flag}, not the result directly.
+		return V(::builder->CreateExtractValue(
+				::builder->CreateAtomicCmpXchg(V(ptr), V(compare), V(value), atomicOrdering(true, memoryOrderEqual), atomicOrdering(true, memoryOrderUnequal)),
+				llvm::ArrayRef<unsigned>(0u)));
 	}
 
 	Value *Nucleus::createTrunc(Value *v, Type *destType)
@@ -2849,6 +2972,18 @@ namespace rr
 		storeValue((~(As<Int4>(cast) >> 31) & uiValue).value);
 	}
 
+	UInt4::UInt4(RValue<UInt> rhs) : XYZW(this)
+	{
+		RR_DEBUG_INFO_UPDATE_LOC();
+		Value *vector = loadValue();
+		Value *insert = Nucleus::createInsertElement(vector, rhs.value, 0);
+
+		int swizzle[4] = {0, 0, 0, 0};
+		Value *replicate = Nucleus::createShuffleVector(insert, insert, swizzle);
+
+		storeValue(replicate);
+	}
+
 	RValue<UInt4> operator<<(RValue<UInt4> lhs, unsigned char rhs)
 	{
 		RR_DEBUG_INFO_UPDATE_LOC();
@@ -3430,10 +3565,7 @@ namespace rr
 
 	RValue<Float4> Pow(RValue<Float4> x, RValue<Float4> y)
 	{
-		::llvm::SmallVector<::llvm::Type*, 2> paramTys;
-		paramTys.push_back(T(Float4::getType()));
-		paramTys.push_back(T(Float4::getType()));
-		auto func = llvm::Intrinsic::getDeclaration(::module, llvm::Intrinsic::pow, paramTys);
+		auto func = llvm::Intrinsic::getDeclaration(::module, llvm::Intrinsic::pow, { T(Float4::getType()) });
 		return RValue<Float4>(V(::builder->CreateCall2(func, ARGS(V(x.value), V(y.value)))));
 	}
 
@@ -3463,13 +3595,7 @@ namespace rr
 
 	RValue<UInt4> Ctlz(RValue<UInt4> v, bool isZeroUndef)
 	{
-#if REACTOR_LLVM_VERSION < 7
-		UNIMPLEMENTED("LLVM 3 does not support ctlz in a vector form");
-#endif
-		::llvm::SmallVector<::llvm::Type*, 2> paramTys;
-		paramTys.push_back(T(UInt4::getType()));
-		paramTys.push_back(T(Bool::getType()));
-		auto func = llvm::Intrinsic::getDeclaration(::module, llvm::Intrinsic::ctlz, paramTys);
+		auto func = llvm::Intrinsic::getDeclaration(::module, llvm::Intrinsic::ctlz, { T(UInt4::getType()) } );
 		return RValue<UInt4>(V(::builder->CreateCall2(func, ARGS(
 			V(v.value),
 			isZeroUndef ? ::llvm::ConstantInt::getTrue(*::context) : ::llvm::ConstantInt::getFalse(*::context)
@@ -3478,13 +3604,7 @@ namespace rr
 
 	RValue<UInt4> Cttz(RValue<UInt4> v, bool isZeroUndef)
 	{
-#if REACTOR_LLVM_VERSION < 7
-		UNIMPLEMENTED("LLVM 3 does not support cttz in a vector form");
-#endif
-		::llvm::SmallVector<::llvm::Type*, 2> paramTys;
-		paramTys.push_back(T(UInt4::getType()));
-		paramTys.push_back(T(Bool::getType()));
-		auto func = llvm::Intrinsic::getDeclaration(::module, llvm::Intrinsic::cttz, paramTys);
+		auto func = llvm::Intrinsic::getDeclaration(::module, llvm::Intrinsic::cttz, { T(UInt4::getType()) } );
 		return RValue<UInt4>(V(::builder->CreateCall2(func, ARGS(
 			V(v.value),
 			isZeroUndef ? ::llvm::ConstantInt::getTrue(*::context) : ::llvm::ConstantInt::getFalse(*::context)
@@ -3560,15 +3680,8 @@ namespace rr
 
 		RValue<Float> sqrtss(RValue<Float> val)
 		{
-#if REACTOR_LLVM_VERSION < 7
-			llvm::Function *sqrtss = llvm::Intrinsic::getDeclaration(::module, llvm::Intrinsic::x86_sse_sqrt_ss);
-			Value *vector = Nucleus::createInsertElement(V(llvm::UndefValue::get(T(Float4::getType()))), val.value, 0);
-
-			return RValue<Float>(Nucleus::createExtractElement(V(::builder->CreateCall(sqrtss, ARGS(V(vector)))), Float::getType(), 0));
-#else
 			llvm::Function *sqrt = llvm::Intrinsic::getDeclaration(::module, llvm::Intrinsic::sqrt, {V(val.value)->getType()});
 			return RValue<Float>(V(::builder->CreateCall(sqrt, ARGS(V(val.value)))));
-#endif
 		}
 
 		RValue<Float> rsqrtss(RValue<Float> val)
@@ -3589,11 +3702,7 @@ namespace rr
 
 		RValue<Float4> sqrtps(RValue<Float4> val)
 		{
-#if REACTOR_LLVM_VERSION < 7
-			llvm::Function *sqrtps = llvm::Intrinsic::getDeclaration(::module, llvm::Intrinsic::x86_sse_sqrt_ps);
-#else
 			llvm::Function *sqrtps = llvm::Intrinsic::getDeclaration(::module, llvm::Intrinsic::sqrt, {V(val.value)->getType()});
-#endif
 
 			return RValue<Float4>(V(::builder->CreateCall(sqrtps, ARGS(V(val.value)))));
 		}
@@ -3658,13 +3767,7 @@ namespace rr
 
 		RValue<Int4> pabsd(RValue<Int4> x)
 		{
-#if REACTOR_LLVM_VERSION < 7
-			llvm::Function *pabsd = llvm::Intrinsic::getDeclaration(::module, llvm::Intrinsic::x86_ssse3_pabs_d_128);
-
-			return RValue<Int4>(V(::builder->CreateCall(pabsd, ARGS(V(x.value)))));
-#else
 			return RValue<Int4>(V(lowerPABS(V(x.value))));
-#endif
 		}
 
 		RValue<Short4> paddsw(RValue<Short4> x, RValue<Short4> y)
@@ -3725,79 +3828,37 @@ namespace rr
 
 		RValue<UShort4> pavgw(RValue<UShort4> x, RValue<UShort4> y)
 		{
-#if REACTOR_LLVM_VERSION < 7
-			llvm::Function *pavgw = llvm::Intrinsic::getDeclaration(::module, llvm::Intrinsic::x86_sse2_pavg_w);
-
-			return As<UShort4>(V(::builder->CreateCall2(pavgw, ARGS(V(x.value), V(y.value)))));
-#else
 			return As<UShort4>(V(lowerPAVG(V(x.value), V(y.value))));
-#endif
 		}
 
 		RValue<Short4> pmaxsw(RValue<Short4> x, RValue<Short4> y)
 		{
-#if REACTOR_LLVM_VERSION < 7
-			llvm::Function *pmaxsw = llvm::Intrinsic::getDeclaration(::module, llvm::Intrinsic::x86_sse2_pmaxs_w);
-
-			return As<Short4>(V(::builder->CreateCall2(pmaxsw, ARGS(V(x.value), V(y.value)))));
-#else
 			return As<Short4>(V(lowerPMINMAX(V(x.value), V(y.value), llvm::ICmpInst::ICMP_SGT)));
-#endif
 		}
 
 		RValue<Short4> pminsw(RValue<Short4> x, RValue<Short4> y)
 		{
-#if REACTOR_LLVM_VERSION < 7
-			llvm::Function *pminsw = llvm::Intrinsic::getDeclaration(::module, llvm::Intrinsic::x86_sse2_pmins_w);
-
-			return As<Short4>(V(::builder->CreateCall2(pminsw, ARGS(V(x.value), V(y.value)))));
-#else
 			return As<Short4>(V(lowerPMINMAX(V(x.value), V(y.value), llvm::ICmpInst::ICMP_SLT)));
-#endif
 		}
 
 		RValue<Short4> pcmpgtw(RValue<Short4> x, RValue<Short4> y)
 		{
-#if REACTOR_LLVM_VERSION < 7
-			llvm::Function *pcmpgtw = llvm::Intrinsic::getDeclaration(::module, llvm::Intrinsic::x86_sse2_pcmpgt_w);
-
-			return As<Short4>(V(::builder->CreateCall2(pcmpgtw, ARGS(V(x.value), V(y.value)))));
-#else
 			return As<Short4>(V(lowerPCMP(llvm::ICmpInst::ICMP_SGT, V(x.value), V(y.value), T(Short4::getType()))));
-#endif
 		}
 
 		RValue<Short4> pcmpeqw(RValue<Short4> x, RValue<Short4> y)
 		{
-#if REACTOR_LLVM_VERSION < 7
-			llvm::Function *pcmpeqw = llvm::Intrinsic::getDeclaration(::module, llvm::Intrinsic::x86_sse2_pcmpeq_w);
-
-			return As<Short4>(V(::builder->CreateCall2(pcmpeqw, ARGS(V(x.value), V(y.value)))));
-#else
 			return As<Short4>(V(lowerPCMP(llvm::ICmpInst::ICMP_EQ, V(x.value), V(y.value), T(Short4::getType()))));
-#endif
 		}
 
 		RValue<Byte8> pcmpgtb(RValue<SByte8> x, RValue<SByte8> y)
 		{
-#if REACTOR_LLVM_VERSION < 7
-			llvm::Function *pcmpgtb = llvm::Intrinsic::getDeclaration(::module, llvm::Intrinsic::x86_sse2_pcmpgt_b);
-
-			return As<Byte8>(V(::builder->CreateCall2(pcmpgtb, ARGS(V(x.value), V(y.value)))));
-#else
 			return As<Byte8>(V(lowerPCMP(llvm::ICmpInst::ICMP_SGT, V(x.value), V(y.value), T(Byte8::getType()))));
-#endif
 		}
 
 		RValue<Byte8> pcmpeqb(RValue<Byte8> x, RValue<Byte8> y)
 		{
-#if REACTOR_LLVM_VERSION < 7
-			llvm::Function *pcmpeqb = llvm::Intrinsic::getDeclaration(::module, llvm::Intrinsic::x86_sse2_pcmpeq_b);
-
-			return As<Byte8>(V(::builder->CreateCall2(pcmpeqb, ARGS(V(x.value), V(y.value)))));
-#else
 			return As<Byte8>(V(lowerPCMP(llvm::ICmpInst::ICMP_EQ, V(x.value), V(y.value), T(Byte8::getType()))));
-#endif
 		}
 
 		RValue<Short4> packssdw(RValue<Int2> x, RValue<Int2> y)
@@ -3931,46 +3992,22 @@ namespace rr
 
 		RValue<Int4> pmaxsd(RValue<Int4> x, RValue<Int4> y)
 		{
-#if REACTOR_LLVM_VERSION < 7
-			llvm::Function *pmaxsd = llvm::Intrinsic::getDeclaration(::module, llvm::Intrinsic::x86_sse41_pmaxsd);
-
-			return RValue<Int4>(V(::builder->CreateCall2(pmaxsd, ARGS(V(x.value), V(y.value)))));
-#else
 			return RValue<Int4>(V(lowerPMINMAX(V(x.value), V(y.value), llvm::ICmpInst::ICMP_SGT)));
-#endif
 		}
 
 		RValue<Int4> pminsd(RValue<Int4> x, RValue<Int4> y)
 		{
-#if REACTOR_LLVM_VERSION < 7
-			llvm::Function *pminsd = llvm::Intrinsic::getDeclaration(::module, llvm::Intrinsic::x86_sse41_pminsd);
-
-			return RValue<Int4>(V(::builder->CreateCall2(pminsd, ARGS(V(x.value), V(y.value)))));
-#else
 			return RValue<Int4>(V(lowerPMINMAX(V(x.value), V(y.value), llvm::ICmpInst::ICMP_SLT)));
-#endif
 		}
 
 		RValue<UInt4> pmaxud(RValue<UInt4> x, RValue<UInt4> y)
 		{
-#if REACTOR_LLVM_VERSION < 7
-			llvm::Function *pmaxud = llvm::Intrinsic::getDeclaration(::module, llvm::Intrinsic::x86_sse41_pmaxud);
-
-			return RValue<UInt4>(V(::builder->CreateCall2(pmaxud, ARGS(V(x.value), V(y.value)))));
-#else
 			return RValue<UInt4>(V(lowerPMINMAX(V(x.value), V(y.value), llvm::ICmpInst::ICMP_UGT)));
-#endif
 		}
 
 		RValue<UInt4> pminud(RValue<UInt4> x, RValue<UInt4> y)
 		{
-#if REACTOR_LLVM_VERSION < 7
-			llvm::Function *pminud = llvm::Intrinsic::getDeclaration(::module, llvm::Intrinsic::x86_sse41_pminud);
-
-			return RValue<UInt4>(V(::builder->CreateCall2(pminud, ARGS(V(x.value), V(y.value)))));
-#else
 			return RValue<UInt4>(V(lowerPMINMAX(V(x.value), V(y.value), llvm::ICmpInst::ICMP_ULT)));
-#endif
 		}
 
 		RValue<Short4> pmulhw(RValue<Short4> x, RValue<Short4> y)
@@ -4031,46 +4068,22 @@ namespace rr
 
 		RValue<Int4> pmovzxbd(RValue<Byte16> x)
 		{
-#if REACTOR_LLVM_VERSION < 7
-			llvm::Function *pmovzxbd = llvm::Intrinsic::getDeclaration(::module, llvm::Intrinsic::x86_sse41_pmovzxbd);
-
-			return RValue<Int4>(V(::builder->CreateCall(pmovzxbd, ARGS(V(x.value)))));
-#else
 			return RValue<Int4>(V(lowerPMOV(V(x.value), T(Int4::getType()), false)));
-#endif
 		}
 
 		RValue<Int4> pmovsxbd(RValue<SByte16> x)
 		{
-#if REACTOR_LLVM_VERSION < 7
-			llvm::Function *pmovsxbd = llvm::Intrinsic::getDeclaration(::module, llvm::Intrinsic::x86_sse41_pmovsxbd);
-
-			return RValue<Int4>(V(::builder->CreateCall(pmovsxbd, ARGS(V(x.value)))));
-#else
 			return RValue<Int4>(V(lowerPMOV(V(x.value), T(Int4::getType()), true)));
-#endif
 		}
 
 		RValue<Int4> pmovzxwd(RValue<UShort8> x)
 		{
-#if REACTOR_LLVM_VERSION < 7
-			llvm::Function *pmovzxwd = llvm::Intrinsic::getDeclaration(::module, llvm::Intrinsic::x86_sse41_pmovzxwd);
-
-			return RValue<Int4>(V(::builder->CreateCall(pmovzxwd, ARGS(V(x.value)))));
-#else
 			return RValue<Int4>(V(lowerPMOV(V(x.value), T(Int4::getType()), false)));
-#endif
 		}
 
 		RValue<Int4> pmovsxwd(RValue<Short8> x)
 		{
-#if REACTOR_LLVM_VERSION < 7
-			llvm::Function *pmovsxwd = llvm::Intrinsic::getDeclaration(::module, llvm::Intrinsic::x86_sse41_pmovsxwd);
-
-			return RValue<Int4>(V(::builder->CreateCall(pmovsxwd, ARGS(V(x.value)))));
-#else
 			return RValue<Int4>(V(lowerPMOV(V(x.value), T(Int4::getType()), true)));
-#endif
 		}
 	}
 #endif  // defined(__i386__) || defined(__x86_64__)
@@ -4090,6 +4103,27 @@ namespace rr
 		return elements;
 	}
 
+	// toInt returns all the integer values in vals extended to a native width
+	// integer.
+	static std::vector<Value*> toInt(const std::vector<Value*>& vals, bool isSigned)
+	{
+		auto intTy = ::llvm::Type::getIntNTy(*::context, sizeof(int) * 8); // Natural integer width.
+		std::vector<Value*> elements;
+		elements.reserve(vals.size());
+		for (auto v : vals)
+		{
+			if (isSigned)
+			{
+				elements.push_back(V(::builder->CreateSExt(V(v), intTy)));
+			}
+			else
+			{
+				elements.push_back(V(::builder->CreateZExt(V(v), intTy)));
+			}
+		}
+		return elements;
+	}
+
 	// toDouble returns all the float values in vals extended to doubles.
 	static std::vector<Value*> toDouble(const std::vector<Value*>& vals)
 	{
@@ -4103,19 +4137,24 @@ namespace rr
 		return elements;
 	}
 
-	std::vector<Value*> PrintValue::Ty<Byte4>::val(const RValue<Byte4>& v) { return extractAll(v.value, 4); }
-	std::vector<Value*> PrintValue::Ty<Int4>::val(const RValue<Int4>& v) { return extractAll(v.value, 4); }
-	std::vector<Value*> PrintValue::Ty<UInt4>::val(const RValue<UInt4>& v) { return extractAll(v.value, 4); }
-	std::vector<Value*> PrintValue::Ty<Short4>::val(const RValue<Short4>& v) { return extractAll(v.value, 4); }
-	std::vector<Value*> PrintValue::Ty<UShort4>::val(const RValue<UShort4>& v) { return extractAll(v.value, 4); }
+	std::vector<Value*> PrintValue::Ty<Byte4>::val(const RValue<Byte4>& v) { return toInt(extractAll(v.value, 4), false); }
+	std::vector<Value*> PrintValue::Ty<Int>::val(const RValue<Int>& v) { return toInt({v.value}, true); }
+	std::vector<Value*> PrintValue::Ty<Int2>::val(const RValue<Int2>& v) { return toInt(extractAll(v.value, 2), true); }
+	std::vector<Value*> PrintValue::Ty<Int4>::val(const RValue<Int4>& v) { return toInt(extractAll(v.value, 4), true); }
+	std::vector<Value*> PrintValue::Ty<UInt>::val(const RValue<UInt>& v) { return toInt({v.value}, false); }
+	std::vector<Value*> PrintValue::Ty<UInt2>::val(const RValue<UInt2>& v) { return toInt(extractAll(v.value, 2), false); }
+	std::vector<Value*> PrintValue::Ty<UInt4>::val(const RValue<UInt4>& v) { return toInt(extractAll(v.value, 4), false); }
+	std::vector<Value*> PrintValue::Ty<Short4>::val(const RValue<Short4>& v) { return toInt(extractAll(v.value, 4), true); }
+	std::vector<Value*> PrintValue::Ty<UShort4>::val(const RValue<UShort4>& v) { return toInt(extractAll(v.value, 4), false); }
 	std::vector<Value*> PrintValue::Ty<Float>::val(const RValue<Float>& v) { return toDouble({v.value}); }
 	std::vector<Value*> PrintValue::Ty<Float4>::val(const RValue<Float4>& v) { return toDouble(extractAll(v.value, 4)); }
+	std::vector<Value*> PrintValue::Ty<const char*>::val(const char* v) { return {V(::builder->CreateGlobalStringPtr(v))}; }
 
 	void Printv(const char* function, const char* file, int line, const char* fmt, std::initializer_list<PrintValue> args)
 	{
 		// LLVM types used below.
 		auto i32Ty = ::llvm::Type::getInt32Ty(*::context);
-		auto intTy = ::llvm::Type::getInt64Ty(*::context); // TODO: Natural int width.
+		auto intTy = ::llvm::Type::getIntNTy(*::context, sizeof(int) * 8); // Natural integer width.
 		auto i8PtrTy = ::llvm::Type::getInt8PtrTy(*::context);
 		auto funcTy = ::llvm::FunctionType::get(i32Ty, {i8PtrTy}, true);
 
@@ -4211,4 +4250,317 @@ namespace rr
 #endif // ENABLE_RR_DEBUG_INFO
 	}
 
+} // namespace rr
+
+// ------------------------------  Coroutines ------------------------------
+
+namespace {
+
+	struct CoroutineState
+	{
+		llvm::Function *await = nullptr;
+		llvm::Function *destroy = nullptr;
+		llvm::Value *handle = nullptr;
+		llvm::Value *id = nullptr;
+		llvm::Value *promise = nullptr;
+		llvm::BasicBlock *suspendBlock = nullptr;
+		llvm::BasicBlock *endBlock = nullptr;
+		llvm::BasicBlock *destroyBlock = nullptr;
+	};
+	CoroutineState coroutine;
+
+	// Magic values retuned by llvm.coro.suspend.
+	// See: https://llvm.org/docs/Coroutines.html#llvm-coro-suspend-intrinsic
+	enum SuspendAction
+	{
+		SuspendActionSuspend = -1,
+		SuspendActionResume = 0,
+		SuspendActionDestroy = 1
+	};
+
+} // anonymous namespace
+
+namespace rr {
+
+void Nucleus::createCoroutine(Type *YieldType, std::vector<Type*> &Params)
+{
+	// Types
+	auto voidTy = ::llvm::Type::getVoidTy(*::context);
+	auto i1Ty = ::llvm::Type::getInt1Ty(*::context);
+	auto i8Ty = ::llvm::Type::getInt8Ty(*::context);
+	auto i32Ty = ::llvm::Type::getInt32Ty(*::context);
+	auto i8PtrTy = ::llvm::Type::getInt8PtrTy(*::context);
+	auto promiseTy = T(YieldType);
+	auto promisePtrTy = promiseTy->getPointerTo();
+	auto handleTy = i8PtrTy;
+	auto boolTy = i1Ty;
+
+	// LLVM intrinsics
+	auto coro_id = ::llvm::Intrinsic::getDeclaration(::module, llvm::Intrinsic::coro_id);
+	auto coro_size = ::llvm::Intrinsic::getDeclaration(::module, llvm::Intrinsic::coro_size, {i32Ty});
+	auto coro_begin = ::llvm::Intrinsic::getDeclaration(::module, llvm::Intrinsic::coro_begin);
+	auto coro_resume = ::llvm::Intrinsic::getDeclaration(::module, ::llvm::Intrinsic::coro_resume);
+	auto coro_end = ::llvm::Intrinsic::getDeclaration(::module, ::llvm::Intrinsic::coro_end);
+	auto coro_free = ::llvm::Intrinsic::getDeclaration(::module, ::llvm::Intrinsic::coro_free);
+	auto coro_destroy = ::llvm::Intrinsic::getDeclaration(::module, ::llvm::Intrinsic::coro_destroy);
+	auto coro_promise = ::llvm::Intrinsic::getDeclaration(::module, ::llvm::Intrinsic::coro_promise);
+	auto coro_done = ::llvm::Intrinsic::getDeclaration(::module, ::llvm::Intrinsic::coro_done);
+	auto coro_suspend = ::llvm::Intrinsic::getDeclaration(::module, ::llvm::Intrinsic::coro_suspend);
+
+	auto allocFrameTy = ::llvm::FunctionType::get(i8PtrTy, {i32Ty}, false);
+	auto allocFrame = ::module->getOrInsertFunction("coroutine_alloc_frame", allocFrameTy);
+	auto freeFrameTy = ::llvm::FunctionType::get(voidTy, {i8PtrTy}, false);
+	auto freeFrame = ::module->getOrInsertFunction("coroutine_free_frame", freeFrameTy);
+
+	// Build the coroutine_await() function:
+	//
+	//    bool coroutine_await(CoroutineHandle* handle, YieldType* out)
+	//    {
+	//        if (llvm.coro.done(handle))
+	//        {
+	//            return false;
+	//        }
+	//        else
+	//        {
+	//            *value = (T*)llvm.coro.promise(handle);
+	//            llvm.coro.resume(handle);
+	//            return true;
+	//        }
+	//    }
+	//
+	llvm::FunctionType *coroutineAwaitTy = llvm::FunctionType::get(boolTy, {handleTy, promisePtrTy}, false);
+	::coroutine.await = llvm::Function::Create(coroutineAwaitTy, llvm::GlobalValue::InternalLinkage, "coroutine_await", ::module);
+	::coroutine.await->setCallingConv(llvm::CallingConv::C);
+	{
+		auto args = ::coroutine.await->arg_begin();
+		auto handle = args++;
+		auto outPtr = args++;
+		::builder->SetInsertPoint(llvm::BasicBlock::Create(*::context, "co_await", ::coroutine.await));
+		auto doneBlock = llvm::BasicBlock::Create(*::context, "done", ::coroutine.await);
+		auto resumeBlock = llvm::BasicBlock::Create(*::context, "resume", ::coroutine.await);
+
+		auto done = ::builder->CreateCall(coro_done, {handle}, "done");
+		::builder->CreateCondBr(done, doneBlock, resumeBlock);
+
+		::builder->SetInsertPoint(doneBlock);
+		::builder->CreateRet(::llvm::ConstantInt::getFalse(i1Ty));
+
+		::builder->SetInsertPoint(resumeBlock);
+		auto promiseAlignment = ::llvm::ConstantInt::get(i32Ty, 4); // TODO: Get correct alignment.
+		auto promisePtr = ::builder->CreateCall(coro_promise, {handle, promiseAlignment, ::llvm::ConstantInt::get(i1Ty, 0)});
+		auto promise = ::builder->CreateLoad(::builder->CreatePointerCast(promisePtr, promisePtrTy));
+		::builder->CreateStore(promise, outPtr);
+		::builder->CreateCall(coro_resume, {handle});
+		::builder->CreateRet(::llvm::ConstantInt::getTrue(i1Ty));
+	}
+
+	// Build the coroutine_destroy() function:
+	//
+	//    void coroutine_destroy(CoroutineHandle* handle)
+	//    {
+	//        llvm.coro.destroy(handle);
+	//    }
+	//
+	llvm::FunctionType *coroutineDestroyTy = llvm::FunctionType::get(voidTy, handleTy, false);
+	::coroutine.destroy = llvm::Function::Create(coroutineDestroyTy, llvm::GlobalValue::InternalLinkage, "coroutine_destroy", ::module);
+	::coroutine.destroy->setCallingConv(llvm::CallingConv::C);
+	{
+		auto handle = ::coroutine.destroy->arg_begin();
+		::builder->SetInsertPoint(llvm::BasicBlock::Create(*::context, "", ::coroutine.destroy));
+		::builder->CreateCall(coro_destroy, {handle});
+		::builder->CreateRetVoid();
+	}
+
+	// Begin building the main coroutine_begin() function.
+	//
+	//    CoroutineHandle* coroutine_begin(<Arguments>)
+	//    {
+	//        YieldType promise;
+	//        auto id = llvm.coro.id(0, &promise, nullptr, nullptr);
+	//        void* frame = coroutine_alloc_frame(llvm.coro.size.i32());
+	//        CoroutineHandle *handle = llvm.coro.begin(id, frame);
+	//
+	//        ... <REACTOR CODE> ...
+	//
+	//    end:
+	//        SuspendAction action = llvm.coro.suspend(none, true /* final */);  // <-- RESUME POINT
+	//        switch (action)
+	//        {
+	//        case SuspendActionResume:
+	//            UNREACHABLE(); // Illegal to resume after final suspend.
+	//        case SuspendActionDestroy:
+	//            goto destroy;
+	//        default: // (SuspendActionSuspend)
+	//            goto suspend;
+	//        }
+	//
+	//    destroy:
+	//        coroutine_free_frame(llvm.coro.free(id, handle));
+	//        goto suspend;
+	//
+	//    suspend:
+	//        llvm.coro.end(handle, false);
+	//        return handle;
+	//    }
+	//
+	llvm::FunctionType *functionType = llvm::FunctionType::get(handleTy, T(Params), false);
+	::function = llvm::Function::Create(functionType, llvm::GlobalValue::InternalLinkage, "coroutine_begin", ::module);
+	::function->setCallingConv(llvm::CallingConv::C);
+
+#ifdef ENABLE_RR_DEBUG_INFO
+	::debugInfo = std::unique_ptr<DebugInfo>(new DebugInfo(::builder, ::context, ::module, ::function));
+#endif // ENABLE_RR_DEBUG_INFO
+
+	auto entryBlock = llvm::BasicBlock::Create(*::context, "coroutine", ::function);
+	::coroutine.suspendBlock = llvm::BasicBlock::Create(*::context, "suspend", ::function);
+	::coroutine.endBlock = llvm::BasicBlock::Create(*::context, "end", ::function);
+	::coroutine.destroyBlock = llvm::BasicBlock::Create(*::context, "destroy", ::function);
+
+	::builder->SetInsertPoint(entryBlock);
+	Variable::materializeAll();
+	::coroutine.promise = ::builder->CreateAlloca(T(YieldType), nullptr, "promise");
+	::coroutine.id = ::builder->CreateCall(coro_id, {
+		::llvm::ConstantInt::get(i32Ty, 0),
+		::builder->CreatePointerCast(::coroutine.promise, i8PtrTy),
+		::llvm::ConstantPointerNull::get(i8PtrTy),
+		::llvm::ConstantPointerNull::get(i8PtrTy),
+	});
+	auto size = ::builder->CreateCall(coro_size, {});
+	auto frame = ::builder->CreateCall(allocFrame, {size});
+	::coroutine.handle = ::builder->CreateCall(coro_begin, {::coroutine.id, frame});
+
+	// Build the suspend block
+	::builder->SetInsertPoint(::coroutine.suspendBlock);
+	::builder->CreateCall(coro_end, {::coroutine.handle, ::llvm::ConstantInt::get(i1Ty, 0)});
+	::builder->CreateRet(::coroutine.handle);
+
+	// Build the end block
+	::builder->SetInsertPoint(::coroutine.endBlock);
+	auto action = ::builder->CreateCall(coro_suspend, {
+		::llvm::ConstantTokenNone::get(*::context),
+		::llvm::ConstantInt::get(i1Ty, 1), // final: true
+	});
+	auto switch_ = ::builder->CreateSwitch(action, ::coroutine.suspendBlock, 3);
+	// switch_->addCase(::llvm::ConstantInt::get(i8Ty, SuspendActionResume), trapBlock); // TODO: Trap attempting to resume after final suspend
+	switch_->addCase(::llvm::ConstantInt::get(i8Ty, SuspendActionDestroy), ::coroutine.destroyBlock);
+
+	// Build the destroy block
+	::builder->SetInsertPoint(::coroutine.destroyBlock);
+	auto memory = ::builder->CreateCall(coro_free, {::coroutine.id, ::coroutine.handle});
+	::builder->CreateCall(freeFrame, {memory});
+	::builder->CreateBr(::coroutine.suspendBlock);
+
+	// Switch back to the entry block for reactor codegen.
+	::builder->SetInsertPoint(entryBlock);
+
+	#if defined(_WIN32)
+		// FIXME(capn):
+		// On Windows, stack memory is committed in increments of 4 kB pages, with the last page
+		// having a trap which allows the OS to grow the stack. For functions with a stack frame
+		// larger than 4 kB this can cause an issue when a variable is accessed beyond the guard
+		// page. Therefore the compiler emits a call to __chkstk in the function prolog to probe
+		// the stack and ensure all pages have been committed. This is currently broken in LLVM
+		// JIT, but we can prevent emitting the stack probe call:
+		::function->addFnAttr("stack-probe-size", "1048576");
+	#endif
 }
+
+void Nucleus::yield(Value* val)
+{
+	ASSERT_MSG(::coroutine.id != nullptr, "yield() can only be called when building a Coroutine");
+
+	//      promise = val;
+	//
+	//      auto action = llvm.coro.suspend(none, false /* final */); // <-- RESUME POINT
+	//      switch (action)
+	//      {
+	//      case SuspendActionResume:
+	//          goto resume;
+	//      case SuspendActionDestroy:
+	//          goto destroy;
+	//      default: // (SuspendActionSuspend)
+	//          goto suspend;
+	//      }
+	//  resume:
+	//
+
+	RR_DEBUG_INFO_UPDATE_LOC();
+	Variable::materializeAll();
+
+	// Types
+	auto i1Ty = ::llvm::Type::getInt1Ty(*::context);
+	auto i8Ty = ::llvm::Type::getInt8Ty(*::context);
+
+	// Intrinsics
+	auto coro_suspend = ::llvm::Intrinsic::getDeclaration(::module, ::llvm::Intrinsic::coro_suspend);
+
+	// Create a block to resume execution.
+	auto resumeBlock = llvm::BasicBlock::Create(*::context, "resume", ::function);
+
+	// Store the promise (yield value)
+	::builder->CreateStore(V(val), ::coroutine.promise);
+	auto action = ::builder->CreateCall(coro_suspend, {
+		::llvm::ConstantTokenNone::get(*::context),
+		::llvm::ConstantInt::get(i1Ty, 0), // final: true
+	});
+	auto switch_ = ::builder->CreateSwitch(action, ::coroutine.suspendBlock, 3);
+	switch_->addCase(::llvm::ConstantInt::get(i8Ty, SuspendActionResume), resumeBlock);
+	switch_->addCase(::llvm::ConstantInt::get(i8Ty, SuspendActionDestroy), ::coroutine.destroyBlock);
+
+	// Continue building in the resume block.
+	::builder->SetInsertPoint(resumeBlock);
+}
+
+Routine* Nucleus::acquireCoroutine(const char *name, bool runOptimizations)
+{
+	ASSERT_MSG(::coroutine.id != nullptr, "acquireCoroutine() called without a call to createCoroutine()");
+
+	::builder->CreateBr(::coroutine.endBlock);
+
+#ifdef ENABLE_RR_DEBUG_INFO
+	if (debugInfo != nullptr)
+	{
+		debugInfo->Finalize();
+	}
+#endif // ENABLE_RR_DEBUG_INFO
+
+	if(false)
+	{
+		std::error_code error;
+		llvm::raw_fd_ostream file(std::string(name) + "-llvm-dump-unopt.txt", error);
+		::module->print(file, 0);
+	}
+
+	// Run manadory coroutine transforms.
+	llvm::legacy::PassManager pm;
+	pm.add(llvm::createCoroEarlyPass());
+	pm.add(llvm::createCoroSplitPass());
+	pm.add(llvm::createCoroElidePass());
+	pm.add(llvm::createBarrierNoopPass());
+	pm.add(llvm::createCoroCleanupPass());
+	pm.run(*::module);
+
+	if(runOptimizations)
+	{
+		optimize();
+	}
+
+	if(false)
+	{
+		std::error_code error;
+		llvm::raw_fd_ostream file(std::string(name) + "-llvm-dump-opt.txt", error);
+		::module->print(file, 0);
+	}
+
+	llvm::Function *funcs[Nucleus::CoroutineEntryCount];
+	funcs[Nucleus::CoroutineEntryBegin] = ::function;
+	funcs[Nucleus::CoroutineEntryAwait] = ::coroutine.await;
+	funcs[Nucleus::CoroutineEntryDestroy] = ::coroutine.destroy;
+	Routine *routine = ::reactorJIT->acquireRoutine(funcs, Nucleus::CoroutineEntryCount);
+
+	::coroutine = CoroutineState{};
+
+	return routine;
+}
+
+} // namespace rr

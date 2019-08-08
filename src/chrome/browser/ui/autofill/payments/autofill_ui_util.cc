@@ -7,16 +7,19 @@
 #include <memory>
 
 #include "build/build_config.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/page_action/page_action_icon_container.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
+#endif
+
 namespace autofill {
 
-void UpdateCreditCardIcon(PageActionIconType icon_type,
+void UpdatePageActionIcon(PageActionIconType icon_type,
                           content::WebContents* web_contents) {
 #if !defined(OS_ANDROID)
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
@@ -46,9 +49,15 @@ void UpdateCreditCardIcon(PageActionIconType icon_type,
       case PageActionIconType::kSaveCard:
         location_bar->UpdateSaveCreditCardIcon();
         break;
-      case PageActionIconType::kFind:
       case PageActionIconType::kManagePasswords:
+        browser->window()
+            ->GetOmniboxPageActionIconContainer()
+            ->UpdatePageActionIcon(icon_type);
+        break;
+      case PageActionIconType::kFind:
+      case PageActionIconType::kIntentPicker:
       case PageActionIconType::kPwaInstall:
+      case PageActionIconType::kSendTabToSelf:
       case PageActionIconType::kTranslate:
       case PageActionIconType::kZoom:
         NOTREACHED();

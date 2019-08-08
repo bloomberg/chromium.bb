@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile_avatar_downloader.h"
@@ -55,31 +56,28 @@ const int kDefaultNames[] = {
 };
 
 // Reads a PNG from disk and decodes it. If the bitmap was successfully read
-// from disk the then |out_image| will contain the bitmap image, otherwise it
-// will be NULL.
-void ReadBitmap(const base::FilePath& image_path, gfx::Image** out_image) {
+// from disk then this will return the bitmap image, otherwise it will return
+// an empty gfx::Image.
+gfx::Image ReadBitmap(const base::FilePath& image_path) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
-  *out_image = nullptr;
 
   // If the path doesn't exist, don't even try reading it.
   if (!base::PathExists(image_path))
-    return;
+    return gfx::Image();
 
   std::string image_data;
   if (!base::ReadFileToString(image_path, &image_data)) {
     LOG(ERROR) << "Failed to read PNG file from disk.";
-    return;
+    return gfx::Image();
   }
 
   gfx::Image image = gfx::Image::CreateFrom1xPNGBytes(
       base::RefCountedString::TakeString(&image_data));
-  if (image.IsEmpty()) {
+  if (image.IsEmpty())
     LOG(ERROR) << "Failed to decode PNG file.";
-    return;
-  }
 
-  *out_image = new gfx::Image(image);
+  return image;
 }
 
 // Writes |data| to disk and takes ownership of the pointer. On successful
@@ -265,9 +263,9 @@ const gfx::Image* ProfileAttributesStorage::LoadAvatarPictureFromPath(
     const base::FilePath& image_path) const {
   // If the picture is already loaded then use it.
   if (cached_avatar_images_.count(key)) {
-    if (cached_avatar_images_[key]->IsEmpty())
+    if (cached_avatar_images_[key].IsEmpty())
       return nullptr;
-    return cached_avatar_images_[key].get();
+    return &cached_avatar_images_[key];
   }
 
   // Don't download the image if downloading is disabled for tests.
@@ -279,12 +277,12 @@ const gfx::Image* ProfileAttributesStorage::LoadAvatarPictureFromPath(
     return nullptr;
   cached_avatar_images_loading_[key] = true;
 
-  gfx::Image** image = new gfx::Image*;
-  file_task_runner_->PostTaskAndReply(
-      FROM_HERE, base::BindOnce(&ReadBitmap, image_path, image),
+  base::PostTaskAndReplyWithResult(
+      file_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&ReadBitmap, image_path),
       base::BindOnce(&ProfileAttributesStorage::OnAvatarPictureLoaded,
                      const_cast<ProfileAttributesStorage*>(this)->AsWeakPtr(),
-                     profile_path, key, image));
+                     profile_path, key));
   return nullptr;
 }
 
@@ -361,13 +359,13 @@ void ProfileAttributesStorage::DownloadHighResAvatar(
 
 void ProfileAttributesStorage::SaveAvatarImageAtPath(
     const base::FilePath& profile_path,
-    const gfx::Image* image,
+    gfx::Image image,
     const std::string& key,
     const base::FilePath& image_path) {
-  cached_avatar_images_[key].reset(new gfx::Image(*image));
+  cached_avatar_images_[key] = image;
 
   std::unique_ptr<ImageData> data(new ImageData);
-  scoped_refptr<base::RefCountedMemory> png_data = image->As1xPNGBytes();
+  scoped_refptr<base::RefCountedMemory> png_data = image.As1xPNGBytes();
   data->assign(png_data->front(), png_data->front() + png_data->size());
 
   // Remove the file from the list of downloads in progress. Note that this list
@@ -396,17 +394,13 @@ void ProfileAttributesStorage::SaveAvatarImageAtPath(
 void ProfileAttributesStorage::OnAvatarPictureLoaded(
     const base::FilePath& profile_path,
     const std::string& key,
-    gfx::Image** image) const {
+    gfx::Image image) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   cached_avatar_images_loading_[key] = false;
 
-  if (*image) {
-    cached_avatar_images_[key].reset(*image);
-  } else {
-    // Place an empty image in the cache to avoid reloading it again.
-    cached_avatar_images_[key].reset(new gfx::Image());
-  }
-  delete image;
+  // Even if the image is empty (e.g. because decoding failed), place it in the
+  // cache to avoid reloading it again.
+  cached_avatar_images_[key] = std::move(image);
 
   NotifyOnProfileHighResAvatarLoaded(profile_path);
 }

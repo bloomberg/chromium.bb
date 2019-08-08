@@ -11,16 +11,20 @@ import logging
 import optparse
 import sys
 
-from third_party import colorama
-from third_party.depot_tools import fix_encoding
-from third_party.depot_tools import subcommand
+from utils import tools
+tools.force_local_third_party()
 
+# third_party/
+import colorama
+from depot_tools import fix_encoding
+from depot_tools import subcommand
+
+# pylint: disable=ungrouped-imports
 from utils import logging_utils
 from utils import on_error
 from utils import net
 from utils import oauth
 from utils import subprocess42
-from utils import tools
 
 
 class AuthServiceError(Exception):
@@ -119,9 +123,8 @@ def CMDlogin(parser, args):
   if service.login(True):
     print 'Logged in as \'%s\'.' % service.get_current_identity()
     return 0
-  else:
-    print 'Login failed or canceled.'
-    return 1
+  print 'Login failed or canceled.'
+  return 1
 
 
 @subcommand.usage('[options]')

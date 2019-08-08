@@ -267,6 +267,8 @@ TEST_F(ExternalProtocolHandlerTest, TestGetBlockStateDefaultBlock) {
   ExternalProtocolHandler::BlockState block_state =
       ExternalProtocolHandler::GetBlockState("afp", profile_.get());
   EXPECT_EQ(ExternalProtocolHandler::BLOCK, block_state);
+  block_state = ExternalProtocolHandler::GetBlockState("res", profile_.get());
+  EXPECT_EQ(ExternalProtocolHandler::BLOCK, block_state);
   EXPECT_TRUE(
       profile_->GetPrefs()->GetDictionary(prefs::kExcludedSchemes)->empty());
 }

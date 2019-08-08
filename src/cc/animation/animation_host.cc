@@ -47,6 +47,19 @@ AnimationWorkletMutationState ToAnimationWorkletMutationState(
   }
 }
 
+bool TickAnimationsIf(AnimationHost::AnimationsList animations,
+                      base::TimeTicks monotonic_time,
+                      bool (*predicate)(const Animation&)) {
+  bool did_tick = false;
+  for (auto& it : animations) {
+    if (predicate(*it)) {
+      it->Tick(monotonic_time);
+      did_tick = true;
+    }
+  }
+  return did_tick;
+}
+
 }  // namespace
 
 std::unique_ptr<AnimationHost> AnimationHost::CreateMainInstance() {
@@ -129,25 +142,35 @@ void AnimationHost::RemoveAnimationTimeline(
   SetNeedsPushProperties();
 }
 
+void AnimationHost::UpdateRegisteredElementIds(ElementListType changed_list) {
+  for (auto map_entry : element_to_animations_map_) {
+    if (mutator_host_client()->IsElementInPropertyTrees(map_entry.first,
+                                                        changed_list))
+      map_entry.second->ElementIdRegistered(map_entry.first, changed_list);
+    else
+      map_entry.second->ElementIdUnregistered(map_entry.first, changed_list);
+  }
+}
+
 void AnimationHost::InitClientAnimationState() {
   for (auto map_entry : element_to_animations_map_)
     map_entry.second->InitClientAnimationState();
 }
 
-void AnimationHost::RegisterElement(ElementId element_id,
-                                    ElementListType list_type) {
-  scoped_refptr<ElementAnimations> element_animations =
-      GetElementAnimationsForElementId(element_id);
-  if (element_animations)
-    element_animations->ElementRegistered(element_id, list_type);
-}
-
-void AnimationHost::UnregisterElement(ElementId element_id,
+void AnimationHost::RegisterElementId(ElementId element_id,
                                       ElementListType list_type) {
   scoped_refptr<ElementAnimations> element_animations =
       GetElementAnimationsForElementId(element_id);
   if (element_animations)
-    element_animations->ElementUnregistered(element_id, list_type);
+    element_animations->ElementIdRegistered(element_id, list_type);
+}
+
+void AnimationHost::UnregisterElementId(ElementId element_id,
+                                        ElementListType list_type) {
+  scoped_refptr<ElementAnimations> element_animations =
+      GetElementAnimationsForElementId(element_id);
+  if (element_animations)
+    element_animations->ElementIdUnregistered(element_id, list_type);
 }
 
 void AnimationHost::RegisterKeyframeEffectForElement(
@@ -348,29 +371,21 @@ void AnimationHost::TickMutator(base::TimeTicks monotonic_time,
   return;
 }
 
-bool AnimationHost::ActivateAnimations() {
+bool AnimationHost::ActivateAnimations(MutatorEvents* mutator_events) {
   if (!NeedsTickAnimations())
     return false;
 
+  auto* animation_events = static_cast<AnimationEvents*>(mutator_events);
+
   TRACE_EVENT0("cc", "AnimationHost::ActivateAnimations");
   AnimationsList ticking_animations_copy = ticking_animations_;
-  for (auto& it : ticking_animations_copy)
+  for (auto& it : ticking_animations_copy) {
     it->ActivateKeyframeEffects();
+    // Finish animations which no longer affect active or pending elements.
+    it->UpdateState(false, animation_events);
+  }
 
   return true;
-}
-
-bool TickAnimationsIf(AnimationHost::AnimationsList animations,
-                      base::TimeTicks monotonic_time,
-                      bool (*predicate)(const Animation&)) {
-  bool did_tick = false;
-  for (auto& it : animations) {
-    if (predicate(*it)) {
-      it->Tick(monotonic_time);
-      did_tick = true;
-    }
-  }
-  return did_tick;
 }
 
 bool AnimationHost::TickAnimations(base::TimeTicks monotonic_time,
@@ -522,6 +537,15 @@ bool AnimationHost::IsAnimatingFilterProperty(ElementId element_id,
              : false;
 }
 
+bool AnimationHost::IsAnimatingBackdropFilterProperty(
+    ElementId element_id,
+    ElementListType list_type) const {
+  auto element_animations = GetElementAnimationsForElementId(element_id);
+  return element_animations ? element_animations->IsCurrentlyAnimatingProperty(
+                                  TargetProperty::BACKDROP_FILTER, list_type)
+                            : false;
+}
+
 bool AnimationHost::IsAnimatingOpacityProperty(
     ElementId element_id,
     ElementListType list_type) const {
@@ -549,6 +573,16 @@ bool AnimationHost::HasPotentiallyRunningFilterAnimation(
   return element_animations
              ? element_animations->IsPotentiallyAnimatingProperty(
                    TargetProperty::FILTER, list_type)
+             : false;
+}
+
+bool AnimationHost::HasPotentiallyRunningBackdropFilterAnimation(
+    ElementId element_id,
+    ElementListType list_type) const {
+  auto element_animations = GetElementAnimationsForElementId(element_id);
+  return element_animations
+             ? element_animations->IsPotentiallyAnimatingProperty(
+                   TargetProperty::BACKDROP_FILTER, list_type)
              : false;
 }
 
@@ -582,15 +616,6 @@ bool AnimationHost::HasAnyAnimationTargetingProperty(
   return element_animations->HasAnyAnimationTargetingProperty(property);
 }
 
-bool AnimationHost::HasOnlyTranslationTransforms(
-    ElementId element_id,
-    ElementListType list_type) const {
-  auto element_animations = GetElementAnimationsForElementId(element_id);
-  return element_animations
-             ? element_animations->HasOnlyTranslationTransforms(list_type)
-             : true;
-}
-
 bool AnimationHost::AnimationsPreserveAxisAlignment(
     ElementId element_id) const {
   auto element_animations = GetElementAnimationsForElementId(element_id);
@@ -599,18 +624,17 @@ bool AnimationHost::AnimationsPreserveAxisAlignment(
              : true;
 }
 
-float AnimationHost::MaximumTargetScale(ElementId element_id,
-                                        ElementListType list_type) const {
-  auto element_animations = GetElementAnimationsForElementId(element_id);
-  return element_animations ? element_animations->MaximumTargetScale(list_type)
-                            : kNotScaled;
-}
-
-float AnimationHost::AnimationStartScale(ElementId element_id,
-                                         ElementListType list_type) const {
-  auto element_animations = GetElementAnimationsForElementId(element_id);
-  return element_animations ? element_animations->AnimationStartScale(list_type)
-                            : kNotScaled;
+void AnimationHost::GetAnimationScales(ElementId element_id,
+                                       ElementListType list_type,
+                                       float* maximum_scale,
+                                       float* starting_scale) const {
+  if (auto element_animations = GetElementAnimationsForElementId(element_id)) {
+    element_animations->GetAnimationScales(list_type, maximum_scale,
+                                           starting_scale);
+    return;
+  }
+  *maximum_scale = kNotScaled;
+  *starting_scale = kNotScaled;
 }
 
 bool AnimationHost::IsElementAnimating(ElementId element_id) const {

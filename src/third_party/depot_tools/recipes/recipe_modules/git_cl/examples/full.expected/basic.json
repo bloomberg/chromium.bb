@@ -13,8 +13,7 @@
       "RECIPE_REPO[depot_tools]/git_cl.py",
       "issue"
     ],
-    "name": "git_cl issue",
-    "stdout": "/path/to/tmp/"
+    "name": "git_cl issue"
   },
   {
     "cmd": [
@@ -24,8 +23,7 @@
       "--rietveld",
       "https://code.review/123"
     ],
-    "name": "git_cl description (build)",
-    "stdout": "/path/to/tmp/"
+    "name": "git_cl description (build)"
   },
   {
     "cmd": [
@@ -37,8 +35,7 @@
       "--rietveld"
     ],
     "name": "git_cl set description",
-    "stdin": "bammmm",
-    "stdout": "/path/to/tmp/"
+    "stdin": "bammmm"
   },
   {
     "cmd": [
@@ -54,8 +51,7 @@
       "-d"
     ],
     "cwd": "[CLEANUP]/fakerepo_tmp_1",
-    "name": "git_cl description",
-    "stdout": "/path/to/tmp/"
+    "name": "git_cl description"
   },
   {
     "cmd": [
@@ -73,8 +69,7 @@
     ],
     "cwd": "[CLEANUP]/fakerepo_tmp_1",
     "name": "git_cl set description (2)",
-    "stdin": "new description woo",
-    "stdout": "/path/to/tmp/"
+    "stdin": "new description woo"
   },
   {
     "cmd": [
@@ -83,8 +78,7 @@
       "-d"
     ],
     "cwd": "[CLEANUP]/fakerepo_tmp_1",
-    "name": "git_cl description (2)",
-    "stdout": "/path/to/tmp/"
+    "name": "git_cl description (2)"
   },
   {
     "cmd": [

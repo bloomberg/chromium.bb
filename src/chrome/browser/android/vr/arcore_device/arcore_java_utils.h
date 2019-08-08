@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_ANDROID_VR_ARCORE_DEVICE_ARCORE_JAVA_UTILS_H_
 #define CHROME_BROWSER_ANDROID_VR_ARCORE_DEVICE_ARCORE_JAVA_UTILS_H_
 
+#include <android/native_window_jni.h>
 #include <jni.h>
+
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
@@ -26,6 +28,12 @@ class ArCoreJavaUtils : public ArCoreInstallUtils {
   bool ShouldRequestInstallSupportedArCore() override;
   void RequestInstallSupportedArCore(int render_process_id,
                                      int render_frame_id) override;
+  void RequestArSession(int render_process_id,
+                        int render_frame_id,
+                        SurfaceReadyCallback ready_callback,
+                        SurfaceTouchCallback touch_callback,
+                        SurfaceDestroyedCallback destroyed_callback) override;
+  void DestroyDrawingSurface() override;
 
   // Methods called from the Java side.
   void OnRequestInstallArModuleResult(
@@ -36,6 +44,21 @@ class ArCoreJavaUtils : public ArCoreInstallUtils {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       bool success);
+  void OnDrawingSurfaceReady(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& surface,
+      int rotation,
+      int width,
+      int height);
+  void OnDrawingSurfaceTouch(JNIEnv* env,
+                             const base::android::JavaParamRef<jobject>& obj,
+                             bool touching,
+                             float x,
+                             float y);
+  void OnDrawingSurfaceDestroyed(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
   bool EnsureLoaded() override;
   base::android::ScopedJavaLocalRef<jobject> GetApplicationContext() override;
@@ -49,6 +72,10 @@ class ArCoreJavaUtils : public ArCoreInstallUtils {
   base::RepeatingCallback<void(bool)> ar_core_installation_callback_;
 
   base::android::ScopedJavaGlobalRef<jobject> j_arcore_java_utils_;
+
+  SurfaceReadyCallback surface_ready_callback_;
+  SurfaceTouchCallback surface_touch_callback_;
+  SurfaceDestroyedCallback surface_destroyed_callback_;
 };
 
 }  // namespace vr

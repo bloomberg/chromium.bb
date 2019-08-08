@@ -130,7 +130,7 @@ BookmarkPermanentNode::BookmarkPermanentNode(int64_t id)
 BookmarkPermanentNode::~BookmarkPermanentNode() = default;
 
 bool BookmarkPermanentNode::IsVisible() const {
-  return visible_ || !empty();
+  return visible_ || !children().empty();
 }
 
 }  // namespace bookmarks

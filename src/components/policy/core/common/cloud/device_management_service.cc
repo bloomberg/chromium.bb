@@ -9,10 +9,10 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/policy/core/common/cloud/dm_auth.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -33,6 +33,10 @@ const char kPostContentType[] = "application/protobuf";
 
 // Number of times to retry on ERR_NETWORK_CHANGED errors.
 const int kMaxRetries = 3;
+static_assert(kMaxRetries <
+                  static_cast<int>(DMServerRequestSuccess::kRequestFailed),
+              "Maximum retries must be less than 10 which is uma sample of "
+              "request failed.");
 
 // HTTP Error Codes of the DM Server with their concrete meanings in the context
 // of the DM Server communication.
@@ -64,7 +68,6 @@ bool IsProxyError(int net_error) {
     case net::ERR_PROXY_CONNECTION_FAILED:
     case net::ERR_TUNNEL_CONNECTION_FAILED:
     case net::ERR_PROXY_AUTH_UNSUPPORTED:
-    case net::ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT:
     case net::ERR_MANDATORY_PROXY_CONFIGURATION_FAILED:
     case net::ERR_PROXY_CERTIFICATE_INVALID:
     case net::ERR_SOCKS_CONNECTION_FAILED:
@@ -250,22 +253,6 @@ class DeviceManagementRequestJobImpl : public DeviceManagementRequestJob {
   DISALLOW_COPY_AND_ASSIGN(DeviceManagementRequestJobImpl);
 };
 
-// Used in the Enterprise.DMServerRequestSuccess histogram, shows how many
-// retries we had to do to execute the DeviceManagementRequestJob.
-enum DMServerRequestSuccess {
-  // No retries happened, the request succeeded for the first try.
-  REQUEST_NO_RETRY = 0,
-
-  // 1..kMaxRetries: number of retries
-
-  // The request failed (too many retries or non-retriable error).
-  REQUEST_FAILED = 10,
-  // The server responded with an error.
-  REQUEST_ERROR,
-
-  REQUEST_MAX
-};
-
 DeviceManagementRequestJobImpl::DeviceManagementRequestJobImpl(
     JobType type,
     const std::string& agent_parameter,
@@ -290,10 +277,12 @@ void DeviceManagementRequestJobImpl::Run() {
 void DeviceManagementRequestJobImpl::HandleResponse(int net_error,
                                                     int response_code,
                                                     const std::string& data) {
+  std::string uma_name =
+      "Enterprise.DMServerRequestSuccess." + GetJobTypeAsString();
   if (net_error != net::OK) {
-    UMA_HISTOGRAM_ENUMERATION("Enterprise.DMServerRequestSuccess",
-                              DMServerRequestSuccess::REQUEST_FAILED,
-                              DMServerRequestSuccess::REQUEST_MAX);
+    // Using histogram functions which allows runtime histogram name.
+    base::UmaHistogramEnumeration(uma_name,
+                                  DMServerRequestSuccess::kRequestFailed);
     LOG(WARNING) << "DMServer request failed, error: " << net_error;
     em::DeviceManagementResponse dummy_response;
     callback_.Run(DM_STATUS_REQUEST_FAILED, net_error, dummy_response);
@@ -301,9 +290,8 @@ void DeviceManagementRequestJobImpl::HandleResponse(int net_error,
   }
 
   if (response_code != kSuccess) {
-    UMA_HISTOGRAM_ENUMERATION("Enterprise.DMServerRequestSuccess",
-                              DMServerRequestSuccess::REQUEST_ERROR,
-                              DMServerRequestSuccess::REQUEST_MAX);
+    base::UmaHistogramEnumeration(uma_name,
+                                  DMServerRequestSuccess::kRequestError);
     em::DeviceManagementResponse response;
     if (response.ParseFromString(data)) {
       LOG(WARNING) << "DMServer sent an error response: " << response_code
@@ -313,9 +301,9 @@ void DeviceManagementRequestJobImpl::HandleResponse(int net_error,
     }
   } else {
     // Success with retries_count_ retries.
-    UMA_HISTOGRAM_EXACT_LINEAR(
-        "Enterprise.DMServerRequestSuccess", retries_count_,
-        static_cast<int>(DMServerRequestSuccess::REQUEST_MAX));
+    base::UmaHistogramExactLinear(
+        uma_name, retries_count_,
+        static_cast<int>(DMServerRequestSuccess::kMaxValue) + 1);
   }
 
   switch (response_code) {
@@ -412,8 +400,8 @@ GURL DeviceManagementRequestJobImpl::GetURL(
 void DeviceManagementRequestJobImpl::ConfigureRequest(
     network::ResourceRequest* resource_request) {
   resource_request->load_flags =
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES |
       net::LOAD_DISABLE_CACHE | (bypass_proxy_ ? net::LOAD_BYPASS_PROXY : 0);
+  resource_request->allow_credentials = false;
   CHECK(auth_data_ || oauth_token_);
   if (!auth_data_)
     return;
@@ -503,6 +491,61 @@ void DeviceManagementRequestJobImpl::ReportError(DeviceManagementStatus code) {
 
 DeviceManagementRequestJob::~DeviceManagementRequestJob() {}
 
+std::string DeviceManagementRequestJob::GetJobTypeAsString() const {
+  switch (type_) {
+    case DeviceManagementRequestJob::TYPE_AUTO_ENROLLMENT:
+      return "AutoEnrollment";
+    case DeviceManagementRequestJob::TYPE_REGISTRATION:
+      return "Registration";
+    case DeviceManagementRequestJob::TYPE_API_AUTH_CODE_FETCH:
+      return "ApiAuthCodeFetch";
+    case DeviceManagementRequestJob::TYPE_POLICY_FETCH:
+      return "PolicyFetch";
+    case DeviceManagementRequestJob::TYPE_UNREGISTRATION:
+      return "Unregistration";
+    case DeviceManagementRequestJob::TYPE_UPLOAD_CERTIFICATE:
+      return "UploadCertificate";
+    case DeviceManagementRequestJob::TYPE_DEVICE_STATE_RETRIEVAL:
+      return "DeviceStateRetrieval";
+    case DeviceManagementRequestJob::TYPE_UPLOAD_STATUS:
+      return "UploadStatus";
+    case DeviceManagementRequestJob::TYPE_REMOTE_COMMANDS:
+      return "RemoteCommands";
+    case DeviceManagementRequestJob::TYPE_ATTRIBUTE_UPDATE_PERMISSION:
+      return "AttributeUpdatePermission";
+    case DeviceManagementRequestJob::TYPE_ATTRIBUTE_UPDATE:
+      return "AttributeUpdate";
+    case DeviceManagementRequestJob::TYPE_GCM_ID_UPDATE:
+      return "GcmIdUpdate";
+    case DeviceManagementRequestJob::TYPE_ANDROID_MANAGEMENT_CHECK:
+      return "AndroidManagementCheck";
+    case DeviceManagementRequestJob::TYPE_CERT_BASED_REGISTRATION:
+      return "CertBasedRegistration";
+    case DeviceManagementRequestJob::TYPE_ACTIVE_DIRECTORY_ENROLL_PLAY_USER:
+      return "ActiveDirectoryEnrollPlayUser";
+    case DeviceManagementRequestJob::TYPE_ACTIVE_DIRECTORY_PLAY_ACTIVITY:
+      return "ActiveDirectoryPlayActivity";
+    case DeviceManagementRequestJob::TYPE_REQUEST_LICENSE_TYPES:
+      return "RequestLicenseTypes";
+    case DeviceManagementRequestJob::TYPE_UPLOAD_APP_INSTALL_REPORT:
+      return "UploadAppInstallReport";
+    case DeviceManagementRequestJob::TYPE_TOKEN_ENROLLMENT:
+      return "TokenEnrollment";
+    case DeviceManagementRequestJob::TYPE_CHROME_DESKTOP_REPORT:
+      return "ChromeDesktopReport";
+    case DeviceManagementRequestJob::TYPE_INITIAL_ENROLLMENT_STATE_RETRIEVAL:
+      return "InitialEnrollmentStateRetrieval";
+    case DeviceManagementRequestJob::TYPE_UPLOAD_POLICY_VALIDATION_REPORT:
+      return "UploadPolicyValidationReport";
+  }
+  NOTREACHED() << "Invalid job type " << type_;
+  return "";
+}
+
+void DeviceManagementRequestJob::SetClientID(const std::string& client_id) {
+  AddParameter(dm_protocol::kParamDeviceID, client_id);
+}
+
 void DeviceManagementRequestJob::SetAuthData(std::unique_ptr<DMAuth> auth) {
   CHECK(!auth->has_oauth_token()) << "This method does not accept OAuth2";
   auth_data_ = std::move(auth);
@@ -512,10 +555,6 @@ void DeviceManagementRequestJob::SetOAuthTokenParameter(
     const std::string& oauth_token) {
   oauth_token_ = oauth_token;
   AddParameter(dm_protocol::kParamOAuthToken, *oauth_token_);
-}
-
-void DeviceManagementRequestJob::SetClientID(const std::string& client_id) {
-  AddParameter(dm_protocol::kParamDeviceID, client_id);
 }
 
 void DeviceManagementRequestJob::SetCritical(bool critical) {

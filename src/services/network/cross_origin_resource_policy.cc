@@ -8,9 +8,8 @@
 
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_response_headers.h"
-#include "net/url_request/url_request.h"
 #include "services/network/initiator_lock_compatibility.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/cpp/resource_response_info.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
@@ -97,8 +96,9 @@ bool ShouldAllowSameSite(const url::Origin& initiator,
 
 // static
 CrossOriginResourcePolicy::VerificationResult CrossOriginResourcePolicy::Verify(
-    const net::URLRequest& request,
-    const ResourceResponse& response,
+    const GURL& request_url,
+    const base::Optional<url::Origin>& request_initiator,
+    const ResourceResponseInfo& response,
     mojom::FetchRequestMode fetch_mode,
     base::Optional<url::Origin> request_initiator_site_lock) {
   // From https://fetch.spec.whatwg.org/#cross-origin-resource-policy-header:
@@ -113,7 +113,7 @@ CrossOriginResourcePolicy::VerificationResult CrossOriginResourcePolicy::Verify(
   // We parse the header earlier than requested by the spec (i.e. we swap steps
   // 2 and 3 from the spec), to return early if there was no header (before
   // slightly more expensive steps needed to extract the origins below).
-  ParsedHeader policy = ParseHeader(response.head.headers.get());
+  ParsedHeader policy = ParseHeader(response.headers.get());
   if (policy == kNoHeader || policy == kParsingError) {
     // The algorithm only returns kBlock from steps 4 and 6, when policy is
     // either kSameOrigin or kSameSite.  For other policy values we can
@@ -127,9 +127,9 @@ CrossOriginResourcePolicy::VerificationResult CrossOriginResourcePolicy::Verify(
   // From https://fetch.spec.whatwg.org/#cross-origin-resource-policy-header:
   // > 2. If request’s origin is same origin with request’s current URL’s
   //      origin, then return allowed.
-  url::Origin target_origin = url::Origin::Create(request.url());
+  url::Origin target_origin = url::Origin::Create(request_url);
   url::Origin initiator =
-      GetTrustworthyInitiator(request_initiator_site_lock, request);
+      GetTrustworthyInitiator(request_initiator_site_lock, request_initiator);
   if (initiator == target_origin)
     return kAllow;
 

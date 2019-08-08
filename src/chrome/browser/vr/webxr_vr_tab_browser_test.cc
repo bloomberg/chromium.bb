@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/vr/test/multi_class_browser_test.h"
 #include "chrome/browser/vr/test/webvr_browser_test.h"
 #include "chrome/browser/vr/test/webxr_vr_browser_test.h"
 #include "url/gurl.h"
@@ -27,11 +28,11 @@ void TestPoseDataUnfocusedTabImpl(WebXrVrBrowserTestBase* t,
   t->EndTest(first_tab_web_contents);
 }
 
-IN_PROC_BROWSER_TEST_F(WebVrBrowserTestStandard, TestPoseDataUnfocusedTab) {
+IN_PROC_BROWSER_TEST_F(WebVrOpenVrBrowserTest, TestPoseDataUnfocusedTab) {
   TestPoseDataUnfocusedTabImpl(this, "test_pose_data_unfocused_tab");
 }
-IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestPoseDataUnfocusedTab) {
-  TestPoseDataUnfocusedTabImpl(this, "webxr_test_pose_data_unfocused_tab");
+WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestPoseDataUnfocusedTab) {
+  TestPoseDataUnfocusedTabImpl(t, "webxr_test_pose_data_unfocused_tab");
 }
 
 }  // namespace vr

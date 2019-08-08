@@ -46,7 +46,7 @@ class WorkerScriptFetchInitiator {
  public:
   using CompletionCallback = base::OnceCallback<void(
       blink::mojom::ServiceWorkerProviderInfoForWorkerPtr,
-      network::mojom::URLLoaderFactoryAssociatedPtrInfo,
+      network::mojom::URLLoaderFactoryPtr,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>,
       blink::mojom::WorkerMainScriptLoadParamsPtr,
       blink::mojom::ControllerServiceWorkerInfoPtr,
@@ -63,6 +63,8 @@ class WorkerScriptFetchInitiator {
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
       AppCacheNavigationHandleCore* appcache_handle_core,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
+      scoped_refptr<network::SharedURLLoaderFactory>
+          url_loader_factory_override,
       StoragePartitionImpl* storage_partition,
       CompletionCallback callback);
 
@@ -92,13 +94,14 @@ class WorkerScriptFetchInitiator {
       AppCacheNavigationHandleCore* appcache_handle_core,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
           blob_url_loader_factory_info,
+      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+          url_loader_factory_override_info,
       CompletionCallback callback);
   static void DidCreateScriptLoaderOnIO(
       CompletionCallback callback,
       blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
           service_worker_provider_info,
-      network::mojom::URLLoaderFactoryAssociatedPtrInfo
-          main_script_loader_factory,
+      network::mojom::URLLoaderFactoryPtr main_script_loader_factory,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
           subresource_loader_factories,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,

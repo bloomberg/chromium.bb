@@ -80,6 +80,9 @@ class APP_LIST_EXPORT AppListPage : public views::View {
   // below the search box.
   gfx::Rect GetDefaultContentsBounds() const;
 
+  // views::View:
+  const char* GetClassName() const override;
+
  private:
   ContentsView* contents_view_;
 

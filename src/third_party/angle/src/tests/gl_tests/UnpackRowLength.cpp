@@ -27,10 +27,8 @@ class UnpackRowLengthTest : public ANGLETest
         mProgram = 0;
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
-
         constexpr char kFS[] = R"(uniform sampler2D tex;
 void main()
 {
@@ -44,18 +42,13 @@ void main()
         }
     }
 
-    void TearDown() override
-    {
-        glDeleteProgram(mProgram);
-
-        ANGLETest::TearDown();
-    }
+    void testTearDown() override { glDeleteProgram(mProgram); }
 
     void testRowLength(int texSize, int rowLength)
     {
         glPixelStorei(GL_UNPACK_ROW_LENGTH, rowLength);
 
-        if ((getClientMajorVersion() == 3) || extensionEnabled("GL_EXT_unpack_subimage"))
+        if ((getClientMajorVersion() == 3) || IsGLExtensionEnabled("GL_EXT_unpack_subimage"))
         {
             // Only texSize * texSize region is filled as WHITE, other parts are BLACK.
             // If the UNPACK_ROW_LENGTH is implemented correctly, all texels inside this texture are

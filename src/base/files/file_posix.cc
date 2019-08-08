@@ -130,7 +130,7 @@ void File::Info::FromStat(const stat_wrapper_t& stat_info) {
   is_symbolic_link = S_ISLNK(stat_info.st_mode);
   size = stat_info.st_size;
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_FUCHSIA)
   time_t last_modified_sec = stat_info.st_mtim.tv_sec;
   int64_t last_modified_nsec = stat_info.st_mtim.tv_nsec;
   time_t last_accessed_sec = stat_info.st_atim.tv_sec;

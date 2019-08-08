@@ -42,11 +42,19 @@ RRectF::RRectF(float x,
                float lower_right_x,
                float lower_right_y,
                float lower_left_x,
-               float lower_left_y)
-    : RRectF(x, y, width, height, upper_left_x, upper_left_y) {
-  SetCornerRadii(RRectF::Corner::kUpperRight, upper_right_x, upper_right_y);
-  SetCornerRadii(RRectF::Corner::kLowerRight, lower_right_x, lower_right_y);
-  SetCornerRadii(RRectF::Corner::kLowerLeft, lower_left_x, lower_left_y);
+               float lower_left_y) {
+  SkVector radii[4] = {
+      {upper_left_x, upper_left_y},
+      {upper_right_x, upper_right_y},
+      {lower_right_x, lower_right_y},
+      {lower_left_x, lower_left_y},
+  };
+  skrrect_.setRectRadii(SkRect::MakeXYWH(x, y, width, height), radii);
+  if (IsEmpty()) {
+    // Make sure that empty rects are created fully empty, not with some
+    // non-zero dimensions.
+    skrrect_ = SkRRect::MakeEmpty();
+  }
 }
 
 gfx::Vector2dF RRectF::GetSimpleRadii() const {

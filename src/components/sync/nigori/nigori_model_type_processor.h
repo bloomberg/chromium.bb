@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "components/sync/engine/model_type_processor.h"
+#include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/model/model_type_controller_delegate.h"
 #include "components/sync/nigori/nigori_local_change_processor.h"
 #include "components/sync/protocol/entity_metadata.pb.h"
@@ -50,12 +51,19 @@ class NigoriModelTypeProcessor : public ModelTypeProcessor,
                         NigoriMetadataBatch nigori_metadata) override;
   void Put(std::unique_ptr<EntityData> entity_data) override;
   NigoriMetadataBatch GetMetadata() override;
+  void ReportError(const ModelError& error) override;
+  base::WeakPtr<ModelTypeControllerDelegate> GetControllerDelegate() override;
+
+  bool IsConnectedForTest() const;
 
  private:
   bool IsTrackingMetadata();
 
   // Returns true if the handshake with sync thread is complete.
   bool IsConnected() const;
+
+  // If preconditions are met, informs sync that we are ready to connect.
+  void ConnectIfReady();
 
   // Nudges worker if there are any local changes to be committed.
   void NudgeForCommitIfNeeded() const;
@@ -71,6 +79,12 @@ class NigoriModelTypeProcessor : public ModelTypeProcessor,
   // metadata).
   bool model_ready_to_sync_ = false;
 
+  // Stores the start callback in between OnSyncStarting() and ReadyToConnect().
+  StartCallback start_callback_;
+
+  // The request context passed in as part of OnSyncStarting().
+  DataTypeActivationRequest activation_request_;
+
   // The first model error that occurred, if any. Stored to track model state
   // and so it can be passed to sync if it happened prior to sync being ready.
   base::Optional<ModelError> model_error_;
@@ -84,6 +98,14 @@ class NigoriModelTypeProcessor : public ModelTypeProcessor,
   std::unique_ptr<CommitQueue> worker_;
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  // WeakPtrFactory for this processor for ModelTypeController (only gets
+  // invalidated during destruction).
+  base::WeakPtrFactory<ModelTypeControllerDelegate>
+      weak_ptr_factory_for_controller_;
+
+  // WeakPtrFactory for this processor which will be sent to sync thread.
+  base::WeakPtrFactory<NigoriModelTypeProcessor> weak_ptr_factory_for_worker_;
 
   DISALLOW_COPY_AND_ASSIGN(NigoriModelTypeProcessor);
 };

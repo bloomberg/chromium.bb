@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "chromecast/base/bitstream_audio_codecs.h"
 #include "chromecast/base/chromecast_switches.h"
@@ -17,12 +18,14 @@
 #include "chromecast/renderer/cast_url_loader_throttle_provider.h"
 #include "chromecast/renderer/media/key_systems_cast.h"
 #include "chromecast/renderer/media/media_caps_observer_impl.h"
+#include "chromecast/renderer/queryable_data_bindings.h"
 #include "components/network_hints/renderer/prescient_networking_dispatcher.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
+#include "media/base/audio_parameters.h"
 #include "media/base/media.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -33,6 +36,7 @@
 #include "third_party/blink/public/web/web_view.h"
 
 #if defined(OS_ANDROID)
+#include "chromecast/media/audio/cast_audio_device_factory.h"
 #include "media/base/android/media_codec_util.h"
 #else
 #include "chromecast/renderer/memory_pressure_observer_impl.h"
@@ -57,6 +61,18 @@
 namespace chromecast {
 namespace shell {
 
+#if defined(OS_ANDROID)
+// Audio renderer algorithm maximum capacity.
+constexpr base::TimeDelta kAudioRendererMaxCapacity =
+    base::TimeDelta::FromSeconds(10);
+// Audio renderer algorithm starting capacity.  Configure large enough to
+// prevent underrun.
+constexpr base::TimeDelta kAudioRendererStartingCapacity =
+    base::TimeDelta::FromMilliseconds(5000);
+constexpr base::TimeDelta kAudioRendererStartingCapacityEncrypted =
+    base::TimeDelta::FromMilliseconds(5500);
+#endif  // defined(OS_ANDROID)
+
 CastContentRendererClient::CastContentRendererClient()
     : supported_profiles_(new media::SupportedCodecProfileLevelsMemo()),
       app_media_capabilities_observer_binding_(this),
@@ -69,6 +85,10 @@ CastContentRendererClient::CastContentRendererClient()
   // instance, which caches the platform decoder supported state when it is
   // constructed.
   ::media::EnablePlatformDecoderSupport();
+
+  // Registers a custom content::AudioDeviceFactory
+  cast_audio_device_factory_ =
+      std::make_unique<media::CastAudioDeviceFactory>();
 #endif  // OS_ANDROID
 }
 
@@ -147,6 +167,7 @@ void CastContentRendererClient::RenderFrameCreated(
   DCHECK(render_frame);
   // Lifetime is tied to |render_frame| via content::RenderFrameObserver.
   new CastMediaPlaybackOptions(render_frame);
+  new QueryableDataBindings(render_frame);
 
   if (!app_media_capabilities_observer_binding_.is_bound()) {
     mojom::ApplicationMediaCapabilitiesObserverPtr observer;
@@ -302,6 +323,21 @@ std::unique_ptr<content::URLLoaderThrottleProvider>
 CastContentRendererClient::CreateURLLoaderThrottleProvider(
     content::URLLoaderThrottleProviderType type) {
   return std::make_unique<CastURLLoaderThrottleProvider>(type);
+}
+
+base::Optional<::media::AudioRendererAlgorithmParameters>
+CastContentRendererClient::GetAudioRendererAlgorithmParameters(
+    ::media::AudioParameters audio_parameters) {
+#if defined(OS_ANDROID)
+  ::media::AudioRendererAlgorithmParameters parameters;
+  parameters.max_capacity = kAudioRendererMaxCapacity;
+  parameters.starting_capacity = kAudioRendererStartingCapacity;
+  parameters.starting_capacity_for_encrypted =
+      kAudioRendererStartingCapacityEncrypted;
+  return base::Optional<::media::AudioRendererAlgorithmParameters>(parameters);
+#else
+  return base::nullopt;
+#endif
 }
 
 }  // namespace shell

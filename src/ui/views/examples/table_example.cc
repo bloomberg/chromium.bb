@@ -160,16 +160,16 @@ void TableExample::ButtonPressed(Button* sender, const ui::Event& event) {
   bool show = true;
   if (sender == column1_visible_checkbox_) {
     index = 0;
-    show = column1_visible_checkbox_->checked();
+    show = column1_visible_checkbox_->GetChecked();
   } else if (sender == column2_visible_checkbox_) {
     index = 1;
-    show = column2_visible_checkbox_->checked();
+    show = column2_visible_checkbox_->GetChecked();
   } else if (sender == column3_visible_checkbox_) {
     index = 2;
-    show = column3_visible_checkbox_->checked();
+    show = column3_visible_checkbox_->GetChecked();
   } else if (sender == column4_visible_checkbox_) {
     index = 3;
-    show = column4_visible_checkbox_->checked();
+    show = column4_visible_checkbox_->GetChecked();
   }
   table_->SetColumnVisibility(index, show);
 }

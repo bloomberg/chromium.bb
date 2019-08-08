@@ -28,7 +28,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/background/background_application_list_model.h"
 #include "chrome/browser/background/background_mode_optimizer.h"
-#include "chrome/browser/background/background_trigger.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -131,7 +130,7 @@ Browser* BackgroundModeManager::BackgroundModeData::GetBrowserWindow() {
 }
 
 bool BackgroundModeManager::BackgroundModeData::HasBackgroundClient() const {
-  return applications_->size() > 0 || !registered_triggers_.empty();
+  return applications_->size() > 0;
 }
 
 void BackgroundModeManager::BackgroundModeData::BuildProfileMenu(
@@ -140,7 +139,7 @@ void BackgroundModeManager::BackgroundModeData::BuildProfileMenu(
   if (HasBackgroundClient()) {
     // Add a menu item for each application (extension).
     for (const auto& application : *applications_) {
-      const gfx::ImageSkia* icon = applications_->GetIcon(application.get());
+      gfx::ImageSkia icon = applications_->GetIcon(application.get());
       const std::string& name = application->name();
       int command_id = command_id_handler_vector_->size();
       // Check that the command ID is within the dynamic range.
@@ -149,8 +148,8 @@ void BackgroundModeManager::BackgroundModeData::BuildProfileMenu(
           &BackgroundModeManager::LaunchBackgroundApplication, profile_,
           base::RetainedRef(application)));
       menu->AddItem(command_id, base::UTF8ToUTF16(name));
-      if (icon)
-        menu->SetIcon(menu->GetItemCount() - 1, gfx::Image(*icon));
+      if (!icon.isNull())
+        menu->SetIcon(menu->GetItemCount() - 1, gfx::Image(icon));
 
       // Component extensions with background that do not have an options page
       // will cause this menu item to go to the extensions page with an
@@ -169,19 +168,6 @@ void BackgroundModeManager::BackgroundModeData::BuildProfileMenu(
       }
     }
 
-    // Add a menu item for each trigger.
-    for (auto* trigger : registered_triggers_) {
-      const gfx::ImageSkia* icon = trigger->GetIcon();
-      const base::string16& name = trigger->GetName();
-      int command_id = command_id_handler_vector_->size();
-      // Check that the command ID is within the dynamic range.
-      DCHECK_LT(command_id, IDC_MinimumLabelValue);
-      command_id_handler_vector_->push_back(base::BindRepeating(
-          &BackgroundTrigger::OnMenuClick, base::Unretained(trigger)));
-      menu->AddItem(command_id, name);
-      if (icon)
-        menu->SetIcon(menu->GetItemCount() - 1, gfx::Image(*icon));
-    }
   } else {
     // When there are no background clients, we want to display just a label
     // stating that none are running.
@@ -232,41 +218,6 @@ bool BackgroundModeManager::BackgroundModeData::BackgroundModeDataCompare(
     const BackgroundModeData* bmd1,
     const BackgroundModeData* bmd2) {
   return bmd1->name_ < bmd2->name_;
-}
-
-void BackgroundModeManager::BackgroundModeData::AddPendingTrigger(
-    BackgroundTrigger* trigger, bool should_notify_user) {
-  if (HasTrigger(trigger))
-    return;
-  pending_trigger_data_[trigger] = should_notify_user;
-}
-
-BackgroundModeManager::PendingTriggerData
-BackgroundModeManager::BackgroundModeData::TakePendingTriggerData() {
-  return std::move(pending_trigger_data_);
-}
-
-bool BackgroundModeManager::BackgroundModeData::HasPendingTrigger() const {
-  return !pending_trigger_data_.empty();
-}
-
-void BackgroundModeManager::BackgroundModeData::RegisterTrigger(
-    BackgroundTrigger* trigger) {
-  if (HasTrigger(trigger))
-    return;
-  registered_triggers_.insert(trigger);
-}
-
-void BackgroundModeManager::BackgroundModeData::UnregisterTrigger(
-    BackgroundTrigger* trigger) {
-  registered_triggers_.erase(trigger);
-  pending_trigger_data_.erase(trigger);
-}
-
-bool BackgroundModeManager::BackgroundModeData::HasTrigger(
-    BackgroundTrigger* trigger) {
-  return base::ContainsKey(registered_triggers_, trigger) ||
-         base::ContainsKey(pending_trigger_data_, trigger);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -426,51 +377,6 @@ bool BackgroundModeManager::IsBackgroundWithoutWindows() const {
 
 size_t BackgroundModeManager::NumberOfBackgroundModeData() {
   return background_mode_data_.size();
-}
-
-void BackgroundModeManager::RegisterTrigger(const Profile* profile,
-                                            BackgroundTrigger* trigger,
-                                            bool should_notify_user) {
-  BackgroundModeManager::BackgroundModeData* bmd =
-      GetBackgroundModeData(profile);
-  if (!bmd)
-    return;
-
-  // Only proceed if we don't have this trigger yet.
-  if (bmd->HasTrigger(trigger))
-    return;
-
-  // If the background pref is disabled, store it as a pending trigger that may
-  // be registered later if the pref gets enabled.
-  if (!IsBackgroundModePrefEnabled()) {
-    bmd->AddPendingTrigger(trigger, should_notify_user);
-    return;
-  }
-
-  bmd->RegisterTrigger(trigger);
-  std::vector<base::string16> new_client_names;
-  if (should_notify_user)
-    new_client_names.push_back(trigger->GetName());
-  OnClientsChanged(profile, new_client_names);
-}
-
-void BackgroundModeManager::UnregisterTrigger(const Profile* profile,
-                                              BackgroundTrigger* trigger) {
-  if (!IsBackgroundModePrefEnabled())
-    return;
-
-  BackgroundModeManager::BackgroundModeData* bmd =
-      GetBackgroundModeData(profile);
-  if (!bmd)
-    return;
-
-  // Only proceed if this is a known trigger.
-  if (!bmd->HasTrigger(trigger))
-    return;
-  bmd->UnregisterTrigger(trigger);
-
-  std::vector<base::string16> new_client_names;
-  OnClientsChanged(profile, new_client_names);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -737,18 +643,6 @@ void BackgroundModeManager::EnableBackgroundMode() {
   if (!in_background_mode_ && ShouldBeInBackgroundMode()) {
     StartBackgroundMode();
 
-    // Register pending triggers.
-    for (const auto& bmd_iterator : background_mode_data_) {
-      PendingTriggerData pending_trigger_data =
-          bmd_iterator.second->TakePendingTriggerData();
-      for (const auto& trigger_data_iterator : pending_trigger_data) {
-        const Profile* profile = bmd_iterator.first;
-        BackgroundTrigger* trigger = trigger_data_iterator.first;
-        bool should_notify_user = trigger_data_iterator.second;
-        RegisterTrigger(profile, trigger, should_notify_user);
-      }
-    }
-
     EnableLaunchOnStartup(true);
   }
 }
@@ -845,17 +739,9 @@ bool BackgroundModeManager::HasBackgroundClientForProfile(
   return bmd && bmd->HasBackgroundClient();
 }
 
-bool BackgroundModeManager::HasPendingTrigger() const {
-  for (const auto& it : background_mode_data_) {
-    if (it.second->HasPendingTrigger())
-      return true;
-  }
-  return false;
-}
-
 bool BackgroundModeManager::ShouldBeInBackgroundMode() const {
   return IsBackgroundModePrefEnabled() &&
-         (HasBackgroundClient() || HasPendingTrigger() || keep_alive_for_test_);
+         (HasBackgroundClient() || keep_alive_for_test_);
 }
 
 void BackgroundModeManager::OnBackgroundClientInstalled(

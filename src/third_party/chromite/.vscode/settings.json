@@ -2,8 +2,8 @@
         "python.autoComplete.extraPaths": [
                 "${workspaceFolder}/third_party",
         ],
-        "python.unitTest.cwd": "${workspaceFolder}",
-        "python.unitTest.unittestArgs": [
+        "python.testing.cwd": "${workspaceFolder}",
+        "python.testing.unittestArgs": [
                 "-v",
                 "-s",
                 ".",
@@ -12,8 +12,10 @@
                 "-p",
                 "*unittest.py"
         ],
-        "python.unitTest.pyTestEnabled": false,
-        "python.unitTest.nosetestsEnabled": false,
-        "python.unitTest.unittestEnabled": true,
-        "python.sortImports.args": ["--settings-path=${workspaceFolder}/.vscode/",],
+        "python.testing.pyTestEnabled": false,
+        "python.testing.nosetestsEnabled": false,
+        "python.testing.unittestEnabled": true,
+        "python.sortImports.args": [
+                "--settings-path=${workspaceFolder}/.vscode/",
+        ],
 }

@@ -28,6 +28,8 @@ ui::mojom::SourceEventType UISourceEventTypeToMojo(ui::SourceEventType type) {
       return ui::mojom::SourceEventType::TOUCHPAD;
     case ui::SourceEventType::FRAME:
       return ui::mojom::SourceEventType::FRAME;
+    case ui::SourceEventType::SCROLLBAR:
+      return ui::mojom::SourceEventType::SCROLLBAR;
     case ui::SourceEventType::OTHER:
       return ui::mojom::SourceEventType::OTHER;
   }
@@ -53,6 +55,8 @@ ui::SourceEventType MojoSourceEventTypeToUI(ui::mojom::SourceEventType type) {
       return ui::SourceEventType::TOUCHPAD;
     case ui::mojom::SourceEventType::FRAME:
       return ui::SourceEventType::FRAME;
+    case ui::mojom::SourceEventType::SCROLLBAR:
+      return ui::SourceEventType::SCROLLBAR;
     case ui::mojom::SourceEventType::OTHER:
       return ui::SourceEventType::OTHER;
   }

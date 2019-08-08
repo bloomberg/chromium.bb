@@ -34,7 +34,6 @@ using RetrievePolicyResponseType =
 
 namespace {
 
-constexpr char kFakeContainerInstanceId[] = "0123456789ABCDEF";
 constexpr char kStubDevicePolicyFileNamePrefix[] = "stub_device_policy";
 constexpr char kStubPerAccountPolicyFileNamePrefix[] = "stub_policy";
 constexpr char kStubStateKeysFileName[] = "stub_state_keys";
@@ -271,7 +270,16 @@ void FakeSessionManagerClient::EmitAshInitialized() {}
 
 void FakeSessionManagerClient::RestartJob(int socket_fd,
                                           const std::vector<std::string>& argv,
-                                          VoidDBusMethodCallback callback) {}
+                                          VoidDBusMethodCallback callback) {
+  DCHECK(supports_browser_restart_);
+
+  restart_job_argv_ = argv;
+  if (restart_job_callback_)
+    std::move(restart_job_callback_).Run();
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
+}
 
 void FakeSessionManagerClient::SaveLoginPassword(const std::string& password) {}
 
@@ -283,7 +291,9 @@ void FakeSessionManagerClient::StartSession(
   user_sessions_[cryptohome_id.account_id()] = user_id_hash;
 }
 
-void FakeSessionManagerClient::StopSession() {}
+void FakeSessionManagerClient::StopSession() {
+  session_stopped_ = true;
+}
 
 void FakeSessionManagerClient::StartDeviceWipe() {
   start_device_wipe_call_count_++;
@@ -488,7 +498,6 @@ void FakeSessionManagerClient::StorePolicy(
         base::BindOnce(std::move(callback), true /* success */));
   } else {
     policy_[GetMemoryStorageKey(descriptor)] = policy_blob;
-    PostReply(FROM_HERE, std::move(callback), true /* success */);
 
     if (IsChromeDevicePolicy(descriptor)) {
       // TODO(ljusten): For historical reasons, this code path only stores keys
@@ -498,24 +507,33 @@ void FakeSessionManagerClient::StorePolicy(
         GetStubPolicyFilePath(descriptor, &key_path);
         DCHECK(!key_path.empty());
 
-        base::PostTaskWithTraits(
+        base::PostTaskWithTraitsAndReply(
             FROM_HERE,
             {base::MayBlock(),
              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
             base::BindOnce(StoreFiles,
                            std::map<base::FilePath, std::string>{
-                               {key_path, response.new_public_key()}}));
-        for (auto& observer : observers_)
-          observer.OwnerKeySet(true /* success */);
+                               {key_path, response.new_public_key()}}),
+            base::BindOnce(
+                &FakeSessionManagerClient::HandleOwnerKeySet,
+                weak_ptr_factory_.GetWeakPtr(),
+                base::BindOnce(std::move(callback), true /*success*/)));
       }
       for (auto& observer : observers_)
         observer.PropertyChangeComplete(true /* success */);
     }
+
+    // Run the callback if it hasn't been passed to
+    // PostTaskWithTraitsAndReply(), in which case it will be run after the
+    // owner key file was stored to disk.
+    if (callback) {
+      PostReply(FROM_HERE, std::move(callback), true /* success */);
+    }
   }
 }
 
-bool FakeSessionManagerClient::SupportsRestartToApplyUserFlags() const {
-  return supports_restart_to_apply_user_flags_;
+bool FakeSessionManagerClient::SupportsBrowserRestart() const {
+  return supports_browser_restart_;
 }
 
 void FakeSessionManagerClient::SetFlagsForUser(
@@ -526,6 +544,11 @@ void FakeSessionManagerClient::SetFlagsForUser(
 
 void FakeSessionManagerClient::GetServerBackedStateKeys(
     StateKeysCallback callback) {
+  if (force_state_keys_missing_) {
+    PostReply(FROM_HERE, std::move(callback), std::vector<std::string>());
+    return;
+  }
+
   if (policy_storage_ == PolicyStorageType::kOnDisk) {
     base::FilePath owner_key_path;
     CHECK(base::PathService::Get(dbus_paths::FILE_OWNER_KEY, &owner_key_path));
@@ -543,45 +566,36 @@ void FakeSessionManagerClient::GetServerBackedStateKeys(
 
 void FakeSessionManagerClient::StartArcMiniContainer(
     const login_manager::StartArcMiniContainerRequest& request,
-    StartArcMiniContainerCallback callback) {
+    VoidDBusMethodCallback callback) {
   last_start_arc_mini_container_request_ = request;
 
   if (!arc_available_) {
-    PostReply(FROM_HERE, std::move(callback), base::nullopt);
+    PostReply(FROM_HERE, std::move(callback), false);
     return;
   }
   // This is starting a new container.
-  base::Base64Encode(kFakeContainerInstanceId, &container_instance_id_);
-  PostReply(FROM_HERE, std::move(callback), container_instance_id_);
+  container_running_ = true;
+  PostReply(FROM_HERE, std::move(callback), true);
 }
 
 void FakeSessionManagerClient::UpgradeArcContainer(
     const login_manager::UpgradeArcContainerRequest& request,
-    base::OnceClosure success_callback,
-    UpgradeErrorCallback error_callback) {
+    VoidDBusMethodCallback callback) {
   last_upgrade_arc_request_ = request;
 
-  if (!arc_available_) {
-    PostReply(FROM_HERE, std::move(error_callback), false);
-    return;
-  }
-  if (low_disk_) {
+  PostReply(FROM_HERE, std::move(callback), !force_upgrade_failure_);
+  if (force_upgrade_failure_) {
+    // Emulate ArcInstanceStopped signal propagation.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&FakeSessionManagerClient::NotifyArcInstanceStopped,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       login_manager::ArcContainerStopReason::LOW_DISK_SPACE,
-                       std::move(container_instance_id_)));
-    PostReply(FROM_HERE, std::move(error_callback), true);
-    return;
+                       weak_ptr_factory_.GetWeakPtr()));
   }
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                std::move(success_callback));
 }
 
 void FakeSessionManagerClient::StopArcInstance(
     VoidDBusMethodCallback callback) {
-  if (!arc_available_ || container_instance_id_.empty()) {
+  if (!arc_available_ || !container_running_) {
     PostReply(FROM_HERE, std::move(callback), false /* result */);
     return;
   }
@@ -591,10 +605,9 @@ void FakeSessionManagerClient::StopArcInstance(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&FakeSessionManagerClient::NotifyArcInstanceStopped,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     login_manager::ArcContainerStopReason::USER_REQUEST,
-                     std::move(container_instance_id_)));
-  container_instance_id_.clear();
+                     weak_ptr_factory_.GetWeakPtr()));
+
+  container_running_ = false;
 }
 
 void FakeSessionManagerClient::SetArcCpuRestriction(
@@ -616,11 +629,9 @@ void FakeSessionManagerClient::GetArcStartTime(
       arc_available_ ? base::make_optional(arc_start_time_) : base::nullopt);
 }
 
-void FakeSessionManagerClient::NotifyArcInstanceStopped(
-    login_manager::ArcContainerStopReason reason,
-    const std::string& container_instance_id) {
+void FakeSessionManagerClient::NotifyArcInstanceStopped() {
   for (auto& observer : observers_)
-    observer.ArcInstanceStopped(reason, container_instance_id);
+    observer.ArcInstanceStopped();
 }
 
 bool FakeSessionManagerClient::GetFlagsForUser(
@@ -698,6 +709,14 @@ void FakeSessionManagerClient::set_device_local_account_policy(
 void FakeSessionManagerClient::OnPropertyChangeComplete(bool success) {
   for (auto& observer : observers_)
     observer.PropertyChangeComplete(success);
+}
+
+void FakeSessionManagerClient::HandleOwnerKeySet(
+    base::OnceClosure callback_to_run) {
+  for (auto& observer : observers_)
+    observer.OwnerKeySet(true /* success */);
+
+  std::move(callback_to_run).Run();
 }
 
 }  // namespace chromeos

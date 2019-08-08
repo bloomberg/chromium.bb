@@ -777,7 +777,7 @@ def set_config(option, value, scope='local'):
 def get_dirty_files():
   # Make sure index is up-to-date before running diff-index.
   run_with_retcode('update-index', '--refresh', '-q')
-  return run('diff-index', '--name-status', 'HEAD')
+  return run('diff-index', '--ignore-submodules', '--name-status', 'HEAD')
 
 
 def is_dirty_git_tree(cmd):

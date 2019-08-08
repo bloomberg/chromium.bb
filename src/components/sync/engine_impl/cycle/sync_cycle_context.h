@@ -49,6 +49,8 @@ class SyncCycleContext {
                    ModelTypeRegistry* model_type_registry,
                    bool keystore_encryption_enabled,
                    const std::string& invalidator_client_id,
+                   const std::string& birthday,
+                   const std::string& bag_of_chips,
                    base::TimeDelta poll_interval);
 
   ~SyncCycleContext();
@@ -70,7 +72,12 @@ class SyncCycleContext {
   }
   bool notifications_enabled() { return notifications_enabled_; }
 
-  // Account name, set once a directory has been opened.
+  void set_birthday(const std::string& birthday);
+  const std::string& birthday() const { return birthday_; }
+
+  void set_bag_of_chips(const std::string& bag_of_chips);
+  const std::string& bag_of_chips() const { return bag_of_chips_; }
+
   void set_account_name(const std::string& name) { account_name_ = name; }
   const std::string& account_name() const { return account_name_; }
 
@@ -136,6 +143,10 @@ class SyncCycleContext {
   // Kept up to date with talk events to determine whether notifications are
   // enabled. True only if the notification channel is authorized and open.
   bool notifications_enabled_;
+
+  std::string birthday_;
+
+  std::string bag_of_chips_;
 
   // The name of the account being synced.
   std::string account_name_;

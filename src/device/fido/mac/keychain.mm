@@ -82,12 +82,16 @@ base::Optional<Credential> FindCredentialInKeychain(
     const std::string& keychain_access_group,
     const std::string& metadata_secret,
     const std::string& rp_id,
-    const std::set<std::vector<uint8_t>>& credential_id_filter,
+    const std::set<std::vector<uint8_t>>& allowed_credential_ids,
     LAContext* authentication_context) {
-  base::Optional<std::string> encoded_rp_id =
-      CredentialMetadata::EncodeRpId(metadata_secret, rp_id);
-  if (!encoded_rp_id)
+  if (allowed_credential_ids.empty()) {
     return base::nullopt;
+  }
+  base::Optional<std::string> encoded_rp_id =
+      EncodeRpId(metadata_secret, rp_id);
+  if (!encoded_rp_id) {
+    return base::nullopt;
+  }
 
   base::ScopedCFTypeRef<CFMutableDictionaryRef> query(
       CFDictionaryCreateMutable(kCFAllocatorDefault, 0, nullptr, nullptr));
@@ -135,8 +139,7 @@ base::Optional<Credential> FindCredentialInKeychain(
     std::vector<uint8_t> cid(CFDataGetBytePtr(application_label),
                              CFDataGetBytePtr(application_label) +
                                  CFDataGetLength(application_label));
-    if (credential_id_filter.empty() ||
-        base::ContainsKey(credential_id_filter, cid)) {
+    if (base::ContainsKey(allowed_credential_ids, cid)) {
       private_key.reset(key, base::scoped_policy::RETAIN);
       credential_id = std::move(cid);
       break;

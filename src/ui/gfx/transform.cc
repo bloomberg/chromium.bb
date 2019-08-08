@@ -164,6 +164,10 @@ void Transform::RotateAbout(const Vector3dF& axis, double degrees) {
 
 void Transform::Scale(SkMScalar x, SkMScalar y) { matrix_.preScale(x, y, 1); }
 
+void Transform::PostScale(SkMScalar x, SkMScalar y) {
+  matrix_.postScale(x, y, 1);
+}
+
 void Transform::Scale3d(SkMScalar x, SkMScalar y, SkMScalar z) {
   matrix_.preScale(x, y, z);
 }
@@ -174,6 +178,14 @@ void Transform::Translate(const Vector2dF& offset) {
 
 void Transform::Translate(SkMScalar x, SkMScalar y) {
   matrix_.preTranslate(x, y, 0);
+}
+
+void Transform::PostTranslate(const Vector2dF& offset) {
+  PostTranslate(offset.x(), offset.y());
+}
+
+void Transform::PostTranslate(SkMScalar x, SkMScalar y) {
+  matrix_.postTranslate(x, y, 0);
 }
 
 void Transform::Translate3d(const Vector3dF& offset) {

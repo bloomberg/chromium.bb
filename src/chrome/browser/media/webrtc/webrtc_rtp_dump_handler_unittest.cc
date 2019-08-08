@@ -102,7 +102,7 @@ class WebRtcRtpDumpHandlerTest : public testing::Test {
   }
 
   void FlushTaskRunners() {
-    base::ThreadPool::GetInstance()->FlushForTesting();
+    base::ThreadPoolInstance::Get()->FlushForTesting();
     base::RunLoop().RunUntilIdle();
   }
 

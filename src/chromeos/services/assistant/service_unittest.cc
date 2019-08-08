@@ -57,15 +57,10 @@ class FakeIdentityAccessor : identity::mojom::IdentityAccessor {
  private:
   // identity::mojom::IdentityAccessor:
   void GetPrimaryAccountInfo(GetPrimaryAccountInfoCallback callback) override {
-    AccountInfo account_info;
+    CoreAccountInfo account_info;
     account_info.account_id = "account_id";
     account_info.gaia = "fakegaiaid";
     account_info.email = "fake@email";
-    account_info.full_name = "full name";
-    account_info.given_name = "given name";
-    account_info.hosted_domain = "hosted_domain";
-    account_info.locale = "en";
-    account_info.picture_url = "http://fakepicture";
 
     identity::AccountState account_state;
     account_state.has_refresh_token = true;
@@ -76,7 +71,7 @@ class FakeIdentityAccessor : identity::mojom::IdentityAccessor {
 
   void GetPrimaryAccountWhenAvailable(
       GetPrimaryAccountWhenAvailableCallback callback) override {}
-  void GetAccessToken(const std::string& account_id,
+  void GetAccessToken(const CoreAccountId& account_id,
                       const ::identity::ScopeSet& scopes,
                       const std::string& consumer_id,
                       GetAccessTokenCallback callback) override {
@@ -148,6 +143,9 @@ class FakeDeviceActions : mojom::DeviceActions {
       std::vector<chromeos::assistant::mojom::AndroidAppInfoPtr> apps_info,
       VerifyAndroidAppCallback callback) override {}
   void LaunchAndroidIntent(const std::string& intent) override {}
+  void AddAppListEventSubscriber(
+      chromeos::assistant::mojom::AppListEventSubscriberPtr subscriber)
+      override {}
 
   mojo::Binding<mojom::DeviceActions> binding_;
 

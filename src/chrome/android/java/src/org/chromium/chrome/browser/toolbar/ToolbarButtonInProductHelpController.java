@@ -12,6 +12,7 @@ import android.view.View;
 import org.chromium.base.Callback;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ActivityTabProvider.ActivityTabTabObserver;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
@@ -22,7 +23,6 @@ import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.ViewHighlighter;
 import org.chromium.chrome.browser.widget.textbubble.TextBubble;
@@ -38,7 +38,7 @@ import org.chromium.ui.widget.ViewRectProvider;
  *     to be able to split up the build target for toolbar which can be a base construct.
  */
 public class ToolbarButtonInProductHelpController implements Destroyable {
-    private final TabModelSelectorTabObserver mPageLoadObserver;
+    private final ActivityTabTabObserver mPageLoadObserver;
     private final ChromeActivity mActivity;
 
     /**
@@ -55,8 +55,7 @@ public class ToolbarButtonInProductHelpController implements Destroyable {
 
     private ToolbarButtonInProductHelpController(final ChromeActivity activity) {
         mActivity = activity;
-        // TODO(jinsukkim): Consider switching to ActivityTabProvider and its TabObserver.
-        mPageLoadObserver = new TabModelSelectorTabObserver(activity.getTabModelSelector()) {
+        mPageLoadObserver = new ActivityTabTabObserver(activity.getActivityTabProvider()) {
             /**
              * Stores total data saved at the start of a page load. Used to calculate delta at the
              * end of page load, which is just an estimate of the data saved for the current page
@@ -65,31 +64,26 @@ public class ToolbarButtonInProductHelpController implements Destroyable {
              * user at a time (i.e. not since the user started using Chrome).
              */
             private long mDataSavedOnStartPageLoad;
-            private Tab mPageLoadTab;
 
             @Override
             public void onPageLoadStarted(Tab tab, String url) {
-                if (tab != activity.getActivityTabProvider().get()) return;
                 mDataSavedOnStartPageLoad = DataReductionProxySettings.getInstance()
                                                     .getContentLengthSavedInHistorySummary();
-                mPageLoadTab = tab;
             }
 
             @Override
             public void onPageLoadFinished(Tab tab, String url) {
-                if (mPageLoadTab != tab) return;
                 long dataSaved = DataReductionProxySettings.getInstance()
                                          .getContentLengthSavedInHistorySummary()
                         - mDataSavedOnStartPageLoad;
                 Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
                 if (dataSaved > 0L) tracker.notifyEvent(EventConstants.DATA_SAVED_ON_PAGE_LOAD);
                 if (tab.isPreview()) tracker.notifyEvent(EventConstants.PREVIEWS_PAGE_LOADED);
-                if (tab == activity.getActivityTabProvider().get() && tab.isUserInteractable()) {
+                if (tab.isUserInteractable()) {
                     maybeShowDataSaverDetail(activity);
-                    maybeShowDataSaverMilestonePromo(activity);
-                    maybeShowPreviewVerboseStatus(activity);
+                    if (dataSaved > 0L) maybeShowDataSaverMilestonePromo(activity);
+                    if (tab.isPreview()) maybeShowPreviewVerboseStatus(activity);
                 }
-                mPageLoadTab = null;
             }
         };
     }
@@ -106,18 +100,21 @@ public class ToolbarButtonInProductHelpController implements Destroyable {
 
     // Attempts to show an IPH text bubble for data saver detail.
     private static void maybeShowDataSaverDetail(ChromeActivity activity) {
-        View anchorView = activity.getToolbarManager().getMenuButton();
+        View anchorView = activity.getToolbarManager().getMenuButtonView();
         if (anchorView == null) return;
 
+        // TODO(https://crbug.com/956260): Provide AppMenuHandler rather than pulling off
+        //  ToolbarManager.
         setupAndMaybeShowIPHForFeature(FeatureConstants.DATA_SAVER_DETAIL_FEATURE,
                 getDataReductionMenuItemHighlight(), false, R.string.iph_data_saver_detail_text,
                 R.string.iph_data_saver_detail_accessibility_text, anchorView,
-                activity.getAppMenuHandler(), Profile.getLastUsedProfile(), activity, null);
+                activity.getToolbarManager().getAppMenuHandler(), Profile.getLastUsedProfile(),
+                activity, null);
     }
 
     // Attempts to show an IPH text bubble for data saver milestone promo.
     private static void maybeShowDataSaverMilestonePromo(ChromeActivity activity) {
-        View anchorView = activity.getToolbarManager().getMenuButton();
+        View anchorView = activity.getToolbarManager().getMenuButtonView();
         if (anchorView == null) return;
 
         final DataReductionSavingsMilestonePromo promo =
@@ -130,14 +127,12 @@ public class ToolbarButtonInProductHelpController implements Destroyable {
         };
         setupAndMaybeShowIPHForFeature(FeatureConstants.DATA_SAVER_MILESTONE_PROMO_FEATURE,
                 getDataReductionMenuItemHighlight(), false, promo.getPromoText(),
-                promo.getPromoText(), anchorView, activity.getAppMenuHandler(),
+                promo.getPromoText(), anchorView, activity.getToolbarManager().getAppMenuHandler(),
                 Profile.getLastUsedProfile(), activity, dismissCallback);
     }
 
     // Attempts to show an IPH text bubble for page in preview mode.
     private static void maybeShowPreviewVerboseStatus(ChromeActivity activity) {
-        if (!activity.getActivityTabProvider().get().isPreview()) return;
-
         final View anchorView = activity.getToolbarManager().getSecurityIconView();
         if (anchorView == null) return;
 
@@ -149,7 +144,6 @@ public class ToolbarButtonInProductHelpController implements Destroyable {
 
     /**
      * Attempts to show an IPH text bubble for those that trigger on a cold start.
-     * @param activity The activity to use for the IPH.
      */
     public void maybeShowColdStartIPH() {
         maybeShowDownloadHomeIPH();
@@ -160,8 +154,9 @@ public class ToolbarButtonInProductHelpController implements Destroyable {
         setupAndMaybeShowIPHForFeature(FeatureConstants.DOWNLOAD_HOME_FEATURE,
                 R.id.downloads_menu_id, true, R.string.iph_download_home_text,
                 R.string.iph_download_home_accessibility_text,
-                mActivity.getToolbarManager().getMenuButton(), mActivity.getAppMenuHandler(),
-                Profile.getLastUsedProfile(), mActivity, null);
+                mActivity.getToolbarManager().getMenuButtonView(),
+                mActivity.getToolbarManager().getAppMenuHandler(), Profile.getLastUsedProfile(),
+                mActivity, null);
     }
 
     private void maybeShowNTPButtonIPH() {
@@ -186,8 +181,8 @@ public class ToolbarButtonInProductHelpController implements Destroyable {
                 R.id.downloads_menu_id, true,
                 R.string.iph_download_infobar_download_continuing_text,
                 R.string.iph_download_infobar_download_continuing_text,
-                activity.getToolbarManager().getMenuButton(), activity.getAppMenuHandler(), profile,
-                activity, null);
+                activity.getToolbarManager().getMenuButtonView(),
+                activity.getToolbarManager().getAppMenuHandler(), profile, activity, null);
     }
 
     private static void setupAndMaybeShowIPHForFeature(String featureName,
@@ -292,9 +287,10 @@ public class ToolbarButtonInProductHelpController implements Destroyable {
 
     private static boolean canShowNTPButtonIPH(ChromeActivity activity) {
         View homeButton = activity.findViewById(R.id.home_button);
+        Tab tab = activity.getActivityTabProvider().get();
         return FeatureUtilities.isNewTabPageButtonEnabled()
-                && !activity.getCurrentTabModel().isIncognito() && activity.getActivityTab() != null
-                && !NewTabPage.isNTPUrl(activity.getActivityTab().getUrl()) && homeButton != null
+                && !activity.getCurrentTabModel().isIncognito() && tab != null
+                && !NewTabPage.isNTPUrl(tab.getUrl()) && homeButton != null
                 && homeButton.getVisibility() == View.VISIBLE;
     }
 }

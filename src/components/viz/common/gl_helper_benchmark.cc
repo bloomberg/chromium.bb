@@ -29,10 +29,10 @@
 #include "base/time/time.h"
 #include "components/viz/common/gl_helper.h"
 #include "components/viz/common/gl_helper_scaling.h"
+#include "components/viz/test/test_gpu_service_holder.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/ipc/gl_in_process_context.h"
-#include "gpu/ipc/test_gpu_thread_holder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkTypes.h"
@@ -66,11 +66,12 @@ class GLHelperBenchmark : public testing::Test {
     attributes.samples = 4;
     attributes.sample_buffers = 1;
     attributes.bind_generates_resource = false;
-    attributes.gpu_preference = gl::PreferDiscreteGpu;
+    attributes.gpu_preference = gl::GpuPreference::kHighPerformance;
 
     context_ = std::make_unique<gpu::GLInProcessContext>();
     auto result = context_->Initialize(
-        gpu::GetTestGpuThreadHolder()->GetTaskExecutor(), nullptr, /* surface */
+        TestGpuServiceHolder::GetInstance()->task_executor(),
+        nullptr,                 /* surface */
         true,                    /* offscreen */
         gpu::kNullSurfaceHandle, /* window */
         attributes, gpu::SharedMemoryLimits(),

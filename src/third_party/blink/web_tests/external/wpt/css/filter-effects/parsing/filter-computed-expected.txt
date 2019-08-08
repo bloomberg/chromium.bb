@@ -1,0 +1,31 @@
+This is a testharness.js-based test.
+PASS Property filter value 'none' computes to 'none'
+PASS Property filter value 'blur(100px)' computes to 'blur(100px)'
+PASS Property filter value 'blur()' computes to 'blur(0px)'
+PASS Property filter value 'brightness(0)' computes to 'brightness(0)'
+PASS Property filter value 'brightness(300%)' computes to 'brightness(3)'
+FAIL Property filter value 'brightness()' computes to 'brightness(1)' assert_equals: expected "brightness(1)" but got "brightness(0)"
+PASS Property filter value 'contrast(0)' computes to 'contrast(0)'
+PASS Property filter value 'contrast(300%)' computes to 'contrast(3)'
+PASS Property filter value 'contrast()' computes to 'contrast(1)'
+PASS Property filter value 'drop-shadow(1px 2px)' computes to 'drop-shadow(rgb(0, 255, 0) 1px 2px 0px)'
+PASS Property filter value 'drop-shadow(rgb(4, 5, 6) 1px 2px 0px)' computes to 'drop-shadow(rgb(4, 5, 6) 1px 2px 0px)'
+PASS Property filter value 'grayscale(50%)' computes to 'grayscale(0.5)'
+PASS Property filter value 'grayscale()' computes to 'grayscale(1)'
+PASS Property filter value 'hue-rotate(90deg)' computes to 'hue-rotate(90deg)'
+PASS Property filter value 'hue-rotate()' computes to 'hue-rotate(0deg)'
+PASS Property filter value 'invert(0)' computes to 'invert(0)'
+PASS Property filter value 'invert(100%)' computes to 'invert(1)'
+FAIL Property filter value 'invert()' computes to 'invert(1)' assert_equals: expected "invert(1)" but got "invert(0)"
+PASS Property filter value 'opacity(0)' computes to 'opacity(0)'
+PASS Property filter value 'opacity(100%)' computes to 'opacity(1)'
+PASS Property filter value 'opacity()' computes to 'opacity(1)'
+PASS Property filter value 'saturate(0)' computes to 'saturate(0)'
+PASS Property filter value 'saturate(300%)' computes to 'saturate(3)'
+PASS Property filter value 'saturate()' computes to 'saturate(1)'
+PASS Property filter value 'sepia(0)' computes to 'sepia(0)'
+PASS Property filter value 'sepia(100%)' computes to 'sepia(1)'
+PASS Property filter value 'sepia()' computes to 'sepia(1)'
+PASS Property filter value 'blur(10px) url("https://www.example.com/picture.svg#f") contrast(20) brightness(30)' computes to 'blur(10px) url("https://www.example.com/picture.svg#f") contrast(20) brightness(30)'
+Harness: the test ran to completion.
+

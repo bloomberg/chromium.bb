@@ -373,6 +373,7 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest,
   void SetUp() override {
     ServiceWorkerRegistrationTest::SetUp();
 
+    const GURL kUrl("https://www.example.not/");
     const GURL kScope("https://www.example.not/");
     const GURL kScript("https://www.example.not/service_worker.js");
 
@@ -414,7 +415,9 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest,
         context()->AsWeakPtr(), &remote_endpoint_);
     DCHECK(remote_endpoint_.client_request()->is_pending());
     DCHECK(remote_endpoint_.host_ptr()->is_bound());
-    version_1->AddControllee(host_.get());
+    host_->UpdateUrls(kUrl, kUrl);
+    host_->SetControllerRegistration(registration_,
+                                     false /* notify_controllerchange */);
 
     // Setup the Mojo implementation fakes for the renderer-side service worker.
     // These will be bound once the service worker starts.
@@ -479,6 +482,16 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest,
   ServiceWorkerRegistration* registration() { return registration_.get(); }
   ServiceWorkerProviderHost* controllee() { return host_.get(); }
   int inflight_request_id() const { return inflight_request_id_; }
+
+  void AddControllee() {
+    controllee()->SetControllerRegistration(
+        registration(), false /* notify_controllerchange */);
+  }
+
+  void RemoveControllee() {
+    controllee()->SetControllerRegistration(
+        nullptr, false /* notify_controllerchange */);
+  }
 
   bool IsLameDuckTimerRunning() {
     return registration_->lame_duck_timer_.IsRunning();
@@ -549,7 +562,7 @@ TEST_P(ServiceWorkerActivationTest, NoInflightRequest) {
 
   // Remove the controllee. Since there is an in-flight request,
   // activation should not yet happen.
-  version_1->RemoveControllee(controllee()->client_uuid());
+  RemoveControllee();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(version_1.get(), reg->active_version());
   // The idle timer living in the renderer is requested to notify the idle state
@@ -694,6 +707,12 @@ TEST_P(ServiceWorkerActivationTest, LameDuckTime_SkipWaiting) {
   EXPECT_TRUE(*result);
   EXPECT_EQ(version_2.get(), reg->active_version());
   EXPECT_FALSE(IsLameDuckTimerRunning());
+
+  // Restore the TickClock to the default. This is required because the dtor
+  // of ServiceWorkerVersions can access the TickClock and it should outlive
+  // ServiceWorkerVersion.
+  version_1->SetTickClockForTesting(base::DefaultTickClock::GetInstance());
+  version_2->SetTickClockForTesting(base::DefaultTickClock::GetInstance());
 }
 
 // Test lame duck timer triggered by loss of controllee.
@@ -711,7 +730,7 @@ TEST_P(ServiceWorkerActivationTest, LameDuckTime_NoControllee) {
   // Remove the controllee. Since there is still an in-flight request,
   // activation should not happen. But the lame duck timer should start.
   EXPECT_FALSE(IsLameDuckTimerRunning());
-  version_1->RemoveControllee(controllee()->client_uuid());
+  RemoveControllee();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(version_1.get(), reg->active_version());
   EXPECT_TRUE(IsLameDuckTimerRunning());
@@ -721,12 +740,12 @@ TEST_P(ServiceWorkerActivationTest, LameDuckTime_NoControllee) {
   clock_1.Advance(kLittleBit);
 
   // Add a controllee again to reset the lame duck period.
-  version_1->AddControllee(controllee());
+  AddControllee();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(IsLameDuckTimerRunning());
 
   // Remove the controllee.
-  version_1->RemoveControllee(controllee()->client_uuid());
+  RemoveControllee();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(IsLameDuckTimerRunning());
 
@@ -1078,8 +1097,11 @@ TEST_F(ServiceWorkerRegistrationObjectHostTest,
   const GURL kScriptUrl("https://www.example.com/sw.js");
   scoped_refptr<ServiceWorkerRegistration> registration =
       CreateRegistration(kScope);
+
   scoped_refptr<ServiceWorkerVersion> version =
       CreateVersion(registration.get(), kScriptUrl);
+  version->SetStatus(ServiceWorkerVersion::ACTIVATED);
+
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
   base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
       helper_->mock_render_process_id(), true /* is_parent_frame_secure */,

@@ -461,7 +461,12 @@ using ActiveTextureArray = std::array<T, IMPLEMENTATION_MAX_ACTIVE_TEXTURES>;
 using ActiveTexturePointerArray = ActiveTextureArray<Texture *>;
 using ActiveTextureTypeArray    = ActiveTextureArray<TextureType>;
 
+template <typename T>
+using UniformBuffersArray = std::array<T, IMPLEMENTATION_MAX_UNIFORM_BUFFER_BINDINGS>;
+
 using ImageUnitMask = angle::BitSet<IMPLEMENTATION_MAX_IMAGE_UNITS>;
+
+using SupportedSampleSet = std::set<GLuint>;
 
 // OffsetBindingPointer.getSize() returns the size specified by the user, which may be larger than
 // the size of the bound buffer. This function reduces the returned size to fit the bound buffer if
@@ -522,7 +527,7 @@ inline DestT *SafeGetImplAs(SrcT *src)
 
 }  // namespace rx
 
-#include "angletypes.inl"
+#include "angletypes.inc"
 
 namespace angle
 {

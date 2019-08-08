@@ -178,7 +178,7 @@ void MultilineExample::CreateExampleView(View* container) {
 void MultilineExample::ContentsChanged(Textfield* sender,
                                        const base::string16& new_contents) {
   render_text_view_->SetText(new_contents);
-  if (label_checkbox_->checked())
+  if (label_checkbox_->GetChecked())
     label_->SetText(new_contents);
   container()->InvalidateLayout();
   container()->SchedulePaint();
@@ -186,10 +186,10 @@ void MultilineExample::ContentsChanged(Textfield* sender,
 
 void MultilineExample::ButtonPressed(Button* sender, const ui::Event& event) {
   if (sender == label_checkbox_) {
-    label_->SetText(label_checkbox_->checked() ? textfield_->text()
-                                               : base::string16());
+    label_->SetText(label_checkbox_->GetChecked() ? textfield_->text()
+                                                  : base::string16());
   } else if (sender == elision_checkbox_) {
-    render_text_view_->SetMaxLines(elision_checkbox_->checked() ? 3 : 0);
+    render_text_view_->SetMaxLines(elision_checkbox_->GetChecked() ? 3 : 0);
   }
   container()->InvalidateLayout();
   container()->SchedulePaint();

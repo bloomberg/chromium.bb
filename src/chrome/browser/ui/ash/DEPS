@@ -1,4 +1,6 @@
 include_rules = [
+  "+ash/keyboard/ui",
+
   # ash depends on views, so code in ui/ash is allowed to depend on ui/views.
   "+chrome/browser/ui/views",
 
@@ -8,17 +10,17 @@ include_rules = [
 specific_include_rules = {
   ".*test.*": [
    "!ash",
-   "+ash/components/shortcut_viewer/public",
+   "+ash/components/shortcut_viewer",
+   "+ash/keyboard/ui",
    "+ash/public",
+   "+ash/shelf/shelf_constants.h",
   ],
   # AshShellInit supports classic (non-mash) mode so allow ash/ includes.
   "ash_shell_init\.cc": [
     "+ash",
   ],
-  # IsAcceleratorDeprecated and SetupWidgetInitParamsForContainer access
-  # ash::Shell in non Mash mode only.
+  # SetupWidgetInitParamsForContainer accesses ash::Shell.
   "ash_util\.cc": [
-    "+ash/accelerators/accelerator_controller.h",
     "+ash/shell.h",
   ],
   # https://crbug.com/756054
@@ -57,5 +59,9 @@ specific_include_rules = {
   # https://crbug.com/796366
   "tab_scrubber\.cc": [
     "+ash/shell.h",
+  ],
+  "screen_rotation_interactive_uitest\.cc": [
+    "+ash/rotator/screen_rotation_animator.h",
+    "+ash/rotator/screen_rotation_animator_observer.h",
   ],
 }

@@ -7,15 +7,16 @@
 #include "base/metrics/histogram_macros.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/unified_consent/feature.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
-#import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #include "ios/chrome/browser/ui/settings/sync/utils/sync_error_infobar_delegate.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/web/public/web_state/web_state.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -125,25 +126,22 @@ bool ShouldShowSyncPassphraseSettings(
   return syncState == SyncSetupService::kSyncServiceNeedsPassphrase;
 }
 
-bool ShouldShowGoogleServicesSettings(
-    SyncSetupService::SyncServiceState syncState) {
-  return syncState == SyncSetupService::kSyncSettingsNotConfirmed;
-}
-
 bool ShouldShowSyncSettings(SyncSetupService::SyncServiceState syncState) {
   switch (syncState) {
     case SyncSetupService::kSyncServiceCouldNotConnect:
     case SyncSetupService::kSyncServiceServiceUnavailable:
     case SyncSetupService::kSyncServiceUnrecoverableError:
     case SyncSetupService::kNoSyncServiceError:
+    case SyncSetupService::kSyncSettingsNotConfirmed:
       return true;
-    default:
+    case SyncSetupService::kSyncServiceSignInNeedsUpdate:
+    case SyncSetupService::kSyncServiceNeedsPassphrase:
       return false;
   }
 }
 
 bool DisplaySyncErrors(ios::ChromeBrowserState* browser_state,
-                       Tab* tab,
+                       web::WebState* web_state,
                        id<SyncPresenter> presenter) {
   // Avoid displaying sync errors on incognito tabs.
   if (browser_state->IsOffTheRecord())
@@ -153,6 +151,14 @@ bool DisplaySyncErrors(ios::ChromeBrowserState* browser_state,
       SyncSetupServiceFactory::GetForBrowserState(browser_state);
   if (!syncSetupService)
     return false;
+
+  // Avoid showing the sync error inforbar when sync changes are still pending.
+  // This is particularely requires during first run when the advanced sign-in
+  // settings are being presented on the NTP before sync changes being
+  // committed.
+  if (syncSetupService->HasUncommittedChanges())
+    return false;
+
   SyncSetupService::SyncServiceState errorState =
       syncSetupService->GetSyncServiceState();
   if (IsTransientSyncError(errorState))
@@ -182,9 +188,9 @@ bool DisplaySyncErrors(ios::ChromeBrowserState* browser_state,
   UMA_HISTOGRAM_ENUMERATION("Sync.SyncErrorInfobarDisplayed", loggedErrorState,
                             SYNC_ERROR_COUNT);
 
-  DCHECK(tab.webState);
+  DCHECK(web_state);
   infobars::InfoBarManager* infoBarManager =
-      InfoBarManagerImpl::FromWebState(tab.webState);
+      InfoBarManagerImpl::FromWebState(web_state);
   DCHECK(infoBarManager);
   return SyncErrorInfoBarDelegate::Create(infoBarManager, browser_state,
                                           presenter);

@@ -223,8 +223,10 @@ class LabelSelectionTest : public LabelTest {
     // representation of the midpoint between glyphs when considering selection.
     // TODO(tapted): When GetCursorSpan() supports returning a vertical range
     // as well as a horizontal range, just use that here.
-    if (!render_text->multiline())
-      return gfx::Point(render_text->GetCursorSpan(range).start(), mid_y);
+    if (!render_text->multiline()) {
+      return gfx::Point(render_text->GetCursorSpan(range).Round().start(),
+                        mid_y);
+    }
 
     // Otherwise, GetCursorSpan() will give incorrect results. Multiline
     // editing is not supported (http://crbug.com/248597) so there hasn't been

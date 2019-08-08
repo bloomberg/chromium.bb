@@ -51,7 +51,7 @@ void GCInfoTable::CreateGlobalTable() {
 
 uint32_t GCInfoTable::EnsureGCInfoIndex(
     const GCInfo* gc_info,
-    std::atomic_uint32_t* gc_info_index_slot) {
+    std::atomic<uint32_t>* gc_info_index_slot) {
   DCHECK(gc_info);
   DCHECK(gc_info_index_slot);
 

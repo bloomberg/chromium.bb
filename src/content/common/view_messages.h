@@ -25,7 +25,6 @@
 #include "components/viz/common/resources/shared_bitmap.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
-#include "content/common/date_time_suggestion.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/navigation_gesture.h"
 #include "content/public/common/common_param_traits.h"
@@ -45,7 +44,6 @@
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/web/web_plugin_action.h"
 #include "third_party/blink/public/web/web_text_direction.h"
-#include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/point.h"
@@ -104,32 +102,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::MenuItem)
   IPC_STRUCT_TRAITS_MEMBER(submenu)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(content::DateTimeSuggestion)
-  IPC_STRUCT_TRAITS_MEMBER(value)
-  IPC_STRUCT_TRAITS_MEMBER(localized_value)
-  IPC_STRUCT_TRAITS_MEMBER(label)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_BEGIN(ViewHostMsg_DateTimeDialogValue_Params)
-  IPC_STRUCT_MEMBER(ui::TextInputType, dialog_type)
-  IPC_STRUCT_MEMBER(double, dialog_value)
-  IPC_STRUCT_MEMBER(double, minimum)
-  IPC_STRUCT_MEMBER(double, maximum)
-  IPC_STRUCT_MEMBER(double, step)
-  IPC_STRUCT_MEMBER(std::vector<content::DateTimeSuggestion>, suggestions)
-IPC_STRUCT_END()
-
 // Messages sent from the browser to the renderer.
-
-#if defined(OS_ANDROID)
-// Tells the renderer to cancel an opened date/time dialog.
-IPC_MESSAGE_ROUTED0(ViewMsg_CancelDateTimeDialog)
-
-// Replaces a date time input field.
-IPC_MESSAGE_ROUTED1(ViewMsg_ReplaceDateTime,
-                    double /* dialog_value */)
-
-#endif
 
 // Make the RenderWidget background transparent or opaque.
 IPC_MESSAGE_ROUTED1(ViewMsg_SetBackgroundOpaque, bool /* opaque */)
@@ -295,10 +268,6 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_RequestPpapiBrokerPermission,
 // a cross-process frame, as appropriate.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_TakeFocus,
                     bool /* reverse */)
-
-// Required for opening a date/time dialog
-IPC_MESSAGE_ROUTED1(ViewHostMsg_OpenDateTimeDialog,
-                    ViewHostMsg_DateTimeDialogValue_Params /* value */)
 
 // Sent when the renderer changes its page scale factor.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_PageScaleFactorChanged,

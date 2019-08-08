@@ -371,18 +371,18 @@ class FakeFaviconService {
       const GURL& icon_url,
       favicon_base::IconType icon_type,
       int desired_size_in_dip,
-      const favicon_base::FaviconResultsCallback& callback,
+      favicon_base::FaviconResultsCallback callback,
       base::CancelableTaskTracker* tracker) {
-    return GetFaviconForPageOrIconURL(icon_url, callback, tracker);
+    return GetFaviconForPageOrIconURL(icon_url, std::move(callback), tracker);
   }
 
   base::CancelableTaskTracker::TaskId GetFaviconForPageURL(
       const GURL& page_url,
       const favicon_base::IconTypeSet& icon_types,
       int desired_size_in_dip,
-      const favicon_base::FaviconResultsCallback& callback,
+      favicon_base::FaviconResultsCallback callback,
       base::CancelableTaskTracker* tracker) {
-    return GetFaviconForPageOrIconURL(page_url, callback, tracker);
+    return GetFaviconForPageOrIconURL(page_url, std::move(callback), tracker);
   }
 
   base::CancelableTaskTracker::TaskId UpdateFaviconMappingsAndFetch(
@@ -390,9 +390,9 @@ class FakeFaviconService {
       const GURL& icon_url,
       favicon_base::IconType icon_type,
       int desired_size_in_dip,
-      const favicon_base::FaviconResultsCallback& callback,
+      favicon_base::FaviconResultsCallback callback,
       base::CancelableTaskTracker* tracker) {
-    return GetFaviconForPageOrIconURL(icon_url, callback, tracker);
+    return GetFaviconForPageOrIconURL(icon_url, std::move(callback), tracker);
   }
 
   // Disables automatic callback for |url|. This is useful for emulating a
@@ -420,12 +420,12 @@ class FakeFaviconService {
  private:
   base::CancelableTaskTracker::TaskId GetFaviconForPageOrIconURL(
       const GURL& page_or_icon_url,
-      const favicon_base::FaviconResultsCallback& callback,
+      favicon_base::FaviconResultsCallback callback,
       base::CancelableTaskTracker* tracker) {
     db_requests_.push_back(page_or_icon_url);
 
-    base::Closure bound_callback =
-        base::Bind(callback, results_[page_or_icon_url]);
+    base::OnceClosure bound_callback =
+        base::BindOnce(std::move(callback), results_[page_or_icon_url]);
 
     // In addition to checking the URL against |manual_callback_url_|, we also
     // defer responses if there are already pending responses (i.e. a previous
@@ -434,14 +434,14 @@ class FakeFaviconService {
     if (page_or_icon_url != manual_callback_url_ &&
         !HasPendingManualCallback()) {
       return tracker->PostTask(base::ThreadTaskRunnerHandle::Get().get(),
-                               FROM_HERE, bound_callback);
+                               FROM_HERE, std::move(bound_callback));
     }
 
     // We use PostTaskAndReply() to cause |callback| being run in the current
     // TaskRunner.
     return tracker->PostTaskAndReply(manual_callback_task_runner_.get(),
                                      FROM_HERE, base::DoNothing(),
-                                     bound_callback);
+                                     std::move(bound_callback));
   }
 
   std::map<GURL, std::vector<favicon_base::FaviconRawBitmapResult>> results_;

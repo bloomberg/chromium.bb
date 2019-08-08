@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/html_body_element.h"
+#include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/layout_geometry_map.h"
@@ -42,7 +43,6 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/style/shadow_list.h"
 #include "third_party/blink/renderer/platform/geometry/length_functions.h"
-#include "third_party/blink/renderer/platform/transforms/transform_state.h"
 
 namespace blink {
 
@@ -313,6 +313,7 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
     SetHasTransformRelatedProperty(false);
     SetHasReflection(false);
     Layer()->UpdateFilters(old_style, StyleRef());
+    Layer()->UpdateBackdropFilters(old_style, StyleRef());
     Layer()->UpdateClipPath(old_style, StyleRef());
     // Calls DestroyLayer() which clears the layer.
     Layer()->RemoveOnlyThisLayerAfterStyleChange(old_style);
@@ -519,19 +520,19 @@ PaintLayerScrollableArea* LayoutBoxModelObject::GetScrollableArea() const {
 }
 
 void LayoutBoxModelObject::AddOutlineRectsForNormalChildren(
-    Vector<LayoutRect>& rects,
-    const LayoutPoint& additional_offset,
+    Vector<PhysicalRect>& rects,
+    const PhysicalOffset& additional_offset,
     NGOutlineType include_block_overflows) const {
   for (LayoutObject* child = SlowFirstChild(); child;
        child = child->NextSibling()) {
     // Outlines of out-of-flow positioned descendants are handled in
-    // LayoutBlock::addOutlineRects().
+    // LayoutBlock::AddOutlineRects().
     if (child->IsOutOfFlowPositioned())
       continue;
 
     // Outline of an element continuation or anonymous block continuation is
     // added when we iterate the continuation chain.
-    // See LayoutBlock::addOutlineRects() and LayoutInline::addOutlineRects().
+    // See LayoutBlock::AddOutlineRects() and LayoutInline::AddOutlineRects().
     auto* child_block_flow = DynamicTo<LayoutBlockFlow>(child);
     if (child->IsElementContinuation() ||
         (child_block_flow && child_block_flow->IsAnonymousBlockContinuation()))
@@ -544,17 +545,17 @@ void LayoutBoxModelObject::AddOutlineRectsForNormalChildren(
 
 void LayoutBoxModelObject::AddOutlineRectsForDescendant(
     const LayoutObject& descendant,
-    Vector<LayoutRect>& rects,
-    const LayoutPoint& additional_offset,
+    Vector<PhysicalRect>& rects,
+    const PhysicalOffset& additional_offset,
     NGOutlineType include_block_overflows) const {
   if (descendant.IsText() || descendant.IsListMarker())
     return;
 
   if (descendant.HasLayer()) {
-    Vector<LayoutRect> layer_outline_rects;
-    descendant.AddOutlineRects(layer_outline_rects, LayoutPoint(),
+    Vector<PhysicalRect> layer_outline_rects;
+    descendant.AddOutlineRects(layer_outline_rects, PhysicalOffset(),
                                include_block_overflows);
-    descendant.LocalToAncestorRects(layer_outline_rects, this, LayoutPoint(),
+    descendant.LocalToAncestorRects(layer_outline_rects, this, PhysicalOffset(),
                                     additional_offset);
     rects.AppendVector(layer_outline_rects);
     return;
@@ -562,7 +563,7 @@ void LayoutBoxModelObject::AddOutlineRectsForDescendant(
 
   if (descendant.IsBox()) {
     descendant.AddOutlineRects(
-        rects, additional_offset + ToLayoutBox(descendant).LocationOffset(),
+        rects, additional_offset + ToLayoutBox(descendant).PhysicalLocation(),
         include_block_overflows);
     return;
   }
@@ -691,9 +692,9 @@ bool LayoutBoxModelObject::HasAutoHeightOrContainingBlockWithAutoHeight(
   return false;
 }
 
-LayoutSize LayoutBoxModelObject::RelativePositionOffset() const {
+PhysicalOffset LayoutBoxModelObject::RelativePositionOffset() const {
   DCHECK(IsRelPositioned());
-  LayoutSize offset = AccumulateInFlowPositionOffsets();
+  PhysicalOffset offset = AccumulateInFlowPositionOffsets();
 
   LayoutBlock* containing_block = ContainingBlock();
 
@@ -731,15 +732,15 @@ LayoutSize LayoutBoxModelObject::RelativePositionOffset() const {
   switch (writing_mode) {
     case WritingMode::kHorizontalTb:
       if (is_ltr)
-        offset.Expand(left.value(), LayoutUnit());
+        offset.left += left.value();
       else
-        offset.SetWidth(-right.value());
+        offset.left = -right.value();
       break;
     case WritingMode::kVerticalRl:
-      offset.SetWidth(-right.value());
+      offset.left = -right.value();
       break;
     case WritingMode::kVerticalLr:
-      offset.Expand(left.value(), LayoutUnit());
+      offset.left += left.value();
       break;
     // TODO(layout-dev): Sideways-lr and sideways-rl are not yet supported.
     default:
@@ -794,19 +795,19 @@ LayoutSize LayoutBoxModelObject::RelativePositionOffset() const {
     bottom = -top.value();
   switch (writing_mode) {
     case WritingMode::kHorizontalTb:
-      offset.Expand(LayoutUnit(), top.value());
+      offset.top += top.value();
       break;
     case WritingMode::kVerticalRl:
       if (is_ltr)
-        offset.Expand(LayoutUnit(), top.value());
+        offset.top += top.value();
       else
-        offset.SetHeight(-bottom.value());
+        offset.top = -bottom.value();
       break;
     case WritingMode::kVerticalLr:
       if (is_ltr)
-        offset.Expand(LayoutUnit(), top.value());
+        offset.top += top.value();
       else
-        offset.SetHeight(-bottom.value());
+        offset.top = -bottom.value();
       break;
     // TODO(layout-dev): Sideways-lr and sideways-rl are not yet supported.
     default:
@@ -834,13 +835,12 @@ void LayoutBoxModelObject::UpdateStickyPositionConstraints() const {
   // The sticky position constraint rects should be independent of the current
   // scroll position therefore we should ignore the scroll offset when
   // calculating the quad.
-  MapCoordinatesFlags flags = kIgnoreScrollOffset | kIgnoreStickyOffset;
+  // TODO(crbug.com/966131): Is kIgnoreTransforms correct here?
+  MapCoordinatesFlags flags =
+      kIgnoreTransforms | kIgnoreScrollOffset | kIgnoreStickyOffset;
   skipped_containers_offset =
-      ToFloatSize(location_container
-                      ->LocalToAncestorQuadWithoutTransforms(
-                          FloatQuad(), containing_block, flags)
-                      .BoundingBox()
-                      .Location());
+      FloatSize(location_container->LocalToAncestorPoint(
+          PhysicalOffset(), containing_block, flags));
   LayoutBox& scroll_ancestor =
       ToLayoutBox(Layer()->AncestorOverflowLayer()->GetLayoutObject());
 
@@ -862,12 +862,10 @@ void LayoutBoxModelObject::UpdateStickyPositionConstraints() const {
   FloatSize scroll_container_border_offset =
       FloatSize(scroll_ancestor.BorderLeft(), scroll_ancestor.BorderTop());
   if (containing_block != &scroll_ancestor) {
-    FloatQuad local_quad(FloatRect(containing_block->PhysicalPaddingBoxRect()));
+    PhysicalRect local_rect = containing_block->PhysicalPaddingBoxRect();
     scroll_container_relative_padding_box_rect =
-        containing_block
-            ->LocalToAncestorQuadWithoutTransforms(local_quad, &scroll_ancestor,
-                                                   flags)
-            .BoundingBox();
+        FloatRect(containing_block->LocalToAncestorRect(
+            local_rect, &scroll_ancestor, flags));
   }
   // Remove top-left border offset from overflow scroller.
   scroll_container_relative_padding_box_rect.Move(
@@ -897,14 +895,17 @@ void LayoutBoxModelObject::UpdateStickyPositionConstraints() const {
   constraints.scroll_container_relative_containing_block_rect =
       FloatRect(scroll_container_relative_containing_block_rect);
 
-  FloatRect sticky_box_rect =
-      IsLayoutInline() ? FloatRect(ToLayoutInline(this)->LinesBoundingBox())
-                       : FloatRect(ToLayoutBox(this)->FrameRect());
-
-  FloatRect flipped_sticky_box_rect = sticky_box_rect;
-  containing_block->FlipForWritingMode(flipped_sticky_box_rect);
+  FloatRect sticky_box_rect;
+  if (IsLayoutInline()) {
+    sticky_box_rect =
+        FloatRect(ToLayoutInline(this)->PhysicalLinesBoundingBox());
+  } else {
+    PhysicalRect physical_rect =
+        containing_block->FlipForWritingMode(ToLayoutBox(this)->FrameRect());
+    sticky_box_rect = FloatRect(physical_rect);
+  }
   FloatPoint sticky_location =
-      flipped_sticky_box_rect.Location() + skipped_containers_offset;
+      sticky_box_rect.Location() + skipped_containers_offset;
 
   // The scrollContainerRelativePaddingBoxRect's position is the padding box so
   // we need to remove the border when finding the position of the sticky box
@@ -917,7 +918,7 @@ void LayoutBoxModelObject::UpdateStickyPositionConstraints() const {
   constraints.scroll_container_relative_sticky_box_rect =
       FloatRect(scroll_container_relative_padding_box_rect.Location() +
                     ToFloatSize(sticky_location),
-                flipped_sticky_box_rect.Size());
+                sticky_box_rect.Size());
 
   // To correctly compute the offsets, the constraints need to know about any
   // nested position:sticky elements between themselves and their
@@ -1045,18 +1046,18 @@ FloatRect LayoutBoxModelObject::ComputeStickyConstrainingRect() const {
   return constraining_rect;
 }
 
-LayoutSize LayoutBoxModelObject::StickyPositionOffset() const {
+PhysicalOffset LayoutBoxModelObject::StickyPositionOffset() const {
   const PaintLayer* ancestor_overflow_layer = Layer()->AncestorOverflowLayer();
   // TODO: Force compositing input update if we ask for offset before
   // compositing inputs have been computed?
   if (!ancestor_overflow_layer || !ancestor_overflow_layer->GetScrollableArea())
-    return LayoutSize();
+    return PhysicalOffset();
 
   StickyConstraintsMap& constraints_map =
       ancestor_overflow_layer->GetScrollableArea()->GetStickyConstraintsMap();
   auto it = constraints_map.find(Layer());
   if (it == constraints_map.end())
-    return LayoutSize();
+    return PhysicalOffset();
   StickyPositionScrollingConstraints* constraints = &it->value;
 
   // The sticky offset is physical, so we can just return the delta computed in
@@ -1064,19 +1065,19 @@ LayoutSize LayoutBoxModelObject::StickyPositionOffset() const {
   FloatRect constraining_rect = ComputeStickyConstrainingRect();
   constraining_rect.MoveBy(
       ancestor_overflow_layer->GetScrollableArea()->ScrollPosition());
-  return LayoutSize(
+  return PhysicalOffset::FromFloatSizeRound(
       constraints->ComputeStickyOffset(constraining_rect, constraints_map));
 }
 
-LayoutPoint LayoutBoxModelObject::AdjustedPositionRelativeTo(
-    const LayoutPoint& start_point,
+PhysicalOffset LayoutBoxModelObject::AdjustedPositionRelativeTo(
+    const PhysicalOffset& start_point,
     const Element* offset_parent) const {
   // If the element is the HTML body element or doesn't have a parent
   // return 0 and stop this algorithm.
   if (IsBody() || !Parent())
-    return LayoutPoint();
+    return PhysicalOffset();
 
-  LayoutPoint reference_point = start_point;
+  PhysicalOffset reference_point = start_point;
 
   // If the offsetParent is null, return the distance between the canvas origin
   // and the left/top border edge of the element and stop this algorithm.
@@ -1087,7 +1088,7 @@ LayoutPoint LayoutBoxModelObject::AdjustedPositionRelativeTo(
           offset_parent->GetLayoutBoxModelObject()) {
     if (!IsOutOfFlowPositioned()) {
       if (IsInFlowPositioned())
-        reference_point.Move(OffsetForInFlowPosition());
+        reference_point += OffsetForInFlowPosition();
 
       // Note that we may fail to find |offsetParent| while walking the
       // container chain, if |offsetParent| is an inline split into
@@ -1098,15 +1099,16 @@ LayoutPoint LayoutBoxModelObject::AdjustedPositionRelativeTo(
            current && current->GetNode() != offset_parent;
            current = current->Container()) {
         // FIXME: What are we supposed to do inside SVG content?
-        reference_point.Move(current->ColumnOffset(reference_point));
+        reference_point += PhysicalOffsetToBeNoop(
+            current->ColumnOffset(reference_point.ToLayoutPoint()));
         if (current->IsBox() && !current->IsTableRow())
-          reference_point.MoveBy(ToLayoutBox(current)->PhysicalLocation());
+          reference_point += ToLayoutBox(current)->PhysicalLocation();
       }
 
       if (offset_parent_object->IsBox() && offset_parent_object->IsBody() &&
           !offset_parent_object->IsPositioned()) {
-        reference_point.MoveBy(
-            ToLayoutBox(offset_parent_object)->PhysicalLocation());
+        reference_point +=
+            ToLayoutBox(offset_parent_object)->PhysicalLocation();
       }
     }
 
@@ -1126,34 +1128,35 @@ LayoutPoint LayoutBoxModelObject::AdjustedPositionRelativeTo(
     }
 
     if (offset_parent_object->IsBox() && !offset_parent_object->IsBody()) {
-      reference_point.Move(-ToLayoutBox(offset_parent_object)->BorderLeft(),
-                           -ToLayoutBox(offset_parent_object)->BorderTop());
+      reference_point -=
+          PhysicalOffset(ToLayoutBox(offset_parent_object)->BorderLeft(),
+                         ToLayoutBox(offset_parent_object)->BorderTop());
     }
   }
 
   return reference_point;
 }
 
-LayoutSize LayoutBoxModelObject::OffsetForInFlowPosition() const {
+PhysicalOffset LayoutBoxModelObject::OffsetForInFlowPosition() const {
   if (IsRelPositioned())
     return RelativePositionOffset();
 
   if (IsStickyPositioned())
     return StickyPositionOffset();
 
-  return LayoutSize();
+  return PhysicalOffset();
 }
 
 LayoutUnit LayoutBoxModelObject::OffsetLeft(const Element* parent) const {
   // Note that LayoutInline and LayoutBox override this to pass a different
   // startPoint to adjustedPositionRelativeTo.
-  return AdjustedPositionRelativeTo(LayoutPoint(), parent).X();
+  return AdjustedPositionRelativeTo(PhysicalOffset(), parent).left;
 }
 
 LayoutUnit LayoutBoxModelObject::OffsetTop(const Element* parent) const {
   // Note that LayoutInline and LayoutBox override this to pass a different
   // startPoint to adjustedPositionRelativeTo.
-  return AdjustedPositionRelativeTo(LayoutPoint(), parent).Y();
+  return AdjustedPositionRelativeTo(PhysicalOffset(), parent).top;
 }
 
 int LayoutBoxModelObject::PixelSnappedOffsetWidth(const Element* parent) const {
@@ -1290,22 +1293,21 @@ const LayoutObject* LayoutBoxModelObject::PushMappingToContainer(
   bool contains_fixed_position = CanContainFixedPositionObjects();
 
   TransformationMatrix adjustment_for_skipped_ancestor;
-  bool adjustment_for_skipped_ancestor_is_translate2D = true;
+  bool adjustment_for_skipped_ancestor_is_translate_2d = true;
   if (skip_info.AncestorSkipped()) {
     // There can't be a transform between container and ancestor_to_stop_at,
     // because transforms create containers, so it should be safe to just
     // subtract the delta between the container and ancestor_to_stop_at.
-    LayoutSize ancestor_offset =
+    PhysicalOffset ancestor_offset =
         ancestor_to_stop_at->OffsetFromAncestor(container);
-    adjustment_for_skipped_ancestor.Translate(
-        -ancestor_offset.Width().ToFloat(),
-        -ancestor_offset.Height().ToFloat());
+    adjustment_for_skipped_ancestor.Translate(-ancestor_offset.left.ToFloat(),
+                                              -ancestor_offset.top.ToFloat());
   }
 
-  LayoutSize container_offset = OffsetFromContainer(container);
+  PhysicalOffset container_offset = OffsetFromContainer(container);
   bool offset_depends_on_point;
   if (IsLayoutFlowThread()) {
-    container_offset += ColumnOffset(LayoutPoint());
+    container_offset += PhysicalOffsetToBeNoop(ColumnOffset(LayoutPoint()));
     offset_depends_on_point = true;
   } else {
     offset_depends_on_point =
@@ -1329,20 +1331,16 @@ const LayoutObject* LayoutBoxModelObject::PushMappingToContainer(
     GetTransformFromContainer(container, container_offset, t);
     adjustment_for_skipped_ancestor.Multiply(t);
     geometry_map.Push(this, adjustment_for_skipped_ancestor, flags,
-                      LayoutSize());
-  } else if (adjustment_for_skipped_ancestor_is_translate2D) {
-    container_offset.SetWidth(
-        container_offset.Width() +
-        LayoutUnit(adjustment_for_skipped_ancestor.M41()));
-    container_offset.SetHeight(
-        container_offset.Height() +
-        LayoutUnit(adjustment_for_skipped_ancestor.M42()));
-    geometry_map.Push(this, container_offset, flags, LayoutSize());
+                      PhysicalOffset());
+  } else if (adjustment_for_skipped_ancestor_is_translate_2d) {
+    container_offset += PhysicalOffset::FromFloatSizeRound(
+        adjustment_for_skipped_ancestor.To2DTranslation());
+    geometry_map.Push(this, container_offset, flags, PhysicalOffset());
   } else {
-    adjustment_for_skipped_ancestor.Translate(container_offset.Width(),
-                                              container_offset.Height());
+    adjustment_for_skipped_ancestor.Translate(container_offset.left,
+                                              container_offset.top);
     geometry_map.Push(this, adjustment_for_skipped_ancestor, flags,
-                      LayoutSize());
+                      PhysicalOffset());
   }
 
   return skip_info.AncestorSkipped() ? ancestor_to_stop_at : container;

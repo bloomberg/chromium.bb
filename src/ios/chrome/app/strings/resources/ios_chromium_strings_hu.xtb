@@ -5,6 +5,7 @@
 <translation id="1185134272377778587">A Chromium névjegye</translation>
 <translation id="1289966288285062467">Chromium – Adatvédelmi közlemény</translation>
 <translation id="1472013873724362412">Fiókja nem működik a Chromium rendszeren. Lépjen kapcsolatba domainrendszergazdájával, vagy használjon normál Google-fiókot a bejelentkezéshez.</translation>
+<translation id="1507010443238049608">Segítség a Chromium funkcióinak és teljesítményének javítása érdekében</translation>
 <translation id="1617663976202781617">A Chromium szinkronizálásából származó adatok</translation>
 <translation id="1736662517232558588">A Chromium adatai törölve</translation>
 <translation id="1838412507805038478">A Chromium ellenőrizte, hogy a(z) <ph name="ISSUER" /> adta ki ezt a webhelytanúsítványt.</translation>
@@ -14,7 +15,7 @@
 <translation id="2168108852149185974">Bizonyos bővítmények a Chromium összeomlását eredményezik. Távolítsa el a következőket:</translation>
 <translation id="2178608107313874732">A Chromium jelenleg nem tudja használni a kamerát</translation>
 <translation id="2195025571279539885">Szeretné, hogy a Chromium a jövőben felajánlja e webhely <ph name="LANGUAGE_NAME" /> nyelvű oldalainak fordítását?</translation>
-<translation id="2517624234762908348">Chromium-adatok szinkronizálása</translation>
+<translation id="2590893390871230428">Chromium-adatok szinkronizálása</translation>
 <translation id="2647554856022461007">Előfordulhat, hogy a Chromium internetes szolgáltatásokat használ böngészési élménye javítására. Lehetősége van az ilyen szolgáltatások letiltására. <ph name="BEGIN_LINK" />További információ<ph name="END_LINK" />.</translation>
 <translation id="2730884209570016437">A Chromium nem tudja használni a kamerát, mivel egy másik alkalmazás használja</translation>
 <translation id="2915596697727466327">A Chromium a Face ID segítségével ellenőrzi a jogosultságot a jelszavakhoz való hozzáféréshez.</translation>
@@ -26,7 +27,6 @@
 <translation id="4024541897090868497">Ha az összes eszközén szeretne hozzáférni lapjaihoz, jelentkezzen be a Chromiumba.</translation>
 <translation id="4157467675761413638">Tipp a Chromium használatához. A további lapbeállításokhoz tartsa lenyomva az eszköztárban lévő Lapok megjelenítése gombot, amely a képernyő alsó vagy felső részén található.</translation>
 <translation id="4241912885070669028">Kijelentkezik egy <ph name="SIGNOUT_MANAGED_DOMAIN" /> által felügyelt fiókból. Ezzel törli az eszközön található Chromium-adatokat, amelyek azonban Google-fiókjában megmaradnak.</translation>
-<translation id="4272892696084633551">Segítség a Chromium funkcióinak és teljesítményének javítása érdekében</translation>
 <translation id="4555020257205549924">Ha a funkció be van kapcsolva, a Chromium felajánlja a más nyelveken írt oldalak lefordítását a Google Fordító segítségével. <ph name="BEGIN_LINK" />További információ<ph name="END_LINK" />.</translation>
 <translation id="4787850887676698916">A más eszközökön futó Chromium böngészőben megnyitott lapok itt jelennek meg.</translation>
 <translation id="495292094137889840">A Chromium QR-olvasójának használata</translation>

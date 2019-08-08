@@ -13,6 +13,7 @@
 #include "ui/accessibility/platform/ax_fragment_root_win.h"
 #include "ui/accessibility/platform/ax_platform_node_textprovider_win.h"
 #include "ui/accessibility/platform/ax_platform_node_textrangeprovider_win.h"
+#include "ui/accessibility/platform/test_ax_node_wrapper.h"
 #include "ui/base/win/accessibility_misc_utils.h"
 
 using Microsoft::WRL::ComPtr;
@@ -173,6 +174,62 @@ TEST_F(AXPlatformNodeTextProviderTest, TestITextProviderRangeFromChild) {
 
   EXPECT_UIA_INVALIDOPERATION(text_provider->RangeFromChild(
       other_root_node_raw.Get(), &text_range_provider));
+}
+
+TEST_F(AXPlatformNodeTextProviderTest, TestNearestTextIndexToPoint) {
+  ui::AXNodeData text_data;
+  text_data.id = 2;
+  text_data.role = ax::mojom::Role::kInlineTextBox;
+  text_data.SetName("text");
+  // spacing: "t-e-x---t--"
+  text_data.AddIntListAttribute(ax::mojom::IntListAttribute::kCharacterOffsets,
+                                {2, 2, 4, 2});
+
+  ui::AXNodeData root_data;
+  root_data.id = 1;
+  root_data.role = ax::mojom::Role::kStaticText;
+  root_data.relative_bounds.bounds = gfx::RectF(1, 1, 2, 2);
+  root_data.child_ids.push_back(2);
+
+  Init(root_data, text_data);
+
+  AXNode* root_node = GetRootNode();
+  AXNodePosition::SetTreeForTesting(tree_.get());
+  AXNode* text_node = root_node->children()[0];
+
+  struct NearestTextIndexTestData {
+    AXNode* node;
+    struct point_offset_expected_index_pair {
+      int point_offset_x;
+      int expected_index;
+    };
+    std::vector<point_offset_expected_index_pair> test_data;
+  };
+  NearestTextIndexTestData nodes[] = {
+      {text_node,
+       {{0, 0}, {2, 0}, {3, 1}, {4, 1}, {5, 2}, {8, 2}, {9, 3}, {10, 3}}},
+      {root_node,
+       {{0, 0}, {2, 0}, {3, 0}, {4, 0}, {5, 0}, {8, 0}, {9, 0}, {10, 0}}}};
+  for (auto data : nodes) {
+    ComPtr<IRawElementProviderSimple> element_provider =
+        QueryInterfaceFromNode<IRawElementProviderSimple>(data.node);
+    ComPtr<ITextProvider> text_provider;
+    EXPECT_HRESULT_SUCCEEDED(element_provider->GetPatternProvider(
+        UIA_TextPatternId, &text_provider));
+    // get internal implementation to access helper for testing
+    ComPtr<AXPlatformNodeTextProviderWin> platform_text_provider;
+    EXPECT_HRESULT_SUCCEEDED(
+        text_provider->QueryInterface(IID_PPV_ARGS(&platform_text_provider)));
+
+    ComPtr<AXPlatformNodeWin> platform_node;
+    EXPECT_HRESULT_SUCCEEDED(
+        element_provider->QueryInterface(IID_PPV_ARGS(&platform_node)));
+
+    for (auto pair : data.test_data) {
+      EXPECT_EQ(pair.expected_index, platform_node->NearestTextIndexToPoint(
+                                         gfx::Point(pair.point_offset_x, 0)));
+    }
+  }
 }
 
 TEST_F(AXPlatformNodeTextProviderTest, TestITextProviderDocumentRange) {

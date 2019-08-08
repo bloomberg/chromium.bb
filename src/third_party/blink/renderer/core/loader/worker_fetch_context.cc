@@ -23,6 +23,8 @@
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
+#include "third_party/blink/renderer/platform/loader/fetch/worker_resource_timing_notifier.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
@@ -33,14 +35,18 @@ namespace blink {
 WorkerFetchContext::~WorkerFetchContext() = default;
 
 WorkerFetchContext::WorkerFetchContext(
+    const DetachableResourceFetcherProperties& properties,
     WorkerOrWorkletGlobalScope& global_scope,
     scoped_refptr<WebWorkerFetchContext> web_context,
     SubresourceFilter* subresource_filter,
-    ContentSecurityPolicy& content_security_policy)
-    : global_scope_(global_scope),
+    ContentSecurityPolicy& content_security_policy,
+    WorkerResourceTimingNotifier& resource_timing_notifier)
+    : BaseFetchContext(properties),
+      global_scope_(global_scope),
       web_context_(std::move(web_context)),
       subresource_filter_(subresource_filter),
       content_security_policy_(&content_security_policy),
+      resource_timing_notifier_(&resource_timing_notifier),
       save_data_enabled_(GetNetworkStateNotifier().SaveDataEnabled()) {
   DCHECK(global_scope.IsContextThread());
   DCHECK(web_context_);
@@ -55,8 +61,7 @@ scoped_refptr<const SecurityOrigin> WorkerFetchContext::GetTopFrameOrigin()
   base::Optional<WebSecurityOrigin> top_frame_origin =
       web_context_->TopFrameOrigin();
 
-  // TODO(crbug.com/918868) The top frame origin of shared and service
-  // workers is unknown.
+  // The top frame origin of shared and service workers is null.
   if (!top_frame_origin) {
     DCHECK(global_scope_->IsSharedWorkerGlobalScope() ||
            global_scope_->IsServiceWorkerGlobalScope());
@@ -204,8 +209,6 @@ void WorkerFetchContext::PrepareRequest(
 }
 
 void WorkerFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
-  BaseFetchContext::AddAdditionalRequestHeaders(request);
-
   // The remaining modifications are only necessary for HTTP and HTTPS.
   if (!request.Url().IsEmpty() && !request.Url().ProtocolIsInHTTPFamily())
     return;
@@ -219,9 +222,14 @@ void WorkerFetchContext::AddResourceTiming(const ResourceTimingInfo& info) {
   // worklets.
   if (global_scope_->IsWorkletGlobalScope())
     return;
-  WorkerGlobalScopePerformance::performance(
-      To<WorkerGlobalScope>(*global_scope_))
-      ->GenerateAndAddResourceTiming(info);
+  if (!resource_timing_notifier_)
+    return;
+  const SecurityOrigin* security_origin = GetResourceFetcherProperties()
+                                              .GetFetchClientSettingsObject()
+                                              .GetSecurityOrigin();
+  WebResourceTimingInfo web_info = Performance::GenerateResourceTiming(
+      *security_origin, info, *global_scope_);
+  resource_timing_notifier_->AddResourceTiming(web_info, info.InitiatorType());
 }
 
 void WorkerFetchContext::PopulateResourceRequest(
@@ -229,21 +237,23 @@ void WorkerFetchContext::PopulateResourceRequest(
     const ClientHintsPreferences& hints_preferences,
     const FetchParameters::ResourceWidth& resource_width,
     ResourceRequest& out_request) {
-  FrameLoader::UpgradeInsecureRequest(
-      out_request, global_scope_,
-      network::mojom::RequestContextFrameType::kNone);
+  MixedContentChecker::UpgradeInsecureRequest(
+      out_request,
+      &GetResourceFetcherProperties().GetFetchClientSettingsObject(),
+      global_scope_, network::mojom::RequestContextFrameType::kNone);
   SetFirstPartyCookie(out_request);
   if (!out_request.TopFrameOrigin())
     out_request.SetTopFrameOrigin(GetTopFrameOrigin());
 }
 
+FetchContext* WorkerFetchContext::Detach() {
+  resource_timing_notifier_.Clear();
+  return BaseFetchContext::Detach();
+}
+
 void WorkerFetchContext::SetFirstPartyCookie(ResourceRequest& out_request) {
   if (out_request.SiteForCookies().IsNull())
     out_request.SetSiteForCookies(GetSiteForCookies());
-}
-
-SecurityContext& WorkerFetchContext::GetSecurityContext() const {
-  return global_scope_->GetSecurityContext();
 }
 
 WorkerSettings* WorkerFetchContext::GetWorkerSettings() const {

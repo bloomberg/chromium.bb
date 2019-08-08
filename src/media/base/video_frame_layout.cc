@@ -108,7 +108,8 @@ base::Optional<VideoFrameLayout> VideoFrameLayout::CreateWithPlanes(
     const gfx::Size& coded_size,
     std::vector<Plane> planes,
     std::vector<size_t> buffer_sizes,
-    size_t buffer_addr_align) {
+    size_t buffer_addr_align,
+    uint64_t modifier) {
   // NOTE: Even if format is UNKNOWN, it is valid if coded_sizes is not Empty().
   // TODO(crbug.com/896135): Return base::nullopt,
   // if (format != PIXEL_FORMAT_UNKNOWN || !coded_sizes.IsEmpty())
@@ -117,19 +118,21 @@ base::Optional<VideoFrameLayout> VideoFrameLayout::CreateWithPlanes(
   // TODO(crbug.com/896135): Return base::nullopt,
   // if (buffer_sizes.size() > planes.size())
   return VideoFrameLayout(format, coded_size, std::move(planes),
-                          std::move(buffer_sizes), buffer_addr_align);
+                          std::move(buffer_sizes), buffer_addr_align, modifier);
 }
 
 VideoFrameLayout::VideoFrameLayout(VideoPixelFormat format,
                                    const gfx::Size& coded_size,
                                    std::vector<Plane> planes,
                                    std::vector<size_t> buffer_sizes,
-                                   size_t buffer_addr_align)
+                                   size_t buffer_addr_align,
+                                   uint64_t modifier)
     : format_(format),
       coded_size_(coded_size),
       planes_(std::move(planes)),
       buffer_sizes_(std::move(buffer_sizes)),
-      buffer_addr_align_(buffer_addr_align) {}
+      buffer_addr_align_(buffer_addr_align),
+      modifier_(modifier) {}
 
 VideoFrameLayout::~VideoFrameLayout() = default;
 VideoFrameLayout::VideoFrameLayout(const VideoFrameLayout&) = default;
@@ -143,15 +146,13 @@ size_t VideoFrameLayout::GetTotalBufferSize() const {
 
 std::ostream& operator<<(std::ostream& ostream,
                          const VideoFrameLayout::Plane& plane) {
-  ostream << "(" << plane.stride << ", " << plane.offset << ", "
-          << plane.modifier << ")";
+  ostream << "(" << plane.stride << ", " << plane.offset << ")";
   return ostream;
 }
 
 bool VideoFrameLayout::Plane::operator==(
     const VideoFrameLayout::Plane& rhs) const {
-  return stride == rhs.stride && offset == rhs.offset &&
-         modifier == rhs.modifier;
+  return stride == rhs.stride && offset == rhs.offset;
 }
 
 bool VideoFrameLayout::Plane::operator!=(
@@ -162,7 +163,8 @@ bool VideoFrameLayout::Plane::operator!=(
 bool VideoFrameLayout::operator==(const VideoFrameLayout& rhs) const {
   return format_ == rhs.format_ && coded_size_ == rhs.coded_size_ &&
          planes_ == rhs.planes_ && buffer_sizes_ == rhs.buffer_sizes_ &&
-         buffer_addr_align_ == rhs.buffer_addr_align_;
+         buffer_addr_align_ == rhs.buffer_addr_align_ &&
+         modifier_ == rhs.modifier_;
 }
 
 bool VideoFrameLayout::operator!=(const VideoFrameLayout& rhs) const {
@@ -173,9 +175,9 @@ std::ostream& operator<<(std::ostream& ostream,
                          const VideoFrameLayout& layout) {
   ostream << "VideoFrameLayout(format: " << layout.format()
           << ", coded_size: " << layout.coded_size().ToString()
-          << ", planes (stride, offset, modifier): "
-          << VectorToString(layout.planes())
-          << ", buffer_sizes: " << VectorToString(layout.buffer_sizes()) << ")";
+          << ", planes (stride, offset): " << VectorToString(layout.planes())
+          << ", buffer_sizes: " << VectorToString(layout.buffer_sizes())
+          << ", modifier: " << layout.modifier() << ")";
   return ostream;
 }
 

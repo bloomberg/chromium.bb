@@ -29,6 +29,7 @@ class PowerTrayView : public TrayItemView,
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
   base::string16 GetTooltipText(const gfx::Point& p) const override;
+  const char* GetClassName() const override;
 
   // PowerStatus::Observer:
   void OnPowerStatusChanged() override;

@@ -9,15 +9,19 @@
 #include <utility>
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desk_mini_view_animations.h"
 #include "ash/wm/desks/new_desk_button.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "base/stl_util.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/events/event_observer.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/views/event_monitor.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_animations.h"
 
@@ -39,6 +43,50 @@ base::string16 GetMiniViewTitle(int mini_view_index) {
 }
 
 }  // namespace
+
+// -----------------------------------------------------------------------------
+// DeskBarHoverObserver:
+
+class DeskBarHoverObserver : public ui::EventObserver {
+ public:
+  DeskBarHoverObserver(DesksBarView* owner, aura::Window* widget_window)
+      : owner_(owner),
+        event_monitor_(views::EventMonitor::CreateWindowMonitor(
+            this,
+            widget_window,
+            {ui::ET_MOUSE_PRESSED, ui::ET_MOUSE_DRAGGED, ui::ET_MOUSE_RELEASED,
+             ui::ET_MOUSE_MOVED, ui::ET_MOUSE_ENTERED, ui::ET_MOUSE_EXITED})) {}
+
+  ~DeskBarHoverObserver() override = default;
+
+  // ui::EventObserver:
+  void OnEvent(const ui::Event& event) override {
+    switch (event.type()) {
+      case ui::ET_MOUSE_PRESSED:
+      case ui::ET_MOUSE_DRAGGED:
+      case ui::ET_MOUSE_RELEASED:
+      case ui::ET_MOUSE_MOVED:
+      case ui::ET_MOUSE_ENTERED:
+      case ui::ET_MOUSE_EXITED:
+        owner_->OnHoverStateMayHaveChanged();
+        break;
+
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+
+ private:
+  DesksBarView* owner_;
+
+  std::unique_ptr<views::EventMonitor> event_monitor_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeskBarHoverObserver);
+};
+
+// -----------------------------------------------------------------------------
+// DesksBarView:
 
 DesksBarView::DesksBarView()
     : backgroud_view_(new views::View),
@@ -93,6 +141,26 @@ std::unique_ptr<views::Widget> DesksBarView::CreateDesksWidget(
 
 void DesksBarView::Init() {
   UpdateNewMiniViews(/*animate=*/false);
+  hover_observer_ = std::make_unique<DeskBarHoverObserver>(
+      this, GetWidget()->GetNativeWindow());
+}
+
+void DesksBarView::OnHoverStateMayHaveChanged() {
+  for (auto& mini_view : mini_views_)
+    mini_view->OnHoverStateMayHaveChanged();
+}
+
+void DesksBarView::SetDragDetails(const gfx::Point& screen_location,
+                                  bool dragged_item_over_bar) {
+  last_dragged_item_screen_location_ = screen_location;
+  const bool old_dragged_item_over_bar = dragged_item_over_bar_;
+  dragged_item_over_bar_ = dragged_item_over_bar;
+
+  if (!old_dragged_item_over_bar && !dragged_item_over_bar)
+    return;
+
+  for (auto& mini_view : mini_views_)
+    mini_view->UpdateBorderColor();
 }
 
 const char* DesksBarView::GetClassName() const {
@@ -139,13 +207,20 @@ void DesksBarView::Layout() {
 void DesksBarView::ButtonPressed(views::Button* sender,
                                  const ui::Event& event) {
   auto* controller = DesksController::Get();
-  if (sender == new_desk_button_ && controller->CanCreateDesks()) {
-    controller->NewDesk();
-  } else {
-    // TODO(afakhry): Handle mini_view presses.
+  if (sender == new_desk_button_) {
+    if (controller->CanCreateDesks()) {
+      controller->NewDesk();
+      UpdateNewDeskButtonState();
+    }
+    return;
   }
 
-  UpdateNewDeskButtonState();
+  for (auto& mini_view : mini_views_) {
+    if (mini_view.get() == sender) {
+      controller->ActivateDesk(mini_view->desk());
+      return;
+    }
+  }
 }
 
 void DesksBarView::OnDeskAdded(const Desk* desk) {
@@ -186,6 +261,17 @@ void DesksBarView::OnDeskRemoved(const Desk* desk) {
                                      begin_x - GetFirstMiniViewXOffset());
 }
 
+void DesksBarView::OnDeskActivationChanged(const Desk* activated,
+                                           const Desk* deactivated) {
+  for (auto& mini_view : mini_views_) {
+    const Desk* desk = mini_view->desk();
+    if (desk == activated || desk == deactivated)
+      mini_view->UpdateBorderColor();
+  }
+}
+
+void DesksBarView::OnDeskSwitchAnimationFinished() {}
+
 void DesksBarView::UpdateNewDeskButtonState() {
   new_desk_button_->SetEnabled(DesksController::Get()->CanCreateDesks());
 }
@@ -212,10 +298,12 @@ void DesksBarView::UpdateNewMiniViews(bool animate) {
   const int begin_x = GetFirstMiniViewXOffset();
   std::vector<DeskMiniView*> new_mini_views;
 
+  aura::Window* root_window = GetWidget()->GetNativeWindow()->GetRootWindow();
+  DCHECK(root_window);
   for (const auto& desk : desks) {
     if (!FindMiniViewForDesk(desk.get())) {
       mini_views_.emplace_back(std::make_unique<DeskMiniView>(
-          desk.get(), GetMiniViewTitle(mini_views_.size()), this));
+          this, root_window, desk.get(), GetMiniViewTitle(mini_views_.size())));
       DeskMiniView* mini_view = mini_views_.back().get();
       mini_view->set_owned_by_client();
       new_mini_views.emplace_back(mini_view);

@@ -75,6 +75,8 @@ std::string IntAttrToString(const BrowserAccessibility& node,
       return ui::ToString(static_cast<ax::mojom::DefaultActionVerb>(value));
     case ax::mojom::IntAttribute::kDescriptionFrom:
       return ui::ToString(static_cast<ax::mojom::DescriptionFrom>(value));
+    case ax::mojom::IntAttribute::kDropeffect:
+      return node.GetData().DropeffectBitfieldToString();
     case ax::mojom::IntAttribute::kHasPopup:
       return ui::ToString(static_cast<ax::mojom::HasPopup>(value));
     case ax::mojom::IntAttribute::kInvalidState:
@@ -114,6 +116,7 @@ std::string IntAttrToString(const BrowserAccessibility& node,
     case ax::mojom::IntAttribute::kNextFocusId:
     case ax::mojom::IntAttribute::kNextOnLineId:
     case ax::mojom::IntAttribute::kPosInSet:
+    case ax::mojom::IntAttribute::kPopupForId:
     case ax::mojom::IntAttribute::kPreviousFocusId:
     case ax::mojom::IntAttribute::kPreviousOnLineId:
     case ax::mojom::IntAttribute::kScrollX:

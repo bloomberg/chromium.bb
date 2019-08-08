@@ -15,10 +15,10 @@
 #include "components/payments/content/payment_manifest_web_data_service.h"
 #include "components/payments/content/utility/payment_manifest_parser.h"
 #include "components/payments/core/payment_manifest_downloader.h"
+#include "components/payments/core/url_util.h"
 #include "components/webdata/common/web_data_results.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "net/base/url_util.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -111,11 +111,9 @@ void ManifestVerifier::Verify(content::PaymentAppProvider::PaymentApps apps,
         continue;
       }
 
-      // All URL payment method names must be HTTPS or localhost for test.
       GURL method_manifest_url = GURL(method);
-      if (!method_manifest_url.is_valid() ||
-          (method_manifest_url.scheme() != "https" &&
-           !net::IsLocalhost(method_manifest_url))) {
+      if (!UrlUtil::IsValidUrlBasedPaymentMethodIdentifier(
+              method_manifest_url)) {
         log_.Warn(
             "\"" + method +
             "\" is not a valid payment method name in payment handler \"" +

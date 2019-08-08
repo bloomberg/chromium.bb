@@ -51,15 +51,15 @@ class SimpleTestView : public View {
   SimpleTestView(std::vector<FocusTestEvent>* event_list, int view_id)
       : event_list_(event_list) {
     SetFocusBehavior(FocusBehavior::ALWAYS);
-    set_id(view_id);
+    SetID(view_id);
   }
 
   void OnFocus() override {
-    event_list_->push_back(FocusTestEvent(ON_FOCUS, id()));
+    event_list_->push_back(FocusTestEvent(ON_FOCUS, GetID()));
   }
 
   void OnBlur() override {
-    event_list_->push_back(FocusTestEvent(ON_BLUR, id()));
+    event_list_->push_back(FocusTestEvent(ON_BLUR, GetID()));
   }
 
  private:
@@ -1073,11 +1073,11 @@ TEST_F(FocusManagerTest, AnchoredDialogInPane) {
   EXPECT_TRUE(bubble_child->HasFocus());
 }
 
-// This test is specifically for the permutation where the main
-// widget is a DesktopNativeWidgetAura and the bubble is a
-// NativeWidgetAura. When focus moves back from the bubble to the
-// parent widget, ensure that the DNWA's aura window is focused.
-#if defined(USE_AURA)
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+// This test is specifically for the permutation where the main widget is a
+// DesktopNativeWidgetAura and the bubble is a NativeWidgetAura. When focus
+// moves back from the bubble to the parent widget, ensure that the DNWA's aura
+// window is focused.
 class DesktopWidgetFocusManagerTest : public FocusManagerTest {
  public:
   DesktopWidgetFocusManagerTest() = default;
@@ -1152,7 +1152,7 @@ TEST_F(DesktopWidgetFocusManagerTest, AnchoredDialogInDesktopNativeWidgetAura) {
   // Finally, the outer widget's window should be focused again.
   ASSERT_EQ(widget.GetNativeView(), focus_client->GetFocusedWindow());
 }
-#endif  // defined(USE_AURA)
+#endif
 
 // Ensures graceful failure if there is a focus cycle.
 TEST_F(FocusManagerTest, HandlesFocusCycles) {

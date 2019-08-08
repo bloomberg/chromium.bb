@@ -37,7 +37,7 @@ static jlong JNI_RecordUserAction_AddActionCallbackForTesting(
     const JavaParamRef<jobject>& callback) {
   // Create a wrapper for the ActionCallback, so it can life on the heap until
   // RemoveActionCallbackForTesting() is called.
-  auto* wrapper = new ActionCallbackWrapper{base::Bind(
+  auto* wrapper = new ActionCallbackWrapper{base::BindRepeating(
       &OnActionRecorded, ScopedJavaGlobalRef<jobject>(env, callback))};
   base::AddActionCallback(wrapper->action_callback);
   return reinterpret_cast<intptr_t>(wrapper);

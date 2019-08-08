@@ -10,10 +10,10 @@
 
 namespace base {
 
-int RecommendedMaxNumberOfThreadsInPool(int min,
-                                        int max,
-                                        double cores_multiplier,
-                                        int offset) {
+int RecommendedMaxNumberOfThreadsInThreadGroup(int min,
+                                               int max,
+                                               double cores_multiplier,
+                                               int offset) {
   const int num_of_cores = SysInfo::NumberOfProcessors();
   const int threads = std::ceil<int>(num_of_cores * cores_multiplier) + offset;
   return std::min(max, std::max(min, threads));

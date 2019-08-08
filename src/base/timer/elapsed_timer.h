@@ -31,6 +31,24 @@ class BASE_EXPORT ElapsedTimer {
   DISALLOW_COPY_AND_ASSIGN(ElapsedTimer);
 };
 
+// A simple wrapper around ThreadTicks::Now().
+class BASE_EXPORT ElapsedThreadTimer {
+ public:
+  ElapsedThreadTimer();
+
+  // Returns the ThreadTicks time elapsed since object construction.
+  // Only valid if |is_supported()| returns true, otherwise returns TimeDelta().
+  TimeDelta Elapsed() const;
+
+  bool is_supported() const { return is_supported_; }
+
+ private:
+  const bool is_supported_;
+  const ThreadTicks begin_;
+
+  DISALLOW_COPY_AND_ASSIGN(ElapsedThreadTimer);
+};
+
 }  // namespace base
 
 #endif  // BASE_TIMER_ELAPSED_TIMER_H_

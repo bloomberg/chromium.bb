@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "build/build_config.h"
 #include "constants/annotation_common.h"
 #include "core/fxcrt/fx_system.h"
 #include "public/cpp/fpdf_scopers.h"
@@ -474,12 +475,12 @@ TEST_F(FPDFAnnotEmbedderTest, GetAndSetQuadPoints) {
 }
 
 TEST_F(FPDFAnnotEmbedderTest, ModifyRectQuadpointsWithAP) {
-#if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+#if defined(OS_MACOSX)
   static const char kMd5Original[] = "63af8432fab95a67cdebb7cd0e514941";
   static const char kMd5ModifiedHighlight[] =
       "aec26075011349dec9bace891856b5f2";
   static const char kMd5ModifiedSquare[] = "057f57a32be95975775e5ec513fdcb56";
-#elif _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#elif defined(OS_WIN)
   static const char kMd5Original[] = "0e27376094f11490f74c65f3dc3a42c5";
   static const char kMd5ModifiedHighlight[] =
       "66f3caef3a7d488a4fa1ad37fc06310e";
@@ -682,12 +683,12 @@ TEST_F(FPDFAnnotEmbedderTest, RemoveAnnotation) {
 }
 
 TEST_F(FPDFAnnotEmbedderTest, AddAndModifyPath) {
-#if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+#if defined(OS_MACOSX)
   static const char kMd5Original[] = "c35408717759562d1f8bf33d317483d2";
   static const char kMd5ModifiedPath[] = "9059723a045e17478753d2f0eb33bc03";
   static const char kMd5TwoPaths[] = "7eed0cfba780f1d4dd8068f717d3a6bf";
   static const char kMd5NewAnnot[] = "1de8212d43b7066a6df042095c2aca61";
-#elif _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#elif defined(OS_WIN)
   static const char kMd5Original[] = "6f3cc2dd37479ce7cc072bfb0c63c275";
   static const char kMd5ModifiedPath[] = "c0c2eb2aba73ad15b3240e342fbe0d72";
   static const char kMd5TwoPaths[] = "2306bf04915fe001b5f4726843d184c8";
@@ -726,7 +727,7 @@ TEST_F(FPDFAnnotEmbedderTest, AddAndModifyPath) {
     EXPECT_TRUE(path);
 
     // Modify the color of the path object.
-    EXPECT_TRUE(FPDFPath_SetStrokeColor(path, 0, 0, 0, 255));
+    EXPECT_TRUE(FPDFPageObj_SetStrokeColor(path, 0, 0, 0, 255));
     EXPECT_TRUE(FPDFAnnot_UpdateObject(annot.get(), path));
 
     // Check that the page with the modified annotation renders correctly.
@@ -738,8 +739,8 @@ TEST_F(FPDFAnnotEmbedderTest, AddAndModifyPath) {
     // Add a second path object to the same annotation.
     FPDF_PAGEOBJECT dot = FPDFPageObj_CreateNewPath(7, 84);
     EXPECT_TRUE(FPDFPath_BezierTo(dot, 9, 86, 10, 87, 11, 88));
-    EXPECT_TRUE(FPDFPath_SetStrokeColor(dot, 255, 0, 0, 100));
-    EXPECT_TRUE(FPDFPath_SetStrokeWidth(dot, 14));
+    EXPECT_TRUE(FPDFPageObj_SetStrokeColor(dot, 255, 0, 0, 100));
+    EXPECT_TRUE(FPDFPageObj_SetStrokeWidth(dot, 14));
     EXPECT_TRUE(FPDFPath_SetDrawMode(dot, 0, 1));
     EXPECT_TRUE(FPDFAnnot_AppendObject(annot.get(), dot));
     EXPECT_EQ(2, FPDFAnnot_GetObjectCount(annot.get()));
@@ -784,8 +785,8 @@ TEST_F(FPDFAnnotEmbedderTest, AddAndModifyPath) {
     EXPECT_TRUE(FPDFPath_LineTo(check, 500, 600));
     EXPECT_TRUE(FPDFPath_MoveTo(check, 350, 550));
     EXPECT_TRUE(FPDFPath_LineTo(check, 450, 450));
-    EXPECT_TRUE(FPDFPath_SetStrokeColor(check, 0, 255, 255, 180));
-    EXPECT_TRUE(FPDFPath_SetStrokeWidth(check, 8.35f));
+    EXPECT_TRUE(FPDFPageObj_SetStrokeColor(check, 0, 255, 255, 180));
+    EXPECT_TRUE(FPDFPageObj_SetStrokeWidth(check, 8.35f));
     EXPECT_TRUE(FPDFPath_SetDrawMode(check, 0, 1));
     EXPECT_TRUE(FPDFAnnot_AppendObject(annot.get(), check));
     EXPECT_EQ(1, FPDFAnnot_GetObjectCount(annot.get()));
@@ -884,11 +885,11 @@ TEST_F(FPDFAnnotEmbedderTest, ModifyAnnotationFlags) {
 }
 
 TEST_F(FPDFAnnotEmbedderTest, AddAndModifyImage) {
-#if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+#if defined(OS_MACOSX)
   static const char kMd5Original[] = "c35408717759562d1f8bf33d317483d2";
   static const char kMd5NewImage[] = "ff012f5697436dfcaec25b32d1333596";
   static const char kMd5ModifiedImage[] = "86cf8cb2755a7a2046a543e66d9c1e61";
-#elif _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#elif defined(OS_WIN)
   static const char kMd5Original[] = "6f3cc2dd37479ce7cc072bfb0c63c275";
   static const char kMd5NewImage[] = "d19c6fcfd9a170802fcfb9adfa13557e";
   static const char kMd5ModifiedImage[] = "1273cf2363570a50d1aa0c95b1318197";
@@ -969,11 +970,11 @@ TEST_F(FPDFAnnotEmbedderTest, AddAndModifyImage) {
 }
 
 TEST_F(FPDFAnnotEmbedderTest, AddAndModifyText) {
-#if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+#if defined(OS_MACOSX)
   static const char kMd5Original[] = "c35408717759562d1f8bf33d317483d2";
   static const char kMd5NewText[] = "60031c1b0330cf1e1575f7d46687d429";
   static const char kMd5ModifiedText[] = "79f5cfb0b07caaf936f65f6a7a57ce77";
-#elif _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#elif defined(OS_WIN)
   static const char kMd5Original[] = "6f3cc2dd37479ce7cc072bfb0c63c275";
   static const char kMd5NewText[] = "87d55e09f9096de7e6552f5ae79afd3b";
   static const char kMd5ModifiedText[] = "26e94fbd3af4b1e65479327507600114";
@@ -1013,7 +1014,7 @@ TEST_F(FPDFAnnotEmbedderTest, AddAndModifyText) {
     ScopedFPDFWideString text =
         GetFPDFWideString(L"I'm a translucent text laying on other text.");
     EXPECT_TRUE(FPDFText_SetText(text_object, text.get()));
-    EXPECT_TRUE(FPDFText_SetFillColor(text_object, 0, 0, 255, 150));
+    EXPECT_TRUE(FPDFPageObj_SetFillColor(text_object, 0, 0, 255, 150));
     FPDFPageObj_Transform(text_object, 1, 0, 0, 1, 200, 600);
     EXPECT_TRUE(FPDFAnnot_AppendObject(annot.get(), text_object));
   }
@@ -1109,9 +1110,9 @@ TEST_F(FPDFAnnotEmbedderTest, GetSetStringValue) {
   EXPECT_TRUE(FPDF_SaveAsCopy(document(), this, 0));
   UnloadPage(page);
 
-#if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+#if defined(OS_MACOSX)
   static const char kMd5[] = "4d64e61c9c0f8c60ab3cc3234bb73b1c";
-#elif _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#elif defined(OS_WIN)
   static const char kMd5[] = "9ee141f698c3fcb56c050dffd6c82624";
 #else
   static const char kMd5[] = "c96ee1f316d7f5a1b154de9f9d467f01";
@@ -1907,6 +1908,136 @@ TEST_F(FPDFAnnotEmbedderTest, GetOptionLabelInvalidAnnotations) {
 
     EXPECT_EQ(0u, FPDFAnnot_GetOptionLabel(form_handle(), annot.get(), 0,
                                            nullptr, 0));
+  }
+
+  UnloadPage(page);
+}
+
+TEST_F(FPDFAnnotEmbedderTest, GetFontSizeCombobox) {
+  // Open a file with combobox annotations and load its first page.
+  ASSERT_TRUE(OpenDocument("combobox_form.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+
+  {
+    // All 3 widgets have Tf font size 12.
+    ScopedFPDFAnnotation annot(FPDFPage_GetAnnot(page, 0));
+    ASSERT_TRUE(annot);
+
+    float value;
+    ASSERT_TRUE(FPDFAnnot_GetFontSize(form_handle(), annot.get(), &value));
+    EXPECT_EQ(12.0, value);
+
+    annot.reset(FPDFPage_GetAnnot(page, 1));
+    ASSERT_TRUE(annot);
+
+    float value_two;
+    ASSERT_TRUE(FPDFAnnot_GetFontSize(form_handle(), annot.get(), &value_two));
+    EXPECT_EQ(12.0, value_two);
+
+    annot.reset(FPDFPage_GetAnnot(page, 2));
+    ASSERT_TRUE(annot);
+
+    float value_three;
+    ASSERT_TRUE(
+        FPDFAnnot_GetFontSize(form_handle(), annot.get(), &value_three));
+    EXPECT_EQ(12.0, value_three);
+  }
+
+  UnloadPage(page);
+}
+
+TEST_F(FPDFAnnotEmbedderTest, GetFontSizeTextField) {
+  // Open a file with textfield annotations and load its first page.
+  ASSERT_TRUE(OpenDocument("text_form_multiple.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+
+  {
+    // All 3 widgets have Tf font size 12.
+    ScopedFPDFAnnotation annot(FPDFPage_GetAnnot(page, 0));
+    ASSERT_TRUE(annot);
+
+    float value;
+    ASSERT_TRUE(FPDFAnnot_GetFontSize(form_handle(), annot.get(), &value));
+    EXPECT_EQ(12.0, value);
+
+    annot.reset(FPDFPage_GetAnnot(page, 1));
+    ASSERT_TRUE(annot);
+
+    float value_two;
+    ASSERT_TRUE(FPDFAnnot_GetFontSize(form_handle(), annot.get(), &value_two));
+    EXPECT_EQ(12.0, value_two);
+
+    annot.reset(FPDFPage_GetAnnot(page, 2));
+    ASSERT_TRUE(annot);
+
+    float value_three;
+    ASSERT_TRUE(
+        FPDFAnnot_GetFontSize(form_handle(), annot.get(), &value_three));
+    EXPECT_EQ(12.0, value_three);
+  }
+
+  UnloadPage(page);
+}
+
+TEST_F(FPDFAnnotEmbedderTest, GetFontSizeInvalidAnnotationTypes) {
+  // Open a file with ink annotations and load its first page.
+  ASSERT_TRUE(OpenDocument("annotation_ink_multiple.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+
+  {
+    // Annotations that do not have variable text and will return -1.
+    ScopedFPDFAnnotation annot(FPDFPage_GetAnnot(page, 0));
+    ASSERT_TRUE(annot);
+
+    float value;
+    ASSERT_FALSE(FPDFAnnot_GetFontSize(form_handle(), annot.get(), &value));
+
+    annot.reset(FPDFPage_GetAnnot(page, 1));
+    ASSERT_TRUE(annot);
+
+    ASSERT_FALSE(FPDFAnnot_GetFontSize(form_handle(), annot.get(), &value));
+  }
+
+  UnloadPage(page);
+}
+
+TEST_F(FPDFAnnotEmbedderTest, GetFontSizeInvalidArguments) {
+  // Open a file with combobox annotations and load its first page.
+  ASSERT_TRUE(OpenDocument("combobox_form.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+
+  {
+    ScopedFPDFAnnotation annot(FPDFPage_GetAnnot(page, 0));
+    ASSERT_TRUE(annot);
+
+    // Check bad form handle / annot.
+    float value;
+    ASSERT_FALSE(FPDFAnnot_GetFontSize(nullptr, annot.get(), &value));
+    ASSERT_FALSE(FPDFAnnot_GetFontSize(form_handle(), nullptr, &value));
+    ASSERT_FALSE(FPDFAnnot_GetFontSize(nullptr, nullptr, &value));
+  }
+
+  UnloadPage(page);
+}
+
+TEST_F(FPDFAnnotEmbedderTest, GetFontSizeNegative) {
+  // Open a file with textfield annotations and load its first page.
+  ASSERT_TRUE(OpenDocument("text_form_negative_fontsize.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+
+  {
+    // Obtain the first annotation, a text field with negative font size, -12.
+    ScopedFPDFAnnotation annot(FPDFPage_GetAnnot(page, 0));
+    ASSERT_TRUE(annot);
+
+    float value;
+    ASSERT_TRUE(FPDFAnnot_GetFontSize(form_handle(), annot.get(), &value));
+    EXPECT_EQ(-12.0, value);
   }
 
   UnloadPage(page);

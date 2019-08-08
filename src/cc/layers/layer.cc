@@ -601,6 +601,10 @@ void Layer::SetBackdropFilterBounds(const gfx::RRectF& backdrop_filter_bounds) {
   inputs_.backdrop_filter_bounds = backdrop_filter_bounds;
 }
 
+void Layer::ClearBackdropFilterBounds() {
+  inputs_.backdrop_filter_bounds.reset();
+}
+
 void Layer::SetBackdropFilterQuality(const float quality) {
   inputs_.backdrop_filter_quality = quality;
 }
@@ -615,7 +619,7 @@ void Layer::SetFiltersOrigin(const gfx::PointF& filters_origin) {
   SetNeedsCommit();
 }
 
-void Layer::SetRoundedCorner(const std::array<uint32_t, 4>& corner_radii) {
+void Layer::SetRoundedCorner(const gfx::RoundedCornersF& corner_radii) {
   DCHECK(IsPropertyChangeAllowed());
   if (inputs_.corner_radii == corner_radii)
     return;
@@ -1264,9 +1268,22 @@ void Layer::SetShouldFlattenTransform(bool should_flatten) {
   SetSubtreePropertyChanged();
 }
 
+#if DCHECK_IS_ON()
+std::string Layer::DebugName() const {
+  if (inputs_.client) {
+    if (auto debug_info = inputs_.client->TakeDebugInfo(this))
+      return debug_info->ToBaseValue()->FindKey("layer_name")->GetString();
+  }
+  return "";
+}
+#endif
+
 std::string Layer::ToString() const {
   return base::StringPrintf(
       "layer_id: %d\n"
+#if DCHECK_IS_ON()
+      "  name: %s\n"
+#endif
       "  Bounds: %s\n"
       "  ElementId: %s\n"
       "  OffsetToTransformParent: %s\n"
@@ -1276,7 +1293,11 @@ std::string Layer::ToString() const {
       "  effect_tree_index: %d\n"
       "  scroll_tree_index: %d\n"
       "  transform_tree_index: %d\n",
-      id(), bounds().ToString().c_str(), element_id().ToString().c_str(),
+      id(),
+#if DCHECK_IS_ON()
+      DebugName().c_str(),
+#endif
+      bounds().ToString().c_str(), element_id().ToString().c_str(),
       offset_to_transform_parent().ToString().c_str(),
       position().ToString().c_str(), scrollable(), clip_tree_index(),
       effect_tree_index(), scroll_tree_index(), transform_tree_index());
@@ -1394,6 +1415,7 @@ void Layer::SetStickyPositionConstraint(
   if (inputs_.sticky_position_constraint == constraint)
     return;
   inputs_.sticky_position_constraint = constraint;
+  SetSubtreePropertyChanged();
   SetPropertyTreesNeedRebuild();
   SetNeedsCommit();
 }
@@ -1596,6 +1618,10 @@ void Layer::SetScrollbarsHiddenFromImplSide(bool hidden) {
 // set directly rather than by calling Set<Property>.
 void Layer::OnFilterAnimated(const FilterOperations& filters) {
   inputs_.filters = filters;
+}
+
+void Layer::OnBackdropFilterAnimated(const FilterOperations& backdrop_filters) {
+  inputs_.backdrop_filters = backdrop_filters;
 }
 
 void Layer::OnOpacityAnimated(float opacity) {

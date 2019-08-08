@@ -15,7 +15,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.tab.Tab;
@@ -23,6 +23,8 @@ import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tabgroup.TabGroupModelFilter;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsCoordinator;
+import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.List;
@@ -39,6 +41,7 @@ public class TabGroupUiCoordinator
     private final PropertyModel mTabStripToolbarModel;
     private final ThemeColorProvider mThemeColorProvider;
     private TabGridSheetCoordinator mTabGridSheetCoordinator;
+    private TabGridDialogCoordinator mTabGridDialogCoordinator;
     private TabListCoordinator mTabStripCoordinator;
     private TabGroupUiMediator mMediator;
     private TabStripToolbarCoordinator mTabStripToolbarCoordinator;
@@ -63,7 +66,7 @@ public class TabGroupUiCoordinator
     @Override
     public void initializeWithNative(ChromeActivity activity,
             BottomControlsCoordinator.BottomControlsVisibilityController visibilityController) {
-        if (ChromeFeatureList.isInitialized()) {
+        if (UmaSessionStats.isMetricsServiceAvailable()) {
             UmaSessionStats.registerSyntheticFieldTrial(
                     ChromeFeatureList.TAB_GROUPS_ANDROID + SYNTHETIC_TRIAL_POSTFIX,
                     "Downloaded_Enabled");
@@ -74,12 +77,24 @@ public class TabGroupUiCoordinator
         TabContentManager tabContentManager = activity.getTabContentManager();
 
         mTabStripCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.STRIP,
-                mContext, tabModelSelector, null, null, false, null,
-                mTabStripToolbarCoordinator.getTabListContainerView(), true, COMPONENT_NAME);
+                mContext, tabModelSelector, null, null, false, null, null, null, null, null,
+                mTabStripToolbarCoordinator.getTabListContainerView(), null, true,
+                R.layout.tab_list_recycler_view_layout, COMPONENT_NAME);
 
-        mTabGridSheetCoordinator =
-                new TabGridSheetCoordinator(mContext, activity.getBottomSheetController(),
-                        tabModelSelector, tabContentManager, activity, mThemeColorProvider);
+        if (FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
+            // TODO(yuezhanggg): find a way to enable interactions between grid tab switcher and the
+            // dialog here.
+            mTabGridSheetCoordinator = null;
+
+            mTabGridDialogCoordinator = new TabGridDialogCoordinator(mContext, tabModelSelector,
+                    tabContentManager, activity, activity.getCompositorViewHolder(), null, null);
+        } else {
+            mTabGridSheetCoordinator =
+                    new TabGridSheetCoordinator(mContext, activity.getBottomSheetController(),
+                            tabModelSelector, tabContentManager, activity, mThemeColorProvider);
+
+            mTabGridDialogCoordinator = null;
+        }
 
         mMediator = new TabGroupUiMediator(visibilityController, this, mTabStripToolbarModel,
                 tabModelSelector, activity,
@@ -90,7 +105,7 @@ public class TabGroupUiCoordinator
 
     /**
      * Handles a reset event originated from {@link TabGroupUiMediator}
-     * when the bottom sheet is collapsed.
+     * when the bottom sheet is collapsed or the dialog is hidden.
      *
      * @param tabs List of Tabs to reset.
      */
@@ -101,13 +116,17 @@ public class TabGroupUiCoordinator
 
     /**
      * Handles a reset event originated from {@link TabGroupUiMediator}
-     * when the bottom sheet is expanded.
+     * when the bottom sheet is expanded or the dialog is shown.
      *
      * @param tabs List of Tabs to reset.
      */
     @Override
-    public void resetSheetWithListOfTabs(List<Tab> tabs) {
-        mTabGridSheetCoordinator.resetWithListOfTabs(tabs);
+    public void resetGridWithListOfTabs(List<Tab> tabs) {
+        if (mTabGridDialogCoordinator == null) {
+            mTabGridSheetCoordinator.resetWithListOfTabs(tabs);
+        } else {
+            mTabGridDialogCoordinator.resetWithListOfTabs(tabs);
+        }
     }
 
     /**
@@ -119,7 +138,12 @@ public class TabGroupUiCoordinator
         if (mActivity == null) return;
 
         mTabStripCoordinator.destroy();
-        mTabGridSheetCoordinator.destroy();
+        if (mTabGridSheetCoordinator != null) {
+            mTabGridSheetCoordinator.destroy();
+        }
+        if (mTabGridDialogCoordinator != null) {
+            mTabGridDialogCoordinator.destroy();
+        }
         mMediator.destroy();
         mActivityLifecycleDispatcher.unregister(this);
     }

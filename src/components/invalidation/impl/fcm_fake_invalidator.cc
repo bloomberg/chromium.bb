@@ -53,7 +53,7 @@ bool FCMFakeInvalidator::UpdateRegisteredIds(InvalidationHandler* handler,
 }
 
 bool FCMFakeInvalidator::UpdateRegisteredIds(InvalidationHandler* handler,
-                                             const TopicSet& topics) {
+                                             const Topics& topics) {
   return registrar_.UpdateRegisteredTopics(handler, topics);
 }
 

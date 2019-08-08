@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/build_config.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/encryption_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "components/sync/base/sync_base_switches.h"
 #include "components/sync/engine/sync_engine_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -102,6 +104,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientCustomPassphraseSyncTest,
   ASSERT_TRUE(
       PassphraseAcceptedChecker(GetSyncService(kEncryptingClientId)).Wait());
   AddTestBookmarksToClient(kEncryptingClientId);
+  // Wait for the client to commit the update.
+  ASSERT_TRUE(
+      UpdatedProgressMarkerChecker(GetSyncService(kEncryptingClientId)).Wait());
 
   // Set up a new sync client.
   ASSERT_TRUE(

@@ -63,7 +63,7 @@ class ExternalFileURLRequestJob : public net::URLRequestJob {
 
   void OnStreamObtained(
       const std::string& mime_type,
-      std::unique_ptr<IsolatedFileSystemScope> isolated_file_system_scope,
+      storage::IsolatedContext::ScopedFSHandle isolated_file_system_scope,
       std::unique_ptr<storage::FileStreamReader> stream_reader,
       int64_t size);
 
@@ -75,7 +75,7 @@ class ExternalFileURLRequestJob : public net::URLRequestJob {
   std::unique_ptr<ExternalFileResolver> resolver_;
 
   std::string mime_type_;
-  std::unique_ptr<IsolatedFileSystemScope> isolated_file_system_scope_;
+  storage::IsolatedContext::ScopedFSHandle isolated_file_system_scope_;
   std::unique_ptr<storage::FileStreamReader> stream_reader_;
   int64_t remaining_bytes_;
   GURL redirect_url_;

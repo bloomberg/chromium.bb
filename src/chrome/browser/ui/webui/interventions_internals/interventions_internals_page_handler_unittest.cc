@@ -915,8 +915,7 @@ TEST_F(InterventionsInternalsPageHandlerTest,
 
 TEST_F(InterventionsInternalsPageHandlerTest,
        IgnoreBlacklistReversedOnLastObserverRemovedCalled) {
-  ASSERT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      previews::switches::kIgnorePreviewsBlacklist));
+  ASSERT_FALSE(previews::switches::ShouldIgnorePreviewsBlacklist());
   page_handler_->OnLastObserverRemove();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(page_->blacklist_ignored());
@@ -927,8 +926,7 @@ TEST_F(InterventionsInternalsPageHandlerTest,
   base::test::ScopedCommandLine scoped_command_line;
   base::CommandLine* command_line = scoped_command_line.GetProcessCommandLine();
   command_line->AppendSwitch(previews::switches::kIgnorePreviewsBlacklist);
-  ASSERT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      previews::switches::kIgnorePreviewsBlacklist));
+  ASSERT_TRUE(previews::switches::ShouldIgnorePreviewsBlacklist());
   page_handler_->OnLastObserverRemove();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(page_->blacklist_ignored());

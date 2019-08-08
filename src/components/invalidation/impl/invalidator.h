@@ -68,7 +68,7 @@ class INVALIDATION_EXPORT Invalidator {
   // not be NULL, and must already be registered.  An ID must be registered for
   // at most one handler. If ID is already registered function returns false.
   virtual bool UpdateRegisteredIds(InvalidationHandler* handler,
-                                   const TopicSet& ids) WARN_UNUSED_RESULT = 0;
+                                   const Topics& ids) WARN_UNUSED_RESULT;
 
   // Stops sending notifications to |handler|.  |handler| must not be NULL, and
   // it must already be registered.  Note that this doesn't unregister the IDs

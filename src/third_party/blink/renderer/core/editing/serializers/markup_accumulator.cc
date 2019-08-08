@@ -153,7 +153,7 @@ void MarkupAccumulator::AppendEndTag(const Element& element,
 void MarkupAccumulator::AppendStartMarkup(const Node& node) {
   switch (node.getNodeType()) {
     case Node::kTextNode:
-      formatter_.AppendText(markup_, ToText(node));
+      formatter_.AppendText(markup_, To<Text>(node));
       break;
     case Node::kElementNode:
       NOTREACHED();
@@ -161,7 +161,7 @@ void MarkupAccumulator::AppendStartMarkup(const Node& node) {
     case Node::kAttributeNode:
       // Only XMLSerializer can pass an Attr.  So, |documentIsHTML| flag is
       // false.
-      formatter_.AppendAttributeValue(markup_, ToAttr(node).value(), false);
+      formatter_.AppendAttributeValue(markup_, To<Attr>(node).value(), false);
       break;
     default:
       formatter_.AppendStartMarkup(markup_, node);

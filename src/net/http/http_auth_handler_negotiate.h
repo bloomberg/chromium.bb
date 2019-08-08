@@ -56,13 +56,6 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNegotiate : public HttpAuthHandler {
 
 #if defined(OS_POSIX)
     const std::string& GetLibraryNameForTesting() const;
-
-    void set_allow_gssapi_library_load(bool allow_gssapi_library_load) {
-      allow_gssapi_library_load_ = allow_gssapi_library_load;
-    }
-    bool allow_gssapi_library_load_for_testing() const {
-      return allow_gssapi_library_load_;
-    }
 #endif  // defined(OS_POSIX)
 #endif  // !defined(OS_ANDROID)
 
@@ -85,9 +78,6 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNegotiate : public HttpAuthHandler {
     bool is_unsupported_ = false;
 #if !defined(OS_ANDROID)
     std::unique_ptr<AuthLibrary> auth_library_;
-#if defined(OS_POSIX)
-    bool allow_gssapi_library_load_ = true;
-#endif  // defined(OS_POSIX)
 #endif  // !defined(OS_ANDROID)
   };
 
@@ -97,9 +87,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNegotiate : public HttpAuthHandler {
 
   ~HttpAuthHandlerNegotiate() override;
 
-  // HttpAuthHandler:
-  HttpAuth::AuthorizationResult HandleAnotherChallenge(
-      HttpAuthChallengeTokenizer* challenge) override;
+  // HttpAuthHandler
   bool NeedsIdentity() override;
   bool AllowsDefaultCredentials() override;
   bool AllowsExplicitCredentials() override;
@@ -107,13 +95,15 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNegotiate : public HttpAuthHandler {
   const std::string& spn_for_testing() const { return spn_; }
 
  protected:
+  // HttpAuthHandler
   bool Init(HttpAuthChallengeTokenizer* challenge,
             const SSLInfo& ssl_info) override;
-
   int GenerateAuthTokenImpl(const AuthCredentials* credentials,
                             const HttpRequestInfo* request,
                             CompletionOnceCallback callback,
                             std::string* auth_token) override;
+  HttpAuth::AuthorizationResult HandleAnotherChallengeImpl(
+      HttpAuthChallengeTokenizer* challenge) override;
 
  private:
   enum State {

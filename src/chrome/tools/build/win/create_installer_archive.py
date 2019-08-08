@@ -17,7 +17,6 @@ import fnmatch
 import glob
 import optparse
 import os
-import re
 import shutil
 import subprocess
 import sys

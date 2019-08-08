@@ -15,6 +15,7 @@
 #include "content/public/common/drop_data.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "net/base/filename_util.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "storage/browser/fileapi/file_system_options.h"
@@ -44,7 +45,7 @@ TEST(BrowserFileSystemHelperTest,
   // Prepare |original_file| FileSystemURL that comes from a |sensitive_origin|.
   // This attempts to simulate for unit testing the drive URL from
   // https://crbug.com/705295#c23.
-  const GURL kSensitiveOrigin("chrome://hhaomjibdihmijegdhdafkllkbggdgoj/");
+  const GURL kSensitiveOrigin(GetWebUIURL("hhaomjibdihmijegdhdafkllkbggdgoj"));
   const char kMountName[] = "drive-testuser%40gmail.com-hash";
   const base::FilePath kTestPath(FILE_PATH_LITERAL("root/dir/testfile.jpg"));
   base::FilePath mount_path = temp_dir.GetPath().AppendASCII(kMountName);

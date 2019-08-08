@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "media/base/media_export.h"
-#include "media/base/video_rotation.h"
+#include "media/base/video_transformation.h"
 
 namespace media {
 

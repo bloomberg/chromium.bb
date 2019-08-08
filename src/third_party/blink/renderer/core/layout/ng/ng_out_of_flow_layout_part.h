@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 
 #include "base/optional.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_absolute_utils.h"
 #include "third_party/blink/renderer/core/style/computed_style_base_constants.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -51,7 +51,7 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
       const NGConstraintSpace& container_space,
       const NGBoxStrut& border_scrollbar,
       NGBoxFragmentBuilder* container_builder,
-      base::Optional<NGLogicalSize> initial_containing_block_fixed_size =
+      base::Optional<LogicalSize> initial_containing_block_fixed_size =
           base::nullopt);
 
   // Normally this function lays out and positions all out-of-flow objects from
@@ -80,16 +80,16 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
     // Containing block style.
     const ComputedStyle* style;
     // Logical in containing block coordinates.
-    NGLogicalSize content_size_for_absolute;
+    LogicalSize content_size_for_absolute;
     // Content size for fixed is different for the ICB.
-    NGLogicalSize content_size_for_fixed;
+    LogicalSize content_size_for_fixed;
 
     // Offsets (both logical and physical) of the container's padding-box, wrt.
     // the default container's border-box.
-    NGLogicalOffset container_offset;
-    NGPhysicalOffset physical_container_offset;
+    LogicalOffset container_offset;
+    PhysicalOffset physical_container_offset;
 
-    NGLogicalSize ContentSize(EPosition position) const {
+    LogicalSize ContentSize(EPosition position) const {
       return position == EPosition::kAbsolute ? content_size_for_absolute
                                               : content_size_for_fixed;
     }
@@ -112,12 +112,19 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
       const NGOutOfFlowPositionedDescendant&,
       const LayoutBox* only_layout);
 
+  scoped_refptr<const NGLayoutResult> Layout(NGBlockNode,
+                                             const NGConstraintSpace&,
+                                             const NGStaticPosition&,
+                                             LogicalSize container_content_size,
+                                             const ContainingBlockInfo&,
+                                             const LayoutBox* only_layout);
+
   bool IsContainingBlockForDescendant(
       const NGOutOfFlowPositionedDescendant& descendant);
 
   scoped_refptr<const NGLayoutResult> GenerateFragment(
       NGBlockNode node,
-      const NGLogicalSize& container_content_size_in_child_writing_mode,
+      const LogicalSize& container_content_size_in_child_writing_mode,
       const base::Optional<LayoutUnit>& block_estimate,
       const NGAbsolutePhysicalPosition& node_position);
 

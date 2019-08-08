@@ -254,7 +254,7 @@ class AXSelectionDeserializer final {
 
  private:
   void HandleCharacterData(const AXObject& text_object) {
-    CharacterData* const node = ToCharacterData(text_object.GetNode());
+    auto* const node = To<CharacterData>(text_object.GetNode());
     Vector<int> base_offsets;
     Vector<int> extent_offsets;
     unsigned number_of_markers = 0;

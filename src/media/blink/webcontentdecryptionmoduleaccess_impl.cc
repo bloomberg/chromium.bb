@@ -92,8 +92,8 @@ void WebContentDecryptionModuleAccessImpl::CreateContentDecryptionModule(
                      cdm_config_, base::Passed(&result_copy)));
 }
 
-const CdmConfig& WebContentDecryptionModuleAccessImpl::GetCdmConfig() const {
-  return cdm_config_;
+bool WebContentDecryptionModuleAccessImpl::UseHardwareSecureCodecs() const {
+  return cdm_config_.use_hw_secure_codecs;
 }
 
 }  // namespace media

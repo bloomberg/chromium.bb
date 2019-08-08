@@ -13,29 +13,6 @@
 
 namespace blink {
 
-namespace {
-
-// Create the style to use for the ellipsis characters.
-//
-// The ellipsis is styled according to the line style.
-// https://drafts.csswg.org/css-ui/#ellipsing-details
-scoped_refptr<const ComputedStyle> CreateEllipsisStyle(
-    scoped_refptr<const ComputedStyle> line_style) {
-  if (line_style->TextDecorationsInEffect() == TextDecoration::kNone)
-    return line_style;
-
-  // Ellipsis should not have text decorations. Reset if it's set.
-  // This is not defined, but 4 impls do this.
-  scoped_refptr<ComputedStyle> ellipsis_style =
-      ComputedStyle::CreateAnonymousStyleWithDisplay(*line_style,
-                                                     EDisplay::kInline);
-  ellipsis_style->ResetTextDecoration();
-  ellipsis_style->ClearAppliedTextDecorations();
-  return ellipsis_style;
-}
-
-}  // namespace
-
 NGLineTruncator::NGLineTruncator(NGInlineNode& node,
                                  const NGLineInfo& line_info)
     : node_(node),
@@ -47,8 +24,9 @@ LayoutUnit NGLineTruncator::TruncateLine(
     LayoutUnit line_width,
     NGLineBoxFragmentBuilder::ChildList* line_box) {
   // Shape the ellipsis and compute its inline size.
-  scoped_refptr<const ComputedStyle> ellipsis_style =
-      CreateEllipsisStyle(line_style_);
+  // The ellipsis is styled according to the line style.
+  // https://drafts.csswg.org/css-ui/#ellipsing-details
+  const ComputedStyle* ellipsis_style = line_style_.get();
   const Font& font = ellipsis_style->GetFont();
   const SimpleFontData* font_data = font.PrimaryFont();
   DCHECK(font_data);
@@ -101,7 +79,7 @@ LayoutUnit NGLineTruncator::TruncateLine(
   NGTextFragmentBuilder builder(node_, line_style_->GetWritingMode());
   DCHECK(ellipsized_fragment->GetLayoutObject() &&
          ellipsized_fragment->GetLayoutObject()->IsInline());
-  builder.SetText(ellipsized_fragment->GetLayoutObject(), ellipsis_text,
+  builder.SetText(ellipsized_fragment->GetMutableLayoutObject(), ellipsis_text,
                   ellipsis_style, true /* is_ellipsis_style */,
                   std::move(ellipsis_shape_result));
   FontBaseline baseline_type = line_style_->GetFontBaseline();
@@ -109,7 +87,7 @@ LayoutUnit NGLineTruncator::TruncateLine(
                                        baseline_type);
   line_box->AddChild(
       builder.ToTextFragment(),
-      NGLogicalOffset{ellipsis_inline_offset, -ellipsis_metrics.ascent},
+      LogicalOffset{ellipsis_inline_offset, -ellipsis_metrics.ascent},
       ellipsis_width, 0);
   return std::max(ellipsis_inline_offset + ellipsis_width, line_width);
 }
@@ -121,10 +99,9 @@ void NGLineTruncator::HideChild(NGLineBoxFragmentBuilder::Child* child) {
   const NGPhysicalFragment* fragment = nullptr;
   if (const NGLayoutResult* layout_result = child->layout_result.get()) {
     // Need to propagate OOF descendants in this inline-block child.
-    if (!layout_result->OutOfFlowPositionedDescendants().IsEmpty()) {
+    if (layout_result->PhysicalFragment().HasOutOfFlowPositionedDescendants())
       return;
-    }
-    fragment = layout_result->PhysicalFragment();
+    fragment = &layout_result->PhysicalFragment();
   } else {
     fragment = child->fragment.get();
   }
@@ -211,6 +188,11 @@ bool NGLineTruncator::TruncateChild(LayoutUnit space_for_child,
   if (!child->fragment)
     return is_first_child;
   auto& fragment = To<NGPhysicalTextFragment>(*child->fragment);
+
+  // No need to truncate empty results.
+  if (!fragment.TextShapeResult())
+    return is_first_child;
+
   // TODO(layout-dev): Add support for OffsetToFit to ShapeResultView to avoid
   // this copy.
   scoped_refptr<blink::ShapeResult> shape_result =

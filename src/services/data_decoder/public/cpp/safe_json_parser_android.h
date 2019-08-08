@@ -15,8 +15,8 @@ namespace data_decoder {
 class SafeJsonParserAndroid : public SafeJsonParser {
  public:
   SafeJsonParserAndroid(const std::string& unsafe_json,
-                        const SuccessCallback& success_callback,
-                        const ErrorCallback& error_callback);
+                        SuccessCallback success_callback,
+                        ErrorCallback error_callback);
 
  private:
   friend std::default_delete<SafeJsonParserAndroid>;

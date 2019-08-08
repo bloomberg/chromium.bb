@@ -15,7 +15,6 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
@@ -24,7 +23,7 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/wm/core/window_util.h"
 
-using ash::mojom::WindowStateType;
+using ash::WindowStateType;
 
 namespace ash {
 namespace wm {
@@ -44,9 +43,9 @@ class AlwaysMaximizeTestState : public WindowState::State {
   void AttachState(WindowState* window_state,
                    WindowState::State* previous_state) override {
     // We always maximize.
-    if (state_type_ != mojom::WindowStateType::MAXIMIZED) {
+    if (state_type_ != WindowStateType::kMaximized) {
       window_state->Maximize();
-      state_type_ = mojom::WindowStateType::MAXIMIZED;
+      state_type_ = WindowStateType::kMaximized;
     }
   }
   void DetachState(WindowState* window_state) override {}
@@ -132,7 +131,7 @@ TEST_F(WindowStateTest, SnapWindowMinimumSize) {
   EXPECT_FALSE(window_state->CanSnap());
   delegate.set_maximum_size(gfx::Size());
   window->SetProperty(aura::client::kResizeBehaviorKey,
-                      ws::mojom::kResizeBehaviorCanResize);
+                      aura::client::kResizeBehaviorCanResize);
   // It should be possible to snap a window with a maximum size, if it
   // can be maximized.
   EXPECT_TRUE(window_state->CanSnap());
@@ -284,8 +283,8 @@ TEST_F(WindowStateTest, SnapModalWindowWithoutMaximumSizeLimit) {
   EXPECT_TRUE(window_state->CanSnap());
 
   window->SetProperty(aura::client::kResizeBehaviorKey,
-                      ws::mojom::kResizeBehaviorCanResize |
-                          ws::mojom::kResizeBehaviorCanMaximize);
+                      aura::client::kResizeBehaviorCanResize |
+                          aura::client::kResizeBehaviorCanMaximize);
   delegate.set_maximum_size(gfx::Size());
   EXPECT_TRUE(window_state->CanSnap());
 
@@ -296,7 +295,7 @@ TEST_F(WindowStateTest, SnapModalWindowWithoutMaximumSizeLimit) {
   EXPECT_TRUE(window_state->CanSnap());
 
   window->SetProperty(aura::client::kResizeBehaviorKey,
-                      ws::mojom::kResizeBehaviorCanResize);
+                      aura::client::kResizeBehaviorCanResize);
   EXPECT_TRUE(window_state->CanSnap());
 
   // It should be possible to snap a modal window without maximum size.
@@ -378,7 +377,7 @@ TEST_F(WindowStateTest, UpdateSnapWidthRatioTest) {
   WindowState* window_state = GetWindowState(window.get());
   const WMEvent cycle_snap_left(WM_EVENT_CYCLE_SNAP_LEFT);
   window_state->OnWMEvent(&cycle_snap_left);
-  EXPECT_EQ(mojom::WindowStateType::LEFT_SNAPPED, window_state->GetStateType());
+  EXPECT_EQ(WindowStateType::kLeftSnapped, window_state->GetStateType());
   gfx::Rect expected =
       gfx::Rect(kWorkAreaBounds.x(), kWorkAreaBounds.y(),
                 kWorkAreaBounds.width() / 2, kWorkAreaBounds.height());
@@ -395,18 +394,18 @@ TEST_F(WindowStateTest, UpdateSnapWidthRatioTest) {
   generator->ReleaseLeftButton();
   expected.set_width(expected.width() + kIncreasedWidth);
   EXPECT_EQ(expected, window->GetBoundsInScreen());
-  EXPECT_EQ(mojom::WindowStateType::LEFT_SNAPPED, window_state->GetStateType());
+  EXPECT_EQ(WindowStateType::kLeftSnapped, window_state->GetStateType());
   EXPECT_EQ(0.75f, *window_state->snapped_width_ratio());
 
   // Another cycle snap left event will restore window state to normal.
   window_state->OnWMEvent(&cycle_snap_left);
-  EXPECT_EQ(mojom::WindowStateType::NORMAL, window_state->GetStateType());
+  EXPECT_EQ(WindowStateType::kNormal, window_state->GetStateType());
   EXPECT_FALSE(window_state->snapped_width_ratio());
 
   // Another cycle snap left event will snap window and reset snapped width
   // ratio.
   window_state->OnWMEvent(&cycle_snap_left);
-  EXPECT_EQ(mojom::WindowStateType::LEFT_SNAPPED, window_state->GetStateType());
+  EXPECT_EQ(WindowStateType::kLeftSnapped, window_state->GetStateType());
   EXPECT_EQ(0.5f, *window_state->snapped_width_ratio());
 }
 
@@ -706,7 +705,7 @@ TEST_F(WindowStateTest,
   EXPECT_TRUE(window_state->IsMinimized());
 
   window_state->Unminimize();
-  EXPECT_TRUE(window_state->GetStateType() == mojom::WindowStateType::NORMAL);
+  EXPECT_TRUE(window_state->GetStateType() == WindowStateType::kNormal);
 }
 
 TEST_F(WindowStateTest, RestoreStateAfterEnterPipViaMinimizeAndDismissingPip) {
@@ -747,7 +746,7 @@ TEST_F(WindowStateTest, RestoreStateAfterEnterPipViaMinimizeAndDismissingPip) {
   EXPECT_TRUE(window_state->IsMinimized());
 
   window_state->Unminimize();
-  EXPECT_TRUE(window_state->GetStateType() == mojom::WindowStateType::NORMAL);
+  EXPECT_TRUE(window_state->GetStateType() == WindowStateType::kNormal);
 }
 
 TEST_F(WindowStateTest, SetBoundsUpdatesSizeOfPipRestoreBounds) {

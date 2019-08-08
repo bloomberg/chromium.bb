@@ -33,6 +33,7 @@ class NetworkStateHandler;
 class NetworkSmsHandler;
 class ProhibitedTechnologiesHandler;
 class UIProxyConfigService;
+class CellularMetricsLogger;
 
 // Class for handling initialization and access to chromeos network handlers.
 // This class should NOT be used in unit tests. Instead, construct individual
@@ -110,6 +111,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkHandler {
   std::unique_ptr<ProhibitedTechnologiesHandler>
       prohibited_technologies_handler_;
   std::unique_ptr<UIProxyConfigService> ui_proxy_config_service_;
+  std::unique_ptr<CellularMetricsLogger> cellular_metrics_logger_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkHandler);
 };

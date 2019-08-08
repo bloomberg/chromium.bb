@@ -121,6 +121,7 @@
 #include "third_party/blink/public/web/web_icon_url.h"
 #include "third_party/blink/public/web/web_input_element.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
+#include "third_party/blink/public/web/web_manifest_manager.h"
 #include "third_party/blink/public/web/web_media_player_action.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/public/web/web_node.h"
@@ -186,7 +187,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/page_scale_constraints_set.h"
 #include "third_party/blink/renderer/core/frame/pausable_script_executor.h"
-#include "third_party/blink/renderer/core/frame/pausable_task.h"
 #include "third_party/blink/renderer/core/frame/picture_in_picture_controller.h"
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_owner.h"
@@ -196,6 +196,7 @@
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
@@ -210,6 +211,7 @@
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/html/plugin_document.h"
 #include "third_party/blink/renderer/core/html/portal/document_portals.h"
+#include "third_party/blink/renderer/core/html/portal/dom_window_portal_host.h"
 #include "third_party/blink/renderer/core/html/portal/html_portal_element.h"
 #include "third_party/blink/renderer/core/html/portal/portal_host.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -226,7 +228,6 @@
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/loader/history_item.h"
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
-#include "third_party/blink/renderer/core/loader/navigation_scheduler.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/page/context_menu_controller.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
@@ -252,6 +253,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
@@ -719,6 +721,17 @@ WebLocalFrameImpl::ExecuteScriptInIsolatedWorldAndReturnValue(
       world_id, source_in, KURL(), SanitizeScriptErrors::kDoNotSanitize);
 }
 
+void WebLocalFrameImpl::ClearIsolatedWorldCSPForTesting(int world_id) {
+  if (!GetFrame())
+    return;
+  if (world_id <= DOMWrapperWorld::kMainWorldId ||
+      world_id >= DOMWrapperWorld::kDOMWrapperWorldEmbedderWorldIdLimit) {
+    return;
+  }
+
+  GetFrame()->GetDocument()->ClearIsolatedWorldCSPForTesting(world_id);
+}
+
 void WebLocalFrameImpl::SetIsolatedWorldInfo(int world_id,
                                              const WebIsolatedWorldInfo& info) {
   DCHECK(GetFrame());
@@ -736,12 +749,6 @@ void WebLocalFrameImpl::SetIsolatedWorldInfo(int world_id,
                                                     info.human_readable_name);
   IsolatedWorldCSP::Get().SetContentSecurityPolicy(
       world_id, info.content_security_policy, security_origin);
-}
-
-void WebLocalFrameImpl::AddMessageToConsole(const WebConsoleMessage& message) {
-  DCHECK(GetFrame());
-  GetFrame()->GetDocument()->AddConsoleMessage(
-      ConsoleMessage::CreateFromWebConsoleMessage(message, GetFrame()));
 }
 
 void WebLocalFrameImpl::Alert(const WebString& message) {
@@ -791,7 +798,7 @@ void WebLocalFrameImpl::RequestExecuteScriptAndReturnValue(
   DCHECK(GetFrame());
 
   scoped_refptr<DOMWrapperWorld> main_world = &DOMWrapperWorld::MainWorld();
-  PausableScriptExecutor* executor = PausableScriptExecutor::Create(
+  auto* executor = MakeGarbageCollected<PausableScriptExecutor>(
       GetFrame(), std::move(main_world), CreateSourcesVector(&source, 1),
       user_gesture, callback);
   executor->Run();
@@ -810,13 +817,6 @@ void WebLocalFrameImpl::RequestExecuteV8Function(
                                        callback);
 }
 
-void WebLocalFrameImpl::PostPausableTask(PausableTaskCallback callback) {
-  DCHECK(GetFrame());
-  Document* document = GetFrame()->GetDocument();
-  DCHECK(document);
-  PausableTask::Post(document, std::move(callback));
-}
-
 void WebLocalFrameImpl::RequestExecuteScriptInIsolatedWorld(
     int world_id,
     const WebScriptSource* sources_in,
@@ -830,7 +830,7 @@ void WebLocalFrameImpl::RequestExecuteScriptInIsolatedWorld(
 
   scoped_refptr<DOMWrapperWorld> isolated_world =
       DOMWrapperWorld::EnsureIsolatedWorld(ToIsolate(GetFrame()), world_id);
-  PausableScriptExecutor* executor = PausableScriptExecutor::Create(
+  auto* executor = MakeGarbageCollected<PausableScriptExecutor>(
       GetFrame(), std::move(isolated_world),
       CreateSourcesVector(sources_in, num_sources), user_gesture, callback);
   switch (option) {
@@ -886,10 +886,8 @@ void WebLocalFrameImpl::StartReload(WebFrameLoadType frame_load_type) {
   if (GetTextFinder())
     GetTextFinder()->ClearActiveFindMatch();
 
-  GetFrame()->Loader().StartNavigation(
-      FrameLoadRequest(nullptr, request, /*frame_name=*/AtomicString(),
-                       kCheckContentSecurityPolicy),
-      frame_load_type);
+  GetFrame()->Loader().StartNavigation(FrameLoadRequest(nullptr, request),
+                                       frame_load_type);
 }
 
 void WebLocalFrameImpl::ReloadImage(const WebNode& web_node) {
@@ -916,9 +914,7 @@ void WebLocalFrameImpl::StartNavigation(const WebURLRequest& request) {
     GetTextFinder()->ClearActiveFindMatch();
 
   GetFrame()->Loader().StartNavigation(
-      FrameLoadRequest(nullptr, request.ToResourceRequest(),
-                       /*frame_name=*/AtomicString(),
-                       kCheckContentSecurityPolicy),
+      FrameLoadRequest(nullptr, request.ToResourceRequest()),
       WebFrameLoadType::kStandard);
 }
 
@@ -932,12 +928,6 @@ void WebLocalFrameImpl::StopLoading() {
   // FIXME: Figure out what we should really do here. It seems like a bug
   // that FrameLoader::stopLoading doesn't call stopAllLoaders.
   GetFrame()->Loader().StopAllLoaders();
-}
-
-WebDocumentLoader* WebLocalFrameImpl::GetProvisionalDocumentLoader() const {
-  DCHECK(GetFrame());
-  return DocumentLoaderForDocLoader(
-      GetFrame()->Loader().GetProvisionalDocumentLoader());
 }
 
 WebDocumentLoader* WebLocalFrameImpl::GetDocumentLoader() const {
@@ -1622,19 +1612,6 @@ WebLocalFrame* WebLocalFrame::CreateProvisional(
       previous_frame, frame_policy);
 }
 
-WebLocalFrameImpl* WebLocalFrameImpl::Create(
-    WebTreeScopeType scope,
-    WebLocalFrameClient* client,
-    blink::InterfaceRegistry* interface_registry,
-    mojo::ScopedMessagePipeHandle document_interface_broker_handle,
-    WebFrame* opener) {
-  WebLocalFrameImpl* frame = MakeGarbageCollected<WebLocalFrameImpl>(
-      scope, client, interface_registry,
-      std::move(document_interface_broker_handle));
-  frame->SetOpener(opener);
-  return frame;
-}
-
 WebLocalFrameImpl* WebLocalFrameImpl::CreateMainFrame(
     WebView* web_view,
     WebLocalFrameClient* client,
@@ -1666,9 +1643,10 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
     WebFrame* previous_web_frame,
     const FramePolicy& frame_policy) {
   DCHECK(client);
-  WebLocalFrameImpl* web_frame = MakeGarbageCollected<WebLocalFrameImpl>(
-      previous_web_frame, client, interface_registry,
-      std::move(document_interface_broker_handle));
+  auto* web_frame = MakeGarbageCollected<WebLocalFrameImpl>(
+      previous_web_frame->InShadowTree() ? WebTreeScopeType::kShadow
+                                         : WebTreeScopeType::kDocument,
+      client, interface_registry, std::move(document_interface_broker_handle));
   Frame* previous_frame = ToCoreFrame(*previous_web_frame);
   web_frame->SetParent(previous_web_frame->Parent());
   web_frame->SetOpener(previous_web_frame->Opener());
@@ -1739,18 +1717,6 @@ WebLocalFrameImpl::WebLocalFrameImpl(
   client_->BindToFrame(this);
 }
 
-WebLocalFrameImpl::WebLocalFrameImpl(
-    WebFrame* previous_web_frame,
-    WebLocalFrameClient* client,
-    blink::InterfaceRegistry* interface_registry,
-    mojo::ScopedMessagePipeHandle document_interface_broker_handle)
-    : WebLocalFrameImpl(previous_web_frame->InShadowTree()
-                            ? WebTreeScopeType::kShadow
-                            : WebTreeScopeType::kDocument,
-                        client,
-                        interface_registry,
-                        std::move(document_interface_broker_handle)) {}
-
 WebLocalFrameImpl::~WebLocalFrameImpl() {
   // The widget for the frame, if any, must have already been closed.
   DCHECK(!frame_widget_);
@@ -1775,8 +1741,8 @@ void WebLocalFrameImpl::SetCoreFrame(LocalFrame* frame) {
 void WebLocalFrameImpl::InitializeCoreFrame(Page& page,
                                             FrameOwner* owner,
                                             const AtomicString& name) {
-  SetCoreFrame(LocalFrame::Create(local_frame_client_.Get(), page, owner,
-                                  interface_registry_));
+  SetCoreFrame(MakeGarbageCollected<LocalFrame>(local_frame_client_.Get(), page,
+                                                owner, interface_registry_));
   frame_->Tree().SetName(name);
   // We must call init() after frame_ is assigned because it is referenced
   // during init().
@@ -1833,8 +1799,9 @@ LocalFrame* WebLocalFrameImpl::CreateChildFrame(
 
 std::pair<RemoteFrame*, base::UnguessableToken> WebLocalFrameImpl::CreatePortal(
     HTMLPortalElement* portal,
-    mojom::blink::PortalAssociatedRequest request) {
-  auto pair = client_->CreatePortal(request.PassHandle());
+    mojom::blink::PortalAssociatedRequest request,
+    mojom::blink::PortalClientAssociatedPtrInfo client) {
+  auto pair = client_->CreatePortal(request.PassHandle(), client.PassHandle());
   WebRemoteFrameImpl* portal_frame = ToWebRemoteFrameImpl(pair.first);
   portal_frame->InitializeCoreFrame(*GetFrame()->GetPage(), portal,
                                     g_null_atom);
@@ -1934,20 +1901,25 @@ WebViewImpl* WebLocalFrameImpl::ViewImpl() const {
   return GetFrame()->GetPage()->GetChromeClient().GetWebView();
 }
 
-void WebLocalFrameImpl::DidFail(const ResourceError& error,
-                                bool was_provisional,
-                                WebHistoryCommitType web_commit_type) {
+void WebLocalFrameImpl::DidFailLoad(const ResourceError& error,
+                                    WebHistoryCommitType web_commit_type) {
   if (!Client())
     return;
   WebURLError web_error = error;
-
   if (WebPluginContainerImpl* plugin = GetFrame()->GetWebPluginContainer())
     plugin->DidFailLoading(error);
+  Client()->DidFailLoad(web_error, web_commit_type);
+}
 
-  if (was_provisional)
-    Client()->DidFailProvisionalLoad(web_error, web_commit_type);
-  else
-    Client()->DidFailLoad(web_error, web_commit_type);
+void WebLocalFrameImpl::DidFailProvisionalLoad(
+    const ResourceError& error,
+    const AtomicString& http_method) {
+  if (!Client())
+    return;
+  WebURLError web_error = error;
+  if (WebPluginContainerImpl* plugin = GetFrame()->GetWebPluginContainer())
+    plugin->DidFailLoading(error);
+  Client()->DidFailProvisionalLoad(web_error, http_method);
 }
 
 void WebLocalFrameImpl::DidFinish() {
@@ -2010,9 +1982,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::LocalRoot() {
 }
 
 WebFrame* WebLocalFrameImpl::FindFrameByName(const WebString& name) {
-  FrameLoadRequest request(nullptr, ResourceRequest(), name);
-  Frame* result = GetFrame()->Tree().FindFrameForNavigation(request).frame;
-  return WebFrame::FromFrame(result);
+  return WebFrame::FromFrame(GetFrame()->Tree().FindFrameByName(name));
 }
 
 bool WebLocalFrameImpl::ScrollTo(const gfx::Point& scrollPosition,
@@ -2067,7 +2037,7 @@ blink::mojom::CommitResult WebLocalFrameImpl::CommitSameDocumentNavigation(
   DCHECK(!url.ProtocolIs("javascript"));
 
   HistoryItem* history_item = item;
-  return GetFrame()->Loader().CommitSameDocumentNavigation(
+  return GetFrame()->Loader().GetDocumentLoader()->CommitSameDocumentNavigation(
       url, web_frame_load_type, history_item,
       is_client_redirect ? ClientRedirectPolicy::kClientRedirect
                          : ClientRedirectPolicy::kNotClientRedirect,
@@ -2078,42 +2048,17 @@ blink::mojom::CommitResult WebLocalFrameImpl::CommitSameDocumentNavigation(
 
 void WebLocalFrameImpl::LoadJavaScriptURL(const WebURL& url) {
   DCHECK(GetFrame());
-  // This is copied from ScriptController::executeScriptIfJavaScriptURL.
-  // Unfortunately, we cannot just use that method since it is private, and
-  // it also doesn't quite behave as we require it to for bookmarklets. The
-  // key difference is that we need to suppress loading the string result
-  // from evaluating the JS URL if executing the JS URL resulted in a
-  // location change. We also allow a JS URL to be loaded even if scripts on
-  // the page are otherwise disabled.
-
-  Document* owner_document = GetFrame()->GetDocument();
-
-  if (!owner_document || !GetFrame()->GetPage())
-    return;
-
   // Protect privileged pages against bookmarklets and other javascript
   // manipulations.
   if (SchemeRegistry::ShouldTreatURLSchemeAsNotAllowingJavascriptURLs(
-          owner_document->Url().Protocol()))
+          GetFrame()->GetDocument()->Url().Protocol()))
     return;
 
-  String script = DecodeURLEscapeSequences(
-      static_cast<const KURL&>(url).GetString().Substring(
-          strlen("javascript:")),
-      DecodeURLMode::kUTF8OrIsomorphic);
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
       LocalFrame::NotifyUserActivation(GetFrame(),
                                        UserGestureToken::kNewGesture);
-  v8::HandleScope handle_scope(ToIsolate(GetFrame()));
-  v8::Local<v8::Value> result =
-      GetFrame()->GetScriptController().ExecuteScriptInMainWorldAndReturnValue(
-          ScriptSourceCode(script, ScriptSourceLocationType::kJavascriptUrl),
-          KURL(), SanitizeScriptErrors::kSanitize);
-  if (result.IsEmpty() || !result->IsString())
-    return;
-  String script_result = ToCoreString(v8::Local<v8::String>::Cast(result));
-  GetFrame()->Loader().ReplaceDocumentWhileExecutingJavaScriptURL(
-      script_result, owner_document);
+  GetFrame()->GetScriptController().ExecuteJavaScriptURL(
+      url, kDoNotCheckContentSecurityPolicy);
 }
 
 WebNavigationControl::FallbackContentResult
@@ -2123,14 +2068,8 @@ WebLocalFrameImpl::MaybeRenderFallbackContent(const WebURLError& error) const {
   if (!GetFrame()->Owner() || !GetFrame()->Owner()->CanRenderFallbackContent())
     return NoFallbackContent;
 
-  // GetProvisionalDocumentLoader() can be null if a navigation started and
-  // completed (e.g. about:blank) while waiting for the navigation that wants
-  // to show fallback content.
-  if (!GetFrame()->Loader().GetProvisionalDocumentLoader())
-    return NoLoadInProgress;
-
-  GetFrame()->Loader().GetProvisionalDocumentLoader()->LoadFailed(error);
-  return FallbackRendered;
+  return GetFrame()->Loader().MaybeRenderFallbackContent() ? FallbackRendered
+                                                           : NoLoadInProgress;
 }
 
 void WebLocalFrameImpl::RenderFallbackContent() const {
@@ -2186,8 +2125,10 @@ bool WebLocalFrameImpl::IsLoading() const {
 
 bool WebLocalFrameImpl::IsNavigationScheduledWithin(
     double interval_in_seconds) const {
-  return GetFrame() &&
-         GetFrame()->GetNavigationScheduler().IsNavigationScheduledWithin(
+  if (!GetFrame())
+    return false;
+  return GetFrame()->Loader().HasProvisionalNavigation() ||
+         GetFrame()->GetDocument()->IsHttpRefreshScheduledWithin(
              interval_in_seconds);
 }
 
@@ -2235,22 +2176,25 @@ void WebLocalFrameImpl::MixedContentFound(
       was_allowed, had_redirect, std::move(source));
 }
 
-void WebLocalFrameImpl::ClientDroppedNavigation() {
-  DCHECK(GetFrame());
-  GetFrame()->Loader().ClientDroppedNavigation();
+void WebLocalFrameImpl::DidDropNavigation() {
+  GetFrame()->Loader().DidDropNavigation();
 }
 
 void WebLocalFrameImpl::MarkAsLoading() {
   GetFrame()->Loader().MarkAsLoading();
 }
 
-bool WebLocalFrameImpl::CreatePlaceholderDocumentLoader(
+bool WebLocalFrameImpl::IsClientNavigationInitialHistoryLoad() {
+  return GetFrame()->Loader().IsClientNavigationInitialHistoryLoad();
+}
+
+bool WebLocalFrameImpl::WillStartNavigation(
     const WebNavigationInfo& info,
-    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
+    bool is_history_navigation_in_new_child_frame) {
   DCHECK(!info.url_request.IsNull());
   DCHECK(!info.url_request.Url().ProtocolIs("javascript"));
-  return GetFrame()->Loader().CreatePlaceholderDocumentLoader(
-      info, std::move(extra_data));
+  return GetFrame()->Loader().WillStartNavigation(
+      info, is_history_navigation_in_new_child_frame);
 }
 
 void WebLocalFrameImpl::SendOrientationChangeEvent() {
@@ -2529,6 +2473,17 @@ void WebLocalFrameImpl::AdvanceFocusInForm(WebFocusType focus_type) {
   next_element->focus();
 }
 
+bool WebLocalFrameImpl::CanFocusedFieldBeAutofilled() const {
+  DCHECK(GetFrame()->GetDocument());
+  auto* focused_form_control_element = ToHTMLFormControlElementOrNull(
+      GetFrame()->GetDocument()->FocusedElement());
+
+  if (!focused_form_control_element)
+    return false;
+
+  return autofill_client_->HasFillData(focused_form_control_element);
+}
+
 void WebLocalFrameImpl::PerformMediaPlayerAction(
     const WebPoint& location,
     const WebMediaPlayerAction& action) {
@@ -2559,7 +2514,9 @@ void WebLocalFrameImpl::PerformMediaPlayerAction(
       DCHECK(media_element->IsHTMLVideoElement());
       if (action.enable) {
         PictureInPictureController::From(node->GetDocument())
-            .EnterPictureInPicture(ToHTMLVideoElement(media_element), nullptr);
+            .EnterPictureInPicture(ToHTMLVideoElement(media_element),
+                                   nullptr /* promise */,
+                                   nullptr /* options */);
       } else {
         PictureInPictureController::From(node->GetDocument())
             .ExitPictureInPicture(ToHTMLVideoElement(media_element), nullptr);
@@ -2571,11 +2528,13 @@ void WebLocalFrameImpl::PerformMediaPlayerAction(
 void WebLocalFrameImpl::OnPortalActivated(
     const base::UnguessableToken& portal_token,
     mojo::ScopedInterfaceEndpointHandle portal_pipe,
+    mojo::ScopedInterfaceEndpointHandle portal_client_pipe,
     TransferableMessage data,
     OnPortalActivatedCallback callback) {
-  GetFrame()->GetPage()->SetInsidePortal(false);
-
   LocalDOMWindow* window = GetFrame()->DomWindow();
+
+  DOMWindowPortalHost::portalHost(*window)->OnPortalActivated();
+  GetFrame()->GetPage()->SetInsidePortal(false);
 
   auto blink_data = ToBlinkTransferableMessage(std::move(data));
   DCHECK(!blink_data.locked_agent_cluster_id)
@@ -2588,6 +2547,8 @@ void WebLocalFrameImpl::OnPortalActivated(
       frame_.Get(), portal_token,
       mojom::blink::PortalAssociatedPtr(mojom::blink::PortalAssociatedPtrInfo(
           std::move(portal_pipe), mojom::blink::Portal::Version_)),
+      mojom::blink::PortalClientAssociatedRequest(
+          std::move(portal_client_pipe)),
       std::move(blink_data.message), ports, std::move(callback));
 
   ThreadDebugger* debugger = MainThreadDebugger::Instance();
@@ -2599,7 +2560,7 @@ void WebLocalFrameImpl::OnPortalActivated(
   event->DetachPortalIfNotAdopted();
 }
 
-void WebLocalFrameImpl::ForwardMessageToPortalHost(
+void WebLocalFrameImpl::ForwardMessageFromHost(
     TransferableMessage message,
     const WebSecurityOrigin& source_origin,
     const base::Optional<WebSecurityOrigin>& target_origin) {
@@ -2610,6 +2571,15 @@ void WebLocalFrameImpl::ForwardMessageToPortalHost(
   PortalHost::From(*(GetFrame()->DomWindow()))
       .ReceiveMessage(ToBlinkTransferableMessage(std::move(message)),
                       source_origin, target);
+}
+
+void WebLocalFrameImpl::AddMessageToConsoleImpl(
+    const WebConsoleMessage& message,
+    bool discard_duplicates) {
+  DCHECK(GetFrame());
+  GetFrame()->GetDocument()->AddConsoleMessage(
+      ConsoleMessage::CreateFromWebConsoleMessage(message, GetFrame()),
+      discard_duplicates);
 }
 
 void WebLocalFrameImpl::SetTextCheckClient(
@@ -2665,6 +2635,16 @@ void WebLocalFrameImpl::BindDevToolsAgent(
 void WebLocalFrameImpl::SetLifecycleState(mojom::FrameLifecycleState state) {
   DCHECK(GetFrame());
   GetFrame()->SetLifecycleState(state);
+}
+
+void WebLocalFrameImpl::WasHidden() {
+  if (frame_)
+    frame_->WasHidden();
+}
+
+void WebLocalFrameImpl::WasShown() {
+  if (frame_)
+    frame_->WasShown();
 }
 
 }  // namespace blink

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/containers/circular_deque.h"
 #include "base/guid.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/pdf_util.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
@@ -47,6 +49,7 @@
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+#include "url/url_constants.h"
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
 #endif
@@ -199,13 +202,11 @@ class ChromeMimeHandlerViewCrossProcessTest
   void SetUpCommandLine(base::CommandLine* cl) override {
     ChromeMimeHandlerViewTestBase::SetUpCommandLine(cl);
     is_cross_process_mode_ = GetParam();
-    // TODO(ekaramad): All these tests started timing out on ChromeOS (https://
-    // crbug.com/949565).
-#if defined(OS_CHROMEOS)
-    is_cross_process_mode_ = false;
-#endif
     if (is_cross_process_mode_) {
       scoped_feature_list_.InitAndEnableFeature(
+          features::kMimeHandlerViewInCrossProcessFrame);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
           features::kMimeHandlerViewInCrossProcessFrame);
     }
   }
@@ -226,7 +227,17 @@ class ChromeMimeHandlerViewCrossProcessTest
 // not be moved to extensions/browser/guest_view/mime_handler_view due to chrome
 // layer dependencies.
 class ChromeMimeHandlerViewBrowserPluginTest
-    : public ChromeMimeHandlerViewTestBase {};
+    : public ChromeMimeHandlerViewTestBase {
+ public:
+  void SetUpCommandLine(base::CommandLine* cl) override {
+    ChromeMimeHandlerViewTestBase::SetUpCommandLine(cl);
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kMimeHandlerViewInCrossProcessFrame);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
 
 // Helper class to monitor focus on a WebContents with BrowserPlugin (guest).
 class FocusChangeWaiter {
@@ -297,6 +308,33 @@ IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewBrowserPluginTest,
                                      std::move(callback));
 }
 
+IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewBrowserPluginTest,
+                       UnderChildFrame) {
+  // Create this frame tree structure.
+  // main_frame_node
+  //   |
+  // middle_node -> is child of |main_frame_node|
+  //   |
+  // mime_node  -> is inner web contents of |middle_node|
+  InitializeTestPage(
+      embedded_test_server()->GetURL("/find_in_page_one_frame.html"));
+  int ordinal;
+  EXPECT_EQ(2, ui_test_utils::FindInPage(embedder_web_contents(),
+                                         base::ASCIIToUTF16("two"), true, true,
+                                         &ordinal, nullptr));
+  EXPECT_EQ(1, ordinal);
+  // Go to next result.
+  EXPECT_EQ(2, ui_test_utils::FindInPage(embedder_web_contents(),
+                                         base::ASCIIToUTF16("two"), true, true,
+                                         &ordinal, nullptr));
+  EXPECT_EQ(2, ordinal);
+  // Go to next result, should wrap back to #1.
+  EXPECT_EQ(2, ui_test_utils::FindInPage(embedder_web_contents(),
+                                         base::ASCIIToUTF16("two"), true, true,
+                                         &ordinal, nullptr));
+  EXPECT_EQ(1, ordinal);
+}
+
 // Flaky under MSan: https://crbug.com/837757
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_BP_AutoResizeMessages DISABLED_AutoResizeMessages
@@ -357,21 +395,19 @@ IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewBrowserPluginTest,
   ASSERT_TRUE(widget->GetRootView());
 
   // Find WebView corresponding to embedder_web_contents().
+  const std::string kWebViewClassName = views::WebView::kViewClassName;
   views::View* aura_webview = nullptr;
-  base::queue<views::View*> queue;
-  queue.push(widget->GetRootView());
-  while (!queue.empty()) {
-    views::View* current = queue.front();
-    queue.pop();
-    if (std::string(current->GetClassName()).find("WebView") !=
-            std::string::npos &&
+  for (base::circular_deque<views::View*> deque = {widget->GetRootView()};
+       !deque.empty(); deque.pop_front()) {
+    views::View* current = deque.front();
+    if (current->GetClassName() == kWebViewClassName &&
         static_cast<views::WebView*>(current)->GetWebContents() ==
             embedder_web_contents()) {
       aura_webview = current;
       break;
     }
-    for (int i = 0; i < current->child_count(); ++i)
-      queue.push(current->child_at(i));
+    const auto& children = current->children();
+    deque.insert(deque.end(), children.cbegin(), children.cend());
   }
   ASSERT_TRUE(aura_webview);
   gfx::Rect bounds(aura_webview->bounds());
@@ -541,13 +577,16 @@ IN_PROC_BROWSER_TEST_P(ChromeMimeHandlerViewCrossProcessTest,
   InitializeTestPage(page_url);
   EXPECT_TRUE(ExecJs(embedder_web_contents(), "sendMessages();"));
   const std::vector<std::pair<extensions::MimeHandlerViewUMATypes::Type, int>>
-      kTestCases = {{UMAType::kDidCreateMimeHandlerViewContainerBase, 1},
-                    {UMAType::kDidLoadExtension, 1},
-                    {UMAType::kAccessibleInvalid, 1},
-                    {UMAType::kAccessibleSelectAll, 1},
-                    {UMAType::kAccessibleGetSelectedText, 1},
-                    {UMAType::kAccessiblePrint, 2},
-                    {UMAType::kPostMessageToEmbeddedMimeHandlerView, 5}};
+      kTestCases = {
+          {(GetParam() ? UMAType::kCreateFrameContainer
+                       : UMAType::kDidCreateMimeHandlerViewContainerBase),
+           1},
+          {UMAType::kDidLoadExtension, 1},
+          {UMAType::kAccessibleInvalid, 1},
+          {UMAType::kAccessibleSelectAll, 1},
+          {UMAType::kAccessibleGetSelectedText, 1},
+          {UMAType::kAccessiblePrint, 2},
+          {UMAType::kPostMessageToEmbeddedMimeHandlerView, 5}};
   base::HistogramTester histogram_tester;
   SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
   for (const auto& pair : kTestCases) {
@@ -565,19 +604,59 @@ IN_PROC_BROWSER_TEST_P(ChromeMimeHandlerViewCrossProcessTest,
   InitializeTestPage(page_url);
   EXPECT_TRUE(ExecJs(embedder_web_contents(), "sendMessages();"));
   const std::vector<std::pair<extensions::MimeHandlerViewUMATypes::Type, int>>
-      kTestCases = {{UMAType::kDidCreateMimeHandlerViewContainerBase, 1},
-                    {UMAType::kDidLoadExtension, 1},
-                    {UMAType::kInaccessibleInvalid, 1},
-                    {UMAType::kInaccessibleSelectAll, 1},
-                    {UMAType::kInaccessibleGetSelectedText, 1},
-                    {UMAType::kInaccessiblePrint, 2},
-                    {UMAType::kPostMessageToEmbeddedMimeHandlerView, 5}};
+      kTestCases = {
+          {(GetParam() ? UMAType::kCreateFrameContainer
+                       : UMAType::kDidCreateMimeHandlerViewContainerBase),
+           1},
+          {UMAType::kDidLoadExtension, 1},
+          {UMAType::kInaccessibleInvalid, 1},
+          {UMAType::kInaccessibleSelectAll, 1},
+          {UMAType::kInaccessibleGetSelectedText, 1},
+          {UMAType::kInaccessiblePrint, 2},
+          {UMAType::kPostMessageToEmbeddedMimeHandlerView, 5}};
   base::HistogramTester histogram_tester;
   SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
   for (const auto& pair : kTestCases) {
     histogram_tester.ExpectBucketCount(
         extensions::MimeHandlerViewUMATypes::kUMAName, pair.first, pair.second);
   }
+}
+
+IN_PROC_BROWSER_TEST_P(ChromeMimeHandlerViewCrossProcessTest,
+                       UMAPDFLoadStatsFullPage) {
+  base::HistogramTester histogram_tester;
+  GURL data_url("data:application/pdf,foo");
+  ui_test_utils::NavigateToURL(browser(), data_url);
+  auto* guest = GetGuestViewManager()->WaitForSingleGuestCreated();
+  while (guest->IsLoading()) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+  }
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  histogram_tester.ExpectBucketCount(
+      "PDF.LoadStatus", PDFLoadStatus::kLoadedFullPagePdfWithPdfium, 1);
+}
+
+IN_PROC_BROWSER_TEST_P(ChromeMimeHandlerViewCrossProcessTest,
+                       UMAPDFLoadStatsEmbedded) {
+  base::HistogramTester histogram_tester;
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  ASSERT_TRUE(content::ExecJs(
+      browser()->tab_strip_model()->GetWebContentsAt(0),
+      "document.write('<iframe></iframe>');"
+      "document.querySelector('iframe').src = 'data:application/pdf, foo';"));
+  auto* guest = GetGuestViewManager()->WaitForSingleGuestCreated();
+  while (guest->IsLoading()) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+  }
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  histogram_tester.ExpectBucketCount(
+      "PDF.LoadStatus", PDFLoadStatus::kLoadedEmbeddedPdfWithPdfium, 1);
 }
 
 INSTANTIATE_TEST_SUITE_P(,

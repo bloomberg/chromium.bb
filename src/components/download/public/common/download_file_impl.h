@@ -84,6 +84,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
       const std::string& mime_type,
       const RenameCompletionCallback& callback) override;
   void PublishDownload(const RenameCompletionCallback& callback) override;
+  base::FilePath GetDisplayName() override;
 #endif  // defined(OS_ANDROID)
 
   // Wrapper of a ByteStreamReader or ScopedDataPipeConsumerHandle, and the meta
@@ -98,17 +99,19 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
    public:
     SourceStream(int64_t offset,
                  int64_t length,
+                 int64_t starting_file_write_offset,
                  std::unique_ptr<InputStream> stream);
     ~SourceStream();
 
     void Initialize();
 
-    // Called after successfully writing a buffer to disk.
-    void OnWriteBytesToDisk(int64_t bytes_write);
+    // Called after successfully reading and writing a buffer from stream.
+    void OnBytesConsumed(int64_t bytes_read, int64_t bytes_written);
 
     // Given a data block that is already written, truncate the length of this
-    // object to avoid overwriting that block.
-    void TruncateLengthWithWrittenDataBlock(int64_t offset,
+    // object to avoid overwriting that block. Data used for validation purpose
+    // will not be truncated.
+    void TruncateLengthWithWrittenDataBlock(int64_t received_slice_offset,
                                             int64_t bytes_written);
 
     // Registers the callback that will be called when data is ready.
@@ -135,8 +138,15 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
     InputStream::StreamState Read(scoped_refptr<net::IOBuffer>* data,
                                   size_t* length);
 
+    // Returning the remaining bytes to validate.
+    size_t GetRemainingBytesToValidate();
+
     int64_t offset() const { return offset_; }
     int64_t length() const { return length_; }
+    int64_t starting_file_write_offset() const {
+      return starting_file_write_offset_;
+    }
+    int64_t bytes_read() const { return bytes_read_; }
     int64_t bytes_written() const { return bytes_written_; }
     bool is_finished() const { return finished_; }
     void set_finished(bool finish) { finished_ = finish; }
@@ -144,15 +154,24 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
     void set_index(size_t index) { index_ = index; }
 
    private:
-    // Starting position for the stream to write to disk.
+    // Starting position of the stream, this is from the network response.
     int64_t offset_;
 
     // The maximum length to write to the disk. If set to 0, keep writing until
     // the stream depletes.
     int64_t length_;
 
-    // Number of bytes written to disk from the stream.
-    // Next write position is (|offset_| + |bytes_written_|).
+    // All the data received before this offset are used for validation purpose
+    // and will not be written to disk. This value should always be no less than
+    // |offset_|.
+    int64_t starting_file_write_offset_;
+
+    // Number of bytes read from the stream.
+    // Next read position is (|offset_| + |bytes_read_|).
+    int64_t bytes_read_;
+
+    // Number of bytes written to the disk. This does not include the bytes used
+    // for validation.
     int64_t bytes_written_;
 
     // If all the data read from the stream has been successfully written to
@@ -171,11 +190,13 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
 
  protected:
   // For test class overrides.
-  // Write data from the offset to the file.
-  // On OS level, it will seek to the |offset| and write from there.
-  virtual DownloadInterruptReason WriteDataToFile(int64_t offset,
-                                                  const char* data,
-                                                  size_t data_len);
+  // Validate the first |bytes_to_validate| bytes and write the next
+  // |bytes_to_write| bytes of data from the offset to the file.
+  virtual DownloadInterruptReason ValidateAndWriteDataToFile(
+      int64_t offset,
+      const char* data,
+      size_t bytes_to_validate,
+      size_t bytes_to_write);
 
   virtual base::TimeDelta GetRetryDelayForFailedRename(int attempt_number);
 
@@ -186,11 +207,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
 
  private:
   friend class DownloadFileTest;
-
-  DownloadFileImpl(std::unique_ptr<DownloadSaveInfo> save_info,
-                   const base::FilePath& default_downloads_directory,
-                   uint32_t download_id,
-                   base::WeakPtr<DownloadDestinationObserver> observer);
 
   // Options for RenameWithRetryInternal.
   enum RenameOption {
@@ -236,13 +252,14 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
   void WillWriteToDisk(size_t data_len);
 
   // For a given SourceStream object and the bytes available to write, determine
-  // the actual number of bytes it can write to the disk. For parallel
-  // downloading, if the first disk IO writes to a location that is already
-  // written by another stream, the current stream should stop writing. Returns
-  // true if the stream can write no more data and should be finished, returns
-  // false otherwise.
+  // the number of bytes to validate and the number of bytes it can write to the
+  // disk. For parallel downloading, if the first disk IO writes to a location
+  // that is already written by another stream, the current stream should stop
+  // writing. Returns true if the stream can write no more data and should be
+  // finished, returns false otherwise.
   bool CalculateBytesToWrite(SourceStream* source_stream,
                              size_t bytes_available_to_write,
+                             size_t* bytes_to_validate,
                              size_t* bytes_to_write);
 
   // Called when a new SourceStream object is added.
@@ -345,6 +362,10 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
 
   // TaskRunner to post updates to the |observer_|.
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+
+#if defined(OS_ANDROID)
+  base::FilePath display_name_;
+#endif  // defined(OS_ANDROID)
 
   SEQUENCE_CHECKER(sequence_checker_);
 

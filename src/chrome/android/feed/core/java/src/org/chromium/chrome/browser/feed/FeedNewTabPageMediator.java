@@ -10,9 +10,9 @@ import android.support.annotation.Nullable;
 import android.view.View;
 import android.widget.ScrollView;
 
-import com.google.android.libraries.feed.api.stream.ContentChangedListener;
-import com.google.android.libraries.feed.api.stream.ScrollListener;
-import com.google.android.libraries.feed.api.stream.Stream;
+import com.google.android.libraries.feed.api.client.stream.Stream;
+import com.google.android.libraries.feed.api.client.stream.Stream.ContentChangedListener;
+import com.google.android.libraries.feed.api.client.stream.Stream.ScrollListener;
 
 import org.chromium.base.MemoryPressureListener;
 import org.chromium.base.VisibleForTesting;

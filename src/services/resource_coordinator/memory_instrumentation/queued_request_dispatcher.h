@@ -7,6 +7,8 @@
 
 #include <map>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/containers/flat_map.h"
 #include "base/trace_event/memory_dump_request_args.h"
@@ -37,12 +39,15 @@ class QueuedRequestDispatcher {
   struct ClientInfo {
     ClientInfo(mojom::ClientProcess* client,
                base::ProcessId pid,
-               mojom::ProcessType process_type);
+               mojom::ProcessType process_type,
+               std::vector<std::string> service_names);
+    ClientInfo(ClientInfo&& other);
     ~ClientInfo();
 
     mojom::ClientProcess* client;
     const base::ProcessId pid;
     const mojom::ProcessType process_type;
+    std::vector<std::string> service_names;
   };
 
   // Sets up the parameters of the queued |request| using |clients| and then

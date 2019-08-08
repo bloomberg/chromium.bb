@@ -33,7 +33,7 @@ size_t GetReceivedFlowControlWindow(QuicSession* session) {
     return session->config()->ReceivedInitialStreamFlowControlWindowBytes();
   }
 
-  return kMinimumFlowControlSendWindow;
+  return kDefaultFlowControlSendWindow;
 }
 
 }  // namespace
@@ -58,8 +58,8 @@ PendingStream::PendingStream(QuicStreamId id, QuicSession* session)
       sequencer_(this) {}
 
 void PendingStream::OnDataAvailable() {
-  QUIC_BUG << "OnDataAvailable should not be called.";
-  CloseConnectionWithDetails(QUIC_INTERNAL_ERROR, "Unexpected data available");
+  // It will be called when pending stream receives its first byte. But this
+  // call should simply be ignored so that data remains in sequencer.
 }
 
 void PendingStream::OnFinRead() {
@@ -68,8 +68,9 @@ void PendingStream::OnFinRead() {
 }
 
 void PendingStream::AddBytesConsumed(QuicByteCount bytes) {
-  QUIC_BUG << "AddBytesConsumed should not be called.";
-  CloseConnectionWithDetails(QUIC_INTERNAL_ERROR, "Unexpected bytes consumed");
+  // It will be called when the metadata of the stream is consumed.
+  flow_controller_.AddBytesConsumed(bytes);
+  connection_flow_controller_->AddBytesConsumed(bytes);
 }
 
 void PendingStream::Reset(QuicRstStreamErrorCode error) {
@@ -92,7 +93,6 @@ const QuicSocketAddress& PendingStream::PeerAddressOfLatestPacket() const {
 
 void PendingStream::OnStreamFrame(const QuicStreamFrame& frame) {
   DCHECK_EQ(frame.stream_id, id_);
-  DCHECK_NE(0u, frame.offset);
 
   bool is_stream_too_long =
       (frame.offset > kMaxStreamLength) ||
@@ -169,11 +169,15 @@ bool PendingStream::MaybeIncreaseHighestReceivedOffset(
   return true;
 }
 
-QuicStream::QuicStream(PendingStream pending, StreamType type)
+void PendingStream::MarkConsumed(size_t num_bytes) {
+  sequencer_.MarkConsumed(num_bytes);
+}
+
+QuicStream::QuicStream(PendingStream pending, StreamType type, bool is_static)
     : QuicStream(pending.id_,
                  pending.session_,
                  std::move(pending.sequencer_),
-                 /*is_static=*/false,
+                 is_static,
                  type,
                  pending.stream_bytes_read_,
                  pending.fin_received_,
@@ -181,6 +185,30 @@ QuicStream::QuicStream(PendingStream pending, StreamType type)
                  pending.connection_flow_controller_) {
   sequencer_.set_stream(this);
 }
+
+namespace {
+
+QuicOptional<QuicFlowController> FlowController(QuicStreamId id,
+                                                QuicSession* session,
+                                                StreamType type) {
+  if (type == CRYPTO) {
+    // The only QuicStream with a StreamType of CRYPTO is QuicCryptoStream, when
+    // it is using crypto frames instead of stream frames. The QuicCryptoStream
+    // doesn't have any flow control in that case, so we don't create a
+    // QuicFlowController for it.
+    return QuicOptional<QuicFlowController>();
+  }
+  return QuicFlowController(
+      session, id,
+      /*is_connection_flow_controller*/ false,
+      GetReceivedFlowControlWindow(session),
+      GetInitialStreamFlowControlWindowToSend(session),
+      kStreamReceiveWindowLimit,
+      session->flow_controller()->auto_tune_receive_window(),
+      session->flow_controller());
+}
+
+}  // namespace
 
 QuicStream::QuicStream(QuicStreamId id,
                        QuicSession* session,
@@ -193,15 +221,7 @@ QuicStream::QuicStream(QuicStreamId id,
                  type,
                  0,
                  false,
-                 QuicFlowController(
-                     session,
-                     id,
-                     /*is_connection_flow_controller*/ false,
-                     GetReceivedFlowControlWindow(session),
-                     GetInitialStreamFlowControlWindowToSend(session),
-                     kStreamReceiveWindowLimit,
-                     session->flow_controller()->auto_tune_receive_window(),
-                     session->flow_controller()),
+                 FlowController(id, session, type),
                  session->flow_controller()) {}
 
 QuicStream::QuicStream(QuicStreamId id,
@@ -211,7 +231,7 @@ QuicStream::QuicStream(QuicStreamId id,
                        StreamType type,
                        uint64_t stream_bytes_read,
                        bool fin_received,
-                       QuicFlowController flow_controller,
+                       QuicOptional<QuicFlowController> flow_controller,
                        QuicFlowController* connection_flow_controller)
     : sequencer_(std::move(sequencer)),
       id_(id),
@@ -240,7 +260,8 @@ QuicStream::QuicStream(QuicStreamId id,
       buffered_data_threshold_(GetQuicFlag(FLAGS_quic_buffered_data_threshold)),
       is_static_(is_static),
       deadline_(QuicTime::Zero()),
-      type_(session->connection()->transport_version() == QUIC_VERSION_99
+      type_(session->connection()->transport_version() == QUIC_VERSION_99 &&
+                    type != CRYPTO
                 ? QuicUtils::GetStreamType(id_,
                                            perspective_,
                                            session->IsIncomingStream(id_))
@@ -253,7 +274,9 @@ QuicStream::QuicStream(QuicStreamId id,
     CloseWriteSide();
   }
   SetFromConfig();
-  session_->RegisterStreamPriority(id, is_static_, priority_);
+  if (type_ != CRYPTO) {
+    session_->RegisterStreamPriority(id, is_static_, priority_);
+  }
 }
 
 QuicStream::~QuicStream() {
@@ -264,7 +287,7 @@ QuicStream::~QuicStream() {
         << send_buffer_.stream_bytes_outstanding()
         << ", fin_outstanding: " << fin_outstanding_;
   }
-  if (session_ != nullptr) {
+  if (session_ != nullptr && type_ != CRYPTO) {
     session_->UnregisterStreamPriority(id(), is_static_);
   }
 }
@@ -324,7 +347,7 @@ void QuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
       MaybeIncreaseHighestReceivedOffset(frame.offset + frame_payload_size)) {
     // As the highest received offset has changed, check to see if this is a
     // violation of flow control.
-    if (flow_controller_.FlowControlViolation() ||
+    if (flow_controller_->FlowControlViolation() ||
         connection_flow_controller_->FlowControlViolation()) {
       CloseConnectionWithDetails(
           QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA,
@@ -353,7 +376,7 @@ void QuicStream::OnStreamReset(const QuicRstStreamFrame& frame) {
     return;
   }
   MaybeIncreaseHighestReceivedOffset(frame.byte_offset);
-  if (flow_controller_.FlowControlViolation() ||
+  if (flow_controller_->FlowControlViolation() ||
       connection_flow_controller_->FlowControlViolation()) {
     CloseConnectionWithDetails(
         QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA,
@@ -494,7 +517,7 @@ void QuicStream::OnCanWrite() {
 }
 
 void QuicStream::MaybeSendBlocked() {
-  if (flow_controller_.ShouldSendBlocked()) {
+  if (flow_controller_->ShouldSendBlocked()) {
     session_->SendBlocked(id_);
   }
   if (!stream_contributes_to_connection_flow_control_) {
@@ -508,7 +531,7 @@ void QuicStream::MaybeSendBlocked() {
   // the stream will be given a chance to write when a connection-level
   // WINDOW_UPDATE arrives.
   if (connection_flow_controller_->IsBlocked() &&
-      !flow_controller_.IsBlocked()) {
+      !flow_controller_->IsBlocked()) {
     session_->MarkConnectionLevelWriteBlocked(id());
   }
 }
@@ -708,7 +731,7 @@ void QuicStream::OnClose() {
     rst_sent_ = true;
   }
 
-  if (flow_controller_.FlowControlViolation() ||
+  if (flow_controller_->FlowControlViolation() ||
       connection_flow_controller_->FlowControlViolation()) {
     return;
   }
@@ -717,13 +740,13 @@ void QuicStream::OnClose() {
   // the same connection level flow control state, mark all unreceived or
   // buffered bytes as consumed.
   QuicByteCount bytes_to_consume =
-      flow_controller_.highest_received_byte_offset() -
-      flow_controller_.bytes_consumed();
+      flow_controller_->highest_received_byte_offset() -
+      flow_controller_->bytes_consumed();
   AddBytesConsumed(bytes_to_consume);
 }
 
 void QuicStream::OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) {
-  if (flow_controller_.UpdateSendWindowOffset(frame.byte_offset)) {
+  if (flow_controller_->UpdateSendWindowOffset(frame.byte_offset)) {
     // Let session unblock this stream.
     session_->MarkConnectionLevelWriteBlocked(id_);
   }
@@ -732,8 +755,8 @@ void QuicStream::OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) {
 bool QuicStream::MaybeIncreaseHighestReceivedOffset(
     QuicStreamOffset new_offset) {
   uint64_t increment =
-      new_offset - flow_controller_.highest_received_byte_offset();
-  if (!flow_controller_.UpdateHighestReceivedOffset(new_offset)) {
+      new_offset - flow_controller_->highest_received_byte_offset();
+  if (!flow_controller_->UpdateHighestReceivedOffset(new_offset)) {
     return false;
   }
 
@@ -749,16 +772,22 @@ bool QuicStream::MaybeIncreaseHighestReceivedOffset(
 }
 
 void QuicStream::AddBytesSent(QuicByteCount bytes) {
-  flow_controller_.AddBytesSent(bytes);
+  flow_controller_->AddBytesSent(bytes);
   if (stream_contributes_to_connection_flow_control_) {
     connection_flow_controller_->AddBytesSent(bytes);
   }
 }
 
 void QuicStream::AddBytesConsumed(QuicByteCount bytes) {
+  if (type_ == CRYPTO) {
+    // A stream with type CRYPTO has no flow control, so there's nothing this
+    // function needs to do. This function still gets called by the
+    // QuicStreamSequencers used by QuicCryptoStream.
+    return;
+  }
   // Only adjust stream level flow controller if still reading.
   if (!read_side_closed_) {
-    flow_controller_.AddBytesConsumed(bytes);
+    flow_controller_->AddBytesConsumed(bytes);
   }
 
   if (stream_contributes_to_connection_flow_control_) {
@@ -767,7 +796,7 @@ void QuicStream::AddBytesConsumed(QuicByteCount bytes) {
 }
 
 void QuicStream::UpdateSendWindowOffset(QuicStreamOffset new_window) {
-  if (flow_controller_.UpdateSendWindowOffset(new_window)) {
+  if (flow_controller_->UpdateSendWindowOffset(new_window)) {
     // Let session unblock this stream.
     session_->MarkConnectionLevelWriteBlocked(id_);
   }
@@ -920,7 +949,7 @@ void QuicStream::WriteBufferedData() {
   bool fin = fin_buffered_;
 
   // How much data flow control permits to be written.
-  QuicByteCount send_window = flow_controller_.SendWindowSize();
+  QuicByteCount send_window = flow_controller_->SendWindowSize();
   if (stream_contributes_to_connection_flow_control_) {
     send_window =
         std::min(send_window, connection_flow_controller_->SendWindowSize());

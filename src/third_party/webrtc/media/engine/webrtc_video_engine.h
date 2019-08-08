@@ -152,8 +152,9 @@ class WebRtcVideoChannel : public VideoMediaChannel, public webrtc::Transport {
   void OnReadyToSend(bool ready) override;
   void OnNetworkRouteChanged(const std::string& transport_name,
                              const rtc::NetworkRoute& network_route) override;
-  void SetInterface(NetworkInterface* iface,
-                    webrtc::MediaTransportInterface* media_transport) override;
+  void SetInterface(
+      NetworkInterface* iface,
+      const webrtc::MediaTransportConfig& media_transport_config) override;
 
   // E2E Encrypted Video Frame API
   // Set a frame decryptor to a particular ssrc that will intercept all
@@ -399,7 +400,8 @@ class WebRtcVideoChannel : public VideoMediaChannel, public webrtc::Transport {
 
     void SetLocalSsrc(uint32_t local_ssrc);
     // TODO(deadbeef): Move these feedback parameters into the recv parameters.
-    void SetFeedbackParameters(bool nack_enabled,
+    void SetFeedbackParameters(bool lntf_enabled,
+                               bool nack_enabled,
                                bool remb_enabled,
                                bool transport_cc_enabled,
                                webrtc::RtcpMode rtcp_mode);

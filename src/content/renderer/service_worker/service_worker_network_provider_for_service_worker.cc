@@ -22,8 +22,7 @@ namespace content {
 
 ServiceWorkerNetworkProviderForServiceWorker::
     ServiceWorkerNetworkProviderForServiceWorker(
-        network::mojom::URLLoaderFactoryAssociatedPtrInfo
-            script_loader_factory_info)
+        network::mojom::URLLoaderFactoryPtrInfo script_loader_factory_info)
     : script_loader_factory_(std::move(script_loader_factory_info)) {}
 
 ServiceWorkerNetworkProviderForServiceWorker::

@@ -157,7 +157,7 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
   void RemoveImpl(const base::Time& delete_begin,
                   const base::Time& delete_end,
                   int remove_mask,
-                  const BrowsingDataFilterBuilder& filter_builder,
+                  BrowsingDataFilterBuilder* filter_builder,
                   int origin_type_mask);
 
   // Notifies observers and transitions to the idle state.

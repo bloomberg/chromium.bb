@@ -7,6 +7,9 @@ option optimize_for = LITE_RUNTIME;
 
 package optimization_guide.proto;
 
+import "common_types.proto";
+import "previews_metadata.proto";
+
 // Information about the hint that the client already has for a host.
 message MatchedHintInfo {
   // Describes the granularity of the key field.
@@ -127,23 +130,6 @@ enum KeyRepresentation {
   HOST_SUFFIX = 1;
 }
 
-enum LoadingOptimizationType {
-  LOADING_UNSPECIFIED = 0;
-  // The resource should not be loaded.
-  LOADING_BLOCK_RESOURCE = 1;
-}
-
-message ResourceLoadingHint {
-  // The pattern to match against the resource URL.
-  //
-  // The pattern may be a single substring to match against the URL or it may be
-  // an ordered set of substrings to match where the substrings are separated by
-  // the ‘*’ wildcard character (with an implicit ‘*’ at the beginning and end).
-  optional string resource_pattern = 1;
-  // The type of loading optimization to apply to the resource.
-  optional LoadingOptimizationType loading_optimization_type = 2;
-}
-
 message Optimization {
   // The type of optimization the hint applies to.
   optional OptimizationType optimization_type = 1;
@@ -155,13 +141,13 @@ message Optimization {
   // Ex: If the received bytes is 100 and the inflation_percent is 30, the
   // inflated bytes calculated by the client will be 30 in order to have a total
   // consumed bytes value of 130.
-  optional int64 inflation_percent = 2;
+  optional int64 inflation_percent = 2 [deprecated = true];
   // An ordered set of resource loading hints for OptimizationType
   // RESOURCE_LOADING.
   //
   // Only the first ResourceLoadingHint record that matches a target resource
   // URL will be applied to that resource.
-  repeated ResourceLoadingHint resource_loading_hints = 3;
+  repeated ResourceLoadingHint resource_loading_hints = 3 [deprecated = true];
   // The experiment name that activates the optimization.
   //
   // If a non-empty name is provided, the optimization will be disabled unless
@@ -182,36 +168,11 @@ message Optimization {
   // same name, the optimization will be disabled and skipped for that client.
   // An empty name is not experimental.
   optional string excluded_experiment_name = 5;
-}
-
-// The possible effective connection type values.
-//
-// The values should match those of //net/nqe/effective_connection_type.h in the
-// Chromium repository.
-enum EffectiveConnectionType {
-  // Effective connection type reported when the network quality is unknown.
-  EFFECTIVE_CONNECTION_TYPE_UNKNOWN = 0;
-
-  // Effective connection type reported when the Internet is unreachable,
-  // either because the device does not have a connection or because the
-  // connection is too slow to be usable.
-  EFFECTIVE_CONNECTION_TYPE_OFFLINE = 1;
-
-  // Effective connection type reported when the network has the quality of a
-  // poor 2G connection.
-  EFFECTIVE_CONNECTION_TYPE_SLOW_2G = 2;
-
-  // Effective connection type reported when the network has the quality of a
-  // faster 2G connection.
-  EFFECTIVE_CONNECTION_TYPE_2G = 3;
-
-  // Effective connection type reported when the network has the quality of a
-  // 3G connection.
-  EFFECTIVE_CONNECTION_TYPE_3G = 4;
-
-  // Effective connection type reported when the network has the quality of a
-  // 4G connection.
-  EFFECTIVE_CONNECTION_TYPE_4G = 5;
+  // The metadata associated with the optimization type.
+  //
+  // It is expected that the client and server have agreed upon the appropriate
+  // metadata type for the optimization type.
+  oneof metadata { PreviewsMetadata previews_metadata = 10; }
 }
 
 message PageHint {
@@ -224,7 +185,7 @@ message PageHint {
   optional string page_pattern = 1;
   // The maximum effective connection type threshold for triggering the
   // optimization associated with this hint.
-  optional EffectiveConnectionType max_ect_trigger = 2;
+  optional EffectiveConnectionType max_ect_trigger = 2 [deprecated = true];
   // An ordered set of optimizations that should be whitelisted for this page
   // pattern.
   //
@@ -244,6 +205,11 @@ message Hint {
   // An ordered set of per-page hints. Only the first PageHint record
   // that matches a committed page URL should be used for that page load.
   repeated PageHint page_hints = 4;
+  // Version that generated this hint.
+  //
+  // It is expected that this version be sent along with subsequent requests
+  // for hosts that match this hint.
+  optional string version = 5;
 }
 
 // Configuration and data for a Bloom filter.
@@ -295,4 +261,34 @@ message Configuration {
   repeated Hint hints = 1;
   // A list of per-optimization blacklists.
   repeated OptimizationFilter optimization_blacklists = 2;
+}
+
+message Timestamp {
+  // Represents seconds of UTC time since Unix epoch
+  // 1970-01-01T00:00:00Z. Must be from 0001-01-01T00:00:00Z to
+  // 9999-12-31T23:59:59Z inclusive.
+  optional int64 seconds = 1;
+
+  // Non-negative fractions of a second at nanosecond resolution. Negative
+  // second values with fractions must still have non-negative nanos values
+  // that count forward in time. Must be from 0 to 999,999,999
+  // inclusive.
+  optional int32 nanos = 2;
+}
+
+enum HintSource {
+  HINT_SOURCE_UNKNOWN = 0;
+  // Served from the Chrome Optimization Hints Component.
+  HINT_SOURCE_OPTIMIZATION_HINTS_COMPONENT = 1;
+  // Served from the Chrome Optimization Guide Service.
+  HINT_SOURCE_OPTIMIZATION_GUIDE_SERVICE = 2;
+}
+
+message Version {
+  reserved 2;
+
+  // The time the hint was generated.
+  optional Timestamp generation_timestamp = 1;
+  // The source from which the hint was served from.
+  optional HintSource hint_source = 3;
 }

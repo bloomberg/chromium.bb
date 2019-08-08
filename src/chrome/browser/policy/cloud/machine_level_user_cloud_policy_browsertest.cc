@@ -22,8 +22,8 @@
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/net/system_network_context_manager.h"
-#include "chrome/browser/policy/browser_dm_token_storage.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
+#include "chrome/browser/policy/fake_browser_dm_token_storage.h"
 #include "chrome/browser/policy/machine_level_user_cloud_policy_controller.h"
 #include "chrome/browser/policy/test/local_policy_test_server.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -120,70 +120,6 @@ class MachineLevelUserCloudPolicyControllerObserver
   bool is_finished_ = false;
   bool should_succeed_ = false;
   bool should_display_error_message_ = false;
-};
-
-class FakeBrowserDMTokenStorage : public BrowserDMTokenStorage {
- public:
-  FakeBrowserDMTokenStorage() = default;
-
-  std::string RetrieveClientId() override { return client_id_; }
-  std::string RetrieveEnrollmentToken() override { return enrollment_token_; }
-  void StoreDMToken(const std::string& dm_token,
-                    StoreCallback callback) override {
-    // Store the dm token in memory even if storage gonna failed. This is the
-    // same behavior of production code.
-    dm_token_ = dm_token;
-    // Run the callback synchronously to make sure the metrics is recorded
-    // before verfication.
-    std::move(callback).Run(storage_enabled_);
-  }
-  std::string RetrieveDMToken() override { return dm_token_; }
-  bool ShouldDisplayErrorMessageOnFailure() override {
-    return should_display_error_message_on_failure_;
-  }
-
-  void SetEnrollmentToken(const std::string& enrollment_token) {
-    enrollment_token_ = enrollment_token;
-  }
-  void SetErrorMessageOption(bool should_displayed) {
-    should_display_error_message_on_failure_ = should_displayed;
-  }
-
-  void SetClientId(std::string client_id) { client_id_ = client_id; }
-
-  void SetDMToken(std::string dm_token) { dm_token_ = dm_token; }
-
-  std::string InitClientId() override {
-    NOTREACHED();
-    return std::string();
-  }
-  std::string InitEnrollmentToken() override {
-    NOTREACHED();
-    return std::string();
-  }
-  std::string InitDMToken() override {
-    NOTREACHED();
-    return std::string();
-  }
-  bool InitEnrollmentErrorOption() override {
-    NOTREACHED();
-    return true;
-  }
-
-  void SaveDMToken(const std::string& dm_token) override { NOTREACHED(); }
-
-  void EnableStorage(bool storage_enabled) {
-    storage_enabled_ = storage_enabled;
-  }
-
- private:
-  std::string enrollment_token_;
-  std::string client_id_;
-  std::string dm_token_;
-  bool storage_enabled_ = true;
-  bool should_display_error_message_on_failure_ = true;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeBrowserDMTokenStorage);
 };
 
 class ChromeBrowserExtraSetUp : public ChromeBrowserMainExtraParts {
@@ -473,7 +409,7 @@ class MachineLevelUserCloudPolicyEnrollmentTest
                                     : kInvalidEnrollmentToken);
     storage_.SetClientId("client_id");
     storage_.EnableStorage(storage_enabled());
-    storage_.SetErrorMessageOption(should_display_error_message());
+    storage_.SetEnrollmentErrorOption(should_display_error_message());
 
     observer_.SetShouldSucceed(is_enrollment_token_valid());
     observer_.SetShouldDisplayErrorMessage(should_display_error_message());

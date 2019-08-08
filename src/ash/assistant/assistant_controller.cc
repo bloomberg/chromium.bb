@@ -9,9 +9,9 @@
 
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/assistant/util/deep_link_util.h"
-#include "ash/new_window_controller.h"
 #include "ash/public/cpp/ash_pref_names.h"
-#include "ash/session/session_controller.h"
+#include "ash/public/cpp/new_window_delegate.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/utility/screenshot_controller.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
@@ -86,6 +86,7 @@ void AssistantController::SetAssistant(
   assistant_ = std::move(assistant);
 
   // Provide reference to sub-controllers.
+  assistant_alarm_timer_controller_.SetAssistant(assistant_.get());
   assistant_interaction_controller_.SetAssistant(assistant_.get());
   assistant_notification_controller_.SetAssistant(assistant_.get());
   assistant_screen_context_controller_.SetAssistant(assistant_.get());
@@ -99,11 +100,6 @@ void AssistantController::SetAssistant(
 
   for (AssistantControllerObserver& observer : observers_)
     observer.OnAssistantReady();
-}
-
-void AssistantController::SetAssistantImageDownloader(
-    mojom::AssistantImageDownloaderPtr assistant_image_downloader) {
-  assistant_image_downloader_ = std::move(assistant_image_downloader);
 }
 
 void AssistantController::OpenAssistantSettings() {
@@ -136,20 +132,18 @@ void AssistantController::StartSpeakerIdEnrollmentFlow() {
   if (consent_status == mojom::ConsentStatus::kActivityControlAccepted) {
     // If activity control has been accepted, launch the enrollment flow.
     setup_controller()->StartOnboarding(false /* relaunch */,
-                                        mojom::FlowType::SPEAKER_ID_ENROLLMENT);
+                                        FlowType::kSpeakerIdEnrollment);
   } else {
     // If activity control has not been accepted, launch the opt-in flow.
     setup_controller()->StartOnboarding(false /* relaunch */,
-                                        mojom::FlowType::CONSENT_FLOW);
+                                        FlowType::kConsentFlow);
   }
 }
 
 void AssistantController::DownloadImage(
     const GURL& url,
-    mojom::AssistantImageDownloader::DownloadCallback callback) {
-  DCHECK(assistant_image_downloader_);
-
-  const mojom::UserSession* user_session =
+    AssistantImageDownloader::DownloadCallback callback) {
+  const UserSession* user_session =
       Shell::Get()->session_controller()->GetUserSession(0);
 
   if (!user_session) {
@@ -158,8 +152,9 @@ void AssistantController::DownloadImage(
     return;
   }
 
-  AccountId account_id = user_session->user_info->account_id;
-  assistant_image_downloader_->Download(account_id, url, std::move(callback));
+  AccountId account_id = user_session->user_info.account_id;
+  AssistantImageDownloader::GetInstance()->Download(account_id, url,
+                                                    std::move(callback));
 }
 
 void AssistantController::OnDeepLinkReceived(
@@ -176,7 +171,7 @@ void AssistantController::OnDeepLinkReceived(
       break;
     }
     case DeepLinkType::kFeedback:
-      Shell::Get()->new_window_controller()->OpenFeedbackPage(
+      NewWindowDelegate::GetInstance()->OpenFeedbackPage(
           /*from_assistant=*/true);
       break;
     case DeepLinkType::kScreenshot:
@@ -187,9 +182,10 @@ void AssistantController::OnDeepLinkReceived(
       break;
     case DeepLinkType::kTaskManager:
       // Open task manager window.
-      Shell::Get()->new_window_controller()->ShowTaskManager();
+      NewWindowDelegate::GetInstance()->ShowTaskManager();
       break;
     case DeepLinkType::kUnsupported:
+    case DeepLinkType::kAlarmTimer:
     case DeepLinkType::kLists:
     case DeepLinkType::kNotes:
     case DeepLinkType::kOnboarding:
@@ -253,16 +249,20 @@ void AssistantController::OpenUrl(const GURL& url, bool from_server) {
     return;
   }
 
+  // Give observers an opportunity to perform any necessary handling before we
+  // open the specified |url| in a new browser tab.
+  NotifyOpeningUrl(url, from_server);
+
   // The new tab should be opened with a user activation since the user
   // interacted with the Assistant to open the url.
-  Shell::Get()->new_window_controller()->NewTabWithUrl(
+  NewWindowDelegate::GetInstance()->NewTabWithUrl(
       url, /*from_user_interaction=*/true);
   NotifyUrlOpened(url, from_server);
 }
 
 void AssistantController::GetNavigableContentsFactory(
     mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver) {
-  const mojom::UserSession* user_session =
+  const UserSession* user_session =
       Shell::Get()->session_controller()->GetUserSession(0);
 
   if (!user_session) {
@@ -271,7 +271,7 @@ void AssistantController::GetNavigableContentsFactory(
   }
 
   const base::Optional<base::Token>& service_instance_group =
-      user_session->user_info->service_instance_group;
+      user_session->user_info.service_instance_group;
   if (!service_instance_group) {
     LOG(ERROR) << "Unable to retrieve service instance group.";
     return;
@@ -312,6 +312,11 @@ void AssistantController::NotifyDeepLinkReceived(const GURL& deep_link) {
   view_delegate_.NotifyDeepLinkReceived(type, params);
 }
 
+void AssistantController::NotifyOpeningUrl(const GURL& url, bool from_server) {
+  for (AssistantControllerObserver& observer : observers_)
+    observer.OnOpeningUrl(url, from_server);
+}
+
 void AssistantController::NotifyUrlOpened(const GURL& url, bool from_server) {
   for (AssistantControllerObserver& observer : observers_)
     observer.OnUrlOpened(url, from_server);
@@ -320,6 +325,11 @@ void AssistantController::NotifyUrlOpened(const GURL& url, bool from_server) {
 void AssistantController::OnVoiceInteractionStatusChanged(
     mojom::VoiceInteractionState state) {
   if (state == mojom::VoiceInteractionState::NOT_READY)
+    assistant_ui_controller_.CloseUi(AssistantExitPoint::kUnspecified);
+}
+
+void AssistantController::OnLockedFullScreenStateChanged(bool enabled) {
+  if (enabled)
     assistant_ui_controller_.CloseUi(AssistantExitPoint::kUnspecified);
 }
 

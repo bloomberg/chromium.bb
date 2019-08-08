@@ -11,7 +11,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/views/payments/payment_request_browsertest_base.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/payments/core/features.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
@@ -330,7 +330,7 @@ class PaymentRequestHasEnrolledInstrumentQueryPMITest
     script_[CheckFor::BOB_PAY] = "[bobPayMethod]";
     script_[CheckFor::BOB_PAY_AND_BASIC_CARD] =
         "[bobPayMethod, basicCardMethod]";
-    script_[CheckFor::BOB_PAY_AND_VISA] = "[bobPayMethod, visaMethod]";
+    script_[CheckFor::BOB_PAY_AND_VISA] = "[bobPayMethod, basicVisaMethod]";
     scoped_feature_list_.InitAndEnableFeature(
         ::features::kPaymentRequestHasEnrolledInstrument);
   }

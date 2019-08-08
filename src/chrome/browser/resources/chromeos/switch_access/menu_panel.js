@@ -28,6 +28,8 @@ class Panel {
       this.connectToBackground();
     else
       background.addEventListener('load', this.connectToBackground.bind(this));
+
+    this.addTranslatedMessagesToDom_();
   }
 
   /**
@@ -41,7 +43,7 @@ class Panel {
 
   /**
    * Adds an event listener to the given button to send a message when clicked.
-   * @param {!HTMLElement} button
+   * @param {!Element} button
    * @private
    */
   setupButton_(button) {
@@ -60,7 +62,7 @@ class Panel {
    * @param {boolean} enable
    */
   setFocusRing(id, enable) {
-    this.updateClass_(id, SAConstants.FOCUS_CLASS, enable);
+    this.updateClass_(id, SAConstants.Focus.CLASS, enable);
     return;
   }
 
@@ -81,7 +83,7 @@ class Panel {
    * |id|.
    * @param {string} id
    * @param {string} className
-   * @param {bool} shouldAdd
+   * @param {boolean} shouldAdd
    */
   updateClass_(id, className, shouldAdd) {
     const htmlNode = document.getElementById(id);
@@ -105,6 +107,32 @@ class Panel {
     const numRows = Math.ceil(numActions / maxCols);
     const height = 60 * numRows;
     document.getElementById(SAConstants.MENU_ID).style.height = height + 'px';
+  }
+
+  /**
+   * Processes an HTML DOM, replacing text content with translated text messages
+   * on elements marked up for translation. Elements whose class attributes
+   * contain the 'i18n' class name are expected to also have an msgid attribute.
+   * The value of the msgid attributes are looked up as message IDs and the
+   * resulting text is used as the text content of the elements.
+   *
+   * TODO(crbug/706981): Combine with similar function in SelectToSpeakOptions.
+   * @private
+   */
+  addTranslatedMessagesToDom_() {
+    const elements = document.querySelectorAll('.i18n');
+    for (const element of elements) {
+      const messageId = element.getAttribute('msgid');
+      if (!messageId)
+        throw new Error('Element has no msgid attribute: ' + element);
+      const translatedMessage =
+          chrome.i18n.getMessage('switch_access_' + messageId);
+      if (element.tagName == 'INPUT')
+        element.setAttribute('placeholder', translatedMessage);
+      else
+        element.textContent = translatedMessage;
+      element.classList.add('i18n-processed');
+    }
   }
 }
 

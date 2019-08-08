@@ -315,18 +315,16 @@ DesktopDragDropClientAuraX11::X11DragContext::X11DragContext(
       }
     } else {
       // data.l[2,3,4] contain the first three types. Unused slots can be None.
-      for (int i = 0; i < 3; ++i) {
-        if (event.data.l[2 + i] != x11::None) {
-          unfetched_targets_.push_back(event.data.l[2 + i]);
-        }
+      for (size_t i = 2; i < 5; ++i) {
+        if (event.data.l[i] != x11::None)
+          unfetched_targets_.push_back(event.data.l[i]);
       }
     }
 
 #if DCHECK_IS_ON()
     DVLOG(1) << "XdndEnter has " << unfetched_targets_.size() << " data types";
-    for (::Atom target : unfetched_targets_) {
+    for (::Atom target : unfetched_targets_)
       DVLOG(1) << "XdndEnter data type: " << target;
-    }
 #endif  // DCHECK_IS_ON()
 
     // The window doesn't have a DesktopDragDropClientAuraX11, that means it's
@@ -448,9 +446,8 @@ void DesktopDragDropClientAuraX11::X11DragContext::ReadActions() {
 
 int DesktopDragDropClientAuraX11::X11DragContext::GetDragOperation() const {
   int drag_operation = ui::DragDropTypes::DRAG_NONE;
-  for (auto it = actions_.begin(); it != actions_.end(); ++it) {
-    MaskOperation(*it, &drag_operation);
-  }
+  for (const auto& action : actions_)
+    MaskOperation(action, &drag_operation);
 
   MaskOperation(suggested_action_, &drag_operation);
 

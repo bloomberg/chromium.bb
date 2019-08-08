@@ -124,7 +124,7 @@ bool StructTraits<chromeos::multidevice::mojom::RemoteDeviceDataView,
   }
 
   out->public_key =
-      chromeos::multidevice::RemoteDeviceRef::DerivePublicKey(device_id);
+      chromeos::multidevice::RemoteDevice::DerivePublicKey(device_id);
   out->last_update_time_millis = last_update_time.ToJavaTime();
 
   return true;

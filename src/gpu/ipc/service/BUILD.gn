@@ -81,21 +81,10 @@ jumbo_component("service") {
   ldflags = []
   if (is_win) {
     sources += [
-      "child_window_win.cc",
-      "child_window_win.h",
-      "direct_composition_child_surface_win.cc",
-      "direct_composition_child_surface_win.h",
-      "direct_composition_surface_win.cc",
-      "direct_composition_surface_win.h",
       "gpu_memory_buffer_factory_dxgi.cc",
       "gpu_memory_buffer_factory_dxgi.h",
       "image_transport_surface_win.cc",
     ]
-    libs += [
-      "dxgi.lib",
-      "dwmapi.lib",
-    ]
-    ldflags += [ "/DELAYLOAD:dxgi.dll" ]
   }
   if (is_mac) {
     sources += [

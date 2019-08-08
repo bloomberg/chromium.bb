@@ -348,6 +348,13 @@ std::string BrowserPolicyConnectorChromeOS::GetDirectoryApiID() const {
   return std::string();
 }
 
+std::string BrowserPolicyConnectorChromeOS::GetCustomerLogoURL() const {
+  const em::PolicyData* policy = GetDevicePolicy();
+  if (policy && policy->has_customer_logo())
+    return policy->customer_logo().logo_url();
+  return std::string();
+}
+
 DeviceMode BrowserPolicyConnectorChromeOS::GetDeviceMode() const {
   return chromeos::InstallAttributes::Get()->GetMode();
 }

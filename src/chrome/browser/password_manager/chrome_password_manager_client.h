@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -16,7 +17,10 @@
 #include "components/autofill/content/common/autofill_driver.mojom.h"
 #include "components/password_manager/content/browser/content_credential_manager.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
+#include "components/password_manager/core/browser/http_auth_manager.h"
+#include "components/password_manager/core/browser/http_auth_manager_impl.h"
 #include "components/password_manager/core/browser/manage_passwords_referrer.h"
+#include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_client_helper.h"
@@ -72,9 +76,9 @@ class ChromePasswordManagerClient
       bool has_generated_password,
       bool is_update) override;
   void HideManualFallbackForSaving() override;
-  void FocusedInputChanged(const url::Origin& last_committed_origin,
-                           bool is_fillable,
-                           bool is_password_field) override;
+  void FocusedInputChanged(
+      password_manager::PasswordManagerDriver* driver,
+      autofill::mojom::FocusedFieldType focused_field_type) override;
   bool PromptUserToChooseCredentials(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
       const GURL& origin,
@@ -97,10 +101,9 @@ class ChromePasswordManagerClient
       const GURL& origin,
       const std::vector<const autofill::PasswordForm*>* federated_matches)
       const override;
-  void AutofillHttpAuth(
-      const std::map<base::string16, const autofill::PasswordForm*>&
-          best_matches,
-      const autofill::PasswordForm& preferred_match) const override;
+  void AutofillHttpAuth(const autofill::PasswordForm& preferred_match,
+                        const password_manager::PasswordFormManagerForUI*
+                            form_manager) const override;
   bool IsIsolationForPasswordSitesEnabled() const override;
 
   PrefService* GetPrefs() const override;
@@ -110,6 +113,7 @@ class ChromePasswordManagerClient
   net::CertStatus GetMainFrameCertStatus() const override;
   bool IsIncognito() const override;
   const password_manager::PasswordManager* GetPasswordManager() const override;
+  password_manager::HttpAuthManager* GetHttpAuthManager() override;
   autofill::AutofillDownloadManager* GetAutofillDownloadManager() override;
   const GURL& GetMainFrameURL() const override;
   bool IsMainFrameSecure() const override;
@@ -126,6 +130,7 @@ class ChromePasswordManagerClient
   void UpdateFormManagers() override;
   void NavigateToManagePasswordsPage(
       password_manager::ManagePasswordsReferrer referrer) override;
+  bool IsNewTabPage() const override;
 
   // autofill::mojom::PasswordGenerationDriver overrides.
   void AutomaticGenerationAvailable(
@@ -150,6 +155,7 @@ class ChromePasswordManagerClient
 
   void CheckProtectedPasswordEntry(
       password_manager::metrics_util::PasswordType reused_password_type,
+      const std::string& username,
       const std::vector<std::string>& matching_domains,
       bool password_field_exists) override;
 
@@ -186,6 +192,12 @@ class ChromePasswordManagerClient
   // Callable for tests.
   ChromePasswordManagerClient(content::WebContents* web_contents,
                               autofill::AutofillClient* autofill_client);
+
+  // content::WebContentsObserver override
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+  void OnPaste() override;
+  base::string16 GetTextFromClipboard();
+#endif
 
  private:
   friend class content::WebContentsUserData<ChromePasswordManagerClient>;
@@ -238,9 +250,10 @@ class ChromePasswordManagerClient
   Profile* const profile_;
 
   password_manager::PasswordManager password_manager_;
+  password_manager::HttpAuthManagerImpl httpauth_manager_;
 
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
-#if !defined(OS_ANDROID)
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   password_manager::PasswordReuseDetectionManager
       password_reuse_detection_manager_;
 #endif

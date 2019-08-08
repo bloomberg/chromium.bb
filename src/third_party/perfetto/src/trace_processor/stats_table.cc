@@ -28,8 +28,8 @@ void StatsTable::RegisterTable(sqlite3* db, const TraceStorage* storage) {
   Table::Register<StatsTable>(db, storage, "stats");
 }
 
-base::Optional<Table::Schema> StatsTable::Init(int, const char* const*) {
-  return Schema(
+util::Status StatsTable::Init(int, const char* const*, Schema* schema) {
+  *schema = Schema(
       {
           Table::Column(Column::kName, "name", ColumnType::kString),
           // Calling a column "index" causes sqlite to silently fail, hence idx.
@@ -39,18 +39,24 @@ base::Optional<Table::Schema> StatsTable::Init(int, const char* const*) {
           Table::Column(Column::kValue, "value", ColumnType::kLong),
       },
       {Column::kName});
+  return util::OkStatus();
 }
 
-std::unique_ptr<Table::Cursor> StatsTable::CreateCursor(const QueryConstraints&,
-                                                        sqlite3_value**) {
-  return std::unique_ptr<Table::Cursor>(new Cursor(storage_));
+std::unique_ptr<Table::Cursor> StatsTable::CreateCursor() {
+  return std::unique_ptr<Table::Cursor>(new Cursor(this));
 }
 
 int StatsTable::BestIndex(const QueryConstraints&, BestIndexInfo*) {
   return SQLITE_OK;
 }
 
-StatsTable::Cursor::Cursor(const TraceStorage* storage) : storage_(storage) {}
+StatsTable::Cursor::Cursor(StatsTable* table)
+    : Table::Cursor(table), table_(table), storage_(table->storage_) {}
+
+int StatsTable::Cursor::Filter(const QueryConstraints&, sqlite3_value**) {
+  *this = Cursor(table_);
+  return SQLITE_OK;
+}
 
 int StatsTable::Cursor::Column(sqlite3_context* ctx, int N) {
   const auto kSqliteStatic = sqlite_utils::kSqliteStatic;
@@ -69,6 +75,9 @@ int StatsTable::Cursor::Column(sqlite3_context* ctx, int N) {
       switch (stats::kSeverities[key_]) {
         case stats::kInfo:
           sqlite3_result_text(ctx, "info", -1, kSqliteStatic);
+          break;
+        case stats::kDataLoss:
+          sqlite3_result_text(ctx, "data_loss", -1, kSqliteStatic);
           break;
         case stats::kError:
           sqlite3_result_text(ctx, "error", -1, kSqliteStatic);

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
+<translation id="1028699632127661925">Отправка на устройство "<ph name="DEVICE_NAME" />"…</translation>
 <translation id="111910763555783249">Настройки уведомлений</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 день назад}one{# день назад}few{# дня назад}many{# дней назад}other{# дня назад}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{минуту назад}one{# минуту назад}few{# минуты назад}many{# минут назад}other{# минуты назад}}</translation>
@@ -15,13 +16,11 @@
 <translation id="1383876407941801731">Поиск</translation>
 <translation id="1398853756734560583">Развернуть</translation>
 <translation id="1409544243779336081">Рекомендуемое приложение</translation>
-<translation id="1413622004203049571">Отключить уведомления от <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 минута }one{# минута }few{# минуты }many{# минут }other{# минуты }}</translation>
 <translation id="1643823602425662293">Уведомление</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">сейчас</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 минута}one{# минута}few{# минуты}many{# минут}other{# минуты}}</translation>
-<translation id="1756116796893109054">Отправка…</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> Б</translation>
 <translation id="1801827354178857021">Точка</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 месяц}one{# месяц}few{# месяца}many{# месяцев}other{# месяца}}</translation>
@@ -135,6 +134,7 @@
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> Б/с</translation>
 <translation id="6156262341071374681">Просмотреть все приложения</translation>
+<translation id="6165508094623778733">Подробнее...</translation>
 <translation id="6264365405983206840">Выделить все</translation>
 <translation id="6351032674660237738">ПРЕДЛАГАЕМЫЕ ПРИЛОЖЕНИЯ</translation>
 <translation id="6364916375976753737">Прокрутка влево</translation>
@@ -180,8 +180,10 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{У вас более 1 непрочитанного уведомления}one{У вас более # непрочитанного уведомления}few{У вас более # непрочитанных уведомлений}many{У вас более # непрочитанных уведомлений}other{У вас более # непрочитанного уведомления}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{через 1 мин.}one{через # мин.}few{через # мин.}many{через # мин.}other{через # мин.}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" /> + <ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8098075892845277643">Произнесите запрос для Google Ассистента</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 час назад}one{# час назад}few{# часа назад}many{# часов назад}other{# часа назад}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Осталась 1 сек.}one{Осталась # сек.}few{Осталось # сек.}many{Осталось # сек.}other{Осталось # сек.}}</translation>
+<translation id="8144660977431427332">Ваши поисковые запросы обрабатывает Google Ассистент. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, автозаполнение</translation>
 <translation id="815598010540052116">Прокрутка вниз</translation>
 <translation id="8170087467028567933">Если вы удалите эту подсказку, она будет скрыта на всех ваших устройствах, где выполнен вход в аккаунт.</translation>

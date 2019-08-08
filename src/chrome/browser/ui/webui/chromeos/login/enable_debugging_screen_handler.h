@@ -10,17 +10,33 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
-#include "chrome/browser/chromeos/login/screens/enable_debugging_screen_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
 class PrefRegistrySimple;
 
 namespace chromeos {
 
+class EnableDebuggingScreen;
+
+// Interface between enable debugging screen and its representation.
+// Note, do not forget to call OnViewDestroyed in the dtor.
+class EnableDebuggingScreenView {
+ public:
+  constexpr static StaticOobeScreenId kScreenId{"debugging"};
+
+  virtual ~EnableDebuggingScreenView() {}
+
+  virtual void Show() = 0;
+  virtual void Hide() = 0;
+  virtual void SetDelegate(EnableDebuggingScreen* screen) = 0;
+};
+
 // WebUI implementation of EnableDebuggingScreenView.
 class EnableDebuggingScreenHandler : public EnableDebuggingScreenView,
                                      public BaseScreenHandler {
  public:
+  using TView = EnableDebuggingScreenView;
+
   explicit EnableDebuggingScreenHandler(JSCallsContainer* js_calls_container);
   ~EnableDebuggingScreenHandler() override;
 

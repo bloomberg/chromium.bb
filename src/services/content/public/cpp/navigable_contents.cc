@@ -34,10 +34,8 @@ void NavigableContents::RemoveObserver(NavigableContentsObserver* observer) {
 NavigableContentsView* NavigableContents::GetView() {
   if (!view_) {
     view_ = base::WrapUnique(new NavigableContentsView(this));
-    contents_->CreateView(
-        ShouldUseWindowService(),
-        base::BindOnce(&NavigableContents::OnEmbedTokenReceived,
-                       base::Unretained(this)));
+    contents_->CreateView(base::BindOnce(
+        &NavigableContents::OnEmbedTokenReceived, base::Unretained(this)));
   }
   return view_.get();
 }
@@ -62,18 +60,6 @@ void NavigableContents::Focus() {
 
 void NavigableContents::FocusThroughTabTraversal(bool reverse) {
   contents_->FocusThroughTabTraversal(reverse);
-}
-
-void NavigableContents::ForceUseWindowService() {
-  // This should only be called before |view_| is created.
-  DCHECK(!view_);
-
-  force_use_window_service_ = true;
-}
-
-bool NavigableContents::ShouldUseWindowService() const {
-  return !NavigableContentsView::IsClientRunningInServiceProcess() ||
-         force_use_window_service_;
 }
 
 void NavigableContents::ClearViewFocus() {

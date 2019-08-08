@@ -185,14 +185,13 @@ TEST(EntropyProviderTest, UseOneTimeRandomizationSHA1) {
   // particular client_id we use for unit tests they won't.
   base::FieldTrialList field_trial_list(
       std::make_unique<SHA1EntropyProvider>("client_id"));
-  const int kNoExpirationYear = base::FieldTrialList::kNoExpirationYear;
   scoped_refptr<base::FieldTrial> trials[] = {
       base::FieldTrialList::FactoryGetFieldTrial(
-          "one", 100, "default", kNoExpirationYear, 1, 1,
-          base::FieldTrial::ONE_TIME_RANDOMIZED, nullptr),
+          "one", 100, "default", base::FieldTrial::ONE_TIME_RANDOMIZED,
+          nullptr),
       base::FieldTrialList::FactoryGetFieldTrial(
-          "two", 100, "default", kNoExpirationYear, 1, 1,
-          base::FieldTrial::ONE_TIME_RANDOMIZED, nullptr),
+          "two", 100, "default", base::FieldTrial::ONE_TIME_RANDOMIZED,
+          nullptr),
   };
 
   for (size_t i = 0; i < base::size(trials); ++i) {
@@ -216,14 +215,13 @@ TEST(EntropyProviderTest, UseOneTimeRandomizationNormalizedMurmurHash) {
   base::FieldTrialList field_trial_list(
       std::make_unique<NormalizedMurmurHashEntropyProvider>(
           1234, kMaxLowEntropySize));
-  const int kNoExpirationYear = base::FieldTrialList::kNoExpirationYear;
   scoped_refptr<base::FieldTrial> trials[] = {
       base::FieldTrialList::FactoryGetFieldTrial(
-          "one", 100, "default", kNoExpirationYear, 1, 1,
-          base::FieldTrial::ONE_TIME_RANDOMIZED, nullptr),
+          "one", 100, "default", base::FieldTrial::ONE_TIME_RANDOMIZED,
+          nullptr),
       base::FieldTrialList::FactoryGetFieldTrial(
-          "two", 100, "default", kNoExpirationYear, 1, 1,
-          base::FieldTrial::ONE_TIME_RANDOMIZED, nullptr),
+          "two", 100, "default", base::FieldTrial::ONE_TIME_RANDOMIZED,
+          nullptr),
   };
 
   for (size_t i = 0; i < base::size(trials); ++i) {
@@ -242,15 +240,14 @@ TEST(EntropyProviderTest, UseOneTimeRandomizationWithCustomSeedSHA1) {
   // for one time randomization produce the same group assignments.
   base::FieldTrialList field_trial_list(
       std::make_unique<SHA1EntropyProvider>("client_id"));
-  const int kNoExpirationYear = base::FieldTrialList::kNoExpirationYear;
   const uint32_t kCustomSeed = 9001;
   scoped_refptr<base::FieldTrial> trials[] = {
       base::FieldTrialList::FactoryGetFieldTrialWithRandomizationSeed(
-          "one", 100, "default", kNoExpirationYear, 1, 1,
-          base::FieldTrial::ONE_TIME_RANDOMIZED, kCustomSeed, nullptr, nullptr),
+          "one", 100, "default", base::FieldTrial::ONE_TIME_RANDOMIZED,
+          kCustomSeed, nullptr, nullptr),
       base::FieldTrialList::FactoryGetFieldTrialWithRandomizationSeed(
-          "two", 100, "default", kNoExpirationYear, 1, 1,
-          base::FieldTrial::ONE_TIME_RANDOMIZED, kCustomSeed, nullptr, nullptr),
+          "two", 100, "default", base::FieldTrial::ONE_TIME_RANDOMIZED,
+          kCustomSeed, nullptr, nullptr),
   };
 
   for (size_t i = 0; i < base::size(trials); ++i) {
@@ -271,15 +268,14 @@ TEST(EntropyProviderTest,
   base::FieldTrialList field_trial_list(
       std::make_unique<NormalizedMurmurHashEntropyProvider>(
           1234, kMaxLowEntropySize));
-  const int kNoExpirationYear = base::FieldTrialList::kNoExpirationYear;
   const uint32_t kCustomSeed = 9001;
   scoped_refptr<base::FieldTrial> trials[] = {
       base::FieldTrialList::FactoryGetFieldTrialWithRandomizationSeed(
-          "one", 100, "default", kNoExpirationYear, 1, 1,
-          base::FieldTrial::ONE_TIME_RANDOMIZED, kCustomSeed, nullptr, nullptr),
+          "one", 100, "default", base::FieldTrial::ONE_TIME_RANDOMIZED,
+          kCustomSeed, nullptr, nullptr),
       base::FieldTrialList::FactoryGetFieldTrialWithRandomizationSeed(
-          "two", 100, "default", kNoExpirationYear, 1, 1,
-          base::FieldTrial::ONE_TIME_RANDOMIZED, kCustomSeed, nullptr, nullptr),
+          "two", 100, "default", base::FieldTrial::ONE_TIME_RANDOMIZED,
+          kCustomSeed, nullptr, nullptr),
   };
 
   for (size_t i = 0; i < base::size(trials); ++i) {

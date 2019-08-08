@@ -488,8 +488,7 @@ void ProximityAuthWebUIHandler::OnForceSyncNow(bool success) {
 void ProximityAuthWebUIHandler::OnSetSoftwareFeatureState(
     const std::string public_key,
     device_sync::mojom::NetworkRequestResult result_code) {
-  std::string device_id =
-      multidevice::RemoteDeviceRef::GenerateDeviceId(public_key);
+  std::string device_id = RemoteDevice::GenerateDeviceId(public_key);
 
   if (result_code == device_sync::mojom::NetworkRequestResult::kSuccess) {
     PA_LOG(VERBOSE) << "Successfully set SoftwareFeature state for device: "

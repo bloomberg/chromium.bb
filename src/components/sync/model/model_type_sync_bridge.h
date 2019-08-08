@@ -16,7 +16,7 @@
 
 namespace syncer {
 
-class ConflictResolution;
+enum class ConflictResolution;
 class DataBatch;
 struct DataTypeActivationRequest;
 struct EntityData;

@@ -8,8 +8,10 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
+#include "gpu/ipc/common/vulkan_ycbcr_info.h"
 #include "media/gpu/media_gpu_export.h"
 
 namespace gpu {
@@ -53,6 +55,10 @@ class MEDIA_GPU_EXPORT SharedImageVideo
   // SharedContextState::ContextLostObserver implementation.
   void OnContextLost() override;
 
+  // Returns ycbcr information. This is only valid in vulkan context and
+  // nullopt for other context.
+  base::Optional<gpu::VulkanYCbCrInfo> GetYcbcrInfo();
+
  protected:
   std::unique_ptr<gpu::SharedImageRepresentationGLTexture> ProduceGLTexture(
       gpu::SharedImageManager* manager,
@@ -68,12 +74,14 @@ class MEDIA_GPU_EXPORT SharedImageVideo
 
  private:
   friend class SharedImageRepresentationGLTextureVideo;
+  friend class SharedImageRepresentationVideoSkiaGL;
+  friend class SharedImageRepresentationVideoSkiaVk;
 
   scoped_refptr<CodecImage> codec_image_;
 
   // |abstract_texture_| is only used for legacy mailbox.
   std::unique_ptr<gpu::gles2::AbstractTexture> abstract_texture_;
-  scoped_refptr<gpu::SharedContextState> shared_context_state_;
+  scoped_refptr<gpu::SharedContextState> context_state_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedImageVideo);
 };

@@ -367,7 +367,7 @@ void VisibleSelectionTemplate<Strategy>::Trace(Visitor* visitor) {
   visitor->Trace(extent_);
 }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 
 template <typename Strategy>
 void VisibleSelectionTemplate<Strategy>::ShowTreeForThis() const {
@@ -422,7 +422,7 @@ std::ostream& operator<<(std::ostream& ostream,
 
 }  // namespace blink
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 
 void showTree(const blink::VisibleSelection& sel) {
   sel.ShowTreeForThis();

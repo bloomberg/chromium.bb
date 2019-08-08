@@ -12,13 +12,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "components/signin/core/browser/signin_status_metrics_provider.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
 #if !defined(OS_ANDROID)
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #endif
 
 ChromeSigninStatusMetricsProviderDelegate::
@@ -89,6 +89,7 @@ ChromeSigninStatusMetricsProviderDelegate::GetIdentityManagersForAllAccounts() {
   return managers;
 }
 
+#if !defined(OS_ANDROID)
 void ChromeSigninStatusMetricsProviderDelegate::OnBrowserAdded(
     Browser* browser) {
   identity::IdentityManager* identity_manager =
@@ -101,6 +102,7 @@ void ChromeSigninStatusMetricsProviderDelegate::OnBrowserAdded(
   const bool signed_in = identity_manager->HasPrimaryAccount();
   UpdateStatusWhenBrowserAdded(signed_in);
 }
+#endif
 
 void ChromeSigninStatusMetricsProviderDelegate::IdentityManagerCreated(
     identity::IdentityManager* identity_manager) {

@@ -37,6 +37,7 @@ class COMPONENT_EXPORT(SYSTEM_MEDIA_CONTROLS) SystemMediaControlsServiceImpl
   // SystemMediaControlsService implementation.
   void AddObserver(SystemMediaControlsServiceObserver* observer) override;
   void RemoveObserver(SystemMediaControlsServiceObserver* observer) override;
+  void SetEnabled(bool enabled) override;
   void SetIsNextEnabled(bool value) override;
   void SetIsPreviousEnabled(bool value) override;
   void SetIsPlayEnabled(bool value) override;
@@ -44,6 +45,12 @@ class COMPONENT_EXPORT(SYSTEM_MEDIA_CONTROLS) SystemMediaControlsServiceImpl
   void SetIsStopEnabled(bool value) override;
   void SetPlaybackStatus(
       ABI::Windows::Media::MediaPlaybackStatus status) override;
+  void SetTitle(const base::string16& title) override;
+  void SetArtist(const base::string16& artist) override;
+  void SetThumbnail(const SkBitmap& bitmap) override;
+  void ClearThumbnail() override;
+  void ClearMetadata() override;
+  void UpdateDisplay() override;
 
  private:
   friend struct base::DefaultSingletonTraits<SystemMediaControlsServiceImpl>;
@@ -60,8 +67,22 @@ class COMPONENT_EXPORT(SYSTEM_MEDIA_CONTROLS) SystemMediaControlsServiceImpl
   void OnPrevious();
   void OnStop();
 
+  // Control and keep track of the metadata.
   Microsoft::WRL::ComPtr<ABI::Windows::Media::ISystemMediaTransportControls>
       system_media_controls_;
+  Microsoft::WRL::ComPtr<
+      ABI::Windows::Media::ISystemMediaTransportControlsDisplayUpdater>
+      display_updater_;
+  Microsoft::WRL::ComPtr<ABI::Windows::Media::IMusicDisplayProperties>
+      display_properties_;
+  Microsoft::WRL::ComPtr<ABI::Windows::Storage::Streams::IDataWriter>
+      icon_data_writer_;
+  Microsoft::WRL::ComPtr<ABI::Windows::Storage::Streams::IRandomAccessStream>
+      icon_stream_;
+  Microsoft::WRL::ComPtr<
+      ABI::Windows::Storage::Streams::IRandomAccessStreamReference>
+      icon_stream_reference_;
+
   EventRegistrationToken registration_token_;
 
   // True if we've already tried to connect to the SystemMediaTransportControls.

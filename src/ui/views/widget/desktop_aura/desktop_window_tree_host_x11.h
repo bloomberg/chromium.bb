@@ -165,10 +165,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   void ShowImpl() override;
   void HideImpl() override;
   gfx::Rect GetBoundsInPixels() const override;
-  void SetBoundsInPixels(
-      const gfx::Rect& requested_bounds_in_pixels,
-      const viz::LocalSurfaceIdAllocation& local_surface_id_allocation =
-          viz::LocalSurfaceIdAllocation()) override;
+  void SetBoundsInPixels(const gfx::Rect& requested_bounds_in_pixels) override;
   gfx::Point GetLocationOnScreenInPixels() const override;
   void SetCapture() override;
   void ReleaseCapture() override;
@@ -304,6 +301,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
 
   // Accessor for DesktopNativeWidgetAura::content_window().
   aura::Window* content_window();
+
+  // Callback for a swapbuffer after resize.
+  void OnCompleteSwapWithNewSize(const gfx::Size& size);
 
   // X11 things
   // The display and the native X window hosting the root window.
@@ -449,6 +449,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   bool had_pointer_grab_ = false;
   bool had_window_focus_ = false;
 
+  // Cached value for SetVisible.  Not the same as the IsVisible public API.
+  bool is_compositor_set_visible_ = false;
+
   // Captures system key events when keyboard lock is requested.
   std::unique_ptr<ui::KeyboardHook> keyboard_hook_;
 
@@ -457,6 +460,17 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   std::unique_ptr<aura::ScopedWindowTargeter> targeter_for_modal_;
 
   uint32_t modal_dialog_counter_ = 0;
+
+  // Used for synchronizing between |xwindow_| between desktop compositor during
+  // resizing.
+  XID update_counter_ = x11::None;
+  XID extended_update_counter_ = x11::None;
+  int64_t pending_counter_value_ = 0;
+  int64_t configure_counter_value_ = 0;
+  int64_t current_counter_value_ = 0;
+  bool pending_counter_value_is_extended_ = false;
+  bool configure_counter_value_is_extended_ = false;
+  std::unique_ptr<CompositorObserver> compositor_observer_;
 
   base::WeakPtrFactory<DesktopWindowTreeHostX11> close_widget_factory_{this};
   base::WeakPtrFactory<DesktopWindowTreeHostX11> weak_factory_{this};

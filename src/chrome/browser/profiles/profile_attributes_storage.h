@@ -134,7 +134,7 @@ class ProfileAttributesStorage
   // profile pictures and the ProfileAvatarDownloader that is used to download
   // the high res avatars.
   void SaveAvatarImageAtPath(const base::FilePath& profile_path,
-                             const gfx::Image* image,
+                             gfx::Image image,
                              const std::string& key,
                              const base::FilePath& image_path);
 
@@ -147,8 +147,7 @@ class ProfileAttributesStorage
 
   // A cache of gaia/high res avatar profile pictures. This cache is updated
   // lazily so it needs to be mutable.
-  mutable std::unordered_map<std::string, std::unique_ptr<gfx::Image>>
-      cached_avatar_images_;
+  mutable std::unordered_map<std::string, gfx::Image> cached_avatar_images_;
 
   // Marks a profile picture as loading from disk. This prevents a picture from
   // loading multiple times.
@@ -174,7 +173,7 @@ class ProfileAttributesStorage
   // decoded into |image|.
   void OnAvatarPictureLoaded(const base::FilePath& profile_path,
                              const std::string& key,
-                             gfx::Image** image) const;
+                             gfx::Image image) const;
 
   // Called when the picture given by |file_name| has been saved to disk. Used
   // both for the GAIA profile picture and the high res avatar files.

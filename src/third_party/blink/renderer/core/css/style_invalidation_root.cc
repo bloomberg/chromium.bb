@@ -16,7 +16,7 @@ Element* StyleInvalidationRoot::RootElement() const {
     return &shadow_root->host();
   if (root_node->IsDocumentNode())
     return root_node->GetDocument().documentElement();
-  return ToElement(root_node);
+  return To<Element>(root_node);
 }
 
 #if DCHECK_IS_ON()

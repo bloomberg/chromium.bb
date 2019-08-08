@@ -129,24 +129,6 @@ class NET_EXPORT_PRIVATE HttpStreamRequest {
     virtual void OnNeedsClientAuth(const SSLConfig& used_ssl_config,
                                    SSLCertRequestInfo* cert_info) = 0;
 
-    // This is the failure of the CONNECT request through an HTTPS proxy due to
-    // a 302 redirect. Headers can be read from |response_info|, while the body
-    // can be read from |stream|.
-    //
-    // |used_ssl_config| indicates the actual SSL configuration used for this
-    // stream, since the HttpStreamRequest may have modified the configuration
-    // during stream processing.
-    //
-    // |used_proxy_info| indicates the actual ProxyInfo used for this stream,
-    // since the HttpStreamRequest performs the proxy resolution.
-    //
-    // Ownership of |stream| is transferred to the delegate.
-    virtual void OnHttpsProxyTunnelResponseRedirect(
-        const HttpResponseInfo& response_info,
-        const SSLConfig& used_ssl_config,
-        const ProxyInfo& used_proxy_info,
-        std::unique_ptr<HttpStream> stream) = 0;
-
     // Called when finding all QUIC alternative services are marked broken for
     // the origin in this request which advertises supporting QUIC.
     virtual void OnQuicBroken() = 0;

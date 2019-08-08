@@ -101,7 +101,7 @@ SVGParsingError SVGPath::SetValueAsString(const String& string) {
       std::make_unique<SVGPathByteStream>();
   SVGParsingError parse_status =
       BuildByteStreamFromString(string, *byte_stream);
-  path_value_ = CSSPathValue::Create(std::move(byte_stream));
+  path_value_ = MakeGarbageCollected<CSSPathValue>(std::move(byte_stream));
   return parse_status;
 }
 
@@ -110,7 +110,7 @@ SVGPropertyBase* SVGPath::CloneForAnimation(const String& value) const {
       std::make_unique<SVGPathByteStream>();
   BuildByteStreamFromString(value, *byte_stream);
   return MakeGarbageCollected<SVGPath>(
-      CSSPathValue::Create(std::move(byte_stream)));
+      MakeGarbageCollected<CSSPathValue>(std::move(byte_stream)));
 }
 
 void SVGPath::Add(SVGPropertyBase* other, SVGElement*) {
@@ -120,7 +120,7 @@ void SVGPath::Add(SVGPropertyBase* other, SVGElement*) {
       ByteStream().IsEmpty() || other_path_byte_stream.IsEmpty())
     return;
 
-  path_value_ = CSSPathValue::Create(
+  path_value_ = MakeGarbageCollected<CSSPathValue>(
       AddPathByteStreams(ByteStream(), other_path_byte_stream));
 }
 
@@ -179,7 +179,7 @@ void SVGPath::CalculateAnimatedValue(
         std::move(new_stream),
         ToSVGPath(to_at_end_of_duration_value)->ByteStream(), repeat_count);
 
-  path_value_ = CSSPathValue::Create(std::move(new_stream));
+  path_value_ = MakeGarbageCollected<CSSPathValue>(std::move(new_stream));
 }
 
 float SVGPath::CalculateDistance(SVGPropertyBase* to, SVGElement*) {

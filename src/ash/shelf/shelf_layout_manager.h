@@ -11,12 +11,12 @@
 #include "ash/ash_export.h"
 #include "ash/home_screen/home_launcher_gesture_handler_observer.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/public/cpp/wallpaper_controller_observer.h"
 #include "ash/rotator/screen_rotation_animator_observer.h"
 #include "ash/session/session_observer.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell_observer.h"
 #include "ash/system/locale/locale_update_controller.h"
-#include "ash/wallpaper/wallpaper_controller_observer.h"
 #include "ash/wm/lock_state_observer.h"
 #include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/wm_snap_to_pixel_layout_manager.h"
@@ -25,6 +25,7 @@
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "base/timer/timer.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/display/display.h"
 #include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/insets.h"
@@ -44,6 +45,7 @@ class Shelf;
 class ShelfLayoutManagerObserver;
 class ShelfLayoutManagerTest;
 class ShelfWidget;
+class WallpaperController;
 
 // ShelfLayoutManager is the layout manager responsible for the shelf and
 // status widgets. The shelf is given the total available width and told the
@@ -481,6 +483,9 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
 
   // The display on which this shelf is shown.
   display::Display display_;
+
+  // Sets shelf opacity to 0 after all animations have completed.
+  std::unique_ptr<ui::ImplicitAnimationObserver> hide_animation_observer_;
 
   // The current shelf background. Should not be assigned to directly, use
   // MaybeUpdateShelfBackground() instead.

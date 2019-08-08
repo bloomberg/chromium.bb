@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/protocol_util.h"
 #include "net/http/http_response_info.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 
@@ -43,8 +44,9 @@ class ProtocolPageLoadMetricsObserver
  private:
   friend class ProtocolPageLoadMetricsObserverTest;
 
-  // The connection info for the committed URL.
-  net::HttpResponseInfo::ConnectionInfo connection_info_;
+  // The protocol for the committed navigation.
+  page_load_metrics::NetworkProtocol protocol_ =
+      page_load_metrics::NetworkProtocol::kOther;
 
   DISALLOW_COPY_AND_ASSIGN(ProtocolPageLoadMetricsObserver);
 };

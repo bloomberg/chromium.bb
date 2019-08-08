@@ -300,23 +300,23 @@ typedef void (GL_APIENTRYP PFNGLBLITFRAMEBUFFERCHROMIUMPROC) (GLint srcX0, GLint
 #endif
 #endif  /* GL_CHROMIUM_framebuffer_multisample */
 
-/* GL_CHROMIUM_texture_compression_dxt3 */
-#ifndef GL_CHROMIUM_texture_compression_dxt3
-#define GL_CHROMIUM_texture_compression_dxt3 1
+/* GL_ANGLE_texture_compression_dxt3 */
+#ifndef GL_ANGLE_texture_compression_dxt3
+#define GL_ANGLE_texture_compression_dxt3 1
 
 #ifndef GL_COMPRESSED_RGBA_S3TC_DXT3_EXT
 #define GL_COMPRESSED_RGBA_S3TC_DXT3_EXT 0x83F2
 #endif
-#endif  /* GL_CHROMIUM_texture_compression_dxt3 */
+#endif /* GL_ANGLE_texture_compression_dxt3 */
 
-/* GL_CHROMIUM_texture_compression_dxt5 */
-#ifndef GL_CHROMIUM_texture_compression_dxt5
-#define GL_CHROMIUM_texture_compression_dxt5 1
+/* GL_ANGLE_texture_compression_dxt5 */
+#ifndef GL_ANGLE_texture_compression_dxt5
+#define GL_ANGLE_texture_compression_dxt5 1
 
 #ifndef GL_COMPRESSED_RGBA_S3TC_DXT5_EXT
 #define GL_COMPRESSED_RGBA_S3TC_DXT5_EXT 0x83F3
 #endif
-#endif  /* GL_CHROMIUM_texture_compression_dxt5 */
+#endif /* GL_ANGLE_texture_compression_dxt5 */
 
 /* GL_CHROMIUM_async_pixel_transfers */
 #ifndef GL_CHROMIUM_async_pixel_transfers
@@ -1286,6 +1286,16 @@ typedef void(GL_APIENTRYP PFNGLUNPREMULTIPLYANDDITHERCOPYCHROMIUMPROC)(
 #define GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM 0x8AF6
 #define GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM 0x8AF7
 #endif /* GL_CHROMIUM_shared_image */
+
+/* GL_CHROMIUM_program_completion_query */
+#ifndef GL_CHROMIUM_program_completion_query
+#define GL_CHROMIUM_program_completion_query 1
+
+#ifndef GL_PROGRAM_COMPLETION_QUERY_CHROMIUM
+// TODO(jie.a.chen@intel.com): Get official numbers for this constants.
+#define GL_PROGRAM_COMPLETION_QUERY_CHROMIUM 0x6009
+#endif
+#endif /* GL_CHROMIUM_program_completion_query */
 
 #ifdef __cplusplus
 }

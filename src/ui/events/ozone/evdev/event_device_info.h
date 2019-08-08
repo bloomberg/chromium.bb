@@ -97,6 +97,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventDeviceInfo {
   uint16_t bustype() const { return input_id_.bustype; }
   uint16_t vendor_id() const { return input_id_.vendor; }
   uint16_t product_id() const { return input_id_.product; }
+  uint16_t version() const { return input_id_.version; }
 
   // Check input device properties.
   bool HasProp(unsigned int code) const;

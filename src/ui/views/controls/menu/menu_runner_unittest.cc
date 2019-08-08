@@ -551,7 +551,7 @@ TEST_F(MenuRunnerImplTest, MenuRunnerDestroyedWithNoActiveController) {
   // This is not expected to run, however this is from the origin ASAN stack
   // traces. So regressions will be caught with the same stack trace.
   if (menu_controller.controller())
-    menu_controller.controller()->CancelAll();
+    menu_controller.controller()->Cancel(MenuController::ExitType::kAll);
   EXPECT_EQ(nullptr, menu_controller.controller());
 }
 
@@ -606,7 +606,7 @@ TEST_F(MenuRunnerDestructionTest, MenuRunnerDestroyedDuringReleaseRef) {
   MenuControllerTestApi menu_controller;
   // This will release the ref on ViewsDelegate. The test version will release
   // |menu_runner| simulating device shutdown.
-  menu_controller.controller()->CancelAll();
+  menu_controller.controller()->Cancel(MenuController::ExitType::kAll);
   // Both the |menu_runner| and |menu_controller| should have been deleted.
   EXPECT_EQ(nullptr, ref);
   EXPECT_EQ(nullptr, menu_controller.controller());

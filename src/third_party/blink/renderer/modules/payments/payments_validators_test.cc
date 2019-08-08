@@ -8,6 +8,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/modules/payments/payment_validation_errors.h"
+#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -339,6 +340,8 @@ TEST(PaymentMethodValidatorTest, IsValidPaymentMethod) {
                     {"https://pay.bobpay.com/pay", true},
                     {"https://pay.bobpay.com/pay?version=1", true},
                     {"https://pay.bobpay.com/pay#", true},
+                    {"http://localhost", true},
+                    {"http://localhost:8080", true},
                     {"http://bobpay.com", false},
                     {"https://username:password@bobpay.com", false},
                     {"https://username@bobpay.com", false},
@@ -347,10 +350,22 @@ TEST(PaymentMethodValidatorTest, IsValidPaymentMethod) {
                     {"Basic-card", false}};
 
   for (const auto& test_case : kTestCases) {
-    EXPECT_EQ(test_case.expected_valid, PaymentsValidators::IsValidMethodFormat(
-                                            test_case.payment_method));
+    EXPECT_EQ(test_case.expected_valid,
+              PaymentsValidators::IsValidMethodFormat(test_case.payment_method))
+        << test_case.payment_method << " should be "
+        << (test_case.expected_valid ? "valid" : "invalid");
   }
 }
-}  // namespace
 
+TEST(PaymentMethodValidatorTest, IsValidPaymentMethodWhitelisted) {
+  EXPECT_FALSE(PaymentsValidators::IsValidMethodFormat("http://alicepay.com"))
+      << "http://alicepay.com is not a valid method format by default";
+
+  SecurityPolicy::AddOriginToTrustworthySafelist("http://alicepay.com");
+
+  EXPECT_TRUE(PaymentsValidators::IsValidMethodFormat("http://alicepay.com"))
+      << "http://alicepay.com should be valid if whitelisted";
+}
+
+}  // namespace
 }  // namespace blink

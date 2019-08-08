@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/layout/jank_tracker.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_table.h"
 #include "third_party/blink/renderer/core/layout/layout_table_section.h"
@@ -29,24 +30,22 @@ namespace blink {
 // If needed, exclude composited layer's subpixel accumulation to avoid full
 // layer raster invalidations during animation with subpixels.
 // See crbug.com/833083 for details.
-template <typename Rect, typename Point>
-void PaintInvalidatorContext::ExcludeCompositedLayerSubpixelAccumulation(
-    const LayoutObject& object,
-    Rect& rect) const {
+bool PaintInvalidatorContext::ShouldExcludeCompositedLayerSubpixelAccumulation(
+    const LayoutObject& object) const {
   // TODO(wangxianzhu): How to handle sub-pixel location animation for CAP?
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
+    return false;
 
   // One of the following conditions happened in crbug.com/837226.
   if (!paint_invalidation_container ||
       !paint_invalidation_container->FirstFragment()
            .HasLocalBorderBoxProperties() ||
       !tree_builder_context_)
-    return;
+    return false;
 
   if (!(paint_invalidation_container->Layer()->GetCompositingReasons() &
         CompositingReason::kComboAllDirectReasons))
-    return;
+    return false;
 
   if (object != paint_invalidation_container &&
       &paint_invalidation_container->FirstFragment().PostScrollTranslation() !=
@@ -54,22 +53,21 @@ void PaintInvalidatorContext::ExcludeCompositedLayerSubpixelAccumulation(
     // Subpixel accumulation doesn't propagate through non-translation
     // transforms. Also skip all transforms, to avoid the runtime cost of
     // verifying whether the transform is a translation.
-    return;
+    return false;
   }
 
-  // Exclude the subpixel accumulation so that the paint invalidator won't
+  // Will exclude the subpixel accumulation so that the paint invalidator won't
   // see changed visual rects during composited animation with subpixels, to
   // avoid full layer invalidation. The subpixel accumulation will be added
   // back in ChunkToLayerMapper::AdjustVisualRectBySubpixelOffset(). Should
   // make sure the code is synced.
   // TODO(wangxianzhu): Avoid exposing subpixel accumulation to platform code.
-  rect.MoveBy(Point(LayoutPoint(
-      -paint_invalidation_container->Layer()->SubpixelAccumulation())));
+  return true;
 }
 
 IntRect PaintInvalidatorContext::MapLocalRectToVisualRect(
     const LayoutObject& object,
-    const LayoutRect& local_rect) const {
+    const PhysicalRect& local_rect) const {
   DCHECK(NeedsVisualRectUpdate(object));
 
   if (local_rect.IsEmpty())
@@ -80,32 +78,20 @@ IntRect PaintInvalidatorContext::MapLocalRectToVisualRect(
          // objects, for carets, selections, etc.
          object.IsBoxModelObject() || object.IsText());
 
-  // The flip below is required because local visual rects are currently in
-  // "physical coordinates with flipped block-flow direction" (see
-  // LayoutBoxModelObject.h) but we need them to be in physical coordinates.
-  auto rect = local_rect;
-  if (object.IsBox()) {
-    ToLayoutBox(object).FlipForWritingMode(rect);
-  } else {
-    // Also convert the rect for non-boxes into physical coordinates before
-    // applying paint offset.
-    // TODO(wangxianzhu): Avoid ContainingBlock().
-    object.ContainingBlock()->FlipForWritingMode(rect);
-  }
-
   // Unite visual rect with clip path bounding rect.
   // It is because the clip path display items are owned by the layout object
   // who has the clip path, and uses its visual rect as bounding rect too.
   // Usually it is done at layout object level and included as a part of
   // local visual overflow, but clip-path can be a reference to SVG, and we
   // have to wait until pre-paint to ensure clean layout.
+  PhysicalRect rect = local_rect;
   if (base::Optional<FloatRect> clip_path_bounding_box =
           ClipPathClipper::LocalClipPathBoundingBox(object))
-    rect.Unite(LayoutRect(EnclosingIntRect(*clip_path_bounding_box)));
+    rect.Unite(PhysicalRect(EnclosingIntRect(*clip_path_bounding_box)));
 
-  rect.MoveBy(fragment_data->PaintOffset());
-  ExcludeCompositedLayerSubpixelAccumulation<LayoutRect, LayoutPoint>(object,
-                                                                      rect);
+  rect.Move(fragment_data->PaintOffset());
+  if (ShouldExcludeCompositedLayerSubpixelAccumulation(object))
+    rect.Move(-paint_invalidation_container->Layer()->SubpixelAccumulation());
   // Use EnclosingIntRect to ensure the final visual rect will cover the rect
   // in source coordinates no matter if the painting will snap to pixels.
   return EnclosingIntRect(rect);
@@ -125,8 +111,10 @@ IntRect PaintInvalidatorContext::MapLocalRectToVisualRectForSVGChild(
   // We also don't need to adjust for clip path here because SVG the local
   // visual rect has already been adjusted by clip path.
   auto rect = local_rect;
-  ExcludeCompositedLayerSubpixelAccumulation<FloatRect, FloatPoint>(object,
-                                                                    rect);
+  if (ShouldExcludeCompositedLayerSubpixelAccumulation(object)) {
+    rect.Move(FloatSize(
+        -paint_invalidation_container->Layer()->SubpixelAccumulation()));
+  }
   // Use EnclosingIntRect to ensure the final visual rect will cover the rect
   // in source coordinates no matter if the painting will snap to pixels.
   return EnclosingIntRect(rect);
@@ -283,6 +271,13 @@ void PaintInvalidator::UpdateVisualRect(const LayoutObject& object,
          fragment_data.PaintOffset());
 
   fragment_data.SetVisualRect(ComputeVisualRect(object, context));
+
+  object.GetFrameView()->GetJankTracker().NotifyObjectPrePaint(
+      object,
+      PropertyTreeState(*context.tree_builder_context_->current.transform,
+                        *context.tree_builder_context_->current.clip,
+                        *context.tree_builder_context_->current_effect),
+      context.old_visual_rect, fragment_data.VisualRect());
 }
 
 void PaintInvalidator::UpdateEmptyVisualRectFlag(

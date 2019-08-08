@@ -49,7 +49,7 @@ struct CORE_EXPORT PaintInvalidatorContext {
   // to map any local rect, and SVG child derived from non-SVG layout objects to
   // map local rect of caret, selection, etc.
   IntRect MapLocalRectToVisualRect(const LayoutObject&,
-                                   const LayoutRect&) const;
+                                   const PhysicalRect&) const;
 
   // Maps a rect in the SVG child object's local coordinates to a visual rect
   // in the local transform space.
@@ -126,16 +126,15 @@ struct CORE_EXPORT PaintInvalidatorContext {
 
   // The previous VisualRect and PaintOffset of FragmentData.
   IntRect old_visual_rect;
-  LayoutPoint old_paint_offset;
+  PhysicalOffset old_paint_offset;
 
   const FragmentData* fragment_data;
 
  private:
   friend class PaintInvalidator;
 
-  template <typename Rect, typename Point>
-  void ExcludeCompositedLayerSubpixelAccumulation(const LayoutObject&,
-                                                  Rect&) const;
+  bool ShouldExcludeCompositedLayerSubpixelAccumulation(
+      const LayoutObject&) const;
 
   const PaintPropertyTreeBuilderFragmentContext* tree_builder_context_ =
       nullptr;

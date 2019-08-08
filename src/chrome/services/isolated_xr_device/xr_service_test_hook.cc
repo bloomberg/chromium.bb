@@ -7,6 +7,7 @@
 #include "base/process/process.h"
 #include "chrome/services/isolated_xr_device/xr_test_hook_wrapper.h"
 #include "device/vr/openvr/openvr_api_wrapper.h"
+#include "device/vr/windows_mixed_reality/mixed_reality_statics.h"
 
 namespace device {
 
@@ -18,8 +19,9 @@ void XRServiceTestHook::SetTestHook(
       hook ? std::make_unique<XRTestHookWrapper>(hook.PassInterface())
            : nullptr;
 
-  // Register the wrapper testhook with OpenVR.
+  // Register the wrapper testhook with OpenVR and WMR.
   OpenVRWrapper::SetTestHook(wrapper.get());
+  MixedRealityDeviceStatics::SetTestHook(wrapper.get());
 
   // Store the new wrapper, so we keep it alive.
   wrapper_ = std::move(wrapper);
@@ -43,7 +45,7 @@ XRServiceTestHook::~XRServiceTestHook() {
                            // Unset the testhook wrapper with OpenVR, so any
                            // future calls to OpenVR don't use it.
                            OpenVRWrapper::SetTestHook(nullptr);
-
+                           MixedRealityDeviceStatics::SetTestHook(nullptr);
                            // Destroy the test hook wrapper on this thread.
                          },
                          std::move(wrapper_)));

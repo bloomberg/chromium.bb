@@ -35,8 +35,6 @@ class SVGFESpecularLightingElement final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_NODE_FACTORY(SVGFESpecularLightingElement);
-
   explicit SVGFESpecularLightingElement(Document&);
 
   void LightElementAttributeChanged(const SVGFELightElement*,

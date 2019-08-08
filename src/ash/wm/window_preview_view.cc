@@ -73,12 +73,11 @@ void WindowPreviewView::Layout() {
                        local_bounds.height() / union_rect.height());
   for (auto entry : mirror_views_) {
     const gfx::Rect bounds = entry.first->GetBoundsInScreen();
-    const int top_inset = entry.first->GetProperty(aura::client::kTopViewInset);
     gfx::Rect mirror_bounds;
     mirror_bounds.set_x(
         gfx::ToRoundedInt((bounds.x() - union_origin.x()) * scale.x()));
-    mirror_bounds.set_y(gfx::ToRoundedInt(
-        (bounds.y() + top_inset - union_origin.y()) * scale.y()));
+    mirror_bounds.set_y(
+        gfx::ToRoundedInt((bounds.y() - union_origin.y()) * scale.y()));
     mirror_bounds.set_width(gfx::ToRoundedInt(bounds.width() * scale.x()));
     mirror_bounds.set_height(gfx::ToRoundedInt(bounds.height() * scale.y()));
     entry.second->SetBoundsRect(mirror_bounds);
@@ -130,14 +129,10 @@ void WindowPreviewView::RemoveWindow(aura::Window* window) {
 }
 
 gfx::RectF WindowPreviewView::GetUnionRect() const {
-  gfx::RectF bounds;
-  for (auto entry : mirror_views_) {
-    gfx::RectF entry_bounds(entry.first->GetBoundsInScreen());
-    entry_bounds.Inset(0, entry.first->GetProperty(aura::client::kTopViewInset),
-                       0, 0);
-    bounds.Union(entry_bounds);
-  }
-  return bounds;
+  gfx::Rect bounds;
+  for (auto entry : mirror_views_)
+    bounds.Union(entry.first->GetBoundsInScreen());
+  return gfx::RectF(bounds);
 }
 
 }  // namespace wm

@@ -54,7 +54,7 @@ WorkerBackingThread& AudioWorkletThread::GetWorkerBackingThread() {
 void AudioWorkletThread::EnsureSharedBackingThread() {
   DCHECK(IsMainThread());
   WorkletThreadHolder<AudioWorkletThread>::EnsureInstance(
-      ThreadCreationParams(WebThreadType::kWebAudioThread));
+      ThreadCreationParams(WebThreadType::kAudioWorkletThread));
 }
 
 void AudioWorkletThread::ClearSharedBackingThread() {

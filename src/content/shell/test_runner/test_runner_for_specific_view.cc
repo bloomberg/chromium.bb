@@ -38,6 +38,7 @@
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_isolated_world_info.h"
 #include "third_party/blink/public/platform/web_point.h"
+#include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_array_buffer.h"
@@ -47,6 +48,7 @@
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_input_element.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_render_theme.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/public/web/web_security_policy.h"
 #include "third_party/blink/public/web/web_serialized_script_value.h"
@@ -89,8 +91,7 @@ void TestRunnerForSpecificView::Reset() {
 #if !defined(OS_MACOSX) && !defined(OS_WIN)
   // (Constants copied because we can't depend on the header that defined
   // them from this file.)
-  web_view()->SetSelectionColors(0xff1e90ff, 0xff000000, 0xffc8c8c8,
-                                 0xff323232);
+  blink::SetSelectionColors(0xff1e90ff, 0xff000000, 0xffc8c8c8, 0xff323232);
 #endif
   if (web_view()->MainFrame()->IsWebLocalFrame()) {
     web_view()->MainFrame()->ToWebLocalFrame()->EnableViewSourceMode(false);
@@ -332,7 +333,7 @@ void TestRunnerForSpecificView::GetManifestThen(
 
 void TestRunnerForSpecificView::GetManifestCallback(
     v8::UniquePersistent<v8::Function> callback,
-    const GURL& manifest_url,
+    const blink::WebURL& manifest_url,
     const blink::Manifest& manifest) {
   PostV8CallbackWithArgs(std::move(callback), 0, nullptr);
 }
@@ -482,8 +483,7 @@ bool TestRunnerForSpecificView::HasCustomPageSizeStyle(int page_index) {
 }
 
 void TestRunnerForSpecificView::ForceRedSelectionColors() {
-  web_view()->SetSelectionColors(0xffee0000, 0xff00ee00, 0xff000000,
-                                 0xffc0c0c0);
+  blink::SetSelectionColors(0xffee0000, 0xff00ee00, 0xff000000, 0xffc0c0c0);
 }
 
 void TestRunnerForSpecificView::SetPageVisibility(
@@ -625,13 +625,18 @@ void TestRunnerForSpecificView::SetIsolatedWorldInfo(
     int world_id,
     v8::Local<v8::Value> security_origin,
     v8::Local<v8::Value> content_security_policy) {
-  CHECK(security_origin->IsString() || security_origin->IsNull());
-  CHECK(content_security_policy->IsString() ||
-        content_security_policy->IsNull());
+  if (!security_origin->IsString() && !security_origin->IsNull())
+    return;
+
+  if (!content_security_policy->IsString() &&
+      !content_security_policy->IsNull()) {
+    return;
+  }
 
   // If |content_security_policy| is specified, |security_origin| must also be
   // specified.
-  CHECK(content_security_policy->IsNull() || security_origin->IsString());
+  if (content_security_policy->IsString() && security_origin->IsNull())
+    return;
 
   blink::WebIsolatedWorldInfo info;
   if (security_origin->IsString()) {
@@ -644,6 +649,9 @@ void TestRunnerForSpecificView::SetIsolatedWorldInfo(
     info.content_security_policy = V8StringToWebString(
         blink::MainThreadIsolate(), content_security_policy.As<v8::String>());
   }
+
+  // Clear the document->isolated world CSP mapping.
+  web_view()->FocusedFrame()->ClearIsolatedWorldCSPForTesting(world_id);
 
   web_view()->FocusedFrame()->SetIsolatedWorldInfo(world_id, info);
 }

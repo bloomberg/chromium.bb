@@ -83,7 +83,7 @@ class TestingQuicChromiumClientSession : public QuicChromiumClientSession {
 
 class QuicChromiumClientSessionTest
     : public ::testing::TestWithParam<
-          std::tuple<quic::QuicTransportVersion, bool>>,
+          std::tuple<quic::ParsedQuicVersion, bool>>,
       public WithScopedTaskEnvironment {
  public:
   QuicChromiumClientSessionTest()
@@ -140,8 +140,7 @@ class QuicChromiumClientSessionTest
         quic::QuicUtils::CreateRandomConnectionId(&random_),
         quic::QuicSocketAddress(quic::QuicSocketAddressImpl(kIpEndPoint)),
         &helper_, &alarm_factory_, writer, true, quic::Perspective::IS_CLIENT,
-        quic::test::SupportedVersions(
-            quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO, version_)));
+        quic::test::SupportedVersions(version_));
     session_.reset(new TestingQuicChromiumClientSession(
         connection, std::move(socket),
         /*stream_factory=*/nullptr, &crypto_client_stream_factory_, &clock_,
@@ -199,25 +198,31 @@ class QuicChromiumClientSessionTest
   }
 
   quic::QuicStreamId GetNthClientInitiatedBidirectionalStreamId(int n) {
-    return quic::test::GetNthClientInitiatedBidirectionalStreamId(version_, n);
+    return quic::test::GetNthClientInitiatedBidirectionalStreamId(
+        version_.transport_version, n);
   }
 
   quic::QuicStreamId GetNthServerInitiatedUnidirectionalStreamId(int n) {
-    return quic::test::GetNthServerInitiatedUnidirectionalStreamId(version_, n);
+    return quic::test::GetNthServerInitiatedUnidirectionalStreamId(
+        version_.transport_version, n);
   }
 
   size_t GetMaxAllowedOutgoingBidirectionalStreams() {
     quic::QuicSession* quic_session =
         dynamic_cast<quic::QuicSession*>(&*session_);
-    if (version_ != quic::QUIC_VERSION_99) {
+    if (version_.transport_version != quic::QUIC_VERSION_99) {
       return quic::test::QuicSessionPeer::GetStreamIdManager(quic_session)
           ->max_open_outgoing_streams();
     }
+    // For version99, the count will include both static and dynamic streams.
+    // These tests are only concerned with dynamic streams (that is, the number
+    // of streams that they can create), so back out the static header stream.
     return quic::test::QuicSessionPeer::v99_streamid_manager(quic_session)
-        ->max_allowed_outgoing_bidirectional_streams();
+               ->max_allowed_outgoing_bidirectional_streams() -
+           1;
   }
 
-  const quic::QuicTransportVersion version_;
+  const quic::ParsedQuicVersion version_;
   const bool client_headers_include_h2_stream_dependency_;
   QuicFlagSaver flags_;  // Save/restore all QUIC flag values.
   quic::QuicCryptoClientConfig crypto_config_;
@@ -248,9 +253,8 @@ class QuicChromiumClientSessionTest
 INSTANTIATE_TEST_SUITE_P(
     VersionIncludeStreamDependencySequence,
     QuicChromiumClientSessionTest,
-    ::testing::Combine(
-        ::testing::ValuesIn(quic::AllSupportedTransportVersions()),
-        ::testing::Bool()));
+    ::testing::Combine(::testing::ValuesIn(quic::AllSupportedVersions()),
+                       ::testing::Bool()));
 
 TEST_P(QuicChromiumClientSessionTest, IsFatalErrorNotSetForNonFatalError) {
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
@@ -326,7 +330,7 @@ TEST_P(QuicChromiumClientSessionTest, Handle) {
       session_->CreateHandle(destination_);
   EXPECT_TRUE(handle->IsConnected());
   EXPECT_FALSE(handle->IsCryptoHandshakeConfirmed());
-  EXPECT_EQ(version_, handle->GetQuicVersion());
+  EXPECT_EQ(version_.transport_version, handle->GetQuicVersion());
   EXPECT_EQ(session_key_.server_id(), handle->server_id());
   EXPECT_EQ(session_net_log.source().type, handle->net_log().source().type);
   EXPECT_EQ(session_net_log.source().id, handle->net_log().source().id);
@@ -355,7 +359,7 @@ TEST_P(QuicChromiumClientSessionTest, Handle) {
   // Veirfy that the handle works correctly after the session is closed.
   EXPECT_FALSE(handle->IsConnected());
   EXPECT_TRUE(handle->IsCryptoHandshakeConfirmed());
-  EXPECT_EQ(version_, handle->GetQuicVersion());
+  EXPECT_EQ(version_.transport_version, handle->GetQuicVersion());
   EXPECT_EQ(session_key_.server_id(), handle->server_id());
   EXPECT_EQ(session_net_log.source().type, handle->net_log().source().type);
   EXPECT_EQ(session_net_log.source().id, handle->net_log().source().id);
@@ -380,7 +384,7 @@ TEST_P(QuicChromiumClientSessionTest, Handle) {
   // Veirfy that the handle works correctly after the session is deleted.
   EXPECT_FALSE(handle->IsConnected());
   EXPECT_TRUE(handle->IsCryptoHandshakeConfirmed());
-  EXPECT_EQ(version_, handle->GetQuicVersion());
+  EXPECT_EQ(version_.transport_version, handle->GetQuicVersion());
   EXPECT_EQ(session_key_.server_id(), handle->server_id());
   EXPECT_EQ(session_net_log.source().type, handle->net_log().source().type);
   EXPECT_EQ(session_net_log.source().id, handle->net_log().source().id);
@@ -507,24 +511,24 @@ TEST_P(QuicChromiumClientSessionTest, AsyncStreamRequest) {
   MockQuicData quic_data;
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeInitialSettingsPacket(1, nullptr));
-  if (version_ == quic::QUIC_VERSION_99) {
+  if (version_.transport_version == quic::QUIC_VERSION_99) {
     // The open stream limit is set to 50 by
     // MockCryptoClientStream::SetConfigNegotiated() so when the 51st stream is
-    // requested, a STREAM_ID_BLOCKED will be sent.
-    quic_data.AddWrite(
-        SYNCHRONOUS,
-        client_maker_.MakeStreamIdBlockedPacket(
-            2, true, GetNthClientInitiatedBidirectionalStreamId(49)));
+    // requested, a STREAMS_BLOCKED will be sent, indicating that it's blocked
+    // at the limit of 50. The +1 accounts for the header stream.
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeStreamsBlockedPacket(
+                                        2, true, 50 + 1,
+                                        /*unidirectional=*/false));
     quic_data.AddWrite(
         SYNCHRONOUS, client_maker_.MakeRstPacket(
                          3, true, GetNthClientInitiatedBidirectionalStreamId(0),
                          quic::QUIC_STREAM_CANCELLED, 0,
                          /*include_stop_sending_if_v99=*/false));
-    // After the STREAM_ID_BLOCKED is sent, receive a MAX_STREAM_ID to increase
-    // the limit.
+    // After the STREAMS_BLOCKED is sent, receive a MAX_STREAMS to increase
+    // the limit to 53.
     quic_data.AddRead(
-        ASYNC, server_maker_.MakeMaxStreamIdPacket(
-                   1, true, GetNthClientInitiatedBidirectionalStreamId(50)));
+        ASYNC, server_maker_.MakeMaxStreamsPacket(1, true, 53,
+                                                  /*unidirectional=*/false));
   } else {
     quic_data.AddWrite(
         SYNCHRONOUS, client_maker_.MakeRstPacket(
@@ -559,7 +563,7 @@ TEST_P(QuicChromiumClientSessionTest, AsyncStreamRequest) {
                                GetNthClientInitiatedBidirectionalStreamId(0),
                                quic::QUIC_STREAM_CANCELLED, 0);
   session_->OnRstStream(rst);
-  if (version_ == quic::QUIC_VERSION_99) {
+  if (version_.transport_version == quic::QUIC_VERSION_99) {
     // For version99, to close the stream completely, we also must receive a
     // STOP_SENDING frame:
     quic::QuicStopSendingFrame stop_sending(
@@ -584,18 +588,17 @@ TEST_P(QuicChromiumClientSessionTest, ClosedWithAsyncStreamRequest) {
   MockQuicData quic_data;
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeInitialSettingsPacket(1, nullptr));
-  if (version_ == quic::QUIC_VERSION_99) {
+  if (version_.transport_version == quic::QUIC_VERSION_99) {
     // The open stream limit is set to 50 by
     // MockCryptoClientStream::SetConfigNegotiated() so when the 51st stream is
-    // requested, a STREAM_ID_BLOCKED will be sent.
-    quic_data.AddWrite(
-        SYNCHRONOUS,
-        client_maker_.MakeStreamIdBlockedPacket(
-            2, true, GetNthClientInitiatedBidirectionalStreamId(49)));
-    quic_data.AddWrite(
-        SYNCHRONOUS,
-        client_maker_.MakeStreamIdBlockedPacket(
-            3, true, GetNthClientInitiatedBidirectionalStreamId(49)));
+    // requested, a STREAMS_BLOCKED will be sent, indicating that it's blocked
+    // at the limit of 50. The +1 accounts for the header streams.
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeStreamsBlockedPacket(
+                                        2, true, 50 + 1,
+                                        /*unidirectional=*/false));
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeStreamsBlockedPacket(
+                                        3, true, 50 + 1,
+                                        /*unidirectional=*/false));
   }
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
   quic_data.AddRead(ASYNC, OK);  // EOF
@@ -648,14 +651,13 @@ TEST_P(QuicChromiumClientSessionTest, CancelPendingStreamRequest) {
   MockQuicData quic_data;
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeInitialSettingsPacket(1, nullptr));
-  if (version_ == quic::QUIC_VERSION_99) {
+  if (version_.transport_version == quic::QUIC_VERSION_99) {
     // The open stream limit is set to 50 by
     // MockCryptoClientStream::SetConfigNegotiated() so when the 51st stream is
-    // requested, a STREAM_ID_BLOCKED will be sent.
-    quic_data.AddWrite(
-        SYNCHRONOUS,
-        client_maker_.MakeStreamIdBlockedPacket(
-            2, true, GetNthClientInitiatedBidirectionalStreamId(49)));
+    // requested, a STREAMS_BLOCKED will be sent.
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeStreamsBlockedPacket(
+                                        2, true, 51,
+                                        /*unidirectional=*/false));
     // This node receives the RST_STREAM+STOP_SENDING, it responds
     // with only a RST_STREAM.
     quic_data.AddWrite(
@@ -701,7 +703,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPendingStreamRequest) {
                                GetNthClientInitiatedBidirectionalStreamId(0),
                                quic::QUIC_STREAM_CANCELLED, 0);
   session_->OnRstStream(rst);
-  if (version_ == quic::QUIC_VERSION_99) {
+  if (version_.transport_version == quic::QUIC_VERSION_99) {
     // For version99, we require a STOP_SENDING as well as a RESET_STREAM to
     // fully close the stream.
     quic::QuicStopSendingFrame stop_sending(
@@ -784,11 +786,10 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionCloseWithPendingStreamRequest) {
   MockQuicData quic_data;
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeInitialSettingsPacket(1, nullptr));
-  if (version_ == quic::QUIC_VERSION_99) {
-    quic_data.AddWrite(
-        SYNCHRONOUS,
-        client_maker_.MakeStreamIdBlockedPacket(
-            2, true, GetNthClientInitiatedBidirectionalStreamId(49)));
+  if (version_.transport_version == quic::QUIC_VERSION_99) {
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeStreamsBlockedPacket(
+                                        2, true, 51,
+                                        /*unidirectional=*/false));
   }
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
   quic_data.AddRead(
@@ -832,24 +833,25 @@ TEST_P(QuicChromiumClientSessionTest, MaxNumStreams) {
   MockQuicData quic_data;
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeInitialSettingsPacket(1, nullptr));
-  if (version_ == quic::QUIC_VERSION_99) {
-    // stream id blocked, stream id blocked on is #102, which is
-    // the 51st stream id...
-    quic_data.AddWrite(
-        SYNCHRONOUS,
-        client_maker_.MakeStreamIdBlockedPacket(
-            2, true, GetNthClientInitiatedBidirectionalStreamId(49)));
+  if (version_.transport_version == quic::QUIC_VERSION_99) {
+    // Initial configuration is 50 dynamic streams. Taking into account
+    // the static stream (headers), expect to block on when hitting the limit
+    // of 51 streams
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeStreamsBlockedPacket(
+                                        2, true, 50 + 1,
+                                        /*unidirectional=*/false));
     quic_data.AddWrite(
         SYNCHRONOUS, client_maker_.MakeRstPacket(
                          3, true, GetNthClientInitiatedBidirectionalStreamId(0),
                          quic::QUIC_RST_ACKNOWLEDGEMENT));
-    quic_data.AddWrite(
-        SYNCHRONOUS,
-        client_maker_.MakeStreamIdBlockedPacket(
-            4, true, GetNthClientInitiatedBidirectionalStreamId(49)));
+    // For the second CreateOutgoingStream that fails because of hitting the
+    // stream count limit.
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeStreamsBlockedPacket(
+                                        4, true, 50 + 1,
+                                        /*unidirectional=*/false));
     quic_data.AddRead(
-        ASYNC, server_maker_.MakeMaxStreamIdPacket(
-                   1, true, GetNthClientInitiatedBidirectionalStreamId(50)));
+        ASYNC, server_maker_.MakeMaxStreamsPacket(1, true, 50 + 2,
+                                                  /*unidirectional=*/false));
   } else {
     quic_data.AddWrite(
         SYNCHRONOUS, client_maker_.MakeRstPacket(
@@ -871,6 +873,7 @@ TEST_P(QuicChromiumClientSessionTest, MaxNumStreams) {
     EXPECT_TRUE(stream);
     streams.push_back(stream);
   }
+  // This stream, the 51st dynamic stream, can not be opened.
   EXPECT_FALSE(
       QuicChromiumClientSessionPeer::CreateOutgoingStream(session_.get()));
 
@@ -1174,18 +1177,17 @@ TEST_P(QuicChromiumClientSessionTest, MaxNumStreamsViaRequest) {
   MockQuicData quic_data;
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeInitialSettingsPacket(1, nullptr));
-  if (version_ == quic::QUIC_VERSION_99) {
-    quic_data.AddWrite(
-        SYNCHRONOUS,
-        client_maker_.MakeStreamIdBlockedPacket(
-            2, true, GetNthClientInitiatedBidirectionalStreamId(49)));
+  if (version_.transport_version == quic::QUIC_VERSION_99) {
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeStreamsBlockedPacket(
+                                        2, true, 51,
+                                        /*unidirectional=*/false));
     quic_data.AddWrite(
         SYNCHRONOUS, client_maker_.MakeRstPacket(
                          3, true, GetNthClientInitiatedBidirectionalStreamId(0),
                          quic::QUIC_RST_ACKNOWLEDGEMENT));
     quic_data.AddRead(
-        ASYNC, server_maker_.MakeMaxStreamIdPacket(
-                   1, true, GetNthClientInitiatedBidirectionalStreamId(50)));
+        ASYNC, server_maker_.MakeMaxStreamsPacket(1, true, 53,
+                                                  /*unidirectional=*/false));
   } else {
     quic_data.AddWrite(
         SYNCHRONOUS, client_maker_.MakeRstPacket(
@@ -1199,7 +1201,6 @@ TEST_P(QuicChromiumClientSessionTest, MaxNumStreamsViaRequest) {
   Initialize();
   CompleteCryptoHandshake();
   const size_t kMaxOpenStreams = GetMaxAllowedOutgoingBidirectionalStreams();
-
   std::vector<QuicChromiumClientStream*> streams;
   for (size_t i = 0; i < kMaxOpenStreams; i++) {
     QuicChromiumClientStream* stream =
@@ -1550,10 +1551,6 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocketReadError) {
 }
 
 TEST_P(QuicChromiumClientSessionTest, DetectPathDegradingDuringHandshake) {
-  if (version_ >= quic::QUIC_VERSION_47) {
-    // TODO(nharper): reenable once MakeDummyCHLOPacket() fixed
-    return;
-  }
   migrate_session_early_v2_ = true;
 
   MockQuicData quic_data;

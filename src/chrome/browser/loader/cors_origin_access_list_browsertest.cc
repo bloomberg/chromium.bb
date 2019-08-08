@@ -31,9 +31,9 @@
 namespace {
 
 const auto kAllowSubdomains =
-    network::mojom::CorsOriginAccessMatchMode::kAllowSubdomains;
+    network::mojom::CorsDomainMatchMode::kAllowSubdomains;
 const auto kDisallowSubdomains =
-    network::mojom::CorsOriginAccessMatchMode::kDisallowSubdomains;
+    network::mojom::CorsDomainMatchMode::kDisallowSubdomains;
 
 const char kTestPath[] = "/loader/cors_origin_access_list_test.html";
 
@@ -82,11 +82,12 @@ class CorsOriginAccessListBrowserTest : public InProcessBrowserTest {
 
   void SetAllowList(const std::string& scheme,
                     const std::string& host,
-                    network::mojom::CorsOriginAccessMatchMode mode) {
+                    network::mojom::CorsDomainMatchMode mode) {
     {
       std::vector<network::mojom::CorsOriginPatternPtr> list;
       list.push_back(network::mojom::CorsOriginPattern::New(
-          scheme, host, mode,
+          scheme, host, /*port=*/0, mode,
+          network::mojom::CorsPortMatchMode::kAllowAnyPort,
           network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority));
 
       base::RunLoop run_loop;
@@ -100,7 +101,8 @@ class CorsOriginAccessListBrowserTest : public InProcessBrowserTest {
     {
       std::vector<network::mojom::CorsOriginPatternPtr> list;
       list.push_back(network::mojom::CorsOriginPattern::New(
-          scheme, host, mode,
+          scheme, host, /*port=*/0, mode,
+          network::mojom::CorsPortMatchMode::kAllowAnyPort,
           network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority));
 
       base::RunLoop run_loop;

@@ -17,7 +17,6 @@ dictionary MediaTrackConstraintSet {
     ConstrainDouble frameRate;
     ConstrainDOMString facingMode;
     ConstrainDOMString resizeMode;
-    ConstrainDouble volume;
     ConstrainLong sampleRate;
     ConstrainLong sampleSize;
     ConstrainBoolean echoCancellation;

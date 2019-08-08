@@ -138,10 +138,9 @@ class BASE_EXPORT SequenceManagerImpl
   void SetTaskRunner(scoped_refptr<SingleThreadTaskRunner> task_runner);
   // TODO(alexclarke): Remove this as part of https://crbug.com/825327.
   scoped_refptr<SingleThreadTaskRunner> GetTaskRunner();
-  std::string GetThreadName() const;
   bool IsBoundToCurrentThread() const;
   MessagePump* GetMessagePump() const;
-  bool IsType(MessageLoop::Type type) const;
+  bool IsType(MessagePump::Type type) const;
   void SetAddQueueTimeToTasks(bool enable);
   void SetTaskExecutionAllowed(bool allowed);
   bool IsTaskExecutionAllowed() const;
@@ -152,7 +151,7 @@ class BASE_EXPORT SequenceManagerImpl
   void BindToCurrentThread(std::unique_ptr<MessagePump> pump);
   void DeletePendingTasks();
   bool HasTasks();
-  MessageLoop::Type GetType() const;
+  MessagePump::Type GetType() const;
 
   // Requests that a task to process work is scheduled.
   void ScheduleWork();
@@ -360,7 +359,8 @@ class BASE_EXPORT SequenceManagerImpl
 
   void RemoveAllCanceledTasksFromFrontOfWorkQueues();
 
-  bool ShouldRecordTaskTiming(const internal::TaskQueueImpl* task_queue);
+  TaskQueue::TaskTiming::TimeRecordingPolicy ShouldRecordTaskTiming(
+      const internal::TaskQueueImpl* task_queue);
   bool ShouldRecordCPUTimeForTask();
   void RecordCrashKeys(const PendingTask&);
 
@@ -387,7 +387,7 @@ class BASE_EXPORT SequenceManagerImpl
   const MetricRecordingSettings metric_recording_settings_;
 
   // Whether to add the queue time to tasks.
-  base::subtle::Atomic32 add_queue_time_to_tasks_ = 0;
+  base::subtle::Atomic32 add_queue_time_to_tasks_;
 
   AtomicFlagSet empty_queues_to_reload_;
 

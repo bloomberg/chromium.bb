@@ -43,6 +43,7 @@
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/impl/profile_identity_provider.h"
@@ -265,6 +266,12 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
   auto pss =
       std::make_unique<syncer::ProfileSyncService>(std::move(init_params));
   pss->Initialize();
+
+  // Hook PSS into PersonalDataManager (a circular dependency).
+  autofill::PersonalDataManager* pdm =
+      autofill::PersonalDataManagerFactory::GetForProfile(profile);
+  pdm->OnSyncServiceInitialized(pss.get());
+
   return pss.release();
 }
 

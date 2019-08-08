@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
 #include "third_party/blink/renderer/core/html/html_pre_element.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -19,7 +20,7 @@ TEST_F(TextTest, SetDataToChangeFirstLetterTextNode) {
       "id=sample>a<span>b</span></pre>");
 
   Node* sample = GetDocument().getElementById("sample");
-  Text* text = ToText(sample->firstChild());
+  auto* text = To<Text>(sample->firstChild());
   text->setData(" ");
   UpdateAllLifecyclePhasesForTest();
 
@@ -30,9 +31,9 @@ TEST_F(TextTest, RemoveFirstLetterPseudoElementWhenNoLetter) {
   SetBodyContent("<style>*::first-letter{font:icon;}</style><pre>AB\n</pre>");
 
   Element* pre = GetDocument().QuerySelector("pre");
-  Text* text = ToText(pre->firstChild());
+  auto* text = To<Text>(pre->firstChild());
 
-  Range* range = Range::Create(GetDocument(), text, 0, text, 2);
+  auto* range = MakeGarbageCollected<Range>(GetDocument(), text, 0, text, 2);
   range->deleteContents(ASSERT_NO_EXCEPTION);
   UpdateAllLifecyclePhasesForTest();
 

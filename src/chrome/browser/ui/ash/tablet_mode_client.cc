@@ -7,18 +7,19 @@
 #include <utility>
 
 #include "ash/public/cpp/tablet_mode.h"
-#include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
+#include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
 #include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/material_design/material_design_controller.h"
-#include "ui/base/ui_base_features.h"
 
 namespace {
 
@@ -26,46 +27,26 @@ TabletModeClient* g_tablet_mode_client_instance = nullptr;
 
 }  // namespace
 
-TabletModeClient::TabletModeClient() : binding_(this) {
+TabletModeClient::TabletModeClient() {
   DCHECK(!g_tablet_mode_client_instance);
   g_tablet_mode_client_instance = this;
-  if (features::IsMultiProcessMash()) {
-    ash::TabletMode::SetCallback(base::BindRepeating(
-        &TabletModeClient::tablet_mode_enabled, base::Unretained(this)));
-  }
 }
 
 TabletModeClient::~TabletModeClient() {
   DCHECK_EQ(this, g_tablet_mode_client_instance);
   g_tablet_mode_client_instance = nullptr;
-  if (features::IsMultiProcessMash())
-    ash::TabletMode::SetCallback({});
+  // The Ash Shell and TabletMode instance should have been destroyed by now.
+  DCHECK(!ash::TabletMode::Get());
 }
 
 void TabletModeClient::Init() {
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &tablet_mode_controller_);
-  BindAndSetClient();
-}
-
-void TabletModeClient::InitForTesting(
-    ash::mojom::TabletModeControllerPtr controller) {
-  tablet_mode_controller_ = std::move(controller);
-  BindAndSetClient();
+  ash::TabletMode::Get()->SetTabletModeToggleObserver(this);
+  OnTabletModeToggled(ash::TabletMode::Get()->IsEnabled());
 }
 
 // static
 TabletModeClient* TabletModeClient::Get() {
   return g_tablet_mode_client_instance;
-}
-
-void TabletModeClient::SetTabletModeEnabledForTesting(
-    bool enabled,
-    ash::mojom::TabletModeController::SetTabletModeEnabledForTestingCallback
-        callback) {
-  tablet_mode_controller_->SetTabletModeEnabledForTesting(enabled,
-                                                          std::move(callback));
 }
 
 void TabletModeClient::AddObserver(TabletModeClientObserver* observer) {
@@ -105,18 +86,8 @@ void TabletModeClient::OnTabStripModelChanged(
   // don't want those to shrink down and resize to fit the width of their
   // windows like webpages on mobile do. So this behavior is limited to webpages
   // in tabs and packaged apps.
-  for (const auto& delta : change.deltas())
-    delta.insert.contents->NotifyPreferencesChanged();
-}
-
-void TabletModeClient::FlushForTesting() {
-  tablet_mode_controller_.FlushForTesting();
-}
-
-void TabletModeClient::BindAndSetClient() {
-  ash::mojom::TabletModeClientPtr client;
-  binding_.Bind(mojo::MakeRequest(&client));
-  tablet_mode_controller_->SetClient(std::move(client));
+  for (const auto& contents : change.GetInsert()->contents)
+    contents.contents->NotifyPreferencesChanged();
 }
 
 void TabletModeClient::SetMobileLikeBehaviorEnabled(bool enabled) {
@@ -142,6 +113,20 @@ void TabletModeClient::SetMobileLikeBehaviorEnabled(bool enabled) {
         DCHECK(web_contents);
 
         web_contents->NotifyPreferencesChanged();
+
+        // For a tab that is requesting its mobile version site (via
+        // chrome::ToggleRequestTabletSite()), and is not originated from ARC
+        // context, return to its normal version site when exiting tablet mode.
+        content::NavigationController& controller =
+            web_contents->GetController();
+        content::NavigationEntry* entry = controller.GetLastCommittedEntry();
+        if (entry && entry->GetIsOverridingUserAgent() &&
+            !web_contents->GetUserData(
+                arc::ArcWebContentsData::ArcWebContentsData::
+                    kArcTransitionFlag)) {
+          entry->SetIsOverridingUserAgent(false);
+          controller.Reload(content::ReloadType::ORIGINAL_REQUEST_URL, true);
+        }
       }
     }
     tab_strip_tracker_ = nullptr;

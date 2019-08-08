@@ -20,6 +20,7 @@
 #include "components/viz/common/surfaces/surface_range.h"
 #include "components/viz/service/viz_service_export.h"
 #include "ui/gfx/color_space.h"
+#include "ui/gfx/overlay_transform.h"
 
 namespace viz {
 class CompositorFrame;
@@ -42,6 +43,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
 
   CompositorFrame Aggregate(const SurfaceId& surface_id,
                             base::TimeTicks expected_display_time,
+                            gfx::OverlayTransform display_transform,
                             int64_t display_trace_id = -1);
   void ReleaseResources(const SurfaceId& surface_id);
   const SurfaceIndexMap& previous_contained_surfaces() const {
@@ -89,12 +91,16 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   };
 
   struct RoundedCornerInfo {
-    RoundedCornerInfo() : bounds(nullptr), is_fast_rounded_corner(false) {}
-    RoundedCornerInfo(const gfx::RRectF* bounds, bool is_fast_rounded_corner)
-        : bounds(bounds), is_fast_rounded_corner(is_fast_rounded_corner) {}
+    RoundedCornerInfo() : is_fast_rounded_corner(false) {}
+    // |target_transform| is the transform that maps |bounds| from its current
+    // space into the desired target space. It must be a scale+translation
+    // matrix.
+    RoundedCornerInfo(const gfx::RRectF& bounds,
+                      bool is_fast_rounded_corner,
+                      const gfx::Transform target_transform);
 
-    bool IsEmpty() const { return !bounds || bounds->IsEmpty(); }
-    const gfx::RRectF* bounds;
+    bool IsEmpty() const { return bounds.IsEmpty(); }
+    gfx::RRectF bounds;
     bool is_fast_rounded_corner;
   };
 
@@ -127,7 +133,8 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
                           bool ignore_undamaged,
                           gfx::Rect* damage_rect_in_quad_space,
                           bool* damage_rect_in_quad_space_valid,
-                          const RoundedCornerInfo& rounded_corner_info);
+                          const RoundedCornerInfo& rounded_corner_info,
+                          bool is_reflection);
 
   void EmitDefaultBackgroundColorQuad(
       const SurfaceDrawQuad* surface_quad,
@@ -188,6 +195,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   void CopyUndrawnSurfaces(PrewalkResult* prewalk);
   void CopyPasses(const CompositorFrame& frame, Surface* surface);
   void AddColorConversionPass();
+  void AddDisplayTransformPass();
 
   // Remove Surfaces that were referenced before but aren't currently
   // referenced from the ResourceProvider.
@@ -219,6 +227,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
                                      const RenderPass* dest_pass,
                                      gfx::Rect* occluding_damage_rect);
   bool RenderPassNeedsFullDamage(const RenderPass* pass) const;
+  bool IsRootSurface(const Surface* surface) const;
 
   static void UnrefResources(base::WeakPtr<SurfaceClient> surface_client,
                              const std::vector<ReturnedResource>& resources);
@@ -245,6 +254,8 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   gfx::ColorSpace blending_color_space_ = gfx::ColorSpace::CreateSRGB();
   // The id for the final color conversion render pass.
   RenderPassId color_conversion_render_pass_id_ = 0;
+  // The id for the optional render pass used to apply the display transform.
+  RenderPassId display_transform_render_pass_id_ = 0;
 
   base::flat_map<SurfaceId, int> surface_id_to_resource_child_id_;
 
@@ -255,6 +266,9 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   // This is the set of surfaces referenced in the aggregation so far, used to
   // detect cycles.
   base::flat_set<SurfaceId> referenced_surfaces_;
+
+  SurfaceId root_surface_id_;
+  gfx::Transform root_surface_transform_;
 
   // For each Surface used in the last aggregation, gives the frame_index at
   // that time.

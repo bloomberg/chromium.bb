@@ -44,6 +44,8 @@ const char* TypeToString(extensions::Manifest::Type type) {
       return "TYPE_PLATFORM_APP";
     case extensions::Manifest::TYPE_SHARED_MODULE:
       return "TYPE_SHARED_MODULE";
+    case extensions::Manifest::TYPE_LOGIN_SCREEN_EXTENSION:
+      return "TYPE_LOGIN_SCREEN_EXTENSION";
     case extensions::Manifest::NUM_LOAD_TYPES:
       break;
   }

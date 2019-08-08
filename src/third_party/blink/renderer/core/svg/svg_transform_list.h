@@ -44,13 +44,8 @@ class SVGTransformList final
  public:
   typedef SVGTransformListTearOff TearOffType;
 
-  static SVGTransformList* Create() {
-    return MakeGarbageCollected<SVGTransformList>();
-  }
-
-  static SVGTransformList* Create(SVGTransformType, const String&);
-
   SVGTransformList();
+  SVGTransformList(SVGTransformType, const String&);
   ~SVGTransformList() override;
 
   SVGTransform* Consolidate();

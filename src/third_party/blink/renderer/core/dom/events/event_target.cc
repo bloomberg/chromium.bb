@@ -150,7 +150,7 @@ void ReportBlockedEvent(EventTarget& target,
 bool CheckTypeThenUseCount(const Event& event,
                            const AtomicString& event_type_to_count,
                            const WebFeature feature,
-                           const Document* document) {
+                           Document* document) {
   if (event.type() != event_type_to_count)
     return false;
   UseCounter::Count(*document, feature);
@@ -442,6 +442,19 @@ bool EventTarget::AddEventListenerInternal(
   if (!listener)
     return false;
 
+  if (event_type == event_type_names::kTouchcancel ||
+      event_type == event_type_names::kTouchend ||
+      event_type == event_type_names::kTouchmove ||
+      event_type == event_type_names::kTouchstart) {
+    if (const LocalDOMWindow* executing_window = ExecutingWindow()) {
+      if (const Document* document = executing_window->document()) {
+        document->CountUse(options->passive()
+                               ? WebFeature::kPassiveTouchEventListener
+                               : WebFeature::kNonPassiveTouchEventListener);
+      }
+    }
+  }
+
   V8DOMActivityLogger* activity_logger =
       V8DOMActivityLogger::CurrentActivityLoggerIfIsolatedWorld();
   if (activity_logger) {
@@ -469,7 +482,7 @@ void EventTarget::AddedEventListener(
     const AtomicString& event_type,
     RegisteredEventListener& registered_listener) {
   if (const LocalDOMWindow* executing_window = ExecutingWindow()) {
-    if (const Document* document = executing_window->document()) {
+    if (Document* document = executing_window->document()) {
       if (event_type == event_type_names::kAuxclick)
         UseCounter::Count(*document, WebFeature::kAuxclickAddListenerCount);
       else if (event_type == event_type_names::kAppinstalled)
@@ -719,7 +732,7 @@ void EventTarget::CountLegacyEvents(
   }
 
   if (const LocalDOMWindow* executing_window = ExecutingWindow()) {
-    if (const Document* document = executing_window->document()) {
+    if (Document* document = executing_window->document()) {
       if (legacy_listeners_vector) {
         if (listeners_vector)
           UseCounter::Count(*document, prefixed_and_unprefixed_feature);
@@ -805,7 +818,7 @@ bool EventTarget::FireEventListeners(Event& event,
   };
 
   if (const LocalDOMWindow* executing_window = ExecutingWindow()) {
-    if (const Document* document = executing_window->document()) {
+    if (Document* document = executing_window->document()) {
       if (CheckTypeThenUseCount(event, event_type_names::kBeforeunload,
                                 WebFeature::kDocumentBeforeUnloadFired,
                                 document)) {

@@ -10,6 +10,8 @@
 
 namespace chromeos {
 
+constexpr StaticOobeScreenId AutoEnrollmentCheckScreenView::kScreenId;
+
 AutoEnrollmentCheckScreenHandler::AutoEnrollmentCheckScreenHandler(
     JSCallsContainer* js_calls_container)
     : BaseScreenHandler(kScreenId, js_calls_container) {

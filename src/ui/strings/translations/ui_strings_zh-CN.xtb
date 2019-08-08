@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
+<translation id="1028699632127661925">正在发送到<ph name="DEVICE_NAME" />…</translation>
 <translation id="111910763555783249">通知设置</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 天前}other{# 天前}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 分钟前}other{# 分钟前}}</translation>
@@ -15,13 +16,11 @@
 <translation id="1383876407941801731">搜索</translation>
 <translation id="1398853756734560583">最大化</translation>
 <translation id="1409544243779336081">推荐的应用</translation>
-<translation id="1413622004203049571">停用来自“<ph name="NOTIFIER_NAME" />”的通知</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 分钟 }other{# 分钟 }}</translation>
 <translation id="1643823602425662293">通知</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">现在</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 分钟}other{# 分钟}}</translation>
-<translation id="1756116796893109054">正在发送标签页…</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1801827354178857021">期间</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 个月}other{# 个月}}</translation>
@@ -135,6 +134,7 @@
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6156262341071374681">展开以显示所有应用</translation>
+<translation id="6165508094623778733">了解详情</translation>
 <translation id="6264365405983206840">全选(&amp;A)</translation>
 <translation id="6351032674660237738">应用推荐</translation>
 <translation id="6364916375976753737">向左滚动</translation>
@@ -180,8 +180,10 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{超过 1 条未读通知}other{超过 # 条未读通知}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{1 分钟后}other{# 分钟后}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8098075892845277643">启动 Google 助理语音查询</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 小时前}other{# 小时前}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{还剩 1 秒}other{还剩 # 秒}}</translation>
+<translation id="8144660977431427332">您的搜索由 Google 助理提供支持。<ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />，自动填充</translation>
 <translation id="815598010540052116">向下滚动</translation>
 <translation id="8170087467028567933">移除这项推荐内容会致使它停止在您的帐号中显示（无论您使用何种设备）。</translation>

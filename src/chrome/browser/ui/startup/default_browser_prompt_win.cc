@@ -12,7 +12,7 @@
 bool ShowFirstRunDefaultBrowserPrompt(Profile* profile) {
   // The behavior on Windows 10 is no good at the moment, since there is no
   // known way to lead the user directly to a default browser picker.
-  if (base::win::GetVersion() >= base::win::VERSION_WIN10)
+  if (base::win::GetVersion() >= base::win::Version::WIN10)
     return false;
 
   // If the only available mode of setting the default browser requires

@@ -51,7 +51,7 @@ class VulkanImplementationAndroidTest : public testing::Test {
   }
 
  protected:
-  std::unique_ptr<VulkanImplementationAndroid> vk_implementation_;
+  std::unique_ptr<VulkanImplementation> vk_implementation_;
   scoped_refptr<viz::VulkanInProcessContextProvider> vk_context_provider_;
   VkDevice vk_device_;
   VkPhysicalDevice vk_phy_device_;

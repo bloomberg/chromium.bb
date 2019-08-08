@@ -20,8 +20,7 @@ class PLATFORM_EXPORT AllowedByNosniff final {
   static bool MimeTypeAsScript(FetchContext&,
                                ConsoleLogger*,
                                const ResourceResponse&,
-                               MimeTypeCheck mime_type_check_mode,
-                               bool is_worker_global_scope);
+                               MimeTypeCheck mime_type_check_mode);
 };
 
 }  // namespace blink

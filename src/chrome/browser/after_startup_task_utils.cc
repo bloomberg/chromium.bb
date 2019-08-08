@@ -19,15 +19,18 @@
 #include "base/task/post_task.h"
 #include "base/task_runner.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/page_visibility_state.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#endif
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include "ui/views/linux_ui/linux_ui.h"

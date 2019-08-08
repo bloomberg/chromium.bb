@@ -5,6 +5,7 @@
 <translation id="1185134272377778587">Quant a Chromium</translation>
 <translation id="1289966288285062467">Avís de privadesa de Chromium</translation>
 <translation id="1472013873724362412">El vostre compte no funciona a Chromium. Contacteu amb l'administrador del domini o utilitzeu un compte de Google estàndard per iniciar la sessió.</translation>
+<translation id="1507010443238049608">Ajuda a millorar les funcions i el rendiment de Chromium</translation>
 <translation id="1617663976202781617">Dades de la sincronització de Chromium</translation>
 <translation id="1736662517232558588">Dades de Chromium esborrades</translation>
 <translation id="1838412507805038478">Chromium ha verificat que <ph name="ISSUER" /> ha emès el certificat d'aquest lloc web.</translation>
@@ -14,7 +15,7 @@
 <translation id="2168108852149185974">Alguns complements fan que Chromium es bloquegi. Desinstal·la:</translation>
 <translation id="2178608107313874732">Chromium no pot utilitzar la càmera en aquest moment</translation>
 <translation id="2195025571279539885">La propera vegada, voleu que Chromium s'ofereixi per traduir les pàgines d'aquest lloc escrites en <ph name="LANGUAGE_NAME" />?</translation>
-<translation id="2517624234762908348">Sincronitza les dades de Chromium</translation>
+<translation id="2590893390871230428">Sincronitza les dades de Chromium</translation>
 <translation id="2647554856022461007">Chromium pot utilitzar serveis web per millorar la navegació, però si vols els pots desactivar. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="2730884209570016437">Chromium no pot utilitzar la càmera perquè l'està utilitzant una altra aplicació</translation>
 <translation id="2915596697727466327">Chromium utilitza Face ID per garantir l'accés autoritzat a les contrasenyes.</translation>
@@ -26,7 +27,6 @@
 <translation id="4024541897090868497">Per veure les teves pestanyes en tots els dispositius, inicia la sessió a Chromium.</translation>
 <translation id="4157467675761413638">Consell de Chromium. Per accedir a més opcions de pestanyes, mantén premut el botó Mostra pestanyes a la barra d'eines, que és a la part inferior o superior de la pantalla.</translation>
 <translation id="4241912885070669028">Estàs tancant la sessió d'un compte gestionat per <ph name="SIGNOUT_MANAGED_DOMAIN" />. Se suprimiran les teves dades de Chromium d'aquest dispositiu, però continuaran al teu compte de Google.</translation>
-<translation id="4272892696084633551">Ajuda a millorar les funcions i el rendiment de Chromium</translation>
 <translation id="4555020257205549924">Quan aquesta funció està activada, Chromium ofereix la possibilitat de traduir pàgines escrites en altres idiomes mitjançant el Traductor de Google. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="4787850887676698916">Les pestanyes que tinguis obertes a Chromium als altres dispositius es mostraran aquí.</translation>
 <translation id="495292094137889840">Comença a utilitzar l'escàner QR de Chromium</translation>

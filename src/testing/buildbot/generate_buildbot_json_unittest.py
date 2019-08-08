@@ -226,6 +226,38 @@ FOO_SCRIPT_WATERFALL = """\
 ]
 """
 
+FOO_SCRIPT_WATERFALL_MACHINE_FORBIDS_SCRIPT_TESTS = """\
+[
+  {
+    'name': 'chromium.test',
+    'machines': {
+      'Fake Tester': {
+        'forbid_script_tests': True,
+        'test_suites': {
+          'scripts': 'foo_scripts',
+        },
+      },
+    },
+  },
+]
+"""
+
+FOO_SCRIPT_WATERFALL_FORBID_SCRIPT_TESTS = """\
+[
+  {
+    'name': 'chromium.test',
+    'forbid_script_tests': True,
+    'machines': {
+      'Fake Tester': {
+        'test_suites': {
+          'scripts': 'foo_scripts',
+        },
+      },
+    },
+  },
+]
+"""
+
 FOO_JUNIT_WATERFALL = """\
 [
   {
@@ -409,6 +441,7 @@ ANDROID_WATERFALL = """\
             {
               'device_os': 'KTU84P',
               'device_type': 'hammerhead',
+              'os': 'Android',
             },
           ],
         },
@@ -422,8 +455,10 @@ ANDROID_WATERFALL = """\
         'swarming': {
           'dimension_sets': [
             {
-              'device_os': 'KTU84P',
+              'device_os': 'LMY41U',
+              'device_os_type': 'user',
               'device_type': 'hammerhead',
+              'os': 'Android',
             },
           ],
         },
@@ -440,6 +475,7 @@ ANDROID_WATERFALL = """\
             {
               'device_os': 'MMB29Q',
               'device_type': 'bullhead',
+              'os': 'Android',
             },
           ],
         },
@@ -822,6 +858,24 @@ FOO_TEST_MODIFICATIONS = """\
 }
 """
 
+FOO_TEST_EXPLICIT_NONE_EXCEPTIONS = """\
+{
+  'foo_test': {
+    'modifications': {
+      'Fake Tester': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'integrity': None,
+            },
+          ],
+        },
+      },
+    },
+  },
+}
+"""
+
 NONEXISTENT_REMOVAL = """\
 {
   'foo_test': {
@@ -851,12 +905,20 @@ COMPOSITION_WATERFALL_OUTPUT = """\
   "Fake Tester": {
     "gtest_tests": [
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "bar_test"
       },
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -877,6 +939,10 @@ COMPOSITION_WATERFALL_WITH_ARGS_OUTPUT = """\
         "args": [
           "--this-is-an-argument"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -886,6 +952,10 @@ COMPOSITION_WATERFALL_WITH_ARGS_OUTPUT = """\
         "args": [
           "--this-is-an-argument"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -903,6 +973,10 @@ VARIATION_GTEST_OUTPUT = """\
   "Fake Tester": {
     "gtest_tests": [
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -917,6 +991,10 @@ VARIATION_GTEST_OUTPUT = """\
         "args": [
           "--variation"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "variation_test",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -940,6 +1018,10 @@ COMPOSITION_WATERFALL_FILTERED_OUTPUT = """\
   "Fake Tester": {
     "gtest_tests": [
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -961,6 +1043,10 @@ MERGED_ARGS_OUTPUT = """\
           "--c_arg",
           "--bar"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -987,6 +1073,10 @@ LINUX_ARGS_OUTPUT = """\
         "args": [
           "--no-xvfb"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1007,6 +1097,10 @@ MERGED_ENABLE_FEATURES_OUTPUT = """\
         "args": [
           "--enable-features=Foo,Bar,Baz"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1027,6 +1121,10 @@ MODIFIED_OUTPUT = """\
         "args": [
           "--bar"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1045,6 +1143,33 @@ MODIFIED_OUTPUT = """\
 }
 """
 
+EXPLICIT_NONE_OUTPUT = """\
+{
+  "AAAAA1 AUTOGENERATED FILE DO NOT EDIT": {},
+  "AAAAA2 See generate_buildbot_json.py to make changes": {},
+  "Fake Tester": {
+    "gtest_tests": [
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1"
+            }
+          ],
+          "expiration": 120
+        },
+        "test": "foo_test"
+      }
+    ]
+  }
+}
+"""
+
 ISOLATED_SCRIPT_OUTPUT = """\
 {
   "AAAAA1 AUTOGENERATED FILE DO NOT EDIT": {},
@@ -1053,6 +1178,10 @@ ISOLATED_SCRIPT_OUTPUT = """\
     "isolated_scripts": [
       {
         "isolate_name": "foo_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "foo_test",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -1223,6 +1352,10 @@ GPU_TELEMETRY_TEST_OUTPUT = """\
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "foo_tests",
         "should_retry_with_patch": false,
         "swarming": {
@@ -1260,6 +1393,10 @@ NVIDIA_GPU_TELEMETRY_TEST_OUTPUT = """\
           "1cb3"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "foo_tests",
         "should_retry_with_patch": false,
         "swarming": {
@@ -1297,6 +1434,10 @@ INTEL_GPU_TELEMETRY_TEST_OUTPUT = """\
           "5912"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "foo_tests",
         "should_retry_with_patch": false,
         "swarming": {
@@ -1333,6 +1474,10 @@ ANDROID_WATERFALL_OUTPUT = """\
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1346,8 +1491,10 @@ ANDROID_WATERFALL_OUTPUT = """\
           "dimension_sets": [
             {
               "device_os": "KTU84P",
+              "device_os_type": "userdebug",
               "device_type": "hammerhead",
-              "integrity": "high"
+              "integrity": "high",
+              "os": "Android"
             }
           ],
           "expiration": 120,
@@ -1373,6 +1520,10 @@ ANDROID_WATERFALL_OUTPUT = """\
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1385,9 +1536,11 @@ ANDROID_WATERFALL_OUTPUT = """\
           ],
           "dimension_sets": [
             {
-              "device_os": "KTU84P",
+              "device_os": "LMY41U",
+              "device_os_type": "user",
               "device_type": "hammerhead",
-              "integrity": "high"
+              "integrity": "high",
+              "os": "Android"
             }
           ],
           "expiration": 120
@@ -1399,6 +1552,10 @@ ANDROID_WATERFALL_OUTPUT = """\
   "Fake Android M Tester": {
     "gtest_tests": [
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": false
         },
@@ -1416,6 +1573,10 @@ MULTI_DIMENSION_OUTPUT = """\
   "Fake Tester": {
     "gtest_tests": [
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1452,6 +1613,10 @@ CHROMEOS_TRIGGER_SCRIPT_OUTPUT = """\
   "Fake Tester": {
     "gtest_tests": [
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1488,6 +1653,10 @@ GPU_DIMENSIONS_WATERFALL_OUTPUT = """\
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
         "name": "foo_test",
         "should_retry_with_patch": false,
         "swarming": {
@@ -1932,6 +2101,16 @@ class UnitTest(unittest.TestCase):
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
+  def test_test_with_explicit_none(self):
+    fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
+                    FOO_TEST_SUITE,
+                    FOO_TEST_EXPLICIT_NONE_EXCEPTIONS,
+                    SWARMING_MIXINS,
+                    LUCI_MILO_CFG)
+    fbb.files['chromium.test.json'] = EXPLICIT_NONE_OUTPUT
+    fbb.check_output_file_consistency(verbose=True)
+    self.assertFalse(fbb.printed_lines)
+
   def test_isolated_script_tests(self):
     fbb = FakeBBGen(FOO_ISOLATED_SCRIPTS_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
@@ -1961,6 +2140,26 @@ class UnitTest(unittest.TestCase):
     fbb.files['chromium.test.json'] = SCRIPT_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
+
+  def test_script_machine_forbids_scripts(self):
+    fbb = FakeBBGen(FOO_SCRIPT_WATERFALL_MACHINE_FORBIDS_SCRIPT_TESTS,
+                    FOO_SCRIPT_SUITE,
+                    NO_BAR_TEST_EXCEPTIONS,
+                    EMPTY_PYL_FILE,
+                    LUCI_MILO_CFG)
+    with self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
+        'Attempted to generate a script test on tester.*'):
+      fbb.check_output_file_consistency(verbose=True)
+
+  def test_script_waterfall_forbids_scripts(self):
+    fbb = FakeBBGen(FOO_SCRIPT_WATERFALL_FORBID_SCRIPT_TESTS,
+                    FOO_SCRIPT_SUITE,
+                    NO_BAR_TEST_EXCEPTIONS,
+                    EMPTY_PYL_FILE,
+                    LUCI_MILO_CFG)
+    with self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
+        'Attempted to generate a script test on tester.*'):
+      fbb.check_output_file_consistency(verbose=True)
 
   def test_junit_tests(self):
     fbb = FakeBBGen(FOO_JUNIT_WATERFALL,
@@ -2551,6 +2750,10 @@ WATERFALL_MIXIN_WATERFALL_OUTPUT = """\
   "Fake Tester": {
     "gtest_tests": [
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2575,6 +2778,10 @@ WATERFALL_MIXIN_WATERFALL_EXCEPTION_OUTPUT = """\
   "Fake Tester": {
     "gtest_tests": [
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2599,6 +2806,10 @@ BUILDER_MIXIN_WATERFALL_OUTPUT = """\
   "Fake Tester": {
     "gtest_tests": [
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2623,6 +2834,10 @@ BUILDER_MIXIN_NON_SWARMING_WATERFALL_OUTPUT = """\
   "Fake Tester": {
     "gtest_tests": [
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2651,6 +2866,10 @@ BUILDER_MIXIN_APPEND_ARGS_WATERFALL_OUTPUT = """\
           "--c_arg",
           "--mixin-argument"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -2668,6 +2887,10 @@ TEST_MIXIN_WATERFALL_OUTPUT = """\
   "Fake Tester": {
     "gtest_tests": [
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2693,6 +2916,10 @@ DIMENSIONS_MIXIN_WATERFALL_OUTPUT = """\
   "Fake Tester": {
     "gtest_tests": [
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2993,6 +3220,10 @@ TEST_QUERY_BOTS_OUTPUT = {
     "gtest_tests": [
       {
         "test": "foo_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": False
         }
@@ -3007,6 +3238,10 @@ TEST_QUERY_BOTS_OUTPUT = {
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "cipd_packages": [
             {
@@ -3018,8 +3253,10 @@ TEST_QUERY_BOTS_OUTPUT = {
           ],
           "dimension_sets":[
             {
-              "device_os": "KTU84P",
-              "device_type": "hammerhead"
+              "device_os": "LMY41U",
+              "device_os_type": "user",
+              "device_type": "hammerhead",
+              'os': 'Android'
             }
           ],
           "can_use_on_swarming_builders": True
@@ -3036,6 +3273,10 @@ TEST_QUERY_BOTS_OUTPUT = {
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "cipd_packages": [
             {
@@ -3048,7 +3289,9 @@ TEST_QUERY_BOTS_OUTPUT = {
           "dimension_sets": [
             {
               "device_os": "KTU84P",
-              "device_type": "hammerhead"
+              "device_os_type": "userdebug",
+              "device_type": "hammerhead",
+              "os": "Android",
             }
           ],
           "can_use_on_swarming_builders": True,
@@ -3071,6 +3314,10 @@ TEST_QUERY_BOTS_OUTPUT = {
 TEST_QUERY_BOTS_TESTS_OUTPUT = {
   "Fake Android M Tester": [
     {
+      "merge": {
+        "args": [],
+        "script": "//testing/merge_scripts/standard_gtest_merge.py"
+      },
       "test": "foo_test",
       "swarming": {
         "can_use_on_swarming_builders": False
@@ -3084,6 +3331,10 @@ TEST_QUERY_BOTS_TESTS_OUTPUT = {
         "--gs-results-bucket=chromium-result-details",
         "--recover-devices"
       ],
+      "merge": {
+        "args": [],
+        "script": "//testing/merge_scripts/standard_gtest_merge.py"
+      },
       "swarming": {
         "cipd_packages": [
           {
@@ -3094,8 +3345,10 @@ TEST_QUERY_BOTS_TESTS_OUTPUT = {
         ],
         "dimension_sets": [
           {
-            "device_os": "KTU84P",
-            "device_type": "hammerhead"
+            "device_os": "LMY41U",
+            "device_os_type": "user",
+            "device_type": "hammerhead",
+            "os": "Android"
           }
         ],
         "can_use_on_swarming_builders": True
@@ -3110,6 +3363,10 @@ TEST_QUERY_BOTS_TESTS_OUTPUT = {
         "--gs-results-bucket=chromium-result-details",
         "--recover-devices"
       ],
+      "merge": {
+        "args": [],
+        "script": "//testing/merge_scripts/standard_gtest_merge.py"
+      },
       "swarming": {
         "cipd_packages": [
           {
@@ -3121,7 +3378,9 @@ TEST_QUERY_BOTS_TESTS_OUTPUT = {
         "dimension_sets": [
           {
             "device_os": "KTU84P",
-            "device_type": "hammerhead"
+            "device_os_type": "userdebug",
+            "device_type": "hammerhead",
+            "os": "Android"
           }
         ],
         "can_use_on_swarming_builders": True,
@@ -3144,10 +3403,16 @@ TEST_QUERY_BOT_OUTPUT = {
   "additional_compile_targets": ["bar_test"],
   "gtest_tests": [
     {
-      "test": "foo_test", "args": [
+      "test": "foo_test",
+      "args": [
         "--gs-results-bucket=chromium-result-details",
         "--recover-devices"
-      ], "swarming": {
+      ],
+      "merge": {
+        "args": [],
+        "script": "//testing/merge_scripts/standard_gtest_merge.py"
+      },
+      "swarming": {
         "cipd_packages": [
           {
             "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -3158,7 +3423,9 @@ TEST_QUERY_BOT_OUTPUT = {
         "dimension_sets": [
           {
             "device_os": "KTU84P",
-            "device_type": "hammerhead"
+            "device_os_type": "userdebug",
+            "device_type": "hammerhead",
+            "os": "Android"
           }
         ],
         "can_use_on_swarming_builders": True,
@@ -3182,6 +3449,10 @@ TEST_QUERY_BOT_TESTS_OUTPUT = [
       "--gs-results-bucket=chromium-result-details",
       "--recover-devices"
     ],
+    "merge": {
+      "args": [],
+      "script": "//testing/merge_scripts/standard_gtest_merge.py"
+    },
     "swarming": {
       "cipd_packages": [
         {
@@ -3192,8 +3463,10 @@ TEST_QUERY_BOT_TESTS_OUTPUT = [
       ],
       "dimension_sets": [
         {
-          "device_os": "KTU84P",
-          "device_type": "hammerhead"
+          "device_os": "LMY41U",
+          "device_os_type": "user",
+          "device_type": "hammerhead",
+          "os": "Android"
         }
       ],
       "can_use_on_swarming_builders": True
@@ -3307,6 +3580,7 @@ class QueryTests(unittest.TestCase):
                                   waterfall_filters = [])
     fbb.query(fbb.args)
     query_json = json.loads("".join(fbb.printed_lines))
+    self.maxDiff = None
     self.assertEqual(query_json, TEST_QUERY_BOT_OUTPUT)
 
   def test_query_bot_invalid_id(self):

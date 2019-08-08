@@ -51,16 +51,12 @@ class ChromeSliceTrack extends Track<Config, Data> {
     const {timeScale, visibleWindowTime} = globals.frontendLocalState;
     const data = this.data();
 
-    // If there aren't enough cached slices data in |data| request more to
-    // the controller.
-    const inRange = data !== undefined &&
-        (visibleWindowTime.start >= data.start &&
-         visibleWindowTime.end <= data.end);
-    if (!inRange || data === undefined ||
-        data.resolution > globals.getCurResolution()) {
+    if (this.shouldRequestData(
+            data, visibleWindowTime.start, visibleWindowTime.end)) {
       globals.requestTrackData(this.trackState.id);
-      if (data === undefined) return;  // Can't possibly draw anything.
     }
+
+    if (data === undefined) return;  // Can't possibly draw anything.
 
     // If the cached trace slices don't fully cover the visible time range,
     // show a gray rectangle with a "Loading..." label.
@@ -91,7 +87,6 @@ class ChromeSliceTrack extends Track<Config, Data> {
       const rectXStart = Math.max(timeScale.timeToPx(tStart), 0);
       const rectXEnd = Math.min(timeScale.timeToPx(tEnd), pxEnd);
       const rectWidth = rectXEnd - rectXStart;
-      if (rectWidth < 0.1) continue;
       const rectYStart = TRACK_PADDING + depth * SLICE_HEIGHT;
 
       const hovered = titleId === this.hoveredTitleId;

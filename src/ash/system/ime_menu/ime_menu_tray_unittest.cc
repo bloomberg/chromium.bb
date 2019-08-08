@@ -4,10 +4,15 @@
 
 #include "ash/system/ime_menu/ime_menu_tray.h"
 
-#include "ash/accelerators/accelerator_controller.h"
+#include <memory>
+
+#include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/test_ime_controller_client.h"
+#include "ash/kiosk_next/kiosk_next_shell_test_util.h"
+#include "ash/kiosk_next/mock_kiosk_next_shell_client.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/interfaces/ime_info.mojom.h"
 #include "ash/shell.h"
 #include "ash/system/ime_menu/ime_list_view.h"
@@ -16,6 +21,7 @@
 #include "ash/test/ash_test_base.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/text_input_flags.h"
@@ -52,7 +58,7 @@ class ImeMenuTrayTest : public AshTestBase {
 
  protected:
   // Returns true if the IME menu tray is visible.
-  bool IsVisible() { return GetTray()->visible(); }
+  bool IsVisible() { return GetTray()->GetVisible(); }
 
   // Returns the label text of the tray.
   const base::string16& GetTrayText() { return GetTray()->label_->text(); }
@@ -259,7 +265,7 @@ TEST_F(ImeMenuTrayTest, TestAccelerator) {
   ASSERT_FALSE(IsTrayBackgroundActive());
 
   Shell::Get()->accelerator_controller()->PerformActionIfEnabled(
-      SHOW_IME_MENU_BUBBLE);
+      SHOW_IME_MENU_BUBBLE, {});
   EXPECT_TRUE(IsTrayBackgroundActive());
   EXPECT_TRUE(IsBubbleShown());
 
@@ -351,6 +357,34 @@ TEST_F(ImeMenuTrayTest, ShouldShowBottomButtonsSeperate) {
   EXPECT_TRUE(IsEmojiEnabled());
   EXPECT_FALSE(IsHandwritingEnabled());
   EXPECT_FALSE(IsVoiceEnabled());
+}
+
+class KioskNextImeMenuTest : public ImeMenuTrayTest {
+ public:
+  KioskNextImeMenuTest() {
+    scoped_feature_list_.InitAndEnableFeature(features::kKioskNextShell);
+  }
+
+  void SetUp() override {
+    set_start_session(false);
+    ImeMenuTrayTest::SetUp();
+    client_ = BindMockKioskNextShellClient();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  std::unique_ptr<MockKioskNextShellClient> client_;
+
+  DISALLOW_COPY_AND_ASSIGN(KioskNextImeMenuTest);
+};
+
+TEST_F(KioskNextImeMenuTest, ImeMenuNotVisible) {
+  ASSERT_FALSE(IsVisible());
+  Shell::Get()->ime_controller()->ShowImeMenuOnShelf(true);
+  EXPECT_TRUE(IsVisible());
+
+  LogInKioskNextUser(GetSessionControllerClient());
+  EXPECT_FALSE(IsVisible());
 }
 
 }  // namespace ash

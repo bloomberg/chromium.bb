@@ -240,7 +240,7 @@ class CORE_EXPORT LayoutMultiColumnSet final : public LayoutBlockFlow {
   LayoutMultiColumnSet(LayoutFlowThread*);
 
  private:
-  LayoutRect LocalVisualRectIgnoringVisibility() const final;
+  PhysicalRect LocalVisualRectIgnoringVisibility() const final;
 
   void InsertedIntoTree() final;
   void WillBeRemovedFromTree() final;
@@ -253,7 +253,7 @@ class CORE_EXPORT LayoutMultiColumnSet final : public LayoutBlockFlow {
   PositionWithAffinity PositionForPoint(const LayoutPoint&) const override;
 
   void PaintObject(const PaintInfo&,
-                   const LayoutPoint& paint_offset) const override;
+                   const PhysicalOffset& paint_offset) const override;
 
   void ComputeVisualOverflow(bool recompute_floats) final;
 

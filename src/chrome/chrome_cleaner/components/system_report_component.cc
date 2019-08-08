@@ -41,6 +41,7 @@
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_variant.h"
+#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "chrome/chrome_cleaner/chrome_utils/chrome_util.h"
 #include "chrome/chrome_cleaner/chrome_utils/extension_file_logger.h"
@@ -593,9 +594,7 @@ void ReportLayeredServiceProviders() {
       const std::set<GUID, GUIDLess>& guids = provider->second;
       for (std::set<GUID, GUIDLess>::const_iterator guid = guids.begin();
            guid != guids.end(); ++guid) {
-        base::string16 guid_str;
-        GUIDToString(*guid, &guid_str);
-        logged_guids.push_back(guid_str);
+        logged_guids.push_back(base::win::String16FromGUID(*guid));
       }
       LoggingServiceAPI::GetInstance()->AddLayeredServiceProvider(
           logged_guids, file_information);

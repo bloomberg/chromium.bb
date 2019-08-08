@@ -233,8 +233,7 @@ class ThreadSafeForwarder : public MessageReceiverWithResponder {
       caller_task_runner_->PostTask(
           FROM_HERE,
           base::BindOnce(&ForwardToCallingThread::CallAcceptAndDeleteResponder,
-                         base::Passed(std::move(responder_)),
-                         base::Passed(std::move(*message))));
+                         std::move(responder_), std::move(*message)));
       return true;
     }
 

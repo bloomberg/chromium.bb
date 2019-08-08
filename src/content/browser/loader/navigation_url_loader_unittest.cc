@@ -13,6 +13,7 @@
 #include "base/unguessable_token.h"
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/navigation_url_loader.h"
+#include "content/browser/loader/prefetched_signed_exchange_cache.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/test_resource_handler.h"
 #include "content/browser/loader_delegate_impl.h"
@@ -21,6 +22,7 @@
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -37,6 +39,8 @@
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
 
@@ -85,7 +89,9 @@ class NavigationURLLoaderTest : public testing::Test {
             false /* skip_service_worker */,
             blink::mojom::RequestContextType::LOCATION,
             blink::WebMixedContentContextType::kBlockable,
-            false /* is_form_submission */, GURL() /* searchable_form_url */,
+            false /* is_form_submission */,
+            false /* was_initiated_by_link_click */,
+            GURL() /* searchable_form_url */,
             std::string() /* searchable_form_encoding */,
             GURL() /* client_side_redirect_url */,
             base::nullopt /* devtools_initiator_info */);
@@ -102,7 +108,7 @@ class NavigationURLLoaderTest : public testing::Test {
     return NavigationURLLoader::Create(
         browser_context_->GetResourceContext(),
         BrowserContext::GetDefaultStoragePartition(browser_context_.get()),
-        std::move(request_info), nullptr, nullptr, nullptr, delegate);
+        std::move(request_info), nullptr, nullptr, nullptr, nullptr, delegate);
   }
 
   // Helper function for fetching the body of a URL to a string.
@@ -175,13 +181,22 @@ TEST_F(NavigationURLLoaderTest, RequestFailedCertErrorFatal) {
   GURL url = https_server.GetURL("/");
 
   // Set HSTS for the test domain in order to make SSL errors fatal.
-  net::TransportSecurityState* transport_security_state =
-      browser_context_->GetRequestContext()
-          ->GetURLRequestContext()
-          ->transport_security_state();
   base::Time expiry = base::Time::Now() + base::TimeDelta::FromDays(1000);
   bool include_subdomains = false;
-  transport_security_state->AddHSTS(url.host(), expiry, include_subdomains);
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    auto* storage_partition =
+        BrowserContext::GetDefaultStoragePartition(browser_context_.get());
+    base::RunLoop run_loop;
+    storage_partition->GetNetworkContext()->AddHSTS(
+        url.host(), expiry, include_subdomains, run_loop.QuitClosure());
+    run_loop.Run();
+  } else {
+    net::TransportSecurityState* transport_security_state =
+        browser_context_->GetRequestContext()
+            ->GetURLRequestContext()
+            ->transport_security_state();
+    transport_security_state->AddHSTS(url.host(), expiry, include_subdomains);
+  }
 
   TestNavigationURLLoaderDelegate delegate;
   std::unique_ptr<NavigationURLLoader> loader = MakeTestLoader(url, &delegate);
@@ -201,6 +216,10 @@ TEST_F(NavigationURLLoaderTest, RequestFailedCertErrorFatal) {
 
 // Tests that the destroying the loader cancels the request.
 TEST_F(NavigationURLLoaderTest, CancelOnDestruct) {
+  // Specific to non-NetworkService path.
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
   // Fake a top-level request. Choose a URL which redirects so the request can
   // be paused before the response comes in.
   TestNavigationURLLoaderDelegate delegate;
@@ -220,6 +239,10 @@ TEST_F(NavigationURLLoaderTest, CancelOnDestruct) {
 // Test that the delegate is not called if OnResponseStarted and destroying the
 // loader race.
 TEST_F(NavigationURLLoaderTest, CancelResponseRace) {
+  // Specific to non-NetworkService path.
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
   TestNavigationURLLoaderDelegate delegate;
   std::unique_ptr<NavigationURLLoader> loader = MakeTestLoader(
       net::URLRequestTestJob::test_url_redirect_to_url_2(), &delegate);
@@ -241,6 +264,10 @@ TEST_F(NavigationURLLoaderTest, CancelResponseRace) {
 
 // Tests that the loader may be canceled by context.
 TEST_F(NavigationURLLoaderTest, CancelByContext) {
+  // Specific to non-NetworkService path.
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
   TestNavigationURLLoaderDelegate delegate;
   std::unique_ptr<NavigationURLLoader> loader = MakeTestLoader(
       net::URLRequestTestJob::test_url_redirect_to_url_2(), &delegate);
@@ -260,6 +287,10 @@ TEST_F(NavigationURLLoaderTest, CancelByContext) {
 // Tests that the request stays alive as long as the URLLoaderClient endpoints
 // are not destructed.
 TEST_F(NavigationURLLoaderTest, OwnedByHandle) {
+  // Specific to non-NetworkService path.
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
   // Fake a top-level request to a URL whose body does not load immediately.
   TestNavigationURLLoaderDelegate delegate;
   std::unique_ptr<NavigationURLLoader> loader =

@@ -24,7 +24,9 @@ source_set("end_to_end_integrationtests") {
     ":test_helper",
     "../gn:default_deps",
     "../gn:gtest_deps",
+    "../include/perfetto/protozero",
     "../include/perfetto/traced",
+    "../protos/perfetto/config:zero",
     "../protos/perfetto/trace:lite",
     "../protos/perfetto/trace:zero",
     "../src/base:base",
@@ -43,7 +45,10 @@ source_set("end_to_end_integrationtests") {
     # In CTS mode we use /syste/bin/perfetto for the cmdline tests and the
     # perfetto_cmd is not required. Outside of CTS mode, instead, we need to
     # build the cmdline code as part of the test executable.
-    deps += [ "../src/perfetto_cmd" ]
+    deps += [
+      "../src/perfetto_cmd",
+      "../src/perfetto_cmd:trigger_perfetto_cmd",
+    ]
   }
 }
 
@@ -57,7 +62,7 @@ perfetto_fuzzer_test("end_to_end_shared_memory_fuzzer") {
     ":task_runner_thread_delegates",
     ":test_helper",
     "../gn:default_deps",
-    "../protos/perfetto/trace:lite",
+    "../protos/perfetto/trace:zero",
     "../src/base:test_support",
     "../src/protozero",
     "../src/tracing",

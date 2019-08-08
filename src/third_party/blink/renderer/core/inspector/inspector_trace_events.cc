@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "cc/layers/picture_layer.h"
-#include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
+#include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-shared.h"
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
@@ -997,12 +997,11 @@ static FloatPoint LocalCoordToFloatPoint(LocalFrameView* view,
 }
 
 static void LocalToPageQuad(const LayoutObject& layout_object,
-                            const LayoutRect& rect,
+                            const PhysicalRect& rect,
                             FloatQuad* quad) {
   LocalFrame* frame = layout_object.GetFrame();
   LocalFrameView* view = frame->View();
-  FloatQuad absolute =
-      layout_object.LocalToAbsoluteQuad(FloatQuad(FloatRect(rect)));
+  FloatQuad absolute = layout_object.LocalRectToAbsoluteQuad(rect);
   quad->SetP1(LocalCoordToFloatPoint(view, absolute.P1()));
   quad->SetP2(LocalCoordToFloatPoint(view, absolute.P2()));
   quad->SetP3(LocalCoordToFloatPoint(view, absolute.P3()));
@@ -1040,7 +1039,7 @@ std::unique_ptr<TracedValue> inspector_layer_invalidation_tracking_event::Data(
 
 std::unique_ptr<TracedValue> inspector_paint_event::Data(
     LayoutObject* layout_object,
-    const LayoutRect& clip_rect,
+    const PhysicalRect& clip_rect,
     const GraphicsLayer* graphics_layer) {
   auto value = std::make_unique<TracedValue>();
   value->SetString("frame",

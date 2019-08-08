@@ -29,9 +29,11 @@
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks_impl.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/modules/indexed_db_names.h"
@@ -43,6 +45,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_cursor_impl.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_impl.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
@@ -105,9 +108,18 @@ void WebIDBCallbacksImpl::Error(int32_t code, const String& message) {
   if (!request_)
     return;
 
+  // In some cases, the backend clears the pending transaction task queue which
+  // destroys all pending tasks.  If our callback was queued with a task that
+  // gets cleared, we'll get a signal with an IgnorableAbortError as the task is
+  // torn down.  This means the error response can be safely ignored.
+  if (code == kWebIDBDatabaseExceptionIgnorableAbortError) {
+    Detach();
+    return;
+  }
+
   probe::AsyncTask async_task(request_->GetExecutionContext(), this, "error");
-  request_->HandleResponse(
-      DOMException::Create(static_cast<DOMExceptionCode>(code), message));
+  request_->HandleResponse(MakeGarbageCollected<DOMException>(
+      static_cast<DOMExceptionCode>(code), message));
   Detach();
 }
 

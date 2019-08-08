@@ -80,8 +80,8 @@ void CreateChromeApplicationShortcutView::InitControls() {
 #if defined(OS_WIN)
   base::win::Version version = base::win::GetVersion();
   // Do not allow creating shortcuts on the Start Screen for Windows 8.
-  if (version != base::win::VERSION_WIN8 &&
-      version != base::win::VERSION_WIN8_1) {
+  if (version != base::win::Version::WIN8 &&
+      version != base::win::Version::WIN8_1) {
     menu_check_box_ = AddCheckbox(
         l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_START_MENU_CHKBOX),
         profile_->GetPrefs()->GetBoolean(prefs::kWebAppCreateInAppsMenu));
@@ -91,7 +91,7 @@ void CreateChromeApplicationShortcutView::InitControls() {
   // that option from the dialog.
   if (base::win::CanPinShortcutToTaskbar()) {
     quick_launch_check_box_ = AddCheckbox(
-        (version >= base::win::VERSION_WIN7)
+        (version >= base::win::Version::WIN7)
             ? l10n_util::GetStringUTF16(IDS_PIN_TO_TASKBAR_CHKBOX)
             : l10n_util::GetStringUTF16(
                   IDS_CREATE_SHORTCUTS_QUICK_LAUNCH_BAR_CHKBOX),
@@ -164,11 +164,10 @@ base::string16 CreateChromeApplicationShortcutView::GetDialogButtonLabel(
 bool CreateChromeApplicationShortcutView::IsDialogButtonEnabled(
     ui::DialogButton button) const {
   if (button == ui::DIALOG_BUTTON_OK)
-    return desktop_check_box_->checked() ||
-           ((menu_check_box_ != nullptr) &&
-            menu_check_box_->checked()) ||
+    return desktop_check_box_->GetChecked() ||
+           ((menu_check_box_ != nullptr) && menu_check_box_->GetChecked()) ||
            ((quick_launch_check_box_ != nullptr) &&
-            quick_launch_check_box_->checked());
+            quick_launch_check_box_->GetChecked());
 
   return true;
 }
@@ -194,15 +193,15 @@ bool CreateChromeApplicationShortcutView::Accept() {
     return false;
 
   web_app::ShortcutLocations creation_locations;
-  creation_locations.on_desktop = desktop_check_box_->checked();
-  if (menu_check_box_ != nullptr && menu_check_box_->checked()) {
+  creation_locations.on_desktop = desktop_check_box_->GetChecked();
+  if (menu_check_box_ != nullptr && menu_check_box_->GetChecked()) {
     creation_locations.applications_menu_location =
         web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS;
   }
 
 #if defined(OS_WIN)
-  creation_locations.in_quick_launch_bar = quick_launch_check_box_ == nullptr ?
-      false : quick_launch_check_box_->checked();
+  creation_locations.in_quick_launch_bar =
+      quick_launch_check_box_ && quick_launch_check_box_->GetChecked();
 #elif defined(OS_POSIX)
   // Create shortcut in Mac dock or as Linux (gnome/kde) application launcher
   // are not implemented yet.
@@ -226,13 +225,13 @@ void CreateChromeApplicationShortcutView::ButtonPressed(
     const ui::Event& event) {
   if (sender == desktop_check_box_) {
     profile_->GetPrefs()->SetBoolean(prefs::kWebAppCreateOnDesktop,
-                                     desktop_check_box_->checked());
+                                     desktop_check_box_->GetChecked());
   } else if (sender == menu_check_box_) {
     profile_->GetPrefs()->SetBoolean(prefs::kWebAppCreateInAppsMenu,
-                                     menu_check_box_->checked());
+                                     menu_check_box_->GetChecked());
   } else if (sender == quick_launch_check_box_) {
     profile_->GetPrefs()->SetBoolean(prefs::kWebAppCreateInQuickLaunchBar,
-                                     quick_launch_check_box_->checked());
+                                     quick_launch_check_box_->GetChecked());
   }
 
   // When no checkbox is checked we should not have the action button enabled.

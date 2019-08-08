@@ -43,10 +43,6 @@ class SVGBoolean final : public SVGPropertyHelper<SVGBoolean> {
   typedef void TearOffType;
   typedef bool PrimitiveType;
 
-  static SVGBoolean* Create(bool value = false) {
-    return MakeGarbageCollected<SVGBoolean>(value);
-  }
-
   SVGBoolean(bool value = false) : value_(value) {}
 
   SVGBoolean* Clone() const { return MakeGarbageCollected<SVGBoolean>(value_); }

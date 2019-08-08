@@ -58,8 +58,11 @@ class TestGpuImpl : public mojom::Gpu {
                             gpu::GpuFeatureInfo());
   }
 
+#if defined(OS_CHROMEOS)
   void CreateJpegDecodeAccelerator(
-      media::mojom::MjpegDecodeAcceleratorRequest jda_request) override {}
+      chromeos_camera::mojom::MjpegDecodeAcceleratorRequest jda_request)
+      override {}
+#endif  // defined(OS_CHROMEOS)
 
   void CreateVideoEncodeAcceleratorProvider(
       media::mojom::VideoEncodeAcceleratorProviderRequest request) override {}
@@ -150,7 +153,7 @@ class GpuTest : public testing::Test {
                          gpu_impl.reset();
                          event->Signal();
                        },
-                       base::Passed(std::move(gpu_impl_)), &event));
+                       std::move(gpu_impl_), &event));
     event.Wait();
   }
 

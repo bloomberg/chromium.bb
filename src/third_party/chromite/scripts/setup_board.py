@@ -13,8 +13,10 @@ headers, gcc-libs).
 
 from __future__ import print_function
 
+from chromite.lib import build_target_util
 from chromite.lib import commandline
-from chromite.service import setup_board
+from chromite.lib import cros_build_lib
+from chromite.service import sysroot
 
 
 def GetParser():
@@ -108,11 +110,12 @@ def _ParseArgs(args):
   opts = parser.parse_args(args)
 
   # Translate raw options to config objects.
-  opts.board_conf = setup_board.Board(board=opts.board, variant=opts.variant,
-                                      board_root=opts.board_root,
-                                      profile=opts.profile)
+  name = '%s_%s' % (opts.board, opts.variant) if opts.variant else opts.board
+  opts.build_target = build_target_util.BuildTarget(name,
+                                                    build_root=opts.board_root,
+                                                    profile=opts.profile)
 
-  opts.run_config = setup_board.SetupBoardRunConfig(
+  opts.run_config = sysroot.SetupBoardRunConfig(
       set_default=opts.default, force=opts.force, usepkg=opts.usepkg,
       jobs=opts.jobs, regen_configs=opts.regen_configs, quiet=opts.quiet,
       update_toolchain=not opts.skip_toolchain_update,
@@ -126,4 +129,7 @@ def _ParseArgs(args):
 
 def main(argv):
   opts = _ParseArgs(argv)
-  setup_board.SetupBoard(opts.board_conf, opts.accept_licenses, opts.run_config)
+  try:
+    sysroot.SetupBoard(opts.build_target, opts.accept_licenses, opts.run_config)
+  except sysroot.Error as e:
+    cros_build_lib.Die(e.message)

@@ -9,9 +9,9 @@
 
 namespace blink {
 
-struct PaintInfo;
 class LayoutEmbeddedObject;
-class LayoutPoint;
+struct PaintInfo;
+struct PhysicalOffset;
 
 class EmbeddedObjectPainter {
   STACK_ALLOCATED();
@@ -20,7 +20,7 @@ class EmbeddedObjectPainter {
   EmbeddedObjectPainter(const LayoutEmbeddedObject& layout_embedded_object)
       : layout_embedded_object_(layout_embedded_object) {}
 
-  void PaintReplaced(const PaintInfo&, const LayoutPoint& paint_offset);
+  void PaintReplaced(const PaintInfo&, const PhysicalOffset& paint_offset);
 
  private:
   const LayoutEmbeddedObject& layout_embedded_object_;

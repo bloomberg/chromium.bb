@@ -23,8 +23,7 @@ ProgramKey::~ProgramKey() = default;
 bool ProgramKey::operator==(const ProgramKey& other) const {
   return type_ == other.type_ && precision_ == other.precision_ &&
          sampler_ == other.sampler_ && blend_mode_ == other.blend_mode_ &&
-         aa_mode_ == other.aa_mode_ && swizzle_mode_ == other.swizzle_mode_ &&
-         is_opaque_ == other.is_opaque_ &&
+         aa_mode_ == other.aa_mode_ && is_opaque_ == other.is_opaque_ &&
          premultiplied_alpha_ == other.premultiplied_alpha_ &&
          has_background_color_ == other.has_background_color_ &&
          has_tex_clamp_rect_ == other.has_tex_clamp_rect_ &&
@@ -66,7 +65,6 @@ ProgramKey ProgramKey::SolidColor(AAMode aa_mode,
 ProgramKey ProgramKey::Tile(TexCoordPrecision precision,
                             SamplerType sampler,
                             AAMode aa_mode,
-                            SwizzleMode swizzle_mode,
                             PremultipliedAlphaMode premultiplied_alpha,
                             bool is_opaque,
                             bool has_tex_clamp_rect,
@@ -77,7 +75,6 @@ ProgramKey ProgramKey::Tile(TexCoordPrecision precision,
   result.precision_ = precision;
   result.sampler_ = sampler;
   result.aa_mode_ = aa_mode;
-  result.swizzle_mode_ = swizzle_mode;
   result.is_opaque_ = is_opaque;
   result.has_tex_clamp_rect_ = has_tex_clamp_rect;
   result.has_tint_color_matrix_ = tint_color;

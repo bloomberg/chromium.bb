@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -40,9 +41,13 @@ namespace {
 // A View that positions itself over another View to intercept clicks.
 class ClickTrackingOverlayView : public views::View {
  public:
-  explicit ClickTrackingOverlayView(views::View* over) {
-    SetBoundsRect(over->bounds());
-    over->parent()->AddChildView(this);
+  explicit ClickTrackingOverlayView(OmniboxResultView* result) {
+    // |result|'s parent is the OmniboxPopupContentsView, which expects that all
+    // its children are OmniboxResultViews.  So skip over it and add this to the
+    // OmniboxPopupContentsView's parent.
+    auto* contents = result->parent();
+    SetBoundsRect(contents->ConvertRectToParent(result->bounds()));
+    contents->parent()->AddChildView(this);
   }
 
   // views::View:
@@ -90,9 +95,8 @@ class OmniboxPopupContentsViewTest : public InProcessBrowserTest {
   }
 
   LocationBarView* location_bar() {
-    return BrowserView::GetBrowserViewForBrowser(browser())
-        ->toolbar()
-        ->location_bar();
+    auto* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
+    return browser_view->toolbar()->location_bar();
   }
   OmniboxViewViews* omnibox_view() { return location_bar()->omnibox_view(); }
   OmniboxEditModel* edit_model() { return omnibox_view()->model(); }
@@ -113,7 +117,11 @@ views::Widget* OmniboxPopupContentsViewTest::CreatePopupForTestQuery() {
   EXPECT_FALSE(GetPopupWidget());
 
   edit_model()->SetUserText(base::ASCIIToUTF16("foo"));
-  edit_model()->StartAutocomplete(false, false);
+  AutocompleteInput input(
+      base::ASCIIToUTF16("foo"), metrics::OmniboxEventProto::BLANK,
+      ChromeAutocompleteSchemeClassifier(browser()->profile()));
+  input.set_want_asynchronous_matches(false);
+  popup_model()->autocomplete_controller()->Start(input);
 
   EXPECT_FALSE(popup_model()->result().empty());
   EXPECT_TRUE(popup_view()->IsOpen());
@@ -145,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, PopupAlignment) {
 
 // Integration test for omnibox popup theming. This is a browser test since it
 // relies on initialization done in chrome_browser_main_extra_parts_views_linux
-// propagating through correctly to OmniboxPopupContentsView::GetTint().
+// propagating through correctly to OmniboxPopupContentsView::CalculateTint().
 IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, ThemeIntegration) {
   // Sanity check the bot: ensure the profile is configured to use the system
   // theme. On Linux, the default depends on a whitelist using the result of
@@ -161,7 +169,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, ThemeIntegration) {
   // Unthemed, non-incognito always has a white background. Exceptions: Inverted
   // color themes on Windows and GTK (not tested here).
   EXPECT_EQ(SK_ColorWHITE, GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND,
-                                           popup_view()->GetTint()));
+                                           popup_view()->CalculateTint()));
 
   Browser* browser_under_test = browser();
 
@@ -173,7 +181,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, ThemeIntegration) {
             ->toolbar()
             ->location_bar();
     return GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND,
-                           location_bar->tint(), OmniboxPartState::SELECTED);
+                           location_bar->CalculateTint(),
+                           OmniboxPartState::SELECTED);
   };
 
   const SkColor selection_color_light =
@@ -233,7 +242,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, ThemeIntegration) {
 }
 
 // TODO(tapted): https://crbug.com/905508 Fix and enable on Mac.
-#if defined(OS_MACOSX) && !defined(USE_AURA)
+#if defined(OS_MACOSX)
 #define MAYBE_ClickOmnibox DISABLED_ClickOmnibox
 #else
 #define MAYBE_ClickOmnibox ClickOmnibox

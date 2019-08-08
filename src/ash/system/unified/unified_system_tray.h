@@ -12,6 +12,10 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 
+namespace message_center {
+class MessagePopupView;
+}  // namespace message_center
+
 namespace ash {
 
 namespace tray {
@@ -26,7 +30,6 @@ class QuietModeView;
 class UnifiedSliderBubbleController;
 class UnifiedSystemTrayBubble;
 class UnifiedSystemTrayModel;
-class NetworkIconPurger;
 
 // The UnifiedSystemTray is the system menu of Chromium OS, which is a clickable
 // rounded rectangle typically located on the bottom right corner of the screen,
@@ -120,6 +123,10 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
   void UpdateNotificationInternal();
   void UpdateNotificationAfterDelay();
 
+  // Forwarded to UiDelegate.
+  message_center::MessagePopupView* GetPopupViewForNotificationID(
+      const std::string& notification_id);
+
   const std::unique_ptr<UiDelegate> ui_delegate_;
 
   std::unique_ptr<UnifiedSystemTrayBubble> bubble_;
@@ -129,8 +136,6 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
 
   const std::unique_ptr<UnifiedSliderBubbleController>
       slider_bubble_controller_;
-
-  const std::unique_ptr<NetworkIconPurger> network_icon_purger_;
 
   CurrentLocaleView* const current_locale_view_;
   ImeModeView* const ime_mode_view_;

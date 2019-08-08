@@ -282,6 +282,22 @@ int FtpNetworkTransaction::Start(
 
   DetectTypecode();
 
+  if (request_->url.has_path()) {
+    std::string gurl_path(request_->url.path());
+
+    // Get rid of the typecode, see RFC 1738 section 3.2.2. FTP url-path.
+    std::string::size_type pos = gurl_path.rfind(';');
+    if (pos != std::string::npos)
+      gurl_path.resize(pos);
+
+    // This may unescape to non-ASCII characters, but we allow that. See the
+    // comment for IsValidFTPCommandSubstring.
+    if (!UnescapeBinaryURLComponentSafe(
+            gurl_path, true /* fail_on_path_separators*/, &unescaped_path_)) {
+      return ERR_INVALID_URL;
+    }
+  }
+
   next_state_ = STATE_CTRL_RESOLVE_HOST;
   int rv = DoLoop(OK);
   if (rv == ERR_IO_PENDING)
@@ -498,27 +514,12 @@ int FtpNetworkTransaction::SendFtpCommand(const std::string& command,
 
 std::string FtpNetworkTransaction::GetRequestPathForFtpCommand(
     bool is_directory) const {
-  std::string path(current_remote_directory_);
-  if (request_->url.has_path()) {
-    std::string gurl_path(request_->url.path());
+  std::string path(current_remote_directory_ + unescaped_path_);
 
-    // Get rid of the typecode, see RFC 1738 section 3.2.2. FTP url-path.
-    std::string::size_type pos = gurl_path.rfind(';');
-    if (pos != std::string::npos)
-      gurl_path.resize(pos);
-
-    path.append(gurl_path);
-  }
   // Make sure that if the path is expected to be a file, it won't end
   // with a trailing slash.
   if (!is_directory && path.length() > 1 && path.back() == '/')
     path.erase(path.length() - 1);
-  UnescapeRule::Type unescape_rules =
-      UnescapeRule::SPACES |
-      UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS;
-  // This may unescape to non-ASCII characters, but we allow that. See the
-  // comment for IsValidFTPCommandSubstring.
-  path = UnescapeURLComponent(path, unescape_rules);
 
   if (system_type_ == SYSTEM_TYPE_VMS) {
     if (is_directory)
@@ -1251,10 +1252,6 @@ int FtpNetworkTransaction::DoDataConnectComplete(int result) {
     return OK;
   }
 
-  // Only record the connection error after we've applied all our fallbacks.
-  // We want to capture the final error, one we're not going to recover from.
-  RecordDataConnectionError(result);
-
   if (result != OK)
     return Stop(result);
 
@@ -1290,94 +1287,6 @@ int FtpNetworkTransaction::DoDataRead() {
 
 int FtpNetworkTransaction::DoDataReadComplete(int result) {
   return result;
-}
-
-// We're using a histogram as a group of counters, with one bucket for each
-// enumeration value.  We're only interested in the values of the counters.
-// Ignore the shape, average, and standard deviation of the histograms because
-// they are meaningless.
-//
-// We use two histograms.  In the first histogram we tally whether the user has
-// seen an error of that type during the session.  In the second histogram we
-// tally the total number of times the users sees each errer.
-void FtpNetworkTransaction::RecordDataConnectionError(int result) {
-  // Gather data for http://crbug.com/3073. See how many users have trouble
-  // establishing FTP data connection in passive FTP mode.
-  enum {
-    // Data connection successful.
-    NET_ERROR_OK = 0,
-
-    // Local firewall blocked the connection.
-    NET_ERROR_ACCESS_DENIED = 1,
-
-    // Connection timed out.
-    NET_ERROR_TIMED_OUT = 2,
-
-    // Connection has been estabilished, but then got broken (either reset
-    // or aborted).
-    NET_ERROR_CONNECTION_BROKEN = 3,
-
-    // Connection has been refused.
-    NET_ERROR_CONNECTION_REFUSED = 4,
-
-    // No connection to the internet.
-    NET_ERROR_INTERNET_DISCONNECTED = 5,
-
-    // Could not reach the destination address.
-    NET_ERROR_ADDRESS_UNREACHABLE = 6,
-
-    // A programming error in our network stack.
-    NET_ERROR_UNEXPECTED = 7,
-
-    // Other kind of error.
-    NET_ERROR_OTHER = 20,
-
-    NUM_OF_NET_ERROR_TYPES
-  } type;
-  switch (result) {
-    case OK:
-      type = NET_ERROR_OK;
-      break;
-    case ERR_ACCESS_DENIED:
-    case ERR_NETWORK_ACCESS_DENIED:
-      type = NET_ERROR_ACCESS_DENIED;
-      break;
-    case ERR_TIMED_OUT:
-      type = NET_ERROR_TIMED_OUT;
-      break;
-    case ERR_CONNECTION_ABORTED:
-    case ERR_CONNECTION_RESET:
-    case ERR_CONNECTION_CLOSED:
-      type = NET_ERROR_CONNECTION_BROKEN;
-      break;
-    case ERR_CONNECTION_FAILED:
-    case ERR_CONNECTION_REFUSED:
-      type = NET_ERROR_CONNECTION_REFUSED;
-      break;
-    case ERR_INTERNET_DISCONNECTED:
-      type = NET_ERROR_INTERNET_DISCONNECTED;
-      break;
-    case ERR_ADDRESS_INVALID:
-    case ERR_ADDRESS_UNREACHABLE:
-      type = NET_ERROR_ADDRESS_UNREACHABLE;
-      break;
-    case ERR_UNEXPECTED:
-      type = NET_ERROR_UNEXPECTED;
-      break;
-    default:
-      type = NET_ERROR_OTHER;
-      break;
-  }
-  static bool had_error_type[NUM_OF_NET_ERROR_TYPES];
-
-  DCHECK(type >= 0 && type < NUM_OF_NET_ERROR_TYPES);
-  if (!had_error_type[type]) {
-    had_error_type[type] = true;
-    UMA_HISTOGRAM_ENUMERATION("Net.FtpDataConnectionErrorHappened",
-        type, NUM_OF_NET_ERROR_TYPES);
-  }
-  UMA_HISTOGRAM_ENUMERATION("Net.FtpDataConnectionErrorCount",
-      type, NUM_OF_NET_ERROR_TYPES);
 }
 
 }  // namespace net

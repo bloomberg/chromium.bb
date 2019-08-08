@@ -269,16 +269,6 @@ class LineLayoutItem {
     return LineLayoutItem(layout_object_->PreviousInPreOrder(stay_within));
   }
 
-  FloatQuad LocalToAbsoluteQuad(const FloatQuad& quad,
-                                MapCoordinatesFlags mode = 0) const {
-    return layout_object_->LocalToAbsoluteQuad(quad, mode);
-  }
-
-  FloatPoint LocalToAbsolute(const FloatPoint& local_point = FloatPoint(),
-                             MapCoordinatesFlags flags = 0) const {
-    return layout_object_->LocalToAbsolute(local_point, flags);
-  }
-
   bool HasOverflowClip() const { return layout_object_->HasOverflowClip(); }
 
   // TODO(dgrogan/eae): Can we instead add a TearDown method to the API
@@ -326,7 +316,7 @@ class LineLayoutItem {
     static const bool safe_to_compare_to_empty_or_deleted = true;
   };
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 
   const char* GetName() const { return layout_object_->GetName(); }
 

@@ -63,6 +63,7 @@ class PLATFORM_EXPORT ReverbConvolverStage {
                        size_t render_phase,
                        size_t render_slice_size,
                        ReverbAccumulationBuffer*,
+                       float scale,
                        bool direct_mode = false);
 
   // WARNING: framesToProcess must be such that it evenly divides the delay

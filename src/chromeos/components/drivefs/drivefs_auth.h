@@ -69,7 +69,7 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsAuth {
       mojom::DriveFsDelegate::GetAccessTokenCallback callback);
 
  private:
-  void AccountReady(const AccountInfo& info,
+  void AccountReady(const CoreAccountInfo& info,
                     const identity::AccountState& state);
 
   void GotChromeAccessToken(const base::Optional<std::string>& access_token,

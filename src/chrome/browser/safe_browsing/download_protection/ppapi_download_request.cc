@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/download_protection/ppapi_download_request.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -15,7 +17,6 @@
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/safe_browsing/common/utils.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -295,7 +296,7 @@ void PPAPIDownloadRequest::Finish(RequestOutcome reason,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DVLOG(2) << __func__ << " response: " << static_cast<int>(response);
   if (!callback_.is_null())
-    base::ResetAndReturn(&callback_).Run(response);
+    std::move(callback_).Run(response);
   loader_.reset();
   weakptr_factory_.InvalidateWeakPtrs();
 

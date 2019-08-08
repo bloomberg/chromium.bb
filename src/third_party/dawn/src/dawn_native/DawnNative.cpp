@@ -26,6 +26,12 @@ namespace dawn_native {
         return GetProcsAutogen();
     }
 
+    std::vector<const char*> GetTogglesUsed(DawnDevice device) {
+        const dawn_native::DeviceBase* deviceBase =
+            reinterpret_cast<const dawn_native::DeviceBase*>(device);
+        return deviceBase->GetTogglesUsed();
+    }
+
     // Adapter
 
     Adapter::Adapter() = default;
@@ -53,8 +59,8 @@ namespace dawn_native {
         return mImpl != nullptr;
     }
 
-    DawnDevice Adapter::CreateDevice() {
-        return reinterpret_cast<DawnDevice>(mImpl->CreateDevice());
+    DawnDevice Adapter::CreateDevice(const DeviceDescriptor* deviceDescriptor) {
+        return reinterpret_cast<DawnDevice>(mImpl->CreateDevice(deviceDescriptor));
     }
 
     // AdapterDiscoverOptionsBase
@@ -89,4 +95,15 @@ namespace dawn_native {
         return adapters;
     }
 
+    const ToggleInfo* Instance::GetToggleInfo(const char* toggleName) {
+        return mImpl->GetToggleInfo(toggleName);
+    }
+
+    void Instance::EnableBackendValidation(bool enableBackendValidation) {
+        mImpl->EnableBackendValidation(enableBackendValidation);
+    }
+
+    bool Instance::IsBackendValidationEnabled() {
+        return mImpl->IsBackendValidationEnabled();
+    }
 }  // namespace dawn_native

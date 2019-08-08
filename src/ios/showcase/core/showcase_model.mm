@@ -112,6 +112,11 @@
       showcase::kClassForInstantiationKey : @"SCInfobarBannerCoordinator",
       showcase::kUseCaseKey : @"Infobar Banner",
     },
+    @{
+      showcase::kClassForDisplayKey : @"AlertController",
+      showcase::kClassForInstantiationKey : @"SCAlertCoordinator",
+      showcase::kUseCaseKey : @"Alert",
+    },
   ];
 }
 

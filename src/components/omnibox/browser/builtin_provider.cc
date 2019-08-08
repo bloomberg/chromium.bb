@@ -96,7 +96,8 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
       base::TrimString(host_and_path, base::ASCIIToUTF16("/"), &host_and_path);
       size_t match_length = embedderAbout.length() + host_and_path.length();
       for (Builtins::const_iterator i(builtins_.begin());
-          (i != builtins_.end()) && (matches_.size() < kMaxMatches); ++i) {
+           (i != builtins_.end()) && (matches_.size() < provider_max_matches_);
+           ++i) {
         if (base::StartsWith(*i, host_and_path,
                              base::CompareCase::INSENSITIVE_ASCII)) {
           base::string16 match_string = embedderAbout + *i;

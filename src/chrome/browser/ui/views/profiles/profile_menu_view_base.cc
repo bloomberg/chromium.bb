@@ -14,16 +14,21 @@
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/browser/ui/views/profiles/incognito_menu_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/separator.h"
 
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
+#include "chrome/browser/ui/views/sync/dice_signin_button_view.h"
 #endif
 
 namespace {
@@ -40,7 +45,21 @@ constexpr int kIconSize = 16;
 // least this tall to show one row.
 constexpr int kMinimumScrollableContentHeight = 40;
 
+// Spacing between the edge of the user menu and the top/bottom or left/right of
+// the menu items.
+constexpr int kMenuEdgeMargin = 16;
+
 }  // namespace
+
+// MenuItems--------------------------------------------------------------------
+
+ProfileMenuViewBase::MenuItems::MenuItems()
+    : first_item_type(ProfileMenuViewBase::MenuItems::kNone),
+      last_item_type(ProfileMenuViewBase::MenuItems::kNone),
+      different_item_types(false) {}
+
+ProfileMenuViewBase::MenuItems::MenuItems(MenuItems&&) = default;
+ProfileMenuViewBase::MenuItems::~MenuItems() = default;
 
 // ProfileMenuViewBase ---------------------------------------------------------
 
@@ -50,25 +69,22 @@ void ProfileMenuViewBase::ShowBubble(
     const signin::ManageAccountsParams& manage_accounts_params,
     signin_metrics::AccessPoint access_point,
     views::Button* anchor_button,
-    gfx::NativeView parent_window,
-    const gfx::Rect& anchor_rect,
     Browser* browser,
     bool is_source_keyboard) {
   if (IsShowing())
     return;
 
-  DCHECK_EQ(browser->profile()->IsIncognito(),
+  DCHECK_EQ(browser->profile()->IsIncognitoProfile(),
             view_mode == profiles::BUBBLE_VIEW_MODE_INCOGNITO);
 
   ProfileMenuViewBase* bubble;
   if (view_mode == profiles::BUBBLE_VIEW_MODE_INCOGNITO) {
-    bubble = new IncognitoMenuView(anchor_button, anchor_rect, parent_window,
-                                   browser);
+    bubble = new IncognitoMenuView(anchor_button, browser);
   } else {
 #if !defined(OS_CHROMEOS)
-    bubble = new ProfileChooserView(
-        anchor_button, anchor_rect, parent_window, browser, view_mode,
-        manage_accounts_params.service_type, access_point);
+    bubble = new ProfileChooserView(anchor_button, browser, view_mode,
+                                    manage_accounts_params.service_type,
+                                    access_point);
 #else
     NOTREACHED();
     return;
@@ -97,8 +113,6 @@ ProfileMenuViewBase* ProfileMenuViewBase::GetBubbleForTesting() {
 }
 
 ProfileMenuViewBase::ProfileMenuViewBase(views::Button* anchor_button,
-                                         const gfx::Rect& anchor_rect,
-                                         gfx::NativeView parent_window,
                                          Browser* browser)
     : BubbleDialogDelegateView(anchor_button, views::BubbleBorder::TOP_RIGHT),
       browser_(browser),
@@ -111,17 +125,11 @@ ProfileMenuViewBase::ProfileMenuViewBase(views::Button* anchor_button,
   // The sign in webview will be clipped on the bottom corners without these
   // margins, see related bug <http://crbug.com/593203>.
   set_margins(gfx::Insets(2, 0));
-  if (anchor_button) {
-    anchor_button->AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
-  } else {
-    DCHECK(parent_window);
-    SetAnchorRect(anchor_rect);
-    set_parent_window(parent_window);
-  }
+  DCHECK(anchor_button);
+  anchor_button->AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
 
-  // The arrow keys can be used to tab between items.
-  AddAccelerator(ui::Accelerator(ui::VKEY_DOWN, ui::EF_NONE));
-  AddAccelerator(ui::Accelerator(ui::VKEY_UP, ui::EF_NONE));
+  EnableUpDownKeyboardAccelerators();
+  GetViewAccessibility().OverrideRole(ax::mojom::Role::kMenu);
 
   bool dice_enabled = AccountConsistencyModeManager::IsDiceEnabledForProfile(
       browser->profile());
@@ -143,22 +151,10 @@ ax::mojom::Role ProfileMenuViewBase::GetAccessibleWindowRole() {
   return ax::mojom::Role::kDialog;
 }
 
-void ProfileMenuViewBase::OnNativeThemeChanged(
-    const ui::NativeTheme* native_theme) {
-  views::BubbleDialogDelegateView::OnNativeThemeChanged(native_theme);
+void ProfileMenuViewBase::OnThemeChanged() {
+  views::BubbleDialogDelegateView::OnThemeChanged();
   SetBackground(views::CreateSolidBackground(GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_DialogBackground)));
-}
-
-bool ProfileMenuViewBase::AcceleratorPressed(
-    const ui::Accelerator& accelerator) {
-  if (accelerator.key_code() != ui::VKEY_DOWN &&
-      accelerator.key_code() != ui::VKEY_UP)
-    return BubbleDialogDelegateView::AcceleratorPressed(accelerator);
-
-  // Move the focus up or down.
-  GetFocusManager()->AdvanceFocus(accelerator.key_code() != ui::VKEY_DOWN);
-  return true;
 }
 
 int ProfileMenuViewBase::GetDialogButtons() const {
@@ -205,62 +201,226 @@ void ProfileMenuViewBase::Reset() {
   menu_item_groups_.clear();
 }
 
-void ProfileMenuViewBase::AddMenuItems(MenuItems& menu_items, bool new_group) {
-  if (new_group || menu_item_groups_.empty())
-    menu_item_groups_.emplace_back();
+int ProfileMenuViewBase::GetMarginSize(GroupMarginSize margin_size) const {
+  switch (margin_size) {
+    case kNone:
+      return 0;
+    case kTiny:
+      return ChromeLayoutProvider::Get()->GetDistanceMetric(
+          DISTANCE_CONTENT_LIST_VERTICAL_SINGLE);
+    case kSmall:
+      return ChromeLayoutProvider::Get()->GetDistanceMetric(
+          DISTANCE_RELATED_CONTROL_VERTICAL_SMALL);
+    case kLarge:
+      return ChromeLayoutProvider::Get()->GetDistanceMetric(
+          DISTANCE_UNRELATED_CONTROL_VERTICAL_LARGE);
+  }
+}
 
-  auto& last_group = menu_item_groups_.back();
-  for (auto& item : menu_items)
-    last_group.push_back(std::move(item));
+void ProfileMenuViewBase::AddMenuGroup(bool add_separator) {
+  if (add_separator && !menu_item_groups_.empty()) {
+    DCHECK(!menu_item_groups_.back().items.empty());
+    menu_item_groups_.emplace_back();
+  }
+
+  menu_item_groups_.emplace_back();
+}
+
+void ProfileMenuViewBase::AddMenuItemInternal(std::unique_ptr<views::View> view,
+                                              MenuItems::ItemType item_type) {
+  DCHECK(!menu_item_groups_.empty());
+  auto& current_group = menu_item_groups_.back();
+
+  current_group.items.push_back(std::move(view));
+  if (current_group.items.size() == 1) {
+    current_group.first_item_type = item_type;
+    current_group.last_item_type = item_type;
+  } else {
+    current_group.different_item_types |=
+        current_group.last_item_type != item_type;
+    current_group.last_item_type = item_type;
+  }
+}
+
+views::Button* ProfileMenuViewBase::CreateAndAddTitleCard(
+    std::unique_ptr<views::View> icon_view,
+    const base::string16& title,
+    const base::string16& subtitle,
+    bool enabled) {
+  std::unique_ptr<HoverButton> title_card = std::make_unique<HoverButton>(
+      enabled ? this : nullptr, std::move(icon_view), title, subtitle);
+  title_card->SetEnabled(enabled);
+  views::Button* button_ptr = title_card.get();
+  AddMenuItemInternal(std::move(title_card), MenuItems::kTitleCard);
+  return button_ptr;
+}
+
+views::Button* ProfileMenuViewBase::CreateAndAddButton(
+    const gfx::ImageSkia& icon,
+    const base::string16& title) {
+  std::unique_ptr<HoverButton> button =
+      std::make_unique<HoverButton>(this, icon, title);
+  views::Button* pointer = button.get();
+  AddMenuItemInternal(std::move(button), MenuItems::kButton);
+  return pointer;
+}
+
+views::Button* ProfileMenuViewBase::CreateAndAddBlueButton(
+    const base::string16& text,
+    bool md_style) {
+  std::unique_ptr<views::LabelButton> button =
+      md_style ? views::MdTextButton::CreateSecondaryUiBlueButton(this, text)
+               : views::MdTextButton::Create(this, text);
+  views::Button* pointer = button.get();
+
+  // Add margins.
+  std::unique_ptr<views::View> margined_view = std::make_unique<views::View>();
+  margined_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kVertical, gfx::Insets(0, kMenuEdgeMargin)));
+  margined_view->AddChildView(std::move(button));
+
+  AddMenuItemInternal(std::move(margined_view), MenuItems::kStyledButton);
+  return pointer;
+}
+
+#if !defined(OS_CHROMEOS)
+DiceSigninButtonView* ProfileMenuViewBase::CreateAndAddDiceSigninButton(
+    AccountInfo* account_info,
+    gfx::Image* account_icon) {
+  std::unique_ptr<DiceSigninButtonView> button =
+      account_info ? std::make_unique<DiceSigninButtonView>(
+                         *account_info, *account_icon, this,
+                         false /* show_drop_down_arrow */)
+                   : std::make_unique<DiceSigninButtonView>(this);
+  DiceSigninButtonView* pointer = button.get();
+
+  // Add margins.
+  std::unique_ptr<views::View> margined_view = std::make_unique<views::View>();
+  margined_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kVertical,
+      gfx::Insets(GetMarginSize(kSmall), kMenuEdgeMargin)));
+  margined_view->AddChildView(std::move(button));
+
+  AddMenuItemInternal(std::move(margined_view), MenuItems::kStyledButton);
+  return pointer;
+}
+#endif
+
+views::Label* ProfileMenuViewBase::CreateAndAddLabel(const base::string16& text,
+                                                     int text_context) {
+  std::unique_ptr<views::Label> label =
+      std::make_unique<views::Label>(text, text_context);
+  label->SetMultiLine(true);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label->SetMaximumWidth(menu_width_ - 2 * kMenuEdgeMargin);
+  views::Label* pointer = label.get();
+
+  // Add margins.
+  std::unique_ptr<views::View> margined_view = std::make_unique<views::View>();
+  margined_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kVertical, gfx::Insets(0, kMenuEdgeMargin)));
+  margined_view->AddChildView(std::move(label));
+
+  AddMenuItemInternal(std::move(margined_view), MenuItems::kLabel);
+  return pointer;
+}
+
+void ProfileMenuViewBase::AddViewItem(std::unique_ptr<views::View> view) {
+  // Add margins.
+  std::unique_ptr<views::View> margined_view = std::make_unique<views::View>();
+  margined_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kVertical, gfx::Insets(0, kMenuEdgeMargin)));
+  margined_view->AddChildView(std::move(view));
+  AddMenuItemInternal(std::move(margined_view), MenuItems::kGeneral);
 }
 
 void ProfileMenuViewBase::RepopulateViewFromMenuItems() {
   RemoveAllChildViews(true);
 
-  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  int border_insets =
-      provider->GetDistanceMetric(DISTANCE_CONTENT_LIST_VERTICAL_SINGLE);
+  // Create a view to keep menu contents.
+  auto contents_view = std::make_unique<views::View>();
+  contents_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kVertical, gfx::Insets()));
 
-  std::unique_ptr<views::View> main_view = std::make_unique<views::View>();
-  main_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(border_insets, 0),
-      border_insets));
+  for (unsigned group_index = 0; group_index < menu_item_groups_.size();
+       group_index++) {
+    MenuItems& group = menu_item_groups_[group_index];
+    if (group.items.empty()) {
+      // An empty group represents a separator.
+      contents_view->AddChildView(new views::Separator());
+    } else {
+      views::View* sub_view = new views::View();
+      GroupMarginSize top_margin;
+      GroupMarginSize bottom_margin;
+      GroupMarginSize child_spacing;
 
-  for (size_t i = 0; i < menu_item_groups_.size(); i++) {
-    if (i > 0)
-      main_view->AddChildView(new views::Separator());
+      if (group.first_item_type == MenuItems::kTitleCard ||
+          group.first_item_type == MenuItems::kLabel) {
+        top_margin = kTiny;
+      } else {
+        top_margin = kSmall;
+      }
 
-    views::View* sub_view = new views::View();
-    sub_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kVertical, gfx::Insets(i ? border_insets : 0, 0)));
+      if (group.last_item_type == MenuItems::kTitleCard) {
+        bottom_margin = kTiny;
+      } else if (group.last_item_type == MenuItems::kButton) {
+        bottom_margin = kSmall;
+      } else {
+        bottom_margin = kLarge;
+      }
 
-    for (std::unique_ptr<views::View>& item : menu_item_groups_[i])
-      sub_view->AddChildView(std::move(item));
+      if (!group.different_item_types) {
+        child_spacing = kNone;
+      } else if (group.items.size() == 2 &&
+                 group.first_item_type == MenuItems::kTitleCard &&
+                 group.last_item_type == MenuItems::kButton) {
+        child_spacing = kNone;
+      } else {
+        child_spacing = kLarge;
+      }
 
-    main_view->AddChildView(sub_view);
+      // Reduce margins if previous/next group is not a separator.
+      if (group_index + 1 < menu_item_groups_.size() &&
+          !menu_item_groups_[group_index + 1].items.empty()) {
+        bottom_margin = kTiny;
+      }
+      if (group_index > 0 &&
+          !menu_item_groups_[group_index - 1].items.empty()) {
+        top_margin = kTiny;
+      }
+
+      sub_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::kVertical,
+          gfx::Insets(GetMarginSize(top_margin), 0,
+                      GetMarginSize(bottom_margin), 0),
+          GetMarginSize(child_spacing)));
+
+      for (std::unique_ptr<views::View>& item : group.items)
+        sub_view->AddChildView(std::move(item));
+
+      contents_view->AddChildView(sub_view);
+    }
   }
 
   menu_item_groups_.clear();
 
-  // TODO(https://crbug.com/934689): Simplify. This part is only done to set
-  // the menu width.
+  // Create a scroll view to hold contents view.
+  auto scroll_view = std::make_unique<views::ScrollView>();
+  scroll_view->set_hide_horizontal_scrollbar(true);
+  // TODO(https://crbug.com/871762): it's a workaround for the crash.
+  scroll_view->set_draw_overflow_indicator(false);
+  scroll_view->ClipHeightTo(0, GetMaxHeight());
+  scroll_view->SetContents(std::move(contents_view));
+
+  // Create a grid layout to set the menu width.
   views::GridLayout* layout =
       SetLayoutManager(std::make_unique<views::GridLayout>(this));
   views::ColumnSet* columns = layout->AddColumnSet(0);
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
                      views::GridLayout::kFixedSize, views::GridLayout::FIXED,
                      menu_width_, menu_width_);
-
-  views::ScrollView* scroll_view = new views::ScrollView;
-  scroll_view->set_hide_horizontal_scrollbar(true);
-
-  // TODO(https://crbug.com/871762): it's a workaround for the crash.
-  scroll_view->set_draw_overflow_indicator(false);
-  scroll_view->ClipHeightTo(0, GetMaxHeight());
-  scroll_view->SetContents(std::move(main_view));
-
   layout->StartRow(1.0, 0);
-  layout->AddView(scroll_view);
+  layout->AddView(scroll_view.release());
   if (GetBubbleFrameView()) {
     SizeToContents();
     // SizeToContents() will perform a layout, but only if the size changed.

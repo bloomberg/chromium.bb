@@ -36,7 +36,6 @@
 #include "media/blink/resource_fetch_context.h"
 #include "media/blink/webencryptedmediaclient_impl.h"
 #include "media/blink/webmediaplayer_impl.h"
-#include "media/filters/context_3d.h"
 #include "media/media_buildflags.h"
 #include "media/renderers/decrypting_renderer_factory.h"
 #include "media/renderers/default_decoder_factory.h"
@@ -50,7 +49,6 @@
 #include "third_party/blink/public/platform/web_video_frame_submitter.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_local_frame.h"
-#include "ui/base/ui_base_features.h"
 #include "url/origin.h"
 
 #if defined(OS_ANDROID)
@@ -142,9 +140,6 @@ namespace content {
 // static
 blink::WebMediaPlayer::SurfaceLayerMode
 MediaFactory::GetVideoSurfaceLayerMode() {
-  if (features::IsMultiProcessMash())
-    return blink::WebMediaPlayer::SurfaceLayerMode::kNever;
-
 #if defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(media::kDisableSurfaceLayerForVideo))
     return blink::WebMediaPlayer::SurfaceLayerMode::kNever;
@@ -439,10 +434,10 @@ MediaFactory::CreateRendererFactorySelector(
       std::make_unique<MediaPlayerRendererClientFactory>(
           render_thread->compositor_task_runner(),
           std::move(mojo_media_player_renderer_factory),
-          base::Bind(&StreamTextureWrapperImpl::Create,
-                     render_thread->EnableStreamTextureCopy(),
-                     render_thread->GetStreamTexureFactory(),
-                     base::ThreadTaskRunnerHandle::Get())));
+          base::BindRepeating(&StreamTextureWrapperImpl::Create,
+                              render_thread->EnableStreamTextureCopy(),
+                              render_thread->GetStreamTexureFactory(),
+                              base::ThreadTaskRunnerHandle::Get())));
 
   factory_selector->SetUseMediaPlayer(use_media_player);
 

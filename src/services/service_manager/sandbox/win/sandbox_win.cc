@@ -71,6 +71,7 @@ const wchar_t* const kTroublesomeDlls[] = {
     L"airfoilinject3.dll",         // Airfoil.
     L"akinsofthook32.dll",         // Akinsoft Software Engineering.
     L"assistant_x64.dll",          // Unknown.
+    L"atcuf64.dll",                // Bit Defender Internet Security x64.
     L"avcuf64.dll",                // Bit Defender Internet Security x64.
     L"avgrsstx.dll",               // AVG 8.
     L"babylonchromepi.dll",        // Babylon translator.
@@ -101,9 +102,11 @@ const wchar_t* const kTroublesomeDlls[] = {
     L"mdnsnsp.dll",                // Bonjour.
     L"moonsysh.dll",               // Moon Secure Antivirus.
     L"mpk.dll",                    // KGB Spy.
+    L"n64hooks.dll",               // Neilsen//NetRatings NetSight.
     L"npdivx32.dll",               // DivX.
     L"npggNT.des",                 // GameGuard 2008.
     L"npggNT.dll",                 // GameGuard (older).
+    L"nphooks.dll",                // Neilsen//NetRatings NetSight.
     L"oawatch.dll",                // Online Armor.
     L"pastali32.dll",              // PastaLeads.
     L"pavhook.dll",                // Panda Internet Security.
@@ -269,7 +272,7 @@ base::string16 PrependWindowsSessionPath(const base::char16* object) {
 bool ShouldSetJobLevel(const base::CommandLine& cmd_line) {
   // Windows 8 allows nested jobs so we don't need to check if we are in other
   // job.
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+  if (base::win::GetVersion() >= base::win::Version::WIN8)
     return true;
 
   BOOL in_job = true;
@@ -414,7 +417,7 @@ sandbox::ResultCode AddPolicyForSandboxedProcess(
   sandbox::ResultCode result = sandbox::SBOX_ALL_OK;
 
   // Win8+ adds a device DeviceApi that we don't need.
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+  if (base::win::GetVersion() >= base::win::Version::WIN8)
     result = policy->AddKernelObjectToClose(L"File", L"\\Device\\DeviceApi");
   if (result != sandbox::SBOX_ALL_OK)
     return result;
@@ -547,7 +550,7 @@ BOOL WINAPI DuplicateHandlePatch(HANDLE source_process_handle,
 #endif
 
 bool IsAppContainerEnabled() {
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+  if (base::win::GetVersion() < base::win::Version::WIN8)
     return false;
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -570,11 +573,13 @@ sandbox::ResultCode SetJobMemoryLimit(const base::CommandLine& cmd_line,
 
   // Note that this command line flag hasn't been fetched by all
   // callers of SetJobLevel, only those in this file.
-  if (service_manager::SandboxTypeFromCommandLine(cmd_line) ==
-      service_manager::SANDBOX_TYPE_GPU) {
+  SandboxType sandbox_type =
+      service_manager::SandboxTypeFromCommandLine(cmd_line);
+  if (sandbox_type == service_manager::SANDBOX_TYPE_GPU ||
+      sandbox_type == service_manager::SANDBOX_TYPE_RENDERER) {
     int64_t GB = 1024 * 1024 * 1024;
-    // Allow the GPU process's sandbox to access more physical memory if
-    // it's available on the system.
+    // Allow the GPU/RENDERER process's sandbox to access more physical memory
+    // if it's available on the system.
     int64_t physical_memory = base::SysInfo::AmountOfPhysicalMemory();
     if (physical_memory > 16 * GB) {
       memory_limit = 16 * GB;
@@ -606,7 +611,7 @@ base::string16 GetAppContainerProfileName(
   // CreateAppContainerProfile requires that the profile name is at most 64
   // characters.  The size of sha1 is a constant 40, so validate that the base
   // names are sufficiently short that the total length is valid.
-  DCHECK(profile_name.length() <= 64);
+  DCHECK_LE(profile_name.length(), 64U);
   return base::UTF8ToWide(profile_name);
 }
 
@@ -748,6 +753,8 @@ sandbox::ResultCode SandboxWin::AddAppContainerProfileToPolicy(
     service_manager::SandboxType sandbox_type,
     const std::string& appcontainer_id,
     sandbox::TargetPolicy* policy) {
+  if (base::win::GetVersion() < base::win::Version::WIN10_RS1)
+    return sandbox::SBOX_ALL_OK;
   base::string16 profile_name =
       GetAppContainerProfileName(appcontainer_id, sandbox_type);
   sandbox::ResultCode result =
@@ -780,7 +787,7 @@ bool SandboxWin::IsAppContainerEnabledForSandbox(
     SandboxType sandbox_type) {
   if (sandbox_type != SANDBOX_TYPE_GPU)
     return false;
-  if (base::win::GetVersion() < base::win::VERSION_WIN10_RS1)
+  if (base::win::GetVersion() < base::win::Version::WIN10_RS1)
     return false;
   const std::string appcontainer_group_name =
       base::FieldTrialList::FindFullName("EnableGpuAppContainer");
@@ -863,7 +870,7 @@ sandbox::ResultCode SandboxWin::StartSandboxedProcess(
     BOOL in_job = true;
     // Prior to Windows 8 nested jobs aren't possible.
     if (sandbox_type == SANDBOX_TYPE_NETWORK &&
-        (base::win::GetVersion() >= base::win::VERSION_WIN8 ||
+        (base::win::GetVersion() >= base::win::Version::WIN8 ||
          (::IsProcessInJob(::GetCurrentProcess(), nullptr, &in_job) &&
           !in_job))) {
       // Launch the process in a job to ensure that the network process doesn't
@@ -917,14 +924,17 @@ sandbox::ResultCode SandboxWin::StartSandboxedProcess(
 #endif
 
   // Post-startup mitigations.
-  mitigations = sandbox::MITIGATION_STRICT_HANDLE_CHECKS |
-                sandbox::MITIGATION_DLL_SEARCH_ORDER;
+  mitigations = sandbox::MITIGATION_DLL_SEARCH_ORDER;
   if (!cmd_line->HasSwitch(switches::kAllowThirdPartyModules))
     mitigations |= sandbox::MITIGATION_FORCE_MS_SIGNED_BINS;
   if (sandbox_type == SANDBOX_TYPE_NETWORK ||
       sandbox_type == SANDBOX_TYPE_AUDIO) {
     mitigations |= sandbox::MITIGATION_DYNAMIC_CODE_DISABLE;
   }
+  // TODO(wfh): Relax strict handle checks for network process until root cause
+  // for this crash can be resolved. See https://crbug.com/939590.
+  if (sandbox_type != SANDBOX_TYPE_NETWORK)
+    mitigations |= sandbox::MITIGATION_STRICT_HANDLE_CHECKS;
 
   result = policy->SetDelayedProcessMitigations(mitigations);
   if (result != sandbox::SBOX_ALL_OK)

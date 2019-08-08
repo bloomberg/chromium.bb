@@ -18,10 +18,10 @@
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
+#import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
-#include "ios/web/public/ssl_status.h"
-#import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
+#include "ios/web/public/security/ssl_status.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -178,12 +178,12 @@ bool ExtractFormFieldData(const base::DictionaryValue& field,
   field.GetBoolean("is_focusable", &field_data->is_focusable);
   field.GetBoolean("should_autocomplete", &field_data->should_autocomplete);
 
-  // ROLE_ATTRIBUTE_OTHER is the default value. The only other value as of this
-  // writing is ROLE_ATTRIBUTE_PRESENTATION.
+  // RoleAttribute::kOther is the default value. The only other value as of this
+  // writing is RoleAttribute::kPresentation.
   int role = 0;
   if (field.GetInteger("role", &role) &&
-      role == autofill::AutofillField::ROLE_ATTRIBUTE_PRESENTATION) {
-    field_data->role = autofill::AutofillField::ROLE_ATTRIBUTE_PRESENTATION;
+      role == static_cast<int>(FormFieldData::RoleAttribute::kPresentation)) {
+    field_data->role = FormFieldData::RoleAttribute::kPresentation;
   }
 
   // TODO(crbug.com/427614): Extract |text_direction|.

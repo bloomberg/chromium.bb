@@ -21,7 +21,9 @@ bool TabRendererData::operator==(const TabRendererData& other) const {
   return favicon.BackedBySameObjectAs(other.favicon) &&
          thumbnail.BackedBySameObjectAs(other.thumbnail) &&
          network_state == other.network_state && title == other.title &&
-         url == other.url && crashed_status == other.crashed_status &&
+         visible_url == other.visible_url &&
+         last_committed_url == other.last_committed_url &&
+         crashed_status == other.crashed_status &&
          incognito == other.incognito && show_icon == other.show_icon &&
          pinned == other.pinned && blocked == other.blocked &&
          alert_state == other.alert_state &&

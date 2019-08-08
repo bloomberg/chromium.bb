@@ -170,8 +170,8 @@ TEST_P(SpellingServiceClientTest, RequestTextCheck) {
   std::string headers(base::StringPrintf(
       "HTTP/1.1 %d %s\nContent-type: application/json\n\n",
       static_cast<int>(http_status), net::GetHttpReasonPhrase(http_status)));
-  head.headers = new net::HttpResponseHeaders(
-      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(headers));
   head.mime_type = "application/json";
 
   network::URLLoaderCompletionStatus status;

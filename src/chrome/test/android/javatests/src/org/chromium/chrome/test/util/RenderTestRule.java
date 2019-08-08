@@ -94,6 +94,9 @@ public class RenderTestRule extends TestWatcher {
     /** Parameterized tests have a prefix inserted at the front of the test description. */
     private String mVariantPrefix;
 
+    /** Prefix on the render test images that describes light/dark mode. */
+    private String mNightModePrefix;
+
     // How much a channel must differ when comparing pixels in order to be considered different.
     private int mPixelDiffThreshold;
 
@@ -275,6 +278,13 @@ public class RenderTestRule extends TestWatcher {
     }
 
     /**
+     * Sets a string prefix that describes the light/dark mode in the golden image name.
+     */
+    public void setNightModeEnabled(boolean nightModeEnabled) {
+        mNightModePrefix = nightModeEnabled ? "NightModeEnabled" : "NightModeDisabled";
+    }
+
+    /**
      * Sets the threshold that a pixel must differ by when comparing channels in order to be
      * considered different.
      */
@@ -290,7 +300,11 @@ public class RenderTestRule extends TestWatcher {
      * This function must be kept in sync with |RE_RENDER_IMAGE_NAME| from
      * src/build/android/pylib/local/device/local_device_instrumentation_test_run.py.
      */
-    private static String imageName(String testClass, String variantPrefix, String desc) {
+    private String imageName(String testClass, String variantPrefix, String desc) {
+        if (!TextUtils.isEmpty(mNightModePrefix)) {
+            desc = mNightModePrefix + "-" + desc;
+        }
+
         if (!TextUtils.isEmpty(variantPrefix)) {
             desc = variantPrefix + "-" + desc;
         }

@@ -22,7 +22,7 @@ class NGBoxFragmentBuilder;
 class NGLayoutResult;
 class NGPhysicalFragment;
 
-struct NGLogicalOffset;
+struct LogicalOffset;
 
 // Represents an unpositioned list marker.
 //
@@ -50,7 +50,7 @@ class CORE_EXPORT NGUnpositionedListMarker final {
   bool AddToBox(const NGConstraintSpace&,
                 FontBaseline,
                 const NGPhysicalFragment& content,
-                NGLogicalOffset* content_offset,
+                LogicalOffset* content_offset,
                 NGBoxFragmentBuilder*,
                 const NGBoxStrut&) const;
 
@@ -61,6 +61,10 @@ class CORE_EXPORT NGUnpositionedListMarker final {
                                       FontBaseline,
                                       NGBoxFragmentBuilder*) const;
   LayoutUnit InlineOffset(const LayoutUnit marker_inline_size) const;
+
+  bool operator==(const NGUnpositionedListMarker& other) const {
+    return marker_layout_object_ == other.marker_layout_object_;
+  }
 
  private:
   bool IsImage() const;

@@ -149,14 +149,17 @@ class FixtureWithMockTaskRunner final : public Fixture {
   FixtureWithMockTaskRunner()
       : test_task_runner_(MakeRefCounted<TestMockTimeTaskRunner>(
             TestMockTimeTaskRunner::Type::kBoundToThread)),
-        call_counting_clock_(
-            Bind(&TestMockTimeTaskRunner::NowTicks, test_task_runner_)),
+        call_counting_clock_(BindRepeating(&TestMockTimeTaskRunner::NowTicks,
+                                           test_task_runner_)),
         sequence_manager_(SequenceManagerForTest::Create(
             nullptr,
             ThreadTaskRunnerHandle::Get(),
             mock_tick_clock(),
-            SequenceManager::Settings{MessageLoop::Type::TYPE_DEFAULT, false,
-                                      mock_tick_clock()})) {
+            SequenceManager::Settings::Builder()
+                .SetMessagePumpType(MessagePump::Type::DEFAULT)
+                .SetRandomisedSamplingEnabled(false)
+                .SetTickClock(mock_tick_clock())
+                .Build())) {
     // A null clock triggers some assertions.
     AdvanceMockTickClock(TimeDelta::FromMilliseconds(1));
 
@@ -223,11 +226,15 @@ class FixtureWithMockMessagePump : public Fixture {
 
     auto pump = std::make_unique<MockTimeMessagePump>(&mock_clock_);
     pump_ = pump.get();
+    auto settings = SequenceManager::Settings::Builder()
+                        .SetMessagePumpType(MessagePump::Type::DEFAULT)
+                        .SetRandomisedSamplingEnabled(false)
+                        .SetTickClock(mock_tick_clock())
+                        .Build();
     sequence_manager_ = SequenceManagerForTest::Create(
-        std::make_unique<ThreadControllerWithMessagePumpImpl>(
-            std::move(pump), mock_tick_clock()),
-        SequenceManager::Settings{MessageLoop::Type::TYPE_DEFAULT, false,
-                                  mock_tick_clock()});
+        std::make_unique<ThreadControllerWithMessagePumpImpl>(std::move(pump),
+                                                              settings),
+        std::move(settings));
     sequence_manager_->SetDefaultTaskRunner(MakeRefCounted<NullTaskRunner>());
 
     // The SequenceManager constructor calls Now() once for setting up
@@ -305,9 +312,12 @@ class FixtureWithMessageLoop : public Fixture {
     pump_ = pump.get();
     message_loop_ = std::make_unique<MessageLoop>(std::move(pump));
 
-    sequence_manager_ =
-        SequenceManagerForTest::CreateOnCurrentThread(SequenceManager::Settings{
-            MessageLoop::Type::TYPE_DEFAULT, false, mock_tick_clock()});
+    sequence_manager_ = SequenceManagerForTest::CreateOnCurrentThread(
+        SequenceManager::Settings::Builder()
+            .SetMessagePumpType(MessagePump::Type::DEFAULT)
+            .SetRandomisedSamplingEnabled(false)
+            .SetTickClock(mock_tick_clock())
+            .Build());
 
     // The SequenceManager constructor calls Now() once for setting up
     // housekeeping. The MessageLoop also contains a SequenceManager so two
@@ -2974,78 +2984,6 @@ TEST_P(SequenceManagerTest, TimeDomainWakeUpOnlyCancelledIfAllUsesCancelled) {
   EXPECT_THAT(run_times, ElementsAre(start_time + delay3, start_time + delay4));
 }
 
-TEST_P(SequenceManagerTest, TaskQueueVoters) {
-  auto queue = CreateTaskQueue();
-
-  // The task queue should be initially enabled.
-  EXPECT_TRUE(queue->IsQueueEnabled());
-
-  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter1 =
-      queue->CreateQueueEnabledVoter();
-  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter2 =
-      queue->CreateQueueEnabledVoter();
-  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter3 =
-      queue->CreateQueueEnabledVoter();
-  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter4 =
-      queue->CreateQueueEnabledVoter();
-
-  // Voters should initially vote for the queue to be enabled.
-  EXPECT_TRUE(queue->IsQueueEnabled());
-
-  // If any voter wants to disable, the queue is disabled.
-  voter1->SetVoteToEnable(false);
-  EXPECT_FALSE(queue->IsQueueEnabled());
-
-  // If the voter is deleted then the queue should be re-enabled.
-  voter1.reset();
-  EXPECT_TRUE(queue->IsQueueEnabled());
-
-  // If any of the remaining voters wants to disable, the queue should be
-  // disabled.
-  voter2->SetVoteToEnable(false);
-  EXPECT_FALSE(queue->IsQueueEnabled());
-
-  // If another queue votes to disable, nothing happens because it's already
-  // disabled.
-  voter3->SetVoteToEnable(false);
-  EXPECT_FALSE(queue->IsQueueEnabled());
-
-  // There are two votes to disable, so one of them voting to enable does
-  // nothing.
-  voter2->SetVoteToEnable(true);
-  EXPECT_FALSE(queue->IsQueueEnabled());
-
-  // IF all queues vote to enable then the queue is enabled.
-  voter3->SetVoteToEnable(true);
-  EXPECT_TRUE(queue->IsQueueEnabled());
-}
-
-TEST_P(SequenceManagerTest, ShutdownQueueBeforeEnabledVoterDeleted) {
-  auto queue = CreateTaskQueue();
-
-  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
-      queue->CreateQueueEnabledVoter();
-
-  voter->SetVoteToEnable(true);  // NOP
-  queue->ShutdownTaskQueue();
-
-  // This should complete without DCHECKing.
-  voter.reset();
-}
-
-TEST_P(SequenceManagerTest, ShutdownQueueBeforeDisabledVoterDeleted) {
-  auto queue = CreateTaskQueue();
-
-  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
-      queue->CreateQueueEnabledVoter();
-
-  voter->SetVoteToEnable(false);
-  queue->ShutdownTaskQueue();
-
-  // This should complete without DCHECKing.
-  voter.reset();
-}
-
 TEST_P(SequenceManagerTest, SweepCanceledDelayedTasks) {
   auto queue = CreateTaskQueue();
 
@@ -3449,8 +3387,8 @@ void SetOnTaskHandlers(scoped_refptr<TestTaskQueue> task_queue,
          const TaskQueue::TaskTiming& task_timing) { ++(*counter); },
       start_counter));
   task_queue->GetTaskQueueImpl()->SetOnTaskCompletedHandler(BindRepeating(
-      [](int* counter, const Task& task,
-         const TaskQueue::TaskTiming& task_timing) { ++(*counter); },
+      [](int* counter, const Task& task, TaskQueue::TaskTiming* task_timing,
+         LazyNow* lazy_now) { ++(*counter); },
       complete_counter));
 }
 
@@ -3458,7 +3396,7 @@ void UnsetOnTaskHandlers(scoped_refptr<TestTaskQueue> task_queue) {
   task_queue->GetTaskQueueImpl()->SetOnTaskStartedHandler(
       internal::TaskQueueImpl::OnTaskStartedHandler());
   task_queue->GetTaskQueueImpl()->SetOnTaskCompletedHandler(
-      internal::TaskQueueImpl::OnTaskStartedHandler());
+      internal::TaskQueueImpl::OnTaskCompletedHandler());
 }
 }  // namespace
 
@@ -3879,7 +3817,7 @@ base::OnceClosure PostOnDestruction(scoped_refptr<TestTaskQueue> task_queue,
       [](base::OnceClosure task, scoped_refptr<TestTaskQueue> task_queue) {
         task_queue->task_runner()->PostTask(FROM_HERE, std::move(task));
       },
-      base::Passed(std::move(task)), task_queue));
+      std::move(task), task_queue));
 }
 
 }  // namespace
@@ -4204,9 +4142,9 @@ TEST_P(SequenceManagerTest, RecordsQueueTimeIfSettingTrue) {
 }
 
 namespace {
-// Inject a test point for recording the destructor calls for Closure objects
-// send to PostTask(). It is awkward usage since we are trying to hook the
-// actual destruction, which is not a common operation.
+// Inject a test point for recording the destructor calls for OnceClosure
+// objects sent to PostTask(). It is awkward usage since we are trying to hook
+// the actual destruction, which is not a common operation.
 class DestructionObserverProbe : public RefCounted<DestructionObserverProbe> {
  public:
   DestructionObserverProbe(bool* task_destroyed,
@@ -4351,12 +4289,6 @@ TEST_P(SequenceManagerTest, OnSystemIdleTimeDomainNotification) {
   RunLoop().RunUntilIdle();
 }
 
-TEST_P(SequenceManagerTest, ThreadName) {
-  std::string kThreadName1("foo");
-  PlatformThread::SetName(kThreadName1);
-  EXPECT_EQ(kThreadName1, sequence_manager()->GetThreadName());
-}
-
 TEST_P(SequenceManagerTest, CreateTaskQueue) {
   scoped_refptr<TaskQueue> task_queue =
       sequence_manager()->CreateTaskQueue(TaskQueue::Spec("test"));
@@ -4490,11 +4422,12 @@ TEST_P(SequenceManagerTest, TaskPriortyInterleaving) {
 
   EXPECT_EQ(order,
             "000000000000000000000000000000000000000000000000000000000000"
-            "111121111213112141121113121111211412311121111211312411121111"
-            "231112114121131211112111123412222223222224223222222223242222"
-            "223222222423222222223433333343333334333333433333343333334333"
-            "333433333343333344444444444444444444444444444444444444444444"
-            "555555555555555555555555555555555555555555555555555555555555");
+            "111121311214131215112314121131211151234112113121114123511211"
+            "312411123115121341211131211145123111211314211352232423222322"
+            "452322232423222352423222322423252322423222322452322232433353"
+            "343333334353333433333345333334333354444445444444544444454444"
+            "445444444544444454445555555555555555555555555555555555555555"
+            "666666666666666666666666666666666666666666666666666666666666");
 }
 
 class CancelableTaskWithDestructionObserver {

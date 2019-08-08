@@ -14,7 +14,6 @@
 <translation id="123620459398936149">Chrome OS nevarēja sinhronizēt jūsu datus. Lūdzu, atjauniniet savu sinhronizācijas ieejas frāzi.</translation>
 <translation id="127345590676626841">Pārlūks Chrome tiek atjaunināts automātiski, tādēļ jums vienmēr būs pieejama visjaunākā versija. Kad šī lejupielāde būs pabeigta, pārlūks Chrome tiks restartēts un varēsiet sākt lietot visjaunāko versiju.</translation>
 <translation id="1302523850133262269">Lūdzu, uzgaidiet, kamēr Chrome instalē jaunākos sistēmas atjauninājumus.</translation>
-<translation id="1312676208694947750">{0,plural, =0{Ir pieejams Chrome OS atjauninājums}=1{Ir pieejams Chrome OS atjauninājums}zero{Chrome OS atjauninājums ir pieejams # dienas}one{Chrome OS atjauninājums ir pieejams # dienu}other{Chrome OS atjauninājums ir pieejams # dienas}}</translation>
 <translation id="137466361146087520">Google Chrome Beta</translation>
 <translation id="1393853151966637042">Saņemt palīdzību par Chrome izmantošanu</translation>
 <translation id="1399397803214730675">Šim datoram jau ir instalēta jaunākā Google Chrome versija. Ja programmatūra nedarbojas, atinstalējiet Google Chrome un mēģiniet vēlreiz.</translation>
@@ -34,6 +33,7 @@
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome ir tīmekļa pārlūks, kas zibenīgi atver tīmekļa lapas un izpilda lietojumprogrammas. Tas ir ātrs, stabils un ērti lietojams. Google Chrome iebūvētā aizsardzība pret ļaunprātīgu programmatūru un pikšķerēšanu nodrošina daudz drošāku tīmekļa pārlūkošanu.</translation>
+<translation id="1713301662689114961">{0,plural, =1{Pārlūks Chrome pēc stundas tiks restartēts}zero{Pārlūks Chrome pēc # stundām tiks restartēts}one{Pārlūks Chrome pēc # stundas tiks restartēts}other{Pārlūks Chrome pēc # stundām tiks restartēts}}</translation>
 <translation id="1718131156967340976">Atlasiet <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
 <translation id="1734234790201236882">Pārlūks Chrome saglabās šo paroli jūsu Google kontā. To nav nepieciešams iegaumēt.</translation>
 <translation id="174539241580958092">Google Chrome nevarēja sinhronizēt jūsu datus pierakstīšanās kļūdas dēļ.</translation>
@@ -41,7 +41,6 @@
 <translation id="1773601347087397504">Saņemt palīdzību par Chrome OS izmantošanu</translation>
 <translation id="1795405610103747296">Instalējiet pārlūku Chrome savā tālrunī. Mēs nosūtīsim īsziņu uz jūsu tālruņa numuru: <ph name="PHONE_NUMBER" />.</translation>
 <translation id="1812689907177901597">Ja izslēgsiet šo iestatījumu, varēsiet pierakstīties Google vietnēs, piemēram, pakalpojumā Gmail, nepierakstoties pārlūkā Chrome.</translation>
-<translation id="1815759068706561639">Fails <ph name="FILE_NAME" /> ir bīstams, tādēļ Chrome to bloķēja. Jūsu konts ir aizsargāts ar papildu aizsardzības funkcijām.</translation>
 <translation id="1860536484129686729">Pārlūkam Chrome ir nepieciešama atļauja piekļūt jūsu kamerai šajā vietnē.</translation>
 <translation id="1873233029667955273">Google Chrome nav jūsu noklusējuma pārlūks.</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
@@ -55,7 +54,6 @@
 <translation id="216054706567564023">Instalējiet pārlūku Chrome savā tālrunī. Mēs nosūtīsim īsziņu uz jūsu konta atkopšanas tālruņa numuru.</translation>
 <translation id="2246246234298806438">Pārlūks Google Chrome nevar parādīt drukas priekšskatījumu, ja nav pieejams iebūvētais PDF skatītājs.</translation>
 <translation id="2252923619938421629">Palīdziet uzlabot pārlūku Google Chrome, ziņojot par pašreizējiem iestatījumiem.</translation>
-<translation id="225363235161345695">{0,plural, =1{Pārlūks Chrome tiks restartēts pēc stundas}zero{Pārlūks Chrome tiks restartēts pēc # stundām}one{Pārlūks Chrome tiks restartēts pēc # stundas}other{Pārlūks Chrome tiks restartēts pēc # stundām}}</translation>
 <translation id="2286950485307333924">Jūs esat pierakstījies pārlūkā Chrome</translation>
 <translation id="2290014774651636340">Trūkst Google API atslēgu. Tiks atspējotas dažas Google Chrome funkcijas.</translation>
 <translation id="2290095356545025170">Vai tiešām vēlaties atinstalēt Google Chrome?</translation>
@@ -67,7 +65,6 @@ Ja pierakstīsieties tik un tā, Chrome informācija, piemēram, grāmatzīmes, 
 <translation id="2429317896000329049">Google Chrome nevarēja sinhronizēt jūsu datus, jo jūsu domēnam nav pieejama sinhronizācija.</translation>
 <translation id="2467438592969358367">Pārlūkā Google Chrome tiek mēģināts eksportēt jūsu paroles. Lai to atļautu, ierakstiet savu Windows paroli.</translation>
 <translation id="2485422356828889247">Atinstalēt</translation>
-<translation id="2521856951867783208">Šis fails var būt bīstams, tādēļ Chrome to bloķēja. Jūsu konts ir aizsargāts ar papildu aizsardzības funkcijām.</translation>
 <translation id="2534507159460261402">Google Pay (kopēts pārlūkā Chrome)</translation>
 <translation id="2535429035253759792">Lai lietotu šo atjauninājumu, administrators lūdz restartēt pārlūku Chrome.</translation>
 <translation id="2580411288591421699">Nevar instalēt to pašu Google Chrome versiju, kas jau darbojas. Lūdzu, aizveriet Google Chrome un mēģiniet vēlreiz.</translation>
@@ -98,13 +95,13 @@ Lai <ph name="NEW_PROFILE_NAME" /> nevarētu piekļūt jūsu kontam, noteikti bl
 Papildu norādījumus skatiet e-pasta ziņojumā šeit: <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="3282568296779691940">Pierakstīties pārlūkā Chrome</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
+<translation id="3379938682270551431">{0,plural, =0{Pārlūks Chrome tūlīt tiks restartēts}=1{Pārlūks Chrome pēc 1 sekundes tiks restartēts}zero{Pārlūks Chrome pēc # sekundēm tiks restartēts}one{Pārlūks Chrome pēc # sekundes tiks restartēts}other{Pārlūks Chrome pēc # sekundēm tiks restartēts}}</translation>
 <translation id="3395323229510056640">Saņemt palīdzību par Chrome OS</translation>
 <translation id="3396977131400919238">Instalācijas laikā radās operētājsistēmas kļūda. Lūdzu, vēlreiz lejupielādējiet Google Chrome.</translation>
 <translation id="3398288718845740432">Paslēpšana Chrome izvēlnē</translation>
 <translation id="3451115285585441894">Notiek pievienošana pārlūkam Chrome...</translation>
 <translation id="345171907106878721">Pievienot savu kontu pārlūkā Chrome</translation>
 <translation id="3479552764303398839">Vēlāk</translation>
-<translation id="3481286511616257896">Fails <ph name="FILE_NAME" /> var būt bīstams, tādēļ Chrome to bloķēja. Jūsu konts ir aizsargāts ar papildu aizsardzības funkcijām.</translation>
 <translation id="34857402635545079">Notīrīt arī datus no Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Pārlūkam Chrome ir nepieciešama piekļuve jūsu atrašanās vietas datiem, lai varētu tos kopīgot ar šo vietni.</translation>
 <translation id="3576528680708590453">Sistēmas administrators ir konfigurējis pārlūku Google Chrome, lai vietne <ph name="TARGET_URL_HOSTNAME" /> tiktu atvērta papildu pārlūkā.</translation>
@@ -126,6 +123,7 @@ Papildu norādījumus skatiet e-pasta ziņojumā šeit: <ph name="ACCOUNT_EMAIL"
 <translation id="4143243756087420366">Chrome profila vārds un attēls</translation>
 <translation id="4147555960264124640">Jūs pierakstāties ar pārvaldītu kontu un nodrošināt, ka tā administrators var pārvaldīt jūsu Google Chrome profilu. Jūsu Chrome dati, piemēram, lietotnes, grāmatzīmes, vēsture, paroles un citi iestatījumi tiks neatgriezeniski saistīti ar lietotāju <ph name="USER_NAME" />. Varēsiet dzēst šos datus, izmantojot Google kontu informācijas paneli, taču nevarēsiet saistīt šos datus ar citu kontu. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Instalētājam neizdevās atarhivēt arhīvu. Lūdzu, vēlreiz lejupielādējiet Google Chrome.</translation>
+<translation id="4191857738314598978">{0,plural, =1{Restartējiet pārlūku Chrome vienas dienas laikā}zero{Restartējiet pārlūku Chrome # dienu laikā}one{Restartējiet pārlūku Chrome # dienas laikā}other{Restartējiet pārlūku Chrome # dienu laikā}}</translation>
 <translation id="424864128008805179">Vai izrakstīties no pārlūka Chrome?</translation>
 <translation id="4251615635259297716">Vai saistīt Chrome datus ar šo kontu?</translation>
 <translation id="4251625577313994583">Iegūt Chrome savā iPhone tālrunī</translation>
@@ -147,11 +145,10 @@ Papildu norādījumus skatiet e-pasta ziņojumā šeit: <ph name="ACCOUNT_EMAIL"
 <translation id="4750550185319565338">Restartējiet pārlūku Chrome, lai iespējotu spraudni <ph name="PLUGIN_NAME" />.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (ienākošā mDNS datplūsma)</translation>
 <translation id="4771048833395599659">Šis fails var būt bīstams, tāpēc Chrome to bloķēja.</translation>
-<translation id="4794050651896644714">Saglabāt informāciju pārlūkā Chrome</translation>
+<translation id="479167709087336770">Šeit tiek izmantota tāds pats pareizrakstības pārbaudītājs, kāds tiek izmantots Google meklēšanā. Pārlūkprogrammā ievadītais teksts tiek nosūtīts Google serveriem. Jebkurā brīdī varat mainīt šo darbību iestatījumos.</translation>
 <translation id="4891791193823137474">Ļaut Google Chrome darboties fonā</translation>
 <translation id="4895437082222824641">Atvērt saiti jaunā Chrome &amp;cilnē</translation>
 <translation id="4921569541910214635">Vai datoru izmanto vairāki lietotāji? Tagad varat iestatīt pārlūku Chrome atbilstoši savām vajadzībām.</translation>
-<translation id="4945319281866068441">{0,plural, =1{Restartējiet Chrome OS dienas laikā}zero{Restartējiet Chrome OS # dienu laikā}one{Restartējiet Chrome OS # dienas laikā}other{Restartējiet Chrome OS # dienu laikā}}</translation>
 <translation id="4953650215774548573">Iestatīt Google Chrome kā manu noklusējuma pārlūku</translation>
 <translation id="495931528404527476">Pārlūkprogrammā Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -167,8 +164,8 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="5251420635869119124">Viesi var izmantot pārlūku Chrome, neatstājot nekādas pēdas.</translation>
 <translation id="532046782124376502">Brīdinājums! Google Chrome nevar novērst to, ka paplašinājumi ieraksta jūsu pārlūkošanas vēsturi. Lai atspējotu šo paplašinājumu inkognito režīmā, noņemiet atzīmi no šīs opcijas.</translation>
 <translation id="5386244825306882791">Tas nosaka arī to, kāda lapa tiks rādīta, kad atvērsiet pārlūku Chrome vai meklēsiet, izmantojot universālo lodziņu.</translation>
+<translation id="5394833366792865639">Chrome cilnes kopīgošana</translation>
 <translation id="5430073640787465221">Jūsu preferenču fails ir bojāts vai nederīgs. Google Chrome nespēj atkopt jūsu iestatījumus.</translation>
-<translation id="5483595757826856374">{0,plural, =0{Pārlūks Chrome tiks restartēts tūlīt}=1{Pārlūks Chrome pēc 1 sekundes tiks restartēts}zero{Pārlūks Chrome pēc # sekundēm tiks restartēts}one{Pārlūks Chrome pēc # sekundes tiks restartēts}other{Pārlūks Chrome pēc # sekundēm tiks restartēts}}</translation>
 <translation id="5543953544073077331">Darbojas citas Chrome kopijas. Lai veiktu atjaunināšanu, aizveriet tās.</translation>
 <translation id="556024056938947818">Google Chrome mēģina rādīt paroles.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS ienākošā datplūsma)</translation>
@@ -196,7 +193,6 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="6291549208091401781">Pārlūks Google Chrome jau ir instalēts visiem jūsu datora lietotājiem.</translation>
 <translation id="6338556085225130112">Notiek Google Chrome atjaunināšana</translation>
 <translation id="6368958679917195344">Chrome OS ir kļuvusi iespējama, pateicoties papildu <ph name="BEGIN_LINK_CROS_OSS" />atklātā pirmkoda programmatūrai<ph name="END_LINK_CROS_OSS" />.</translation>
-<translation id="6468844726266617801">{0,plural, =1{Restartējiet pārlūku Chrome dienas laikā}zero{Restartējiet pārlūku Chrome # dienu laikā}one{Restartējiet pārlūku Chrome # dienas laikā}other{Restartējiet pārlūku Chrome # dienu laikā}}</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> — Google Chrome izstrādātāju versija</translation>
 <translation id="6566149418543181476">Notiek Google Chrome atjaunināšana (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Chrome satura sinhronizēšanai jūs izmantojat kontu <ph name="PROFILE_EMAIL" />. Lai atjauninātu savas sinhronizācijas preferences vai izmantotu Chrome ierīci bez Google konta, dodieties uz: <ph name="SETTINGS_LINK" />.</translation>
@@ -204,17 +200,16 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="6634887557811630702">Pārlūks Google Chrome ir atjaunināts.</translation>
 <translation id="6676384891291319759">Piekļūt internetam</translation>
 <translation id="6679975945624592337">Ļaut pārlūkam Google Chrome darboties fonā</translation>
+<translation id="6750954913813541382">Lai labotu pareizrakstības kļūdas, Chrome nosūta jūsu pārlūkprogrammā ievadīto tekstu Google serveriem</translation>
 <translation id="677276454032249905">Vai tik un tā aizvērt pārlūku Chrome?</translation>
 <translation id="683440813066116847">Ienākošo savienojumu kārtula pārlūkam Google Chrome Canary, lai atļautu mDNS datplūsmu.</translation>
 <translation id="686561893457936865">Paņemiet Chrome sev līdzi</translation>
 <translation id="6885412569789873916">Chrome Beta lietotnes</translation>
 <translation id="6943584222992551122">Šī lietotāja pārlūkošanas dati tiks dzēsti no šīs ierīces. Lai atkoptu datus, pierakstieties pārlūkprogrammā Chrome kā lietotājs <ph name="USER_EMAIL" />.</translation>
-<translation id="6964107240822114422">{0,plural, =0{Ir pieejams Chrome atjauninājums}=1{Ir pieejams Chrome atjauninājums}zero{Chrome atjauninājums ir pieejams # dienas}one{Chrome atjauninājums ir pieejams # dienu}other{Chrome atjauninājums ir pieejams # dienas}}</translation>
 <translation id="6967962315388095737">Ienākošo savienojumu kārtula pārlūkam Google Chrome Beta, lai atļautu mDNS datplūsmu.</translation>
 <translation id="6970811910055250180">Notiek ierīces atjaunināšana...</translation>
 <translation id="6982337800632491844">Pirms šīs ierīces lietošanas jums ir jāizlasa un jāapstiprina tālāk sniegtie domēna <ph name="DOMAIN" /> pakalpojumu sniegšanas noteikumi. Šie noteikumi nepaplašina, nepārveido vai neierobežo operētājsistēmas Google Chrome OS noteikumus.</translation>
 <translation id="6989339256997917931">Pārlūkprogramma Google Chrome ir atjaunināta, bet jūs neesat to izmantojis vismaz 30 dienas.</translation>
-<translation id="7023651421574588884">Lai lietotu atjauninājumu, administrators pieprasa restartēt Chrome OS.</translation>
 <translation id="7098166902387133879">Pārlūkā Google Chrome tiek izmantots mikrofons.</translation>
 <translation id="7106741999175697885">Uzdevumu pārvaldnieks - Google Chrome</translation>
 <translation id="7164397146364144019">Varat palīdzēt uzlabot Chrome drošību un lietošanas ērtumu, automātiski nosūtot Google serveriem informāciju par iespējamām drošības problēmām.</translation>
@@ -229,15 +224,12 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="7459554271817304652">Iestatiet sinhronizāciju, lai saglabātu savas personalizētās pārlūka funkcijas tīmeklī un piekļūtu tām no pārlūka Google Chrome jebkurā datorā.</translation>
 <translation id="7473136999113284234">Pārlūks Chrome tiek atjaunināts automātiski, tādēļ jums vienmēr būs pieejama visjaunākā versija.</translation>
 <translation id="7486227612705979895">Pārlūkā Chrome tiks izmantota Diskā pieejamā informācija, lai adrešu joslā piedāvātu ieteikumus</translation>
-<translation id="748945194546522577">Šis fails ir bīstams, tādēļ Chrome to bloķēja. Jūsu konts ir aizsargāts ar papildu aizsardzības funkcijām.</translation>
 <translation id="7531671357096394523">Aizveriet visas Chrome kopijas.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Rādīt Chrome OS šajā valodā</translation>
-<translation id="7561940363513215021">{0,plural, =1{Pārlūks Chrome tiks restartēts pēc 1 minūtes}zero{Pārlūks Chrome tiks restartēts pēc # minūtēm}one{Pārlūks Chrome tiks restartēts pēc # minūtes}other{Pārlūks Chrome tiks restartēts pēc # minūtēm}}</translation>
 <translation id="7589360514048265910">Šajā datorā vairs netiks saņemti Google Chrome atjauninājumi, jo operētājsistēma Mac OS X 10.9 vairs netiek atbalstīta.</translation>
 <translation id="7592736734348559088">Google Chrome nevarēja sinhronizēt jūsu datus, jo jūsu konta pierakstīšanās informācija ir novecojusi.</translation>
 <translation id="7626032353295482388">Laipni lūdzam pārlūkā Chrome</translation>
-<translation id="7636297873481318396">Šis fails ir bīstams, tādēļ Chrome to bloķēja. Jūsu konts ir aizsargāts ar papildu aizsardzības funkcijām.</translation>
 <translation id="7641148173327520642">Jūsu sistēmas administrators ir konfigurējis Google Chrome atvērt <ph name="ALTERNATIVE_BROWSER_NAME" />, lai piekļūtu <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">Chrome Enterprise logotips</translation>
 <translation id="7747138024166251722">Instalētājam neizdevās izveidot pagaidu katalogu. Lūdzu, pārbaudiet, vai diskā pietiek vietas un vai ir atļauja instalēt programmatūru.</translation>
@@ -258,18 +250,14 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="8013993649590906847">Ja attēlam nav vērtīga apraksta, pārlūks Chrome mēģinās jums tādu nodrošināt. Lai izveidotu aprakstus, attēli tiek nosūtīti uzņēmumam Google.</translation>
 <translation id="8030318113982266900">Notiek ierīces atjaunināšana uz kanālu <ph name="CHANNEL_NAME" />...</translation>
 <translation id="8032142183999901390">Kad konts būs noņemts no Chrome, iespējams, būs atkārtoti jāielādē atvērtās cilnes, lai izmaiņas stātos spēkā.</translation>
-<translation id="8077352834923175128">Lai lietotu šo atjauninājumu, administrators lūdz restartēt Chrome OS.</translation>
 <translation id="8129812357326543296">Par &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Instalējiet pārlūkprogrammu Chrome savā tālrunī. Mēs nosūtīsim īsziņu uz jūsu tālruņa numuru.</translation>
-<translation id="8183957050892517584">Chrome droši saglabās jūsu privāto informāciju, lai tā vairs nebūtu atkārtoti jāievada.</translation>
-<translation id="8226081633851087288">{0,plural, =0{Operētājsistēma Chrome OS tiks restartēta tūlīt}=1{Operētājsistēma Chrome OS tiks restartēta pēc 1 sekundes}zero{Operētājsistēma Chrome OS tiks restartēta pēc # sekundēm}one{Operētājsistēma Chrome OS tiks restartēta pēc # sekundes}other{Operētājsistēma Chrome OS tiks restartēta pēc # sekundēm}}</translation>
 <translation id="825412236959742607">Šī lapa izmanto pārāk daudz atmiņas, tādēļ pārlūks Chrome noņēma daļu satura.</translation>
 <translation id="8255190535488645436">Pārlūkā Google Chrome tiek izmantota kamera un mikrofons.</translation>
 <translation id="8286862437124483331">Google Chrome mēģina rādīt paroles. Lai to atļautu, ierakstiet savu Windows paroli.</translation>
 <translation id="8290100596633877290">Eh! Google Chrome ir avarējis. Vai restartēt to tūlīt?</translation>
 <translation id="8342675569599923794">Šis fails ir bīstams, tāpēc Chrome to bloķēja.</translation>
 <translation id="8370517070665726704">Autortiesības: <ph name="YEAR" /> Google LLC. Visas tiesības paturētas.</translation>
-<translation id="8380166467911888159">Lai izlabotu pareizrakstības kļūdas, Chrome nosūta teksta laukos ievadīto tekstu Google serveriem.</translation>
 <translation id="840084489713044809">Pārlūkā Google Chrome tiek mēģināts eksportēt jūsu paroles.</translation>
 <translation id="8406086379114794905">Palīdziet uzlabot Chrome</translation>
 <translation id="8432724323949790809">Restartējiet Google Chrome tūlīt.</translation>
@@ -283,22 +271,21 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="8568392309447938879">Lai izmantotu lietotnes, jums ir jāpierakstās pārlūkā Chrome. Tādējādi pārlūkā Chrome var sinhronizēt jūsu lietotnes, grāmatzīmes, vēsturi, paroles un citus iestatījumus dažādās ierīcēs.</translation>
 <translation id="8606668294522778825">Google Chrome var izmantot tīmekļa pakalpojumus, lai uzlabotu jūsu pārlūkošanas pieredzi. Jūs varat arī atspējot šos pakalpojumus. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
 <translation id="8614913330719544658">Google Chrome nereaģē. Vai restartēt to tūlīt?</translation>
+<translation id="8625237574518804553">{0,plural, =1{Pārlūks Chrome pēc 1 minūtes tiks restartēts}zero{Pārlūks Chrome pēc # minūtēm tiks restartēts}one{Pārlūks Chrome pēc # minūtes tiks restartēts}other{Pārlūks Chrome pēc # minūtēm tiks restartēts}}</translation>
 <translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> ierīce ir atjaunināta.</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">Tas nosaka arī to, kāda lapa tiks rādīta, kad atvērsiet pārlūku Chrome.</translation>
 <translation id="870251953148363156">Atjaunināt &amp;Google Chrome</translation>
-<translation id="8704255848199359374">Šeit tiek izmantota tā pati pareizrakstības pārbaude, kāda tiek izmantota Google meklēšanā. Pārlūkprogrammā ievadītais teksts tiek nosūtīts Google serveriem. Jebkurā brīdī varat mainīt šo darbību iestatījumos.</translation>
 <translation id="873133009373065397">Google Chrome nevar noteikt vai iestatīt noklusējuma pārlūku.</translation>
 <translation id="8736674169840206667">Lai lietotu atjauninājumu, administrators pieprasa restartēt pārlūku Chrome.</translation>
 <translation id="8788264404293392165">Šī valoda tiek izmantota, lai attēlotu Chrome OS lietotāja saskarni</translation>
-<translation id="8791470158600044404">{0,plural, =1{Operētājsistēma Chrome OS tiks restartēta pēc 1 minūtes}zero{Operētājsistēma Chrome OS tiks restartēta pēc # minūtēm}one{Operētājsistēma Chrome OS tiks restartēta pēc # minūtes}other{Operētājsistēma Chrome OS tiks restartēta pēc # minūtēm}}</translation>
 <translation id="8823341990149967727">Chrome versija ir novecojusi</translation>
 <translation id="884296878221830158">Tas nosaka arī to, kāda lapa tiks rādīta, kad atvērsiet pārlūku Chrome vai noklikšķināsiet uz pogas “Sākums”.</translation>
 <translation id="8862326446509486874">Jums nav vajadzīgo tiesību, lai instalētu sistēmas līmenī. Mēģiniet vēlreiz palaist instalēšanas programmu kā administrators.</translation>
 <translation id="8914504000324227558">Atkārtoti palaist pārlūkprogrammu Chrome</translation>
+<translation id="8999208279178790196">{0,plural, =0{Ir pieejams Chrome atjauninājums}=1{Ir pieejams Chrome atjauninājums}zero{Chrome atjauninājums ir pieejams jau # dienu}one{Chrome atjauninājums ir pieejams jau # dienu}other{Chrome atjauninājums ir pieejams jau # dienas}}</translation>
 <translation id="9026991721384951619">Chrome OS nevarēja sinhronizēt jūsu datus, jo jūsu konta pierakstīšanās informācija ir novecojusi.</translation>
 <translation id="9067395829937117663">Pārlūka Google Chrome izmantošanai nepieciešama operētājsistēma Windows 7 vai jaunāka versija.</translation>
-<translation id="909149346112452267">{0,plural, =1{Operētājsistēma Chrome OS tiks restartēta pēc vienas stundas}zero{Operētājsistēma Chrome OS tiks restartēta pēc # stundām}one{Operētājsistēma Chrome OS tiks restartēta pēc # stundas}other{Operētājsistēma Chrome OS tiks restartēta pēc # stundām}}</translation>
 <translation id="911206726377975832">Vai dzēst arī pārlūkošanas datus?</translation>
 <translation id="9138603949443464873">Lai ieviestu veiktās izmaiņas, atkārtoti palaidiet pārlūku Chrome.</translation>
 <translation id="919706545465235479">Lai sāktu sinhronizāciju, atjauniniet Chrome.</translation>

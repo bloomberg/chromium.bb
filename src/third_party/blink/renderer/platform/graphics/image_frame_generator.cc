@@ -28,12 +28,12 @@
 #include <memory>
 #include <utility>
 
-#include "SkData.h"
 #include "base/macros.h"
 #include "third_party/blink/renderer/platform/graphics/image_decoder_wrapper.h"
 #include "third_party/blink/renderer/platform/graphics/image_decoding_store.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkYUVASizeInfo.h"
 
 namespace blink {
@@ -42,12 +42,16 @@ static bool UpdateYUVComponentSizes(ImageDecoder* decoder,
                                     SkISize component_sizes[4],
                                     size_t component_width_bytes[4]) {
   DCHECK(decoder->CanDecodeToYUV());
+  // Initialize sizes for decoder if not already set.
+  bool size_available = decoder->IsSizeAvailable();
+  DCHECK(size_available);
 
   for (int yuv_index = 0; yuv_index < 3; ++yuv_index) {
     IntSize size = decoder->DecodedYUVSize(yuv_index);
     component_sizes[yuv_index].set(size.Width(), size.Height());
     component_width_bytes[yuv_index] = decoder->DecodedYUVWidthBytes(yuv_index);
   }
+  // TODO(crbug/910276): Alpha plane is currently unsupported.
   component_sizes[3] = SkISize::MakeEmpty();
   component_width_bytes[3] = 0;
 
@@ -74,6 +78,7 @@ ImageFrameGenerator::ImageFrameGenerator(const SkISize& full_size,
 }
 
 ImageFrameGenerator::~ImageFrameGenerator() {
+  // We expect all image decoders to be unlocked and catch with DCHECKs if not.
   ImageDecodingStore::Instance().RemoveCacheIndexedByGenerator(this);
 }
 
@@ -155,17 +160,16 @@ bool ImageFrameGenerator::DecodeToYUV(SegmentReader* data,
   // TODO (scroggo): The only interesting thing this uses from the
   // ImageFrameGenerator is m_decodeFailed. Move this into
   // DecodingImageGenerator, which is the only class that calls it.
-  if (decode_failed_)
+  if (decode_failed_ || yuv_decoding_failed_)
     return false;
 
   if (!planes || !planes[0] || !planes[1] || !planes[2] || !row_bytes ||
       !row_bytes[0] || !row_bytes[1] || !row_bytes[2]) {
     return false;
   }
-
-  const bool data_complete = true;
+  const bool all_data_received = true;
   std::unique_ptr<ImageDecoder> decoder = ImageDecoder::Create(
-      data, data_complete, ImageDecoder::kAlphaPremultiplied,
+      data, all_data_received, ImageDecoder::kAlphaPremultiplied,
       ImageDecoder::kDefaultBitDepth, decoder_color_behavior_);
   // getYUVComponentSizes was already called and was successful, so
   // ImageDecoder::create must succeed.
@@ -173,11 +177,15 @@ bool ImageFrameGenerator::DecodeToYUV(SegmentReader* data,
 
   std::unique_ptr<ImagePlanes> image_planes =
       std::make_unique<ImagePlanes>(planes, row_bytes);
+  // TODO(crbug.com/943519): Don't forget to initialize planes to black or
+  // transparent for incremental decoding.
   decoder->SetImagePlanes(std::move(image_planes));
+
+  DCHECK(decoder->CanDecodeToYUV());
 
   {
     // This is the YUV analog of ImageFrameGenerator::decode.
-    TRACE_EVENT0("blink", "ImageFrameGenerator::decodeToYUV");
+    TRACE_EVENT0("blink,benchmark", "ImageFrameGenerator::decodeToYUV");
     decoder->DecodeToYUV();
   }
 
@@ -221,19 +229,18 @@ bool ImageFrameGenerator::GetYUVComponentSizes(SegmentReader* data,
 
   if (yuv_decoding_failed_)
     return false;
-
-  const bool data_complete = true;
   std::unique_ptr<ImageDecoder> decoder = ImageDecoder::Create(
-      data, data_complete, ImageDecoder::kAlphaPremultiplied,
+      data, true /* data_complete */, ImageDecoder::kAlphaPremultiplied,
       ImageDecoder::kDefaultBitDepth, decoder_color_behavior_);
-  if (!decoder)
-    return false;
+  DCHECK(decoder);
 
   // Setting a dummy ImagePlanes object signals to the decoder that we want to
   // do YUV decoding.
   std::unique_ptr<ImagePlanes> dummy_image_planes =
       std::make_unique<ImagePlanes>();
   decoder->SetImagePlanes(std::move(dummy_image_planes));
+
+  DCHECK(decoder->CanDecodeToYUV());
 
   return UpdateYUVComponentSizes(decoder.get(), size_info->fSizes,
                                  size_info->fWidthBytes);

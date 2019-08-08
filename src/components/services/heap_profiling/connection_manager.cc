@@ -7,21 +7,10 @@
 #include "base/bind.h"
 #include "base/json/string_escape.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/post_task.h"
 #include "components/services/heap_profiling/json_exporter.h"
-#include "components/services/heap_profiling/public/cpp/client.h"
+#include "components/services/heap_profiling/public/cpp/profiling_client.h"
 
 namespace heap_profiling {
-
-namespace {
-const size_t kMinSizeThreshold = 16 * 1024;
-const size_t kMinCountThreshold = 1024;
-}  // namespace
-
-ConnectionManager::DumpArgs::DumpArgs() = default;
-ConnectionManager::DumpArgs::DumpArgs(DumpArgs&& other) noexcept
-    : backtrace_storage_lock(std::move(other.backtrace_storage_lock)) {}
-ConnectionManager::DumpArgs::~DumpArgs() = default;
 
 // Tracking information for DumpProcessForTracing(). This struct is
 // refcounted since there will be many background thread calls (one for each
@@ -31,10 +20,7 @@ ConnectionManager::DumpArgs::~DumpArgs() = default;
 // This class is not threadsafe, its members must only be accessed on the
 // I/O thread.
 struct ConnectionManager::DumpProcessesForTracingTracking
-    : public ConnectionManager::DumpArgs,
-      public base::RefCountedThreadSafe<DumpProcessesForTracingTracking> {
-  DumpProcessesForTracingTracking() = default;
-
+    : public base::RefCountedThreadSafe<DumpProcessesForTracingTracking> {
   // Number of processes we're still waiting on responses for. When this gets
   // to 0, the callback will be issued.
   size_t waiting_responses = 0;
@@ -46,7 +32,7 @@ struct ConnectionManager::DumpProcessesForTracingTracking
   VmRegions vm_regions;
 
   // Collects the results.
-  std::vector<memory_instrumentation::mojom::SharedBufferWithSizePtr> results;
+  std::vector<memory_instrumentation::mojom::HeapProfileResultPtr> results;
 
  private:
   friend class base::RefCountedThreadSafe<DumpProcessesForTracingTracking>;
@@ -154,7 +140,7 @@ void ConnectionManager::OnConnectionComplete(base::ProcessId pid) {
 void ConnectionManager::ReportMetrics() {
   base::AutoLock lock(connections_lock_);
   for (auto& pair : connections_) {
-    UMA_HISTOGRAM_ENUMERATION("OutOfProcessHeapProfiling.ProfiledProcess.Type",
+    UMA_HISTOGRAM_ENUMERATION("HeapProfiling.ProfiledProcess.Type",
                               pair.second->process_type,
                               static_cast<int>(mojom::ProcessType::LAST) + 1);
   }
@@ -169,13 +155,11 @@ void ConnectionManager::DumpProcessesForTracing(
   // Early out if there are no connections.
   if (connections_.empty()) {
     std::move(callback).Run(
-        std::vector<memory_instrumentation::mojom::SharedBufferWithSizePtr>());
+        std::vector<memory_instrumentation::mojom::HeapProfileResultPtr>());
     return;
   }
 
   auto tracking = base::MakeRefCounted<DumpProcessesForTracingTracking>();
-  tracking->backtrace_storage_lock =
-      BacktraceStorage::Lock(&backtrace_storage_);
   tracking->waiting_responses = connections_.size();
   tracking->callback = std::move(callback);
   tracking->vm_regions = std::move(vm_regions);
@@ -191,28 +175,20 @@ void ConnectionManager::DumpProcessesForTracing(
   }
 }
 
-void ConnectionManager::HeapProfileRetrieved(
-    scoped_refptr<DumpProcessesForTracingTracking> tracking,
-    base::ProcessId pid,
-    mojom::ProcessType process_type,
-    bool strip_path_from_mapped_files,
+bool ConnectionManager::ConvertProfileToExportParams(
+    mojom::HeapProfilePtr profile,
     uint32_t sampling_rate,
-    mojom::HeapProfilePtr profile) {
-  AllocationCountMap counts;
+    ExportParams* params) {
+  AllocationMap allocs;
   ContextMap context_map;
   AddressToStringMap string_map;
-  BacktraceStorage backtrace_storage;
-  BacktraceStorage::Lock backtrace_storage_lock(&backtrace_storage);
 
-  bool success = true;
   for (const mojom::HeapProfileSamplePtr& sample : profile->samples) {
     int context_id = 0;
     if (sample->context_id) {
       auto it = profile->strings.find(sample->context_id);
-      if (it == profile->strings.end()) {
-        success = false;
-        break;
-      }
+      if (it == profile->strings.end())
+        return false;
       const std::string& context = it->second;
       // Escape the strings early, to simplify exporting a heap dump.
       std::string escaped_context;
@@ -223,11 +199,43 @@ void ConnectionManager::HeapProfileRetrieved(
                                 static_cast<int>(context_map.size() + 1))
                        .first->second;
     }
-    const Backtrace* backtrace = backtrace_storage.Insert(
-        std::vector<Address>(sample->stack.begin(), sample->stack.end()));
-    AllocationEvent alloc(sample->allocator, Address(0), sample->size,
-                          backtrace, context_id);
-    ++counts[alloc];
+
+    size_t alloc_size = sample->size;
+    size_t alloc_count = 1;
+
+    // If allocations were sampled, then we need to desample to return accurate
+    // results.
+    // TODO(alph): Move it closer to the the sampler, so other components
+    // wouldn't care about the math.
+    if (alloc_size < sampling_rate && alloc_size != 0) {
+      // To desample, we need to know the probability P that an allocation will
+      // be sampled. Once we know P, we still have to deal with discretization.
+      // Let's say that there's 1 allocation with P=0.85. Should we report 1 or
+      // 2 allocations? Should we report a fudged size (size / 0.85), or a
+      // discreted size, e.g. (1 * size) or (2 * size)? There are tradeoffs.
+      //
+      // We choose to emit a fudged size, which will return a more accurate
+      // total allocation size, but less accurate per-allocation size.
+      //
+      // The aggregate probability that an allocation will be sampled is
+      // alloc_size / sampling_rate. For a more detailed treatise, see
+      // https://bugs.chromium.org/p/chromium/issues/detail?id=810748#c4
+      float desampling_multiplier =
+          static_cast<float>(sampling_rate) / static_cast<float>(alloc_size);
+      alloc_count *= desampling_multiplier;
+      alloc_size *= desampling_multiplier;
+    }
+
+    std::vector<Address> stack(sample->stack.begin(), sample->stack.end());
+    AllocationMetrics& metrics =
+        allocs
+            .emplace(std::piecewise_construct,
+                     std::forward_as_tuple(sample->allocator, std::move(stack),
+                                           context_id),
+                     std::forward_as_tuple())
+            .first->second;
+    metrics.size += alloc_size;
+    metrics.count += alloc_count;
   }
 
   for (const auto& str : profile->strings) {
@@ -238,96 +246,46 @@ void ConnectionManager::HeapProfileRetrieved(
     string_map.emplace(str.first, std::move(quoted_string));
   }
 
-  DCHECK(success);
-  DoDumpOneProcessForTracing(std::move(tracking), pid, process_type,
-                             strip_path_from_mapped_files, sampling_rate,
-                             success, std::move(counts), std::move(context_map),
-                             std::move(string_map));
+  params->allocs = std::move(allocs);
+  params->context_map = std::move(context_map);
+  params->mapped_strings = std::move(string_map);
+  return true;
 }
 
-void ConnectionManager::DoDumpOneProcessForTracing(
+void ConnectionManager::HeapProfileRetrieved(
     scoped_refptr<DumpProcessesForTracingTracking> tracking,
     base::ProcessId pid,
     mojom::ProcessType process_type,
     bool strip_path_from_mapped_files,
     uint32_t sampling_rate,
-    bool success,
-    AllocationCountMap counts,
-    ContextMap context,
-    AddressToStringMap mapped_strings) {
+    mojom::HeapProfilePtr profile) {
   // All code paths through here must issue the callback when waiting_responses
   // is 0 or the browser will wait forever for the dump.
   DCHECK(tracking->waiting_responses > 0);
 
-  if (!success) {
-    tracking->waiting_responses--;
-    if (tracking->waiting_responses == 0)
-      std::move(tracking->callback).Run(std::move(tracking->results));
-    return;
-  }
-
-  CHECK(tracking->backtrace_storage_lock.IsLocked());
   ExportParams params;
-  params.allocs = std::move(counts);
+  bool success =
+      ConvertProfileToExportParams(std::move(profile), sampling_rate, &params);
+  if (success) {
+    params.process_type = process_type;
+    params.strip_path_from_mapped_files = strip_path_from_mapped_files;
+    params.next_id = next_id_;
 
-  auto it = tracking->vm_regions.find(pid);
-  if (it != tracking->vm_regions.end()) {
-    params.maps = std::move(it->second);
+    auto it = tracking->vm_regions.find(pid);
+    if (it != tracking->vm_regions.end())
+      params.maps = std::move(it->second);
+
+    memory_instrumentation::mojom::HeapProfileResultPtr result =
+        memory_instrumentation::mojom::HeapProfileResult::New();
+    result->pid = pid;
+    result->json = ExportMemoryMapsAndV2StackTraceToJSON(&params);
+    tracking->results.push_back(std::move(result));
+    next_id_ = params.next_id;
   }
 
-  params.context_map = std::move(context);
-  params.mapped_strings = std::move(mapped_strings);
-  params.process_type = process_type;
-  params.min_size_threshold = kMinSizeThreshold;
-  params.min_count_threshold = kMinCountThreshold;
-  params.strip_path_from_mapped_files = strip_path_from_mapped_files;
-  params.next_id = next_id_;
-  params.sampling_rate = sampling_rate;
-
-  std::ostringstream oss;
-  ExportMemoryMapsAndV2StackTraceToJSON(&params, oss);
-  std::string reply = oss.str();
-  size_t reply_size = reply.size();
-  next_id_ = params.next_id;
-
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE,
-      {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::BindOnce(
-          [](size_t size) {
-            // This call sends a synchronous IPC to the browser process.
-            return mojo::SharedBufferHandle::Create(size);
-          },
-          reply_size),
-      base::BindOnce(
-          [](std::string reply, base::ProcessId pid,
-             scoped_refptr<DumpProcessesForTracingTracking> tracking,
-             mojo::ScopedSharedBufferHandle buffer) {
-            if (!buffer.is_valid()) {
-              DLOG(ERROR) << "Could not create Mojo shared buffer";
-            } else {
-              mojo::ScopedSharedBufferMapping mapping =
-                  buffer->Map(reply.size());
-              if (!mapping) {
-                DLOG(ERROR) << "Could not map Mojo shared buffer";
-              } else {
-                memcpy(mapping.get(), reply.c_str(), reply.size());
-
-                memory_instrumentation::mojom::SharedBufferWithSizePtr result =
-                    memory_instrumentation::mojom::SharedBufferWithSize::New();
-                result->buffer = std::move(buffer);
-                result->size = reply.size();
-                result->pid = pid;
-                tracking->results.push_back(std::move(result));
-              }
-            }
-
-            // When all responses complete, issue done callback.
-            if (--tracking->waiting_responses == 0)
-              std::move(tracking->callback).Run(std::move(tracking->results));
-          },
-          std::move(reply), pid, std::move(tracking)));
+  // When all responses complete, issue done callback.
+  if (--tracking->waiting_responses == 0)
+    std::move(tracking->callback).Run(std::move(tracking->results));
 }
 
 }  // namespace heap_profiling

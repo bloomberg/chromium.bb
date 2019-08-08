@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_global_scope.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
 
 namespace blink {
@@ -78,9 +79,10 @@ void AnimationAndPaintWorkletThread::CollectAllGarbageForTesting() {
       WorkletThreadHolder<AnimationAndPaintWorkletThread>::GetInstance();
   if (!holder)
     return;
-  holder->GetThread()->BackingThread().PostTask(
-      FROM_HERE, CrossThreadBind(&CollectAllGarbageOnThreadForTesting,
-                                 CrossThreadUnretained(&done_event)));
+  PostCrossThreadTask(*holder->GetThread()->BackingThread().GetTaskRunner(),
+                      FROM_HERE,
+                      CrossThreadBindOnce(&CollectAllGarbageOnThreadForTesting,
+                                          CrossThreadUnretained(&done_event)));
   done_event.Wait();
 }
 

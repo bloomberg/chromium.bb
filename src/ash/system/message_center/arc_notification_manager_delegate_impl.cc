@@ -6,7 +6,7 @@
 
 #include "ash/login_status.h"
 #include "ash/root_window_controller.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/message_center/message_center_controller.h"
 #include "ash/system/status_area_widget.h"

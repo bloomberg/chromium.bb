@@ -14,7 +14,6 @@
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/payments/card_unmask_delegate.h"
-#include "components/autofill/core/browser/payments/legacy_strike_database.h"
 #include "components/autofill/core/browser/payments/strike_database.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
@@ -35,7 +34,6 @@ class WebViewAutofillClientIOS : public AutofillClient {
       web::WebState* web_state,
       id<CWVAutofillClientIOSBridge> bridge,
       identity::IdentityManager* identity_manager,
-      LegacyStrikeDatabase* legacy_strike_database,
       StrikeDatabase* strike_database,
       scoped_refptr<AutofillWebDataService> autofill_web_data_service,
       syncer::SyncService* sync_service);
@@ -49,7 +47,6 @@ class WebViewAutofillClientIOS : public AutofillClient {
   identity::IdentityManager* GetIdentityManager() override;
   FormDataImporter* GetFormDataImporter() override;
   payments::PaymentsClient* GetPaymentsClient() override;
-  LegacyStrikeDatabase* GetLegacyStrikeDatabase() override;
   StrikeDatabase* GetStrikeDatabase() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
@@ -92,6 +89,7 @@ class WebViewAutofillClientIOS : public AutofillClient {
       base::i18n::TextDirection text_direction,
       const std::vector<Suggestion>& suggestions,
       bool /*unused_autoselect_first_suggestion*/,
+      PopupType popup_type,
       base::WeakPtr<AutofillPopupDelegate> delegate) override;
   void UpdateAutofillPopupDataListValues(
       const std::vector<base::string16>& values,
@@ -121,7 +119,6 @@ class WebViewAutofillClientIOS : public AutofillClient {
   identity::IdentityManager* identity_manager_;
   std::unique_ptr<payments::PaymentsClient> payments_client_;
   std::unique_ptr<FormDataImporter> form_data_importer_;
-  LegacyStrikeDatabase* legacy_strike_database_;
   StrikeDatabase* strike_database_;
   scoped_refptr<AutofillWebDataService> autofill_web_data_service_;
   syncer::SyncService* sync_service_ = nullptr;

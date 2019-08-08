@@ -171,6 +171,10 @@ class BlobRegistryImplTest : public testing::Test {
     return registry_impl_->BlobsUnderConstructionForTesting();
   }
 
+  size_t BlobsBeingStreamed() {
+    return registry_impl_->BlobsBeingStreamedForTesting();
+  }
+
  protected:
   base::ScopedTempDir data_dir_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -1014,18 +1018,20 @@ TEST_F(BlobRegistryImplTest, RegisterFromStream) {
   mojo::AssociatedBinding<blink::mojom::ProgressClient> progress_binding(
       &progress_client, MakeRequest(&progress_client_ptr));
 
-  mojo::DataPipe pipe;
+  mojo::ScopedDataPipeProducerHandle producer;
+  mojo::ScopedDataPipeConsumerHandle consumer;
+  mojo::CreateDataPipe(nullptr, &producer, &consumer);
   blink::mojom::SerializedBlobPtr blob;
   base::RunLoop loop;
   registry_->RegisterFromStream(
-      kContentType, kContentDisposition, kData.length(),
-      std::move(pipe.consumer_handle), std::move(progress_client_ptr),
+      kContentType, kContentDisposition, kData.length(), std::move(consumer),
+      std::move(progress_client_ptr),
       base::BindLambdaForTesting([&](blink::mojom::SerializedBlobPtr result) {
         blob = std::move(result);
         loop.Quit();
       }));
-  mojo::BlockingCopyFromString(kData, pipe.producer_handle);
-  pipe.producer_handle.reset();
+  mojo::BlockingCopyFromString(kData, producer);
+  producer.reset();
   loop.Run();
 
   ASSERT_TRUE(blob);
@@ -1038,6 +1044,39 @@ TEST_F(BlobRegistryImplTest, RegisterFromStream) {
 
   EXPECT_EQ(kData.length(), progress_client.total_size);
   EXPECT_GE(progress_client.call_count, 1);
+
+  EXPECT_EQ(0u, BlobsBeingStreamed());
+}
+
+TEST_F(BlobRegistryImplTest, RegisterFromStream_NoDiskSpace) {
+  const std::string kData =
+      base::RandBytesAsString(kTestBlobStorageMaxDiskSpace + 1);
+  const std::string kContentType = "content/type";
+  const std::string kContentDisposition = "disposition";
+
+  FakeProgressClient progress_client;
+  blink::mojom::ProgressClientAssociatedPtrInfo progress_client_ptr;
+  mojo::AssociatedBinding<blink::mojom::ProgressClient> progress_binding(
+      &progress_client, MakeRequest(&progress_client_ptr));
+
+  mojo::ScopedDataPipeProducerHandle producer;
+  mojo::ScopedDataPipeConsumerHandle consumer;
+  mojo::CreateDataPipe(nullptr, &producer, &consumer);
+  blink::mojom::SerializedBlobPtr blob;
+  base::RunLoop loop;
+  registry_->RegisterFromStream(
+      kContentType, kContentDisposition, kData.length(), std::move(consumer),
+      std::move(progress_client_ptr),
+      base::BindLambdaForTesting([&](blink::mojom::SerializedBlobPtr result) {
+        blob = std::move(result);
+        loop.Quit();
+      }));
+  mojo::BlockingCopyFromString(kData, producer);
+  producer.reset();
+  loop.Run();
+
+  EXPECT_FALSE(blob);
+  EXPECT_EQ(0u, BlobsBeingStreamed());
 }
 
 TEST_F(BlobRegistryImplTest, DestroyWithUnfinishedStream) {

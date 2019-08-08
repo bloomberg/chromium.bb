@@ -67,8 +67,6 @@ class EVENTS_EXPORT GestureRecognizerImpl : public GestureRecognizer,
                                     GestureConsumer* consumer) override;
 
  private:
-  enum ShouldNotifyObservers { kNotifyObservers, kDontNotifyObservers };
-
   // Sets up the target consumer for gestures based on the touch-event.
   void SetupTargets(const TouchEvent& event, GestureConsumer* consumer);
 
@@ -80,10 +78,8 @@ class EVENTS_EXPORT GestureRecognizerImpl : public GestureRecognizer,
                          bool is_source_touch_event_set_non_blocking,
                          GestureConsumer* consumer) override;
 
-  void CancelActiveTouchesExceptImpl(GestureConsumer* not_cancelled,
-                                     ShouldNotifyObservers should_notify);
-  bool CancelActiveTouchesImpl(GestureConsumer* consumer,
-                               ShouldNotifyObservers should_notify);
+  void CancelActiveTouchesExceptImpl(GestureConsumer* not_cancelled);
+  bool CancelActiveTouchesImpl(GestureConsumer* consumer);
 
   bool CleanupStateForConsumer(GestureConsumer* consumer) override;
   void AddGestureEventHelper(GestureEventHelper* helper) override;

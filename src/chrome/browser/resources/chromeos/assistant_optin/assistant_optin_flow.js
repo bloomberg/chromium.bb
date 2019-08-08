@@ -36,9 +36,14 @@ Polymer({
 
   /**
    * Signal from host to show the screen.
-   * @param {?number} type The type of the flow.
+   * @param {?string} type The type of the flow.
+   * @param {?string} captionBarHeight The height of the caption bar.
    */
-  onShow: function(type) {
+  onShow: function(type, captionBarHeight) {
+    captionBarHeight = captionBarHeight ? captionBarHeight + 'px' : '0px';
+    this.style.setProperty('--caption-bar-height', captionBarHeight);
+
+    type = type ? type : this.FlowType.CONSENT_FLOW.toString();
     var flowType = Number(type);
     switch (flowType) {
       case this.FlowType.CONSENT_FLOW:
@@ -172,6 +177,7 @@ Polymer({
       return;
     }
 
+    this.$['loading'].hidden = true;
     screen.hidden = false;
     screen.addEventListener('loading', this.boundShowLoadingScreen);
     screen.addEventListener('error', this.boundOnScreenLoadingError);

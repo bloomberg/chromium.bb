@@ -41,9 +41,9 @@ class FuchsiaVideoDecoderTest : public testing::Test {
     return init_cb_result;
   }
 
-  void OnVideoFrame(const scoped_refptr<VideoFrame>& frame) {
+  void OnVideoFrame(scoped_refptr<VideoFrame> frame) {
     num_output_frames_++;
-    output_frames_.push_back(frame);
+    output_frames_.push_back(std::move(frame));
     while (output_frames_.size() > frames_to_keep_) {
       output_frames_.pop_front();
     }

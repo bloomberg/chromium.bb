@@ -8,7 +8,7 @@
 #ifndef GrFillRRectOp_DEFINED
 #define GrFillRRectOp_DEFINED
 
-#include "GrDrawOp.h"
+#include "src/gpu/ops/GrDrawOp.h"
 
 class GrRecordingContext;
 
@@ -29,7 +29,7 @@ public:
     GrProcessorSet::Analysis finalize(
             const GrCaps&, const GrAppliedClip*, GrFSAAType, GrClampType) override;
     CombineResult onCombineIfPossible(GrOp*, const GrCaps&) override;
-    void visitProxies(const VisitProxyFunc& fn, VisitorType) const override {
+    void visitProxies(const VisitProxyFunc& fn) const override {
         fProcessors.visitProxies(fn);
     }
     void onPrepare(GrOpFlushState*) override;

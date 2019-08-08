@@ -12,10 +12,10 @@
 #import "ios/chrome/browser/ui/find_bar/find_bar_constants.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_controller_ios.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
-#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/web/public/test/http_server/http_server.h"
@@ -222,10 +222,11 @@ const std::string kFindInPageResponse = "Find in page. Find in page.";
 
 - (void)navigateToTestPage {
   // Navigate to a page with some text.
-  [ChromeEarlGrey loadURL:self.testURL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:self.testURL]);
 
   // Verify web page finished loading.
-  [ChromeEarlGrey waitForWebViewContainingText:kFindInPageResponse];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebStateContainingText:kFindInPageResponse]);
 }
 
 @end

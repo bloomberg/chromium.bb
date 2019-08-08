@@ -5,8 +5,10 @@
 #include "net/third_party/quiche/src/quic/core/chlo_extractor.h"
 
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_framer.h"
+#include "net/third_party/quiche/src/quic/core/crypto/crypto_handshake.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_handshake_message.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
+#include "net/third_party/quiche/src/quic/core/crypto/crypto_utils.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_decrypter.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_encrypter.h"
 #include "net/third_party/quiche/src/quic/core/quic_framer.h"
@@ -35,6 +37,9 @@ class ChloFramerVisitor : public QuicFramerVisitorInterface,
   void OnPublicResetPacket(const QuicPublicResetPacket& packet) override {}
   void OnVersionNegotiationPacket(
       const QuicVersionNegotiationPacket& packet) override {}
+  void OnRetryPacket(QuicConnectionId original_connection_id,
+                     QuicConnectionId new_connection_id,
+                     QuicStringPiece retry_token) override {}
   bool OnUnauthenticatedPublicHeader(const QuicPacketHeader& header) override;
   bool OnUnauthenticatedHeader(const QuicPacketHeader& header) override;
   void OnDecryptedPacket(EncryptionLevel level) override {}
@@ -60,8 +65,8 @@ class ChloFramerVisitor : public QuicFramerVisitorInterface,
   bool OnPathChallengeFrame(const QuicPathChallengeFrame& frame) override;
   bool OnPathResponseFrame(const QuicPathResponseFrame& frame) override;
   bool OnGoAwayFrame(const QuicGoAwayFrame& frame) override;
-  bool OnMaxStreamIdFrame(const QuicMaxStreamIdFrame& frame) override;
-  bool OnStreamIdBlockedFrame(const QuicStreamIdBlockedFrame& frame) override;
+  bool OnMaxStreamsFrame(const QuicMaxStreamsFrame& frame) override;
+  bool OnStreamsBlockedFrame(const QuicStreamsBlockedFrame& frame) override;
   bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override;
   bool OnBlockedFrame(const QuicBlockedFrame& frame) override;
   bool OnPaddingFrame(const QuicPaddingFrame& frame) override;
@@ -113,6 +118,23 @@ bool ChloFramerVisitor::OnProtocolVersionMismatch(ParsedQuicVersion version,
 bool ChloFramerVisitor::OnUnauthenticatedPublicHeader(
     const QuicPacketHeader& header) {
   connection_id_ = header.destination_connection_id;
+  // QuicFramer creates a NullEncrypter and NullDecrypter at level
+  // ENCRYPTION_INITIAL, which are the correct ones to use with the QUIC Crypto
+  // handshake. When the TLS handshake is used, the IETF-style initial crypters
+  // are used instead, so those need to be created and installed.
+  if (header.version.handshake_protocol == PROTOCOL_TLS1_3) {
+    CrypterPair crypters;
+    CryptoUtils::CreateTlsInitialCrypters(
+        Perspective::IS_SERVER, header.version.transport_version,
+        header.destination_connection_id, &crypters);
+    framer_->SetEncrypter(ENCRYPTION_INITIAL, std::move(crypters.encrypter));
+    if (framer_->version().KnowsWhichDecrypterToUse()) {
+      framer_->InstallDecrypter(ENCRYPTION_INITIAL,
+                                std::move(crypters.decrypter));
+    } else {
+      framer_->SetDecrypter(ENCRYPTION_INITIAL, std::move(crypters.decrypter));
+    }
+  }
   return true;
 }
 bool ChloFramerVisitor::OnUnauthenticatedHeader(
@@ -129,8 +151,8 @@ bool ChloFramerVisitor::OnStreamFrame(const QuicStreamFrame& frame) {
     return false;
   }
   QuicStringPiece data(frame.data_buffer, frame.data_length);
-  if (frame.stream_id ==
-          QuicUtils::GetCryptoStreamId(framer_->transport_version()) &&
+  if (QuicUtils::IsCryptoStreamId(framer_->transport_version(),
+                                  frame.stream_id) &&
       frame.offset == 0 && QuicTextUtils::StartsWith(data, "CHLO")) {
     return OnHandshakeData(data);
   }
@@ -263,12 +285,12 @@ bool ChloFramerVisitor::IsValidStatelessResetToken(QuicUint128 token) const {
   return false;
 }
 
-bool ChloFramerVisitor::OnMaxStreamIdFrame(const QuicMaxStreamIdFrame& frame) {
+bool ChloFramerVisitor::OnMaxStreamsFrame(const QuicMaxStreamsFrame& frame) {
   return true;
 }
 
-bool ChloFramerVisitor::OnStreamIdBlockedFrame(
-    const QuicStreamIdBlockedFrame& frame) {
+bool ChloFramerVisitor::OnStreamsBlockedFrame(
+    const QuicStreamsBlockedFrame& frame) {
   return true;
 }
 

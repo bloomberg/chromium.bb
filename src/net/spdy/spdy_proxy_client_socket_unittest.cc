@@ -537,7 +537,7 @@ TEST_P(SpdyProxyClientSocketTest, ConnectRedirects) {
   spdy::SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(1, spdy::ERROR_CODE_CANCEL));
   MockWrite writes[] = {
-      CreateMockWrite(conn, 0, SYNCHRONOUS), CreateMockWrite(rst, 3),
+      CreateMockWrite(conn, 0, SYNCHRONOUS),
   };
 
   spdy::SpdySerializedFrame resp(ConstructConnectRedirectReplyFrame());
@@ -547,15 +547,14 @@ TEST_P(SpdyProxyClientSocketTest, ConnectRedirects) {
 
   Initialize(reads, writes);
 
-  AssertConnectFails(ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT);
+  AssertConnectFails(ERR_TUNNEL_CONNECTION_FAILED);
 
   const HttpResponseInfo* response = sock_->GetConnectResponseInfo();
   ASSERT_TRUE(response != nullptr);
 
   const HttpResponseHeaders* headers = response->headers.get();
   ASSERT_EQ(302, headers->response_code());
-  ASSERT_FALSE(headers->HasHeader("set-cookie"));
-  ASSERT_TRUE(headers->HasHeaderValue("content-length", "0"));
+  ASSERT_TRUE(headers->HasHeader("set-cookie"));
 
   std::string location;
   ASSERT_TRUE(headers->IsRedirect(&location));

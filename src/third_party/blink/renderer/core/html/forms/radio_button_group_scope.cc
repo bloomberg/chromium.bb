@@ -29,8 +29,6 @@ namespace blink {
 
 class RadioButtonGroup : public GarbageCollected<RadioButtonGroup> {
  public:
-  static RadioButtonGroup* Create();
-
   RadioButtonGroup();
 
   bool IsEmpty() const { return members_.IsEmpty(); }

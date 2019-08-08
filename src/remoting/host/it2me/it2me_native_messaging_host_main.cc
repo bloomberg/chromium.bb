@@ -102,7 +102,7 @@ int It2MeNativeMessagingHostMain(int argc, char** argv) {
 
   mojo::core::Init();
 
-  base::ThreadPool::CreateAndStartWithDefaultParams("It2Me");
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams("It2Me");
 
   remoting::LoadResources("");
 
@@ -232,7 +232,7 @@ int It2MeNativeMessagingHostMain(int argc, char** argv) {
   run_loop.Run();
 
   // Block until tasks blocking shutdown have completed their execution.
-  base::ThreadPool::GetInstance()->Shutdown();
+  base::ThreadPoolInstance::Get()->Shutdown();
 
   return kSuccessExitCode;
 }

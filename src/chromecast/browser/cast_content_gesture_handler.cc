@@ -74,29 +74,29 @@ void CastContentGestureHandler::HandleSideSwipe(
     case CastSideSwipeEvent::BEGIN:
       current_swipe_time_ = base::ElapsedTimer();
       if (gesture_type == GestureType::GO_BACK) {
-        VLOG(1) << "back swipe gesture begin";
+        DVLOG(1) << "back swipe gesture begin";
       }
       break;
     case CastSideSwipeEvent::CONTINUE:
-      VLOG(1) << "swipe gesture continue, elapsed time: "
-              << current_swipe_time_.Elapsed().InMilliseconds() << "ms";
+      DVLOG(1) << "swipe gesture continue, elapsed time: "
+               << current_swipe_time_.Elapsed().InMilliseconds() << "ms";
       delegate_->GestureProgress(gesture_type, touch_location);
       break;
     case CastSideSwipeEvent::END:
-      VLOG(1) << "swipe end, elapsed time: "
-              << current_swipe_time_.Elapsed().InMilliseconds() << "ms";
+      DVLOG(1) << "swipe end, elapsed time: "
+               << current_swipe_time_.Elapsed().InMilliseconds() << "ms";
       // If it's a back gesture, we have special handling to check for the
       // horizontal threshold. If the finger has lifted before the horizontal
       // gesture, cancel the back gesture and do not consume it.
       if (gesture_type == GestureType::GO_BACK &&
           touch_location.x() < back_horizontal_threshold_) {
-        VLOG(1) << "swipe gesture cancelled";
+        DVLOG(1) << "swipe gesture cancelled";
         delegate_->CancelGesture(GestureType::GO_BACK, touch_location);
         return;
       }
       delegate_->ConsumeGesture(gesture_type);
-      VLOG(1) << "gesture complete, elapsed time: "
-              << current_swipe_time_.Elapsed().InMilliseconds() << "ms";
+      DVLOG(1) << "gesture complete, elapsed time: "
+               << current_swipe_time_.Elapsed().InMilliseconds() << "ms";
       break;
   }
 }

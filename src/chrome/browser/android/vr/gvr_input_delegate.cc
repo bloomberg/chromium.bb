@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/android/vr/gl_browser_interface.h"
 #include "chrome/browser/android/vr/vr_controller.h"
 #include "chrome/browser/vr/input_event.h"
@@ -16,7 +18,60 @@
 
 namespace {
 constexpr gfx::Vector3dF kForwardVector = {0.0f, 0.0f, -1.0f};
+
+// TODO(https://crbug.com/957806): Copies of this function live in device/vr and
+// device/gamepad, which will be consolidated. Is there a way to also remove
+// this duplicate even though this is in under chrome/browser instead of device?
+void CopyToUString(const base::string16& src,
+                   base::char16* dest,
+                   size_t dest_length) {
+  const size_t copy_char_count = std::min(src.size(), dest_length - 1);
+  src.copy(dest, copy_char_count);
+  std::fill(dest + copy_char_count, dest + dest_length, 0);
 }
+
+device::Gamepad CreateGamepad(const device::GvrGamepadData& data) {
+  device::Gamepad gamepad;
+
+  // Unless the controller state is updated on a different thread,
+  // data.connected should always be true when this function is called by
+  // GvrInputDelegate::GetInputSourceState.
+  gamepad.connected = data.connected;
+
+  gamepad.timestamp = data.timestamp;
+
+  // TODO(https://crbug.com/942201): Get correct ID string once WebXR spec issue
+  // #550 (https://github.com/immersive-web/webxr/issues/550) is resolved.
+  CopyToUString(base::UTF8ToUTF16("daydream-controller"), gamepad.id,
+                base::size(gamepad.id));
+
+  gamepad.hand = data.right_handed ? device::GamepadHand::kRight
+                                   : device::GamepadHand::kLeft;
+
+  bool pressed = data.controller_button_pressed;
+  bool touched = data.is_touching;
+  double value = pressed ? 1.0 : 0.0;
+  gamepad.buttons[gamepad.buttons_length++] =
+      device::GamepadButton(pressed, touched, value);
+
+  if (touched) {
+    // data.touch_pos values reported by the GVR Android SDK are clamped to
+    // [0.0, 1.0], with (0, 0) corresponding to the top-left of the touchpad.
+    // Normalize the values to use X axis range -1 (left) to 1 (right) and Y
+    // axis range -1 (top) to 1 (bottom).
+    // TODO(https://crbug.com/966060): Revisit this if the convention changes.
+    gamepad.axes[0] = (data.touch_pos.x() * 2.0) - 1.0;
+    gamepad.axes[1] = (data.touch_pos.y() * 2.0) - 1.0;
+  } else {
+    gamepad.axes[0] = 0.0;
+    gamepad.axes[1] = 0.0;
+  }
+
+  gamepad.axes_length = 2;
+
+  return gamepad;
+}
+}  // namespace
 
 namespace vr {
 
@@ -147,6 +202,9 @@ device::mojom::XRInputSourceStatePtr GvrInputDelegate::GetInputSourceState() {
     gfx::Transform pointer;
     controller_->GetRelativePointerTransform(&pointer);
     state->description->pointer_offset = pointer;
+
+    // This Gamepad data is used to expose touchpad position to WebXR.
+    state->gamepad = CreateGamepad(controller_->GetGamepadData());
   }
 
   return state;

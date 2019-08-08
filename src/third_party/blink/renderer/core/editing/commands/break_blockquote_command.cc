@@ -184,8 +184,7 @@ void BreakBlockquoteCommand::DoApply(EditingState* editing_state) {
   DCHECK(start_node);
 
   // Split at pos if in the middle of a text node.
-  if (start_node->IsTextNode()) {
-    Text* text_node = ToText(start_node);
+  if (auto* text_node = DynamicTo<Text>(start_node)) {
     int text_offset = pos.ComputeOffsetInContainerNode();
     if ((unsigned)text_offset >= text_node->length()) {
       start_node = NodeTraversal::Next(*start_node);

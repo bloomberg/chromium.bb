@@ -33,7 +33,6 @@ class SVGAnimateMotionElement final : public SVGAnimationElement {
   explicit SVGAnimateMotionElement(Document&);
   ~SVGAnimateMotionElement() override;
 
-  DECLARE_NODE_FACTORY(SVGAnimateMotionElement);
   void UpdateAnimationPath();
 
  private:

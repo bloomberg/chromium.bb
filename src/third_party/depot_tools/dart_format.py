@@ -10,6 +10,8 @@ dartfmt binaries are pulled down during gclient sync in the mojo repo.
 This tool is named dart_format.py instead of dartfmt to parallel
 clang_format.py, which is in this same repository."""
 
+from __future__ import print_function
+
 import os
 import subprocess
 import sys
@@ -41,15 +43,15 @@ def FindDartFmtToolInChromiumTree():
 def main(args):
   try:
     tool = FindDartFmtToolInChromiumTree()
-  except NotFoundError, e:
-    print >> sys.stderr, e
+  except NotFoundError as e:
+    print(e, file=sys.stderr)
     sys.exit(1)
 
   # Add some visibility to --help showing where the tool lives, since this
   # redirection can be a little opaque.
   help_syntax = ('-h', '--help', '-help', '-help-list', '--help-list')
   if any(match in args for match in help_syntax):
-    print '\nDepot tools redirects you to the dartfmt at:\n    %s\n' % tool
+    print('\nDepot tools redirects you to the dartfmt at:\n    %s\n' % tool)
 
   return subprocess.call([tool] + sys.argv[1:])
 

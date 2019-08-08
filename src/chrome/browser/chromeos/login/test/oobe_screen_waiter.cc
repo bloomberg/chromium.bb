@@ -10,7 +10,7 @@
 
 namespace chromeos {
 
-OobeScreenWaiter::OobeScreenWaiter(OobeScreen target_screen)
+OobeScreenWaiter::OobeScreenWaiter(OobeScreenId target_screen)
     : target_screen_(target_screen) {}
 
 OobeScreenWaiter::~OobeScreenWaiter() = default;
@@ -40,24 +40,22 @@ void OobeScreenWaiter::Wait() {
     EXPECT_EQ(target_screen_, GetOobeUI()->current_screen());
 }
 
-void OobeScreenWaiter::OnCurrentScreenChanged(OobeScreen current_screen,
-                                              OobeScreen new_screen) {
+void OobeScreenWaiter::OnCurrentScreenChanged(OobeScreenId current_screen,
+                                              OobeScreenId new_screen) {
   DCHECK_NE(state_, State::IDLE);
 
   if (state_ != State::WAITING_FOR_SCREEN) {
     if (assert_last_screen_ && new_screen != target_screen_) {
       ADD_FAILURE() << "Screen changed from the target screen "
-                    << static_cast<int>(current_screen) << " -> "
-                    << static_cast<int>(new_screen);
+                    << current_screen.name << " -> " << new_screen.name;
       EndWait();
     }
     return;
   }
 
   if (assert_next_screen_ && new_screen != target_screen_) {
-    ADD_FAILURE() << "Untarget screen change to "
-                  << static_cast<int>(new_screen) << " while waiting for "
-                  << static_cast<int>(target_screen_);
+    ADD_FAILURE() << "Untarget screen change to " << new_screen.name
+                  << " while waiting for " << target_screen_.name;
     EndWait();
     return;
   }

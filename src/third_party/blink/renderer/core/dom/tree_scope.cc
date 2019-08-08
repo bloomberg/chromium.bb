@@ -120,7 +120,7 @@ Element* TreeScope::getElementById(const AtomicString& element_id) const {
   Element* element = elements_by_id_->GetElementById(element_id, *this);
   if (element && &RootNode() == &GetDocument() &&
       GetDocument().InDOMNodeRemovedHandler()) {
-    if (NodeChildRemovalTracker::IsBeingRemoved(element))
+    if (NodeChildRemovalTracker::IsBeingRemoved(*element))
       GetDocument().CountDetachingNodeAccessInDOMNodeRemovedHandler();
   }
   return element;

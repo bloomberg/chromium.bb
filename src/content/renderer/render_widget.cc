@@ -109,6 +109,7 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/base_event_utils.h"
+#include "ui/events/types/scroll_types.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -128,10 +129,6 @@
 #include "third_party/skia/include/core/SkMallocPixelRef.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
 #endif  // defined(OS_POSIX)
-
-#if defined(USE_AURA)
-#include "content/renderer/mus/renderer_window_tree_client.h"
-#endif
 
 #if defined(OS_MACOSX)
 #include "content/renderer/text_input_client_observer.h"
@@ -323,31 +320,29 @@ WebDragData DropDataToWebDragData(const DropData& drop_data) {
     item_list.push_back(item);
   }
 
-  for (auto it = drop_data.filenames.begin(); it != drop_data.filenames.end();
-       ++it) {
+  for (const ui::FileInfo& filename : drop_data.filenames) {
     WebDragData::Item item;
     item.storage_type = WebDragData::Item::kStorageTypeFilename;
-    item.filename_data = blink::FilePathToWebString(it->path);
+    item.filename_data = blink::FilePathToWebString(filename.path);
     item.display_name_data =
-        blink::FilePathToWebString(base::FilePath(it->display_name));
+        blink::FilePathToWebString(base::FilePath(filename.display_name));
     item_list.push_back(item);
   }
 
-  for (auto it = drop_data.file_system_files.begin();
-       it != drop_data.file_system_files.end(); ++it) {
+  for (const DropData::FileSystemFileInfo& file : drop_data.file_system_files) {
     WebDragData::Item item;
     item.storage_type = WebDragData::Item::kStorageTypeFileSystemFile;
-    item.file_system_url = it->url;
-    item.file_system_file_size = it->size;
-    item.file_system_id = blink::WebString::FromASCII(it->filesystem_id);
+    item.file_system_url = file.url;
+    item.file_system_file_size = file.size;
+    item.file_system_id = blink::WebString::FromASCII(file.filesystem_id);
     item_list.push_back(item);
   }
 
-  for (const auto& it : drop_data.custom_data) {
+  for (const auto& data : drop_data.custom_data) {
     WebDragData::Item item;
     item.storage_type = WebDragData::Item::kStorageTypeString;
-    item.string_type = WebString::FromUTF16(it.first);
-    item.string_data = WebString::FromUTF16(it.second);
+    item.string_type = WebString::FromUTF16(data.first);
+    item.string_data = WebString::FromUTF16(data.second);
     item_list.push_back(item);
   }
 
@@ -492,11 +487,6 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
                                           ->NewRenderWidgetSchedulingState();
     render_widget_scheduling_state_->SetHidden(is_hidden_);
   }
-#if defined(USE_AURA)
-  RendererWindowTreeClient::CreateIfNecessary(routing_id_);
-  if (features::IsMultiProcessMash())
-    RendererWindowTreeClient::Get(routing_id_)->SetVisible(!is_hidden_);
-#endif
 
   if (routing_id_ != MSG_ROUTING_NONE)
     g_routing_id_widget_map.Get().emplace(routing_id_, this);
@@ -510,13 +500,6 @@ RenderWidget::~RenderWidget() {
   // and RenderViewImpl are rationalized. Currently, too many unit and
   // browser tests delete a RenderWidget without correclty going through
   // the shutdown. https://crbug.com/545684
-
-#if defined(USE_AURA)
-  // It is possible for a RenderWidget to be destroyed before it was embedded
-  // in a mus window. The RendererWindowTreeClient will leak in such cases. So
-  // explicitly delete it here.
-  RendererWindowTreeClient::Destroy(routing_id_);
-#endif
 }
 
 // static
@@ -948,13 +931,17 @@ void RenderWidget::OnWasHidden() {
 
   SetHidden(true);
 
+  tab_switch_time_recorder_.TabWasHidden();
+
   for (auto& observer : render_frames_)
     observer.WasHidden();
 }
 
-void RenderWidget::OnWasShown(base::TimeTicks show_request_timestamp,
-                              bool was_evicted,
-                              base::TimeTicks tab_switch_start_time) {
+void RenderWidget::OnWasShown(
+    base::TimeTicks show_request_timestamp,
+    bool was_evicted,
+    const base::Optional<content::RecordTabSwitchTimeRequest>&
+        record_tab_switch_time_request) {
   // A frozen main frame widget does not become shown, since it has no frame
   // associated with it. It must be thawed before changing visibility.
   DCHECK(!is_frozen_);
@@ -965,11 +952,11 @@ void RenderWidget::OnWasShown(base::TimeTicks show_request_timestamp,
   was_shown_time_ = base::TimeTicks::Now();
 
   SetHidden(false);
-  if (!show_request_timestamp.is_null()) {
+  if (record_tab_switch_time_request) {
     layer_tree_view_->layer_tree_host()->RequestPresentationTimeForNextFrame(
-        tab_switch_time_recorder_.BeginTimeRecording(
-            tab_switch_start_time, false /* has_saved_frames */,
-            show_request_timestamp));
+        tab_switch_time_recorder_.TabWasShown(
+            false /* has_saved_frames */,
+            record_tab_switch_time_request.value(), show_request_timestamp));
   }
 
   for (auto& observer : render_frames_)
@@ -1492,6 +1479,7 @@ void RenderWidget::UpdateTextInputStateInternal(bool show_virtual_keyboard,
     TextInputState params;
     params.type = new_type;
     params.mode = new_mode;
+    params.action = new_info.action;
     params.flags = new_info.flags;
 #if defined(OS_ANDROID)
     if (next_previous_flags_ == kInvalidNextPreviousFlagsValue) {
@@ -2530,14 +2518,8 @@ void RenderWidget::SetHidden(bool hidden) {
   // throttled acks are released in case frame production ceases.
   is_hidden_ = hidden;
 
-#if defined(USE_AURA)
-  if (features::IsMultiProcessMash())
-    RendererWindowTreeClient::Get(routing_id_)->SetVisible(!hidden);
-#endif
-
-  if (is_hidden_) {
+  if (is_hidden_)
     first_update_visual_state_after_hidden_ = true;
-  }
 
   if (render_widget_scheduling_state_)
     render_widget_scheduling_state_->SetHidden(hidden);
@@ -2796,6 +2778,16 @@ void RenderWidget::DidOverscroll(
       layer_tree_view_->layer_tree_host()->overscroll_behavior());
 }
 
+void RenderWidget::InjectGestureScrollEvent(
+    blink::WebGestureDevice device,
+    const blink::WebFloatSize& delta,
+    ui::input_types::ScrollGranularity granularity,
+    cc::ElementId scrollable_area_element_id,
+    blink::WebInputEvent::Type injected_type) {
+  input_handler_->InjectGestureScrollEvent(
+      device, delta, granularity, scrollable_area_element_id, injected_type);
+}
+
 void RenderWidget::SetOverscrollBehavior(
     const cc::OverscrollBehavior& behavior) {
   layer_tree_view_->layer_tree_host()->SetOverscrollBehavior(behavior);
@@ -2980,6 +2972,8 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
       cmd.HasSwitch(cc::switches::kShowLayerAnimationBounds);
   settings.initial_debug_state.show_paint_rects =
       cmd.HasSwitch(switches::kShowPaintRects);
+  settings.initial_debug_state.show_layout_shift_regions =
+      cmd.HasSwitch(switches::kShowLayoutShiftRegions);
   settings.initial_debug_state.show_property_changed_rects =
       cmd.HasSwitch(cc::switches::kShowPropertyChangedRects);
   settings.initial_debug_state.show_surface_damage_rects =
@@ -3262,9 +3256,9 @@ cc::ManagedMemoryPolicy RenderWidget::GetGpuMemoryPolicy(
   return actual;
 }
 
-void RenderWidget::HasPointerRawMoveEventHandlers(bool has_handlers) {
+void RenderWidget::HasPointerRawUpdateEventHandlers(bool has_handlers) {
   if (input_event_queue_)
-    input_event_queue_->HasPointerRawMoveEventHandlers(has_handlers);
+    input_event_queue_->HasPointerRawUpdateEventHandlers(has_handlers);
 }
 
 void RenderWidget::HasTouchEventHandlers(bool has_handlers) {
@@ -3329,11 +3323,35 @@ void RenderWidget::SetAllowGpuRasterization(bool allow_gpu_raster) {
       allow_gpu_raster);
 }
 
-void RenderWidget::SetPageScaleFactorAndLimits(float page_scale_factor,
-                                               float minimum,
-                                               float maximum) {
+void RenderWidget::SetPageScaleStateAndLimits(float page_scale_factor,
+                                              bool is_pinch_gesture_active,
+                                              float minimum,
+                                              float maximum) {
   layer_tree_view_->layer_tree_host()->SetPageScaleFactorAndLimits(
       page_scale_factor, minimum, maximum);
+
+  // Only continue if this is a mainframe, or something's actually changed.
+  if (!delegate() ||
+      (page_scale_factor == page_scale_factor_from_mainframe_ &&
+       is_pinch_gesture_active == is_pinch_gesture_active_from_mainframe_)) {
+    return;
+  }
+
+  // The page scale is controlled by the WebView for the local main frame of
+  // the Page. So this is called from blink by for the RenderWidget of that
+  // local main frame. We forward the value on to each child RenderWidget (each
+  // of which will be via proxy child frame). These will each in turn forward
+  // the message to their child RenderWidgets (through their proxy child
+  // frames).
+  DCHECK(!is_frozen_);
+
+  for (auto& observer : render_frame_proxies_) {
+    observer.OnPageScaleFactorChanged(page_scale_factor,
+                                      is_pinch_gesture_active);
+  }
+  // Store the value to give to any new RenderFrameProxy that is registered.
+  page_scale_factor_from_mainframe_ = page_scale_factor;
+  is_pinch_gesture_active_from_mainframe_ = is_pinch_gesture_active;
 }
 
 void RenderWidget::StartPageScaleAnimation(const gfx::Vector2d& target_offset,
@@ -3393,7 +3411,8 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
             frame_token_));
   }
 
-  void DidNotSwap(DidNotSwapReason reason) override {
+  cc::SwapPromise::DidNotSwapAction DidNotSwap(
+      DidNotSwapReason reason) override {
     blink::WebWidgetClient::SwapResult result;
     switch (reason) {
       case cc::SwapPromise::DidNotSwapReason::SWAP_FAILS:
@@ -3414,6 +3433,7 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
     task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback_), result, base::TimeTicks::Now()));
+    return DidNotSwapAction::BREAK_PROMISE;
   }
 
   int64_t TraceId() const override { return 0; }
@@ -3609,26 +3629,6 @@ void RenderWidget::SetMouseCapture(bool capture) {
 bool RenderWidget::IsSurfaceSynchronizationEnabled() const {
   return layer_tree_view_ &&
          layer_tree_view_->IsSurfaceSynchronizationEnabled();
-}
-
-void RenderWidget::PageScaleFactorChanged(float page_scale_factor,
-                                          bool is_pinch_gesture_active) {
-  // The page scale is controlled by the WebView for the local main frame of
-  // the Page. So this is called from blink by for the RenderWidget of that
-  // local main frame. We forward the value on to each child RenderWidget (each
-  // of which will be via proxy child frame). These will each in turn forward
-  // the message to their child RenderWidgets (through their proxy child
-  // frames).
-  DCHECK(!is_frozen_);
-  DCHECK(delegate());
-
-  for (auto& observer : render_frame_proxies_) {
-    observer.OnPageScaleFactorChanged(page_scale_factor,
-                                      is_pinch_gesture_active);
-  }
-  // Store the value to give to any new RenderFrameProxy that is registered.
-  page_scale_factor_from_mainframe_ = page_scale_factor;
-  is_pinch_gesture_active_from_mainframe_ = is_pinch_gesture_active;
 }
 
 void RenderWidget::UseSynchronousResizeModeForTesting(bool enable) {

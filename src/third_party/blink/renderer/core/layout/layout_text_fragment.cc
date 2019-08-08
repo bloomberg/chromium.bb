@@ -163,15 +163,14 @@ Text* LayoutTextFragment::AssociatedTextNode() const {
   if (!node)
     return nullptr;
 
-  if (node->IsFirstLetterPseudoElement()) {
-    FirstLetterPseudoElement* pseudo = ToFirstLetterPseudoElement(node);
+  if (auto* pseudo = DynamicTo<FirstLetterPseudoElement>(node)) {
     LayoutObject* next_layout_object =
         FirstLetterPseudoElement::FirstLetterTextLayoutObject(*pseudo);
     if (!next_layout_object)
       return nullptr;
     node = next_layout_object->GetNode();
   }
-  return (node && node->IsTextNode()) ? ToText(node) : nullptr;
+  return DynamicTo<Text>(node);
 }
 
 LayoutText* LayoutTextFragment::GetFirstLetterPart() const {

@@ -43,8 +43,10 @@ std::string GetUserAgent() {
   return "cert_verify_tool/0.1";
 }
 
-void SetUpOnNetworkThread(std::unique_ptr<net::URLRequestContext>* context,
-                          base::WaitableEvent* initialization_complete_event) {
+void SetUpOnNetworkThread(
+    std::unique_ptr<net::URLRequestContext>* context,
+    scoped_refptr<net::CertNetFetcherImpl>* cert_net_fetcher,
+    base::WaitableEvent* initialization_complete_event) {
   net::URLRequestContextBuilder url_request_context_builder;
   url_request_context_builder.set_user_agent(GetUserAgent());
 #if defined(OS_LINUX)
@@ -61,12 +63,18 @@ void SetUpOnNetworkThread(std::unique_ptr<net::URLRequestContext>* context,
 #if defined(USE_NSS_CERTS)
   net::SetURLRequestContextForNSSHttpIO(context->get());
 #endif
-  net::SetGlobalCertNetFetcher(net::CreateCertNetFetcher(context->get()));
+  // TODO(mattm): add command line flag to configure using
+  // CertNetFetcher
+  *cert_net_fetcher = base::MakeRefCounted<net::CertNetFetcherImpl>();
+  (*cert_net_fetcher)->SetURLRequestContext(context->get());
   initialization_complete_event->Signal();
 }
 
-void ShutdownOnNetworkThread(std::unique_ptr<net::URLRequestContext>* context) {
-  net::ShutdownGlobalCertNetFetcher();
+void ShutdownOnNetworkThread(
+    std::unique_ptr<net::URLRequestContext>* context,
+    scoped_refptr<net::CertNetFetcherImpl>* cert_net_fetcher) {
+  (*cert_net_fetcher)->Shutdown();
+  cert_net_fetcher->reset();
   context->reset();
 }
 
@@ -137,6 +145,10 @@ class CertVerifyImplUsingProc : public CertVerifyImpl {
 // Runs certificate verification using CertPathBuilder.
 class CertVerifyImplUsingPathBuilder : public CertVerifyImpl {
  public:
+  explicit CertVerifyImplUsingPathBuilder(
+      scoped_refptr<net::CertNetFetcher> cert_net_fetcher)
+      : cert_net_fetcher_(std::move(cert_net_fetcher)) {}
+
   std::string GetName() const override { return "CertPathBuilder"; }
 
   bool VerifyCert(const CertInput& target_der_cert,
@@ -155,25 +167,33 @@ class CertVerifyImplUsingPathBuilder : public CertVerifyImpl {
     }
 
     return VerifyUsingPathBuilder(target_der_cert, intermediate_der_certs,
-                                  root_der_certs, verify_time,
-                                  dump_prefix_path);
+                                  root_der_certs, verify_time, dump_prefix_path,
+                                  cert_net_fetcher_);
   }
+
+ private:
+  scoped_refptr<net::CertNetFetcher> cert_net_fetcher_;
 };
 
 // Creates an subclass of CertVerifyImpl based on its name, or returns nullptr.
 std::unique_ptr<CertVerifyImpl> CreateCertVerifyImplFromName(
-    base::StringPiece impl_name) {
-  if (impl_name == "platform")
+    base::StringPiece impl_name,
+    scoped_refptr<net::CertNetFetcher> cert_net_fetcher) {
+  if (impl_name == "platform") {
     return std::make_unique<CertVerifyImplUsingProc>(
-        "CertVerifyProc (default)", net::CertVerifyProc::CreateDefault());
+        "CertVerifyProc (default)",
+        net::CertVerifyProc::CreateDefault(std::move(cert_net_fetcher)));
+  }
 
   if (impl_name == "builtin") {
     return std::make_unique<CertVerifyImplUsingProc>(
-        "CertVerifyProcBuiltin", net::CreateCertVerifyProcBuiltin());
+        "CertVerifyProcBuiltin",
+        net::CreateCertVerifyProcBuiltin(std::move(cert_net_fetcher)));
   }
 
   if (impl_name == "pathbuilder")
-    return std::make_unique<CertVerifyImplUsingPathBuilder>();
+    return std::make_unique<CertVerifyImplUsingPathBuilder>(
+        std::move(cert_net_fetcher));
 
   std::cerr << "WARNING: Unrecognized impl: " << impl_name << "\n";
   return nullptr;
@@ -253,12 +273,13 @@ int main(int argc, char** argv) {
     std::cerr << "ERROR in CommandLine::Init\n";
     return 1;
   }
-  base::ThreadPool::CreateAndStartWithDefaultParams("cert_verify_tool");
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams("cert_verify_tool");
   base::ScopedClosureRunner cleanup(
-      base::BindOnce([] { base::ThreadPool::GetInstance()->Shutdown(); }));
+      base::BindOnce([] { base::ThreadPoolInstance::Get()->Shutdown(); }));
   base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
   logging::LoggingSettings settings;
-  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+  settings.logging_dest =
+      logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;
   logging::InitLogging(settings);
 
   base::CommandLine::StringVector args = command_line.GetArgs();
@@ -337,12 +358,14 @@ int main(int argc, char** argv) {
   // Owned by this thread, but initialized, used, and shutdown on the network
   // thread.
   std::unique_ptr<net::URLRequestContext> context;
+  scoped_refptr<net::CertNetFetcherImpl> cert_net_fetcher;
   base::WaitableEvent initialization_complete_event(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   thread.task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&SetUpOnNetworkThread, &context,
-                                &initialization_complete_event));
+      FROM_HERE,
+      base::BindOnce(&SetUpOnNetworkThread, &context, &cert_net_fetcher,
+                     &initialization_complete_event));
   initialization_complete_event.Wait();
 
   std::vector<std::unique_ptr<CertVerifyImpl>> impls;
@@ -357,7 +380,8 @@ int main(int argc, char** argv) {
       impls_str, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
   for (const std::string& impl_name : impl_names) {
-    auto verify_impl = CreateCertVerifyImplFromName(impl_name);
+    auto verify_impl =
+        CreateCertVerifyImplFromName(impl_name, cert_net_fetcher);
     if (verify_impl)
       impls.push_back(std::move(verify_impl));
   }
@@ -381,7 +405,8 @@ int main(int argc, char** argv) {
   // Clean up on the network thread and stop it (which waits for the clean up
   // task to run).
   thread.task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&ShutdownOnNetworkThread, &context));
+      FROM_HERE,
+      base::BindOnce(&ShutdownOnNetworkThread, &context, &cert_net_fetcher));
   thread.Stop();
 
   return all_impls_success ? 0 : 1;

@@ -37,7 +37,7 @@
 #include "third_party/blink/renderer/core/svg/svg_uri_reference.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 #include <stdio.h>
 #endif
 
@@ -48,7 +48,7 @@ using namespace svg_names;
 SVGResources::SVGResources() : linked_resource_(nullptr) {}
 
 SVGResourceClient* SVGResources::GetClient(const LayoutObject& object) {
-  return ToSVGElement(object.GetNode())->GetSVGResourceClient();
+  return To<SVGElement>(object.GetNode())->GetSVGResourceClient();
 }
 
 static HashSet<AtomicString>& ClipperFilterMaskerTags() {
@@ -159,7 +159,7 @@ std::unique_ptr<SVGResources> SVGResources::BuildResources(
   DCHECK(node);
   SECURITY_DCHECK(node->IsSVGElement());
 
-  SVGElement& element = ToSVGElement(*node);
+  auto& element = To<SVGElement>(*node);
 
   const AtomicString& tag_name = element.localName();
   DCHECK(!tag_name.IsNull());
@@ -557,7 +557,7 @@ void SVGResources::SetLinkedResource(
   linked_resource_ = linked_resource;
 }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 void SVGResources::Dump(const LayoutObject* object) {
   DCHECK(object);
   DCHECK(object->GetNode());

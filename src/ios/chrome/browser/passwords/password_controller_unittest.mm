@@ -37,13 +37,13 @@
 #import "ios/chrome/browser/ui/autofill/form_input_accessory_mediator.h"
 #include "ios/chrome/browser/web/chrome_web_client.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
+#include "ios/web/public/js_messaging/web_frame.h"
+#include "ios/web/public/js_messaging/web_frame_util.h"
+#import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #import "ios/web/public/test/web_js_test.h"
-#include "ios/web/public/web_state/web_frame.h"
-#include "ios/web/public/web_state/web_frame_util.h"
-#import "ios/web/public/web_state/web_frames_manager.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -131,7 +131,7 @@ PasswordForm CreatePasswordForm(const char* origin_url,
                                 const char* username_value,
                                 const char* password_value) {
   PasswordForm form;
-  form.scheme = PasswordForm::SCHEME_HTML;
+  form.scheme = PasswordForm::Scheme::kHtml;
   form.origin = GURL(origin_url);
   form.signon_realm = origin_url;
   form.username_value = ASCIIToUTF16(username_value);
@@ -985,7 +985,6 @@ TEST_F(PasswordControllerTest, SuggestionUpdateTests) {
   EXPECT_NSEQ(@"[]=, onkeyup=false, onchange=false",
               ExecuteJavaScript(kUsernamePasswordVerificationScript));
 
-  NSString* showAll = @"Show All\u2026";
   // clang-format off
   SuggestionTestData test_data[] = {
     {
@@ -993,7 +992,7 @@ TEST_F(PasswordControllerTest, SuggestionUpdateTests) {
       @[(@"var evt = document.createEvent('Events');"
          "username_.focus();"),
         @""],
-      @[@"user0 ••••••••", @"abc ••••••••", showAll],
+      @[@"user0 ••••••••", @"abc ••••••••"],
       @"[]=, onkeyup=false, onchange=false"
     },
     {
@@ -1001,7 +1000,7 @@ TEST_F(PasswordControllerTest, SuggestionUpdateTests) {
       @[(@"var evt = document.createEvent('Events');"
          "password_.focus();"),
         @""],
-      @[@"user0 ••••••••", @"abc ••••••••", showAll],
+      @[@"user0 ••••••••", @"abc ••••••••"],
       @"[]=, onkeyup=false, onchange=false"
     },
     {
@@ -1009,7 +1008,7 @@ TEST_F(PasswordControllerTest, SuggestionUpdateTests) {
       @[(@"username_.value='ab';"
          "username_.focus();"),
         @""],
-      @[@"user0 ••••••••", @"abc ••••••••", showAll],
+      @[@"user0 ••••••••", @"abc ••••••••"],
       @"ab[]=, onkeyup=false, onchange=false"
     },
   };
@@ -1119,7 +1118,6 @@ TEST_F(PasswordControllerTest, SelectingSuggestionShouldFillPasswordForm) {
                      [suggestion_values addObject:suggestion.value];
                    EXPECT_NSEQ((@[
                                  @"user0 ••••••••", @"abc ••••••••",
-                                 @"Show All\u2026"
                                ]),
                                suggestion_values);
                    block_was_called = YES;
@@ -1208,7 +1206,7 @@ TEST_F(PasswordControllerTest, SendingToStoreDynamicallyAddedFormsOnFocus) {
   bool* p_get_logins_called = &get_logins_called;
 
   password_manager::PasswordStore::FormDigest expected_form_digest(
-      autofill::PasswordForm::SCHEME_HTML, "https://chromium.test/",
+      autofill::PasswordForm::Scheme::kHtml, "https://chromium.test/",
       GURL("https://chromium.test/"));
   // TODO(crbug.com/949519): replace WillRepeatedly with WillOnce when the old
   // parser is gone.
@@ -1262,7 +1260,7 @@ TEST_F(PasswordControllerTest, TouchendAsSubmissionIndicator) {
     // code better to allow proper unit-testing.
     EXPECT_CALL(log_manager, IsLoggingActive()).WillRepeatedly(Return(true));
     const char kExpectedMessage[] =
-        "Message: \"PasswordManager::ProvisionallySavePassword\"\n";
+        "Message: \"PasswordManager::ProvisionallySaveForm\"\n";
     EXPECT_CALL(log_manager, LogSavePasswordProgress(kExpectedMessage));
     EXPECT_CALL(log_manager,
                 LogSavePasswordProgress(testing::Ne(kExpectedMessage)))
@@ -1484,7 +1482,6 @@ TEST_F(PasswordControllerTest, CheckPasswordGenerationSuggestion) {
   EXPECT_NSEQ(@"[]=, onkeyup=false, onchange=false",
               ExecuteJavaScript(kUsernamePasswordVerificationScript));
 
-  NSString* showAll = @"Show All\u2026";
   // clang-format off
   SuggestionTestData test_data[] = {
     {
@@ -1492,7 +1489,7 @@ TEST_F(PasswordControllerTest, CheckPasswordGenerationSuggestion) {
       @[(@"var evt = document.createEvent('Events');"
          "username_.focus();"),
         @""],
-      @[@"user0 ••••••••", @"abc ••••••••", showAll],
+      @[@"user0 ••••••••", @"abc ••••••••"],
       @"[]=, onkeyup=false, onchange=false"
     },
     {
@@ -1500,7 +1497,7 @@ TEST_F(PasswordControllerTest, CheckPasswordGenerationSuggestion) {
       @[(@"var evt = document.createEvent('Events');"
          "password_.focus();"),
         @""],
-      @[@"user0 ••••••••", @"abc ••••••••", @"Suggest  Password\u2026", showAll],
+      @[@"user0 ••••••••", @"abc ••••••••", @"Suggest  Password\u2026"],
       @"[]=, onkeyup=false, onchange=false"
     },
   };

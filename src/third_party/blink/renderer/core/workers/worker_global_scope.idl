@@ -70,13 +70,16 @@
 
     // AnimationFrameProvider mixin
     // https://html.spec.whatwg.org/C/#animation-frames
-    [RuntimeEnabled=OffscreenCanvas, RaisesException] long requestAnimationFrame(FrameRequestCallback callback);
-    [RuntimeEnabled=OffscreenCanvas] void cancelAnimationFrame(long handle);
+    [RaisesException] long requestAnimationFrame(FrameRequestCallback callback);
+    void cancelAnimationFrame(long handle);
 
     // FontFaceSource
     // https://drafts.csswg.org/css-font-loading-3/#font-face-source
     // TODO(fserb): temporarly until we can enable the interface below.
-    [RuntimeEnabled=OffscreenCanvasText] readonly attribute FontFaceSet fonts;
+    readonly attribute FontFaceSet fonts;
+
+    // TrustedTypes API: http://github.com/wicg/trusted-types
+    [OriginTrialEnabled=TrustedDOMTypes, Unforgeable] readonly attribute TrustedTypePolicyFactory TrustedTypesWorkers;
 };
 
 WorkerGlobalScope includes WindowOrWorkerGlobalScope;

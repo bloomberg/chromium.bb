@@ -8,6 +8,7 @@ import android.content.Context;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
 /**
@@ -65,8 +66,9 @@ public class EphemeralTabBarControl {
      * @param percentage The percentage to the more opened state.
      */
     public void updateForCloseOrPeek(float percentage) {
-        if (percentage == SOLID_OPAQUE) updateForMaximize(SOLID_TRANSPARENT);
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)) return;
 
+        if (percentage == SOLID_OPAQUE) updateForMaximize(SOLID_TRANSPARENT);
         // When the panel is completely closed the caption should be hidden.
         if (percentage == SOLID_TRANSPARENT && mCaption != null) mCaption.hide();
     }
@@ -76,6 +78,8 @@ public class EphemeralTabBarControl {
      * @param percentage The percentage to the more opened state.
      */
     public void updateForMaximize(float percentage) {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)) return;
+
         if (mCaption != null) mCaption.updatePanelForMaximization(percentage);
     }
 

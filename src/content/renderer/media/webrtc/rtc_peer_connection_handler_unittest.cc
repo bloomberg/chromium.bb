@@ -203,6 +203,10 @@ class MockPeerConnectionTracker : public PeerConnectionTracker {
   MOCK_METHOD2(TrackIceConnectionStateChange,
                void(RTCPeerConnectionHandler* pc_handler,
                     webrtc::PeerConnectionInterface::IceConnectionState state));
+  MOCK_METHOD2(
+      TrackConnectionStateChange,
+      void(RTCPeerConnectionHandler* pc_handler,
+           webrtc::PeerConnectionInterface::PeerConnectionState state));
   MOCK_METHOD2(TrackIceGatheringStateChange,
                void(RTCPeerConnectionHandler* pc_handler,
                     webrtc::PeerConnectionInterface::IceGatheringState state));
@@ -312,8 +316,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
                 media::CHANNEL_LAYOUT_STEREO,
                 media::AudioParameters::kAudioCDSampleRate / 100),
             false /* disable_local_echo */, blink::AudioProcessingProperties(),
-            base::Bind(&RTCPeerConnectionHandlerTest::OnAudioSourceStarted),
-            mock_dependency_factory_.get(),
+            base::DoNothing(), mock_dependency_factory_.get(),
             blink::scheduler::GetSingleThreadTaskRunnerForTesting());
     audio_source->SetAllowInvalidRenderFrameIdForTesting(true);
     blink_audio_source.SetPlatformSource(
@@ -376,10 +379,6 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     for (const auto& track : stream.VideoTracks())
       blink::MediaStreamVideoTrack::GetVideoTrack(track)->Stop();
   }
-
-  static void OnAudioSourceStarted(blink::WebPlatformMediaStreamSource* source,
-                                   blink::MediaStreamRequestResult result,
-                                   const blink::WebString& result_name) {}
 
   bool AddStream(const blink::WebMediaStream& web_stream) {
     size_t senders_size_before_add = senders_.size();
@@ -1028,74 +1027,122 @@ TEST_F(RTCPeerConnectionHandlerTest, OnIceConnectionChange) {
 
   webrtc::PeerConnectionInterface::IceConnectionState new_state =
       webrtc::PeerConnectionInterface::kIceConnectionNew;
-  EXPECT_CALL(*mock_tracker_.get(),
-              TrackIceConnectionStateChange(
-                  pc_handler_.get(),
-                  webrtc::PeerConnectionInterface::kIceConnectionNew));
   EXPECT_CALL(*mock_client_.get(),
               DidChangeIceConnectionState(
                   webrtc::PeerConnectionInterface::kIceConnectionNew));
   pc_handler_->observer()->OnStandardizedIceConnectionChange(new_state);
 
   new_state = webrtc::PeerConnectionInterface::kIceConnectionChecking;
-  EXPECT_CALL(*mock_tracker_.get(),
-              TrackIceConnectionStateChange(
-                  pc_handler_.get(),
-                  webrtc::PeerConnectionInterface::kIceConnectionChecking));
   EXPECT_CALL(*mock_client_.get(),
               DidChangeIceConnectionState(
                   webrtc::PeerConnectionInterface::kIceConnectionChecking));
   pc_handler_->observer()->OnStandardizedIceConnectionChange(new_state);
 
   new_state = webrtc::PeerConnectionInterface::kIceConnectionConnected;
-  EXPECT_CALL(*mock_tracker_.get(),
-              TrackIceConnectionStateChange(
-                  pc_handler_.get(),
-                  webrtc::PeerConnectionInterface::kIceConnectionConnected));
   EXPECT_CALL(*mock_client_.get(),
               DidChangeIceConnectionState(
                   webrtc::PeerConnectionInterface::kIceConnectionConnected));
   pc_handler_->observer()->OnStandardizedIceConnectionChange(new_state);
 
   new_state = webrtc::PeerConnectionInterface::kIceConnectionCompleted;
-  EXPECT_CALL(*mock_tracker_.get(),
-              TrackIceConnectionStateChange(
-                  pc_handler_.get(),
-                  webrtc::PeerConnectionInterface::kIceConnectionCompleted));
   EXPECT_CALL(*mock_client_.get(),
               DidChangeIceConnectionState(
                   webrtc::PeerConnectionInterface::kIceConnectionCompleted));
   pc_handler_->observer()->OnStandardizedIceConnectionChange(new_state);
 
   new_state = webrtc::PeerConnectionInterface::kIceConnectionFailed;
-  EXPECT_CALL(*mock_tracker_.get(),
-              TrackIceConnectionStateChange(
-                  pc_handler_.get(),
-                  webrtc::PeerConnectionInterface::kIceConnectionFailed));
   EXPECT_CALL(*mock_client_.get(),
               DidChangeIceConnectionState(
                   webrtc::PeerConnectionInterface::kIceConnectionFailed));
   pc_handler_->observer()->OnStandardizedIceConnectionChange(new_state);
 
   new_state = webrtc::PeerConnectionInterface::kIceConnectionDisconnected;
-  EXPECT_CALL(*mock_tracker_.get(),
-              TrackIceConnectionStateChange(
-                  pc_handler_.get(),
-                  webrtc::PeerConnectionInterface::kIceConnectionDisconnected));
   EXPECT_CALL(*mock_client_.get(),
               DidChangeIceConnectionState(
                   webrtc::PeerConnectionInterface::kIceConnectionDisconnected));
   pc_handler_->observer()->OnStandardizedIceConnectionChange(new_state);
 
   new_state = webrtc::PeerConnectionInterface::kIceConnectionClosed;
-  EXPECT_CALL(*mock_tracker_.get(),
-              TrackIceConnectionStateChange(
-                  pc_handler_.get(),
-                  webrtc::PeerConnectionInterface::kIceConnectionClosed));
   EXPECT_CALL(*mock_client_.get(),
               DidChangeIceConnectionState(
                   webrtc::PeerConnectionInterface::kIceConnectionClosed));
   pc_handler_->observer()->OnStandardizedIceConnectionChange(new_state);
+}
+
+TEST_F(RTCPeerConnectionHandlerTest, OnConnectionChange) {
+  testing::InSequence sequence;
+
+  webrtc::PeerConnectionInterface::PeerConnectionState new_state =
+      webrtc::PeerConnectionInterface::PeerConnectionState::kNew;
+  EXPECT_CALL(*mock_tracker_.get(),
+              TrackConnectionStateChange(
+                  pc_handler_.get(),
+                  webrtc::PeerConnectionInterface::PeerConnectionState::kNew));
+  EXPECT_CALL(*mock_client_.get(),
+              DidChangePeerConnectionState(
+                  webrtc::PeerConnectionInterface::PeerConnectionState::kNew));
+  pc_handler_->observer()->OnConnectionChange(new_state);
+
+  new_state = webrtc::PeerConnectionInterface::PeerConnectionState::kConnecting;
+  EXPECT_CALL(
+      *mock_tracker_.get(),
+      TrackConnectionStateChange(
+          pc_handler_.get(),
+          webrtc::PeerConnectionInterface::PeerConnectionState::kConnecting));
+  EXPECT_CALL(
+      *mock_client_.get(),
+      DidChangePeerConnectionState(
+          webrtc::PeerConnectionInterface::PeerConnectionState::kConnecting));
+  pc_handler_->observer()->OnConnectionChange(new_state);
+
+  new_state = webrtc::PeerConnectionInterface::PeerConnectionState::kConnected;
+  EXPECT_CALL(
+      *mock_tracker_.get(),
+      TrackConnectionStateChange(
+          pc_handler_.get(),
+          webrtc::PeerConnectionInterface::PeerConnectionState::kConnected));
+  EXPECT_CALL(
+      *mock_client_.get(),
+      DidChangePeerConnectionState(
+          webrtc::PeerConnectionInterface::PeerConnectionState::kConnected));
+  pc_handler_->observer()->OnConnectionChange(new_state);
+
+  new_state =
+      webrtc::PeerConnectionInterface::PeerConnectionState::kDisconnected;
+  EXPECT_CALL(
+      *mock_tracker_.get(),
+      TrackConnectionStateChange(
+          pc_handler_.get(),
+          webrtc::PeerConnectionInterface::PeerConnectionState::kDisconnected));
+  EXPECT_CALL(
+      *mock_client_.get(),
+      DidChangePeerConnectionState(
+          webrtc::PeerConnectionInterface::PeerConnectionState::kDisconnected));
+  pc_handler_->observer()->OnConnectionChange(new_state);
+
+  new_state = webrtc::PeerConnectionInterface::PeerConnectionState::kFailed;
+  EXPECT_CALL(
+      *mock_tracker_.get(),
+      TrackConnectionStateChange(
+          pc_handler_.get(),
+          webrtc::PeerConnectionInterface::PeerConnectionState::kFailed));
+  EXPECT_CALL(
+      *mock_client_.get(),
+      DidChangePeerConnectionState(
+          webrtc::PeerConnectionInterface::PeerConnectionState::kFailed));
+  pc_handler_->observer()->OnConnectionChange(new_state);
+
+  new_state = webrtc::PeerConnectionInterface::PeerConnectionState::kClosed;
+  EXPECT_CALL(
+      *mock_tracker_.get(),
+      TrackConnectionStateChange(
+          pc_handler_.get(),
+          webrtc::PeerConnectionInterface::PeerConnectionState::kClosed));
+  EXPECT_CALL(
+      *mock_client_.get(),
+      DidChangePeerConnectionState(
+          webrtc::PeerConnectionInterface::PeerConnectionState::kClosed));
+  pc_handler_->observer()->OnConnectionChange(new_state);
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, OnIceGatheringChange) {

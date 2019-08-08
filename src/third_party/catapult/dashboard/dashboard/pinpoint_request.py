@@ -3,21 +3,28 @@
 # found in the LICENSE file.
 
 """URL endpoint containing server-side functionality for pinpoint jobs."""
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
 import json
 
 from google.appengine.ext import ndb
 
+from dashboard import find_change_points
 from dashboard import start_try_job
 from dashboard.common import descriptor
+from dashboard.common import math_utils
 from dashboard.common import request_handler
 from dashboard.common import utils
+from dashboard.models import anomaly_config
+from dashboard.models import graph_data
 from dashboard.services import crrev_service
 from dashboard.services import pinpoint_service
 
 _NON_CHROME_TARGETS = ['v8']
-# TODO(simonhatch): Find a more official way to lookup isolate targets for suites.
-# crbug.com/950165
+# TODO(simonhatch): Find a more official way to lookup isolate targets for
+# suites; crbug.com/950165
 _ISOLATE_TARGETS = [
     'angle_perftests', 'base_perftests', 'cc_perftests', 'gpu_perftests',
     'load_library_perf_tests', 'media_perftests', 'net_perftests',
@@ -41,24 +48,26 @@ class PinpointNewBisectRequestHandler(request_handler.RequestHandler):
   def post(self):
     job_params = dict(
         (a, self.request.get(a)) for a in self.request.arguments())
+    self.response.write(json.dumps(NewPinpointBisect(job_params)))
 
-    try:
-      pinpoint_params = PinpointParamsFromBisectParams(job_params)
-    except InvalidParamsError as e:
-      self.response.write(json.dumps({'error': e.message}))
-      return
 
-    results = pinpoint_service.NewJob(pinpoint_params)
+def NewPinpointBisect(job_params):
+  try:
+    pinpoint_params = PinpointParamsFromBisectParams(job_params)
+  except InvalidParamsError as e:
+    return {'error': e.message}
 
-    alert_keys = job_params.get('alerts')
-    if 'jobId' in results and alert_keys:
-      alerts = json.loads(alert_keys)
-      for alert_urlsafe_key in alerts:
-        alert = ndb.Key(urlsafe=alert_urlsafe_key).get()
-        alert.pinpoint_bisects.append(results['jobId'])
-        alert.put()
+  results = pinpoint_service.NewJob(pinpoint_params)
 
-    self.response.write(json.dumps(results))
+  alert_keys = job_params.get('alerts')
+  if 'jobId' in results and alert_keys:
+    alerts = json.loads(alert_keys)
+    for alert_urlsafe_key in alerts:
+      alert = ndb.Key(urlsafe=alert_urlsafe_key).get()
+      alert.pinpoint_bisects.append(results['jobId'])
+      alert.put()
+
+  return results
 
 
 class PinpointNewPerfTryRequestHandler(request_handler.RequestHandler):
@@ -91,6 +100,39 @@ def ParseMetricParts(test_path_parts):
   # left empty and implied to be summary.
   assert len(metric_parts) == 1
   return '', metric_parts[0], ''
+
+
+def _GitHashToCommitPosition(commit_position):
+  try:
+    commit_position = int(commit_position)
+  except ValueError:
+    result = crrev_service.GetCommit(commit_position)
+    if 'error' in result:
+      raise InvalidParamsError(
+          'Error retrieving commit info: %s' % result['error'].get('message'))
+    commit_position = int(result['number'])
+  return commit_position
+
+
+def FindMagnitudeBetweenCommits(test_key, start_commit, end_commit):
+  start_commit = _GitHashToCommitPosition(start_commit)
+  end_commit = _GitHashToCommitPosition(end_commit)
+
+  test = test_key.get()
+  num_points = anomaly_config.GetAnomalyConfigDict(test).get(
+      'min_segment_size', find_change_points.MIN_SEGMENT_SIZE)
+  start_rows = graph_data.GetRowsForTestBeforeAfterRev(
+      test_key, start_commit, num_points, 0)
+  end_rows = graph_data.GetRowsForTestBeforeAfterRev(
+      test_key, end_commit, 0, num_points)
+
+  if not start_rows or not end_rows:
+    return None
+
+  median_before = math_utils.Median([r.value for r in start_rows])
+  median_after = math_utils.Median([r.value for r in end_rows])
+
+  return median_after - median_before
 
 
 def ResolveToGitHash(commit_position, suite):
@@ -202,6 +244,7 @@ def PinpointParamsFromPerfTryParams(params):
   end_commit = params['end_commit']
   start_git_hash = ResolveToGitHash(start_commit, suite)
   end_git_hash = ResolveToGitHash(end_commit, suite)
+  story_filter = params['story_filter']
 
   # Pinpoint also requires you specify which isolate target to run the
   # test, so we derive that from the suite name. Eventually, this would
@@ -214,7 +257,7 @@ def PinpointParamsFromPerfTryParams(params):
   email = utils.GetEmail()
   job_name = 'Try job on %s/%s' % (bot_name, suite)
 
-  return {
+  pinpoint_params = {
       'configuration': bot_name,
       'benchmark': suite,
       'start_git_hash': start_git_hash,
@@ -224,6 +267,11 @@ def PinpointParamsFromPerfTryParams(params):
       'user': email,
       'name': job_name
   }
+
+  if story_filter:
+    pinpoint_params['story'] = story_filter
+
+  return pinpoint_params
 
 
 def PinpointParamsFromBisectParams(params):
@@ -293,6 +341,10 @@ def PinpointParamsFromBisectParams(params):
   if alert_key:
     alert = ndb.Key(urlsafe=alert_key).get()
     alert_magnitude = alert.median_after_anomaly - alert.median_before_anomaly
+
+  if not alert_magnitude:
+    alert_magnitude = FindMagnitudeBetweenCommits(
+        utils.TestKey(test_path), start_commit, end_commit)
 
   pinpoint_params = {
       'configuration': bot_name,

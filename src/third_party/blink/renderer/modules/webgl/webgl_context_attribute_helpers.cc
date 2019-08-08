@@ -30,7 +30,7 @@ Platform::ContextAttributes ToPlatformContextAttributes(
     Platform::ContextType context_type,
     bool support_own_offscreen_surface) {
   Platform::ContextAttributes result;
-  result.prefer_integrated_gpu = attrs.power_preference == "low-power";
+  result.prefer_low_power_gpu = attrs.power_preference == "low-power";
   result.fail_if_major_performance_caveat =
       attrs.fail_if_major_performance_caveat;
   result.context_type = context_type;

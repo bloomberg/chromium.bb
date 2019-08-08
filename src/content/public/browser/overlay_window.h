@@ -14,8 +14,12 @@ class Rect;
 class Size;
 }
 
-namespace ui {
+namespace cc {
 class Layer;
+}
+
+namespace viz {
+class SurfaceId;
 }
 
 namespace content {
@@ -53,7 +57,6 @@ class OverlayWindow {
   virtual void Hide() = 0;
   virtual bool IsVisible() const = 0;
   virtual bool IsAlwaysOnTop() const = 0;
-  virtual ui::Layer* GetLayer() = 0;
   // Retrieves the window's current bounds, including its window.
   virtual gfx::Rect GetBounds() const = 0;
   virtual void UpdateVideoSize(const gfx::Size& natural_size) = 0;
@@ -63,13 +66,8 @@ class OverlayWindow {
   virtual void SetSkipAdButtonVisibility(bool is_visible) = 0;
   virtual void SetNextTrackButtonVisibility(bool is_visible) = 0;
   virtual void SetPreviousTrackButtonVisibility(bool is_visible) = 0;
-
-  // Retrieves the ui::Layers corresponding to the window and video.
-  virtual ui::Layer* GetWindowBackgroundLayer() = 0;
-  virtual ui::Layer* GetVideoLayer() = 0;
-
-  // Retrieves the bounds of the video.
-  virtual gfx::Rect GetVideoBounds() = 0;
+  virtual void SetSurfaceId(const viz::SurfaceId& surface_id) = 0;
+  virtual cc::Layer* GetLayerForTesting() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OverlayWindow);

@@ -1342,11 +1342,24 @@ TEST_F(BindTest, EmptyFunctor) {
 }
 
 TEST_F(BindTest, CapturingLambdaForTesting) {
+  // Test copyable lambdas.
   int x = 6;
   EXPECT_EQ(42, BindLambdaForTesting([=](int y) { return x * y; }).Run(7));
-
+  EXPECT_EQ(42,
+            BindLambdaForTesting([=](int y) mutable { return x *= y; }).Run(7));
   auto f = [x](std::unique_ptr<int> y) { return x * *y; };
   EXPECT_EQ(42, BindLambdaForTesting(f).Run(std::make_unique<int>(7)));
+
+  // Test move-only lambdas.
+  auto y = std::make_unique<int>(7);
+  auto g = [y = std::move(y)](int& x) mutable {
+    return x * *std::exchange(y, nullptr);
+  };
+  EXPECT_EQ(42, BindLambdaForTesting(std::move(g)).Run(x));
+
+  y = std::make_unique<int>(7);
+  auto h = [x, y = std::move(y)] { return x * *y; };
+  EXPECT_EQ(42, BindLambdaForTesting(std::move(h)).Run());
 }
 
 TEST_F(BindTest, Cancellation) {

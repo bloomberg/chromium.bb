@@ -36,6 +36,10 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
+namespace base {
+class TickClock;
+}
+
 namespace blink {
 
 struct HeapInfo {
@@ -72,6 +76,13 @@ class CORE_EXPORT MemoryInfo final : public ScriptWrappable {
   }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(MemoryInfoTest, Bucketized);
+  FRIEND_TEST_ALL_PREFIXES(MemoryInfoTest, Precise);
+  friend struct MemoryInfoTestScopedMockTime;
+  // The caller owns the |clock| which must outlive the MemoryInfo.
+  static void SetTickClockForTestingForCurrentThread(
+      const base::TickClock* clock);
+
   HeapInfo info_;
 };
 

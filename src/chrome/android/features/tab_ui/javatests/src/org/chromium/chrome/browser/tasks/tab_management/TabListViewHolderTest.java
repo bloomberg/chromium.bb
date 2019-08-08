@@ -7,9 +7,10 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import static org.chromium.base.GarbageCollectionTestUtils.canBeGarbageCollected;
+
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.test.annotation.UiThreadTest;
@@ -23,15 +24,18 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
+import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
+import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Tests for the {@link android.support.v7.widget.RecyclerView.ViewHolder} classes for {@link
@@ -47,17 +51,24 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     private PropertyModel mStripModel;
     private PropertyModelChangeProcessor mStripMCP;
 
+    private TabGridViewHolder mSelectableTabGridViewHolder;
+    private PropertyModel mSelectableModel;
+    private PropertyModelChangeProcessor mSelectableMCP;
+    private SelectionDelegate<Integer> mSelectionDelegate;
+
     private TabListMediator.ThumbnailFetcher mMockThumbnailProvider =
             new TabListMediator.ThumbnailFetcher(new TabListMediator.ThumbnailProvider() {
                 @Override
-                public void getTabThumbnailWithCallback(
-                        Tab tab, Callback<Bitmap> callback, boolean forceUpdate) {
+                public void getTabThumbnailWithCallback(Tab tab, Callback<Bitmap> callback,
+                        boolean forceUpdate, boolean writeToCache) {
                     Bitmap bitmap = mShouldReturnBitmap
                             ? Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
                             : null;
                     callback.onResult(bitmap);
+                    mThumbnailFetchedCount.incrementAndGet();
                 }
-            }, null, false);
+            }, null, false, false);
+    private AtomicInteger mThumbnailFetchedCount = new AtomicInteger();
 
     private TabListMediator.TabActionListener mMockCloseListener =
             new TabListMediator.TabActionListener() {
@@ -88,12 +99,18 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             getActivity().setContentView(view, params);
 
-            mTabGridViewHolder = TabGridViewHolder.create(view, 0);
+            mTabGridViewHolder = TabGridViewHolder.create(
+                    view, TabGridViewHolder.TabGridViewItemType.CLOSABLE_TAB);
             mTabStripViewHolder = TabStripViewHolder.create(view, 0);
+            mSelectableTabGridViewHolder = TabGridViewHolder.create(
+                    view, TabGridViewHolder.TabGridViewItemType.SELECTABLE_TAB);
 
             view.addView(mTabGridViewHolder.itemView);
             view.addView(mTabStripViewHolder.itemView);
+            view.addView(mSelectableTabGridViewHolder.itemView);
         });
+
+        mSelectionDelegate = new SelectionDelegate<>();
 
         mGridModel = new PropertyModel.Builder(TabProperties.ALL_KEYS_TAB_GRID)
                              .with(TabProperties.TAB_SELECTED_LISTENER, mMockSelectedListener)
@@ -103,32 +120,35 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
                               .with(TabProperties.TAB_SELECTED_LISTENER, mMockSelectedListener)
                               .with(TabProperties.TAB_CLOSED_LISTENER, mMockCloseListener)
                               .build();
+        mSelectableModel =
+                new PropertyModel.Builder(TabProperties.ALL_KEYS_TAB_GRID)
+                        .with(TabProperties.SELECTABLE_TAB_CLICKED_LISTENER, mMockSelectedListener)
+                        .with(TabProperties.TAB_SELECTION_DELEGATE, mSelectionDelegate)
+                        .build();
 
         mGridMCP = PropertyModelChangeProcessor.create(mGridModel, mTabGridViewHolder,
                 new TestRecyclerViewSimpleViewBinder<>(TabGridViewBinder::onBindViewHolder));
         mStripMCP = PropertyModelChangeProcessor.create(mStripModel, mTabStripViewHolder,
                 new TestRecyclerViewSimpleViewBinder<>(TabStripViewBinder::onBindViewHolder));
+        mSelectableMCP = PropertyModelChangeProcessor.create(mSelectableModel,
+                mSelectableTabGridViewHolder,
+                new TestRecyclerViewSimpleViewBinder<>(TabGridViewBinder::onBindViewHolder));
     }
 
-    @Test
-    @MediumTest
-    @UiThreadTest
-    public void testSelected() throws Exception {
+    private void testGridSelected(TabGridViewHolder holder, PropertyModel model) {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
-            mGridModel.set(TabProperties.IS_SELECTED, true);
-            Assert.assertTrue(
-                    ((FrameLayout) (mTabGridViewHolder.itemView)).getForeground() != null);
-            mGridModel.set(TabProperties.IS_SELECTED, false);
-            Assert.assertFalse(
-                    ((FrameLayout) (mTabGridViewHolder.itemView)).getForeground() != null);
+            model.set(TabProperties.IS_SELECTED, true);
+            Assert.assertTrue(((FrameLayout) (holder.itemView)).getForeground() != null);
+            model.set(TabProperties.IS_SELECTED, false);
+            Assert.assertFalse(((FrameLayout) (holder.itemView)).getForeground() != null);
         } else {
-            mGridModel.set(TabProperties.IS_SELECTED, true);
+            model.set(TabProperties.IS_SELECTED, true);
             Drawable selectedDrawable =
-                    mTabGridViewHolder.itemView.findViewById(R.id.background_view).getBackground();
+                    holder.itemView.findViewById(R.id.background_view).getBackground();
             Assert.assertTrue(selectedDrawable != null);
-            mGridModel.set(TabProperties.IS_SELECTED, false);
+            model.set(TabProperties.IS_SELECTED, false);
             Drawable elevationDrawable =
-                    mTabGridViewHolder.itemView.findViewById(R.id.background_view).getBackground();
+                    holder.itemView.findViewById(R.id.background_view).getBackground();
             Assert.assertTrue(elevationDrawable != null);
             Assert.assertNotSame(selectedDrawable, elevationDrawable);
         }
@@ -141,10 +161,36 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     @UiThreadTest
+    public void testSelected() throws Exception {
+        testGridSelected(mTabGridViewHolder, mGridModel);
+
+        mStripModel.set(TabProperties.IS_SELECTED, true);
+        Assert.assertTrue(((FrameLayout) (mTabStripViewHolder.itemView)).getForeground() != null);
+        mStripModel.set(TabProperties.IS_SELECTED, false);
+        Assert.assertFalse(((FrameLayout) (mTabStripViewHolder.itemView)).getForeground() != null);
+
+        testGridSelected(mSelectableTabGridViewHolder, mSelectableModel);
+        mSelectableModel.set(TabProperties.IS_SELECTED, true);
+        Assert.assertTrue(
+                mSelectableTabGridViewHolder.actionButton.getBackground().getLevel() == 1);
+        Assert.assertTrue(mSelectableTabGridViewHolder.actionButton.getDrawable() != null);
+
+        mSelectableModel.set(TabProperties.IS_SELECTED, false);
+        Assert.assertTrue(
+                mSelectableTabGridViewHolder.actionButton.getBackground().getLevel() == 0);
+        Assert.assertTrue(mSelectableTabGridViewHolder.actionButton.getDrawable() == null);
+    }
+
+    @Test
+    @MediumTest
+    @UiThreadTest
     public void testTitle() throws Exception {
         final String title = "Surf the cool webz";
         mGridModel.set(TabProperties.TITLE, title);
         Assert.assertEquals(mTabGridViewHolder.title.getText(), title);
+
+        mSelectableModel.set(TabProperties.TITLE, title);
+        Assert.assertEquals(mSelectableTabGridViewHolder.title.getText(), title);
     }
 
     @Test
@@ -152,17 +198,104 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     @UiThreadTest
     public void testThumbnail() throws Exception {
         mGridModel.set(TabProperties.THUMBNAIL_FETCHER, mMockThumbnailProvider);
-        // This should have set the image resource id to 0 and reset it.
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
-            Assert.assertNull(mTabGridViewHolder.thumbnail.getDrawable());
-        } else {
-            assertThat(mTabGridViewHolder.thumbnail.getDrawable(), instanceOf(ColorDrawable.class));
-        }
+        Assert.assertNull(mTabGridViewHolder.thumbnail.getDrawable());
         mGridModel.set(TabProperties.THUMBNAIL_FETCHER, null);
 
         mShouldReturnBitmap = true;
         mGridModel.set(TabProperties.THUMBNAIL_FETCHER, mMockThumbnailProvider);
         assertThat(mTabGridViewHolder.thumbnail.getDrawable(), instanceOf(BitmapDrawable.class));
+        Assert.assertEquals(2, mThumbnailFetchedCount.get());
+    }
+
+    @Test
+    @MediumTest
+    @UiThreadTest
+    public void testThumbnailGCAfterNullBitmap() throws Exception {
+        mShouldReturnBitmap = true;
+        mGridModel.set(TabProperties.THUMBNAIL_FETCHER, mMockThumbnailProvider);
+        assertThat(mTabGridViewHolder.thumbnail.getDrawable(), instanceOf(BitmapDrawable.class));
+        Bitmap bitmap = ((BitmapDrawable) mTabGridViewHolder.thumbnail.getDrawable()).getBitmap();
+        WeakReference<Bitmap> ref = new WeakReference<>(bitmap);
+        bitmap = null;
+
+        Assert.assertFalse(canBeGarbageCollected(ref));
+
+        mShouldReturnBitmap = false;
+        mGridModel.set(TabProperties.THUMBNAIL_FETCHER, mMockThumbnailProvider);
+        Assert.assertTrue(canBeGarbageCollected(ref));
+        Assert.assertEquals(2, mThumbnailFetchedCount.get());
+    }
+
+    @Test
+    @MediumTest
+    @UiThreadTest
+    public void testThumbnailGCAfterNewBitmap() throws Exception {
+        mShouldReturnBitmap = true;
+        mGridModel.set(TabProperties.THUMBNAIL_FETCHER, mMockThumbnailProvider);
+        assertThat(mTabGridViewHolder.thumbnail.getDrawable(), instanceOf(BitmapDrawable.class));
+        Bitmap bitmap = ((BitmapDrawable) mTabGridViewHolder.thumbnail.getDrawable()).getBitmap();
+        WeakReference<Bitmap> ref = new WeakReference<>(bitmap);
+        bitmap = null;
+
+        Assert.assertFalse(canBeGarbageCollected(ref));
+
+        mGridModel.set(TabProperties.THUMBNAIL_FETCHER, mMockThumbnailProvider);
+        Assert.assertTrue(canBeGarbageCollected(ref));
+        Assert.assertEquals(2, mThumbnailFetchedCount.get());
+    }
+
+    @Test
+    @MediumTest
+    @UiThreadTest
+    public void testResetThumbnailGC() throws Exception {
+        mShouldReturnBitmap = true;
+        mGridModel.set(TabProperties.THUMBNAIL_FETCHER, mMockThumbnailProvider);
+        assertThat(mTabGridViewHolder.thumbnail.getDrawable(), instanceOf(BitmapDrawable.class));
+        Bitmap bitmap = ((BitmapDrawable) mTabGridViewHolder.thumbnail.getDrawable()).getBitmap();
+        WeakReference<Bitmap> ref = new WeakReference<>(bitmap);
+        bitmap = null;
+
+        Assert.assertFalse(canBeGarbageCollected(ref));
+
+        mTabGridViewHolder.resetThumbnail();
+        Assert.assertTrue(canBeGarbageCollected(ref));
+    }
+
+    @Test
+    @MediumTest
+    @UiThreadTest
+    public void testHiddenGC() throws Exception {
+        mShouldReturnBitmap = true;
+        mGridModel.set(TabProperties.THUMBNAIL_FETCHER, mMockThumbnailProvider);
+        assertThat(mTabGridViewHolder.thumbnail.getDrawable(), instanceOf(BitmapDrawable.class));
+        Bitmap bitmap = ((BitmapDrawable) mTabGridViewHolder.thumbnail.getDrawable()).getBitmap();
+        WeakReference<Bitmap> ref = new WeakReference<>(bitmap);
+        bitmap = null;
+
+        Assert.assertFalse(canBeGarbageCollected(ref));
+
+        mGridModel.set(TabProperties.THUMBNAIL_FETCHER, null);
+        Assert.assertTrue(canBeGarbageCollected(ref));
+        Assert.assertNull(mTabGridViewHolder.thumbnail.getDrawable());
+        Assert.assertEquals(1, mThumbnailFetchedCount.get());
+    }
+
+    @Test
+    @MediumTest
+    @UiThreadTest
+    public void testHiddenThenShow() throws Exception {
+        mShouldReturnBitmap = true;
+        mGridModel.set(TabProperties.THUMBNAIL_FETCHER, mMockThumbnailProvider);
+        assertThat(mTabGridViewHolder.thumbnail.getDrawable(), instanceOf(BitmapDrawable.class));
+        Assert.assertEquals(1, mThumbnailFetchedCount.get());
+
+        mGridModel.set(TabProperties.THUMBNAIL_FETCHER, null);
+        Assert.assertNull(mTabGridViewHolder.thumbnail.getDrawable());
+        Assert.assertEquals(1, mThumbnailFetchedCount.get());
+
+        mGridModel.set(TabProperties.THUMBNAIL_FETCHER, mMockThumbnailProvider);
+        assertThat(mTabGridViewHolder.thumbnail.getDrawable(), instanceOf(BitmapDrawable.class));
+        Assert.assertEquals(2, mThumbnailFetchedCount.get());
     }
 
     @Test
@@ -181,13 +314,23 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
         mStripModel.set(TabProperties.IS_SELECTED, true);
         mTabStripViewHolder.button.performClick();
         Assert.assertFalse(mSelectClicked.get());
+        mSelectClicked.set(false);
+
+        mSelectableModel.set(TabProperties.IS_SELECTED, false);
+        mSelectableTabGridViewHolder.itemView.performClick();
+        Assert.assertTrue(mSelectClicked.get());
+        mSelectClicked.set(false);
+
+        mSelectableModel.set(TabProperties.IS_SELECTED, true);
+        mSelectableTabGridViewHolder.itemView.performClick();
+        Assert.assertTrue(mSelectClicked.get());
     }
 
     @Test
     @MediumTest
     @UiThreadTest
     public void testClickToClose() throws Exception {
-        mTabGridViewHolder.closeButton.performClick();
+        mTabGridViewHolder.actionButton.performClick();
         Assert.assertTrue(mCloseClicked.get());
         mCloseClicked.set(false);
 
@@ -205,6 +348,7 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     public void tearDownTest() throws Exception {
         mStripMCP.destroy();
         mGridMCP.destroy();
+        mSelectableMCP.destroy();
         super.tearDownTest();
     }
 }

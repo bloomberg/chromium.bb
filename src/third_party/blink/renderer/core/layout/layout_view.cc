@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
+#include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_counter.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
@@ -56,7 +57,6 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/transforms/transform_state.h"
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
@@ -238,7 +238,7 @@ bool LayoutView::CanHaveChildren() const {
   // the PluginDocument's <embed> element to have an EmbeddedContentView, which
   // it acquires during LocalFrameView::UpdatePlugins, which operates on the
   // <embed> element's layout object (LayoutEmbeddedObject).
-  if (GetDocument().IsPluginDocument())
+  if (GetDocument().IsPluginDocument() || GetDocument().IsForExternalHandler())
     return true;
   return !owner->IsDisplayNone();
 }
@@ -344,19 +344,19 @@ void LayoutView::UpdateLayout() {
   ClearNeedsLayout();
 }
 
-LayoutRect LayoutView::LocalVisualRectIgnoringVisibility() const {
-  LayoutRect rect = VisualOverflowRect();
-  rect.Unite(LayoutRect(rect.Location(), ViewRect().Size()));
+PhysicalRect LayoutView::LocalVisualRectIgnoringVisibility() const {
+  PhysicalRect rect = PhysicalVisualOverflowRect();
+  rect.Unite(PhysicalRect(rect.offset, ViewRect().size));
   return rect;
 }
 
 void LayoutView::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
                                     TransformState& transform_state,
                                     MapCoordinatesFlags mode) const {
-  if (!ancestor && mode & kUseTransforms &&
+  if (!ancestor && !(mode & kIgnoreTransforms) &&
       ShouldUseTransformFromContainer(nullptr)) {
     TransformationMatrix t;
-    GetTransformFromContainer(nullptr, LayoutSize(), t);
+    GetTransformFromContainer(nullptr, PhysicalOffset(), t);
     transform_state.ApplyTransform(t);
   }
 
@@ -385,7 +385,7 @@ void LayoutView::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
 const LayoutObject* LayoutView::PushMappingToContainer(
     const LayoutBoxModelObject* ancestor_to_stop_at,
     LayoutGeometryMap& geometry_map) const {
-  LayoutSize offset;
+  PhysicalOffset offset;
   LayoutObject* container = nullptr;
 
   if (geometry_map.GetMapCoordinatesFlags() & kTraverseDocumentBoundaries) {
@@ -402,7 +402,7 @@ const LayoutObject* LayoutView::PushMappingToContainer(
   if ((!ancestor_to_stop_at || container) &&
       ShouldUseTransformFromContainer(container)) {
     TransformationMatrix t;
-    GetTransformFromContainer(container, LayoutSize(), t);
+    GetTransformFromContainer(container, PhysicalOffset(), t);
     geometry_map.Push(this, t, kContainsFixedPosition,
                       OffsetForFixedPosition());
   } else {
@@ -438,7 +438,7 @@ void LayoutView::Paint(const PaintInfo& paint_info) const {
 }
 
 void LayoutView::PaintBoxDecorationBackground(const PaintInfo& paint_info,
-                                              const LayoutPoint&) const {
+                                              const PhysicalOffset&) const {
   ViewPainter(*this).PaintBoxDecorationBackground(paint_info);
 }
 
@@ -471,7 +471,7 @@ void LayoutView::InvalidatePaintForViewAndCompositedLayers() {
 
 bool LayoutView::MapToVisualRectInAncestorSpace(
     const LayoutBoxModelObject* ancestor,
-    LayoutRect& rect,
+    PhysicalRect& rect,
     MapCoordinatesFlags mode,
     VisualRectFlags visual_rect_flags) const {
   bool intersects = true;
@@ -484,7 +484,8 @@ bool LayoutView::MapToVisualRectInAncestorSpace(
   intersects = MapToVisualRectInAncestorSpaceInternal(ancestor, transform_state,
                                                       mode, visual_rect_flags);
   transform_state.Flatten();
-  rect = LayoutRect(transform_state.LastPlanarQuad().BoundingBox());
+  rect = PhysicalRect::EnclosingRect(
+      transform_state.LastPlanarQuad().BoundingBox());
   return intersects;
 }
 
@@ -517,15 +518,17 @@ bool LayoutView::MapToVisualRectInAncestorSpaceInternal(
 
   Element* owner = GetDocument().LocalOwner();
   if (!owner) {
-    LayoutRect rect(transform_state.LastPlanarQuad().BoundingBox());
+    PhysicalRect rect = PhysicalRect::EnclosingRect(
+        transform_state.LastPlanarQuad().BoundingBox());
     bool retval = GetFrameView()->MapToVisualRectInTopFrameSpace(rect);
     transform_state.SetQuad(FloatQuad(FloatRect(rect)));
     return retval;
   }
 
   if (LayoutBox* obj = owner->GetLayoutBox()) {
-    LayoutRect rect(transform_state.LastPlanarQuad().BoundingBox());
-    LayoutRect view_rectangle = ViewRect();
+    PhysicalRect rect = PhysicalRect::EnclosingRect(
+        transform_state.LastPlanarQuad().BoundingBox());
+    PhysicalRect view_rectangle = ViewRect();
     if (visual_rect_flags & kEdgeInclusive) {
       if (!rect.InclusiveIntersect(view_rectangle)) {
         transform_state.SetQuad(FloatQuad(FloatRect(rect)));
@@ -554,20 +557,16 @@ bool LayoutView::MapToVisualRectInAncestorSpaceInternal(
   return false;
 }
 
-LayoutSize LayoutView::OffsetForFixedPosition() const {
-  return HasOverflowClip() ? LayoutSize(ScrolledContentOffset()) : LayoutSize();
-}
-
-void LayoutView::AbsoluteRects(Vector<IntRect>& rects,
-                               const LayoutPoint& accumulated_offset) const {
-  rects.push_back(
-      PixelSnappedIntRect(accumulated_offset, LayoutSize(Layer()->Size())));
+PhysicalOffset LayoutView::OffsetForFixedPosition() const {
+  return HasOverflowClip() ? PhysicalOffset(ScrolledContentOffset())
+                           : PhysicalOffset();
 }
 
 void LayoutView::AbsoluteQuads(Vector<FloatQuad>& quads,
                                MapCoordinatesFlags mode) const {
-  quads.push_back(LocalToAbsoluteQuad(
-      FloatRect(FloatPoint(), FloatSize(Layer()->Size())), mode));
+  quads.push_back(LocalRectToAbsoluteQuad(
+      PhysicalRect(PhysicalOffset(), PhysicalSizeToBeNoop(Layer()->Size())),
+      mode));
 }
 
 void LayoutView::CommitPendingSelection() {
@@ -582,24 +581,24 @@ bool LayoutView::ShouldUsePrintingLayout() const {
   return frame_view_->GetFrame().ShouldUsePrintingLayout();
 }
 
-LayoutRect LayoutView::ViewRect() const {
+PhysicalRect LayoutView::ViewRect() const {
   if (ShouldUsePrintingLayout())
-    return LayoutRect(LayoutPoint(), Size());
+    return PhysicalRect(PhysicalOffset(), Size());
   if (frame_view_)
-    return LayoutRect(LayoutPoint(), LayoutSize(frame_view_->Size()));
-  return LayoutRect();
+    return PhysicalRect(PhysicalOffset(), PhysicalSize(frame_view_->Size()));
+  return PhysicalRect();
 }
 
-LayoutRect LayoutView::OverflowClipRect(
-    const LayoutPoint& location,
+PhysicalRect LayoutView::OverflowClipRect(
+    const PhysicalOffset& location,
     OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior) const {
-  LayoutRect rect = ViewRect();
+  PhysicalRect rect = ViewRect();
   if (rect.IsEmpty()) {
     return LayoutBox::OverflowClipRect(location,
                                        overlay_scrollbar_clip_behavior);
   }
 
-  rect.SetLocation(location);
+  rect.offset = location;
   if (HasOverflowClip())
     ExcludeScrollbars(rect, overlay_scrollbar_clip_behavior);
 
@@ -717,8 +716,7 @@ void LayoutView::MayUpdateHoverWhenContentUnderMouseChanged(
 }
 
 IntRect LayoutView::DocumentRect() const {
-  LayoutRect overflow_rect(LayoutOverflowRect());
-  FlipForWritingMode(overflow_rect);
+  PhysicalRect overflow_rect = FlipForWritingMode(LayoutOverflowRect());
   // TODO(crbug.com/650768): The pixel snapping looks incorrect.
   return PixelSnappedIntRect(overflow_rect);
 }
@@ -819,7 +817,7 @@ IntervalArena* LayoutView::GetIntervalArena() {
   return interval_arena_.get();
 }
 
-bool LayoutView::BackgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const {
+bool LayoutView::BackgroundIsKnownToBeOpaqueInRect(const PhysicalRect&) const {
   // FIXME: Remove this main frame check. Same concept applies to subframes too.
   if (!GetFrame()->IsMainFrame())
     return false;
@@ -871,9 +869,9 @@ bool LayoutView::RecalcLayoutOverflow() {
   return result;
 }
 
-LayoutRect LayoutView::DebugRect() const {
-  return LayoutRect(0, 0, ViewWidth(kIncludeScrollbars),
-                    ViewHeight(kIncludeScrollbars));
+PhysicalRect LayoutView::DebugRect() const {
+  return PhysicalRect(IntRect(0, 0, ViewWidth(kIncludeScrollbars),
+                              ViewHeight(kIncludeScrollbars)));
 }
 
 bool LayoutView::UpdateLogicalWidthAndColumnWidth() {

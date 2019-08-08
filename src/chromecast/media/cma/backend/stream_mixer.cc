@@ -729,7 +729,7 @@ void StreamMixer::RemoveLoopbackAudioObserver(
 
 void StreamMixer::RemoveLoopbackAudioObserverOnThread(
     CastMediaShlib::LoopbackAudioObserver* observer) {
-  DCHECK(mixer_task_runner_->BelongsToCurrentThread());
+  DCHECK(loopback_task_runner_->BelongsToCurrentThread());
   LOG(INFO) << __func__;
 
   loopback_observers_.erase(observer);

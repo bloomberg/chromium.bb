@@ -8,8 +8,10 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -49,8 +51,8 @@ class UrlDataManagerBackendTest : public testing::Test {
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {
     // URLRequestJobFactory takes ownership of the passed in ProtocolHandler.
     url_request_job_factory_.SetProtocolHandler(
-        "chrome", URLDataManagerBackend::CreateProtocolHandler(
-                      &resource_context_, nullptr));
+        kChromeUIScheme, URLDataManagerBackend::CreateProtocolHandler(
+                             &resource_context_, nullptr));
     url_request_context_.set_job_factory(&url_request_job_factory_);
   }
 
@@ -59,7 +61,7 @@ class UrlDataManagerBackendTest : public testing::Test {
       const char* origin) {
     std::unique_ptr<net::URLRequest> request =
         url_request_context_.CreateRequest(
-            GURL("chrome://resources/css/text_defaults.css"), net::HIGHEST,
+            GetWebUIURL("resources/css/text_defaults.css"), net::HIGHEST,
             delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
     request->SetExtraRequestHeaderByName("Origin", origin, true);
     return request;
@@ -75,11 +77,11 @@ class UrlDataManagerBackendTest : public testing::Test {
 
 TEST_F(UrlDataManagerBackendTest, AccessControlAllowOriginChromeUrl) {
   std::unique_ptr<net::URLRequest> request(
-      CreateRequest(&delegate_, "chrome://webui"));
+      CreateRequest(&delegate_, GetWebUIURLString("webui").c_str()));
   request->Start();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(request->response_headers()->HasHeaderValue(
-      "Access-Control-Allow-Origin", "chrome://webui"));
+      "Access-Control-Allow-Origin", GetWebUIURLString("webui").c_str()));
 }
 
 TEST_F(UrlDataManagerBackendTest, AccessControlAllowOriginNonChromeUrl) {
@@ -94,7 +96,7 @@ TEST_F(UrlDataManagerBackendTest, AccessControlAllowOriginNonChromeUrl) {
 // Check that the URLRequest isn't passed headers after cancellation.
 TEST_F(UrlDataManagerBackendTest, CancelBeforeResponseStarts) {
   std::unique_ptr<net::URLRequest> request(
-      CreateRequest(&delegate_, "chrome://webui"));
+      CreateRequest(&delegate_, GetWebUIURLString("webui").c_str()));
   request->Start();
   request->Cancel();
   base::RunLoop().RunUntilIdle();
@@ -106,7 +108,7 @@ TEST_F(UrlDataManagerBackendTest, CancelBeforeResponseStarts) {
 TEST_F(UrlDataManagerBackendTest, CancelAfterFirstReadStarted) {
   CancelAfterFirstReadURLRequestDelegate cancel_delegate;
   std::unique_ptr<net::URLRequest> request(
-      CreateRequest(&cancel_delegate, "chrome://webui"));
+      CreateRequest(&cancel_delegate, GetWebUIURLString("webui").c_str()));
   request->Start();
   base::RunLoop().RunUntilIdle();
 
@@ -118,7 +120,7 @@ TEST_F(UrlDataManagerBackendTest, CancelAfterFirstReadStarted) {
 // Check for a network error page request via chrome://network-error/.
 TEST_F(UrlDataManagerBackendTest, ChromeNetworkErrorPageRequest) {
   std::unique_ptr<net::URLRequest> error_request =
-      url_request_context_.CreateRequest(GURL("chrome://network-error/-105"),
+      url_request_context_.CreateRequest(GetWebUIURL("network-error/-105"),
                                          net::HIGHEST, &delegate_,
                                          TRAFFIC_ANNOTATION_FOR_TESTS);
   error_request->Start();
@@ -131,7 +133,7 @@ TEST_F(UrlDataManagerBackendTest, ChromeNetworkErrorPageRequest) {
 TEST_F(UrlDataManagerBackendTest, ChromeNetworkErrorPageRequestFailed) {
   std::unique_ptr<net::URLRequest> error_request =
       url_request_context_.CreateRequest(
-          GURL("chrome://network-error/-123456789"), net::HIGHEST, &delegate_,
+          GetWebUIURL("network-error/-123456789"), net::HIGHEST, &delegate_,
           TRAFFIC_ANNOTATION_FOR_TESTS);
   error_request->Start();
   base::RunLoop().Run();

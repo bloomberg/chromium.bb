@@ -70,7 +70,7 @@ class FindBarView : public views::View,
   const char* GetClassName() const override;
   void Layout() override;
   gfx::Size CalculatePreferredSize() const override;
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  void OnThemeChanged() override;
 
   // DropdownBarHostDelegate:
   void FocusAndSelectAll() override;

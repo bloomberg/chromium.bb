@@ -43,7 +43,8 @@ TEST(DomDistillerUrlUtilsTest, TestGetValueForKeyInUrlPathQuery) {
 
 std::string ThroughDistiller(const std::string& url) {
   return GetOriginalUrlFromDistillerUrl(
-      GetDistillerViewUrlFromUrl(kDomDistillerScheme, GURL(url), 123)).spec();
+             GetDistillerViewUrlFromUrl(kDomDistillerScheme, GURL(url), 123))
+      .spec();
 }
 
 std::string GetOriginalUrlFromDistillerUrl(const std::string& url) {

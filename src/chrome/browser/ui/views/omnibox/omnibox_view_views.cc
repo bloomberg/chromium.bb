@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
+#include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/feature_engagement/buildflags.h"
 #include "components/omnibox/browser/autocomplete_input.h"
@@ -65,6 +66,7 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/selection_model.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
@@ -196,7 +198,7 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
       friendly_suggestion_text_prefix_length_(0),
       scoped_compositor_observer_(this),
       scoped_template_url_service_observer_(this) {
-  set_id(VIEW_ID_OMNIBOX);
+  SetID(VIEW_ID_OMNIBOX);
   SetFontList(font_list);
 
   if (base::FeatureList::IsEnabled(
@@ -448,9 +450,25 @@ gfx::Size OmniboxViewViews::GetMinimumSize() const {
 void OmniboxViewViews::OnPaint(gfx::Canvas* canvas) {
   if (latency_histogram_state_ == CHAR_TYPED) {
     DCHECK(!insert_char_time_.is_null());
+    auto now = base::TimeTicks::Now();
     UMA_HISTOGRAM_TIMES("Omnibox.CharTypedToRepaintLatency.ToPaint",
-                        base::TimeTicks::Now() - insert_char_time_);
+                        now - insert_char_time_);
     latency_histogram_state_ = ON_PAINT_CALLED;
+    GetWidget()->GetCompositor()->RequestPresentationTimeForNextFrame(
+        base::BindOnce(
+            [](base::TimeTicks insert_timestamp,
+               base::TimeTicks paint_timestamp,
+               const gfx::PresentationFeedback& feedback) {
+              if (feedback.flags & gfx::PresentationFeedback::kFailure)
+                return;
+              UMA_HISTOGRAM_TIMES(
+                  "Omnibox.CharTypedToRepaintLatency.PaintToPresent",
+                  feedback.timestamp - paint_timestamp);
+              UMA_HISTOGRAM_TIMES(
+                  "Omnibox.CharTypedToRepaintLatency.InsertToPresent",
+                  feedback.timestamp - insert_timestamp);
+            },
+            insert_char_time_, now));
   }
 
   {
@@ -475,10 +493,12 @@ void OmniboxViewViews::ExecuteCommand(int command_id, int event_flags) {
     case IDC_EDIT_SEARCH_ENGINES:
       location_bar_view_->command_updater()->ExecuteCommand(command_id);
       return;
-    case IDC_SEND_TAB_TO_SELF:
+
+    case IDC_SEND_TAB_TO_SELF_SINGLE_TARGET:
+      send_tab_to_self::ShareToSingleTarget(
+          location_bar_view_->GetWebContents());
       send_tab_to_self::RecordSendTabToSelfClickResult(
           send_tab_to_self::kOmniboxMenu, SendTabToSelfClickResult::kClickItem);
-      send_tab_to_self::CreateNewEntry(location_bar_view_->GetWebContents());
       return;
 
     // These commands do invoke the popup.
@@ -1091,8 +1111,9 @@ void OmniboxViewViews::OnGestureEvent(ui::GestureEvent* event) {
 
   views::Textfield::OnGestureEvent(event);
 
-  if (select_all_on_gesture_tap_ && event->type() == ui::ET_GESTURE_TAP)
+  if (select_all_on_gesture_tap_ && event->type() == ui::ET_GESTURE_TAP) {
     SelectAllForUserGesture();
+  }
 
   if (event->type() == ui::ET_GESTURE_TAP ||
       event->type() == ui::ET_GESTURE_TAP_CANCEL ||
@@ -1721,10 +1742,33 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
     // Add a separator if this is not the first item.
     if (index)
       menu_contents->InsertSeparatorAt(index++, ui::NORMAL_SEPARATOR);
-    menu_contents->InsertItemWithStringIdAt(index, IDC_SEND_TAB_TO_SELF,
-                                            IDS_CONTEXT_MENU_SEND_TAB_TO_SELF);
+
+    if (send_tab_to_self::GetValidDeviceCount(location_bar_view_->profile()) ==
+        1) {
+      menu_contents->InsertItemAt(
+          index, IDC_SEND_TAB_TO_SELF_SINGLE_TARGET,
+          l10n_util::GetStringFUTF16(
+              IDS_CONTEXT_MENU_SEND_TAB_TO_SELF_SINGLE_TARGET,
+              base::UTF8ToUTF16(send_tab_to_self::GetSingleTargetDeviceName(
+                  location_bar_view_->profile()))));
+      send_tab_to_self::RecordSendTabToSelfClickResult(
+          send_tab_to_self::kOmniboxMenu,
+          SendTabToSelfClickResult::kShowDeviceList);
+      send_tab_to_self::RecordSendTabToSelfDeviceCount(
+          send_tab_to_self::kOmniboxMenu, 1);
+    } else {
+      send_tab_to_self_sub_menu_model_ =
+          std::make_unique<send_tab_to_self::SendTabToSelfSubMenuModel>(
+              location_bar_view_->GetWebContents(),
+              send_tab_to_self::SendTabToSelfMenuType::kOmnibox);
+      menu_contents->InsertSubMenuWithStringIdAt(
+          index, IDC_SEND_TAB_TO_SELF, IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
+          send_tab_to_self_sub_menu_model_.get());
+    }
+#if !defined(OS_MACOSX)
     menu_contents->SetIcon(index,
                            gfx::Image(*send_tab_to_self::GetImageSkia()));
+#endif
     menu_contents->InsertSeparatorAt(++index, ui::NORMAL_SEPARATOR);
   }
 

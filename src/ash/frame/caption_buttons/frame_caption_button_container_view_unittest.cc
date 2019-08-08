@@ -107,39 +107,39 @@ TEST_F(FrameCaptionButtonContainerViewTest, ButtonVisibility) {
   // All the buttons should be visible when minimizing and maximizing are
   // allowed.
   FrameCaptionButtonContainerView container1(
-      CreateTestWidget(MAXIMIZE_ALLOWED, MINIMIZE_ALLOWED), nullptr);
+      CreateTestWidget(MAXIMIZE_ALLOWED, MINIMIZE_ALLOWED));
   InitContainer(&container1);
   container1.Layout();
   FrameCaptionButtonContainerView::TestApi t1(&container1);
-  EXPECT_TRUE(t1.minimize_button()->visible());
-  EXPECT_TRUE(t1.size_button()->visible());
-  EXPECT_TRUE(t1.close_button()->visible());
+  EXPECT_TRUE(t1.minimize_button()->GetVisible());
+  EXPECT_TRUE(t1.size_button()->GetVisible());
+  EXPECT_TRUE(t1.close_button()->GetVisible());
   EXPECT_TRUE(CheckButtonsAtEdges(&container1, *t1.minimize_button(),
                                   *t1.close_button()));
 
   // The minimize button should be visible when minimizing is allowed but
   // maximizing is disallowed.
   FrameCaptionButtonContainerView container2(
-      CreateTestWidget(MAXIMIZE_DISALLOWED, MINIMIZE_ALLOWED), nullptr);
+      CreateTestWidget(MAXIMIZE_DISALLOWED, MINIMIZE_ALLOWED));
   InitContainer(&container2);
   container2.Layout();
   FrameCaptionButtonContainerView::TestApi t2(&container2);
-  EXPECT_TRUE(t2.minimize_button()->visible());
-  EXPECT_FALSE(t2.size_button()->visible());
-  EXPECT_TRUE(t2.close_button()->visible());
+  EXPECT_TRUE(t2.minimize_button()->GetVisible());
+  EXPECT_FALSE(t2.size_button()->GetVisible());
+  EXPECT_TRUE(t2.close_button()->GetVisible());
   EXPECT_TRUE(CheckButtonsAtEdges(&container2, *t2.minimize_button(),
                                   *t2.close_button()));
 
   // Neither the minimize button nor the size button should be visible when
   // neither minimizing nor maximizing are allowed.
   FrameCaptionButtonContainerView container3(
-      CreateTestWidget(MAXIMIZE_DISALLOWED, MINIMIZE_DISALLOWED), nullptr);
+      CreateTestWidget(MAXIMIZE_DISALLOWED, MINIMIZE_DISALLOWED));
   InitContainer(&container3);
   container3.Layout();
   FrameCaptionButtonContainerView::TestApi t3(&container3);
-  EXPECT_FALSE(t3.minimize_button()->visible());
-  EXPECT_FALSE(t3.size_button()->visible());
-  EXPECT_TRUE(t3.close_button()->visible());
+  EXPECT_FALSE(t3.minimize_button()->GetVisible());
+  EXPECT_FALSE(t3.size_button()->GetVisible());
+  EXPECT_TRUE(t3.close_button()->GetVisible());
   EXPECT_TRUE(
       CheckButtonsAtEdges(&container3, *t3.close_button(), *t3.close_button()));
 }
@@ -149,7 +149,7 @@ TEST_F(FrameCaptionButtonContainerViewTest, ButtonVisibility) {
 TEST_F(FrameCaptionButtonContainerViewTest,
        TestUpdateSizeButtonVisibilityAnimation) {
   FrameCaptionButtonContainerView container(
-      CreateTestWidget(MAXIMIZE_ALLOWED, MINIMIZE_ALLOWED), nullptr);
+      CreateTestWidget(MAXIMIZE_ALLOWED, MINIMIZE_ALLOWED));
 
   // Add an extra button to the left of the size button to verify that it is
   // repositioned similarly to the minimize button. This simulates the PWA menu
@@ -181,9 +181,9 @@ TEST_F(FrameCaptionButtonContainerViewTest,
   // Parent needs to layout in response to size change.
   container.Layout();
 
-  EXPECT_TRUE(test.minimize_button()->visible());
-  EXPECT_TRUE(test.size_button()->visible());
-  EXPECT_TRUE(test.close_button()->visible());
+  EXPECT_TRUE(test.minimize_button()->GetVisible());
+  EXPECT_TRUE(test.size_button()->GetVisible());
+  EXPECT_TRUE(test.close_button()->GetVisible());
   gfx::Rect extra_button_bounds = extra_button->bounds();
   gfx::Rect minimize_button_bounds = test.minimize_button()->bounds();
   gfx::Rect size_button_bounds = test.size_button()->bounds();
@@ -202,9 +202,9 @@ TEST_F(FrameCaptionButtonContainerViewTest,
   // Calling code needs to layout in response to size change.
   container.Layout();
   test.EndAnimations();
-  EXPECT_TRUE(test.minimize_button()->visible());
-  EXPECT_TRUE(test.size_button()->visible());
-  EXPECT_TRUE(test.close_button()->visible());
+  EXPECT_TRUE(test.minimize_button()->GetVisible());
+  EXPECT_TRUE(test.size_button()->GetVisible());
+  EXPECT_TRUE(test.close_button()->GetVisible());
   EXPECT_EQ(initial_extra_button_bounds, extra_button->bounds());
   EXPECT_EQ(initial_minimize_button_bounds, test.minimize_button()->bounds());
   EXPECT_EQ(initial_size_button_bounds, test.size_button()->bounds());

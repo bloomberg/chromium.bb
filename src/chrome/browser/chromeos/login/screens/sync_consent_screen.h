@@ -12,7 +12,7 @@
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
-#include "chrome/browser/chromeos/login/screens/sync_consent_screen_view.h"
+#include "chrome/browser/ui/webui/chromeos/login/sync_consent_screen_handler.h"
 #include "components/sync/driver/sync_service_observer.h"
 #include "components/user_manager/user.h"
 

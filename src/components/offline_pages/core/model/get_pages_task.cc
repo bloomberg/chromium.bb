@@ -30,7 +30,8 @@ using ReadResult = GetPagesTask::ReadResult;
   " offline_id,creation_time,file_size,last_access_time," \
   "access_count,system_download_id,file_missing_time,"    \
   "client_namespace,client_id,online_url,"                \
-  "file_path,title,original_url,request_origin,digest"
+  "file_path,title,original_url,request_origin,digest,"   \
+  "snippet,attribution"
 
 ClientId OfflinePageClientId(const sql::Statement& statement) {
   return ClientId(statement.ColumnString(7), statement.ColumnString(8));
@@ -57,6 +58,8 @@ OfflinePageItem MakeOfflinePageItem(const sql::Statement& statement) {
   item.original_url_if_different = GURL(statement.ColumnString(12));
   item.request_origin = statement.ColumnString(13);
   item.digest = statement.ColumnString(14);
+  item.snippet = statement.ColumnString(15);
+  item.attribution = statement.ColumnString(16);
   return item;
 }
 
@@ -76,6 +79,40 @@ std::string RelaxedLikePattern(const GURL& url) {
   return string_to_match;
 }
 
+}  // namespace
+
+GetPagesTask::ReadResult::ReadResult() = default;
+GetPagesTask::ReadResult::ReadResult(const ReadResult& other) = default;
+GetPagesTask::ReadResult::~ReadResult() = default;
+
+GetPagesTask::GetPagesTask(OfflinePageMetadataStore* store,
+                           const ClientPolicyController* policy_controller,
+                           const PageCriteria& criteria,
+                           MultipleOfflinePageItemCallback callback)
+    : store_(store),
+      policy_controller_(policy_controller),
+      criteria_(criteria),
+      callback_(std::move(callback)),
+      weak_ptr_factory_(this) {
+  DCHECK(store_);
+  DCHECK(!callback_.is_null());
+}
+
+GetPagesTask::~GetPagesTask() = default;
+
+void GetPagesTask::Run() {
+  store_->Execute(base::BindOnce(&GetPagesTask::ReadPagesWithCriteriaSync,
+                                 policy_controller_, std::move(criteria_)),
+                  base::BindOnce(&GetPagesTask::CompleteWithResult,
+                                 weak_ptr_factory_.GetWeakPtr()),
+                  ReadResult());
+}
+
+void GetPagesTask::CompleteWithResult(ReadResult result) {
+  std::move(callback_).Run(result.pages);
+  TaskComplete();
+}
+
 // Some comments on query performance as of March 2019:
 // - SQLite stores data in row-oriented fashion, so there's little cost to
 //   querying additional columns.
@@ -92,11 +129,20 @@ std::string RelaxedLikePattern(const GURL& url) {
 //   query quickly. Otherwise, we need to read the whole table anyway. Unless
 //   the db is loaded to memory, and disk access will likely dwarf any
 //   other query optimizations.
-ReadResult ReadPagesByCriteriaSync(
-    const PageCriteria& criteria,
+ReadResult GetPagesTask::ReadPagesWithCriteriaSync(
     const ClientPolicyController* policy_controller,
+    const PageCriteria& criteria,
     sql::Database* db) {
   ReadResult result;
+
+  // Quick return for known empty results.
+  if ((criteria.offline_ids && criteria.offline_ids.value().empty()) ||
+      (criteria.client_ids && criteria.client_ids.value().empty()) ||
+      (criteria.client_namespaces &&
+       criteria.client_namespaces.value().empty())) {
+    result.success = true;
+    return result;
+  }
 
   // Note: the WHERE clause here is a relaxed form of |criteria|, so returned
   // items must be re-checked with |MeetsCriteria|.
@@ -111,16 +157,19 @@ ReadResult ReadPagesByCriteriaSync(
       " AND (? OR request_origin=?)"
       " AND (? OR instr(?,client_id)>0)"
       " AND (? OR online_url LIKE ? OR original_url LIKE ?)"
-      " ORDER BY creation_time DESC";
+      // Order by either creation_time or last_access_time, depending on
+      // bound parameters.
+      " ORDER BY creation_time*?+last_access_time*?";
 
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
 
   int param = 0;
 
-  if (criteria.offline_id) {
-    int64_t id = criteria.offline_id.value();
-    statement.BindInt64(param++, id);
-    statement.BindInt64(param++, id);
+  if (criteria.offline_ids) {
+    const std::vector<int64_t> ids = criteria.offline_ids.value();
+    auto min_max = std::minmax_element(ids.begin(), ids.end());
+    statement.BindInt64(param++, *min_max.first);
+    statement.BindInt64(param++, *min_max.second);
   } else {
     statement.BindInt64(param++, INT64_MIN);
     statement.BindInt64(param++, INT64_MAX);
@@ -150,11 +199,11 @@ ReadResult ReadPagesByCriteriaSync(
   statement.BindBool(param++, criteria.request_origin.empty());
   statement.BindString(param++, criteria.request_origin);
 
-  if (!criteria.client_ids.empty()) {
+  if (criteria.client_ids) {
     // Collect all client ids into a single string for matching in the query
     // with substring match (instr()).
     std::string concatenated_ids;
-    for (const ClientId& id : criteria.client_ids) {
+    for (const ClientId& id : criteria.client_ids.value()) {
       concatenated_ids += id.id;
     }
     statement.BindBool(param++, false);
@@ -172,6 +221,22 @@ ReadResult ReadPagesByCriteriaSync(
   statement.BindString(param++, url_pattern);
   statement.BindString(param++, url_pattern);
 
+  // ORDER BY criteria.
+  switch (criteria.result_order) {
+    case PageCriteria::kDescendingCreationTime:
+      statement.BindInt64(param++, -1);
+      statement.BindInt64(param++, 0);
+      break;
+    case PageCriteria::kAscendingAccessTime:
+      statement.BindInt64(param++, 0);
+      statement.BindInt64(param++, 1);
+      break;
+    case PageCriteria::kDescendingAccessTime:
+      statement.BindInt64(param++, 0);
+      statement.BindInt64(param++, -1);
+      break;
+  }
+
   while (statement.Step()) {
     // Initially, read just the client ID to avoid creating the offline item
     // if it's filtered out.
@@ -187,42 +252,13 @@ ReadResult ReadPagesByCriteriaSync(
     if (criteria.maximum_matches == result.pages.size())
       break;
   }
-  result.success = true;
+
+  result.success = statement.Succeeded();
+  if (!result.success) {
+    DLOG(ERROR) << "ReadPagesWithCriteriaSync: statement.Succeeded()=false";
+    result.pages.clear();
+  }
   return result;
-}
-
-}  // namespace
-
-GetPagesTask::ReadResult::ReadResult() = default;
-GetPagesTask::ReadResult::ReadResult(const ReadResult& other) = default;
-GetPagesTask::ReadResult::~ReadResult() = default;
-
-GetPagesTask::GetPagesTask(OfflinePageMetadataStore* store,
-                           const ClientPolicyController* policy_controller,
-                           const PageCriteria& criteria,
-                           MultipleOfflinePageItemCallback callback)
-    : store_(store),
-      policy_controller_(policy_controller),
-      criteria_(criteria),
-      callback_(std::move(callback)),
-      weak_ptr_factory_(this) {
-  DCHECK(store_);
-  DCHECK(!callback_.is_null());
-}
-
-GetPagesTask::~GetPagesTask() {}
-
-void GetPagesTask::Run() {
-  store_->Execute(base::BindOnce(&ReadPagesByCriteriaSync, std::move(criteria_),
-                                 policy_controller_),
-                  base::BindOnce(&GetPagesTask::CompleteWithResult,
-                                 weak_ptr_factory_.GetWeakPtr()),
-                  ReadResult());
-}
-
-void GetPagesTask::CompleteWithResult(ReadResult result) {
-  std::move(callback_).Run(result.pages);
-  TaskComplete();
 }
 
 }  // namespace offline_pages

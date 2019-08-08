@@ -13,7 +13,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
-#include "content/browser/gpu/video_capture_dependencies.h"
 #include "content/browser/renderer_host/media/in_process_launched_video_capture_device.h"
 #include "content/browser/renderer_host/media/video_capture_controller.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -23,11 +22,9 @@
 #include "media/base/media_switches.h"
 #include "media/capture/video/fake_video_capture_device.h"
 #include "media/capture/video/fake_video_capture_device_factory.h"
-#include "media/capture/video/scoped_video_capture_jpeg_decoder.h"
 #include "media/capture/video/video_capture_buffer_pool_impl.h"
 #include "media/capture/video/video_capture_buffer_tracker_factory_impl.h"
 #include "media/capture/video/video_capture_device_client.h"
-#include "media/capture/video/video_capture_jpeg_decoder_impl.h"
 #include "media/capture/video/video_frame_receiver.h"
 #include "media/capture/video/video_frame_receiver_on_task_runner.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
@@ -45,8 +42,15 @@
 #endif  // defined(OS_ANDROID)
 #endif  // defined(ENABLE_SCREEN_CAPTURE)
 
+#if defined(OS_CHROMEOS)
+#include "content/browser/gpu/chromeos/video_capture_dependencies.h"
+#include "media/capture/video/chromeos/scoped_video_capture_jpeg_decoder.h"
+#include "media/capture/video/chromeos/video_capture_jpeg_decoder_impl.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace {
 
+#if defined(OS_CHROMEOS)
 std::unique_ptr<media::VideoCaptureJpegDecoder> CreateGpuJpegDecoder(
     media::VideoCaptureJpegDecoder::DecodeDoneCB decode_done_cb,
     base::Callback<void(const std::string&)> send_log_message_cb) {
@@ -60,6 +64,7 @@ std::unique_ptr<media::VideoCaptureJpegDecoder> CreateGpuJpegDecoder(
           std::move(send_log_message_cb)),
       io_task_runner);
 }
+#endif  // defined(OS_CHROMEOS)
 
 // The maximum number of video frame buffers in-flight at any one time. This
 // value should be based on the logical capacity of the capture pipeline, and
@@ -248,6 +253,7 @@ InProcessVideoCaptureDeviceLauncher::CreateDeviceClient(
           std::make_unique<media::VideoCaptureBufferTrackerFactoryImpl>(),
           buffer_pool_max_buffer_count);
 
+#if defined(OS_CHROMEOS)
   return std::make_unique<media::VideoCaptureDeviceClient>(
       requested_buffer_type, std::move(receiver), std::move(buffer_pool),
       base::BindRepeating(
@@ -256,6 +262,10 @@ InProcessVideoCaptureDeviceLauncher::CreateDeviceClient(
                               receiver_on_io_thread),
           base::BindRepeating(&media::VideoFrameReceiver::OnLog,
                               receiver_on_io_thread)));
+#else
+  return std::make_unique<media::VideoCaptureDeviceClient>(
+      requested_buffer_type, std::move(receiver), std::move(buffer_pool));
+#endif  // defined(OS_CHROMEOS)
 }
 
 void InProcessVideoCaptureDeviceLauncher::OnDeviceStarted(
@@ -271,11 +281,11 @@ void InProcessVideoCaptureDeviceLauncher::OnDeviceStarted(
         callbacks->OnDeviceLaunchFailed(
             media::VideoCaptureError::
                 kInProcessDeviceLauncherFailedToCreateDeviceInstance);
-        base::ResetAndReturn(&done_cb).Run();
+        std::move(done_cb).Run();
         return;
       case State::DEVICE_START_ABORTING:
         callbacks->OnDeviceLaunchAborted();
-        base::ResetAndReturn(&done_cb).Run();
+        std::move(done_cb).Run();
         return;
       case State::READY_TO_LAUNCH:
         NOTREACHED();
@@ -289,12 +299,12 @@ void InProcessVideoCaptureDeviceLauncher::OnDeviceStarted(
   switch (state_copy) {
     case State::DEVICE_START_IN_PROGRESS:
       callbacks->OnDeviceLaunched(std::move(launched_device));
-      base::ResetAndReturn(&done_cb).Run();
+      std::move(done_cb).Run();
       return;
     case State::DEVICE_START_ABORTING:
       launched_device.reset();
       callbacks->OnDeviceLaunchAborted();
-      base::ResetAndReturn(&done_cb).Run();
+      std::move(done_cb).Run();
       return;
     case State::READY_TO_LAUNCH:
       NOTREACHED();

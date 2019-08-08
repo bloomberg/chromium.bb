@@ -10,8 +10,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/public/cpp/wallpaper_controller_observer.h"
 #include "ash/shelf/shelf_observer.h"
-#include "ash/wallpaper/wallpaper_controller_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -27,7 +27,7 @@ enum class AnimationChangeType;
 class Shelf;
 class ShelfBackgroundAnimatorObserver;
 class ShelfBackgroundAnimatorTestApi;
-class WallpaperController;
+class WallpaperControllerImpl;
 
 // Central controller for the Shelf and Dock opacity animations.
 //
@@ -51,7 +51,7 @@ class ASH_EXPORT ShelfBackgroundAnimator : public ShelfObserver,
   // wallpaper changes if not null.
   ShelfBackgroundAnimator(ShelfBackgroundType background_type,
                           Shelf* shelf,
-                          WallpaperController* wallpaper_controller);
+                          WallpaperControllerImpl* wallpaper_controller);
   ~ShelfBackgroundAnimator() override;
 
   ShelfBackgroundType target_background_type() const {
@@ -159,7 +159,7 @@ class ASH_EXPORT ShelfBackgroundAnimator : public ShelfObserver,
   Shelf* shelf_;
 
   // The wallpaper controller to observe for changes and to extract colors from.
-  WallpaperController* wallpaper_controller_;
+  WallpaperControllerImpl* wallpaper_controller_;
 
   // The background type that this is animating towards or has reached.
   ShelfBackgroundType target_background_type_ = SHELF_BACKGROUND_DEFAULT;

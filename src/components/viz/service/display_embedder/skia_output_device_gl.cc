@@ -27,7 +27,8 @@ SkiaOutputDeviceGL::SkiaOutputDeviceGL(
     gpu::SurfaceHandle surface_handle,
     scoped_refptr<gpu::gles2::FeatureInfo> feature_info,
     const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback)
-    : SkiaOutputDevice(did_swap_buffer_complete_callback),
+    : SkiaOutputDevice(false /*need_swap_semaphore */,
+                       did_swap_buffer_complete_callback),
       surface_handle_(surface_handle),
       feature_info_(feature_info) {
   DCHECK(surface_handle_);
@@ -102,6 +103,7 @@ void SkiaOutputDeviceGL::Reshape(const gfx::Size& size,
 }
 
 gfx::SwapResponse SkiaOutputDeviceGL::SwapBuffers(
+    const GrBackendSemaphore& semaphore,
     BufferPresentedCallback feedback) {
   // TODO(backer): Support SwapBuffersAsync
   StartSwapBuffers({});
@@ -110,6 +112,7 @@ gfx::SwapResponse SkiaOutputDeviceGL::SwapBuffers(
 
 gfx::SwapResponse SkiaOutputDeviceGL::PostSubBuffer(
     const gfx::Rect& rect,
+    const GrBackendSemaphore& semaphore,
     BufferPresentedCallback feedback) {
   // TODO(backer): Support PostSubBufferAsync
   StartSwapBuffers({});

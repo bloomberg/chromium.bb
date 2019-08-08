@@ -24,7 +24,6 @@ class DeviceMemory : public Object<DeviceMemory, VkDeviceMemory>
 {
 public:
 	DeviceMemory(const VkMemoryAllocateInfo* pCreateInfo, void* mem);
-	~DeviceMemory() = delete;
 
 	static size_t ComputeRequiredAllocationSize(const VkMemoryAllocateInfo* pCreateInfo);
 
@@ -43,7 +42,7 @@ private:
 
 static inline DeviceMemory* Cast(VkDeviceMemory object)
 {
-	return reinterpret_cast<DeviceMemory*>(object);
+	return reinterpret_cast<DeviceMemory*>(object.get());
 }
 
 

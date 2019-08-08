@@ -66,6 +66,9 @@ public class MockWebContents implements WebContents {
     }
 
     @Override
+    public void clearNativeReference() {}
+
+    @Override
     public NavigationController getNavigationController() {
         return null;
     }
@@ -198,6 +201,11 @@ public class MockWebContents implements WebContents {
     }
 
     @Override
+    public int getLoadProgress() {
+        return 0;
+    }
+
+    @Override
     public void requestSmartClipExtract(int x, int y, int width, int height) {}
 
     @Override
@@ -269,4 +277,7 @@ public class MockWebContents implements WebContents {
 
     @Override
     public void setDisplayCutoutSafeArea(Rect insets) {}
+
+    @Override
+    public void notifyRendererPreferenceUpdate() {}
 }

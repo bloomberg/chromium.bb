@@ -62,6 +62,8 @@
 #include "third_party/blink/renderer/core/html/html_template_element.h"
 #include "third_party/blink/renderer/core/html/imports/html_import_child.h"
 #include "third_party/blink/renderer/core/html/imports/html_import_loader.h"
+#include "third_party/blink/renderer/core/html/portal/document_portals.h"
+#include "third_party/blink/renderer/core/html/portal/html_portal_element.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/inspector/dom_editor.h"
 #include "third_party/blink/renderer/core/inspector/dom_patch_support.h"
@@ -625,12 +627,13 @@ Response InspectorDOMAgent::querySelector(int node_id,
   Response response = AssertNode(node_id, node);
   if (!response.isSuccess())
     return response;
-  if (!node || !node->IsContainerNode())
+  auto* container_node = DynamicTo<ContainerNode>(node);
+  if (!container_node)
     return Response::Error("Not a container node");
 
   DummyExceptionStateForTesting exception_state;
-  Element* element = ToContainerNode(node)->QuerySelector(
-      AtomicString(selectors), exception_state);
+  Element* element =
+      container_node->QuerySelector(AtomicString(selectors), exception_state);
   if (exception_state.HadException())
     return Response::Error("DOM Error while querying");
 
@@ -647,11 +650,12 @@ Response InspectorDOMAgent::querySelectorAll(
   Response response = AssertNode(node_id, node);
   if (!response.isSuccess())
     return response;
-  if (!node || !node->IsContainerNode())
+  auto* container_node = DynamicTo<ContainerNode>(node);
+  if (!container_node)
     return Response::Error("Not a container node");
 
   DummyExceptionStateForTesting exception_state;
-  StaticElementList* elements = ToContainerNode(node)->QuerySelectorAll(
+  StaticElementList* elements = container_node->QuerySelectorAll(
       AtomicString(selectors), exception_state);
   if (exception_state.HadException())
     return Response::Error("DOM Error while querying");
@@ -757,8 +761,8 @@ Response InspectorDOMAgent::setAttributesAsText(int element_id,
                         kAllowScriptingContent);
   } else {
     Element* contextElement = nullptr;
-    if (element->IsSVGElement())
-      contextElement = ToSVGElement(element)->ownerSVGElement();
+    if (auto* svg_element = DynamicTo<SVGElement>(element))
+      contextElement = svg_element->ownerSVGElement();
     fragment->ParseXML(markup, contextElement, kAllowScriptingContent);
   }
 
@@ -923,7 +927,7 @@ Response InspectorDOMAgent::setNodeValue(int node_id, const String& value) {
   if (node->getNodeType() != Node::kTextNode)
     return Response::Error("Can only set value of text nodes");
 
-  return dom_editor_->ReplaceWholeText(ToText(node), value);
+  return dom_editor_->ReplaceWholeText(To<Text>(node), value);
 }
 
 static Node* NextNodeWithShadowDOMInMind(const Node& current,
@@ -1074,7 +1078,7 @@ Response InspectorDOMAgent::performSearch(
           break;
 
         if (node->getNodeType() == Node::kAttributeNode)
-          node = ToAttr(node)->ownerElement();
+          node = To<Attr>(node)->ownerElement();
         result_collector.insert(node);
       }
     }
@@ -1288,7 +1292,7 @@ Response InspectorDOMAgent::getBoxModel(
   if (!response.isSuccess())
     return response;
 
-  bool result = InspectorHighlight::GetBoxModel(node, model);
+  bool result = InspectorHighlight::GetBoxModel(node, model, true);
   if (!result)
     return Response::Error("Could not compute box model.");
   return Response::OK();
@@ -1437,7 +1441,7 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
         node_value = node_value.Left(kMaxTextSize) + kEllipsisUChar;
       break;
     case Node::kAttributeNode:
-      local_name = ToAttr(node)->localName();
+      local_name = To<Attr>(node)->localName();
       break;
     case Node::kElementNode:
       local_name = ToElement(node)->localName();
@@ -1521,9 +1525,9 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
         value->setXmlVersion(element->ownerDocument()->xmlVersion());
     }
 
-    if (element->IsV0InsertionPoint()) {
+    if (auto* insertion_point = DynamicTo<V0InsertionPoint>(element)) {
       value->setDistributedNodes(
-          BuildArrayForDistributedNodes(ToV0InsertionPoint(element)));
+          BuildArrayForDistributedNodes(insertion_point));
       force_push_children = true;
     }
     if (auto* slot = ToHTMLSlotElementOrNull(*element)) {
@@ -1536,12 +1540,11 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
     value->setDocumentURL(DocumentURLString(document));
     value->setBaseURL(DocumentBaseURLString(document));
     value->setXmlVersion(document->xmlVersion());
-  } else if (node->IsDocumentTypeNode()) {
-    DocumentType* doc_type = ToDocumentType(node);
+  } else if (auto* doc_type = DynamicTo<DocumentType>(node)) {
     value->setPublicId(doc_type->publicId());
     value->setSystemId(doc_type->systemId());
   } else if (node->IsAttributeNode()) {
-    Attr* attribute = ToAttr(node);
+    auto* attribute = To<Attr>(node);
     value->setName(attribute->name());
     value->setValue(attribute->value());
   } else if (auto* shadow_root = DynamicTo<ShadowRoot>(node)) {
@@ -2197,7 +2200,7 @@ Response InspectorDOMAgent::getRelayoutBoundary(
         "No layout object for node, perhaps orphan or hidden node");
   }
   while (layout_object && !layout_object->IsDocumentElement() &&
-         !layout_object->IsRelayoutBoundaryForInspector())
+         !layout_object->IsRelayoutBoundary())
     layout_object = layout_object->Container();
   Node* result_node =
       layout_object ? layout_object->GeneratingNode() : node->ownerDocument();
@@ -2231,6 +2234,15 @@ protocol::Response InspectorDOMAgent::getFrameOwner(
   for (; frame; frame = frame->Tree().TraverseNext(inspected_frames_->Root())) {
     if (IdentifiersFactory::FrameId(frame) == frame_id)
       break;
+  }
+  if (!frame) {
+    for (HTMLPortalElement* portal :
+         DocumentPortals::From(*inspected_frames_->Root()->GetDocument())
+             .GetPortals()) {
+      frame = portal->ContentFrame();
+      if (IdentifiersFactory::FrameId(frame) == frame_id)
+        break;
+    }
   }
   if (!frame)
     return Response::Error("Frame with the given id was not found.");

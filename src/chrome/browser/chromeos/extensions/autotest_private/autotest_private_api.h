@@ -11,8 +11,9 @@
 
 #include "ash/public/cpp/assistant/assistant_state_proxy.h"
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/public/interfaces/ash_message_center_controller.mojom.h"
-#include "ash/public/interfaces/shelf.mojom.h"
+#include "ash/public/interfaces/shelf_integration_test_api.mojom.h"
 #include "base/compiler_specific.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
@@ -21,7 +22,6 @@
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/model.mojom.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
-#include "services/ws/public/mojom/window_server_test.mojom.h"
 #include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/snapshot/screenshot_grabber.h"
 
@@ -71,8 +71,6 @@ class AutotestPrivateLoginStatusFunction : public UIThreadExtensionFunction {
  private:
   ~AutotestPrivateLoginStatusFunction() override;
   ResponseAction Run() override;
-
-  void OnIsReadyForPassword(bool is_ready);
 };
 
 class AutotestPrivateLockScreenFunction : public UIThreadExtensionFunction {
@@ -566,26 +564,6 @@ class AutotestPrivateSetCrostiniAppScaledFunction
   ResponseAction Run() override;
 };
 
-// Ensure a Window Service client has drawn windows with a timeout.
-class AutotestPrivateEnsureWindowServiceClientHasDrawnWindowFunction
-    : public UIThreadExtensionFunction {
- public:
-  AutotestPrivateEnsureWindowServiceClientHasDrawnWindowFunction();
-  DECLARE_EXTENSION_FUNCTION(
-      "autotestPrivate.ensureWindowServiceClientHasDrawnWindow",
-      AUTOTESTPRIVATE_ENSUREWINDOWSERVICECLIENTHASDRAWNWINDOW)
-
- private:
-  ~AutotestPrivateEnsureWindowServiceClientHasDrawnWindowFunction() override;
-  ResponseAction Run() override;
-
-  void OnEnsureClientHasDrawnWindowCallback(bool success);
-  void OnTimeout();
-
-  ws::mojom::WindowServerTestPtr window_server_test_ptr_;
-  base::OneShotTimer timeout_timer_;
-};
-
 // The profile-keyed service that manages the autotestPrivate extension API.
 class AutotestPrivateAPI : public BrowserContextKeyedAPI {
  public:
@@ -640,7 +618,6 @@ class AutotestPrivateSetTabletModeEnabledFunction
                              AUTOTESTPRIVATE_SETTABLETMODEENABLED)
 
  private:
-  void OnSetTabletModeEnabled(bool enabled);
   ~AutotestPrivateSetTabletModeEnabledFunction() override;
   ResponseAction Run() override;
 };
@@ -658,7 +635,7 @@ class AutotestPrivateGetShelfAutoHideBehaviorFunction
   ~AutotestPrivateGetShelfAutoHideBehaviorFunction() override;
   ResponseAction Run() override;
 
-  ash::mojom::ShelfControllerPtr shelf_controller_;
+  ash::mojom::ShelfIntegrationTestApiPtr shelf_test_api_;
 };
 
 // Sets shelf autohide behavior.
@@ -674,7 +651,39 @@ class AutotestPrivateSetShelfAutoHideBehaviorFunction
   ~AutotestPrivateSetShelfAutoHideBehaviorFunction() override;
   ResponseAction Run() override;
 
-  ash::mojom::ShelfControllerPtr shelf_controller_;
+  ash::mojom::ShelfIntegrationTestApiPtr shelf_test_api_;
+};
+
+// Returns the shelf alignment.
+class AutotestPrivateGetShelfAlignmentFunction
+    : public UIThreadExtensionFunction {
+ public:
+  AutotestPrivateGetShelfAlignmentFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.getShelfAlignment",
+                             AUTOTESTPRIVATE_GETSHELFALIGNMENT)
+
+ private:
+  void OnGetShelfAlignmentCompleted(ash::ShelfAlignment alignment);
+  ~AutotestPrivateGetShelfAlignmentFunction() override;
+  ResponseAction Run() override;
+
+  ash::mojom::ShelfIntegrationTestApiPtr shelf_test_api_;
+};
+
+// Sets shelf alignment.
+class AutotestPrivateSetShelfAlignmentFunction
+    : public UIThreadExtensionFunction {
+ public:
+  AutotestPrivateSetShelfAlignmentFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.setShelfAlignment",
+                             AUTOTESTPRIVATE_SETSHELFALIGNMENT)
+
+ private:
+  void OnSetShelfAlignmentCompleted();
+  ~AutotestPrivateSetShelfAlignmentFunction() override;
+  ResponseAction Run() override;
+
+  ash::mojom::ShelfIntegrationTestApiPtr shelf_test_api_;
 };
 
 class AutotestPrivateShowVirtualKeyboardIfEnabledFunction

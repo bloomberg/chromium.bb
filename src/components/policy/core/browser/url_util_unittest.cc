@@ -117,6 +117,16 @@ TEST(URLUtilTest, GetEmbeddedURLGoogleAmpViewer) {
   EXPECT_EQ(GURL(), GetEmbeddedURL("https://mail.google.com/amp/example.com"));
   // Invalid TLD.
   EXPECT_EQ(GURL(), GetEmbeddedURL("https://www.google.nope/amp/example.com"));
+
+  // Valid TLD that is not considered safe to display to the user by
+  // UnescapeURLComponent(). Note that when UTF-8 characters appear in a domain
+  // name, as is the case here, they're replaced by equivalent punycode by the
+  // GURL constructor.
+  EXPECT_EQ(GURL("http://www.xn--iv8h.com/"),
+            GetEmbeddedURL("https://www.google.com/amp/www.%F0%9F%94%8F.com/"));
+  // Invalid UTF-8 characters.
+  EXPECT_EQ(GURL("http://example.com/%81%82%83"),
+            GetEmbeddedURL("https://www.google.com/amp/example.com/%81%82%83"));
 }
 
 TEST(URLUtilTest, GetEmbeddedURLGoogleWebCache) {

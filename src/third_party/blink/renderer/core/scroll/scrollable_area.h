@@ -391,7 +391,9 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   virtual bool RestoreScrollAnchor(const SerializedAnchor&) { return false; }
   virtual ScrollAnchor* GetScrollAnchor() { return nullptr; }
 
-  virtual void DidScrollWithScrollbar(ScrollbarPart, ScrollbarOrientation) {}
+  virtual void DidScrollWithScrollbar(ScrollbarPart,
+                                      ScrollbarOrientation,
+                                      WebInputEvent::Type) {}
 
   // Returns the task runner to be used for scrollable area timers.
   // Ideally a frame-specific throttled one can be used.
@@ -405,7 +407,16 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   virtual ScrollbarTheme& GetPageScrollbarTheme() const = 0;
 
+  virtual void MarkHoverStateDirty();
+
   float ScrollStep(ScrollGranularity, ScrollbarOrientation) const;
+
+  // Injects a gesture scroll event based on the given parameters,
+  // targeted at this scrollable area.
+  void InjectGestureScrollEvent(WebGestureDevice device,
+                                ScrollOffset delta,
+                                ScrollGranularity granularity,
+                                WebInputEvent::Type gesture_type) const;
 
  protected:
   // Deduces the ScrollBehavior based on the element style and the parameter set

@@ -114,23 +114,12 @@ ServiceWorkerProcessManager::AllocateWorkerProcess(
       storage_partition_ &&
       !storage_partition_->site_for_service_worker().is_empty();
   scoped_refptr<SiteInstanceImpl> site_instance =
-      SiteInstanceImpl::CreateForURL(
-          browser_context_, use_url_from_storage_partition
-                                ? storage_partition_->site_for_service_worker()
-                                : script_url);
-  site_instance->set_is_for_service_worker();
-
-  // Attempt to reuse a renderer process if possible. Note that in the
-  // <webview> case, process reuse isn't currently supported and a new
-  // process will always be created (https://crbug.com/752667).
-  DCHECK(site_instance->process_reuse_policy() ==
-             SiteInstanceImpl::ProcessReusePolicy::DEFAULT ||
-         site_instance->process_reuse_policy() ==
-             SiteInstanceImpl::ProcessReusePolicy::PROCESS_PER_SITE);
-  if (can_use_existing_process) {
-    site_instance->set_process_reuse_policy(
-        SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE);
-  }
+      SiteInstanceImpl::CreateForServiceWorker(
+          browser_context_,
+          use_url_from_storage_partition
+              ? storage_partition_->site_for_service_worker()
+              : script_url,
+          can_use_existing_process);
 
   // Get the process from the SiteInstance.
   RenderProcessHost* rph = site_instance->GetProcess();

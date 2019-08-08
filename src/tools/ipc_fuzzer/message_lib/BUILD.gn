@@ -33,7 +33,7 @@ static_library("ipc_message_lib") {
     "//ui/accessibility:ax_enums_mojo",
   ]
   if (is_win) {
-    public_deps += [ "//chrome_elf:test_stubs" ]
+    public_deps += [ "//chrome/chrome_elf:test_stubs" ]
   }
   sources = [
     "all_messages.h",

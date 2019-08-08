@@ -324,8 +324,6 @@ const size_t kActionsAllowedInPinnedModeLength =
     base::size(kActionsAllowedInPinnedMode);
 
 const AcceleratorAction kActionsNeedingWindow[] = {
-    CYCLE_BACKWARD_MRU,
-    CYCLE_FORWARD_MRU,
     MOVE_ACTIVE_WINDOW_BETWEEN_DISPLAYS,
     ROTATE_WINDOW,
     TOGGLE_FULLSCREEN,

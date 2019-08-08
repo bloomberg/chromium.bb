@@ -31,6 +31,7 @@
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_content_client.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_result_codes.h"
@@ -48,7 +49,7 @@
 #include "components/crash/core/common/crash_keys.h"
 #include "components/gwp_asan/buildflags/buildflags.h"
 #include "components/nacl/common/buildflags.h"
-#include "components/services/heap_profiling/public/cpp/sampling_profiler_wrapper.h"
+#include "components/services/heap_profiling/public/cpp/profiling_client.h"
 #include "components/tracing/common/tracing_sampler_profiler.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/content_client.h"
@@ -75,8 +76,8 @@
 #include "base/win/atl.h"
 #include "chrome/browser/downgrade/user_data_downgrade.h"
 #include "chrome/child/v8_crashpad_support_win.h"
+#include "chrome/chrome_elf/chrome_elf_main.h"
 #include "chrome/common/child_process_logging.h"
-#include "chrome_elf/chrome_elf_main.h"
 #include "sandbox/win/src/sandbox.h"
 #include "ui/base/resource/resource_bundle_win.h"
 #endif
@@ -87,7 +88,6 @@
 #include "chrome/browser/chrome_browser_application_mac.h"
 #include "chrome/browser/mac/relauncher.h"
 #include "chrome/browser/shell_integration.h"
-#include "chrome/common/mac/cfbundle_blocker.h"
 #include "components/crash/core/common/objc_zombie.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #endif
@@ -166,7 +166,8 @@
 #include "chrome/child/pdf_child_init.h"
 #endif
 
-#if BUILDFLAG(ENABLE_GWP_ASAN)
+#if BUILDFLAG(ENABLE_GWP_ASAN_MALLOC) || \
+    BUILDFLAG(ENABLE_GWP_ASAN_PARTITIONALLOC)
 #include "components/gwp_asan/client/gwp_asan.h"  // nogncheck
 #endif
 
@@ -521,7 +522,8 @@ void ChromeMainDelegate::PostEarlyInitialization(bool is_running_tests) {
 
 #if defined(OS_CHROMEOS)
   // The feature list depends on BrowserPolicyConnectorChromeOS which depends
-  // on DBus, so initialize it here.
+  // on DBus, so initialize it here. Some D-Bus clients may depend on feature
+  // list, so initialize them separately later at the end of this function.
   chromeos::InitializeDBus();
 #endif
 
@@ -536,6 +538,11 @@ void ChromeMainDelegate::PostEarlyInitialization(bool is_running_tests) {
       LoadLocalState(chrome_feature_list_creator, is_running_tests);
   chrome_feature_list_creator->SetApplicationLocale(actual_locale);
   chrome_feature_list_creator->OverrideCachedUIStrings();
+
+#if defined(OS_CHROMEOS)
+  // Initialize D-Bus clients that depend on feature list.
+  chromeos::InitializeFeatureListDependentDBus();
+#endif
 }
 
 bool ChromeMainDelegate::ShouldCreateFeatureList() {
@@ -543,19 +550,45 @@ bool ChromeMainDelegate::ShouldCreateFeatureList() {
   return false;
 }
 
+void ChromeMainDelegate::PostTaskSchedulerStart() {
+#if defined(OS_ANDROID)
+  startup_data_->CreateProfilePrefService();
+#endif
+  if (base::FeatureList::IsEnabled(
+          features::kWriteBasicSystemProfileToPersistentHistogramsFile)) {
+    startup_data_->RecordCoreSystemProfile();
+  }
+}
+
 #endif
 
 void ChromeMainDelegate::PostFieldTrialInitialization() {
-#if BUILDFLAG(ENABLE_GWP_ASAN)
-  version_info::Channel channel = chrome::GetChannel();
-  bool is_canary_dev = (channel == version_info::Channel::CANARY ||
-                        channel == version_info::Channel::DEV);
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  std::string process_type =
-      command_line.GetSwitchValueASCII(switches::kProcessType);
-  bool is_browser_process = process_type.empty();
-  gwp_asan::EnableForMalloc(is_canary_dev, is_browser_process);
+#if BUILDFLAG(ENABLE_GWP_ASAN_MALLOC)
+  {
+    version_info::Channel channel = chrome::GetChannel();
+    bool is_canary_dev = (channel == version_info::Channel::CANARY ||
+                          channel == version_info::Channel::DEV);
+    const base::CommandLine& command_line =
+        *base::CommandLine::ForCurrentProcess();
+    std::string process_type =
+        command_line.GetSwitchValueASCII(switches::kProcessType);
+    bool is_browser_process = process_type.empty();
+    gwp_asan::EnableForMalloc(is_canary_dev || is_browser_process,
+                              process_type.c_str());
+  }
+#endif
+
+#if BUILDFLAG(ENABLE_GWP_ASAN_PARTITIONALLOC)
+  {
+    version_info::Channel channel = chrome::GetChannel();
+    bool is_canary_dev = (channel == version_info::Channel::CANARY ||
+                          channel == version_info::Channel::DEV);
+    const base::CommandLine& command_line =
+        *base::CommandLine::ForCurrentProcess();
+    std::string process_type =
+        command_line.GetSwitchValueASCII(switches::kProcessType);
+    gwp_asan::EnableForPartitionAlloc(is_canary_dev, process_type.c_str());
+  }
 #endif
 }
 
@@ -597,8 +630,6 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
   // there have more impact.
   const bool is_browser = !command_line.HasSwitch(switches::kProcessType);
   ObjcEvilDoers::ZombieEnable(true, is_browser ? 10000 : 1000);
-
-  chrome::common::mac::EnableCFBundleBlocker();
 #endif
 
   content::Profiling::ProcessStarted();
@@ -1020,7 +1051,9 @@ int ChromeMainDelegate::RunProcess(
 // ANDROID doesn't support "service", so no CloudPrintServiceProcessMain, and
 // arraysize doesn't support empty array. So we comment out the block for
 // Android.
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+  NOTREACHED();  // Android provides a subclass and shares no code here.
+#else
   static const MainFunction kMainFunctions[] = {
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(CHROME_MULTIPLE_DLL_CHILD) && \
     !defined(OS_CHROMEOS)
@@ -1046,7 +1079,7 @@ int ChromeMainDelegate::RunProcess(
     if (process_type == kMainFunctions[i].name)
       return kMainFunctions[i].function(main_function_params);
   }
-#endif
+#endif  // !defined(OS_ANDROID)
 
   return -1;
 }

@@ -191,16 +191,25 @@ public class MediaViewerUtils {
     static void synchronousUpdateMediaLauncherActivityEnabled() {
         Context context = ContextUtils.getApplicationContext();
         PackageManager packageManager = context.getPackageManager();
-        ComponentName componentName = new ComponentName(context, MediaLauncherActivity.class);
-        int newState = shouldEnableMediaLauncherActivity()
+        ComponentName mediaComponentName = new ComponentName(context, MediaLauncherActivity.class);
+        ComponentName audioComponentName = new ComponentName(
+                context, "org.chromium.chrome.browser.media.AudioLauncherActivity");
+
+        int newMediaState = shouldEnableMediaLauncherActivity()
+                ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+                : PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
+        int newAudioState = shouldEnableAudioLauncherActivity()
                 ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED
                 : PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
         // This indicates that we don't want to kill Chrome when changing component enabled
         // state.
         int flags = PackageManager.DONT_KILL_APP;
 
-        if (packageManager.getComponentEnabledSetting(componentName) != newState) {
-            packageManager.setComponentEnabledSetting(componentName, newState, flags);
+        if (packageManager.getComponentEnabledSetting(mediaComponentName) != newMediaState) {
+            packageManager.setComponentEnabledSetting(mediaComponentName, newMediaState, flags);
+        }
+        if (packageManager.getComponentEnabledSetting(audioComponentName) != newAudioState) {
+            packageManager.setComponentEnabledSetting(audioComponentName, newAudioState, flags);
         }
     }
 
@@ -226,6 +235,10 @@ public class MediaViewerUtils {
         return sIsMediaLauncherActivityForceEnabledForTest
                 || ((FeatureUtilities.isAndroidGo() || isEnterpriseManaged())
                         && ChromeFeatureList.isEnabled(ChromeFeatureList.HANDLE_MEDIA_INTENTS));
+    }
+
+    private static boolean shouldEnableAudioLauncherActivity() {
+        return shouldEnableMediaLauncherActivity() && !FeatureUtilities.isAndroidGo();
     }
 
     private static boolean isEnterpriseManaged() {

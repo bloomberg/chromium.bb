@@ -67,7 +67,7 @@ LocalSiteCharacteristicsDataStore::GetReaderForOrigin(
 std::unique_ptr<SiteCharacteristicsDataWriter>
 LocalSiteCharacteristicsDataStore::GetWriterForOrigin(
     const url::Origin& origin,
-    TabVisibility tab_visibility) {
+    performance_manager::TabVisibility tab_visibility) {
   internal::LocalSiteCharacteristicsDataImpl* impl =
       GetOrCreateFeatureImpl(origin);
   DCHECK(impl);
@@ -103,14 +103,13 @@ void LocalSiteCharacteristicsDataStore::GetDatabaseSize(
 bool LocalSiteCharacteristicsDataStore::GetDataForOrigin(
     const url::Origin& origin,
     bool* is_dirty,
-    std::unique_ptr<SiteCharacteristicsProto>* data) {
+    std::unique_ptr<SiteDataProto>* data) {
   DCHECK_NE(nullptr, data);
   const auto it = origin_data_map_.find(origin);
   if (it == origin_data_map_.end())
     return false;
 
-  std::unique_ptr<SiteCharacteristicsProto> ret =
-      std::make_unique<SiteCharacteristicsProto>();
+  std::unique_ptr<SiteDataProto> ret = std::make_unique<SiteDataProto>();
   ret->CopyFrom(it->second->FlushStateToProto());
   *is_dirty = it->second->is_dirty();
   *data = std::move(ret);

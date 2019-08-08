@@ -105,7 +105,7 @@ class SnapshotCacheTest : public PlatformTest {
 
   // Flushes all the runloops internally used by the snapshot cache.
   void FlushRunLoops() {
-    base::ThreadPool::GetInstance()->FlushForTesting();
+    base::ThreadPoolInstance::Get()->FlushForTesting();
     base::RunLoop().RunUntilIdle();
   }
 

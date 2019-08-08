@@ -11,8 +11,8 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
-#include "chrome/browser/chromeos/login/screens/core_oobe_view.h"
 #include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
+#include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -21,6 +21,8 @@
 #include "components/prefs/pref_service.h"
 
 namespace chromeos {
+
+constexpr StaticOobeScreenId HIDDetectionView::kScreenId;
 
 HIDDetectionScreenHandler::HIDDetectionScreenHandler(
     JSCallsContainer* js_calls_container,

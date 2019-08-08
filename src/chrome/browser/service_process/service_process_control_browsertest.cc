@@ -23,7 +23,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/cloud_print.mojom.h"
 #include "chrome/common/service_process_util.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -91,24 +90,15 @@ class ServiceProcessControlBrowserTest
     // point to a bundle so that the service process has an Info.plist.
     base::FilePath exe_path;
     ASSERT_TRUE(base::PathService::Get(base::DIR_EXE, &exe_path));
-#if BUILDFLAG(NEW_MAC_BUNDLE_STRUCTURE)
-    exe_path = exe_path.DirName()
+    exe_path = exe_path.Append(chrome::kBrowserProcessExecutablePath)
                    .DirName()
-                   .Append("Contents")
+                   .DirName()
                    .Append("Frameworks")
                    .Append(chrome::kFrameworkName)
                    .Append("Versions")
                    .Append(chrome::kChromeVersion)
                    .Append("Helpers")
                    .Append(chrome::kHelperProcessExecutablePath);
-#else
-    exe_path = exe_path.DirName()
-                   .DirName()
-                   .Append("Contents")
-                   .Append("Versions")
-                   .Append(chrome::kChromeVersion)
-                   .Append(chrome::kHelperProcessExecutablePath);
-#endif
     child_process_exe_override_ = std::make_unique<base::ScopedPathOverride>(
         content::CHILD_PROCESS_EXE, exe_path);
 #endif
@@ -428,16 +418,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, HistogramsNoService) {
       base::TimeDelta()));
 }
 
-// Histograms disabled on OSX http://crbug.com/406227
-#if defined(OS_MACOSX)
-#define MAYBE_HistogramsTimeout DISABLED_HistogramsTimeout
-#define MAYBE_Histograms DISABLED_Histograms
-#else
-#define MAYBE_HistogramsTimeout HistogramsTimeout
-#define MAYBE_Histograms Histograms
-#endif
-IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
-                       MAYBE_HistogramsTimeout) {
+IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, HistogramsTimeout) {
   LaunchServiceProcessControlAndWait();
   ASSERT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
   // Callback should not be called during GetHistograms call.
@@ -452,7 +433,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
   run_loop.Run();
 }
 
-IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_Histograms) {
+IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, Histograms) {
   LaunchServiceProcessControlAndWait();
   ASSERT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
   // Callback should not be called during GetHistograms call.

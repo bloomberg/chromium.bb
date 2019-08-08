@@ -5,6 +5,7 @@
 #include "ash/system/ime/ime_feature_pod_controller.h"
 
 #include "ash/ime/ime_controller.h"
+#include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -12,7 +13,6 @@
 #include "ash/system/unified/feature_pod_button.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/keyboard/keyboard_util.h"
 
 namespace ash {
 

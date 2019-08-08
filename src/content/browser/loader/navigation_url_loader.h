@@ -24,6 +24,7 @@ class AppCacheNavigationHandle;
 class NavigationUIData;
 class NavigationURLLoaderDelegate;
 class NavigationURLLoaderFactory;
+class PrefetchedSignedExchangeCache;
 class ResourceContext;
 class ServiceWorkerNavigationHandle;
 class StoragePartition;
@@ -50,6 +51,8 @@ class CONTENT_EXPORT NavigationURLLoader {
       std::unique_ptr<NavigationUIData> navigation_ui_data,
       ServiceWorkerNavigationHandle* service_worker_handle,
       AppCacheNavigationHandle* appcache_handle,
+      scoped_refptr<PrefetchedSignedExchangeCache>
+          prefetched_signed_exchange_cache,
       NavigationURLLoaderDelegate* delegate);
 
   // For testing purposes; sets the factory for use in testing.

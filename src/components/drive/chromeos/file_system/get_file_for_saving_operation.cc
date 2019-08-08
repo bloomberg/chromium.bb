@@ -123,8 +123,8 @@ void GetFileForSavingOperation::GetFileForSavingAfterDownload(
                      file_closer, entry_ptr),
       base::BindOnce(
           &GetFileForSavingOperation::GetFileForSavingAfterOpenForWrite,
-          weak_ptr_factory_.GetWeakPtr(), base::Passed(std::move(callback)),
-          cache_path, std::move(entry), base::Owned(file_closer)));
+          weak_ptr_factory_.GetWeakPtr(), std::move(callback), cache_path,
+          std::move(entry), base::Owned(file_closer)));
 }
 
 void GetFileForSavingOperation::GetFileForSavingAfterOpenForWrite(

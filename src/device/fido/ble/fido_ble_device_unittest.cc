@@ -199,7 +199,7 @@ TEST_F(FidoBleDeviceTest, SendPingTest) {
 TEST_F(FidoBleDeviceTest, CancelDuringTransmission) {
   // Simulate a cancelation request that occurs while a multi-fragment message
   // is still being transmitted.
-  device()->set_supported_protocol(ProtocolVersion::kCtap);
+  device()->set_supported_protocol(ProtocolVersion::kCtap2);
   ConnectWithLength(kControlPointLength);
 
   ::testing::Sequence sequence;
@@ -233,7 +233,7 @@ TEST_F(FidoBleDeviceTest, CancelDuringTransmission) {
 
 TEST_F(FidoBleDeviceTest, CancelAfterTransmission) {
   // Simulate a cancelation request that occurs after the request has been sent.
-  device()->set_supported_protocol(ProtocolVersion::kCtap);
+  device()->set_supported_protocol(ProtocolVersion::kCtap2);
   ConnectWithLength(kControlPointLength);
 
   ::testing::Sequence sequence;
@@ -351,6 +351,17 @@ TEST_F(FidoBleDeviceTest, DeviceMsgErrorTest) {
 
   callback_receiver.WaitForCallback();
   EXPECT_EQ(FidoDevice::State::kMsgError, device()->state_for_testing());
+}
+
+TEST_F(FidoBleDeviceTest, Timeout) {
+  EXPECT_CALL(*connection(), ConnectPtr);
+  TestDeviceCallbackReceiver callback_receiver;
+  device()->SendPing(std::vector<uint8_t>(), callback_receiver.callback());
+
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  EXPECT_EQ(FidoDevice::State::kDeviceError, device()->state_for_testing());
+  EXPECT_TRUE(callback_receiver.was_called());
+  EXPECT_FALSE(callback_receiver.value());
 }
 
 }  // namespace device

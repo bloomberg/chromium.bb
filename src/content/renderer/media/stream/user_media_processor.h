@@ -133,7 +133,7 @@ class CONTENT_EXPORT UserMediaProcessor
   // These are virtual for test purposes.
   virtual std::unique_ptr<blink::MediaStreamAudioSource> CreateAudioSource(
       const blink::MediaStreamDevice& device,
-      const blink::WebPlatformMediaStreamSource::ConstraintsCallback&
+      blink::WebPlatformMediaStreamSource::ConstraintsRepeatingCallback
           source_ready);
   virtual std::unique_ptr<blink::MediaStreamVideoSource> CreateVideoSource(
       const blink::MediaStreamDevice& device,

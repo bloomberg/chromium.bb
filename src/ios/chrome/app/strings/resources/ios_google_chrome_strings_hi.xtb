@@ -1,11 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hi">
+<translation id="1282031177488366470">Chrome की सुविधाओं और प्रदर्शन को बेहतर बनाने में मदद करें</translation>
 <translation id="1326317727527857210">अपने दूसरे डिवाइस से अपने टैब पाने के लिए, Chrome में साइन इन करें.</translation>
+<translation id="1682483655351012182">अपना Chrome डेटा सिंक करें</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Google Chrome निजता सूचना</translation>
 <translation id="1863312987075920112">इस ऐप्‍लिकेशन का इस्तेमाल करके, आप Chrome की <ph name="BEGIN_LINK_TOS" />सेवा की शर्तों<ph name="END_LINK_TOS" /> और <ph name="BEGIN_LINK_PRIVACY" />निजता सूचना<ph name="END_LINK_PRIVACY" /> से सहमत होते हैं.</translation>
-<translation id="1984705450038014246">अपना Chrome डेटा सिंक करें</translation>
 <translation id="2147651015520127414">Chrome ने सत्‍यापित किया है कि वेबसाइट का यह प्रमाणपत्र <ph name="ISSUER" /> ने जारी किया है.</translation>
 <translation id="2199719347983604670">Chrome सिंक का डेटा</translation>
 <translation id="2342981853652716282">अपने सभी डिवाइस पर बुकमार्क, पासवर्ड और ज़्यादा चीज़ें पाने के लिए Chrome में साइन इन करें.</translation>
@@ -26,7 +27,6 @@
 <translation id="4099578267706723511">Google को इस्तेमाल के आंकड़े और खराबी रिपोर्ट भेजकर Chrome को बेहतर बनाने में मदद करें.</translation>
 <translation id="415767770115540173">अपने स्थान के आधार पर Chrome में एक बेहतर Google अनुभव प्राप्त करें.</translation>
 <translation id="424864128008805179">Chrome से साइन आउट करें?</translation>
-<translation id="447252321002412580">Chrome के फ़ीचर और परफ़ॉर्मेंस को बेहतर बनाने में सहायता करें</translation>
 <translation id="4523886039239821078">कुछ ऐड-ऑन के कारण Chrome बंद हो जा रहा है. कृपया उन्हें अनइंस्टॉल करें:</translation>
 <translation id="4615174829807303908">आप <ph name="SIGNOUT_MANAGED_DOMAIN" /> से प्रबंधित खाते से साइन आउट कर रहे हैं. इससे आपका Chrome डेटा इस डिवाइस से मिट जाएगा, लेकिन आपका डेटा आपके Google खाते में बना रहेगा.</translation>
 <translation id="5389212809648216794">Google Chrome आपके कैमरे का उपयोग नहीं कर सकता क्योंकि दूसरा ऐप्लिकेशन उसका उपयोग कर रहा है</translation>

@@ -50,6 +50,9 @@ public class SigninManagerTest {
     @Mock
     SigninManager.Natives mNativeMock;
 
+    @Mock
+    SigninManagerDelegate mDelegateMock;
+
     private AccountTrackerService mAccountTrackerService;
     private SigninManager mSigninManager;
 
@@ -64,8 +67,8 @@ public class SigninManagerTest {
         mAccountTrackerService = mock(AccountTrackerService.class);
         AndroidSyncSettings androidSyncSettings = mock(AndroidSyncSettings.class);
 
-        mSigninManager = spy(new SigninManager(
-                ContextUtils.getApplicationContext(), mAccountTrackerService, androidSyncSettings));
+        mSigninManager = spy(new SigninManager(ContextUtils.getApplicationContext(), mDelegateMock,
+                mAccountTrackerService, androidSyncSettings));
 
         // SigninManager interacts with AndroidSyncSettings, but its not the focus
         // of this test. Using MockSyncContentResolver reduces burden of test setup.

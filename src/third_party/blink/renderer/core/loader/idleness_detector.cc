@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/loader/idleness_detector.h"
 
+#include "base/logging.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -15,7 +16,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
-#include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/frame_resource_coordinator.h"
+#include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/document_resource_coordinator.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 
 namespace blink {
@@ -51,10 +52,6 @@ void IdlenessDetector::DomContentLoadedEventFired() {
   network_2_quiet_ = TimeTicks();
   network_0_quiet_ = TimeTicks();
 
-  if (auto* frame_resource_coordinator =
-          local_frame_->GetFrameResourceCoordinator()) {
-    frame_resource_coordinator->SetNetworkAlmostIdle(false);
-  }
   OnDidLoadResource();
 }
 
@@ -149,10 +146,11 @@ void IdlenessDetector::WillProcessTask(base::TimeTicks start_time) {
     probe::LifecycleEvent(
         local_frame_, loader, "networkAlmostIdle",
         network_2_quiet_start_time_.since_origin().InSecondsF());
-      if (auto* frame_resource_coordinator =
-              local_frame_->GetFrameResourceCoordinator()) {
-        frame_resource_coordinator->SetNetworkAlmostIdle(true);
-      }
+    DCHECK(local_frame_->GetDocument());
+    if (auto* document_resource_coordinator =
+            local_frame_->GetDocument()->GetResourceCoordinator()) {
+      document_resource_coordinator->SetNetworkAlmostIdle();
+    }
     local_frame_->GetDocument()->Fetcher()->OnNetworkQuiet();
     if (WebServiceWorkerNetworkProvider* service_worker_network_provider =
             loader->GetServiceWorkerNetworkProvider()) {

@@ -48,7 +48,6 @@
 .stats-table-container {
   float: left;
   padding: 0 0 0 0;
-  width: 50em;
   overflow: auto;
 }
 

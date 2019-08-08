@@ -6,6 +6,7 @@
 
 #include "base/run_loop.h"
 #import "base/test/ios/wait_util.h"
+#include "components/unified_consent/feature.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_consumer.h"
@@ -132,10 +133,15 @@ class SigninPromoViewMediatorTest : public PlatformTest {
     NSRange profileNameRange =
         [primary_button_title_ rangeOfString:userFullName];
     EXPECT_NE(profileNameRange.length, 0u);
-    NSString* userEmail = expected_default_dentity_.userEmail;
-    NSRange profileEmailRange =
-        [secondary_button_title_ rangeOfString:userEmail];
-    EXPECT_NE(profileEmailRange.length, 0u);
+
+    if (!unified_consent::IsUnifiedConsentFeatureEnabled()) {
+      // Secondary buttons for sign-in promos contained the email before
+      // Unified Consent.
+      NSString* userEmail = expected_default_dentity_.userEmail;
+      NSRange profileEmailRange =
+          [secondary_button_title_ rangeOfString:userEmail];
+      EXPECT_NE(profileEmailRange.length, 0u);
+    }
   }
 
   // Mediator used for the tests.

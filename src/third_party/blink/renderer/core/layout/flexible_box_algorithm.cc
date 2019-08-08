@@ -39,7 +39,7 @@ namespace blink {
 FlexItem::FlexItem(LayoutBox* box,
                    LayoutUnit flex_base_content_size,
                    MinMaxSize min_max_sizes,
-                   LayoutUnit main_axis_border_scrollbar_padding,
+                   LayoutUnit main_axis_border_and_padding,
                    LayoutUnit main_axis_margin)
     : algorithm(nullptr),
       line_number(0),
@@ -48,7 +48,7 @@ FlexItem::FlexItem(LayoutBox* box,
       min_max_sizes(min_max_sizes),
       hypothetical_main_content_size(
           min_max_sizes.ClampSizeToMinAndMax(flex_base_content_size)),
-      main_axis_border_scrollbar_padding(main_axis_border_scrollbar_padding),
+      main_axis_border_and_padding(main_axis_border_and_padding),
       main_axis_margin(main_axis_margin),
       frozen(false),
       ng_input_node(/* LayoutBox* */ nullptr) {
@@ -487,12 +487,15 @@ bool FlexLayoutAlgorithm::ShouldApplyMinSizeAutoForChild(
 
   // TODO(crbug.com/927066): We calculate an incorrect intrinsic logical height
   // when percentages are involved, so for now don't apply min-height: auto
-  // in such cases.
-  if (IsColumnFlow() && child.IsFlexibleBox() &&
-      To<LayoutBlock>(child).HasPercentHeightDescendants())
+  // in such cases. (This is only a problem if the child has a definite height)
+  const LayoutBlock* child_block = DynamicTo<LayoutBlock>(child);
+  if (IsColumnFlow() && child_block &&
+      child_block->HasPercentHeightDescendants() &&
+      child_block->HasDefiniteLogicalHeight())
     return false;
 
   return !child.ShouldApplySizeContainment() &&
+         !child.DisplayLockInducesSizeContainment() &&
          MainAxisOverflowForChild(child) == EOverflow::kVisible;
 }
 

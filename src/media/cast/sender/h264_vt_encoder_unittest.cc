@@ -138,8 +138,8 @@ class EndToEndFrameChecker
     EXPECT_TRUE(decoder_init_result);
   }
 
-  void PushExpectation(const scoped_refptr<VideoFrame>& frame) {
-    expectations_.push(frame);
+  void PushExpectation(scoped_refptr<VideoFrame> frame) {
+    expectations_.push(std::move(frame));
   }
 
   void EncodeDone(std::unique_ptr<SenderEncodedFrame> encoded_frame) {
@@ -149,11 +149,11 @@ class EndToEndFrameChecker
                                        base::Unretained(this)));
   }
 
-  void CompareFrameWithExpected(const scoped_refptr<VideoFrame>& frame) {
+  void CompareFrameWithExpected(scoped_refptr<VideoFrame> frame) {
     ASSERT_LT(0u, expectations_.size());
     auto& e = expectations_.front();
     expectations_.pop();
-    EXPECT_LE(kVideoAcceptedPSNR, I420PSNR(e, frame));
+    EXPECT_LE(kVideoAcceptedPSNR, I420PSNR(*e, *frame));
     ++count_frames_checked_;
   }
 
@@ -303,7 +303,7 @@ TEST_F(H264VideoToolboxEncoderTest, DISABLED_CheckFrameMetadataSequence) {
 TEST_F(H264VideoToolboxEncoderTest, DISABLED_CheckFramesAreDecodable) {
   VideoDecoderConfig config(
       kCodecH264, H264PROFILE_MAIN, frame_->format(), VideoColorSpace(),
-      VIDEO_ROTATION_0, frame_->coded_size(), frame_->visible_rect(),
+      kNoTransformation, frame_->coded_size(), frame_->visible_rect(),
       frame_->natural_size(), EmptyExtraData(), Unencrypted());
   scoped_refptr<EndToEndFrameChecker> checker(new EndToEndFrameChecker(config));
 

@@ -123,17 +123,15 @@ class PrintViewManagerBase : public content::NotificationObserver,
 
 // Helpers for PrintForPrintPreview();
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  void OnPrintSettingsDone(
-      const scoped_refptr<base::RefCountedMemory>& print_data,
-      int page_count,
-      PrinterHandler::PrintCallback callback,
-      scoped_refptr<PrinterQuery> printer_query);
+  void OnPrintSettingsDone(scoped_refptr<base::RefCountedMemory> print_data,
+                           int page_count,
+                           PrinterHandler::PrintCallback callback,
+                           scoped_refptr<PrinterQuery> printer_query);
 
-  void StartLocalPrintJob(
-      const scoped_refptr<base::RefCountedMemory>& print_data,
-      int page_count,
-      scoped_refptr<PrinterQuery> printer_query,
-      PrinterHandler::PrintCallback callback);
+  void StartLocalPrintJob(scoped_refptr<base::RefCountedMemory> print_data,
+                          int page_count,
+                          scoped_refptr<PrinterQuery> printer_query,
+                          PrinterHandler::PrintCallback callback);
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
   // Processes a NOTIFY_PRINT_JOB_EVENT notification.
@@ -150,7 +148,7 @@ class PrintViewManagerBase : public content::NotificationObserver,
   // Starts printing the |document| in |print_job_| with the given |print_data|.
   // This method assumes PrintJobHasDocument() has been called, and |print_data|
   // contains valid data.
-  void PrintDocument(const scoped_refptr<base::RefCountedMemory>& print_data,
+  void PrintDocument(scoped_refptr<base::RefCountedMemory> print_data,
                      const gfx::Size& page_size,
                      const gfx::Rect& content_area,
                      const gfx::Point& offsets);

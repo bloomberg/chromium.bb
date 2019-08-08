@@ -2184,9 +2184,8 @@ public class AwSettingsTest {
                     + "</body></html>";
             // Actual test. Blocking should trigger onerror handler.
             awSettings.setBlockNetworkLoads(true);
-            InstrumentationRegistry.getInstrumentation().runOnMainSync(
-                    () -> awContents.addJavascriptInterface(new AudioEvent(callback),
-                            "AudioEvent"));
+            AwActivityTestRule.addJavascriptInterfaceOnUiThread(
+                    awContents, new AudioEvent(callback), "AudioEvent");
             int count = callback.getCallCount();
             mActivityTestRule.loadDataSync(awContents, contentClient.getOnPageFinishedHelper(),
                     pageHtml, "text/html", false);
@@ -2347,6 +2346,7 @@ public class AwSettingsTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
+    @DisabledTest(message = "crbug.com/957626")
     public void testJavaScriptPopupsOpenTwice() throws Throwable {
         final ViewPair views = createViews();
         runPerViewSettingsTest(new AwSettingsJavaScriptPopupsTestHelper(

@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "components/user_manager/user.h"
 
@@ -14,6 +15,10 @@ namespace chromeos {
 
 bool IsProfileAssociatedWithGaiaAccount(Profile* profile) {
   // TODO(crbug.com/942937): This code can likely be simplified.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kDisableGaiaServices)) {
+    return false;
+  }
   if (!chromeos::LoginState::IsInitialized())
     return false;
   if (!chromeos::LoginState::Get()->IsUserGaiaAuthenticated())

@@ -40,13 +40,13 @@ namespace blink {
 using namespace html_names;
 
 AtomicString StyleSheetCandidate::Title() const {
-  return IsElement() ? ToElement(GetNode()).FastGetAttribute(kTitleAttr)
+  return IsElement() ? To<Element>(GetNode()).FastGetAttribute(kTitleAttr)
                      : g_null_atom;
 }
 
 bool StyleSheetCandidate::IsXSL() const {
   return !GetNode().GetDocument().IsHTMLDocument() && type_ == kPi &&
-         ToProcessingInstruction(GetNode()).IsXSL();
+         To<ProcessingInstruction>(GetNode()).IsXSL();
 }
 
 bool StyleSheetCandidate::IsImport() const {
@@ -110,7 +110,7 @@ StyleSheet* StyleSheetCandidate::Sheet() const {
     case kSVGStyle:
       return ToSVGStyleElement(GetNode()).sheet();
     case kPi:
-      return ToProcessingInstruction(GetNode()).sheet();
+      return To<ProcessingInstruction>(GetNode()).sheet();
     default:
       NOTREACHED();
       return nullptr;

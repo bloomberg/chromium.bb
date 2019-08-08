@@ -4,6 +4,8 @@
 
 """Generic presubmit checks that can be reused by other presubmit checks."""
 
+from __future__ import print_function
+
 import os as _os
 _HERE = _os.path.dirname(_os.path.abspath(__file__))
 
@@ -1111,7 +1113,7 @@ def PanProjectChecks(input_api, output_api,
     if snapshot_memory:
       delta_ms = int(1000*(dt2 - snapshot_memory[0]))
       if delta_ms > 500:
-        print "  %s took a long time: %dms" % (snapshot_memory[1], delta_ms)
+        print("  %s took a long time: %dms" % (snapshot_memory[1], delta_ms))
     snapshot_memory[:] = (dt2, msg)
 
   snapshot("checking owners files format")
@@ -1466,3 +1468,21 @@ def CheckLucicfgGenOutput(input_api, output_api, entry_script):
         },
         output_api.PresubmitError)
   ]
+
+# TODO(agable): Add this to PanProjectChecks.
+def CheckJsonParses(input_api, output_api):
+  """Verifies that all JSON files at least parse as valid JSON."""
+  import json
+  affected_files = input_api.AffectedFiles(
+      include_deletes=False,
+      file_filter=lambda x: x.LocalPath().endswith('.json'))
+  warnings = []
+  for f in affected_files:
+    with open(f.AbsoluteLocalPath()) as j:
+      try:
+        json.load(j)
+      except ValueError:
+        # Just a warning for now, in case people are using JSON5 somewhere.
+        warnings.append(output_api.PresubmitPromptWarning(
+            '%s does not appear to be valid JSON.' % f.LocalPath()))
+  return warnings

@@ -20,7 +20,6 @@
 
 namespace quic {
 
-class ChannelIDSource;
 class CommonCertSets;
 class ProofSource;
 class ProofVerifier;
@@ -38,37 +37,6 @@ namespace test {
 
 class PacketSavingConnection;
 
-class TestChannelIDKey : public ChannelIDKey {
- public:
-  explicit TestChannelIDKey(EVP_PKEY* ecdsa_key);
-  ~TestChannelIDKey() override;
-
-  // ChannelIDKey implementation.
-
-  bool Sign(QuicStringPiece signed_data,
-            std::string* out_signature) const override;
-
-  std::string SerializeKey() const override;
-
- private:
-  bssl::UniquePtr<EVP_PKEY> ecdsa_key_;
-};
-
-class TestChannelIDSource : public ChannelIDSource {
- public:
-  ~TestChannelIDSource() override;
-
-  // ChannelIDSource implementation.
-
-  QuicAsyncStatus GetChannelIDKey(
-      const std::string& hostname,
-      std::unique_ptr<ChannelIDKey>* channel_id_key,
-      ChannelIDSourceCallback* /*callback*/) override;
-
- private:
-  static EVP_PKEY* HostnameToKey(const std::string& hostname);
-};
-
 namespace crypto_test_utils {
 
 // An interface for a source of callbacks. This is used for invoking
@@ -85,32 +53,11 @@ class CallbackSource {
   virtual void RunPendingCallbacks() = 0;
 };
 
-// FakeServerOptions bundles together a number of options for configuring the
-// server in HandshakeWithFakeServer.
-struct FakeServerOptions {
-  FakeServerOptions();
-  ~FakeServerOptions();
-
-  // The Token Binding params that the server supports and will negotiate.
-  QuicTagVector token_binding_params;
-};
-
 // FakeClientOptions bundles together a number of options for configuring
 // HandshakeWithFakeClient.
 struct FakeClientOptions {
   FakeClientOptions();
   ~FakeClientOptions();
-
-  // If channel_id_enabled is true then the client will attempt to send a
-  // ChannelID.
-  bool channel_id_enabled;
-
-  // If channel_id_source_async is true then the client will use an async
-  // ChannelIDSource for testing. Ignored if channel_id_enabled is false.
-  bool channel_id_source_async;
-
-  // The Token Binding params that the client supports and will negotiate.
-  QuicTagVector token_binding_params;
 
   // If only_tls_versions is set, then the client will only use TLS for the
   // crypto handshake.
@@ -122,8 +69,7 @@ int HandshakeWithFakeServer(QuicConfig* server_quic_config,
                             MockQuicConnectionHelper* helper,
                             MockAlarmFactory* alarm_factory,
                             PacketSavingConnection* client_conn,
-                            QuicCryptoClientStream* client,
-                            const FakeServerOptions& options);
+                            QuicCryptoClientStream* client);
 
 // returns: the number of client hellos that the client sent.
 int HandshakeWithFakeClient(MockQuicConnectionHelper* helper,
@@ -137,8 +83,7 @@ int HandshakeWithFakeClient(MockQuicConnectionHelper* helper,
 // with sensible defaults for testing.
 void SetupCryptoServerConfigForTest(const QuicClock* clock,
                                     QuicRandom* rand,
-                                    QuicCryptoServerConfig* crypto_config,
-                                    const FakeServerOptions& options);
+                                    QuicCryptoServerConfig* crypto_config);
 
 // Sends the handshake message |message| to stream |stream| with the perspective
 // that the message is coming from |perspective|.
@@ -152,18 +97,6 @@ void CommunicateHandshakeMessages(PacketSavingConnection* client_conn,
                                   QuicCryptoStream* client,
                                   PacketSavingConnection* server_conn,
                                   QuicCryptoStream* server);
-
-// CommunicateHandshakeMessagesAndRunCallbacks moves messages from |client|
-// to |server| and back until |client|'s handshake has completed. If
-// |callback_source| is not nullptr,
-// CommunicateHandshakeMessagesAndRunCallbacks also runs callbacks from
-// |callback_source| between processing messages.
-void CommunicateHandshakeMessagesAndRunCallbacks(
-    PacketSavingConnection* client_conn,
-    QuicCryptoStream* client,
-    PacketSavingConnection* server_conn,
-    QuicCryptoStream* server,
-    CallbackSource* callback_source);
 
 // AdvanceHandshake attempts to moves messages from |client| to |server| and
 // |server| to |client|. Returns the number of messages moved.
@@ -199,7 +132,7 @@ CommonCertSets* MockCommonCertSets(QuicStringPiece cert,
 // Creates a minimal dummy reject message that will pass the client-config
 // validation tests. This will include a server config, but no certs, proof
 // source address token, or server nonce.
-void FillInDummyReject(CryptoHandshakeMessage* rej, bool reject_is_stateless);
+void FillInDummyReject(CryptoHandshakeMessage* rej);
 
 // ParseTag returns a QuicTag from parsing |tagstr|. |tagstr| may either be
 // in the format "EXMP" (i.e. ASCII format), or "#11223344" (an explicit hex
@@ -221,12 +154,6 @@ CryptoHandshakeMessage CreateCHLO(
 CryptoHandshakeMessage CreateCHLO(
     std::vector<std::pair<std::string, std::string>> tags_and_values,
     int minimum_size_bytes);
-
-// ChannelIDSourceForTesting returns a ChannelIDSource that generates keys
-// deterministically based on the hostname given in the GetChannelIDKey call.
-// This ChannelIDSource works in synchronous mode, i.e., its GetChannelIDKey
-// method never returns QUIC_PENDING.
-std::unique_ptr<ChannelIDSource> ChannelIDSourceForTesting();
 
 // MovePackets parses crypto handshake messages from packet number
 // |*inout_packet_index| through to the last packet (or until a packet fails

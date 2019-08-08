@@ -60,7 +60,7 @@ class MEDIA_EXPORT DecoderStream {
   using InitCB = base::OnceCallback<void(bool success)>;
 
   // Indicates completion of a DecoderStream read.
-  using ReadCB = base::OnceCallback<void(Status, const scoped_refptr<Output>&)>;
+  using ReadCB = base::OnceCallback<void(Status, scoped_refptr<Output>)>;
 
   DecoderStream(std::unique_ptr<DecoderStreamTraits<StreamType>> traits,
                 const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
@@ -120,9 +120,9 @@ class MEDIA_EXPORT DecoderStream {
   // prepared at any one time; this alleviates resource usage issues incurred by
   // the preparation process when a decoder has a burst of outputs after on
   // Decode(). For more context on why, see https://crbug.com/820167.
-  using OutputReadyCB = base::OnceCallback<void(const scoped_refptr<Output>&)>;
-  using PrepareCB = base::RepeatingCallback<void(const scoped_refptr<Output>&,
-                                                 OutputReadyCB)>;
+  using OutputReadyCB = base::OnceCallback<void(scoped_refptr<Output>)>;
+  using PrepareCB =
+      base::RepeatingCallback<void(scoped_refptr<Output>, OutputReadyCB)>;
   void SetPrepareCB(PrepareCB prepare_cb);
 
   // Indicates that we won't need to prepare outputs before |start_timestamp|,
@@ -175,7 +175,7 @@ class MEDIA_EXPORT DecoderStream {
       std::unique_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream);
 
   // Satisfy pending |read_cb_| with |status| and |output|.
-  void SatisfyRead(Status status, const scoped_refptr<Output>& output);
+  void SatisfyRead(Status status, scoped_refptr<Output> output);
 
   // Decodes |buffer| and returns the result via OnDecodeOutputReady().
   // Saves |buffer| into |pending_buffers_| if appropriate.
@@ -195,7 +195,7 @@ class MEDIA_EXPORT DecoderStream {
                     DecodeStatus status);
 
   // Output callback passed to Decoder::Initialize().
-  void OnDecodeOutputReady(const scoped_refptr<Output>& output);
+  void OnDecodeOutputReady(scoped_refptr<Output> output);
 
   // Reads a buffer from |stream_| and returns the result via OnBufferReady().
   void ReadFromDemuxerStream();
@@ -216,7 +216,7 @@ class MEDIA_EXPORT DecoderStream {
 
   void ClearOutputs();
   void MaybePrepareAnotherOutput();
-  void OnPreparedOutputReady(const scoped_refptr<Output>& frame);
+  void OnPreparedOutputReady(scoped_refptr<Output> frame);
   void CompletePrepare(const Output* output);
 
   std::unique_ptr<DecoderStreamTraits<StreamType>> traits_;

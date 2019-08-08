@@ -46,8 +46,8 @@ void PointerLockController::RequestPointerLock(Element* target) {
     return;
   }
 
-  UseCounter::CountCrossOriginIframe(
-      target->GetDocument(), WebFeature::kElementRequestPointerLockIframe);
+  target->GetDocument().CountUseOnlyInCrossOriginIframe(
+      WebFeature::kElementRequestPointerLockIframe);
   if (target->IsInShadowTree()) {
     UseCounter::Count(target->GetDocument(),
                       WebFeature::kElementRequestPointerLockInShadow);

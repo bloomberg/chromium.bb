@@ -42,7 +42,7 @@ void DumpToTracedValue(const LayoutObject& object,
   if (trace_geometry) {
     traced_value->SetDouble("absX", object.AbsoluteBoundingBoxRect().X());
     traced_value->SetDouble("absY", object.AbsoluteBoundingBoxRect().Y());
-    LayoutRect rect = object.DebugRect();
+    PhysicalRect rect = object.DebugRect();
     traced_value->SetDouble("relX", rect.X());
     traced_value->SetDouble("relY", rect.Y());
     traced_value->SetDouble("width", rect.Width());

@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/base64url.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "chromeos/components/multidevice/logging/logging.h"

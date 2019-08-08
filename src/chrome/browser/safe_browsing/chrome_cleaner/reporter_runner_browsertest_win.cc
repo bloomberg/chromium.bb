@@ -29,6 +29,7 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/mock_chrome_cleaner_controller_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_client_info_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/sw_reporter_invocation_win.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_switches.h"
@@ -501,14 +502,6 @@ class ReporterRunnerTest
                                   SwReporterInvocationResult result) {
     EXPECT_EQ(expected_result, result);
     std::move(closure).Run();
-  }
-
-  OnReporterSequenceDone ExpectResultOnSequenceDoneCallback(
-      SwReporterInvocationResult expected_result,
-      base::OnceClosure closure) {
-    return base::BindOnce(&ReporterRunnerTest::ExpectResultOnSequenceDone,
-                          base::Unretained(this), expected_result,
-                          base::Passed(&closure));
   }
 
   bool PromptDialogShouldBeShown(SwReporterInvocationType invocation_type) {

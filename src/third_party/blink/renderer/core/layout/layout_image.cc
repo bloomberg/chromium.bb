@@ -219,7 +219,7 @@ void LayoutImage::ImageNotifyFinished(ImageResourceContent* new_image) {
 }
 
 void LayoutImage::PaintReplaced(const PaintInfo& paint_info,
-                                const LayoutPoint& paint_offset) const {
+                                const PhysicalOffset& paint_offset) const {
   ImagePainter(*this).PaintReplaced(paint_info, paint_offset);
 }
 
@@ -237,7 +237,7 @@ void LayoutImage::AreaElementFocusChanged(HTMLAreaElement* area_element) {
 }
 
 bool LayoutImage::ForegroundIsKnownToBeOpaqueInRect(
-    const LayoutRect& local_rect,
+    const PhysicalRect& local_rect,
     unsigned) const {
   if (!image_resource_->HasImage() || image_resource_->ErrorOccurred())
     return false;
@@ -275,7 +275,7 @@ bool LayoutImage::ComputeBackgroundIsKnownToBeObscured() const {
   if (!StyleRef().HasBackground())
     return false;
 
-  LayoutRect painted_extent;
+  PhysicalRect painted_extent;
   if (!GetBackgroundPaintedExtent(painted_extent))
     return false;
   return ForegroundIsKnownToBeOpaqueInRect(painted_extent, 0);
@@ -348,7 +348,7 @@ bool LayoutImage::OverrideIntrinsicSizingInfo(
 
 void LayoutImage::ComputeIntrinsicSizingInfo(
     IntrinsicSizingInfo& intrinsic_sizing_info) const {
-  DCHECK(!ShouldApplySizeContainment());
+  DCHECK(!ShouldApplySizeContainment() && !DisplayLockInducesSizeContainment());
   if (!OverrideIntrinsicSizingInfo(intrinsic_sizing_info)) {
     if (SVGImage* svg_image = EmbeddedSVGImage()) {
       svg_image->GetIntrinsicSizingInfo(intrinsic_sizing_info);

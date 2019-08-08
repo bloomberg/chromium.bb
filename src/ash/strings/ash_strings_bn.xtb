@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">মেনুটি আড়াল করুন</translation>
 <translation id="1383876407941801731">সার্চ করুন</translation>
 <translation id="1419738280318246476">বিজ্ঞপ্তি সম্পর্কিত অ্যাকশনের জন্য ডিভাইস আনলক করুন</translation>
+<translation id="1426410128494586442">হ্যাঁ</translation>
 <translation id="1455242230282523554">ভাষার সেটিংস দেখুন</translation>
 <translation id="1467432559032391204">বামে</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -47,7 +48,6 @@
 <translation id="1570871743947603115">ব্লুটুথ টগল করুন। <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">এই সেশনে আপনার সব অ্যাক্টিভিটি অ্যাক্সেস করুন</translation>
 <translation id="1608626060424371292">এই ব্যবহারকারীকে সরান</translation>
-<translation id="1621499497873603021">ব্যাটারি শেষ হতে <ph name="TIME_LEFT" /> সময় বাকি আছে</translation>
 <translation id="1654477262762802994">ভয়েস কোয়েরি শুরু করুন</translation>
 <translation id="1658406695958299976">দুঃখিত, আপনার পাসওয়ার্ড এখনও পর্যন্ত যাচাই করা যায়নি। দ্রষ্টব্য: আপনি যদি সম্প্রতি আপনার পাসওয়ার্ড পরিবর্তন করে থাকেন, তাহলে আপনি সাইন-আউট করার পর আপনার নতুন পাসওয়ার্ড প্রয়োগ করা হবে, অনুগ্রহ করে এখানে পুরানো পাসওয়ার্ড ব্যবহার করুন।</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> বাকি আছে</translation>
@@ -72,7 +72,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">সাম্প্রতিক <ph name="SYSTEM_APP_NAME" /> আপডেট সম্পর্কে আরও জানুন</translation>
 <translation id="1995660704900986789">পাওয়ার বন্ধ করুন</translation>
-<translation id="1999763610967697511">ড্র্যাগ করে ড্রপ করুন</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">একটি মেসেজ লিখুন</translation>
 <translation id="2050339315714019657">প্রতিকৃতি</translation>
@@ -100,7 +99,6 @@
 <translation id="239188844683466770">'বিরক্ত করবেন না' মোড টগল করুন</translation>
 <translation id="2412593942846481727">আপডেট উপলভ্য</translation>
 <translation id="2413728805700750528"><ph name="DOMAIN" /> দ্বারা পরিচালিত <ph name="DISPLAY_NAME" /> একটি পরিচালিত সেশন</translation>
-<translation id="2416346634399901812"><ph name="NETWORK_NAME" />-এর সাথে কানেক্ট হয়েছে</translation>
 <translation id="2427507373259914951">বাঁদিকের বোতামে ক্লিক করুন</translation>
 <translation id="2429753432712299108">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করার অনুমতি চাইছে। স্বীকার করার আগে, এই পাস কীটি ডিভাইসে প্রদর্শিত হয়েছে কিনা নিশ্চিত করুন: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">বিজ্ঞপ্তিগুলি</translation>
@@ -114,11 +112,11 @@
 <translation id="2597972630681408282">নাইট লাইট: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">সিম কার্ড লক করা আছে</translation>
 <translation id="2653659639078652383">জমা দিন</translation>
+<translation id="2658778018866295321">ক্লিক করে ড্র্যাগ করুন</translation>
 <translation id="2700493154570097719">আপনার কীবোর্ড সেট করুন</translation>
 <translation id="2718395828230677721">নাইট লাইট</translation>
 <translation id="2727977024730340865">একটি নিম্ন শক্তির চার্জার প্লাগইন করা হয়েছে৷ বিশ্বস্ত ব্যাটারি চার্জ নাও হতে পারে৷</translation>
 <translation id="2761704814324807722">স্থিতি ট্রে, সময় <ph name="TIME" />, <ph name="BATTERY" /></translation>
-<translation id="277257480934873581"><ph name="NAME" /> এ পুনরায় সংযোগ করছে</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="2803734122639935495">আনলক করতে আপনার পাসওয়ার্ড লিখুন</translation>
 <translation id="2819276065543622893">আপনি এখনই প্রস্থান করুন হবেন৷</translation>
@@ -139,7 +137,6 @@
 <translation id="2996462380875591307">ডক করা ম্যাগনিফায়ার চালু আছে। আবার Ctrl+Search+D প্রেস করে সেটিকে বন্ধ করুন।</translation>
 <translation id="3000461861112256445">মোনো অডিও</translation>
 <translation id="3009178788565917040">আউটপুট</translation>
-<translation id="3019353588588144572">ব্যাটারি পরিপূর্ণ চার্জ হতে, <ph name="TIME_REMAINING" /> সময় বাকি আছে</translation>
 <translation id="3051128274746680507">আপনার তত্ত্বাবধানে থাকা ব্যবহারকারীর প্রোফাইল শীঘ্রই সরিয়ে দেওয়া হবে। আরও জানতে সাইন-ইন করুন।</translation>
 <translation id="3055162170959710888">এই ডিভাইসটি আজ আপনি <ph name="USED_TIME" /> ব্যবহার করেছেন</translation>
 <translation id="3077734595579995578">shift</translation>
@@ -175,6 +172,7 @@
 <translation id="3510164367642747937">মাউস কার্সার হাইলাইট করুন</translation>
 <translation id="3513798432020909783">অ্যাকাউন্টটি <ph name="MANAGER_EMAIL" /> ম্যানেজ করছেন</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" তে ফেরান (পুনর্সূচনা প্রয়োজন)</translation>
+<translation id="3576141592585647168">টাইমজোন পরিবর্তন করা</translation>
 <translation id="3595596368722241419">ব্যাটারি পুরো চার্জ</translation>
 <translation id="3606978283550408104">ব্রেইল প্রদর্শন সংযুক্ত হয়েছে৷</translation>
 <translation id="3621202678540785336">ইনপুট</translation>
@@ -202,6 +200,7 @@
 <translation id="394485226368336402">অডিও সেটিংস</translation>
 <translation id="3962859241508114581">আগের ট্র্যাক চালান</translation>
 <translation id="397105322502079400">গণনা করা হচ্ছে...</translation>
+<translation id="3977512764614765090">ব্যাটারি <ph name="PERCENTAGE" /> শতাংশ চার্জ করা হয়েছে এবং এখনও চার্জ করা চলছে।</translation>
 <translation id="3995138139523574647">USB-C ডিভাইস (ডান দিকের পিছনের পোর্ট)</translation>
 <translation id="4017989525502048489">লেজার পয়েন্টার</translation>
 <translation id="4042660782729322247">আপনার স্ক্রিন শেয়ার করছেন</translation>
@@ -218,7 +217,7 @@
 <translation id="4269883910223712419">এই ডিভাইসের প্রশাসক এগুলি করতে পারেন:</translation>
 <translation id="4279490309300973883">অনুকরণ করা হচ্ছে</translation>
 <translation id="4281007048406351813">টাইমারে ১ মিনিট যোগ করুন</translation>
-<translation id="4292681942966152062"><ph name="NETWORK_NAME" /> চালু করা হচ্ছে</translation>
+<translation id="4296136865091727875"><ph name="COUNT" />টি বিজ্ঞপ্তি মুছে ফেলুন</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">উচ্চ কনট্রাস্টের জন্য আপনি কীবোর্ড শর্টকাট টিপেছেন। আপনি কি এটি চালু করতে চান?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -234,7 +233,6 @@
 <translation id="4477350412780666475">পরের ট্র্যাক চালান</translation>
 <translation id="4479639480957787382">ইথারনেট</translation>
 <translation id="4481530544597605423">বিযুক্ত করা ডিভাইসগুলি</translation>
-<translation id="4508225577814909926"><ph name="NAME" />: সংযুক্ত হচ্ছে...</translation>
 <translation id="4513946894732546136">প্রতিক্রিয়া</translation>
 <translation id="4527045527269911712">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করার অনুমতি চাইছে।</translation>
 <translation id="453661520163887813">সম্পূর্ণ হতে <ph name="TIME" /> বাকি</translation>
@@ -247,12 +245,12 @@
 <translation id="4696813013609194136">অভিভাবকীয় কোড দিয়ে ডিভাইস আনলক করুন</translation>
 <translation id="4731797938093519117">অভিভাবকীয় অ্যাক্সেস</translation>
 <translation id="4734965478015604180">অনুভূমিক</translation>
-<translation id="476166673298332917">ডিভাইস প্রশাসক আপনার ব্রাউজিং অ্যাক্টিভিটি পর্যবেক্ষণ করতে পারেন।</translation>
 <translation id="4774338217796918551">আগামীকাল <ph name="COME_BACK_TIME" />-এ আবার ব্যবহার করতে পারবেন।</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" />-এর জন্য পাসওয়ার্ড</translation>
 <translation id="4778095205580009397">একটি ডেমো সেশনে Google অ্যাসিস্ট্যান্ট উপলভ্য নয়।</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">সংযোগ বিচ্ছিন্ন</translation>
+<translation id="4831034276697007977">অটোমেটিক ক্লিক বন্ধ করতে চান কিনা সেই বিষয়টি ভাল করে দেখে নিন?</translation>
 <translation id="4849058404725798627">কিবোর্ড ফোকাসের মাধ্যমে হাইলাইট করুন</translation>
 <translation id="485592688953820832">কোনও অ্যাকশন নেবেন না (পজ)</translation>
 <translation id="4872237917498892622">Alt+Search অথবা Shift</translation>
@@ -356,9 +354,9 @@
 <translation id="6537270692134705506">স্ক্রিন ক্যাপচার করুন</translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" /> এ কাস্ট করা হচ্ছে</translation>
 <translation id="6559976592393364813">অ্যাডমিনিস্ট্রেটরকে জিজ্ঞাসা করুন</translation>
-<translation id="6574601967010742428">ডিভাইস অ্যাডমিনিস্ট্রেটর আপনার অ্যাক্টিভিটি হয়ত মনিটর করতে পারেন।</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" /> এর মধ্যে সেশন শেষ হয়ে যাবে৷</translation>
 <translation id="6627638273713273709">সার্চ+Shift+K</translation>
+<translation id="6637729079642709226">ব্যবহারের মোট সময় পরিবর্তন করা</translation>
 <translation id="6650933572246256093">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করার অনুমতি চাইছে। ডিভাইসটিতে এই পাস কীটি দিন: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">পাসওয়ার্ড</translation>
 <translation id="6665545700722362599">ওয়েবসাইট, অ্যাপ এবং এক্সটেনশনকে লোকেশন ভিত্তিক পরিষেবা, ডিভাইসের মাইক্রোফোন, ক্যামেরা ও অন্যান্য ফিচার ব্যবহারের অনুমতি দেয়</translation>
@@ -370,7 +368,6 @@
 <translation id="6715542151869432661">কোনও মোবাইল ডিভাইস খুঁজে পাওয়া যায়নি।</translation>
 <translation id="6723839937902243910">পাওয়ার</translation>
 <translation id="6751826523481687655">পারফরম্যান্স ট্রেস করার বিকল্প চালু আছে</translation>
-<translation id="6785414152754474415">ব্যাটারি <ph name="PERCENTAGE" />% পূর্ণ এবং চার্জ হচ্ছে৷</translation>
 <translation id="6790428901817661496">চালু করুন</translation>
 <translation id="6803622936009808957">সমর্থিত রেসুলিউশানগুলি খুঁজে না পাওয়ায় প্রদর্শনগুলি মিরর মানে প্রতিবিম্বিত করতে পারেনি। এর পরিবর্তে প্রসারিত ডেস্কটপে প্রবেশ করেছে।</translation>
 <translation id="6820676911989879663">বিরতি নিন!</translation>
@@ -404,6 +401,7 @@
 <translation id="7348093485538360975">অন-স্ক্রীণ কীবোর্ড</translation>
 <translation id="735745346212279324">VPN ডিসকানেক্ট করা হয়েছে</translation>
 <translation id="7377169924702866686">Caps Lock চালু আছে৷</translation>
+<translation id="7378594059915113390">মিডিয়ার নিয়ন্ত্রণ</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" />সেকেন্ড</translation>
 <translation id="7398254312354928459">নেটওয়ার্ক সংযোগ পরিবর্তন করা হয়েছে</translation>
 <translation id="7405710164030118432">ডিভাইসটি আনলক করতে আপনার Family Link-এর অভিভাবকীয় অ্যাক্সেস কোডটি লিখুন</translation>
@@ -417,6 +415,7 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />, <ph name="SPECIFIED_RESOLUTION" /> সমর্থন করে না৷ রেজোলিউশন <ph name="FALLBACK_RESOLUTION" />-এ পরিবর্তিত হয়েছে</translation>
 <translation id="7562368315689366235">ইমোজি প্যালেট</translation>
 <translation id="7564874036684306347">কোনও উইন্ডো অন্য ডেস্কটপে সরানো হলে সেটির আচরণে অপ্রত্যাশিত পরিবর্তন হতে পারে। পরবর্তী বিজ্ঞপ্তি, উইন্ডো এবং ডায়ালগ দুটি ডেস্কটপ মিলিয়ে দেখানো হতে পারে।</translation>
+<translation id="7568294522609223312">অটোমেটিক ক্লিক বিকল্প বন্ধ করুন</translation>
 <translation id="7569509451529460200">ব্রেল এবং ChromeVox সক্ষম করেছেন</translation>
 <translation id="7593891976182323525">Search অথবা Shift</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (মালিক)</translation>
@@ -433,7 +432,6 @@
 <translation id="7814236020522506259"><ph name="HOUR" /> এবং <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">জোরালো সিগন্যাল</translation>
 <translation id="7837740436429729974">সময় শেষ</translation>
-<translation id="7842211907556571265"><ph name="NETWORK_NAME" />-এ কানেক্ট করা হচ্ছে</translation>
 <translation id="7842569679327885685">সতর্কতা: পরীক্ষামূলক বৈশিষ্ট্য</translation>
 <translation id="7846634333498149051">কীবোর্ড</translation>
 <translation id="7868900307798234037">আঙ্গুলের ছাপ দিয়ে আনলক করা হচ্ছে</translation>
@@ -505,6 +503,7 @@
 <translation id="8877788021141246043">রিমাইন্ডার সেট করুন</translation>
 <translation id="8878886163241303700">স্ক্রিন সম্প্রসারণ করা হচ্ছে</translation>
 <translation id="890616557918890486">সোর্স পরিবর্তন করুন</translation>
+<translation id="8909138438987180327">ব্যাটারিতে <ph name="PERCENTAGE" /> শতাংশ চার্জ আছে।</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google অ্যাসিস্ট্যান্ট এই ভাষায় কথা বলে না।</translation>
 <translation id="8938800817013097409">USB-C ডিভাইস (পিছনের ডান পোর্ট)</translation>
@@ -513,9 +512,11 @@
 <translation id="8990809378771970590"><ph name="IME_NAME" /> ব্যবহার করা হচ্ছে</translation>
 <translation id="899350903320462459">বিজ্ঞপ্তি সম্পর্কিত অ্যাকশনের জন্য <ph name="LOGIN_ID" /> হিসেবে ডিভাইস আনলক করুন</translation>
 <translation id="8995603266996330174">পরিচালনা করেছেন <ph name="DOMAIN" /> </translation>
+<translation id="9017320285115481645">Family Link-এর অভিভাবকীয় অ্যাক্সেস কোডটি লিখুন।</translation>
 <translation id="9029474291399787231">Adobe Flash Player-এর আপডেট উপলভ্য</translation>
 <translation id="9056839673611986238">ডিভাইস রোল ব্যাক করা হবে</translation>
 <translation id="9070640332319875144">অ্যাসিস্ট্যান্ট সেটিংস</translation>
+<translation id="9072519059834302790"><ph name="TIME_LEFT" /> পরে ব্যাটারির চার্জ শেষ হয়ে যাবে।</translation>
 <translation id="9074739597929991885">ব্লুটুথ</translation>
 <translation id="9079731690316798640">ওয়াই ফাই: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">মাইক্রোফোন ব্যবহার করা হচ্ছে।</translation>
@@ -526,8 +527,8 @@
 <translation id="9179259655489829027">এই বৈশিষ্ট্যের মাধ্যমে আপনি কোনও পাসওয়ার্ড ছাড়াই সাইন-ইন করা যেকোনও ব্যবহারকারীকে দ্রুত অ্যাক্সেস করতে পারেন। এটি শুধুমাত্র বিশ্বস্ত অ্যাকাউন্টেই ব্যবহার করুন।</translation>
 <translation id="9193626018745640770">অজানা ডিভাইসে কাস্ট করা হচ্ছে</translation>
 <translation id="9194617393863864469">অন্য ব্যবহারকারীকে সাইন-ইন করান...</translation>
-<translation id="9201131092683066720">ব্যাটারি <ph name="PERCENTAGE" />% পূর্ণ৷</translation>
 <translation id="9210037371811586452">সমন্বিত ডেস্কটপ মোড থেকে প্রস্থান করছে</translation>
+<translation id="9211681782751733685">ব্যাটারি পুরো চার্জ হতে <ph name="TIME_REMAINING" /> বাকি আছে।</translation>
 <translation id="9215934040295798075">ওয়ালপেপার সেট করুন</translation>
 <translation id="921989828232331238">আপনার অভিভাবক এই ডিভাইসটি আজকের জন্য লক করে দিয়েছেন</translation>
 <translation id="923686485342484400">সাইন-আউট করার জন্য দু'বার Control Shift Q টিপুন৷</translation>

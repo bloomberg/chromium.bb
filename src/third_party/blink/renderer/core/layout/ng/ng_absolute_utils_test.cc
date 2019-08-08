@@ -35,7 +35,7 @@ class NGAbsoluteUtilsTest : public testing::Test {
     style_->SetBorderTopStyle(EBorderStyle::kSolid);
     style_->SetBorderBottomStyle(EBorderStyle::kSolid);
     style_->SetBoxSizing(EBoxSizing::kBorderBox);
-    container_size_ = NGLogicalSize(LayoutUnit(200), LayoutUnit(300));
+    container_size_ = LogicalSize(LayoutUnit(200), LayoutUnit(300));
 
     ltr_space_ =
         CreateConstraintSpace(TextDirection::kLtr, WritingMode::kHorizontalTb);
@@ -90,7 +90,7 @@ class NGAbsoluteUtilsTest : public testing::Test {
   }
 
   scoped_refptr<ComputedStyle> style_;
-  NGLogicalSize container_size_;
+  LogicalSize container_size_;
   NGConstraintSpace ltr_space_;
   NGConstraintSpace rtl_space_;
   NGConstraintSpace vlr_space_;

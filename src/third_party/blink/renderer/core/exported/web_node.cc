@@ -175,7 +175,7 @@ WebElementCollection WebNode::GetElementsByHTMLTagName(
     const WebString& tag) const {
   if (private_->IsContainerNode()) {
     return WebElementCollection(
-        ToContainerNode(private_.Get())
+        blink::To<ContainerNode>(private_.Get())
             ->getElementsByTagNameNS(html_names::xhtmlNamespaceURI, tag));
   }
   return WebElementCollection();
@@ -184,7 +184,7 @@ WebElementCollection WebNode::GetElementsByHTMLTagName(
 WebElement WebNode::QuerySelector(const WebString& selector) const {
   if (!private_->IsContainerNode())
     return WebElement();
-  return ToContainerNode(private_.Get())
+  return blink::To<ContainerNode>(private_.Get())
       ->QuerySelector(selector, IGNORE_EXCEPTION_FOR_TESTING);
 }
 
@@ -193,7 +193,7 @@ WebVector<WebElement> WebNode::QuerySelectorAll(
   if (!private_->IsContainerNode())
     return WebVector<WebElement>();
   StaticElementList* elements =
-      ToContainerNode(private_.Get())
+      blink::To<ContainerNode>(private_.Get())
           ->QuerySelectorAll(selector, IGNORE_EXCEPTION_FOR_TESTING);
   if (elements) {
     WebVector<WebElement> vector((size_t)elements->length());

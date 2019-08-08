@@ -484,12 +484,10 @@ bool FileSystemContext::CanServeURLRequest(const FileSystemURL& url) const {
   // We never support accessing files in isolated filesystems via an URL.
   if (url.mount_type() == kFileSystemTypeIsolated)
     return false;
-#if defined(OS_CHROMEOS)
   if (url.type() == kFileSystemTypeTemporary &&
       sandbox_backend_->enable_temporary_file_system_in_incognito()) {
     return true;
   }
-#endif
   return !is_incognito_ || !FileSystemContext::IsSandboxFileSystem(url.type());
 }
 

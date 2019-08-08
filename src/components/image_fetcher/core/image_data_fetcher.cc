@@ -81,11 +81,7 @@ void ImageDataFetcher::FetchImageData(
   request->url = image_url;
   request->referrer_policy = referrer_policy;
   request->referrer = GURL(referrer);
-  if (!send_cookies) {
-    request->load_flags = net::LOAD_DO_NOT_SEND_COOKIES |
-                          net::LOAD_DO_NOT_SAVE_COOKIES |
-                          net::LOAD_DO_NOT_SEND_AUTH_DATA;
-  }
+  request->allow_credentials = send_cookies;
 
   std::unique_ptr<network::SimpleURLLoader> loader =
       network::SimpleURLLoader::Create(std::move(request), traffic_annotation);

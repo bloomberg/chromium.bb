@@ -1,10 +1,6 @@
-# TODO(https://crbug.com/704441) : Added temporarily.
 include_rules = [
-    "+base/json/json_reader.h",
-    "+base/memory/scoped_refptr.h",
+    # TODO(https://crbug.com/704441) : Added temporarily.
     "+base/strings",
-    "+base/values.h",
     "+net/base/mime_util.h",
-    "+ui/gfx/geometry/size.h",
-    "+url",
+    "+third_party/blink/renderer/core/frame/web_local_frame_impl.h",
 ]

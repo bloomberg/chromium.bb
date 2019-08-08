@@ -89,6 +89,11 @@ base::ProcessId CoordinatorImpl::GetProcessIdForClientIdentity(
   return process_map_->GetProcessId(identity);
 }
 
+std::map<base::ProcessId, std::vector<std::string>>
+CoordinatorImpl::ComputePidToServiceNamesMap() const {
+  return process_map_->ComputePidToServiceNamesMap();
+}
+
 service_manager::Identity CoordinatorImpl::GetClientIdentityForCurrentRequest()
     const {
   return bindings_.dispatch_context();
@@ -207,11 +212,13 @@ void CoordinatorImpl::GetVmRegionsForHeapProfiler(
       std::make_unique<QueuedVmRegionRequest>(dump_guid, std::move(callback));
   in_progress_vm_region_requests_[dump_guid] = std::move(request);
 
+  auto names_for_pid = ComputePidToServiceNamesMap();
   std::vector<QueuedRequestDispatcher::ClientInfo> clients;
   for (const auto& kv : clients_) {
     auto client_identity = kv.second->identity;
     const base::ProcessId pid = GetProcessIdForClientIdentity(client_identity);
-    clients.emplace_back(kv.second->client.get(), pid, kv.second->process_type);
+    clients.emplace_back(kv.second->client.get(), pid, kv.second->process_type,
+                         std::move(names_for_pid[pid]));
   }
 
   QueuedVmRegionRequest* request_ptr =
@@ -373,6 +380,7 @@ void CoordinatorImpl::PerformNextQueuedGlobalMemoryDump() {
   if (request == nullptr)
     return;
 
+  auto names_for_pid = ComputePidToServiceNamesMap();
   std::vector<QueuedRequestDispatcher::ClientInfo> clients;
   for (const auto& kv : clients_) {
     auto client_identity = kv.second->identity;
@@ -382,7 +390,9 @@ void CoordinatorImpl::PerformNextQueuedGlobalMemoryDump() {
               << client_identity.ToString();
       continue;
     }
-    clients.emplace_back(kv.second->client.get(), pid, kv.second->process_type);
+
+    clients.emplace_back(kv.second->client.get(), pid, kv.second->process_type,
+                         std::move(names_for_pid[pid]));
   }
 
   auto chrome_callback =
@@ -413,9 +423,8 @@ void CoordinatorImpl::PerformNextQueuedGlobalMemoryDump() {
             .IsArgumentFilterEnabled();
     heap_profiler_->DumpProcessesForTracing(
         strip_path_from_mapped_files,
-        base::BindRepeating(&CoordinatorImpl::OnDumpProcessesForTracing,
-                            weak_ptr_factory_.GetWeakPtr(),
-                            request->dump_guid));
+        base::BindOnce(&CoordinatorImpl::OnDumpProcessesForTracing,
+                       weak_ptr_factory_.GetWeakPtr(), request->dump_guid));
 
     base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
@@ -528,7 +537,7 @@ void CoordinatorImpl::FinalizeVmRegionDumpIfAllManagersReplied(
 
 void CoordinatorImpl::OnDumpProcessesForTracing(
     uint64_t dump_guid,
-    std::vector<mojom::SharedBufferWithSizePtr> buffers) {
+    std::vector<mojom::HeapProfileResultPtr> heap_profile_results) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   QueuedRequest* request = GetCurrentRequest();
   if (!request || request->dump_guid != dump_guid) {
@@ -537,23 +546,9 @@ void CoordinatorImpl::OnDumpProcessesForTracing(
 
   request->heap_dump_in_progress = false;
 
-  for (auto& buffer_ptr : buffers) {
-    mojo::ScopedSharedBufferHandle& buffer = buffer_ptr->buffer;
-    uint32_t size = buffer_ptr->size;
-
-    if (!buffer->is_valid())
-      continue;
-
-    mojo::ScopedSharedBufferMapping mapping = buffer->Map(size);
-    if (!mapping) {
-      DLOG(ERROR) << "Failed to map buffer";
-      continue;
-    }
-
-    const char* char_buffer = static_cast<const char*>(mapping.get());
-    std::string json(char_buffer, char_buffer + size);
+  for (auto& result : heap_profile_results) {
     base::trace_event::TraceArguments args(
-        "dumps", std::make_unique<StringWrapper>(std::move(json)));
+        "dumps", std::make_unique<StringWrapper>(std::move(result->json)));
 
     // Using the same id merges all of the heap dumps into a single detailed
     // dump node in the UI.
@@ -562,7 +557,7 @@ void CoordinatorImpl::OnDumpProcessesForTracing(
         base::trace_event::TraceLog::GetCategoryGroupEnabled(
             base::trace_event::MemoryDumpManager::kTraceCategory),
         "periodic_interval", trace_event_internal::kGlobalScope, dump_guid,
-        buffer_ptr->pid, &args, TRACE_EVENT_FLAG_HAS_ID);
+        result->pid, &args, TRACE_EVENT_FLAG_HAS_ID);
   }
 
   FinalizeGlobalMemoryDumpIfAllManagersReplied();

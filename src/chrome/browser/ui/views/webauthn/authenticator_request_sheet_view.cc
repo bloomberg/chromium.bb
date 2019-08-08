@@ -93,7 +93,7 @@ AuthenticatorRequestSheetView::CreateIllustrationWithOverlays() {
   step_illustration_ = image_view.get();
   UpdateIconImageFromModel();
   image_view->SetSize(illustration_size);
-  image_view->SetVerticalAlignment(views::ImageView::LEADING);
+  image_view->SetVerticalAlignment(views::ImageView::Alignment::kLeading);
   image_with_overlays->AddChildView(image_view.release());
 
   if (model()->IsActivityIndicatorVisible()) {
@@ -109,8 +109,7 @@ AuthenticatorRequestSheetView::CreateIllustrationWithOverlays() {
   }
 
   if (model()->IsBackButtonVisible()) {
-    std::unique_ptr<views::ImageButton> back_arrow(
-        views::CreateVectorImageButton(this));
+    auto back_arrow = views::CreateVectorImageButton(this);
     back_arrow->SetFocusForPlatform();
     back_arrow->SetAccessibleName(l10n_util::GetStringUTF16(IDS_BACK_BUTTON));
 
@@ -128,8 +127,8 @@ AuthenticatorRequestSheetView::CreateIllustrationWithOverlays() {
     back_arrow->SizeToPreferredSize();
     back_arrow->SetX(dialog_insets.left());
     back_arrow->SetY(dialog_insets.top());
-    back_arrow_button_ = back_arrow.get();
-    image_with_overlays->AddChildView(back_arrow.release());
+    back_arrow_button_ =
+        image_with_overlays->AddChildView(std::move(back_arrow));
   }
 
   return image_with_overlays;
@@ -159,14 +158,18 @@ AuthenticatorRequestSheetView::CreateContentsBelowIllustration() {
       views::style::STYLE_PRIMARY);
   title_label->SetMultiLine(true);
   title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  title_label->SetAllowCharacterBreak(true);
   label_container->AddChildView(title_label.release());
 
-  auto description_label = std::make_unique<views::Label>(
-      model()->GetStepDescription(),
-      views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT);
-  description_label->SetMultiLine(true);
-  description_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  label_container->AddChildView(description_label.release());
+  base::string16 description = model()->GetStepDescription();
+  if (!description.empty()) {
+    auto description_label = std::make_unique<views::Label>(
+        std::move(description), views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT);
+    description_label->SetMultiLine(true);
+    description_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    description_label->SetAllowCharacterBreak(true);
+    label_container->AddChildView(description_label.release());
+  }
 
   base::Optional<base::string16> additional_desciption =
       model()->GetAdditionalDescription();
@@ -176,6 +179,7 @@ AuthenticatorRequestSheetView::CreateContentsBelowIllustration() {
         views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT);
     label->SetMultiLine(true);
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    label->SetAllowCharacterBreak(true);
     label_container->AddChildView(label.release());
   }
 
@@ -192,8 +196,8 @@ AuthenticatorRequestSheetView::CreateContentsBelowIllustration() {
   return contents;
 }
 
-void AuthenticatorRequestSheetView::OnNativeThemeChanged(
-    const ui::NativeTheme* theme) {
+void AuthenticatorRequestSheetView::OnThemeChanged() {
+  ui::NativeTheme* theme = GetNativeTheme();
   if (theme != ui::NativeTheme::GetInstanceForNativeUi())
     return;
   bool in_dark_mode = theme->SystemDarkModeEnabled();

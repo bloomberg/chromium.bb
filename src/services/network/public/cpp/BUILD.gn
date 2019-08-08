@@ -16,6 +16,7 @@ jumbo_component("cpp") {
   output_name = "network_cpp"
 
   sources = [
+    "constants.h",
     "cors/cors.cc",
     "cors/cors.h",
     "cors/origin_access_entry.cc",
@@ -199,10 +200,6 @@ source_set("tests") {
     "simple_url_loader_unittest.cc",
     "url_request_mojom_traits_unittest.cc",
   ]
-
-  if (is_ct_supported) {
-    sources += [ "signed_tree_head_mojom_traits_unittest.cc" ]
-  }
 
   if (!is_ios) {
     sources += [ "server/http_server_unittest.cc" ]

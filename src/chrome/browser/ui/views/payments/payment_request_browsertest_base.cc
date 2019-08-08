@@ -26,10 +26,10 @@
 #include "chrome/browser/ui/views/payments/validating_textfield.h"
 #include "chrome/browser/ui/views/payments/view_stack.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/autofill/core/browser/address_combobox_model.h"
-#include "components/autofill/core/browser/autofill_profile.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/ui/address_combobox_model.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/payments/content/payment_request.h"
 #include "components/payments/content/payment_request_web_contents_manager.h"
@@ -713,7 +713,7 @@ base::string16 PaymentRequestBrowserTestBase::GetComboboxValue(
       static_cast<ValidatingCombobox*>(delegate_->dialog_view()->GetViewByID(
           EditorViewController::GetInputFieldViewId(type)));
   DCHECK(combobox);
-  return combobox->model()->GetItemAt(combobox->selected_index());
+  return combobox->model()->GetItemAt(combobox->GetSelectedIndex());
 }
 
 void PaymentRequestBrowserTestBase::SetComboboxValue(
@@ -755,7 +755,7 @@ bool PaymentRequestBrowserTestBase::IsEditorComboboxInvalid(
       static_cast<ValidatingCombobox*>(delegate_->dialog_view()->GetViewByID(
           EditorViewController::GetInputFieldViewId(type)));
   DCHECK(combobox);
-  return combobox->invalid();
+  return combobox->GetInvalid();
 }
 
 bool PaymentRequestBrowserTestBase::IsPayButtonEnabled() {
@@ -763,7 +763,7 @@ bool PaymentRequestBrowserTestBase::IsPayButtonEnabled() {
       static_cast<views::Button*>(delegate_->dialog_view()->GetViewByID(
           static_cast<int>(DialogViewID::PAY_BUTTON)));
   DCHECK(button);
-  return button->enabled();
+  return button->GetEnabled();
 }
 
 void PaymentRequestBrowserTestBase::WaitForAnimation() {
@@ -834,6 +834,14 @@ void PaymentRequestBrowserTestBase::ResetEventWaiterForDialogOpened() {
 
 void PaymentRequestBrowserTestBase::WaitForObservedEvent() {
   event_waiter_->Wait();
+}
+
+void PaymentRequestBrowserTestBase::EnableSkipUIForForBasicCard() {
+  std::vector<PaymentRequest*> requests =
+      GetPaymentRequests(GetActiveWebContents());
+  ASSERT_EQ(1U, requests.size());
+  requests.front()
+      ->set_skip_ui_for_non_url_payment_method_identifiers_for_test();
 }
 
 }  // namespace payments

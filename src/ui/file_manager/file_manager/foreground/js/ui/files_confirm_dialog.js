@@ -18,7 +18,7 @@ FilesConfirmDialog.prototype.__proto__ = cr.ui.dialogs.ConfirmDialog.prototype;
  * @protected
  * @override
  */
-FilesConfirmDialog.prototype.initDom_ = function() {
-  cr.ui.dialogs.ConfirmDialog.prototype.initDom_.call(this);
-  this.frame_.classList.add('files-confirm-dialog');
+FilesConfirmDialog.prototype.initDom = function() {
+  cr.ui.dialogs.ConfirmDialog.prototype.initDom.call(this);
+  this.frame.classList.add('files-confirm-dialog');
 };

@@ -182,7 +182,7 @@ as a separate entry in the `folders` array:
 ```json
 {
   "name": "blink",
-  "path": "src/third_party/WebKit",
+  "path": "src/third_party/blink",
 }
 ```
 

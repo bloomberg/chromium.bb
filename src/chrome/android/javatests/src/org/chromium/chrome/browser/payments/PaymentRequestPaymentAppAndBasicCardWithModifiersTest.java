@@ -40,7 +40,6 @@ import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
 import org.chromium.payments.mojom.BasicCardNetwork;
 import org.chromium.payments.mojom.BasicCardType;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -78,7 +77,7 @@ public class PaymentRequestPaymentAppAndBasicCardWithModifiersTest {
     @MediumTest
     @Feature({"Payments"})
     public void testUpdateTotalAndInstrumentLabelWithBobPayModifiers()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws InterruptedException, TimeoutException {
         // Mastercard card with complete set of information and unknown type.
         mHelper.setCreditCard(new CreditCard("", "https://example.com", true /* isLocal */,
                 true /* isCached */, "Jon Doe", "5555555555554444", "" /* obfuscatedNumber */, "12",
@@ -107,7 +106,7 @@ public class PaymentRequestPaymentAppAndBasicCardWithModifiersTest {
     @MediumTest
     @Feature({"Payments"})
     public void testUpdateTotalAndInstrumentLabelWithCreditModifiers()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws InterruptedException, TimeoutException {
         // Credit mastercard card with complete set of information.
         mHelper.addServerCreditCard(new CreditCard("guid_1", "https://example.com",
                 false /* isLocal */, true /* isCached */, "Jon Doe", "5454545454545454",
@@ -142,7 +141,7 @@ public class PaymentRequestPaymentAppAndBasicCardWithModifiersTest {
     @MediumTest
     @Feature({"Payments"})
     public void testUpdateTotalAndInstrumentLabelWithDebitModifiers()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws InterruptedException, TimeoutException {
         // Debit mastercard card with complete set of information.
         mHelper.addServerCreditCard(new CreditCard("guid_1", "https://example.com",
                 false /* isLocal */, true /* isCached */, "Jon Doe", "5200828282828210",
@@ -177,7 +176,7 @@ public class PaymentRequestPaymentAppAndBasicCardWithModifiersTest {
     @MediumTest
     @Feature({"Payments"})
     public void testUpdateTotalAndInstrumentLabelWithCreditVisaModifiers()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws InterruptedException, TimeoutException {
         // Credit visa card with complete set of information.
         mHelper.addServerCreditCard(new CreditCard("guid_1", "https://example.com",
                 false /* isLocal */, true /* isCached */, "Jon Doe", "4111111111111111",
@@ -211,7 +210,7 @@ public class PaymentRequestPaymentAppAndBasicCardWithModifiersTest {
     @MediumTest
     @Feature({"Payments"})
     public void testUpdateTotalAndInstrumentLabelWithMasterCreditModifiers()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws InterruptedException, TimeoutException {
         // Credit mastercard with complete set of information.
         mHelper.addServerCreditCard(new CreditCard("guid_1", "https://example.com",
                 false /* isLocal */, true /* isCached */, "Jon Doe", "5200828282828210",
@@ -245,7 +244,7 @@ public class PaymentRequestPaymentAppAndBasicCardWithModifiersTest {
     @MediumTest
     @Feature({"Payments"})
     public void testUpdateTotalAndInstrumentLabelWithMastercardModifiers()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws InterruptedException, TimeoutException {
         // Mastercard card with complete set of information and unknown type.
         String guid = mHelper.setCreditCard(new CreditCard("", "https://example.com",
                 true /* isLocal */, true /* isCached */, "Jon Doe", "5555555555554444",
@@ -293,8 +292,7 @@ public class PaymentRequestPaymentAppAndBasicCardWithModifiersTest {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testPaymentAppCanPayWithModifiers()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testPaymentAppCanPayWithModifiers() throws InterruptedException, TimeoutException {
         mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, DELAYED_RESPONSE);
         mPaymentRequestTestRule.triggerUIAndWait(
                 "buy_with_bobpay_discount", mPaymentRequestTestRule.getReadyToPay());
@@ -318,7 +316,7 @@ public class PaymentRequestPaymentAppAndBasicCardWithModifiersTest {
     @MediumTest
     @Feature({"Payments"})
     public void testUpdateTotalWithCreditVisaModifiersForServiceWorkerPaymentApp()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws InterruptedException, TimeoutException {
         String[] bobpayMethodNames = {"https://bobpay.com", "basic-card"};
         int[] bobpayNetworks = {BasicCardNetwork.VISA};
         int[] bobPayTypes = {BasicCardType.CREDIT};

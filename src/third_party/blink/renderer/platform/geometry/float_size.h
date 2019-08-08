@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/hash_traits.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/skia/include/core/SkSize.h"
 #include "ui/gfx/geometry/size_f.h"
@@ -79,6 +80,10 @@ class PLATFORM_EXPORT FloatSize {
            width_ < std::numeric_limits<float>::epsilon() &&
            -std::numeric_limits<float>::epsilon() < height_ &&
            height_ < std::numeric_limits<float>::epsilon();
+  }
+  bool IsValid() const {
+    return width_ != -std::numeric_limits<float>::infinity() &&
+           height_ != -std::numeric_limits<float>::infinity();
   }
   bool IsExpressibleAsIntSize() const;
 
@@ -150,6 +155,9 @@ class PLATFORM_EXPORT FloatSize {
 
  private:
   float width_, height_;
+
+  friend struct ::WTF::DefaultHash<blink::FloatSize>;
+  friend struct ::WTF::HashTraits<blink::FloatSize>;
 };
 
 inline FloatSize& operator+=(FloatSize& a, const FloatSize& b) {
@@ -219,5 +227,44 @@ PLATFORM_EXPORT WTF::TextStream& operator<<(WTF::TextStream&, const FloatSize&);
 
 // Allows this class to be stored in a HeapVector.
 WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(blink::FloatSize)
+
+namespace WTF {
+
+template <>
+struct DefaultHash<blink::FloatSize> {
+  STATIC_ONLY(DefaultHash);
+  struct Hash {
+    STATIC_ONLY(Hash);
+    typedef typename IntTypes<sizeof(float)>::UnsignedType Bits;
+    static unsigned GetHash(const blink::FloatSize& key) {
+      return HashInts(bit_cast<Bits>(key.Width()),
+                      bit_cast<Bits>(key.Height()));
+    }
+    static bool Equal(const blink::FloatSize& a, const blink::FloatSize& b) {
+      return bit_cast<Bits>(a.Width()) == bit_cast<Bits>(b.Width()) &&
+             bit_cast<Bits>(a.Height()) == bit_cast<Bits>(b.Height());
+    }
+    static const bool safe_to_compare_to_empty_or_deleted = true;
+  };
+};
+
+template <>
+struct HashTraits<blink::FloatSize> : GenericHashTraits<blink::FloatSize> {
+  STATIC_ONLY(HashTraits);
+  static const bool kEmptyValueIsZero = false;
+  static blink::FloatSize EmptyValue() {
+    return blink::FloatSize(std::numeric_limits<float>::infinity(),
+                            std::numeric_limits<float>::infinity());
+  }
+  static void ConstructDeletedValue(blink::FloatSize& slot, bool) {
+    slot = blink::FloatSize(-std::numeric_limits<float>::infinity(),
+                            -std::numeric_limits<float>::infinity());
+  }
+  static bool IsDeletedValue(const blink::FloatSize& value) {
+    return !value.IsValid();
+  }
+};
+
+}  // namespace WTF
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_FLOAT_SIZE_H_

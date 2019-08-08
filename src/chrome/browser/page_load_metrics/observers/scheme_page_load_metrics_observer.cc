@@ -44,6 +44,8 @@ page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 SchemePageLoadMetricsObserver::OnCommit(
     content::NavigationHandle* navigation_handle,
     ukm::SourceId source_id) {
+  // Capture committed transition type.
+  transition_ = navigation_handle->GetPageTransition();
   if (navigation_handle->GetURL().scheme() == url::kHttpScheme ||
       navigation_handle->GetURL().scheme() == url::kHttpsScheme) {
     return CONTINUE_OBSERVING;
@@ -106,6 +108,17 @@ void SchemePageLoadMetricsObserver::OnFirstContentfulPaintInPage(
       "PageLoad.Clients.Scheme.HTTP.PaintTiming.UnderStat";
   static constexpr char kUnderStatHistogramHttps[] =
       "PageLoad.Clients.Scheme.HTTPS.PaintTiming.UnderStat";
+  static constexpr char kUnderStatHistogramHttpUserNewNav[] =
+      "PageLoad.Clients.Scheme.HTTP.PaintTiming.UnderStat.UserInitiated."
+      "NewNavigation";
+  static constexpr char kUnderStatHistogramHttpsUserNewNav[] =
+      "PageLoad.Clients.Scheme.HTTPS.PaintTiming.UnderStat.UserInitiated."
+      "NewNavigation";
+
+  bool is_user_initiated = extra_info.user_initiated_info.browser_initiated ||
+                           extra_info.user_initiated_info.user_gesture;
+  bool is_user_initiated_new_navigation =
+      is_user_initiated && ui::PageTransitionIsNewNavigation(transition_);
 
   // Record understat metrics for the time to first contentful paint.
   static constexpr const int kUnderStatRecordingIntervalsSeconds[] = {1, 2, 5,
@@ -119,6 +132,12 @@ void SchemePageLoadMetricsObserver::OnFirstContentfulPaintInPage(
                                     ? kUnderStatHistogramHttp
                                     : kUnderStatHistogramHttps,
                                 PageLoadTimingUnderStat::kTotal);
+  if (is_user_initiated_new_navigation) {
+    base::UmaHistogramEnumeration(extra_info.url.scheme() == url::kHttpScheme
+                                      ? kUnderStatHistogramHttpUserNewNav
+                                      : kUnderStatHistogramHttpsUserNewNav,
+                                  PageLoadTimingUnderStat::kTotal);
+  }
 
   for (size_t index = 0;
        index < base::size(kUnderStatRecordingIntervalsSeconds); ++index) {
@@ -130,6 +149,13 @@ void SchemePageLoadMetricsObserver::OnFirstContentfulPaintInPage(
               ? kUnderStatHistogramHttp
               : kUnderStatHistogramHttps,
           static_cast<PageLoadTimingUnderStat>(index + 1));
+      if (is_user_initiated_new_navigation) {
+        base::UmaHistogramEnumeration(
+            extra_info.url.scheme() == url::kHttpScheme
+                ? kUnderStatHistogramHttpUserNewNav
+                : kUnderStatHistogramHttpsUserNewNav,
+            static_cast<PageLoadTimingUnderStat>(index + 1));
+      }
     }
   }
 }

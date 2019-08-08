@@ -43,11 +43,17 @@ using VideoCaptureJpegDecoderFactoryCB =
 class CAPTURE_EXPORT VideoCaptureDeviceClient
     : public VideoCaptureDevice::Client {
  public:
+#if defined(OS_CHROMEOS)
   VideoCaptureDeviceClient(
       VideoCaptureBufferType target_buffer_type,
       std::unique_ptr<VideoFrameReceiver> receiver,
       scoped_refptr<VideoCaptureBufferPool> buffer_pool,
-      VideoCaptureJpegDecoderFactoryCB optional_jpeg_decoder_factory_callback);
+      VideoCaptureJpegDecoderFactoryCB jpeg_decoder_factory_callback);
+#else
+  VideoCaptureDeviceClient(VideoCaptureBufferType target_buffer_type,
+                           std::unique_ptr<VideoFrameReceiver> receiver,
+                           scoped_refptr<VideoCaptureBufferPool> buffer_pool);
+#endif  // defined(OS_CHROMEOS)
   ~VideoCaptureDeviceClient() override;
 
   static Buffer MakeBufferStruct(
@@ -59,6 +65,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceClient
   void OnIncomingCapturedData(const uint8_t* data,
                               int length,
                               const VideoCaptureFormat& frame_format,
+                              const gfx::ColorSpace& color_space,
                               int clockwise_rotation,
                               base::TimeTicks reference_time,
                               base::TimeDelta timestamp,
@@ -108,9 +115,11 @@ class CAPTURE_EXPORT VideoCaptureDeviceClient
   const std::unique_ptr<VideoFrameReceiver> receiver_;
   std::vector<int> buffer_ids_known_by_receiver_;
 
+#if defined(OS_CHROMEOS)
   VideoCaptureJpegDecoderFactoryCB optional_jpeg_decoder_factory_callback_;
   std::unique_ptr<VideoCaptureJpegDecoder> external_jpeg_decoder_;
   base::OnceClosure on_started_using_gpu_cb_;
+#endif  // defined(OS_CHROMEOS)
 
   // The pool of shared-memory buffers used for capturing.
   const scoped_refptr<VideoCaptureBufferPool> buffer_pool_;

@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/platform/fonts/ng_text_fragment_paint_info.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/caching_word_shaper.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_bloberizer.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
 #include "third_party/blink/renderer/platform/fonts/text_run_paint_info.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
@@ -106,11 +107,12 @@ void Font::Update(FontSelector* font_selector) const {
 
 namespace {
 
-void DrawBlobs(cc::PaintCanvas* canvas,
-               const cc::PaintFlags& flags,
-               const ShapeResultBloberizer::BlobBuffer& blobs,
-               const FloatPoint& point,
-               const cc::NodeHolder& node_holder = cc::NodeHolder()) {
+void DrawBlobs(
+    cc::PaintCanvas* canvas,
+    const cc::PaintFlags& flags,
+    const ShapeResultBloberizer::BlobBuffer& blobs,
+    const FloatPoint& point,
+    const cc::NodeHolder& node_holder = cc::NodeHolder::EmptyNodeHolder()) {
   for (const auto& blob_info : blobs) {
     DCHECK(blob_info.blob);
     cc::PaintCanvasAutoRestore auto_restore(canvas, false);
@@ -174,7 +176,7 @@ void Font::DrawText(cc::PaintCanvas* canvas,
   ShapeResultBloberizer bloberizer(*this, device_scale_factor);
   bloberizer.FillGlyphs(text_info.text, text_info.from, text_info.to,
                         text_info.shape_result);
-  DrawBlobs(canvas, flags, bloberizer.Blobs(), point);
+  DrawBlobs(canvas, flags, bloberizer.Blobs(), point, node_holder);
 }
 
 bool Font::DrawBidiText(cc::PaintCanvas* canvas,
@@ -274,6 +276,21 @@ void Font::DrawEmphasisMarks(cc::PaintCanvas* canvas,
                                     text_info.to, emphasis_glyph_data,
                                     text_info.shape_result);
   DrawBlobs(canvas, flags, bloberizer.Blobs(), point);
+}
+
+FloatRect Font::TextInkBounds(const NGTextFragmentPaintInfo& text_info) const {
+  // No need to compute bounds if using custom fonts that are in the process
+  // of loading as it won't be painted.
+  if (ShouldSkipDrawing())
+    return FloatRect();
+
+  // NOTE(eae): We could use the SkTextBlob::bounds API [1] however by default
+  // it returns conservative bounds (rather than tight bounds) which are
+  // unsuitable for our needs. If we could get the tight bounds from Skia that
+  // would be quite a bit faster than the two-stage approach employed by the
+  // ShapeResultView::ComputeInkBounds method.
+  // 1: https://skia.org/user/api/SkTextBlob_Reference#SkTextBlob_bounds
+  return text_info.shape_result->ComputeInkBounds();
 }
 
 float Font::Width(const TextRun& run,

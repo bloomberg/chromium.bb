@@ -34,7 +34,7 @@ KeywordHintView::KeywordHintView(LocationBarView* parent, Profile* profile)
       chip_container_(new views::View()),
       chip_label_(
           new views::Label(base::string16(), CONTEXT_OMNIBOX_DECORATION)) {
-  OmniboxTint tint = parent->GetTint();
+  OmniboxTint tint = parent->CalculateTint();
   const SkColor leading_label_text_color =
       GetOmniboxColor(OmniboxPart::LOCATION_BAR_TEXT_DEFAULT, tint);
   const SkColor background_color =
@@ -205,7 +205,7 @@ void KeywordHintView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 }
 
 void KeywordHintView::OnThemeChanged() {
-  OmniboxTint tint = location_bar_view_->GetTint();
+  OmniboxTint tint = location_bar_view_->CalculateTint();
   const SkColor leading_label_text_color =
       GetOmniboxColor(OmniboxPart::LOCATION_BAR_TEXT_DEFAULT, tint);
   const SkColor background_color =

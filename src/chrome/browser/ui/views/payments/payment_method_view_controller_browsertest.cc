@@ -42,9 +42,9 @@ IN_PROC_BROWSER_TEST_F(PaymentMethodViewControllerTest, OneCardSelected) {
 
   EXPECT_EQ(request->state()->available_instruments().front().get(),
             request->state()->selected_instrument());
-  views::View* checkmark_view = list_view->child_at(0)->GetViewByID(
+  views::View* checkmark_view = list_view->children().front()->GetViewByID(
       static_cast<int>(DialogViewID::CHECKMARK_VIEW));
-  EXPECT_TRUE(checkmark_view->visible());
+  EXPECT_TRUE(checkmark_view->GetVisible());
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentMethodViewControllerTest,
@@ -82,17 +82,17 @@ IN_PROC_BROWSER_TEST_F(PaymentMethodViewControllerTest,
 
   EXPECT_EQ(request->state()->available_instruments().front().get(),
             request->state()->selected_instrument());
-  views::View* checkmark_view = list_view->child_at(0)->GetViewByID(
+  views::View* checkmark_view = list_view->children()[0]->GetViewByID(
       static_cast<int>(DialogViewID::CHECKMARK_VIEW));
-  EXPECT_TRUE(checkmark_view->visible());
+  EXPECT_TRUE(checkmark_view->GetVisible());
 
-  views::View* checkmark_view2 = list_view->child_at(1)->GetViewByID(
+  views::View* checkmark_view2 = list_view->children()[1]->GetViewByID(
       static_cast<int>(DialogViewID::CHECKMARK_VIEW));
-  EXPECT_FALSE(checkmark_view2->visible());
+  EXPECT_FALSE(checkmark_view2->GetVisible());
 
   ResetEventWaiter(DialogEvent::BACK_NAVIGATION);
   // Simulate selecting the second card.
-  ClickOnDialogViewAndWait(list_view->child_at(1));
+  ClickOnDialogViewAndWait(list_view->children()[1]);
 
   EXPECT_EQ(request->state()->available_instruments().back().get(),
             request->state()->selected_instrument());
@@ -104,7 +104,7 @@ IN_PROC_BROWSER_TEST_F(PaymentMethodViewControllerTest,
   ResetEventWaiter(DialogEvent::BACK_NAVIGATION);
   // Clicking on the second card again should not modify any state, and should
   // return to the main payment sheet.
-  ClickOnDialogViewAndWait(list_view->child_at(1));
+  ClickOnDialogViewAndWait(list_view->children()[1]);
 
   EXPECT_EQ(request->state()->available_instruments().back().get(),
             request->state()->selected_instrument());
@@ -122,7 +122,7 @@ IN_PROC_BROWSER_TEST_F(PaymentMethodViewControllerTest, EditButtonOpensEditor) {
   EXPECT_TRUE(list_view);
   EXPECT_EQ(1u, list_view->children().size());
 
-  views::View* edit_button = list_view->child_at(0)->GetViewByID(
+  views::View* edit_button = list_view->children().front()->GetViewByID(
       static_cast<int>(DialogViewID::EDIT_ITEM_BUTTON));
 
   ResetEventWaiter(DialogEvent::CREDIT_CARD_EDITOR_OPENED);

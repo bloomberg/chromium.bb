@@ -287,7 +287,9 @@ class SharedImageRepresentationSkiaImpl : public SharedImageRepresentationSkia {
 
   sk_sp<SkSurface> BeginWriteAccess(
       int final_msaa_count,
-      const SkSurfaceProps& surface_props) override {
+      const SkSurfaceProps& surface_props,
+      std::vector<GrBackendSemaphore>* begin_semaphores,
+      std::vector<GrBackendSemaphore>* end_semaphores) override {
     CheckContext();
     if (write_surface_)
       return nullptr;
@@ -313,7 +315,9 @@ class SharedImageRepresentationSkiaImpl : public SharedImageRepresentationSkia {
     write_surface_ = nullptr;
   }
 
-  sk_sp<SkPromiseImageTexture> BeginReadAccess() override {
+  sk_sp<SkPromiseImageTexture> BeginReadAccess(
+      std::vector<GrBackendSemaphore>* begin_semaphores,
+      std::vector<GrBackendSemaphore>* end_semaphores) override {
     CheckContext();
     static_cast<SharedImageBackingWithReadAccess*>(backing())
         ->BeginReadAccess();
@@ -805,8 +809,7 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
       const char* error_message = "unspecified";
       if (!gles2::ValidateCompressedTexDimensions(
               target, 0 /* level */, size.width(), size.height(), 1 /* depth */,
-              format_info.image_internal_format, false /* restrict_for_webgl */,
-              &error_message)) {
+              format_info.image_internal_format, &error_message)) {
         LOG(ERROR) << "CreateSharedImage: "
                       "ValidateCompressedTexDimensionsFailed with error: "
                    << error_message;
@@ -1040,6 +1043,14 @@ scoped_refptr<gl::GLImage> SharedImageBackingFactoryGLTexture::MakeGLImage(
 
   return image_factory_->CreateImageForGpuMemoryBuffer(
       std::move(handle), size, format, client_id, surface_handle);
+}
+
+bool SharedImageBackingFactoryGLTexture::CanImportGpuMemoryBuffer(
+    gfx::GpuMemoryBufferType memory_buffer_type) {
+  // SharedImageFactory may call CanImportGpuMemoryBuffer() in all other
+  // SharedImageBackingFactory implementations except this one.
+  NOTREACHED();
+  return true;
 }
 
 std::unique_ptr<SharedImageBacking>

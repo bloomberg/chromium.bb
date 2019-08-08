@@ -23,7 +23,7 @@ source_set("scoped_file") {
   ]
 
   deps = [
-    "//base:base",
+    "//base",
   ]
 }
 
@@ -67,7 +67,7 @@ source_set("test_executables") {
   deps = [
     ":test_strings",
     ":test_util",
-    "//base:base",
+    "//base",
     "//chrome/chrome_cleaner/constants:common_strings",
     "//chrome/chrome_cleaner/os:common_os",
   ]
@@ -80,7 +80,7 @@ source_set("test_extensions") {
   ]
 
   deps = [
-    "//base:base",
+    "//base",
     "//chrome/chrome_cleaner/os:common_os",
   ]
 }
@@ -94,7 +94,7 @@ source_set("test_pup_data") {
   ]
 
   deps = [
-    "//base:base",
+    "//base",
     "//chrome/chrome_cleaner/proto:shared_pup_enums_proto",
     "//chrome/chrome_cleaner/pup_data:pup_data_base",
   ]
@@ -172,7 +172,7 @@ source_set("test_util") {
     ":test_pup_data",
     ":test_strings",
     ":test_uws_catalog",
-    "//base:base",
+    "//base",
     "//base/test:test_support",
     "//chrome/chrome_cleaner/constants:common_strings",
     "//chrome/chrome_cleaner/os:cleaner_os",
@@ -181,7 +181,7 @@ source_set("test_util") {
     "//chrome/chrome_cleaner/pup_data:pup_data_base",
     "//chrome/chrome_cleaner/scanner:matcher_util",
     "//chrome/chrome_cleaner/scanner:signature_matcher_api",
-    "//chrome/chrome_cleaner/settings:settings",
+    "//chrome/chrome_cleaner/settings",
     "//chrome/chrome_cleaner/strings",
     "//components/chrome_cleaner/public/constants:constants",
     "//sandbox/win:sandbox",
@@ -232,7 +232,7 @@ executable("test_process") {
   deps = [
     ":test_strings",
     ":test_util",
-    "//base:base",
+    "//base",
     "//base/test:test_support",
     "//build/win:default_exe_manifest",
     "//chrome/chrome_cleaner:other_executable_definitions",
@@ -250,7 +250,7 @@ executable("test_service") {
 
   deps = [
     ":test_strings",
-    "//base:base",
+    "//base",
     "//base/test:test_support",
     "//build/win:default_exe_manifest",
   ]

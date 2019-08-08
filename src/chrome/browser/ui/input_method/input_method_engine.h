@@ -31,6 +31,10 @@ class InputMethodEngine : public InputMethodEngineBase,
   void UpdateComposition(const ui::CompositionText& composition_text,
                          uint32_t cursor_pos,
                          bool is_visible) override;
+  bool SetCompositionRange(
+      uint32_t before,
+      uint32_t after,
+      const std::vector<ui::ImeTextSpan>& text_spans) override;
   void CommitTextToInputContext(int context_id,
                                 const std::string& text) override;
   void DeleteSurroundingTextToInputContext(int offset,

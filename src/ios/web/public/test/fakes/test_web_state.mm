@@ -12,12 +12,12 @@
 #import "base/strings/sys_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #import "ios/web/common/crw_content_view.h"
-#import "ios/web/public/crw_navigation_item_storage.h"
-#import "ios/web/public/crw_session_storage.h"
-#import "ios/web/public/serializable_user_data_manager.h"
-#include "ios/web/public/web_state/web_frame.h"
+#include "ios/web/js_messaging/web_frames_manager_impl.h"
+#include "ios/web/public/js_messaging/web_frame.h"
+#import "ios/web/public/session/crw_navigation_item_storage.h"
+#import "ios/web/public/session/crw_session_storage.h"
+#import "ios/web/public/session/serializable_user_data_manager.h"
 #import "ios/web/public/web_state/web_state_policy_decider.h"
-#include "ios/web/web_state/web_frames_manager_impl.h"
 #include "ui/gfx/image/image.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

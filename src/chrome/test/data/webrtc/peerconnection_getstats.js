@@ -145,7 +145,9 @@ let kRTCRemoteInboundRtpStreamStats =
   roundTripTime: 'number',
   fractionLost: 'number',
 });
-// TODO(hbos): When remote-inbound-rtp is implemented, make presence MANDATORY.
+// TODO(https://crbug.com/967382): Update the browser_tests to wait for the
+// existence of remote-inbound-rtp as well (these are created later than
+// outbound-rtp). When this is done, change presence to MANDATORY.
 addRTCStatsToWhitelist(
     Presence.OPTIONAL, 'remote-inbound-rtp', kRTCRemoteInboundRtpStreamStats);
 
@@ -169,6 +171,7 @@ let kRTCSentRtpStreamStats = new RTCStats(kRTCRtpStreamStats, {
  */
 let kRTCOutboundRtpStreamStats = new RTCStats(kRTCSentRtpStreamStats, {
   trackId: 'string',
+  mediaSourceId: 'string',
   senderId: 'string',
   remoteId: 'string',
   lastPacketSentTimestamp: 'number',
@@ -179,6 +182,7 @@ let kRTCOutboundRtpStreamStats = new RTCStats(kRTCSentRtpStreamStats, {
   framesEncoded: 'number',
   qpSum: 'number',
   totalEncodeTime: 'number',
+  totalPacketSendDelay: 'number',
   averageRtcpInterval: 'number',
   qualityLimitationReason: 'string',
   qualityLimitationDurations: 'object',
@@ -203,6 +207,40 @@ let kRTCRemoteOutboundRtpStreamStats = new RTCStats(kRTCSentRtpStreamStats, {
 // TODO(hbos): When remote-outbound-rtp is implemented, make presence MANDATORY.
 addRTCStatsToWhitelist(
     Presence.OPTIONAL, 'remote-outbound-rtp', kRTCRemoteOutboundRtpStreamStats);
+
+/**
+ * RTCMediaSourceStats
+ * https://w3c.github.io/webrtc-stats/#dom-rtcmediasourcestats
+ * @private
+ */
+const kRTCMediaSourceStats = new RTCStats(null, {
+  trackIdentifier: 'string',
+  kind: 'string',
+});
+
+/**
+ * RTCAudioSourceStats
+ * https://w3c.github.io/webrtc-stats/#dom-rtcaudiosourcestats
+ * @private
+ */
+const kRTCAudioSourceStats = new RTCStats(kRTCMediaSourceStats, {
+});
+addRTCStatsToWhitelist(
+    Presence.MANDATORY, 'media-source', kRTCAudioSourceStats);
+
+/**
+ * RTCVideoSourceStats
+ * https://w3c.github.io/webrtc-stats/#dom-rtcvideosourcestats
+ * @private
+ */
+const kRTCVideoSourceStats = new RTCStats(kRTCMediaSourceStats, {
+  width: 'number',
+  height: 'number',
+  frames: 'number',
+  framesPerSecond: 'number',
+});
+addRTCStatsToWhitelist(
+    Presence.MANDATORY, 'media-source', kRTCVideoSourceStats);
 
 /*
  * RTCRtpContributingSourceStats
@@ -293,6 +331,7 @@ let kRTCVideoHandlerStats = new RTCStats(kRTCMediaHandlerStats, {
  * @private
  */
 let kRTCVideoSenderStats = new RTCStats(kRTCVideoHandlerStats, {
+  mediaSourceId: 'string',
   framesCaptured: 'number',
   framesSent: 'number',
   hugeFramesSent: 'number',
@@ -360,6 +399,7 @@ let kRTCAudioHandlerStats = new RTCStats(kRTCMediaHandlerStats, {
  * @private
  */
 let kRTCAudioSenderStats = new RTCStats(kRTCAudioHandlerStats, {
+  mediaSourceId: 'string',
   echoReturnLoss: 'number',
   echoReturnLossEnhancement: 'number',
   totalSamplesSent: 'number',

@@ -5,7 +5,7 @@
 #include "ash/shelf/shelf_tooltip_bubble.h"
 
 #include "ash/system/tray/tray_constants.h"
-#include "ash/wm/pip/pip_positioner.h"
+#include "ash/wm/collision_detection/collision_detection_utils.h"
 #include "ui/aura/window.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
@@ -61,7 +61,7 @@ ShelfTooltipBubble::ShelfTooltipBubble(views::View* anchor,
   set_anchor_view_insets(insets);
 
   CreateBubble();
-  PipPositioner::MarkWindowAsIgnoredForCollisionDetection(
+  CollisionDetectionUtils::IgnoreWindowForCollisionDetection(
       GetWidget()->GetNativeWindow());
 }
 

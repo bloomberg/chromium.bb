@@ -5,11 +5,13 @@
 #include "ash/system/update/update_notification_controller.h"
 
 #include "ash/public/cpp/notification_utils.h"
+#include "ash/public/cpp/system_tray_client.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/model/system_tray_model.h"
 #include "base/bind.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -61,7 +63,8 @@ void UpdateNotificationController::OnUpdateAvailable() {
           base::BindRepeating(
               &UpdateNotificationController::HandleNotificationClick,
               weak_ptr_factory_.GetWeakPtr())),
-      model_->rollback() ? kSystemMenuRollbackIcon : kSystemMenuUpdateIcon,
+      model_->rollback() ? kSystemMenuRollbackIcon
+                         : vector_icons::kBusinessIcon,
       warning_level);
   notification->set_pinned(true);
 
@@ -130,7 +133,7 @@ void UpdateNotificationController::HandleNotificationClick(
 
   if (!button_index) {
     // Notification message body clicked, which says "learn more".
-    Shell::Get()->system_tray_model()->client_ptr()->ShowAboutChromeOS();
+    Shell::Get()->system_tray_model()->client()->ShowAboutChromeOS();
     return;
   }
 
@@ -140,13 +143,13 @@ void UpdateNotificationController::HandleNotificationClick(
                                                            false /* by_user */);
 
   if (model_->update_required()) {
-    Shell::Get()->system_tray_model()->client_ptr()->RequestRestartForUpdate();
+    Shell::Get()->system_tray_model()->client()->RequestRestartForUpdate();
     Shell::Get()->metrics()->RecordUserMetricsAction(
         UMA_STATUS_AREA_OS_UPDATE_DEFAULT_SELECTED);
   } else {
     // Shows the about chrome OS page and checks for update after the page is
     // loaded.
-    Shell::Get()->system_tray_model()->client_ptr()->ShowAboutChromeOS();
+    Shell::Get()->system_tray_model()->client()->ShowAboutChromeOS();
   }
 }
 

@@ -413,8 +413,8 @@ inline void DispatchEventsOnWindowAndFocusedElement(Document* document,
 }
 
 inline bool HasCustomFocusLogic(const Element& element) {
-  return element.IsHTMLElement() &&
-         ToHTMLElement(element).HasCustomFocusLogic();
+  auto* html_element = DynamicTo<HTMLElement>(element);
+  return html_element && html_element->HasCustomFocusLogic();
 }
 
 inline bool IsShadowHostWithoutCustomFocusLogic(const Element& element) {
@@ -1061,10 +1061,17 @@ bool FocusController::AdvanceFocusInDocumentOrder(
     return true;
   }
 
+  // Focus frames rather than frame owners.  Note that we should always attempt
+  // to descend into frame owners with remote frames, since we don't know ahead
+  // of time whether they contain focusable elements.  If a remote frame
+  // doesn't contain any focusable elements, the search will eventually return
+  // back to this frame and continue looking for focusable elements after the
+  // frame owner.
   auto* owner = DynamicTo<HTMLFrameOwnerElement>(element);
-  if (owner &&
-      (!IsHTMLPlugInElement(*element) || !element->IsKeyboardFocusable())) {
-    // We focus frames rather than frame owners.
+  bool has_remote_frame =
+      owner && owner->ContentFrame() && owner->ContentFrame()->IsRemoteFrame();
+  if (owner && (has_remote_frame || !IsHTMLPlugInElement(*element) ||
+                !element->IsKeyboardFocusable())) {
     // FIXME: We should not focus frames that have no scrollbars, as focusing
     // them isn't useful to the user.
     if (!owner->ContentFrame())
@@ -1123,15 +1130,16 @@ Element* FocusController::NextFocusableElementInForm(Element* element,
   // Will nvestigate further for a proper solution later.
   static const int kFocusTraversalThreshold = 50;
   element->GetDocument().UpdateStyleAndLayout();
-  if (!element->IsHTMLElement())
+  auto* html_element = DynamicTo<HTMLElement>(element);
+  if (!html_element)
     return nullptr;
 
   if (!element->IsFormControlElement() &&
-      !ToHTMLElement(element)->isContentEditableForBinding())
+      !html_element->isContentEditableForBinding())
     return nullptr;
 
   HTMLFormElement* form_owner = nullptr;
-  if (ToHTMLElement(element)->isContentEditableForBinding())
+  if (html_element->isContentEditableForBinding())
     form_owner = Traversal<HTMLFormElement>::FirstAncestor(*element);
   else
     form_owner = ToHTMLFormControlElement(element)->formOwner();
@@ -1146,9 +1154,10 @@ Element* FocusController::NextFocusableElementInForm(Element* element,
        next_element =
            FindFocusableElement(focus_type, *next_element, owner_map),
        ++traversal) {
-    if (!next_element->IsHTMLElement())
+    auto* next_html_element = DynamicTo<HTMLElement>(next_element);
+    if (!next_html_element)
       continue;
-    if (ToHTMLElement(next_element)->isContentEditableForBinding() &&
+    if (next_html_element->isContentEditableForBinding() &&
         next_element->IsDescendantOf(form_owner))
       return next_element;
     if (!next_element->IsFormControlElement())

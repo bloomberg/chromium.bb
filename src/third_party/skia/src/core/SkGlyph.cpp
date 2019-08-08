@@ -5,11 +5,11 @@
  * found in the LICENSE file.
  */
 
-#include "SkGlyph.h"
+#include "src/core/SkGlyph.h"
 
-#include "SkArenaAlloc.h"
-#include "SkMakeUnique.h"
-#include "SkScalerContext.h"
+#include "src/core/SkArenaAlloc.h"
+#include "src/core/SkMakeUnique.h"
+#include "src/core/SkScalerContext.h"
 
 SkMask SkGlyph::mask() const {
     // getMetrics had to be called.
@@ -72,6 +72,8 @@ size_t SkGlyph::formatAlignment() const {
 
 size_t SkGlyph::allocImage(SkArenaAlloc* alloc) {
     auto size = this->computeImageSize();
+    SkASSERT(fWidth < kMaxGlyphWidth);
+    SkASSERT(fHeight < kMaxGlyphWidth);
     auto format = static_cast<SkMask::Format>(fMaskFormat);
     fImage = alloc->makeBytesAlignedTo(size, format_alignment(format));
 

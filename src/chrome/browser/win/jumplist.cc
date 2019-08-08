@@ -537,8 +537,8 @@ void JumpList::OnFaviconDataAvailable(
     if (!image_result.image.IsEmpty() && icon_urls_.front().second.get()) {
       gfx::ImageSkia image_skia = image_result.image.AsImageSkia();
       image_skia.EnsureRepsForSupportedScales();
-      std::unique_ptr<gfx::ImageSkia> deep_copy(image_skia.DeepCopy());
-      icon_urls_.front().second->set_icon_image(*deep_copy);
+      gfx::ImageSkia deep_copy(image_skia.DeepCopy());
+      icon_urls_.front().second->set_icon_image(deep_copy);
     }
     icon_urls_.pop_front();
   }

@@ -171,8 +171,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   void SetScrollParent(cc::Layer*);
   void SetClipParent(cc::Layer*);
 
-  void SetPaintArtifactCompositorNeedsUpdate() const;
-
   // For special cases, e.g. drawing missing tiles on Android.
   // The compositor should never paint this color in normal cases because the
   // Layer will paint the background by itself.
@@ -268,7 +266,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   // cc::LayerClient implementation.
   std::unique_ptr<base::trace_event::TracedValue> TakeDebugInfo(
-      cc::Layer*) override;
+      const cc::Layer*) override;
   void DidChangeScrollbarsHiddenIfOverlay(bool) override;
 
   PaintController& GetPaintController() const;
@@ -322,7 +320,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
       const base::Optional<IntRect>& interest_rect = base::nullopt);
 
  protected:
-  String DebugName(cc::Layer*) const;
+  String DebugName(const cc::Layer*) const;
 
  private:
   friend class CompositedLayerMappingTest;
@@ -336,6 +334,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   size_t GetApproximateUnsharedMemoryUsage() const final;
 
   void PaintRecursivelyInternal(Vector<GraphicsLayer*>& repainted_layers);
+  void UpdateSafeOpaqueBackgroundColor();
 
   // Returns true if PaintController::PaintArtifact() changed and needs commit.
   bool PaintWithoutCommit(

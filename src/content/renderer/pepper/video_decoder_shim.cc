@@ -63,7 +63,7 @@ class VideoDecoderShim::YUVConverter {
   YUVConverter(scoped_refptr<ws::ContextProviderCommandBuffer>);
   ~YUVConverter();
   bool Initialize();
-  void Convert(const scoped_refptr<media::VideoFrame>& frame, GLuint tex_out);
+  void Convert(const media::VideoFrame* frame, GLuint tex_out);
 
  private:
   GLuint CreateShader();
@@ -353,9 +353,8 @@ bool VideoDecoderShim::YUVConverter::Initialize() {
   return (program_ != 0);
 }
 
-void VideoDecoderShim::YUVConverter::Convert(
-    const scoped_refptr<media::VideoFrame>& frame,
-    GLuint tex_out) {
+void VideoDecoderShim::YUVConverter::Convert(const media::VideoFrame* frame,
+                                             GLuint tex_out) {
   const float* yuv_matrix = nullptr;
   const float* yuv_adjust = nullptr;
 
@@ -610,8 +609,7 @@ VideoDecoderShim::PendingDecode::~PendingDecode() {
 
 struct VideoDecoderShim::PendingFrame {
   explicit PendingFrame(uint32_t decode_id);
-  PendingFrame(uint32_t decode_id,
-               const scoped_refptr<media::VideoFrame>& frame);
+  PendingFrame(uint32_t decode_id, scoped_refptr<media::VideoFrame> frame);
   ~PendingFrame();
 
   const uint32_t decode_id;
@@ -628,9 +626,8 @@ VideoDecoderShim::PendingFrame::PendingFrame(uint32_t decode_id)
 
 VideoDecoderShim::PendingFrame::PendingFrame(
     uint32_t decode_id,
-    const scoped_refptr<media::VideoFrame>& frame)
-    : decode_id(decode_id), video_frame(frame) {
-}
+    scoped_refptr<media::VideoFrame> frame)
+    : decode_id(decode_id), video_frame(std::move(frame)) {}
 
 VideoDecoderShim::PendingFrame::~PendingFrame() {
 }
@@ -653,7 +650,7 @@ class VideoDecoderShim::DecoderImpl {
   void OnInitDone(bool success);
   void DoDecode();
   void OnDecodeComplete(media::DecodeStatus status);
-  void OnOutputComplete(const scoped_refptr<media::VideoFrame>& frame);
+  void OnOutputComplete(scoped_refptr<media::VideoFrame> frame);
   void OnResetComplete();
 
   // WeakPtr is bound to main_message_loop_. Use only in shim callbacks.
@@ -709,10 +706,10 @@ void VideoDecoderShim::DecoderImpl::Initialize(
 
   decoder_->Initialize(
       config, true /* low_delay */, nullptr,
-      base::Bind(&VideoDecoderShim::DecoderImpl::OnInitDone,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&VideoDecoderShim::DecoderImpl::OnOutputComplete,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&VideoDecoderShim::DecoderImpl::OnInitDone,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&VideoDecoderShim::DecoderImpl::OnOutputComplete,
+                          weak_ptr_factory_.GetWeakPtr()),
       base::NullCallback());
 #else
   OnInitDone(false);
@@ -745,8 +742,9 @@ void VideoDecoderShim::DecoderImpl::Reset() {
     return;
   }
 
-  decoder_->Reset(base::Bind(&VideoDecoderShim::DecoderImpl::OnResetComplete,
-                             weak_ptr_factory_.GetWeakPtr()));
+  decoder_->Reset(
+      base::BindOnce(&VideoDecoderShim::DecoderImpl::OnResetComplete,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void VideoDecoderShim::DecoderImpl::Stop() {
@@ -778,9 +776,10 @@ void VideoDecoderShim::DecoderImpl::DoDecode() {
   awaiting_decoder_ = true;
   const PendingDecode& decode = pending_decodes_.front();
   decode_id_ = decode.decode_id;
-  decoder_->Decode(decode.buffer,
-                   base::Bind(&VideoDecoderShim::DecoderImpl::OnDecodeComplete,
-                              weak_ptr_factory_.GetWeakPtr()));
+  decoder_->Decode(
+      decode.buffer,
+      base::BindOnce(&VideoDecoderShim::DecoderImpl::OnDecodeComplete,
+                     weak_ptr_factory_.GetWeakPtr()));
   pending_decodes_.pop();
 }
 
@@ -808,14 +807,14 @@ void VideoDecoderShim::DecoderImpl::OnDecodeComplete(
 }
 
 void VideoDecoderShim::DecoderImpl::OnOutputComplete(
-    const scoped_refptr<media::VideoFrame>& frame) {
+    scoped_refptr<media::VideoFrame> frame) {
   // Software decoders are expected to generated frames only when a Decode()
   // call is pending.
   DCHECK(awaiting_decoder_);
 
   std::unique_ptr<PendingFrame> pending_frame;
   if (!frame->metadata()->IsTrue(media::VideoFrameMetadata::END_OF_STREAM))
-    pending_frame.reset(new PendingFrame(decode_id_, frame));
+    pending_frame.reset(new PendingFrame(decode_id_, std::move(frame)));
   else
     pending_frame.reset(new PendingFrame(decode_id_));
 
@@ -894,7 +893,7 @@ bool VideoDecoderShim::Initialize(const Config& vda_config, Client* client) {
 
   media::VideoDecoderConfig video_decoder_config(
       codec, vda_config.profile, media::PIXEL_FORMAT_I420,
-      media::VideoColorSpace(), media::VIDEO_ROTATION_0,
+      media::VideoColorSpace(), media::kNoTransformation,
       gfx::Size(32, 24),  // Small sizes that won't fail.
       gfx::Rect(32, 24), gfx::Size(32, 24),
       // TODO(bbudge): Verify extra data isn't needed.
@@ -912,7 +911,7 @@ bool VideoDecoderShim::Initialize(const Config& vda_config, Client* client) {
   return true;
 }
 
-void VideoDecoderShim::Decode(const media::BitstreamBuffer& bitstream_buffer) {
+void VideoDecoderShim::Decode(media::BitstreamBuffer bitstream_buffer) {
   DCHECK(RenderThreadImpl::current());
   DCHECK_EQ(state_, DECODING);
 
@@ -1056,7 +1055,7 @@ void VideoDecoderShim::SendPictures() {
 
     uint32_t local_texture_id = texture_id_map_[texture_id];
 
-    yuv_converter_->Convert(frame->video_frame, local_texture_id);
+    yuv_converter_->Convert(frame->video_frame.get(), local_texture_id);
 
     host_->PictureReady(media::Picture(texture_id, frame->decode_id,
                                        frame->video_frame->visible_rect(),

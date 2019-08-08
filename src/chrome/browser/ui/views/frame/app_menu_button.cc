@@ -11,12 +11,16 @@
 #include "chrome/browser/ui/views/frame/app_menu_button_observer.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
+#include "ui/views/controls/button/menu_button_controller.h"
 #include "ui/views/view_class_properties.h"
 
 AppMenuButton::AppMenuButton(views::MenuButtonListener* menu_button_listener)
-    : views::MenuButton(base::string16(),
-                        menu_button_listener,
-                        CONTEXT_TOOLBAR_BUTTON) {
+    : ToolbarButton(nullptr) {
+  std::unique_ptr<views::MenuButtonController> menu_button_controller =
+      std::make_unique<views::MenuButtonController>(
+          this, menu_button_listener, CreateButtonControllerDelegate());
+  menu_button_controller_ = menu_button_controller.get();
+  SetButtonController(std::move(menu_button_controller));
   SetProperty(views::kInternalPaddingKey, new gfx::Insets());
 }
 
@@ -24,13 +28,10 @@ AppMenuButton::~AppMenuButton() {}
 
 void AppMenuButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   // TODO(pbos): Consolidate with ToolbarButton::OnBoundsChanged.
+  // ToolbarButton::OnBoundsChanged calls UpdateHighlightBackgroundAndInsets
+  // which expects ToolbarButtons to be the same height as the location bar
+  // which breaks tests on ChromeOS.
   SetToolbarButtonHighlightPath(this, *GetProperty(views::kInternalPaddingKey));
-
-  views::MenuButton::OnBoundsChanged(previous_bounds);
-}
-
-SkColor AppMenuButton::GetInkDropBaseColor() const {
-  return GetToolbarInkDropBaseColor(this);
 }
 
 void AppMenuButton::AddObserver(AppMenuButtonObserver* observer) {
@@ -68,7 +69,7 @@ void AppMenuButton::RunMenu(std::unique_ptr<AppMenuModel> menu_model,
   menu_ = std::make_unique<AppMenu>(browser, run_flags, alert_reopen_tab_items);
   menu_->Init(menu_model_.get());
 
-  menu_->RunMenu(this);
+  menu_->RunMenu(menu_button_controller_);
 
   for (AppMenuButtonObserver& observer : observer_list_)
     observer.AppMenuShown();

@@ -54,11 +54,11 @@ bool QuicClientBase::Initialize() {
   const uint32_t kSessionMaxRecvWindowSize = 15 * 1024 * 1024;  // 15 MB
   const uint32_t kStreamMaxRecvWindowSize = 6 * 1024 * 1024;    //  6 MB
   if (config()->GetInitialStreamFlowControlWindowToSend() ==
-      kMinimumFlowControlSendWindow) {
+      kDefaultFlowControlSendWindow) {
     config()->SetInitialStreamFlowControlWindowToSend(kStreamMaxRecvWindowSize);
   }
   if (config()->GetInitialSessionFlowControlWindowToSend() ==
-      kMinimumFlowControlSendWindow) {
+      kDefaultFlowControlSendWindow) {
     config()->SetInitialSessionFlowControlWindowToSend(
         kSessionMaxRecvWindowSize);
   }
@@ -80,11 +80,6 @@ bool QuicClientBase::Connect() {
     StartConnect();
     while (EncryptionBeingEstablished()) {
       WaitForEvents();
-    }
-    if (GetQuicReloadableFlag(enable_quic_stateless_reject_support) &&
-        connected()) {
-      // Resend any previously queued data.
-      ResendSavedData();
     }
     ParsedQuicVersion version = UnsupportedQuicVersion();
     if (session() != nullptr &&
@@ -181,16 +176,13 @@ bool QuicClientBase::WaitForEvents() {
   DCHECK(session() != nullptr);
   ParsedQuicVersion version = UnsupportedQuicVersion();
   if (!connected() &&
-      (session()->error() == QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT ||
-       CanReconnectWithDifferentVersion(&version))) {
-    if (session()->error() == QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT) {
-      DCHECK(GetQuicReloadableFlag(enable_quic_stateless_reject_support));
-      QUIC_DLOG(INFO) << "Detected stateless reject while waiting for events.  "
-                      << "Attempting to reconnect.";
-    } else {
-      QUIC_DLOG(INFO) << "Can reconnect with version: " << version
-                      << ", attempting to reconnect.";
-    }
+
+      CanReconnectWithDifferentVersion(&version)) {
+    DCHECK_NE(session()->error(), QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT);
+
+    QUIC_DLOG(INFO) << "Can reconnect with version: " << version
+                    << ", attempting to reconnect.";
+
     Connect();
   }
 

@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/css/css_function_value.h"
 #include "third_party/blink/renderer/core/css/css_gradient_value.h"
 #include "third_party/blink/renderer/core/css/css_grid_auto_repeat_value.h"
+#include "third_party/blink/renderer/core/css/css_grid_integer_repeat_value.h"
 #include "third_party/blink/renderer/core/css/css_grid_line_names_value.h"
 #include "third_party/blink/renderer/core/css/css_grid_template_areas_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
@@ -205,6 +206,8 @@ bool CSSValue::operator==(const CSSValue& other) const {
         return CompareCSSValues<CSSUnsetValue>(*this, other);
       case kGridAutoRepeatClass:
         return CompareCSSValues<CSSGridAutoRepeatValue>(*this, other);
+      case kGridIntegerRepeatClass:
+        return CompareCSSValues<CSSGridIntegerRepeatValue>(*this, other);
       case kGridLineNamesClass:
         return CompareCSSValues<CSSGridLineNamesValue>(*this, other);
       case kGridTemplateAreasClass:
@@ -230,8 +233,6 @@ bool CSSValue::operator==(const CSSValue& other) const {
                                                                    other);
       case kStepsTimingFunctionClass:
         return CompareCSSValues<CSSStepsTimingFunctionValue>(*this, other);
-      case kFramesTimingFunctionClass:
-        return CompareCSSValues<CSSFramesTimingFunctionValue>(*this, other);
       case kUnicodeRangeClass:
         return CompareCSSValues<CSSUnicodeRangeValue>(*this, other);
       case kURIClass:
@@ -315,6 +316,8 @@ String CSSValue::CssText() const {
       return To<CSSInitialValue>(this)->CustomCSSText();
     case kGridAutoRepeatClass:
       return To<CSSGridAutoRepeatValue>(this)->CustomCSSText();
+    case kGridIntegerRepeatClass:
+      return To<CSSGridIntegerRepeatValue>(this)->CustomCSSText();
     case kGridLineNamesClass:
       return To<CSSGridLineNamesValue>(this)->CustomCSSText();
     case kGridTemplateAreasClass:
@@ -339,8 +342,6 @@ String CSSValue::CssText() const {
       return To<CSSCubicBezierTimingFunctionValue>(this)->CustomCSSText();
     case kStepsTimingFunctionClass:
       return To<CSSStepsTimingFunctionValue>(this)->CustomCSSText();
-    case kFramesTimingFunctionClass:
-      return To<CSSFramesTimingFunctionValue>(this)->CustomCSSText();
     case kUnicodeRangeClass:
       return To<CSSUnicodeRangeValue>(this)->CustomCSSText();
     case kURIClass:
@@ -449,6 +450,9 @@ void CSSValue::FinalizeGarbageCollectedObject() {
     case kGridAutoRepeatClass:
       To<CSSGridAutoRepeatValue>(this)->~CSSGridAutoRepeatValue();
       return;
+    case kGridIntegerRepeatClass:
+      To<CSSGridIntegerRepeatValue>(this)->~CSSGridIntegerRepeatValue();
+      return;
     case kGridLineNamesClass:
       To<CSSGridLineNamesValue>(this)->~CSSGridLineNamesValue();
       return;
@@ -485,9 +489,6 @@ void CSSValue::FinalizeGarbageCollectedObject() {
       return;
     case kStepsTimingFunctionClass:
       To<CSSStepsTimingFunctionValue>(this)->~CSSStepsTimingFunctionValue();
-      return;
-    case kFramesTimingFunctionClass:
-      To<CSSFramesTimingFunctionValue>(this)->~CSSFramesTimingFunctionValue();
       return;
     case kUnicodeRangeClass:
       To<CSSUnicodeRangeValue>(this)->~CSSUnicodeRangeValue();
@@ -606,6 +607,9 @@ void CSSValue::Trace(blink::Visitor* visitor) {
     case kGridAutoRepeatClass:
       To<CSSGridAutoRepeatValue>(this)->TraceAfterDispatch(visitor);
       return;
+    case kGridIntegerRepeatClass:
+      To<CSSGridIntegerRepeatValue>(this)->TraceAfterDispatch(visitor);
+      return;
     case kGridLineNamesClass:
       To<CSSGridLineNamesValue>(this)->TraceAfterDispatch(visitor);
       return;
@@ -641,9 +645,6 @@ void CSSValue::Trace(blink::Visitor* visitor) {
       return;
     case kStepsTimingFunctionClass:
       To<CSSStepsTimingFunctionValue>(this)->TraceAfterDispatch(visitor);
-      return;
-    case kFramesTimingFunctionClass:
-      To<CSSFramesTimingFunctionValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kUnicodeRangeClass:
       To<CSSUnicodeRangeValue>(this)->TraceAfterDispatch(visitor);

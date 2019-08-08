@@ -20,8 +20,6 @@
 
 #include "third_party/blink/renderer/platform/fonts/font_platform_data.h"
 
-#include "SkFont.h"
-#include "SkTypeface.h"
 #include "build/build_config.h"
 #include "hb-ot.h"
 #include "hb.h"
@@ -35,6 +33,8 @@
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/skia/include/core/SkFont.h"
+#include "third_party/skia/include/core/SkTypeface.h"
 
 #if defined(OS_MACOSX)
 #include "third_party/skia/include/ports/SkTypeface_mac.h"

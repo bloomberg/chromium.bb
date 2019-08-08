@@ -26,17 +26,17 @@ namespace {
 bool ShouldUseU2fBecauseCtapRequiresClientPin(
     const FidoDevice* device,
     const CtapMakeCredentialRequest& request) {
-  if (request.user_verification() == UserVerificationRequirement::kRequired ||
-      (request.pin_auth() && !request.pin_auth()->empty())) {
+  if (request.user_verification == UserVerificationRequirement::kRequired ||
+      (request.pin_auth && !request.pin_auth->empty())) {
     return false;
   }
 
   DCHECK(device && device->device_info());
   bool client_pin_set =
-      device->device_info()->options().client_pin_availability ==
+      device->device_info()->options.client_pin_availability ==
       AuthenticatorSupportedOptions::ClientPinAvailability::kSupportedAndPinSet;
-  bool supports_u2f = base::ContainsKey(device->device_info()->versions(),
-                                        ProtocolVersion::kU2f);
+  bool supports_u2f =
+      base::ContainsKey(device->device_info()->versions, ProtocolVersion::kU2f);
   return client_pin_set && supports_u2f;
 }
 
@@ -51,7 +51,7 @@ MakeCredentialTask::MakeCredentialTask(FidoDevice* device,
       weak_factory_(this) {
   // The UV parameter should have been made binary by this point because CTAP2
   // only takes a binary value.
-  DCHECK_NE(request_.user_verification(),
+  DCHECK_NE(request_.user_verification,
             UserVerificationRequirement::kPreferred);
 }
 
@@ -75,7 +75,7 @@ CtapMakeCredentialRequest MakeCredentialTask::GetTouchRequest(
       PublicKeyCredentialParams(
           {{CredentialType::kPublicKey,
             base::strict_cast<int>(CoseAlgorithmIdentifier::kCoseEs256)}}));
-  req.SetExcludeList({});
+  req.exclude_list.reset();
 
   // If a device supports CTAP2 and has PIN support then setting an empty
   // pinAuth should trigger just a touch[1]. Our U2F code also understands
@@ -84,10 +84,10 @@ CtapMakeCredentialRequest MakeCredentialTask::GetTouchRequest(
   // https://fidoalliance.org/specs/fido-v2.0-ps-20190130/fido-client-to-authenticator-protocol-v2.0-ps-20190130.html#using-pinToken-in-authenticatorGetAssertion
   if (device->supported_protocol() == ProtocolVersion::kU2f ||
       (device->device_info() &&
-       device->device_info()->options().client_pin_availability !=
+       device->device_info()->options.client_pin_availability !=
            AuthenticatorSupportedOptions::ClientPinAvailability::
                kNotSupported)) {
-    req.SetPinAuth({});
+    req.pin_auth.emplace();
   }
 
   DCHECK(IsConvertibleToU2fRegisterCommand(req));
@@ -107,15 +107,15 @@ void MakeCredentialTask::Cancel() {
 }
 
 void MakeCredentialTask::StartTask() {
-  if (device()->supported_protocol() == ProtocolVersion::kCtap &&
-      !request_.is_u2f_only() &&
+  if (device()->supported_protocol() == ProtocolVersion::kCtap2 &&
+      !request_.is_u2f_only &&
       !ShouldUseU2fBecauseCtapRequiresClientPin(device(), request_)) {
     MakeCredential();
   } else {
     // |device_info| should be present iff the device is CTAP2. This will be
     // used in |MaybeRevertU2fFallback| to restore the protocol of CTAP2 devices
     // once this task is complete.
-    DCHECK((device()->supported_protocol() == ProtocolVersion::kCtap) ==
+    DCHECK((device()->supported_protocol() == ProtocolVersion::kCtap2) ==
            static_cast<bool>(device()->device_info()));
     device()->set_supported_protocol(ProtocolVersion::kU2f);
     U2fRegister();
@@ -123,26 +123,27 @@ void MakeCredentialTask::StartTask() {
 }
 
 CtapGetAssertionRequest MakeCredentialTask::NextSilentSignRequest() {
-  DCHECK(request_.exclude_list() &&
-         current_credential_ < request_.exclude_list()->size());
-  CtapGetAssertionRequest request(request_.rp().rp_id(),
+  DCHECK(request_.exclude_list &&
+         current_credential_ < request_.exclude_list->size());
+  CtapGetAssertionRequest request(request_.rp.id,
                                   /*client_data_json=*/"");
-  request.SetAllowList({{request_.exclude_list()->at(current_credential_)}});
-  request.SetUserPresenceRequired(false);
-  request.SetUserVerification(UserVerificationRequirement::kDiscouraged);
+  request.allow_list = {{request_.exclude_list->at(current_credential_)}};
+  request.user_presence_required = false;
+  request.user_verification = UserVerificationRequirement::kDiscouraged;
   return request;
 }
 
 void MakeCredentialTask::MakeCredential() {
   // Silently probe each credential in the allow list to work around
   // authenticators rejecting lists over a certain size.
-  if (request_.exclude_list() && request_.exclude_list()->size() > 1) {
+  if (request_.exclude_list && request_.exclude_list->size() > 1) {
     silent_sign_operation_ = std::make_unique<Ctap2DeviceOperation<
         CtapGetAssertionRequest, AuthenticatorGetAssertionResponse>>(
         device(), NextSilentSignRequest(),
         base::BindOnce(&MakeCredentialTask::HandleResponseToSilentSignRequest,
                        weak_factory_.GetWeakPtr()),
-        base::BindOnce(&ReadCTAPGetAssertionResponse));
+        base::BindOnce(&ReadCTAPGetAssertionResponse),
+        /*string_fixup_predicate=*/nullptr);
     silent_sign_operation_->Start();
     return;
   }
@@ -151,14 +152,15 @@ void MakeCredentialTask::MakeCredential() {
       CtapMakeCredentialRequest, AuthenticatorMakeCredentialResponse>>(
       device(), std::move(request_), std::move(callback_),
       base::BindOnce(&ReadCTAPMakeCredentialResponse,
-                     device()->DeviceTransport()));
+                     device()->DeviceTransport()),
+      /*string_fixup_predicate=*/nullptr);
   register_operation_->Start();
 }
 
 void MakeCredentialTask::HandleResponseToSilentSignRequest(
     CtapDeviceResponseCode response_code,
     base::Optional<AuthenticatorGetAssertionResponse> response_data) {
-  DCHECK(request_.exclude_list() && request_.exclude_list()->size() > 0);
+  DCHECK(request_.exclude_list && request_.exclude_list->size() > 0);
 
   if (canceled_) {
     return;
@@ -169,13 +171,13 @@ void MakeCredentialTask::HandleResponseToSilentSignRequest(
   // touch and and the CTAP2_ERR_CREDENTIAL_EXCLUDED error code.
   if (response_code == CtapDeviceResponseCode::kSuccess) {
     CtapMakeCredentialRequest request = request_;
-    request.SetExcludeList(
-        {{request_.exclude_list()->at(current_credential_)}});
+    request.exclude_list = {{request_.exclude_list->at(current_credential_)}};
     register_operation_ = std::make_unique<Ctap2DeviceOperation<
         CtapMakeCredentialRequest, AuthenticatorMakeCredentialResponse>>(
         device(), std::move(request), std::move(callback_),
         base::BindOnce(&ReadCTAPMakeCredentialResponse,
-                       device()->DeviceTransport()));
+                       device()->DeviceTransport()),
+        /*string_fixup_predicate=*/nullptr);
     register_operation_->Start();
     return;
   }
@@ -192,20 +194,22 @@ void MakeCredentialTask::HandleResponseToSilentSignRequest(
         base::BindOnce(&MakeCredentialTask::HandleResponseToDummyTouch,
                        weak_factory_.GetWeakPtr()),
         base::BindOnce(&ReadCTAPMakeCredentialResponse,
-                       device()->DeviceTransport()));
+                       device()->DeviceTransport()),
+        /*string_fixup_predicate=*/nullptr);
     register_operation_->Start();
     return;
   }
 
   // The authenticator doesn't recognize this particular credential from the
   // exclude list. Try the next one.
-  if (++current_credential_ < request_.exclude_list()->size()) {
+  if (++current_credential_ < request_.exclude_list->size()) {
     silent_sign_operation_ = std::make_unique<Ctap2DeviceOperation<
         CtapGetAssertionRequest, AuthenticatorGetAssertionResponse>>(
         device(), NextSilentSignRequest(),
         base::BindOnce(&MakeCredentialTask::HandleResponseToSilentSignRequest,
                        weak_factory_.GetWeakPtr()),
-        base::BindOnce(&ReadCTAPGetAssertionResponse));
+        base::BindOnce(&ReadCTAPGetAssertionResponse),
+        /*string_fixup_predicate=*/nullptr);
     silent_sign_operation_->Start();
     return;
   }
@@ -214,12 +218,13 @@ void MakeCredentialTask::HandleResponseToSilentSignRequest(
   // register request may proceed but without the exclude list present in case
   // it exceeds the device's size limit.
   CtapMakeCredentialRequest request = request_;
-  request.SetExcludeList({});
+  request.exclude_list.reset();
   register_operation_ = std::make_unique<Ctap2DeviceOperation<
       CtapMakeCredentialRequest, AuthenticatorMakeCredentialResponse>>(
       device(), std::move(request), std::move(callback_),
       base::BindOnce(&ReadCTAPMakeCredentialResponse,
-                     device()->DeviceTransport()));
+                     device()->DeviceTransport()),
+      /*string_fixup_predicate=*/nullptr);
   register_operation_->Start();
 }
 
@@ -253,7 +258,7 @@ void MakeCredentialTask::MaybeRevertU2fFallback(
     // This was actually a CTAP2 device, but the protocol version was set to U2F
     // because it had a PIN set and so, in order to make a credential, the U2F
     // interface was used.
-    device()->set_supported_protocol(ProtocolVersion::kCtap);
+    device()->set_supported_protocol(ProtocolVersion::kCtap2);
   }
 
   std::move(callback_).Run(status, std::move(response));

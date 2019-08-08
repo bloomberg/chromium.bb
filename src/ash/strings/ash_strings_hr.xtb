@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">Sažmi izbornik</translation>
 <translation id="1383876407941801731">Traži</translation>
 <translation id="1419738280318246476">Otključajte uređaj za izvršenje radnje obavijesti</translation>
+<translation id="1426410128494586442">Da</translation>
 <translation id="1455242230282523554">Prikaz postavki jezika</translation>
 <translation id="1467432559032391204">Ulijevo</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -47,7 +48,6 @@
 <translation id="1570871743947603115">Prebacivanje Bluetootha. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Pristup svim vašim aktivnostima u ovoj sesiji</translation>
 <translation id="1608626060424371292">Ukloni tog korisnika</translation>
-<translation id="1621499497873603021">Baterija će se isprazniti za <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Pokrenite glasovni upit</translation>
 <translation id="1658406695958299976">Vaša zaporka i dalje nije mogla biti potvrđena. Napomena: ako ste nedavno promijenili zaporku, vaša nova zaporka primjenjivat će se nakon što se odjavite. Ovdje upotrijebite staru zaporku.</translation>
 <translation id="1677472565718498478">Još <ph name="TIME" /></translation>
@@ -72,7 +72,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Saznajte više o najnovijem ažuriranju za <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">Isključi</translation>
-<translation id="1999763610967697511">Povlačenje i ispuštanje</translation>
 <translation id="2012624427112548395">Ctrl + Search + H</translation>
 <translation id="2016340657076538683">Unesite poruku</translation>
 <translation id="2050339315714019657">Portret</translation>
@@ -100,7 +99,6 @@
 <translation id="239188844683466770">Prebacivanje načina Ne uznemiravaj</translation>
 <translation id="2412593942846481727">Dostupno je ažuriranje</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> predstavlja upravljanu sesiju kojom upravlja <ph name="DOMAIN" /></translation>
-<translation id="2416346634399901812">Povezano s mrežom <ph name="NETWORK_NAME" /></translation>
 <translation id="2427507373259914951">Lijevi klik</translation>
 <translation id="2429753432712299108">Bluetooth uređaj "<ph name="DEVICE_NAME" />" traži dopuštenje za uparivanje. Prije prihvaćanja provjerite prikazuje li se na njemu ovaj pristupni ključ: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Obavijesti</translation>
@@ -114,11 +112,11 @@
 <translation id="2597972630681408282">Noćno svjetlo: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM kartica je zaključana</translation>
 <translation id="2653659639078652383">Pošalji</translation>
+<translation id="2658778018866295321">Klikanje i povlačenje</translation>
 <translation id="2700493154570097719">Postavite tipkovnicu</translation>
 <translation id="2718395828230677721">Noćno svjetlo</translation>
 <translation id="2727977024730340865">Uređaj je priključen na punjač male snage. Punjenje baterije možda nije pouzdano.</translation>
 <translation id="2761704814324807722">Traka statusa, vrijeme <ph name="TIME" />, <ph name="BATTERY" /></translation>
-<translation id="277257480934873581">Ponovno povezivanje s mrežom <ph name="NAME" /></translation>
 <translation id="2792498699870441125">Alt + Pretraživanje</translation>
 <translation id="2803734122639935495">Za otključavanje unesite zaporku</translation>
 <translation id="2819276065543622893">Odjavit ćete se sada.</translation>
@@ -139,7 +137,6 @@
 <translation id="2996462380875591307">Usidreno je povećalo omogućeno. Ponovo pritisnite Ctrl + Search + D da biste ga isključili.</translation>
 <translation id="3000461861112256445">Monoaudio</translation>
 <translation id="3009178788565917040">Izlaz</translation>
-<translation id="3019353588588144572">Baterija će se napuniti za <ph name="TIME_REMAINING" /></translation>
 <translation id="3051128274746680507">Vaš profil nadziranog korisnika uskoro će se ukloniti. Prijavite se da biste saznali više.</translation>
 <translation id="3055162170959710888">Uređaj je danas korišten <ph name="USED_TIME" /></translation>
 <translation id="3077734595579995578">shift</translation>
@@ -175,6 +172,7 @@
 <translation id="3510164367642747937">Istakni pokazivač miša</translation>
 <translation id="3513798432020909783">Računom upravlja <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Vratite na "<ph name="FROM_LOCALE" />" (zahtijeva ponovno pokretanje)</translation>
+<translation id="3576141592585647168">Promjena vremenske zone</translation>
 <translation id="3595596368722241419">Baterija je puna</translation>
 <translation id="3606978283550408104">Brajev je redak povezan.</translation>
 <translation id="3621202678540785336">Ulaz</translation>
@@ -202,6 +200,7 @@
 <translation id="394485226368336402">Postavke zvuka</translation>
 <translation id="3962859241508114581">Prethodna pjesma</translation>
 <translation id="397105322502079400">Izračun u tijeku…</translation>
+<translation id="3977512764614765090">Baterija je na <ph name="PERCENTAGE" />% i puni se.</translation>
 <translation id="3995138139523574647">USB-C uređaj (stražnji desni priključak)</translation>
 <translation id="4017989525502048489">Laserski pokazivač</translation>
 <translation id="4042660782729322247">Dijelite zaslon</translation>
@@ -218,7 +217,7 @@
 <translation id="4269883910223712419">Administrator ovog uređaja ima sljedeće mogućnosti:</translation>
 <translation id="4279490309300973883">Zrcaljenje</translation>
 <translation id="4281007048406351813">Dodaj odbrojavanju 1 min</translation>
-<translation id="4292681942966152062">Aktiviranje mreže <ph name="NETWORK_NAME" /></translation>
+<translation id="4296136865091727875">Brisanje svih obavijesti (<ph name="COUNT" />)</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Pritisnuli ste tipkovni prečac za visoki kontrast. Želite li ga uključiti?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -234,7 +233,6 @@
 <translation id="4477350412780666475">Sljedeća pjesma</translation>
 <translation id="4479639480957787382">Eternet</translation>
 <translation id="4481530544597605423">Neupareni uređaji</translation>
-<translation id="4508225577814909926"><ph name="NAME" />: povezivanje...</translation>
 <translation id="4513946894732546136">Povratne informacije</translation>
 <translation id="4527045527269911712">Bluetooth uređaj "<ph name="DEVICE_NAME" />" traži dopuštenje za uparivanje.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> do potpune napunjenosti</translation>
@@ -247,12 +245,12 @@
 <translation id="4696813013609194136">Otključajte uređaj roditeljskim kodom</translation>
 <translation id="4731797938093519117">Roditeljski pristup</translation>
 <translation id="4734965478015604180">Vodoravno</translation>
-<translation id="476166673298332917">Administrator uređaja može pratiti vašu aktivnost pregledavanja.</translation>
 <translation id="4774338217796918551">Vrati se sutra u <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Zaporka za adresu <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Google asistent nije dostupan u demosesiji.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Prekini vezu</translation>
+<translation id="4831034276697007977">Jeste li sigurni da želite isključiti automatske klikove?</translation>
 <translation id="4849058404725798627">Istakni objekt fokusom na tipkovnici</translation>
 <translation id="485592688953820832">Nema radnje (pauza)</translation>
 <translation id="4872237917498892622">Alt + Pretraživanje ili Shift</translation>
@@ -355,9 +353,9 @@
 <translation id="6537270692134705506">Snimi zaslon</translation>
 <translation id="6542521951477560771">Emitiranje na uređaj <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Pitajte administratora</translation>
-<translation id="6574601967010742428">Administrator uređaja možda može nadzirati vašu aktivnost.</translation>
 <translation id="6585808820553845416">Sesija će završiti za <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Pretraži + Shift + K</translation>
+<translation id="6637729079642709226">Promijenite vrijeme</translation>
 <translation id="6650933572246256093">Bluetooth uređaj "<ph name="DEVICE_NAME" />" traži dopuštenje za uparivanje. Unesite ovaj pristupni ključ na tom uređaju: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Zaporka</translation>
 <translation id="6665545700722362599">Dopustite web-lokacijama, aplikacijama i proširenjima da upotrebljavaju usluge lokacije, mikrofon i kameru uređaja ili druge značajke</translation>
@@ -369,7 +367,6 @@
 <translation id="6715542151869432661">Nije pronađen nijedan mobilni uređaj.</translation>
 <translation id="6723839937902243910">Napajanje</translation>
 <translation id="6751826523481687655">Uključeno je praćenje izvedbe</translation>
-<translation id="6785414152754474415">Baterija je <ph name="PERCENTAGE" />% puna i puni se.</translation>
 <translation id="6790428901817661496">Reproduciraj</translation>
 <translation id="6803622936009808957">Nije bilo moguće zrcaliti zaslone jer nije pronađena nijedna podržana razlučivost. Umjesto toga proširena je radna površina.</translation>
 <translation id="6820676911989879663">Odmorite se!</translation>
@@ -403,6 +400,7 @@
 <translation id="7348093485538360975">Tipkovnica na zaslonu</translation>
 <translation id="735745346212279324">Veza s VPN-om prekinuta</translation>
 <translation id="7377169924702866686">Uključena je opcija Caps Lock.</translation>
+<translation id="7378594059915113390">Medijske kontrole</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" />s</translation>
 <translation id="7398254312354928459">Promijenjena je mrežna veza</translation>
 <translation id="7405710164030118432">Da biste otključali uređaj, unesite kôd za roditeljski pristup Family Linka</translation>
@@ -416,6 +414,7 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> ne podržava razlučivost <ph name="SPECIFIED_RESOLUTION" />. Razlučivost je promijenjena u <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Paleta emojija</translation>
 <translation id="7564874036684306347">Premještanje prozora na drugu radnu površinu može dovesti do neočekivanog ponašanja. Daljnje obavijesti, prozori i dijaloški okviri mogu se podijeliti između radnih površina.</translation>
+<translation id="7568294522609223312">Isključi automatske klikove</translation>
 <translation id="7569509451529460200">Brajica i ChromeVox omogućeni</translation>
 <translation id="7593891976182323525">Pretraživanje ili Shift</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (vlasnik)</translation>
@@ -432,7 +431,6 @@
 <translation id="7814236020522506259"><ph name="HOUR" /> i <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Jak signal</translation>
 <translation id="7837740436429729974">Vrijeme je isteklo</translation>
-<translation id="7842211907556571265">Povezivanje s mrežom <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Upozorenje: eksperimentalna značajka</translation>
 <translation id="7846634333498149051">Tipkovnica</translation>
 <translation id="7868900307798234037">Otključavanje otiskom prsta</translation>
@@ -504,6 +502,7 @@
 <translation id="8877788021141246043">Postavi podsjetnik</translation>
 <translation id="8878886163241303700">Produljenje zaslona</translation>
 <translation id="890616557918890486">Promijeni izvor</translation>
+<translation id="8909138438987180327">Baterija je na <ph name="PERCENTAGE" /> posto.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google asistent ne govori taj jezik.</translation>
 <translation id="8938800817013097409">USB-C uređaj (desni priključak sa stražnje strane)</translation>
@@ -512,9 +511,11 @@
 <translation id="8990809378771970590">Upotrebljava se <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Otključajte uređaj kao <ph name="LOGIN_ID" /> za izvršenje radnje obavijesti.</translation>
 <translation id="8995603266996330174">Upravlja <ph name="DOMAIN" /></translation>
+<translation id="9017320285115481645">Unesite kôd za roditeljski pristup Family Linka.</translation>
 <translation id="9029474291399787231">Dostupno je ažuriranje za Adobe Flash Player</translation>
 <translation id="9056839673611986238">Uređaj će se vratiti na prethodnu verziju sustava</translation>
 <translation id="9070640332319875144">Postavke Asistenta</translation>
+<translation id="9072519059834302790">Baterija će se isprazniti za <ph name="TIME_LEFT" />.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Upotrebljava se mikrofon.</translation>
@@ -525,8 +526,8 @@
 <translation id="9179259655489829027">Ta vam značajka omogućuje brzi pristup bilo kojem prijavljenom korisniku bez zahtijevanja zaporke. Tu značajku upotrebljavajte samo s pouzdanim računima.</translation>
 <translation id="9193626018745640770">Emitiranje na nepoznatom prijamniku</translation>
 <translation id="9194617393863864469">Prijavljivanje drugog korisnika...</translation>
-<translation id="9201131092683066720">Baterija je <ph name="PERCENTAGE" />% puna.</translation>
 <translation id="9210037371811586452">Izlaz iz načina jedinstvene radne površine</translation>
+<translation id="9211681782751733685">Baterija će se napuniti za <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">Postavi pozadinu</translation>
 <translation id="921989828232331238">Tvoj je roditelj zaključao ovaj uređaj za danas</translation>
 <translation id="923686485342484400">Pritisnite Ctrl, Shift i Q dvaput da biste se odjavili.</translation>

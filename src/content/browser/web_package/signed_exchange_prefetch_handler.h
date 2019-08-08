@@ -15,6 +15,7 @@
 #include "services/network/public/mojom/url_loader.mojom.h"
 
 namespace net {
+struct SHA256HashValue;
 class URLRequestContextGetter;
 }
 
@@ -64,6 +65,12 @@ class SignedExchangePrefetchHandler final
   network::mojom::URLLoaderClientRequest FollowRedirect(
       network::mojom::URLLoaderRequest loader_request);
 
+  // Returns the header integrity value of the loaded signed exchange if
+  // available. This is available after OnReceiveRedirect() of
+  // |forwarding_client| is called and before FollowRedirect() of |this| is
+  // called. Otherwise returns nullopt.
+  base::Optional<net::SHA256HashValue> ComputeHeaderIntegrity() const;
+
  private:
   // network::mojom::URLLoaderClient overrides:
   void OnReceiveResponse(const network::ResourceResponseHead& head) override;
@@ -72,7 +79,7 @@ class SignedExchangePrefetchHandler final
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         base::OnceCallback<void()> callback) override;
-  void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override;
+  void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override;
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;

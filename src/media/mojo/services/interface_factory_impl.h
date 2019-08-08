@@ -53,8 +53,10 @@ class InterfaceFactoryImpl : public DeferredDestroy<mojom::InterfaceFactory> {
       mojom::RendererRequest request,
       mojom::MediaPlayerRendererExtensionRequest renderer_extension_request)
       final;
-  void CreateFlingingRenderer(const std::string& presentation_id,
-                              mojom::RendererRequest request) final;
+  void CreateFlingingRenderer(
+      const std::string& presentation_id,
+      mojom::FlingingRendererClientExtensionPtr client_extension,
+      mojom::RendererRequest request) final;
 #endif  // defined(OS_ANDROID)
   void CreateCdm(const std::string& key_system,
                  mojom::ContentDecryptionModuleRequest request) final;

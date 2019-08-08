@@ -4,12 +4,11 @@
 
 #include "chrome/browser/chromeos/printing/bulk_printers_calculator_factory.h"
 
-#include <memory>
-
 #include "base/lazy_instance.h"
 #include "chrome/browser/chromeos/printing/bulk_printers_calculator.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/account_id/account_id.h"
 #include "components/user_manager/user.h"
 
 namespace chromeos {

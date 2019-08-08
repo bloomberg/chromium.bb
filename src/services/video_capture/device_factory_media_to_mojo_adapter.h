@@ -16,6 +16,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "media/capture/video/chromeos/mojo/cros_image_capture.mojom.h"
+#include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace video_capture {
@@ -28,10 +29,15 @@ class DeviceMediaToMojoAdapter;
 // same media::VideoCaptureDevice at the same time.
 class DeviceFactoryMediaToMojoAdapter : public DeviceFactory {
  public:
+#if defined(OS_CHROMEOS)
   DeviceFactoryMediaToMojoAdapter(
       std::unique_ptr<media::VideoCaptureSystem> capture_system,
       media::MojoMjpegDecodeAcceleratorFactoryCB jpeg_decoder_factory_callback,
       scoped_refptr<base::SequencedTaskRunner> jpeg_decoder_task_runner);
+#else
+  DeviceFactoryMediaToMojoAdapter(
+      std::unique_ptr<media::VideoCaptureSystem> capture_system);
+#endif  // defined(OS_CHROMEOS)
   ~DeviceFactoryMediaToMojoAdapter() override;
 
   // DeviceFactory implementation.
@@ -79,12 +85,15 @@ class DeviceFactoryMediaToMojoAdapter : public DeviceFactory {
 
   std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
   const std::unique_ptr<media::VideoCaptureSystem> capture_system_;
+  std::map<std::string, ActiveDeviceEntry> active_devices_by_id_;
+
+#if defined(OS_CHROMEOS)
   const media::MojoMjpegDecodeAcceleratorFactoryCB
       jpeg_decoder_factory_callback_;
   scoped_refptr<base::SequencedTaskRunner> jpeg_decoder_task_runner_;
-  std::map<std::string, ActiveDeviceEntry> active_devices_by_id_;
-  bool has_called_get_device_infos_;
+#endif  // defined(OS_CHROMEOS)
 
+  bool has_called_get_device_infos_;
   base::WeakPtrFactory<DeviceFactoryMediaToMojoAdapter> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceFactoryMediaToMojoAdapter);

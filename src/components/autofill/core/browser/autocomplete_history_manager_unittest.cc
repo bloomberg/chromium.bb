@@ -12,7 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -156,7 +155,6 @@ class AutocompleteHistoryManagerTest : public testing::Test {
   scoped_refptr<MockWebDataService> web_data_service_;
   std::unique_ptr<AutocompleteHistoryManager> autocomplete_manager_;
   std::unique_ptr<PrefService> prefs_;
-  base::test::ScopedFeatureList scoped_features;
   TestAutofillClock test_clock;
 };
 
@@ -342,7 +340,7 @@ TEST_F(AutocompleteHistoryManagerTest, PresentationField) {
   field.name = ASCIIToUTF16("esoterica");
   field.value = ASCIIToUTF16("a truly esoteric value, I assure you");
   field.form_control_type = "text";
-  field.role = FormFieldData::ROLE_ATTRIBUTE_PRESENTATION;
+  field.role = FormFieldData::RoleAttribute::kPresentation;
   form.fields.push_back(field);
 
   EXPECT_CALL(*web_data_service_, AddFormFields(_)).Times(0);
@@ -354,9 +352,7 @@ TEST_F(AutocompleteHistoryManagerTest, PresentationField) {
 // cleanup if the flag is enabled, we're not in OTR and it hadn't run in the
 // current major version.
 TEST_F(AutocompleteHistoryManagerTest, Init_TriggersCleanup) {
-  // Enable the feature, and set the major version.
-  scoped_features.InitAndEnableFeature(
-      features::kAutocompleteRetentionPolicyEnabled);
+  // Set the rentention policy cleanup to a past major version.
   prefs_->SetInteger(prefs::kAutocompleteLastVersionRetentionPolicy,
                      CHROME_VERSION_MAJOR - 1);
 
@@ -370,9 +366,7 @@ TEST_F(AutocompleteHistoryManagerTest, Init_TriggersCleanup) {
 // Tests that the Init function will not trigger the Autocomplete Retention
 // Policy when running in OTR.
 TEST_F(AutocompleteHistoryManagerTest, Init_OTR_Not_TriggersCleanup) {
-  // Enable the feature, and set the major version.
-  scoped_features.InitAndEnableFeature(
-      features::kAutocompleteRetentionPolicyEnabled);
+  // Set the rentention policy cleanup to a past major version.
   prefs_->SetInteger(prefs::kAutocompleteLastVersionRetentionPolicy,
                      CHROME_VERSION_MAJOR - 1);
 
@@ -383,28 +377,9 @@ TEST_F(AutocompleteHistoryManagerTest, Init_OTR_Not_TriggersCleanup) {
                               /*is_off_the_record=*/true);
 }
 
-// Tests that the Init function will not trigger the Autocomplete Retention
-// Policy when the feature is disabled.
-TEST_F(AutocompleteHistoryManagerTest,
-       Init_FeatureDisabled_Not_TriggersCleanup) {
-  // Disable the feature, and set the major version.
-  scoped_features.InitAndDisableFeature(
-      features::kAutocompleteRetentionPolicyEnabled);
-  prefs_->SetInteger(prefs::kAutocompleteLastVersionRetentionPolicy,
-                     CHROME_VERSION_MAJOR - 1);
-
-  EXPECT_CALL(*web_data_service_,
-              RemoveExpiredAutocompleteEntries(autocomplete_manager_.get()))
-      .Times(0);
-  autocomplete_manager_->Init(web_data_service_, prefs_.get(),
-                              /*is_off_the_record=*/false);
-}
-
 // Tests that the Init function will not crash even if we don't have a DB.
 TEST_F(AutocompleteHistoryManagerTest, Init_NullDB_NoCrash) {
-  // Enable the feature, and set the major version.
-  scoped_features.InitAndEnableFeature(
-      features::kAutocompleteRetentionPolicyEnabled);
+  // Set the rentention policy cleanup to a past major version.
   prefs_->SetInteger(prefs::kAutocompleteLastVersionRetentionPolicy,
                      CHROME_VERSION_MAJOR - 1);
 
@@ -419,9 +394,7 @@ TEST_F(AutocompleteHistoryManagerTest, Init_NullDB_NoCrash) {
 // Policy when running in a major version that was already cleaned.
 TEST_F(AutocompleteHistoryManagerTest,
        Init_SameMajorVersion_Not_TriggersCleanup) {
-  // Enable the feature, and set the major version.
-  scoped_features.InitAndEnableFeature(
-      features::kAutocompleteRetentionPolicyEnabled);
+  // Set the rentention policy cleanup to the current major version.
   prefs_->SetInteger(prefs::kAutocompleteLastVersionRetentionPolicy,
                      CHROME_VERSION_MAJOR);
 

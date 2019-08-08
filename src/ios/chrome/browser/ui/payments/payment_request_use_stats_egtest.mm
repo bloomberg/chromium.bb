@@ -5,15 +5,16 @@
 #import <EarlGrey/EarlGrey.h>
 
 #include "base/time/time.h"
-#include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/payments/payment_request_egtest_base.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -58,17 +59,15 @@ const char kContactDetailsFreeShippingPage[] =
 // Sets up a credit card with an associated billing address.
 - (void)setUpCreditCard {
   autofill::AutofillProfile billingAddress = autofill::test::GetFullProfile();
-  NSError* billingAddressError = [self addAutofillProfile:billingAddress];
-  GREYAssertNil(billingAddressError, billingAddressError.localizedDescription);
+  CHROME_EG_ASSERT_NO_ERROR([self addAutofillProfile:billingAddress]);
   autofill::CreditCard card = autofill::test::GetCreditCard();  // visa
   card.set_billing_address_id(billingAddress.guid());
-  NSError* creditCardError = [self addCreditCard:card];
-  GREYAssertNil(creditCardError, creditCardError.localizedDescription);
+  CHROME_EG_ASSERT_NO_ERROR([self addCreditCard:card]);
 }
 
 // Completes the Payment Request.
 - (void)completePayment {
-  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
 
   // Tap the buy button.
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
@@ -97,13 +96,11 @@ const char kContactDetailsFreeShippingPage[] =
 
   // Setup a credit card with an associated billing address.
   autofill::AutofillProfile billingAddress = autofill::test::GetFullProfile();
-  NSError* billingAddressError = [self addAutofillProfile:billingAddress];
-  GREYAssertNil(billingAddressError, billingAddressError.localizedDescription);
+  CHROME_EG_ASSERT_NO_ERROR([self addAutofillProfile:billingAddress]);
 
   autofill::CreditCard card = autofill::test::GetCreditCard();  // visa
   card.set_billing_address_id(billingAddress.guid());
-  NSError* creditCardError = [self addCreditCard:card];
-  GREYAssertNil(creditCardError, creditCardError.localizedDescription);
+  CHROME_EG_ASSERT_NO_ERROR([self addCreditCard:card]);
 
   // Check that the initial use stats were set correctly.
   autofill::CreditCard* initialCard =
@@ -116,7 +113,8 @@ const char kContactDetailsFreeShippingPage[] =
   EXPECT_EQ(1U, initialBilling->use_count());
   EXPECT_EQ(kSomeDate, initialBilling->use_date());
 
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kNoShippingPage)];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kNoShippingPage)]);
 
   testClock.SetNow(kSomeLaterDate);
   [self completePayment];
@@ -146,9 +144,7 @@ const char kContactDetailsFreeShippingPage[] =
   // selected as the default shipping address.
   autofill::AutofillProfile shippingAddress = autofill::test::GetFullProfile2();
   shippingAddress.set_use_count(3);
-  NSError* shippingAddressError = [self addAutofillProfile:shippingAddress];
-  GREYAssertNil(shippingAddressError,
-                shippingAddressError.localizedDescription);
+  CHROME_EG_ASSERT_NO_ERROR([self addAutofillProfile:shippingAddress]);
 
   // Check that the initial use stats were set correctly.
   autofill::AutofillProfile* initialShipping =
@@ -156,7 +152,8 @@ const char kContactDetailsFreeShippingPage[] =
   EXPECT_EQ(3U, initialShipping->use_count());
   EXPECT_EQ(kSomeDate, initialShipping->use_date());
 
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kFreeShippingPage)];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kFreeShippingPage)]);
 
   testClock.SetNow(kSomeLaterDate);
   [self completePayment];
@@ -180,8 +177,7 @@ const char kContactDetailsFreeShippingPage[] =
   // selected as the default shipping address.
   autofill::AutofillProfile contactAddress = autofill::test::GetFullProfile2();
   contactAddress.set_use_count(3);
-  NSError* contactAddressError = [self addAutofillProfile:contactAddress];
-  GREYAssertNil(contactAddressError, contactAddressError.localizedDescription);
+  CHROME_EG_ASSERT_NO_ERROR([self addAutofillProfile:contactAddress]);
 
   // Check that the initial use stats were set correctly.
   autofill::AutofillProfile* initialContact =
@@ -189,7 +185,8 @@ const char kContactDetailsFreeShippingPage[] =
   EXPECT_EQ(3U, initialContact->use_count());
   EXPECT_EQ(kSomeDate, initialContact->use_date());
 
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kRequestNamePage)];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kRequestNamePage)]);
 
   testClock.SetNow(kSomeLaterDate);
   [self completePayment];
@@ -213,8 +210,7 @@ const char kContactDetailsFreeShippingPage[] =
   // the default shipping and contact address.
   autofill::AutofillProfile multiAddress = autofill::test::GetFullProfile2();
   multiAddress.set_use_count(3);
-  NSError* multiAddressError = [self addAutofillProfile:multiAddress];
-  GREYAssertNil(multiAddressError, multiAddressError.localizedDescription);
+  CHROME_EG_ASSERT_NO_ERROR([self addAutofillProfile:multiAddress]);
 
   // Check that the initial use stats were set correctly.
   autofill::AutofillProfile* initialAddress =
@@ -222,8 +218,8 @@ const char kContactDetailsFreeShippingPage[] =
   EXPECT_EQ(3U, initialAddress->use_count());
   EXPECT_EQ(kSomeDate, initialAddress->use_date());
 
-  [ChromeEarlGrey
-      loadURL:web::test::HttpServer::MakeUrl(kContactDetailsFreeShippingPage)];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kContactDetailsFreeShippingPage)]);
 
   testClock.SetNow(kSomeLaterDate);
   [self completePayment];

@@ -24,6 +24,8 @@ import {StatsViewer} from '../nodes/stats-viewer.js';
 import {Node} from '../core/node.js';
 import {vec3, quat} from '../math/gl-matrix.js';
 
+import '../../../../js/xrray-polyfill.js'
+
 export class WebXRView extends RenderView {
   constructor(view, pose, layer) {
     super(
@@ -82,11 +84,11 @@ export class Scene extends Node {
   updateInputSources(frame, refSpace) {
     // FIXME: Check for the existence of the API first. This check should be
     // removed once the input API is part of the official spec.
-    if (!frame.session.getInputSources) {
+    if (!frame.session.inputSources) {
       return;
     }
 
-    let inputSources = frame.session.getInputSources();
+    let inputSources = frame.session.inputSources;
 
     let newHoveredNodes = [];
     let lastHoverFrame = this._hoverFrame;

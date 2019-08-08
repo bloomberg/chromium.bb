@@ -28,8 +28,8 @@ public class DownloadMediaParserBridge {
      * Destroys the native object of DownloadMediaParser. This will result in the utility process
      * being destroyed.
      */
-    public void destory() {
-        nativeDestory(mNativeDownloadMediaParserBridge);
+    public void destroy() {
+        nativeDestroy(mNativeDownloadMediaParserBridge);
         mNativeDownloadMediaParserBridge = 0;
     }
 
@@ -44,6 +44,6 @@ public class DownloadMediaParserBridge {
 
     private native long nativeInit(
             String mimeType, String filePath, Callback<DownloadMediaData> callback);
-    private native void nativeDestory(long nativeDownloadMediaParserBridge);
+    private native void nativeDestroy(long nativeDownloadMediaParserBridge);
     private native void nativeStart(long nativeDownloadMediaParserBridge);
 }

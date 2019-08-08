@@ -216,13 +216,14 @@ void VideoDecodePerfHistory::SavePerfRecord(ukm::SourceId source_id,
                                             uint64_t player_id,
                                             base::OnceClosure save_done_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DVLOG(3) << __func__
-           << base::StringPrintf(
-                  " profile:%s size:%s fps:%d decoded:%d dropped:%d",
-                  GetProfileName(features.profile).c_str(),
-                  features.video_size.ToString().c_str(),
-                  features.frames_per_sec, targets.frames_decoded,
-                  targets.frames_dropped);
+  DVLOG(3)
+      << __func__
+      << base::StringPrintf(
+             " profile:%s size:%s fps:%d decoded:%d dropped:%d efficient:%d",
+             GetProfileName(features.profile).c_str(),
+             features.video_size.ToString().c_str(), features.frames_per_sec,
+             targets.frames_decoded, targets.frames_dropped,
+             targets.frames_power_efficient);
 
   if (db_init_status_ == FAILED) {
     DVLOG(3) << __func__ << " Can't save stats. No DB!";

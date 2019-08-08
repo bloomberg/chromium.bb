@@ -4,16 +4,6 @@
 
 #include "third_party/blink/renderer/modules/manifest/manifest_parser.h"
 
-#include <stddef.h>
-#include <utility>
-
-#include "base/json/json_reader.h"
-#include "base/strings/nullable_string16.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_split.h"
-#include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/values.h"
 #include "net/base/mime_util.h"
 #include "third_party/blink/public/common/manifest/manifest_util.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
@@ -22,29 +12,28 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/modules/manifest/manifest_uma_util.h"
-#include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/json/json_parser.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-#include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/geometry/size.h"
-#include "url/gurl.h"
 
 namespace blink {
 
 namespace {
 
-bool IsValidMimeType(const std::string& mime_type) {
-  if (mime_type.length() > 0 && mime_type.at(0) == '.')
+bool IsValidMimeType(const String& mime_type) {
+  if (mime_type.StartsWith('.'))
     return true;
-  return net::ParseMimeTypeWithoutParameter(mime_type, nullptr, nullptr);
+  return net::ParseMimeTypeWithoutParameter(
+      StringUTF8Adaptor(mime_type).AsStdString(), nullptr, nullptr);
 }
 
-bool VerifyFiles(const std::vector<Manifest::FileFilter>& files) {
-  for (const Manifest::FileFilter& file : files) {
-    for (const base::string16& utf_accept : file.accept) {
-      std::string accept_type =
-          base::ToLowerASCII(base::UTF16ToASCII(utf_accept));
-      if (!IsValidMimeType(accept_type))
+bool VerifyFiles(const Vector<mojom::blink::ManifestFileFilterPtr>& files) {
+  for (const auto& file : files) {
+    for (const auto& accept_type : file->accept) {
+      if (!IsValidMimeType(accept_type.LowerASCII()))
         return false;
     }
   }
@@ -53,7 +42,7 @@ bool VerifyFiles(const std::vector<Manifest::FileFilter>& files) {
 
 }  // anonymous namespace
 
-ManifestParser::ManifestParser(const base::StringPiece& data,
+ManifestParser::ManifestParser(const String& data,
                                const KURL& manifest_url,
                                const KURL& document_url)
     : data_(data),
@@ -64,71 +53,84 @@ ManifestParser::ManifestParser(const base::StringPiece& data,
 ManifestParser::~ManifestParser() {}
 
 void ManifestParser::Parse() {
-  std::string error_msg;
-  int error_line = 0;
-  int error_column = 0;
-  std::unique_ptr<base::Value> value =
-      base::JSONReader::ReadAndReturnErrorDeprecated(
-          data_, base::JSON_PARSE_RFC, nullptr, &error_msg, &error_line,
-          &error_column);
-
-  if (!value) {
-    AddErrorInfo(error_msg, true, error_line, error_column);
+  JSONParseError error;
+  std::unique_ptr<JSONValue> root = ParseJSON(data_, &error);
+  manifest_ = mojom::blink::Manifest::New();
+  if (!root) {
+    AddErrorInfo(error.message, true, error.line, error.column);
     ManifestUmaUtil::ParseFailed();
     failed_ = true;
     return;
   }
 
-  base::DictionaryValue* dictionary = nullptr;
-  if (!value->GetAsDictionary(&dictionary)) {
+  std::unique_ptr<JSONObject> root_object = JSONObject::From(std::move(root));
+  if (!root_object) {
     AddErrorInfo("root element must be a valid JSON object.", true);
     ManifestUmaUtil::ParseFailed();
     failed_ = true;
     return;
   }
-  DCHECK(dictionary);
 
-  manifest_.name = ParseName(*dictionary);
-  manifest_.short_name = ParseShortName(*dictionary);
-  manifest_.start_url = ParseStartURL(*dictionary);
-  manifest_.scope = ParseScope(*dictionary, manifest_.start_url);
-  manifest_.display = ParseDisplay(*dictionary);
-  manifest_.orientation = ParseOrientation(*dictionary);
-  manifest_.icons = ParseIcons(*dictionary);
-  manifest_.share_target = ParseShareTarget(*dictionary);
-  manifest_.file_handler = ParseFileHandler(*dictionary);
-  manifest_.related_applications = ParseRelatedApplications(*dictionary);
-  manifest_.prefer_related_applications =
-      ParsePreferRelatedApplications(*dictionary);
-  manifest_.theme_color = ParseThemeColor(*dictionary);
-  manifest_.background_color = ParseBackgroundColor(*dictionary);
-  manifest_.splash_screen_url = ParseSplashScreenURL(*dictionary);
-  manifest_.gcm_sender_id = ParseGCMSenderID(*dictionary);
+  manifest_->name = ParseName(root_object.get());
+  manifest_->short_name = ParseShortName(root_object.get());
+  manifest_->start_url = ParseStartURL(root_object.get());
+  manifest_->scope = ParseScope(root_object.get(), manifest_->start_url);
+  manifest_->display = ParseDisplay(root_object.get());
+  manifest_->orientation = ParseOrientation(root_object.get());
+  manifest_->icons = ParseIcons(root_object.get());
+
+  auto share_target = ParseShareTarget(root_object.get());
+  if (share_target.has_value())
+    manifest_->share_target = std::move(*share_target);
+
+  auto file_handler = ParseFileHandler(root_object.get());
+  if (file_handler.has_value())
+    manifest_->file_handler = std::move(*file_handler);
+
+  manifest_->related_applications = ParseRelatedApplications(root_object.get());
+  manifest_->prefer_related_applications =
+      ParsePreferRelatedApplications(root_object.get());
+
+  base::Optional<RGBA32> theme_color = ParseThemeColor(root_object.get());
+  manifest_->has_theme_color = theme_color.has_value();
+  if (manifest_->has_theme_color)
+    manifest_->theme_color = *theme_color;
+
+  base::Optional<RGBA32> background_color =
+      ParseBackgroundColor(root_object.get());
+  manifest_->has_background_color = background_color.has_value();
+  if (manifest_->has_background_color)
+    manifest_->background_color = *background_color;
+
+  manifest_->splash_screen_url = ParseSplashScreenURL(root_object.get());
+  manifest_->gcm_sender_id = ParseGCMSenderID(root_object.get());
 
   ManifestUmaUtil::ParseSucceeded(manifest_);
 }
 
-const Manifest& ManifestParser::manifest() const {
+const mojom::blink::ManifestPtr& ManifestParser::manifest() const {
   return manifest_;
 }
 
-void ManifestParser::TakeErrors(WebVector<ManifestError>* errors) {
-  errors->Clear();
-  errors->Assign(errors_);
+void ManifestParser::TakeErrors(
+    Vector<mojom::blink::ManifestErrorPtr>* errors) {
+  errors->clear();
+  errors->swap(errors_);
 }
 
 bool ManifestParser::failed() const {
   return failed_;
 }
 
-bool ManifestParser::ParseBoolean(const base::DictionaryValue& dictionary,
-                                  const std::string& key,
+bool ManifestParser::ParseBoolean(const JSONObject* object,
+                                  const String& key,
                                   bool default_value) {
-  if (!dictionary.HasKey(key))
+  JSONValue* json_value = object->Get(key);
+  if (!json_value)
     return default_value;
 
   bool value;
-  if (!dictionary.GetBoolean(key, &value)) {
+  if (!json_value->AsBoolean(&value)) {
     AddErrorInfo("property '" + key + "' ignored, type " + "boolean expected.");
     return default_value;
   }
@@ -136,64 +138,60 @@ bool ManifestParser::ParseBoolean(const base::DictionaryValue& dictionary,
   return value;
 }
 
-base::NullableString16 ManifestParser::ParseString(
-    const base::DictionaryValue& dictionary,
-    const std::string& key,
-    TrimType trim) {
-  if (!dictionary.HasKey(key))
-    return base::NullableString16();
+base::Optional<String> ManifestParser::ParseString(const JSONObject* object,
+                                                   const String& key,
+                                                   TrimType trim) {
+  JSONValue* json_value = object->Get(key);
+  if (!json_value)
+    return base::nullopt;
 
-  base::string16 value;
-  if (!dictionary.GetString(key, &value)) {
+  String value;
+  if (!json_value->AsString(&value)) {
     AddErrorInfo("property '" + key + "' ignored, type " + "string expected.");
-    return base::NullableString16();
+    return base::nullopt;
   }
 
   if (trim == Trim)
-    base::TrimWhitespace(value, base::TRIM_ALL, &value);
-  return base::NullableString16(value, false);
+    value = value.StripWhiteSpace();
+  return value;
 }
 
-base::Optional<SkColor> ManifestParser::ParseColor(
-    const base::DictionaryValue& dictionary,
-    const std::string& key) {
-  base::NullableString16 parsed_color = ParseString(dictionary, key, Trim);
-  if (parsed_color.is_null())
+base::Optional<RGBA32> ManifestParser::ParseColor(const JSONObject* object,
+                                                  const String& key) {
+  base::Optional<String> parsed_color = ParseString(object, key, Trim);
+  if (!parsed_color.has_value())
     return base::nullopt;
 
   Color color;
-  WebString color_string = WebString::FromUTF16(parsed_color);
-
-  if (!CSSParser::ParseColor(color, WTF::String(color_string), true)) {
-    AddErrorInfo("property '" + key + "' ignored, '" +
-                 base::UTF16ToUTF8(parsed_color.string()) + "' is not a " +
-                 "valid color.");
+  if (!CSSParser::ParseColor(color, *parsed_color, true)) {
+    AddErrorInfo("property '" + key + "' ignored, '" + *parsed_color +
+                 "' is not a " + "valid color.");
     return base::nullopt;
   }
 
   return color.Rgb();
 }
 
-GURL ManifestParser::ParseURL(const base::DictionaryValue& dictionary,
-                              const std::string& key,
-                              const GURL& base_url,
+KURL ManifestParser::ParseURL(const JSONObject* object,
+                              const String& key,
+                              const KURL& base_url,
                               ParseURLOriginRestrictions origin_restriction) {
-  base::NullableString16 url_str = ParseString(dictionary, key, NoTrim);
-  if (url_str.is_null())
-    return GURL();
+  base::Optional<String> url_str = ParseString(object, key, NoTrim);
+  if (!url_str.has_value())
+    return KURL();
 
-  GURL resolved = base_url.Resolve(url_str.string());
-  if (!resolved.is_valid()) {
+  KURL resolved = KURL(base_url, *url_str);
+  if (!resolved.IsValid()) {
     AddErrorInfo("property '" + key + "' ignored, URL is invalid.");
-    return GURL();
+    return KURL();
   }
 
   switch (origin_restriction) {
     case ParseURLOriginRestrictions::kSameOriginOnly:
-      if (resolved.GetOrigin() != document_url_.GetOrigin()) {
+      if (!SecurityOrigin::AreSameSchemeHostPort(resolved, document_url_)) {
         AddErrorInfo("property '" + key +
                      "' ignored, should be same origin as document.");
-        return GURL();
+        return KURL();
       }
       return resolved;
     case ParseURLOriginRestrictions::kNoRestrictions:
@@ -201,140 +199,135 @@ GURL ManifestParser::ParseURL(const base::DictionaryValue& dictionary,
   }
 
   NOTREACHED();
-  return GURL();
+  return KURL();
 }
 
-base::NullableString16 ManifestParser::ParseName(
-    const base::DictionaryValue& dictionary) {
-  return ParseString(dictionary, "name", Trim);
+String ManifestParser::ParseName(const JSONObject* object) {
+  base::Optional<String> name = ParseString(object, "name", Trim);
+  return name.has_value() ? *name : String();
 }
 
-base::NullableString16 ManifestParser::ParseShortName(
-    const base::DictionaryValue& dictionary) {
-  return ParseString(dictionary, "short_name", Trim);
+String ManifestParser::ParseShortName(const JSONObject* object) {
+  base::Optional<String> short_name = ParseString(object, "short_name", Trim);
+  return short_name.has_value() ? *short_name : String();
 }
 
-GURL ManifestParser::ParseStartURL(const base::DictionaryValue& dictionary) {
-  return ParseURL(dictionary, "start_url", manifest_url_,
+KURL ManifestParser::ParseStartURL(const JSONObject* object) {
+  return ParseURL(object, "start_url", manifest_url_,
                   ParseURLOriginRestrictions::kSameOriginOnly);
 }
 
-GURL ManifestParser::ParseScope(const base::DictionaryValue& dictionary,
-                                const GURL& start_url) {
-  GURL scope = ParseURL(dictionary, "scope", manifest_url_,
+KURL ManifestParser::ParseScope(const JSONObject* object,
+                                const KURL& start_url) {
+  KURL scope = ParseURL(object, "scope", manifest_url_,
                         ParseURLOriginRestrictions::kSameOriginOnly);
 
   // This will change to remove the |document_url_| fallback in the future.
   // See https://github.com/w3c/manifest/issues/668.
-  const GURL& default_value = start_url.is_empty() ? document_url_ : start_url;
-  DCHECK(default_value.is_valid());
+  const KURL& default_value = start_url.IsEmpty() ? document_url_ : start_url;
+  DCHECK(default_value.IsValid());
 
-  if (scope.is_empty())
-    return default_value.GetWithoutFilename();
+  if (scope.IsEmpty())
+    return KURL(default_value.BaseAsString());
 
-  if (default_value.GetOrigin() != scope.GetOrigin() ||
-      !base::StartsWith(default_value.path(), scope.path(),
-                        base::CompareCase::SENSITIVE)) {
+  if (!SecurityOrigin::AreSameSchemeHostPort(default_value, scope) ||
+      !default_value.GetPath().StartsWith(scope.GetPath())) {
     AddErrorInfo(
         "property 'scope' ignored. Start url should be within scope "
         "of scope URL.");
-    return default_value.GetWithoutFilename();
+    return KURL(default_value.BaseAsString());
   }
 
-  DCHECK(scope.is_valid());
+  DCHECK(scope.IsValid());
   return scope;
 }
 
-WebDisplayMode ManifestParser::ParseDisplay(
-    const base::DictionaryValue& dictionary) {
-  base::NullableString16 display = ParseString(dictionary, "display", Trim);
-  if (display.is_null())
+WebDisplayMode ManifestParser::ParseDisplay(const JSONObject* object) {
+  base::Optional<String> display = ParseString(object, "display", Trim);
+  if (!display.has_value())
     return kWebDisplayModeUndefined;
 
   WebDisplayMode display_enum =
-      WebDisplayModeFromString(base::UTF16ToUTF8(display.string()));
+      WebDisplayModeFromString(StringUTF8Adaptor(*display).AsStdString());
   if (display_enum == kWebDisplayModeUndefined)
     AddErrorInfo("unknown 'display' value ignored.");
   return display_enum;
 }
 
 WebScreenOrientationLockType ManifestParser::ParseOrientation(
-    const base::DictionaryValue& dictionary) {
-  base::NullableString16 orientation =
-      ParseString(dictionary, "orientation", Trim);
+    const JSONObject* object) {
+  base::Optional<String> orientation = ParseString(object, "orientation", Trim);
 
-  if (orientation.is_null())
+  if (!orientation.has_value())
     return kWebScreenOrientationLockDefault;
 
   WebScreenOrientationLockType orientation_enum =
       WebScreenOrientationLockTypeFromString(
-          base::UTF16ToUTF8(orientation.string()));
+          StringUTF8Adaptor(*orientation).AsStdString());
   if (orientation_enum == kWebScreenOrientationLockDefault)
     AddErrorInfo("unknown 'orientation' value ignored.");
   return orientation_enum;
 }
 
-GURL ManifestParser::ParseIconSrc(const base::DictionaryValue& icon) {
+KURL ManifestParser::ParseIconSrc(const JSONObject* icon) {
   return ParseURL(icon, "src", manifest_url_,
                   ParseURLOriginRestrictions::kNoRestrictions);
 }
 
-base::string16 ManifestParser::ParseIconType(
-    const base::DictionaryValue& icon) {
-  base::NullableString16 nullable_string = ParseString(icon, "type", Trim);
-  if (nullable_string.is_null())
-    return base::string16();
-  return nullable_string.string();
+String ManifestParser::ParseIconType(const JSONObject* icon) {
+  base::Optional<String> type = ParseString(icon, "type", Trim);
+  return type.has_value() ? *type : String("");
 }
 
-std::vector<gfx::Size> ManifestParser::ParseIconSizes(
-    const base::DictionaryValue& icon) {
-  base::NullableString16 sizes_str = ParseString(icon, "sizes", NoTrim);
-  std::vector<gfx::Size> sizes;
+Vector<WebSize> ManifestParser::ParseIconSizes(const JSONObject* icon) {
+  base::Optional<String> sizes_str = ParseString(icon, "sizes", NoTrim);
+  if (!sizes_str.has_value())
+    return Vector<WebSize>();
 
-  if (sizes_str.is_null())
-    return sizes;
+  WebVector<WebSize> web_sizes =
+      WebIconSizesParser::ParseIconSizes(WebString(*sizes_str));
+  Vector<WebSize> sizes;
+  for (auto& size : web_sizes)
+    sizes.push_back(size);
 
-  WebVector<WebSize> web_sizes = WebIconSizesParser::ParseIconSizes(
-      WebString::FromUTF16(sizes_str.string()));
-  sizes.resize(web_sizes.size());
-  for (size_t i = 0; i < web_sizes.size(); ++i)
-    sizes[i] = gfx::Size(web_sizes[i]);
-  if (sizes.empty()) {
+  if (sizes.IsEmpty())
     AddErrorInfo("found icon with no valid size.");
-  }
   return sizes;
 }
 
-base::Optional<std::vector<Manifest::ImageResource::Purpose>>
-ManifestParser::ParseIconPurpose(const base::DictionaryValue& icon) {
-  base::NullableString16 purpose_str = ParseString(icon, "purpose", NoTrim);
-  std::vector<Manifest::ImageResource::Purpose> purposes;
+base::Optional<Vector<mojom::blink::ManifestImageResource::Purpose>>
+ManifestParser::ParseIconPurpose(const JSONObject* icon) {
+  base::Optional<String> purpose_str = ParseString(icon, "purpose", NoTrim);
+  Vector<mojom::blink::ManifestImageResource::Purpose> purposes;
 
-  if (purpose_str.is_null()) {
-    purposes.push_back(Manifest::ImageResource::Purpose::ANY);
+  if (!purpose_str.has_value()) {
+    purposes.push_back(mojom::blink::ManifestImageResource::Purpose::ANY);
     return purposes;
   }
 
-  std::vector<base::string16> keywords =
-      base::SplitString(purpose_str.string(), base::ASCIIToUTF16(" "),
-                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  Vector<String> keywords;
+  purpose_str.value().Split(/*separator=*/" ", /*allow_empty_entries=*/false,
+                            keywords);
 
   // "any" is the default if there are no other keywords.
-  if (keywords.empty()) {
-    purposes.push_back(Manifest::ImageResource::Purpose::ANY);
+  if (keywords.IsEmpty()) {
+    purposes.push_back(mojom::blink::ManifestImageResource::Purpose::ANY);
     return purposes;
   }
 
   bool unrecognised_purpose = false;
+  for (auto& keyword : keywords) {
+    keyword = keyword.StripWhiteSpace();
+    if (keyword.IsEmpty())
+      continue;
 
-  for (const base::string16& keyword : keywords) {
-    if (base::LowerCaseEqualsASCII(keyword, "any")) {
-      purposes.push_back(Manifest::ImageResource::Purpose::ANY);
-    } else if (base::LowerCaseEqualsASCII(keyword, "badge")) {
-      purposes.push_back(Manifest::ImageResource::Purpose::BADGE);
-    } else if (base::LowerCaseEqualsASCII(keyword, "maskable")) {
-      purposes.push_back(Manifest::ImageResource::Purpose::MASKABLE);
+    if (!CodePointCompareIgnoringASCIICase(keyword, "any")) {
+      purposes.push_back(mojom::blink::ManifestImageResource::Purpose::ANY);
+    } else if (!CodePointCompareIgnoringASCIICase(keyword, "badge")) {
+      purposes.push_back(mojom::blink::ManifestImageResource::Purpose::BADGE);
+    } else if (!CodePointCompareIgnoringASCIICase(keyword, "maskable")) {
+      purposes.push_back(
+          mojom::blink::ManifestImageResource::Purpose::MASKABLE);
     } else {
       unrecognised_purpose = true;
     }
@@ -343,7 +336,7 @@ ManifestParser::ParseIconPurpose(const base::DictionaryValue& icon) {
   // This implies there was at least one purpose given, but none recognised.
   // Instead of defaulting to "any" (which would not be future proof),
   // invalidate the whole icon.
-  if (purposes.empty()) {
+  if (purposes.IsEmpty()) {
     AddErrorInfo("found icon with no valid purpose; ignoring it.");
     return base::nullopt;
   }
@@ -357,134 +350,132 @@ ManifestParser::ParseIconPurpose(const base::DictionaryValue& icon) {
   return purposes;
 }
 
-std::vector<Manifest::ImageResource> ManifestParser::ParseIcons(
-    const base::DictionaryValue& dictionary) {
-  std::vector<Manifest::ImageResource> icons;
-  if (!dictionary.HasKey("icons"))
+Vector<mojom::blink::ManifestImageResourcePtr> ManifestParser::ParseIcons(
+    const JSONObject* object) {
+  Vector<mojom::blink::ManifestImageResourcePtr> icons;
+  JSONValue* json_value = object->Get("icons");
+  if (!json_value)
     return icons;
 
-  const base::ListValue* icons_list = nullptr;
-  if (!dictionary.GetList("icons", &icons_list)) {
+  JSONArray* icons_list = object->GetArray("icons");
+  if (!icons_list) {
     AddErrorInfo("property 'icons' ignored, type array expected.");
     return icons;
   }
 
-  for (size_t i = 0; i < icons_list->GetSize(); ++i) {
-    const base::DictionaryValue* icon_dictionary = nullptr;
-    if (!icons_list->GetDictionary(i, &icon_dictionary))
+  for (wtf_size_t i = 0; i < icons_list->size(); ++i) {
+    JSONObject* icon_object = JSONObject::Cast(icons_list->at(i));
+    if (!icon_object)
       continue;
 
-    Manifest::ImageResource icon;
-    icon.src = ParseIconSrc(*icon_dictionary);
+    auto icon = mojom::blink::ManifestImageResource::New();
+    icon->src = ParseIconSrc(icon_object);
     // An icon MUST have a valid src. If it does not, it MUST be ignored.
-    if (!icon.src.is_valid())
+    if (!icon->src.IsValid())
       continue;
 
-    icon.type = ParseIconType(*icon_dictionary);
-    icon.sizes = ParseIconSizes(*icon_dictionary);
-    auto purpose = ParseIconPurpose(*icon_dictionary);
+    icon->type = ParseIconType(icon_object);
+    icon->sizes = ParseIconSizes(icon_object);
+    auto purpose = ParseIconPurpose(icon_object);
     if (!purpose)
       continue;
 
-    icon.purpose = std::move(*purpose);
+    icon->purpose = std::move(*purpose);
 
-    icons.push_back(icon);
+    icons.push_back(std::move(icon));
   }
 
   return icons;
 }
 
-base::string16 ManifestParser::ParseFileFilterName(
-    const base::DictionaryValue& file) {
-  if (!file.HasKey("name")) {
+String ManifestParser::ParseFileFilterName(const JSONObject* file) {
+  if (!file->Get("name")) {
     AddErrorInfo("property 'name' missing.");
-    return base::string16();
+    return String("");
   }
 
-  base::string16 value;
-  if (!file.GetString("name", &value)) {
+  String value;
+  if (!file->GetString("name", &value)) {
     AddErrorInfo("property 'name' ignored, type string expected.");
-    return base::string16();
+    return String("");
   }
   return value;
 }
 
-std::vector<base::string16> ManifestParser::ParseFileFilterAccept(
-    const base::DictionaryValue& dictionary) {
-  std::vector<base::string16> accept_types;
-  if (!dictionary.HasKey("accept")) {
+Vector<String> ManifestParser::ParseFileFilterAccept(const JSONObject* object) {
+  Vector<String> accept_types;
+  if (!object->Get("accept"))
     return accept_types;
-  }
 
-  base::string16 accept_str;
-  if (dictionary.GetString("accept", &accept_str)) {
+  String accept_str;
+  if (object->GetString("accept", &accept_str)) {
     accept_types.push_back(accept_str);
     return accept_types;
   }
 
-  const base::ListValue* accept_list = nullptr;
-  if (!dictionary.GetList("accept", &accept_list)) {
+  JSONArray* accept_list = object->GetArray("accept");
+  if (!accept_list) {
     // 'accept' property is the wrong type. Returning an empty vector here
     // causes the 'files' entry to be discarded.
     AddErrorInfo("property 'accept' ignored, type array or string expected.");
     return accept_types;
   }
 
-  for (const base::Value& accept_value : accept_list->GetList()) {
-    if (!accept_value.is_string()) {
+  for (wtf_size_t i = 0; i < accept_list->size(); ++i) {
+    JSONValue* accept_value = accept_list->at(i);
+    String accept_string;
+    if (!accept_value || !accept_value->AsString(&accept_string)) {
       // A particular 'accept' entry is invalid - just drop that one entry.
       AddErrorInfo("'accept' entry ignored, expected to be of type string.");
       continue;
     }
-    accept_types.push_back(base::ASCIIToUTF16(accept_value.GetString()));
+    accept_types.push_back(accept_string);
   }
 
   return accept_types;
 }
 
-std::vector<Manifest::FileFilter> ManifestParser::ParseTargetFiles(
-    const base::StringPiece& key,
-    const base::DictionaryValue& from) {
-  std::vector<Manifest::FileFilter> files;
-  if (!from.HasKey(key))
+Vector<mojom::blink::ManifestFileFilterPtr> ManifestParser::ParseTargetFiles(
+    const String& key,
+    const JSONObject* from) {
+  Vector<mojom::blink::ManifestFileFilterPtr> files;
+  if (!from->Get(key))
     return files;
 
-  const base::ListValue* file_list = nullptr;
-  if (!from.GetList(key, &file_list)) {
+  JSONArray* file_list = from->GetArray(key);
+  if (!file_list) {
     // https://wicg.github.io/web-share-target/level-2/#share_target-member
     // step 5 indicates that the 'files' attribute is allowed to be a single
     // (non-array) FileFilter.
-    const base::DictionaryValue* file_dictionary = nullptr;
-    if (!from.GetDictionary(key, &file_dictionary)) {
+    const JSONObject* file_object = from->GetJSONObject(key);
+    if (!file_object) {
       AddErrorInfo(
           "property 'files' ignored, type array or FileFilter expected.");
       return files;
     }
 
-    ParseFileFilter(*file_dictionary, &files);
-
+    ParseFileFilter(file_object, &files);
     return files;
   }
-
-  for (const base::Value& file_value : file_list->GetList()) {
-    const base::DictionaryValue* file_dictionary = nullptr;
-    if (!file_value.GetAsDictionary(&file_dictionary)) {
+  for (wtf_size_t i = 0; i < file_list->size(); ++i) {
+    const JSONObject* file_object = JSONObject::Cast(file_list->at(i));
+    if (!file_object) {
       AddErrorInfo("files must be a sequence of non-empty file entries.");
       continue;
     }
 
-    ParseFileFilter(*file_dictionary, &files);
+    ParseFileFilter(file_object, &files);
   }
 
   return files;
 }
 
 void ManifestParser::ParseFileFilter(
-    const base::DictionaryValue& file_dictionary,
-    std::vector<Manifest::FileFilter>* files) {
-  Manifest::FileFilter file;
-  file.name = ParseFileFilterName(file_dictionary);
-  if (file.name.empty()) {
+    const JSONObject* file_object,
+    Vector<mojom::blink::ManifestFileFilterPtr>* files) {
+  auto file = mojom::blink::ManifestFileFilter::New();
+  file->name = ParseFileFilterName(file_object);
+  if (file->name.IsEmpty()) {
     // https://wicg.github.io/web-share-target/level-2/#share_target-member
     // step 7.1 requires that we invalidate this FileFilter if 'name' is an
     // empty string. We also invalidate if 'name' is undefined or not a
@@ -492,142 +483,127 @@ void ManifestParser::ParseFileFilter(
     return;
   }
 
-  file.accept = ParseFileFilterAccept(file_dictionary);
-  if (file.accept.empty())
+  file->accept = ParseFileFilterAccept(file_object);
+  if (file->accept.IsEmpty())
     return;
 
-  files->push_back(file);
+  files->push_back(std::move(file));
 }
 
-base::Optional<Manifest::ShareTarget::Method>
-ManifestParser::ParseShareTargetMethod(
-    const base::DictionaryValue& share_target_dict) {
-  if (!share_target_dict.HasKey("method")) {
+base::Optional<mojom::blink::ManifestShareTarget::Method>
+ManifestParser::ParseShareTargetMethod(const JSONObject* share_target_object) {
+  if (!share_target_object->Get("method")) {
     AddErrorInfo(
         "Method should be set to either GET or POST. It currently defaults to "
         "GET.");
-    return base::Optional<Manifest::ShareTarget::Method>(
-        Manifest::ShareTarget::Method::kGet);
+    return mojom::blink::ManifestShareTarget::Method::kGet;
   }
 
-  base::string16 value;
-  if (!share_target_dict.GetString("method", &value))
+  String value;
+  if (!share_target_object->GetString("method", &value))
     return base::nullopt;
 
-  std::string method = base::ToUpperASCII(base::UTF16ToASCII(value));
+  String method = value.UpperASCII();
   if (method == "GET")
-    return Manifest::ShareTarget::Method::kGet;
+    return mojom::blink::ManifestShareTarget::Method::kGet;
   if (method == "POST")
-    return Manifest::ShareTarget::Method::kPost;
+    return mojom::blink::ManifestShareTarget::Method::kPost;
 
   return base::nullopt;
 }
 
-base::Optional<Manifest::ShareTarget::Enctype>
-ManifestParser::ParseShareTargetEnctype(
-    const base::DictionaryValue& share_target_dict) {
-  if (!share_target_dict.HasKey("enctype")) {
+base::Optional<mojom::blink::ManifestShareTarget::Enctype>
+ManifestParser::ParseShareTargetEnctype(const JSONObject* share_target_object) {
+  if (!share_target_object->Get("enctype")) {
     AddErrorInfo(
         "Enctype should be set to either application/x-www-form-urlencoded or "
         "multipart/form-data. It currently defaults to "
         "application/x-www-form-urlencoded");
-    return base::Optional<Manifest::ShareTarget::Enctype>(
-        Manifest::ShareTarget::Enctype::kApplication);
+    return mojom::blink::ManifestShareTarget::Enctype::kApplication;
   }
 
-  base::string16 value;
-  if (!share_target_dict.GetString("enctype", &value)) {
+  String value;
+  if (!share_target_object->GetString("enctype", &value))
     return base::nullopt;
-  }
 
-  std::string enctype = base::ToLowerASCII(base::UTF16ToASCII(value));
-  if (enctype == "application/x-www-form-urlencoded") {
-    return base::Optional<Manifest::ShareTarget::Enctype>(
-        Manifest::ShareTarget::Enctype::kApplication);
-  }
+  String enctype = value.LowerASCII();
+  if (enctype == "application/x-www-form-urlencoded")
+    return mojom::blink::ManifestShareTarget::Enctype::kApplication;
 
-  if (enctype == "multipart/form-data") {
-    return base::Optional<Manifest::ShareTarget::Enctype>(
-        Manifest::ShareTarget::Enctype::kMultipart);
-  }
+  if (enctype == "multipart/form-data")
+    return mojom::blink::ManifestShareTarget::Enctype::kMultipart;
 
   return base::nullopt;
 }
 
-Manifest::ShareTargetParams ManifestParser::ParseShareTargetParams(
-    const base::DictionaryValue& share_target_params) {
-  Manifest::ShareTargetParams params;
+mojom::blink::ManifestShareTargetParamsPtr
+ManifestParser::ParseShareTargetParams(const JSONObject* share_target_params) {
+  auto params = mojom::blink::ManifestShareTargetParams::New();
+
   // NOTE: These are key names for query parameters, which are filled with share
   // data. As such, |params.url| is just a string.
-  params.text = ParseString(share_target_params, "text", Trim);
-  params.title = ParseString(share_target_params, "title", Trim);
-  params.url = ParseString(share_target_params, "url", Trim);
-  params.files = ParseTargetFiles("files", share_target_params);
+  base::Optional<String> text = ParseString(share_target_params, "text", Trim);
+  params->text = text.has_value() ? *text : String();
+  base::Optional<String> title =
+      ParseString(share_target_params, "title", Trim);
+  params->title = title.has_value() ? *title : String();
+  base::Optional<String> url = ParseString(share_target_params, "url", Trim);
+  params->url = url.has_value() ? *url : String();
+
+  auto files = ParseTargetFiles("files", share_target_params);
+  if (!files.IsEmpty())
+    params->files = std::move(files);
   return params;
 }
 
-base::Optional<Manifest::ShareTarget> ManifestParser::ParseShareTarget(
-    const base::DictionaryValue& dictionary) {
-  if (!dictionary.HasKey("share_target"))
+base::Optional<mojom::blink::ManifestShareTargetPtr>
+ManifestParser::ParseShareTarget(const JSONObject* object) {
+  const JSONObject* share_target_object = object->GetJSONObject("share_target");
+  if (!share_target_object)
     return base::nullopt;
 
-  Manifest::ShareTarget share_target;
-  const base::DictionaryValue* share_target_dict = nullptr;
-  dictionary.GetDictionary("share_target", &share_target_dict);
-  share_target.action = ParseURL(*share_target_dict, "action", manifest_url_,
-                                 ParseURLOriginRestrictions::kSameOriginOnly);
-  if (!share_target.action.is_valid()) {
+  auto share_target = mojom::blink::ManifestShareTarget::New();
+  share_target->action = ParseURL(share_target_object, "action", manifest_url_,
+                                  ParseURLOriginRestrictions::kSameOriginOnly);
+  if (!share_target->action.IsValid()) {
     AddErrorInfo(
         "property 'share_target' ignored. Property 'action' is "
         "invalid.");
     return base::nullopt;
   }
 
-  base::Optional<Manifest::ShareTarget::Method> method =
-      ParseShareTargetMethod(*share_target_dict);
-  base::Optional<Manifest::ShareTarget::Enctype> enctype =
-      ParseShareTargetEnctype(*share_target_dict);
+  auto method = ParseShareTargetMethod(share_target_object);
+  auto enctype = ParseShareTargetEnctype(share_target_object);
 
-  const base::DictionaryValue* share_target_params_dict = nullptr;
-  if (!share_target_dict->GetDictionary("params", &share_target_params_dict)) {
+  const JSONObject* share_target_params_object =
+      share_target_object->GetJSONObject("params");
+  if (!share_target_params_object) {
     AddErrorInfo(
         "property 'share_target' ignored. Property 'params' type "
         "dictionary expected.");
     return base::nullopt;
   }
 
-  share_target.params = ParseShareTargetParams(*share_target_params_dict);
-
-  if (method == base::nullopt) {
+  share_target->params = ParseShareTargetParams(share_target_params_object);
+  if (!method.has_value()) {
     AddErrorInfo(
         "invalid method. Allowed methods are:"
         "GET and POST.");
     return base::nullopt;
   }
+  share_target->method = method.value();
 
-  if (enctype == base::nullopt) {
+  if (!enctype.has_value()) {
     AddErrorInfo(
         "invalid enctype. Allowed enctypes are:"
         "application/x-www-form-urlencoded and multipart/form-data.");
     return base::nullopt;
   }
+  share_target->enctype = enctype.value();
 
-  if (method == base::Optional<Manifest::ShareTarget::Method>(
-                    Manifest::ShareTarget::Method::kGet)) {
-    share_target.method = Manifest::ShareTarget::Method::kGet;
-  } else {
-    share_target.method = Manifest::ShareTarget::Method::kPost;
-  }
-
-  if (enctype == base::Optional<Manifest::ShareTarget::Enctype>(
-                     Manifest::ShareTarget::Enctype::kMultipart)) {
-    share_target.enctype = Manifest::ShareTarget::Enctype::kMultipart;
-  } else {
-    share_target.enctype = Manifest::ShareTarget::Enctype::kApplication;
-  }
-
-  if (share_target.method == Manifest::ShareTarget::Method::kGet) {
-    if (share_target.enctype == Manifest::ShareTarget::Enctype::kMultipart) {
+  if (share_target->method == mojom::blink::ManifestShareTarget::Method::kGet) {
+    if (share_target->enctype ==
+        mojom::blink::ManifestShareTarget::Enctype::kMultipart) {
       AddErrorInfo(
           "invalid enctype for GET method. Only "
           "application/x-www-form-urlencoded is allowed.");
@@ -635,134 +611,151 @@ base::Optional<Manifest::ShareTarget> ManifestParser::ParseShareTarget(
     }
   }
 
-  if (share_target.params.files.size() > 0) {
-    if (share_target.method != Manifest::ShareTarget::Method::kPost ||
-        share_target.enctype != Manifest::ShareTarget::Enctype::kMultipart) {
+  if (share_target->params->files.has_value()) {
+    if (share_target->method !=
+            mojom::blink::ManifestShareTarget::Method::kPost ||
+        share_target->enctype !=
+            mojom::blink::ManifestShareTarget::Enctype::kMultipart) {
       AddErrorInfo("files are only supported with multipart/form-data POST.");
       return base::nullopt;
     }
   }
 
-  if (!VerifyFiles(share_target.params.files)) {
+  if (share_target->params->files.has_value() &&
+      !VerifyFiles(*share_target->params->files)) {
     AddErrorInfo("invalid mime type inside files.");
     return base::nullopt;
   }
 
-  return base::Optional<Manifest::ShareTarget>(std::move(share_target));
+  return share_target;
 }
 
-base::Optional<Manifest::FileHandler> ManifestParser::ParseFileHandler(
-    const base::DictionaryValue& dictionary) {
-  constexpr char file_handler_key[] = "file_handler";
-  if (!dictionary.HasKey(file_handler_key))
+base::Optional<mojom::blink::ManifestFileHandlerPtr>
+ManifestParser::ParseFileHandler(const JSONObject* object) {
+  const JSONObject* file_handler_object = object->GetJSONObject("file_handler");
+  if (!file_handler_object)
     return base::nullopt;
 
-  Manifest::FileHandler file_handler =
-      ParseTargetFiles(file_handler_key, dictionary);
-  if (file_handler.size() == 0) {
+  auto file_handler = mojom::blink::ManifestFileHandler::New();
+  file_handler->action = ParseURL(file_handler_object, "action", manifest_url_,
+                                  ParseURLOriginRestrictions::kSameOriginOnly);
+  if (!file_handler->action.IsValid()) {
+    AddErrorInfo(
+        "property 'file_handler' ignored. Property 'action' is "
+        "invalid.");
+    return base::nullopt;
+  }
+
+  file_handler->files = ParseTargetFiles("files", file_handler_object);
+
+  if (file_handler->files.size() == 0) {
     AddErrorInfo("no file handlers were specified.");
     return base::nullopt;
   }
 
-  return base::Optional<Manifest::FileHandler>(std::move(file_handler));
+  return file_handler;
 }
 
-base::NullableString16 ManifestParser::ParseRelatedApplicationPlatform(
-    const base::DictionaryValue& application) {
-  return ParseString(application, "platform", Trim);
+String ManifestParser::ParseRelatedApplicationPlatform(
+    const JSONObject* application) {
+  base::Optional<String> platform = ParseString(application, "platform", Trim);
+  return platform.has_value() ? *platform : String();
 }
 
-GURL ManifestParser::ParseRelatedApplicationURL(
-    const base::DictionaryValue& application) {
+base::Optional<KURL> ManifestParser::ParseRelatedApplicationURL(
+    const JSONObject* application) {
   return ParseURL(application, "url", manifest_url_,
                   ParseURLOriginRestrictions::kNoRestrictions);
 }
 
-base::NullableString16 ManifestParser::ParseRelatedApplicationId(
-    const base::DictionaryValue& application) {
-  return ParseString(application, "id", Trim);
+String ManifestParser::ParseRelatedApplicationId(
+    const JSONObject* application) {
+  base::Optional<String> id = ParseString(application, "id", Trim);
+  return id.has_value() ? *id : String();
 }
 
-std::vector<Manifest::RelatedApplication>
-ManifestParser::ParseRelatedApplications(
-    const base::DictionaryValue& dictionary) {
-  std::vector<Manifest::RelatedApplication> applications;
-  if (!dictionary.HasKey("related_applications"))
+Vector<mojom::blink::ManifestRelatedApplicationPtr>
+ManifestParser::ParseRelatedApplications(const JSONObject* object) {
+  Vector<mojom::blink::ManifestRelatedApplicationPtr> applications;
+
+  JSONValue* value = object->Get("related_applications");
+  if (!value)
     return applications;
 
-  const base::ListValue* applications_list = nullptr;
-  if (!dictionary.GetList("related_applications", &applications_list)) {
+  JSONArray* applications_list = object->GetArray("related_applications");
+  if (!applications_list) {
     AddErrorInfo(
         "property 'related_applications' ignored,"
         " type array expected.");
     return applications;
   }
 
-  for (size_t i = 0; i < applications_list->GetSize(); ++i) {
-    const base::DictionaryValue* application_dictionary = nullptr;
-    if (!applications_list->GetDictionary(i, &application_dictionary))
+  for (wtf_size_t i = 0; i < applications_list->size(); ++i) {
+    const JSONObject* application_object =
+        JSONObject::Cast(applications_list->at(i));
+    if (!application_object)
       continue;
 
-    Manifest::RelatedApplication application;
-    application.platform =
-        ParseRelatedApplicationPlatform(*application_dictionary);
+    auto application = mojom::blink::ManifestRelatedApplication::New();
+    application->platform = ParseRelatedApplicationPlatform(application_object);
     // "If platform is undefined, move onto the next item if any are left."
-    if (application.platform.is_null()) {
+    if (application->platform.IsEmpty()) {
       AddErrorInfo(
           "'platform' is a required field, related application"
           " ignored.");
       continue;
     }
 
-    application.id = ParseRelatedApplicationId(*application_dictionary);
-    application.url = ParseRelatedApplicationURL(*application_dictionary);
+    application->id = ParseRelatedApplicationId(application_object);
+    application->url = ParseRelatedApplicationURL(application_object);
     // "If both id and url are undefined, move onto the next item if any are
     // left."
-    if (application.url.is_empty() && application.id.is_null()) {
+    if ((!application->url.has_value() || !application->url->IsValid()) &&
+        application->id.IsEmpty()) {
       AddErrorInfo(
           "one of 'url' or 'id' is required, related application"
           " ignored.");
       continue;
     }
 
-    applications.push_back(application);
+    applications.push_back(std::move(application));
   }
 
   return applications;
 }
 
-bool ManifestParser::ParsePreferRelatedApplications(
-    const base::DictionaryValue& dictionary) {
-  return ParseBoolean(dictionary, "prefer_related_applications", false);
+bool ManifestParser::ParsePreferRelatedApplications(const JSONObject* object) {
+  return ParseBoolean(object, "prefer_related_applications", false);
 }
 
-base::Optional<SkColor> ManifestParser::ParseThemeColor(
-    const base::DictionaryValue& dictionary) {
-  return ParseColor(dictionary, "theme_color");
+base::Optional<RGBA32> ManifestParser::ParseThemeColor(
+    const JSONObject* object) {
+  return ParseColor(object, "theme_color");
 }
 
-base::Optional<SkColor> ManifestParser::ParseBackgroundColor(
-    const base::DictionaryValue& dictionary) {
-  return ParseColor(dictionary, "background_color");
+base::Optional<RGBA32> ManifestParser::ParseBackgroundColor(
+    const JSONObject* object) {
+  return ParseColor(object, "background_color");
 }
 
-GURL ManifestParser::ParseSplashScreenURL(
-    const base::DictionaryValue& dictionary) {
-  return ParseURL(dictionary, "splash_screen_url", manifest_url_,
+KURL ManifestParser::ParseSplashScreenURL(const JSONObject* object) {
+  return ParseURL(object, "splash_screen_url", manifest_url_,
                   ParseURLOriginRestrictions::kSameOriginOnly);
 }
 
-base::NullableString16 ManifestParser::ParseGCMSenderID(
-    const base::DictionaryValue& dictionary) {
-  return ParseString(dictionary, "gcm_sender_id", Trim);
+String ManifestParser::ParseGCMSenderID(const JSONObject* object) {
+  base::Optional<String> gcm_sender_id =
+      ParseString(object, "gcm_sender_id", Trim);
+  return gcm_sender_id.has_value() ? *gcm_sender_id : String();
 }
 
-void ManifestParser::AddErrorInfo(const std::string& error_msg,
+void ManifestParser::AddErrorInfo(const String& error_msg,
                                   bool critical,
                                   int error_line,
                                   int error_column) {
-  ManifestError error = {error_msg, critical, error_line, error_column};
-  errors_.push_back(error);
+  mojom::blink::ManifestErrorPtr error = mojom::blink::ManifestError::New(
+      error_msg, critical, error_line, error_column);
+  errors_.push_back(std::move(error));
 }
 
 }  // namespace blink

@@ -22,6 +22,7 @@
 #include "net/third_party/quiche/src/quic/platform/api/quic_map_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_text_utils.h"
 
 namespace quic {
 
@@ -161,18 +162,15 @@ void QuicTimeWaitListManager::ProcessPacket(
           if (connection_data->encryption_level == ENCRYPTION_INITIAL) {
             QUIC_CODE_COUNT(
                 quic_encryption_none_termination_packets_for_short_header);
-            if (GetQuicReloadableFlag(quic_always_reset_short_header_packets)) {
-              QUIC_RELOADABLE_FLAG_COUNT(
-                  quic_always_reset_short_header_packets);
-              // Send stateless reset in response to short header packets,
-              // because ENCRYPTION_INITIAL termination packets will not be
-              // processed by clients.
-              SendPublicReset(self_address, peer_address, connection_id,
-                              connection_data->ietf_quic,
-                              std::move(packet_context));
-              return;
-            }
-          } else if (connection_data->encryption_level == ENCRYPTION_ZERO_RTT) {
+            // Send stateless reset in response to short header packets,
+            // because ENCRYPTION_INITIAL termination packets will not be
+            // processed by clients.
+            SendPublicReset(self_address, peer_address, connection_id,
+                            connection_data->ietf_quic,
+                            std::move(packet_context));
+            return;
+          }
+          if (connection_data->encryption_level == ENCRYPTION_ZERO_RTT) {
             QUIC_CODE_COUNT(quic_zero_rtt_termination_packets_for_short_header);
           }
           break;
@@ -203,16 +201,24 @@ void QuicTimeWaitListManager::ProcessPacket(
 }
 
 void QuicTimeWaitListManager::SendVersionNegotiationPacket(
-    QuicConnectionId connection_id,
+    QuicConnectionId server_connection_id,
+    QuicConnectionId client_connection_id,
     bool ietf_quic,
     const ParsedQuicVersionVector& supported_versions,
     const QuicSocketAddress& self_address,
     const QuicSocketAddress& peer_address,
     std::unique_ptr<QuicPerPacketContext> packet_context) {
-  SendOrQueuePacket(QuicMakeUnique<QueuedPacket>(
-                        self_address, peer_address,
-                        QuicFramer::BuildVersionNegotiationPacket(
-                            connection_id, ietf_quic, supported_versions)),
+  std::unique_ptr<QuicEncryptedPacket> version_packet =
+      QuicFramer::BuildVersionNegotiationPacket(server_connection_id,
+                                                client_connection_id, ietf_quic,
+                                                supported_versions);
+  QUIC_DVLOG(2) << "Dispatcher sending version negotiation packet: {"
+                << ParsedQuicVersionVectorToString(supported_versions) << "}, "
+                << (ietf_quic ? "" : "!") << "ietf_quic:" << std::endl
+                << QuicTextUtils::HexDump(QuicStringPiece(
+                       version_packet->data(), version_packet->length()));
+  SendOrQueuePacket(QuicMakeUnique<QueuedPacket>(self_address, peer_address,
+                                                 std::move(version_packet)),
                     packet_context.get());
 }
 
@@ -229,10 +235,17 @@ void QuicTimeWaitListManager::SendPublicReset(
     bool ietf_quic,
     std::unique_ptr<QuicPerPacketContext> packet_context) {
   if (ietf_quic) {
-    SendOrQueuePacket(QuicMakeUnique<QueuedPacket>(
-                          self_address, peer_address,
-                          BuildIetfStatelessResetPacket(connection_id)),
-                      packet_context.get());
+    std::unique_ptr<QuicEncryptedPacket> ietf_reset_packet =
+        BuildIetfStatelessResetPacket(connection_id);
+    QUIC_DVLOG(2) << "Dispatcher sending IETF reset packet for "
+                  << connection_id << std::endl
+                  << QuicTextUtils::HexDump(
+                         QuicStringPiece(ietf_reset_packet->data(),
+                                         ietf_reset_packet->length()));
+    SendOrQueuePacket(
+        QuicMakeUnique<QueuedPacket>(self_address, peer_address,
+                                     std::move(ietf_reset_packet)),
+        packet_context.get());
     return;
   }
   QuicPublicResetPacket packet;
@@ -243,8 +256,13 @@ void QuicTimeWaitListManager::SendPublicReset(
   packet.client_address = peer_address;
   GetEndpointId(&packet.endpoint_id);
   // Takes ownership of the packet.
+  std::unique_ptr<QuicEncryptedPacket> reset_packet = BuildPublicReset(packet);
+  QUIC_DVLOG(2) << "Dispatcher sending reset packet for " << connection_id
+                << std::endl
+                << QuicTextUtils::HexDump(QuicStringPiece(
+                       reset_packet->data(), reset_packet->length()));
   SendOrQueuePacket(QuicMakeUnique<QueuedPacket>(self_address, peer_address,
-                                                 BuildPublicReset(packet)),
+                                                 std::move(reset_packet)),
                     packet_context.get());
 }
 

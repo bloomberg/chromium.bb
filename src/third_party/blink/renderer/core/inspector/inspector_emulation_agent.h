@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/inspector/inspector_base_agent.h"
 #include "third_party/blink/renderer/core/inspector/protocol/Emulation.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
+#include "third_party/blink/renderer/core/timezone/timezone_controller.h"
 #include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
@@ -54,6 +55,7 @@ class CORE_EXPORT InspectorEmulationAgent final
       protocol::Maybe<bool> wait_for_navigation,
       protocol::Maybe<double> initial_virtual_time,
       double* virtual_time_ticks_base_ms) override;
+  protocol::Response setTimezoneOverride(const String& timezone_id) override;
   protocol::Response setNavigatorOverrides(const String& platform) override;
   protocol::Response setDefaultBackgroundColorOverride(
       protocol::Maybe<protocol::DOM::RGBA>) override;
@@ -107,6 +109,8 @@ class CORE_EXPORT InspectorEmulationAgent final
   Member<WebLocalFrameImpl> web_local_frame_;
   WTF::TimeTicks virtual_time_base_ticks_;
 
+  std::unique_ptr<TimeZoneController::TimeZoneOverride> timezone_override_;
+
   // Supports a virtual time policy change scheduled to occur after any
   // navigation has started.
   base::Optional<PendingVirtualTimePolicy> pending_virtual_time_policy_;
@@ -130,6 +134,7 @@ class CORE_EXPORT InspectorEmulationAgent final
   InspectorAgentState::Integer virtual_time_task_starvation_count_;
   InspectorAgentState::Boolean wait_for_navigation_;
   InspectorAgentState::Boolean emulate_focus_;
+  InspectorAgentState::String timezone_id_override_;
   DISALLOW_COPY_AND_ASSIGN(InspectorEmulationAgent);
 };
 

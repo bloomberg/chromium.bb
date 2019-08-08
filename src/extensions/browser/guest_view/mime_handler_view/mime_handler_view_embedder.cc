@@ -18,7 +18,9 @@
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_constants.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/common/mojo/guest_view.mojom.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
+#include "third_party/blink/public/common/frame/sandbox_flags.h"
 
 namespace extensions {
 
@@ -32,28 +34,42 @@ EmbedderMap* GetMimeHandlerViewEmbeddersMap() {
 }
 }  // namespace
 
+// static
+MimeHandlerViewEmbedder* MimeHandlerViewEmbedder::Get(
+    int32_t frame_tree_node_id) {
+  const auto& map = *GetMimeHandlerViewEmbeddersMap();
+  auto it = map.find(frame_tree_node_id);
+  if (it == map.cend())
+    return nullptr;
+  return it->second.get();
+}
+
+// static
 void MimeHandlerViewEmbedder::Create(int32_t frame_tree_node_id,
                                      const GURL& resource_url,
                                      const std::string& mime_type,
-                                     const std::string& stream_id) {
+                                     const std::string& stream_id,
+                                     const std::string& internal_id) {
   DCHECK(!base::ContainsKey(*GetMimeHandlerViewEmbeddersMap(),
                             frame_tree_node_id));
   GetMimeHandlerViewEmbeddersMap()->insert_or_assign(
-      frame_tree_node_id,
-      base::WrapUnique(new MimeHandlerViewEmbedder(
-          frame_tree_node_id, resource_url, mime_type, stream_id)));
+      frame_tree_node_id, base::WrapUnique(new MimeHandlerViewEmbedder(
+                              frame_tree_node_id, resource_url, mime_type,
+                              stream_id, internal_id)));
 }
 
 MimeHandlerViewEmbedder::MimeHandlerViewEmbedder(int32_t frame_tree_node_id,
                                                  const GURL& resource_url,
                                                  const std::string& mime_type,
-                                                 const std::string& stream_id)
+                                                 const std::string& stream_id,
+                                                 const std::string& internal_id)
     : content::WebContentsObserver(
           content::WebContents::FromFrameTreeNodeId(frame_tree_node_id)),
       frame_tree_node_id_(frame_tree_node_id),
       resource_url_(resource_url),
       mime_type_(mime_type),
       stream_id_(stream_id),
+      internal_id_(internal_id),
       weak_factory_(this) {}
 
 MimeHandlerViewEmbedder::~MimeHandlerViewEmbedder() {}
@@ -62,18 +78,31 @@ void MimeHandlerViewEmbedder::DidStartNavigation(
     content::NavigationHandle* handle) {
   // This observer is created after the observed |frame_tree_node_id_| started
   // its navigation to the |resource_url|. If any new navigations start then
-  // we should stop now and do not create a MHVG.
-  if (handle->GetFrameTreeNodeId() == frame_tree_node_id_)
+  // we should stop now and do not create a MHVG. Same document navigations
+  // could occur for {replace,push}State among other reasons and should not
+  // lead to deleting the MVHE (e.g., the test
+  // PDFExtensionLinkClickTest.OpenPDFWithReplaceState reaches here).
+  if (handle->GetFrameTreeNodeId() == frame_tree_node_id_ &&
+      !handle->IsSameDocument()) {
     GetMimeHandlerViewEmbeddersMap()->erase(frame_tree_node_id_);
+  }
 }
 
 void MimeHandlerViewEmbedder::ReadyToCommitNavigation(
     content::NavigationHandle* handle) {
-  if (handle->GetFrameTreeNodeId() == frame_tree_node_id_ &&
-      !render_frame_host_) {
-    DCHECK_EQ(handle->GetURL(), resource_url_);
+  if (handle->GetFrameTreeNodeId() != frame_tree_node_id_)
+    return;
+  if (!render_frame_host_) {
     render_frame_host_ = handle->GetRenderFrameHost();
+    GetContainerManager()->SetInternalId(internal_id_);
   }
+}
+
+void MimeHandlerViewEmbedder::DidFinishNavigation(
+    content::NavigationHandle* handle) {
+  if (frame_tree_node_id_ != handle->GetFrameTreeNodeId())
+    return;
+  CheckSandboxFlags();
 }
 
 void MimeHandlerViewEmbedder::RenderFrameCreated(
@@ -81,6 +110,13 @@ void MimeHandlerViewEmbedder::RenderFrameCreated(
   if (!render_frame_host_ ||
       render_frame_host_ != render_frame_host->GetParent() ||
       render_frame_host_->GetLastCommittedURL() != resource_url_) {
+    return;
+  }
+  if (!ready_to_create_mime_handler_view_) {
+    // Renderer notifies the browser about creating MimeHandlerView right after
+    // HTMLPlugInElement::RequestObject, which is before the plugin element is
+    // navigated.
+    GetMimeHandlerViewEmbeddersMap()->erase(frame_tree_node_id_);
     return;
   }
   outer_contents_frame_tree_node_id_ = render_frame_host->GetFrameTreeNodeId();
@@ -143,16 +179,24 @@ void MimeHandlerViewEmbedder::DidCreateMimeHandlerViewGuest(
       outer_contents_rfh->GetParent()->GetProcess()->GetID();
   guest_view->SetEmbedderFrame(embedder_frame_process_id,
                                outer_contents_rfh->GetParent()->GetRoutingID());
+  // TODO(ekaramad): This URL is used to communicate with
+  // MimeHandlerViewFrameContainer which is only the case if the embedder frame
+  // is the content frame of a plugin element (https://crbug.com/957373).
+  guest_view->set_original_resource_url(resource_url_);
   guest_view::GuestViewManager::FromBrowserContext(
       web_contents()->GetBrowserContext())
       ->AttachGuest(embedder_frame_process_id, element_instance_id_,
                     guest_instance_id,
                     base::DictionaryValue() /* unused attach_params */);
+  // Full page plugin refers to <iframe> or main frame navigations to a
+  // MimeHandlerView resource. In such cases MHVG does not have a frame
+  // container.
+  bool is_full_page = !guest_view->maybe_has_frame_container() &&
+                      !guest_view->GetEmbedderFrame()->GetParent();
   MimeHandlerViewAttachHelper::Get(embedder_frame_process_id)
       ->AttachToOuterWebContents(guest_view, embedder_frame_process_id,
-                                 outer_contents_rfh->GetRoutingID(),
-                                 element_instance_id_,
-                                 true /* is_full_page_plugin */);
+                                 outer_contents_rfh, element_instance_id_,
+                                 is_full_page /* is_full_page_plugin */);
   // MHVE is no longer required.
   GetMimeHandlerViewEmbeddersMap()->erase(frame_tree_node_id_);
 }
@@ -160,9 +204,32 @@ void MimeHandlerViewEmbedder::DidCreateMimeHandlerViewGuest(
 mojom::MimeHandlerViewContainerManager*
 MimeHandlerViewEmbedder::GetContainerManager() {
   if (!container_manager_) {
-    render_frame_host_->GetRemoteInterfaces()->GetInterface(
+    render_frame_host_->GetRemoteAssociatedInterfaces()->GetInterface(
         &container_manager_);
   }
   return container_manager_.get();
 }
+
+void MimeHandlerViewEmbedder::ReadyToCreateMimeHandlerView(
+    bool ready_to_create_mime_handler_view) {
+  ready_to_create_mime_handler_view_ = ready_to_create_mime_handler_view;
+  if (!ready_to_create_mime_handler_view_)
+    GetMimeHandlerViewEmbeddersMap()->erase(frame_tree_node_id_);
+}
+
+void MimeHandlerViewEmbedder::CheckSandboxFlags() {
+  // If the FrameTreeNode is deleted while it has ownership of the ongoing
+  // NavigationRequest, DidFinishNavigation is called before FrameDeleted (see
+  // https://crbug.com/969840).
+  if (render_frame_host_ &&
+      !render_frame_host_->IsSandboxed(blink::WebSandboxFlags::kPlugins)) {
+    return;
+  }
+  if (render_frame_host_) {
+    // Notify the renderer to load an empty page instead.
+    GetContainerManager()->LoadEmptyPage(resource_url_);
+  }
+  GetMimeHandlerViewEmbeddersMap()->erase(frame_tree_node_id_);
+}
+
 }  // namespace extensions

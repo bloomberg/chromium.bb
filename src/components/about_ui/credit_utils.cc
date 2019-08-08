@@ -12,7 +12,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_ANDROID)
-#include "base/android/jni_array.h"
+#include "base/files/file.h"
 #include "jni/CreditUtils_jni.h"
 #endif
 
@@ -52,13 +52,10 @@ std::string GetCredits(bool include_scripts) {
 }
 
 #if defined(OS_ANDROID)
-static base::android::ScopedJavaLocalRef<jbyteArray>
-JNI_CreditUtils_GetJavaWrapperCredits(JNIEnv* env) {
+static void JNI_CreditUtils_WriteCreditsHtml(JNIEnv* env, jint fd) {
   std::string html_content = GetCredits(false);
-  const char* html_content_arr = html_content.c_str();
-  return base::android::ToJavaByteArray(
-      env, reinterpret_cast<const uint8_t*>(html_content_arr),
-      html_content.size());
+  base::File out_file(fd);
+  out_file.WriteAtCurrentPos(html_content.c_str(), html_content.size());
 }
 #endif
 

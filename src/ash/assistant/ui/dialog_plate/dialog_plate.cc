@@ -87,7 +87,7 @@ int DialogPlate::GetHeightForWidth(int width) const {
 }
 
 void DialogPlate::ButtonPressed(views::Button* sender, const ui::Event& event) {
-  OnButtonPressed(static_cast<AssistantButtonId>(sender->id()));
+  OnButtonPressed(static_cast<AssistantButtonId>(sender->GetID()));
 }
 
 bool DialogPlate::HandleKeyEvent(views::Textfield* textfield,
@@ -260,7 +260,7 @@ void DialogPlate::InitLayout() {
           gfx::Insets(0, 0, 0, kRightPaddingDip)));
 
   layout_manager->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
 
   // Input modality layout container.
   input_modality_layout_container_ = new views::View();
@@ -302,7 +302,7 @@ void DialogPlate::InitKeyboardLayoutContainer() {
               gfx::Insets(0, kHorizontalPaddingDip)));
 
   layout_manager->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
 
   gfx::FontList font_list =
       assistant::ui::GetDefaultFontList().DeriveWithSizeDelta(2);
@@ -348,7 +348,7 @@ void DialogPlate::InitVoiceLayoutContainer() {
           gfx::Insets(0, kLeftPaddingDip, 0, 0)));
 
   layout_manager->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
 
   // Keyboard input toggle.
   keyboard_input_toggle_ =
@@ -409,7 +409,10 @@ bool DialogPlate::OnAnimationEnded(
       break;
   }
 
-  SetFocus(input_modality);
+  // Only set focus if Assistant UI is visible. Otherwise we may accidentally
+  // steal focus from another window. (See crbug/969983).
+  if (delegate_->GetUiModel()->visibility() == AssistantVisibility::kVisible)
+    SetFocus(input_modality);
 
   // We return false so that the animation observer will not destroy itself.
   return false;

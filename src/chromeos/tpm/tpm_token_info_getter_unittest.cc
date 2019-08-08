@@ -190,8 +190,7 @@ class TestCryptohomeClient : public chromeos::FakeCryptohomeClient {
     // Called synchronously for convenience (to avoid using extra RunLoop in
     // tests). Unlike with other Cryptohome callbacks, TPMTokenInfoGetter does
     // not rely on this callback being called asynchronously.
-    base::ResetAndReturn(&pending_get_tpm_token_info_callback_)
-        .Run(tpm_token_info_);
+    std::move(pending_get_tpm_token_info_callback_).Run(tpm_token_info_);
   }
 
   AccountId account_id_;

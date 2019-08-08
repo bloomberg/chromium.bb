@@ -53,7 +53,8 @@ class IdentityManagerObserverBridge : public IdentityManager::Observer {
       const CoreAccountInfo& previous_primary_account_info) override;
   void OnRefreshTokenUpdatedForAccount(
       const CoreAccountInfo& account_info) override;
-  void OnRefreshTokenRemovedForAccount(const std::string& account_id) override;
+  void OnRefreshTokenRemovedForAccount(
+      const CoreAccountId& account_id) override;
   void OnRefreshTokensLoaded() override;
   void OnAccountsInCookieUpdated(
       const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,

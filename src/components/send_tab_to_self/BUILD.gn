@@ -15,8 +15,12 @@ static_library("send_tab_to_self") {
     "send_tab_to_self_model.cc",
     "send_tab_to_self_model.h",
     "send_tab_to_self_model_observer.h",
+    "send_tab_to_self_model_type_controller.cc",
+    "send_tab_to_self_model_type_controller.h",
     "send_tab_to_self_sync_service.cc",
     "send_tab_to_self_sync_service.h",
+    "target_device_info.cc",
+    "target_device_info.h",
   ]
   deps = [
     "//base",
@@ -24,18 +28,23 @@ static_library("send_tab_to_self") {
     "//components/keyed_service/core",
     "//components/send_tab_to_self/proto:send_tab_to_self_proto",
     "//components/sync",
+    "//components/sync_device_info",
     "//components/version_info",
+    "//google_apis",
     "//url",
   ]
   public_deps = [
     "//components/send_tab_to_self/proto:send_tab_to_self_proto",
   ]
-  if (is_ios || is_android) {
+  if (is_android) {
     sources += [
       "send_tab_to_self_infobar_delegate.cc",
       "send_tab_to_self_infobar_delegate.h",
     ]
-    deps += [ "//components/infobars/core" ]
+    deps += [
+      "//components/infobars/core",
+      "//content/public/browser",
+    ]
   }
 }
 
@@ -63,9 +72,8 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/history/core/browser",
     "//components/send_tab_to_self/proto:send_tab_to_self_proto",
-    "//components/sync",
-    "//components/sync:test_support_driver",
-    "//components/sync:test_support_model",
+    "//components/sync:test_support",
+    "//components/sync_device_info",
     "//testing/gtest",
     "//url",
   ]

@@ -167,6 +167,7 @@ void MediaEngagementContentsObserver::DidFinishNavigation(
     return;
 
   // Only get the opener if the navigation originated from a link.
+  // This is done outside of `GetOrCreateSession()` to simplify unit testing.
   content::WebContents* opener = nullptr;
   if (ui::PageTransitionCoreTypeIs(navigation_handle->GetPageTransition(),
                                    ui::PAGE_TRANSITION_LINK) ||
@@ -175,9 +176,7 @@ void MediaEngagementContentsObserver::DidFinishNavigation(
     opener = GetOpener();
   }
 
-  bool was_restored =
-      navigation_handle->GetRestoreType() != content::RestoreType::NONE;
-  session_ = GetOrCreateSession(new_origin, opener, was_restored);
+  session_ = GetOrCreateSession(navigation_handle, opener);
 }
 
 MediaEngagementContentsObserver::PlayerState::PlayerState(base::Clock* clock)
@@ -234,7 +233,7 @@ void MediaEngagementContentsObserver::
   }
 
   int percentage =
-      round(service_->GetEngagementScore(session_->origin().GetURL()) * 100);
+      round(service_->GetEngagementScore(session_->origin()) * 100);
   UMA_HISTOGRAM_PERCENTAGE(
       MediaEngagementContentsObserver::kHistogramScoreAtPlaybackName,
       percentage);
@@ -571,15 +570,18 @@ void MediaEngagementContentsObserver::SetTaskRunnerForTest(
 
 void MediaEngagementContentsObserver::ReadyToCommitNavigation(
     content::NavigationHandle* handle) {
-  // TODO(beccahughes): Convert MEI API to using origin.
   // If the navigation is occuring in the main frame we should use the URL
   // provided by |handle| as the navigation has not committed yet. If the
   // navigation is in a sub frame then use the URL from the main frame.
-  GURL url = handle->IsInMainFrame()
-                 ? handle->GetURL()
-                 : handle->GetWebContents()->GetLastCommittedURL();
-  MediaEngagementScore score = service_->CreateEngagementScore(url);
+  url::Origin origin = url::Origin::Create(
+      handle->IsInMainFrame()
+          ? handle->GetURL()
+          : handle->GetWebContents()->GetLastCommittedURL());
+  MediaEngagementScore score = service_->CreateEngagementScore(origin);
   bool has_high_engagement = score.high_score();
+
+  if (base::FeatureList::IsEnabled(media::kMediaEngagementHTTPSOnly))
+    DCHECK(!has_high_engagement || (origin.scheme() == url::kHttpsScheme));
 
   // If the preloaded feature flag is enabled and the number of visits is less
   // than the number of visits required to have an MEI score we should check the
@@ -589,7 +591,7 @@ void MediaEngagementContentsObserver::ReadyToCommitNavigation(
       base::FeatureList::IsEnabled(media::kPreloadMediaEngagementData)) {
     has_high_engagement =
         MediaEngagementPreloadedList::GetInstance()->CheckOriginIsPresent(
-            url::Origin::Create(url));
+            origin);
   }
 
   // If we have high media engagement then we should send that to Blink.
@@ -602,11 +604,8 @@ void MediaEngagementContentsObserver::ReadyToCommitNavigation(
 content::WebContents* MediaEngagementContentsObserver::GetOpener() const {
 #if !defined(OS_ANDROID)
   for (auto* browser : *BrowserList::GetInstance()) {
-    if (!browser->profile()->IsSameProfile(service_->profile()) ||
-        browser->profile()->GetProfileType() !=
-            service_->profile()->GetProfileType()) {
+    if (!browser->profile()->IsSameProfileAndType(service_->profile()))
       continue;
-    }
 
     int index =
         browser->tab_strip_model()->GetIndexOfWebContents(web_contents());
@@ -623,14 +622,14 @@ content::WebContents* MediaEngagementContentsObserver::GetOpener() const {
 
 scoped_refptr<MediaEngagementSession>
 MediaEngagementContentsObserver::GetOrCreateSession(
-    const url::Origin& origin,
-    content::WebContents* opener,
-    bool was_restored) const {
-  GURL url = origin.GetURL();
-  if (!url.is_valid())
+    content::NavigationHandle* navigation_handle,
+    content::WebContents* opener) const {
+  url::Origin origin = url::Origin::Create(navigation_handle->GetURL());
+
+  if (origin.opaque())
     return nullptr;
 
-  if (!service_->ShouldRecordEngagement(url))
+  if (!service_->ShouldRecordEngagement(origin))
     return nullptr;
 
   MediaEngagementContentsObserver* opener_observer =
@@ -641,8 +640,13 @@ MediaEngagementContentsObserver::GetOrCreateSession(
     return opener_observer->session_;
   }
 
+  MediaEngagementSession::RestoreType restore_type =
+      navigation_handle->GetRestoreType() == content::RestoreType::NONE
+          ? MediaEngagementSession::RestoreType::kNotRestored
+          : MediaEngagementSession::RestoreType::kRestored;
+
   return new MediaEngagementSession(
-      service_, origin,
-      was_restored ? MediaEngagementSession::RestoreType::kRestored
-                   : MediaEngagementSession::RestoreType::kNotRestored);
+      service_, origin, restore_type,
+      ukm::ConvertToSourceId(navigation_handle->GetNavigationId(),
+                             ukm::SourceIdType::NAVIGATION_ID));
 }

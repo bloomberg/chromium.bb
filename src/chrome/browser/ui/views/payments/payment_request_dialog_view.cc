@@ -23,8 +23,8 @@
 #include "chrome/browser/ui/views/payments/profile_list_view_controller.h"
 #include "chrome/browser/ui/views/payments/shipping_address_editor_view_controller.h"
 #include "chrome/browser/ui/views/payments/shipping_option_view_controller.h"
-#include "components/autofill/core/browser/autofill_profile.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/payments/content/payment_request.h"
 #include "components/strings/grit/components_strings.h"
@@ -181,7 +181,7 @@ void PaymentRequestDialogView::ShowProcessingSpinner() {
 }
 
 bool PaymentRequestDialogView::IsInteractive() const {
-  return !throbber_overlay_.visible();
+  return !throbber_overlay_.GetVisible();
 }
 
 void PaymentRequestDialogView::ShowPaymentHandlerScreen(
@@ -207,8 +207,10 @@ void PaymentRequestDialogView::RetryDialog() {
     ShowShippingAddressEditor(
         BackNavigationType::kOneStep,
         /*on_edited=*/
-        base::BindOnce(&PaymentRequestState::SetSelectedShippingProfile,
-                       base::Unretained(request_->state()), profile),
+        base::BindOnce(
+            &PaymentRequestState::SetSelectedShippingProfile,
+            base::Unretained(request_->state()), profile,
+            PaymentRequestState::SectionSelectionStatus::kEditedSelected),
         /*on_added=*/
         base::OnceCallback<void(const autofill::AutofillProfile&)>(), profile);
   }
@@ -219,8 +221,10 @@ void PaymentRequestDialogView::RetryDialog() {
     ShowContactInfoEditor(
         BackNavigationType::kOneStep,
         /*on_edited=*/
-        base::BindOnce(&PaymentRequestState::SetSelectedContactProfile,
-                       base::Unretained(request_->state()), profile),
+        base::BindOnce(
+            &PaymentRequestState::SetSelectedContactProfile,
+            base::Unretained(request_->state()), profile,
+            PaymentRequestState::SectionSelectionStatus::kEditedSelected),
         /*on_added=*/
         base::OnceCallback<void(const autofill::AutofillProfile&)>(), profile);
   }
@@ -249,10 +253,9 @@ void PaymentRequestDialogView::OnInitialized(
 
   HideProcessingSpinner();
 
-  if (request_->state()->are_requested_methods_supported()) {
-    request_->RecordDialogShownEventInJourneyLogger();
-    if (observer_for_testing_)
-      observer_for_testing_->OnDialogOpened();
+  if (request_->state()->are_requested_methods_supported() &&
+      observer_for_testing_) {
+    observer_for_testing_->OnDialogOpened();
   }
 }
 
@@ -431,10 +434,9 @@ void PaymentRequestDialogView::ShowInitialPaymentSheet() {
   if (number_of_initialization_tasks_ > 0)
     return;
 
-  if (request_->state()->are_requested_methods_supported()) {
-    request_->RecordDialogShownEventInJourneyLogger();
-    if (observer_for_testing_)
-      observer_for_testing_->OnDialogOpened();
+  if (request_->state()->are_requested_methods_supported() &&
+      observer_for_testing_) {
+    observer_for_testing_->OnDialogOpened();
   }
 }
 

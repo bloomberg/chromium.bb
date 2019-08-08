@@ -10,9 +10,11 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "chrome/browser/ui/views/tabs/fake_base_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/new_tab_button.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
+#include "chrome/browser/ui/views/tabs/tab_group_header.h"
 #include "chrome/browser/ui/views/tabs/tab_icon.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
@@ -81,41 +83,6 @@ class TestAXEventObserver : public views::AXEventObserver {
   DISALLOW_COPY_AND_ASSIGN(TestAXEventObserver);
 };
 
-class AnimationWaiter {
- public:
-  AnimationWaiter(TabStrip* tab_strip, base::TimeDelta duration)
-      : tab_strip_(tab_strip), duration_(duration) {}
-
-  ~AnimationWaiter() = default;
-
-  // Blocks until |tab_strip_| is not animating.
-  void Wait() {
-    interval_timer_.Start(
-        FROM_HERE, duration_,
-        base::BindRepeating(&AnimationWaiter::CheckAnimationEnds,
-                            base::Unretained(this)));
-
-    run_loop_.Run();
-  }
-
- private:
-  void CheckAnimationEnds() {
-    if (tab_strip_->IsAnimating())
-      return;
-
-    interval_timer_.Stop();
-    run_loop_.Quit();
-  }
-
-  TabStrip* tab_strip_;
-
-  base::RepeatingTimer interval_timer_;
-  base::TimeDelta duration_;
-
-  base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(AnimationWaiter);
-};
 }  // namespace
 
 class TestTabStripObserver : public TabStripObserver {
@@ -207,10 +174,6 @@ class TabStripTest : public ChromeViewsTestBase,
 
   void AnimateToIdealBounds() { tab_strip_->AnimateToIdealBounds(); }
 
-  int current_inactive_width() const {
-    return tab_strip_->current_inactive_width_;
-  }
-
   const StackedTabStripLayout* touch_layout() const {
     return tab_strip_->touch_layout_.get();
   }
@@ -218,6 +181,8 @@ class TabStripTest : public ChromeViewsTestBase,
   views::BoundsAnimator* bounds_animator() {
     return &tab_strip_->bounds_animator_;
   }
+
+  int GetInactiveTabWidth() { return tab_strip_->GetInactiveTabWidth(); }
 
   // End any outstanding drag and animate tabs back to their ideal bounds.
   void StopDraggingTab(Tab* tab) {
@@ -418,7 +383,7 @@ TEST_P(TabStripTest, VisibilityInOverflow) {
   int invisible_tab_index = 0;
   for (; invisible_tab_index < 100; ++invisible_tab_index) {
     controller_->AddTab(invisible_tab_index, false);
-    if (!tab_strip_->tab_at(invisible_tab_index)->visible())
+    if (!tab_strip_->tab_at(invisible_tab_index)->GetVisible())
       break;
   }
   EXPECT_GT(invisible_tab_index, 0);
@@ -426,43 +391,43 @@ TEST_P(TabStripTest, VisibilityInOverflow) {
 
   // The tabs before the invisible tab should still be visible.
   for (int i = 0; i < invisible_tab_index; ++i)
-    EXPECT_TRUE(tab_strip_->tab_at(i)->visible());
+    EXPECT_TRUE(tab_strip_->tab_at(i)->GetVisible());
 
   // Enlarging the strip should result in the last tab becoming visible.
   tab_strip_->SetBounds(0, 0, kInitialWidth * 2, 20);
-  EXPECT_TRUE(tab_strip_->tab_at(invisible_tab_index)->visible());
+  EXPECT_TRUE(tab_strip_->tab_at(invisible_tab_index)->GetVisible());
 
   // Shrinking it again should re-hide the last tab.
   tab_strip_->SetBounds(0, 0, kInitialWidth, 20);
-  EXPECT_FALSE(tab_strip_->tab_at(invisible_tab_index)->visible());
+  EXPECT_FALSE(tab_strip_->tab_at(invisible_tab_index)->GetVisible());
 
   // Shrinking it still more should make more tabs invisible, though not all.
   // All the invisible tabs should be at the end of the strip.
   tab_strip_->SetBounds(0, 0, kInitialWidth / 2, 20);
   int i = 0;
   for (; i < invisible_tab_index; ++i) {
-    if (!tab_strip_->tab_at(i)->visible())
+    if (!tab_strip_->tab_at(i)->GetVisible())
       break;
   }
   ASSERT_GT(i, 0);
   EXPECT_LT(i, invisible_tab_index);
   invisible_tab_index = i;
   for (int i = invisible_tab_index + 1; i < tab_strip_->tab_count(); ++i)
-    EXPECT_FALSE(tab_strip_->tab_at(i)->visible());
+    EXPECT_FALSE(tab_strip_->tab_at(i)->GetVisible());
 
   // When we're already in overflow, adding tabs at the beginning or end of
   // the strip should not change how many tabs are visible.
   controller_->AddTab(tab_strip_->tab_count(), false);
-  EXPECT_TRUE(tab_strip_->tab_at(invisible_tab_index - 1)->visible());
-  EXPECT_FALSE(tab_strip_->tab_at(invisible_tab_index)->visible());
+  EXPECT_TRUE(tab_strip_->tab_at(invisible_tab_index - 1)->GetVisible());
+  EXPECT_FALSE(tab_strip_->tab_at(invisible_tab_index)->GetVisible());
   controller_->AddTab(0, false);
-  EXPECT_TRUE(tab_strip_->tab_at(invisible_tab_index - 1)->visible());
-  EXPECT_FALSE(tab_strip_->tab_at(invisible_tab_index)->visible());
+  EXPECT_TRUE(tab_strip_->tab_at(invisible_tab_index - 1)->GetVisible());
+  EXPECT_FALSE(tab_strip_->tab_at(invisible_tab_index)->GetVisible());
 
   // If we remove enough tabs, all the tabs should be visible.
   for (int i = tab_strip_->tab_count() - 1; i >= invisible_tab_index; --i)
     controller_->RemoveTab(i);
-  EXPECT_TRUE(tab_strip_->tab_at(tab_strip_->tab_count() - 1)->visible());
+  EXPECT_TRUE(tab_strip_->tab_at(tab_strip_->tab_count() - 1)->GetVisible());
 }
 
 // Creates a tab strip in stacked layout mode and verifies that as we move
@@ -607,7 +572,7 @@ TEST_P(TabStripTest, TabCloseButtonVisibilityWhenNotStacked) {
   // title would be shown.
   EXPECT_TRUE(tab3->showing_icon_);
   EXPECT_FALSE(tab3->showing_alert_indicator_);
-  EXPECT_TRUE(tab3->title_->visible());
+  EXPECT_TRUE(tab3->title_->GetVisible());
 
   // The active tab's close button still shows.
   EXPECT_TRUE(tab1->showing_close_button_);
@@ -800,7 +765,7 @@ TEST_P(TabStripTest, ActiveTabWidthWhenTabsAreTiny) {
 
   // Create a lot of tabs in order to make inactive tabs tiny.
   const int min_inactive_width = TabStyleViews::GetMinimumInactiveWidth();
-  while (current_inactive_width() != min_inactive_width)
+  while (GetInactiveTabWidth() != min_inactive_width)
     controller_->CreateNewTab();
 
   int active_index = controller_->GetActiveIndex();
@@ -810,12 +775,12 @@ TEST_P(TabStripTest, ActiveTabWidthWhenTabsAreTiny) {
             tab_strip_->ideal_bounds(active_index).width());
 
   // During mouse-based tab closure, the active tab should remain at least as
-  // wide as it's minium width.
+  // wide as it's minimum width.
   controller_->SelectTab(0, dummy_event_);
-  for (const int min_active_width = TabStyleViews::GetMinimumActiveWidth();
-       tab_strip_->tab_count();) {
+  while (tab_strip_->tab_count() > 0) {
     const int active_index = controller_->GetActiveIndex();
-    EXPECT_GE(tab_strip_->ideal_bounds(active_index).width(), min_active_width);
+    EXPECT_GE(tab_strip_->ideal_bounds(active_index).width(),
+              TabStyleViews::GetMinimumActiveWidth());
     tab_strip_->CloseTab(tab_strip_->tab_at(active_index),
                          CLOSE_TAB_FROM_MOUSE);
   }
@@ -830,18 +795,21 @@ TEST_P(TabStripTest, InactiveTabWidthWhenTabsAreTiny) {
   // tab but not the minimum.
   const int min_inactive_width = TabStyleViews::GetMinimumInactiveWidth();
   const int min_active_width = TabStyleViews::GetMinimumActiveWidth();
-  while (current_inactive_width() >=
-         (min_inactive_width + min_active_width) / 2)
+  while (GetInactiveTabWidth() >= (min_inactive_width + min_active_width) / 2) {
     controller_->CreateNewTab();
+  }
 
   // During mouse-based tab closure, inactive tabs shouldn't shrink
   // so that users can close tabs continuously without moving mouse.
   controller_->SelectTab(0, dummy_event_);
-  for (int old_inactive_width = current_inactive_width();
-       tab_strip_->tab_count(); old_inactive_width = current_inactive_width()) {
+  // If there are only two tabs in the strip, then after closing one the
+  // remaining one will be active and there will be no inactive tabs,
+  // so we stop at 2.
+  while (tab_strip_->tab_count() > 2) {
+    const int last_inactive_width = GetInactiveTabWidth();
     tab_strip_->CloseTab(tab_strip_->tab_at(controller_->GetActiveIndex()),
                          CLOSE_TAB_FROM_MOUSE);
-    EXPECT_GE(current_inactive_width(), old_inactive_width);
+    EXPECT_GE(GetInactiveTabWidth(), last_inactive_width);
   }
 }
 
@@ -852,7 +820,7 @@ TEST_P(TabStripTest, ResetBoundsForDraggedTabs) {
 
   // Create a lot of tabs in order to make inactive tabs tiny.
   const int min_inactive_width = TabStyleViews::GetMinimumInactiveWidth();
-  while (current_inactive_width() != min_inactive_width)
+  while (GetInactiveTabWidth() != min_inactive_width)
     controller_->CreateNewTab();
 
   const int min_active_width = TabStyleViews::GetMinimumActiveWidth();
@@ -864,6 +832,8 @@ TEST_P(TabStripTest, ResetBoundsForDraggedTabs) {
   // Mark the active tab as being dragged.
   Tab* dragged_tab = tab_strip_->tab_at(dragged_tab_index);
   dragged_tab->set_dragging(true);
+
+  gfx::AnimationContainerTestApi test_api(bounds_animator()->container());
 
   // Ending the drag triggers the tabstrip to begin animating this tab back
   // to its ideal bounds.
@@ -879,8 +849,7 @@ TEST_P(TabStripTest, ResetBoundsForDraggedTabs) {
   // than the original ones (where it's an active tab).
   const auto duration = base::TimeDelta::FromMilliseconds(
       bounds_animator()->GetAnimationDuration());
-  AnimationWaiter waiter(tab_strip_, duration);
-  waiter.Wait();
+  test_api.IncrementTime(duration);
 
   EXPECT_FALSE(dragged_tab->dragging());
   EXPECT_LT(dragged_tab->bounds().width(), min_active_width);
@@ -1000,17 +969,65 @@ TEST_P(TabStripTest, HorizontalScroll) {
   EXPECT_EQ(1, controller_->GetActiveIndex());
 }
 
-TEST_P(TabStripTest, CreateTabGroup) {
+TEST_P(TabStripTest, GroupHeaderBasics) {
+  tab_strip_->SetBounds(0, 0, 1000, 100);
+  bounds_animator()->SetAnimationDuration(0);
   tab_strip_->AddTabAt(0, TabRendererData(), false);
-  base::Optional<int> group = controller_->CreateTabGroup();
+
+  Tab* tab = tab_strip_->tab_at(0);
+  const int first_slot_x = tab->x();
+
+  base::Optional<TabGroupId> group = TabGroupId::GenerateNew();
   controller_->MoveTabIntoGroup(0, group);
-  EXPECT_EQ(1u, ListGroupHeaders().size());
+
+  std::vector<TabGroupHeader*> headers = ListGroupHeaders();
+  EXPECT_EQ(1u, headers.size());
+  TabGroupHeader* header = headers[0];
+  EXPECT_EQ(first_slot_x, header->x());
+  EXPECT_EQ(tab->width(), header->width());
+  EXPECT_EQ(tab->height(), header->height());
+}
+
+TEST_P(TabStripTest, GroupHeaderBetweenTabs) {
+  tab_strip_->SetBounds(0, 0, 1000, 100);
+  bounds_animator()->SetAnimationDuration(0);
+
+  tab_strip_->AddTabAt(0, TabRendererData(), false);
+  tab_strip_->AddTabAt(1, TabRendererData(), false);
+
+  const int second_slot_x = tab_strip_->tab_at(1)->x();
+
+  base::Optional<TabGroupId> group = TabGroupId::GenerateNew();
+  controller_->MoveTabIntoGroup(1, group);
+
+  TabGroupHeader* header = ListGroupHeaders()[0];
+  EXPECT_EQ(header->x(), second_slot_x);
+}
+
+// This can happen when a tab in the middle of a group starts to close.
+TEST_P(TabStripTest, DiscontinuousGroup) {
+  tab_strip_->SetBounds(0, 0, 1000, 100);
+  bounds_animator()->SetAnimationDuration(0);
+
+  tab_strip_->AddTabAt(0, TabRendererData(), false);
+  tab_strip_->AddTabAt(1, TabRendererData(), false);
+  tab_strip_->AddTabAt(2, TabRendererData(), false);
+
+  const int first_slot_x = tab_strip_->tab_at(0)->x();
+
+  base::Optional<TabGroupId> group = TabGroupId::GenerateNew();
+  controller_->MoveTabIntoGroup(0, group);
+  controller_->MoveTabIntoGroup(2, group);
+
+  std::vector<TabGroupHeader*> headers = ListGroupHeaders();
+  EXPECT_EQ(1u, headers.size());
+  EXPECT_EQ(first_slot_x, headers[0]->x());
 }
 
 TEST_P(TabStripTest, DeleteTabGroupHeaderWhenEmpty) {
   tab_strip_->AddTabAt(0, TabRendererData(), false);
   tab_strip_->AddTabAt(1, TabRendererData(), false);
-  base::Optional<int> group = controller_->CreateTabGroup();
+  base::Optional<TabGroupId> group = TabGroupId::GenerateNew();
   controller_->MoveTabIntoGroup(0, group);
   controller_->MoveTabIntoGroup(1, group);
   controller_->MoveTabIntoGroup(0, base::nullopt);

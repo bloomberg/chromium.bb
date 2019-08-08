@@ -29,13 +29,12 @@ class BindUniformLocationTest : public ANGLETest
         setConfigAlphaBits(8);
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
         if (mProgram != 0)
         {
             glDeleteProgram(mProgram);
         }
-        ANGLETest::TearDown();
     }
 
     GLuint mProgram = 0;
@@ -44,7 +43,7 @@ class BindUniformLocationTest : public ANGLETest
 // Test basic functionality of GL_CHROMIUM_bind_uniform_location
 TEST_P(BindUniformLocationTest, Basic)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_CHROMIUM_bind_uniform_location"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_CHROMIUM_bind_uniform_location"));
 
     constexpr char kFS[] = R"(precision mediump float;
 uniform vec4 u_colorC;
@@ -85,7 +84,7 @@ void main()
 // Force a sampler location and make sure it samples the correct texture
 TEST_P(BindUniformLocationTest, SamplerLocation)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_CHROMIUM_bind_uniform_location"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_CHROMIUM_bind_uniform_location"));
 
     constexpr char kFS[] = R"(precision mediump float;
 uniform vec4 u_colorA;
@@ -134,7 +133,7 @@ void main()
 // Test that conflicts are detected when two uniforms are bound to the same location
 TEST_P(BindUniformLocationTest, ConflictsDetection)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_CHROMIUM_bind_uniform_location"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_CHROMIUM_bind_uniform_location"));
 
     constexpr char kFS[] =
         R"(precision mediump float;
@@ -176,7 +175,7 @@ TEST_P(BindUniformLocationTest, ConflictsDetection)
 // Test a use case of the chromium compositor
 TEST_P(BindUniformLocationTest, Compositor)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_CHROMIUM_bind_uniform_location"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_CHROMIUM_bind_uniform_location"));
 
     constexpr char kVS[] =
         R"(attribute vec4 a_position;
@@ -265,7 +264,7 @@ TEST_P(BindUniformLocationTest, Compositor)
 // Test that unused uniforms don't conflict when bound to the same location
 TEST_P(BindUniformLocationTest, UnusedUniformUpdate)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_CHROMIUM_bind_uniform_location"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_CHROMIUM_bind_uniform_location"));
 
     ASSERT_NE(nullptr, glBindUniformLocationCHROMIUM);
 
@@ -349,7 +348,7 @@ void main()
 // binding the sampler to a location higher than the amount of active uniforms.
 TEST_P(BindUniformLocationTest, UseSamplerWhenUnusedUniforms)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_CHROMIUM_bind_uniform_location"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_CHROMIUM_bind_uniform_location"));
 
     constexpr char kFS[] =
         R"(uniform sampler2D tex;
@@ -374,7 +373,7 @@ TEST_P(BindUniformLocationTest, UseSamplerWhenUnusedUniforms)
 // This is valid according to the extension spec.
 TEST_P(BindUniformLocationTest, SameLocationForUsedAndUnusedUniform)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_CHROMIUM_bind_uniform_location"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_CHROMIUM_bind_uniform_location"));
 
     constexpr char kFS[] =
         R"(precision mediump float;
@@ -418,7 +417,7 @@ class BindUniformLocationES31Test : public BindUniformLocationTest
 // bindUniformLocation API sets a consistent location.
 TEST_P(BindUniformLocationES31Test, ConsistentWithLocationLayoutQualifier)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_CHROMIUM_bind_uniform_location"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_CHROMIUM_bind_uniform_location"));
 
     constexpr char kFS[] =
         "#version 310 es\n"
@@ -448,7 +447,7 @@ TEST_P(BindUniformLocationES31Test, ConsistentWithLocationLayoutQualifier)
 // location should prevail.
 TEST_P(BindUniformLocationES31Test, LocationLayoutQualifierOverridesAPIBinding)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_CHROMIUM_bind_uniform_location"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_CHROMIUM_bind_uniform_location"));
 
     constexpr char kFS[] =
         "#version 310 es\n"
@@ -481,7 +480,7 @@ TEST_P(BindUniformLocationES31Test, LocationLayoutQualifierOverridesAPIBinding)
 // fail.
 TEST_P(BindUniformLocationES31Test, LocationLayoutQualifierConflictsWithAPIBinding)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_CHROMIUM_bind_uniform_location"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_CHROMIUM_bind_uniform_location"));
 
     constexpr char kFS[] =
         "#version 310 es\n"
@@ -505,7 +504,7 @@ TEST_P(BindUniformLocationES31Test, LocationLayoutQualifierConflictsWithAPIBindi
 // Test for binding a location for an array of arrays uniform.
 TEST_P(BindUniformLocationES31Test, ArrayOfArrays)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_CHROMIUM_bind_uniform_location"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_CHROMIUM_bind_uniform_location"));
 
     constexpr char kFS[] =
         R"(#version 310 es
@@ -539,7 +538,6 @@ TEST_P(BindUniformLocationES31Test, ArrayOfArrays)
 ANGLE_INSTANTIATE_TEST(BindUniformLocationTest,
                        ES2_D3D9(),
                        ES2_D3D11(),
-                       ES2_D3D11_FL9_3(),
                        ES2_OPENGL(),
                        ES2_OPENGLES(),
                        ES2_VULKAN());

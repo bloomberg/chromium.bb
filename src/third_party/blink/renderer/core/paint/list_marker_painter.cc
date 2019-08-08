@@ -67,7 +67,7 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info) {
     return;
 
   const auto& local_paint_info = paint_state.GetPaintInfo();
-  auto box_origin = paint_state.PaintOffset();
+  auto box_origin = paint_state.PaintOffset().ToLayoutPoint();
 
   DrawingRecorder recorder(local_paint_info.context, layout_list_marker_,
                            local_paint_info.phase);

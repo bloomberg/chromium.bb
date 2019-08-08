@@ -8,10 +8,10 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "remoting/base/constants.h"
 #include "remoting/signaling/mock_signal_strategy.h"
 #include "remoting/signaling/signaling_address.h"
@@ -89,7 +89,7 @@ class HostChangeNotificationListenerTest : public testing::Test {
   std::set<SignalStrategy::Listener*> signal_strategy_listeners_;
   std::unique_ptr<HostChangeNotificationListener>
       host_change_notification_listener_;
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 TEST_F(HostChangeNotificationListenerTest, ReceiveValidNotification) {
@@ -99,7 +99,7 @@ TEST_F(HostChangeNotificationListenerTest, ReceiveValidNotification) {
       GetNotificationStanza("delete", kHostId, kTestBotJid);
   host_change_notification_listener_->OnSignalStrategyIncomingStanza(
       stanza.get());
-  message_loop_.task_runner()->PostTask(
+  scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
   base::RunLoop().Run();
 }
@@ -112,7 +112,7 @@ TEST_F(HostChangeNotificationListenerTest, ReceiveNotificationBeforeDelete) {
   host_change_notification_listener_->OnSignalStrategyIncomingStanza(
       stanza.get());
   host_change_notification_listener_.reset();
-  message_loop_.task_runner()->PostTask(
+  scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
   base::RunLoop().Run();
 }
@@ -125,7 +125,7 @@ TEST_F(HostChangeNotificationListenerTest, ReceiveInvalidHostIdNotification) {
       GetNotificationStanza("delete", "1", kTestBotJid);
   host_change_notification_listener_->OnSignalStrategyIncomingStanza(
       stanza.get());
-  message_loop_.task_runner()->PostTask(
+  scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
   base::RunLoop().Run();
 }
@@ -137,7 +137,7 @@ TEST_F(HostChangeNotificationListenerTest, ReceiveInvalidBotJidNotification) {
       "delete", kHostId, "notremotingbot@bot.talk.google.com");
   host_change_notification_listener_->OnSignalStrategyIncomingStanza(
       stanza.get());
-  message_loop_.task_runner()->PostTask(
+  scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
   base::RunLoop().Run();
 }
@@ -149,7 +149,7 @@ TEST_F(HostChangeNotificationListenerTest, ReceiveNonDeleteNotification) {
       GetNotificationStanza("update", kHostId, kTestBotJid);
   host_change_notification_listener_->OnSignalStrategyIncomingStanza(
       stanza.get());
-  message_loop_.task_runner()->PostTask(
+  scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
   base::RunLoop().Run();
 }

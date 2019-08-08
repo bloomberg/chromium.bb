@@ -326,23 +326,17 @@ static bool SkipForInvertibility(const LayerImpl* layer,
   bool non_root_copy_request =
       effect_node->closest_ancestor_with_copy_request_id >
       EffectTree::kContentsRootNodeId;
+  gfx::Transform from_target;
   // If there is a copy request, we check the invertibility of the transform
   // between the node corresponding to the layer and the node corresponding to
   // the copy request. Otherwise, we are interested in the invertibility of
   // screen space transform which is already cached on the transform node.
-  if (non_root_copy_request) {
-    // Null check is a temporary fix for crasher: https://crbug.com/939342
-    if (effect_node == nullptr)
-      return false;
-    gfx::Transform from_target;
-    return !property_trees->GetFromTarget(
-        layer->transform_tree_index(),
-        effect_node->closest_ancestor_with_copy_request_id, &from_target);
-  }
-  // Null check is a temporary fix for crasher: https://crbug.com/939342
-  if (transform_node == nullptr)
-    return false;
-  return !transform_node->ancestors_are_invertible;
+  return non_root_copy_request
+             ? !property_trees->GetFromTarget(
+                   layer->transform_tree_index(),
+                   effect_node->closest_ancestor_with_copy_request_id,
+                   &from_target)
+             : !transform_node->ancestors_are_invertible;
 }
 
 static void ComputeInitialRenderSurfaceList(
@@ -495,6 +489,38 @@ static void CalculateRenderSurfaceLayerList(
                                 render_surface_list);
 }
 
+static void RecordRenderSurfaceReasonsForTracing(
+    const PropertyTrees* property_trees,
+    const RenderSurfaceList* render_surface_list) {
+  static const auto* tracing_enabled =
+      TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED("cc");
+  if (!*tracing_enabled ||
+      // Don't output single root render surface.
+      render_surface_list->size() <= 1)
+    return;
+
+  TRACE_EVENT_INSTANT1("cc", "RenderSurfaceReasonCount",
+                       TRACE_EVENT_SCOPE_THREAD, "total",
+                       render_surface_list->size());
+
+  // kTest is the last value which is not included for tracing.
+  constexpr auto kNumReasons = static_cast<size_t>(RenderSurfaceReason::kTest);
+  int reason_counts[kNumReasons] = {0};
+  for (const auto* render_surface : *render_surface_list) {
+    const auto* effect_node =
+        property_trees->effect_tree.Node(render_surface->EffectTreeIndex());
+    reason_counts[static_cast<size_t>(effect_node->render_surface_reason)]++;
+  }
+  for (size_t i = 0; i < kNumReasons; i++) {
+    if (!reason_counts[i])
+      continue;
+    TRACE_EVENT_INSTANT1(
+        "cc", "RenderSurfaceReasonCount", TRACE_EVENT_SCOPE_THREAD,
+        RenderSurfaceReasonToString(static_cast<RenderSurfaceReason>(i)),
+        reason_counts[i]);
+  }
+}
+
 void CalculateDrawPropertiesInternal(
     LayerTreeHostCommon::CalcDrawPropsImplInputs* inputs,
     PropertyTreeOption property_tree_option) {
@@ -610,6 +636,8 @@ void CalculateDrawPropertiesInternal(
         inputs->root_layer->layer_tree_impl(), inputs->property_trees,
         inputs->render_surface_list, inputs->max_texture_size);
   }
+  RecordRenderSurfaceReasonsForTracing(inputs->property_trees,
+                                       inputs->render_surface_list);
 
   // A root layer render_surface should always exist after
   // CalculateDrawProperties.

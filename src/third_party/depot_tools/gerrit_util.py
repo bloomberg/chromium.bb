@@ -8,6 +8,8 @@ Utilities for requesting information for a gerrit server via https.
 https://gerrit-review.googlesource.com/Documentation/rest-api.html
 """
 
+from __future__ import print_function
+
 import base64
 import contextlib
 import cookielib
@@ -166,10 +168,10 @@ class CookiesAuthenticator(Authenticator):
 
     st = os.stat(path)
     if st.st_mode & (stat.S_IRWXG | stat.S_IRWXO):
-      print >> sys.stderr, (
+      print(
           'WARNING: netrc file %s cannot be used because its file '
           'permissions are insecure.  netrc file permissions should be '
-          '600.' % path)
+          '600.' % path, file=sys.stderr)
     with open(path) as fd:
       content = fd.read()
 
@@ -189,11 +191,11 @@ class CookiesAuthenticator(Authenticator):
     try:
       return netrc.netrc(path)
     except IOError:
-      print >> sys.stderr, 'WARNING: Could not read netrc file %s' % path
+      print('WARNING: Could not read netrc file %s' % path, file=sys.stderr)
       return netrc.netrc(os.devnull)
     except netrc.NetrcParseError as e:
-      print >> sys.stderr, ('ERROR: Cannot use netrc file %s due to a '
-                            'parsing error: %s' % (path, e))
+      print('ERROR: Cannot use netrc file %s due to a parsing error: %s' %
+          (path, e), file=sys.stderr)
       return netrc.netrc(os.devnull)
 
   @classmethod
@@ -786,7 +788,7 @@ def AddReviewers(host, change, reviewers=None, ccs=None, notify=True,
      'reviewer': r,
      'state': state,
      'notify': 'NONE',  # We handled `notify` argument above.
-   })
+    })
 
   conn = CreateHttpConn(host, path, reqtype='POST', body=body)
   # Gerrit will return 400 if one or more of the requested reviewers are

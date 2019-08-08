@@ -62,6 +62,44 @@ message SupportsScriptResponseProto {
   // Defines what should happen if no scripts in [scripts] becomes runnable,
   // because of preconditions.
   optional ScriptTimeoutError script_timeout_error = 2;
+
+  optional ClientSettingsProto client_settings = 3;
+}
+
+message ClientSettingsProto {
+  // Time between two periodic script precondition checks.
+  optional int32 periodic_script_check_interval_ms = 1;
+
+  // Time between two element checks in the script executor.
+  optional int32 periodic_element_check_interval_ms = 2;
+
+  // Run that many periodic checks before giving up unless something happens to
+  // wake it up, such as the user touching the screen.
+  optional int32 periodic_script_check_count = 3;
+
+  // Time between two element position refreshes, when displaying highlighted
+  // areas in prompt state.
+  optional int32 element_position_update_interval_ms = 4;
+
+  // Maximum amount of time normal actions should implicitly wait for a selector
+  // to show up.
+  optional int32 short_wait_for_element_deadline_ms = 5;
+
+  // Time to wait between two checks of the box model, when waiting for an
+  // element to become stable, such as before clicking.
+  optional int32 box_model_check_interval_ms = 6;
+
+  // Maximum number of checks to run while waiting for the element position to
+  // become stable.
+  optional int32 box_model_check_count = 7;
+
+  // Time to wait between two checks of the document state, when waiting for the
+  // document to become ready.
+  optional int32 document_ready_check_interval_ms = 8;
+
+  // Maximum number of checks to run while waiting for the document to become
+  // ready.
+  optional int32 document_ready_check_count = 9;
 }
 
 message ScriptTimeoutError {
@@ -83,7 +121,8 @@ message SupportedScriptProto {
 
   message PresentationProto {
     // Script name.
-    optional string name = 1;
+    // Deprecated, use chip.text instead.
+    optional string name = 1 [deprecated = true];
 
     // Precondition contains a set of conditions that must hold for a script to
     // be executed. No precondition means that a script can run in any case.
@@ -101,10 +140,16 @@ message SupportedScriptProto {
 
     // Describes the chip to be shown. The name of the chip is set by the
     // name field.
-    optional ChipType chip_type = 10;
+    // Deprecated, use chip.type instead.
+    optional ChipType chip_type = 10 [deprecated = true];
 
     // An icon the should be shown next to the chip text.
-    optional ChipIcon chip_icon = 11;
+    // Deprecated, use chip.icon instead.
+    optional ChipIcon chip_icon = 11 [deprecated = true];
+
+    // The chip to display. This chip has precedence over name, chip_type and
+    // chip_icon. Not required if autostart is true.
+    optional ChipProto chip = 12;
 
     // When set to true this script can be run in 'autostart mode'. Chip won't
     // be shown; name and chip_type are ignored.
@@ -115,6 +160,24 @@ message SupportedScriptProto {
     optional bool interrupt = 9;
   }
   optional PresentationProto presentation = 2;
+}
+
+// A message to describe a chip.
+message ChipProto {
+  // The type of the chip.
+  optional ChipType type = 1;
+
+  // The icon shown on the chip. Not required if text is set.
+  optional ChipIcon icon = 2;
+
+  // The text shown on the chip. Not required if icon is set.
+  optional string text = 3;
+
+  // Whether the chip is sticky. When the bottom sheet is configured with the
+  // ConfigureBottomSheetProto::PeekMode::HANDLE_HEADER peek mode and the
+  // sheet is minimized, the first sticky action will be displayed instead of
+  // the profile icon.
+  optional bool sticky = 4;
 }
 
 enum ChipType {
@@ -342,6 +405,7 @@ message ActionProto {
     ExpectNavigationProto expect_navigation = 40;
     WaitForNavigationProto wait_for_navigation = 41;
     ConfigureBottomSheetProto configure_bottom_sheet = 42;
+    ShowFormProto show_form = 43;
   }
 
   // Set to true to make the client remove any contextual information if the
@@ -374,11 +438,19 @@ message ProcessedActionProto {
     PaymentDetails payment_details = 15;
     // Should be set as a result of SetFormFieldValueAction.
     SetFormFieldValueProto.Result set_form_field_value_result = 17;
+    // May be set as a result of WaitForDomProto.
+    WaitForDomProto.Result wait_for_dom_result = 22;
+    // Should be set as a result of FormAction.
+    FormProto.Result form_result = 21;
   }
 
   // Reports information about navigation that happened while
   // processing the action. This is meant for debugging.
   optional NavigationInfoProto navigation_info = 20;
+
+  // Reports how long it took for the client to run the action. This does not
+  // include the delay specified in action.delay_ms.
+  optional int64 run_time_ms = 23;
 }
 
 // Extended information about the action status, which provides more details
@@ -616,7 +688,14 @@ enum VisibilityRequirement {
 
 // Contain all arguments to perform a click.
 message ClickProto {
+  enum ClickType {
+    NOT_SET = 0;
+    TAP = 1;
+    JAVASCRIPT = 2;
+    CLICK = 3;
+  }
   optional ElementReferenceProto element_to_click = 1;
+  optional ClickType click_type = 2;
 }
 
 // Contain all arguments to perform a select option action.
@@ -634,6 +713,14 @@ message TellProto {
 
 // Contain all arguments to focus on an element.
 message FocusElementProto {
+  message TopPadding {
+    oneof top_padding {
+      // Padding in CSS pixels. Eg. 20.
+      int32 pixels = 1;
+      // Ratio in relation to the window.innerHeight. Eg. 0.25.
+      float ratio = 2;
+    }
+  }
   // Element to focus on.
   optional ElementReferenceProto element = 1;
 
@@ -648,6 +735,9 @@ message FocusElementProto {
 
   // Restrict interaction to a series of rectangular areas.
   optional ElementAreaProto touchable_element_area = 6;
+
+  // The padding that will be added between the focused element and the top.
+  optional TopPadding top_padding = 7;
 }
 
 // An area made up of rectangles whole border are made defined by the position
@@ -738,6 +828,18 @@ message WaitForDomProto {
     // Wait as long as there's at least one element that matches the given
     // reference.
     ElementReferenceProto wait_while = 6;
+
+    // Wait until at least one condition is met.
+    //
+    // If, at the end of the timeout, no conditions are not met, the action
+    // returns ELEMENT_RESOLUTION_FAILED.
+    ElementConditions wait_for_any = 7;
+
+    // Wait until all conditions are met.
+    //
+    // If, at the end of the timeout, not all condition are met, the action
+    // returns ELEMENT_RESOLUTION_FAILED.
+    ElementConditions wait_for_all = 8;
   }
 
   // If true, run scripts flagged with 'interrupt=true' as soon as their
@@ -745,6 +847,30 @@ message WaitForDomProto {
   optional bool allow_interrupt = 3;
 
   reserved 4;
+
+  // Multiple element conditions.
+  message ElementConditions { repeated ElementCondition conditions = 1; }
+
+  // A single element condition.
+  message ElementCondition {
+    oneof condition {
+      // There must be at least one matching element.
+      ElementReferenceProto must_match = 1;
+
+      // There must not be any matching elements.
+      ElementReferenceProto must_not_match = 2;
+    }
+
+    // If this condition is met and this is nonempty, put the following payload
+    // into the result.
+    optional bytes server_payload = 5;
+  }
+
+  // Result to include into ProcessedActionProto.
+  message Result {
+    // Payload of all matching conditions, if one is set.
+    repeated bytes matching_condition_payloads = 1;
+  }
 }
 
 // Volatile upload of a portion of the dom for backend analysis, does not store
@@ -821,14 +947,21 @@ message PromptProto {
   message Choice {
     // Localized text message to display. Not required if
     // auto_select_if_element_exists is set.
-    optional string name = 2;
+    // Deprecated, use chip.text instead.
+    optional string name = 2 [deprecated = true];
 
     // Describes the chip to be shown. The name of the chip is set by the
     // name field.
-    optional ChipType chip_type = 7;
+    // Deprecated, use chip.type instead.
+    optional ChipType chip_type = 7 [deprecated = true];
 
     // An icon the should be shown next to the chip text.
-    optional ChipIcon chip_icon = 10;
+    // Deprecated, use chip.icon instead.
+    optional ChipIcon chip_icon = 10 [deprecated = true];
+
+    // The chip to display. This chip has precedence over name, chip_type and
+    // chip_icon. Not required if auto_select_if_element_exists is set.
+    optional ChipProto chip = 11;
 
     // Auto-select this choice if the given element exist.
     optional ElementReferenceProto auto_select_if_element_exists = 4;
@@ -888,8 +1021,12 @@ message GetPaymentInformationProto {
   repeated string supported_basic_card_networks = 6;
   // Contact details that should be gathered.
   optional ContactDetailsProto contact_details = 5;
+  // Override for the text of the confirm button in the payment request.
+  optional string confirm_button_text = 7;
   // The initial state of the terms & conditions choice.
   optional TermsAndConditionsState terms_and_conditions_state = 8;
+  // When 'false', hide the terms and conditions box in the UI.
+  optional bool request_terms_and_conditions = 9 [default = true];
 }
 
 // Resets Autofill Assistant: clears any state and server payload.
@@ -1118,4 +1255,200 @@ message ConfigureBottomSheetProto {
   // resize_viewport is true or was set to true by a previous actions, the
   // viewport will be resized to match the new peek height.
   optional PeekMode peek_mode = 2;
+
+  // Maximum time to wait for the window to resize before continuing with the
+  // script. If 0 or unset, the action doesn't wait.
+  optional int32 resize_timeout_ms = 3;
+}
+
+// Allow scripts to display a form with multiple inputs.
+message ShowFormProto {
+  // The form to display.
+  optional FormProto form = 1;
+
+  // The chip to display below the form. This chip will be enabled only if all
+  // form inputs are valid.
+  optional ChipProto chip = 2;
+}
+
+message FormProto {
+  // A result associated to this form, such that |input_results[i]| is the
+  // result of |inputs[i]|.
+  message Result { repeated FormInputProto.Result input_results = 1; }
+
+  // The different inputs to display.
+  repeated FormInputProto inputs = 1;
+}
+
+message FormInputProto {
+  message Result {
+    oneof input_type {
+      CounterInputProto.Result counter = 1;
+      SelectionInputProto.Result selection = 2;
+    }
+  }
+
+  oneof input_type {
+    CounterInputProto counter = 1;
+    SelectionInputProto selection = 2;
+  }
+}
+
+// An input that is made of one or more counters. This input is considered valid
+// if its |validation_rule| is satisfied or if it doesn't have one.
+message CounterInputProto {
+  // A single counter.
+  message Counter {
+    // The label shown with the counter, that handles plurals using the format
+    // defined by java.text.ChoiceFormat. All occurrences of the '{value}'
+    // substring will be replaced by the current counter value.
+    optional string label = 1;
+
+    // Text shown below the label. Optional.
+    optional string subtext = 5;
+
+    // The minimum value this counter can have.
+    optional int32 min_value = 2 [default = -0x80000000];  // kint32min
+
+    // The maximum value this counter can have.
+    optional int32 max_value = 3 [default = 0x7FFFFFFF];  // kint32max
+
+    // The initial value of the counter.
+    optional int32 initial_value = 4 [default = 0];
+  }
+
+  // A result associated to this counter.
+  message Result {
+    // The values of all counters from this CounterInputProto, such that
+    // |values[i]| is the value of |counters[i]|.
+    repeated int32 values = 1;
+  }
+
+  // A validation rule to validate this input values.
+  message ValidationRule {
+    // A rule to combine sub rules. This rule allows to express the following:
+    //  - Rule A and Rule B must be satisfied.
+    //  - Rule A or Rule B must be satisfied.
+    //  - Rule A must not be satisfied.
+    //  - At least 2 of Rules A, B or C must be satisfied.
+    //
+    // This rule is satisfied if the number of satisfied |sub_rules| is >=
+    // min_satisfied_rules and <= max_satisfied_rules.
+    message BooleanRule {
+      // The sub rules to check.
+      repeated ValidationRule sub_rules = 1;
+
+      // The minimum number of rules that must be satisfied.
+      optional int32 min_satisfied_rules = 2 [default = 0];
+
+      // The maximum number of rules that must be satisfied.
+      optional int32 max_satisfied_rules = 3
+          [default = 0x7FFFFFFF];  // kint32max
+    }
+
+    // A rule on the value of one of the |counters|. This rule is satisfied if
+    // min_value <= counter.value <= max_value.
+    message CounterRule {
+      // The index of the counter in |counters|. Must be >= 0 and <
+      // |counters.size|.
+      optional int32 counter_index = 1;
+
+      // The minimum value this counter can have.
+      optional int32 min_value = 2 [default = -0x80000000];  // kint32min
+
+      // The maximum value this counter can have.
+      optional int32 max_value = 3 [default = 0x7FFFFFFF];  // kint32max
+    }
+
+    // A rule on the sum of the |counters|. This rule satisfied if the sum of
+    // all |counters| is >= min_value and <= max_value. If there is an overflow
+    // when computing the sum, the behavior is undefined.
+    message CountersSumRule {
+      // The minimum value the total can have.
+      optional int64 min_value = 1
+          [default = -0x8000000000000000];  // kint64min
+
+      // The maximum value this counter can have.
+      optional int64 max_value = 2 [default = 0x7FFFFFFFFFFFFFFF];  // kint64max
+    }
+
+    oneof rule_type {
+      BooleanRule boolean = 1;
+      CounterRule counter = 2;
+      CountersSumRule counters_sum = 3;
+    }
+  }
+
+  // An optional label shown above the different counters.
+  optional string label = 1;
+
+  // The counters to display.
+  repeated Counter counters = 2;
+
+  // If specified, the input will initially display maximum |minimized_count|
+  // counters. If |counters|.size > |minimized_count|, the remaining counters
+  // will be displayed in an expandable section below the first
+  // |minimized_count| counters. Setting this value will have no effect if
+  // |expand_text| and |minimize_text| are not set.
+  optional int32 minimized_count = 3 [default = 0x7FFFFFFF];  // kint32max
+
+  // Text shown when counters are inside the expandable section and the section
+  // is minimized. Clicking this text will expand the section and show the
+  // remaining counters.
+  optional string expand_text = 4;
+
+  // Text shown when counters are inside the expandable section and the section
+  // is expanded. Clicking this text will minimize the section and hide the
+  // counters inside it.
+  optional string minimize_text = 5;
+
+  // Validation rule used to check whether the current values of this input are
+  // valid.
+  optional ValidationRule validation_rule = 6;
+
+  // The minimum value of the sum of the counters. All counters decrease button
+  // will be disabled if sum <= min_counters_sum.
+  optional int64 min_counters_sum = 7
+      [default = -0x8000000000000000];  // kint64min
+
+  // The maximum value of the sum of the counters. All counters increase button
+  // will be disabled if sum >= max_counters_sum.
+  optional int64 max_counters_sum = 8
+      [default = 0x7FFFFFFFFFFFFFFF];  // kint64max
+}
+
+// An input that allows the user to choose one or multiple options. This input
+// is considered valid if the number of selected choices is bigger or equal than
+// |min_choices|.
+message SelectionInputProto {
+  message Choice {
+    // The label of this choice.
+    optional string label = 1;
+
+    // Whether this choice is selected by default. If |allow_multiple| is false,
+    // then maximum 1 Choice can have this set to true, otherwise the associated
+    // FormAction will fail.
+    optional bool selected = 2 [default = false];
+  }
+
+  message Result {
+    // Stores whether each choice was selected or not, such that |selected[i]|
+    // is true if |choices[i]| was selected.
+    repeated bool selected = 1;
+  }
+
+  // An optional label shown above the different choices.
+  optional string label = 1;
+
+  // The choices to display.
+  repeated Choice choices = 2;
+
+  // Whether the user will be allowed to select multiple choices. If false, each
+  // choice will be displayed with a radio button. Otherwise, it will be
+  // displayed with checkboxes.
+  optional bool allow_multiple = 3 [default = false];
+
+  // The minimum number of choices that should be selected to consider this
+  // input valid.
+  optional int32 min_selected_choices = 4 [default = 1];
 }

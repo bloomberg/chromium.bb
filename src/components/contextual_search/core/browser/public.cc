@@ -7,8 +7,14 @@
 namespace contextual_search {
 
 const char kContextualSearchFieldTrialName[] = "ContextualSearch";
-const char kContextualCardsVersionParamName[] = "contextual_cards_version";
 
+// Longpress Resolve variations:
+const char kLongpressResolveParamName[] = "longpress_resolve_variation";
+const char kLongpressResolveHideOnScroll[] = "1";
+const char kLongpressResolvePrivacyAggressive[] = "2";
+
+// Contextual Cards variations and integration Api settings.
+const char kContextualCardsVersionParamName[] = "contextual_cards_version";
 // The version of the Contextual Cards API that we want to invoke.
 const int kContextualCardsEntityIntegration = 1;
 const int kContextualCardsQuickActionsIntegration = 2;

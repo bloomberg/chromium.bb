@@ -32,8 +32,8 @@
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider_client.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_application_cache_host.h"
 #include "third_party/blink/public/platform/web_media_player.h"
+#include "third_party/blink/public/web/web_application_cache_host.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/forms/color_chooser.h"
@@ -69,6 +69,7 @@ ColorChooser* EmptyChromeClient::OpenColorChooser(LocalFrame*,
 }
 
 DateTimeChooser* EmptyChromeClient::OpenDateTimeChooser(
+    LocalFrame* frame,
     DateTimeChooserClient*,
     const DateTimeChooserParameters&) {
   return nullptr;
@@ -153,8 +154,10 @@ LocalFrame* EmptyLocalFrameClient::CreateFrame(const AtomicString&,
 }
 
 std::pair<RemoteFrame*, base::UnguessableToken>
-EmptyLocalFrameClient::CreatePortal(HTMLPortalElement*,
-                                    mojom::blink::PortalAssociatedRequest) {
+EmptyLocalFrameClient::CreatePortal(
+    HTMLPortalElement*,
+    mojom::blink::PortalAssociatedRequest,
+    mojom::blink::PortalClientAssociatedPtrInfo) {
   return std::pair<RemoteFrame*, base::UnguessableToken>(
       nullptr, base::UnguessableToken());
 }

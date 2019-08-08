@@ -559,10 +559,14 @@ dictionary Preferences {
   boolean searchSuggestEnabled;
   boolean use24hourClock;
   DOMString timezone;
+  boolean arcEnabled;
+  boolean arcRemovableMediaAccessEnabled;
 };
 
 dictionary PreferencesChange {
   boolean? cellularDisabled;
+  boolean? arcEnabled;
+  boolean? arcRemovableMediaAccessEnabled;
 };
 
 dictionary SearchParams {
@@ -671,6 +675,21 @@ dictionary CrostiniEvent {
 
   // Paths that have been shared or unshared.
   [instanceOf=Entry] object[] entries;
+};
+
+// Represents an Android app (activity).
+dictionary AndroidApp {
+  // Name of the app to be shown to the user (e.g. Photos).
+  DOMString name;
+
+  // Package name (e.g. com.google.android.apps.photos).
+  DOMString packageName;
+
+  // Activity name (e.g. .PhotosPickerActivity).
+  DOMString activityName;
+
+  // App icon.
+  IconSet? iconSet;
 };
 
 // Callback that does not take arguments.
@@ -803,6 +822,9 @@ callback DetectCharacterEncodingCallback = void(DOMString result);
 // |thumbnailDataUrl| A data URL for the thumbnail as a PNG; |thumbnailDataUrl|
 // is empty if no thumbnail was available.
 callback GetThumbnailCallback = void(DOMString thumbnailDataUrl);
+
+// |apps| List of Android picker apps.
+callback GetAndroidPickerAppsCallback = void(AndroidApp[] apps);
 
 interface Functions {
   // Logout the current user for navigating to the re-authentication screen for
@@ -1012,6 +1034,11 @@ interface Functions {
   // |changeInfo|
   static void setPreferences(PreferencesChange changeInfo);
 
+  // Sets the flag for remembering if the toast UI for ARC storage
+  // has already been shown.
+  // |callback| Completion callback with the original value of the flag.
+  static void setArcStorageToastShownFlag(BooleanCallback callback);
+
   // Performs drive content search.
   // |searchParams|
   // |callback|
@@ -1215,6 +1242,14 @@ interface Functions {
   // Returns an empty string if failed.
   static DOMString detectCharacterEncoding(DOMString bytes,
     DetectCharacterEncodingCallback callback);
+
+  // Returns a list of Android picker apps to be shown in file selector.
+  static void getAndroidPickerApps(DOMString[] extensions,
+                                   GetAndroidPickerAppsCallback callback);
+
+  // Called when the user selects an Android picker app in file selector.
+  static void selectAndroidPickerApp(AndroidApp androidApp,
+                                     SimpleCallback callback);
 };
 
 interface Events {

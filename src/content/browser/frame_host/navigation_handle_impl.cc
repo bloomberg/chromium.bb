@@ -59,6 +59,9 @@ int64_t CreateUniqueHandleID() {
 // UMA_HISTOGRAM_MEDIUM_TIMES, but a custom kMinTime is used for high fidelity
 // near the low end of measured values.
 //
+// TODO(zetamoo): This is duplicated in navigation_request. Never update one
+// without the other. And remove this one.
+//
 // TODO(csharrison,nasko): This macro is incorrect for subframe navigations,
 // which will only have subframe-specific transition types. This means that all
 // subframes currently are tagged as NewNavigations.
@@ -121,23 +124,15 @@ void LogIsSameProcess(ui::PageTransition transition, bool is_same_process) {
 
 NavigationHandleImpl::NavigationHandleImpl(
     NavigationRequest* navigation_request,
-    const std::vector<GURL>& redirect_chain,
     int pending_nav_entry_id,
-    net::HttpRequestHeaders request_headers,
-    const Referrer& sanitized_referrer)
+    net::HttpRequestHeaders request_headers)
     : navigation_request_(navigation_request),
       net_error_code_(net::OK),
-      was_redirected_(false),
-      did_replace_entry_(false),
-      should_update_history_(false),
-      subframe_entry_committed_(false),
       request_headers_(std::move(request_headers)),
       pending_nav_entry_id_(pending_nav_entry_id),
       navigation_id_(CreateUniqueHandleID()),
-      redirect_chain_(redirect_chain),
       reload_type_(ReloadType::NONE),
       restore_type_(RestoreType::NONE),
-      navigation_type_(NAVIGATION_TYPE_UNKNOWN),
       is_same_process_(true),
       weak_factory_(this) {
   const GURL& url = navigation_request_->common_params().url;
@@ -147,20 +142,6 @@ NavigationHandleImpl::NavigationHandleImpl(
                            url.possibly_invalid_spec());
   DCHECK(!navigation_request_->common_params().navigation_start.is_null());
   DCHECK(!IsRendererDebugURL(url));
-
-  if (redirect_chain_.empty())
-    redirect_chain_.push_back(url);
-
-  // Mirrors the logic in RenderFrameImpl::SendDidCommitProvisionalLoad.
-  if (navigation_request_->common_params().transition &
-      ui::PAGE_TRANSITION_CLIENT_REDIRECT) {
-    // If the page contained a client redirect (meta refresh,
-    // document.location), set the referrer appropriately.
-    sanitized_referrer_ =
-        Referrer(redirect_chain_[0], sanitized_referrer.policy);
-  } else {
-    sanitized_referrer_ = sanitized_referrer;
-  }
 
   // Try to match this with a pending NavigationEntry if possible.  Note that
   // the NavigationController itself may be gone if this is a navigation inside
@@ -185,10 +166,6 @@ NavigationHandleImpl::NavigationHandleImpl(
     }
   }
 
-#if defined(OS_ANDROID)
-  navigation_handle_proxy_ = std::make_unique<NavigationHandleProxy>(this);
-#endif
-
   if (IsInMainFrame()) {
     TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(
         "navigation", "Navigation StartToCommit", this,
@@ -203,9 +180,6 @@ NavigationHandleImpl::NavigationHandleImpl(
 }
 
 NavigationHandleImpl::~NavigationHandleImpl() {
-#if defined(OS_ANDROID)
-  navigation_handle_proxy_->DidFinish();
-#endif
 
   GetDelegate()->DidFinishNavigation(this);
 
@@ -250,11 +224,11 @@ bool NavigationHandleImpl::IsRendererInitiated() {
 }
 
 bool NavigationHandleImpl::WasServerRedirect() {
-  return was_redirected_;
+  return navigation_request_->was_redirected();
 }
 
 const std::vector<GURL>& NavigationHandleImpl::GetRedirectChain() {
-  return redirect_chain_;
+  return navigation_request_->redirect_chain();
 }
 
 int NavigationHandleImpl::GetFrameTreeNodeId() {
@@ -286,7 +260,7 @@ NavigationHandleImpl::GetResourceRequestBody() {
 }
 
 const Referrer& NavigationHandleImpl::GetReferrer() {
-  return sanitized_referrer_;
+  return navigation_request_->sanitized_referrer();
 }
 
 bool NavigationHandleImpl::HasUserGesture() {
@@ -297,7 +271,7 @@ ui::PageTransition NavigationHandleImpl::GetPageTransition() {
   return navigation_request_->common_params().transition;
 }
 
-const NavigationUIData* NavigationHandleImpl::GetNavigationUIData() {
+NavigationUIData* NavigationHandleImpl::GetNavigationUIData() {
   return navigation_request_->navigation_ui_data();
 }
 
@@ -370,28 +344,19 @@ bool NavigationHandleImpl::IsErrorPage() {
 }
 
 bool NavigationHandleImpl::HasSubframeNavigationEntryCommitted() {
-  DCHECK(!IsInMainFrame());
-  DCHECK(state() == NavigationRequest::DID_COMMIT ||
-         state() == NavigationRequest::DID_COMMIT_ERROR_PAGE);
-  return subframe_entry_committed_;
+  return navigation_request_->subframe_entry_committed();
 }
 
 bool NavigationHandleImpl::DidReplaceEntry() {
-  DCHECK(state() == NavigationRequest::DID_COMMIT ||
-         state() == NavigationRequest::DID_COMMIT_ERROR_PAGE);
-  return did_replace_entry_;
+  return navigation_request_->did_replace_entry();
 }
 
 bool NavigationHandleImpl::ShouldUpdateHistory() {
-  DCHECK(state() == NavigationRequest::DID_COMMIT ||
-         state() == NavigationRequest::DID_COMMIT_ERROR_PAGE);
-  return should_update_history_;
+  return navigation_request_->should_update_history();
 }
 
 const GURL& NavigationHandleImpl::GetPreviousURL() {
-  DCHECK(state() == NavigationRequest::DID_COMMIT ||
-         state() == NavigationRequest::DID_COMMIT_ERROR_PAGE);
-  return previous_url_;
+  return navigation_request_->previous_url();
 }
 
 net::IPEndPoint NavigationHandleImpl::GetSocketAddress() {
@@ -409,13 +374,6 @@ void NavigationHandleImpl::RegisterThrottleForTesting(
   navigation_request_->RegisterThrottleForTesting(
       std::move(navigation_throttle));
 }
-
-#if defined(OS_ANDROID)
-base::android::ScopedJavaGlobalRef<jobject>
-NavigationHandleImpl::java_navigation_handle() {
-  return navigation_handle_proxy_->java_navigation_handle();
-}
-#endif
 
 bool NavigationHandleImpl::IsDeferredForTesting() {
   return navigation_request_->IsDeferredForTesting();
@@ -469,6 +427,10 @@ bool NavigationHandleImpl::IsDownload() {
 
 bool NavigationHandleImpl::IsFormSubmission() {
   return navigation_request_->begin_params()->is_form_submission;
+}
+
+bool NavigationHandleImpl::WasInitiatedByLinkClick() {
+  return navigation_request_->begin_params()->was_initiated_by_link_click;
 }
 
 const std::string& NavigationHandleImpl::GetHrefTranslate() {
@@ -529,36 +491,6 @@ NavigationHandleImpl::TakeAppCacheHandle() {
   return std::move(appcache_handle_);
 }
 
-void NavigationHandleImpl::UpdateStateFollowingRedirect(
-    const GURL& new_referrer_url,
-    ThrottleChecksFinishedCallback callback) {
-  // The navigation should not redirect to a "renderer debug" url. It should be
-  // blocked in NavigationRequest::OnRequestRedirected or in
-  // ResourceLoader::OnReceivedRedirect.
-  // Note: the call to GetURL below returns the post-redirect URL.
-  // See https://crbug.com/728398.
-  CHECK(!IsRendererDebugURL(GetURL()));
-
-  // Update the navigation parameters.
-  if (!(GetPageTransition() & ui::PAGE_TRANSITION_CLIENT_REDIRECT)) {
-    sanitized_referrer_.url = new_referrer_url;
-    sanitized_referrer_ =
-        Referrer::SanitizeForRequest(GetURL(), sanitized_referrer_);
-  }
-
-  was_redirected_ = true;
-  redirect_chain_.push_back(GetURL());
-
-  navigation_request_->set_handle_state(
-      NavigationRequest::PROCESSING_WILL_REDIRECT_REQUEST);
-
-#if defined(OS_ANDROID)
-  navigation_handle_proxy_->DidRedirect();
-#endif
-
-  complete_callback_ = std::move(callback);
-}
-
 void NavigationHandleImpl::ReadyToCommitNavigation(bool is_error) {
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
                                "ReadyToCommitNavigation");
@@ -613,99 +545,6 @@ void NavigationHandleImpl::ReadyToCommitNavigation(bool is_error) {
 
   if (!IsSameDocument())
     GetDelegate()->ReadyToCommitNavigation(this);
-}
-
-void NavigationHandleImpl::DidCommitNavigation(
-    const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
-    bool navigation_entry_committed,
-    bool did_replace_entry,
-    const GURL& previous_url,
-    NavigationType navigation_type) {
-  CHECK_EQ(GetURL(), params.url);
-
-  did_replace_entry_ = did_replace_entry;
-  should_update_history_ = params.should_update_history;
-  previous_url_ = previous_url;
-  base_url_ = params.base_url;
-  navigation_type_ = navigation_type;
-
-  // If an error page reloads, net_error_code might be 200 but we still want to
-  // count it as an error page.
-  if (params.base_url.spec() == kUnreachableWebDataURL ||
-      net_error_code_ != net::OK) {
-    TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
-                                 "DidCommitNavigation: error page");
-    navigation_request_->set_handle_state(
-        NavigationRequest::DID_COMMIT_ERROR_PAGE);
-  } else {
-    TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
-                                 "DidCommitNavigation");
-    navigation_request_->set_handle_state(NavigationRequest::DID_COMMIT);
-  }
-
-  StopCommitTimeout();
-
-  // Record metrics for the time it took to commit the navigation if it was to
-  // another document without error.
-  if (!IsSameDocument() && !IsErrorPage()) {
-    base::TimeTicks now = base::TimeTicks::Now();
-    base::TimeDelta delta =
-        now - navigation_request_->common_params().navigation_start;
-    ui::PageTransition transition = GetPageTransition();
-    base::Optional<bool> is_background =
-        GetRenderFrameHost()->GetProcess()->IsProcessBackgrounded();
-    LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit", transition, is_background,
-                                    delta);
-    if (IsInMainFrame()) {
-      LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.MainFrame", transition,
-                                      is_background, delta);
-    } else {
-      LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.Subframe", transition,
-                                      is_background, delta);
-    }
-    if (is_same_process_) {
-      LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.SameProcess", transition,
-                                      is_background, delta);
-      if (IsInMainFrame()) {
-        LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.SameProcess.MainFrame",
-                                        transition, is_background, delta);
-      } else {
-        LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.SameProcess.Subframe",
-                                        transition, is_background, delta);
-      }
-    } else {
-      LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.CrossProcess", transition,
-                                      is_background, delta);
-      if (IsInMainFrame()) {
-        LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.CrossProcess.MainFrame",
-                                        transition, is_background, delta);
-      } else {
-        LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.CrossProcess.Subframe",
-                                        transition, is_background, delta);
-      }
-    }
-
-    if (!ready_to_commit_time_.is_null()) {
-      LOG_NAVIGATION_TIMING_HISTOGRAM("ReadyToCommitUntilCommit2",
-                                      GetPageTransition(), is_background,
-                                      now - ready_to_commit_time_);
-    }
-  }
-
-  DCHECK(!IsInMainFrame() || navigation_entry_committed)
-      << "Only subframe navigations can get here without changing the "
-      << "NavigationEntry";
-  subframe_entry_committed_ = navigation_entry_committed;
-
-  // For successful navigations, ensure the frame owner element is no longer
-  // collapsed as a result of a prior navigation.
-  if (!IsErrorPage() && !frame_tree_node()->IsMainFrame()) {
-    // The last committed load in collapsed frames will be an error page with
-    // |kUnreachableWebDataURL|. Same-document navigation should not be
-    // possible.
-    DCHECK(!IsSameDocument() || !frame_tree_node()->is_collapsed());
-    frame_tree_node()->SetCollapsed(false);
-  }
 }
 
 void NavigationHandleImpl::RunCompleteCallback(

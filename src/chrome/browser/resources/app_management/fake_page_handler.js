@@ -79,6 +79,7 @@ cr.define('app_management', function() {
         version: '5.1',
         size: '9.0MB',
         isPinned: apps.mojom.OptionalBool.kFalse,
+        installSource: apps.mojom.InstallSource.kUser,
         permissions: {},
       };
 

@@ -8,11 +8,9 @@
 
 #include "base/process/process_handle.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
-#include "chrome/browser/performance_manager/graph/graph.h"
+#include "chrome/browser/performance_manager/graph/graph_impl.h"
 #include "chrome/browser/performance_manager/graph/graph_test_harness.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
-#include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
-#include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -22,7 +20,7 @@ namespace {
 
 class GraphObserverTest : public GraphTestHarness {};
 
-class TestGraphObserver : public GraphObserver {
+class TestGraphObserver : public GraphObserverDefaultImpl {
  public:
   TestGraphObserver() {}
   ~TestGraphObserver() override {}
@@ -36,8 +34,7 @@ class TestGraphObserver : public GraphObserver {
   void OnRegistered() override { ++registered_; }
   void OnUnregistered() override { ++unregistered_; }
   bool ShouldObserve(const NodeBase* node) override {
-    return node->id().type ==
-           resource_coordinator::CoordinationUnitType::kFrame;
+    return node->type() == FrameNodeImpl::Type();
   }
   void OnNodeAdded(NodeBase* node) override { ++node_created_count_; }
   void OnBeforeNodeRemoved(NodeBase* node) override { ++node_destroyed_count_; }
@@ -62,9 +59,9 @@ TEST_F(GraphObserverTest, CallbacksInvoked) {
 
   {
     auto process_node = CreateNode<ProcessNodeImpl>();
-    auto page_node = CreateNode<PageNodeImpl>(nullptr);
-    auto root_frame_node = CreateNode<FrameNodeImpl>(
-        process_node.get(), page_node.get(), nullptr, 0);
+    auto page_node = CreateNode<PageNodeImpl>();
+    auto root_frame_node =
+        CreateNode<FrameNodeImpl>(process_node.get(), page_node.get());
     auto frame_node = CreateNode<FrameNodeImpl>(
         process_node.get(), page_node.get(), root_frame_node.get(), 1);
 

@@ -17,6 +17,7 @@
 #include "net/base/auth.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/multi_log_ct_verifier.h"
@@ -107,7 +108,8 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
                                       HostPortPair("host", 80),
                                       /*is_trusted_proxy=*/false,
                                       /*tunnel=*/true,
-                                      TRAFFIC_ANNOTATION_FOR_TESTS)),
+                                      TRAFFIC_ANNOTATION_FOR_TESTS,
+                                      NetworkIsolationKey())),
         common_connect_job_params_(session_->CreateCommonConnectJobParams()) {
     ssl_config_service_->GetSSLConfig(&ssl_config_);
 

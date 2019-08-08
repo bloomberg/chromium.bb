@@ -29,6 +29,7 @@
 #include "net/cert/cert_status_flags.h"
 #include "net/http/http_util.h"
 #include "net/url_request/redirect_util.h"
+#include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
@@ -44,27 +45,6 @@ constexpr char kPrefetchLoadResultHistogram[] =
 constexpr char kContentTypeOptionsHeaderName[] = "x-content-type-options";
 constexpr char kNoSniffHeaderValue[] = "nosniff";
 
-net::RedirectInfo CreateRedirectInfo(
-    const GURL& new_url,
-    const network::ResourceRequest& outer_request,
-    const network::ResourceResponseHead& outer_response,
-    bool is_fallback_redirect) {
-  // https://wicg.github.io/webpackage/loading.html#mp-http-fetch
-  // Step 3. Set actualResponse's status to 303. [spec text]
-  return net::RedirectInfo::ComputeRedirectInfo(
-      "GET", outer_request.url, outer_request.site_for_cookies,
-      outer_request.top_frame_origin,
-      outer_request.update_first_party_url_on_redirect
-          ? net::URLRequest::FirstPartyURLPolicy::
-                UPDATE_FIRST_PARTY_URL_ON_REDIRECT
-          : net::URLRequest::FirstPartyURLPolicy::NEVER_CHANGE_FIRST_PARTY_URL,
-      outer_request.referrer_policy, outer_request.referrer.spec(), 303,
-      new_url,
-      net::RedirectUtil::GetReferrerPolicyHeader(outer_response.headers.get()),
-      false /* insecure_scheme_was_upgraded */, true /* copy_fragment */,
-      is_fallback_redirect);
-}
-
 bool HasNoSniffHeader(const network::ResourceResponseHead& response) {
   std::string content_type_options;
   response.headers->EnumerateHeader(nullptr, kContentTypeOptionsHeaderName,
@@ -72,64 +52,9 @@ bool HasNoSniffHeader(const network::ResourceResponseHead& response) {
   return base::LowerCaseEqualsASCII(content_type_options, kNoSniffHeaderValue);
 }
 
-// The buffer size of DataPipe which is used to send the body to the renderer.
-// Use the same size as regular resource loading.
-constexpr static int kDefaultBufferSize = 512 * 1024;
-
 SignedExchangeHandlerFactory* g_signed_exchange_factory_for_testing_ = nullptr;
 
 }  // namespace
-
-class SignedExchangeLoader::OuterResponseInfo {
- public:
-  explicit OuterResponseInfo(const network::ResourceResponseHead& response)
-      : request_start_(response.request_start),
-        response_start_(response.response_start),
-        request_time_(response.request_time),
-        response_time_(response.response_time),
-        load_timing_(response.load_timing) {
-    if (base::FeatureList::IsEnabled(
-            features::kSignedExchangeSubresourcePrefetch) &&
-        response.headers) {
-      response.headers->GetNormalizedHeader("link", &link_header_);
-    }
-  }
-
-  network::ResourceResponseHead CreateRedirectResponseHead() const {
-    network::ResourceResponseHead response_head;
-    response_head.encoded_data_length = 0;
-    std::string buf;
-    if (link_header_.empty()) {
-      buf = base::StringPrintf("HTTP/1.1 %d %s\r\n", 303, "See Other");
-    } else {
-      DCHECK(base::FeatureList::IsEnabled(
-          features::kSignedExchangeSubresourcePrefetch));
-      buf = base::StringPrintf(
-          "HTTP/1.1 %d %s\r\n"
-          "link: %s\r\n",
-          303, "See Other", link_header_.c_str());
-    }
-    response_head.headers = new net::HttpResponseHeaders(
-        net::HttpUtil::AssembleRawHeaders(buf.c_str(), buf.size()));
-    response_head.encoded_data_length = 0;
-    response_head.request_start = request_start_;
-    response_head.response_start = response_start_;
-    response_head.request_time = request_time_;
-    response_head.response_time = response_time_;
-    response_head.load_timing = load_timing_;
-    return response_head;
-  }
-
- private:
-  const base::TimeTicks request_start_;
-  const base::TimeTicks response_start_;
-  const base::Time request_time_;
-  const base::Time response_time_;
-  const net::LoadTimingInfo load_timing_;
-  std::string link_header_;
-
-  DISALLOW_COPY_AND_ASSIGN(OuterResponseInfo);
-};
 
 SignedExchangeLoader::SignedExchangeLoader(
     const network::ResourceRequest& outer_request,
@@ -146,7 +71,6 @@ SignedExchangeLoader::SignedExchangeLoader(
     scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder,
     const std::string& accept_langs)
     : outer_request_(outer_request),
-      outer_response_info_(std::make_unique<OuterResponseInfo>(outer_response)),
       outer_response_(outer_response),
       forwarding_client_(std::move(forwarding_client)),
       url_loader_client_binding_(this),
@@ -217,8 +141,7 @@ void SignedExchangeLoader::OnUploadProgress(
   NOTREACHED();
 }
 
-void SignedExchangeLoader::OnReceiveCachedMetadata(
-    const std::vector<uint8_t>& data) {
+void SignedExchangeLoader::OnReceiveCachedMetadata(mojo_base::BigBuffer data) {
   // Curerntly CachedMetadata for Signed Exchange is not supported.
   NOTREACHED();
 }
@@ -295,6 +218,13 @@ void SignedExchangeLoader::ConnectToClient(
                       client.PassInterface());
 }
 
+base::Optional<net::SHA256HashValue>
+SignedExchangeLoader::ComputeHeaderIntegrity() const {
+  if (!signed_exchange_handler_)
+    return base::nullopt;
+  return signed_exchange_handler_->ComputeHeaderIntegrity();
+}
+
 void SignedExchangeLoader::OnHTTPExchangeFound(
     SignedExchangeLoadResult result,
     net::Error error,
@@ -316,22 +246,24 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
     // Make a fallback redirect to |request_url|.
     DCHECK(!fallback_url_);
     fallback_url_ = request_url;
-    DCHECK(outer_response_info_);
     forwarding_client_->OnReceiveRedirect(
-        CreateRedirectInfo(request_url, outer_request_, outer_response_,
-                           true /* is_fallback_redirect */),
-        std::move(outer_response_info_)->CreateRedirectResponseHead());
+        signed_exchange_utils::CreateRedirectInfo(
+            request_url, outer_request_, outer_response_,
+            true /* is_fallback_redirect */),
+        signed_exchange_utils::CreateRedirectResponseHead(
+            outer_response_, true /* is_fallback_redirect */));
     forwarding_client_.reset();
     return;
   }
   DCHECK_EQ(result, SignedExchangeLoadResult::kSuccess);
   inner_request_url_ = request_url;
 
-  DCHECK(outer_response_info_);
   forwarding_client_->OnReceiveRedirect(
-      CreateRedirectInfo(request_url, outer_request_, outer_response_,
-                         false /* is_fallback_redirect */),
-      std::move(outer_response_info_)->CreateRedirectResponseHead());
+      signed_exchange_utils::CreateRedirectInfo(
+          request_url, outer_request_, outer_response_,
+          false /* is_fallback_redirect */),
+      signed_exchange_utils::CreateRedirectResponseHead(
+          outer_response_, false /* is_fallback_redirect */));
   forwarding_client_.reset();
 
   const base::Optional<net::SSLInfo>& ssl_info = resource_response.ssl_info;
@@ -357,12 +289,22 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
   // Currently we always assume that we have body.
   // TODO(https://crbug.com/80374): Add error handling and bail out
   // earlier if there's an error.
-
-  mojo::DataPipe data_pipe(kDefaultBufferSize);
-  pending_body_consumer_ = std::move(data_pipe.consumer_handle);
-
+  mojo::ScopedDataPipeProducerHandle producer_handle;
+  mojo::ScopedDataPipeConsumerHandle consumer_handle;
+  MojoCreateDataPipeOptions options;
+  options.struct_size = sizeof(MojoCreateDataPipeOptions);
+  options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
+  options.element_num_bytes = 1;
+  options.capacity_num_bytes = network::kDataPipeDefaultAllocationSize;
+  if (mojo::CreateDataPipe(&options, &producer_handle, &consumer_handle) !=
+      MOJO_RESULT_OK) {
+    forwarding_client_->OnComplete(
+        network::URLLoaderCompletionStatus(net::ERR_INSUFFICIENT_RESOURCES));
+    return;
+  }
+  pending_body_consumer_ = std::move(consumer_handle);
   body_data_pipe_adapter_ = std::make_unique<SourceStreamToDataPipe>(
-      std::move(payload_stream), std::move(data_pipe.producer_handle),
+      std::move(payload_stream), std::move(producer_handle),
       base::BindOnce(&SignedExchangeLoader::FinishReadingBody,
                      base::Unretained(this)));
 

@@ -10,6 +10,7 @@ source_set("manifest") {
 
   deps = [
     "//base",
+    "//chrome:strings",
     "//chrome/services/printing/public/mojom",
     "//services/service_manager/public/cpp",
   ]

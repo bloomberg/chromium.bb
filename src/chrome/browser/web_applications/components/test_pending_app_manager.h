@@ -61,6 +61,7 @@ class TestPendingAppManager : public PendingAppManager {
   bool HasAppIdWithInstallSource(
       const AppId& app_id,
       web_app::InstallSource install_source) const override;
+  void Shutdown() override {}
 
  private:
   void DoInstall(InstallOptions install_options, OnceInstallCallback callback);
@@ -72,6 +73,8 @@ class TestPendingAppManager : public PendingAppManager {
 
   std::map<GURL, InstallSource> installed_apps_;
   InstallResultCode install_result_code_ = InstallResultCode::kSuccess;
+
+  base::WeakPtrFactory<TestPendingAppManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestPendingAppManager);
 };

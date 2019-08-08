@@ -8,7 +8,7 @@
 #ifndef TestEmptyTypeface_DEFINED
 #define TestEmptyTypeface_DEFINED
 
-#include "SkTypeface.h"
+#include "include/core/SkTypeface.h"
 
 class TestEmptyTypeface : public SkTypeface {
 public:
@@ -34,6 +34,8 @@ protected:
         sk_bzero(glyphs, count * sizeof(glyphs[0]));
     }
     int onCountGlyphs() const override { return 0; }
+    void getPostScriptGlyphNames(SkString*) const override {}
+    void getGlyphToUnicodeMap(SkUnichar*) const override {}
     int onGetUPEM() const override { return 0; }
     class EmptyLocalizedStrings : public SkTypeface::LocalizedStrings {
     public:

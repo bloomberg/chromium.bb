@@ -12,10 +12,10 @@
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_init.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_compositor.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
-#include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
@@ -42,14 +42,11 @@ class TestIntersectionObserverDelegate : public IntersectionObserverDelegate {
   int CallCount() const { return call_count_; }
   int EntryCount() const { return entries_.size(); }
   const IntersectionObserverEntry* LastEntry() const { return entries_.back(); }
-  FloatRect LastIntersectionRect() const {
+  PhysicalRect LastIntersectionRect() const {
     if (entries_.IsEmpty())
-      return FloatRect();
+      return PhysicalRect();
     const IntersectionGeometry& geometry = entries_.back()->GetGeometry();
-    return FloatRect(geometry.IntersectionRect().X(),
-                     geometry.IntersectionRect().Y(),
-                     geometry.IntersectionRect().Width(),
-                     geometry.IntersectionRect().Height());
+    return geometry.IntersectionRect();
   }
 
   void Trace(blink::Visitor* visitor) override {
@@ -410,7 +407,7 @@ TEST_F(IntersectionObserverTest, RootIntersectionWithForceZeroLayoutHeight) {
   test::RunPendingTasks();
   ASSERT_EQ(observer_delegate->CallCount(), 2);
   EXPECT_FALSE(observer_delegate->LastIntersectionRect().IsEmpty());
-  EXPECT_EQ(FloatRect(200, 400, 100, 100),
+  EXPECT_EQ(PhysicalRect(200, 400, 100, 100),
             observer_delegate->LastIntersectionRect());
 
   GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 1200),

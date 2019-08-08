@@ -113,10 +113,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterAndroid final
 
   // BluetoothAdapter:
   bool SetPoweredImpl(bool powered) override;
-  void AddDiscoverySession(
-      BluetoothDiscoveryFilter* discovery_filter,
-      const base::Closure& callback,
-      DiscoverySessionErrorCallback error_callback) override;
+  void StartScanWithFilter(
+      std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
+      DiscoverySessionResultCallback callback) override;
+  void UpdateFilter(std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
+                    DiscoverySessionResultCallback callback) override;
   void RemoveDiscoverySession(
       BluetoothDiscoveryFilter* discovery_filter,
       const base::Closure& callback,
@@ -134,7 +135,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterAndroid final
   base::android::ScopedJavaGlobalRef<jobject> j_adapter_;
 
  private:
-  size_t num_discovery_sessions_ = 0;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

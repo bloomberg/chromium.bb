@@ -21,6 +21,7 @@
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/frame_host/navigator_delegate.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/loader/prefetched_signed_exchange_cache.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
@@ -107,18 +108,20 @@ NavigationController* NavigatorImpl::GetController() {
 
 void NavigatorImpl::DidFailProvisionalLoadWithError(
     RenderFrameHostImpl* render_frame_host,
-    const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params) {
-  VLOG(1) << "Failed Provisional Load: " << params.url.possibly_invalid_spec()
-          << ", error_code: " << params.error_code
-          << ", error_description: " << params.error_description
-          << ", showing_repost_interstitial: "
-          << params.showing_repost_interstitial
+    const GURL& url,
+    int error_code,
+    const base::string16& error_description,
+    bool showing_repost_interstitial) {
+  VLOG(1) << "Failed Provisional Load: " << url.possibly_invalid_spec()
+          << ", error_code: " << error_code
+          << ", error_description: " << error_description
+          << ", showing_repost_interstitial: " << showing_repost_interstitial
           << ", frame_id: " << render_frame_host->GetRoutingID();
-  GURL validated_url(params.url);
+  GURL validated_url(url);
   RenderProcessHost* render_process_host = render_frame_host->GetProcess();
   render_process_host->FilterURL(false, &validated_url);
 
-  if (net::ERR_ABORTED == params.error_code) {
+  if (net::ERR_ABORTED == error_code) {
     // EVIL HACK ALERT! Ignore failed loads when we're showing interstitials.
     // This means that the interstitial won't be torn down properly, which is
     // bad. But if we have an interstitial, go back to another tab type, and
@@ -168,9 +171,10 @@ void NavigatorImpl::DidFailLoadWithError(
 
 bool NavigatorImpl::StartHistoryNavigationInNewSubframe(
     RenderFrameHostImpl* render_frame_host,
-    const GURL& default_url) {
-  return controller_->StartHistoryNavigationInNewSubframe(render_frame_host,
-                                                          default_url);
+    const GURL& default_url,
+    mojom::NavigationClientAssociatedPtrInfo* navigation_client) {
+  return controller_->StartHistoryNavigationInNewSubframe(
+      render_frame_host, default_url, navigation_client);
 }
 
 void NavigatorImpl::DidNavigate(
@@ -280,9 +284,9 @@ void NavigatorImpl::DidNavigate(
   if (details.type != NAVIGATION_TYPE_NAV_IGNORE && delegate_) {
     DCHECK_EQ(!render_frame_host->GetParent(),
               did_navigate ? details.is_main_frame : false);
-    navigation_request->navigation_handle()->DidCommitNavigation(
-        params, did_navigate, details.did_replace_entry, details.previous_url,
-        details.type);
+    navigation_request->DidCommitNavigation(params, did_navigate,
+                                            details.did_replace_entry,
+                                            details.previous_url, details.type);
     navigation_request.reset();
   }
 
@@ -336,7 +340,7 @@ void NavigatorImpl::Navigate(std::unique_ptr<NavigationRequest> request,
   bool should_dispatch_beforeunload =
       !FrameMsg_Navigate_Type::IsSameDocument(
           request->common_params().navigation_type) &&
-      !request->commit_params().is_history_navigation_in_new_child &&
+      !request->common_params().is_history_navigation_in_new_child_frame &&
       frame_tree_node->current_frame_host()->ShouldDispatchBeforeUnload(
           false /* check_subframes_only */);
 
@@ -460,7 +464,7 @@ void NavigatorImpl::RequestOpenURL(
 
   GetContentClient()->browser()->OverrideNavigationParams(
       current_site_instance, &params.transition, &params.is_renderer_initiated,
-      &params.referrer);
+      &params.referrer, &params.initiator_origin);
 
   if (delegate_)
     delegate_->OpenURL(params);
@@ -519,12 +523,13 @@ void NavigatorImpl::NavigateFromFrameProxy(
     is_renderer_initiated = false;
   }
 
+  base::Optional<url::Origin> final_initiator_origin = initiator_origin;
   GetContentClient()->browser()->OverrideNavigationParams(
       current_site_instance, &page_transition, &is_renderer_initiated,
-      &referrer_to_use);
+      &referrer_to_use, &final_initiator_origin);
 
   controller_->NavigateFromFrameProxy(
-      render_frame_host, url, initiator_origin, is_renderer_initiated,
+      render_frame_host, url, final_initiator_origin, is_renderer_initiated,
       source_site_instance, referrer_to_use, page_transition,
       should_replace_current_entry, download_policy, method, post_body,
       extra_headers, std::move(blob_url_loader_factory));
@@ -583,11 +588,24 @@ void NavigatorImpl::OnBeginNavigation(
     mojom::BeginNavigationParamsPtr begin_params,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
     mojom::NavigationClientAssociatedPtrInfo navigation_client,
-    blink::mojom::NavigationInitiatorPtr navigation_initiator) {
+    blink::mojom::NavigationInitiatorPtr navigation_initiator,
+    scoped_refptr<PrefetchedSignedExchangeCache>
+        prefetched_signed_exchange_cache) {
   // TODO(clamy): the url sent by the renderer should be validated with
   // FilterURL.
   // This is a renderer-initiated navigation.
   DCHECK(frame_tree_node);
+
+  if (common_params.is_history_navigation_in_new_child_frame) {
+    // Try to find a FrameNavigationEntry that matches this frame instead, based
+    // on the frame's unique name.  If this can't be found, fall back to the
+    // default path below.
+    if (frame_tree_node->navigator()->StartHistoryNavigationInNewSubframe(
+            frame_tree_node->current_frame_host(), common_params.url,
+            &navigation_client)) {
+      return;
+    }
+  }
 
   NavigationRequest* ongoing_navigation_request =
       frame_tree_node->navigation_request();
@@ -595,8 +613,9 @@ void NavigatorImpl::OnBeginNavigation(
   // Client redirects during the initial history navigation of a child frame
   // should take precedence over the history navigation (despite being renderer-
   // initiated).  See https://crbug.com/348447 and https://crbug.com/691168.
-  if (ongoing_navigation_request && ongoing_navigation_request->commit_params()
-                                        .is_history_navigation_in_new_child) {
+  if (ongoing_navigation_request &&
+      ongoing_navigation_request->common_params()
+          .is_history_navigation_in_new_child_frame) {
     // Preemptively clear this local pointer before deleting the request.
     ongoing_navigation_request = nullptr;
     frame_tree_node->ResetNavigationRequest(false, true);
@@ -647,7 +666,8 @@ void NavigatorImpl::OnBeginNavigation(
           std::move(begin_params), controller_->GetLastCommittedEntryIndex(),
           controller_->GetEntryCount(), override_user_agent,
           std::move(blob_url_loader_factory), std::move(navigation_client),
-          std::move(navigation_initiator)));
+          std::move(navigation_initiator),
+          std::move(prefetched_signed_exchange_cache)));
   NavigationRequest* navigation_request = frame_tree_node->navigation_request();
 
   // This frame has already run beforeunload before it sent this IPC.  See if

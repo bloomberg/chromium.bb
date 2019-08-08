@@ -189,10 +189,13 @@ std::unique_ptr<SkBitmap> ImageHelper::Job::CombineImages() {
   int icon_write_offset = icon_padding_pixel_size / 2;
 
   SkBitmap composite_bitmap;
-  SkImageInfo image_info = bitmaps_[0].info().makeWH(pixel_size_, pixel_size_);
+  SkImageInfo image_info = bitmaps_[0]
+                               .info()
+                               .makeWH(pixel_size_, pixel_size_)
+                               .makeAlphaType(kPremul_SkAlphaType);
+
   composite_bitmap.setInfo(image_info);
   composite_bitmap.allocPixels();
-  composite_bitmap.eraseColor(gfx::kGoogleGrey100);  // Set background to grey.
 
   int icon_size = pixel_size_ / 2;
 

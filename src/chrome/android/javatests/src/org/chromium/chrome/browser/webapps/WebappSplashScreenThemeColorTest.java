@@ -22,7 +22,7 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ShortcutHelper;
-import org.chromium.chrome.browser.metrics.SameActivityWebappUmaCache;
+import org.chromium.chrome.browser.metrics.WebappSplashUmaCache;
 import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -99,7 +99,7 @@ public class WebappSplashScreenThemeColorTest {
     public void testUmaThemeColorCustom() {
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
-                        SameActivityWebappUmaCache.HISTOGRAM_SPLASHSCREEN_THEMECOLOR,
-                        SameActivityWebappUmaCache.SplashColorStatus.CUSTOM));
+                        WebappSplashUmaCache.HISTOGRAM_SPLASHSCREEN_THEMECOLOR,
+                        WebappSplashUmaCache.SplashColorStatus.CUSTOM));
     }
 }

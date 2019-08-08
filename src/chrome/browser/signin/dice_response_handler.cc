@@ -176,8 +176,8 @@ DiceResponseHandler::DiceTokenFetcher::DiceTokenFetcher(
   DCHECK(dice_response_handler_);
   account_reconcilor_lock_ =
       std::make_unique<AccountReconcilor::Lock>(account_reconcilor);
-  gaia_auth_fetcher_ = signin_client->CreateGaiaAuthFetcher(
-      this, gaia::GaiaSource::kChrome, signin_client->GetURLLoaderFactory());
+  gaia_auth_fetcher_ =
+      signin_client->CreateGaiaAuthFetcher(this, gaia::GaiaSource::kChrome);
   VLOG(1) << "Start fetching token for account: " << email;
   gaia_auth_fetcher_->StartAuthCodeForOAuth2TokenExchange(authorization_code_);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(

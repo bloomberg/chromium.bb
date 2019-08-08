@@ -21,7 +21,7 @@
 
 namespace chromeos {
 
-WizardInProcessBrowserTest::WizardInProcessBrowserTest(OobeScreen screen)
+WizardInProcessBrowserTest::WizardInProcessBrowserTest(OobeScreenId screen)
     : screen_(screen) {}
 
 void WizardInProcessBrowserTest::SetUp() {

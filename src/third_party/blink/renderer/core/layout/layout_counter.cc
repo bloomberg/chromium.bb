@@ -37,7 +37,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 #include <stdio.h>
 #endif
 
@@ -715,7 +715,7 @@ void LayoutCounter::LayoutObjectStyleChanged(LayoutObject& layout_object,
 
 }  // namespace blink
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 
 void showCounterLayoutObjectTree(const blink::LayoutObject* layout_object,
                                  const char* counter_name) {
@@ -743,4 +743,4 @@ void showCounterLayoutObjectTree(const blink::LayoutObject* layout_object,
   fflush(stderr);
 }
 
-#endif  // NDEBUG
+#endif  // DCHECK_IS_ON()

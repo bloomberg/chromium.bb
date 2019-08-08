@@ -11,14 +11,15 @@ import java.net.URL;
 /**
  * An interface for network communication between the Contextual Search client and server.
  */
-public interface ContextualSearchNetworkCommunicator {
-
+interface ContextualSearchNetworkCommunicator {
     /**
      * Starts a Search Term Resolution request.
      * When the response comes back {@link #handleSearchTermResolutionResponse} will be called.
      * @param selection the current selected text.
+     * @param isRestrictedResolve Whether the resolution should be restricted to an exact match with
+     *        the given selection.
      */
-    void startSearchTermResolutionRequest(String selection);
+    void startSearchTermResolutionRequest(String selection, boolean isRestrictedResolve);
 
     /**
      * Handles a Search Term Resolution response.

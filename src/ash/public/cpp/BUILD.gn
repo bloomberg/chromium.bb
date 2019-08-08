@@ -9,8 +9,11 @@ component("cpp") {
   sources = [
     "accelerators.cc",
     "accelerators.h",
+    "app_list/app_list_client.h",
     "app_list/app_list_config.cc",
     "app_list/app_list_config.h",
+    "app_list/app_list_controller.cc",
+    "app_list/app_list_controller.h",
     "app_list/app_list_features.cc",
     "app_list/app_list_features.h",
     "app_list/app_list_metrics.cc",
@@ -30,8 +33,6 @@ component("cpp") {
     "app_list/tokenized_string_match.h",
     "app_menu_constants.h",
     "app_types.h",
-    "ash_client.cc",
-    "ash_client.h",
     "ash_constants.h",
     "ash_features.cc",
     "ash_features.h",
@@ -43,6 +44,10 @@ component("cpp") {
     "ash_typography.cc",
     "ash_typography.h",
     "ash_view_ids.h",
+    "assistant/assistant_image_downloader.cc",
+    "assistant/assistant_image_downloader.h",
+    "assistant/assistant_setup.cc",
+    "assistant/assistant_setup.h",
     "assistant/assistant_state_base.cc",
     "assistant/assistant_state_base.h",
     "assistant/assistant_state_proxy.cc",
@@ -53,10 +58,13 @@ component("cpp") {
     "caption_buttons/frame_back_button.h",
     "caption_buttons/frame_caption_button_container_view.cc",
     "caption_buttons/frame_caption_button_container_view.h",
-    "caption_buttons/frame_caption_delegate.h",
     "caption_buttons/frame_size_button.cc",
     "caption_buttons/frame_size_button.h",
     "caption_buttons/frame_size_button_delegate.h",
+    "caption_buttons/snap_controller.cc",
+    "caption_buttons/snap_controller.h",
+    "cast_config_controller.cc",
+    "cast_config_controller.h",
     "default_frame_header.cc",
     "default_frame_header.h",
     "default_scale_factor_retriever.cc",
@@ -68,6 +76,7 @@ component("cpp") {
     "frame_utils.cc",
     "frame_utils.h",
     "gesture_action_type.h",
+    "immersive/immersive_context.cc",
     "immersive/immersive_context.h",
     "immersive/immersive_focus_watcher.cc",
     "immersive/immersive_focus_watcher.h",
@@ -76,28 +85,50 @@ component("cpp") {
     "immersive/immersive_fullscreen_controller_delegate.h",
     "immersive/immersive_revealed_lock.cc",
     "immersive/immersive_revealed_lock.h",
+    "keyboard/keyboard_switches.cc",
+    "keyboard/keyboard_switches.h",
+    "keyboard_shortcut_viewer.h",
+    "kiosk_app_menu.cc",
+    "kiosk_app_menu.h",
     "lock_screen_widget_factory.cc",
     "lock_screen_widget_factory.h",
     "login_constants.h",
-    "menu_utils.cc",
-    "menu_utils.h",
-    "mus_property_mirror_ash.cc",
-    "mus_property_mirror_ash.h",
+    "login_screen.cc",
+    "login_screen.h",
+    "login_screen_client.h",
+    "login_screen_model.cc",
+    "login_screen_model.h",
+    "login_types.cc",
+    "login_types.h",
     "network_icon_image_source.cc",
     "network_icon_image_source.h",
+    "new_window_delegate.cc",
+    "new_window_delegate.h",
+    "note_taking_client.cc",
+    "note_taking_client.h",
     "notification_utils.cc",
     "notification_utils.h",
+    "pagination/pagination_controller.cc",
+    "pagination/pagination_controller.h",
+    "pagination/pagination_model.cc",
+    "pagination/pagination_model.h",
+    "pagination/pagination_model_observer.h",
     "power_utils.cc",
     "power_utils.h",
     "presentation_time_recorder.cc",
     "presentation_time_recorder.h",
-    "remote_shelf_item_delegate.cc",
-    "remote_shelf_item_delegate.h",
     "rounded_corner_decorator.cc",
     "rounded_corner_decorator.h",
     "scale_utility.cc",
     "scale_utility.h",
-    "session_types.h",
+    "session/session_activation_observer.h",
+    "session/session_controller.cc",
+    "session/session_controller.h",
+    "session/session_controller_client.h",
+    "session/session_types.cc",
+    "session/session_types.h",
+    "session/user_info.cc",
+    "session/user_info.h",
     "shelf_item.cc",
     "shelf_item.h",
     "shelf_item_delegate.cc",
@@ -111,14 +142,27 @@ component("cpp") {
     "shelf_types.h",
     "shell_window_ids.cc",
     "shell_window_ids.h",
+    "split_view.cc",
+    "split_view.h",
     "stylus_utils.cc",
     "stylus_utils.h",
+    "system_tray.cc",
+    "system_tray.h",
+    "system_tray_client.h",
     "system_tray_focus_observer.h",
     "tablet_mode.cc",
     "tablet_mode.h",
+    "tablet_mode_toggle_observer.h",
     "touch_uma.cc",
     "touch_uma.h",
+    "wallpaper_controller.cc",
+    "wallpaper_controller.h",
+    "wallpaper_controller_client.h",
+    "wallpaper_controller_observer.cc",
+    "wallpaper_controller_observer.h",
+    "wallpaper_info.h",
     "wallpaper_types.h",
+    "wallpaper_user_info.h",
     "window_animation_types.h",
     "window_properties.cc",
     "window_properties.h",
@@ -133,9 +177,9 @@ component("cpp") {
     "//chromeos/constants",
     "//chromeos/dbus/power:power_manager_proto",
     "//components/prefs",
+    "//components/sync:rest_of_sync",
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp",
-    "//services/ws/public/cpp",
     "//services/ws/public/mojom",
     "//skia/public/interfaces",
     "//ui/aura",
@@ -145,7 +189,6 @@ component("cpp") {
     "//ui/events/devices",
     "//ui/message_center/public/cpp",
     "//ui/views",
-    "//ui/views/mus",
     "//ui/views/window/vector_icons",
     "//ui/wm",
     "//ui/wm/public",
@@ -154,6 +197,8 @@ component("cpp") {
   public_deps = [
     "//ash/public/interfaces:interfaces_internal",
     "//base",
+    "//components/session_manager:base",
+    "//components/user_manager",
     "//ui/gfx",
   ]
 
@@ -173,6 +218,7 @@ source_set("manifest") {
     "//ash/public/interfaces:interfaces_internal",
     "//base",
     "//chromeos/services/multidevice_setup/public/mojom",
+    "//chromeos/services/network_config/public/mojom",
     "//services/content/public/mojom",
     "//services/data_decoder/public/mojom",
     "//services/device/public/mojom",
@@ -180,8 +226,6 @@ source_set("manifest") {
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
     "//services/viz/public/interfaces",
-    "//services/ws/public/cpp:manifest",
-    "//services/ws/public/mojom",
   ]
 }
 
@@ -202,35 +246,18 @@ source_set("manifest_for_tests") {
   ]
 }
 
-# Using a test service because the traits need to pass handles around. Revisit
-# this after Deserialize(Serialize()) API works with handles.
-mojom("test_interfaces") {
-  visibility = [ ":unit_tests" ]
-  disable_variants = true
-
-  sources = [
-    "shelf_struct_traits_test_service.mojom",
-  ]
-
-  public_deps = [
-    "//ash/public/interfaces:interfaces_internal",
-  ]
-}
-
 source_set("unit_tests") {
   testonly = true
   sources = [
     "default_scale_factor_retriever_unittest.cc",
-    "menu_utils_unittest.cc",
+    "pagination/pagination_model_unittest.cc",
     "power_utils_unittest.cc",
     "rounded_corner_decorator_unittest.cc",
     "shelf_model_unittest.cc",
-    "shelf_struct_mojom_traits_unittest.cc",
   ]
 
   deps = [
     ":cpp",
-    ":test_interfaces",
     "//base",
     "//base/test:test_support",
     "//testing/gtest",
@@ -246,6 +273,8 @@ source_set("test_support") {
     "immersive/immersive_fullscreen_controller_test_api.h",
     "test/test_keyboard_controller_observer.cc",
     "test/test_keyboard_controller_observer.h",
+    "test/test_new_window_delegate.cc",
+    "test/test_new_window_delegate.h",
   ]
 
   deps = [
@@ -255,7 +284,6 @@ source_set("test_support") {
     "//ui/aura",
     "//ui/aura:test_support",
     "//ui/gfx",
-    "//ui/keyboard:mojom",
     "//ui/views",
   ]
 }

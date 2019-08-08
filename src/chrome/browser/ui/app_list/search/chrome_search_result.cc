@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/app_list/app_context_menu.h"
 
 ChromeSearchResult::ChromeSearchResult()
-    : metadata_(ash::mojom::SearchResultMetadata::New()) {}
+    : metadata_(std::make_unique<ash::SearchResultMetadata>()) {}
 
 ChromeSearchResult::~ChromeSearchResult() = default;
 
@@ -187,13 +187,6 @@ void ChromeSearchResult::UpdateFromMatch(
 
 void ChromeSearchResult::GetContextMenuModel(GetMenuModelCallback callback) {
   std::move(callback).Run(nullptr);
-}
-
-void ChromeSearchResult::ContextMenuItemSelected(int command_id,
-                                                 int event_flags) {
-  app_list::AppContextMenu* menu = GetAppContextMenu();
-  if (menu)
-    menu->ExecuteCommand(command_id, event_flags);
 }
 
 // static

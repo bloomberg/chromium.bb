@@ -246,17 +246,14 @@ void PdfAccessibilityTree::FindNodeOffset(uint32_t page_index,
   *out_node_id = -1;
   *out_node_char_index = 0;
   ui::AXNode* root = tree_.root();
-  if (page_index >= static_cast<uint32_t>(root->child_count()))
+  if (page_index >= root->children().size())
     return;
-  ui::AXNode* page = root->ChildAtIndex(page_index);
+  ui::AXNode* page = root->children()[page_index];
 
   // Iterate over all paragraphs within this given page, and static text nodes
   // within each paragraph.
-  for (int i = 0; i < page->child_count(); i++) {
-    ui::AXNode* para = page->ChildAtIndex(i);
-    for (int j = 0; j < para->child_count(); j++) {
-      ui::AXNode* static_text = para->ChildAtIndex(j);
-
+  for (ui::AXNode* para : page->children()) {
+    for (ui::AXNode* static_text : para->children()) {
       // Look up the page-relative character index for this node from a map
       // we built while the document was initially built.
       DCHECK(
@@ -451,8 +448,8 @@ int32_t PdfAccessibilityTree::GetId(const ui::AXNode* node) const {
 void PdfAccessibilityTree::GetChildren(
     const ui::AXNode* node,
     std::vector<const ui::AXNode*>* out_children) const {
-  for (int i = 0; i < node->child_count(); ++i)
-    out_children->push_back(node->ChildAtIndex(i));
+  *out_children = std::vector<const ui::AXNode*>(node->children().cbegin(),
+                                                 node->children().cend());
 }
 
 ui::AXNode* PdfAccessibilityTree::GetParent(const ui::AXNode* node) const {

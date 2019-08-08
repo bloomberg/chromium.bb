@@ -5,6 +5,7 @@
   "version": "0.1.0",
   "manifest_version": 2,
   "description": "Kiosk Next Home",
+  "display_in_launcher": false,
   "icons": {
     "192": "static/icon192.png"
   },

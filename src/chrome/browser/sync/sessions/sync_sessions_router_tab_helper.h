@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_SYNC_SESSIONS_SYNC_SESSIONS_ROUTER_TAB_HELPER_H_
 #define CHROME_BROWSER_SYNC_SESSIONS_SYNC_SESSIONS_ROUTER_TAB_HELPER_H_
 
+#include "chrome/browser/translate/chrome_translate_client.h"
 #include "components/sessions/core/session_id.h"
+#include "components/translate/content/browser/content_translate_driver.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -22,7 +24,8 @@ class SyncSessionsWebContentsRouter;
 // https://chromium.googlesource.com/chromium/src/+/master/docs/tab_helpers.md
 class SyncSessionsRouterTabHelper
     : public content::WebContentsUserData<SyncSessionsRouterTabHelper>,
-      public content::WebContentsObserver {
+      public content::WebContentsObserver,
+      public translate::ContentTranslateDriver::Observer {
  public:
   ~SyncSessionsRouterTabHelper() override;
 
@@ -45,6 +48,10 @@ class SyncSessionsRouterTabHelper
                            ui::PageTransition transition,
                            bool started_from_context_menu,
                            bool renderer_initiated) override;
+
+  // ContentTranslateDriver::Observer implementation.
+  void OnLanguageDetermined(
+      const translate::LanguageDetectionDetails& details) override;
 
   // Sets the source tab id for the given child WebContents to the id of the
   // WebContents that owns this helper.
@@ -75,6 +82,8 @@ class SyncSessionsRouterTabHelper
   // * Ctrl-click.
   // * Click on a link with target='_blank'.
   SessionID source_tab_id_;
+
+  ChromeTranslateClient* chrome_translate_client_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

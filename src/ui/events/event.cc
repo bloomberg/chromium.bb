@@ -1149,12 +1149,6 @@ void KeyEvent::NormalizeFlags() {
     set_flags(flags() & ~mask);
 }
 
-base::OnceCallback<void(bool, bool)> KeyEvent::WillHandleAsync() {
-  if (cancelable())
-    SetHandled();
-  return std::move(async_callback_);
-}
-
 KeyboardCode KeyEvent::GetLocatedWindowsKeyboardCode() const {
   return NonLocatedToLocatedKeyboardCode(key_code_, code_);
 }

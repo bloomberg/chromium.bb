@@ -111,4 +111,12 @@ void AssistantStateProxy::OnArcPlayStoreEnabledChanged(bool enabled) {
     observer.OnArcPlayStoreEnabledChanged(arc_play_store_enabled_.value());
 }
 
+void AssistantStateProxy::OnLockedFullScreenStateChanged(bool enabled) {
+  locked_full_screen_enabled_ = enabled;
+  for (auto& observer : observers_) {
+    observer.OnLockedFullScreenStateChanged(
+        locked_full_screen_enabled_.value());
+  }
+}
+
 }  // namespace ash

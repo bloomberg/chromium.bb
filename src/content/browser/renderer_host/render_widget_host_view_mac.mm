@@ -16,11 +16,15 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "components/remote_cocoa/common/bridge_factory.mojom.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/switches.h"
+#import "content/app_shim_remote_cocoa/render_widget_host_ns_view_bridge_local.h"
+#import "content/app_shim_remote_cocoa/render_widget_host_view_cocoa.h"
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
 #import "content/browser/accessibility/browser_accessibility_mac.h"
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
@@ -32,8 +36,6 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
-#import "content/browser/renderer_host/render_widget_host_ns_view_bridge_local.h"
-#import "content/browser/renderer_host/render_widget_host_view_cocoa.h"
 #import "content/browser/renderer_host/text_input_client_mac.h"
 #import "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/text_input_state.h"
@@ -41,7 +43,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/native_web_keyboard_event.h"
-#include "content/public/browser/ns_view_bridge_factory_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "skia/ext/platform_canvas.h"
@@ -87,7 +88,6 @@ void RenderWidgetHostViewMac::BrowserCompositorMacOnBeginFrame(
   // ProgressFling must get called for middle click autoscroll fling on Mac.
   if (host())
     host()->ProgressFlingIfNeeded(frame_time);
-  UpdateNeedsBeginFramesInternal();
 }
 
 void RenderWidgetHostViewMac::OnFrameTokenChanged(uint32_t frame_token) {
@@ -212,8 +212,6 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
         GetFrameSinkId(), this);
   }
 
-  bool needs_begin_frames = true;
-
   RenderWidgetHostOwnerDelegate* owner_delegate = host()->owner_delegate();
   if (owner_delegate) {
     // TODO(mostynb): actually use prefs.  Landing this as a separate CL
@@ -221,29 +219,12 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
     // NOTE: This will not be run for child frame widgets, which do not have
     // an owner delegate and won't get a RenderViewHost here.
     ignore_result(owner_delegate->GetWebkitPreferencesForWidget());
-    needs_begin_frames = !owner_delegate->IsNeverVisible();
   }
 
   cursor_manager_.reset(new CursorManager(this));
 
   if (GetTextInputManager())
     GetTextInputManager()->AddObserver(this);
-
-  // When Viz Display Compositor is not active, RenderWidgetHostViewMac is
-  // responsible for handling BeginFrames.
-  //
-  // Because of the way Mac pumps messages during resize, SetNeedsBeginFrame
-  // messages are not delayed on Mac.  This leads to creation-time raciness
-  // where renderer sends a SetNeedsBeginFrame(true) before the renderer host is
-  // created to receive it.
-  //
-  // Any renderer that will produce frames needs to have begin frames sent to
-  // it. So unless it is never visible, start this value at true here to avoid
-  // startup raciness and decrease latency.
-  if (!features::IsVizDisplayCompositorEnabled()) {
-    needs_begin_frames_ = needs_begin_frames;
-    UpdateNeedsBeginFramesInternal();
-  }
 }
 
 RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
@@ -260,7 +241,7 @@ RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
 }
 
 void RenderWidgetHostViewMac::MigrateNSViewBridge(
-    NSViewBridgeFactoryHost* bridge_factory_host,
+    remote_cocoa::mojom::BridgeFactory* remote_cocoa_application,
     uint64_t parent_ns_view_id) {
   // Destroy the previous remote accessibility element.
   remote_window_accessible_.reset();
@@ -272,10 +253,11 @@ void RenderWidgetHostViewMac::MigrateNSViewBridge(
   ns_view_bridge_remote_.reset();
 
   // Enable accessibility focus overriding for remote NSViews.
-  accessibility_focus_overrider_.SetAppIsRemote(bridge_factory_host != nullptr);
+  accessibility_focus_overrider_.SetAppIsRemote(remote_cocoa_application !=
+                                                nullptr);
 
   // If no host is specified, then use the locally hosted NSView.
-  if (!bridge_factory_host) {
+  if (!remote_cocoa_application) {
     ns_view_bridge_ = ns_view_bridge_local_.get();
     return;
   }
@@ -287,15 +269,15 @@ void RenderWidgetHostViewMac::MigrateNSViewBridge(
 
   // Cast from mojom::RenderWidgetHostNSViewClientPtr and
   // mojom::RenderWidgetHostNSViewBridgeRequest to the public interfaces
-  // accepted by the factory.
+  // accepted by the application.
   // TODO(ccameron): Remove the need for this cast.
   // https://crbug.com/888290
-  mojo::AssociatedInterfacePtrInfo<mojom::StubInterface> stub_client(
-      client.PassInterface().PassHandle(), 0);
-  mojom::StubInterfaceAssociatedRequest stub_bridge_request(
+  mojo::AssociatedInterfacePtrInfo<remote_cocoa::mojom::StubInterface>
+      stub_client(client.PassInterface().PassHandle(), 0);
+  remote_cocoa::mojom::StubInterfaceAssociatedRequest stub_bridge_request(
       bridge_request.PassHandle());
 
-  bridge_factory_host->GetFactory()->CreateRenderWidgetHostNSViewBridge(
+  remote_cocoa_application->CreateRenderWidgetHostNSView(
       std::move(stub_client), std::move(stub_bridge_request));
 
   ns_view_bridge_ = ns_view_bridge_remote_.get();
@@ -479,11 +461,12 @@ void RenderWidgetHostViewMac::WasUnOccluded() {
   bool has_saved_frame =
       browser_compositor_->has_saved_frame_before_state_transition();
 
-  auto tab_switch_start_time = GetAndResetLastTabChangeStartTime();
+  auto tab_switch_start_state = TakeRecordTabSwitchTimeRequest();
 
   const bool renderer_should_record_presentation_time = !has_saved_frame;
-  host()->WasShown(renderer_should_record_presentation_time,
-                   tab_switch_start_time);
+  host()->WasShown(renderer_should_record_presentation_time
+                       ? tab_switch_start_state
+                       : base::nullopt);
 
   if (delegated_frame_host) {
     // If the frame for the renderer is already available, then the
@@ -492,8 +475,8 @@ void RenderWidgetHostViewMac::WasUnOccluded() {
     delegated_frame_host->WasShown(
         browser_compositor_->GetRendererLocalSurfaceIdAllocation()
             .local_surface_id(),
-        browser_compositor_->GetRendererSize(), record_presentation_time,
-        tab_switch_start_time);
+        browser_compositor_->GetRendererSize(),
+        record_presentation_time ? tab_switch_start_state : base::nullopt);
   }
 }
 
@@ -695,8 +678,7 @@ void RenderWidgetHostViewMac::OnRenderFrameMetadataChangedAfterActivation() {
   RenderWidgetHostViewBase::OnRenderFrameMetadataChangedAfterActivation();
 }
 
-void RenderWidgetHostViewMac::RenderProcessGone(base::TerminationStatus status,
-                                                int error_code) {
+void RenderWidgetHostViewMac::RenderProcessGone() {
   Destroy();
 }
 
@@ -870,12 +852,7 @@ void RenderWidgetHostViewMac::EnsureSurfaceSynchronizedForWebTest() {
 }
 
 void RenderWidgetHostViewMac::SetNeedsBeginFrames(bool needs_begin_frames) {
-  needs_begin_frames_ = needs_begin_frames;
-  UpdateNeedsBeginFramesInternal();
-}
-
-void RenderWidgetHostViewMac::UpdateNeedsBeginFramesInternal() {
-  browser_compositor_->SetNeedsBeginFrames(needs_begin_frames_);
+  NOTREACHED();
 }
 
 void RenderWidgetHostViewMac::OnDidUpdateVisualPropertiesComplete(
@@ -1573,7 +1550,7 @@ void RenderWidgetHostViewMac::ForwardKeyboardEventWithCommands(
     const std::vector<EditCommand>& commands) {
   if (auto* widget_host = GetWidgetForKeyboardEvent()) {
     widget_host->ForwardKeyboardEventWithCommands(key_event, latency_info,
-                                                  &commands, nullptr);
+                                                  &commands);
   }
 }
 
@@ -1825,6 +1802,8 @@ bool RenderWidgetHostViewMac::SyncGetFirstRectForRange(
   *success = true;
   if (!GetCachedFirstRectForCharacterRange(requested_range, rect,
                                            actual_range)) {
+    // https://crbug.com/121917
+    base::ScopedAllowBlocking allow_wait;
     *rect = TextInputClientMac::GetInstance()->GetFirstRectForRange(
         GetFocusedWidget(), requested_range);
     // TODO(thakis): Pipe |actualRange| through TextInputClientMac machinery.

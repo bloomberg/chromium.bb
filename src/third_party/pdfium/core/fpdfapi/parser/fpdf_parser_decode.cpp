@@ -23,6 +23,7 @@
 #include "core/fxcodec/codec/ccodec_scanlinedecoder.h"
 #include "core/fxcodec/fx_codec.h"
 #include "core/fxcrt/fx_extension.h"
+#include "core/fxcrt/fx_safe_types.h"
 #include "third_party/base/numerics/safe_math.h"
 #include "third_party/base/stl_util.h"
 
@@ -312,9 +313,8 @@ std::unique_ptr<CCodec_ScanlineDecoder> CreateFaxDecoder(
     if (Rows > USHRT_MAX)
       Rows = 0;
   }
-  return CPDF_ModuleMgr::Get()->GetFaxModule()->CreateDecoder(
-      src_span, width, height, K, EndOfLine, ByteAlign, BlackIs1, Columns,
-      Rows);
+  return CCodec_FaxModule::CreateDecoder(src_span, width, height, K, EndOfLine,
+                                         ByteAlign, BlackIs1, Columns, Rows);
 }
 
 std::unique_ptr<CCodec_ScanlineDecoder> CreateFlateDecoder(
@@ -336,9 +336,9 @@ std::unique_ptr<CCodec_ScanlineDecoder> CreateFlateDecoder(
     if (!CheckFlateDecodeParams(Colors, BitsPerComponent, Columns))
       return nullptr;
   }
-  return CPDF_ModuleMgr::Get()->GetFlateModule()->CreateDecoder(
-      src_span, width, height, nComps, bpc, predictor, Colors, BitsPerComponent,
-      Columns);
+  return CCodec_FlateModule::CreateDecoder(src_span, width, height, nComps, bpc,
+                                           predictor, Colors, BitsPerComponent,
+                                           Columns);
 }
 
 uint32_t FlateOrLZWDecode(bool bLZW,
@@ -361,7 +361,7 @@ uint32_t FlateOrLZWDecode(bool bLZW,
     if (!CheckFlateDecodeParams(Colors, BitsPerComponent, Columns))
       return FX_INVALID_OFFSET;
   }
-  return CPDF_ModuleMgr::Get()->GetFlateModule()->FlateOrLZWDecode(
+  return CCodec_FlateModule::FlateOrLZWDecode(
       bLZW, src_span, bEarlyChange, predictor, Colors, BitsPerComponent,
       Columns, estimated_size, dest_buf, dest_size);
 }
@@ -586,15 +586,13 @@ ByteString PDF_EncodeString(const ByteString& src, bool bHex) {
 bool FlateEncode(pdfium::span<const uint8_t> src_span,
                  std::unique_ptr<uint8_t, FxFreeDeleter>* dest_buf,
                  uint32_t* dest_size) {
-  CCodec_ModuleMgr* pEncoders = CPDF_ModuleMgr::Get()->GetCodecModule();
-  return pEncoders->GetFlateModule()->Encode(src_span.data(), src_span.size(),
-                                             dest_buf, dest_size);
+  return CCodec_FlateModule::Encode(src_span.data(), src_span.size(), dest_buf,
+                                    dest_size);
 }
 
 uint32_t FlateDecode(pdfium::span<const uint8_t> src_span,
                      std::unique_ptr<uint8_t, FxFreeDeleter>* dest_buf,
                      uint32_t* dest_size) {
-  CCodec_ModuleMgr* pEncoders = CPDF_ModuleMgr::Get()->GetCodecModule();
-  return pEncoders->GetFlateModule()->FlateOrLZWDecode(
-      false, src_span, false, 0, 0, 0, 0, 0, dest_buf, dest_size);
+  return CCodec_FlateModule::FlateOrLZWDecode(false, src_span, false, 0, 0, 0,
+                                              0, 0, dest_buf, dest_size);
 }

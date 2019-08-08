@@ -6,7 +6,7 @@
 
 #include "chrome/browser/background_sync/background_sync_controller_impl.h"
 #include "chrome/browser/engagement/site_engagement_service_factory.h"
-#include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/metrics/ukm_background_recorder_service.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -28,7 +28,7 @@ BackgroundSyncControllerFactory::BackgroundSyncControllerFactory()
     : BrowserContextKeyedServiceFactory(
           "BackgroundSyncService",
           BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(HistoryServiceFactory::GetInstance());
+  DependsOn(ukm::UkmBackgroundRecorderFactory::GetInstance());
   DependsOn(SiteEngagementServiceFactory::GetInstance());
 }
 

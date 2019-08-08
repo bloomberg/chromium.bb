@@ -3,20 +3,25 @@
    found in the LICENSE file.
 */
 'use strict';
-tr.exportTo('cp', () => {
-  class ExistingBugRequest extends cp.RequestBase {
-    constructor(options) {
-      super(options);
-      this.method_ = 'POST';
-      this.body_ = new FormData();
-      for (const key of options.alertKeys) this.body_.append('key', key);
-      this.body_.set('bug', options.bugId);
-    }
 
-    get url_() {
-      return ExistingBugRequest.URL;
-    }
+import RequestBase from './request-base.js';
+
+export default class ExistingBugRequest extends RequestBase {
+  constructor(options) {
+    super(options);
+    this.method_ = 'POST';
+    this.body_ = new FormData();
+    for (const key of options.alertKeys) this.body_.append('key', key);
+    this.body_.set('bug', options.bugId);
   }
-  ExistingBugRequest.URL = '/api/existing_bug';
-  return {ExistingBugRequest};
-});
+
+  get url_() {
+    return ExistingBugRequest.URL;
+  }
+
+  get description_() {
+    return `assigning ${this.body_.getAll('key').length} alerts to
+      ${this.body_.get('bug')}`;
+  }
+}
+ExistingBugRequest.URL = '/api/existing_bug';

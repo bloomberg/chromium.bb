@@ -11,26 +11,28 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
-#include "chrome/browser/chromeos/login/screens/kiosk_enable_screen_view.h"
 
 namespace chromeos {
 
+class KioskEnableScreenView;
+
 // Representation independent class that controls screen for enabling
 // consumer kiosk mode.
-class KioskEnableScreen : public BaseScreen,
-                          public KioskEnableScreenView::Delegate {
+class KioskEnableScreen : public BaseScreen {
  public:
   KioskEnableScreen(KioskEnableScreenView* view,
                     const base::RepeatingClosure& exit_callback);
   ~KioskEnableScreen() override;
 
+  // Called when screen is exited.
+  void OnExit();
+  // This method is called, when view is being destroyed. Note, if Delegate
+  // is destroyed earlier then it has to call SetDelegate(nullptr).
+  void OnViewDestroyed(KioskEnableScreenView* view);
+
   // BaseScreen implementation:
   void Show() override;
-  void Hide() override {}
-
-  // KioskEnableScreenActor::Delegate implementation:
-  void OnExit() override;
-  void OnViewDestroyed(KioskEnableScreenView* view) override;
+  void Hide() override;
 
  private:
   KioskEnableScreenView* view_;

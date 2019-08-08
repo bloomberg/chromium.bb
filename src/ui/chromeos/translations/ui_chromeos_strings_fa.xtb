@@ -5,6 +5,7 @@
 <translation id="1023220960495960452">‏نویسه‌گردانی (vanakkam ← ‏வணக்கம்)</translation>
 <translation id="1035094536595558507">مشاهده اسلاید</translation>
 <translation id="1045157690796831147">‏نویسه‌گردانی (namaskar ← ‏നമസ്കാരം)</translation>
+<translation id="1046068652463704410">ورودی ژاپنی (برای صفحه‌کلید ایالات متحده)</translation>
 <translation id="1047956942837015229">در حال حذف <ph name="COUNT" /> مورد...</translation>
 <translation id="1049926623896334335">‏سند Word </translation>
 <translation id="1062407476771304334">جایگزینی</translation>
@@ -36,7 +37,6 @@
 <translation id="1346748346194534595">راست</translation>
 <translation id="1351692861129622852">وارد کردن <ph name="FILE_COUNT" /> فایل...</translation>
 <translation id="1352103415082130575">صفحه‌کلید تایلندی (پاتاشوت)</translation>
-<translation id="1358032944105037487">صفحه‌کلید ژاپنی</translation>
 <translation id="1358735829858566124">فایل یا فهرست راهنما قابل استفاده نیست.</translation>
 <translation id="1363028406613469049">تراک</translation>
 <translation id="1378727793141957596">‏به Google Drive خوش آمدید!</translation>
@@ -205,13 +205,13 @@
 <translation id="3468522857997926824">‏<ph name="FILE_COUNT" /> عکس در <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /> پشتیبان گرفته شدند</translation>
 <translation id="3470502288861289375">در حال کپی کردن...</translation>
 <translation id="3475447146579922140">‏صفحه‌گسترده Google</translation>
-<translation id="3494768541638400973">‏ورودی ژاپنی Google (برای صفحه‌کلید ژاپنی)</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> خطا.</translation>
 <translation id="3519867315646775981">‏نویسه‌گردانی (shalom ← ‏שלום)</translation>
 <translation id="3522708245912499433">پرتغالی</translation>
 <translation id="3527085408025491307">پوشه</translation>
 <translation id="3549797760399244642">‏رفتن به drive.google.com…</translation>
 <translation id="357479282490346887">لیتوانیایی</translation>
+<translation id="3583509704582854624">ورودی حرفی عددی (برای صفحه‌کلید ژاپنی)</translation>
 <translation id="3603385196401704894">فرانسوی کانادا</translation>
 <translation id="3606220979431771195">‏ترکی F</translation>
 <translation id="3609785682760573515">در حال همگام‌سازی...</translation>
@@ -262,6 +262,7 @@
 <translation id="421017592316736757">باید آنلاین باشید تا به این فایل دسترسی داشته باشید.</translation>
 <translation id="4212740939091998969">پوشه‌ای با نام «<ph name="FOLDER_NAME" />» ازقبل وجود دارد. لطفاً نام دیگری انتخاب کنید.</translation>
 <translation id="4215448920900139318">درحال پشتیبان‌ گرفتن از <ph name="FILE_COUNT" /></translation>
+<translation id="4242533952199664413">باز کردن تنظیمات</translation>
 <translation id="426015154560005552">صفحه‌کلید عربی</translation>
 <translation id="4261901459838235729">‏ارائه Google </translation>
 <translation id="4290535918735525311">‏۱ پوشه با Linux هم‌رسانی شد</translation>
@@ -285,13 +286,13 @@
 <translation id="4572815280350369984">فایل <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">بیشتر...</translation>
 <translation id="4582497162516204941">‏نصب با Linux (بتا)</translation>
-<translation id="4584780943629874245">‏هم‌رسانی ازطریق Plugin VM</translation>
 <translation id="4631887759990505102">هنرمند</translation>
 <translation id="4656293982926141856">این رایانه</translation>
 <translation id="4669606053856530811">اگر این موارد با اعضای «<ph name="SOURCE_NAME" />» هم‌رسانی نشوند، دسترسی را از دست خواهند داد.</translation>
 <translation id="4690246192099372265">سوئدی</translation>
 <translation id="4693155481716051732">سوشی</translation>
 <translation id="4694604912444486114">میمون</translation>
+<translation id="4697043402264950621">فهرست فایل براساس <ph name="COLUMN_NAME" /> به‌صورت صعودی مرتب شد.</translation>
 <translation id="4711094779914110278">ترکی</translation>
 <translation id="4713544552769165154">‏این فایل برای رایانه‌ای طراحی شده است که از نرم‌افزار Macintosh استفاده می‌کند. این فایل با دستگاه شما که Chrome OS روی آن نصب است، سازگار نیست. لطفاً <ph name="BEGIN_LINK" />فروشگاه وب Chrome‏<ph name="END_LINK" /> را برای برنامه مناسب جایگزین بررسی کنید.<ph name="BEGIN_LINK_HELP" />بیشتر بدانید<ph name="END_LINK_HELP" /></translation>
 <translation id="4724850507808590449"><ph name="FILE_COUNT" /> عکس پشتیبان گرفته شدند</translation>
@@ -312,6 +313,7 @@
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> مورد انتخاب شد</translation>
 <translation id="4850886885716139402">نما</translation>
 <translation id="485316830061041779">آلمانی</translation>
+<translation id="4867079195717347957">کلیک کنید تا ستون به‌صورت نزولی مرتب شود.</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> بایت</translation>
 <translation id="4880214202172289027">اسلایدر میزان صدا</translation>
 <translation id="4880520557730313061">تصحیح خودکار</translation>
@@ -352,6 +354,7 @@
 <translation id="5167131699331641907">صفحه‌کلید هلندی</translation>
 <translation id="5170477580121653719">‏فضای باقیمانده در Google Drive: <ph name="SPACE_AVAILABLE" /> .</translation>
 <translation id="5177526793333269655">نمای تصویر کوچک</translation>
+<translation id="5194713942430106590">کلیک کنید تا ستون به‌صورت صعودی مرتب شود.</translation>
 <translation id="5218183485292899140">فرانسوی سوئیس</translation>
 <translation id="5234764350956374838">لغو کردن</translation>
 <translation id="5241298539944515331">‏صفحه‌کلید ویتنامی (VIQR)</translation>
@@ -411,6 +414,7 @@
 <translation id="5818003990515275822">کره‌ای</translation>
 <translation id="5819442873484330149">مجموعه هانگول ۳ (نهایی)</translation>
 <translation id="5833610766403489739">این فایل در جایی سرگردان شده است. لطفاً تنظیم محل دانلودتان را بررسی کنید و دوباره امتحان کنید.</translation>
+<translation id="5838051104334203064">‏برنامه‌های «فروشگاه Play» نمی‌توانند به این دستگاه دسترسی داشته باشند</translation>
 <translation id="5838825566232597749">‏بین‌المللی US Workman</translation>
 <translation id="5850516540536751549">‏این نوع فایل پشتیبانی نمی‌شود. لطفاً از <ph name="BEGIN_LINK" />فروشگاه وب<ph name="END_LINK" /> Chrome بازدید کنید تا برنامه‌ای پیدا کنید که بتواند این نوع فایل را باز کند.
  <ph name="BEGIN_LINK_HELP" />بیشتر بدانید<ph name="END_LINK_HELP" /></translation>
@@ -419,6 +423,7 @@
 <translation id="5892290200158927959">‏صفحه‌کلید BÉPO فرانسوی</translation>
 <translation id="5911887972742538906">‏هنگام نصب برنامه Linux خطایی روی داد.</translation>
 <translation id="5913638992615760742">عملیات کپی انجام نشد، خطای غیرمنتظره: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5923484009666796948">ورودی ژاپنی (برای صفحه کلید ژاپنی)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">‏به برنامه‌های Linux اجازه دهید فایل‌های موجود در Google Drive را تغییر دهند. تغییرات در سایر دستگاه‌هایتان همگام‌سازی خواهد شد.</translation>
 <translation id="5982621672636444458">گزینه‌های مرتب‌سازی</translation>
@@ -497,7 +502,6 @@
     <ph name="LINE_BREAK1" />
     <ph name="FILE_COUNT" /> مورد پیدا شد</translation>
 <translation id="6935521024859866267">وارونه</translation>
-<translation id="6937152069980083337">‏ورودی ژاپنی Google (برای صفحه‌کلید آمریکایی)</translation>
 <translation id="6939777852457331078">‏صفحه‌کلید US Workman</translation>
 <translation id="696203921837389374">فعال کردن همگام‌سازی از طریق داده تلفن همراه</translation>
 <translation id="6965382102122355670">قبول</translation>
@@ -527,7 +531,7 @@
 <translation id="7339898014177206373">پنجرهٔ جدید</translation>
 <translation id="7348749398828259943">‏صفحه‌کلید بین‌المللی US Workman</translation>
 <translation id="7359359531237882347">در حال کپی کردن <ph name="NUMBER_OF_ITEMS" /> مورد…</translation>
-<translation id="7379734276381389090">‏<ph name="NUMBER_OF_ITEMS" /> پوشه بااستفاده از Plugin VM هم‌رسانی شد</translation>
+<translation id="7375951387215729722">فهرست فایل براساس <ph name="COLUMN_NAME" /> به‌ترتیب نزولی مرتب شد.</translation>
 <translation id="7389722738210761877">‏صفحه‌کلید تایلندی (TIS 820-2531)</translation>
 <translation id="7396038720194014279">صفحه‌‌کلید هندی (آوایی)</translation>
 <translation id="7417453074306512035">صفحه‌کلید اتیوپیایی</translation>
@@ -590,7 +594,6 @@
 <translation id="7969525169268594403">اسلوونیایی</translation>
 <translation id="7982283708762922719">ارتفاع</translation>
 <translation id="7987485481246785146">صفحه‌کلید کردی مبتنی بر عربی</translation>
-<translation id="7990715602172183602">‏۱ پوشه بااستفاده از Plugin VM هم‌رسانی شد</translation>
 <translation id="799547531016638432">حذف میان‌بر</translation>
 <translation id="799923393800005025">می‌تواند مشاهده کند</translation>
 <translation id="8008366997883261463">جک راسل تریر</translation>
@@ -631,7 +634,6 @@
 <translation id="8342318071240498787">یک فایل یا یک پوشه با همین نام از قبل وجود دارد.</translation>
 <translation id="8391950649760071442">‏نویسه‌گردانی (emandi ← ‏ఏమండీ)</translation>
 <translation id="8395901698320285466">ابعاد</translation>
-<translation id="8400874747056634633">‏مدیریت هم‌رسانی ازطریق Plugin VM</translation>
 <translation id="8412586565681117057">روش ورودی سریع</translation>
 <translation id="8418113698656761985">صفحه‌کلید رومانیایی</translation>
 <translation id="8432745813735585631">صفحه‌کلید کلماک آمریکایی</translation>

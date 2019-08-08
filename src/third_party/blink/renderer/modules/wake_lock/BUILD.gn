@@ -6,14 +6,14 @@ import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("wake_lock") {
   sources = [
-    "navigator_wake_lock.cc",
-    "navigator_wake_lock.h",
-    "screen_wake_lock.cc",
-    "screen_wake_lock.h",
     "wake_lock.cc",
     "wake_lock.h",
-    "wake_lock_request.cc",
-    "wake_lock_request.h",
+    "wake_lock_controller.cc",
+    "wake_lock_controller.h",
+    "wake_lock_state_record.cc",
+    "wake_lock_state_record.h",
+    "wake_lock_type.cc",
+    "wake_lock_type.h",
   ]
   deps = [
     "//mojo/public/cpp/bindings",

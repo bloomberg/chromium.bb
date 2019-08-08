@@ -18,6 +18,7 @@
 #include "base/trace_event/memory_dump_request_args.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/values.h"
+#include "net/base/features.h"
 #include "net/dns/host_resolver.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_response_body_drainer.h"
@@ -95,7 +96,6 @@ HttpNetworkSession::Params::Params()
       time_func(&base::TimeTicks::Now),
       enable_http2_alternative_service(false),
       enable_websocket_over_http2(false),
-      enable_early_data(false),
       enable_quic(false),
       enable_quic_proxies_for_https_urls(false),
       quic_max_packet_length(quic::kDefaultMaxPacketSize),
@@ -108,8 +108,7 @@ HttpNetworkSession::Params::Params()
       quic_goaway_sessions_on_ip_change(false),
       quic_idle_connection_timeout_seconds(kIdleConnectionTimeoutSeconds),
       quic_reduced_ping_timeout_seconds(quic::kPingTimeoutSecs),
-      quic_retransmittable_on_wire_timeout_milliseconds(
-          kDefaultRetransmittableOnWireTimeoutMillisecs),
+      quic_retransmittable_on_wire_timeout_milliseconds(0),
       quic_max_time_before_crypto_handshake_seconds(
           quic::kMaxTimeForCryptoHandshakeSecs),
       quic_max_idle_time_before_crypto_handshake_seconds(
@@ -134,9 +133,13 @@ HttpNetworkSession::Params::Params()
       quic_race_cert_verification(false),
       quic_estimate_initial_rtt(false),
       quic_headers_include_h2_stream_dependency(false),
+      quic_initial_rtt_for_handshake_milliseconds(0),
       http_09_on_non_default_ports_enabled(false),
       disable_idle_sockets_close_on_memory_pressure(false) {
-  quic_supported_versions.push_back(quic::QUIC_VERSION_43);
+  quic_supported_versions.push_back(quic::ParsedQuicVersion(
+      quic::PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_46));
+  enable_early_data =
+      base::FeatureList::IsEnabled(features::kEnableTLS13EarlyData);
 }
 
 HttpNetworkSession::Params::Params(const Params& other) = default;
@@ -234,7 +237,8 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
           params.quic_headers_include_h2_stream_dependency,
           params.quic_connection_options,
           params.quic_client_connection_options,
-          params.quic_enable_socket_recv_optimization),
+          params.quic_enable_socket_recv_optimization,
+          params.quic_initial_rtt_for_handshake_milliseconds),
       spdy_session_pool_(context.host_resolver,
                          context.ssl_config_service,
                          context.http_server_properties,
@@ -329,7 +333,7 @@ std::unique_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
 
   auto supported_versions(std::make_unique<base::ListValue>());
   for (const auto& version : params_.quic_supported_versions)
-    supported_versions->AppendString(QuicVersionToString(version));
+    supported_versions->AppendString(ParsedQuicVersionToString(version));
   dict->Set("supported_versions", std::move(supported_versions));
 
   auto origins_to_force_quic_on(std::make_unique<base::ListValue>());
@@ -384,6 +388,8 @@ std::unique_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
   dict->SetBoolean("estimate_initial_rtt", params_.quic_estimate_initial_rtt);
   dict->SetBoolean("server_push_cancellation",
                    params_.enable_server_push_cancellation);
+  dict->SetInteger("initial_rtt_for_handshake_milliseconds",
+                   params_.quic_initial_rtt_for_handshake_milliseconds);
 
   return std::move(dict);
 }

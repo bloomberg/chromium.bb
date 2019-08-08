@@ -49,7 +49,7 @@ def Repr(obj, as_ref=True):
       return ('{\n%s\n}' % (',\n'.join('    %s: %s' % (
           Repr(key, as_ref).replace('\n', '\n    '),
           Repr(val, as_ref).replace('\n', '\n    '))
-          for key, val in obj.iteritems())))
+          for key, val in obj.items())))
   else:
     return repr(obj)
 
@@ -70,10 +70,8 @@ def GenericRepr(obj, names):
     return '    %s=%s' % (name, Repr(getattr(obj, name), as_ref).replace(
         '\n', '\n    '))
 
-  return '%s(\n%s\n)' % (
-      obj.__class__.__name__,
-      ',\n'.join(ReprIndent(name, as_ref)
-                 for (name, as_ref) in names.iteritems()))
+  return '%s(\n%s\n)' % (obj.__class__.__name__, ',\n'.join(
+      ReprIndent(name, as_ref) for (name, as_ref) in names.items()))
 
 
 class Kind(object):
@@ -153,7 +151,7 @@ class ReferenceKind(Kind):
          a = Struct('test_struct_1')
          b = a.MakeNullableKind()
          a.name = 'test_struct_2'
-         print b.name  # Outputs 'test_struct_2'.
+         print(b.name)  # Outputs 'test_struct_2'.
     """
     def Get(self):
       return self.shared_definition[name]
@@ -494,11 +492,14 @@ class PendingRemote(ReferenceKind):
   ReferenceKind.AddSharedProperty('kind')
 
   def __init__(self, kind=None):
-    if not isinstance(kind, Interface):
-      raise Exception(
-          'pending_remote<T> requires T to be an interface type. Got %r' %
-          kind.spec)
-    ReferenceKind.__init__(self, 'rmt:' + kind.spec)
+    if kind is not None:
+      if not isinstance(kind, Interface):
+        raise Exception(
+            'pending_remote<T> requires T to be an interface type. Got %r' %
+            kind.spec)
+      ReferenceKind.__init__(self, 'rmt:' + kind.spec)
+    else:
+      ReferenceKind.__init__(self)
     self.kind = kind
 
 
@@ -506,11 +507,44 @@ class PendingReceiver(ReferenceKind):
   ReferenceKind.AddSharedProperty('kind')
 
   def __init__(self, kind=None):
-    if not isinstance(kind, Interface):
-      raise Exception(
-          'pending_receiver<T> requires T to be an interface type. Got %r' %
-          kind.spec)
-    ReferenceKind.__init__(self, 'rcv:' + kind.spec)
+    if kind is not None:
+      if not isinstance(kind, Interface):
+        raise Exception(
+            'pending_receiver<T> requires T to be an interface type. Got %r' %
+            kind.spec)
+      ReferenceKind.__init__(self, 'rcv:' + kind.spec)
+    else:
+      ReferenceKind.__init__(self)
+    self.kind = kind
+
+
+class PendingAssociatedRemote(ReferenceKind):
+  ReferenceKind.AddSharedProperty('kind')
+
+  def __init__(self, kind=None):
+    if kind is not None:
+      if not isinstance(kind, Interface):
+        raise Exception(
+            'pending_associated_remote<T> requires T to be an interface ' +
+            'type. Got %r' % kind.spec)
+      ReferenceKind.__init__(self, 'rma:' + kind.spec)
+    else:
+      ReferenceKind.__init__(self)
+    self.kind = kind
+
+
+class PendingAssociatedReceiver(ReferenceKind):
+  ReferenceKind.AddSharedProperty('kind')
+
+  def __init__(self, kind=None):
+    if kind is not None:
+      if not isinstance(kind, Interface):
+        raise Exception(
+            'pending_associated_receiver<T> requires T to be an interface' +
+            'type. Got %r' % kind.spec)
+      ReferenceKind.__init__(self, 'rca:' + kind.spec)
+    else:
+      ReferenceKind.__init__(self)
     self.kind = kind
 
 
@@ -871,6 +905,14 @@ def IsPendingReceiverKind(kind):
   return isinstance(kind, PendingReceiver)
 
 
+def IsPendingAssociatedRemoteKind(kind):
+  return isinstance(kind, PendingAssociatedRemote)
+
+
+def IsPendingAssociatedReceiverKind(kind):
+  return isinstance(kind, PendingAssociatedReceiver)
+
+
 def IsEnumKind(kind):
   return isinstance(kind, Enum)
 
@@ -917,7 +959,9 @@ def IsAnyHandleOrInterfaceKind(kind):
 
 def IsAssociatedKind(kind):
   return (IsAssociatedInterfaceKind(kind) or
-          IsAssociatedInterfaceRequestKind(kind))
+          IsAssociatedInterfaceRequestKind(kind) or
+          IsPendingAssociatedRemoteKind(kind) or
+          IsPendingAssociatedReceiverKind(kind))
 
 
 def HasCallbacks(interface):

@@ -671,30 +671,18 @@ IN_PROC_BROWSER_TEST_P(OtherFrameNavigationDownloadBrowserTest_AdFrame,
   CheckNumDownloadsExpectation();
 }
 
-// TODO(yaoxia): Combine the following two test suites when cross-process
-// navigation in ad frame is correctly handled (UseCounter is logged and
-// download gets blocked when feature is enabled). Skip testing these cases for
-// now.
 INSTANTIATE_TEST_SUITE_P(
-    TopFrameNavigatesAdSubframe,
+    /* no prefix */,
     OtherFrameNavigationDownloadBrowserTest_AdFrame,
     ::testing::Combine(
         ::testing::Bool(),
-        ::testing::Values(false),  // is_cross_origin
+        ::testing::Bool(),
         ::testing::Bool(),
         ::testing::Values(
+            OtherFrameNavigationType::
+                kRestrictedSubframeNavigatesUnrestrictedTopFrame,
             OtherFrameNavigationType::
                 kUnrestrictedTopFrameNavigatesRestrictedSubframe)));
-INSTANTIATE_TEST_SUITE_P(
-    AdSubframeNavigatesTopFrame,
-    OtherFrameNavigationDownloadBrowserTest_AdFrame,
-    ::testing::Combine(
-        ::testing::Bool(),
-        ::testing::Bool(),
-        ::testing::Bool(),
-        ::testing::Values(
-            OtherFrameNavigationType::
-                kRestrictedSubframeNavigatesUnrestrictedTopFrame)));
 
 class TopFrameSameFrameDownloadBrowserTest
     : public DownloadFramePolicyBrowserTest,

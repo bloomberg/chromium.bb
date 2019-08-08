@@ -64,6 +64,7 @@
 #include "components/safe_browsing/browser/browser_url_loader_throttle.h"
 #include "components/safe_browsing/browser/mojo_safe_browsing_impl.h"
 #include "components/safe_browsing/features.h"
+#include "components/services/heap_profiling/heap_profiling_service.h"
 #include "components/services/heap_profiling/public/mojom/constants.mojom.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -260,11 +261,6 @@ std::string AwContentBrowserClient::GetAcceptLangsImpl() {
 }
 
 // static
-AwBrowserContext* AwContentBrowserClient::GetAwBrowserContext() {
-  return AwBrowserContext::GetDefault();
-}
-
-// static
 void AwContentBrowserClient::set_check_cleartext_permitted(bool permitted) {
 #if DCHECK_IS_ON()
   DCHECK(!g_created_network_context_params);
@@ -377,6 +373,9 @@ AwContentBrowserClient::GetNetworkContextParams() {
   // WebView does not support ftp yet.
   context_params->enable_ftp_url_support = false;
 
+  context_params->enable_brotli = base::FeatureList::IsEnabled(
+      android_webview::features::kWebViewBrotliSupport);
+
 #if DCHECK_IS_ON()
   g_created_network_context_params = true;
 #endif
@@ -403,9 +402,10 @@ AwBrowserContext* AwContentBrowserClient::InitBrowserContext() {
   return browser_context_.get();
 }
 
-content::BrowserMainParts* AwContentBrowserClient::CreateBrowserMainParts(
+std::unique_ptr<content::BrowserMainParts>
+AwContentBrowserClient::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters) {
-  return new AwBrowserMainParts(this);
+  return std::make_unique<AwBrowserMainParts>(this);
 }
 
 content::WebContentsViewDelegate*
@@ -497,10 +497,10 @@ std::string AwContentBrowserClient::GetAcceptLangs(
   return GetAcceptLangsImpl();
 }
 
-const gfx::ImageSkia* AwContentBrowserClient::GetDefaultFavicon() {
+gfx::ImageSkia AwContentBrowserClient::GetDefaultFavicon() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   // TODO(boliu): Bundle our own default favicon?
-  return rb.GetImageSkiaNamed(IDR_DEFAULT_FAVICON);
+  return rb.GetImageNamed(IDR_DEFAULT_FAVICON).AsImageSkia();
 }
 
 bool AwContentBrowserClient::AllowAppCache(const GURL& manifest_url,
@@ -576,7 +576,7 @@ void AwContentBrowserClient::AllowCertificateError(
     int cert_error,
     const net::SSLInfo& ssl_info,
     const GURL& request_url,
-    ResourceType resource_type,
+    bool is_main_frame_request,
     bool strict_enforcement,
     bool expired_previous_decision,
     const base::Callback<void(content::CertificateRequestResultType)>&
@@ -751,6 +751,16 @@ AwContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
   if (name == content::mojom::kUtilityServiceName)
     return GetAWContentUtilityOverlayManifest();
   return base::nullopt;
+}
+
+void AwContentBrowserClient::RunServiceInstanceOnIOThread(
+    const service_manager::Identity& identity,
+    mojo::PendingReceiver<service_manager::mojom::Service>* receiver) {
+  if (identity.name() == heap_profiling::mojom::kServiceName) {
+    heap_profiling::HeapProfilingService::GetServiceFactory().Run(
+        std::move(*receiver));
+    return;
+  }
 }
 
 void AwContentBrowserClient::BindInterfaceRequestFromFrame(
@@ -938,8 +948,6 @@ bool AwContentBrowserClient::HandleExternalProtocol(
     bool is_main_frame,
     ui::PageTransition page_transition,
     bool has_user_gesture,
-    const std::string& method,
-    const net::HttpRequestHeaders& headers,
     network::mojom::URLLoaderFactoryRequest* factory_request,
     network::mojom::URLLoaderFactory*& out_factory) {
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
@@ -958,25 +966,20 @@ bool AwContentBrowserClient::HandleExternalProtocol(
   return false;
 }
 
-void AwContentBrowserClient::RegisterOutOfProcessServices(
-    OutOfProcessServiceMap* services) {
-  (*services)[heap_profiling::mojom::kServiceName] =
-      base::BindRepeating(&base::ASCIIToUTF16, "Heap Profiling Service");
-}
-
 void AwContentBrowserClient::RegisterNonNetworkSubresourceURLLoaderFactories(
     int render_process_id,
     int render_frame_id,
     NonNetworkURLLoaderFactoryMap* factories) {
-  AwSettings* aw_settings =
-      AwSettings::FromWebContents(content::WebContents::FromRenderFrameHost(
-          content::RenderFrameHost::FromID(render_process_id,
-                                           render_frame_id)));
+  WebContents* web_contents = content::WebContents::FromRenderFrameHost(
+      content::RenderFrameHost::FromID(render_process_id, render_frame_id));
+  AwSettings* aw_settings = AwSettings::FromWebContents(web_contents);
 
   if (aw_settings && aw_settings->GetAllowFileAccess()) {
+    AwBrowserContext* aw_browser_context =
+        AwBrowserContext::FromWebContents(web_contents);
     auto file_factory = CreateFileURLLoaderFactory(
-        AwBrowserContext::GetDefault()->GetPath(),
-        AwBrowserContext::GetDefault()->GetSharedCorsOriginAccessList());
+        aw_browser_context->GetPath(),
+        aw_browser_context->GetSharedCorsOriginAccessList());
     factories->emplace(url::kFileScheme, std::move(file_factory));
   }
 }

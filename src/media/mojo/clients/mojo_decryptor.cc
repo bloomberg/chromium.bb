@@ -287,7 +287,7 @@ void MojoDecryptor::OnConnectionError(uint32_t custom_reason,
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // All pending callbacks will be fired automatically because they are wrapped
-  // in ScopedCallbackRunner.
+  // in WrapCallbackWithDefaultInvokeIfNotRun.
 }
 
 }  // namespace media

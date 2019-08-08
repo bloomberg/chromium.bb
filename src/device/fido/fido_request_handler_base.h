@@ -31,6 +31,7 @@ namespace device {
 
 class BleAdapterManager;
 class FidoAuthenticator;
+class FidoDiscoveryFactory;
 
 struct COMPONENT_EXPORT(DEVICE_FIDO) PlatformAuthenticatorInfo {
   PlatformAuthenticatorInfo(std::unique_ptr<FidoAuthenticator> authenticator,
@@ -93,6 +94,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
     //  - may choose not to dispatch immediately if caBLE is available
     //  - should dispatch immediately if no other transport is available
     bool has_win_native_api_authenticator = false;
+
+    // Indicates whether the Windows native UI will include a privacy notice
+    // when creating a resident credential.
+    bool win_native_ui_shows_resident_credential_notice = false;
 
     // Contains the authenticator ID of the native Windows
     // authenticator if |has_win_native_api_authenticator| is true.
@@ -162,6 +167,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   // relying party.
   FidoRequestHandlerBase(
       service_manager::Connector* connector,
+      FidoDiscoveryFactory* fido_discovery_factory,
       const base::flat_set<FidoTransportProtocol>& available_transports);
   ~FidoRequestHandlerBase() override;
 
@@ -188,8 +194,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
                                  std::string pin_code,
                                  base::OnceClosure success_callback,
                                  base::OnceClosure error_callback);
-
-  virtual void ProvidePIN(const std::string& old_pin, const std::string& pin);
 
   base::WeakPtr<FidoRequestHandlerBase> GetWeakPtr();
 
@@ -247,6 +251,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   void AuthenticatorPairingModeChanged(FidoDiscoveryBase* discovery,
                                        const std::string& device_id,
                                        bool is_in_pairing_mode) override;
+
+  FidoDiscoveryFactory* fido_discovery_factory_;
 
  private:
   friend class FidoRequestHandlerTest;

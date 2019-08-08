@@ -9,11 +9,12 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
-#include "ios/chrome/test/app/navigation_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
 #include "ios/web/public/test/http_server/html_response_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
@@ -94,9 +95,16 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
   web::test::SetUpHttpServer(
       std::make_unique<InfinitePendingResponseProvider>(infinitePendingURL));
 
-  // The page being loaded never completes, so call the LoadUrl helper that
-  // does not wait for the page to complete loading.
-  chrome_test_util::LoadUrl(infinitePendingURL);
+  if (IsIPadIdiom()) {
+    // TODO(crbug.com/960508): Investigate why test fails on iPad if
+    // synchronization is enabled.
+    ScopedSynchronizationDisabler disabler;
+    CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:infinitePendingURL
+                                    waitForCompletion:NO]);
+  } else {
+    CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:infinitePendingURL
+                                    waitForCompletion:NO]);
+  }
 
   if (IsIPadIdiom()) {
     // Disable EG synchronization so the framework does not wait until the tab
@@ -108,7 +116,8 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
   }
 
   // Wait until the page is half loaded.
-  [ChromeEarlGrey waitForWebViewContainingText:kPageText];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebStateContainingText:kPageText]);
 
   // On iPhone Stop/Reload button is a part of tools menu, so open it.
   if (!IsIPadIdiom()) {
@@ -125,8 +134,8 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::StopButton()]
       performAction:grey_tap()];
 
-  // Enable synchronization back. The spinner should become idle and test should
-  // wait for it.
+  // Enable synchronization back. The spinner should become idle and test
+  // should wait for it.
   [[GREYConfiguration sharedInstance]
           setValue:@YES
       forConfigKey:kGREYConfigKeySynchronizationEnabled];

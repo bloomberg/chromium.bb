@@ -6,8 +6,8 @@ package org.chromium.chrome.browser.feed.action;
 
 import android.support.annotation.NonNull;
 
-import com.google.android.libraries.feed.api.knowncontent.ContentMetadata;
-import com.google.android.libraries.feed.host.action.ActionApi;
+import com.google.android.libraries.feed.api.client.knowncontent.ContentMetadata;
+import com.google.android.libraries.feed.api.host.action.ActionApi;
 
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.feed.FeedLoggingBridge;

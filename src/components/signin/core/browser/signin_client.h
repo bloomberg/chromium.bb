@@ -79,6 +79,9 @@ class SigninClient : public KeyedService {
   // Returns true if GAIA cookies are allowed in the content area.
   virtual bool AreSigninCookiesAllowed() = 0;
 
+  // Returns true if signin cookies are cleared on exit.
+  virtual bool AreSigninCookiesDeletedOnExit() = 0;
+
   // Adds an observer to listen for changes to the state of sign in cookie
   // settings.
   virtual void AddContentSettingsObserver(
@@ -92,8 +95,7 @@ class SigninClient : public KeyedService {
   // Creates a new platform-specific GaiaAuthFetcher.
   virtual std::unique_ptr<GaiaAuthFetcher> CreateGaiaAuthFetcher(
       GaiaAuthConsumer* consumer,
-      gaia::GaiaSource source,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) = 0;
+      gaia::GaiaSource source) = 0;
 
   // Schedules migration to happen at next startup.
   virtual void SetReadyForDiceMigration(bool is_ready) {}

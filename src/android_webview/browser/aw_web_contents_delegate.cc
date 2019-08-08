@@ -30,7 +30,7 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/AwWebContentsDelegate_jni.h"
-#include "net/base/escape.h"
+#include "net/base/filename_util.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 
 using base::android::AttachCurrentThread;
@@ -356,13 +356,13 @@ static void JNI_AwWebContentsDelegate_FilesSelectedInChooser(
     GURL url(file_path_str[i]);
     if (!url.is_valid())
       continue;
-    base::FilePath path(
-        url.SchemeIsFile()
-            ? net::UnescapeURLComponent(
-                  url.path(), net::UnescapeRule::SPACES |
-                                  net::UnescapeRule::
-                                      URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS)
-            : file_path_str[i]);
+    base::FilePath path;
+    if (url.SchemeIsFile()) {
+      if (!net::FileURLToFilePath(url, &path))
+        continue;
+    } else {
+      path = base::FilePath(file_path_str[i]);
+    }
     auto file_info = blink::mojom::NativeFileInfo::New();
     file_info->file_path = path;
     if (!display_name_str[i].empty())

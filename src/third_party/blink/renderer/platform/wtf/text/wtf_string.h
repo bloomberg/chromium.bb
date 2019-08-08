@@ -27,6 +27,7 @@
 // on systems without case-sensitive file systems.
 
 #include <iosfwd>
+#include "base/containers/span.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/integer_to_string_conversion.h"
@@ -125,6 +126,21 @@ class WTF_EXPORT String {
     return impl_->length();
   }
 
+  // Prefer Span8() and Span16() to Characters8() and Characters16().
+  base::span<const LChar> Span8() const {
+    if (!impl_)
+      return {};
+    DCHECK(impl_->Is8Bit());
+    return impl_->Span8();
+  }
+
+  base::span<const UChar> Span16() const {
+    if (!impl_)
+      return {};
+    DCHECK(!impl_->Is8Bit());
+    return impl_->Span16();
+  }
+
   const LChar* Characters8() const {
     if (!impl_)
       return nullptr;
@@ -152,7 +168,7 @@ class WTF_EXPORT String {
   bool Is8Bit() const { return impl_->Is8Bit(); }
 
   CString Ascii() const WARN_UNUSED_RESULT;
-  CString Latin1() const WARN_UNUSED_RESULT;
+  std::string Latin1() const WARN_UNUSED_RESULT;
   CString Utf8(UTF8ConversionMode = kLenientUTF8Conversion) const
       WARN_UNUSED_RESULT;
 

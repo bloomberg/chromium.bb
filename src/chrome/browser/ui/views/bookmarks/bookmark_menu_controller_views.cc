@@ -6,7 +6,7 @@
 
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_stats.h"
+#include "chrome/browser/ui/bookmarks/bookmark_stats.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_menu_controller_observer.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_menu_delegate.h"
@@ -57,7 +57,8 @@ void BookmarkMenuController::RunMenuAt(BookmarkBarView* bookmark_bar) {
   menu_delegate_->GetBookmarkModel()->AddObserver(this);
   // We only delete ourself after the menu completes, so we can safely ignore
   // the return value.
-  menu_runner_->RunMenuAt(menu_delegate_->parent(), menu_button, bounds, anchor,
+  menu_runner_->RunMenuAt(menu_delegate_->parent(),
+                          menu_button->button_controller(), bounds, anchor,
                           ui::MENU_SOURCE_NONE);
 }
 

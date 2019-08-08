@@ -17,7 +17,7 @@ namespace android_webview {
 namespace {
 
 AwFormDatabaseService* GetFormDatabaseService() {
-  AwBrowserContext* context = AwContentBrowserClient::GetAwBrowserContext();
+  AwBrowserContext* context = AwBrowserContext::GetDefault();
   AwFormDatabaseService* service = context->GetFormDatabaseService();
   return service;
 }

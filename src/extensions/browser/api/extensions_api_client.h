@@ -35,6 +35,7 @@ class GuestViewManagerDelegate;
 
 namespace extensions {
 
+class AutomationInternalApiDelegate;
 class AppViewGuestDelegate;
 class ContentRulesRegistry;
 class DevicePermissionsPrompt;
@@ -183,6 +184,8 @@ class ExtensionsAPIClient {
       const base::Closure& success_callback,
       const base::Callback<void(const std::string&)>& error_callback);
 #endif
+
+  virtual AutomationInternalApiDelegate* GetAutomationInternalApiDelegate();
 
   // NOTE: If this interface gains too many methods (perhaps more than 20) it
   // should be split into one interface per API.

@@ -189,25 +189,17 @@ Polymer({
    */
   ensureSubpageInstance_: function() {
     const routePath = settings.getCurrentRoute().path;
-    /* TODO(dpapad): Remove conditional logic once migration to Polymer 2 is
-     * completed. */
-    const domIf = this.querySelector(
-        (Polymer.DomIf ? 'dom-if' : 'template') +
-        `[route-path='${routePath}']`);
+    const domIf = this.querySelector(`dom-if[route-path='${routePath}']`);
 
-    // Nothing to do if the subpage isn't wrapped in a <dom-if>
-    // (or <template is="dom-if" for Poylmer 1) or the template is already
-    // stamped.
+    // Nothing to do if the subpage isn't wrapped in a <dom-if> or the template
+    // is already stamped.
     if (!domIf || domIf.if) {
       return;
     }
 
     // Set the subpage's id for use by neon-animated-pages.
-    // TODO(dpapad): Remove conditional logic once migration to Polymer 2 is
-    // completed.
-    const content = Polymer.DomIf ?
-        Polymer.DomIf._contentForTemplate(domIf.firstElementChild) :
-        /** @type {{_content: DocumentFragment}} */ (domIf)._content;
+    const content = Polymer.DomIf._contentForTemplate(
+        /** @type {!HTMLTemplateElement} */ (domIf.firstElementChild));
     const subpage = content.querySelector('settings-subpage');
     subpage.setAttribute('route-path', routePath);
 

@@ -24,7 +24,6 @@ class PipelineCache : public Object<PipelineCache, VkPipelineCache>
 {
 public:
 	PipelineCache(const VkPipelineCacheCreateInfo* pCreateInfo, void* mem);
-	~PipelineCache() = delete;
 	void destroy(const VkAllocationCallbacks* pAllocator);
 
 	static size_t ComputeRequiredAllocationSize(const VkPipelineCacheCreateInfo* pCreateInfo);
@@ -48,7 +47,7 @@ private:
 
 static inline PipelineCache* Cast(VkPipelineCache object)
 {
-	return reinterpret_cast<PipelineCache*>(object);
+	return reinterpret_cast<PipelineCache*>(object.get());
 }
 
 } // namespace vk

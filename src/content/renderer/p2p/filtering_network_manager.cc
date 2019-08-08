@@ -113,10 +113,12 @@ void FilteringNetworkManager::CheckPermission() {
   // Request for media permission asynchronously.
   media_permission_->HasPermission(
       media::MediaPermission::AUDIO_CAPTURE,
-      base::Bind(&FilteringNetworkManager::OnPermissionStatus, GetWeakPtr()));
+      base::BindOnce(&FilteringNetworkManager::OnPermissionStatus,
+                     GetWeakPtr()));
   media_permission_->HasPermission(
       media::MediaPermission::VIDEO_CAPTURE,
-      base::Bind(&FilteringNetworkManager::OnPermissionStatus, GetWeakPtr()));
+      base::BindOnce(&FilteringNetworkManager::OnPermissionStatus,
+                     GetWeakPtr()));
 }
 
 void FilteringNetworkManager::OnPermissionStatus(bool granted) {

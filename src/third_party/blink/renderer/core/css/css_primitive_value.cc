@@ -345,7 +345,7 @@ void CSSPrimitiveValue::AccumulateLengthArray(CSSLengthArray& length_array,
   length_array.values[length_type] +=
       value_.num * ConversionToCanonicalUnitsScaleFactor(GetType()) *
       multiplier;
-  length_array.type_flags.Set(length_type);
+  length_array.type_flags.set(length_type);
 }
 
 double CSSPrimitiveValue::ConversionToCanonicalUnitsScaleFactor(

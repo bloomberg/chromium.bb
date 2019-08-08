@@ -80,9 +80,10 @@ void TabReactivationTracker::OnTabStripModelChanged(
     const TabStripModelChange& change,
     const TabStripSelectionChange& selection) {
   if (change.type() == TabStripModelChange::kRemoved) {
-    for (const auto& delta : change.deltas()) {
-      if (delta.remove.will_be_deleted)
-        GetHelper(delta.remove.contents)->OnTabClosing();
+    auto* remove = change.GetRemove();
+    if (remove->will_be_deleted) {
+      for (const auto& contents : remove->contents)
+        GetHelper(contents.contents)->OnTabClosing();
     }
   }
 

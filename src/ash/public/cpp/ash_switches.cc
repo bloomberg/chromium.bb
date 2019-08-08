@@ -18,9 +18,6 @@ const char kAshDebugShortcuts[] = "ash-debug-shortcuts";
 // Enable keyboard shortcuts used by developers only.
 const char kAshDeveloperShortcuts[] = "ash-dev-shortcuts";
 
-// Disables the split view on tablet mode.
-const char kAshDisableTabletSplitView[] = "disable-tablet-splitview";
-
 // Disable the Touch Exploration Mode. Touch Exploration Mode will no longer be
 // turned on automatically when spoken feedback is enabled when this flag is
 // set.
@@ -49,6 +46,15 @@ const char kAshEnablePaletteOnAllDisplays[] =
 // is not a covertible or tablet, thus doesn't have this flag set, thus can't
 // enter tablet mode.
 const char kAshEnableTabletMode[] = "enable-touchview";
+
+// Used to expose additional test-only interfaces.
+// Historical note: this name was originally used by the window-service to
+// enable additional test only interfaces, which also enabled test functionality
+// in ash. While the window-service is no more, autotest lives on. The string
+// value matches that used by the window-service.
+// TODO(crbug.com/958247): this is only necessary because of
+// ShelfIntegrationTestApi, that likely can be removed.
+const char kAshEnableTestInterfaces[] = "use-test-config";
 
 // Enable the wayland server.
 const char kAshEnableWaylandServer[] = "enable-wayland-server";
@@ -83,6 +89,12 @@ const char kAshHideNotificationsForFactory[] =
 
 // Enables the heads-up display for tracking touch points.
 const char kAshTouchHud[] = "ash-touch-hud";
+
+// The physical position info of the side volume button while in landscape
+// primary screen orientation. The value is a JSON object containing a "region"
+// property with the value "keyboard", "screen" and a "side" property with the
+// value "left", "right", "top", "bottom".
+const char kAshSideVolumeButtonPosition[] = "ash-side-volume-button-position";
 
 // (Most) Chrome OS hardware reports ACPI power button releases correctly.
 // Standard hardware reports releases immediately after presses.  If set, we

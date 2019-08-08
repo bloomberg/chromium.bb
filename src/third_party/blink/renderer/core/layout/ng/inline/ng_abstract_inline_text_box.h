@@ -32,7 +32,6 @@ class CORE_EXPORT NGAbstractInlineTextBox final : public AbstractInlineTextBox {
   NGAbstractInlineTextBox(LineLayoutText line_layout_item,
                           const NGPaintFragment& fragment);
 
-  bool HasSoftWrapToNextLine() const;
   const NGPhysicalTextFragment& PhysicalTextFragment() const;
   bool NeedsLayout() const;
   bool NeedsTrailingSpace() const;

@@ -254,7 +254,7 @@ void MediaCodecVideoDecoder::Destroy() {
 void MediaCodecVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                         bool low_delay,
                                         CdmContext* cdm_context,
-                                        const InitCB& init_cb,
+                                        InitCB init_cb,
                                         const OutputCB& output_cb,
                                         const WaitingCB& waiting_cb) {
   DCHECK(output_cb);
@@ -265,21 +265,21 @@ void MediaCodecVideoDecoder::Initialize(const VideoDecoderConfig& config,
            << " MCVD with config: " << config.AsHumanReadableString()
            << ", cdm_context = " << cdm_context;
 
-  InitCB bound_init_cb = BindToCurrentLoop(init_cb);
   if (!ConfigSupported(config, device_info_)) {
-    bound_init_cb.Run(false);
+    BindToCurrentLoop(std::move(init_cb)).Run(false);
     return;
   }
 
   // Disallow codec changes when reinitializing.
   if (!first_init && decoder_config_.codec() != config.codec()) {
     DVLOG(1) << "Codec changed: cannot reinitialize";
-    bound_init_cb.Run(false);
+    BindToCurrentLoop(std::move(init_cb)).Run(false);
     return;
   }
   decoder_config_ = config;
 
-  surface_chooser_helper_.SetVideoRotation(decoder_config_.video_rotation());
+  surface_chooser_helper_.SetVideoRotation(
+      decoder_config_.video_transformation().rotation);
 
   output_cb_ = output_cb;
   waiting_cb_ = waiting_cb;
@@ -294,22 +294,21 @@ void MediaCodecVideoDecoder::Initialize(const VideoDecoderConfig& config,
   // encrypted config later.
   if (first_init && cdm_context && cdm_context->GetMediaCryptoContext()) {
     DCHECK(media_crypto_.is_null());
-    SetCdm(cdm_context, init_cb);
+    SetCdm(cdm_context, std::move(init_cb));
     return;
   }
 
   if (config.is_encrypted() && media_crypto_.is_null()) {
     DVLOG(1) << "No MediaCrypto to handle encrypted config";
-    bound_init_cb.Run(false);
+    BindToCurrentLoop(std::move(init_cb)).Run(false);
     return;
   }
 
   // Do the rest of the initialization lazily on the first decode.
-  init_cb.Run(true);
+  BindToCurrentLoop(std::move(init_cb)).Run(true);
 }
 
-void MediaCodecVideoDecoder::SetCdm(CdmContext* cdm_context,
-                                    const InitCB& init_cb) {
+void MediaCodecVideoDecoder::SetCdm(CdmContext* cdm_context, InitCB init_cb) {
   DVLOG(1) << __func__;
   DCHECK(cdm_context) << "No CDM provided";
   DCHECK(cdm_context->GetMediaCryptoContext());
@@ -319,12 +318,12 @@ void MediaCodecVideoDecoder::SetCdm(CdmContext* cdm_context,
   // Register CDM callbacks. The callbacks registered will be posted back to
   // this thread via BindToCurrentLoop.
   media_crypto_context_->SetMediaCryptoReadyCB(media::BindToCurrentLoop(
-      base::Bind(&MediaCodecVideoDecoder::OnMediaCryptoReady,
-                 weak_factory_.GetWeakPtr(), init_cb)));
+      base::BindOnce(&MediaCodecVideoDecoder::OnMediaCryptoReady,
+                     weak_factory_.GetWeakPtr(), std::move(init_cb))));
 }
 
 void MediaCodecVideoDecoder::OnMediaCryptoReady(
-    const InitCB& init_cb,
+    InitCB init_cb,
     JavaObjectPtr media_crypto,
     bool requires_secure_video_codec) {
   DVLOG(1) << __func__
@@ -334,21 +333,20 @@ void MediaCodecVideoDecoder::OnMediaCryptoReady(
   DCHECK(media_crypto);
 
   if (media_crypto->is_null()) {
-    media_crypto_context_->SetMediaCryptoReadyCB(
-        MediaCryptoContext::MediaCryptoReadyCB());
+    media_crypto_context_->SetMediaCryptoReadyCB(base::NullCallback());
     media_crypto_context_ = nullptr;
 
     if (decoder_config_.is_encrypted()) {
       LOG(ERROR) << "MediaCrypto is not available";
       EnterTerminalState(State::kError);
-      init_cb.Run(false);
+      std::move(init_cb).Run(false);
       return;
     }
 
     // MediaCrypto is not available, but the stream is clear. So we can still
     // play the current stream. But if we switch to an encrypted stream playback
     // will fail.
-    init_cb.Run(true);
+    std::move(init_cb).Run(true);
     return;
   }
 
@@ -373,7 +371,7 @@ void MediaCodecVideoDecoder::OnMediaCryptoReady(
           : SurfaceChooserHelper::SecureSurfaceMode::kRequested);
 
   // Signal success, and create the codec lazily on the first decode.
-  init_cb.Run(true);
+  std::move(init_cb).Run(true);
 }
 
 void MediaCodecVideoDecoder::OnKeyAdded() {
@@ -596,10 +594,10 @@ void MediaCodecVideoDecoder::OnCodecConfigured(
 }
 
 void MediaCodecVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
-                                    const DecodeCB& decode_cb) {
+                                    DecodeCB decode_cb) {
   DVLOG(3) << __func__ << ": " << buffer->AsHumanReadableString();
   if (state_ == State::kError) {
-    decode_cb.Run(DecodeStatus::DECODE_ERROR);
+    std::move(decode_cb).Run(DecodeStatus::DECODE_ERROR);
     return;
   }
   pending_decodes_.emplace_back(std::move(buffer), std::move(decode_cb));
@@ -752,7 +750,7 @@ bool MediaCodecVideoDecoder::QueueInput() {
     DCHECK(!eos_decode_cb_);
     eos_decode_cb_ = std::move(pending_decode.decode_cb);
   } else {
-    pending_decode.decode_cb.Run(DecodeStatus::OK);
+    std::move(pending_decode.decode_cb).Run(DecodeStatus::OK);
   }
   pending_decodes_.pop_front();
   return true;
@@ -849,14 +847,22 @@ void MediaCodecVideoDecoder::RunEosDecodeCb(int reset_generation) {
 void MediaCodecVideoDecoder::ForwardVideoFrame(
     int reset_generation,
     std::unique_ptr<ScopedAsyncTrace> async_trace,
-    const scoped_refptr<VideoFrame>& frame) {
+    scoped_refptr<VideoFrame> frame) {
   DVLOG(3) << __func__ << " : "
            << (frame ? frame->AsHumanReadableString() : "null");
+
+  // No |frame| indicates an error creating it.
+  if (!frame) {
+    DLOG(ERROR) << __func__ << " |frame| is null";
+    EnterTerminalState(State::kError);
+    return;
+  }
+
   if (reset_generation == reset_generation_) {
     // TODO(liberato): We might actually have a SW decoder.  Consider setting
     // this to false if so, especially for higher bitrates.
     frame->metadata()->SetBoolean(VideoFrameMetadata::POWER_EFFICIENT, true);
-    output_cb_.Run(frame);
+    output_cb_.Run(std::move(frame));
   }
 }
 
@@ -864,7 +870,7 @@ void MediaCodecVideoDecoder::ForwardVideoFrame(
 // After |closure| runs:
 // 1) no VideoFrames from before the Reset() will be output, and
 // 2) no DecodeCBs (including EOS) from before the Reset() will be run.
-void MediaCodecVideoDecoder::Reset(const base::Closure& closure) {
+void MediaCodecVideoDecoder::Reset(base::OnceClosure closure) {
   DVLOG(2) << __func__;
   DCHECK(!reset_cb_);
   reset_generation_++;
@@ -961,7 +967,7 @@ bool MediaCodecVideoDecoder::InTerminalState() {
 
 void MediaCodecVideoDecoder::CancelPendingDecodes(DecodeStatus status) {
   for (auto& pending_decode : pending_decodes_)
-    pending_decode.decode_cb.Run(status);
+    std::move(pending_decode.decode_cb).Run(status);
   pending_decodes_.clear();
   if (eos_decode_cb_)
     std::move(eos_decode_cb_).Run(status);

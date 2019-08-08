@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/modules/mediastream/media_devices.h"
 
+#include <utility>
+
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -22,6 +24,7 @@
 #include "third_party/blink/renderer/modules/mediastream/navigator_media_stream.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_controller.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 using blink::mojom::blink::MediaDeviceType;
@@ -67,7 +70,8 @@ ScriptPromise MediaDevices::enumerateDevices(ScriptState* script_state) {
       To<Document>(ExecutionContext::From(script_state))->GetFrame();
   if (!frame) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kNotSupportedError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
                                            "Current frame is detached."));
   }
 
@@ -107,12 +111,13 @@ ScriptPromise MediaDevices::SendUserMediaRequest(
   Document* document = To<Document>(ExecutionContext::From(script_state));
   UserMediaController* user_media =
       UserMediaController::From(document->GetFrame());
-  if (!user_media)
+  if (!user_media) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                             "No media device controller available; is this a "
-                             "detached window?"));
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kNotSupportedError,
+                          "No media device controller available; is this a "
+                          "detached window?"));
+  }
 
   MediaErrorState error_state;
   UserMediaRequest* request = UserMediaRequest::Create(
@@ -131,8 +136,8 @@ ScriptPromise MediaDevices::SendUserMediaRequest(
   String error_message;
   if (!request->IsSecureContextUse(error_message)) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                                           error_message));
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kNotSupportedError, error_message));
   }
   auto promise = resolver->Promise();
   request->Start();
@@ -328,8 +333,8 @@ void MediaDevices::DevicesEnumerated(
 
 void MediaDevices::OnDispatcherHostConnectionError() {
   for (ScriptPromiseResolver* resolver : requests_) {
-    resolver->Reject(DOMException::Create(DOMExceptionCode::kAbortError,
-                                          "enumerateDevices() failed."));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kAbortError, "enumerateDevices() failed."));
   }
   requests_.clear();
   dispatcher_host_.reset();

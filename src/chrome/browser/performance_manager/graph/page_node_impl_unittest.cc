@@ -38,11 +38,17 @@ class PageNodeImplTest : public GraphTestHarness {
 
 }  // namespace
 
+TEST_F(PageNodeImplTest, GetIndexingKey) {
+  auto page = CreateNode<PageNodeImpl>();
+  EXPECT_EQ(page->GetIndexingKey(),
+            static_cast<const void*>(static_cast<const NodeBase*>(page.get())));
+}
+
 TEST_F(PageNodeImplTest, AddFrameBasic) {
   auto process_node = CreateNode<ProcessNodeImpl>();
-  auto page_node = CreateNode<PageNodeImpl>(nullptr);
-  auto parent_frame = CreateNode<FrameNodeImpl>(process_node.get(),
-                                                page_node.get(), nullptr, 0);
+  auto page_node = CreateNode<PageNodeImpl>();
+  auto parent_frame =
+      CreateNode<FrameNodeImpl>(process_node.get(), page_node.get());
   auto child1_frame = CreateNode<FrameNodeImpl>(
       process_node.get(), page_node.get(), parent_frame.get(), 1);
   auto child2_frame = CreateNode<FrameNodeImpl>(
@@ -54,7 +60,7 @@ TEST_F(PageNodeImplTest, AddFrameBasic) {
 
 TEST_F(PageNodeImplTest, RemoveFrame) {
   auto process_node = CreateNode<ProcessNodeImpl>();
-  auto page_node = CreateNode<PageNodeImpl>(nullptr);
+  auto page_node = CreateNode<PageNodeImpl>();
   auto frame_node = CreateNode<FrameNodeImpl>(process_node.get(),
                                               page_node.get(), nullptr, 0);
 
@@ -194,7 +200,7 @@ void ExpectInterventionPolicy(
 }
 
 void ExpectInitialInterventionPolicyAggregationWorks(
-    Graph* mock_graph,
+    GraphImpl* mock_graph,
     resource_coordinator::mojom::InterventionPolicy f0_policy,
     resource_coordinator::mojom::InterventionPolicy f1_policy,
     resource_coordinator::mojom::InterventionPolicy f0_policy_aggregated,
@@ -202,7 +208,7 @@ void ExpectInitialInterventionPolicyAggregationWorks(
   TestNodeWrapper<ProcessNodeImpl> process =
       TestNodeWrapper<ProcessNodeImpl>::Create(mock_graph);
   TestNodeWrapper<PageNodeImpl> page =
-      TestNodeWrapper<PageNodeImpl>::Create(mock_graph, nullptr);
+      TestNodeWrapper<PageNodeImpl>::Create(mock_graph);
 
   // Check the initial values before any frames are added.
   EXPECT_EQ(0u, page->GetInterventionPolicyFramesReportedForTesting());
@@ -213,7 +219,7 @@ void ExpectInitialInterventionPolicyAggregationWorks(
 
   // Create an initial frame.
   TestNodeWrapper<FrameNodeImpl> f0 = TestNodeWrapper<FrameNodeImpl>::Create(
-      mock_graph, process.get(), page.get(), nullptr, 0);
+      mock_graph, process.get(), page.get());
   // Add a frame and expect the values to be invalidated. Reaggregate and
   // ensure the appropriate value results.
   f0->SetAllInterventionPoliciesForTesting(f0_policy);
@@ -245,8 +251,8 @@ void ExpectInitialInterventionPolicyAggregationWorks(
 TEST_F(PageNodeImplTest, InitialInterventionPolicy) {
   auto* mock_graph = graph();
 
-  // Tests all possible transitions where the frame CU has its policy values
-  // set before being attached to the page CU. This affectively tests the
+  // Tests all possible transitions where the frame node has its policy values
+  // set before being attached to the page node. This affectively tests the
   // aggregation logic in isolation.
 
   // Default x [Default, OptIn, OptOut]
@@ -343,11 +349,11 @@ TEST_F(PageNodeImplTest, IncrementalInterventionPolicy) {
   TestNodeWrapper<ProcessNodeImpl> process =
       TestNodeWrapper<ProcessNodeImpl>::Create(mock_graph);
   TestNodeWrapper<PageNodeImpl> page =
-      TestNodeWrapper<PageNodeImpl>::Create(mock_graph, nullptr);
+      TestNodeWrapper<PageNodeImpl>::Create(mock_graph);
 
   // Create two frames and immediately attach them to the page.
   TestNodeWrapper<FrameNodeImpl> f0 = TestNodeWrapper<FrameNodeImpl>::Create(
-      mock_graph, process.get(), page.get(), nullptr, 0);
+      mock_graph, process.get(), page.get());
   TestNodeWrapper<FrameNodeImpl> f1 = TestNodeWrapper<FrameNodeImpl>::Create(
       mock_graph, process.get(), page.get(), f0.get(), 1);
   EXPECT_EQ(0u, page->GetInterventionPolicyFramesReportedForTesting());
@@ -355,7 +361,7 @@ TEST_F(PageNodeImplTest, IncrementalInterventionPolicy) {
   EXPECT_EQ(0u, page->GetInterventionPolicyFramesReportedForTesting());
 
   // Set the policies on the first frame. This should be observed by the page
-  // CU, but aggregation should still not be possible.
+  // node, but aggregation should still not be possible.
   f0->SetAllInterventionPoliciesForTesting(
       resource_coordinator::mojom::InterventionPolicy::kDefault);
   EXPECT_EQ(1u, page->GetInterventionPolicyFramesReportedForTesting());

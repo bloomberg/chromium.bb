@@ -7,8 +7,8 @@ without changes to the corresponding grd file. -->
       <emit emit_type='prepend'></emit>
     </output>
     <output filename="grit/webui_resources_map.cc"
-            type="gzipped_resource_file_map_source" />
-    <output filename="grit/webui_resources_map.h" type="gzipped_resource_map_header" />
+            type="resource_file_map_source" />
+    <output filename="grit/webui_resources_map.h" type="resource_map_header" />
     <output filename="webui_resources.pak" type="data_package" />
   </outputs>
   <release seq="1">
@@ -536,6 +536,9 @@ without changes to the corresponding grd file. -->
         <part file="cr_elements_resources.grdp" />
         <part file="cr_polymer_resources.grdp" />
         <part file="polymer_resources.grdp" />
+        <if expr="not optimize_webui">
+          <part file="polymer_resources_v3.grdp" />
+        </if>
       </if>
     </structures>
   </release>

@@ -31,7 +31,6 @@
 #include "chrome/renderer/media/cast_rtp_stream.h"
 #include "chrome/renderer/media/cast_session.h"
 #include "chrome/renderer/media/cast_udp_transport.h"
-#include "content/public/renderer/media_stream_utils.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/extension.h"
 #include "extensions/renderer/native_extension_bindings_system.h"

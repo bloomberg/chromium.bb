@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/policy/remote_commands/crd_host_delegate.h"
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/task/post_task.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
+#include "chrome/common/chrome_features.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -53,8 +55,8 @@ constexpr char kCRDConnectAuth[] = "authServiceWithToken";
 constexpr char kCRDConnectXMPPServer[] = "xmppServerAddress";
 constexpr char kCRDConnectXMPPTLS[] = "xmppServerUseTls";
 constexpr char kCRDConnectDirectoryBot[] = "directoryBotJid";
-constexpr char kCRDConnectICEConfig[] = "iceConfig";
 constexpr char kCRDConnectNoDialogs[] = "noDialogs";
+constexpr char kCRDTerminateUponInput[] = "terminateUponInput";
 
 // Connect message parameter values:
 constexpr char kCRDConnectXMPPServerValue[] = "talk.google.com:443";
@@ -84,6 +86,10 @@ constexpr char kCloudDevicesOAuth2Scope[] =
     "https://www.googleapis.com/auth/clouddevices";
 constexpr char kChromotingOAuth2Scope[] =
     "https://www.googleapis.com/auth/chromoting";
+constexpr char kChromotingRemoteSupportOAuth2Scope[] =
+    "https://www.googleapis.com/auth/chromoting.remote.support";
+constexpr char kTachyonOAuth2Scope[] =
+    "https://www.googleapis.com/auth/tachyon";
 
 net::NetworkTrafficAnnotationTag CreateIceConfigRequestAnnotation() {
   return net::DefineNetworkTrafficAnnotation("CRD_ice_config_request", R"(
@@ -186,8 +192,16 @@ void CRDHostDelegate::FetchOAuthToken(
 
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert(GaiaConstants::kGoogleUserInfoEmail);
-  scopes.insert(GaiaConstants::kGoogleTalkOAuth2Scope);
   scopes.insert(kCloudDevicesOAuth2Scope);
+
+  if (base::FeatureList::IsEnabled(
+          features::kUseFtlSignalingForCrdHostDelegate)) {
+    scopes.insert(kChromotingRemoteSupportOAuth2Scope);
+    scopes.insert(kTachyonOAuth2Scope);
+  }
+
+  // TODO(joedow): Remove these scopes once we migrate to FTL signaling.
+  scopes.insert(GaiaConstants::kGoogleTalkOAuth2Scope);
   scopes.insert(kChromotingOAuth2Scope);
 
   oauth_success_callback_ = std::move(success_callback);
@@ -274,7 +288,8 @@ void CRDHostDelegate::OnICEConfigurationLoaded(
 
 void CRDHostDelegate::StartCRDHostAndGetCode(
     const std::string& oauth_token,
-    base::Value ice_config,
+    base::Value unused_ice_config,
+    bool terminate_upon_input,
     DeviceCommandStartCRDSessionJob::AccessCodeCallback success_callback,
     DeviceCommandStartCRDSessionJob::ErrorCallback error_callback) {
   DCHECK(!host_);
@@ -293,8 +308,9 @@ void CRDHostDelegate::StartCRDHostAndGetCode(
   connect_params.SetKey(kCRDConnectXMPPTLS, base::Value(true));
   connect_params.SetKey(kCRDConnectDirectoryBot,
                         base::Value(kCRDConnectDirectoryBotValue));
-  connect_params.SetKey(kCRDConnectICEConfig, std::move(ice_config));
   connect_params.SetKey(kCRDConnectNoDialogs, base::Value(true));
+  connect_params.SetKey(kCRDTerminateUponInput,
+                        base::Value(terminate_upon_input));
   connect_params_ = std::move(connect_params);
 
   remote_connected_ = false;

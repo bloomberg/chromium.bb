@@ -54,14 +54,55 @@ TEST(UnalignedSharedMemoryTest, CreateAndDestroy) {
   UnalignedSharedMemory shm(handle, kDataSize, true);
 }
 
+TEST(UnalignedSharedMemoryTest, CreateAndDestroyRegion) {
+  auto region = CreateRegion(kData, kDataSize);
+  UnalignedSharedMemory shm(
+      base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
+          std::move(region)),
+      kDataSize, false);
+}
+
+TEST(UnalignedSharedMemoryTest, CreateAndDestroyReadOnlyRegion) {
+  auto region = CreateReadOnlyRegion(kData, kDataSize);
+  UnalignedSharedMemory shm(
+      base::ReadOnlySharedMemoryRegion::TakeHandleForSerialization(
+          std::move(region)),
+      kDataSize, true);
+}
+
 TEST(UnalignedSharedMemoryTest, CreateAndDestroy_InvalidHandle) {
   base::SharedMemoryHandle handle;
   UnalignedSharedMemory shm(handle, kDataSize, true);
 }
 
+TEST(UnalignedSharedMemoryTest, CreateAndDestroy_InvalidRegion) {
+  UnalignedSharedMemory shm(base::subtle::PlatformSharedMemoryRegion(),
+                            kDataSize, false);
+}
+
 TEST(UnalignedSharedMemoryTest, Map) {
   auto handle = CreateHandle(kData, kDataSize);
   UnalignedSharedMemory shm(handle, kDataSize, true);
+  ASSERT_TRUE(shm.MapAt(0, kDataSize));
+  EXPECT_EQ(0, memcmp(shm.memory(), kData, kDataSize));
+}
+
+TEST(UnalignedSharedMemoryTest, MapRegion) {
+  auto region = CreateRegion(kData, kDataSize);
+  UnalignedSharedMemory shm(
+      base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
+          std::move(region)),
+      kDataSize, false);
+  ASSERT_TRUE(shm.MapAt(0, kDataSize));
+  EXPECT_EQ(0, memcmp(shm.memory(), kData, kDataSize));
+}
+
+TEST(UnalignedSharedMemoryTest, MapReadOnlyRegion) {
+  auto region = CreateReadOnlyRegion(kData, kDataSize);
+  UnalignedSharedMemory shm(
+      base::ReadOnlySharedMemoryRegion::TakeHandleForSerialization(
+          std::move(region)),
+      kDataSize, true);
   ASSERT_TRUE(shm.MapAt(0, kDataSize));
   EXPECT_EQ(0, memcmp(shm.memory(), kData, kDataSize));
 }
@@ -73,9 +114,36 @@ TEST(UnalignedSharedMemoryTest, Map_Unaligned) {
   EXPECT_EQ(0, memcmp(shm.memory(), kData, kDataSize));
 }
 
+TEST(UnalignedSharedMemoryTest, Map_UnalignedRegion) {
+  auto region = CreateRegion(kUnalignedData, kUnalignedDataSize);
+  UnalignedSharedMemory shm(
+      base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
+          std::move(region)),
+      kUnalignedDataSize, false);
+  ASSERT_TRUE(shm.MapAt(kUnalignedOffset, kDataSize));
+  EXPECT_EQ(0, memcmp(shm.memory(), kData, kDataSize));
+}
+
+TEST(UnalignedSharedMemoryTest, Map_UnalignedReadOnlyRegion) {
+  auto region = CreateReadOnlyRegion(kUnalignedData, kUnalignedDataSize);
+  UnalignedSharedMemory shm(
+      base::ReadOnlySharedMemoryRegion::TakeHandleForSerialization(
+          std::move(region)),
+      kUnalignedDataSize, true);
+  ASSERT_TRUE(shm.MapAt(kUnalignedOffset, kDataSize));
+  EXPECT_EQ(0, memcmp(shm.memory(), kData, kDataSize));
+}
+
 TEST(UnalignedSharedMemoryTest, Map_InvalidHandle) {
   base::SharedMemoryHandle handle;
   UnalignedSharedMemory shm(handle, kDataSize, true);
+  ASSERT_FALSE(shm.MapAt(1, kDataSize));
+  EXPECT_EQ(shm.memory(), nullptr);
+}
+
+TEST(UnalignedSharedMemoryTest, Map_InvalidRegion) {
+  UnalignedSharedMemory shm(base::subtle::PlatformSharedMemoryRegion(),
+                            kDataSize, true);
   ASSERT_FALSE(shm.MapAt(1, kDataSize));
   EXPECT_EQ(shm.memory(), nullptr);
 }
@@ -86,9 +154,45 @@ TEST(UnalignedSharedMemoryTest, Map_NegativeOffset) {
   ASSERT_FALSE(shm.MapAt(-1, kDataSize));
 }
 
+TEST(UnalignedSharedMemoryTest, Map_NegativeOffsetRegion) {
+  auto region = CreateRegion(kData, kDataSize);
+  UnalignedSharedMemory shm(
+      base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
+          std::move(region)),
+      kDataSize, false);
+  ASSERT_FALSE(shm.MapAt(-1, kDataSize));
+}
+
+TEST(UnalignedSharedMemoryTest, Map_NegativeOffsetReadOnlyRegion) {
+  auto region = CreateReadOnlyRegion(kData, kDataSize);
+  UnalignedSharedMemory shm(
+      base::ReadOnlySharedMemoryRegion::TakeHandleForSerialization(
+          std::move(region)),
+      kDataSize, true);
+  ASSERT_FALSE(shm.MapAt(-1, kDataSize));
+}
+
 TEST(UnalignedSharedMemoryTest, Map_SizeOverflow) {
   auto handle = CreateHandle(kData, kDataSize);
   UnalignedSharedMemory shm(handle, kDataSize, true);
+  ASSERT_FALSE(shm.MapAt(1, std::numeric_limits<size_t>::max()));
+}
+
+TEST(UnalignedSharedMemoryTest, Map_SizeOverflowRegion) {
+  auto region = CreateRegion(kData, kDataSize);
+  UnalignedSharedMemory shm(
+      base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
+          std::move(region)),
+      kDataSize, false);
+  ASSERT_FALSE(shm.MapAt(1, std::numeric_limits<size_t>::max()));
+}
+
+TEST(UnalignedSharedMemoryTest, Map_SizeOverflowReadOnlyRegion) {
+  auto region = CreateReadOnlyRegion(kData, kDataSize);
+  UnalignedSharedMemory shm(
+      base::ReadOnlySharedMemoryRegion::TakeHandleForSerialization(
+          std::move(region)),
+      kDataSize, true);
   ASSERT_FALSE(shm.MapAt(1, std::numeric_limits<size_t>::max()));
 }
 
@@ -98,21 +202,27 @@ TEST(UnalignedSharedMemoryTest, UnmappedIsNullptr) {
   ASSERT_EQ(shm.memory(), nullptr);
 }
 
+TEST(UnalignedSharedMemoryTest, UnmappedRegionIsNullptr) {
+  auto region = CreateRegion(kData, kDataSize);
+  UnalignedSharedMemory shm(
+      base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
+          std::move(region)),
+      kDataSize, false);
+  ASSERT_EQ(shm.memory(), nullptr);
+}
+
+TEST(UnalignedSharedMemoryTest, UnmappedReadOnlyRegionIsNullptr) {
+  auto region = CreateReadOnlyRegion(kData, kDataSize);
+  UnalignedSharedMemory shm(
+      base::ReadOnlySharedMemoryRegion::TakeHandleForSerialization(
+          std::move(region)),
+      kDataSize, true);
+  ASSERT_EQ(shm.memory(), nullptr);
+}
+
 TEST(WritableUnalignedMappingTest, CreateAndDestroy) {
   auto region = CreateRegion(kData, kDataSize);
   WritableUnalignedMapping shm(region, kDataSize, 0);
-  EXPECT_TRUE(shm.IsValid());
-}
-
-TEST(WritableUnalignedMappingTest, CreateAndDestroy_InvalidHandle) {
-  base::SharedMemoryHandle handle;
-  WritableUnalignedMapping shm(handle, kDataSize, 0);
-  EXPECT_FALSE(shm.IsValid());
-}
-
-TEST(WritableUnalignedMappingTest, CreateAndDestroyHandle) {
-  auto handle = CreateHandle(kData, kDataSize);
-  WritableUnalignedMapping shm(handle, kDataSize, 0);
   EXPECT_TRUE(shm.IsValid());
 }
 
@@ -131,13 +241,6 @@ TEST(WritableUnalignedMappingTest, Map) {
 
 TEST(WritableUnalignedMappingTest, Map_Unaligned) {
   auto region = CreateRegion(kUnalignedData, kUnalignedDataSize);
-  WritableUnalignedMapping shm(region, kDataSize, kUnalignedOffset);
-  ASSERT_TRUE(shm.IsValid());
-  EXPECT_EQ(0, memcmp(shm.memory(), kData, kDataSize));
-}
-
-TEST(WritableUnalignedMappingTest, Map_UnalignedHandle) {
-  auto region = CreateHandle(kUnalignedData, kUnalignedDataSize);
   WritableUnalignedMapping shm(region, kDataSize, kUnalignedOffset);
   ASSERT_TRUE(shm.IsValid());
   EXPECT_EQ(0, memcmp(shm.memory(), kData, kDataSize));

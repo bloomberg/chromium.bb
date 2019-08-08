@@ -5,8 +5,8 @@
  * found in the LICENSE file.
  */
 
-#include "../private/SkLeanWindows.h"
-#include "../private/SkSemaphore.h"
+#include "include/private/SkSemaphore.h"
+#include "src/core/SkLeanWindows.h"
 
 #if defined(SK_BUILD_FOR_MAC) || defined(SK_BUILD_FOR_IOS)
     #include <mach/mach.h>
@@ -36,8 +36,14 @@
             }
         }
         void wait() {
-            semaphore_wait(fSemaphore);
-            AnnotateHappensAfter(__FILE__, __LINE__, &fSemaphore);
+            while (true) {
+                kern_return_t result = semaphore_wait(fSemaphore);
+                if (result == KERN_SUCCESS) {
+                    AnnotateHappensAfter(__FILE__, __LINE__, &fSemaphore);
+                    return;
+                }
+                SkASSERT(result == KERN_ABORTED);
+            }
         }
     };
 #elif defined(SK_BUILD_FOR_WIN)

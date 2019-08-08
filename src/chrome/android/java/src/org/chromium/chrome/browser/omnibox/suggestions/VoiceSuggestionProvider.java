@@ -122,7 +122,7 @@ class VoiceSuggestionProvider {
         classifications.add(new MatchClassification(0, MatchClassificationStyle.NONE));
         suggestions.add(new OmniboxSuggestion(OmniboxSuggestionType.VOICE_SUGGEST, true, 0, 1,
                 result.getMatch(), classifications, null, classifications, null, null, voiceUrl,
-                false, false));
+                null, null, false, false));
     }
 
     private boolean doesVoiceResultHaveMatch(

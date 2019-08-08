@@ -105,11 +105,10 @@ TEST_F(LockScreenSanityTest, PasswordSubmitCallsLoginScreenClient) {
   std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
 
   // Password submit runs mojo.
-  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+  auto client = std::make_unique<MockLoginScreenClient>();
   client->set_authenticate_user_callback_result(false);
-  EXPECT_CALL(*client,
-              AuthenticateUserWithPasswordOrPin_(
-                  users()[0]->basic_user_info->account_id, _, false, _));
+  EXPECT_CALL(*client, AuthenticateUserWithPasswordOrPin_(
+                           users()[0].basic_user_info.account_id, _, false, _));
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->PressKey(ui::KeyboardCode::VKEY_A, 0);
   generator->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
@@ -120,7 +119,7 @@ TEST_F(LockScreenSanityTest, PasswordSubmitCallsLoginScreenClient) {
 // authentication request is complete and the auth fails.
 TEST_F(LockScreenSanityTest,
        PasswordSubmitClearsPasswordAfterFailedAuthentication) {
-  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+  auto client = std::make_unique<MockLoginScreenClient>();
 
   auto* contents = new LockContentsView(
       mojom::TrayActionState::kAvailable, LockScreen::ScreenType::kLock,
@@ -131,7 +130,7 @@ TEST_F(LockScreenSanityTest,
   LoginPasswordView::TestApi password_test_api =
       MakeLoginPasswordTestApi(contents, AuthTarget::kPrimary);
 
-  MockLoginScreenClient::AuthenticateUserWithPasswordOrPinCallback callback;
+  base::OnceCallback<void(bool)> callback;
   auto submit_password = [&]() {
     // Capture the authentication callback.
     client->set_authenticate_user_with_password_or_pin_callback_storage(
@@ -173,7 +172,7 @@ TEST_F(LockScreenSanityTest,
 // Verifies that tabbing from the lock screen will eventually focus the shelf.
 // Then, a shift+tab will bring focus back to the lock screen.
 TEST_F(LockScreenSanityTest, TabGoesFromLockToShelfAndBackToLock) {
-  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+  auto client = std::make_unique<MockLoginScreenClient>();
   // Make lock screen shelf visible.
   GetSessionControllerClient()->SetSessionState(
       session_manager::SessionState::LOCKED);
@@ -259,8 +258,6 @@ TEST_F(LockScreenSanityTest, TabWithLockScreenAppActive) {
           ->GetStatusAreaWidget()
           ->GetContentsView();
 
-  LoginScreenController* controller = Shell::Get()->login_screen_controller();
-
   // Initialize lock screen action state.
   DataDispatcher()->SetLockScreenNoteState(mojom::TrayActionState::kActive);
 
@@ -274,7 +271,7 @@ TEST_F(LockScreenSanityTest, TabWithLockScreenAppActive) {
   // Lock screen app focus is requested using lock screen mojo client - set up
   // the mock client.
   LockScreenAppFocuser app_widget_focuser(app_widget.get());
-  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+  auto client = std::make_unique<MockLoginScreenClient>();
   EXPECT_CALL(*client, FocusLockScreenApps(_))
       .WillRepeatedly(Invoke(&app_widget_focuser,
                              &LockScreenAppFocuser::FocusLockScreenApp));
@@ -282,32 +279,28 @@ TEST_F(LockScreenSanityTest, TabWithLockScreenAppActive) {
   // Initially, focus should be with the lock screen app - when the app loses
   // focus (notified via mojo interface), shelf should get the focus next.
   EXPECT_TRUE(VerifyFocused(lock_screen_app));
-  controller->HandleFocusLeavingLockScreenApps(false /*reverse*/);
+  DataDispatcher()->HandleFocusLeavingLockScreenApps(false /*reverse*/);
   EXPECT_TRUE(VerifyFocused(shelf));
 
   // Reversing focus should bring focus back to the lock screen app.
   GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
-  // Focus is passed to lock screen apps via mojo - flush the request.
-  controller->FlushForTesting();
   EXPECT_TRUE(VerifyFocused(lock_screen_app));
   EXPECT_TRUE(app_widget_focuser.reversed_tab_order());
 
   // Have the app tab out in reverse tab order - in this case, the status area
   // should get the focus.
-  controller->HandleFocusLeavingLockScreenApps(true /*reverse*/);
+  DataDispatcher()->HandleFocusLeavingLockScreenApps(true /*reverse*/);
   EXPECT_TRUE(VerifyFocused(status_area));
 
   // Tabbing out of the status area (in default order) should focus the lock
   // screen app again.
   GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_TAB, 0);
-  // Focus is passed to lock screen apps via mojo - flush the request.
-  controller->FlushForTesting();
   EXPECT_TRUE(VerifyFocused(lock_screen_app));
   EXPECT_FALSE(app_widget_focuser.reversed_tab_order());
 
   // Tab out of the lock screen app once more - the shelf should get the focus
   // again.
-  controller->HandleFocusLeavingLockScreenApps(false /*reverse*/);
+  DataDispatcher()->HandleFocusLeavingLockScreenApps(false /*reverse*/);
   EXPECT_TRUE(VerifyFocused(shelf));
 }
 
@@ -336,8 +329,7 @@ TEST_F(LockScreenSanityTest, FocusLockScreenWhenLockScreenAppExit) {
   EXPECT_TRUE(VerifyFocused(lock_screen_app));
 
   // Tab out of the lock screen app - shelf should get the focus.
-  Shell::Get()->login_screen_controller()->HandleFocusLeavingLockScreenApps(
-      false /*reverse*/);
+  DataDispatcher()->HandleFocusLeavingLockScreenApps(false /*reverse*/);
   EXPECT_TRUE(VerifyFocused(shelf));
 
   // Move the lock screen note taking to available state (which happens when the
@@ -351,9 +343,7 @@ TEST_F(LockScreenSanityTest, FocusLockScreenWhenLockScreenAppExit) {
 }
 
 TEST_F(LockScreenSanityTest, RemoveUser) {
-  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
-  LoginScreenController* controller =
-      ash::Shell::Get()->login_screen_controller();
+  auto client = std::make_unique<MockLoginScreenClient>();
 
   auto* contents = new LockContentsView(
       mojom::TrayActionState::kAvailable, LockScreen::ScreenType::kLock,
@@ -362,9 +352,9 @@ TEST_F(LockScreenSanityTest, RemoveUser) {
 
   // Add two users, the first of which can be removed.
   users().push_back(CreateUser("test1@test"));
-  users()[0]->can_remove = true;
+  users()[0].can_remove = true;
   users().push_back(CreateUser("test2@test"));
-  DataDispatcher()->NotifyUsers(users());
+  DataDispatcher()->SetUserList(users());
 
   std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
 
@@ -380,7 +370,6 @@ TEST_F(LockScreenSanityTest, RemoveUser) {
   // Fires a return and validates that mock expectations have been satisfied.
   auto submit = [&]() {
     GetEventGenerator()->PressKey(ui::VKEY_RETURN, 0);
-    controller->FlushForTesting();
     testing::Mock::VerifyAndClearExpectations(client.get());
   };
   auto focus_and_submit = [&](views::View* view) {
@@ -406,7 +395,7 @@ TEST_F(LockScreenSanityTest, RemoveUser) {
   EXPECT_TRUE(HasFocusInAnyChildView(primary().menu()));
   EXPECT_CALL(*client, OnRemoveUserWarningShown()).Times(1);
   submit();
-  EXPECT_CALL(*client, RemoveUser(users()[0]->basic_user_info->account_id))
+  EXPECT_CALL(*client, RemoveUser(users()[0].basic_user_info.account_id))
       .Times(1);
   submit();
 
@@ -415,8 +404,8 @@ TEST_F(LockScreenSanityTest, RemoveUser) {
   EXPECT_TRUE(MakeLockContentsViewTestApi(contents)
                   .primary_big_view()
                   ->GetCurrentUser()
-                  ->basic_user_info->account_id ==
-              users()[1]->basic_user_info->account_id);
+                  .basic_user_info.account_id ==
+              users()[1].basic_user_info.account_id);
 }
 
 TEST_F(LockScreenSanityTest, LockScreenKillsPreventsClipboardPaste) {

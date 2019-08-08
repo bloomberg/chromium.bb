@@ -13,14 +13,15 @@ let testName = "XRSession requestAnimationFrame must fail if the session has "
 
 let fakeDeviceInitParams = { supportsImmersive:true };
 
-let requestSessionOptions = [
+let requestSessionModes = [
   'immersive-vr',
   'inline'
 ];
 
 let testFunction = (session) => new Promise((resolve, reject) => {
   // Session must have a baseLayer or frame requests will be ignored.
-  let webglLayer = new XRWebGLLayer(session, gl);
+  let webglLayer = new XRWebGLLayer(session, gl, {
+      compositionDisabled: session.mode == 'inline' });
 
   function onEarlyFrame(time, vrFrame) {
     // We shouldn't be allowed to reach this callback with no baseLayer
@@ -38,13 +39,12 @@ let testFunction = (session) => new Promise((resolve, reject) => {
   setTimeout(() => {
     // Once the base layer is set the previously registered callback should run.
     session.updateRenderState({
-        baseLayer: webglLayer,
-        outputContext: getOutputContext()
+        baseLayer: webglLayer
     });
   }, 300);
 });
 
 xr_session_promise_test(
-  testFunction, fakeDeviceInitParams, requestSessionOptions, testName);
+  testFunction, fakeDeviceInitParams, requestSessionModes, testName);
 
 </script>

@@ -8,10 +8,12 @@
 #ifndef GrMtlResourceProvider_DEFINED
 #define GrMtlResourceProvider_DEFINED
 
-#include "GrMtlCopyPipelineState.h"
-#include "GrMtlPipelineStateBuilder.h"
-#include "SkLRUCache.h"
-#include "SkTArray.h"
+#include "include/private/SkTArray.h"
+#include "src/core/SkLRUCache.h"
+#include "src/gpu/mtl/GrMtlCopyPipelineState.h"
+#include "src/gpu/mtl/GrMtlDepthStencil.h"
+#include "src/gpu/mtl/GrMtlPipelineStateBuilder.h"
+#include "src/gpu/mtl/GrMtlSampler.h"
 
 #import <metal/metal.h>
 
@@ -33,6 +35,18 @@ public:
         const GrTextureProxy* const primProcProxies[],
         GrPrimitiveType);
 
+    // Finds or creates a compatible MTLDepthStencilState based on the GrStencilSettings.
+    GrMtlDepthStencil* findOrCreateCompatibleDepthStencilState(const GrStencilSettings&,
+                                                               GrSurfaceOrigin);
+
+    // Finds or creates a compatible MTLSamplerState based on the GrSamplerState.
+    GrMtlSampler* findOrCreateCompatibleSampler(const GrSamplerState&, uint32_t maxMipLevel);
+
+    id<MTLBuffer> getDynamicBuffer(size_t size, size_t* offset);
+
+    // Destroy any cached resources. To be called before releasing the MtlDevice.
+    void destroyResources();
+
 private:
 #ifdef SK_DEBUG
 #define GR_PIPELINE_STATE_CACHE_STATS
@@ -43,6 +57,7 @@ private:
         PipelineStateCache(GrMtlGpu* gpu);
         ~PipelineStateCache();
 
+        void release();
         GrMtlPipelineState* refPipelineState(GrRenderTarget*, GrSurfaceOrigin,
                                              const GrPrimitiveProcessor&,
                                              const GrTextureProxy* const primProcProxies[],
@@ -80,6 +95,17 @@ private:
 
     // Cache of GrMtlPipelineStates
     std::unique_ptr<PipelineStateCache> fPipelineStateCache;
+
+    SkTDynamicHash<GrMtlSampler, GrMtlSampler::Key> fSamplers;
+    SkTDynamicHash<GrMtlDepthStencil, GrMtlDepthStencil::Key> fDepthStencilStates;
+
+    // Buffer state
+    struct BufferState {
+        id<MTLBuffer> fAllocation;
+        size_t        fAllocationSize;
+        size_t        fNextOffset;
+    };
+    BufferState fBufferState;
 };
 
 #endif

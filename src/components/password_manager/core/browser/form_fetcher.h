@@ -63,18 +63,18 @@ class FormFetcher {
 
   // Non-federated matches obtained from the backend. Valid only if GetState()
   // returns NOT_WAITING.
-  virtual const std::vector<const autofill::PasswordForm*>&
-  GetNonFederatedMatches() const = 0;
+  virtual std::vector<const autofill::PasswordForm*> GetNonFederatedMatches()
+      const = 0;
 
   // Federated matches obtained from the backend. Valid only if GetState()
   // returns NOT_WAITING.
-  virtual const std::vector<const autofill::PasswordForm*>&
-  GetFederatedMatches() const = 0;
+  virtual std::vector<const autofill::PasswordForm*> GetFederatedMatches()
+      const = 0;
 
   // Blacklisted matches obtained from the backend. Valid only if GetState()
   // returns NOT_WAITING.
-  virtual const std::vector<const autofill::PasswordForm*>&
-  GetBlacklistedMatches() const = 0;
+  virtual std::vector<const autofill::PasswordForm*> GetBlacklistedMatches()
+      const = 0;
 
   // Fetches stored matching logins. In addition the statistics is fetched on
   // platforms with the password bubble. This is called automatically during

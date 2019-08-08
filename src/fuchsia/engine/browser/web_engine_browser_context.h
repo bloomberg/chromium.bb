@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "components/keyed_service/core/simple_factory_key.h"
 #include "content/public/browser/browser_context.h"
 
 class WebEngineNetLog;
@@ -61,6 +62,7 @@ class WebEngineBrowserContext : public content::BrowserContext {
 
   std::unique_ptr<WebEngineNetLog> net_log_;
   scoped_refptr<WebEngineURLRequestContextGetter> url_request_getter_;
+  std::unique_ptr<SimpleFactoryKey> simple_factory_key_;
   std::unique_ptr<ResourceContext> resource_context_;
 
   DISALLOW_COPY_AND_ASSIGN(WebEngineBrowserContext);

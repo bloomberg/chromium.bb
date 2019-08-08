@@ -120,9 +120,9 @@ TEST(WebResourceTimingInfoTest, CrossThreadCopy) {
   std::unique_ptr<Thread> thread = Platform::Current()->CreateThread(
       ThreadCreationParams(WebThreadType::kTestThread)
           .SetThreadNameForTest("TestThread"));
-  PostCrossThreadTask(
-      *thread->GetTaskRunner(), FROM_HERE,
-      CrossThreadBind(&CheckWebResourceTimingInfoOnThread, info, pseudo_time));
+  PostCrossThreadTask(*thread->GetTaskRunner(), FROM_HERE,
+                      CrossThreadBindOnce(&CheckWebResourceTimingInfoOnThread,
+                                          info, pseudo_time));
 }
 
 }  // namespace blink

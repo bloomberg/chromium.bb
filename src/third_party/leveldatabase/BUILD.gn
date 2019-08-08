@@ -278,7 +278,7 @@ if (!is_ios && !is_android) {
 
   test("leveldb_db_bench") {
     sources = [
-      "src/db/db_bench.cc",
+      "src/benchmarks/db_bench.cc",
     ]
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]

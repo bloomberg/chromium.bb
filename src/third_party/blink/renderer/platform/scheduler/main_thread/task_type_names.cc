@@ -93,8 +93,6 @@ const char* TaskTypeNames::TaskTypeToString(TaskType task_type) {
       return "InternalUserInteraction";
     case TaskType::kInternalInspector:
       return "InternalInspector";
-    case TaskType::kInternalWorker:
-      return "InternalWorker";
     case TaskType::kMainThreadTaskQueueV8:
       return "MainThreadTaskQueueV8";
     case TaskType::kMainThreadTaskQueueCompositor:
@@ -131,8 +129,8 @@ const char* TaskTypeNames::TaskTypeToString(TaskType task_type) {
       return "InternalTranslation";
     case TaskType::kInternalContentCapture:
       return "InternalContentCapture";
-    case TaskType::kInternalNavigation:
-      return "InternalNavigation";
+    case TaskType::kInternalNavigationAssociated:
+      return "InternalNavigationAssociated";
     case TaskType::kCount:
       return "Count";
   }

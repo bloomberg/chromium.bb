@@ -8,11 +8,11 @@
 #ifndef SkTextBlob_DEFINED
 #define SkTextBlob_DEFINED
 
-#include "../private/SkTemplates.h"
-#include "SkFont.h"
-#include "SkPaint.h"
-#include "SkString.h"
-#include "SkRefCnt.h"
+#include "include/core/SkFont.h"
+#include "include/core/SkPaint.h"
+#include "include/core/SkRefCnt.h"
+#include "include/core/SkString.h"
+#include "include/private/SkTemplates.h"
 
 #include <atomic>
 
@@ -77,7 +77,7 @@ public:
         @return            SkTextBlob constructed from one run
     */
     static sk_sp<SkTextBlob> MakeFromText(const void* text, size_t byteLength, const SkFont& font,
-                                          SkTextEncoding encoding = kUTF8_SkTextEncoding);
+                                          SkTextEncoding encoding = SkTextEncoding::kUTF8);
 
     /** Creates SkTextBlob with a single run. string meaning depends on SkTextEncoding;
         by default, string is encoded as UTF-8.
@@ -97,15 +97,14 @@ public:
         @return         SkTextBlob constructed from one run
     */
     static sk_sp<SkTextBlob> MakeFromString(const char* string, const SkFont& font,
-                                            SkTextEncoding encoding = kUTF8_SkTextEncoding) {
+                                            SkTextEncoding encoding = SkTextEncoding::kUTF8) {
         if (!string) {
             return nullptr;
         }
         return MakeFromText(string, strlen(string), font, encoding);
     }
 
-    /** Experimental.
-        Returns a textblob built from a single run of text with x-positions and a single y value.
+    /** Returns a textblob built from a single run of text with x-positions and a single y value.
         This is equivalent to using SkTextBlobBuilder and calling allocRunPosH().
         Returns nullptr if byteLength is zero.
 
@@ -119,10 +118,9 @@ public:
      */
     static sk_sp<SkTextBlob> MakeFromPosTextH(const void* text, size_t byteLength,
                                       const SkScalar xpos[], SkScalar constY, const SkFont& font,
-                                      SkTextEncoding encoding = kUTF8_SkTextEncoding);
+                                      SkTextEncoding encoding = SkTextEncoding::kUTF8);
 
-    /** Experimental.
-        Returns a textblob built from a single run of text with positions.
+    /** Returns a textblob built from a single run of text with positions.
         This is equivalent to using SkTextBlobBuilder and calling allocRunPos().
         Returns nullptr if byteLength is zero.
 
@@ -135,12 +133,11 @@ public:
      */
     static sk_sp<SkTextBlob> MakeFromPosText(const void* text, size_t byteLength,
                                              const SkPoint pos[], const SkFont& font,
-                                             SkTextEncoding encoding = kUTF8_SkTextEncoding);
+                                             SkTextEncoding encoding = SkTextEncoding::kUTF8);
 
-    // Experimental
     static sk_sp<SkTextBlob> MakeFromRSXform(const void* text, size_t byteLength,
                                              const SkRSXform xform[], const SkFont& font,
-                                             SkTextEncoding encoding = kUTF8_SkTextEncoding);
+                                             SkTextEncoding encoding = SkTextEncoding::kUTF8);
 
     /** Writes data to allow later reconstruction of SkTextBlob. memory points to storage
         to receive the encoded data, and memory_size describes the size of storage.
@@ -274,9 +271,8 @@ public:
         char*      utf8text; //!< reserved for future use
         uint32_t*  clusters; //!< reserved for future use
 
-        // experimental
+        // Helpers, since the "pos" field can be different types (always some number of floats).
         SkPoint*    points() const { return reinterpret_cast<SkPoint*>(pos); }
-        // experimental
         SkRSXform*  xforms() const { return reinterpret_cast<SkRSXform*>(pos); }
     };
 
@@ -351,7 +347,7 @@ public:
     const RunBuffer& allocRunPos(const SkFont& font, int count,
                                  const SkRect* bounds = nullptr);
 
-    // Experimental, RunBuffer.pos points to SkRSXform array
+    // RunBuffer.pos points to SkRSXform array
     const RunBuffer& allocRunRSXform(const SkFont& font, int count);
 
 private:

@@ -14,6 +14,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
+#include "ui/accessibility/platform/ax_platform_text_boundary.h"
 #include "ui/base/buildflags.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
@@ -206,9 +207,23 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // Returns true if this node can be scrolled in the vertical direction.
   bool IsVerticallyScrollable() const;
 
+  // Returns true if this node has role of StaticText, LineBreak, or
+  // InlineTextBox
+  bool IsTextOnlyObject() const;
+
+  // Returns true if the node is an editable text field.
+  bool IsPlainTextField() const;
+
   bool HasFocus();
 
-  virtual base::string16 GetText() const;
+  // Returns the text of this node and represent the text of descendant nodes
+  // with a special character in place of every embedded object. This represents
+  // the concept of text in ATK and IA2 APIs.
+  virtual base::string16 GetHypertext() const;
+
+  // Returns the text of this node and all descendant nodes; including text
+  // found in embedded objects.
+  virtual base::string16 GetInnerText() const;
 
   virtual base::string16 GetValue() const;
 
@@ -227,11 +242,28 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // This method finds text boundaries in the text used for platform text APIs.
   // Implementations may use side-channel data such as line or word indices to
   // produce appropriate results.
-  virtual int FindTextBoundary(TextBoundaryType boundary_type,
+  virtual int FindTextBoundary(AXTextBoundary boundary,
                                int offset,
                                TextBoundaryDirection direction,
                                ax::mojom::TextAffinity affinity =
                                    ax::mojom::TextAffinity::kDownstream) const;
+
+  enum ScrollType {
+    TopLeft,
+    BottomRight,
+    TopEdge,
+    BottomEdge,
+    LeftEdge,
+    RightEdge,
+    Anywhere,
+  };
+  bool ScrollToNode(ScrollType scroll_type);
+
+  // Return the nearest text index to a point in screen coordinates for an
+  // accessibility node. If the node is not a text only node, the implicit
+  // nearest index is zero. Note this will only find the index of text on the
+  // input node. The node's subtree will not be searched.
+  int NearestTextIndexToPoint(gfx::Point point);
 
   //
   // Delegate.  This is a weak reference which owns |this|.
@@ -240,8 +272,6 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
 
  protected:
   bool IsDocument() const;
-  bool IsTextOnlyObject() const;
-  bool IsPlainTextField() const;
   // Is in a focused textfield with a related suggestion popup available,
   // such as for the Autofill feature. The suggestion popup can be either hidden
   // and available or already visible. This indicates next down arrow key will
@@ -255,10 +285,6 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // attribute used in input controls such as text boxes and combo boxes.
   base::string16 GetRangeValueText() const;
 
-  // |GetInnerText| recursively includes all the text from descendants such as
-  // text found in any embedded object.
-  base::string16 GetInnerText() const;
-
   // Get the role description from the node data or from the image annotation
   // status.
   base::string16 GetRoleDescription() const;
@@ -270,8 +296,8 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
 
   virtual void Dispose();
 
-  // Sets the text selection in this object if possible.
-  bool SetTextSelection(int start_offset, int end_offset);
+  // Sets the hypertext selection in this object if possible.
+  bool SetHypertextSelection(int start_offset, int end_offset);
 
 #if BUILDFLAG(USE_ATK)
   using PlatformAttributeList = AtkAttributeSet*;

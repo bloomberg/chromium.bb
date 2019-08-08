@@ -24,6 +24,7 @@ using ::blink::mojom::PublicKeyCredentialRpEntityPtr;
 using ::blink::mojom::PublicKeyCredentialType;
 using ::blink::mojom::PublicKeyCredentialUserEntityPtr;
 using ::blink::mojom::UserVerificationRequirement;
+using ::blink::test::mojom::ClientToAuthenticatorProtocol;
 
 // static
 ::device::FidoTransportProtocol
@@ -168,10 +169,10 @@ TypeConverter<::device::PublicKeyCredentialRpEntity,
               PublicKeyCredentialRpEntityPtr>::
     Convert(const PublicKeyCredentialRpEntityPtr& input) {
   device::PublicKeyCredentialRpEntity rp_entity(input->id);
-  rp_entity.SetRpName(input->name);
-  if (input->icon)
-    rp_entity.SetRpIconUrl(*input->icon);
-
+  rp_entity.name = input->name;
+  if (input->icon) {
+    rp_entity.icon_url = input->icon;
+  }
   return rp_entity;
 }
 
@@ -237,6 +238,20 @@ TypeConverter<::device::AttestationConveyancePreference,
   }
   NOTREACHED();
   return ::device::AttestationConveyancePreference::NONE;
+}
+
+// static
+::device::ProtocolVersion
+TypeConverter<::device::ProtocolVersion, ClientToAuthenticatorProtocol>::
+    Convert(const ClientToAuthenticatorProtocol& input) {
+  switch (input) {
+    case ClientToAuthenticatorProtocol::U2F:
+      return ::device::ProtocolVersion::kU2f;
+    case ClientToAuthenticatorProtocol::CTAP2:
+      return ::device::ProtocolVersion::kCtap2;
+  }
+  NOTREACHED();
+  return ::device::ProtocolVersion::kUnknown;
 }
 
 }  // namespace mojo

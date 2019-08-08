@@ -7,4 +7,6 @@ include_rules = [
   "+components/prefs",
   "+media",
   "+testing",
+  "+services/media_session/public",
+  "+services/service_manager/public",
 ]

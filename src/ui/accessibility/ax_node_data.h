@@ -16,6 +16,7 @@
 #include "base/strings/string_split.h"
 #include "ui/accessibility/ax_enums.mojom-shared.h"
 #include "ui/accessibility/ax_export.h"
+#include "ui/accessibility/ax_node_text_styles.h"
 #include "ui/accessibility/ax_relative_bounds.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -124,6 +125,11 @@ struct AX_EXPORT AXNodeData {
   void RemoveStringListAttribute(ax::mojom::StringListAttribute attribute);
 
   //
+  // Text styles.
+  //
+  AXNodeTextStyles GetTextStyles() const;
+
+  //
   // Convenience functions.
   //
 
@@ -146,12 +152,16 @@ struct AX_EXPORT AXNodeData {
   bool HasState(ax::mojom::State state) const;
   bool HasAction(ax::mojom::Action action) const;
   bool HasTextStyle(ax::mojom::TextStyle text_style) const;
+  // aria-dropeffect is deprecated in WAI-ARIA 1.1.
+  bool HasDropeffect(ax::mojom::Dropeffect dropeffect) const;
 
   // Set or remove bits in the given enum's corresponding bitfield.
   ax::mojom::State AddState(ax::mojom::State state);
   ax::mojom::State RemoveState(ax::mojom::State state);
   ax::mojom::Action AddAction(ax::mojom::Action action);
   void AddTextStyle(ax::mojom::TextStyle text_style);
+  // aria-dropeffect is deprecated in WAI-ARIA 1.1.
+  void AddDropeffect(ax::mojom::Dropeffect dropeffect);
 
   // Helper functions to get or set some common int attributes with some
   // specific enum types. To remove an attribute, set it to None.
@@ -185,6 +195,11 @@ struct AX_EXPORT AXNodeData {
 
   // Return a string representation of this data, for debugging.
   virtual std::string ToString() const;
+
+  // Return a string representation of |aria-dropeffect| values, for testing
+  // and debugging.
+  // aria-dropeffect is deprecated in WAI-ARIA 1.1.
+  std::string DropeffectBitfieldToString() const;
 
   // As much as possible this should behave as a simple, serializable,
   // copyable struct.

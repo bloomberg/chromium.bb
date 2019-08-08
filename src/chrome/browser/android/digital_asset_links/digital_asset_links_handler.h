@@ -68,7 +68,7 @@ class DigitalAssetLinksHandler {
   void OnJSONParseSucceeded(const std::string& package,
                             const std::string& fingerprint,
                             const std::string& relationship,
-                            std::unique_ptr<base::Value> result);
+                            base::Value result);
   void OnJSONParseFailed(const std::string& error_message);
 
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;

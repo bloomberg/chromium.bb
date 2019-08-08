@@ -58,7 +58,7 @@ inline Element* LayoutTextControlSingleLine::EditingViewPortElement() const {
 
 inline HTMLElement* LayoutTextControlSingleLine::InnerSpinButtonElement()
     const {
-  return ToHTMLElement(InputElement()->UserAgentShadowRoot()->getElementById(
+  return To<HTMLElement>(InputElement()->UserAgentShadowRoot()->getElementById(
       shadow_element_names::SpinButton()));
 }
 
@@ -161,7 +161,10 @@ bool LayoutTextControlSingleLine::NodeAtPoint(
       if (container->GetLayoutBox())
         point_in_parent -= ToLayoutSize(container->GetLayoutBox()->Location());
     }
-    HitInnerEditorElement(result, point_in_parent, accumulated_offset);
+    const LayoutObject* stop_node = result.GetHitTestRequest().GetStopNode();
+    if (!stop_node || stop_node->NodeForHitTest() != result.InnerNode()) {
+      HitInnerEditorElement(result, point_in_parent, accumulated_offset);
+    }
   }
   return true;
 }
@@ -194,10 +197,10 @@ bool LayoutTextControlSingleLine::HasControlClip() const {
   return true;
 }
 
-LayoutRect LayoutTextControlSingleLine::ControlClipRect(
-    const LayoutPoint& additional_offset) const {
-  LayoutRect clip_rect = PhysicalPaddingBoxRect();
-  clip_rect.MoveBy(additional_offset);
+PhysicalRect LayoutTextControlSingleLine::ControlClipRect(
+    const PhysicalOffset& additional_offset) const {
+  PhysicalRect clip_rect = PhysicalPaddingBoxRect();
+  clip_rect.offset += additional_offset;
   return clip_rect;
 }
 

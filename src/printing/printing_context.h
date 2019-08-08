@@ -125,9 +125,7 @@ class PRINTING_EXPORT PrintingContext {
   void set_margin_type(MarginType type);
   void set_is_modifiable(bool is_modifiable);
 
-  const PrintSettings& settings() const {
-    return settings_;
-  }
+  const PrintSettings& settings() const { return settings_; }
 
   int job_id() const { return job_id_; }
 

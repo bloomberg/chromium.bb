@@ -23,6 +23,7 @@ struct ScheduleParams {
   };
 
   ScheduleParams();
+  bool operator==(const ScheduleParams& other) const;
   ~ScheduleParams();
 
   Priority priority;

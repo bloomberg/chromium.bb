@@ -941,20 +941,21 @@ void AXObjectCacheImpl::ProcessUpdatesAfterLayout(Document& document) {
 }
 
 void AXObjectCacheImpl::PostNotificationsAfterLayout(Document* document) {
-  NotificationVector old_notifications_to_post;
+  std::vector<AXEventParams> old_notifications_to_post;
   notifications_to_post_.swap(old_notifications_to_post);
-  for (auto& pair : old_notifications_to_post) {
-    AXObject* obj = pair.first;
+  for (auto& params : old_notifications_to_post) {
+    AXObject* obj = params.target;
 
-    if (!obj->AXObjectID())
+    if (!obj || !obj->AXObjectID())
       continue;
 
     if (obj->IsDetached())
       continue;
 
-    ax::mojom::Event notification = pair.second;
+    ax::mojom::Event event_type = params.event_type;
+    ax::mojom::EventFrom event_from = params.event_from;
     if (obj->GetDocument() != document) {
-      notifications_to_post_.push_back(std::make_pair(obj, notification));
+      notifications_to_post_.push_back({obj, event_type, event_from});
       continue;
     }
 
@@ -969,9 +970,9 @@ void AXObjectCacheImpl::PostNotificationsAfterLayout(Document* document) {
     }
 #endif
 
-    PostPlatformNotification(obj, notification);
+    PostPlatformNotification(obj, event_type, event_from);
 
-    if (notification == ax::mojom::Event::kChildrenChanged &&
+    if (event_type == ax::mojom::Event::kChildrenChanged &&
         obj->CachedParentObject() &&
         obj->LastKnownIsIgnoredValue() != obj->AccessibilityIsIgnored())
       ChildrenChanged(obj->CachedParentObject());
@@ -998,7 +999,7 @@ void AXObjectCacheImpl::PostNotification(AXObject* object,
     return;
 
   modification_count_++;
-  notifications_to_post_.push_back(std::make_pair(object, notification));
+  notifications_to_post_.push_back({object, notification, ComputeEventFrom()});
 }
 
 bool AXObjectCacheImpl::IsAriaOwned(const AXObject* object) const {
@@ -1014,6 +1015,19 @@ void AXObjectCacheImpl::UpdateAriaOwns(
     const Vector<String>& id_vector,
     HeapVector<Member<AXObject>>& owned_children) {
   relation_cache_->UpdateAriaOwns(owner, id_vector, owned_children);
+}
+
+bool AXObjectCacheImpl::MayHaveHTMLLabel(const HTMLElement& elem) {
+  // Return false if this type of element will not accept a <label for> label.
+  if (!elem.IsLabelable())
+    return false;
+
+  // Return true if a <label for> pointed to this element at some point.
+  if (relation_cache_->MayHaveHTMLLabelViaForAttribute(elem))
+    return true;
+
+  // Return true if any amcestor is a label, as in <label><input></label>.
+  return Traversal<HTMLLabelElement>::FirstAncestor(elem);
 }
 
 void AXObjectCacheImpl::CheckedStateChanged(Node* node) {
@@ -1387,7 +1401,8 @@ void AXObjectCacheImpl::HandleValidationMessageVisibilityChanged(
 }
 
 void AXObjectCacheImpl::LabelChangedWithCleanLayout(Element* element) {
-  TextChangedWithCleanLayout(ToHTMLLabelElement(element)->control());
+  // Will call back to TextChanged() when done updating relation cache.
+  relation_cache_->LabelChanged(element);
 }
 
 void AXObjectCacheImpl::InlineTextBoxesUpdated(
@@ -1475,7 +1490,8 @@ bool IsNodeAriaVisible(Node* node) {
 
 void AXObjectCacheImpl::PostPlatformNotification(
     AXObject* obj,
-    ax::mojom::Event notification) {
+    ax::mojom::Event notification,
+    ax::mojom::EventFrom event_from) {
   if (!document_ || !document_->View() ||
       !document_->View()->GetFrame().GetPage())
     return;
@@ -1483,7 +1499,8 @@ void AXObjectCacheImpl::PostPlatformNotification(
   WebLocalFrameImpl* webframe =
       WebLocalFrameImpl::FromFrame(document_->AXObjectCacheOwner().GetFrame());
   if (webframe && webframe->Client()) {
-    webframe->Client()->PostAccessibilityEvent(WebAXObject(obj), notification);
+    webframe->Client()->PostAccessibilityEvent(WebAXObject(obj), notification,
+                                               event_from);
   }
 }
 
@@ -1504,14 +1521,15 @@ void AXObjectCacheImpl::MarkElementDirty(const Element* element, bool subtree) {
   MarkAXObjectDirty(Get(element), subtree);
 }
 
-void AXObjectCacheImpl::HandleFocusedUIElementChanged(Node* old_focused_node,
-                                                      Node* new_focused_node) {
+void AXObjectCacheImpl::HandleFocusedUIElementChanged(
+    Element* old_focused_element,
+    Element* new_focused_element) {
   RemoveValidationMessageObject();
 
-  if (!new_focused_node)
+  if (!new_focused_element)
     return;
 
-  Page* page = new_focused_node->GetDocument().GetPage();
+  Page* page = new_focused_element->GetDocument().GetPage();
   if (!page)
     return;
 
@@ -1519,7 +1537,7 @@ void AXObjectCacheImpl::HandleFocusedUIElementChanged(Node* old_focused_node,
   if (!focused_object)
     return;
 
-  AXObject* old_focused_object = Get(old_focused_node);
+  AXObject* old_focused_object = Get(old_focused_element);
   PostNotification(old_focused_object, ax::mojom::Event::kBlur);
   PostNotification(focused_object, ax::mojom::Event::kFocus);
 }
@@ -1755,9 +1773,21 @@ void AXObjectCacheImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(node_object_mapping_);
 
   visitor->Trace(objects_);
-  visitor->Trace(notifications_to_post_);
   visitor->Trace(documents_);
   AXObjectCache::Trace(visitor);
+}
+
+ax::mojom::EventFrom AXObjectCacheImpl::ComputeEventFrom() {
+  if (is_handling_action_)
+    return ax::mojom::EventFrom::kAction;
+
+  if (document_ && document_->View() &&
+      LocalFrame::HasTransientUserActivation(
+          &(document_->View()->GetFrame()))) {
+    return ax::mojom::EventFrom::kUser;
+  }
+
+  return ax::mojom::EventFrom::kPage;
 }
 
 }  // namespace blink

@@ -43,10 +43,8 @@ void ScreenlockIconSource::StartDataRequest(
   }
 
   GURL url(chrome::kChromeUIScreenlockIconURL + path);
-  std::string username = net::UnescapeURLComponent(
-      url.path().substr(1),
-      net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS |
-          net::UnescapeRule::PATH_SEPARATORS | net::UnescapeRule::SPACES);
+  std::string username =
+      net::UnescapeBinaryURLComponent(url.path_piece().substr(1));
 
   gfx::Image image = icon_provider_->GetIcon(username);
   if (image.IsEmpty()) {

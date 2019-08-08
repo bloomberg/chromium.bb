@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.photo_picker;
 
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -54,6 +56,12 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
     // The image view containing the bitmap.
     private ImageView mIconView;
 
+    // For video tiles, this lists the duration of the video. Blank for other types.
+    private TextView mVideoDuration;
+
+    // The Play button in the bottom right corner. Only shown for videos.
+    private ImageView mPlayButton;
+
     // The little shader in the top left corner (provides backdrop for selection ring on
     // unfavorable image backgrounds).
     private ImageView mScrim;
@@ -97,6 +105,11 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
         mSpecialTile = findViewById(R.id.special_tile);
         mSpecialTileIcon = (ImageView) findViewById(R.id.special_tile_icon);
         mSpecialTileLabel = (TextView) findViewById(R.id.special_tile_label);
+
+        // Specific UI controls for video support.
+        mVideoDuration = (TextView) findViewById(R.id.video_duration);
+        mPlayButton = findViewById(R.id.play_video);
+        mPlayButton.setOnClickListener(this);
     }
 
     @Override
@@ -108,6 +121,15 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
         int width = mCategoryView.getImageSize();
         int height = mCategoryView.getImageSize();
         setMeasuredDimension(width, height);
+    }
+
+    @Override
+    public final void onClick(View view) {
+        if (view == mPlayButton) {
+            mCategoryView.playVideo(mBitmapDetails.getUri());
+        } else {
+            super.onClick(view);
+        }
     }
 
     @Override
@@ -172,12 +194,22 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
         if (needsResize) {
             float start;
             float end;
+            float videoDurationOffsetX;
+            float videoDurationOffsetY;
             if (size != mCategoryView.getImageSize()) {
                 start = 1f;
                 end = 0.8f;
+
+                float pixels = getResources().getDimensionPixelSize(
+                        R.dimen.photo_picker_video_duration_offset);
+                videoDurationOffsetX = -pixels;
+                videoDurationOffsetY = pixels;
             } else {
                 start = 0.8f;
                 end = 1f;
+
+                videoDurationOffsetX = 0;
+                videoDurationOffsetY = 0;
             }
 
             Animation animation = new ScaleAnimation(
@@ -188,6 +220,15 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
             animation.setDuration(ANIMATION_DURATION);
             animation.setFillAfter(true); // Keep the results of the animation.
             mIconView.startAnimation(animation);
+
+            ObjectAnimator videoDurationX = ObjectAnimator.ofFloat(
+                    mVideoDuration, View.TRANSLATION_X, videoDurationOffsetX);
+            ObjectAnimator videoDurationY = ObjectAnimator.ofFloat(
+                    mVideoDuration, View.TRANSLATION_Y, videoDurationOffsetY);
+            AnimatorSet animatorSet = new AnimatorSet();
+            animatorSet.playTogether(videoDurationX, videoDurationY);
+            animatorSet.setDuration(ANIMATION_DURATION);
+            animatorSet.start();
         }
     }
 
@@ -222,10 +263,11 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
      * respond to click events.
      * @param bitmapDetails The details about the bitmap represented by this PickerBitmapView.
      * @param thumbnail The Bitmap to use for the thumbnail (or null).
+     * @param videoDuration The time-length of the video (human-friendly string).
      * @param placeholder Whether the image given is a placeholder or the actual image.
      */
-    public void initialize(
-            PickerBitmap bitmapDetails, @Nullable Bitmap thumbnail, boolean placeholder) {
+    public void initialize(PickerBitmap bitmapDetails, @Nullable Bitmap thumbnail,
+            String videoDuration, boolean placeholder) {
         resetTile();
 
         mBitmapDetails = bitmapDetails;
@@ -234,7 +276,7 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
             initializeSpecialTile(mBitmapDetails);
             mImageLoaded = true;
         } else {
-            setThumbnailBitmap(thumbnail);
+            setThumbnailBitmap(thumbnail, videoDuration);
             mImageLoaded = !placeholder;
         }
 
@@ -246,18 +288,20 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
      * @param bitmapDetails The details about the bitmap represented by this PickerBitmapView.
      */
     public void initializeSpecialTile(PickerBitmap bitmapDetails) {
-        int labelStringId;
-        Drawable image;
+        int labelStringId = 0;
+        Drawable image = null;
         Resources resources = mContext.getResources();
 
         if (isCameraTile()) {
             image = VectorDrawableCompat.create(
                     resources, R.drawable.ic_photo_camera_grey, mContext.getTheme());
             labelStringId = R.string.photo_picker_camera;
-        } else {
+        } else if (isGalleryTile()) {
             image = VectorDrawableCompat.create(
                     resources, R.drawable.ic_collections_grey, mContext.getTheme());
             labelStringId = R.string.photo_picker_browse;
+        } else {
+            assert false;
         }
 
         mSpecialTileIcon.setImageDrawable(image);
@@ -277,10 +321,12 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
      * Sets a thumbnail bitmap for the current view and ensures the selection border is showing, if
      * the image has already been selected.
      * @param thumbnail The Bitmap to use for the icon ImageView.
+     * @param videoDuration The time-length of the video (human-friendly string).
      * @return True if no image was loaded before (e.g. not even a low-res image).
      */
-    public boolean setThumbnailBitmap(Bitmap thumbnail) {
+    public boolean setThumbnailBitmap(Bitmap thumbnail, String videoDuration) {
         mIconView.setImageBitmap(thumbnail);
+        if (videoDuration != null) mVideoDuration.setText(videoDuration);
 
         // If the tile has been selected before the bitmap has loaded, make sure it shows up with
         // a selection border on load.
@@ -320,6 +366,7 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
      */
     private void resetTile() {
         mIconView.setImageBitmap(null);
+        mVideoDuration.setText("");
         mUnselectedView.setVisibility(View.GONE);
         mSelectedView.setVisibility(View.GONE);
         mScrim.setVisibility(View.GONE);
@@ -367,6 +414,9 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
                 && mCategoryView.isMultiSelectAllowed();
         mUnselectedView.setVisibility(showUnselectedToggle ? View.VISIBLE : View.GONE);
         mScrim.setVisibility(showUnselectedToggle ? View.VISIBLE : View.GONE);
+        mPlayButton.setVisibility(
+                mImageLoaded && mBitmapDetails.type() == PickerBitmap.TileTypes.VIDEO ? View.VISIBLE
+                                                                                      : View.GONE);
     }
 
     private boolean isGalleryTile() {
@@ -378,6 +428,7 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
     }
 
     private boolean isPictureTile() {
-        return mBitmapDetails.type() == PickerBitmap.TileTypes.PICTURE;
+        return mBitmapDetails.type() == PickerBitmap.TileTypes.PICTURE
+                || mBitmapDetails.type() == PickerBitmap.TileTypes.VIDEO;
     }
 }

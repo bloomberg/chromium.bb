@@ -19,27 +19,37 @@
 #include "ui/wm/public/activation_client.h"
 
 namespace exo {
+namespace {
+
+// Returns the native location of the display. Removes any rotations and scales.
+gfx::Rect GetNativeBounds(const display::Display& display) {
+  gfx::Point origin = gfx::ScaleToFlooredPoint(display.bounds().origin(),
+                                               display.device_scale_factor());
+  gfx::Size size_in_pixels = display.GetSizeInPixel();
+  switch (display.rotation()) {
+    case display::Display::ROTATE_0:
+    case display::Display::ROTATE_180:
+      return gfx::Rect(origin, size_in_pixels);
+    case display::Display::ROTATE_90:
+    case display::Display::ROTATE_270:
+      return gfx::Rect(
+          origin, gfx::Size(size_in_pixels.height(), size_in_pixels.width()));
+  }
+}
+
+}  // namespace
 
 WMHelperCastShell::WMHelperCastShell(
-    aura::Env* env,
     chromecast::CastWindowManagerAura* cast_window_manager_aura,
     chromecast::CastScreen* cast_screen)
     : cast_window_manager_aura_(cast_window_manager_aura),
-      env_(env),
       cast_screen_(cast_screen),
-      vsync_manager_(cast_window_manager_aura->GetRootWindow()
-                         ->layer()
-                         ->GetCompositor()
-                         ->vsync_manager()) {
+      vsync_timing_manager_(this) {
   cast_screen_->AddObserver(&display_observer_);
 }
 
 WMHelperCastShell::~WMHelperCastShell() {
   cast_screen_->RemoveObserver(&display_observer_);
-}
-
-aura::Env* WMHelperCastShell::env() {
-  return env_;
 }
 
 void WMHelperCastShell::AddActivationObserver(
@@ -78,14 +88,8 @@ void WMHelperCastShell::ResetDragDropDelegate(aura::Window* window) {
   aura::client::SetDragDropDelegate(window, nullptr);
 }
 
-void WMHelperCastShell::AddVSyncObserver(
-    ui::CompositorVSyncManager::Observer* observer) {
-  vsync_manager_->AddObserver(observer);
-}
-
-void WMHelperCastShell::RemoveVSyncObserver(
-    ui::CompositorVSyncManager::Observer* observer) {
-  vsync_manager_->RemoveObserver(observer);
+VSyncTimingManager& WMHelperCastShell::GetVSyncTimingManager() {
+  return vsync_timing_manager_;
 }
 
 void WMHelperCastShell::OnDragEntered(const ui::DropTargetEvent& event) {}
@@ -100,6 +104,14 @@ void WMHelperCastShell::OnDragExited() {}
 int WMHelperCastShell::OnPerformDrop(const ui::DropTargetEvent& event) {
   NOTIMPLEMENTED();
   return ui::DragDropTypes::DRAG_MOVE;
+}
+
+void WMHelperCastShell::AddVSyncParameterObserver(
+    viz::mojom::VSyncParameterObserverPtr observer) {
+  cast_window_manager_aura_->GetRootWindow()
+      ->layer()
+      ->GetCompositor()
+      ->AddVSyncParameterObserver(std::move(observer));
 }
 
 const display::ManagedDisplayInfo& WMHelperCastShell::GetDisplayInfo(
@@ -186,7 +198,9 @@ void WMHelperCastShell::CastDisplayObserver::OnDidProcessDisplayChanges() {}
 void WMHelperCastShell::CastDisplayObserver::OnDisplayAdded(
     const display::Display& new_display) {
   display::ManagedDisplayInfo md(new_display.id(), "CastDisplayInfo", true);
-  md.SetBounds(new_display.bounds());
+  md.SetRotation(new_display.rotation(),
+                 display::Display::RotationSource::ACTIVE);
+  md.SetBounds(GetNativeBounds(new_display));
   display_info_.emplace(new_display.id(), md);
 }
 
@@ -198,15 +212,12 @@ void WMHelperCastShell::CastDisplayObserver::OnDisplayRemoved(
 void WMHelperCastShell::CastDisplayObserver::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t changed_metrics) {
-  if (display_info_.find(display.id()) == display_info_.end()) {
-    display::ManagedDisplayInfo md(display.id(), "CastDisplayInfo", true);
-    md.SetBounds(display.bounds());
-    display_info_.emplace(display.id(), md);
-  }
+  if (display_info_.find(display.id()) == display_info_.end())
+    OnDisplayAdded(display);
 
   // Currently only updates bounds
   if ((DISPLAY_METRIC_BOUNDS & changed_metrics) == DISPLAY_METRIC_BOUNDS)
-    display_info_[display.id()].SetBounds(display.bounds());
+    display_info_[display.id()].SetBounds(GetNativeBounds(display));
 }
 
 const display::ManagedDisplayInfo&

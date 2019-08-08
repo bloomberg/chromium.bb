@@ -11,6 +11,7 @@
 #include "base/time/default_tick_clock.h"
 #include "content/browser/media/audio_log_factory.h"
 #include "content/public/common/content_features.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/audio/public/mojom/constants.mojom.h"
 #include "services/audio/public/mojom/log_factory_manager.mojom.h"
@@ -222,10 +223,10 @@ void AudioServiceListener::MaybeSetLogFactory() {
   media::mojom::AudioLogFactoryPtr audio_log_factory_ptr;
   mojo::MakeStrongBinding(std::make_unique<AudioLogFactory>(),
                           mojo::MakeRequest(&audio_log_factory_ptr));
-  audio::mojom::LogFactoryManagerPtr log_factory_manager_ptr;
-  connector_->BindInterface(*current_instance_identity_,
-                            mojo::MakeRequest(&log_factory_manager_ptr));
-  log_factory_manager_ptr->SetLogFactory(std::move(audio_log_factory_ptr));
+  mojo::Remote<audio::mojom::LogFactoryManager> log_factory_manager;
+  connector_->Connect(*current_instance_identity_,
+                      log_factory_manager.BindNewPipeAndPassReceiver());
+  log_factory_manager->SetLogFactory(audio_log_factory_ptr.PassInterface());
   log_factory_is_set_ = true;
 }
 

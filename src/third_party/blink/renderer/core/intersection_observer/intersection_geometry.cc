@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/intersection_observer/intersection_geometry.h"
 
+#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -33,19 +34,13 @@ bool IsContainingBlockChainDescendant(LayoutObject* descendant,
   return descendant;
 }
 
-void MapRectUpToDocument(LayoutRect& rect, const LayoutObject& descendant) {
-  FloatQuad mapped_quad =
-      descendant.LocalToAncestorQuad(FloatQuad(FloatRect(rect)), nullptr,
-                                     kUseTransforms | kApplyContainerFlip);
-  rect = LayoutRect(mapped_quad.BoundingBox());
+void MapRectUpToDocument(PhysicalRect& rect, const LayoutObject& descendant) {
+  rect = descendant.LocalToAncestorRect(rect, nullptr);
 }
 
-void MapRectDownToDocument(LayoutRect& rect,
-                           const Document& document) {
-  FloatQuad mapped_quad = document.GetLayoutView()->AncestorToLocalQuad(
-      nullptr, FloatQuad(FloatRect(rect)),
-      kUseTransforms | kApplyContainerFlip | kTraverseDocumentBoundaries);
-  rect = LayoutRect(mapped_quad.BoundingBox());
+void MapRectDownToDocument(PhysicalRect& rect, const Document& document) {
+  rect = document.GetLayoutView()->AbsoluteToLocalRect(
+      rect, kTraverseDocumentBoundaries);
 }
 
 LayoutUnit ComputeMargin(const Length& length, LayoutUnit reference_length) {
@@ -63,7 +58,7 @@ LayoutView* LocalRootView(Element& element) {
   return frame_root ? frame_root->ContentLayoutObject() : nullptr;
 }
 
-bool ComputeIsVisible(LayoutObject* target, const LayoutRect& rect) {
+bool ComputeIsVisible(LayoutObject* target, const PhysicalRect& rect) {
   DCHECK(RuntimeEnabledFeatures::IntersectionObserverV2Enabled());
   if (target->GetDocument().GetFrame()->LocalFrameRoot().GetOcclusionState() !=
       FrameOcclusionState::kGuaranteedNotOccluded) {
@@ -74,8 +69,15 @@ bool ComputeIsVisible(LayoutObject* target, const LayoutRect& rect) {
   // TODO(layout-dev): This should hit-test the intersection rect, not the
   // target rect; it's not helpful to know that the portion of the target that
   // is clipped is also occluded.
-  HitTestResult result(target->HitTestForOcclusion(rect));
-  return (!result.InnerNode() || result.InnerNode() == target->GetNode());
+  HitTestResult result(target->HitTestForOcclusion(rect.ToLayoutRect()));
+  Node* hit_node = result.InnerNode();
+  if (!hit_node || hit_node == target->GetNode())
+    return true;
+  // TODO(layout-dev): This IsDescendantOf tree walk could be optimized by
+  // stopping when hit_node's containing LayoutBlockFlow is reached.
+  if (target->IsLayoutInline())
+    return hit_node->IsDescendantOf(target->GetNode());
+  return false;
 }
 
 static const unsigned kConstructorFlagsMask =
@@ -124,6 +126,11 @@ void IntersectionGeometry::ComputeGeometry(Element* root_element,
     return;
   if (root_element && !IsContainingBlockChainDescendant(target, root))
     return;
+  // If the target is inside a locked subtree, it isn't ever visible.
+  if (UNLIKELY(DisplayLockUtilities::IsInLockedSubtreeCrossingFrames(
+          target_element))) {
+    return;
+  }
 
   DCHECK(!target_element.GetDocument().View()->NeedsLayout());
 
@@ -139,7 +146,7 @@ void IntersectionGeometry::ComputeGeometry(Element* root_element,
     else
       MapRectUpToDocument(intersection_rect_, *root);
   } else {
-    intersection_rect_ = LayoutRect();
+    intersection_rect_ = PhysicalRect();
   }
   MapRectUpToDocument(root_rect_, *root);
 
@@ -159,17 +166,17 @@ void IntersectionGeometry::ComputeGeometry(Element* root_element,
   //       any non-zero threshold.
 
   if (does_intersect) {
-    const LayoutRect comparison_rect =
+    const PhysicalRect& comparison_rect =
         ShouldTrackFractionOfRoot() ? root_rect_ : target_rect_;
     if (comparison_rect.IsEmpty()) {
       intersection_ratio_ = 1;
     } else {
-      const LayoutSize& intersection_size = intersection_rect_.Size();
-      const float intersection_area = intersection_size.Width().ToFloat() *
-                                      intersection_size.Height().ToFloat();
-      const LayoutSize& comparison_size = comparison_rect.Size();
-      const float area_of_interest = comparison_size.Width().ToFloat() *
-                                     comparison_size.Height().ToFloat();
+      const PhysicalSize& intersection_size = intersection_rect_.size;
+      const float intersection_area = intersection_size.width.ToFloat() *
+                                      intersection_size.height.ToFloat();
+      const PhysicalSize& comparison_size = comparison_rect.size;
+      const float area_of_interest =
+          comparison_size.width.ToFloat() * comparison_size.height.ToFloat();
       intersection_ratio_ = intersection_area / area_of_interest;
     }
     threshold_index_ =
@@ -185,38 +192,34 @@ void IntersectionGeometry::ComputeGeometry(Element* root_element,
   if (flags_ & kShouldConvertToCSSPixels) {
     FloatRect target_float_rect(target_rect_);
     AdjustForAbsoluteZoom::AdjustFloatRect(target_float_rect, *target);
-    target_rect_ = LayoutRect(target_float_rect);
+    target_rect_ = PhysicalRect::EnclosingRect(target_float_rect);
     FloatRect intersection_float_rect(intersection_rect_);
     AdjustForAbsoluteZoom::AdjustFloatRect(intersection_float_rect, *target);
-    intersection_rect_ = LayoutRect(intersection_float_rect);
+    intersection_rect_ = PhysicalRect::EnclosingRect(intersection_float_rect);
     FloatRect root_float_rect(root_rect_);
     AdjustForAbsoluteZoom::AdjustFloatRect(root_float_rect, *root);
-    root_rect_ = LayoutRect(root_float_rect);
+    root_rect_ = PhysicalRect::EnclosingRect(root_float_rect);
   }
 }
 
-LayoutRect IntersectionGeometry::InitializeTargetRect(LayoutObject* target) {
+PhysicalRect IntersectionGeometry::InitializeTargetRect(LayoutObject* target) {
   if ((flags_ & kShouldUseReplacedContentRect) &&
       target->IsLayoutEmbeddedContent()) {
     return ToLayoutEmbeddedContent(target)->ReplacedContentRect();
   }
   if (target->IsBox())
-    return LayoutRect(ToLayoutBoxModelObject(target)->BorderBoundingBox());
+    return PhysicalRect(ToLayoutBoxModelObject(target)->BorderBoundingBox());
   if (target->IsLayoutInline()) {
-    return EnclosingLayoutRect(
-        target
-            ->AncestorToLocalQuad(
-                nullptr, FloatQuad(target->AbsoluteBoundingBoxFloatRect()),
-                kUseTransforms | kApplyContainerFlip)
-            .BoundingBox());
+    return target->AbsoluteToLocalRect(
+        PhysicalRect::EnclosingRect(target->AbsoluteBoundingBoxFloatRect()));
   }
-  return ToLayoutText(target)->LinesBoundingBox();
+  return ToLayoutText(target)->PhysicalLinesBoundingBox();
 }
 
-LayoutRect IntersectionGeometry::InitializeRootRect(
+PhysicalRect IntersectionGeometry::InitializeRootRect(
     LayoutObject* root,
     const Vector<Length>& margin) {
-  LayoutRect result;
+  PhysicalRect result;
   if (root->IsLayoutView() && root->GetDocument().IsInMainFrame()) {
     // The main frame is a bit special as the scrolling viewport can differ in
     // size from the LayoutView itself. There's two situations this occurs in:
@@ -226,38 +229,34 @@ LayoutRect IntersectionGeometry::InitializeRootRect(
     // testing. Use the FrameView geometry instead.
     // 2) An element wider than the ICB can cause us to resize the FrameView so
     // we can zoom out to fit the entire element width.
-    result = ToLayoutView(root)->OverflowClipRect(LayoutPoint());
+    result = ToLayoutView(root)->OverflowClipRect(PhysicalOffset());
   } else if (root->IsBox() && root->HasOverflowClip()) {
-    result = LayoutRect(ToLayoutBox(root)->PhysicalContentBoxRect());
+    result = ToLayoutBox(root)->PhysicalContentBoxRect();
   } else {
-    result = LayoutRect(ToLayoutBoxModelObject(root)->BorderBoundingBox());
+    result = PhysicalRect(ToLayoutBoxModelObject(root)->BorderBoundingBox());
   }
   ApplyRootMargin(result, margin);
   return result;
 }
 
-void IntersectionGeometry::ApplyRootMargin(LayoutRect& rect,
+void IntersectionGeometry::ApplyRootMargin(PhysicalRect& rect,
                                            const Vector<Length>& margin) {
   if (margin.IsEmpty())
     return;
 
   // TODO(szager): Make sure the spec is clear that left/right margins are
   // resolved against width and not height.
-  LayoutUnit top_margin = ComputeMargin(margin[0], rect.Height());
-  LayoutUnit right_margin = ComputeMargin(margin[1], rect.Width());
-  LayoutUnit bottom_margin = ComputeMargin(margin[2], rect.Height());
-  LayoutUnit left_margin = ComputeMargin(margin[3], rect.Width());
-
-  rect.SetX(rect.X() - left_margin);
-  rect.SetWidth(rect.Width() + left_margin + right_margin);
-  rect.SetY(rect.Y() - top_margin);
-  rect.SetHeight(rect.Height() + top_margin + bottom_margin);
+  LayoutRectOutsets outsets(ComputeMargin(margin[0], rect.Height()),
+                            ComputeMargin(margin[1], rect.Width()),
+                            ComputeMargin(margin[2], rect.Height()),
+                            ComputeMargin(margin[3], rect.Width()));
+  rect.Expand(outsets);
 }
 
 bool IntersectionGeometry::ClipToRoot(LayoutObject* root,
                                       LayoutObject* target,
-                                      const LayoutRect& root_rect,
-                                      LayoutRect& intersection_rect) {
+                                      const PhysicalRect& root_rect,
+                                      PhysicalRect& intersection_rect) {
   // Map and clip rect into root element coordinates.
   // TODO(szager): the writing mode flipping needs a test.
   LayoutBox* local_ancestor = nullptr;
@@ -275,11 +274,16 @@ bool IntersectionGeometry::ClipToRoot(LayoutObject* root,
       local_ancestor, intersection_rect, static_cast<VisualRectFlags>(flags));
   if (!does_intersect || !local_ancestor)
     return does_intersect;
-  if (local_ancestor->HasOverflowClip())
-    intersection_rect.Move(-local_ancestor->ScrolledContentOffset());
-  LayoutRect root_clip_rect(root_rect);
-  local_ancestor->FlipForWritingMode(root_clip_rect);
-  return does_intersect & intersection_rect.InclusiveIntersect(root_clip_rect);
+  if (local_ancestor->HasOverflowClip()) {
+    intersection_rect.Move(
+        -PhysicalOffset(local_ancestor->ScrolledContentOffset()));
+  }
+  LayoutRect root_clip_rect = root_rect.ToLayoutRect();
+  // TODO(szager): This flipping seems incorrect because root_rect is already
+  // physical.
+  local_ancestor->DeprecatedFlipForWritingMode(root_clip_rect);
+  return does_intersect &
+         intersection_rect.InclusiveIntersect(PhysicalRect(root_clip_rect));
 }
 
 unsigned IntersectionGeometry::FirstThresholdGreaterThan(

@@ -14,6 +14,7 @@
 #include "remoting/host/client_session_control.h"
 #include "remoting/proto/control.pb.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
+#include "ui/events/event.h"
 
 namespace remoting {
 
@@ -43,7 +44,8 @@ class HostWindowProxy::Core
   // ClientSessionControl interface.
   const std::string& client_jid() const override;
   void DisconnectSession(protocol::ErrorCode error) override;
-  void OnLocalMouseMoved(const webrtc::DesktopVector& position) override;
+  void OnLocalPointerMoved(const webrtc::DesktopVector& position,
+                           ui::EventType type) override;
   void SetDisableInputs(bool disable_inputs) override;
   void OnDesktopDisplayChanged(
       std::unique_ptr<protocol::VideoLayout> layout) override;
@@ -160,16 +162,18 @@ void HostWindowProxy::Core::DisconnectSession(protocol::ErrorCode error) {
     client_session_control_->DisconnectSession(error);
 }
 
-void HostWindowProxy::Core::OnLocalMouseMoved(
-    const webrtc::DesktopVector& position) {
+void HostWindowProxy::Core::OnLocalPointerMoved(
+    const webrtc::DesktopVector& position,
+    ui::EventType type) {
   if (!caller_task_runner_->BelongsToCurrentThread()) {
     caller_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&Core::OnLocalMouseMoved, this, position));
+        FROM_HERE,
+        base::BindOnce(&Core::OnLocalPointerMoved, this, position, type));
     return;
   }
 
   if (client_session_control_.get())
-    client_session_control_->OnLocalMouseMoved(position);
+    client_session_control_->OnLocalPointerMoved(position, type);
 }
 
 void HostWindowProxy::Core::SetDisableInputs(bool disable_inputs) {

@@ -28,6 +28,9 @@ const std::vector<Manifest>& GetTestManifests() {
            .WithOptions(ManifestOptionsBuilder()
                             .WithInstanceSharingPolicy(
                                 Manifest::InstanceSharingPolicy::kSingleton)
+                            .WithExecutionMode(
+                                Manifest::ExecutionMode::kStandaloneExecutable)
+                            .WithSandboxType("none")
                             .Build())
            .RequireCapability(kTestTargetName, "")
            .PackageService(ManifestBuilder()
@@ -56,7 +59,7 @@ const std::vector<Manifest>& GetTestManifests() {
                    .Build())
            .Build(),
        ManifestBuilder()
-           .WithServiceName("service_manager_unittest")
+           .WithServiceName(kTestServiceName)
            .WithOptions(ManifestOptionsBuilder()
                             .WithInstanceSharingPolicy(
                                 Manifest::InstanceSharingPolicy::kSingleton)
@@ -76,6 +79,11 @@ const std::vector<Manifest>& GetTestManifests() {
            .Build(),
        ManifestBuilder()
            .WithServiceName(kTestTargetName)
+           .WithOptions(ManifestOptionsBuilder()
+                            .WithExecutionMode(
+                                Manifest::ExecutionMode::kStandaloneExecutable)
+                            .WithSandboxType("none")
+                            .Build())
            .RequireCapability(kTestTargetName, "")
            .RequireCapability(kTestServiceName, kCreateInstanceTestCapability)
            .Build()}};

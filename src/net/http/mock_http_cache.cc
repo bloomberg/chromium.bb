@@ -52,7 +52,7 @@ int GetTestModeForEntry(const std::string& key) {
   // If we split the cache by top frame origin, then the origin is prepended to
   // the key. Skip to the second url in the key.
   if (base::StartsWith(url, "_dk_", base::CompareCase::SENSITIVE)) {
-    auto const pos = url.find("\nhttp");
+    auto const pos = url.find(" http");
     url = url.substr(pos + 1);
   }
 
@@ -886,7 +886,7 @@ void MockBlockingBackendFactory::FinishCreation() {
     if (!fail_)
       backend_->reset(new MockDiskCache());
     // Running the callback might delete |this|.
-    base::ResetAndReturn(&callback_).Run(Result());
+    std::move(callback_).Run(Result());
   }
 }
 

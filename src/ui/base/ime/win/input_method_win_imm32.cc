@@ -11,6 +11,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram_macros.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/ime_engine_handler_interface.h"
 #include "ui/base/ime/text_input_client.h"
@@ -212,6 +213,8 @@ LRESULT InputMethodWinImm32::OnImeStartComposition(HWND window_handle,
   composing_window_handle_ = window_handle;
   imm32_manager_.CreateImeWindow(window_handle);
   imm32_manager_.ResetComposition(window_handle);
+  UMA_HISTOGRAM_BOOLEAN("InputMethod.CompositionWithImm32BasedIme",
+                        imm32_manager_.IsImm32ImeActive());
   return 0;
 }
 
@@ -338,9 +341,7 @@ void InputMethodWinImm32::UpdateIMEState() {
   // We disable input method in password field.
   const HWND window_handle = toplevel_window_handle_;
   const TextInputType text_input_type =
-      (GetEngine() && GetEngine()->IsInterestedInKeyEvent())
-          ? TEXT_INPUT_TYPE_NONE
-          : GetTextInputType();
+      GetEngine() ? TEXT_INPUT_TYPE_NONE : GetTextInputType();
   const TextInputMode text_input_mode = GetTextInputMode();
   switch (text_input_type) {
     case ui::TEXT_INPUT_TYPE_NONE:

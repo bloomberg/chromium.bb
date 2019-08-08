@@ -61,7 +61,7 @@ TEST_F(CannedBrowsingDataSharedWorkerHelperTest, Delete) {
 
 TEST_F(CannedBrowsingDataSharedWorkerHelperTest, IgnoreExtensionsAndDevTools) {
   const GURL worker1("chrome-extension://abcdefghijklmnopqrstuvwxyz/worker.js");
-  const GURL worker2("chrome-devtools://abcdefghijklmnopqrstuvwxyz/worker.js");
+  const GURL worker2("devtools://abcdefghijklmnopqrstuvwxyz/worker.js");
   std::string name("name");
   const url::Origin constructor_origin1 = url::Origin::Create(worker1);
   const url::Origin constructor_origin2 = url::Origin::Create(worker2);

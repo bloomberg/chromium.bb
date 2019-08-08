@@ -18,7 +18,7 @@ TEST(CaptionStyleWinTest, TestWinCaptionStyle) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kSystemCaptionStyle);
 
-  if (base::win::GetVersion() >= base::win::VERSION_WIN10) {
+  if (base::win::GetVersion() >= base::win::Version::WIN10) {
     base::win::ScopedCOMInitializer com_initializer;
     ASSERT_TRUE(com_initializer.Succeeded());
 

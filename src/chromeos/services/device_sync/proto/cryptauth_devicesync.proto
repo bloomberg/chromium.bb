@@ -167,6 +167,10 @@ message ShareGroupPrivateKeyResponse {}
 // Allows a device, which is part of the group, notify another group device.
 // This allows setup to work, e.g. by letting the other device know it needs to
 // turn on the bluetooth radio.
+//
+// Note: This request is encoded as query parameters in a GET request. If any
+// field or subfield of this proto changes, update the files
+// cryptauth_proto_to_query_parameters_util.{h,cc}.
 message BatchNotifyGroupDevicesRequest {
   // The context of this request.
   RequestContext context = 1;
@@ -184,6 +188,10 @@ message BatchNotifyGroupDevicesRequest {
 message BatchNotifyGroupDevicesResponse {}
 
 // Requests feature enabled/disabled statuses per device in the group.
+//
+// Note: This request is encoded as query parameters in a GET request. If any
+// field or subfield of this proto changes, update the files
+// cryptauth_proto_to_query_parameters_util.{h,cc}.
 message BatchGetFeatureStatusesRequest {
   // The context of this request.
   RequestContext context = 1;

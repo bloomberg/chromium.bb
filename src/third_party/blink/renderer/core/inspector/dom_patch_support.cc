@@ -30,7 +30,6 @@
 
 #include "third_party/blink/renderer/core/inspector/dom_patch_support.h"
 
-#include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
@@ -50,6 +49,7 @@
 #include "third_party/blink/renderer/core/xml/parser/xml_document_parser.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/crypto.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/hash_traits.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
@@ -64,13 +64,13 @@ void DOMPatchSupport::PatchDocument(const String& markup) {
   Document* new_document = nullptr;
   DocumentInit init = DocumentInit::Create();
   if (GetDocument().IsHTMLDocument())
-    new_document = HTMLDocument::Create(init);
+    new_document = MakeGarbageCollected<HTMLDocument>(init);
   else if (GetDocument().IsSVGDocument())
     new_document = XMLDocument::CreateSVG(init);
   else if (GetDocument().IsXHTMLDocument())
     new_document = XMLDocument::CreateXHTML(init);
   else if (GetDocument().IsXMLDocument())
-    new_document = XMLDocument::Create(init);
+    new_document = MakeGarbageCollected<XMLDocument>(init);
 
   DCHECK(new_document);
   new_document->SetContextFeatures(GetDocument().GetContextFeatures());

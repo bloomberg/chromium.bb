@@ -16,6 +16,6 @@
 // https://wicg.github.io/animation-worklet/#create-a-new-animator-instance
 callback AnimatorConstructor = any (any options, any state);
 // https://wicg.github.io/animation-worklet/#run-animators
-callback AnimateCallback = void (double currentTime, (EffectProxy or WorkletGroupEffectProxy) effect);
+callback AnimateCallback = void (double currentTime, (WorkletAnimationEffect or WorkletGroupEffect) effect);
 // https://drafts.css-houdini.org/css-animationworklet/#stateful-animator-desc
 callback StateCallback = any ();

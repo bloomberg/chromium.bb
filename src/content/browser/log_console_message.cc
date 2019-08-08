@@ -32,14 +32,15 @@ logging::LogSeverity ConsoleMessageLevelToLogSeverity(
   return log_severity;
 }
 
-void LogConsoleMessage(int32_t level,
+void LogConsoleMessage(blink::mojom::ConsoleMessageLevel log_level,
                        const base::string16& message,
                        int32_t line_number,
                        bool is_builtin_component,
                        bool is_off_the_record,
                        const base::string16& source_id) {
   const int32_t resolved_level =
-      is_builtin_component ? level : ::logging::LOG_INFO;
+      is_builtin_component ? ConsoleMessageLevelToLogSeverity(log_level)
+                           : ::logging::LOG_INFO;
   if (::logging::GetMinLogLevel() > resolved_level)
     return;
 

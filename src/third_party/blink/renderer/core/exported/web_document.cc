@@ -59,6 +59,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
@@ -137,6 +138,10 @@ WebURL WebDocument::BaseURL() const {
   return ConstUnwrap<Document>()->BaseURL();
 }
 
+ukm::SourceId WebDocument::GetUkmSourceId() const {
+  return ConstUnwrap<Document>()->UkmSourceID();
+}
+
 WebURL WebDocument::SiteForCookies() const {
   return ConstUnwrap<Document>()->SiteForCookies();
 }
@@ -204,8 +209,8 @@ WebStyleSheetKey WebDocument::InsertStyleSheet(const WebString& source_code,
                                                CSSOrigin origin) {
   Document* document = Unwrap<Document>();
   DCHECK(document);
-  StyleSheetContents* parsed_sheet =
-      StyleSheetContents::Create(CSSParserContext::Create(*document));
+  auto* parsed_sheet = MakeGarbageCollected<StyleSheetContents>(
+      MakeGarbageCollected<CSSParserContext>(*document));
   parsed_sheet->ParseString(source_code);
   const WebStyleSheetKey& injection_key =
       key && !key->IsNull() ? *key : GenerateStyleSheetKey();
@@ -250,24 +255,6 @@ WebVector<WebDraggableRegion> WebDocument::DraggableRegions() const {
     }
   }
   return draggable_regions;
-}
-
-WebURL WebDocument::ManifestURL() const {
-  const Document* document = ConstUnwrap<Document>();
-  HTMLLinkElement* link_element = document->LinkManifest();
-  if (!link_element)
-    return WebURL();
-  return link_element->Href();
-}
-
-bool WebDocument::ManifestUseCredentials() const {
-  const Document* document = ConstUnwrap<Document>();
-  HTMLLinkElement* link_element = document->LinkManifest();
-  if (!link_element)
-    return false;
-  return EqualIgnoringASCIICase(
-      link_element->FastGetAttribute(html_names::kCrossoriginAttr),
-      "use-credentials");
 }
 
 WebURL WebDocument::CanonicalUrlForSharing() const {

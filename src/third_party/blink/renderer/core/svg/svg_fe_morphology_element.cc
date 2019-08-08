@@ -36,7 +36,7 @@ const SVGEnumerationMap& GetEnumerationMap<MorphologyOperatorType>() {
   return entries;
 }
 
-inline SVGFEMorphologyElement::SVGFEMorphologyElement(Document& document)
+SVGFEMorphologyElement::SVGFEMorphologyElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFEMorphologyTag,
                                            document),
       radius_(MakeGarbageCollected<SVGAnimatedNumberOptionalNumber>(
@@ -60,8 +60,6 @@ void SVGFEMorphologyElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(svg_operator_);
   SVGFilterPrimitiveStandardAttributes::Trace(visitor);
 }
-
-DEFINE_NODE_FACTORY(SVGFEMorphologyElement)
 
 bool SVGFEMorphologyElement::SetFilterEffectAttribute(
     FilterEffect* effect,

@@ -136,7 +136,10 @@ void MediaControlPopupMenuElement::DefaultEventHandler(Event& event) {
         ->PostTask(FROM_HERE,
                    WTF::Bind(&MediaControlPopupMenuElement::HideIfNotFocused,
                              WrapWeakPersistent(this)));
-  } else if (event.type() == event_type_names::kClick) {
+  } else if (event.type() == event_type_names::kClick &&
+             event.target() != this) {
+    // Since event.target() != this, we know that one of our children was
+    // clicked.
     OnItemSelected();
 
     event.stopPropagation();

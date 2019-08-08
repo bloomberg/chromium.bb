@@ -3,17 +3,16 @@
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
-<link rel="import" href="../../appearance_page/appearance_page.html">
-<link rel="import" href="../../autofill_page/autofill_page.html">
+<link rel="import" href="../os_a11y_page/os_a11y_page.html">
+<link rel="import" href="../os_people_page/os_people_page.html">
+<link rel="import" href="../os_search_page/os_search_page.html">
+<link rel="import" href="../personalization_page/personalization_page.html">
 <link rel="import" href="../../change_password_page/change_password_page.html">
 <link rel="import" href="../../controls/settings_idle_load.html">
-<link rel="import" href="../../on_startup_page/on_startup_page.html">
-<link rel="import" href="../../people_page/people_page.html">
-<link rel="import" href="../../reset_page/reset_profile_banner.html">
-<link rel="import" href="../../search_page/search_page.html">
 <link rel="import" href="../../settings_page/main_page_behavior.html">
 <link rel="import" href="../../settings_page/settings_section.html">
 <link rel="import" href="../../settings_page_css.html">
+<link rel="import" href="../../app_management_page/app_management_page.html">
 <link rel="import" href="../../android_apps_page/android_apps_browser_proxy.html">
 <link rel="import" href="../../android_apps_page/android_apps_page.html">
 <link rel="import" href="../../bluetooth_page/bluetooth_page.html">
@@ -85,10 +84,6 @@
     <template is="dom-if" if="[[showBasicPage_(
         currentRoute_, inSearchMode, hasExpandedSection_)]]">
       <div id="basicPage">
-        <template is="dom-if" if="[[showResetProfileBanner_]]" restamp>
-          <settings-reset-profile-banner on-close="onResetProfileBannerClosed_">
-          </settings-reset-profile-banner>
-        </template>
         <div id="secondaryUserBanner" hidden="[[!showSecondaryUserBanner_]]">
           <div id="secondaryUserIcon"></div>
           <div class="flex">$i18n{secondaryUserBannerText}</div>
@@ -125,27 +120,20 @@
         <template is="dom-if" if="[[showPage_(pageVisibility.people)]]" restamp>
           <settings-section page-title="$i18n{peoplePageTitle}"
               section="people">
-            <settings-people-page prefs="{{prefs}}"
+            <os-settings-people-page prefs="{{prefs}}"
                 page-visibility="[[pageVisibility]]">
-            </settings-people-page>
+            </os-settings-people-page>
           </settings-section>
         </template>
-        <template is="dom-if" if="[[showPage_(pageVisibility.autofill)]]"
-            restamp>
-          <settings-section page-title="$i18n{autofillPageTitle}"
-              section="autofill">
-            <settings-autofill-page prefs="{{prefs}}"
-                page-visibility="[[pageVisibility]]">
-            </settings-autofill-page>
-          </settings-section>
-        </template>
+        <!-- TODO(hsuregan): Change from appearance to personalization once
+          pageVisibility is forked for OS Settings.-->
         <template is="dom-if" if="[[showPage_(pageVisibility.appearance)]]"
             restamp>
-          <settings-section page-title="$i18n{appearancePageTitle}"
-              section="appearance">
-            <settings-appearance-page prefs="{{prefs}}"
+          <settings-section page-title="$i18n{personalizationPageTitle}"
+              section="personalization">
+            <settings-personalization-page
                 page-visibility="[[pageVisibility.appearance]]">
-            </settings-appearance-page>
+            </settings-personalization-page>
           </settings-section>
         </template>
         <template is="dom-if" if="[[showPage_(pageVisibility.device)]]" restamp>
@@ -157,13 +145,16 @@
           </settings-section>
         </template>
         <template is="dom-if" if="[[showPage_(pageVisibility.search)]]" restamp>
-          <settings-section page-title="$i18n{searchPageTitle}"
+          <settings-section page-title="$i18n{osSearchPageTitle}"
               section="search">
-            <settings-search-page prefs="{{prefs}}"
-                 arc-enabled="[[prefs.arc.enabled.value]]"
-                 voice-interaction-value-prop-accepted="[[
-                     prefs.arc.voice_interaction_value_prop.accepted.value]]">
-            </settings-search-page>
+            <os-settings-search-page prefs="{{prefs}}">
+            </os-settings-search-page>
+          </settings-section>
+        </template>
+        <template is="dom-if" if="[[showApps]]" restamp>
+          <settings-section page-title="$i18n{appsPageTitle}" section="apps">
+            <settings-app-management-page>
+            </settings-app-management-page>
           </settings-section>
         </template>
         <template is="dom-if" if="[[shouldCreateAndroidAppsSection_(
@@ -200,13 +191,6 @@
             </settings-plugin-vm-page>
           </settings-section>
         </template>
-        <template is="dom-if" if="[[showPage_(pageVisibility.onStartup)]]"
-            restamp>
-          <settings-section page-title="$i18n{onStartup}" section="onStartup">
-            <settings-on-startup-page prefs="{{prefs}}">
-            </settings-on-startup-page>
-          </settings-section>
-        </template>
       </div>
     </template>
 
@@ -224,7 +208,8 @@
         </h2>
       </template>
 
-      <settings-idle-load id="advancedPageTemplate" url="/lazy_load.html">
+      <settings-idle-load id="advancedPageTemplate"
+          url="chromeos/lazy_load.html">
         <template>
           <div id="advancedPage" hidden$="[[!showAdvancedPage_(
               currentRoute_, inSearchMode, hasExpandedSection_,
@@ -242,9 +227,8 @@
                 restamp>
               <settings-section page-title="$i18n{privacyPageTitle}"
                   section="privacy">
-                <settings-privacy-page prefs="{{prefs}}"
-                    page-visibility="[[pageVisibility.privacy]]">
-                </settings-privacy-page>
+                <os-settings-privacy-page prefs="{{prefs}}">
+                </os-settings-privacy-page>
               </settings-section>
             </template>
             <template is="dom-if" if="[[showPage_(pageVisibility.languages)]]"
@@ -259,9 +243,9 @@
                 restamp>
               <settings-section page-title="$i18n{downloadsPageTitle}"
                   section="downloads">
-                <settings-downloads-page prefs="{{prefs}}"
+                <os-settings-downloads-page prefs="{{prefs}}"
                     page-visibility="[[pageVisibility.downloads]]">
-                </settings-downloads-page>
+                </os-settings-downloads-page>
               </settings-section>
             </template>
             <template is="dom-if" if="[[showPage_(pageVisibility.printing)]]"
@@ -276,14 +260,15 @@
                 restamp>
               <settings-section page-title="$i18n{a11yPageTitle}"
                   section="a11y">
-                <settings-a11y-page prefs="{{prefs}}"></settings-a11y-page>
+                <os-settings-a11y-page prefs="{{prefs}}">
+                </os-settings-a11y-page>
               </settings-section>
             </template>
             <template is="dom-if" if="[[showPage_(pageVisibility.reset)]]"
                 restamp>
               <settings-section page-title="$i18n{resetPageTitle}"
                   section="reset">
-                <settings-reset-page prefs="{{prefs}}"></settings-reset-page>
+                <os-settings-reset-page></os-settings-reset-page>
               </settings-section>
             </template>
           </div>

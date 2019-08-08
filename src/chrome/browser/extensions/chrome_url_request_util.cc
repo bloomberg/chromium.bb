@@ -55,11 +55,11 @@ void DetermineCharset(const std::string& mime_type,
 }
 
 scoped_refptr<base::RefCountedMemory> GetResource(
-    const extensions::ComponentExtensionResourceInfo& resource_info,
+    int resource_id,
     const std::string& extension_id) {
   const ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   scoped_refptr<base::RefCountedMemory> bytes =
-      rb.LoadDataResourceBytes(resource_info.resource_id);
+      rb.LoadDataResourceBytes(resource_id);
   auto* replacements =
       ExtensionsBrowserClient::Get()->GetComponentExtensionResourceManager()
           ? ExtensionsBrowserClient::Get()
@@ -67,7 +67,8 @@ scoped_refptr<base::RefCountedMemory> GetResource(
                 ->GetTemplateReplacementsForExtension(extension_id)
           : nullptr;
 
-  if (!bytes->size() || (!replacements && !resource_info.gzipped)) {
+  bool is_gzipped = rb.IsGzipped(resource_id);
+  if (!bytes->size() || (!replacements && !is_gzipped)) {
     return bytes;
   }
 
@@ -77,7 +78,7 @@ scoped_refptr<base::RefCountedMemory> GetResource(
   std::string temp_str;
 
   base::StringPiece source = input;
-  if (resource_info.gzipped) {
+  if (is_gzipped) {
     temp_str.resize(compression::GetUncompressedSize(input));
     source = temp_str;
     CHECK(compression::GzipUncompress(input, source));
@@ -96,16 +97,15 @@ scoped_refptr<base::RefCountedMemory> GetResource(
 // by component extensions.
 class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
  public:
-  URLRequestResourceBundleJob(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate,
-      const base::FilePath& filename,
-      const extensions::ComponentExtensionResourceInfo& resource_info,
-      const std::string& content_security_policy,
-      bool send_cors_header)
+  URLRequestResourceBundleJob(net::URLRequest* request,
+                              net::NetworkDelegate* network_delegate,
+                              const base::FilePath& filename,
+                              int resource_id,
+                              const std::string& content_security_policy,
+                              bool send_cors_header)
       : net::URLRequestSimpleJob(request, network_delegate),
         filename_(filename),
-        resource_info_(resource_info),
+        resource_id_(resource_id),
         weak_factory_(this) {
     // Leave cache headers out of resource bundle requests.
     response_info_.headers = extensions::BuildHttpHeaders(
@@ -117,7 +117,7 @@ class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
                         std::string* charset,
                         scoped_refptr<base::RefCountedMemory>* data,
                         net::CompletionOnceCallback callback) const override {
-    *data = GetResource(resource_info_, request()->url().host());
+    *data = GetResource(resource_id_, request()->url().host());
 
     // Add the Content-Length header now that we know the resource length.
     response_info_.headers->AddHeader(
@@ -162,8 +162,8 @@ class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
   // We need the filename of the resource to determine the mime type.
   base::FilePath filename_;
 
-  // The resource to load.
-  const extensions::ComponentExtensionResourceInfo resource_info_;
+  // The resource bundle id to load.
+  int resource_id_;
 
   net::HttpResponseInfo response_info_;
 
@@ -174,21 +174,20 @@ class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
 // component extensions.
 class ResourceBundleFileLoader : public network::mojom::URLLoader {
  public:
-  static void CreateAndStart(
-      const network::ResourceRequest& request,
-      network::mojom::URLLoaderRequest loader,
-      network::mojom::URLLoaderClientPtrInfo client_info,
-      const base::FilePath& filename,
-      const extensions::ComponentExtensionResourceInfo& resource_info,
-      const std::string& content_security_policy,
-      bool send_cors_header) {
+  static void CreateAndStart(const network::ResourceRequest& request,
+                             network::mojom::URLLoaderRequest loader,
+                             network::mojom::URLLoaderClientPtrInfo client_info,
+                             const base::FilePath& filename,
+                             int resource_id,
+                             const std::string& content_security_policy,
+                             bool send_cors_header) {
     // Owns itself. Will live as long as its URLLoader and URLLoaderClientPtr
     // bindings are alive - essentially until either the client gives up or all
     // file data has been sent to it.
     auto* bundle_loader =
         new ResourceBundleFileLoader(content_security_policy, send_cors_header);
     bundle_loader->Start(request, std::move(loader), std::move(client_info),
-                         filename, resource_info);
+                         filename, resource_id);
   }
 
   // mojom::URLLoader implementation:
@@ -218,14 +217,14 @@ class ResourceBundleFileLoader : public network::mojom::URLLoader {
              network::mojom::URLLoaderRequest loader,
              network::mojom::URLLoaderClientPtrInfo client_info,
              const base::FilePath& filename,
-             const extensions::ComponentExtensionResourceInfo& resource_info) {
+             int resource_id) {
     client_.Bind(std::move(client_info));
     binding_.Bind(std::move(loader));
     binding_.set_connection_error_handler(base::BindOnce(
         &ResourceBundleFileLoader::OnBindingError, base::Unretained(this)));
     client_.set_connection_error_handler(base::BindOnce(
         &ResourceBundleFileLoader::OnConnectionError, base::Unretained(this)));
-    auto data = GetResource(resource_info, request.url.host());
+    auto data = GetResource(resource_id, request.url.host());
 
     std::string* read_mime_type = new std::string;
     base::PostTaskWithTraitsAndReplyWithResult(
@@ -356,15 +355,15 @@ net::URLRequestJob* MaybeCreateURLRequestResourceBundleJob(
       resources_path.AppendRelativePath(directory_path, &relative_path)) {
     base::FilePath request_path =
         extensions::file_util::ExtensionURLToRelativeFilePath(request->url());
-    ComponentExtensionResourceInfo resource_info;
+    int resource_id = 0;
     if (ExtensionsBrowserClient::Get()
             ->GetComponentExtensionResourceManager()
             ->IsComponentExtensionResource(directory_path, request_path,
-                                           &resource_info)) {
+                                           &resource_id)) {
       relative_path = relative_path.Append(request_path);
       relative_path = relative_path.NormalizePathSeparators();
       return new URLRequestResourceBundleJob(
-          request, network_delegate, relative_path, resource_info,
+          request, network_delegate, relative_path, resource_id,
           content_security_policy, send_cors_header);
     }
   }
@@ -374,8 +373,8 @@ net::URLRequestJob* MaybeCreateURLRequestResourceBundleJob(
 base::FilePath GetBundleResourcePath(
     const network::ResourceRequest& request,
     const base::FilePath& extension_resources_path,
-    ComponentExtensionResourceInfo* resource_info) {
-  *resource_info = {};
+    int* resource_id) {
+  *resource_id = 0;
   // |chrome_resources_path| corresponds to src/chrome/browser/resources in
   // source tree.
   base::FilePath chrome_resources_path;
@@ -394,11 +393,10 @@ base::FilePath GetBundleResourcePath(
   if (!ExtensionsBrowserClient::Get()
            ->GetComponentExtensionResourceManager()
            ->IsComponentExtensionResource(extension_resources_path,
-                                          request_relative_path,
-                                          resource_info)) {
+                                          request_relative_path, resource_id)) {
     return base::FilePath();
   }
-  DCHECK_NE(0, resource_info->resource_id);
+  DCHECK_NE(0, *resource_id);
 
   return request_relative_path;
 }
@@ -407,14 +405,14 @@ void LoadResourceFromResourceBundle(
     const network::ResourceRequest& request,
     network::mojom::URLLoaderRequest loader,
     const base::FilePath& resource_relative_path,
-    const ComponentExtensionResourceInfo& resource_info,
+    int resource_id,
     const std::string& content_security_policy,
     network::mojom::URLLoaderClientPtr client,
     bool send_cors_header) {
   DCHECK(!resource_relative_path.empty());
   ResourceBundleFileLoader::CreateAndStart(
       request, std::move(loader), client.PassInterface(),
-      resource_relative_path, resource_info, content_security_policy,
+      resource_relative_path, resource_id, content_security_policy,
       send_cors_header);
 }
 

@@ -127,20 +127,20 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
 
   // Verify bookmark bar visibility.
   BookmarkBarView* bookmark_bar = browser_view()->GetBookmarkBarView();
-  EXPECT_FALSE(bookmark_bar->visible());
+  EXPECT_FALSE(bookmark_bar->GetVisible());
   EXPECT_EQ(devtools_web_view->y(), bookmark_bar->height());
   EXPECT_EQ(GetLayoutConstant(BOOKMARK_BAR_HEIGHT),
             bookmark_bar->GetMinimumSize().height());
   chrome::ExecuteCommand(browser, IDC_SHOW_BOOKMARK_BAR);
-  EXPECT_TRUE(bookmark_bar->visible());
+  EXPECT_TRUE(bookmark_bar->GetVisible());
   chrome::ExecuteCommand(browser, IDC_SHOW_BOOKMARK_BAR);
-  EXPECT_FALSE(bookmark_bar->visible());
+  EXPECT_FALSE(bookmark_bar->GetVisible());
 
   // The NTP should be treated the same as any other page.
   NavigateAndCommitActiveTabWithTitle(browser,
                                       GURL(chrome::kChromeUINewTabURL),
                                       base::string16());
-  EXPECT_FALSE(bookmark_bar->visible());
+  EXPECT_FALSE(bookmark_bar->GetVisible());
   EXPECT_EQ(top_container, bookmark_bar->parent());
 
   // Find bar host is still at the front of the view hierarchy, followed by the
@@ -197,11 +197,11 @@ TEST_F(BrowserViewTest, BookmarkBarInvisibleOnShutdown) {
 
   BookmarkBarView* bookmark_bar = browser_view()->GetBookmarkBarView();
   chrome::ExecuteCommand(browser, IDC_SHOW_BOOKMARK_BAR);
-  EXPECT_TRUE(bookmark_bar->visible());
+  EXPECT_TRUE(bookmark_bar->GetVisible());
 
   tab_strip_model->CloseWebContentsAt(tab_strip_model->active_index(), 0);
   EXPECT_EQ(0, tab_strip_model->count());
-  EXPECT_FALSE(bookmark_bar->visible());
+  EXPECT_FALSE(bookmark_bar->GetVisible());
 
   BookmarkBarView::DisableAnimationsForTesting(false);
 }
@@ -305,8 +305,8 @@ TEST_F(BrowserViewHostedAppTest, Layout) {
 
   // The tabstrip, toolbar and bookmark bar should not be visible for hosted
   // apps.
-  EXPECT_FALSE(browser_view()->tabstrip()->visible());
-  EXPECT_FALSE(browser_view()->toolbar()->visible());
+  EXPECT_FALSE(browser_view()->tabstrip()->GetVisible());
+  EXPECT_FALSE(browser_view()->toolbar()->GetVisible());
   EXPECT_FALSE(browser_view()->IsBookmarkBarVisible());
 
   gfx::Point header_offset;

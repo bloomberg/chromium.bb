@@ -17,9 +17,8 @@
 #include "ash/app_list/views/search_result_list_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
-#include "ash/public/interfaces/app_list.mojom.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/bind.h"
-#include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/font.h"
@@ -28,7 +27,6 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
-#include "ui/views/controls/progress_bar.h"
 
 namespace app_list {
 
@@ -71,7 +69,6 @@ SearchResultView::SearchResultView(SearchResultListView* list_view,
       display_icon_(new views::ImageView),
       badge_icon_(new views::ImageView),
       actions_view_(new SearchResultActionsView(this)),
-      progress_bar_(new views::ProgressBar),
       weak_ptr_factory_(this) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
   icon_->set_can_process_events_within_subtree(false);
@@ -83,7 +80,6 @@ SearchResultView::SearchResultView(SearchResultListView* list_view,
   AddChildView(display_icon_);
   AddChildView(badge_icon_);
   AddChildView(actions_view_);
-  AddChildView(progress_bar_);
   set_context_menu_controller(this);
   set_notify_enter_exit_on_child(true);
 }
@@ -96,13 +92,7 @@ void SearchResultView::OnResultChanged() {
   OnMetadataChanged();
   UpdateTitleText();
   UpdateDetailsText();
-  OnIsInstallingChanged();
-  OnPercentDownloadedChanged();
   SchedulePaint();
-}
-
-void SearchResultView::ClearSelectedAction() {
-  actions_view_->SetSelectedAction(-1);
 }
 
 void SearchResultView::UpdateTitleText() {
@@ -121,22 +111,6 @@ void SearchResultView::UpdateDetailsText() {
     CreateDetailsRenderText();
 
   UpdateAccessibleName();
-}
-
-base::string16 SearchResultView::ComputeAccessibleName() const {
-  if (!result())
-    return base::string16();
-
-  base::string16 accessible_name = result()->title();
-  if (!result()->title().empty() && !result()->details().empty())
-    accessible_name += base::ASCIIToUTF16(", ");
-  accessible_name += result()->details();
-
-  return accessible_name;
-}
-
-void SearchResultView::UpdateAccessibleName() {
-  SetAccessibleName(ComputeAccessibleName());
 }
 
 void SearchResultView::CreateTitleRenderText() {
@@ -245,44 +219,25 @@ void SearchResultView::Layout() {
   actions_bounds.set_x(rect.right() - kActionButtonRightMargin - actions_width);
   actions_bounds.set_width(actions_width);
   actions_view_->SetBoundsRect(actions_bounds);
-
-  const int progress_width = rect.width() / 5;
-  const int progress_height = progress_bar_->GetPreferredSize().height();
-  const gfx::Rect progress_bounds(
-      rect.right() - kActionButtonRightMargin - progress_width,
-      rect.y() + (rect.height() - progress_height) / 2, progress_width,
-      progress_height);
-  progress_bar_->SetBoundsRect(progress_bounds);
 }
 
 bool SearchResultView::OnKeyPressed(const ui::KeyEvent& event) {
-  // |result()| could be NULL when result list is changing.
+  // result() could be null when result list is changing.
   if (!result())
     return false;
 
   switch (event.key_code()) {
-    case ui::VKEY_RETURN: {
-      int selected = actions_view_->selected_action();
-      if (actions_view_->IsValidActionIndex(selected)) {
-        OnSearchResultActionActivated(selected, event.flags());
-      } else {
-        list_view_->SearchResultActivated(this, event.flags());
-      }
+    case ui::VKEY_RETURN:
+      list_view_->SearchResultActivated(this, event.flags());
       return true;
-    }
     case ui::VKEY_UP:
-    case ui::VKEY_DOWN: {
-      if (!actions_view_->children().empty()) {
-        return list_view_->HandleVerticalFocusMovement(
-            this, event.key_code() == ui::VKEY_UP);
-      }
-      break;
-    }
+    case ui::VKEY_DOWN:
+      return !actions_view_->children().empty() &&
+             list_view_->HandleVerticalFocusMovement(
+                 this, event.key_code() == ui::VKEY_UP);
     default:
-      break;
+      return false;
   }
-
-  return false;
 }
 
 void SearchResultView::PaintButtonContents(gfx::Canvas* canvas) {
@@ -293,15 +248,14 @@ void SearchResultView::PaintButtonContents(gfx::Canvas* canvas) {
   gfx::Rect content_rect(rect);
   gfx::Rect text_bounds(rect);
   text_bounds.set_x(kPreferredIconViewWidth);
-  if (actions_view_->visible()) {
+  if (actions_view_->GetVisible()) {
     text_bounds.set_width(
         rect.width() - kPreferredIconViewWidth - kTextTrailPadding -
         actions_view_->bounds().width() -
         (actions_view_->children().empty() ? 0 : kActionButtonRightMargin));
   } else {
     text_bounds.set_width(rect.width() - kPreferredIconViewWidth -
-                          kTextTrailPadding - progress_bar_->bounds().width() -
-                          kActionButtonRightMargin);
+                          kTextTrailPadding - kActionButtonRightMargin);
   }
   text_bounds.set_x(
       GetMirroredXWithWidthInView(text_bounds.x(), text_bounds.width()));
@@ -365,7 +319,7 @@ void SearchResultView::OnMouseExited(const ui::MouseEvent& event) {
 }
 
 void SearchResultView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  if (!visible())
+  if (!GetVisible())
     return;
 
   // This is a work around to deal with the nested button case(append and remove
@@ -448,21 +402,6 @@ void SearchResultView::SetIconImage(const gfx::ImageSkia& source,
   icon->SetImage(image);
 }
 
-void SearchResultView::OnIsInstallingChanged() {
-  const bool is_installing = result() && result()->is_installing();
-  actions_view_->SetVisible(!is_installing);
-  progress_bar_->SetVisible(is_installing);
-}
-
-void SearchResultView::OnPercentDownloadedChanged() {
-  progress_bar_->SetValue(result() ? result()->percent_downloaded() / 100.0
-                                   : 0);
-}
-
-void SearchResultView::OnItemInstalled() {
-  list_view_->OnSearchResultInstalled(this);
-}
-
 void SearchResultView::OnSearchResultActionActivated(size_t index,
                                                      int event_flags) {
   // |result()| could be NULL when result list is changing.
@@ -497,6 +436,12 @@ bool SearchResultView::IsSearchResultHoveredOrSelected() {
   return IsMouseHovered() || selected();
 }
 
+void SearchResultView::OnMenuClosed() {
+  // Release menu since its menu model delegate (AppContextMenu) could be
+  // released as a result of menu command execution.
+  context_menu_.reset();
+}
+
 void SearchResultView::ShowContextMenuForViewImpl(
     views::View* source,
     const gfx::Point& point,
@@ -515,27 +460,25 @@ void SearchResultView::OnGetContextMenu(
     views::View* source,
     const gfx::Point& point,
     ui::MenuSourceType source_type,
-    std::vector<ash::mojom::MenuItemPtr> menu) {
-  if (menu.empty() || context_menu_->IsShowingMenu())
+    std::unique_ptr<ui::SimpleMenuModel> menu_model) {
+  if (!menu_model || (context_menu_ && context_menu_->IsShowingMenu()))
     return;
 
+  AppLaunchedMetricParams metric_params = {
+      ash::AppListLaunchedFrom::kLaunchedFromSearchBox,
+      ash::AppListLaunchType::kSearchResult};
+  view_delegate_->GetAppLaunchedMetricParams(&metric_params);
+
   context_menu_ = std::make_unique<AppListMenuModelAdapter>(
-      std::string(), GetWidget(), source_type, this,
-      AppListMenuModelAdapter::SEARCH_RESULT, base::OnceClosure(),
+      std::string(), std::move(menu_model), GetWidget(), source_type,
+      metric_params, AppListMenuModelAdapter::SEARCH_RESULT,
+      base::BindOnce(&SearchResultView::OnMenuClosed,
+                     weak_ptr_factory_.GetWeakPtr()),
       view_delegate_->GetSearchModel()->tablet_mode());
-  context_menu_->Build(std::move(menu));
   context_menu_->Run(gfx::Rect(point, gfx::Size()),
                      views::MenuAnchorPosition::kTopLeft,
                      views::MenuRunner::HAS_MNEMONICS);
   source->RequestFocus();
-}
-
-void SearchResultView::ExecuteCommand(int command_id, int event_flags) {
-  if (result()) {
-    view_delegate_->SearchResultContextMenuItemSelected(
-        result()->id(), command_id, event_flags,
-        ash::mojom::AppListLaunchType::kSearchResult);
-  }
 }
 
 void SearchResultView::SetDisplayIcon(const gfx::ImageSkia& source) {

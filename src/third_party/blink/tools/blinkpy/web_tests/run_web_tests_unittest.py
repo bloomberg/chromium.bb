@@ -52,7 +52,7 @@ from blinkpy.web_tests.views.printing import Printer
 _MOCK_ROOT = os.path.join(
     path_finder.get_chromium_src_dir(), 'third_party', 'pymock')
 sys.path.insert(0, _MOCK_ROOT)
-import mock
+import mock  # pylint: disable=wrong-import-position
 
 
 def parse_args(extra_args=None, tests_included=False):
@@ -531,29 +531,27 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         tests_to_run = ['passes/error.html', 'passes/image.html', 'passes/platform_image.html', 'passes/text.html']
 
         with mock.patch('__builtin__.hash', len):
-
-          # Shard 0 of 2
-          tests_run = get_tests_run(['--shard-index', '0', '--total-shards', '2', '--order', 'natural'] + tests_to_run)
-          self.assertEqual(tests_run, ['passes/platform_image.html', 'passes/text.html'])
-          # Shard 1 of 2
-          tests_run = get_tests_run(['--shard-index', '1', '--total-shards', '2', '--order', 'natural'] + tests_to_run)
-          self.assertEqual(tests_run, ['passes/error.html', 'passes/image.html'])
+            # Shard 0 of 2
+            tests_run = get_tests_run(['--shard-index', '0', '--total-shards', '2', '--order', 'natural'] + tests_to_run)
+            self.assertEqual(tests_run, ['passes/platform_image.html', 'passes/text.html'])
+            # Shard 1 of 2
+            tests_run = get_tests_run(['--shard-index', '1', '--total-shards', '2', '--order', 'natural'] + tests_to_run)
+            self.assertEqual(tests_run, ['passes/error.html', 'passes/image.html'])
 
     def test_sharding_uneven(self):
         tests_to_run = ['passes/error.html', 'passes/image.html', 'passes/platform_image.html', 'passes/text.html',
                         'perf/foo/test.html']
 
         with mock.patch('__builtin__.hash', len):
-
-          # Shard 0 of 3
-          tests_run = get_tests_run(['--shard-index', '0', '--total-shards', '3', '--order', 'natural'] + tests_to_run)
-          self.assertEqual(tests_run, ['perf/foo/test.html'])
-          # Shard 1 of 3
-          tests_run = get_tests_run(['--shard-index', '1', '--total-shards', '3', '--order', 'natural'] + tests_to_run)
-          self.assertEqual(tests_run, ['passes/text.html'])
-          # Shard 2 of 3
-          tests_run = get_tests_run(['--shard-index', '2', '--total-shards', '3', '--order', 'natural'] + tests_to_run)
-          self.assertEqual(tests_run, ['passes/error.html', 'passes/image.html', 'passes/platform_image.html'])
+            # Shard 0 of 3
+            tests_run = get_tests_run(['--shard-index', '0', '--total-shards', '3', '--order', 'natural'] + tests_to_run)
+            self.assertEqual(tests_run, ['perf/foo/test.html'])
+            # Shard 1 of 3
+            tests_run = get_tests_run(['--shard-index', '1', '--total-shards', '3', '--order', 'natural'] + tests_to_run)
+            self.assertEqual(tests_run, ['passes/text.html'])
+            # Shard 2 of 3
+            tests_run = get_tests_run(['--shard-index', '2', '--total-shards', '3', '--order', 'natural'] + tests_to_run)
+            self.assertEqual(tests_run, ['passes/error.html', 'passes/image.html', 'passes/platform_image.html'])
 
     def test_sharding_incorrect_arguments(self):
         with self.assertRaises(ValueError):
@@ -568,16 +566,15 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         host = MockHost()
 
         with mock.patch('__builtin__.hash', len):
+            host.environ['GTEST_SHARD_INDEX'] = '0'
+            host.environ['GTEST_TOTAL_SHARDS'] = '2'
+            shard_0_tests_run = get_tests_run(['--order', 'natural'] + tests_to_run, host=host)
+            self.assertEqual(shard_0_tests_run, ['passes/platform_image.html', 'passes/text.html'])
 
-          host.environ['GTEST_SHARD_INDEX'] = '0'
-          host.environ['GTEST_TOTAL_SHARDS'] = '2'
-          shard_0_tests_run = get_tests_run(['--order', 'natural'] + tests_to_run, host=host)
-          self.assertEqual(shard_0_tests_run, ['passes/platform_image.html', 'passes/text.html'])
-
-          host.environ['GTEST_SHARD_INDEX'] = '1'
-          host.environ['GTEST_TOTAL_SHARDS'] = '2'
-          shard_1_tests_run = get_tests_run(['--order', 'natural'] + tests_to_run, host=host)
-          self.assertEqual(shard_1_tests_run, ['passes/error.html', 'passes/image.html'])
+            host.environ['GTEST_SHARD_INDEX'] = '1'
+            host.environ['GTEST_TOTAL_SHARDS'] = '2'
+            shard_1_tests_run = get_tests_run(['--order', 'natural'] + tests_to_run, host=host)
+            self.assertEqual(shard_1_tests_run, ['passes/error.html', 'passes/image.html'])
 
     def test_smoke_test(self):
         host = MockHost()
@@ -1064,7 +1061,8 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         extra_png = test.WEB_TEST_DIR + '/passes/testharness-expected.png'
         host.filesystem.write_text_file(extra_png, 'Extra png')
         extra_txt = test.WEB_TEST_DIR + '/passes/testharness-expected.txt'
-        host.filesystem.write_text_file(extra_txt,
+        host.filesystem.write_text_file(
+            extra_txt,
             'This is a testharness.js-based test.\nPASS: bah\nHarness: the test ran to completion.')
         extra_wav = test.WEB_TEST_DIR + '/passes/testharness-expected.wav'
         host.filesystem.write_text_file(extra_wav, 'Extra wav')
@@ -1085,7 +1083,8 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
     def test_passing_testharness_extra_txt_baseline(self):
         host = MockHost()
         extra_txt = test.WEB_TEST_DIR + '/passes/testharness-expected.txt'
-        host.filesystem.write_text_file(extra_txt,
+        host.filesystem.write_text_file(
+            extra_txt,
             'This is a testharness.js-based test.\nPASS: bah\nHarness: the test ran to completion.')
         test_name = 'passes/testharness.html'
         run_details, log_stream, _ = logging_run([test_name], tests_included=True, host=host)
@@ -1096,7 +1095,8 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
     def test_passing_testharness_extra_mismatching_txt_baseline(self):
         host = MockHost()
         extra_txt = test.WEB_TEST_DIR + '/passes/testharness-expected.txt'
-        host.filesystem.write_text_file(extra_txt,
+        host.filesystem.write_text_file(
+            extra_txt,
             'This is a testharness.js-based test.\nFAIL: bah\nHarness: the test ran to completion.')
         test_name = 'passes/testharness.html'
         run_details, log_stream, _ = logging_run([test_name], tests_included=True, host=host)
@@ -1115,7 +1115,8 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         base_baseline = test.WEB_TEST_DIR + '/passes/testharness-expected.txt'
         host.filesystem.write_text_file(base_baseline, 'Failure')
         platform_baseline = test.WEB_TEST_DIR + '/platform/test-mac-mac10.10/passes/testharness-expected.txt'
-        host.filesystem.write_text_file(platform_baseline,
+        host.filesystem.write_text_file(
+            platform_baseline,
             'This is a testharness.js-based test.\nPASS: bah\nHarness: the test ran to completion.')
         run_details, log_stream, _ = logging_run(
             ['passes/testharness.html'], tests_included=True, host=host)
@@ -1613,7 +1614,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
             tests_included=True, host=host)
         written_files = host.filesystem.written_files
         self.assertEqual(details.exit_code, 0)
-        self.assertEqual(len(written_files.keys()), 7)
+        self.assertEqual(len(written_files.keys()), 9)
         # We should create new image baseline only.
         self.assert_baselines(
             written_files, log_stream,
@@ -1697,7 +1698,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
         self.assertEqual(details.exit_code, 0)
         self.assertFalse(host.filesystem.exists(virtual_baseline_txt))
         written_files = host.filesystem.written_files
-        self.assertEqual(len(written_files.keys()), 8)
+        self.assertEqual(len(written_files.keys()), 10)
         # We should create new image baseline only.
         self.assert_baselines(
             written_files, log_stream,

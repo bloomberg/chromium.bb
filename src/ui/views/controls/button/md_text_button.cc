@@ -19,6 +19,7 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/layout/layout_provider.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/painter.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/style/typography.h"
@@ -26,26 +27,28 @@
 namespace views {
 
 // static
-LabelButton* MdTextButton::CreateSecondaryUiButton(ButtonListener* listener,
-                                                   const base::string16& text) {
+std::unique_ptr<LabelButton> MdTextButton::CreateSecondaryUiButton(
+    ButtonListener* listener,
+    const base::string16& text) {
   return MdTextButton::Create(listener, text, style::CONTEXT_BUTTON_MD);
 }
 
 // static
-LabelButton* MdTextButton::CreateSecondaryUiBlueButton(
+std::unique_ptr<LabelButton> MdTextButton::CreateSecondaryUiBlueButton(
     ButtonListener* listener,
     const base::string16& text) {
-  MdTextButton* md_button =
+  auto md_button =
       MdTextButton::Create(listener, text, style::CONTEXT_BUTTON_MD);
   md_button->SetProminent(true);
   return md_button;
 }
 
 // static
-MdTextButton* MdTextButton::Create(ButtonListener* listener,
-                                   const base::string16& text,
-                                   int button_context) {
-  MdTextButton* button = new MdTextButton(listener, button_context);
+std::unique_ptr<MdTextButton> MdTextButton::Create(ButtonListener* listener,
+                                                   const base::string16& text,
+                                                   int button_context) {
+  auto button = base::WrapUnique<MdTextButton>(
+      new MdTextButton(listener, button_context));
   button->SetText(text);
   button->SetFocusForPlatform();
 
@@ -60,16 +63,31 @@ void MdTextButton::SetProminent(bool is_prominent) {
 
   is_prominent_ = is_prominent;
   UpdateColors();
+  OnPropertyChanged(&is_prominent_, kPropertyEffectsNone);
+}
+
+bool MdTextButton::GetProminent() const {
+  return is_prominent_;
 }
 
 void MdTextButton::SetBgColorOverride(const base::Optional<SkColor>& color) {
   bg_color_override_ = color;
   UpdateColors();
+  OnPropertyChanged(&bg_color_override_, kPropertyEffectsNone);
 }
 
-void MdTextButton::set_corner_radius(float radius) {
+base::Optional<SkColor> MdTextButton::GetBgColorOverride() const {
+  return bg_color_override_;
+}
+
+void MdTextButton::SetCornerRadius(float radius) {
   corner_radius_ = radius;
   set_ink_drop_corner_radii(corner_radius_, corner_radius_);
+  OnPropertyChanged(&corner_radius_, kPropertyEffectsPaint);
+}
+
+float MdTextButton::GetCornerRadius() const {
+  return corner_radius_;
 }
 
 void MdTextButton::OnPaintBackground(gfx::Canvas* canvas) {
@@ -90,8 +108,8 @@ void MdTextButton::OnPaintBackground(gfx::Canvas* canvas) {
   }
 }
 
-void MdTextButton::OnNativeThemeChanged(const ui::NativeTheme* theme) {
-  LabelButton::OnNativeThemeChanged(theme);
+void MdTextButton::OnThemeChanged() {
+  LabelButton::OnThemeChanged();
   UpdateColors();
 }
 
@@ -149,9 +167,10 @@ void MdTextButton::SetText(const base::string16& text) {
   UpdatePadding();
 }
 
-void MdTextButton::UpdateStyleToIndicateDefaultStatus() {
-  is_prominent_ = is_prominent_ || is_default();
+PropertyEffects MdTextButton::UpdateStyleToIndicateDefaultStatus() {
+  is_prominent_ = is_prominent_ || GetIsDefault();
   UpdateColors();
+  return kPropertyEffectsNone;
 }
 
 MdTextButton::MdTextButton(ButtonListener* listener, int button_context)
@@ -159,7 +178,7 @@ MdTextButton::MdTextButton(ButtonListener* listener, int button_context)
       is_prominent_(false) {
   SetInkDropMode(InkDropMode::ON);
   set_has_ink_drop_action_on_click(true);
-  set_corner_radius(LayoutProvider::Get()->GetCornerRadiusMetric(EMPHASIS_LOW));
+  SetCornerRadius(LayoutProvider::Get()->GetCornerRadiusMetric(EMPHASIS_LOW));
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   SetFocusForPlatform();
   const int minimum_width = LayoutProvider::Get()->GetDistanceMetric(
@@ -275,5 +294,12 @@ void MdTextButton::UpdateColors() {
           bg_color, stroke_color, corner_radius_)));
   SchedulePaint();
 }
+
+BEGIN_METADATA(MdTextButton)
+METADATA_PARENT_CLASS(LabelButton)
+ADD_PROPERTY_METADATA(MdTextButton, bool, Prominent)
+ADD_PROPERTY_METADATA(MdTextButton, float, CornerRadius)
+ADD_PROPERTY_METADATA(MdTextButton, base::Optional<SkColor>, BgColorOverride)
+END_METADATA()
 
 }  // namespace views

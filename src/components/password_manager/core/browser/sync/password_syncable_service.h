@@ -66,11 +66,6 @@ class PasswordSyncableService : public syncer::SyncableService {
   // Map from password sync tag to password form.
   typedef std::map<std::string, autofill::PasswordForm*> PasswordEntryMap;
 
-  // The type of PasswordStoreSync::AddLoginImpl,
-  // PasswordStoreSync::UpdateLoginImpl and PasswordStoreSync::RemoveLoginImpl.
-  typedef PasswordStoreChangeList (PasswordStoreSync::*DatabaseOperation)(
-      const autofill::PasswordForm& form);
-
   struct SyncEntries;
 
   // Retrieves the entries from password db and fills both |password_entries|
@@ -80,7 +75,7 @@ class PasswordSyncableService : public syncer::SyncableService {
       PasswordEntryMap* passwords_entry_map) const;
 
   // Uses the |PasswordStore| APIs to change entries.
-  void WriteToPasswordStore(const SyncEntries& entries);
+  void WriteToPasswordStore(const SyncEntries& entries, bool is_merge);
 
   // Examines |data|, an entry in sync db, and updates |sync_entries| or
   // |updated_db_entries| accordingly. An element is removed from
@@ -90,13 +85,6 @@ class PasswordSyncableService : public syncer::SyncableService {
       PasswordEntryMap* unmatched_data_from_password_db,
       SyncEntries* sync_entries,
       syncer::SyncChangeList* updated_db_entries);
-
-  // Calls |operation| for each element in |entries| and appends the changes to
-  // |all_changes|.
-  void WriteEntriesToDatabase(
-      DatabaseOperation operation,
-      const std::vector<std::unique_ptr<autofill::PasswordForm>>& entries,
-      PasswordStoreChangeList* all_changes);
 
   // Returns true if corrupted passwords should be deleted from the local
   // database when merging data.

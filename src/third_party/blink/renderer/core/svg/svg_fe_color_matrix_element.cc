@@ -39,7 +39,7 @@ const SVGEnumerationMap& GetEnumerationMap<ColorMatrixType>() {
   return entries;
 }
 
-inline SVGFEColorMatrixElement::SVGFEColorMatrixElement(Document& document)
+SVGFEColorMatrixElement::SVGFEColorMatrixElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFEColorMatrixTag,
                                            document),
       values_(
@@ -61,8 +61,6 @@ void SVGFEColorMatrixElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(type_);
   SVGFilterPrimitiveStandardAttributes::Trace(visitor);
 }
-
-DEFINE_NODE_FACTORY(SVGFEColorMatrixElement)
 
 bool SVGFEColorMatrixElement::SetFilterEffectAttribute(
     FilterEffect* effect,

@@ -246,6 +246,10 @@ void ExpandArrowView::OnBlur() {
   Button::OnBlur();
 }
 
+const char* ExpandArrowView::GetClassName() const {
+  return "ExpandArrowView";
+}
+
 std::unique_ptr<views::InkDrop> ExpandArrowView::CreateInkDrop() {
   std::unique_ptr<views::InkDropImpl> ink_drop =
       Button::CreateDefaultInkDropImpl();
@@ -349,7 +353,7 @@ void ExpandArrowView::TransitToFullscreenAllAppsState() {
   UMA_HISTOGRAM_ENUMERATION(kAppListPeekingToFullscreenHistogram, kExpandArrow,
                             kMaxPeekingToFullscreen);
   contents_view_->SetActiveState(ash::AppListState::kStateApps);
-  app_list_view_->SetState(ash::mojom::AppListViewState::kFullscreenAllApps);
+  app_list_view_->SetState(ash::AppListViewState::kFullscreenAllApps);
 }
 
 void ExpandArrowView::ScheduleHintingAnimation(bool is_first_time) {

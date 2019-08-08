@@ -13,6 +13,7 @@ import static org.chromium.chrome.browser.download.DownloadNotificationService.A
 import static org.chromium.chrome.browser.download.DownloadNotificationService.EXTRA_DOWNLOAD_CONTENTID_ID;
 import static org.chromium.chrome.browser.download.DownloadNotificationService.EXTRA_DOWNLOAD_CONTENTID_NAMESPACE;
 import static org.chromium.chrome.browser.download.DownloadNotificationService.EXTRA_DOWNLOAD_STATE_AT_CANCEL;
+import static org.chromium.chrome.browser.download.DownloadNotificationService.EXTRA_IS_AUTO_RESUMPTION;
 import static org.chromium.chrome.browser.download.DownloadNotificationService.EXTRA_IS_OFF_THE_RECORD;
 import static org.chromium.chrome.browser.download.DownloadNotificationService.clearResumptionAttemptLeft;
 
@@ -39,6 +40,7 @@ import org.chromium.chrome.browser.download.items.OfflineContentAggregatorNotifi
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
@@ -197,7 +199,7 @@ public class DownloadBroadcastManager extends Service {
             @Override
             public boolean startServiceManagerOnly() {
                 if (!LegacyHelpers.isLegacyDownload(id)) return false;
-                return DownloadUtils.shouldStartServiceManagerOnly()
+                return FeatureUtilities.isServiceManagerForDownloadResumptionEnabled()
                         && !ACTION_DOWNLOAD_OPEN.equals(intent.getAction());
             }
         };
@@ -256,11 +258,12 @@ public class DownloadBroadcastManager extends Service {
                 DownloadItem item = (entry != null)
                         ? entry.buildDownloadItem()
                         : new DownloadItem(false,
-                                  new DownloadInfo.Builder()
-                                          .setDownloadGuid(id.id)
-                                          .setIsOffTheRecord(isOffTheRecord)
-                                          .build());
-                downloadServiceDelegate.resumeDownload(id, item, true /* hasUserGesture */);
+                                new DownloadInfo.Builder()
+                                        .setDownloadGuid(id.id)
+                                        .setIsOffTheRecord(isOffTheRecord)
+                                        .build());
+                downloadServiceDelegate.resumeDownload(id, item,
+                        !IntentUtils.safeGetBooleanExtra(intent, EXTRA_IS_AUTO_RESUMPTION, false));
                 break;
 
             default:
@@ -352,7 +355,7 @@ public class DownloadBroadcastManager extends Service {
             String referrer = IntentUtils.safeGetStringExtra(intent, Intent.EXTRA_REFERRER);
             DownloadManagerService.openDownloadedContent(context, downloadFilename,
                     isSupportedMimeType, isOffTheRecord, contentId.id, id, originalUrl, referrer,
-                    DownloadMetrics.DownloadOpenSource.NOTIFICATION);
+                    DownloadMetrics.DownloadOpenSource.NOTIFICATION, null);
         });
     }
 

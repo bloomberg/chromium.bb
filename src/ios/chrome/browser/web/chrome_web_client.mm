@@ -151,13 +151,20 @@ base::RefCountedMemory* ChromeWebClient::GetDataResourceBytes(
       resource_id);
 }
 
+bool ChromeWebClient::IsDataResourceGzipped(int resource_id) const {
+  return ui::ResourceBundle::GetSharedInstance().IsGzipped(resource_id);
+}
+
 base::Optional<service_manager::Manifest>
 ChromeWebClient::GetServiceManifestOverlay(base::StringPiece name) {
   if (name == web::mojom::kBrowserServiceName)
     return GetChromeWebBrowserOverlayManifest();
-  if (name == web::mojom::kPackagedServicesServiceName)
-    return GetChromeWebPackagedServicesOverlayManifest();
   return base::nullopt;
+}
+
+std::vector<service_manager::Manifest>
+ChromeWebClient::GetExtraServiceManifests() {
+  return GetChromeWebPackagedServicesOverlayManifest().packaged_services;
 }
 
 void ChromeWebClient::GetAdditionalWebUISchemes(

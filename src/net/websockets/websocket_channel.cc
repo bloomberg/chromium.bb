@@ -199,10 +199,11 @@ class WebSocketChannel::ConnectDelegate
   void OnSSLCertificateError(
       std::unique_ptr<WebSocketEventInterface::SSLErrorCallbacks>
           ssl_error_callbacks,
+      int net_error,
       const SSLInfo& ssl_info,
       bool fatal) override {
-    creator_->OnSSLCertificateError(std::move(ssl_error_callbacks), ssl_info,
-                                    fatal);
+    creator_->OnSSLCertificateError(std::move(ssl_error_callbacks), net_error,
+                                    ssl_info, fatal);
   }
 
   int OnAuthRequired(const AuthChallengeInfo& auth_info,
@@ -391,7 +392,7 @@ WebSocketChannel::ChannelState WebSocketChannel::SendFrame(
   // |this| may have been deleted.
 }
 
-ChannelState WebSocketChannel::SendFlowControl(int64_t quota) {
+ChannelState WebSocketChannel::AddReceiveFlowControlQuota(int64_t quota) {
   DCHECK(state_ == CONNECTING || state_ == CONNECTED || state_ == SEND_CLOSED ||
          state_ == CLOSE_WAIT);
   // TODO(ricea): Kill the renderer if it tries to send us a negative quota
@@ -595,10 +596,11 @@ void WebSocketChannel::OnConnectFailure(const std::string& message) {
 void WebSocketChannel::OnSSLCertificateError(
     std::unique_ptr<WebSocketEventInterface::SSLErrorCallbacks>
         ssl_error_callbacks,
+    int net_error,
     const SSLInfo& ssl_info,
     bool fatal) {
-  event_interface_->OnSSLCertificateError(std::move(ssl_error_callbacks),
-                                          socket_url_, ssl_info, fatal);
+  event_interface_->OnSSLCertificateError(
+      std::move(ssl_error_callbacks), socket_url_, net_error, ssl_info, fatal);
 }
 
 int WebSocketChannel::OnAuthRequired(

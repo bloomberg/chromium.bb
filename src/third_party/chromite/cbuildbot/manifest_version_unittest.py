@@ -20,7 +20,6 @@ from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import timeout_util
-from chromite.lib import tree_status
 from chromite.lib.buildstore import FakeBuildStore, BuildIdentifier
 
 
@@ -313,8 +312,6 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
     self.db = mock.Mock()
     self.buildstore = FakeBuildStore(self.db)
     self.buildbucket_client_mock = mock.Mock()
-
-    self.PatchObject(tree_status, 'GetExperimentalBuilders', return_value=[])
 
   def BuildManager(self, config=None, metadata=None,
                    buildbucket_client=None):

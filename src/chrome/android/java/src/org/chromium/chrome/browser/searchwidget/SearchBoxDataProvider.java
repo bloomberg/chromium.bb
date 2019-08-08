@@ -49,6 +49,16 @@ class SearchBoxDataProvider implements ToolbarDataProvider {
     }
 
     @Override
+    public boolean isInOverviewAndShowingOmnibox() {
+        return false;
+    }
+
+    @Override
+    public boolean shouldShowLocationBarInOverviewMode() {
+        return false;
+    }
+
+    @Override
     public Profile getProfile() {
         if (mTab == null) return null;
         return mTab.getProfile();

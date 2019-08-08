@@ -12,6 +12,7 @@ option java_package = "org.chromium.components.metrics";
 package metrics;
 
 import "cast_logs.proto";
+import "chrome_os_app_list_launch_event.proto";
 import "histogram_event.proto";
 import "memory_leak_report.proto";
 import "omnibox_event.proto";
@@ -24,7 +25,7 @@ import "trace_log.proto";
 import "translate_event.proto";
 import "user_action_event.proto";
 
-// Next tag: 20
+// Next tag: 21
 message ChromeUserMetricsExtension {
   // The product (i.e. end user application) for a given UMA log.
   enum Product {
@@ -71,6 +72,7 @@ message ChromeUserMetricsExtension {
   repeated HistogramEventProto histogram_event = 6;
   repeated TranslateEventProto translate_event = 15;
   repeated PrinterEventProto printer_event = 16;
+  repeated ChromeOSAppListLaunchEventProto chrome_os_app_list_launch_event = 20;
 
   // Deprecated: use |sampled_profile| instead.
   repeated PerfDataProto perf_data = 8 [deprecated = true];

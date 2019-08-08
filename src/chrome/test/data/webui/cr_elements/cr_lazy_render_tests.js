@@ -15,7 +15,7 @@ suite('cr-lazy-render', function() {
     PolymerTest.clearBody();
     const template = `
         <dom-bind>
-          <template is="dom-bind">
+          <template>
             <cr-lazy-render id="lazy">
               <template>
                 <h1>
@@ -28,9 +28,7 @@ suite('cr-lazy-render', function() {
         </dom-bind>`;
     document.body.innerHTML = template;
     lazy = document.getElementById('lazy');
-    // TODO(dpapad): Remove conditional when Polymer 2 migration has completed.
-    bind = document.querySelector(
-        Polymer.DomBind ? 'dom-bind' : 'template[is=\'dom-bind\']');
+    bind = document.querySelector('dom-bind');
   });
 
   test('stamps after get()', function() {

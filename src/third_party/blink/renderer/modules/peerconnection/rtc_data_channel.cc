@@ -153,16 +153,17 @@ void RTCDataChannel::Observer::Unregister() {
 void RTCDataChannel::Observer::OnStateChange() {
   PostCrossThreadTask(
       *main_thread_, FROM_HERE,
-      CrossThreadBind(&RTCDataChannel::Observer::OnStateChangeImpl,
-                      scoped_refptr<Observer>(this), webrtc_channel_->state()));
+      CrossThreadBindOnce(&RTCDataChannel::Observer::OnStateChangeImpl,
+                          scoped_refptr<Observer>(this),
+                          webrtc_channel_->state()));
 }
 
 void RTCDataChannel::Observer::OnBufferedAmountChange(uint64_t sent_data_size) {
   PostCrossThreadTask(
       *main_thread_, FROM_HERE,
-      CrossThreadBind(&RTCDataChannel::Observer::OnBufferedAmountChangeImpl,
-                      scoped_refptr<Observer>(this),
-                      SafeCast<unsigned>(sent_data_size)));
+      CrossThreadBindOnce(&RTCDataChannel::Observer::OnBufferedAmountChangeImpl,
+                          scoped_refptr<Observer>(this),
+                          SafeCast<unsigned>(sent_data_size)));
 }
 
 void RTCDataChannel::Observer::OnMessage(const webrtc::DataBuffer& buffer) {
@@ -170,10 +171,11 @@ void RTCDataChannel::Observer::OnMessage(const webrtc::DataBuffer& buffer) {
   // having to create a copy.  See webrtc bug 3967.
   std::unique_ptr<webrtc::DataBuffer> new_buffer(
       new webrtc::DataBuffer(buffer));
-  PostCrossThreadTask(*main_thread_, FROM_HERE,
-                      CrossThreadBind(&RTCDataChannel::Observer::OnMessageImpl,
-                                      scoped_refptr<Observer>(this),
-                                      WTF::Passed(std::move(new_buffer))));
+  PostCrossThreadTask(
+      *main_thread_, FROM_HERE,
+      CrossThreadBindOnce(&RTCDataChannel::Observer::OnMessageImpl,
+                          scoped_refptr<Observer>(this),
+                          WTF::Passed(std::move(new_buffer))));
 }
 
 void RTCDataChannel::Observer::OnStateChangeImpl(
@@ -222,7 +224,7 @@ RTCDataChannel::RTCDataChannel(
   // thread. Done in a single synchronous call to the signaling thread to ensure
   // channel state consistency.
   peer_connection_handler->RunSynchronousOnceClosureOnSignalingThread(
-      ConvertToBaseCallback(CrossThreadBind(
+      ConvertToBaseOnceCallback(CrossThreadBindOnce(
           [](scoped_refptr<RTCDataChannel::Observer> observer,
              webrtc::DataChannelInterface::DataState current_state) {
             scoped_refptr<webrtc::DataChannelInterface> channel =

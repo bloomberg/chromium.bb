@@ -93,8 +93,12 @@ void XRCanvasInputProvider::UpdateInputSource(PointerEvent* event) {
     return;
 
   if (!input_source_) {
-    input_source_ = MakeGarbageCollected<XRInputSource>(session_, 0);
-    input_source_->SetTargetRayMode(XRInputSource::kScreen);
+    // XRSession doesn't like source ID's of 0.  We should only be processing
+    // Canvas Input events in non-immersive sessions anyway, where we don't
+    // expect other controllers, so this number is somewhat arbitrary anyway.
+    input_source_ = MakeGarbageCollected<XRInputSource>(session_, 1,
+                                                        XRInputSource::kScreen);
+    session_->AddTransientInputSource(input_source_);
   }
 
   // Get the event location relative to the canvas element.
@@ -105,16 +109,17 @@ void XRCanvasInputProvider::UpdateInputSource(PointerEvent* event) {
   // position of the screen interaction and shoves it backwards through the
   // projection matrix to get a 3D point in space, which is then returned in
   // matrix form so we can use it as an XRInputSource's pointerMatrix.
-  XRView* view = session_->views()[0];
+  XRViewData& view = session_->views()[0];
   std::unique_ptr<TransformationMatrix> pointer_transform_matrix =
-      view->UnprojectPointer(element_x, element_y, canvas_->OffsetWidth(),
-                             canvas_->OffsetHeight());
+      view.UnprojectPointer(element_x, element_y, canvas_->OffsetWidth(),
+                            canvas_->OffsetHeight());
 
   // Update the input source's pointer matrix.
   input_source_->SetPointerTransformMatrix(std::move(pointer_transform_matrix));
 }
 
 void XRCanvasInputProvider::ClearInputSource() {
+  session_->RemoveTransientInputSource(input_source_);
   input_source_ = nullptr;
 }
 

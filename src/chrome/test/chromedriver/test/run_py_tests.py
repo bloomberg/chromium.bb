@@ -96,6 +96,15 @@ _OS_SPECIFIC_FILTER['win'] = [
     'ChromeExtensionsCapabilityTest.testWaitsForExtensionToLoad',
     # https://bugs.chromium.org/p/chromium/issues/detail?id=946704
     'ChromeDownloadDirTest.testFileDownloadWithClick',
+    'ChromeDriverTest.testBackNavigationAfterClickElement',
+    'ChromeDriverTest.testCanClickInIframes',
+    'ChromeDriverTest.testClickElementAfterNavigation',
+    'ChromeDriverTest.testCloseWindow',
+    'ChromeDriverTest.testCloseWindowUsingJavascript',
+    'ChromeDriverTest.testGetLogOnClosedWindow',
+    'ChromeDriverTest.testGetWindowHandles',
+    'ChromeDriverTest.testShouldHandleNewWindowLoadingProperly',
+    'ChromeDriverTest.testSwitchToWindow',
 ]
 _OS_SPECIFIC_FILTER['linux'] = [
     # https://bugs.chromium.org/p/chromium/issues/detail?id=932073
@@ -501,6 +510,19 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
             'var callback = arguments[0];'
             'setTimeout(function(){callback(2);}, 300);'))
 
+  def testExecuteScriptTimeout(self):
+    self._driver.SetTimeouts({'script': 0})
+    self.assertRaises(
+        chromedriver.ScriptTimeout,
+        self._driver.ExecuteScript,
+            'return 2')
+
+    # Regular script can still run afterwards.
+    self._driver.SetTimeouts({'script': 1000})
+    self.assertEquals(
+        4,
+        self._driver.ExecuteScript('return 4'))
+
   def testSwitchToFrame(self):
     self._driver.ExecuteScript(
         'var frame = document.createElement("iframe");'
@@ -739,6 +761,52 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.PerformActions(actions)
     self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
 
+  def testActionsMouseDrag(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/drag.html'))
+    target = self._driver.FindElement('css selector', '#target')
+
+    # Move to center of target element and drag it to a new location.
+    actions = ({'actions': [{
+      'type': 'pointer',
+      'actions': [
+          {'type': 'pointerMove', 'x': 100, 'y': 100},
+          {'type': 'pointerDown', 'button': 0},
+          {'type': 'pointerMove', 'x': 200, 'y': 250}
+      ],
+      'parameters': {'pointerType': 'mouse'},
+      'id': 'pointer1'}]})
+    self._driver.PerformActions(actions)
+    rect = target.GetRect()
+    self.assertEquals(150, rect['x'])
+    self.assertEquals(200, rect['y'])
+
+    # Without releasing mouse button, should continue the drag.
+    actions = ({'actions': [{
+      'type': 'pointer',
+      'actions': [
+          {'type': 'pointerMove', 'x': 30, 'y': 40, 'origin': 'pointer'}
+      ],
+      'parameters': {'pointerType': 'mouse'},
+      'id': 'pointer1'}]})
+    self._driver.PerformActions(actions)
+    rect = target.GetRect()
+    self.assertEquals(180, rect['x'])
+    self.assertEquals(240, rect['y'])
+
+    # Releasing mouse button stops the drag.
+    actions = ({'actions': [{
+      'type': 'pointer',
+      'actions': [
+          {'type': 'pointerUp', 'button': 0},
+          {'type': 'pointerMove', 'x': 50, 'y': 50, 'origin': 'pointer'}
+      ],
+      'parameters': {'pointerType': 'mouse'},
+      'id': 'pointer1'}]})
+    self._driver.PerformActions(actions)
+    rect = target.GetRect()
+    self.assertEquals(180, rect['x'])
+    self.assertEquals(240, rect['y'])
+
   def testActionsTouchTap(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     self._driver.ExecuteScript(
@@ -890,6 +958,67 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
       if i > 0:
         elapsed_time = events[i]['time'] - events[i-1]['time']
         self.assertGreaterEqual(elapsed_time, 200)
+
+  def testReleaseActions(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    self._driver.ExecuteScript(
+        '''
+        document.body.innerHTML
+          = "<input id='target' type='text' style='width:200px; height:200px'>";
+        window.events = [];
+        const recordKeyEvent = event => {
+          window.events.push(
+              {type: event.type, code: event.code});
+        };
+        const recordMouseEvent = event => {
+          window.events.push(
+              {type: event.type, x: event.clientX, y: event.clientY});
+        };
+        const target = document.getElementById('target');
+        target.addEventListener('keydown', recordKeyEvent);
+        target.addEventListener('keyup', recordKeyEvent);
+        target.addEventListener('mousedown', recordMouseEvent);
+        target.addEventListener('mouseup', recordMouseEvent);
+        ''')
+
+    # Move mouse to (50, 50), press a mouse button, and press a key.
+    self._driver.PerformActions({'actions': [
+        {
+            'type': 'pointer',
+            'id': 'mouse',
+            'actions': [
+                {'type': 'pointerMove', 'x': 50, 'y': 50},
+                {'type': 'pointerDown', "button": 0}
+            ]
+        },
+        {
+            'type': 'key',
+            'id': 'key',
+            'actions': [
+                {'type': 'pause'},
+                {'type': 'pause'},
+                {'type': 'keyDown', 'value': 'a'}
+            ]
+        }
+    ]})
+
+    events = self._driver.ExecuteScript('return window.events')
+    self.assertEquals(2, len(events))
+    self.assertEquals('mousedown', events[0]['type'])
+    self.assertEquals(50, events[0]['x'])
+    self.assertEquals(50, events[0]['y'])
+    self.assertEquals('keydown', events[1]['type'])
+    self.assertEquals('KeyA', events[1]['code'])
+
+    self._driver.ReleaseActions()
+
+    events = self._driver.ExecuteScript('return window.events')
+    self.assertEquals(4, len(events))
+    self.assertEquals('keyup', events[2]['type'])
+    self.assertEquals('KeyA', events[2]['code'])
+    self.assertEquals('mouseup', events[3]['type'])
+    self.assertEquals(50, events[3]['x'])
+    self.assertEquals(50, events[3]['y'])
 
   def testPageLoadStrategyIsNormalByDefault(self):
     self.assertEquals('normal',
@@ -1407,6 +1536,8 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     """Checks that chromedriver can call Click on an element in a shadow DOM."""
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/shadow_dom_test.html'))
+    # Wait for page to stabilize. See https://crbug.com/954553#c7
+    time.sleep(1)
     elem = self._FindElementInShadowDom(
         ["#innerDiv", "#parentDiv", "#button"])
     elem.Click()
@@ -1415,11 +1546,34 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
         'return arguments[0].value;',
         self._FindElementInShadowDom(["#innerDiv", "#parentDiv", "#textBox"])))
 
+  def testShadowDomActionClick(self):
+    '''Checks that ChromeDriver can use actions API to click on an element in a
+    shadow DOM.'''
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/shadow_dom_test.html'))
+    # Wait for page to stabilize. See https://crbug.com/954553#c7
+    time.sleep(1)
+    elem = self._FindElementInShadowDom(
+        ['#innerDiv', '#parentDiv', '#button'])
+    actions = ({'actions': [{
+      'type': 'pointer',
+      'actions': [{'type': 'pointerMove', 'x': 0, 'y': 0, 'origin': elem},
+                  {'type': 'pointerDown', 'button': 0},
+                  {'type': 'pointerUp', 'button': 0}],
+      'id': 'pointer1'}]})
+    self._driver.PerformActions(actions)
+    # the button's onClicked handler changes the text box's value
+    self.assertEqual('Button Was Clicked', self._driver.ExecuteScript(
+        'return arguments[0].value;',
+        self._FindElementInShadowDom(['#innerDiv', '#parentDiv', '#textBox'])))
+
   def testShadowDomHover(self):
     """Checks that chromedriver can call HoverOver on an element in a
     shadow DOM."""
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/shadow_dom_test.html'))
+    # Wait for page to stabilize. See https://crbug.com/954553#c7
+    time.sleep(1)
     elem = self._FindElementInShadowDom(
         ["#innerDiv", "#parentDiv", "#button"])
     elem.HoverOver()

@@ -72,10 +72,6 @@ class ScreenshotSyncIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       '--test-type=gpu'] + browser_args
 
   @classmethod
-  def _CreateExpectations(cls):
-    raise NotImplementedError
-
-  @classmethod
   def GenerateGpuTests(cls, options):
     cls.SetParsedCommandLineOptions(options)
     yield('ScreenshotSync_SWRasterWithCanvas',

@@ -2,6 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+
 import httplib
 import httplib2
 import json
@@ -12,7 +16,6 @@ from google.appengine.api import memcache
 from google.appengine.api import urlfetch_errors
 
 from dashboard.common import utils
-
 
 _CACHE_DURATION = 60 * 60 * 24 * 7  # 1 week.
 _VULNERABILITY_PREFIX = ")]}'\n"
@@ -34,8 +37,12 @@ def RequestJson(*args, **kwargs):
   return json.loads(content)
 
 
-def Request(url, method='GET', body=None,
-            use_cache=False, use_auth=True, scope=utils.EMAIL_SCOPE,
+def Request(url,
+            method='GET',
+            body=None,
+            use_cache=False,
+            use_auth=True,
+            scope=utils.EMAIL_SCOPE,
             **parameters):
   """Fetch a URL while authenticated as the service account.
 
@@ -58,12 +65,12 @@ def Request(url, method='GET', body=None,
 
   if parameters:
     # URL-encode the parameters.
-    for key, value in parameters.items():
+    for key, value in list(parameters.items()):
       if value is None:
         del parameters[key]
       if isinstance(value, bool):
         parameters[key] = str(value).lower()
-    url += '?' + urllib.urlencode(sorted(parameters.iteritems()), doseq=True)
+    url += '?' + urllib.urlencode(sorted(parameters.items()), doseq=True)
 
   kwargs = {'method': method}
   if body:
@@ -105,10 +112,10 @@ def _RequestAndProcessHttpErrors(url, use_auth, scope, **kwargs):
   response, content = http.request(url, **kwargs)
 
   if response['status'] == '404':
-    raise NotFoundError(
-        'HTTP status code %s: %s' % (response['status'], content))
+    raise NotFoundError('HTTP status code %s: %s' %
+                        (response['status'], content))
   if not response['status'].startswith('2'):
-    raise httplib.HTTPException(
-        'HTTP status code %s: %s' % (response['status'], content))
+    raise httplib.HTTPException('HTTP status code %s: %s' %
+                                (response['status'], content))
 
   return content

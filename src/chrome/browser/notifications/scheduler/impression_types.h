@@ -7,10 +7,10 @@
 
 #include <deque>
 #include <map>
+#include <string>
 
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "chrome/browser/notifications/scheduler/internal_types.h"
 #include "chrome/browser/notifications/scheduler/notification_scheduler_types.h"
 
 namespace notifications {
@@ -45,6 +45,9 @@ struct Impression {
 
   // The task start time when this impression is generated.
   SchedulerTaskTime task_start_time = SchedulerTaskTime::kUnknown;
+
+  // The unique identifier of the notification.
+  std::string guid;
 };
 
 // Contains details about supression and recovery after suppression expired.
@@ -54,6 +57,9 @@ struct SuppressionInfo {
   SuppressionInfo(const SuppressionInfo& other);
   ~SuppressionInfo() = default;
   bool operator==(const SuppressionInfo& other) const;
+
+  // Time that the suppression should release.
+  base::Time ReleaseTime() const;
 
   // The last supression trigger time.
   base::Time last_trigger_time;

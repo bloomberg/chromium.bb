@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
+<translation id="1028699632127661925">Invio a <ph name="DEVICE_NAME" />…</translation>
 <translation id="111910763555783249">Impostazioni di notifica</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 giorno fa}other{# giorni fa}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 minuto fa}other{# minuti fa}}</translation>
@@ -15,13 +16,11 @@
 <translation id="1383876407941801731">Cerca</translation>
 <translation id="1398853756734560583">Ingrandisci</translation>
 <translation id="1409544243779336081">Consiglio applicazione</translation>
-<translation id="1413622004203049571">Disabilita notifiche da <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuto e }other{# minuti e }}</translation>
 <translation id="1643823602425662293">Notifica</translation>
 <translation id="169515659049020177">Maiusc</translation>
 <translation id="1710340000377843106">ora</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minuto}other{# minuti}}</translation>
-<translation id="1756116796893109054">Invio della scheda…</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1801827354178857021">Periodo</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 mese}other{# mesi}}</translation>
@@ -135,6 +134,7 @@
 <translation id="6135826906199951471">Canc</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6156262341071374681">Espandi per vedere tutte le app</translation>
+<translation id="6165508094623778733">Ulteriori informazioni</translation>
 <translation id="6264365405983206840">Seleziona &amp;tutto</translation>
 <translation id="6351032674660237738">APP SUGGERITE</translation>
 <translation id="6364916375976753737">Scorri a sinistra</translation>
@@ -180,8 +180,10 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Più di 1 notifica da leggere}other{Più di # notifiche da leggere}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{tra 1 m}other{tra # m}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" /> + <ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8098075892845277643">Avvia query vocale dell'Assistente Google</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 ora fa}other{# ore fa}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 sec rimanente}other{# sec rimanenti}}</translation>
+<translation id="8144660977431427332">Le tue ricerche sono basate sulla tecnologia dell'Assistente Google. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, completamento automatico</translation>
 <translation id="815598010540052116">Scorri verso il basso</translation>
 <translation id="8170087467028567933">Questo suggerimento, se rimosso, verrà nascosto dal tuo account su tutti i tuoi dispositivi.</translation>

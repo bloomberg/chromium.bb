@@ -42,7 +42,7 @@ class DeprecatedRegistrarInvalidator : public Invalidator {
     registrar_.UnregisterHandler(handler);
   }
 
-  bool UpdateRegisteredIds(InvalidationHandler*, const TopicSet&) override {
+  bool UpdateRegisteredIds(InvalidationHandler*, const Topics&) override {
     NOTREACHED();
     return false;
   }

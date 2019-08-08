@@ -21,6 +21,7 @@ import org.chromium.components.minidump_uploader.MinidumpUploadJobService;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Service that is responsible for receiving crash dumps from an application, for upload.
@@ -43,7 +44,7 @@ public class CrashReceiverService extends Service {
 
     private final ICrashReceiverService.Stub mBinder = new ICrashReceiverService.Stub() {
         @Override
-        public void transmitCrashes(ParcelFileDescriptor[] fileDescriptors) {
+        public void transmitCrashes(ParcelFileDescriptor[] fileDescriptors, List crashInfo) {
             int uid = Binder.getCallingUid();
             performMinidumpCopyingSerially(uid, fileDescriptors, true /* scheduleUploads */);
         }

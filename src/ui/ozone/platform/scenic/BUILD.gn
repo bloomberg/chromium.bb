@@ -30,6 +30,10 @@ source_set("scenic") {
     "scenic_window_canvas.h",
     "scenic_window_manager.cc",
     "scenic_window_manager.h",
+    "sysmem_buffer_collection.cc",
+    "sysmem_buffer_collection.h",
+    "sysmem_buffer_manager.cc",
+    "sysmem_buffer_manager.h",
   ]
 
   defines = [
@@ -45,6 +49,7 @@ source_set("scenic") {
     "//third_party/fuchsia-sdk/sdk:images",
     "//third_party/fuchsia-sdk/sdk:mem",
     "//third_party/fuchsia-sdk/sdk:scenic_cpp",
+    "//third_party/fuchsia-sdk/sdk:sysmem",
     "//third_party/fuchsia-sdk/sdk:ui_gfx",
     "//third_party/fuchsia-sdk/sdk:ui_scenic",
     "//ui/base",

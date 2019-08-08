@@ -29,7 +29,7 @@ class WidgetFocusChangeListener {
 class VIEWS_EXPORT WidgetFocusManager {
  public:
   // Returns the singleton instance.
-  static WidgetFocusManager* GetInstance(gfx::NativeWindow context = nullptr);
+  static WidgetFocusManager* GetInstance();
 
   ~WidgetFocusManager();
 

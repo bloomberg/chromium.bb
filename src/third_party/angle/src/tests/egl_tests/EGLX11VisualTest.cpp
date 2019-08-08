@@ -24,15 +24,10 @@ namespace
 const EGLint contextAttribs[] = {EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE};
 }
 
-class EGLX11VisualHintTest : public EGLTest,
-                             public ::testing::WithParamInterface<angle::PlatformParameters>
+class EGLX11VisualHintTest : public ANGLETest
 {
   public:
-    void SetUp() override
-    {
-        EGLTest::SetUp();
-        mDisplay = XOpenDisplay(nullptr);
-    }
+    void testSetUp() override { mDisplay = XOpenDisplay(nullptr); }
 
     std::vector<EGLint> getDisplayAttributes(int visualId) const
     {
@@ -208,4 +203,4 @@ TEST_P(EGLX11VisualHintTest, InvalidWindowVisualID)
     OSWindow::Delete(&osWindow);
 }
 
-ANGLE_INSTANTIATE_TEST(EGLX11VisualHintTest, ES2_OPENGL());
+ANGLE_INSTANTIATE_TEST(EGLX11VisualHintTest, WithNoFixture(ES2_OPENGL()));

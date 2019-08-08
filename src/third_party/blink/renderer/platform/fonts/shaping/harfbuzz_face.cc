@@ -30,6 +30,9 @@
 
 #include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_face.h"
 
+#include <hb-ot.h>
+#include <hb.h>
+
 #include <memory>
 
 #include "build/build_config.h"
@@ -47,16 +50,12 @@
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
-
-#include <hb-ot.h>
-#include <hb.h>
-
-#include <SkPaint.h>
-#include <SkPath.h>
-#include <SkPoint.h>
-#include <SkRect.h>
-#include <SkStream.h>
-#include <SkTypeface.h>
+#include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkPath.h"
+#include "third_party/skia/include/core/SkPoint.h"
+#include "third_party/skia/include/core/SkRect.h"
+#include "third_party/skia/include/core/SkStream.h"
+#include "third_party/skia/include/core/SkTypeface.h"
 
 namespace blink {
 

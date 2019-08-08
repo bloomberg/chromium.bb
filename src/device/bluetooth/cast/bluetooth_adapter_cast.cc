@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
@@ -18,6 +19,7 @@
 #include "chromecast/device/bluetooth/le/remote_device.h"
 #include "chromecast/device/bluetooth/le/remote_service.h"
 #include "device/bluetooth/bluetooth_device.h"
+#include "device/bluetooth/bluetooth_discovery_filter.h"
 #include "device/bluetooth/bluetooth_discovery_session_outcome.h"
 #include "device/bluetooth/cast/bluetooth_device_cast.h"
 #include "device/bluetooth/cast/bluetooth_utils.h"
@@ -33,10 +35,10 @@ BluetoothAdapterCast::FactoryCb& GetFactory() {
 }  // namespace
 
 BluetoothAdapterCast::DiscoveryParams::DiscoveryParams(
-    device::BluetoothDiscoveryFilter* filter,
+    std::unique_ptr<device::BluetoothDiscoveryFilter> filter,
     base::Closure success_callback,
     DiscoverySessionErrorCallback error_callback)
-    : filter(filter),
+    : filter(std::move(filter)),
       success_callback(success_callback),
       error_callback(std::move(error_callback)) {}
 
@@ -183,27 +185,24 @@ bool BluetoothAdapterCast::SetPoweredImpl(bool powered) {
   return true;
 }
 
-void BluetoothAdapterCast::AddDiscoverySession(
-    BluetoothDiscoveryFilter* discovery_filter,
-    const base::Closure& callback,
-    DiscoverySessionErrorCallback error_callback) {
+void BluetoothAdapterCast::StartScanWithFilter(
+    std::unique_ptr<device::BluetoothDiscoveryFilter> discovery_filter,
+    DiscoverySessionResultCallback callback) {
   // The discovery filter is unused for now, as the Cast bluetooth stack does
   // not expose scan filters yet. However, implementation of filtering would
-  // save numerous UI<->IO threadhops by eliminating uneccessary calls to
+  // save numerous UI<->IO threadhops by eliminating unnecessary calls to
   // GetDevice().
   // TODO(bcf|slan): Wire this up once scan filters are implemented.
   (void)discovery_filter;
 
-  // If the count is greater than 0, increment the count and return success.
-  if (num_discovery_sessions_ > 0) {
-    num_discovery_sessions_++;
-    callback.Run();
-    return;
-  }
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
 
   // Add this request to the queue.
-  pending_discovery_requests_.emplace(discovery_filter, std::move(callback),
-                                      std::move(error_callback));
+  pending_discovery_requests_.emplace(BluetoothAdapterCast::DiscoveryParams(
+      std::move(discovery_filter),
+      base::BindRepeating(copyable_callback, /*is_error=*/false,
+                          UMABluetoothDiscoverySessionOutcome::SUCCESS),
+      base::BindOnce(copyable_callback, /*is_error=*/true)));
 
   // If the queue length is greater than 1 (i.e. there was a pending request
   // when this method was called), exit early. This request will be processed
@@ -215,6 +214,24 @@ void BluetoothAdapterCast::AddDiscoverySession(
   // scanning.
   le_scan_manager_->RequestScan(base::BindOnce(
       &BluetoothAdapterCast::OnScanEnabled, weak_factory_.GetWeakPtr()));
+}
+
+void BluetoothAdapterCast::UpdateFilter(
+    std::unique_ptr<device::BluetoothDiscoveryFilter> discovery_filter,
+    DiscoverySessionResultCallback callback) {
+  // The discovery filter is unused for now, as the Cast bluetooth stack does
+  // not expose scan filters yet. However, implementation of filtering would
+  // save numerous UI<->IO threadhops by eliminating unnecessary calls to
+  // GetDevice().
+  // TODO(bcf|slan): Wire this up once scan filters are implemented.
+
+  // If calling update then there must be other sessions actively scanning
+  // besides this one.
+  DCHECK_GT(NumDiscoverySessions(), 1);
+
+  // Since filters are not used simply return success.
+  std::move(callback).Run(/*is_error=*/false,
+                          UMABluetoothDiscoverySessionOutcome::SUCCESS);
 }
 
 void BluetoothAdapterCast::RemoveDiscoverySession(

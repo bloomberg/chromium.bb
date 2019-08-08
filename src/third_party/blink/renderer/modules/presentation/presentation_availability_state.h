@@ -30,9 +30,8 @@ class PresentationAvailabilityObserver;
 // TODO(crbug.com/780109): Improve encapsulation of PresentationAvailability and
 // this class by moving the multiple URL tracking logic to the former, and
 // consolidating this class's APIs to take repeating callbacks.
-class MODULES_EXPORT PresentationAvailabilityState {
-  USING_FAST_MALLOC(PresentationAvailabilityState);
-
+class MODULES_EXPORT PresentationAvailabilityState
+    : public GarbageCollectedFinalized<PresentationAvailabilityState> {
  public:
   explicit PresentationAvailabilityState(mojom::blink::PresentationService*);
   ~PresentationAvailabilityState();
@@ -41,7 +40,7 @@ class MODULES_EXPORT PresentationAvailabilityState {
   // with the determined availability value. The callbacks will only be invoked
   // once and will be deleted afterwards.
   void RequestAvailability(const Vector<KURL>&,
-                           std::unique_ptr<PresentationAvailabilityCallbacks>);
+                           PresentationAvailabilityCallbacks* callbacks);
 
   // Starts/stops listening for availability with the given observer.
   void AddObserver(PresentationAvailabilityObserver*);
@@ -50,6 +49,8 @@ class MODULES_EXPORT PresentationAvailabilityState {
   // Updates the availability value for a given URL, and invoking any affected
   // callbacks and observers.
   void UpdateAvailability(const KURL&, mojom::blink::ScreenAvailability);
+
+  void Trace(blink::Visitor*);
 
  private:
   enum class ListeningState {
@@ -61,15 +62,20 @@ class MODULES_EXPORT PresentationAvailabilityState {
   // Tracks listeners of presentation displays availability for
   // |availability_urls|. Shared with PresentationRequest objects with the same
   // set of URLs.
-  struct AvailabilityListener {
+  class AvailabilityListener
+      : public GarbageCollectedFinalized<AvailabilityListener> {
+   public:
     explicit AvailabilityListener(const Vector<KURL>& availability_urls);
     ~AvailabilityListener();
 
     const Vector<KURL> urls;
-    std::vector<std::unique_ptr<PresentationAvailabilityCallbacks>>
+    HeapVector<Member<PresentationAvailabilityCallbacks>>
         availability_callbacks;
-    std::set<PresentationAvailabilityObserver*> availability_observers;
+    HeapVector<Member<PresentationAvailabilityObserver>> availability_observers;
 
+    void Trace(blink::Visitor*);
+
+   private:
     DISALLOW_COPY_AND_ASSIGN(AvailabilityListener);
   };
 
@@ -104,7 +110,7 @@ class MODULES_EXPORT PresentationAvailabilityState {
       const Vector<KURL>&) const;
 
   // Returns nullptr if there is no AvailabilityListener for the given URLs.
-  AvailabilityListener* GetAvailabilityListener(const Vector<KURL>&) const;
+  AvailabilityListener* GetAvailabilityListener(const Vector<KURL>&);
 
   // Removes the given listener from |availability_set_| if it has no callbacks
   // and no observers.
@@ -117,14 +123,10 @@ class MODULES_EXPORT PresentationAvailabilityState {
   std::vector<std::unique_ptr<ListeningStatus>> availability_listening_status_;
 
   // Set of AvailabilityListener for known PresentationRequests.
-  std::vector<std::unique_ptr<AvailabilityListener>> availability_listeners_;
+  HeapVector<Member<AvailabilityListener>> availability_listeners_;
 
   // A pointer to PresentationService owned by PresentationController.
   mojom::blink::PresentationService* const presentation_service_;
-
-  // Whether we are iterating listeners, if this state is set we avoid
-  // removing items from |availability_listeners_|.
-  bool iterating_listeners_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PresentationAvailabilityState);
 };

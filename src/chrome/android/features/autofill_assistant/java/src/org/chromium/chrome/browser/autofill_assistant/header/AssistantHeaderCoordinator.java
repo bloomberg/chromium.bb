@@ -20,8 +20,10 @@ import java.util.Collections;
 /**
  * Coordinator for the header of the Autofill Assistant.
  */
-public class AssistantHeaderCoordinator {
-    private ProfileDataCache mProfileCache;
+public class AssistantHeaderCoordinator implements ProfileDataCache.Observer {
+    private final ProfileDataCache mProfileCache;
+    private final ImageView mProfileView;
+    private final String mSignedInAccountName;
 
     public AssistantHeaderCoordinator(
             Context context, ViewGroup bottomBarView, AssistantHeaderModel model) {
@@ -35,17 +37,38 @@ public class AssistantHeaderCoordinator {
                         R.dimen.autofill_assistant_poodle_size));
         addPoodle(bottomBarView, poodle.getView());
 
-        mProfileCache = new ProfileDataCache(context, R.dimen.autofill_assistant_profile_size);
-        setupProfileImage(bottomBarView);
+        int imageSize = context.getResources().getDimensionPixelSize(
+                R.dimen.autofill_assistant_profile_size);
+        mProfileCache = new ProfileDataCache(context, imageSize);
+        mProfileView = bottomBarView.findViewById(R.id.profile_image);
+        mSignedInAccountName = ChromeSigninController.get().getSignedInAccountName();
+        setupProfileImage(context, bottomBarView);
 
         // Bind view and mediator through the model.
         AssistantHeaderViewBinder.ViewHolder viewHolder =
-                new AssistantHeaderViewBinder.ViewHolder(bottomBarView, poodle);
+                new AssistantHeaderViewBinder.ViewHolder(context, bottomBarView, poodle);
         AssistantHeaderViewBinder viewBinder = new AssistantHeaderViewBinder();
         PropertyModelChangeProcessor.create(model, viewHolder, viewBinder);
 
         model.set(AssistantHeaderModel.VISIBLE, true);
         model.set(AssistantHeaderModel.PROGRESS_VISIBLE, true);
+    }
+
+    @Override
+    public void onProfileDataUpdated(String account) {
+        if (!mSignedInAccountName.equals(account)) {
+            return;
+        }
+        setProfileImageFor(mSignedInAccountName);
+    }
+
+    /**
+     * Cleanup resources when this goes out of scope.
+     */
+    public void destroy() {
+        if (mSignedInAccountName != null) {
+            mProfileCache.removeObserver(this);
+        }
     }
 
     private void addPoodle(ViewGroup root, View poodleView) {
@@ -55,19 +78,16 @@ public class AssistantHeaderCoordinator {
     }
 
     // TODO(b/130415092): Use image from AGSA if chrome is not signed in.
-    private void setupProfileImage(ViewGroup root) {
-        String signedInAccountName = ChromeSigninController.get().getSignedInAccountName();
-        if (signedInAccountName != null) {
-            mProfileCache.addObserver(account -> {
-                if (!signedInAccountName.equals(account)) {
-                    return;
-                }
-                DisplayableProfileData profileData =
-                        mProfileCache.getProfileDataOrDefault(signedInAccountName);
-                ImageView profileView = root.findViewById(R.id.profile_image);
-                profileView.setImageDrawable(profileData.getImage());
-            });
-            mProfileCache.update(Collections.singletonList(signedInAccountName));
+    private void setupProfileImage(Context context, ViewGroup root) {
+        if (mSignedInAccountName != null) {
+            mProfileCache.addObserver(this);
+            mProfileCache.update(Collections.singletonList(mSignedInAccountName));
         }
+    }
+
+    private void setProfileImageFor(String signedInAccountName) {
+        DisplayableProfileData profileData =
+                mProfileCache.getProfileDataOrDefault(signedInAccountName);
+        mProfileView.setImageDrawable(profileData.getImage());
     }
 }

@@ -18,6 +18,7 @@ class HistoryService;
 }  // namespace history
 
 namespace syncer {
+class DeviceInfoTracker;
 class ModelTypeControllerDelegate;
 }  // namespace syncer
 
@@ -31,7 +32,8 @@ class SendTabToSelfSyncService : public KeyedService {
   SendTabToSelfSyncService(
       version_info::Channel channel,
       syncer::OnceModelTypeStoreFactory create_store_callback,
-      history::HistoryService* history_service);
+      history::HistoryService* history_service,
+      syncer::DeviceInfoTracker* device_info_tracker);
   ~SendTabToSelfSyncService() override;
 
   virtual SendTabToSelfModel* GetSendTabToSelfModel();

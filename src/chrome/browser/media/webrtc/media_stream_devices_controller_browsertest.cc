@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/prefs/pref_service.h"
@@ -709,7 +710,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest, ContentSettings) {
 // Request and allow camera access on WebUI pages without prompting.
 IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
                        WebUIRequestAndAllowCam) {
-  InitWithUrl(GURL("chrome://version"));
+  InitWithUrl(GURL(chrome::kChromeUIVersionURL));
   RequestPermissions(
       GetWebContents(), CreateRequest(std::string(), example_video_id()),
       base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
@@ -901,7 +902,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
 IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
                        PepperAudioRequestNoCamera) {
   MediaCaptureDevicesDispatcher::GetInstance()->SetTestVideoCaptureDevices({});
-  InitWithUrl(GURL("chrome://version"));
+  InitWithUrl(GURL(chrome::kChromeUIVersionURL));
   RequestPermissions(
       GetWebContents(),
       CreateRequestWithType(example_audio_id(), std::string(),
@@ -917,7 +918,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
 IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
                        PepperVideoRequestNoMic) {
   MediaCaptureDevicesDispatcher::GetInstance()->SetTestAudioCaptureDevices({});
-  InitWithUrl(GURL("chrome://version"));
+  InitWithUrl(GURL(chrome::kChromeUIVersionURL));
   RequestPermissions(
       GetWebContents(),
       CreateRequestWithType(std::string(), example_video_id(),

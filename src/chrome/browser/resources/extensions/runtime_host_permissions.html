@@ -23,6 +23,11 @@
   <template>
     <style include="cr-shared-style action-link md-select paper-button-style
         shared-style">
+      iron-icon {
+        --iron-icon-height: var(--cr-icon-size);
+        --iron-icon-width: var(--cr-icon-size);
+      }
+
       #section-heading {
         align-items: center;
         display: flex;
@@ -74,7 +79,7 @@
         <span>$i18n{hostPermissionsHeading}</span>
         <a class="link-icon-button" aria-label="$i18n{learnMore}"
             href="$i18n{hostPermissionsLearnMoreLink}" target="_blank">
-          <iron-icon icon="cr:info-outline"></iron-icon>
+          <iron-icon icon="cr:help-outline"></iron-icon>
         </a>
       </div>
       <cr-radio-group id="host-access" selected="[[permissions.hostAccess]]"

@@ -274,8 +274,6 @@ class BuilderStage(object):
       })
       if self.buildstore.AreClientsReady():
         failures_lib.ReportStageFailure(
-            self.buildstore,
-            self._build_stage_id,
             stage_result,
             metrics_fields=failed_metrics_fields)
 
@@ -423,11 +421,23 @@ class BuilderStage(object):
     """Get job keyvals for the build stage."""
     build_identifier, _ = self._run.GetCIDBHandle()
     build_id = build_identifier.cidb_id
+    if self._run.options.master_buildbucket_id:
+      master_status = self.buildstore.GetBuildStatuses(
+          [self._run.options.master_buildbucket_id])[0]
+      master_config = master_status['build_config']
+    else:
+      master_config = None
     job_keyvals = {
         constants.JOB_KEYVAL_DATASTORE_PARENT_KEY: (
             'Build', build_id),
         constants.JOB_KEYVAL_CIDB_BUILD_ID:
-            build_id
+            build_id,
+        constants.JOB_KEYVAL_BUILD_CONFIG:
+            self._run.config.name,
+        constants.JOB_KEYVAL_BRANCH:
+            self._run.options.branch,
+        constants.JOB_KEYVAL_MASTER_BUILD_CONFIG:
+            master_config
     }
     return job_keyvals
 

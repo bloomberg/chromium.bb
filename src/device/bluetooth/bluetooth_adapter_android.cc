@@ -11,6 +11,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -158,7 +159,6 @@ void BluetoothAdapterAndroid::OnAdapterStateChanged(
 void BluetoothAdapterAndroid::OnScanFailed(
     JNIEnv* env,
     const JavaParamRef<jobject>& caller) {
-  num_discovery_sessions_ = 0;
   MarkDiscoverySessionsAsInactive();
 }
 
@@ -301,17 +301,36 @@ bool BluetoothAdapterAndroid::SetPoweredImpl(bool powered) {
                                                 j_adapter_, powered);
 }
 
-void BluetoothAdapterAndroid::AddDiscoverySession(
-    BluetoothDiscoveryFilter* discovery_filter,
-    const base::Closure& callback,
-    DiscoverySessionErrorCallback error_callback) {
-  // TODO(scheib): Support filters crbug.com/490401
+void BluetoothAdapterAndroid::UpdateFilter(
+    std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
+    DiscoverySessionResultCallback callback) {
+  // If there is only 1 discovery session then StartScan should be called and
+  // not UpdateFilter.
+  DCHECK_GT(NumDiscoverySessions(), 1);
+  if (IsPowered()) {
+    // TODO(jameshollyer): Actually update the filter in Android.
+    std::move(callback).Run(/*is_error=*/false,
+                            UMABluetoothDiscoverySessionOutcome::SUCCESS);
+    return;
+  } else {
+    VLOG(1) << "UpdateFilter: Fails: !isPowered";
+    std::move(callback).Run(/*is_error=*/true,
+                            UMABluetoothDiscoverySessionOutcome::UNKNOWN);
+  }
+}
+
+void BluetoothAdapterAndroid::StartScanWithFilter(
+    std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
+    DiscoverySessionResultCallback callback) {
+  // This function should only be called if this is the first discovery session.
+  // Otherwise we should have called updateFilter.
+  DCHECK_EQ(NumDiscoverySessions(), 1);
   bool session_added = false;
   if (IsPowered()) {
-    if (num_discovery_sessions_ > 0) {
-      session_added = true;
-    } else if (Java_ChromeBluetoothAdapter_startScan(AttachCurrentThread(),
-                                                     j_adapter_)) {
+    // TODO(jameshollyer): convert discovery filter into java scan filter and
+    // add to start scan call
+    if (Java_ChromeBluetoothAdapter_startScan(AttachCurrentThread(),
+                                              j_adapter_)) {
       session_added = true;
 
       // Using a delayed task in order to give the adapter some time
@@ -323,17 +342,18 @@ void BluetoothAdapterAndroid::AddDiscoverySession(
           base::TimeDelta::FromMilliseconds(kPurgeDelay));
     }
   } else {
-    VLOG(1) << "AddDiscoverySession: Fails: !isPowered";
+    VLOG(1) << "StartScanWithFilter: Fails: !isPowered";
   }
 
   if (session_added) {
-    num_discovery_sessions_++;
-    VLOG(1) << "AddDiscoverySession: Now " << unsigned(num_discovery_sessions_)
+    VLOG(1) << "StartScanWithFilter: Now " << unsigned(NumDiscoverySessions())
             << " sessions.";
-    callback.Run();
+    std::move(callback).Run(/*is_error=*/false,
+                            UMABluetoothDiscoverySessionOutcome::SUCCESS);
   } else {
     // TODO(scheib): Eventually wire the SCAN_FAILED result through to here.
-    std::move(error_callback).Run(UMABluetoothDiscoverySessionOutcome::UNKNOWN);
+    std::move(callback).Run(/*is_error=*/true,
+                            UMABluetoothDiscoverySessionOutcome::UNKNOWN);
   }
 }
 
@@ -342,13 +362,12 @@ void BluetoothAdapterAndroid::RemoveDiscoverySession(
     const base::Closure& callback,
     DiscoverySessionErrorCallback error_callback) {
   bool session_removed = false;
-  if (num_discovery_sessions_ == 0) {
+  if (NumDiscoverySessions() == 0) {
     VLOG(1) << "RemoveDiscoverySession: No scan in progress.";
     NOTREACHED();
   } else {
-    --num_discovery_sessions_;
     session_removed = true;
-    if (num_discovery_sessions_ == 0) {
+    if (NumDiscoverySessions() == 1) {
       VLOG(1) << "RemoveDiscoverySession: Now 0 sessions. Stopping scan.";
       session_removed = Java_ChromeBluetoothAdapter_stopScan(
           AttachCurrentThread(), j_adapter_);
@@ -357,7 +376,7 @@ void BluetoothAdapterAndroid::RemoveDiscoverySession(
       }
     } else {
       VLOG(1) << "RemoveDiscoverySession: Now "
-              << unsigned(num_discovery_sessions_) << " sessions.";
+              << unsigned(NumDiscoverySessions()) << " sessions.";
     }
   }
 

@@ -15,8 +15,8 @@ MediaMultiChannelResampler::MediaMultiChannelResampler(
     int channels,
     double io_sample_rate_ratio,
     size_t request_frames,
-    const ReadCB& read_cb)
-    : read_cb_(read_cb) {
+    ReadCB read_cb)
+    : read_cb_(std::move(read_cb)) {
   resampler_.reset(new media::MultiChannelResampler(
       channels, io_sample_rate_ratio, request_frames,
       base::BindRepeating(&MediaMultiChannelResampler::ProvideResamplerInput,

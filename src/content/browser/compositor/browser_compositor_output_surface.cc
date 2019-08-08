@@ -12,7 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/service/display/output_surface_client.h"
-#include "components/viz/service/display_embedder/compositor_overlay_candidate_validator.h"
+#include "components/viz/service/display/overlay_candidate_validator.h"
 #include "content/browser/compositor/reflector_impl.h"
 #include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
 
@@ -20,21 +20,14 @@ namespace content {
 
 BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
     scoped_refptr<viz::ContextProvider> context_provider,
-    const viz::UpdateVSyncParametersCallback& update_vsync_parameters_callback,
-    std::unique_ptr<viz::CompositorOverlayCandidateValidator>
-        overlay_candidate_validator)
-    : OutputSurface(std::move(context_provider)),
-      update_vsync_parameters_callback_(update_vsync_parameters_callback),
-      reflector_(nullptr) {
+    std::unique_ptr<viz::OverlayCandidateValidator> overlay_candidate_validator)
+    : OutputSurface(std::move(context_provider)) {
   overlay_candidate_validator_ = std::move(overlay_candidate_validator);
 }
 
 BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
-    std::unique_ptr<viz::SoftwareOutputDevice> software_device,
-    const viz::UpdateVSyncParametersCallback& update_vsync_parameters_callback)
-    : OutputSurface(std::move(software_device)),
-      update_vsync_parameters_callback_(update_vsync_parameters_callback),
-      reflector_(nullptr) {}
+    std::unique_ptr<viz::SoftwareOutputDevice> software_device)
+    : OutputSurface(std::move(software_device)) {}
 
 BrowserCompositorOutputSurface::~BrowserCompositorOutputSurface() {
   if (reflector_)
@@ -43,11 +36,6 @@ BrowserCompositorOutputSurface::~BrowserCompositorOutputSurface() {
 }
 
 void BrowserCompositorOutputSurface::SetReflector(ReflectorImpl* reflector) {
-  // Software mirroring is done by doing a GL copy out of the framebuffer - if
-  // we have overlays then that data will be missing.
-  if (overlay_candidate_validator_) {
-    overlay_candidate_validator_->SetSoftwareMirrorMode(reflector != nullptr);
-  }
   reflector_ = reflector;
 
   OnReflectorChanged();
@@ -56,9 +44,9 @@ void BrowserCompositorOutputSurface::SetReflector(ReflectorImpl* reflector) {
 void BrowserCompositorOutputSurface::OnReflectorChanged() {
 }
 
-viz::OverlayCandidateValidator*
-BrowserCompositorOutputSurface::GetOverlayCandidateValidator() const {
-  return overlay_candidate_validator_.get();
+std::unique_ptr<viz::OverlayCandidateValidator>
+BrowserCompositorOutputSurface::TakeOverlayCandidateValidator() {
+  return std::move(overlay_candidate_validator_);
 }
 
 bool BrowserCompositorOutputSurface::HasExternalStencilTest() const {
@@ -66,5 +54,14 @@ bool BrowserCompositorOutputSurface::HasExternalStencilTest() const {
 }
 
 void BrowserCompositorOutputSurface::ApplyExternalStencil() {}
+
+void BrowserCompositorOutputSurface::SetUpdateVSyncParametersCallback(
+    viz::UpdateVSyncParametersCallback callback) {
+  update_vsync_parameters_callback_ = std::move(callback);
+}
+
+gfx::OverlayTransform BrowserCompositorOutputSurface::GetDisplayTransform() {
+  return gfx::OVERLAY_TRANSFORM_NONE;
+}
 
 }  // namespace content

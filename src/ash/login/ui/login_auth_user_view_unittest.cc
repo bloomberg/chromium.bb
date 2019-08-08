@@ -60,7 +60,7 @@ class LoginAuthUserViewUnittest : public LoginTestBase {
     view_->SetAuthMethods(auth_methods, can_use_pin);
   }
 
-  mojom::LoginUserInfoPtr user_;
+  LoginUserInfo user_;
   views::View* container_ = nullptr;   // Owned by test widget view hierarchy.
   LoginAuthUserView* view_ = nullptr;  // Owned by test widget view hierarchy.
 
@@ -104,7 +104,7 @@ TEST_F(LoginAuthUserViewUnittest, ShowingPasswordForcesOpaque) {
 // Verifies that pressing return with an empty password field when tap-to-unlock
 // is enabled attempts unlock.
 TEST_F(LoginAuthUserViewUnittest, PressReturnWithTapToUnlockEnabled) {
-  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+  auto client = std::make_unique<MockLoginScreenClient>();
 
   ui::test::EventGenerator* generator = GetEventGenerator();
 
@@ -116,7 +116,7 @@ TEST_F(LoginAuthUserViewUnittest, PressReturnWithTapToUnlockEnabled) {
 
   EXPECT_CALL(*client,
               AuthenticateUserWithEasyUnlock(
-                  user_view->current_user()->basic_user_info->account_id));
+                  user_view->current_user().basic_user_info.account_id));
   SetAuthMethods(LoginAuthUserView::AUTH_PASSWORD |
                  LoginAuthUserView::AUTH_TAP);
   password_view->Clear();
@@ -126,7 +126,7 @@ TEST_F(LoginAuthUserViewUnittest, PressReturnWithTapToUnlockEnabled) {
 }
 
 TEST_F(LoginAuthUserViewUnittest, OnlineSignInMessage) {
-  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+  auto client = std::make_unique<MockLoginScreenClient>();
   LoginAuthUserView::TestApi test_auth_user_view(view_);
   views::Button* online_sign_in_message(
       test_auth_user_view.online_sign_in_message());
@@ -137,16 +137,15 @@ TEST_F(LoginAuthUserViewUnittest, OnlineSignInMessage) {
   // When auth method is |AUTH_ONLINE_SIGN_IN|, the online sign-in message is
   // visible. The password field and PIN keyboard are invisible.
   SetAuthMethods(LoginAuthUserView::AUTH_ONLINE_SIGN_IN);
-  EXPECT_TRUE(online_sign_in_message->visible());
-  EXPECT_FALSE(password_view->visible());
-  EXPECT_FALSE(pin_view->visible());
+  EXPECT_TRUE(online_sign_in_message->GetVisible());
+  EXPECT_FALSE(password_view->GetVisible());
+  EXPECT_FALSE(pin_view->GetVisible());
 
   // Clicking the message triggers |ShowGaiaSignin|.
-  EXPECT_CALL(*client,
-              ShowGaiaSignin(
-                  true /*can_close*/,
-                  base::Optional<AccountId>(
-                      user_view->current_user()->basic_user_info->account_id)));
+  EXPECT_CALL(
+      *client,
+      ShowGaiaSignin(true /*can_close*/,
+                     user_view->current_user().basic_user_info.account_id));
   const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                              ui::EventTimeForNow(), 0, 0);
   view_->ButtonPressed(online_sign_in_message, event);
@@ -154,13 +153,13 @@ TEST_F(LoginAuthUserViewUnittest, OnlineSignInMessage) {
 
   // The online sign-in message is invisible for all other auth methods.
   SetAuthMethods(LoginAuthUserView::AUTH_NONE);
-  EXPECT_FALSE(online_sign_in_message->visible());
+  EXPECT_FALSE(online_sign_in_message->GetVisible());
   SetAuthMethods(LoginAuthUserView::AUTH_PASSWORD);
-  EXPECT_FALSE(online_sign_in_message->visible());
+  EXPECT_FALSE(online_sign_in_message->GetVisible());
   SetAuthMethods(LoginAuthUserView::AUTH_PIN);
-  EXPECT_FALSE(online_sign_in_message->visible());
+  EXPECT_FALSE(online_sign_in_message->GetVisible());
   SetAuthMethods(LoginAuthUserView::AUTH_TAP);
-  EXPECT_FALSE(online_sign_in_message->visible());
+  EXPECT_FALSE(online_sign_in_message->GetVisible());
 }
 
 // Verifies that password is cleared after AUTH_PASSWORD is disabled.
@@ -193,7 +192,7 @@ TEST_F(LoginAuthUserViewUnittest,
 
 TEST_F(LoginAuthUserViewUnittest, AttemptsUnlockOnLidOpen) {
   LoginAuthUserView::TestApi test_auth_user_view(view_);
-  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+  auto client = std::make_unique<MockLoginScreenClient>();
 
   SetAuthMethods(LoginAuthUserView::AUTH_EXTERNAL_BINARY);
 
@@ -202,7 +201,7 @@ TEST_F(LoginAuthUserViewUnittest, AttemptsUnlockOnLidOpen) {
   EXPECT_CALL(*client, AuthenticateUserWithExternalBinary_(
                            test_auth_user_view.user_view()
                                ->current_user()
-                               ->basic_user_info->account_id,
+                               .basic_user_info.account_id,
                            _));
   power_manager_client()->SetLidState(
       chromeos::PowerManagerClient::LidState::OPEN, base::TimeTicks::Now());

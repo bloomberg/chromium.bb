@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.omnibox.geo;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Process;
@@ -437,12 +436,9 @@ public class GeolocationHeader {
 
     /** Returns the location source. */
     @LocationSource
-    // We should replace our usage of LOCATION_PROVIDERS_ALLOWED when the min API is 19.
-    @SuppressWarnings("deprecation")
     private static int getLocationSource() {
         if (sUseLocationSourceForTesting) return sLocationSourceForTesting;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             int locationMode;
             try {
                 locationMode = Settings.Secure.getInt(
@@ -461,21 +457,6 @@ public class GeolocationHeader {
             } else {
                 return LocationSource.MASTER_OFF;
             }
-        } else {
-            String locationProviders = Settings.Secure.getString(
-                    ContextUtils.getApplicationContext().getContentResolver(),
-                    Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
-            if (locationProviders.contains(LocationManager.GPS_PROVIDER)
-                    && locationProviders.contains(LocationManager.NETWORK_PROVIDER)) {
-                return LocationSource.HIGH_ACCURACY;
-            } else if (locationProviders.contains(LocationManager.GPS_PROVIDER)) {
-                return LocationSource.GPS_ONLY;
-            } else if (locationProviders.contains(LocationManager.NETWORK_PROVIDER)) {
-                return LocationSource.BATTERY_SAVING;
-            } else {
-                return LocationSource.MASTER_OFF;
-            }
-        }
     }
 
     private static boolean isNetworkLocationEnabled() {

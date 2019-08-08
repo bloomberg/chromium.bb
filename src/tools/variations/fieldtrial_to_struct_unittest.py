@@ -297,6 +297,91 @@ class FieldTrialToStruct(unittest.TestCase):
     self.maxDiff = None
     self.assertEqual(expected, result)
 
+  _MULTIPLE_OVERRIDE_UI_STRING_CONFIG = {
+    'Trial1': [
+      {
+        'platforms': ['windows'],
+        'experiments': [
+          {
+            'name': 'Group1',
+            'override_ui_strings': {
+              'IDS_NEW_TAB_TITLE': 'test1',
+              'IDS_SAD_TAB_TITLE': 'test2',
+            },
+          },
+        ]
+      }
+    ],
+    'Trial2': [
+      {
+        'platforms': ['windows'],
+        'experiments': [
+          {
+            'name': 'Group2',
+            'override_ui_strings': {
+              'IDS_DEFAULT_TAB_TITLE': 'test3',
+            },
+          }
+        ]
+      }
+    ]
+  }
+
+  def test_FieldTrialToDescriptionMultipleOverrideUIStringTrial(self):
+    result = fieldtrial_to_struct._FieldTrialConfigToDescription(
+        self._MULTIPLE_OVERRIDE_UI_STRING_CONFIG, ['windows'])
+    expected = {
+      'elements': {
+        'kFieldTrialConfig': {
+          'studies': [
+            {
+              'name': 'Trial1',
+              'experiments': [
+                {
+                  'name': 'Group1',
+                  'platforms': ['Study::PLATFORM_WINDOWS'],
+                  'override_ui_string': [
+                    {
+                      'name_hash':
+                        4045341670,
+                      'value': 'test1'
+                    },
+                    {
+                      'name_hash':
+                        1173727369,
+                      'value': 'test2'
+                    },
+                  ],
+                  'is_low_end_device': 'Study::OPTIONAL_BOOL_MISSING',
+                  'form_factors': [],
+                },
+              ],
+            },
+            {
+              'name': 'Trial2',
+              'experiments': [
+                {
+                  'name': 'Group2',
+                  'platforms': ['Study::PLATFORM_WINDOWS'],
+                  'override_ui_string': [
+                    {
+                      'name_hash':
+                        3477264953,
+                      'value': 'test3'
+                    },
+                  ],
+                  'is_low_end_device': 'Study::OPTIONAL_BOOL_MISSING',
+                  'form_factors': [],
+                },
+              ],
+            }
+          ]
+        }
+      }
+    }
+    self.maxDiff = None
+    self.assertEqual(expected, result)
+
   def test_FieldTrialToStructMain(self):
 
     schema = self.FullRelativePath(

@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 #ifndef NDEBUG
@@ -41,11 +42,11 @@
 
 namespace blink {
 
-static wtf_size_t SizeForImmutableCSSPropertyValueSetWithPropertyCount(
+static AdditionalBytes
+AdditionalBytesForImmutableCSSPropertyValueSetWithPropertyCount(
     unsigned count) {
-  return sizeof(ImmutableCSSPropertyValueSet) - sizeof(void*) +
-         sizeof(Member<CSSValue>) * count +
-         sizeof(CSSPropertyValueMetadata) * count;
+  return AdditionalBytes(sizeof(Member<CSSValue>) * count +
+                         sizeof(CSSPropertyValueMetadata) * count);
 }
 
 ImmutableCSSPropertyValueSet* ImmutableCSSPropertyValueSet::Create(
@@ -53,10 +54,9 @@ ImmutableCSSPropertyValueSet* ImmutableCSSPropertyValueSet::Create(
     unsigned count,
     CSSParserMode css_parser_mode) {
   DCHECK_LE(count, static_cast<unsigned>(kMaxArraySize));
-  void* slot = ThreadHeap::Allocate<CSSPropertyValueSet>(
-      SizeForImmutableCSSPropertyValueSetWithPropertyCount(count));
-  return new (slot)
-      ImmutableCSSPropertyValueSet(properties, count, css_parser_mode);
+  return MakeGarbageCollected<ImmutableCSSPropertyValueSet>(
+      AdditionalBytesForImmutableCSSPropertyValueSetWithPropertyCount(count),
+      properties, count, css_parser_mode);
 }
 
 CSSPropertyName CSSPropertyValueSet::PropertyReference::Name() const {
@@ -446,11 +446,12 @@ void MutableCSSPropertyValueSet::ParseDeclarationList(
 
   CSSParserContext* context;
   if (context_style_sheet) {
-    context = CSSParserContext::CreateWithStyleSheetContents(
+    context = MakeGarbageCollected<CSSParserContext>(
         context_style_sheet->ParserContext(), context_style_sheet);
     context->SetMode(CssParserMode());
   } else {
-    context = CSSParserContext::Create(CssParserMode(), secure_context_mode);
+    context = MakeGarbageCollected<CSSParserContext>(CssParserMode(),
+                                                     secure_context_mode);
   }
 
   CSSParser::ParseDeclarationList(context, this, style_declaration);
@@ -600,7 +601,8 @@ MutableCSSPropertyValueSet* CSSPropertyValueSet::CopyPropertiesInSet(
       list.push_back(CSSPropertyValue(*properties[i], *value, false));
     }
   }
-  return MutableCSSPropertyValueSet::Create(list.data(), list.size());
+  return MakeGarbageCollected<MutableCSSPropertyValueSet>(list.data(),
+                                                          list.size());
 }
 
 CSSStyleDeclaration* MutableCSSPropertyValueSet::EnsureCSSStyleDeclaration() {
@@ -645,7 +647,9 @@ void MutableCSSPropertyValueSet::TraceAfterDispatch(blink::Visitor* visitor) {
 unsigned CSSPropertyValueSet::AverageSizeInBytes() {
   // Please update this if the storage scheme changes so that this longer
   // reflects the actual size.
-  return SizeForImmutableCSSPropertyValueSetWithPropertyCount(4);
+  return sizeof(ImmutableCSSPropertyValueSet) +
+         AdditionalBytesForImmutableCSSPropertyValueSetWithPropertyCount(4)
+             .value;
 }
 
 // See the function above if you need to update this.
@@ -662,17 +666,6 @@ void CSSPropertyValueSet::ShowStyle() {
   fprintf(stderr, "%s\n", AsText().Ascii().data());
 }
 #endif
-
-MutableCSSPropertyValueSet* MutableCSSPropertyValueSet::Create(
-    CSSParserMode css_parser_mode) {
-  return MakeGarbageCollected<MutableCSSPropertyValueSet>(css_parser_mode);
-}
-
-MutableCSSPropertyValueSet* MutableCSSPropertyValueSet::Create(
-    const CSSPropertyValue* properties,
-    unsigned count) {
-  return MakeGarbageCollected<MutableCSSPropertyValueSet>(properties, count);
-}
 
 void CSSLazyPropertyParser::Trace(blink::Visitor* visitor) {}
 

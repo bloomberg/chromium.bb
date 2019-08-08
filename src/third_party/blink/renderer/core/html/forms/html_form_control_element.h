@@ -146,9 +146,6 @@ class CORE_EXPORT HTMLFormControlElement : public HTMLElement,
   bool SupportsFocus() const override;
   bool IsKeyboardFocusable() const override;
   bool ShouldHaveFocusAppearance() const final;
-  void DispatchBlurEvent(Element* new_focused_element,
-                         WebFocusType,
-                         InputDeviceCapabilities* source_capabilities) override;
 
   void DidRecalcStyle(const StyleRecalcChange) override;
 

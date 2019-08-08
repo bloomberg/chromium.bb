@@ -87,7 +87,7 @@ class GridTrackSizingAlgorithm final {
         layout_grid_(layout_grid),
         sizing_state_(kColumnSizingFirstIteration) {}
 
-  // setup() must be run before calling run() as it configures the behaviour of
+  // Setup() must be run before calling Run() as it configures the behaviour of
   // the algorithm.
   void Setup(GridTrackSizingDirection,
              size_t num_tracks,
@@ -287,6 +287,7 @@ class GridTrackSizingAlgorithmStrategy {
       Vector<LayoutUnit>& increments,
       LayoutUnit& total_growth) const = 0;
   virtual LayoutUnit FreeSpaceForStretchAutoTracksStep() const = 0;
+  virtual bool IsComputingSizeContainment() const = 0;
 
  protected:
   GridTrackSizingAlgorithmStrategy(GridTrackSizingAlgorithm& algorithm)

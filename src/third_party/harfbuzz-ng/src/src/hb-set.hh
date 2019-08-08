@@ -39,7 +39,7 @@
 
 struct hb_set_t
 {
-  HB_NO_COPY_ASSIGN (hb_set_t);
+  HB_DELETE_COPY_ASSIGN (hb_set_t);
   hb_set_t ()  { init (); }
   ~hb_set_t () { fini (); }
 
@@ -227,11 +227,18 @@ struct hb_set_t
     return true;
   }
 
+  void reset ()
+  {
+    if (unlikely (hb_object_is_immutable (this)))
+      return;
+    clear ();
+    successful = true;
+  }
+
   void clear ()
   {
     if (unlikely (hb_object_is_immutable (this)))
       return;
-    successful = true;
     population = 0;
     page_map.resize (0);
     pages.resize (0);
@@ -684,7 +691,7 @@ struct hb_set_t
    */
   struct iter_t : hb_iter_with_fallback_t<iter_t, hb_codepoint_t>
   {
-    static constexpr bool is_sorted_iterator = true;
+    static constexpr hb_sortedness_t is_sorted_iterator = hb_sortedness_t::STRICTLY_SORTED;
     iter_t (const hb_set_t &s_ = Null(hb_set_t)) :
       s (&s_), v (INVALID), l (s->get_population () + 1) { __next__ (); }
 
@@ -694,6 +701,9 @@ struct hb_set_t
     void __next__ () { s->next (&v); if (l) l--; }
     void __prev__ () { s->previous (&v); }
     unsigned __len__ () const { return l; }
+    iter_t end () const { return iter_t (*s); }
+    bool operator != (const iter_t& o) const
+    { return s != o.s || v != o.v; }
 
     protected:
     const hb_set_t *s;

@@ -27,10 +27,8 @@ class IndexedPointsTest : public ANGLETest
 
     float getIndexPositionY(size_t idx) { return (idx == 2 || idx == 3) ? -0.5f : 0.5f; }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
-
         constexpr char kVS[] = R"(precision highp float;
 attribute vec2 position;
 
@@ -100,7 +98,7 @@ void main()
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), &indices[0], GL_STATIC_DRAW);
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
         glDeleteBuffers(1, &mVertexBuffer);
         glDeleteBuffers(1, &mIndexBuffer);
@@ -108,7 +106,6 @@ void main()
 
         glDeleteBuffers(1, &mVertexWithColorBuffer);
         glDeleteProgram(mVertexWithColorBufferProgram);
-        ANGLETest::TearDown();
     }
 
     void runTest(GLuint firstIndex, bool useVertexBufferWithColor = false)
@@ -319,7 +316,7 @@ typedef IndexedPointsTest<GLuint, GL_UNSIGNED_INT> IndexedPointsTestUInt;
 
 TEST_P(IndexedPointsTestUInt, UnsignedIntOffset0)
 {
-    if (getClientMajorVersion() < 3 && !extensionEnabled("GL_OES_element_index_uint"))
+    if (getClientMajorVersion() < 3 && !IsGLExtensionEnabled("GL_OES_element_index_uint"))
     {
         return;
     }
@@ -329,7 +326,7 @@ TEST_P(IndexedPointsTestUInt, UnsignedIntOffset0)
 
 TEST_P(IndexedPointsTestUInt, UnsignedIntOffset1)
 {
-    if (getClientMajorVersion() < 3 && !extensionEnabled("GL_OES_element_index_uint"))
+    if (getClientMajorVersion() < 3 && !IsGLExtensionEnabled("GL_OES_element_index_uint"))
     {
         return;
     }
@@ -339,7 +336,7 @@ TEST_P(IndexedPointsTestUInt, UnsignedIntOffset1)
 
 TEST_P(IndexedPointsTestUInt, UnsignedIntOffset2)
 {
-    if (getClientMajorVersion() < 3 && !extensionEnabled("GL_OES_element_index_uint"))
+    if (getClientMajorVersion() < 3 && !IsGLExtensionEnabled("GL_OES_element_index_uint"))
     {
         return;
     }
@@ -349,7 +346,7 @@ TEST_P(IndexedPointsTestUInt, UnsignedIntOffset2)
 
 TEST_P(IndexedPointsTestUInt, UnsignedIntOffset3)
 {
-    if (getClientMajorVersion() < 3 && !extensionEnabled("GL_OES_element_index_uint"))
+    if (getClientMajorVersion() < 3 && !IsGLExtensionEnabled("GL_OES_element_index_uint"))
     {
         return;
     }
@@ -359,7 +356,7 @@ TEST_P(IndexedPointsTestUInt, UnsignedIntOffset3)
 
 TEST_P(IndexedPointsTestUInt, VertexWithColorUnsignedIntOffset0)
 {
-    if (getClientMajorVersion() < 3 && !extensionEnabled("GL_OES_element_index_uint"))
+    if (getClientMajorVersion() < 3 && !IsGLExtensionEnabled("GL_OES_element_index_uint"))
     {
         return;
     }
@@ -369,7 +366,7 @@ TEST_P(IndexedPointsTestUInt, VertexWithColorUnsignedIntOffset0)
 
 TEST_P(IndexedPointsTestUInt, VertexWithColorUnsignedIntOffset1)
 {
-    if (getClientMajorVersion() < 3 && !extensionEnabled("GL_OES_element_index_uint"))
+    if (getClientMajorVersion() < 3 && !IsGLExtensionEnabled("GL_OES_element_index_uint"))
     {
         return;
     }
@@ -379,7 +376,7 @@ TEST_P(IndexedPointsTestUInt, VertexWithColorUnsignedIntOffset1)
 
 TEST_P(IndexedPointsTestUInt, VertexWithColorUnsignedIntOffset2)
 {
-    if (getClientMajorVersion() < 3 && !extensionEnabled("GL_OES_element_index_uint"))
+    if (getClientMajorVersion() < 3 && !IsGLExtensionEnabled("GL_OES_element_index_uint"))
     {
         return;
     }
@@ -389,7 +386,7 @@ TEST_P(IndexedPointsTestUInt, VertexWithColorUnsignedIntOffset2)
 
 TEST_P(IndexedPointsTestUInt, VertexWithColorUnsignedIntOffset3)
 {
-    if (getClientMajorVersion() < 3 && !extensionEnabled("GL_OES_element_index_uint"))
+    if (getClientMajorVersion() < 3 && !IsGLExtensionEnabled("GL_OES_element_index_uint"))
     {
         return;
     }
@@ -403,19 +400,16 @@ TEST_P(IndexedPointsTestUInt, VertexWithColorUnsignedIntOffset3)
 // TODO(geofflang): Figure out why this test fails on Intel OpenGL
 ANGLE_INSTANTIATE_TEST(IndexedPointsTestUByte,
                        ES2_D3D11(),
-                       ES2_D3D11_FL9_3(),
                        ES2_OPENGL(),
                        ES2_OPENGLES(),
                        ES2_VULKAN());
 ANGLE_INSTANTIATE_TEST(IndexedPointsTestUShort,
                        ES2_D3D11(),
-                       ES2_D3D11_FL9_3(),
                        ES2_OPENGL(),
                        ES2_OPENGLES(),
                        ES2_VULKAN());
 ANGLE_INSTANTIATE_TEST(IndexedPointsTestUInt,
                        ES2_D3D11(),
-                       ES2_D3D11_FL9_3(),
                        ES2_OPENGL(),
                        ES2_OPENGLES(),
                        ES2_VULKAN());

@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/view_tracker.h"
 #include "ui/views/widget/widget.h"
@@ -24,6 +25,10 @@
 namespace gfx {
 class Rect;
 }
+
+namespace ui {
+class Accelerator;
+}  // namespace ui
 
 namespace views {
 
@@ -54,6 +59,7 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   ClientView* CreateClientView(Widget* widget) override;
   NonClientFrameView* CreateNonClientFrameView(Widget* widget) override;
   const char* GetClassName() const override;
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
   // WidgetObserver:
   void OnWidgetClosing(Widget* widget) override;
@@ -75,7 +81,7 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   // The anchor rect is used in the absence of an assigned anchor view.
   const gfx::Rect& anchor_rect() const { return anchor_rect_; }
 
-  BubbleBorder::Arrow arrow() const { return arrow_; }
+  // Set the desired arrow for the bubble. The arrow will be mirrored for RTL.
   void SetArrow(BubbleBorder::Arrow arrow);
 
   BubbleBorder::Shadow GetShadow() const;
@@ -104,6 +110,10 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
 
   bool adjust_if_offscreen() const { return adjust_if_offscreen_; }
   void set_adjust_if_offscreen(bool adjust) { adjust_if_offscreen_ = adjust; }
+
+  void set_focus_traversable_from_anchor_view(bool focusable) {
+    focus_traversable_from_anchor_view_ = focusable;
+  }
 
   void set_highlight_button_when_shown(bool highlight) {
     highlight_button_when_shown_ = highlight;
@@ -134,11 +144,15 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
       BubbleBorder::Arrow arrow,
       BubbleBorder::Shadow shadow = BubbleBorder::DIALOG_SHADOW);
 
+  // Returns the desired arrow post-RTL mirroring if needed.
+  BubbleBorder::Arrow arrow() const { return arrow_; }
+
   // Get bubble bounds from the anchor rect and client view's preferred size.
   virtual gfx::Rect GetBubbleBounds();
 
   // DialogDelegateView:
   ax::mojom::Role GetAccessibleWindowRole() override;
+  void OnPaintAsActiveChanged(bool paint_as_active) override;
 
   // Disallow overrides of GetMinimumSize and GetMaximumSize(). These would only
   // be called by the FrameView, but the BubbleFrameView ignores these. Bubbles
@@ -147,7 +161,7 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   gfx::Size GetMinimumSize() const final;
   gfx::Size GetMaximumSize() const final;
 
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  void OnThemeChanged() override;
 
   // Perform view initialization on the contents for bubble sizing.
   virtual void Init();
@@ -164,6 +178,9 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
 
   BubbleFrameView* GetBubbleFrameView() const;
 
+  // Allows the up and down arrow keys to tab between items.
+  void EnableUpDownKeyboardAccelerators();
+
  private:
   friend class BubbleBorderDelegate;
   friend class BubbleWindowTargeter;
@@ -171,17 +188,14 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   FRIEND_TEST_ALL_PREFIXES(BubbleDelegateTest, CreateDelegate);
   FRIEND_TEST_ALL_PREFIXES(BubbleDelegateTest, NonClientHitTest);
 
-  // Update the bubble color from |theme|, unless it was explicitly set.
-  void UpdateColorsFromTheme(const ui::NativeTheme* theme);
+  // Update the bubble color from the NativeTheme unless it was explicitly set.
+  void UpdateColorsFromTheme();
 
   // Handles widget visibility changes.
   void HandleVisibilityChanged(Widget* widget, bool visible);
 
   // Called when a deactivation is detected.
   void OnDeactivate();
-
-  // When a bubble is visible, the anchor widget should always render as active.
-  void UpdateAnchorWidgetRenderState(bool visible);
 
   // Update the button highlight, which may be the anchor view or an explicit
   // view set in |highlighted_button_tracker_|. This can be overridden to
@@ -196,6 +210,7 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   // it from there. It will make sure that the view is still valid.
   std::unique_ptr<ViewTracker> anchor_view_tracker_;
   Widget* anchor_widget_;
+  std::unique_ptr<Widget::PaintAsActiveLock> paint_as_active_lock_;
 
   // Whether the |anchor_widget_| (or the |highlighted_button_tracker_|, when
   // provided) should be highlighted when this bubble is shown.
@@ -209,8 +224,8 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   // The anchor rect used in the absence of an anchor view.
   mutable gfx::Rect anchor_rect_;
 
-  // The arrow's location on the bubble.
-  BubbleBorder::Arrow arrow_;
+  // The arrow's default location on the bubble post-RTL mirroring if needed.
+  BubbleBorder::Arrow arrow_ = BubbleBorder::NONE;
 
   // Bubble border shadow to use.
   BubbleBorder::Shadow shadow_;
@@ -235,6 +250,10 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
 
   // Parent native window of the bubble.
   gfx::NativeView parent_window_;
+
+  // If true, focus can navigate to the bubble from the anchor view. This takes
+  // effect only when SetAnchorView is called.
+  bool focus_traversable_from_anchor_view_ = true;
 
 #if defined(OS_MACOSX)
   // Special handler for close_on_deactivate() on Mac. Window (de)activation is

@@ -117,7 +117,7 @@ void NativeViewHostAura::NativeViewDetaching(bool destroyed) {
   // change.
   base::Optional<aura::WindowOcclusionTracker::ScopedPause> pause_occlusion;
   if (clipping_window_)
-    pause_occlusion.emplace(clipping_window_->env());
+    pause_occlusion.emplace();
 
   clipping_window_delegate_->set_native_view(nullptr);
   RemoveClippingWindow();
@@ -303,8 +303,7 @@ void NativeViewHostAura::CreateClippingWindow() {
   // Use WINDOW_TYPE_CONTROLLER type so descendant views (including popups) get
   // positioned appropriately.
   clipping_window_ = std::make_unique<aura::Window>(
-      clipping_window_delegate_.get(), aura::client::WINDOW_TYPE_CONTROL,
-      host_->native_view()->env());
+      clipping_window_delegate_.get(), aura::client::WINDOW_TYPE_CONTROL);
   clipping_window_->Init(ui::LAYER_NOT_DRAWN);
   clipping_window_->set_owned_by_parent(false);
   clipping_window_->SetName("NativeViewHostAuraClip");

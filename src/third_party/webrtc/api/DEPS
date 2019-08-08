@@ -117,7 +117,6 @@ specific_include_rules = {
   ],
 
   "peer_connection_interface\.h": [
-    "+logging/rtc_event_log/rtc_event_log_factory_interface.h",
     "+media/base/media_config.h",
     "+media/base/media_engine.h",
     "+p2p/base/port_allocator.h",
@@ -148,7 +147,12 @@ specific_include_rules = {
   "rtc_error\.h": [
     "+rtc_base/logging.h",
   ],
-
+  "rtc_event_log_output_file.h": [
+    # TODO(bugs.webrtc.org/6463): Delete this dependency.
+    "+rtc_base/platform_file.h",
+    # For private member and constructor.
+    "+rtc_base/system/file_wrapper.h",
+  ],
   "rtp_receiver_interface\.h": [
     "+rtc_base/ref_count.h",
   ],

@@ -82,7 +82,7 @@ namespace dawn_native { namespace null {
 
     class Device : public DeviceBase {
       public:
-        Device(Adapter* adapter);
+        Device(Adapter* adapter, const DeviceDescriptor* descriptor);
         ~Device();
 
         CommandBufferBase* CreateCommandBuffer(CommandEncoderBase* encoder) override;
@@ -101,6 +101,9 @@ namespace dawn_native { namespace null {
                                            BufferBase* destination,
                                            uint64_t destinationOffset,
                                            uint64_t size) override;
+
+        MaybeError IncrementMemoryUsage(size_t bytes);
+        void DecrementMemoryUsage(size_t bytes);
 
       private:
         ResultOrError<BindGroupBase*> CreateBindGroupImpl(
@@ -128,6 +131,9 @@ namespace dawn_native { namespace null {
         Serial mCompletedSerial = 0;
         Serial mLastSubmittedSerial = 0;
         std::vector<std::unique_ptr<PendingOperation>> mPendingOperations;
+
+        static constexpr size_t kMaxMemoryUsage = 256 * 1024 * 1024;
+        size_t mMemoryUsage = 0;
     };
 
     class Buffer : public BufferBase {
@@ -138,15 +144,17 @@ namespace dawn_native { namespace null {
         void MapReadOperationCompleted(uint32_t serial, void* ptr, bool isWrite);
 
       private:
+        // Dawn API
         MaybeError SetSubDataImpl(uint32_t start, uint32_t count, const uint8_t* data) override;
         void MapReadAsyncImpl(uint32_t serial) override;
         void MapWriteAsyncImpl(uint32_t serial) override;
         void UnmapImpl() override;
         void DestroyImpl() override;
 
+        MaybeError MapAtCreationImpl(uint8_t** mappedPointer) override;
         void MapAsyncImplCommon(uint32_t serial, bool isWrite);
 
-        std::unique_ptr<char[]> mBackingData;
+        std::unique_ptr<uint8_t[]> mBackingData;
     };
 
     class CommandBuffer : public CommandBufferBase {

@@ -13,7 +13,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/system_network_context_manager.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
+#include "chrome/browser/policy/profile_policy_connector_builder.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -285,7 +285,8 @@ class QuicAllowedPolicyIsNotSet : public QuicAllowedPolicyTestBase {
   DISALLOW_COPY_AND_ASSIGN(QuicAllowedPolicyIsNotSet);
 };
 
-IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyIsNotSet, NoQuicRegulations) {
+// Flaky test on Win7. https://crbug.com/961049
+IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyIsNotSet, DISABLED_NoQuicRegulations) {
   EXPECT_TRUE(IsQuicEnabledForSystem());
   EXPECT_TRUE(IsQuicEnabledForSafeBrowsing());
   EXPECT_TRUE(IsQuicEnabled(browser()->profile()));
@@ -312,8 +313,8 @@ class QuicAllowedPolicyDynamicTest : public QuicTestBase {
     // Set the overriden policy provider for the first Profile (profile_1_).
     EXPECT_CALL(policy_for_profile_1_, IsInitializationComplete(testing::_))
         .WillRepeatedly(testing::Return(true));
-    policy::ProfilePolicyConnectorFactory::GetInstance()
-        ->PushProviderForTesting(&policy_for_profile_1_);
+    policy::PushProfilePolicyConnectorProviderForTesting(
+        &policy_for_profile_1_);
   }
 
   void SetUpOnMainThread() override {
@@ -329,8 +330,8 @@ class QuicAllowedPolicyDynamicTest : public QuicTestBase {
     // Prepare policy provider for second profile.
     EXPECT_CALL(policy_for_profile_2_, IsInitializationComplete(testing::_))
         .WillRepeatedly(testing::Return(true));
-    policy::ProfilePolicyConnectorFactory::GetInstance()
-        ->PushProviderForTesting(&policy_for_profile_2_);
+    policy::PushProfilePolicyConnectorProviderForTesting(
+        &policy_for_profile_2_);
 
     ProfileManager* profile_manager = g_browser_process->profile_manager();
 

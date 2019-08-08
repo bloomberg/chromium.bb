@@ -355,7 +355,7 @@ class FakeGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
   void FixOrAddSecondaryAccount() {
     identity::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(GetProfile());
-    std::vector<AccountInfo> accounts =
+    std::vector<CoreAccountInfo> accounts =
         identity_manager->GetAccountsWithRefreshTokens();
     std::string primary_id = identity_manager->GetPrimaryAccountId();
     bool fixed_auth_error = false;
@@ -777,7 +777,7 @@ class GetAuthTokenFunctionTest
     return ext;
   }
 
-  const std::string& GetPrimaryAccountId() {
+  std::string GetPrimaryAccountId() {
     return identity_test_env()->identity_manager()->GetPrimaryAccountId();
   }
 

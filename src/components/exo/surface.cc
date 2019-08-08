@@ -27,7 +27,6 @@
 #include "components/viz/common/resources/single_release_callback.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_manager.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/client/aura_constants.h"
@@ -229,9 +228,9 @@ DEFINE_UI_CLASS_PROPERTY_KEY(int32_t, kClientSurfaceIdKey, 0)
 // Surface, public:
 
 Surface::Surface()
-    : window_(std::make_unique<aura::Window>(new CustomWindowDelegate(this),
-                                             aura::client::WINDOW_TYPE_CONTROL,
-                                             WMHelper::GetInstance()->env())) {
+    : window_(
+          std::make_unique<aura::Window>(new CustomWindowDelegate(this),
+                                         aura::client::WINDOW_TYPE_CONTROL)) {
   window_->SetName("ExoSurface");
   window_->SetProperty(kSurfaceKey, this);
   window_->Init(ui::LAYER_NOT_DRAWN);
@@ -537,8 +536,8 @@ bool Surface::HasPendingAcquireFence() const {
 void Surface::Commit() {
   TRACE_EVENT0("exo", "Surface::Commit");
 
-  if (!commit_callback_.is_null())
-    commit_callback_.Run(this);
+  for (auto& observer : observers_)
+    observer.OnCommit(this);
 
   needs_commit_surface_ = true;
   if (delegate_)
@@ -584,8 +583,8 @@ void Surface::CommitSurfaceHierarchy(bool synchronized) {
 
     window_->SetEventTargetingPolicy(
         (state_.input_region.has_value() && state_.input_region->IsEmpty())
-            ? ws::mojom::EventTargetingPolicy::DESCENDANTS_ONLY
-            : ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
+            ? aura::EventTargetingPolicy::kDescendantsOnly
+            : aura::EventTargetingPolicy::kTargetAndDescendants);
 
     // We update contents if Attach() has been called since last commit.
     if (has_pending_contents_) {
@@ -769,10 +768,6 @@ void Surface::RemoveSurfaceObserver(SurfaceObserver* observer) {
 
 bool Surface::HasSurfaceObserver(const SurfaceObserver* observer) const {
   return observers_.HasObserver(observer);
-}
-
-void Surface::SetCommitCallback(CommitCallback callback) {
-  commit_callback_ = std::move(callback);
 }
 
 std::unique_ptr<base::trace_event::TracedValue> Surface::AsTracedValue() const {

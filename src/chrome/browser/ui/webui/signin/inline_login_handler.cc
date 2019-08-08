@@ -15,7 +15,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/signin/gaia_auth_extension_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -121,8 +120,6 @@ void InlineLoginHandler::ContinueHandleInitializeMessage() {
     base::RecordAction(base::UserMetricsAction("Signin_SigninPage_Loading"));
     params.SetBoolean("isLoginPrimaryAccount", true);
   }
-
-  params.SetString("continueUrl", signin::GetLandingURL(access_point).spec());
 
   Profile* profile = Profile::FromWebUI(web_ui());
   std::string default_email;

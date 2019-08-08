@@ -117,7 +117,7 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
       LayoutUnit estimated_used_width = LayoutUnit()) const override;
   void UpdateLayout() override;
   void PaintReplaced(const PaintInfo&,
-                     const LayoutPoint& paint_offset) const override;
+                     const PhysicalOffset& paint_offset) const override;
 
   void WillBeDestroyed() override;
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
@@ -142,10 +142,9 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
                    const LayoutPoint& accumulated_offset,
                    HitTestAction) override;
 
-  void MapLocalToAncestor(
-      const LayoutBoxModelObject* ancestor,
-      TransformState&,
-      MapCoordinatesFlags = kApplyContainerFlip) const override;
+  void MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
+                          TransformState&,
+                          MapCoordinatesFlags) const override;
   const LayoutObject* PushMappingToContainer(
       const LayoutBoxModelObject* ancestor_to_stop_at,
       LayoutGeometryMap&) const override;

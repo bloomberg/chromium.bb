@@ -41,15 +41,16 @@ InputEngine::InputEngine() {}
 
 InputEngine::~InputEngine() {}
 
-bool InputEngine::BindRequest(const std::string& ime_spec,
-                              mojom::InputChannelRequest request,
-                              mojom::InputChannelPtr client,
-                              const std::vector<uint8_t>& extra) {
+bool InputEngine::BindRequest(
+    const std::string& ime_spec,
+    mojo::PendingReceiver<mojom::InputChannel> receiver,
+    mojo::PendingRemote<mojom::InputChannel> remote,
+    const std::vector<uint8_t>& extra) {
   if (!IsImeSupported(ime_spec))
     return false;
 
-  channel_bindings_.AddBinding(this, std::move(request),
-                               std::make_unique<InputEngineContext>(ime_spec));
+  channel_receivers_.Add(this, std::move(receiver),
+                         std::make_unique<InputEngineContext>(ime_spec));
 
   return true;
   // TODO(https://crbug.com/837156): Registry connection error handler.
@@ -61,7 +62,7 @@ bool InputEngine::IsImeSupported(const std::string& ime_spec) {
 
 void InputEngine::ProcessText(const std::string& message,
                               ProcessTextCallback callback) {
-  auto& context = channel_bindings_.dispatch_context();
+  auto& context = channel_receivers_.current_context();
   std::string result = Process(message, context.get());
   std::move(callback).Run(result);
 }

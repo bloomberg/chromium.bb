@@ -94,15 +94,6 @@ class HttpStreamFactory::Job
                                     const SSLConfig& used_ssl_config,
                                     const SSLInfo& ssl_info) = 0;
 
-    // Invoked when |job| has a failure of the CONNECT request (due to a 302
-    // redirect) through an HTTPS proxy.
-    virtual void OnHttpsProxyTunnelResponseRedirect(
-        Job* job,
-        const HttpResponseInfo& response_info,
-        const SSLConfig& used_ssl_config,
-        const ProxyInfo& used_proxy_info,
-        std::unique_ptr<HttpStream> stream) = 0;
-
     // Invoked when |job| raises failure for SSL Client Auth.
     virtual void OnNeedsClientAuth(Job* job,
                                    const SSLConfig& used_ssl_config,
@@ -177,7 +168,7 @@ class HttpStreamFactory::Job
       HostPortPair destination,
       GURL origin_url,
       NextProto alternative_protocol,
-      quic::QuicTransportVersion quic_version,
+      quic::ParsedQuicVersion quic_version,
       const ProxyServer& alternative_proxy_server,
       bool is_websocket,
       bool enable_ip_based_pooling,
@@ -286,9 +277,6 @@ class HttpStreamFactory::Job
                                 HttpAuthController* auth_controller,
                                 base::OnceClosure restart_with_auth_callback);
   void OnNeedsClientAuthCallback(SSLCertRequestInfo* cert_info);
-  void OnHttpsProxyTunnelResponseRedirectCallback(
-      const HttpResponseInfo& response_info,
-      std::unique_ptr<HttpStream> stream);
   void OnPreconnectsComplete();
 
   void OnIOComplete(int result);
@@ -334,10 +322,6 @@ class HttpStreamFactory::Job
   // SpdySessionPool::SpdySessionRequest::Delegate implementation:
   void OnSpdySessionAvailable(base::WeakPtr<SpdySession> spdy_session) override;
 
-  // Sets several fields of |ssl_config| based on the proxy info and other
-  // factors.
-  void InitSSLConfig(SSLConfig* ssl_config, bool is_proxy) const;
-
   // Retrieve SSLInfo from our SSL Socket.
   // This must only be called when we are using an SSLSocket.
   void GetSSLInfo(SSLInfo* ssl_info);
@@ -350,11 +334,13 @@ class HttpStreamFactory::Job
                               bool using_ssl);
 
   // Called in Job constructor. Use |spdy_session_key_| after construction.
-  static SpdySessionKey GetSpdySessionKey(bool spdy_session_direct,
-                                          const ProxyServer& proxy_server,
-                                          const GURL& origin_url,
-                                          PrivacyMode privacy_mode,
-                                          const SocketTag& socket_tag);
+  static SpdySessionKey GetSpdySessionKey(
+      bool spdy_session_direct,
+      const ProxyServer& proxy_server,
+      const GURL& origin_url,
+      PrivacyMode privacy_mode,
+      const SocketTag& socket_tag,
+      const NetworkIsolationKey& network_isolation_key);
 
   // Returns true if the current request can use an existing spdy session.
   bool CanUseExistingSpdySession() const;
@@ -367,24 +353,9 @@ class HttpStreamFactory::Job
   // code is simply returned.
   int ReconsiderProxyAfterError(int error);
 
-  // Called to handle a certificate error.  Stores the certificate in the
-  // allowed_bad_certs list. Returns the error code.
-  int HandleCertificateError(int error);
-
   ClientSocketPoolManager::SocketGroupType GetSocketGroup() const;
 
   void MaybeCopyConnectionAttemptsFromSocketOrHandle();
-
-  // Invoked by the transport socket pool after host resolution is complete
-  // to allow the connection to be aborted, if a matching SPDY session can
-  // be found.  Will return ERR_SPDY_SESSION_ALREADY_EXISTS if such a
-  // session is found, and OK otherwise.
-  static int OnHostResolution(SpdySessionPool* spdy_session_pool,
-                              const SpdySessionKey& spdy_session_key,
-                              bool enable_ip_based_pooling,
-                              bool is_websocket,
-                              const AddressList& addresses,
-                              const NetLogWithSource& net_log);
 
   // Returns true if the request should be throttled to allow for only one
   // connection attempt to be made to an H2 server at a time.
@@ -438,9 +409,9 @@ class HttpStreamFactory::Job
   // True if Job uses QUIC.
   const bool using_quic_;
 
-  // quic::QuicTransportVersion that should be used to connect to the QUIC
+  // quic::ParsedQuicVersion that should be used to connect to the QUIC
   // server if Job uses QUIC.
-  quic::QuicTransportVersion quic_version_;
+  quic::ParsedQuicVersion quic_version_;
 
   // True if Alternative Service protocol field requires that HTTP/2 is used.
   // In this case, Job fails if it cannot pool to an existing SpdySession and
@@ -545,7 +516,7 @@ class HttpStreamFactory::JobFactory {
       HostPortPair destination,
       GURL origin_url,
       NextProto alternative_protocol,
-      quic::QuicTransportVersion quic_version,
+      quic::ParsedQuicVersion quic_version,
       bool is_websocket,
       bool enable_ip_based_pooling,
       NetLog* net_log);

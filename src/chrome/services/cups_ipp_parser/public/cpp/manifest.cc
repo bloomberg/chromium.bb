@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/no_destructor.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/services/cups_ipp_parser/public/mojom/constants.mojom.h"
 #include "chrome/services/cups_ipp_parser/public/mojom/ipp_parser.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
@@ -15,13 +16,16 @@ const service_manager::Manifest& GetCupsIppParserManifest() {
   static base::NoDestructor<service_manager::Manifest> manifest{
       service_manager::ManifestBuilder()
           .WithServiceName(chrome::mojom::kCupsIppParserServiceName)
-          .WithDisplayName("CUPS IPP Parser")
-          .WithOptions(service_manager::ManifestOptionsBuilder()
-                           .WithSandboxType("utility")
-                           .WithInstanceSharingPolicy(
-                               service_manager::Manifest::
-                                   InstanceSharingPolicy::kSharedAcrossGroups)
-                           .Build())
+          .WithDisplayName(IDS_UTILITY_PROCESS_CUPS_IPP_PARSER_SERVICE_NAME)
+          .WithOptions(
+              service_manager::ManifestOptionsBuilder()
+                  .WithExecutionMode(service_manager::Manifest::ExecutionMode::
+                                         kOutOfProcessBuiltin)
+                  .WithSandboxType("utility")
+                  .WithInstanceSharingPolicy(
+                      service_manager::Manifest::InstanceSharingPolicy::
+                          kSharedAcrossGroups)
+                  .Build())
           .ExposeCapability("ipp_parser",
                             service_manager::Manifest::InterfaceList<
                                 chrome::mojom::IppParser>())

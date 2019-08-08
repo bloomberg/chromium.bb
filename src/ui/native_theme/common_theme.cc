@@ -301,7 +301,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
 
     // FocusableBorder
     case NativeTheme::kColorId_FocusedBorderColor:
-      return gfx::kGoogleBlue500;
+      return SkColorSetA(gfx::kGoogleBlue500, 0x66);
     case NativeTheme::kColorId_UnfocusedBorderColor:
       return SkColorSetA(SK_ColorBLACK, 0x66);
 

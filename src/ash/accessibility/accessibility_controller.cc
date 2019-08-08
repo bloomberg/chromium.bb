@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "ash/accelerators/accelerator_controller.h"
+#include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/accessibility/accessibility_highlight_controller.h"
 #include "ash/accessibility/accessibility_observer.h"
 #include "ash/accessibility/accessibility_panel_layout_manager.h"
@@ -16,12 +16,13 @@
 #include "ash/events/switch_access_event_handler.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/keyboard/ash_keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/policy/policy_recommendation_restorer.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/session/session_observer.h"
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
@@ -42,7 +43,6 @@
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor_type.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/keyboard/keyboard_util.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
 #include "ui/wm/core/cursor_manager.h"
@@ -317,41 +317,6 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
 
   // In production the prefs are owned by chrome.
   // TODO(jamescook): Move ownership to ash.
-  registry->RegisterForeignPref(prefs::kAccessibilityAutoclickEnabled);
-  registry->RegisterForeignPref(prefs::kAccessibilityAutoclickDelayMs);
-  registry->RegisterForeignPref(prefs::kAccessibilityAutoclickEventType);
-  registry->RegisterForeignPref(
-      prefs::kAccessibilityAutoclickRevertToLeftClick);
-  registry->RegisterForeignPref(
-      prefs::kAccessibilityAutoclickStabilizePosition);
-  registry->RegisterForeignPref(
-      prefs::kAccessibilityAutoclickMovementThreshold);
-  registry->RegisterForeignPref(prefs::kAccessibilityAutoclickMenuPosition);
-  registry->RegisterForeignPref(prefs::kAccessibilityCaretHighlightEnabled);
-  registry->RegisterForeignPref(prefs::kAccessibilityCursorHighlightEnabled);
-  registry->RegisterForeignPref(prefs::kAccessibilityDictationEnabled);
-  registry->RegisterForeignPref(prefs::kAccessibilityFocusHighlightEnabled);
-  registry->RegisterForeignPref(prefs::kAccessibilityHighContrastEnabled);
-  registry->RegisterForeignPref(prefs::kAccessibilityLargeCursorEnabled);
-  registry->RegisterForeignPref(prefs::kAccessibilityLargeCursorDipSize);
-  registry->RegisterForeignPref(prefs::kAccessibilityMonoAudioEnabled);
-  registry->RegisterForeignPref(prefs::kAccessibilityScreenMagnifierEnabled);
-  registry->RegisterForeignPref(prefs::kAccessibilityScreenMagnifierScale);
-  registry->RegisterForeignPref(prefs::kAccessibilitySpokenFeedbackEnabled);
-  registry->RegisterForeignPref(prefs::kAccessibilitySelectToSpeakEnabled);
-  registry->RegisterForeignPref(prefs::kAccessibilityStickyKeysEnabled);
-  registry->RegisterForeignPref(prefs::kAccessibilitySwitchAccessEnabled);
-  registry->RegisterForeignPref(prefs::kAccessibilityVirtualKeyboardEnabled);
-  registry->RegisterForeignPref(
-      prefs::kHighContrastAcceleratorDialogHasBeenAccepted);
-  registry->RegisterForeignPref(
-      prefs::kScreenMagnifierAcceleratorDialogHasBeenAccepted);
-  registry->RegisterForeignPref(
-      prefs::kDockedMagnifierAcceleratorDialogHasBeenAccepted);
-  registry->RegisterForeignPref(
-      prefs::kDictationAcceleratorDialogHasBeenAccepted);
-  registry->RegisterForeignPref(
-      prefs::kDisplayRotationAcceleratorDialogHasBeenAccepted);
 }
 
 void AccessibilityController::SetHighContrastAcceleratorDialogAccepted() {
@@ -945,7 +910,8 @@ void AccessibilityController::UpdateAutoclickFromPref() {
 
   NotifyAccessibilityStatusChanged();
 
-  Shell::Get()->autoclick_controller()->SetEnabled(enabled);
+  Shell::Get()->autoclick_controller()->SetEnabled(
+      enabled, true /* show confirmation dialog */);
 }
 
 void AccessibilityController::UpdateAutoclickDelayFromPref() {
@@ -1029,6 +995,10 @@ AccessibilityController::GetAutoclickMenuPosition() {
   return static_cast<mojom::AutoclickMenuPosition>(
       active_user_prefs_->GetInteger(
           prefs::kAccessibilityAutoclickMenuPosition));
+}
+
+void AccessibilityController::UpdateAutoclickMenuBoundsIfNeeded() {
+  Shell::Get()->autoclick_controller()->UpdateAutoclickMenuBoundsIfNeeded();
 }
 
 void AccessibilityController::UpdateCaretHighlightFromPref() {

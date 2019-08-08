@@ -40,7 +40,6 @@ blink::mojom::FetchAPIRequestPtr TypeConverter<
   output->redirect_mode = input.fetch_redirect_mode;
   output->request_context_type = static_cast<blink::mojom::RequestContextType>(
       input.fetch_request_context_type);
-  output->frame_type = input.fetch_frame_type;
   output->is_reload = ui::PageTransitionCoreTypeIs(
       static_cast<ui::PageTransition>(input.transition_type),
       ui::PAGE_TRANSITION_RELOAD);

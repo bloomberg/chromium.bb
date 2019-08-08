@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 """Provides the web interface for displaying an overview of alerts."""
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
 import json
 
@@ -170,6 +173,7 @@ def GetAnomalyDict(anomaly_entity, bisect_status=None, v2=False):
         'testCase': desc.test_case,
         'statistic': desc.statistic,
     }
+    dct['pinpoint_bisects'] = anomaly_entity.pinpoint_bisects
   else:
     test_path_parts = test_path.split('/')
     dct['absolute_delta'] = '%s' % anomaly_entity.GetDisplayAbsoluteChanged()

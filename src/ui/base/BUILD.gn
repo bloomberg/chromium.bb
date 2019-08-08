@@ -44,6 +44,7 @@ component("ui_data_pack") {
 
   deps = [
     "//base",
+    "//net",
   ]
 
   defines = [ "UI_DATA_PACK_IMPLEMENTATION" ]
@@ -108,18 +109,12 @@ jumbo_component("base") {
     "cocoa/focus_window_set.mm",
     "cocoa/menu_controller.h",
     "cocoa/menu_controller.mm",
-    "cocoa/nib_loading.h",
-    "cocoa/nib_loading.mm",
-    "cocoa/ns_view_ids.h",
-    "cocoa/ns_view_ids.mm",
     "cocoa/quartz_util.h",
     "cocoa/quartz_util.mm",
     "cocoa/remote_accessibility_api.h",
     "cocoa/remote_accessibility_api.mm",
     "cocoa/remote_layer_api.h",
     "cocoa/remote_layer_api.mm",
-    "cocoa/remote_views_window.h",
-    "cocoa/remote_views_window.mm",
     "cocoa/secure_password_input.h",
     "cocoa/secure_password_input.mm",
     "cocoa/text_services_context_menu.cc",
@@ -223,7 +218,6 @@ jumbo_component("base") {
     "page_transition_types.h",
     "platform_window_defaults.cc",
     "platform_window_defaults.h",
-    "property_data.h",
     "resource/resource_bundle.cc",
     "resource/resource_bundle.h",
     "resource/resource_bundle_android.cc",
@@ -484,11 +478,6 @@ jumbo_component("base") {
     }
   }
 
-  if (use_aura) {
-    deps += [ "//ui/events" ]
-    sources += [ "window_tracker_template.h" ]
-  }
-
   if (!use_aura || !is_linux) {
     sources -= [ "resource/resource_bundle_auralinux.cc" ]
   }
@@ -670,6 +659,8 @@ jumbo_static_library("test_support") {
       "test/cocoa_helper.mm",
       "test/menu_test_observer.h",
       "test/menu_test_observer.mm",
+      "test/ns_ax_tree_validator.h",
+      "test/ns_ax_tree_validator.mm",
       "test/nswindow_fullscreen_notification_waiter.h",
       "test/nswindow_fullscreen_notification_waiter.mm",
       "test/scoped_fake_full_keyboard_access.h",

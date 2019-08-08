@@ -33,11 +33,11 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/push_messaging_status.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "third_party/blink/public/common/notifications/notification_resources.h"
 #include "third_party/blink/public/mojom/notifications/notification.mojom-shared.h"
+#include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -64,7 +64,7 @@ using content::ServiceWorkerContext;
 using content::WebContents;
 
 namespace {
-void RecordUserVisibleStatus(content::mojom::PushUserVisibleStatus status) {
+void RecordUserVisibleStatus(blink::mojom::PushUserVisibleStatus status) {
   UMA_HISTOGRAM_ENUMERATION("PushMessaging.UserVisibleStatus", status);
 }
 
@@ -101,17 +101,18 @@ PushMessagingNotificationManager::PushMessagingNotificationManager(
     Profile* profile)
     : profile_(profile), budget_database_(profile), weak_factory_(this) {}
 
-PushMessagingNotificationManager::~PushMessagingNotificationManager() {}
+PushMessagingNotificationManager::~PushMessagingNotificationManager() = default;
 
 void PushMessagingNotificationManager::EnforceUserVisibleOnlyRequirements(
     const GURL& origin,
     int64_t service_worker_registration_id,
-    base::OnceClosure message_handled_closure) {
+    EnforceRequirementsCallback message_handled_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
 #if defined(OS_CHROMEOS)
   if (ShouldSkipUserVisibleOnlyRequirements(origin)) {
-    std::move(message_handled_closure).Run();
+    std::move(message_handled_callback)
+        .Run(/* did_show_generic_notification= */ false);
     return;
   }
 #endif
@@ -125,13 +126,13 @@ void PushMessagingNotificationManager::EnforceUserVisibleOnlyRequirements(
       base::BindOnce(
           &PushMessagingNotificationManager::DidGetNotificationsFromDatabase,
           weak_factory_.GetWeakPtr(), origin, service_worker_registration_id,
-          std::move(message_handled_closure)));
+          std::move(message_handled_callback)));
 }
 
 void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
     const GURL& origin,
     int64_t service_worker_registration_id,
-    base::OnceClosure message_handled_closure,
+    EnforceRequirementsCallback message_handled_callback,
     bool success,
     const std::vector<NotificationDatabaseData>& data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -165,12 +166,16 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
   if (notification_count >= 2) {
     for (const auto& notification_database_data : data) {
       if (notification_database_data.notification_data.tag !=
-          kPushMessagingForcedNotificationTag)
+          kPushMessagingForcedNotificationTag) {
         continue;
+      }
 
-      PlatformNotificationServiceFactory::GetForProfile(profile_)
-          ->ClosePersistentNotification(
-              notification_database_data.notification_id);
+      scoped_refptr<PlatformNotificationContext> notification_context =
+          GetStoragePartition(profile_, origin)
+              ->GetPlatformNotificationContext();
+      notification_context->DeleteNotificationData(
+          notification_database_data.notification_id, origin,
+          /* close_notification= */ true, base::DoNothing());
       break;
     }
   }
@@ -183,22 +188,23 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
         base::BindOnce(&PushMessagingNotificationManager::ProcessSilentPush,
                        weak_factory_.GetWeakPtr(), origin,
                        service_worker_registration_id,
-                       std::move(message_handled_closure)));
+                       std::move(message_handled_callback)));
     return;
   }
 
   if (notification_needed && notification_shown) {
     RecordUserVisibleStatus(
-        content::mojom::PushUserVisibleStatus::REQUIRED_AND_SHOWN);
+        blink::mojom::PushUserVisibleStatus::REQUIRED_AND_SHOWN);
   } else if (!notification_needed && !notification_shown) {
     RecordUserVisibleStatus(
-        content::mojom::PushUserVisibleStatus::NOT_REQUIRED_AND_NOT_SHOWN);
+        blink::mojom::PushUserVisibleStatus::NOT_REQUIRED_AND_NOT_SHOWN);
   } else {
     RecordUserVisibleStatus(
-        content::mojom::PushUserVisibleStatus::NOT_REQUIRED_BUT_SHOWN);
+        blink::mojom::PushUserVisibleStatus::NOT_REQUIRED_BUT_SHOWN);
   }
 
-  std::move(message_handled_closure).Run();
+  std::move(message_handled_callback)
+      .Run(/* did_show_generic_notification= */ false);
 }
 
 bool PushMessagingNotificationManager::IsTabVisible(
@@ -237,19 +243,20 @@ bool PushMessagingNotificationManager::IsTabVisible(
 void PushMessagingNotificationManager::ProcessSilentPush(
     const GURL& origin,
     int64_t service_worker_registration_id,
-    base::OnceClosure message_handled_closure,
+    EnforceRequirementsCallback message_handled_callback,
     bool silent_push_allowed) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // If the origin was allowed to issue a silent push, just return.
   if (silent_push_allowed) {
-    RecordUserVisibleStatus(content::mojom::PushUserVisibleStatus::
-                                REQUIRED_BUT_NOT_SHOWN_USED_GRACE);
-    std::move(message_handled_closure).Run();
+    RecordUserVisibleStatus(
+        blink::mojom::PushUserVisibleStatus::REQUIRED_BUT_NOT_SHOWN_USED_GRACE);
+    std::move(message_handled_callback)
+        .Run(/* did_show_generic_notification= */ false);
     return;
   }
 
-  RecordUserVisibleStatus(content::mojom::PushUserVisibleStatus::
+  RecordUserVisibleStatus(blink::mojom::PushUserVisibleStatus::
                               REQUIRED_BUT_NOT_SHOWN_GRACE_EXCEEDED);
   rappor::SampleDomainAndRegistryFromGURL(
       g_browser_process->rappor_service(),
@@ -271,18 +278,19 @@ void PushMessagingNotificationManager::ProcessSilentPush(
       database_data,
       base::BindOnce(
           &PushMessagingNotificationManager::DidWriteNotificationData,
-          weak_factory_.GetWeakPtr(), std::move(message_handled_closure)));
+          weak_factory_.GetWeakPtr(), std::move(message_handled_callback)));
 }
 
 void PushMessagingNotificationManager::DidWriteNotificationData(
-    base::OnceClosure message_handled_closure,
+    EnforceRequirementsCallback message_handled_callback,
     bool success,
     const std::string& notification_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!success)
     DLOG(ERROR) << "Writing forced notification to database should not fail";
 
-  std::move(message_handled_closure).Run();
+  std::move(message_handled_callback)
+      .Run(/* did_show_generic_notification= */ true);
 }
 
 #if defined(OS_CHROMEOS)

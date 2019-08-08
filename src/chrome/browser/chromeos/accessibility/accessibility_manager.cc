@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "ash/accessibility/accessibility_controller.h"
+#include "ash/public/cpp/accelerators.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/interfaces/accessibility_focus_ring_controller.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
@@ -161,6 +162,11 @@ void RestartBrltty(const std::string& address) {
   client->StartJob(kBrlttyUpstartJobName, args, EmptyVoidDBusMethodCallback());
 }
 
+bool VolumeAdjustSoundEnabled() {
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kDisableVolumeAdjustSound);
+}
+
 }  // namespace
 
 class AccessibilityPanelWidgetObserver : public views::WidgetObserver {
@@ -292,6 +298,11 @@ AccessibilityManager::AccessibilityManager()
   manager->Initialize(SOUND_STARTUP,
                       bundle.GetRawDataResource(IDR_SOUND_STARTUP_WAV));
 
+  if (VolumeAdjustSoundEnabled()) {
+    manager->Initialize(chromeos::SOUND_VOLUME_ADJUST,
+                        bundle.GetRawDataResource(IDR_SOUND_VOLUME_ADJUST_WAV));
+  }
+
   base::FilePath resources_path;
   if (!base::PathService::Get(chrome::DIR_RESOURCES, &resources_path))
     NOTREACHED();
@@ -328,6 +339,10 @@ AccessibilityManager::AccessibilityManager()
       ->BindInterface(media_session::mojom::kServiceName,
                       &audio_focus_manager_ptr_);
 
+  ash::AcceleratorController::SetVolumeAdjustmentSoundCallback(
+      base::BindRepeating(&AccessibilityManager::PlayVolumeAdjustSound,
+                          base::Unretained(this)));
+
   CrasAudioHandler::Get()->AddAudioObserver(this);
 }
 
@@ -343,6 +358,8 @@ AccessibilityManager::~AccessibilityManager() {
     chromevox_panel_->CloseNow();
     chromevox_panel_ = nullptr;
   }
+
+  ash::AcceleratorController::SetVolumeAdjustmentSoundCallback({});
 }
 
 bool AccessibilityManager::ShouldShowAccessibilityMenu() {
@@ -1224,6 +1241,13 @@ void AccessibilityManager::UpdateChromeOSAccessibilityHistograms() {
                             IsSelectToSpeakEnabled());
   base::UmaHistogramBoolean("Accessibility.CrosSwitchAccess",
                             IsSwitchAccessEnabled());
+}
+
+void AccessibilityManager::PlayVolumeAdjustSound() {
+  if (VolumeAdjustSoundEnabled()) {
+    PlayEarcon(chromeos::SOUND_VOLUME_ADJUST,
+               chromeos::PlaySoundOption::ONLY_IF_SPOKEN_FEEDBACK_ENABLED);
+  }
 }
 
 void AccessibilityManager::Observe(

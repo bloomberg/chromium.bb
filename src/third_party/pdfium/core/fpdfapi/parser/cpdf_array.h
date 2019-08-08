@@ -20,16 +20,14 @@
 
 class CPDF_Array final : public CPDF_Object {
  public:
-  using const_iterator =
-      std::vector<std::unique_ptr<CPDF_Object>>::const_iterator;
+  using const_iterator = std::vector<RetainPtr<CPDF_Object>>::const_iterator;
 
-  CPDF_Array();
-  explicit CPDF_Array(const WeakPtr<ByteStringPool>& pPool);
-  ~CPDF_Array() override;
+  template <typename T, typename... Args>
+  friend RetainPtr<T> pdfium::MakeRetain(Args&&... args);
 
   // CPDF_Object:
   Type GetType() const override;
-  std::unique_ptr<CPDF_Object> Clone() const override;
+  RetainPtr<CPDF_Object> Clone() const override;
   bool IsArray() const override;
   CPDF_Array* AsArray() override;
   const CPDF_Array* AsArray() const override;
@@ -52,58 +50,59 @@ class CPDF_Array final : public CPDF_Object {
   const CPDF_Stream* GetStreamAt(size_t index) const;
   CPDF_Array* GetArrayAt(size_t index);
   const CPDF_Array* GetArrayAt(size_t index) const;
-  float GetFloatAt(size_t index) const { return GetNumberAt(index); }
   CFX_Matrix GetMatrix() const;
   CFX_FloatRect GetRect() const;
 
-  // Takes ownership of |pObj|, returns unowned pointer to it.
-  CPDF_Object* Add(std::unique_ptr<CPDF_Object> pObj);
-  CPDF_Object* SetAt(size_t index, std::unique_ptr<CPDF_Object> pObj);
-  CPDF_Object* InsertAt(size_t index, std::unique_ptr<CPDF_Object> pObj);
-
   // Creates object owned by the array, returns unowned pointer to it.
   // We have special cases for objects that can intern strings from
-  // a ByteStringPool.
+  // a ByteStringPool. Prefer using these templates over direct calls
+  // to Add()/SetAt()/InsertAt() since by creating a new object with no
+  // previous references, they ensure cycles can not be introduced.
   template <typename T, typename... Args>
   typename std::enable_if<!CanInternStrings<T>::value, T*>::type AddNew(
       Args&&... args) {
     return static_cast<T*>(
-        Add(pdfium::MakeUnique<T>(std::forward<Args>(args)...)));
+        Add(pdfium::MakeRetain<T>(std::forward<Args>(args)...)));
   }
   template <typename T, typename... Args>
   typename std::enable_if<CanInternStrings<T>::value, T*>::type AddNew(
       Args&&... args) {
     return static_cast<T*>(
-        Add(pdfium::MakeUnique<T>(m_pPool, std::forward<Args>(args)...)));
+        Add(pdfium::MakeRetain<T>(m_pPool, std::forward<Args>(args)...)));
   }
   template <typename T, typename... Args>
   typename std::enable_if<!CanInternStrings<T>::value, T*>::type SetNewAt(
       size_t index,
       Args&&... args) {
     return static_cast<T*>(
-        SetAt(index, pdfium::MakeUnique<T>(std::forward<Args>(args)...)));
+        SetAt(index, pdfium::MakeRetain<T>(std::forward<Args>(args)...)));
   }
   template <typename T, typename... Args>
   typename std::enable_if<CanInternStrings<T>::value, T*>::type SetNewAt(
       size_t index,
       Args&&... args) {
     return static_cast<T*>(SetAt(
-        index, pdfium::MakeUnique<T>(m_pPool, std::forward<Args>(args)...)));
+        index, pdfium::MakeRetain<T>(m_pPool, std::forward<Args>(args)...)));
   }
   template <typename T, typename... Args>
   typename std::enable_if<!CanInternStrings<T>::value, T*>::type InsertNewAt(
       size_t index,
       Args&&... args) {
     return static_cast<T*>(
-        InsertAt(index, pdfium::MakeUnique<T>(std::forward<Args>(args)...)));
+        InsertAt(index, pdfium::MakeRetain<T>(std::forward<Args>(args)...)));
   }
   template <typename T, typename... Args>
   typename std::enable_if<CanInternStrings<T>::value, T*>::type InsertNewAt(
       size_t index,
       Args&&... args) {
     return static_cast<T*>(InsertAt(
-        index, pdfium::MakeUnique<T>(m_pPool, std::forward<Args>(args)...)));
+        index, pdfium::MakeRetain<T>(m_pPool, std::forward<Args>(args)...)));
   }
+
+  // Takes ownership of |pObj|, returns unowned pointer to it.
+  CPDF_Object* Add(RetainPtr<CPDF_Object> pObj);
+  CPDF_Object* SetAt(size_t index, RetainPtr<CPDF_Object> pObj);
+  CPDF_Object* InsertAt(size_t index, RetainPtr<CPDF_Object> pObj);
 
   void Clear();
   void RemoveAt(size_t index);
@@ -113,11 +112,15 @@ class CPDF_Array final : public CPDF_Object {
  private:
   friend class CPDF_ArrayLocker;
 
-  std::unique_ptr<CPDF_Object> CloneNonCyclic(
+  CPDF_Array();
+  explicit CPDF_Array(const WeakPtr<ByteStringPool>& pPool);
+  ~CPDF_Array() override;
+
+  RetainPtr<CPDF_Object> CloneNonCyclic(
       bool bDirect,
       std::set<const CPDF_Object*>* pVisited) const override;
 
-  std::vector<std::unique_ptr<CPDF_Object>> m_Objects;
+  std::vector<RetainPtr<CPDF_Object>> m_Objects;
   WeakPtr<ByteStringPool> m_pPool;
   mutable uint32_t m_LockCount = 0;
 };
@@ -150,12 +153,8 @@ inline const CPDF_Array* ToArray(const CPDF_Object* obj) {
   return obj ? obj->AsArray() : nullptr;
 }
 
-inline std::unique_ptr<CPDF_Array> ToArray(std::unique_ptr<CPDF_Object> obj) {
-  CPDF_Array* pArray = ToArray(obj.get());
-  if (!pArray)
-    return nullptr;
-  obj.release();
-  return std::unique_ptr<CPDF_Array>(pArray);
+inline RetainPtr<CPDF_Array> ToArray(RetainPtr<CPDF_Object> obj) {
+  return RetainPtr<CPDF_Array>(ToArray(obj.Get()));
 }
 
 #endif  // CORE_FPDFAPI_PARSER_CPDF_ARRAY_H_

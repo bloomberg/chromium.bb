@@ -59,7 +59,7 @@ class NGPaintFragmentTraversalTest : public RenderingTest,
   }
 
   LayoutBlockFlow* layout_block_flow_;
-  NGPaintFragment* root_fragment_;
+  const NGPaintFragment* root_fragment_;
 };
 
 TEST_F(NGPaintFragmentTraversalTest, MoveToNext) {

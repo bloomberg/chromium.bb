@@ -1,5 +1,4 @@
 include_rules = [
-  "+components/data_use_measurement/core",
   "+components/google/core",
   "+components/keyed_service/core",
   "+components/pref_registry",

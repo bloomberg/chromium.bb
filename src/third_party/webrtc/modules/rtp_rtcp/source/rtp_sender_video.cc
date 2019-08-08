@@ -24,9 +24,7 @@
 #include "modules/remote_bitrate_estimator/test/bwe_test_logging.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
 #include "modules/rtp_rtcp/source/byte_io.h"
-#include "modules/rtp_rtcp/source/rtp_format_video_generic.h"
-#include "modules/rtp_rtcp/source/rtp_format_vp8.h"
-#include "modules/rtp_rtcp/source/rtp_format_vp9.h"
+#include "modules/rtp_rtcp/source/rtp_format.h"
 #include "modules/rtp_rtcp/source/rtp_generic_frame_descriptor_extension.h"
 #include "modules/rtp_rtcp/source/rtp_header_extensions.h"
 #include "modules/rtp_rtcp/source/rtp_packet_to_send.h"
@@ -189,6 +187,7 @@ RTPSenderVideo::RTPSenderVideo(Clock* clock,
                                PlayoutDelayOracle* playout_delay_oracle,
                                FrameEncryptorInterface* frame_encryptor,
                                bool require_frame_encryption,
+                               bool need_rtp_packet_infos,
                                const WebRtcKeyValueConfig& field_trials)
     : rtp_sender_(rtp_sender),
       clock_(clock),
@@ -197,14 +196,10 @@ RTPSenderVideo::RTPSenderVideo(Clock* clock,
       last_rotation_(kVideoRotation_0),
       transmit_color_space_next_frame_(false),
       playout_delay_oracle_(playout_delay_oracle),
-      // TODO(eladalon): Choose whether to instantiate rtp_sequence_number_map_
-      // according to the negotiation of the RTCP message.
-      rtp_sequence_number_map_(
-          field_trials.Lookup("WebRTC-RtcpLossNotification").find("Enabled") !=
-                  std::string::npos
-              ? absl::make_unique<RtpSequenceNumberMap>(
-                    kRtpSequenceNumberMapMaxEntries)
-              : nullptr),
+      rtp_sequence_number_map_(need_rtp_packet_infos
+                                   ? absl::make_unique<RtpSequenceNumberMap>(
+                                         kRtpSequenceNumberMapMaxEntries)
+                                   : nullptr),
       red_payload_type_(-1),
       ulpfec_payload_type_(-1),
       flexfec_sender_(flexfec_sender),
@@ -224,28 +219,28 @@ RTPSenderVideo::RTPSenderVideo(Clock* clock,
 RTPSenderVideo::~RTPSenderVideo() {}
 
 void RTPSenderVideo::RegisterPayloadType(int8_t payload_type,
-                                         absl::string_view payload_name) {
-  VideoCodecType video_type;
-
-  if (absl::EqualsIgnoreCase(payload_name, "VP8")) {
-    video_type = kVideoCodecVP8;
-  } else if (absl::EqualsIgnoreCase(payload_name, "VP9")) {
-    video_type = kVideoCodecVP9;
-  } else if (absl::EqualsIgnoreCase(payload_name, "H264")) {
-    video_type = kVideoCodecH264;
-  } else if (absl::EqualsIgnoreCase(payload_name, "I420")) {
-    video_type = kVideoCodecGeneric;
-  } else if (absl::EqualsIgnoreCase(payload_name, "stereo")) {
-    video_type = kVideoCodecGeneric;
-  } else {
-    video_type = kVideoCodecGeneric;
+                                         absl::string_view payload_name,
+                                         bool raw_payload) {
+  absl::optional<VideoCodecType> video_type;
+  if (!raw_payload) {
+    if (absl::EqualsIgnoreCase(payload_name, "VP8")) {
+      video_type = kVideoCodecVP8;
+    } else if (absl::EqualsIgnoreCase(payload_name, "VP9")) {
+      video_type = kVideoCodecVP9;
+    } else if (absl::EqualsIgnoreCase(payload_name, "H264")) {
+      video_type = kVideoCodecH264;
+    } else {
+      video_type = kVideoCodecGeneric;
+    }
   }
 
-  rtc::CritScope cs(&payload_type_crit_);
-  payload_type_map_[payload_type] = video_type;
+  {
+    rtc::CritScope cs(&payload_type_crit_);
+    payload_type_map_[payload_type] = video_type;
+  }
 
   // Backward compatibility for older receivers without temporal layer logic
-  if (video_type == kVideoCodecH264) {
+  if (absl::EqualsIgnoreCase(payload_name, "H264")) {
     rtc::CritScope cs(&crit_);
     retransmission_settings_ = kRetransmitBaseLayer | kRetransmitHigherLayers;
   }
@@ -613,7 +608,7 @@ bool RTPSenderVideo::SendVideo(VideoFrameType frame_type,
         << "one is required since require_frame_encryptor is set";
   }
 
-  VideoCodecType video_type;
+  absl::optional<VideoCodecType> type;
   {
     rtc::CritScope cs(&payload_type_crit_);
     const auto it = payload_type_map_.find(payload_type);
@@ -622,10 +617,10 @@ bool RTPSenderVideo::SendVideo(VideoFrameType frame_type,
                         << " not registered.";
       return false;
     }
-    video_type = it->second;
+    type = it->second;
   }
   std::unique_ptr<RtpPacketizer> packetizer = RtpPacketizer::Create(
-      video_type, rtc::MakeArrayView(payload_data, payload_size), limits,
+      type, rtc::MakeArrayView(payload_data, payload_size), limits,
       *packetize_video_header, frame_type, fragmentation);
 
   const uint8_t temporal_id = GetTemporalId(*video_header);

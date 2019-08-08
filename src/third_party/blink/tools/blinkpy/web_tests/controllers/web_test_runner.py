@@ -27,6 +27,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import collections
+import copy
 import itertools
 import logging
 import math
@@ -151,7 +152,6 @@ class WebTestRunner(object):
         return test_run_results
 
     def _reorder_tests_by_args(self, shards):
-        reordered_shards = []
         for shard in shards:
             tests_by_args = collections.OrderedDict()
             for test_input in shard.test_inputs:
@@ -242,7 +242,10 @@ class Worker(object):
         self._worker_number = caller.worker_number
         self._name = caller.name
         self._results_directory = results_directory
-        self._options = options
+        # We have already updated the manifest when collecting tests, so skip it
+        # in the workers (this also prevents race conditions among workers).
+        self._options = copy.copy(options)
+        self._options.manifest_update = False
 
         # The remaining fields are initialized in start()
         self._host = None

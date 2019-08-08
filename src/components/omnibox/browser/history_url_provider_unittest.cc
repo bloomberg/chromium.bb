@@ -1119,7 +1119,7 @@ TEST_F(HistoryURLProviderTest, HUPScoringExperiment) {
   max_1100_visit_typed_decays.visited_count_buckets.buckets().push_back(
       std::make_pair(0.0, 50));
 
-  const int kMaxMatches = 3;
+  const int kProviderMaxMatches = 3;
   struct TestCase {
     const char* input;
     HUPScoringParams scoring_params;
@@ -1128,7 +1128,7 @@ TEST_F(HistoryURLProviderTest, HUPScoringExperiment) {
       int control_relevance;
       int experiment_relevance;
     };
-    ExpectedMatch matches[kMaxMatches];
+    ExpectedMatch matches[kProviderMaxMatches];
   } test_cases[] = {
       // Max score 2000 -> no demotion.
       {"7.com/1",
@@ -1166,9 +1166,9 @@ TEST_F(HistoryURLProviderTest, HUPScoringExperiment) {
   };
   for (size_t i = 0; i < base::size(test_cases); ++i) {
     SCOPED_TRACE(test_cases[i].input);
-    UrlAndLegalDefault output[kMaxMatches];
+    UrlAndLegalDefault output[kProviderMaxMatches];
     int max_matches;
-    for (max_matches = 0; max_matches < kMaxMatches; ++max_matches) {
+    for (max_matches = 0; max_matches < kProviderMaxMatches; ++max_matches) {
       if (test_cases[i].matches[max_matches].url == nullptr)
         break;
       output[max_matches].url =

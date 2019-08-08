@@ -10,8 +10,10 @@
 #include <set>
 #include <string>
 #include <unordered_set>
+#include <vector>
 
 #include "base/command_line.h"
+#include "base/containers/flat_set.h"
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -23,10 +25,8 @@
 #include "net/base/mime_sniffer.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_response_headers.h"
-#include "net/url_request/url_request.h"
 #include "services/network/cross_origin_resource_policy.h"
 #include "services/network/public/cpp/features.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/resource_response_info.h"
 
 using base::StringPiece;
@@ -202,18 +202,33 @@ std::set<int>& GetPluginProxyingProcesses() {
   return *set;
 }
 
-bool ShouldEnforceInitiatorLock() {
-  return base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-         base::FeatureList::IsEnabled(
-             network::features::kEnforceRequestInitiatorLockForCorb);
-}
+// The function below returns a set of MIME types below may be blocked by CORB
+// without any confirmation sniffing (in contrast to HTML/JSON/XML which require
+// confirmation sniffing because images, scripts, etc. are frequently
+// mislabelled by http servers as HTML/JSON/XML).
+base::flat_set<std::string>& GetNeverSniffedMimeTypes() {
+  static base::NoDestructor<base::flat_set<std::string>> s_types({
+      // The list below has been populated based on most commonly used content
+      // types according to HTTP Archive - see:
+      // https://github.com/whatwg/fetch/issues/860#issuecomment-457330454
+      //
+      // TODO(lukasza): https://crbug.com/802836#c11: Add
+      // application/signed-exchange.
+      "application/gzip",
+      "application/x-gzip",
+      "application/x-protobuf",
+      "application/x-www-form-urlencoded",
+      "application/zip",
+      "text/event-stream",
+  });
 
-void RecordCorbResultVsInitiatorLockCompatibility(
-    CrossOriginReadBlocking::CorbResultVsInitiatorLockCompatibility value) {
-  if (ShouldEnforceInitiatorLock()) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "SiteIsolation.XSD.NetworkService.InitiatorLockCompatibility", value);
-  }
+  // All items need to be lower-case, to support case-insensitive comparisons
+  // later.
+  DCHECK(std::all_of(
+      s_types->begin(), s_types->end(),
+      [](const std::string& s) { return s == base::ToLowerASCII(s); }));
+
+  return *s_types;
 }
 
 }  // namespace
@@ -249,6 +264,11 @@ MimeType CrossOriginReadBlocking::GetCanonicalMimeType(
 
   if (base::LowerCaseEqualsASCII(mime_type, kTextPlain))
     return MimeType::kPlain;
+
+  if (base::ContainsKey(GetNeverSniffedMimeTypes(),
+                        base::ToLowerASCII(mime_type))) {
+    return MimeType::kNeverSniffed;
+  }
 
   return MimeType::kOthers;
 }
@@ -456,11 +476,11 @@ SniffingResult CrossOriginReadBlocking::SniffForFetchOnlyResource(
 
 // static
 void CrossOriginReadBlocking::SanitizeBlockedResponse(
-    const scoped_refptr<network::ResourceResponse>& response) {
+    network::ResourceResponseInfo* response) {
   DCHECK(response);
-  response->head.content_length = 0;
-  if (response->head.headers)
-    BlockResponseHeaders(response->head.headers);
+  response->content_length = 0;
+  if (response->headers)
+    BlockResponseHeaders(response->headers);
 }
 
 // static
@@ -566,23 +586,18 @@ class CrossOriginReadBlocking::ResponseAnalyzer::FetchOnlyResourceSniffer
 };
 
 CrossOriginReadBlocking::ResponseAnalyzer::ResponseAnalyzer(
-    const net::URLRequest& request,
-    const ResourceResponse& response,
+    const GURL& request_url,
+    const base::Optional<url::Origin>& request_initiator,
+    const ResourceResponseInfo& response,
     base::Optional<url::Origin> request_initiator_site_lock,
     mojom::FetchRequestMode fetch_request_mode) {
-  // TODO(lukasza): Remove |initiator_compatibility_| field once the UMAs
-  // depending on it are expired (e.g. see
-  // SiteIsolation.XSD.NetworkService.InitiatorLockCompatibility).
-  initiator_compatibility_ = VerifyRequestInitiatorLock(
-      request_initiator_site_lock, request.initiator());
-
-  content_length_ = response.head.content_length;
+  content_length_ = response.content_length;
   http_response_code_ =
-      response.head.headers ? response.head.headers->response_code() : 0;
+      response.headers ? response.headers->response_code() : 0;
   request_initiator_site_lock_ = request_initiator_site_lock;
 
-  should_block_based_on_headers_ =
-      ShouldBlockBasedOnHeaders(fetch_request_mode, request, response);
+  should_block_based_on_headers_ = ShouldBlockBasedOnHeaders(
+      fetch_request_mode, request_url, request_initiator, response);
   if (should_block_based_on_headers_ == kNeedToSniffMore)
     CreateSniffers();
 }
@@ -592,16 +607,17 @@ CrossOriginReadBlocking::ResponseAnalyzer::~ResponseAnalyzer() = default;
 CrossOriginReadBlocking::ResponseAnalyzer::BlockingDecision
 CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
     mojom::FetchRequestMode fetch_request_mode,
-    const net::URLRequest& request,
-    const ResourceResponse& response) {
+    const GURL& request_url,
+    const base::Optional<url::Origin>& request_initiator,
+    const ResourceResponseInfo& response) {
   // The checks in this method are ordered to rule out blocking in most cases as
   // quickly as possible.  Checks that are likely to lead to returning false or
   // that are inexpensive should be near the top.
-  url::Origin target_origin = url::Origin::Create(request.url());
+  url::Origin target_origin = url::Origin::Create(request_url);
 
   // Check if |target_origin| seems to match the factory lock in
   // |request_initiator_site_lock_|.  If so, then treat this request as
-  // same-origin (even if |request.initiator()| might be cross-origin).  See
+  // same-origin (even if |request_initiator| might be cross-origin).  See
   // also https://crbug.com/918660.
   if (VerifyRequestInitiatorLock(request_initiator_site_lock_, target_origin) ==
       InitiatorLockCompatibility::kCompatibleLock) {
@@ -612,10 +628,8 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   // there was no initiator or if it was incompatible with the lock. Using a
   // unique origin makes CORB treat the response as cross-origin and thus
   // considers it eligible for blocking (based on content-type, sniffing, etc.).
-  url::Origin initiator = GetTrustworthyInitiator(
-      ShouldEnforceInitiatorLock() ? request_initiator_site_lock_
-                                   : base::nullopt,
-      request);
+  url::Origin initiator =
+      GetTrustworthyInitiator(request_initiator_site_lock_, request_initiator);
 
   // Don't block same-origin documents.
   if (initiator.IsSameOriginWith(target_origin))
@@ -644,8 +658,8 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
     case mojom::FetchRequestMode::kCors:
     case mojom::FetchRequestMode::kCorsWithForcedPreflight:
       std::string cors_header;
-      response.head.headers->GetNormalizedHeader("access-control-allow-origin",
-                                                 &cors_header);
+      response.headers->GetNormalizedHeader("access-control-allow-origin",
+                                            &cors_header);
       if (IsValidCorsHeaderSet(initiator, cors_header))
         return kAllow;
       break;
@@ -657,8 +671,8 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   // for bar.example.com).  This is okay and should not be blocked by CORB,
   // unless the initiator opted out of CORS / opted into receiving an opaque
   // response.  See also https://crbug.com/803672.
-  if (response.head.was_fetched_via_service_worker) {
-    switch (response.head.response_type) {
+  if (response.was_fetched_via_service_worker) {
+    switch (response.response_type) {
       case network::mojom::FetchResponseType::kBasic:
       case network::mojom::FetchResponseType::kCors:
       case network::mojom::FetchResponseType::kDefault:
@@ -679,26 +693,30 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   // Note: if there is a nosniff header, it means we should honor the response
   // mime type without trying to confirm it.
   std::string nosniff_header;
-  response.head.headers->GetNormalizedHeader("x-content-type-options",
-                                             &nosniff_header);
+  response.headers->GetNormalizedHeader("x-content-type-options",
+                                        &nosniff_header);
   bool has_nosniff_header =
       base::LowerCaseEqualsASCII(nosniff_header, "nosniff");
 
   // CORB should look directly at the Content-Type header if one has been
-  // received from the network.  Ignoring |response.head.mime_type| helps avoid
+  // received from the network.  Ignoring |response.mime_type| helps avoid
   // breaking legitimate websites (which might happen more often when blocking
   // would be based on the mime type sniffed by MimeSniffingResourceHandler).
   //
   // TODO(nick): What if the mime type is omitted? Should that be treated the
   // same as text/plain? https://crbug.com/795971
   std::string mime_type;
-  if (response.head.headers)
-    response.head.headers->GetMimeType(&mime_type);
+  if (response.headers)
+    response.headers->GetMimeType(&mime_type);
   // Canonicalize the MIME type.  Note that even if it doesn't claim to be a
   // blockable type (i.e., HTML, XML, JSON, or plain text), it may still fail
   // the checks during the SniffForFetchOnlyResource() phase.
   canonical_mime_type_ =
       network::CrossOriginReadBlocking::GetCanonicalMimeType(mime_type);
+
+  // Some types (e.g. ZIP) are protected without any confirmation sniffing.
+  if (canonical_mime_type_ == MimeType::kNeverSniffed)
+    return kBlock;
 
   // CORS is currently implemented in the renderer process, so it's useful for
   // CORB to filter failed "cors" mode fetches to avoid leaking the responses to
@@ -726,8 +744,8 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   constexpr mojom::FetchRequestMode kOverreachingFetchMode =
       mojom::FetchRequestMode::kNoCors;
   if (CrossOriginResourcePolicy::kBlock ==
-      CrossOriginResourcePolicy::Verify(request, response,
-                                        kOverreachingFetchMode,
+      CrossOriginResourcePolicy::Verify(request_url, request_initiator,
+                                        response, kOverreachingFetchMode,
                                         request_initiator_site_lock_)) {
     // Ignore mime types and/or sniffing and have CORB block all responses with
     // COR*P* header.
@@ -737,7 +755,7 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   // If this is a partial response, sniffing is not possible, so allow the
   // response if it's not a protected mime type.
   std::string range_header;
-  response.head.headers->GetNormalizedHeader("content-range", &range_header);
+  response.headers->GetNormalizedHeader("content-range", &range_header);
   bool has_range_header = !range_header.empty();
   if (has_range_header) {
     switch (canonical_mime_type_) {
@@ -748,7 +766,8 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
       case MimeType::kJson:
       case MimeType::kXml:
         return kBlock;
-      case MimeType::kMax:
+      case MimeType::kInvalidMimeType:
+      case MimeType::kNeverSniffed:  // Handled much earlier.
         NOTREACHED();
         return kBlock;
     }
@@ -769,13 +788,14 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
     case MimeType::kOthers:
       // Stylesheets shouldn't be sniffed for JSON parser breakers - see
       // https://crbug.com/809259.
-      if (base::LowerCaseEqualsASCII(response.head.mime_type, "text/css"))
+      if (base::LowerCaseEqualsASCII(response.mime_type, "text/css"))
         return kAllow;
       else
         return kNeedToSniffMore;
       break;
 
     case MimeType::kInvalidMimeType:
+    case MimeType::kNeverSniffed:  // Handled much earlier.
       NOTREACHED();
       return kBlock;
   }
@@ -928,9 +948,6 @@ void CrossOriginReadBlocking::ResponseAnalyzer::LogAllowedResponse() {
           : network::CrossOriginReadBlocking::Action::kAllowedWithoutSniffing);
 
   LogBytesReadForSniffing();
-
-  RecordCorbResultVsInitiatorLockCompatibility(
-      CorbResultVsInitiatorLockCompatibility::kNoBlocking);
 }
 
 void CrossOriginReadBlocking::ResponseAnalyzer::LogBlockedResponse() {
@@ -952,28 +969,11 @@ void CrossOriginReadBlocking::ResponseAnalyzer::LogBlockedResponse() {
         content_length());
   }
 
-  LogBytesReadForSniffing();
+  UMA_HISTOGRAM_ENUMERATION(
+      "SiteIsolation.XSD.Browser.Blocked.CanonicalMimeType",
+      canonical_mime_type_);
 
-  if (!ShouldReportBlockedResponse()) {
-    RecordCorbResultVsInitiatorLockCompatibility(
-        CorbResultVsInitiatorLockCompatibility::kBenignBlocking);
-  } else {
-    switch (initiator_compatibility_) {
-      case InitiatorLockCompatibility::kIncorrectLock:
-        RecordCorbResultVsInitiatorLockCompatibility(
-            CorbResultVsInitiatorLockCompatibility::kBlockingWhenIncorrectLock);
-        break;
-      case InitiatorLockCompatibility::kCompatibleLock:
-        RecordCorbResultVsInitiatorLockCompatibility(
-            CorbResultVsInitiatorLockCompatibility::
-                kBlockingWhenCompatibleLock);
-        break;
-      default:
-        RecordCorbResultVsInitiatorLockCompatibility(
-            CorbResultVsInitiatorLockCompatibility::kBlockingWhenOtherLock);
-        break;
-    }
-  }
+  LogBytesReadForSniffing();
 }
 
 // static
@@ -993,6 +993,18 @@ void CrossOriginReadBlocking::RemoveExceptionForPlugin(int process_id) {
   std::set<int>& plugin_proxies = GetPluginProxyingProcesses();
   size_t number_of_elements_removed = plugin_proxies.erase(process_id);
   DCHECK_EQ(1u, number_of_elements_removed);
+}
+
+// static
+void CrossOriginReadBlocking::AddExtraMimeTypesForCorb(
+    const std::vector<std::string>& mime_types) {
+  // All items need to be lower-case, to support case-insensitive comparisons.
+  DCHECK(std::all_of(
+      mime_types.begin(), mime_types.end(),
+      [](const std::string& s) { return s == base::ToLowerASCII(s); }));
+  base::flat_set<std::string>& never_sniffed_types = GetNeverSniffedMimeTypes();
+  never_sniffed_types.insert(mime_types.begin(), mime_types.end());
+  never_sniffed_types.shrink_to_fit();
 }
 
 }  // namespace network

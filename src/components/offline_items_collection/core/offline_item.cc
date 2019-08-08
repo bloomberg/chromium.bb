@@ -88,6 +88,7 @@ bool OfflineItem::operator==(const OfflineItem& offline_item) const {
          page_url == offline_item.page_url &&
          original_url == offline_item.original_url &&
          is_off_the_record == offline_item.is_off_the_record &&
+         attribution == offline_item.attribution &&
          state == offline_item.state && fail_state == offline_item.fail_state &&
          pending_state == offline_item.pending_state &&
          is_resumable == offline_item.is_resumable &&
@@ -99,6 +100,9 @@ bool OfflineItem::operator==(const OfflineItem& offline_item) const {
 }
 
 OfflineItemVisuals::OfflineItemVisuals() = default;
+OfflineItemVisuals::OfflineItemVisuals(const gfx::Image& icon,
+                                       const gfx::Image& custom_favicon)
+    : icon(icon), custom_favicon(custom_favicon) {}
 OfflineItemVisuals::OfflineItemVisuals(const OfflineItemVisuals& other) =
     default;
 OfflineItemVisuals::~OfflineItemVisuals() = default;

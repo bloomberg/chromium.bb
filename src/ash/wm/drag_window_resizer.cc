@@ -62,7 +62,7 @@ void DragWindowResizer::Drag(const gfx::Point& location, int event_flags) {
   if (display::Screen::GetScreen()->GetNumDisplays() > 1) {
     gfx::Point location_in_screen = location;
     ::wm::ConvertPointToScreen(GetTarget()->parent(), &location_in_screen);
-    UpdateDragWindow(GetTarget()->bounds(), location_in_screen);
+    UpdateDragWindow(location_in_screen);
   } else {
     drag_window_controller_.reset();
   }
@@ -105,7 +105,6 @@ DragWindowResizer::DragWindowResizer(
 }
 
 void DragWindowResizer::UpdateDragWindow(
-    const gfx::Rect& bounds_in_parent,
     const gfx::Point& drag_location_in_screen) {
   if (details().window_component != HTCAPTION || !ShouldAllowMouseWarp())
     return;
@@ -113,20 +112,9 @@ void DragWindowResizer::UpdateDragWindow(
   if (!drag_window_controller_)
     drag_window_controller_.reset(new DragWindowController(GetTarget()));
 
-  gfx::Rect bounds_in_screen = bounds_in_parent;
-  ::wm::ConvertRectToScreen(GetTarget()->parent(), &bounds_in_screen);
-
-  gfx::Rect root_bounds_in_screen =
-      GetTarget()->GetRootWindow()->GetBoundsInScreen();
-  float opacity = 1.0f;
-  if (!root_bounds_in_screen.Contains(drag_location_in_screen)) {
-    gfx::Rect visible_bounds = root_bounds_in_screen;
-    visible_bounds.Intersect(bounds_in_screen);
-    opacity = DragWindowController::GetDragWindowOpacity(bounds_in_screen,
-                                                         visible_bounds);
-  }
-  GetTarget()->layer()->SetOpacity(opacity);
-  drag_window_controller_->Update(bounds_in_screen, drag_location_in_screen);
+  GetTarget()->layer()->SetOpacity(DragWindowController::GetDragWindowOpacity(
+      GetTarget()->GetRootWindow(), GetTarget(), drag_location_in_screen));
+  drag_window_controller_->Update(drag_location_in_screen);
 }
 
 bool DragWindowResizer::ShouldAllowMouseWarp() {

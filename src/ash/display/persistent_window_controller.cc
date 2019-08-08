@@ -5,7 +5,7 @@
 #include "ash/display/persistent_window_controller.h"
 
 #include "ash/display/persistent_window_info.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_state.h"
@@ -24,7 +24,7 @@ display::DisplayManager* GetDisplayManager() {
 }
 
 MruWindowTracker::WindowList GetWindowList() {
-  return Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
+  return Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kAllDesks);
 }
 
 // Returns true when window cycle list can be processed to perform save/restore

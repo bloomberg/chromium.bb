@@ -5,15 +5,15 @@
  * found in the LICENSE file.
  */
 
-#include "SkRecorder.h"
+#include "src/core/SkRecorder.h"
 
-#include "SkBigPicture.h"
-#include "SkCanvasPriv.h"
-#include "SkImage.h"
-#include "SkPatchUtils.h"
-#include "SkPicture.h"
-#include "SkSurface.h"
-#include "SkTo.h"
+#include "include/core/SkImage.h"
+#include "include/core/SkPicture.h"
+#include "include/core/SkSurface.h"
+#include "include/private/SkTo.h"
+#include "src/core/SkBigPicture.h"
+#include "src/core/SkCanvasPriv.h"
+#include "src/utils/SkPatchUtils.h"
 
 #include <new>
 
@@ -137,6 +137,10 @@ void SkRecorder::flushMiniRecorder() {
 
 void SkRecorder::onDrawPaint(const SkPaint& paint) {
     this->append<SkRecords::DrawPaint>(paint);
+}
+
+void SkRecorder::onDrawBehind(const SkPaint& paint) {
+    this->append<SkRecords::DrawBehind>(paint);
 }
 
 void SkRecorder::onDrawPoints(PointMode mode,

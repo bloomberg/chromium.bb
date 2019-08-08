@@ -10,17 +10,21 @@
 
 namespace performance_monitor {
 
+using SamplingFrequency = SystemMonitor::SamplingFrequency;
+using MetricsRefreshFrequencies =
+    SystemMonitor::SystemObserver::MetricRefreshFrequencies;
+
 SystemMonitorMetricsLogger::SystemMonitorMetricsLogger() {
   // These metrics are only available on Windows for now.
 #if defined(OS_WIN)
   if (auto* system_monitor = SystemMonitor::Get()) {
     system_monitor->AddOrUpdateObserver(
-        this, {
-                  .free_phys_memory_mb_frequency =
-                      SystemMonitor::SamplingFrequency::kDefaultFrequency,
-                  .disk_idle_time_percent_frequency =
-                      SystemMonitor::SamplingFrequency::kDefaultFrequency,
-              });
+        this,
+        MetricsRefreshFrequencies::Builder()
+            .SetFreePhysMemoryMbFrequency(SamplingFrequency::kDefaultFrequency)
+            .SetDiskIdleTimePercentFrequency(
+                SamplingFrequency::kDefaultFrequency)
+            .Build());
   }
 #endif
 }

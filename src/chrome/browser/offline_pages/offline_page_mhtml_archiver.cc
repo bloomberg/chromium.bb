@@ -18,14 +18,11 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/offline_pages/offline_page_utils.h"
-#include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "components/offline_pages/core/archive_validator.h"
 #include "components/offline_pages/core/model/offline_page_model_utils.h"
 #include "components/offline_pages/core/offline_clock.h"
 #include "components/offline_pages/core/offline_page_feature.h"
-#include "components/security_state/core/security_state.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/mhtml_generation_params.h"
 #include "net/base/filename_util.h"
@@ -69,26 +66,6 @@ void OfflinePageMHTMLArchiver::CreateArchive(
   DCHECK(callback_.is_null());
   DCHECK(!callback.is_null());
   callback_ = std::move(callback);
-
-  // TODO(chili): crbug/710248 These checks should probably be done inside
-  // the offliner.
-  if (HasConnectionSecurityError(web_contents)) {
-    ReportFailure(ArchiverResult::ERROR_SECURITY_CERTIFICATE);
-    return;
-  }
-
-  // Don't save chrome error pages.
-  if (GetPageType(web_contents) == content::PageType::PAGE_TYPE_ERROR) {
-    ReportFailure(ArchiverResult::ERROR_ERROR_PAGE);
-    return;
-  }
-
-  // Don't save chrome-injected interstitial info pages
-  // i.e. "This site may be dangerous. Are you sure you want to continue?"
-  if (GetPageType(web_contents) == content::PageType::PAGE_TYPE_INTERSTITIAL) {
-    ReportFailure(ArchiverResult::ERROR_INTERSTITIAL_PAGE);
-    return;
-  }
 
   GenerateMHTML(archives_dir, web_contents, create_archive_params);
 }
@@ -182,20 +159,6 @@ void OfflinePageMHTMLArchiver::OnComputeDigestDone(
       FROM_HERE,
       base::BindOnce(std::move(callback_), ArchiverResult::SUCCESSFULLY_CREATED,
                      url, file_path, title, file_size, digest));
-}
-
-bool OfflinePageMHTMLArchiver::HasConnectionSecurityError(
-    content::WebContents* web_contents) {
-  SecurityStateTabHelper::CreateForWebContents(web_contents);
-  SecurityStateTabHelper* helper =
-      SecurityStateTabHelper::FromWebContents(web_contents);
-  DCHECK(helper);
-  return security_state::SecurityLevel::DANGEROUS == helper->GetSecurityLevel();
-}
-
-content::PageType OfflinePageMHTMLArchiver::GetPageType(
-    content::WebContents* web_contents) {
-  return web_contents->GetController().GetVisibleEntry()->GetPageType();
 }
 
 void OfflinePageMHTMLArchiver::DeleteFileAndReportFailure(

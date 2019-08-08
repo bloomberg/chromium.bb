@@ -373,4 +373,9 @@ RTCRtpReceiverOnlyTransceiver::FiredDirection() const {
   return webrtc::RtpTransceiverDirection::kSendOnly;
 }
 
+webrtc::RTCError RTCRtpReceiverOnlyTransceiver::SetCodecPreferences(
+    blink::WebVector<webrtc::RtpCodecCapability>) {
+  NOTIMPLEMENTED();
+  return {};
+}
 }  // namespace content

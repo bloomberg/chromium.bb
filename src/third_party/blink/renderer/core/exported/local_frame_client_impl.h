@@ -89,7 +89,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void WillBeDetached() override;
   void Detached(FrameDetachType) override;
   void DispatchWillSendRequest(ResourceRequest&) override;
-  void DispatchDidReceiveResponse(const ResourceResponse&) override;
   void DispatchDidLoadResourceFromMemoryCache(const ResourceRequest&,
                                               const ResourceResponse&) override;
   void DispatchDidHandleOnloadEvents() override;
@@ -103,7 +102,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
                              WebHistoryCommitType,
                              GlobalObjectReusePolicy) override;
   void DispatchDidFailProvisionalLoad(const ResourceError&,
-                                      WebHistoryCommitType) override;
+                                      const AtomicString& http_method) override;
   void DispatchDidFailLoad(const ResourceError&, WebHistoryCommitType) override;
   void DispatchDidFinishDocumentLoad() override;
   void DispatchDidFinishLoad() override;
@@ -151,7 +150,8 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void DidObserveLoadingBehavior(WebLoadingBehaviorFlag) override;
   void DidObserveNewFeatureUsage(mojom::WebFeature) override;
   void DidObserveNewCssPropertyUsage(int, bool) override;
-  void DidObserveLayoutJank(double jank_fraction) override;
+  void DidObserveLayoutJank(double jank_fraction,
+                            bool after_input_or_scroll) override;
   void DidObserveLazyLoadBehavior(
       WebLocalFrameClient::LazyLoadBehavior lazy_load_behavior) override;
   bool ShouldTrackUseCounter(const KURL&) override;
@@ -182,7 +182,8 @@ class LocalFrameClientImpl final : public LocalFrameClient {
                           HTMLFrameOwnerElement*) override;
   std::pair<RemoteFrame*, base::UnguessableToken> CreatePortal(
       HTMLPortalElement*,
-      mojom::blink::PortalAssociatedRequest) override;
+      mojom::blink::PortalAssociatedRequest,
+      mojom::blink::PortalClientAssociatedPtrInfo) override;
   RemoteFrame* AdoptPortal(HTMLPortalElement*) override;
   WebPluginContainerImpl* CreatePlugin(HTMLPlugInElement&,
                                        const KURL&,
@@ -304,9 +305,9 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   void FrameRectsChanged(const IntRect&) override;
 
-  bool MaybeCreateMimeHandlerView(HTMLPlugInElement&,
-                                  const KURL&,
-                                  const String&) override;
+  bool IsPluginHandledExternally(HTMLPlugInElement&,
+                                 const KURL&,
+                                 const String&) override;
   v8::Local<v8::Object> GetScriptableObject(HTMLPlugInElement&,
                                             v8::Isolate*) override;
 
@@ -320,6 +321,8 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void SetMouseCapture(bool capture) override;
 
   bool UsePrintingLayout() const override;
+
+  void TransferUserActivationFrom(LocalFrame* source_frame) override;
 
  private:
   struct DocumentInterfaceBrokerForwarderTraits {

@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
-#include "base/files/file.h"
+#include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
@@ -36,7 +36,7 @@ class WaylandZwpLinuxDmabuf {
   // Requests to create a wl_buffer backed by the |file| descriptor. The result
   // is sent back via the |callback|. If buffer creation failed, nullptr is sent
   // back via the callback. Otherwise, a pointer to the |wl_buffer| is sent.
-  void CreateBuffer(base::File file,
+  void CreateBuffer(base::ScopedFD fd,
                     const gfx::Size& size,
                     const std::vector<uint32_t>& strides,
                     const std::vector<uint32_t>& offsets,

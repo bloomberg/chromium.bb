@@ -3,15 +3,16 @@
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
 
+import ctypes
 import itertools
-import logging
 import os
+import signal
 import sys
 import tempfile
 import unittest
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, ROOT_DIR)
+# Mutates sys.path.
+import test_env
 
 from utils import subprocess42
 
@@ -324,6 +325,148 @@ class Subprocess42Test(unittest.TestCase):
       proc.wait()
       self.assertLessEqual(0.5, proc.duration())
 
+  def _test_lower_priority(self, lower_priority):
+    if sys.platform == 'win32':
+      cmd = [
+        sys.executable, '-u', '-c',
+        'import ctypes,sys; v=ctypes.windll.kernel32.GetPriorityClass(-1);'
+        'sys.stdout.write(hex(v))'
+      ]
+    else:
+      cmd = [
+        sys.executable, '-u', '-c',
+        'import os,sys;sys.stdout.write(str(os.nice(0)))',
+      ]
+    proc = subprocess42.Popen(
+        cmd, stdout=subprocess42.PIPE, lower_priority=lower_priority)
+    out, err = proc.communicate()
+    self.assertEqual(None, err)
+    return out
+
+  def test_lower_priority(self):
+    out = self._test_lower_priority(True)
+    if sys.platform == 'win32':
+      # See
+      # https://docs.microsoft.com/en-us/windows/desktop/api/processthreadsapi/nf-processthreadsapi-getpriorityclass
+      BELOW_NORMAL_PRIORITY_CLASS = 0x4000
+      self.assertEqual(hex(BELOW_NORMAL_PRIORITY_CLASS), out)
+    else:
+      self.assertEqual(str(os.nice(0)+1), out)
+
+  def test_lower_priority_False(self):
+    out = self._test_lower_priority(False)
+    if sys.platform == 'win32':
+      # Should be NORMAL_PRIORITY_CLASS.
+      p = ctypes.windll.kernel32.GetPriorityClass(-1)
+      self.assertEqual(hex(p), out)
+    else:
+      self.assertEqual(str(os.nice(0)), out)
+
+  @staticmethod
+  def _cmd_print_good():
+    # Used in test_containment_auto and test_containment_auto_limit_process.
+    return [
+        sys.executable, '-u', '-c',
+        'import subprocess,sys; '
+        'subprocess.call([sys.executable, "-c", "print(\\"good\\")"])',
+    ]
+
+  def test_containment_none(self):
+    # Minimal test case. Starts two processes.
+    cmd = self._cmd_print_good()
+    containment = subprocess42.Containment(
+        containment_type=subprocess42.Containment.NONE)
+    self.assertEqual(0, subprocess42.check_call(cmd, containment=containment))
+
+  def test_containment_auto(self):
+    # Minimal test case. Starts two processes.
+    cmd = self._cmd_print_good()
+    containment = subprocess42.Containment(
+        containment_type=subprocess42.Containment.AUTO,
+        limit_processes=2,
+        limit_total_committed_memory=1024*1024*1024)
+    self.assertEqual(0, subprocess42.check_call(cmd, containment=containment))
+
+  def test_containment_auto_limit_process(self):
+    # Process creates a children process. It should fail, throwing not enough
+    # quota.
+    cmd = self._cmd_print_good()
+    containment = subprocess42.Containment(
+        containment_type=subprocess42.Containment.JOB_OBJECT,
+        limit_processes=1)
+    start = lambda: subprocess42.Popen(
+        cmd, stdout=subprocess42.PIPE, stderr=subprocess42.PIPE,
+        containment=containment)
+
+    if sys.platform == 'win32':
+      p = start()
+      out, err = p.communicate()
+      self.assertEqual(1, p.returncode)
+      self.assertEqual('', out)
+      self.assertIn('WindowsError', err)
+      # Value for ERROR_NOT_ENOUGH_QUOTA. See
+      # https://docs.microsoft.com/windows/desktop/debug/system-error-codes--1700-3999-
+      self.assertIn('1816', err)
+    else:
+      # JOB_OBJECT is not usable on non-Windows.
+      with self.assertRaises(NotImplementedError):
+        start()
+
+  def test_containment_auto_kill(self):
+    # Test process killing.
+    cmd = [
+      sys.executable, '-u', '-c',
+      'import sys,time; print("hi");time.sleep(60)',
+    ]
+    containment = subprocess42.Containment(
+        containment_type=subprocess42.Containment.AUTO,
+        limit_processes=1,
+        limit_total_committed_memory=1024*1024*1024)
+    p = subprocess42.Popen(
+        cmd, stdout=subprocess42.PIPE, containment=containment)
+    itr = p.yield_any_line()
+    self.assertEqual(('stdout', 'hi'), next(itr))
+    p.kill()
+    p.wait()
+    if sys.platform != 'win32':
+      # signal.SIGKILL is not defined on Windows. Validate our assumption here.
+      self.assertEqual(9, signal.SIGKILL)
+    self.assertEqual(-9, p.returncode)
+
+  @staticmethod
+  def _cmd_large_memory():
+    # Used in test_large_memory and test_containment_auto_limit_memory.
+    return [
+      sys.executable, '-u', '-c', 'range(50*1024*1024); print("hi")',
+    ]
+
+  def test_large_memory(self):
+    # Just assert the process works normally.
+    cmd = self._cmd_large_memory()
+    self.assertEqual('hi', subprocess42.check_output(cmd).strip())
+
+  def test_containment_auto_limit_memory(self):
+    # Process allocates a lot of memory. It should fail due to quota.
+    cmd = self._cmd_large_memory()
+    containment = subprocess42.Containment(
+        containment_type=subprocess42.Containment.JOB_OBJECT,
+        # 20 MiB.
+        limit_total_committed_memory=20*1024*1024)
+    start = lambda: subprocess42.Popen(
+        cmd, stdout=subprocess42.PIPE, stderr=subprocess42.PIPE,
+        containment=containment)
+
+    if sys.platform == 'win32':
+      p = start()
+      out, err = p.communicate()
+      self.assertEqual(1, p.returncode)
+      self.assertEqual('', out)
+      self.assertIn('MemoryError', err)
+    else:
+      # JOB_OBJECT is not usable on non-Windows.
+      with self.assertRaises(NotImplementedError):
+        start()
+
   def test_call(self):
     cmd = [sys.executable, '-u', '-c', 'import sys; sys.exit(0)']
     self.assertEqual(0, subprocess42.call(cmd))
@@ -466,38 +609,44 @@ class Subprocess42Test(unittest.TestCase):
       self.assertEqual(0, proc.returncode)
 
   def test_recv_any_timeout_0(self):
+    self._test_recv_any_timeout(False, False)
+    self._test_recv_any_timeout(False, True)
+    self._test_recv_any_timeout(True, False)
+    self._test_recv_any_timeout(True, True)
+
+  def _test_recv_any_timeout(self, flush, unbuffered):
     # rec_any() is expected to timeout and return None with no data pending at
     # least once, due to the sleep of 'duration' and the use of timeout=0.
-    for flush, unbuffered in itertools.product([True, False], [True, False]):
-      for duration in (0.05, 0.1, 0.5, 2):
+    for duration in (0.05, 0.1, 0.5, 2):
+      got_none = False
+      actual = ''
+      try:
+        proc = get_output_sleep_proc(flush, unbuffered, duration)
         try:
-          actual = ''
-          proc = get_output_sleep_proc(flush, unbuffered, duration)
-          try:
-            got_none = False
-            while True:
-              p, data = proc.recv_any(timeout=0)
-              if not p:
-                if proc.poll() is None:
-                  got_none = True
-                  continue
-                break
+          while True:
+            p, data = proc.recv_any(timeout=0)
+            if p:
               self.assertEqual('stdout', p)
               self.assertTrue(data, (p, data))
               actual += data
-
-            self.assertEqual('A\nB\n', actual)
-            self.assertEqual(0, proc.returncode)
-            self.assertEqual(True, got_none)
+              continue
+            if proc.poll() is None:
+              got_none = True
+              continue
             break
-          finally:
-            proc.kill()
-            proc.wait()
-        except AssertionError:
-          if duration != 2:
-            print('Sleeping rocks. Trying slower.')
-            continue
-          raise
+
+          self.assertEqual('A\nB\n', actual)
+          self.assertEqual(0, proc.returncode)
+          self.assertEqual(True, got_none)
+          break
+        finally:
+          proc.kill()
+          proc.wait()
+      except AssertionError:
+        if duration != 2:
+          print('Sleeping rocks. Trying slower.')
+          continue
+        raise
 
   def test_yield_any_no_timeout(self):
     for duration in (0.05, 0.1, 0.5, 2):
@@ -558,18 +707,16 @@ class Subprocess42Test(unittest.TestCase):
     # rec_any() is expected to timeout and return None with no data pending at
     # least once, due to the sleep of 'duration' and the use of timeout=0.
     for duration in (0.05, 0.1, 0.5, 2):
+      got_none = False
+      expected = ['A\n', 'B\n']
+      called = []
+      def timeout():
+        # pylint: disable=cell-var-from-loop
+        called.append(0)
+        return 0
       try:
         proc = get_output_sleep_proc(True, True, duration)
         try:
-          expected = [
-            'A\n',
-            'B\n',
-          ]
-          got_none = False
-          called = []
-          def timeout():
-            called.append(0)
-            return 0
           for p, data in proc.yield_any(timeout=timeout):
             if not p:
               got_none = True
@@ -702,7 +849,7 @@ class Subprocess42Test(unittest.TestCase):
       ('stdout', 'incomplete last stdout'),
       ('stderr', 'incomplete last stderr'),
     ]
-    self.assertEquals(list(subprocess42.split(data)), [
+    self.assertEqual(list(subprocess42.split(data)), [
       ('stdout', 'o1'),
       ('stdout', 'o2'),
       ('stdout', 'o3'),
@@ -720,9 +867,6 @@ class Subprocess42Test(unittest.TestCase):
       ('stdout', 'incomplete last stdout'),
     ])
 
+
 if __name__ == '__main__':
-  if '-v' in sys.argv:
-    unittest.TestCase.maxDiff = None
-  logging.basicConfig(
-      level=logging.DEBUG if '-v' in sys.argv else logging.ERROR)
-  unittest.main()
+  test_env.main()

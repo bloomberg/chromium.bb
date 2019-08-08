@@ -52,7 +52,7 @@ class VulkanRenderer : public RendererBase {
         gpu::VulkanCommandPool* vulkan_command_pool,
         VkRenderPass vk_render_pass,
         gpu::VulkanSurface* vulkan_surface,
-        uint32_t vulkan_swap_chain_image_index);
+        VkImage image);
 
     VkImageView vk_image_view() const { return vk_image_view_; }
     VkFramebuffer vk_framebuffer() const { return vk_framebuffer_; }

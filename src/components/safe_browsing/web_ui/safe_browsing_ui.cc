@@ -30,6 +30,7 @@
 #include "components/safe_browsing/browser/referrer_chain_provider.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/features.h"
+#include "components/safe_browsing/proto/csd.pb.h"
 #include "components/safe_browsing/web_ui/constants.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/user_prefs/user_prefs.h"
@@ -198,6 +199,30 @@ void WebUIInfoSingleton::UnregisterWebUIInstance(SafeBrowsingUIHandler* webui) {
     ClearPGEvents();
     ClearPGPings();
     ClearLogMessages();
+  }
+}
+
+network::mojom::CookieManager* WebUIInfoSingleton::GetCookieManager() {
+  if (!cookie_manager_ptr_)
+    InitializeCookieManager();
+
+  return cookie_manager_ptr_.get();
+}
+
+void WebUIInfoSingleton::InitializeCookieManager() {
+  DCHECK(network_context_);
+
+  // Reset |cookie_manager_ptr_|, and only re-initialize it if we have a
+  // listening SafeBrowsingUIHandler.
+  cookie_manager_ptr_ = nullptr;
+
+  if (HasListener()) {
+    network_context_->GetNetworkContext()->GetCookieManager(
+        mojo::MakeRequest(&cookie_manager_ptr_));
+
+    // base::Unretained is safe because |this| owns |cookie_manager_ptr_|.
+    cookie_manager_ptr_.set_connection_error_handler(base::BindOnce(
+        &WebUIInfoSingleton::InitializeCookieManager, base::Unretained(this)));
   }
 }
 
@@ -878,6 +903,28 @@ base::Value SerializeChromeUserPopulation(
   return std::move(population_dict);
 }
 
+base::Value SerializeDomFeatures(const DomFeatures& dom_features) {
+  base::DictionaryValue dom_features_dict;
+  auto feature_map = std::make_unique<base::ListValue>();
+  for (const auto& feature : dom_features.feature_map()) {
+    auto feature_dict = std::make_unique<base::DictionaryValue>();
+    feature_dict->SetStringKey("name", feature.name());
+    feature_dict->SetDoubleKey("value", feature.value());
+    feature_map->Append(std::move(feature_dict));
+  }
+  dom_features_dict.SetList("feature_map", std::move(feature_map));
+
+  auto shingle_hashes = std::make_unique<base::ListValue>();
+  for (const auto& hash : dom_features.shingle_hashes()) {
+    shingle_hashes->AppendInteger(hash);
+  }
+  dom_features_dict.SetList("shingle_hashes", std::move(shingle_hashes));
+
+  dom_features_dict.SetInteger("model_version", dom_features.model_version());
+
+  return std::move(dom_features_dict);
+}
+
 std::string SerializePGPing(const LoginReputationClientRequest& request) {
   base::DictionaryValue request_dict;
 
@@ -921,6 +968,11 @@ std::string SerializePGPing(const LoginReputationClientRequest& request) {
   if (request.has_content_area_width()) {
     request_dict.SetKey("content_area_width",
                         base::Value(request.content_area_width()));
+  }
+
+  if (request.has_dom_features()) {
+    request_dict.SetKey("dom_features",
+                        SerializeDomFeatures(request.dom_features()));
   }
 
   std::string request_serialized;
@@ -991,7 +1043,6 @@ SafeBrowsingUI::SafeBrowsingUI(content::WebUI* web_ui)
   html_source->AddResourcePath("safe_browsing.css", IDR_SAFE_BROWSING_CSS);
   html_source->AddResourcePath("safe_browsing.js", IDR_SAFE_BROWSING_JS);
   html_source->SetDefaultResource(IDR_SAFE_BROWSING_HTML);
-  html_source->UseGzip();
 
   content::WebUIDataSource::Add(browser_context, html_source);
 }
@@ -999,8 +1050,7 @@ SafeBrowsingUI::SafeBrowsingUI(content::WebUI* web_ui)
 SafeBrowsingUI::~SafeBrowsingUI() {}
 
 SafeBrowsingUIHandler::SafeBrowsingUIHandler(content::BrowserContext* context)
-    : browser_context_(context) {
-}
+    : browser_context_(context) {}
 
 SafeBrowsingUIHandler::~SafeBrowsingUIHandler() {
   WebUIInfoSingleton::GetInstance()->UnregisterWebUIInstance(this);
@@ -1034,6 +1084,35 @@ void SafeBrowsingUIHandler::GetPrefs(const base::ListValue* args) {
   ResolveJavascriptCallback(base::Value(callback_id),
                             safe_browsing::GetSafeBrowsingPreferencesList(
                                 user_prefs::UserPrefs::Get(browser_context_)));
+}
+
+void SafeBrowsingUIHandler::GetCookie(const base::ListValue* args) {
+  std::string callback_id;
+  args->GetString(0, &callback_id);
+
+  WebUIInfoSingleton::GetInstance()->GetCookieManager()->GetAllCookies(
+      base::BindOnce(&SafeBrowsingUIHandler::OnGetCookie,
+                     weak_factory_.GetWeakPtr(), std::move(callback_id)));
+}
+
+void SafeBrowsingUIHandler::OnGetCookie(
+    const std::string& callback_id,
+    const std::vector<net::CanonicalCookie>& cookies) {
+  DCHECK_GE(1u, cookies.size());
+
+  std::string cookie = "No cookie";
+  double time = 0.0;
+  if (!cookies.empty()) {
+    cookie = cookies[0].Value();
+    time = cookies[0].CreationDate().ToJsTime();
+  }
+
+  base::Value response(base::Value::Type::LIST);
+  response.GetList().push_back(base::Value(cookie));
+  response.GetList().push_back(base::Value(time));
+
+  AllowJavascript();
+  ResolveJavascriptCallback(base::Value(callback_id), std::move(response));
 }
 
 void SafeBrowsingUIHandler::GetSavedPasswords(const base::ListValue* args) {
@@ -1311,6 +1390,9 @@ void SafeBrowsingUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getPrefs", base::BindRepeating(&SafeBrowsingUIHandler::GetPrefs,
                                       base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getCookie", base::BindRepeating(&SafeBrowsingUIHandler::GetCookie,
+                                       base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getSavedPasswords",
       base::BindRepeating(&SafeBrowsingUIHandler::GetSavedPasswords,

@@ -19,7 +19,7 @@
 namespace blink {
 
 void ObjectPainter::PaintOutline(const PaintInfo& paint_info,
-                                 const LayoutPoint& paint_offset) {
+                                 const PhysicalOffset& paint_offset) {
   DCHECK(ShouldPaintSelfOutline(paint_info.phase));
 
   const ComputedStyle& style_to_use = layout_object_.StyleRef();
@@ -35,7 +35,7 @@ void ObjectPainter::PaintOutline(const PaintInfo& paint_info,
     return;
   }
 
-  auto outline_rects = layout_object_.PhysicalOutlineRects(
+  auto outline_rects = layout_object_.OutlineRects(
       paint_offset,
       layout_object_.OutlineRectsShouldIncludeBlockVisualOverflow());
   if (outline_rects.IsEmpty())
@@ -63,7 +63,7 @@ void ObjectPainter::PaintInlineChildrenOutlines(const PaintInfo& paint_info) {
 }
 
 void ObjectPainter::AddPDFURLRectIfNeeded(const PaintInfo& paint_info,
-                                          const LayoutPoint& paint_offset) {
+                                          const PhysicalOffset& paint_offset) {
   DCHECK(paint_info.IsPrinting());
   if (layout_object_.IsElementContinuation() || !layout_object_.GetNode() ||
       !layout_object_.GetNode()->IsLink() ||
@@ -74,7 +74,7 @@ void ObjectPainter::AddPDFURLRectIfNeeded(const PaintInfo& paint_info,
   if (!url.IsValid())
     return;
 
-  auto outline_rects = layout_object_.PhysicalOutlineRects(
+  auto outline_rects = layout_object_.OutlineRects(
       paint_offset, NGOutlineType::kIncludeBlockVisualOverflow);
   IntRect rect = PixelSnappedIntRect(UnionRect(outline_rects));
   if (rect.IsEmpty())

@@ -52,34 +52,6 @@ const char kExtensionBlocklistHttpsUrlPrefix[] =
 
 const char kThumbsWhiteListedExtension[] = "khopmbdjffemhegeeobelklnbglcdgfh";
 
-// Mirrors version_info::Channel for histograms.
-enum ChromeChannelForHistogram {
-  CHANNEL_UNKNOWN,
-  CHANNEL_CANARY,
-  CHANNEL_DEV,
-  CHANNEL_BETA,
-  CHANNEL_STABLE,
-  NUM_CHANNELS_FOR_HISTOGRAM
-};
-
-ChromeChannelForHistogram GetChromeChannelForHistogram(
-    version_info::Channel channel) {
-  switch (channel) {
-    case version_info::Channel::UNKNOWN:
-      return CHANNEL_UNKNOWN;
-    case version_info::Channel::CANARY:
-      return CHANNEL_CANARY;
-    case version_info::Channel::DEV:
-      return CHANNEL_DEV;
-    case version_info::Channel::BETA:
-      return CHANNEL_BETA;
-    case version_info::Channel::STABLE:
-      return CHANNEL_STABLE;
-  }
-  NOTREACHED() << static_cast<int>(channel);
-  return CHANNEL_UNKNOWN;
-}
-
 }  // namespace
 
 ChromeExtensionsClient::ChromeExtensionsClient() {
@@ -197,19 +169,6 @@ bool ChromeExtensionsClient::IsScriptableURL(
   return true;
 }
 
-bool ChromeExtensionsClient::ShouldSuppressFatalErrors() const {
-  // Suppress fatal everywhere until the cause of bugs like http://crbug/471599
-  // are fixed. This would typically be:
-  // return GetCurrentChannel() > version_info::Channel::DEV;
-  return true;
-}
-
-void ChromeExtensionsClient::RecordDidSuppressFatalError() {
-  UMA_HISTOGRAM_ENUMERATION("Extensions.DidSuppressJavaScriptException",
-                            GetChromeChannelForHistogram(GetCurrentChannel()),
-                            NUM_CHANNELS_FOR_HISTOGRAM);
-}
-
 const GURL& ChromeExtensionsClient::GetWebstoreBaseURL() const {
   return webstore_base_url_;
 }
@@ -275,8 +234,9 @@ void ChromeExtensionsClient::AddOriginAccessPermissions(
   if (extensions::Manifest::IsComponentLocation(extension.location()) &&
       is_extension_active) {
     origin_patterns->push_back(network::mojom::CorsOriginPattern::New(
-        content::kChromeUIScheme, chrome::kChromeUIThemeHost,
-        network::mojom::CorsOriginAccessMatchMode::kDisallowSubdomains,
+        content::kChromeUIScheme, chrome::kChromeUIThemeHost, /*port=*/0,
+        network::mojom::CorsDomainMatchMode::kDisallowSubdomains,
+        network::mojom::CorsPortMatchMode::kAllowAnyPort,
         network::mojom::CorsOriginAccessMatchPriority::kMaxPriority));
   }
 
@@ -287,7 +247,8 @@ void ChromeExtensionsClient::AddOriginAccessPermissions(
                                  extensions::APIPermission::kManagement)) {
     origin_patterns->push_back(network::mojom::CorsOriginPattern::New(
         content::kChromeUIScheme, chrome::kChromeUIExtensionIconHost,
-        network::mojom::CorsOriginAccessMatchMode::kDisallowSubdomains,
+        /*port=*/0, network::mojom::CorsDomainMatchMode::kDisallowSubdomains,
+        network::mojom::CorsPortMatchMode::kAllowAnyPort,
         network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority));
   }
 }

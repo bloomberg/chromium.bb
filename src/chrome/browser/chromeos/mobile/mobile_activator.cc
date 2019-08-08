@@ -320,9 +320,10 @@ void MobileActivator::StartActivationOTA() {
   }
 
   const NetworkState* default_network = GetDefaultNetwork();
-  bool is_online_or_portal = default_network &&
+  bool is_online_or_portal =
+      default_network &&
       (default_network->connection_state() == shill::kStateOnline ||
-       default_network->connection_state() == shill::kStatePortal);
+       NetworkState::StateIsPortalled(default_network->connection_state()));
   if (!is_online_or_portal)
     ConnectNetwork(network);
 
@@ -454,8 +455,8 @@ void MobileActivator::ReconnectTimedOut() {
 void MobileActivator::ContinueConnecting() {
   const NetworkState* network = GetNetworkState(service_path_);
   if (network && network->IsConnectedState()) {
-    if (network->connection_state() == shill::kStatePortal &&
-        network->error() == shill::kErrorDNSLookupFailed) {
+    if (NetworkState::StateIsPortalled(network->connection_state()) &&
+        network->GetError() == shill::kErrorDNSLookupFailed) {
       // It isn't an error to be in a restricted pool, but if DNS doesn't work,
       // then we're not getting traffic through at all.  Just disconnect and
       // try again.
@@ -496,10 +497,11 @@ void MobileActivator::RefreshCellularNetworks() {
     // used to route default traffic. Also, note that we can access the
     // payment portal over a cellular network in the portalled state.
     const NetworkState* default_network = GetDefaultNetwork();
-    bool is_online_or_portal = default_network &&
+    bool is_online_or_portal =
+        default_network &&
         (default_network->connection_state() == shill::kStateOnline ||
          (default_network->type() == shill::kTypeCellular &&
-          default_network->connection_state() == shill::kStatePortal));
+          NetworkState::StateIsPortalled(default_network->connection_state())));
     if (waiting && is_online_or_portal) {
       ChangeState(network, post_reconnect_state_, ActivationError::kNone);
     } else if (!waiting && !is_online_or_portal) {
@@ -536,7 +538,7 @@ void MobileActivator::EvaluateCellularNetwork(const NetworkState* network) {
   LOG(WARNING) << "Cellular:\n  service state=" << network->connection_state()
                << "\n  ui=" << GetStateDescription(state_)
                << "\n  activation=" << network->activation_state()
-               << "\n  error=" << network->error()
+               << "\n  error=" << network->GetError()
                << "\n  setvice_path=" << network->path()
                << "\n  connected=" << network->IsConnectedState();
 
@@ -568,8 +570,8 @@ MobileActivator::PlanActivationState MobileActivator::PickNextState(
     const std::string& activation = network->activation_state();
     if ((activation == shill::kActivationStatePartiallyActivated ||
          activation == shill::kActivationStateActivating) &&
-        (network->error().empty() ||
-         network->error() == shill::kErrorOtaspFailed)) {
+        (network->GetError().empty() ||
+         network->GetError() == shill::kErrorOtaspFailed)) {
       NET_LOG_EVENT("Activation failure detected ", network->path());
       switch (state_) {
         case PLAN_ACTIVATION_OTASP:
@@ -612,7 +614,7 @@ MobileActivator::PlanActivationState MobileActivator::PickNextOfflineState(
       break;
     case PLAN_ACTIVATION_START:
       if (activation == shill::kActivationStateActivated) {
-        if (network->connection_state() == shill::kStatePortal)
+        if (NetworkState::StateIsPortalled(network->connection_state()))
           new_state = PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING;
         else
           new_state = PLAN_ACTIVATION_DONE;
@@ -689,7 +691,7 @@ MobileActivator::PlanActivationState MobileActivator::PickNextOnlineState(
       }
       break;
     case PLAN_ACTIVATION_RECONNECTING_PAYMENT:
-      if (network->connection_state() != shill::kStatePortal &&
+      if (!NetworkState::StateIsPortalled(network->connection_state()) &&
           activation == shill::kActivationStateActivated)
         // We're not portalled, and we're already activated, so we're online!
         new_state = PLAN_ACTIVATION_DONE;

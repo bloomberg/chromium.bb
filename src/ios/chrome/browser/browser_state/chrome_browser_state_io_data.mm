@@ -43,7 +43,7 @@
 #include "ios/chrome/browser/net/ios_chrome_network_delegate.h"
 #include "ios/chrome/browser/net/ios_chrome_url_request_context_getter.h"
 #import "ios/net/cookies/system_cookie_store.h"
-#include "ios/web/public/system_cookie_store_util.h"
+#include "ios/web/public/browsing_data/system_cookie_store_util.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "net/cert/cert_verifier.h"
@@ -57,7 +57,6 @@
 #include "net/proxy_resolution/pac_file_fetcher_impl.h"
 #include "net/proxy_resolution/proxy_config_service_fixed.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
-#include "net/ssl/channel_id_service.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/file_protocol_handler.h"
@@ -132,12 +131,6 @@ void ChromeBrowserStateIOData::AppRequestContext::SetCookieStore(
     std::unique_ptr<net::CookieStore> cookie_store) {
   cookie_store_ = std::move(cookie_store);
   set_cookie_store(cookie_store_.get());
-}
-
-void ChromeBrowserStateIOData::AppRequestContext::SetChannelIDService(
-    std::unique_ptr<net::ChannelIDService> channel_id_service) {
-  channel_id_service_ = std::move(channel_id_service);
-  set_channel_id_service(channel_id_service_.get());
 }
 
 void ChromeBrowserStateIOData::AppRequestContext::SetHttpNetworkSession(
@@ -466,11 +459,6 @@ void ChromeBrowserStateIOData::ShutdownOnUIThread(
   bool posted = web::WebThread::DeleteSoon(web::WebThread::IO, FROM_HERE, this);
   if (!posted)
     delete this;
-}
-
-void ChromeBrowserStateIOData::set_channel_id_service(
-    net::ChannelIDService* channel_id_service) const {
-  channel_id_service_.reset(channel_id_service);
 }
 
 std::unique_ptr<net::HttpNetworkSession>

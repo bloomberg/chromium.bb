@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/modules/webshare/share_data.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -28,17 +29,20 @@ using mojom::blink::ShareService;
 // A mock ShareService used to intercept calls to the mojo methods.
 class MockShareService : public ShareService {
  public:
-  MockShareService() : binding_(this) {}
+  MockShareService() : binding_(this), error_(mojom::ShareError::OK) {}
   ~MockShareService() override = default;
 
   void Bind(mojo::ScopedMessagePipeHandle handle) {
     binding_.Bind(mojom::blink::ShareServiceRequest(std::move(handle)));
   }
 
+  void set_error(mojom::ShareError value) { error_ = value; }
+
   const WTF::String& title() const { return title_; }
   const WTF::String& text() const { return text_; }
   const KURL& url() const { return url_; }
   const WTF::Vector<SharedFilePtr>& files() const { return files_; }
+  mojom::ShareError error() const { return error_; }
 
  private:
   void Share(const WTF::String& title,
@@ -56,7 +60,7 @@ class MockShareService : public ShareService {
       files_.push_back(entry->Clone());
     }
 
-    std::move(callback).Run(mojom::ShareError::OK);
+    std::move(callback).Run(error_);
   }
 
   mojo::Binding<ShareService> binding_;
@@ -64,6 +68,7 @@ class MockShareService : public ShareService {
   WTF::String text_;
   KURL url_;
   WTF::Vector<SharedFilePtr> files_;
+  mojom::ShareError error_;
 };
 
 class NavigatorShareTest : public testing::Test {
@@ -90,13 +95,13 @@ class NavigatorShareTest : public testing::Test {
     ScriptPromise promise =
         NavigatorShare::share(GetScriptState(), *navigator, &share_data);
     test::RunPendingTasks();
-    EXPECT_EQ(v8::Promise::kFulfilled,
+    EXPECT_EQ(mock_share_service_.error() == mojom::ShareError::OK
+                  ? v8::Promise::kFulfilled
+                  : v8::Promise::kRejected,
               promise.V8Value().As<v8::Promise>()->State());
   }
 
-  const MockShareService& mock_share_service() const {
-    return mock_share_service_;
-  }
+  MockShareService& mock_share_service() { return mock_share_service_; }
 
  protected:
   void SetUp() override {
@@ -135,6 +140,21 @@ TEST_F(NavigatorShareTest, ShareText) {
   EXPECT_EQ(mock_share_service().text(), message);
   EXPECT_EQ(mock_share_service().url(), KURL(url));
   EXPECT_EQ(mock_share_service().files().size(), 0U);
+  EXPECT_TRUE(
+      GetDocument().IsUseCounted(WebFeature::kWebShareSuccessfulWithoutFiles));
+}
+
+File* CreateSampleFile(ExecutionContext* context,
+                       const String& file_name,
+                       const String& content_type,
+                       const String& file_contents) {
+  HeapVector<ArrayBufferOrArrayBufferViewOrBlobOrUSVString> blob_parts;
+  blob_parts.push_back(ArrayBufferOrArrayBufferViewOrBlobOrUSVString());
+  blob_parts.back().SetUSVString(file_contents);
+
+  FilePropertyBag file_property_bag;
+  file_property_bag.setType(content_type);
+  return File::Create(context, blob_parts, file_name, &file_property_bag);
 }
 
 TEST_F(NavigatorShareTest, ShareFile) {
@@ -142,16 +162,9 @@ TEST_F(NavigatorShareTest, ShareFile) {
   const String content_type = "image/svg+xml";
   const String file_contents = "<svg></svg>";
 
-  HeapVector<ArrayBufferOrArrayBufferViewOrBlobOrUSVString> blob_parts;
-  blob_parts.push_back(ArrayBufferOrArrayBufferViewOrBlobOrUSVString());
-  blob_parts.back().SetUSVString(file_contents);
-
-  FilePropertyBag file_property_bag;
-  file_property_bag.setType(content_type);
-
   HeapVector<Member<File>> files;
-  files.push_back(File::Create(ExecutionContext::From(GetScriptState()),
-                               blob_parts, file_name, &file_property_bag));
+  files.push_back(CreateSampleFile(ExecutionContext::From(GetScriptState()),
+                                   file_name, content_type, file_contents));
 
   ShareData share_data;
   share_data.setFiles(files);
@@ -162,6 +175,37 @@ TEST_F(NavigatorShareTest, ShareFile) {
   EXPECT_EQ(mock_share_service().files()[0]->blob->GetType(), content_type);
   EXPECT_EQ(mock_share_service().files()[0]->blob->size(),
             file_contents.length());
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kWebShareSuccessfulContainingFiles));
+}
+
+TEST_F(NavigatorShareTest, CancelShare) {
+  const String title = "Subject";
+  ShareData share_data;
+  share_data.setTitle(title);
+
+  mock_share_service().set_error(mojom::blink::ShareError::CANCELED);
+  Share(share_data);
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kWebShareUnsuccessfulWithoutFiles));
+}
+
+TEST_F(NavigatorShareTest, CancelShareWithFile) {
+  const String file_name = "counts.csv";
+  const String content_type = "text/csv";
+  const String file_contents = "1,2,3";
+
+  HeapVector<Member<File>> files;
+  files.push_back(CreateSampleFile(ExecutionContext::From(GetScriptState()),
+                                   file_name, content_type, file_contents));
+
+  ShareData share_data;
+  share_data.setFiles(files);
+
+  mock_share_service().set_error(mojom::blink::ShareError::CANCELED);
+  Share(share_data);
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kWebShareUnsuccessfulContainingFiles));
 }
 
 }  // namespace blink

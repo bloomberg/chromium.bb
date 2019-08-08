@@ -26,4 +26,3 @@ jboolean JNI_HttpUtil_IsAllowedHeader(
 }
 
 }  // namespace net
-

@@ -30,23 +30,6 @@ namespace chromeos {
 
 namespace {
 
-// Gets the file path from which easy unlock app should be loaded.
-base::FilePath GetEasyUnlockAppPath() {
-#if defined(GOOGLE_CHROME_BUILD)
-#ifndef NDEBUG
-  // Only allow app path override switch for debug build.
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEasyUnlockAppPath))
-    return command_line->GetSwitchValuePath(switches::kEasyUnlockAppPath);
-#endif  // !defined(NDEBUG)
-
-  return base::FilePath("/usr/share/chromeos-assets/easy_unlock");
-#endif  // defined(GOOGLE_CHROME_BUILD)
-
-  return base::FilePath();
-}
-
 bool IsFeatureAllowed(content::BrowserContext* context) {
   return multidevice_setup::IsFeatureAllowed(
       multidevice_setup::mojom::Feature::kSmartLock,
@@ -112,10 +95,6 @@ KeyedService* EasyUnlockServiceFactory::BuildServiceInstanceFor(
         multidevice_setup::MultiDeviceSetupClientFactory::GetForProfile(
             Profile::FromBrowserContext(context)));
   }
-
-  const base::FilePath app_path = app_path_for_testing_.empty()
-                                      ? GetEasyUnlockAppPath()
-                                      : app_path_for_testing_;
 
   service->Initialize();
   return service;

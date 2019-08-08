@@ -217,7 +217,7 @@ class WebTestDelegate {
   // Fetch the manifest for a given WebView from the given url.
   virtual void FetchManifest(
       blink::WebView* view,
-      base::OnceCallback<void(const GURL&, const blink::Manifest&)>
+      base::OnceCallback<void(const blink::WebURL&, const blink::Manifest&)>
           callback) = 0;
 
   // Sends a message to the WebTestPermissionManager in order for it to

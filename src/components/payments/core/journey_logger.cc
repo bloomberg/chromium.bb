@@ -5,8 +5,13 @@
 #include "components/payments/core/journey_logger.h"
 
 #include <algorithm>
+#include <vector>
 
+#include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/strings/stringprintf.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
@@ -53,6 +58,19 @@ std::string GetHistogramNameSuffix(
   return name_suffix;
 }
 
+// Returns true when exactly one boolean value in the vector is true.
+bool ValidateExclusiveBitVector(const std::vector<bool>& bit_vector) {
+  bool seen_true_bit = false;
+  for (auto bit : bit_vector) {
+    if (!bit)
+      continue;
+    if (seen_true_bit)
+      return false;
+    seen_true_bit = true;
+  }
+  return seen_true_bit;
+}
+
 }  // namespace
 
 JourneyLogger::JourneyLogger(bool is_incognito, ukm::SourceId source_id)
@@ -61,8 +79,12 @@ JourneyLogger::JourneyLogger(bool is_incognito, ukm::SourceId source_id)
       source_id_(source_id) {}
 
 JourneyLogger::~JourneyLogger() {
-  if (WasPaymentRequestTriggered())
-    DCHECK(has_recorded_);
+  // has_recorded_ is false in cases that the page gets closed. To see more
+  // details about this case please check sample crash link from
+  // dumpWithoutCrash:
+  // https://crash.corp.google.com/browse?q=reportid=%27c1268a7104b25de2%27
+  UMA_HISTOGRAM_BOOLEAN("PaymentRequest.JourneyLoggerHasRecorded",
+                        has_recorded_);
 }
 
 void JourneyLogger::IncrementSelectionAdds(Section section) {
@@ -143,15 +165,15 @@ void JourneyLogger::SetRequestedPaymentMethodTypes(
 }
 
 void JourneyLogger::SetCompleted() {
+  DCHECK(WasPaymentRequestTriggered());
   RecordJourneyStatsHistograms(COMPLETION_STATUS_COMPLETED);
 }
 
 void JourneyLogger::SetAborted(AbortReason reason) {
-  // Don't log abort reasons if the Payment Request was not triggered.
-  if (WasPaymentRequestTriggered()) {
-    base::UmaHistogramEnumeration("PaymentRequest.CheckoutFunnel.Aborted",
-                                  reason, ABORT_REASON_MAX);
-  }
+  // Always record the first abort reason regardless of whether the
+  // PaymentRequest.show() was triggered or not.
+  base::UmaHistogramEnumeration("PaymentRequest.CheckoutFunnel.Aborted", reason,
+                                ABORT_REASON_MAX);
 
   if (reason == ABORT_REASON_ABORTED_BY_USER ||
       reason == ABORT_REASON_USER_NAVIGATION)
@@ -161,13 +183,24 @@ void JourneyLogger::SetAborted(AbortReason reason) {
 }
 
 void JourneyLogger::SetNotShown(NotShownReason reason) {
+  DCHECK(!WasPaymentRequestTriggered());
+  RecordJourneyStatsHistograms(COMPLETION_STATUS_COULD_NOT_SHOW);
   base::UmaHistogramEnumeration("PaymentRequest.CheckoutFunnel.NoShow", reason,
                                 NOT_SHOWN_REASON_MAX);
 }
 
 void JourneyLogger::RecordJourneyStatsHistograms(
     CompletionStatus completion_status) {
-  DCHECK(!has_recorded_);
+  if (has_recorded_) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "PaymentRequest.JourneyLoggerHasRecordedMultipleTimes", true);
+    static base::debug::CrashKeyString* journey_logger_multiple_record =
+        base::debug::AllocateCrashKeyString("journey_logger_multiple_record",
+                                            base::debug::CrashKeySize::Size32);
+    base::debug::SetCrashKeyString(journey_logger_multiple_record,
+                                   base::StringPrintf("%d", events_));
+    base::debug::DumpWithoutCrashing();
+  }
   has_recorded_ = true;
 
   RecordEventsMetric(completion_status);
@@ -217,6 +250,9 @@ void JourneyLogger::RecordEventsMetric(CompletionStatus completion_status) {
     case COMPLETION_STATUS_OTHER_ABORTED:
       events_ |= EVENT_OTHER_ABORTED;
       break;
+    case COMPLETION_STATUS_COULD_NOT_SHOW:
+      events_ |= EVENT_COULD_NOT_SHOW;
+      break;
     default:
       NOTREACHED();
   }
@@ -244,6 +280,7 @@ void JourneyLogger::RecordEventsMetric(CompletionStatus completion_status) {
     events_ |= EVENT_HAD_INITIAL_FORM_OF_PAYMENT;
 
   // Record the events in UMA.
+  ValidateEventBits();
   base::UmaHistogramSparse("PaymentRequest.Events", events_);
 
   if (source_id_ == ukm::kInvalidSourceId)
@@ -254,6 +291,65 @@ void JourneyLogger::RecordEventsMetric(CompletionStatus completion_status) {
       .SetCompletionStatus(completion_status)
       .SetEvents(events_)
       .Record(ukm::UkmRecorder::Get());
+}
+
+void JourneyLogger::ValidateEventBits() const {
+  std::vector<bool> bit_vector;
+
+  // Validate completion status.
+  bit_vector.push_back(events_ & EVENT_COMPLETED);
+  bit_vector.push_back(events_ & EVENT_OTHER_ABORTED);
+  bit_vector.push_back(events_ & EVENT_USER_ABORTED);
+  bit_vector.push_back(events_ & EVENT_COULD_NOT_SHOW);
+  DCHECK(ValidateExclusiveBitVector(bit_vector));
+  bit_vector.clear();
+  if (events_ & EVENT_COMPLETED)
+    DCHECK(events_ & EVENT_PAY_CLICKED);
+
+  // Validate the user selected method.
+  if (events_ & EVENT_COMPLETED) {
+    bit_vector.push_back(events_ & EVENT_SELECTED_CREDIT_CARD);
+    bit_vector.push_back(events_ & EVENT_SELECTED_GOOGLE);
+    bit_vector.push_back(events_ & EVENT_SELECTED_OTHER);
+    DCHECK(ValidateExclusiveBitVector(bit_vector));
+    bit_vector.clear();
+  }
+
+  // Selected method should be requested.
+  if (events_ & EVENT_SELECTED_CREDIT_CARD) {
+    DCHECK(events_ & EVENT_REQUEST_METHOD_BASIC_CARD);
+  } else if (events_ & EVENT_SELECTED_GOOGLE) {
+    DCHECK(events_ & EVENT_REQUEST_METHOD_GOOGLE);
+  } else if (events_ & EVENT_SELECTED_OTHER) {
+    // It is possible that a service worker based app responds to "basic-card"
+    // request.
+    DCHECK(events_ & EVENT_REQUEST_METHOD_OTHER ||
+           events_ & EVENT_REQUEST_METHOD_BASIC_CARD);
+  }
+
+  // Validate UI SHOWN status.
+  if (events_ & EVENT_COMPLETED) {
+    bit_vector.push_back(events_ & EVENT_SHOWN);
+    bit_vector.push_back(events_ & EVENT_SKIPPED_SHOW);
+    DCHECK(ValidateExclusiveBitVector(bit_vector));
+    bit_vector.clear();
+  }
+
+  // Validate skipped UI show.
+  if (events_ & EVENT_SKIPPED_SHOW) {
+    // Built in autofill payment handler for basic card should not skip UI show.
+    DCHECK(!(events_ & EVENT_SELECTED_CREDIT_CARD));
+    // Payment sheet should not get skipped when any of the following info is
+    // required.
+    DCHECK(!(events_ & EVENT_REQUEST_SHIPPING));
+    DCHECK(!(events_ & EVENT_REQUEST_PAYER_NAME));
+    DCHECK(!(events_ & EVENT_REQUEST_PAYER_EMAIL));
+    DCHECK(!(events_ & EVENT_REQUEST_PAYER_PHONE));
+  }
+
+  // Check that the two bits are not set at the same time.
+  DCHECK(!(events_ & EVENT_CAN_MAKE_PAYMENT_TRUE) ||
+         !(events_ & EVENT_CAN_MAKE_PAYMENT_FALSE));
 }
 
 bool JourneyLogger::WasPaymentRequestTriggered() {

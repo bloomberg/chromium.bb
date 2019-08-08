@@ -263,7 +263,7 @@ LayoutRect LayoutSVGRoot::ComputeContentsVisualOverflow() const {
 }
 
 void LayoutSVGRoot::PaintReplaced(const PaintInfo& paint_info,
-                                  const LayoutPoint& paint_offset) const {
+                                  const PhysicalOffset& paint_offset) const {
   SVGRootPainter(*this).PaintReplaced(paint_info, paint_offset);
 }
 
@@ -447,8 +447,7 @@ AffineTransform LayoutSVGRoot::LocalToSVGParentTransform() const {
 void LayoutSVGRoot::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
                                        TransformState& transform_state,
                                        MapCoordinatesFlags mode) const {
-  LayoutReplaced::MapLocalToAncestor(ancestor, transform_state,
-                                     mode | kApplyContainerFlip);
+  LayoutReplaced::MapLocalToAncestor(ancestor, transform_state, mode);
 }
 
 const LayoutObject* LayoutSVGRoot::PushMappingToContainer(
@@ -479,7 +478,8 @@ bool LayoutSVGRoot::NodeAtPoint(HitTestResult& result,
   // supported by nodeAtFloatPoint.
   bool skip_children = (result.GetHitTestRequest().GetStopNode() == this);
   if (!skip_children &&
-      (local_border_box_location.Intersects(PhysicalContentBoxRect()) ||
+      (local_border_box_location.Intersects(
+           PhysicalContentBoxRect().ToLayoutRect()) ||
        (!ShouldApplyViewportClip() &&
         local_border_box_location.Intersects(VisualOverflowRect())))) {
     TransformedHitTestLocation local_location(local_border_box_location,

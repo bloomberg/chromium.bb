@@ -86,9 +86,9 @@ class VIEWS_EXPORT Label : public View,
 
   // Enables or disables auto-color-readability (enabled by default).  If this
   // is enabled, then calls to set any foreground or background color will
-  // trigger an automatic mapper that uses
-  // color_utils::GetColorWithMinimumContrast() to ensure that the foreground
-  // colors are readable over the background color.
+  // trigger an automatic mapper that uses color_utils::BlendForMinContrast()
+  // to ensure that the foreground colors are readable over the background
+  // color.
   void SetAutoColorReadabilityEnabled(bool enabled);
 
   // Sets the color.  This will automatically force the color to be readable
@@ -144,6 +144,10 @@ class VIEWS_EXPORT Label : public View,
   // elide the rest (currently only ELIDE_TAIL supported). See gfx::RenderText.
   int max_lines() const { return max_lines_; }
   void SetMaxLines(int max_lines);
+
+  // Returns the number of lines required to render all text. The actual number
+  // of rendered lines might be limited by |max_lines_| which elides the rest.
+  size_t GetRequiredLines() const;
 
   // Get or set if the label text should be obscured before rendering (e.g.
   // should "Password!" display as "*********"); default is false.
@@ -252,7 +256,7 @@ class VIEWS_EXPORT Label : public View,
   void OnPaint(gfx::Canvas* canvas) override;
   void OnDeviceScaleFactorChanged(float old_device_scale_factor,
                                   float new_device_scale_factor) override;
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  void OnThemeChanged() override;
   gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
   void OnFocus() override;
   void OnBlur() override;
@@ -332,7 +336,7 @@ class VIEWS_EXPORT Label : public View,
   void ApplyTextColors() const;
 
   // Updates any colors that have not been explicitly set from the theme.
-  void UpdateColorsFromTheme(const ui::NativeTheme* theme);
+  void UpdateColorsFromTheme();
 
   bool ShouldShowDefaultTooltip() const;
 

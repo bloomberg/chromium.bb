@@ -257,6 +257,7 @@ rtc_source_set("video_coding_utility") {
     "../../rtc_base:rtc_base_approved",
     "../../rtc_base:rtc_numerics",
     "../../rtc_base:rtc_task_queue",
+    "../../rtc_base/experiments:quality_scaler_settings",
     "../../rtc_base/experiments:quality_scaling_experiment",
     "../../rtc_base/experiments:rate_control_settings",
     "../../rtc_base/synchronization:sequence_checker",
@@ -273,6 +274,12 @@ rtc_static_library("webrtc_h264") {
   visibility = [ "*" ]
   sources = [
     "codecs/h264/h264.cc",
+    "codecs/h264/h264_color_space.cc",
+    "codecs/h264/h264_color_space.h",
+    "codecs/h264/h264_decoder_impl.cc",
+    "codecs/h264/h264_decoder_impl.h",
+    "codecs/h264/h264_encoder_impl.cc",
+    "codecs/h264/h264_encoder_impl.h",
     "codecs/h264/include/h264.h",
   ]
 
@@ -284,6 +291,7 @@ rtc_static_library("webrtc_h264") {
     "../../api/video:video_frame_i010",
     "../../api/video:video_frame_i420",
     "../../api/video_codecs:video_codecs_api",
+    "../../common_video",
     "../../media:rtc_h264_profile_id",
     "../../media:rtc_media_base",
     "../../rtc_base",
@@ -298,21 +306,10 @@ rtc_static_library("webrtc_h264") {
   ]
 
   if (rtc_use_h264) {
-    assert(!(is_win && !is_clang), "See: bugs.webrtc.org/9213#c13.")
-    sources += [
-      "codecs/h264/h264_color_space.cc",
-      "codecs/h264/h264_color_space.h",
-      "codecs/h264/h264_decoder_impl.cc",
-      "codecs/h264/h264_decoder_impl.h",
-      "codecs/h264/h264_encoder_impl.cc",
-      "codecs/h264/h264_encoder_impl.h",
-    ]
     deps += [
-      "../../common_video",
       "//third_party/ffmpeg",
       "//third_party/openh264:encoder",
     ]
-
     if (!build_with_mozilla) {
       deps += [ "../../media:rtc_media_base" ]
     }
@@ -780,6 +777,7 @@ if (rtc_include_tests) {
       "decoding_state_unittest.cc",
       "fec_controller_unittest.cc",
       "frame_buffer2_unittest.cc",
+      "generic_decoder_unittest.cc",
       "h264_sprop_parameter_sets_unittest.cc",
       "h264_sps_pps_tracker_unittest.cc",
       "histogram_unittest.cc",
@@ -839,6 +837,7 @@ if (rtc_include_tests) {
       "../../api:scoped_refptr",
       "../../api:simulcast_test_fixture_api",
       "../../api:videocodec_test_fixture_api",
+      "../../api/task_queue:default_task_queue_factory",
       "../../api/test/video:function_video_factory",
       "../../api/video:builtin_video_bitrate_allocator_factory",
       "../../api/video:video_bitrate_allocation",
@@ -849,6 +848,7 @@ if (rtc_include_tests) {
       "../../api/video_codecs:video_codecs_api",
       "../../api/video_codecs:vp8_temporal_layers_factory",
       "../../common_video",
+      "../../common_video/test:utilities",
       "../../media:rtc_media_base",
       "../../rtc_base",
       "../../rtc_base:checks",
@@ -862,6 +862,7 @@ if (rtc_include_tests) {
       "../../system_wrappers:event_wrapper",
       "../../system_wrappers:field_trial",
       "../../system_wrappers:metrics",
+      "../../test:fake_video_codecs",
       "../../test:field_trial",
       "../../test:fileutils",
       "../../test:test_common",

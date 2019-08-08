@@ -165,7 +165,7 @@ static NSDictionary<NSString*, NSNumber*>* const kOfflineReasonL10nId = @{
 
   _imageView.image = RemotingTheme.desktopIcon;
 
-  if ([_hostInfo.status isEqualToString:@"ONLINE"]) {
+  if (_hostInfo.isOnline) {
     _imageView.backgroundColor = RemotingTheme.hostOnlineColor;
     _statusLabel.text = l10n_util::GetNSString(IDS_HOST_ONLINE_SUBTITLE);
   } else {

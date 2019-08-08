@@ -58,10 +58,10 @@ class CORE_EXPORT NGBreakToken : public RefCounted<NGBreakToken> {
         box_, static_cast<NGLayoutInputNode::NGLayoutInputNodeType>(type_));
   }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   virtual String ToString() const;
   void ShowBreakTokenTree() const;
-#endif  // NDEBUG
+#endif
 
  protected:
   NGBreakToken(NGBreakTokenType type,

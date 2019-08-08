@@ -176,6 +176,10 @@ class PersistentBase {
     persistent_node_.ClearWithLockHeld();
   }
 
+ protected:
+  NO_SANITIZE_ADDRESS
+  bool IsNotNull() const { return raw_; }
+
  private:
   NO_SANITIZE_ADDRESS
   void Assign(T* ptr) {
@@ -420,6 +424,9 @@ class WeakPersistent
     Parent::operator=(other);
     return *this;
   }
+
+  NO_SANITIZE_ADDRESS
+  bool IsClearedUnsafe() const { return this->IsNotNull(); }
 };
 
 // Unlike Persistent, we can destruct a CrossThreadPersistent in a thread
@@ -537,14 +544,6 @@ class CrossThreadWeakPersistent
 
 template <typename T>
 Persistent<T> WrapPersistent(T* value) {
-  // There is no technical need to require a complete type here. However, types
-  // that support wrapper-tracing are not suitable with WrapPersistent because
-  // Persistent<T> does not perform wrapper-tracing. We'd like to delete such
-  // overloads for sure. Thus, we require a complete type here so that it makes
-  // sure that an appropriate header is included and such an overload is
-  // deleted.
-  static_assert(sizeof(T), "T must be fully defined");
-
   return Persistent<T>(value);
 }
 

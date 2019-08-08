@@ -140,10 +140,6 @@ class TabManagerTest : public testing::ChromeTestHarnessWithLocalDB {
 
   std::unique_ptr<WebContents> CreateWebContents() {
     std::unique_ptr<WebContents> web_contents = CreateTestWebContents();
-    // TODO(siggi): This is an abomination, remove this once the
-    //     PageSignalGenerator is folded into the performance manager.
-    performance_manager::PerformanceManagerTabHelper::CreateForWebContents(
-        web_contents.get());
     ResourceCoordinatorTabHelper::CreateForWebContents(web_contents.get());
     // Commit an URL to allow discarding.
     content::WebContentsTester::For(web_contents.get())
@@ -414,8 +410,10 @@ TEST_F(TabManagerTest, IsInternalPage) {
       TabManager::IsInternalPage(GURL(chrome::kChromeUINetInternalsURL)));
 
   // Prefix matches are included.
-  EXPECT_TRUE(
-      TabManager::IsInternalPage(GURL("chrome://settings/fakeSetting")));
+  GURL::Replacements replace_fake_path;
+  replace_fake_path.SetPathStr("fakeSetting");
+  EXPECT_TRUE(TabManager::IsInternalPage(
+      GURL(chrome::kChromeUISettingsURL).ReplaceComponents(replace_fake_path)));
 }
 
 // Data race on Linux. http://crbug.com/787842
@@ -518,6 +516,7 @@ TEST_F(TabManagerTest, OnTabIsLoaded) {
       ->DidStartNavigation(nav_handle1_.get());
 
   EXPECT_TRUE(tab_manager_->IsTabLoadingForTest(contents1_.get()));
+  EXPECT_FALSE(ResourceCoordinatorTabHelper::IsLoaded(contents1_.get()));
   EXPECT_FALSE(tab_manager_->IsTabLoadingForTest(contents2_.get()));
   EXPECT_TRUE(tab_manager_->IsNavigationDelayedForTest(nav_handle2_.get()));
 
@@ -528,6 +527,7 @@ TEST_F(TabManagerTest, OnTabIsLoaded) {
   // After tab 1 has finished loading, TabManager starts loading the next tab.
   EXPECT_FALSE(tab_manager_->IsTabLoadingForTest(contents1_.get()));
   EXPECT_TRUE(tab_manager_->IsTabLoadingForTest(contents2_.get()));
+  EXPECT_TRUE(ResourceCoordinatorTabHelper::IsLoaded(contents1_.get()));
   EXPECT_FALSE(tab_manager_->IsNavigationDelayedForTest(nav_handle2_.get()));
 }
 
@@ -688,14 +688,14 @@ TEST_F(TabManagerTest, BackgroundTabLoadingMode) {
 }
 
 TEST_F(TabManagerTest, BackgroundTabLoadingSlots) {
-  TabManager tab_manager1(GetPageSignalReceiver(), TabLoadTracker::Get());
+  TabManager tab_manager1(TabLoadTracker::Get());
   MaybeThrottleNavigations(&tab_manager1, 1);
   EXPECT_FALSE(tab_manager1.IsNavigationDelayedForTest(nav_handle1_.get()));
   EXPECT_TRUE(tab_manager1.IsNavigationDelayedForTest(nav_handle2_.get()));
   EXPECT_TRUE(tab_manager1.IsNavigationDelayedForTest(nav_handle3_.get()));
   ResetState();
 
-  TabManager tab_manager2(GetPageSignalReceiver(), TabLoadTracker::Get());
+  TabManager tab_manager2(TabLoadTracker::Get());
   tab_manager2.SetLoadingSlotsForTest(2);
   MaybeThrottleNavigations(&tab_manager2, 2);
   EXPECT_FALSE(tab_manager2.IsNavigationDelayedForTest(nav_handle1_.get()));
@@ -703,7 +703,7 @@ TEST_F(TabManagerTest, BackgroundTabLoadingSlots) {
   EXPECT_TRUE(tab_manager2.IsNavigationDelayedForTest(nav_handle3_.get()));
   ResetState();
 
-  TabManager tab_manager3(GetPageSignalReceiver(), TabLoadTracker::Get());
+  TabManager tab_manager3(TabLoadTracker::Get());
   tab_manager3.SetLoadingSlotsForTest(3);
   MaybeThrottleNavigations(&tab_manager3, 3);
   EXPECT_FALSE(tab_manager3.IsNavigationDelayedForTest(nav_handle1_.get()));
@@ -1048,6 +1048,32 @@ TEST_F(TabManagerTest, TrackingNumberOfLoadedLifecycleUnits) {
 
   // Closing discarded tabs shouldn't affect |num_loaded_lifecycle_units_|.
   EXPECT_EQ(tab_manager_->num_loaded_lifecycle_units_, 0);
+}
+
+TEST_F(TabManagerTest, GetSortedLifecycleUnits) {
+  auto window = std::make_unique<TestBrowserWindow>();
+  Browser::CreateParams params(profile(), true);
+  params.type = Browser::TYPE_TABBED;
+  params.window = window.get();
+  auto browser = std::make_unique<Browser>(params);
+  TabStripModel* tab_strip = browser->tab_strip_model();
+
+  const int num_of_tabs_to_test = 20;
+  for (int i = 0; i < num_of_tabs_to_test; ++i) {
+    task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(10));
+    tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/true);
+  }
+
+  LifecycleUnitVector lifecycle_units = tab_manager_->GetSortedLifecycleUnits();
+  EXPECT_EQ(lifecycle_units.size(), static_cast<size_t>(num_of_tabs_to_test));
+
+  // Check that the lifecycle_units are sorted with ascending importance.
+  for (int i = 0; i < num_of_tabs_to_test - 1; ++i) {
+    EXPECT_TRUE(lifecycle_units[i]->GetSortKey() <
+                lifecycle_units[i + 1]->GetSortKey());
+  }
+
+  tab_strip->CloseAllTabs();
 }
 
 TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
@@ -1406,12 +1432,24 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
   EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(0)));
   EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
   EXPECT_TRUE(IsTabFrozen(tab_strip->GetWebContentsAt(2)));
+  EXPECT_FALSE(
+      ResourceCoordinatorTabHelper::IsFrozen(tab_strip->GetWebContentsAt(0)));
+  EXPECT_FALSE(
+      ResourceCoordinatorTabHelper::IsFrozen(tab_strip->GetWebContentsAt(1)));
+  EXPECT_TRUE(
+      ResourceCoordinatorTabHelper::IsFrozen(tab_strip->GetWebContentsAt(2)));
 
   // After half the freeze timeout, the 1st tab should be frozen.
   task_runner_->FastForwardBy(kFreezeTimeout / 2);
   EXPECT_TRUE(IsTabFrozen(tab_strip->GetWebContentsAt(0)));
   EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
   EXPECT_TRUE(IsTabFrozen(tab_strip->GetWebContentsAt(2)));
+  EXPECT_TRUE(
+      ResourceCoordinatorTabHelper::IsFrozen(tab_strip->GetWebContentsAt(0)));
+  EXPECT_FALSE(
+      ResourceCoordinatorTabHelper::IsFrozen(tab_strip->GetWebContentsAt(1)));
+  EXPECT_TRUE(
+      ResourceCoordinatorTabHelper::IsFrozen(tab_strip->GetWebContentsAt(2)));
 
   tab_strip->CloseAllTabs();
 }

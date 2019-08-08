@@ -1121,6 +1121,8 @@ void NativeViewGLSurfaceEGL::SetEnableSwapTimestamps() {
   // called twice.
   supported_egl_timestamps_.clear();
   supported_event_names_.clear();
+  presentation_feedback_index_ = -1;
+  composition_start_index_ = -1;
 
   eglSurfaceAttrib(GetDisplay(), surface_, EGL_TIMESTAMPS_ANDROID, EGL_TRUE);
 
@@ -1162,6 +1164,8 @@ void NativeViewGLSurfaceEGL::SetEnableSwapTimestamps() {
         // all_timestamps.
         presentation_feedback_index_ =
             static_cast<int>(supported_egl_timestamps_.size());
+        composition_start_index_ =
+            static_cast<int>(supported_egl_timestamps_.size());
         presentation_flags_ = 0;
         break;
       case EGL_DISPLAY_PRESENT_TIME_ANDROID:
@@ -1177,12 +1181,10 @@ void NativeViewGLSurfaceEGL::SetEnableSwapTimestamps() {
     supported_egl_timestamps_.push_back(ts.egl_name);
     supported_event_names_.push_back(ts.name);
   }
+  DCHECK_GE(presentation_feedback_index_, 0);
+  DCHECK_GE(composition_start_index_, 0);
 
   use_egl_timestamps_ = !supported_egl_timestamps_.empty();
-}
-
-bool NativeViewGLSurfaceEGL::SupportsPresentationCallback() {
-  return true;
 }
 
 bool NativeViewGLSurfaceEGL::InitializeNativeWindow() {
@@ -1495,6 +1497,7 @@ bool NativeViewGLSurfaceEGL::GetFrameTimestampInfoIfAvailable(
     return true;
   }
   DCHECK_GE(presentation_feedback_index_, 0);
+  DCHECK_GE(composition_start_index_, 0);
 
   // Get the presentation time.
   EGLnsecsANDROID presentation_time_ns =
@@ -1505,7 +1508,14 @@ bool NativeViewGLSurfaceEGL::GetFrameTimestampInfoIfAvailable(
     return false;
   }
   if (presentation_time_ns == EGL_TIMESTAMP_INVALID_ANDROID) {
-    *presentation_time = base::TimeTicks::Now();
+    presentation_time_ns = egl_timestamps[composition_start_index_];
+    if (presentation_time_ns == EGL_TIMESTAMP_INVALID_ANDROID ||
+        presentation_time_ns == EGL_TIMESTAMP_PENDING_ANDROID) {
+      *presentation_time = base::TimeTicks::Now();
+    } else {
+      *presentation_time = base::TimeTicks() + base::TimeDelta::FromNanoseconds(
+                                                   presentation_time_ns);
+    }
   } else {
     *presentation_time = base::TimeTicks() +
                          base::TimeDelta::FromNanoseconds(presentation_time_ns);

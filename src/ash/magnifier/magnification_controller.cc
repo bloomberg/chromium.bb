@@ -9,11 +9,12 @@
 #include <utility>
 #include <vector>
 
-#include "ash/accelerators/accelerator_controller.h"
+#include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/accessibility/accessibility_delegate.h"
 #include "ash/display/root_window_transformers.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/host/root_window_transformer.h"
+#include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/magnifier/magnifier_utils.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -36,7 +37,6 @@
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect_conversions.h"
-#include "ui/keyboard/keyboard_controller.h"
 #include "ui/wm/core/compound_event_filter.h"
 #include "ui/wm/core/coordinate_conversion.h"
 

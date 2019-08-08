@@ -26,7 +26,7 @@ class CONTENT_EXPORT BackgroundTracingConfigImpl
   ~BackgroundTracingConfigImpl() override;
 
   // From BackgroundTracingConfig
-  void IntoDict(base::DictionaryValue* dict) const override;
+  void IntoDict(base::DictionaryValue* dict) override;
 
   enum CategoryPreset {
     CATEGORY_PRESET_UNSET,

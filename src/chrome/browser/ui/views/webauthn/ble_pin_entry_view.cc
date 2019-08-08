@@ -33,7 +33,7 @@ BlePinEntryView::BlePinEntryView(Delegate* delegate) : delegate_(delegate) {
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           views::DISTANCE_CONTROL_VERTICAL_TEXT_PADDING));
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+      views::BoxLayout::CrossAxisAlignment::kStart);
   SetLayoutManager(std::move(layout));
 
   auto textfield_label = std::make_unique<views::Label>(

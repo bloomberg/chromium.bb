@@ -163,8 +163,8 @@ void ShellDevToolsBindings::ReadyToCommitNavigation(
   content::RenderFrameHost* frame = navigation_handle->GetRenderFrameHost();
   if (navigation_handle->IsInMainFrame()) {
     frontend_host_ = DevToolsFrontendHost::Create(
-        frame,
-        base::Bind(&ShellDevToolsBindings::HandleMessageFromDevToolsFrontend,
+        frame, base::BindRepeating(
+                   &ShellDevToolsBindings::HandleMessageFromDevToolsFrontend,
                    base::Unretained(this)));
     return;
   }

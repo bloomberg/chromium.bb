@@ -103,7 +103,6 @@ PaintWorkletGlobalScope* PaintWorkletGlobalScope::Create(
   auto* global_scope = MakeGarbageCollected<PaintWorkletGlobalScope>(
       frame, std::move(creation_params), reporting_proxy,
       pending_generator_registry);
-  // TODO(bashi): Handle a case where the script controller fails to initialize.
   global_scope->ScriptController()->Initialize(NullURL());
   MainThreadDebugger::Instance()->ContextCreated(
       global_scope->ScriptController()->GetScriptState(),
@@ -220,9 +219,11 @@ void PaintWorkletGlobalScope::registerPaint(const String& name,
       input_argument_types, context_settings);
   paint_definitions_.Set(name, definition);
 
-  // TODO(xidachen): the following steps should be done with a PostTask when
-  // we move PaintWorklet off main thread.
-  if (!RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()) {
+  if (RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()) {
+    PaintWorkletProxyClient* proxy_client =
+        PaintWorkletProxyClient::From(Clients());
+    proxy_client->RegisterCSSPaintDefinition(name, definition, exception_state);
+  } else {
     PaintWorklet* paint_worklet =
         PaintWorklet::From(*GetFrame()->GetDocument()->domWindow());
     PaintWorklet::DocumentDefinitionMap& document_definition_map =

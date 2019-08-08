@@ -263,7 +263,7 @@ HRESULT UpdateProfilePicturesForWindows8AndNewer(
     bool force_update) {
   DCHECK(!sid.empty());
   DCHECK(!picture_url.empty());
-  DCHECK(base::win::GetVersion() >= base::win::VERSION_WIN8);
+  DCHECK(base::win::GetVersion() >= base::win::Version::WIN8);
 
   // Try to download profile pictures of all required sizes for windows.
   // Needed profile picture sizes are in |kProfilePictureSizes|.
@@ -549,7 +549,7 @@ HRESULT ScopedUserProfile::SaveAccountInfo(const base::Value& properties) {
   }
 
   // This code for setting profile pictures is specific for windows 8+.
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+  if (base::win::GetVersion() >= base::win::Version::WIN8) {
     base::string16 picture_url = GetDictString(properties, kKeyPicture);
     if (!picture_url.empty() && !sid.empty()) {
       wchar_t old_picture_url[512];

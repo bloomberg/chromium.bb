@@ -369,7 +369,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
     CallStorePolicy(descriptor, policy_blob, std::move(callback));
   }
 
-  bool SupportsRestartToApplyUserFlags() const override { return true; }
+  bool SupportsBrowserRestart() const override { return true; }
 
   void SetFlagsForUser(const cryptohome::AccountIdentifier& cryptohome_id,
                        const std::vector<std::string>& flags) override {
@@ -402,7 +402,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
 
   void StartArcMiniContainer(
       const login_manager::StartArcMiniContainerRequest& request,
-      StartArcMiniContainerCallback callback) override {
+      VoidDBusMethodCallback callback) override {
     DCHECK(!callback.is_null());
     dbus::MethodCall method_call(
         login_manager::kSessionManagerInterface,
@@ -413,16 +413,14 @@ class SessionManagerClientImpl : public SessionManagerClient {
 
     session_manager_proxy_->CallMethod(
         &method_call, kStartArcTimeout,
-        base::BindOnce(&SessionManagerClientImpl::OnStartArcMiniContainer,
+        base::BindOnce(&SessionManagerClientImpl::OnVoidMethod,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void UpgradeArcContainer(
       const login_manager::UpgradeArcContainerRequest& request,
-      base::OnceClosure success_callback,
-      UpgradeErrorCallback error_callback) override {
-    DCHECK(!success_callback.is_null());
-    DCHECK(!error_callback.is_null());
+      VoidDBusMethodCallback callback) override {
+    DCHECK(!callback.is_null());
     dbus::MethodCall method_call(
         login_manager::kSessionManagerInterface,
         login_manager::kSessionManagerUpgradeArcContainer);
@@ -430,11 +428,10 @@ class SessionManagerClientImpl : public SessionManagerClient {
 
     writer.AppendProtoAsArrayOfBytes(request);
 
-    session_manager_proxy_->CallMethodWithErrorResponse(
+    session_manager_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&SessionManagerClientImpl::OnUpgradeArcContainer,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       std::move(success_callback), std::move(error_callback)));
+        base::BindOnce(&SessionManagerClientImpl::OnVoidMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void StopArcInstance(VoidDBusMethodCallback callback) override {
@@ -728,24 +725,8 @@ class SessionManagerClientImpl : public SessionManagerClient {
   }
 
   void ArcInstanceStoppedReceived(dbus::Signal* signal) {
-    dbus::MessageReader reader(signal);
-
-    auto reason = login_manager::ArcContainerStopReason::CRASH;
-    uint32_t value = 0;
-    if (reader.PopUint32(&value)) {
-      reason = static_cast<login_manager::ArcContainerStopReason>(value);
-    } else {
-      LOG(ERROR) << "Invalid signal: " << signal->ToString();
-      return;
-    }
-
-    std::string container_instance_id;
-    if (!reader.PopString(&container_instance_id)) {
-      LOG(ERROR) << "Invalid signal: " << signal->ToString();
-      return;
-    }
     for (auto& observer : observers_)
-      observer.ArcInstanceStopped(reason, container_instance_id);
+      observer.ArcInstanceStopped();
   }
 
   // Called when the object is connected to the signal.
@@ -798,38 +779,6 @@ class SessionManagerClientImpl : public SessionManagerClient {
     }
 
     std::move(callback).Run(base::TimeTicks::FromInternalValue(ticks));
-  }
-
-  void OnStartArcMiniContainer(StartArcMiniContainerCallback callback,
-                               dbus::Response* response) {
-    if (!response) {
-      std::move(callback).Run(base::nullopt);
-      return;
-    }
-
-    dbus::MessageReader reader(response);
-    std::string container_instance_id;
-    if (!reader.PopString(&container_instance_id)) {
-      LOG(ERROR) << "Invalid response: " << response->ToString();
-      std::move(callback).Run(base::nullopt);
-      return;
-    }
-    std::move(callback).Run(std::move(container_instance_id));
-  }
-
-  void OnUpgradeArcContainer(base::OnceClosure success_callback,
-                             UpgradeErrorCallback error_callback,
-                             dbus::Response* response,
-                             dbus::ErrorResponse* error) {
-    if (!response) {
-      LOG(ERROR) << "Failed to call UpgradeArcContainer: "
-                 << (error ? error->ToString() : "(null)");
-      std::move(error_callback)
-          .Run(error && error->GetErrorName() ==
-                            login_manager::dbus_error::kLowFreeDisk);
-      return;
-    }
-    std::move(success_callback).Run();
   }
 
   dbus::ObjectProxy* session_manager_proxy_ = nullptr;

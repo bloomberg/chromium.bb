@@ -21,22 +21,21 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/home_screen/home_launcher_gesture_handler_observer.h"
 #include "ash/home_screen/home_screen_delegate.h"
+#include "ash/keyboard/ui/keyboard_controller_observer.h"
+#include "ash/public/cpp/app_list/app_list_controller.h"
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/public/interfaces/app_list.mojom.h"
-#include "ash/public/interfaces/app_list_view.mojom.h"
+#include "ash/public/cpp/wallpaper_controller_observer.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
-#include "ash/wallpaper/wallpaper_controller_observer.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/observer_list.h"
 #include "components/sync/model/string_ordinal.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
-#include "ui/keyboard/keyboard_controller_observer.h"
+
+class PrefRegistrySimple;
 
 namespace ui {
 class MouseWheelEvent;
@@ -50,7 +49,7 @@ class AppListControllerObserver;
 // functions that allow Chrome to modify and observe the Shelf and AppListModel
 // state.
 class ASH_EXPORT AppListControllerImpl
-    : public mojom::AppListController,
+    : public app_list::AppListController,
       public SessionObserver,
       public app_list::AppListModelObserver,
       public app_list::AppListViewDelegate,
@@ -67,20 +66,17 @@ class ASH_EXPORT AppListControllerImpl
       public HomeLauncherGestureHandlerObserver,
       public HomeScreenDelegate {
  public:
-  using AppListItemMetadataPtr = mojom::AppListItemMetadataPtr;
-  using SearchResultMetadataPtr = mojom::SearchResultMetadataPtr;
   AppListControllerImpl();
   ~AppListControllerImpl() override;
 
-  // Binds the mojom::AppListController interface request to this object.
-  void BindRequest(mojom::AppListControllerRequest request);
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   app_list::AppListPresenterImpl* presenter() { return &presenter_; }
 
-  // mojom::AppListController:
-  void SetClient(mojom::AppListClientPtr client_ptr) override;
-  void AddItem(AppListItemMetadataPtr app_item) override;
-  void AddItemToFolder(AppListItemMetadataPtr app_item,
+  // app_list::AppListController:
+  void SetClient(app_list::AppListClient* client) override;
+  void AddItem(std::unique_ptr<ash::AppListItemMetadata> app_item) override;
+  void AddItemToFolder(std::unique_ptr<ash::AppListItemMetadata> app_item,
                        const std::string& folder_id) override;
   void RemoveItem(const std::string& id) override;
   void RemoveUninstalledItem(const std::string& id) override;
@@ -97,18 +93,19 @@ class ASH_EXPORT AppListControllerImpl
   void UpdateSearchBox(const base::string16& text,
                        bool initiated_by_user) override;
   void PublishSearchResults(
-      std::vector<SearchResultMetadataPtr> results) override;
+      std::vector<std::unique_ptr<ash::SearchResultMetadata>> results) override;
   void SetItemMetadata(const std::string& id,
-                       AppListItemMetadataPtr data) override;
+                       std::unique_ptr<ash::AppListItemMetadata> data) override;
   void SetItemIcon(const std::string& id, const gfx::ImageSkia& icon) override;
   void SetItemIsInstalling(const std::string& id, bool is_installing) override;
   void SetItemPercentDownloaded(const std::string& id,
                                 int32_t percent_downloaded) override;
   void SetModelData(int profile_id,
-                    std::vector<AppListItemMetadataPtr> apps,
+                    std::vector<std::unique_ptr<ash::AppListItemMetadata>> apps,
                     bool is_search_engine_google) override;
 
-  void SetSearchResultMetadata(SearchResultMetadataPtr metadata) override;
+  void SetSearchResultMetadata(
+      std::unique_ptr<ash::SearchResultMetadata> metadata) override;
   void SetSearchResultIsInstalling(const std::string& id,
                                    bool is_installing) override;
   void SetSearchResultPercentDownloaded(const std::string& id,
@@ -147,12 +144,12 @@ class ASH_EXPORT AppListControllerImpl
             base::TimeTicks event_time_stamp);
   void UpdateYPositionAndOpacity(int y_position_in_screen,
                                  float background_opacity);
-  void EndDragFromShelf(ash::mojom::AppListViewState app_list_state);
+  void EndDragFromShelf(ash::AppListViewState app_list_state);
   void ProcessMouseWheelEvent(const ui::MouseWheelEvent& event);
   ash::ShelfAction ToggleAppList(int64_t display_id,
                                  app_list::AppListShowSource show_source,
                                  base::TimeTicks event_time_stamp);
-  ash::mojom::AppListViewState GetAppListViewState();
+  ash::AppListViewState GetAppListViewState();
 
   // app_list::AppListViewDelegate:
   app_list::AppListModel* GetModel() override;
@@ -161,8 +158,8 @@ class ASH_EXPORT AppListControllerImpl
   void StartSearch(const base::string16& raw_query) override;
   void OpenSearchResult(const std::string& result_id,
                         int event_flags,
-                        ash::mojom::AppListLaunchedFrom launched_from,
-                        ash::mojom::AppListLaunchType launch_type,
+                        AppListLaunchedFrom launched_from,
+                        AppListLaunchType launch_type,
                         int suggestion_index) override;
   void LogResultLaunchHistogram(
       app_list::SearchResultLaunchLocation launch_location,
@@ -176,26 +173,15 @@ class ASH_EXPORT AppListControllerImpl
   void GetSearchResultContextMenuModel(
       const std::string& result_id,
       GetContextMenuModelCallback callback) override;
-  void SearchResultContextMenuItemSelected(
-      const std::string& result_id,
-      int command_id,
-      int event_flags,
-      mojom::AppListLaunchType launch_type) override;
   void ViewShown(int64_t display_id) override;
   void ViewClosing() override;
   void ViewClosed() override;
-  void GetWallpaperProminentColors(
-      GetWallpaperProminentColorsCallback callback) override;
+  const std::vector<SkColor>& GetWallpaperProminentColors() override;
   void ActivateItem(const std::string& id,
                     int event_flags,
-                    mojom::AppListLaunchedFrom launched_from) override;
+                    AppListLaunchedFrom launched_from) override;
   void GetContextMenuModel(const std::string& id,
                            GetContextMenuModelCallback callback) override;
-  void ContextMenuItemSelected(
-      const std::string& id,
-      int command_id,
-      int event_flags,
-      mojom::AppListLaunchedFrom launched_from) override;
   void ShowWallpaperContextMenu(const gfx::Point& onscreen_location,
                                 ui::MenuSourceType source_type) override;
   bool ProcessHomeLauncherGesture(ui::GestureEvent* event,
@@ -209,8 +195,13 @@ class ASH_EXPORT AppListControllerImpl
   void OnSearchResultVisibilityChanged(const std::string& id,
                                        bool visibility) override;
   bool IsAssistantAllowedAndEnabled() const override;
+  bool ShouldShowAssistantPrivacyInfo() const override;
+  void MaybeIncreaseAssistantPrivacyInfoShownCount() override;
+  void MarkAssistantPrivacyInfoDismissed() override;
   void OnStateTransitionAnimationCompleted(
-      ash::mojom::AppListViewState state) override;
+      ash::AppListViewState state) override;
+  void GetAppLaunchedMetricParams(
+      app_list::AppLaunchedMetricParams* metric_params) override;
 
   void AddObserver(AppListControllerObserver* observer);
   void RemoveObserver(AppListControllerObserver* obsever);
@@ -218,8 +209,6 @@ class ASH_EXPORT AppListControllerImpl
   // AppList visibility announcements are for clamshell mode AppList.
   void NotifyAppListVisibilityChanged(bool visible, int64_t display_id);
   void NotifyAppListTargetVisibilityChanged(bool visible);
-
-  void FlushForTesting();
 
   // ShellObserver:
   void OnShellDestroying() override;
@@ -274,6 +263,8 @@ class ASH_EXPORT AppListControllerImpl
   base::Optional<base::TimeDelta> GetOptionalAnimationDuration() override;
   bool ShouldShowShelfOnHomeScreen() const override;
   bool ShouldShowStatusAreaOnHomeScreen() const override;
+  void NotifyHomeLauncherAnimationTransition(AnimationTrigger trigger,
+                                             bool launcher_will_show) override;
 
   bool onscreen_keyboard_shown() const { return onscreen_keyboard_shown_; }
 
@@ -296,20 +287,20 @@ class ASH_EXPORT AppListControllerImpl
   bool IsShowingEmbeddedAssistantUI() const;
 
   // Get updated app list view state after dragging from shelf.
-  ash::mojom::AppListViewState CalculateStateAfterShelfDrag(
+  ash::AppListViewState CalculateStateAfterShelfDrag(
       const ui::GestureEvent& gesture_in_screen,
       float launcher_above_shelf_bottom_amount) const;
 
   void SetAppListModelForTest(std::unique_ptr<app_list::AppListModel> model);
 
   using StateTransitionAnimationCallback =
-      base::RepeatingCallback<void(ash::mojom::AppListViewState)>;
+      base::RepeatingCallback<void(ash::AppListViewState)>;
 
   void SetStateTransitionAnimationCallback(
       StateTransitionAnimationCallback callback);
 
   void RecordShelfAppLaunched(
-      base::Optional<mojom::AppListViewState> recorded_app_list_view_state,
+      base::Optional<AppListViewState> recorded_app_list_view_state,
       base::Optional<bool> home_launcher_shown);
 
  private:
@@ -320,7 +311,7 @@ class ASH_EXPORT AppListControllerImpl
 
   syncer::StringOrdinal GetOemFolderPos();
   std::unique_ptr<app_list::AppListItem> CreateAppListItem(
-      AppListItemMetadataPtr metadata);
+      std::unique_ptr<ash::AppListItemMetadata> metadata);
   app_list::AppListFolderItem* FindFolderItem(const std::string& folder_id);
 
   // Update the visibility of Assistant functionality.
@@ -343,11 +334,9 @@ class ASH_EXPORT AppListControllerImpl
   void Shutdown();
 
   // Record the app launch for AppListAppLaunchedV2 metric.
-  void RecordAppLaunched(mojom::AppListLaunchedFrom launched_from);
+  void RecordAppLaunched(AppListLaunchedFrom launched_from);
 
-  base::string16 last_raw_query_;
-
-  mojom::AppListClientPtr client_;
+  app_list::AppListClient* client_ = nullptr;
 
   std::unique_ptr<app_list::AppListModel> model_;
   app_list::SearchModel search_model_;
@@ -355,9 +344,6 @@ class ASH_EXPORT AppListControllerImpl
   // |presenter_| should be put below |client_| and |model_| to prevent a crash
   // in destruction.
   app_list::AppListPresenterImpl presenter_;
-
-  // Bindings for the AppListController interface.
-  mojo::BindingSet<mojom::AppListController> bindings_;
 
   // True if the on-screen keyboard is shown.
   bool onscreen_keyboard_shown_ = false;

@@ -56,6 +56,8 @@ void FakeAudioOutputStream::Close() {
   audio_manager_->ReleaseOutputStream(this);
 }
 
+void FakeAudioOutputStream::Flush() {}
+
 void FakeAudioOutputStream::SetVolume(double volume) {}
 
 void FakeAudioOutputStream::GetVolume(double* volume) {

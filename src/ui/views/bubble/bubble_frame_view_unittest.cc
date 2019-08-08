@@ -105,6 +105,18 @@ class TestBubbleFrameView : public BubbleFrameView {
     available_anchor_window_bounds_ = bounds;
   }
 
+  BubbleBorder::Arrow GetBorderArrow() const {
+    return bubble_border_for_testing()->arrow();
+  }
+
+  SkColor GetBorderBackgroundColor() const {
+    return bubble_border_for_testing()->background_color();
+  }
+
+  gfx::Insets GetBorderInsets() const {
+    return bubble_border_for_testing()->GetInsets();
+  }
+
   // View overrides:
   const Widget* GetWidget() const override {
     return widget_.get();
@@ -137,11 +149,11 @@ class TestBubbleFrameView : public BubbleFrameView {
 
 TEST_F(BubbleFrameViewTest, GetBoundsForClientView) {
   TestBubbleFrameView frame(this);
-  EXPECT_EQ(kArrow, frame.bubble_border()->arrow());
-  EXPECT_EQ(kColor, frame.bubble_border()->background_color());
+  EXPECT_EQ(kArrow, frame.GetBorderArrow());
+  EXPECT_EQ(kColor, frame.GetBorderBackgroundColor());
 
   const gfx::Insets content_margins = frame.content_margins();
-  const gfx::Insets insets = frame.GetInsets();
+  const gfx::Insets insets = frame.GetBorderInsets();
   const gfx::Rect client_view_bounds = frame.GetBoundsForClientView();
   EXPECT_EQ(insets.left() + content_margins.left(), client_view_bounds.x());
   EXPECT_EQ(insets.top() + content_margins.top(), client_view_bounds.y());
@@ -151,11 +163,11 @@ TEST_F(BubbleFrameViewTest, GetBoundsForClientViewWithClose) {
   TestBubbleFrameView frame(this);
   frame.widget_delegate()->SetShouldShowCloseButton(true);
   frame.ResetWindowControls();
-  EXPECT_EQ(kArrow, frame.bubble_border()->arrow());
-  EXPECT_EQ(kColor, frame.bubble_border()->background_color());
+  EXPECT_EQ(kArrow, frame.GetBorderArrow());
+  EXPECT_EQ(kColor, frame.GetBorderBackgroundColor());
 
   const gfx::Insets content_margins = frame.content_margins();
-  const gfx::Insets insets = frame.GetInsets();
+  const gfx::Insets insets = frame.GetBorderInsets();
   const int close_margin =
       frame.GetCloseButtonForTest()->height() +
       LayoutProvider::Get()->GetDistanceMetric(DISTANCE_CLOSE_BUTTON_MARGIN);
@@ -174,7 +186,7 @@ TEST_F(BubbleFrameViewTest, RemoveFootnoteView) {
   View* container_view = footnote_dummy_view->parent();
   delete footnote_dummy_view;
   footnote_dummy_view = nullptr;
-  EXPECT_FALSE(container_view->visible());
+  EXPECT_FALSE(container_view->GetVisible());
   EXPECT_EQ(nullptr, frame.footnote_container_);
 }
 
@@ -185,11 +197,11 @@ TEST_F(BubbleFrameViewTest,
   footnote_dummy_view->SetVisible(false);
   frame.SetFootnoteView(footnote_dummy_view);
   View* footnote_container_view = footnote_dummy_view->parent();
-  EXPECT_FALSE(footnote_container_view->visible());
+  EXPECT_FALSE(footnote_container_view->GetVisible());
   footnote_dummy_view->SetVisible(true);
-  EXPECT_TRUE(footnote_container_view->visible());
+  EXPECT_TRUE(footnote_container_view->GetVisible());
   footnote_dummy_view->SetVisible(false);
-  EXPECT_FALSE(footnote_container_view->visible());
+  EXPECT_FALSE(footnote_container_view->GetVisible());
 }
 
 // Tests that the arrow is mirrored as needed to better fit the screen.
@@ -201,102 +213,102 @@ TEST_F(BubbleFrameViewTest, GetUpdatedWindowBounds) {
       std::make_unique<BubbleBorder>(kArrow, BubbleBorder::NO_SHADOW, kColor));
 
   // Test that the info bubble displays normally when it fits.
-  frame.bubble_border()->set_arrow(BubbleBorder::TOP_LEFT);
+  frame.SetArrow(BubbleBorder::TOP_LEFT);
   window_bounds = frame.GetUpdatedWindowBounds(
       gfx::Rect(100, 100, 0, 0),      // |anchor_rect|
       BubbleBorder::Arrow::TOP_LEFT,  // |delegate_arrow|
       gfx::Size(500, 500),            // |client_size|
       true);                          // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::TOP_LEFT, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::TOP_LEFT, frame.GetBorderArrow());
   EXPECT_EQ(window_bounds.x(), 100);
   EXPECT_EQ(window_bounds.y(), 100);
 
   // Test bubble not fitting on left.
-  frame.bubble_border()->set_arrow(BubbleBorder::TOP_RIGHT);
+  frame.SetArrow(BubbleBorder::TOP_RIGHT);
   window_bounds = frame.GetUpdatedWindowBounds(
       gfx::Rect(100, 100, 0, 0),       // |anchor_rect|
       BubbleBorder::Arrow::TOP_RIGHT,  // |delegate_arrow|
       gfx::Size(500, 500),             // |client_size|
       true);                           // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::TOP_LEFT, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::TOP_LEFT, frame.GetBorderArrow());
   EXPECT_EQ(window_bounds.x(), 100);
   EXPECT_EQ(window_bounds.y(), 100);
 
   // Test bubble not fitting on left or top.
-  frame.bubble_border()->set_arrow(BubbleBorder::BOTTOM_RIGHT);
+  frame.SetArrow(BubbleBorder::BOTTOM_RIGHT);
   window_bounds = frame.GetUpdatedWindowBounds(
       gfx::Rect(100, 100, 0, 0),          // |anchor_rect|
       BubbleBorder::Arrow::BOTTOM_RIGHT,  // |delegate_arrow|
       gfx::Size(500, 500),                // |client_size|
       true);                              // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::TOP_LEFT, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::TOP_LEFT, frame.GetBorderArrow());
   EXPECT_EQ(window_bounds.x(), 100);
   EXPECT_EQ(window_bounds.y(), 100);
 
   // Test bubble not fitting on top.
-  frame.bubble_border()->set_arrow(BubbleBorder::BOTTOM_LEFT);
+  frame.SetArrow(BubbleBorder::BOTTOM_LEFT);
   window_bounds = frame.GetUpdatedWindowBounds(
       gfx::Rect(100, 100, 0, 0),         // |anchor_rect|
       BubbleBorder::Arrow::BOTTOM_LEFT,  // |delegate_arrow|
       gfx::Size(500, 500),               // |client_size|
       true);                             // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::TOP_LEFT, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::TOP_LEFT, frame.GetBorderArrow());
   EXPECT_EQ(window_bounds.x(), 100);
   EXPECT_EQ(window_bounds.y(), 100);
 
   // Test bubble not fitting on top and right.
-  frame.bubble_border()->set_arrow(BubbleBorder::BOTTOM_LEFT);
+  frame.SetArrow(BubbleBorder::BOTTOM_LEFT);
   window_bounds = frame.GetUpdatedWindowBounds(
       gfx::Rect(900, 100, 0, 0),         // |anchor_rect|
       BubbleBorder::Arrow::BOTTOM_LEFT,  // |delegate_arrow|
       gfx::Size(500, 500),               // |client_size|
       true);                             // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::TOP_RIGHT, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::TOP_RIGHT, frame.GetBorderArrow());
   EXPECT_EQ(window_bounds.right(), 900);
   EXPECT_EQ(window_bounds.y(), 100);
 
   // Test bubble not fitting on right.
-  frame.bubble_border()->set_arrow(BubbleBorder::TOP_LEFT);
+  frame.SetArrow(BubbleBorder::TOP_LEFT);
   window_bounds = frame.GetUpdatedWindowBounds(
       gfx::Rect(900, 100, 0, 0),      // |anchor_rect|
       BubbleBorder::Arrow::TOP_LEFT,  // |delegate_arrow|
       gfx::Size(500, 500),            // |client_size|
       true);                          // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::TOP_RIGHT, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::TOP_RIGHT, frame.GetBorderArrow());
   EXPECT_EQ(window_bounds.right(), 900);
   EXPECT_EQ(window_bounds.y(), 100);
 
   // Test bubble not fitting on bottom and right.
-  frame.bubble_border()->set_arrow(BubbleBorder::TOP_LEFT);
+  frame.SetArrow(BubbleBorder::TOP_LEFT);
   window_bounds = frame.GetUpdatedWindowBounds(
       gfx::Rect(900, 900, 0, 0),      // |anchor_rect|
       BubbleBorder::Arrow::TOP_LEFT,  // |delegate_arrow|
       gfx::Size(500, 500),            // |client_size|
       true);                          // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::BOTTOM_RIGHT, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::BOTTOM_RIGHT, frame.GetBorderArrow());
   EXPECT_EQ(window_bounds.right(), 900);
   EXPECT_EQ(window_bounds.bottom(), 900);
 
   // Test bubble not fitting at the bottom.
-  frame.bubble_border()->set_arrow(BubbleBorder::TOP_LEFT);
+  frame.SetArrow(BubbleBorder::TOP_LEFT);
   window_bounds = frame.GetUpdatedWindowBounds(
       gfx::Rect(100, 900, 0, 0),      // |anchor_rect|
       BubbleBorder::Arrow::TOP_LEFT,  // |delegate_arrow|
       gfx::Size(500, 500),            // |client_size|
       true);                          // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::BOTTOM_LEFT, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::BOTTOM_LEFT, frame.GetBorderArrow());
   // The window should be right aligned with the anchor_rect.
   EXPECT_EQ(window_bounds.x(), 100);
   EXPECT_EQ(window_bounds.bottom(), 900);
 
   // Test bubble not fitting at the bottom and left.
-  frame.bubble_border()->set_arrow(BubbleBorder::TOP_RIGHT);
+  frame.SetArrow(BubbleBorder::TOP_RIGHT);
   window_bounds = frame.GetUpdatedWindowBounds(
       gfx::Rect(100, 900, 0, 0),       // |anchor_rect|
       BubbleBorder::Arrow::TOP_RIGHT,  // |delegate_arrow|
       gfx::Size(500, 500),             // |client_size|
       true);                           // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::BOTTOM_LEFT, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::BOTTOM_LEFT, frame.GetBorderArrow());
   // The window should be right aligned with the anchor_rect.
   EXPECT_EQ(window_bounds.x(), 100);
   EXPECT_EQ(window_bounds.bottom(), 900);
@@ -306,53 +318,53 @@ TEST_F(BubbleFrameViewTest, GetUpdatedWindowBounds) {
 // screen but moving it would make matter worse.
 TEST_F(BubbleFrameViewTest, GetUpdatedWindowBoundsMirroringFails) {
   TestBubbleFrameView frame(this);
-  frame.bubble_border()->set_arrow(BubbleBorder::TOP_LEFT);
+  frame.SetArrow(BubbleBorder::TOP_LEFT);
   frame.GetUpdatedWindowBounds(
       gfx::Rect(400, 100, 50, 50),    // |anchor_rect|
       BubbleBorder::Arrow::TOP_LEFT,  // |delegate_arrow|
       gfx::Size(500, 700),            // |client_size|
       true);                          // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::TOP_LEFT, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::TOP_LEFT, frame.GetBorderArrow());
 }
 
 TEST_F(BubbleFrameViewTest, TestMirroringForCenteredArrow) {
   TestBubbleFrameView frame(this);
 
   // Test bubble not fitting above the anchor.
-  frame.bubble_border()->set_arrow(BubbleBorder::BOTTOM_CENTER);
+  frame.SetArrow(BubbleBorder::BOTTOM_CENTER);
   frame.GetUpdatedWindowBounds(
       gfx::Rect(100, 100, 50, 50),         // |anchor_rect|
       BubbleBorder::Arrow::BOTTOM_CENTER,  // |delegate_arrow|
       gfx::Size(500, 700),                 // |client_size|
       true);                               // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::TOP_CENTER, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::TOP_CENTER, frame.GetBorderArrow());
 
   // Test bubble not fitting below the anchor.
-  frame.bubble_border()->set_arrow(BubbleBorder::TOP_CENTER);
+  frame.SetArrow(BubbleBorder::TOP_CENTER);
   frame.GetUpdatedWindowBounds(
       gfx::Rect(300, 800, 50, 50),      // |anchor_rect|
       BubbleBorder::Arrow::TOP_CENTER,  // |delegate_arrow|
       gfx::Size(500, 200),              // |client_size|
       true);                            // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::BOTTOM_CENTER, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::BOTTOM_CENTER, frame.GetBorderArrow());
 
   // Test bubble not fitting to the right of the anchor.
-  frame.bubble_border()->set_arrow(BubbleBorder::LEFT_CENTER);
+  frame.SetArrow(BubbleBorder::LEFT_CENTER);
   frame.GetUpdatedWindowBounds(
       gfx::Rect(800, 300, 50, 50),       // |anchor_rect|
       BubbleBorder::Arrow::LEFT_CENTER,  // |delegate_arrow|
       gfx::Size(200, 500),               // |client_size|
       true);                             // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::RIGHT_CENTER, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::RIGHT_CENTER, frame.GetBorderArrow());
 
   // Test bubble not fitting to the left of the anchor.
-  frame.bubble_border()->set_arrow(BubbleBorder::RIGHT_CENTER);
+  frame.SetArrow(BubbleBorder::RIGHT_CENTER);
   frame.GetUpdatedWindowBounds(
       gfx::Rect(100, 300, 50, 50),        // |anchor_rect|
       BubbleBorder::Arrow::RIGHT_CENTER,  // |delegate_arrow|
       gfx::Size(500, 500),                // |client_size|
       true);                              // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::LEFT_CENTER, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::LEFT_CENTER, frame.GetBorderArrow());
 }
 
 // Test that the arrow will not be mirrored when
@@ -366,7 +378,7 @@ TEST_F(BubbleFrameViewTest, GetUpdatedWindowBoundsDontTryMirror) {
       BubbleBorder::Arrow::TOP_RIGHT,  // |delegate_arrow|
       gfx::Size(500, 500),             // |client_size|
       false);                          // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::TOP_RIGHT, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::TOP_RIGHT, frame.GetBorderArrow());
   // The coordinates should be pointing to anchor_rect from TOP_RIGHT.
   EXPECT_EQ(window_bounds.right(), 100);
   EXPECT_EQ(window_bounds.y(), 900);
@@ -386,51 +398,51 @@ TEST_F(BubbleFrameViewTest, GetUpdatedWindowBoundsCenterArrows) {
   // added for MD mode.
 
   // Test that the bubble displays normally when it fits.
-  frame.bubble_border()->set_arrow(BubbleBorder::BOTTOM_CENTER);
+  frame.SetArrow(BubbleBorder::BOTTOM_CENTER);
   window_bounds = frame.GetUpdatedWindowBounds(
       gfx::Rect(500, 900, 50, 50),         // |anchor_rect|
       BubbleBorder::Arrow::BOTTOM_CENTER,  // |delegate_arrow|
       gfx::Size(500, 500),                 // |client_size|
       true);                               // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::BOTTOM_CENTER, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::BOTTOM_CENTER, frame.GetBorderArrow());
   EXPECT_EQ(window_bounds.x() + window_bounds.width() / 2, 525);
 
-  frame.bubble_border()->set_arrow(BubbleBorder::LEFT_CENTER);
+  frame.SetArrow(BubbleBorder::LEFT_CENTER);
   window_bounds = frame.GetUpdatedWindowBounds(
       gfx::Rect(100, 400, 50, 50),       // |anchor_rect|
       BubbleBorder::Arrow::LEFT_CENTER,  // |delegate_arrow|
       gfx::Size(500, 500),               // |client_size|
       true);                             // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::LEFT_CENTER, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::LEFT_CENTER, frame.GetBorderArrow());
   EXPECT_EQ(window_bounds.y() + window_bounds.height() / 2, 425);
 
-  frame.bubble_border()->set_arrow(BubbleBorder::RIGHT_CENTER);
+  frame.SetArrow(BubbleBorder::RIGHT_CENTER);
   window_bounds = frame.GetUpdatedWindowBounds(
       gfx::Rect(900, 400, 50, 50),        // |anchor_rect|
       BubbleBorder::Arrow::RIGHT_CENTER,  // |delegate_arrow|
       gfx::Size(500, 500),                // |client_size|
       true);                              // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::RIGHT_CENTER, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::RIGHT_CENTER, frame.GetBorderArrow());
   EXPECT_EQ(window_bounds.y() + window_bounds.height() / 2, 425);
 
   // Test bubble not fitting left screen edge.
-  frame.bubble_border()->set_arrow(BubbleBorder::BOTTOM_CENTER);
+  frame.SetArrow(BubbleBorder::BOTTOM_CENTER);
   window_bounds = frame.GetUpdatedWindowBounds(
       gfx::Rect(100, 900, 50, 50),         // |anchor_rect|
       BubbleBorder::Arrow::BOTTOM_CENTER,  // |delegate_arrow|
       gfx::Size(500, 500),                 // |client_size|
       true);                               // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::BOTTOM_CENTER, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::BOTTOM_CENTER, frame.GetBorderArrow());
   EXPECT_EQ(window_bounds.x(), 0);
 
   // Test bubble not fitting right screen edge.
-  frame.bubble_border()->set_arrow(BubbleBorder::BOTTOM_CENTER);
+  frame.SetArrow(BubbleBorder::BOTTOM_CENTER);
   window_bounds = frame.GetUpdatedWindowBounds(
       gfx::Rect(900, 900, 50, 50),         // |anchor_rect|
       BubbleBorder::Arrow::BOTTOM_CENTER,  // |delegate_arrow|
       gfx::Size(500, 500),                 // |client_size|
       true);                               // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::BOTTOM_CENTER, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::BOTTOM_CENTER, frame.GetBorderArrow());
   EXPECT_EQ(window_bounds.right(), 1000);
 }
 
@@ -445,110 +457,110 @@ TEST_F(BubbleFrameViewTest, GetUpdatedWindowBoundsForBubbleWithAnchorWindow) {
       std::make_unique<BubbleBorder>(kArrow, BubbleBorder::NO_SHADOW, kColor));
 
   // Test that the bubble displays normally when it fits.
-  frame.bubble_border()->set_arrow(BubbleBorder::TOP_LEFT);
+  frame.SetArrow(BubbleBorder::TOP_LEFT);
   window_bounds = frame.GetUpdatedWindowBounds(
       gfx::Rect(200, 200, 0, 0),      // |anchor_rect|
       BubbleBorder::Arrow::TOP_LEFT,  // |delegate_arrow|
       gfx::Size(250, 250),            // |client_size|
       true);                          // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::TOP_LEFT, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::TOP_LEFT, frame.GetBorderArrow());
   EXPECT_EQ(window_bounds.x(), 200);
   EXPECT_EQ(window_bounds.y(), 200);
 
   // Test bubble not fitting on left for anchor window displays left aligned
   // with the left side of the anchor rect.
-  frame.bubble_border()->set_arrow(BubbleBorder::TOP_RIGHT);
+  frame.SetArrow(BubbleBorder::TOP_RIGHT);
   window_bounds = frame.GetUpdatedWindowBounds(
       gfx::Rect(200, 200, 0, 0),       // |anchor_rect|
       BubbleBorder::Arrow::TOP_RIGHT,  // |delegate_arrow|
       gfx::Size(250, 250),             // |client_size|
       true);                           // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::TOP_LEFT, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::TOP_LEFT, frame.GetBorderArrow());
   EXPECT_EQ(window_bounds.x(), 200);
   EXPECT_EQ(window_bounds.y(), 200);
 
   // Test bubble not fitting on left or top displays left and top aligned
   // with the left and bottom sides of the anchor rect.
-  frame.bubble_border()->set_arrow(BubbleBorder::BOTTOM_RIGHT);
+  frame.SetArrow(BubbleBorder::BOTTOM_RIGHT);
   window_bounds = frame.GetUpdatedWindowBounds(
       gfx::Rect(200, 200, 0, 0),          // |anchor_rect|
       BubbleBorder::Arrow::BOTTOM_RIGHT,  // |delegate_arrow|
       gfx::Size(250, 250),                // |client_size|
       true);                              // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::TOP_LEFT, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::TOP_LEFT, frame.GetBorderArrow());
   EXPECT_EQ(window_bounds.x(), 200);
   EXPECT_EQ(window_bounds.y(), 200);
 
   // Test bubble not fitting on top displays top aligned with the bottom side of
   // the anchor rect.
-  frame.bubble_border()->set_arrow(BubbleBorder::BOTTOM_LEFT);
+  frame.SetArrow(BubbleBorder::BOTTOM_LEFT);
   window_bounds = frame.GetUpdatedWindowBounds(
       gfx::Rect(200, 200, 0, 0),         // |anchor_rect|
       BubbleBorder::Arrow::BOTTOM_LEFT,  // |delegate_arrow|
       gfx::Size(250, 250),               // |client_size|
       true);                             // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::TOP_LEFT, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::TOP_LEFT, frame.GetBorderArrow());
   EXPECT_EQ(window_bounds.x(), 200);
   EXPECT_EQ(window_bounds.y(), 200);
 
   // Test bubble not fitting on top and right displays right and top aligned
   // with the right and bottom sides of the anchor rect.
-  frame.bubble_border()->set_arrow(BubbleBorder::BOTTOM_LEFT);
+  frame.SetArrow(BubbleBorder::BOTTOM_LEFT);
   window_bounds = frame.GetUpdatedWindowBounds(
       gfx::Rect(500, 200, 0, 0),         // |anchor_rect|
       BubbleBorder::Arrow::BOTTOM_LEFT,  // |delegate_arrow|
       gfx::Size(250, 250),               // |client_size|
       true);                             // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::TOP_RIGHT, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::TOP_RIGHT, frame.GetBorderArrow());
   EXPECT_EQ(window_bounds.right(), 500);
   EXPECT_EQ(window_bounds.y(), 200);
 
   // Test bubble not fitting on right display in line with the right edge of
   // the anchor rect.
-  frame.bubble_border()->set_arrow(BubbleBorder::TOP_LEFT);
+  frame.SetArrow(BubbleBorder::TOP_LEFT);
   window_bounds = frame.GetUpdatedWindowBounds(
       gfx::Rect(500, 200, 0, 0),      // |anchor_rect|
       BubbleBorder::Arrow::TOP_LEFT,  // |delegate_arrow|
       gfx::Size(250, 250),            // |client_size|
       true);                          // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::TOP_RIGHT, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::TOP_RIGHT, frame.GetBorderArrow());
   EXPECT_EQ(window_bounds.right(), 500);
   EXPECT_EQ(window_bounds.y(), 200);
 
   // Test bubble not fitting on bottom and right displays in line with the right
   // edge of the anchor rect and the bottom in line with the top of the anchor
   // rect.
-  frame.bubble_border()->set_arrow(BubbleBorder::TOP_LEFT);
+  frame.SetArrow(BubbleBorder::TOP_LEFT);
   window_bounds = frame.GetUpdatedWindowBounds(
       gfx::Rect(500, 500, 0, 0),      // |anchor_rect|
       BubbleBorder::Arrow::TOP_LEFT,  // |delegate_arrow|
       gfx::Size(250, 250),            // |client_size|
       true);                          // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::BOTTOM_RIGHT, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::BOTTOM_RIGHT, frame.GetBorderArrow());
   EXPECT_EQ(window_bounds.right(), 500);
   EXPECT_EQ(window_bounds.bottom(), 500);
 
   // Test bubble not fitting at the bottom displays line with the top of the
   // anchor rect.
-  frame.bubble_border()->set_arrow(BubbleBorder::TOP_LEFT);
+  frame.SetArrow(BubbleBorder::TOP_LEFT);
   window_bounds = frame.GetUpdatedWindowBounds(
       gfx::Rect(200, 500, 0, 0),      // |anchor_rect|
       BubbleBorder::Arrow::TOP_LEFT,  // |delegate_arrow|
       gfx::Size(250, 250),            // |client_size|
       true);                          // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::BOTTOM_LEFT, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::BOTTOM_LEFT, frame.GetBorderArrow());
   EXPECT_EQ(window_bounds.x(), 200);
   EXPECT_EQ(window_bounds.bottom(), 500);
 
   // Test bubble not fitting at the bottom and left displays right aligned with
   // the anchor rect and the bottom in line with the top of the anchor rect.
-  frame.bubble_border()->set_arrow(BubbleBorder::TOP_RIGHT);
+  frame.SetArrow(BubbleBorder::TOP_RIGHT);
   window_bounds = frame.GetUpdatedWindowBounds(
       gfx::Rect(200, 500, 0, 0),       // |anchor_rect|
       BubbleBorder::Arrow::TOP_RIGHT,  // |delegate_arrow|
       gfx::Size(250, 250),             // |client_size|
       true);                           // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::BOTTOM_LEFT, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::BOTTOM_LEFT, frame.GetBorderArrow());
   EXPECT_EQ(window_bounds.x(), 200);
   EXPECT_EQ(window_bounds.bottom(), 500);
 }
@@ -571,13 +583,13 @@ TEST_F(BubbleFrameViewTest,
   //    |      |_________________|__________|
   //    |________________________|
   frame.SetAvailableAnchorWindowBounds(gfx::Rect(700, 200, 400, 400));
-  frame.bubble_border()->set_arrow(BubbleBorder::TOP_LEFT);
+  frame.SetArrow(BubbleBorder::TOP_LEFT);
   window_bounds = frame.GetUpdatedWindowBounds(
       gfx::Rect(800, 300, 0, 0),      // |anchor_rect|
       BubbleBorder::Arrow::TOP_LEFT,  // |delegate_arrow|
       gfx::Size(250, 250),            // |client_size|
       true);                          // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::TOP_RIGHT, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::TOP_RIGHT, frame.GetBorderArrow());
   // The window should be right aligned with the anchor_rect.
   EXPECT_EQ(window_bounds.right(), 800);
   EXPECT_EQ(window_bounds.y(), 300);
@@ -592,13 +604,13 @@ TEST_F(BubbleFrameViewTest,
   //           |             |_______|      |
   //           |____________________________|
   frame.SetAvailableAnchorWindowBounds(gfx::Rect(700, 700, 400, 400));
-  frame.bubble_border()->set_arrow(BubbleBorder::TOP_LEFT);
+  frame.SetArrow(BubbleBorder::TOP_LEFT);
   window_bounds = frame.GetUpdatedWindowBounds(
       gfx::Rect(800, 800, 0, 0),      // |anchor_rect|
       BubbleBorder::Arrow::TOP_LEFT,  // |delegate_arrow|
       gfx::Size(250, 250),            // |client_size|
       true);                          // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::BOTTOM_RIGHT, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::BOTTOM_RIGHT, frame.GetBorderArrow());
   // The window should be right aligned with the anchor_rect.
   EXPECT_EQ(window_bounds.right(), 800);
   EXPECT_EQ(window_bounds.bottom(), 800);
@@ -613,13 +625,13 @@ TEST_F(BubbleFrameViewTest,
   //    |                    |_______|
   //    |________________________|
   frame.SetAvailableAnchorWindowBounds(gfx::Rect(700, 200, 400, 400));
-  frame.bubble_border()->set_arrow(BubbleBorder::TOP_LEFT);
+  frame.SetArrow(BubbleBorder::TOP_LEFT);
   window_bounds = frame.GetUpdatedWindowBounds(
       gfx::Rect(800, 500, 0, 0),      // |anchor_rect|
       BubbleBorder::Arrow::TOP_LEFT,  // |delegate_arrow|
       gfx::Size(250, 250),            // |client_size|
       true);                          // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::BOTTOM_RIGHT, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::BOTTOM_RIGHT, frame.GetBorderArrow());
   // The window should be right aligned with the anchor_rect.
   EXPECT_EQ(window_bounds.right(), 800);
   EXPECT_EQ(window_bounds.bottom(), 500);
@@ -636,13 +648,13 @@ TEST_F(BubbleFrameViewTest, MirroringNotStickyForGetUpdatedWindowBounds) {
 
   // Test bubble fitting anchor window and not fitting screen on right.
   frame.SetAvailableAnchorWindowBounds(gfx::Rect(700, 200, 400, 400));
-  frame.bubble_border()->set_arrow(BubbleBorder::TOP_LEFT);
+  frame.SetArrow(BubbleBorder::TOP_LEFT);
   window_bounds = frame.GetUpdatedWindowBounds(
       gfx::Rect(800, 300, 0, 0),      // |anchor_rect|
       BubbleBorder::Arrow::TOP_LEFT,  // |delegate_arrow|
       gfx::Size(250, 250),            // |client_size|
       true);                          // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::TOP_RIGHT, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::TOP_RIGHT, frame.GetBorderArrow());
   // The window should be right aligned with the anchor_rect.
   EXPECT_EQ(window_bounds.right(), 800);
   EXPECT_EQ(window_bounds.y(), 300);
@@ -654,7 +666,7 @@ TEST_F(BubbleFrameViewTest, MirroringNotStickyForGetUpdatedWindowBounds) {
       BubbleBorder::Arrow::TOP_LEFT,  // |delegate_arrow|
       gfx::Size(250, 250),            // |client_size|
       true);                          // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::TOP_LEFT, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::TOP_LEFT, frame.GetBorderArrow());
   // The window should be right aligned with the anchor_rect.
   EXPECT_EQ(window_bounds.x(), 700);
   EXPECT_EQ(window_bounds.y(), 300);
@@ -672,47 +684,47 @@ TEST_F(BubbleFrameViewTest, GetUpdatedWindowBoundsForBubbleSetToOffset) {
       std::make_unique<BubbleBorder>(kArrow, BubbleBorder::NO_SHADOW, kColor));
 
   // Test that the bubble displays normally when it fits.
-  frame.bubble_border()->set_arrow(BubbleBorder::TOP_LEFT);
+  frame.SetArrow(BubbleBorder::TOP_LEFT);
   window_bounds = frame.GetUpdatedWindowBounds(
       gfx::Rect(200, 200, 0, 0),      // |anchor_rect|
       BubbleBorder::Arrow::TOP_LEFT,  // |delegate_arrow|
       gfx::Size(250, 250),            // |client_size|
       true);                          // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::TOP_LEFT, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::TOP_LEFT, frame.GetBorderArrow());
   EXPECT_EQ(window_bounds.x(), 200);
 
   // Test bubble not fitting left window edge displayed against left window
   // edge.
-  frame.bubble_border()->set_arrow(BubbleBorder::TOP_RIGHT);
+  frame.SetArrow(BubbleBorder::TOP_RIGHT);
   window_bounds = frame.GetUpdatedWindowBounds(
       gfx::Rect(200, 200, 0, 0),       // |anchor_rect|
       BubbleBorder::Arrow::TOP_RIGHT,  // |delegate_arrow|
       gfx::Size(250, 250),             // |client_size|
       true);                           // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::TOP_RIGHT, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::TOP_RIGHT, frame.GetBorderArrow());
   EXPECT_EQ(window_bounds.x(), 100);
 
   // Test bubble not fitting right window edge displays against the right edge
   // of the anchor window.
-  frame.bubble_border()->set_arrow(BubbleBorder::TOP_LEFT);
+  frame.SetArrow(BubbleBorder::TOP_LEFT);
   window_bounds = frame.GetUpdatedWindowBounds(
       gfx::Rect(500, 200, 0, 0),      // |anchor_rect|
       BubbleBorder::Arrow::TOP_LEFT,  // |delegate_arrow|
       gfx::Size(250, 250),            // |client_size|
       true);                          // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::TOP_LEFT, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::TOP_LEFT, frame.GetBorderArrow());
   EXPECT_EQ(window_bounds.right(), 600);
 
   // Test bubble fitting anchor window and not fitting screen on right displays
   // against the right edge of the screen.
   frame.SetAvailableAnchorWindowBounds(gfx::Rect(800, 300, 500, 500));
-  frame.bubble_border()->set_arrow(BubbleBorder::TOP_LEFT);
+  frame.SetArrow(BubbleBorder::TOP_LEFT);
   window_bounds = frame.GetUpdatedWindowBounds(
       gfx::Rect(900, 500, 0, 0),      // |anchor_rect|
       BubbleBorder::Arrow::TOP_LEFT,  // |delegate_arrow|
       gfx::Size(250, 250),            // |client_size|
       true);                          // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::TOP_LEFT, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::TOP_LEFT, frame.GetBorderArrow());
   EXPECT_EQ(window_bounds.right(), 1000);
 }
 
@@ -731,48 +743,48 @@ TEST_F(BubbleFrameViewTest,
 
   // Test that the bubble exiting right side of anchor window displays against
   // left edge of anchor window bounds if larger than anchor window.
-  frame.bubble_border()->set_arrow(BubbleBorder::TOP_LEFT);
+  frame.SetArrow(BubbleBorder::TOP_LEFT);
   window_bounds = frame.GetUpdatedWindowBounds(
       gfx::Rect(300, 300, 0, 0),      // |anchor_rect|
       BubbleBorder::Arrow::TOP_LEFT,  // |delegate_arrow|
       gfx::Size(600, 250),            // |client_size|
       true);                          // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::TOP_LEFT, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::TOP_LEFT, frame.GetBorderArrow());
   EXPECT_EQ(window_bounds.x(), 200);
 
   // Test that the bubble exiting left side of anchor window displays against
   // right edge of anchor window bounds if larger than anchor window.
-  frame.bubble_border()->set_arrow(BubbleBorder::TOP_RIGHT);
+  frame.SetArrow(BubbleBorder::TOP_RIGHT);
   window_bounds = frame.GetUpdatedWindowBounds(
       gfx::Rect(300, 300, 0, 0),       // |anchor_rect|
       BubbleBorder::Arrow::TOP_RIGHT,  // |delegate_arrow|
       gfx::Size(600, 250),             // |client_size|
       true);                           // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::TOP_RIGHT, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::TOP_RIGHT, frame.GetBorderArrow());
   // Check that the right edge of the bubble equals the right edge of the
   // anchor window.
   EXPECT_EQ(window_bounds.right(), 700);
 
   // Test that the bubble exiting bottom side of anchor window displays against
   // top edge of anchor window bounds if larger than anchor window.
-  frame.bubble_border()->set_arrow(BubbleBorder::LEFT_TOP);
+  frame.SetArrow(BubbleBorder::LEFT_TOP);
   window_bounds = frame.GetUpdatedWindowBounds(
       gfx::Rect(400, 400, 0, 0),      // |anchor_rect|
       BubbleBorder::Arrow::LEFT_TOP,  // |delegate_arrow|
       gfx::Size(250, 600),            // |client_size|
       true);                          // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::LEFT_TOP, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::LEFT_TOP, frame.GetBorderArrow());
   EXPECT_EQ(window_bounds.y(), 200);
 
   // Test that the bubble exiting top side of anchor window displays against
   // bottom edge of anchor window bounds if larger than anchor window.
-  frame.bubble_border()->set_arrow(BubbleBorder::LEFT_BOTTOM);
+  frame.SetArrow(BubbleBorder::LEFT_BOTTOM);
   window_bounds = frame.GetUpdatedWindowBounds(
       gfx::Rect(300, 300, 0, 0),         // |anchor_rect|
       BubbleBorder::Arrow::LEFT_BOTTOM,  // |delegate_arrow|
       gfx::Size(250, 600),               // |client_size|
       true);                             // |adjust_to_fit_available_bounds|
-  EXPECT_EQ(BubbleBorder::LEFT_BOTTOM, frame.bubble_border()->arrow());
+  EXPECT_EQ(BubbleBorder::LEFT_BOTTOM, frame.GetBorderArrow());
   EXPECT_EQ(window_bounds.bottom(), 700);
 }
 
@@ -781,7 +793,7 @@ TEST_F(BubbleFrameViewTest, GetPreferredSize) {
   TestBubbleFrameView frame(this);
   gfx::Rect preferred_rect(frame.GetPreferredSize());
   // Expect that a border has been added to the preferred size.
-  preferred_rect.Inset(frame.bubble_border()->GetInsets());
+  preferred_rect.Inset(frame.GetBorderInsets());
 
   gfx::Size expected_size(kPreferredClientWidth + kExpectedAdditionalWidth,
                           kPreferredClientHeight + kExpectedAdditionalHeight);
@@ -815,7 +827,7 @@ TEST_F(BubbleFrameViewTest, GetMinimumSize) {
   TestBubbleFrameView frame(this);
   gfx::Rect minimum_rect(frame.GetMinimumSize());
   // Expect that a border has been added to the minimum size.
-  minimum_rect.Inset(frame.bubble_border()->GetInsets());
+  minimum_rect.Inset(frame.GetBorderInsets());
 
   gfx::Size expected_size(kMinimumClientWidth + kExpectedAdditionalWidth,
                           kMinimumClientHeight + kExpectedAdditionalHeight);
@@ -830,7 +842,7 @@ TEST_F(BubbleFrameViewTest, GetMaximumSize) {
   // (unlimited). See http://crbug.com/506206.
   EXPECT_EQ(gfx::Size(), maximum_rect.size());
 #else
-  maximum_rect.Inset(frame.bubble_border()->GetInsets());
+  maximum_rect.Inset(frame.GetBorderInsets());
 
   // Should ignore the contents view's maximum size and use the preferred size.
   gfx::Size expected_size(kPreferredClientWidth + kExpectedAdditionalWidth,

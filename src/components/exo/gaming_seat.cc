@@ -63,7 +63,7 @@ void GamingSeat::OnWindowFocused(aura::Window* gained_focus,
 // ui::GamepadObserver overrides:
 
 void GamingSeat::OnGamepadDevicesUpdated() {
-  std::vector<ui::InputDevice> gamepad_devices =
+  std::vector<ui::GamepadDevice> gamepad_devices =
       ui::GamepadProviderOzone::GetInstance()->GetGamepadDevices();
 
   base::flat_map<int, GamepadDelegate*> new_gamepads;
@@ -84,7 +84,7 @@ void GamingSeat::OnGamepadDevicesUpdated() {
   // Add each new connected gamepad.
   for (auto& device : gamepad_devices) {
     if (new_gamepads.find(device.id) == new_gamepads.end())
-      new_gamepads[device.id] = delegate_->GamepadAdded();
+      new_gamepads[device.id] = delegate_->GamepadAdded(device);
   }
 
   new_gamepads.swap(gamepads_);
@@ -97,10 +97,11 @@ void GamingSeat::OnGamepadEvent(const ui::GamepadEvent& event) {
 
   switch (event.type()) {
     case ui::GamepadEventType::BUTTON:
-      it->second->OnButton(event.code(), event.value(), event.value());
+      it->second->OnButton(event.code(), event.raw_code(), event.value(),
+                           event.value());
       break;
     case ui::GamepadEventType::AXIS:
-      it->second->OnAxis(event.code(), event.value());
+      it->second->OnAxis(event.code(), event.raw_code(), event.value());
       break;
     case ui::GamepadEventType::FRAME:
       it->second->OnFrame();

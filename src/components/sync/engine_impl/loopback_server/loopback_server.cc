@@ -344,9 +344,9 @@ net::HttpStatusCode LoopbackServer::HandleCommand(const string& request,
     std::vector<ModelType> datatypes_to_migrate;
     switch (message.message_contents()) {
       case sync_pb::ClientToServerMessage::GET_UPDATES:
-        success = HandleGetUpdatesRequest(message.get_updates(),
-                                          response_proto.mutable_get_updates(),
-                                          &datatypes_to_migrate);
+        success = HandleGetUpdatesRequest(
+            message.get_updates(), message.store_birthday(),
+            response_proto.mutable_get_updates(), &datatypes_to_migrate);
         break;
       case sync_pb::ClientToServerMessage::COMMIT:
         success = HandleCommitRequest(message.commit(),
@@ -394,9 +394,24 @@ void LoopbackServer::EnableStrongConsistencyWithConflictDetectionModel() {
 
 bool LoopbackServer::HandleGetUpdatesRequest(
     const sync_pb::GetUpdatesMessage& get_updates,
+    const std::string& store_birthday,
     sync_pb::GetUpdatesResponse* response,
     std::vector<ModelType>* datatypes_to_migrate) {
   response->set_changes_remaining(0);
+
+  // It's a protocol-level contract that the birthday should only be empty
+  // during the initial sync cycle, which requires all progress markers to be
+  // empty. This is also DCHECK-ed on the client, inside syncer_proto_util.cc,
+  // but we guard against client-side code changes here.
+  if (store_birthday.empty()) {
+    for (const sync_pb::DataTypeProgressMarker& marker :
+         get_updates.from_progress_marker()) {
+      if (!marker.token().empty()) {
+        DLOG(WARNING) << "Non-empty progress marker without birthday";
+        return false;
+      }
+    }
+  }
 
   auto sieve = std::make_unique<UpdateSieve>(get_updates, migration_versions_);
 

@@ -12,8 +12,8 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
-#include "components/autofill/core/browser/popup_item_ids.h"
-#include "components/autofill/core/browser/suggestion.h"
+#include "components/autofill/core/browser/ui/popup_item_ids.h"
+#include "components/autofill/core/browser/ui/suggestion.h"
 
 namespace autofill {
 

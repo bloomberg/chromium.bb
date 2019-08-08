@@ -389,6 +389,18 @@ NavigationControllerAndroid::GetEntryAtIndex(JNIEnv* env,
 }
 
 base::android::ScopedJavaLocalRef<jobject>
+NavigationControllerAndroid::GetVisibleEntry(JNIEnv* env,
+                                             const JavaParamRef<jobject>& obj) {
+  content::NavigationEntry* entry = navigation_controller_->GetVisibleEntry();
+
+  if (!entry)
+    return base::android::ScopedJavaLocalRef<jobject>();
+
+  return JNI_NavigationControllerImpl_CreateJavaNavigationEntry(env, entry,
+                                                                /*index=*/-1);
+}
+
+base::android::ScopedJavaLocalRef<jobject>
 NavigationControllerAndroid::GetPendingEntry(JNIEnv* env,
                                              const JavaParamRef<jobject>& obj) {
   content::NavigationEntry* entry = navigation_controller_->GetPendingEntry();

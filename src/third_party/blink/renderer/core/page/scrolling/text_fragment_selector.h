@@ -14,7 +14,7 @@ namespace blink {
 // TextFragmentAnchor, parsed into its components.
 class CORE_EXPORT TextFragmentSelector final {
  public:
-  static TextFragmentSelector Create(const String& target_text);
+  static TextFragmentSelector Create(String target_text);
 
   enum SelectorType {
     // An exact selector on the string start_.
@@ -23,17 +23,25 @@ class CORE_EXPORT TextFragmentSelector final {
     kRange,
   };
 
-  TextFragmentSelector(SelectorType type, String start, String end);
+  TextFragmentSelector(SelectorType type,
+                       const String& start,
+                       const String& end,
+                       const String& prefix,
+                       const String& suffix);
   ~TextFragmentSelector() = default;
 
   SelectorType Type() const { return type_; }
   String Start() const { return start_; }
   String End() const { return end_; }
+  String Prefix() const { return prefix_; }
+  String Suffix() const { return suffix_; }
 
  private:
   const SelectorType type_;
   String start_;
   String end_;
+  String prefix_;
+  String suffix_;
 };
 
 }  // namespace blink

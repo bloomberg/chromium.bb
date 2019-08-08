@@ -10,12 +10,14 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "components/strings/grit/components_strings.h"
+#include "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
 #import "ios/chrome/browser/ui/commands/activity_service_commands.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/infobar_commands.h"
 #import "ios/chrome/browser/ui/commands/load_query_commands.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
+#import "ios/chrome/browser/ui/infobars/badge/infobar_badge_button.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #include "ios/chrome/browser/ui/location_bar/location_bar_steady_view.h"
 #import "ios/chrome/browser/ui/orchestrator/location_bar_offset_provider.h"
@@ -57,6 +59,17 @@ typedef NS_ENUM(int, TrailingButtonState) {
 // state of the share button if it's temporarily replaced by the voice search
 // icon (in iPad multitasking).
 @property(nonatomic, assign) BOOL shareButtonEnabled;
+
+// Keeps the status of the leading button of the location bar steady view. Used
+// to preserve leading button visibility during animations.
+@property(nonatomic, assign) BOOL shouldShowLeadingButton;
+
+// Used to build and record Infobar metrics.
+@property(nonatomic, strong) InfobarMetricsRecorder* infobarMetricsRecorder;
+
+// Whether the InfobarBadge is active or not.
+// TODO(crbug.com/961343): Move this into a future BadgeContainer.
+@property(nonatomic, assign) BOOL activeBadge;
 
 // Starts voice search, updating the NamedGuide to be constrained to the
 // trailing button.
@@ -213,8 +226,10 @@ typedef NS_ENUM(int, TrailingButtonState) {
 
 #pragma mark - LocationBarConsumer
 
-- (void)updateLocationText:(NSString*)text {
-  [self.locationBarSteadyView setLocationLabelText:text];
+- (void)updateLocationText:(NSString*)string clipTail:(BOOL)clipTail {
+  [self.locationBarSteadyView setLocationLabelText:string];
+  self.locationBarSteadyView.locationLabel.lineBreakMode =
+      clipTail ? NSLineBreakByTruncatingTail : NSLineBreakByTruncatingHead;
 }
 
 - (void)updateLocationIcon:(UIImage*)icon
@@ -247,8 +262,11 @@ typedef NS_ENUM(int, TrailingButtonState) {
   }
 }
 
-- (void)displayInfobarButton:(BOOL)display {
-  self.locationBarSteadyView.leadingButton.hidden = !display;
+- (void)displayInfobarButton:(BOOL)display
+             metricsRecorder:(InfobarMetricsRecorder*)metricsRecorder {
+  self.infobarMetricsRecorder = metricsRecorder;
+  self.shouldShowLeadingButton = display;
+  [self.locationBarSteadyView displayBadge:display animated:YES];
 }
 
 #pragma mark - LocationBarAnimatee
@@ -279,6 +297,15 @@ typedef NS_ENUM(int, TrailingButtonState) {
 
 - (void)setSteadyViewFaded:(BOOL)hidden {
   self.locationBarSteadyView.alpha = hidden ? 0 : 1;
+}
+
+- (void)hideSteadyViewLeadingButton {
+  [self.locationBarSteadyView displayBadge:NO animated:NO];
+}
+
+- (void)showSteadyViewLeadingButtonIfNeeded {
+  [self.locationBarSteadyView displayBadge:self.shouldShowLeadingButton
+                                  animated:NO];
 }
 
 - (void)setEditViewFaded:(BOOL)hidden {
@@ -437,31 +464,33 @@ typedef NS_ENUM(int, TrailingButtonState) {
 // being used here if/when this stops being temporary.
 - (void)updateInfobarButton {
   DCHECK(IsInfobarUIRebootEnabled());
-  [self.locationBarSteadyView.leadingButton
-      setImage:[[UIImage imageNamed:@"infobar_passwords_icon"]
-                   imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]
-      forState:UIControlStateNormal];
-  self.locationBarSteadyView.leadingButton.imageView.contentMode =
-      UIViewContentModeScaleToFill;
-  self.locationBarSteadyView.leadingButton.imageEdgeInsets =
-      UIEdgeInsetsMake(6, 6, 6, 6);
 
   [self.locationBarSteadyView.leadingButton
-             addTarget:self.dispatcher
+             addTarget:self
                 action:@selector(displayModalInfobar)
       forControlEvents:UIControlEventTouchUpInside];
   // Set as hidden as it should only be shown by |displayInfobarButton:|
   self.locationBarSteadyView.leadingButton.hidden = YES;
 }
 
-- (void)setInfobarButtonStyleSelected:(BOOL)selected {
-  self.locationBarSteadyView.leadingButton.backgroundColor =
-      selected ? [UIColor colorWithWhite:0.80 alpha:1.0] : [UIColor clearColor];
+- (void)displayModalInfobar {
+  MobileMessagesBadgeState state;
+  if (self.activeBadge) {
+    state = MobileMessagesBadgeState::Active;
+    base::RecordAction(
+        base::UserMetricsAction("MobileMessagesBadgeAcceptedTapped"));
+  } else {
+    state = MobileMessagesBadgeState::Inactive;
+    base::RecordAction(
+        base::UserMetricsAction("MobileMessagesBadgeNonAcceptedTapped"));
+  }
+  [self.infobarMetricsRecorder recordBadgeTappedInState:state];
+  [self.dispatcher displayModalInfobar];
 }
 
 - (void)setInfobarButtonStyleActive:(BOOL)active {
-  self.locationBarSteadyView.leadingButton.tintColor =
-      active ? self.locationBarSteadyView.tintColor : [UIColor lightGrayColor];
+  self.activeBadge = active;
+  [self.locationBarSteadyView.leadingButton setActive:active animated:YES];
 }
 
 #pragma mark - UIMenu

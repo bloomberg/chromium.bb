@@ -12,12 +12,13 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "chrome/browser/chromeos/printing/bulk_printers_calculator.h"
-#include "components/account_id/account_id.h"
 
+class AccountId;
 class Profile;
 
 namespace chromeos {
+
+class BulkPrintersCalculator;
 
 // Dispenses BulkPrintersCalculator objects based on account id.  Access to this
 // object should be sequenced.

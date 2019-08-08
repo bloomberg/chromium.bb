@@ -53,10 +53,6 @@ const SVGEnumerationMap& GetEnumerationMap<SVGLengthAdjustType>() {
 // manually.
 class SVGAnimatedTextLength final : public SVGAnimatedLength {
  public:
-  static SVGAnimatedTextLength* Create(SVGTextContentElement* context_element) {
-    return MakeGarbageCollected<SVGAnimatedTextLength>(context_element);
-  }
-
   SVGAnimatedTextLength(SVGTextContentElement* context_element)
       : SVGAnimatedLength(context_element,
                           svg_names::kTextLengthAttr,
@@ -78,7 +74,7 @@ class SVGAnimatedTextLength final : public SVGAnimatedLength {
 SVGTextContentElement::SVGTextContentElement(const QualifiedName& tag_name,
                                              Document& document)
     : SVGGraphicsElement(tag_name, document),
-      text_length_(SVGAnimatedTextLength::Create(this)),
+      text_length_(MakeGarbageCollected<SVGAnimatedTextLength>(this)),
       text_length_is_specified_by_user_(false),
       length_adjust_(
           MakeGarbageCollected<SVGAnimatedEnumeration<SVGLengthAdjustType>>(
@@ -284,7 +280,7 @@ SVGTextContentElement* SVGTextContentElement::ElementFromLineLayoutItem(
       (!line_layout_item.IsSVGText() && !line_layout_item.IsSVGInline()))
     return nullptr;
 
-  SVGElement* element = ToSVGElement(line_layout_item.GetNode());
+  auto* element = To<SVGElement>(line_layout_item.GetNode());
   DCHECK(element);
   return IsSVGTextContentElement(*element) ? ToSVGTextContentElement(element)
                                            : nullptr;

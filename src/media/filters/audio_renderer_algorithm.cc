@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "cc/base/math_util.h"
 #include "media/base/audio_bus.h"
+#include "media/base/audio_timestamp_helper.h"
 #include "media/base/limits.h"
 #include "media/filters/wsola_internals.h"
 
@@ -46,28 +47,38 @@ namespace media {
 //        |search_block_center_offset_|.
 
 // Overlap-and-add window size in milliseconds.
-static const int kOlaWindowSizeMs = 20;
+constexpr base::TimeDelta kOlaWindowSize =
+    base::TimeDelta::FromMilliseconds(20);
 
 // Size of search interval in milliseconds. The search interval is
 // [-delta delta] around |output_index_| * |playback_rate|. So the search
 // interval is 2 * delta.
-static const int kWsolaSearchIntervalMs = 30;
+constexpr base::TimeDelta kWsolaSearchInterval =
+    base::TimeDelta::FromMilliseconds(30);
 
-// The maximum size in seconds for the |audio_buffer_|. Arbitrarily determined.
-static const int kMaxCapacityInSeconds = 3;
+// The maximum size for the |audio_buffer_|. Arbitrarily determined.
+constexpr base::TimeDelta kMaxCapacity = base::TimeDelta::FromSeconds(3);
 
-// The minimum size in ms for the |audio_buffer_|. Arbitrarily determined.
-static const int kStartingCapacityInMs = 200;
+// The minimum size for the |audio_buffer_|. Arbitrarily determined.
+constexpr base::TimeDelta kStartingCapacity =
+    base::TimeDelta::FromMilliseconds(200);
 
-// The minimum size in ms for the |audio_buffer_| for encrypted streams.
-// Set this to be larger than |kStartingCapacityInMs| because the performance of
+// The minimum size for the |audio_buffer_| for encrypted streams.
+// Set this to be larger than |kStartingCapacity| because the performance of
 // encrypted playback is always worse than clear playback, due to decryption and
 // potentially IPC overhead. For the context, see https://crbug.com/403462,
 // https://crbug.com/718161 and https://crbug.com/879970.
-static const int kStartingCapacityForEncryptedInMs = 500;
+constexpr base::TimeDelta kStartingCapacityForEncrypted =
+    base::TimeDelta::FromMilliseconds(500);
 
 AudioRendererAlgorithm::AudioRendererAlgorithm()
-    : channels_(0),
+    : AudioRendererAlgorithm(
+          {kMaxCapacity, kStartingCapacity, kStartingCapacityForEncrypted}) {}
+
+AudioRendererAlgorithm::AudioRendererAlgorithm(
+    AudioRendererAlgorithmParameters params)
+    : audio_renderer_algorithm_params_(std::move(params)),
+      channels_(0),
       samples_per_second_(0),
       is_bitstream_format_(false),
       capacity_(0),
@@ -92,14 +103,20 @@ void AudioRendererAlgorithm::Initialize(const AudioParameters& params,
   samples_per_second_ = params.sample_rate();
   is_bitstream_format_ = params.IsBitstreamFormat();
   initial_capacity_ = capacity_ = std::max(
-      params.frames_per_buffer() * 2,
-      ConvertMillisecondsToFrames(is_encrypted
-                                      ? kStartingCapacityForEncryptedInMs
-                                      : kStartingCapacityInMs));
-  max_capacity_ =
-      std::max(initial_capacity_, kMaxCapacityInSeconds * samples_per_second_);
-  num_candidate_blocks_ = ConvertMillisecondsToFrames(kWsolaSearchIntervalMs);
-  ola_window_size_ = ConvertMillisecondsToFrames(kOlaWindowSizeMs);
+      static_cast<int64_t>(params.frames_per_buffer()) * 2,
+      AudioTimestampHelper::TimeToFrames(
+          is_encrypted
+              ? audio_renderer_algorithm_params_.starting_capacity_for_encrypted
+              : audio_renderer_algorithm_params_.starting_capacity,
+          samples_per_second_));
+  max_capacity_ = std::max(
+      initial_capacity_,
+      AudioTimestampHelper::TimeToFrames(
+          audio_renderer_algorithm_params_.max_capacity, samples_per_second_));
+  num_candidate_blocks_ = AudioTimestampHelper::TimeToFrames(
+      kWsolaSearchInterval, samples_per_second_);
+  ola_window_size_ =
+      AudioTimestampHelper::TimeToFrames(kOlaWindowSize, samples_per_second_);
 
   // Make sure window size in an even number.
   ola_window_size_ += ola_window_size_ & 1;
@@ -224,9 +241,9 @@ void AudioRendererAlgorithm::FlushBuffers() {
 }
 
 void AudioRendererAlgorithm::EnqueueBuffer(
-    const scoped_refptr<AudioBuffer>& buffer_in) {
+    scoped_refptr<AudioBuffer> buffer_in) {
   DCHECK(!buffer_in->end_of_stream());
-  audio_buffer_.Append(buffer_in);
+  audio_buffer_.Append(std::move(buffer_in));
 }
 
 bool AudioRendererAlgorithm::IsQueueFull() {
@@ -247,11 +264,6 @@ bool AudioRendererAlgorithm::CanPerformWsola() const {
   const int frames = audio_buffer_.frames();
   return target_block_index_ + ola_window_size_ <= frames &&
       search_block_index_ + search_block_size <= frames;
-}
-
-int AudioRendererAlgorithm::ConvertMillisecondsToFrames(int ms) const {
-  return ms * (samples_per_second_ /
-               static_cast<double>(base::Time::kMillisecondsPerSecond));
 }
 
 bool AudioRendererAlgorithm::RunOneWsolaIteration(double playback_rate) {

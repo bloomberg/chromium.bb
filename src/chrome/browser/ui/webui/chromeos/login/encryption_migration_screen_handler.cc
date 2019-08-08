@@ -22,6 +22,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_migration_constants.h"
+#include "chrome/browser/chromeos/login/screens/encryption_migration_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_feedback.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
@@ -252,6 +253,8 @@ FirstScreen GetFirstScreenForMode(chromeos::EncryptionMigrationMode mode) {
 
 namespace chromeos {
 
+constexpr StaticOobeScreenId EncryptionMigrationScreenView::kScreenId;
+
 EncryptionMigrationScreenHandler::EncryptionMigrationScreenHandler(
     JSCallsContainer* js_calls_container)
     : BaseScreenHandler(kScreenId, js_calls_container),
@@ -280,7 +283,8 @@ void EncryptionMigrationScreenHandler::Hide() {
   show_on_init_ = false;
 }
 
-void EncryptionMigrationScreenHandler::SetDelegate(Delegate* delegate) {
+void EncryptionMigrationScreenHandler::SetDelegate(
+    EncryptionMigrationScreen* delegate) {
   delegate_ = delegate;
   if (page_is_ready())
     Initialize();

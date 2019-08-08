@@ -46,12 +46,6 @@ class SVGAnimatedNumberList final : public ScriptWrappable,
   USING_GARBAGE_COLLECTED_MIXIN(SVGAnimatedNumberList);
 
  public:
-  static SVGAnimatedNumberList* Create(SVGElement* context_element,
-                                       const QualifiedName& attribute_name) {
-    return MakeGarbageCollected<SVGAnimatedNumberList>(context_element,
-                                                       attribute_name);
-  }
-
   SVGAnimatedNumberList(SVGElement* context_element,
                         const QualifiedName& attribute_name)
       : SVGAnimatedProperty<SVGNumberList>(

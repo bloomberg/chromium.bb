@@ -4,18 +4,23 @@
 
 #include "content/browser/network_service_client.h"
 
+#include <utility>
+
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/optional.h"
 #include "base/task/post_task.h"
+#include "base/threading/sequence_bound.h"
 #include "base/unguessable_token.h"
 #include "content/browser/browsing_data/clear_site_data_handler.h"
 #include "content/browser/devtools/devtools_url_loader_interceptor.h"
+#include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/ssl/ssl_error_handler.h"
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/browser/ssl_private_key_impl.h"
-#include "content/browser/web_contents/web_contents_getter_registry.h"
+#include "content/browser/web_contents/frame_tree_node_id_registry.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -25,12 +30,15 @@
 #include "content/public/browser/login_delegate.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "net/cookies/cookie_util.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/ssl/client_cert_store.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/content_uri_utils.h"
@@ -64,107 +72,67 @@ class SSLErrorDelegate : public SSLErrorHandler::Delegate {
   base::WeakPtrFactory<SSLErrorDelegate> weak_factory_;
 };
 
-// This class is created on UI thread, and deleted by
-// BrowserThread::DeleteSoon() after the |callback_| runs. The |callback_|
-// needs to run on UI thread since it is called through the
-// NetworkServiceClient interface.
-//
-// The |ssl_client_auth_handler_| needs to be created on IO thread, and deleted
-// on the same thread by posting a BrowserThread::DeleteSoon() task to IO
-// thread.
-//
-// ContinueWithCertificate() and CancelCertificateSelection() run on IO thread.
+// This class lives on the IO thread. It is self-owned and will delete itself
+// after any of the SSLClientAuthHandler::Delegate methods are invoked (or when
+// a mojo connection error occurs).
 class SSLClientAuthDelegate : public SSLClientAuthHandler::Delegate {
  public:
   SSLClientAuthDelegate(
-      network::mojom::NetworkServiceClient::OnCertificateRequestedCallback
-          callback,
+      network::mojom::ClientCertificateResponderPtrInfo
+          client_cert_responder_info,
+      content::ResourceContext* resource_context,
       ResourceRequestInfo::WebContentsGetter web_contents_getter,
-      scoped_refptr<net::SSLCertRequestInfo> cert_info)
-      : callback_(std::move(callback)), cert_info_(std::move(cert_info)) {
-    content::WebContents* web_contents = web_contents_getter.Run();
-    content::BrowserContext* browser_context =
-        web_contents->GetBrowserContext();
-    content::ResourceContext* resource_context =
-        browser_context->GetResourceContext();
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&SSLClientAuthDelegate::CreateSSLClientAuthHandler,
-                       base::Unretained(this), resource_context,
-                       web_contents_getter));
+      const scoped_refptr<net::SSLCertRequestInfo>& cert_info)
+      : client_cert_responder_(std::move(client_cert_responder_info)),
+        ssl_client_auth_handler_(std::make_unique<SSLClientAuthHandler>(
+            GetContentClient()->browser()->CreateClientCertStore(
+                resource_context),
+            std::move(web_contents_getter),
+            std::move(cert_info.get()),
+            this)) {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    DCHECK(client_cert_responder_);
+    ssl_client_auth_handler_->SelectCertificate();
+    client_cert_responder_.set_connection_error_handler(base::BindOnce(
+        &SSLClientAuthDelegate::DeleteSelf, base::Unretained(this)));
   }
-  ~SSLClientAuthDelegate() override {}
+
+  ~SSLClientAuthDelegate() override { DCHECK_CURRENTLY_ON(BrowserThread::IO); }
+
+  void DeleteSelf() { delete this; }
+
+  // SSLClientAuthHandler::Delegate:
+  void CancelCertificateSelection() override {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    client_cert_responder_->CancelRequest();
+    DeleteSelf();
+  }
 
   // SSLClientAuthHandler::Delegate:
   void ContinueWithCertificate(
       scoped_refptr<net::X509Certificate> cert,
       scoped_refptr<net::SSLPrivateKey> private_key) override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
     DCHECK((cert && private_key) || (!cert && !private_key));
 
-    std::string provider_name;
-    std::vector<uint16_t> algorithm_preferences;
-    network::mojom::SSLPrivateKeyPtr ssl_private_key;
-    auto ssl_private_key_request = mojo::MakeRequest(&ssl_private_key);
+    if (cert && private_key) {
+      network::mojom::SSLPrivateKeyPtr ssl_private_key;
 
-    if (private_key) {
-      provider_name = private_key->GetProviderName();
-      algorithm_preferences = private_key->GetAlgorithmPreferences();
-      mojo::MakeStrongBinding(
-          std::make_unique<SSLPrivateKeyImpl>(std::move(private_key)),
-          std::move(ssl_private_key_request));
+      mojo::MakeStrongBinding(std::make_unique<SSLPrivateKeyImpl>(private_key),
+                              mojo::MakeRequest(&ssl_private_key));
+
+      client_cert_responder_->ContinueWithCertificate(
+          cert, private_key->GetProviderName(),
+          private_key->GetAlgorithmPreferences(), std::move(ssl_private_key));
+    } else {
+      client_cert_responder_->ContinueWithoutCertificate();
     }
 
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&SSLClientAuthDelegate::RunCallback,
-                       base::Unretained(this), cert, std::move(provider_name),
-                       std::move(algorithm_preferences),
-                       std::move(ssl_private_key),
-                       false /* cancel_certificate_selection */));
-  }
-
-  // SSLClientAuthHandler::Delegate:
-  void CancelCertificateSelection() override {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-    network::mojom::SSLPrivateKeyPtr ssl_private_key;
-    mojo::MakeRequest(&ssl_private_key);
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&SSLClientAuthDelegate::RunCallback,
-                       base::Unretained(this), nullptr, std::string(),
-                       std::vector<uint16_t>(), std::move(ssl_private_key),
-                       true /* cancel_certificate_selection */));
-  }
-
-  void RunCallback(scoped_refptr<net::X509Certificate> cert,
-                   std::string provider_name,
-                   std::vector<uint16_t> algorithm_preferences,
-                   network::mojom::SSLPrivateKeyPtr ssl_private_key,
-                   bool cancel_certificate_selection) {
-    std::move(callback_).Run(cert, provider_name, algorithm_preferences,
-                             std::move(ssl_private_key),
-                             cancel_certificate_selection);
-    BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, this);
+    DeleteSelf();
   }
 
  private:
-  void CreateSSLClientAuthHandler(
-      content::ResourceContext* resource_context,
-      ResourceRequestInfo::WebContentsGetter web_contents_getter) {
-    std::unique_ptr<net::ClientCertStore> client_cert_store =
-        GetContentClient()->browser()->CreateClientCertStore(resource_context);
-    ssl_client_auth_handler_.reset(new SSLClientAuthHandler(
-        std::move(client_cert_store), std::move(web_contents_getter),
-        cert_info_.get(), this));
-    ssl_client_auth_handler_->SelectCertificate();
-  }
-
-  network::mojom::NetworkServiceClient::OnCertificateRequestedCallback
-      callback_;
-  scoped_refptr<net::SSLCertRequestInfo> cert_info_;
+  network::mojom::ClientCertificateResponderPtr client_cert_responder_;
   std::unique_ptr<SSLClientAuthHandler> ssl_client_auth_handler_;
 };
 
@@ -324,7 +292,8 @@ void HandleFileUploadRequest(
 
 base::RepeatingCallback<WebContents*(void)> GetWebContentsFromRegistry(
     const base::UnguessableToken& window_id) {
-  return WebContentsGetterRegistry::GetInstance()->Get(window_id);
+  return FrameTreeNodeIdRegistry::GetInstance()->GetWebContentsGetter(
+      window_id);
 }
 
 WebContents* GetWebContents(int process_id, int routing_id) {
@@ -334,18 +303,24 @@ WebContents* GetWebContents(int process_id, int routing_id) {
   return WebContents::FromFrameTreeNodeId(routing_id);
 }
 
-BrowserContext* GetBrowserContextFromIds(int process_id, int routing_id) {
-  WebContents* web_contents = GetWebContents(process_id, routing_id);
-  if (web_contents)
-    return web_contents->GetBrowserContext();
-  // Some requests such as service worker updates are not associated with
-  // a WebContents so we can't use it to obtain the BrowserContext.
-  // TODO(dullweber): Could we always use RenderProcessHost?
-  RenderProcessHost* process_host = RenderProcessHostImpl::FromID(process_id);
-  if (process_host)
-    return process_host->GetBrowserContext();
+bool IsMainFrameRequest(int process_id, int routing_id) {
+  if (process_id != network::mojom::kBrowserProcessId)
+    return false;
 
-  return nullptr;
+  auto* frame_tree_node = FrameTreeNode::GloballyFindByID(routing_id);
+  return frame_tree_node && frame_tree_node->IsMainFrame();
+}
+
+void CreateSSLClientAuthDelegateOnIO(
+    network::mojom::ClientCertificateResponderPtrInfo
+        client_cert_responder_info,
+    content::ResourceContext* resource_context,
+    ResourceRequestInfo::WebContentsGetter web_contents_getter,
+    scoped_refptr<net::SSLCertRequestInfo> cert_info) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  new SSLClientAuthDelegate(std::move(client_cert_responder_info),
+                            resource_context, std::move(web_contents_getter),
+                            cert_info);  // deletes self
 }
 
 void OnCertificateRequestedContinuation(
@@ -353,23 +328,28 @@ void OnCertificateRequestedContinuation(
     uint32_t routing_id,
     uint32_t request_id,
     const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
-    network::mojom::NetworkServiceClient::OnCertificateRequestedCallback
-        callback,
+    network::mojom::ClientCertificateResponderPtrInfo
+        client_cert_responder_info,
     base::RepeatingCallback<WebContents*(void)> web_contents_getter) {
   if (!web_contents_getter) {
     web_contents_getter =
         base::BindRepeating(GetWebContents, process_id, routing_id);
   }
-  if (!web_contents_getter.Run()) {
-    network::mojom::SSLPrivateKeyPtr ssl_private_key;
-    mojo::MakeRequest(&ssl_private_key);
-    std::move(callback).Run(nullptr, std::string(), std::vector<uint16_t>(),
-                            std::move(ssl_private_key),
-                            true /* cancel_certificate_selection */);
+  WebContents* web_contents = web_contents_getter.Run();
+  if (!web_contents) {
+    DCHECK(client_cert_responder_info);
+    network::mojom::ClientCertificateResponderPtr client_cert_responder(
+        std::move(client_cert_responder_info));
+    client_cert_responder->CancelRequest();
     return;
   }
-  new SSLClientAuthDelegate(std::move(callback), std::move(web_contents_getter),
-                            cert_info);  // deletes self
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&CreateSSLClientAuthDelegateOnIO,
+                     std::move(client_cert_responder_info),
+                     web_contents->GetBrowserContext()->GetResourceContext(),
+                     std::move(web_contents_getter), cert_info));
 }
 
 #if defined(OS_ANDROID)
@@ -382,6 +362,82 @@ void FinishGenerateNegotiateAuthToken(
   std::move(callback).Run(result, *auth_token);
 }
 #endif
+
+// TODO(crbug.com/977040): Remove when no longer needed.
+void DeprecateSameSiteCookies(int process_id,
+                              int routing_id,
+                              const net::CookieStatusList& excluded_cookies) {
+  // Navigation requests start in the browser, before process_id is assigned, so
+  // the id is set to network::mojom::kBrowserProcessId. In these situations,
+  // the routing_id is the frame tree node id, and can be used directly.
+  RenderFrameHostImpl* frame = nullptr;
+  if (process_id == network::mojom::kBrowserProcessId) {
+    FrameTreeNode* ftn = FrameTreeNode::GloballyFindByID(routing_id);
+    if (ftn)
+      frame = ftn->current_frame_host();
+  } else {
+    frame = RenderFrameHostImpl::FromID(process_id, routing_id);
+  }
+
+  if (!frame)
+    return;
+
+  // Because of the nature of mojo and calling cross process, there's the
+  // possibility of calling this method after the page has already been
+  // navigated away from, which is DCHECKed against in
+  // LogWebFeatureForCurrentPage. We're replicating the DCHECK here and
+  // returning early should this be the case.
+  WebContents* web_contents = WebContents::FromRenderFrameHost(frame);
+
+  // |web_contents| will be null on interstitial pages, which means the frame
+  // has been navigated away from and the function should return early.
+  if (!web_contents)
+    return;
+
+  RenderFrameHostImpl* root_frame_host = frame;
+  while (root_frame_host->GetParent() != nullptr)
+    root_frame_host = root_frame_host->GetParent();
+
+  if (root_frame_host != web_contents->GetMainFrame())
+    return;
+
+  bool samesite_treated_as_lax_cookies = false;
+  bool samesite_none_insecure_cookies = false;
+
+  bool emit_messages =
+      base::FeatureList::IsEnabled(features::kCookieDeprecationMessages);
+
+  for (const net::CookieWithStatus& excluded_cookie : excluded_cookies) {
+    std::string cookie_url =
+        net::cookie_util::CookieOriginToURL(excluded_cookie.cookie.Domain(),
+                                            excluded_cookie.cookie.IsSecure())
+            .possibly_invalid_spec();
+
+    if (excluded_cookie.status ==
+        net::CanonicalCookie::CookieInclusionStatus::
+            EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX) {
+      samesite_treated_as_lax_cookies = true;
+    }
+    if (excluded_cookie.status == net::CanonicalCookie::CookieInclusionStatus::
+                                      EXCLUDE_SAMESITE_NONE_INSECURE) {
+      samesite_none_insecure_cookies = true;
+    }
+    if (emit_messages) {
+      root_frame_host->AddSameSiteCookieDeprecationMessage(
+          cookie_url, excluded_cookie.status);
+    }
+  }
+
+  if (samesite_treated_as_lax_cookies) {
+    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+        frame, blink::mojom::WebFeature::kCookieNoSameSite);
+  }
+
+  if (samesite_none_insecure_cookies) {
+    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+        frame, blink::mojom::WebFeature::kCookieInsecureAndSameSiteNone);
+  }
+}
 
 }  // namespace
 
@@ -430,13 +486,11 @@ void NetworkServiceClient::OnAuthRequired(
     uint32_t routing_id,
     uint32_t request_id,
     const GURL& url,
-    const GURL& site_for_cookies,
     bool first_auth_attempt,
     const net::AuthChallengeInfo& auth_info,
-    int32_t resource_type,
     const base::Optional<network::ResourceResponseHead>& head,
     network::mojom::AuthChallengeResponderPtr auth_challenge_responder) {
-  base::Callback<WebContents*(void)> web_contents_getter =
+  base::RepeatingCallback<WebContents*(void)> web_contents_getter =
       base::BindRepeating(GetWebContents, process_id, routing_id);
 
   if (!web_contents_getter.Run()) {
@@ -444,14 +498,7 @@ void NetworkServiceClient::OnAuthRequired(
     return;
   }
 
-  if (ResourceDispatcherHostImpl::Get()->DoNotPromptForLogin(
-          static_cast<ResourceType>(resource_type), url, site_for_cookies)) {
-    std::move(auth_challenge_responder)->OnAuthCredentials(base::nullopt);
-    return;
-  }
-
-  bool is_request_for_main_frame =
-      static_cast<ResourceType>(resource_type) == ResourceType::kMainFrame;
+  bool is_request_for_main_frame = IsMainFrameRequest(process_id, routing_id);
   new LoginHandlerDelegate(std::move(auth_challenge_responder),
                            std::move(web_contents_getter), auth_info,
                            is_request_for_main_frame, process_id, routing_id,
@@ -465,38 +512,39 @@ void NetworkServiceClient::OnCertificateRequested(
     uint32_t routing_id,
     uint32_t request_id,
     const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
-    network::mojom::NetworkServiceClient::OnCertificateRequestedCallback
-        callback) {
+    network::mojom::ClientCertificateResponderPtr cert_responder) {
   // Use |window_id| if it's provided.
   if (window_id) {
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&GetWebContentsFromRegistry, *window_id),
         base::BindOnce(&OnCertificateRequestedContinuation, process_id,
-                       routing_id, request_id, cert_info, std::move(callback)));
+                       routing_id, request_id, cert_info,
+                       cert_responder.PassInterface()));
     return;
   }
 
   OnCertificateRequestedContinuation(process_id, routing_id, request_id,
-                                     cert_info, std::move(callback), {});
+                                     cert_info, cert_responder.PassInterface(),
+                                     {});
 }
 
 void NetworkServiceClient::OnSSLCertificateError(
     uint32_t process_id,
     uint32_t routing_id,
-    uint32_t request_id,
-    int32_t resource_type,
     const GURL& url,
+    int net_error,
     const net::SSLInfo& ssl_info,
     bool fatal,
     OnSSLCertificateErrorCallback response) {
   SSLErrorDelegate* delegate =
       new SSLErrorDelegate(std::move(response));  // deletes self
-  base::Callback<WebContents*(void)> web_contents_getter =
+  base::RepeatingCallback<WebContents*(void)> web_contents_getter =
       base::BindRepeating(GetWebContents, process_id, routing_id);
+  bool is_main_frame_request = IsMainFrameRequest(process_id, routing_id);
   SSLManager::OnSSLCertificateError(
-      delegate->GetWeakPtr(), static_cast<ResourceType>(resource_type), url,
-      std::move(web_contents_getter), ssl_info, fatal);
+      delegate->GetWeakPtr(), is_main_frame_request, url,
+      std::move(web_contents_getter), net_error, ssl_info, fatal);
 }
 
 #if defined(OS_CHROMEOS)
@@ -562,21 +610,6 @@ void NetworkServiceClient::OnLoadingStateUpdate(
                                                   std::move(rdh_infos));
 
   std::move(callback).Run();
-}
-
-void NetworkServiceClient::OnClearSiteData(int process_id,
-                                           int routing_id,
-                                           const GURL& url,
-                                           const std::string& header_value,
-                                           int load_flags,
-                                           OnClearSiteDataCallback callback) {
-  auto browser_context_getter =
-      base::BindRepeating(GetBrowserContextFromIds, process_id, routing_id);
-  auto web_contents_getter =
-      base::BindRepeating(GetWebContents, process_id, routing_id);
-  ClearSiteDataHandler::HandleHeader(browser_context_getter,
-                                     web_contents_getter, url, header_value,
-                                     load_flags, std::move(callback));
 }
 
 void NetworkServiceClient::OnCertDBChanged() {
@@ -687,5 +720,29 @@ void NetworkServiceClient::OnGenerateHttpNegotiateAuthToken(
                      std::move(prefs), std::move(callback)));
 }
 #endif
+
+void NetworkServiceClient::OnFlaggedRequestCookies(
+    int32_t process_id,
+    int32_t routing_id,
+    const net::CookieStatusList& excluded_cookies) {
+  DeprecateSameSiteCookies(process_id, routing_id, excluded_cookies);
+}
+
+void NetworkServiceClient::OnFlaggedResponseCookies(
+    int32_t process_id,
+    int32_t routing_id,
+    const net::CookieAndLineStatusList& excluded_cookies) {
+  net::CookieStatusList excluded_list;
+
+  for (const auto& excluded_cookie : excluded_cookies) {
+    // If there's no cookie, it was a parsing error and wouldn't be deprecated
+    if (excluded_cookie.cookie) {
+      excluded_list.push_back(
+          {excluded_cookie.cookie.value(), excluded_cookie.status});
+    }
+  }
+
+  DeprecateSameSiteCookies(process_id, routing_id, excluded_list);
+}
 
 }  // namespace content

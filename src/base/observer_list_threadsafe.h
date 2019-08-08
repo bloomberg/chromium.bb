@@ -155,9 +155,9 @@ class ObserverListThreadSafe : public internal::ObserverListThreadSafeBase {
   // delivery.
   template <typename Method, typename... Params>
   void Notify(const Location& from_here, Method m, Params&&... params) {
-    Callback<void(ObserverType*)> method =
-        Bind(&Dispatcher<ObserverType, Method>::Run, m,
-             std::forward<Params>(params)...);
+    RepeatingCallback<void(ObserverType*)> method =
+        BindRepeating(&Dispatcher<ObserverType, Method>::Run, m,
+                      std::forward<Params>(params)...);
 
     AutoLock lock(lock_);
     for (const auto& observer : observers_) {
@@ -174,11 +174,11 @@ class ObserverListThreadSafe : public internal::ObserverListThreadSafeBase {
   struct NotificationData : public NotificationDataBase {
     NotificationData(ObserverListThreadSafe* observer_list_in,
                      const Location& from_here_in,
-                     const Callback<void(ObserverType*)>& method_in)
+                     const RepeatingCallback<void(ObserverType*)>& method_in)
         : NotificationDataBase(observer_list_in, from_here_in),
           method(method_in) {}
 
-    Callback<void(ObserverType*)> method;
+    RepeatingCallback<void(ObserverType*)> method;
   };
 
   ~ObserverListThreadSafe() override = default;

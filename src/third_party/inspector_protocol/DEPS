@@ -4,7 +4,7 @@
 # directly but this requires an exception here.
 
 specific_include_rules = {
-  '^.*_test\.cc$': [
+  '^.*encoding_test_helper\.h$': [
     '+base',
     '+testing/gtest/include',
     '+testing/gmock/include',

@@ -271,8 +271,8 @@ definition in BUILD.gn file:
 fuzzer_test("my_fuzzer") {
   ...
   libfuzzer_options = [
-    "max_len=2048",
-    "len_control=0",
+    # Suppress stderr output (not recommended, as it may silence useful info).
+    "close_fd_mask=2",
   ]
 }
 ```

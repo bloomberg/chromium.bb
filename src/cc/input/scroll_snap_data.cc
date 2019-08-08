@@ -112,6 +112,9 @@ void SnapContainerData::AddSnapAreaData(SnapAreaData snap_area_data) {
 bool SnapContainerData::FindSnapPosition(
     const SnapSelectionStrategy& strategy,
     gfx::ScrollOffset* snap_position) const {
+  if (scroll_snap_type_.is_none)
+    return false;
+
   gfx::ScrollOffset base_position = strategy.base_position();
   SnapAxis axis = scroll_snap_type_.axis;
   bool should_snap_on_x = strategy.ShouldSnapOnX() &&

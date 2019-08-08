@@ -362,6 +362,17 @@ bool ValidateTextureMaxAnisotropyValue(Context *context, GLfloat paramValue)
     return true;
 }
 
+bool ValidateFragmentShaderColorBufferMaskMatch(Context *context)
+{
+    const Program *program         = context->getState().getLinkedProgram(context);
+    const Framebuffer *framebuffer = context->getState().getDrawFramebuffer();
+
+    auto drawBufferMask     = framebuffer->getDrawBufferMask().to_ulong();
+    auto fragmentOutputMask = program->getActiveOutputVariables().to_ulong();
+
+    return drawBufferMask == (drawBufferMask & fragmentOutputMask);
+}
+
 bool ValidateFragmentShaderColorBufferTypeMatch(Context *context)
 {
     const Program *program         = context->getState().getLinkedProgram(context);
@@ -1817,7 +1828,23 @@ bool ValidateGetQueryObjectValueBase(Context *context, GLuint id, GLenum pname, 
 {
     if (numParams)
     {
-        *numParams = 0;
+        *numParams = 1;
+    }
+
+    if (context->isContextLost())
+    {
+        context->validationError(GL_CONTEXT_LOST, kContextLost);
+
+        if (pname == GL_QUERY_RESULT_AVAILABLE_EXT)
+        {
+            // Generate an error but still return true, the context still needs to return a
+            // value in this case.
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     Query *queryObject = context->getQuery(id, false, QueryType::InvalidEnum);
@@ -1843,11 +1870,6 @@ bool ValidateGetQueryObjectValueBase(Context *context, GLuint id, GLenum pname, 
         default:
             context->validationError(GL_INVALID_ENUM, kEnumNotSupported);
             return false;
-    }
-
-    if (numParams)
-    {
-        *numParams = 1;
     }
 
     return true;
@@ -2677,7 +2699,7 @@ const char *ValidateDrawStates(Context *context)
             return kTextureTypeConflict;
         }
 
-        if (extensions.multiview2)
+        if (extensions.multiview || extensions.multiview2)
         {
             const int programNumViews     = program->usesMultiview() ? program->getNumViews() : 1;
             const int framebufferNumViews = framebuffer->getNumViews();
@@ -2756,10 +2778,20 @@ const char *ValidateDrawStates(Context *context)
                 return kVertexShaderTypeMismatch;
             }
 
-            // Detect that the color buffer types match the fragment shader output types
-            if (!ValidateFragmentShaderColorBufferTypeMatch(context))
+            if (!context->getState().getRasterizerState().rasterizerDiscard &&
+                !context->getState().getBlendState().allChannelsMasked())
             {
-                return kDrawBufferTypeMismatch;
+                // Detect that if there's active color buffer without fragment shader output
+                if (!ValidateFragmentShaderColorBufferMaskMatch(context))
+                {
+                    return kDrawBufferMaskMismatch;
+                }
+
+                // Detect that the color buffer types match the fragment shader output types
+                if (!ValidateFragmentShaderColorBufferTypeMatch(context))
+                {
+                    return kDrawBufferTypeMismatch;
+                }
             }
 
             const VertexArray *vao = context->getState().getVertexArray();
@@ -3832,7 +3864,8 @@ bool ValidateGetFramebufferAttachmentParameterivBase(Context *context,
 
         case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_NUM_VIEWS_OVR:
         case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_BASE_VIEW_INDEX_OVR:
-            if (clientVersion < 3 || !context->getExtensions().multiview2)
+            if (clientVersion < 3 ||
+                !(context->getExtensions().multiview || context->getExtensions().multiview2))
             {
                 context->validationError(GL_INVALID_ENUM, kEnumNotSupported);
                 return false;
@@ -4158,6 +4191,22 @@ bool ValidateGetProgramivBase(Context *context, GLuint program, GLenum pname, GL
     if (numParams)
     {
         *numParams = 1;
+    }
+
+    if (context->isContextLost())
+    {
+        context->validationError(GL_CONTEXT_LOST, kContextLost);
+
+        if (context->getExtensions().parallelShaderCompile && pname == GL_COMPLETION_STATUS_KHR)
+        {
+            // Generate an error but still return true, the context still needs to return a
+            // value in this case.
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     // Special case for GL_COMPLETION_STATUS_KHR: don't resolve the link. Otherwise resolve it now.
@@ -5026,6 +5075,22 @@ bool ValidateGetShaderivBase(Context *context, GLuint shader, GLenum pname, GLsi
     if (length)
     {
         *length = 0;
+    }
+
+    if (context->isContextLost())
+    {
+        context->validationError(GL_CONTEXT_LOST, kContextLost);
+
+        if (context->getExtensions().parallelShaderCompile && pname == GL_COMPLETION_STATUS_KHR)
+        {
+            // Generate an error but still return true, the context still needs to return a
+            // value in this case.
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     if (GetValidShader(context, shader) == nullptr)

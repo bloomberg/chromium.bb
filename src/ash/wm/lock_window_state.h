@@ -30,7 +30,7 @@ class LockWindowState : public wm::WindowState::State {
   // WindowState::State overrides:
   void OnWMEvent(wm::WindowState* window_state,
                  const wm::WMEvent* event) override;
-  mojom::WindowStateType GetType() const override;
+  WindowStateType GetType() const override;
   void AttachState(wm::WindowState* window_state,
                    wm::WindowState::State* previous_state) override;
   void DetachState(wm::WindowState* window_state) override;
@@ -45,11 +45,11 @@ class LockWindowState : public wm::WindowState::State {
   // Either full screen, maximized centered or minimized. If the state does not
   // change, only the bounds will be changed.
   void UpdateWindow(wm::WindowState* window_state,
-                    mojom::WindowStateType new_state_type);
+                    WindowStateType new_state_type);
 
   // Depending on the capabilities of the window we either return
-  // |WindowStateType::MAXIMIZED| or |WindowStateType::NORMAL|.
-  mojom::WindowStateType GetMaximizedOrCenteredWindowType(
+  // |WindowStateType::kMaximized| or |WindowStateType::kNormal|.
+  WindowStateType GetMaximizedOrCenteredWindowType(
       wm::WindowState* window_state);
 
   // Returns boudns to be used for the provided window.
@@ -60,7 +60,7 @@ class LockWindowState : public wm::WindowState::State {
 
   // The current state type. Due to the nature of this state, this can only be
   // WM_STATE_TYPE{NORMAL, MINIMIZED, MAXIMIZED}.
-  mojom::WindowStateType current_state_type_;
+  WindowStateType current_state_type_;
 
   // Restrict window size to the work area defined by the shelf - i.e. window
   // bounds exclude system shelf bounds.

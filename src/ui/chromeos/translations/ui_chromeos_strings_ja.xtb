@@ -5,6 +5,7 @@
 <translation id="1023220960495960452">文字変換（vanakkam → வணக்கம்）</translation>
 <translation id="1035094536595558507">スライド モード</translation>
 <translation id="1045157690796831147">文字変換（namaskar → നമസ്കാരം）</translation>
+<translation id="1046068652463704410">日本語入力（US キーボード用）</translation>
 <translation id="1047956942837015229"><ph name="COUNT" /> 件の項目を削除しています...</translation>
 <translation id="1049926623896334335">Word ドキュメント</translation>
 <translation id="1062407476771304334">置換</translation>
@@ -36,7 +37,6 @@
 <translation id="1346748346194534595">右</translation>
 <translation id="1351692861129622852"><ph name="FILE_COUNT" /> 件のファイルをインポートしています...</translation>
 <translation id="1352103415082130575">タイ語キーボード（Pattachote）</translation>
-<translation id="1358032944105037487">日本語のキーボード</translation>
 <translation id="1358735829858566124">このファイルまたはディレクトリは使用できません。</translation>
 <translation id="1363028406613469049">トラック</translation>
 <translation id="1378727793141957596">Google ドライブへようこそ。</translation>
@@ -205,13 +205,13 @@
 <translation id="3468522857997926824"><ph name="FILE_COUNT" /> 枚の写真を <ph name="BEGIN_LINK" />Google ドライブ<ph name="END_LINK" />にバックアップしました</translation>
 <translation id="3470502288861289375">コピーしています...</translation>
 <translation id="3475447146579922140">Google スプレッドシート</translation>
-<translation id="3494768541638400973">Google 日本語入力（日本語キーボード用）</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> 件のエラーがあります。</translation>
 <translation id="3519867315646775981">文字変換（shalom ← שלום）</translation>
 <translation id="3522708245912499433">ポルトガル語</translation>
 <translation id="3527085408025491307">フォルダ</translation>
 <translation id="3549797760399244642">drive.google.com にアクセスします...</translation>
 <translation id="357479282490346887">リトアニア語</translation>
+<translation id="3583509704582854624">英数入力（日本語キーボード用）</translation>
 <translation id="3603385196401704894">フランス語（カナダ）</translation>
 <translation id="3606220979431771195">トルコ語-F</translation>
 <translation id="3609785682760573515">同期しています...</translation>
@@ -262,6 +262,7 @@
 <translation id="421017592316736757">このファイルにアクセスするには、オンライン接続が必要です。</translation>
 <translation id="4212740939091998969">「<ph name="FOLDER_NAME" />」という名前のフォルダはすでに存在します。別の名前を選択してください。</translation>
 <translation id="4215448920900139318"><ph name="FILE_COUNT" />をバックアップしています</translation>
+<translation id="4242533952199664413">設定を開く</translation>
 <translation id="426015154560005552">アラビア語キーボード</translation>
 <translation id="4261901459838235729">Google プレゼンテーション</translation>
 <translation id="4290535918735525311">1 個のフォルダを Linux と共有しました</translation>
@@ -285,13 +286,13 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> ファイル</translation>
 <translation id="457386861538956877">その他...</translation>
 <translation id="4582497162516204941">Linux（ベータ版）でのインストール</translation>
-<translation id="4584780943629874245">プラグイン VM と共有</translation>
 <translation id="4631887759990505102">アーティスト</translation>
 <translation id="4656293982926141856">このパソコン</translation>
 <translation id="4669606053856530811">「<ph name="SOURCE_NAME" />」のメンバーはこれらのアイテムにアクセスできなくなります（ただし個別に共有されている場合はアクセス可能です）。</translation>
 <translation id="4690246192099372265">スウェーデン語</translation>
 <translation id="4693155481716051732">お寿司</translation>
 <translation id="4694604912444486114">サル</translation>
+<translation id="4697043402264950621">ファイルの一覧は <ph name="COLUMN_NAME" /> の昇順で並べ替えられています。</translation>
 <translation id="4711094779914110278">トルコ語</translation>
 <translation id="4713544552769165154">このファイルは Macintosh ソフトウェアを使用するパソコン向けのもので、Chrome OS を実行するデバイスとは互換性がありません。<ph name="BEGIN_LINK" />Chrome ウェブストア<ph name="END_LINK" />で、このデバイスで使用できる代わりのアプリをお探しください。<ph name="BEGIN_LINK_HELP" />詳細<ph name="END_LINK_HELP" /></translation>
 <translation id="4724850507808590449"><ph name="FILE_COUNT" /> 枚の写真をバックアップしました</translation>
@@ -312,6 +313,7 @@
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> 個のアイテムを選択</translation>
 <translation id="4850886885716139402">表示</translation>
 <translation id="485316830061041779">ドイツ語</translation>
+<translation id="4867079195717347957">クリックすると、列が降順で並べ替えられます。</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> バイト</translation>
 <translation id="4880214202172289027">音量スライダー</translation>
 <translation id="4880520557730313061">自動修正</translation>
@@ -352,6 +354,7 @@
 <translation id="5167131699331641907">オランダ語キーボード</translation>
 <translation id="5170477580121653719">Google ドライブの残容量: <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="5177526793333269655">サムネイル ビュー</translation>
+<translation id="5194713942430106590">クリックすると、列が昇順で並べ替えられます。</translation>
 <translation id="5218183485292899140">フランス語（スイス）</translation>
 <translation id="5234764350956374838">閉じる</translation>
 <translation id="5241298539944515331">ベトナム語キーボード（VIQR）</translation>
@@ -411,6 +414,7 @@
 <translation id="5818003990515275822">韓国語</translation>
 <translation id="5819442873484330149">ハングル（3 ボル式、最終版）</translation>
 <translation id="5833610766403489739">このファイルは移動されています。ダウンロード保存先の設定を確認し、もう一度お試しください。</translation>
+<translation id="5838051104334203064">Play ストアのアプリからこのデバイスにアクセスできません</translation>
 <translation id="5838825566232597749">US Workman インターナショナル</translation>
 <translation id="5850516540536751549">このファイル形式はサポートされていません。<ph name="BEGIN_LINK" />Chrome ウェブストア<ph name="END_LINK" />にアクセスして、この形式のファイルを開くことができるアプリをお探しください。
     <ph name="BEGIN_LINK_HELP" />詳細<ph name="END_LINK_HELP" /></translation>
@@ -419,6 +423,7 @@
 <translation id="5892290200158927959">フランス語 BÉPO キーボード</translation>
 <translation id="5911887972742538906">Linux アプリケーションのインストール中にエラーが発生しました。</translation>
 <translation id="5913638992615760742">コピーできませんでした。予期しないエラー: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5923484009666796948">日本語入力（日本語キーボード用）</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Linux アプリに対して、Google ドライブのファイルの編集を許可します。変更が加えられた場合は他のデバイスに同期されます。</translation>
 <translation id="5982621672636444458">並べ替え方法</translation>
@@ -497,7 +502,6 @@
     <ph name="LINE_BREAK1" />
     <ph name="FILE_COUNT" />が見つかりました</translation>
 <translation id="6935521024859866267">逆さま</translation>
-<translation id="6937152069980083337">Google 日本語入力（US キーボード用）</translation>
 <translation id="6939777852457331078">US Workman キーボード</translation>
 <translation id="696203921837389374">モバイルデータとの同期を有効にする</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -527,7 +531,7 @@
 <translation id="7339898014177206373">新しいウィンドウ</translation>
 <translation id="7348749398828259943">US Workman インターナショナル キーボード</translation>
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> 個のアイテムをコピーしています...</translation>
-<translation id="7379734276381389090"><ph name="NUMBER_OF_ITEMS" /> 個のフォルダがプラグイン VM と共有されています</translation>
+<translation id="7375951387215729722">ファイルの一覧は <ph name="COLUMN_NAME" /> の降順で並べ替えられています。</translation>
 <translation id="7389722738210761877">タイ語キーボード（TIS 820～2531）</translation>
 <translation id="7396038720194014279">ヒンディー語キーボード（表音）</translation>
 <translation id="7417453074306512035">エチオピア語キーボード</translation>
@@ -590,7 +594,6 @@
 <translation id="7969525169268594403">スロベニア語</translation>
 <translation id="7982283708762922719">高さ</translation>
 <translation id="7987485481246785146">ソラニークルド語キーボード（アラビア語ベース）</translation>
-<translation id="7990715602172183602">1 個のフォルダがプラグイン VM と共有されています</translation>
 <translation id="799547531016638432">ショートカットを削除</translation>
 <translation id="799923393800005025">閲覧者</translation>
 <translation id="8008366997883261463">犬</translation>
@@ -631,7 +634,6 @@
 <translation id="8342318071240498787">同じ名前のファイルまたはディレクトリが既に存在しています。</translation>
 <translation id="8391950649760071442">文字変換（emandi → ఏమండీ）</translation>
 <translation id="8395901698320285466">サイズ</translation>
-<translation id="8400874747056634633">プラグイン VM の共有を管理</translation>
 <translation id="8412586565681117057">入力方法（Quick）</translation>
 <translation id="8418113698656761985">ルーマニア語のキーボード</translation>
 <translation id="8432745813735585631">Colemak キーボード（米国）</translation>

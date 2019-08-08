@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/base64.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/stream_socket.h"
 #include "net/url_request/url_request_test_util.h"
@@ -117,7 +117,9 @@ const int kDefaultPort = 443;
 class XmppSignalStrategyTest : public testing::Test,
                                public SignalStrategy::Listener {
  public:
-  XmppSignalStrategyTest() : message_loop_(base::MessageLoop::TYPE_IO) {}
+  XmppSignalStrategyTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
 
   void SetUp() override {
     auto url_request_context = std::make_unique<net::TestURLRequestContext>(
@@ -125,7 +127,8 @@ class XmppSignalStrategyTest : public testing::Test,
     url_request_context->set_client_socket_factory(&client_socket_factory_);
     url_request_context->Init();
     request_context_getter_ = new net::TestURLRequestContextGetter(
-        message_loop_.task_runner(), std::move(url_request_context));
+        scoped_task_environment_.GetMainThreadTaskRunner(),
+        std::move(url_request_context));
   }
 
   void CreateSignalStrategy(int port) {
@@ -157,7 +160,7 @@ class XmppSignalStrategyTest : public testing::Test,
   void Connect(bool success);
 
  protected:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   MockClientSocketFactory client_socket_factory_;
   std::unique_ptr<XmppSocketDataProvider> socket_data_provider_;

@@ -53,6 +53,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
+#include "third_party/blink/renderer/core/layout/style_retain_scope.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
@@ -397,7 +398,6 @@ void TextAutosizer::EndLayout(LayoutBlock* block) {
   if (block == first_block_to_begin_layout_) {
     first_block_to_begin_layout_ = nullptr;
     cluster_stack_.clear();
-    styles_retained_during_layout_.clear();
 #if DCHECK_IS_ON()
     blocks_that_have_begun_layout_.clear();
 #endif
@@ -498,7 +498,7 @@ float TextAutosizer::Inflate(LayoutObject* parent,
   }
 
   if (page_info_.has_autosized_)
-    UseCounter::Count(*document_, WebFeature::kTextAutosizing);
+    document_->CountUse(WebFeature::kTextAutosizing);
 
   return multiplier;
 }
@@ -1155,7 +1155,7 @@ void TextAutosizer::ReportIfCrossSiteFrame() {
       view->Size().IsEmpty() || !IsCrossSite(*frame, frame->Tree().Top()))
     return;
 
-  UseCounter::Count(*document_, WebFeature::kTextAutosizedCrossSiteIframe);
+  document_->CountUse(WebFeature::kTextAutosizedCrossSiteIframe);
 }
 
 void TextAutosizer::ApplyMultiplier(LayoutObject* layout_object,
@@ -1195,7 +1195,10 @@ void TextAutosizer::ApplyMultiplier(LayoutObject* layout_object,
       // Don't free current_style until the end of the layout pass. This allows
       // other parts of the system to safely hold raw ComputedStyle* pointers
       // during layout, e.g. BreakingContext::current_style_.
-      styles_retained_during_layout_.push_back(&current_style);
+      if (auto* scope = StyleRetainScope::Current())
+        scope->Retain(current_style);
+      else
+        DCHECK(false);
 
       layout_object->SetModifiedStyleOutsideStyleRecalc(
           std::move(style), LayoutObject::ApplyStyleChanges::kNo);

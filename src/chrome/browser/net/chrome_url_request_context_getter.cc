@@ -178,10 +178,10 @@ ChromeURLRequestContextGetter::CreateAndInit(
   // run and complete before the constructor returns, which would reduce the
   // reference count from 1 to 0 on completion, and delete the object
   // immediately.
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                           base::BindOnce(&ChromeURLRequestContextGetter::Init,
-                                          url_request_context_getter,
-                                          base::Passed(std::move(factory))));
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
+      base::BindOnce(&ChromeURLRequestContextGetter::Init,
+                     url_request_context_getter, std::move(factory)));
   return url_request_context_getter;
 }
 

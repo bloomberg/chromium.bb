@@ -83,6 +83,7 @@ class PageLoadMetricsObserverTestHarness
   void SimulateMetadataUpdate(const mojom::PageLoadMetadata& metadata,
                               content::RenderFrameHost* rfh);
   void SimulateFeaturesUpdate(const mojom::PageLoadFeatures& new_features);
+  void SimulateCpuTimingUpdate(const mojom::CpuTiming& cpu_timing);
   void SimulateResourceDataUseUpdate(
       const std::vector<mojom::ResourceDataUpdatePtr>& resources);
   void SimulateResourceDataUseUpdate(

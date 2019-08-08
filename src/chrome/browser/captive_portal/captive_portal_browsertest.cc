@@ -945,7 +945,7 @@ bool CaptivePortalBrowserTest::OnIntercept(
           kMockHttpsUrl);
       net::HttpResponseInfo info;
       info.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-          net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.length()));
+          net::HttpUtil::AssembleRawHeaders(headers));
       network::ResourceResponseHead response;
       response.headers = info.headers;
       response.headers->GetMimeType(&response.mime_type);

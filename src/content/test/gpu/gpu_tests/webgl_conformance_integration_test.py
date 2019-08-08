@@ -6,11 +6,9 @@ import logging
 import os
 import sys
 
+from gpu_tests import gpu_helper
 from gpu_tests import gpu_integration_test
-from gpu_tests import gpu_test_expectations
 from gpu_tests import path_util
-from gpu_tests import webgl_conformance_expectations
-from gpu_tests import webgl2_conformance_expectations
 from gpu_tests import webgl_test_util
 
 conformance_harness_script = r"""
@@ -89,7 +87,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         default='false')
     parser.add_option('--is-asan',
         help='Indicates whether currently running an ASAN build',
-        action='store_true')
+        action='store_true', default=False)
 
   @classmethod
   def GenerateGpuTests(cls, options):
@@ -108,7 +106,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       test_path_with_args = test_path
       if cls._webgl_version > 1:
         test_path_with_args += '?webglVersion=' + str(cls._webgl_version)
-      yield (test_path,
+      yield (test_path.replace(os.path.sep, '/'),
              os.path.join(
                  webgl_test_util.conformance_relpath, test_path_with_args),
              ('_RunConformanceTest'))
@@ -211,8 +209,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     # Verify that Chrome's GL backend matches if a specific one was requested
     if self._gl_backend:
       if (self._gl_backend == 'angle' and
-          gpu_test_expectations.GpuTestExpectations. \
-          GetANGLERenderer(gpu_info) == 'no_angle'):
+          gpu_helper.GetANGLERenderer(gpu_info) == 'no_angle'):
         self.fail('requested GL backend (' + self._gl_backend + ')' +
                   ' had no effect on the browser: ' +
                   self._GetGPUInfoErrorString(gpu_info))
@@ -230,8 +227,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         'opengles': 'gles',
         'vulkan': 'vulkan',
       }
-      current_angle_backend = gpu_test_expectations.GpuTestExpectations. \
-          GetANGLERenderer(gpu_info)
+      current_angle_backend = gpu_helper.GetANGLERenderer(gpu_info)
       if (current_angle_backend not in known_backend_flag_map or
           known_backend_flag_map[current_angle_backend] != \
           self._angle_backend):
@@ -249,8 +245,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         'passthrough': 'passthrough',
         'no_passthrough': 'validating',
       }
-      current_command_decoder = gpu_test_expectations.GpuTestExpectations. \
-          GetCommandDecoder(gpu_info)
+      current_command_decoder = gpu_helper.GetCommandDecoder(gpu_info)
       if (current_command_decoder not in known_command_decoder_flag_map or
           known_command_decoder_flag_map[current_command_decoder] != \
           self._command_decoder):
@@ -375,16 +370,6 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     cls.CustomizeBrowserArgs(browser_args)
 
   @classmethod
-  def _CreateExpectations(cls):
-    assert cls._webgl_version == 1 or cls._webgl_version == 2
-    clz = None
-    if cls._webgl_version == 1:
-      clz = webgl_conformance_expectations.WebGLConformanceExpectations
-    else:
-      clz = webgl2_conformance_expectations.WebGL2ConformanceExpectations
-    return clz(is_asan=cls._is_asan)
-
-  @classmethod
   def SetUpProcess(cls):
     super(WebGLConformanceIntegrationTest, cls).SetUpProcess()
     cls.SetupWebGLBrowserArgs([])
@@ -477,6 +462,17 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         [['no-asan', 'asan'][cls._is_asan],
          'webgl-version-%d' % cls._webgl_version])
     return tags
+
+  @classmethod
+  def ExpectationsFiles(cls):
+    assert cls._webgl_version == 1 or cls._webgl_version == 2
+    if cls._webgl_version == 1:
+      file_name = 'webgl_conformance_expectations.txt'
+    else:
+      file_name = 'webgl2_conformance_expectations.txt'
+    return [
+        os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                     'test_expectations', file_name)]
 
 
 def load_tests(loader, tests, pattern):

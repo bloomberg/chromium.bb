@@ -55,6 +55,7 @@ const int64_t kInvalidTimestamp = std::numeric_limits<int64_t>::min();
 constexpr base::TimeDelta kFadeTime = base::TimeDelta::FromMilliseconds(5);
 constexpr base::TimeDelta kMixerStartThreshold =
     base::TimeDelta::FromMilliseconds(60);
+constexpr base::TimeDelta kRenderBufferSize = base::TimeDelta::FromSeconds(4);
 }  // namespace
 
 namespace chromecast {
@@ -105,10 +106,18 @@ class CastAudioOutputStream::CmaWrapper : public CmaBackend::Decoder::Delegate {
                   chromecast::mojom::MultiroomInfoPtr multiroom_info);
   void Start(AudioSourceCallback* source_callback);
   void Stop(base::WaitableEvent* finished);
+  void Flush(base::WaitableEvent* finished);
   void Close(base::OnceClosure closure);
   void SetVolume(double volume);
 
  private:
+  enum class CmaBackendState {
+    kUinitialized,
+    kStopped,
+    kPaused,
+    kStarted,
+  };
+
   void PushBuffer();
 
   // CmaBackend::Decoder::Delegate implementation:
@@ -126,16 +135,17 @@ class CastAudioOutputStream::CmaWrapper : public CmaBackend::Decoder::Delegate {
   CmaBackendFactory* const cma_backend_factory_;
 
   AudioOutputState media_thread_state_;
+  CmaBackendState cma_backend_state_ = CmaBackendState::kUinitialized;
   ::media::AudioTimestampHelper timestamp_helper_;
   const base::TimeDelta buffer_duration_;
   std::unique_ptr<TaskRunnerImpl> cma_backend_task_runner_;
   std::unique_ptr<CmaBackend> cma_backend_;
   std::unique_ptr<::media::AudioBus> audio_bus_;
-  scoped_refptr<media::DecoderBufferBase> decoder_buffer_;
   base::OneShotTimer push_timer_;
   bool push_in_progress_;
   bool encountered_error_;
-  base::TimeTicks next_push_time_;
+  base::TimeTicks last_push_complete_time_;
+  base::TimeDelta render_buffer_size_estimate_ = kRenderBufferSize;
   CmaBackend::AudioDecoder* audio_decoder_;
   AudioSourceCallback* source_callback_;
 
@@ -155,7 +165,8 @@ CastAudioOutputStream::CmaWrapper::CmaWrapper(
       cma_backend_factory_(cma_backend_factory),
       media_thread_state_(kClosed),
       timestamp_helper_(audio_params_.sample_rate()),
-      buffer_duration_(audio_params_.GetBufferDuration()) {
+      buffer_duration_(audio_params_.GetBufferDuration()),
+      render_buffer_size_estimate_(kRenderBufferSize) {
   DETACH_FROM_THREAD(media_thread_checker_);
   DCHECK(audio_task_runner_);
   DCHECK(cma_backend_factory_);
@@ -223,11 +234,9 @@ void CastAudioOutputStream::CmaWrapper::Initialize(
     encountered_error_ = true;
     return;
   }
+  cma_backend_state_ = CmaBackendState::kStopped;
 
   audio_bus_ = ::media::AudioBus::Create(audio_params_);
-  decoder_buffer_ =
-      base::MakeRefCounted<DecoderBufferAdapter>(new ::media::DecoderBuffer(
-          audio_params_.GetBytesPerBuffer(::media::kSampleFormatS16)));
   timestamp_helper_.SetBaseTimestamp(base::TimeDelta());
 }
 
@@ -245,11 +254,19 @@ void CastAudioOutputStream::CmaWrapper::Start(
   }
 
   if (media_thread_state_ == kOpened) {
+    DCHECK(cma_backend_state_ == CmaBackendState::kPaused ||
+           cma_backend_state_ == CmaBackendState::kStopped);
+    if (cma_backend_state_ == CmaBackendState::kPaused) {
+      cma_backend_->Resume();
+    } else {
+      cma_backend_->Start(0);
+      render_buffer_size_estimate_ = kRenderBufferSize;
+    }
+    last_push_complete_time_ = base::TimeTicks::Now();
+    cma_backend_state_ = CmaBackendState::kStarted;
     media_thread_state_ = kStarted;
-    cma_backend_->Start(0);
   }
 
-  next_push_time_ = base::TimeTicks::Now();
   if (!push_in_progress_) {
     push_in_progress_ = true;
     PushBuffer();
@@ -260,8 +277,30 @@ void CastAudioOutputStream::CmaWrapper::Stop(base::WaitableEvent* finished) {
   DCHECK_CALLED_ON_VALID_THREAD(media_thread_checker_);
   // Prevent further pushes to the audio buffer after stopping.
   push_timer_.Stop();
-  if (cma_backend_ && media_thread_state_ == kStarted) {
-    cma_backend_->Stop();
+  // Don't actually stop the backend.  Stop() gets called when the stream is
+  // paused.  We rely on Flush() to stop the backend.
+  if (cma_backend_) {
+    cma_backend_->Pause();
+    cma_backend_state_ = CmaBackendState::kPaused;
+  }
+  push_in_progress_ = false;
+  media_thread_state_ = kOpened;
+  source_callback_ = nullptr;
+  finished->Signal();
+}
+
+void CastAudioOutputStream::CmaWrapper::Flush(base::WaitableEvent* finished) {
+  DCHECK_CALLED_ON_VALID_THREAD(media_thread_checker_);
+  // Prevent further pushes to the audio buffer after stopping.
+  push_timer_.Stop();
+
+  if (cma_backend_ &&
+      (media_thread_state_ == kStarted || media_thread_state_ == kOpened)) {
+    if (cma_backend_state_ == CmaBackendState::kPaused ||
+        cma_backend_state_ == CmaBackendState::kStarted) {
+      cma_backend_->Stop();
+      cma_backend_state_ = CmaBackendState::kStopped;
+    }
   }
   push_in_progress_ = false;
   media_thread_state_ = kOpened;
@@ -274,8 +313,9 @@ void CastAudioOutputStream::CmaWrapper::Close(base::OnceClosure closure) {
   // Prevent further pushes to the audio buffer after stopping.
   push_timer_.Stop();
   // Only stop the backend if it was started.
-  if (cma_backend_ && media_thread_state_ == kStarted) {
+  if (cma_backend_ && cma_backend_state_ != CmaBackendState::kStopped) {
     cma_backend_->Stop();
+    cma_backend_state_ = CmaBackendState::kStopped;
   }
   push_in_progress_ = false;
   media_thread_state_ = kPendingClose;
@@ -312,33 +352,35 @@ void CastAudioOutputStream::CmaWrapper::PushBuffer() {
 
   CmaBackend::AudioDecoder::RenderingDelay rendering_delay =
       audio_decoder_->GetRenderingDelay();
-  base::TimeDelta delay =
-      base::TimeDelta::FromMicroseconds(rendering_delay.delay_microseconds);
-  base::TimeTicks delay_timestamp =
-      base::TimeTicks() +
-      base::TimeDelta::FromMicroseconds(rendering_delay.timestamp_microseconds);
 
-  // The delay must be greater than zero, and if the timestamp is invalid, we
-  // cannot trust the current delay.
-  if (rendering_delay.timestamp_microseconds == kInvalidTimestamp ||
-      rendering_delay.delay_microseconds < 0) {
+  base::TimeDelta delay;
+  if (rendering_delay.delay_microseconds < 0) {
     delay = base::TimeDelta();
+  } else {
+    delay =
+        base::TimeDelta::FromMicroseconds(rendering_delay.delay_microseconds);
   }
 
+  // This isn't actually used by audio_renderer_impl
+  base::TimeTicks delay_timestamp = base::TimeTicks();
+  if (rendering_delay.timestamp_microseconds != kInvalidTimestamp) {
+    delay_timestamp += base::TimeDelta::FromMicroseconds(
+        rendering_delay.timestamp_microseconds);
+  }
   int frame_count =
       source_callback_->OnMoreData(delay, delay_timestamp, 0, audio_bus_.get());
-  VLOG(3) << "frames_filled=" << frame_count << " with latency=" << delay;
+  DVLOG(3) << "frames_filled=" << frame_count << " with latency=" << delay;
 
   DCHECK_EQ(frame_count, audio_bus_->frames());
-  DCHECK_EQ(static_cast<int>(decoder_buffer_->data_size()),
-            audio_params_.GetBytesPerBuffer(::media::kSampleFormatS16));
+  auto decoder_buffer =
+      base::MakeRefCounted<DecoderBufferAdapter>(new ::media::DecoderBuffer(
+          audio_params_.GetBytesPerBuffer(::media::kSampleFormatS16)));
   audio_bus_->ToInterleaved<::media::SignedInt16SampleTypeTraits>(
-      frame_count,
-      reinterpret_cast<int16_t*>(decoder_buffer_->writable_data()));
-  decoder_buffer_->set_timestamp(timestamp_helper_.GetTimestamp());
+      frame_count, reinterpret_cast<int16_t*>(decoder_buffer->writable_data()));
+  decoder_buffer->set_timestamp(timestamp_helper_.GetTimestamp());
   timestamp_helper_.AddFrames(frame_count);
 
-  BufferStatus status = audio_decoder_->PushBuffer(decoder_buffer_.get());
+  BufferStatus status = audio_decoder_->PushBuffer(std::move(decoder_buffer));
   if (status != CmaBackend::BufferStatus::kBufferPending)
     OnPushBufferComplete(status);
 }
@@ -361,15 +403,26 @@ void CastAudioOutputStream::CmaWrapper::OnPushBufferComplete(
 
   // Schedule next push buffer.
   const base::TimeTicks now = base::TimeTicks::Now();
-  next_push_time_ = std::max(now, next_push_time_ + buffer_duration_);
+  render_buffer_size_estimate_ -= buffer_duration_;
+  render_buffer_size_estimate_ += now - last_push_complete_time_;
+  last_push_complete_time_ = now;
 
-  base::TimeDelta delay = next_push_time_ - now;
+  base::TimeDelta delay;
+  if (render_buffer_size_estimate_ >= buffer_duration_) {
+    delay = base::TimeDelta::FromSeconds(0);
+  } else {
+    delay = buffer_duration_;
+  }
+
+  DVLOG(3) << "render_buffer_size_estimate_=" << render_buffer_size_estimate_
+           << " delay=" << delay << " buffer_duration_=" << buffer_duration_;
+
   push_timer_.Start(FROM_HERE, delay, this, &CmaWrapper::PushBuffer);
   push_in_progress_ = true;
 }
 
 void CastAudioOutputStream::CmaWrapper::OnDecoderError() {
-  VLOG(1) << this << ": " << __func__;
+  DVLOG(1) << this << ": " << __func__;
   DCHECK_CALLED_ON_VALID_THREAD(media_thread_checker_);
 
   encountered_error_ = true;
@@ -390,6 +443,7 @@ class CastAudioOutputStream::MixerServiceWrapper
   void Stop();
   void Close(base::OnceClosure closure);
   void SetVolume(double volume);
+  void Flush();
 
   base::SingleThreadTaskRunner* io_task_runner() {
     return io_task_runner_.get();
@@ -488,6 +542,12 @@ void CastAudioOutputStream::MixerServiceWrapper::Stop() {
   source_callback_ = nullptr;
 }
 
+void CastAudioOutputStream::MixerServiceWrapper::Flush() {
+  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
+  // Nothing to do.
+  return;
+}
+
 void CastAudioOutputStream::MixerServiceWrapper::Close(
     base::OnceClosure closure) {
   DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
@@ -563,8 +623,8 @@ CastAudioOutputStream::CastAudioOutputStream(
   DCHECK(audio_manager_);
   DCHECK(connector_);
   DETACH_FROM_THREAD(audio_thread_checker_);
-  VLOG(1) << __func__ << " " << this << " created from group_id=" << group_id_
-          << " with audio_params=" << audio_params_.AsHumanReadableString();
+  DVLOG(1) << __func__ << " " << this << " created from group_id=" << group_id_
+           << " with audio_params=" << audio_params_.AsHumanReadableString();
 }
 
 CastAudioOutputStream::~CastAudioOutputStream() {
@@ -573,7 +633,7 @@ CastAudioOutputStream::~CastAudioOutputStream() {
 
 bool CastAudioOutputStream::Open() {
   DCHECK_CALLED_ON_VALID_THREAD(audio_thread_checker_);
-  VLOG(1) << this << ": " << __func__;
+  DVLOG(1) << this << ": " << __func__;
   if (audio_thread_state_ != kClosed)
     return false;
 
@@ -592,8 +652,8 @@ bool CastAudioOutputStream::Open() {
 
   const std::string application_session_id =
       audio_manager_->GetSessionId(group_id_);
-  VLOG(1) << this << ": " << __func__
-          << ", session_id=" << application_session_id;
+  DVLOG(1) << this << ": " << __func__
+           << ", session_id=" << application_session_id;
 
   // Connect to the Multiroom interface and fetch the current info.
   connector_->BindInterface(chromecast::mojom::kChromecastServiceName,
@@ -621,7 +681,7 @@ bool CastAudioOutputStream::Open() {
 
 void CastAudioOutputStream::Close() {
   DCHECK_CALLED_ON_VALID_THREAD(audio_thread_checker_);
-  VLOG(1) << this << ": " << __func__;
+  DVLOG(1) << this << ": " << __func__;
 
   audio_thread_state_ = kPendingClose;
   base::OnceClosure finish_callback = base::BindOnce(
@@ -650,7 +710,7 @@ void CastAudioOutputStream::Start(AudioSourceCallback* source_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(audio_thread_checker_);
   // We allow calls to start even in the unopened state.
   DCHECK(audio_thread_state_ != kPendingClose);
-  VLOG(2) << this << ": " << __func__;
+  DVLOG(2) << this << ": " << __func__;
   audio_thread_state_ = kStarted;
   metrics::CastMetricsHelper::GetInstance()->LogTimeToFirstAudio();
 
@@ -673,7 +733,7 @@ void CastAudioOutputStream::Start(AudioSourceCallback* source_callback) {
 
 void CastAudioOutputStream::Stop() {
   DCHECK_CALLED_ON_VALID_THREAD(audio_thread_checker_);
-  VLOG(2) << this << ": " << __func__;
+  DVLOG(2) << this << ": " << __func__;
   // We allow calls to stop even in the unstarted/unopened state.
   if (audio_thread_state_ != kStarted)
     return;
@@ -693,10 +753,30 @@ void CastAudioOutputStream::Stop() {
   }
 }
 
+void CastAudioOutputStream::Flush() {
+  DCHECK_CALLED_ON_VALID_THREAD(audio_thread_checker_);
+  DVLOG(2) << this << ": " << __func__;
+
+  // |cma_wrapper_| and |mixer_service_wrapper_| cannot be both active.
+  DCHECK(!(cma_wrapper_ && mixer_service_wrapper_));
+
+  if (cma_wrapper_) {
+    // Make sure this is not on the same thread as CMA_WRAPPER to prevent
+    // deadlock.
+    DCHECK(!audio_manager_->media_task_runner()->BelongsToCurrentThread());
+
+    base::WaitableEvent finished;
+    POST_TO_CMA_WRAPPER(Flush, base::Unretained(&finished));
+    finished.Wait();
+  } else if (mixer_service_wrapper_) {
+    POST_TO_MIXER_SERVICE_WRAPPER(Flush);
+  }
+}
+
 void CastAudioOutputStream::SetVolume(double volume) {
   DCHECK_CALLED_ON_VALID_THREAD(audio_thread_checker_);
   DCHECK(audio_thread_state_ != kPendingClose);
-  VLOG(2) << this << ": " << __func__ << "(" << volume << ")";
+  DVLOG(2) << this << ": " << __func__ << "(" << volume << ")";
   volume_ = volume;
 
   if (!cma_wrapper_ && !mixer_service_wrapper_) {

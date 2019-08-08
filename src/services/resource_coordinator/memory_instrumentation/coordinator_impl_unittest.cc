@@ -5,8 +5,9 @@
 #include "services/resource_coordinator/memory_instrumentation/coordinator_impl.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/trace_event_analyzer.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -17,7 +18,6 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/resource_coordinator/memory_instrumentation/process_map.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
-
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -38,6 +38,7 @@ using ::testing::NotNull;
 using ::testing::Pointee;
 using ::testing::Property;
 using ::testing::Return;
+using ::testing::UnorderedElementsAre;
 
 using GetVmRegionsForHeapProfilerCallback = memory_instrumentation::
     CoordinatorImpl::GetVmRegionsForHeapProfilerCallback;
@@ -69,6 +70,8 @@ class FakeCoordinatorImpl : public CoordinatorImpl {
                      service_manager::Identity());
   MOCK_CONST_METHOD1(GetProcessIdForClientIdentity,
                      base::ProcessId(service_manager::Identity));
+  MOCK_CONST_METHOD0(ComputePidToServiceNamesMap,
+                     std::map<base::ProcessId, std::vector<std::string>>());
 };
 
 class CoordinatorImplTest : public testing::Test {
@@ -83,14 +86,22 @@ class CoordinatorImplTest : public testing::Test {
   void RegisterClientProcess(mojom::ClientProcessPtr client_process,
                              base::ProcessId pid,
                              mojom::ProcessType process_type) {
-    service_manager::Identity identity(std::to_string(pid), base::Token{1, 1},
-                                       base::Token{}, base::Token{1, 1});
+    service_manager::Identity identity(base::NumberToString(pid),
+                                       base::Token{1, 1}, base::Token{},
+                                       base::Token{1, 1});
 
     ON_CALL(*coordinator_, GetClientIdentityForCurrentRequest())
         .WillByDefault(Return(identity));
 
     ON_CALL(*coordinator_, GetProcessIdForClientIdentity(identity))
         .WillByDefault(Return(pid));
+
+    ON_CALL(*coordinator_, ComputePidToServiceNamesMap())
+        .WillByDefault(
+            Return(std::map<base::ProcessId, std::vector<std::string>>(
+                {{1, {"bootup_helper", "1"}},
+                 {2, {"bootup_helper", "2"}},
+                 {3, {"bootup_helper", "3"}}})));
 
     coordinator_->RegisterClientProcess(std::move(client_process),
                                         process_type);
@@ -139,7 +150,11 @@ class CoordinatorImplTest : public testing::Test {
 
  private:
   std::unique_ptr<NiceMock<FakeCoordinatorImpl>> coordinator_;
-  base::MessageLoop message_loop_;
+  // Do not start a ThreadPool as we are overriding global time with
+  // ScopedTimeClockOverrides and that might lead to races (as worker threads
+  // try to access base::TimeTicks::Now())
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY};
 };
 
 class MockClientProcess : public mojom::ClientProcess {
@@ -160,18 +175,17 @@ class MockClientProcess : public mojom::ClientProcess {
                                             process_type);
 
     ON_CALL(*this, RequestChromeMemoryDumpMock(_, _))
-        .WillByDefault(
-            Invoke([pid](const MemoryDumpRequestArgs& args,
-                         RequestChromeMemoryDumpCallback& callback) {
-              MemoryDumpArgs dump_args{MemoryDumpLevelOfDetail::DETAILED};
-              auto pmd = std::make_unique<ProcessMemoryDump>(dump_args);
-              auto* mad = pmd->CreateAllocatorDump(
-                  "malloc", base::trace_event::MemoryAllocatorDumpGuid(pid));
-              mad->AddScalar(MemoryAllocatorDump::kNameSize,
-                             MemoryAllocatorDump::kUnitsBytes, 1024);
+        .WillByDefault(Invoke([pid](const MemoryDumpRequestArgs& args,
+                                    RequestChromeMemoryDumpCallback& callback) {
+          MemoryDumpArgs dump_args{MemoryDumpLevelOfDetail::DETAILED};
+          auto pmd = std::make_unique<ProcessMemoryDump>(dump_args);
+          auto* mad = pmd->CreateAllocatorDump(
+              "malloc", base::trace_event::MemoryAllocatorDumpGuid(pid));
+          mad->AddScalar(MemoryAllocatorDump::kNameSize,
+                         MemoryAllocatorDump::kUnitsBytes, 1024);
 
-              std::move(callback).Run(true, args.dump_guid, std::move(pmd));
-            }));
+          std::move(callback).Run(true, args.dump_guid, std::move(pmd));
+        }));
 
     ON_CALL(*this, RequestOSMemoryDumpMock(_, _, _))
         .WillByDefault(Invoke([](mojom::MemoryMapOption,
@@ -685,6 +699,11 @@ TEST_F(CoordinatorImplTest, GlobalMemoryDumpStruct) {
         mojom::ProcessMemoryDumpPtr browser_dump = nullptr;
         mojom::ProcessMemoryDumpPtr renderer_dump = nullptr;
         for (mojom::ProcessMemoryDumpPtr& dump : global_dump->process_dumps) {
+          // Service names should match what ComputePidToServiceNamesMap
+          // provides.
+          EXPECT_THAT(dump->service_names,
+                      UnorderedElementsAre("bootup_helper",
+                                           base::NumberToString(dump->pid)));
           if (dump->process_type == mojom::ProcessType::BROWSER) {
             browser_dump = std::move(dump);
           } else if (dump->process_type == mojom::ProcessType::RENDERER) {
@@ -937,15 +956,24 @@ TEST_F(CoordinatorImplTest, DumpByPidSuccess) {
       .WillOnce(Invoke([](bool success, GlobalMemoryDump* global_dump) {
         EXPECT_EQ(1U, global_dump->process_dumps.size());
         EXPECT_EQ(global_dump->process_dumps[0]->pid, kBrowserPid);
+        EXPECT_THAT(global_dump->process_dumps[0]->service_names,
+                    UnorderedElementsAre("bootup_helper",
+                                         base::NumberToString(kBrowserPid)));
       }))
       .WillOnce(Invoke([](bool success, GlobalMemoryDump* global_dump) {
         EXPECT_EQ(1U, global_dump->process_dumps.size());
         EXPECT_EQ(global_dump->process_dumps[0]->pid, kRendererPid);
+        EXPECT_THAT(global_dump->process_dumps[0]->service_names,
+                    UnorderedElementsAre("bootup_helper",
+                                         base::NumberToString(kRendererPid)));
       }))
       .WillOnce(
           Invoke([&run_loop](bool success, GlobalMemoryDump* global_dump) {
             EXPECT_EQ(1U, global_dump->process_dumps.size());
             EXPECT_EQ(global_dump->process_dumps[0]->pid, kGpuPid);
+            EXPECT_THAT(global_dump->process_dumps[0]->service_names,
+                        UnorderedElementsAre("bootup_helper",
+                                             base::NumberToString(kGpuPid)));
             run_loop.Quit();
           }));
 

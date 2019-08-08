@@ -7,6 +7,7 @@
 
 #include "base/callback_forward.h"
 
+class TemplateURLService;
 struct AutocompleteMatch;
 
 namespace views {
@@ -16,8 +17,13 @@ class View;
 // Shows a confirmation bubble to remove a suggestion represented by |match|.
 // If the user clicks Remove, then |remove_closure| is executed, and the bubble
 // is closed.
-void ShowRemoveSuggestion(views::View* anchor_view,
+void ShowRemoveSuggestion(TemplateURLService* template_url_service,
+                          views::View* anchor_view,
                           const AutocompleteMatch& match,
                           base::OnceClosure remove_closure);
+
+// Shows a simple "Why this suggestion" info bubble for |match|.
+void ShowWhyThisSuggestion(views::View* anchor_view,
+                           const AutocompleteMatch& match);
 
 #endif  // CHROME_BROWSER_UI_VIEWS_OMNIBOX_REMOVE_SUGGESTION_BUBBLE_H_

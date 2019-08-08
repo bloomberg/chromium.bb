@@ -1,5 +1,0 @@
-# tags: [foo bar honda]
-
-crbug.com/124 [ foo ] a/b/expected-fail.html [ Failure ]
-crbug.com/125 [ foo ] a/b/expected-flaky.html [ RetryOnFailure ]
-crbug.com/125 [ foo ] a/b/expected-skip.html [ Skip ]

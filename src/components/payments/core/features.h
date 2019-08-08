@@ -11,6 +11,10 @@
 namespace payments {
 namespace features {
 
+// Master toggle for all experimental features that will ship in the next
+// release.
+extern const base::Feature kWebPaymentsExperimentalFeatures;
+
 // Used to control whether Google Pay cards are returned for basic-card.
 extern const base::Feature kReturnGooglePayInBasicCard;
 
@@ -36,6 +40,10 @@ extern const base::Feature kWebPaymentsJustInTimePaymentApp;
 
 // Used to control whether canMakePayment() quota is per-method.
 extern const base::Feature kWebPaymentsPerMethodCanMakePaymentQuota;
+
+// Used to control whether the shipping address returned for the
+// ShippingAddressChangeEvent is redacted of fine-grained details.
+extern const base::Feature kWebPaymentsRedactShippingAddress;
 
 }  // namespace features
 }  // namespace payments

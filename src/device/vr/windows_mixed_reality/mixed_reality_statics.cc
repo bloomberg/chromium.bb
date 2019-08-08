@@ -12,9 +12,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/core_winrt_util.h"
 #include "base/win/scoped_hstring.h"
+#include "device/vr/test/locked_vr_test_hook.h"
+#include "device/vr/test/test_hook.h"
 
 namespace device {
 
+// TODO(crbug.com/941546): Remove namespaces to comply with coding standard.
 using namespace ABI::Windows::Graphics::Holographic;
 using namespace Microsoft::WRL;
 using namespace Microsoft::WRL::Wrappers;
@@ -34,9 +37,29 @@ class DEVICE_VR_EXPORT MixedRealityDeviceStaticsImpl
   ComPtr<IHolographicSpaceStatics2> holographic_space_statics_;
 };
 
+VRTestHook* MixedRealityDeviceStatics::test_hook_ = nullptr;
+
 std::unique_ptr<MixedRealityDeviceStatics>
 MixedRealityDeviceStatics::CreateInstance() {
   return std::make_unique<MixedRealityDeviceStaticsImpl>();
+}
+
+void MixedRealityDeviceStatics::SetTestHook(VRTestHook* hook) {
+  // This may be called from any thread - tests are responsible for
+  // maintaining thread safety, typically by not changing the test hook
+  // while presenting.
+  auto locked_hook = GetLockedTestHook();
+  test_hook_ = hook;
+}
+
+LockedVRTestHook MixedRealityDeviceStatics::GetLockedTestHook() {
+  return LockedVRTestHook(test_hook_);
+}
+
+bool MixedRealityDeviceStatics::ShouldUseMocks() {
+  auto locked_hook = GetLockedTestHook();
+  static bool should_use_mocks = (locked_hook.GetHook() != nullptr);
+  return should_use_mocks;
 }
 
 MixedRealityDeviceStatics::~MixedRealityDeviceStatics() {}
@@ -69,6 +92,8 @@ MixedRealityDeviceStaticsImpl::~MixedRealityDeviceStaticsImpl() {
 }
 
 bool MixedRealityDeviceStaticsImpl::IsHardwareAvailable() {
+  if (GetLockedTestHook().GetHook())
+    return true;
   if (!holographic_space_statics_)
     return false;
 
@@ -78,6 +103,8 @@ bool MixedRealityDeviceStaticsImpl::IsHardwareAvailable() {
 }
 
 bool MixedRealityDeviceStaticsImpl::IsApiAvailable() {
+  if (GetLockedTestHook().GetHook())
+    return true;
   if (!holographic_space_statics_)
     return false;
 

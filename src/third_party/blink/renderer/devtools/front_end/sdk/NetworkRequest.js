@@ -459,6 +459,13 @@ SDK.NetworkRequest = class extends Common.Object {
     return !!this._fromMemoryCache && !this._transferSize;
   }
 
+  /**
+   * @return {boolean}
+   */
+  fromPrefetchCache() {
+    return !!this._fromPrefetchCache;
+  }
+
   setFromMemoryCache() {
     this._fromMemoryCache = true;
     delete this._timing;
@@ -466,6 +473,10 @@ SDK.NetworkRequest = class extends Common.Object {
 
   setFromDiskCache() {
     this._fromDiskCache = true;
+  }
+
+  setFromPrefetchCache() {
+    this._fromPrefetchCache = true;
   }
 
   /**
@@ -1195,8 +1206,8 @@ SDK.NetworkRequest = class extends Common.Object {
    * @param {string} errorMessage
    * @param {number} time
    */
-  addFrameError(errorMessage, time) {
-    this._addFrame({
+  addProtocolFrameError(errorMessage, time) {
+    this.addFrame({
       type: SDK.NetworkRequest.WebSocketFrameType.Error,
       text: errorMessage,
       time: this.pseudoWallTime(time),
@@ -1210,9 +1221,9 @@ SDK.NetworkRequest = class extends Common.Object {
    * @param {number} time
    * @param {boolean} sent
    */
-  addFrame(response, time, sent) {
+  addProtocolFrame(response, time, sent) {
     const type = sent ? SDK.NetworkRequest.WebSocketFrameType.Send : SDK.NetworkRequest.WebSocketFrameType.Receive;
-    this._addFrame({
+    this.addFrame({
       type: type,
       text: response.payloadData,
       time: this.pseudoWallTime(time),
@@ -1224,7 +1235,7 @@ SDK.NetworkRequest = class extends Common.Object {
   /**
    * @param {!SDK.NetworkRequest.WebSocketFrame} frame
    */
-  _addFrame(frame) {
+  addFrame(frame) {
     this._frames.push(frame);
     this.dispatchEventToListeners(SDK.NetworkRequest.Events.WebsocketFrameAdded, frame);
   }

@@ -75,7 +75,6 @@ static_library("impl") {
   deps = [
     "//base",
     "//base:i18n",
-    "//components/data_use_measurement/core",
     "//components/gcm_driver",
     "//components/gcm_driver/common",
     "//components/keyed_service/core",
@@ -129,19 +128,6 @@ static_library("impl") {
   }
 }
 
-source_set("json_unsafe_parser") {
-  testonly = !is_ios
-
-  sources = [
-    "json_unsafe_parser.cc",
-    "json_unsafe_parser.h",
-  ]
-
-  public_deps = [
-    "//base",
-  ]
-}
-
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -156,7 +142,6 @@ source_set("unit_tests") {
   ]
   deps = [
     ":impl",
-    ":json_unsafe_parser",
     ":test_support",
     "//base",
     "//base/test:test_support",
@@ -170,6 +155,7 @@ source_set("unit_tests") {
     "//google_apis/gcm:gcm",
     "//net",
     "//net:test_support",
+    "//services/data_decoder/public/cpp:test_support",
     "//services/identity/public/cpp:test_support",
     "//services/network:test_support",
     "//testing/gmock",

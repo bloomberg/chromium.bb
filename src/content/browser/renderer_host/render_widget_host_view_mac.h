@@ -15,9 +15,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/viz/common/surfaces/surface_id.h"
+#include "content/app_shim_remote_cocoa/render_widget_host_ns_view_client_helper.h"
 #include "content/browser/renderer_host/browser_compositor_view_mac.h"
 #include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
-#include "content/browser/renderer_host/render_widget_host_ns_view_client_helper.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/common/content_export.h"
@@ -29,6 +29,12 @@
 #include "ui/base/cocoa/accessibility_focus_overrider.h"
 #include "ui/base/cocoa/remote_layer_api.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
+
+namespace remote_cocoa {
+namespace mojom {
+class BridgeFactory;
+}  // namespace mojom
+}  // namespace remote_cocoa
 
 namespace ui {
 enum class DomCode;
@@ -44,7 +50,6 @@ class ScopedPasswordInputEnabler;
 namespace content {
 
 class CursorManager;
-class NSViewBridgeFactoryHost;
 class RenderWidgetHost;
 class RenderWidgetHostNSViewBridgeLocal;
 class RenderWidgetHostViewMac;
@@ -128,8 +133,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   CursorManager* GetCursorManager() override;
   void OnDidNavigateMainFrameToNewPage() override;
   void SetIsLoading(bool is_loading) override;
-  void RenderProcessGone(base::TerminationStatus status,
-                         int error_code) override;
+  void RenderProcessGone() override;
   void Destroy() override;
   void SetTooltipText(const base::string16& tooltip_text) override;
   void DisplayTooltipText(const base::string16& tooltip_text) override;
@@ -454,11 +458,12 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // https://crbug.com/831843
   RenderWidgetHostImpl* GetWidgetForKeyboardEvent();
 
-  // Migrate the NSView for this RenderWidgetHostView to be in the process
-  // hosted by |bridge_factory_host|, and make it a child view of the NSView
-  // referred to by |parent_ns_view_id|.
-  void MigrateNSViewBridge(NSViewBridgeFactoryHost* bridge_factory_host,
-                           uint64_t parent_ns_view_id);
+  // Migrate the NSView for this RenderWidgetHostView to be in the process at
+  // the other end of |remote_cocoa_application|, and make it a child view of
+  // the NSView referred to by |parent_ns_view_id|.
+  void MigrateNSViewBridge(
+      remote_cocoa::mojom::BridgeFactory* remote_cocoa_application,
+      uint64_t parent_ns_view_id);
 
   // Specify a ui::Layer into which the renderer's content should be
   // composited. If nullptr is specified, then this layer will create a
@@ -493,9 +498,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // Send updated vsync parameters to the top level display.
   void UpdateDisplayVSyncParameters();
-
-  // Adds/Removes frame observer based on state.
-  void UpdateNeedsBeginFramesInternal();
 
   void SendSyntheticWheelEventWithPhaseEnded(
       blink::WebMouseWheelEvent wheel_event,
@@ -575,9 +577,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // Display link for getting vsync info.
   scoped_refptr<ui::DisplayLinkMac> display_link_;
-
-  // Whether a request for begin frames has been issued.
-  bool needs_begin_frames_;
 
   // Whether or not the background is opaque as determined by calls to
   // SetBackgroundColor. The default value is opaque.

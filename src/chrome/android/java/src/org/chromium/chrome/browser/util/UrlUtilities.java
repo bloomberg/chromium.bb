@@ -368,9 +368,15 @@ public class UrlUtilities {
             boolean includePrivateRegistries);
     private static native String nativeGetDomainAndRegistry(String url,
             boolean includePrivateRegistries);
+    /** Returns whether the given URL uses the Google.com domain. */
     public static native boolean nativeIsGoogleDomainUrl(String url, boolean allowNonStandardPort);
+    /** Returns whether the given URL is a Google.com domain or sub-domain. */
+    public static native boolean nativeIsGoogleSubDomainUrl(String url);
+    /** Returns whether the given URL is a Google.com Search URL. */
     public static native boolean nativeIsGoogleSearchUrl(String url);
+    /** Returns whether the given URL is the Google Web Search URL. */
     public static native boolean nativeIsGoogleHomePageUrl(String url);
+
     private static native boolean nativeIsUrlWithinScope(String url, String scopeUrl);
     private static native boolean nativeUrlsMatchIgnoringFragments(String url, String url2);
     private static native boolean nativeUrlsFragmentsDiffer(String url, String url2);

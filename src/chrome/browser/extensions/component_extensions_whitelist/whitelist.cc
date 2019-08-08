@@ -16,9 +16,9 @@
 #include "printing/buildflags/buildflags.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/keyboard/ui/grit/keyboard_resources.h"
 #include "chrome/browser/chromeos/input_method/component_extension_ime_manager_impl.h"
 #include "ui/file_manager/grit/file_manager_resources.h"
-#include "ui/keyboard/grit/keyboard_resources.h"
 #endif
 
 namespace extensions {
@@ -68,7 +68,6 @@ bool IsComponentExtensionWhitelisted(int manifest_resource_id) {
 #endif
     case IDR_CRYPTOTOKEN_MANIFEST:
     case IDR_FEEDBACK_MANIFEST:
-    case IDR_GAIA_AUTH_MANIFEST:
 #if BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
     case IDR_HANGOUT_SERVICES_MANIFEST:
 #endif
@@ -98,9 +97,11 @@ bool IsComponentExtensionWhitelisted(int manifest_resource_id) {
 #if defined(GOOGLE_CHROME_BUILD)
     case IDR_GENIUS_APP_MANIFEST:
     case IDR_HELP_MANIFEST:
-    case IDR_KIOSK_NEXT_HOME_MANIFEST:
     case IDR_QUICKOFFICE_MANIFEST:
 #endif  // defined(GOOGLE_CHROME_BUILD)
+#if defined(KIOSK_NEXT)
+    case IDR_KIOSK_NEXT_HOME_MANIFEST:
+#endif  // defined(KIOSK_NEXT)
 #endif  // defined(OS_CHROMEOS)
       return true;
   }

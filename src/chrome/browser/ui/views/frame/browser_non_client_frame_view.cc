@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
-#include "chrome/browser/ui/web_app_browser_controller.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/theme_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -134,7 +134,7 @@ bool BrowserNonClientFrameView::EverHasVisibleBackgroundTabShapes() const {
 
 bool BrowserNonClientFrameView::CanDrawStrokes() const {
   // Hosted apps should not draw strokes, as they don't have a tab strip.
-  return !browser_view_->browser()->web_app_controller();
+  return !browser_view_->browser()->app_controller();
 }
 
 SkColor BrowserNonClientFrameView::GetCaptionColor(
@@ -153,10 +153,10 @@ SkColor BrowserNonClientFrameView::GetFrameColor(
   if (frame_->ShouldUseTheme())
     return GetThemeProviderForProfile()->GetColor(color_id);
 
-  WebAppBrowserController* web_app_controller =
-      browser_view_->browser()->web_app_controller();
-  if (web_app_controller && web_app_controller->GetThemeColor())
-    return *web_app_controller->GetThemeColor();
+  web_app::AppBrowserController* app_controller =
+      browser_view_->browser()->app_controller();
+  if (app_controller && app_controller->GetThemeColor())
+    return *app_controller->GetThemeColor();
 
   return ThemeProperties::GetDefaultColor(color_id,
                                           browser_view_->IsIncognito());
@@ -208,6 +208,17 @@ int BrowserNonClientFrameView::GetTabBackgroundResourceId(
 }
 
 void BrowserNonClientFrameView::UpdateMinimumSize() {}
+
+void BrowserNonClientFrameView::Layout() {
+  // BrowserView updates most UI visibility on layout based on fullscreen
+  // state. However, it doesn't have access to hosted_app_button_container_. Do
+  // it here. This is necessary since otherwise the visibility of ink drop
+  // layers won't be updated; see crbug.com/964215.
+  if (hosted_app_button_container_)
+    hosted_app_button_container_->SetVisible(!frame_->IsFullscreen());
+
+  NonClientFrameView::Layout();
+}
 
 void BrowserNonClientFrameView::VisibilityChanged(views::View* starting_from,
                                                   bool is_visible) {
@@ -272,18 +283,10 @@ void BrowserNonClientFrameView::ChildPreferredSizeChanged(views::View* child) {
     Layout();
 }
 
-void BrowserNonClientFrameView::ActivationChanged(bool active) {
-  // On Windows, while deactivating the widget, this is called before the
-  // active HWND has actually been changed.  Since we want the state to reflect
-  // that the window is inactive, we force NonClientFrameView to see the
-  // "correct" state as an override.
-  set_active_state_override(&active);
-
+void BrowserNonClientFrameView::PaintAsActiveChanged(bool active) {
   // The toolbar top separator color (used as the stroke around the tabs and
   // the new tab button) needs to be recalculated.
   browser_view_->tabstrip()->FrameColorsChanged();
-
-  set_active_state_override(nullptr);
 
   if (hosted_app_button_container_)
     hosted_app_button_container_->SetPaintAsActive(active);

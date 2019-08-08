@@ -424,8 +424,9 @@ void ParkableStringImpl::ParkInternal(ParkingMode mode) {
         this, string_.Bytes(), string_.CharactersSizeInBytes(),
         Thread::Current()->GetTaskRunner());
     worker_pool::PostTask(
-        FROM_HERE, CrossThreadBind(&ParkableStringImpl::CompressInBackground,
-                                   WTF::Passed(std::move(params))));
+        FROM_HERE,
+        CrossThreadBindOnce(&ParkableStringImpl::CompressInBackground,
+                            WTF::Passed(std::move(params))));
     state_ = State::kParkingInProgress;
   }
 }
@@ -493,12 +494,15 @@ String ParkableStringImpl::UnparkInternal() const {
         base::StringPiece(reinterpret_cast<const char*>(data), size);
   }
 
+  // If the buffer size is incorrect, then we have a corrupted data issue,
+  // and in such case there is nothing else to do than crash.
+  CHECK_EQ(compression::GetUncompressedSize(compressed_string_piece),
+           uncompressed_string_piece.size());
   // If decompression fails, this is either because:
-  // 1. The output buffer is too small
-  // 2. Compressed data is corrupted
-  // 3. Cannot allocate memory in zlib
+  // 1. Compressed data is corrupted
+  // 2. Cannot allocate memory in zlib
   //
-  // (1-2) are data corruption, and (3) is OOM. In all cases, we cannot
+  // (1) is data corruption, and (2) is OOM. In all cases, we cannot
   // recover the string we need, nothing else to do than to abort.
   //
   // Stability sheriffs: If you see this, this is likely an OOM.
@@ -580,9 +584,7 @@ void ParkableStringImpl::CompressInBackground(
 
   // This runs in background, making CPU starvation likely, and not an issue.
   // Hence, report thread time instead of wall clock time.
-  bool thread_ticks_supported = base::ThreadTicks::IsSupported();
-  auto tick =
-      thread_ticks_supported ? base::ThreadTicks::Now() : base::ThreadTicks();
+  base::ElapsedThreadTimer thread_timer;
   {
     // Temporary vector. As we don't want to waste memory, the temporary buffer
     // has the same size as the initial data. Compression will fail if this is
@@ -620,14 +622,13 @@ void ParkableStringImpl::CompressInBackground(
                          compressed_size);
     }
   }
-  auto tock =
-      thread_ticks_supported ? base::ThreadTicks::Now() : base::ThreadTicks();
+  base::TimeDelta thread_elapsed = thread_timer.Elapsed();
 
   auto* task_runner = params->callback_task_runner.get();
   size_t size = params->size;
   PostCrossThreadTask(
       *task_runner, FROM_HERE,
-      CrossThreadBind(
+      CrossThreadBindOnce(
           [](std::unique_ptr<CompressionTaskParams> params,
              std::unique_ptr<Vector<uint8_t>> compressed,
              base::TimeDelta parking_thread_time) {
@@ -636,7 +637,7 @@ void ParkableStringImpl::CompressInBackground(
                 std::move(params), std::move(compressed), parking_thread_time);
           },
           WTF::Passed(std::move(params)), WTF::Passed(std::move(compressed)),
-          tock - tick));
+          thread_elapsed));
   RecordStatistics(size, timer.Elapsed(), ParkingAction::kParkedInBackground);
 }
 

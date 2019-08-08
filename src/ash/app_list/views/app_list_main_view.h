@@ -16,6 +16,10 @@
 #include "ui/chromeos/search_box/search_box_view_delegate.h"
 #include "ui/views/view.h"
 
+namespace ash {
+class PaginationModel;
+}  // namespace ash
+
 namespace search_box {
 class SearchBoxViewBase;
 }  // namespace search_box
@@ -28,7 +32,6 @@ class AppListView;
 class AppListViewDelegate;
 class ApplicationDragAndDropHost;
 class ContentsView;
-class PaginationModel;
 class SearchBoxView;
 
 // AppListMainView contains the normal view of the app list, which is shown
@@ -87,7 +90,7 @@ class APP_LIST_EXPORT AppListMainView
   void AddContentsViews();
 
   // Gets the PaginationModel owned by the AppsGridView.
-  PaginationModel* GetAppsPaginationModel();
+  ash::PaginationModel* GetAppsPaginationModel();
 
   // Overridden from SearchBoxViewDelegate:
   void QueryChanged(search_box::SearchBoxViewBase* sender) override;

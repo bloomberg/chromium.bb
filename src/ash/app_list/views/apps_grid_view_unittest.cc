@@ -13,7 +13,6 @@
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/model/app_list_model.h"
-#include "ash/app_list/pagination_model.h"
 #include "ash/app_list/test/app_list_test_model.h"
 #include "ash/app_list/test/app_list_test_view_delegate.h"
 #include "ash/app_list/test/test_search_result.h"
@@ -30,9 +29,11 @@
 #include "ash/app_list/views/search_result_tile_item_view.h"
 #include "ash/app_list/views/suggestion_chip_container_view.h"
 #include "ash/app_list/views/test/apps_grid_view_test_api.h"
+#include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
+#include "ash/public/cpp/pagination/pagination_model.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -47,7 +48,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
 #include "ui/events/event_utils.h"
-#include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/views_test_base.h"
@@ -59,9 +59,9 @@ namespace {
 
 constexpr int kNumOfSuggestedApps = 3;
 
-class PageFlipWaiter : public PaginationModelObserver {
+class PageFlipWaiter : public ash::PaginationModelObserver {
  public:
-  explicit PageFlipWaiter(PaginationModel* model) : model_(model) {
+  explicit PageFlipWaiter(ash::PaginationModel* model) : model_(model) {
     model_->AddObserver(this);
   }
 
@@ -96,7 +96,7 @@ class PageFlipWaiter : public PaginationModelObserver {
   void TransitionEnded() override {}
 
   std::unique_ptr<base::RunLoop> ui_run_loop_;
-  PaginationModel* model_ = nullptr;
+  ash::PaginationModel* model_ = nullptr;
   bool wait_ = false;
   std::string selected_pages_;
 
@@ -104,9 +104,9 @@ class PageFlipWaiter : public PaginationModelObserver {
 };
 
 // Dragging task to be run after page flip is observed.
-class DragAfterPageFlipTask : public PaginationModelObserver {
+class DragAfterPageFlipTask : public ash::PaginationModelObserver {
  public:
-  DragAfterPageFlipTask(PaginationModel* model,
+  DragAfterPageFlipTask(ash::PaginationModel* model,
                         AppsGridView* view,
                         const ui::MouseEvent& drag_event)
       : model_(model), view_(view), drag_event_(drag_event) {
@@ -125,7 +125,7 @@ class DragAfterPageFlipTask : public PaginationModelObserver {
   void TransitionChanged() override {}
   void TransitionEnded() override {}
 
-  PaginationModel* model_;
+  ash::PaginationModel* model_;
   AppsGridView* view_;
   ui::MouseEvent drag_event_;
 
@@ -186,7 +186,7 @@ class AppsGridViewTest : public views::ViewsTestBase,
     }
     // Needed to update suggestions from |model_|.
     suggestions_container_->Update();
-    app_list_view_->SetState(ash::mojom::AppListViewState::kFullscreenAllApps);
+    app_list_view_->SetState(ash::AppListViewState::kFullscreenAllApps);
     app_list_view_->Layout();
 
     test_api_ = std::make_unique<AppsGridViewTestApi>(apps_grid_view_);
@@ -222,7 +222,7 @@ class AppsGridViewTest : public views::ViewsTestBase,
 
   int GetTilesPerPage(int page) const { return test_api_->TilesPerPage(page); }
 
-  PaginationModel* GetPaginationModel() const {
+  ash::PaginationModel* GetPaginationModel() const {
     return apps_grid_view_->pagination_model();
   }
 
@@ -418,7 +418,7 @@ TEST_F(AppsGridViewTest, UMATestForLaunchingApps) {
       1 /* Times kAppListItem launched */);
 
   // Launch a suggested app.
-  suggestions_container_->child_at(0)->OnKeyPressed(
+  suggestions_container_->children().front()->OnKeyPressed(
       ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::EF_NONE));
 
   // Test that histogram recorded app launched from suggestion chip.
@@ -624,7 +624,7 @@ TEST_F(AppsGridViewTest, PageResetAfterOpenFolder) {
 
   // Open the folder. It should be at page 0.
   test_api_->PressItemAt(0);
-  PaginationModel* pagination_model =
+  ash::PaginationModel* pagination_model =
       app_list_folder_view()->items_grid_view()->pagination_model();
   EXPECT_EQ(3, pagination_model->total_pages());
   EXPECT_EQ(0, pagination_model->selected_page());

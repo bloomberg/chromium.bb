@@ -457,28 +457,8 @@ Signer.prototype.doSign_ = async function() {
 
   var timeoutSeconds = this.timer_.millisecondsUntilExpired() / 1000.0;
 
-  // Check to see if WebAuthn or legacy U2F requests should be used.
-  await new Promise(resolve => {
-    if (!chrome.cryptotokenPrivate || !window.PublicKeyCredential) {
-      resolve(false);
-    } else {
-      chrome.cryptotokenPrivate.canProxyToWebAuthn(resolve);
-    }
-  }).then(shouldUseWebAuthn => {
-    if (shouldUseWebAuthn) {
-      // If we can proxy to WebAuthn, send the request via WebAuthn.
-      console.log('Proxying sign request to WebAuthn');
-      return this.doSignWebAuthn_(encodedChallenges, challengeVal);
-    }
-    var request = makeSignHelperRequest(
-        encodedChallenges, timeoutSeconds, this.logMsgUrl_);
-    this.handler_ = FACTORY_REGISTRY.getRequestHelper().getHandler(
-        /** @type {HelperRequest} */ (request));
-    if (!this.handler_) {
-      return false;
-    }
-    return this.handler_.run(this.helperComplete_.bind(this));
-  });
+  console.log('Proxying sign request to WebAuthn');
+  return this.doSignWebAuthn_(encodedChallenges, challengeVal);
 };
 
 /**
@@ -560,8 +540,6 @@ Signer.prototype.handleWebAuthnError_ = function(exception) {
   if (domError && domError.name) {
     switch (domError.name) {
       case 'NotAllowedError':
-        errorCode = ErrorCodes.TIMEOUT;
-        break;
       case 'InvalidStateError':
         errorCode = ErrorCodes.DEVICE_INELIGIBLE;
         break;

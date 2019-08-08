@@ -15,6 +15,8 @@ SimpleDownloadManager::~SimpleDownloadManager() {
 
 void SimpleDownloadManager::AddObserver(Observer* observer) {
   simple_download_manager_observers_.AddObserver(observer);
+  if (initialized_)
+    NotifyInitialized();
 }
 
 void SimpleDownloadManager::RemoveObserver(Observer* observer) {
@@ -23,23 +25,17 @@ void SimpleDownloadManager::RemoveObserver(Observer* observer) {
 
 void SimpleDownloadManager::OnInitialized() {
   initialized_ = true;
-  for (auto& callback : std::move(on_initialized_callbacks_))
-    std::move(callback).Run();
-}
-
-void SimpleDownloadManager::NotifyWhenInitialized(
-    base::OnceClosure on_initialized_cb) {
-  if (initialized_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  std::move(on_initialized_cb));
-    return;
-  }
-  on_initialized_callbacks_.emplace_back(std::move(on_initialized_cb));
+  NotifyInitialized();
 }
 
 void SimpleDownloadManager::OnNewDownloadCreated(DownloadItem* download) {
   for (auto& observer : simple_download_manager_observers_)
     observer.OnDownloadCreated(download);
+}
+
+void SimpleDownloadManager::NotifyInitialized() {
+  for (auto& observer : simple_download_manager_observers_)
+    observer.OnDownloadsInitialized();
 }
 
 }  // namespace download

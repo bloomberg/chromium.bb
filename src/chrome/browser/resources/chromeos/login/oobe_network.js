@@ -121,4 +121,12 @@ Polymer({
     this.$.networkSelectLogin.isOfflineDemoModeSetup =
         this.isDemoModeSetup && this.offlineDemoModeEnabled;
   },
+
+  /**
+   * This is called when network setup is done.
+   * @private
+   */
+  onNetworkConnected_: function() {
+    chrome.send('login.NetworkScreen.userActed', ['continue']);
+  },
 });

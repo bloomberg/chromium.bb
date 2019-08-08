@@ -25,7 +25,9 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
     ACCESS_KEY_CHANGED,
     ACTIVE_DESCENDANT_CHANGED,
     ALERT,
+    ATOMIC_CHANGED,
     AUTO_COMPLETE_CHANGED,
+    BUSY_CHANGED,
     CHECKED_STATE_CHANGED,
     CHILDREN_CHANGED,
     CLASS_NAME_CHANGED,
@@ -35,10 +37,13 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
     DESCRIPTION_CHANGED,
     DOCUMENT_SELECTION_CHANGED,
     DOCUMENT_TITLE_CHANGED,
+    DROPEFFECT_CHANGED,
     ENABLED_CHANGED,
     EXPANDED,
     FLOW_FROM_CHANGED,
     FLOW_TO_CHANGED,
+    GRABBED_CHANGED,
+    HASPOPUP_CHANGED,
     HIERARCHICAL_LEVEL_CHANGED,
     IMAGE_ANNOTATION_CHANGED,
     INVALID_STATUS_CHANGED,
@@ -49,9 +54,12 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
     LIVE_REGION_CHANGED,  // Fired on the root of a live region.
     LIVE_REGION_CREATED,
     LIVE_REGION_NODE_CHANGED,  // Fired on a node within a live region.
+    LIVE_RELEVANT_CHANGED,
+    LIVE_STATUS_CHANGED,
     LOAD_COMPLETE,
     LOAD_START,
     MENU_ITEM_SELECTED,
+    MULTILINE_STATE_CHANGED,
     MULTISELECTABLE_STATE_CHANGED,
     NAME_CHANGED,
     OTHER_ATTRIBUTE_CHANGED,
@@ -67,6 +75,7 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
     SELECTED_CHANGED,
     SELECTED_CHILDREN_CHANGED,
     SET_SIZE_CHANGED,
+    SORT_CHANGED,
     STATE_CHANGED,
     SUBTREE_CREATED,
     VALUE_CHANGED,
@@ -146,11 +155,6 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
   // same order they were added.
   void AddEvent(ui::AXNode* node, Event event);
 
-  // Set the event_from field for all subsequent generated events.
-  void set_event_from(ax::mojom::EventFrom event_from) {
-    event_from_ = event_from;
-  }
-
  protected:
   // AXTreeObserver overrides.
   void OnNodeDataWillChange(AXTree* tree,
@@ -220,9 +224,6 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
   // Valid between the call to OnIntAttributeChanged and the call to
   // OnAtomicUpdateFinished. List of nodes whose active descendant changed.
   std::vector<AXNode*> active_descendant_changed_;
-
-  // The value of the event from field in TargetedEvent.
-  ax::mojom::EventFrom event_from_;
 };
 
 }  // namespace ui

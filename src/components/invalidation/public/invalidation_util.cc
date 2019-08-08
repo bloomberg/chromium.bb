@@ -12,6 +12,7 @@
 #include "base/json/json_writer.h"
 #include "base/values.h"
 #include "components/invalidation/public/invalidation.h"
+#include "components/invalidation/public/invalidation_handler.h"
 #include "components/invalidation/public/invalidation_object_id.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "google/cacheinvalidation/types.pb.h"
@@ -49,6 +50,10 @@ bool InvalidationVersionLessThan::operator()(const Invalidation& a,
     return false;
 
   return a.version() < b.version();
+}
+
+bool operator==(const TopicMetadata& lhs, const TopicMetadata& rhs) {
+  return lhs.is_public == rhs.is_public;
 }
 
 std::unique_ptr<base::DictionaryValue> ObjectIdToValue(
@@ -138,10 +143,10 @@ std::string InvalidationObjectIdToString(
   return str;
 }
 
-TopicSet ConvertIdsToTopics(ObjectIdSet ids) {
-  TopicSet topics;
+Topics ConvertIdsToTopics(ObjectIdSet ids, InvalidationHandler* handler) {
+  Topics topics;
   for (const auto& id : ids)
-    topics.insert(id.name());
+    topics.emplace(id.name(), TopicMetadata{handler->IsPublicTopic(id.name())});
   return topics;
 }
 
@@ -149,6 +154,13 @@ ObjectIdSet ConvertTopicsToIds(TopicSet topics) {
   ObjectIdSet ids;
   for (const auto& topic : topics)
     ids.insert(invalidation::ObjectId(kDeprecatedSource, topic));
+  return ids;
+}
+
+ObjectIdSet ConvertTopicsToIds(Topics topics) {
+  ObjectIdSet ids;
+  for (const auto& topic : topics)
+    ids.insert(invalidation::ObjectId(kDeprecatedSource, topic.first));
   return ids;
 }
 
@@ -178,6 +190,36 @@ HandlerOwnerType OwnerNameToHandlerType(const std::string& owner_name) {
   if (owner_name == "SyncEngineImpl")
     return HandlerOwnerType::kSyncEngineImpl;
   return HandlerOwnerType::kUnknown;
+}
+
+const Topic* FindMatchingTopic(const Topics& lhs, const Topics& rhs) {
+  for (auto lhs_it = lhs.begin(), rhs_it = rhs.begin();
+       lhs_it != lhs.end() && rhs_it != rhs.end();) {
+    if (lhs_it->first == rhs_it->first) {
+      return &lhs_it->first;
+    } else if (lhs_it->first < rhs_it->first) {
+      ++lhs_it;
+    } else {
+      ++rhs_it;
+    }
+  }
+  return nullptr;
+}
+
+std::vector<Topic> FindRemovedTopics(const Topics& lhs, const Topics& rhs) {
+  std::vector<Topic> result;
+  for (auto lhs_it = lhs.begin(), rhs_it = rhs.begin(); lhs_it != lhs.end();) {
+    if (rhs_it == rhs.end() || lhs_it->first < rhs_it->first) {
+      result.push_back(lhs_it->first);
+      ++lhs_it;
+    } else if (lhs_it->first == rhs_it->first) {
+      ++lhs_it;
+      ++rhs_it;
+    } else {
+      ++rhs_it;
+    }
+  }
+  return result;
 }
 
 }  // namespace syncer

@@ -97,6 +97,7 @@ class MockMediaAudioOutputStream : public ::media::AudioOutputStream {
 
   MOCK_METHOD0(Open, bool());
   MOCK_METHOD0(Close, void());
+  MOCK_METHOD0(Flush, void());
   MOCK_METHOD1(Start, void(AudioSourceCallback* source_callback));
   MOCK_METHOD0(Stop, void());
   MOCK_METHOD1(SetVolume, void(double volume));

@@ -40,7 +40,8 @@ class SyncSessionDurationsMetricsRecorder
   // IdentityManager::Observer:
   void OnRefreshTokenUpdatedForAccount(
       const CoreAccountInfo& account_info) override;
-  void OnRefreshTokenRemovedForAccount(const std::string& account_id) override;
+  void OnRefreshTokenRemovedForAccount(
+      const CoreAccountId& account_id) override;
   void OnRefreshTokensLoaded() override;
   void OnErrorStateOfRefreshTokenUpdatedForAccount(
       const CoreAccountInfo& account_info,

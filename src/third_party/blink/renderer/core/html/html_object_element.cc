@@ -48,22 +48,17 @@ namespace blink {
 
 using namespace html_names;
 
-inline HTMLObjectElement::HTMLObjectElement(Document& document,
-                                            const CreateElementFlags flags)
+HTMLObjectElement::HTMLObjectElement(Document& document,
+                                     const CreateElementFlags flags)
     : HTMLPlugInElement(kObjectTag,
                         document,
                         flags,
                         kShouldNotPreferPlugInsForImages),
-      use_fallback_content_(false) {}
+      use_fallback_content_(false) {
+  EnsureUserAgentShadowRoot();
+}
 
 inline HTMLObjectElement::~HTMLObjectElement() = default;
-
-HTMLObjectElement* HTMLObjectElement::Create(Document& document,
-                                             const CreateElementFlags flags) {
-  auto* element = MakeGarbageCollected<HTMLObjectElement>(document, flags);
-  element->EnsureUserAgentShadowRoot();
-  return element;
-}
 
 void HTMLObjectElement::Trace(Visitor* visitor) {
   ListedElement::Trace(visitor);
@@ -197,8 +192,9 @@ bool HTMLObjectElement::HasFallbackContent() const {
   for (Node* child = firstChild(); child; child = child->nextSibling()) {
     // Ignore whitespace-only text, and <param> tags, any other content is
     // fallback content.
-    if (child->IsTextNode()) {
-      if (!ToText(child)->ContainsOnlyWhitespaceOrEmpty())
+    auto* child_text_node = DynamicTo<Text>(child);
+    if (child_text_node) {
+      if (!child_text_node->ContainsOnlyWhitespaceOrEmpty())
         return true;
     } else if (!IsHTMLParamElement(*child)) {
       return true;
@@ -239,7 +235,7 @@ void HTMLObjectElement::ReloadPluginOnAttributeChange(
   }
   SetNeedsPluginUpdate(true);
   if (needs_invalidation)
-    LazyReattachIfNeeded();
+    ReattachOnPluginChangeIfNeeded();
 }
 
 // TODO(schenney): crbug.com/572908 This should be unified with
@@ -312,7 +308,7 @@ void HTMLObjectElement::RemovedFrom(ContainerNode& insertion_point) {
 void HTMLObjectElement::ChildrenChanged(const ChildrenChange& change) {
   if (isConnected() && !UseFallbackContent()) {
     SetNeedsPluginUpdate(true);
-    LazyReattachIfNeeded();
+    ReattachOnPluginChangeIfNeeded();
   }
   HTMLPlugInElement::ChildrenChanged(change);
 }

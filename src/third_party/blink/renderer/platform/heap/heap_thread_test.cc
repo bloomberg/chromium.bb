@@ -82,8 +82,8 @@ class AlternatingThreadTester {
             .SetThreadNameForTest("Test Worker Thread"));
     PostCrossThreadTask(
         *worker_thread->GetTaskRunner(), FROM_HERE,
-        CrossThreadBind(&AlternatingThreadTester::StartWorkerThread,
-                        CrossThreadUnretained(this)));
+        CrossThreadBindOnce(&AlternatingThreadTester::StartWorkerThread,
+                            CrossThreadUnretained(this)));
 
     MainThreadMain();
   }

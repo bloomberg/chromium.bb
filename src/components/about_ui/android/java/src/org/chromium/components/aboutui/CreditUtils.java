@@ -11,6 +11,6 @@ import org.chromium.base.annotations.JNINamespace;
 public class CreditUtils {
     private CreditUtils() {}
 
-    /** Returns a string containing the content of about_credits.html. */
-    public static native byte[] nativeGetJavaWrapperCredits();
+    /** Writes the chrome://credits HTML to the given descriptor. */
+    public static native void nativeWriteCreditsHtml(int fd);
 }

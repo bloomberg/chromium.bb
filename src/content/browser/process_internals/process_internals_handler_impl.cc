@@ -66,6 +66,8 @@ void ProcessInternalsHandlerImpl::GetIsolationMode(
     modes.push_back("Site Per Process");
   if (SiteIsolationPolicy::AreIsolatedOriginsEnabled())
     modes.push_back("Isolate Origins");
+  if (SiteIsolationPolicy::IsStrictOriginIsolationEnabled())
+    modes.push_back("Strict Origin Isolation");
 
   // Retrieve any additional site isolation modes controlled by the embedder.
   std::vector<std::string> additional_modes =

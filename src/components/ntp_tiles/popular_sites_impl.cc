@@ -19,9 +19,8 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/google/core/common/google_util.h"
-#include "components/ntp_tiles/constants.h"
+#include "components/ntp_tiles/features.h"
 #include "components/ntp_tiles/pref_names.h"
 #include "components/ntp_tiles/switches.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -172,9 +171,10 @@ std::map<SectionType, PopularSites::SitesVector> ParseVersion6OrAbove(
                    << "invalid ID (" << section << ")";
       continue;
     }
+    // Non-personalized site exploration tiles are no longer supported, so
+    // ignore all other section types.
     SectionType section_type = static_cast<SectionType>(section);
-    if (section_type == SectionType::UNKNOWN) {
-      LOG(WARNING) << "Dropped an unknown section in SitesExploration list.";
+    if (section_type != SectionType::PERSONALIZED) {
       continue;
     }
     const base::ListValue* sites_list;
@@ -182,12 +182,6 @@ std::map<SectionType, PopularSites::SitesVector> ParseVersion6OrAbove(
       continue;
     }
     sections[section_type] = ParseSiteList(*sites_list);
-  }
-  if (!base::FeatureList::IsEnabled(kSiteExplorationUiFeature)) {
-    // New versions of popular sites that should act like old versions will
-    // mimic having only the personalized list.
-    return {std::make_pair(SectionType::PERSONALIZED,
-                           std::move(sections[SectionType::PERSONALIZED]))};
   }
   return sections;
 }
@@ -268,12 +262,12 @@ PopularSitesImpl::PopularSitesImpl(
     const TemplateURLService* template_url_service,
     VariationsService* variations_service,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    ParseJSONCallback parse_json)
+    const ParseJSONCallback& parse_json)
     : prefs_(prefs),
       template_url_service_(template_url_service),
       variations_(variations_service),
       url_loader_factory_(std::move(url_loader_factory)),
-      parse_json_(std::move(parse_json)),
+      parse_json_(parse_json),
       is_fallback_(false),
       sections_(
           ParseSites(*prefs->GetList(prefs::kPopularSitesJsonPref),
@@ -450,11 +444,7 @@ void PopularSitesImpl::FetchPopularSites() {
         })");
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = pending_url_;
-  resource_request->load_flags =
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
-  // TODO(https://crbug.com/808498): Re-add data use measurement once
-  // SimpleURLLoader supports it.
-  // ID=data_use_measurement::DataUseUserData::NTP_TILES
+  resource_request->allow_credentials = false;
   simple_url_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
   simple_url_loader_->SetRetryOptions(
@@ -475,15 +465,15 @@ void PopularSitesImpl::OnSimpleLoaderComplete(
   }
 
   parse_json_.Run(*response_body,
-                  base::Bind(&PopularSitesImpl::OnJsonParsed,
-                             weak_ptr_factory_.GetWeakPtr()),
-                  base::Bind(&PopularSitesImpl::OnJsonParseFailed,
-                             weak_ptr_factory_.GetWeakPtr()));
+                  base::BindOnce(&PopularSitesImpl::OnJsonParsed,
+                                 weak_ptr_factory_.GetWeakPtr()),
+                  base::BindOnce(&PopularSitesImpl::OnJsonParseFailed,
+                                 weak_ptr_factory_.GetWeakPtr()));
 }
 
-void PopularSitesImpl::OnJsonParsed(std::unique_ptr<base::Value> json) {
+void PopularSitesImpl::OnJsonParsed(base::Value json) {
   std::unique_ptr<base::ListValue> list =
-      base::ListValue::From(std::move(json));
+      base::ListValue::From(base::Value::ToUniquePtrValue(std::move(json)));
   if (!list) {
     DLOG(WARNING) << "JSON is not a list";
     OnDownloadFailed();

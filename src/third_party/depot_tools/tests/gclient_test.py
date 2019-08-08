@@ -1105,7 +1105,7 @@ class GclientTest(trial_dir.TestCase):
     try:
       obj.RunOnDeps('None', [])
       self.fail()
-    except gclient_utils.Error, e:
+    except gclient_utils.Error as e:
       self.assertIn('allowed_hosts must be', str(e))
     finally:
       self._get_processed()
@@ -1130,7 +1130,7 @@ class GclientTest(trial_dir.TestCase):
     try:
       obj.RunOnDeps('None', [])
       self.fail()
-    except gclient_utils.Error, e:
+    except gclient_utils.Error as e:
       self.assertIn('allowed_hosts must be', str(e))
     finally:
       self._get_processed()

@@ -193,7 +193,11 @@ bool RunApp(const std::vector<const char *> &args,
     {
         startInfo.hStdError = GetStdHandle(STD_ERROR_HANDLE);
     }
-    startInfo.dwFlags |= STARTF_USESTDHANDLES;
+
+    if (stderrOut || stdoutOut)
+    {
+        startInfo.dwFlags |= STARTF_USESTDHANDLES;
+    }
 
     // Create the child process.
     PROCESS_INFORMATION processInfo = {};
@@ -278,5 +282,29 @@ class Win32Library : public Library
 Library *OpenSharedLibrary(const char *libraryName)
 {
     return new Win32Library(libraryName);
+}
+
+bool IsDirectory(const char *filename)
+{
+    WIN32_FILE_ATTRIBUTE_DATA fileInformation;
+
+    BOOL result = GetFileAttributesExA(filename, GetFileExInfoStandard, &fileInformation);
+    if (result)
+    {
+        DWORD attribs = fileInformation.dwFileAttributes;
+        return (attribs != INVALID_FILE_ATTRIBUTES) && ((attribs & FILE_ATTRIBUTE_DIRECTORY) > 0);
+    }
+
+    return false;
+}
+
+bool IsDebuggerAttached()
+{
+    return !!::IsDebuggerPresent();
+}
+
+void BreakDebugger()
+{
+    __debugbreak();
 }
 }  // namespace angle

@@ -5,20 +5,20 @@
  * found in the LICENSE file.
  */
 
-#include "SkArenaAlloc.h"
-#include "SkBlendModePriv.h"
-#include "SkBlitter.h"
-#include "SkColor.h"
-#include "SkColorFilter.h"
-#include "SkColorSpacePriv.h"
-#include "SkColorSpaceXformSteps.h"
-#include "SkOpts.h"
-#include "SkPaint.h"
-#include "SkRasterPipeline.h"
-#include "SkShader.h"
-#include "SkShaderBase.h"
-#include "SkTo.h"
-#include "SkUtils.h"
+#include "include/core/SkColor.h"
+#include "include/core/SkColorFilter.h"
+#include "include/core/SkPaint.h"
+#include "include/core/SkShader.h"
+#include "include/private/SkTo.h"
+#include "src/core/SkArenaAlloc.h"
+#include "src/core/SkBlendModePriv.h"
+#include "src/core/SkBlitter.h"
+#include "src/core/SkColorSpacePriv.h"
+#include "src/core/SkColorSpaceXformSteps.h"
+#include "src/core/SkOpts.h"
+#include "src/core/SkRasterPipeline.h"
+#include "src/core/SkUtils.h"
+#include "src/shaders/SkShaderBase.h"
 
 class SkRasterPipelineBlitter final : public SkBlitter {
 public:
@@ -220,30 +220,15 @@ SkBlitter* SkRasterPipelineBlitter::Create(const SkPixmap& dst,
             }; break;
 
             case 1: blitter->fMemset2D = [](SkPixmap* dst, int x,int y, int w,int h, uint64_t c) {
-                uint16_t* p = dst->writable_addr16(x,y);
-                auto fn = SkOpts::memset16;
-                while (h --> 0) {
-                    fn(p, c, w);
-                    p = SkTAddOffset<uint16_t>(p, dst->rowBytes());
-                }
+                SkOpts::rect_memset16(dst->writable_addr16(x,y), c, w, dst->rowBytes(), h);
             }; break;
 
             case 2: blitter->fMemset2D = [](SkPixmap* dst, int x,int y, int w,int h, uint64_t c) {
-                uint32_t* p = dst->writable_addr32(x,y);
-                auto fn = SkOpts::memset32;
-                while (h --> 0) {
-                    fn(p, c, w);
-                    p = SkTAddOffset<uint32_t>(p, dst->rowBytes());
-                }
+                SkOpts::rect_memset32(dst->writable_addr32(x,y), c, w, dst->rowBytes(), h);
             }; break;
 
             case 3: blitter->fMemset2D = [](SkPixmap* dst, int x,int y, int w,int h, uint64_t c) {
-                uint64_t* p = dst->writable_addr64(x,y);
-                auto fn = SkOpts::memset64;
-                while (h --> 0) {
-                    fn(p, c, w);
-                    p = SkTAddOffset<uint64_t>(p, dst->rowBytes());
-                }
+                SkOpts::rect_memset64(dst->writable_addr64(x,y), c, w, dst->rowBytes(), h);
             }; break;
 
             // TODO(F32)?

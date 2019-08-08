@@ -33,7 +33,7 @@ class EGLContextSharingTest : public ANGLETest
   public:
     EGLContextSharingTest() : mContexts{EGL_NO_CONTEXT, EGL_NO_CONTEXT}, mTexture(0) {}
 
-    void TearDown() override
+    void testTearDown() override
     {
         glDeleteTextures(1, &mTexture);
 
@@ -49,8 +49,6 @@ class EGLContextSharingTest : public ANGLETest
 
         // Set default test state to not give an error on shutdown.
         getEGLWindow()->makeCurrent();
-
-        ANGLETest::TearDown();
     }
 
     EGLContext mContexts[2];
@@ -96,7 +94,7 @@ TEST_P(EGLContextSharingTest, DisplayShareGroupContextCreation)
     mContexts[0] = eglCreateContext(display, config, nullptr, inShareGroupContextAttribs);
     mContexts[1] = eglCreateContext(display, config, mContexts[1], inShareGroupContextAttribs);
 
-    if (!ANGLETest::eglDisplayExtensionEnabled(display, "EGL_ANGLE_display_texture_share_group"))
+    if (!IsEGLDisplayExtensionEnabled(display, "EGL_ANGLE_display_texture_share_group"))
     {
         // Make sure an error is generated and early-exit
         ASSERT_EGL_ERROR(EGL_BAD_ATTRIBUTE);
@@ -123,7 +121,7 @@ TEST_P(EGLContextSharingTest, DisplayShareGroupContextCreation)
 TEST_P(EGLContextSharingTest, DisplayShareGroupObjectSharing)
 {
     EGLDisplay display = getEGLWindow()->getDisplay();
-    if (!ANGLETest::eglDisplayExtensionEnabled(display, "EGL_ANGLE_display_texture_share_group"))
+    if (!IsEGLDisplayExtensionEnabled(display, "EGL_ANGLE_display_texture_share_group"))
     {
         std::cout << "Test skipped because EGL_ANGLE_display_texture_share_group is not present."
                   << std::endl;
@@ -205,7 +203,7 @@ TEST_P(EGLContextSharingTest, DisplayShareGroupObjectSharing)
 TEST_P(EGLContextSharingTest, DisplayShareGroupReleasedWithLastContext)
 {
     EGLDisplay display = getEGLWindow()->getDisplay();
-    if (!ANGLETest::eglDisplayExtensionEnabled(display, "EGL_ANGLE_display_texture_share_group"))
+    if (!IsEGLDisplayExtensionEnabled(display, "EGL_ANGLE_display_texture_share_group"))
     {
         std::cout << "Test skipped because EGL_ANGLE_display_texture_share_group is not present."
                   << std::endl;

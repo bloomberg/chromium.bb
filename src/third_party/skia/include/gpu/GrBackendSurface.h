@@ -8,16 +8,16 @@
 #ifndef GrBackendSurface_DEFINED
 #define GrBackendSurface_DEFINED
 
-#include "GrTypes.h"
-#include "gl/GrGLTypes.h"
-#include "mock/GrMockTypes.h"
-#include "vk/GrVkTypes.h"
-#include "../private/GrVkTypesPriv.h"
+#include "include/gpu/GrTypes.h"
+#include "include/gpu/gl/GrGLTypes.h"
+#include "include/gpu/mock/GrMockTypes.h"
+#include "include/gpu/vk/GrVkTypes.h"
+#include "include/private/GrVkTypesPriv.h"
 
 class GrVkImageLayout;
 
 #ifdef SK_METAL
-#include "mtl/GrMtlTypes.h"
+#include "include/gpu/mtl/GrMtlTypes.h"
 #endif
 
 #if !SK_SUPPORT_GPU
@@ -113,14 +113,14 @@ private:
     GrBackendFormat(const GrPixelConfig config);
 
     GrBackendApi fBackend;
-    bool      fValid;
+    bool         fValid;
 
     union {
         GrGLenum         fGLFormat; // the sized, internal format of the GL resource
         struct {
             VkFormat                 fFormat;
             GrVkYcbcrConversionInfo  fYcbcrConversionInfo;
-        } fVk;
+        }                fVk;
 #ifdef SK_METAL
         GrMTLPixelFormat fMtlFormat;
 #endif
@@ -196,6 +196,9 @@ public:
     // Returns true if the backend texture has been initialized.
     bool isValid() const { return fIsValid; }
 
+    // Returns true if both textures are valid and refer to the same API texture.
+    bool isSameTexture(const GrBackendTexture&);
+
 #if GR_TEST_UTILS
     // We can remove the pixelConfig getter and setter once we remove the GrPixelConfig from the
     // GrBackendTexture and plumb the GrPixelconfig manually throughout our code (or remove all use
@@ -214,6 +217,7 @@ private:
     friend class SkImage_GpuYUVA;
     friend class SkPromiseImageHelper;
     friend class SkSurface;
+    friend class SkSurface_Gpu;
     friend class GrAHardwareBufferImageGenerator;
     friend class GrBackendTextureImageGenerator;
     friend class GrProxyProvider;

@@ -211,17 +211,15 @@ int vp9_rc_clamp_pframe_target_size(const VP9_COMP *const cpi, int target) {
   const RATE_CONTROL *rc = &cpi->rc;
   const VP9EncoderConfig *oxcf = &cpi->oxcf;
 
-  if (cpi->oxcf.pass != 2) {
-    const int min_frame_target =
-        VPXMAX(rc->min_frame_bandwidth, rc->avg_frame_bandwidth >> 5);
-    if (target < min_frame_target) target = min_frame_target;
-    if (cpi->refresh_golden_frame && rc->is_src_frame_alt_ref) {
-      // If there is an active ARF at this location use the minimum
-      // bits on this frame even if it is a constructed arf.
-      // The active maximum quantizer insures that an appropriate
-      // number of bits will be spent if needed for constructed ARFs.
-      target = min_frame_target;
-    }
+  const int min_frame_target =
+      VPXMAX(rc->min_frame_bandwidth, rc->avg_frame_bandwidth >> 5);
+  if (target < min_frame_target) target = min_frame_target;
+  if (cpi->refresh_golden_frame && rc->is_src_frame_alt_ref) {
+    // If there is an active ARF at this location use the minimum
+    // bits on this frame even if it is a constructed arf.
+    // The active maximum quantizer insures that an appropriate
+    // number of bits will be spent if needed for constructed ARFs.
+    target = min_frame_target;
   }
 
   // Clip the frame target to the maximum allowed value.
@@ -437,6 +435,7 @@ void vp9_rc_init(const VP9EncoderConfig *oxcf, int pass, RATE_CONTROL *rc) {
   rc->last_post_encode_dropped_scene_change = 0;
   rc->use_post_encode_drop = 0;
   rc->ext_use_post_encode_drop = 0;
+  rc->arf_active_best_quality_adjustment_factor = 1.0;
 }
 
 static int check_buffer_above_thresh(VP9_COMP *cpi, int drop_mark) {
@@ -1417,6 +1416,8 @@ static int rc_pick_q_and_bounds_two_pass(const VP9_COMP *cpi, int *bottom_index,
   int active_worst_quality = cpi->twopass.active_worst_quality;
   int q;
   int *inter_minq;
+  int arf_active_best_quality_adjustment, arf_active_best_quality_max;
+  int *arfgf_high_motion_minq;
   const int boost_frame =
       !rc->is_src_frame_alt_ref &&
       (cpi->refresh_golden_frame || cpi->refresh_alt_ref_frame);
@@ -1441,24 +1442,26 @@ static int rc_pick_q_and_bounds_two_pass(const VP9_COMP *cpi, int *bottom_index,
     // For constrained quality dont allow Q less than the cq level
     if (oxcf->rc_mode == VPX_CQ) {
       if (q < cq_level) q = cq_level;
+    }
+    active_best_quality = get_gf_active_quality(cpi, q, cm->bit_depth);
 
-      active_best_quality = get_gf_active_quality(cpi, q, cm->bit_depth);
+    ASSIGN_MINQ_TABLE(cm->bit_depth, arfgf_high_motion_minq);
+    arf_active_best_quality_max = arfgf_high_motion_minq[q];
+    arf_active_best_quality_adjustment =
+        arf_active_best_quality_max - active_best_quality;
+    active_best_quality = arf_active_best_quality_max -
+                          (int)(arf_active_best_quality_adjustment *
+                                rc->arf_active_best_quality_adjustment_factor);
 
-      // Constrained quality use slightly lower active best.
-      active_best_quality = active_best_quality * 15 / 16;
-
-      // Modify best quality for second level arfs. For mode VPX_Q this
-      // becomes the baseline frame q.
-      if (gf_group->rf_level[gf_group_index] == GF_ARF_LOW) {
-        const int layer_depth = gf_group->layer_depth[gf_group_index];
-        // linearly fit the frame q depending on the layer depth index from
-        // the base layer ARF.
-        active_best_quality =
-            ((layer_depth - 1) * q + active_best_quality + layer_depth / 2) /
-            layer_depth;
-      }
-    } else {
-      active_best_quality = get_gf_active_quality(cpi, q, cm->bit_depth);
+    // Modify best quality for second level arfs. For mode VPX_Q this
+    // becomes the baseline frame q.
+    if (gf_group->rf_level[gf_group_index] == GF_ARF_LOW) {
+      const int layer_depth = gf_group->layer_depth[gf_group_index];
+      // linearly fit the frame q depending on the layer depth index from
+      // the base layer ARF.
+      active_best_quality =
+          ((layer_depth - 1) * q + active_best_quality + layer_depth / 2) /
+          layer_depth;
     }
   } else {
     active_best_quality = inter_minq[active_worst_quality];
@@ -3050,7 +3053,7 @@ int vp9_encodedframe_overshoot(VP9_COMP *cpi, int frame_size, int *q) {
   // Lower thresh_qp for video (more overshoot at lower Q) to be
   // more conservative for video.
   if (cpi->oxcf.content != VP9E_CONTENT_SCREEN)
-    thresh_qp = rc->worst_quality >> 1;
+    thresh_qp = 3 * (rc->worst_quality >> 2);
   // If this decision is not based on an encoded frame size but just on
   // scene/slide change detection (i.e., re_encode_overshoot_cbr_rt ==
   // FAST_DETECTION_MAXQ), for now skip the (frame_size > thresh_rate)

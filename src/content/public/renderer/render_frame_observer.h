@@ -32,8 +32,8 @@ class GURL;
 
 namespace blink {
 class WebDocumentLoader;
+class WebElement;
 class WebFormElement;
-class WebNode;
 class WebString;
 struct WebURLError;
 class WebWorkerFetchContext;
@@ -116,7 +116,6 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   virtual void WillReleaseScriptContext(v8::Local<v8::Context> context,
                                         int world_id) {}
   virtual void DidClearWindowObject() {}
-  virtual void DidChangeManifest() {}
   virtual void DidChangeScrollOffset() {}
   virtual void WillSendSubmitEvent(const blink::WebFormElement& form) {}
   virtual void WillSubmitForm(const blink::WebFormElement& form) {}
@@ -169,8 +168,11 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   // Reports that visible elements in the frame shifted (bit.ly/lsm-explainer).
   // This is called once for each janking animation frame, with the jank
   // fraction for that frame.  The cumulative jank score can be inferred by
-  // summing the jank fractions.
-  virtual void DidObserveLayoutJank(double jank_fraction) {}
+  // summing the jank fractions. |after_input_or_scroll| indicates whether the
+  // given |jank_fraction| was observed after an input or scroll occurred in the
+  // associated document.
+  virtual void DidObserveLayoutJank(double jank_fraction,
+                                    bool after_input_or_scroll) {}
 
   // Reports lazy loaded behavior when the frame or image is fully deferred or
   // if the frame or image is loaded after being deferred by lazy load.
@@ -202,8 +204,8 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   virtual void DidReceiveTransferSizeUpdate(int resource_id,
                                             int received_data_length) {}
 
-  // Called when the focused node has changed to |node|.
-  virtual void FocusedNodeChanged(const blink::WebNode& node) {}
+  // Called when the focused element has changed to |element|.
+  virtual void FocusedElementChanged(const blink::WebElement& element) {}
 
   // Called when accessibility is enabled or disabled.
   virtual void AccessibilityModeChanged() {}

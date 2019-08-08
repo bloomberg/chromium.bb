@@ -5,16 +5,15 @@
 #ifndef CHROME_BROWSER_CHROMEOS_PRINTING_PPD_RESOLUTION_TRACKER_H_
 #define CHROME_BROWSER_CHROMEOS_PRINTING_PPD_RESOLUTION_TRACKER_H_
 
-#include <memory>
 #include <string>
 #include <unordered_map>
-#include <vector>
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/printing/ppd_resolution_state.h"
 #include "chromeos/printing/printer_configuration.h"
 
 namespace chromeos {
+
+class PpdResolutionState;
 
 class PpdResolutionTracker {
  public:

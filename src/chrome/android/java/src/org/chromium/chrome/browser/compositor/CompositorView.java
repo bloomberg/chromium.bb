@@ -45,7 +45,8 @@ import java.util.List;
  */
 @JNINamespace("android")
 public class CompositorView
-        extends FrameLayout implements CompositorSurfaceManager.SurfaceManagerCallbackTarget {
+        extends FrameLayout implements CompositorSurfaceManager.SurfaceManagerCallbackTarget,
+                                       WindowAndroid.SelectionHandlesObserver {
     private static final String TAG = "CompositorView";
 
     // Cache objects that should not be created every frame
@@ -78,6 +79,9 @@ public class CompositorView
     private List<Runnable> mDrawingFinishedCallbacks;
 
     private boolean mIsInVr;
+
+    private boolean mIsSurfaceControlEnabled;
+    private boolean mSelectionHandlesActive;
 
     // On P and above, toggling the screen off gets us in a state where the Surface is destroyed but
     // it is never recreated when it is turned on again. This is the only workaround that seems to
@@ -199,6 +203,40 @@ public class CompositorView
     }
 
     /**
+     * WindowAndroid.SelectionHandlesObserver impl.
+     */
+    @Override
+    public void onSelectionHandlesStateChanged(boolean active) {
+        // If the feature is disabled or we're in Vr mode, we are already rendering directly to the
+        // SurfaceView.
+        if (!mIsSurfaceControlEnabled || mIsInVr) return;
+
+        if (mSelectionHandlesActive == active) return;
+        mSelectionHandlesActive = active;
+
+        // If selection handles are active, we need to switch to render to the SurfaceView so the
+        // Magnifier widget can copy from its buffers to show in the UI.
+        boolean switchToSurfaceView = mSelectionHandlesActive;
+
+        // Cache the backbuffer for the currently visible Surface in the GPU process, if we're going
+        // from SurfaceControl to SurfaceView. We need to preserve it until the new SurfaceView has
+        // content.
+        // When the CompositorImpl is switched to a new SurfaceView the Surface associated with the
+        // current SurfaceView is disconnected from GL and its EGLSurface is destroyed. But the
+        // buffers associated with that Surface are preserved (in android's internal BufferQueue)
+        // when rendering directly to the SurfaceView. So caching the SurfaceView is enough to
+        // preserve the old content.
+        // But with SurfaceControl, switching to a new SurfaceView evicts that content when
+        // destroying the GLSurface in the GPU process. So we need to explicitly preserve them in
+        // the GPU process during this transition.
+        if (switchToSurfaceView) nativeCacheBackBufferForCurrentSurface(mNativeCompositorView);
+
+        // Trigger the creation of a new SurfaceView. CompositorSurfaceManager will handle caching
+        // the old one during the transition.
+        mCompositorSurfaceManager.requestSurface(getSurfacePixelFormat());
+    }
+
+    /**
      * @return The ResourceManager.
      */
     public ResourceManager getResourceManager() {
@@ -234,6 +272,8 @@ public class CompositorView
         // https://crbug.com/802160. We can't call setWindowAndroid here because updating the window
         // visibility here breaks exiting Reader Mode somehow.
         mWindowAndroid = windowAndroid;
+        mWindowAndroid.addSelectionHandlesObserver(this);
+
         mLayerTitleCache = layerTitleCache;
         mTabContentManager = tabContentManager;
 
@@ -266,7 +306,11 @@ public class CompositorView
     }
 
     private void setWindowAndroid(WindowAndroid windowAndroid) {
+        assert mWindowAndroid != null;
+        mWindowAndroid.removeSelectionHandlesObserver(this);
+
         mWindowAndroid = windowAndroid;
+        mWindowAndroid.addSelectionHandlesObserver(this);
         onWindowVisibilityChangedInternal(getWindowVisibility());
     }
 
@@ -291,8 +335,23 @@ public class CompositorView
     }
 
     private int getSurfacePixelFormat() {
+        if (mIsSurfaceControlEnabled) {
+            // In SurfaceControl mode, we can always use a translucent format since there is no
+            // buffer associated to the SurfaceView, and the buffers passed to the SurfaceControl
+            // API are correctly tagged with whether blending is needed in the GPU process itself.
+            // But if we need to temporarily render directly to a SurfaceView, then opaque format is
+            // needed.
+            // The transition between the 2 also relies on them using different Surfaces (through
+            // different format requests).
+            return canUseSurfaceControl() ? PixelFormat.TRANSLUCENT : PixelFormat.OPAQUE;
+        }
+
         return (mOverlayVideoEnabled || mAlwaysTranslucent) ? PixelFormat.TRANSLUCENT
                                                             : PixelFormat.OPAQUE;
+    }
+
+    private boolean canUseSurfaceControl() {
+        return !mIsInVr && !mSelectionHandlesActive;
     }
 
     @Override
@@ -306,9 +365,8 @@ public class CompositorView
     public void surfaceChanged(Surface surface, int format, int width, int height) {
         if (mNativeCompositorView == 0) return;
 
-        boolean backedBySurfaceTexture = mIsInVr;
         nativeSurfaceChanged(
-                mNativeCompositorView, format, width, height, backedBySurfaceTexture, surface);
+                mNativeCompositorView, format, width, height, canUseSurfaceControl(), surface);
         mRenderHost.onSurfaceResized(width, height);
     }
 
@@ -326,6 +384,11 @@ public class CompositorView
         if (mNativeCompositorView == 0) return;
 
         nativeSurfaceDestroyed(mNativeCompositorView);
+    }
+
+    @Override
+    public void unownedSurfaceDestroyed() {
+        nativeEvictCachedBackBuffer(mNativeCompositorView);
     }
 
     @Override
@@ -383,6 +446,10 @@ public class CompositorView
             // We can hide the outgoing surface, since the incoming one has a frame.  It's okay if
             // we've don't have an unowned surface.
             mFramesUntilHideBackground = 0;
+
+            // Evict the SurfaceView and the associated backbuffer now that the new SurfaceView is
+            // ready.
+            nativeEvictCachedBackBuffer(mNativeCompositorView);
             mCompositorSurfaceManager.doneWithUnownedSurface();
         }
 
@@ -394,7 +461,7 @@ public class CompositorView
 
     @CalledByNative
     private void notifyWillUseSurfaceControl() {
-        mAlwaysTranslucent = true;
+        mIsSurfaceControlEnabled = true;
         mCompositorSurfaceManager.requestSurface(getSurfacePixelFormat());
     }
 
@@ -530,4 +597,6 @@ public class CompositorView
     private native void nativeSetOverlayVideoMode(long nativeCompositorView, boolean enabled);
     private native void nativeSetSceneLayer(long nativeCompositorView, SceneLayer sceneLayer);
     private native void nativeSetCompositorWindow(long nativeCompositorView, WindowAndroid window);
+    private native void nativeCacheBackBufferForCurrentSurface(long nativeCompositorView);
+    private native void nativeEvictCachedBackBuffer(long nativeCompositorView);
 }

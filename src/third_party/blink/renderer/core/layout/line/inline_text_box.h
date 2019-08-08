@@ -114,7 +114,7 @@ class CORE_EXPORT InlineTextBox : public InlineBox {
       int maximum_length,
       StringBuilder* characters_with_hyphen = nullptr) const;
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   void DumpBox(StringBuilder&) const override;
 #endif
   const char* BoxName() const override;

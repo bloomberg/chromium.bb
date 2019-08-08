@@ -76,20 +76,20 @@ gfx::Rect GetCenteredBounds(const gfx::Rect& bounds_in_parent,
 }
 
 // Returns the maximized/full screen and/or centered bounds of a window.
-gfx::Rect GetBoundsInMaximizedMode(wm::WindowState* state_object) {
+gfx::Rect GetBoundsInTabletMode(wm::WindowState* state_object) {
   if (state_object->IsFullscreen() || state_object->IsPinned()) {
     return screen_util::GetFullscreenWindowBoundsInParent(
         state_object->window());
   }
 
-  if (state_object->GetStateType() == mojom::WindowStateType::LEFT_SNAPPED) {
+  if (state_object->GetStateType() == WindowStateType::kLeftSnapped) {
     return Shell::Get()
         ->split_view_controller()
         ->GetSnappedWindowBoundsInParent(state_object->window(),
                                          SplitViewController::LEFT);
   }
 
-  if (state_object->GetStateType() == mojom::WindowStateType::RIGHT_SNAPPED) {
+  if (state_object->GetStateType() == WindowStateType::kRightSnapped) {
     return Shell::Get()
         ->split_view_controller()
         ->GetSnappedWindowBoundsInParent(state_object->window(),
@@ -133,7 +133,7 @@ bool IsTabDraggingSourceWindow(aura::Window* window) {
     return false;
 
   MruWindowTracker::WindowList window_list =
-      Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+      Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
   if (window_list.empty())
     return false;
 
@@ -158,7 +158,7 @@ bool IsTabDraggingSourceWindow(aura::Window* window) {
 // static
 void TabletModeWindowState::UpdateWindowPosition(wm::WindowState* window_state,
                                                  bool animate) {
-  gfx::Rect bounds_in_parent = GetBoundsInMaximizedMode(window_state);
+  gfx::Rect bounds_in_parent = GetBoundsInTabletMode(window_state);
   if (bounds_in_parent == window_state->window()->GetTargetBounds())
     return;
 
@@ -196,11 +196,13 @@ void TabletModeWindowState::LeaveTabletMode(wm::WindowState* window_state,
   // TODO(minch): Keep the current animation if leaving tablet mode from
   // overview. Need more investigation for windows' transform animation and
   // updates bounds animation when overview is active.
-  old_state_->set_enter_animation_type((was_in_overview ||
-                                        window_state->IsSnapped() ||
-                                        IsTopWindow(window_state->window()))
-                                           ? DEFAULT
-                                           : IMMEDIATE);
+  bool use_default = was_in_overview || window_state->IsSnapped() ||
+                     IsTopWindow(window_state->window());
+  if (old_state_->GetType() == window_state->GetStateType() &&
+      !window_state->IsNormalStateType()) {
+    use_default = false;
+  }
+  old_state_->set_enter_animation_type(use_default ? DEFAULT : IMMEDIATE);
   // Note: When we return we will destroy ourselves with the |our_reference|.
   std::unique_ptr<wm::WindowState::State> our_reference =
       window_state->SetStateObject(std::move(old_state_));
@@ -218,23 +220,22 @@ void TabletModeWindowState::OnWMEvent(wm::WindowState* window_state,
       ToggleFullScreen(window_state, window_state->delegate());
       break;
     case wm::WM_EVENT_FULLSCREEN:
-      UpdateWindow(window_state, mojom::WindowStateType::FULLSCREEN,
+      UpdateWindow(window_state, WindowStateType::kFullscreen,
                    true /* animated */);
       break;
     case wm::WM_EVENT_PIN:
       if (!Shell::Get()->screen_pinning_controller()->IsPinned())
-        UpdateWindow(window_state, mojom::WindowStateType::PINNED,
+        UpdateWindow(window_state, WindowStateType::kPinned,
                      true /* animated */);
       break;
     case wm::WM_EVENT_PIP:
       if (!window_state->IsPip()) {
-        UpdateWindow(window_state, mojom::WindowStateType::PIP,
-                     true /* animated */);
+        UpdateWindow(window_state, WindowStateType::kPip, true /* animated */);
       }
       break;
     case wm::WM_EVENT_TRUSTED_PIN:
       if (!Shell::Get()->screen_pinning_controller()->IsPinned())
-        UpdateWindow(window_state, mojom::WindowStateType::TRUSTED_PINNED,
+        UpdateWindow(window_state, WindowStateType::kTrustedPinned,
                      true /* animated */);
       break;
     case wm::WM_EVENT_TOGGLE_MAXIMIZE_CAPTION:
@@ -254,8 +255,8 @@ void TabletModeWindowState::OnWMEvent(wm::WindowState* window_state,
       // place the window.
       window_state->set_bounds_changed_by_user(true);
       UpdateWindow(window_state,
-                   GetSnappedWindowStateType(
-                       window_state, mojom::WindowStateType::LEFT_SNAPPED),
+                   GetSnappedWindowStateType(window_state,
+                                             WindowStateType::kLeftSnapped),
                    false /* animated */);
       return;
     case wm::WM_EVENT_SNAP_RIGHT:
@@ -263,12 +264,12 @@ void TabletModeWindowState::OnWMEvent(wm::WindowState* window_state,
       // place the window.
       window_state->set_bounds_changed_by_user(true);
       UpdateWindow(window_state,
-                   GetSnappedWindowStateType(
-                       window_state, mojom::WindowStateType::RIGHT_SNAPPED),
+                   GetSnappedWindowStateType(window_state,
+                                             WindowStateType::kRightSnapped),
                    false /* animated */);
       return;
     case wm::WM_EVENT_MINIMIZE:
-      UpdateWindow(window_state, mojom::WindowStateType::MINIMIZED,
+      UpdateWindow(window_state, WindowStateType::kMinimized,
                    true /* animated */);
       return;
     case wm::WM_EVENT_SHOW_INACTIVE:
@@ -286,18 +287,17 @@ void TabletModeWindowState::OnWMEvent(wm::WindowState* window_state,
         // dragged window's source window, we may need to update its bounds
         // during dragging.
         window_state->SetBoundsDirect(bounds_in_parent);
-      } else if (current_state_type_ == mojom::WindowStateType::MAXIMIZED) {
+      } else if (current_state_type_ == WindowStateType::kMaximized) {
         // Having a maximized window, it could have been created with an empty
         // size and the caller should get his size upon leaving the maximized
         // mode. As such we set the restore bounds to the requested bounds.
         window_state->SetRestoreBoundsInParent(bounds_in_parent);
-      } else if (current_state_type_ != mojom::WindowStateType::MINIMIZED &&
-                 current_state_type_ != mojom::WindowStateType::FULLSCREEN &&
-                 current_state_type_ != mojom::WindowStateType::PINNED &&
-                 current_state_type_ !=
-                     mojom::WindowStateType::TRUSTED_PINNED &&
-                 current_state_type_ != mojom::WindowStateType::LEFT_SNAPPED &&
-                 current_state_type_ != mojom::WindowStateType::RIGHT_SNAPPED) {
+      } else if (current_state_type_ != WindowStateType::kMinimized &&
+                 current_state_type_ != WindowStateType::kFullscreen &&
+                 current_state_type_ != WindowStateType::kPinned &&
+                 current_state_type_ != WindowStateType::kTrustedPinned &&
+                 current_state_type_ != WindowStateType::kLeftSnapped &&
+                 current_state_type_ != WindowStateType::kRightSnapped) {
         // In all other cases (except for minimized windows) we respect the
         // requested bounds and center it to a fully visible area on the screen.
         bounds_in_parent = GetCenteredBounds(bounds_in_parent, window_state);
@@ -313,27 +313,27 @@ void TabletModeWindowState::OnWMEvent(wm::WindowState* window_state,
       break;
     }
     case wm::WM_EVENT_ADDED_TO_WORKSPACE:
-      if (current_state_type_ != mojom::WindowStateType::MAXIMIZED &&
-          current_state_type_ != mojom::WindowStateType::FULLSCREEN &&
-          current_state_type_ != mojom::WindowStateType::MINIMIZED) {
-        mojom::WindowStateType new_state =
+      if (current_state_type_ != WindowStateType::kMaximized &&
+          current_state_type_ != WindowStateType::kFullscreen &&
+          current_state_type_ != WindowStateType::kMinimized) {
+        WindowStateType new_state =
             GetMaximizedOrCenteredWindowType(window_state);
         UpdateWindow(window_state, new_state, true /* animated */);
       }
       break;
     case wm::WM_EVENT_WORKAREA_BOUNDS_CHANGED:
-      if (current_state_type_ != mojom::WindowStateType::MINIMIZED)
+      if (current_state_type_ != WindowStateType::kMinimized)
         UpdateBounds(window_state, true /* animated */);
       break;
     case wm::WM_EVENT_DISPLAY_BOUNDS_CHANGED:
       // Don't animate on a screen rotation - just snap to new size.
-      if (current_state_type_ != mojom::WindowStateType::MINIMIZED)
+      if (current_state_type_ != WindowStateType::kMinimized)
         UpdateBounds(window_state, false /* animated */);
       break;
   }
 }
 
-mojom::WindowStateType TabletModeWindowState::GetType() const {
+WindowStateType TabletModeWindowState::GetType() const {
   return current_state_type_;
 }
 
@@ -350,11 +350,11 @@ void TabletModeWindowState::AttachState(
                               window_state->GetShowState());
   }
 
-  if (current_state_type_ != mojom::WindowStateType::MAXIMIZED &&
-      current_state_type_ != mojom::WindowStateType::MINIMIZED &&
-      current_state_type_ != mojom::WindowStateType::FULLSCREEN &&
-      current_state_type_ != mojom::WindowStateType::PINNED &&
-      current_state_type_ != mojom::WindowStateType::TRUSTED_PINNED) {
+  if (current_state_type_ != WindowStateType::kMaximized &&
+      current_state_type_ != WindowStateType::kMinimized &&
+      current_state_type_ != WindowStateType::kFullscreen &&
+      current_state_type_ != WindowStateType::kPinned &&
+      current_state_type_ != WindowStateType::kTrustedPinned) {
     UpdateWindow(window_state, state_type_on_attach_,
                  animate_bounds_on_attach_);
   }
@@ -367,33 +367,33 @@ void TabletModeWindowState::DetachState(wm::WindowState* window_state) {
 }
 
 void TabletModeWindowState::UpdateWindow(wm::WindowState* window_state,
-                                         mojom::WindowStateType target_state,
+                                         WindowStateType target_state,
                                          bool animated) {
-  DCHECK(target_state == mojom::WindowStateType::MINIMIZED ||
-         target_state == mojom::WindowStateType::MAXIMIZED ||
-         target_state == mojom::WindowStateType::PINNED ||
-         target_state == mojom::WindowStateType::TRUSTED_PINNED ||
-         (target_state == mojom::WindowStateType::NORMAL &&
+  DCHECK(target_state == WindowStateType::kMinimized ||
+         target_state == WindowStateType::kMaximized ||
+         target_state == WindowStateType::kPinned ||
+         target_state == WindowStateType::kTrustedPinned ||
+         (target_state == WindowStateType::kNormal &&
           (!window_state->CanMaximize() ||
            !!::wm::GetTransientParent(window_state->window()))) ||
-         target_state == mojom::WindowStateType::FULLSCREEN ||
-         target_state == mojom::WindowStateType::LEFT_SNAPPED ||
-         target_state == mojom::WindowStateType::RIGHT_SNAPPED);
+         target_state == WindowStateType::kFullscreen ||
+         target_state == WindowStateType::kLeftSnapped ||
+         target_state == WindowStateType::kRightSnapped);
 
   if (current_state_type_ == target_state) {
-    if (target_state == mojom::WindowStateType::MINIMIZED)
+    if (target_state == WindowStateType::kMinimized)
       return;
     // If the state type did not change, update it accordingly.
     UpdateBounds(window_state, animated);
     return;
   }
 
-  const mojom::WindowStateType old_state_type = current_state_type_;
+  const WindowStateType old_state_type = current_state_type_;
   current_state_type_ = target_state;
   window_state->UpdateWindowPropertiesFromStateType();
   window_state->NotifyPreStateTypeChange(old_state_type);
 
-  if (target_state == mojom::WindowStateType::MINIMIZED) {
+  if (target_state == WindowStateType::kMinimized) {
     ::wm::SetWindowVisibilityAnimationType(
         window_state->window(), wm::WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
     window_state->window()->Hide();
@@ -404,7 +404,7 @@ void TabletModeWindowState::UpdateWindow(wm::WindowState* window_state,
   }
 
   if ((window_state->window()->layer()->GetTargetVisibility() ||
-       old_state_type == mojom::WindowStateType::MINIMIZED) &&
+       old_state_type == WindowStateType::kMinimized) &&
       !window_state->window()->layer()->visible()) {
     // The layer may be hidden if the window was previously minimized. Make
     // sure it's visible.
@@ -413,28 +413,28 @@ void TabletModeWindowState::UpdateWindow(wm::WindowState* window_state,
 
   window_state->NotifyPostStateTypeChange(old_state_type);
 
-  if (old_state_type == mojom::WindowStateType::PINNED ||
-      target_state == mojom::WindowStateType::PINNED ||
-      old_state_type == mojom::WindowStateType::TRUSTED_PINNED ||
-      target_state == mojom::WindowStateType::TRUSTED_PINNED) {
+  if (old_state_type == WindowStateType::kPinned ||
+      target_state == WindowStateType::kPinned ||
+      old_state_type == WindowStateType::kTrustedPinned ||
+      target_state == WindowStateType::kTrustedPinned) {
     Shell::Get()->screen_pinning_controller()->SetPinnedWindow(
         window_state->window());
   }
 }
 
-mojom::WindowStateType TabletModeWindowState::GetMaximizedOrCenteredWindowType(
+WindowStateType TabletModeWindowState::GetMaximizedOrCenteredWindowType(
     wm::WindowState* window_state) {
   return (window_state->CanMaximize() &&
           ::wm::GetTransientParent(window_state->window()) == nullptr)
-             ? mojom::WindowStateType::MAXIMIZED
-             : mojom::WindowStateType::NORMAL;
+             ? WindowStateType::kMaximized
+             : WindowStateType::kNormal;
 }
 
-mojom::WindowStateType TabletModeWindowState::GetSnappedWindowStateType(
+WindowStateType TabletModeWindowState::GetSnappedWindowStateType(
     wm::WindowState* window_state,
-    mojom::WindowStateType target_state) {
-  DCHECK(target_state == mojom::WindowStateType::LEFT_SNAPPED ||
-         target_state == mojom::WindowStateType::RIGHT_SNAPPED);
+    WindowStateType target_state) {
+  DCHECK(target_state == WindowStateType::kLeftSnapped ||
+         target_state == WindowStateType::kRightSnapped);
   return CanSnapInSplitview(window_state->window())
              ? target_state
              : GetMaximizedOrCenteredWindowType(window_state);
@@ -448,10 +448,10 @@ void TabletModeWindowState::UpdateBounds(wm::WindowState* window_state,
     return;
 
   // Do not update minimized windows bounds until it was unminimized.
-  if (current_state_type_ == mojom::WindowStateType::MINIMIZED)
+  if (current_state_type_ == WindowStateType::kMinimized)
     return;
 
-  gfx::Rect bounds_in_parent = GetBoundsInMaximizedMode(window_state);
+  gfx::Rect bounds_in_parent = GetBoundsInTabletMode(window_state);
   // If we have a target bounds rectangle, we center it and set it
   // accordingly.
   if (!bounds_in_parent.IsEmpty() &&
@@ -480,10 +480,8 @@ void TabletModeWindowState::UpdateBounds(wm::WindowState* window_state,
 }
 
 bool TabletModeWindowState::IsTopWindow(aura::Window* window) {
-  MruWindowTracker::WindowList windows =
-      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
-
-  return !windows.empty() && window == windows[0];
+  DCHECK(window);
+  return window == creator_->GetTopWindow();
 }
 
 }  // namespace ash

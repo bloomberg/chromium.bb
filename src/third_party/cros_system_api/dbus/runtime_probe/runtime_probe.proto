@@ -31,6 +31,7 @@ message ProbeRequest {
     audio_codec = 0;
     battery = 1;
     storage = 2;
+    vpd_cached = 3;
   }
   // repeated string categories = 1;
   repeated SupportCategory categories = 1;
@@ -82,6 +83,10 @@ message Battery {
     // The path of this battery in system. It is useful if caller needs to
     // correlate with other information
     string path = 13;
+    // Smart Manufacture Date is defined in
+    // http://sbs-forum.org/specs/sbdat110.pdf.
+    // The value is calculated by ((year-1980) * 512 + month * 32 + day).
+    int32 manufacture_date_smart = 14;
   }
   string name = 1;    // Component alias
   Fields values = 2;  // Component's details
@@ -89,8 +94,6 @@ message Battery {
 
 // Things about storage
 message Storage {
-  // TODO(itspeter): Add more fileds for storage.
-  // Those fields are for eMMC now.
   message Fields {
     // The path of this storage in system. It is useful if caller needs to
     // correlate with other information.
@@ -100,8 +103,8 @@ message Storage {
     // Exact size of this storage, reported in bytes
     int64 size = 3;
     // Storage type, could be MMC / NVMe / ATA
-    // TODO(b/122027599): NVMe/ATA is still underdevelopment.
     string type = 4;
+
     // Below are based on JEDEC Standard No. 84-B51, and kernel MMC driver
     // exposed in sysfs:
     //   https://chromium.googlesource.com/chromiumos/third_party/kernel/+/v3.18/include/linux/mmc/card.h#17
@@ -117,6 +120,43 @@ message Storage {
     uint32 serial = 8;
     // OID: OEM/Application ID, 8 bits
     uint32 oemid = 9;
+
+    // The following are fields for NVMe. Every field name comes with
+    // prefix "pci_" as NVMe is a PCI device.
+    // These fields are based on what kernel pci driver exposes in sysfs:
+    //   https://chromium.googlesource.com/chromiumos/third_party/kernel/+/v4.4/include/linux/pci.h#267
+
+    // Vendor ID, 16 bits
+    uint32 pci_vendor = 10;
+    // Device ID, 16 bits
+    uint32 pci_device = 11;
+    // Device class indicator, 32 bits
+    uint32 pci_class = 12;
+
+    // The following are fields for SATA. Every field name comes with
+    // prefix "ata_".
+    // These fields based on what kernel pci driver exposes in sysfs:
+    //   https://chromium.googlesource.com/chromiumos/third_party/kernel/+/v4.4/drivers/scsi/scsi_devinfo.c#22
+
+    // Vendor name, 8 bytes
+    string ata_vendor = 13;
+    // Model name, 16 bytes
+    string ata_model = 14;
+  }
+  string name = 1;    // Component alias
+  Fields values = 2;  // Component's details
+}
+
+// Things about VPD (Vital Product Data) , cached version.
+message VpdCached{
+  // TODO(itspeter): Add more fileds for Vpd.
+  message Fields {
+    // Allowed VPD fileds are reviewed on https://b/131849646
+    // Up to date documentation on VPD fields for each Chromebook is on
+    //   https://www.google.com/chromeos/partner/fe/docs/factory/vpd.html
+
+    // SKU number of the unit
+    string vpd_sku_number = 1;
   }
   string name = 1;    // Component alias
   Fields values = 2;  // Component's details
@@ -131,4 +171,5 @@ message ProbeResult {
   repeated AudioCodec audio_codec = 2;
   repeated Battery battery = 3;
   repeated Storage storage = 4;
+  repeated VpdCached vpd_cached = 5;
 }

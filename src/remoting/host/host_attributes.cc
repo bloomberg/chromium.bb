@@ -107,13 +107,13 @@ std::string GetHostAttributes() {
     GetD3DCapabilities(&result);
 
     auto version = base::win::GetVersion();
-    if (version >= base::win::VERSION_WIN8) {
+    if (version >= base::win::Version::WIN8) {
       result.push_back("Win8+");
     }
-    if (version >= base::win::VERSION_WIN8_1) {
+    if (version >= base::win::Version::WIN8_1) {
       result.push_back("Win81+");
     }
-    if (version >= base::win::VERSION_WIN10) {
+    if (version >= base::win::Version::WIN10) {
       result.push_back("Win10+");
     }
   }

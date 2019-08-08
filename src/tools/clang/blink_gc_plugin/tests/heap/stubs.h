@@ -256,9 +256,6 @@ public:
     bool operator!() const { return false; }
 };
 
-template <class T>
-class TraceWrapperMember : public Member<T> {};
-
 template <typename T>
 class TraceWrapperV8Reference {
  public:

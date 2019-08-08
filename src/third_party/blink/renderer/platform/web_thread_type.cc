@@ -31,8 +31,6 @@ const char* GetNameForThreadType(WebThreadType thread_type) {
       return "File thread";
     case WebThreadType::kDatabaseThread:
       return "Database thread";
-    case WebThreadType::kWebAudioThread:
-      return "WebAudio thread";
     case WebThreadType::kOfflineAudioRenderThread:
       return "OfflineAudioRender thread";
     case WebThreadType::kReverbConvolutionBackgroundThread:

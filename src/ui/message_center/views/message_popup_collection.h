@@ -58,6 +58,11 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationCanceled(const gfx::Animation* animation) override;
 
+  // Find the message popup view for the given notification id. Return nullptr
+  // if it does not exist.
+  MessagePopupView* GetPopupViewForNotificationID(
+      const std::string& notification_id);
+
   void set_inverse() { inverse_ = true; }
 
  protected:

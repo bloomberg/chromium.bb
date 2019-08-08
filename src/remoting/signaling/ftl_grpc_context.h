@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "net/base/backoff_entry.h"
 #include "remoting/base/grpc_support/grpc_channel.h"
-#include "remoting/signaling/ftl.pb.h"
+#include "remoting/proto/ftl/v1/ftl_messages.pb.h"
 
 namespace grpc {
 class ClientContext;
@@ -32,7 +32,7 @@ class FtlGrpcContext final {
   static std::string GetChromotingAppIdentifier();
   static ftl::Id CreateIdFromString(const std::string& ftl_id);
   static GrpcChannelSharedPtr CreateChannel();
-  static std::unique_ptr<grpc::ClientContext> CreateClientContext();
+  static void FillClientContext(grpc::ClientContext* context);
   static ftl::RequestHeader CreateRequestHeader(
       const std::string& ftl_auth_token = {});
 

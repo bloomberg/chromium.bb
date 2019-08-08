@@ -1,0 +1,40 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="print_preview_shared_css.html">
+
+<dom-module id="print-preview-settings-section">
+  <template>
+    <style include="print-preview-shared">
+      :host {
+        display: flex;
+        padding-inline-start: var(--print-preview-sidebar-margin);
+      }
+
+      ::slotted([slot=controls]),
+      ::slotted([slot=title]) {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: var(--print-preview-row-height);
+        word-break: break-word;
+      }
+
+      ::slotted([slot=controls]) {
+        flex: 1;
+        overflow: hidden;
+      }
+
+      ::slotted([slot=title]) {
+        color: var(--cr-primary-text-color);
+        flex: none;
+        font-size: 1em;
+        line-height: calc(20/13 * 1em);
+        width: var(--print-preview-title-width);
+      }
+    </style>
+    <slot name="title"></slot>
+    <slot name="controls"></slot>
+  </template>
+  <script src="settings_section.js"></script>
+</dom-module>

@@ -7,8 +7,7 @@
 
 #include <memory>
 
-#include "ash/public/interfaces/ash_window_manager.mojom.h"
-#include "ash/public/interfaces/split_view.mojom.h"
+#include "ash/public/cpp/split_view.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -20,10 +19,7 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/tab_icon_view_model.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/ws/common/types.h"
 #include "ui/aura/window_observer.h"
-
-class Browser;
 
 namespace {
 class HostedAppNonClientFrameViewAshTest;
@@ -33,7 +29,6 @@ class ProfileIndicatorIcon;
 class TabIconView;
 
 namespace ash {
-class AshFrameCaptionController;
 class FrameCaptionButtonContainerView;
 }  // namespace ash
 
@@ -48,8 +43,7 @@ class BrowserNonClientFrameViewAsh
       public TabletModeClientObserver,
       public TabIconViewModel,
       public CommandObserver,
-      public ash::mojom::SplitViewObserver,
-      public ash::FrameCaptionDelegate,
+      public ash::SplitViewObserver,
       public aura::WindowObserver,
       public ImmersiveModeController::Observer {
  public:
@@ -57,8 +51,6 @@ class BrowserNonClientFrameViewAsh
   ~BrowserNonClientFrameViewAsh() override;
 
   void Init();
-
-  ash::mojom::SplitViewObserverPtr CreateInterfacePtrForTesting();
 
   // BrowserNonClientFrameView:
   gfx::Rect GetBoundsForTabStripRegion(
@@ -80,7 +72,7 @@ class BrowserNonClientFrameViewAsh
   void UpdateWindowIcon() override;
   void UpdateWindowTitle() override;
   void SizeConstraintsChanged() override;
-  void ActivationChanged(bool active) override;
+  void PaintAsActiveChanged(bool active) override;
 
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
@@ -90,8 +82,6 @@ class BrowserNonClientFrameViewAsh
   gfx::Size GetMinimumSize() const override;
   void OnThemeChanged() override;
   void ChildPreferredSizeChanged(views::View* child) override;
-  bool OnMousePressed(const ui::MouseEvent& event) override;
-  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // BrowserFrameHeaderAsh::AppearanceProvider:
   SkColor GetTitleColor() override;
@@ -110,16 +100,9 @@ class BrowserNonClientFrameViewAsh
   // CommandObserver:
   void EnabledStateChangedForCommand(int id, bool enabled) override;
 
-  // ash::mojom::SplitViewObserver:
-  void OnSplitViewStateChanged(
-      ash::mojom::SplitViewState current_state) override;
-
-  // ash::FrameCaptionDelegate:
-  bool CanSnap(aura::Window* window) override;
-  void ShowSnapPreview(aura::Window* window,
-                       ash::mojom::SnapDirection snap) override;
-  void CommitSnap(aura::Window* window,
-                  ash::mojom::SnapDirection snap) override;
+  // ash::SplitViewObserver:
+  void OnSplitViewStateChanged(ash::SplitViewState previous_state,
+                               ash::SplitViewState new_state) override;
 
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
@@ -131,10 +114,6 @@ class BrowserNonClientFrameViewAsh
   void OnImmersiveRevealStarted() override;
   void OnImmersiveRevealEnded() override;
   void OnImmersiveFullscreenExited() override;
-
-  // Returns true if the header should be painted so that it looks the same as
-  // the header used for packaged apps.
-  static bool UsePackagedAppHeaderStyle(const Browser* browser);
 
  protected:
   // BrowserNonClientFrameView:
@@ -211,8 +190,6 @@ class BrowserNonClientFrameViewAsh
 
   void LayoutProfileIndicator();
 
-  ws::Id GetServerWindowId() const;
-
   // Returns whether this window is currently in the overview list.
   bool IsInOverviewMode() const;
 
@@ -234,23 +211,7 @@ class BrowserNonClientFrameViewAsh
   // Helper class for painting the header.
   std::unique_ptr<ash::FrameHeader> frame_header_;
 
-  // A helper for controlling the window frame; only used in !Mash.
-  std::unique_ptr<ash::AshFrameCaptionController> caption_controller_;
-
-  // Ash's mojom::SplitViewController.
-  ash::mojom::SplitViewControllerPtr split_view_controller_;
-
-  // The binding this instance uses to implement mojom::SplitViewObserver.
-  mojo::Binding<ash::mojom::SplitViewObserver> observer_binding_{this};
-
   ScopedObserver<aura::Window, aura::WindowObserver> window_observer_{this};
-
-  // Maintains the current split view state.
-  ash::mojom::SplitViewState split_view_state_ =
-      ash::mojom::SplitViewState::NO_SNAP;
-
-  // Only used in mash.
-  ash::mojom::AshWindowManagerAssociatedPtr ash_window_manager_;
 
   base::WeakPtrFactory<BrowserNonClientFrameViewAsh> weak_ptr_factory_{this};
 

@@ -11,6 +11,7 @@
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/loader/navigation_url_loader_factory.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
+#include "content/browser/loader/prefetched_signed_exchange_cache.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "services/network/public/cpp/features.h"
 
@@ -25,6 +26,8 @@ std::unique_ptr<NavigationURLLoader> NavigationURLLoader::Create(
     std::unique_ptr<NavigationUIData> navigation_ui_data,
     ServiceWorkerNavigationHandle* service_worker_handle,
     AppCacheNavigationHandle* appcache_handle,
+    scoped_refptr<PrefetchedSignedExchangeCache>
+        prefetched_signed_exchange_cache,
     NavigationURLLoaderDelegate* delegate) {
   if (g_loader_factory) {
     return g_loader_factory->CreateLoader(
@@ -34,7 +37,8 @@ std::unique_ptr<NavigationURLLoader> NavigationURLLoader::Create(
   return std::make_unique<NavigationURLLoaderImpl>(
       resource_context, storage_partition, std::move(request_info),
       std::move(navigation_ui_data), service_worker_handle, appcache_handle,
-      delegate, std::vector<std::unique_ptr<NavigationLoaderInterceptor>>());
+      std::move(prefetched_signed_exchange_cache), delegate,
+      std::vector<std::unique_ptr<NavigationLoaderInterceptor>>());
 }
 
 void NavigationURLLoader::SetFactoryForTesting(

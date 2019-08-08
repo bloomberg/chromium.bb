@@ -66,7 +66,8 @@ GpuChannelManager::GpuChannelManager(
     GpuProcessActivityFlags activity_flags,
     scoped_refptr<gl::GLSurface> default_offscreen_surface,
     ImageDecodeAcceleratorWorker* image_decode_accelerator_worker,
-    viz::VulkanContextProvider* vulkan_context_provider)
+    viz::VulkanContextProvider* vulkan_context_provider,
+    viz::MetalContextProvider* metal_context_provider)
     : task_runner_(task_runner),
       io_task_runner_(io_task_runner),
       gpu_preferences_(gpu_preferences),
@@ -89,6 +90,7 @@ GpuChannelManager::GpuChannelManager(
           base::BindRepeating(&GpuChannelManager::HandleMemoryPressure,
                               base::Unretained(this))),
       vulkan_context_provider_(vulkan_context_provider),
+      metal_context_provider_(metal_context_provider),
       weak_factory_(this) {
   DCHECK(task_runner->BelongsToCurrentThread());
   DCHECK(io_task_runner);
@@ -115,6 +117,11 @@ GpuChannelManager::~GpuChannelManager() {
     default_offscreen_surface_->Destroy();
     default_offscreen_surface_ = nullptr;
   }
+
+  // Try to make the context current so that GPU resources can be destroyed
+  // correctly.
+  if (shared_context_state_)
+    shared_context_state_->MakeCurrent(nullptr);
 }
 
 gles2::Outputter* GpuChannelManager::outputter() {
@@ -352,7 +359,7 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
   scoped_refptr<gl::GLSurface> surface = default_offscreen_surface();
   bool use_virtualized_gl_contexts = false;
 #if defined(OS_MACOSX)
-  // Virtualize PreferIntegratedGpu contexts by default on OS X to prevent
+  // Virtualize GpuPreference::kLowPower contexts by default on OS X to prevent
   // performance regressions when enabling FCM.
   // http://crbug.com/180463
   use_virtualized_gl_contexts = true;
@@ -422,7 +429,7 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
       use_virtualized_gl_contexts,
       base::BindOnce(&GpuChannelManager::OnContextLost, base::Unretained(this),
                      /*synthetic_loss=*/false),
-      vulkan_context_provider_);
+      vulkan_context_provider_, metal_context_provider_);
 
   // OOP-R needs GrContext for raster tiles.
   bool need_gr_context =
@@ -433,7 +440,7 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
   need_gr_context |= features::IsUsingSkiaRenderer();
 
   if (need_gr_context) {
-    if (!vulkan_context_provider_) {
+    if (!vulkan_context_provider_ && !metal_context_provider_) {
       auto feature_info = base::MakeRefCounted<gles2::FeatureInfo>(
           gpu_driver_bug_workarounds(), gpu_feature_info());
       if (!shared_context_state_->InitializeGL(gpu_preferences_,

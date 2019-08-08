@@ -18,6 +18,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/string_split.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -36,10 +37,13 @@ bool IsSiteIsolationDisabled() {
     return true;
   }
 
+#if defined(OS_ANDROID)
+  // Desktop platforms no longer support disabling Site Isolation by policy.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableSiteIsolationForPolicy)) {
     return true;
   }
+#endif
 
   return GetContentClient() &&
          GetContentClient()->browser()->ShouldDisableSiteIsolation();
@@ -76,10 +80,6 @@ void SiteIsolationPolicy::PopulateURLLoaderFactoryParamsPtrForCORB(
   }
 
   params->is_corb_enabled = true;
-  params->corb_detachable_resource_type =
-      static_cast<int>(ResourceType::kPrefetch);
-  params->corb_excluded_resource_type =
-      static_cast<int>(ResourceType::kPluginResource);
 }
 
 // static
@@ -99,6 +99,19 @@ bool SiteIsolationPolicy::AreIsolatedOriginsEnabled() {
   // activates the field trial and assigns the client either to a control or an
   // experiment group - such assignment should be final.
   return base::FeatureList::IsEnabled(features::kIsolateOrigins);
+}
+
+// static
+bool SiteIsolationPolicy::IsStrictOriginIsolationEnabled() {
+  // TODO(wjmaclean): Figure out what should happen when this feature is
+  // combined with --isolate-origins.
+  if (IsSiteIsolationDisabled())
+    return false;
+
+  // The feature needs to be checked last, because checking the feature
+  // activates the field trial and assigns the client either to a control or an
+  // experiment group - such assignment should be final.
+  return base::FeatureList::IsEnabled(features::kStrictOriginIsolation);
 }
 
 // static

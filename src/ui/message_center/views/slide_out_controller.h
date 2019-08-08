@@ -70,6 +70,10 @@ class MESSAGE_CENTER_EXPORT SlideOutController
   // Effective only when swipe control is enabled by EnableSwipeControl().
   void CloseSwipeControl();
 
+  // Slides the view out and closes it after the animation. The sign of
+  // |direction| indicates which way the slide occurs.
+  void SlideOutAndClose(int direction);
+
  private:
   // Positions where the slided view stays after the touch released.
   enum class SwipeControlOpenState { CLOSED, OPEN_ON_LEFT, OPEN_ON_RIGHT };
@@ -79,10 +83,6 @@ class MESSAGE_CENTER_EXPORT SlideOutController
 
   // Decides which position the slide should go back after touch is released.
   void CaptureControlOpenState();
-
-  // Slides the view out and closes it after the animation. The sign of
-  // |direction| indicates which way the slide occurs.
-  void SlideOutAndClose(int direction);
 
   // Sets the opacity of the slide out layer if |update_opacity_| is true.
   void SetOpacityIfNecessary(float opacity);

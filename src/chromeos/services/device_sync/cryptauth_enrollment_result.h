@@ -15,13 +15,12 @@ namespace chromeos {
 namespace device_sync {
 
 // Information about the result of a CryptAuth v2 Enrollment attempt.
-//
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused. If entries are added, kMaxValue should
-// be updated.
 class CryptAuthEnrollmentResult {
  public:
-  // Enum class to denote the result of a CryptAuth v2 Enrollment attempt
+  // Enum class to denote the result of a CryptAuth v2 Enrollment attempt.
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused. If entries are added, kMaxValue
+  // should be updated.
   enum class ResultCode {
     // Successfully synced but no new keys were requested by CryptAuth, so no
     // EnrollKeysRequest was made.

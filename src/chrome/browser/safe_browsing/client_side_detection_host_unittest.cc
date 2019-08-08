@@ -284,7 +284,10 @@ class ClientSideDetectionHostTestBase : public ChromeRenderViewHostTestHarness {
     csd_service_.reset(new StrictMock<MockClientSideDetectionService>());
     database_manager_ = new StrictMock<MockSafeBrowsingDatabaseManager>();
     ui_manager_ = new StrictMock<MockSafeBrowsingUIManager>(
-        SafeBrowsingService::CreateSafeBrowsingService());
+        // TODO(crbug/925153): Port consumers of the SafeBrowsingService to
+        // use the interface in components/safe_browsing, and remove this cast.
+        static_cast<safe_browsing::SafeBrowsingService*>(
+            SafeBrowsingService::CreateSafeBrowsingService()));
 
     csd_host_ = ClientSideDetectionHost::Create(web_contents());
     csd_host_->set_client_side_detection_service(csd_service_.get());

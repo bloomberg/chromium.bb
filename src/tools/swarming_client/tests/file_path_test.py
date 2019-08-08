@@ -5,24 +5,19 @@
 # that can be found in the LICENSE file.
 
 import getpass
-import logging
 import os
-import tempfile
-import unittest
 import StringIO
 import subprocess
 import sys
+import tempfile
 import time
 
-FILE_PATH = os.path.abspath(__file__.decode(sys.getfilesystemencoding()))
-BASE_DIR = os.path.dirname(FILE_PATH)
-ROOT_DIR = os.path.dirname(BASE_DIR)
-sys.path.insert(0, ROOT_DIR)
-sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
+# Mutates sys.path.
+import test_env
 
+# third_party/
 from depot_tools import auto_stub
-from depot_tools import fix_encoding
-import test_utils
+
 from utils import file_path
 from utils import fs
 
@@ -73,7 +68,7 @@ class FilePathTest(auto_stub.TestCase):
     self.assertEqual([u'existing_file'], os.listdir(self.tempdir))
 
   def assertFileMode(self, filepath, mode, umask=None):
-    umask = test_utils.umask() if umask is None else umask
+    umask = test_env.umask() if umask is None else umask
     actual = fs.stat(filepath).st_mode
     expected = mode & ~umask
     self.assertEqual(
@@ -87,11 +82,11 @@ class FilePathTest(auto_stub.TestCase):
 
   def test_native_case_end_with_os_path_sep(self):
     # Make sure the trailing os.path.sep is kept.
-    path = file_path.get_native_path_case(ROOT_DIR) + os.path.sep
+    path = file_path.get_native_path_case(test_env.CLIENT_DIR) + os.path.sep
     self.assertEqual(file_path.get_native_path_case(path), path)
 
   def test_native_case_end_with_dot_os_path_sep(self):
-    path = file_path.get_native_path_case(ROOT_DIR + os.path.sep)
+    path = file_path.get_native_path_case(test_env.CLIENT_DIR + os.path.sep)
     self.assertEqual(
         file_path.get_native_path_case(path + '.' + os.path.sep),
         path)
@@ -101,7 +96,7 @@ class FilePathTest(auto_stub.TestCase):
     non_existing = 'trace_input_test_this_file_should_not_exist'
     path = os.path.expanduser('~/' + non_existing)
     self.assertFalse(os.path.exists(path))
-    path = file_path.get_native_path_case(ROOT_DIR) + os.path.sep
+    path = file_path.get_native_path_case(test_env.CLIENT_DIR) + os.path.sep
     self.assertEqual(file_path.get_native_path_case(path), path)
 
   def test_delete_wd_rf(self):
@@ -178,6 +173,15 @@ class FilePathTest(auto_stub.TestCase):
     # must be reset to be read-only after deleting one of the hard link
     # directory entry.
 
+  def test_ensure_tree(self):
+    dir_foo = os.path.join(self.tempdir, 'foo')
+    file_path.ensure_tree(dir_foo, 0777)
+
+    self.assertTrue(os.path.isdir(dir_foo))
+
+    # Do not raise OSError with errno.EEXIST
+    file_path.ensure_tree(dir_foo, 0777)
+
   def test_rmtree_unicode(self):
     subdir = os.path.join(self.tempdir, 'hi')
     fs.mkdir(subdir)
@@ -190,7 +194,7 @@ class FilePathTest(auto_stub.TestCase):
 
   if sys.platform == 'darwin':
     def test_native_case_symlink_wrong_case(self):
-      base_dir = file_path.get_native_path_case(BASE_DIR)
+      base_dir = file_path.get_native_path_case(test_env.TESTS_DIR)
       trace_inputs_dir = os.path.join(base_dir, 'trace_inputs')
       actual = file_path.get_native_path_case(trace_inputs_dir)
       self.assertEqual(trace_inputs_dir, actual)
@@ -336,41 +340,40 @@ class FilePathTest(auto_stub.TestCase):
   if sys.platform != 'win32':
     def test_symlink(self):
       # This test will fail if the checkout is in a symlink.
-      actual = file_path.split_at_symlink(None, ROOT_DIR)
-      expected = (ROOT_DIR, None, None)
+      actual = file_path.split_at_symlink(None, test_env.CLIENT_DIR)
+      expected = (test_env.CLIENT_DIR, None, None)
       self.assertEqual(expected, actual)
 
       actual = file_path.split_at_symlink(
-          None, os.path.join(BASE_DIR, 'trace_inputs'))
+          None, os.path.join(test_env.TESTS_DIR, 'trace_inputs'))
+      expected = (os.path.join(test_env.TESTS_DIR, 'trace_inputs'), None, None)
+      self.assertEqual(expected, actual)
+
+      actual = file_path.split_at_symlink(
+          None, os.path.join(test_env.TESTS_DIR, 'trace_inputs', 'files2'))
       expected = (
-          os.path.join(BASE_DIR, 'trace_inputs'), None, None)
+          os.path.join(test_env.TESTS_DIR, 'trace_inputs'), 'files2', '')
       self.assertEqual(expected, actual)
 
       actual = file_path.split_at_symlink(
-          None, os.path.join(BASE_DIR, 'trace_inputs', 'files2'))
-      expected = (
-          os.path.join(BASE_DIR, 'trace_inputs'), 'files2', '')
-      self.assertEqual(expected, actual)
-
-      actual = file_path.split_at_symlink(
-          ROOT_DIR, os.path.join('tests', 'trace_inputs', 'files2'))
+          test_env.CLIENT_DIR, os.path.join('tests', 'trace_inputs', 'files2'))
       expected = (
           os.path.join('tests', 'trace_inputs'), 'files2', '')
       self.assertEqual(expected, actual)
       actual = file_path.split_at_symlink(
-          ROOT_DIR, os.path.join('tests', 'trace_inputs', 'files2', 'bar'))
-      expected = (
-          os.path.join('tests', 'trace_inputs'), 'files2', '/bar')
+          test_env.CLIENT_DIR,
+          os.path.join('tests', 'trace_inputs', 'files2', 'bar'))
+      expected = (os.path.join('tests', 'trace_inputs'), 'files2', '/bar')
       self.assertEqual(expected, actual)
 
     def test_native_case_symlink_right_case(self):
       actual = file_path.get_native_path_case(
-          os.path.join(BASE_DIR, 'trace_inputs'))
+          os.path.join(test_env.TESTS_DIR, 'trace_inputs'))
       self.assertEqual('trace_inputs', os.path.basename(actual))
 
       # Make sure the symlink is not resolved.
       actual = file_path.get_native_path_case(
-          os.path.join(BASE_DIR, 'trace_inputs', 'files2'))
+          os.path.join(test_env.TESTS_DIR, 'trace_inputs', 'files2'))
       self.assertEqual('files2', os.path.basename(actual))
 
   else:
@@ -410,9 +413,4 @@ class FilePathTest(auto_stub.TestCase):
 
 
 if __name__ == '__main__':
-  fix_encoding.fix_encoding()
-  logging.basicConfig(
-      level=logging.DEBUG if '-v' in sys.argv else logging.ERROR)
-  if '-v' in sys.argv:
-    unittest.TestCase.maxDiff = None
-  unittest.main()
+  test_env.main()

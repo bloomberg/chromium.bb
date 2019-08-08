@@ -99,19 +99,33 @@ void TestUnwindFunctions::VirtualUnwind(DWORD64 image_base,
   EXPECT_EQ(&runtime_functions_.back(), runtime_function);
 }
 
+static void SetContextPc(CONTEXT* context, DWORD64 val) {
+#if defined(ARCH_CPU_ARM64)
+  context->Pc = val;
+#else
+  context->Rip = val;
+#endif
+}
+
 void TestUnwindFunctions::SetHasRuntimeFunction(CONTEXT* context) {
   RUNTIME_FUNCTION runtime_function = {};
   runtime_function.BeginAddress = 16;
+#if defined(ARCH_CPU_ARM64)
+  runtime_function.FunctionLength = 256;
+#else
   runtime_function.EndAddress = runtime_function.BeginAddress + 256;
+#endif
+
   runtime_functions_.push_back(runtime_function);
   next_runtime_function_ = &runtime_functions_.back();
-
-  expected_program_counter_ = context->Rip =
+  expected_program_counter_ =
       next_image_base_ + runtime_function.BeginAddress + 8;
+  SetContextPc(context, expected_program_counter_);
 }
 
 void TestUnwindFunctions::SetNoRuntimeFunction(CONTEXT* context) {
-  expected_program_counter_ = context->Rip = 100;
+  expected_program_counter_ = 100;
+  SetContextPc(context, expected_program_counter_);
   next_runtime_function_ = nullptr;
 }
 
@@ -166,13 +180,23 @@ TEST_F(Win32StackFrameUnwinderTest, FrameAtTopWithoutUnwindInfo) {
   CONTEXT context = {0};
   DWORD64 next_ip = 0x0123456789abcdef;
   DWORD64 original_rsp = reinterpret_cast<DWORD64>(&next_ip);
+#if defined(ARCH_CPU_ARM64)
+  context.Sp = original_rsp;
+  context.Lr = next_ip;
+  context.ContextFlags |= CONTEXT_UNWOUND_TO_CALL;
+#else
   context.Rsp = original_rsp;
+#endif
 
   TestModule stub_module(kImageBaseIncrement);
   unwind_functions_->SetNoRuntimeFunction(&context);
   EXPECT_TRUE(unwinder->TryUnwind(true, &context, &stub_module));
+#if defined(ARCH_CPU_ARM64)
+  EXPECT_EQ(next_ip, context.Pc);
+#else
   EXPECT_EQ(next_ip, context.Rip);
   EXPECT_EQ(original_rsp + 8, context.Rsp);
+#endif
 }
 
 // Checks that a frame below the top of the stack with missing unwind info

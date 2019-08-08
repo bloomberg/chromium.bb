@@ -321,6 +321,36 @@ class V8Platform::TracingControllerImpl : public v8::TracingController {
     memcpy(&result, &handle, sizeof(result));
     return result;
   }
+  uint64_t AddTraceEventWithTimestamp(
+      char phase,
+      const uint8_t* category_enabled_flag,
+      const char* name,
+      const char* scope,
+      uint64_t id,
+      uint64_t bind_id,
+      int32_t num_args,
+      const char** arg_names,
+      const uint8_t* arg_types,
+      const uint64_t* arg_values,
+      std::unique_ptr<v8::ConvertableToTraceFormat>* arg_convertables,
+      unsigned int flags,
+      int64_t timestampMicroseconds) override {
+    base::trace_event::TraceArguments args(
+        num_args, arg_names, arg_types,
+        reinterpret_cast<const unsigned long long*>(arg_values),
+        arg_convertables);
+    DCHECK_LE(num_args, 2);
+    base::TimeTicks timestamp =
+        base::TimeTicks() +
+        base::TimeDelta::FromMicroseconds(timestampMicroseconds);
+    base::trace_event::TraceEventHandle handle =
+        TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_THREAD_ID_AND_TIMESTAMP(
+            phase, category_enabled_flag, name, scope, id, bind_id,
+            TRACE_EVENT_API_CURRENT_THREAD_ID, timestamp, &args, flags);
+    uint64_t result;
+    memcpy(&result, &handle, sizeof(result));
+    return result;
+  }
   void UpdateTraceEventDuration(const uint8_t* category_enabled_flag,
                                 const char* name,
                                 uint64_t handle) override {
@@ -371,11 +401,11 @@ int V8Platform::NumberOfWorkerThreads() {
   // V8Platform assumes the scheduler uses the same set of workers for default
   // and user blocking tasks.
   const int num_foreground_workers =
-      base::ThreadPool::GetInstance()
+      base::ThreadPoolInstance::Get()
           ->GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
               kDefaultTaskTraits);
   DCHECK_EQ(num_foreground_workers,
-            base::ThreadPool::GetInstance()
+            base::ThreadPoolInstance::Get()
                 ->GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
                     kBlockingTaskTraits));
   return std::max(1, num_foreground_workers);

@@ -11,6 +11,7 @@
 #include "third_party/blink/public/platform/web_pointer_event.h"
 #include "third_party/blink/renderer/core/css/css_color_value.h"
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/static_node_list.h"
@@ -38,8 +39,8 @@ InspectorHighlightContrastInfo FetchContrast(Node* node) {
   Vector<Color> bgcolors;
   String font_size;
   String font_weight;
-  // TODO(crbug.com/951817): make InspectorCSSAgent::GetBackgroundColors work
-  // fast enough for large tables (and other heavy pages) and call it here.
+  InspectorCSSAgent::GetBackgroundColors(ToElement(node), &bgcolors, &font_size,
+                                         &font_weight);
   if (bgcolors.size() == 1) {
     result.font_size = font_size;
     result.font_weight = font_weight;
@@ -127,7 +128,7 @@ void SearchingForNodeTool::Draw(float scale) {
                              node->GetLayoutObject() &&
                              node->GetDocument().GetFrame();
   InspectorHighlight highlight(node, *highlight_config_, contrast_info_,
-                               append_element_info);
+                               append_element_info, false, is_locked_ancestor_);
   if (event_target_node_) {
     highlight.AppendEventTargetQuads(event_target_node_.Get(),
                                      *highlight_config_);
@@ -169,6 +170,16 @@ bool SearchingForNodeTool::HandleMouseMove(const WebMouseEvent& event) {
 
   if (!node)
     return true;
+
+  // If |node| is in a display locked subtree, highlight the highest locked
+  // element instead.
+  if (Node* locked_ancestor =
+          DisplayLockUtilities::HighestLockedExclusiveAncestor(*node)) {
+    node = locked_ancestor;
+    is_locked_ancestor_ = true;
+  } else {
+    is_locked_ancestor_ = false;
+  }
 
   if (auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(node)) {
     if (!IsA<LocalFrame>(frame_owner->ContentFrame())) {
@@ -263,9 +274,15 @@ NodeHighlightTool::NodeHighlightTool(
     Member<Node> node,
     String selector_list,
     std::unique_ptr<InspectorHighlightConfig> highlight_config)
-    : node_(node),
-      selector_list_(selector_list),
+    : selector_list_(selector_list),
       highlight_config_(std::move(highlight_config)) {
+  if (Node* locked_ancestor =
+          DisplayLockUtilities::HighestLockedExclusiveAncestor(*node)) {
+    is_locked_ancestor_ = true;
+    node_ = locked_ancestor;
+  } else {
+    node_ = node;
+  }
   contrast_info_ = FetchContrast(node);
 }
 
@@ -288,7 +305,7 @@ void NodeHighlightTool::DrawNode() {
                              node_->GetLayoutObject() &&
                              node_->GetDocument().GetFrame();
   InspectorHighlight highlight(node_.Get(), *highlight_config_, contrast_info_,
-                               append_element_info);
+                               append_element_info, false, is_locked_ancestor_);
   std::unique_ptr<protocol::DictionaryValue> highlight_json =
       highlight.AsProtocolValue();
   overlay_->EvaluateInOverlay("drawHighlight", std::move(highlight_json));
@@ -308,8 +325,13 @@ void NodeHighlightTool::DrawMatchingSelector() {
 
   for (unsigned i = 0; i < elements->length(); ++i) {
     Element* element = elements->item(i);
+    // Skip elements in locked subtrees.
+    if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*element))
+      continue;
     InspectorHighlight highlight(element, *highlight_config_, contrast_info_,
-                                 false);
+                                 false /* append_element_info */,
+                                 false /* append_distance_info */,
+                                 false /* is_locked_ancestor */);
     overlay_->EvaluateInOverlay("drawHighlight", highlight.AsProtocolValue());
   }
 }
@@ -354,6 +376,12 @@ bool NearbyDistanceTool::HandleMouseMove(const WebMouseEvent& event) {
     }
   }
 
+  // If |node| is in a display locked subtree, highlight the highest locked
+  // element instead.
+  if (Node* locked_ancestor =
+          DisplayLockUtilities::HighestLockedExclusiveAncestor(*node))
+    node = locked_ancestor;
+
   // Store values for the highlight.
   hovered_node_ = node;
   return true;
@@ -367,40 +395,11 @@ void NearbyDistanceTool::Draw(float scale) {
   Node* node = hovered_node_.Get();
   if (!node)
     return;
-  node->GetDocument().EnsurePaintLocationDataValidForNode(node);
-  LayoutObject* layout_object = node->GetLayoutObject();
-  if (!layout_object)
-    return;
-
-  CSSStyleDeclaration* style =
-      MakeGarbageCollected<CSSComputedStyleDeclaration>(node, true);
-  std::unique_ptr<protocol::DictionaryValue> computed_style =
-      protocol::DictionaryValue::create();
-  for (size_t i = 0; i < style->length(); ++i) {
-    AtomicString name(style->item(i));
-    const CSSValue* value = style->GetPropertyCSSValueInternal(name);
-    if (!value)
-      continue;
-    if (value->IsColorValue()) {
-      Color color = static_cast<const cssvalue::CSSColorValue*>(value)->Value();
-      String hex_color =
-          String::Format("#%02X%02X%02X%02X", color.Red(), color.Green(),
-                         color.Blue(), color.Alpha());
-      computed_style->setString(name, hex_color);
-    } else {
-      computed_style->setString(name, value->CssText());
-    }
-  }
-
-  std::unique_ptr<protocol::DOM::BoxModel> model;
-  InspectorHighlight::GetBoxModel(node, &model);
-  std::unique_ptr<protocol::DictionaryValue> object =
-      protocol::DictionaryValue::create();
-  object->setArray("content", model->getContent()->toValue());
-  object->setArray("padding", model->getPadding()->toValue());
-  object->setArray("border", model->getBorder()->toValue());
-  object->setObject("style", std::move(computed_style));
-  overlay_->EvaluateInOverlay("drawDistances", std::move(object));
+  InspectorHighlight highlight(
+      node, InspectorHighlight::DefaultConfig(),
+      InspectorHighlightContrastInfo(), false /* append_element_info */,
+      true /* append_distance_info */, false /* is_locked_ancestor */);
+  overlay_->EvaluateInOverlay("drawDistances", highlight.AsProtocolValue());
 }
 
 void NearbyDistanceTool::Trace(blink::Visitor* visitor) {

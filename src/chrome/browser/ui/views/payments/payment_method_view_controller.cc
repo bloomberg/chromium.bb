@@ -82,8 +82,10 @@ class PaymentMethodListItem : public PaymentRequestItemList::Item {
             BackNavigationType::kPaymentSheet,
             static_cast<int>(PaymentMethodViewControllerTags::MAX_TAG),
             /*on_edited=*/
-            base::BindOnce(&PaymentRequestState::SetSelectedInstrument,
-                           base::Unretained(state()), instrument_),
+            base::BindOnce(
+                &PaymentRequestState::SetSelectedInstrument,
+                base::Unretained(state()), instrument_,
+                PaymentRequestState::SectionSelectionStatus::kEditedSelected),
             /*on_added=*/
             base::OnceCallback<void(const autofill::CreditCard&)>(),
             static_cast<AutofillPaymentInstrument*>(instrument_)
@@ -116,7 +118,7 @@ class PaymentMethodListItem : public PaymentRequestItemList::Item {
         views::BoxLayout::kVertical,
         gfx::Insets(kPaymentRequestRowVerticalInsets, 0));
     box_layout->set_cross_axis_alignment(
-        views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+        views::BoxLayout::CrossAxisAlignment::kStart);
     card_info_container->SetLayoutManager(std::move(box_layout));
 
     base::string16 label = instrument_->GetLabel();
@@ -145,7 +147,8 @@ class PaymentMethodListItem : public PaymentRequestItemList::Item {
 
   void SelectedStateChanged() override {
     if (selected()) {
-      state()->SetSelectedInstrument(instrument_);
+      state()->SetSelectedInstrument(
+          instrument_, PaymentRequestState::SectionSelectionStatus::kSelected);
       dialog_->GoBack();
     }
   }
@@ -207,9 +210,9 @@ base::string16 PaymentMethodViewController::GetSheetTitle() {
 
 void PaymentMethodViewController::FillContentView(views::View* content_view) {
   auto layout = std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
-  layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+  layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
+      views::BoxLayout::CrossAxisAlignment::kStretch);
   content_view->SetLayoutManager(std::move(layout));
 
   base::string16 sub_header =
@@ -219,7 +222,7 @@ void PaymentMethodViewController::FillContentView(views::View* content_view) {
 
   std::unique_ptr<views::View> list_view =
       payment_method_list_.CreateListView();
-  list_view->set_id(
+  list_view->SetID(
       static_cast<int>(DialogViewID::PAYMENT_METHOD_SHEET_LIST_VIEW));
   content_view->AddChildView(list_view.release());
 }

@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "remoting/base/grpc_support/grpc_async_request.h"
+#include "remoting/base/grpc_support/grpc_util.h"
 #include "third_party/grpc/src/include/grpcpp/support/async_unary_call.h"
 
 namespace remoting {
@@ -35,22 +36,41 @@ class GrpcAsyncUnaryRequest : public GrpcAsyncRequest {
   using StartAndCreateReaderCallback = base::OnceCallback<std::unique_ptr<
       grpc::ClientAsyncResponseReader<ResponseType>>(grpc::CompletionQueue*)>;
 
-  GrpcAsyncUnaryRequest(std::unique_ptr<grpc::ClientContext> context,
-                        StartAndCreateReaderCallback create_reader_cb,
-                        GrpcAsyncUnaryRpcCallback<ResponseType> callback)
-      : GrpcAsyncRequest(std::move(context)) {
+  ~GrpcAsyncUnaryRequest() override = default;
+
+ private:
+  template <typename Req, typename Res>
+  friend std::unique_ptr<GrpcAsyncUnaryRequest<Res>>
+  CreateGrpcAsyncUnaryRequest(
+      GrpcAsyncUnaryRpcFunction<Req, Res> rpc_function,
+      const Req& request,
+      base::OnceCallback<void(const grpc::Status&, const Res&)> callback);
+
+  GrpcAsyncUnaryRequest() = default;
+
+  void SetCallbacks(StartAndCreateReaderCallback create_reader_cb,
+                    GrpcAsyncUnaryRpcCallback<ResponseType> callback) {
+    DCHECK(!create_reader_cb_);
+    DCHECK(!callback_);
+    DCHECK(create_reader_cb);
+    DCHECK(callback);
     create_reader_cb_ = std::move(create_reader_cb);
     callback_ = std::move(callback);
   }
 
-  ~GrpcAsyncUnaryRequest() override = default;
-
- private:
   // GrpcAsyncRequest implementations
   void Start(const RunTaskCallback& run_task_cb,
              grpc::CompletionQueue* cq,
              void* event_tag) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+    static constexpr base::TimeDelta kDefaultRequestTimeout =
+        base::TimeDelta::FromSeconds(30);
+    if (GetDeadline(*context()).is_max()) {
+      VLOG(1) << "Deadline is not set. Using the default request timeout.";
+      SetDeadline(context(), base::Time::Now() + kDefaultRequestTimeout);
+    }
+
     response_reader_ = std::move(create_reader_cb_).Run(cq);
     response_reader_->Finish(&response_, &status_, event_tag);
     run_task_cb_ = run_task_cb;
@@ -95,14 +115,16 @@ template <typename RequestType, typename ResponseType>
 std::unique_ptr<GrpcAsyncUnaryRequest<ResponseType>>
 CreateGrpcAsyncUnaryRequest(
     GrpcAsyncUnaryRpcFunction<RequestType, ResponseType> rpc_function,
-    std::unique_ptr<grpc::ClientContext> context,
     const RequestType& request,
     base::OnceCallback<void(const grpc::Status&, const ResponseType&)>
         callback) {
+  // Cannot use make_unique because the constructor is private.
+  std::unique_ptr<GrpcAsyncUnaryRequest<ResponseType>> grpc_request(
+      new GrpcAsyncUnaryRequest<ResponseType>());
   auto create_reader_cb =
-      base::BindOnce(std::move(rpc_function), context.get(), request);
-  return std::make_unique<GrpcAsyncUnaryRequest<ResponseType>>(
-      std::move(context), std::move(create_reader_cb), std::move(callback));
+      base::BindOnce(std::move(rpc_function), grpc_request->context(), request);
+  grpc_request->SetCallbacks(std::move(create_reader_cb), std::move(callback));
+  return grpc_request;
 }
 
 }  // namespace remoting

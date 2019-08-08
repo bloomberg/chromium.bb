@@ -38,4 +38,27 @@ TEST(CookieConstantsTest, TestCookiePriority) {
   }
 }
 
+TEST(CookieConstantsTest, TestCookieSameSite) {
+  // Test case insensitivity
+  EXPECT_EQ(CookieSameSite::NO_RESTRICTION, StringToCookieSameSite("None"));
+  EXPECT_EQ(CookieSameSite::NO_RESTRICTION, StringToCookieSameSite("none"));
+  EXPECT_EQ(CookieSameSite::NO_RESTRICTION, StringToCookieSameSite("NONE"));
+  EXPECT_EQ(CookieSameSite::LAX_MODE, StringToCookieSameSite("Lax"));
+  EXPECT_EQ(CookieSameSite::LAX_MODE, StringToCookieSameSite("LAX"));
+  EXPECT_EQ(CookieSameSite::LAX_MODE, StringToCookieSameSite("lAx"));
+  EXPECT_EQ(CookieSameSite::STRICT_MODE, StringToCookieSameSite("Strict"));
+  EXPECT_EQ(CookieSameSite::STRICT_MODE, StringToCookieSameSite("STRICT"));
+  EXPECT_EQ(CookieSameSite::STRICT_MODE, StringToCookieSameSite("sTrIcT"));
+  EXPECT_EQ(CookieSameSite::EXTENDED_MODE, StringToCookieSameSite("extended"));
+  EXPECT_EQ(CookieSameSite::EXTENDED_MODE, StringToCookieSameSite("EXTENDED"));
+  EXPECT_EQ(CookieSameSite::EXTENDED_MODE, StringToCookieSameSite("ExtenDED"));
+
+  // Unrecognized tokens are interpreted as UNSPECIFIED.
+  const char* const bad_tokens[] = {"",          "foo",   "none ",
+                                    "strictest", " none", "0"};
+  for (const auto* bad_token : bad_tokens) {
+    EXPECT_EQ(CookieSameSite::UNSPECIFIED, StringToCookieSameSite(bad_token));
+  }
+}
+
 }  // namespace net

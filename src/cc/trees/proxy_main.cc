@@ -39,7 +39,7 @@ ProxyMain::ProxyMain(LayerTreeHost* layer_tree_host,
       commit_waits_for_activation_(false),
       started_(false),
       defer_main_frame_update_(false),
-      defer_commits_(false),
+      defer_commits_(true),
       frame_sink_bound_weak_factory_(this),
       weak_factory_(this) {
   TRACE_EVENT0("cc", "ProxyMain::ProxyMain");
@@ -232,7 +232,7 @@ void ProxyMain::BeginMainFrame(
 
   // Check now if we should stop deferring commits
   if (defer_commits_ && base::TimeTicks::Now() > commits_restart_time_) {
-    StopDeferringCommits();
+    StopDeferringCommits(PaintHoldingCommitTrigger::kTimeout);
   }
 
   // At this point the main frame may have deferred commits to avoid committing
@@ -360,11 +360,6 @@ void ProxyMain::DidPresentCompositorFrame(
                                               feedback);
 }
 
-void ProxyMain::DidGenerateLocalSurfaceIdAllocation(
-    const viz::LocalSurfaceIdAllocation& allocation) {
-  layer_tree_host_->DidGenerateLocalSurfaceIdAllocation(allocation);
-}
-
 bool ProxyMain::IsStarted() const {
   DCHECK(IsMainThread());
   return started_;
@@ -480,10 +475,11 @@ void ProxyMain::StartDeferringCommits(base::TimeDelta timeout) {
   commits_restart_time_ = base::TimeTicks::Now() + timeout;
 }
 
-void ProxyMain::StopDeferringCommits() {
+void ProxyMain::StopDeferringCommits(PaintHoldingCommitTrigger trigger) {
   if (!defer_commits_)
     return;
   defer_commits_ = false;
+  UMA_HISTOGRAM_ENUMERATION("PaintHolding.CommitTrigger", trigger);
   commits_restart_time_ = base::TimeTicks();
   TRACE_EVENT_ASYNC_END0("cc", "ProxyMain::SetDeferCommits", this);
 }
@@ -547,9 +543,9 @@ void ProxyMain::Stop() {
 void ProxyMain::SetMutator(std::unique_ptr<LayerTreeMutator> mutator) {
   TRACE_EVENT0("cc", "ThreadProxy::SetMutator");
   ImplThreadTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&ProxyImpl::InitializeMutatorOnImpl,
-                                base::Unretained(proxy_impl_.get()),
-                                base::Passed(std::move(mutator))));
+      FROM_HERE,
+      base::BindOnce(&ProxyImpl::InitializeMutatorOnImpl,
+                     base::Unretained(proxy_impl_.get()), std::move(mutator)));
 }
 
 void ProxyMain::SetPaintWorkletLayerPainter(
@@ -558,18 +554,11 @@ void ProxyMain::SetPaintWorkletLayerPainter(
   ImplThreadTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&ProxyImpl::InitializePaintWorkletLayerPainterOnImpl,
-                     base::Unretained(proxy_impl_.get()),
-                     base::Passed(std::move(painter))));
+                     base::Unretained(proxy_impl_.get()), std::move(painter)));
 }
 
 bool ProxyMain::SupportsImplScrolling() const {
   return true;
-}
-
-uint32_t ProxyMain::GenerateChildSurfaceSequenceNumberSync() {
-  // This function only makes sense for single-threaded mode.
-  NOTREACHED();
-  return 0u;
 }
 
 bool ProxyMain::MainFrameWillHappenForTesting() {
@@ -645,11 +634,12 @@ base::SingleThreadTaskRunner* ProxyMain::ImplThreadTaskRunner() {
   return task_runner_provider_->ImplThreadTaskRunner();
 }
 
-void ProxyMain::SetURLForUkm(const GURL& url) {
+void ProxyMain::SetSourceURL(ukm::SourceId source_id, const GURL& url) {
   DCHECK(IsMainThread());
   ImplThreadTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&ProxyImpl::SetURLForUkm,
-                                base::Unretained(proxy_impl_.get()), url));
+      FROM_HERE, base::BindOnce(&ProxyImpl::SetSourceURL,
+                                base::Unretained(proxy_impl_.get()),
+                                source_id, url));
 }
 
 void ProxyMain::ClearHistory() {

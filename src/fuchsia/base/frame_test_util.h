@@ -13,7 +13,7 @@ namespace cr_fuchsia {
 // after the load is completed. Returns true if the load was successful, false
 // otherwise.
 bool LoadUrlAndExpectResponse(
-    fuchsia::web::NavigationControllerPtr* navigation_controller,
+    fuchsia::web::NavigationController* navigation_controller,
     fuchsia::web::LoadUrlParams load_url_params,
     std::string url);
 

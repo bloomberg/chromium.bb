@@ -1,12 +1,23 @@
-# `Source/core/paint`
+<!---
+  The live version of this document can be viewed at:
+  https://chromium.googlesource.com/chromium/src/+/master/third_party/blink/renderer/core/paint/README.md
+-->
 
-This directory contains implementation of painters of layout objects. It covers
-the following document lifecycle phases:
+# renderer/core/paint
 
-*   Layerization (`kInCompositingUpdate`, `kCompositingInputsClean` and `kCompositingClean`)
-*   PaintInvalidation (`InPaintInvalidation` and `PaintInvalidationClean`)
-*   PrePaint (`InPrePaint` and `PrePaintClean`)
-*   Paint (`InPaint` and `PaintClean`)
+The code in this directory converts the LayoutObject tree into an efficient
+rendering format for the compositor (a list of cc::Layers containing display
+item lists, and associated cc::PropertyTrees). For a high level overview, see
+the [Overview](#Overview) section.
+
+For information about how the display list and paint property trees are
+implemented, see
+[the platform paint README file](../../platform/graphics/paint/README.md).
+
+This code is owned by the
+[rendering team](https://www.chromium.org/teams/rendering).
+
+[TOC]
 
 ## Glossaries
 
@@ -26,12 +37,13 @@ are treated in different ways during painting:
     *   Stacking contexts: elements with non-auto z-indices or other properties
         that affect stacking e.g. transform, opacity, blend-mode.
 
-    *   Replaced normal-flow stacking elements: [replaced elements](https://html.spec.whatwg.org/C/#replaced-elements)
-        that do not have non-auto z-index but are stacking contexts for
-        elements below them. Right now the only example is SVG <foreignObject>.
-        The difference between these elements and regular stacking contexts is
-        that they paint in the foreground phase of the painting algorithm
-        (as opposed to the positioned descendants phase).
+    *   Replaced normal-flow stacking elements:
+        [replaced elements](https://html.spec.whatwg.org/C/#replaced-elements)
+        that do not have non-auto z-index but are stacking contexts for elements
+        below them. Right now the only example is SVG `<foreignObject>`. The
+        difference between these elements and regular stacking contexts is that
+        they paint in the foreground phase of the painting algorithm (as opposed
+        to the positioned descendants phase).
 
     *   Elements that are not real stacking contexts but are treated as stacking
         contexts but don't manage other stacked elements. Their z-ordering are
@@ -115,70 +127,61 @@ are treated in different ways during painting:
 
 ## Overview
 
-The primary responsibility of this module is to convert the outputs from layout
-(the `LayoutObject` tree) to the inputs of the compositor (the `cc::Layer` tree
-and associated display items).
+The primary responsibility of this directory is to convert the outputs from
+layout (the `LayoutObject` tree) to the inputs of the compositor
+(the `cc::Layer` list, which contains display items, and the associated
+`cc::PropertyNode`s).
 
-At the time of writing, there are three operation modes that are switched by
-`RuntimeEnabledFeatures`.
+This process is done in the following document lifecycle phases:
+
+*   Compositing update (`kInCompositingUpdate`, `kCompositingInputsClean`)
+    *    Decides layerization (GraphicsLayers).
+    *    This is only needed for the
+         [current compositing algorithm](#Current-compositing-algorithm-CompositeBeforePaint_)
+         and will go away with
+         [CompositeAfterPaint](#New-compositing-algorithm-CompositeAfterPaint_).
+*   [PrePaint](#PrePaint) (`kInPrePaint`)
+    *    [Paint invalidation](#Paint-invalidation) which invalidates display
+         items which need to be painted.
+    *    [Builds paint property trees](#Building-paint-property-trees).
+*   [Paint](#Paint) (`kInPaint`)
+    *    Walks the LayoutObject tree and creates a display item list.
+    *    Groups the display list into paint chunks which share the same
+         property tree state.
+    *    Commits the results to the compositor.
+        *    [CompositeAfterPaint](##New-compositing-algorithm-CompositeAfterPaint_)
+             will decide layerization at this point.
+        *    Passes the paint chunks to the compositor in a cc::Layer list.
+        *    Converts the blink property tree nodes into cc property tree nodes.
 
 
-### SlimmingPaintV175 (a.k.a. SPv1.75)
+Compositing decisions are currently made before paint (see
+[Current compositing algorithm](#Current-compositing-algorithm-CompositeBeforePaint_))
+but there is an in-progress refactoring to make compositing decisions after
+paint (see
+[CompositeAfterPaint](##New-compositing-algorithm-CompositeAfterPaint_)). The
+most recent step towards CompositeAfterPaint was a project called
+[BlinkGenPropertyTrees](https://docs.google.com/document/d/17GKr2uIH2O5GthdTyvJpv1qZjoHYoLgrzvCkbCHoID4/view)
+which uses the compositing decisions from the current compositor
+(PaintLayerCompositor, which produces GraphicsLayers) with the new
+CompositeAfterPaint compositor (PaintArtifactCompositor). This is done by a step
+at the end of paint which collects all painted GraphicsLayers (and their
+associated cc::Layers) as a list of
+[ForeignLayerDisplayItem](../../platform/graphics/paint/foreign_layer_display_item.h)s.
+Foreign layers are typically used for cc::Layers managed outside blink (e.g.,
+video layers, plugin layers) and are treated as opaque composited content by
+the PaintArtifactCompositor. This approach of using foreign layers starts using
+much of the new PaintArtifactCompositor logic (e.g., converting blink property
+trees to cc property trees) without changing how compositing decisions are made.
 
-This mode is for incrementally shipping completed features from CAP. SPv1.75
-reuses layerization from SPv1, but will cherrypick property-tree-based paint
-from CAP. Meta display items are abandoned in favor of property tree. Each
-drawable GraphicsLayer's layer state will be computed by the property tree
-builder. During paint, each display item will be associated with a property
-tree state. At the end of paint, meta display items will be generated from
-the state differences between the chunk and the layer.
+[Debugging blink objects](https://docs.google.com/document/d/1vgQY11pxRQUDAufxSsc2xKyQCKGPftZ5wZnjY2El4w8/view)
+has information about dumping the paint and compositing datastructures for
+debugging.
 
-```
-from layout
-  |
-  v
-+------------------------------+
-| LayoutObject/PaintLayer tree |-----------+
-+------------------------------+           |
-  |                                        |
-  | PaintLayerCompositor::UpdateIfNeeded() |
-  |   CompositingInputsUpdater::Update()   |
-  |   CompositingLayerAssigner::Assign()   |
-  |   GraphicsLayerUpdater::Update()       | PrePaintTreeWalk::Walk()
-  |   GraphicsLayerTreeBuilder::Rebuild()  |   PaintPropertyTreeBuider::UpdatePropertiesForSelf()
-  v                                        |
-+--------------------+                   +------------------+
-| GraphicsLayer tree |<------------------|  Property trees  |
-+--------------------+                   +------------------+
-  |   |                                    |              |
-  |   |<-----------------------------------+              |
-  |   | LocalFrameView::PaintTree()                       |
-  |   |   LocalFrameView::PaintGraphicsLayerRecursively() |
-  |   |     GraphicsLayer::Paint()                        |
-  |   |       CompositedLayerMapping::PaintContents()     |
-  |   |         PaintLayerPainter::PaintLayerContents()   |
-  |   |           ObjectPainter::Paint()                  |
-  |   v                                                   |
-  | +---------------------------------+                   |
-  | | DisplayItemList/PaintChunk list |                   |
-  | +---------------------------------+                   |
-  |   |                                                   |
-  |   |<--------------------------------------------------+
-  |   | PaintChunksToCcLayer::Convert()
-  |   |
-  |   | WebContentLayer shim
-  v   v
-+----------------+
-| cc::Layer tree |
-+----------------+
-  |
-  | to compositor
-  v
-```
 
-#### SPv1 compositing algorithm
+### Current compositing algorithm (CompositeBeforePaint)
 
-The SPv1 compositing system chooses which `LayoutObject`s paint into their
+The current compositing system chooses which `LayoutObject`s paint into their
 own composited backing texture. This is called "having a compositing trigger".
 These textures correspond to GraphicsLayers. There are also additional
 `GraphicsLayer`s which represent property tree-related effects.
@@ -187,13 +190,14 @@ All elements which do not have a compositing trigger paint into the texture
 of the nearest `LayoutObject`with a compositing trigger on its
 *compositing container chain* (except for squashed layers; see below). For
 historical, practical and implementation detail reasons, only `LayoutObject`s
-with `PaintLayer`s can have a compositing trigger. See crbug.com/370604 for a
-bug tracking this limitation, which is often referred to as the "fundamental
-compositing bug".
+with `PaintLayer`s can have a compositing trigger. See
+[crbug.com/370604](https://crbug.com/370604) for a bug tracking this limitation,
+which is often referred to as the **fundamental compositing bug**.
 
-The various compositing triggers are listed
-[here](../../platform/graphics/compositing_reasons.h).
-They fall in to several categories:
+The various compositing triggers are listed in
+[compositing_reasons.h](../../platform/graphics/compositing_reasons.h) and fall
+in to several categories:
+
 1. Direct reasons due to CSS style (see `CompositingReason::kComboAllDirectStyleDeterminedReasons`)
 2. Direct reasons due to other conditions (see `CompositingReason::kComboAllDirectNonStyleDeterminedReasons`)
 3. Composited scrolling-dependent reasons (see `CompositingReason::kComboAllCompositedScrollingDeterminedReasons`)
@@ -214,6 +218,7 @@ if the `LayoutObject` paints after and overlaps (or may overlap) another
 composited layer.
 
 Note that composited scrolling is special. Several ways it is special:
+
  * Composited descendants do _not_ necessarily cause composited scrolling of an
 ancestor.
  * The presence of LCD text prevents composited scrolling in the
@@ -227,6 +232,7 @@ composited scrolling if they have overflow and any composited descendants.
  reason from category (3) during the CompositingRequirementsUpdater
 
 Note that overlap triggers have two special behaviors:
+
  * Any `LayoutObject`
 which may overlap a `LayoutObject` that uses composited scrolling or a
 transform animation, paints after it, and scrolls with respect to it, receives
@@ -249,13 +255,9 @@ lifecycle update.
  * `kCompositingInputsClean`: compute (3), the rest of (4), and (5), in
 `CompositingRequirementsUpdater`
 
-### BlinkGenPropertyTrees
 
-This mode is for incrementally shipping completed features from CAP. It is
-based on SPv1.75 and starts sending a layer list and property trees directly to
-the compositor. BlinkGenPropertyTrees still uses the GraphicsLayers from SPv1.75
-and plugs them in as foreign layers to the CAP compositor
-(PaintArtifactCompositor).
+The flow of data from the LayoutObject tree to the cc::Layer list and cc
+property trees is described below:
 
 ```
 from layout
@@ -307,12 +309,14 @@ from layout
   | to compositor
   v
 ```
+[Debugging blink objects](https://docs.google.com/document/d/1vgQY11pxRQUDAufxSsc2xKyQCKGPftZ5wZnjY2El4w8/view)
+has information about dumping these paint and compositing datastructures for
+debugging.
 
-### CompositeAfterPaint (a.k.a. CAP)
+### New compositing algorithm (CompositeAfterPaint)
 
-This is a new mode under development. In this mode, layerization runs after
-pre-paint and paint, and meta display items are abandoned in favor of property
-trees.
+This is a new mode under development. In this mode, layerization decisions are
+made after paint.
 
 The process starts with pre-paint to generate property trees. During paint,
 each generated display item will be associated with a property tree state.
@@ -366,30 +370,126 @@ from layout
   | to compositor
   v
 ```
+[Debugging blink objects](https://docs.google.com/document/d/1vgQY11pxRQUDAufxSsc2xKyQCKGPftZ5wZnjY2El4w8/view)
+has information about dumping these paint and compositing datastructures for
+debugging.
 
-### Comparison of the three modes
+### Comparison of the current and new compositing algorithms
 
-```
-                                 | SPv175             | BlinkGenPropertyTrees | CompositeAfterPaint
----------------------------------+--------------------+-----------------------+-------
-REF::BlinkGenPropertyTreesEnabled| false              | true                  | false
-REF::CompositeAfterPaintEnabled  | false              | false                 | true
-Layerization                     | PLC/CLM            | PLC/CLM               | PAC
-cc property tree builder         | on                 | off                   | off
-```
+The
+[current compositing design](#Current-compositing-algorithm-CompositeBeforePaint_)
+is an incremental step towards the new
+[CompositeAfterPaint](##New-compositing-algorithm-CompositeAfterPaint_) design
+and was launched as [BlinkGenPropertyTrees](https://docs.google.com/document/d/17GKr2uIH2O5GthdTyvJpv1qZjoHYoLgrzvCkbCHoID4/view). The design before
+BlinkGenPropertyTrees is not described in this document.
+
+
+|                                 | Current (CompositeBeforePaint)               | New (CompositeAfterPaint) |
+|---------------------------------|:---------------------------------------------|:--------------------------|
+| REF::CompositeAfterPaintEnabled | False                                        | True                      |
+| Layerization                    | PaintLayerCompositor, CompositedLayerMapping | PaintArtifactCompositor   |
+| PaintController                 | One per GraphicsLayer                        | One per LocalFrameView    |
 
 ## PrePaint
 [`PrePaintTreeWalk`](pre_paint_tree_walk.h)
 
-During `InPrePaint` document lifecycle state, this class is called to walk the
-whole layout tree, beginning from the root FrameView, across frame boundaries.
-We do the following during the tree walk:
+During the `InPrePaint` document lifecycle state, this class is called to walk
+the whole layout tree, beginning from the root FrameView, and across frame
+boundaries. This is an in-order tree traversal which is important for
+efficiently computing DOM-order hierarchy such as the parent containing block.
+
+The PrePaint walk has two primary goals:
+[paint invalidation](#Paint-invalidation) and
+[building paint property trees](#Building-paint-property-trees).
+
+### Paint invalidation
+[`PaintInvalidator`](paint_invalidator.h)
+
+Paint invalidator marks anything that need to be painted differently from the
+original cached painting.
+
+During the document lifecycle stages prior to PrePaint, objects are marked for
+needing paint invalidation checking if needed by style change, layout change,
+compositing change, etc. In PrePaint stage, we traverse the layout tree in
+pre-order, crossing frame boundaries, for marked subtrees and objects and
+invalidate display item clients that will generate different display items.
+
+At the beginning of the PrePaint tree walk, a root `PaintInvalidatorContext`
+is created for the root `LayoutView`. During the tree walk, one
+`PaintInvalidatorContext` is created for each visited object based on the
+`PaintInvalidatorContext` passed from the parent object. It tracks the following
+information to provide O(1) complexity access to them if possible:
+
+*   Paint invalidation container (Slimming Paint v1 only): As described by
+    the definitions in [Other glossaries](#Other-glossaries), the paint
+    invalidation container for stacked objects can differ from normal objects,
+    we have to track both separately. Here is an example:
+
+        <div style="overflow: scroll">
+            <div id=A style="position: absolute"></div>
+            <div id=B></div>
+        </div>
+
+    If the scroller is composited (for high-DPI screens for example), it is the
+    paint invalidation container for div B, but not A.
+
+*   Painting layer: the layer which will initiate painting of the current
+    object. It's the same value as `LayoutObject::PaintingLayer()`.
+
+[`PaintInvalidator`](PaintInvalidator.h) initializes `PaintInvalidatorContext`
+for the current object, then calls `LayoutObject::InvalidatePaint()` which
+calls the object's paint invalidator (e.g. `BoxPaintInvalidator`) to complete
+paint invalidation of the object.
+
+#### Paint invalidation of text
+
+Text is painted by `InlineTextBoxPainter` using `InlineTextBox` as display
+item client. Text backgrounds and masks are painted by `InlineTextFlowPainter`
+using `InlineFlowBox` as display item client. We should invalidate these display
+item clients when their painting will change.
+
+`LayoutInline`s and `LayoutText`s are marked for full paint invalidation if
+needed when new style is set on them. During paint invalidation, we invalidate
+the `InlineFlowBox`s directly contained by the `LayoutInline` in
+`LayoutInline::InvalidateDisplayItemClients()` and `InlineTextBox`s contained by
+the `LayoutText` in `LayoutText::InvalidateDisplayItemClients()`. We don't need
+to traverse into the subtree of `InlineFlowBox`s in
+`LayoutInline::InvalidateDisplayItemClients()` because the descendant
+`InlineFlowBox`s and `InlineTextBox`s will be handled by their owning
+`LayoutInline`s and `LayoutText`s, respectively, when changed style is
+propagated.
+
+#### Specialty of `::first-line`
+
+`::first-line` pseudo style dynamically applies to all `InlineBox`'s in the
+first line in the block having `::first-line` style. The actual applied style is
+computed from the `::first-line` style and other applicable styles.
+
+If the first line contains any `LayoutInline`, we compute the style from the
+`::first-line` style and the style of the `LayoutInline` and apply the computed
+style to the first line part of the `LayoutInline`. In Blink's style
+implementation, the combined first line style of `LayoutInline` is identified
+with `kPseudoIdFirstLineInherited`.
+
+The normal paint invalidation of texts doesn't work for first line because:
+
+*   `ComputedStyle::VisualInvalidationDiff()` can't detect first line style
+    changes;
+*   The normal paint invalidation is based on whole LayoutObject's, not aware of
+    the first line.
+
+We have a special path for first line style change: the style system informs the
+layout system when the computed first-line style changes through
+`LayoutObject::FirstLineStyleDidChange()`. When this happens, we invalidate all
+`InlineBox`es in the first line.
 
 ### Building paint property trees
 [`PaintPropertyTreeBuilder`](paint_property_tree_builder.h)
 
 This class is responsible for building property trees
-(see [the platform paint README file](../../platform/graphics/paint/README.md)).
+(see
+[platform/paint/README.md](../../platform/graphics/paint/README.md#Paint-properties)
+for information about what property trees are).
 
 Each `PaintLayer`'s `LayoutObject` has one or more `FragmentData` objects (see
 below for more on fragments). Every `FragmentData` has an
@@ -420,39 +520,28 @@ element itself is not isolated against ancestor mutations; it only isolates the
 element's subtree.
 
 Example tree:
-+----------------------+
-| 1. Root LayoutObject |
-+----------------------+
-      |       |
-      |       +-----------------+
-      |                         |
-      v                         v
-+-----------------+       +-----------------+
-| 2. LayoutObject |       | 3. LayoutObject |
-+-----------------+       +-----------------+
-      |                         |
-      v                         |
-+-----------------+             |
-| 4. LayoutObject |             |
-+-----------------+             |
-                                |
-      +-------------------------+
-      |                         |
-+-----------------+       +-----------------+
-| 5. LayoutObject |       | 6. LayoutObject |
-+-----------------+       +-----------------+
-      |   |
-      |   +---------------------+
-      |                         |
-      v                         v
-+-----------------+       +-----------------+
-| 7. LayoutObject |       | 8. LayoutObject |
-+-----------------+       +-----------------+
-
+```
+                        +----------------------+
+                        | 1. Root LayoutObject |
+                        +----------------------+
+                          /                  \
+           +-----------------+            +-----------------+
+           | 2. LayoutObject |            | 3. LayoutObject |
+           +-----------------+            +-----------------+
+             /                              /             \
+  +-----------------+          +-----------------+    +-----------------+
+  | 4. LayoutObject |          | 5. LayoutObject |    | 6. LayoutObject |
+  +-----------------+          +-----------------+    +-----------------+
+                                 /             \
+                   +-----------------+     +-----------------+
+                   | 7. LayoutObject |     | 8. LayoutObject |
+                   +-----------------+     +-----------------+
+```
 Suppose that element 3's style changes to include a transform (e.g.
-"transform: translateX(10px);").
+`transform: translateX(10px)`).
 
 Typically, here is the order of the walk (depth first) and updates:
+
 *    Root element 1 is visited since some descendant needs updates
 *    Element 2 is visited since it is one of the descendants, but it doesn't
      need updates.
@@ -460,7 +549,7 @@ Typically, here is the order of the walk (depth first) and updates:
 *    Element 3 is visited since it's a descendant of the root element, and its
      property trees are updated to include a new transform. This causes a flag
      to be flipped that all subtree nodes need an update.
-*    Elements are then visited in the depth order: 5, 7, 8, 6. Elements 5 and 6
+*    Elements are then visited in depth order: 5, 7, 8, 6. Elements 5 and 6
      reparent their transform nodes to point to the transform node of element 3.
      Elements 7 and 8 are visited and updated but no changes occur.
 
@@ -504,90 +593,29 @@ Each `FragmentData` receives its own `ClipPaintPropertyNode`. They
 also store a unique `PaintOffset, `PaginationOffset and
 `LocalBordreBoxProperties` object.
 
-See [`LayoutMultiColumnFlowThread.h`](../layout/layout_multi_column_flow_thread.h)
+See
+[`LayoutMultiColumnFlowThread.h`](../layout/layout_multi_column_flow_thread.h)
 for a much more detail about multicolumn/pagination.
 
-### Paint invalidation
-[`PaintInvalidator`](paint_invalidator.h)
-
-Paint invalidator marks anything that need to be painted differently from the
-original cached painting.
-
-During the document lifecycle stages prior to PrePaint, objects are marked for
-needing paint invalidation checking if needed by style change, layout change,
-compositing change, etc. In PrePaint stage, we traverse the layout tree in
-pre-order, crossing frame boundaries, for marked subtrees and objects and
-invalidate display item clients that will generate different display items.
-
-At the beginning of the PrePaint tree walk, a root `PaintInvalidatorContext`
-is created for the root `LayoutView`. During the tree walk, one
-`PaintInvalidatorContext` is created for each visited object based on the
-`PaintInvalidatorContext` passed from the parent object. It tracks the following
-information to provide O(1) complexity access to them if possible:
-
-*   Paint invalidation container (Slimming Paint v1 only): Since as indicated by
-    the definitions in [Glossaries](#other-glossaries), the paint invalidation
-    container for stacked objects can differ from normal objects, we have to
-    track both separately. Here is an example:
-
-        <div style="overflow: scroll">
-            <div id=A style="position: absolute"></div>
-            <div id=B></div>
-        </div>
-
-    If the scroller is composited (for high-DPI screens for example), it is the
-    paint invalidation container for div B, but not A.
-
-*   Painting layer: the layer which will initiate painting of the current
-    object. It's the same value as `LayoutObject::PaintingLayer()`.
-
-`PaintInvalidator`[PaintInvalidator.h] initializes `PaintInvalidatorContext`
-for the current object, then calls `LayoutObject::InvalidatePaint()` which
-calls the object's paint invalidator (e.g. `BoxPaintInvalidator`) to complete
-paint invalidation of the object.
-
-#### Paint invalidation of text
-
-Text is painted by `InlineTextBoxPainter` using `InlineTextBox` as display
-item client. Text backgrounds and masks are painted by `InlineTextFlowPainter`
-using `InlineFlowBox` as display item client. We should invalidate these display
-item clients when their painting will change.
-
-`LayoutInline`s and `LayoutText`s are marked for full paint invalidation if
-needed when new style is set on them. During paint invalidation, we invalidate
-the `InlineFlowBox`s directly contained by the `LayoutInline` in
-`LayoutInline::InvalidateDisplayItemClients()` and `InlineTextBox`s contained by
-the `LayoutText` in `LayoutText::InvalidateDisplayItemClients()`. We don't need
-to traverse into the subtree of `InlineFlowBox`s in
-`LayoutInline::InvalidateDisplayItemClients()` because the descendant
-`InlineFlowBox`s and `InlineTextBox`s will be handled by their owning
-`LayoutInline`s and `LayoutText`s, respectively, when changed style is
-propagated.
-
-#### Specialty of `::first-line`
-
-`::first-line` pseudo style dynamically applies to all `InlineBox`'s in the
-first line in the block having `::first-line` style. The actual applied style is
-computed from the `::first-line` style and other applicable styles.
-
-If the first line contains any `LayoutInline`, we compute the style from the
-`::first-line` style and the style of the `LayoutInline` and apply the computed
-style to the first line part of the `LayoutInline`. In Blink's style
-implementation, the combined first line style of `LayoutInline` is identified
-with `kPseudoIdFirstLineInherited`.
-
-The normal paint invalidation of texts doesn't work for first line because
-*   `ComputedStyle::VisualInvalidationDiff()` can't detect first line style
-    changes;
-*   The normal paint invalidation is based on whole LayoutObject's, not aware of
-    the first line.
-
-We have a special path for first line style change: the style system informs the
-layout system when the computed first-line style changes through
-`LayoutObject::FirstLineStyleDidChange()`. When this happens, we invalidate all
-`InlineBox`es in the first line.
-
 ## Paint
+
+Paint walks the LayoutObject tree in paint-order and produces a list of
+display items. This is implemented using static painter classes
+(e.g., [`BlockPainter`](block_painter.cc)) and appends display items to a
+[`PaintController`](../../platform/graphics/paint/paint_controller.h). During
+this treewalk, the current property tree state is maintained (see:
+`PaintController::UpdateCurrentPaintChunkProperties`). The `PaintController`
+segments the display item list into
+[`PaintChunk`](../../platform/graphics/paint/paint_chunk.h)s which are
+sequential display items that share a common property tree state.
+
+With the
+[current compositing algorithm](#Current-compositing-algorithm-CompositeBeforePaint_),
+the paint-order `LayoutObject` treewalk is initiated by `GraphicsLayer`s, and
+each `GraphicsLayer` contains a `PaintController`. In the new compositing
+approach,
+[CompositeAfterPaint](##New-compositing-algorithm-CompositeAfterPaint_), there
+is only one `PaintController` for the entire `LocalFrameView`.
 
 ### Paint result caching
 
@@ -609,10 +637,9 @@ the scope as a "subsequence". Before painting a layer, if we are sure that the
 layer will generate exactly the same display items as the previous paint, we'll
 get the whole subsequence from the cache instead of repainting them.
 
-There are many conditions affecting
-*   whether we need to generate subsequence for a PaintLayer;
-*   whether we can use cached subsequence for a PaintLayer.
-See `ShouldCreateSubsequence()` and `shouldRepaintSubsequence()` in
+There are many conditions affecting whether we need to generate subsequence for
+a PaintLayer and whether we can use cached subsequence for a PaintLayer. See
+`ShouldCreateSubsequence()` and `shouldRepaintSubsequence()` in
 `PaintLayerPainter.cpp` for the conditions.
 
 ### Empty paint phase optimization
@@ -638,7 +665,7 @@ needs all paint phases that its container self-painting layer needs.
 
 We could update the `NeedsPaintPhaseXXX` flags in a separate tree walk, but that
 would regress performance of the first paint. For CompositeAfterPaint, we can
-update the flags during the pre-painting tree walk to simplify the logics.
+update the flags during the pre-painting tree walk to simplify the logic.
 
 ### Hit test painting
 
@@ -667,3 +694,4 @@ When a particular LayoutObject subclass fully migrates to NG, its LayoutObject
 geometry information might no longer be updated\(\*\), and its
 painter needs to be rewritten to paint NGFragments.
 For example, see how BlockPainter is being rewritten as NGBoxFragmentPainter.
+

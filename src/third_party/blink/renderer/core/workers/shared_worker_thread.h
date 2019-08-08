@@ -48,6 +48,8 @@ class CORE_EXPORT SharedWorkerThread : public WorkerThread {
   }
   void ClearWorkerBackingThread() override;
 
+  void OnAppCacheSelected();
+
  private:
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
       std::unique_ptr<GlobalScopeCreationParams>) override;
@@ -55,6 +57,8 @@ class CORE_EXPORT SharedWorkerThread : public WorkerThread {
   WebThreadType GetThreadType() const override {
     return WebThreadType::kSharedWorkerThread;
   }
+
+  void OnAppCacheSelectedOnWorkerThread();
 
   std::unique_ptr<WorkerBackingThread> worker_backing_thread_;
 };

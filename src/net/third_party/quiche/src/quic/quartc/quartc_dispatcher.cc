@@ -37,9 +37,9 @@ QuartcDispatcher::QuartcDispatcher(
       delegate_(delegate),
       packet_writer_(packet_writer.get()) {
   // Allow incoming packets to set our expected connection ID length.
-  SetShouldUpdateExpectedConnectionIdLength(true);
+  SetShouldUpdateExpectedServerConnectionIdLength(true);
   // Allow incoming packets with connection ID lengths shorter than allowed.
-  SetAllowShortInitialConnectionIds(true);
+  SetAllowShortInitialServerConnectionIds(true);
   // QuicDispatcher takes ownership of the writer.
   QuicDispatcher::InitializeWithWriter(packet_writer.release());
   // NB: This must happen *after* InitializeWithWriter.  It can call us back
@@ -58,7 +58,7 @@ QuartcSession* QuartcDispatcher::CreateQuicSession(
     QuicStringPiece alpn,
     const ParsedQuicVersion& version) {
   // Make our expected connection ID non-mutable since we have a connection.
-  SetShouldUpdateExpectedConnectionIdLength(false);
+  SetShouldUpdateExpectedServerConnectionIdLength(false);
   std::unique_ptr<QuicConnection> connection = CreateQuicConnection(
       connection_id, client_address, helper(), alarm_factory(), writer(),
       Perspective::IS_SERVER, ParsedQuicVersionVector{version});

@@ -69,6 +69,13 @@ class SyncedTabDelegate {
   // tab should be preserved.
   virtual bool IsPlaceholderTab() const = 0;
 
+  // Task IDs represent navigations and relationships between navigations. -1
+  // indicates the Task ID is unknown. A Navigation ID is a Unique ID and
+  // is stored on a NavigationEntry and SerialiedNavigationEntry.
+  virtual int64_t GetTaskIdForNavigationId(int nav_id) const = 0;
+  virtual int64_t GetParentTaskIdForNavigationId(int nav_id) const = 0;
+  virtual int64_t GetRootTaskIdForNavigationId(int nav_id) const = 0;
+
  protected:
   SyncedTabDelegate();
 };

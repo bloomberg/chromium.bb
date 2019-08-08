@@ -33,6 +33,9 @@ class QUIC_EXPORT_PRIVATE QuicDataReader {
  public:
   // Constructs a reader using NETWORK_BYTE_ORDER endianness.
   // Caller must provide an underlying buffer to work on.
+  explicit QuicDataReader(QuicStringPiece data);
+  // Constructs a reader using NETWORK_BYTE_ORDER endianness.
+  // Caller must provide an underlying buffer to work on.
   QuicDataReader(const char* data, const size_t len);
   // Constructs a reader using the specified endianness.
   // Caller must provide an underlying buffer to work on.
@@ -108,6 +111,11 @@ class QUIC_EXPORT_PRIVATE QuicDataReader {
   // Returns true on success, false otherwise.
   bool ReadBytes(void* result, size_t size);
 
+  // Skips over |size| bytes from the buffer and forwards the internal iterator.
+  // Returns true if there are at least |size| bytes remaining to read, false
+  // otherwise.
+  bool Seek(size_t size);
+
   // Returns true if the entirety of the underlying buffer has been read via
   // Read*() calls.
   bool IsDoneReading() const;
@@ -142,11 +150,11 @@ class QUIC_EXPORT_PRIVATE QuicDataReader {
   // and that the integers in the range 0 ... (2^62)-1.
   bool ReadVarInt62(uint64_t* result);
 
-  // Convenience method that reads a StreamId.
-  // Atempts to read a Stream ID into |result| using ReadVarInt62 and
+  // Convenience method that reads a uint32_t.
+  // Attempts to read a varint into a uint32_t. using ReadVarInt62 and
   // returns false if there is a read error or if the value is
   // greater than (2^32)-1.
-  bool ReadVarIntStreamId(QuicStreamId* result);
+  bool ReadVarIntU32(uint32_t* result);
 
   std::string DebugString() const;
 

@@ -21,7 +21,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
-#include "components/autofill/core/browser/popup_item_ids.h"
+#include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
@@ -42,25 +42,30 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/infobars/infobar.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#import "ios/chrome/browser/infobars/infobar_type.h"
 #import "ios/chrome/browser/metrics/ukm_url_recorder.h"
 #include "ios/chrome/browser/passwords/credential_manager.h"
 #import "ios/chrome/browser/passwords/ios_chrome_save_password_infobar_delegate.h"
 #import "ios/chrome/browser/passwords/ios_chrome_update_password_infobar_delegate.h"
+#import "ios/chrome/browser/passwords/ios_password_infobar_controller.h"
 #import "ios/chrome/browser/passwords/notify_auto_signin_view_controller.h"
 #import "ios/chrome/browser/passwords/password_form_filler.h"
 #include "ios/chrome/browser/passwords/password_manager_features.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/infobars/coordinators/infobar_password_coordinator.h"
+#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/browser/web/tab_id_tab_helper.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/web/public/origin_util.h"
+#import "ios/web/common/origin_util.h"
+#import "ios/web/public/deprecated/crw_js_injection_receiver.h"
+#include "ios/web/public/js_messaging/web_frame.h"
+#include "ios/web/public/js_messaging/web_frame_util.h"
 #include "ios/web/public/url_scheme_util.h"
-#import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
-#include "ios/web/public/web_state/web_frame.h"
-#include "ios/web/public/web_state/web_frame_util.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -145,6 +150,9 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 
 // Tracks field when current password was generated.
 @property(nonatomic, copy) NSString* passwordGeneratedIdentifier;
+
+// Tracks current potential generated password until accepted or rejected.
+@property(nonatomic, copy) NSString* generatedPotentialPassword;
 
 @end
 
@@ -471,11 +479,10 @@ void LogSuggestionShown(PasswordSuggestionType type) {
       return;
     }
     case autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY: {
+      // Don't call completion because current siggestion state should remain
+      // whether user injects a generated password or cancels.
       [self generatePasswordForFormName:formName
-                      completionHandler:^(BOOL injected) {
-                        if (injected)
-                          completion();
-                      }];
+                        fieldIdentifier:fieldIdentifier];
       LogSuggestionClicked(PasswordSuggestionType::SUGGESTED);
       return;
     }
@@ -671,16 +678,46 @@ void LogSuggestionShown(PasswordSuggestionType type) {
       InfoBarManagerImpl::FromWebState(_webState);
 
   switch (type) {
-    case PasswordInfoBarType::SAVE:
-      IOSChromeSavePasswordInfoBarDelegate::Create(
-          isSyncUser, infoBarManager, std::move(form), self.dispatcher);
-      break;
+    case PasswordInfoBarType::SAVE: {
+      auto delegate = std::make_unique<IOSChromeSavePasswordInfoBarDelegate>(
+          isSyncUser, /*password_update*/ false, std::move(form));
+      delegate->set_dispatcher(self.dispatcher);
 
-    case PasswordInfoBarType::UPDATE:
-      IOSChromeUpdatePasswordInfoBarDelegate::Create(
-          isSyncUser, infoBarManager, std::move(form), self.baseViewController,
-          self.dispatcher);
+      if (IsInfobarUIRebootEnabled()) {
+        InfobarPasswordCoordinator* coordinator =
+            [[InfobarPasswordCoordinator alloc]
+                initWithInfoBarDelegate:delegate.get()
+                                   type:InfobarType::kInfobarTypePasswordSave];
+        infoBarManager->AddInfoBar(
+            std::make_unique<InfoBarIOS>(coordinator, std::move(delegate)));
+      } else {
+        IOSPasswordInfoBarController* controller =
+            [[IOSPasswordInfoBarController alloc]
+                initWithInfoBarDelegate:delegate.get()];
+        infoBarManager->AddInfoBar(
+            std::make_unique<InfoBarIOS>(controller, std::move(delegate)));
+      }
       break;
+    }
+    case PasswordInfoBarType::UPDATE: {
+      if (IsInfobarUIRebootEnabled()) {
+        auto delegate = std::make_unique<IOSChromeSavePasswordInfoBarDelegate>(
+            isSyncUser, /*password_update*/ true, std::move(form));
+        delegate->set_dispatcher(self.dispatcher);
+        InfobarPasswordCoordinator* coordinator = [[InfobarPasswordCoordinator
+            alloc]
+            initWithInfoBarDelegate:delegate.get()
+                               type:InfobarType::kInfobarTypePasswordUpdate];
+        infoBarManager->AddInfoBar(
+            std::make_unique<InfoBarIOS>(coordinator, std::move(delegate)));
+
+      } else {
+        IOSChromeUpdatePasswordInfoBarDelegate::Create(
+            isSyncUser, infoBarManager, std::move(form),
+            self.baseViewController, self.dispatcher);
+      }
+      break;
+    }
   }
 }
 
@@ -726,25 +763,28 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 }
 
 - (void)generatePasswordForFormName:(NSString*)formName
-                  completionHandler:(void (^)(BOOL))completionHandler {
+                    fieldIdentifier:(NSString*)fieldIdentifier {
   if (![self getFormForGenerationFromFormName:formName])
     return;
 
-  // TODO(crbug.com/886583): form_signature, field_signature, max_length and
-  // spec_priority in PGM::GeneratePassword are being refactored, passing 0 for
-  // now to get a generic random password.
+  // TODO(crbug.com/886583): pass correct |max_length|.
   base::string16 generatedPassword =
       _passwordGenerationHelper->GeneratePassword([self lastCommittedURL], 0, 0,
                                                   0, nullptr);
 
-  NSString* title = GetNSStringF(IDS_IOS_SUGGESTED_PASSWORD, generatedPassword);
-  NSString* message = GetNSString(IDS_IOS_SUGGESTED_PASSWORD_HINT);
+  self.generatedPotentialPassword = SysUTF16ToNSString(generatedPassword);
+
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(updateGeneratePasswordStrings:)
+             name:UIContentSizeCategoryDidChangeNotification
+           object:nil];
 
   // TODO(crbug.com/886583): add eg tests
   self.actionSheetCoordinator = [[ActionSheetCoordinator alloc]
       initWithBaseViewController:self.baseViewController
-                           title:title
-                         message:message
+                           title:@""
+                         message:@""
                             rect:self.baseViewController.view.frame
                             view:self.baseViewController.view];
   self.actionSheetCoordinator.popoverArrowDirection = 0;
@@ -752,32 +792,78 @@ void LogSuggestionShown(PasswordSuggestionType type) {
       IsIPadIdiom() ? UIAlertControllerStyleAlert
                     : UIAlertControllerStyleActionSheet;
 
-  NSString* nsPassword = SysUTF16ToNSString(generatedPassword);
+  // Set attributed text.
+  [self updateGeneratePasswordStrings:self];
 
   __weak PasswordController* weakSelf = self;
+
+  auto restoreFocus = ^{
+    [weakSelf generatePasswordPopupDismissed];
+    // Suggestion are still visible but they lost their state, so by forcing
+    // a focus event on the current field, it will reset the suggestions.
+    [weakSelf.formHelper focusOnForm:formName
+                     fieldIdentifier:fieldIdentifier
+                   completionHandler:nil];
+  };
+
   [self.actionSheetCoordinator
       addItemWithTitle:GetNSString(IDS_IOS_USE_SUGGESTED_PASSWORD)
                 action:^{
                   [weakSelf
                       injectGeneratedPasswordForFormName:formName
-                                       generatedPassword:nsPassword
-                                       completionHandler:completionHandler];
+                                       generatedPassword:
+                                           weakSelf.generatedPotentialPassword
+                                       completionHandler:restoreFocus];
                 }
                  style:UIAlertActionStyleDefault];
 
   [self.actionSheetCoordinator addItemWithTitle:GetNSString(IDS_CANCEL)
-                                         action:^{
-                                           if (completionHandler)
-                                             completionHandler(NO);
-                                         }
+                                         action:restoreFocus
                                           style:UIAlertActionStyleCancel];
+
+  // Set 'suggest' as preferred action, as per UX.
+  self.actionSheetCoordinator.alertController.preferredAction =
+      self.actionSheetCoordinator.alertController.actions[0];
 
   [self.actionSheetCoordinator start];
 }
 
+- (void)generatePasswordPopupDismissed {
+  [self.actionSheetCoordinator stop];
+  self.actionSheetCoordinator = nil;
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  self.generatedPotentialPassword = nil;
+}
+
+- (void)updateGeneratePasswordStrings:(id)sender {
+  NSString* title = [NSString
+      stringWithFormat:@"%@\n%@\n ", GetNSString(IDS_IOS_SUGGESTED_PASSWORD),
+                       self.generatedPotentialPassword];
+  self.actionSheetCoordinator.attributedTitle =
+      [[NSMutableAttributedString alloc]
+          initWithString:title
+              attributes:@{
+                NSFontAttributeName :
+                    [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
+              }];
+
+  NSString* message = GetNSString(IDS_IOS_SUGGESTED_PASSWORD_HINT);
+  self.actionSheetCoordinator.attributedMessage =
+      [[NSMutableAttributedString alloc]
+          initWithString:message
+              attributes:@{
+                NSFontAttributeName :
+                    [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote]
+              }];
+
+  // TODO(crbug.com/886583): find a way to make action sheet coordinator
+  // responsible for font size changes.
+  [self.actionSheetCoordinator updateAttributedText];
+}
+
 - (void)injectGeneratedPasswordForFormName:(NSString*)formName
                          generatedPassword:(NSString*)generatedPassword
-                         completionHandler:(void (^)(BOOL))completionHandler {
+                         completionHandler:(void (^)())completionHandler {
   const autofill::NewPasswordFormGenerationData* generation_data =
       [self getFormForGenerationFromFormName:formName];
   if (!generation_data)
@@ -805,7 +891,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
       self.passwordGeneratedIdentifier = newPasswordIdentifier;
     }
     if (completionHandler)
-      completionHandler(YES);
+      completionHandler();
   };
 
   [self.formHelper fillPasswordForm:formName

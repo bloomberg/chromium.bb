@@ -27,7 +27,6 @@
 #include "base/test/test_timeouts.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/browser/autofill/legacy_strike_database_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/strike_database_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -55,10 +54,9 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
-#include "components/autofill/core/browser/credit_card.h"
-#include "components/autofill/core/browser/payments/legacy_strike_database.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/strike_database.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
@@ -166,7 +164,7 @@ const char kTestOrigin3[] = "http://host3.com:1/";
 const char kTestRegisterableDomain3[] = "host3.com";
 const char kTestOrigin4[] = "https://host3.com:1/";
 const char kTestOriginExt[] = "chrome-extension://abcdefghijklmnopqrstuvwxyz/";
-const char kTestOriginDevTools[] = "chrome-devtools://abcdefghijklmnopqrstuvw/";
+const char kTestOriginDevTools[] = "devtools://abcdefghijklmnopqrstuvw/";
 
 // For HTTP auth.
 const char kTestRealm[] = "TestRealm";
@@ -319,8 +317,11 @@ class RemoveSafeBrowsingCookieTester : public RemoveCookieTester {
                 {content::BrowserThread::IO}));
     browser_process_->SetSystemRequestContext(
         system_request_context_getter_.get());
+    // TODO(crbug/925153): Port consumers of the |sb_service| to use the
+    // interface in components/safe_browsing, and remove this cast.
     scoped_refptr<safe_browsing::SafeBrowsingService> sb_service =
-        safe_browsing::SafeBrowsingService::CreateSafeBrowsingService();
+        static_cast<safe_browsing::SafeBrowsingService*>(
+            safe_browsing::SafeBrowsingService::CreateSafeBrowsingService());
     browser_process_->SetSafeBrowsingService(sb_service.get());
     sb_service->Initialize();
     base::RunLoop().RunUntilIdle();
@@ -367,17 +368,20 @@ class RemoveHistoryTester {
 
   // Returns true, if the given URL exists in the history service.
   bool HistoryContainsURL(const GURL& url) {
-    scoped_refptr<content::MessageLoopRunner> message_loop_runner =
-        new content::MessageLoopRunner;
-    quit_closure_ = message_loop_runner->QuitClosure();
+    bool contains_url = false;
+
+    base::RunLoop run_loop;
+    base::CancelableTaskTracker tracker;
     history_service_->QueryURL(
-        url,
-        true,
-        base::Bind(&RemoveHistoryTester::SaveResultAndQuit,
-                   base::Unretained(this)),
-        &tracker_);
-    message_loop_runner->Run();
-    return query_url_success_;
+        url, true,
+        base::BindLambdaForTesting([&](history::QueryURLResult result) {
+          contains_url = result.success;
+          run_loop.Quit();
+        }),
+        &tracker);
+    run_loop.Run();
+
+    return contains_url;
   }
 
   void AddHistory(const GURL& url, base::Time time) {
@@ -387,19 +391,6 @@ class RemoveHistoryTester {
   }
 
  private:
-  // Callback for HistoryService::QueryURL.
-  void SaveResultAndQuit(bool success,
-                         const history::URLRow&,
-                         const history::VisitVector&) {
-    query_url_success_ = success;
-    quit_closure_.Run();
-  }
-
-  // For History requests.
-  base::CancelableTaskTracker tracker_;
-  bool query_url_success_ = false;
-  base::Closure quit_closure_;
-
   // TestingProfile owns the history service; we shouldn't delete it.
   history::HistoryService* history_service_ = nullptr;
 
@@ -550,16 +541,16 @@ class ClearDomainReliabilityTester {
 
  private:
   void Clear(
-      const content::BrowsingDataFilterBuilder& filter_builder,
+      content::BrowsingDataFilterBuilder* filter_builder,
       network::mojom::NetworkContext_DomainReliabilityClearMode mode,
       network::mojom::NetworkContext::ClearDomainReliabilityCallback callback) {
     ++clear_count_;
     last_clear_mode_ = mode;
     std::move(callback).Run();
 
-    last_filter_ = filter_builder.IsEmptyBlacklist()
+    last_filter_ = filter_builder->IsEmptyBlacklist()
                        ? base::RepeatingCallback<bool(const GURL&)>()
-                       : filter_builder.BuildGeneralFilter();
+                       : filter_builder->BuildGeneralFilter();
   }
 
   unsigned clear_count_ = 0;
@@ -1006,29 +997,6 @@ class MockReportingService : public net::ReportingService {
 };
 
 namespace autofill {
-// LegacyStrikeDatabaseTester is in the autofill namespace since
-// LegacyStrikeDatabase declares it as a friend in the autofill namespace.
-class LegacyStrikeDatabaseTester {
- public:
-  explicit LegacyStrikeDatabaseTester(Profile* profile)
-      : legacy_strike_database_(
-            autofill::LegacyStrikeDatabaseFactory::GetForProfile(profile)) {}
-
-  bool IsEmpty() {
-    int num_keys;
-    base::RunLoop run_loop;
-    legacy_strike_database_->LoadKeys(base::BindLambdaForTesting(
-        [&](bool success, std::unique_ptr<std::vector<std::string>> keys) {
-          num_keys = keys.get()->size();
-          run_loop.Quit();
-        }));
-    run_loop.Run();
-    return (num_keys == 0);
-  }
-
- private:
-  autofill::LegacyStrikeDatabase* legacy_strike_database_;
-};
 
 // StrikeDatabaseTester is in the autofill namespace since
 // StrikeDatabase declares it as a friend in the autofill namespace.
@@ -1100,8 +1068,7 @@ class MockNetworkErrorLoggingService : public net::NetworkErrorLoggingService {
 
   void OnRequest(RequestDetails details) override { NOTREACHED(); }
 
-  void QueueSignedExchangeReport(
-      const SignedExchangeReportDetails& details) override {
+  void QueueSignedExchangeReport(SignedExchangeReportDetails details) override {
     NOTREACHED();
   }
 
@@ -1232,7 +1199,7 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
     remover_->RemoveAndReply(
         delete_begin, delete_end, remove_mask, origin_type_mask,
         &completion_observer);
-    base::ThreadPool::GetInstance()->FlushForTesting();
+    base::ThreadPoolInstance::Get()->FlushForTesting();
     completion_observer.BlockUntilCompletion();
   }
 
@@ -1247,7 +1214,7 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
         delete_begin, delete_end, remove_mask,
         content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
         std::move(filter_builder), &completion_observer);
-    base::ThreadPool::GetInstance()->FlushForTesting();
+    base::ThreadPoolInstance::Get()->FlushForTesting();
     completion_observer.BlockUntilCompletion();
   }
 
@@ -1721,31 +1688,6 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, AutofillRemovalEverything) {
       base::Time(), base::Time::Max(),
       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_FORM_DATA, false);
 
-  EXPECT_EQ(ChromeBrowsingDataRemoverDelegate::DATA_TYPE_FORM_DATA,
-            GetRemovalMask());
-  EXPECT_EQ(content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
-            GetOriginTypeMask());
-  ASSERT_FALSE(tester.HasProfile());
-}
-
-TEST_F(ChromeBrowsingDataRemoverDelegateTest,
-       LegacyStrikeDatabaseEmptyOnAutofillRemoveEverything) {
-  GetProfile()->CreateWebDataService();
-  RemoveAutofillTester tester(GetProfile());
-
-  ASSERT_FALSE(tester.HasProfile());
-  tester.AddProfilesAndCards();
-  ASSERT_TRUE(tester.HasProfile());
-
-  autofill::LegacyStrikeDatabaseTester legacy_strike_database_tester(
-      GetProfile());
-  BlockUntilBrowsingDataRemoved(
-      base::Time(), base::Time::Max(),
-      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_FORM_DATA, false);
-
-  // LegacyStrikeDatabase should be empty when DATA_TYPE_FORM_DATA browsing data
-  // gets deleted.
-  ASSERT_TRUE(legacy_strike_database_tester.IsEmpty());
   EXPECT_EQ(ChromeBrowsingDataRemoverDelegate::DATA_TYPE_FORM_DATA,
             GetRemovalMask());
   EXPECT_EQ(content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,

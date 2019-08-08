@@ -5,6 +5,7 @@
 <translation id="1023220960495960452">transliteracija (vanakkam → வணக்கம்)</translation>
 <translation id="1035094536595558507">Prikaz prezentacije</translation>
 <translation id="1045157690796831147">transliteracija (namaskar → നമസ്കാരം)</translation>
+<translation id="1046068652463704410">Unos za japanski (za američku tipkovnicu)</translation>
 <translation id="1047956942837015229">Brisanje stavki (<ph name="COUNT" />)...</translation>
 <translation id="1049926623896334335">Wordov dokument</translation>
 <translation id="1062407476771304334">Zamijeni</translation>
@@ -36,7 +37,6 @@
 <translation id="1346748346194534595">Udesno</translation>
 <translation id="1351692861129622852">Uvoz datoteka (<ph name="FILE_COUNT" />)...</translation>
 <translation id="1352103415082130575">tajska tipkovnica (pattachote)</translation>
-<translation id="1358032944105037487">Japanska tipkovnica</translation>
 <translation id="1358735829858566124">Datoteka ili direktorij nisu upotrebljivi.</translation>
 <translation id="1363028406613469049">Zvučni zapis</translation>
 <translation id="1378727793141957596">Dobro došli u Google disk!</translation>
@@ -205,13 +205,13 @@
 <translation id="3468522857997926824">Izrađene su sigurnosne kopije fotografija na <ph name="BEGIN_LINK" />Google disku<ph name="END_LINK" /> (ukupno <ph name="FILE_COUNT" />)</translation>
 <translation id="3470502288861289375">Kopiranje...</translation>
 <translation id="3475447146579922140">Googleova proračunska tablica</translation>
-<translation id="3494768541638400973">Google japanski unos (za japanske tipkovnice)</translation>
 <translation id="3495304270784461826">Broj pogrešaka: <ph name="COUNT" />.</translation>
 <translation id="3519867315646775981">transliteracija (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Portugalski</translation>
 <translation id="3527085408025491307">Mapa</translation>
 <translation id="3549797760399244642">Idite na drive.google.com...</translation>
 <translation id="357479282490346887">Litavski</translation>
+<translation id="3583509704582854624">Alfanumerički unos (za japansku tipkovnicu)</translation>
 <translation id="3603385196401704894">francuska (kanadska)</translation>
 <translation id="3606220979431771195">Turska F</translation>
 <translation id="3609785682760573515">Sinkronizacija...</translation>
@@ -262,6 +262,7 @@
 <translation id="421017592316736757">Morate biti na mreži da biste pristupili toj datoteci.</translation>
 <translation id="4212740939091998969">Mapa s nazivom "<ph name="FOLDER_NAME" />" već postoji. Odaberite drugi naziv.</translation>
 <translation id="4215448920900139318">Sigurnosno kopiranje datoteka (ukupno <ph name="FILE_COUNT" />)</translation>
+<translation id="4242533952199664413">Otvori postavke</translation>
 <translation id="426015154560005552">arapska tipkovnica</translation>
 <translation id="4261901459838235729">Googleova prezentacija</translation>
 <translation id="4290535918735525311">Jedna mapa podijeljena s Linuxom</translation>
@@ -285,13 +286,13 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> datoteka</translation>
 <translation id="457386861538956877">Više...</translation>
 <translation id="4582497162516204941">Instalacija uz Linux (Beta)</translation>
-<translation id="4584780943629874245">Dijeli s Plugin VM-om</translation>
 <translation id="4631887759990505102">Izvođač</translation>
 <translation id="4656293982926141856">Ovo računalo</translation>
 <translation id="4669606053856530811">Članovi grupe "<ph name="SOURCE_NAME" />" izgubit će pristup ako se te stavke ne podijele s njima.</translation>
 <translation id="4690246192099372265">Švedski</translation>
 <translation id="4693155481716051732">Suši</translation>
 <translation id="4694604912444486114">Majmun</translation>
+<translation id="4697043402264950621">Popis datoteka razvrstan prema "<ph name="COLUMN_NAME" />", rastućim redoslijedom.</translation>
 <translation id="4711094779914110278">Turski</translation>
 <translation id="4713544552769165154">Ova datoteka predviđena je za računalo koje upotrebljava Macintosh softver. Nije kompatibilna s vašim uređajem koji radi na Chrome OS-u. Potražite odgovarajuću zamjensku aplikaciju u <ph name="BEGIN_LINK" />Chrome web-trgovini<ph name="END_LINK" />.<ph name="BEGIN_LINK_HELP" />Saznajte više<ph name="END_LINK_HELP" /></translation>
 <translation id="4724850507808590449">Izrađene su sigurnosne kopije fotografija (ukupno <ph name="FILE_COUNT" />)</translation>
@@ -312,6 +313,7 @@
 <translation id="4839847978919684242">Odabrane stavke: <ph name="SELCTED_FILES_COUNT" /></translation>
 <translation id="4850886885716139402">Prikaz</translation>
 <translation id="485316830061041779">Njemački</translation>
+<translation id="4867079195717347957">Kliknite da biste stavke u stupcu poredali silaznim redoslijedom.</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> B</translation>
 <translation id="4880214202172289027">Klizač za glasnoću</translation>
 <translation id="4880520557730313061">Automatska obrada</translation>
@@ -352,6 +354,7 @@
 <translation id="5167131699331641907">Nizozemska tipkovnica</translation>
 <translation id="5170477580121653719">Preostali prostor na Google disku: <ph name="SPACE_AVAILABLE" />.</translation>
 <translation id="5177526793333269655">Prikaz minijatura</translation>
+<translation id="5194713942430106590">Kliknite da biste stavke u stupcu poredali uzlaznim redoslijedom.</translation>
 <translation id="5218183485292899140">švicarska (francuska)</translation>
 <translation id="5234764350956374838">Odbaci</translation>
 <translation id="5241298539944515331">vijetnamska tipkovnica (VIQR)</translation>
@@ -411,6 +414,7 @@
 <translation id="5818003990515275822">Korejski</translation>
 <translation id="5819442873484330149">hangul 3 set (završni)</translation>
 <translation id="5833610766403489739">Datoteka nije pronađena. Provjerite postavku lokacije preuzimanja i pokušajte ponovo.</translation>
+<translation id="5838051104334203064">Aplikacije iz Trgovine Play ne mogu pristupiti ovom uređaju</translation>
 <translation id="5838825566232597749">Američka međunarodna Workman</translation>
 <translation id="5850516540536751549">Ta vrsta datoteke nije podržana. Posjetite <ph name="BEGIN_LINK" />Chrome web-trgovinu<ph name="END_LINK" /> da biste pronašli aplikaciju koja može otvoriti tu vrstu datoteke.
     <ph name="BEGIN_LINK_HELP" />Saznajte više<ph name="END_LINK_HELP" /></translation>
@@ -419,6 +423,7 @@
 <translation id="5892290200158927959">Francuska BÉPO tipkovnica</translation>
 <translation id="5911887972742538906">Došlo je do pogreške tijekom instalacije vaše Linux aplikacije.</translation>
 <translation id="5913638992615760742">Kopiranje nije uspjelo, neočekivana pogreška: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5923484009666796948">Unos za japanski (za japansku tipkovnicu)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Linux aplikacijama daje dopuštenje za izmjenu datoteka na Google disku. Promjene će se sinkronizirati na vaše ostale uređaje.</translation>
 <translation id="5982621672636444458">Opcije razvrstavanja</translation>
@@ -497,7 +502,6 @@
     <ph name="LINE_BREAK1" />
     Pronađene su datoteke (ukupno <ph name="FILE_COUNT" />)</translation>
 <translation id="6935521024859866267">Naopako</translation>
-<translation id="6937152069980083337">Google japanski unos (za američke tipkovnice)</translation>
 <translation id="6939777852457331078">Američka Workman tipkovnica</translation>
 <translation id="696203921837389374">Omogući sinkronizaciju putem mobilnih podataka</translation>
 <translation id="6965382102122355670">U redu</translation>
@@ -527,7 +531,7 @@
 <translation id="7339898014177206373">Novi prozor</translation>
 <translation id="7348749398828259943">Američka međunarodna Workman tipkovnica</translation>
 <translation id="7359359531237882347">Kopiranje stavki (<ph name="NUMBER_OF_ITEMS" />)...</translation>
-<translation id="7379734276381389090">S Plugin VM-om dijeli se sljedeći broj mapa: <ph name="NUMBER_OF_ITEMS" /></translation>
+<translation id="7375951387215729722">Popis datoteka razvrstan prema "<ph name="COLUMN_NAME" />", silaznim redoslijedom.</translation>
 <translation id="7389722738210761877">tajska tipkovnica (TIS 820-2531)</translation>
 <translation id="7396038720194014279">hindska tipkovnica (fonetska)</translation>
 <translation id="7417453074306512035">etiopska tipkovnica</translation>
@@ -590,7 +594,6 @@
 <translation id="7969525169268594403">Slovenski</translation>
 <translation id="7982283708762922719">Visina</translation>
 <translation id="7987485481246785146">soransko-kurdska tipkovnica temeljena na arapskom</translation>
-<translation id="7990715602172183602">S Plugin VM-om dijeli se jedna mapa</translation>
 <translation id="799547531016638432">Uklanjanje prečaca</translation>
 <translation id="799923393800005025">Može pregledavati</translation>
 <translation id="8008366997883261463">Jack Russell terijer</translation>
@@ -631,7 +634,6 @@
 <translation id="8342318071240498787">Datoteka ili direktorij s istim imenom već postoje.</translation>
 <translation id="8391950649760071442">transliteracija (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Dimenzije</translation>
-<translation id="8400874747056634633">Upravljaj dijeljenjem s Plugin VM-om</translation>
 <translation id="8412586565681117057">brzi način unosa</translation>
 <translation id="8418113698656761985">Rumunjska tipkovnica</translation>
 <translation id="8432745813735585631">SAD Colemak tipkovnica</translation>

@@ -12,22 +12,13 @@
 namespace blink {
 
 class Document;
-class LayoutNGListItem;
 
-// A LayoutObject subclass for list markers in LayoutNG.
+// A LayoutObject subclass for outside-positioned list markers in LayoutNG.
 class CORE_EXPORT LayoutNGListMarker final
     : public LayoutNGMixin<LayoutBlockFlow> {
  public:
   explicit LayoutNGListMarker(Element*);
   static LayoutNGListMarker* CreateAnonymous(Document*);
-
-  // True if the LayoutObject is a list marker wrapper for block content.
-  //
-  // Because a list marker in LayoutNG is an inline block, and because CSS
-  // defines all children of a box must be either inline level or block level,
-  // when the content of an list item is block level, the list marker is wrapped
-  // in an anonymous block box. This function determines such an anonymous box.
-  static bool IsListMarkerWrapperForBlockContent(const LayoutObject&);
 
   void WillCollectInlines() override;
 
@@ -35,17 +26,13 @@ class CORE_EXPORT LayoutNGListMarker final
 
   LayoutObject* SymbolMarkerLayoutText() const;
 
-  // Marker text with suffix, e.g. "1. ", for use in accessibility.
-  String TextAlternative() const;
-
   const char* GetName() const override { return "LayoutNGListMarker"; }
-
-  LayoutNGListItem* ListItem() const;
 
   bool NeedsOccupyWholeLine() const;
 
  private:
   bool IsOfType(LayoutObjectType) const override;
+  PositionWithAffinity PositionForPoint(const LayoutPoint&) const override;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutNGListMarker, IsLayoutNGListMarker());

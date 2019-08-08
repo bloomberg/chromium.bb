@@ -112,9 +112,6 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   void DirtyOrDeleteLineBoxesIfNeeded(bool full_layout);
   void DirtyLineBoxes();
 
-  void AbsoluteRects(Vector<IntRect>&,
-                     const LayoutPoint& accumulated_offset) const final;
-
   void AbsoluteQuads(Vector<FloatQuad>&,
                      MapCoordinatesFlags mode = 0) const final;
   void AbsoluteQuadsForRange(Vector<FloatQuad>&,
@@ -123,11 +120,8 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   FloatRect LocalBoundingBoxRectForAccessibility() const final;
 
   enum ClippingOption { kNoClipping, kClipToEllipsis };
-  enum LocalOrAbsoluteOption { kLocalQuads, kAbsoluteQuads };
-  void Quads(Vector<FloatQuad>&,
-             ClippingOption = kNoClipping,
-             LocalOrAbsoluteOption = kAbsoluteQuads,
-             MapCoordinatesFlags mode = 0) const;
+  void LocalQuadsInFlippedBlocksDirection(Vector<FloatQuad>&,
+                                          ClippingOption = kNoClipping) const;
 
   PositionWithAffinity PositionForPoint(const LayoutPoint&) const override;
 
@@ -186,12 +180,13 @@ class CORE_EXPORT LayoutText : public LayoutObject {
                          bool& strip_front_spaces,
                          TextDirection);
 
-  virtual LayoutRect LinesBoundingBox() const;
+  virtual PhysicalRect PhysicalLinesBoundingBox() const;
 
-  // Returns the bounding box of visual overflow rects of all line boxes.
-  LayoutRect VisualOverflowRect() const;
+  // Returns the bounding box of visual overflow rects of all line boxes,
+  // in containing block's physical coordinates with flipped blocks direction.
+  PhysicalRect PhysicalVisualOverflowRect() const;
 
-  FloatPoint FirstRunOrigin() const;
+  PhysicalOffset FirstLineBoxTopLeft() const;
 
   virtual void SetText(scoped_refptr<StringImpl>,
                        bool force = false,
@@ -203,7 +198,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   virtual void TransformText();
 
-  LayoutRect LocalSelectionRect() const final;
+  PhysicalRect LocalSelectionVisualRect() const final;
   LayoutRect LocalCaretRect(
       const InlineBox*,
       int caret_offset,
@@ -221,10 +216,6 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   // returns first-letter part of |InlineTextBox| instead of remaining part.
   InlineTextBox* FirstTextBox() const { return TextBoxes().First(); }
   InlineTextBox* LastTextBox() const { return TextBoxes().Last(); }
-
-  // Returns upper left corner point in local physical coordinates with flipped
-  // block-flow direction if this object has rendered text.
-  base::Optional<FloatPoint> GetUpperLeftCorner() const;
 
   // True if we have inline text box children which implies rendered text (or
   // whitespace) output.
@@ -286,9 +277,15 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   scoped_refptr<AbstractInlineTextBox> FirstAbstractInlineTextBox();
 
+  bool HasAbstractInlineTextBox() const {
+    return has_abstract_inline_text_box_;
+  }
+
+  void SetHasAbstractInlineTextBox() { has_abstract_inline_text_box_ = true; }
+
   float HyphenWidth(const Font&, TextDirection);
 
-  LayoutRect DebugRect() const override;
+  PhysicalRect DebugRect() const override;
 
   void AutosizingMultiplerChanged() {
     known_to_have_no_overflow_and_no_fallback_fonts_ = false;
@@ -324,6 +321,10 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   // it was inserted/changed but also it was moved.
   void InvalidateInlineItems() { valid_ng_items_ = false; }
 
+  bool HasBidiControlInlineItems() const { return has_bidi_control_items_; }
+  void SetHasBidiControlInlineItems() { has_bidi_control_items_ = true; }
+  void ClearHasBidiControlInlineItems() { has_bidi_control_items_ = false; }
+
  protected:
   virtual const NGInlineItems* GetNGInlineItems() const { return nullptr; }
   virtual NGInlineItems* GetNGInlineItems() { return nullptr; }
@@ -346,11 +347,11 @@ class CORE_EXPORT LayoutText : public LayoutObject {
  private:
   InlineTextBoxList& MutableTextBoxes();
 
-  void AccumlateQuads(Vector<FloatQuad>&,
-                      const IntRect& ellipsis_rect,
-                      LocalOrAbsoluteOption,
-                      MapCoordinatesFlags mode,
-                      const LayoutRect&) const;
+  // PhysicalRectCollector should be like a function:
+  // void (const PhysicalRect&).
+  template <typename PhysicalRectCollector>
+  void CollectLineBoxRects(const PhysicalRectCollector&,
+                           ClippingOption option = kNoClipping) const;
 
   void ComputePreferredLogicalWidths(float lead_width);
   void ComputePreferredLogicalWidths(
@@ -390,7 +391,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   bool IsText() const =
       delete;  // This will catch anyone doing an unnecessary check.
 
-  LayoutRect LocalVisualRectIgnoringVisibility() const final;
+  PhysicalRect LocalVisualRectIgnoringVisibility() const final;
 
   bool CanOptimizeSetText() const;
   void SetFirstTextBoxLogicalLeft(float text_width) const;
@@ -422,6 +423,10 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   // modified.
   // Functionally the inverse equivalent of lines_dirty_ for LayoutNG.
   unsigned valid_ng_items_ : 1;
+
+  // Used by LayoutNGText. Whether there is any BidiControl type NGInlineItem
+  // associated with this object. Set after layout when associating items.
+  unsigned has_bidi_control_items_ : 1;
 
   unsigned contains_reversed_text_ : 1;
   mutable unsigned known_to_have_no_overflow_and_no_fallback_fonts_ : 1;

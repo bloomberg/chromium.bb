@@ -72,6 +72,8 @@ const service_manager::Manifest& GetChromeContentRendererOverlayManifest() {
 #endif
                 subresource_filter::mojom::SubresourceFilterAgent>())
         .RequireInterfaceFilterCapability_Deprecated(
+            "content_browser", "navigation:frame", "cellular_setup")
+        .RequireInterfaceFilterCapability_Deprecated(
             "content_browser", "navigation:frame", "multidevice_setup")
         .Build()
   };

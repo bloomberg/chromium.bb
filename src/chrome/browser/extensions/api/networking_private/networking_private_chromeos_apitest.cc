@@ -243,8 +243,6 @@ class NetworkingPrivateChromeOSApiTest : public extensions::ExtensionApiTest {
     // Add a Cellular GSM Device.
     device_test_->AddDevice(kCellularDevicePath, shill::kTypeCellular,
                             "stub_cellular_device1");
-    SetDeviceProperty(kCellularDevicePath, shill::kCarrierProperty,
-                      base::Value("Cellular1_Carrier"));
     base::DictionaryValue home_provider;
     home_provider.SetString("name", "Cellular1_Provider");
     home_provider.SetString("code", "000000");
@@ -528,17 +526,6 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, StartActivate) {
   EXPECT_EQ(1, UIDelegateStub::s_show_account_details_called_);
 }
 
-IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, StartActivateSprint) {
-  SetupCellular();
-  // Set the carrier to Sprint.
-  DBusThreadManager::Get()->GetShillDeviceClient()->SetCarrier(
-      dbus::ObjectPath(kCellularDevicePath), shill::kCarrierSprint,
-      base::DoNothing(),
-      base::BindRepeating([](const std::string&, const std::string&) {}));
-  EXPECT_TRUE(RunNetworkingSubtest("startActivateSprint")) << message_;
-  EXPECT_EQ(0, UIDelegateStub::s_show_account_details_called_);
-}
-
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
                        StartConnectNonexistent) {
   EXPECT_TRUE(RunNetworkingSubtest("startConnectNonexistent")) << message_;
@@ -773,7 +760,7 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, GetManagedProperties) {
 }
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, GetErrorState) {
-  chromeos::NetworkHandler::Get()->network_state_handler()->SetLastErrorForTest(
+  chromeos::NetworkHandler::Get()->network_state_handler()->SetErrorForTest(
       kWifi1ServicePath, "TestErrorState");
   EXPECT_TRUE(RunNetworkingSubtest("getErrorState")) << message_;
 }
@@ -799,6 +786,12 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
                        OnDeviceStateListChangedEvent) {
   EXPECT_TRUE(RunNetworkingSubtest("onDeviceStateListChangedEvent"))
       << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
+                       OnDeviceScanningChangedEvent) {
+  SetupCellular();
+  EXPECT_TRUE(RunNetworkingSubtest("onDeviceScanningChangedEvent")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,

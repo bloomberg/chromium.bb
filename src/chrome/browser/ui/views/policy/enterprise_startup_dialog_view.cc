@@ -158,6 +158,10 @@ bool EnterpriseStartupDialogView::Close() {
   return Cancel();
 }
 
+bool EnterpriseStartupDialogView::IsDialogDraggable() const {
+  return true;
+}
+
 bool EnterpriseStartupDialogView::ShouldShowWindowTitle() const {
   return false;
 }
@@ -178,7 +182,7 @@ views::View* EnterpriseStartupDialogView::CreateExtraView() {
   gfx::Rect logo_bounds = logo_image->GetImageBounds();
   logo_image->SetImageSize(gfx::Size(
       logo_bounds.width() * kLogoHeight / logo_bounds.height(), kLogoHeight));
-  logo_image->SetVerticalAlignment(views::ImageView::CENTER);
+  logo_image->SetVerticalAlignment(views::ImageView::Alignment::kCenter);
   return logo_image;
 #else
   return nullptr;

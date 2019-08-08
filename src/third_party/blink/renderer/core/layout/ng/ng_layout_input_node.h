@@ -7,8 +7,9 @@
 
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
+#include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_box_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
@@ -17,17 +18,15 @@
 namespace blink {
 
 class ComputedStyle;
+class DisplayLockContext;
 class Document;
 class LayoutObject;
 class LayoutBox;
-class NGBreakToken;
 class NGConstraintSpace;
-class NGInlineChildLayoutContext;
-class NGLayoutResult;
 class NGPaintFragment;
 struct MinMaxSize;
-struct NGLogicalSize;
-struct NGPhysicalSize;
+struct LogicalSize;
+struct PhysicalSize;
 
 enum class NGMinMaxSizeType { kContentBoxSize, kBorderBoxSize };
 
@@ -82,6 +81,7 @@ class CORE_EXPORT NGLayoutInputNode {
   bool IsInline() const { return type_ == kInline; }
   bool IsBlock() const { return type_ == kBlock; }
 
+  bool IsBlockFlow() const { return IsBlock() && box_->IsLayoutBlockFlow(); }
   bool IsColumnSpanAll() const { return IsBlock() && box_->IsColumnSpanAll(); }
   bool IsFloating() const { return IsBlock() && Style().IsFloating(); }
   bool IsOutOfFlowPositioned() const {
@@ -97,6 +97,9 @@ class CORE_EXPORT NGLayoutInputNode {
   bool IsBody() const { return IsBlock() && box_->IsBody(); }
   bool IsDocumentElement() const { return box_->IsDocumentElement(); }
   bool IsFlexItem() const { return IsBlock() && box_->IsFlexItemIncludingNG(); }
+  bool IsFlexibleBox() const {
+    return IsBlock() && box_->IsFlexibleBoxIncludingNG();
+  }
   bool ShouldBeConsideredAsReplaced() const {
     return box_->ShouldBeConsideredAsReplaced();
   }
@@ -153,11 +156,6 @@ class CORE_EXPORT NGLayoutInputNode {
     return false;
   }
 
-  // Performs layout on this input node, will return the layout result.
-  scoped_refptr<const NGLayoutResult> Layout(const NGConstraintSpace&,
-                                             const NGBreakToken*,
-                                             NGInlineChildLayoutContext*);
-
   // Returns border box.
   MinMaxSize ComputeMinMaxSize(WritingMode,
                                const MinMaxSizeInput&,
@@ -168,7 +166,7 @@ class CORE_EXPORT NGLayoutInputNode {
   // Corresponds to Legacy's LayoutReplaced::IntrinsicSizingInfo.
   void IntrinsicSize(base::Optional<LayoutUnit>* computed_inline_size,
                      base::Optional<LayoutUnit>* computed_block_size,
-                     NGLogicalSize* aspect_ratio) const;
+                     LogicalSize* aspect_ratio) const;
 
   LayoutUnit IntrinsicPaddingBlockStart() const;
   LayoutUnit IntrinsicPaddingBlockEnd() const;
@@ -178,7 +176,7 @@ class CORE_EXPORT NGLayoutInputNode {
 
   Document& GetDocument() const { return box_->GetDocument(); }
 
-  NGPhysicalSize InitialContainingBlockSize() const;
+  PhysicalSize InitialContainingBlockSize() const;
 
   // Returns the LayoutObject which is associated with this node.
   LayoutBox* GetLayoutBox() const { return box_; }
@@ -187,6 +185,19 @@ class CORE_EXPORT NGLayoutInputNode {
 
   bool ShouldApplySizeContainment() const {
     return box_->ShouldApplySizeContainment();
+  }
+
+  // Display locking functionality.
+  const DisplayLockContext& GetDisplayLockContext() const {
+    DCHECK(box_->GetDisplayLockContext());
+    return *box_->GetDisplayLockContext();
+  }
+  bool DisplayLockInducesSizeContainment() const {
+    return box_->DisplayLockInducesSizeContainment();
+  }
+  bool LayoutBlockedByDisplayLock(
+      DisplayLockContext::LifecycleTarget target) const {
+    return box_->LayoutBlockedByDisplayLock(target);
   }
 
   // Returns the first NGPaintFragment for this node. When block fragmentation
@@ -205,7 +216,7 @@ class CORE_EXPORT NGLayoutInputNode {
     return !(*this == other);
   }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   void ShowNodeTree() const;
 #endif
 

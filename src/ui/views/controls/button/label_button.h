@@ -14,8 +14,10 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/label_button_label.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/native_theme_delegate.h"
 #include "ui/views/style/typography.h"
 
@@ -23,11 +25,12 @@ namespace views {
 
 class InkDropContainerView;
 class LabelButtonBorder;
-class LabelButtonLabel;
 
 // LabelButton is a button with text and an icon, it's not focusable by default.
 class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
  public:
+  METADATA_HEADER(LabelButton);
+
   static const char kViewClassName[];
 
   // Creates a LabelButton with ButtonPressed() events sent to |listener| and
@@ -44,7 +47,7 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   void SetImage(ButtonState for_state, const gfx::ImageSkia& image);
 
   // Gets or sets the text shown on the button.
-  const base::string16& GetText() const;
+  base::string16 GetText() const;
   virtual void SetText(const base::string16& text);
 
   // Sets the text color shown for the specified button |for_state| to |color|.
@@ -65,99 +68,40 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   // Sets the horizontal alignment used for the button; reversed in RTL. The
   // optional image will lead the text, unless the button is right-aligned.
   void SetHorizontalAlignment(gfx::HorizontalAlignment alignment);
-  gfx::HorizontalAlignment horizontal_alignment() const {
-    return horizontal_alignment_;
-  }
+  gfx::HorizontalAlignment GetHorizontalAlignment() const;
 
+  gfx::Size GetMinSize() const;
   void SetMinSize(const gfx::Size& min_size);
+
+  gfx::Size GetMaxSize() const;
   void SetMaxSize(const gfx::Size& max_size);
 
   // Gets or sets the option to handle the return key; false by default.
-  bool is_default() const { return is_default_; }
+  bool GetIsDefault() const;
   void SetIsDefault(bool is_default);
 
-  // Gets or sets the button's overall style; the default is |STYLE_TEXTBUTTON|.
-  // DEPRECATED: ButtonStyle is deprecated. Use MdTextButton in place of
-  // |STYLE_BUTTON|.
-  ButtonStyle style() const { return style_; }
-  void SetStyleDeprecated(ButtonStyle style);
-
   // Sets the spacing between the image and the text.
+  int GetImageLabelSpacing() const;
   void SetImageLabelSpacing(int spacing);
 
   // Creates the default border for this button. This can be overridden by
   // subclasses.
   virtual std::unique_ptr<LabelButtonBorder> CreateDefaultBorder() const;
 
-  // View:
+  // Button:
   void SetBorder(std::unique_ptr<Border> border) override;
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int w) const override;
   void Layout() override;
   const char* GetClassName() const override;
   void EnableCanvasFlippingForRTLUI(bool flip) override;
-  void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
-  void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-
- protected:
-  ImageView* image() const { return image_; }
-  Label* label() const;
-  InkDropContainerView* ink_drop_container() const {
-    return ink_drop_container_;
-  }
-
-  bool explicitly_set_normal_color() const {
-    return explicitly_set_colors_[STATE_NORMAL];
-  }
-
-  // Returns the available area for the label and image. Subclasses can change
-  // these bounds if they need room to do manual painting.
-  virtual gfx::Rect GetChildAreaBounds();
-
-  // View:
-  void OnFocus() override;
-  void OnBlur() override;
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
-
-  // Button:
-  void StateChanged(ButtonState old_state) override;
-
-  // Fills |params| with information about the button.
-  virtual void GetExtraParams(ui::NativeTheme::ExtraParams* params) const;
-
-  // Resets colors from the NativeTheme, explicitly set colors are unchanged.
-  virtual void ResetColorsFromNativeTheme();
-
-  // Changes the visual styling of this button to reflect the state of
-  // |is_default()|.
-  virtual void UpdateStyleToIndicateDefaultStatus();
-
-  // Updates the image view to contain the appropriate button state image.
-  void UpdateImage();
-
-  // Updates the border as per the NativeTheme, unless a different border was
-  // set with SetBorder.
-  void UpdateThemedBorder();
-
-  // NativeThemeDelegate:
-  gfx::Rect GetThemePaintRect() const override;
-
-  const std::array<bool, STATE_COUNT>& explicitly_set_colors() const {
-    return explicitly_set_colors_;
-  }
-  void set_explicitly_set_colors(const std::array<bool, STATE_COUNT>& colors) {
-    explicitly_set_colors_ = colors;
-  }
-
- private:
-  void SetTextInternal(const base::string16& text);
-
-  // View:
-  void ChildPreferredSizeChanged(View* child) override;
+  void AddLayerBeneathView(ui::Layer* new_layer) override;
+  void RemoveLayerBeneathView(ui::Layer* old_layer) override;
 
   // NativeThemeDelegate:
   ui::NativeTheme::Part GetThemePart() const override;
+  gfx::Rect GetThemePaintRect() const override;
   ui::NativeTheme::State GetThemeState(
       ui::NativeTheme::ExtraParams* params) const override;
   const gfx::Animation* GetThemeAnimation() const override;
@@ -166,8 +110,57 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   ui::NativeTheme::State GetForegroundThemeState(
       ui::NativeTheme::ExtraParams* params) const override;
 
-  // Resets |cached_preferred_size_| and marks |cached_preferred_size_valid_|
-  // as false.
+ protected:
+  ImageView* image() const { return image_; }
+  Label* label() const { return label_; }
+  InkDropContainerView* ink_drop_container() const {
+    return ink_drop_container_;
+  }
+
+  bool explicitly_set_normal_color() const {
+    return explicitly_set_colors_[STATE_NORMAL];
+  }
+
+  const std::array<bool, STATE_COUNT>& explicitly_set_colors() const {
+    return explicitly_set_colors_;
+  }
+  void set_explicitly_set_colors(const std::array<bool, STATE_COUNT>& colors) {
+    explicitly_set_colors_ = colors;
+  }
+
+  // Updates the image view to contain the appropriate button state image.
+  void UpdateImage();
+
+  // Updates the border as per the NativeTheme, unless a different border was
+  // set with SetBorder.
+  void UpdateThemedBorder();
+
+  // Returns the available area for the label and image. Subclasses can change
+  // these bounds if they need room to do manual painting.
+  virtual gfx::Rect GetChildAreaBounds();
+
+  // Fills |params| with information about the button.
+  virtual void GetExtraParams(ui::NativeTheme::ExtraParams* params) const;
+
+  // Resets colors from the NativeTheme, explicitly set colors are unchanged.
+  virtual void ResetColorsFromNativeTheme();
+
+  // Changes the visual styling to match changes in the default state.  Returns
+  // the PropertyEffects triggered as a result.
+  virtual PropertyEffects UpdateStyleToIndicateDefaultStatus();
+
+  // Button:
+  void ChildPreferredSizeChanged(View* child) override;
+  void PreferredSizeChanged() override;
+  void OnFocus() override;
+  void OnBlur() override;
+  void OnThemeChanged() override;
+  void StateChanged(ButtonState old_state) override;
+
+ private:
+  void SetTextInternal(const base::string16& text);
+
+  // Resets |cached_preferred_size_|.
   void ResetCachedPreferredSize();
 
   // Gets the preferred size (without respecting min_size_ or max_size_), but
@@ -191,7 +184,7 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   // A separate view is necessary to hold the ink drop layer so that it can
   // be stacked below |image_| and on top of |label_|, without resorting to
   // drawing |label_| on a layer (which can mess with subpixel anti-aliasing).
-  InkDropContainerView* const ink_drop_container_;
+  InkDropContainerView* ink_drop_container_;
 
   // The cached font lists in the normal and default button style. The latter
   // may be bold.
@@ -199,39 +192,36 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   gfx::FontList cached_default_button_font_list_;
 
   // The images and colors for each button state.
-  gfx::ImageSkia button_state_images_[STATE_COUNT];
-  SkColor button_state_colors_[STATE_COUNT];
+  gfx::ImageSkia button_state_images_[STATE_COUNT] = {};
+  SkColor button_state_colors_[STATE_COUNT] = {};
 
   // Used to track whether SetTextColor() has been invoked.
-  std::array<bool, STATE_COUNT> explicitly_set_colors_;
+  std::array<bool, STATE_COUNT> explicitly_set_colors_ = {};
 
   // |min_size_| and |max_size_| may be set to clamp the preferred size.
   gfx::Size min_size_;
   gfx::Size max_size_;
 
   // Cache the last computed preferred size.
-  mutable gfx::Size cached_preferred_size_;
-  mutable bool cached_preferred_size_valid_;
+  mutable base::Optional<gfx::Size> cached_preferred_size_;
 
   // Flag indicating default handling of the return key via an accelerator.
   // Whether or not the button appears or behaves as the default button in its
   // current context;
-  bool is_default_;
+  bool is_default_ = false;
 
-  // The button's overall style.
-  ButtonStyle style_;
-
-  // True if current border was set by UpdateThemedBorder. Defaults to true.
-  bool border_is_themed_border_;
+  // True if current border was set by UpdateThemedBorder.
+  bool border_is_themed_border_ = true;
 
   // Spacing between the image and the text.
-  int image_label_spacing_;
+  int image_label_spacing_ = LayoutProvider::Get()->GetDistanceMetric(
+      DISTANCE_RELATED_LABEL_HORIZONTAL);
 
   // Alignment of the button. This can be different from the alignment of the
   // text; for example, the label may be set to ALIGN_TO_HEAD (alignment matches
   // text direction) while |this| is laid out as ALIGN_LEFT (alignment matches
   // UI direction).
-  gfx::HorizontalAlignment horizontal_alignment_;
+  gfx::HorizontalAlignment horizontal_alignment_ = gfx::ALIGN_LEFT;
 
   DISALLOW_COPY_AND_ASSIGN(LabelButton);
 };

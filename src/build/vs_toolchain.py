@@ -5,6 +5,7 @@
 
 from __future__ import print_function
 
+import collections
 import glob
 import json
 import os
@@ -22,9 +23,11 @@ from gn_helpers import ToGNString
 script_dir = os.path.dirname(os.path.realpath(__file__))
 json_data_file = os.path.join(script_dir, 'win_toolchain.json')
 
-
-# Use MSVS2017 as the default toolchain.
-CURRENT_DEFAULT_TOOLCHAIN_VERSION = '2017'
+# VS versions are listed in descending order of priority (highest first).
+MSVS_VERSIONS = collections.OrderedDict([
+  ('2017', '15.0'),
+  ('2019', '16.0'),
+])
 
 
 def SetEnvironmentAndGetRuntimeDllDirs():
@@ -129,9 +132,47 @@ def _RegistryGetValue(key, value):
 
 
 def GetVisualStudioVersion():
-  """Return GYP_MSVS_VERSION of Visual Studio.
+  """Return best available version of Visual Studio.
   """
-  return os.environ.get('GYP_MSVS_VERSION', CURRENT_DEFAULT_TOOLCHAIN_VERSION)
+
+  env_version = os.environ.get('GYP_MSVS_VERSION')
+  supported_versions = MSVS_VERSIONS.keys()
+
+  # VS installed in depot_tools for Googlers
+  if bool(int(os.environ.get('DEPOT_TOOLS_WIN_TOOLCHAIN', '1'))):
+    if env_version:
+      return env_version
+    else:
+      return supported_versions[0]
+
+  # VS installed in system for external developers
+  supported_versions_str = ', '.join('{} ({})'.format(v,k)
+      for k,v in MSVS_VERSIONS.items())
+  available_versions = []
+  for version in supported_versions:
+    for path in (
+        os.environ.get('vs%s_install' % version),
+        os.path.expandvars('%ProgramFiles(x86)%' +
+                           '/Microsoft Visual Studio/%s' % version)):
+      if path and os.path.exists(path):
+        available_versions.append(version)
+        break
+
+  if not available_versions:
+    raise Exception('No supported Visual Studio can be found.'
+                    ' Supported versions are: %s.' % supported_versions_str)
+
+  if env_version:
+    if env_version not in supported_versions:
+      raise Exception('Visual Studio version %s (from GYP_MSVS_VERSION)'
+                      ' is not supported. Supported versions are: %s.'
+                      % (env_version, supported_versions_str))
+    if env_version not in available_versions:
+      raise Exception('Visual Studio version %s (from GYP_MSVS_VERSION)'
+                      ' is not available.' % env_version)
+    return env_version
+
+  return available_versions[0]
 
 
 def DetectVisualStudioPath():
@@ -141,14 +182,6 @@ def DetectVisualStudioPath():
   # Note that this code is used from
   # build/toolchain/win/setup_toolchain.py as well.
   version_as_year = GetVisualStudioVersion()
-  year_to_version = {
-      '2017': '15.0',
-      '2019': '16.0',
-  }
-  if version_as_year not in year_to_version:
-    raise Exception(('Visual Studio version %s (from GYP_MSVS_VERSION)'
-                     ' not supported. Supported versions are: %s') % (
-                       version_as_year, ', '.join(year_to_version.keys())))
 
   # The VC++ >=2017 install location needs to be located using COM instead of
   # the registry. For details see:
@@ -171,8 +204,8 @@ def DetectVisualStudioPath():
     if path and os.path.exists(path):
       return path
 
-  raise Exception(('Visual Studio Version %s (from GYP_MSVS_VERSION)'
-                   ' not found.') % (version_as_year))
+  raise Exception('Visual Studio Version %s (from GYP_MSVS_VERSION)'
+                  ' not found.' % version_as_year)
 
 
 def _CopyRuntimeImpl(target, source, verbose=True):
@@ -196,6 +229,23 @@ def _CopyRuntimeImpl(target, source, verbose=True):
     # keep it readable.
     os.chmod(target, stat.S_IWRITE | stat.S_IREAD)
 
+def _SortByHighestVersionNumberFirst(list_of_str_versions):
+  """This sorts |list_of_str_versions| according to version number rules
+  so that version "1.12" is higher than version "1.9". Does not work
+  with non-numeric versions like 1.4.a8 which will be higher than
+  1.4.a12. It does handle the versions being embedded in file paths.
+  """
+  def to_int_if_int(x):
+    try:
+      return int(x)
+    except ValueError:
+      return x
+
+  def to_number_sequence(x):
+    part_sequence = re.split(r'[\\/\.]', x)
+    return [to_int_if_int(x) for x in part_sequence]
+
+  list_of_str_versions.sort(key=to_number_sequence, reverse=True)
 
 def _CopyUCRTRuntime(target_dir, source_dir, target_cpu, dll_pattern, suffix):
   """Copy both the msvcp and vccorlib runtime DLLs, only if the target doesn't
@@ -232,7 +282,7 @@ def _CopyUCRTRuntime(target_dir, source_dir, target_cpu, dll_pattern, suffix):
     redist_dir = os.path.join(win_sdk_dir, 'Redist')
     version_dirs = glob.glob(os.path.join(redist_dir, '10.*'))
     if len(version_dirs) > 0:
-      version_dirs.sort(reverse=True)
+      _SortByHighestVersionNumberFirst(version_dirs)
       redist_dir = version_dirs[0]
     ucrt_dll_dirs = os.path.join(redist_dir, 'ucrt', 'DLLs', target_cpu)
     ucrt_files = glob.glob(os.path.join(ucrt_dll_dirs, 'api-ms-win-*.dll'))
@@ -249,12 +299,12 @@ def _CopyUCRTRuntime(target_dir, source_dir, target_cpu, dll_pattern, suffix):
       sdk_redist_root = os.path.join(win_sdk_dir, 'bin')
       sdk_bin_sub_dirs = os.listdir(sdk_redist_root)
       # Select the most recent SDK if there are multiple versions installed.
-      sdk_bin_sub_dirs.sort(reverse=True)
+      _SortByHighestVersionNumberFirst(sdk_bin_sub_dirs)
       for directory in sdk_bin_sub_dirs:
         sdk_redist_root_version = os.path.join(sdk_redist_root, directory)
         if not os.path.isdir(sdk_redist_root_version):
           continue
-        if re.match('10\.\d+\.\d+\.\d+', directory):
+        if re.match(r'10\.\d+\.\d+\.\d+', directory):
           source_dir = os.path.join(sdk_redist_root_version, target_cpu, 'ucrt')
           break
     _CopyRuntimeImpl(os.path.join(target_dir, 'ucrtbase' + suffix),
@@ -267,18 +317,18 @@ def FindVCComponentRoot(component):
   version number part changes frequently so the highest version number found is
   used.
   """
-  assert GetVisualStudioVersion() in ['2017', '2019']
+
   SetEnvironmentAndGetRuntimeDllDirs()
   assert ('GYP_MSVS_OVERRIDE_PATH' in os.environ)
   vc_component_msvc_root = os.path.join(os.environ['GYP_MSVS_OVERRIDE_PATH'],
       'VC', component, 'MSVC')
   vc_component_msvc_contents = os.listdir(vc_component_msvc_root)
   # Select the most recent toolchain if there are several.
-  vc_component_msvc_contents.sort(reverse=True)
+  _SortByHighestVersionNumberFirst(vc_component_msvc_contents)
   for directory in vc_component_msvc_contents:
     if not os.path.isdir(os.path.join(vc_component_msvc_root, directory)):
       continue
-    if re.match('14\.\d+\.\d+', directory):
+    if re.match(r'14\.\d+\.\d+', directory):
       return os.path.join(vc_component_msvc_root, directory)
   raise Exception('Unable to find the VC %s directory.' % component)
 

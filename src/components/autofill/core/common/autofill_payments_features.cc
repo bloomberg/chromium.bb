@@ -20,6 +20,20 @@
 namespace autofill {
 namespace features {
 
+const char kAutofillSaveCreditCardUsesImprovedMessagingParamName[] =
+    "AutofillSaveCreditCardUsesImprovedMessaging";
+
+const char kAutofillSaveCreditCardUsesImprovedMessagingParamValueStoreCard[] =
+    "Store Card";
+const char
+    kAutofillSaveCreditCardUsesImprovedMessagingParamValueStoreBillingDetails
+        [] = "Store Billing Details";
+const char kAutofillSaveCreditCardUsesImprovedMessagingParamValueAddCard[] =
+    "Add Card";
+const char
+    kAutofillSaveCreditCardUsesImprovedMessagingParamValueConfirmAndSaveCard[] =
+        "Confirm & Save Card";
+
 const base::Feature kAutofillCreditCardAblationExperiment{
     "AutofillCreditCardAblationExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -28,8 +42,9 @@ const base::Feature kAutofillCreditCardAblationExperiment{
 const base::Feature kAutofillCreditCardAuthentication{
     "AutofillCreditCardAuthentication", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kAutofillCreditCardLocalCardMigration{
-    "AutofillCreditCardLocalCardMigration", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kAutofillDoNotMigrateUnsupportedLocalCards{
+    "AutofillDoNotMigrateUnsupportedLocalCards",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kAutofillDoNotUploadSaveUnsupportedCards{
     "AutofillDoNotUploadSaveUnsupportedCards",
@@ -62,12 +77,6 @@ const base::Feature kAutofillImportNonFocusableCreditCardForms{
     "AutofillImportNonFocusableCreditCardForms",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// When enabled, the local card migration dialog will show the progress
-// and result of the migration after starting the migration. When disabled,
-// there is no feedback for the migration.
-const base::Feature kAutofillLocalCardMigrationShowFeedback{
-    "AutofillLocalCardMigrationShowFeedback", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether offering to migrate cards will consider data from the
 // Autofill strike database (new version).
 const base::Feature kAutofillLocalCardMigrationUsesStrikeSystemV2{
@@ -90,21 +99,10 @@ const base::Feature kAutofillNoLocalSaveOnUploadSuccess{
 const base::Feature kAutofillSaveCardImprovedUserConsent{
     "AutofillSaveCardImprovedUserConsent", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// When enabled, a sign in promo will show up right after the user
-// saves a card locally. This also introduces a "Manage Cards" bubble.
-const base::Feature kAutofillSaveCardSignInAfterLocalSave{
-    "AutofillSaveCardSignInAfterLocalSave", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Controls whether offering to save cards will consider data from the Autofill
-// strike database.
-const base::Feature kAutofillSaveCreditCardUsesStrikeSystem{
-    "AutofillSaveCreditCardUsesStrikeSystem",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls whether offering to save cards will consider data from the Autofill
-// strike database (new version).
-const base::Feature kAutofillSaveCreditCardUsesStrikeSystemV2{
-    "AutofillSaveCreditCardUsesStrikeSystemV2",
+// Controls what title and bubble label for the credit card upload bubble are
+// shown to users.
+const base::Feature kAutofillSaveCreditCardUsesImprovedMessaging{
+    "AutofillSaveCreditCardUsesImprovedMessaging",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether experiment ids should be sent through
@@ -150,8 +148,13 @@ const base::Feature kAutofillUpstreamDisallowJcb{
     "AutofillUpstreamDisallowJcb", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kAutofillUpstreamEditableCardholderName{
-    "AutofillUpstreamEditableCardholderName",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+  "AutofillUpstreamEditableCardholderName",
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 const base::Feature kAutofillUpstreamEditableExpirationDate{
     "AutofillUpstreamEditableExpirationDate",
@@ -161,26 +164,6 @@ const base::Feature kAutofillUpstreamEditableExpirationDate{
 // Google Payments.
 const base::Feature kAutofillUsePaymentsCustomerData{
     "AutofillUsePaymentsCustomerData", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const char kAutofillCreditCardLocalCardMigrationParameterName[] = "variant";
-
-const char kAutofillCreditCardLocalCardMigrationParameterWithoutSettingsPage[] =
-    "without-settings-page";
-
-LocalCardMigrationExperimentalFlag GetLocalCardMigrationExperimentalFlag() {
-  if (!base::FeatureList::IsEnabled(kAutofillCreditCardLocalCardMigration))
-    return LocalCardMigrationExperimentalFlag::kMigrationDisabled;
-
-  std::string param = base::GetFieldTrialParamValueByFeature(
-      kAutofillCreditCardLocalCardMigration,
-      kAutofillCreditCardLocalCardMigrationParameterName);
-
-  if (param ==
-      kAutofillCreditCardLocalCardMigrationParameterWithoutSettingsPage) {
-    return LocalCardMigrationExperimentalFlag::kMigrationWithoutSettingsPage;
-  }
-  return LocalCardMigrationExperimentalFlag::kMigrationIncludeSettingsPage;
-}
 
 bool IsAutofillUpstreamAlwaysRequestCardholderNameExperimentEnabled() {
   return base::FeatureList::IsEnabled(

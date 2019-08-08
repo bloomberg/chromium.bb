@@ -18,7 +18,7 @@ CupsPrintJob::CupsPrintJob(const Printer& printer,
       total_page_number_(total_page_number),
       weak_factory_(this) {}
 
-CupsPrintJob::~CupsPrintJob() {}
+CupsPrintJob::~CupsPrintJob() = default;
 
 std::string CupsPrintJob::GetUniqueId() const {
   return CreateUniqueId(printer_.id(), job_id_);

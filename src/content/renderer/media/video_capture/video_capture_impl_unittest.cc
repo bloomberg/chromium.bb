@@ -125,7 +125,7 @@ class VideoCaptureImplTest : public ::testing::Test {
  protected:
   // These four mocks are used to create callbacks for the different oeprations.
   MOCK_METHOD2(OnFrameReady,
-               void(const scoped_refptr<media::VideoFrame>&, base::TimeTicks));
+               void(scoped_refptr<media::VideoFrame>, base::TimeTicks));
   MOCK_METHOD1(OnStateUpdate, void(blink::VideoCaptureState));
   MOCK_METHOD1(OnDeviceFormatsInUse, void(const media::VideoCaptureFormats&));
   MOCK_METHOD1(OnDeviceSupportedFormats,

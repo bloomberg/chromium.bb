@@ -15,6 +15,7 @@
 #include "content/browser/appcache/appcache_navigation_handle_core.h"
 #include "content/browser/data_url_loader_factory.h"
 #include "content/browser/file_url_loader_factory.h"
+#include "content/browser/navigation_subresource_loader_params.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
@@ -23,7 +24,6 @@
 #include "content/browser/worker_host/worker_script_loader.h"
 #include "content/browser/worker_host/worker_script_loader_factory.h"
 #include "content/common/content_constants_internal.h"
-#include "content/common/navigation_subresource_loader_params.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -35,12 +35,11 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "third_party/blink/public/common/loader//url_loader_factory_bundle.h"
+#include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "url/origin.h"
@@ -55,6 +54,7 @@ void WorkerScriptFetchInitiator::Start(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
     AppCacheNavigationHandleCore* appcache_handle_core,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_override,
     StoragePartitionImpl* storage_partition,
     CompletionCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -120,6 +120,8 @@ void WorkerScriptFetchInitiator::Start(
           std::move(subresource_loader_factories), resource_context,
           std::move(service_worker_context), appcache_handle_core,
           blob_url_loader_factory ? blob_url_loader_factory->Clone() : nullptr,
+          url_loader_factory_override ? url_loader_factory_override->Clone()
+                                      : nullptr,
           std::move(callback)));
 }
 
@@ -223,20 +225,8 @@ void WorkerScriptFetchInitiator::AddAdditionalRequestHeaders(
   if ((base::FeatureList::IsEnabled(network::features::kFetchMetadata) ||
        experimental_features_enabled) &&
       IsOriginSecure(resource_request->url)) {
-    // The worker's origin can be different from the constructor's origin, for
-    // example, when the worker created from the extension.
-    // TODO(hiroshige): Add DCHECK to make sure the same-originness once the
-    // cross-origin workers are deprecated (https://crbug.com/867302).
-    std::string site_value = "cross-site";
-    if (resource_request->request_initiator->IsSameOriginWith(
-            url::Origin::Create(resource_request->url))) {
-      site_value = "same-origin";
-    }
-    resource_request->headers.SetHeaderIfMissing("Sec-Fetch-Site",
-                                                 site_value.c_str());
     resource_request->headers.SetHeaderIfMissing("Sec-Fetch-Mode",
                                                  "same-origin");
-    // We don't set `Sec-Fetch-User` for subresource requests.
 
     if (base::FeatureList::IsEnabled(
             network::features::kFetchMetadataDestination) ||
@@ -244,6 +234,10 @@ void WorkerScriptFetchInitiator::AddAdditionalRequestHeaders(
       resource_request->headers.SetHeaderIfMissing("Sec-Fetch-Dest",
                                                    "sharedworker");
     }
+
+    // Note that the `Sec-Fetch-User` header is always false (and therefore
+    // omitted) for subresource requests. Also note that `Sec-Fetch-Site` is
+    // covered elsewhere - by the network::SetSecFetchSiteHeader function.
   }
 }
 
@@ -260,6 +254,8 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
     AppCacheNavigationHandleCore* appcache_handle_core,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
         blob_url_loader_factory_info,
+    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+        url_loader_factory_override_info,
     CompletionCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(resource_context);
@@ -278,6 +274,10 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
     // creating a new URLLoaderFactoryBundle.
     url_loader_factory = network::SharedURLLoaderFactory::Create(
         std::move(blob_url_loader_factory_info));
+  } else if (url_loader_factory_override_info) {
+    // For unit tests.
+    url_loader_factory = network::SharedURLLoaderFactory::Create(
+        std::move(url_loader_factory_override_info));
   } else {
     // Add the default factory to the bundle for browser if NetworkService
     // is on. When NetworkService is off, we already created the default factory
@@ -338,8 +338,8 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
   }
 
   // Create the WorkerScriptLoaderFactory.
-  network::mojom::URLLoaderFactoryAssociatedPtrInfo main_script_loader_factory;
-  mojo::MakeStrongAssociatedBinding(
+  network::mojom::URLLoaderFactoryPtr main_script_loader_factory;
+  mojo::MakeStrongBinding(
       std::make_unique<WorkerScriptLoaderFactory>(
           process_id, std::move(service_worker_host), std::move(appcache_host),
           resource_context_getter, std::move(url_loader_factory)),
@@ -357,8 +357,7 @@ void WorkerScriptFetchInitiator::DidCreateScriptLoaderOnIO(
     CompletionCallback callback,
     blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
         service_worker_provider_info,
-    network::mojom::URLLoaderFactoryAssociatedPtrInfo
-        main_script_loader_factory,
+    network::mojom::URLLoaderFactoryPtr main_script_loader_factory,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,

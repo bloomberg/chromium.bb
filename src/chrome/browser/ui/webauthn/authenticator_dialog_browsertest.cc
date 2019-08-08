@@ -112,17 +112,21 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
     } else if (name == "authenticator_removed") {
       model->SetCurrentStep(AuthenticatorRequestDialogModel::Step::
                                 kClientPinErrorAuthenticatorRemoved);
-    } else if (name == "missing_resident_keys") {
+    } else if (name == "missing_capability") {
       model->SetCurrentStep(
-          AuthenticatorRequestDialogModel::Step::kMissingResidentKeys);
-    } else if (name == "missing_user_verification") {
+          AuthenticatorRequestDialogModel::Step::kMissingCapability);
+    } else if (name == "storage_full") {
       model->SetCurrentStep(
-          AuthenticatorRequestDialogModel::Step::kMissingUserVerification);
+          AuthenticatorRequestDialogModel::Step::kStorageFull);
     } else if (name == "account_select") {
       const std::vector<std::pair<std::string, std::string>> infos = {
           {"foo@example.com", "Test User 1"},
-          {"bar@example.com", "Test User 2"},
-          {"bat@example.com", "Test User 3"},
+          {"", "Test User 2"},
+          {"", ""},
+          {"bat@example.com", "Test User 4"},
+          {"verylong@reallylongreallylongreallylongreallylongreallylong.com",
+           "Very Long String Very Long String Very Long String Very Long "
+           "String Very Long String Very Long String "},
       };
       std::vector<device::AuthenticatorGetAssertionResponse> responses;
 
@@ -266,13 +270,16 @@ IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest,
   ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest,
-                       InvokeUi_missing_resident_keys) {
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_missing_capability) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_storage_full) {
   ShowAndVerifyUi();
 }
 
 IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest,
-                       InvokeUi_missing_user_verification) {
+                       InvokeUi_resident_credential_confirm) {
   ShowAndVerifyUi();
 }
 

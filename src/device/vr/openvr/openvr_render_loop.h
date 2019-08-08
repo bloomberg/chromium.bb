@@ -54,6 +54,8 @@ class OpenVRRenderLoop : public XRCompositorCommon {
     bool primary_input_pressed;
     vr::ETrackedDeviceClass device_class;
     vr::ETrackedControllerRole controller_role;
+
+    void MarkAsInactive();
   };
 
   InputActiveState input_active_states_[vr::k_unMaxTrackedDeviceCount];

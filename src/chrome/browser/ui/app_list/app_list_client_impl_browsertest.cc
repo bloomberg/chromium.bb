@@ -53,7 +53,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/constants.h"
 #include "ui/aura/window.h"
-#include "ui/base/models/menu_model.h"
+#include "ui/base/models/simple_menu_model.h"
 
 // Browser Test for AppListClientImpl.
 using AppListClientImplBrowserTest = extensions::PlatformAppBrowserTest;
@@ -130,9 +130,9 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, ShowContextMenu) {
   EXPECT_TRUE(item);
 
   base::RunLoop run_loop;
-  std::unique_ptr<ui::MenuModel> menu_model;
+  std::unique_ptr<ui::SimpleMenuModel> menu_model;
   item->GetContextMenuModel(base::BindLambdaForTesting(
-      [&](std::unique_ptr<ui::MenuModel> created_menu) {
+      [&](std::unique_ptr<ui::SimpleMenuModel> created_menu) {
         menu_model = std::move(created_menu);
         run_loop.Quit();
       }));
@@ -149,6 +149,49 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, ShowContextMenu) {
     base::string16 label = menu_model->GetLabelAt(i);
     EXPECT_FALSE(label.empty());
   }
+}
+
+// Test that OpenSearchResult that dismisses app list runs fine without
+// user-after-free.
+IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, OpenSearchResult) {
+  AppListClientImpl* client = AppListClientImpl::GetInstance();
+  ASSERT_TRUE(client);
+
+  // Associate |client| with the current profile.
+  client->UpdateProfile();
+
+  // Show the launcher.
+  client->ShowAppList();
+
+  AppListModelUpdater* model_updater = test::GetModelUpdater(client);
+  ASSERT_TRUE(model_updater);
+  app_list::SearchController* search_controller = client->search_controller();
+  ASSERT_TRUE(search_controller);
+
+  // Any app that opens a window to dismiss app list is good enough for this
+  // test.
+  const std::string app_title = "chromium";
+  const std::string app_result_id =
+      "chrome-extension://mgndgikekgjfcpckkfioiadnlibdjbkf/";
+
+  // Search by title and the app must present in the results.
+  model_updater->UpdateSearchBox(base::ASCIIToUTF16(app_title),
+                                 true /* initiated_by_user */);
+  ASSERT_TRUE(search_controller->FindSearchResult(app_result_id));
+
+  // Open the app result.
+  client->OpenSearchResult(app_result_id, ui::EF_NONE,
+                           ash::AppListLaunchedFrom::kLaunchedFromSearchBox,
+                           ash::AppListLaunchType::kAppSearchResult, 0);
+
+  // App list should be dismissed.
+  EXPECT_FALSE(client->app_list_target_visibility());
+
+  // Needed to let AppLaunchEventLogger finish its work on worker thread.
+  // Otherwise, its |weak_factory_| is released on UI thread and causing
+  // the bound WeakPtr to fail sequence check on a worker thread.
+  // TODO(crbug.com/965065): Remove after fixing AppLaunchEventLogger.
+  content::RunAllTasksUntilIdle();
 }
 
 // Test that browser launch time is recorded is recorded in preferences.
@@ -246,7 +289,6 @@ IN_PROC_BROWSER_TEST_F(AppListClientSearchResultsBrowserTest,
 
   // Show the app list first, otherwise we won't have a search box to update.
   client->ShowAppList();
-  client->FlushMojoForTesting();
 
   // Currently the search box is empty, so we have no result.
   EXPECT_FALSE(search_controller->GetResultByTitleForTest(title));
@@ -255,15 +297,10 @@ IN_PROC_BROWSER_TEST_F(AppListClientSearchResultsBrowserTest,
   model_updater->UpdateSearchBox(base::ASCIIToUTF16(title),
                                  true /* initiated_by_user */);
 
-  // Ensure everything is done, from Chrome to Ash and backwards.
-  client->FlushMojoForTesting();
   EXPECT_TRUE(search_controller->GetResultByTitleForTest(title));
 
   // Uninstall the extension.
   UninstallExtension(extension->id());
-
-  // Ensure everything is done, from Chrome to Ash and backwards.
-  client->FlushMojoForTesting();
 
   // We cannot find the extension any more.
   EXPECT_FALSE(search_controller->GetResultByTitleForTest(title));
@@ -362,125 +399,4 @@ IN_PROC_BROWSER_TEST_F(AppListAppLaunchTest, DemoModeAppLaunchSourceReported) {
   histogram_tester_->ExpectUniqueSample(
       "DemoMode.AppLaunchSource",
       chromeos::DemoSession::AppLaunchSource::kAppList, 1);
-}
-
-class AppListClientWithProfileTest : public InProcessBrowserTest {
- protected:
-  AppListClientWithProfileTest()
-      : account_id1_(
-            AccountId::FromUserEmailGaiaId("test1@example.com", "ID1")),
-        account_id2_(
-            AccountId::FromUserEmailGaiaId("test2@example.com", "ID2")) {}
-  ~AppListClientWithProfileTest() override {}
-
-  static std::unique_ptr<KeyedService> BuildTestSyncService(
-      content::BrowserContext* context) {
-    Profile* profile = Profile::FromBrowserContext(context);
-    return std::make_unique<app_list::AppListSyncableService>(
-        profile, extensions::ExtensionSystem::Get(profile));
-  }
-
-  static std::unique_ptr<KeyedService> BuildTestURLService(
-      content::BrowserContext* context) {
-    return std::make_unique<TemplateURLService>(nullptr, 0);
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    // Disable the password sync service. Otherwise the test will crash.
-    command_line->AppendSwitchASCII(
-        switches::kDisableSyncTypes,
-        syncer::ModelTypeSetToString(syncer::PASSWORDS));
-  }
-
-  void SetUpOnMainThread() override {
-    user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
-        std::make_unique<chromeos::FakeChromeUserManager>());
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-
-    profile1_ = BuildProfile(account_id1_);
-    profile2_ = BuildProfile(account_id2_);
-
-    AppListClientImpl::GetInstance()->SetUpMojoRecorderForTest();
-  }
-
-  void TearDownOnMainThread() override {
-    GetFakeUserManager()->RemoveUserFromList(account_id1_);
-    profile1_.reset();
-    profile2_.reset();
-    base::RunLoop().RunUntilIdle();
-    user_manager_enabler_.reset();
-  }
-
-  chromeos::FakeChromeUserManager* GetFakeUserManager() const {
-    return static_cast<chromeos::FakeChromeUserManager*>(
-        user_manager::UserManager::Get());
-  }
-
-  TestingProfile* GetProfile1() { return profile1_.get(); }
-  TestingProfile* GetProfile2() { return profile2_.get(); }
-
- private:
-  std::unique_ptr<TestingProfile> BuildProfile(AccountId account_id) {
-    GetFakeUserManager()->AddUser(account_id);
-    GetFakeUserManager()->LoginUser(account_id);
-
-    TestingProfile::Builder profile_builder;
-    profile_builder.SetPath(
-        temp_dir_.GetPath().AppendASCII(account_id.GetUserEmail()));
-    profile_builder.SetProfileName(account_id.GetUserEmail());
-
-    // Add service factories needed by AppListClientImpl::SetProfile.
-    profile_builder.AddTestingFactory(
-        app_list::AppListSyncableServiceFactory::GetInstance(),
-        base::BindRepeating(&BuildTestSyncService));
-    profile_builder.AddTestingFactory(
-        TemplateURLServiceFactory::GetInstance(),
-        base::BindRepeating(&BuildTestURLService));
-
-    return IdentityTestEnvironmentProfileAdaptor::
-        CreateProfileForIdentityTestEnvironment(profile_builder);
-  }
-
-  AccountId account_id1_;
-  AccountId account_id2_;
-  std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
-  std::unique_ptr<TestingProfile> profile1_;
-  std::unique_ptr<TestingProfile> profile2_;
-  base::ScopedTempDir temp_dir_;
-};
-
-// Verifies that in multi-profile mode, mojo callings from Ash side to access
-// the app list are handled by the correct AppListModelUpdater. (see
-// https://crbug.com/939755)
-IN_PROC_BROWSER_TEST_F(AppListClientWithProfileTest, CheckDataRace) {
-  AppListClientImpl* client = AppListClientImpl::GetInstance();
-
-  // Emulate that the default profile is the profile 1.
-  client->SetProfile(GetProfile1());
-  int profile_id1 = client->GetModelUpdaterForTest()->model_id();
-
-  // Emulate that the AppListSyncableService adds an item within the folder.
-  // So the AppListClientImpl should receive OnFolderCreated event later.
-  auto* model_updater = client->GetModelUpdaterForTest();
-  std::unique_ptr<ChromeAppListItem> item = std::make_unique<ChromeAppListItem>(
-      GetProfile1(), "item 1", model_updater);
-  item->SetFolderId("folder");
-  model_updater->AddItem(std::move(item));
-
-  // Emulate that the current profile is switched to the profile 2. Wait until
-  // the AppListClientImpl receives the mojo callings from Ash side.
-  client->SetProfile(GetProfile2());
-  client->FlushMojoForTesting();
-
-  int profile_id2 = client->GetModelUpdaterForTest()->model_id();
-
-  // Check the following things:
-  // (1) The model updater associated with the profile 2 should not process the
-  // OnFolderCreated event.
-  // (2) The model updater associated with the profile 1 should process the On-
-  // FolderCreated event.
-  EXPECT_EQ(0, client->QueryMojoRecorderForTest(profile_id2));
-  EXPECT_EQ(1, client->QueryMojoRecorderForTest(profile_id1));
-
-  client->SetProfile(nullptr);
 }

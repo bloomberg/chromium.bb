@@ -16,6 +16,7 @@ namespace notifications {
 struct NotificationData {
   NotificationData();
   NotificationData(const NotificationData& other);
+  bool operator==(const NotificationData& other) const;
   ~NotificationData();
 
   // The unique identifier of the notification. This is not used as the key for

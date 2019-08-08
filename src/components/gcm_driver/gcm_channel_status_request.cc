@@ -8,7 +8,6 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/gcm_driver/gcm_backoff_policy.h"
 #include "components/sync/protocol/experiment_status.pb.h"
 #include "net/base/escape.h"
@@ -109,14 +108,10 @@ void GCMChannelStatusRequest::Start() {
   auto resource_request = std::make_unique<network::ResourceRequest>();
 
   resource_request->url = request_url;
-  resource_request->load_flags =
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  resource_request->allow_credentials = false;
   resource_request->method = "POST";
   resource_request->headers.SetHeader(net::HttpRequestHeaders::kUserAgent,
                                       user_agent_);
-  // TODO(https://crbug.com/808498): Re-add data use measurement once
-  // SimpleURLLoader supports it.
-  // ID=data_use_measurement::DataUseUserData::GCM_DRIVER
   simple_url_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
   simple_url_loader_->AttachStringForUpload(upload_data, kRequestContentType);

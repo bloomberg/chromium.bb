@@ -130,6 +130,43 @@ void RecordPaginationAnimationSmoothness(int actual_frames,
   }
 }
 
+void RecordPageSwitcherSourceByEventType(ui::EventType type,
+                                         bool is_tablet_mode) {
+  AppListPageSwitcherSource source;
+
+  switch (type) {
+    case ui::ET_MOUSEWHEEL:
+      source = kMouseWheelScroll;
+      break;
+    case ui::ET_SCROLL:
+      source = kMousePadScroll;
+      break;
+    case ui::ET_GESTURE_SCROLL_END:
+      source = kSwipeAppGrid;
+      break;
+    case ui::ET_SCROLL_FLING_START:
+      source = kFlingAppGrid;
+      break;
+    default:
+      NOTREACHED();
+      return;
+  }
+  RecordPageSwitcherSource(source, is_tablet_mode);
+}
+
+void RecordPageSwitcherSource(AppListPageSwitcherSource source,
+                              bool is_tablet_mode) {
+  UMA_HISTOGRAM_ENUMERATION(kAppListPageSwitcherSourceHistogram, source,
+                            kMaxAppListPageSwitcherSource);
+  if (is_tablet_mode) {
+    UMA_HISTOGRAM_ENUMERATION(kAppListPageSwitcherSourceHistogramInTablet,
+                              source, kMaxAppListPageSwitcherSource);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION(kAppListPageSwitcherSourceHistogramInClamshell,
+                              source, kMaxAppListPageSwitcherSource);
+  }
+}
+
 APP_LIST_EXPORT void RecordSearchResultOpenSource(
     const SearchResult* result,
     const AppListModel* model,
@@ -139,11 +176,11 @@ APP_LIST_EXPORT void RecordSearchResultOpenSource(
     return;
 
   ApplistSearchResultOpenedSource source;
-  ash::mojom::AppListViewState state = model->state_fullscreen();
+  ash::AppListViewState state = model->state_fullscreen();
   if (search_model->tablet_mode()) {
     source = ApplistSearchResultOpenedSource::kFullscreenTablet;
   } else {
-    source = state == ash::mojom::AppListViewState::kHalf
+    source = state == ash::AppListViewState::kHalf
                  ? ApplistSearchResultOpenedSource::kHalfClamshell
                  : ApplistSearchResultOpenedSource::kFullscreenClamshell;
   }
@@ -193,22 +230,22 @@ void RecordZeroStateSearchResultRemovalHistogram(
                             removal_decision);
 }
 
-void RecordAppListAppLaunched(ash::mojom::AppListLaunchedFrom launched_from,
-                              ash::mojom::AppListViewState app_list_state,
+void RecordAppListAppLaunched(ash::AppListLaunchedFrom launched_from,
+                              ash::AppListViewState app_list_state,
                               bool is_tablet_mode,
                               bool home_launcher_shown) {
   UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunched, launched_from);
   switch (app_list_state) {
-    case ash::mojom::AppListViewState::kClosed:
+    case ash::AppListViewState::kClosed:
       UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunchedClosed, launched_from);
       break;
-    case ash::mojom::AppListViewState::kPeeking:
+    case ash::AppListViewState::kPeeking:
       UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunchedPeeking, launched_from);
       break;
-    case ash::mojom::AppListViewState::kHalf:
+    case ash::AppListViewState::kHalf:
       UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunchedHalf, launched_from);
       break;
-    case ash::mojom::AppListViewState::kFullscreenAllApps:
+    case ash::AppListViewState::kFullscreenAllApps:
       if (is_tablet_mode) {
         if (home_launcher_shown) {
           UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunchedHomecherAllApps,
@@ -222,7 +259,7 @@ void RecordAppListAppLaunched(ash::mojom::AppListLaunchedFrom launched_from,
                                   launched_from);
       }
       break;
-    case ash::mojom::AppListViewState::kFullscreenSearch:
+    case ash::AppListViewState::kFullscreenSearch:
       if (is_tablet_mode) {
         if (home_launcher_shown) {
           UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunchedHomecherSearch,
@@ -245,8 +282,8 @@ bool IsCommandIdAnAppLaunch(int command_id_number) {
   ash::CommandId command_id = static_cast<ash::CommandId>(command_id_number);
 
   // Consider all platform app menu options as launches.
-  if (command_id >= ash::CommandId::USE_LAUNCH_TYPE_COMMAND_END &&
-      command_id < ash::CommandId::LAUNCH_APP_SHORTCUT_FIRST) {
+  if (command_id >= ash::CommandId::EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
+      command_id < ash::CommandId::EXTENSIONS_CONTEXT_CUSTOM_LAST) {
     return true;
   }
 
@@ -295,6 +332,8 @@ bool IsCommandIdAnAppLaunch(int command_id_number) {
     case ash::CommandId::USE_LAUNCH_TYPE_WINDOW:
     case ash::CommandId::USE_LAUNCH_TYPE_COMMAND_END:
     case ash::CommandId::STOP_APP:
+    case ash::CommandId::EXTENSIONS_CONTEXT_CUSTOM_FIRST:
+    case ash::CommandId::EXTENSIONS_CONTEXT_CUSTOM_LAST:
     case ash::CommandId::COMMAND_ID_COUNT:
       return false;
   }

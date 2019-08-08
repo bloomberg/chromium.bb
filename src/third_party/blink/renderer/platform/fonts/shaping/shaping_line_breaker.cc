@@ -65,6 +65,15 @@ bool ShouldHyphenate(const String& text, unsigned start, unsigned end) {
   return true;
 }
 
+inline void CheckBreakOffset(unsigned offset, unsigned start, unsigned end) {
+  // It is critical to move the offset forward, or NGLineBreaker may keep adding
+  // NGInlineItemResult until all the memory is consumed.
+  CHECK_GT(offset, start);
+  // The offset must be within the given range, or NGLineBreaker will fail to
+  // sync item with offset.
+  CHECK_LE(offset, end);
+}
+
 }  // namespace
 
 inline const String& ShapingLineBreaker::GetText() const {
@@ -259,9 +268,7 @@ scoped_refptr<const ShapeResultView> ShapingLineBreaker::ShapeLine(
       return ShapeToEnd(start, first_safe, range_start, range_end);
     }
   }
-  // It is critical to move forward, or callers may end up in an infinite loop.
-  CHECK_GT(break_opportunity.offset, start);
-  DCHECK_LE(break_opportunity.offset, range_end);
+  CheckBreakOffset(break_opportunity.offset, start, range_end);
 
   // If the start offset is not at a safe-to-break boundary the content between
   // the start and the next safe-to-break boundary needs to be reshaped and the
@@ -271,6 +278,7 @@ scoped_refptr<const ShapeResultView> ShapingLineBreaker::ShapeLine(
     if (first_safe >= break_opportunity.offset) {
       // There is no safe-to-break, reshape the whole range.
       result_out->break_offset = break_opportunity.offset;
+      CheckBreakOffset(result_out->break_offset, start, range_end);
       return ShapeResultView::Create(
           Shape(start, break_opportunity.offset).get());
     }
@@ -345,7 +353,7 @@ scoped_refptr<const ShapeResultView> ShapingLineBreaker::ShapeLine(
     }
   }
   // It is critical to move forward, or callers may end up in an infinite loop.
-  CHECK_GT(break_opportunity.offset, start);
+  CheckBreakOffset(break_opportunity.offset, start, range_end);
   DCHECK_GE(break_opportunity.offset, last_safe);
   DCHECK_EQ(break_opportunity.offset - start,
             (line_start_result ? line_start_result->NumCharacters() : 0) +
@@ -364,8 +372,6 @@ scoped_refptr<const ShapeResultView> ShapingLineBreaker::ShapeLine(
   if (line_end_result)
     segments[count++] = {line_end_result.get(), last_safe, max_length};
   auto line_result = ShapeResultView::Create(&segments[0], count);
-
-  DCHECK_LE(break_opportunity.offset, range_end);
   DCHECK_EQ(break_opportunity.offset - start, line_result->NumCharacters());
 
   result_out->break_offset = break_opportunity.offset;

@@ -90,6 +90,7 @@ class MockAudioOutputStream : public AudioOutputStream {
   MOCK_METHOD1(SetVolume, void(double volume));
   MOCK_METHOD1(GetVolume, void(double* volume));
   MOCK_METHOD0(Close, void());
+  MOCK_METHOD0(Flush, void());
 
  private:
   bool start_called_;

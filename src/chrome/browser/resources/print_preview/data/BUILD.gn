@@ -17,8 +17,10 @@ js_type_check("closure_compile") {
     ":local_parsers",
     ":margins",
     ":measurement_system",
+    ":model",
     ":printable_area",
     ":size",
+    ":state",
   ]
 }
 
@@ -106,6 +108,16 @@ js_library("measurement_system") {
   ]
 }
 
+js_library("model") {
+  deps = [
+    ":destination",
+    ":document_info",
+    ":margins",
+    "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js:promise_resolver",
+  ]
+}
+
 js_library("printable_area") {
   deps = [
     ":coordinate2d",
@@ -120,18 +132,25 @@ js_library("size") {
   ]
 }
 
+js_library("state") {
+  deps = [
+    "//ui/webui/resources/js:cr",
+  ]
+}
+
 js_library("coordinate2d") {
   deps = [
     "//ui/webui/resources/js:cr",
   ]
 }
 
-js_library("user_info") {
+js_library("user_manager") {
   deps = [
     ":destination_store",
     ":invitation_store",
     "..:cloud_print_interface",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:event_tracker",
+    "//ui/webui/resources/js:web_ui_listener_behavior",
   ]
 }

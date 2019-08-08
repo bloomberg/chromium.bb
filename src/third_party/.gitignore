@@ -166,7 +166,6 @@
 /nss
 /objenesis/lib/
 /omaha/src/omaha
-/openmax_dl/
 /openh264/src
 /openscreen/src
 /ow2_asm/lib/
@@ -182,7 +181,6 @@
 /pthreads-win32
 /py_trace_event/src
 /pyelftools
-/pyftpdlib/src
 /pylib
 /pymox/src
 /python_24

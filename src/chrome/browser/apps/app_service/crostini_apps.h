@@ -18,6 +18,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 
+class PrefChangeRegistrar;
 class Profile;
 
 namespace apps {
@@ -34,6 +35,9 @@ class CrostiniApps : public KeyedService,
 
   void Initialize(const apps::mojom::AppServicePtr& app_service,
                   Profile* profile);
+
+  void ReInitializeForTesting(const apps::mojom::AppServicePtr& app_service,
+                              Profile* profile);
 
  private:
   enum class PublishAppIDType {
@@ -69,6 +73,8 @@ class CrostiniApps : public KeyedService,
   void OnAppIconUpdated(const std::string& app_id,
                         ui::ScaleFactor scale_factor) override;
 
+  void OnCrostiniEnabledChanged();
+
   void LoadIconFromVM(const std::string app_id,
                       apps::mojom::IconCompression icon_compression,
                       int32_t size_hint_in_dip,
@@ -88,9 +94,14 @@ class CrostiniApps : public KeyedService,
   mojo::Binding<apps::mojom::Publisher> binding_;
   mojo::InterfacePtrSet<apps::mojom::Subscriber> subscribers_;
 
+  Profile* profile_;
+
+  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
   crostini::CrostiniRegistryService* registry_;
 
   apps_util::IncrementingIconKeyFactory icon_key_factory_;
+
+  bool crostini_enabled_;
 
   base::WeakPtrFactory<CrostiniApps> weak_ptr_factory_{this};
 

@@ -25,10 +25,13 @@ from grit.node import misc
 
 
 @contextlib.contextmanager
+# Returns the name of the new temporary file containing |content|, which must be
+# deleted by the caller.
 def _MakeTempPredeterminedIdsFile(content):
-  with tempfile.NamedTemporaryFile() as f:
+  with tempfile.NamedTemporaryFile(delete=False) as f:
     f.write(content)
     f.flush()
+    f.close()
     yield f.name
 
 
@@ -83,11 +86,13 @@ class GritNodeUnittest(unittest.TestCase):
         </release>
       </grit>''' % chrome_html_path
 
-    grd = grd_reader.Parse(StringIO.StringIO(xml), util.PathFromRoot('grit/testdata'))
+    grd = grd_reader.Parse(StringIO.StringIO(xml),
+                           util.PathFromRoot('grit/testdata'))
     expected = ['chrome_html.html', 'default_100_percent/a.png',
                 'default_100_percent/b.png', 'included_sample.html',
                 'special_100_percent/a.png']
-    actual = [os.path.relpath(path, util.PathFromRoot('grit/testdata')) for path in grd.GetInputFiles()]
+    actual = [os.path.relpath(path, util.PathFromRoot('grit/testdata')) for
+              path in grd.GetInputFiles()]
     # Convert path separator for Windows paths.
     actual = [path.replace('\\', '/') for path in actual]
     self.assertEquals(expected, actual)
@@ -112,7 +117,8 @@ class GritNodeUnittest(unittest.TestCase):
 
     grd = grd_reader.Parse(StringIO.StringIO(xml), util.PathFromRoot('grit/testdata'))
     expected = ['chrome_html.html', 'included_sample.html']
-    actual = [os.path.relpath(path, util.PathFromRoot('grit/testdata')) for path in grd.GetInputFiles()]
+    actual = [os.path.relpath(path, util.PathFromRoot('grit/testdata')) for
+              path in grd.GetInputFiles()]
     # Convert path separator for Windows paths.
     actual = [path.replace('\\', '/') for path in actual]
     self.assertEquals(expected, actual)
@@ -177,6 +183,7 @@ class GritNodeUnittest(unittest.TestCase):
       self.assertEqual(('#define IDS_B 102\n'
                         '#define IDS_GREETING 10000\n'
                         '#define IDS_A 101\n'), ''.join(output))
+      os.remove(ids_file)
 
   def testPredeterminedIdsOverlap(self):
     with _MakeTempPredeterminedIdsFile('ID_LOGO 10000') as ids_file:
@@ -193,6 +200,7 @@ class GritNodeUnittest(unittest.TestCase):
               Bongo!
             </message>
           </messages>''', predetermined_ids_file=ids_file)
+      os.remove(ids_file)
 
 
 class IfNodeUnittest(unittest.TestCase):

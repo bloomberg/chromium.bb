@@ -55,8 +55,7 @@ class BlockingHttpPost : public HttpPostProviderInterface {
 class BlockingHttpPostFactory : public HttpPostProviderFactory {
  public:
   ~BlockingHttpPostFactory() override {}
-  void Init(const std::string& user_agent,
-            const BindToTrackerCallback& bind_to_tracker_callback) override {}
+  void Init(const std::string& user_agent) override {}
 
   HttpPostProviderInterface* Create() override {
     return new BlockingHttpPost();
@@ -72,8 +71,8 @@ class BlockingHttpPostFactory : public HttpPostProviderFactory {
 TEST(SyncServerConnectionManagerTest, VeryEarlyAbortPost) {
   CancelationSignal signal;
   signal.Signal();
-  SyncServerConnectionManager server("server", 0, true,
-                                     new BlockingHttpPostFactory(), &signal);
+  SyncServerConnectionManager server(
+      "server", 0, true, std::make_unique<BlockingHttpPostFactory>(), &signal);
 
   ServerConnectionManager::PostBufferParams params;
 
@@ -87,8 +86,8 @@ TEST(SyncServerConnectionManagerTest, VeryEarlyAbortPost) {
 // Ask the ServerConnectionManager to stop before its first request is made.
 TEST(SyncServerConnectionManagerTest, EarlyAbortPost) {
   CancelationSignal signal;
-  SyncServerConnectionManager server("server", 0, true,
-                                     new BlockingHttpPostFactory(), &signal);
+  SyncServerConnectionManager server(
+      "server", 0, true, std::make_unique<BlockingHttpPostFactory>(), &signal);
 
   ServerConnectionManager::PostBufferParams params;
 
@@ -103,8 +102,8 @@ TEST(SyncServerConnectionManagerTest, EarlyAbortPost) {
 // Ask the ServerConnectionManager to stop during a request.
 TEST(SyncServerConnectionManagerTest, AbortPost) {
   CancelationSignal signal;
-  SyncServerConnectionManager server("server", 0, true,
-                                     new BlockingHttpPostFactory(), &signal);
+  SyncServerConnectionManager server(
+      "server", 0, true, std::make_unique<BlockingHttpPostFactory>(), &signal);
 
   ServerConnectionManager::PostBufferParams params;
 
@@ -158,8 +157,7 @@ class FailingHttpPostFactory : public HttpPostProviderFactory {
   explicit FailingHttpPostFactory(int net_error_code)
       : net_error_code_(net_error_code) {}
   ~FailingHttpPostFactory() override {}
-  void Init(const std::string& user_agent,
-            const BindToTrackerCallback& bind_to_tracker_callback) override {}
+  void Init(const std::string& user_agent) override {}
 
   HttpPostProviderInterface* Create() override {
     return new FailingHttpPost(net_error_code_);
@@ -180,8 +178,8 @@ class FailingHttpPostFactory : public HttpPostProviderFactory {
 TEST(SyncServerConnectionManagerTest, FailPostWithTimedOut) {
   CancelationSignal signal;
   SyncServerConnectionManager server(
-      "server", 0, true, new FailingHttpPostFactory(net::ERR_TIMED_OUT),
-      &signal);
+      "server", 0, true,
+      std::make_unique<FailingHttpPostFactory>(net::ERR_TIMED_OUT), &signal);
 
   ServerConnectionManager::PostBufferParams params;
 

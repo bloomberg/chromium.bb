@@ -91,7 +91,7 @@ XMLDocument* DOMImplementation::createDocument(
     doc = XMLDocument::CreateXHTML(
         init.WithRegistrationContext(document_->RegistrationContext()));
   } else {
-    doc = XMLDocument::Create(init);
+    doc = MakeGarbageCollected<XMLDocument>(init);
   }
 
   doc->SetSecurityOrigin(document_->GetMutableSecurityOrigin());
@@ -207,7 +207,7 @@ Document* DOMImplementation::createHTMLDocument(const String& title) {
       DocumentInit::Create()
           .WithContextDocument(document_->ContextDocument())
           .WithRegistrationContext(document_->RegistrationContext());
-  HTMLDocument* d = HTMLDocument::Create(init);
+  auto* d = MakeGarbageCollected<HTMLDocument>(init);
   d->open();
   d->write("<!doctype html><html><head></head><body></body></html>");
   if (!title.IsNull()) {
@@ -226,12 +226,12 @@ Document* DOMImplementation::createDocument(const String& type,
                                             const DocumentInit& init,
                                             bool in_view_source_mode) {
   if (in_view_source_mode)
-    return HTMLViewSourceDocument::Create(init, type);
+    return MakeGarbageCollected<HTMLViewSourceDocument>(init, type);
 
   // Plugins cannot take HTML and XHTML from us, and we don't even need to
   // initialize the plugin database for those.
   if (type == "text/html")
-    return HTMLDocument::Create(init);
+    return MakeGarbageCollected<HTMLDocument>(init);
   if (type == "application/xhtml+xml")
     return XMLDocument::CreateXHTML(init);
 
@@ -256,11 +256,13 @@ Document* DOMImplementation::createDocument(const String& type,
   }
 
   if (RuntimeEnabledFeatures::MimeHandlerViewInCrossProcessFrameEnabled() &&
-      plugin_data && plugin_data->IsMimeHandlerViewMimeType(type)) {
+      plugin_data && plugin_data->IsExternalPluginMimeType(type)) {
     // Plugins handled by MimeHandlerView do not create a PluginDocument. They
     // are rendered inside cross-process frames and the notion of a PluginView
     // (which is associated with PluginDocument) is irrelevant here.
-    return HTMLDocument::Create(init);
+    auto* html_document = MakeGarbageCollected<HTMLDocument>(init);
+    html_document->SetIsForExternalHandler();
+    return html_document;
   }
 
   // PDF is one image type for which a plugin can override built-in support.
@@ -296,9 +298,9 @@ Document* DOMImplementation::createDocument(const String& type,
   if (type == "image/svg+xml")
     return XMLDocument::CreateSVG(init);
   if (IsXMLMIMEType(type))
-    return XMLDocument::Create(init);
+    return MakeGarbageCollected<XMLDocument>(init);
 
-  return HTMLDocument::Create(init);
+  return MakeGarbageCollected<HTMLDocument>(init);
 }
 
 void DOMImplementation::Trace(Visitor* visitor) {

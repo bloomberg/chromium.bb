@@ -50,6 +50,8 @@
 #include "perfetto/base/string_utils.h"
 #include "perfetto/base/task_runner.h"
 #include "perfetto/base/thread_task_runner.h"
+
+#include "src/profiling/memory/utils.h"
 #include "src/profiling/memory/wire_protocol.h"
 
 namespace perfetto {
@@ -100,22 +102,6 @@ std::unique_ptr<unwindstack::Regs> CreateFromRawData(unwindstack::ArchEnum arch,
   return ret;
 }
 
-// Behaves as a pread64, emulating it if not already exposed by the standard
-// library. Safe to use on 32bit platforms for addresses with the top bit set.
-// Clobbers the |fd| seek position if emulating.
-ssize_t ReadAtOffsetClobberSeekPos(int fd,
-                                   void* buf,
-                                   size_t count,
-                                   uint64_t addr) {
-#ifdef __BIONIC__
-  return pread64(fd, buf, count, static_cast<off64_t>(addr));
-#else
-  if (lseek64(fd, static_cast<off64_t>(addr), SEEK_SET) == -1)
-    return -1;
-  return read(fd, buf, count);
-#endif
-}
-
 }  // namespace
 
 StackOverlayMemory::StackOverlayMemory(std::shared_ptr<unwindstack::Memory> mem,
@@ -137,7 +123,8 @@ size_t StackOverlayMemory::Read(uint64_t addr, void* dst, size_t size) {
 FDMemory::FDMemory(base::ScopedFile mem_fd) : mem_fd_(std::move(mem_fd)) {}
 
 size_t FDMemory::Read(uint64_t addr, void* dst, size_t size) {
-  ssize_t rd = ReadAtOffsetClobberSeekPos(*mem_fd_, dst, size, addr);
+  ssize_t rd = ReadAtOffsetClobberSeekPos(*mem_fd_, dst, size,
+                                          static_cast<off64_t>(addr));
   if (rd == -1) {
     PERFETTO_DPLOG("read of %zu at offset %" PRIu64, size, addr);
     return 0;
@@ -247,7 +234,7 @@ void UnwindingWorker::OnDisconnect(base::UnixSocket* self) {
   // TODO(fmayer): Maybe try to drain shmem one last time.
   auto it = client_data_.find(self->peer_pid());
   if (it == client_data_.end()) {
-    PERFETTO_DFATAL("Disconnected unexpecter socket.");
+    PERFETTO_DFATAL_OR_ELOG("Disconnected unexpected socket.");
     return;
   }
   ClientData& client_data = it->second;
@@ -300,9 +287,9 @@ void UnwindingWorker::HandleUnwindBatch(pid_t peer_pid) {
   SharedRingBuffer::Buffer buf;
 
   size_t i;
+  bool repost_task = false;
   for (i = 0; i < kUnwindBatchSize; ++i) {
-    // TODO(fmayer): Allow spinlock acquisition to fail and repost Task if it
-    // did.
+    uint64_t reparses_before = client_data.metadata.reparses;
     buf = shmem.BeginRead();
     if (!buf)
       break;
@@ -310,9 +297,21 @@ void UnwindingWorker::HandleUnwindBatch(pid_t peer_pid) {
                  client_data.data_source_instance_id,
                  client_data.sock->peer_pid(), delegate_);
     shmem.EndRead(std::move(buf));
+    // Reparsing takes time, so process the rest in a new batch to avoid timing
+    // out.
+    // TODO(fmayer): Do not special case blocking mode.
+    if (client_data.client_config.block_client &&
+        reparses_before < client_data.metadata.reparses) {
+      repost_task = true;
+      break;
+    }
   }
 
-  if (i == kUnwindBatchSize) {
+  // Always repost if we have gone through the whole batch.
+  if (i == kUnwindBatchSize)
+    repost_task = true;
+
+  if (repost_task) {
     thread_task_runner_.get()->PostTask(
         [this, peer_pid] { HandleUnwindBatch(peer_pid); });
   }
@@ -329,7 +328,7 @@ void UnwindingWorker::HandleBuffer(const SharedRingBuffer::Buffer& buf,
   // char* has stronger guarantees regarding aliasing.
   // see https://timsong-cpp.github.io/cppwp/n3337/basic.lval#10.8
   if (!ReceiveWireMessage(reinterpret_cast<char*>(buf.data), buf.size, &msg)) {
-    PERFETTO_DFATAL("Failed to receive wire message.");
+    PERFETTO_DFATAL_OR_ELOG("Failed to receive wire message.");
     return;
   }
 
@@ -351,7 +350,7 @@ void UnwindingWorker::HandleBuffer(const SharedRingBuffer::Buffer& buf,
     memcpy(&rec.free_batch, msg.free_header, sizeof(*msg.free_header));
     delegate->PostFreeRecord(std::move(rec));
   } else {
-    PERFETTO_DFATAL("Invalid record type.");
+    PERFETTO_DFATAL_OR_ELOG("Invalid record type.");
   }
 }
 
@@ -374,12 +373,14 @@ void UnwindingWorker::HandleHandoffSocket(HandoffData handoff_data) {
       base::SockType::kStream);
   pid_t peer_pid = sock->peer_pid();
 
-  UnwindingMetadata metadata(peer_pid,
-                             std::move(handoff_data.fds[kHandshakeMaps]),
-                             std::move(handoff_data.fds[kHandshakeMem]));
+  UnwindingMetadata metadata(peer_pid, std::move(handoff_data.maps_fd),
+                             std::move(handoff_data.mem_fd));
   ClientData client_data{
-      handoff_data.data_source_instance_id, std::move(sock),
-      std::move(metadata), std::move(handoff_data.shmem),
+      handoff_data.data_source_instance_id,
+      std::move(sock),
+      std::move(metadata),
+      std::move(handoff_data.shmem),
+      std::move(handoff_data.client_config),
   };
   client_data_.emplace(peer_pid, std::move(client_data));
 }

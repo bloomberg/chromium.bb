@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -93,7 +92,7 @@ class MockServerSocket : public net::ServerSocket {
 
     *accept_socket_ = CreateMockAcceptSocket();
     accept_socket_ = nullptr;
-    base::ResetAndReturn(&accept_callback_).Run(result);
+    std::move(accept_callback_).Run(result);
   }
 
  private:

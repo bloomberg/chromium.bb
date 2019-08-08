@@ -55,7 +55,15 @@ class CompositorSurfaceManagerImpl implements SurfaceHolder.Callback2, Composito
 
         public SurfaceState(Context context, int format, SurfaceHolder.Callback2 callback) {
             surfaceView = new SurfaceView(context);
-            surfaceView.setZOrderMediaOverlay(true);
+
+            // Media overlays require a translucent surface for the compositor which should be
+            // placed above them, so we mark it setZOrderMediaOverlay. But its not not needed for
+            // the opaque one. In fact setting this for the opaque one causes glitches when
+            // transitioning to the opaque SurfaceView. This is because if the opaque SurfaceView is
+            // stacked on top of the translucent one, the framework doesn't draw any content
+            // underneath it and shows its background instead when it has no content during the
+            // transition.
+            if (format == PixelFormat.TRANSLUCENT) surfaceView.setZOrderMediaOverlay(true);
             surfaceView.setVisibility(View.INVISIBLE);
             surfaceHolder().setFormat(format);
             surfaceHolder().addCallback(callback);
@@ -312,6 +320,9 @@ class CompositorSurfaceManagerImpl implements SurfaceHolder.Callback2, Composito
             // re-signal the client about construction.
             return;
         }
+
+        // Make sure the client has no remaining references to the destroyed surface.
+        mClient.unownedSurfaceDestroyed();
 
         // The client doesn't own this surface, but might want it.
         // If the client has requested this surface, then start construction on it.  The client will

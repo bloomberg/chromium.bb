@@ -124,6 +124,12 @@ ACTION_P(RunOnceClosure, closure) {
 
 ACTION_TEMPLATE(RunOnceCallback,
                 HAS_1_TEMPLATE_PARAMS(int, k),
+                AND_0_VALUE_PARAMS()) {
+  return std::move(std::get<k>(args)).Run();
+}
+
+ACTION_TEMPLATE(RunOnceCallback,
+                HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(p0)) {
   return std::move(std::get<k>(args)).Run(p0);
 }

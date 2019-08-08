@@ -160,6 +160,7 @@ public class ContentViewFocusTest {
     @MediumTest
     @Feature({"TabContents"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @FlakyTest(message = "http://crbug.com/967128")
     public void testHideSelectionOnPhoneTabSwitcher() throws Exception {
         // Setup
         OverviewModeBehaviorWatcher showWatcher = new OverviewModeBehaviorWatcher(

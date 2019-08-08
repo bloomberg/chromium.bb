@@ -192,6 +192,60 @@ bool RTCRtpTransceiver::FiredDirectionHasRecv() const {
           *fired_direction_ == webrtc::RtpTransceiverDirection::kRecvOnly);
 }
 
+void RTCRtpTransceiver::setCodecPreferences(
+    const HeapVector<Member<RTCRtpCodecCapability>>& codecs,
+    ExceptionState& exception_state) {
+  std::vector<webrtc::RtpCodecCapability> codec_preferences;
+  codec_preferences.reserve(codecs.size());
+  for (const auto& codec : codecs) {
+    codec_preferences.emplace_back();
+    auto& webrtc_codec = codec_preferences.back();
+    auto slash_position = codec->mimeType().find('/');
+    if (slash_position == WTF::kNotFound) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kInvalidModificationError, "Invalid codec");
+      return;
+    }
+    auto type = codec->mimeType().Left(slash_position);
+    if (type == "video") {
+      webrtc_codec.kind = cricket::MEDIA_TYPE_VIDEO;
+    } else if (type == "audio") {
+      webrtc_codec.kind = cricket::MEDIA_TYPE_AUDIO;
+    } else {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kInvalidModificationError, "Invalid codec");
+      return;
+    }
+    webrtc_codec.name =
+        codec->mimeType().Substring(slash_position + 1).Ascii().data();
+    webrtc_codec.clock_rate = codec->clockRate();
+    if (codec->hasChannels()) {
+      webrtc_codec.num_channels = codec->channels();
+    }
+    if (codec->hasSdpFmtpLine()) {
+      WTF::Vector<WTF::String> parameters;
+      codec->sdpFmtpLine().Split(';', parameters);
+      for (const auto& parameter : parameters) {
+        auto equal_position = parameter.find('=');
+        if (equal_position == WTF::kNotFound) {
+          exception_state.ThrowDOMException(
+              DOMExceptionCode::kInvalidModificationError, "Invalid codec");
+          return;
+        }
+        auto parameter_name = parameter.Left(equal_position);
+        auto parameter_value = parameter.Substring(equal_position + 1);
+        webrtc_codec.parameters.insert(std::make_pair<std::string, std::string>(
+            parameter_name.Ascii().data(), parameter_value.Ascii().data()));
+      }
+    }
+  }
+  auto result = web_transceiver_->SetCodecPreferences(codec_preferences);
+  if (!result.ok()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidModificationError, result.message());
+  }
+}
+
 void RTCRtpTransceiver::Trace(Visitor* visitor) {
   visitor->Trace(pc_);
   visitor->Trace(sender_);

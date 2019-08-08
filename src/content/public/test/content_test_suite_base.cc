@@ -26,10 +26,6 @@
 #include "gin/v8_initializer.h"  // nogncheck
 #endif
 
-#if defined(OS_ANDROID) && !defined(USE_AURA)
-#include "content/public/browser/android/compositor.h"
-#endif
-
 namespace content {
 
 namespace {
@@ -60,10 +56,6 @@ void ContentTestSuiteBase::Initialize() {
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   gin::V8Initializer::LoadV8Snapshot(kSnapshotType);
   gin::V8Initializer::LoadV8Natives();
-#endif
-
-#if defined(OS_ANDROID) && !defined(USE_AURA)
-  content::Compositor::Initialize();
 #endif
 
   ui::MaterialDesignController::Initialize();

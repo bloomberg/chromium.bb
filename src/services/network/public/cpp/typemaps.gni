@@ -16,6 +16,7 @@ typemaps = [
   "//services/network/public/cpp/ip_endpoint.typemap",
   "//services/network/public/cpp/mutable_network_traffic_annotation_tag.typemap",
   "//services/network/public/cpp/mutable_partial_network_traffic_annotation_tag.typemap",
+  "//services/network/public/cpp/net_log.typemap",
   "//services/network/public/cpp/network_interface.typemap",
   "//services/network/public/cpp/network_param.typemap",
   "//services/network/public/cpp/network_types.typemap",
@@ -27,7 +28,3 @@ typemaps = [
   "//services/network/public/cpp/url_request_redirect_info.typemap",
   "//services/network/public/cpp/url_response_head.typemap",
 ]
-
-if (is_ct_supported) {
-  typemaps += [ "//services/network/public/cpp/signed_tree_head.typemap" ]
-}

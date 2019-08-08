@@ -124,6 +124,8 @@ const char* EventTypeToSuffix(ServiceWorkerMetrics::EventType event_type) {
       return "_LONG_RUNNING_MESSAGE";
     case ServiceWorkerMetrics::EventType::BACKGROUND_FETCH_SUCCESS:
       return "_BACKGROUND_FETCH_SUCCESS";
+    case ServiceWorkerMetrics::EventType::PERIODIC_SYNC:
+      return "_PERIODIC_SYNC";
   }
   return "_UNKNOWN";
 }
@@ -238,6 +240,8 @@ const char* ServiceWorkerMetrics::EventTypeToString(EventType event_type) {
       return "Long Running Message";
     case EventType::BACKGROUND_FETCH_SUCCESS:
       return "Background Fetch Success";
+    case EventType::PERIODIC_SYNC:
+      return "Periodic Sync";
   }
   NOTREACHED() << "Got unexpected event type: " << static_cast<int>(event_type);
   return "error";
@@ -572,6 +576,10 @@ void ServiceWorkerMetrics::RecordEventDuration(EventType event,
       // Since this event is expected to last indefinitely we don't need to log
       // how long they actually last.
       break;
+    case EventType::PERIODIC_SYNC:
+      UMA_HISTOGRAM_MEDIUM_TIMES(
+          "ServiceWorker.PeriodicBackgroundSyncEvent.Time", time);
+      break;
 
     case EventType::NAVIGATION_HINT:
     // The navigation hint should not be sent as an event.
@@ -630,6 +638,14 @@ void ServiceWorkerMetrics::RecordProcessCreated(bool is_new_process) {
 
 void ServiceWorkerMetrics::RecordStartWorkerTiming(const StartTimes& times,
                                                    StartSituation situation) {
+  // This is in-process timing, so process consistency doesn't matter.
+  constexpr base::TimeDelta kMinTime = base::TimeDelta::FromMicroseconds(1);
+  constexpr base::TimeDelta kMaxTime = base::TimeDelta::FromMilliseconds(100);
+  constexpr int kBuckets = 50;
+  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+      "ServiceWorker.StartTiming.BrowserThreadHopTime", times.thread_hop_time,
+      kMinTime, kMaxTime, kBuckets);
+
   // Bail if the timings across processes weren't consistent.
   if (!base::TimeTicks::IsHighResolution() ||
       !base::TimeTicks::IsConsistentAcrossProcesses()) {
@@ -809,6 +825,22 @@ void ServiceWorkerMetrics::RecordStartServiceWorkerForNavigationHintResult(
 
 void ServiceWorkerMetrics::RecordRegisteredOriginCount(size_t origin_count) {
   UMA_HISTOGRAM_COUNTS_1M("ServiceWorker.RegisteredOriginCount", origin_count);
+}
+
+void ServiceWorkerMetrics::RecordLookupRegistrationTime(
+    blink::ServiceWorkerStatusCode status,
+    base::TimeDelta duration) {
+  if (status == blink::ServiceWorkerStatusCode::kOk) {
+    UMA_HISTOGRAM_TIMES(
+        "ServiceWorker.LookupRegistration.MainResource.Time.Exists", duration);
+  } else if (status == blink::ServiceWorkerStatusCode::kErrorNotFound) {
+    UMA_HISTOGRAM_TIMES(
+        "ServiceWorker.LookupRegistration.MainResource.Time.DoesNotExist",
+        duration);
+  } else {
+    UMA_HISTOGRAM_TIMES(
+        "ServiceWorker.LookupRegistration.MainResource.Time.Error", duration);
+  }
 }
 
 }  // namespace content

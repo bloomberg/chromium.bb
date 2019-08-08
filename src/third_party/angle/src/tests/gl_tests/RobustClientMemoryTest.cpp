@@ -30,7 +30,7 @@ class RobustClientMemoryTest : public ANGLETest
 
     bool extensionsPresent() const
     {
-        if (!extensionEnabled("GL_ANGLE_robust_client_memory"))
+        if (!IsGLExtensionEnabled("GL_ANGLE_robust_client_memory"))
         {
             std::cout << "Test skipped because GL_ANGLE_robust_client_memory is not available.";
             return false;
@@ -204,7 +204,6 @@ ANGLE_INSTANTIATE_TEST(RobustClientMemoryTest,
                        ES2_D3D9(),
                        ES2_D3D11(),
                        ES3_D3D11(),
-                       ES2_D3D11_FL9_3(),
                        ES2_OPENGL(),
                        ES3_OPENGL(),
                        ES2_OPENGLES(),

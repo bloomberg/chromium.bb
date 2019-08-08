@@ -42,8 +42,8 @@
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
+#include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/platform/web_input_event.h"
-#include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/web/web_ax_object.h"
 #include "third_party/blink/public/web/web_console_message.h"
@@ -59,22 +59,15 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/surface/transport_dib.h"
 
-#if defined(OS_ANDROID)
-#include "content/renderer/android/renderer_date_time_picker.h"
-#endif
-
 namespace blink {
-class WebDateTimeChooserCompletion;
 class WebGestureEvent;
 class WebMouseEvent;
 class WebURLRequest;
-struct WebDateTimeChooserParams;
 struct WebPluginAction;
 struct WebWindowFeatures;
 }  // namespace blink
 
 namespace content {
-class RendererDateTimePicker;
 class RenderViewImplTest;
 class RenderViewObserver;
 class RenderViewTest;
@@ -162,10 +155,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void AddObserver(RenderViewObserver* observer);
   void RemoveObserver(RenderViewObserver* observer);
 
-#if defined(OS_ANDROID)
-  void DismissDateTimeDialog();
-#endif
-
   // Sets the zoom level and notifies observers.
   void SetZoomLevel(double zoom_level);
 
@@ -246,29 +235,21 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   bool AcceptsLoadDrops() override;
   void FocusNext() override;
   void FocusPrevious() override;
-  void FocusedNodeChanged(const blink::WebNode& fromNode,
-                          const blink::WebNode& toNode) override;
+  void FocusedElementChanged(const blink::WebElement& from_element,
+                             const blink::WebElement& to_element) override;
   bool CanUpdateLayout() override;
   void DidUpdateMainFrameLayout() override;
   blink::WebString AcceptLanguages() override;
   int HistoryBackListCount() override;
   int HistoryForwardListCount() override;
   void ZoomLimitsChanged(double minimum_level, double maximum_level) override;
-  void PageScaleFactorChanged(float page_scale_factor,
-                              bool is_pinch_gesture_active) override;
+  void PageScaleFactorChanged(float page_scale_factor) override;
   void PageImportanceSignalsChanged() override;
   void DidAutoResize(const blink::WebSize& newSize) override;
   void DidFocus(blink::WebLocalFrame* calling_frame) override;
   blink::WebScreenInfo GetScreenInfo() override;
   bool CanHandleGestureEvent() override;
   bool AllowPopupsDuringPageUnload() override;
-
-#if defined(OS_ANDROID)
-  // Only used on Android since all other platforms implement
-  // date and time input fields using MULTIPLE_FIELDS_UI
-  bool OpenDateTimeChooser(const blink::WebDateTimeChooserParams&,
-                           blink::WebDateTimeChooserCompletion*) override;
-#endif
 
   // RenderView implementation -------------------------------------------------
 
@@ -281,7 +262,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   const WebPreferences& GetWebkitPreferences() override;
   void SetWebkitPreferences(const WebPreferences& preferences) override;
   blink::WebView* GetWebView() override;
-  blink::WebFrameWidget* GetWebFrameWidget() override;
   bool GetContentStateImmediately() override;
   void SetEditCommandForNextKeyEvent(const std::string& name,
                                      const std::string& value) override;
@@ -651,10 +631,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   blink::WebFrameWidget* frame_widget_ = nullptr;
 
 #if defined(OS_ANDROID)
-  // Android Specific ---------------------------------------------------------
-
-  // A date/time picker object for date and time related input elements.
-  std::unique_ptr<RendererDateTimePicker> date_time_picker_client_;
+  // Android Specific ----------------------------------------------------------
 
   // Whether this was a renderer-created or browser-created RenderView.
   bool was_created_by_renderer_ = false;

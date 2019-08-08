@@ -116,7 +116,7 @@ class IdlInterfaceFileNotFoundError(Exception):
 
 
 def parse_options():
-    usage = 'Usage: %prog [InfoIndividual.pickle]... [Info.pickle]'
+    usage = 'Usage: %prog [input_info.pickle]... [output_info.pickle]'
     parser = optparse.OptionParser(usage=usage)
 
     return parser.parse_args()

@@ -8,6 +8,8 @@
 
 #include "base/debug/alias.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/windows_version.h"
 #include "skia/ext/fontmgr_default.h"
@@ -66,7 +68,7 @@ void InitializeDirectWrite() {
       SkFontMgr_New_DirectWrite(factory.Get());
   int iteration = 0;
   if (!direct_write_font_mgr &&
-      base::win::GetVersion() == base::win::VERSION_WIN7) {
+      base::win::GetVersion() == base::win::Version::WIN7) {
     // Windows (win7_rtm) may fail to map the service sections
     // (crbug.com/956064).
     constexpr int kMaxRetries = 5;
@@ -101,6 +103,69 @@ IDWriteFactory* GetDirectWriteFactory() {
   if (!g_direct_write_factory)
     InitializeDirectWrite();
   return g_direct_write_factory;
+}
+
+base::Optional<std::string> RetrieveLocalizedString(
+    IDWriteLocalizedStrings* names,
+    const std::string& locale) {
+  base::string16 locale_wide = base::UTF8ToUTF16(locale);
+
+  // If locale is empty, index 0 will be used. Otherwise, the locale name must
+  // be found and must exist.
+  UINT32 index = 0;
+  BOOL exists = false;
+  if (!locale.empty() &&
+      (FAILED(names->FindLocaleName(locale_wide.c_str(), &index, &exists)) ||
+       !exists)) {
+    return base::nullopt;
+  }
+
+  // Get the string length.
+  UINT32 length = 0;
+  if (FAILED(names->GetStringLength(index, &length)))
+    return base::nullopt;
+
+  // The output buffer length needs to be one larger to receive the NUL
+  // character.
+  base::string16 buffer;
+  buffer.resize(length + 1);
+  if (FAILED(names->GetString(index, &buffer[0], buffer.size())))
+    return base::nullopt;
+
+  // Shrink the string to fit the actual length.
+  buffer.resize(length);
+
+  return base::UTF16ToUTF8(buffer);
+}
+
+base::Optional<std::string> RetrieveLocalizedFontName(
+    base::StringPiece font_name,
+    const std::string& locale) {
+  Microsoft::WRL::ComPtr<IDWriteFactory> factory;
+  CreateDWriteFactory(&factory);
+
+  Microsoft::WRL::ComPtr<IDWriteFontCollection> font_collection;
+  if (FAILED(factory->GetSystemFontCollection(&font_collection))) {
+    return base::nullopt;
+  }
+
+  UINT32 index = 0;
+  BOOL exists;
+  base::string16 font_name_wide = base::UTF8ToUTF16(font_name);
+  if (FAILED(font_collection->FindFamilyName(font_name_wide.c_str(), &index,
+                                             &exists)) ||
+      !exists) {
+    return base::nullopt;
+  }
+
+  Microsoft::WRL::ComPtr<IDWriteFontFamily> font_family;
+  Microsoft::WRL::ComPtr<IDWriteLocalizedStrings> family_names;
+  if (FAILED(font_collection->GetFontFamily(index, &font_family)) ||
+      FAILED(font_family->GetFamilyNames(&family_names))) {
+    return base::nullopt;
+  }
+
+  return RetrieveLocalizedString(family_names.Get(), locale);
 }
 
 }  // namespace win

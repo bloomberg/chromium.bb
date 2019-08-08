@@ -28,6 +28,7 @@ message BackgroundSyncRegistrationProto {
   required int32 num_attempts = 7;
   required int64 delay_until = 8;
   optional PeriodicSyncOptions periodic_sync_options = 9;
+  optional int32 max_attempts = 10;
 }
 
 message BackgroundSyncRegistrationsProto {

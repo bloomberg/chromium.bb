@@ -132,7 +132,7 @@ class SyncConnectionOkChecker : public SingleClientStatusChangeChecker {
       : SingleClientStatusChangeChecker(service) {}
 
   bool IsExitConditionSatisfied() override {
-    return service()->GetSyncTokenStatus().connection_status ==
+    return service()->GetSyncTokenStatusForDebugging().connection_status ==
            syncer::CONNECTION_OK;
   }
 
@@ -222,7 +222,7 @@ class UkmBrowserTestBase : public SyncTest {
   ukm::Report GetUkmReport() {
     EXPECT_TRUE(HasUnsentUkmLogs());
 
-    metrics::PersistedLogs* log_store =
+    metrics::UnsentLogStore* log_store =
         ukm_service()->reporting_service_.ukm_log_store();
     EXPECT_FALSE(log_store->has_staged_log());
     log_store->StageNextLog();

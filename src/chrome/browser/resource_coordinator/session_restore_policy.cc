@@ -102,6 +102,7 @@ SessionRestorePolicy::SessionRestorePolicy()
 SessionRestorePolicy::~SessionRestorePolicy() {
   // Record the number of tabs involved in the session restore that use
   // background communications mechanisms.
+  DCHECK_GE(tabs_used_in_bg_, tabs_used_in_bg_restored_);
   UMA_HISTOGRAM_COUNTS_100("SessionRestore.BackgroundUseCaseTabCount.Total",
                            tabs_used_in_bg_);
   UMA_HISTOGRAM_COUNTS_100("SessionRestore.BackgroundUseCaseTabCount.Restored",
@@ -307,7 +308,8 @@ size_t SessionRestorePolicy::CalculateSimultaneousTabLoads() const {
 
 // static
 void SessionRestorePolicy::SetUsedInBg(TabData* tab_data) {
-  static const SiteFeatureUsage kInUse = SiteFeatureUsage::kSiteFeatureInUse;
+  static const performance_manager::SiteFeatureUsage kInUse =
+      performance_manager::SiteFeatureUsage::kSiteFeatureInUse;
   auto& reader = tab_data->reader;
   DCHECK(reader->DataLoaded());
 

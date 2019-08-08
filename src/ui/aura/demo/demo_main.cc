@@ -145,7 +145,7 @@ int DemoMain() {
 
   // Create the message-loop here before creating the root window.
   base::MessageLoopForUI message_loop;
-  base::ThreadPool::CreateAndStartWithDefaultParams("demo");
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams("demo");
   ui::InitializeInputMethodForTesting();
 
   // The ContextFactory must exist before any Compositors are created.

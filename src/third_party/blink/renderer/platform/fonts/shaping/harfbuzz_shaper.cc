@@ -948,7 +948,7 @@ scoped_refptr<ShapeResult> HarfBuzzShaper::Shape(const Font* font,
 
   unsigned length = end - start;
   scoped_refptr<ShapeResult> result =
-      ShapeResult::Create(font, length, direction);
+      ShapeResult::Create(font, start, length, direction);
 
   HarfBuzzScopedPtr<hb_buffer_t> buffer(hb_buffer_create(), hb_buffer_destroy);
   RangeData range_data = CreateRangeData(font, direction, buffer.Get());
@@ -983,10 +983,6 @@ scoped_refptr<ShapeResult> HarfBuzzShaper::Shape(const Font* font,
     }
   }
 
-  // Ensure |start_index_| is updated even when no runs were inserted.
-  if (UNLIKELY(result->runs_.IsEmpty()))
-    result->start_index_ = start;
-
 #if DCHECK_IS_ON()
   if (result)
     CheckShapeResultRange(result.get(), start, end, text_, font);
@@ -1009,7 +1005,7 @@ scoped_refptr<ShapeResult> HarfBuzzShaper::Shape(
 
   unsigned length = end - start;
   scoped_refptr<ShapeResult> result =
-      ShapeResult::Create(font, length, direction);
+      ShapeResult::Create(font, start, length, direction);
 
   HarfBuzzScopedPtr<hb_buffer_t> buffer(hb_buffer_create(), hb_buffer_destroy);
   RangeData range_data = CreateRangeData(font, direction, buffer.Get());
@@ -1023,10 +1019,6 @@ scoped_refptr<ShapeResult> HarfBuzzShaper::Shape(
     range_data.end = segmented_range.end;
     ShapeSegment(&range_data, segmented_range, result.get());
   }
-
-  // Ensure |start_index_| is updated even when no runs were inserted.
-  if (UNLIKELY(result->runs_.IsEmpty()))
-    result->start_index_ = start;
 
 #if DCHECK_IS_ON()
   if (result)
@@ -1049,7 +1041,7 @@ scoped_refptr<ShapeResult> HarfBuzzShaper::Shape(
 
   unsigned length = end - start;
   scoped_refptr<ShapeResult> result =
-      ShapeResult::Create(font, length, direction);
+      ShapeResult::Create(font, start, length, direction);
 
   HarfBuzzScopedPtr<hb_buffer_t> buffer(hb_buffer_create(), hb_buffer_destroy);
   RangeData range_data = CreateRangeData(font, direction, buffer.Get());
@@ -1057,10 +1049,6 @@ scoped_refptr<ShapeResult> HarfBuzzShaper::Shape(
   range_data.end = end;
 
   ShapeSegment(&range_data, pre_segmented, result.get());
-
-  // Ensure |start_index_| is updated even when no runs were inserted.
-  if (UNLIKELY(result->runs_.IsEmpty()))
-    result->start_index_ = start;
 
 #if DCHECK_IS_ON()
   if (result)

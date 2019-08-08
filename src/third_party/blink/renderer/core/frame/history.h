@@ -51,10 +51,6 @@ class CORE_EXPORT History final : public ScriptWrappable,
   USING_GARBAGE_COLLECTED_MIXIN(History);
 
  public:
-  static History* Create(LocalFrame* frame) {
-    return MakeGarbageCollected<History>(frame);
-  }
-
   explicit History(LocalFrame*);
 
   unsigned length(ExceptionState&) const;

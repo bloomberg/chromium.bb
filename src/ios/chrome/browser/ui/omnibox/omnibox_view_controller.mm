@@ -17,7 +17,6 @@
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -63,9 +62,15 @@ const CGFloat kClearButtonSize = 28.0f;
   UIColor* textFieldTintColor = self.incognito
                                     ? [UIColor whiteColor]
                                     : UIColorFromRGB(kLocationBarTintBlue);
-  UIColor* iconTintColor = self.incognito
-                               ? [UIColor whiteColor]
-                               : [UIColor colorWithWhite:0 alpha:0.7];
+  UIColor* iconTintColor;
+  if (base::FeatureList::IsEnabled(kNewOmniboxPopupLayout)) {
+    iconTintColor = self.incognito
+                        ? [UIColor.whiteColor colorWithAlphaComponent:0.7]
+                        : [UIColor.blackColor colorWithAlphaComponent:0.5];
+  } else {
+    iconTintColor = self.incognito ? [UIColor whiteColor]
+                                   : [UIColor colorWithWhite:0 alpha:0.7];
+  }
 
   self.view = [[OmniboxContainerView alloc]
       initWithFrame:CGRectZero

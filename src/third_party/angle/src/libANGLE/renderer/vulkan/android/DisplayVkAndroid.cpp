@@ -13,6 +13,7 @@
 #include <android/native_window.h>
 #include <vulkan/vulkan.h>
 
+#include "common/version.h"
 #include "libANGLE/renderer/vulkan/RendererVk.h"
 #include "libANGLE/renderer/vulkan/android/HardwareBufferImageSiblingVkAndroid.h"
 #include "libANGLE/renderer/vulkan/android/WindowSurfaceVkAndroid.h"
@@ -26,8 +27,12 @@ DisplayVkAndroid::DisplayVkAndroid(const egl::DisplayState &state) : DisplayVk(s
 egl::Error DisplayVkAndroid::initialize(egl::Display *display)
 {
     ANGLE_TRY(DisplayVk::initialize(display));
-    std::string rendererDescription = mRenderer->getRendererDescription();
-    __android_log_print(ANDROID_LOG_INFO, "ANGLE", "%s", rendererDescription.c_str());
+
+    std::stringstream strstr;
+    strstr << "Version (" << ANGLE_VERSION_STRING << "), ";
+    strstr << "Renderer (" << mRenderer->getRendererDescription() << ")";
+    __android_log_print(ANDROID_LOG_INFO, "ANGLE", "%s", strstr.str().c_str());
+
     return egl::NoError();
 }
 
@@ -47,9 +52,7 @@ SurfaceImpl *DisplayVkAndroid::createWindowSurfaceVk(const egl::SurfaceState &st
 egl::ConfigSet DisplayVkAndroid::generateConfigs()
 {
     constexpr GLenum kColorFormats[] = {GL_RGBA8, GL_RGB8, GL_RGB565, GL_RGB10_A2, GL_RGBA16F};
-    constexpr EGLint kSampleCounts[] = {0};
-    return egl_vk::GenerateConfigs(kColorFormats, egl_vk::kConfigDepthStencilFormats, kSampleCounts,
-                                   this);
+    return egl_vk::GenerateConfigs(kColorFormats, egl_vk::kConfigDepthStencilFormats, this);
 }
 
 bool DisplayVkAndroid::checkConfigSupport(egl::Config *config)

@@ -7,9 +7,9 @@
 #include <stdint.h>
 
 #include <cstring>
+#include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -226,7 +226,7 @@ int MockHttpStream::ReadResponseBodyImpl(IOBuffer* buf, int buf_len) {
 void MockHttpStream::CompleteRead() {
   int result = ReadResponseBodyImpl(user_buf_.get(), buf_len_);
   user_buf_ = nullptr;
-  base::ResetAndReturn(&callback_).Run(result);
+  std::move(callback_).Run(result);
 }
 
 class HttpResponseBodyDrainerTest : public TestWithScopedTaskEnvironment {

@@ -13,7 +13,6 @@
 #include "components/autofill/core/browser/webdata/autofill_profile_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_syncable_service.h"
-#include "components/autofill/core/browser/webdata/autofill_wallet_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/browser_sync/profile_sync_components_factory_impl.h"
@@ -28,7 +27,7 @@
 #include "components/sync/engine/passive_model_worker.h"
 #include "components/sync/engine/sequenced_model_worker.h"
 #include "components/sync/engine/ui_model_worker.h"
-#include "components/sync/user_events/user_event_service.h"
+#include "components/sync_user_events/user_event_service.h"
 #include "components/version_info/version_info.h"
 #include "components/version_info/version_string.h"
 #include "ios/web/public/web_task_traits.h"
@@ -186,10 +185,6 @@ WebViewSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
       return autofill::AutofillProfileSyncableService::FromWebDataService(
                  service.get())
           ->AsWeakPtr();
-    case syncer::AUTOFILL_WALLET_DATA:
-      return autofill::AutofillWalletSyncableService::FromWebDataService(
-                 service.get())
-          ->AsWeakPtr();
     case syncer::AUTOFILL_WALLET_METADATA:
       return autofill::AutofillWalletMetadataSyncableService::
           FromWebDataService(service.get())
@@ -205,8 +200,12 @@ WebViewSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
 
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
 WebViewSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
-  NOTREACHED();
-  // TODO(crbug.com/873790): Figure out if USER_CONSENTS need to be enabled.
+  // Even though USER_CONSENTS are disabled, the component factory will create
+  // its controller and ask for a delegate; this client later removes the
+  // controller. No other data type should ask for its delegate.
+  // TODO(crbug.com/873790): Figure out if USER_CONSENTS need to be enabled or
+  // find a better way how to disable it.
+  DCHECK_EQ(type, syncer::USER_CONSENTS);
   return base::WeakPtr<syncer::ModelTypeControllerDelegate>();
 }
 

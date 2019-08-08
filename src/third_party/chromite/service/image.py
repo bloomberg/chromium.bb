@@ -23,8 +23,13 @@ PARALLEL_EMERGE_STATUS_FILE_NAME = 'status_file'
 class Error(Exception):
   """Base module error."""
 
-class InvalidArgumentError(Exception):
+
+class InvalidArgumentError(Error):
   """Invalid argument values."""
+
+
+class ImageToVmError(Error):
+  """Error converting the image to a vm."""
 
 
 class BuildConfig(object):
@@ -127,6 +132,41 @@ def Build(board=None, images=None, config=None):
       failed = content.split() if content else None
 
     return BuildResult(result.returncode, failed)
+
+
+def CreateVm(board, is_test=False, chroot=None):
+  """Create a VM from an image.
+
+  Args:
+    board (str): The board for which the VM is being created.
+    is_test (bool): Whether it is a test image.
+    chroot (chroot_lib.Chroot): The chroot where the image lives.
+
+  Returns:
+    str: Path to the created VM .bin file.
+  """
+  assert board
+  cmd = ['./image_to_vm.sh', '--board', board]
+
+  if is_test:
+    cmd.append('--test_image')
+
+  chroot_args = None
+  if chroot and cros_build_lib.IsOutsideChroot():
+    chroot_args = chroot.GetEnterArgs()
+
+  result = cros_build_lib.RunCommand(cmd, error_code_ok=True,
+                                     enter_chroot=True, chroot_args=chroot_args)
+
+  if result.returncode:
+    # Error running the command. Unfortunately we can't be much more helpful
+    # than this right now.
+    raise ImageToVmError('Unable to convert the image to a VM. '
+                         'Consult the logs to determine the problem.')
+
+  vm_path = os.path.join(image_lib.GetLatestImageLink(board),
+                         constants.VM_IMAGE_BIN)
+  return os.path.realpath(vm_path)
 
 
 def Test(board, result_directory, image_dir=None):

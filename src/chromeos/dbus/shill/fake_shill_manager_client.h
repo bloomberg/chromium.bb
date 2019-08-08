@@ -88,7 +88,8 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillManagerClient
                            const std::string& state) override;
   void SortManagerServices(bool notify) override;
   void SetupDefaultEnvironment() override;
-  int GetInteractiveDelay() const override;
+  base::TimeDelta GetInteractiveDelay() const override;
+  void SetInteractiveDelay(base::TimeDelta delay) override;
   void SetBestServiceToConnect(const std::string& service_path) override;
   const NetworkThrottlingStatus& GetNetworkThrottlingStatus() override;
   bool GetFastTransitionStatus() override;
@@ -109,8 +110,7 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillManagerClient
                             bool enabled);
   std::unique_ptr<base::ListValue> GetEnabledServiceList(
       const std::string& property) const;
-  void ScanCompleted(const std::string& device_path,
-                     const base::Closure& callback);
+  void ScanCompleted(const std::string& device_path);
 
   // Parses the command line for Shill stub switches and sets initial states.
   // Uses comma-separated name-value pairs (see SplitStringIntoKeyValuePairs):
@@ -128,14 +128,11 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillManagerClient
   // Dictionary of technology -> list of property dictionaries
   base::DictionaryValue stub_geo_networks_;
 
-  // Seconds to delay interactive actions
-  int interactive_delay_;
+  // Delay for interactive actions
+  base::TimeDelta interactive_delay_;
 
   // Initial state for fake services.
   std::map<std::string, std::string> shill_initial_state_map_;
-
-  // Carrier for fake cellular service.
-  std::string cellular_carrier_;
 
   // URL used for cellular activation.
   std::string cellular_olp_;
@@ -163,7 +160,7 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillManagerClient
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<FakeShillManagerClient> weak_ptr_factory_;
+  base::WeakPtrFactory<FakeShillManagerClient> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeShillManagerClient);
 };

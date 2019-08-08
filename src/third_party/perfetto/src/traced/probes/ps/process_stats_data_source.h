@@ -26,7 +26,6 @@
 #include "perfetto/base/scoped_file.h"
 #include "perfetto/base/weak_ptr.h"
 #include "perfetto/tracing/core/basic_types.h"
-#include "perfetto/tracing/core/data_source_config.h"
 #include "perfetto/tracing/core/trace_writer.h"
 #include "src/traced/probes/probes_data_source.h"
 
@@ -44,6 +43,8 @@ class ProcessStats_Process;
 }  // namespace pbzero
 }  // namespace protos
 
+class DataSourceConfig;
+
 class ProcessStatsDataSource : public ProbesDataSource {
  public:
   static constexpr int kTypeId = 3;
@@ -57,10 +58,12 @@ class ProcessStatsDataSource : public ProbesDataSource {
   base::WeakPtr<ProcessStatsDataSource> GetWeakPtr() const;
   void WriteAllProcesses();
   void OnPids(const std::vector<int32_t>& pids);
+  void OnRenamePids(const std::vector<int32_t>& pids);
 
   // ProbesDataSource implementation.
   void Start() override;
   void Flush(FlushRequestID, std::function<void()> callback) override;
+  void ClearIncrementalState() override;
 
   bool on_demand_dumps_enabled() const { return enable_on_demand_dumps_; }
 
@@ -120,7 +123,7 @@ class ProcessStatsDataSource : public ProbesDataSource {
 
   // Fields for keeping track of the periodic stats/counters.
   uint32_t poll_period_ms_ = 0;
-  uint64_t ticks_ = 0;
+  uint64_t cache_ticks_ = 0;
   protos::pbzero::ProcessStats* cur_ps_stats_ = nullptr;
   protos::pbzero::ProcessStats_Process* cur_ps_stats_process_ = nullptr;
   std::vector<bool> skip_stats_for_pids_;
@@ -129,6 +132,15 @@ class ProcessStatsDataSource : public ProbesDataSource {
   // |poll_period_ms_| ms.
   uint32_t process_stats_cache_ttl_ticks_ = 0;
   std::unordered_map<int32_t, CachedProcessStats> process_stats_cache_;
+
+  // If true, the next trace packet will have the |incremental_state_cleared|
+  // flag set. Set when handling a ClearIncrementalState call.
+  //
+  // TODO(rsavitski): initialized to true since the first packet also doesn't
+  // have any prior state to refer to. It might make more sense to let the
+  // tracing service set this for every first packet (as it does for
+  // |previous_packet_dropped|).
+  bool did_clear_incremental_state_ = true;
 
   base::WeakPtrFactory<ProcessStatsDataSource> weak_factory_;  // Keep last.
 };

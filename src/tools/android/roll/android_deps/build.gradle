@@ -63,11 +63,11 @@ dependencies {
 
     compile "com.android.support:multidex:1.0.0"
 
-    compile "javax.inject:javax.inject:1"
+    buildCompile "javax.inject:javax.inject:1"
 
     // Dagger
     def daggerVersion = '2.17'
-    compile "com.google.dagger:dagger:${daggerVersion}"
+    buildCompile "com.google.dagger:dagger:${daggerVersion}"
     annotationProcessor "com.google.dagger:dagger-compiler:${daggerVersion}"
 
     // JavaPoet
@@ -91,6 +91,9 @@ dependencies {
 task setUpRepository(type: BuildConfigGenerator) {
     // Paths are relative to the chromium source root.
     repositoryPath 'third_party/android_deps'
+    depsPath 'DEPS'
+    chromiumSourceRoot '../../../..'
+    cipdBucket 'chromium'
 }
 
 task wrapper(type: Wrapper) {

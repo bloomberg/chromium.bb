@@ -18,9 +18,9 @@
 #include "net/base/address_family.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/host_port_pair.h"
-#include "net/base/prioritized_dispatcher.h"
 #include "net/base/request_priority.h"
 #include "net/dns/dns_config.h"
+#include "net/dns/dns_config_overrides.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver_source.h"
 #include "net/dns/public/dns_query_type.h"
@@ -112,23 +112,38 @@ class NET_EXPORT HostResolver {
     virtual void ChangeRequestPriority(RequestPriority priority) {}
   };
 
-  // |max_concurrent_resolves| is how many resolve requests will be allowed to
-  // run in parallel. Pass HostResolver::kDefaultParallelism to choose a
-  // default value.
-  // |max_retry_attempts| is the maximum number of times we will retry for host
-  // resolution. Pass HostResolver::kDefaultRetryAttempts to choose a default
-  // value.
-  // |enable_caching| controls whether a HostCache is used.
-  struct NET_EXPORT Options {
-    Options();
+  // Parameter-grouping struct for additional optional parameters for creation
+  // of HostResolverManagers and stand-alone HostResolvers.
+  struct NET_EXPORT ManagerOptions {
+    // Set |max_concurrent_resolves| to this to select a default level
+    // of concurrency.
+    static const size_t kDefaultParallelism = 0;
 
-    PrioritizedDispatcher::Limits GetDispatcherLimits() const;
+    // Set |max_system_retry_attempts| to this to select a default retry value.
+    static const size_t kDefaultRetryAttempts = static_cast<size_t>(-1);
 
-    size_t max_concurrent_resolves;
-    size_t max_retry_attempts;
-    // TODO(crbug.com/934402): Remove once caching is fully handled and enabled
-    // at the per-context level.
-    bool enable_caching;
+    // How many resolve requests will be allowed to run in parallel.
+    // |kDefaultParallelism| for the resolver to choose a default value.
+    size_t max_concurrent_resolves = kDefaultParallelism;
+
+    // The maximum number of times to retry for host resolution if using the
+    // system resolver. No effect when the system resolver is not used.
+    // |kDefaultRetryAttempts| for the resolver to choose a default value.
+    size_t max_system_retry_attempts = kDefaultRetryAttempts;
+
+    // Initial setting for whether the built-in asynchronous DnsClient is
+    // enabled or disabled. See HostResolverManager::SetDnsClientEnabled() for
+    // details.
+    bool dns_client_enabled = false;
+
+    // Initial configuration overrides for the built-in asynchronous DnsClient.
+    // See HostResolverManager::SetDnsConfigOverrides() for details.
+    DnsConfigOverrides dns_config_overrides;
+
+    // If set to |false|, when on a WiFi connection, IPv6 will be assumed to be
+    // unreachable without actually checking. See https://crbug.com/696569 for
+    // further context.
+    bool check_ipv6_on_wifi = true;
   };
 
   // Factory class. Useful for classes that need to inject and override resolver
@@ -146,7 +161,7 @@ class NET_EXPORT HostResolver {
     // See HostResolver::CreateStandaloneResolver.
     virtual std::unique_ptr<HostResolver> CreateStandaloneResolver(
         NetLog* net_log,
-        const Options& options,
+        const ManagerOptions& options,
         base::StringPiece host_mapping_rules,
         bool enable_caching);
   };
@@ -154,7 +169,10 @@ class NET_EXPORT HostResolver {
   // Parameter-grouping struct for additional optional parameters for
   // CreateRequest() calls. All fields are optional and have a reasonable
   // default.
-  struct ResolveHostParameters {
+  struct NET_EXPORT ResolveHostParameters {
+    ResolveHostParameters();
+    ResolveHostParameters(const ResolveHostParameters& other);
+
     // Requested DNS query type. If UNSPECIFIED, resolver will pick A or AAAA
     // (or both) based on IPv4/IPv6 settings.
     DnsQueryType dns_query_type = DnsQueryType::UNSPECIFIED;
@@ -197,6 +215,10 @@ class NET_EXPORT HostResolver {
     // will receive special logging/observer treatment, and the result addresses
     // will always be |base::nullopt|.
     bool is_speculative = false;
+
+    // Set to override the resolver's default secure dns mode for this request.
+    base::Optional<DnsConfig::SecureDnsMode> secure_dns_mode_override =
+        base::nullopt;
   };
 
   // Handler for an ongoing MDNS listening operation. Created by
@@ -238,13 +260,6 @@ class NET_EXPORT HostResolver {
     virtual int Start(Delegate* delegate) = 0;
   };
 
-  // Set Options.max_concurrent_resolves to this to select a default level
-  // of concurrency.
-  static const size_t kDefaultParallelism = 0;
-
-  // Set Options.max_retry_attempts to this to select a default retry value.
-  static const size_t kDefaultRetryAttempts = static_cast<size_t>(-1);
-
   // If any completion callbacks are pending when the resolver is destroyed,
   // the host resolutions are cancelled, and the completion callbacks will not
   // be called.
@@ -265,58 +280,21 @@ class NET_EXPORT HostResolver {
       const HostPortPair& host,
       DnsQueryType query_type);
 
-  // Enable or disable the built-in asynchronous DnsClient.
-  virtual void SetDnsClientEnabled(bool enabled);
-
   // Returns the HostResolverCache |this| uses, or NULL if there isn't one.
   // Used primarily to clear the cache and for getting debug information.
   virtual HostCache* GetHostCache();
-
-  // Checks whether this HostResolver has cached a resolution for the given
-  // hostname (or IP address literal). If so, returns true and writes the source
-  // of the resolution (e.g. DNS, HOSTS file, etc.) to |source_out|, the
-  // staleness of the resolution to |stale_out|, and whether the result was
-  // retrieved securely or not to |secure_out| (if they are not null). It tries
-  // using two common address_family and host_resolver_flag combinations when
-  // checking the cache; this means false negatives are possible, but unlikely.
-  virtual bool HasCached(base::StringPiece hostname,
-                         HostCache::Entry::Source* source_out,
-                         HostCache::EntryStaleness* stale_out,
-                         bool* secure_out) const = 0;
 
   // Returns the current DNS configuration |this| is using, as a Value, or
   // nullptr if it's configured to always use the system host resolver.
   virtual std::unique_ptr<base::Value> GetDnsConfigAsValue() const;
 
-  // Sets the HostResolver to assume that IPv6 is unreachable when on a wifi
-  // connection. See https://crbug.com/696569 for further context.
-  virtual void SetNoIPv6OnWifi(bool no_ipv6_on_wifi);
-  virtual bool GetNoIPv6OnWifi();
-
-  // Sets overriding configuration that will replace or add to configuration
-  // read from the system for DnsClient resolution.
-  virtual void SetDnsConfigOverrides(const DnsConfigOverrides& overrides);
-
   // Set the associated URLRequestContext, generally expected to be called by
   // URLRequestContextBuilder on passing ownership of |this| to a context. May
   // only be called once.
-  //
-  // TODO(crbug.com/934402): Use |request_context| for DoH resolves.
   virtual void SetRequestContext(URLRequestContext* request_context);
-
-  // Returns the currently configured DNS over HTTPS servers. Returns nullptr if
-  // DNS over HTTPS is not enabled.
-  virtual const std::vector<DnsConfig::DnsOverHttpsServerConfig>*
-  GetDnsOverHttpsServersForTesting() const;
 
   virtual HostResolverManager* GetManagerForTesting();
   virtual const URLRequestContext* GetContextForTesting() const;
-
-  // TODO(crbug.com/934402): Cleanup the various property-setting methods in
-  // this class.  Many only affect manager-wide properties and can probably be
-  // removed and replaced by calling equivalent methods directly on the
-  // underlying HostResolverManager (through NetworkService that generally owns
-  // that manager).
 
   // Creates a new HostResolver. |manager| must outlive the returned resolver.
   //
@@ -334,7 +312,7 @@ class NET_EXPORT HostResolver {
   // requests.  See MappedHostResolver for details.
   static std::unique_ptr<HostResolver> CreateStandaloneResolver(
       NetLog* net_log,
-      base::Optional<Options> options = base::nullopt,
+      base::Optional<ManagerOptions> options = base::nullopt,
       base::StringPiece host_mapping_rules = "",
       bool enable_caching = true);
   // Same, but explicitly returns the implementing ContextHostResolver. Only
@@ -342,7 +320,7 @@ class NET_EXPORT HostResolver {
   // applied because doing so requires wrapping the ContextHostResolver.
   static std::unique_ptr<ContextHostResolver> CreateStandaloneContextResolver(
       NetLog* net_log,
-      base::Optional<Options> options = base::nullopt,
+      base::Optional<ManagerOptions> options = base::nullopt,
       bool enable_caching = true);
 
   // Helpers for interacting with HostCache and ProcResolver.

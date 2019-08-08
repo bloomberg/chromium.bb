@@ -135,11 +135,12 @@ class VideoDecoderStreamTest
     DCHECK(!pending_stop_);
   }
 
-  void PrepareFrame(const scoped_refptr<VideoFrame>& frame,
+  void PrepareFrame(scoped_refptr<VideoFrame> frame,
                     VideoDecoderStream::OutputReadyCB output_ready_cb) {
     // Simulate some delay in return of the output.
     message_loop_.task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(output_ready_cb), frame));
+        FROM_HERE,
+        base::BindOnce(std::move(output_ready_cb), std::move(frame)));
   }
 
   void OnBytesDecoded(int count) { num_decoded_bytes_unreported_ += count; }
@@ -303,7 +304,7 @@ class VideoDecoderStreamTest
 
   // Callback for VideoDecoderStream::Read().
   void FrameReady(VideoDecoderStream::Status status,
-                  const scoped_refptr<VideoFrame>& frame) {
+                  scoped_refptr<VideoFrame> frame) {
     DCHECK(pending_read_);
     frame_read_ = frame;
     last_read_status_ = status;

@@ -10,6 +10,7 @@
 #include "base/containers/span.h"
 #include "base/feature_list.h"
 #include "base/stl_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_manager.h"
@@ -170,6 +171,13 @@ base::span<const PermissionsUIInfo> GetContentSettingsUIInfo() {
          ? IDS_PAGE_INFO_TYPE_SENSORS
          : IDS_PAGE_INFO_TYPE_MOTION_SENSORS},
     {CONTENT_SETTINGS_TYPE_USB_GUARD, IDS_PAGE_INFO_TYPE_USB},
+#if !defined(OS_ANDROID)
+    {CONTENT_SETTINGS_TYPE_SERIAL_GUARD, IDS_PAGE_INFO_TYPE_SERIAL},
+    // TODO(https://crbug.com/960962): Implement Bluetooth scanning API content
+    // settings and page info on Android.
+    {CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING,
+     IDS_PAGE_INFO_TYPE_BLUETOOTH_SCANNING},
+#endif
   };
   return kPermissionsUIInfo;
 }
@@ -429,9 +437,8 @@ SkColor PageInfoUI::GetSecondaryTextColor() {
 // static
 base::string16 PageInfoUI::ChosenObjectToUIString(
     const ChosenObjectInfo& object) {
-  base::string16 name;
-  object.chooser_object->value.GetString(object.ui_info.ui_name_key, &name);
-  return name;
+  return base::UTF8ToUTF16(
+      object.ui_info.get_object_name(object.chooser_object->value));
 }
 
 #if defined(OS_ANDROID)
@@ -551,6 +558,16 @@ const gfx::ImageSkia PageInfoUI::GetPermissionIcon(const PermissionInfo& info,
     case CONTENT_SETTINGS_TYPE_USB_GUARD:
       icon = &vector_icons::kUsbIcon;
       break;
+#if !defined(OS_ANDROID)
+    case CONTENT_SETTINGS_TYPE_SERIAL_GUARD:
+      icon = &vector_icons::kSerialPortIcon;
+      break;
+    // TODO(https://crbug.com/960962): Implement Bluetooth scanning API content
+    // settings and page info on Android.
+    case CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING:
+      icon = &vector_icons::kBluetoothScanningIcon;
+      break;
+#endif
     default:
       // All other |ContentSettingsType|s do not have icons on desktop or are
       // not shown in the Page Info bubble.

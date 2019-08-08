@@ -64,7 +64,8 @@ ReverbConvolver::ReverbConvolver(AudioChannel* impulse_response,
                                  size_t render_slice_size,
                                  size_t max_fft_size,
                                  size_t convolver_render_phase,
-                                 bool use_background_threads)
+                                 bool use_background_threads,
+                                 float scale)
     : impulse_response_length_(impulse_response->length()),
       accumulation_buffer_(impulse_response->length() + render_slice_size),
       input_buffer_(kInputBufferSize),
@@ -109,7 +110,7 @@ ReverbConvolver::ReverbConvolver(AudioChannel* impulse_response,
         std::make_unique<ReverbConvolverStage>(
             response, total_response_length, reverb_total_latency, stage_offset,
             stage_size, fft_size, render_phase, render_slice_size,
-            &accumulation_buffer_, use_direct_convolver);
+            &accumulation_buffer_, scale, use_direct_convolver);
 
     bool is_background_stage = false;
 
@@ -201,9 +202,10 @@ void ReverbConvolver::Process(const AudioChannel* source_channel,
   // Now that we've buffered more input, post another task to the background
   // thread.
   if (background_thread_) {
-    PostCrossThreadTask(*background_thread_->GetTaskRunner(), FROM_HERE,
-                        CrossThreadBind(&ReverbConvolver::ProcessInBackground,
-                                        CrossThreadUnretained(this)));
+    PostCrossThreadTask(
+        *background_thread_->GetTaskRunner(), FROM_HERE,
+        CrossThreadBindOnce(&ReverbConvolver::ProcessInBackground,
+                            CrossThreadUnretained(this)));
   }
 }
 

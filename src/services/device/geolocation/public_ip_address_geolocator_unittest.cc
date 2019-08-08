@@ -12,6 +12,7 @@
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,10 +26,13 @@ class PublicIpAddressGeolocatorTest : public testing::Test {
  public:
   PublicIpAddressGeolocatorTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {
+            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+        network_connection_tracker_(
+            network::TestNetworkConnectionTracker::CreateInstance()) {
     notifier_.reset(new PublicIpAddressLocationNotifier(
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &test_url_loader_factory_),
+        network::TestNetworkConnectionTracker::GetInstance(),
         kTestGeolocationApiKey));
   }
 
@@ -92,6 +96,10 @@ class PublicIpAddressGeolocatorTest : public testing::Test {
 
   // List of any Mojo bad-message errors raised.
   std::vector<std::string> bad_messages_;
+
+  // Test NetworkConnectionTracker for PublicIpAddressLocationNotifier.
+  std::unique_ptr<network::TestNetworkConnectionTracker>
+      network_connection_tracker_;
 
   // PublicIpAddressGeolocator requires a notifier.
   std::unique_ptr<PublicIpAddressLocationNotifier> notifier_;

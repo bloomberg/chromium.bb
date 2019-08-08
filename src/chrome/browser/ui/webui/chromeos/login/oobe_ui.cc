@@ -25,16 +25,12 @@
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_check_screen_view.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen_view.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
-#include "chrome/browser/chromeos/login/screens/demo_preferences_screen_view.h"
-#include "chrome/browser/chromeos/login/screens/demo_setup_screen_view.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
-#include "chrome/browser/chromeos/login/screens/fingerprint_setup_screen_view.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/shutdown_policy_handler.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
-#include "chrome/browser/extensions/signin/gaia_auth_extension_loader.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -70,6 +66,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/recommend_apps_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/supervision_onboarding_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/supervision_transition_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/sync_consent_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
@@ -167,6 +164,11 @@ void AddSyncConsentResources(content::WebUIDataSource* source) {
 #endif
 }
 
+void AddSupervisionOnboardingScreenResources(content::WebUIDataSource* source) {
+  source->AddResourcePath("supervision/onboarding_controller.mojom-lite.js",
+                          IDR_SUPERVISION_ONBOARDING_CONTROLLER_MOJOM_LITE_JS);
+}
+
 // Adds resources for ARC-dependent screens (PlayStore ToS, Assistant, etc...)
 void AddArcScreensResources(content::WebUIDataSource* source) {
   // Required for postprocessing of Goolge PlayStore Terms and Overlay help.
@@ -250,10 +252,9 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   AddFingerprintResources(source);
   AddSyncConsentResources(source);
   AddArcScreensResources(source);
+  AddSupervisionOnboardingScreenResources(source);
 
   source->AddResourcePath(kKeyboardUtilsJSPath, IDR_KEYBOARD_UTILS_JS);
-  source->OverrideContentSecurityPolicyChildSrc(base::StringPrintf(
-      "child-src %s/;", extensions::kGaiaAuthExtensionOrigin));
   source->OverrideContentSecurityPolicyObjectSrc(
       "object-src chrome:;");
 
@@ -404,7 +405,7 @@ void OobeUI::ConfigureOobeDisplay() {
 
   auto signin_screen_handler = std::make_unique<SigninScreenHandler>(
       js_calls_container_.get(), network_state_informer_, error_screen,
-      core_handler_, GetView<GaiaScreenHandler>());
+      core_handler_, GetHandler<GaiaScreenHandler>());
   signin_screen_handler_ = signin_screen_handler.get();
   AddWebUIHandler(std::move(signin_screen_handler));
 
@@ -418,6 +419,9 @@ void OobeUI::ConfigureOobeDisplay() {
       std::make_unique<DeviceDisabledScreenHandler>(js_calls_container_.get()));
 
   AddScreenHandler(std::make_unique<EncryptionMigrationScreenHandler>(
+      js_calls_container_.get()));
+
+  AddScreenHandler(std::make_unique<SupervisionOnboardingScreenHandler>(
       js_calls_container_.get()));
 
   AddScreenHandler(std::make_unique<SupervisionTransitionScreenHandler>(
@@ -529,136 +533,8 @@ CoreOobeView* OobeUI::GetCoreOobeView() {
   return core_handler_;
 }
 
-WelcomeView* OobeUI::GetWelcomeView() {
-  return GetView<WelcomeScreenHandler>();
-}
-
-EulaView* OobeUI::GetEulaView() {
-  return GetView<EulaScreenHandler>();
-}
-
-UpdateView* OobeUI::GetUpdateView() {
-  return GetView<UpdateScreenHandler>();
-}
-
-EnableDebuggingScreenView* OobeUI::GetEnableDebuggingScreenView() {
-  return GetView<EnableDebuggingScreenHandler>();
-}
-
-EnrollmentScreenView* OobeUI::GetEnrollmentScreenView() {
-  return GetView<EnrollmentScreenHandler>();
-}
-
-ResetView* OobeUI::GetResetView() {
-  return GetView<ResetScreenHandler>();
-}
-
-DemoSetupScreenView* OobeUI::GetDemoSetupScreenView() {
-  return GetView<DemoSetupScreenHandler>();
-}
-
-DemoPreferencesScreenView* OobeUI::GetDemoPreferencesScreenView() {
-  return GetView<DemoPreferencesScreenHandler>();
-}
-
-FingerprintSetupScreenView* OobeUI::GetFingerprintSetupScreenView() {
-  return GetView<FingerprintSetupScreenHandler>();
-}
-
-KioskAutolaunchScreenView* OobeUI::GetKioskAutolaunchScreenView() {
-  return GetView<KioskAutolaunchScreenHandler>();
-}
-
-KioskEnableScreenView* OobeUI::GetKioskEnableScreenView() {
-  return GetView<KioskEnableScreenHandler>();
-}
-
-TermsOfServiceScreenView* OobeUI::GetTermsOfServiceScreenView() {
-  return GetView<TermsOfServiceScreenHandler>();
-}
-
-SyncConsentScreenView* OobeUI::GetSyncConsentScreenView() {
-  return GetView<SyncConsentScreenHandler>();
-}
-
-MarketingOptInScreenView* OobeUI::GetMarketingOptInScreenView() {
-  return GetView<MarketingOptInScreenHandler>();
-}
-
-ArcTermsOfServiceScreenView* OobeUI::GetArcTermsOfServiceScreenView() {
-  return GetView<ArcTermsOfServiceScreenHandler>();
-}
-
-RecommendAppsScreenView* OobeUI::GetRecommendAppsScreenView() {
-  return GetView<RecommendAppsScreenHandler>();
-}
-
-AppDownloadingScreenView* OobeUI::GetAppDownloadingScreenView() {
-  return GetView<AppDownloadingScreenHandler>();
-}
-
-WrongHWIDScreenView* OobeUI::GetWrongHWIDScreenView() {
-  return GetView<WrongHWIDScreenHandler>();
-}
-
-AutoEnrollmentCheckScreenView* OobeUI::GetAutoEnrollmentCheckScreenView() {
-  return GetView<AutoEnrollmentCheckScreenHandler>();
-}
-
-HIDDetectionView* OobeUI::GetHIDDetectionView() {
-  return GetView<HIDDetectionScreenHandler>();
-}
-
-DeviceDisabledScreenView* OobeUI::GetDeviceDisabledScreenView() {
-  return GetView<DeviceDisabledScreenHandler>();
-}
-
-EncryptionMigrationScreenView* OobeUI::GetEncryptionMigrationScreenView() {
-  return GetView<EncryptionMigrationScreenHandler>();
-}
-
-SupervisionTransitionScreenView* OobeUI::GetSupervisionTransitionScreenView() {
-  return GetView<SupervisionTransitionScreenHandler>();
-}
-
-UpdateRequiredView* OobeUI::GetUpdateRequiredScreenView() {
-  return GetView<UpdateRequiredScreenHandler>();
-}
-
-AssistantOptInFlowScreenView* OobeUI::GetAssistantOptInFlowScreenView() {
-  return GetView<AssistantOptInFlowScreenHandler>();
-}
-
-MultiDeviceSetupScreenView* OobeUI::GetMultiDeviceSetupScreenView() {
-  return GetView<MultiDeviceSetupScreenHandler>();
-}
-
 ErrorScreen* OobeUI::GetErrorScreen() {
   return error_screen_.get();
-}
-
-GaiaView* OobeUI::GetGaiaScreenView() {
-  return GetView<GaiaScreenHandler>();
-}
-
-UserBoardView* OobeUI::GetUserBoardView() {
-  return GetView<UserBoardScreenHandler>();
-}
-
-NetworkScreenView* OobeUI::GetNetworkScreenView() {
-  return GetView<NetworkScreenHandler>();
-}
-
-AppLaunchSplashScreenView* OobeUI::GetAppLaunchSplashScreenView() {
-  return GetView<AppLaunchSplashScreenHandler>();
-}
-
-ArcKioskSplashScreenView* OobeUI::GetArcKioskSplashScreenView() {
-  return GetView<ArcKioskSplashScreenHandler>();
-}
-
-DiscoverScreenView* OobeUI::GetDiscoverScreenView() {
-  return GetView<DiscoverScreenHandler>();
 }
 
 void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
@@ -714,7 +590,7 @@ void OobeUI::InitializeHandlers() {
     handler->InitializeBase();
 }
 
-void OobeUI::CurrentScreenChanged(OobeScreen new_screen) {
+void OobeUI::CurrentScreenChanged(OobeScreenId new_screen) {
   previous_screen_ = current_screen_;
 
   current_screen_ = new_screen;
@@ -722,7 +598,7 @@ void OobeUI::CurrentScreenChanged(OobeScreen new_screen) {
     observer.OnCurrentScreenChanged(current_screen_, new_screen);
 }
 
-bool OobeUI::IsScreenInitialized(OobeScreen screen) {
+bool OobeUI::IsScreenInitialized(OobeScreenId screen) {
   for (BaseScreenHandler* handler : screen_handlers_) {
     if (handler->oobe_screen() == screen) {
       return handler->page_is_ready();

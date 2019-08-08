@@ -5,13 +5,16 @@
 #ifndef ASH_SYSTEM_ACCESSIBILITY_AUTOCLICK_MENU_BUBBLE_CONTROLLER_H_
 #define ASH_SYSTEM_ACCESSIBILITY_AUTOCLICK_MENU_BUBBLE_CONTROLLER_H_
 
+#include "ash/public/cpp/ash_constants.h"
 #include "ash/system/accessibility/autoclick_menu_view.h"
+#include "ash/system/locale/locale_update_controller.h"
 #include "ash/system/tray/tray_bubble_view.h"
 
 namespace ash {
 
 // Manages the bubble which contains an AutoclickMenuView.
-class AutoclickMenuBubbleController : public TrayBubbleView::Delegate {
+class AutoclickMenuBubbleController : public TrayBubbleView::Delegate,
+                                      public LocaleChangeObserver {
  public:
   AutoclickMenuBubbleController();
   ~AutoclickMenuBubbleController() override;
@@ -27,6 +30,9 @@ class AutoclickMenuBubbleController : public TrayBubbleView::Delegate {
 
   void CloseBubble();
 
+  // Shows or hides the bubble.
+  void SetBubbleVisibility(bool is_visible);
+
   // Performs the mouse events on the bubble. at the given location in DIPs.
   void ClickOnBubble(gfx::Point location_in_dips, int mouse_event_flags);
 
@@ -37,6 +43,9 @@ class AutoclickMenuBubbleController : public TrayBubbleView::Delegate {
   // TrayBubbleView::Delegate:
   void BubbleViewDestroyed() override;
 
+  // LocaleChangeObserver:
+  void OnLocaleChanged() override;
+
  private:
   friend class AutoclickMenuBubbleControllerTest;
   friend class AutoclickTest;
@@ -44,6 +53,7 @@ class AutoclickMenuBubbleController : public TrayBubbleView::Delegate {
   // Owned by views hierarchy.
   AutoclickMenuBubbleView* bubble_view_ = nullptr;
   AutoclickMenuView* menu_view_ = nullptr;
+  mojom::AutoclickMenuPosition position_ = kDefaultAutoclickMenuPosition;
 
   views::Widget* bubble_widget_ = nullptr;
 

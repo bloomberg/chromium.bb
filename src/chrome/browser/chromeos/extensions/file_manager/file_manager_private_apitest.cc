@@ -52,7 +52,6 @@ using chromeos::disks::DiskMountManager;
 namespace {
 
 struct TestDiskInfo {
-  const char* system_path;
   const char* file_path;
   bool write_disabled_by_policy;
   const char* device_label;
@@ -62,7 +61,7 @@ struct TestDiskInfo {
   const char* product_id;
   const char* product_name;
   const char* fs_uuid;
-  const char* system_path_prefix;
+  const char* storage_device_path;
   chromeos::DeviceType device_type;
   uint64_t size_in_bytes;
   bool is_parent;
@@ -85,8 +84,7 @@ struct TestMountPoint {
   int disk_info_index;
 };
 
-TestDiskInfo kTestDisks[] = {{"system_path1",
-                              "file_path1",
+TestDiskInfo kTestDisks[] = {{"file_path1",
                               false,
                               "device_label1",
                               "drive_label1",
@@ -95,7 +93,7 @@ TestDiskInfo kTestDisks[] = {{"system_path1",
                               "abcd",
                               "product1",
                               "FFFF-FFFF",
-                              "system_path_prefix1",
+                              "storage_device_path1",
                               chromeos::DEVICE_TYPE_USB,
                               1073741824,
                               false,
@@ -106,8 +104,7 @@ TestDiskInfo kTestDisks[] = {{"system_path1",
                               false,
                               "exfat",
                               ""},
-                             {"system_path2",
-                              "file_path2",
+                             {"file_path2",
                               false,
                               "device_label2",
                               "drive_label2",
@@ -116,7 +113,7 @@ TestDiskInfo kTestDisks[] = {{"system_path1",
                               "cdef",
                               "product2",
                               "0FFF-FFFF",
-                              "system_path_prefix2",
+                              "storage_device_path2",
                               chromeos::DEVICE_TYPE_MOBILE,
                               47723,
                               true,
@@ -127,8 +124,7 @@ TestDiskInfo kTestDisks[] = {{"system_path1",
                               false,
                               "exfat",
                               ""},
-                             {"system_path3",
-                              "file_path3",
+                             {"file_path3",
                               true,  // write_disabled_by_policy
                               "device_label3",
                               "drive_label3",
@@ -137,7 +133,7 @@ TestDiskInfo kTestDisks[] = {{"system_path1",
                               "ef01",
                               "product3",
                               "00FF-FFFF",
-                              "system_path_prefix3",
+                              "storage_device_path3",
                               chromeos::DEVICE_TYPE_OPTICAL_DISC,
                               0,
                               true,
@@ -294,7 +290,6 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
                 .SetMountPath(kTestMountPoints[i].mount_path)
                 .SetWriteDisabledByPolicy(
                     kTestDisks[disk_info_index].write_disabled_by_policy)
-                .SetSystemPath(kTestDisks[disk_info_index].system_path)
                 .SetFilePath(kTestDisks[disk_info_index].file_path)
                 .SetDeviceLabel(kTestDisks[disk_info_index].device_label)
                 .SetDriveLabel(kTestDisks[disk_info_index].drive_label)
@@ -303,8 +298,8 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
                 .SetProductId(kTestDisks[disk_info_index].product_id)
                 .SetProductName(kTestDisks[disk_info_index].product_name)
                 .SetFileSystemUUID(kTestDisks[disk_info_index].fs_uuid)
-                .SetSystemPathPrefix(
-                    kTestDisks[disk_info_index].system_path_prefix)
+                .SetStorageDevicePath(
+                    kTestDisks[disk_info_index].storage_device_path)
                 .SetDeviceType(kTestDisks[disk_info_index].device_type)
                 .SetSizeInBytes(kTestDisks[disk_info_index].size_in_bytes)
                 .SetIsParent(kTestDisks[disk_info_index].is_parent)
@@ -465,7 +460,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, OnFileChanged) {
 
   // event_router->addFileWatch create some tasks which are performed on
   // ThreadPool. Wait until they are done.
-  base::ThreadPool::GetInstance()->FlushForTesting();
+  base::ThreadPoolInstance::Get()->FlushForTesting();
   // We also wait the UI thread here, since some tasks which are performed
   // above message loop back results to the UI thread.
   base::RunLoop().RunUntilIdle();
@@ -507,7 +502,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, OnFileChanged) {
 
   // event_router->addFileWatch create some tasks which are performed on
   // ThreadPool. Wait until they are done.
-  base::ThreadPool::GetInstance()->FlushForTesting();
+  base::ThreadPoolInstance::Get()->FlushForTesting();
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, ContentChecksum) {

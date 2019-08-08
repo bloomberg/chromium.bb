@@ -159,7 +159,6 @@ class NetErrorHelperCore {
 
   NetErrorHelperCore(Delegate* delegate,
                      bool auto_reload_enabled,
-                     bool auto_reload_visible_only,
                      bool is_visible);
   ~NetErrorHelperCore();
 
@@ -306,9 +305,6 @@ class NetErrorHelperCore {
 
   // True if auto-reload is enabled at all.
   const bool auto_reload_enabled_;
-
-  // True if auto-reload should only run when the observed frame is visible.
-  const bool auto_reload_visible_only_;
 
   // Timer used to wait for auto-reload attempts.
   std::unique_ptr<base::OneShotTimer> auto_reload_timer_;

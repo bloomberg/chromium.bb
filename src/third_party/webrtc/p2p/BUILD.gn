@@ -25,6 +25,12 @@ rtc_static_library("rtc_p2p") {
     "base/basic_packet_socket_factory.cc",
     "base/basic_packet_socket_factory.h",
     "base/candidate_pair_interface.h",
+    "base/connection.cc",
+    "base/connection.h",
+    "base/connection_info.cc",
+    "base/connection_info.h",
+    "base/datagram_dtls_adaptor.cc",
+    "base/datagram_dtls_adaptor.h",
     "base/dtls_transport.cc",
     "base/dtls_transport.h",
     "base/dtls_transport_internal.cc",
@@ -85,7 +91,6 @@ rtc_static_library("rtc_p2p") {
 
   deps = [
     "../api:libjingle_peerconnection_api",
-    "../api:ortc_api",
     "../api:scoped_refptr",
     "../api/transport:enums",
     "../logging:ice_log",
@@ -126,12 +131,23 @@ if (rtc_include_tests) {
     ]
   }
 
+  rtc_source_set("fake_port_allocator") {
+    testonly = true
+    visibility = [ "*" ]
+    sources = [
+      "base/fake_port_allocator.h",
+    ]
+    deps = [
+      ":rtc_p2p",
+      "../rtc_base",
+    ]
+  }
+
   rtc_source_set("p2p_test_utils") {
     testonly = true
     sources = [
       "base/fake_dtls_transport.h",
       "base/fake_packet_transport.h",
-      "base/fake_port_allocator.h",
       "base/mock_async_resolver.h",
       "base/mock_ice_transport.h",
       "base/test_relay_server.h",
@@ -142,10 +158,10 @@ if (rtc_include_tests) {
     ]
     deps = [
       ":fake_ice_transport",
+      ":fake_port_allocator",
       ":p2p_server_utils",
       ":rtc_p2p",
       "../api:libjingle_peerconnection_api",
-      "../api:ortc_api",
       "../rtc_base",
       "../rtc_base:gunit_helpers",
       "../rtc_base:rtc_base_approved",
@@ -186,11 +202,11 @@ if (rtc_include_tests) {
     ]
     deps = [
       ":fake_ice_transport",
+      ":fake_port_allocator",
       ":p2p_server_utils",
       ":p2p_test_utils",
       ":rtc_p2p",
       "../api:libjingle_peerconnection_api",
-      "../api:ortc_api",
       "../api:scoped_refptr",
       "../api/units:time_delta",
       "../rtc_base",
@@ -202,6 +218,7 @@ if (rtc_include_tests) {
       "../rtc_base/network:sent_packet",
       "../rtc_base/third_party/sigslot",
       "../system_wrappers:metrics",
+      "../test:field_trial",
       "../test:test_support",
       "//testing/gtest",
       "//third_party/abseil-cpp/absl/algorithm:container",

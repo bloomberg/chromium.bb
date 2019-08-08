@@ -16,16 +16,19 @@
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/test/help_app_test_helper.h"
+#include "chrome/browser/chromeos/login/test/dialog_window_waiter.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/test/scoped_help_app_for_test.h"
+#include "chrome/browser/chromeos/login/test/webview_content_extractor.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/settings/stats_reporting_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "components/guest_view/browser/guest_view_manager.h"
@@ -39,6 +42,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 using net::test_server::BasicHttpResponse;
@@ -120,22 +124,9 @@ class EulaTest : public OobeBaseTest {
   }
 
   void ShowEulaScreen() {
-    LoginDisplayHost::default_host()->StartWizard(OobeScreen::SCREEN_OOBE_EULA);
+    LoginDisplayHost::default_host()->StartWizard(EulaView::kScreenId);
     OverrideOnlineEulaUrl();
-    OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
-  }
-
-  std::string GetLoadedEulaAsText() {
-    // Wait the contents to load.
-    WebContentsLoadFinishedWaiter(FindEulaContents()).Wait();
-
-    std::string eula_text;
-    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-        FindEulaContents(),
-        "window.domAutomationController.send(document.body.textContent);",
-        &eula_text));
-
-    return eula_text;
+    OobeScreenWaiter(EulaView::kScreenId).Wait();
   }
 
   void set_allow_online_eula(bool allow) { allow_online_eula_ = allow; }
@@ -249,7 +240,8 @@ IN_PROC_BROWSER_TEST_F(EulaTest, DISABLED_LoadOnline) {
   set_allow_online_eula(true);
   ShowEulaScreen();
 
-  EXPECT_TRUE(GetLoadedEulaAsText().find(kFakeOnlineEula) != std::string::npos);
+  EXPECT_TRUE(test::GetWebViewContents({"oobe-eula-md", "crosEulaFrame"})
+                  .find(kFakeOnlineEula) != std::string::npos);
 }
 
 // Tests that offline version is shown when the online version is not
@@ -267,8 +259,8 @@ IN_PROC_BROWSER_TEST_F(EulaTest, LoadOffline) {
     WebContentsLoadFinishedWaiter(eula_contents).Wait();
   }
 
-  EXPECT_TRUE(GetLoadedEulaAsText().find(kOfflineEULAWarning) !=
-              std::string::npos);
+  EXPECT_TRUE(test::GetWebViewContents({"oobe-eula-md", "crosEulaFrame"})
+                  .find(kOfflineEULAWarning) != std::string::npos);
 }
 
 // Tests that clicking on "System security settings" button opens a dialog
@@ -365,10 +357,11 @@ IN_PROC_BROWSER_TEST_F(EulaTest, LearnMore) {
   ShowEulaScreen();
 
   // Load HelperApp extension.
-  HelpAppTestHelper scoped_helper;
+  ScopedHelpAppForTest scoped_help_app;
 
   // Start listening for help dialog creation.
-  HelpAppTestHelper::Waiter waiter;
+  DialogWindowWaiter waiter(
+      l10n_util::GetStringUTF16(IDS_LOGIN_OOBE_HELP_DIALOG_TITLE));
 
   NonPolymerOobeJS().TapOnPath({"oobe-eula-md", "learn-more"});
 
@@ -377,4 +370,5 @@ IN_PROC_BROWSER_TEST_F(EulaTest, LearnMore) {
 }
 
 }  // namespace
+
 }  // namespace chromeos

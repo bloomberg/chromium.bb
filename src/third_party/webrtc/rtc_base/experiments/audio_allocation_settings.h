@@ -34,6 +34,8 @@ class AudioAllocationSettings {
   // configured.
   bool ShouldSendTransportSequenceNumber(
       int transport_seq_num_extension_header_id) const;
+  // Returns true if audio should request ALR probing from network controller.
+  bool RequestAlrProbing() const;
   // Returns true if audio should be added to rate allocation when the audio
   // stream is started.
   // |min_bitrate_bps| the configured min bitrate, set to -1 if unset.
@@ -72,17 +74,23 @@ class AudioAllocationSettings {
   // divide bitrate evently between audio and video above this bitrate.
   DataRate DefaultPriorityBitrate() const;
 
+  // The bitrate priority is used to determine how much of the available bitrate
+  // beyond the min or priority bitrate audio streams should receive.
+  absl::optional<double> BitratePriority() const;
+
  private:
-  FieldTrialFlag audio_send_side_bwe_;
-  FieldTrialFlag allocate_audio_without_feedback_;
-  FieldTrialFlag force_no_audio_feedback_;
-  FieldTrialFlag send_side_bwe_with_overhead_;
+  const bool audio_send_side_bwe_;
+  const bool allocate_audio_without_feedback_;
+  const bool force_no_audio_feedback_;
+  const bool enable_audio_alr_probing_;
+  const bool send_side_bwe_with_overhead_;
   int min_overhead_bps_ = 0;
   // Field Trial configured bitrates to use as overrides over default/user
   // configured bitrate range when audio bitrate allocation is enabled.
   FieldTrialOptional<DataRate> min_bitrate_;
   FieldTrialOptional<DataRate> max_bitrate_;
   FieldTrialParameter<DataRate> priority_bitrate_;
+  FieldTrialOptional<double> bitrate_priority_;
 };
 }  // namespace webrtc
 

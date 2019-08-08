@@ -44,7 +44,10 @@ const HistoryPageViewHistogram = {
 const SYNCED_TABS_HISTOGRAM_NAME = 'HistoryPage.OtherDevicesMenu';
 
 /**
- * Histogram buckets for UMA tracking of synced tabs.
+ * Histogram buckets for UMA tracking of synced tabs. Keep in sync with
+ * chrome/browser/ui/webui/foreign_session_handler.h. These values are persisted
+ * to logs. Entries should not be renumbered and numeric values should never be
+ * reused.
  * @enum {number}
  */
 const SyncedTabsHistogram = {
@@ -59,5 +62,6 @@ const SyncedTabsHistogram = {
   OPEN_ALL: 8,
   HAS_FOREIGN_DATA: 9,
   HIDE_FOR_NOW: 10,
-  LIMIT: 11  // Should always be the last one.
+  OPENED_LINK_VIA_CONTEXT_MENU: 11,
+  LIMIT: 12  // Should always be the last one.
 };

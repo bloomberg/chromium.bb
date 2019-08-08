@@ -54,9 +54,12 @@ class PtraceStrategyDecider {
   //! \brief Chooses an appropriate `ptrace` strategy.
   //!
   //! \param[in] sock A socket conncted to a ExceptionHandlerClient.
+  //! \param[in] multiple_clients `true` if the socket is connected to multiple
+  //!     clients. The broker is not supported in this configuration.
   //! \param[in] client_credentials The credentials for the connected client.
   //! \return the chosen #Strategy.
   virtual Strategy ChooseStrategy(int sock,
+                                  bool multiple_clients,
                                   const ucred& client_credentials) = 0;
 
  protected:
@@ -82,11 +85,12 @@ class ExceptionHandlerServer {
     //! \param[out] local_report_id The unique identifier for the report created
     //!     in the local report database. Optional.
     //! \return `true` on success. `false` on failure with a message logged.
-    virtual bool HandleException(pid_t client_process_id,
-                                 const ClientInformation& info,
-                                 VMAddress requesting_thread_stack_address = 0,
-                                 pid_t* requesting_thread_id = nullptr,
-                                 UUID* local_report_id = nullptr) = 0;
+    virtual bool HandleException(
+        pid_t client_process_id,
+        const ExceptionHandlerProtocol::ClientInformation& info,
+        VMAddress requesting_thread_stack_address = 0,
+        pid_t* requesting_thread_id = nullptr,
+        UUID* local_report_id = nullptr) = 0;
 
     //! \brief Called on the receipt of a crash dump request from a client for a
     //!     crash that should be mediated by a PtraceBroker.
@@ -97,10 +101,11 @@ class ExceptionHandlerServer {
     //! \param[out] local_report_id The unique identifier for the report created
     //!     in the local report database. Optional.
     //! \return `true` on success. `false` on failure with a message logged.
-    virtual bool HandleExceptionWithBroker(pid_t client_process_id,
-                                           const ClientInformation& info,
-                                           int broker_sock,
-                                           UUID* local_report_id = nullptr) = 0;
+    virtual bool HandleExceptionWithBroker(
+        pid_t client_process_id,
+        const ExceptionHandlerProtocol::ClientInformation& info,
+        int broker_sock,
+        UUID* local_report_id = nullptr) = 0;
 
    protected:
     ~Delegate() {}
@@ -120,8 +125,11 @@ class ExceptionHandlerServer {
   //! This method must be successfully called before Run().
   //!
   //! \param[in] sock A socket on which to receive client requests.
+  //! \param[in] multiple_clients `true` if this socket is used by multiple
+  //!     clients. Using a broker process is not supported in this
+  //!     configuration.
   //! \return `true` on success. `false` on failure with a message logged.
-  bool InitializeWithClient(ScopedFileHandle sock);
+  bool InitializeWithClient(ScopedFileHandle sock, bool multiple_clients);
 
   //! \brief Runs the exception-handling server.
   //!
@@ -141,16 +149,32 @@ class ExceptionHandlerServer {
   void Stop();
 
  private:
-  struct Event;
+  struct Event {
+    enum class Type {
+      // Used by Stop() to shutdown the server.
+      kShutdown,
+
+      // A message from a client on a private socket connection.
+      kClientMessage,
+
+      // A message from a client on a shared socket connection.
+      kSharedSocketMessage
+    };
+
+    Type type;
+    ScopedFileHandle fd;
+  };
 
   void HandleEvent(Event* event, uint32_t event_type);
-  bool InstallClientSocket(ScopedFileHandle socket);
+  bool InstallClientSocket(ScopedFileHandle socket, Event::Type type);
   bool UninstallClientSocket(Event* event);
   bool ReceiveClientMessage(Event* event);
-  bool HandleCrashDumpRequest(const msghdr& msg,
-                              const ClientInformation& client_info,
-                              VMAddress requesting_thread_stack_address,
-                              int client_sock);
+  bool HandleCrashDumpRequest(
+      const ucred& creds,
+      const ExceptionHandlerProtocol::ClientInformation& client_info,
+      VMAddress requesting_thread_stack_address,
+      int client_sock,
+      bool multiple_clients);
 
   std::unordered_map<int, std::unique_ptr<Event>> clients_;
   std::unique_ptr<Event> shutdown_event_;

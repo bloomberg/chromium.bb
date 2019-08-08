@@ -12,7 +12,7 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop_current.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -101,10 +101,9 @@ class LocalMediaDataSource : public chrome::mojom::MediaDataSource {
     ReadFileCallback read_file_done = base::BindOnce(
         &LocalMediaDataSource::OnReadFileDone, weak_ptr_factory_.GetWeakPtr());
     file_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&ReadFile, file_path_, position, length,
-                       base::MessageLoopCurrent::Get()->task_runner(),
-                       std::move(read_file_done)));
+        FROM_HERE, base::BindOnce(&ReadFile, file_path_, position, length,
+                                  base::ThreadTaskRunnerHandle::Get(),
+                                  std::move(read_file_done)));
   }
 
   void OnReadFileDone(bool success, std::vector<char> buffer) {

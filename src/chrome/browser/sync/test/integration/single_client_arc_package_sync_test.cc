@@ -3,12 +3,10 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/test/integration/feature_toggler.h"
 #include "chrome/browser/sync/test/integration/sync_arc_package_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service.h"
-#include "components/sync/driver/sync_driver_switches.h"
 
 namespace arc {
 
@@ -21,11 +19,9 @@ bool AllProfilesHaveSameArcPackageDetails() {
 
 }  // namespace
 
-class SingleClientArcPackageSyncTest : public FeatureToggler, public SyncTest {
+class SingleClientArcPackageSyncTest : public SyncTest {
  public:
-  SingleClientArcPackageSyncTest()
-      : FeatureToggler(switches::kSyncPseudoUSSArcPackage),
-        SyncTest(SINGLE_CLIENT) {}
+  SingleClientArcPackageSyncTest() : SyncTest(SINGLE_CLIENT) {}
 
   ~SingleClientArcPackageSyncTest() override {}
 
@@ -33,13 +29,13 @@ class SingleClientArcPackageSyncTest : public FeatureToggler, public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(SingleClientArcPackageSyncTest);
 };
 
-IN_PROC_BROWSER_TEST_P(SingleClientArcPackageSyncTest, ArcPackageEmpty) {
+IN_PROC_BROWSER_TEST_F(SingleClientArcPackageSyncTest, ArcPackageEmpty) {
   ASSERT_TRUE(SetupSync());
 
   ASSERT_TRUE(AllProfilesHaveSameArcPackageDetails());
 }
 
-IN_PROC_BROWSER_TEST_P(SingleClientArcPackageSyncTest,
+IN_PROC_BROWSER_TEST_F(SingleClientArcPackageSyncTest,
                        ArcPackageInstallSomePackages) {
   ASSERT_TRUE(SetupSync());
 
@@ -52,9 +48,5 @@ IN_PROC_BROWSER_TEST_P(SingleClientArcPackageSyncTest,
   ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
   ASSERT_TRUE(AllProfilesHaveSameArcPackageDetails());
 }
-
-INSTANTIATE_TEST_SUITE_P(USS,
-                         SingleClientArcPackageSyncTest,
-                         ::testing::Values(false, true));
 
 }  // namespace arc

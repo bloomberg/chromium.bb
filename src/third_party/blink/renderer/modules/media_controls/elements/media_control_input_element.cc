@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
@@ -57,11 +58,12 @@ HTMLElement* MediaControlInputElement::CreateOverflowElement(
   // We don't want the button visible within the overflow menu.
   button->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueID::kNone);
 
-  overflow_menu_text_ = HTMLSpanElement::Create(GetDocument());
+  overflow_menu_text_ = MakeGarbageCollected<HTMLSpanElement>(GetDocument());
   overflow_menu_text_->setInnerText(button->GetOverflowMenuString(),
                                     ASSERT_NO_EXCEPTION);
 
-  overflow_label_element_ = HTMLLabelElement::Create(GetDocument());
+  overflow_label_element_ =
+      MakeGarbageCollected<HTMLLabelElement>(GetDocument());
   overflow_label_element_->SetShadowPseudoId(
       AtomicString("-internal-media-controls-overflow-menu-list-item"));
   overflow_label_element_->setAttribute(html_names::kRoleAttr, "menuitem");
@@ -74,7 +76,8 @@ HTMLElement* MediaControlInputElement::CreateOverflowElement(
   button->setTabIndex(-1);
 
   if (MediaControlsImpl::IsModern()) {
-    overflow_menu_container_ = HTMLDivElement::Create(GetDocument());
+    overflow_menu_container_ =
+        MakeGarbageCollected<HTMLDivElement>(GetDocument());
     overflow_menu_container_->ParserAppendChild(overflow_menu_text_);
     overflow_menu_container_->setAttribute(html_names::kAriaHiddenAttr, "true");
     aria_label_ = button->getAttribute(html_names::kAriaLabelAttr) + " " +
@@ -114,7 +117,8 @@ void MediaControlInputElement::UpdateOverflowSubtitleElement(String text) {
     overflow_menu_subtitle_->setInnerText(text, ASSERT_NO_EXCEPTION);
   } else {
     // Otherwise, create a new element.
-    overflow_menu_subtitle_ = HTMLSpanElement::Create(GetDocument());
+    overflow_menu_subtitle_ =
+        MakeGarbageCollected<HTMLSpanElement>(GetDocument());
     overflow_menu_subtitle_->setInnerText(text, ASSERT_NO_EXCEPTION);
     overflow_menu_subtitle_->setAttribute("class", kOverflowSubtitleCSSClass);
 
@@ -183,10 +187,7 @@ void MediaControlInputElement::UpdateOverflowString() {
 MediaControlInputElement::MediaControlInputElement(
     MediaControlsImpl& media_controls)
     : HTMLInputElement(media_controls.GetDocument(), CreateElementFlags()),
-      MediaControlElementBase(media_controls, this) {
-  CreateUserAgentShadowRoot();
-  CreateShadowSubtree();
-}
+      MediaControlElementBase(media_controls, this) {}
 
 WebLocalizedString::Name MediaControlInputElement::GetOverflowStringName()
     const {

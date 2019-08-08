@@ -315,6 +315,12 @@ const GURL& FakeDownloadItem::GetTabReferrerUrl() const {
   return dummy_url;
 }
 
+const base::Optional<url::Origin>& FakeDownloadItem::GetRequestInitiator()
+    const {
+  NOTREACHED();
+  return dummy_origin;
+}
+
 std::string FakeDownloadItem::GetSuggestedFilename() const {
   NOTREACHED();
   return std::string();

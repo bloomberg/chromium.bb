@@ -9,7 +9,10 @@
 Polymer({
   is: 'settings-clear-browsing-data-dialog',
 
-  behaviors: [WebUIListenerBehavior, settings.RouteObserverBehavior],
+  behaviors: [
+    WebUIListenerBehavior,
+    settings.RouteObserverBehavior,
+  ],
 
   properties: {
     /**
@@ -145,7 +148,16 @@ Polymer({
     dialogOpenedTime_: {
       type: Number,
       value: 0,
-    }
+    },
+
+    /** @private {Array<string>} */
+    tabsNames_: {
+      type: Array,
+      value: () =>
+          [loadTimeData.getString('basicPageTitle'),
+           loadTimeData.getString('advancedPageTitle'),
+],
+    },
   },
 
   listeners: {'settings-boolean-control-change': 'updateClearButtonState_'},

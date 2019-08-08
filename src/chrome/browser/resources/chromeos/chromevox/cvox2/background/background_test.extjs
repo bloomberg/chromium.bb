@@ -1242,7 +1242,9 @@ TEST_F('ChromeVoxBackgroundTest', 'InPageLinks', function() {
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'ListItem', function() {
+// Timeout on ChromeOS with LayoutNG & Viz.
+// https://crbug.com/959261
+TEST_F('ChromeVoxBackgroundTest', 'DISABLED_ListItem', function() {
   this.resetContextualOutput();
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function(root) {/*!
@@ -1921,5 +1923,35 @@ TEST_F('ChromeVoxBackgroundTest', 'DISABLED_ValidationTest', function() {
       .expectSpeech('Alert')
       .expectSpeech('Please enter name')
       .replay();
+  });
+});
+
+TEST_F('ChromeVoxBackgroundTest', 'EventFromAction', function() {
+  this.runWithLoadedTree(function() {/*
+    <button>ok</button><button>cancel</button>
+  */}, function(root) {
+    var button = root.findAll({role: RoleType.BUTTON})[1];
+    button.addEventListener(EventType.FOCUS, this.newCallback(function(evt) {
+      assertEquals(RoleType.BUTTON, evt.target.role);
+      assertEquals('action', evt.eventFrom);
+      assertEquals('cancel', evt.target.name);
+    }));
+
+    button.focus();
+  });
+});
+
+TEST_F('ChromeVoxBackgroundTest', 'EventFromUser', function() {
+  this.runWithLoadedTree(function() {/*
+    <button>ok</button><button>cancel</button>
+  */}, function(root) {
+    var button = root.findAll({role: RoleType.BUTTON})[1];
+    button.addEventListener(EventType.FOCUS, this.newCallback(function(evt) {
+      assertEquals(RoleType.BUTTON, evt.target.role);
+      assertEquals('user', evt.eventFrom);
+      assertEquals('cancel', evt.target.name);
+    }));
+
+    press(9  /* tab */)();
   });
 });

@@ -17,6 +17,12 @@ Polymer({
     },
 
     /** @private */
+    keyboardNavigationActive_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** @private */
     showOnLeft_: {
       type: Boolean,
       computed: 'computeShowOnLeft_(newPrintPreview)',
@@ -30,6 +36,8 @@ Polymer({
 
   listeners: {
     'focus': 'onFocus_',
+    'keyup': 'onKeyUp_',
+    'pointerdown': 'onPointerDown_',
   },
 
   isVisible: function() {
@@ -42,6 +50,16 @@ Polymer({
     if (!this.visible_) {
       this.show();
     }
+  },
+
+  /** @private */
+  onKeyUp_: function() {
+    this.keyboardNavigationActive_ = true;
+  },
+
+  /** @private */
+  onPointerDown_: function() {
+    this.keyboardNavigationActive_ = false;
   },
 
   /**

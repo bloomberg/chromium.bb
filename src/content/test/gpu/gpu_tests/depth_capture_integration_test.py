@@ -70,10 +70,6 @@ class DepthCaptureIntegrationTest(gpu_integration_test.GpuIntegrationTest):
                 tab.EvaluateJavaScript('domAutomationController._error_msg'))
 
   @classmethod
-  def _CreateExpectations(cls):
-    raise NotImplementedError
-
-  @classmethod
   def SetUpProcess(cls):
     super(DepthCaptureIntegrationTest, cls).SetUpProcess()
     cls.CustomizeBrowserArgs([

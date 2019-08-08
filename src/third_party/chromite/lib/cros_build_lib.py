@@ -742,6 +742,11 @@ def IsInsideChroot():
   return os.path.exists('/etc/cros_chroot_version')
 
 
+def IsOutsideChroot():
+  """Returns True if we are outside chroot."""
+  return not IsInsideChroot()
+
+
 def AssertInsideChroot():
   """Die if we are outside the chroot"""
   if not IsInsideChroot():
@@ -1870,14 +1875,26 @@ def GetImageDiskPartitionInfo(image_path):
     cmd = ['cgpt', 'show', image_path]
     func = _ParseCgpt
   else:
-    # Outside chroot, use `parted`.
-    cmd = ['parted', '-m', image_path, 'unit', 'B', 'print']
+    # Outside chroot, use `parted`. Parted 3.2 and earlier has a bug where it
+    # will complain that partitions are overlapping even when they are not. It
+    # does this in a specific case: when inserting a one-sector partition into
+    # a layout where that partition is snug in between two other partitions
+    # that have smaller partition numbers. With disk_layout_v2.json, this
+    # happens when inserting partition 10, KERN-A, since the blank padding
+    # before it was removed.
+    # Work around this by telling parted to ignore this "failure" interactively.
+    # Yes, the three dashes are correct, and yes, it _is_ weird.
+    cmd = ['parted', '---pretend-input-tty', '-m', image_path, 'unit', 'B',
+           'print']
     func = _ParseParted
 
+  # The 'I' input tells parted to ignore its supposed concern about overlapping
+  # partitions. Cgpt simply ignores the input.
   lines = RunCommand(
       cmd,
       extra_env={'PATH': '/sbin:%s' % os.environ['PATH'], 'LC_ALL': 'C'},
-      capture_output=True).output.splitlines()
+      capture_output=True,
+      input='I').output.splitlines()
   return func(lines)
 
 

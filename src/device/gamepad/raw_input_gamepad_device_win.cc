@@ -258,6 +258,11 @@ bool RawInputGamepadDeviceWin::QueryDeviceInfo() {
   if (!name_.compare(0, pci_prefix.size(), pci_prefix))
     return false;
 
+  // Filter out the virtual digitizer, which was observed after remote desktop.
+  // See https://crbug.com/961774 for details.
+  if (name_ == L"\\\\?\\VIRTUAL_DIGITIZER")
+    return false;
+
   // Fetch the human-friendly |product_string_|, if available.
   if (!QueryProductString())
     product_string_ = L"Unknown Gamepad";

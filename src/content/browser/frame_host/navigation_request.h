@@ -13,23 +13,32 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_throttle_runner.h"
 #include "content/browser/initiator_csp_context.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
+#include "content/browser/navigation_subresource_loader_params.h"
 #include "content/common/content_export.h"
 #include "content/common/frame_message_enums.h"
 #include "content/common/navigation_params.h"
 #include "content/common/navigation_params.mojom.h"
-#include "content/common/navigation_subresource_loader_params.h"
 #include "content/public/browser/navigation_throttle.h"
+#include "content/public/browser/navigation_type.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/common/previews_state.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/scoped_java_ref.h"
+#include "content/browser/android/navigation_handle_proxy.h"
+#endif
 
 namespace network {
 class ResourceRequestBody;
 struct URLLoaderCompletionStatus;
 }
+
+struct FrameHostMsg_DidCommitProvisionalLoad_Params;
 
 namespace content {
 
@@ -40,6 +49,7 @@ class NavigationURLLoader;
 class NavigationData;
 class NavigationUIData;
 class NavigatorDelegate;
+class PrefetchedSignedExchangeCache;
 class SiteInstanceImpl;
 struct SubresourceLoaderParams;
 
@@ -139,7 +149,9 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
       bool override_user_agent,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
       mojom::NavigationClientAssociatedPtrInfo navigation_client,
-      blink::mojom::NavigationInitiatorPtr navigation_initiator);
+      blink::mojom::NavigationInitiatorPtr navigation_initiator,
+      scoped_refptr<PrefetchedSignedExchangeCache>
+          prefetched_signed_exchange_cache);
 
   // Creates a request at commit time. This should only be used for
   // renderer-initiated same-document navigations, and navigations whose
@@ -347,6 +359,74 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
     return throttle_runner_->GetDeferringThrottle();
   }
 
+  // Called when the navigation was committed.
+  // This will update the |handle_state_|.
+  // |navigation_entry_committed| indicates whether the navigation changed which
+  // NavigationEntry is current.
+  // |did_replace_entry| is true if the committed entry has replaced the
+  // existing one. A non-user initiated redirect causes such replacement.
+  void DidCommitNavigation(
+      const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+      bool navigation_entry_committed,
+      bool did_replace_entry,
+      const GURL& previous_url,
+      NavigationType navigation_type);
+
+  NavigationType navigation_type() const {
+    DCHECK_GE(handle_state_, DID_COMMIT);
+    return navigation_type_;
+  }
+
+  const GURL& base_url() { return base_url_; }
+
+  bool did_replace_entry() const {
+    DCHECK(handle_state_ == DID_COMMIT ||
+           handle_state_ == DID_COMMIT_ERROR_PAGE);
+    return did_replace_entry_;
+  }
+
+  bool should_update_history() const {
+    DCHECK(handle_state_ == DID_COMMIT ||
+           handle_state_ == DID_COMMIT_ERROR_PAGE);
+    return should_update_history_;
+  }
+
+  bool subframe_entry_committed() const {
+    DCHECK(!frame_tree_node_->IsMainFrame());
+    DCHECK(handle_state_ == DID_COMMIT ||
+           handle_state_ == DID_COMMIT_ERROR_PAGE);
+    return subframe_entry_committed_;
+  }
+
+  const GURL& previous_url() const {
+    DCHECK(handle_state_ == DID_COMMIT ||
+           handle_state_ == DID_COMMIT_ERROR_PAGE);
+    return previous_url_;
+  }
+
+
+#if defined(OS_ANDROID)
+  // Returns a reference to |navigation_handle_| Java counterpart. It is used
+  // by Java WebContentsObservers.
+  base::android::ScopedJavaGlobalRef<jobject> java_navigation_handle() {
+    return navigation_handle_proxy_->java_navigation_handle();
+  }
+#endif
+
+  bool was_redirected() { return was_redirected_; }
+
+  std::vector<GURL>& redirect_chain() { return redirect_chain_; }
+
+  Referrer& sanitized_referrer() { return sanitized_referrer_; }
+
+  // This should be a private method. The only valid reason to be used
+  // outside of the class constructor is in the case of an initial history
+  // navigation in a subframe. This allows a browser-initiated NavigationRequest
+  // to be canceled by the renderer.
+  void SetNavigationClient(
+      mojom::NavigationClientAssociatedPtrInfo navigation_client,
+      int32_t associated_site_instance_id);
+
  private:
   // TODO(clamy): Transform NavigationHandleImplTest into NavigationRequestTest
   // once NavigationHandleImpl has become a wrapper around NavigationRequest.
@@ -495,13 +575,6 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // Inform the RenderProcessHost to no longer expect a navigation.
   void ResetExpectedProcess();
 
-  // https://crbug.com/936962 happens when a |render_frame_host_| has been
-  // selected and the |loader_| calls OnRequestFailed(). This shouldn't be
-  // possible, because |render_frame_host_| and |loader_| can't be non-null at
-  // the same time.
-  // TODO(https://crbug.com/936962): Remove this when the bug is fixed.
-  void VerifyLoaderAndRenderFrameHostExpectations();
-
   // Compute the history offset of the new document compared to the current one.
   // See navigation_history_offset_ for more details.
   int EstimateHistoryOffset();
@@ -576,8 +649,20 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // RenderProcessHostObserver implementation.
   void RenderProcessHostDestroyed(RenderProcessHost* host) override;
 
+  void RecordNavigationMetrics() const;
+
+  // Helper function that computes the site URL for |common_params_.url|.
+  // Note: |site_url_| should only be updated with the result of this function.
+  GURL GetSiteForCommonParamsURL() const;
+
+  // Updates the state of the navigation handle after encountering a server
+  // redirect.
+  void UpdateStateFollowingRedirect(const GURL& new_referrer_url,
+                                    ThrottleChecksFinishedCallback callback);
+
   FrameTreeNode* frame_tree_node_;
 
+  // Invariant: At least one of |loader_| or |render_frame_host_| is null.
   RenderFrameHostImpl* render_frame_host_ = nullptr;
 
   // Initialized on creation of the NavigationRequest. Sent to the renderer when
@@ -611,6 +696,12 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // the handle before the loader.
   std::unique_ptr<NavigationHandleImpl> navigation_handle_;
   std::unique_ptr<NavigationURLLoader> loader_;
+
+#if defined(OS_ANDROID)
+  // For each C++ NavigationHandle, there is a Java counterpart. It is the JNI
+  // bridge in between the two.
+  std::unique_ptr<NavigationHandleProxy> navigation_handle_proxy_;
+#endif
 
   // These next items are used in browser-initiated navigations to store
   // information from the NavigationEntryImpl that is required after request
@@ -670,7 +761,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   base::Closure on_start_checks_complete_closure_;
 
   // Used in the network service world to pass the subressource loader params
-  // to the renderer. Used by AppCache and ServiceWorker.
+  // to the renderer. Used by AppCache and ServiceWorker, and
+  // SignedExchangeSubresourcePrefetch.
   base::Optional<SubresourceLoaderParams> subresource_loader_params_;
 
   // See comment on accessor.
@@ -707,6 +799,48 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // Owns the NavigationThrottles associated with this navigation, and is
   // responsible for notifying them about the various navigation events.
   std::unique_ptr<NavigationThrottleRunner> throttle_runner_;
+
+  // Indicates whether the navigation changed which NavigationEntry is current.
+  bool subframe_entry_committed_ = false;
+
+  // True if the committed entry has replaced the existing one.
+  // A non-user initiated redirect causes such replacement.
+  bool did_replace_entry_ = false;
+
+  // Set to false if we want to update the session history but not update the
+  // browser history. E.g., on unreachable urls.
+  bool should_update_history_ = false;
+
+  // The previous main frame URL that the user was on. This may be empty if
+  // there was no last committed entry.
+  GURL previous_url_;
+
+  // The base URL for the page's document when the frame was committed.
+  GURL base_url_;
+
+  // The type of navigation that just occurred. Note that not all types of
+  // navigations in the enum are valid here, since some of them don't actually
+  // cause a "commit" and won't generate this notification.
+  NavigationType navigation_type_ = NAVIGATION_TYPE_UNKNOWN;
+
+  // The chain of redirects, including client-side redirect and the current URL.
+  // TODO(zetamoo): Try to improve redirect tracking during navigation.
+  std::vector<GURL> redirect_chain_;
+
+  // TODO(zetamoo): Try to remove this by always sanitizing the referrer in
+  // common_params_.
+  Referrer sanitized_referrer_;
+
+  bool was_redirected_ = false;
+
+  // Used when SignedExchangeSubresourcePrefetch is enabled to hold the
+  // prefetched signed exchanges. This is shared with the navigation initiator's
+  // RenderFrameHostImpl. This also means that only the navigations that were
+  // directly initiated by the frame that made the prefetches could use the
+  // prefetched resources, which is a different behavior from regular prefetches
+  // (where all prefetched resources are stored and shared in http cache).
+  scoped_refptr<PrefetchedSignedExchangeCache>
+      prefetched_signed_exchange_cache_;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_;
 

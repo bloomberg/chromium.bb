@@ -99,12 +99,12 @@ void WebSocketHandleImpl::Send(bool fin,
   websocket_->SendFrame(fin, type_to_pass, data_to_pass);
 }
 
-void WebSocketHandleImpl::FlowControl(int64_t quota) {
+void WebSocketHandleImpl::AddReceiveFlowControlQuota(int64_t quota) {
   DCHECK(websocket_);
 
   NETWORK_DVLOG(1) << this << " flowControl(" << quota << ")";
 
-  websocket_->SendFlowControl(quota);
+  websocket_->AddReceiveFlowControlQuota(quota);
 }
 
 void WebSocketHandleImpl::Close(uint16_t code, const String& reason) {

@@ -24,7 +24,8 @@ namespace chrome_cleaner {
 namespace internal {
 
 base::string16 ConstructZipArchiveFileName(const base::string16& filename,
-                                           const std::string& file_hash);
+                                           const std::string& file_hash,
+                                           size_t max_filename_length);
 
 }  // namespace internal
 
@@ -46,6 +47,7 @@ class SandboxedZipArchiver : public ZipArchiver {
   UniqueZipArchiverPtr zip_archiver_ptr_;
   const base::FilePath dst_archive_folder_;
   const std::string zip_password_;
+  size_t dst_max_component_length_;
 };
 
 ResultCode SpawnZipArchiverSandbox(

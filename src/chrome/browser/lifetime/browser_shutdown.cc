@@ -266,7 +266,7 @@ void ShutdownPostThreadsStop(int shutdown_flags) {
     base::FilePath shutdown_ms_file = GetShutdownMsPath();
     // Note: ReadLastShutdownFile() is done as a BLOCK_SHUTDOWN task so there's
     // an implicit sequencing between it and this write which happens after
-    // threads have been stopped (and thus ThreadPool::Shutdown() is
+    // threads have been stopped (and thus ThreadPoolInstance::Shutdown() is
     // complete).
     base::WriteFile(shutdown_ms_file, shutdown_ms.c_str(), len);
   }

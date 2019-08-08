@@ -7,17 +7,57 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "chrome/browser/chromeos/login/screens/reset_view.h"
 #include "chrome/browser/chromeos/tpm_firmware_update.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "content/public/browser/web_ui.h"
 
 namespace chromeos {
 
+class ResetScreen;
+
+// Interface for dependency injection between ResetScreen and its actual
+// representation, either views based or WebUI.
+class ResetView {
+ public:
+  constexpr static StaticOobeScreenId kScreenId{"reset"};
+
+  virtual ~ResetView() {}
+
+  virtual void Bind(ResetScreen* screen) = 0;
+  virtual void Unbind() = 0;
+  virtual void Show() = 0;
+  virtual void Hide() = 0;
+
+  enum class State {
+    kRestartRequired = 0,
+    kRevertPromise,
+    kPowerwashProposal,
+    kError,
+  };
+
+  virtual void SetIsRollbackAvailable(bool value) = 0;
+  virtual void SetIsRollbackChecked(bool value) = 0;
+  virtual void SetIsTpmFirmwareUpdateAvailable(bool value) = 0;
+  virtual void SetIsTpmFirmwareUpdateChecked(bool value) = 0;
+  virtual void SetIsTpmFirmwareUpdateEditable(bool value) = 0;
+  virtual void SetTpmFirmwareUpdateMode(tpm_firmware_update::Mode value) = 0;
+  virtual void SetIsConfirmational(bool value) = 0;
+  virtual void SetIsOfficialBuild(bool value) = 0;
+  virtual void SetScreenState(State value) = 0;
+
+  virtual State GetScreenState() = 0;
+  virtual tpm_firmware_update::Mode GetTpmFirmwareUpdateMode() = 0;
+  virtual bool GetIsRollbackAvailable() = 0;
+  virtual bool GetIsRollbackChecked() = 0;
+  virtual bool GetIsTpmFirmwareUpdateChecked() = 0;
+};
+
 // WebUI implementation of ResetScreenActor.
 class ResetScreenHandler : public ResetView,
                            public BaseScreenHandler {
  public:
+  using TView = ResetView;
+
   explicit ResetScreenHandler(JSCallsContainer* js_calls_container);
   ~ResetScreenHandler() override;
 

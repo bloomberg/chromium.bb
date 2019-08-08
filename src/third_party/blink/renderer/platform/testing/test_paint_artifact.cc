@@ -108,6 +108,11 @@ TestPaintArtifact& TestPaintArtifact::ScrollHitTest(
   return *this;
 }
 
+TestPaintArtifact& TestPaintArtifact::OutsetForRasterEffects(float outset) {
+  paint_chunks_.back().outset_for_raster_effects = outset;
+  return *this;
+}
+
 TestPaintArtifact& TestPaintArtifact::KnownToBeOpaque() {
   paint_chunks_.back().known_to_be_opaque = true;
   return *this;

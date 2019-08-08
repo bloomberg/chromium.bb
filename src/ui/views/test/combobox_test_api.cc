@@ -26,7 +26,7 @@ class TestMenuRunnerHandler : public MenuRunnerHandler {
   explicit TestMenuRunnerHandler(int* show_counter)
       : show_counter_(show_counter) {}
   void RunMenuAt(Widget* parent,
-                 MenuButton* button,
+                 MenuButtonController* button_controller,
                  const gfx::Rect& bounds,
                  MenuAnchorPosition anchor,
                  ui::MenuSourceType source_type,

@@ -8,6 +8,8 @@
 
 #include "ash/wm/desks/close_desk_button.h"
 #include "ash/wm/desks/desk.h"
+#include "ash/wm/desks/desk_preview_view.h"
+#include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
@@ -16,75 +18,52 @@ namespace ash {
 
 namespace {
 
-constexpr int kDeskPreviewHeight = 64;
-
 constexpr int kLabelPreviewSpacing = 8;
 
-constexpr int kCloseButtonMargin = 2;
+constexpr int kCloseButtonMargin = 4;
 
 constexpr gfx::Size kCloseButtonSize{24, 24};
+
+constexpr SkColor kActiveColor = SkColorSetARGB(0xEE, 0xFF, 0xFF, 0xFF);
+
+constexpr SkColor kInactiveColor = SkColorSetARGB(0x50, 0xFF, 0xFF, 0xFF);
+
+constexpr SkColor kDraggedOverColor = SkColorSetARGB(0xFF, 0x5B, 0xBC, 0xFF);
+
+std::unique_ptr<DeskPreviewView> CreateDeskPreviewView(
+    DeskMiniView* mini_view) {
+  auto desk_preview_view = std::make_unique<DeskPreviewView>(mini_view);
+  desk_preview_view->set_owned_by_client();
+  return desk_preview_view;
+}
 
 // The desk preview bounds are proportional to the bounds of the display on
 // which it resides, but always has a fixed height `kDeskPreviewHeight`.
 gfx::Rect GetDeskPreviewBounds(aura::Window* root_window) {
   const auto root_size = root_window->GetBoundsInRootWindow().size();
-  return gfx::Rect(kDeskPreviewHeight * root_size.width() / root_size.height(),
-                   kDeskPreviewHeight);
+  const int preview_height = DeskPreviewView::GetHeight();
+  return gfx::Rect(preview_height * root_size.width() / root_size.height(),
+                   preview_height);
 }
 
 }  // namespace
 
 // -----------------------------------------------------------------------------
-
-// A view that shows the contents of the corresponding desk in its mini_view.
-class DeskPreviewView : public views::View {
- public:
-  explicit DeskPreviewView(DeskMiniView* mini_view) : mini_view_(mini_view) {
-    // For now use a solid color layer.
-    SetPaintToLayer(ui::LAYER_SOLID_COLOR);
-    layer()->SetColor(SK_ColorDKGRAY);
-
-    // TODO(afakhry):
-    // - Ability to mark this preview as active.
-    // - Actually mirror the contents of the corresponding desk.
-  }
-
-  ~DeskPreviewView() override = default;
-
-  // ui::EventHandler:
-  void OnMouseEvent(ui::MouseEvent* event) override {
-    switch (event->type()) {
-      case ui::ET_MOUSE_PRESSED:
-      case ui::ET_MOUSE_DRAGGED:
-      case ui::ET_MOUSE_RELEASED:
-      case ui::ET_MOUSE_MOVED:
-      case ui::ET_MOUSE_ENTERED:
-      case ui::ET_MOUSE_EXITED:
-        mini_view_->OnHoverStateMayHaveChanged();
-        break;
-
-      default:
-        break;
-    }
-  }
-
- private:
-  DeskMiniView* mini_view_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeskPreviewView);
-};
-
-// -----------------------------------------------------------------------------
 // DeskMiniView
 
-DeskMiniView::DeskMiniView(const Desk* desk,
-                           const base::string16& title,
-                           views::ButtonListener* listener)
-    : views::Button(listener),
+DeskMiniView::DeskMiniView(DesksBarView* owner_bar,
+                           aura::Window* root_window,
+                           Desk* desk,
+                           const base::string16& title)
+    : views::Button(owner_bar),
+      owner_bar_(owner_bar),
+      root_window_(root_window),
       desk_(desk),
-      desk_preview_(new DeskPreviewView(this)),
+      desk_preview_(CreateDeskPreviewView(this)),
       label_(new views::Label(title)),
       close_desk_button_(new CloseDeskButton(this)) {
+  desk_->AddObserver(this);
+
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
@@ -98,27 +77,53 @@ DeskMiniView::DeskMiniView(const Desk* desk,
 
   // TODO(afakhry): Tooltips and accessible names.
 
-  AddChildView(desk_preview_);
+  AddChildView(desk_preview_.get());
   AddChildView(label_);
   AddChildView(close_desk_button_);
 
   SetFocusPainter(nullptr);
   SetInkDropMode(InkDropMode::OFF);
 
+  UpdateBorderColor();
+
   SchedulePaint();
 }
 
-DeskMiniView::~DeskMiniView() = default;
+DeskMiniView::~DeskMiniView() {
+  // In tests, where animations are disabled, the mini_view maybe destroyed
+  // before the desk.
+  if (desk_)
+    desk_->RemoveObserver(this);
+}
 
 void DeskMiniView::SetTitle(const base::string16& title) {
   label_->SetText(title);
 }
 
+aura::Window* DeskMiniView::GetDeskContainer() const {
+  DCHECK(desk_);
+  return desk_->GetDeskContainerForRoot(root_window_);
+}
+
 void DeskMiniView::OnHoverStateMayHaveChanged() {
   // TODO(afakhry): In tablet mode, discuss showing the close button on long
   // press.
+  // Don't show the close button when hovered while the dragged window is on
+  // the DesksBarView.
   close_desk_button_->SetVisible(DesksController::Get()->CanRemoveDesks() &&
+                                 !owner_bar_->dragged_item_over_bar() &&
                                  IsMouseHovered());
+}
+
+void DeskMiniView::UpdateBorderColor() {
+  DCHECK(desk_);
+  if (owner_bar_->dragged_item_over_bar() &&
+      IsPointOnMiniView(owner_bar_->last_dragged_item_screen_location())) {
+    desk_preview_->SetBorderColor(kDraggedOverColor);
+  } else {
+    desk_preview_->SetBorderColor(desk_->is_active() ? kActiveColor
+                                                     : kInactiveColor);
+  }
 }
 
 const char* DeskMiniView::GetClassName() const {
@@ -162,8 +167,12 @@ gfx::Size DeskMiniView::CalculatePreferredSize() const {
 
 void DeskMiniView::ButtonPressed(views::Button* sender,
                                  const ui::Event& event) {
+  DCHECK(desk_);
   if (sender != close_desk_button_)
     return;
+
+  // Hide the close button so it can no longer be pressed.
+  close_desk_button_->SetVisible(false);
 
   // This mini_view can no longer be pressed.
   listener_ = nullptr;
@@ -173,20 +182,34 @@ void DeskMiniView::ButtonPressed(views::Button* sender,
   controller->RemoveDesk(desk_);
 }
 
-void DeskMiniView::OnMouseEvent(ui::MouseEvent* event) {
-  switch (event->type()) {
-    case ui::ET_MOUSE_PRESSED:
-    case ui::ET_MOUSE_DRAGGED:
-    case ui::ET_MOUSE_RELEASED:
-    case ui::ET_MOUSE_MOVED:
-    case ui::ET_MOUSE_ENTERED:
-    case ui::ET_MOUSE_EXITED:
-      OnHoverStateMayHaveChanged();
-      break;
+void DeskMiniView::OnContentChanged() {
+  desk_preview_->RecreateDeskContentsMirrorLayers();
+}
 
-    default:
-      break;
-  }
+void DeskMiniView::OnDeskDestroyed(const Desk* desk) {
+  // Note that the mini_view outlives the desk (which will be removed after all
+  // DeskController's observers have been notified of its removal) because of
+  // the animation.
+  // Note that we can't make it the other way around (i.e. make the desk outlive
+  // the mini_view). The desk's existence (or lack thereof) is more important
+  // than the existence of the mini_view, since it determines whether we can
+  // create new desks or remove existing ones. This determines whether the close
+  // button will show on hover, and whether the new_desk_button is enabled. We
+  // shouldn't allow that state to be wrong while the mini_views perform the
+  // desk removal animation.
+  // TODO(afakhry): Consider detaching the layer and destroying the mini_view
+  // directly.
+
+  DCHECK_EQ(desk_, desk);
+  desk_ = nullptr;
+
+  // No need to remove `this` as an observer; it's done automatically.
+}
+
+bool DeskMiniView::IsPointOnMiniView(const gfx::Point& screen_location) const {
+  gfx::Point point_in_view = screen_location;
+  ConvertPointFromScreen(this, &point_in_view);
+  return HitTestPoint(point_in_view);
 }
 
 }  // namespace ash

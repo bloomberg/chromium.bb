@@ -34,8 +34,6 @@ class CORE_EXPORT HTMLMapElement final : public HTMLElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_NODE_FACTORY(HTMLMapElement);
-
   explicit HTMLMapElement(Document&);
   ~HTMLMapElement() override;
 

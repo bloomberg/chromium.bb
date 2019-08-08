@@ -29,7 +29,7 @@ gfx::Rect TouchSelectionMenuRunnerViews::TestApi::GetAnchorRect() const {
 
 LabelButton* TouchSelectionMenuRunnerViews::TestApi::GetFirstButton() const {
   TouchSelectionMenuViews* menu = menu_runner_->menu_;
-  return menu ? static_cast<LabelButton*>(menu->child_at(0)) : nullptr;
+  return menu ? static_cast<LabelButton*>(menu->children().front()) : nullptr;
 }
 
 Widget* TouchSelectionMenuRunnerViews::TestApi::GetWidget() const {

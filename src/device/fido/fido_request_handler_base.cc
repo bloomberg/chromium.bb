@@ -18,6 +18,10 @@
 #include "device/fido/fido_discovery_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
 
+#if defined(OS_WIN)
+#include "device/fido/win/authenticator.h"
+#endif
+
 namespace device {
 
 // PlatformAuthenticatorInfo --------------------------
@@ -57,8 +61,11 @@ FidoRequestHandlerBase::Observer::~Observer() = default;
 
 FidoRequestHandlerBase::FidoRequestHandlerBase(
     service_manager::Connector* connector,
+    FidoDiscoveryFactory* fido_discovery_factory,
     const base::flat_set<FidoTransportProtocol>& available_transports)
-    : connector_(connector), weak_factory_(this) {
+    : fido_discovery_factory_(fido_discovery_factory),
+      connector_(connector),
+      weak_factory_(this) {
 #if defined(OS_WIN)
   InitDiscoveriesWin(available_transports);
 #else
@@ -99,7 +106,7 @@ void FidoRequestHandlerBase::InitDiscoveries(
       continue;
     }
 
-    auto discovery = FidoDiscoveryFactory::Create(transport, connector_);
+    auto discovery = fido_discovery_factory_->Create(transport, connector_);
     if (discovery == nullptr) {
       // This can occur in tests when a ScopedVirtualU2fDevice is in effect and
       // HID transports are not configured.
@@ -136,7 +143,8 @@ void FidoRequestHandlerBase::InitDiscoveriesWin(
   // Try to instantiate the discovery for proxying requests to the native
   // Windows WebAuthn API; or fall back to using the regular device transport
   // discoveries if the API is unavailable.
-  auto discovery = FidoDiscoveryFactory::MaybeCreateWinWebAuthnApiDiscovery();
+  auto discovery =
+      fido_discovery_factory_->MaybeCreateWinWebAuthnApiDiscovery();
   if (!discovery) {
     InitDiscoveries(available_transports);
     return;
@@ -154,6 +162,8 @@ void FidoRequestHandlerBase::InitDiscoveriesWin(
   //  responsible for dispatch of the authenticator and whether they
   //  display any UI in addition to the one provided by the OS.
   transport_availability_info_.has_win_native_api_authenticator = true;
+  transport_availability_info_.win_native_ui_shows_resident_credential_notice =
+      WinWebAuthnApiAuthenticator::ShowsResidentCredentialPrivacyNotice();
 
   // Allow caBLE as a potential additional transport if requested by
   // the implementing class because it is not subject to the OS'
@@ -242,11 +252,6 @@ void FidoRequestHandlerBase::InitiatePairingWithDevice(
   bluetooth_adapter_manager_->InitiatePairing(
       std::move(authenticator_id), std::move(pin_code),
       std::move(success_callback), std::move(error_callback));
-}
-
-void FidoRequestHandlerBase::ProvidePIN(const std::string& old_pin,
-                                        const std::string& pin) {
-  NOTREACHED();
 }
 
 base::WeakPtr<FidoRequestHandlerBase> FidoRequestHandlerBase::GetWeakPtr() {

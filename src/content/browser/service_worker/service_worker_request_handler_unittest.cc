@@ -27,7 +27,6 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_test_util.h"
-#include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
@@ -97,7 +96,6 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
         ServiceWorkerRequestHandler::CreateForNavigation(
             GURL(url), nullptr /* resource_context */,
             navigation_handle_core.get(), request_info,
-            base::RepeatingCallback<WebContents*(void)>(),
             &service_worker_provider_host);
     EXPECT_EQ(expected_handler_created, !!interceptor.get());
   }

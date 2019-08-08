@@ -52,6 +52,7 @@ class GPU_IPC_SERVICE_EXPORT GLES2CommandBufferStub
 
   void AddFilter(IPC::MessageFilter* message_filter) override;
   int32_t GetRouteID() const override;
+  viz::GpuVSyncCallback GetGpuVSyncCallback() override;
 
  private:
   bool HandleMessage(const IPC::Message& message) override;

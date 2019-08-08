@@ -30,9 +30,8 @@ void StubPasswordManagerClient::ShowManualFallbackForSaving(
 void StubPasswordManagerClient::HideManualFallbackForSaving() {}
 
 void StubPasswordManagerClient::FocusedInputChanged(
-    const url::Origin& last_committed_origin,
-    bool is_fillable,
-    bool is_password_field) {}
+    password_manager::PasswordManagerDriver* driver,
+    autofill::mojom::FocusedFieldType focused_field_type) {}
 
 bool StubPasswordManagerClient::PromptUserToChooseCredentials(
     std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
@@ -89,6 +88,7 @@ void StubPasswordManagerClient::CheckSafeBrowsingReputation(
 
 void StubPasswordManagerClient::CheckProtectedPasswordEntry(
     metrics_util::PasswordType reused_password_type,
+    const std::string& username,
     const std::vector<std::string>& matching_domains,
     bool password_field_exists) {}
 
@@ -108,6 +108,10 @@ StubPasswordManagerClient::GetMetricsRecorder() {
 }
 
 bool StubPasswordManagerClient::IsIsolationForPasswordSitesEnabled() const {
+  return false;
+}
+
+bool StubPasswordManagerClient::IsNewTabPage() const {
   return false;
 }
 

@@ -1,11 +1,11 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://downloads/browser_proxy.html">
-<link rel="import" href="chrome://downloads/constants.html">
-<link rel="import" href="chrome://downloads/i18n_setup.html">
-<link rel="import" href="chrome://downloads/item.html">
-<link rel="import" href="chrome://downloads/search_service.html">
-<link rel="import" href="chrome://downloads/toolbar.html">
+<link rel="import" href="browser_proxy.html">
+<link rel="import" href="constants.html">
+<link rel="import" href="i18n_setup.html">
+<link rel="import" href="item.html">
+<link rel="import" href="search_service.html">
+<link rel="import" href="toolbar.html">
 <link rel="import" href="chrome://resources/cr_components/managed_footnote/managed_footnote.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toast/cr_toast_manager.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
@@ -86,7 +86,7 @@
       }
 
       #no-downloads .illustration {
-        background: url(chrome://downloads/images/no_downloads.svg) no-repeat
+        background: url(images/no_downloads.svg) no-repeat
             center center;
         background-size: contain;
         height: 144px;
@@ -142,7 +142,8 @@
       </div>
     </div>
     <cr-toast-manager on-undo-click="onUndoClick_" undo-label="$i18n{undo}"
-        undo-description="$i18n{undoDescription}"></cr-toast-manager>
+        undo-description="$i18n{undoDescription}" duration="10000">
+    </cr-toast-manager>
   </template>
-  <script src="chrome://downloads/manager.js"></script>
+  <script src="manager.js"></script>
 </dom-module>

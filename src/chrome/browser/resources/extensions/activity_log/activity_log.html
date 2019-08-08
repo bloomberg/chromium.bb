@@ -3,13 +3,12 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_container_shadow_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
-<link rel="import" href="chrome://resources/cr_elements/paper_tabs_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_tabs/cr_tabs.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-pages/iron-pages.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-tabs/paper-tabs.html">
 <link rel="import" href="activity_log_history.html">
 <link rel="import" href="activity_log_stream.html">
 <link rel="import" href="../item_behavior.html">
@@ -19,7 +18,7 @@
 
 <dom-module id="extensions-activity-log">
   <template>
-    <style include="cr-icons shared-style paper-tabs-style">
+    <style include="cr-icons shared-style">
       #activity-log-heading {
         @apply --cr-title-text;
       }
@@ -28,17 +27,20 @@
         margin-inline-start: 8px;
       }
 
+      #closeButton {
+        margin-inline-end: 16px;
+      }
+
       #icon {
         height: 24px;
         margin-inline-end: 12px;
-        margin-inline-start: 16px;
         width: 24px;
       }
 
-      paper-tabs {
+      cr-tabs {
+        --cr-tabs-font-size: inherit;
+        --cr-tabs-height: 40px;
         border-bottom: 1px solid var(--google-grey-refresh-300);
-        font-size: inherit;
-        height: 40px;
       }
 
       .page-content {
@@ -66,23 +68,19 @@
           <cr-icon-button class="icon-arrow-back no-overlap" id="closeButton"
               aria-label="$i18n{back}" on-click="onCloseButtonTap_">
           </cr-icon-button>
-          <img id="icon" src="[[extensionInfo.iconUrl]]"
-              alt$="[[appOrExtension(
-                  extensionInfo.type,
-                  '$i18nPolymer{appIcon}',
-                  '$i18nPolymer{extensionIcon}')]]">
+          <template is="dom-if" if="[[!extensionInfo.isPlaceholder]]">
+            <img id="icon" src="[[extensionInfo.iconUrl]]"
+                alt$="[[appOrExtension(
+                    extensionInfo.type,
+                    '$i18nPolymer{appIcon}',
+                    '$i18nPolymer{extensionIcon}')]]">
+          </template>
           <div id="activity-log-heading">
-            [[i18n('activityLogPageHeading', extensionInfo.name)]]
+            [[getActivityLogHeading_(extensionInfo)]]
           </div>
         </div>
-        <paper-tabs noink selected="{{selectedSubpage_}}">
-          <paper-tab id="history-tab">
-            $i18n{activityLogHistoryTabHeading}
-          </paper-tab>
-          <paper-tab id="real-time-tab">
-            $i18n{activityLogStreamTabHeading}
-          </paper-tab>
-        </paper-tabs>
+        <cr-tabs selected="{{selectedSubpage_}}" tab-names="[[tabNames_]]">
+        </cr-tabs>
         <iron-pages selected="[[selectedSubpage_]]">
           <div>
             <template is="dom-if"
@@ -94,7 +92,7 @@
           </div>
           <div>
             <template is="dom-if"
-                if="[[isStreamTabSelected_(selectedSubpage_)]]" restamp>
+                if="[[isStreamTabSelected_(selectedSubpage_)]]">
               <activity-log-stream extension-id="[[extensionInfo.id]]"
                   delegate="[[delegate]]">
               </activity-log-stream>

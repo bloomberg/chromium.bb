@@ -63,6 +63,11 @@ class QuicPacketPrinter : public QuicFramerVisitorInterface {
       const QuicVersionNegotiationPacket& packet) override {
     std::cerr << "OnVersionNegotiationPacket\n";
   }
+  void OnRetryPacket(QuicConnectionId original_connection_id,
+                     QuicConnectionId new_connection_id,
+                     QuicStringPiece retry_token) override {
+    std::cerr << "OnRetryPacket\n";
+  }
   bool OnUnauthenticatedPublicHeader(const QuicPacketHeader& header) override {
     std::cerr << "OnUnauthenticatedPublicHeader\n";
     return true;
@@ -168,12 +173,12 @@ class QuicPacketPrinter : public QuicFramerVisitorInterface {
     std::cerr << "OnGoAwayFrame: " << frame;
     return true;
   }
-  bool OnMaxStreamIdFrame(const QuicMaxStreamIdFrame& frame) override {
-    std::cerr << "OnMaxStreamIdFrame: " << frame;
+  bool OnMaxStreamsFrame(const QuicMaxStreamsFrame& frame) override {
+    std::cerr << "OnMaxStreamsFrame: " << frame;
     return true;
   }
-  bool OnStreamIdBlockedFrame(const QuicStreamIdBlockedFrame& frame) override {
-    std::cerr << "OnStreamIdBlockedFrame: " << frame;
+  bool OnStreamsBlockedFrame(const QuicStreamsBlockedFrame& frame) override {
+    std::cerr << "OnStreamsBlockedFrame: " << frame;
     return true;
   }
   bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override {

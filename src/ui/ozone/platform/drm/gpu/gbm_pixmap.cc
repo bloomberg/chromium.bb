@@ -44,7 +44,7 @@ int GbmPixmap::GetDmaBufOffset(size_t plane) const {
   return buffer_->GetPlaneOffset(plane);
 }
 
-uint64_t GbmPixmap::GetDmaBufModifier(size_t plane) const {
+uint64_t GbmPixmap::GetBufferFormatModifier() const {
   return buffer_->GetFormatModifier();
 }
 

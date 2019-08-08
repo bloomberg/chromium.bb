@@ -35,8 +35,8 @@ void WorkletModuleTreeClient::NotifyModuleTreeLoadFinished(
     // The steps are implemented in WorkletPendingTasks::Abort().
     PostCrossThreadTask(
         *outside_settings_task_runner_, FROM_HERE,
-        CrossThreadBind(&WorkletPendingTasks::Abort,
-                        WrapCrossThreadPersistent(pending_tasks_.Get())));
+        CrossThreadBindOnce(&WorkletPendingTasks::Abort,
+                            WrapCrossThreadPersistent(pending_tasks_.Get())));
     return;
   }
 
@@ -53,8 +53,8 @@ void WorkletModuleTreeClient::NotifyModuleTreeLoadFinished(
   if (module_script->HasErrorToRethrow()) {
     PostCrossThreadTask(
         *outside_settings_task_runner_, FROM_HERE,
-        CrossThreadBind(&WorkletPendingTasks::Abort,
-                        WrapCrossThreadPersistent(pending_tasks_.Get())));
+        CrossThreadBindOnce(&WorkletPendingTasks::Abort,
+                            WrapCrossThreadPersistent(pending_tasks_.Get())));
     return;
   }
 
@@ -72,8 +72,8 @@ void WorkletModuleTreeClient::NotifyModuleTreeLoadFinished(
   // The steps are implemented in WorkletPendingTasks::DecrementCounter().
   PostCrossThreadTask(
       *outside_settings_task_runner_, FROM_HERE,
-      CrossThreadBind(&WorkletPendingTasks::DecrementCounter,
-                      WrapCrossThreadPersistent(pending_tasks_.Get())));
+      CrossThreadBindOnce(&WorkletPendingTasks::DecrementCounter,
+                          WrapCrossThreadPersistent(pending_tasks_.Get())));
 }
 
 void WorkletModuleTreeClient::Trace(blink::Visitor* visitor) {

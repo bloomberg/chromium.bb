@@ -4,21 +4,16 @@
 
 #include "chrome/browser/chromeos/note_taking_controller_client.h"
 
-#include "ash/public/interfaces/constants.mojom.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/common/service_manager_connection.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace chromeos {
 
 NoteTakingControllerClient::NoteTakingControllerClient(NoteTakingHelper* helper)
-    : helper_(helper), note_observer_(this), binding_(this) {
-  note_observer_.Add(helper_);
+    : helper_(helper) {
   registrar_.Add(this, chrome::NOTIFICATION_SESSION_STARTED,
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
@@ -27,34 +22,13 @@ NoteTakingControllerClient::NoteTakingControllerClient(NoteTakingHelper* helper)
 
 NoteTakingControllerClient::~NoteTakingControllerClient() = default;
 
+bool NoteTakingControllerClient::CanCreateNote() {
+  return profile_ && helper_->IsAppAvailable(profile_);
+}
+
 void NoteTakingControllerClient::CreateNote() {
   helper_->LaunchAppForNewNote(profile_, base::FilePath());
 }
-
-void NoteTakingControllerClient::OnAvailableNoteTakingAppsUpdated() {
-  bool has_app = profile_ && helper_->IsAppAvailable(profile_);
-
-  // No need to rebind the client if already connected.
-  if (binding_.is_bound() == has_app)
-    return;
-
-  if (binding_.is_bound()) {
-    binding_.Close();
-  } else {
-    // Connector can be overridden for testing.
-    if (!connector_) {
-      connector_ =
-          content::ServiceManagerConnection::GetForProcess()->GetConnector();
-    }
-    connector_->BindInterface(ash::mojom::kServiceName, &controller_);
-    ash::mojom::NoteTakingControllerClientPtr client;
-    binding_.Bind(mojo::MakeRequest(&client));
-    controller_->SetClient(std::move(client));
-  }
-}
-
-void NoteTakingControllerClient::OnPreferredNoteTakingAppUpdated(
-    Profile* profile) {}
 
 void NoteTakingControllerClient::ActiveUserChanged(
     const user_manager::User* active_user) {
@@ -88,7 +62,6 @@ void NoteTakingControllerClient::Observe(
 
 void NoteTakingControllerClient::SetProfile(Profile* profile) {
   profile_ = profile;
-  OnAvailableNoteTakingAppsUpdated();
 }
 
 }  // namespace chromeos

@@ -91,7 +91,8 @@ struct WebCursorInfo {
     kTypeZoomOut,
     kTypeGrab,
     kTypeGrabbing,
-    kTypeCustom
+    kTypeCustom,
+    kTypeMaxValue = kTypeCustom
   };
 
   Type type;

@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chromeos/settings/cros_settings_names.h"
-#include "components/gcm_driver/common/gcm_messages.h"
+#include "components/gcm_driver/common/gcm_message.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"

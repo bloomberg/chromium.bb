@@ -301,9 +301,9 @@ inline int LazyLineBreakIterator::NextBreakablePosition(
     int pos,
     const CharacterType* str,
     int len) const {
-  DCHECK_GE(pos, 0);
+  CHECK_GE(pos, 0);
   DCHECK_GE(static_cast<unsigned>(pos), start_offset_);
-  DCHECK_LE(pos, len);
+  CHECK_LE(pos, len);
   int next_break = -1;
   UChar last_last_ch = pos > 1 ? str[pos - 2] : SecondToLastCharacter();
   UChar last_ch = pos > 0 ? str[pos - 1] : LastCharacter();
@@ -337,12 +337,8 @@ inline int LazyLineBreakIterator::NextBreakablePosition(
       case BreakSpaceType::kAfterEverySpace:
         if (is_last_space)
           return i;
-        if (is_space) {
-          // Might be allowed to break before the first space after a word.
-          if (lineBreakType == LineBreakType::kBreakAll)
-            return i;
+        if (is_space)
           continue;
-        }
         break;
     }
 

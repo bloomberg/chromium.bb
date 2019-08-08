@@ -20,6 +20,7 @@
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
+#include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
@@ -130,32 +131,33 @@ class OAuth2TokenService {
   class DiagnosticsObserver {
    public:
     // Called when receiving request for access token.
-    virtual void OnAccessTokenRequested(const std::string& account_id,
+    virtual void OnAccessTokenRequested(const CoreAccountId& account_id,
                                         const std::string& consumer_id,
                                         const ScopeSet& scopes) {}
     // Called when access token fetching finished successfully or
     // unsuccessfully. |expiration_time| are only valid with
     // successful completion.
-    virtual void OnFetchAccessTokenComplete(const std::string& account_id,
+    virtual void OnFetchAccessTokenComplete(const CoreAccountId& account_id,
                                             const std::string& consumer_id,
                                             const ScopeSet& scopes,
                                             GoogleServiceAuthError error,
                                             base::Time expiration_time) {}
     // Called when an access token was removed.
-    virtual void OnAccessTokenRemoved(const std::string& account_id,
+    virtual void OnAccessTokenRemoved(const CoreAccountId& account_id,
                                       const ScopeSet& scopes) {}
 
     // Caled when a new refresh token is available. Contains diagnostic
     // information about the source of the update credentials operation.
     virtual void OnRefreshTokenAvailableFromSource(
-        const std::string& account_id,
+        const CoreAccountId& account_id,
         bool is_refresh_token_valid,
         const std::string& source) {}
 
     // Called when a refreh token is revoked. Contains diagnostic information
     // about the source that initiated the revokation operation.
-    virtual void OnRefreshTokenRevokedFromSource(const std::string& account_id,
-                                                 const std::string& source) {}
+    virtual void OnRefreshTokenRevokedFromSource(
+        const CoreAccountId& account_id,
+        const std::string& source) {}
   };
 
   explicit OAuth2TokenService(

@@ -62,8 +62,8 @@ void GetModelIndexToRangeStart(TableGrouper* grouper,
     GroupRange range;
     grouper->GetGroupRange(model_index, &range);
     DCHECK_GT(range.length, 0);
-    for (int range_counter = 0; range_counter < range.length; range_counter++)
-      (*model_index_to_range_start)[range_counter + model_index] = model_index;
+    for (int i = model_index; i < model_index + range.length; ++i)
+      (*model_index_to_range_start)[i] = model_index;
     model_index += range.length;
   }
 }
@@ -149,9 +149,9 @@ TableView::TableView(ui::TableModel* model,
   row_height_ = LayoutProvider::GetControlHeightForFont(kTextContext,
                                                         kTextStyle, font_list_);
 
-  for (size_t i = 0; i < columns.size(); ++i) {
+  for (const auto& column : columns) {
     VisibleColumn visible_column;
-    visible_column.column = columns[i];
+    visible_column.column = column;
     visible_columns_.push_back(visible_column);
   }
 
@@ -170,7 +170,7 @@ TableView::~TableView() {
 // static
 std::unique_ptr<ScrollView> TableView::CreateScrollViewWithTable(
     std::unique_ptr<TableView> table) {
-  auto scroll_view = base::WrapUnique(ScrollView::CreateScrollViewWithBorder());
+  auto scroll_view = ScrollView::CreateScrollViewWithBorder();
   auto* table_ptr = table.get();
   scroll_view->SetContents(std::move(table));
   table_ptr->CreateHeaderIfNecessary(scroll_view.get());
@@ -220,16 +220,13 @@ void TableView::SetColumnVisibility(int id, bool is_visible) {
     visible_column.column = FindColumnByID(id);
     visible_columns_.push_back(visible_column);
   } else {
-    for (size_t i = 0; i < visible_columns_.size(); ++i) {
-      if (visible_columns_[i].column.id == id) {
-        visible_columns_.erase(visible_columns_.begin() + i);
-        if (active_visible_column_index_ >=
-            static_cast<int>(visible_columns_.size())) {
-          SetActiveVisibleColumnIndex(
-              static_cast<int>(visible_columns_.size()) - 1);
-        }
-        break;
-      }
+    const auto i = std::find_if(
+        visible_columns_.begin(), visible_columns_.end(),
+        [id](const auto& column) { return column.column.id == id; });
+    if (i != visible_columns_.end()) {
+      visible_columns_.erase(i);
+      if (active_visible_column_index_ >= int{visible_columns_.size()})
+        SetActiveVisibleColumnIndex(int{visible_columns_.size()} - 1);
     }
   }
   UpdateVisibleColumnSizes();
@@ -273,11 +270,11 @@ void TableView::SetSortDescriptors(const SortDescriptors& sort_descriptors) {
 }
 
 bool TableView::IsColumnVisible(int id) const {
-  for (size_t i = 0; i < visible_columns_.size(); ++i) {
-    if (visible_columns_[i].column.id == id)
-      return true;
-  }
-  return false;
+  const auto ids_match = [id](const auto& column) {
+    return column.column.id == id;
+  };
+  return std::any_of(visible_columns_.cbegin(), visible_columns_.cend(),
+                     ids_match);
 }
 
 void TableView::AddColumn(const ui::TableColumn& col) {
@@ -286,11 +283,8 @@ void TableView::AddColumn(const ui::TableColumn& col) {
 }
 
 bool TableView::HasColumn(int id) const {
-  for (size_t i = 0; i < columns_.size(); ++i) {
-    if (columns_[i].id == id)
-      return true;
-  }
-  return false;
+  const auto ids_match = [id](const auto& column) { return column.id == id; };
+  return std::any_of(columns_.cbegin(), columns_.cend(), ids_match);
 }
 
 bool TableView::HasFocusIndicator() const {
@@ -915,8 +909,8 @@ void TableView::UpdateVisibleColumnSizes() {
     return;
 
   std::vector<ui::TableColumn> columns;
-  for (size_t i = 0; i < visible_columns_.size(); ++i)
-    columns.push_back(visible_columns_[i].column);
+  for (const auto& visible_column : visible_columns_)
+    columns.push_back(visible_column.column);
 
   const int cell_margin = GetCellMargin();
   const int cell_element_spacing = GetCellElementSpacing();
@@ -992,12 +986,10 @@ void TableView::SchedulePaintForSelection() {
 }
 
 ui::TableColumn TableView::FindColumnByID(int id) const {
-  for (size_t i = 0; i < columns_.size(); ++i) {
-    if (columns_[i].id == id)
-      return columns_[i];
-  }
-  NOTREACHED();
-  return ui::TableColumn();
+  const auto ids_match = [id](const auto& column) { return column.id == id; };
+  const auto i = std::find_if(columns_.cbegin(), columns_.cend(), ids_match);
+  DCHECK(i != columns_.cend());
+  return *i;
 }
 
 void TableView::AdvanceActiveVisibleColumn(AdvanceDirection direction) {
@@ -1354,12 +1346,12 @@ AXVirtualView* TableView::GetVirtualAccessibilityRow(int row) {
   DCHECK_GE(row, 0);
   DCHECK_LT(row, RowCount());
   if (header_)
-    row += 1;
-  if (row < GetViewAccessibility().virtual_child_count()) {
-    AXVirtualView* ax_row = GetViewAccessibility().virtual_child_at(row);
+    ++row;
+  if (size_t{row} < GetViewAccessibility().virtual_children().size()) {
+    const auto& ax_row = GetViewAccessibility().virtual_children()[size_t{row}];
     DCHECK(ax_row);
     DCHECK_EQ(ax_row->GetData().role, ax::mojom::Role::kRow);
-    return ax_row;
+    return ax_row.get();
   }
   NOTREACHED() << "|row| not found. Did you forget to call "
                   "UpdateVirtualAccessibilityChildren()?";
@@ -1370,25 +1362,22 @@ AXVirtualView* TableView::GetVirtualAccessibilityCell(
     int row,
     int visible_column_index) {
   AXVirtualView* ax_row = GetVirtualAccessibilityRow(row);
-  if (!ax_row) {
-    NOTREACHED() << "|row| not found. Did you forget to call "
+  DCHECK(ax_row) << "|row| not found. Did you forget to call "
                     "UpdateVirtualAccessibilityChildren()?";
-    return nullptr;
-  }
-  for (int i = 0; i < ax_row->GetChildCount(); ++i) {
-    AXVirtualView* ax_cell = ax_row->child_at(i);
+  const auto matches_index = [visible_column_index](const auto& ax_cell) {
     DCHECK(ax_cell);
     DCHECK(ax_cell->GetData().role == ax::mojom::Role::kColumnHeader ||
            ax_cell->GetData().role == ax::mojom::Role::kCell);
-    if (ax_cell->GetData().GetIntAttribute(
-            ax::mojom::IntAttribute::kTableCellColumnIndex) ==
-        visible_column_index) {
-      return ax_cell;
-    }
-  }
-  NOTREACHED() << "|visible_column_index| not found. Did you forget to call "
-                  "UpdateVirtualAccessibilityChildren()?";
-  return nullptr;
+    return ax_cell->GetData().GetIntAttribute(
+               ax::mojom::IntAttribute::kTableCellColumnIndex) ==
+           visible_column_index;
+  };
+  const auto i = std::find_if(ax_row->children().cbegin(),
+                              ax_row->children().cend(), matches_index);
+  DCHECK(i != ax_row->children().cend())
+      << "|visible_column_index| not found. Did you forget to call "
+      << "UpdateVirtualAccessibilityChildren()?";
+  return i->get();
 }
 
 }  // namespace views

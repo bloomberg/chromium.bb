@@ -33,10 +33,8 @@ class ProgramBinaryTest : public ANGLETest
         forceNewDisplay();
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
-
         mProgram = CompileProgram(essl1_shaders::vs::Simple(), essl1_shaders::fs::Red());
         if (mProgram == 0)
         {
@@ -51,11 +49,10 @@ class ProgramBinaryTest : public ANGLETest
         ASSERT_GL_NO_ERROR();
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
         glDeleteProgram(mProgram);
         glDeleteBuffers(1, &mBuffer);
-        ANGLETest::TearDown();
     }
 
     GLint getAvailableProgramBinaryFormatCount() const
@@ -67,7 +64,7 @@ class ProgramBinaryTest : public ANGLETest
 
     bool supported() const
     {
-        if (!extensionEnabled("GL_OES_get_program_binary"))
+        if (!IsGLExtensionEnabled("GL_OES_get_program_binary"))
         {
             std::cout << "Test skipped because GL_OES_get_program_binary is not available."
                       << std::endl;
@@ -227,8 +224,7 @@ TEST_P(ProgramBinaryTest, CallProgramBinaryBeforeLink)
     ASSERT_GL_NO_ERROR();
 
     // Shutdown and restart GL entirely.
-    TearDown();
-    SetUp();
+    recreateTestFixture();
 
     ANGLE_GL_BINARY_OES_PROGRAM(binaryProgram, binaryBlob, binaryFormat);
     ASSERT_GL_NO_ERROR();
@@ -565,10 +561,8 @@ class ProgramBinaryTransformFeedbackTest : public ANGLETest
         setConfigAlphaBits(8);
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
-
         constexpr char kVS[] = R"(#version 300 es
 in vec4 inputAttribute;
 out vec4 outputVarying;
@@ -598,12 +592,7 @@ void main()
         ASSERT_GL_NO_ERROR();
     }
 
-    void TearDown() override
-    {
-        glDeleteProgram(mProgram);
-
-        ANGLETest::TearDown();
-    }
+    void testTearDown() override { glDeleteProgram(mProgram); }
 
     GLint getAvailableProgramBinaryFormatCount() const
     {
@@ -619,7 +608,7 @@ void main()
 // should not internally cause a vertex shader recompile (for conversion).
 TEST_P(ProgramBinaryTransformFeedbackTest, GetTransformFeedbackVarying)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_OES_get_program_binary"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_OES_get_program_binary"));
 
     ANGLE_SKIP_TEST_IF(!getAvailableProgramBinaryFormatCount());
 
@@ -719,11 +708,11 @@ class ProgramBinariesAcrossPlatforms : public testing::TestWithParam<PlatformsWi
 
     EGLWindow *createAndInitEGLWindow(angle::PlatformParameters &param)
     {
-        EGLWindow *eglWindow =
-            EGLWindow::New(param.majorVersion, param.minorVersion, param.eglParameters);
+        EGLWindow *eglWindow = EGLWindow::New(param.majorVersion, param.minorVersion);
         ConfigParameters configParams;
-        bool result = eglWindow->initializeGL(mOSWindow, mEntryPointsLib.get(), configParams);
-        if (result == false)
+        bool result = eglWindow->initializeGL(mOSWindow, mEntryPointsLib.get(), param.eglParameters,
+                                              configParams);
+        if (!result)
         {
             EGLWindow::Delete(&eglWindow);
         }
@@ -899,9 +888,6 @@ ANGLE_INSTANTIATE_TEST(ProgramBinariesAcrossPlatforms,
                        //                     | using these params | using these params    | link result
                        PlatformsWithLinkResult(ES2_D3D11(),         ES2_D3D11(),            true         ), // Loading + reloading binary should work
                        PlatformsWithLinkResult(ES3_D3D11(),         ES3_D3D11(),            true         ), // Loading + reloading binary should work
-                       PlatformsWithLinkResult(ES2_D3D11_FL11_0(),  ES2_D3D11_FL9_3(),      false        ), // Switching feature level shouldn't work
-                       PlatformsWithLinkResult(ES2_D3D11(),         ES2_D3D11_WARP(),       false        ), // Switching from hardware to software shouldn't work
-                       PlatformsWithLinkResult(ES2_D3D11_FL9_3(),   ES2_D3D11_FL9_3_WARP(), false        ), // Switching from hardware to software shouldn't work for FL9 either
                        PlatformsWithLinkResult(ES2_D3D11(),         ES2_D3D9(),             false        ), // Switching from D3D11 to D3D9 shouldn't work
                        PlatformsWithLinkResult(ES2_D3D9(),          ES2_D3D11(),            false        ), // Switching from D3D9 to D3D11 shouldn't work
                        PlatformsWithLinkResult(ES2_D3D11(),         ES3_D3D11(),            false        ), // Switching to newer client version shouldn't work

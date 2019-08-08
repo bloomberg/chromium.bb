@@ -14,10 +14,12 @@
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/variations/variations_associated_data.h"
@@ -90,7 +92,7 @@ void SetHeaderExpectations(const std::string& secure_session,
                            const std::string& build,
                            const std::string& patch,
                            const std::string& page_id,
-                           const std::vector<std::string> experiments,
+                           const std::string& server_experiments,
                            std::string* expected_header) {
   std::vector<std::string> expected_options;
   if (!secure_session.empty()) {
@@ -108,9 +110,10 @@ void SetHeaderExpectations(const std::string& secure_session,
   expected_options.push_back(std::string(kPatchNumberHeaderOption) + "=" +
                              patch);
 
-  for (const auto& experiment : experiments) {
+  if (!server_experiments.empty()) {
     expected_options.push_back(
-        std::string(kExperimentsOption) + "=" + experiment);
+        std::string(params::GetDataSaverServerExperimentsOptionName()) + "=" +
+        server_experiments);
   }
 
   EXPECT_FALSE(page_id.empty());
@@ -182,12 +185,12 @@ class DataReductionProxyRequestOptionsTest : public testing::Test {
 TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationOnIOThread) {
   std::string expected_header;
   SetHeaderExpectations(std::string(), kClientStr, kExpectedBuild,
-                        kExpectedPatch, kPageId, std::vector<std::string>(),
+                        kExpectedPatch, kPageId, std::string(),
                         &expected_header);
 
   std::string expected_header2;
   SetHeaderExpectations(std::string(), kClientStr, kExpectedBuild,
-                        kExpectedPatch, kPageId2, std::vector<std::string>(),
+                        kExpectedPatch, kPageId2, std::string(),
                         &expected_header2);
 
   CreateRequestOptions(kVersion);
@@ -203,7 +206,7 @@ TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationOnIOThread) {
 TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationIgnoresEmptyKey) {
   std::string expected_header;
   SetHeaderExpectations(std::string(), kClientStr, kExpectedBuild,
-                        kExpectedPatch, kPageId, std::vector<std::string>(),
+                        kExpectedPatch, kPageId, std::string(),
                         &expected_header);
   CreateRequestOptions(kVersion);
   VerifyExpectedHeader(expected_header, kPageIdValue);
@@ -217,7 +220,7 @@ TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationIgnoresEmptyKey) {
 TEST_F(DataReductionProxyRequestOptionsTest, SecureSession) {
   std::string expected_header;
   SetHeaderExpectations(kSecureSession, kClientStr, kExpectedBuild,
-                        kExpectedPatch, kPageId, std::vector<std::string>(),
+                        kExpectedPatch, kPageId, std::string(),
                         &expected_header);
 
   CreateRequestOptions(kVersion);
@@ -228,7 +231,7 @@ TEST_F(DataReductionProxyRequestOptionsTest, SecureSession) {
 TEST_F(DataReductionProxyRequestOptionsTest, CallsHeaderCallback) {
   std::string expected_header;
   SetHeaderExpectations(kSecureSession, kClientStr, kExpectedBuild,
-                        kExpectedPatch, kPageId, std::vector<std::string>(),
+                        kExpectedPatch, kPageId, std::string(),
                         &expected_header);
 
   CreateRequestOptionsWithCallback(kVersion);
@@ -247,13 +250,10 @@ TEST_F(DataReductionProxyRequestOptionsTest, CallsHeaderCallback) {
 TEST_F(DataReductionProxyRequestOptionsTest, ParseExperiments) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       data_reduction_proxy::switches::kDataReductionProxyExperiment,
-      "staging,\"foo,bar\"");
-  std::vector<std::string> expected_experiments;
-  expected_experiments.push_back("staging");
-  expected_experiments.push_back("\"foo,bar\"");
+      "staging,foo,bar");
   std::string expected_header;
   SetHeaderExpectations(std::string(), kClientStr, kExpectedBuild,
-                        kExpectedPatch, kPageId, expected_experiments,
+                        kExpectedPatch, kPageId, "staging,foo,bar",
                         &expected_header);
 
   CreateRequestOptions(kVersion);
@@ -262,7 +262,6 @@ TEST_F(DataReductionProxyRequestOptionsTest, ParseExperiments) {
 
 TEST_F(DataReductionProxyRequestOptionsTest, ParseExperimentsFromFieldTrial) {
   const char kFieldTrialGroupFoo[] = "enabled_foo";
-  const char kFieldTrialGroupBar[] = "enabled_bar";
   const char kExperimentFoo[] = "foo";
   const char kExperimentBar[] = "bar";
   const struct {
@@ -276,48 +275,50 @@ TEST_F(DataReductionProxyRequestOptionsTest, ParseExperimentsFromFieldTrial) {
       {"disabled_group", kExperimentFoo, false, kExperimentFoo},
       // Valid field trial groups should pick from field trial.
       {kFieldTrialGroupFoo, std::string(), false, kExperimentFoo},
-      {kFieldTrialGroupBar, std::string(), false, kExperimentBar},
       {kFieldTrialGroupFoo, std::string(), true, std::string()},
-      {kFieldTrialGroupBar, std::string(), true, std::string()},
       // Experiments from command line switch should override.
       {kFieldTrialGroupFoo, kExperimentBar, false, kExperimentBar},
-      {kFieldTrialGroupBar, kExperimentFoo, false, kExperimentFoo},
-      {kFieldTrialGroupFoo, kExperimentBar, true, kExperimentBar},
-      {kFieldTrialGroupBar, kExperimentFoo, true, kExperimentFoo},
+      {kFieldTrialGroupFoo, kExperimentBar, false, kExperimentBar},
+      {kFieldTrialGroupFoo, kExperimentBar, true, std::string()},
   };
 
-  std::map<std::string, std::string> server_experiment_foo,
-      server_experiment_bar;
+  std::map<std::string, std::string> server_experiment_foo;
 
-  server_experiment_foo["exp"] = kExperimentFoo;
-  server_experiment_bar["exp"] = kExperimentBar;
-  ASSERT_TRUE(variations::AssociateVariationParams(
-      params::GetServerExperimentsFieldTrialName(), kFieldTrialGroupFoo,
-      server_experiment_foo));
-  ASSERT_TRUE(variations::AssociateVariationParams(
-      params::GetServerExperimentsFieldTrialName(), kFieldTrialGroupBar,
-      server_experiment_bar));
+  server_experiment_foo[params::GetDataSaverServerExperimentsOptionName()] =
+      kExperimentFoo;
 
   for (const auto& test : tests) {
-    std::vector<std::string> expected_experiments;
+    // Remove all related switches first to reset the test state.
+    base::CommandLine::ForCurrentProcess()->RemoveSwitch(
+        data_reduction_proxy::switches::kDataReductionProxyExperiment);
+    base::CommandLine::ForCurrentProcess()->RemoveSwitch(
+        switches::kDataReductionProxyServerExperimentsDisabled);
 
-    base::CommandLine::ForCurrentProcess()->InitFromArgv(0, nullptr);
+    std::string expected_experiments;
 
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        data_reduction_proxy::switches::kDataReductionProxyExperiment,
-        test.command_line_experiment);
+    base::test::ScopedFeatureList scoped_feature_list;
+
+    if (test.field_trial_group != "disabled_group") {
+      scoped_feature_list.InitWithFeaturesAndParameters(
+          {{data_reduction_proxy::features::
+                kDataReductionProxyServerExperiments,
+            {server_experiment_foo}}},
+          {});
+    }
+
     if (test.disable_server_experiments_via_flag) {
       base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
           switches::kDataReductionProxyServerExperimentsDisabled, "");
+    } else {
+      base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+          data_reduction_proxy::switches::kDataReductionProxyExperiment,
+          test.command_line_experiment);
     }
 
     std::string expected_header;
-    base::FieldTrialList field_trial_list(nullptr);
-    base::FieldTrialList::CreateFieldTrial(
-        params::GetServerExperimentsFieldTrialName(), test.field_trial_group);
 
     if (!test.expected_experiment.empty())
-      expected_experiments.push_back(test.expected_experiment);
+      expected_experiments = test.expected_experiment;
 
     SetHeaderExpectations(std::string(), kClientStr, kExpectedBuild,
                           kExpectedPatch, kPageId, expected_experiments,
@@ -335,16 +336,15 @@ TEST_F(DataReductionProxyRequestOptionsTest, TestExperimentPrecedence) {
 
   // Field trial has the lowest priority.
   std::map<std::string, std::string> server_experiment;
-  server_experiment["exp"] = "foo";
-  ASSERT_TRUE(variations::AssociateVariationParams(
-      params::GetServerExperimentsFieldTrialName(), "enabled",
-      server_experiment));
+  server_experiment[params::GetDataSaverServerExperimentsOptionName()] = "foo";
 
-  base::FieldTrialList field_trial_list(nullptr);
-  base::FieldTrialList::CreateFieldTrial(
-      params::GetServerExperimentsFieldTrialName(), "enabled");
-  std::vector<std::string> expected_experiments;
-  expected_experiments.push_back("foo");
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeaturesAndParameters(
+      {{data_reduction_proxy::features::kDataReductionProxyServerExperiments,
+        {server_experiment}}},
+      {});
+
+  std::string expected_experiments = "foo";
   std::string expected_header;
   SetHeaderExpectations(std::string(), kClientStr, kExpectedBuild,
                         kExpectedPatch, kPageId, expected_experiments,
@@ -355,8 +355,7 @@ TEST_F(DataReductionProxyRequestOptionsTest, TestExperimentPrecedence) {
   // Setting the experiment explicitly has the highest priority.
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       data_reduction_proxy::switches::kDataReductionProxyExperiment, "bar");
-  expected_experiments.clear();
-  expected_experiments.push_back("bar");
+  expected_experiments = "bar";
   SetHeaderExpectations(std::string(), kClientStr, kExpectedBuild,
                         kExpectedPatch, kPageId, expected_experiments,
                         &expected_header);

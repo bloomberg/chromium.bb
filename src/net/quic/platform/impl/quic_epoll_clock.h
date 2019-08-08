@@ -10,17 +10,19 @@
 #include "net/third_party/quiche/src/quic/core/quic_time.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_clock.h"
 
-namespace quic {}  // namespace quic
-namespace net {
-class EpollServer;
-}  // namespace net
+namespace epoll_server {
+
+class SimpleEpollServer;
+
+}  // namespace epoll_server
+
 namespace quic {
 
 // Clock to efficiently retrieve an approximately accurate time from an
 // net::EpollServer.
 class QuicEpollClock : public QuicClock {
  public:
-  explicit QuicEpollClock(net::EpollServer* epoll_server);
+  explicit QuicEpollClock(epoll_server::SimpleEpollServer* epoll_server);
   ~QuicEpollClock() override;
 
   // Returns the approximate current time as a QuicTime object.
@@ -40,7 +42,7 @@ class QuicEpollClock : public QuicClock {
       const QuicWallTime& walltime) const override;
 
  protected:
-  net::EpollServer* epoll_server_;
+  epoll_server::SimpleEpollServer* epoll_server_;
   // Largest time returned from Now() so far.
   mutable QuicTime largest_time_;
 

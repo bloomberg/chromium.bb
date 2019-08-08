@@ -43,7 +43,7 @@ class CORE_EXPORT InspectorTaskRunner final
   // Can be called from any thread other than isolate's thread.
   // This method appends a task, and both posts to the isolate's task runner
   // and requests interrupt. Whatever comes first - executes the task.
-  using Task = WTF::CrossThreadClosure;
+  using Task = CrossThreadOnceClosure;
   void AppendTask(Task) LOCKS_EXCLUDED(mutex_);
 
   // Can be called on any thread.

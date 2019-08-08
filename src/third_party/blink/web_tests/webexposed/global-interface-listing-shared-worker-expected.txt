@@ -51,8 +51,11 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute @@toStringTag
 [Worker]     getter size
 [Worker]     getter type
+[Worker]     method arrayBuffer
 [Worker]     method constructor
 [Worker]     method slice
+[Worker]     method stream
+[Worker]     method text
 [Worker] interface BroadcastChannel : EventTarget
 [Worker]     attribute @@toStringTag
 [Worker]     getter name
@@ -488,6 +491,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter direction
 [Worker]     getter key
 [Worker]     getter primaryKey
+[Worker]     getter request
 [Worker]     getter source
 [Worker]     method advance
 [Worker]     method constructor
@@ -640,6 +644,11 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter width
 [Worker]     method close
 [Worker]     method constructor
+[Worker] interface ImageBitmapRenderingContext
+[Worker]     attribute @@toStringTag
+[Worker]     getter canvas
+[Worker]     method constructor
+[Worker]     method transferFromImageBitmap
 [Worker] interface ImageData
 [Worker]     attribute @@toStringTag
 [Worker]     getter data
@@ -658,6 +667,11 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method constructor
 [Worker]     method query
 [Worker]     method request
+[Worker] interface MediaCapabilities
+[Worker]     attribute @@toStringTag
+[Worker]     method constructor
+[Worker]     method decodingInfo
+[Worker]     method encodingInfo
 [Worker] interface MessageChannel
 [Worker]     attribute @@toStringTag
 [Worker]     getter port1
@@ -920,6 +934,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method mark
 [Worker]     method measure
 [Worker]     method now
+[Worker]     method profile
 [Worker]     method setElementTimingBufferMaxSize
 [Worker]     method setEventTimingBufferMaxSize
 [Worker]     method setResourceTimingBufferSize
@@ -937,9 +952,11 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method toJSON
 [Worker] interface PerformanceMark : PerformanceEntry
 [Worker]     attribute @@toStringTag
+[Worker]     getter detail
 [Worker]     method constructor
 [Worker] interface PerformanceMeasure : PerformanceEntry
 [Worker]     attribute @@toStringTag
+[Worker]     getter detail
 [Worker]     method constructor
 [Worker] interface PerformanceObserver
 [Worker]     static getter supportedEntryTypes
@@ -996,6 +1013,12 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method request
 [Worker]     method requestAll
 [Worker]     method revoke
+[Worker] interface Profiler
+[Worker]     attribute @@toStringTag
+[Worker]     getter sampleInterval
+[Worker]     getter stopped
+[Worker]     method constructor
+[Worker]     method stop
 [Worker] interface ProgressEvent : Event
 [Worker]     attribute @@toStringTag
 [Worker]     getter lengthComputable
@@ -3464,6 +3487,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter language
 [Worker]     getter languages
 [Worker]     getter locks
+[Worker]     getter mediaCapabilities
 [Worker]     getter onLine
 [Worker]     getter permissions
 [Worker]     getter platform
@@ -3534,6 +3558,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute console
 [Worker]     attribute globalThis
 [Worker]     attribute internals
+[Worker]     getter TrustedTypesWorkers
 [Worker]     getter name
 [Worker]     getter onconnect
 [Worker]     method close

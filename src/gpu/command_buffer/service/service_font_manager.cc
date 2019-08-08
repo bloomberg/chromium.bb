@@ -118,6 +118,7 @@ class ServiceFontManager::SkiaDiscardableManager
 
 ServiceFontManager::ServiceFontManager(Client* client)
     : client_(client),
+      client_thread_id_(base::PlatformThread::CurrentId()),
       strike_client_(std::make_unique<SkStrikeClient>(
           sk_make_sp<SkiaDiscardableManager>(this))) {}
 
@@ -139,6 +140,7 @@ bool ServiceFontManager::Deserialize(
     uint32_t memory_size,
     std::vector<SkDiscardableHandleId>* locked_handles) {
   base::AutoLock hold(lock_);
+  DCHECK_EQ(client_thread_id_, base::PlatformThread::CurrentId());
 
   DCHECK(locked_handles->empty());
   DCHECK(!destroyed_);
@@ -225,10 +227,23 @@ bool ServiceFontManager::DeleteHandle(SkDiscardableHandleId handle_id) {
   if (destroyed_)
     return true;
 
+  // If this method returns true, the strike associated with the handle will be
+  // deleted which deletes the memory for all glyphs cached by the strike. On
+  // mac this is resulting in hangs during strike deserialization when a bunch
+  // of strikes may be deleted in bulk. Try to avoid that by pinging the
+  // progress reporter before deleting each strike.
+  // Note that this method should generally only run on the Gpu main thread,
+  // where skia is used, except for single process webview where the renderer
+  // and GPU run in the same process.
+  const bool report_progress =
+      base::PlatformThread::CurrentId() == client_thread_id_;
+
   auto it = discardable_handle_map_.find(handle_id);
   if (it == discardable_handle_map_.end()) {
     LOG(ERROR) << "Tried to delete invalid SkDiscardableHandleId: "
                << handle_id;
+    if (report_progress)
+      client_->ReportProgress();
     return true;
   }
 
@@ -237,6 +252,8 @@ bool ServiceFontManager::DeleteHandle(SkDiscardableHandleId handle_id) {
     return false;
 
   discardable_handle_map_.erase(it);
+  if (report_progress)
+    client_->ReportProgress();
   return true;
 }
 

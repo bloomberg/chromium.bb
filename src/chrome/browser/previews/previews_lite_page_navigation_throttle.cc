@@ -338,16 +338,8 @@ bool PreviewsLitePageNavigationThrottle::IsEligibleForPreview() const {
 GURL PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
     const GURL& original_url) {
   DCHECK(original_url.is_valid());
-  std::string experiment_id = variations::GetVariationParamValue(
-      data_reduction_proxy::params::GetServerExperimentsFieldTrialName(),
-      data_reduction_proxy::kExperimentsOption);
-
-  // Allow the command line to override any variations-provided experiment.
-  std::string cmd_line_experiment =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          data_reduction_proxy::switches::kDataReductionProxyExperiment);
-  if (!cmd_line_experiment.empty())
-    experiment_id = cmd_line_experiment;
+  const std::string experiment_id =
+      data_reduction_proxy::params::GetDataSaverServerExperiments();
 
   std::string experiment_query;
   if (!experiment_id.empty()) {

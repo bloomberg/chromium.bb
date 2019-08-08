@@ -5,9 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBUSB_USB_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBUSB_USB_H_
 
-#include "device/usb/public/mojom/device_manager.mojom-blink.h"
-#include "device/usb/public/mojom/device_manager_client.mojom-blink.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "services/device/public/mojom/usb_manager.mojom-blink.h"
+#include "services/device/public/mojom/usb_manager_client.mojom-blink.h"
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"

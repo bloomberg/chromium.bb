@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -19,6 +20,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "net/base/net_errors.h"
@@ -31,6 +33,7 @@
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_dir_url_request_job.h"
+#include "storage/browser/fileapi/file_system_features.h"
 #include "storage/browser/fileapi/file_system_file_util.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
 #include "storage/browser/fileapi/file_system_url.h"
@@ -47,6 +50,8 @@ using storage::FileSystemURL;
 
 namespace content {
 namespace {
+
+enum class TestMode { kRegular, kIncognito, kRegularWithIncognitoEnabled };
 
 // We always use the TEMPORARY FileSystem in this test.
 const char kFileSystemURLPrefix[] = "filesystem:http://remote/temporary/";
@@ -123,18 +128,37 @@ class FileSystemDirURLRequestJobFactory : public net::URLRequestJobFactory {
 
 }  // namespace
 
-class FileSystemDirURLRequestJobTest : public testing::Test {
+class FileSystemDirURLRequestJobTest
+    : public testing::Test,
+      public ::testing::WithParamInterface<TestMode> {
  protected:
   FileSystemDirURLRequestJobTest()
     : weak_factory_(this) {
+    if (GetParam() == TestMode::kIncognito ||
+        GetParam() == TestMode::kRegularWithIncognitoEnabled) {
+      feature_list_.InitAndEnableFeature(
+          storage::features::kEnableFilesystemInIncognito);
+    }
   }
+
+  bool IsInMemoryFileSystemEnabled() {
+    return base::FeatureList::IsEnabled(
+        storage::features::kEnableFilesystemInIncognito);
+  }
+
+  bool IsIncognito() { return GetParam() == TestMode::kIncognito; }
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     special_storage_policy_ = new MockSpecialStoragePolicy;
     file_system_context_ =
-        CreateFileSystemContextForTesting(nullptr, temp_dir_.GetPath());
+        IsIncognito()
+            ? CreateIncognitoFileSystemContextForTesting(
+                  base::ThreadTaskRunnerHandle::Get(),
+                  base::ThreadTaskRunnerHandle::Get(), nullptr,
+                  temp_dir_.GetPath())
+            : CreateFileSystemContextForTesting(nullptr, temp_dir_.GetPath());
 
     file_system_context_->OpenFileSystem(
         GURL("http://remote/"), storage::kFileSystemTypeTemporary,
@@ -163,8 +187,9 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     handlers.emplace_back(base::BindRepeating(&TestAutoMountForURLRequest));
 
     file_system_context_ = CreateFileSystemContextWithAutoMountersForTesting(
-        nullptr, std::move(additional_providers), handlers,
-        temp_dir_.GetPath());
+        base::ThreadTaskRunnerHandle::Get(),
+        base::ThreadTaskRunnerHandle::Get(), nullptr,
+        std::move(additional_providers), handlers, temp_dir_.GetPath());
   }
 
   void OnOpenFileSystem(const GURL& root_url,
@@ -300,6 +325,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
   // leaks caused by tasks posted during shutdown.
   base::MessageLoopForIO message_loop_;
 
+  base::test::ScopedFeatureList feature_list_;
   base::ScopedTempDir temp_dir_;
   net::URLRequestContext empty_context_;
   std::unique_ptr<net::TestDelegate> delegate_;
@@ -310,9 +336,16 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
   base::WeakPtrFactory<FileSystemDirURLRequestJobTest> weak_factory_;
 };
 
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    FileSystemDirURLRequestJobTest,
+    testing::Values(TestMode::kRegular,
+                    TestMode::kIncognito,
+                    TestMode::kRegularWithIncognitoEnabled));
+
 namespace {
 
-TEST_F(FileSystemDirURLRequestJobTest, DirectoryListing) {
+TEST_P(FileSystemDirURLRequestJobTest, DirectoryListing) {
   CreateDirectory("foo");
   CreateDirectory("foo/bar");
   CreateDirectory("foo/bar/baz");
@@ -345,26 +378,26 @@ TEST_F(FileSystemDirURLRequestJobTest, DirectoryListing) {
   EXPECT_FALSE(!!std::getline(in, line));
 }
 
-TEST_F(FileSystemDirURLRequestJobTest, InvalidURL) {
+TEST_P(FileSystemDirURLRequestJobTest, InvalidURL) {
   TestRequest(GURL("filesystem:/foo/bar/baz"));
   ASSERT_FALSE(request_->is_pending());
   EXPECT_TRUE(delegate_->request_failed());
   EXPECT_EQ(net::ERR_INVALID_URL, delegate_->request_status());
 }
 
-TEST_F(FileSystemDirURLRequestJobTest, NoSuchRoot) {
+TEST_P(FileSystemDirURLRequestJobTest, NoSuchRoot) {
   TestRequest(GURL("filesystem:http://remote/persistent/somedir/"));
   ASSERT_FALSE(request_->is_pending());
   EXPECT_EQ(net::ERR_FILE_NOT_FOUND, delegate_->request_status());
 }
 
-TEST_F(FileSystemDirURLRequestJobTest, NoSuchDirectory) {
+TEST_P(FileSystemDirURLRequestJobTest, NoSuchDirectory) {
   TestRequest(CreateFileSystemURL("somedir/"));
   ASSERT_FALSE(request_->is_pending());
   EXPECT_EQ(net::ERR_FILE_NOT_FOUND, delegate_->request_status());
 }
 
-TEST_F(FileSystemDirURLRequestJobTest, Cancel) {
+TEST_P(FileSystemDirURLRequestJobTest, Cancel) {
   CreateDirectory("foo");
   TestRequestNoRun(CreateFileSystemURL("foo/"));
   // Run StartAsync() and only StartAsync().
@@ -374,20 +407,27 @@ TEST_F(FileSystemDirURLRequestJobTest, Cancel) {
   // If we get here, success! we didn't crash!
 }
 
-TEST_F(FileSystemDirURLRequestJobTest, Incognito) {
+TEST_P(FileSystemDirURLRequestJobTest, Incognito) {
   CreateDirectory("foo");
 
   scoped_refptr<FileSystemContext> file_system_context =
-      CreateIncognitoFileSystemContextForTesting(nullptr, temp_dir_.GetPath());
-
+      CreateIncognitoFileSystemContextForTesting(
+          base::ThreadTaskRunnerHandle::Get(),
+          base::ThreadTaskRunnerHandle::Get(), nullptr, temp_dir_.GetPath());
   TestRequestWithContext(CreateFileSystemURL("/"),
                          file_system_context.get());
   ASSERT_FALSE(request_->is_pending());
 
-  std::istringstream in(delegate_->data_received());
-  std::string line;
-  EXPECT_TRUE(std::getline(in, line));
-  EXPECT_FALSE(!!std::getline(in, line));
+  if (IsInMemoryFileSystemEnabled()) {
+    // When in-memory file system is enabled, the request fails as the requested
+    // directory does not exist in in-memory obfuscated file system.
+    EXPECT_EQ(net::ERR_FILE_NOT_FOUND, delegate_->request_status());
+  } else {
+    std::istringstream in(delegate_->data_received());
+    std::string line;
+    EXPECT_TRUE(std::getline(in, line));
+    EXPECT_FALSE(!!std::getline(in, line));
+  }
 
   TestRequestWithContext(CreateFileSystemURL("foo"),
                          file_system_context.get());
@@ -395,7 +435,7 @@ TEST_F(FileSystemDirURLRequestJobTest, Incognito) {
   EXPECT_EQ(net::ERR_FILE_NOT_FOUND, delegate_->request_status());
 }
 
-TEST_F(FileSystemDirURLRequestJobTest, AutoMountDirectoryListing) {
+TEST_P(FileSystemDirURLRequestJobTest, AutoMountDirectoryListing) {
   base::FilePath mnt_point;
   SetUpAutoMountContext(&mnt_point);
   ASSERT_TRUE(base::CreateDirectory(mnt_point));
@@ -429,7 +469,7 @@ TEST_F(FileSystemDirURLRequestJobTest, AutoMountDirectoryListing) {
           kValidExternalMountPoint));
 }
 
-TEST_F(FileSystemDirURLRequestJobTest, AutoMountInvalidRoot) {
+TEST_P(FileSystemDirURLRequestJobTest, AutoMountInvalidRoot) {
   base::FilePath mnt_point;
   SetUpAutoMountContext(&mnt_point);
   TestRequest(GURL("filesystem:http://automount/external/invalid"));
@@ -442,7 +482,7 @@ TEST_F(FileSystemDirURLRequestJobTest, AutoMountInvalidRoot) {
           "invalid"));
 }
 
-TEST_F(FileSystemDirURLRequestJobTest, AutoMountNoHandler) {
+TEST_P(FileSystemDirURLRequestJobTest, AutoMountNoHandler) {
   base::FilePath mnt_point;
   SetUpAutoMountContext(&mnt_point);
   TestRequest(GURL("filesystem:http://noauto/external/mnt_name"));

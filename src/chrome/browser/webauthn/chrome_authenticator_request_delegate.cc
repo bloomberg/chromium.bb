@@ -17,11 +17,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webauthn/authenticator_request_dialog.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
 #include "chrome/common/chrome_features.h"
@@ -155,6 +150,9 @@ bool ChromeAuthenticatorRequestDelegate::DoesBlockRequestOnFailure(
     case InterestingFailureReason::kAuthenticatorMissingUserVerification:
       weak_dialog_model_->OnAuthenticatorMissingUserVerification();
       break;
+    case InterestingFailureReason::kStorageFull:
+      weak_dialog_model_->OnAuthenticatorStorageFull();
+      break;
   }
   return true;
 }
@@ -267,7 +265,7 @@ std::string TouchIdMetadataSecret(Profile* profile) {
   PrefService* prefs = profile->GetPrefs();
   std::string key = prefs->GetString(kWebAuthnTouchIdMetadataSecretPrefName);
   if (key.empty() || !base::Base64Decode(key, &key)) {
-    key = device::fido::mac::CredentialMetadata::GenerateRandomSecret();
+    key = device::fido::mac::GenerateCredentialMetadataSecret();
     std::string encoded_key;
     base::Base64Encode(key, &encoded_key);
     prefs->SetString(kWebAuthnTouchIdMetadataSecretPrefName, encoded_key);
@@ -334,8 +332,7 @@ bool ChromeAuthenticatorRequestDelegate::IsWebAuthnUIEnabled() {
 bool ChromeAuthenticatorRequestDelegate::ShouldDisablePlatformAuthenticators() {
 #if defined(OS_MACOSX)
   // Touch ID is available in Incognito, but not in Guest mode.
-  return Profile::FromBrowserContext(browser_context())->GetProfileType() ==
-         Profile::ProfileType::GUEST_PROFILE;
+  return Profile::FromBrowserContext(browser_context())->IsGuestSession();
 #else  // Windows, Android
   return browser_context()->IsOffTheRecord();
 #endif
@@ -349,8 +346,7 @@ void ChromeAuthenticatorRequestDelegate::OnTransportAvailabilityEnumerated(
   }
 
   weak_dialog_model_->set_incognito_mode(
-      Profile::FromBrowserContext(browser_context())->GetProfileType() ==
-      Profile::ProfileType::INCOGNITO_PROFILE);
+      Profile::FromBrowserContext(browser_context())->IsIncognitoProfile());
 
   weak_dialog_model_->StartFlow(std::move(data), GetLastTransportUsed(),
                                 GetPreviouslyPairedFidoBleDeviceIds());

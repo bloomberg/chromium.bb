@@ -42,7 +42,6 @@
 
 namespace blink {
 
-class Document;
 class EncodedFormData;
 class Event;
 class HTMLFormControlElement;
@@ -112,7 +111,7 @@ class FormSubmission : public GarbageCollectedFinalized<FormSubmission> {
 
   void Trace(blink::Visitor*);
 
-  FrameLoadRequest CreateFrameLoadRequest(Document* origin_document);
+  void Navigate();
 
   KURL RequestURL() const;
 
@@ -120,7 +119,6 @@ class FormSubmission : public GarbageCollectedFinalized<FormSubmission> {
   const KURL& Action() const { return action_; }
   HTMLFormElement* Form() const { return form_.Get(); }
   EncodedFormData* Data() const { return form_data_.get(); }
-  NavigationPolicy GetNavigationPolicy() const { return navigation_policy_; }
 
   const String& Result() const { return result_; }
 

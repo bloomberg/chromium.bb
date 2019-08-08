@@ -89,6 +89,10 @@ source_set("test_support") {
     "//components/image_fetcher/core:test_support",
     "//components/signin/core/browser",
   ]
+
+  if (is_ios) {
+    deps += [ "//components/signin/ios/browser" ]
+  }
 }
 
 source_set("tests") {

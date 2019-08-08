@@ -52,8 +52,6 @@ class CORE_EXPORT HTMLSelectElement final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static HTMLSelectElement* Create(Document&);
-
   explicit HTMLSelectElement(Document&);
   ~HTMLSelectElement() override;
 
@@ -284,6 +282,10 @@ class CORE_EXPORT HTMLSelectElement final
 
   void ObserveTreeMutation();
   void UnobserveTreeMutation();
+
+  // Apply changes to rendering as a result of attribute changes (multiple,
+  // size).
+  void ChangeRendering();
 
   // list_items_ contains HTMLOptionElement, HTMLOptGroupElement, and
   // HTMLHRElement objects.

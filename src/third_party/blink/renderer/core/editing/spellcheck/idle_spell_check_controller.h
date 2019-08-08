@@ -26,6 +26,7 @@ class SpellCheckRequester;
   V(InColdModeInvocation)
 
 // Main class for the implementation of idle time spell checker.
+// See design doc for details: https://goo.gl/zONC3v
 class CORE_EXPORT IdleSpellCheckController final
     : public GarbageCollectedFinalized<IdleSpellCheckController>,
       public DocumentShutdownObserver {

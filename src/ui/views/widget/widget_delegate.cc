@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/view.h"
 #include "ui/views/views_delegate.h"
@@ -49,6 +48,8 @@ bool WidgetDelegate::OnCloseRequested(Widget::ClosedReason close_reason) {
   return true;
 }
 
+void WidgetDelegate::OnPaintAsActiveChanged(bool paint_as_active) {}
+
 View* WidgetDelegate::GetInitiallyFocusedView() {
   return nullptr;
 }
@@ -71,17 +72,6 @@ bool WidgetDelegate::CanMaximize() const {
 
 bool WidgetDelegate::CanMinimize() const {
   return false;
-}
-
-int32_t WidgetDelegate::GetResizeBehavior() const {
-  int32_t behavior = ws::mojom::kResizeBehaviorNone;
-  if (CanResize())
-    behavior |= ws::mojom::kResizeBehaviorCanResize;
-  if (CanMaximize())
-    behavior |= ws::mojom::kResizeBehaviorCanMaximize;
-  if (CanMinimize())
-    behavior |= ws::mojom::kResizeBehaviorCanMinimize;
-  return behavior;
 }
 
 bool WidgetDelegate::CanActivate() const {
@@ -137,11 +127,10 @@ std::string WidgetDelegate::GetWindowName() const {
 void WidgetDelegate::SaveWindowPlacement(const gfx::Rect& bounds,
                                          ui::WindowShowState show_state) {
   std::string window_name = GetWindowName();
-  if (!ViewsDelegate::GetInstance() || window_name.empty())
-    return;
-
-  ViewsDelegate::GetInstance()->SaveWindowPlacement(GetWidget(), window_name,
-                                                    bounds, show_state);
+  if (!window_name.empty()) {
+    ViewsDelegate::GetInstance()->SaveWindowPlacement(GetWidget(), window_name,
+                                                      bounds, show_state);
+  }
 }
 
 bool WidgetDelegate::GetSavedWindowPlacement(
@@ -149,11 +138,9 @@ bool WidgetDelegate::GetSavedWindowPlacement(
     gfx::Rect* bounds,
     ui::WindowShowState* show_state) const {
   std::string window_name = GetWindowName();
-  if (!ViewsDelegate::GetInstance() || window_name.empty())
-    return false;
-
-  return ViewsDelegate::GetInstance()->GetSavedWindowPlacement(
-      widget, window_name, bounds, show_state);
+  return !window_name.empty() &&
+         ViewsDelegate::GetInstance()->GetSavedWindowPlacement(
+             widget, window_name, bounds, show_state);
 }
 
 bool WidgetDelegate::ShouldRestoreWindowSize() const {

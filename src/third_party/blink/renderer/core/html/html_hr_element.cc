@@ -38,8 +38,6 @@ using namespace html_names;
 HTMLHRElement::HTMLHRElement(Document& document)
     : HTMLElement(kHrTag, document) {}
 
-DEFINE_NODE_FACTORY(HTMLHRElement)
-
 bool HTMLHRElement::IsPresentationAttribute(const QualifiedName& name) const {
   if (name == kAlignAttr || name == kWidthAttr || name == kColorAttr ||
       name == kNoshadeAttr || name == kSizeAttr)

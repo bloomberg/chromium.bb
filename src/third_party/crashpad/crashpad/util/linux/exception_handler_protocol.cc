@@ -16,10 +16,10 @@
 
 namespace crashpad {
 
-ClientInformation::ClientInformation()
+ExceptionHandlerProtocol::ClientInformation::ClientInformation()
     : exception_information_address(0), sanitization_information_address(0) {}
 
-ClientToServerMessage::ClientToServerMessage()
-    : version(kVersion), type(kCrashDumpRequest), client_info() {}
+ExceptionHandlerProtocol::ClientToServerMessage::ClientToServerMessage()
+    : version(kVersion), type(kTypeCrashDumpRequest), client_info() {}
 
 }  // namespace crashpad

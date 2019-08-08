@@ -314,39 +314,37 @@ class ProxyResolverFactoryForPacResult : public ProxyResolverFactory {
 };
 
 // Returns NetLog parameters describing a proxy configuration change.
-std::unique_ptr<base::Value> NetLogProxyConfigChangedCallback(
+base::Value NetLogProxyConfigChangedCallback(
     const base::Optional<ProxyConfigWithAnnotation>* old_config,
     const ProxyConfigWithAnnotation* new_config,
     NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  base::Value dict(base::Value::Type::DICTIONARY);
   // The "old_config" is optional -- the first notification will not have
   // any "previous" configuration.
   if (old_config->has_value())
-    dict->Set("old_config", (*old_config)->value().ToValue());
-  dict->Set("new_config", new_config->value().ToValue());
-  return std::move(dict);
+    dict.SetKey("old_config", (*old_config)->value().ToValue());
+  dict.SetKey("new_config", new_config->value().ToValue());
+  return dict;
 }
 
-std::unique_ptr<base::Value> NetLogBadProxyListCallback(
-    const ProxyRetryInfoMap* retry_info,
-    NetLogCaptureMode /* capture_mode */) {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  auto list = std::make_unique<base::ListValue>();
+base::Value NetLogBadProxyListCallback(const ProxyRetryInfoMap* retry_info,
+                                       NetLogCaptureMode /* capture_mode */) {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  base::Value list(base::Value::Type::LIST);
 
-  for (auto iter = retry_info->begin(); iter != retry_info->end(); ++iter) {
-    list->AppendString(iter->first);
-  }
-  dict->Set("bad_proxy_list", std::move(list));
-  return std::move(dict);
+  for (const auto& retry_info_pair : *retry_info)
+    list.GetList().emplace_back(retry_info_pair.first);
+  dict.SetKey("bad_proxy_list", std::move(list));
+  return dict;
 }
 
 // Returns NetLog parameters on a successfuly proxy resolution.
-std::unique_ptr<base::Value> NetLogFinishedResolvingProxyCallback(
+base::Value NetLogFinishedResolvingProxyCallback(
     const ProxyInfo* result,
     NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("pac_string", result->ToPacString());
-  return std::move(dict);
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetStringKey("pac_string", result->ToPacString());
+  return dict;
 }
 
 #if defined(OS_CHROMEOS)
@@ -1061,8 +1059,10 @@ ProxyResolutionService::ProxyResolutionService(
     std::unique_ptr<ProxyConfigService> config_service,
     std::unique_ptr<ProxyResolverFactory> resolver_factory,
     NetLog* net_log)
-    : resolver_factory_(std::move(resolver_factory)),
+    : config_service_(std::move(config_service)),
+      resolver_factory_(std::move(resolver_factory)),
       current_state_(STATE_NONE),
+      permanent_error_(OK),
       net_log_(net_log),
       stall_proxy_auto_config_delay_(
           TimeDelta::FromMilliseconds(kDelayAfterNetworkChangesMs)),
@@ -1070,7 +1070,7 @@ ProxyResolutionService::ProxyResolutionService(
       weak_ptr_factory_(this) {
   NetworkChangeNotifier::AddIPAddressObserver(this);
   NetworkChangeNotifier::AddDNSObserver(this);
-  ResetConfigService(std::move(config_service));
+  config_service_->AddObserver(this);
 }
 
 // static
@@ -1545,23 +1545,6 @@ ProxyResolutionService::State ProxyResolutionService::ResetProxyConfig(
   current_state_ = STATE_NONE;
 
   return previous_state;
-}
-
-void ProxyResolutionService::ResetConfigService(
-    std::unique_ptr<ProxyConfigService> new_proxy_config_service) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  State previous_state = ResetProxyConfig(true);
-
-  // Release the old configuration service.
-  if (config_service_.get())
-    config_service_->RemoveObserver(this);
-
-  // Set the new configuration service.
-  config_service_ = std::move(new_proxy_config_service);
-  config_service_->AddObserver(this);
-
-  if (previous_state != STATE_NONE)
-    ApplyProxyConfigIfAvailable();
 }
 
 void ProxyResolutionService::ForceReloadProxyConfig() {

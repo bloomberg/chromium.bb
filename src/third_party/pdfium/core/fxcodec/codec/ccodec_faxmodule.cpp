@@ -11,6 +11,7 @@
 #include <memory>
 #include <vector>
 
+#include "build/build_config.h"
 #include "core/fxcodec/codec/ccodec_scanlinedecoder.h"
 #include "core/fxcodec/codec/codec_int.h"
 #include "core/fxcodec/fx_codec.h"
@@ -571,26 +572,6 @@ void CCodec_FaxDecoder::InvertBuffer() {
 }  // namespace
 
 // static
-int CCodec_FaxModule::FaxG4Decode(const uint8_t* src_buf,
-                                  uint32_t src_size,
-                                  int starting_bitpos,
-                                  int width,
-                                  int height,
-                                  int pitch,
-                                  uint8_t* dest_buf) {
-  ASSERT(pitch != 0);
-
-  std::vector<uint8_t> ref_buf(pitch, 0xff);
-  int bitpos = starting_bitpos;
-  for (int iRow = 0; iRow < height; ++iRow) {
-    uint8_t* line_buf = dest_buf + iRow * pitch;
-    memset(line_buf, 0xff, pitch);
-    FaxG4GetRow(src_buf, src_size << 3, &bitpos, line_buf, ref_buf, width);
-    memcpy(ref_buf.data(), line_buf, pitch);
-  }
-  return bitpos;
-}
-
 std::unique_ptr<CCodec_ScanlineDecoder> CCodec_FaxModule::CreateDecoder(
     pdfium::span<const uint8_t> src_span,
     int width,
@@ -617,7 +598,28 @@ std::unique_ptr<CCodec_ScanlineDecoder> CCodec_FaxModule::CreateDecoder(
                                                EncodedByteAlign, BlackIs1);
 }
 
-#if _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+// static
+int CCodec_FaxModule::FaxG4Decode(const uint8_t* src_buf,
+                                  uint32_t src_size,
+                                  int starting_bitpos,
+                                  int width,
+                                  int height,
+                                  int pitch,
+                                  uint8_t* dest_buf) {
+  ASSERT(pitch != 0);
+
+  std::vector<uint8_t> ref_buf(pitch, 0xff);
+  int bitpos = starting_bitpos;
+  for (int iRow = 0; iRow < height; ++iRow) {
+    uint8_t* line_buf = dest_buf + iRow * pitch;
+    memset(line_buf, 0xff, pitch);
+    FaxG4GetRow(src_buf, src_size << 3, &bitpos, line_buf, ref_buf, width);
+    memcpy(ref_buf.data(), line_buf, pitch);
+  }
+  return bitpos;
+}
+
+#if defined(OS_WIN)
 namespace {
 const uint8_t BlackRunTerminator[128] = {
     0x37, 10, 0x02, 3,  0x03, 2,  0x02, 2,  0x03, 3,  0x03, 4,  0x02, 4,
@@ -798,6 +800,7 @@ void CCodec_FaxEncoder::Encode(
 
 }  // namespace
 
+// static
 void CCodec_FaxModule::FaxEncode(
     const uint8_t* src_buf,
     int width,
@@ -809,4 +812,4 @@ void CCodec_FaxModule::FaxEncode(
   encoder.Encode(dest_buf, dest_size);
 }
 
-#endif  // _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+#endif  // defined(OS_WIN)

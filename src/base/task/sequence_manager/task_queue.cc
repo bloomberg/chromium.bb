@@ -144,6 +144,9 @@ TaskQueue::TaskTiming::TaskTiming(bool has_wall_time, bool has_thread_time)
     : has_wall_time_(has_wall_time), has_thread_time_(has_thread_time) {}
 
 void TaskQueue::TaskTiming::RecordTaskStart(LazyNow* now) {
+  DCHECK_EQ(State::NotStarted, state_);
+  state_ = State::Running;
+
   if (has_wall_time())
     start_time_ = now->Now();
   if (has_thread_time())
@@ -151,6 +154,11 @@ void TaskQueue::TaskTiming::RecordTaskStart(LazyNow* now) {
 }
 
 void TaskQueue::TaskTiming::RecordTaskEnd(LazyNow* now) {
+  DCHECK(state_ == State::Running || state_ == State::Finished);
+  if (state_ == State::Finished)
+    return;
+  state_ = State::Finished;
+
   if (has_wall_time())
     end_time_ = now->Now();
   if (has_thread_time())
@@ -176,8 +184,8 @@ void TaskQueue::ShutdownTaskQueue() {
 scoped_refptr<SingleThreadTaskRunner> TaskQueue::CreateTaskRunner(
     TaskType task_type) {
   // We only need to lock if we're not on the main thread.
-  base::internal::AutoSchedulerLockMaybe lock(IsOnMainThread() ? &impl_lock_
-                                                               : nullptr);
+  base::internal::CheckedAutoLockMaybe lock(IsOnMainThread() ? &impl_lock_
+                                                             : nullptr);
   if (!impl_)
     return CreateNullTaskRunner();
   return impl_->CreateTaskRunner(task_type);
@@ -331,7 +339,7 @@ bool TaskQueue::IsOnMainThread() const {
 }
 
 std::unique_ptr<internal::TaskQueueImpl> TaskQueue::TakeTaskQueueImpl() {
-  base::internal::AutoSchedulerLock lock(impl_lock_);
+  base::internal::CheckedAutoLock lock(impl_lock_);
   DCHECK(impl_);
   return std::move(impl_);
 }

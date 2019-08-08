@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {TrackData} from '../../common/track_data';
+
 export const SLICE_TRACK_KIND = 'ChromeSliceTrack';
 
 export interface Config {
@@ -20,11 +22,7 @@ export interface Config {
   utid: number;
 }
 
-export interface Data {
-  start: number;
-  end: number;
-  resolution: number;
-
+export interface Data extends TrackData {
   // Slices are stored in a columnar fashion. All fields have the same length.
   strings: string[];
   starts: Float64Array;

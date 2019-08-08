@@ -39,6 +39,12 @@ class PreviewsTopHostProviderImpl;
 class PreviewsUIService;
 }
 
+namespace leveldb_proto {
+class ProtoDatabaseProvider;
+}
+
+class PreviewsOfflineHelper;
+
 // Keyed service that owns a previews::PreviewsUIService. PreviewsService lives
 // on the UI thread.
 class PreviewsService : public KeyedService {
@@ -52,6 +58,7 @@ class PreviewsService : public KeyedService {
   // |profile_path| is the path to user data on disc.
   void Initialize(
       optimization_guide::OptimizationGuideService* optimization_guide_service,
+      leveldb_proto::ProtoDatabaseProvider* database_provider,
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
       const base::FilePath& profile_path);
 
@@ -79,6 +86,10 @@ class PreviewsService : public KeyedService {
     return previews_lite_page_decider_.get();
   }
 
+  PreviewsOfflineHelper* previews_offline_helper() {
+    return previews_offline_helper_.get();
+  }
+
   // Returns the enabled PreviewsTypes with their version.
   static blacklist::BlacklistData::AllowedTypesAndVersions GetAllowedPreviews();
 
@@ -92,6 +103,12 @@ class PreviewsService : public KeyedService {
 
   // The server lite page preview decider.
   std::unique_ptr<PreviewsLitePageDecider> previews_lite_page_decider_;
+
+  // The offline previews helper.
+  std::unique_ptr<PreviewsOfflineHelper> previews_offline_helper_;
+
+  // Guaranteed to outlive |this|.
+  content::BrowserContext* browser_context_;
 
   // URL Factory for the Previews Optimization Guide's Hints Fetcher.
   scoped_refptr<network::SharedURLLoaderFactory> previews_url_loader_factory_;

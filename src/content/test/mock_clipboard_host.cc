@@ -98,15 +98,13 @@ void MockClipboardHost::ReadCustomData(ui::ClipboardType clipboard_type,
                                                    : base::string16());
 }
 
-void MockClipboardHost::WriteText(ui::ClipboardType,
-                                  const base::string16& text) {
+void MockClipboardHost::WriteText(const base::string16& text) {
   if (needs_reset_)
     Reset();
   plain_text_ = text;
 }
 
-void MockClipboardHost::WriteHtml(ui::ClipboardType,
-                                  const base::string16& markup,
+void MockClipboardHost::WriteHtml(const base::string16& markup,
                                   const GURL& url) {
   if (needs_reset_)
     Reset();
@@ -114,14 +112,13 @@ void MockClipboardHost::WriteHtml(ui::ClipboardType,
   url_ = url;
 }
 
-void MockClipboardHost::WriteSmartPasteMarker(ui::ClipboardType) {
+void MockClipboardHost::WriteSmartPasteMarker() {
   if (needs_reset_)
     Reset();
   write_smart_paste_ = true;
 }
 
 void MockClipboardHost::WriteCustomData(
-    ui::ClipboardType,
     const base::flat_map<base::string16, base::string16>& data) {
   if (needs_reset_)
     Reset();
@@ -129,17 +126,16 @@ void MockClipboardHost::WriteCustomData(
     custom_data_[it.first] = it.second;
 }
 
-void MockClipboardHost::WriteBookmark(ui::ClipboardType,
-                                      const std::string& url,
+void MockClipboardHost::WriteBookmark(const std::string& url,
                                       const base::string16& title) {}
 
-void MockClipboardHost::WriteImage(ui::ClipboardType, const SkBitmap& bitmap) {
+void MockClipboardHost::WriteImage(const SkBitmap& bitmap) {
   if (needs_reset_)
     Reset();
   image_ = bitmap;
 }
 
-void MockClipboardHost::CommitWrite(ui::ClipboardType) {
+void MockClipboardHost::CommitWrite() {
   ++sequence_number_;
   needs_reset_ = true;
 }

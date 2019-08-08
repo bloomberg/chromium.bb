@@ -118,8 +118,8 @@ class MODULES_EXPORT AXObjectCacheImpl
   void HandleAutofillStateChanged(Element*, bool) override;
   void HandleValidationMessageVisibilityChanged(
       const Element* form_control) override;
-  void HandleFocusedUIElementChanged(Node* old_focused_node,
-                                     Node* new_focused_node) override;
+  void HandleFocusedUIElementChanged(Element* old_focused_element,
+                                     Element* new_focused_element) override;
   void HandleInitialFocus() override;
   void HandleTextFormControlChanged(Node*) override;
   void HandleEditableTextContentChanged(Node*) override;
@@ -234,6 +234,8 @@ class MODULES_EXPORT AXObjectCacheImpl
                       const Vector<String>& id_vector,
                       HeapVector<Member<AXObject>>& owned_children);
 
+  bool MayHaveHTMLLabel(const HTMLElement& elem);
+
   // Synchronously returns whether or not we currently have permission to
   // call AOM event listeners.
   bool CanCallAOMEventListeners() const;
@@ -251,8 +253,13 @@ class MODULES_EXPORT AXObjectCacheImpl
   void WillStartLifecycleUpdate(const LocalFrameView&) override;
   void DidFinishLifecycleUpdate(const LocalFrameView&) override;
 
+  void set_is_handling_action(bool value) { is_handling_action_ = value; }
+
  protected:
-  void PostPlatformNotification(AXObject*, ax::mojom::Event);
+  void PostPlatformNotification(
+      AXObject*,
+      ax::mojom::Event,
+      ax::mojom::EventFrom event_from = ax::mojom::EventFrom::kNone);
   void LabelChangedWithCleanLayout(Element*);
 
   AXObject* CreateFromRenderer(LayoutObject*);
@@ -260,6 +267,14 @@ class MODULES_EXPORT AXObjectCacheImpl
   AXObject* CreateFromInlineTextBox(AbstractInlineTextBox*);
 
  private:
+  struct AXEventParams {
+    Persistent<AXObject> target;
+    ax::mojom::Event event_type;
+    ax::mojom::EventFrom event_from;
+  };
+
+  ax::mojom::EventFrom ComputeEventFrom();
+
   Member<Document> document_;
   HeapHashMap<AXID, Member<AXObject>> objects_;
   // LayoutObject and AbstractInlineTextBox are not on the Oilpan heap so we
@@ -285,8 +300,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   bool has_been_disposed_ = false;
 #endif
 
-  typedef VectorOfPairs<AXObject, ax::mojom::Event> NotificationVector;
-  NotificationVector notifications_to_post_;
+  std::vector<AXEventParams> notifications_to_post_;
   void PostNotificationsAfterLayout(Document*);
 
   // ContextLifecycleObserver overrides.
@@ -353,6 +367,8 @@ class MODULES_EXPORT AXObjectCacheImpl
   typedef std::vector<std::pair<WeakPersistent<Node>, base::OnceClosure>>
       TreeUpdateCallbackQueue;
   TreeUpdateCallbackQueue tree_update_callback_queue_;
+
+  bool is_handling_action_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AXObjectCacheImpl);
 };

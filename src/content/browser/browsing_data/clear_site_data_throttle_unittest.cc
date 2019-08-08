@@ -67,8 +67,8 @@ class TestThrottle : public ClearSiteDataThrottle {
 
   void SetResponseHeaders(const std::string& headers) {
     std::string headers_with_status_code = "HTTP/1.1 200\n" + headers;
-    headers_ = new net::HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
-        headers_with_status_code.c_str(), headers_with_status_code.size()));
+    headers_ = base::MakeRefCounted<net::HttpResponseHeaders>(
+        net::HttpUtil::AssembleRawHeaders(headers_with_status_code));
   }
 
   MOCK_METHOD4(ClearSiteData,

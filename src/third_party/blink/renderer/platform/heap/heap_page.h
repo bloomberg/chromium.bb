@@ -149,7 +149,7 @@ uint32_t ComputeRandomMagic();
 //
 // | random magic value (32 bits) | Only present on 64-bit platforms.
 // | gc_info_index (14 bits)      |
-// | in construction (1 bit)      |
+// | in construction (1 bit)      | true: bit not set; false bit set
 // | size (14 bits)               | Actually 17 bits because sizes are aligned.
 // | wrapper mark bit (1 bit)     |
 // | unused (1 bit)               |
@@ -218,6 +218,8 @@ class PLATFORM_EXPORT HeapObjectHeader {
   size_t size() const;
   void SetSize(size_t size);
 
+  bool IsLargeObject() const;
+
   bool IsWrapperHeaderMarked() const;
   void MarkWrapperHeader();
   void UnmarkWrapperHeader();
@@ -227,9 +229,8 @@ class PLATFORM_EXPORT HeapObjectHeader {
   void Unmark();
   bool TryMark();
 
-  void MarkIsInConstruction();
-  void UnmarkIsInConstruction();
   bool IsInConstruction() const;
+  void MarkFullyConstructed();
 
   // The payload starts directly after the HeapObjectHeader, and the payload
   // size does not include the sizeof(HeapObjectHeader).
@@ -363,16 +364,6 @@ class BasePage {
   BasePage(PageMemory*, BaseArena*);
   virtual ~BasePage() = default;
 
-  void Link(BasePage** previous_next) {
-    next_ = *previous_next;
-    *previous_next = this;
-  }
-  void Unlink(BasePage** previous_next) {
-    *previous_next = next_;
-    next_ = nullptr;
-  }
-  BasePage* Next() const { return next_; }
-
   // Virtual methods are slow. So performance-sensitive methods should be
   // defined as non-virtual methods on |NormalPage| and |LargeObjectPage|. The
   // following methods are not performance-sensitive.
@@ -433,13 +424,41 @@ class BasePage {
   uint32_t const magic_;
   PageMemory* const storage_;
   BaseArena* const arena_;
-  BasePage* next_;
 
   // Track the sweeping state of a page. Set to false at the start of a sweep,
   // true  upon completion of lazy sweeping.
   bool swept_;
 
   friend class BaseArena;
+};
+
+class PageStack : Vector<BasePage*> {
+  using Base = Vector<BasePage*>;
+
+ public:
+  PageStack() = default;
+
+  void Push(BasePage* page) { push_back(page); }
+
+  BasePage* Pop() {
+    if (IsEmpty())
+      return nullptr;
+    BasePage* top = back();
+    pop_back();
+    return top;
+  }
+
+  BasePage* Top() const {
+    if (IsEmpty())
+      return nullptr;
+    return back();
+  }
+
+  using Base::begin;
+  using Base::clear;
+  using Base::end;
+  using Base::IsEmpty;
+  using Base::size;
 };
 
 // A bitmap for recording object starts. Objects have to be allocated at
@@ -553,12 +572,12 @@ class PLATFORM_EXPORT NormalPage final : public BasePage {
     NormalPage* current_page_ = nullptr;
     // Offset into |current_page_| to the next free address.
     size_t allocation_point_ = 0;
-    // Chain of available pages to use for compaction. Page compaction picks the
-    // next one when the current one is exhausted.
-    BasePage* available_pages_ = nullptr;
-    // Chain of pages that have been compacted. Page compaction will add
+    // Vector of available pages to use for compaction. Page compaction picks
+    // the next one when the current one is exhausted.
+    PageStack available_pages_;
+    // Vector of pages that have been compacted. Page compaction will add
     // compacted pages once the current one becomes exhausted.
-    BasePage** compacted_pages_ = nullptr;
+    PageStack* compacted_pages_;
   };
 
   void SweepAndCompact(CompactionContext&);
@@ -754,21 +773,30 @@ class PLATFORM_EXPORT BaseArena {
 
   Address AllocateLargeObject(size_t allocation_size, size_t gc_info_index);
 
-  bool WillObjectBeLazilySwept(BasePage*, void*) const;
-
   virtual void VerifyObjectStartBitmap() {}
   virtual void VerifyMarking() {}
+  virtual void ResetAllocationPointForTesting() {}
 
  protected:
-  bool SweepingCompleted() const { return !first_unswept_page_; }
+  bool SweepingCompleted() const { return unswept_pages_.IsEmpty(); }
 
-  BasePage* first_page_;
-  BasePage* first_unswept_page_;
+  PageStack swept_pages_;
+  PageStack unswept_pages_;
+
+  void SetCurrentlyProccesedPage(BasePage* page) {
+#if DCHECK_IS_ON()
+    currently_processed_page_ = page;
+#endif
+  }
 
  private:
   virtual Address LazySweepPages(size_t, size_t gc_info_index) = 0;
 
   ThreadState* thread_state_;
+
+#if DCHECK_IS_ON()
+  BasePage* currently_processed_page_ = nullptr;
+#endif
 
   // Index into the page pools. This is used to ensure that the pages of the
   // same type go into the correct page pool and thus avoid type confusion.
@@ -822,6 +850,9 @@ class PLATFORM_EXPORT NormalPageArena final : public BaseArena {
 
   void VerifyObjectStartBitmap() override;
   void VerifyMarking() override;
+  void ResetAllocationPointForTesting() override {
+    SetAllocationPoint(nullptr, 0);
+  }
 
   Address CurrentAllocationPoint() const { return current_allocation_point_; }
 
@@ -838,7 +869,12 @@ class PLATFORM_EXPORT NormalPageArena final : public BaseArena {
  private:
   void AllocatePage();
 
+  // OutOfLineAllocate represent the slow-path allocation. The suffixed version
+  // contains just allocation code while the other version also invokes a
+  // safepoint where allocated bytes are reported to observers.
   Address OutOfLineAllocate(size_t allocation_size, size_t gc_info_index);
+  Address OutOfLineAllocateImpl(size_t allocation_size, size_t gc_info_index);
+
   Address AllocateFromFreeList(size_t, size_t gc_info_index);
 
   Address LazySweepPages(size_t, size_t gc_info_index) override;
@@ -848,8 +884,9 @@ class PLATFORM_EXPORT NormalPageArena final : public BaseArena {
   }
   void SetAllocationPoint(Address, size_t);
 
+  // Only use when adjusting the area from allocation and free and not when
+  // returning it to free list.
   void SetRemainingAllocationSize(size_t);
-  void UpdateRemainingAllocationSize();
 
   FreeList free_list_;
   Address current_allocation_point_;
@@ -872,6 +909,7 @@ class LargeObjectArena final : public BaseArena {
 #if DCHECK_IS_ON()
   bool IsConsistentForGC() override { return true; }
 #endif
+
  private:
   Address DoAllocateLargeObjectPage(size_t, size_t gc_info_index);
   Address LazySweepPages(size_t, size_t gc_info_index) override;
@@ -932,18 +970,17 @@ NO_SANITIZE_ADDRESS inline void HeapObjectHeader::SetSize(size_t size) {
   encoded_ = static_cast<uint32_t>(size) | (encoded_ & ~kHeaderSizeMask);
 }
 
+NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsLargeObject() const {
+  return (encoded_ & kHeaderSizeMask) == kLargeObjectSizeInHeader;
+}
+
 NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsInConstruction() const {
-  return encoded_ & kHeaderIsInConstructionMask;
+  return (encoded_ & kHeaderIsInConstructionMask) == 0;
 }
 
-NO_SANITIZE_ADDRESS inline void HeapObjectHeader::MarkIsInConstruction() {
-  DCHECK(!IsInConstruction());
-  encoded_ = encoded_ | kHeaderIsInConstructionMask;
-}
-
-NO_SANITIZE_ADDRESS inline void HeapObjectHeader::UnmarkIsInConstruction() {
+NO_SANITIZE_ADDRESS inline void HeapObjectHeader::MarkFullyConstructed() {
   DCHECK(IsInConstruction());
-  encoded_ = encoded_ & ~kHeaderIsInConstructionMask;
+  encoded_ |= kHeaderIsInConstructionMask;
 }
 
 NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsValid() const {
@@ -1129,9 +1166,9 @@ NO_SANITIZE_ADDRESS inline HeapObjectHeader::HeapObjectHeader(
   magic_ = GetMagic();
 #endif
 
-  DCHECK(gc_info_index < GCInfoTable::kMaxIndex);
+  DCHECK_LT(gc_info_index, GCInfoTable::kMaxIndex);
   DCHECK_LT(size, kNonLargeObjectPageSizeMax);
-  DCHECK(!(size & kAllocationMask));
+  DCHECK_EQ(0u, size & kAllocationMask);
   encoded_ =
       static_cast<uint32_t>((gc_info_index << kHeaderGCInfoIndexShift) | size);
   if (header_location == kNormalPage) {
@@ -1142,6 +1179,7 @@ NO_SANITIZE_ADDRESS inline HeapObjectHeader::HeapObjectHeader(
   } else {
     DCHECK(PageFromObject(this)->IsLargeObjectPage());
   }
+  DCHECK(IsInConstruction());
 }
 
 }  // namespace blink

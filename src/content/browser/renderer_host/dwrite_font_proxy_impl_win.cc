@@ -503,14 +503,8 @@ void DWriteFontProxyImpl::GetUniqueNameLookupTable(
   callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
       std::move(callback), base::ReadOnlySharedMemoryRegion());
 
-  // ScheduleBuildFontUniqueNameTable() is called early in browser startup
-  // before EnsureFontUniqueNameTable() can be called. See
-  // BrowserMainLoop::BrowserThreadsStarted().
-  if (!DWriteFontLookupTableBuilder::GetInstance()->EnsureFontUniqueNameTable())
-    return;
-
-  std::move(callback).Run(
-      DWriteFontLookupTableBuilder::GetInstance()->DuplicateMemoryRegion());
+  DWriteFontLookupTableBuilder::GetInstance()->QueueShareMemoryRegionWhenReady(
+      base::SequencedTaskRunnerHandle::Get(), std::move(callback));
 }
 
 void DWriteFontProxyImpl::InitializeDirectWrite() {

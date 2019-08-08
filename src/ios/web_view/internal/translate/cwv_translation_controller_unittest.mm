@@ -11,7 +11,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/language/ios/browser/ios_language_detection_tab_helper.h"
 #include "components/translate/core/browser/translate_prefs.h"
-#import "ios/web/public/test/fakes/crw_test_js_injection_receiver.h"
+#import "ios/web/public/deprecated/crw_test_js_injection_receiver.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"

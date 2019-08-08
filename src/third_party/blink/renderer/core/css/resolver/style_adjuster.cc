@@ -122,8 +122,8 @@ static EDisplay EquivalentBlockDisplay(EDisplay display) {
 }
 
 static bool IsOutermostSVGElement(const Element* element) {
-  return element && element->IsSVGElement() &&
-         ToSVGElement(*element).IsOutermostSVGSVGElement();
+  auto* svg_element = DynamicTo<SVGElement>(element);
+  return svg_element && svg_element->IsOutermostSVGSVGElement();
 }
 
 static bool IsAtUAShadowBoundary(const Element* element) {
@@ -510,10 +510,10 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   const ComputedStyle& parent_style = *state.ParentStyle();
   const ComputedStyle& layout_parent_style = *state.LayoutParentStyle();
 
-  if (element && element->IsHTMLElement() &&
-      (style.Display() != EDisplay::kNone ||
-       element->LayoutObjectIsNeeded(style))) {
-    AdjustStyleForHTMLElement(style, ToHTMLElement(*element));
+  auto* html_element = DynamicTo<HTMLElement>(element);
+  if (html_element && (style.Display() != EDisplay::kNone ||
+                       element->LayoutObjectIsNeeded(style))) {
+    AdjustStyleForHTMLElement(style, *html_element);
   }
   if (style.Display() != EDisplay::kNone) {
     bool is_document_element =
@@ -553,6 +553,11 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     AdjustStyleForFirstLetter(style);
   }
 
+  if (style.IsColorInternalText()) {
+    style.SetColor(
+        LayoutTheme::GetTheme().RootElementColor(style.UsedColorScheme()));
+  }
+
   // Make sure our z-index value is only applied if the object is positioned.
   if (style.GetPosition() == EPosition::kStatic &&
       !LayoutParentStyleForcesZIndexToCreateStackingContext(
@@ -589,10 +594,10 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   AdjustStyleForEditing(style);
 
   bool is_svg_root = false;
-  bool is_svg_element = element && element->IsSVGElement();
+  auto* svg_element = DynamicTo<SVGElement>(element);
 
-  if (is_svg_element) {
-    is_svg_root = ToSVGElement(element)->IsOutermostSVGSVGElement();
+  if (svg_element) {
+    is_svg_root = svg_element->IsOutermostSVGSVGElement();
     if (!is_svg_root) {
       // Only the root <svg> element in an SVG document fragment tree honors css
       // position.

@@ -14,6 +14,9 @@ import android.os.Handler;
 import android.os.Process;
 import android.os.UserHandle;
 
+import org.chromium.base.BuildInfo;
+import org.chromium.base.StrictModeContext;
+
 import java.lang.reflect.Method;
 import java.util.concurrent.Executor;
 
@@ -21,12 +24,47 @@ import java.util.concurrent.Executor;
  * Class of static helper methods to call Context.bindService variants.
  */
 final class BindService {
+    private static final Method sDoBindServiceQMethod;
+    private static final Method sUpdateServiceGroupQMethod;
+    static {
+        Method bindMethod = null;
+        Method updateServiceGroupMethod = null;
+        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+            if (BuildInfo.isAtLeastQ()) {
+                Class<?> clazz =
+                        Class.forName("org.chromium.base.process_launcher.BindServiceInternal");
+                bindMethod = clazz.getDeclaredMethod("doBindServiceQ", Context.class, Intent.class,
+                        ServiceConnection.class, int.class, Executor.class, String.class);
+                updateServiceGroupMethod = clazz.getDeclaredMethod("updateServiceGroupQ",
+                        Context.class, ServiceConnection.class, int.class, int.class);
+            }
+        } catch (Exception e) {
+            // Ignore exceptions.
+        } finally {
+            sDoBindServiceQMethod = bindMethod;
+            sUpdateServiceGroupQMethod = updateServiceGroupMethod;
+        }
+    }
+
     private static Method sBindServiceAsUserMethod;
+
+    static boolean supportVariableConnections() {
+        return sDoBindServiceQMethod != null && sUpdateServiceGroupQMethod != null;
+    }
 
     // Note that handler is not guaranteed to be used, and client still need to correctly handle
     // callbacks on the UI thread.
     static boolean doBindService(Context context, Intent intent, ServiceConnection connection,
             int flags, Handler handler, Executor executor, String instanceName) {
+        if (supportVariableConnections()) {
+            try {
+                return (boolean) sDoBindServiceQMethod.invoke(
+                        null, context, intent, connection, flags, executor, instanceName);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             return bindServiceByCall(context, intent, connection, flags);
         }
@@ -35,6 +73,15 @@ final class BindService {
             return bindServiceByReflection(context, intent, connection, flags, handler);
         } catch (ReflectiveOperationException e) {
             return bindServiceByCall(context, intent, connection, flags);
+        }
+    }
+
+    static void updateServiceGroup(
+            Context context, ServiceConnection connection, int group, int importance) {
+        try {
+            sUpdateServiceGroupQMethod.invoke(null, context, connection, group, importance);
+        } catch (ReflectiveOperationException e) {
+            // Ignore reflection errors.
         }
     }
 

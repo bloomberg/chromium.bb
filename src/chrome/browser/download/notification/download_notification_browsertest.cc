@@ -109,13 +109,13 @@ class SlowDownloadInterceptor {
   static const char* kErrorDownloadUrl;
 
   SlowDownloadInterceptor()
-      : interceptor_(base::BindRepeating(&SlowDownloadInterceptor::OnIntercept,
-                                         base::Unretained(this))),
-        handlers_(
+      : handlers_(
             {{kKnownSizeUrl, &SlowDownloadInterceptor::HandleKnownSize},
              {kUnknownSizeUrl, &SlowDownloadInterceptor::HandleUnknownSize},
              {kFinishDownloadUrl, &SlowDownloadInterceptor::HandleFinish},
-             {kErrorDownloadUrl, &SlowDownloadInterceptor::HandleError}}) {}
+             {kErrorDownloadUrl, &SlowDownloadInterceptor::HandleError}}),
+        interceptor_(base::BindRepeating(&SlowDownloadInterceptor::OnIntercept,
+                                         base::Unretained(this))) {}
 
  private:
   using Handler = void (SlowDownloadInterceptor::*)(
@@ -211,8 +211,8 @@ class SlowDownloadInterceptor {
       headers += base::StringPrintf("Content-Length: %ld\n", content_length);
       head.content_length = content_length;
     }
-    head.headers = new net::HttpResponseHeaders(
-        net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.length()));
+    head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+        net::HttpUtil::AssembleRawHeaders(headers));
     head.headers->GetMimeType(&head.mime_type);
     params->client->OnReceiveResponse(head);
   }
@@ -230,10 +230,10 @@ class SlowDownloadInterceptor {
     params->client->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
   }
 
-  content::URLLoaderInterceptor interceptor_;
   const std::map<std::string, Handler> handlers_;
   base::Lock lock_;
   std::vector<PendingRequest*> pending_requests_ GUARDED_BY(lock_);
+  content::URLLoaderInterceptor interceptor_;
 };
 
 const char* SlowDownloadInterceptor::kUnknownSizeUrl =
@@ -1065,9 +1065,8 @@ IN_PROC_BROWSER_TEST_F(MultiProfileDownloadNotificationTest,
   AddAllUsers();
 }
 
-// TODO(crbug.com/933963): Flaky with network service.
 IN_PROC_BROWSER_TEST_F(MultiProfileDownloadNotificationTest,
-                       DISABLED_DownloadMultipleFiles) {
+                       DownloadMultipleFiles) {
   AddAllUsers();
 
   GURL url(SlowDownloadInterceptor::kUnknownSizeUrl);

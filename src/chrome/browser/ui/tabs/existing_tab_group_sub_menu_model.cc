@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/tabs/existing_tab_group_sub_menu_model.h"
 
 #include "chrome/browser/ui/tabs/tab_group_data.h"
+#include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 
 constexpr int kFirstCommandIndex =
@@ -21,7 +22,7 @@ ExistingTabGroupSubMenuModel::ExistingTabGroupSubMenuModel(TabStripModel* model,
 void ExistingTabGroupSubMenuModel::Build() {
   // Start command ids after the parent menu's ids to avoid collisions.
   int group_index = kFirstCommandIndex;
-  for (int group : model_->ListTabGroups()) {
+  for (TabGroupId group : model_->ListTabGroups()) {
     if (ShouldShowGroup(model_, context_index_, group)) {
       AddItem(group_index, model_->GetDataForGroup(group)->title());
     }
@@ -50,7 +51,7 @@ void ExistingTabGroupSubMenuModel::ExecuteCommand(int command_id,
 // static
 bool ExistingTabGroupSubMenuModel::ShouldShowSubmenu(TabStripModel* model,
                                                      int context_index) {
-  for (int group : model->ListTabGroups()) {
+  for (TabGroupId group : model->ListTabGroups()) {
     if (ShouldShowGroup(model, context_index, group)) {
       return true;
     }
@@ -61,7 +62,7 @@ bool ExistingTabGroupSubMenuModel::ShouldShowSubmenu(TabStripModel* model,
 // static
 bool ExistingTabGroupSubMenuModel::ShouldShowGroup(TabStripModel* model,
                                                    int context_index,
-                                                   int group) {
+                                                   TabGroupId group) {
   if (!model->IsTabSelected(context_index)) {
     if (group != model->GetTabGroupForTab(context_index))
       return true;

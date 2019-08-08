@@ -4,6 +4,10 @@
 
 #include "chrome/browser/notifications/scheduler/proto_conversion.h"
 
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/logging.h"
 #include "chrome/browser/notifications/scheduler/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -14,6 +18,7 @@ namespace notifications {
 namespace {
 
 const char kUuid[] = "123";
+const char kGuid[] = "testGuid";
 const char kData[] = "bitmapdata";
 
 void TestClientStateConversion(ClientState* client_state) {
@@ -25,6 +30,20 @@ void TestClientStateConversion(ClientState* client_state) {
   EXPECT_EQ(*client_state, expected)
       << " \n Output: \n " << client_state->DebugPrint() << " \n Expected: \n"
       << expected.DebugPrint();
+}
+
+void TestNotificationEntryConversion(NotificationEntry* entry) {
+  DCHECK(entry);
+  notifications::proto::NotificationEntry proto;
+  NotificationEntry expected(SchedulerClientType::kTest1, "");
+  NotificationEntryToProto(entry, &proto);
+  NotificationEntryFromProto(&proto, &expected);
+  EXPECT_EQ(entry->notification_data, expected.notification_data);
+  EXPECT_EQ(entry->schedule_params, expected.schedule_params);
+
+  EXPECT_EQ(*entry, expected)
+      << "Output: " << test::DebugString(entry)
+      << " \n Expected: " << test::DebugString(&expected);
 }
 
 TEST(ProtoConversionTest, IconEntryFromProto) {
@@ -80,9 +99,9 @@ TEST(ProtoConversionTest, ImpressionProtoConversion) {
   base::Time create_time;
   bool success = base::Time::FromString("03/25/19 00:00:00 AM", &create_time);
   DCHECK(success);
-  Impression impression{create_time, UserFeedback::kHelpful,
-                        ImpressionResult::kPositive, true,
-                        SchedulerTaskTime::kMorning};
+  Impression impression{
+      create_time, UserFeedback::kHelpful,      ImpressionResult::kPositive,
+      true,        SchedulerTaskTime::kMorning, kGuid};
   client_state.impressions.emplace_back(impression);
   TestClientStateConversion(&client_state);
 
@@ -133,6 +152,32 @@ TEST(ProtoConversionTest, MultipleImpressionConversion) {
   client_state.impressions.emplace_back(std::move(impression));
   client_state.impressions.emplace_back(std::move(other_impression));
   TestClientStateConversion(&client_state);
+}
+
+// Verifies notification entry proto conversion.
+TEST(ProtoConversionTest, NotificationEntryConversion) {
+  NotificationEntry entry(SchedulerClientType::kTest2, kGuid);
+  bool success =
+      base::Time::FromString("04/25/20 01:00:00 AM", &entry.create_time);
+  DCHECK(success);
+  TestNotificationEntryConversion(&entry);
+
+  // Test notification data.
+  entry.notification_data.id = kGuid;
+  entry.notification_data.title = "title";
+  entry.notification_data.message = "message";
+  entry.notification_data.icon_uuid = "icon_uuid";
+  entry.notification_data.url = "url";
+  TestNotificationEntryConversion(&entry);
+
+  // Test scheduling params.
+  const ScheduleParams::Priority priorities[] = {
+      ScheduleParams::Priority::kLow, ScheduleParams::Priority::kHigh,
+      ScheduleParams::Priority::kNoThrottle};
+  for (auto priority : priorities) {
+    entry.schedule_params.priority = priority;
+    TestNotificationEntryConversion(&entry);
+  }
 }
 
 }  // namespace

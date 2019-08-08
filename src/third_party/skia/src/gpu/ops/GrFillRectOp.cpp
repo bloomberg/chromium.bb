@@ -5,21 +5,21 @@
  * found in the LICENSE file.
  */
 
-#include "GrFillRectOp.h"
+#include "src/gpu/ops/GrFillRectOp.h"
 
-#include "GrCaps.h"
-#include "GrGeometryProcessor.h"
-#include "GrMeshDrawOp.h"
-#include "GrPaint.h"
-#include "GrQuad.h"
-#include "GrQuadPerEdgeAA.h"
-#include "GrSimpleMeshDrawOpHelper.h"
-#include "SkGr.h"
-#include "SkMatrix.h"
-#include "SkRect.h"
-#include "glsl/GrGLSLColorSpaceXformHelper.h"
-#include "glsl/GrGLSLGeometryProcessor.h"
-#include "glsl/GrGLSLVarying.h"
+#include "include/core/SkMatrix.h"
+#include "include/core/SkRect.h"
+#include "src/gpu/GrCaps.h"
+#include "src/gpu/GrGeometryProcessor.h"
+#include "src/gpu/GrPaint.h"
+#include "src/gpu/GrQuad.h"
+#include "src/gpu/SkGr.h"
+#include "src/gpu/glsl/GrGLSLColorSpaceXformHelper.h"
+#include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
+#include "src/gpu/glsl/GrGLSLVarying.h"
+#include "src/gpu/ops/GrMeshDrawOp.h"
+#include "src/gpu/ops/GrQuadPerEdgeAA.h"
+#include "src/gpu/ops/GrSimpleMeshDrawOpHelper.h"
 
 namespace {
 
@@ -64,40 +64,37 @@ public:
                                           GrQuadAAFlags edgeAA,
                                           const GrUserStencilSettings* stencilSettings,
                                           const GrPerspQuad& deviceQuad,
-                                          GrQuadType deviceQuadType,
-                                          const GrPerspQuad& localQuad,
-                                          GrQuadType localQuadType) {
+                                          const GrPerspQuad& localQuad) {
         // Clean up deviations between aaType and edgeAA
-        GrResolveAATypeForQuad(aaType, edgeAA, deviceQuad, deviceQuadType, &aaType, &edgeAA);
+        GrResolveAATypeForQuad(aaType, edgeAA, deviceQuad, &aaType, &edgeAA);
         return Helper::FactoryHelper<FillRectOp>(context, std::move(paint), aaType, edgeAA,
-                stencilSettings, deviceQuad, deviceQuadType, localQuad, localQuadType);
+                stencilSettings, deviceQuad, localQuad);
     }
 
     // aaType is passed to Helper in the initializer list, so incongruities between aaType and
     // edgeFlags must be resolved prior to calling this constructor.
     FillRectOp(Helper::MakeArgs args, SkPMColor4f paintColor, GrAAType aaType,
                GrQuadAAFlags edgeFlags, const GrUserStencilSettings* stencil,
-               const GrPerspQuad& deviceQuad, GrQuadType deviceQuadType,
-               const GrPerspQuad& localQuad, GrQuadType localQuadType)
+               const GrPerspQuad& deviceQuad, const GrPerspQuad& localQuad)
             : INHERITED(ClassID())
             , fHelper(args, aaType, stencil) {
         // The color stored with the quad is the clear color if a scissor-clear is decided upon
         // when executing the op.
-        fDeviceQuads.push_back(deviceQuad, deviceQuadType, { paintColor, edgeFlags });
+        fDeviceQuads.push_back(deviceQuad, { paintColor, edgeFlags });
 
         if (!fHelper.isTrivial()) {
             // Conservatively keep track of the local coordinates; it may be that the paint doesn't
             // need them after analysis is finished. If the paint is known to be solid up front they
             // can be skipped entirely.
-            fLocalQuads.push_back(localQuad, localQuadType);
+            fLocalQuads.push_back(localQuad);
         }
-        this->setBounds(deviceQuad.bounds(deviceQuadType),
-                        HasAABloat(aaType == GrAAType::kCoverage), IsZeroArea::kNo);
+        this->setBounds(deviceQuad.bounds(), HasAABloat(aaType == GrAAType::kCoverage),
+                        IsZeroArea::kNo);
     }
 
     const char* name() const override { return "FillRectOp"; }
 
-    void visitProxies(const VisitProxyFunc& func, VisitorType) const override {
+    void visitProxies(const VisitProxyFunc& func) const override {
         return fHelper.visitProxies(func);
     }
 
@@ -297,8 +294,7 @@ private:
     // used with quad sets, which uses the same view matrix for each quad so this assumes that the
     // device quad type of the new quad is the same as the op's.
     void addQuad(const GrPerspQuad& deviceQuad, const GrPerspQuad& localQuad,
-                 GrQuadType localQuadType, const SkPMColor4f& color, GrQuadAAFlags edgeAA,
-                 GrAAType aaType) {
+                 const SkPMColor4f& color, GrQuadAAFlags edgeAA, GrAAType aaType) {
         // The new quad's aa type should be the same as the first quad's or none, except when the
         // first quad's aa type was already downgraded to none, in which case the stored type must
         // be lifted to back to the requested type.
@@ -314,12 +310,12 @@ private:
 
         // Update the bounds and add the quad to this op's storage
         SkRect newBounds = this->bounds();
-        newBounds.joinPossiblyEmptyRect(deviceQuad.bounds(fDeviceQuads.quadType()));
+        newBounds.joinPossiblyEmptyRect(deviceQuad.bounds());
         this->setBounds(newBounds, HasAABloat(fHelper.aaType() == GrAAType::kCoverage),
                         IsZeroArea::kNo);
-        fDeviceQuads.push_back(deviceQuad, fDeviceQuads.quadType(), { color, edgeAA });
+        fDeviceQuads.push_back(deviceQuad, { color, edgeAA });
         if (!fHelper.isTrivial()) {
-            fLocalQuads.push_back(localQuad, localQuadType);
+            fLocalQuads.push_back(localQuad);
         }
     }
 
@@ -349,6 +345,26 @@ private:
 
 namespace GrFillRectOp {
 
+std::unique_ptr<GrDrawOp> MakeGeneric(GrRecordingContext* context,
+                                      GrPaint&& paint,
+                                      GrAAType aaType,
+                                      GrQuadAAFlags aaFlags,
+                                      const GrPerspQuad& deviceQuad,
+                                      const GrPerspQuad& localQuad,
+                                      const GrUserStencilSettings* stencil) {
+    return FillRectOp::Make(context, std::move(paint), aaType, aaFlags, stencil,
+                            deviceQuad, localQuad);
+}
+
+std::unique_ptr<GrDrawOp> MakeNonAARect(GrRecordingContext* context,
+                                        GrPaint&& paint,
+                                        const SkMatrix& view,
+                                        const SkRect& rect,
+                                        const GrUserStencilSettings* stencil) {
+    return MakeGeneric(context, std::move(paint), GrAAType::kNone, GrQuadAAFlags::kNone,
+                       GrPerspQuad::MakeFromRect(rect, view), GrPerspQuad(rect), stencil);
+}
+
 std::unique_ptr<GrDrawOp> MakePerEdge(GrRecordingContext* context,
                                       GrPaint&& paint,
                                       GrAAType aaType,
@@ -356,10 +372,9 @@ std::unique_ptr<GrDrawOp> MakePerEdge(GrRecordingContext* context,
                                       const SkMatrix& viewMatrix,
                                       const SkRect& rect,
                                       const GrUserStencilSettings* stencilSettings) {
-    GrQuadType dstQuadType = GrQuadTypeForTransformedRect(viewMatrix);
-    return FillRectOp::Make(context, std::move(paint), aaType, edgeAA, stencilSettings,
-                            GrPerspQuad::MakeFromRect(rect, viewMatrix),  dstQuadType,
-                            GrPerspQuad(rect), GrQuadType::kRect);
+    return MakeGeneric(context, std::move(paint), aaType, edgeAA,
+                       GrPerspQuad::MakeFromRect(rect, viewMatrix),
+                       GrPerspQuad(rect), stencilSettings);
 }
 
 std::unique_ptr<GrDrawOp> MakePerEdgeWithLocalMatrix(GrRecordingContext* context,
@@ -370,11 +385,9 @@ std::unique_ptr<GrDrawOp> MakePerEdgeWithLocalMatrix(GrRecordingContext* context
                                                      const SkMatrix& localMatrix,
                                                      const SkRect& rect,
                                                      const GrUserStencilSettings* stencilSettings) {
-    GrQuadType dstQuadType = GrQuadTypeForTransformedRect(viewMatrix);
-    GrQuadType localQuadType = GrQuadTypeForTransformedRect(localMatrix);
-    return FillRectOp::Make(context, std::move(paint), aaType, edgeAA, stencilSettings,
-                            GrPerspQuad::MakeFromRect(rect, viewMatrix), dstQuadType,
-                            GrPerspQuad::MakeFromRect(rect, localMatrix), localQuadType);
+    return MakeGeneric(context, std::move(paint), aaType, edgeAA,
+                       GrPerspQuad::MakeFromRect(rect, viewMatrix),
+                       GrPerspQuad::MakeFromRect(rect, localMatrix), stencilSettings);
 }
 
 std::unique_ptr<GrDrawOp> MakePerEdgeWithLocalRect(GrRecordingContext* context,
@@ -385,10 +398,9 @@ std::unique_ptr<GrDrawOp> MakePerEdgeWithLocalRect(GrRecordingContext* context,
                                                    const SkRect& rect,
                                                    const SkRect& localRect,
                                                    const GrUserStencilSettings* stencilSettings) {
-    GrQuadType dstQuadType = GrQuadTypeForTransformedRect(viewMatrix);
-    return FillRectOp::Make(context, std::move(paint), aaType, edgeAA, stencilSettings,
-                            GrPerspQuad::MakeFromRect(rect, viewMatrix), dstQuadType,
-                            GrPerspQuad(localRect), GrQuadType::kRect);
+    return MakeGeneric(context, std::move(paint), aaType, edgeAA,
+                       GrPerspQuad::MakeFromRect(rect, viewMatrix),
+                       GrPerspQuad(localRect), stencilSettings);
 }
 
 std::unique_ptr<GrDrawOp> MakePerEdgeQuad(GrRecordingContext* context,
@@ -399,12 +411,10 @@ std::unique_ptr<GrDrawOp> MakePerEdgeQuad(GrRecordingContext* context,
                                           const SkPoint quad[4],
                                           const SkPoint localQuad[4],
                                           const GrUserStencilSettings* stencilSettings) {
-    GrQuadType deviceType = GrQuadTypeForPoints(quad, viewMatrix);
-    GrQuadType localType = GrQuadTypeForPoints(localQuad ? localQuad : quad, SkMatrix::I());
-    return FillRectOp::Make(context, std::move(paint), aaType, edgeAA, stencilSettings,
-                            GrPerspQuad::MakeFromSkQuad(quad, viewMatrix), deviceType,
-                            GrPerspQuad::MakeFromSkQuad(localQuad ? localQuad : quad,
-                                                        SkMatrix::I()), localType);
+    const SkPoint* localPoints = localQuad ? localQuad : quad;
+    return MakeGeneric(context, std::move(paint), aaType, edgeAA,
+                       GrPerspQuad::MakeFromSkQuad(quad, viewMatrix),
+                       GrPerspQuad::MakeFromSkQuad(localPoints, SkMatrix::I()), stencilSettings);
 }
 
 std::unique_ptr<GrDrawOp> MakeSet(GrRecordingContext* context,
@@ -416,14 +426,12 @@ std::unique_ptr<GrDrawOp> MakeSet(GrRecordingContext* context,
                                   const GrUserStencilSettings* stencilSettings) {
     // First make a draw op for the first quad in the set
     SkASSERT(cnt > 0);
-    GrQuadType deviceQuadType = GrQuadTypeForTransformedRect(viewMatrix);
 
     paint.setColor4f(quads[0].fColor);
     std::unique_ptr<GrDrawOp> op = FillRectOp::Make(context, std::move(paint), aaType,
             quads[0].fAAFlags, stencilSettings,
-            GrPerspQuad::MakeFromRect(quads[0].fRect, viewMatrix), deviceQuadType,
-            GrPerspQuad::MakeFromRect(quads[0].fRect, quads[0].fLocalMatrix),
-            GrQuadTypeForTransformedRect(quads[0].fLocalMatrix));
+            GrPerspQuad::MakeFromRect(quads[0].fRect, viewMatrix),
+            GrPerspQuad::MakeFromRect(quads[0].fRect, quads[0].fLocalMatrix));
     auto* fillRects = op->cast<FillRectOp>();
 
     // Accumulate remaining quads similar to onCombineIfPossible() without creating an op
@@ -432,13 +440,12 @@ std::unique_ptr<GrDrawOp> MakeSet(GrRecordingContext* context,
 
         GrAAType resolvedAA;
         GrQuadAAFlags resolvedEdgeFlags;
-        GrResolveAATypeForQuad(aaType, quads[i].fAAFlags, deviceQuad, deviceQuadType,
+        GrResolveAATypeForQuad(aaType, quads[i].fAAFlags, deviceQuad,
                                &resolvedAA, &resolvedEdgeFlags);
 
         fillRects->addQuad(deviceQuad,
                            GrPerspQuad::MakeFromRect(quads[i].fRect, quads[i].fLocalMatrix),
-                           GrQuadTypeForTransformedRect(quads[i].fLocalMatrix), quads[i].fColor,
-                           resolvedEdgeFlags,resolvedAA);
+                           quads[i].fColor, resolvedEdgeFlags,resolvedAA);
     }
 
     return op;
@@ -483,8 +490,8 @@ std::unique_ptr<GrDrawOp> MakeWithLocalRect(GrRecordingContext* context,
 
 #if GR_TEST_UTILS
 
-#include "GrDrawOpTest.h"
-#include "SkGr.h"
+#include "src/gpu/GrDrawOpTest.h"
+#include "src/gpu/SkGr.h"
 
 GR_DRAW_OP_TEST_DEFINE(FillRectOp) {
     SkMatrix viewMatrix = GrTest::TestMatrixInvertible(random);

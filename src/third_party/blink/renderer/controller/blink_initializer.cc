@@ -70,8 +70,9 @@ class EndOfTaskRunner : public Thread::TaskObserver {
   void WillProcessTask(const base::PendingTask&) override {
     AnimationClock::NotifyTaskStart();
   }
+
   void DidProcessTask(const base::PendingTask&) override {
-    Microtask::PerformCheckpoint(V8PerIsolateData::MainThreadIsolate());
+    // TODO(tzik): Move rejected promise handling to EventLoop.
     V8Initializer::ReportRejectedPromisesOnMainThread();
   }
 };

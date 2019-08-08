@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <set>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -111,6 +113,18 @@ class PaymentsClientTest : public testing::Test {
     base::FieldTrialList::CreateFieldTrial(trial_name, group_name)->group();
   }
 
+  void OnDidGetUnmaskDetails(AutofillClient::PaymentsRpcResult result,
+                             std::string auth_method,
+                             bool offer_opt_in,
+                             std::unique_ptr<base::Value> request_options,
+                             std::set<std::string> fido_eligible_card_ids) {
+    result_ = result;
+    auth_method_ = auth_method;
+    offer_opt_in_ = offer_opt_in;
+    request_options_ = std::move(request_options);
+    fido_eligible_card_ids_ = fido_eligible_card_ids;
+  }
+
   void OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
                        const std::string& real_pan) {
     result_ = result;
@@ -144,6 +158,15 @@ class PaymentsClientTest : public testing::Test {
 
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
+
+  // Issue a GetUnmaskDetails request. This requires an OAuth token before
+  // starting the request.
+  void StartGettingUnmaskDetails() {
+    client_->GetUnmaskDetails(
+        base::BindOnce(&PaymentsClientTest::OnDidGetUnmaskDetails,
+                       weak_ptr_factory_.GetWeakPtr()),
+        "language-LOCALE");
+  }
 
   // Issue an UnmaskCard request. This requires an OAuth token before starting
   // the request.
@@ -235,6 +258,11 @@ class PaymentsClientTest : public testing::Test {
   }
 
   AutofillClient::PaymentsRpcResult result_;
+  std::string auth_method_;
+  bool offer_opt_in_;
+  std::unique_ptr<base::Value> request_options_;
+  std::set<std::string> fido_eligible_card_ids_;
+
   std::string server_id_;
   std::string real_pan_;
   std::unique_ptr<base::Value> legal_message_;
@@ -288,6 +316,31 @@ class PaymentsClientTest : public testing::Test {
     return profile;
   }
 };
+
+TEST_F(PaymentsClientTest, GetUnmaskDetailsSuccess) {
+  StartGettingUnmaskDetails();
+  IssueOAuthToken();
+  ReturnResponse(
+      net::HTTP_OK,
+      "{ \"offer_opt_in\": \"false\", \"authentication_method\": \"CVC\" }");
+  EXPECT_EQ(AutofillClient::SUCCESS, result_);
+  EXPECT_EQ(false, offer_opt_in_);
+  EXPECT_EQ("CVC", auth_method_);
+}
+
+TEST_F(PaymentsClientTest, GetUnmaskDetailsIncludesChromeUserContext) {
+  scoped_feature_list_.InitWithFeatures(
+      {features::kAutofillGetPaymentsIdentityFromSync},  // Enabled
+      {features::kAutofillEnableAccountWalletStorage});  // Disabled
+
+  StartGettingUnmaskDetails();
+  IssueOAuthToken();
+  ReturnResponse(net::HTTP_OK, "{}");
+
+  // ChromeUserContext was set.
+  EXPECT_TRUE(GetUploadData().find("chrome_user_context") != std::string::npos);
+  EXPECT_TRUE(GetUploadData().find("full_sync_enabled") != std::string::npos);
+}
 
 TEST_F(PaymentsClientTest, OAuthError) {
   StartUnmasking();

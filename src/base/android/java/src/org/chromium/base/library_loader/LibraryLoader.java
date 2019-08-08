@@ -11,7 +11,6 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
-import android.os.StrictMode;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -32,8 +31,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.compat.ApiHelperForM;
-import org.chromium.base.task.PostTask;
-import org.chromium.base.task.TaskTraits;
 
 import java.io.File;
 import java.io.IOException;
@@ -82,9 +79,6 @@ public class LibraryLoader {
 
     // Location of extracted native libraries.
     private static final String LIBRARY_DIR = "native_libraries";
-
-    // SharedPreferences key for "don't prefetch libraries" flag
-    private static final String DONT_PREFETCH_LIBRARIES_KEY = "dont_prefetch_libraries";
 
     // Shared preferences key for the reached code profiler.
     private static final String REACHED_CODE_PROFILER_ENABLED_KEY = "reached_code_profiler_enabled";
@@ -292,37 +286,6 @@ public class LibraryLoader {
     public void initialize(@LibraryProcessType int processType) throws ProcessInitException {
         synchronized (mLock) {
             initializeAlreadyLocked(processType);
-        }
-    }
-
-    /**
-     * Disables prefetching for subsequent runs. The value comes from "DontPrefetchLibraries"
-     * finch experiment, and is pushed on every run. I.e. the effect of the finch experiment
-     * lags by one run, which is the best we can do considering that prefetching happens way
-     * before finch is initialized. Note that since LibraryLoader is in //base, it can't depend
-     * on ChromeFeatureList, and has to rely on external code pushing the value.
-     *
-     * @param dontPrefetch whether not to prefetch libraries
-     */
-    public static void setDontPrefetchLibrariesOnNextRuns(boolean dontPrefetch) {
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putBoolean(DONT_PREFETCH_LIBRARIES_KEY, dontPrefetch)
-                .apply();
-    }
-
-    /**
-     * @return whether not to prefetch libraries (see setDontPrefetchLibrariesOnNextRun()).
-     */
-    private static boolean isNotPrefetchingLibraries() {
-        // This might be the first time getAppSharedPreferences() is used, so relax strict mode
-        // to allow disk reads.
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        try {
-            return ContextUtils.getAppSharedPreferences().getBoolean(
-                    DONT_PREFETCH_LIBRARIES_KEY, false);
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
         }
     }
 
@@ -603,9 +566,9 @@ public class LibraryLoader {
 
         if (processType == LibraryProcessType.PROCESS_BROWSER
                 && PLATFORM_REQUIRES_NATIVE_FALLBACK_EXTRACTION) {
-            // Perform the detection and deletion of obsolete native libraries on a background
+            // Perform the detection and deletion of obsolete native libraries on a
             // background thread.
-            PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
+            new Thread(() -> {
                 final String suffix = BuildInfo.getInstance().extractedFileSuffix;
                 final File[] files = getLibraryDir().listFiles();
                 if (files == null) return;
@@ -628,7 +591,7 @@ public class LibraryLoader {
                         }
                     }
                 }
-            });
+            }).start();
         }
 
         // From this point on, native code is ready to use and checkIsReady()
@@ -730,8 +693,7 @@ public class LibraryLoader {
                     throw new RuntimeException("Cannot find ZipEntry" + pathWithinApk);
                 InputStream inputStream = zipFile.getInputStream(zipEntry);
 
-                FileUtils.copyFileStreamAtomicWithBuffer(
-                        inputStream, libraryFile, new byte[16 * 1024]);
+                FileUtils.copyStreamToFile(inputStream, libraryFile);
                 libraryFile.setReadable(true, false);
                 libraryFile.setExecutable(true, false);
             } catch (IOException e) {

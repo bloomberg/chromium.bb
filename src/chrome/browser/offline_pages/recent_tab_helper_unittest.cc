@@ -145,8 +145,7 @@ class RecentTabHelperTest
     page_added_count_++;
     all_pages_needs_updating_ = true;
   }
-  void OfflinePageDeleted(
-      const OfflinePageModel::DeletedPageInfo& pageInfo) override {
+  void OfflinePageDeleted(const OfflinePageItem& item) override {
     model_removed_count_++;
     all_pages_needs_updating_ = true;
   }

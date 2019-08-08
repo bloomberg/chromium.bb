@@ -24,8 +24,8 @@ void ANGLEProcessTestArgs(int *argc, char *argv[]);
 
 int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
-  testing::InitGoogleMock(&argc, argv);
   ANGLEProcessTestArgs(&argc, argv);
+  testing::InitGoogleMock(&argc, argv);
   base::TestSuite test_suite(argc, argv);
   int rt = base::LaunchUnitTestsWithOptions(
       argc, argv,

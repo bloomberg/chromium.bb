@@ -8,10 +8,13 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/intent_picker_bubble_view.h"
 #include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/web_application_info.h"
 #include "content/public/test/browser_test_utils.h"
 #include "url/gurl.h"
 
@@ -22,8 +25,7 @@ class IntentPickerBubbleViewBrowserTest
   void SetUp() override {
     // Link capturing disables showing the intent picker.
     scoped_feature_list_.InitWithFeatures(
-        {features::kDesktopPWAWindowing, features::kIntentPicker},
-        {features::kDesktopPWAsLinkCapturing});
+        {features::kIntentPicker}, {features::kDesktopPWAsLinkCapturing});
 
     extensions::test::BookmarkAppNavigationBrowserTest::SetUp();
   }
@@ -67,11 +69,12 @@ IN_PROC_BROWSER_TEST_P(IntentPickerBubbleViewBrowserTest,
       in_scope_url, base::BindOnce(&ClickLinkAndWait, web_contents,
                                    in_scope_url, LinkTarget::SELF, GetParam()));
 
-  IntentPickerView* intent_picker_view =
+  PageActionIconView* intent_picker_view =
       BrowserView::GetBrowserViewForBrowser(browser())
-          ->GetLocationBarView()
-          ->intent_picker_view();
-  EXPECT_TRUE(intent_picker_view->visible());
+          ->toolbar_button_provider()
+          ->GetOmniboxPageActionIconContainerView()
+          ->GetPageActionIconView(PageActionIconType::kIntentPicker);
+  EXPECT_TRUE(intent_picker_view->GetVisible());
 
   IntentPickerBubbleView* intent_picker =
       IntentPickerBubbleView::intent_picker_bubble();
@@ -180,6 +183,36 @@ IN_PROC_BROWSER_TEST_P(
   }
 }
 
+// Tests that the intent icon updates its visibiliy when switching between
+// tabs.
+IN_PROC_BROWSER_TEST_P(IntentPickerBubbleViewBrowserTest,
+                       IconVisibilityAfterTabSwitching) {
+  InstallTestBookmarkApp();
+
+  const GURL in_scope_url =
+      https_server().GetURL(GetAppUrlHost(), GetInScopeUrlPath());
+  const GURL out_of_scope_url =
+      https_server().GetURL(GetAppUrlHost(), GetOutOfScopeUrlPath());
+
+  PageActionIconView* intent_picker_view =
+      BrowserView::GetBrowserViewForBrowser(browser())
+          ->toolbar_button_provider()
+          ->GetOmniboxPageActionIconContainerView()
+          ->GetPageActionIconView(PageActionIconType::kIntentPicker);
+
+  // OpenNewTab opens a new tab and focus on the new tab.
+  OpenNewTab(in_scope_url);
+  EXPECT_TRUE(intent_picker_view->GetVisible());
+  OpenNewTab(out_of_scope_url);
+  EXPECT_FALSE(intent_picker_view->GetVisible());
+
+  chrome::SelectPreviousTab(browser());
+  EXPECT_TRUE(intent_picker_view->GetVisible());
+
+  chrome::SelectNextTab(browser());
+  EXPECT_FALSE(intent_picker_view->GetVisible());
+}
+
 // Tests that the navigation in iframe doesn't affect intent picker icon
 IN_PROC_BROWSER_TEST_P(IntentPickerBubbleViewBrowserTest,
                        IframeNavigationDoesNotAffectIntentPicker) {
@@ -192,8 +225,9 @@ IN_PROC_BROWSER_TEST_P(IntentPickerBubbleViewBrowserTest,
 
   PageActionIconView* intent_picker_view =
       BrowserView::GetBrowserViewForBrowser(browser())
-          ->GetLocationBarView()
-          ->intent_picker_view();
+          ->toolbar_button_provider()
+          ->GetOmniboxPageActionIconContainerView()
+          ->GetPageActionIconView(PageActionIconType::kIntentPicker);
 
   OpenNewTab(out_of_scope_url);
   content::WebContents* initial_tab =
@@ -202,7 +236,7 @@ IN_PROC_BROWSER_TEST_P(IntentPickerBubbleViewBrowserTest,
 
   EXPECT_TRUE(
       content::NavigateIframeToURL(initial_tab, "iframe", in_scope_url));
-  EXPECT_FALSE(intent_picker_view->visible());
+  EXPECT_FALSE(intent_picker_view->GetVisible());
 
   OpenNewTab(in_scope_url);
   content::WebContents* new_tab =
@@ -211,7 +245,34 @@ IN_PROC_BROWSER_TEST_P(IntentPickerBubbleViewBrowserTest,
 
   EXPECT_TRUE(
       content::NavigateIframeToURL(initial_tab, "iframe", out_of_scope_url));
-  EXPECT_TRUE(intent_picker_view->visible());
+  EXPECT_TRUE(intent_picker_view->GetVisible());
+}
+
+// Tests that the intent picker icon is not visible if the navigatation
+// redirects to a URL that doesn't have an installed PWA.
+IN_PROC_BROWSER_TEST_P(IntentPickerBubbleViewBrowserTest,
+                       DoesNotShowIntentPickerWhenRedirectedOutOfScope) {
+  InstallTestBookmarkApp(GetOtherAppUrlHost(), /*app_scope=*/"/");
+
+  const GURL out_of_scope_url =
+      https_server().GetURL(GetAppUrlHost(), GetOutOfScopeUrlPath());
+  const GURL in_scope_url = https_server().GetURL(GetOtherAppUrlHost(), "/");
+  const GURL redirect_url = https_server().GetURL(
+      GetOtherAppUrlHost(), CreateServerRedirect(out_of_scope_url));
+
+  PageActionIconView* intent_picker_view =
+      BrowserView::GetBrowserViewForBrowser(browser())
+          ->toolbar_button_provider()
+          ->GetOmniboxPageActionIconContainerView()
+          ->GetPageActionIconView(PageActionIconType::kIntentPicker);
+
+  OpenNewTab(in_scope_url);
+  EXPECT_TRUE(intent_picker_view->GetVisible());
+
+  ClickLinkAndWaitForURL(browser()->tab_strip_model()->GetActiveWebContents(),
+                         redirect_url, out_of_scope_url, LinkTarget::SELF,
+                         GetParam());
+  EXPECT_FALSE(intent_picker_view->GetVisible());
 }
 
 INSTANTIATE_TEST_SUITE_P(

@@ -46,7 +46,7 @@ class ToolbarActionView : public views::MenuButton,
 
     // Returns the view of the toolbar actions overflow menu to use as a
     // reference point for a popup when this view isn't visible.
-    virtual views::MenuButton* GetOverflowReferenceView() = 0;
+    virtual views::LabelButton* GetOverflowReferenceView() = 0;
 
     // Returns the preferred size of the ToolbarActionView.
     virtual gfx::Size GetToolbarActionSize() = 0;
@@ -97,8 +97,11 @@ class ToolbarActionView : public views::MenuButton,
 
   views::MenuItemView* menu_for_testing() { return menu_; }
 
+  static const char kClassName[];
+
  private:
   // views::MenuButton:
+  const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
@@ -110,7 +113,7 @@ class ToolbarActionView : public views::MenuButton,
   // ToolbarActionViewDelegateViews:
   views::View* GetAsView() override;
   views::FocusManager* GetFocusManagerForAccelerator() override;
-  views::View* GetReferenceViewForPopup() override;
+  views::Button* GetReferenceButtonForPopup() override;
   bool IsMenuRunning() const override;
   void OnPopupShown(bool by_user) override;
   void OnPopupClosed() override;

@@ -7,7 +7,7 @@
 
 from __future__ import print_function
 
-import datetime
+from datetime import datetime, date
 
 from google.protobuf import field_mask_pb2
 from google.protobuf.struct_pb2 import Struct, Value
@@ -70,7 +70,7 @@ class BuildbucketV2Test(cros_test_lib.MockTestCase):
         return_value={'build_config': 'something-paladin'})
     expected_result = [{
         'name': 'stage_name',
-        'start_time': datetime.datetime.fromtimestamp(start_time.seconds),
+        'start_time': datetime.fromtimestamp(start_time.seconds),
         'finish_time': None,
         'buildbucket_id': 1234,
         'status': constants.BUILDER_STATUS_INFLIGHT,
@@ -129,7 +129,7 @@ class BuildbucketV2Test(cros_test_lib.MockTestCase):
                      return_value=fake_build)
     expected_valid_status = {
         'build_config': 'sludge-paladin-tryjob',
-        'start_time': datetime.datetime.fromtimestamp(start_time.seconds),
+        'start_time': datetime.fromtimestamp(start_time.seconds),
         'finish_time': None,
         'id': 1234,
         'status': constants.BUILDER_STATUS_INFLIGHT,
@@ -217,6 +217,62 @@ class BuildbucketV2Test(cros_test_lib.MockTestCase):
     bbv2.SearchBuild(build_predicate, fields=fields, page_size=123)
     search_builds_fn.assert_called_once_with(rpc_pb2.SearchBuildsRequest(
         predicate=build_predicate, fields=fields, page_size=123))
+
+  def testGetBuildHistoryIgnoreIdFoundId(self):
+    """Test GetBuildHistory ignore_build_id logic."""
+    # pylint: disable=unused-variable
+    bbv2 = buildbucket_v2.BuildbucketV2()
+    builder = build_pb2.BuilderID(project='chromeos', bucket='general')
+    tags = [common_pb2.StringPair(key='cbb_config',
+                                  value='something-paladin')]
+    build_list = [build_pb2.Build(id=1234),
+                  build_pb2.Build(id=2341)]
+    search_fn = self.PatchObject(
+        bbv2, 'SearchBuild',
+        return_value=rpc_pb2.SearchBuildsResponse(builds=build_list))
+    status_fn = self.PatchObject(bbv2, 'GetBuildStatus')
+    bbv2.GetBuildHistory('something-paladin', 1, ignore_build_id=1234)
+    fake_predicate = rpc_pb2.BuildPredicate(
+        builder=builder, tags=tags, create_time=None, build=None)
+    search_fn.assert_called_once_with(fake_predicate, page_size=2)
+    status_fn.assert_called_once_with(2341)
+
+  def testGetBuildHistoryIgnoreIdWithoutId(self):
+    """Test GetBuildHistory ignore_build_id logic when ID is absent."""
+    bbv2 = buildbucket_v2.BuildbucketV2()
+    builder = build_pb2.BuilderID(project='chromeos', bucket='general')
+    tags = [common_pb2.StringPair(key='cbb_config',
+                                  value='something-paladin')]
+    build_list = [build_pb2.Build(id=1234),
+                  build_pb2.Build(id=2341)]
+    search_fn = self.PatchObject(
+        bbv2, 'SearchBuild',
+        return_value=rpc_pb2.SearchBuildsResponse(builds=build_list))
+    status_fn = self.PatchObject(bbv2, 'GetBuildStatus')
+    bbv2.GetBuildHistory('something-paladin', 1, ignore_build_id=1000)
+    fake_predicate = rpc_pb2.BuildPredicate(
+        builder=builder, tags=tags, create_time=None, build=None)
+    search_fn.assert_called_with(fake_predicate, page_size=2)
+    status_fn.assert_called_with(1234)
+
+  def testGetBuildHistoryOtherArgs(self):
+    """Test GetBuildHistory's processing of (args - ignore_build_id)."""
+    builder = build_pb2.BuilderID(project='chromeos', bucket='general')
+    tags = [common_pb2.StringPair(key='cbb_config',
+                                  value='something-paladin'),
+            common_pb2.StringPair(key='cbb_branch',
+                                  value='master')]
+    start_date = date(2019, 4, 16)
+    create_time = buildbucket_v2.DateToTimeRange(start_date)
+    fake_build = rpc_pb2.BuildRange(end_build_id=1234)
+    fake_predicate = rpc_pb2.BuildPredicate(
+        builder=builder, tags=tags, create_time=create_time, build=fake_build)
+    bbv2 = buildbucket_v2.BuildbucketV2()
+    search_fn = self.PatchObject(bbv2, 'SearchBuild')
+    self.PatchObject(bbv2, 'GetBuildStatus')
+    bbv2.GetBuildHistory('something-paladin', 10, start_date=start_date,
+                         branch='master', ending_build_id=1234)
+    search_fn.assert_called_once_with(fake_predicate, page_size=10)
 
   def testGetChildStatusesSuccess(self):
     """Test GetChildStatuses when RPC succeeds."""
@@ -350,7 +406,7 @@ class StaticFunctionsTest(cros_test_lib.MockTestCase):
                          status=2)
     expected_result = {
         'name': 'stage_name',
-        'start_time': datetime.datetime.fromtimestamp(start_time.seconds),
+        'start_time': datetime.fromtimestamp(start_time.seconds),
         'finish_time': None,
         'buildbucket_id': 1234,
         'status': constants.BUILDER_STATUS_INFLIGHT,
@@ -358,3 +414,18 @@ class StaticFunctionsTest(cros_test_lib.MockTestCase):
 
     self.assertEqual(buildbucket_v2.BuildStepToDict(step, build_values),
                      expected_result)
+
+  def testDateToTimeRangeNoneInput(self):
+    self.assertIsNone(buildbucket_v2.DateToTimeRange(None))
+
+  def testDateToTimeRangeStartDate(self):
+    date_example = date(2019, 4, 15)
+    result = buildbucket_v2.DateToTimeRange(start_date=date_example)
+    self.assertEqual(result.start_time.seconds, 1555286400)
+    self.assertEqual(result.end_time.seconds, 0)
+
+  def testDateToTimeRangeEndDate(self):
+    date_example = date(2019, 4, 15)
+    result = buildbucket_v2.DateToTimeRange(end_date=date_example)
+    self.assertEqual(result.end_time.seconds, 1555372740)
+    self.assertEqual(result.start_time.seconds, 0)

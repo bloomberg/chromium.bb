@@ -256,8 +256,9 @@ static jint JNI_DialogOverlayImpl_RegisterSurface(
     const JavaParamRef<jobject>& surface) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return gpu::GpuSurfaceTracker::Get()->AddSurfaceForNativeWidget(
-      gpu::GpuSurfaceTracker::SurfaceRecord(gfx::kNullAcceleratedWidget,
-                                            surface.obj()));
+      gpu::GpuSurfaceTracker::SurfaceRecord(
+          gfx::kNullAcceleratedWidget, surface.obj(),
+          false /* can_be_used_with_surface_control */));
 }
 
 static void JNI_DialogOverlayImpl_UnregisterSurface(
@@ -271,8 +272,10 @@ static ScopedJavaLocalRef<jobject>
 JNI_DialogOverlayImpl_LookupSurfaceForTesting(
     JNIEnv* env,
     jint surfaceId) {
+  bool can_be_used_with_surface_control = false;
   gl::ScopedJavaSurface surface =
-      gpu::GpuSurfaceTracker::Get()->AcquireJavaSurface(surfaceId);
+      gpu::GpuSurfaceTracker::Get()->AcquireJavaSurface(
+          surfaceId, &can_be_used_with_surface_control);
   return ScopedJavaLocalRef<jobject>(surface.j_surface());
 }
 

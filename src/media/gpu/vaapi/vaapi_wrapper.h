@@ -20,15 +20,13 @@
 #include <va/va.h>
 
 #include "base/files/file.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
-#include "media/base/video_decoder_config.h"
-#include "media/base/video_frame.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/vaapi/va_surface.h"
-#include "media/video/mjpeg_decode_accelerator.h"
 #include "media/video/video_decode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
 #include "ui/gfx/geometry/size.h"
@@ -44,6 +42,7 @@ class NativePixmap;
 namespace media {
 
 class ScopedVAImage;
+class VideoFrame;
 
 // This class handles VA-API calls and ensures proper locking of VA-API calls
 // to libva, the userspace shim to the HW codec driver. libva is not
@@ -141,6 +140,8 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // Returns the list of VAImageFormats supported by the driver.
   static const std::vector<VAImageFormat>& GetSupportedImageFormatsForTesting();
 
+  static uint32_t BufferFormatToVARTFormat(gfx::BufferFormat fmt);
+
   // Creates |num_surfaces| backing surfaces in driver for VASurfaces of
   // |va_format|, each of size |size| and initializes |va_context_id_| with
   // |format| and |size|. Returns true when successful, with the created IDs in
@@ -221,7 +222,7 @@ class MEDIA_GPU_EXPORT VaapiWrapper
                                                const gfx::Size& size);
 
   // Upload contents of |frame| into |va_surface_id| for encode.
-  bool UploadVideoFrameToSurface(const scoped_refptr<VideoFrame>& frame,
+  bool UploadVideoFrameToSurface(const VideoFrame& frame,
                                  VASurfaceID va_surface_id);
 
   // Create a buffer of |size| bytes to be used as encode output.
@@ -276,7 +277,10 @@ class MEDIA_GPU_EXPORT VaapiWrapper
 
  private:
   friend class base::RefCountedThreadSafe<VaapiWrapper>;
-  friend class VaapiJpegDecoderTest;
+
+  FRIEND_TEST_ALL_PREFIXES(VaapiUtilsTest, ScopedVAImage);
+  FRIEND_TEST_ALL_PREFIXES(VaapiUtilsTest, BadScopedVAImage);
+  FRIEND_TEST_ALL_PREFIXES(VaapiUtilsTest, BadScopedVABufferMapping);
 
   bool Initialize(CodecMode mode, VAProfile va_profile);
   void Deinitialize();

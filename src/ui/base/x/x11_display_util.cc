@@ -101,6 +101,21 @@ void ClipWorkArea(std::vector<display::Display>* displays,
     primary.set_work_area(work_area);
 }
 
+int GetRefreshRateFromXRRModeInfo(XRRModeInfo* modes,
+                                  int num_of_mode,
+                                  RRMode current_mode_id) {
+  for (int i = 0; i < num_of_mode; i++) {
+    XRRModeInfo mode_info = modes[i];
+    if (mode_info.id != current_mode_id)
+      continue;
+    if (!mode_info.hTotal || !mode_info.vTotal)
+      return 0;
+
+    // Refresh Rate = Pixel Clock / (Horizontal Total * Vertical Total)
+    return mode_info.dotClock / (mode_info.hTotal * mode_info.vTotal);
+  }
+  return 0;
+}
 }  // namespace
 
 int GetXrandrVersion(XDisplay* xdisplay) {
@@ -232,8 +247,13 @@ std::vector<display::Display> BuildDisplaysFromXRandRInfo(
         gfx::ICCProfile icc_profile = ui::GetICCProfileForMonitor(
             monitor_iter == output_to_monitor.end() ? 0 : monitor_iter->second);
         icc_profile.HistogramDisplay(display.id());
-        display.set_color_space(icc_profile.GetColorSpace());
+        display.set_color_space(icc_profile.GetPrimariesOnlyColorSpace());
       }
+
+      // Set monitor refresh rate
+      int refresh_rate = GetRefreshRateFromXRRModeInfo(
+          resources->modes, resources->nmode, crtc->mode);
+      display.set_display_frequency(refresh_rate);
 
       displays.push_back(display);
     }

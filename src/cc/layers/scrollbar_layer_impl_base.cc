@@ -290,6 +290,14 @@ gfx::Rect ScrollbarLayerImplBase::ForwardButtonRect() const {
   return gfx::Rect(0, 0);
 }
 
+gfx::Rect ScrollbarLayerImplBase::BackTrackRect() const {
+  return gfx::Rect(0, 0);
+}
+
+gfx::Rect ScrollbarLayerImplBase::ForwardTrackRect() const {
+  return gfx::Rect(0, 0);
+}
+
 // This manages identifying which part of a composited scrollbar got hit based
 // on the position_in_widget.
 ScrollbarPart ScrollbarLayerImplBase::IdentifyScrollbarPart(
@@ -298,8 +306,18 @@ ScrollbarPart ScrollbarLayerImplBase::IdentifyScrollbarPart(
                                     position_in_widget.y());
   if (BackButtonRect().Contains(pointer_location))
     return ScrollbarPart::BACK_BUTTON;
+
   if (ForwardButtonRect().Contains(pointer_location))
     return ScrollbarPart::FORWARD_BUTTON;
+
+  if (ComputeThumbQuadRect().Contains(pointer_location))
+    return ScrollbarPart::THUMB;
+
+  if (BackTrackRect().Contains(pointer_location))
+    return ScrollbarPart::BACK_TRACK;
+
+  if (ForwardTrackRect().Contains(pointer_location))
+    return ScrollbarPart::FORWARD_TRACK;
 
   // TODO(arakeri): Once crbug.com/952314 is fixed, add a DCHECK to verify that
   // the point that is passed in is within the TrackRect. Also, please note that

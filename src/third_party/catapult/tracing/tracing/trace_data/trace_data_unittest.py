@@ -5,6 +5,7 @@
 import base64
 import json
 import os
+import tempfile
 import unittest
 
 from py_utils import tempfile_ext
@@ -57,6 +58,17 @@ class TraceDataBuilderTest(unittest.TestCase):
       with self.assertRaises(ValueError):
         builder.AddTraceFor(trace_data.TELEMETRY_PART, 'unstructured trace')
 
+  def testAddTraceFileFor(self):
+    original_data = {'msg': 'The answer is 42'}
+    with tempfile.NamedTemporaryFile(delete=False) as source:
+      json.dump(original_data, source)
+    with trace_data.TraceDataBuilder() as builder:
+      builder.AddTraceFileFor(trace_data.CHROME_TRACE_PART, source.name)
+      self.assertFalse(os.path.exists(source.name))
+      out_data = builder.AsData().GetTraceFor(trace_data.CHROME_TRACE_PART)
+
+    self.assertEqual(original_data, out_data)
+
   def testOpenTraceHandleFor(self):
     original_data = {'msg': 'The answer is 42'}
     with trace_data.TraceDataBuilder() as builder:
@@ -92,10 +104,11 @@ class TraceDataBuilderTest(unittest.TestCase):
         builder.AddTraceFor(trace_data.CHROME_TRACE_PART,
                             {'traceEvents': [1, 2, 3]})
 
-  def testCantCallAsDataTwice(self):
+  def testCantWriteAfterFreeze(self):
     with trace_data.TraceDataBuilder() as builder:
       builder.AddTraceFor(trace_data.CHROME_TRACE_PART,
                           {'traceEvents': [1, 2, 3]})
-      builder.AsData().CleanUpAllTraces()
-      with self.assertRaises(Exception):
-        builder.AsData()
+      builder.Freeze()
+      with self.assertRaises(RuntimeError):
+        builder.AddTraceFor(trace_data.CHROME_TRACE_PART,
+                            {'traceEvents': [1, 2, 3]})

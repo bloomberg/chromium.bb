@@ -90,11 +90,12 @@ MockMediaStreamVideoSource::GetCurrentCaptureParams() const {
 }
 
 void MockMediaStreamVideoSource::DeliverVideoFrame(
-    const scoped_refptr<media::VideoFrame>& frame) {
+    scoped_refptr<media::VideoFrame> frame) {
   DCHECK(!is_stopped_for_restart_);
   DCHECK(!frame_callback_.is_null());
   io_task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(frame_callback_, frame, base::TimeTicks()));
+      FROM_HERE,
+      base::BindOnce(frame_callback_, std::move(frame), base::TimeTicks()));
 }
 
 void MockMediaStreamVideoSource::StopSourceForRestartImpl() {

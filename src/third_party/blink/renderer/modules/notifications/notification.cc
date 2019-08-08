@@ -54,7 +54,7 @@
 #include "third_party/blink/renderer/modules/notifications/timestamp_trigger.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/frame_resource_coordinator.h"
+#include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/document_resource_coordinator.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -99,8 +99,8 @@ Notification* Notification::Create(ExecutionContext* context,
   if (context->IsSecureContext()) {
     UseCounter::Count(context, WebFeature::kNotificationSecureOrigin);
     if (document) {
-      UseCounter::CountCrossOriginIframe(
-          *document, WebFeature::kNotificationAPISecureOriginIframe);
+      document->CountUseOnlyInCrossOriginIframe(
+          WebFeature::kNotificationAPISecureOriginIframe);
     }
   } else {
     Deprecation::CountDeprecation(context,
@@ -135,10 +135,10 @@ Notification* Notification::Create(ExecutionContext* context,
 
   notification->SchedulePrepareShow();
 
-  if (document && document->GetFrame()) {
-    if (auto* frame_resource_coordinator =
-            document->GetFrame()->GetFrameResourceCoordinator()) {
-      frame_resource_coordinator->OnNonPersistentNotificationCreated();
+  if (document) {
+    if (auto* document_resource_coordinator =
+            document->GetResourceCoordinator()) {
+      document_resource_coordinator->OnNonPersistentNotificationCreated();
     }
   }
 

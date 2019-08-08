@@ -61,17 +61,7 @@ using chrome_test_util::SettingsDoneButton;
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI
       tapSettingsMenuButton:chrome_test_util::SecondarySignInButton()];
-  if (base::FeatureList::IsEnabled(unified_consent::kUnifiedConsent)) {
-    [[EarlGrey
-        selectElementWithMatcher:grey_allOf(
-                                     grey_accessibilityID(identity.userEmail),
-                                     grey_kindOfClass(
-                                         [IdentityChooserCell class]),
-                                     grey_sufficientlyVisible(), nil)]
-        performAction:grey_tap()];
-  } else {
-    [self selectIdentityWithEmail:identity.userEmail];
-  }
+  [self selectIdentityWithEmail:identity.userEmail];
   [self confirmSigninConfirmationDialog];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -81,11 +71,21 @@ using chrome_test_util::SettingsDoneButton;
 }
 
 + (void)selectIdentityWithEmail:(NSString*)userEmail {
-  // Sign in to |userEmail|.
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(userEmail)]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:AccountConsistencySetupSigninButton()]
-      performAction:grey_tap()];
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+    // Assumes that the identity chooser is visible.
+    [[EarlGrey
+        selectElementWithMatcher:grey_allOf(grey_accessibilityID(userEmail),
+                                            grey_kindOfClass(
+                                                [IdentityChooserCell class]),
+                                            grey_sufficientlyVisible(), nil)]
+        performAction:grey_tap()];
+  } else {
+    // Sign in to |userEmail|.
+    [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(userEmail)]
+        performAction:grey_tap()];
+    [[EarlGrey selectElementWithMatcher:AccountConsistencySetupSigninButton()]
+        performAction:grey_tap()];
+  }
 }
 
 + (void)tapSettingsLink {
@@ -110,7 +110,7 @@ using chrome_test_util::SettingsDoneButton;
   // Once to the bottom, the consent can be confirmed.
   id<GREYMatcher> confirmationScrollViewMatcher = nil;
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-  if (base::FeatureList::IsEnabled(unified_consent::kUnifiedConsent)) {
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
     confirmationScrollViewMatcher =
         grey_accessibilityID(kUnifiedConsentScrollViewIdentifier);
   } else {

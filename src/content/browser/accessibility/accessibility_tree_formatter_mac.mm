@@ -19,7 +19,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 
 // This file uses the deprecated NSObject accessibility interface.
-// TODO(crbug.com/921109): Migrate to the new NSAccessibility interface.
+// TODO(crbug.com/948844): Migrate to the new NSAccessibility interface.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 
@@ -43,12 +43,16 @@ const char kRangeLenDictAttr[] = "len";
 
 std::unique_ptr<base::DictionaryValue> PopulatePosition(
     const BrowserAccessibility& node) {
+  DCHECK(node.instance_active());
+  BrowserAccessibilityManager* root_manager = node.manager()->GetRootManager();
+  DCHECK(root_manager);
+
   std::unique_ptr<base::DictionaryValue> position(new base::DictionaryValue);
   // The NSAccessibility position of an object is in global coordinates and
   // based on the lower-left corner of the object. To make this easier and less
   // confusing, convert it to local window coordinates using the top-left
   // corner when dumping the position.
-  BrowserAccessibility* root = node.manager()->GetRootManager()->GetRoot();
+  BrowserAccessibility* root = root_manager->GetRoot();
   BrowserAccessibilityCocoa* cocoa_root = ToBrowserAccessibilityCocoa(root);
   NSPoint root_position = [[cocoa_root position] pointValue];
   NSSize root_size = [[cocoa_root size] sizeValue];
@@ -118,7 +122,7 @@ std::unique_ptr<base::Value> StringForBrowserAccessibility(
 
   // Include the description, title, or value - the first one not empty.
   id title = [obj title];
-  id description = [obj description];
+  id description = [obj descriptionForAccessibility];
   id value = [obj value];
   if (description && ![description isEqual:@""]) {
     [tokens addObject:description];

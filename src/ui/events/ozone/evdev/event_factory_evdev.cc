@@ -133,7 +133,7 @@ class ProxyDeviceEventDispatcher : public DeviceEventDispatcherEvdev {
   }
 
   void DispatchGamepadDevicesUpdated(
-      const std::vector<InputDevice>& devices) override {
+      const std::vector<GamepadDevice>& devices) override {
     ui_thread_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&EventFactoryEvdev::DispatchGamepadDevicesUpdated,
@@ -426,7 +426,7 @@ void EventFactoryEvdev::DispatchUncategorizedDevicesUpdated(
 }
 
 void EventFactoryEvdev::DispatchGamepadDevicesUpdated(
-    const std::vector<InputDevice>& devices) {
+    const std::vector<GamepadDevice>& devices) {
   TRACE_EVENT0("evdev", "EventFactoryEvdev::DispatchGamepadDevicesUpdated");
   gamepad_provider_->DispatchGamepadDevicesUpdated(devices);
 }

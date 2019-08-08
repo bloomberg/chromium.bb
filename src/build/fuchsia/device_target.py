@@ -4,6 +4,8 @@
 
 """Implements commands for running and interacting with Fuchsia on devices."""
 
+from __future__ import print_function
+
 import boot_data
 import filecmp
 import logging
@@ -165,12 +167,12 @@ class DeviceTarget(target.Target):
 
       # Handle the output of "dev_finder list".
       if len(name_host_pairs) > 1:
-        print 'More than one device was discovered on the network.'
-        print 'Use --node-name <name> to specify the device to use.'
-        print '\nList of devices:'
+        print('More than one device was discovered on the network.')
+        print('Use --node-name <name> to specify the device to use.')
+        print('\nList of devices:')
         for pair in name_host_pairs:
-          print '  ' + pair[1]
-        print
+          print('  ' + pair[1])
+        print()
         raise Exception('Ambiguous target device specification.')
 
       assert len(name_host_pairs) == 1

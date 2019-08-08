@@ -12,6 +12,7 @@
 #include "base/bit_cast.h"
 #include "base/logging.h"
 #include "base/process/memory.h"
+#include "base/strings/string_piece.h"
 #include "base/sys_byteorder.h"
 
 #if defined(USE_SYSTEM_ZLIB)
@@ -224,6 +225,17 @@ bool GzipUncompress(base::StringPiece input, base::StringPiece output) {
   if (uncompressed_size > output.size())
     return false;
   return GzipUncompressHelper(bit_cast<Bytef*>(output.data()),
+                              &uncompressed_size,
+                              bit_cast<const Bytef*>(input.data()),
+                              static_cast<uLongf>(input.length())) == Z_OK;
+}
+
+bool GzipUncompress(base::StringPiece input, std::string* output) {
+  // Disallow in-place usage, i.e., |input| using |*output| as underlying data.
+  DCHECK_NE(input.data(), output->data());
+  uLongf uncompressed_size = GetUncompressedSize(input);
+  output->resize(uncompressed_size);
+  return GzipUncompressHelper(bit_cast<Bytef*>(output->data()),
                               &uncompressed_size,
                               bit_cast<const Bytef*>(input.data()),
                               static_cast<uLongf>(input.length())) == Z_OK;

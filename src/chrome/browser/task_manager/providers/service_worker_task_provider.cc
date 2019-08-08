@@ -121,6 +121,11 @@ void ServiceWorkerTaskProvider::StartUpdating() {
 void ServiceWorkerTaskProvider::StopUpdating() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  // OnDidGetAllServiceWorkerRunningInfos()/OnDidGetServiceWorkerRunningInfo()
+  // should never be called after this, and hence we must invalidate the weak
+  // pointers.
+  weak_ptr_factory_.InvalidateWeakPtrs();
+
   // Stop listening to NOTIFICATION_PROFILE_CREATED.
   registrar_.RemoveAll();
 

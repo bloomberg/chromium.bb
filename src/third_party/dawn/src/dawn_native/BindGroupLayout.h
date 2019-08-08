@@ -46,20 +46,22 @@ namespace dawn_native {
         };
         const LayoutBindingInfo& GetBindingInfo() const;
 
+        // Functors necessary for the unordered_set<BGLBase*>-based cache.
+        struct HashFunc {
+            size_t operator()(const BindGroupLayoutBase* bgl) const;
+        };
+        struct EqualityFunc {
+            bool operator()(const BindGroupLayoutBase* a, const BindGroupLayoutBase* b) const;
+        };
+
+        uint32_t GetDynamicBufferCount() const;
+
       private:
         BindGroupLayoutBase(DeviceBase* device, ObjectBase::ErrorTag tag);
 
         LayoutBindingInfo mBindingInfo;
         bool mIsBlueprint = false;
-    };
-
-    // Implements the functors necessary for the unordered_set<BGL*>-based cache.
-    struct BindGroupLayoutCacheFuncs {
-        // The hash function
-        size_t operator()(const BindGroupLayoutBase* bgl) const;
-
-        // The equality predicate
-        bool operator()(const BindGroupLayoutBase* a, const BindGroupLayoutBase* b) const;
+        uint32_t mDynamicBufferCount = 0;
     };
 
 }  // namespace dawn_native

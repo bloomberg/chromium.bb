@@ -9,7 +9,6 @@ include_rules = [
   "+services/shape_detection",
   "+services/viz/privileged/interfaces",
   "+services/viz/service",
-  "+services/ws/common",
   "+sandbox",
   "+skia",
 ]

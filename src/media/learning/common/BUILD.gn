@@ -38,6 +38,7 @@ component("common") {
 
   deps = [
     "//base",
+    "//services/metrics/public/cpp:metrics_cpp",
   ]
 }
 

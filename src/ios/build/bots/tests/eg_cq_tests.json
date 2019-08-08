@@ -9,26 +9,6 @@
       "shards": 3
     },
     {
-      "app": "ios_chrome_ui_payments_egtests",
-      "xcode parallelization": true,
-      "shards": 3
-    },
-    {
-      "app": "ios_chrome_ui_qr_scanner_egtests",
-      "xcode parallelization": true,
-      "shards": 3
-    },
-    {
-      "app": "ios_chrome_ui_settings_egtests",
-      "xcode parallelization": true,
-      "shards": 3
-    },
-    {
-      "app": "ios_chrome_ui_signin_interaction_egtests",
-      "xcode parallelization": true,
-      "shards": 3
-    },
-    {
       "app": "ios_chrome_ui_egtests",
       "shard size": 12,
       "xcode parallelization": true,

@@ -69,7 +69,6 @@ jumbo_component("gfx") {
     "font.cc",
     "font.h",
     "font_fallback.h",
-    "font_fallback_android.cc",
     "font_fallback_linux.cc",
     "font_fallback_linux.h",
     "font_fallback_mac.mm",
@@ -81,7 +80,6 @@ jumbo_component("gfx") {
     "font_list_impl.h",
     "font_render_params.cc",
     "font_render_params.h",
-    "font_render_params_android.cc",
     "font_render_params_linux.cc",
     "font_render_params_mac.cc",
     "font_render_params_win.cc",
@@ -127,6 +125,8 @@ jumbo_component("gfx") {
     "mac/scoped_cocoa_disable_screen_updates.mm",
     "nine_image_painter.cc",
     "nine_image_painter.h",
+    "overlay_transform_utils.cc",
+    "overlay_transform_utils.h",
     "path_mac.h",
     "path_mac.mm",
     "path_win.cc",
@@ -170,6 +170,8 @@ jumbo_component("gfx") {
     "utf16_indexing.h",
     "vsync_provider.cc",
     "vsync_provider.h",
+    "win/crash_id_helper.cc",
+    "win/crash_id_helper.h",
     "win/direct_write.cc",
     "win/direct_write.h",
     "win/hwnd_util.cc",
@@ -265,7 +267,7 @@ jumbo_component("gfx") {
     "//third_party/zlib",
   ]
 
-  if (is_linux || is_android || is_fuchsia) {
+  if (!is_mac && !is_ios) {
     sources += [
       "platform_font_skia.cc",
       "platform_font_skia.h",
@@ -299,6 +301,13 @@ jumbo_component("gfx") {
     ]
   }
 
+  if (is_android || is_fuchsia) {
+    sources += [
+      "font_fallback_skia.cc",
+      "font_render_params_skia.cc",
+    ]
+  }
+
   if (!is_ios) {
     sources += [
       "bidi_line_iterator.cc",
@@ -324,6 +333,7 @@ jumbo_component("gfx") {
       "setupapi.lib",
       "dwrite.lib",
     ]
+    deps += [ "//components/crash/core/common" ]
   } else {
     sources -= [
       "gdi_util.cc",
@@ -362,13 +372,6 @@ jumbo_component("gfx") {
     configs += [ "//build/config/linux:x11" ]
   } else {
     sources -= [ "path_x11.cc" ]
-  }
-
-  if (is_fuchsia) {
-    sources += [
-      "font_fallback_fuchsia.cc",
-      "font_render_params_fuchsia.cc",
-    ]
   }
 }
 
@@ -528,6 +531,7 @@ jumbo_source_set("memory_buffer_sources") {
   ]
 
   deps = [
+    ":gfx_switches",
     ":native_widget_types",
     "//base",
     "//ui/gfx/geometry",
@@ -646,7 +650,6 @@ test("gfx_unittests") {
 
   data = [
     "test/data/",
-    "$root_out_dir/ui_test.pak",
   ]
 
   if (!is_ios) {
@@ -679,6 +682,7 @@ test("gfx_unittests") {
       "geometry/quad_unittest.cc",
       "geometry/quaternion_unittest.cc",
       "geometry/rect_unittest.cc",
+      "geometry/rounded_corners_f_unittest.cc",
       "geometry/safe_integer_conversions_unittest.cc",
       "geometry/scroll_offset_unittest.cc",
       "geometry/size_unittest.cc",
@@ -691,6 +695,8 @@ test("gfx_unittests") {
       "mac/coordinate_conversion_unittest.mm",
       "mojo/struct_traits_unittest.cc",
       "nine_image_painter_unittest.cc",
+      "overlay_transform_utils_unittest.cc",
+      "paint_vector_icon_unittest.cc",
       "path_mac_unittest.mm",
       "platform_font_mac_unittest.mm",
       "range/range_mac_unittest.mm",
@@ -705,14 +711,11 @@ test("gfx_unittests") {
       "transform_util_unittest.cc",
       "utf16_indexing_unittest.cc",
     ]
+    data += [ "$root_out_dir/ui_test.pak" ]
   }
 
   if (is_linux || is_android || is_fuchsia) {
     sources += [ "platform_font_skia_unittest.cc" ]
-  }
-
-  if (!is_ios) {
-    sources += [ "paint_vector_icon_unittest.cc" ]
   }
 
   deps = [
@@ -744,6 +747,10 @@ test("gfx_unittests") {
     "//ui/resources:ui_test_pak",
   ]
 
+  if (is_mac || is_ios) {
+    deps += [ "//ui/resources:ui_test_pak_bundle_data" ]
+  }
+
   if (!is_mac && !is_ios) {
     sources += [
       "interpolated_transform_unittest.cc",
@@ -753,6 +760,10 @@ test("gfx_unittests") {
 
   if (is_android) {
     deps += [ "//ui/android:ui_java" ]
+  }
+
+  if (is_android || is_fuchsia) {
+    sources += [ "font_fallback_skia_unittest.cc" ]
   }
 
   if (!use_aura && !is_ios) {
@@ -772,6 +783,8 @@ test("gfx_unittests") {
       "path_win_unittest.cc",
       "platform_font_win_unittest.cc",
       "system_fonts_win_unittest.cc",
+      "win/crash_id_helper_unittest.cc",
+      "win/direct_write_unittest.cc",
       "win/text_analysis_source_unittest.cc",
     ]
 
@@ -805,6 +818,10 @@ test("gfx_unittests") {
   if (is_linux) {
     sources += [ "linux/native_pixmap_dmabuf_unittest.cc" ]
     deps += [ "//third_party/fontconfig" ]
+  }
+
+  if (is_fuchsia) {
+    deps += [ "//skia:test_fonts" ]
   }
 }
 

@@ -10,6 +10,8 @@
 #include <memory>
 #include <vector>
 
+#include "build/build_config.h"
+#include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_stream_acc.h"
 #include "core/fxcrt/fx_string.h"
 #include "core/fxcrt/fx_system.h"
@@ -18,7 +20,6 @@
 
 class CFX_SubstFont;
 class CPDF_CIDFont;
-class CPDF_Dictionary;
 class CPDF_Document;
 class CPDF_Object;
 class CPDF_TrueTypeFont;
@@ -54,7 +55,7 @@ class CPDF_Font {
   virtual size_t CountChar(ByteStringView pString) const;
   virtual int AppendChar(char* buf, uint32_t charcode) const;
   virtual int GlyphFromCharCode(uint32_t charcode, bool* pVertGlyph) = 0;
-#if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+#if defined(OS_MACOSX)
   virtual int GlyphFromCharCodeExt(uint32_t charcode);
 #endif
   virtual WideString UnicodeFromCharCode(uint32_t charcode) const;
@@ -81,9 +82,13 @@ class CPDF_Font {
   virtual uint32_t GetCharWidthF(uint32_t charcode) = 0;
   virtual FX_RECT GetCharBBox(uint32_t charcode) = 0;
 
+  // Can return nullptr for stock Type1 fonts. Always returns non-null for other
+  // font types.
   CPDF_Document* GetDocument() const { return m_pDocument.Get(); }
+
   CFX_Font* GetFont() { return &m_Font; }
   const CFX_Font* GetFont() const { return &m_Font; }
+
   CFX_Font* GetFontFallback(int position);
 
  protected:
@@ -105,7 +110,7 @@ class CPDF_Font {
   CFX_Font m_Font;
   std::vector<std::unique_ptr<CFX_Font>> m_FontFallbacks;
   RetainPtr<CPDF_StreamAcc> m_pFontFile;
-  UnownedPtr<CPDF_Dictionary> m_pFontDict;
+  RetainPtr<CPDF_Dictionary> m_pFontDict;
   ByteString m_BaseFont;
   mutable std::unique_ptr<CPDF_ToUnicodeMap> m_pToUnicodeMap;
   mutable bool m_bToUnicodeLoaded = false;

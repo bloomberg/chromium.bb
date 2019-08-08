@@ -33,7 +33,6 @@
 #include "third_party/blink/renderer/core/animation/animation.h"
 #include "third_party/blink/renderer/core/animation/animation_input_helpers.h"
 #include "third_party/blink/renderer/core/animation/computed_effect_timing.h"
-#include "third_party/blink/renderer/core/animation/effect_timing.h"
 #include "third_party/blink/renderer/core/animation/optional_effect_timing.h"
 #include "third_party/blink/renderer/core/animation/timing_calculations.h"
 #include "third_party/blink/renderer/core/animation/timing_input.h"
@@ -92,26 +91,7 @@ void AnimationEffect::UpdateSpecifiedTiming(const Timing& timing) {
 }
 
 EffectTiming* AnimationEffect::getTiming() const {
-  EffectTiming* effect_timing = EffectTiming::Create();
-
-  effect_timing->setDelay(SpecifiedTiming().start_delay * 1000);
-  effect_timing->setEndDelay(SpecifiedTiming().end_delay * 1000);
-  effect_timing->setFill(Timing::FillModeString(SpecifiedTiming().fill_mode));
-  effect_timing->setIterationStart(SpecifiedTiming().iteration_start);
-  effect_timing->setIterations(SpecifiedTiming().iteration_count);
-  UnrestrictedDoubleOrString duration;
-  if (SpecifiedTiming().iteration_duration) {
-    duration.SetUnrestrictedDouble(
-        SpecifiedTiming().iteration_duration->InMillisecondsF());
-  } else {
-    duration.SetString("auto");
-  }
-  effect_timing->setDuration(duration);
-  effect_timing->setDirection(
-      Timing::PlaybackDirectionString(SpecifiedTiming().direction));
-  effect_timing->setEasing(SpecifiedTiming().timing_function->ToString());
-
-  return effect_timing;
+  return SpecifiedTiming().ConvertToEffectTiming();
 }
 
 ComputedEffectTiming* AnimationEffect::getComputedTiming() const {
@@ -206,11 +186,14 @@ void AnimationEffect::UpdateInheritedTime(double inherited_time,
     const double current_iteration = CalculateCurrentIteration(
         current_phase, active_time, timing_.iteration_count, overall_progress,
         simple_iteration_progress);
-
+    const bool current_direction_is_forwards =
+        IsCurrentDirectionForwards(current_iteration, timing_.direction);
     const double directed_progress = CalculateDirectedProgress(
         simple_iteration_progress, current_iteration, timing_.direction);
+
     progress = CalculateTransformedProgress(
-        directed_progress, iteration_duration, timing_.timing_function);
+        current_phase, directed_progress, iteration_duration,
+        current_direction_is_forwards, timing_.timing_function);
     if (IsNull(progress.value())) {
       progress.reset();
     }

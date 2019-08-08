@@ -15,6 +15,7 @@
 #include "dawn_native/RenderPipeline.h"
 
 #include "common/BitSetIterator.h"
+#include "common/HashUtils.h"
 #include "dawn_native/Commands.h"
 #include "dawn_native/Device.h"
 #include "dawn_native/Texture.h"
@@ -24,33 +25,33 @@ namespace dawn_native {
     // Helper functions
     namespace {
 
-        MaybeError ValidateVertexInputDescriptor(const VertexInputDescriptor* input,
-                                                 std::bitset<kMaxVertexInputs>* inputsSetMask) {
-            DAWN_TRY(ValidateInputStepMode(input->stepMode));
-            if (input->inputSlot >= kMaxVertexInputs) {
-                return DAWN_VALIDATION_ERROR("Setting input out of bounds");
+        MaybeError ValidateVertexBufferDescriptor(const VertexBufferDescriptor* buffer,
+                                                  std::bitset<kMaxVertexBuffers>* inputsSetMask) {
+            DAWN_TRY(ValidateInputStepMode(buffer->stepMode));
+            if (buffer->inputSlot >= kMaxVertexBuffers) {
+                return DAWN_VALIDATION_ERROR("Setting vertex buffer out of bounds");
             }
-            if (input->stride > kMaxVertexInputStride) {
+            if (buffer->stride > kMaxVertexBufferStride) {
                 return DAWN_VALIDATION_ERROR("Setting input stride out of bounds");
             }
-            if ((*inputsSetMask)[input->inputSlot]) {
-                return DAWN_VALIDATION_ERROR("Setting already set input");
+            if ((*inputsSetMask)[buffer->inputSlot]) {
+                return DAWN_VALIDATION_ERROR("Setting already set vertex buffer");
             }
 
-            inputsSetMask->set(input->inputSlot);
+            inputsSetMask->set(buffer->inputSlot);
             return {};
         }
 
         MaybeError ValidateVertexAttributeDescriptor(
             const VertexAttributeDescriptor* attribute,
-            const std::bitset<kMaxVertexInputs>* inputsSetMask,
+            const std::bitset<kMaxVertexBuffers>* inputsSetMask,
             std::bitset<kMaxVertexAttributes>* attributesSetMask) {
             DAWN_TRY(ValidateVertexFormat(attribute->format));
 
             if (attribute->shaderLocation >= kMaxVertexAttributes) {
                 return DAWN_VALIDATION_ERROR("Setting attribute out of bounds");
             }
-            if (attribute->inputSlot >= kMaxVertexInputs) {
+            if (attribute->inputSlot >= kMaxVertexBuffers) {
                 return DAWN_VALIDATION_ERROR("Binding slot out of bounds");
             }
             ASSERT(kMaxVertexAttributeEnd >= VertexFormatSize(attribute->format));
@@ -69,24 +70,24 @@ namespace dawn_native {
             return {};
         }
 
-        MaybeError ValidateInputStateDescriptor(
-            const InputStateDescriptor* descriptor,
-            std::bitset<kMaxVertexInputs>* inputsSetMask,
+        MaybeError ValidateVertexInputDescriptor(
+            const VertexInputDescriptor* descriptor,
+            std::bitset<kMaxVertexBuffers>* inputsSetMask,
             std::bitset<kMaxVertexAttributes>* attributesSetMask) {
             if (descriptor->nextInChain != nullptr) {
                 return DAWN_VALIDATION_ERROR("nextInChain must be nullptr");
             }
             DAWN_TRY(ValidateIndexFormat(descriptor->indexFormat));
 
-            if (descriptor->numInputs > kMaxVertexInputs) {
+            if (descriptor->numBuffers > kMaxVertexBuffers) {
                 return DAWN_VALIDATION_ERROR("Vertex Inputs number exceeds maximum");
             }
             if (descriptor->numAttributes > kMaxVertexAttributes) {
                 return DAWN_VALIDATION_ERROR("Vertex Attributes number exceeds maximum");
             }
 
-            for (uint32_t i = 0; i < descriptor->numInputs; ++i) {
-                DAWN_TRY(ValidateVertexInputDescriptor(&descriptor->inputs[i], inputsSetMask));
+            for (uint32_t i = 0; i < descriptor->numBuffers; ++i) {
+                DAWN_TRY(ValidateVertexBufferDescriptor(&descriptor->buffers[i], inputsSetMask));
             }
 
             for (uint32_t i = 0; i < descriptor->numAttributes; ++i) {
@@ -261,14 +262,14 @@ namespace dawn_native {
 
         DAWN_TRY(device->ValidateObject(descriptor->layout));
 
-        if (descriptor->inputState == nullptr) {
+        if (descriptor->vertexInput == nullptr) {
             return DAWN_VALIDATION_ERROR("Input state must not be null");
         }
 
-        std::bitset<kMaxVertexInputs> inputsSetMask;
+        std::bitset<kMaxVertexBuffers> inputsSetMask;
         std::bitset<kMaxVertexAttributes> attributesSetMask;
-        DAWN_TRY(ValidateInputStateDescriptor(descriptor->inputState, &inputsSetMask,
-                                              &attributesSetMask));
+        DAWN_TRY(ValidateVertexInputDescriptor(descriptor->vertexInput, &inputsSetMask,
+                                               &attributesSetMask));
         DAWN_TRY(ValidatePrimitiveTopology(descriptor->primitiveTopology));
         DAWN_TRY(ValidatePipelineStageDescriptor(device, descriptor->vertexStage,
                                                  descriptor->layout, dawn::ShaderStage::Vertex));
@@ -328,26 +329,32 @@ namespace dawn_native {
     // RenderPipelineBase
 
     RenderPipelineBase::RenderPipelineBase(DeviceBase* device,
-                                           const RenderPipelineDescriptor* descriptor)
+                                           const RenderPipelineDescriptor* descriptor,
+                                           bool blueprint)
         : PipelineBase(device,
                        descriptor->layout,
                        dawn::ShaderStageBit::Vertex | dawn::ShaderStageBit::Fragment),
-          mInputState(*descriptor->inputState),
+          mVertexInput(*descriptor->vertexInput),
+          mHasDepthStencilAttachment(descriptor->depthStencilState != nullptr),
           mPrimitiveTopology(descriptor->primitiveTopology),
           mRasterizationState(*descriptor->rasterizationState),
-          mHasDepthStencilAttachment(descriptor->depthStencilState != nullptr),
-          mSampleCount(descriptor->sampleCount) {
+          mSampleCount(descriptor->sampleCount),
+          mVertexModule(descriptor->vertexStage->module),
+          mVertexEntryPoint(descriptor->vertexStage->entryPoint),
+          mFragmentModule(descriptor->fragmentStage->module),
+          mFragmentEntryPoint(descriptor->fragmentStage->entryPoint),
+          mIsBlueprint(blueprint) {
         uint32_t location = 0;
-        for (uint32_t i = 0; i < mInputState.numAttributes; ++i) {
-            location = mInputState.attributes[i].shaderLocation;
+        for (uint32_t i = 0; i < mVertexInput.numAttributes; ++i) {
+            location = mVertexInput.attributes[i].shaderLocation;
             mAttributesSetMask.set(location);
-            mAttributeInfos[location] = mInputState.attributes[i];
+            mAttributeInfos[location] = mVertexInput.attributes[i];
         }
         uint32_t slot = 0;
-        for (uint32_t i = 0; i < mInputState.numInputs; ++i) {
-            slot = mInputState.inputs[i].inputSlot;
+        for (uint32_t i = 0; i < mVertexInput.numBuffers; ++i) {
+            slot = mVertexInput.buffers[i].inputSlot;
             mInputsSetMask.set(slot);
-            mInputInfos[slot] = mInputState.inputs[i];
+            mInputInfos[slot] = mVertexInput.buffers[i];
         }
 
         if (mHasDepthStencilAttachment) {
@@ -391,9 +398,16 @@ namespace dawn_native {
         return new RenderPipelineBase(device, ObjectBase::kError);
     }
 
-    const InputStateDescriptor* RenderPipelineBase::GetInputStateDescriptor() const {
+    RenderPipelineBase::~RenderPipelineBase() {
+        // Do not uncache the actual cached object if we are a blueprint
+        if (!mIsBlueprint && !IsError()) {
+            GetDevice()->UncacheRenderPipeline(this);
+        }
+    }
+
+    const VertexInputDescriptor* RenderPipelineBase::GetVertexInputDescriptor() const {
         ASSERT(!IsError());
-        return &mInputState;
+        return &mVertexInput;
     }
 
     const std::bitset<kMaxVertexAttributes>& RenderPipelineBase::GetAttributesSetMask() const {
@@ -407,25 +421,25 @@ namespace dawn_native {
         return mAttributeInfos[location];
     }
 
-    const std::bitset<kMaxVertexInputs>& RenderPipelineBase::GetInputsSetMask() const {
+    const std::bitset<kMaxVertexBuffers>& RenderPipelineBase::GetInputsSetMask() const {
         ASSERT(!IsError());
         return mInputsSetMask;
     }
 
-    const VertexInputDescriptor& RenderPipelineBase::GetInput(uint32_t slot) const {
+    const VertexBufferDescriptor& RenderPipelineBase::GetInput(uint32_t slot) const {
         ASSERT(!IsError());
         ASSERT(mInputsSetMask[slot]);
         return mInputInfos[slot];
     }
 
     const ColorStateDescriptor* RenderPipelineBase::GetColorStateDescriptor(
-        uint32_t attachmentSlot) {
+        uint32_t attachmentSlot) const {
         ASSERT(!IsError());
         ASSERT(attachmentSlot < mColorStates.size());
         return &mColorStates[attachmentSlot];
     }
 
-    const DepthStencilStateDescriptor* RenderPipelineBase::GetDepthStencilStateDescriptor() {
+    const DepthStencilStateDescriptor* RenderPipelineBase::GetDepthStencilStateDescriptor() const {
         ASSERT(!IsError());
         return &mDepthStencilState;
     }
@@ -433,6 +447,16 @@ namespace dawn_native {
     dawn::PrimitiveTopology RenderPipelineBase::GetPrimitiveTopology() const {
         ASSERT(!IsError());
         return mPrimitiveTopology;
+    }
+
+    dawn::CullMode RenderPipelineBase::GetCullMode() const {
+        ASSERT(!IsError());
+        return mRasterizationState.cullMode;
+    }
+
+    dawn::FrontFace RenderPipelineBase::GetFrontFace() const {
+        ASSERT(!IsError());
+        return mRasterizationState.frontFace;
     }
 
     std::bitset<kMaxColorAttachments> RenderPipelineBase::GetColorAttachmentsMask() const {
@@ -497,6 +521,177 @@ namespace dawn_native {
         uint32_t slot) const {
         ASSERT(!IsError());
         return attributesUsingInput[slot];
+    }
+
+    size_t RenderPipelineBase::HashFunc::operator()(const RenderPipelineBase* pipeline) const {
+        size_t hash = 0;
+
+        // Hash modules and layout
+        HashCombine(&hash, pipeline->GetLayout());
+        HashCombine(&hash, pipeline->mVertexModule.Get(), pipeline->mFragmentEntryPoint);
+        HashCombine(&hash, pipeline->mFragmentModule.Get(), pipeline->mFragmentEntryPoint);
+
+        // Hash attachments
+        HashCombine(&hash, pipeline->mColorAttachmentsSet);
+        for (uint32_t i : IterateBitSet(pipeline->mColorAttachmentsSet)) {
+            const ColorStateDescriptor& desc = *pipeline->GetColorStateDescriptor(i);
+            HashCombine(&hash, desc.format, desc.writeMask);
+            HashCombine(&hash, desc.colorBlend.operation, desc.colorBlend.srcFactor,
+                        desc.colorBlend.dstFactor);
+            HashCombine(&hash, desc.alphaBlend.operation, desc.alphaBlend.srcFactor,
+                        desc.alphaBlend.dstFactor);
+        }
+
+        if (pipeline->mHasDepthStencilAttachment) {
+            const DepthStencilStateDescriptor& desc = pipeline->mDepthStencilState;
+            HashCombine(&hash, desc.format, desc.depthWriteEnabled, desc.depthCompare);
+            HashCombine(&hash, desc.stencilReadMask, desc.stencilWriteMask);
+            HashCombine(&hash, desc.stencilFront.compare, desc.stencilFront.failOp,
+                        desc.stencilFront.depthFailOp, desc.stencilFront.passOp);
+            HashCombine(&hash, desc.stencilBack.compare, desc.stencilBack.failOp,
+                        desc.stencilBack.depthFailOp, desc.stencilBack.passOp);
+        }
+
+        // Hash vertex input state
+        HashCombine(&hash, pipeline->mAttributesSetMask);
+        for (uint32_t i : IterateBitSet(pipeline->mAttributesSetMask)) {
+            const VertexAttributeDescriptor& desc = pipeline->GetAttribute(i);
+            HashCombine(&hash, desc.shaderLocation, desc.inputSlot, desc.offset, desc.format);
+        }
+
+        HashCombine(&hash, pipeline->mInputsSetMask);
+        for (uint32_t i : IterateBitSet(pipeline->mInputsSetMask)) {
+            const VertexBufferDescriptor& desc = pipeline->GetInput(i);
+            HashCombine(&hash, desc.inputSlot, desc.stride, desc.stepMode);
+        }
+
+        HashCombine(&hash, pipeline->mVertexInput.indexFormat);
+
+        // Hash rasterization state
+        {
+            const RasterizationStateDescriptor& desc = pipeline->mRasterizationState;
+            HashCombine(&hash, desc.frontFace, desc.cullMode);
+            HashCombine(&hash, desc.depthBias, desc.depthBiasSlopeScale, desc.depthBiasClamp);
+        }
+
+        // Hash other state
+        HashCombine(&hash, pipeline->mSampleCount, pipeline->mPrimitiveTopology);
+
+        return hash;
+    }
+
+    bool RenderPipelineBase::EqualityFunc::operator()(const RenderPipelineBase* a,
+                                                      const RenderPipelineBase* b) const {
+        // Check modules and layout
+        if (a->GetLayout() != b->GetLayout() || a->mVertexModule.Get() != b->mVertexModule.Get() ||
+            a->mVertexEntryPoint != b->mVertexEntryPoint ||
+            a->mFragmentModule.Get() != b->mFragmentModule.Get() ||
+            a->mFragmentEntryPoint != b->mFragmentEntryPoint) {
+            return false;
+        }
+
+        // Check attachments
+        if (a->mColorAttachmentsSet != b->mColorAttachmentsSet ||
+            a->mHasDepthStencilAttachment != b->mHasDepthStencilAttachment) {
+            return false;
+        }
+
+        for (uint32_t i : IterateBitSet(a->mColorAttachmentsSet)) {
+            const ColorStateDescriptor& descA = *a->GetColorStateDescriptor(i);
+            const ColorStateDescriptor& descB = *b->GetColorStateDescriptor(i);
+            if (descA.format != descB.format || descA.writeMask != descB.writeMask) {
+                return false;
+            }
+            if (descA.colorBlend.operation != descB.colorBlend.operation ||
+                descA.colorBlend.srcFactor != descB.colorBlend.srcFactor ||
+                descA.colorBlend.dstFactor != descB.colorBlend.dstFactor) {
+                return false;
+            }
+            if (descA.alphaBlend.operation != descB.alphaBlend.operation ||
+                descA.alphaBlend.srcFactor != descB.alphaBlend.srcFactor ||
+                descA.alphaBlend.dstFactor != descB.alphaBlend.dstFactor) {
+                return false;
+            }
+        }
+
+        if (a->mHasDepthStencilAttachment) {
+            const DepthStencilStateDescriptor& descA = a->mDepthStencilState;
+            const DepthStencilStateDescriptor& descB = b->mDepthStencilState;
+            if (descA.format != descB.format ||
+                descA.depthWriteEnabled != descB.depthWriteEnabled ||
+                descA.depthCompare != descB.depthCompare) {
+                return false;
+            }
+            if (descA.stencilReadMask != descB.stencilReadMask ||
+                descA.stencilWriteMask != descB.stencilWriteMask) {
+                return false;
+            }
+            if (descA.stencilFront.compare != descB.stencilFront.compare ||
+                descA.stencilFront.failOp != descB.stencilFront.failOp ||
+                descA.stencilFront.depthFailOp != descB.stencilFront.depthFailOp ||
+                descA.stencilFront.passOp != descB.stencilFront.passOp) {
+                return false;
+            }
+            if (descA.stencilBack.compare != descB.stencilBack.compare ||
+                descA.stencilBack.failOp != descB.stencilBack.failOp ||
+                descA.stencilBack.depthFailOp != descB.stencilBack.depthFailOp ||
+                descA.stencilBack.passOp != descB.stencilBack.passOp) {
+                return false;
+            }
+        }
+
+        // Check vertex input state
+        if (a->mAttributesSetMask != b->mAttributesSetMask) {
+            return false;
+        }
+
+        for (uint32_t i : IterateBitSet(a->mAttributesSetMask)) {
+            const VertexAttributeDescriptor& descA = a->GetAttribute(i);
+            const VertexAttributeDescriptor& descB = b->GetAttribute(i);
+            if (descA.shaderLocation != descB.shaderLocation ||
+                descA.inputSlot != descB.inputSlot || descA.offset != descB.offset ||
+                descA.format != descB.format) {
+                return false;
+            }
+        }
+
+        if (a->mInputsSetMask != b->mInputsSetMask) {
+            return false;
+        }
+
+        for (uint32_t i : IterateBitSet(a->mInputsSetMask)) {
+            const VertexBufferDescriptor& descA = a->GetInput(i);
+            const VertexBufferDescriptor& descB = b->GetInput(i);
+            if (descA.inputSlot != descB.inputSlot || descA.stride != descB.stride ||
+                descA.stepMode != descB.stepMode) {
+                return false;
+            }
+        }
+
+        if (a->mVertexInput.indexFormat != b->mVertexInput.indexFormat) {
+            return false;
+        }
+
+        // Check rasterization state
+        {
+            const RasterizationStateDescriptor& descA = a->mRasterizationState;
+            const RasterizationStateDescriptor& descB = b->mRasterizationState;
+            if (descA.frontFace != descB.frontFace || descA.cullMode != descB.cullMode) {
+                return false;
+            }
+            if (descA.depthBias != descB.depthBias ||
+                descA.depthBiasSlopeScale != descB.depthBiasSlopeScale ||
+                descA.depthBiasClamp != descB.depthBiasClamp) {
+                return false;
+            }
+        }
+
+        // Check other state
+        if (a->mSampleCount != b->mSampleCount || a->mPrimitiveTopology != b->mPrimitiveTopology) {
+            return false;
+        }
+
+        return true;
     }
 
 }  // namespace dawn_native

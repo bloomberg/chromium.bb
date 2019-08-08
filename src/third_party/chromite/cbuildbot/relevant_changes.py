@@ -22,7 +22,7 @@ from chromite.lib import triage_lib
 
 # Limit (hours) for looking back cl actions in the history for history-aware
 # submission.
-CQ_HISTORY_LOOKBACK_LIMIT_HOUR = 48
+CQ_HISTORY_LOOKBACK_LIMIT_HOUR = 24*7
 
 
 class RelevantChanges(object):

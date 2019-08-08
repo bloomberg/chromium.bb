@@ -52,7 +52,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/protocol/user_event_specifics.pb.h"
-#include "components/sync/user_events/user_event_service.h"
+#include "components/sync_user_events/user_event_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -1240,15 +1240,26 @@ std::string ChromePasswordProtectionService::GetOrganizationName(
 
 void ChromePasswordProtectionService::MaybeReportPasswordReuseDetected(
     content::WebContents* web_contents,
+    const std::string& username,
     ReusedPasswordType reused_password_type,
     bool is_phishing_url) {
+  // When a PasswordFieldFocus event is sent, a PasswordProtectionRequest is
+  // sent which means the password reuse type is unknown. We do not want to
+  // report these events as PasswordReuse events. Also do not send reports for
+  // Gmail accounts.
   bool can_log_password_reuse_event =
       (reused_password_type == PasswordReuseEvent::ENTERPRISE_PASSWORD ||
-       GetSyncAccountType() == PasswordReuseEvent::GSUITE);
+       GetSyncAccountType() == PasswordReuseEvent::GSUITE) &&
+      (reused_password_type !=
+       PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN);
   if (!IsIncognito() && can_log_password_reuse_event) {
+    // User name should only be empty when MaybeStartPasswordFieldOnFocusRequest
+    // is called.
+    std::string username_or_email =
+        username.empty() ? GetAccountInfo().email : username;
     extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
         ->OnPolicySpecifiedPasswordReuseDetected(
-            web_contents->GetLastCommittedURL(), GetAccountInfo().email,
+            web_contents->GetLastCommittedURL(), username_or_email,
             is_phishing_url);
   }
 }

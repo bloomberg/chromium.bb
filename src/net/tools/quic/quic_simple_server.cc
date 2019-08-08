@@ -62,6 +62,7 @@ QuicSimpleServer::QuicSimpleServer(
       read_buffer_(base::MakeRefCounted<IOBufferWithSize>(kReadBufferSize)),
       quic_simple_server_backend_(quic_simple_server_backend),
       weak_factory_(this) {
+  DCHECK(quic_simple_server_backend);
   Initialize();
 }
 

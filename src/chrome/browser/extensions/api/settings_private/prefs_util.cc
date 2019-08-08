@@ -320,7 +320,7 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   (*s_whitelist)[ash::prefs::kAccessibilityAutoclickEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[ash::prefs::kAccessibilityAutoclickDelayMs] =
-      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+      settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)[ash::prefs::kAccessibilityAutoclickEventType] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)[ash::prefs::kAccessibilityAutoclickRevertToLeftClick] =
@@ -521,6 +521,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_DICTIONARY;
   (*s_whitelist)[chromeos::kDisplayRotationDefault] =
       settings_api::PrefType::PREF_TYPE_DICTIONARY;
+  (*s_whitelist)[arc::prefs::kArcHasAccessToRemovableMedia] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Native Printing settings.
   (*s_whitelist)[::prefs::kUserNativePrintersAllowed] =

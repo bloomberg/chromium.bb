@@ -56,9 +56,8 @@ enum { kMaxInFlightDecodes = 4 };
 enum { kBufferCountBeforeGC = 1024 };
 
 struct GpuVideoDecoder::PendingDecoderBuffer {
-  PendingDecoderBuffer(std::unique_ptr<base::SharedMemory> s,
-                       const DecodeCB& done_cb)
-      : shared_memory(std::move(s)), done_cb(done_cb) {}
+  PendingDecoderBuffer(std::unique_ptr<base::SharedMemory> s, DecodeCB done_cb)
+      : shared_memory(std::move(s)), done_cb(std::move(done_cb)) {}
   std::unique_ptr<base::SharedMemory> shared_memory;
   DecodeCB done_cb;
 };
@@ -101,24 +100,26 @@ GpuVideoDecoder::GpuVideoDecoder(
       this, "media::GpuVideoDecoder", base::ThreadTaskRunnerHandle::Get());
 }
 
-void GpuVideoDecoder::Reset(const base::Closure& closure) {
+void GpuVideoDecoder::Reset(base::OnceClosure closure) {
   DVLOG(3) << "Reset()";
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
 
   if (state_ == kDrainingDecoder) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&GpuVideoDecoder::Reset,
-                                  weak_factory_.GetWeakPtr(), closure));
+        FROM_HERE,
+        base::BindOnce(&GpuVideoDecoder::Reset, weak_factory_.GetWeakPtr(),
+                       std::move(closure)));
     return;
   }
 
   if (!vda_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, closure);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(closure));
     return;
   }
 
   DCHECK(!pending_reset_cb_);
-  pending_reset_cb_ = BindToCurrentLoop(closure);
+  pending_reset_cb_ = BindToCurrentLoop(std::move(closure));
 
   vda_->Reset();
 }
@@ -136,7 +137,7 @@ static bool IsCodedSizeSupported(const gfx::Size& coded_size,
 // UMA stat reported because the UMA_HISTOGRAM_ENUMERATION API requires a
 // callsite to always be called with the same stat name (can't parameterize it).
 static void ReportGpuVideoDecoderInitializeStatusToUMAAndRunCB(
-    const VideoDecoder::InitCB& cb,
+    VideoDecoder::InitCB cb,
     MediaLog* media_log,
     bool success) {
   // TODO(xhwang): Report |success| directly.
@@ -149,7 +150,7 @@ static void ReportGpuVideoDecoderInitializeStatusToUMAAndRunCB(
         "Media.OriginUrl.GpuVideoDecoderInitFailure");
   }
 
-  cb.Run(success);
+  std::move(cb).Run(success);
 }
 
 bool GpuVideoDecoder::IsPlatformDecoder() const {
@@ -163,7 +164,7 @@ std::string GpuVideoDecoder::GetDisplayName() const {
 void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                  bool /* low_delay */,
                                  CdmContext* cdm_context,
-                                 const InitCB& init_cb,
+                                 InitCB init_cb,
                                  const OutputCB& output_cb,
                                  const WaitingCB& /* waiting_cb */) {
   DVLOG(3) << "Initialize()";
@@ -171,8 +172,8 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
   DCHECK(config.IsValidConfig());
 
   InitCB bound_init_cb =
-      base::Bind(&ReportGpuVideoDecoderInitializeStatusToUMAAndRunCB,
-                 BindToCurrentLoop(init_cb), media_log_);
+      base::BindOnce(&ReportGpuVideoDecoderInitializeStatusToUMAAndRunCB,
+                     BindToCurrentLoop(std::move(init_cb)), media_log_);
 
   bool previously_initialized = config_.IsValidConfig();
   DVLOG(1) << (previously_initialized ? "Reinitializing" : "Initializing")
@@ -182,14 +183,14 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
   if (encryption_mode != EncryptionScheme::CIPHER_MODE_UNENCRYPTED &&
       encryption_mode != EncryptionScheme::CIPHER_MODE_AES_CTR) {
     DVLOG(1) << "VDAs only support clear or cenc encrypted streams.";
-    bound_init_cb.Run(false);
+    std::move(bound_init_cb).Run(false);
     return;
   }
 
   // Disallow codec changes between configuration changes.
   if (previously_initialized && config_.codec() != config.codec()) {
     DVLOG(1) << "Codec changed, cannot reinitialize.";
-    bound_init_cb.Run(false);
+    std::move(bound_init_cb).Run(false);
     return;
   }
 
@@ -197,7 +198,7 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
   // hardware decoder which supports alpha formats.
   if (config.format() == PIXEL_FORMAT_I420A) {
     DVLOG(1) << "Alpha transparency formats are not supported.";
-    bound_init_cb.Run(false);
+    std::move(bound_init_cb).Run(false);
     return;
   }
 
@@ -209,7 +210,7 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
       VideoDecodeAccelerator::Capabilities::SUPPORTS_ENCRYPTED_STREAMS;
   if (config.is_encrypted() && (!cdm_context || !supports_encrypted_streams)) {
     DVLOG(1) << "Encrypted stream not supported.";
-    bound_init_cb.Run(false);
+    std::move(bound_init_cb).Run(false);
     return;
   }
 
@@ -219,7 +220,7 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
              << ", unsupported coded size " << config.coded_size().ToString()
              << ", or accelerator should only be used for encrypted content. "
              << " is_encrypted: " << (config.is_encrypted() ? "yes." : "no.");
-    bound_init_cb.Run(false);
+    std::move(bound_init_cb).Run(false);
     return;
   }
 
@@ -258,7 +259,7 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
   if (config.is_encrypted() && !supports_deferred_initialization_) {
     DVLOG(1) << __func__
              << " Encrypted stream requires deferred initialialization.";
-    bound_init_cb.Run(false);
+    std::move(bound_init_cb).Run(false);
     return;
   }
 
@@ -268,14 +269,14 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
     // Reinitialization with a different config (but same codec and profile).
     // VDA should handle it by detecting this in-stream by itself,
     // no need to notify it.
-    bound_init_cb.Run(true);
+    std::move(bound_init_cb).Run(true);
     return;
   }
 
   vda_ = factories_->CreateVideoDecodeAccelerator();
   if (!vda_) {
     DVLOG(1) << "Failed to create a VDA.";
-    bound_init_cb.Run(false);
+    std::move(bound_init_cb).Run(false);
     return;
   }
 
@@ -284,11 +285,11 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   if (config.is_encrypted() && cdm_id_ == CdmContext::kInvalidCdmId) {
     DVLOG(1) << "CDM ID not available.";
-    bound_init_cb.Run(false);
+    std::move(bound_init_cb).Run(false);
     return;
   }
 
-  init_cb_ = bound_init_cb;
+  init_cb_ = std::move(bound_init_cb);
 
   const bool supports_external_output_surface = !!(
       capabilities.flags &
@@ -413,16 +414,14 @@ void GpuVideoDecoder::DestroyVDA() {
 }
 
 void GpuVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
-                             const DecodeCB& decode_cb) {
+                             DecodeCB decode_cb) {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
   DCHECK(!pending_reset_cb_);
 
   DVLOG(3) << __func__ << " " << buffer->AsHumanReadableString();
 
-  DecodeCB bound_decode_cb = BindToCurrentLoop(decode_cb);
-
   if (state_ == kError || !vda_) {
-    bound_decode_cb.Run(DecodeStatus::DECODE_ERROR);
+    BindToCurrentLoop(std::move(decode_cb)).Run(DecodeStatus::DECODE_ERROR);
     return;
   }
 
@@ -443,7 +442,7 @@ void GpuVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   if (buffer->end_of_stream()) {
     DVLOG(3) << __func__ << " Initiating Flush for EOS.";
     state_ = kDrainingDecoder;
-    eos_decode_cb_ = bound_decode_cb;
+    eos_decode_cb_ = BindToCurrentLoop(std::move(decode_cb));
     vda_->Flush();
     return;
   }
@@ -451,16 +450,16 @@ void GpuVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   size_t size = buffer->data_size();
   auto shared_memory = GetSharedMemory(size);
   if (!shared_memory) {
-    bound_decode_cb.Run(DecodeStatus::DECODE_ERROR);
+    BindToCurrentLoop(std::move(decode_cb)).Run(DecodeStatus::DECODE_ERROR);
     return;
   }
 
   memcpy(shared_memory->memory(), buffer->data(), size);
   // AndroidVideoDecodeAccelerator needs the timestamp to output frames in
   // presentation order.
-  BitstreamBuffer bitstream_buffer(next_bitstream_buffer_id_,
-                                   shared_memory->handle(), size, 0,
-                                   buffer->timestamp());
+  BitstreamBuffer bitstream_buffer(
+      next_bitstream_buffer_id_, shared_memory->handle(), false /* read_only */,
+      size, 0, buffer->timestamp());
 
   if (buffer->decrypt_config()) {
     bitstream_buffer.SetDecryptionSettings(
@@ -476,11 +475,11 @@ void GpuVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
 
   bitstream_buffers_in_decoder_.emplace(
       bitstream_buffer.id(),
-      PendingDecoderBuffer(std::move(shared_memory), decode_cb));
+      PendingDecoderBuffer(std::move(shared_memory), std::move(decode_cb)));
   DCHECK_LE(static_cast<int>(bitstream_buffers_in_decoder_.size()),
             kMaxInFlightDecodes);
 
-  vda_->Decode(bitstream_buffer);
+  vda_->Decode(std::move(bitstream_buffer));
 }
 
 void GpuVideoDecoder::RecordBufferData(const BitstreamBuffer& bitstream_buffer,
@@ -707,7 +706,7 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
   DeliverFrame(frame);
 }
 
-void GpuVideoDecoder::DeliverFrame(const scoped_refptr<VideoFrame>& frame) {
+void GpuVideoDecoder::DeliverFrame(scoped_refptr<VideoFrame> frame) {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
 
   // During a pending vda->Reset(), we don't accumulate frames.  Drop it on the
@@ -717,7 +716,7 @@ void GpuVideoDecoder::DeliverFrame(const scoped_refptr<VideoFrame>& frame) {
 
   frame->metadata()->SetBoolean(VideoFrameMetadata::POWER_EFFICIENT, true);
 
-  output_cb_.Run(frame);
+  output_cb_.Run(std::move(frame));
 }
 
 // static
@@ -817,8 +816,8 @@ void GpuVideoDecoder::NotifyEndOfBitstreamBuffer(int32_t id) {
   }
 
   PutSharedMemory(std::move(it->second.shared_memory), id);
-  it->second.done_cb.Run(state_ == kError ? DecodeStatus::DECODE_ERROR
-                                          : DecodeStatus::OK);
+  std::move(it->second.done_cb)
+      .Run(state_ == kError ? DecodeStatus::DECODE_ERROR : DecodeStatus::OK);
   bitstream_buffers_in_decoder_.erase(it);
 }
 
@@ -839,10 +838,8 @@ GpuVideoDecoder::~GpuVideoDecoder() {
     std::move(request_overlay_info_cb_).Run(false, ProvideOverlayInfoCB());
   }
 
-  for (auto it = bitstream_buffers_in_decoder_.begin();
-       it != bitstream_buffers_in_decoder_.end(); ++it) {
-    it->second.done_cb.Run(DecodeStatus::ABORTED);
-  }
+  for (auto& pair : bitstream_buffers_in_decoder_)
+    std::move(pair.second.done_cb).Run(DecodeStatus::ABORTED);
   bitstream_buffers_in_decoder_.clear();
 
   if (pending_reset_cb_)
@@ -888,7 +885,7 @@ void GpuVideoDecoder::NotifyError(media::VideoDecodeAccelerator::Error error) {
   // won't be another decode request to report the error.
   if (!bitstream_buffers_in_decoder_.empty()) {
     auto it = bitstream_buffers_in_decoder_.begin();
-    it->second.done_cb.Run(DecodeStatus::DECODE_ERROR);
+    std::move(it->second.done_cb).Run(DecodeStatus::DECODE_ERROR);
     bitstream_buffers_in_decoder_.erase(it);
   }
 

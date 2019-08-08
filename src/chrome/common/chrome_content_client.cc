@@ -16,8 +16,8 @@
 #include "base/containers/flat_set.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
-#include "base/lazy_instance.h"
 #include "base/native_library.h"
+#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -39,7 +39,7 @@
 #include "components/crash/core/common/crash_key.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/net_log/chrome_net_log.h"
-#include "components/services/heap_profiling/public/cpp/client.h"
+#include "components/services/heap_profiling/public/cpp/profiling_client.h"
 #include "content/public/common/cdm_info.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
@@ -363,9 +363,11 @@ bool IsWidevineAvailable(base::FilePath* cdm_path,
       // This list must match the CDM that is being bundled with Chrome.
       capability->video_codecs.push_back(media::VideoCodec::kCodecVP8);
       capability->video_codecs.push_back(media::VideoCodec::kCodecVP9);
-      // TODO(xhwang): Update this and tests after Widevine CDM supports VP9
-      // profile 2.
+      // TODO(crbug.com/899403): Update this and tests after Widevine CDM
+      // supports VP9 profile 2.
       capability->supports_vp9_profile2 = false;
+      // TODO(crbug.com/953504): Update this and tests after Widevine CDM
+      // supports AV1.
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
       capability->video_codecs.push_back(media::VideoCodec::kCodecH264);
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
@@ -676,6 +678,10 @@ base::RefCountedMemory* ChromeContentClient::GetDataResourceBytes(
       resource_id);
 }
 
+bool ChromeContentClient::IsDataResourceGzipped(int resource_id) const {
+  return ui::ResourceBundle::GetSharedInstance().IsGzipped(resource_id);
+}
+
 gfx::Image& ChromeContentClient::GetNativeImageNamed(int resource_id) const {
   return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       resource_id);
@@ -732,14 +738,12 @@ media::MediaDrmBridgeClient* ChromeContentClient::GetMediaDrmBridgeClient() {
 
 void ChromeContentClient::OnServiceManagerConnected(
     content::ServiceManagerConnection* connection) {
-  static base::LazyInstance<heap_profiling::Client>::Leaky profiling_client =
-      LAZY_INSTANCE_INITIALIZER;
+  static base::NoDestructor<heap_profiling::ProfilingClient> profiling_client;
 
-  std::unique_ptr<service_manager::BinderRegistry> registry(
-      new service_manager::BinderRegistry);
+  auto registry = std::make_unique<service_manager::BinderRegistry>();
   registry->AddInterface(
-      base::BindRepeating(&heap_profiling::Client::BindToInterface,
-                          base::Unretained(&profiling_client.Get())));
+      base::BindRepeating(&heap_profiling::ProfilingClient::BindToInterface,
+                          base::Unretained(profiling_client.get())));
   connection->AddConnectionFilter(
       std::make_unique<content::SimpleConnectionFilter>(std::move(registry)));
 }

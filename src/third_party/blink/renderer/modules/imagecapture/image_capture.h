@@ -21,10 +21,10 @@
 namespace blink {
 
 class ExceptionState;
+class ImageCaptureFrameGrabber;
 class MediaStreamTrack;
 class PhotoCapabilities;
 class ScriptPromiseResolver;
-class WebImageCaptureFrameGrabber;
 
 // TODO(mcasas): Consider adding a web test checking that this class is not
 // garbage collected while it has event listeners.
@@ -98,7 +98,7 @@ class MODULES_EXPORT ImageCapture final
   void ResolveWithPhotoCapabilities(ScriptPromiseResolver*);
 
   Member<MediaStreamTrack> stream_track_;
-  std::unique_ptr<WebImageCaptureFrameGrabber> frame_grabber_;
+  std::unique_ptr<ImageCaptureFrameGrabber> frame_grabber_;
   media::mojom::blink::ImageCapturePtr service_;
 
   Member<MediaTrackCapabilities> capabilities_;

@@ -12,6 +12,8 @@ binary. It will also automatically try to find the gn binary when run inside
 the chrome source tree, so users can just type "gn" on the command line
 (normally depot_tools is on the path)."""
 
+from __future__ import print_function
+
 import gclient_paths
 import os
 import subprocess
@@ -56,13 +58,13 @@ def main(args):
   # inside of buildtools.
   bin_path = gclient_paths.GetBuildtoolsPlatformBinaryPath()
   if not bin_path:
-    print >> sys.stderr, ('gn.py: Could not find checkout in any parent of '
-                          'the current path.\nThis must be run inside a '
-                          'checkout.')
+    print('gn.py: Could not find checkout in any parent of the current path.\n'
+          'This must be run inside a checkout.', file=sys.stderr)
     return 1
   gn_path = os.path.join(bin_path, 'gn' + gclient_paths.GetExeSuffix())
   if not os.path.exists(gn_path):
-    print >> sys.stderr, 'gn.py: Could not find gn executable at: %s' % gn_path
+    print(
+        'gn.py: Could not find gn executable at: %s' % gn_path, file=sys.stderr)
     return 2
   else:
     return subprocess.call([gn_path] + args[1:])

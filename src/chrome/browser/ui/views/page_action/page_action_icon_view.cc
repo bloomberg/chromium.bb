@@ -23,17 +23,14 @@
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/style/platform_style.h"
 
-namespace {
-
-bool ActivateButtonOnSpaceDown() {
-  return views::PlatformStyle::kKeyClickActionOnSpace ==
-         views::Button::KeyClickAction::CLICK_ON_KEY_PRESS;
-}
-
-}  // namespace
-
 bool PageActionIconView::Delegate::IsLocationBarUserInputInProgress() const {
   return false;
+}
+
+const OmniboxView* PageActionIconView::Delegate::GetOmniboxView() const {
+  // Should not reach here: should call subclass's implementation.
+  NOTREACHED();
+  return nullptr;
 }
 
 PageActionIconView::PageActionIconView(CommandUpdater* command_updater,
@@ -51,6 +48,8 @@ PageActionIconView::PageActionIconView(CommandUpdater* command_updater,
   set_ink_drop_visible_opacity(
       GetOmniboxStateOpacity(OmniboxPartState::SELECTED));
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
+  // Only shows bubble after mouse is released.
+  set_notify_action(NotifyAction::NOTIFY_ON_RELEASE);
 }
 
 PageActionIconView::~PageActionIconView() {}
@@ -75,6 +74,11 @@ SkColor PageActionIconView::GetLabelColorForTesting() const {
   return label()->enabled_color();
 }
 
+void PageActionIconView::ExecuteForTesting() {
+  DCHECK(GetVisible());
+  OnExecuting(EXECUTE_SOURCE_MOUSE);
+}
+
 SkColor PageActionIconView::GetTextColor() const {
   return GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_TextfieldDefaultColor);
@@ -90,61 +94,6 @@ base::string16 PageActionIconView::GetTooltipText(const gfx::Point& p) const {
                            : GetTextForTooltipAndAccessibleName();
 }
 
-bool PageActionIconView::OnMousePressed(const ui::MouseEvent& event) {
-  // If the bubble is showing then don't reshow it when the mouse is released.
-  suppress_mouse_released_action_ = IsBubbleShowing();
-  if (!suppress_mouse_released_action_ && event.IsOnlyLeftMouseButton())
-    AnimateInkDrop(views::InkDropState::ACTION_PENDING, &event);
-
-  // We want to show the bubble on mouse release; that is the standard behavior
-  // for buttons.
-  return true;
-}
-
-void PageActionIconView::OnMouseReleased(const ui::MouseEvent& event) {
-  // If this is the second click on this view then the bubble was showing on the
-  // mouse pressed event and is hidden now. Prevent the bubble from reshowing by
-  // doing nothing here.
-  if (suppress_mouse_released_action_) {
-    suppress_mouse_released_action_ = false;
-    OnPressed(false);
-    return;
-  }
-  if (!event.IsLeftMouseButton())
-    return;
-
-  const bool activated = HitTestPoint(event.location());
-  AnimateInkDrop(
-      activated ? views::InkDropState::ACTIVATED : views::InkDropState::HIDDEN,
-      &event);
-  if (activated)
-    ExecuteCommand(EXECUTE_SOURCE_MOUSE);
-  OnPressed(activated);
-}
-
-bool PageActionIconView::OnKeyPressed(const ui::KeyEvent& event) {
-  if (event.key_code() != ui::VKEY_RETURN && event.key_code() != ui::VKEY_SPACE)
-    return false;
-
-  AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr /* &event */);
-  // This behavior is duplicated from Button: on some platforms buttons activate
-  // on VKEY_SPACE keydown, and on some platforms they activate on VKEY_SPACE
-  // keyup. All platforms activate buttons on VKEY_RETURN keydown though.
-  if (ActivateButtonOnSpaceDown() || event.key_code() == ui::VKEY_RETURN)
-    ExecuteCommand(EXECUTE_SOURCE_KEYBOARD);
-  return true;
-}
-
-bool PageActionIconView::OnKeyReleased(const ui::KeyEvent& event) {
-  // If buttons activate on VKEY_SPACE keydown, don't re-execute the command on
-  // keyup.
-  if (event.key_code() != ui::VKEY_SPACE || ActivateButtonOnSpaceDown())
-    return false;
-
-  ExecuteCommand(EXECUTE_SOURCE_KEYBOARD);
-  return true;
-}
-
 void PageActionIconView::ViewHierarchyChanged(
     const views::ViewHierarchyChangedDetails& details) {
   View::ViewHierarchyChanged(details);
@@ -152,12 +101,8 @@ void PageActionIconView::ViewHierarchyChanged(
     UpdateIconImage();
 }
 
-void PageActionIconView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
-  IconLabelBubbleView::OnNativeThemeChanged(theme);
-  UpdateIconImage();
-}
-
 void PageActionIconView::OnThemeChanged() {
+  IconLabelBubbleView::OnThemeChanged();
   UpdateIconImage();
 }
 
@@ -169,12 +114,48 @@ bool PageActionIconView::ShouldShowSeparator() const {
   return false;
 }
 
-void PageActionIconView::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() == ui::ET_GESTURE_TAP) {
-    AnimateInkDrop(views::InkDropState::ACTIVATED, event);
-    ExecuteCommand(EXECUTE_SOURCE_GESTURE);
-    event->SetHandled();
+void PageActionIconView::NotifyClick(const ui::Event& event) {
+  // Intentionally skip the immediate parent function
+  // IconLabelBubbleView::NotifyClick(). It calls ShowBubble() which
+  // is redundant here since we use Chrome command to show the bubble.
+  LabelButton::NotifyClick(event);
+  ExecuteSource source;
+  if (event.IsMouseEvent()) {
+    source = EXECUTE_SOURCE_MOUSE;
+  } else if (event.IsKeyEvent()) {
+    source = EXECUTE_SOURCE_KEYBOARD;
+  } else if (event.IsGestureEvent()) {
+    source = EXECUTE_SOURCE_GESTURE;
+  } else {
+    NOTREACHED();
+    return;
   }
+
+  // Set ink drop state to ACTIVATED.
+  SetHighlighted(true);
+  ExecuteCommand(source);
+}
+
+bool PageActionIconView::IsTriggerableEvent(const ui::Event& event) {
+  // For PageActionIconView, returns whether the bubble should be shown given
+  // the event happened. For mouse event, only shows bubble when the bubble is
+  // not visible and when event is a left button click.
+  if (event.IsMouseEvent()) {
+    // IconLabelBubbleView allows any mouse click to be triggerable event so
+    // need to manually check here.
+    return IconLabelBubbleView::IsTriggerableEvent(event) &&
+           ((triggerable_event_flags() & event.flags()) != 0);
+  }
+
+  return IconLabelBubbleView::IsTriggerableEvent(event);
+}
+
+bool PageActionIconView::ShouldUpdateInkDropOnClickCanceled() const {
+  // Override IconLabelBubbleView since for PageActionIconView if click is
+  // cancelled due to bubble being visible, the InkDropState is ACTIVATED. So
+  // the ink drop will not be updated anyway. Setting this to true will help to
+  // update ink drop in other cases where clicks are cancelled.
+  return true;
 }
 
 void PageActionIconView::ExecuteCommand(ExecuteSource source) {

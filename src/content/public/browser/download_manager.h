@@ -34,6 +34,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
@@ -46,6 +47,7 @@
 #include "net/base/net_errors.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "storage/browser/blob/blob_data_handle.h"
+#include "url/origin.h"
 
 class GURL;
 
@@ -72,7 +74,7 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data,
   // Sets/Gets the delegate for this DownloadManager. The delegate has to live
   // past its Shutdown method being called (by the DownloadManager).
   virtual void SetDelegate(DownloadManagerDelegate* delegate) = 0;
-  virtual DownloadManagerDelegate* GetDelegate() const = 0;
+  virtual DownloadManagerDelegate* GetDelegate() = 0;
 
   // Shutdown the download manager. Content calls this when BrowserContext is
   // being destructed. If the embedder needs this to be called earlier, it can
@@ -164,6 +166,7 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data,
       const GURL& site_url,
       const GURL& tab_url,
       const GURL& tab_referrer_url,
+      const base::Optional<url::Origin>& request_initiator,
       const std::string& mime_type,
       const std::string& original_mime_type,
       base::Time start_time,
@@ -195,20 +198,20 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data,
       DownloadInitializationDependency dependency) = 0;
 
   // Returns if the manager has been initialized and loaded all the data.
-  virtual bool IsManagerInitialized() const = 0;
+  virtual bool IsManagerInitialized() = 0;
 
   // The number of in progress (including paused) downloads.
   // Performance note: this loops over all items. If profiling finds that this
   // is too slow, use an AllDownloadItemNotifier to count in-progress items.
-  virtual int InProgressCount() const = 0;
+  virtual int InProgressCount() = 0;
 
   // The number of in progress (including paused) downloads.
   // Performance note: this loops over all items. If profiling finds that this
   // is too slow, use an AllDownloadItemNotifier to count in-progress items.
   // This excludes downloads that are marked as malicious.
-  virtual int NonMaliciousInProgressCount() const = 0;
+  virtual int NonMaliciousInProgressCount() = 0;
 
-  virtual BrowserContext* GetBrowserContext() const = 0;
+  virtual BrowserContext* GetBrowserContext() = 0;
 
   // Checks whether downloaded files still exist. Updates state of downloads
   // that refer to removed files. The check runs in the background and may

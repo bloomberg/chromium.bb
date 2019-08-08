@@ -18,10 +18,8 @@ bool SwappedOutMessages::CanSendWhileSwappedOut(const IPC::Message* msg) {
   // consistent in case we later return to the same renderer.
   switch (msg->type()) {
     // Handled by RenderViewHost.
-    case FrameHostMsg_RenderProcessGone::ID:
     case ViewHostMsg_ClosePage_ACK::ID:
     case ViewHostMsg_Focus::ID:
-    case ViewHostMsg_OpenDateTimeDialog::ID:
     case ViewHostMsg_ShowFullscreenWidget::ID:
     case ViewHostMsg_ShowWidget::ID:
     case ViewHostMsg_UpdateTargetURL::ID:

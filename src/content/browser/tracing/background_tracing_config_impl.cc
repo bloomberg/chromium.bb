@@ -168,7 +168,7 @@ bool BackgroundTracingConfigImpl::StringToCategoryPreset(
   return false;
 }
 
-void BackgroundTracingConfigImpl::IntoDict(base::DictionaryValue* dict) const {
+void BackgroundTracingConfigImpl::IntoDict(base::DictionaryValue* dict) {
   switch (tracing_mode()) {
     case BackgroundTracingConfigImpl::PREEMPTIVE:
       dict->SetString(kConfigModeKey, kConfigModePreemptive);
@@ -366,7 +366,7 @@ TraceConfig BackgroundTracingConfigImpl::GetConfigForCategoryPreset(
     case BackgroundTracingConfigImpl::CategoryPreset::BENCHMARK_SERVICEWORKER:
       return TraceConfig(
           "benchmark,toplevel,ipc,base,ServiceWorker,CacheStorage,Blob,"
-          "loader,loading,navigation,blink.user_timing,"
+          "loading,mojom,navigation,renderer,blink,blink_gc,blink.user_timing,"
           "disabled-by-default-network",
           record_mode);
     case BackgroundTracingConfigImpl::CategoryPreset::BENCHMARK_POWER:

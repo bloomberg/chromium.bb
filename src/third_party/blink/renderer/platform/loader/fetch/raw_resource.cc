@@ -26,7 +26,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/raw_resource.h"
 
 #include <memory>
-#include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
+#include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-shared.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/loader/fetch/buffering_bytes_consumer.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
@@ -268,8 +268,8 @@ void RawResource::ResponseBodyReceived(
   if (!client && GetResourceRequest().UseStreamOnResponse()) {
     // For preload, we want to store the body while dispatching
     // onload and onerror events.
-    bytes_consumer_for_preload_ = MakeGarbageCollected<BufferingBytesConsumer>(
-        &body_loader.DrainAsBytesConsumer());
+    bytes_consumer_for_preload_ =
+        BufferingBytesConsumer::Create(&body_loader.DrainAsBytesConsumer());
     return;
   }
 

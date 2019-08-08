@@ -4,15 +4,20 @@
 
 #include "chrome/browser/ui/manifest_web_app_browser_controller.h"
 
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/common/origin_util.h"
+#include "content/public/common/url_constants.h"
+#include "extensions/common/constants.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
 ManifestWebAppBrowserController::ManifestWebAppBrowserController(
     Browser* browser)
-    : WebAppBrowserController(browser) {}
+    : AppBrowserController(browser), app_launch_url_(GURL()) {}
 
 ManifestWebAppBrowserController::~ManifestWebAppBrowserController() = default;
 
@@ -21,6 +26,30 @@ base::Optional<std::string> ManifestWebAppBrowserController::GetAppId() const {
 }
 
 bool ManifestWebAppBrowserController::ShouldShowToolbar() const {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Don't show a toolbar until a navigation has occurred.
+  if (!web_contents || web_contents->GetLastCommittedURL().is_empty())
+    return false;
+
+  // Show toolbar if the web_contents is not on a secure origin.
+  if (!content::IsOriginSecure(app_launch_url_))
+    return true;
+
+  // Show toolbar if web_contents is not on the same origin as it was originally
+  // launched on.
+  if (!url::IsSameOriginWith(app_launch_url_,
+                             web_contents->GetLastCommittedURL()) ||
+      !url::IsSameOriginWith(app_launch_url_, web_contents->GetVisibleURL())) {
+    return true;
+  }
+
+  // Show toolbar if on a insecure external website. This checks the security
+  // level, different from IsOriginSecure which just checks the origin itself.
+  if (!IsSiteSecure(web_contents))
+    return true;
+
   return false;
 }
 
@@ -46,37 +75,6 @@ gfx::ImageSkia ManifestWebAppBrowserController::GetWindowIcon() const {
   return browser()->GetCurrentPageIcon().AsImageSkia();
 }
 
-base::Optional<SkColor> ManifestWebAppBrowserController::GetThemeColor() const {
-  base::Optional<SkColor> result;
-
-  // HTML meta theme-color tag overrides manifest theme_color, see spec:
-  // https://www.w3.org/TR/appmanifest/#theme_color-member
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  if (web_contents) {
-    base::Optional<SkColor> color = web_contents->GetThemeColor();
-    if (color)
-      result = color;
-  }
-
-  if (!result)
-    return base::nullopt;
-
-  // The frame/tabstrip code expects an opaque color.
-  return SkColorSetA(*result, SK_AlphaOPAQUE);
-}
-
-base::string16 ManifestWebAppBrowserController::GetTitle() const {
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  if (!web_contents)
-    return base::string16();
-
-  content::NavigationEntry* entry =
-      web_contents->GetController().GetVisibleEntry();
-  return entry ? entry->GetTitle() : base::string16();
-}
-
 std::string ManifestWebAppBrowserController::GetAppShortName() const {
   return std::string();
 }
@@ -86,5 +84,13 @@ base::string16 ManifestWebAppBrowserController::GetFormattedUrlOrigin() const {
 }
 
 GURL ManifestWebAppBrowserController::GetAppLaunchURL() const {
-  return GURL();
+  return app_launch_url_;
+}
+
+void ManifestWebAppBrowserController::OnTabInserted(
+    content::WebContents* contents) {
+  if (app_launch_url_.is_empty())
+    app_launch_url_ = contents->GetURL();
+  AppBrowserController::OnTabInserted(contents);
+  UpdateToolbarVisibility(false);
 }

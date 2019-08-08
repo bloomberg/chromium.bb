@@ -13,9 +13,9 @@
 #include "base/lazy_instance_helpers.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/common/checked_lock.h"
 #include "base/task/single_thread_task_runner_thread_mode.h"
 #include "base/task/task_traits.h"
-#include "base/task/thread_pool/scheduler_lock.h"
 #include "base/thread_annotations.h"
 #include "build/build_config.h"
 
@@ -204,7 +204,7 @@ class BASE_EXPORT ScopedLazyTaskRunnerListForTesting {
   // Add |callback| to the list of callbacks to run on destruction.
   void AddCallback(OnceClosure callback);
 
-  SchedulerLock lock_;
+  CheckedLock lock_;
 
   // List of callbacks to run on destruction.
   std::vector<OnceClosure> callbacks_ GUARDED_BY(lock_);

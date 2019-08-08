@@ -102,6 +102,7 @@ bool ChromeClient::CanOpenUIElementIfDuringPageDismissal(
 Page* ChromeClient::CreateWindow(
     LocalFrame* frame,
     const FrameLoadRequest& r,
+    const AtomicString& frame_name,
     const WebWindowFeatures& features,
     WebSandboxFlags sandbox_flags,
     const FeaturePolicy::FeatureState& opener_feature_state,
@@ -115,7 +116,7 @@ Page* ChromeClient::CreateWindow(
   }
 #endif
 
-  return CreateWindowDelegate(frame, r, features, sandbox_flags,
+  return CreateWindowDelegate(frame, r, frame_name, features, sandbox_flags,
                               opener_feature_state,
                               session_storage_namespace_id);
 }

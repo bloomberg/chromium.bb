@@ -34,25 +34,18 @@ class RobustBufferAccessBehaviorTest : public ANGLETest
         forceNewDisplay();
     }
 
-    void TearDown() override
-    {
-        glDeleteProgram(mProgram);
-        ANGLETest::TearDown();
-    }
+    void testTearDown() override { glDeleteProgram(mProgram); }
 
     bool initExtension()
     {
         EGLWindow *window  = getEGLWindow();
         EGLDisplay display = window->getDisplay();
-        if (!eglDisplayExtensionEnabled(display, "EGL_EXT_create_context_robustness"))
+        if (!IsEGLDisplayExtensionEnabled(display, "EGL_EXT_create_context_robustness"))
         {
             return false;
         }
-
-        ANGLETest::TearDown();
         setRobustAccess(true);
-        ANGLETest::SetUp();
-        if (!extensionEnabled("GL_KHR_robust_buffer_access_behavior"))
+        if (!IsGLExtensionEnabled("GL_KHR_robust_buffer_access_behavior"))
         {
             return false;
         }
@@ -271,7 +264,7 @@ void main()
 TEST_P(RobustBufferAccessBehaviorTest, VeryLargeVertexCountWithDynamicVertexData)
 {
     ANGLE_SKIP_TEST_IF(!initExtension());
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_OES_element_index_uint"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_OES_element_index_uint"));
 
     constexpr GLsizei kIndexCount           = 32;
     std::array<GLuint, kIndexCount> indices = {{}};
@@ -573,7 +566,6 @@ TEST_P(RobustBufferAccessBehaviorTest, DynamicBuffer)
 
 ANGLE_INSTANTIATE_TEST(RobustBufferAccessBehaviorTest,
                        ES2_D3D9(),
-                       ES2_D3D11_FL9_3(),
                        ES2_D3D11(),
                        ES3_D3D11(),
                        ES31_D3D11(),

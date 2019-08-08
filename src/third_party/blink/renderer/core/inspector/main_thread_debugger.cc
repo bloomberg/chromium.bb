@@ -266,7 +266,7 @@ void MainThreadDebugger::muteMetrics(int context_group_id) {
   if (!frame)
     return;
   if (frame->GetDocument() && frame->GetDocument()->Loader())
-    frame->GetDocument()->Loader()->GetUseCounter().MuteForInspector();
+    frame->GetDocument()->Loader()->GetUseCounterHelper().MuteForInspector();
   if (frame->GetPage())
     frame->GetPage()->GetDeprecation().MuteForInspector();
 }
@@ -276,7 +276,7 @@ void MainThreadDebugger::unmuteMetrics(int context_group_id) {
   if (!frame)
     return;
   if (frame->GetDocument() && frame->GetDocument()->Loader())
-    frame->GetDocument()->Loader()->GetUseCounter().UnmuteForInspector();
+    frame->GetDocument()->Loader()->GetUseCounterHelper().UnmuteForInspector();
   if (frame->GetPage())
     frame->GetPage()->GetDeprecation().UnmuteForInspector();
 }
@@ -399,14 +399,14 @@ void MainThreadDebugger::QuerySelectorCallback(
   String selector = ToCoreStringWithUndefinedOrNullCheck(info[0]);
   if (selector.IsEmpty())
     return;
-  Node* node = SecondArgumentAsNode(info);
-  if (!node || !node->IsContainerNode())
+  auto* container_node = DynamicTo<ContainerNode>(SecondArgumentAsNode(info));
+  if (!container_node)
     return;
   ExceptionState exception_state(info.GetIsolate(),
                                  ExceptionState::kExecutionContext,
                                  "CommandLineAPI", "$");
-  Element* element = ToContainerNode(node)->QuerySelector(
-      AtomicString(selector), exception_state);
+  Element* element =
+      container_node->QuerySelector(AtomicString(selector), exception_state);
   if (exception_state.HadException())
     return;
   if (element)
@@ -422,16 +422,16 @@ void MainThreadDebugger::QuerySelectorAllCallback(
   String selector = ToCoreStringWithUndefinedOrNullCheck(info[0]);
   if (selector.IsEmpty())
     return;
-  Node* node = SecondArgumentAsNode(info);
-  if (!node || !node->IsContainerNode())
+  auto* container_node = DynamicTo<ContainerNode>(SecondArgumentAsNode(info));
+  if (!container_node)
     return;
   ExceptionState exception_state(info.GetIsolate(),
                                  ExceptionState::kExecutionContext,
                                  "CommandLineAPI", "$$");
   // ToV8(elementList) doesn't work here, since we need a proper Array instance,
   // not NodeList.
-  StaticElementList* element_list = ToContainerNode(node)->QuerySelectorAll(
-      AtomicString(selector), exception_state);
+  StaticElementList* element_list =
+      container_node->QuerySelectorAll(AtomicString(selector), exception_state);
   if (exception_state.HadException() || !element_list)
     return;
   v8::Isolate* isolate = info.GetIsolate();

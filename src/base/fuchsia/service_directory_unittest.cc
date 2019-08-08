@@ -47,7 +47,17 @@ TEST_F(ServiceDirectoryTest, ConnectDisconnect) {
   run_loop.Run();
 }
 
-// Verifies that we can connect to the service service more than once.
+// Verify that we can connect to a service through both "public" and "svc".
+TEST_F(ServiceDirectoryTest, ConnectNewAndLegacyServices) {
+  auto stub = public_service_directory_client_
+                  ->ConnectToService<testfidl::TestInterface>();
+  auto stub2 = legacy_public_service_directory_client_
+                   ->ConnectToService<testfidl::TestInterface>();
+  VerifyTestInterface(&stub, ZX_OK);
+  VerifyTestInterface(&stub2, ZX_OK);
+}
+
+// Verify that we can connect to the same service more than once.
 TEST_F(ServiceDirectoryTest, ConnectMulti) {
   auto stub = public_service_directory_client_
                   ->ConnectToService<testfidl::TestInterface>();
@@ -84,6 +94,24 @@ TEST_F(ServiceDirectoryTest, NoService) {
   auto stub = public_service_directory_client_
                   ->ConnectToService<testfidl::TestInterface>();
   VerifyTestInterface(&stub, ZX_ERR_PEER_CLOSED);
+}
+
+// Verify that we can connect to a debug service.
+TEST_F(ServiceDirectoryTest, ConnectDebugService) {
+  // Remove the public service binding.
+  service_binding_.reset();
+
+  // Publish the test service to the "debug" directory.
+  ScopedServiceBinding<testfidl::TestInterface> debug_service_binding(
+      service_directory_->debug(), &test_service_);
+
+  auto debug_stub = debug_service_directory_client_
+                        ->ConnectToService<testfidl::TestInterface>();
+  VerifyTestInterface(&debug_stub, ZX_OK);
+
+  auto release_stub = public_service_directory_client_
+                          ->ConnectToService<testfidl::TestInterface>();
+  VerifyTestInterface(&release_stub, ZX_ERR_PEER_CLOSED);
 }
 
 }  // namespace fuchsia

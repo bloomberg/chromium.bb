@@ -191,7 +191,7 @@ class CredentialManagerImplTest : public testing::Test {
     form_.password_value = base::ASCIIToUTF16("Password");
     form_.origin = client_->GetLastCommittedEntryURL();
     form_.signon_realm = form_.origin.GetOrigin().spec();
-    form_.scheme = autofill::PasswordForm::SCHEME_HTML;
+    form_.scheme = autofill::PasswordForm::Scheme::kHtml;
     form_.skip_zero_click = false;
 
     affiliated_form1_.username_value = base::ASCIIToUTF16("Affiliated 1");
@@ -199,7 +199,7 @@ class CredentialManagerImplTest : public testing::Test {
     affiliated_form1_.password_value = base::ASCIIToUTF16("Password");
     affiliated_form1_.origin = GURL();
     affiliated_form1_.signon_realm = kTestAndroidRealm1;
-    affiliated_form1_.scheme = autofill::PasswordForm::SCHEME_HTML;
+    affiliated_form1_.scheme = autofill::PasswordForm::Scheme::kHtml;
     affiliated_form1_.skip_zero_click = false;
 
     affiliated_form2_.username_value = base::ASCIIToUTF16("Affiliated 2");
@@ -207,7 +207,7 @@ class CredentialManagerImplTest : public testing::Test {
     affiliated_form2_.password_value = base::ASCIIToUTF16("Password");
     affiliated_form2_.origin = GURL();
     affiliated_form2_.signon_realm = kTestAndroidRealm2;
-    affiliated_form2_.scheme = autofill::PasswordForm::SCHEME_HTML;
+    affiliated_form2_.scheme = autofill::PasswordForm::Scheme::kHtml;
     affiliated_form2_.skip_zero_click = false;
 
     origin_path_form_.username_value = base::ASCIIToUTF16("Username 2");
@@ -216,7 +216,7 @@ class CredentialManagerImplTest : public testing::Test {
     origin_path_form_.origin = GURL("https://example.com/path");
     origin_path_form_.signon_realm =
         origin_path_form_.origin.GetOrigin().spec();
-    origin_path_form_.scheme = autofill::PasswordForm::SCHEME_HTML;
+    origin_path_form_.scheme = autofill::PasswordForm::Scheme::kHtml;
     origin_path_form_.skip_zero_click = false;
 
     subdomain_form_.username_value = base::ASCIIToUTF16("Username 2");
@@ -224,7 +224,7 @@ class CredentialManagerImplTest : public testing::Test {
     subdomain_form_.password_value = base::ASCIIToUTF16("Password 2");
     subdomain_form_.origin = GURL("https://subdomain.example.com/path");
     subdomain_form_.signon_realm = subdomain_form_.origin.GetOrigin().spec();
-    subdomain_form_.scheme = autofill::PasswordForm::SCHEME_HTML;
+    subdomain_form_.scheme = autofill::PasswordForm::Scheme::kHtml;
     subdomain_form_.skip_zero_click = false;
 
     cross_origin_form_.username_value = base::ASCIIToUTF16("Username");
@@ -233,7 +233,7 @@ class CredentialManagerImplTest : public testing::Test {
     cross_origin_form_.origin = GURL("https://example.net/");
     cross_origin_form_.signon_realm =
         cross_origin_form_.origin.GetOrigin().spec();
-    cross_origin_form_.scheme = autofill::PasswordForm::SCHEME_HTML;
+    cross_origin_form_.scheme = autofill::PasswordForm::Scheme::kHtml;
     cross_origin_form_.skip_zero_click = false;
 
     store_->Clear();
@@ -388,7 +388,7 @@ TEST_F(CredentialManagerImplTest, CredentialManagerOnStore) {
   EXPECT_TRUE(new_form.federation_origin.opaque());
   EXPECT_EQ(form_.icon_url, new_form.icon_url);
   EXPECT_FALSE(form_.skip_zero_click);
-  EXPECT_EQ(autofill::PasswordForm::SCHEME_HTML, new_form.scheme);
+  EXPECT_EQ(autofill::PasswordForm::Scheme::kHtml, new_form.scheme);
 }
 
 TEST_F(CredentialManagerImplTest, CredentialManagerOnStoreFederated) {
@@ -421,7 +421,7 @@ TEST_F(CredentialManagerImplTest, CredentialManagerOnStoreFederated) {
   EXPECT_EQ(form_.federation_origin, new_form.federation_origin);
   EXPECT_EQ(form_.icon_url, new_form.icon_url);
   EXPECT_FALSE(form_.skip_zero_click);
-  EXPECT_EQ(autofill::PasswordForm::SCHEME_HTML, new_form.scheme);
+  EXPECT_EQ(autofill::PasswordForm::Scheme::kHtml, new_form.scheme);
 }
 
 TEST_F(CredentialManagerImplTest, StoreFederatedAfterPassword) {
@@ -430,7 +430,7 @@ TEST_F(CredentialManagerImplTest, StoreFederatedAfterPassword) {
 
   autofill::PasswordForm federated = form_;
   federated.password_value.clear();
-  federated.type = autofill::PasswordForm::TYPE_API;
+  federated.type = autofill::PasswordForm::Type::kApi;
   federated.preferred = true;
   federated.federation_origin =
       url::Origin::Create(GURL("https://google.com/"));
@@ -1507,7 +1507,7 @@ TEST_F(CredentialManagerImplTest, GetSynthesizedFormForOrigin) {
       cm_service_impl_->GetSynthesizedFormForOrigin();
   EXPECT_EQ(kTestWebOrigin, synthesized.origin.spec());
   EXPECT_EQ(kTestWebOrigin, synthesized.signon_realm);
-  EXPECT_EQ(autofill::PasswordForm::SCHEME_HTML, synthesized.scheme);
+  EXPECT_EQ(autofill::PasswordForm::Scheme::kHtml, synthesized.scheme);
 }
 
 TEST_F(CredentialManagerImplTest, GetBlacklistedPasswordCredential) {
@@ -1548,7 +1548,6 @@ TEST_F(CredentialManagerImplTest, BlacklistPasswordCredential) {
   blacklisted.blacklisted_by_user = true;
   blacklisted.origin = form_.origin;
   blacklisted.signon_realm = form_.signon_realm;
-  blacklisted.type = autofill::PasswordForm::TYPE_API;
   blacklisted.date_created = passwords[form_.signon_realm][0].date_created;
   EXPECT_THAT(passwords[form_.signon_realm], testing::ElementsAre(blacklisted));
 }
@@ -1577,7 +1576,6 @@ TEST_F(CredentialManagerImplTest, BlacklistFederatedCredential) {
   blacklisted.blacklisted_by_user = true;
   blacklisted.origin = form_.origin;
   blacklisted.signon_realm = blacklisted.origin.spec();
-  blacklisted.type = autofill::PasswordForm::TYPE_API;
   blacklisted.date_created =
       passwords[blacklisted.signon_realm][0].date_created;
   EXPECT_THAT(passwords[blacklisted.signon_realm],

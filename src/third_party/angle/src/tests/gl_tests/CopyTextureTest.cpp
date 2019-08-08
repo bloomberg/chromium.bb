@@ -26,10 +26,8 @@ class CopyTextureTest : public ANGLETest
         setConfigAlphaBits(8);
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
-
         glGenTextures(2, mTextures);
         glBindTexture(GL_TEXTURE_2D, mTextures[1]);
 
@@ -43,7 +41,7 @@ class CopyTextureTest : public ANGLETest
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mTextures[1],
                                0);
 
-        if (extensionEnabled("GL_CHROMIUM_copy_texture"))
+        if (IsGLExtensionEnabled("GL_CHROMIUM_copy_texture"))
         {
             glCopyTextureCHROMIUM = reinterpret_cast<PFNGLCOPYTEXTURECHROMIUMPROC>(
                 eglGetProcAddress("glCopyTextureCHROMIUM"));
@@ -52,17 +50,15 @@ class CopyTextureTest : public ANGLETest
         }
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
         glDeleteTextures(2, mTextures);
         glDeleteFramebuffers(1, &mFramebuffer);
-
-        ANGLETest::TearDown();
     }
 
     bool checkExtensions() const
     {
-        if (!extensionEnabled("GL_CHROMIUM_copy_texture"))
+        if (!IsGLExtensionEnabled("GL_CHROMIUM_copy_texture"))
         {
             std::cout << "Test skipped because GL_CHROMIUM_copy_texture is not available."
                       << std::endl;
@@ -210,10 +206,8 @@ class CopyTextureVariationsTest : public ANGLETestWithParam<CopyTextureVariation
         setConfigAlphaBits(8);
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETestWithParam::SetUp();
-
         glGenTextures(2, mTextures);
         glBindTexture(GL_TEXTURE_2D, mTextures[1]);
 
@@ -227,7 +221,7 @@ class CopyTextureVariationsTest : public ANGLETestWithParam<CopyTextureVariation
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mTextures[1],
                                0);
 
-        if (extensionEnabled("GL_CHROMIUM_copy_texture"))
+        if (IsGLExtensionEnabled("GL_CHROMIUM_copy_texture"))
         {
             glCopyTextureCHROMIUM = reinterpret_cast<PFNGLCOPYTEXTURECHROMIUMPROC>(
                 eglGetProcAddress("glCopyTextureCHROMIUM"));
@@ -236,17 +230,15 @@ class CopyTextureVariationsTest : public ANGLETestWithParam<CopyTextureVariation
         }
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
         glDeleteTextures(2, mTextures);
         glDeleteFramebuffers(1, &mFramebuffer);
-
-        ANGLETestWithParam::TearDown();
     }
 
     bool checkExtensions(GLenum sourceFormat, GLenum destFormat) const
     {
-        if (!extensionEnabled("GL_CHROMIUM_copy_texture"))
+        if (!IsGLExtensionEnabled("GL_CHROMIUM_copy_texture"))
         {
             std::cout << "Test skipped because GL_CHROMIUM_copy_texture is not available."
                       << std::endl;
@@ -254,7 +246,7 @@ class CopyTextureVariationsTest : public ANGLETestWithParam<CopyTextureVariation
         }
 
         if ((sourceFormat == GL_BGRA_EXT || destFormat == GL_BGRA_EXT) &&
-            !extensionEnabled("GL_EXT_texture_format_BGRA8888"))
+            !IsGLExtensionEnabled("GL_EXT_texture_format_BGRA8888"))
         {
             return false;
         }
@@ -577,9 +569,9 @@ TEST_P(CopyTextureTest, ImmutableTexture)
         return;
     }
 
-    ANGLE_SKIP_TEST_IF(
-        getClientMajorVersion() < 3 &&
-        (!extensionEnabled("GL_EXT_texture_storage") || !extensionEnabled("GL_OES_rgb8_rgba8")));
+    ANGLE_SKIP_TEST_IF(getClientMajorVersion() < 3 &&
+                       (!IsGLExtensionEnabled("GL_EXT_texture_storage") ||
+                        !IsGLExtensionEnabled("GL_OES_rgb8_rgba8")));
 
     GLColor pixels = GLColor::red;
 
@@ -629,7 +621,7 @@ TEST_P(CopyTextureTest, InternalFormat)
     destFormats.push_back(GL_RGB);
     destFormats.push_back(GL_RGBA);
 
-    if (extensionEnabled("GL_EXT_texture_format_BGRA8888"))
+    if (IsGLExtensionEnabled("GL_EXT_texture_format_BGRA8888"))
     {
         sourceFormats.push_back(GL_BGRA_EXT);
         destFormats.push_back(GL_BGRA_EXT);
@@ -679,7 +671,7 @@ TEST_P(CopyTextureTest, InternalFormat)
 TEST_P(CopyTextureTest, RedefineDestinationTexture)
 {
     ANGLE_SKIP_TEST_IF(!checkExtensions());
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_texture_format_BGRA8888"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_texture_format_BGRA8888"));
 
     GLColor pixels[4] = {GLColor::red, GLColor::red, GLColor::red, GLColor::red};
 
@@ -966,6 +958,38 @@ TEST_P(CopyTextureTest, CubeMapTarget)
     }
 }
 
+// Test that we can successfully copy into incomplete cube maps. Regression test for
+// http://anglebug.com/3384
+TEST_P(CopyTextureTest, IncompleteCubeMap)
+{
+    if (!checkExtensions())
+    {
+        return;
+    }
+
+    GLTexture texture2D;
+    GLColor rgbaPixels[4 * 4] = {GLColor::red, GLColor::green, GLColor::blue, GLColor::black};
+    glBindTexture(GL_TEXTURE_2D, texture2D);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgbaPixels);
+
+    GLTexture textureCube;
+    glBindTexture(GL_TEXTURE_CUBE_MAP, textureCube);
+    for (GLenum face = GL_TEXTURE_CUBE_MAP_POSITIVE_X; face <= GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
+         face++)
+    {
+        glTexImage2D(face, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    }
+
+    // Set one face to 2x2
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                 rgbaPixels);
+
+    // Copy into the incomplete face
+    glCopySubTextureCHROMIUM(texture2D, 0, GL_TEXTURE_CUBE_MAP_NEGATIVE_X, textureCube, 0, 0, 0, 0,
+                             0, 2, 2, false, false, false);
+    EXPECT_GL_NO_ERROR();
+}
+
 // Test BGRA to RGBA cube map copy
 TEST_P(CopyTextureTest, CubeMapTargetBGRA)
 {
@@ -974,7 +998,7 @@ TEST_P(CopyTextureTest, CubeMapTargetBGRA)
         return;
     }
 
-    if (!extensionEnabled("GL_EXT_texture_format_BGRA8888"))
+    if (!IsGLExtensionEnabled("GL_EXT_texture_format_BGRA8888"))
     {
         return;
     }
@@ -1111,7 +1135,7 @@ TEST_P(CopyTextureTest, CopyToMipmap)
     }
 
     ANGLE_SKIP_TEST_IF(getClientMajorVersion() < 3 &&
-                       !extensionEnabled("GL_OES_fbo_render_mipmap"));
+                       !IsGLExtensionEnabled("GL_OES_fbo_render_mipmap"));
 
     ANGLE_SKIP_TEST_IF(IsOSX() && IsIntel());
 
@@ -1569,11 +1593,11 @@ TEST_P(CopyTextureTestDest, AlphaCopyWithRGB)
 // Test to ensure that CopyTexture will fail with a non-zero level and NPOT texture in WebGL
 TEST_P(CopyTextureTestWebGL, NPOT)
 {
-    if (extensionRequestable("GL_CHROMIUM_copy_texture"))
+    if (IsGLExtensionRequestable("GL_CHROMIUM_copy_texture"))
     {
         glRequestExtensionANGLE("GL_CHROMIUM_copy_texture");
     }
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_CHROMIUM_copy_texture"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_CHROMIUM_copy_texture"));
 
     std::vector<GLColor> pixelData(10 * 10, GLColor::red);
 
@@ -1710,7 +1734,7 @@ TEST_P(CopyTextureTestES3, ES3UnormFormats)
                         GL_UNSIGNED_BYTE, false, true, false, GLColor(0, 0, 0, 128));
 
     // New sRGB dest formats
-    if (extensionEnabled("GL_EXT_sRGB"))
+    if (IsGLExtensionEnabled("GL_EXT_sRGB"))
     {
         testCopyCombination(GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, GLColor(128, 64, 32, 128), GL_SRGB,
                             GL_UNSIGNED_BYTE, false, false, false, GLColor(55, 13, 4, 255));
@@ -1740,7 +1764,7 @@ TEST_P(CopyTextureTestES3, ES3FloatFormats)
         return;
     }
 
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_color_buffer_float"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_color_buffer_float"));
 
     auto testOutput = [this](GLuint texture, const GLColor32F &expectedColor) {
         constexpr char kVS[] =

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/base64.h"
 #include "base/i18n/time_formatting.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string16.h"
@@ -39,6 +40,8 @@ SyncCycleSnapshot::SyncCycleSnapshot()
       is_initialized_(false) {}
 
 SyncCycleSnapshot::SyncCycleSnapshot(
+    const std::string& birthday,
+    const std::string& bag_of_chips,
     const ModelNeutralState& model_neutral_state,
     const ProgressMarkerMap& download_progress_markers,
     bool is_silenced,
@@ -54,7 +57,9 @@ SyncCycleSnapshot::SyncCycleSnapshot(
     sync_pb::SyncEnums::GetUpdatesOrigin get_updates_origin,
     base::TimeDelta poll_interval,
     bool has_remaining_local_changes)
-    : model_neutral_state_(model_neutral_state),
+    : birthday_(birthday),
+      bag_of_chips_(bag_of_chips),
+      model_neutral_state_(model_neutral_state),
       download_progress_markers_(download_progress_markers),
       is_silenced_(is_silenced),
       num_encryption_conflicts_(num_encryption_conflicts),
@@ -77,6 +82,10 @@ SyncCycleSnapshot::~SyncCycleSnapshot() {}
 
 std::unique_ptr<base::DictionaryValue> SyncCycleSnapshot::ToValue() const {
   std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+  value->SetString("birthday", birthday_);
+  std::string encoded_bag_of_chips;
+  base::Base64Encode(bag_of_chips_, &encoded_bag_of_chips);
+  value->SetString("bagOfChips", encoded_bag_of_chips);
   value->SetInteger("numSuccessfulCommits",
                     model_neutral_state_.num_successful_commits);
   value->SetInteger("numSuccessfulBookmarkCommits",

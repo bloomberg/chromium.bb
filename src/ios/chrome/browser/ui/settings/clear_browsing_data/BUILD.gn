@@ -5,6 +5,8 @@
 source_set("clear_browsing_data") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "browsing_data_counter_wrapper_producer.h",
+    "browsing_data_counter_wrapper_producer.mm",
     "clear_browsing_data_collection_view_controller.h",
     "clear_browsing_data_collection_view_controller.mm",
     "clear_browsing_data_consumer.h",
@@ -27,6 +29,7 @@ source_set("clear_browsing_data") {
     "//components/browsing_data/core",
     "//components/feature_engagement/public",
     "//components/history/core/browser",
+    "//components/prefs/ios",
     "//components/strings",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
@@ -69,12 +72,13 @@ source_set("unit_tests") {
   ]
   deps = [
     ":clear_browsing_data",
+    ":test_support",
     "//base",
     "//base/test:test_support",
     "//components/browsing_data/core",
     "//components/pref_registry",
     "//components/prefs",
-    "//components/sync:test_support_driver",
+    "//components/sync:test_support",
     "//components/sync_preferences",
     "//components/sync_preferences:test_support",
     "//ios/chrome/app/strings",
@@ -82,6 +86,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/browsing_data:counters",
     "//ios/chrome/browser/browsing_data:feature_flags",
+    "//ios/chrome/browser/browsing_data:test_support",
     "//ios/chrome/browser/prefs:browser_prefs",
     "//ios/chrome/browser/signin:test_support",
     "//ios/chrome/browser/sync",
@@ -96,6 +101,19 @@ source_set("unit_tests") {
     "//testing/gtest",
     "//third_party/ocmock",
     "//ui/base",
+  ]
+}
+
+source_set("test_support") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "fake_browsing_data_counter_wrapper_producer.h",
+    "fake_browsing_data_counter_wrapper_producer.mm",
+  ]
+  deps = [
+    ":clear_browsing_data",
+    "//base",
   ]
 }
 

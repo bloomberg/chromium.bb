@@ -38,10 +38,10 @@ constexpr size_t kExtraNumberOfChars = 20;
 std::unique_ptr<InputMethodKeyboardController> CreateKeyboardController(
     HWND toplevel_window_handle) {
   if (base::FeatureList::IsEnabled(features::kInputPaneOnScreenKeyboard) &&
-      base::win::GetVersion() >= base::win::VERSION_WIN10_RS4) {
+      base::win::GetVersion() >= base::win::Version::WIN10_RS4) {
     return std::make_unique<OnScreenKeyboardDisplayManagerInputPane>(
         toplevel_window_handle);
-  } else if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+  } else if (base::win::GetVersion() >= base::win::Version::WIN8) {
     return std::make_unique<OnScreenKeyboardDisplayManagerTabTip>(
         toplevel_window_handle);
   }
@@ -245,8 +245,7 @@ ui::EventDispatchDetails InputMethodWinBase::DispatchKeyEvent(
   // 1) |char_msgs| is empty when the event is non-character key.
   // 2) |char_msgs|.size() == 1 when the event is character key and the WM_CHAR
   // messages have been combined in the event processing flow.
-  if (char_msgs.size() <= 1 && GetEngine() &&
-      GetEngine()->IsInterestedInKeyEvent()) {
+  if (char_msgs.size() <= 1 && GetEngine()) {
     ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback =
         base::BindOnce(&InputMethodWinBase::ProcessKeyEventDone,
                        weak_ptr_factory_.GetWeakPtr(),

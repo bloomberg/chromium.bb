@@ -3,6 +3,7 @@
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
 
+import ctypes
 import json
 import logging
 import os
@@ -11,17 +12,13 @@ import sys
 import time
 import unittest
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
-    __file__.decode(sys.getfilesystemencoding()))))
-sys.path.insert(0, ROOT_DIR)
-
-import isolated_format
-import run_isolated
-from depot_tools import fix_encoding
-from utils import file_path
+# Mutates sys.path.
+import test_env
 
 import isolateserver_fake
-import test_utils
+
+import run_isolated
+from utils import file_path
 
 
 CONTENTS = {
@@ -68,7 +65,7 @@ CONTENTS = {
           print >> sys.stderr, 'Unexpected content: %s' % actual
           sys.exit(1)
       print('Success')""",
-  'tar_archive': open(os.path.join(ROOT_DIR, 'tests', 'archive.tar')).read(),
+  'tar_archive': open(os.path.join(test_env.TESTS_DIR, 'archive.tar')).read(),
   'archive_files.py': """if True:
       import os, sys
       ROOT_DIR = os.path.dirname(os.path.abspath(
@@ -122,7 +119,7 @@ CONTENTS['download.isolated'] = json.dumps(
 
 CONTENTS['file_with_size.isolated'] = json.dumps(
     {
-      'command': [ 'python', '-V' ],
+      'command': ['python', '-V'],
       'files': {'file1.txt': file_meta('file1.txt')},
       'read_only': 1,
     })
@@ -231,7 +228,7 @@ class RunIsolatedTest(unittest.TestCase):
   def setUp(self):
     super(RunIsolatedTest, self).setUp()
     self.tempdir = run_isolated.make_temp_dir(
-        u'run_isolated_smoke_test', ROOT_DIR)
+        u'run_isolated_smoke_test', test_env.CLIENT_DIR)
     logging.debug(self.tempdir)
     # The run_isolated local cache.
     self._isolated_cache_dir = os.path.join(self.tempdir, 'i')
@@ -246,7 +243,7 @@ class RunIsolatedTest(unittest.TestCase):
       super(RunIsolatedTest, self).tearDown()
 
   def _run(self, args):
-    cmd = [sys.executable, os.path.join(ROOT_DIR, 'run_isolated.py')]
+    cmd = [sys.executable, os.path.join(test_env.CLIENT_DIR, 'run_isolated.py')]
     cmd.extend(args)
     pipe = subprocess.PIPE
     logging.debug(' '.join(cmd))
@@ -363,7 +360,7 @@ class RunIsolatedTest(unittest.TestCase):
       self._store('file3.txt'),
       # Maps file1.txt.
       self._store('manifest1.isolated'),
-      # References manifest1.isolated. Maps file2.txt but it is overriden.
+      # References manifest1.isolated. Maps file2.txt but it is overridden.
       self._store('manifest2.isolated'),
       self._store('repeated_files.py'),
       self._store('repeated_files.isolated'),
@@ -396,7 +393,7 @@ class RunIsolatedTest(unittest.TestCase):
     file1_hash = self._store('file1.txt')
 
     # Run the test once to generate the cache.
-    # The weird file mode is because of test_utils.py that sets umask(0070).
+    # The weird file mode is because of test_env.py that sets umask(0070).
     _out, _err, returncode = self._run(self._cmd_args(isolated_hash))
     self.assertEqual(0, returncode)
     expected = {
@@ -405,7 +402,7 @@ class RunIsolatedTest(unittest.TestCase):
       # The reason for 0100666 on Windows is that the file node had to be
       # modified to delete the hardlinked node. The read only bit is reset on
       # load.
-      unicode(file1_hash): (0100400, 0100400, 0100666),
+      unicode(file1_hash): (0100400, 0100400, 0100444),
       unicode(isolated_hash): (0100400, 0100400, 0100444),
     }
     self.assertTreeModes(self._isolated_cache_dir, expected)
@@ -426,7 +423,7 @@ class RunIsolatedTest(unittest.TestCase):
     expected = {
       u'.': (040707, 040707, 040777),
       u'state.json': (0100606, 0100606, 0100666),
-      unicode(file1_hash): (0100400, 0100400, 0100666),
+      unicode(file1_hash): (0100400, 0100400, 0100444),
       unicode(isolated_hash): (0100400, 0100400, 0100444),
     }
     self.assertTreeModes(self._isolated_cache_dir, expected)
@@ -447,6 +444,51 @@ class RunIsolatedTest(unittest.TestCase):
     # TODO(maruel): This corruption is NOT detected.
     # This needs to be fixed.
     self.assertNotEqual(CONTENTS['file1.txt'], read_content(cached_file_path))
+
+  def test_minimal_lower_priority(self):
+    cmd = ['--lower-priority', '--raw-cmd', '--', sys.executable, '-c']
+    if sys.platform == 'win32':
+      cmd.append(
+          'import ctypes,sys; v=ctypes.windll.kernel32.GetPriorityClass(-1);'
+          'sys.stdout.write(hex(v))')
+    else:
+      cmd.append('import os,sys; sys.stdout.write(str(os.nice(0)))')
+    out, err, returncode = self._run(cmd)
+    self.assertEqual('', err)
+    if sys.platform == 'win32':
+      # See
+      # https://docs.microsoft.com/en-us/windows/desktop/api/processthreadsapi/nf-processthreadsapi-getpriorityclass
+      BELOW_NORMAL_PRIORITY_CLASS = 0x4000
+      self.assertEqual(hex(BELOW_NORMAL_PRIORITY_CLASS), out)
+    else:
+      self.assertEqual(str(os.nice(0)+1), out)
+    self.assertEqual(0, returncode)
+
+  def test_limit_processes(self):
+    # Execution fails because it tries to run a second process.
+    cmd = ['--limit-processes', '1', '--raw-cmd']
+    if sys.platform == 'win32':
+      cmd.extend(('--containment-type', 'JOB_OBJECT'))
+    cmd.extend(('--', sys.executable, '-c'))
+    if sys.platform == 'win32':
+      cmd.append(
+          'import subprocess,sys; '
+          'subprocess.call([sys.executable, "-c", "print 0"])')
+    else:
+      cmd.append('import os,sys; sys.stdout.write(str(os.nice(0)))')
+    out, err, returncode = self._run(cmd)
+    if sys.platform == 'win32':
+      self.assertIn('WindowsError', err)
+      # Value for ERROR_NOT_ENOUGH_QUOTA. See
+      # https://docs.microsoft.com/windows/desktop/debug/system-error-codes--1700-3999-
+      self.assertIn('1816', err)
+      self.assertEqual('', out)
+      self.assertEqual(1, returncode)
+    else:
+      # TODO(maruel): Add containment on other platforms.
+      self.assertEqual('', err)
+      self.assertEqual('0', out, out)
+      self.assertEqual(0, returncode)
 
   def test_named_cache(self):
     # Runs a task that drops a file in the named cache, and assert that it's
@@ -483,7 +525,4 @@ class RunIsolatedTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-  fix_encoding.fix_encoding()
-  logging.basicConfig(
-      level=logging.DEBUG if '-v' in sys.argv else logging.ERROR)
-  test_utils.main()
+  test_env.main()

@@ -55,7 +55,7 @@
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/sync/base/sync_prefs.h"
-#include "components/sync/user_events/user_event_service.h"
+#include "components/sync_user_events/user_event_service.h"
 #include "components/variations/variations_switches.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -528,7 +528,8 @@ class DiceBrowserTest : public InProcessBrowserTest,
     }
   }
 
-  void OnRefreshTokenRemovedForAccount(const std::string& account_id) override {
+  void OnRefreshTokenRemovedForAccount(
+      const CoreAccountId& account_id) override {
     ++token_revoked_notification_count_;
   }
 

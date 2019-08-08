@@ -20,7 +20,7 @@ class WebApp;
 
 class WebAppRegistrar : public AppRegistrar {
  public:
-  explicit WebAppRegistrar(AbstractWebAppDatabase* database);
+  explicit WebAppRegistrar(Profile* profile, AbstractWebAppDatabase* database);
   ~WebAppRegistrar() override;
 
   void RegisterApp(std::unique_ptr<WebApp> web_app);
@@ -37,6 +37,7 @@ class WebAppRegistrar : public AppRegistrar {
 
   // AppRegistrar
   void Init(base::OnceClosure callback) override;
+  bool IsInstalled(const GURL& start_url) const override;
   bool IsInstalled(const AppId& app_id) const override;
   bool WasExternalAppUninstalledByUser(const AppId& app_id) const override;
   bool HasScopeUrl(const AppId& app_id) const override;

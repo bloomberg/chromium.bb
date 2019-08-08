@@ -4,32 +4,21 @@
 
 #include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container_base.h"
 
-#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/lazy_instance.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
-#include "base/values.h"
 #include "components/guest_view/common/guest_view_constants.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/guest_view/extensions_guest_view_messages.h"
-#include "extensions/common/mojo/guest_view.mojom.h"
 #include "extensions/renderer/extension_frame_helper.h"
-#include "gin/arguments.h"
-#include "gin/dictionary.h"
-#include "gin/handle.h"
-#include "gin/interceptor.h"
-#include "gin/object_template_builder.h"
-#include "gin/wrappable.h"
 #include "ipc/ipc_sync_channel.h"
 #include "services/network/public/cpp/features.h"
-#include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_associated_url_loader.h"
@@ -37,14 +26,11 @@
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_local_frame.h"
-#include "third_party/blink/public/web/web_remote_frame.h"
 
 namespace extensions {
 using UMAType = MimeHandlerViewUMATypes::Type;
 
 namespace {
-
-const char kPostMessageName[] = "postMessage";
 
 base::LazyInstance<mojom::GuestViewAssociatedPtr>::Leaky g_guest_view;
 
@@ -56,67 +42,6 @@ mojom::GuestView* GetGuestView() {
 
   return g_guest_view.Get().get();
 }
-
-// The gin-backed scriptable object which is exposed by the BrowserPlugin for
-// MimeHandlerViewContainerBase. This currently only implements "postMessage".
-class ScriptableObject : public gin::Wrappable<ScriptableObject>,
-                         public gin::NamedPropertyInterceptor {
- public:
-  static gin::WrapperInfo kWrapperInfo;
-
-  static v8::Local<v8::Object> Create(
-      v8::Isolate* isolate,
-      base::WeakPtr<MimeHandlerViewContainerBase> container) {
-    ScriptableObject* scriptable_object =
-        new ScriptableObject(isolate, container);
-    return gin::CreateHandle(isolate, scriptable_object)
-        .ToV8()
-        .As<v8::Object>();
-  }
-
-  // gin::NamedPropertyInterceptor
-  v8::Local<v8::Value> GetNamedProperty(
-      v8::Isolate* isolate,
-      const std::string& identifier) override {
-    if (identifier == kPostMessageName) {
-      if (post_message_function_template_.IsEmpty()) {
-        post_message_function_template_.Reset(
-            isolate,
-            gin::CreateFunctionTemplate(
-                isolate,
-                base::BindRepeating(
-                    &MimeHandlerViewContainerBase::PostJavaScriptMessage,
-                    container_, isolate)));
-      }
-      v8::Local<v8::FunctionTemplate> function_template =
-          v8::Local<v8::FunctionTemplate>::New(isolate,
-                                               post_message_function_template_);
-      v8::Local<v8::Function> function;
-      if (function_template->GetFunction(isolate->GetCurrentContext())
-              .ToLocal(&function))
-        return function;
-    }
-    return v8::Local<v8::Value>();
-  }
-
- private:
-  ScriptableObject(v8::Isolate* isolate,
-                   base::WeakPtr<MimeHandlerViewContainerBase> container)
-      : gin::NamedPropertyInterceptor(isolate, this), container_(container) {}
-
-  // gin::Wrappable
-  gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
-      v8::Isolate* isolate) override {
-    return gin::Wrappable<ScriptableObject>::GetObjectTemplateBuilder(isolate)
-        .AddNamedPropertyInterceptor();
-  }
-
-  base::WeakPtr<MimeHandlerViewContainerBase> container_;
-  v8::Persistent<v8::FunctionTemplate> post_message_function_template_;
-};
-
-// static
-gin::WrapperInfo ScriptableObject::kWrapperInfo = {gin::kEmbedderNativeGin};
 
 // Maps from content::RenderFrame to the set of MimeHandlerViewContainerBases
 //  within it.
@@ -189,13 +114,6 @@ MimeHandlerViewContainerBase::MimeHandlerViewContainerBase(
       mime_type_(mime_type),
       embedder_render_frame_routing_id_(embedder_render_frame->GetRoutingID()),
       before_unload_control_binding_(this),
-      resource_access_type_(
-          embedder_render_frame->GetWebFrame()
-                  ->GetDocument()
-                  .GetSecurityOrigin()
-                  .CanAccess(blink::WebSecurityOrigin::Create(original_url))
-              ? ResourceAccessType::kAccessible
-              : ResourceAccessType::kInaccessible),
       weak_factory_(this) {
   DCHECK(!mime_type_.empty());
   g_mime_handler_view_container_base_map.Get()[embedder_render_frame].insert(
@@ -213,6 +131,23 @@ MimeHandlerViewContainerBase::~MimeHandlerViewContainerBase() {
     if (g_mime_handler_view_container_base_map.Get()[rf].empty())
       g_mime_handler_view_container_base_map.Get().erase(rf);
   }
+}
+
+// static
+PostMessageSupport::Delegate* PostMessageSupport::Delegate::FromWebLocalFrame(
+    blink::WebLocalFrame* web_local_frame) {
+  if (!web_local_frame->GetDocument().IsPluginDocument())
+    return nullptr;
+  auto mime_handlers = MimeHandlerViewContainerBase::FromRenderFrame(
+      content::RenderFrame::FromWebFrame(web_local_frame));
+  if (mime_handlers.empty())
+    return nullptr;
+  return mime_handlers.front();
+}
+
+// static
+mojom::GuestView* MimeHandlerViewContainerBase::GuestView() {
+  return GetGuestView();
 }
 
 // static
@@ -234,53 +169,6 @@ MimeHandlerViewContainerBase::MaybeCreatePluginThrottle(const GURL& url) {
 
   waiting_to_create_throttle_ = false;
   return std::make_unique<PluginResourceThrottle>(weak_factory_.GetWeakPtr());
-}
-
-void MimeHandlerViewContainerBase::PostJavaScriptMessage(
-    v8::Isolate* isolate,
-    v8::Local<v8::Value> message) {
-  if (should_report_internal_messages_)
-    RecordUMAForPostMessage(message);
-  if (!guest_loaded_) {
-    pending_messages_.push_back(v8::Global<v8::Value>(isolate, message));
-    return;
-  }
-
-  auto* guest_proxy_frame = GetGuestProxyFrame();
-
-  v8::Context::Scope context_scope(
-      GetEmbedderRenderFrame()->GetWebFrame()->MainWorldScriptContext());
-
-  v8::Local<v8::Object> guest_proxy_window = guest_proxy_frame->GlobalProxy();
-  gin::Dictionary window_object(isolate, guest_proxy_window);
-  v8::Local<v8::Function> post_message;
-  if (!window_object.Get(std::string(kPostMessageName), &post_message))
-    return;
-
-  v8::Local<v8::Value> args[] = {
-      message,
-      // Post the message to any domain inside the browser plugin. The embedder
-      // should already know what is embedded.
-      gin::StringToV8(isolate, "*")};
-  GetEmbedderRenderFrame()->GetWebFrame()->CallFunctionEvenIfScriptDisabled(
-      post_message.As<v8::Function>(), guest_proxy_window, base::size(args),
-      args);
-}
-
-void MimeHandlerViewContainerBase::PostMessageFromValue(
-    const base::Value& message) {
-  blink::WebLocalFrame* frame = GetEmbedderRenderFrame()->GetWebFrame();
-  if (!frame)
-    return;
-
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  v8::HandleScope handle_scope(isolate);
-  v8::Context::Scope context_scope(frame->MainWorldScriptContext());
-  base::AutoReset<bool> avoid_recording_internal_messages(
-      &should_report_internal_messages_, false);
-  PostJavaScriptMessage(isolate,
-                        content::V8ValueConverter::Create()->ToV8Value(
-                            &message, frame->MainWorldScriptContext()));
 }
 
 void MimeHandlerViewContainerBase::DidReceiveData(const char* data,
@@ -331,7 +219,7 @@ void MimeHandlerViewContainerBase::CreateMimeHandlerViewGuestIfNecessary() {
     guest_view->CreateEmbeddedMimeHandlerViewGuest(
         embedder_render_frame->GetRoutingID(), extension_frame_helper->tab_id(),
         original_url_, GetInstanceId(), GetElementSize(),
-        std::move(transferrable_url_loader_), plugin_frame_routing_id_);
+        std::move(transferrable_url_loader_));
     guest_created_ = true;
     return;
   }
@@ -354,8 +242,7 @@ void MimeHandlerViewContainerBase::CreateMimeHandlerViewGuestIfNecessary() {
   }
   guest_view->CreateMimeHandlerViewGuest(
       embedder_render_frame->GetRoutingID(), view_id_, GetInstanceId(),
-      GetElementSize(), std::move(before_unload_control),
-      plugin_frame_routing_id_);
+      GetElementSize(), std::move(before_unload_control));
 
   guest_created_ = true;
 }
@@ -364,24 +251,8 @@ void MimeHandlerViewContainerBase::DidLoadInternal() {
   RecordInteraction(UMAType::kDidLoadExtension);
   if (!GetEmbedderRenderFrame())
     return;
-
   guest_loaded_ = true;
-  if (pending_messages_.empty())
-    return;
-
-  // Now that the guest has loaded, flush any unsent messages.
-  blink::WebLocalFrame* frame = GetEmbedderRenderFrame()->GetWebFrame();
-  if (!frame)
-    return;
-
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  v8::HandleScope handle_scope(isolate);
-  v8::Context::Scope context_scope(frame->MainWorldScriptContext());
-  for (const auto& pending_message : pending_messages_)
-    PostJavaScriptMessage(isolate,
-                          v8::Local<v8::Value>::New(isolate, pending_message));
-
-  pending_messages_.clear();
+  post_message_support()->SetActive();
 }
 
 void MimeHandlerViewContainerBase::SendResourceRequest() {
@@ -419,38 +290,6 @@ void MimeHandlerViewContainerBase::SetEmbeddedLoader(
   CreateMimeHandlerViewGuestIfNecessary();
 }
 
-void MimeHandlerViewContainerBase::RecordUMAForPostMessage(
-    v8::Local<v8::Value>& message) {
-  auto data = content::V8ValueConverter::Create()->FromV8Value(
-      message,
-      GetEmbedderRenderFrame()->GetWebFrame()->MainWorldScriptContext());
-  std::string message_type;
-  if (data->is_dict()) {
-    base::DictionaryValue::From(std::move(data))
-        ->GetString("type", &message_type);
-  }
-
-  bool accessible = resource_access_type_ == ResourceAccessType::kAccessible;
-  MimeHandlerViewUMATypes::Type post_message_type;
-  if (message_type == "getSelectedText") {
-    post_message_type = accessible ? UMAType::kAccessibleGetSelectedText
-                                   : UMAType::kInaccessibleGetSelectedText;
-  } else if (message_type == "print") {
-    post_message_type =
-        accessible ? UMAType::kAccessiblePrint : UMAType::kInaccessiblePrint;
-  } else if (message_type == "selectAll") {
-    post_message_type = accessible ? UMAType::kAccessibleSelectAll
-                                   : UMAType::kInaccessibleSelectAll;
-  } else {
-    post_message_type = accessible ? UMAType::kAccessibleInvalid
-                                   : UMAType::kInaccessibleInvalid;
-  }
-  DCHECK_NE(post_message_type, UMAType::kDidCreateMimeHandlerViewContainerBase);
-  RecordInteraction(post_message_type);
-  if (is_embedded_)
-    RecordInteraction(UMAType::kPostMessageToEmbeddedMimeHandlerView);
-}
-
 void MimeHandlerViewContainerBase::SetShowBeforeUnloadDialog(
     bool show_dialog,
     SetShowBeforeUnloadDialogCallback callback) {
@@ -464,12 +303,7 @@ void MimeHandlerViewContainerBase::SetShowBeforeUnloadDialog(
 
 v8::Local<v8::Object> MimeHandlerViewContainerBase::GetScriptableObjectInternal(
     v8::Isolate* isolate) {
-  if (scriptable_object_.IsEmpty()) {
-    v8::Local<v8::Object> object =
-        ScriptableObject::Create(isolate, weak_factory_.GetWeakPtr());
-    scriptable_object_.Reset(isolate, object);
-  }
-  return v8::Local<v8::Object>::New(isolate, scriptable_object_);
+  return post_message_support()->GetScriptableObject(isolate);
 }
 
 void MimeHandlerViewContainerBase::RecordInteraction(UMAType uma_type) {

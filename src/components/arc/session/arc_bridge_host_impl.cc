@@ -20,6 +20,7 @@
 #include "components/arc/common/backup_settings.mojom.h"
 #include "components/arc/common/bluetooth.mojom.h"
 #include "components/arc/common/boot_phase_monitor.mojom.h"
+#include "components/arc/common/camera.mojom.h"
 #include "components/arc/common/cast_receiver.mojom.h"
 #include "components/arc/common/cert_store.mojom.h"
 #include "components/arc/common/clipboard.mojom.h"
@@ -42,6 +43,7 @@
 #include "components/arc/common/policy.mojom.h"
 #include "components/arc/common/power.mojom.h"
 #include "components/arc/common/print.mojom.h"
+#include "components/arc/common/print_spooler.mojom.h"
 #include "components/arc/common/process.mojom.h"
 #include "components/arc/common/property.mojom.h"
 #include "components/arc/common/rotation_lock.mojom.h"
@@ -127,6 +129,11 @@ void ArcBridgeHostImpl::OnBootPhaseMonitorInstanceReady(
     mojom::BootPhaseMonitorInstancePtr boot_phase_monitor_ptr) {
   OnInstanceReady(arc_bridge_service_->boot_phase_monitor(),
                   std::move(boot_phase_monitor_ptr));
+}
+
+void ArcBridgeHostImpl::OnCameraInstanceReady(
+    mojom::CameraInstancePtr camera_ptr) {
+  OnInstanceReady(arc_bridge_service_->camera(), std::move(camera_ptr));
 }
 
 void ArcBridgeHostImpl::OnCastReceiverInstanceReady(
@@ -254,6 +261,12 @@ void ArcBridgeHostImpl::OnPowerInstanceReady(
 void ArcBridgeHostImpl::OnPrintInstanceReady(
     mojom::PrintInstancePtr print_ptr) {
   OnInstanceReady(arc_bridge_service_->print(), std::move(print_ptr));
+}
+
+void ArcBridgeHostImpl::OnPrintSpoolerInstanceReady(
+    mojom::PrintSpoolerInstancePtr print_spooler_ptr) {
+  OnInstanceReady(arc_bridge_service_->print_spooler(),
+                  std::move(print_spooler_ptr));
 }
 
 void ArcBridgeHostImpl::OnProcessInstanceReady(

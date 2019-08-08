@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/wm/desks/desk.h"
 #include "base/macros.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
@@ -15,7 +16,7 @@
 namespace ash {
 
 class CloseDeskButton;
-class Desk;
+class DesksBarView;
 class DeskPreviewView;
 
 // A view that acts as a mini representation (a.k.a. desk thumbnail) of a
@@ -23,14 +24,18 @@ class DeskPreviewView;
 // shows a preview of the contents of the associated desk, its title, and
 // supports desk activation and removal.
 class ASH_EXPORT DeskMiniView : public views::Button,
-                                public views::ButtonListener {
+                                public views::ButtonListener,
+                                public Desk::Observer {
  public:
-  DeskMiniView(const Desk* desk,
-               const base::string16& title,
-               views::ButtonListener* listener);
+  DeskMiniView(DesksBarView* owner_bar,
+               aura::Window* root_window,
+               Desk* desk,
+               const base::string16& title);
   ~DeskMiniView() override;
 
-  const Desk* desk() const { return desk_; }
+  aura::Window* root_window() { return root_window_; }
+
+  Desk* desk() { return desk_; }
 
   const CloseDeskButton* close_desk_button() const {
     return close_desk_button_;
@@ -38,9 +43,17 @@ class ASH_EXPORT DeskMiniView : public views::Button,
 
   void SetTitle(const base::string16& title);
 
+  // Returns the associated desk's container window on the display this
+  // mini_view resides on.
+  aura::Window* GetDeskContainer() const;
+
   // Updates the visibility state of the close button depending on whether this
   // view is mouse hovered.
   void OnHoverStateMayHaveChanged();
+
+  // Updates the border color of the DeskPreviewView based on the activation
+  // state of the corresponding desk.
+  void UpdateBorderColor();
 
   // views::Button:
   const char* GetClassName() const override;
@@ -50,15 +63,25 @@ class ASH_EXPORT DeskMiniView : public views::Button,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // ui::EventHandler:
-  void OnMouseEvent(ui::MouseEvent* event) override;
+  // Desk::Observer:
+  void OnContentChanged() override;
+  void OnDeskDestroyed(const Desk* desk) override;
+
+  bool IsPointOnMiniView(const gfx::Point& screen_location) const;
 
  private:
-  // The associated desk.
-  const Desk* desk_;  // Not owned.
+  DesksBarView* const owner_bar_;
+
+  // The root window on which this mini_view is created.
+  aura::Window* root_window_;
+
+  // The associated desk. Can be null when the desk is deleted before this
+  // mini_view completes its removal animation. See comment above
+  // OnDeskRemoved().
+  Desk* desk_;  // Not owned.
 
   // The view that shows a preview of the desk contents.
-  DeskPreviewView* desk_preview_;
+  std::unique_ptr<DeskPreviewView> desk_preview_;
 
   // The desk title.
   views::Label* label_;

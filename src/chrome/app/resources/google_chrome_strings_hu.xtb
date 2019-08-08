@@ -14,7 +14,6 @@
 <translation id="123620459398936149">A Chrome OS nem tudta szinkronizálni az adatokat. Kérjük, frissítse szinkronizálási összetett jelszavát.</translation>
 <translation id="127345590676626841">A Chrome automatikusan frissít, így Ön mindig a legújabb verzióval rendelkezik. A letöltés befejezése után a Chrome újraindul, és máris rendelkezésre áll.</translation>
 <translation id="1302523850133262269">Kérjük, várjon, amíg a Chrome telepíti a legutóbbi rendszerfrissítéseket.</translation>
-<translation id="1312676208694947750">{0,plural, =0{Rendelkezésre áll egy Chrome OS-frissítés}=1{Rendelkezésre áll egy Chrome OS-frissítés}other{# napja rendelkezésre áll egy Chrome OS-frissítés}}</translation>
 <translation id="137466361146087520">Google Chrome Béta</translation>
 <translation id="1393853151966637042">A Chrome használatával kapcsolatos súgó</translation>
 <translation id="1399397803214730675">A számítógépen már megtalálható a Google Chrome újabb verziója. Ha a szoftver nem működik, kérjük, távolítsa el a Google Chrome-ot, majd próbálkozzon újra.</translation>
@@ -32,6 +31,7 @@
 <translation id="1674870198290878346">Link megnyitása Chrome-inko&amp;gnitóablakban</translation>
 <translation id="1682634494516646069">A Chrome nem tudja olvasni és írni az adatkönyvtárát: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">A Google Chrome olyan böngésző, amely villámgyorsan futtatja a weboldalakat és az alkalmazásokat. Gyors, stabil és könnyen használható. A beépített, adathalászat és a kártékony programok elleni védelemmel biztonságosabban böngészhet az interneten.</translation>
+<translation id="1713301662689114961">{0,plural, =1{A Chrome 1 órán belül újraindul}other{A Chrome # órán belül újraindul}}</translation>
 <translation id="1718131156967340976">Válassza a <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /> alkalmazást</translation>
 <translation id="1734234790201236882">A Chrome ezt a jelszót Google-fiókjába menti. Nem kell megjegyeznie.</translation>
 <translation id="174539241580958092">A Google Chrome egy bejelentkezési hiba miatt nem tudta szinkronizálni az adatokat.</translation>
@@ -39,7 +39,6 @@
 <translation id="1773601347087397504">A Chrome OS használatával kapcsolatos súgó</translation>
 <translation id="1795405610103747296">Telepítse a Chrome-ot telefonjára. SMS-t küldünk majd a következő telefonszámra: <ph name="PHONE_NUMBER" /></translation>
 <translation id="1812689907177901597">A beállítás kikapcsolásával anélkül jelentkezhet be a Google-webhelyekre (pl. Gmail), hogy a Chrome-ba is bejelentkezne</translation>
-<translation id="1815759068706561639">A(z) <ph name="FILE_NAME" /> veszélyes, ezért a Chrome letiltotta. Az Ön biztonságáról a Speciális védelem gondoskodik.</translation>
 <translation id="1860536484129686729">A Chrome-nak engedélyre van szüksége ahhoz, hogy hozzáférjen a kamerához ennél a webhelynél</translation>
 <translation id="1873233029667955273">Nem a Google Chrome az alapértelmezett böngésző</translation>
 <translation id="1874309113135274312">Google Chrome Béta (mDNS-In)</translation>
@@ -53,7 +52,6 @@
 <translation id="216054706567564023">Telepítse a Chrome-ot telefonjára. SMS-t küldünk majd a fiók-helyreállítási telefonszámára.</translation>
 <translation id="2246246234298806438">A Google Chrome nem tudja megjeleníteni a nyomtatási előnézetet, ha nincs beépített PDF-megjelenítő.</translation>
 <translation id="2252923619938421629">Segítsen a Google Chrome fejlesztésében a jelenlegi beállítások elküldésével</translation>
-<translation id="225363235161345695">{0,plural, =1{A Chrome 1 órán belül újraindul}other{A Chrome # órán belül újraindul}}</translation>
 <translation id="2286950485307333924">Most már bejelentkezett a Chrome-ba</translation>
 <translation id="2290014774651636340">Hiányoznak Google API-kulcsok. A Google Chrome egyes funkciói kikapcsolnak.</translation>
 <translation id="2290095356545025170">Biztos benne, hogy eltávolítja a Google Chrome-ot?</translation>
@@ -65,7 +63,6 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW" 
 <translation id="2429317896000329049">A Google Chrome nem tudta szinkronizálni az adatait, mert a szinkronizálás nem érhető el az Ön domainjénél.</translation>
 <translation id="2467438592969358367">A Google Chrome exportálni szeretné a jelszavakat. Ennek engedélyezéséhez írja be Windows-jelszavát.</translation>
 <translation id="2485422356828889247">Eltávolítás</translation>
-<translation id="2521856951867783208">Ez a fájl veszélyes lehet, ezért a Chrome letiltotta. Az Ön biztonságáról a Speciális védelem gondoskodik.</translation>
 <translation id="2534507159460261402">Google Pay (a Chrome-ba másolva)</translation>
 <translation id="2535429035253759792">Rendszergazdája arra kéri, hogy indítsa újra a Chrome-ot a frissítés alkalmazásához</translation>
 <translation id="2580411288591421699">Nem lehet ugyanazt a Google Chrome verziót telepíteni, amely jelenleg is fut. Zárja be a Google Chrome-ot, és próbálja újra.</translation>
@@ -96,13 +93,13 @@ Ha szeretné megakadályozni, hogy <ph name="NEW_PROFILE_NAME" /> hozzáférjen 
 További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-mailekben talál.</translation>
 <translation id="3282568296779691940">Bejelentkezés a Chrome-ba</translation>
 <translation id="3360895254066713204">Chrome segéd</translation>
+<translation id="3379938682270551431">{0,plural, =0{A Chrome most újraindul}=1{A Chrome 1 másodpercen belül újraindul}other{A Chrome # másodpercen belül újraindul}}</translation>
 <translation id="3395323229510056640">Segítség a Chrome OS használatával kapcsolatban</translation>
 <translation id="3396977131400919238">Az operációs rendszer hibát jelzett a telepítés során.</translation>
 <translation id="3398288718845740432">Elrejtés a Chrome-menüben</translation>
 <translation id="3451115285585441894">Hozzáadás a Chrome-hoz...</translation>
 <translation id="345171907106878721">Adja hozzá magát a Chrome-ban</translation>
 <translation id="3479552764303398839">Ne most</translation>
-<translation id="3481286511616257896">A(z) <ph name="FILE_NAME" /> veszélyes lehet, ezért a Chrome letiltotta. Az Ön biztonságáról a Speciális védelem gondoskodik.</translation>
 <translation id="34857402635545079">Az adatokat is törölje a Chrome-ból (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">A Chrome-nak a helyadatokhoz való hozzáférésre van szüksége ahhoz, hogy megoszthassa a webhellyel az Ön tartózkodási helyét</translation>
 <translation id="3576528680708590453">Rendszergazdája úgy állította be a Google Chrome-ot, hogy másik böngészőt nyisson meg a(z) <ph name="TARGET_URL_HOSTNAME" /> eléréséhez.</translation>
@@ -124,6 +121,7 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="4143243756087420366">Chrome-név és -kép</translation>
 <translation id="4147555960264124640">Kezelt fiókkal jelentkezik be, és annak adminisztrátora számára hozzáférést biztosít Google Chrome-profiljához. Chrome-adatait – például alkalmazásait, könyvjelzőit, előzményeit, jelszavait és más beállításait – a rendszer véglegesen társítja a(z) <ph name="USER_NAME" /> fiókhoz. Ezen adatokat a Google-fiókok Irányítópultján törölheti, de más fiókhoz nem társíthatja őket. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Nem sikerült a telepítőnek kibontani a tömörített állományt. Kérjük, töltse le újra a Google Chrome böngészőt.</translation>
+<translation id="4191857738314598978">{0,plural, =1{A Chrome-ot 1 napon belül újra kell indítani}other{A Chrome-ot # napon belül újra kell indítani}}</translation>
 <translation id="424864128008805179">Kijelentkezés a Chrome-ból</translation>
 <translation id="4251615635259297716">Társítja Chrome-adatait ezzel a fiókkal?</translation>
 <translation id="4251625577313994583">Chrome beszerzése iPhone eszközre</translation>
@@ -145,11 +143,10 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="4750550185319565338">A Chrome újraindítása a(z) <ph name="PLUGIN_NAME" /> engedélyezéséhez</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Ez a fájl veszélyes lehet, ezért a Chrome letiltotta.</translation>
-<translation id="4794050651896644714">Részletek mentése a Chrome-ban</translation>
+<translation id="479167709087336770">A szolgáltatás ugyanazt a helyesírás-ellenőrzést használja, mint a Google Keresés. A begépelt szöveget a böngésző elküldi a Google-nak. A beállítások között ezt bármikor módosíthatja.</translation>
 <translation id="4891791193823137474">A Google Chrome futhat a háttérben</translation>
 <translation id="4895437082222824641">Link megnyi&amp;tása új Chrome-lapon</translation>
 <translation id="4921569541910214635">Közösen használ valakivel egy számítógépet? Mostantól úgy állíthatja be a Chrome-ot, ahogy Ön szeretné.</translation>
-<translation id="4945319281866068441">{0,plural, =1{A Chrome OS-t egy napon belül újra kell indítani}other{A Chrome OS-t # napon belül újra kell indítani}}</translation>
 <translation id="4953650215774548573">A Google Chrome beállítása alapértelmezett böngészőként</translation>
 <translation id="495931528404527476">A Chrome-ban</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -163,8 +160,8 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="5251420635869119124">A vendégek úgy használhatják a Chrome-ot, hogy nem hagynak hátra semmit.</translation>
 <translation id="532046782124376502">Figyelmeztetés: A Google Chrome nem tudja megakadályozni, hogy a bővítmények rögzítsék a böngészési előzményeket. A bővítmény inkognitómódban való használatának letiltásához törölje e lehetőség bejelölését.</translation>
 <translation id="5386244825306882791">Továbbá azt is szabályozza, hogy melyik oldal jelenik meg a Chrome indításakor vagy a cím- és keresősávban indított kereséskor.</translation>
+<translation id="5394833366792865639">Chrome-lap megosztása</translation>
 <translation id="5430073640787465221">A beállításait tartalmazó fájl hibás vagy érvénytelen. A Google Chrome nem tudja helyreállítani a beállításait.</translation>
-<translation id="5483595757826856374">{0,plural, =0{A Chrome most újraindul}=1{A Chrome 1 másodpercen belül újraindul}other{A Chrome # másodpercen belül újraindul}}</translation>
 <translation id="5543953544073077331">További Chrome-példányok is futnak. A frissítéshez zárja be őket.</translation>
 <translation id="556024056938947818">A Google Chrome megpróbálja megjeleníteni a jelszavakat.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
@@ -192,7 +189,6 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="6291549208091401781">A Google Chrome már telepítve van az összes felhasználó számára a számítógépen.</translation>
 <translation id="6338556085225130112">A Google Chrome frissítése</translation>
 <translation id="6368958679917195344">A Chrome OS-hez egyéb <ph name="BEGIN_LINK_CROS_OSS" />nyílt forráskódú szoftver<ph name="END_LINK_CROS_OSS" /> is hozzájárult.</translation>
-<translation id="6468844726266617801">{0,plural, =1{A Chrome-ot 1 napon belül újra kell indítani}other{A Chrome-ot # napon belül újra kell indítani}}</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome Dev</translation>
 <translation id="6566149418543181476">A Google Chrome frissítése (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Chrome-os dolgainak szinkronizálásához a(z) <ph name="PROFILE_EMAIL" /> fiókot használja. Szinkronizálási beállításainak frissítéséhez, illetve a Chrome Google-fiók nélküli használatához keresse fel a <ph name="SETTINGS_LINK" /> linket.</translation>
@@ -200,17 +196,16 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="6634887557811630702">A Google Chrome naprakész.</translation>
 <translation id="6676384891291319759">Internetelérés</translation>
 <translation id="6679975945624592337">A Google Chrome futhat a háttérben</translation>
+<translation id="6750954913813541382">A nyelvtani hibák javítása érdekében a Chrome elküldi a böngészőben begépelt összes szöveget a Google-nak</translation>
 <translation id="677276454032249905">Biztosan kilép a Chrome-ból?</translation>
 <translation id="683440813066116847">Bejövő szabály a Google Chrome Canaryhoz az mDNS forgalom engedélyezése céljából.</translation>
 <translation id="686561893457936865">Vigye magával a Chrome-ot mindenhova</translation>
 <translation id="6885412569789873916">Chrome Beta-alkalmazások</translation>
 <translation id="6943584222992551122">A személy böngészési adatai törlődnek az eszközről. Az adatok visszaállításához jelentkezzen be a Chrome-ba a következő felhasználóként: <ph name="USER_EMAIL" />.</translation>
-<translation id="6964107240822114422">{0,plural, =0{Rendelkezésre áll egy Chrome-frissítés}=1{Rendelkezésre áll egy Chrome-frissítés}other{# napja rendelkezésre áll egy Chrome-frissítés}}</translation>
 <translation id="6967962315388095737">Bejövő szabály a Google Chrome Bétához az mDNS forgalom engedélyezése céljából.</translation>
 <translation id="6970811910055250180">Az eszköz frissítése folyamatban van...</translation>
 <translation id="6982337800632491844">A(z) <ph name="DOMAIN" /> megköveteli, hogy olvassa el, majd fogadja el a következő Általános Szerződési Feltételeket, mielőtt használná ezt az eszközt. Ezek a feltételek nem bővítik, módosítják vagy korlátozzák a Google Chrome OS feltételeit.</translation>
 <translation id="6989339256997917931">A Google Chrome frissítése megtörtént, de nem használta a böngészőt legalább 30 napja.</translation>
-<translation id="7023651421574588884">A rendszergazda előírta, hogy újra kell indítania a Chrome OS-t egy frissítés telepítése miatt</translation>
 <translation id="7098166902387133879">A Google Chrome használja a mikrofont.</translation>
 <translation id="7106741999175697885">Feladatkezelő - Google Chrome</translation>
 <translation id="7164397146364144019">Az esetleges biztonsági események adatainak automatikus jelentésével segítséget nyújthat a Google-nak a Chrome használatának biztonságosabbá és egyszerűbbé tételéhez.</translation>
@@ -225,15 +220,12 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="7459554271817304652">A szinkronizálás beállításával személyre szabott beállításait az interneten tárolhatja, így azok bármelyik számítógépen elérhetők a Google Chrome böngészőből.</translation>
 <translation id="7473136999113284234">A Chrome automatikusan frissít, így Ön mindig a legújabb verzióval rendelkezik.</translation>
 <translation id="7486227612705979895">A Chrome hozzáfér Drive-jához, hogy javaslatokat nyújthasson a címsávon.</translation>
-<translation id="748945194546522577">Ez a fájl veszélyes, ezért a Chrome letiltotta. Az Ön biztonságáról a Speciális védelem gondoskodik.</translation>
 <translation id="7531671357096394523">A Chrome összes példányát be kell zárnia.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">A Chrome OS megjelenítése ezen a nyelven</translation>
-<translation id="7561940363513215021">{0,plural, =1{A Chrome 1 percen belül újraindul}other{A Chrome # percen belül újraindul}}</translation>
 <translation id="7589360514048265910">Mivel a jelenlegi Mac OS X 10.9 rendszer támogatása megszűnik, ez a számítógép a továbbiakban nem kap Google Chrome-frissítéseket.</translation>
 <translation id="7592736734348559088">A Google Chrome nem tudta szinkronizálni az adatokat, mert a fiók bejelentkezési adatai elavultak.</translation>
 <translation id="7626032353295482388">A Chrome üdvözli Önt!</translation>
-<translation id="7636297873481318396">Ez a fájl veszélyes, ezért a Chrome letiltotta. Az Ön biztonságáról a Speciális védelem gondoskodik.</translation>
 <translation id="7641148173327520642">Rendszergazdája úgy állította be a Google Chrome-ot, hogy a(z) <ph name="ALTERNATIVE_BROWSER_NAME" /> böngészőt nyissa meg a(z) <ph name="TARGET_URL_HOSTNAME" /> eléréséhez.</translation>
 <translation id="7651907282515937834">Chrome Enterprise-embléma</translation>
 <translation id="7747138024166251722">A telepítőnek nem sikerült létrehoznia az ideiglenes könyvtárat. Kérjük ellenőrizze, hogy van-e elegendő hely a lemezen, és rendelkezik-e engedéllyel a szoftvertelepítésre.</translation>
@@ -254,18 +246,14 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="8013993649590906847">Ha valamelyik kép nem rendelkezik hasznos leírással, akkor a Chrome igyekszik leírást adni róla. A Google automatikusan megkapja a leírások létrehozásához szükséges képeket.</translation>
 <translation id="8030318113982266900">Eszköz frissítése a(z) <ph name="CHANNEL_NAME" /> csatornára...</translation>
 <translation id="8032142183999901390">Fiókjának eltávolítása után a Chrome-ból előfordulhat, hogy újra kell töltenie a megnyitott lapokat ahhoz, hogy a változások életbe lépjenek.</translation>
-<translation id="8077352834923175128">A rendszergazda arra kéri, hogy indítsa újra a Chrome OS-t a frissítés telepítése miatt</translation>
 <translation id="8129812357326543296">A &amp;Google Chrome névjegye</translation>
 <translation id="8179874765710681175">Telepítse a Chrome-ot telefonjára. SMS-t küldünk majd a telefonra.</translation>
-<translation id="8183957050892517584">A Chrome biztonságosan tárolja a személyes adatait, így nem kell újra begépelnie őket.</translation>
-<translation id="8226081633851087288">{0,plural, =0{A Chrome OS most újraindul}=1{A Chrome OS 1 másodpercen belül újraindul}other{A Chrome OS # másodpercen belül újraindul}}</translation>
 <translation id="825412236959742607">Ez az oldal túl sok memóriát használ, ezért a Chrome eltávolított egyes tartalmakat.</translation>
 <translation id="8255190535488645436">A Google Chrome használja a kamerát és a mikrofont.</translation>
 <translation id="8286862437124483331">A Google Chrome megkísérli megjeleníteni a jelszavakat. Ennek engedélyezéséhez írja be Windows-jelszavát.</translation>
 <translation id="8290100596633877290">Hmm. A Google Chrome összeomlott. Újraindítja most?</translation>
 <translation id="8342675569599923794">Ez a fájl veszélyes, ezért a Chrome letiltotta.</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. Minden jog fenntartva.</translation>
-<translation id="8380166467911888159">A nyelvtani hibák javítása érdekében a Chrome elküldi a szövegmezőkbe gépelt szöveget a Google-nak</translation>
 <translation id="840084489713044809">A Google Chrome exportálni szeretné a jelszavakat.</translation>
 <translation id="8406086379114794905">Segítsen a Chrome tökéletesítésében</translation>
 <translation id="8432724323949790809">Indítsa újra a Google Chrome-ot most</translation>
@@ -279,22 +267,21 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="8568392309447938879">Be kell jelentkeznie a Chrome-ba az alkalmazások használatához. Ez lehetővé teszi a Chrome számára, hogy szinkronizálja alkalmazásait, könyvjelzőit, előzményeit, jelszavait és egyéb beállításait a különböző eszközök között.</translation>
 <translation id="8606668294522778825">Előfordulhat, hogy a Google Chrome internetes szolgáltatásokat használ böngészési élménye javítására. Lehetősége van e szolgáltatások letiltására. <ph name="BEGIN_LINK" />További információ<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">A Google Chrome nem válaszol. Újraindítja most?</translation>
+<translation id="8625237574518804553">{0,plural, =1{A Chrome 1 percen belül újraindul}other{A Chrome # percen belül újraindul}}</translation>
 <translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> eszköze naprakész.</translation>
 <translation id="8669527147644353129">Google Chrome segéd</translation>
 <translation id="8679801911857917785">Továbbá azt is szabályozza, hogy melyik oldal jelenik meg a Chrome indításakor.</translation>
 <translation id="870251953148363156">A &amp;Google Chrome frissítése</translation>
-<translation id="8704255848199359374">A szolgáltatás ugyanazt a helyesírás-ellenőrzést használja, mint a Google Keresés. A rendszer elküldi a böngészőben begépelt szövegeket a Google-nak. A beállítások között ezt bármikor módosíthatja.</translation>
 <translation id="873133009373065397">A Google Chrome problémába ütközött az alapértelmezett böngésző megállapításakor vagy beállításakor</translation>
 <translation id="8736674169840206667">A rendszergazda előírta, hogy újra kell indítania a Chrome-ot egy frissítés alkalmazása miatt</translation>
 <translation id="8788264404293392165">A Chrome OS kezelőfelülete ezen a nyelven jelenik meg.</translation>
-<translation id="8791470158600044404">{0,plural, =1{A Chrome OS 1 percen belül újraindul}other{A Chrome OS # percen belül újraindul}}</translation>
 <translation id="8823341990149967727">A Chrome elavult</translation>
 <translation id="884296878221830158">Továbbá azt is szabályozza, hogy melyik oldal jelenik meg a Chrome indításakor vagy a Kezdőlap gombra történő kattintáskor.</translation>
 <translation id="8862326446509486874">Nincsenek meg a megfelelő jogai a rendszerszintű telepítéshez. Indítsa újra a telepítőt rendszergazdaként.</translation>
 <translation id="8914504000324227558">A Chrome újraindítása</translation>
+<translation id="8999208279178790196">{0,plural, =0{Rendelkezésre áll egy Chrome-frissítés}=1{Rendelkezésre áll egy Chrome-frissítés}other{# napja rendelkezésre áll egy Chrome-frissítés}}</translation>
 <translation id="9026991721384951619">A Chrome OS nem tudta szinkronizálni az adatokat, mert a fiók bejelentkezési adatai elavultak.</translation>
 <translation id="9067395829937117663">A Google Chrome futtatásához Windows 7 vagy újabb verzió szükséges.</translation>
-<translation id="909149346112452267">{0,plural, =1{A Chrome OS 1 órán belül újraindul}other{A Chrome OS # órán belül újraindul}}</translation>
 <translation id="911206726377975832">Törli a böngészési adatait is?</translation>
 <translation id="9138603949443464873">A módosítások alkalmazásához indítsa újra a Chrome-ot</translation>
 <translation id="919706545465235479">Frissítse a Chrome-ot a szinkronizálás megkezdéséhez</translation>

@@ -20,6 +20,13 @@ namespace remoting {
 
 namespace {
 
+constexpr remoting::ftl::ChromotingCapability::Feature
+    kChromotingCapabilities[] = {
+        remoting::ftl::ChromotingCapability_Feature_SERIALIZED_XMPP_SIGNALING};
+constexpr size_t kChromotingCapabilityCount =
+    sizeof(kChromotingCapabilities) /
+    sizeof(ftl::ChromotingCapability::Feature);
+
 constexpr remoting::ftl::FtlCapability::Feature kFtlCapabilities[] = {
     remoting::ftl::FtlCapability_Feature_RECEIVE_CALLS_FROM_GAIA,
     remoting::ftl::FtlCapability_Feature_GAIA_REACHABLE};
@@ -43,7 +50,7 @@ FtlRegistrationManager::FtlRegistrationManager(
 FtlRegistrationManager::~FtlRegistrationManager() = default;
 
 void FtlRegistrationManager::SignInGaia(DoneCallback on_done) {
-  VLOG(0) << "SignInGaia will be called with backoff: "
+  VLOG(1) << "SignInGaia will be called with backoff: "
           << sign_in_backoff_.GetTimeUntilRelease();
   sign_in_backoff_timer_.Start(
       FROM_HERE, sign_in_backoff_.GetTimeUntilRelease(),
@@ -81,6 +88,10 @@ void FtlRegistrationManager::DoSignInGaia(DoneCallback on_done) {
   *request.mutable_register_data()->mutable_device_id() =
       device_id_provider_->GetDeviceId();
 
+  for (size_t i = 0; i < kChromotingCapabilityCount; i++) {
+    request.mutable_register_data()->add_caps(kChromotingCapabilities[i]);
+  }
+
   for (size_t i = 0; i < kFtlCapabilityCount; i++) {
     request.mutable_register_data()->add_caps(kFtlCapabilities[i]);
   }
@@ -88,9 +99,10 @@ void FtlRegistrationManager::DoSignInGaia(DoneCallback on_done) {
   auto grpc_request = CreateGrpcAsyncUnaryRequest(
       base::BindOnce(&Registration::Stub::AsyncSignInGaia,
                      base::Unretained(registration_stub_.get())),
-      FtlGrpcContext::CreateClientContext(), request,
+      request,
       base::BindOnce(&FtlRegistrationManager::OnSignInGaiaResponse,
                      base::Unretained(this), std::move(on_done)));
+  FtlGrpcContext::FillClientContext(grpc_request->context());
   executor_->ExecuteRpc(std::move(grpc_request));
 }
 
@@ -119,7 +131,7 @@ void FtlRegistrationManager::OnSignInGaiaResponse(
 
   // TODO(yuweih): Consider caching auth token.
   ftl_auth_token_ = response.auth_token().payload();
-  VLOG(0) << "Auth token set on FtlClient";
+  VLOG(1) << "Auth token set on FtlClient";
   base::TimeDelta refresh_delay =
       base::TimeDelta::FromMicroseconds(response.auth_token().expires_in());
   if (refresh_delay > kRefreshBufferTime) {
@@ -132,7 +144,7 @@ void FtlRegistrationManager::OnSignInGaiaResponse(
       base::BindOnce(&FtlRegistrationManager::SignInGaia,
                      base::Unretained(this),
                      base::DoNothing::Once<const grpc::Status&>()));
-  VLOG(0) << "Scheduled auth token refresh in: " << refresh_delay;
+  VLOG(1) << "Scheduled auth token refresh in: " << refresh_delay;
   std::move(on_done).Run(status);
 }
 

@@ -84,16 +84,15 @@ int FtpCtrlResponseBuffer::ConsumeData(const char* data, int data_length) {
 
 namespace {
 
-std::unique_ptr<base::Value> NetLogFtpCtrlResponseCallback(
-    const FtpCtrlResponse* response,
-    NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::ListValue> lines(new base::ListValue());
+base::Value NetLogFtpCtrlResponseCallback(const FtpCtrlResponse* response,
+                                          NetLogCaptureMode capture_mode) {
+  base::ListValue lines;
   for (const auto& line : response->lines)
-    lines->GetList().push_back(NetLogStringValue(line));
+    lines.GetList().push_back(NetLogStringValue(line));
 
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetInteger("status_code", response->status_code);
-  dict->Set("lines", std::move(lines));
+  base::DictionaryValue dict;
+  dict.SetInteger("status_code", response->status_code);
+  dict.SetKey("lines", std::move(lines));
   return std::move(dict);
 }
 

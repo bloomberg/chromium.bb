@@ -1020,26 +1020,26 @@ TEST_P(PaintAndRasterInvalidationTest, ScrollingInvalidatesStickyOffset) {
 
   const auto* sticky = GetLayoutObjectByElementId("sticky");
   EXPECT_TRUE(sticky->NeedsPaintPropertyUpdate());
-  EXPECT_EQ(LayoutPoint(0, 0), sticky->FirstFragment().PaintOffset());
+  EXPECT_EQ(PhysicalOffset(), sticky->FirstFragment().PaintOffset());
   EXPECT_EQ(FloatSize(0, 50), sticky->FirstFragment()
                                   .PaintProperties()
                                   ->StickyTranslation()
                                   ->Translation2D());
   const auto* inner = GetLayoutObjectByElementId("inner");
-  EXPECT_EQ(LayoutPoint(0, 0), inner->FirstFragment().PaintOffset());
+  EXPECT_EQ(PhysicalOffset(), inner->FirstFragment().PaintOffset());
 
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_FALSE(sticky->NeedsPaintPropertyUpdate());
-  EXPECT_EQ(LayoutPoint(0, 0), sticky->FirstFragment().PaintOffset());
+  EXPECT_EQ(PhysicalOffset(), sticky->FirstFragment().PaintOffset());
   EXPECT_EQ(FloatSize(0, 150), sticky->FirstFragment()
                                    .PaintProperties()
                                    ->StickyTranslation()
                                    ->Translation2D());
-  EXPECT_EQ(LayoutPoint(0, 0), inner->FirstFragment().PaintOffset());
+  EXPECT_EQ(PhysicalOffset(), inner->FirstFragment().PaintOffset());
 }
 
-class PaintInvalidatorTestClient : public EmptyChromeClient {
+class PaintInvalidatorTestClient : public RenderingTestChromeClient {
  public:
   void InvalidateRect(const IntRect&) override {
     invalidation_recorded_ = true;

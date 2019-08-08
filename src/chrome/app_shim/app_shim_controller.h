@@ -9,7 +9,6 @@
 
 #include "base/files/file_path.h"
 #include "base/mac/scoped_nsobject.h"
-#include "chrome/common/mac/app_mode_common.h"
 #include "chrome/common/mac/app_shim.mojom.h"
 #include "chrome/common/mac/app_shim_param_traits.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -18,13 +17,24 @@
 
 @class AppShimDelegate;
 
-// The AppShimController is responsible for communication with the main Chrome
-// process, and generally controls the lifetime of the app shim process.
+// The AppShimController is responsible for launching and maintaining the
+// connection with the main Chrome process, and generally controls the lifetime
+// of the app shim process.
 class AppShimController : public chrome::mojom::AppShim {
  public:
-  explicit AppShimController(
-      const app_mode::ChromeAppModeInfo* app_mode_info,
-      base::scoped_nsobject<NSRunningApplication> chrome_running_app);
+  struct Params {
+    Params();
+    Params(const Params& other);
+    ~Params();
+    // The full path of the user data dir.
+    base::FilePath user_data_dir;
+    // The relative path of the profile.
+    base::FilePath profile_dir;
+    std::string app_mode_id;
+    base::string16 app_mode_name;
+  };
+
+  explicit AppShimController(const Params& params);
   ~AppShimController() override;
 
   chrome::mojom::AppShimHost* host() const { return host_.get(); }
@@ -40,6 +50,7 @@ class AppShimController : public chrome::mojom::AppShim {
 
   // Create a channel from the Mojo |endpoint| and send a LaunchApp message.
   void CreateChannelAndSendLaunchApp(mojo::PlatformChannelEndpoint endpoint);
+
   // Builds main menu bar items.
   void SetUpMenu();
   void ChannelError(uint32_t custom_reason, const std::string& description);
@@ -50,9 +61,7 @@ class AppShimController : public chrome::mojom::AppShim {
 
   // chrome::mojom::AppShim implementation.
   void CreateViewsBridgeFactory(
-      views_bridge_mac::mojom::BridgeFactoryAssociatedRequest request) override;
-  void CreateContentNSViewBridgeFactory(
-      content::mojom::NSViewBridgeFactoryAssociatedRequest request) override;
+      remote_cocoa::mojom::BridgeFactoryAssociatedRequest request) override;
   void CreateCommandDispatcherForWidget(uint64_t widget_id) override;
   void Hide() override;
   void SetBadgeLabel(const std::string& badge_label) override;
@@ -70,11 +79,15 @@ class AppShimController : public chrome::mojom::AppShim {
   // Connects to Chrome and sends a LaunchApp message.
   void InitBootstrapPipe();
 
+  // Find a running instance of Chrome and set |chrome_running_app_| to it. If
+  // none exists, launch Chrome, and set |chrome_running_app_|.
+  void FindOrLaunchChrome();
+
   // Check to see if Chrome's AppShimHostManager has been initialized. If it
   // has, then connect.
   void PollForChromeReady(const base::TimeDelta& time_until_timeout);
 
-  const app_mode::ChromeAppModeInfo* const app_mode_info_;
+  const Params params_;
   base::scoped_nsobject<NSRunningApplication> chrome_running_app_;
 
   mojo::IsolatedConnection bootstrap_mojo_connection_;

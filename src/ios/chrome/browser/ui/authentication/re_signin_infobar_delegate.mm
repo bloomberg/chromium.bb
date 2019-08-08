@@ -18,10 +18,10 @@
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #include "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
-#include "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/web/public/web_state/web_state.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -30,11 +30,11 @@
 
 // static
 bool ReSignInInfoBarDelegate::Create(ios::ChromeBrowserState* browser_state,
-                                     Tab* tab,
+                                     web::WebState* web_state,
                                      id<SigninPresenter> presenter) {
-  DCHECK(tab.webState);
+  DCHECK(web_state);
   infobars::InfoBarManager* infobar_manager =
-      InfoBarManagerImpl::FromWebState(tab.webState);
+      InfoBarManagerImpl::FromWebState(web_state);
   DCHECK(infobar_manager);
 
   std::unique_ptr<infobars::InfoBar> infobar =
@@ -73,8 +73,8 @@ ReSignInInfoBarDelegate::CreateInfoBarDelegate(
   if (!authService->ShouldPromptForSignIn())
     return nullptr;
   // Returns null if user has already signed in via some other path.
-  if ([authService->GetAuthenticatedUserEmail() length]) {
-    authService->SetPromptForSignIn(false);
+  if (authService->IsAuthenticated()) {
+    authService->ResetPromptForSignIn();
     return nullptr;
   }
   signin_metrics::RecordSigninImpressionUserActionForAccessPoint(
@@ -132,12 +132,12 @@ bool ReSignInInfoBarDelegate::Accept() {
 
   // Stop displaying the infobar once user interacted with it.
   AuthenticationServiceFactory::GetForBrowserState(browser_state_)
-      ->SetPromptForSignIn(false);
+      ->ResetPromptForSignIn();
   return true;
 }
 
 void ReSignInInfoBarDelegate::InfoBarDismissed() {
   // Stop displaying the infobar once user interacted with it.
   AuthenticationServiceFactory::GetForBrowserState(browser_state_)
-      ->SetPromptForSignIn(false);
+      ->ResetPromptForSignIn();
 }

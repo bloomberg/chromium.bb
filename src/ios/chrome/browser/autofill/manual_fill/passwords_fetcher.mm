@@ -87,7 +87,7 @@ class PasswordStoreObserverBridge
       _passwordStore->GetAutofillableLogins(_savedPasswordsConsumer.get());
     } else {
       password_manager::PasswordStore::FormDigest digest = {
-          autofill::PasswordForm::SCHEME_HTML, std::string(), URL};
+          autofill::PasswordForm::Scheme::kHtml, std::string(), URL};
       digest.signon_realm = URL.spec();
       _passwordStore->GetLogins(digest, _savedPasswordsConsumer.get());
     }

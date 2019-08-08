@@ -575,8 +575,12 @@ Status ExecuteExecuteScript(Session* session,
     if (script.find("//") != std::string::npos)
       script = script + "\n";
 
-    return web_view->CallFunction(session->GetCurrentFrameId(),
-                                  "function(){" + script + "}", *args, value);
+    Status status = web_view->CallUserSyncFunction(
+        session->GetCurrentFrameId(), "function(){" + script + "}", *args,
+        session->script_timeout, value);
+    if (status.code() == kTimeout)
+      return Status(kScriptTimeout);
+    return status;
   }
 }
 
@@ -592,9 +596,16 @@ Status ExecuteExecuteAsyncScript(Session* session,
   if (!params.GetList("args", &args))
     return Status(kInvalidArgument, "'args' must be a list");
 
-  return web_view->CallUserAsyncFunction(
+  // Need to support line oriented comment
+  if (script.find("//") != std::string::npos)
+    script = script + "\n";
+
+  Status status = web_view->CallUserAsyncFunction(
       session->GetCurrentFrameId(), "function(){" + script + "}", *args,
       session->script_timeout, value);
+  if (status.code() == kTimeout)
+    return Status(kScriptTimeout);
+  return status;
 }
 
 Status ExecuteSwitchToFrame(Session* session,
@@ -1043,8 +1054,10 @@ Status ProcessInputActionSequence(
     DCHECK(source);
 
     std::string source_id;
+    std::string source_type;
     source->GetString("id", &source_id);
-    if (source_id == id) {
+    source->GetString("type", &source_type);
+    if (source_id == id && source_type == type) {
       found = true;
       if (type == "pointer") {
         std::string source_pointer_type;
@@ -1054,12 +1067,6 @@ Status ProcessInputActionSequence(
                         "'pointerType' must be a string that matches sources "
                         "pointer type");
         }
-      }
-      std::string source_type;
-      source->GetString("type", &source_type);
-      if (source_type != type) {
-        return Status(kInvalidArgument,
-                      "input state with same id has a different type");
       }
       break;
     }
@@ -1089,11 +1096,11 @@ Status ProcessInputActionSequence(
       // enum KeyModifierMask.
       tmp_state.SetInteger("modifiers", 0);
     } else if (type == "pointer") {
-      std::unique_ptr<base::ListValue> pressed(new base::ListValue);
       int x = 0;
       int y = 0;
 
-      tmp_state.SetList("pressed", std::move(pressed));
+      // "pressed" is stored as a bitmask of pointer buttons.
+      tmp_state.SetInteger("pressed", 0);
       tmp_state.SetString("subtype", pointer_type);
 
       tmp_state.SetInteger("x", x);
@@ -1348,8 +1355,8 @@ Status ExecutePerformActions(Session* session,
       std::vector<TouchEvent> touch_events;
       double x = 0;
       double y = 0;
-      bool has_touch_start = false;
-      int buttons = 0;
+      bool has_touch_start = input_state->FindKey("pressed")->GetInt() != 0;
+      int buttons = input_state->FindKey("pressed")->GetInt();
       std::string button_type;
       OriginType origin_type = kPointer;
       std::string element_id;
@@ -1479,8 +1486,10 @@ Status ExecutePerformActions(Session* session,
             event.y += mouse_locations[j].y();
           } else if (!event.element_id.empty()) {
             int center_x = 0, center_y = 0;
-            ElementInViewCenter(session, web_view, event.element_id, &center_x,
-                                &center_y);
+            Status status = ElementInViewCenter(
+                session, web_view, event.element_id, &center_x, &center_y);
+            if (status.IsError())
+              return status;
             event.x += center_x;
             event.y += center_y;
           }
@@ -1507,6 +1516,17 @@ Status ExecutePerformActions(Session* session,
           event.click_count = session->click_count;
         }
         dispatch_mouse_events.push_back(event);
+        if (event.type == kPressedMouseEventType) {
+          session->input_cancel_list.emplace_back(mouse_input_states[j], &event,
+                                                  nullptr, nullptr);
+          mouse_input_states[j]->SetInteger(
+              "pressed", mouse_input_states[j]->FindKey("pressed")->GetInt() |
+                             (1 << event.button));
+        } else if (event.type == kReleasedMouseEventType) {
+          mouse_input_states[j]->SetInteger(
+              "pressed", mouse_input_states[j]->FindKey("pressed")->GetInt() &
+                             ~(1 << event.button));
+        }
       }
     }
     if (dispatch_mouse_events.size() > 0) {
@@ -1527,8 +1547,10 @@ Status ExecutePerformActions(Session* session,
             event.y += touch_locations[j].y();
           } else if (!event.element_id.empty()) {
             int center_x = 0, center_y = 0;
-            ElementInViewCenter(session, web_view, event.element_id, &center_x,
-                                &center_y);
+            Status status = ElementInViewCenter(
+                session, web_view, event.element_id, &center_x, &center_y);
+            if (status.IsError())
+              return status;
             event.x += center_x;
             event.y += center_y;
           }
@@ -1542,6 +1564,13 @@ Status ExecutePerformActions(Session* session,
         }
         if (event.dispatch)
           dispatch_touch_events.push_back(event);
+        if (event.type == kTouchStart) {
+          session->input_cancel_list.emplace_back(touch_input_states[j],
+                                                  nullptr, &event, nullptr);
+          touch_input_states[j]->SetInteger("pressed", 1);
+        } else if (event.type == kTouchEnd) {
+          touch_input_states[j]->SetInteger("pressed", 0);
+        }
       }
     }
     if (dispatch_touch_events.size() > 0) {
@@ -1573,8 +1602,6 @@ Status ExecuteReleaseActions(Session* session,
                              const base::DictionaryValue& params,
                              std::unique_ptr<base::Value>* value,
                              Timeout* timeout) {
-  // TODO(https://crbug.com/chromedriver/1897): Process "input cancel list" for
-  // mouse and touch events.
   for (auto it = session->input_cancel_list.rbegin();
        it != session->input_cancel_list.rend(); ++it) {
     if (it->key_event) {
@@ -1584,6 +1611,20 @@ Status ExecuteReleaseActions(Session* session,
         continue;
       web_view->DispatchKeyEvents({*it->key_event});
       pressed->Remove(it->key_event->key, nullptr);
+    } else if (it->mouse_event) {
+      int pressed = it->input_state->FindKey("pressed")->GetInt();
+      int button_mask = 1 << it->mouse_event->button;
+      if ((pressed & button_mask) == 0)
+        continue;
+      web_view->DispatchMouseEvents({*it->mouse_event},
+                                    session->GetCurrentFrameId());
+      it->input_state->SetInteger("pressed", pressed & ~button_mask);
+    } else if (it->touch_event) {
+      int pressed = it->input_state->FindKey("pressed")->GetInt();
+      if (pressed == 0)
+        continue;
+      web_view->DispatchTouchEvents({*it->touch_event});
+      it->input_state->SetInteger("pressed", 0);
     }
   }
 

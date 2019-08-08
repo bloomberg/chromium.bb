@@ -60,6 +60,10 @@ class TestableTtsController : public content::TtsController {
   void SetTtsPlatform(content::TtsPlatform* tts_platform) override {}
   int QueueSize() override { return 0; }
 
+  void StripSSML(
+      const std::string& utterance,
+      base::OnceCallback<void(const std::string&)> callback) override {}
+
   int last_utterance_id_;
   content::TtsEventType last_event_type_;
   int last_char_index_;

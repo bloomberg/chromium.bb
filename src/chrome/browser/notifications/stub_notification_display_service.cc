@@ -129,22 +129,22 @@ void StubNotificationDisplayService::RemoveNotification(
   auto iter = FindNotification(notification_type, notification_id);
   if (iter == notifications_.end())
     return;
+  NotificationData data = std::move(*iter);
+  notifications_.erase(iter);
 
   if (!silent) {
     NotificationHandler* handler = GetNotificationHandler(notification_type);
     if (notification_type == NotificationHandler::Type::TRANSIENT) {
       DCHECK(!handler);
-      if (iter->notification.delegate())
-        iter->notification.delegate()->Close(by_user);
+      if (data.notification.delegate())
+        data.notification.delegate()->Close(by_user);
     } else {
       base::RunLoop run_loop;
-      handler->OnClose(profile_, iter->notification.origin_url(),
+      handler->OnClose(profile_, data.notification.origin_url(),
                        notification_id, by_user, run_loop.QuitClosure());
       run_loop.Run();
     }
   }
-
-  notifications_.erase(iter);
 }
 
 void StubNotificationDisplayService::RemoveAllNotifications(
@@ -155,16 +155,17 @@ void StubNotificationDisplayService::RemoveAllNotifications(
             notification_type == NotificationHandler::Type::TRANSIENT);
   for (auto iter = notifications_.begin(); iter != notifications_.end();) {
     if (iter->type == notification_type) {
+      NotificationData data = std::move(*iter);
+      iter = notifications_.erase(iter);
       if (handler) {
         base::RunLoop run_loop;
-        handler->OnClose(profile_, iter->notification.origin_url(),
-                         iter->notification.id(), by_user,
+        handler->OnClose(profile_, data.notification.origin_url(),
+                         data.notification.id(), by_user,
                          run_loop.QuitClosure());
         run_loop.Run();
-      } else if (iter->notification.delegate()) {
-        iter->notification.delegate()->Close(by_user);
+      } else if (data.notification.delegate()) {
+        data.notification.delegate()->Close(by_user);
       }
-      iter = notifications_.erase(iter);
     } else {
       iter++;
     }

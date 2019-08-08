@@ -4,8 +4,6 @@
 
 #include "ui/views/controls/button/button.h"
 
-#include <utility>
-
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/class_property.h"
@@ -19,6 +17,7 @@
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/controls/button/button_controller.h"
 #include "ui/views/controls/button/button_controller_delegate.h"
+#include "ui/views/controls/button/button_observer.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
@@ -213,24 +212,20 @@ void Button::SetHighlighted(bool bubble_visible) {
   AnimateInkDrop(bubble_visible ? views::InkDropState::ACTIVATED
                                 : views::InkDropState::DEACTIVATED,
                  nullptr);
+  for (ButtonObserver& observer : button_observers_)
+    observer.OnHighlightChanged(this, bubble_visible);
+}
+
+void Button::AddButtonObserver(ButtonObserver* observer) {
+  button_observers_.AddObserver(observer);
+}
+
+void Button::RemoveButtonObserver(ButtonObserver* observer) {
+  button_observers_.RemoveObserver(observer);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Button, View overrides:
-
-void Button::OnEnabledChanged() {
-  if (enabled() ? (state_ != STATE_DISABLED) : (state_ == STATE_DISABLED))
-    return;
-
-  if (enabled()) {
-    bool should_enter_hover_state = ShouldEnterHoveredState();
-    SetState(should_enter_hover_state ? STATE_HOVERED : STATE_NORMAL);
-    GetInkDrop()->SetHovered(should_enter_hover_state);
-  } else {
-    SetState(STATE_DISABLED);
-    GetInkDrop()->SetHovered(false);
-  }
-}
 
 const char* Button::GetClassName() const {
   return kViewClassName;
@@ -297,26 +292,8 @@ bool Button::OnKeyReleased(const ui::KeyEvent& event) {
   return button_controller_->OnKeyReleased(event);
 }
 
-// TODO(cyan): Move the implementation into ButtonController.
 void Button::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() == ui::ET_GESTURE_TAP && IsTriggerableEvent(*event)) {
-    // Set the button state to hot and start the animation fully faded in. The
-    // GESTURE_END event issued immediately after will set the state to
-    // STATE_NORMAL beginning the fade out animation. See
-    // http://crbug.com/131184.
-    SetState(STATE_HOVERED);
-    hover_animation_.Reset(1.0);
-    NotifyClick(*event);
-    event->SetHandled();
-  } else if (event->type() == ui::ET_GESTURE_TAP_DOWN &&
-             ShouldEnterPushedState(*event)) {
-    SetState(STATE_PRESSED);
-    RequestFocusFromEvent();
-    event->SetHandled();
-  } else if (event->type() == ui::ET_GESTURE_TAP_CANCEL ||
-             event->type() == ui::ET_GESTURE_END) {
-    SetState(STATE_NORMAL);
-  }
+  button_controller_->OnGestureEvent(event);
 }
 
 bool Button::AcceleratorPressed(const ui::Accelerator& accelerator) {
@@ -369,7 +346,7 @@ void Button::OnPaint(gfx::Canvas* canvas) {
 void Button::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kButton;
   node_data->SetName(GetAccessibleName());
-  if (!enabled())
+  if (!GetEnabled())
     node_data->SetRestriction(ax::mojom::Restriction::kDisabled);
 
   switch (state_) {
@@ -387,7 +364,7 @@ void Button::GetAccessibleNodeData(ui::AXNodeData* node_data) {
       // No additional accessibility node_data set for this button node_data.
       break;
   }
-  if (enabled())
+  if (GetEnabled())
     node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kPress);
 
   button_controller_->UpdateAccessibleNodeData(node_data);
@@ -456,45 +433,52 @@ void Button::AnimationProgressed(const gfx::Animation* animation) {
 ////////////////////////////////////////////////////////////////////////////////
 // ButtonControllerDelegate, protected:
 
-class Button::DefaultButtonControllerDelegate
-    : public ButtonControllerDelegate {
- public:
-  using ButtonControllerDelegate::ButtonControllerDelegate;
-  ~DefaultButtonControllerDelegate() override = default;
+Button::DefaultButtonControllerDelegate::DefaultButtonControllerDelegate(
+    Button* button)
+    : ButtonControllerDelegate(button) {}
 
-  // views::ButtonControllerDelegate:
-  void RequestFocusFromEvent() override { button()->RequestFocusFromEvent(); }
-  void NotifyClick(const ui::Event& event) override {
-    button()->NotifyClick(event);
-  }
-  void OnClickCanceled(const ui::Event& event) override {
-    button()->OnClickCanceled(event);
-  }
-  bool IsTriggerableEvent(const ui::Event& event) override {
-    return button()->IsTriggerableEvent(event);
-  }
-  bool ShouldEnterPushedState(const ui::Event& event) override {
-    return button()->ShouldEnterPushedState(event);
-  }
-  bool ShouldEnterHoveredState() override {
-    return button()->ShouldEnterHoveredState();
-  }
-  InkDrop* GetInkDrop() override { return button()->GetInkDrop(); }
-  int GetDragOperations(const gfx::Point& press_pt) override {
-    return button()->GetDragOperations(press_pt);
-  }
-  bool InDrag() override { return button()->InDrag(); }
+Button::DefaultButtonControllerDelegate::~DefaultButtonControllerDelegate() =
+    default;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(DefaultButtonControllerDelegate);
-};
+void Button::DefaultButtonControllerDelegate::RequestFocusFromEvent() {
+  button()->RequestFocusFromEvent();
+}
+void Button::DefaultButtonControllerDelegate::NotifyClick(
+    const ui::Event& event) {
+  button()->NotifyClick(event);
+}
+void Button::DefaultButtonControllerDelegate::OnClickCanceled(
+    const ui::Event& event) {
+  button()->OnClickCanceled(event);
+}
+bool Button::DefaultButtonControllerDelegate::IsTriggerableEvent(
+    const ui::Event& event) {
+  return button()->IsTriggerableEvent(event);
+}
+bool Button::DefaultButtonControllerDelegate::ShouldEnterPushedState(
+    const ui::Event& event) {
+  return button()->ShouldEnterPushedState(event);
+}
+bool Button::DefaultButtonControllerDelegate::ShouldEnterHoveredState() {
+  return button()->ShouldEnterHoveredState();
+}
+InkDrop* Button::DefaultButtonControllerDelegate::GetInkDrop() {
+  return button()->GetInkDrop();
+}
+int Button::DefaultButtonControllerDelegate::GetDragOperations(
+    const gfx::Point& press_pt) {
+  return button()->GetDragOperations(press_pt);
+}
+bool Button::DefaultButtonControllerDelegate::InDrag() {
+  return button()->InDrag();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Button, protected:
 
 std::unique_ptr<ButtonControllerDelegate>
 Button::CreateButtonControllerDelegate() {
-  return std::make_unique<DefaultButtonControllerDelegate>(this);
+  return std::make_unique<Button::DefaultButtonControllerDelegate>(this);
 }
 
 Button::Button(ButtonListener* listener)
@@ -550,6 +534,8 @@ void Button::OnSetTooltipText(const base::string16& tooltip_text) {}
 
 void Button::StateChanged(ButtonState old_state) {
   button_controller_->OnStateChanged(old_state);
+  for (ButtonObserver& observer : button_observers_)
+    observer.OnStateChanged(this, old_state);
 }
 
 bool Button::IsTriggerableEvent(const ui::Event& event) {
@@ -572,7 +558,7 @@ bool Button::ShouldEnterPushedState(const ui::Event& event) {
 void Button::PaintButtonContents(gfx::Canvas* canvas) {}
 
 bool Button::ShouldEnterHoveredState() {
-  if (!visible())
+  if (!GetVisible())
     return false;
 
   bool check_mouse_position = true;
@@ -593,6 +579,20 @@ bool Button::ShouldEnterHoveredState() {
 #endif
 
   return check_mouse_position && IsMouseHovered();
+}
+
+void Button::OnEnabledChanged() {
+  if (GetEnabled() ? (state_ != STATE_DISABLED) : (state_ == STATE_DISABLED))
+    return;
+
+  if (GetEnabled()) {
+    bool should_enter_hover_state = ShouldEnterHoveredState();
+    SetState(should_enter_hover_state ? STATE_HOVERED : STATE_NORMAL);
+    GetInkDrop()->SetHovered(should_enter_hover_state);
+  } else {
+    SetState(STATE_DISABLED);
+    GetInkDrop()->SetHovered(false);
+  }
 }
 
 void Button::WidgetActivationChanged(Widget* widget, bool active) {

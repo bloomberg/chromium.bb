@@ -6,7 +6,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#import "content/browser/web_contents/web_contents_view_cocoa.h"
+#import "content/app_shim_remote_cocoa/web_contents_view_cocoa.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"

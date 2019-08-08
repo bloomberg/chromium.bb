@@ -84,6 +84,9 @@ class HostContextFactoryPrivate : public ContextFactoryPrivate {
                                const viz::BeginFrameArgs& args) override;
   void SetOutputIsSecure(Compositor* compositor, bool secure) override;
   viz::FrameSinkManagerImpl* GetFrameSinkManager() override;
+  void AddVSyncParameterObserver(
+      Compositor* compositor,
+      viz::mojom::VSyncParameterObserverPtr observer) override;
 
  private:
   struct CompositorData {

@@ -179,11 +179,8 @@ class LayoutGrid final : public LayoutBlock {
   GridTrackSizingDirection AutoPlacementMajorAxisDirection() const;
   GridTrackSizingDirection AutoPlacementMinorAxisDirection() const;
 
-  void ComputeTrackSizesForIndefiniteSize(
-      GridTrackSizingAlgorithm&,
-      GridTrackSizingDirection,
-      LayoutUnit* min_intrinsic_size = nullptr,
-      LayoutUnit* max_intrinsic_size = nullptr) const;
+  void ComputeTrackSizesForIndefiniteSize(GridTrackSizingAlgorithm&,
+                                          GridTrackSizingDirection) const;
   void ComputeTrackSizesForDefiniteSize(GridTrackSizingDirection,
                                         LayoutUnit free_space);
 
@@ -238,7 +235,7 @@ class LayoutGrid final : public LayoutBlock {
       GridTrackSizingDirection) const;
 
   void PaintChildren(const PaintInfo&,
-                     const LayoutPoint& paint_offset) const override;
+                     const PhysicalOffset& paint_offset) const override;
 
   LayoutUnit AvailableAlignmentSpaceForChildBeforeStretching(
       LayoutUnit grid_area_breadth_for_child,

@@ -9,15 +9,15 @@
 
 #include <cmath>
 
-namespace blink {
+namespace {
 
 // TODO(bajones): All of the matrix math here is temporary. It will be removed
 // once the VRService has been updated to allow the underlying VR APIs to
 // provide the projection and view matrices directly.
 
 // Build a projection matrix from a field of view and near/far planes.
-void ProjectionFromFieldOfView(DOMFloat32Array* out_array,
-                               VRFieldOfView* fov,
+void ProjectionFromFieldOfView(blink::DOMFloat32Array* out_array,
+                               blink::VRFieldOfView* fov,
                                float depth_near,
                                float depth_far) {
   float up_tan = tanf(fov->UpDegrees() * M_PI / 180.0);
@@ -48,7 +48,7 @@ void ProjectionFromFieldOfView(DOMFloat32Array* out_array,
 
 // Create a matrix from a rotation and translation.
 void MatrixfromRotationTranslation(
-    DOMFloat32Array* out_array,
+    blink::DOMFloat32Array* out_array,
     const base::Optional<WTF::Vector<float>>& rotation,
     const base::Optional<WTF::Vector<float>>& translation) {
   // Quaternion math
@@ -90,8 +90,8 @@ void MatrixfromRotationTranslation(
 }
 
 // Translate a matrix
-void MatrixTranslate(DOMFloat32Array* out_array,
-                     const DOMFloat32Array* translation) {
+void MatrixTranslate(blink::DOMFloat32Array* out_array,
+                     const blink::DOMFloat32Array* translation) {
   if (!translation)
     return;
 
@@ -106,7 +106,7 @@ void MatrixTranslate(DOMFloat32Array* out_array,
   out[15] = out[3] * x + out[7] * y + out[11] * z + out[15];
 }
 
-bool MatrixInvert(DOMFloat32Array* out_array) {
+bool MatrixInvert(blink::DOMFloat32Array* out_array) {
   float* out = out_array->Data();
   float a00 = out[0];
   float a01 = out[1];
@@ -167,6 +167,18 @@ bool MatrixInvert(DOMFloat32Array* out_array) {
   return true;
 }
 
+blink::DOMFloat32Array* EnsureMatrix(blink::DOMFloat32Array* existing) {
+  if (!existing || existing->length() != 16) {
+    return blink::DOMFloat32Array::Create(16);
+  }
+
+  return existing;
+}
+
+}  // namespace
+
+namespace blink {
+
 VRFrameData::VRFrameData() {
   left_projection_matrix_ = DOMFloat32Array::Create(16);
   left_view_matrix_ = DOMFloat32Array::Create(16);
@@ -191,20 +203,24 @@ bool VRFrameData::Update(const device::mojom::blink::VRPosePtr& pose,
   }
 
   // Build the projection matrices
+  left_projection_matrix_ = EnsureMatrix(left_projection_matrix_);
   ProjectionFromFieldOfView(left_projection_matrix_, fov_left, depth_near,
                             depth_far);
+  right_projection_matrix_ = EnsureMatrix(right_projection_matrix_);
   ProjectionFromFieldOfView(right_projection_matrix_, fov_right, depth_near,
                             depth_far);
 
   // Build the view matrices
+  left_view_matrix_ = EnsureMatrix(left_view_matrix_);
   MatrixfromRotationTranslation(left_view_matrix_, pose->orientation,
                                 pose->position);
+  right_view_matrix_ = EnsureMatrix(right_view_matrix_);
   MatrixfromRotationTranslation(right_view_matrix_, pose->orientation,
                                 pose->position);
 
   if (left_eye && right_eye) {
-    MatrixTranslate(left_view_matrix_, left_eye->offset());
-    MatrixTranslate(right_view_matrix_, right_eye->offset());
+    MatrixTranslate(left_view_matrix_, left_eye->offsetInternal());
+    MatrixTranslate(right_view_matrix_, right_eye->offsetInternal());
   }
 
   if (!MatrixInvert(left_view_matrix_) || !MatrixInvert(right_view_matrix_))

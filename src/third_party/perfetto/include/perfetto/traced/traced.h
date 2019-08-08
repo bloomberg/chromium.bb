@@ -24,6 +24,7 @@ namespace perfetto {
 int ServiceMain(int argc, char** argv);
 int ProbesMain(int argc, char** argv);
 int PerfettoCmdMain(int argc, char** argv);
+int TriggerPerfettoMain(int argc, char** argv);
 
 }  // namespace perfetto
 

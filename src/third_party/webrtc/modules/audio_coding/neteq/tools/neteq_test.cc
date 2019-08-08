@@ -224,8 +224,10 @@ NetEqTest::SimulationStepResult NetEqTest::RunToNextGetAudio() {
             (out_frame.speech_type_ == AudioFrame::SpeechType::kPLCCNG);
         const bool cng = out_frame.speech_type_ == AudioFrame::SpeechType::kCNG;
         const bool voice_concealed =
-            lifetime_stats.voice_concealed_samples >
-            prev_lifetime_stats_.voice_concealed_samples;
+            (lifetime_stats.concealed_samples -
+             lifetime_stats.silent_concealed_samples) >
+            (prev_lifetime_stats_.concealed_samples -
+             prev_lifetime_stats_.silent_concealed_samples);
         *text_log_ << "GetAudio - wallclock: " << std::setw(5) << time_now_ms
                    << ", delta wc: " << std::setw(4)
                    << (input_->NextEventTime().value_or(time_now_ms) -
@@ -250,7 +252,10 @@ NetEqTest::SimulationStepResult NetEqTest::RunToNextGetAudio() {
         }
       }
       prev_lifetime_stats_ = lifetime_stats;
-      result.is_simulation_finished = input_->ended();
+      const bool no_more_packets_to_decode =
+          !input_->NextPacketTime() && !operations_state.next_packet_available;
+      result.is_simulation_finished =
+          no_more_packets_to_decode || input_->ended();
       prev_ops_state_ = operations_state;
       return result;
     }

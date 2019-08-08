@@ -22,7 +22,7 @@ ChromePopularSitesFactory::NewForProfile(Profile* profile) {
       g_browser_process->variations_service(),
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLLoaderFactoryForBrowserProcess(),
-      base::Bind(
-          data_decoder::SafeJsonParser::Parse,
+      base::BindRepeating(
+          &data_decoder::SafeJsonParser::Parse,
           content::ServiceManagerConnection::GetForProcess()->GetConnector()));
 }

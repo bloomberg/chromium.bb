@@ -257,12 +257,29 @@ WebContentsAndroid::~WebContentsAndroid() {
   DCHECK(g_allocated_web_contents_androids.Get().find(this) !=
       g_allocated_web_contents_androids.Get().end());
   g_allocated_web_contents_androids.Get().erase(this);
+  for (auto& observer : destruction_observers_)
+    observer.WebContentsAndroidDestroyed(this);
   Java_WebContentsImpl_clearNativePtr(AttachCurrentThread(), obj_);
 }
 
 base::android::ScopedJavaLocalRef<jobject>
 WebContentsAndroid::GetJavaObject() {
   return base::android::ScopedJavaLocalRef<jobject>(obj_);
+}
+
+void WebContentsAndroid::ClearNativeReference(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  return web_contents_->ClearWebContentsAndroid();
+}
+
+void WebContentsAndroid::AddDestructionObserver(DestructionObserver* observer) {
+  destruction_observers_.AddObserver(observer);
+}
+
+void WebContentsAndroid::RemoveDestructionObserver(
+    DestructionObserver* observer) {
+  destruction_observers_.RemoveObserver(observer);
 }
 
 base::android::ScopedJavaLocalRef<jobject>
@@ -615,6 +632,11 @@ jint WebContentsAndroid::GetThemeColor(JNIEnv* env,
   return web_contents_->GetThemeColor().value_or(SK_ColorTRANSPARENT);
 }
 
+jint WebContentsAndroid::GetLoadProgress(JNIEnv* env,
+                                         const JavaParamRef<jobject>& obj) {
+  return web_contents_->GetLoadProgress() * 100;
+}
+
 void WebContentsAndroid::RequestSmartClipExtract(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -898,6 +920,14 @@ void WebContentsAndroid::SetDisplayCutoutSafeArea(
     int right) {
   web_contents()->SetDisplayCutoutSafeArea(
       gfx::Insets(top, left, bottom, right));
+}
+
+void WebContentsAndroid::NotifyRendererPreferenceUpdate(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  RenderViewHost* rvh = web_contents_->GetRenderViewHost();
+  DCHECK(rvh);
+  rvh->OnWebkitPreferencesChanged();
 }
 
 }  // namespace content

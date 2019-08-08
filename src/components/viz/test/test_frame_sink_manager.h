@@ -56,6 +56,10 @@ class TestFrameSinkManagerImpl : public mojom::FrameSinkManager {
       const FrameSinkId& root_frame_sink_id,
       const std::vector<FrameSinkId>& hit_test_async_queried_debug_queue)
       override {}
+  void CacheBackBuffer(uint32_t cache_id,
+                       const FrameSinkId& root_frame_sink_id) override {}
+  void EvictBackBuffer(uint32_t cache_id,
+                       EvictBackBufferCallback callback) override {}
 
   mojo::Binding<mojom::FrameSinkManager> binding_;
   mojom::FrameSinkManagerClientPtr client_;

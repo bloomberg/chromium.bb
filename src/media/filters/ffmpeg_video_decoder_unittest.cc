@@ -59,10 +59,7 @@ MATCHER(ContainsFailedToSendLog, "") {
 
 class FFmpegVideoDecoderTest : public testing::Test {
  public:
-  FFmpegVideoDecoderTest()
-      : decoder_(new FFmpegVideoDecoder(&media_log_)),
-        decode_cb_(base::Bind(&FFmpegVideoDecoderTest::DecodeDone,
-                              base::Unretained(this))) {
+  FFmpegVideoDecoderTest() : decoder_(new FFmpegVideoDecoder(&media_log_)) {
     // Initialize various test buffers.
     frame_buffer_.reset(new uint8_t[kCodedSize.GetArea()]);
     end_of_stream_buffer_ = DecoderBuffer::CreateEOSBuffer();
@@ -187,16 +184,17 @@ class FFmpegVideoDecoderTest : public testing::Test {
     DecodeStatus status;
     EXPECT_CALL(*this, DecodeDone(_)).WillOnce(SaveArg<0>(&status));
 
-    decoder_->Decode(buffer, decode_cb_);
+    decoder_->Decode(buffer, base::BindOnce(&FFmpegVideoDecoderTest::DecodeDone,
+                                            base::Unretained(this)));
 
     base::RunLoop().RunUntilIdle();
 
     return status;
   }
 
-  void FrameReady(const scoped_refptr<VideoFrame>& frame) {
+  void FrameReady(scoped_refptr<VideoFrame> frame) {
     DCHECK(!frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM));
-    output_frames_.push_back(frame);
+    output_frames_.push_back(std::move(frame));
   }
 
   MOCK_METHOD1(DecodeDone, void(DecodeStatus));
@@ -205,8 +203,6 @@ class FFmpegVideoDecoderTest : public testing::Test {
 
   base::MessageLoop message_loop_;
   std::unique_ptr<FFmpegVideoDecoder> decoder_;
-
-  VideoDecoder::DecodeCB decode_cb_;
 
   // Various buffers for testing.
   std::unique_ptr<uint8_t[]> frame_buffer_;
@@ -227,7 +223,7 @@ TEST_F(FFmpegVideoDecoderTest, Initialize_Normal) {
 TEST_F(FFmpegVideoDecoderTest, Initialize_OpenDecoderFails) {
   // Specify Theora w/o extra data so that avcodec_open2() fails.
   VideoDecoderConfig config(kCodecTheora, VIDEO_CODEC_PROFILE_UNKNOWN,
-                            kVideoFormat, VideoColorSpace(), VIDEO_ROTATION_0,
+                            kVideoFormat, VideoColorSpace(), kNoTransformation,
                             kCodedSize, kVisibleRect, kNaturalSize,
                             EmptyExtraData(), Unencrypted());
   InitializeWithConfigWithResult(config, false);

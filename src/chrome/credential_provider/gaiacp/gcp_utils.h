@@ -196,6 +196,15 @@ HRESULT GetCommandLineForEntrypoint(HINSTANCE dll_handle,
                                     const wchar_t* entrypoint,
                                     base::CommandLine* command_line);
 
+// Looks up the name associated to the |sid| (if any). Returns an error on any
+// failure or no name is associated with the |sid|.
+HRESULT LookupLocalizedNameBySid(PSID sid, base::string16* localized_name);
+
+// Looks up the name associated to the well known |sid_type| (if any). Returns
+// an error on any failure or no name is associated with the |sid_type|.
+HRESULT LookupLocalizedNameForWellKnownSid(WELL_KNOWN_SID_TYPE sid_type,
+                                           base::string16* localized_name);
+
 // Handles the writing and deletion of a startup sentinel file used to ensure
 // that the GCPW does not crash continuously on startup and render the
 // winlogon process unusable.

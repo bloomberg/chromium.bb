@@ -59,6 +59,12 @@ std::unique_ptr<AnimationWorkletOutput> ProxyClientMutate(
   return output;
 }
 
+std::unique_ptr<WorkletAnimationEffectTimings> CreateEffectTimings() {
+  auto timings = base::MakeRefCounted<base::RefCountedData<Vector<Timing>>>();
+  timings->data.push_back(Timing());
+  return std::make_unique<WorkletAnimationEffectTimings>(std::move(timings));
+}
+
 }  // namespace
 
 class AnimationWorkletGlobalScopeTest : public PageTestBase {
@@ -84,9 +90,9 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
     base::WaitableEvent waitable_event;
     PostCrossThreadTask(
         *worklet->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
-        CrossThreadBind(callback, CrossThreadUnretained(this),
-                        CrossThreadUnretained(worklet.get()),
-                        CrossThreadUnretained(&waitable_event)));
+        CrossThreadBindOnce(callback, CrossThreadUnretained(this),
+                            CrossThreadUnretained(worklet.get()),
+                            CrossThreadUnretained(&waitable_event)));
     waitable_event.Wait();
 
     worklet->Terminate();
@@ -204,8 +210,10 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
     // worklet to create and animate an animator.
     cc::WorkletAnimationId animation_id = {1, 1};
     AnimationWorkletInput state;
-    state.added_and_updated_animations.emplace_back(animation_id, "test", 5000,
-                                                    nullptr, 1);
+    std::unique_ptr<WorkletAnimationEffectTimings> effect_timings =
+        CreateEffectTimings();
+    state.added_and_updated_animations.emplace_back(
+        animation_id, "test", 5000, nullptr, std::move(effect_timings));
 
     std::unique_ptr<AnimationWorkletOutput> output =
         ProxyClientMutate(state, global_scope);
@@ -304,8 +312,10 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
     // worklet to create and animate an animator.
     cc::WorkletAnimationId animation_id = {1, 1};
     AnimationWorkletInput state;
-    state.added_and_updated_animations.emplace_back(animation_id, "test", 5000,
-                                                    nullptr, 1);
+    std::unique_ptr<WorkletAnimationEffectTimings> effect_timings =
+        CreateEffectTimings();
+    state.added_and_updated_animations.emplace_back(
+        animation_id, "test", 5000, nullptr, std::move(effect_timings));
 
     std::unique_ptr<AnimationWorkletOutput> output =
         ProxyClientMutate(state, global_scope);
@@ -364,8 +374,10 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
     output = ProxyClientMutate(state, global_scope);
     EXPECT_EQ(global_scope->GetAnimatorsSizeForTest(), 0u);
 
+    std::unique_ptr<WorkletAnimationEffectTimings> effect_timings =
+        CreateEffectTimings();
     state.added_and_updated_animations.push_back(
-        {animation_id, "test", 5000, nullptr, 1});
+        {animation_id, "test", 5000, nullptr, std::move(effect_timings)});
     EXPECT_EQ(state.added_and_updated_animations.size(), 1u);
 
     output = ProxyClientMutate(state, global_scope);
@@ -404,8 +416,10 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
 
     cc::WorkletAnimationId animation_id = {1, 1};
     AnimationWorkletInput state;
+    std::unique_ptr<WorkletAnimationEffectTimings> effect_timings =
+        CreateEffectTimings();
     state.added_and_updated_animations.push_back(
-        {animation_id, "test", 5000, nullptr, 1});
+        {animation_id, "test", 5000, nullptr, std::move(effect_timings)});
     EXPECT_EQ(state.added_and_updated_animations.size(), 1u);
 
     std::unique_ptr<AnimationWorkletOutput> output =
@@ -485,11 +499,11 @@ TEST_F(AnimationWorkletGlobalScopeTest,
       )JS";
   PostCrossThreadTask(
       *worklet->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
-      CrossThreadBind(&AnimationWorkletGlobalScopeTest::RunScriptOnWorklet,
-                      CrossThreadUnretained(this),
-                      Passed(std::move(source_code)),
-                      CrossThreadUnretained(worklet.get()),
-                      CrossThreadUnretained(&waitable_event)));
+      CrossThreadBindOnce(&AnimationWorkletGlobalScopeTest::RunScriptOnWorklet,
+                          CrossThreadUnretained(this),
+                          Passed(std::move(source_code)),
+                          CrossThreadUnretained(worklet.get()),
+                          CrossThreadUnretained(&waitable_event)));
   waitable_event.Wait();
 
   // AWGS should register itself first time an animator is registered with it.

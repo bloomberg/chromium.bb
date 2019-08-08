@@ -37,10 +37,23 @@ Polymer({
      */
     defaultUrl: {
       type: String,
-      value:
-          'https://www.gstatic.com/opa-android/oobe/a02187e41eed9e42/v2_omni_en_us.html',
+      value: function() {
+        return this.urlTemplate_.replace('$', 'en_us');
+      }
     },
   },
+
+  setUrlTemplateForTesting: function(url) {
+    this.urlTemplate_ = url;
+  },
+
+  /**
+   * The value prop URL template - loaded from loadTimeData.
+   * The template is expected to have '$' instead of the locale.
+   * @private {string}
+   */
+  urlTemplate_:
+      'https://www.gstatic.com/opa-android/oobe/a02187e41eed9e42/v2_omni_$.html',
 
   /**
    * Whether try to reload with the default url when a 404 error occurred.
@@ -179,9 +192,7 @@ Polymer({
 
     this.loadingError_ = false;
     this.headerReceived_ = false;
-    this.valuePropView_.src =
-        'https://www.gstatic.com/opa-android/oobe/a02187e41eed9e42/v2_omni_' +
-        this.locale + '.html';
+    this.valuePropView_.src = this.urlTemplate_.replace('$', this.locale);
 
     this.buttonsDisabled = true;
   },

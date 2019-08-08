@@ -2369,6 +2369,38 @@ void main()
     EXPECT_GL_NO_ERROR();
 }
 
+// Test that a large struct array in std140 uniform block won't consume too much time.
+TEST_P(ComputeShaderTest, LargeStructArraySize)
+{
+    constexpr char kComputeShaderSource[] = R"(#version 310 es
+layout(local_size_x=8) in;
+precision mediump float;
+
+struct InstancingData
+{
+    mat4 transformation;
+};
+
+#define MAX_INSTANCE_COUNT 800
+
+layout(std140) uniform InstanceBlock
+{
+    InstancingData instances[MAX_INSTANCE_COUNT];
+};
+
+layout(std140, binding = 1) buffer blockB {
+    mat4 v[];
+} instanceB;
+
+void main()
+{
+    instanceB.v[gl_GlobalInvocationID.x] = instances[gl_GlobalInvocationID.x].transformation;
+})";
+
+    ANGLE_GL_COMPUTE_PROGRAM(program, kComputeShaderSource);
+    EXPECT_GL_NO_ERROR();
+}
+
 // Check that it is not possible to create a compute shader when the context does not support ES
 // 3.10
 TEST_P(ComputeShaderTestES3, NotSupported)
@@ -2750,6 +2782,238 @@ void main()
     glReadPixels(0, 0, kWidth1, kHeight1, GL_RED_INTEGER, GL_UNSIGNED_INT, &outputValues);
     EXPECT_GL_NO_ERROR();
     EXPECT_EQ(expectedValue, outputValues);
+}
+
+// Test that render pipeline and compute pipeline access to the same texture.
+// Steps:
+//   1. DispatchCompute.
+//   2. DrawArrays.
+TEST_P(ComputeShaderTest, DispatchDraw)
+{
+    // TODO(xinghua.cao@intel.com): http://anglebug.com/3152
+    ANGLE_SKIP_TEST_IF(IsD3D11());
+
+    const char kCSSource[] = R"(#version 310 es
+layout(local_size_x=1, local_size_y=1, local_size_z=1) in;
+layout(rgba32f, binding = 0) writeonly uniform highp image2D image;
+void main()
+{
+    imageStore(image, ivec2(gl_LocalInvocationID.xy), vec4(0.0, 0.0, 1.0, 1.0));
+})";
+
+    const char kVSSource[] = R"(#version 310 es
+layout (location = 0) in vec2 pos;
+out vec2 texCoord;
+void main(void) {
+    texCoord = 0.5*pos + 0.5;
+    gl_Position = vec4(pos, 0.0, 1.0);
+})";
+
+    const char kFSSource[] = R"(#version 310 es
+precision highp float;
+uniform sampler2D tex;
+in vec2 texCoord;
+out vec4 fragColor;
+void main(void) {
+    fragColor = texture(tex, texCoord);
+})";
+
+    GLuint aPosLoc = 0;
+    ANGLE_GL_PROGRAM(program, kVSSource, kFSSource);
+    glBindAttribLocation(program, aPosLoc, "pos");
+    GLuint buffer;
+    glGenBuffers(1, &buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    GLfloat vertices[] = {-1, -1, 1, -1, -1, 1, 1, 1};
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 8, vertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(aPosLoc, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(aPosLoc);
+
+    constexpr GLfloat kInputValues[4] = {1.0, 0.0, 0.0, 1.0};
+    GLTexture texture;
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, 1, 1);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 1, 1, GL_RGBA, GL_FLOAT, kInputValues);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    EXPECT_GL_NO_ERROR();
+
+    ANGLE_GL_COMPUTE_PROGRAM(csProgram, kCSSource);
+    glUseProgram(csProgram);
+
+    glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
+
+    glDispatchCompute(1, 1, 1);
+    glMemoryBarrier(GL_TEXTURE_UPDATE_BARRIER_BIT);
+    EXPECT_GL_NO_ERROR();
+
+    glUseProgram(program);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    EXPECT_PIXEL_COLOR_EQ(1, 1, GLColor::blue);
+}
+
+// Test that render pipeline and compute pipeline access to the same texture.
+// Steps:
+//   1. DrawArrays.
+//   2. DispatchCompute.
+//   3. DispatchCompute.
+//   4. DrawArrays.
+TEST_P(ComputeShaderTest, DrawDispachDispatchDraw)
+{
+    // TODO(xinghua.cao@intel.com): http://anglebug.com/3152
+    ANGLE_SKIP_TEST_IF(IsD3D11());
+
+    const char kCSSource[] = R"(#version 310 es
+layout(local_size_x=1, local_size_y=1, local_size_z=1) in;
+layout(rgba32f, binding = 0) writeonly uniform highp image2D image;
+uniform float factor;
+void main()
+{
+    imageStore(image, ivec2(gl_LocalInvocationID.xy), vec4(factor, 0.0, 1.0, 1.0));
+})";
+
+    const char kVSSource[] = R"(#version 310 es
+layout (location = 0) in vec2 pos;
+out vec2 texCoord;
+void main(void) {
+    texCoord = 0.5*pos + 0.5;
+    gl_Position = vec4(pos, 0.0, 1.0);
+})";
+
+    const char kFSSource[] = R"(#version 310 es
+precision highp float;
+uniform sampler2D tex;
+in vec2 texCoord;
+out vec4 fragColor;
+void main(void) {
+    fragColor = texture(tex, texCoord);
+})";
+
+    GLuint aPosLoc = 0;
+    ANGLE_GL_PROGRAM(program, kVSSource, kFSSource);
+    glBindAttribLocation(program, aPosLoc, "pos");
+    GLuint buffer;
+    glGenBuffers(1, &buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    GLfloat vertices[] = {-1, -1, 1, -1, -1, 1, 1, 1};
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 8, vertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(aPosLoc, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(aPosLoc);
+
+    constexpr GLfloat kInputValues[4] = {1.0, 0.0, 0.0, 1.0};
+    GLTexture texture;
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, 1, 1);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 1, 1, GL_RGBA, GL_FLOAT, kInputValues);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glUseProgram(program);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    EXPECT_GL_NO_ERROR();
+
+    ANGLE_GL_COMPUTE_PROGRAM(csProgram, kCSSource);
+    glUseProgram(csProgram);
+    glUniform1f(glGetUniformLocation(csProgram, "factor"), 0.0);
+    glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
+    EXPECT_GL_NO_ERROR();
+
+    glDispatchCompute(1, 1, 1);
+    glMemoryBarrier(GL_TEXTURE_UPDATE_BARRIER_BIT);
+    EXPECT_GL_NO_ERROR();
+
+    glUniform1f(glGetUniformLocation(csProgram, "factor"), 1.0);
+    glDispatchCompute(1, 1, 1);
+    glMemoryBarrier(GL_TEXTURE_UPDATE_BARRIER_BIT);
+    EXPECT_GL_NO_ERROR();
+
+    glUseProgram(program);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    EXPECT_PIXEL_COLOR_EQ(1, 1, GLColor::magenta);
+}
+
+// Test that render pipeline and compute pipeline access to the same texture.
+// Steps:
+//   1. DispatchCompute.
+//   2. DrawArrays.
+//   3. DrawArrays.
+//   4. DispatchCompute.
+TEST_P(ComputeShaderTest, DispatchDrawDrawDispatch)
+{
+    // TODO(xinghua.cao@intel.com): http://anglebug.com/3152
+    ANGLE_SKIP_TEST_IF(IsD3D11());
+
+    const char kCSSource[] = R"(#version 310 es
+layout(local_size_x=1, local_size_y=1, local_size_z=1) in;
+layout(rgba32f, binding = 0) writeonly uniform highp image2D image;
+
+void main()
+{
+    imageStore(image, ivec2(gl_LocalInvocationID.xy), vec4(0.0, 0.0, 1.0, 1.0));
+})";
+
+    const char kVSSource[] = R"(#version 310 es
+layout (location = 0) in vec2 pos;
+out vec2 texCoord;
+void main(void) {
+    texCoord = 0.5*pos + 0.5;
+    gl_Position = vec4(pos, 0.0, 1.0);
+})";
+
+    const char kFSSource[] = R"(#version 310 es
+precision highp float;
+uniform sampler2D tex;
+in vec2 texCoord;
+uniform float factor;
+out vec4 fragColor;
+void main(void) {
+    fragColor = texture(tex, texCoord) + vec4(factor, 0.0, 0.0, 0.0);
+})";
+
+    GLuint aPosLoc = 0;
+    ANGLE_GL_PROGRAM(program, kVSSource, kFSSource);
+    glBindAttribLocation(program, aPosLoc, "pos");
+    GLuint buffer;
+    glGenBuffers(1, &buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    GLfloat vertices[] = {-1, -1, 1, -1, -1, 1, 1, 1};
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 8, vertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(aPosLoc, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(aPosLoc);
+
+    constexpr GLfloat kInputValues[4] = {1.0, 0.0, 0.0, 1.0};
+    GLTexture texture;
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, 1, 1);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 1, 1, GL_RGBA, GL_FLOAT, kInputValues);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    ANGLE_GL_COMPUTE_PROGRAM(csProgram, kCSSource);
+    glUseProgram(csProgram);
+    glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
+
+    glDispatchCompute(1, 1, 1);
+    glMemoryBarrier(GL_TEXTURE_UPDATE_BARRIER_BIT);
+    EXPECT_GL_NO_ERROR();
+
+    glUseProgram(program);
+    glUniform1f(glGetUniformLocation(program, "factor"), 0.0);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    EXPECT_GL_NO_ERROR();
+
+    glUniform1f(glGetUniformLocation(program, "factor"), 1.0);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    EXPECT_GL_NO_ERROR();
+
+    glUseProgram(csProgram);
+    glDispatchCompute(1, 1, 1);
+    glMemoryBarrier(GL_TEXTURE_UPDATE_BARRIER_BIT);
+    EXPECT_GL_NO_ERROR();
+
+    glUseProgram(program);
+    glUniform1f(glGetUniformLocation(program, "factor"), 0.0);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    EXPECT_PIXEL_COLOR_EQ(1, 1, GLColor::blue);
 }
 
 // Test that invalid memory barrier will produce an error.

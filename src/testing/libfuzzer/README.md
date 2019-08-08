@@ -29,11 +29,11 @@ ClusterFuzz fuzzing system. Cover bug: [crbug.com/539572].
 your fuzz target and submit it to ClusterFuzz.
 * [Efficient Fuzzer Guide] explains how to measure fuzz target effectiveness and
 ways to improve it.
-* [Guide to libprotobuf-mutator] walks through the steps necessary to create a
-fuzz target that expects a protobuf as input (instead of a byte stream). In
-addition to fuzzing code that accepts protobufs, it can be used to fuzz
-code that requires multiple mutated inputs, or to generate inputs defined by a
-grammar.
+* [Guide to libprotobuf-mutator (LPM)] walks through the steps necessary to
+create a fuzz target that expects a protobuf as input (instead of a byte
+stream). In addition to fuzzing code that accepts protobufs, it can be used to
+fuzz code that requires multiple mutated inputs, or to generate inputs defined
+by a grammar.
 * [ClusterFuzz Integration] describes integration between ClusterFuzz and
 libFuzzer.
 * [Reproducing Bugs] describes how to reproduce bugs found by libFuzzer/AFL
@@ -60,7 +60,7 @@ libFuzzer.
 [Cover Bug]: https://bugs.chromium.org/p/chromium/issues/detail?id=539572
 [Getting Started Guide]: getting_started.md
 [Efficient Fuzzer Guide]: efficient_fuzzer.md
-[Guide to libprotobuf-mutator]: libprotobuf-mutator.md
+[Guide to libprotobuf-mutator (LPM)]: libprotobuf-mutator.md
 [ClusterFuzz Integration]: clusterfuzz.md
 [Reproducing Bugs]: reproducing.md
 [Reference]: reference.md

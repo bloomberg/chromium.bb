@@ -17,6 +17,7 @@
 #include "cc/input/touch_action.h"
 #include "cc/trees/element_id.h"
 #include "cc/trees/swap_promise_monitor.h"
+#include "ui/events/types/scroll_types.h"
 
 namespace gfx {
 class Point;
@@ -41,6 +42,9 @@ struct CC_EXPORT InputHandlerPointerResult {
   // the pointer event.
   PointerResultType type;
 
+  // Tells what scroll_units should be used.
+  ui::input_types::ScrollGranularity scroll_units;
+
   // If the input handler processed the event as a scrollbar scroll, it will
   // return a gfx::ScrollOffset that produces the necessary scroll. However,
   // it is still the client's responsibility to generate the gesture scrolls
@@ -48,9 +52,6 @@ struct CC_EXPORT InputHandlerPointerResult {
   // pointer event (due to the latency attribution that happens at the
   // InputHandlerProxy level).
   gfx::ScrollOffset scroll_offset;
-
-  // TODO(arakeri): Extend this structure to contain scroll_units and
-  // element_id. For now, assume kPrecisePixels and root layer scroll.
 };
 
 struct CC_EXPORT InputHandlerScrollResult {
@@ -188,7 +189,8 @@ class CC_EXPORT InputHandler {
   // ScrollBegin() returned SCROLL_STARTED.
   virtual InputHandlerScrollResult ScrollBy(ScrollState* scroll_state) = 0;
 
-  virtual void MouseMoveAt(const gfx::Point& mouse_position) = 0;
+  virtual InputHandlerPointerResult MouseMoveAt(
+      const gfx::Point& mouse_position) = 0;
   virtual InputHandlerPointerResult MouseDown(
       const gfx::PointF& mouse_position) = 0;
   virtual InputHandlerPointerResult MouseUp(
@@ -204,9 +206,10 @@ class CC_EXPORT InputHandler {
   virtual void RequestUpdateForSynchronousInputHandler() = 0;
 
   // Called when the root scroll offset has been changed in the synchronous
-  // input handler by the application (outside of input event handling).
+  // input handler by the application (outside of input event handling). Offset
+  // is expected in "content/page coordinates".
   virtual void SetSynchronousInputHandlerRootScrollOffset(
-      const gfx::ScrollOffset& root_offset) = 0;
+      const gfx::ScrollOffset& root_content_offset) = 0;
 
   virtual void PinchGestureBegin() = 0;
   virtual void PinchGestureUpdate(float magnify_delta,

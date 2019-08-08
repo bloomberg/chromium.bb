@@ -416,8 +416,8 @@ void LogoServiceImplTest::SetServerResponseWhenFingerprint(
   std::string headers(base::StringPrintf(
       "HTTP/1.1 %d %s\nContent-type: text/html\n\n",
       static_cast<int>(response_code), GetHttpReasonPhrase(response_code)));
-  head.headers = new net::HttpResponseHeaders(
-      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(headers));
   head.mime_type = "text/html";
   network::URLLoaderCompletionStatus status;
   status.error_code = error_code;

@@ -37,7 +37,6 @@ scheduling_metrics::ThreadType ConvertBlinkThreadType(
     case WebThreadType::kReverbConvolutionBackgroundThread:
     case WebThreadType::kSharedWorkerThread:
     case WebThreadType::kUnspecifiedWorkerThread:
-    case WebThreadType::kWebAudioThread:
     case WebThreadType::kTestThread:
       return scheduling_metrics::ThreadType::kRendererOtherBlinkThread;
     case WebThreadType::kCount:
@@ -74,7 +73,9 @@ bool MetricsHelper::ShouldDiscardTask(
     const base::sequence_manager::TaskQueue::TaskTiming& task_timing) {
   // TODO(altimin): Investigate the relationship between thread time and
   // wall time for discarded tasks.
-  return task_timing.wall_duration() > kLongTaskDiscardingThreshold;
+  using State = base::sequence_manager ::TaskQueue::TaskTiming::State;
+  return task_timing.state() == State::Finished &&
+         task_timing.wall_duration() > kLongTaskDiscardingThreshold;
 }
 
 void MetricsHelper::RecordCommonTaskMetrics(

@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <set>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/containers/flat_set.h"
@@ -19,8 +20,7 @@
 class CastRunner : public WebContentRunner {
  public:
   CastRunner(base::fuchsia::ServiceDirectory* service_directory,
-             fuchsia::web::ContextPtr context,
-             base::OnceClosure on_idle_closure);
+             fuchsia::web::ContextPtr context);
 
   ~CastRunner() override;
 
@@ -38,6 +38,11 @@ class CastRunner : public WebContentRunner {
 
   void GetConfigCallback(PendingComponent* pending_component,
                          chromium::cast::ApplicationConfig app_config);
+  void GetBindingsCallback(PendingComponent* pending_component,
+                           std::vector<chromium::cast::ApiBinding> bindings);
+
+  // Starts a component once all configuration data is available.
+  void MaybeStartComponent(PendingComponent* pending_component);
 
   // Holds StartComponent() requests while the ApplicationConfig is being
   // fetched from the ApplicationConfigManager.

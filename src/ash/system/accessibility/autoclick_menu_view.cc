@@ -17,6 +17,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/separator.h"
@@ -47,11 +48,22 @@ class AutoclickMenuButton : public TopShortcutButton {
       : TopShortcutButton(listener, accessible_name_id),
         icon_(&icon),
         size_(size) {
+    EnableCanvasFlippingForRTLUI(false);
     SetPreferredSize(gfx::Size(size_, size_));
     UpdateImage();
   }
 
   ~AutoclickMenuButton() override = default;
+
+  // views::Button:
+  const char* GetClassName() const override { return "AutoclickMenuButton"; }
+
+  // views::ImageButton:
+  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
+    gfx::Rect bounds = GetContentsBounds();
+    return std::make_unique<views::CircleInkDropMask>(
+        size(), bounds.CenterPoint(), bounds.width() / 2);
+  }
 
   // Set the vector icon shown in a circle.
   void SetVectorIcon(const gfx::VectorIcon& icon) {
@@ -81,8 +93,12 @@ class AutoclickMenuButton : public TopShortcutButton {
     views::ImageButton::PaintButtonContents(canvas);
   }
 
+  gfx::Size CalculatePreferredSize() const override {
+    return gfx::Size(size_, size_);
+  }
+
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    if (!enabled())
+    if (!GetEnabled())
       return;
     TopShortcutButton::GetAccessibleNodeData(node_data);
     node_data->role = ax::mojom::Role::kToggleButton;
@@ -91,7 +107,7 @@ class AutoclickMenuButton : public TopShortcutButton {
   }
 
   void SetId(AutoclickMenuView::ButtonId id) {
-    views::View::set_id(static_cast<int>(id));
+    views::View::SetID(static_cast<int>(id));
   }
 
  private:
@@ -126,9 +142,8 @@ bool AutoclickMenuBubbleView::IsAnchoredToStatusArea() const {
   return false;
 }
 
-void AutoclickMenuBubbleView::MoveToPosition(const gfx::Rect& rect) {
-  // TODO(katie): Animate to the new position.
-  SetAnchorRect(rect);
+const char* AutoclickMenuBubbleView::GetClassName() const {
+  return "AutoclickMenuBubbleView";
 }
 
 // ------ AutoclickMenuView  ------ //
@@ -170,7 +185,7 @@ AutoclickMenuView::AutoclickMenuView(mojom::AutoclickEventType type,
 
   std::unique_ptr<views::BoxLayout> layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, gfx::Insets(), 0);
-  layout->set_cross_axis_alignment(views::BoxLayout::CROSS_AXIS_ALIGNMENT_END);
+  layout->set_cross_axis_alignment(views::BoxLayout::CrossAxisAlignment::kEnd);
   SetLayoutManager(std::move(layout));
 
   // The action control buttons all have the same spacing.
@@ -234,6 +249,11 @@ void AutoclickMenuView::UpdatePosition(mojom::AutoclickMenuPosition position) {
     case mojom::AutoclickMenuPosition::kTopRight:
       position_button_->SetVectorIcon(kAutoclickPositionTopRightIcon);
       return;
+    case mojom::AutoclickMenuPosition::kSystemDefault:
+      position_button_->SetVectorIcon(base::i18n::IsRTL()
+                                          ? kAutoclickPositionBottomLeftIcon
+                                          : kAutoclickPositionBottomRightIcon);
+      return;
   }
 }
 
@@ -255,6 +275,11 @@ void AutoclickMenuView::ButtonPressed(views::Button* sender,
         break;
       case mojom::AutoclickMenuPosition::kTopRight:
         new_position = mojom::AutoclickMenuPosition::kBottomRight;
+        break;
+      case mojom::AutoclickMenuPosition::kSystemDefault:
+        new_position = base::i18n::IsRTL()
+                           ? mojom::AutoclickMenuPosition::kTopLeft
+                           : mojom::AutoclickMenuPosition::kBottomLeft;
         break;
     }
     Shell::Get()->accessibility_controller()->SetAutoclickMenuPosition(
@@ -286,6 +311,10 @@ void AutoclickMenuView::ButtonPressed(views::Button* sender,
   Shell::Get()->accessibility_controller()->SetAutoclickEventType(type);
   UMA_HISTOGRAM_ENUMERATION("Accessibility.CrosAutoclick.TrayMenu.ChangeAction",
                             type);
+}
+
+const char* AutoclickMenuView::GetClassName() const {
+  return "AutoclickMenuView";
 }
 
 }  // namespace ash

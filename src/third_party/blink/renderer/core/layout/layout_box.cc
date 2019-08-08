@@ -242,8 +242,6 @@ void LayoutBox::StyleWillChange(StyleDifference diff,
         // recalculation.
         SetNeedsLayoutAndPrefWidthsRecalc(
             layout_invalidation_reason::kStyleChange);
-        if (RuntimeEnabledFeatures::LayoutNGEnabled())
-          MarkParentForOutOfFlowPositionedChange();
       } else {
         MarkContainerChainForLayout();
       }
@@ -344,7 +342,7 @@ void LayoutBox::StyleDidChange(StyleDifference diff,
     if (flow_thread && flow_thread != this)
       flow_thread->FlowThreadDescendantStyleDidChange(this, diff, *old_style);
 
-    UpdateScrollSnapMappingAfterStyleChange(&new_style, old_style);
+    UpdateScrollSnapMappingAfterStyleChange(*old_style);
 
     if (ShouldClipOverflow()) {
       // The overflow clip paint property depends on border sizes through
@@ -459,40 +457,48 @@ void LayoutBox::UpdateGridPositionAfterStyleChange(
 }
 
 void LayoutBox::UpdateScrollSnapMappingAfterStyleChange(
-    const ComputedStyle* new_style,
-    const ComputedStyle* old_style) {
+    const ComputedStyle& old_style) {
+  DCHECK(Style());
   SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
   if (!snap_coordinator)
     return;
 
-  // Scroll snap type has no effect on the viewport defining element instead
-  // they are handled by the LayoutView.
-  bool allows_snap_container =
-      GetNode() != GetDocument().ViewportDefiningElement();
+  // scroll-snap-type and scroll-padding invalidate the snap container.
+  if (old_style.GetScrollSnapType() != StyleRef().GetScrollSnapType() ||
+      old_style.ScrollPaddingBottom() != StyleRef().ScrollPaddingBottom() ||
+      old_style.ScrollPaddingLeft() != StyleRef().ScrollPaddingLeft() ||
+      old_style.ScrollPaddingTop() != StyleRef().ScrollPaddingTop() ||
+      old_style.ScrollPaddingRight() != StyleRef().ScrollPaddingRight()) {
+    snap_coordinator->SnapContainerDidChange(*this, false /* is_removed */);
+  }
 
-  cc::ScrollSnapType old_snap_type =
-      old_style ? old_style->GetScrollSnapType() : cc::ScrollSnapType();
-  cc::ScrollSnapType new_snap_type = new_style && allows_snap_container
-                                         ? new_style->GetScrollSnapType()
-                                         : cc::ScrollSnapType();
-  if (old_snap_type != new_snap_type)
-    snap_coordinator->SnapContainerDidChange(*this, new_snap_type);
-
-  cc::ScrollSnapAlign old_snap_align =
-      old_style ? old_style->GetScrollSnapAlign() : cc::ScrollSnapAlign();
-  cc::ScrollSnapAlign new_snap_align = new_style && allows_snap_container
-                                           ? new_style->GetScrollSnapAlign()
-                                           : cc::ScrollSnapAlign();
-  if (old_snap_align != new_snap_align)
-    snap_coordinator->SnapAreaDidChange(*this, new_snap_align);
+  // scroll-snap-align, scroll-snap-stop and scroll-margin invalidate the snap
+  // area.
+  if (old_style.GetScrollSnapAlign() != StyleRef().GetScrollSnapAlign() ||
+      old_style.ScrollSnapStop() != StyleRef().ScrollSnapStop() ||
+      old_style.ScrollMarginBottom() != StyleRef().ScrollMarginBottom() ||
+      old_style.ScrollMarginLeft() != StyleRef().ScrollMarginLeft() ||
+      old_style.ScrollMarginTop() != StyleRef().ScrollMarginTop() ||
+      old_style.ScrollMarginRight() != StyleRef().ScrollMarginRight())
+    snap_coordinator->SnapAreaDidChange(*this, StyleRef().GetScrollSnapAlign());
 }
 
 void LayoutBox::AddScrollSnapMapping() {
-  UpdateScrollSnapMappingAfterStyleChange(Style(), nullptr);
+  SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
+  if (!snap_coordinator)
+    return;
+
+  snap_coordinator->SnapContainerDidChange(*this, false /* is_removed */);
+  snap_coordinator->SnapAreaDidChange(*this, Style()->GetScrollSnapAlign());
 }
 
 void LayoutBox::ClearScrollSnapMapping() {
-  UpdateScrollSnapMappingAfterStyleChange(nullptr, Style());
+  SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
+  if (!snap_coordinator)
+    return;
+
+  snap_coordinator->SnapContainerDidChange(*this, true /* is_removed */);
+  snap_coordinator->SnapAreaDidChange(*this, cc::ScrollSnapAlign());
 }
 
 void LayoutBox::UpdateFromStyle() {
@@ -510,7 +516,7 @@ void LayoutBox::UpdateLayout() {
   DCHECK(NeedsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
 
-  if (LayoutBlockedByDisplayLock())
+  if (LayoutBlockedByDisplayLock(DisplayLockContext::kChildren))
     return;
 
   LayoutObject* child = SlowFirstChild();
@@ -527,7 +533,7 @@ void LayoutBox::UpdateLayout() {
   }
   UpdateAfterLayout();
   ClearNeedsLayout();
-  NotifyDisplayLockDidLayout();
+  NotifyDisplayLockDidLayout(DisplayLockContext::kChildren);
 }
 
 // ClientWidth and ClientHeight represent the interior of an object excluding
@@ -708,12 +714,12 @@ LayoutRect LayoutBox::ScrollRectToVisibleRecursive(
         AllowedToPropagateRecursiveScrollToParentFrame(params)) {
       parent_box = owner_element->GetLayoutObject()->EnclosingBox();
       LayoutView* parent_view = owner_element->GetLayoutObject()->View();
-      absolute_rect_for_parent = EnclosingLayoutRect(
+      absolute_rect_for_parent =
           View()
-              ->LocalToAncestorQuad(
-                  FloatRect(absolute_rect_for_parent), parent_view,
-                  kUseTransforms | kTraverseDocumentBoundaries)
-              .BoundingBox());
+              ->LocalToAncestorRect(
+                  PhysicalRectToBeNoop(absolute_rect_for_parent), parent_view,
+                  kTraverseDocumentBoundaries)
+              .ToLayoutRect();
     }
   } else {
     absolute_rect_for_parent = absolute_rect_to_scroll;
@@ -744,21 +750,13 @@ void LayoutBox::SetMargin(const NGPhysicalBoxStrut& box) {
   margin_box_outsets_.SetLeft(box.left);
 }
 
-void LayoutBox::AbsoluteRects(Vector<IntRect>& rects,
-                              const LayoutPoint& accumulated_offset) const {
-  rects.push_back(PixelSnappedIntRect(accumulated_offset, Size()));
-}
-
 void LayoutBox::AbsoluteQuads(Vector<FloatQuad>& quads,
                               MapCoordinatesFlags mode) const {
   if (LayoutFlowThread* flow_thread = FlowThreadContainingBlock()) {
     flow_thread->AbsoluteQuadsForDescendant(*this, quads, mode);
     return;
   }
-  quads.push_back(
-      LocalToAbsoluteQuad(FloatRect(0, 0, frame_rect_.Width().ToFloat(),
-                                    frame_rect_.Height().ToFloat()),
-                          mode));
+  quads.push_back(LocalRectToAbsoluteQuad(PhysicalBorderBoxRect(), mode));
 }
 
 FloatRect LayoutBox::LocalBoundingBoxRectForAccessibility() const {
@@ -782,7 +780,7 @@ void LayoutBox::UpdateAfterLayout() {
   // We also want to make sure that if our entrance point into layout changes,
   // e.g. an OOF-positioned object is laid out by an NG containing block, then
   // Legacy, then NG again, NG won't use a stale layout result.
-  if (!IsLayoutNGObject())
+  if (IsOutOfFlowPositioned() && !IsLayoutNGObject())
     cached_layout_result_.reset();
 }
 
@@ -813,16 +811,25 @@ LayoutUnit LayoutBox::ConstrainLogicalWidthByMinMax(
 LayoutUnit LayoutBox::ConstrainLogicalHeightByMinMax(
     LayoutUnit logical_height,
     LayoutUnit intrinsic_content_height) const {
-  const ComputedStyle& style_to_use = StyleRef();
-  if (!style_to_use.LogicalMaxHeight().IsMaxSizeNone()) {
-    LayoutUnit max_h = ComputeLogicalHeightUsing(
-        kMaxSize, style_to_use.LogicalMaxHeight(), intrinsic_content_height);
+  // Note that the values 'min-content', 'max-content' and 'fit-content' should
+  // behave as the initial value if specified in the block direction.
+  const Length& logical_max_height = StyleRef().LogicalMaxHeight();
+  if (!logical_max_height.IsMaxSizeNone() &&
+      !logical_max_height.IsMinContent() &&
+      !logical_max_height.IsMaxContent() &&
+      !logical_max_height.IsFitContent()) {
+    LayoutUnit max_h = ComputeLogicalHeightUsing(kMaxSize, logical_max_height,
+                                                 intrinsic_content_height);
     if (max_h != -1)
       logical_height = std::min(logical_height, max_h);
   }
-  return std::max(logical_height, ComputeLogicalHeightUsing(
-                                      kMinSize, style_to_use.LogicalMinHeight(),
-                                      intrinsic_content_height));
+  Length logical_min_height = StyleRef().LogicalMinHeight();
+  if (logical_min_height.IsMinContent() || logical_min_height.IsMaxContent() ||
+      logical_min_height.IsFitContent())
+    logical_min_height = Length::Auto();
+  return std::max(logical_height,
+                  ComputeLogicalHeightUsing(kMinSize, logical_min_height,
+                                            intrinsic_content_height));
 }
 
 LayoutUnit LayoutBox::ConstrainContentBoxLogicalHeightByMinMax(
@@ -883,11 +890,11 @@ void LayoutBox::SetLocationAndUpdateOverflowControlsIfNeeded(
 }
 
 FloatQuad LayoutBox::AbsoluteContentQuad(MapCoordinatesFlags flags) const {
-  LayoutRect rect = PhysicalContentBoxRect();
-  return LocalToAbsoluteQuad(FloatRect(rect), flags);
+  PhysicalRect rect = PhysicalContentBoxRect();
+  return LocalRectToAbsoluteQuad(rect, flags);
 }
 
-LayoutRect LayoutBox::PhysicalBackgroundRect(
+PhysicalRect LayoutBox::PhysicalBackgroundRect(
     BackgroundRectType rect_type) const {
   EFillBox background_box = EFillBox::kText;
   // Find the largest background rect of the given opaqueness.
@@ -943,7 +950,7 @@ LayoutRect LayoutBox::PhysicalBackgroundRect(
   }
   switch (background_box) {
     case EFillBox::kBorder:
-      return BorderBoxRect();
+      return PhysicalBorderBoxRect();
       break;
     case EFillBox::kPadding:
       return PhysicalPaddingBoxRect();
@@ -954,13 +961,13 @@ LayoutRect LayoutBox::PhysicalBackgroundRect(
     default:
       break;
   }
-  return LayoutRect();
+  return PhysicalRect();
 }
 
-void LayoutBox::AddOutlineRects(Vector<LayoutRect>& rects,
-                                const LayoutPoint& additional_offset,
+void LayoutBox::AddOutlineRects(Vector<PhysicalRect>& rects,
+                                const PhysicalOffset& additional_offset,
                                 NGOutlineType) const {
-  rects.push_back(LayoutRect(additional_offset, Size()));
+  rects.emplace_back(additional_offset, Size());
 }
 
 bool LayoutBox::CanResize() const {
@@ -1043,38 +1050,38 @@ bool LayoutBox::CanAutoscroll() const {
 // If specified point is outside the border-belt-excluded box (the border box
 // inset by the autoscroll activation threshold), returned offset denotes
 // direction of scrolling.
-LayoutSize LayoutBox::CalculateAutoscrollDirection(
+PhysicalOffset LayoutBox::CalculateAutoscrollDirection(
     const FloatPoint& point_in_root_frame) const {
   if (!GetFrame())
-    return LayoutSize();
+    return PhysicalOffset();
 
   LocalFrameView* frame_view = GetFrame()->View();
   if (!frame_view)
-    return LayoutSize();
+    return PhysicalOffset();
 
-  LayoutRect absolute_scrolling_box = LayoutRect(AbsoluteBoundingBoxRect());
+  PhysicalRect absolute_scrolling_box(AbsoluteBoundingBoxRect());
 
   // Exclude scrollbars so the border belt (activation area) starts from the
   // scrollbar-content edge rather than the window edge.
   ExcludeScrollbars(absolute_scrolling_box,
                     kExcludeOverlayScrollbarSizeForHitTesting);
 
-  LayoutRect belt_box =
+  PhysicalRect belt_box =
       View()->GetFrameView()->ConvertToRootFrame(absolute_scrolling_box);
-  belt_box.Inflate(-kAutoscrollBeltSize);
-  LayoutPoint point(point_in_root_frame);
+  belt_box.Inflate(LayoutUnit(-kAutoscrollBeltSize));
+  FloatPoint point = point_in_root_frame;
 
   if (point.X() < belt_box.X())
     point.Move(-kAutoscrollBeltSize, 0);
-  else if (point.X() > belt_box.MaxX())
+  else if (point.X() > belt_box.Right())
     point.Move(kAutoscrollBeltSize, 0);
 
   if (point.Y() < belt_box.Y())
     point.Move(0, -kAutoscrollBeltSize);
-  else if (point.Y() > belt_box.MaxY())
+  else if (point.Y() > belt_box.Bottom())
     point.Move(0, kAutoscrollBeltSize);
 
-  return point - LayoutPoint(point_in_root_frame);
+  return PhysicalOffset::FromFloatSizeRound(point - point_in_root_frame);
 }
 
 LayoutBox* LayoutBox::FindAutoscrollable(LayoutObject* layout_object) {
@@ -1102,11 +1109,10 @@ LayoutBox* LayoutBox::FindAutoscrollable(LayoutObject* layout_object) {
 void LayoutBox::MayUpdateHoverWhenContentUnderMouseChanged(
     EventHandler& event_handler) {
   const LayoutBoxModelObject& container = ContainerForPaintInvalidation();
-  FloatQuad scroller_rect_in_frame =
-      FloatQuad(FloatRect(VisualRectIncludingCompositedScrolling(container)));
-  scroller_rect_in_frame =
-      container.LocalToAbsoluteQuad(scroller_rect_in_frame);
-  event_handler.MayUpdateHoverAfterScroll(scroller_rect_in_frame);
+  PhysicalRect scroller_rect(VisualRectIncludingCompositedScrolling(container));
+  FloatQuad scroller_quad_in_frame =
+      container.LocalRectToAbsoluteQuad(scroller_rect);
+  event_handler.MayUpdateHoverAfterScroll(scroller_quad_in_frame);
 }
 
 void LayoutBox::ScrollByRecursively(const ScrollOffset& delta) {
@@ -1159,8 +1165,8 @@ IntSize LayoutBox::ScrolledContentOffset() const {
   return GetScrollableArea()->ScrollOffsetInt();
 }
 
-LayoutRect LayoutBox::ClippingRect(const LayoutPoint& location) const {
-  LayoutRect result = LayoutRect(LayoutRect::InfiniteIntRect());
+PhysicalRect LayoutBox::ClippingRect(const PhysicalOffset& location) const {
+  PhysicalRect result(PhysicalRect::InfiniteIntRect());
   if (ShouldClipOverflow())
     result = OverflowClipRect(location);
 
@@ -1172,7 +1178,7 @@ LayoutRect LayoutBox::ClippingRect(const LayoutPoint& location) const {
 
 bool LayoutBox::MapVisualRectToContainer(
     const LayoutObject* container_object,
-    const LayoutPoint& container_offset,
+    const PhysicalOffset& container_offset,
     const LayoutObject* ancestor,
     VisualRectFlags visual_rect_flags,
     TransformState& transform_state) const {
@@ -1185,7 +1191,7 @@ bool LayoutBox::MapVisualRectToContainer(
   // If there is no transform on this box, adjust for container offset and
   // container scrolling, then apply container clip.
   if (!ShouldUseTransformFromContainer(container_object)) {
-    transform_state.MoveBy(container_offset, accumulation);
+    transform_state.Move(container_offset, accumulation);
     if (container_object->IsBox() && container_object != ancestor &&
         !ToLayoutBox(container_object)
              ->MapContentsRectToBoxSpace(transform_state, accumulation, *this,
@@ -1223,8 +1229,8 @@ bool LayoutBox::MapVisualRectToContainer(
     transform.Multiply(Layer()->CurrentTransform());
 
   // b) Container offset.
-  transform.PostTranslate(container_offset.X().ToFloat(),
-                          container_offset.Y().ToFloat());
+  transform.PostTranslate(container_offset.left.ToFloat(),
+                          container_offset.top.ToFloat());
 
   // c) Container scroll offset.
   if (container_object->IsBox() && container_object != ancestor &&
@@ -1273,10 +1279,8 @@ bool LayoutBox::MapContentsRectToBoxSpace(
   if (!HasClipRelatedProperty())
     return true;
 
-  if (ContainedContentsScroll(contents)) {
-    LayoutSize offset = LayoutSize(-ScrolledContentOffset());
-    transform_state.Move(offset, accumulation);
-  }
+  if (ContainedContentsScroll(contents))
+    transform_state.Move(PhysicalOffset(-ScrolledContentOffset()));
 
   return ApplyBoxClips(transform_state, accumulation, visual_rect_flags);
 }
@@ -1296,10 +1300,10 @@ bool LayoutBox::ApplyBoxClips(
   // This won't work fully correctly for fixed-position elements, who should
   // receive CSS clip but for whom the current object is not in the containing
   // block chain.
-  LayoutRect clip_rect = ClippingRect(LayoutPoint());
+  PhysicalRect clip_rect = ClippingRect(PhysicalOffset());
 
   transform_state.Flatten();
-  LayoutRect rect(transform_state.LastPlanarQuad().EnclosingBoundingBox());
+  PhysicalRect rect(transform_state.LastPlanarQuad().EnclosingBoundingBox());
   bool does_intersect;
   if (visual_rect_flags & kEdgeInclusive) {
     does_intersect = rect.InclusiveIntersect(clip_rect);
@@ -1590,19 +1594,19 @@ bool LayoutBox::HitTestAllPhases(HitTestResult& result,
   // If we have clipping, then we can't have any spillout.
   // TODO(pdr): Why is this optimization not valid for the effective root?
   if (!IsEffectiveRootScroller()) {
-    LayoutRect overflow_box;
+    PhysicalRect overflow_box;
     if (result.GetHitTestRequest().GetType() &
         HitTestRequest::kHitTestVisualOverflow) {
-      overflow_box = VisualOverflowRectIncludingFilters();
+      overflow_box = PhysicalVisualOverflowRectIncludingFilters();
     } else {
       overflow_box = (HasOverflowClip() || ShouldApplyPaintContainment())
-                         ? BorderBoxRect()
-                         : VisualOverflowRect();
-      FlipForWritingMode(overflow_box);
+                         ? PhysicalBorderBoxRect()
+                         : PhysicalVisualOverflowRect();
     }
-    LayoutPoint adjusted_location = accumulated_offset + Location();
-    overflow_box.MoveBy(adjusted_location);
-    if (!location_in_container.Intersects(overflow_box))
+
+    LayoutRect adjusted_overflow_box = overflow_box.ToLayoutRect();
+    adjusted_overflow_box.MoveBy(accumulated_offset + Location());
+    if (!location_in_container.Intersects(adjusted_overflow_box))
       return false;
   }
   return LayoutObject::HitTestAllPhases(result, location_in_container,
@@ -1653,16 +1657,15 @@ bool LayoutBox::NodeAtPoint(HitTestResult& result,
     LayoutRect bounds_rect;
     if (result.GetHitTestRequest().GetType() &
         HitTestRequest::kHitTestVisualOverflow) {
-      bounds_rect = VisualOverflowRectIncludingFilters();
-      FlipForWritingMode(bounds_rect);
+      bounds_rect = PhysicalVisualOverflowRectIncludingFilters().ToLayoutRect();
     } else {
       bounds_rect = BorderBoxRect();
     }
     bounds_rect.Move(ToSize(adjusted_location));
     if (location_in_container.Intersects(bounds_rect)) {
-      UpdateHitTestResult(result,
-                          FlipForWritingMode(location_in_container.Point() -
-                                             ToLayoutSize(adjusted_location)));
+      UpdateHitTestResult(result, DeprecatedFlipForWritingMode(
+                                      location_in_container.Point() -
+                                      ToLayoutSize(adjusted_location)));
       if (result.AddNodeToListBasedTestResult(NodeForHitTest(),
                                               location_in_container,
                                               bounds_rect) == kStopHitTesting)
@@ -1704,18 +1707,18 @@ void LayoutBox::Paint(const PaintInfo& paint_info) const {
 
 void LayoutBox::PaintBoxDecorationBackground(
     const PaintInfo& paint_info,
-    const LayoutPoint& paint_offset) const {
+    const PhysicalOffset& paint_offset) const {
   BoxPainter(*this).PaintBoxDecorationBackground(paint_info, paint_offset);
 }
 
-bool LayoutBox::GetBackgroundPaintedExtent(LayoutRect& painted_extent) const {
+bool LayoutBox::GetBackgroundPaintedExtent(PhysicalRect& painted_extent) const {
   DCHECK(StyleRef().HasBackground());
 
   // LayoutView is special in the sense that it expands to the whole canvas,
   // thus can't be handled by this function.
   DCHECK(!IsLayoutView());
 
-  LayoutRect background_rect(BorderBoxRect());
+  PhysicalRect background_rect(PhysicalBorderBoxRect());
 
   Color background_color = ResolveColor(GetCSSPropertyBackgroundColor());
   if (background_color.Alpha()) {
@@ -1738,12 +1741,12 @@ bool LayoutBox::GetBackgroundPaintedExtent(LayoutRect& painted_extent) const {
                      background_rect);
   if (geometry.HasNonLocalGeometry())
     return false;
-  painted_extent = LayoutRect(geometry.SnappedDestRect());
+  painted_extent = PhysicalRect(geometry.SnappedDestRect());
   return true;
 }
 
 bool LayoutBox::BackgroundIsKnownToBeOpaqueInRect(
-    const LayoutRect& local_rect) const {
+    const PhysicalRect& local_rect) const {
   // If the background transfers to view, the used background of this object
   // is transparent.
   if (BackgroundTransfersToView())
@@ -1799,7 +1802,7 @@ static bool IsCandidateForOpaquenessTest(const LayoutBox& child_box) {
 }
 
 bool LayoutBox::ForegroundIsKnownToBeOpaqueInRect(
-    const LayoutRect& local_rect,
+    const PhysicalRect& local_rect,
     unsigned max_depth_to_test) const {
   if (!max_depth_to_test)
     return false;
@@ -1810,20 +1813,21 @@ bool LayoutBox::ForegroundIsKnownToBeOpaqueInRect(
     LayoutBox* child_box = ToLayoutBox(child);
     if (!IsCandidateForOpaquenessTest(*child_box))
       continue;
-    LayoutPoint child_location = child_box->Location();
+    PhysicalOffset child_location = child_box->PhysicalLocation();
     if (child_box->IsInFlowPositioned())
-      child_location.Move(child_box->OffsetForInFlowPosition());
-    LayoutRect child_local_rect = local_rect;
-    child_local_rect.MoveBy(-child_location);
+      child_location += child_box->OffsetForInFlowPosition();
+    PhysicalRect child_local_rect = local_rect;
+    child_local_rect.Move(-child_location);
     if (child_local_rect.Y() < 0 || child_local_rect.X() < 0) {
       // If there is unobscured area above/left of a static positioned box then
-      // the rect is probably not covered.
+      // the rect is probably not covered. This can cause false-negative in
+      // non-horizontal-tb writing mode but is allowed.
       if (!child_box->IsPositioned())
         return false;
       continue;
     }
-    if (child_local_rect.MaxY() > child_box->Size().Height() ||
-        child_local_rect.MaxX() > child_box->Size().Width())
+    if (child_local_rect.Bottom() > child_box->Size().Height() ||
+        child_local_rect.Right() > child_box->Size().Width())
       continue;
     if (child_box->BackgroundIsKnownToBeOpaqueInRect(child_local_rect))
       return true;
@@ -1847,7 +1851,7 @@ bool LayoutBox::ComputeBackgroundIsKnownToBeObscured() const {
   // FIXME: box-shadow is painted while background painting.
   if (StyleRef().BoxShadow())
     return false;
-  LayoutRect background_rect;
+  PhysicalRect background_rect;
   if (!GetBackgroundPaintedExtent(background_rect))
     return false;
   return ForegroundIsKnownToBeOpaqueInRect(background_rect,
@@ -1855,7 +1859,7 @@ bool LayoutBox::ComputeBackgroundIsKnownToBeObscured() const {
 }
 
 void LayoutBox::PaintMask(const PaintInfo& paint_info,
-                          const LayoutPoint& paint_offset) const {
+                          const PhysicalOffset& paint_offset) const {
   BoxPainter(*this).PaintMask(paint_info, paint_offset);
 }
 
@@ -1920,9 +1924,12 @@ void LayoutBox::ImageChanged(WrappedImagePtr image,
 }
 
 ResourcePriority LayoutBox::ComputeResourcePriority() const {
-  LayoutRect view_bounds = ViewRect();
-  LayoutRect object_bounds = PhysicalContentBoxRect();
-  object_bounds.MoveBy(LayoutPoint(LocalToAbsolute()));
+  PhysicalRect view_bounds = ViewRect();
+  PhysicalRect object_bounds = PhysicalContentBoxRect();
+  // TODO(japhet): Is this IgnoreTransforms correct? Would it be better to use
+  // the visual rect (which has ancestor clips and transforms applied)? Should
+  // we map to the top-level viewport instead of the current (sub) frame?
+  object_bounds.Move(LocalToAbsolutePoint(PhysicalOffset(), kIgnoreTransforms));
 
   // The object bounds might be empty right now, so intersects will fail since
   // it doesn't deal with empty rects. Use LayoutRect::contains in that case.
@@ -1932,7 +1939,7 @@ ResourcePriority LayoutBox::ComputeResourcePriority() const {
   else
     is_visible = view_bounds.Contains(object_bounds);
 
-  LayoutRect screen_rect;
+  PhysicalRect screen_rect;
   if (!object_bounds.IsEmpty()) {
     screen_rect = view_bounds;
     screen_rect.Intersect(object_bounds);
@@ -1966,12 +1973,12 @@ void LayoutBox::SizeChanged() {
 }
 
 bool LayoutBox::IntersectsVisibleViewport() const {
-  LayoutRect rect = VisualOverflowRect();
+  PhysicalRect rect = PhysicalVisualOverflowRect();
   LayoutView* layout_view = View();
   while (layout_view->GetFrame()->OwnerLayoutObject())
     layout_view = layout_view->GetFrame()->OwnerLayoutObject()->View();
   MapToVisualRectInAncestorSpace(layout_view, rect);
-  return rect.Intersects(LayoutRect(
+  return rect.Intersects(PhysicalRect(
       layout_view->GetFrameView()->GetScrollableArea()->VisibleContentRect()));
 }
 
@@ -2005,10 +2012,10 @@ void LayoutBox::InvalidatePaint(const PaintInvalidatorContext& context) const {
   BoxPaintInvalidator(*this, context).InvalidatePaint();
 }
 
-LayoutRect LayoutBox::OverflowClipRect(
-    const LayoutPoint& location,
+PhysicalRect LayoutBox::OverflowClipRect(
+    const PhysicalOffset& location,
     OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior) const {
-  LayoutRect clip_rect;
+  PhysicalRect clip_rect;
 
   if (IsEffectiveRootScroller()) {
     // If this box is the effective root scroller, use the viewport clipping
@@ -2016,15 +2023,13 @@ LayoutRect LayoutBox::OverflowClipRect(
     // box does not. We can do this because the effective root scroller is
     // restricted such that it exactly fills the viewport. See
     // RootScrollerController::IsValidRootScroller()
-    clip_rect = LayoutRect(location, View()->ViewRect().Size());
+    clip_rect = PhysicalRect(location, View()->ViewRect().size);
   } else {
     // FIXME: When overflow-clip (CSS3) is implemented, we'll obtain the
     // property here.
-    clip_rect = BorderBoxRect();
-    clip_rect.SetLocation(location + clip_rect.Location() +
-                          LayoutSize(BorderLeft(), BorderTop()));
-    clip_rect.SetSize(clip_rect.Size() -
-                      LayoutSize(BorderWidth(), BorderHeight()));
+    clip_rect = PhysicalBorderBoxRect();
+    clip_rect.Move(location);
+    clip_rect.Contract(BorderBoxOutsets());
   }
 
   if (HasOverflowClip())
@@ -2037,49 +2042,45 @@ LayoutRect LayoutBox::OverflowClipRect(
 }
 
 void LayoutBox::ExcludeScrollbars(
-    LayoutRect& rect,
+    PhysicalRect& rect,
     OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior) const {
   if (PaintLayerScrollableArea* scrollable_area = GetScrollableArea()) {
     if (ShouldPlaceBlockDirectionScrollbarOnLogicalLeft()) {
-      rect.Move(scrollable_area->VerticalScrollbarWidth(
-                    overlay_scrollbar_clip_behavior),
-                0);
+      rect.offset.left += scrollable_area->VerticalScrollbarWidth(
+          overlay_scrollbar_clip_behavior);
     }
-    rect.Contract(scrollable_area->VerticalScrollbarWidth(
-                      overlay_scrollbar_clip_behavior),
-                  scrollable_area->HorizontalScrollbarHeight(
-                      overlay_scrollbar_clip_behavior));
+    rect.size.width -= scrollable_area->VerticalScrollbarWidth(
+        overlay_scrollbar_clip_behavior);
+    rect.size.height -= scrollable_area->HorizontalScrollbarHeight(
+        overlay_scrollbar_clip_behavior);
   }
 }
 
-LayoutRect LayoutBox::ClipRect(const LayoutPoint& location) const {
-  LayoutRect border_box_rect = BorderBoxRect();
-  LayoutRect clip_rect =
-      LayoutRect(border_box_rect.Location() + location, border_box_rect.Size());
+PhysicalRect LayoutBox::ClipRect(const PhysicalOffset& location) const {
+  PhysicalRect clip_rect(location, Size());
+  LayoutUnit width = Size().Width();
+  LayoutUnit height = Size().Height();
 
   if (!StyleRef().ClipLeft().IsAuto()) {
-    LayoutUnit c =
-        ValueForLength(StyleRef().ClipLeft(), border_box_rect.Width());
-    clip_rect.Move(c, LayoutUnit());
-    clip_rect.Contract(c, LayoutUnit());
+    LayoutUnit c = ValueForLength(StyleRef().ClipLeft(), width);
+    clip_rect.offset.left += c;
+    clip_rect.size.width -= c;
   }
 
-  if (!StyleRef().ClipRight().IsAuto())
-    clip_rect.Contract(
-        Size().Width() - ValueForLength(StyleRef().ClipRight(), Size().Width()),
-        LayoutUnit());
+  if (!StyleRef().ClipRight().IsAuto()) {
+    clip_rect.size.width -=
+        width - ValueForLength(StyleRef().ClipRight(), width);
+  }
 
   if (!StyleRef().ClipTop().IsAuto()) {
-    LayoutUnit c =
-        ValueForLength(StyleRef().ClipTop(), border_box_rect.Height());
-    clip_rect.Move(LayoutUnit(), c);
-    clip_rect.Contract(LayoutUnit(), c);
+    LayoutUnit c = ValueForLength(StyleRef().ClipTop(), height);
+    clip_rect.offset.top += c;
+    clip_rect.size.height -= c;
   }
 
   if (!StyleRef().ClipBottom().IsAuto()) {
-    clip_rect.Contract(LayoutUnit(),
-                       Size().Height() - ValueForLength(StyleRef().ClipBottom(),
-                                                        Size().Height()));
+    clip_rect.size.height -=
+        height - ValueForLength(StyleRef().ClipBottom(), height);
   }
 
   return clip_rect;
@@ -2250,16 +2251,16 @@ void LayoutBox::MapAncestorToLocal(const LayoutBoxModelObject* ancestor,
   LayoutBoxModelObject::MapAncestorToLocal(ancestor, transform_state, mode);
 }
 
-LayoutSize LayoutBox::OffsetFromContainerInternal(
+PhysicalOffset LayoutBox::OffsetFromContainerInternal(
     const LayoutObject* o,
     bool ignore_scroll_offset) const {
   DCHECK_EQ(o, Container());
 
-  LayoutSize offset;
+  PhysicalOffset offset;
   if (IsInFlowPositioned())
     offset += OffsetForInFlowPosition();
 
-  offset += PhysicalLocationOffset();
+  offset += PhysicalLocation();
 
   if (o->HasOverflowClip())
     offset += OffsetFromScrollableContainer(o, ignore_scroll_offset);
@@ -2312,62 +2313,90 @@ void LayoutBox::SetCachedLayoutResult(const NGLayoutResult& layout_result,
     return;
   if (layout_result.GetConstraintSpaceForCaching().IsIntermediateLayout())
     return;
+  if (layout_result.PhysicalFragment().BreakToken())
+    return;
 
   cached_layout_result_ = &layout_result;
 }
 
 scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
     const NGConstraintSpace& new_space,
-    const NGBreakToken* break_token) {
+    const NGBreakToken* break_token,
+    base::Optional<NGFragmentGeometry>* initial_fragment_geometry,
+    NGLayoutCacheStatus* out_cache_status) {
+  *out_cache_status = NGLayoutCacheStatus::kNeedsLayout;
+
   if (!RuntimeEnabledFeatures::LayoutNGFragmentCachingEnabled())
-    return nullptr;
-
-  // TODO(cbiesinger): Support caching fragmented boxes.
-  if (break_token)
-    return nullptr;
-
-  if (SelfNeedsLayoutForStyle() || NormalChildNeedsLayout() ||
-      PosChildNeedsLayout() || NeedsSimplifiedNormalFlowLayout() ||
-      (NeedsPositionedMovementLayout() && !NeedsPositionedMovementLayoutOnly()))
     return nullptr;
 
   const NGLayoutResult* cached_layout_result = GetCachedLayoutResult();
   if (!cached_layout_result)
     return nullptr;
 
+  // TODO(cbiesinger): Support caching fragmented boxes.
+  if (break_token)
+    return nullptr;
+
+  // Set our initial temporary cache status to "hit".
+  NGLayoutCacheStatus cache_status = NGLayoutCacheStatus::kHit;
+
+  // If the display-lock blocked child layout, then we don't clear child needs
+  // layout bits. However, we can still use the cached result, since we will
+  // re-layout when unlocking.
+  bool child_needs_layout_unless_locked =
+      !LayoutBlockedByDisplayLock(DisplayLockContext::kChildren) &&
+      (PosChildNeedsLayout() || NormalChildNeedsLayout());
+
+  if (SelfNeedsLayoutForStyle() || child_needs_layout_unless_locked ||
+      NeedsSimplifiedNormalFlowLayout() ||
+      (NeedsPositionedMovementLayout() &&
+       !NeedsPositionedMovementLayoutOnly())) {
+    // Check if we only need "simplified" layout. We don't abort yet, as we
+    // need to check if other things (like floats) will require us to perform a
+    // full layout.
+    //
+    // We don't regenerate any lineboxes during our "simplified" layout pass.
+    // If something needs "simplified" layout within a linebox, (e.g. an
+    // atomic-inline) we miss the cache.
+    if (NeedsSimplifiedLayoutOnly() &&
+        (!ChildrenInline() || !NeedsSimplifiedNormalFlowLayout()))
+      cache_status = NGLayoutCacheStatus::kNeedsSimplifiedLayout;
+    else
+      return nullptr;
+  }
+
+  const NGPhysicalContainerFragment& physical_fragment =
+      cached_layout_result->PhysicalFragment();
+
+  DCHECK(!physical_fragment.BreakToken());
+
   // If we have an orthogonal flow root descendant, we don't attempt to cache
   // our layout result. This is because the initial containing block size may
   // have changed, having a high likelihood of changing the size of the
   // orthogonal flow root.
-  if (cached_layout_result->HasOrthogonalFlowRoots())
+  if (physical_fragment.HasOrthogonalFlowRoots())
     return nullptr;
 
   NGBlockNode node(this);
-  if (!MaySkipLayout(node, *cached_layout_result, new_space))
-    return nullptr;
-  // It is possible that our intrinsic size has changed; check for that here.
-  // TODO(cbiesinger): Move this to ::MaySkipLayout.
-  if (new_space.IsShrinkToFit() || NeedMinMaxSize(StyleRef())) {
-    NGBoxFragment fragment(
-        new_space.GetWritingMode(), StyleRef().Direction(),
-        To<NGPhysicalBoxFragment>(*cached_layout_result->PhysicalFragment()));
-    // If we get here, we know that border and padding haven't changed.
-    NGBoxStrut border_padding = fragment.Borders() + fragment.Padding();
-    LayoutUnit size =
-        ComputeInlineSizeForFragment(new_space, node, border_padding);
-    if (size != fragment.InlineSize())
-      return nullptr;
-  }
+  NGLayoutCacheStatus size_cache_status = CalculateSizeBasedLayoutCacheStatus(
+      node, *cached_layout_result, new_space, initial_fragment_geometry);
 
-  const NGConstraintSpace& old_space =
-      cached_layout_result->GetConstraintSpaceForCaching();
+  // If our size may change (or we know a descendants size may change), we miss
+  // the cache.
+  if (size_cache_status == NGLayoutCacheStatus::kNeedsLayout)
+    return nullptr;
+
+  // Update our temporary cache status, if the size cache check indicated we
+  // might need simplified layout.
+  if (size_cache_status == NGLayoutCacheStatus::kNeedsSimplifiedLayout)
+    cache_status = NGLayoutCacheStatus::kNeedsSimplifiedLayout;
 
   base::Optional<LayoutUnit> bfc_block_offset =
       cached_layout_result->BfcBlockOffset();
   LayoutUnit bfc_line_offset = new_space.BfcOffset().line_offset;
 
-  DCHECK_EQ(old_space.BfcOffset().line_offset,
-            cached_layout_result->BfcLineOffset());
+  const NGConstraintSpace& old_space =
+      cached_layout_result->GetConstraintSpaceForCaching();
 
   // Check the BFC offset. Even if they don't match, there're some cases we can
   // still reuse the fragment.
@@ -2384,50 +2413,50 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
   bool is_exclusion_space_equal =
       new_space.ExclusionSpace() == old_space.ExclusionSpace();
 
-  // If anything changes within the layout regarding floats, we need to perform
-  // a series of additional checks to see if the result can still be reused.
-  if (!is_bfc_offset_equal || !is_exclusion_space_equal ||
-      new_space.ClearanceOffset() != old_space.ClearanceOffset()) {
-    // We can't reuse a result if it was previously affected by clearance.
-    //
-    // TODO(layout-dev): There may be cases where we can re-use results here.
-    // However as there are complexities regarding margin-collapsing and
-    // clearance we currently don't attempt to cache anything.
-    if (cached_layout_result->IsPushedByFloats()) {
-      DCHECK(old_space.HasFloats());
+  bool is_new_formatting_context =
+      physical_fragment.IsBlockFormattingContextRoot();
+
+  // If a node *doesn't* establish a new formatting context it may be affected
+  // by floats, or clearance.
+  // If anything has changed prior to us (different exclusion space, etc), we
+  // need to perform a series of additional checks if we can still reuse this
+  // layout result.
+  if (!is_new_formatting_context &&
+      (!is_bfc_offset_equal || !is_exclusion_space_equal ||
+       new_space.ClearanceOffset() != old_space.ClearanceOffset())) {
+    DCHECK(!CreatesNewFormattingContext());
+
+    // If we have a different BFC offset, or exclusion space we can't perform
+    // "simplified" layout.
+    // This may occur if our %-block-size has changed (allowing "simplified"
+    // layout), and we've been pushed down in the BFC coordinate space by a
+    // sibling.
+    // The "simplified" layout algorithm doesn't have the required logic to
+    // shift any added exclusions within the output exclusion space.
+    if (cache_status == NGLayoutCacheStatus::kNeedsSimplifiedLayout)
       return nullptr;
-    }
 
-    // Check we have a descendant that *may* be positioned above the block-start
-    // edge. We abort if either the old or new space has floats, as we don't
-    // keep track of how far above the child could be. This case is relatively
-    // rare, and only occurs with negative margins.
-    if (cached_layout_result->MayHaveDescendantAboveBlockStart() &&
-        (old_space.HasFloats() || new_space.HasFloats()))
+    DCHECK_EQ(cache_status, NGLayoutCacheStatus::kHit);
+
+    if (!MaySkipLayoutWithinBlockFormattingContext(
+            *cached_layout_result, new_space, &bfc_block_offset))
       return nullptr;
-
-    // We can now try to adjust the BFC block-offset.
-    if (bfc_block_offset) {
-      // Check if the previous position may intersect with any floats.
-      if (*bfc_block_offset <
-          old_space.ExclusionSpace().ClearanceOffset(EClear::kBoth))
-        return nullptr;
-
-      bfc_block_offset = *bfc_block_offset -
-                         old_space.BfcOffset().block_offset +
-                         new_space.BfcOffset().block_offset;
-
-      // Check if the new position may intersect with any floats.
-      if (*bfc_block_offset <
-          new_space.ExclusionSpace().ClearanceOffset(EClear::kBoth))
-        return nullptr;
-    }
   }
+
+  // We've performed all of the cache checks at this point. If we need
+  // "simplified" layout then abort now.
+  *out_cache_status = cache_status;
+  if (*out_cache_status == NGLayoutCacheStatus::kNeedsSimplifiedLayout)
+    return nullptr;
+
+  DCHECK_EQ(*out_cache_status, NGLayoutCacheStatus::kHit);
 
   // We can safely re-use this fragment if we are positioned, and only our
   // position constraints changed (left/top/etc). However we need to clear the
-  // dirty layout bit(s).
-  ClearNeedsLayout();
+  // dirty layout bit(s). Note that we may be here because we are display locked
+  // and have cached a locked layout result. In that case, we still need to
+  // retain child bits.
+  ClearNeedsLayout(!LayoutBlockedByDisplayLock(DisplayLockContext::kChildren));
 
   // The checks above should be enough to bail if layout is incomplete, but
   // let's verify:
@@ -2669,8 +2698,8 @@ bool LayoutBox::PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
   return true;
 }
 
-LayoutRect LayoutBox::LocalVisualRectIgnoringVisibility() const {
-  return SelfVisualOverflowRect();
+PhysicalRect LayoutBox::LocalVisualRectIgnoringVisibility() const {
+  return PhysicalSelfVisualOverflowRect();
 }
 
 void LayoutBox::InflateVisualRectForFilterUnderContainer(
@@ -2681,15 +2710,14 @@ void LayoutBox::InflateVisualRectForFilterUnderContainer(
   // Apply visual overflow caused by reflections and filters defined on objects
   // between this object and container (not included) or ancestorToStopAt
   // (included).
-  LayoutSize offset_from_container = OffsetFromContainer(&container);
+  PhysicalOffset offset_from_container = OffsetFromContainer(&container);
   transform_state.Move(offset_from_container);
   for (LayoutObject* parent = Parent(); parent && parent != container;
        parent = parent->Parent()) {
     if (parent->IsBox()) {
       // Convert rect into coordinate space of parent to apply parent's
       // reflection and filter.
-      LayoutSize parent_offset =
-          parent->OffsetFromAncestor(&container);
+      PhysicalOffset parent_offset = parent->OffsetFromAncestor(&container);
       transform_state.Move(-parent_offset);
       ToLayoutBox(parent)->InflateVisualRectForFilter(transform_state);
       transform_state.Move(parent_offset);
@@ -2725,39 +2753,34 @@ bool LayoutBox::MapToVisualRectInAncestorSpaceInternal(
   if (!container)
     return true;
 
-  LayoutPoint container_offset;
+  PhysicalOffset container_offset;
   if (container->IsBox()) {
-    container_offset.MoveBy(PhysicalLocation(ToLayoutBox(container)));
+    container_offset += PhysicalLocation(ToLayoutBox(container));
 
     // If the row is the ancestor, however, add its offset back in. In effect,
     // this passes from the joint <td> / <tr> coordinate space to the parent
     // space, then back to <tr> / <td>.
     if (table_row_container) {
-      container_offset.MoveBy(
-          -table_row_container->PhysicalLocation(ToLayoutBox(container)));
+      container_offset -=
+          table_row_container->PhysicalLocation(ToLayoutBox(container));
     }
-  } else if (container->IsRuby()) {
-    // TODO(wkorman): Generalize Ruby specialization and/or document more
-    // clearly. See the accompanying specialization in
-    // LayoutInline::mapToVisualRectInAncestorSpaceInternal.
-    container_offset.MoveBy(PhysicalLocation());
   } else {
-    container_offset.MoveBy(Location());
+    container_offset += PhysicalLocation();
   }
 
   const ComputedStyle& style_to_use = StyleRef();
   EPosition position = style_to_use.GetPosition();
   if (IsOutOfFlowPositioned() && container->IsLayoutInline() &&
       container->CanContainOutOfFlowPositionedElement(position)) {
-    container_offset.Move(
-        ToLayoutInline(container)->OffsetForInFlowPositionedInline(*this));
+    container_offset +=
+        ToLayoutInline(container)->OffsetForInFlowPositionedInline(*this);
   } else if (style_to_use.HasInFlowPosition() && Layer()) {
     // Apply the relative position offset when invalidating a rectangle. The
     // layer is translated, but the layout box isn't, so we need to do this to
     // get the right dirty rect.  Since this is called from
     // LayoutObject::setStyle, the relative position flag on the LayoutObject
     // has been cleared, so use the one on the style().
-    container_offset.Move(Layer()->OffsetForInFlowPosition());
+    container_offset += Layer()->OffsetForInFlowPosition();
   }
 
   if (skip_info.FilterSkipped()) {
@@ -2777,8 +2800,7 @@ bool LayoutBox::MapToVisualRectInAncestorSpaceInternal(
 
     // If the ancestor is below the container, then we need to map the rect into
     // ancestor's coordinates.
-    LayoutSize container_offset =
-        ancestor->OffsetFromAncestor(container);
+    PhysicalOffset container_offset = ancestor->OffsetFromAncestor(container);
     transform_state.Move(-container_offset, accumulation);
     return true;
   }
@@ -2801,9 +2823,10 @@ void LayoutBox::InflateVisualRectForFilter(
     return;
 
   transform_state.Flatten();
-  LayoutRect rect(transform_state.LastPlanarQuad().BoundingBox());
+  PhysicalRect rect = PhysicalRect::EnclosingRect(
+      transform_state.LastPlanarQuad().BoundingBox());
   transform_state.SetQuad(
-      FloatQuad(FloatRect(Layer()->MapLayoutRectForFilter(rect))));
+      FloatQuad(FloatRect(Layer()->MapRectForFilter(rect))));
 }
 
 static bool ShouldRecalculateMinMaxWidthsAffectedByAncestor(
@@ -2892,10 +2915,16 @@ static float GetMaxWidthListMarker(const LayoutBox* layout_object) {
 DISABLE_CFI_PERF
 void LayoutBox::ComputeLogicalWidth(
     LogicalExtentComputedValues& computed_values) const {
-  computed_values.extent_ =
-      ShouldApplySizeContainment()
-          ? BorderAndPaddingLogicalWidth() + ScrollbarLogicalWidth()
-          : LogicalWidth();
+  if (ShouldApplySizeContainment()) {
+    computed_values.extent_ =
+        BorderAndPaddingLogicalWidth() + ScrollbarLogicalWidth();
+  } else if (DisplayLockInducesSizeContainment()) {
+    computed_values.extent_ =
+        BorderAndPaddingLogicalWidth() + ScrollbarLogicalWidth() +
+        GetDisplayLockContext()->GetLockedContentLogicalWidth();
+  } else {
+    computed_values.extent_ = LogicalWidth();
+  }
   computed_values.position_ = LogicalLeft();
   computed_values.margins_.start_ = MarginStart();
   computed_values.margins_.end_ = MarginEnd();
@@ -3121,9 +3150,13 @@ LayoutUnit LayoutBox::ComputeLogicalWidthUsing(
     // Reset width so that any percent margins on inline children do not
     // use it when calculating min/max preferred width.
     // TODO(crbug.com/710026): Remove const_cast
+    LayoutUnit w = LogicalWidth();
     const_cast<LayoutBox*>(this)->SetLogicalWidth(LayoutUnit());
-    return std::max(MinPreferredLogicalWidth(),
-                    std::min(MaxPreferredLogicalWidth(), logical_width_result));
+    LayoutUnit result =
+        std::max(MinPreferredLogicalWidth(),
+                 std::min(MaxPreferredLogicalWidth(), logical_width_result));
+    const_cast<LayoutBox*>(this)->SetLogicalWidth(w);
+    return result;
   }
   return logical_width_result;
 }
@@ -3384,10 +3417,18 @@ static inline const Length& HeightForDocumentElement(const Document& document) {
 
 void LayoutBox::ComputeLogicalHeight(
     LogicalExtentComputedValues& computed_values) const {
-  LayoutUnit height =
-      ShouldApplySizeContainment()
-          ? BorderAndPaddingLogicalHeight() + ScrollbarLogicalHeight()
-          : LogicalHeight();
+  LayoutUnit height;
+  // TODO(962979): Implement grid layout with display locking. We need to figure
+  // out what happens here if IsLayoutGrid() is true and size containment is
+  // specified while the box is locked.
+  if (ShouldApplySizeContainment() && !IsLayoutGrid()) {
+    height = BorderAndPaddingLogicalHeight() + ScrollbarLogicalHeight();
+  } else if (DisplayLockInducesSizeContainment()) {
+    height = BorderAndPaddingLogicalHeight() + ScrollbarLogicalHeight() +
+             GetDisplayLockContext()->GetLockedContentLogicalHeight();
+  } else {
+    height = LogicalHeight();
+  }
   ComputeLogicalHeight(height, LogicalTop(), computed_values);
 }
 
@@ -3520,12 +3561,21 @@ void LayoutBox::ComputeLogicalHeight(
 }
 
 LayoutUnit LayoutBox::ComputeLogicalHeightWithoutLayout() const {
-  // TODO(cbiesinger): We should probably return something other than just
-  // border + padding, but for now we have no good way to do anything else
-  // without layout, so we just use that.
   LogicalExtentComputedValues computed_values;
-  ComputeLogicalHeight(BorderAndPaddingLogicalHeight(), LayoutUnit(),
-                       computed_values);
+
+  if (!SelfNeedsLayout() && !ShouldApplySizeContainment() &&
+      DisplayLockInducesSizeContainment()) {
+    ComputeLogicalHeight(
+        BorderAndPaddingLogicalHeight() +
+            GetDisplayLockContext()->GetLockedContentLogicalHeight(),
+        LayoutUnit(), computed_values);
+  } else {
+    // TODO(cbiesinger): We should probably return something other than just
+    // border + padding, but for now we have no good way to do anything else
+    // without layout, so we just use that.
+    ComputeLogicalHeight(BorderAndPaddingLogicalHeight(), LayoutUnit(),
+                         computed_values);
+  }
   return computed_values.extent_;
 }
 
@@ -3572,7 +3622,7 @@ LayoutUnit LayoutBox::ComputeIntrinsicLogicalContentHeightUsing(
   if (logical_height_length.IsMinContent() ||
       logical_height_length.IsMaxContent() ||
       logical_height_length.IsFitContent()) {
-    if (IsAtomicInlineLevel())
+    if (IsAtomicInlineLevel() && !IsLayoutGrid())
       return IntrinsicSize().Height();
     return intrinsic_content_height;
   }
@@ -3728,7 +3778,10 @@ LayoutUnit LayoutBox::ContainingBlockLogicalHeightForPercentageResolution(
 
   available_height -= root_margin_border_padding_height;
 
-  if (IsTable() && IsOutOfFlowPositioned())
+  // LayoutNG already includes padding in
+  // OverrideContainingBlockContentLogicalHeight so we only need to add it here
+  // for legacy containing blocks.
+  if (IsTable() && IsOutOfFlowPositioned() && !cb->IsLayoutNGObject())
     available_height += cb->PaddingLogicalHeight();
 
   return available_height;
@@ -3874,6 +3927,13 @@ bool LayoutBox::LogicalHeightComputesAsNone(SizeType size_type) const {
   const Length& logical_height = size_type == kMinSize
                                      ? StyleRef().LogicalMinHeight()
                                      : StyleRef().LogicalMaxHeight();
+
+  // Note that the values 'min-content', 'max-content' and 'fit-content' should
+  // behave as the initial value if specified in the block direction.
+  if (logical_height.IsMinContent() || logical_height.IsMaxContent() ||
+      logical_height.IsFitContent())
+    return true;
+
   Length initial_logical_height =
       size_type == kMinSize ? ComputedStyleInitialValues::InitialMinHeight()
                             : ComputedStyleInitialValues::InitialMaxHeight();
@@ -4228,11 +4288,11 @@ LayoutUnit LayoutBox::ContainingBlockLogicalHeightForPositioned(
     return LayoutUnit();
 
   LayoutUnit height_result;
-  LayoutRect bounding_box(flow->LinesBoundingBox());
+  auto bounding_box_size = flow->PhysicalLinesBoundingBox().size;
   if (containing_block->IsHorizontalWritingMode())
-    height_result = bounding_box.Height();
+    height_result = bounding_box_size.height;
   else
-    height_result = bounding_box.Width();
+    height_result = bounding_box_size.width;
   height_result -=
       (containing_block->BorderBefore() + containing_block->BorderAfter());
   return height_result;
@@ -4299,8 +4359,7 @@ void LayoutBox::ComputeInlineStaticDistance(
                 ? fragment_builder->GetChildOffset(curr).inline_offset
                 : ToLayoutBox(curr)->LogicalLeft();
         if (ToLayoutBox(curr)->IsInFlowPositioned())
-          static_position +=
-              ToLayoutBox(curr)->OffsetForInFlowPosition().Width();
+          static_position += ToLayoutBox(curr)->OffsetForInFlowPosition().left;
         if (curr->IsInsideFlowThread())
           static_position += AccumulateStaticOffsetForFlowThread(
               *ToLayoutBox(curr), static_position, static_block_position);
@@ -4337,9 +4396,10 @@ void LayoutBox::ComputeInlineStaticDistance(
                fragment_builder->GetLayoutObject() == curr->Parent())
                   ? fragment_builder->GetChildOffset(curr).inline_offset
                   : ToLayoutBox(curr)->LogicalLeft();
-          if (ToLayoutBox(curr)->IsInFlowPositioned())
+          if (ToLayoutBox(curr)->IsInFlowPositioned()) {
             static_position -=
-                ToLayoutBox(curr)->OffsetForInFlowPosition().Width();
+                ToLayoutBox(curr)->OffsetForInFlowPosition().left;
+          }
           if (curr->IsInsideFlowThread())
             static_position -= AccumulateStaticOffsetForFlowThread(
                 *ToLayoutBox(curr), static_position, static_block_position);
@@ -4770,7 +4830,7 @@ void LayoutBox::ComputeBlockStaticDistance(
             ? fragment_builder->GetChildOffset(&box).block_offset
             : box.LogicalTop();
     if (box.IsInFlowPositioned())
-      static_logical_top += box.OffsetForInFlowPosition().Height();
+      static_logical_top += box.OffsetForInFlowPosition().top;
     if (!box.IsLayoutFlowThread())
       continue;
     // We're walking out of a flowthread here. This flow thread is not in the
@@ -4851,14 +4911,17 @@ void LayoutBox::ComputePositionedLogicalHeight(
   // see FIXME 2
 
   // Calculate constraint equation values for 'max-height' case.
-  if (!style_to_use.LogicalMaxHeight().IsMaxSizeNone()) {
+  const Length& logical_max_height = style_to_use.LogicalMaxHeight();
+  if (!logical_max_height.IsMaxSizeNone() &&
+      !logical_max_height.IsMinContent() &&
+      !logical_max_height.IsMaxContent() &&
+      !logical_max_height.IsFitContent()) {
     LogicalExtentComputedValues max_values;
 
     ComputePositionedLogicalHeightUsing(
-        kMaxSize, style_to_use.LogicalMaxHeight(), container_block,
-        container_logical_height, borders_plus_padding, logical_height,
-        logical_top_length, logical_bottom_length, margin_before, margin_after,
-        max_values);
+        kMaxSize, logical_max_height, container_block, container_logical_height,
+        borders_plus_padding, logical_height, logical_top_length,
+        logical_bottom_length, margin_before, margin_after, max_values);
 
     if (computed_values.extent_ > max_values.extent_) {
       computed_values.extent_ = max_values.extent_;
@@ -4869,15 +4932,17 @@ void LayoutBox::ComputePositionedLogicalHeight(
   }
 
   // Calculate constraint equation values for 'min-height' case.
-  if (!style_to_use.LogicalMinHeight().IsZero() ||
-      style_to_use.LogicalMinHeight().IsIntrinsic()) {
+  Length logical_min_height = style_to_use.LogicalMinHeight();
+  if (logical_min_height.IsMinContent() || logical_min_height.IsMaxContent() ||
+      logical_min_height.IsFitContent())
+    logical_min_height = Length::Auto();
+  if (!logical_min_height.IsZero() || logical_min_height.IsFillAvailable()) {
     LogicalExtentComputedValues min_values;
 
     ComputePositionedLogicalHeightUsing(
-        kMinSize, style_to_use.LogicalMinHeight(), container_block,
-        container_logical_height, borders_plus_padding, logical_height,
-        logical_top_length, logical_bottom_length, margin_before, margin_after,
-        min_values);
+        kMinSize, logical_min_height, container_block, container_logical_height,
+        borders_plus_padding, logical_height, logical_top_length,
+        logical_bottom_length, margin_before, margin_after, min_values);
 
     if (computed_values.extent_ < min_values.extent_) {
       computed_values.extent_ = min_values.extent_;
@@ -5302,14 +5367,28 @@ bool LayoutBox::ShrinkToAvoidFloats() const {
 
 DISABLE_CFI_PERF
 bool LayoutBox::ShouldBeConsideredAsReplaced() const {
-  // Checkboxes and radioboxes are not isAtomicInlineLevel() nor do they have
-  // their own layoutObject in which to override avoidFloats().
   if (IsAtomicInlineLevel())
     return true;
-  Node* node = GetNode();
-  return node && node->IsElementNode() &&
-         (ToElement(node)->IsFormControlElement() ||
-          IsHTMLImageElement(ToElement(node)));
+  // We need to detect all types of objects that should be treated as replaced.
+  // Callers of this method will use the result for various things, such as
+  // determining how to size the object, or whether it needs to avoid adjacent
+  // floats, just like objects that establish a new formatting context.
+  // IsAtomicInlineLevel() will not catch all the cases. Objects may be
+  // block-level and still replaced, and we cannot deduce this from the
+  // LayoutObject type. Checkboxes and radio buttons are such examples. We need
+  // to check the Element type. This also applies to images, since we may have
+  // created a block-flow LayoutObject for the ALT text (which still counts as
+  // replaced).
+  auto* element = ToElementOrNull(GetNode());
+  if (!element)
+    return false;
+  if (element->IsFormControlElement()) {
+    // Form control elements are generally replaced objects. Fieldsets are not,
+    // though. A fieldset is (almost) a regular block container, and should be
+    // treated as such.
+    return !IsHTMLFieldSetElement(element);
+  }
+  return IsHTMLImageElement(element);
 }
 
 bool LayoutBox::HasNonCompositedScrollbars() const {
@@ -5382,7 +5461,8 @@ bool LayoutBox::ChildNeedsRelayoutForPagination(const LayoutBox& child) const {
 void LayoutBox::MarkChildForPaginationRelayoutIfNeeded(
     LayoutBox& child,
     SubtreeLayoutScope& layout_scope) {
-  DCHECK(!child.NeedsLayout());
+  DCHECK(!child.NeedsLayout() ||
+         child.LayoutBlockedByDisplayLock(DisplayLockContext::kChildren));
   LayoutState* layout_state = View()->GetLayoutState();
 
   if (layout_state->PaginationStateChanged() ||
@@ -5420,7 +5500,7 @@ void LayoutBox::AddVisualEffectOverflow() {
     return;
 
   // Add in the final overflow with shadows, outsets and outline combined.
-  LayoutRect visual_effect_overflow = BorderBoxRect();
+  PhysicalRect visual_effect_overflow = PhysicalBorderBoxRect();
   LayoutRectOutsets outsets = ComputeVisualEffectOverflowOutsets();
   visual_effect_overflow.Expand(outsets);
   AddSelfVisualOverflow(visual_effect_overflow);
@@ -5438,21 +5518,16 @@ LayoutRectOutsets LayoutBox::ComputeVisualEffectOverflowOutsets() {
 
   LayoutRectOutsets outsets = style.BoxDecorationOutsets();
 
-  // Box-shadow and border-image-outsets are in physical direction. Flip into
-  // block direction.
-  if (UNLIKELY(HasFlippedBlocksWritingMode()))
-    outsets.FlipHorizontally();
-
   if (style.HasOutline()) {
-    Vector<LayoutRect> outline_rects;
-    // The result rects are in coordinates of this object's border box.
-    AddOutlineRects(outline_rects, LayoutPoint(),
-                    OutlineRectsShouldIncludeBlockVisualOverflow());
-    LayoutRect rect = UnionRectEvenIfEmpty(outline_rects);
-    bool outline_affected = rect.Size() != Size();
+    Vector<PhysicalRect> outline_rects = OutlineRects(
+        PhysicalOffset(), OutlineRectsShouldIncludeBlockVisualOverflow());
+    PhysicalRect rect = UnionRectEvenIfEmpty(outline_rects);
+    bool outline_affected = rect.size != PhysicalSizeToBeNoop(Size());
     SetOutlineMayBeAffectedByDescendants(outline_affected);
-    rect.Inflate(style.OutlineOutsetExtent());
-    outsets.Unite(rect.ToOutsets(Size()));
+    rect.Inflate(LayoutUnit(style.OutlineOutsetExtent()));
+    outsets.Unite(LayoutRectOutsets(-rect.Y(), rect.Right() - Size().Width(),
+                                    rect.Bottom() - Size().Height(),
+                                    -rect.X()));
   }
 
   return outsets;
@@ -5504,14 +5579,13 @@ LayoutUnit LayoutBox::LayoutClientAfterEdge() const {
              : ClientLogicalBottom();
 }
 
-LayoutRect LayoutBox::VisualOverflowRectIncludingFilters() const {
-  LayoutRect bounds_rect = VisualOverflowRect();
-  FlipForWritingMode(bounds_rect);
+PhysicalRect LayoutBox::PhysicalVisualOverflowRectIncludingFilters() const {
+  PhysicalRect bounds_rect = PhysicalVisualOverflowRect();
   if (!StyleRef().HasFilter())
     return bounds_rect;
   FloatRect float_rect = Layer()->MapRectForFilter(FloatRect(bounds_rect));
   float_rect.UniteIfNonZero(Layer()->FilterReferenceBox());
-  bounds_rect = EnclosingLayoutRect(float_rect);
+  bounds_rect = PhysicalRect::EnclosingRect(float_rect);
   return bounds_rect;
 }
 
@@ -5663,13 +5737,11 @@ bool LayoutBox::HasUnsplittableScrollingOverflow() const {
 }
 
 LayoutBox::PaginationBreakability LayoutBox::GetPaginationBreakability() const {
-  // TODO(mstensho): It is wrong to check isAtomicInlineLevel() as we
-  // actually look for replaced elements.
-  if (IsAtomicInlineLevel() || HasUnsplittableScrollingOverflow() ||
+  if (ShouldBeConsideredAsReplaced() || HasUnsplittableScrollingOverflow() ||
       (Parent() && IsWritingModeRoot()) ||
       (IsOutOfFlowPositioned() &&
        StyleRef().GetPosition() == EPosition::kFixed) ||
-      ShouldApplySizeContainment())
+      ShouldApplySizeContainment() || DisplayLockInducesSizeContainment())
     return kForbidBreaks;
 
   EBreakInside break_value = BreakInside();
@@ -5719,6 +5791,16 @@ PaintLayer* LayoutBox::EnclosingFloatPaintingLayer() const {
     curr = curr->Parent();
   }
   return nullptr;
+}
+
+const LayoutBlock& LayoutBox::EnclosingScrollportBox() const {
+  const LayoutBlock* ancestor = ContainingBlock();
+  for (; ancestor; ancestor = ancestor->ContainingBlock()) {
+    if (ancestor->HasOverflowClip())
+      return *ancestor;
+  }
+  NOTREACHED();
+  return *ancestor;
 }
 
 LayoutRect LayoutBox::LogicalVisualOverflowRectForPropagation() const {
@@ -5775,12 +5857,12 @@ LayoutRect LayoutBox::LayoutOverflowRectForPropagation(
     // If we are relatively positioned or if we have a transform, then we have
     // to convert this rectangle into physical coordinates, apply relative
     // positioning and transforms to it, and then convert it back.
-    FlipForWritingMode(rect);
+    DeprecatedFlipForWritingMode(rect);
 
-    LayoutSize container_offset;
+    PhysicalOffset container_offset;
 
-    if (IsInFlowPositioned())
-      container_offset = OffsetForInFlowPosition();
+    if (IsRelPositioned())
+      container_offset = RelativePositionOffset();
 
     if (ShouldUseTransformFromContainer(container)) {
       TransformationMatrix t;
@@ -5788,11 +5870,11 @@ LayoutRect LayoutBox::LayoutOverflowRectForPropagation(
                                 container_offset, t);
       rect = t.MapRect(rect);
     } else {
-      rect.Move(container_offset);
+      rect.Move(container_offset.ToLayoutSize());
     }
 
     // Now we need to flip back.
-    FlipForWritingMode(rect);
+    DeprecatedFlipForWritingMode(rect);
   }
 
   return RectForOverflowPropagation(rect);
@@ -5800,9 +5882,7 @@ LayoutRect LayoutBox::LayoutOverflowRectForPropagation(
 
 DISABLE_CFI_PERF
 LayoutRect LayoutBox::NoOverflowRect() const {
-  auto rect = PhysicalPaddingBoxRect();
-  FlipForWritingMode(rect);
-  return rect;
+  return FlipForWritingMode(PhysicalPaddingBoxRect());
 }
 
 LayoutRect LayoutBox::VisualOverflowRect() const {
@@ -5814,16 +5894,16 @@ LayoutRect LayoutBox::VisualOverflowRect() const {
                    overflow_->visual_overflow->ContentsVisualOverflowRect());
 }
 
-LayoutPoint LayoutBox::OffsetPoint(const Element* parent) const {
+PhysicalOffset LayoutBox::OffsetPoint(const Element* parent) const {
   return AdjustedPositionRelativeTo(PhysicalLocation(), parent);
 }
 
 LayoutUnit LayoutBox::OffsetLeft(const Element* parent) const {
-  return OffsetPoint(parent).X();
+  return OffsetPoint(parent).left;
 }
 
 LayoutUnit LayoutBox::OffsetTop(const Element* parent) const {
-  return OffsetPoint(parent).Y();
+  return OffsetPoint(parent).top;
 }
 
 LayoutPoint LayoutBox::FlipForWritingModeForChild(
@@ -5852,7 +5932,7 @@ LayoutBox* LayoutBox::LocationContainer() const {
   return ToLayoutBox(container);
 }
 
-LayoutPoint LayoutBox::PhysicalLocation(
+PhysicalOffset LayoutBox::PhysicalLocation(
     const LayoutBox* flipped_blocks_container) const {
   const LayoutBox* container_box;
   if (flipped_blocks_container) {
@@ -5862,8 +5942,9 @@ LayoutPoint LayoutBox::PhysicalLocation(
     container_box = LocationContainer();
   }
   if (!container_box)
-    return Location();
-  return container_box->FlipForWritingModeForChild(this, Location());
+    return PhysicalOffset(Location());
+  return PhysicalOffset(
+      container_box->FlipForWritingModeForChild(this, Location()));
 }
 
 bool LayoutBox::HasRelativeLogicalWidth() const {
@@ -6011,8 +6092,7 @@ void LayoutBox::LogicalExtentAfterUpdatingLogicalWidth(
 }
 
 ShapeOutsideInfo* LayoutBox::GetShapeOutsideInfo() const {
-  return ShapeOutsideInfo::IsEnabledFor(*this) ? ShapeOutsideInfo::Info(*this)
-                                               : nullptr;
+  return ShapeOutsideInfo::Info(*this);
 }
 
 void LayoutBox::ClearPreviousVisualRects() {
@@ -6235,8 +6315,8 @@ void LayoutBox::ClearCustomLayoutChild() {
   rare_data_->layout_child_ = nullptr;
 }
 
-LayoutRect LayoutBox::DebugRect() const {
-  return FrameRect();
+PhysicalRect LayoutBox::DebugRect() const {
+  return PhysicalRect(PhysicalLocation(), Size());
 }
 
 bool LayoutBox::ComputeShouldClipOverflow() const {
@@ -6268,13 +6348,12 @@ TextDirection LayoutBox::ResolvedDirection() const {
   if (IsInline() && IsAtomicInlineLevel()) {
     const auto fragments = NGPaintFragment::InlineFragmentsFor(this);
     if (fragments.IsInLayoutNGInlineFormattingContext()) {
-      DCHECK(*fragments.begin()) << this;
-      const NGPaintFragment* fragment = *fragments.begin();
-      return fragment->PhysicalFragment().ResolvedDirection();
-    }
-
-    if (InlineBoxWrapper())
+      if (!fragments.IsEmpty()) {
+        return fragments.front().PhysicalFragment().ResolvedDirection();
+      }
+    } else if (InlineBoxWrapper()) {
       return InlineBoxWrapper()->Direction();
+    }
   }
   return StyleRef().Direction();
 }

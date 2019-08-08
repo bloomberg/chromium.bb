@@ -73,7 +73,7 @@ class V4EmbeddedTestServerBrowserTest : public InProcessBrowserTest {
   // Only marks the prefix as bad in the local database. The server will respond
   // with the source of truth.
   void LocallyMarkPrefixAsBad(const GURL& url, const ListIdentifier& list_id) {
-    FullHash full_hash = GetFullHash(url);
+    FullHash full_hash = V4ProtocolManagerUtil::GetFullHash(url);
     v4_db_factory_->MarkPrefixAsBad(list_id, full_hash);
   }
 
@@ -91,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(V4EmbeddedTestServerBrowserTest, SimpleTest) {
   const GURL bad_url = embedded_test_server()->GetURL(kMalwarePage);
 
   ThreatMatch match;
-  FullHash full_hash = GetFullHash(bad_url);
+  FullHash full_hash = V4ProtocolManagerUtil::GetFullHash(bad_url);
   LocallyMarkPrefixAsBad(bad_url, GetUrlMalwareId());
   match.set_platform_type(GetUrlMalwareId().platform_type());
   match.set_threat_entry_type(ThreatEntryType::URL);
@@ -117,7 +117,8 @@ IN_PROC_BROWSER_TEST_F(V4EmbeddedTestServerBrowserTest,
   // Return a different full hash, so there will be no match and no
   // interstitial.
   ThreatMatch match;
-  FullHash full_hash = GetFullHash(GURL("https://example.test/"));
+  FullHash full_hash =
+      V4ProtocolManagerUtil::GetFullHash(GURL("https://example.test/"));
   LocallyMarkPrefixAsBad(bad_url, GetUrlMalwareId());
   match.set_platform_type(GetUrlMalwareId().platform_type());
   match.set_threat_entry_type(ThreatEntryType::URL);

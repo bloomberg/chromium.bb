@@ -1,0 +1,16 @@
+{
+  metadata: {
+    namespace: "enter_key_hint_names",
+    export: "CORE_EXPORT",
+  },
+
+  data: [
+    "enter",
+    "done",
+    "go",
+    "next",
+    "previous",
+    "search",
+    "send",
+  ],
+}

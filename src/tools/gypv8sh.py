@@ -29,7 +29,7 @@ def main ():
   parser = optparse.OptionParser()
   parser.set_usage(
       "%prog v8_shell mock.js test_api.js js2webui.js "
-      "testtype inputfile inputrelfile cxxoutfile jsoutfile")
+      "testtype inputfile srcrootdir cxxoutfile jsoutfile")
   parser.add_option('-v', '--verbose', action='store_true')
   parser.add_option('-n', '--impotent', action='store_true',
                     help="don't execute; just print (as if verbose)")
@@ -43,9 +43,9 @@ def main ():
   if len(args) != 9:
     parser.error('all arguments are required.')
   (v8_shell, mock_js, test_api, js2webui, test_type,
-      inputfile, inputrelfile, cxxoutfile, jsoutfile) = args
+      inputfile, srcrootdir, cxxoutfile, jsoutfile) = args
   cmd = [v8_shell]
-  arguments = [js2webui, inputfile, inputrelfile, opts.deps_js,
+  arguments = [js2webui, inputfile, srcrootdir, opts.deps_js,
                cxxoutfile, test_type]
   cmd.extend(['-e', "arguments=" + json.dumps(arguments), mock_js,
          test_api, js2webui])

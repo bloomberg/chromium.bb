@@ -175,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, LoadInNewTab) {
 // Tests that reloads of navigation errors behave correctly after a crash.
 // Regression test for http://crbug.com/348918
 IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, DoubleReloadWithError) {
-  GURL url("chrome://bogus");
+  GURL url(content::GetWebUIURL("bogus"));
   ui_test_utils::NavigateToURL(browser(), url);
   ASSERT_EQ(url, GetActiveWebContents()->GetVisibleURL());
 

@@ -6,21 +6,15 @@
 
 #import <objc/runtime.h>
 
-#import <EarlGrey/EarlGrey.h>
-
 #include <memory>
 
 #include "base/command_line.h"
-#include "base/mac/scoped_block.h"
 #include "base/strings/sys_string_conversions.h"
-#include "components/signin/core/browser/signin_switches.h"
-#import "ios/chrome/test/app/chrome_test_util.h"
-#include "ios/chrome/test/app/settings_test_util.h"
-#include "ios/chrome/test/app/signin_test_util.h"
-#import "ios/chrome/test/app/sync_test_util.h"
-#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
+#import "ios/chrome/test/earl_grey/chrome_test_case_app_interface.h"
 #import "ios/testing/earl_grey/coverage_utils.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/web/public/test/http_server/http_server.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -83,7 +77,35 @@ NSArray* whiteListedMultitaskingTests = @[
 
 const CFTimeInterval kDrainTimeout = 5;
 
+void SetUpMockAuthentication() {
+  [ChromeTestCaseAppInterface setUpMockAuthentication];
+}
+
+void TearDownMockAuthentication() {
+  [ChromeTestCaseAppInterface tearDownMockAuthentication];
+}
+
+void ResetAuthentication() {
+  [ChromeTestCaseAppInterface resetAuthentication];
+}
+
+void RemoveInfoBarsAndPresentedState() {
+  [ChromeTestCaseAppInterface removeInfoBarsAndPresentedState];
+}
+
+UIDeviceOrientation GetCurrentDeviceOrientation() {
+#if defined(CHROME_EARL_GREY_1)
+  return [[UIDevice currentDevice] orientation];
+#elif defined(CHROME_EARL_GREY_2)
+  return [[GREY_REMOTE_CLASS_IN_APP(UIDevice) currentDevice] orientation];
+#endif
+}
+
 }  // namespace
+
+#if defined(CHROME_EARL_GREY_2)
+GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
+#endif
 
 @interface ChromeTestCase () {
   // Block to be executed during object tearDown.
@@ -122,6 +144,7 @@ const CFTimeInterval kDrainTimeout = 5;
 // Overrides testInvocations so the set of tests run can be modified, as
 // necessary.
 + (NSArray*)testInvocations {
+#if defined(CHROME_EARL_GREY_1)
   NSError* error = nil;
   [[EarlGrey selectElementWithMatcher:grey_systemAlertViewShown()]
       assertWithMatcher:grey_nil()
@@ -139,8 +162,9 @@ const CFTimeInterval kDrainTimeout = 5;
         [NSInvocation invocationWithMethodSignature:signature];
     systemAlertTest.selector = @selector(failAllTestsDueToSystemAlertVisible);
     return @[ systemAlertTest ];
-#endif
+#endif  // !TARGET_IPHONE_SIMULATOR
   }
+#endif  // defined(CHROME_EARL_GREY_1)
 
   // Return specific list of tests based on the target.
   NSString* targetName = [NSBundle mainBundle].infoDictionary[@"CFBundleName"];
@@ -155,11 +179,22 @@ const CFTimeInterval kDrainTimeout = 5;
   }
 }
 
+#if defined(CHROME_EARL_GREY_1)
++ (void)setUp {
+  [super setUp];
+  [ChromeTestCase setUpHelper];
+}
+#elif defined(CHROME_EARL_GREY_2)
++ (void)setUpForTestCase {
+  [super setUpForTestCase];
+  [ChromeTestCase setUpHelper];
+}
+#endif  // CHROME_EARL_GREY_2
+
 // Set up called once for the class, to dismiss anything displayed on startup
 // and revert browser settings to default. It also starts the HTTP server and
 // enables mock authentication.
-+ (void)setUp {
-  [super setUp];
++ (void)setUpHelper {
   [[self class] startHTTPServer];
   [[self class] enableMockAuthentication];
 
@@ -167,7 +202,7 @@ const CFTimeInterval kDrainTimeout = 5;
   // ensure the UI is in a clean state.
   [self removeAnyOpenMenusAndInfoBars];
   [self closeAllTabs];
-  chrome_test_util::SetContentSettingsBlockPopups(CONTENT_SETTING_DEFAULT);
+  [ChromeEarlGrey setContentSettings:CONTENT_SETTING_DEFAULT];
 
   [CoverageUtils configureCoverageReportPath];
 }
@@ -195,10 +230,12 @@ const CFTimeInterval kDrainTimeout = 5;
   _isHTTPServerStopped = NO;
   _isMockAuthenticationDisabled = NO;
   _tearDownHandler = nil;
-  _originalOrientation = [[UIDevice currentDevice] orientation];
+  _originalOrientation = GetCurrentDeviceOrientation();
 
-  chrome_test_util::ResetSigninPromoPreferences();
-  chrome_test_util::ResetMockAuthentication();
+  ResetAuthentication();
+
+  // Reset any remaining sign-in state from previous tests.
+  [ChromeEarlGrey signOutAndClearAccounts];
   [ChromeEarlGrey openNewTab];
 }
 
@@ -211,7 +248,7 @@ const CFTimeInterval kDrainTimeout = 5;
   }
 
   // Clear any remaining test accounts and signed in users.
-  chrome_test_util::SignOutAndClearAccounts();
+  [ChromeEarlGrey signOutAndClearAccounts];
 
   // Re-start anything that was disabled this test, so it is running when the
   // next test starts.
@@ -229,10 +266,16 @@ const CFTimeInterval kDrainTimeout = 5;
   [[self class] removeAnyOpenMenusAndInfoBars];
   [[self class] closeAllTabs];
 
-  if ([[UIDevice currentDevice] orientation] != _originalOrientation) {
+  if (GetCurrentDeviceOrientation() != _originalOrientation) {
     // Rotate the device back to the original orientation, since some tests
     // attempt to run in other orientations.
+#if defined(CHROME_EARL_GREY_1)
     [EarlGrey rotateDeviceToOrientation:_originalOrientation errorOrNil:nil];
+#elif defined(CHROME_EARL_GREY_2)
+    [EarlGrey rotateDeviceToOrientation:_originalOrientation error:nil];
+#else
+#error Neither CHROME_EARL_GREY_1 nor CHROME_EARL_GREY_2 are defined
+#endif
   }
   [super tearDown];
 }
@@ -246,8 +289,7 @@ const CFTimeInterval kDrainTimeout = 5;
 }
 
 + (void)removeAnyOpenMenusAndInfoBars {
-  chrome_test_util::RemoveAllInfoBars();
-  chrome_test_util::ClearPresentedState();
+  RemoveInfoBarsAndPresentedState();
   // After programatically removing UI elements, allow Earl Grey's
   // UI synchronization to become idle, so subsequent steps won't start before
   // the UI is in a good state.
@@ -256,7 +298,7 @@ const CFTimeInterval kDrainTimeout = 5;
 }
 
 + (void)closeAllTabs {
-  chrome_test_util::CloseAllTabs();
+  [ChromeEarlGrey closeAllTabs];
   [[GREYUIThreadExecutor sharedInstance]
       drainUntilIdleWithTimeout:kDrainTimeout];
 }
@@ -281,16 +323,14 @@ const CFTimeInterval kDrainTimeout = 5;
 + (void)disableMockAuthentication {
   // Make sure local data is cleared, before disabling mock authentication,
   // where data may be sent to real servers.
-  chrome_test_util::SignOutAndClearAccounts();
-  chrome_test_util::TearDownFakeSyncServer();
-  chrome_test_util::TearDownMockAccountReconcilor();
-  chrome_test_util::TearDownMockAuthentication();
+  [ChromeEarlGrey signOutAndClearAccounts];
+  [ChromeEarlGrey tearDownFakeSyncServer];
+  TearDownMockAuthentication();
 }
 
 + (void)enableMockAuthentication {
-  chrome_test_util::SetUpMockAuthentication();
-  chrome_test_util::SetUpMockAccountReconcilor();
-  chrome_test_util::SetUpFakeSyncServer();
+  SetUpMockAuthentication();
+  [ChromeEarlGrey setUpFakeSyncServer];
 }
 
 + (void)stopHTTPServer {

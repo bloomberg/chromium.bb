@@ -6,8 +6,8 @@
 
 #include "base/mac/availability.h"
 #import "chrome/browser/ui/cocoa/touchbar/web_textfield_touch_bar_controller.h"
-#include "components/autofill/core/browser/autofill_popup_delegate.h"
-#include "components/autofill/core/browser/popup_item_ids.h"
+#include "components/autofill/core/browser/ui/autofill_popup_delegate.h"
+#include "components/autofill/core/browser/ui/popup_item_ids.h"
 
 using base::WeakPtr;
 
@@ -55,8 +55,10 @@ AutofillPopupControllerImplMac::~AutofillPopupControllerImplMac() {}
 
 void AutofillPopupControllerImplMac::Show(
     const std::vector<autofill::Suggestion>& suggestions,
-    bool autoselect_first_suggestion) {
-  AutofillPopupControllerImpl::Show(suggestions, autoselect_first_suggestion);
+    bool autoselect_first_suggestion,
+    PopupType popup_type) {
+  AutofillPopupControllerImpl::Show(suggestions, autoselect_first_suggestion,
+                                    popup_type);
 
   if (suggestions.empty() || !is_credit_card_popup_)
     return;

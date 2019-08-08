@@ -30,6 +30,7 @@ class MockClient : public VideoCaptureDevice::Client {
   void OnIncomingCapturedData(const uint8_t* data,
                               int length,
                               const VideoCaptureFormat& frame_format,
+                              const gfx::ColorSpace& color_space,
                               int clockwise_rotation,
                               base::TimeTicks reference_time,
                               base::TimeDelta timestamp,

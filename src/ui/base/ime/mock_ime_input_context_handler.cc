@@ -32,6 +32,15 @@ void MockIMEInputContextHandler::UpdateCompositionText(
   last_update_composition_arg_.is_visible = visible;
 }
 
+#if defined(OS_CHROMEOS)
+bool MockIMEInputContextHandler::SetCompositionRange(
+    uint32_t before,
+    uint32_t after,
+    const std::vector<ui::ImeTextSpan>& text_spans) {
+  return false;
+}
+#endif
+
 void MockIMEInputContextHandler::DeleteSurroundingText(int32_t offset,
                                                        uint32_t length) {
   ++delete_surrounding_text_call_count_;

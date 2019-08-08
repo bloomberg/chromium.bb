@@ -215,7 +215,7 @@ class WTF_EXPORT AtomicString {
   static AtomicString FromUTF8(const char*);
 
   CString Ascii() const { return string_.Ascii(); }
-  CString Latin1() const { return string_.Latin1(); }
+  std::string Latin1() const { return string_.Latin1(); }
   CString Utf8(UTF8ConversionMode mode = kLenientUTF8Conversion) const {
     return string_.Utf8(mode);
   }

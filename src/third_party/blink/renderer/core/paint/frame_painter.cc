@@ -67,7 +67,7 @@ void FramePainter::PaintContents(GraphicsContext& context,
   FramePaintTiming frame_paint_timing(context, &GetFrameView().GetFrame());
   TRACE_EVENT1("devtools.timeline,rail", "Paint", "data",
                inspector_paint_event::Data(
-                   layout_view, LayoutRect(cull_rect.Rect()), nullptr));
+                   layout_view, PhysicalRect(cull_rect.Rect()), nullptr));
 
   bool is_top_level_painter = !in_paint_contents_;
   in_paint_contents_ = true;

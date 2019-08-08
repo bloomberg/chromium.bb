@@ -588,6 +588,8 @@ CSSCustomIdentValue* ConsumeCustomIdentWithToken(
 
   if (EqualIgnoringASCIICase(token.Value(), "default"))
     context.Count(WebFeature::kDefaultInCustomIdent);
+  if (EqualIgnoringASCIICase(token.Value(), "revert"))
+    context.Count(WebFeature::kRevertInCustomIdent);
 
   return MakeGarbageCollected<CSSCustomIdentValue>(
       token.Value().ToAtomicString());
@@ -1740,6 +1742,16 @@ bool IsCSSWideKeyword(StringView keyword) {
          EqualIgnoringASCIICase(keyword, "unset");
 }
 
+// https://drafts.csswg.org/css-cascade/#default
+bool IsRevertKeyword(StringView keyword) {
+  return EqualIgnoringASCIICase(keyword, "revert");
+}
+
+// https://drafts.csswg.org/css-values-4/#identifier-value
+bool IsDefaultKeyword(StringView keyword) {
+  return EqualIgnoringASCIICase(keyword, "default");
+}
+
 // https://drafts.csswg.org/css-shapes-1/#typedef-shape-box
 CSSIdentifierValue* ConsumeShapeBox(CSSParserTokenRange& range) {
   return ConsumeIdent<CSSValueID::kContentBox, CSSValueID::kPaddingBox,
@@ -1924,6 +1936,10 @@ bool ConsumeShorthandVia2Longhands(
 
   const CSSValue* end =
       ParseLonghand(longhands[1]->PropertyID(), shorthand.id(), context, range);
+
+  if (shorthand.id() == CSSPropertyID::kOverflow && start && end) {
+    context.Count(WebFeature::kTwoValuedOverflow);
+  }
 
   if (!end)
     end = start;

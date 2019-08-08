@@ -32,6 +32,7 @@ class RoboConfiguration:
     Important: We might be doing --setup, so these sanity checks should only be
     for things that we don't plan for fix as part of that.
     """
+    self.set_prompt_on_call(False)
     # This is the prefix that our branches start with.
     self._sushi_branch_prefix = "sushi-"
     # This is the title that we use for the commit with GN configs.
@@ -175,3 +176,20 @@ class RoboConfiguration:
 
   def autorename_git_file(self):
     return self._autorename_git_file
+
+  def prompt_on_call(self):
+    """ Return True if and only if we're supposed to ask the user before running
+    any command that might have a side-effect."""
+    return self._prompt_on_call
+
+  def set_prompt_on_call(self, value):
+    self._prompt_on_call = value
+
+  def Call(self, args, shell=False):
+    """Run the command specified by |args| (see subprocess.call), optionally
+    prompting the user."""
+    if self.prompt_on_call():
+      print("[%s] About to run: %s " % (os.getcwd(), args))
+      raw_input("Press ENTER to continue, or interrupt the script: ")
+    return call(args, shell=shell)
+

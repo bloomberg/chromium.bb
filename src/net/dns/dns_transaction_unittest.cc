@@ -281,7 +281,7 @@ class TransactionHelper {
                     bool expected_secure)
       : hostname_(hostname),
         qtype_(qtype),
-        secure_dns_mode_(SecureDnsMode::AUTOMATIC),
+        secure_dns_mode_(DnsConfig::SecureDnsMode::AUTOMATIC),
         response_(nullptr),
         expected_answer_count_(expected_answer_count),
         expected_secure_(expected_secure),
@@ -292,7 +292,7 @@ class TransactionHelper {
   void set_cancel_in_callback() { cancel_in_callback_ = true; }
 
   // Set the secure DNS mode for the transaction.
-  void set_secure_dns_mode(SecureDnsMode secure_dns_mode) {
+  void set_secure_dns_mode(DnsConfig::SecureDnsMode secure_dns_mode) {
     secure_dns_mode_ = secure_dns_mode;
   }
 
@@ -382,7 +382,7 @@ class TransactionHelper {
  private:
   std::string hostname_;
   uint16_t qtype_;
-  SecureDnsMode secure_dns_mode_;
+  DnsConfig::SecureDnsMode secure_dns_mode_;
   std::unique_ptr<DnsTransaction> transaction_;
   const DnsResponse* response_;
   int expected_answer_count_;
@@ -514,9 +514,8 @@ class URLRequestMockDohJob : public URLRequestJob, public AsyncSocket {
       raw_headers.append(base::StringPrintf("Content-Length: %1d\n",
                                             static_cast<int>(content_length_)));
     }
-    info->headers =
-        base::MakeRefCounted<HttpResponseHeaders>(HttpUtil::AssembleRawHeaders(
-            raw_headers.c_str(), static_cast<int>(raw_headers.length())));
+    info->headers = base::MakeRefCounted<HttpResponseHeaders>(
+        HttpUtil::AssembleRawHeaders(raw_headers));
     if (response_modifier_)
       response_modifier_.Run(request(), info);
   }
@@ -1652,7 +1651,7 @@ TEST_F(DnsTransactionTest, HttpsPostFailNoUDPFallbackInSecureMode) {
                            SYNCHRONOUS, Transport::HTTPS);
   TransactionHelper helper0(kT0HostName, kT0Qtype, ERR_FAILED,
                             true /* expected_secure */);
-  helper0.set_secure_dns_mode(SecureDnsMode::SECURE);
+  helper0.set_secure_dns_mode(DnsConfig::SecureDnsMode::SECURE);
   SetDohJobMakerCallback(base::BindRepeating(DohJobMakerCallbackFailStart));
   EXPECT_TRUE(helper0.RunUntilDone(transaction_factory_.get()));
   unsigned kOrder0[] = {2, 3};
@@ -1673,7 +1672,7 @@ TEST_F(DnsTransactionTest, NoHttpsAttemptInOffMode) {
                       base::size(kT0ResponseDatagram), ASYNC, Transport::UDP);
   TransactionHelper helper0(kT0HostName, kT0Qtype, kT0RecordCount,
                             false /* expected_secure */);
-  helper0.set_secure_dns_mode(SecureDnsMode::OFF);
+  helper0.set_secure_dns_mode(DnsConfig::SecureDnsMode::OFF);
   EXPECT_TRUE(helper0.RunUntilDone(transaction_factory_.get()));
   unsigned kOrder0[] = {0, 1, 0, 1};
   CheckServerOrder(kOrder0, base::size(kOrder0));
@@ -2022,8 +2021,8 @@ class CountingObserver : public net::NetLog::ThreadSafeObserver {
 
   void OnAddEntry(const NetLogEntry& entry) override {
     ++count_;
-    std::unique_ptr<base::Value> value = entry.ParametersToValue();
-    if (value && value->is_dict())
+    base::Value value = entry.ParametersToValue();
+    if (!value.is_none() && value.is_dict())
       dict_count_++;
   }
 

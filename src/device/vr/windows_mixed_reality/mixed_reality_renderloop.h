@@ -5,14 +5,10 @@
 #ifndef DEVICE_VR_WINDOWS_MIXED_REALITY_MIXED_REALITY_RENDERLOOP_H_
 #define DEVICE_VR_WINDOWS_MIXED_REALITY_MIXED_REALITY_RENDERLOOP_H_
 
-#include <windows.graphics.holographic.h>
-#include <windows.perception.spatial.h>
-
-#include <wrl.h>
-
 #include <memory>
 
 #include "base/callback.h"
+#include "base/callback_list.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
@@ -31,6 +27,16 @@
 namespace device {
 
 class MixedRealityWindow;
+class WMRAttachedOrigin;
+class WMRCamera;
+class WMRCameraPose;
+class WMRCoordinateSystem;
+class WMRHolographicFrame;
+class WMRHolographicSpace;
+class WMRRenderingParameters;
+class WMRStageOrigin;
+class WMRStageStatics;
+class WMRTimestamp;
 
 class MixedRealityRenderLoop : public XRCompositorCommon {
  public:
@@ -78,23 +84,17 @@ class MixedRealityRenderLoop : public XRCompositorCommon {
   // 3) The current bounds array is empty.
   void EnsureStageBounds();
 
+  void OnWindowDestroyed();
+
   std::unique_ptr<base::win::ScopedWinrtInitializer> initializer_;
 
-  Microsoft::WRL::ComPtr<ABI::Windows::Graphics::Holographic::IHolographicSpace>
-      holographic_space_;
-  Microsoft::WRL::ComPtr<
-      ABI::Windows::Perception::Spatial::ISpatialStageFrameOfReference>
-      spatial_stage_;
-  Microsoft::WRL::ComPtr<
-      ABI::Windows::Perception::Spatial::ISpatialCoordinateSystem>
-      origin_;
-  Microsoft::WRL::ComPtr<
-      ABI::Windows::Perception::Spatial::ISpatialCoordinateSystem>
-      stage_origin_;
+  std::unique_ptr<WMRHolographicSpace> holographic_space_;
+  std::unique_ptr<WMRStageOrigin> spatial_stage_;
+  std::unique_ptr<WMRCoordinateSystem> stationary_origin_;
+  std::unique_ptr<WMRCoordinateSystem> stage_origin_;
+  std::unique_ptr<WMRCoordinateSystem> anchor_origin_;
   bool stage_transform_needs_updating_ = false;
-  Microsoft::WRL::ComPtr<ABI::Windows::Perception::Spatial::
-                             ISpatialLocatorAttachedFrameOfReference>
-      attached_;
+  std::unique_ptr<WMRAttachedOrigin> attached_;
   bool emulated_position_ = false;
   base::Optional<gfx::Transform> last_origin_from_attached_;
 
@@ -104,34 +104,19 @@ class MixedRealityRenderLoop : public XRCompositorCommon {
       on_display_info_changed_;
 
   // Per frame data:
-  Microsoft::WRL::ComPtr<ABI::Windows::Graphics::Holographic::IHolographicFrame>
-      holographic_frame_;
-  Microsoft::WRL::ComPtr<ABI::Windows::Perception::IPerceptionTimestamp>
-      timestamp_;
-
-  // The set of all poses for this frame (there could be multiple headsets or
-  // external cameras).
-  Microsoft::WRL::ComPtr<ABI::Windows::Foundation::Collections::IVectorView<
-      ABI::Windows::Graphics::Holographic::HolographicCameraPose*>>
-      poses_;
+  std::unique_ptr<WMRHolographicFrame> holographic_frame_;
+  std::unique_ptr<WMRTimestamp> timestamp_;
 
   // We only support one headset at a time - this is the one pose.
-  Microsoft::WRL::ComPtr<
-      ABI::Windows::Graphics::Holographic::IHolographicCameraPose>
-      pose_;
-  Microsoft::WRL::ComPtr<ABI::Windows::Graphics::Holographic::
-                             IHolographicCameraRenderingParameters>
-      rendering_params_;
-  Microsoft::WRL::ComPtr<
-      ABI::Windows::Graphics::Holographic::IHolographicCamera>
-      camera_;
+  std::unique_ptr<WMRCameraPose> pose_;
+  std::unique_ptr<WMRRenderingParameters> rendering_params_;
+  std::unique_ptr<WMRCamera> camera_;
 
   std::unique_ptr<MixedRealityInputHelper> input_helper_;
 
-  Microsoft::WRL::ComPtr<
-      ABI::Windows::Perception::Spatial::ISpatialStageFrameOfReferenceStatics>
-      stage_statics_;
-  EventRegistrationToken stage_changed_token_;
+  std::unique_ptr<WMRStageStatics> stage_statics_;
+  std::unique_ptr<base::CallbackList<void()>::Subscription>
+      stage_changed_subscription_;
 
   std::vector<gfx::Point3F> bounds_;
   bool bounds_updated_ = false;

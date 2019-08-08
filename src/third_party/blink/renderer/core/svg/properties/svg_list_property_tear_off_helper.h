@@ -70,14 +70,6 @@ class ListItemPropertyTraits {
     new_item->Bind(binding);
     return new_item->Target();
   }
-
-  static ItemTearOffType* CreateTearOff(
-      ItemPropertyType* value,
-      SVGAnimatedPropertyBase* binding,
-      PropertyIsAnimValType property_is_anim_val) {
-    return MakeGarbageCollected<ItemTearOffType>(value, binding,
-                                                 property_is_anim_val);
-  }
 };
 
 template <typename Derived, typename ListProperty>
@@ -198,10 +190,11 @@ class SVGListPropertyTearOffHelper : public SVGPropertyTearOff<ListProperty> {
       return nullptr;
 
     if (value->OwnerList() == ToDerived()->Target()) {
-      return ItemTraits::CreateTearOff(value, ToDerived()->GetBinding(),
-                                       ToDerived()->PropertyIsAnimVal());
+      return MakeGarbageCollected<ItemTearOffType>(
+          value, ToDerived()->GetBinding(), ToDerived()->PropertyIsAnimVal());
     }
-    return ItemTraits::CreateTearOff(value, nullptr, kPropertyIsNotAnimVal);
+    return MakeGarbageCollected<ItemTearOffType>(value, nullptr,
+                                                 kPropertyIsNotAnimVal);
   }
 
  private:

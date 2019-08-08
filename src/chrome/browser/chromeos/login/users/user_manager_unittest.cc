@@ -83,8 +83,7 @@ class UserManagerTest : public testing::Test {
 
     wallpaper_controller_client_ =
         std::make_unique<WallpaperControllerClient>();
-    wallpaper_controller_client_->InitForTesting(
-        test_wallpaper_controller_.CreateInterfacePtr());
+    wallpaper_controller_client_->InitForTesting(&test_wallpaper_controller_);
   }
 
   void TearDown() override {
@@ -218,7 +217,6 @@ TEST_F(UserManagerTest, RemoveAllExceptOwnerFromList) {
   EXPECT_EQ(1U, users->size());
   EXPECT_EQ((*users)[0]->GetAccountId(), owner_account_id_at_invalid_domain_);
   // Verify that the wallpaper is removed when user is removed.
-  wallpaper_controller_client_->FlushForTesting();
   EXPECT_EQ(2, test_wallpaper_controller_.remove_user_wallpaper_count());
 }
 

@@ -42,7 +42,6 @@ from chromite.lib import parallel
 from chromite.lib import retry_stats
 from chromite.lib import sudo
 from chromite.lib import timeout_util
-from chromite.lib import tree_status
 from chromite.lib import ts_mon_config
 from chromite.lib.buildstore import BuildStore
 
@@ -533,13 +532,6 @@ def _CreateParser():
                           api=constants.REEXEC_API_MASTER_BUILDBUCKET_ID,
                           help='buildbucket id of the master build to this '
                                'slave build.')
-  group.add_remote_option('--mock-tree-status',
-                          help='Override the tree status value that would be '
-                               'returned from the the actual tree. Example '
-                               'values: open, closed, throttled. When used '
-                               'in conjunction with --debug, the tree status '
-                               'will not be ignored as it usually is in a '
-                               '--debug run.')
   # TODO(nxia): crbug.com/778838
   # cbuildbot doesn't use pickle files anymore, remove this.
   group.add_remote_option('--mock-slave-status',
@@ -653,7 +645,7 @@ def _PostParseCheck(parser, options, site_config):
 
   # Ensure that all args are legitimate config targets.
   if options.build_config_name not in site_config:
-    cros_build_lib.Die('Unkonwn build config: "%s"' % options.build_config_name)
+    cros_build_lib.Die('Unknown build config: "%s"' % options.build_config_name)
 
   build_config = site_config[options.build_config_name]
   is_payloads_build = build_config.build_type == constants.PAYLOADS_TYPE
@@ -913,10 +905,6 @@ def main(argv):
     # ensures that sudo bits cannot outlive cbuildbot, that anything
     # cgroups would kill gets killed, etc.
     stack.Add(critical_section.ForkWatchdog)
-
-    if options.mock_tree_status is not None:
-      stack.Add(_ObjectMethodPatcher, tree_status, '_GetStatus',
-                return_value=options.mock_tree_status)
 
     if options.mock_slave_status is not None:
       with open(options.mock_slave_status, 'r') as f:

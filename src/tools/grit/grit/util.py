@@ -641,7 +641,7 @@ class TempDir(object):
       dir_path = os.path.split(file_path)[0]
       if not os.path.exists(dir_path):
         os.makedirs(dir_path)
-      with open(file_path, 'w') as f:
+      with open(file_path, 'wb') as f:
         f.write(file_data[name])
 
   def __enter__(self):

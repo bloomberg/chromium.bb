@@ -540,20 +540,12 @@ CancelCallback FakeDriveService::GetRemainingChangeList(
       if (parameters[i].first == "changestamp") {
         base::StringToInt64(parameters[i].second, &start_changestamp);
       } else if (parameters[i].first == "q") {
-        search_query = net::UnescapeURLComponent(
-            parameters[i].second,
-            net::UnescapeRule::PATH_SEPARATORS |
-                net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
+        search_query = net::UnescapeBinaryURLComponent(parameters[i].second);
       } else if (parameters[i].first == "parent") {
-        directory_resource_id = net::UnescapeURLComponent(
-            parameters[i].second,
-            net::UnescapeRule::PATH_SEPARATORS |
-                net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
+        directory_resource_id =
+            net::UnescapeBinaryURLComponent(parameters[i].second);
       } else if (parameters[i].first == "team-drive-id") {
-        team_drive_id = net::UnescapeURLComponent(
-            parameters[i].second,
-            net::UnescapeRule::PATH_SEPARATORS |
-                net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
+        team_drive_id = net::UnescapeBinaryURLComponent(parameters[i].second);
       } else if (parameters[i].first == "start-offset") {
         base::StringToInt(parameters[i].second, &start_offset);
       } else if (parameters[i].first == "max-results") {

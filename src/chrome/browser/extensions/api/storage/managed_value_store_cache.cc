@@ -18,7 +18,6 @@
 #include "base/task/post_task.h"
 #include "chrome/browser/extensions/api/storage/policy_value_store.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/policy/schema_registry_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/storage/storage_schema_manifest_handler.h"
@@ -236,9 +235,7 @@ ManagedValueStoreCache::ManagedValueStoreCache(
     scoped_refptr<SettingsObserverList> observers)
     : profile_(Profile::FromBrowserContext(context)),
       policy_domain_(GetPolicyDomain(profile_)),
-      policy_service_(
-          policy::ProfilePolicyConnectorFactory::GetForBrowserContext(context)
-              ->policy_service()),
+      policy_service_(profile_->GetProfilePolicyConnector()->policy_service()),
       storage_factory_(std::move(factory)),
       observers_(std::move(observers)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

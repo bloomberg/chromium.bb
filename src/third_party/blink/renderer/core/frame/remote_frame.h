@@ -24,17 +24,11 @@ struct FrameLoadRequest;
 
 class CORE_EXPORT RemoteFrame final : public Frame {
  public:
-  static RemoteFrame* Create(RemoteFrameClient*, Page&, FrameOwner*);
-
   RemoteFrame(RemoteFrameClient*, Page&, FrameOwner*);
   ~RemoteFrame() override;
 
   // Frame overrides:
   void Trace(blink::Visitor*) override;
-  void ScheduleNavigation(Document& origin_document,
-                          const KURL&,
-                          WebFrameLoadType,
-                          UserGestureStatus) override;
   void Navigate(const FrameLoadRequest&, WebFrameLoadType) override;
   RemoteSecurityContext* GetSecurityContext() const override;
   bool PrepareForCommit() override;

@@ -101,7 +101,6 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_keyboard_controller.h"
 #include "ui/base/ime/mock_input_method.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/compositor.h"
@@ -263,9 +262,7 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
  public:
   FakeRenderWidgetHostViewAura(RenderWidgetHost* widget,
                                bool is_guest_view_hack)
-      : RenderWidgetHostViewAura(widget,
-                                 is_guest_view_hack,
-                                 false /* is_mus_browser_plugin_guest */),
+      : RenderWidgetHostViewAura(widget, is_guest_view_hack),
         is_guest_view_hack_(is_guest_view_hack),
         delegated_frame_host_client_(
             new FakeDelegatedFrameHostClientAura(this)) {
@@ -570,9 +567,8 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     parent_host_ = MockRenderWidgetHostImpl::Create(delegates_.back().get(),
                                                     process_host_, routing_id);
     delegates_.back()->set_widget_host(parent_host_);
-    const bool is_mus_browser_plugin_guest = false;
-    parent_view_ = new RenderWidgetHostViewAura(
-        parent_host_, is_guest_view_hack_, is_mus_browser_plugin_guest);
+    parent_view_ =
+        new RenderWidgetHostViewAura(parent_host_, is_guest_view_hack_);
     parent_view_->InitAsChild(nullptr);
     aura::client::ParentWindowWithContext(parent_view_->GetNativeView(),
                                           aura_test_helper_->root_window(),
@@ -3063,10 +3059,6 @@ viz::CompositorFrame MakeDelegatedFrame(float scale_factor,
 
 // This test verifies that returned resources do not require a pending ack.
 TEST_F(RenderWidgetHostViewAuraTest, ReturnedResources) {
-  // TODO: fix for mash.
-  if (features::IsMultiProcessMash())
-    return;
-
   gfx::Size view_size(100, 100);
   gfx::Rect view_rect(view_size);
 
@@ -3097,10 +3089,8 @@ TEST_F(RenderWidgetHostViewAuraTest, ReturnedResources) {
 TEST_F(RenderWidgetHostViewAuraTest, TwoOutputSurfaces) {
   // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
   // https://crbug.com/844469
-  if (features::IsVizDisplayCompositorEnabled() ||
-      features::IsMultiProcessMash()) {
+  if (features::IsVizDisplayCompositorEnabled())
     return;
-  }
 
   viz::FakeSurfaceObserver manager_observer;
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
@@ -3241,10 +3231,6 @@ TEST_F(RenderWidgetHostViewAuraTest, ZeroSizeStillGetsLocalSurfaceId) {
 }
 
 TEST_F(RenderWidgetHostViewAuraTest, BackgroundColorMatchesCompositorFrame) {
-  // TODO: fix for mash.
-  if (features::IsMultiProcessMash())
-    return;
-
   gfx::Size frame_size(100, 100);
   parent_local_surface_id_allocator_.GenerateId();
   viz::LocalSurfaceId local_surface_id =
@@ -3416,10 +3402,6 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_Resize) {
 
 // This test verifies that the primary SurfaceId is populated on resize.
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest, SurfaceChanges) {
-  // Early out because DelegatedFrameHost is not used in mash.
-  if (features::IsMultiProcessMash())
-    return;
-
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
       view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
@@ -3438,10 +3420,6 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest, SurfaceChanges) {
 // factor changes.
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
        DeviceScaleFactorChanges) {
-  // TODO: fix for mash.
-  if (features::IsMultiProcessMash())
-    return;
-
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
       view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
@@ -3466,10 +3444,8 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
        CompositorFrameSinkChange) {
   // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
   // https://crbug.com/844469
-  if (features::IsVizDisplayCompositorEnabled() ||
-      features::IsMultiProcessMash()) {
+  if (features::IsVizDisplayCompositorEnabled())
     return;
-  }
 
   gfx::Rect view_rect(100, 100);
   gfx::Size frame_size = view_rect.size();
@@ -3503,10 +3479,6 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 // RenderWidgetHostViewAuraTest.DiscardDelegatedFrame.
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
        DiscardDelegatedFrames) {
-  // Early out because DelegatedFrameHost is not used in mash.
-  if (features::IsMultiProcessMash())
-    return;
-
   // Make sure |parent_view_| is evicted to avoid interfering with the code
   // below.
   parent_view_->Hide();
@@ -3623,10 +3595,6 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 // Test that changing the memory pressure should delete saved frames. This test
 // only applies to ChromeOS.
 TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithMemoryPressure) {
-  // Early out because DelegatedFrameHost is not used in mash.
-  if (features::IsMultiProcessMash())
-    return;
-
   // Make sure |parent_view_| is evicted to avoid interfering with the code
   // below.
   parent_view_->Hide();
@@ -3732,10 +3700,8 @@ TEST_F(RenderWidgetHostViewAuraTest, SourceEventTypeExistsInLatencyInfo) {
 TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
   // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
   // https://crbug.com/844469
-  if (features::IsVizDisplayCompositorEnabled() ||
-      features::IsMultiProcessMash()) {
+  if (features::IsVizDisplayCompositorEnabled())
     return;
-  }
 
   gfx::Rect view_rect(100, 100);
   gfx::Size frame_size = view_rect.size();
@@ -4522,8 +4488,9 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
 
 // Tests that the gesture debounce timer plays nice with the overscroll
 // controller.
+// TODO(crbug.com/776424): Disabled due to flakiness on Fuchsia and Linux tsan.
 TEST_F(RenderWidgetHostViewAuraOverscrollTest,
-       GestureScrollDebounceTimerOverscroll) {
+       DISABLED_GestureScrollDebounceTimerOverscroll) {
   SetUpOverscrollEnvironmentWithDebounce(10);
 
   PressAndSetTouchActionAuto();
@@ -4695,8 +4662,9 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollWithTouchEvents) {
 
 // Tests that touch-gesture end is dispatched to the renderer at the end of a
 // touch-gesture initiated overscroll.
+// TODO(crbug.com/776424): Disabled due to flakiness on Fuchsia and Linux tsan.
 TEST_F(RenderWidgetHostViewAuraOverscrollTest,
-       TouchGestureEndDispatchedAfterOverscrollComplete) {
+       DISABLED_TouchGestureEndDispatchedAfterOverscrollComplete) {
   SetUpOverscrollEnvironmentWithDebounce(10);
   widget_host_->OnMessageReceived(WidgetHostMsg_HasTouchEventHandlers(0, true));
 
@@ -5345,108 +5313,6 @@ TEST_F(RenderWidgetHostViewAuraTest, KeyEventsHandled) {
   EXPECT_FALSE(key_event2.handled());
 }
 
-TEST_F(RenderWidgetHostViewAuraTest, KeyEventAsyncHandled) {
-  view_->InitAsChild(nullptr);
-  view_->Show();
-  bool async_callback_run = false;
-  bool async_callback_handled_result = false;
-  bool async_callback_stopped_propagation_result = false;
-  ui::KeyEvent key_event1(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
-  ui::KeyEvent::KeyDispatcherApi(&key_event1)
-      .set_async_callback(base::BindLambdaForTesting(
-          [&](bool handled, bool stopped_propagation) {
-            async_callback_handled_result = handled;
-            async_callback_stopped_propagation_result = stopped_propagation;
-            async_callback_run = true;
-          }));
-  view_->OnKeyEvent(&key_event1);
-  // Normally event should be handled.
-  EXPECT_TRUE(key_event1.handled());
-  // The async-callback should have been obtained, but not run yet.
-  EXPECT_FALSE(key_event1.HasAsyncCallback());
-  EXPECT_FALSE(async_callback_run);
-  widget_host_->FlushForTesting();
-
-  // Run the event callback, which should result in running the callback
-  // attached to the event.
-  MockWidgetInputHandler::MessageVector events =
-      GetAndResetDispatchedMessages();
-  ASSERT_EQ(1u, events.size());
-  EXPECT_EQ("RawKeyDown", GetMessageNames(events));
-  events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_TRUE(async_callback_run);
-  EXPECT_TRUE(async_callback_handled_result);
-  // |async_callback_stopped_propagation_result| should always be false.
-  EXPECT_FALSE(async_callback_stopped_propagation_result);
-}
-
-TEST_F(RenderWidgetHostViewAuraTest, KeyEventAsyncUnhandled) {
-  view_->InitAsChild(nullptr);
-  view_->Show();
-  bool async_callback_run = false;
-  bool async_callback_handled_result = false;
-  bool async_callback_stopped_propagation_result = false;
-  ui::KeyEvent key_event1(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
-  ui::KeyEvent::KeyDispatcherApi(&key_event1)
-      .set_async_callback(base::BindLambdaForTesting(
-          [&](bool handled, bool stopped_propagation) {
-            async_callback_handled_result = handled;
-            async_callback_stopped_propagation_result = stopped_propagation;
-            async_callback_run = true;
-          }));
-  view_->OnKeyEvent(&key_event1);
-  // Normally event should be handled.
-  EXPECT_TRUE(key_event1.handled());
-  // The async-callback should have been obtained, but not run yet.
-  EXPECT_FALSE(key_event1.HasAsyncCallback());
-  EXPECT_FALSE(async_callback_run);
-  widget_host_->FlushForTesting();
-
-  // Run the event callback, which should result in running the callback
-  // attached to the event.
-  MockWidgetInputHandler::MessageVector events =
-      GetAndResetDispatchedMessages();
-  ASSERT_EQ(1u, events.size());
-  EXPECT_EQ("RawKeyDown", GetMessageNames(events));
-  events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_TRUE(async_callback_run);
-  EXPECT_FALSE(async_callback_handled_result);
-  // |async_callback_stopped_propagation_result| should always be false.
-  EXPECT_FALSE(async_callback_stopped_propagation_result);
-}
-
-TEST_F(RenderWidgetHostViewAuraTest, KeyEventAsyncNotifiedWhenRouterChanges) {
-  view_->InitAsChild(nullptr);
-  view_->Show();
-  bool async_callback_run = false;
-  bool async_callback_handled_result = false;
-  bool async_callback_stopped_propagation_result = false;
-  ui::KeyEvent key_event1(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
-  ui::KeyEvent::KeyDispatcherApi(&key_event1)
-      .set_async_callback(base::BindLambdaForTesting(
-          [&](bool handled, bool stopped_propagation) {
-            async_callback_handled_result = handled;
-            async_callback_stopped_propagation_result = stopped_propagation;
-            async_callback_run = true;
-          }));
-  view_->OnKeyEvent(&key_event1);
-  // Normally event should be handled.
-  EXPECT_TRUE(key_event1.handled());
-  // The async-callback should have been obtained, but not run yet.
-  EXPECT_FALSE(key_event1.HasAsyncCallback());
-  EXPECT_FALSE(async_callback_run);
-
-  // RendererExited() should result in running the callback.
-  widget_host_->RendererExited(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
-  EXPECT_TRUE(async_callback_run);
-  EXPECT_FALSE(async_callback_handled_result);
-  // |async_callback_stopped_propagation_result| should always be false.
-  EXPECT_FALSE(async_callback_stopped_propagation_result);
-
-  // RendererExited() results in destroying the view.
-  view_ = nullptr;
-}
-
 TEST_F(RenderWidgetHostViewAuraTest, SetCanScrollForWebMouseWheelEvent) {
   view_->InitAsChild(nullptr);
   view_->Show();
@@ -5779,10 +5645,8 @@ TEST_F(RenderWidgetHostViewAuraTest, GestureTapFromStylusHasPointerType) {
 TEST_F(RenderWidgetHostViewAuraTest, HitTestRegionListSubmitted) {
   // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
   // https://crbug.com/844469
-  if (features::IsVizDisplayCompositorEnabled() ||
-      features::IsMultiProcessMash()) {
+  if (features::IsVizDisplayCompositorEnabled())
     return;
-  }
 
   gfx::Rect view_rect(0, 0, 100, 100);
   gfx::Size frame_size = view_rect.size();
@@ -5821,10 +5685,6 @@ TEST_F(RenderWidgetHostViewAuraTest, HitTestRegionListSubmitted) {
 // time passes without receiving a new compositor frame.
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
        NewContentRenderingTimeout) {
-  // TODO: fix for mash.
-  if (features::IsMultiProcessMash())
-    return;
-
   constexpr base::TimeDelta kTimeout = base::TimeDelta::FromMicroseconds(10);
 
   view_->InitAsChild(nullptr);
@@ -5879,11 +5739,9 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 // If a tab is evicted, allocate a new LocalSurfaceId next time it's shown.
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
        AllocateLocalSurfaceIdOnEviction) {
-  // TODO: fix for mash.
-  if (features::IsMultiProcessMash())
-    return;
-
   view_->InitAsChild(nullptr);
+  // View has to not be empty in order for frame eviction to be invoked.
+  view_->SetSize(gfx::Size(54, 32));
   aura::client::ParentWindowWithContext(
       view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
       gfx::Rect());
@@ -5910,10 +5768,6 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 // visible we show blank.
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
        DropFallbackIfResizedWhileHidden) {
-  // Early out because DelegatedFrameHost is not used in mash.
-  if (features::IsMultiProcessMash())
-    return;
-
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
       view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
@@ -5931,10 +5785,6 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 // fallback SurfaceId has to be preserved.
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
        DontDropFallbackIfNotResizedWhileHidden) {
-  // Early out because DelegatedFrameHost is not used in mash.
-  if (features::IsMultiProcessMash())
-    return;
-
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
       view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
@@ -5958,10 +5808,6 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 // background color from the previous view to the new view.
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
        TakeFallbackContent) {
-  // Early out because DelegatedFrameHost is not used in mash.
-  if (features::IsMultiProcessMash())
-    return;
-
   // Initialize the first view.
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
@@ -6003,8 +5849,7 @@ class RenderWidgetHostViewAuraWithViewHarnessTest
     delete contents()->GetRenderViewHost()->GetWidget()->GetView();
     // This instance is destroyed in the TearDown method below.
     view_ = new RenderWidgetHostViewAura(
-        contents()->GetRenderViewHost()->GetWidget(), false,
-        false /* is_mus_browser_plugin_guest */);
+        contents()->GetRenderViewHost()->GetWidget(), false);
   }
 
   void TearDown() override {

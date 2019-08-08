@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/optional.h"
-#include "components/autofill/core/browser/autofill_profile.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 
 namespace autofill_assistant {
 // Data shared between scripts and actions.

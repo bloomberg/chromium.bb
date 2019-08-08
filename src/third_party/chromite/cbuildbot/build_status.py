@@ -18,8 +18,6 @@ from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import metrics
-from chromite.lib import timeout_util
-from chromite.lib import tree_status
 
 
 # TODO(nxia): Rename this module to slave_status, since this module is for
@@ -151,24 +149,6 @@ class SlaveStatus(object):
     """Update slave statuses by querying CIDB and Buildbucket(if supported)."""
     logging.info('Updating slave status...')
 
-    # Fetch experimental builders from tree status and update experimental
-    # builders in metedata before querying and updating any slave status.
-    if self.metadata is not None:
-      try:
-        experimental_builders = tree_status.GetExperimentalBuilders()
-        self.metadata.UpdateWithDict({
-            constants.METADATA_EXPERIMENTAL_BUILDERS: experimental_builders
-        })
-      except timeout_util.TimeoutError:
-        logging.error('Timeout getting experimental builders from the tree'
-                      'status. Not updating metadata.')
-
-      # If a slave build was important in previous loop and got added to the
-      # completed_builds because it completed, but in the current loop it's
-      # marked as experimental, take it out from the completed_builds list.
-      self.completed_builds = set([build for build in self.completed_builds
-                                   if build not in experimental_builders])
-
     if self.config and self.metadata:
       scheduled_buildbucket_info_dict = buildbucket_lib.GetBuildInfoDict(
           self.metadata)
@@ -217,9 +197,6 @@ class SlaveStatus(object):
 
   def _GetExpectedBuilders(self):
     """Returns the list of expected slave build configs.
-
-    This list includes all important slave build configs that are not currently
-    marked as experimental through the tree status.
 
     Returns:
       A list of build slave config names.
@@ -283,11 +260,6 @@ class SlaveStatus(object):
       if build_result == constants.BUILDBUCKET_BUILDER_RESULT_SUCCESS:
         logging.info('Not retriable build %s completed with result %s.',
                      build, build_result)
-        continue
-
-      # TODO (xixuan): Remove this after Skylab testing stage is finished.
-      if build in ['nyan_blaze-paladin']:
-        builds_to_retry.add(build)
         continue
 
       build_retry = self.new_buildbucket_info_dict[build].retry

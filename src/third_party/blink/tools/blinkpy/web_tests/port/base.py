@@ -260,6 +260,14 @@ class Port(object):
     def additional_driver_flags(self):
         # Clone list to avoid mutating option state.
         flags = list(self.get_option('additional_driver_flag', []))
+
+        # Disable LayoutNG unless explicitly enabled during transition period to
+        # avoid having to unnecessarily update test expectations every time the flag
+        # is flipped and to allow us to update expectations one bot at a time.
+        # TODO(eae): Remove once LayoutNG launches. https://crbug.com/961437
+        if not '--enable-blink-features=LayoutNG' in flags:
+            flags += ['--disable-blink-features=LayoutNG']
+
         if flags and flags[0] == self.primary_driver_flag():
             flags = flags[1:]
         if self.driver_name() == self.CONTENT_SHELL_NAME:
@@ -458,7 +466,7 @@ class Port(object):
         # diff. To account for variances when the tests are ran on an actual
         # GPU.
         if self.get_option('fuzzy_diff'):
-          command.append('--fuzzy-diff')
+            command.append('--fuzzy-diff')
 
         result = None
         err_str = None
@@ -806,9 +814,9 @@ class Port(object):
         # Convert '/' to the platform-specific separator.
         path = self._filesystem.normpath(path)
         manifest_path = self._filesystem.join(self.web_tests_dir(), path, MANIFEST_NAME)
-        if not self._filesystem.exists(manifest_path):
-            _log.error('Manifest not found at %s. Remove the --no-manifest-update argument to generate it.', manifest_path)
-            return WPTManifest('{}')
+        if not self._filesystem.exists(manifest_path) or self.get_option('manifest_update', True):
+            _log.debug('Generating MANIFEST.json for %s...', path)
+            WPTManifest.ensure_manifest(self, path)
         return WPTManifest(self._filesystem.read_text_file(manifest_path))
 
     def is_slow_wpt_test(self, test_file):
@@ -1390,6 +1398,7 @@ class Port(object):
         """
         return filter(None, [
             self.path_to_generic_test_expectations_file(),
+            self.path_to_webdriver_expectations_file(),
             self._filesystem.join(self.web_tests_dir(), 'NeverFixTests'),
             self._filesystem.join(self.web_tests_dir(), 'StaleTestExpectations'),
             self._filesystem.join(self.web_tests_dir(), 'SlowTests'),
@@ -1778,6 +1787,20 @@ class Port(object):
                 _log.error(message)
                 raise TestRunException(exit_codes.SYS_DEPS_EXIT_STATUS, message)
         return result
+
+    def split_webdriver_test_name(self, test_name):
+        """Splits a WebDriver test name into a filename and a subtest name and
+        returns both of them. E.g.
+
+        abd::foo.html -> (abd, foo.html)
+        """
+        separator_index = test_name.find(self.WEBDRIVER_SUBTEST_SEPARATOR)
+        if separator_index == -1:
+            return test_name
+        webdriver_test_name = test_name[:separator_index]
+        separator_len = len(self.WEBDRIVER_SUBTEST_SEPARATOR)
+        subtest_suffix = test_name[separator_index + separator_len:]
+        return (webdriver_test_name, subtest_suffix)
 
     def add_webdriver_subtest_suffix(self, test_name, subtest_name):
         return test_name + self.WEBDRIVER_SUBTEST_SEPARATOR + subtest_name

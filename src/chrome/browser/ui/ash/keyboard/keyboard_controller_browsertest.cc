@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/resources/keyboard_resource_util.h"
+#include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -18,7 +21,6 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/value_builder.h"
-#include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/dummy_text_input_client.h"
 #include "ui/base/ime/init/input_method_factory.h"
@@ -27,9 +29,6 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/public/keyboard_switches.h"
-#include "ui/keyboard/resources/keyboard_resource_util.h"
 
 namespace {
 
@@ -159,13 +158,6 @@ class KeyboardControllerWebContentTest : public InProcessBrowserTest {
     // Mock window.resizeTo that is expected to be called after navigate to a
     // new virtual keyboard.
     keyboard_controller->GetKeyboardWindow()->SetBounds(init_bounds);
-
-    // SetBounds() of the keyboard window in this context will end up with
-    // invisible bounds so that the virtual keyboard isn't going to be visible
-    // in this context. We need to wait for the processing of this bounds
-    // change, otherwise further SetBounds invocations in
-    // FocusEditableNodeeAndShowKeyboard() will be ignored.
-    aura::test::WaitForAllChangesToComplete();
   }
 
  private:
@@ -386,11 +378,9 @@ IN_PROC_BROWSER_TEST_F(KeyboardControllerStateTest, StateResolvesAfterPreload) {
     return;
 
   auto* controller = keyboard::KeyboardController::Get();
-  EXPECT_EQ(controller->GetStateForTest(),
-            keyboard::KeyboardControllerState::LOADING_EXTENSION);
+  EXPECT_EQ(controller->GetStateForTest(), keyboard::KeyboardUIState::kLoading);
   KeyboardLoadedWaiter().Wait();
-  EXPECT_EQ(controller->GetStateForTest(),
-            keyboard::KeyboardControllerState::HIDDEN);
+  EXPECT_EQ(controller->GetStateForTest(), keyboard::KeyboardUIState::kHidden);
 }
 
 IN_PROC_BROWSER_TEST_F(KeyboardControllerStateTest,
@@ -401,18 +391,15 @@ IN_PROC_BROWSER_TEST_F(KeyboardControllerStateTest,
   auto* controller = keyboard::KeyboardController::Get();
   controller->ShowKeyboard(false);
   // Need to wait the extension to be loaded. Hence LOADING_EXTENSION.
-  EXPECT_EQ(controller->GetStateForTest(),
-            keyboard::KeyboardControllerState::LOADING_EXTENSION);
+  EXPECT_EQ(controller->GetStateForTest(), keyboard::KeyboardUIState::kLoading);
   KeyboardVisibleWaiter(true).Wait();
 
   controller->HideKeyboardExplicitlyBySystem();
-  EXPECT_EQ(controller->GetStateForTest(),
-            keyboard::KeyboardControllerState::HIDDEN);
+  EXPECT_EQ(controller->GetStateForTest(), keyboard::KeyboardUIState::kHidden);
 
   controller->ShowKeyboard(false);
   // The extension already has been loaded. Hence SHOWING.
-  EXPECT_EQ(controller->GetStateForTest(),
-            keyboard::KeyboardControllerState::SHOWN);
+  EXPECT_EQ(controller->GetStateForTest(), keyboard::KeyboardUIState::kShown);
 }
 
 // See crbug.com/755354.
@@ -423,10 +410,8 @@ IN_PROC_BROWSER_TEST_F(KeyboardControllerStateTest,
 
   auto* controller = keyboard::KeyboardController::Get();
 
-  EXPECT_EQ(controller->GetStateForTest(),
-            keyboard::KeyboardControllerState::LOADING_EXTENSION);
+  EXPECT_EQ(controller->GetStateForTest(), keyboard::KeyboardUIState::kLoading);
 
   controller->Shutdown();
-  EXPECT_EQ(controller->GetStateForTest(),
-            keyboard::KeyboardControllerState::INITIAL);
+  EXPECT_EQ(controller->GetStateForTest(), keyboard::KeyboardUIState::kInitial);
 }

@@ -297,43 +297,34 @@ bool StructTraits<gpu::mojom::ImageDecodeAcceleratorSupportedProfileDataView,
 
 #if defined(OS_WIN)
 // static
-gpu::mojom::OverlayFormat
-EnumTraits<gpu::mojom::OverlayFormat, gpu::OverlayFormat>::ToMojom(
-    gpu::OverlayFormat format) {
-  switch (format) {
-    case gpu::OverlayFormat::kBGRA:
-      return gpu::mojom::OverlayFormat::BGRA;
-    case gpu::OverlayFormat::kYUY2:
-      return gpu::mojom::OverlayFormat::YUY2;
-    case gpu::OverlayFormat::kNV12:
-      return gpu::mojom::OverlayFormat::NV12;
+gpu::mojom::OverlaySupport
+EnumTraits<gpu::mojom::OverlaySupport, gpu::OverlaySupport>::ToMojom(
+    gpu::OverlaySupport support) {
+  switch (support) {
+    case gpu::OverlaySupport::kNone:
+      return gpu::mojom::OverlaySupport::NONE;
+    case gpu::OverlaySupport::kDirect:
+      return gpu::mojom::OverlaySupport::DIRECT;
+    case gpu::OverlaySupport::kScaling:
+      return gpu::mojom::OverlaySupport::SCALING;
   }
 }
 
-bool EnumTraits<gpu::mojom::OverlayFormat, gpu::OverlayFormat>::FromMojom(
-    gpu::mojom::OverlayFormat input,
-    gpu::OverlayFormat* out) {
+bool EnumTraits<gpu::mojom::OverlaySupport, gpu::OverlaySupport>::FromMojom(
+    gpu::mojom::OverlaySupport input,
+    gpu::OverlaySupport* out) {
   switch (input) {
-    case gpu::mojom::OverlayFormat::BGRA:
-      *out = gpu::OverlayFormat::kBGRA;
+    case gpu::mojom::OverlaySupport::NONE:
+      *out = gpu::OverlaySupport::kNone;
       break;
-    case gpu::mojom::OverlayFormat::YUY2:
-      *out = gpu::OverlayFormat::kYUY2;
+    case gpu::mojom::OverlaySupport::DIRECT:
+      *out = gpu::OverlaySupport::kDirect;
       break;
-    case gpu::mojom::OverlayFormat::NV12:
-      *out = gpu::OverlayFormat::kNV12;
+    case gpu::mojom::OverlaySupport::SCALING:
+      *out = gpu::OverlaySupport::kScaling;
       break;
   }
   return true;
-}
-
-// static
-bool StructTraits<
-    gpu::mojom::OverlayCapabilityDataView,
-    gpu::OverlayCapability>::Read(gpu::mojom::OverlayCapabilityDataView data,
-                                  gpu::OverlayCapability* out) {
-  out->is_scaling_supported = data.is_scaling_supported();
-  return data.ReadFormat(&out->format);
 }
 
 // static
@@ -392,7 +383,8 @@ bool StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo>::Read(
          data.ReadGlWsExtensions(&out->gl_ws_extensions) &&
          data.ReadDirectRenderingVersion(&out->direct_rendering_version) &&
 #if defined(OS_WIN)
-         data.ReadOverlayCapabilities(&out->overlay_capabilities) &&
+         data.ReadYuy2OverlaySupport(&out->yuy2_overlay_support) &&
+         data.ReadNv12OverlaySupport(&out->nv12_overlay_support) &&
          data.ReadDxDiagnostics(&out->dx_diagnostics) &&
          data.ReadDx12VulkanVersionInfo(&out->dx12_vulkan_version_info) &&
 #endif

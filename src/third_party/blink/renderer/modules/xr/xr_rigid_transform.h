@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -23,10 +24,6 @@ class MODULES_EXPORT XRRigidTransform : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  // deep copies
-  XRRigidTransform(const XRRigidTransform& other);
-  XRRigidTransform& operator=(const XRRigidTransform& other);
-
   explicit XRRigidTransform(const TransformationMatrix&);
   explicit XRRigidTransform(std::unique_ptr<TransformationMatrix>);
   XRRigidTransform(DOMPointInit*, DOMPointInit*);
@@ -47,11 +44,15 @@ class MODULES_EXPORT XRRigidTransform : public ScriptWrappable {
  private:
   void DecomposeMatrix();
   void EnsureMatrix();
+  void EnsureInverse();
 
   Member<DOMPointReadOnly> position_;
   Member<DOMPointReadOnly> orientation_;
+  Member<XRRigidTransform> inverse_;
+  Member<DOMFloat32Array> matrix_array_;
   std::unique_ptr<TransformationMatrix> matrix_;
-  std::unique_ptr<TransformationMatrix> inv_matrix_;
+
+  DISALLOW_COPY_AND_ASSIGN(XRRigidTransform);
 };
 
 }  // namespace blink

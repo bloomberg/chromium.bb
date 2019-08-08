@@ -21,16 +21,16 @@ class VaapiWrapper;
 // VideoFrame and use the VaapiWrapper to access the memory there.
 class MEDIA_GPU_EXPORT VaapiDmaBufVideoFrameMapper : public VideoFrameMapper {
  public:
-  ~VaapiDmaBufVideoFrameMapper() override;
+  static std::unique_ptr<VideoFrameMapper> Create(VideoPixelFormat format);
 
-  static std::unique_ptr<VideoFrameMapper> Create();
+  ~VaapiDmaBufVideoFrameMapper() override;
 
   // VideoFrameMapper override.
   scoped_refptr<VideoFrame> Map(
       scoped_refptr<const VideoFrame> video_frame) const override;
 
  private:
-  VaapiDmaBufVideoFrameMapper();
+  explicit VaapiDmaBufVideoFrameMapper(VideoPixelFormat format);
 
   // Vaapi components for mapping.
   const scoped_refptr<VaapiWrapper> vaapi_wrapper_;

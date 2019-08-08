@@ -54,9 +54,17 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) PowerManagerProviderImpl
   void AcquireWakeLock() override;
   void ReleaseWakeLock() override;
 
+  void set_tick_clock_for_testing(const base::TickClock* tick_clock) {
+    DCHECK(tick_clock);
+    tick_clock_ = tick_clock;
+  }
+
  private:
   using CallbackAndTimer =
       std::pair<assistant_client::Callback0, std::unique_ptr<NativeTimer>>;
+
+  // Returns time ticks from boot including time ticks during sleeping.
+  base::TimeTicks GetCurrentBootTime();
 
   // Creates a native timer by calling |NativeTimer::Create|. Runs on
   // |main_thread_task_runner_|.
@@ -101,6 +109,9 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) PowerManagerProviderImpl
   // Used to post tasks from a libassistant thread on to the main thread in
   // order to use Chrome APIs safely.
   const scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner_;
+
+  // Clock to use to calculate time ticks. Set and used only for testing.
+  const base::TickClock* tick_clock_ = nullptr;
 
   base::WeakPtrFactory<PowerManagerProviderImpl> weak_factory_;
 

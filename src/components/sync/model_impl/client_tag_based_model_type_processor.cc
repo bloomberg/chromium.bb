@@ -29,25 +29,6 @@ namespace syncer {
 
 namespace {
 
-bool CompareProtoTimeStamp(const int64_t left, const int64_t right) {
-  return left > right;
-}
-
-// This function use quick select algorithm (std::nth_element) to find the |n|th
-// bigest number in the vector |time_stamps|.
-int64_t FindTheNthBigestProtoTimeStamp(std::vector<int64_t> time_stamps,
-                                       size_t n) {
-  DCHECK(n);
-
-  if (n > time_stamps.size())
-    return 0;
-
-  std::nth_element(time_stamps.begin(), time_stamps.begin() + n - 1,
-                   time_stamps.end(), &CompareProtoTimeStamp);
-
-  return time_stamps[n - 1];
-}
-
 int CountNonTombstoneEntries(
     const std::map<std::string, std::unique_ptr<ProcessorEntity>>& entities) {
   int count = 0;
@@ -166,10 +147,6 @@ void ClientTagBasedModelTypeProcessor::ModelReadyToSync(
   ConnectIfReady();
 }
 
-bool ClientTagBasedModelTypeProcessor::IsModelReadyOrError() const {
-  return model_error_ || model_ready_to_sync_;
-}
-
 bool ClientTagBasedModelTypeProcessor::IsAllowingChanges() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Changes can be handled correctly even before pending data is loaded.
@@ -177,24 +154,30 @@ bool ClientTagBasedModelTypeProcessor::IsAllowingChanges() const {
 }
 
 void ClientTagBasedModelTypeProcessor::ConnectIfReady() {
-  if (!IsModelReadyOrError() || !start_callback_)
+  if (!start_callback_) {
     return;
-
+  }
   if (model_error_) {
     activation_request_.error_handler.Run(model_error_.value());
     start_callback_.Reset();
     return;
   }
-
-  DCHECK(model_ready_to_sync_);
+  if (!model_ready_to_sync_) {
+    return;
+  }
 
   if (!model_type_state_.has_cache_guid()) {
+    // Initialize the cache_guid for old clients that didn't persist it.
     model_type_state_.set_cache_guid(activation_request_.cache_guid);
-  } else if (model_type_state_.cache_guid() != activation_request_.cache_guid) {
-    // There is a mismatch between the cache guid stored in |model_type_state_|
-    // and the one received from sync and stored it |activation_request_|. This
-    // indicates that the stored metadata are invalid (e.g. has been
-    // manipulated) and don't belong to the current syncing client.
+  }
+  // Check for invalid persisted metadata.
+  if (model_type_state_.cache_guid() != activation_request_.cache_guid ||
+      model_type_state_.progress_marker().data_type_id() !=
+          GetSpecificsFieldNumberFromModelType(type_)) {
+    // There is a mismatch between the cache guid or the data type id stored in
+    // |model_type_state_| and the one received from sync. This indicates that
+    // the stored metadata are invalid (e.g. has been manipulated) and don't
+    // belong to the current syncing client.
     ClearMetadataAndResetState();
 
     // The model is still ready to sync (with the same |bridge_|) - replay
@@ -315,8 +298,9 @@ void ClientTagBasedModelTypeProcessor::ReportError(const ModelError& error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Ignore all errors after the first.
-  if (model_error_)
+  if (model_error_) {
     return;
+  }
 
   model_error_ = error;
 
@@ -329,14 +313,14 @@ void ClientTagBasedModelTypeProcessor::ReportError(const ModelError& error) {
     DisconnectSync();
   }
 
-  if (start_callback_) {
-    // Tell sync about the error instead of connecting.
-    ConnectIfReady();
-  } else if (activation_request_.error_handler) {
-    // Connecting was already initiated; just tell sync about the error instead
-    // of going through ConnectIfReady().
+  // Shouldn't connect anymore.
+  start_callback_.Reset();
+  if (activation_request_.error_handler) {
+    // Tell sync about the error.
     activation_request_.error_handler.Run(error);
   }
+  // If the error handler isn't ready yet, we defer reporting the error until it
+  // becomes available which happens in ConnectIfReady() upon OnSyncStarting().
 }
 
 base::Optional<ModelError> ClientTagBasedModelTypeProcessor::GetError() const {
@@ -796,13 +780,16 @@ ProcessorEntity* ClientTagBasedModelTypeProcessor::ProcessUpdate(
     return nullptr;
   }
 
-  ConflictResolution::Type resolution_type = ConflictResolution::TYPE_SIZE;
+  // Cache update encryption key name in case |update| will be moved away into
+  // ResolveConflict().
+  const std::string update_encryption_key_name = update->encryption_key_name;
+  ConflictResolution resolution_type = ConflictResolution::kTypeSize;
   if (entity && entity->IsUnsynced()) {
     // Handle conflict resolution.
-    resolution_type =
-        ResolveConflict(*update, entity, entity_changes, storage_key_to_clear);
+    resolution_type = ResolveConflict(std::move(update), entity, entity_changes,
+                                      storage_key_to_clear);
     UMA_HISTOGRAM_ENUMERATION("Sync.ResolveConflict", resolution_type,
-                              ConflictResolution::TYPE_SIZE);
+                              ConflictResolution::kTypeSize);
   } else {
     // Handle simple create/delete/update.
     base::Optional<EntityChange::ChangeType> change_type;
@@ -842,9 +829,9 @@ ProcessorEntity* ClientTagBasedModelTypeProcessor::ProcessUpdate(
 
   // If the received entity has out of date encryption, we schedule another
   // commit to fix it.
-  if (model_type_state_.encryption_key_name() != update->encryption_key_name) {
+  if (model_type_state_.encryption_key_name() != update_encryption_key_name) {
     DVLOG(2) << ModelTypeToString(type_) << ": Requesting re-encrypt commit "
-             << update->encryption_key_name << " -> "
+             << update_encryption_key_name << " -> "
              << model_type_state_.encryption_key_name();
 
     entity->IncrementSequenceNumber(base::Time::Now());
@@ -852,61 +839,62 @@ ProcessorEntity* ClientTagBasedModelTypeProcessor::ProcessUpdate(
   return entity;
 }
 
-ConflictResolution::Type ClientTagBasedModelTypeProcessor::ResolveConflict(
-    const UpdateResponseData& update,
+ConflictResolution ClientTagBasedModelTypeProcessor::ResolveConflict(
+    std::unique_ptr<UpdateResponseData> update,
     ProcessorEntity* entity,
     EntityChangeList* changes,
     std::string* storage_key_to_clear) {
-  const EntityData& remote_data = *update.entity;
+  const EntityData& remote_data = *update->entity;
 
-  ConflictResolution::Type resolution_type = ConflictResolution::TYPE_SIZE;
-  std::unique_ptr<EntityData> new_data;
+  ConflictResolution resolution_type = ConflictResolution::kTypeSize;
 
   // Determine the type of resolution.
   if (entity->MatchesData(remote_data)) {
     // The changes are identical so there isn't a real conflict.
-    resolution_type = ConflictResolution::CHANGES_MATCH;
+    resolution_type = ConflictResolution::kChangesMatch;
   } else if (entity->metadata().is_deleted()) {
     // Local tombstone vs remote update (non-deletion). Should be undeleted.
-    resolution_type = ConflictResolution::USE_REMOTE;
+    resolution_type = ConflictResolution::kUseRemote;
   } else if (entity->MatchesOwnBaseData()) {
     // If there is no real local change, then the entity must be unsynced due to
     // a pending local re-encryption request. In this case, the remote data
     // should win.
-    resolution_type = ConflictResolution::IGNORE_LOCAL_ENCRYPTION;
+    resolution_type = ConflictResolution::kIgnoreLocalEncryption;
   } else if (entity->MatchesBaseData(remote_data)) {
     // The remote data isn't actually changing from the last remote data that
     // was seen, so it must have been a re-encryption and can be ignored.
-    resolution_type = ConflictResolution::IGNORE_REMOTE_ENCRYPTION;
+    resolution_type = ConflictResolution::kIgnoreRemoteEncryption;
   } else {
     // There's a real data conflict here; let the bridge resolve it.
-    ConflictResolution resolution =
+    resolution_type =
         bridge_->ResolveConflict(entity->storage_key(), remote_data);
-    resolution_type = resolution.type();
-    new_data = resolution.ExtractData();
   }
 
   // Apply the resolution.
   switch (resolution_type) {
-    case ConflictResolution::CHANGES_MATCH:
+    case ConflictResolution::kChangesMatch:
       // Record the update and squash the pending commit.
-      entity->RecordForcedUpdate(update);
+      entity->RecordForcedUpdate(*update);
       break;
-    case ConflictResolution::USE_LOCAL:
-    case ConflictResolution::IGNORE_REMOTE_ENCRYPTION:
+    case ConflictResolution::kUseLocal:
+    case ConflictResolution::kIgnoreRemoteEncryption:
       // Record that we received the update from the server but leave the
       // pending commit intact.
-      entity->RecordIgnoredUpdate(update);
+      entity->RecordIgnoredUpdate(*update);
       break;
-    case ConflictResolution::USE_REMOTE:
-    case ConflictResolution::IGNORE_LOCAL_ENCRYPTION:
+    case ConflictResolution::kUseRemote:
+    case ConflictResolution::kIgnoreLocalEncryption:
       // Update client data to match server.
-      if (update.entity->is_deleted()) {
+      if (update->entity->is_deleted()) {
         DCHECK(!entity->metadata().is_deleted());
+        // Squash the pending commit.
+        entity->RecordForcedUpdate(*update);
         changes->push_back(EntityChange::CreateDelete(entity->storage_key()));
       } else if (!entity->metadata().is_deleted()) {
-        changes->push_back(EntityChange::CreateUpdate(entity->storage_key(),
-                                                      update.entity->Clone()));
+        // Squash the pending commit.
+        entity->RecordForcedUpdate(*update);
+        changes->push_back(EntityChange::CreateUpdate(
+            entity->storage_key(), std::move(update->entity)));
       } else {
         // Remote undeletion. This could imply a new storage key for some
         // bridges, so we may need to wait until UpdateStorageKey() is called.
@@ -914,27 +902,17 @@ ConflictResolution::Type ClientTagBasedModelTypeProcessor::ResolveConflict(
           *storage_key_to_clear = entity->storage_key();
           entity->ClearStorageKey();
         }
+        // Squash the pending commit.
+        entity->RecordForcedUpdate(*update);
         changes->push_back(EntityChange::CreateAdd(entity->storage_key(),
-                                                   update.entity->Clone()));
+                                                   std::move(update->entity)));
       }
-      // Squash the pending commit.
-      entity->RecordForcedUpdate(update);
       break;
-    case ConflictResolution::USE_NEW:
-      DCHECK(!entity->metadata().is_deleted());
-      // Record that we received the update.
-      entity->RecordIgnoredUpdate(update);
-      // Make a new pending commit to update the server.
-      entity->MakeLocalChange(std::move(new_data));
-      // Update the client with the new entity.
-      changes->push_back(EntityChange::CreateUpdate(
-          entity->storage_key(), entity->commit_data().Clone()));
-      break;
-    case ConflictResolution::TYPE_SIZE:
+    case ConflictResolution::kUseNewDEPRECATED:
+    case ConflictResolution::kTypeSize:
       NOTREACHED();
       break;
   }
-  DCHECK(!new_data);
 
   return resolution_type;
 }
@@ -1374,13 +1352,6 @@ void ClientTagBasedModelTypeProcessor::ExpireEntriesIfNeeded(
     }
   }
 
-  if (new_gc_directive.has_max_number_of_items()) {
-    DCHECK(new_gc_directive.max_number_of_items());
-    ExpireEntriesByItemLimit(new_gc_directive.max_number_of_items(),
-                             metadata_changes.get());
-    has_expired_changes = true;
-  }
-
   if (has_expired_changes)
     bridge_->ApplySyncChanges(std::move(metadata_changes), EntityChangeList());
 }
@@ -1425,35 +1396,6 @@ void ClientTagBasedModelTypeProcessor::ExpireEntriesByAge(
     if (!entity->IsUnsynced() &&
         ProtoTimeToTime(entity->metadata().modification_time()) <=
             to_be_expired) {
-      storage_key_to_be_deleted.push_back(entity->storage_key());
-    }
-  }
-
-  ClearMetadataForEntries(storage_key_to_be_deleted, metadata_changes);
-}
-
-void ClientTagBasedModelTypeProcessor::ExpireEntriesByItemLimit(
-    int32_t max_number_of_items,
-    MetadataChangeList* metadata_changes) {
-  DCHECK(metadata_changes);
-
-  size_t limited_number = max_number_of_items;
-  if (limited_number >= entities_.size())
-    return;
-
-  std::vector<int64_t> all_proto_times;
-  for (const auto& kv : entities_) {
-    ProcessorEntity* entity = kv.second.get();
-    all_proto_times.push_back(entity->metadata().modification_time());
-  }
-  int64_t expired_proto_time = FindTheNthBigestProtoTimeStamp(
-      std::move(all_proto_times), limited_number);
-
-  std::vector<std::string> storage_key_to_be_deleted;
-  for (const auto& kv : entities_) {
-    ProcessorEntity* entity = kv.second.get();
-    if (!entity->IsUnsynced() &&
-        entity->metadata().modification_time() < expired_proto_time) {
       storage_key_to_be_deleted.push_back(entity->storage_key());
     }
   }

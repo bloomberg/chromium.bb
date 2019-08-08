@@ -24,8 +24,8 @@
 #include "ios/chrome/browser/crash_report/crash_upload_list.h"
 #include "ios/chrome/browser/metrics/ios_chrome_metrics_service_accessor.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
-#include "ios/web/public/web_ui_ios_data_source.h"
 #include "ios/web/public/webui/web_ui_ios.h"
+#include "ios/web/public/webui/web_ui_ios_data_source.h"
 #include "ios/web/public/webui/web_ui_ios_message_handler.h"
 
 namespace {
@@ -46,7 +46,6 @@ web::WebUIIOSDataSource* CreateCrashesUIHTMLSource() {
   source->SetJsonPath("strings.js");
   source->AddResourcePath(crash::kCrashesUICrashesJS, IDR_CRASH_CRASHES_JS);
   source->SetDefaultResource(IDR_CRASH_CRASHES_HTML);
-  source->UseGzip();
   return source;
 }
 

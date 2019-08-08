@@ -117,16 +117,16 @@ IN_PROC_BROWSER_TEST_F(AccessibilityIpcErrorBrowserTest,
   VLOG(1) << tree->ToString();
 
   EXPECT_EQ(ax::mojom::Role::kRootWebArea, root->data().role);
-  ASSERT_EQ(2, root->child_count());
+  ASSERT_EQ(2u, root->children().size());
 
-  const ui::AXNode* live_region = root->ChildAtIndex(0);
-  ASSERT_EQ(1, live_region->child_count());
+  const ui::AXNode* live_region = root->children()[0];
+  ASSERT_EQ(1u, live_region->children().size());
   EXPECT_EQ(ax::mojom::Role::kGenericContainer, live_region->data().role);
 
-  const ui::AXNode* para = live_region->ChildAtIndex(0);
+  const ui::AXNode* para = live_region->children().front();
   EXPECT_EQ(ax::mojom::Role::kParagraph, para->data().role);
 
-  const ui::AXNode* button = root->ChildAtIndex(1);
+  const ui::AXNode* button = root->children()[1];
   EXPECT_EQ(ax::mojom::Role::kButton, button->data().role);
 }
 
@@ -174,10 +174,12 @@ IN_PROC_BROWSER_TEST_F(AccessibilityIpcErrorBrowserTest,
   int max_iterations = RenderFrameHostImpl::kMaxAccessibilityResets;
 
   for (int iteration = 0; iteration < max_iterations; iteration++) {
-    // Send the browser accessibility the bad message.
-    BrowserAccessibilityManager* manager =
-        frame->GetOrCreateBrowserAccessibilityManager();
-    manager->OnAccessibilityEvents(bad_accessibility_event);
+    // Make sure the manager has been created.
+    frame->GetOrCreateBrowserAccessibilityManager();
+    ASSERT_NE(nullptr, frame->browser_accessibility_manager());
+
+    // Send the bad message to the manager.
+    frame->SendAccessibilityEventsToManager(bad_accessibility_event);
 
     // Now the frame should have deleted the BrowserAccessibilityManager.
     ASSERT_EQ(nullptr, frame->browser_accessibility_manager());

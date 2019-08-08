@@ -261,6 +261,10 @@ TEST_F(ContentSettingBubbleModelTest, BlockedMediastreamMicAndCamera) {
 // Tests whether a changed setting in the setting bubble is displayed again when
 // the bubble is re-opened.
 TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubble) {
+  ASSERT_TRUE(profile()->CreateHistoryService(
+      /* delete_file= */ true,
+      /* no_db= */ false));
+
   // Required to break dependency on BrowserMainLoop.
   MediaCaptureDevicesDispatcher::GetInstance()->
       DisableDeviceEnumerationForTesting();
@@ -743,8 +747,8 @@ TEST_F(ContentSettingBubbleModelTest, Plugins) {
   EXPECT_FALSE(bubble_content.title.empty());
   ASSERT_EQ(0U, bubble_content.list_items.size());
   EXPECT_EQ(0U, bubble_content.radio_group.radio_items.size());
-  EXPECT_FALSE(bubble_content.custom_link.empty());
-  EXPECT_TRUE(bubble_content.custom_link_enabled);
+  EXPECT_FALSE(bubble_content.custom_link_enabled);
+  EXPECT_TRUE(bubble_content.custom_link.empty());
   EXPECT_FALSE(bubble_content.manage_text.empty());
   EXPECT_TRUE(bubble_content.show_learn_more);
 }

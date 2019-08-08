@@ -31,8 +31,7 @@ TEST_F(V8MemoryDumpProviderTest, DumpStatistics) {
   // not set before V8::InitializePlatform the sizes will not be accurate, but
   // this serves the purpose of this test.
   const char track_objects_flag[] = "--track-gc-object-stats";
-  v8::V8::SetFlagsFromString(track_objects_flag,
-                             static_cast<int>(strlen(track_objects_flag)));
+  v8::V8::SetFlagsFromString(track_objects_flag, strlen(track_objects_flag));
 
   base::trace_event::MemoryDumpArgs dump_args = {
       base::trace_event::MemoryDumpLevelOfDetail::DETAILED};

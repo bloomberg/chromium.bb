@@ -12,13 +12,20 @@
 
 namespace download {
 
-SimpleDownloadManagerCoordinator::SimpleDownloadManagerCoordinator()
+SimpleDownloadManagerCoordinator::SimpleDownloadManagerCoordinator(
+    const DownloadWhenFullManagerStartsCallBack&
+        download_when_full_manager_starts_cb)
     : simple_download_manager_(nullptr),
       has_all_history_downloads_(false),
+      current_manager_has_all_history_downloads_(false),
       initialized_(false),
+      download_when_full_manager_starts_cb_(
+          download_when_full_manager_starts_cb),
       weak_factory_(this) {}
 
 SimpleDownloadManagerCoordinator::~SimpleDownloadManagerCoordinator() {
+  if (simple_download_manager_)
+    simple_download_manager_->RemoveObserver(this);
   for (auto& observer : observers_)
     observer.OnManagerGoingDown();
 }
@@ -26,18 +33,24 @@ SimpleDownloadManagerCoordinator::~SimpleDownloadManagerCoordinator() {
 void SimpleDownloadManagerCoordinator::SetSimpleDownloadManager(
     SimpleDownloadManager* simple_download_manager,
     bool manages_all_history_downloads) {
-  DCHECK(simple_download_manager_);
+  DCHECK(simple_download_manager);
+  // Make sure we won't transition from a full manager to a in-progress manager,
+  DCHECK(!current_manager_has_all_history_downloads_ ||
+         manages_all_history_downloads);
+
   if (simple_download_manager_)
     simple_download_manager_->RemoveObserver(this);
+  current_manager_has_all_history_downloads_ = manages_all_history_downloads;
   simple_download_manager_ = simple_download_manager;
   simple_download_manager_->AddObserver(this);
-  simple_download_manager_->NotifyWhenInitialized(base::BindOnce(
-      &SimpleDownloadManagerCoordinator::OnManagerInitialized,
-      weak_factory_.GetWeakPtr(), manages_all_history_downloads));
 }
 
 void SimpleDownloadManagerCoordinator::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
+  if (initialized_) {
+    for (auto& observer : observers_)
+      observer.OnDownloadsInitialized(!has_all_history_downloads_);
+  }
 }
 
 void SimpleDownloadManagerCoordinator::RemoveObserver(Observer* observer) {
@@ -46,13 +59,22 @@ void SimpleDownloadManagerCoordinator::RemoveObserver(Observer* observer) {
 
 void SimpleDownloadManagerCoordinator::DownloadUrl(
     std::unique_ptr<DownloadUrlParameters> parameters) {
-  if (simple_download_manager_)
+  bool result = simple_download_manager_
+                    ? simple_download_manager_->CanDownload(parameters.get())
+                    : false;
+  if (result) {
     simple_download_manager_->DownloadUrl(std::move(parameters));
+    return;
+  }
+
+  if (!current_manager_has_all_history_downloads_)
+    download_when_full_manager_starts_cb_.Run(std::move(parameters));
 }
 
 void SimpleDownloadManagerCoordinator::GetAllDownloads(
     std::vector<DownloadItem*>* downloads) {
-  simple_download_manager_->GetAllDownloads(downloads);
+  if (simple_download_manager_)
+    simple_download_manager_->GetAllDownloads(downloads);
 }
 
 DownloadItem* SimpleDownloadManagerCoordinator::GetDownloadByGuid(
@@ -62,16 +84,11 @@ DownloadItem* SimpleDownloadManagerCoordinator::GetDownloadByGuid(
   return nullptr;
 }
 
-bool SimpleDownloadManagerCoordinator::HasSetDownloadManager() {
-  return simple_download_manager_;
-}
-
-void SimpleDownloadManagerCoordinator::OnManagerInitialized(
-    bool has_all_history_downloads) {
+void SimpleDownloadManagerCoordinator::OnDownloadsInitialized() {
   initialized_ = true;
-  has_all_history_downloads_ = has_all_history_downloads;
+  has_all_history_downloads_ = current_manager_has_all_history_downloads_;
   for (auto& observer : observers_)
-    observer.OnDownloadsInitialized(!has_all_history_downloads);
+    observer.OnDownloadsInitialized(!has_all_history_downloads_);
 }
 
 void SimpleDownloadManagerCoordinator::OnManagerGoingDown() {

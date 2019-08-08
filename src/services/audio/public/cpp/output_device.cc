@@ -12,6 +12,7 @@
 #include "media/audio/audio_output_device_thread_callback.h"
 #include "media/mojo/interfaces/audio_data_pipe.mojom.h"
 #include "media/mojo/interfaces/audio_logging.mojom.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/audio/public/mojom/constants.mojom.h"
 
@@ -27,17 +28,16 @@ OutputDevice::OutputDevice(
       weak_factory_(this) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(params.IsValid());
-  connector->BindInterface(audio::mojom::kServiceName,
-                           mojo::MakeRequest(&stream_factory_));
+  connector->Connect(audio::mojom::kServiceName,
+                     stream_factory_.BindNewPipeAndPassReceiver());
 
-  media::mojom::AudioOutputStreamRequest stream_request =
-      mojo::MakeRequest(&stream_);
-  stream_.set_connection_error_handler(base::BindOnce(
-      &OutputDevice::OnConnectionError, weak_factory_.GetWeakPtr()));
   stream_factory_->CreateOutputStream(
-      std::move(stream_request), nullptr, nullptr, device_id, params,
-      base::UnguessableToken::Create(), base::nullopt,
+      stream_.BindNewPipeAndPassReceiver(), mojo::NullAssociatedRemote(),
+      mojo::NullRemote(), device_id, params, base::UnguessableToken::Create(),
+      base::nullopt,
       base::BindOnce(&OutputDevice::StreamCreated, weak_factory_.GetWeakPtr()));
+  stream_.set_disconnect_handler(base::BindOnce(
+      &OutputDevice::OnConnectionError, weak_factory_.GetWeakPtr()));
 }
 
 OutputDevice::~OutputDevice() {

@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
 #include "third_party/blink/renderer/core/editing/state_machines/backward_code_point_state_machine.h"
 #include "third_party/blink/renderer/core/editing/state_machines/forward_code_point_state_machine.h"
+#include "third_party/blink/renderer/core/enter_key_hint_names.h"
 #include "third_party/blink/renderer/core/events/composition_event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -211,6 +212,27 @@ AtomicString GetInputModeAttribute(Element* element) {
   // TODO(dtapuska): We may wish to restrict this to a yet to be proposed
   // <contenteditable> or <richtext> element Mozilla discussed at TPAC 2016.
   return element->FastGetAttribute(html_names::kInputmodeAttr).LowerASCII();
+}
+
+AtomicString GetEnterKeyHintAttribute(Element* element) {
+  if (!element)
+    return AtomicString();
+
+  bool query_attribute = false;
+  if (auto* input = ToHTMLInputElementOrNull(*element)) {
+    query_attribute = input->SupportsInputModeAttribute();
+  } else if (IsHTMLTextAreaElement(*element)) {
+    query_attribute = true;
+  } else {
+    element->GetDocument().UpdateStyleAndLayoutTree();
+    if (HasEditableStyle(*element))
+      query_attribute = true;
+  }
+
+  if (!query_attribute)
+    return AtomicString();
+
+  return element->FastGetAttribute(html_names::kEnterkeyhintAttr).LowerASCII();
 }
 
 constexpr int kInvalidDeletionLength = -1;
@@ -1290,6 +1312,7 @@ WebTextInputInfo InputMethodController::TextInputInfo() const {
   if (!element)
     return info;
 
+  info.action = InputActionOfFocusedElement();
   info.input_mode = InputModeOfFocusedElement();
   info.type = TextInputType();
   info.flags = TextInputFlags();
@@ -1398,6 +1421,32 @@ int InputMethodController::ComputeWebTextInputNextPreviousFlags() const {
   return flags;
 }
 
+ui::TextInputAction InputMethodController::InputActionOfFocusedElement() const {
+  if (!RuntimeEnabledFeatures::EnterKeyHintAttributeEnabled())
+    return ui::TextInputAction::kDefault;
+
+  AtomicString action =
+      GetEnterKeyHintAttribute(GetDocument().FocusedElement());
+
+  if (action.IsEmpty())
+    return ui::TextInputAction::kDefault;
+  if (action == enter_key_hint_names::kEnter)
+    return ui::TextInputAction::kEnter;
+  if (action == enter_key_hint_names::kDone)
+    return ui::TextInputAction::kDone;
+  if (action == enter_key_hint_names::kGo)
+    return ui::TextInputAction::kGo;
+  if (action == enter_key_hint_names::kNext)
+    return ui::TextInputAction::kNext;
+  if (action == enter_key_hint_names::kPrevious)
+    return ui::TextInputAction::kPrevious;
+  if (action == enter_key_hint_names::kSearch)
+    return ui::TextInputAction::kSearch;
+  if (action == enter_key_hint_names::kSend)
+    return ui::TextInputAction::kSend;
+  return ui::TextInputAction::kDefault;
+}
+
 WebTextInputMode InputMethodController::InputModeOfFocusedElement() const {
   AtomicString mode = GetInputModeAttribute(GetDocument().FocusedElement());
 
@@ -1471,8 +1520,8 @@ WebTextInputType InputMethodController::TextInputType() const {
     return kWebTextInputTypeTextArea;
   }
 
-  if (element->IsHTMLElement()) {
-    if (ToHTMLElement(element)->IsDateTimeFieldElement())
+  if (auto* html_element = DynamicTo<HTMLElement>(element)) {
+    if (html_element->IsDateTimeFieldElement())
       return kWebTextInputTypeDateTimeField;
   }
 

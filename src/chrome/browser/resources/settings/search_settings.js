@@ -61,8 +61,6 @@ cr.define('settings', function() {
     const highlights = [];
     const bubbles = [];
 
-    const domIfTag = Polymer.DomIf ? 'DOM-IF' : 'TEMPLATE';
-
     function doSearch(node) {
       // NOTE: For subpage wrappers <template route-path="..."> when |no-search|
       // participates in a data binding:
@@ -73,8 +71,7 @@ cr.define('settings', function() {
       //
       // The latter throws an error during the automatic Polymer 2 conversion to
       // <dom-if><template...></dom-if> syntax.
-      // TODO(dpapad):Clean this up once Polymer 2 migration has finished.
-      if (node.nodeName == domIfTag && node.hasAttribute('route-path') &&
+      if (node.nodeName == 'DOM-IF' && node.hasAttribute('route-path') &&
           !node.if && !node['noSearch'] &&
           !node.hasAttribute(SKIP_SEARCH_CSS_ATTRIBUTE)) {
         request.queue_.addRenderTask(new RenderTask(request, node));
@@ -216,9 +213,8 @@ cr.define('settings', function() {
     exec() {
       const routePath = this.node.getAttribute('route-path');
 
-      const content = Polymer.DomIf ?
-          Polymer.DomIf._contentForTemplate(this.node.firstElementChild) :
-          /** @type {{_content: DocumentFragment}} */ (this.node)._content;
+      const content = Polymer.DomIf._contentForTemplate(
+          /** @type {!HTMLTemplateElement} */ (this.node.firstElementChild));
       const subpageTemplate = content.querySelector('settings-subpage');
       subpageTemplate.setAttribute('route-path', routePath);
       assert(!this.node.if);

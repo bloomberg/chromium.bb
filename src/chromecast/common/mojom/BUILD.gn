@@ -13,6 +13,7 @@ mojom("mojom") {
     "media_playback_options.mojom",
     "memory_pressure.mojom",
     "multiroom.mojom",
+    "queryable_data_store.mojom",
   ]
 
   public_deps = [

@@ -121,19 +121,17 @@ class CC_ANIMATION_EXPORT KeyframeEffect {
 
   bool HasNonDeletedKeyframeModel() const;
 
-  bool HasOnlyTranslationTransforms(ElementListType list_type) const;
-
   bool AnimationsPreserveAxisAlignment() const;
 
-  // Sets |start_scale| to the maximum of starting keyframe_model scale along
-  // any dimension at any destination in active KeyframeModels. Returns false
-  // if the starting scale cannot be computed.
-  bool AnimationStartScale(ElementListType, float* start_scale) const;
-
-  // Sets |max_scale| to the maximum scale along any dimension at any
-  // destination in active KeyframeModels. Returns false if the maximum scale
-  // cannot be computed.
-  bool MaximumTargetScale(ElementListType, float* max_scale) const;
+  // Gets scales transform animations. On return, |maximum_scale| is the maximum
+  // scale along any dimension at any destination in active scale animations,
+  // and |starting_scale| is the maximum of starting animation scale along any
+  // dimension at any destination in active scale animations. They are set to
+  // kNotScaled if there is no active scale animation or the scales cannot be
+  // computed. Returns false if the scales cannot be computed.
+  bool GetAnimationScales(ElementListType,
+                          float* maximum_scale,
+                          float* starting_scale) const;
 
   // Returns true if there is a keyframe_model that is either currently
   // animating the given property or scheduled to animate this property in the
@@ -169,6 +167,7 @@ class CC_ANIMATION_EXPORT KeyframeEffect {
  private:
   void StartKeyframeModels(base::TimeTicks monotonic_time);
   void PromoteStartedKeyframeModels(AnimationEvents* events);
+  void PurgeDeletedKeyframeModels();
 
   void MarkKeyframeModelsForDeletion(base::TimeTicks, AnimationEvents* events);
   void MarkFinishedKeyframeModels(base::TimeTicks monotonic_time);

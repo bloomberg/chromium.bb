@@ -12,16 +12,16 @@
 namespace cr_fuchsia {
 
 bool LoadUrlAndExpectResponse(
-    fuchsia::web::NavigationControllerPtr* navigation_controller,
+    fuchsia::web::NavigationController* navigation_controller,
     fuchsia::web::LoadUrlParams load_url_params,
     std::string url) {
   DCHECK(navigation_controller);
   base::RunLoop run_loop;
   ResultReceiver<fuchsia::web::NavigationController_LoadUrl_Result> result(
       run_loop.QuitClosure());
-  (*navigation_controller)
-      ->LoadUrl(url, std::move(load_url_params),
-                CallbackToFitFunction(result.GetReceiveCallback()));
+  navigation_controller->LoadUrl(
+      url, std::move(load_url_params),
+      CallbackToFitFunction(result.GetReceiveCallback()));
   run_loop.Run();
   return result->is_response();
 }

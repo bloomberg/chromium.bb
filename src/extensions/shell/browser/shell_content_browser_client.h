@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_SHELL_BROWSER_SHELL_CONTENT_BROWSER_CLIENT_H_
 #define EXTENSIONS_SHELL_BROWSER_SHELL_CONTENT_BROWSER_CLIENT_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "content/public/browser/content_browser_client.h"
@@ -38,7 +40,7 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
   content::BrowserContext* GetBrowserContext();
 
   // content::ContentBrowserClient overrides.
-  content::BrowserMainParts* CreateBrowserMainParts(
+  std::unique_ptr<content::BrowserMainParts> CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) override;
   void RenderProcessWillLaunch(
       content::RenderProcessHost* host,
@@ -91,8 +93,6 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
       bool is_main_frame,
       ui::PageTransition page_transition,
       bool has_user_gesture,
-      const std::string& method,
-      const net::HttpRequestHeaders& headers,
       network::mojom::URLLoaderFactoryRequest* factory_request,
       network::mojom::URLLoaderFactory*& out_factory) override;
   network::mojom::URLLoaderFactoryPtrInfo
@@ -105,7 +105,7 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
 
  protected:
   // Subclasses may wish to provide their own ShellBrowserMainParts.
-  virtual ShellBrowserMainParts* CreateShellBrowserMainParts(
+  virtual std::unique_ptr<ShellBrowserMainParts> CreateShellBrowserMainParts(
       const content::MainFunctionParams& parameters,
       ShellBrowserMainDelegate* browser_main_delegate);
 

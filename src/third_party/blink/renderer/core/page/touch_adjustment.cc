@@ -183,10 +183,10 @@ static inline void AppendContextSubtargetsForNode(
   // subtargets for selected or auto-selectable parts of text nodes.
   DCHECK(node->GetLayoutObject());
 
-  if (!node->IsTextNode())
+  auto* text_node = DynamicTo<Text>(node);
+  if (!text_node)
     return AppendBasicSubtargetsForNode(node, subtargets);
 
-  Text* text_node = ToText(node);
   LayoutText* text_layout_object = text_node->GetLayoutObject();
 
   if (text_layout_object->GetFrame()

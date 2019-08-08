@@ -14,6 +14,7 @@
 namespace content {
 
 class FakeBluetoothChooser;
+class FakeBluetoothChooserFactory;
 class WebTestBrowserContext;
 class MockClipboardHost;
 class MockPlatformNotificationService;
@@ -45,7 +46,7 @@ class WebTestContentBrowserClient : public ShellContentBrowserClient {
                            WebPreferences* prefs) override;
   void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
                                       int child_process_id) override;
-  BrowserMainParts* CreateBrowserMainParts(
+  std::unique_ptr<BrowserMainParts> CreateBrowserMainParts(
       const MainFunctionParams& parameters) override;
   void GetQuotaSettings(
       content::BrowserContext* context,
@@ -88,17 +89,17 @@ class WebTestContentBrowserClient : public ShellContentBrowserClient {
       LoginAuthRequiredCallback auth_required_callback) override;
 
  private:
-  // Creates and stores a FakeBluetoothChooser instance.
-  void CreateFakeBluetoothChooser(mojom::FakeBluetoothChooserRequest request);
+  // Creates and stores a FakeBluetoothChooserFactory instance.
+  void CreateFakeBluetoothChooserFactory(
+      mojom::FakeBluetoothChooserFactoryRequest request);
   void BindClipboardHost(blink::mojom::ClipboardHostRequest request);
 
   std::unique_ptr<MockPlatformNotificationService>
       mock_platform_notification_service_;
   bool block_popups_ = false;
 
-  // Stores the next instance of FakeBluetoothChooser that is to be returned
-  // when GetNextFakeBluetoothChooser is called.
-  std::unique_ptr<FakeBluetoothChooser> next_fake_bluetooth_chooser_;
+  // Stores the FakeBluetoothChooserFactory that produces FakeBluetoothChoosers.
+  std::unique_ptr<FakeBluetoothChooserFactory> fake_bluetooth_chooser_factory_;
   std::unique_ptr<MockClipboardHost> mock_clipboard_host_;
 };
 

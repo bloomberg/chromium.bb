@@ -7,20 +7,40 @@
 
 // This test only works with the GPU backend.
 
-#include "gm.h"
+#include "gm/gm.h"
+#include "include/core/SkBitmap.h"
+#include "include/core/SkBlendMode.h"
+#include "include/core/SkColor.h"
+#include "include/core/SkImage.h"
+#include "include/core/SkImageInfo.h"
+#include "include/core/SkMatrix.h"
+#include "include/core/SkRect.h"
+#include "include/core/SkRefCnt.h"
+#include "include/core/SkScalar.h"
+#include "include/core/SkSize.h"
+#include "include/core/SkString.h"
+#include "include/core/SkTypes.h"
+#include "include/core/SkYUVAIndex.h"
+#include "include/gpu/GrContext.h"
+#include "include/gpu/GrSamplerState.h"
+#include "include/private/GrTextureProxy.h"
+#include "include/private/GrTypesPriv.h"
+#include "src/gpu/GrClip.h"
+#include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrFragmentProcessor.h"
+#include "src/gpu/GrPaint.h"
+#include "src/gpu/GrProxyProvider.h"
+#include "src/gpu/GrRenderTargetContext.h"
+#include "src/gpu/GrRenderTargetContextPriv.h"
+#include "src/gpu/effects/GrPorterDuffXferProcessor.h"
+#include "src/gpu/effects/GrYUVtoRGBEffect.h"
+#include "src/gpu/ops/GrDrawOp.h"
+#include "src/gpu/ops/GrFillRectOp.h"
 
-#include "GrClip.h"
-#include "GrContext.h"
-#include "GrContextPriv.h"
-#include "GrProxyProvider.h"
-#include "GrRenderTargetContextPriv.h"
-#include "GrTextureProxy.h"
-#include "SkBitmap.h"
-#include "SkGr.h"
-#include "SkGradientShader.h"
-#include "effects/GrYUVtoRGBEffect.h"
-#include "ops/GrDrawOp.h"
-#include "ops/GrFillRectOp.h"
+#include <memory>
+#include <utility>
+
+class SkCanvas;
 
 #define YSIZE 8
 #define USIZE 4
@@ -118,8 +138,8 @@ protected:
                     SkMatrix viewMatrix;
                     viewMatrix.setTranslate(x, y);
                     renderTargetContext->priv().testingOnly_addDrawOp(
-                            GrFillRectOp::Make(context, std::move(grPaint), GrAAType::kNone,
-                                               viewMatrix, renderRect));
+                            GrFillRectOp::MakeNonAARect(context, std::move(grPaint),
+                                                        viewMatrix, renderRect));
                 }
                 x += renderRect.width() + kTestPad;
             }
@@ -231,8 +251,8 @@ protected:
                 SkMatrix viewMatrix;
                 viewMatrix.setTranslate(x, y);
                 grPaint.addColorFragmentProcessor(std::move(fp));
-                std::unique_ptr<GrDrawOp> op(GrFillRectOp::Make(context, std::move(grPaint),
-                        GrAAType::kNone, viewMatrix, renderRect));
+                std::unique_ptr<GrDrawOp> op(GrFillRectOp::MakeNonAARect(
+                        context, std::move(grPaint), viewMatrix, renderRect));
                 renderTargetContext->priv().testingOnly_addDrawOp(std::move(op));
             }
         }

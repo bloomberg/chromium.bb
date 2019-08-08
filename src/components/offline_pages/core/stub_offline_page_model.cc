@@ -26,15 +26,8 @@ void StubOfflinePageModel::SavePage(
 void StubOfflinePageModel::AddPage(const OfflinePageItem& page,
                                    AddPageCallback callback) {}
 void StubOfflinePageModel::MarkPageAccessed(int64_t offline_id) {}
-void StubOfflinePageModel::DeletePagesByOfflineId(
-    const std::vector<int64_t>& offline_ids,
-    DeletePageCallback callback) {}
-void StubOfflinePageModel::DeletePagesByClientIds(
-    const std::vector<ClientId>& client_ids,
-    DeletePageCallback callback) {}
-void StubOfflinePageModel::DeletePagesByClientIdsAndOrigin(
-    const std::vector<ClientId>& client_ids,
-    const std::string& origin,
+void StubOfflinePageModel::DeletePagesWithCriteria(
+    const PageCriteria& criteria,
     DeletePageCallback callback) {}
 void StubOfflinePageModel::DeleteCachedPagesByURLPredicate(
     const UrlPredicate& predicate,

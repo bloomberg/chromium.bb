@@ -155,8 +155,8 @@ class CrostiniSharePath : public KeyedService,
   // Callback for FilePathWatcher.
   void OnFileChanged(const base::FilePath& path, bool error);
 
-  // Runs on IO Thread to check if a path is deleted.
-  void CheckIfPathDeletedOnIOThread(const base::FilePath& path);
+  // Blocking function to check if a path is deleted.
+  void CheckIfPathDeleted(const base::FilePath& path);
 
   // Returns info for specified path or nullptr if not found.
   SharedPathInfo* FindSharedPathInfo(const base::FilePath& path);

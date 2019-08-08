@@ -17,7 +17,6 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string16.h"
@@ -30,7 +29,6 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "components/crx_file/id_util.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
@@ -128,7 +126,7 @@ bool IsManifestSupported(int manifest_version,
 
 }  // namespace
 
-const int Extension::kInitFromValueFlagBits = 13;
+const int Extension::kInitFromValueFlagBits = 14;
 
 const char Extension::kMimeType[] = "application/x-chrome-extension";
 
@@ -173,8 +171,14 @@ scoped_refptr<Extension> Extension::Create(const base::FilePath& path,
   base::ElapsedTimer timer;
   DCHECK(utf8_error);
   base::string16 error;
-  std::unique_ptr<extensions::Manifest> manifest(
-      new extensions::Manifest(location, value.CreateDeepCopy()));
+
+  std::unique_ptr<extensions::Manifest> manifest;
+  if (flags & FOR_LOGIN_SCREEN) {
+    manifest = Manifest::CreateManifestForLoginScreen(location,
+                                                      value.CreateDeepCopy());
+  } else {
+    manifest = std::make_unique<Manifest>(location, value.CreateDeepCopy());
+  }
 
   if (!InitExtensionID(manifest.get(), path, explicit_id, flags, &error)) {
     *utf8_error = base::UTF16ToUTF8(error);
@@ -192,27 +196,6 @@ scoped_refptr<Extension> Extension::Create(const base::FilePath& path,
   if (!extension->InitFromValue(flags, &error)) {
     *utf8_error = base::UTF16ToUTF8(error);
     return NULL;
-  }
-
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  std::string process_type =
-      command_line.GetSwitchValueASCII(::switches::kProcessType);
-  // Use microsecond accuracy for increased granularity. Max at 10 seconds.
-  base::TimeDelta elapsed_time = timer.Elapsed();
-  const int kMaxTimeInMicroseconds = 10000000;
-  if (process_type.empty()) {
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "Extensions.ExtensionCreationTime.BrowserProcess",
-        elapsed_time.InMicroseconds(), 1, kMaxTimeInMicroseconds, 100);
-  } else if (command_line.HasSwitch(switches::kExtensionProcess)) {
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "Extensions.ExtensionCreationTime.ExtensionProcess",
-        elapsed_time.InMicroseconds(), 1, kMaxTimeInMicroseconds, 100);
-  } else if (process_type == ::switches::kRendererProcess) {
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "Extensions.ExtensionCreationTime.RendererProcess",
-        elapsed_time.InMicroseconds(), 1, kMaxTimeInMicroseconds, 100);
   }
 
   return extension;
@@ -480,6 +463,10 @@ bool Extension::is_shared_module() const {
 
 bool Extension::is_theme() const {
   return manifest()->is_theme();
+}
+
+bool Extension::is_login_screen_extension() const {
+  return manifest()->is_login_screen_extension();
 }
 
 void Extension::AddWebExtentPattern(const URLPattern& pattern) {

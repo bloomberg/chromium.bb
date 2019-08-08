@@ -39,7 +39,7 @@ class PictureInPictureWindowController {
 
   // Called to notify the controller that the window was requested to be closed
   // by the user or the content.
-  virtual void Close(bool should_pause_video, bool should_reset_pip_player) = 0;
+  virtual void Close(bool should_pause_video) = 0;
 
   // Called to notify the controller that the window was requested to be closed
   // by the content and that initiator should be focused.

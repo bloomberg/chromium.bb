@@ -77,9 +77,12 @@ class LeakDetectionStorySet(story_module.StorySet):
       'https://www.csdn.net/',
       'https://www.alipay.com/',
       'https://www.twitch.tv/',
-      'https://www.ebay.com/',
-      'https://www.microsoft.com/',
-      'https://www.xvideos.com/',
+      # TODO(keishi): Memory dump fails flakily crbug.com/963273
+      #'https://www.ebay.com/',
+      # TODO(keishi): Memory dump fails flakily crbug.com/963273
+      #'https://www.microsoft.com/',
+      # TODO(keishi): Memory dump fails flakily crbug.com/963273
+      #'https://www.xvideos.com/',
       'https://mail.ru/',
       'https://www.bing.com/',
       'http://www.wikia.com/',
@@ -90,12 +93,14 @@ class LeakDetectionStorySet(story_module.StorySet):
       'https://news.google.com/',
       'https://www.theguardian.com/',
       'https://www.indiatimes.com/',
-      'http://www.foxnews.com/',
+      # TODO(keishi): Memory dump fails flakily crbug.com/963273
+      #'http://www.foxnews.com/',
       'https://weather.com/',
       'https://www.shutterstock.com/',
       'https://docs.google.com/',
       'https://wordpress.com/',
-      'https://www.apple.com/',
+      # TODO(yuzus): This test crashes.
+      # 'https://www.apple.com/',
       'https://play.google.com/store',
       'https://www.dropbox.com/',
       'https://soundcloud.com/',
@@ -106,7 +111,8 @@ class LeakDetectionStorySet(story_module.StorySet):
       'https://www.ikea.com/',
       'https://www.bestbuy.com/',
       'https://www.homedepot.com/',
-      'https://www.target.com/',
+      # TODO(keishi): Memory dump fails flakily crbug.com/963273
+      #'https://www.target.com/',
       'https://www.booking.com/',
       'https://www.tripadvisor.com/',
       'https://9gag.com/',
@@ -114,7 +120,8 @@ class LeakDetectionStorySet(story_module.StorySet):
       'https://www.roblox.com/',
       'https://www.gamespot.com/',
       'https://www.blizzard.com',
-      'https://ign.com/',
+      # TODO(keishi): Memory dump fails flakily crbug.com/963273
+      #'https://ign.com/',
       'https://www.yelp.com/',
       # Times out waiting for HasReachedQuiescence - crbug.com/927427
       # 'https://gizmodo.com/',
@@ -162,10 +169,12 @@ class LeakDetectionStorySet(story_module.StorySet):
       # https://crbug.com/892352
       # 'https://www.tumblr.com/',
       'https://www.paypal.com/',
-      'http://www.espn.com/',
+      # TODO(yuzus): espn.com is flaky. https://crbug.com/959796
+      #'http://www.espn.com/',
       'https://edition.cnn.com/',
       'https://www.pinterest.com/',
-      'https://www.nytimes.com/',
+      # TODO(keishi): Memory dump fails flakily crbug.com/963273
+      #'https://www.nytimes.com/',
       'https://github.com/',
       'https://www.salesforce.com/',
       # Japan Alexa top websites
@@ -178,7 +187,8 @@ class LeakDetectionStorySet(story_module.StorySet):
       'https://www.pixiv.net/',
       # websites which were found to be leaking in the past
       'https://www.prezi.com',
-      'http://www.time.com',
+      # TODO(keishi): Memory dump fails flakily crbug.com/963273
+      #'http://www.time.com',
       'http://www.cheapoair.com',
       'http://www.onlinedown.net',
       'http://www.dailypost.ng',
@@ -251,7 +261,8 @@ class LeakDetectionStorySet(story_module.StorySet):
     resource_loading_urls_list = [
       'https://www.hotels.com/',
       'https://www.livejournal.com/',
-      'https://www.yahoo.com',
+      # TODO(keishi): Memory dump fails flakily crbug.com/963273
+      #'https://www.yahoo.com',
       'http://www.quora.com',
       'https://www.macys.com',
       'http://infomoney.com.br',

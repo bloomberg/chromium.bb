@@ -538,9 +538,11 @@ def EvaluateCondition(condition, variables, referenced_variables=None):
   main_node = ast.parse(condition, mode='eval')
   if isinstance(main_node, ast.Expression):
     main_node = main_node.body
-  def _convert(node):
+  def _convert(node, allow_tuple=False):
     if isinstance(node, ast.Str):
       return node.s
+    elif isinstance(node, ast.Tuple) and allow_tuple:
+      return tuple(map(_convert, node.elts))
     elif isinstance(node, ast.Name):
       if node.id in referenced_variables:
         raise ValueError(
@@ -612,12 +614,15 @@ def EvaluateCondition(condition, variables, referenced_variables=None):
                 condition))
 
       left = _convert(node.left)
-      right = _convert(node.comparators[0])
+      right = _convert(
+          node.comparators[0], allow_tuple=isinstance(node.ops[0], ast.In))
 
       if isinstance(node.ops[0], ast.Eq):
         return left == right
       if isinstance(node.ops[0], ast.NotEq):
         return left != right
+      if isinstance(node.ops[0], ast.In):
+        return left in right
 
       raise ValueError(
           'unexpected operator: %s %s (inside %r)' % (

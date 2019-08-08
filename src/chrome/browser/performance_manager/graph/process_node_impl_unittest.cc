@@ -19,6 +19,13 @@ class ProcessNodeImplTest : public GraphTestHarness {};
 
 }  // namespace
 
+TEST_F(ProcessNodeImplTest, GetIndexingKey) {
+  auto process = CreateNode<ProcessNodeImpl>();
+  EXPECT_EQ(
+      process->GetIndexingKey(),
+      static_cast<const void*>(static_cast<const NodeBase*>(process.get())));
+}
+
 TEST_F(ProcessNodeImplTest, MeasureCPUUsage) {
   auto process_node = CreateNode<ProcessNodeImpl>();
   process_node->SetCPUUsage(1.0);
@@ -28,7 +35,7 @@ TEST_F(ProcessNodeImplTest, MeasureCPUUsage) {
 TEST_F(ProcessNodeImplTest, ProcessLifeCycle) {
   auto process_node = CreateNode<ProcessNodeImpl>();
 
-  // Test the potential lifecycles of a process CU.
+  // Test the potential lifecycles of a process node.
   // First go to exited without an intervening process attached, as would happen
   // in the case the process fails to start.
   EXPECT_FALSE(process_node->process().IsValid());

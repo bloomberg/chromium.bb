@@ -41,14 +41,12 @@ source_set("vaapi") {
     "vaapi_dmabuf_video_frame_mapper.h",
     "vaapi_h264_accelerator.cc",
     "vaapi_h264_accelerator.h",
+    "vaapi_jpeg_decode_accelerator_worker.cc",
+    "vaapi_jpeg_decode_accelerator_worker.h",
     "vaapi_jpeg_decoder.cc",
     "vaapi_jpeg_decoder.h",
-    "vaapi_jpeg_encode_accelerator.cc",
-    "vaapi_jpeg_encode_accelerator.h",
     "vaapi_jpeg_encoder.cc",
     "vaapi_jpeg_encoder.h",
-    "vaapi_mjpeg_decode_accelerator.cc",
-    "vaapi_mjpeg_decode_accelerator.h",
     "vaapi_picture.cc",
     "vaapi_picture.h",
     "vaapi_picture_factory.cc",
@@ -76,13 +74,32 @@ source_set("vaapi") {
   deps = [
     ":libva_stubs",
     "//base",
+    "//gpu/ipc/common",
     "//gpu/ipc/service",
     "//media",
     "//media/gpu:common",
     "//media/gpu:video_frame_mapper_common",
+    "//media/gpu/linux",
+    "//media/parsers",
+    "//mojo/public/cpp/bindings",
     "//third_party/libyuv",
+    "//ui/gfx",
     "//ui/gfx/geometry",
   ]
+
+  if (is_chromeos) {
+    sources += [
+      "vaapi_jpeg_encode_accelerator.cc",
+      "vaapi_jpeg_encode_accelerator.h",
+      "vaapi_mjpeg_decode_accelerator.cc",
+      "vaapi_mjpeg_decode_accelerator.h",
+    ]
+
+    deps += [
+      "//components/chromeos_camera:jpeg_encode_accelerator",
+      "//components/chromeos_camera:mjpeg_decode_accelerator",
+    ]
+  }
 
   if (is_linux) {
     configs += [ "//build/config/linux/libva" ]
@@ -144,13 +161,31 @@ source_set("jpeg_decoder_unit_test") {
   ]
   deps = [
     ":vaapi",
+    ":vaapi_utils_unittest",
     "//base",
-    "//base/test:test_support",
     "//media:test_support",
+    "//media/parsers",
     "//skia",
     "//testing/gtest",
     "//third_party/libyuv:libyuv",
     "//ui/gfx/codec",
     "//ui/gfx/geometry",
+  ]
+}
+
+source_set("vaapi_utils_unittest") {
+  testonly = true
+  sources = [
+    "vaapi_utils_unittest.cc",
+  ]
+  deps = [
+    ":vaapi",
+    "//base",
+    "//base/test:test_support",
+    "//testing/gtest",
+    "//ui/gfx/geometry",
+
+    # Indirect dependency from vaapi_wrapper.h.
+    "//skia",
   ]
 }

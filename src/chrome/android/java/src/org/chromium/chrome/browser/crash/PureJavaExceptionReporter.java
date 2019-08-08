@@ -12,7 +12,6 @@ import android.os.Build;
 import android.util.Log;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.BuildConfig;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PiiElider;
@@ -145,7 +144,7 @@ public class PureJavaExceptionReporter {
                 PiiElider.sanitizeStacktrace(Log.getStackTraceString(javaException)));
         addPairedString(EARLY_JAVA_EXCEPTION, "true");
         addPairedString(PACKAGE,
-                String.format("%s v%s (%s)", BuildConfig.FIREBASE_APP_ID, buildInfo.versionCode,
+                String.format("%s v%s (%s)", BuildInfo.getFirebaseAppId(), buildInfo.versionCode,
                         buildInfo.versionName));
         addPairedString(CUSTOM_THEMES, buildInfo.customThemes);
         addPairedString(RESOURCES_VERSION, buildInfo.resourcesVersion);

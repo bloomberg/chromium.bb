@@ -345,7 +345,6 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     # Throw away CLs that might not be used this run.
     if validation_pool:
       validation_pool.has_chump_cls = has_chump_cls
-      validation_pool.FilterChangesForThrottledTree()
 
       # Apply any manifest CLs (internal or exteral).
       validation_pool.ApplyPoolIntoRepo(

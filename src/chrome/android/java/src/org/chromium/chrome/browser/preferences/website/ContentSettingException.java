@@ -72,6 +72,10 @@ public class ContentSettingException implements Serializable {
         return mContentSetting;
     }
 
+    public int getContentSettingType() {
+        return mContentSettingType;
+    }
+
     /**
      * Sets the content setting value for this exception.
      */

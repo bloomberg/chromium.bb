@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_PARENT_ACCESS_CODE_PARENT_ACCESS_SERVICE_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -22,65 +23,56 @@ class Clock;
 namespace chromeos {
 namespace parent_access {
 
-class Authenticator;
-
 // Parent access code validation service.
-class ParentAccessService : public LoginScreenClient::ParentAccessDelegate,
-                            public ConfigSource::Observer {
+class ParentAccessService {
  public:
-  // Delegate that gets notified about attempts to validate parent access code.
-  class Delegate {
+  // Observer that gets notified about attempts to validate parent access code.
+  class Observer : public base::CheckedObserver {
    public:
-    Delegate();
-    virtual ~Delegate();
-
     // Called when access code validation was performed. |result| is true if
-    // validation finished with a success and false otherwise.
-    virtual void OnAccessCodeValidation(bool result) = 0;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Delegate);
+    // validation finished with a success and false otherwise. |account_id| is
+    // forwarded from the ValidateParentAccessCode method that triggered this
+    // event, when it is filled it means that the validation happened
+    // specifically to the account identified by the parameter.
+    virtual void OnAccessCodeValidation(
+        bool result,
+        base::Optional<AccountId> account_id) = 0;
   };
 
   // Registers preferences.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
-  explicit ParentAccessService(std::unique_ptr<ConfigSource> config_source);
-  ~ParentAccessService() override;
+  // Gets the service singleton.
+  static ParentAccessService& Get();
 
-  void SetDelegate(Delegate* delegate);
+  // Checks if |access_code| is valid for the user identified by |account_id|.
+  // When account_id is empty, this method checks if the |access_code| is valid
+  // for any child that was added to this device.
+  bool ValidateParentAccessCode(base::Optional<AccountId> account_id,
+                                const std::string& access_code);
 
-  // LoginScreenClient::ParentAccessDelegate:
-  void ValidateParentAccessCode(
-      const std::string& access_code,
-      ValidateParentAccessCodeCallback callback) override;
+  // Reloads config for the provided user.
+  void LoadConfigForUser(const user_manager::User* user);
 
-  // ConfigSource::Observer:
-  void OnConfigChanged(const ConfigSource::ConfigSet& configs) override;
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Allows to override the time for testing purposes.
   void SetClockForTesting(base::Clock* clock);
 
  private:
-  friend class ParentAccessServiceTest;
+  friend class base::NoDestructor<ParentAccessService>;
 
-  void CreateValidators(const ConfigSource::ConfigSet& configs);
-
-  // Delegate that will be notified about results of access code validation.
-  Delegate* delegate_ = nullptr;
+  ParentAccessService();
+  ~ParentAccessService();
 
   // Provides configurations to be used for validation of access codes.
-  std::unique_ptr<ConfigSource> config_source_;
-
-  // Authenticators used for validation of parent access code.
-  // There is one validator per active parent access code configuration.
-  // Validators should be used in the order they are stored in
-  // |access_code_validators_|. Validation is considered successful if any of
-  // validators returns success.
-  std::vector<std::unique_ptr<Authenticator>> access_code_validators_;
+  ConfigSource config_source_;
 
   // Points to the base::DefaultClock by default.
   const base::Clock* clock_;
+
+  base::ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ParentAccessService);
 };

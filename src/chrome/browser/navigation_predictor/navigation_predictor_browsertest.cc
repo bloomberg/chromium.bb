@@ -318,12 +318,12 @@ IN_PROC_BROWSER_TEST_F(
 
   const GURL& url = GetTestURL("/page_with_same_host_anchor_element.html");
   ui_test_utils::NavigateToURL(browser(), url);
-  base::RunLoop().RunUntilIdle();
+  WaitForLayout(&histogram_tester);
 
   EXPECT_TRUE(content::ExecuteScript(
       browser()->tab_strip_model()->GetActiveWebContents(),
       "document.getElementById('google').click();"));
-  WaitForLayout(&histogram_tester);
+  base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectUniqueSample(
       "AnchorElementMetrics.Visible.NumberOfAnchorElements", 2, 1);

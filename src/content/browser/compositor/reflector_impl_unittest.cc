@@ -14,7 +14,7 @@
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
 #include "components/viz/service/display/output_surface_frame.h"
-#include "components/viz/service/display_embedder/compositor_overlay_candidate_validator.h"
+#include "components/viz/service/display/overlay_candidate_validator.h"
 #include "components/viz/test/test_context_provider.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
 #include "content/browser/compositor/reflector_texture.h"
@@ -22,11 +22,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
-#include "ui/compositor/test/context_factories_for_test.h"
+#include "ui/compositor/test/test_context_factories.h"
 
 #if defined(USE_OZONE)
 #include "components/viz/service/display/overlay_candidate.h"
-#include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_ozone.h"
+#include "components/viz/service/display_embedder/overlay_candidate_validator_ozone.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 #endif  // defined(USE_OZONE)
 
@@ -64,12 +64,11 @@ class TestOverlayCandidatesOzone : public ui::OverlayCandidatesOzone {
 };
 #endif  // defined(USE_OZONE)
 
-std::unique_ptr<viz::CompositorOverlayCandidateValidator>
-CreateTestValidatorOzone() {
+std::unique_ptr<viz::OverlayCandidateValidator> CreateTestValidatorOzone() {
 #if defined(USE_OZONE)
   std::vector<viz::OverlayStrategy> strategies = {
       viz::OverlayStrategy::kSingleOnTop, viz::OverlayStrategy::kUnderlay};
-  return std::make_unique<viz::CompositorOverlayCandidateValidatorOzone>(
+  return std::make_unique<viz::OverlayCandidateValidatorOzone>(
       std::make_unique<TestOverlayCandidatesOzone>(), std::move(strategies));
 #else
   return nullptr;
@@ -79,9 +78,7 @@ CreateTestValidatorOzone() {
 class TestOutputSurface : public BrowserCompositorOutputSurface {
  public:
   TestOutputSurface(scoped_refptr<viz::ContextProvider> context_provider)
-      : BrowserCompositorOutputSurface(std::move(context_provider),
-                                       viz::UpdateVSyncParametersCallback(),
-                                       CreateTestValidatorOzone()) {}
+      : BrowserCompositorOutputSurface(std::move(context_provider), nullptr) {}
 
   void SetFlip(bool flip) { capabilities_.flipped_output_surface = flip; }
 
@@ -126,12 +123,10 @@ const gfx::Size kSurfaceSize(256, 256);
 class ReflectorImplTest : public testing::Test {
  public:
   void SetUp() override {
-    bool enable_pixel_output = false;
-    ui::ContextFactory* context_factory = nullptr;
-    ui::ContextFactoryPrivate* context_factory_private = nullptr;
+    const bool enable_pixel_output = false;
+    context_factories_ =
+        std::make_unique<ui::TestContextFactories>(enable_pixel_output);
 
-    ui::InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
-                                         &context_factory_private);
     ImageTransportFactory::SetFactory(
         std::make_unique<TestImageTransportFactory>());
     task_runner_ = base::ThreadTaskRunnerHandle::Get();
@@ -140,16 +135,18 @@ class ReflectorImplTest : public testing::Test {
         std::make_unique<viz::DelayBasedTimeSource>(
             compositor_task_runner_.get()),
         viz::BeginFrameSource::kNotRestartableId);
-    compositor_.reset(new ui::Compositor(
-        context_factory_private->AllocateFrameSinkId(), context_factory,
-        context_factory_private, compositor_task_runner_.get(),
-        false /* enable_pixel_canvas */));
+    compositor_ = std::make_unique<ui::Compositor>(
+        context_factories_->GetContextFactoryPrivate()->AllocateFrameSinkId(),
+        context_factories_->GetContextFactory(),
+        context_factories_->GetContextFactoryPrivate(),
+        compositor_task_runner_.get(), false /* enable_pixel_canvas */);
     compositor_->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
 
     auto context_provider = viz::TestContextProvider::Create();
     context_provider->BindToCurrentThread();
     output_surface_ =
         std::make_unique<TestOutputSurface>(std::move(context_provider));
+    overlay_validator_ = CreateTestValidatorOzone();
 
     root_layer_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
     compositor_->SetRootLayer(root_layer_.get());
@@ -163,7 +160,8 @@ class ReflectorImplTest : public testing::Test {
   void SetUpReflector() {
     reflector_ = std::make_unique<ReflectorImpl>(compositor_.get(),
                                                  mirroring_layer_.get());
-    reflector_->OnSourceSurfaceReady(output_surface_.get());
+    reflector_->OnSourceSurfaceReady(output_surface_.get(),
+                                     overlay_validator_.get());
   }
 
   void TearDown() override {
@@ -176,7 +174,7 @@ class ReflectorImplTest : public testing::Test {
       release->Run(gpu::SyncToken(), false);
     }
     compositor_.reset();
-    ui::TerminateContextFactoryForTests();
+    context_factories_.reset();
     ImageTransportFactory::Terminate();
   }
 
@@ -184,7 +182,14 @@ class ReflectorImplTest : public testing::Test {
     reflector_->OnSourcePostSubBuffer(kSubRect, kSurfaceSize);
   }
 
+#if defined(USE_OZONE)
+  void CheckOverlaySupport(viz::OverlayCandidateList* surfaces) {
+    overlay_validator_->CheckOverlaySupport(surfaces);
+  }
+#endif  // defined(USE_OZONE)
+
  protected:
+  std::unique_ptr<ui::TestContextFactories> context_factories_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   std::unique_ptr<viz::SyntheticBeginFrameSource> begin_frame_source_;
   base::test::ScopedTaskEnvironment task_environment_;
@@ -194,6 +199,7 @@ class ReflectorImplTest : public testing::Test {
   std::unique_ptr<ui::Layer> mirroring_layer_;
   std::unique_ptr<ReflectorImpl> reflector_;
   std::unique_ptr<TestOutputSurface> output_surface_;
+  std::unique_ptr<viz::OverlayCandidateValidator> overlay_validator_;
 };
 
 namespace {
@@ -235,7 +241,7 @@ TEST_F(ReflectorImplTest, CheckOverlayNoReflector) {
   plane_2.plane_z_order = 1;
   list.push_back(plane_1);
   list.push_back(plane_2);
-  output_surface_->GetOverlayCandidateValidator()->CheckOverlaySupport(&list);
+  CheckOverlaySupport(&list);
   EXPECT_TRUE(list[0].overlay_handled);
 }
 
@@ -251,7 +257,7 @@ TEST_F(ReflectorImplTest, CheckOverlaySWMirroring) {
   plane_2.plane_z_order = 1;
   list.push_back(plane_1);
   list.push_back(plane_2);
-  output_surface_->GetOverlayCandidateValidator()->CheckOverlaySupport(&list);
+  CheckOverlaySupport(&list);
   EXPECT_FALSE(list[0].overlay_handled);
 }
 #endif  // defined(USE_OZONE)

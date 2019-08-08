@@ -27,7 +27,7 @@ const GURL& RenderFrameHostDelegate::GetMainFrameLastCommittedURL() {
 }
 
 bool RenderFrameHostDelegate::DidAddMessageToConsole(
-    int32_t level,
+    blink::mojom::ConsoleMessageLevel log_level,
     const base::string16& message,
     int32_t line_no,
     const base::string16& source_id) {
@@ -95,10 +95,6 @@ RenderFrameHostDelegate::GetGeolocationContext() {
   return nullptr;
 }
 
-device::mojom::WakeLock* RenderFrameHostDelegate::GetRendererWakeLock() {
-  return nullptr;
-}
-
 #if defined(OS_ANDROID)
 void RenderFrameHostDelegate::GetNFC(device::mojom::NFCRequest request) {}
 #endif
@@ -145,6 +141,11 @@ Visibility RenderFrameHostDelegate::GetVisibility() {
 ukm::SourceId RenderFrameHostDelegate::GetUkmSourceIdForLastCommittedSource()
     const {
   return ukm::kInvalidSourceId;
+}
+
+RenderFrameHostImpl* RenderFrameHostDelegate::GetMainFrameForInnerDelegate(
+    FrameTreeNode* frame_tree_node) {
+  return nullptr;
 }
 
 }  // namespace content

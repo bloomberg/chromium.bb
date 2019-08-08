@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_pump_for_io.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "chromecast/external_mojo/external_service_support/external_connector.h"
 #include "chromecast/external_mojo/external_service_support/process_setup.h"
 #include "chromecast/external_mojo/external_service_support/service_process.h"
@@ -49,7 +49,8 @@ int main(int argc, char** argv) {
       main_loop.task_runner(),
       mojo::core::ScopedIPCSupport::ShutdownPolicy::CLEAN);
 
-  base::TaskScheduler::CreateAndStartWithDefaultParams("StandaloneService");
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams(
+      "StandaloneService");
 
   GlobalState state;
   chromecast::external_service_support::ExternalConnector::Connect(
@@ -57,7 +58,7 @@ int main(int argc, char** argv) {
       base::BindOnce(&OnConnected, &state));
 
   run_loop.Run();
-  base::TaskScheduler::GetInstance()->Shutdown();
+  base::ThreadPoolInstance::Get()->Shutdown();
 
   return 0;
 }

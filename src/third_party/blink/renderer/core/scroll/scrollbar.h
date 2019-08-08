@@ -116,7 +116,7 @@ class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
   int PressedPos() const { return pressed_pos_; }
 
   virtual void SetHoveredPart(ScrollbarPart);
-  virtual void SetPressedPart(ScrollbarPart);
+  virtual void SetPressedPart(ScrollbarPart, WebInputEvent::Type);
 
   void SetProportion(int visible_size, int total_size);
   void SetPressedPos(int p) { pressed_pos_ = p; }
@@ -192,7 +192,6 @@ class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
   // Promptly unregister from the theme manager + run finalizers of derived
   // Scrollbars.
   EAGERLY_FINALIZE();
-  DEFINE_INLINE_EAGER_FINALIZATION_OPERATOR_NEW()
   virtual void Trace(blink::Visitor*);
 
  protected:
@@ -200,6 +199,13 @@ class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
   void StartTimerIfNeeded(TimeDelta delay);
   void StopTimerIfNeeded();
   void AutoscrollPressedPart(TimeDelta delay);
+  bool HandleTapGesture();
+  bool IsScrollGestureInjectionEnabled() const;
+  void InjectScrollGestureForPressedPart(WebInputEvent::Type gesture_type);
+  void InjectGestureScrollUpdateForThumbMove(float single_axis_target_offset);
+  void InjectScrollGesture(WebInputEvent::Type type,
+                           ScrollOffset delta,
+                           ScrollGranularity granularity);
   ScrollDirectionPhysical PressedPartScrollDirectionPhysical();
   ScrollGranularity PressedPartScrollGranularity();
 
@@ -231,10 +237,12 @@ class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
   float ScrollableAreaCurrentPos() const;
   float ScrollableAreaTargetPos() const;
   bool ThumbWillBeUnderMouse() const;
+  bool DeltaWillScroll(ScrollOffset delta) const;
 
   int theme_scrollbar_thickness_;
   bool track_needs_repaint_;
   bool thumb_needs_repaint_;
+  bool injected_gesture_scroll_begin_;
   IntRect visual_rect_;
   IntRect frame_rect_;
 };

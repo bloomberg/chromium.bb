@@ -46,8 +46,9 @@ struct SameSizeAsElementData
 static_assert(sizeof(ElementData) == sizeof(SameSizeAsElementData),
               "ElementData should stay small");
 
-static size_t SizeForShareableElementDataWithAttributeCount(unsigned count) {
-  return sizeof(ShareableElementData) + sizeof(Attribute) * count;
+static AdditionalBytes AdditionalBytesForShareableElementDataWithAttributeCount(
+    unsigned count) {
+  return AdditionalBytes(sizeof(Attribute) * count);
 }
 
 ElementData::ElementData()
@@ -145,9 +146,10 @@ ShareableElementData::ShareableElementData(const UniqueElementData& other)
 
 ShareableElementData* ShareableElementData::CreateWithAttributes(
     const Vector<Attribute>& attributes) {
-  void* slot = ThreadHeap::Allocate<ElementData>(
-      SizeForShareableElementDataWithAttributeCount(attributes.size()));
-  return new (slot) ShareableElementData(attributes);
+  return MakeGarbageCollected<ShareableElementData>(
+      AdditionalBytesForShareableElementDataWithAttributeCount(
+          attributes.size()),
+      attributes);
 }
 
 UniqueElementData::UniqueElementData() = default;
@@ -174,9 +176,10 @@ UniqueElementData::UniqueElementData(const ShareableElementData& other)
 }
 
 ShareableElementData* UniqueElementData::MakeShareableCopy() const {
-  void* slot = ThreadHeap::Allocate<ElementData>(
-      SizeForShareableElementDataWithAttributeCount(attribute_vector_.size()));
-  return new (slot) ShareableElementData(*this);
+  return MakeGarbageCollected<ShareableElementData>(
+      AdditionalBytesForShareableElementDataWithAttributeCount(
+          attribute_vector_.size()),
+      *this);
 }
 
 void UniqueElementData::TraceAfterDispatch(blink::Visitor* visitor) {

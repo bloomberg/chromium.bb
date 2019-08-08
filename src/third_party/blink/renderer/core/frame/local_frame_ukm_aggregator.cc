@@ -6,6 +6,7 @@
 
 #include "base/format_macros.h"
 #include "base/rand_util.h"
+#include "base/time/default_tick_clock.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -15,15 +16,18 @@ namespace blink {
 
 LocalFrameUkmAggregator::ScopedUkmHierarchicalTimer::ScopedUkmHierarchicalTimer(
     scoped_refptr<LocalFrameUkmAggregator> aggregator,
-    size_t metric_index)
+    size_t metric_index,
+    const base::TickClock* clock)
     : aggregator_(aggregator),
       metric_index_(metric_index),
-      start_time_(CurrentTimeTicks()) {}
+      clock_(clock),
+      start_time_(clock_->NowTicks()) {}
 
 LocalFrameUkmAggregator::ScopedUkmHierarchicalTimer::ScopedUkmHierarchicalTimer(
     ScopedUkmHierarchicalTimer&& other)
     : aggregator_(other.aggregator_),
       metric_index_(other.metric_index_),
+      clock_(other.clock_),
       start_time_(other.start_time_) {
   other.aggregator_ = nullptr;
 }
@@ -31,7 +35,7 @@ LocalFrameUkmAggregator::ScopedUkmHierarchicalTimer::ScopedUkmHierarchicalTimer(
 LocalFrameUkmAggregator::ScopedUkmHierarchicalTimer::
     ~ScopedUkmHierarchicalTimer() {
   if (aggregator_ && base::TimeTicks::IsHighResolution()) {
-    aggregator_->RecordSample(metric_index_, start_time_, CurrentTimeTicks());
+    aggregator_->RecordSample(metric_index_, start_time_, clock_->NowTicks());
   }
 }
 
@@ -39,6 +43,7 @@ LocalFrameUkmAggregator::LocalFrameUkmAggregator(int64_t source_id,
                                                  ukm::UkmRecorder* recorder)
     : source_id_(source_id),
       recorder_(recorder),
+      clock_(base::DefaultTickClock::GetInstance()),
       event_name_("Blink.UpdateTime") {
   // Record average and worst case for the primary metric.
   primary_metric_.reset();
@@ -111,12 +116,29 @@ LocalFrameUkmAggregator::LocalFrameUkmAggregator(int64_t source_id,
 
 LocalFrameUkmAggregator::ScopedUkmHierarchicalTimer
 LocalFrameUkmAggregator::GetScopedTimer(size_t metric_index) {
-  return ScopedUkmHierarchicalTimer(this, metric_index);
+  return ScopedUkmHierarchicalTimer(this, metric_index, clock_);
 }
 
 void LocalFrameUkmAggregator::BeginMainFrame() {
   DCHECK(!in_main_frame_update_);
   in_main_frame_update_ = true;
+}
+
+void LocalFrameUkmAggregator::SetTickClockForTesting(
+    const base::TickClock* clock) {
+  clock_ = clock;
+}
+
+void LocalFrameUkmAggregator::RecordForcedStyleLayoutUMA(TimeDelta& duration) {
+  if (!calls_to_next_forced_style_layout_uma_) {
+    auto& record = absolute_metric_records_[kForcedStyleAndLayout];
+    record.uma_counter->CountMicroseconds(duration);
+    calls_to_next_forced_style_layout_uma_ =
+        base::RandInt(0, mean_calls_between_forced_style_layout_uma_ * 2);
+  } else {
+    DCHECK_GT(calls_to_next_forced_style_layout_uma_, 0u);
+    --calls_to_next_forced_style_layout_uma_;
+  }
 }
 
 void LocalFrameUkmAggregator::RecordSample(size_t metric_index,
@@ -129,8 +151,15 @@ void LocalFrameUkmAggregator::RecordSample(size_t metric_index,
   auto& record = absolute_metric_records_[metric_index];
   record.interval_duration += duration;
   // Record the UMA
-  if (record.uma_counter)
-    record.uma_counter->CountMicroseconds(duration);
+  // ForcedStyleAndLayout happen so frequently on some pages that we overflow
+  // the signed 32 counter for number of events in a 30 minute period. So
+  // randomly record with probability 1/100.
+  if (record.uma_counter) {
+    if (metric_index == static_cast<size_t>(kForcedStyleAndLayout))
+      RecordForcedStyleLayoutUMA(duration);
+    else
+      record.uma_counter->CountMicroseconds(duration);
+  }
 
   // Only record ratios when inside a main frame.
   if (in_main_frame_update_) {
@@ -145,8 +174,12 @@ void LocalFrameUkmAggregator::RecordEndOfFrameMetrics(TimeTicks start,
   // Any of the early out's in LocalFrameView::UpdateLifecyclePhases
   // will mean we are not in a main frame update. Recording is triggered
   // higher in the stack, so we cannot know to avoid calling this method.
-  if (!in_main_frame_update_)
+  if (!in_main_frame_update_) {
+    // Reset for the next frame to start the next recording period with
+    // clear counters, even when we did not record anything this frame.
+    ResetAllMetrics();
     return;
+  }
   in_main_frame_update_ = false;
 
   TimeDelta duration = end - start;

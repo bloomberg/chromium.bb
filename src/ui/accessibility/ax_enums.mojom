@@ -546,6 +546,7 @@ enum IntAttribute {
   kInPageLinkTargetId,
   kMemberOfId,
   kNextOnLineId,
+  kPopupForId,
   kPreviousOnLineId,
 
   // Input restriction, if any, such as readonly or disabled.
@@ -606,6 +607,11 @@ enum IntAttribute {
   // Focus traversal in views and Android.
   kPreviousFocusId,
   kNextFocusId,
+
+  // For indicating what functions can be performed when a dragged object
+  // is released on the drop target.
+  // Note: aria-dropeffect is deprecated in WAI-ARIA 1.1.
+  kDropeffect,
 };
 
 enum FloatAttribute {
@@ -672,6 +678,10 @@ enum BoolAttribute {
 
   // Indicates whether this node supports text location.
   kSupportsTextLocation,
+
+  // Indicates whether this node can be grabbed for drag-and-drop operation.
+  // Note: aria-grabbed is deprecated in WAI-ARIA 1.1.
+  kGrabbed,
 };
 
 enum IntListAttribute {
@@ -956,12 +966,21 @@ enum ImageAnnotationStatus {
   // Not an image, or image annotation feature not enabled.
   kNone,
 
+  // Not eligible due to the scheme of the page. Image annotations are only
+  // generated for images on http, https, file and data URLs.
+  kWillNotAnnotateDueToScheme,
+
   // Not loaded yet, already labeled by the author, or not eligible
   // due to size, type, etc.
   kIneligibleForAnnotation,
 
   // Eligible to be automatically annotated if the user requests it.
+  // This is communicated to the user via a tutor message.
   kEligibleForAnnotation,
+
+  // Eligible to be automatically annotated but this is not communicated to the
+  // user.
+  kSilentlyEligibleForAnnotation,
 
   // An annotation has been requested but has not been received yet.
   kAnnotationPending,
@@ -981,4 +1000,13 @@ enum ImageAnnotationStatus {
   // The annotation process failed, e.g. unable to contact the server,
   // request timed out, etc.
   kAnnotationProcessFailed,
+};
+
+enum Dropeffect {
+  kNone,
+  kCopy,
+  kExecute,
+  kLink,
+  kMove,
+  kPopup,
 };

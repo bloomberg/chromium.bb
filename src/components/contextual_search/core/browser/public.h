@@ -37,6 +37,12 @@ extern const char kContextualCardsSimplifiedServerMixinChar[];
 // String form of kContextualCardsSimplifiedServerMixin +
 // kContextualCardsDiagnosticIntegration.
 extern const char kContextualCardsSimplifiedServerWithDiagnosticChar[];
+
+// Longpress resolve variations:
+extern const char kLongpressResolveParamName[];
+extern const char kLongpressResolveHideOnScroll[];
+extern const char kLongpressResolvePrivacyAggressive[];
+
 }  // namespace contextual_search
 
 #endif  // COMPONENTS_CONTEXTUAL_SEARCH_CORE_BROWSER_PUBLIC_H_

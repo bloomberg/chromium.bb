@@ -16,10 +16,6 @@
 #include "base/macros.h"
 #include "ui/views/view_observer.h"
 
-namespace ui {
-class CallbackLayerAnimationObserver;
-}  // namespace ui
-
 namespace ash {
 
 class AssistantResponse;
@@ -58,8 +54,6 @@ class COMPONENT_EXPORT(ASSISTANT_UI) UiElementContainerView
   void OnCardElementAdded(const AssistantCardElement* card_element);
   void OnTextElementAdded(const AssistantTextElement* text_element);
   void OnAllUiElementsAdded();
-  bool OnAllUiElementsExitAnimationEnded(
-      const ui::CallbackLayerAnimationObserver& observer);
 
   // Sets whether or not PreferredSizeChanged events should be propagated.
   void SetPropagatePreferredSizeChanged(bool propagate);
@@ -84,12 +78,11 @@ class COMPONENT_EXPORT(ASSISTANT_UI) UiElementContainerView
   // query response.
   std::vector<std::pair<ui::LayerOwner*, float>> ui_element_views_;
 
-  std::unique_ptr<ui::CallbackLayerAnimationObserver>
-      ui_elements_exit_animation_observer_;
-
   // Whether or not the card we are adding is the first card for the current
   // Assistant response. The first card requires the addition of a top margin.
   bool is_first_card_ = true;
+
+  base::WeakPtrFactory<UiElementContainerView> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UiElementContainerView);
 };

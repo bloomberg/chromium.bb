@@ -24,10 +24,6 @@
 #include "third_party/blink/public/web/web_remote_frame_client.h"
 #include "url/origin.h"
 
-#if defined(USE_AURA)
-#include "content/renderer/mus/mus_embedded_frame_delegate.h"
-#endif
-
 namespace blink {
 struct FramePolicy;
 struct WebRect;
@@ -48,10 +44,6 @@ struct ContentSecurityPolicyHeader;
 struct FrameOwnerProperties;
 struct FrameReplicationState;
 struct ResourceTimingInfo;
-
-#if defined(USE_AURA)
-class MusEmbeddedFrame;
-#endif
 
 // When a page's frames are rendered by multiple processes, each renderer has a
 // full copy of the frame tree. It has full RenderFrames for the frames it is
@@ -75,9 +67,6 @@ class MusEmbeddedFrame;
 // RenderFrame is created for it.
 class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
                                         public IPC::Sender,
-#if defined(USE_AURA)
-                                        public MusEmbeddedFrameDelegate,
-#endif
                                         public ChildFrameCompositor,
                                         public blink::WebRemoteFrameClient {
  public:
@@ -114,8 +103,10 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
 
   // Creates a RenderFrameProxy to be used with a portal owned by |parent|.
   // |routing_id| is the routing id of this new RenderFrameProxy.
-  static RenderFrameProxy* CreateProxyForPortal(RenderFrameImpl* parent,
-                                                int proxy_routing_id);
+  static RenderFrameProxy* CreateProxyForPortal(
+      RenderFrameImpl* parent,
+      int proxy_routing_id,
+      const base::UnguessableToken& devtools_frame_token);
 
   // Returns the RenderFrameProxy for the given routing ID.
   static RenderFrameProxy* FromRoutingID(int routing_id);
@@ -170,11 +161,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
 
   // Returns the widget used for the local frame root.
   RenderWidget* render_widget() { return render_widget_; }
-
-#if defined(USE_AURA)
-  void SetMusEmbeddedFrame(
-      std::unique_ptr<MusEmbeddedFrame> mus_embedded_frame);
-#endif
 
   void SynchronizeVisualProperties();
 
@@ -280,18 +266,12 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnScrollRectToVisible(const gfx::Rect& rect_to_scroll,
                              const blink::WebScrollIntoViewParams& params);
   void OnBubbleLogicalScroll(blink::WebScrollDirection direction,
-                             blink::WebScrollGranularity granularity);
+                             ui::input_types::ScrollGranularity granularity);
   void OnDidUpdateVisualProperties(const cc::RenderFrameMetadata& metadata);
   void OnEnableAutoResize(const gfx::Size& min_size, const gfx::Size& max_size);
   void OnDisableAutoResize();
   void OnSetHasReceivedUserGestureBeforeNavigation(bool value);
   void OnRenderFallbackContent() const;
-
-#if defined(USE_AURA)
-  // MusEmbeddedFrameDelegate
-  void OnMusEmbeddedFrameSinkIdAllocated(
-      const viz::FrameSinkId& frame_sink_id) override;
-#endif
 
   // ChildFrameCompositor:
   cc::Layer* GetLayer() override;
@@ -346,10 +326,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   gfx::Rect last_compositor_visible_rect_;
   blink::FrameOcclusionState last_occlusion_state_ =
       blink::FrameOcclusionState::kUnknown;
-
-#if defined(USE_AURA)
-  std::unique_ptr<MusEmbeddedFrame> mus_embedded_frame_;
-#endif
 
   // The layer used to embed the out-of-process content.
   scoped_refptr<cc::Layer> embedded_layer_;

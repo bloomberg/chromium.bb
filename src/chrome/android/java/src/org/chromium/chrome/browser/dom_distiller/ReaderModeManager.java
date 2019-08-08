@@ -467,7 +467,8 @@ public class ReaderModeManager extends TabModelSelectorTabObserver {
     }
 
     private void showControlsTransient(Tab tab) {
-        FullscreenManager fullscreenManager = tab.getFullscreenManager();
+        assert mChromeActivity != null;
+        FullscreenManager fullscreenManager = mChromeActivity.getFullscreenManager();
         if (!(fullscreenManager instanceof ChromeFullscreenManager)) return;
         ((ChromeFullscreenManager) fullscreenManager).getBrowserVisibilityDelegate()
                 .showControlsTransient();

@@ -30,7 +30,9 @@ namespace syncer {
 class SyncCycleSnapshot {
  public:
   SyncCycleSnapshot();
-  SyncCycleSnapshot(const ModelNeutralState& model_neutral_state,
+  SyncCycleSnapshot(const std::string& birthday,
+                    const std::string& bag_of_chips,
+                    const ModelNeutralState& model_neutral_state,
                     const ProgressMarkerMap& download_progress_markers,
                     bool is_silenced,
                     int num_encryption_conflicts,
@@ -52,6 +54,8 @@ class SyncCycleSnapshot {
 
   std::string ToString() const;
 
+  const std::string& birthday() const { return birthday_; }
+  const std::string& bag_of_chips() const { return bag_of_chips_; }
   ModelNeutralState model_neutral_state() const { return model_neutral_state_; }
   const ProgressMarkerMap& download_progress_markers() const;
   bool is_silenced() const;
@@ -73,6 +77,8 @@ class SyncCycleSnapshot {
   bool is_initialized() const;
 
  private:
+  std::string birthday_;
+  std::string bag_of_chips_;
   ModelNeutralState model_neutral_state_;
   ProgressMarkerMap download_progress_markers_;
   bool is_silenced_;

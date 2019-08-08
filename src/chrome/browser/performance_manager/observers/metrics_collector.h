@@ -28,9 +28,8 @@ extern const char
 extern const base::TimeDelta kMetricsReportDelayTimeout;
 extern const int kDefaultFrequencyUkmEQTReported;
 
-// A MetricsCollector observes changes happened inside CoordinationUnit Graph,
-// and reports UMA/UKM.
-class MetricsCollector : public GraphObserver {
+// The MetricsCollector is a graph observer that reports UMA/UKM.
+class MetricsCollector : public GraphObserverDefaultImpl {
  public:
   MetricsCollector();
   ~MetricsCollector() override;
@@ -77,23 +76,19 @@ class MetricsCollector : public GraphObserver {
   };
 
   bool ShouldReportMetrics(const PageNodeImpl* page_node);
-  bool IsCollectingExpectedQueueingTimeForUkm(
-      const resource_coordinator::CoordinationUnitID& page_node_id);
+  bool IsCollectingExpectedQueueingTimeForUkm(PageNodeImpl* page_node);
   void RecordExpectedQueueingTimeForUkm(
-      const resource_coordinator::CoordinationUnitID& page_node_id,
+      PageNodeImpl* page_node,
       const base::TimeDelta& expected_queueing_time);
-  void UpdateUkmSourceIdForPage(
-      const resource_coordinator::CoordinationUnitID& page_node_id,
-      ukm::SourceId ukm_source_id);
+  void UpdateUkmSourceIdForPage(PageNodeImpl* page_node,
+                                ukm::SourceId ukm_source_id);
   void UpdateWithFieldTrialParams();
-  void ResetMetricsReportRecord(resource_coordinator::CoordinationUnitID cu_id);
+  void ResetMetricsReportRecord(PageNodeImpl* page_nod);
 
   // The metrics_report_record_map_ is used to record whether a metric was
   // already reported to avoid reporting multiple metrics.
-  std::map<resource_coordinator::CoordinationUnitID, MetricsReportRecord>
-      metrics_report_record_map_;
-  std::map<resource_coordinator::CoordinationUnitID, UkmCollectionState>
-      ukm_collection_state_map_;
+  std::map<PageNodeImpl*, MetricsReportRecord> metrics_report_record_map_;
+  std::map<PageNodeImpl*, UkmCollectionState> ukm_collection_state_map_;
   // The number of reports to wait before reporting ExpectedQueueingTime. For
   // example, if |frequency_ukm_eqt_reported_| is 2, then the first value is not
   // reported, the second one is, the third one isn't, etc.

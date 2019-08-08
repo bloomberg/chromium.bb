@@ -28,8 +28,7 @@ DomDistillerServiceAndroid::DomDistillerServiceAndroid(
   java_ref_.Reset(env, local_java_ref.obj());
 }
 
-DomDistillerServiceAndroid::~DomDistillerServiceAndroid() {
-}
+DomDistillerServiceAndroid::~DomDistillerServiceAndroid() {}
 
 bool DomDistillerServiceAndroid::HasEntry(
     JNIEnv* env,

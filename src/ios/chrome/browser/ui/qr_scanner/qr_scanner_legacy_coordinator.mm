@@ -76,6 +76,7 @@
             self.baseViewController.presentedViewController);
   [self.baseViewController dismissViewControllerAnimated:YES
                                               completion:completion];
+  self.viewController = nil;
 }
 
 @end

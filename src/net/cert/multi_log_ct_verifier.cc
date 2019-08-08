@@ -54,8 +54,7 @@ void AddSCTAndLogStatus(scoped_refptr<ct::SignedCertificateTimestamp> sct,
 
 }  // namespace
 
-MultiLogCTVerifier::MultiLogCTVerifier() : observer_(nullptr) {
-}
+MultiLogCTVerifier::MultiLogCTVerifier() {}
 
 MultiLogCTVerifier::~MultiLogCTVerifier() = default;
 
@@ -65,14 +64,6 @@ void MultiLogCTVerifier::AddLogs(
     VLOG(1) << "Adding CT log: " << log_verifier->description();
     logs_[log_verifier->key_id()] = log_verifier;
   }
-}
-
-void MultiLogCTVerifier::SetObserver(Observer* observer) {
-  observer_ = observer;
-}
-
-CTVerifier::Observer* MultiLogCTVerifier::GetObserver() const {
-  return observer_;
 }
 
 void MultiLogCTVerifier::Verify(
@@ -213,8 +204,6 @@ bool MultiLogCTVerifier::VerifySingleSCT(
   }
 
   AddSCTAndLogStatus(sct, ct::SCT_STATUS_OK, output_scts);
-  if (observer_)
-    observer_->OnSCTVerified(hostname, cert, sct.get());
   return true;
 }
 

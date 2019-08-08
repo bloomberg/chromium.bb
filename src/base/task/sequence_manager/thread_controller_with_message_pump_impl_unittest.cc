@@ -30,8 +30,8 @@ class ThreadControllerForTest
     : public internal::ThreadControllerWithMessagePumpImpl {
  public:
   ThreadControllerForTest(std::unique_ptr<MessagePump> pump,
-                          const TickClock* clock)
-      : ThreadControllerWithMessagePumpImpl(std::move(pump), clock) {}
+                          SequenceManager::Settings& settings)
+      : ThreadControllerWithMessagePumpImpl(std::move(pump), settings) {}
 
   using ThreadControllerWithMessagePumpImpl::DoDelayedWork;
   using ThreadControllerWithMessagePumpImpl::DoIdleWork;
@@ -130,8 +130,10 @@ class ThreadControllerWithMessagePumpTest : public testing::Test {
  public:
   ThreadControllerWithMessagePumpTest()
       : message_pump_(new testing::StrictMock<MockMessagePump>()),
+        settings_(
+            SequenceManager::Settings::Builder().SetTickClock(&clock_).Build()),
         thread_controller_(std::unique_ptr<MessagePump>(message_pump_),
-                           &clock_),
+                           settings_),
         task_source_(&clock_) {
     thread_controller_.SetWorkBatchSize(1);
     thread_controller_.SetSequencedTaskSource(&task_source_);
@@ -139,6 +141,7 @@ class ThreadControllerWithMessagePumpTest : public testing::Test {
 
  protected:
   MockMessagePump* message_pump_;
+  SequenceManager::Settings settings_;
   SimpleTestTickClock clock_;
   ThreadControllerForTest thread_controller_;
   FakeSequencedTaskSource task_source_;

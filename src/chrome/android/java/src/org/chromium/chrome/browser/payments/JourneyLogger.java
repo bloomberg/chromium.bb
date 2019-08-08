@@ -145,9 +145,8 @@ public class JourneyLogger {
      */
     public void setCompleted() {
         assert !mHasRecorded;
-        assert mWasPaymentRequestTriggered;
 
-        if (!mHasRecorded && mWasPaymentRequestTriggered) {
+        if (!mHasRecorded) {
             mHasRecorded = true;
             nativeSetCompleted(mJourneyLoggerAndroid);
         }
@@ -164,7 +163,7 @@ public class JourneyLogger {
 
         // The abort reasons on Android cascade into each other, so only the first one should be
         // recorded.
-        if (!mHasRecorded && mWasPaymentRequestTriggered) {
+        if (!mHasRecorded) {
             mHasRecorded = true;
             nativeSetAborted(mJourneyLoggerAndroid, reason);
         }
@@ -177,7 +176,6 @@ public class JourneyLogger {
      */
     public void setNotShown(int reason) {
         assert reason < NotShownReason.MAX;
-        assert !mWasPaymentRequestTriggered;
         assert !mHasRecorded;
 
         if (!mHasRecorded) {

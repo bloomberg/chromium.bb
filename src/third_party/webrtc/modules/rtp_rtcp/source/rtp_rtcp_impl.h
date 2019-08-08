@@ -133,11 +133,12 @@ class ModuleRtpRtcpImpl : public RtpRtcp, public RTCPReceiver::ModuleRtpRtcp {
                          int payload_type,
                          bool force_sender_report) override;
 
-  bool TimeToSendPacket(uint32_t ssrc,
-                        uint16_t sequence_number,
-                        int64_t capture_time_ms,
-                        bool retransmission,
-                        const PacedPacketInfo& pacing_info) override;
+  RtpPacketSendResult TimeToSendPacket(
+      uint32_t ssrc,
+      uint16_t sequence_number,
+      int64_t capture_time_ms,
+      bool retransmission,
+      const PacedPacketInfo& pacing_info) override;
 
   // Returns the number of padding bytes actually sent, which can be more or
   // less than |bytes|.
@@ -183,9 +184,6 @@ class ModuleRtpRtcpImpl : public RtpRtcp, public RTCPReceiver::ModuleRtpRtcp {
   // Normal SR and RR are triggered via the process function.
   int32_t SendRTCP(RTCPPacketType rtcpPacketType) override;
 
-  int32_t SendCompoundRTCP(
-      const std::set<RTCPPacketType>& rtcpPacketTypes) override;
-
   // Statistics of the amount of data sent and received.
   int32_t DataCountersRTP(size_t* bytes_sent,
                           uint32_t* packets_sent) const override;
@@ -202,6 +200,11 @@ class ModuleRtpRtcpImpl : public RtpRtcp, public RTCPReceiver::ModuleRtpRtcp {
   // Get received RTCP report, report block.
   int32_t RemoteRTCPStat(
       std::vector<RTCPReportBlock>* receive_blocks) const override;
+  // A snapshot of the most recent Report Block with additional data of
+  // interest to statistics. Used to implement RTCRemoteInboundRtpStreamStats.
+  // Within this list, the ReportBlockData::RTCPReportBlock::source_ssrc(),
+  // which is the SSRC of the corresponding outbound RTP stream, is unique.
+  std::vector<ReportBlockData> GetLatestReportBlockData() const override;
 
   // (REMB) Receiver Estimated Max Bitrate.
   void SetRemb(int64_t bitrate_bps, std::vector<uint32_t> ssrcs) override;
@@ -236,6 +239,7 @@ class ModuleRtpRtcpImpl : public RtpRtcp, public RTCPReceiver::ModuleRtpRtcp {
   void RegisterRtcpStatisticsCallback(
       RtcpStatisticsCallback* callback) override;
   RtcpStatisticsCallback* GetRtcpStatisticsCallback() override;
+  void SetReportBlockDataObserver(ReportBlockDataObserver* observer) override;
 
   bool SendFeedbackPacket(const rtcp::TransportFeedback& packet) override;
   // (APP) Application specific data.

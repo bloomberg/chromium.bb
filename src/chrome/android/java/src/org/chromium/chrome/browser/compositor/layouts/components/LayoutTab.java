@@ -8,51 +8,17 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.RectF;
-import android.support.annotation.IntDef;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.animation.FloatProperty;
-import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.MathUtils;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 
 /**
  * {@link LayoutTab} is used to keep track of a thumbnail's bitmap and position and to
  * draw itself onto the GL canvas at the desired Y Offset.
  */
-public class LayoutTab implements ChromeAnimation.Animatable {
-    /**
-     * Properties that can be animated by using a
-     * {@link org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animatable}.
-     */
-    @IntDef({Property.BORDER_ALPHA, Property.BORDER_SCALE, Property.ALPHA, Property.SATURATION,
-            Property.STATIC_TO_VIEW_BLEND, Property.SCALE, Property.TILTX, Property.TILTY,
-            Property.X, Property.Y, Property.MAX_CONTENT_WIDTH, Property.MAX_CONTENT_HEIGHT,
-            Property.TOOLBAR_ALPHA, Property.DECORATION_ALPHA, Property.TOOLBAR_Y_OFFSET,
-            Property.SIDE_BORDER_SCALE})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface Property {
-        int BORDER_ALPHA = 0;
-        int BORDER_SCALE = 1;
-        int ALPHA = 2;
-        int SATURATION = 3;
-        int STATIC_TO_VIEW_BLEND = 4;
-        int SCALE = 5;
-        int TILTX = 6;
-        int TILTY = 7;
-        int X = 8;
-        int Y = 9;
-        int MAX_CONTENT_WIDTH = 10;
-        int MAX_CONTENT_HEIGHT = 11;
-        int TOOLBAR_ALPHA = 12;
-        int DECORATION_ALPHA = 13;
-        int TOOLBAR_Y_OFFSET = 14;
-        int SIDE_BORDER_SCALE = 15;
-    }
-
+public class LayoutTab {
     public static final float ALPHA_THRESHOLD = 1.0f / 255.0f;
 
     private static final float SNAP_SPEED = 1.0f; // dp per second
@@ -919,71 +885,6 @@ public class LayoutTab implements ChromeAnimation.Animatable {
         return mTextBoxAlpha;
     }
 
-    /**
-     * Callback for
-     * {@link org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animatable}
-     *
-     * @param prop The property to set
-     * @param val The value to set it to
-     */
-    @Override
-    public void setProperty(@Property int prop, float val) {
-        switch (prop) {
-            case Property.BORDER_ALPHA:
-                setBorderAlpha(val);
-                break;
-            case Property.BORDER_SCALE:
-                setBorderScale(val);
-                break;
-            case Property.ALPHA:
-                setAlpha(val);
-                break;
-            case Property.SATURATION:
-                setSaturation(val);
-                break;
-            case Property.STATIC_TO_VIEW_BLEND:
-                setStaticToViewBlend(val);
-                break;
-            case Property.SCALE:
-                setScale(val);
-                break;
-            case Property.TILTX:
-                setTiltX(val, mTiltXPivotOffset);
-                break;
-            case Property.TILTY:
-                setTiltY(val, mTiltYPivotOffset);
-                break;
-            case Property.X:
-                setX(val);
-                break;
-            case Property.Y:
-                setY(val);
-                break;
-            case Property.MAX_CONTENT_WIDTH:
-                setMaxContentWidth(val);
-                break;
-            case Property.MAX_CONTENT_HEIGHT:
-                setMaxContentHeight(val);
-                break;
-            case Property.TOOLBAR_ALPHA:
-                setToolbarAlpha(val);
-                break;
-            case Property.DECORATION_ALPHA:
-                setDecorationAlpha(val);
-                break;
-            case Property.TOOLBAR_Y_OFFSET:
-                setToolbarYOffset(val);
-                break;
-            case Property.SIDE_BORDER_SCALE:
-                setSideBorderScale(val);
-                break;
-        }
-    }
-
-    @Override
-    public void onPropertyAnimationFinished(@Property int prop) {
-    }
-
     public static final FloatProperty<LayoutTab> ALPHA = new FloatProperty<LayoutTab>("ALPHA") {
         @Override
         public void setValue(LayoutTab layoutTab, float v) {
@@ -1006,6 +907,19 @@ public class LayoutTab implements ChromeAnimation.Animatable {
                 @Override
                 public Float get(LayoutTab layoutTab) {
                     return layoutTab.getBorderAlpha();
+                }
+            };
+
+    public static final FloatProperty<LayoutTab> DECORATION_ALPHA =
+            new FloatProperty<LayoutTab>("DECORATION_ALPHA") {
+                @Override
+                public void setValue(LayoutTab layoutTab, float v) {
+                    layoutTab.setDecorationAlpha(v);
+                }
+
+                @Override
+                public Float get(LayoutTab layoutTab) {
+                    return layoutTab.getDecorationAlpha();
                 }
             };
 
@@ -1111,6 +1025,30 @@ public class LayoutTab implements ChromeAnimation.Animatable {
                     return layoutTab.getStaticToViewBlend();
                 }
             };
+
+    public static final FloatProperty<LayoutTab> TILTX = new FloatProperty<LayoutTab>("TILTX") {
+        @Override
+        public void setValue(LayoutTab layoutTab, float v) {
+            layoutTab.setTiltX(v, layoutTab.mTiltXPivotOffset);
+        }
+
+        @Override
+        public Float get(LayoutTab layoutTab) {
+            return layoutTab.getTiltX();
+        }
+    };
+
+    public static final FloatProperty<LayoutTab> TILTY = new FloatProperty<LayoutTab>("TILTY") {
+        @Override
+        public void setValue(LayoutTab layoutTab, float v) {
+            layoutTab.setTiltY(v, layoutTab.mTiltYPivotOffset);
+        }
+
+        @Override
+        public Float get(LayoutTab layoutTab) {
+            return layoutTab.getTiltY();
+        }
+    };
 
     public static final FloatProperty<LayoutTab> X = new FloatProperty<LayoutTab>("X") {
         @Override

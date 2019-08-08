@@ -14,11 +14,10 @@
 #include "components/arc/video_accelerator/protected_buffer_allocator.h"
 #include "components/arc/video_accelerator/protected_buffer_manager.h"
 #include "media/gpu/format_utils.h"
+#include "media/gpu/macros.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/geometry/size.h"
-
-#define VLOGF(level) VLOG(level) << __func__ << "(): "
 
 namespace arc {
 // static

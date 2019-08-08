@@ -55,7 +55,6 @@ wayland_protocol("remote_shell_protocol") {
 
 wayland_protocol("gaming_input_protocol") {
   sources = [
-    "unstable/gaming-input/gaming-input-unstable-v1.xml",
     "unstable/gaming-input/gaming-input-unstable-v2.xml",
   ]
 }

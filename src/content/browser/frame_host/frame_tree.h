@@ -222,6 +222,10 @@ class CONTENT_EXPORT FrameTree {
   void AddRenderViewHostRef(RenderViewHostImpl* render_view_host);
   void ReleaseRenderViewHostRef(RenderViewHostImpl* render_view_host);
 
+  // This is called when the frame is about to be removed and started to run
+  // unload handlers.
+  void FrameUnloading(FrameTreeNode* frame);
+
   // This is only meant to be called by FrameTreeNode. Triggers calling
   // the listener installed by SetFrameRemoveListener.
   void FrameRemoved(FrameTreeNode* frame);

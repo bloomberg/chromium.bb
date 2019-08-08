@@ -12,16 +12,16 @@
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #import "ios/web/public/test/earl_grey/web_view_actions.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "ios/web/public/test/element_selector.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
-#import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -89,9 +89,10 @@ void AssertElementIsFocused(const std::string& element_id) {
   web::test::SetUpFileBasedHttpServer();
   GURL URL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/multi_field_form.html");
-  [ChromeEarlGrey loadURL:URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
 
-  [ChromeEarlGrey waitForWebViewContainingText:"hello!"];
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebStateContainingText:"hello!"]);
 
   // Opening the keyboard from a webview blocks EarlGrey's synchronization.
   [[GREYConfiguration sharedInstance]

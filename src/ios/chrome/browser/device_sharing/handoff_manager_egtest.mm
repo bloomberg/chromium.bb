@@ -9,8 +9,8 @@
 #import "ios/chrome/browser/device_sharing/device_sharing_manager.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
@@ -65,33 +65,33 @@ void AssertHandoffURL(const GURL& gurl) {
 - (void)testTypicalURL {
   const GURL destinationUrl = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/destination.html");
-  [ChromeEarlGrey loadURL:destinationUrl];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:destinationUrl]);
   AssertHandoffURL(destinationUrl);
 }
 
 // Tests Handoff URL for a new tab.
 - (void)testTypicalURLInNewTab {
-  [ChromeEarlGrey openNewTab];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
   const GURL destinationUrl = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/pony.html");
-  [ChromeEarlGrey loadURL:destinationUrl];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:destinationUrl]);
   AssertHandoffURL(destinationUrl);
 }
 
 // Tests that Handoff URL should never be set for an incognito tab.
 - (void)testTypicalURLInNewIncognitoTab {
   // Opens an incognito tab and loads a web page. Check that Handoff URL is nil.
-  [ChromeEarlGrey openNewIncognitoTab];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewIncognitoTab]);
   const GURL destinationUrl = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/destination.html");
-  [ChromeEarlGrey loadURL:destinationUrl];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:destinationUrl]);
   AssertHandoffURL(GURL());
 
   // Loads a second URL on the same incognito tab. Handoff URL should still be
   // nil.
   const GURL destinationUrl2 = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/pony.html");
-  [ChromeEarlGrey loadURL:destinationUrl2];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:destinationUrl2]);
   AssertHandoffURL(GURL());
 }
 
@@ -106,11 +106,11 @@ void AssertHandoffURL(const GURL& gurl) {
       "http://ios/testing/data/http_server_files/chromium_logo_page.html");
 
   // Sets up the state for 3 tabs.
-  [ChromeEarlGrey loadURL:tab1URL];
-  [ChromeEarlGrey openNewTab];
-  [ChromeEarlGrey loadURL:tab2URL];
-  [ChromeEarlGrey openNewTab];
-  [ChromeEarlGrey loadURL:tab3URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:tab1URL]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:tab2URL]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:tab3URL]);
 
   // When tab 3 is closed, tab 2 is front and Handoff URL should be the URL for
   // tab 2.
@@ -118,7 +118,7 @@ void AssertHandoffURL(const GURL& gurl) {
   AssertHandoffURL(tab2URL);
 
   // Switches back to the first tab.
-  chrome_test_util::SelectTabAtIndexInCurrentMode(0);
+  [ChromeEarlGrey selectTabAtIndex:0];
   AssertHandoffURL(tab1URL);
 }
 
@@ -133,16 +133,16 @@ void AssertHandoffURL(const GURL& gurl) {
       "http://ios/testing/data/http_server_files/chromium_logo_page.html");
 
   // Loads one page.
-  [ChromeEarlGrey loadURL:tab1URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:tab1URL]);
   // Loads page two in incognito and verifies that Handoff URL is nil.
-  [ChromeEarlGrey openNewIncognitoTab];
-  [ChromeEarlGrey loadURL:tab2URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewIncognitoTab]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:tab2URL]);
   AssertHandoffURL(GURL());
 
   // Loads page three in a new normal tab and verify that Handoff URL is not
   // nil.
-  [ChromeEarlGrey openNewTab];
-  [ChromeEarlGrey loadURL:tab3URL];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:tab3URL]);
   AssertHandoffURL(tab3URL);
 }
 

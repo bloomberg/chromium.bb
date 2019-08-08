@@ -25,7 +25,6 @@ WebUIDataSource* CreateWebApksUIDataSource() {
   html_source->AddResourcePath("webapks.js", IDR_WEBAPKS_UI_JS);
   html_source->AddResourcePath("about_webapks.css", IDR_WEBAPKS_UI_CSS);
   html_source->SetDefaultResource(IDR_WEBAPKS_UI_HTML);
-  html_source->UseGzip();
 
   return html_source;
 }

@@ -19,13 +19,8 @@ constexpr char kProvider[] = "provider";
 constexpr char kDrawQuad[] = "draw_quad";
 constexpr char kSurfaceLayer[] = "surface_layer";
 
-#if defined(USE_AURA) || defined(OS_MACOSX)
 const base::Feature kEnableSurfaceSynchronization{
     "SurfaceSynchronization", base::FEATURE_ENABLED_BY_DEFAULT};
-#else
-const base::Feature kEnableSurfaceSynchronization{
-    "SurfaceSynchronization", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
 
 // Enables running the display compositor as part of the viz service in the GPU
 // process. This is also referred to as out-of-process display compositor
@@ -64,18 +59,23 @@ const base::Feature kRecordSkPicture{"RecordSkPicture",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsSurfaceSynchronizationEnabled() {
-  auto* command_line = base::CommandLine::ForCurrentProcess();
   return IsVizDisplayCompositorEnabled() ||
-         base::FeatureList::IsEnabled(kEnableSurfaceSynchronization) ||
-         command_line->HasSwitch(switches::kEnableSurfaceSynchronization);
+         base::FeatureList::IsEnabled(kEnableSurfaceSynchronization);
 }
 
 bool IsVizDisplayCompositorEnabled() {
+#if defined(OS_MACOSX) || defined(OS_WIN)
+  // We can't remove the feature switch yet because OOP-D isn't enabled on all
+  // platforms but turning it off on Mac and Windows isn't supported. Don't
+  // check the feature switch for these platforms anymore.
+  return true;
+#else
 #if defined(OS_ANDROID)
   if (features::IsAndroidSurfaceControlEnabled())
     return true;
 #endif
   return base::FeatureList::IsEnabled(kVizDisplayCompositor);
+#endif
 }
 
 bool IsVizHitTestingDebugEnabled() {

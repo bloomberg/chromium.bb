@@ -48,7 +48,9 @@ class BASE_EXPORT FileDescriptorWatcher {
 
     // Registers |callback| to be invoked when |fd| is readable or writable
     // without blocking (depending on |mode|).
-    Controller(MessagePumpForIO::Mode mode, int fd, const Closure& callback);
+    Controller(MessagePumpForIO::Mode mode,
+               int fd,
+               const RepeatingClosure& callback);
 
     // Starts watching the file descriptor.
     void StartWatching();
@@ -58,7 +60,7 @@ class BASE_EXPORT FileDescriptorWatcher {
 
     // The callback to run when the watched file descriptor is readable or
     // writable without blocking.
-    Closure callback_;
+    RepeatingClosure callback_;
 
     // TaskRunner associated with the MessageLoopForIO that watches the file
     // descriptor.
@@ -100,10 +102,12 @@ class BASE_EXPORT FileDescriptorWatcher {
   // must return true (these conditions are met at least on all ThreadPool
   // threads as well as on threads backed by a MessageLoopForIO). |fd| must
   // outlive the returned Controller.
-  static std::unique_ptr<Controller> WatchReadable(int fd,
-                                                   const Closure& callback);
-  static std::unique_ptr<Controller> WatchWritable(int fd,
-                                                   const Closure& callback);
+  static std::unique_ptr<Controller> WatchReadable(
+      int fd,
+      const RepeatingClosure& callback);
+  static std::unique_ptr<Controller> WatchWritable(
+      int fd,
+      const RepeatingClosure& callback);
 
   // Asserts that usage of this API is allowed on this thread.
   static void AssertAllowed()

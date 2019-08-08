@@ -26,6 +26,7 @@ class COMPONENTS_DOWNLOAD_EXPORT SimpleDownloadManager {
     Observer() = default;
     virtual ~Observer() = default;
 
+    virtual void OnDownloadsInitialized() {}
     virtual void OnManagerGoingDown() {}
     virtual void OnDownloadCreated(DownloadItem* item) {}
 
@@ -39,13 +40,13 @@ class COMPONENTS_DOWNLOAD_EXPORT SimpleDownloadManager {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // Calls the callback if this object becomes initialized.
-  void NotifyWhenInitialized(base::OnceClosure callback);
-
   // Download a URL given by the |params|. Returns true if the download could
   // take place, or false otherwise.
-  virtual bool DownloadUrl(
+  virtual void DownloadUrl(
       std::unique_ptr<DownloadUrlParameters> parameters) = 0;
+
+  // Returns whether the manager can handle this download.
+  virtual bool CanDownload(DownloadUrlParameters* parameters) = 0;
 
   using DownloadVector = std::vector<DownloadItem*>;
   // Add all download items to |downloads|, no matter the type or state, without
@@ -62,15 +63,14 @@ class COMPONENTS_DOWNLOAD_EXPORT SimpleDownloadManager {
   // Called when a new download is created.
   void OnNewDownloadCreated(DownloadItem* download);
 
+  // Notify observers that this object is initialized.
+  void NotifyInitialized();
+
   // Whether this object is initialized.
   bool initialized_ = false;
 
   // Observers that want to be notified of changes to the set of downloads.
   base::ObserverList<Observer>::Unchecked simple_download_manager_observers_;
-
- private:
-  // Callbacks to call once this object is initialized.
-  std::vector<base::OnceClosure> on_initialized_callbacks_;
 };
 
 }  // namespace download

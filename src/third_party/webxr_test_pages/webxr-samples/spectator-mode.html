@@ -36,6 +36,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     <!--The polyfill is not needed for browser that have native API support,
         but is linked by these samples for wider compatibility.-->
     <!--script src='https://cdn.jsdelivr.net/npm/webxr-polyfill@latest/build/webxr-polyfill.js'></script-->
+    <script src='js/xrray-polyfill.js' type='module'></script>
     <script src='js/webxr-polyfill.js'></script>
 
     <script src='js/webxr-button.js'></script>
@@ -48,7 +49,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           This sample demonstrates how to render a separate, 3rd person view of
           the scene to an external monitor if one is available. This sample is
           not applicable to mobile or standalone devices.
-          <a class="back" href="./">Back</a>
+          <a class="back" href="./index.html">Back</a>
         </p>
       </details>
     </header>
@@ -73,7 +74,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       let xrNonImmersiveRefSpace = null;
 
       // WebGL scene globals.
-      let outputCanvas = null;
       let gl = null;
       let renderer = null;
       let scene = new Scene();
@@ -99,15 +99,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         document.querySelector('header').appendChild(xrButton.domElement);
 
         if (navigator.xr) {
-          outputCanvas = document.createElement('canvas');
-
           navigator.xr.requestSession('inline')
               .then((session) => {
-                document.body.appendChild(outputCanvas);
-                session.updateRenderState({
-                  outputContext: outputCanvas.getContext('xrpresent')
-                });
-
+                session.mode = 'inline';
                 onSessionStarted(session);
               });
         } else {
@@ -117,7 +111,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       function initFallback() {
         initGL();
-        document.body.appendChild(gl.canvas);
         let fallbackHelper = new FallbackHelper(scene, gl);
         fallbackHelper.emulateStage = true;
       }
@@ -130,6 +123,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           xrCompatible: true
         });
 
+        function onResize () {
+          gl.canvas.width = (gl.canvas.offsetWidth * window.devicePixelRatio);
+          gl.canvas.height = (gl.canvas.offsetHeight * window.devicePixelRatio);
+        }
+        window.addEventListener('resize', onResize);
+        onResize();
+
         renderer = new Renderer(gl);
         scene.setRenderer(renderer);
         scene.inputRenderer.setControllerMesh(new Gltf2Node({url: '../media/gltf/controller/controller.gltf'}));
@@ -141,6 +141,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       function onRequestSession() {
         navigator.xr.requestSession('immersive-vr').then((session) => {
+          session.mode = 'immersive-vr';
           xrButton.setSession(session);
           onSessionStarted(session);
 
@@ -155,9 +156,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           spectatorButton.addEventListener('click', onEnableSpectatorMode);
           mainElement.appendChild(spectatorButton);
 
-          // Hide the non-exclusive session's output canvas so that we can see
+          // Hide the inline session's canvas so that we can see
           // the button.
-          outputCanvas.style.display = 'none';
+          gl.canvas.style.display = 'none';
         });
       }
 
@@ -168,13 +169,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
 
-        session.requestReferenceSpace({ type: 'stationary', subtype: 'floor-level' }).then((refSpace) => {
+        session.requestReferenceSpace('local-floor').then((refSpace) => {
           return refSpace;
         }, (e) => {
           if (!session.mode.startsWith('immersive')) {
             // If we're in inline mode, our underlying platform may not support
             // the stationary reference space, but an identity space is guaranteed.
-            return session.requestReferenceSpace({ type: 'identity' });
+            return session.requestReferenceSpace('viewer');
           } else {
             throw e;
           }
@@ -210,8 +211,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             spectatorButton = null;
           }
 
-          // Show the non-exclusive session's output canvas again.
-          outputCanvas.style.display = '';
+          // Show the inline session's canvas again.
+          gl.canvas.style.display = '';
         }
       }
 

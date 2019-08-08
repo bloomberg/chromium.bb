@@ -248,7 +248,7 @@ TEST_F(BrowserViewLayoutTest, LayoutDownloadShelf) {
   delegate()->set_download_shelf_needs_layout(true);
   download_shelf->SetVisible(false);
   EXPECT_EQ(450, layout()->LayoutDownloadShelf(kBottom));
-  EXPECT_TRUE(download_shelf->visible());
+  EXPECT_TRUE(download_shelf->GetVisible());
   EXPECT_EQ("0,450 0x50", download_shelf->bounds().ToString());
 }
 

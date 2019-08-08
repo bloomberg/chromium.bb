@@ -4,9 +4,15 @@
 
 module network.mojom;
 
+// An enum to represent a mode if origin matching functions uses port.
+enum CorsPortMatchMode {
+  kAllowAnyPort,
+  kAllowOnlySpecifiedPort,
+};
+
 // An enum to represent a mode if matching functions can accept a partial match
 // for sub-domains, or for registrable domains.
-enum CorsOriginAccessMatchMode {
+enum CorsDomainMatchMode {
   // 'www.example.com' matches an OriginAccessEntry for 'example.com'
   kAllowSubdomains,
 
@@ -35,8 +41,14 @@ struct CorsOriginPattern {
   // The domain part of the destination URL.
   string domain;
 
+  // The port part of the destination URL.
+  uint16 port;
+
   // Specifies a mode for domain match.
-  CorsOriginAccessMatchMode mode;
+  CorsDomainMatchMode domain_match_mode;
+
+  // Specifies a mode for port match.
+  CorsPortMatchMode port_match_mode;
 
   // Order of preference in which the pattern is applied.  Higher priority
   // patterns take precedence over lower ones.  In the case were both a

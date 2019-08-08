@@ -26,6 +26,7 @@
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/display/gl_renderer.h"
 #include "components/viz/service/display/output_surface.h"
+#include "components/viz/service/display/renderer_utils.h"
 #include "components/viz/service/display/skia_output_surface.h"
 #include "components/viz/service/display/skia_renderer.h"
 #include "components/viz/service/display/software_renderer.h"
@@ -36,6 +37,7 @@
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/overlay_transform_utils.h"
 #include "ui/gfx/presentation_feedback.h"
 
 namespace viz {
@@ -47,7 +49,8 @@ namespace {
 // difficult to associate the trace-events with the particular displays.
 int64_t GetStartingTraceId() {
   static int64_t client = 0;
-  return ((++client & 0xffffffff) << 32);
+  // https://crbug.com/956695
+  return ((++client & 0xffff) << 16);
 }
 
 gfx::PresentationFeedback SanitizePresentationFeedback(
@@ -123,18 +126,16 @@ Display::Display(
     const FrameSinkId& frame_sink_id,
     std::unique_ptr<OutputSurface> output_surface,
     std::unique_ptr<DisplayScheduler> scheduler,
-    scoped_refptr<base::SingleThreadTaskRunner> current_task_runner,
-    SkiaOutputSurface* skia_output_surface)
+    scoped_refptr<base::SingleThreadTaskRunner> current_task_runner)
     : bitmap_manager_(bitmap_manager),
       settings_(settings),
       frame_sink_id_(frame_sink_id),
-      skia_output_surface_(skia_output_surface),
       output_surface_(std::move(output_surface)),
+      skia_output_surface_(output_surface_->AsSkiaOutputSurface()),
       scheduler_(std::move(scheduler)),
       current_task_runner_(std::move(current_task_runner)),
       swapped_trace_id_(GetStartingTraceId()),
-      last_acked_trace_id_(swapped_trace_id_),
-      last_presented_trace_id_(last_acked_trace_id_) {
+      last_presented_trace_id_(swapped_trace_id_) {
   DCHECK(output_surface_);
   DCHECK(frame_sink_id_.is_valid());
   if (scheduler_)
@@ -343,12 +344,10 @@ void Display::InitializeRenderer(bool enable_shared_images) {
 
   // TODO(jbauman): Outputting an incomplete quad list doesn't work when using
   // overlays.
-  OverlayCandidateValidator* overlay_validator =
-      output_surface_->GetOverlayCandidateValidator();
   bool output_partial_list =
-      renderer_->use_partial_swap() && !overlay_validator;
+      renderer_->use_partial_swap() && !renderer_->has_overlay_validator();
   bool needs_surface_occluding_damage_rect =
-      overlay_validator && overlay_validator->NeedsSurfaceOccludingDamageRect();
+      renderer_->OverlayNeedsSurfaceOccludingDamageRect();
   aggregator_.reset(new SurfaceAggregator(
       surface_manager_, resource_provider_.get(), output_partial_list,
       needs_surface_occluding_damage_rect));
@@ -405,8 +404,9 @@ bool Display::DrawAndSwap() {
     frame = aggregator_->Aggregate(
         current_surface_id_,
         scheduler_ ? scheduler_->current_frame_display_time() : now_time,
-        ++swapped_trace_id_);
+        output_surface_->GetDisplayTransform(), ++swapped_trace_id_);
   }
+
   UMA_HISTOGRAM_COUNTS_1M("Compositing.SurfaceAggregator.AggregateUs",
                           aggregate_timer.Elapsed().InMicroseconds());
 
@@ -437,19 +437,29 @@ bool Display::DrawAndSwap() {
   gfx::Size surface_size;
   bool have_damage = false;
   auto& last_render_pass = *frame.render_pass_list.back();
+
+  // The CompositorFrame provided by the SurfaceAggregator includes the display
+  // transform while |current_surface_size_| is the pre-transform size received
+  // from the client.
+  const gfx::Transform display_transform = gfx::OverlayTransformToTransform(
+      output_surface_->GetDisplayTransform(), current_surface_size_);
+  const gfx::Size current_surface_size =
+      cc::MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
+          display_transform, gfx::Rect(current_surface_size_))
+          .size();
   if (settings_.auto_resize_output_surface &&
-      last_render_pass.output_rect.size() != current_surface_size_ &&
+      last_render_pass.output_rect.size() != current_surface_size &&
       last_render_pass.damage_rect == last_render_pass.output_rect &&
-      !current_surface_size_.IsEmpty()) {
+      !current_surface_size.IsEmpty()) {
     // Resize the output rect to the current surface size so that we won't
     // skip the draw and so that the GL swap won't stretch the output.
-    last_render_pass.output_rect.set_size(current_surface_size_);
+    last_render_pass.output_rect.set_size(current_surface_size);
     last_render_pass.damage_rect = last_render_pass.output_rect;
   }
   surface_size = last_render_pass.output_rect.size();
   have_damage = !last_render_pass.damage_rect.size().IsEmpty();
 
-  bool size_matches = surface_size == current_surface_size_;
+  bool size_matches = surface_size == current_surface_size;
   if (!size_matches)
     TRACE_EVENT_INSTANT0("viz", "Size mismatch.", TRACE_EVENT_SCOPE_THREAD);
 
@@ -479,7 +489,7 @@ bool Display::DrawAndSwap() {
     base::ElapsedTimer draw_timer;
     renderer_->DecideRenderPassAllocationsForFrame(frame.render_pass_list);
     renderer_->DrawFrame(&frame.render_pass_list, device_scale_factor_,
-                         current_surface_size_);
+                         current_surface_size);
     if (software_renderer_) {
       UMA_HISTOGRAM_COUNTS_1M("Compositing.DirectRenderer.Software.DrawFrameUs",
                               draw_timer.Elapsed().InMicroseconds());
@@ -525,7 +535,7 @@ bool Display::DrawAndSwap() {
       scheduler_->DidSwapBuffers();
     TRACE_EVENT_ASYNC_STEP_INTO0("viz,benchmark",
                                  "Graphics.Pipeline.DrawAndSwap",
-                                 swapped_trace_id_, "WaitForAck");
+                                 swapped_trace_id_, "WaitForPresentation");
   } else {
     TRACE_EVENT_INSTANT0("viz", "Swap skipped.", TRACE_EVENT_SCOPE_THREAD);
 
@@ -567,9 +577,6 @@ bool Display::DrawAndSwap() {
 }
 
 void Display::DidReceiveSwapBuffersAck() {
-  ++last_acked_trace_id_;
-  TRACE_EVENT_ASYNC_STEP_INTO0("viz,benchmark", "Graphics.Pipeline.DrawAndSwap",
-                               last_acked_trace_id_, "WaitForPresentation");
   if (scheduler_)
     scheduler_->DidReceiveSwapBuffersAck();
   if (renderer_)
@@ -606,6 +613,9 @@ void Display::DidReceivePresentationFeedback(
   auto& callbacks = pending_presented_callbacks_.front().second;
   const auto swap_time = pending_presented_callbacks_.front().first;
   auto copy_feedback = SanitizePresentationFeedback(feedback, swap_time);
+  TRACE_EVENT_INSTANT_WITH_TIMESTAMP0(
+      "benchmark,viz", "Display::FrameDisplayed", TRACE_EVENT_SCOPE_THREAD,
+      copy_feedback.timestamp);
   for (auto& callback : callbacks) {
     std::move(callback).Run(copy_feedback);
   }
@@ -745,7 +755,7 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
       // not entirely covered by draw quads in it; or the DrawQuad size is
       // smaller than the kMinimumDrawOcclusionSize; or the DrawQuad is inside
       // a 3d objects.
-      if (quad->material == ContentDrawQuadBase::Material::RENDER_PASS ||
+      if (quad->material == ContentDrawQuadBase::Material::kRenderPass ||
           (quad->visible_rect.width() <= minimum_draw_occlusion_width &&
            quad->visible_rect.height() <= minimum_draw_occlusion_height) ||
           quad->shared_quad_state->sorting_context_id != 0) {
@@ -901,6 +911,14 @@ base::TimeDelta Display::GetPreferredFrameIntervalForFrameSinkId(
 void Display::SetSupportedFrameIntervals(
     std::vector<base::TimeDelta> intervals) {
   frame_rate_decider_->SetSupportedFrameIntervals(std::move(intervals));
+}
+
+void Display::SetDisplayTransformHint(gfx::OverlayTransform transform) {
+  output_surface_->SetDisplayTransformHint(transform);
+}
+
+base::ScopedClosureRunner Display::GetCacheBackBufferCb() {
+  return output_surface_->GetCacheBackBufferCb();
 }
 
 }  // namespace viz

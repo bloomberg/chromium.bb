@@ -225,19 +225,19 @@ void AutofillAgent::DidChangeScrollOffsetImpl(
     HidePopup();
 }
 
-void AutofillAgent::FocusedNodeChanged(const WebNode& node) {
+void AutofillAgent::FocusedElementChanged(const WebElement& element) {
   was_focused_before_now_ = false;
 
   if ((IsKeyboardAccessoryEnabled() || !focus_requires_scroll_) &&
       WebUserGestureIndicator::IsProcessingUserGesture(
-          node.IsNull() ? nullptr : node.GetDocument().GetFrame())) {
+          element.IsNull() ? nullptr : element.GetDocument().GetFrame())) {
     focused_node_was_last_clicked_ = true;
     HandleFocusChangeComplete();
   }
 
   HidePopup();
 
-  if (node.IsNull() || !node.IsElementNode()) {
+  if (element.IsNull()) {
     if (!last_interacted_form_.IsNull()) {
       // Focus moved away from the last interacted form to somewhere else on
       // the page.
@@ -246,22 +246,21 @@ void AutofillAgent::FocusedNodeChanged(const WebNode& node) {
     return;
   }
 
-  WebElement web_element = node.ToConst<WebElement>();
-  const WebInputElement* element = ToWebInputElement(&web_element);
+  const WebInputElement* input = ToWebInputElement(&element);
 
   if (!last_interacted_form_.IsNull() &&
-      (!element || last_interacted_form_ != element->Form())) {
+      (!input || last_interacted_form_ != input->Form())) {
     // The focused element is not part of the last interacted form (could be
     // in a different form).
     GetAutofillDriver()->FocusNoLongerOnForm();
     return;
   }
 
-  if (!element || !element->IsEnabled() || element->IsReadOnly() ||
-      !element->IsTextField())
+  if (!input || !input->IsEnabled() || input->IsReadOnly() ||
+      !input->IsTextField())
     return;
 
-  element_ = *element;
+  element_ = *input;
 
   FormData form;
   FormFieldData field;
@@ -891,6 +890,12 @@ void AutofillAgent::SelectFieldOptionsChanged(
       base::TimeDelta::FromMilliseconds(kWaitTimeForSelectOptionsChangesMs),
       base::BindRepeating(&AutofillAgent::SelectWasUpdated,
                           weak_ptr_factory_.GetWeakPtr(), element));
+}
+
+bool AutofillAgent::HasFillData(const WebFormControlElement& element) const {
+  // This is currently only implemented for passwords. Consider supporting other
+  // autofill types in the future as well.
+  return password_autofill_agent_->HasFillData(element);
 }
 
 void AutofillAgent::SelectWasUpdated(

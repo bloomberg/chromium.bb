@@ -25,7 +25,8 @@
 namespace crostini {
 
 class CrostiniPackageService : public KeyedService,
-                               public LinuxPackageOperationProgressObserver {
+                               public LinuxPackageOperationProgressObserver,
+                               public PendingAppListUpdatesObserver {
  public:
   using StateChangeCallback =
       base::RepeatingCallback<void(PackageOperationStatus)>;
@@ -80,6 +81,11 @@ class CrostiniPackageService : public KeyedService,
                                   const std::string& container_name,
                                   UninstallPackageProgressStatus status,
                                   int progress_percent) override;
+
+  // PendingAppListUpdatesObserver:
+  void OnPendingAppListUpdates(const std::string& vm_name,
+                               const std::string& container_name,
+                               int count) override;
 
   // (Eventually) uninstall the package identified by |app_id|. If successfully
   // started, a system notification will be used to display further updates.
@@ -172,6 +178,11 @@ class CrostiniPackageService : public KeyedService,
   // update them any more.
   std::vector<std::unique_ptr<CrostiniPackageNotification>>
       finished_notifications_;
+
+  // A map storing which containers have currently pending app list update
+  // operations. If a container is not present in the map, we assume no pending
+  // updates.
+  std::set<ContainerId> has_pending_app_list_updates_;
 
   // Called each time a notification is set to a new state.
   StateChangeCallback testing_state_change_callback_;

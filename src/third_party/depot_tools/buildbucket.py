@@ -15,6 +15,8 @@ Usage:
   Puts a build into buildbucket for my-builder on tryserver.chromium.linux.
 """
 
+from __future__ import print_function
+
 import argparse
 import json
 import urlparse
@@ -153,9 +155,9 @@ def main(argv):
   http.force_exception_to_status_code = True
 
   if args.verbose:
-    print 'Request URL:', url
-    print 'Request method:', method
-    print 'Request body:', body
+    print('Request URL:', url)
+    print('Request method:', method)
+    print('Request body:', body)
 
   response, content = http.request(
     url,
@@ -165,8 +167,8 @@ def main(argv):
   )
 
   if args.verbose:
-    print 'Response:', response
-    print 'Content:', content
+    print('Response:', response)
+    print('Content:', content)
 
   try:
     content_json = json.loads(content)
@@ -177,7 +179,7 @@ def main(argv):
   except (ValueError, TypeError, KeyError):
     pass
   else:
-    print 'Build: %s' % build_url
+    print('Build: %s' % build_url)
 
   return response.status != 200
 

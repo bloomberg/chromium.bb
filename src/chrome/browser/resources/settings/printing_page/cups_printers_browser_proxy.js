@@ -180,6 +180,14 @@ cr.define('settings', function() {
      * @param {!CupsPrinterInfo} newPrinter
      */
     cancelPrinterSetUp(newPrinter) {}
+
+    /**
+     * @param {string} ppdManufacturer
+     * @param {string} ppdModel
+     * @return {!Promise<string>} Returns the EULA URL of the printer. Returns
+     * an empty string if no EULA is required.
+     */
+    getEulaUrl(ppdManufacturer, ppdModel) {}
   }
 
   /**
@@ -254,6 +262,11 @@ cr.define('settings', function() {
     /** @override */
     cancelPrinterSetUp(newPrinter) {
       chrome.send('cancelPrinterSetUp', [newPrinter]);
+    }
+
+    /** @override */
+    getEulaUrl(ppdManufacturer, ppdModel) {
+      return cr.sendWithPromise('getEulaUrl', ppdManufacturer, ppdModel);
     }
   }
 

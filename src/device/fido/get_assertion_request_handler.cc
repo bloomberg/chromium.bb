@@ -20,6 +20,7 @@
 #include "device/fido/features.h"
 #include "device/fido/fido_authenticator.h"
 #include "device/fido/fido_discovery_factory.h"
+#include "device/fido/fido_parsing_utils.h"
 #include "device/fido/get_assertion_task.h"
 #include "device/fido/pin.h"
 
@@ -30,7 +31,10 @@ namespace {
 bool ResponseValid(const FidoAuthenticator& authenticator,
                    const CtapGetAssertionRequest& request,
                    const AuthenticatorGetAssertionResponse& response) {
-  if (!request.CheckResponseRpIdHash(response.GetRpIdHash())) {
+  if (response.GetRpIdHash() !=
+          fido_parsing_utils::CreateSHA256Hash(request.rp_id) &&
+      (!request.app_id ||
+       response.GetRpIdHash() != request.alternative_application_parameter)) {
     return false;
   }
 
@@ -52,8 +56,7 @@ bool ResponseValid(const FidoAuthenticator& authenticator,
     return false;
   }
 
-  if ((!request.allow_list() || request.allow_list()->empty()) &&
-      !user_entity) {
+  if (request.allow_list.empty() && !user_entity) {
     return false;
   }
 
@@ -68,8 +71,8 @@ bool ResponseValid(const FidoAuthenticator& authenticator,
   // Thus, returned credential ID need not be in allowed list.
   // TODO(hongjunchoi) : Add link to section of the CTAP spec once it is
   // published.
-  const auto& allow_list = request.allow_list();
-  if (!allow_list || allow_list->empty()) {
+  const auto& allow_list = request.allow_list;
+  if (allow_list.empty()) {
     if (authenticator.Options() &&
         !authenticator.Options()->supports_resident_key) {
       // Allow list can't be empty for authenticators w/o resident key support.
@@ -80,9 +83,9 @@ bool ResponseValid(const FidoAuthenticator& authenticator,
     // allow list has size 1. Otherwise, it needs to match an entry from the
     // allow list
     const auto opt_transport_used = authenticator.AuthenticatorTransport();
-    if ((!response.credential() && allow_list->size() != 1) ||
+    if ((!response.credential() && allow_list.size() != 1) ||
         (response.credential() &&
-         !std::any_of(allow_list->cbegin(), allow_list->cend(),
+         !std::any_of(allow_list.cbegin(), allow_list.cend(),
                       [&response, opt_transport_used](const auto& credential) {
                         return credential.id() ==
                                    response.raw_credential_id() &&
@@ -109,9 +112,8 @@ bool ResponseValid(const FidoAuthenticator& authenticator,
 void SetCredentialIdForResponseWithEmptyCredential(
     const CtapGetAssertionRequest& request,
     AuthenticatorGetAssertionResponse& response) {
-  if (request.allow_list() && request.allow_list()->size() == 1 &&
-      !response.credential()) {
-    response.SetCredential(request.allow_list()->at(0));
+  if (request.allow_list.size() == 1 && !response.credential()) {
+    response.SetCredential(request.allow_list.at(0));
   }
 }
 
@@ -130,8 +132,7 @@ bool CheckUserVerificationCompatible(FidoAuthenticator* authenticator,
 
   const bool pin_support =
       base::FeatureList::IsEnabled(device::kWebAuthPINSupport) && have_observer;
-  return request.user_verification() !=
-             UserVerificationRequirement::kRequired ||
+  return request.user_verification != UserVerificationRequirement::kRequired ||
          opt_options->user_verification_availability ==
              AuthenticatorSupportedOptions::UserVerificationAvailability::
                  kSupportedAndConfigured ||
@@ -149,15 +150,13 @@ base::flat_set<FidoTransportProtocol> GetTransportsAllowedByRP(
       FidoTransportProtocol::kBluetoothLowEnergy,
       FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy};
 
-  // TODO(https://crbug.com/874479): |allowed_list| will |has_value| even if the
-  // WebAuthn request has `allowCredential` undefined.
-  const auto& allowed_list = request.allow_list();
-  if (!allowed_list || allowed_list->empty()) {
+  const auto& allowed_list = request.allow_list;
+  if (allowed_list.empty()) {
     return kAllTransports;
   }
 
   base::flat_set<FidoTransportProtocol> transports;
-  for (const auto credential : *allowed_list) {
+  for (const auto credential : allowed_list) {
     if (credential.transports().empty())
       return kAllTransports;
     transports.insert(credential.transports().begin(),
@@ -170,20 +169,38 @@ base::flat_set<FidoTransportProtocol> GetTransportsAllowedByRP(
 base::flat_set<FidoTransportProtocol> GetTransportsAllowedAndConfiguredByRP(
     const CtapGetAssertionRequest& request) {
   auto transports = GetTransportsAllowedByRP(request);
-  if (!request.cable_extension())
+  if (!request.cable_extension)
     transports.erase(FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
   return transports;
+}
+
+void ReportGetAssertionRequestTransport(FidoAuthenticator* authenticator) {
+  if (authenticator->AuthenticatorTransport()) {
+    base::UmaHistogramEnumeration(
+        "WebAuthentication.GetAssertionRequestTransport",
+        *authenticator->AuthenticatorTransport());
+  }
+}
+
+void ReportGetAssertionResponseTransport(FidoAuthenticator* authenticator) {
+  if (authenticator->AuthenticatorTransport()) {
+    base::UmaHistogramEnumeration(
+        "WebAuthentication.GetAssertionResponseTransport",
+        *authenticator->AuthenticatorTransport());
+  }
 }
 
 }  // namespace
 
 GetAssertionRequestHandler::GetAssertionRequestHandler(
     service_manager::Connector* connector,
+    FidoDiscoveryFactory* fido_discovery_factory,
     const base::flat_set<FidoTransportProtocol>& supported_transports,
     CtapGetAssertionRequest request,
     CompletionCallback completion_callback)
     : FidoRequestHandler(
           connector,
+          fido_discovery_factory,
           base::STLSetIntersection<base::flat_set<FidoTransportProtocol>>(
               supported_transports,
               GetTransportsAllowedAndConfiguredByRP(request)),
@@ -196,11 +213,16 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
   if (base::ContainsKey(
           transport_availability_info().available_transports,
           FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy)) {
-    DCHECK(request_.cable_extension());
+    DCHECK(request_.cable_extension);
     auto discovery =
-        FidoDiscoveryFactory::CreateCable(*request_.cable_extension());
+        fido_discovery_factory_->CreateCable(*request_.cable_extension);
     discovery->set_observer(this);
     discoveries().push_back(std::move(discovery));
+  }
+
+  if (request_.allow_list.empty()) {
+    // Resident credential requests always involve user verification.
+    request_.user_verification = UserVerificationRequirement::kRequired;
   }
 
   FIDO_LOG(EVENT) << "Starting GetAssertion flow";
@@ -258,24 +280,20 @@ void GetAssertionRequestHandler::DispatchRequest(
     }
   }
 
-  if (authenticator->AuthenticatorTransport()) {
-    base::UmaHistogramEnumeration(
-        "WebAuthentication.GetAssertionRequestTransport",
-        *authenticator->AuthenticatorTransport());
-  }
-
   CtapGetAssertionRequest request(request_);
   if (authenticator->Options()) {
     if (authenticator->Options()->user_verification_availability ==
             AuthenticatorSupportedOptions::UserVerificationAvailability::
                 kSupportedAndConfigured &&
-        request_.user_verification() !=
+        request_.user_verification !=
             UserVerificationRequirement::kDiscouraged) {
-      request.SetUserVerification(UserVerificationRequirement::kRequired);
+      request.user_verification = UserVerificationRequirement::kRequired;
     } else {
-      request.SetUserVerification(UserVerificationRequirement::kDiscouraged);
+      request.user_verification = UserVerificationRequirement::kDiscouraged;
     }
   }
+
+  ReportGetAssertionRequestTransport(authenticator);
 
   FIDO_LOG(DEBUG) << "Asking for assertion from "
                   << authenticator->GetDisplayName();
@@ -327,8 +345,14 @@ void GetAssertionRequestHandler::HandleResponse(
   const base::Optional<FidoReturnCode> maybe_result =
       ConvertDeviceResponseCodeToFidoReturnCode(status);
   if (!maybe_result) {
-    FIDO_LOG(ERROR) << "Ignoring status " << static_cast<int>(status)
-                    << " from " << authenticator->GetDisplayName();
+    if (state_ == State::kWaitingForSecondTouch) {
+      OnAuthenticatorResponse(authenticator,
+                              FidoReturnCode::kAuthenticatorResponseInvalid,
+                              base::nullopt);
+    } else {
+      FIDO_LOG(ERROR) << "Ignoring status " << static_cast<int>(status)
+                      << " from " << authenticator->GetDisplayName();
+    }
     return;
   }
 
@@ -354,8 +378,8 @@ void GetAssertionRequestHandler::HandleResponse(
 
   SetCredentialIdForResponseWithEmptyCredential(request_, *response);
   const size_t num_responses = response->num_credentials().value_or(1);
-  if (num_responses == 0 || (num_responses > 1 && request_.allow_list() &&
-                             !request_.allow_list()->empty())) {
+  if (num_responses == 0 ||
+      (num_responses > 1 && !request_.allow_list.empty())) {
     OnAuthenticatorResponse(authenticator,
                             FidoReturnCode::kAuthenticatorResponseInvalid,
                             base::nullopt);
@@ -373,6 +397,8 @@ void GetAssertionRequestHandler::HandleResponse(
                        weak_factory_.GetWeakPtr(), authenticator));
     return;
   }
+
+  ReportGetAssertionResponseTransport(authenticator);
 
   OnAuthenticatorResponse(authenticator, FidoReturnCode::kSuccess,
                           std::move(responses_));
@@ -417,6 +443,8 @@ void GetAssertionRequestHandler::HandleNextResponse(
     return;
   }
 
+  ReportGetAssertionResponseTransport(authenticator);
+
   OnAuthenticatorResponse(authenticator, FidoReturnCode::kSuccess,
                           std::move(responses_));
 }
@@ -454,17 +482,19 @@ void GetAssertionRequestHandler::OnRetriesResponse(
     base::Optional<pin::RetriesResponse> response) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
   DCHECK_EQ(state_, State::kGettingRetries);
-
   if (status != CtapDeviceResponseCode::kSuccess) {
     state_ = State::kFinished;
-    FidoReturnCode ret = FidoReturnCode::kAuthenticatorResponseInvalid;
-    if (status == CtapDeviceResponseCode::kCtap2ErrPinBlocked) {
-      ret = FidoReturnCode::kHardPINBlock;
-    }
-    std::move(completion_callback_).Run(ret, base::nullopt, base::nullopt);
+    std::move(completion_callback_)
+        .Run(FidoReturnCode::kAuthenticatorResponseInvalid, base::nullopt,
+             base::nullopt);
     return;
   }
-
+  if (response->retries == 0) {
+    state_ = State::kFinished;
+    std::move(completion_callback_)
+        .Run(FidoReturnCode::kHardPINBlock, base::nullopt, base::nullopt);
+    return;
+  }
   state_ = State::kWaitingForPIN;
   observer()->CollectPIN(response->retries,
                          base::BindOnce(&GetAssertionRequestHandler::OnHavePIN,
@@ -546,11 +576,13 @@ void GetAssertionRequestHandler::OnHavePINToken(
   observer()->FinishCollectPIN();
   state_ = State::kWaitingForSecondTouch;
   CtapGetAssertionRequest request(request_);
-  request.SetPinAuth(response->PinAuth(request.client_data_hash()));
-  request.SetPinProtocol(pin::kProtocolVersion);
+  request.pin_auth = response->PinAuth(request.client_data_hash);
+  request.pin_protocol = pin::kProtocolVersion;
   // If doing a PIN operation then we don't ask the authenticator to also do
   // internal UV.
-  request.SetUserVerification(UserVerificationRequirement::kDiscouraged);
+  request.user_verification = UserVerificationRequirement::kDiscouraged;
+
+  ReportGetAssertionRequestTransport(authenticator_);
 
   authenticator_->GetAssertion(
       std::move(request),

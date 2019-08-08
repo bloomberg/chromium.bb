@@ -46,14 +46,6 @@ class SwitchAccessInterface {
   hasCommand(command) {}
 
   /**
-   * Return the default key code for a command.
-   *
-   * @param {!SAConstants.Command} command
-   * @return {number}
-   */
-  getDefaultKeyCodeFor(command) {}
-
-  /**
    * Forwards keycodes received from keyPress events to |callback|.
    * @param {function(number)} callback
    */
@@ -86,28 +78,36 @@ class SwitchAccessInterface {
    * Set the value of the preference |key| to |value| in chrome.storage.sync.
    * The behavior is not updated until the storage update is complete.
    *
-   * @param {string} key
-   * @param {boolean|string|number} value
+   * @param {SAConstants.Preference} key
+   * @param {boolean|number} value
    */
   setPreference(key, value) {}
 
   /**
-   * Get the value of type 'boolean' of the preference |key|. Will throw a type
-   * error if the value of |key| is not 'boolean'.
+   * Get the boolean value for the given key. Will throw a type error if the
+   * value associated with |key| is not a boolean, or undefined.
    *
-   * @param  {string} key
+   * @param  {SAConstants.Preference} key
    * @return {boolean}
    */
   getBooleanPreference(key) {}
 
   /**
-   * Get the value of type 'number' of the preference |key|. Will throw a type
-   * error if the value of |key| is not 'number'.
+   * Get the number value for the given key. Will throw a type error if the
+   * value associated with |key| is not a number, or undefined.
    *
-   * @param  {string} key
+   * @param  {SAConstants.Preference} key
    * @return {number}
    */
   getNumberPreference(key) {}
+
+  /**
+   * Get the number value for the given key, or |null| if none exists.
+   *
+   * @param  {SAConstants.Preference} key
+   * @return {number|null}
+   */
+  getNumberPreferenceIfDefined(key) {}
 
   /**
    * Returns true if |keyCode| is already used to run a command from the

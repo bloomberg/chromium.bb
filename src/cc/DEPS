@@ -33,6 +33,7 @@ include_rules = [
   "+third_party/libyuv",
   "+third_party/skia/include",
   "+third_party/skia/src/core/SkRemoteGlyphCache.h",
+  "+ui/events/types",
   "+ui/latency",
   "+ui/gfx",
   "+ui/gl",

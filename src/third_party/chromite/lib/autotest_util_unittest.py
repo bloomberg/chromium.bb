@@ -14,6 +14,7 @@ from chromite.lib import autotest_util
 from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
+from chromite.utils import matching
 
 
 class BuildTarballTests(cros_test_lib.RunCommandTempDirTestCase):
@@ -56,7 +57,7 @@ class BuildTarballTests(cros_test_lib.RunCommandTempDirTestCase):
     tar_path = os.path.join(self.tempdir, self.builder._CONTROL_FILES_ARCHIVE)
 
     tar_mock = self.PatchObject(self.builder, '_BuildTarball')
-    self.PatchObject(autotest_util, '_FindFilesWithPattern',
+    self.PatchObject(matching, 'FindFilesMatching',
                      return_value=control_file_list)
 
     self.builder.BuildAutotestControlFilesTarball()
@@ -89,7 +90,7 @@ class BuildTarballTests(cros_test_lib.RunCommandTempDirTestCase):
     tar_mock = self.PatchObject(self.builder, '_BuildTarball')
     self.PatchObject(self.builder, '_GetTastSspFiles', return_value=ssp_files)
     # Pass a copy of the file list so the code under test can't mutate it.
-    self.PatchObject(autotest_util, '_FindFilesWithPattern',
+    self.PatchObject(matching, 'FindFilesMatching',
                      return_value=list(file_list))
 
     self.builder.BuildAutotestServerPackageTarball()

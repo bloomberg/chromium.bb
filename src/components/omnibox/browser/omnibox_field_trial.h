@@ -17,10 +17,12 @@
 #include "base/optional.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
+#include "components/omnibox/browser/autocomplete_provider.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 
 namespace base {
 class TimeDelta;
+struct Feature;
 }
 
 // The set of parameters customizing the HUP scoring.
@@ -160,16 +162,19 @@ base::TimeDelta StopTimerFieldTrialDuration();
 // Returns whether the user is in a ZeroSuggest field trial, which shows
 // most visited URLs. This is true for both "MostVisited" and
 // "MostVisitedWithoutSERP" trials.
-bool InZeroSuggestMostVisitedFieldTrial();
+bool InZeroSuggestMostVisitedFieldTrial(
+    metrics::OmniboxEventProto::PageClassification page_classification);
 
 // Returns whether the user is in ZeroSuggest field trial showing most
 // visited URLs except it doesn't show suggestions on Google search result
 // pages.
-bool InZeroSuggestMostVisitedWithoutSerpFieldTrial();
+bool InZeroSuggestMostVisitedWithoutSerpFieldTrial(
+    metrics::OmniboxEventProto::PageClassification page_classification);
 
 // Returns whether the user is in a ZeroSuggest field trial, but should
 // show recently searched-for queries instead.
-bool InZeroSuggestPersonalizedFieldTrial();
+bool InZeroSuggestPersonalizedFieldTrial(
+    metrics::OmniboxEventProto::PageClassification page_classification);
 
 // ---------------------------------------------------------
 // For the Zero Suggest Redirect to Chrome field trial.
@@ -227,6 +232,14 @@ bool SearchHistoryDisable(
 void GetDemotionsByType(
     metrics::OmniboxEventProto::PageClassification current_page_classification,
     DemotionMultipliers* demotions_by_type);
+
+// ---------------------------------------------------------
+// For the UIMaxAutocompleteMatchesByProvider experiment that's part of the
+// bundled omnibox field trial.
+
+// If the user is in an experiment group that specifies the max results for a
+// particular provider, returns the limit. Otherwise returns the default limit.
+size_t GetProviderMaxMatches(AutocompleteProvider::Type provider);
 
 // ---------------------------------------------------------
 // For the HistoryURL provider new scoring experiment that is part of the
@@ -386,14 +399,14 @@ size_t GetMaxURLMatches();
 // ---------------------------------------------------------
 // For UI experiments.
 
-// Returns whether preserving default match score is enabled.
+// Returns whether preserve default match score is enabled.
 bool IsPreserveDefaultMatchScoreEnabled();
-
-// Returns true if the rich entities flag is enabled.
-bool IsRichEntitySuggestionsEnabled();
 
 // Returns true if the reverse answers flag is enabled.
 bool IsReverseAnswersEnabled();
+
+// Returns true if the short bookmark suggestions flag is enabled.
+bool IsShortBookmarkSuggestionsEnabled();
 
 // Returns true if either the tab switch suggestions flag is enabled.
 bool IsTabSwitchSuggestionsEnabled();
@@ -489,6 +502,7 @@ extern const char kMaxNumHQPUrlsIndexedAtStartupOnNonLowEndDevicesParam[];
 
 // Parameter names used by UI experiments.
 extern const char kUIMaxAutocompleteMatchesParam[];
+extern const char kUIMaxAutocompleteMatchesByProviderParam[];
 extern const char kUIVerticalMarginParam[];
 
 // Parameter name and values used by the Simplify HTTPS experiment.
@@ -523,9 +537,21 @@ namespace internal {
 // context, returns the empty string.  For more details, including how we
 // prioritize different wildcard contexts, see the implementation.  How to
 // interpret the value is left to the caller; this is rule-dependent.
+//
+// Deprecated. Use GetValueForRuleInContextByFeature instead.
 std::string GetValueForRuleInContext(
     const std::string& rule,
     metrics::OmniboxEventProto::PageClassification page_classification);
+
+// Same as GetValueForRuleInContext, but by |feature| instead of the bundled
+// omnibox experiment.  Prefer to use this method over GetValueForRuleInContext
+// when possible, as it can be useful to configure parameters outside of the
+// omnibox bundled experiment.
+std::string GetValueForRuleInContextByFeature(
+    const base::Feature& feature,
+    const std::string& rule,
+    metrics::OmniboxEventProto::PageClassification page_classification);
+
 }  // namespace internal
 
 }  // namespace OmniboxFieldTrial

@@ -72,6 +72,16 @@ USER_METRICS_ACTION_RE_JS = re.compile(r"""
   """,
   re.VERBOSE | re.DOTALL      # Verbose syntax and makes . also match new lines.
 )
+USER_METRICS_ACTION_RE_DEVTOOLS = re.compile(r"""
+  InspectorFrontendHost\.recordUserMetricsAction     # Start of function call.
+  \(                          # Opening parenthesis.
+  \s*                         # Any amount of whitespace, including new lines.
+  (.+?)                       # A sequence of characters for the param.
+  \s*                         # Any amount of whitespace, including new lines.
+  \)                          # Closing parenthesis.
+  """,
+  re.VERBOSE | re.DOTALL      # Verbose syntax and makes . also match new lines.
+)
 COMPUTED_ACTION_RE = re.compile(r'RecordComputedAction')
 QUOTED_STRING_RE = re.compile(r"""('[^']+'|"[^"]+")$""")
 
@@ -99,6 +109,7 @@ KNOWN_COMPUTED_USERS = (
   'pepper_pdf_host.cc',  # see AddClosedSourceActions()
   'record_user_action.cc', # see RecordUserAction.java
   'blink_platform_impl.cc', # see WebKit/public/platform/Platform.h
+  'devtools_ui_bindings.cc', # see AddDevToolsActions()
 )
 
 # Language codes used in Chrome. The list should be updated when a new
@@ -433,6 +444,31 @@ def GrepForWebUIActions(path, actions):
     if not close_called:
       parser.close()
 
+def GrepForDevToolsActions(path, actions):
+  """Grep a DevTools source file for calls to UserMetrics functions.
+
+  Arguments:
+    path: path to the file
+    actions: set of actions to add to
+  """
+  global number_of_files_total
+  number_of_files_total = number_of_files_total + 1
+
+  ext = os.path.splitext(path)[1].lower()
+  if ext != '.js':
+    return
+
+  finder = ActionNameFinder(path, open(path).read(),
+      USER_METRICS_ACTION_RE_DEVTOOLS)
+  while True:
+    try:
+      action_name = finder.FindNextAction()
+      if not action_name:
+        break
+      actions.add(action_name)
+    except InvalidStatementException, e:
+      logging.warning(str(e))
+
 def WalkDirectory(root_path, actions, extensions, callback):
   for path, dirs, files in os.walk(root_path):
     if '.svn' in dirs:
@@ -484,6 +520,16 @@ def AddWebUIActions(actions):
                                 'resources')
   WalkDirectory(resources_root, actions, ('.html'), GrepForWebUIActions)
   WalkDirectory(resources_root, actions, ('.js'), GrepForActions)
+
+def AddDevToolsActions(actions):
+  """Add user actions defined in DevTools frontend files.
+
+  Arguments:
+    actions: set of actions to add to.
+  """
+  resources_root = os.path.join(REPOSITORY_ROOT, 'third_party', 'blink',
+                                'renderer', 'devtools', 'front_end')
+  WalkDirectory(resources_root, actions, ('.js'), GrepForDevToolsActions)
 
 def AddHistoryPageActions(actions):
   """Add actions that are used in History page.
@@ -721,6 +767,7 @@ def UpdateXml(original_xml):
   actions = set()
   AddComputedActions(actions)
   AddWebUIActions(actions)
+  AddDevToolsActions(actions)
 
   AddLiteralActions(actions)
 

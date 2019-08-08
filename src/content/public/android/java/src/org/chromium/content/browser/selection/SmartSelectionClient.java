@@ -141,11 +141,11 @@ public class SmartSelectionClient implements SelectionClient {
 
         switch (callbackData) {
             case RequestType.SUGGEST_AND_CLASSIFY:
-                mProvider.sendSuggestAndClassifyRequest(text, start, end, null);
+                mProvider.sendSuggestAndClassifyRequest(text, start, end);
                 break;
 
             case RequestType.CLASSIFY:
-                mProvider.sendClassifyRequest(text, start, end, null);
+                mProvider.sendClassifyRequest(text, start, end);
                 break;
 
             default:

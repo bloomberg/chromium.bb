@@ -59,8 +59,6 @@
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/socket/tcp_client_socket.h"
 #include "net/spdy/spdy_session.h"
-#include "net/ssl/channel_id_service.h"
-#include "net/ssl/default_channel_id_store.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/file_protocol_handler.h"
@@ -246,7 +244,8 @@ void IOSIOThread::Init() {
   globals_->system_network_delegate = CreateSystemNetworkDelegate();
   globals_->host_resolver = CreateGlobalHostResolver(net_log_);
 
-  globals_->cert_verifier = net::CertVerifier::CreateDefault();
+  globals_->cert_verifier =
+      net::CertVerifier::CreateDefault(/*cert_net_fetcher=*/nullptr);
 
   globals_->transport_security_state.reset(new net::TransportSecurityState());
 
@@ -261,11 +260,6 @@ void IOSIOThread::Init() {
   // TODO(crbug.com/801910): Hook up logging by passing in a non-null netlog.
   globals_->system_cookie_store.reset(
       new net::CookieMonster(nullptr /* store */, nullptr /* netlog */));
-  // In-memory channel ID store.
-  globals_->system_channel_id_service.reset(
-      new net::ChannelIDService(new net::DefaultChannelIDStore(nullptr)));
-  globals_->system_cookie_store->SetChannelIDServiceID(
-      globals_->system_channel_id_service->GetUniqueID());
   globals_->http_user_agent_settings.reset(new net::StaticHttpUserAgentSettings(
       std::string(),
       web::GetWebClient()->GetUserAgent(web::UserAgentType::MOBILE)));
@@ -376,7 +370,6 @@ net::URLRequestContext* IOSIOThread::ConstructSystemRequestContext(
   context->set_job_factory(globals->system_url_request_job_factory.get());
 
   context->set_cookie_store(globals->system_cookie_store.get());
-  context->set_channel_id_service(globals->system_channel_id_service.get());
   context->set_network_delegate(globals->system_network_delegate.get());
   context->set_http_user_agent_settings(
       globals->http_user_agent_settings.get());

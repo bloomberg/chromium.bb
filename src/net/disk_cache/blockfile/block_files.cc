@@ -4,9 +4,9 @@
 
 #include "net/disk_cache/blockfile/block_files.h"
 
+#include <atomic>
 #include <limits>
 
-#include "base/atomicops.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
@@ -91,7 +91,7 @@ bool BlockHeader::CreateMapBlock(int size, int* index) {
       // the order of memory accesses between num_entries and allocation_map, we
       // can assert that even if we crash here, num_entries will never be less
       // than the actual number of used blocks.
-      base::subtle::MemoryBarrier();
+      std::atomic_thread_fence(std::memory_order_seq_cst);
       header_->allocation_map[current] |= to_add;
 
       header_->hints[target - 1] = current;
@@ -144,7 +144,7 @@ void BlockHeader::DeleteMapBlock(int index, int size) {
     header_->empty[new_type - 1]++;
     STRESS_DCHECK(header_->empty[bits_at_end - 1] >= 0);
   }
-  base::subtle::MemoryBarrier();
+  std::atomic_thread_fence(std::memory_order_seq_cst);
   header_->num_entries--;
   STRESS_DCHECK(header_->num_entries >= 0);
   LOCAL_HISTOGRAM_TIMES("DiskCache.DeleteBlock", TimeTicks::Now() - start);

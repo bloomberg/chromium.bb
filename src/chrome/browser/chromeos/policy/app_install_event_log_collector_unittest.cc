@@ -321,7 +321,8 @@ TEST_F(AppInstallEventLogCollectorTest, ConnectivityChanges) {
             delegate()->last_event().event_type());
   EXPECT_FALSE(delegate()->last_event().online());
 
-  SetNetworkState(collector.get(), kWifiServicePath, shill::kStatePortal);
+  SetNetworkState(collector.get(), kWifiServicePath,
+                  shill::kStateNoConnectivity);
   EXPECT_EQ(2, delegate()->add_for_all_count());
 
   SetNetworkState(collector.get(), kWifiServicePath, shill::kStateOnline);

@@ -58,6 +58,14 @@ base::Optional<CorsErrorStatus> CheckAccess(
     mojom::FetchCredentialsMode credentials_mode,
     const url::Origin& origin);
 
+// Returns true if |fetch_request_mode| is not kNavigate nor kNoCors, and the
+// origin of |request_url| is not a data URL, and |request_initiator| is not
+// same as the origin of |request_url|,
+COMPONENT_EXPORT(NETWORK_CPP)
+bool ShouldCheckCors(const GURL& request_url,
+                     const base::Optional<url::Origin>& request_initiator,
+                     mojom::FetchRequestMode fetch_request_mode);
+
 // Performs a CORS access check on the CORS-preflight response parameters.
 // According to the note at https://fetch.spec.whatwg.org/#cors-preflight-fetch
 // step 6, even for a preflight check, |credentials_mode| should be checked on

@@ -46,6 +46,9 @@ Polymer({
     localTrustRoots_: String,
 
     /** @private */
+    customerLogo_: String,
+
+    /** @private */
     managementOverview_: String,
 
     // </if>
@@ -79,7 +82,7 @@ Polymer({
         'browser-reporting-info-updated',
         reportingInfo => this.onBrowserReportingInfoReceived_(reportingInfo));
 
-    this.addWebUIListener('managed_state_changed', () => {
+    this.addWebUIListener('managed_data_changed', () => {
       this.updateManagedFields_();
     });
 
@@ -235,7 +238,11 @@ Polymer({
 
   /** @private */
   onTapBack_() {
-    window.location.href = `chrome://settings/help`;
+    if (history.length > 1) {
+      history.back();
+    } else {
+      window.location.href = 'chrome://settings/help';
+    }
   },
 
   /** @private */
@@ -245,6 +252,7 @@ Polymer({
       this.extensionReportingSubtitle_ = data.extensionReportingTitle;
       this.subtitle_ = data.pageSubtitle;
       // <if expr="chromeos">
+      this.customerLogo_ = data.customerLogo;
       this.managementOverview_ = data.overview;
       // </if>
       // <if expr="not chromeos">

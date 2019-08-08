@@ -150,7 +150,7 @@ CastDialogView::SourceType MediaRouterUiForTest::GetChosenSourceType() const {
 
 void MediaRouterUiForTest::StartCasting(const std::string& sink_name) {
   CastDialogSinkButton* sink_button = GetSinkButton(sink_name);
-  CHECK(sink_button->enabled());
+  CHECK(sink_button->GetEnabled());
   sink_button->OnMousePressed(CreateMousePressedEvent());
   sink_button->OnMouseReleased(CreateMouseReleasedEvent());
   base::RunLoop().RunUntilIdle();
@@ -290,7 +290,7 @@ void MediaRouterUiForTest::OnDialogModelUpdated(CastDialogView* dialog_view) {
                                     base::UTF8ToUTF16(*watch_sink_name_) &&
                                 sink_button->sink().state ==
                                     UIMediaSinkState::AVAILABLE &&
-                                sink_button->enabled();
+                                sink_button->GetEnabled();
                        case WatchType::kAnyIssue:
                          return sink_button->sink().issue.has_value();
                        case WatchType::kAnyRoute:

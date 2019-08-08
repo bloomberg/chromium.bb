@@ -31,8 +31,8 @@ class OverviewGestureHandlerTest : public AshTestBase {
     Shell::Get()->overview_controller()->ToggleOverview();
   }
 
-  bool IsSelecting() {
-    return Shell::Get()->overview_controller()->IsSelecting();
+  bool InOverviewSession() {
+    return Shell::Get()->overview_controller()->InOverviewSession();
   }
 
   float vertical_threshold_pixels() const {
@@ -60,22 +60,22 @@ TEST_F(OverviewGestureHandlerTest, VerticalScrolls) {
   const float long_scroll = 2 * vertical_threshold_pixels();
   generator.ScrollSequence(gfx::Point(), base::TimeDelta::FromMilliseconds(5),
                            0, -long_scroll, 100, 3);
-  EXPECT_TRUE(IsSelecting());
+  EXPECT_TRUE(InOverviewSession());
 
   // Swiping up again does nothing.
   generator.ScrollSequence(gfx::Point(), base::TimeDelta::FromMilliseconds(5),
                            0, -long_scroll, 100, 3);
-  EXPECT_TRUE(IsSelecting());
+  EXPECT_TRUE(InOverviewSession());
 
   // Swiping down exits.
   generator.ScrollSequence(gfx::Point(), base::TimeDelta::FromMilliseconds(5),
                            0, long_scroll, 100, 3);
-  EXPECT_FALSE(IsSelecting());
+  EXPECT_FALSE(InOverviewSession());
 
   // Swiping down again does nothing.
   generator.ScrollSequence(gfx::Point(), base::TimeDelta::FromMilliseconds(5),
                            0, long_scroll, 100, 3);
-  EXPECT_FALSE(IsSelecting());
+  EXPECT_FALSE(InOverviewSession());
 }
 
 // Tests three finger horizontal scroll gesture to move selection left or right.
@@ -94,27 +94,27 @@ TEST_F(OverviewGestureHandlerTest, HorizontalScrollInOverview) {
   // Entering overview mode with an upwards three-finger scroll gesture would
   // have the same result (allow selection using horizontal scroll).
   ToggleOverview();
-  EXPECT_TRUE(IsSelecting());
+  EXPECT_TRUE(InOverviewSession());
 
   // Long scroll right moves selection to the fourth window.
   generator.ScrollSequence(gfx::Point(), base::TimeDelta::FromMilliseconds(5),
                            horizontal_scroll * 4, 0, 100, 3);
-  EXPECT_TRUE(IsSelecting());
+  EXPECT_TRUE(InOverviewSession());
 
   // Short scroll left (3 fingers) moves selection to the third window.
   generator.ScrollSequence(gfx::Point(), base::TimeDelta::FromMilliseconds(5),
                            -horizontal_scroll, 0, 100, 3);
-  EXPECT_TRUE(IsSelecting());
+  EXPECT_TRUE(InOverviewSession());
 
   // Short scroll left (3 fingers) moves selection to the second window.
   generator.ScrollSequence(gfx::Point(), base::TimeDelta::FromMilliseconds(5),
                            -horizontal_scroll, 0, 100, 3);
-  EXPECT_TRUE(IsSelecting());
+  EXPECT_TRUE(InOverviewSession());
 
   // Swiping down exits and selects the currently-highlighted window.
   generator.ScrollSequence(gfx::Point(), base::TimeDelta::FromMilliseconds(5),
                            0, vertical_scroll, 100, 3);
-  EXPECT_FALSE(IsSelecting());
+  EXPECT_FALSE(InOverviewSession());
 
   // Second MRU window is selected (i.e. |window4|).
   EXPECT_EQ(window4.get(), wm::GetActiveWindow());
@@ -130,11 +130,11 @@ TEST_F(OverviewGestureHandlerTest, HorizontalScrolls) {
   const float long_scroll = 2 * vertical_threshold_pixels();
   generator.ScrollSequence(gfx::Point(), base::TimeDelta::FromMilliseconds(5),
                            long_scroll + 100, -long_scroll, 100, 3);
-  EXPECT_FALSE(IsSelecting());
+  EXPECT_FALSE(InOverviewSession());
 
   generator.ScrollSequence(gfx::Point(), base::TimeDelta::FromMilliseconds(5),
                            -long_scroll - 100, -long_scroll, 100, 3);
-  EXPECT_FALSE(IsSelecting());
+  EXPECT_FALSE(InOverviewSession());
 }
 
 // Tests a scroll up with three fingers without releasing followed by a scroll
@@ -161,7 +161,7 @@ TEST_F(OverviewGestureHandlerTest, ScrollUpDownWithoutReleasing) {
     generator.Dispatch(&move);
   }
 
-  EXPECT_TRUE(IsSelecting());
+  EXPECT_TRUE(InOverviewSession());
 
   // Without releasing scroll back down by 600px.
   for (int i = 0; i < 60; ++i) {
@@ -171,7 +171,7 @@ TEST_F(OverviewGestureHandlerTest, ScrollUpDownWithoutReleasing) {
     generator.Dispatch(&move);
   }
 
-  EXPECT_FALSE(IsSelecting());
+  EXPECT_FALSE(InOverviewSession());
   ui::ScrollEvent fling_start(ui::ET_SCROLL_FLING_START, start, timestamp, 0, 0,
                               10, 0, 10, num_fingers);
   generator.Dispatch(&fling_start);

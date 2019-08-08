@@ -168,6 +168,27 @@ Hence, even if we were to stop the compute engine VM instance, the website
 should still keep running. But it won't update, since the cloud datastore won't
 get updated.
 
+-----------------------------------------------
+Updating Docs served from Google Cloud Storage.
+
+Some docs (e.g. webstore docs) are served using Google Cloud Storage buckets. To
+update files in these docs, follow these steps:
+
+1) Go the project homepage and then to the Storage section.
+2) Go to the relevant storage bucket. For example, to update webstore docs, go
+   to the page for "chromedocs-webstore".
+3) Modify an existing file or upload a new file. Edit file permissions if
+   necessary to ensure these are accessible to Public. (Ideally these should be
+   only accessible to the cron job running on the compute engine VM instance.)
+4) After the next cron job on the compute engine completes, the modifications
+   should be live.
+5) In order to expedite 4), a manual datastore update can be performed by
+   running "./update_docs.sh --data-source=content_providers --force" on the VM
+   instance.
+
+Note: these steps shouldn't require a server version bump. If they do, please
+file a bug.
+
 ---------------------------------------
 VM: Some notes and troubleshooting tips
 

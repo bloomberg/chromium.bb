@@ -4,13 +4,13 @@
 
 #include "components/ukm/ukm_recorder_impl.h"
 
-#include <limits>
 #include <memory>
 #include <string>
 #include <unordered_map>
 #include <utility>
 
 #include "base/feature_list.h"
+#include "base/metrics/crc32.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
@@ -52,7 +52,8 @@ std::string GetWhitelistEntries() {
 
 bool IsWhitelistedSourceId(SourceId source_id) {
   return GetSourceIdType(source_id) == SourceIdType::NAVIGATION_ID ||
-         GetSourceIdType(source_id) == SourceIdType::APP_ID;
+         GetSourceIdType(source_id) == SourceIdType::APP_ID ||
+         GetSourceIdType(source_id) == SourceIdType::HISTORY_ID;
 }
 
 // Gets the maximum number of Sources we'll keep in memory before discarding any
@@ -85,12 +86,6 @@ bool HasSupportedScheme(const GURL& url) {
   return url.SchemeIsHTTPOrHTTPS() || url.SchemeIs(url::kFtpScheme) ||
          url.SchemeIs(url::kAboutScheme) || url.SchemeIs(kChromeUIScheme) ||
          url.SchemeIs(kExtensionScheme) || url.SchemeIs(kAppScheme);
-}
-
-// True if we should record the initial_url field of the UKM Source proto.
-bool ShouldRecordInitialUrl() {
-  return base::GetFieldTrialParamByFeatureAsBool(kUkmFeature,
-                                                 "RecordInitialUrl", false);
 }
 
 enum class DroppedDataReason {
@@ -177,7 +172,9 @@ bool HasUnknownMetrics(const ukm::builders::DecodeMap& decode_map,
 
 }  // namespace
 
-UkmRecorderImpl::UkmRecorderImpl() : recording_enabled_(false) {}
+UkmRecorderImpl::UkmRecorderImpl()
+    : recording_enabled_(false),
+      sampling_seed_(static_cast<uint32_t>(base::RandUint64())) {}
 UkmRecorderImpl::~UkmRecorderImpl() = default;
 
 // static
@@ -201,7 +198,6 @@ void UkmRecorderImpl::CreateFallbackSamplingTrial(
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrial(
           kUkmSamplingRateFeature.name, 100, sampled_group,
-          base::FieldTrialList::kNoExpirationYear, 1, 1,
           base::FieldTrial::ONE_TIME_RANDOMIZED, nullptr));
 
   // Everybody (100%) should have a sampling configuration.
@@ -219,24 +215,6 @@ void UkmRecorderImpl::CreateFallbackSamplingTrial(
 
 UkmRecorderImpl::EventAggregate::EventAggregate() = default;
 UkmRecorderImpl::EventAggregate::~EventAggregate() = default;
-
-UkmRecorderImpl::PageSampling::PageSampling() = default;
-UkmRecorderImpl::PageSampling::~PageSampling() = default;
-
-void UkmRecorderImpl::PageSampling::Set(uint64_t event_id, bool sampled_in) {
-  event_sampling_[event_id] = sampled_in;
-  modified_ = true;
-}
-
-bool UkmRecorderImpl::PageSampling::Find(uint64_t event_id,
-                                         bool* out_sampled_in) {
-  modified_ = true;
-  auto found = event_sampling_.find(event_id);
-  if (found == event_sampling_.end())
-    return false;
-  *out_sampled_in = found->second;
-  return true;
-}
 
 UkmRecorderImpl::Recordings::Recordings() = default;
 UkmRecorderImpl::Recordings& UkmRecorderImpl::Recordings::operator=(
@@ -276,7 +254,6 @@ bool UkmRecorderImpl::IsSamplingEnabled() const {
 
 void UkmRecorderImpl::Purge() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  source_event_sampling_.clear();
   recordings_.Reset();
   recording_is_continuous_ = false;
 }
@@ -324,8 +301,6 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
     }
     Source* proto_source = report->add_sources();
     kv.second->PopulateProto(proto_source);
-    if (!ShouldRecordInitialUrl())
-      proto_source->clear_initial_url();
 
     serialized_source_type_counts[GetSourceIdType(kv.first)]++;
   }
@@ -432,30 +407,6 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
   UMA_HISTOGRAM_COUNTS_1000("UKM.Sources.KeptSourcesCount",
                             recordings_.sources.size());
   recordings_.source_counts.carryover_sources = recordings_.sources.size();
-
-  // Check all the event-sampling values and clear those for any sources
-  // not seen since the last data upload. This ensure that pages never
-  // visited again don't continue to use memory remembering what events
-  // were sampled-in the last time it was accessed. They can't simply be
-  // cleared here because this call could come in the middle of a page
-  // load.
-  auto iter = source_event_sampling_.begin();
-  auto next = iter;
-  while (iter != source_event_sampling_.end()) {
-    // Increment here (and copy later) because otherwise erasing |iter| would
-    // break iteration.
-    ++next;
-
-    // If the PageSampling has been modified since the last upload of data,
-    // clear that flag and continue. If it hasn't been modified, remove the
-    // entire object.
-    if (iter->second.modified())
-      iter->second.clear_modified();
-    else
-      source_event_sampling_.erase(iter);
-
-    iter = next;
-  }
 }
 
 bool UkmRecorderImpl::ShouldRestrictToWhitelistedSourceIds() const {
@@ -604,20 +555,12 @@ void UkmRecorderImpl::AddEntry(mojom::UkmEntryPtr entry) {
       LoadExperimentSamplingInfo();
     }
 
-    bool sampled_in = true;  // Overwritten by Find(...) if it returns True.
-    PageSampling* page_sampling = &source_event_sampling_[entry->source_id];
-    if (!page_sampling->Find(entry->event_hash, &sampled_in)) {
-      auto found = event_sampling_rates_.find(entry->event_hash);
-      int sampling_rate = (found != event_sampling_rates_.end())
-                              ? found->second
-                              : default_sampling_rate_;
-      sampled_in = IsSampledIn(sampling_rate);
-
-      // Remember the decision for this event for this page so all such events
-      // on this page are sampled-in or sampled-out together making it possible
-      // to correlate between events and within a page.
-      page_sampling->Set(entry->event_hash, sampled_in);
-    }
+    auto found = event_sampling_rates_.find(entry->event_hash);
+    int sampling_rate = (found != event_sampling_rates_.end())
+                            ? found->second
+                            : default_sampling_rate_;
+    bool sampled_in =
+        IsSampledIn(entry->source_id, entry->event_hash, sampling_rate);
 
     if (!sampled_in) {
       RecordDroppedEntry(DroppedDataReason::SAMPLED_OUT);
@@ -678,15 +621,28 @@ void UkmRecorderImpl::LoadExperimentSamplingInfo() {
   }
 }
 
-int UkmRecorderImpl::RandInt(int begin, int end) {
-  return base::RandInt(begin, end);
-}
+bool UkmRecorderImpl::IsSampledIn(int64_t source_id,
+                                  uint64_t event_id,
+                                  int sampling_rate) {
+  // A sampling rate of 0 is "never"; everything else is 1-in-N but calculated
+  // deterministically based on a seed, the source-id, and the event-id. Skip
+  // the calculation, though, if N==1 because it will always be true.
+  if (sampling_rate == 0)
+    return false;
+  if (sampling_rate == 1)
+    return true;
 
-bool UkmRecorderImpl::IsSampledIn(int sampling_rate) {
-  // A sampling rate of 0 is "never"; everything else is 1-in-N but skip
-  // the RandInt() call if N==1.
-  return sampling_rate > 0 &&
-         (sampling_rate == 1 || RandInt(1, sampling_rate) == 1);
+  // Mutate the "sampling seed" number in a predictable manner based on the
+  // source and event IDs. This makes the result of this function be always
+  // the same for the same input parameters (since the seed is fixed during
+  // construction of this object) which is important for proper sampling
+  // behavior. CRC32 is fast and statistically random enough for these
+  // purposes.
+  uint32_t sampled_num = sampling_seed_;
+  sampled_num = base::Crc32(sampled_num, &source_id, sizeof(source_id));
+  sampled_num = base::Crc32(sampled_num, &event_id, sizeof(event_id));
+
+  return sampled_num % sampling_rate == 0;
 }
 
 void UkmRecorderImpl::StoreWhitelistedEntries() {

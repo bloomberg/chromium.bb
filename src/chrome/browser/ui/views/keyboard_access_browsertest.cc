@@ -74,7 +74,7 @@ class ViewFocusChangeWaiter : public views::FocusChangeListener {
 
   void OnDidChangeFocus(views::View* focused_before,
                         views::View* focused_now) override {
-    if (focused_now && focused_now->id() != previous_view_id_) {
+    if (focused_now && focused_now->GetID() != previous_view_id_) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
     }
@@ -153,7 +153,7 @@ class KeyboardAccessTest : public InProcessBrowserTest {
     views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
     const views::FocusManager* focus_manager = widget->GetFocusManager();
     const views::View* focused_view = focus_manager->GetFocusedView();
-    return focused_view ? focused_view->id() : -1;
+    return focused_view ? focused_view->GetID() : -1;
   }
 
   void WaitForFocusedViewIDToChange(int original_view_id) {

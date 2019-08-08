@@ -28,6 +28,8 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "ui/base/page_transition_types.h"
 
+using autofill::mojom::FocusedFieldType;
+
 namespace {
 
 gfx::RectF TransformToRootCoordinates(
@@ -204,7 +206,7 @@ void ContentPasswordManagerDriver::DidNavigateFrame(
       !navigation_handle->IsSameDocument()) {
     NotifyDidNavigateMainFrame(navigation_handle->IsRendererInitiated(),
                                navigation_handle->GetPageTransition(),
-                               navigation_handle->HasUserGesture(),
+                               navigation_handle->WasInitiatedByLinkClick(),
                                GetPasswordManager());
     GetPasswordAutofillManager()->DidNavigateMainFrame();
   }
@@ -310,10 +312,9 @@ void ContentPasswordManagerDriver::CheckSafeBrowsingReputation(
 #endif
 }
 
-void ContentPasswordManagerDriver::FocusedInputChanged(bool is_fillable,
-                                                       bool is_password_field) {
-  client_->FocusedInputChanged(render_frame_host_->GetLastCommittedOrigin(),
-                               is_fillable, is_password_field);
+void ContentPasswordManagerDriver::FocusedInputChanged(
+    FocusedFieldType focused_field_type) {
+  client_->FocusedInputChanged(this, focused_field_type);
 }
 
 void ContentPasswordManagerDriver::LogFirstFillingResult(

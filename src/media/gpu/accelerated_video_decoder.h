@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "media/base/decrypt_config.h"
 #include "media/gpu/media_gpu_export.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace media {
@@ -66,11 +67,12 @@ class MEDIA_GPU_EXPORT AcceleratedVideoDecoder {
   // we need a new set of them, or when an error occurs.
   virtual DecodeResult Decode() WARN_UNUSED_RESULT = 0;
 
-  // Return dimensions/required number of pictures that client should be ready
-  // to provide for the decoder to function properly (of which up to
-  // GetNumReferenceFrames() might be needed for internal decoding). To be used
-  // after Decode() returns kAllocateNewSurfaces.
+  // Return dimensions/visible rectangle/required number of pictures that client
+  // should be ready to provide for the decoder to function properly (of which
+  // up to GetNumReferenceFrames() might be needed for internal decoding). To be
+  // used after Decode() returns kAllocateNewSurfaces.
   virtual gfx::Size GetPicSize() const = 0;
+  virtual gfx::Rect GetVisibleRect() const = 0;
   virtual size_t GetRequiredNumOfPictures() const = 0;
   virtual size_t GetNumReferenceFrames() const = 0;
 

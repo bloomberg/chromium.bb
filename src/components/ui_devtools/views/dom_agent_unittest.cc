@@ -464,8 +464,10 @@ TEST_F(DOMAgentTest, ViewInserted) {
   dom_agent()->getDocument(&root);
 
   views::View* root_view = widget->GetRootView();
-  root_view->AddChildView(new views::View);
-  EXPECT_TRUE(WasChildNodeInserted(root_view, root_view->child_at(0)));
+  ASSERT_FALSE(root_view->children().empty());
+  auto* last_child = root_view->children().back();
+  root_view->AddChildView(std::make_unique<views::View>());
+  EXPECT_TRUE(WasChildNodeInserted(root_view, last_child));
 }
 
 TEST_F(DOMAgentTest, ViewRemoved) {

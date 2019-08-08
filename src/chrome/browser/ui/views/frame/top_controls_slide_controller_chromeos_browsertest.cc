@@ -36,7 +36,6 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/rect.h"
@@ -891,11 +890,8 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestDropDowns) {
   OpenUrlAtIndex(embedded_test_server()->GetURL("/top_controls_scroll.html"),
                  0);
 
-  // On mash, use nullptr root windows to route events over mojo to ash.
   aura::Window* browser_window = browser()->window()->GetNativeWindow();
-  ui::test::EventGenerator event_generator(
-      features::IsUsingWindowService() ? nullptr
-                                       : browser_window->GetRootWindow());
+  ui::test::EventGenerator event_generator(browser_window->GetRootWindow());
 
   // Send a mouse click event that should open the popup drop-down menu of the
   // <select> html element on the page.

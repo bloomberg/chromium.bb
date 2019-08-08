@@ -8,9 +8,9 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/payments/core/payment_instrument.h"
 #include "components/payments/core/payment_prefs.h"
 #include "components/payments/core/payment_shipping_option.h"

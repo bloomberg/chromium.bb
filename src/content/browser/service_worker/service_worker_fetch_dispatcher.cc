@@ -128,8 +128,8 @@ class DelegatingURLLoaderClient final : public network::mojom::URLLoaderClient {
     client_->OnUploadProgress(current_position, total_size,
                               std::move(ack_callback));
   }
-  void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override {
-    client_->OnReceiveCachedMetadata(data);
+  void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override {
+    client_->OnReceiveCachedMetadata(std::move(data));
   }
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override {
     client_->OnTransferSizeUpdated(transfer_size_diff);

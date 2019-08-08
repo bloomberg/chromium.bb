@@ -76,7 +76,7 @@ class DeviceEventRouterTest : public testing::Test {
     return *Disk::Builder()
                 .SetDevicePath(device_path)
                 .SetMountPath(mount_path)
-                .SetSystemPathPrefix(device_path)
+                .SetStorageDevicePath(device_path)
                 .SetIsReadOnlyHardware(is_read_only_hardware)
                 .SetFileSystemType("vfat")
                 .SetIsMounted(is_mounted)

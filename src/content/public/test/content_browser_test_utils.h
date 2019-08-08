@@ -10,7 +10,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/run_loop.h"
 #include "content/public/common/page_type.h"
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
@@ -41,8 +41,6 @@ class EmbeddedTestServer;
 // content\public\test\browser_test_utils.h
 
 namespace content {
-
-class MessageLoopRunner;
 class RenderFrameHost;
 class RenderWidgetHost;
 class Shell;
@@ -134,8 +132,8 @@ class ShellAddedObserver {
  private:
   void ShellCreated(Shell* shell);
 
-  Shell* shell_;
-  scoped_refptr<MessageLoopRunner> runner_;
+  Shell* shell_ = nullptr;
+  std::unique_ptr<base::RunLoop> runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellAddedObserver);
 };

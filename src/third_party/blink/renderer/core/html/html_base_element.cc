@@ -37,8 +37,6 @@ using namespace html_names;
 HTMLBaseElement::HTMLBaseElement(Document& document)
     : HTMLElement(kBaseTag, document) {}
 
-DEFINE_NODE_FACTORY(HTMLBaseElement)
-
 const AttrNameToTrustedType& HTMLBaseElement::GetCheckedAttributeTypes() const {
   DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
                       ({{"href", SpecificTrustedType::kTrustedURL}}));

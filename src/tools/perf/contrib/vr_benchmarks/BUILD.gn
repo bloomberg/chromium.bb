@@ -72,7 +72,7 @@ action("generate_vr_assets_profile") {
     "//chrome/browser/resources/vr/assets/vr_assets_component_files.json",
   ]
   outputs = [
-    "$target_gen_dir/vr_assets_profile/",
+    "$target_gen_dir/vr_assets_profile",
   ]
   args = [
     "--output",

@@ -69,7 +69,7 @@ base::string16 BleDeviceHoverListModel::GetPlaceholderText() const {
       IDS_WEBAUTHN_BLE_DEVICE_SELECTION_SEARCHING_LABEL);
 }
 
-const gfx::VectorIcon& BleDeviceHoverListModel::GetPlaceholderIcon() const {
+const gfx::VectorIcon* BleDeviceHoverListModel::GetPlaceholderIcon() const {
   return GetTransportVectorIcon(AuthenticatorTransport::kBluetoothLowEnergy);
 }
 
@@ -77,7 +77,11 @@ base::string16 BleDeviceHoverListModel::GetItemText(int item_tag) const {
   return GetAuthenticator(item_tag)->authenticator_display_name();
 }
 
-const gfx::VectorIcon& BleDeviceHoverListModel::GetItemIcon(
+base::string16 BleDeviceHoverListModel::GetDescriptionText(int item_tag) const {
+  return base::string16();
+}
+
+const gfx::VectorIcon* BleDeviceHoverListModel::GetItemIcon(
     int item_tag) const {
   return GetTransportVectorIcon(AuthenticatorTransport::kBluetoothLowEnergy);
 }
@@ -106,6 +110,10 @@ void BleDeviceHoverListModel::OnListItemSelected(int item_tag) {
 
 size_t BleDeviceHoverListModel::GetPreferredItemCount() const {
   return kDefaultItemViewCount;
+}
+
+bool BleDeviceHoverListModel::StyleForTwoLines() const {
+  return false;
 }
 
 void BleDeviceHoverListModel::OnAuthenticatorAdded(

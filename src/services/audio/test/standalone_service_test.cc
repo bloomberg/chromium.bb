@@ -20,11 +20,18 @@ namespace audio {
 
 const char kTestServiceName[] = "audio_unittests";
 
+service_manager::Manifest MakeAudioManifestForUnsandboxedExecutable() {
+  service_manager::Manifest manifest(GetManifest(
+      service_manager::Manifest::ExecutionMode::kStandaloneExecutable));
+  manifest.options.sandbox_type = "none";
+  return manifest;
+}
+
 class StandaloneAudioServiceTest : public testing::Test {
  public:
   StandaloneAudioServiceTest()
       : test_service_manager_(
-            {GetManifest(),
+            {MakeAudioManifestForUnsandboxedExecutable(),
              service_manager::ManifestBuilder()
                  .WithServiceName(kTestServiceName)
                  .RequireCapability(mojom::kServiceName, "info")

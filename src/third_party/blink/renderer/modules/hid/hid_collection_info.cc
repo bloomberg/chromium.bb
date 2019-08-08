@@ -41,10 +41,6 @@ const HeapVector<Member<HIDReportInfo>>& HIDCollectionInfo::featureReports()
   return feature_reports_;
 }
 
-const Vector<uint8_t>& HIDCollectionInfo::reportIds() const {
-  return report_ids_;
-}
-
 uint32_t HIDCollectionInfo::collectionType() const {
   return 0;
 }

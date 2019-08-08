@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/location_bar/location_bar_consumer.h"
 #import "ios/chrome/browser/ui/orchestrator/location_bar_animatee.h"
 
+@class InfobarMetricsRecorder;
 @class OmniboxTextFieldIOS;
 @protocol ActivityServiceCommands;
 @protocol ApplicationCommands;
@@ -66,22 +67,20 @@
 - (void)updateLocationIcon:(UIImage*)icon
         securityStatusText:(NSString*)statusText;
 // Updates the location text in the non-editing mode.
-- (void)updateLocationText:(NSString*)text;
+// |clipTail| indicates whether the tail or the head should be clipped when the
+// location text is too long.
+- (void)updateLocationText:(NSString*)text clipTail:(BOOL)clipTail;
 // Updates the location view to show a fake placeholder in the steady location
 // view and hides the trailing button if |isNTP|. Otherwise, shows the
 // location text and the button as normal.
 - (void)updateForNTP:(BOOL)isNTP;
 // Sets |enabled| of the share button.
 - (void)setShareButtonEnabled:(BOOL)enabled;
-// Displays or hides the InfobarButton.
+// Displays or hides the InfobarButton. |metricsRecorder| can be nil.
 // TODO(crbug.com/935804): This method is currently only being used in the
 // Infobar redesign.
-- (void)displayInfobarButton:(BOOL)display;
-// If |selected| is YES applies the selected styling to the InfobarButton, if NO
-// it removes it.
-// TODO(crbug.com/935804): This method is currently only being used in the
-// Infobar redesign.
-- (void)setInfobarButtonStyleSelected:(BOOL)selected;
+- (void)displayInfobarButton:(BOOL)display
+             metricsRecorder:(InfobarMetricsRecorder*)metricsRecorder;
 // If |active| is YES applies the active styling to the InfobarButton, if NO it
 // removes it.
 // TODO(crbug.com/935804): This method is currently only being used in the

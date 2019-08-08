@@ -165,7 +165,7 @@ TEST(OAuthMultiloginResultTest, CreateOAuthMultiloginResultFromString) {
           ]
         }
       )");
-  EXPECT_EQ(result1.error().state(), GoogleServiceAuthError::State::NONE);
+  EXPECT_EQ(result1.status(), OAuthMultiloginResponseStatus::kOk);
   EXPECT_FALSE(result1.cookies().empty());
 
   OAuthMultiloginResult result2(R"(many_random_characters_before_newline
@@ -185,7 +185,7 @@ TEST(OAuthMultiloginResultTest, CreateOAuthMultiloginResultFromString) {
           ]
         }
       )");
-  EXPECT_EQ(result2.error().state(), GoogleServiceAuthError::State::NONE);
+  EXPECT_EQ(result2.status(), OAuthMultiloginResponseStatus::kOk);
   EXPECT_FALSE(result2.cookies().empty());
 
   OAuthMultiloginResult result3(R"())]}\'\n)]}'\n{
@@ -204,8 +204,7 @@ TEST(OAuthMultiloginResultTest, CreateOAuthMultiloginResultFromString) {
           ]
         }
       )");
-  EXPECT_EQ(result3.error().state(),
-            GoogleServiceAuthError::State::UNEXPECTED_SERVICE_RESPONSE);
+  EXPECT_EQ(result3.status(), OAuthMultiloginResponseStatus::kUnknownStatus);
 }
 
 TEST(OAuthMultiloginResultTest, ProduceErrorFromResponseStatus) {
@@ -228,7 +227,7 @@ TEST(OAuthMultiloginResultTest, ProduceErrorFromResponseStatus) {
         }
       )";
   OAuthMultiloginResult result1(data_error_none);
-  EXPECT_EQ(result1.error().state(), GoogleServiceAuthError::State::NONE);
+  EXPECT_EQ(result1.status(), OAuthMultiloginResponseStatus::kOk);
 
   std::string data_error_transient =
       R"(()]}'
@@ -249,7 +248,7 @@ TEST(OAuthMultiloginResultTest, ProduceErrorFromResponseStatus) {
         }
       )";
   OAuthMultiloginResult result2(data_error_transient);
-  EXPECT_TRUE(result2.error().IsTransientError());
+  EXPECT_EQ(result2.status(), OAuthMultiloginResponseStatus::kRetry);
 
   // "ERROR" is a real response status that Gaia sends. This is a persistent
   // error.
@@ -272,7 +271,7 @@ TEST(OAuthMultiloginResultTest, ProduceErrorFromResponseStatus) {
         }
       )";
   OAuthMultiloginResult result3(data_error_persistent);
-  EXPECT_TRUE(result3.error().IsPersistentError());
+  EXPECT_EQ(result3.status(), OAuthMultiloginResponseStatus::kError);
 
   std::string data_error_invalid_credentials =
       R"()]}'
@@ -303,9 +302,7 @@ TEST(OAuthMultiloginResultTest, ProduceErrorFromResponseStatus) {
         }
       )";
   OAuthMultiloginResult result4(data_error_invalid_credentials);
-  EXPECT_EQ(result4.error().state(),
-            GoogleServiceAuthError::State::INVALID_GAIA_CREDENTIALS);
-  EXPECT_TRUE(result4.error().IsPersistentError());
+  EXPECT_EQ(result4.status(), OAuthMultiloginResponseStatus::kInvalidTokens);
   EXPECT_THAT(result4.failed_accounts(), ElementsAre(Eq("account1")));
 
   // Unknown status.
@@ -326,8 +323,8 @@ TEST(OAuthMultiloginResultTest, ProduceErrorFromResponseStatus) {
           ]
         }
       )");
-  EXPECT_EQ(unknown_status.error().state(),
-            GoogleServiceAuthError::State::UNEXPECTED_SERVICE_RESPONSE);
+  EXPECT_EQ(unknown_status.status(),
+            OAuthMultiloginResponseStatus::kUnknownStatus);
   EXPECT_TRUE(unknown_status.cookies().empty());
 }
 

@@ -466,7 +466,7 @@ void HttpCache::OnExternalCacheHit(
   HttpRequestInfo request_info;
   request_info.url = url;
   request_info.method = http_method;
-  request_info.top_frame_origin = std::move(top_frame_origin);
+  request_info.network_isolation_key = NetworkIsolationKey(top_frame_origin);
   std::string key = GenerateCacheKey(&request_info);
   disk_cache_->OnExternalCacheHit(key);
 }
@@ -601,22 +601,19 @@ int HttpCache::GetBackendForTransaction(Transaction* transaction) {
 
 // Generate a key that can be used inside the cache.
 std::string HttpCache::GenerateCacheKey(const HttpRequestInfo* request) {
-  // Strip out the reference, username, and password sections of the URL.
-  std::string url;
+  std::string isolation_key;
 
-  // If we're splitting the cache by top frame origin, then prefix the key with
-  // the origin.
-  if (request->top_frame_origin &&
-      base::FeatureList::IsEnabled(features::kSplitCacheByTopFrameOrigin)) {
+  if (base::FeatureList::IsEnabled(features::kSplitCacheByTopFrameOrigin)) {
     // Prepend the key with "_dk_" to mark it as double keyed (and makes it an
     // invalid url so that it doesn't get confused with a single-keyed
-    // entry). Separate the origin and url with invalid whitespace and control
-    // characters.
-    url = base::StrCat({"_dk_", request->top_frame_origin->Serialize(), " \n",
-                        HttpUtil::SpecForRequest(request->url)});
-  } else {
-    url = HttpUtil::SpecForRequest(request->url);
+    // entry). Separate the origin and url with invalid whitespace character.
+    isolation_key =
+        base::StrCat({"_dk_", request->network_isolation_key.ToString(), " "});
   }
+
+  // Strip out the reference, username, and password sections of the URL and
+  // concatenate with the network isolation key if we are splitting the cache.
+  std::string url = isolation_key + HttpUtil::SpecForRequest(request->url);
 
   DCHECK_NE(DISABLE, mode_);
   // No valid URL can begin with numerals, so we should not have to worry
@@ -692,16 +689,15 @@ int HttpCache::AsyncDoomEntry(const std::string& key,
   return rv;
 }
 
-void HttpCache::DoomMainEntryForUrl(
-    const GURL& url,
-    base::Optional<url::Origin> top_frame_origin) {
+void HttpCache::DoomMainEntryForUrl(const GURL& url,
+                                    const NetworkIsolationKey& isolation_key) {
   if (!disk_cache_)
     return;
 
   HttpRequestInfo temp_info;
   temp_info.url = url;
   temp_info.method = "GET";
-  temp_info.top_frame_origin = std::move(top_frame_origin);
+  temp_info.network_isolation_key = isolation_key;
   std::string key = GenerateCacheKey(&temp_info);
 
   // Defer to DoomEntry if there is an active entry, otherwise call

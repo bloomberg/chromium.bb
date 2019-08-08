@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/modules/bluetooth/bluetooth.h"
 
-#include <memory>
 #include <utility>
+
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/modules/bluetooth/bluetooth_service_data_map.h"
 #include "third_party/blink/renderer/modules/bluetooth/bluetooth_uuid.h"
 #include "third_party/blink/renderer/modules/bluetooth/request_device_options.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -188,7 +189,7 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* script_state,
   if (!LocalFrame::HasTransientUserActivation(frame)) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
-        DOMException::Create(
+        MakeGarbageCollected<DOMException>(
             DOMExceptionCode::kSecurityError,
             "Must be handling a user gesture to show a permission request."));
   }
@@ -308,7 +309,7 @@ ScriptPromise Bluetooth::requestLEScan(ScriptState* script_state,
   if (!LocalFrame::HasTransientUserActivation(frame)) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
-        DOMException::Create(
+        MakeGarbageCollected<DOMException>(
             DOMExceptionCode::kSecurityError,
             "Must be handling a user gesture to show a permission request."));
   }

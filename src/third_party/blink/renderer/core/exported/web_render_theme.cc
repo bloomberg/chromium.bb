@@ -44,4 +44,13 @@ void SetFocusRingColor(SkColor color) {
   LayoutTheme::GetTheme().SetCustomFocusRingColor(color);
 }
 
+void SetSelectionColors(unsigned active_background_color,
+                        unsigned active_foreground_color,
+                        unsigned inactive_background_color,
+                        unsigned inactive_foreground_color) {
+  LayoutTheme::GetTheme().SetSelectionColors(
+      active_background_color, active_foreground_color,
+      inactive_background_color, inactive_foreground_color);
+}
+
 }  // namespace blink

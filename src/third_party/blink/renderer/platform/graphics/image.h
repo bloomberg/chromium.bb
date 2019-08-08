@@ -32,7 +32,6 @@
 #include "base/memory/weak_ptr.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
-#include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/graphics/image_animation_policy.h"
 #include "third_party/blink/renderer/platform/graphics/image_observer.h"
@@ -74,9 +73,7 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
  public:
   virtual ~Image();
 
-  static cc::ImageDecodeCache* SharedCCDecodeCache(
-      CanvasColorSpace color_space,
-      CanvasPixelFormat pixel_format);
+  static cc::ImageDecodeCache& SharedCCDecodeCache(SkColorType);
 
   static scoped_refptr<Image> LoadPlatformResource(const char* name);
 
@@ -282,9 +279,8 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
       const FloatRect& src_rect,
       const DarkModeClassification dark_mode_classification);
 
-  typedef std::pair<float, float> ClassificationKey;
-  std::map<ClassificationKey, DarkModeClassification>
-      dark_mode_classifications_;
+  typedef FloatSize ClassificationKey;
+  HashMap<ClassificationKey, DarkModeClassification> dark_mode_classifications_;
 
  private:
   virtual DarkModeClassification ClassifyImageForDarkMode(

@@ -31,7 +31,7 @@ class BASE_EXPORT StackSamplerImpl : public StackSampler {
   StackSamplerImpl& operator=(const StackSamplerImpl&) = delete;
 
   // StackSampler:
-  void AddAuxUnwinder(Unwinder* unwinder) override;
+  void AddAuxUnwinder(std::unique_ptr<Unwinder> unwinder) override;
   void RecordStackFrames(StackBuffer* stack_buffer,
                          ProfileBuilder* profile_builder) override;
 
@@ -56,10 +56,23 @@ class BASE_EXPORT StackSamplerImpl : public StackSampler {
 
   const std::unique_ptr<ThreadDelegate> thread_delegate_;
   const std::unique_ptr<Unwinder> native_unwinder_;
-  Unwinder* aux_unwinder_ = nullptr;
+  std::unique_ptr<Unwinder> aux_unwinder_;
   ModuleCache* const module_cache_;
   StackSamplerTestDelegate* const test_delegate_;
 };
+
+// These two functions are exposed for testing.
+
+BASE_EXPORT uintptr_t
+RewritePointerIfInOriginalStack(const uint8_t* original_stack_bottom,
+                                const uintptr_t* original_stack_top,
+                                const uint8_t* stack_copy_bottom,
+                                uintptr_t pointer);
+
+BASE_EXPORT const uint8_t* CopyStackContentsAndRewritePointers(
+    const uint8_t* original_stack_bottom,
+    const uintptr_t* original_stack_top,
+    uintptr_t* stack_buffer_bottom);
 
 }  // namespace base
 

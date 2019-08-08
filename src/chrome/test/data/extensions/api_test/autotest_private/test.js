@@ -341,14 +341,43 @@ var defaultTests = [
         var behavior = behaviors[i];
         chrome.autotestPrivate.setShelfAutoHideBehavior(displayId, behavior,
             function() {
+          chrome.test.assertNoLastError();
           chrome.autotestPrivate.getShelfAutoHideBehavior(displayId,
               function(newBehavior) {
-            chrome.test.assertTrue(behavior === newBehavior);
             chrome.test.assertNoLastError();
-            chrome.test.succeed();
+            chrome.test.assertEq(behavior, newBehavior);
           });
         });
       }
+      chrome.test.succeed();
+    });
+  },
+  // This test verifies that changing the shelf alignment works as expected.
+  function setShelfAlignment() {
+    // Using shelf from primary display.
+    var displayId = "-1";
+    chrome.system.display.getInfo(function(info) {
+      var l = info.length;
+      for (var i = 0; i < l; i++) {
+        if (info[i].isPrimary === true) {
+          displayId = info[i].id;
+          break;
+        }
+      }
+      chrome.test.assertTrue(displayId != "-1");
+      // When running 'browser_tests', Chrome OS reports itself as locked,
+      // so the only valid shelf is Bottom Locked.
+      var alignment = chrome.autotestPrivate.ShelfAlignmentType.BOTTOM_LOCKED;
+      chrome.autotestPrivate.setShelfAlignment(displayId, alignment,
+          function() {
+        chrome.test.assertNoLastError();
+        chrome.autotestPrivate.getShelfAlignment(displayId,
+            function(newAlignment) {
+          chrome.test.assertNoLastError();
+          chrome.test.assertEq(newAlignment, alignment);
+          chrome.test.succeed();
+        });
+      });
     });
   },
 ];

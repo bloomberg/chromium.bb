@@ -25,7 +25,14 @@
 python_version: "2.7"
 
 # Used by:
-#   build/chromeos/run_vm_test.py
+#   build/chromeos/test_runner.py
+wheel: <
+  name: "infra/python/wheels/jsonlines-py2_py3"
+  version: "version:1.2.0"
+>
+
+# Used by:
+#   build/chromeos/test_runner.py
 #   third_party/catapult
 #
 # This version must be compatible with the version range specified by

@@ -13,6 +13,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/layout/box_layout.h"
@@ -54,7 +55,7 @@ const char* ExtensionsMenuButton::GetClassName() const {
 
 void ExtensionsMenuButton::ButtonPressed(Button* sender,
                                          const ui::Event& event) {
-  if (sender->id() == EXTENSION_CONTEXT_MENU) {
+  if (sender->GetID() == EXTENSION_CONTEXT_MENU) {
     ShowContextMenu(gfx::Point(), ui::MENU_SOURCE_MOUSE);
     return;
   }
@@ -71,10 +72,10 @@ views::FocusManager* ExtensionsMenuButton::GetFocusManagerForAccelerator() {
   return GetFocusManager();
 }
 
-views::View* ExtensionsMenuButton::GetReferenceViewForPopup() {
+views::Button* ExtensionsMenuButton::GetReferenceButtonForPopup() {
   return BrowserView::GetBrowserViewForBrowser(browser_)
       ->toolbar()
-      ->extensions_button();
+      ->GetExtensionsButton();
 }
 
 content::WebContents* ExtensionsMenuButton::GetCurrentWebContents() const {
@@ -91,6 +92,7 @@ void ExtensionsMenuButton::UpdateState() {
   SetTitleTextWithHintRange(controller_->GetActionName(),
                             gfx::Range::InvalidRange());
   SetTooltipText(controller_->GetTooltip(GetCurrentWebContents()));
+  SetEnabled(controller_->IsEnabled(GetCurrentWebContents()));
 }
 
 bool ExtensionsMenuButton::IsMenuRunning() const {
@@ -115,7 +117,8 @@ void ExtensionsMenuButton::ShowContextMenuForViewImpl(
 
   menu_runner_ = std::make_unique<views::MenuRunner>(
       model, views::MenuRunner::HAS_MNEMONICS);
-  menu_runner_->RunMenuAt(GetWidget(), context_menu_button_,
+  menu_runner_->RunMenuAt(GetWidget(),
+                          context_menu_button_->button_controller(),
                           context_menu_button_->GetAnchorBoundsInScreen(),
                           views::MenuAnchorPosition::kTopRight, source_type);
 }
@@ -139,7 +142,7 @@ void ExtensionsMenuButton::ConfigureSecondaryView() {
 
   auto context_menu_button =
       std::make_unique<views::MenuButton>(base::string16(), this);
-  context_menu_button->set_id(EXTENSION_CONTEXT_MENU);
+  context_menu_button->SetID(EXTENSION_CONTEXT_MENU);
   context_menu_button->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_MENU_CONTEXT_MENU_TOOLTIP));
 

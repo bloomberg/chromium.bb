@@ -103,7 +103,7 @@ class MemoryCacheTest : public testing::Test {
         MakeGarbageCollected<MemoryCache>(platform_->test_task_runner()));
     auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
     fetcher_ = MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
-        *properties, MakeGarbageCollected<MockFetchContext>(),
+        properties->MakeDetachable(), MakeGarbageCollected<MockFetchContext>(),
         base::MakeRefCounted<scheduler::FakeTaskRunner>(),
         MakeGarbageCollected<TestLoaderFactory>()));
   }

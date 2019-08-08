@@ -40,6 +40,11 @@ class AssistantControllerObserver : public base::CheckedObserver {
       assistant::util::DeepLinkType type,
       const std::map<std::string, std::string>& params) {}
 
+  // Invoked when the specified |url| is about to be opened by Assistant in a
+  // new tab. If |from_server| is true, this event was triggered by a server
+  // response. Note that this event immediately precedes |OnUrlOpened|.
+  virtual void OnOpeningUrl(const GURL& url, bool from_server) {}
+
   // Invoked when the specified |url| is opened by Assistant in a new tab. If
   // |from_server| is true, this event was triggered by a server response.
   virtual void OnUrlOpened(const GURL& url, bool from_server) {}

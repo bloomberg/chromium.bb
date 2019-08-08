@@ -38,8 +38,6 @@ class TouchEvent;
 }
 
 namespace aura {
-class Env;
-class MusMouseLocationUpdater;
 class TestScreen;
 class WindowTargeter;
 class WindowTreeHost;
@@ -161,7 +159,6 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
     ~ObserverNotifier();
 
    private:
-    Env* env_;
     WindowEventDispatcher* dispatcher_;
 
     DISALLOW_COPY_AND_ASSIGN(ObserverNotifier);
@@ -220,7 +217,6 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   void ReleaseNativeCapture() override;
 
   // Overridden from ui::EventProcessor:
-  ui::EventTarget* GetInitialEventTarget(ui::Event* event) override;
   ui::EventTarget* GetRootForEvent(ui::Event* event) override;
   void OnEventProcessingStarted(ui::Event* event) override;
   void OnEventProcessingFinished(ui::Event* event) override;
@@ -290,10 +286,6 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
                                                  ui::TouchEvent* event);
   ui::EventDispatchDetails PreDispatchKeyEvent(ui::KeyEvent* event);
 
-  // Comes from host_->window()->env(). Cached as it's needed in the destructor
-  // and at that time the window has been deleted.
-  Env* env_;
-
   WindowTreeHost* host_;
 
   const bool are_events_in_pixels_;
@@ -326,8 +318,6 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   ui::LocatedEvent* dispatching_held_event_ = nullptr;
 
   ScopedObserver<aura::Window, aura::WindowObserver> observer_manager_;
-
-  std::unique_ptr<MusMouseLocationUpdater> mus_mouse_location_updater_;
 
   // The default EventTargeter for WindowEventDispatcher generated events.
   std::unique_ptr<WindowTargeter> event_targeter_;

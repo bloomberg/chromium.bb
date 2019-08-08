@@ -319,9 +319,24 @@ TEST_F(AccountManagerTest, RemovedAccountsAreImmediatelyUnavailable) {
   account_manager_->UpsertAccount(kGaiaAccountKey_, kRawUserEmail, kGaiaToken);
 
   account_manager_->RemoveAccount(kGaiaAccountKey_);
-  std::vector<AccountManager::Account> accounts = GetAccountsBlocking();
+  EXPECT_TRUE(GetAccountsBlocking().empty());
+}
 
-  EXPECT_TRUE(accounts.empty());
+TEST_F(AccountManagerTest, AccountsCanBeRemovedByRawEmail) {
+  account_manager_->UpsertAccount(kGaiaAccountKey_, kRawUserEmail, kGaiaToken);
+
+  account_manager_->RemoveAccount(kRawUserEmail);
+  EXPECT_TRUE(GetAccountsBlocking().empty());
+}
+
+TEST_F(AccountManagerTest, AccountsCanBeRemovedByCanonicalEmail) {
+  const std::string raw_email = "abc.123.456@gmail.com";
+  const std::string canonical_email = "abc123456@gmail.com";
+
+  account_manager_->UpsertAccount(kGaiaAccountKey_, raw_email, kGaiaToken);
+
+  account_manager_->RemoveAccount(canonical_email);
+  EXPECT_TRUE(GetAccountsBlocking().empty());
 }
 
 TEST_F(AccountManagerTest, AccountRemovalIsPersistedToDisk) {
@@ -330,10 +345,7 @@ TEST_F(AccountManagerTest, AccountRemovalIsPersistedToDisk) {
   scoped_task_environment_.RunUntilIdle();
 
   ResetAndInitializeAccountManager();
-
-  std::vector<AccountManager::Account> accounts = GetAccountsBlocking();
-
-  EXPECT_TRUE(accounts.empty());
+  EXPECT_TRUE(GetAccountsBlocking().empty());
 }
 
 TEST_F(AccountManagerTest, ObserversAreNotifiedOnAccountRemoval) {
@@ -386,7 +398,7 @@ TEST_F(AccountManagerTest,
   account_manager_->RemoveAccount(kGaiaAccountKey_);
 }
 
-TEST_F(AccountManagerTest, OldTokenIsRevokedOnTokenUpdate) {
+TEST_F(AccountManagerTest, OldTokenIsRevokedOnTokenUpdateByDefault) {
   ResetAndInitializeAccountManager();
   // Only 1 token should be revoked.
   EXPECT_CALL(*account_manager_.get(), RevokeGaiaTokenOnServer(kGaiaToken))
@@ -395,6 +407,34 @@ TEST_F(AccountManagerTest, OldTokenIsRevokedOnTokenUpdate) {
 
   // Update the token.
   account_manager_->UpdateToken(kGaiaAccountKey_, kNewGaiaToken);
+  scoped_task_environment_.RunUntilIdle();
+}
+
+TEST_F(AccountManagerTest,
+       OldTokenIsNotRevokedOnTokenUpdateIfRequestedByClient) {
+  ResetAndInitializeAccountManager();
+  // Token should not be revoked.
+  EXPECT_CALL(*account_manager_.get(), RevokeGaiaTokenOnServer(kGaiaToken))
+      .Times(0);
+  account_manager_->UpsertAccount(kGaiaAccountKey_, kRawUserEmail, kGaiaToken);
+
+  // Update the token.
+  account_manager_->UpdateToken(kGaiaAccountKey_, kNewGaiaToken,
+                                false /* revoke_old_token */);
+  scoped_task_environment_.RunUntilIdle();
+}
+
+TEST_F(AccountManagerTest,
+       OldTokenIsNotRevokedOnAccountUpdateIfRequestedByClient) {
+  ResetAndInitializeAccountManager();
+  // Token should not be revoked.
+  EXPECT_CALL(*account_manager_.get(), RevokeGaiaTokenOnServer(kGaiaToken))
+      .Times(0);
+  account_manager_->UpsertAccount(kGaiaAccountKey_, kRawUserEmail, kGaiaToken);
+
+  // Update the token.
+  account_manager_->UpsertAccount(kGaiaAccountKey_, kRawUserEmail,
+                                  kNewGaiaToken, false /* revoke_old_token */);
   scoped_task_environment_.RunUntilIdle();
 }
 
@@ -412,8 +452,8 @@ TEST_F(AccountManagerTest,
                                   AccountManager::kActiveDirectoryDummyToken);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_FALSE(account_manager_->IsTokenAvailable(kActiveDirectoryAccountKey_));
-  std::vector<AccountManager::Account> accounts = GetAccountsBlocking();
-  EXPECT_TRUE(IsAccountKeyPresent(accounts, kActiveDirectoryAccountKey_));
+  EXPECT_TRUE(
+      IsAccountKeyPresent(GetAccountsBlocking(), kActiveDirectoryAccountKey_));
 }
 
 TEST_F(AccountManagerTest, IsTokenAvailableReturnsTrueForInvalidTokens) {
@@ -422,8 +462,7 @@ TEST_F(AccountManagerTest, IsTokenAvailableReturnsTrueForInvalidTokens) {
                                   AccountManager::kInvalidToken);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_TRUE(account_manager_->IsTokenAvailable(kGaiaAccountKey_));
-  std::vector<AccountManager::Account> accounts = GetAccountsBlocking();
-  EXPECT_TRUE(IsAccountKeyPresent(accounts, kGaiaAccountKey_));
+  EXPECT_TRUE(IsAccountKeyPresent(GetAccountsBlocking(), kGaiaAccountKey_));
 }
 
 }  // namespace chromeos

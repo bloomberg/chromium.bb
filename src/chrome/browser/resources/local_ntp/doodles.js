@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 
-let doodles = {};
+const doodles = {};
 
 doodles.numDdllogResponsesReceived = 0;
 doodles.lastDdllogResponse = '';
@@ -116,12 +116,12 @@ doodles.LOG_TYPE = {
  * @param {Object} args, arguments sent to the page via postMessage.
  */
 doodles.resizeDoodleHandler = function(args) {
-  let width = args.width || null;
-  let height = args.height || null;
-  let duration = args.duration || '0s';
-  let iframe = $(doodles.IDS.LOGO_DOODLE_IFRAME);
+  const width = args.width || null;
+  const height = args.height || null;
+  const duration = args.duration || '0s';
+  const iframe = $(doodles.IDS.LOGO_DOODLE_IFRAME);
 
-  var transitionCallback = function() {
+  const transitionCallback = function() {
     iframe.removeEventListener('webkitTransitionEnd', transitionCallback);
     iframe.contentWindow.postMessage(
         {cmd: 'resizeComplete'}, 'https://www.google.com');
@@ -169,11 +169,11 @@ doodles.init = function() {
   });
 
   // Set up doodle notifier (but it may be invisible).
-  var doodleNotifier = $(doodles.IDS.LOGO_DOODLE_NOTIFIER);
+  const doodleNotifier = $(doodles.IDS.LOGO_DOODLE_NOTIFIER);
   doodleNotifier.title = configData.translatedStrings.clickToViewDoodle;
   doodleNotifier.addEventListener('click', function(e) {
     e.preventDefault();
-    var state = window.history.state || {};
+    const state = window.history.state || {};
     state.notheme = true;
     window.history.replaceState(state, document.title);
     ntpApiHandle.logEvent(doodles.LOG_TYPE.NTP_STATIC_LOGO_SHOWN_FROM_CACHE);
@@ -195,7 +195,7 @@ doodles.init = function() {
  * @param {function(?{v, usable, image, metadata})} onload
  */
 doodles.loadDoodle = function(v, onload) {
-  var ddlScript = document.createElement('script');
+  const ddlScript = document.createElement('script');
   ddlScript.src = 'chrome-search://local-ntp/doodle.js';
   if (v !== null) {
     ddlScript.src += '?v=' + v;
@@ -224,7 +224,7 @@ doodles.handleDdllogResponse = function(ddllog, isAnimated) {
       doodles.ei = ddllog.encoded_ei;
     }
     if (ddllog.interaction_log_url) {
-      let interactionLogUrl =
+      const interactionLogUrl =
           new URL(ddllog.interaction_log_url, configData.googleBaseUrl);
       if (isAnimated) {
         doodles.targetDoodle.animatedInteractionLogUrl = interactionLogUrl;
@@ -268,8 +268,9 @@ doodles.logDoodleImpression = function(logUrl, isAnimated) {
         if (text.startsWith(preamble)) {
           text = text.substr(preamble.length);
         }
+        let json;
         try {
-          var json = JSON.parse(text);
+          json = JSON.parse(text);
         } catch (error) {
           console.log('Failed to parse doodle impression response as JSON:');
           console.log(error);
@@ -324,9 +325,9 @@ doodles.logDoodleShare = function(platform) {
  * @returns {boolean}
  */
 doodles.isDoodleCurrentlyVisible = function() {
-  var haveDoodle = ($(doodles.IDS.LOGO_DOODLE)
-                        .classList.contains(doodles.CLASSES.SHOW_LOGO));
-  var wantDoodle = (doodles.targetDoodle.metadata !== null) &&
+  const haveDoodle = ($(doodles.IDS.LOGO_DOODLE)
+                          .classList.contains(doodles.CLASSES.SHOW_LOGO));
+  const wantDoodle = (doodles.targetDoodle.metadata !== null) &&
       (doodles.targetDoodle.image !== null ||
        doodles.targetDoodle.metadata.type === doodles.LOGO_TYPE.INTERACTIVE);
   if (!haveDoodle || !wantDoodle) {
@@ -335,12 +336,12 @@ doodles.isDoodleCurrentlyVisible = function() {
 
   // Have a visible doodle and a target doodle. Test that they match.
   if (doodles.targetDoodle.metadata.type === doodles.LOGO_TYPE.INTERACTIVE) {
-    var logoDoodleIframe = $(doodles.IDS.LOGO_DOODLE_IFRAME);
+    const logoDoodleIframe = $(doodles.IDS.LOGO_DOODLE_IFRAME);
     return logoDoodleIframe.classList.contains(doodles.CLASSES.SHOW_LOGO) &&
         (logoDoodleIframe.src === doodles.targetDoodle.metadata.fullPageUrl);
   } else {
-    var logoDoodleImage = $(doodles.IDS.LOGO_DOODLE_IMAGE);
-    var logoDoodleContainer = $(doodles.IDS.LOGO_DOODLE_CONTAINER);
+    const logoDoodleImage = $(doodles.IDS.LOGO_DOODLE_IMAGE);
+    const logoDoodleContainer = $(doodles.IDS.LOGO_DOODLE_CONTAINER);
     return logoDoodleContainer.classList.contains(doodles.CLASSES.SHOW_LOGO) &&
         ((logoDoodleImage.src === doodles.targetDoodle.image) ||
          (logoDoodleImage.src === doodles.targetDoodle.metadata.animatedUrl));
@@ -365,9 +366,9 @@ doodles.targetDoodle = {
 
 
 doodles.getDoodleTargetUrl = function() {
-  let url = new URL(doodles.targetDoodle.metadata.onClickUrl);
+  const url = new URL(doodles.targetDoodle.metadata.onClickUrl);
   if (doodles.targetDoodle.onClickUrlExtraParams) {
-    for (var param of doodles.targetDoodle.onClickUrlExtraParams) {
+    for (const param of doodles.targetDoodle.onClickUrlExtraParams) {
       url.searchParams.append(param[0], param[1]);
     }
   }
@@ -395,8 +396,8 @@ doodles.showLogoOrDoodle = function(fromCache) {
           .classList.remove(doodles.CLASSES.SHOW_LOGO);
 
       // Log the impression in Chrome metrics.
-      var isCta = doodles.targetDoodle.metadata.animatedUrl;
-      var eventType = isCta ?
+      const isCta = doodles.targetDoodle.metadata.animatedUrl;
+      const eventType = isCta ?
           (fromCache ? doodles.LOG_TYPE.NTP_CTA_LOGO_SHOWN_FROM_CACHE :
                        doodles.LOG_TYPE.NTP_CTA_LOGO_SHOWN_FRESH) :
           (fromCache ? doodles.LOG_TYPE.NTP_STATIC_LOGO_SHOWN_FROM_CACHE :
@@ -404,8 +405,8 @@ doodles.showLogoOrDoodle = function(fromCache) {
       ntpApiHandle.logEvent(eventType);
 
       // Ping the proper impression logging URL if it exists.
-      var logUrl = isCta ? doodles.targetDoodle.metadata.ctaLogUrl :
-                           doodles.targetDoodle.metadata.logUrl;
+      const logUrl = isCta ? doodles.targetDoodle.metadata.ctaLogUrl :
+                             doodles.targetDoodle.metadata.logUrl;
       if (logUrl) {
         doodles.logDoodleImpression(logUrl, /*isAnimated=*/ false);
       }
@@ -481,12 +482,12 @@ doodles.onDoodleFadeOutComplete = function(e) {
 
 
 doodles.applyDoodleMetadata = function() {
-  var logoDoodleImage = $(doodles.IDS.LOGO_DOODLE_IMAGE);
-  var logoDoodleButton = $(doodles.IDS.LOGO_DOODLE_BUTTON);
-  var logoDoodleIframe = $(doodles.IDS.LOGO_DOODLE_IFRAME);
+  const logoDoodleImage = $(doodles.IDS.LOGO_DOODLE_IMAGE);
+  const logoDoodleButton = $(doodles.IDS.LOGO_DOODLE_BUTTON);
+  const logoDoodleIframe = $(doodles.IDS.LOGO_DOODLE_IFRAME);
 
-  var logoDoodleShareButton = null;
-  var logoDoodleShareDialog = null;
+  const logoDoodleShareButton = null;
+  const logoDoodleShareDialog = null;
 
   switch (doodles.targetDoodle.metadata.type) {
     case doodles.LOGO_TYPE.SIMPLE:
@@ -586,11 +587,11 @@ doodles.insertShareButton = function() {
       !doodles.targetDoodle.metadata.shareButtonIcon) {
     return;
   }
-  var shareDialog = $(doodles.IDS.DOODLE_SHARE_DIALOG);
+  const shareDialog = $(doodles.IDS.DOODLE_SHARE_DIALOG);
 
-  var shareButtonWrapper = document.createElement('button');
+  const shareButtonWrapper = document.createElement('button');
   shareButtonWrapper.id = doodles.IDS.DOODLE_SHARE_BUTTON;
-  var shareButtonImg = document.createElement('img');
+  const shareButtonImg = document.createElement('img');
   shareButtonImg.id = doodles.IDS.DOODLE_SHARE_BUTTON_IMG;
   shareButtonWrapper.appendChild(shareButtonImg);
   shareButtonWrapper.title = configData.translatedStrings.shareDoodle;
@@ -604,10 +605,10 @@ doodles.insertShareButton = function() {
   // Share button opacity represented as a double between 0 to 1.
   // Final background color is an RGBA HEX string created by combining
   // both.
-  var backgroundColor = doodles.targetDoodle.metadata.shareButtonBg;
+  let backgroundColor = doodles.targetDoodle.metadata.shareButtonBg;
   if (!!doodles.targetDoodle.metadata.shareButtonOpacity ||
       doodles.targetDoodle.metadata.shareButtonOpacity == 0) {
-    var backgroundOpacityHex =
+    const backgroundOpacityHex =
         parseInt(doodles.targetDoodle.metadata.shareButtonOpacity * 255, 10)
             .toString(16);
     backgroundColor += backgroundOpacityHex;
@@ -620,12 +621,12 @@ doodles.insertShareButton = function() {
     shareDialog.showModal();
   };
 
-  var oldButton = $(doodles.IDS.DOODLE_SHARE_BUTTON);
+  const oldButton = $(doodles.IDS.DOODLE_SHARE_BUTTON);
   if (oldButton) {
     oldButton.remove();
   }
 
-  var logoContainer = $(doodles.IDS.LOGO_DOODLE_CONTAINER);
+  const logoContainer = $(doodles.IDS.LOGO_DOODLE_CONTAINER);
   if (logoContainer) {
     logoContainer.appendChild(shareButtonWrapper);
   }
@@ -636,14 +637,14 @@ doodles.insertShareButton = function() {
  * title and short link.
  */
 doodles.updateShareDialog = function() {
-  var shareDialog = $(doodles.IDS.DOODLE_SHARE_DIALOG);
-  var shareDialogTitle = $(doodles.IDS.DOODLE_SHARE_DIALOG_TITLE);
-  var closeButton = $(doodles.IDS.DOODLE_SHARE_DIALOG_CLOSE_BUTTON);
-  var facebookButton = $(doodles.IDS.DOODLE_SHARE_DIALOG_FACEBOOK_BUTTON);
-  var twitterButton = $(doodles.IDS.DOODLE_SHARE_DIALOG_TWITTER_BUTTON);
-  var mailButton = $(doodles.IDS.DOODLE_SHARE_DIALOG_MAIL_BUTTON);
-  var copyButton = $(doodles.IDS.DOODLE_SHARE_DIALOG_COPY_LINK_BUTTON);
-  var linkText = $(doodles.IDS.DOODLE_SHARE_DIALOG_LINK);
+  const shareDialog = $(doodles.IDS.DOODLE_SHARE_DIALOG);
+  const shareDialogTitle = $(doodles.IDS.DOODLE_SHARE_DIALOG_TITLE);
+  const closeButton = $(doodles.IDS.DOODLE_SHARE_DIALOG_CLOSE_BUTTON);
+  const facebookButton = $(doodles.IDS.DOODLE_SHARE_DIALOG_FACEBOOK_BUTTON);
+  const twitterButton = $(doodles.IDS.DOODLE_SHARE_DIALOG_TWITTER_BUTTON);
+  const mailButton = $(doodles.IDS.DOODLE_SHARE_DIALOG_MAIL_BUTTON);
+  const copyButton = $(doodles.IDS.DOODLE_SHARE_DIALOG_COPY_LINK_BUTTON);
+  const linkText = $(doodles.IDS.DOODLE_SHARE_DIALOG_LINK);
 
   if (!doodles.targetDoodle.metadata ||
       !doodles.targetDoodle.metadata.shortLink ||
@@ -651,7 +652,7 @@ doodles.updateShareDialog = function() {
     return;
   }
 
-  var closeDialog = function() {
+  const closeDialog = function() {
     shareDialog.close();
   };
 
@@ -663,13 +664,13 @@ doodles.updateShareDialog = function() {
     }
   };
 
-  var title = doodles.targetDoodle.metadata.altText;
+  const title = doodles.targetDoodle.metadata.altText;
 
   shareDialogTitle.innerHTML = title;
-  var shortLink = doodles.targetDoodle.metadata.shortLink;
+  const shortLink = doodles.targetDoodle.metadata.shortLink;
 
   facebookButton.onclick = function() {
-    var url = 'https://www.facebook.com/dialog/share' +
+    const url = 'https://www.facebook.com/dialog/share' +
         '?app_id=' + doodles.FACEBOOK_APP_ID +
         '&href=' + encodeURIComponent(shortLink) +
         '&hashtag=' + encodeURIComponent('#GoogleDoodle');
@@ -679,7 +680,7 @@ doodles.updateShareDialog = function() {
   facebookButton.title = configData.translatedStrings.shareFacebook;
 
   twitterButton.onclick = function() {
-    var url = 'https://twitter.com/intent/tweet' +
+    const url = 'https://twitter.com/intent/tweet' +
         '?text=' + encodeURIComponent(title + '\n' + shortLink);
     window.open(url);
     doodles.logDoodleShare(doodles.SHARE_TYPE.TWITTER);
@@ -687,7 +688,7 @@ doodles.updateShareDialog = function() {
   twitterButton.title = configData.translatedStrings.shareTwitter;
 
   mailButton.onclick = function() {
-    var url = 'mailto:?subject=' + encodeURIComponent(title) +
+    const url = 'mailto:?subject=' + encodeURIComponent(title) +
         '&body=' + encodeURIComponent(shortLink);
     document.location.href = url;
     doodles.logDoodleShare(doodles.SHARE_TYPE.EMAIL);

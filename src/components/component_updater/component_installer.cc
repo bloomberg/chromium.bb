@@ -176,13 +176,6 @@ void ComponentInstaller::Install(const base::FilePath& unpack_path,
   current_version_ = version;
   current_install_dir_ = install_path;
 
-  // Invoke |ComponentReady| on the main thread, then after this task has
-  // completed, post a task to call the lamda below using the task scheduler.
-  // The task scheduler PostTaskAndReply call requires the caller to run on
-  // a sequence. This code is not running on a sequence, therefore, there
-  // are two tasks posted to the main thread runner, to ensure that
-  // the |callback| is invoked by the task scheduler after |ComponentReady| has
-  // returned.
   main_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&ComponentInstaller::ComponentReady, this,
                                 std::move(manifest)));

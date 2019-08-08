@@ -274,23 +274,14 @@ std::string CryptoHandshakeMessage::DebugStringInternal(size_t indent) const {
       case kCFCW:
       case kSFCW:
       case kIRTT:
-      case kMIDS:
+      case kMIUS:
+      case kMIBS:
       case kSCLS:
       case kTCID:
         // uint32_t value
         if (it->second.size() == 4) {
           uint32_t value;
           memcpy(&value, it->second.data(), sizeof(value));
-          ret += QuicTextUtils::Uint64ToString(value);
-          done = true;
-        }
-        break;
-      case kRCID:
-        // uint64_t value
-        if (it->second.size() == 8) {
-          uint64_t value;
-          memcpy(&value, it->second.data(), sizeof(value));
-          value = QuicEndian::NetToHost64(value);
           ret += QuicTextUtils::Uint64ToString(value);
           done = true;
         }

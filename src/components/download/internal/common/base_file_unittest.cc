@@ -757,4 +757,25 @@ TEST_F(BaseFileTest, WriteDataToSparseFile) {
   ExpectHashValue(kHashOfTestData1To3, base_file_->Finish());
 }
 
+// Test that validating data in a file works.
+TEST_F(BaseFileTest, ValidateDataInFile) {
+  ASSERT_TRUE(InitializeFile());
+  ASSERT_TRUE(AppendDataToFile(kTestData1));
+
+  ASSERT_TRUE(base_file_->ValidateDataInFile(0, "Let's", 5));
+  ASSERT_TRUE(base_file_->ValidateDataInFile(1, "et's ", 5));
+  ASSERT_TRUE(base_file_->ValidateDataInFile(
+      0, "Let's write some data to the file!\n", kTestDataLength1));
+  ASSERT_TRUE(base_file_->ValidateDataInFile(kTestDataLength1 - 1, "\n", 1));
+  ASSERT_FALSE(base_file_->ValidateDataInFile(kTestDataLength1, "\n", 1));
+  ASSERT_FALSE(base_file_->ValidateDataInFile(kTestDataLength1 - 1, "y\n", 2));
+  ASSERT_FALSE(base_file_->ValidateDataInFile(0, "et's ", 5));
+  ASSERT_FALSE(base_file_->ValidateDataInFile(
+      0, "Let's write some data to the file1\n", kTestDataLength1));
+  ASSERT_FALSE(base_file_->ValidateDataInFile(
+      0, "Let's write some data to the file1!\n", kTestDataLength1 + 1));
+
+  base_file_->Finish();
+}
+
 }  // namespace download

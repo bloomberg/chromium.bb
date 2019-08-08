@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/services/filesystem/public/interfaces/file_system.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/test/test_service.h"
 #include "services/service_manager/public/cpp/test/test_service_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,18 +27,18 @@ class FilesTestBase : public testing::Test {
   void SetUp() override;
 
  protected:
-  // Note: This has an out parameter rather than returning the |DirectoryPtr|,
+  // Note: This has an out parameter rather than returning the Directory remote,
   // since |ASSERT_...()| doesn't work with return values.
-  void GetTemporaryRoot(mojom::DirectoryPtr* directory);
+  void GetTemporaryRoot(mojo::Remote<mojom::Directory>* directory);
 
   service_manager::Connector* connector() { return test_service_.connector(); }
-  mojom::FileSystemPtr& files() { return files_; }
+  mojo::Remote<mojom::FileSystem>& files() { return files_; }
 
  private:
   base::test::ScopedTaskEnvironment task_environment_;
   service_manager::TestServiceManager test_service_manager_;
   service_manager::TestService test_service_;
-  mojom::FileSystemPtr files_;
+  mojo::Remote<mojom::FileSystem> files_;
 
   DISALLOW_COPY_AND_ASSIGN(FilesTestBase);
 };

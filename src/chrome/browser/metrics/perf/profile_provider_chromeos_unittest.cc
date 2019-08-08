@@ -355,7 +355,7 @@ TEST_F(ProfileProviderFeatureParamsTest, HeapCollectorEnabled) {
   // collectors, because the sampling factor param is set to 1. Otherwise, we
   // must still have one collector only.
   profile_provider.Init();
-#if BUILDFLAG(USE_NEW_TCMALLOC)
+#if !defined(MEMORY_TOOL_REPLACES_ALLOCATOR) && BUILDFLAG(USE_NEW_TCMALLOC)
   EXPECT_EQ(2u, profile_provider.collectors_.size());
 #else
   EXPECT_EQ(1u, profile_provider.collectors_.size());

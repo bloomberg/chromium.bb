@@ -50,7 +50,6 @@
 namespace blink {
 
 class DOMWrapperWorld;
-class Element;
 class ExecutionContext;
 class KURL;
 class LocalFrame;
@@ -114,12 +113,7 @@ class CORE_EXPORT ScriptController final
       const KURL& base_url,
       SanitizeScriptErrors sanitize_script_errors);
 
-  // Returns true if argument is a JavaScript URL.
-  bool ExecuteScriptIfJavaScriptURL(
-      const KURL&,
-      Element*,
-      ContentSecurityPolicyDisposition check_main_world_csp =
-          kCheckContentSecurityPolicy);
+  void ExecuteJavaScriptURL(const KURL&, ContentSecurityPolicyDisposition);
 
   // Creates a new isolated world for DevTools with the given human readable
   // |world_name| and returns it id or nullptr on failure.

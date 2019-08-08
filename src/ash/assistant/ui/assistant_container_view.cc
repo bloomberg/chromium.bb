@@ -16,6 +16,7 @@
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/assistant_web_view.h"
+#include "ash/assistant/util/assistant_util.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
@@ -25,7 +26,6 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/animation/tween.h"
-#include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/view.h"
@@ -156,7 +156,7 @@ class AssistantContainerLayout : public views::LayoutManager {
     // Our preferred width is the width of our largest visible child.
     int preferred_width = 0;
     for (const views::View* child : host->children()) {
-      if (child->visible()) {
+      if (child->GetVisible()) {
         preferred_width =
             std::max(child->GetPreferredSize().width(), preferred_width);
       }
@@ -170,7 +170,7 @@ class AssistantContainerLayout : public views::LayoutManager {
     // Our preferred height is the height of our largest visible child.
     int preferred_height = 0;
     for (const views::View* child : host->children()) {
-      if (child->visible()) {
+      if (child->GetVisible()) {
         preferred_height =
             std::max(child->GetHeightForWidth(width), preferred_height);
       }
@@ -236,10 +236,10 @@ AssistantContainerView::AssistantContainerView(AssistantViewDelegate* delegate)
   views::BubbleDialogDelegateView::CreateBubble(this);
 
   // Corner radius can only be set after bubble creation.
-  GetBubbleFrameView()->bubble_border()->SetCornerRadius(
-      delegate_->GetUiModel()->ui_mode() == AssistantUiMode::kMiniUi
-          ? kMiniUiCornerRadiusDip
-          : kCornerRadiusDip);
+  GetBubbleFrameView()->SetCornerRadius(delegate_->GetUiModel()->ui_mode() ==
+                                                AssistantUiMode::kMiniUi
+                                            ? kMiniUiCornerRadiusDip
+                                            : kCornerRadiusDip);
 
   // Initialize non-client view layer.
   GetBubbleFrameView()->SetPaintToLayer();
@@ -342,7 +342,8 @@ void AssistantContainerView::Init() {
   AddChildView(assistant_web_view_);
 
   // Update the view state based on the current UI mode.
-  OnUiModeChanged(delegate_->GetUiModel()->ui_mode());
+  OnUiModeChanged(delegate_->GetUiModel()->ui_mode(),
+                  /*due_to_interaction=*/false);
 }
 
 void AssistantContainerView::RequestFocus() {
@@ -379,7 +380,8 @@ void AssistantContainerView::UpdateAnchor() {
   SetArrow(views::BubbleBorder::Arrow::BOTTOM_CENTER);
 }
 
-void AssistantContainerView::OnUiModeChanged(AssistantUiMode ui_mode) {
+void AssistantContainerView::OnUiModeChanged(AssistantUiMode ui_mode,
+                                             bool due_to_interaction) {
   for (auto* child : children())
     child->SetVisible(false);
 
@@ -437,11 +439,11 @@ SkColor AssistantContainerView::GetBackgroundColor() const {
 }
 
 int AssistantContainerView::GetCornerRadius() const {
-  return GetBubbleFrameView()->bubble_border()->GetBorderCornerRadius();
+  return GetBubbleFrameView()->corner_radius();
 }
 
 void AssistantContainerView::SetCornerRadius(int corner_radius) {
-  GetBubbleFrameView()->bubble_border()->SetCornerRadius(corner_radius);
+  GetBubbleFrameView()->SetCornerRadius(corner_radius);
 }
 
 ui::Layer* AssistantContainerView::GetNonClientViewLayer() {

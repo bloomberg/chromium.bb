@@ -60,6 +60,7 @@ class CORE_EXPORT CSSValueList : public CSSValue {
 
   wtf_size_t length() const { return values_.size(); }
   const CSSValue& Item(wtf_size_t index) const { return *values_[index]; }
+  const CSSValue& Last() const { return *values_.back(); }
 
   void Append(const CSSValue& value) { values_.push_back(value); }
   bool RemoveAll(const CSSValue&);

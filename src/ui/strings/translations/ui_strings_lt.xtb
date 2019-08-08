@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lt">
+<translation id="1028699632127661925">Siunčiama į „<ph name="DEVICE_NAME" />“...</translation>
 <translation id="111910763555783249">Pranešimų nustatymai</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Prieš 1 dieną}one{Prieš # dieną}few{Prieš # dienas}many{Prieš # dienos}other{Prieš # dienų}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{Prieš 1 minutę}one{Prieš # minutę}few{Prieš # minutes}many{Prieš # minutės}other{Prieš # minučių}}</translation>
@@ -15,13 +16,11 @@
 <translation id="1383876407941801731">Ieškoti</translation>
 <translation id="1398853756734560583">Išskleisti</translation>
 <translation id="1409544243779336081">Programos rekomendacija</translation>
-<translation id="1413622004203049571">Išjungti pranešimus nuo <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minutė ir }one{# minutė ir }few{# minutės ir }many{# minutės ir }other{# minučių ir }}</translation>
 <translation id="1643823602425662293">Pranešimas</translation>
 <translation id="169515659049020177">Antrojo lygio klavišas</translation>
 <translation id="1710340000377843106">dabar</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minutė}one{# minutė}few{# minutės}many{# minutės}other{# minučių}}</translation>
-<translation id="1756116796893109054">Siunčiamas skirtukas...</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1801827354178857021">Laikotarpis</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 mėnuo}one{# mėnuo}few{# mėnesiai}many{# mėnesio}other{# mėnesių}}</translation>
@@ -135,6 +134,7 @@
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6156262341071374681">Išskleisti, kad būtų rodomos visos programos</translation>
+<translation id="6165508094623778733">Sužinokite daugiau</translation>
 <translation id="6264365405983206840">Pasirinkti &amp;viską</translation>
 <translation id="6351032674660237738">PROGRAMŲ PASIŪLYMAI</translation>
 <translation id="6364916375976753737">Slinkti į kairę</translation>
@@ -180,8 +180,10 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Daugiau nei 1 neskaitytas pranešimas}one{Daugiau nei # neskaitytas pranešimas}few{Daugiau nei # neskaityti pranešimai}many{Daugiau nei # neskaityto pranešimo}other{Daugiau nei # neskaitytų pranešimų}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{po 1 min.}one{po # min.}few{po # min.}many{po # min.}other{po # min.}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" /> + „<ph name="KEY_COMBO_NAME" />“</translation>
+<translation id="8098075892845277643">Pradėti „Google Assistant“ užklausą balsu</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Prieš 1 valandą}one{Prieš # valandą}few{Prieš # valandas}many{Prieš # valandos}other{Prieš # valandų}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Liko 1 sek.}one{Liko # sek.}few{Liko # sek.}many{Liko # sek.}other{Liko # sek.}}</translation>
+<translation id="8144660977431427332">Jūsų paieškos veikia su „Google Assistant“. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, automatinis užbaigimas</translation>
 <translation id="815598010540052116">Slinkti žemyn</translation>
 <translation id="8170087467028567933">Pašalinus šį pasiūlymą jis bus paslėptas jūsų paskyroje visuose įrenginiuose.</translation>

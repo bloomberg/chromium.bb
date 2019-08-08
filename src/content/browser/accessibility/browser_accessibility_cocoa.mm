@@ -322,8 +322,9 @@ NSAttributedString* GetAttributedTextForTextMarkerRange(
 
   int trim_length = 0;
   if ((end_object->IsPlainTextField() || end_object->IsTextOnlyObject()) &&
-      end_offset < static_cast<int>(end_object->GetText().length())) {
-    trim_length = static_cast<int>(end_object->GetText().length()) - end_offset;
+      end_offset < static_cast<int>(end_object->GetInnerText().length())) {
+    trim_length =
+        static_cast<int>(end_object->GetInnerText().length()) - end_offset;
   }
   int range_length = [text length] - start_offset - trim_length;
 
@@ -601,7 +602,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
       {NSAccessibilityColumnHeaderUIElementsAttribute, @"columnHeaders"},
       {NSAccessibilityColumnIndexRangeAttribute, @"columnIndexRange"},
       {NSAccessibilityContentsAttribute, @"contents"},
-      {NSAccessibilityDescriptionAttribute, @"description"},
+      {NSAccessibilityDescriptionAttribute, @"descriptionForAccessibility"},
       {NSAccessibilityDisclosingAttribute, @"disclosing"},
       {NSAccessibilityDisclosedByRowAttribute, @"disclosedByRow"},
       {NSAccessibilityDisclosureLevelAttribute, @"disclosureLevel"},
@@ -936,7 +937,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   return table;
 }
 
-- (NSString*)description {
+- (NSString*)descriptionForAccessibility {
   if (![self instanceActive])
     return nil;
 
@@ -974,7 +975,9 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
       break;
 
     case ax::mojom::ImageAnnotationStatus::kNone:
+    case ax::mojom::ImageAnnotationStatus::kWillNotAnnotateDueToScheme:
     case ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation:
+    case ax::mojom::ImageAnnotationStatus::kSilentlyEligibleForAnnotation:
       break;
   }
 
@@ -1574,7 +1577,9 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
       return true;
 
     case ax::mojom::ImageAnnotationStatus::kNone:
+    case ax::mojom::ImageAnnotationStatus::kWillNotAnnotateDueToScheme:
     case ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation:
+    case ax::mojom::ImageAnnotationStatus::kSilentlyEligibleForAnnotation:
       break;
   }
 
@@ -1723,7 +1728,9 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     return nil;
 
   if (owner_->GetData().GetImageAnnotationStatus() ==
-      ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation) {
+          ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation ||
+      owner_->GetData().GetImageAnnotationStatus() ==
+          ax::mojom::ImageAnnotationStatus::kSilentlyEligibleForAnnotation) {
     return base::SysUTF16ToNSString(
         owner_->GetLocalizedRoleDescriptionForUnlabeledImage());
   }
@@ -1909,8 +1916,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     return nil;
   NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
 
-  if ([self internalRole] == ax::mojom::Role::kTable ||
-      [self internalRole] == ax::mojom::Role::kGrid) {
+  if (ui::IsTableLike(owner_->GetRole())) {
     for (BrowserAccessibilityCocoa* child in [self children]) {
       if ([[child role] isEqualToString:NSAccessibilityRowRole])
         [ret addObject:child];
@@ -1942,7 +1948,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
   BrowserAccessibilityManager* manager = owner_->manager();
   BrowserAccessibility* focusedChild = manager->GetFocus();
-  if (!focusedChild->IsDescendantOf(owner_))
+  if (focusedChild && !focusedChild->IsDescendantOf(owner_))
     focusedChild = nullptr;
 
   // If it's not multiselectable, try to skip iterating over the
@@ -2393,7 +2399,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 
   base::string16 text = owner_->GetValue();
   if (owner_->IsTextOnlyObject() && text.empty())
-    text = owner_->GetText();
+    text = owner_->GetInnerText();
 
   // We need to get the whole text because a spelling mistake might start or end
   // outside our range.
@@ -2470,10 +2476,8 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if ([attribute
           isEqualToString:
               NSAccessibilityCellForColumnAndRowParameterizedAttribute]) {
-    if ([self internalRole] != ax::mojom::Role::kTable &&
-        [self internalRole] != ax::mojom::Role::kGrid) {
+    if (!ui::IsTableLike([self internalRole]))
       return nil;
-    }
     if (![parameter isKindOfClass:[NSArray class]])
       return nil;
     if (2 != [parameter count])
@@ -2674,8 +2678,8 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     if ([self internalRole] != ax::mojom::Role::kStaticText)
       return nil;
     NSRange range = [(NSValue*)parameter rangeValue];
-    gfx::Rect rect =
-        owner_->GetUnclippedScreenRangeBoundsRect(range.location, range.length);
+    gfx::Rect rect = owner_->GetUnclippedScreenInnerTextRangeBoundsRect(
+        range.location, range.location + range.length);
     NSRect nsrect = [self rectInScreen:rect];
     return [NSValue valueWithRect:nsrect];
   }
@@ -2734,8 +2738,9 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     DCHECK_GE(startOffset, 0);
     DCHECK_GE(endOffset, 0);
 
-    gfx::Rect rect = BrowserAccessibilityManager::GetRootFrameRangeBoundsRect(
-        *startObject, startOffset, *endObject, endOffset);
+    gfx::Rect rect =
+        BrowserAccessibilityManager::GetRootFrameInnerTextRangeBoundsRect(
+            *startObject, startOffset, *endObject, endOffset);
     NSRect nsrect = [self rectInScreen:rect];
     return [NSValue valueWithRect:nsrect];
   }
@@ -2890,49 +2895,6 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 
   return actions;
 }
-
-// TODO(crbug.com/921109): Migrate from the NSObject accessibility interface to
-// the NSAccessibility one, then remove this suppression.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-
-// Returns a sub-array of values for the given attribute value, starting at
-// index, with up to maxCount items.  If the given index is out of bounds,
-// or there are no values for the given attribute, it will return nil.
-// This method is used for querying subsets of values, without having to
-// return a large set of data, such as elements with a large number of
-// children.
-- (NSArray*)accessibilityArrayAttributeValues:(NSString*)attribute
-                                        index:(NSUInteger)index
-                                     maxCount:(NSUInteger)maxCount {
-  if (![self instanceActive])
-    return nil;
-
-  NSArray* fullArray = [self accessibilityAttributeValue:attribute];
-  if (!fullArray)
-    return nil;
-  NSUInteger arrayCount = [fullArray count];
-  if (index >= arrayCount)
-    return nil;
-  NSRange subRange;
-  if ((index + maxCount) > arrayCount) {
-    subRange = NSMakeRange(index, arrayCount - index);
-  } else {
-    subRange = NSMakeRange(index, maxCount);
-  }
-  return [fullArray subarrayWithRange:subRange];
-}
-
-// Returns the count of the specified accessibility array attribute.
-- (NSUInteger)accessibilityArrayAttributeCount:(NSString*)attribute {
-  if (![self instanceActive])
-    return 0;
-
-  NSArray* fullArray = [self accessibilityAttributeValue:attribute];
-  return [fullArray count];
-}
-
-#pragma clang diagnostic pop
 
 // Returns the list of accessibility attributes that this object supports.
 - (NSArray*)accessibilityAttributeNames {

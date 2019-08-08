@@ -366,8 +366,7 @@ class BuilderStageTest(AbstractStageTestCase):
     """Basic test for the ConstructDashboardURL() function."""
     stage = self.ConstructStage()
 
-    exp_url = ('https://cros-goldeneye.corp.google.com/chromeos/'
-               'healthmonitoring/buildDetails?buildbucketId=fake_bb_id')
+    exp_url = 'https://ci.chromium.org/b/fake_bb_id'
     self.assertEqual(stage.ConstructDashboardURL(), exp_url)
 
     stage_name = 'Archive'
@@ -520,6 +519,55 @@ class BuilderStageTest(AbstractStageTestCase):
         DEFAULT_BUILD_STAGE_ID,
         constants.BUILDER_STATUS_FAILED)
 
+  def testGetJobKeyvalsRegularBuild(self):
+    """Test GetJobKeyvals for a build with master."""
+    stage = self.ConstructStage()
+    build_identifier = BuildIdentifier(cidb_id=constants.MOCK_BUILD_ID,
+                                       buildbucket_id=1234)
+    self.PatchObject(stage._run, 'GetCIDBHandle',
+                     return_value=[build_identifier, None])
+    self.PatchObject(self.buildstore, 'GetBuildStatuses',
+                     return_value=[{'build_config':'master-paladin'}])
+    stage._run.options.master_buildbucket_id = 2341
+    stage._run.config.name = 'something-paladin'
+    stage._run.options.branch = 'master'
+    expected = {
+        constants.JOB_KEYVAL_DATASTORE_PARENT_KEY: (
+            'Build', constants.MOCK_BUILD_ID),
+        constants.JOB_KEYVAL_CIDB_BUILD_ID:
+            constants.MOCK_BUILD_ID,
+        constants.JOB_KEYVAL_BUILD_CONFIG:
+            'something-paladin',
+        constants.JOB_KEYVAL_BRANCH:
+            'master',
+        constants.JOB_KEYVAL_MASTER_BUILD_CONFIG:
+            'master-paladin'
+    }
+    self.assertEqual(stage.GetJobKeyvals(), expected)
+
+  def testGetJobKeyvalsSpecialBuild(self):
+    """Test GetJobKeyvals for a build without master."""
+    stage = self.ConstructStage()
+    build_identifier = BuildIdentifier(cidb_id=constants.MOCK_BUILD_ID,
+                                       buildbucket_id=1234)
+    self.PatchObject(stage._run, 'GetCIDBHandle',
+                     return_value=[build_identifier, None])
+    stage._run.config.name = 'something-paladin'
+    stage._run.options.branch = 'master'
+    expected = {
+        constants.JOB_KEYVAL_DATASTORE_PARENT_KEY: (
+            'Build', constants.MOCK_BUILD_ID),
+        constants.JOB_KEYVAL_CIDB_BUILD_ID:
+            constants.MOCK_BUILD_ID,
+        constants.JOB_KEYVAL_BUILD_CONFIG:
+            'something-paladin',
+        constants.JOB_KEYVAL_BRANCH:
+            'master',
+        constants.JOB_KEYVAL_MASTER_BUILD_CONFIG:
+            None
+    }
+    self.assertEqual(stage.GetJobKeyvals(), expected)
+
 class BuilderStageGetBuildFailureMessage(AbstractStageTestCase):
   """Test GetBuildFailureMessage in BuilderStage."""
 
@@ -534,35 +582,6 @@ class BuilderStageGetBuildFailureMessage(AbstractStageTestCase):
 
   def ConstructStage(self):
     return generic_stages.BuilderStage(self._run, self.buildstore)
-
-  def testGetBuildFailureMessageFromBuildStore(self):
-    """Test GetBuildFailureMessageFromBuildStore."""
-    db = fake_cidb.FakeCIDBConnection()
-    cidb.CIDBConnectionFactory.SetupMockCidb(db)
-    buildstore = FakeBuildStore(db)
-
-    build_id = db.InsertBuild('lumpy-pre-cq', 1,
-                              'lumpy-pre-cq', 'bot_hostname',
-                              status=constants.BUILDER_STATUS_INFLIGHT)
-    stage_id = db.InsertBuildStage(build_id, 'BuildPackages', status='fail')
-    db.InsertFailure(stage_id, 'PackageBuildFailure',
-                     'Packages failed in ./build_packages: sys-apps/flashrom',
-                     exception_category='build',
-                     extra_info={"shortname": "./build_packages",
-                                 "failed_packages": ["sys-apps/flashrom"]})
-    self._Prepare(build_id=build_id)
-    stage = self.ConstructStage()
-    # Sending cidb_id as buildbucket_id so as to not refactor the
-    # fake_cidb function.
-    self._run.options.master_build_id = 2
-    self._run.options.master_buildbucket_id = 2341
-    message = stage.GetBuildFailureMessageFromBuildStore(
-        buildstore, BuildIdentifier(buildbucket_id=build_id, cidb_id=build_id))
-
-    self.assertFalse(message.MatchesExceptionCategories(
-        {constants.EXCEPTION_CATEGORY_LAB}))
-    self.assertTrue(message.MatchesExceptionCategories(
-        {constants.EXCEPTION_CATEGORY_BUILD}))
 
   def testGetBuildFailureMessageFromResults(self):
     """Test GetBuildFailureMessageFromResults."""
@@ -624,8 +643,7 @@ class BuilderStageGetBuildFailureMessage(AbstractStageTestCase):
     msg = stage.GetBuildFailureMessage()
     self.assertTrue(stage._run.config.name in msg.message_summary)
     self.assertTrue(stage._run.ConstructDashboardURL() in msg.message_summary)
-    self.assertTrue('TacoStage' in msg.message_summary)
-    self.assertTrue(str(exception) in msg.message_summary)
+    self.assertTrue('the builder failed' in msg.message_summary)
 
 
 class MasterConfigBuilderStageTest(AbstractStageTestCase):

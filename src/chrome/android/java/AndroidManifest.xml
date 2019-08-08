@@ -337,13 +337,32 @@ by a child template that "extends" this file.
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <!-- TODO(https://crbug.com/800875): Limit these to supported MIME types. -->
-                <data android:mimeType="audio/*" />
                 <data android:mimeType="image/*" />
                 <data android:mimeType="video/*" />
                 <data android:scheme="file" />
                 <data android:scheme="content" />
             </intent-filter>
         </activity>
+
+        <!-- We have a separate activity-alias for audio so that we can disable audio handling
+             without disabling video and image handling. We need this because there are memory
+             restrictions for music players on Android Go, so we want to only handle video and
+             images in that case. -->
+        <activity-alias android:name="org.chromium.chrome.browser.media.AudioLauncherActivity"
+            android:targetActivity="org.chromium.chrome.browser.media.MediaLauncherActivity"
+            android:theme="@android:style/Theme.NoDisplay"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:enabled="false"><!-- This will be selectively enabled at runtime. -->
+            <intent-filter tools:ignore="AppLinkUrlError">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <!-- TODO(https://crbug.com/800875): Limit these to supported MIME types. -->
+                <data android:mimeType="audio/*" />
+                <data android:scheme="file" />
+                <data android:scheme="content" />
+            </intent-filter>
+        </activity-alias>
 
         {% if notouch_build == "true" %}
         <activity-alias android:name="com.google.android.apps.chrome.DinoActivity"
@@ -388,19 +407,6 @@ by a child template that "extends" this file.
         </activity>
 
         <!-- Upgrade related -->
-        <activity android:name="org.chromium.chrome.browser.upgrade.UpgradeActivity"
-            android:excludeFromRecents="true"
-            android:theme="@style/Theme.Chromium.Activity"
-            android:windowSoftInputMode="adjustResize"
-            android:taskAffinity=""
-            android:launchMode="singleInstance"
-            android:persistableMode="persistNever"
-            android:autoRemoveFromRecents="false"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
-            android:hardwareAccelerated="false">
-        </activity>
-        <service android:name="org.chromium.chrome.browser.upgrade.UpgradeIntentService"
-            android:exported="false"/>
         <receiver android:name="org.chromium.chrome.browser.upgrade.PackageReplacedBroadcastReceiver"
             android:exported="false">
             <intent-filter>
@@ -415,33 +421,6 @@ by a child template that "extends" this file.
                 <action android:name="android.intent.action.LOCALE_CHANGED" />
             </intent-filter>
         </receiver>
-
-        <!-- Document mode Activities. -->
-        <activity android:name="org.chromium.chrome.browser.document.DocumentActivity"
-            android:exported="false"
-            android:theme="@style/Theme.Chromium.Activity"
-            android:taskAffinity=""
-            android:persistableMode="persistAcrossReboots"
-            android:autoRemoveFromRecents="false"
-            {{ self.chrome_activity_common() }}>
-            {{ self.extra_web_rendering_activity_definitions() }}
-        </activity>
-        <activity-alias android:name="com.google.android.apps.chrome.document.DocumentActivity"
-            android:targetActivity="org.chromium.chrome.browser.document.DocumentActivity"
-            android:exported="false"/>
-        <activity android:name="org.chromium.chrome.browser.document.IncognitoDocumentActivity"
-            android:icon="@mipmap/incognito_app_icon"
-            android:exported="false"
-            android:theme="@style/Theme.Chromium.Incognito"
-            android:taskAffinity=""
-            android:persistableMode="persistNever"
-            android:autoRemoveFromRecents="false"
-            {{ self.chrome_activity_common() }}>
-            {{ self.extra_web_rendering_activity_definitions() }}
-        </activity>
-        <activity-alias android:name="com.google.android.apps.chrome.document.IncognitoDocumentActivity"
-            android:targetActivity="org.chromium.chrome.browser.document.IncognitoDocumentActivity"
-            android:exported="false"/>
 
         <!-- Custom Tabs -->
         <activity android:name="org.chromium.chrome.browser.customtabs.CustomTabActivity"
@@ -804,7 +783,7 @@ by a child template that "extends" this file.
         {% endfor %}
         <!-- Activities for WebAPKs. -->
         <activity android:name="org.chromium.chrome.browser.webapps.SameTaskWebApkActivity"
-            android:theme="@style/Theme.Chromium.Webapp"
+            android:theme="@style/Theme.Chromium.Webapp.Translucent"
             android:label="@string/webapp_activity_title"
             android:exported="false"
             android:persistableMode="persistNever"
@@ -1183,6 +1162,7 @@ by a child template that "extends" this file.
               <action android:name="android.support.customtabs.action.CustomTabsService" />
               <category android:name="androidx.browser.trusted.category.TrustedWebActivities"/>
               <category android:name="androidx.browser.trusted.category.TrustedWebActivitySplashScreensV1"/>
+              <category android:name="androidx.browser.trusted.category.NavBarColorCustomization"/>
             </intent-filter>
         </service>
         <service android:name="android.support.customtabs.PostMessageService" />
@@ -1241,13 +1221,6 @@ android:value="true" />
         {% endfor %}
 
         <receiver android:name="org.chromium.chrome.browser.notifications.NotificationIntentInterceptor$Receiver"
-            android:exported="false"/>
-
-        <receiver android:name="org.chromium.chrome.browser.ntp.ContentSuggestionsNotifier$OpenUrlReceiver"
-            android:exported="false"/>
-        <receiver android:name="org.chromium.chrome.browser.ntp.ContentSuggestionsNotifier$DeleteReceiver"
-            android:exported="false"/>
-        <receiver android:name="org.chromium.chrome.browser.ntp.ContentSuggestionsNotifier$TimeoutReceiver"
             android:exported="false"/>
 
         <receiver android:name="org.chromium.chrome.browser.send_tab_to_self.NotificationManager$TapReceiver"

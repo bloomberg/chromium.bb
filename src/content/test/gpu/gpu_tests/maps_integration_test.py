@@ -8,7 +8,6 @@ import sys
 
 from gpu_tests import gpu_integration_test
 from gpu_tests import cloud_storage_integration_test_base
-from gpu_tests import maps_expectations
 from gpu_tests import path_util
 from gpu_tests import color_profile_manager
 
@@ -34,10 +33,6 @@ class MapsIntegrationTest(
   @classmethod
   def Name(cls):
     return 'maps'
-
-  @classmethod
-  def _CreateExpectations(cls):
-    return maps_expectations.MapsExpectations()
 
   @classmethod
   def SetUpProcess(cls):

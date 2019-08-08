@@ -31,9 +31,18 @@ cr.define('extension_navigation_helper_tests', function() {
     let navigationHelper;
 
     setup(function() {
-      PolymerTest.clearBody();
-      Polymer.dom.flush();
-      navigationHelper = new extensions.NavigationHelper();
+      // In release mode tests, we need to wait for the page to actually import
+      // the navigation_helper.html file, since the tests do not navigate there
+      // directly. Wait for an element that imports this class to be defined.
+      const whenReady = ((typeof extensions !== 'undefined') &&
+                         !!extensions.NavigationHelper) ?
+          Promise.resolve() :
+          customElements.whenDefined('extensions-manager');
+      return whenReady.then(() => {
+        PolymerTest.clearBody();
+        Polymer.dom.flush();
+        navigationHelper = new extensions.NavigationHelper();
+      });
     });
 
     test(assert(TestNames.Basic), function() {

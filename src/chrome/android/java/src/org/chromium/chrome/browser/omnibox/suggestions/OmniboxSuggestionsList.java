@@ -9,7 +9,6 @@ import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
-import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.view.KeyEvent;
 import android.view.View;
@@ -20,7 +19,6 @@ import android.widget.ListView;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.KeyNavigationUtil;
 import org.chromium.chrome.browser.util.ViewUtils;
@@ -42,28 +40,6 @@ public class OmniboxSuggestionsList extends ListView {
     private View mAlignmentView;
     private OnGlobalLayoutListener mAnchorViewLayoutListener;
     private OnLayoutChangeListener mAlignmentViewLayoutListener;
-
-    /**
-     * Provides the capabilities required to embed the omnibox suggestion list into the UI.
-     */
-    public interface OmniboxSuggestionListEmbedder {
-        /** Return the anchor view the suggestion list should be drawn below. */
-        View getAnchorView();
-
-        /**
-         * Return the view that the omnibox suggestions should be aligned horizontally to.  The
-         * view must be a descendant of {@link #getAnchorView()}.  If null, the suggestions will
-         * be aligned to the start of {@link #getAnchorView()}.
-         */
-        @Nullable
-        View getAlignmentView();
-
-        /** Return the delegate used to interact with the Window. */
-        WindowDelegate getWindowDelegate();
-
-        /** Return whether the suggestions are being rendered in the tablet UI. */
-        boolean isTablet();
-    }
 
     /**
      * Constructs a new list designed for containing omnibox suggestions.

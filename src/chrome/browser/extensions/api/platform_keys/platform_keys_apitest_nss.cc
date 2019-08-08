@@ -19,7 +19,6 @@
 #include "chrome/browser/extensions/api/platform_keys/platform_keys_test_base.h"
 #include "chrome/browser/net/nss_context.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/policy/policy_constants.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -135,7 +134,7 @@ class PlatformKeysTest : public PlatformKeysTestBase {
         LoadExtension(test_data_dir_.AppendASCII("platform_keys_genkey"));
 
     policy::ProfilePolicyConnector* const policy_connector =
-        policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile());
+        profile()->GetProfilePolicyConnector();
 
     extensions::StateStore* const state_store =
         extensions::ExtensionSystem::Get(profile())->state_store();

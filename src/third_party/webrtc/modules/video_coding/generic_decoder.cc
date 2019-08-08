@@ -25,10 +25,7 @@ namespace webrtc {
 
 VCMDecodedFrameCallback::VCMDecodedFrameCallback(VCMTiming* timing,
                                                  Clock* clock)
-    : _clock(clock),
-      _timing(timing),
-      _timestampMap(kDecoderFrameMemoryLength),
-      _lastReceivedPictureID(0) {
+    : _clock(clock), _timing(timing), _timestampMap(kDecoderFrameMemoryLength) {
   ntp_offset_ =
       _clock->CurrentNtpInMilliseconds() - _clock->TimeInMilliseconds();
 }
@@ -82,6 +79,9 @@ void VCMDecodedFrameCallback::Decoded(VideoFrame& decodedImage,
                            "this one.";
     return;
   }
+
+  decodedImage.set_ntp_time_ms(frameInfo->ntp_time_ms);
+  decodedImage.set_rotation(frameInfo->rotation);
 
   const int64_t now_ms = _clock->TimeInMilliseconds();
   if (!decode_time_ms) {
@@ -143,23 +143,7 @@ void VCMDecodedFrameCallback::Decoded(VideoFrame& decodedImage,
 
   decodedImage.set_timestamp_us(frameInfo->renderTimeMs *
                                 rtc::kNumMicrosecsPerMillisec);
-  decodedImage.set_rotation(frameInfo->rotation);
   _receiveCallback->FrameToRender(decodedImage, qp, frameInfo->content_type);
-}
-
-int32_t VCMDecodedFrameCallback::ReceivedDecodedReferenceFrame(
-    const uint64_t pictureId) {
-  return _receiveCallback->ReceivedDecodedReferenceFrame(pictureId);
-}
-
-int32_t VCMDecodedFrameCallback::ReceivedDecodedFrame(
-    const uint64_t pictureId) {
-  _lastReceivedPictureID = pictureId;
-  return 0;
-}
-
-uint64_t VCMDecodedFrameCallback::LastReceivedPictureID() const {
-  return _lastReceivedPictureID;
 }
 
 void VCMDecodedFrameCallback::OnDecoderImplementationName(
@@ -217,6 +201,9 @@ int32_t VCMGenericDecoder::Decode(const VCMEncodedFrame& frame, int64_t nowMs) {
   _frameInfos[_nextFrameInfoIdx].renderTimeMs = frame.RenderTimeMs();
   _frameInfos[_nextFrameInfoIdx].rotation = frame.rotation();
   _frameInfos[_nextFrameInfoIdx].timing = frame.video_timing();
+  _frameInfos[_nextFrameInfoIdx].ntp_time_ms =
+      frame.EncodedImage().ntp_time_ms_;
+
   // Set correctly only for key frames. Thus, use latest key frame
   // content type. If the corresponding key frame was lost, decode will fail
   // and content type will be ignored.

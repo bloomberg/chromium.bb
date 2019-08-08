@@ -245,9 +245,6 @@ class NET_EXPORT URLRequestContextBuilder {
   // Sets a shared HostResolverManager to be used for created HostResolvers.
   // Should not be used if set_host_resolver() is used. The consumer must ensure
   // |manager| outlives the URLRequestContext returned by the builder.
-  //
-  // TODO(crbug.com/934402): Make this required if set_host_resolver() not
-  // called to force sharing managers when reasonable.
   void set_host_resolver_manager(HostResolverManager* manager);
 
   // Sets the factory used for any HostResolverCreation. By default, a default

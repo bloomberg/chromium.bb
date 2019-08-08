@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.app.Instrumentation;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.pm.InstrumentationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -24,9 +25,11 @@ import android.support.test.runner.AndroidJUnitRunner;
 import dalvik.system.DexFile;
 
 import org.chromium.base.BuildConfig;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.multidex.ChromiumMultiDexInstaller;
+import org.chromium.base.test.util.InMemorySharedPreferencesContext;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -75,12 +78,14 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
     private static final String ARGUMENT_LOG_ONLY = "log";
 
     private static final String TAG = "BaseJUnitRunner";
+    static InMemorySharedPreferencesContext sInMemorySharedPreferencesContext;
 
     @Override
     public Application newApplication(ClassLoader cl, String className, Context context)
             throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+        Context targetContext = super.getTargetContext();
         boolean hasUnderTestApk =
-                !getContext().getPackageName().equals(getTargetContext().getPackageName());
+                !getContext().getPackageName().equals(targetContext.getPackageName());
         // When there is an under-test APK, BuildConfig belongs to it and does not indicate whether
         // the test apk is multidex. In this case, just assume it is.
         boolean isTestMultidex = hasUnderTestApk || BuildConfig.IS_MULTIDEX_ENABLED;
@@ -89,14 +94,40 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
                 // Need hacks to have multidex work when there is an under-test apk :(.
                 ChromiumMultiDexInstaller.install(
                         new BaseChromiumRunnerCommon.MultiDexContextWrapper(
-                                getContext(), getTargetContext()));
-                BaseChromiumRunnerCommon.reorderDexPathElements(
-                        cl, getContext(), getTargetContext());
+                                getContext(), targetContext));
+                BaseChromiumRunnerCommon.reorderDexPathElements(cl, getContext(), targetContext);
             } else {
                 ChromiumMultiDexInstaller.install(getContext());
             }
         }
-        return super.newApplication(cl, className, context);
+
+        // Wrap |context| here so that calls to getSharedPreferences() from within
+        // attachBaseContext() will hit our InMemorySharedPreferencesContext.
+        sInMemorySharedPreferencesContext = new InMemorySharedPreferencesContext(context);
+        Application ret = super.newApplication(cl, className, sInMemorySharedPreferencesContext);
+        try {
+            // There is framework code that assumes Application.getBaseContext() can be casted to
+            // ContextImpl (on KitKat for broadcast receivers, refer to ActivityThread.java), so
+            // invert the wrapping relationship.
+            Field baseField = ContextWrapper.class.getDeclaredField("mBase");
+            baseField.setAccessible(true);
+            baseField.set(ret, context);
+            baseField.set(sInMemorySharedPreferencesContext, ret);
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        }
+
+        // Replace the application with our wrapper here for any code that runs between
+        // Application.attachBaseContext() and our BaseJUnit4TestRule (e.g. Application.onCreate()).
+        ContextUtils.initApplicationContextForTests(sInMemorySharedPreferencesContext);
+        return ret;
+    }
+
+    @Override
+    public Context getTargetContext() {
+        // The target context by default points directly at the ContextImpl, which we can't wrap.
+        // Make it instead point at the Application.
+        return sInMemorySharedPreferencesContext;
     }
 
     /**

@@ -217,11 +217,11 @@ QualifiedName SvgAttributeName(const String& property) {
 const QualifiedName* AnimationInputHelpers::KeyframeAttributeToSVGAttribute(
     const String& property,
     Element* element) {
-  if (!RuntimeEnabledFeatures::WebAnimationsSVGEnabled() || !element ||
-      !element->IsSVGElement() || !IsSVGPrefixed(property))
+  auto* svg_element = DynamicTo<SVGElement>(element);
+  if (!RuntimeEnabledFeatures::WebAnimationsSVGEnabled() || !svg_element ||
+      !IsSVGPrefixed(property))
     return nullptr;
 
-  SVGElement* svg_element = ToSVGElement(element);
   if (IsSVGSMILElement(svg_element))
     return nullptr;
 

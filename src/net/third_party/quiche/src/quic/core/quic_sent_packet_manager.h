@@ -70,7 +70,9 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
     virtual void OnApplicationLimited() {}
 
     virtual void OnAdjustNetworkParameters(QuicBandwidth bandwidth,
-                                           QuicTime::Delta rtt) {}
+                                           QuicTime::Delta rtt,
+                                           QuicByteCount old_cwnd,
+                                           QuicByteCount new_cwnd) {}
   };
 
   // Interface which gets callbacks from the QuicSentPacketManager when
@@ -89,6 +91,7 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
 
   QuicSentPacketManager(Perspective perspective,
                         const QuicClock* clock,
+                        QuicRandom* random,
                         QuicConnectionStats* stats,
                         CongestionControlType congestion_control_type,
                         LossDetectionType loss_type);
@@ -127,7 +130,9 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
 
   // Notify the sent packet manager of an external network measurement or
   // prediction for either |bandwidth| or |rtt|; either can be empty.
-  void AdjustNetworkParameters(QuicBandwidth bandwidth, QuicTime::Delta rtt);
+  void AdjustNetworkParameters(QuicBandwidth bandwidth,
+                               QuicTime::Delta rtt,
+                               bool allow_cwnd_to_decrease);
 
   // Retransmits the oldest pending packet there is still a tail loss probe
   // pending.  Invoked after OnRetransmissionTimeout.
@@ -535,6 +540,7 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   PendingRetransmissionMap pending_retransmissions_;
 
   const QuicClock* clock_;
+  QuicRandom* random_;
   QuicConnectionStats* stats_;
 
   DebugDelegate* debug_delegate_;
@@ -627,6 +633,9 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
 
   // Latched value of quic_tolerate_reneging.
   const bool tolerate_reneging_;
+
+  // Latched value of quic_loss_removes_from_inflight.
+  const bool loss_removes_from_inflight_;
 };
 
 }  // namespace quic

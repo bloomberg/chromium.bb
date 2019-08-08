@@ -41,13 +41,10 @@ class SearchIPCRouterPolicyImpl : public SearchIPCRouter::Policy {
   bool ShouldProcessLogEvent() override;
   bool ShouldProcessLogSuggestionEventWithValue() override;
   bool ShouldProcessPasteIntoOmnibox(bool is_active_tab) override;
-  bool ShouldProcessChromeIdentityCheck() override;
-  bool ShouldProcessHistorySyncCheck() override;
   bool ShouldSendSetInputInProgress(bool is_active_tab) override;
   bool ShouldSendOmniboxFocusChanged() override;
   bool ShouldSendMostVisitedItems() override;
   bool ShouldSendThemeBackgroundInfo() override;
-  bool ShouldProcessSetCustomBackgroundURL() override;
   bool ShouldProcessSetCustomBackgroundURLWithAttributions() override;
   bool ShouldProcessSelectLocalBackgroundImage() override;
   bool ShouldProcessBlocklistSearchSuggestion() override;

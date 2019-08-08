@@ -38,7 +38,7 @@ class ObserverUpdatesMatcher
 };
 
 testing::Matcher<const std::vector<DomDistillerObserver::ArticleUpdate>&>
-    HasExpectedUpdates(const std::vector<DomDistillerObserver::ArticleUpdate>&);
+HasExpectedUpdates(const std::vector<DomDistillerObserver::ArticleUpdate>&);
 
 // Creates a simple DomDistillerStore backed by |fake_db| and initialized
 // with |store_model|.

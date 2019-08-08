@@ -24,7 +24,7 @@ class PlatformNotificationServiceFactory
 
   PlatformNotificationServiceFactory();
 
-  // BrowserContextKeyedBaseFactory implementation.
+  // BrowserContextKeyedServiceFactory implementation.
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
   content::BrowserContext* GetBrowserContextToUse(

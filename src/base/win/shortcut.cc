@@ -150,7 +150,7 @@ bool CreateOrUpdateShortcutLink(const FilePath& shortcut_path,
       return false;
 
     if (has_app_id && !SetAppIdForPropertyStore(property_store.Get(),
-                                                as_wcstr(properties.app_id))) {
+                                                properties.app_id.c_str())) {
       return false;
     }
     if (has_dual_mode &&
@@ -357,7 +357,7 @@ bool ResolveShortcut(const FilePath& shortcut_path,
 
 bool CanPinShortcutToTaskbar() {
   // "Pin to taskbar" stopped being supported in Windows 10.
-  return GetVersion() < VERSION_WIN10;
+  return GetVersion() < Version::WIN10;
 }
 
 bool PinShortcutToTaskbar(const FilePath& shortcut) {

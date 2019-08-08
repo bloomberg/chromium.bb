@@ -34,7 +34,8 @@ class ProfileIdentityProvider : public IdentityProvider,
   // identity::IdentityManager::Observer:
   void OnRefreshTokenUpdatedForAccount(
       const CoreAccountInfo& account_info) override;
-  void OnRefreshTokenRemovedForAccount(const std::string& account_id) override;
+  void OnRefreshTokenRemovedForAccount(
+      const CoreAccountId& account_id) override;
 
  private:
   identity::IdentityManager* const identity_manager_;

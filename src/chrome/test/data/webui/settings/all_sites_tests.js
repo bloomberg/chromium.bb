@@ -116,15 +116,10 @@ suite('AllSites', function() {
       // Use resolver to ensure that the list container is populated.
       const resolver = new PromiseResolver();
       // In Polymer2, we need to wait until after the next render for the list
-      // to be populated. TODO (rbpotter): Remove conditional when migration to
-      // Polymer 2 is completed.
-      if (Polymer.DomIf) {
-        Polymer.RenderStatus.beforeNextRender(testElement, () => {
-          resolver.resolve();
-        });
-      } else {
-        testElement.async(resolver.resolve);
-      }
+      // to be populated.
+      Polymer.RenderStatus.beforeNextRender(testElement, () => {
+        resolver.resolve();
+      });
       return resolver.promise.then(() => {
         assertEquals(3, testElement.siteGroupMap.size);
 
@@ -155,8 +150,8 @@ suite('AllSites', function() {
           Polymer.dom.flush();
           const siteEntries =
               testElement.$.listContainer.querySelectorAll('site-entry');
-          const hiddenSiteEntries = Polymer.dom(testElement.root)
-                                        .querySelectorAll('site-entry[hidden]');
+          const hiddenSiteEntries =
+              testElement.shadowRoot.querySelectorAll('site-entry[hidden]');
           assertEquals(1, siteEntries.length - hiddenSiteEntries.length);
 
           for (let i = 0; i < siteEntries; ++i) {

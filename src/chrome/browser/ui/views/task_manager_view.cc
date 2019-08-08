@@ -38,9 +38,8 @@
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/window_properties.h"
 #include "chrome/grit/theme_resources.h"
-#include "ui/aura/client/aura_constants.h"
+#include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/gfx/image/image_skia.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -104,16 +103,6 @@ task_manager::TaskManagerTableModel* TaskManagerView::Show(Browser* browser) {
   const ash::ShelfID shelf_id(kTaskManagerId);
   window->SetProperty(ash::kShelfIDKey, new std::string(shelf_id.Serialize()));
   window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_DIALOG);
-  // For classic Ash, GetWindowIcon() is sufficient. For Mash, the task manager
-  // specifically needs to set a large app icon for the benefit of
-  // ShelfWindowWatcher.
-  if (features::IsUsingWindowService()) {
-    window->GetRootWindow()->SetProperty(
-        aura::client::kAppIconLargeKey,
-        new gfx::ImageSkia(
-            *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-                IDR_ASH_SHELF_ICON_TASK_MANAGER)));
-  }
 #endif
   return g_task_manager_view->table_model_.get();
 }

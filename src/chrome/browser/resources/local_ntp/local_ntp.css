@@ -4,17 +4,22 @@
 
 html {
   /* Material Design constants */
-  --md-tile-height: 112px;
   --md-tile-margin: 16px;
+  --md-tile-size: 112px;
 
-  /* This will be overridden based on the viewport width, see below. */
+  /* This will be overridden based on the viewport width, see below.
+   * TODO(kristipark): Combine these.
+   */
   --column-count: 2;
+  --shortcut-column-count: 3;
 
   --content-width: calc(
       (var(--column-count) * (var(--tile-width) + var(--tile-margin)))
       /* We add an extra pixel because rounding errors on different zooms can
        * make the width shorter than it should be. */
       + 1px);
+
+  --shortcuts-width: calc(var(--shortcut-column-count) * var(--md-tile-size));
 
   --logo-height: 200px; /* Normal height of a doodle. */
   --logo-margin-top: 56px; /* Expected OGB height, so logo doesn't overlap. */
@@ -55,6 +60,7 @@ html[darkmode=true] body:not(.light-chip) {
 @media (min-width: 694px) {
   html {
     --column-count: 3;
+    --shortcut-column-count: 4;
   }
 }
 
@@ -62,6 +68,7 @@ html[darkmode=true] body:not(.light-chip) {
 @media (min-width: 864px) {
   html {
     --column-count: 4;
+    --shortcut-column-count: 5;
   }
 }
 
@@ -107,7 +114,7 @@ button {
    * single row, but also works for a row of icons, and works well on small
    * screens (like Pixelbook), as well as high-res screens. */
   height: 155px;
-  left: calc(50% - var(--content-width)/2);
+  left: calc(50% - var(--shortcuts-width)/2);
   position: absolute;
   top: calc(50% - 155px);
 }
@@ -392,15 +399,15 @@ body.remove-fakebox #user-content {
 
 #mv-tiles {
   /* Two rows of tiles of 112px each, 16px of spacing after each row, and 10px
-   * of margin on top. If you change this, also change the corresponding values
+   * of padding on top. If you change this, also change the corresponding values
    * in most_visited_single.css. */
-  height: calc(2*(var(--md-tile-height) + var(--md-tile-margin)) + 10px);
+  height: calc(2*(var(--md-tile-size) + var(--md-tile-margin)) + 10px);
   margin: 0;
   position: relative;
   text-align: -webkit-auto;
-  /* Add 2*5px to account for drop shadow on the tiles. If you change this, also
-   * change the corresponding values in most_visited_single.css. */
-  width: calc(var(--content-width) + 2*5px);
+  /* Add 2*6px to account for drop shadow on the tiles. If you change this, also
+   * change the corresponding padding in most_visited_single.css. */
+  width: calc(var(--shortcuts-width) + 12px);
 }
 
 #mv-notice-container {
@@ -568,21 +575,14 @@ html[darkmode=true] .customize-dialog::backdrop {
   width: 100%;
 }
 
-#custom-links-edit.show {
-  display: block;
-}
-
 #one-google {
+  display: none;
   position: absolute;
   top: 0;
   transition: opacity 130ms;
   /* One Google Bar can automatically align to left and right
     based on the profile language preference */
   width: 100%;
-}
-
-#one-google.hidden {
-  opacity: 0;
 }
 
 /* The box containing the slider */
@@ -752,7 +752,7 @@ html[darkmode=true] body:not(.light-chip) #error-notice-link:active {
 
 #promo {
   bottom: 16px;
-  display: block;
+  display: none;
   left: 0;
   pointer-events: none;
   position: fixed;
@@ -828,8 +828,9 @@ html[darkmode=true] body:not(.light-chip) #promo > div > img {
   background-color: rgb(var(--GG200-rgb));
 }
 
-#promo.hide-promo {
-  display: none;
+#one-google.show-element,
+#promo.show-element {
+  display: block;
 }
 
 #promo.notice-hide {
@@ -838,4 +839,497 @@ html[darkmode=true] body:not(.light-chip) #promo > div > img {
 
 #user-content {
   z-index: -1;
+}
+
+#customization-menu {
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px 0 rgba(var(--GG800-rgb), .3),
+              0 4px 8px 3px rgba(var(--GG800-rgb), .15);
+  color: rgb(var(--GG700-rgb));
+  height: 528px;
+  padding: 0;
+  width: 800px;
+}
+
+html[darkmode=true] #customization-menu {
+  background-color: rgb(41, 42, 45);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3),
+      0 4px 8px 3px rgba(0, 0, 0, 0.15);
+  color: rgb(var(--GG200-rgb));
+}
+
+#menu-nav-panel {
+  display: inline-block;
+  height: 384px;
+  left: 0;
+  vertical-align: top;
+  width: 192px;
+}
+
+.menu-option {
+  border-radius: 0 16px 16px 0;
+  font-size: 14px;
+  height: 32px;
+  left: 0;
+  line-height: 32px;
+  margin-bottom: 16px;
+  outline: none;
+  user-select: none;
+  width: 192px;
+}
+
+html[dir=rtl] .menu-option {
+  border-radius: 16px 0 0 16px;
+}
+
+.menu-option:hover,
+.menu-option:focus {
+  background-color: rgba(var(--GB900-rgb), .1);
+}
+
+.menu-option:active,
+.menu-option.selected {
+  background-color: rgb(232, 240, 254);
+  color: rgb(var(--GB600-rgb));
+}
+
+.menu-option-icon-wrapper {
+  display: inline-block;
+  height: 20px;
+  margin-inline-start: 24px;
+  width: 20px;
+}
+
+.menu-option-icon {
+  -webkit-mask-position-x: center;
+  -webkit-mask-position-y: center;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 20px;
+  background-color: black;
+  background-size: 20px 20px;
+  height: 20px;
+  margin-top: 6px;
+  width: 20px;
+}
+
+html[darkmode=true] .menu-option-icon {
+  background-color: rgb(var(--GG200-rgb));
+}
+
+.menu-option:active .menu-option-icon-wrapper .menu-option-icon,
+.menu-option.selected .menu-option-icon-wrapper .menu-option-icon {
+  background-color: rgb(var(--GB600-rgb));
+}
+
+#shortcuts-icon {
+  -webkit-mask-image: url(icons/link.svg);
+}
+
+#backgrounds-icon {
+  -webkit-mask-image: url(icons/backgrounds.svg);
+}
+
+#colors-icon {
+  -webkit-mask-image: url(icons/colors.svg);
+}
+
+.menu-option-label {
+  display: inline-block;
+  height: 32px;
+  line-height: 32px;
+  margin-inline-start: 16px;
+  text-align: center;
+  user-select: none;
+}
+
+#menu-header {
+  height: 80px;
+}
+
+#menu-title-wrapper {
+  display: inline-block;
+  height: 80px;
+  line-height: 80px;
+  position: absolute;
+  vertical-align: center;
+}
+
+#menu-title {
+  font-size: 16px;
+  user-select: none;
+  width: fit-content;
+}
+
+.on-img-menu #menu-title {
+  margin-inline-start: 16px;
+}
+
+#menu-footer {
+  border-top: 1px solid rgb(var(--GG200-rgb));
+  bottom: 0;
+  color: rgb(var(--GG800-rgb));
+  height: 64px;
+  left: 0;
+  padding-inline-start: 0;
+  position: absolute;
+  text-align: end;
+  user-select: none;
+  width: 100%;
+}
+
+html[darkmode=true] #menu-footer {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+#menu-done {
+  height: 32px;
+  line-height: 32px;
+  margin-inline-end: 16px;
+}
+
+#menu-cancel {
+  height: 32px;
+  line-height: 32px;
+  margin-inline-end: 8px;
+}
+
+#menu-contents {
+  display: inline-block;
+  height: 384px;
+  margin-inline-start: 20px;
+  position: relative;
+  width: 584px;
+}
+
+.menu-panel {
+  height: 100%;
+  left: 0;
+  overflow-y: scroll;
+  position: absolute;
+  top: 0;
+  visibility: hidden;
+  width: 100%;
+}
+
+.menu-panel.menu-shown {
+  visibility: visible;
+}
+
+#backgrounds-menu .bg-sel-tile-bg,
+#backgrounds-image-menu .bg-sel-tile-bg {
+  border-radius: 4px;
+  height: 176px;
+  margin-bottom: 45px;
+  margin-inline-end: 8px;
+  margin-inline-start: 0;
+  margin-top: 0;
+  width: 176px;
+}
+
+#backgrounds-image-menu .bg-sel-tile-bg {
+  margin-bottom: 8px;
+}
+
+.selected #backgrounds-default-icon,
+#backgrounds-image-menu .bg-sel-tile-bg.selected .bg-sel-tile {
+  height: 144px;
+  margin: 16px 16px 0 16px;
+  width: 144px;
+}
+
+#backgrounds-image-menu .bg-sel-tile-bg.selected .bg-sel-tile:focus {
+  outline: none;
+}
+
+#backgrounds-menu .bg-sel-tile,
+#backgrounds-image-menu .bg-sel-tile {
+  background-position: center;
+  border-radius: 4px;
+}
+
+#backgrounds-menu .bg-sel-tile-title {
+  background-color: unset;
+  color: rgb(var(--GG700-rgb));
+  font-size: 13px;
+  height: 30px;
+  margin-bottom: -28px;
+  padding: 8px 0 24px 0;
+}
+
+html[darkmode=true] #backgrounds-menu .bg-sel-tile-title {
+  color: rgb(var(--GG200-rgb));
+}
+
+#backgrounds-default.bg-sel-tile-bg {
+  background-color: white;
+  border: 1px solid rgb(var(--GG300-rgb));
+  height: 174px;
+  margin-inline-end: 6px;
+  width: 174px;
+}
+
+#backgrounds-default.selected,
+#backgrounds-image-menu .bg-sel-tile-bg.selected {
+  background-color: rgba(var(--GB900-rgb), .08);
+}
+
+#backgrounds-upload.bg-sel-tile-bg {
+  background-color: white;
+  border: 1px solid rgb(var(--GG300-rgb));
+  height: 174px;
+  margin-inline-end: 6px;
+  vertical-align: top;
+  width: 174px;
+}
+
+#menu-back-wrapper {
+  display: inline-block;
+  height: 80px;
+}
+
+#menu-back {
+  -webkit-mask-image: url(../../../../ui/webui/resources/images/icon_arrow_back.svg);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 20px;
+  background-color: rgb(var(--GG900-rgb));
+  height: 20px;
+  margin-inline-start: 8px;
+  margin-top: 8px;
+  outline: none;
+  width: 20px;
+}
+
+html[darkmode=true] #menu-back {
+  background-color: rgb(var(--GG200-rgb));
+}
+
+#menu-back-circle {
+  border-radius: 50%;
+  display: inline-block;
+  height: 36px;
+  margin-inline-start: 192px;
+  margin-top: 22px;
+  outline: none;
+  visibility: hidden;
+  width: 36px;
+}
+
+html[darkmode=true] #menu-back-circle:active,
+html[darkmode=true] #menu-back-circle:focus {
+  background: rgb(var(--GG800-rgb));
+}
+
+.on-img-menu #menu-back-circle {
+  margin-inline-start: 212px;
+  visibility: visible;
+}
+
+#menu-back-circle:active,
+#menu-back-circle:focus {
+  background: rgb(var(--GG300-rgb));
+  background-position: center;
+  background-size: 36px 36px;
+}
+
+html[darkmode=true] #menu-back {
+  background-color: rgb(var(--GG200-rgb));
+}
+
+html[dir=rtl] #menu-back {
+  transform: scaleX(-1);
+}
+
+#backgrounds-upload-icon {
+  -webkit-mask-image: url(icons/upload.svg);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100%;
+  background: 32px 32px rgb(var(--GG700-rgb));
+  height: 32px;
+  margin-bottom: 8px;
+  margin-inline-start: 72px;
+  margin-top: 61px;
+  width: 32px;
+}
+
+#backgrounds-upload-text {
+  color: rgb(var(--GG700-rgb));
+  text-align: center;
+  width: 100%;
+}
+
+#customization-menu .bg-sel-tile .selected-circle {
+  height: 20px;
+  left: initial;
+  right: 10px;
+  top: 10px;
+  width: 20px;
+}
+
+html[dir=rtl] #customization-menu .bg-sel-tile .selected-circle {
+  left: 10px;
+  right: initial;
+}
+
+#customization-menu .bg-sel-tile .selected-check {
+  height: 24px;
+  left: initial;
+  right: 0;
+  top: 0;
+  width: 24px;
+}
+
+html[dir=rtl] #customization-menu .bg-sel-tile .selected-check {
+  left: 0;
+  right: initial;
+}
+
+#backgrounds-default-icon {
+  background-color: white;
+  background-repeat: no-repeat;
+  height: 174px;
+  opacity: 1;
+  width: 174px;
+}
+
+#backgrounds-default-icon-header {
+  -webkit-mask-image: url(icons/header.svg);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100%;
+  background-color: rgb(var(--GG500-rgb));
+  height: 50px;
+  margin-inline-start: 17px;
+  margin-top: 24px;
+  position: absolute;
+  width: 140px;
+}
+
+#backgrounds-default-icon-shortcuts {
+  -webkit-mask-image: url(icons/shortcut-circles.svg);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100%;
+  background-color: rgb(var(--GG500-rgb));
+  height: 50px;
+  margin-inline-start: 17px;
+  margin-top: 86px;
+  position: absolute;
+  width: 140px;
+}
+
+.selected #backgrounds-default-icon-header,
+.selected #backgrounds-default-icon-shortcuts {
+  margin-inline-start: 14px;
+  width: 116px;
+}
+
+#shortcuts-menu {
+  line-height: 20px;
+  overflow-y: unset;
+  width: calc(100% - 24px);
+}
+
+#sh-options {
+  display: flex;
+}
+
+.sh-option {
+  width: 268px;
+}
+
+#sh-option-cl {
+  margin-inline-end: 9px;
+}
+
+.sh-option-select {
+  position: absolute;
+  visibility: none;
+}
+
+.sh-option-image {
+  background-color: white;
+  border: 1px solid rgb(var(--GG300-rgb));
+  border-radius: 4px;
+  height: 176px;
+  position: relative;
+  width: 268px;
+}
+
+.sh-option-mini {
+  background-color: white;
+  border: 1px solid rgb(var(--GG300-rgb));
+  border-radius: 4px;
+  height: 144px;
+  position: absolute;
+  right: 40px;
+  top: 16px;
+  width: 144px;
+}
+
+html[dir=rtl] .sh-option-mini {
+  left: 40px;
+  right: unset;
+}
+
+.sh-option-icon {
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100%;
+  background: 96px 96px rgb(var(--GG200-rgb));
+  height: 96px;
+  left: 16px;
+  position: absolute;
+  top: 48px;
+  width: 96px;
+}
+
+#sh-option-cl .sh-option-icon {
+  -webkit-mask-image: url(../../../../ui/webui/resources/images/account_circle.svg);
+}
+
+#sh-option-mv .sh-option-icon {
+  -webkit-mask-image: url(../../../../components/neterror/resources/images/generic-globe.svg);
+}
+
+html[dir=rtl] .sh-option-icon {
+  right: 16px;
+}
+
+.sh-title {
+  font-weight: bold;
+  margin: 8px 0;
+}
+
+#sh-hide {
+  background-color: white;
+  border: 1px solid rgb(var(--GG300-rgb));
+  border-radius: 4px;
+  display: flex;
+  height: 64px;
+  margin-top: 24px;
+  max-width: 544px;
+  width: 100%;
+}
+
+#sh-hide > div {
+  margin-bottom: auto;
+  margin-top: auto;
+}
+
+#sh-hide-icon {
+  -webkit-mask-image: url(../../../../ui/webui/resources/images/icon_visibility_off.svg);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100%;
+  background: 24px 24px rgb(var(--GG700-rgb));
+  height: 24px;
+  margin-inline-end: 20px;
+  margin-inline-start: 24px;
+  width: 24px;
+}
+
+#sh-hide-title {
+  font-weight: bold;
+}
+
+#sh-hide-toggle {
+  margin-inline-end: 20px;
+  margin-inline-start: auto;
 }

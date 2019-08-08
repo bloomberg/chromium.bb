@@ -116,7 +116,7 @@ class SVGResources {
   void ResourceDestroyed(LayoutSVGResourceContainer*);
   void ClearReferencesTo(LayoutSVGResourceContainer*);
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   void Dump(const LayoutObject*);
 #endif
 

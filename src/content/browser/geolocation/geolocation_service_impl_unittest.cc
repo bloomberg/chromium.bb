@@ -32,10 +32,10 @@ using device::mojom::GeopositionPtr;
 using blink::mojom::GeolocationService;
 using blink::mojom::GeolocationServicePtr;
 
-typedef base::Callback<void(PermissionStatus)> PermissionCallback;
-
 namespace content {
 namespace {
+
+using PermissionCallback = base::OnceCallback<void(PermissionStatus)>;
 
 double kMockLatitude = 1.0;
 double kMockLongitude = 10.0;
@@ -52,24 +52,24 @@ class TestPermissionManager : public MockPermissionManager {
                         RenderFrameHost* render_frame_host,
                         const GURL& requesting_origin,
                         bool user_gesture,
-                        const PermissionCallback& callback) override {
+                        PermissionCallback callback) override {
     EXPECT_EQ(permissions, PermissionType::GEOLOCATION);
     EXPECT_TRUE(user_gesture);
-    request_callback_.Run(callback);
+    request_callback_.Run(std::move(callback));
     return request_id_;
   }
 
   void SetRequestId(int request_id) { request_id_ = request_id; }
 
   void SetRequestCallback(
-      const base::Callback<void(const PermissionCallback&)>& request_callback) {
-    request_callback_ = request_callback;
+      base::RepeatingCallback<void(PermissionCallback)> request_callback) {
+    request_callback_ = std::move(request_callback);
   }
 
  private:
   int request_id_;
 
-  base::Callback<void(const PermissionCallback&)> request_callback_;
+  base::RepeatingCallback<void(PermissionCallback)> request_callback_;
 };
 
 class GeolocationServiceTest : public RenderViewHostImplTestHarness {
@@ -156,7 +156,7 @@ TEST_F(GeolocationServiceTest, PermissionGrantedPolicyViolation) {
   CreateEmbeddedFrameAndGeolocationService(/*allow_via_feature_policy=*/false);
 
   permission_manager()->SetRequestCallback(
-      base::BindRepeating([](const PermissionCallback& callback) {
+      base::BindRepeating([](PermissionCallback callback) {
         ADD_FAILURE() << "Permissions checked unexpectedly.";
       }));
   GeolocationPtr geolocation;
@@ -180,8 +180,8 @@ TEST_F(GeolocationServiceTest, PermissionGrantedNoPolicyViolation) {
   CreateEmbeddedFrameAndGeolocationService(/*allow_via_feature_policy=*/true);
 
   permission_manager()->SetRequestCallback(
-      base::BindRepeating([](const PermissionCallback& callback) {
-        callback.Run(PermissionStatus::GRANTED);
+      base::BindRepeating([](PermissionCallback callback) {
+        std::move(callback).Run(PermissionStatus::GRANTED);
       }));
   GeolocationPtr geolocation;
   service()->CreateGeolocation(
@@ -207,8 +207,8 @@ TEST_F(GeolocationServiceTest, PermissionGrantedNoPolicyViolation) {
 TEST_F(GeolocationServiceTest, PermissionGrantedSync) {
   CreateEmbeddedFrameAndGeolocationService(/*allow_via_feature_policy=*/true);
   permission_manager()->SetRequestCallback(
-      base::BindRepeating([](const PermissionCallback& callback) {
-        callback.Run(PermissionStatus::GRANTED);
+      base::BindRepeating([](PermissionCallback callback) {
+        std::move(callback).Run(PermissionStatus::GRANTED);
       }));
   GeolocationPtr geolocation;
   service()->CreateGeolocation(
@@ -234,8 +234,8 @@ TEST_F(GeolocationServiceTest, PermissionGrantedSync) {
 TEST_F(GeolocationServiceTest, PermissionDeniedSync) {
   CreateEmbeddedFrameAndGeolocationService(/*allow_via_feature_policy=*/true);
   permission_manager()->SetRequestCallback(
-      base::BindRepeating([](const PermissionCallback& callback) {
-        callback.Run(PermissionStatus::DENIED);
+      base::BindRepeating([](PermissionCallback callback) {
+        std::move(callback).Run(PermissionStatus::DENIED);
       }));
   GeolocationPtr geolocation;
   service()->CreateGeolocation(
@@ -257,13 +257,10 @@ TEST_F(GeolocationServiceTest, PermissionGrantedAsync) {
   CreateEmbeddedFrameAndGeolocationService(/*allow_via_feature_policy=*/true);
   permission_manager()->SetRequestId(42);
   permission_manager()->SetRequestCallback(
-      base::BindRepeating([](const PermissionCallback& permission_callback) {
+      base::BindRepeating([](PermissionCallback permission_callback) {
         base::ThreadTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE, base::BindOnce(
-                           [](const PermissionCallback& callback) {
-                             callback.Run(PermissionStatus::GRANTED);
-                           },
-                           permission_callback));
+            FROM_HERE, base::BindOnce(std::move(permission_callback),
+                                      PermissionStatus::GRANTED));
       }));
   GeolocationPtr geolocation;
   service()->CreateGeolocation(
@@ -290,13 +287,10 @@ TEST_F(GeolocationServiceTest, PermissionDeniedAsync) {
   CreateEmbeddedFrameAndGeolocationService(/*allow_via_feature_policy=*/true);
   permission_manager()->SetRequestId(42);
   permission_manager()->SetRequestCallback(
-      base::BindRepeating([](const PermissionCallback& permission_callback) {
+      base::BindRepeating([](PermissionCallback permission_callback) {
         base::ThreadTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE, base::BindOnce(
-                           [](const PermissionCallback& callback) {
-                             callback.Run(PermissionStatus::DENIED);
-                           },
-                           permission_callback));
+            FROM_HERE, base::BindOnce(std::move(permission_callback),
+                                      PermissionStatus::DENIED));
       }));
   GeolocationPtr geolocation;
   service()->CreateGeolocation(

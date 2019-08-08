@@ -13,11 +13,9 @@ namespace chromeos {
 namespace cellular_setup {
 
 FakeCellularSetup::StartActivationInvocation::StartActivationInvocation(
-    const std::string& cellular_network_guid,
     mojom::ActivationDelegatePtr activation_delegate,
     StartActivationCallback callback)
-    : cellular_network_guid_(cellular_network_guid),
-      activation_delegate_(std::move(activation_delegate)),
+    : activation_delegate_(std::move(activation_delegate)),
       callback_(std::move(callback)) {}
 
 FakeCellularSetup::StartActivationInvocation::~StartActivationInvocation() =
@@ -40,7 +38,6 @@ FakeCellularSetup::FakeCellularSetup() = default;
 FakeCellularSetup::~FakeCellularSetup() = default;
 
 void FakeCellularSetup::StartActivation(
-    const std::string& cellular_network_guid,
     mojom::ActivationDelegatePtr activation_delegate,
     StartActivationCallback callback) {
   DCHECK(activation_delegate);
@@ -48,8 +45,7 @@ void FakeCellularSetup::StartActivation(
 
   start_activation_invocations_.emplace_back(
       std::make_unique<StartActivationInvocation>(
-          cellular_network_guid, std::move(activation_delegate),
-          std::move(callback)));
+          std::move(activation_delegate), std::move(callback)));
 }
 
 }  // namespace cellular_setup

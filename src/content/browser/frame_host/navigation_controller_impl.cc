@@ -2137,7 +2137,8 @@ void NavigationControllerImpl::NotifyUserActivation() {
 
 bool NavigationControllerImpl::StartHistoryNavigationInNewSubframe(
     RenderFrameHostImpl* render_frame_host,
-    const GURL& default_url) {
+    const GURL& default_url,
+    mojom::NavigationClientAssociatedPtrInfo* navigation_client) {
   NavigationEntryImpl* entry =
       GetEntryWithUniqueID(render_frame_host->nav_entry_id());
   if (!entry)
@@ -2176,6 +2177,9 @@ bool NavigationControllerImpl::StartHistoryNavigationInNewSubframe(
   if (!request)
     return false;
 
+  request->SetNavigationClient(std::move(*navigation_client),
+                               render_frame_host->GetSiteInstance()->GetId());
+
   render_frame_host->frame_tree_node()->navigator()->Navigate(
       std::move(request), ReloadType::NONE, RestoreType::NONE);
 
@@ -2193,7 +2197,7 @@ void NavigationControllerImpl::GoToOffsetInSandboxedFrame(
 void NavigationControllerImpl::NavigateFromFrameProxy(
     RenderFrameHostImpl* render_frame_host,
     const GURL& url,
-    const url::Origin& initiator_origin,
+    const base::Optional<url::Origin>& initiator_origin,
     bool is_renderer_initiated,
     SiteInstance* source_site_instance,
     const Referrer& referrer,
@@ -2204,6 +2208,9 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
     scoped_refptr<network::ResourceRequestBody> post_body,
     const std::string& extra_headers,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory) {
+  if (is_renderer_initiated)
+    DCHECK(initiator_origin.has_value());
+
   FrameTreeNode* node = render_frame_host->frame_tree_node();
 
   // Create a NavigationEntry for the transfer, without making it the pending
@@ -2392,8 +2399,12 @@ bool NavigationControllerImpl::NeedsReload() {
 }
 
 void NavigationControllerImpl::SetNeedsReload() {
+  SetNeedsReload(NeedsReloadType::kRequestedByClient);
+}
+
+void NavigationControllerImpl::SetNeedsReload(NeedsReloadType type) {
   needs_reload_ = true;
-  needs_reload_type_ = NeedsReloadType::kRequestedByClient;
+  needs_reload_type_ = type;
 
   if (last_committed_entry_index_ != -1) {
     entries_[last_committed_entry_index_]->SetTransitionType(
@@ -3103,15 +3114,15 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
       params.load_type == LOAD_TYPE_HTTP_POST ? "POST" : "GET",
       params.post_data, base::Optional<SourceLocation>(),
       params.started_from_context_menu, has_user_gesture, InitiatorCSPInfo(),
-      params.href_translate, params.input_start);
+      std::vector<int>(), params.href_translate,
+      false /* is_history_navigation_in_new_child_frame */, params.input_start);
 
   CommitNavigationParams commit_params(
       frame_entry->committed_origin(), override_user_agent,
       params.redirect_chain, common_params.url, common_params.method,
       params.can_load_local_resources, frame_entry->page_state(),
-      entry->GetUniqueID(), false /* is_history_navigation_in_new_child */,
-      entry->GetSubframeUniqueNames(node), true /* intended_as_new_entry */,
-      -1 /* pending_history_list_offset */,
+      entry->GetUniqueID(), entry->GetSubframeUniqueNames(node),
+      true /* intended_as_new_entry */, -1 /* pending_history_list_offset */,
       params.should_clear_history_list ? -1 : GetLastCommittedEntryIndex(),
       params.should_clear_history_list ? 0 : GetEntryCount(),
       is_view_source_mode, params.should_clear_history_list);
@@ -3143,7 +3154,7 @@ NavigationControllerImpl::CreateNavigationRequestFromEntry(
     FrameNavigationEntry* frame_entry,
     ReloadType reload_type,
     bool is_same_document_history_load,
-    bool is_history_navigation_in_new_child) {
+    bool is_history_navigation_in_new_child_frame) {
   GURL dest_url = frame_entry->url();
   base::Optional<url::Origin> origin_to_commit =
       frame_entry->committed_origin();
@@ -3218,13 +3229,14 @@ NavigationControllerImpl::CreateNavigationRequestFromEntry(
   CommonNavigationParams common_params = entry->ConstructCommonNavigationParams(
       *frame_entry, request_body, dest_url, dest_referrer, navigation_type,
       previews_state, navigation_start, base::TimeTicks() /* input_start */);
+  common_params.is_history_navigation_in_new_child_frame =
+      is_history_navigation_in_new_child_frame;
 
   // TODO(clamy): |intended_as_new_entry| below should always be false once
   // Reload no longer leads to this being called for a pending NavigationEntry
   // of index -1.
   CommitNavigationParams commit_params = entry->ConstructCommitNavigationParams(
       *frame_entry, common_params.url, origin_to_commit, common_params.method,
-      is_history_navigation_in_new_child,
       entry->GetSubframeUniqueNames(frame_tree_node),
       GetPendingEntryIndex() == -1 /* intended_as_new_entry */,
       GetIndexOfEntry(entry), GetLastCommittedEntryIndex(), GetEntryCount());

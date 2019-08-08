@@ -23,7 +23,6 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
-#include "media/filters/context_3d.h"
 #include "media/renderers/paint_canvas_video_renderer.h"
 #include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
 #include "skia/ext/platform_canvas.h"
@@ -209,7 +208,7 @@ VideoTrackRecorder::Encoder::~Encoder() {
 }
 
 void VideoTrackRecorder::Encoder::StartFrameEncode(
-    const scoped_refptr<VideoFrame>& video_frame,
+    scoped_refptr<VideoFrame> video_frame,
     base::TimeTicks capture_timestamp) {
   // Cache the thread sending frames on first frame arrival.
   if (!origin_task_runner_.get())
@@ -234,7 +233,7 @@ void VideoTrackRecorder::Encoder::StartFrameEncode(
   if (video_frame->HasTextures()) {
     main_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&Encoder::RetrieveFrameOnMainThread, this,
-                                  video_frame, capture_timestamp));
+                                  std::move(video_frame), capture_timestamp));
     return;
   }
 
@@ -245,15 +244,14 @@ void VideoTrackRecorder::Encoder::StartFrameEncode(
     wrapped_frame = media::WrapAsI420VideoFrame(video_frame);
   } else {
     wrapped_frame = media::VideoFrame::WrapVideoFrame(
-        video_frame, video_frame->format(), video_frame->visible_rect(),
+        *video_frame, video_frame->format(), video_frame->visible_rect(),
         video_frame->natural_size());
   }
   wrapped_frame->AddDestructionObserver(media::BindToCurrentLoop(
       base::BindOnce(&VideoTrackRecorder::Counter::DecreaseCount,
                      num_frames_in_encode_->GetWeakPtr())));
-  wrapped_frame->AddDestructionObserver(
-      base::BindOnce([](const scoped_refptr<VideoFrame>& video_frame) {},
-                     std::move(video_frame)));
+  wrapped_frame->AddDestructionObserver(base::BindOnce(
+      [](scoped_refptr<VideoFrame> video_frame) {}, std::move(video_frame)));
   num_frames_in_encode_->IncreaseCount();
 
   encoding_task_runner_->PostTask(
@@ -262,7 +260,7 @@ void VideoTrackRecorder::Encoder::StartFrameEncode(
 }
 
 void VideoTrackRecorder::Encoder::RetrieveFrameOnMainThread(
-    const scoped_refptr<VideoFrame>& video_frame,
+    scoped_refptr<VideoFrame> video_frame,
     base::TimeTicks capture_timestamp) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
@@ -311,11 +309,7 @@ void VideoTrackRecorder::Encoder::RetrieveFrameOnMainThread(
     if (!video_renderer_)
       video_renderer_.reset(new media::PaintCanvasVideoRenderer);
 
-    DCHECK(context_provider->ContextGL());
-    video_renderer_->Copy(video_frame.get(), canvas_.get(),
-                          media::Context3D(context_provider->ContextGL(),
-                                           context_provider->GrContext()),
-                          context_provider->ContextSupport());
+    video_renderer_->Copy(video_frame.get(), canvas_.get(), context_provider);
 
     SkPixmap pixmap;
     if (!bitmap_.peekPixels(&pixmap)) {
@@ -461,7 +455,7 @@ void VideoTrackRecorder::Resume() {
 }
 
 void VideoTrackRecorder::OnVideoFrameForTesting(
-    const scoped_refptr<media::VideoFrame>& frame,
+    scoped_refptr<media::VideoFrame> frame,
     base::TimeTicks timestamp) {
   DVLOG(3) << __func__;
 
@@ -471,7 +465,7 @@ void VideoTrackRecorder::OnVideoFrameForTesting(
                                      timestamp);
   }
 
-  encoder_->StartFrameEncode(frame, timestamp);
+  encoder_->StartFrameEncode(std::move(frame), timestamp);
 }
 
 void VideoTrackRecorder::InitializeEncoder(
@@ -479,7 +473,7 @@ void VideoTrackRecorder::InitializeEncoder(
     const OnEncodedVideoCB& on_encoded_video_callback,
     int32_t bits_per_second,
     bool allow_vea_encoder,
-    const scoped_refptr<media::VideoFrame>& frame,
+    scoped_refptr<media::VideoFrame> frame,
     base::TimeTicks capture_time) {
   DVLOG(3) << __func__ << frame->visible_rect().size().ToString();
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);

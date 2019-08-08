@@ -9,18 +9,17 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
-#include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/test/views_test_base.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -64,7 +63,7 @@ class TestFocusRules : public wm::BaseFocusRules {
   DISALLOW_COPY_AND_ASSIGN(TestFocusRules);
 };
 
-class NativeWidgetAuraTest : public aura::test::AuraTestBase {
+class NativeWidgetAuraTest : public ViewsTestBase {
  public:
   NativeWidgetAuraTest() = default;
   ~NativeWidgetAuraTest() override = default;
@@ -73,7 +72,7 @@ class NativeWidgetAuraTest : public aura::test::AuraTestBase {
 
   // testing::Test overrides:
   void SetUp() override {
-    AuraTestBase::SetUp();
+    ViewsTestBase::SetUp();
     test_focus_rules_ = new TestFocusRules;
     focus_controller_ =
         std::make_unique<wm::FocusController>(test_focus_rules_);
@@ -98,9 +97,9 @@ TEST_F(NativeWidgetAuraTest, CenterWindowLargeParent) {
   NativeWidgetAura* window = Init(parent.get(), widget.get());
 
   window->CenterWindow(gfx::Size(100, 100));
-  EXPECT_EQ(gfx::Rect( (640 - 100) / 2,
-                       (480 - 100) / 2,
-                       100, 100),
+  EXPECT_EQ(gfx::Rect((640 - 100) / 2,
+                      (480 - 100) / 2,
+                      100, 100),
             window->GetNativeWindow()->bounds());
   widget->CloseNow();
 }
@@ -115,9 +114,9 @@ TEST_F(NativeWidgetAuraTest, CenterWindowSmallParent) {
   NativeWidgetAura* window = Init(parent.get(), widget.get());
 
   window->CenterWindow(gfx::Size(100, 100));
-  EXPECT_EQ(gfx::Rect( (480 - 100) / 2,
-                       (320 - 100) / 2,
-                       100, 100),
+  EXPECT_EQ(gfx::Rect((480 - 100) / 2,
+                      (320 - 100) / 2,
+                      100, 100),
             window->GetNativeWindow()->bounds());
   widget->CloseNow();
 }
@@ -310,9 +309,9 @@ class PropertyTestLayoutManager : public TestLayoutManagerBase {
  private:
   // aura::LayoutManager:
   void OnWindowAddedToLayout(aura::Window* child) override {
-    EXPECT_EQ(ws::mojom::kResizeBehaviorCanResize |
-                  ws::mojom::kResizeBehaviorCanMaximize |
-                  ws::mojom::kResizeBehaviorCanMinimize,
+    EXPECT_EQ(aura::client::kResizeBehaviorCanResize |
+                  aura::client::kResizeBehaviorCanMaximize |
+                  aura::client::kResizeBehaviorCanMinimize,
               child->GetProperty(aura::client::kResizeBehaviorKey));
     added_ = true;
   }

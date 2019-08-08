@@ -8,13 +8,13 @@
 #ifndef GrOp_DEFINED
 #define GrOp_DEFINED
 
-#include "GrGpuResource.h"
-#include "GrNonAtomicRef.h"
-#include "GrTracing.h"
-#include "GrXferProcessor.h"
-#include "SkMatrix.h"
-#include "SkRect.h"
-#include "SkString.h"
+#include "include/core/SkMatrix.h"
+#include "include/core/SkRect.h"
+#include "include/core/SkString.h"
+#include "include/gpu/GrGpuResource.h"
+#include "src/gpu/GrNonAtomicRef.h"
+#include "src/gpu/GrTracing.h"
+#include "src/gpu/GrXferProcessor.h"
 #include <atomic>
 #include <new>
 
@@ -69,24 +69,9 @@ public:
 
     virtual const char* name() const = 0;
 
-    typedef std::function<void(GrSurfaceProxy*)> VisitProxyFunc;
+    using VisitProxyFunc = std::function<void(GrSurfaceProxy*, GrMipMapped)>;
 
-    /**
-     * Knowning the type of visitor may enable an op to be more efficient by skipping irrelevant
-     * proxies on visitProxies.
-     */
-    enum class VisitorType : unsigned {
-        /**
-         * Ops *may* skip proxy visitation for allocation for proxies that have the
-         * canSkipResourceAllocator() property.
-         */
-        kAllocatorGather,
-        /**
-         * Ops should visit all proxies.
-         */
-        kOther,
-    };
-    virtual void visitProxies(const VisitProxyFunc&, VisitorType = VisitorType::kOther) const {
+    virtual void visitProxies(const VisitProxyFunc&) const {
         // This default implementation assumes the op has no proxies
     }
 

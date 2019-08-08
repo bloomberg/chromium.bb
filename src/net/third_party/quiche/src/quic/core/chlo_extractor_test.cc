@@ -70,6 +70,14 @@ class ChloExtractorTest : public QuicTest {
     }
     QuicFramer framer(SupportedVersions(header_.version), QuicTime::Zero(),
                       Perspective::IS_CLIENT, kQuicDefaultConnectionIdLength);
+    if (version.handshake_protocol == PROTOCOL_TLS1_3) {
+      CrypterPair crypters;
+      CryptoUtils::CreateTlsInitialCrypters(Perspective::IS_CLIENT,
+                                            version.transport_version,
+                                            TestConnectionId(), &crypters);
+      framer.SetEncrypter(ENCRYPTION_INITIAL, std::move(crypters.encrypter));
+      framer.SetDecrypter(ENCRYPTION_INITIAL, std::move(crypters.decrypter));
+    }
     if (!QuicVersionUsesCryptoFrames(version.transport_version) ||
         munge_stream_id) {
       QuicStreamId stream_id =
@@ -133,11 +141,15 @@ TEST_F(ChloExtractorTest, FindsValidChlo) {
 }
 
 TEST_F(ChloExtractorTest, DoesNotFindValidChloOnWrongStream) {
+  ParsedQuicVersion version = AllSupportedVersions()[0];
+  if (QuicVersionUsesCryptoFrames(version.transport_version)) {
+    return;
+  }
   CryptoHandshakeMessage client_hello;
   client_hello.set_tag(kCHLO);
 
   std::string client_hello_str(client_hello.GetSerialized().AsStringPiece());
-  MakePacket(AllSupportedVersions()[0], client_hello_str,
+  MakePacket(version, client_hello_str,
              /*munge_offset*/ false, /*munge_stream_id*/ true);
   EXPECT_FALSE(ChloExtractor::Extract(*packet_, AllSupportedVersions(), {},
                                       &delegate_,
@@ -157,7 +169,11 @@ TEST_F(ChloExtractorTest, DoesNotFindValidChloOnWrongOffset) {
 }
 
 TEST_F(ChloExtractorTest, DoesNotFindInvalidChlo) {
-  MakePacket(AllSupportedVersions()[0], "foo", /*munge_offset*/ false,
+  ParsedQuicVersion version = AllSupportedVersions()[0];
+  if (QuicVersionUsesCryptoFrames(version.transport_version)) {
+    return;
+  }
+  MakePacket(version, "foo", /*munge_offset*/ false,
              /*munge_stream_id*/ true);
   EXPECT_FALSE(ChloExtractor::Extract(*packet_, AllSupportedVersions(), {},
                                       &delegate_,

@@ -38,15 +38,35 @@ class DataSource {
   // source.
   void Cancelled();
 
-  // Reads data from the source. Then |callback| is invoked with read
-  // data. If Cancelled() is invoked or DataSource is destroyed before
-  // completion, the callback is never called.
+  // Search the set of offered MIME types for the most preferred of each of the
+  // following categories: text/plain*, text/rtf, text/html*, image/*. If any
+  // usable MIME types in a given category are available, the corresponding
+  // |*_reader| input callback will be called with the best one and the
+  // corresponding data. For any category that has no available MIME types,
+  // |failure_callback| is run. |failure_callback| may therefore be run as many
+  // as four times.
   using ReadDataCallback =
-      base::OnceCallback<void(const std::vector<uint8_t>&)>;
-  void ReadData(ReadDataCallback callback);
+      base::OnceCallback<void(const std::string&, const std::vector<uint8_t>&)>;
+  void GetDataForPreferredMimeTypes(ReadDataCallback text_reader,
+                                    ReadDataCallback rtf_reader,
+                                    ReadDataCallback html_reader,
+                                    ReadDataCallback image_reader,
+                                    base::RepeatingClosure failure_callback);
+
+  void ReadDataForTesting(const std::string& mime_type,
+                          ReadDataCallback callback);
 
  private:
-  void OnDataRead(ReadDataCallback callback, const std::vector<uint8_t>&);
+  // Reads data from the source. Then |callback| is invoked with read data. If
+  // Cancelled() is invoked or DataSource is destroyed before completion,
+  // |callback| is never called, and |failure_callback| is run instead.
+  void ReadData(const std::string& mime_type,
+                ReadDataCallback callback,
+                base::OnceClosure failure_callback);
+
+  void OnDataRead(ReadDataCallback callback,
+                  const std::string& mime_type,
+                  const std::vector<uint8_t>&);
 
   DataSourceDelegate* const delegate_;
   base::ObserverList<DataSourceObserver>::Unchecked observers_;

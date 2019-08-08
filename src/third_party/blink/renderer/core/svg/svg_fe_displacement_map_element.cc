@@ -35,8 +35,7 @@ const SVGEnumerationMap& GetEnumerationMap<ChannelSelectorType>() {
   return entries;
 }
 
-inline SVGFEDisplacementMapElement::SVGFEDisplacementMapElement(
-    Document& document)
+SVGFEDisplacementMapElement::SVGFEDisplacementMapElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFEDisplacementMapTag,
                                            document),
       scale_(MakeGarbageCollected<SVGAnimatedNumber>(this,
@@ -69,8 +68,6 @@ void SVGFEDisplacementMapElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(y_channel_selector_);
   SVGFilterPrimitiveStandardAttributes::Trace(visitor);
 }
-
-DEFINE_NODE_FACTORY(SVGFEDisplacementMapElement)
 
 bool SVGFEDisplacementMapElement::SetFilterEffectAttribute(
     FilterEffect* effect,

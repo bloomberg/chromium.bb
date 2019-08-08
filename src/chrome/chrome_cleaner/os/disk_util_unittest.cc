@@ -9,6 +9,7 @@
 #include <shlobj.h>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -24,6 +25,7 @@
 #include "base/test/scoped_path_override.h"
 #include "base/test/test_shortcut_win.h"
 #include "base/test/test_timeouts.h"
+#include "base/unguessable_token.h"
 #include "base/win/windows_version.h"
 #include "chrome/chrome_cleaner/os/file_path_sanitization.h"
 #include "chrome/chrome_cleaner/os/layered_service_provider_wrapper.h"
@@ -786,9 +788,7 @@ TEST(DiskUtilTests, GetAppDataProductDirectory) {
   EXPECT_TRUE(PathEqual(appdata_dir, product_folder.DirName().DirName()));
 }
 
-// TODO(crbug.com/867550): This does not work in component builds because
-// test_process.exe depends on DLL's that don't get copied. Fix and re-enable.
-TEST(DiskUtilTests, DISABLED_ZoneIdentifier) {
+TEST(DiskUtilTests, ZoneIdentifier) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath path(temp_dir.GetPath().Append(kTestProcessExecutableName));
@@ -817,33 +817,39 @@ TEST(DiskUtilTests, DISABLED_ZoneIdentifier) {
   EXPECT_EQ("[ZoneTransfer]\r\nZoneId=0\r\n", content);
 }
 
-// TODO(crbug.com/867550): This does not work in component builds because
-// test_process.exe depends on DLL's that don't get copied. Fix and re-enable.
-TEST(DiskUtilTests, DISABLED_ZoneIdentifierWhenProcessIsRunning) {
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+TEST(DiskUtilTests, ZoneIdentifierWhenProcessIsRunning) {
+  base::FilePath executable_path;
+  ASSERT_TRUE(base::PathService::Get(base::DIR_EXE, &executable_path));
 
-  if (!DoesVolumeSupportNamedStreams(temp_dir.GetPath())) {
+  if (!DoesVolumeSupportNamedStreams(executable_path)) {
     LOG(ERROR) << "Skip ZoneIdentifier : alternate streams not supported.";
     return;
   }
 
-  // Copy the test_process executable in a temporary folder.
-  base::FilePath executable_path;
-  ASSERT_TRUE(base::PathService::Get(base::DIR_EXE, &executable_path));
+  // Copy the test_process executable to a temporary name. We don't use a
+  // ScopedTempDir here because in a component build, the executable depends on
+  // DLL's that would have to be copied into the folder too.
   base::FilePath source_exe_path(
       executable_path.Append(kTestProcessExecutableName));
-  base::FilePath target_exe_path(
-      temp_dir.GetPath().Append(kTestProcessExecutableName));
+  base::string16 target_exe_name = base::StrCat(
+      {base::UTF8ToUTF16(base::UnguessableToken::Create().ToString()),
+       L".exe"});
+  base::FilePath target_exe_path(executable_path.Append(target_exe_name));
+
   ASSERT_TRUE(base::CopyFile(source_exe_path, target_exe_path));
+  base::ScopedClosureRunner delete_temp_file(base::BindOnce(
+      [](const base::FilePath& temp_file) {
+        base::DeleteFile(temp_file, /*recursive=*/false);
+      },
+      target_exe_path));
 
   // Launch the test_process and wait it's completion. The process must set its
   // zone identifier.
   EXPECT_FALSE(HasZoneIdentifier(target_exe_path));
-  ASSERT_FALSE(IsProcessRunning(kTestProcessExecutableName));
+  ASSERT_FALSE(IsProcessRunning(target_exe_name.c_str()));
   ASSERT_TRUE(LaunchTestProcess(target_exe_path.value().c_str(),
                                 kTestForceOverwriteZoneIdentifier, false));
-  EXPECT_TRUE(WaitForProcessesStopped(kTestProcessExecutableName));
+  EXPECT_TRUE(WaitForProcessesStopped(target_exe_name.c_str()));
   EXPECT_TRUE(HasZoneIdentifier(target_exe_path));
 
   // Validate the content of the Zone.Identifier stream.

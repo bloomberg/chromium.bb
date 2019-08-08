@@ -34,7 +34,6 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
@@ -46,7 +45,6 @@
 #include "third_party/blink/renderer/modules/filesystem/dom_file_system_base.h"
 #include "third_party/blink/renderer/modules/filesystem/entry.h"
 #include "third_party/blink/renderer/modules/filesystem/file_entry.h"
-#include "third_party/blink/renderer/modules/filesystem/file_system_base_handle.h"
 #include "third_party/blink/renderer/modules/filesystem/file_writer.h"
 #include "third_party/blink/renderer/modules/filesystem/metadata.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"

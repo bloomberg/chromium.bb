@@ -74,16 +74,20 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
           const FrameSinkId& frame_sink_id,
           std::unique_ptr<OutputSurface> output_surface,
           std::unique_ptr<DisplayScheduler> scheduler,
-          scoped_refptr<base::SingleThreadTaskRunner> current_task_runner,
-          SkiaOutputSurface* skia_output_surface = nullptr);
+          scoped_refptr<base::SingleThreadTaskRunner> current_task_runner);
 
   ~Display() override;
 
   // TODO(cblume, crbug.com/900973): |enable_shared_images| is a temporary
   // solution that unblocks us until SharedImages are threadsafe in WebView.
+#if defined(ANDROID)
+  static constexpr bool kEnableSharedImages = false;
+#else
+  static constexpr bool kEnableSharedImages = true;
+#endif
   void Initialize(DisplayClient* client,
                   SurfaceManager* surface_manager,
-                  bool enable_shared_images = false);
+                  bool enable_shared_images = kEnableSharedImages);
 
   void AddObserver(DisplayObserver* observer);
   void RemoveObserver(DisplayObserver* observer);
@@ -146,6 +150,9 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   void RemoveOverdrawQuads(CompositorFrame* frame);
 
   void SetSupportedFrameIntervals(std::vector<base::TimeDelta> intervals);
+  void SetDisplayTransformHint(gfx::OverlayTransform transform);
+
+  base::ScopedClosureRunner GetCacheBackBufferCb();
 
  private:
   // TODO(cblume, crbug.com/900973): |enable_shared_images| is a temporary
@@ -173,8 +180,8 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   bool swapped_since_resize_ = false;
   bool output_is_secure_ = false;
 
-  SkiaOutputSurface* skia_output_surface_;
   std::unique_ptr<OutputSurface> output_surface_;
+  SkiaOutputSurface* const skia_output_surface_;
   std::unique_ptr<DisplayScheduler> scheduler_;
   std::unique_ptr<DisplayResourceProvider> resource_provider_;
   std::unique_ptr<SurfaceAggregator> aggregator_;
@@ -191,7 +198,6 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
       pending_presented_callbacks_;
 
   int64_t swapped_trace_id_ = 0;
-  int64_t last_acked_trace_id_ = 0;
   int64_t last_presented_trace_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(Display);

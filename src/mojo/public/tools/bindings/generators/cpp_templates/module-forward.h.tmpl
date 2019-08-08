@@ -39,27 +39,35 @@ namespace {{variant}} {
 #ifndef {{header_guard}}
 #define {{header_guard}}
 
-#include "mojo/public/cpp/bindings/struct_ptr.h"
+{% if all_enums|length -%}
+#include <stdint.h>
+{%- endif %}
 
-{% if not disallow_interfaces -%}
+{% if structs|length -%}
+#include "mojo/public/cpp/bindings/struct_ptr.h"
+{%- endif %}
+
+{% if not disallow_interfaces and interfaces|length -%}
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/lib/control_message_handler.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/raw_ptr_impl_ref_traits.h"
 #include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
 {%- endif %}
 
-{% if not disallow_native_types %}
+{% if not disallow_native_types and structs|length %}
 #include "mojo/public/cpp/bindings/lib/native_enum_serialization.h"
 #include "mojo/public/cpp/bindings/lib/native_struct_serialization.h"
 {%- endif %}
 
-{%- if export_header %}
+{%- if export_header and module.constants|length %}
 #include "{{export_header}}"
 {%- endif %}
 
@@ -92,7 +100,12 @@ using {{enum|get_name_for_kind(flatten_nested_kind=True)}} = mojo::NativeEnum;
 {%- from "enum_macros.tmpl" import enum_hash_blink_forward%}
 {%- if for_blink %}
 {%-   if all_enums %}
-#include "third_party/blink/renderer/platform/wtf/hash_functions.h"
+
+namespace WTF {
+template <typename T>
+struct DefaultHash;
+}
+
 {%-   endif %}
 
 {%-   for enum in all_enums %}

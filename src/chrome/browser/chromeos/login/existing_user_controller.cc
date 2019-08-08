@@ -65,7 +65,12 @@
 #include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
+#include "chrome/browser/ui/webui/chromeos/login/encryption_migration_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/kiosk_autolaunch_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/kiosk_enable_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
+#include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/wrong_hwid_screen_handler.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -78,7 +83,9 @@
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/login/auth/key.h"
+#include "chromeos/login/session/session_termination_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_util.h"
 #include "components/google/core/common/google_util.h"
@@ -120,6 +127,8 @@
 #include "ui/views/widget/widget.h"
 
 using PolicyFetchResult = policy::PreSigninPolicyFetcher::PolicyFetchResult;
+using RebootOnSignOutPolicy =
+    enterprise_management::DeviceRebootOnUserSignoutProto;
 
 namespace apu = arc::policy_util;
 
@@ -406,6 +415,15 @@ void ExistingUserController::Init(const user_manager::UserList& users) {
 
 void ExistingUserController::UpdateLoginDisplay(
     const user_manager::UserList& users) {
+  int reboot_on_signout_policy = -1;
+  cros_settings_->GetInteger(kDeviceRebootOnUserSignout,
+                             &reboot_on_signout_policy);
+  if (reboot_on_signout_policy != -1 &&
+      reboot_on_signout_policy !=
+          RebootOnSignOutPolicy::REBOOT_ON_SIGNOUT_MODE_UNSPECIFIED &&
+      reboot_on_signout_policy != RebootOnSignOutPolicy::NEVER) {
+    SessionTerminationManager::Get()->RebootIfNecessary();
+  }
   bool show_users_on_signin;
   user_manager::UserList filtered_users;
 
@@ -727,11 +745,11 @@ void ExistingUserController::SetDisplayAndGivenName(
 }
 
 void ExistingUserController::ShowWrongHWIDScreen() {
-  GetLoginDisplayHost()->StartWizard(OobeScreen::SCREEN_WRONG_HWID);
+  GetLoginDisplayHost()->StartWizard(WrongHWIDScreenView::kScreenId);
 }
 
 void ExistingUserController::ShowUpdateRequiredScreen() {
-  GetLoginDisplayHost()->StartWizard(OobeScreen::SCREEN_UPDATE_REQUIRED);
+  GetLoginDisplayHost()->StartWizard(UpdateRequiredView::kScreenId);
 }
 
 void ExistingUserController::Signout() {
@@ -777,30 +795,30 @@ void ExistingUserController::OnEnrollmentOwnershipCheckCompleted(
 }
 
 void ExistingUserController::ShowEnrollmentScreen() {
-  GetLoginDisplayHost()->StartWizard(OobeScreen::SCREEN_OOBE_ENROLLMENT);
+  GetLoginDisplayHost()->StartWizard(EnrollmentScreenView::kScreenId);
 }
 
 void ExistingUserController::ShowEnableDebuggingScreen() {
-  GetLoginDisplayHost()->StartWizard(OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING);
+  GetLoginDisplayHost()->StartWizard(EnableDebuggingScreenView::kScreenId);
 }
 
 void ExistingUserController::ShowKioskEnableScreen() {
-  GetLoginDisplayHost()->StartWizard(OobeScreen::SCREEN_KIOSK_ENABLE);
+  GetLoginDisplayHost()->StartWizard(KioskEnableScreenView::kScreenId);
 }
 
 void ExistingUserController::ShowKioskAutolaunchScreen() {
-  GetLoginDisplayHost()->StartWizard(OobeScreen::SCREEN_KIOSK_AUTOLAUNCH);
+  GetLoginDisplayHost()->StartWizard(KioskAutolaunchScreenView::kScreenId);
 }
 
 void ExistingUserController::ShowEncryptionMigrationScreen(
     const UserContext& user_context,
     EncryptionMigrationMode migration_mode) {
-  GetLoginDisplayHost()->StartWizard(OobeScreen::SCREEN_ENCRYPTION_MIGRATION);
+  GetLoginDisplayHost()->StartWizard(EncryptionMigrationScreenView::kScreenId);
 
   EncryptionMigrationScreen* migration_screen =
       static_cast<EncryptionMigrationScreen*>(
           WizardController::default_controller()->GetScreen(
-              OobeScreen::SCREEN_ENCRYPTION_MIGRATION));
+              EncryptionMigrationScreenView::kScreenId));
   DCHECK(migration_screen);
   migration_screen->SetUserContext(user_context);
   migration_screen->SetMode(migration_mode);
@@ -856,12 +874,13 @@ void ExistingUserController::OnAuthFailure(const AuthFailure& failure) {
       last_login_attempt_account_id_);
   if (failure.reason() == AuthFailure::OWNER_REQUIRED) {
     ShowError(IDS_LOGIN_ERROR_OWNER_REQUIRED, error);
-    // Using Untretained here is safe because SessionManagerClient is destroyed
-    // after the task runner, in ChromeBrowserMainParts::PostDestroyThreads().
+    // Using Untretained here is safe because SessionTerminationManager is
+    // destroyed after the task runner, in
+    // ChromeBrowserMainParts::PostDestroyThreads().
     base::PostDelayedTaskWithTraits(
         FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&SessionManagerClient::StopSession,
-                       base::Unretained(SessionManagerClient::Get())),
+        base::BindOnce(&SessionTerminationManager::StopSession,
+                       base::Unretained(SessionTerminationManager::Get())),
         base::TimeDelta::FromMilliseconds(kSafeModeRestartUiDelayMs));
   } else if (failure.reason() == AuthFailure::TPM_ERROR) {
     ShowTPMError();
@@ -1001,8 +1020,8 @@ void ExistingUserController::ShowAutoLaunchManagedGuestSessionNotification() {
       l10n_util::GetStringUTF16(IDS_AUTO_LAUNCH_NOTIFICATION_BUTTON)));
   const base::string16 title =
       l10n_util::GetStringUTF16(IDS_AUTO_LAUNCH_NOTIFICATION_TITLE);
-  const base::string16 message =
-      l10n_util::GetStringUTF16(IDS_AUTO_LAUNCH_NOTIFICATION_MESSAGE);
+  const base::string16 message = l10n_util::GetStringUTF16(
+      IDS_ASH_LOGIN_MANAGED_SESSION_MONITORING_FULL_WARNING);
   auto delegate =
       base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
           base::BindRepeating([](base::Optional<int> button_index) {

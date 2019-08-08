@@ -11,7 +11,6 @@
 <translation id="1206693055195146388">ползунок</translation>
 <translation id="1211441953136645838">концевая сноска</translation>
 <translation id="1281252709823657822">диалоговое окно</translation>
-<translation id="1289247557029249093">Выйти из режима "Картинка в картинке"</translation>
 <translation id="1335095011850992622">выходные сведения</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">баннер</translation>
@@ -37,6 +36,7 @@
 <translation id="2148716181193084225">Сегодня</translation>
 <translation id="2158401438286456825">список страниц</translation>
 <translation id="2226276347425096477">Длина текста не должна превышать <ph name="MAX_CHARACTERS" /> симв. (сейчас <ph name="CURRENT_LENGTH" /> симв.).</translation>
+<translation id="2246498165605549352">Локальный файл</translation>
 <translation id="2247351761944213033">Неделя <ph name="WEEKNUMBER" />, <ph name="YEAR" /></translation>
 <translation id="2277199496770840904">Трек <ph name="NUMBER" /></translation>
 <translation id="2291999235780842123">флажок</translation>
@@ -75,6 +75,7 @@
 <translation id="3685101356851116974">Изображение без описания</translation>
 <translation id="3706100364254443312">переключить</translation>
 <translation id="3732799496749320381">мм</translation>
+<translation id="3754210790023674521">Выйти из режима "Картинка в картинке"</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> ГБ</translation>
 <translation id="3808586225841795776">запрос</translation>
 <translation id="3822383571486410024">Минимально допустимое количество символов: <ph name="MIN_CHARACTERS" />. Длина текста сейчас: <ph name="CURRENT_LENGTH" />.</translation>
@@ -102,6 +103,7 @@
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">Часть адреса после символа "<ph name="ATSIGN" />" не должна содержать символ "<ph name="INVALIDCHARACTER" />".</translation>
 <translation id="4668956016107839909">приложение</translation>
+<translation id="4718048029184481307">Воспроизведение в режиме "Картинка в картинке"</translation>
 <translation id="4742539557769756338">обложка</translation>
 <translation id="4748357248530471599">Переключить вырезанную область на полный экран</translation>
 <translation id="4757246831282535685">панель вкладок</translation>
@@ -150,7 +152,7 @@
 <translation id="6166809985690652833">послесловие</translation>
 <translation id="6209276755895393898">Кажется, это "<ph name="DESCRIPTION" />"</translation>
 <translation id="6213469881011901533">словарь</translation>
-<translation id="628938136236500310">Воспроизведение в режиме "Картинка в картинке"</translation>
+<translation id="6310801910862476708">Выйти из режима "Картинка в картинке"</translation>
 <translation id="6398862346408813489">Показать панель выбора месяца</translation>
 <translation id="6404546809543547843">полоса воспроизведения</translation>
 <translation id="6443871981718447451">показать меню субтитров</translation>

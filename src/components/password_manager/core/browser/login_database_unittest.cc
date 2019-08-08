@@ -42,8 +42,11 @@ using autofill::PasswordForm;
 using autofill::ValueElementPair;
 using autofill::ValueElementVector;
 using base::ASCIIToUTF16;
+using base::UTF16ToASCII;
 using ::testing::Eq;
+using ::testing::Ne;
 using ::testing::Pointee;
+using ::testing::SizeIs;
 using ::testing::UnorderedElementsAre;
 
 namespace password_manager {
@@ -74,7 +77,7 @@ void GenerateExamplePasswordForm(PasswordForm* form) {
   form->submit_element = ASCIIToUTF16("signIn");
   form->signon_realm = "http://www.google.com/";
   form->preferred = false;
-  form->scheme = PasswordForm::SCHEME_HTML;
+  form->scheme = PasswordForm::Scheme::kHtml;
   form->times_used = 1;
   form->form_data.name = ASCIIToUTF16("form_name");
   form->date_synced = base::Time::Now();
@@ -88,20 +91,24 @@ void GenerateExamplePasswordForm(PasswordForm* form) {
 // Helper functions to read the value of the first column of an executed
 // statement if we know its type. You must implement a specialization for
 // every column type you use.
-template<class T> struct must_be_specialized {
+template <class T>
+struct must_be_specialized {
   static const bool is_specialized = false;
 };
 
-template<class T> T GetFirstColumn(const sql::Statement& s) {
+template <class T>
+T GetFirstColumn(const sql::Statement& s) {
   static_assert(must_be_specialized<T>::is_specialized,
                 "Implement a specialization.");
 }
 
-template<> int64_t GetFirstColumn(const sql::Statement& s) {
+template <>
+int64_t GetFirstColumn(const sql::Statement& s) {
   return s.ColumnInt64(0);
 }
 
-template<> std::string GetFirstColumn(const sql::Statement& s) {
+template <>
+std::string GetFirstColumn(const sql::Statement& s) {
   return s.ColumnString(0);
 }
 
@@ -152,18 +159,18 @@ MATCHER(IsGoogle1Account, "") {
   return arg.origin.spec() == "https://accounts.google.com/ServiceLogin" &&
          arg.action.spec() == "https://accounts.google.com/ServiceLoginAuth" &&
          arg.username_value == ASCIIToUTF16("theerikchen") &&
-         arg.scheme == PasswordForm::SCHEME_HTML;
+         arg.scheme == PasswordForm::Scheme::kHtml;
 }
 
 MATCHER(IsGoogle2Account, "") {
   return arg.origin.spec() == "https://accounts.google.com/ServiceLogin" &&
          arg.action.spec() == "https://accounts.google.com/ServiceLoginAuth" &&
          arg.username_value == ASCIIToUTF16("theerikchen2") &&
-         arg.scheme == PasswordForm::SCHEME_HTML;
+         arg.scheme == PasswordForm::Scheme::kHtml;
 }
 
 MATCHER(IsBasicAuthAccount, "") {
-  return arg.scheme == PasswordForm::SCHEME_BASIC;
+  return arg.scheme == PasswordForm::Scheme::kBasic;
 }
 
 }  // namespace
@@ -209,7 +216,7 @@ class LoginDatabaseTest : public testing::Test {
     html_form.password_element = ASCIIToUTF16("password");
     html_form.submit_element = ASCIIToUTF16("");
     html_form.signon_realm = "http://example.com/";
-    html_form.scheme = PasswordForm::SCHEME_HTML;
+    html_form.scheme = PasswordForm::Scheme::kHtml;
     html_form.date_created = now;
 
     // Add them and make sure they are there.
@@ -454,7 +461,7 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatching) {
   form.submit_element = ASCIIToUTF16("");
   form.signon_realm = "https://foo.com/";
   form.preferred = false;
-  form.scheme = PasswordForm::SCHEME_HTML;
+  form.scheme = PasswordForm::Scheme::kHtml;
 
   // Add it and make sure it is there.
   EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
@@ -499,7 +506,7 @@ TEST_F(LoginDatabaseTest, TestFederatedMatching) {
   form.password_value = ASCIIToUTF16("test");
   form.signon_realm = "https://foo.com/";
   form.preferred = false;
-  form.scheme = PasswordForm::SCHEME_HTML;
+  form.scheme = PasswordForm::Scheme::kHtml;
 
   // We go to the mobile site.
   PasswordForm form2(form);
@@ -507,7 +514,7 @@ TEST_F(LoginDatabaseTest, TestFederatedMatching) {
   form2.action = GURL("https://mobile.foo.com/login");
   form2.signon_realm = "federation://mobile.foo.com/accounts.google.com";
   form2.username_value = ASCIIToUTF16("test1@gmail.com");
-  form2.type = PasswordForm::TYPE_API;
+  form2.type = PasswordForm::Type::kApi;
   form2.federation_origin =
       url::Origin::Create(GURL("https://accounts.google.com/"));
 
@@ -518,8 +525,9 @@ TEST_F(LoginDatabaseTest, TestFederatedMatching) {
   EXPECT_EQ(2U, result.size());
 
   // Match against desktop.
-  PasswordStore::FormDigest form_request = {
-      PasswordForm::SCHEME_HTML, "https://foo.com/", GURL("https://foo.com/")};
+  PasswordStore::FormDigest form_request = {PasswordForm::Scheme::kHtml,
+                                            "https://foo.com/",
+                                            GURL("https://foo.com/")};
   EXPECT_TRUE(db().GetLogins(form_request, &result));
   // Both forms are matched, only form2 is a PSL match.
   form.is_public_suffix_match = false;
@@ -543,8 +551,8 @@ TEST_F(LoginDatabaseTest, TestFederatedMatchingLocalhost) {
   form.federation_origin =
       url::Origin::Create(GURL("https://accounts.google.com/"));
   form.username_value = ASCIIToUTF16("test@gmail.com");
-  form.type = PasswordForm::TYPE_API;
-  form.scheme = PasswordForm::SCHEME_HTML;
+  form.type = PasswordForm::Type::kApi;
+  form.scheme = PasswordForm::Scheme::kHtml;
 
   PasswordForm form_with_port(form);
   form_with_port.origin = GURL("http://localhost:8080/");
@@ -554,7 +562,7 @@ TEST_F(LoginDatabaseTest, TestFederatedMatchingLocalhost) {
   EXPECT_EQ(AddChangeForForm(form_with_port), db().AddLogin(form_with_port));
 
   // Match localhost with and without port.
-  PasswordStore::FormDigest form_request(PasswordForm::SCHEME_HTML,
+  PasswordStore::FormDigest form_request(PasswordForm::Scheme::kHtml,
                                          "http://localhost/",
                                          GURL("http://localhost/"));
   std::vector<std::unique_ptr<PasswordForm>> result;
@@ -568,25 +576,25 @@ TEST_F(LoginDatabaseTest, TestFederatedMatchingLocalhost) {
 }
 
 TEST_F(LoginDatabaseTest, TestPublicSuffixDisabledForNonHTMLForms) {
-  TestNonHTMLFormPSLMatching(PasswordForm::SCHEME_BASIC);
-  TestNonHTMLFormPSLMatching(PasswordForm::SCHEME_DIGEST);
-  TestNonHTMLFormPSLMatching(PasswordForm::SCHEME_OTHER);
+  TestNonHTMLFormPSLMatching(PasswordForm::Scheme::kBasic);
+  TestNonHTMLFormPSLMatching(PasswordForm::Scheme::kDigest);
+  TestNonHTMLFormPSLMatching(PasswordForm::Scheme::kOther);
 }
 
 TEST_F(LoginDatabaseTest, TestIPAddressMatches_HTML) {
-  TestRetrievingIPAddress(PasswordForm::SCHEME_HTML);
+  TestRetrievingIPAddress(PasswordForm::Scheme::kHtml);
 }
 
 TEST_F(LoginDatabaseTest, TestIPAddressMatches_basic) {
-  TestRetrievingIPAddress(PasswordForm::SCHEME_BASIC);
+  TestRetrievingIPAddress(PasswordForm::Scheme::kBasic);
 }
 
 TEST_F(LoginDatabaseTest, TestIPAddressMatches_digest) {
-  TestRetrievingIPAddress(PasswordForm::SCHEME_DIGEST);
+  TestRetrievingIPAddress(PasswordForm::Scheme::kDigest);
 }
 
 TEST_F(LoginDatabaseTest, TestIPAddressMatches_other) {
-  TestRetrievingIPAddress(PasswordForm::SCHEME_OTHER);
+  TestRetrievingIPAddress(PasswordForm::Scheme::kOther);
 }
 
 TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingShouldMatchingApply) {
@@ -607,7 +615,7 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingShouldMatchingApply) {
   form.submit_element = ASCIIToUTF16("");
   form.signon_realm = "https://accounts.google.com/";
   form.preferred = false;
-  form.scheme = PasswordForm::SCHEME_HTML;
+  form.scheme = PasswordForm::Scheme::kHtml;
 
   // Add it and make sure it is there.
   EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
@@ -621,7 +629,7 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingShouldMatchingApply) {
   result.clear();
 
   // We go to a different site on the same domain where feature is not needed.
-  PasswordStore::FormDigest form2 = {PasswordForm::SCHEME_HTML,
+  PasswordStore::FormDigest form2 = {PasswordForm::Scheme::kHtml,
                                      "https://some.other.google.com/",
                                      GURL("https://some.other.google.com/")};
 
@@ -645,7 +653,7 @@ TEST_F(LoginDatabaseTest, TestFederatedMatchingWithoutPSLMatching) {
   form.password_value = ASCIIToUTF16("test");
   form.signon_realm = "https://accounts.google.com/";
   form.preferred = false;
-  form.scheme = PasswordForm::SCHEME_HTML;
+  form.scheme = PasswordForm::Scheme::kHtml;
 
   // We go to a different site on the same domain where PSL is disabled.
   PasswordForm form2(form);
@@ -653,7 +661,7 @@ TEST_F(LoginDatabaseTest, TestFederatedMatchingWithoutPSLMatching) {
   form2.action = GURL("https://some.other.google.com/login");
   form2.signon_realm = "federation://some.other.google.com/accounts.google.com";
   form2.username_value = ASCIIToUTF16("test1@gmail.com");
-  form2.type = PasswordForm::TYPE_API;
+  form2.type = PasswordForm::Type::kApi;
   form2.federation_origin =
       url::Origin::Create(GURL("https://accounts.google.com/"));
 
@@ -664,7 +672,7 @@ TEST_F(LoginDatabaseTest, TestFederatedMatchingWithoutPSLMatching) {
   EXPECT_EQ(2U, result.size());
 
   // Match against the first one.
-  PasswordStore::FormDigest form_request = {PasswordForm::SCHEME_HTML,
+  PasswordStore::FormDigest form_request = {PasswordForm::Scheme::kHtml,
                                             form.signon_realm, form.origin};
   EXPECT_TRUE(db().GetLogins(form_request, &result));
   EXPECT_THAT(result, testing::ElementsAre(Pointee(form)));
@@ -686,14 +694,14 @@ TEST_F(LoginDatabaseTest, TestFederatedPSLMatching) {
   form.action = GURL("https://psl.example.com/login");
   form.signon_realm = "federation://psl.example.com/accounts.google.com";
   form.username_value = ASCIIToUTF16("test1@gmail.com");
-  form.type = PasswordForm::TYPE_API;
+  form.type = PasswordForm::Type::kApi;
   form.federation_origin =
       url::Origin::Create(GURL("https://accounts.google.com/"));
-  form.scheme = PasswordForm::SCHEME_HTML;
+  form.scheme = PasswordForm::Scheme::kHtml;
   EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
 
   // Match against.
-  PasswordStore::FormDigest form_request = {PasswordForm::SCHEME_HTML,
+  PasswordStore::FormDigest form_request = {PasswordForm::Scheme::kHtml,
                                             "https://example.com/",
                                             GURL("https://example.com/login")};
   std::vector<std::unique_ptr<PasswordForm>> result;
@@ -723,7 +731,7 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingDifferentSites) {
   form.submit_element = ASCIIToUTF16("");
   form.signon_realm = "https://foo.com/";
   form.preferred = false;
-  form.scheme = PasswordForm::SCHEME_HTML;
+  form.scheme = PasswordForm::Scheme::kHtml;
 
   // Add it and make sure it is there.
   EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
@@ -758,7 +766,7 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingDifferentSites) {
   form.submit_element = ASCIIToUTF16("");
   form.signon_realm = "https://baz.com/";
   form.preferred = false;
-  form.scheme = PasswordForm::SCHEME_HTML;
+  form.scheme = PasswordForm::Scheme::kHtml;
 
   // Add it and make sure it is there.
   EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
@@ -806,7 +814,7 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingRegexp) {
   form.submit_element = ASCIIToUTF16("");
   form.signon_realm = "http://foo.com/";
   form.preferred = false;
-  form.scheme = PasswordForm::SCHEME_HTML;
+  form.scheme = PasswordForm::Scheme::kHtml;
 
   // Add it and make sure it is there.
   EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
@@ -1113,7 +1121,7 @@ TEST_F(LoginDatabaseTest, BlacklistedLogins) {
   form.signon_realm = "http://www.google.com/";
   form.preferred = true;
   form.blacklisted_by_user = true;
-  form.scheme = PasswordForm::SCHEME_HTML;
+  form.scheme = PasswordForm::Scheme::kHtml;
   form.date_synced = base::Time::Now();
   form.display_name = ASCIIToUTF16("Mr. Smith");
   form.icon_url = GURL("https://accounts.google.com/Icon");
@@ -1173,7 +1181,7 @@ TEST_F(LoginDatabaseTest, UpdateIncompleteCredentials) {
   incomplete_form.password_value = ASCIIToUTF16("my_password");
   incomplete_form.preferred = true;
   incomplete_form.blacklisted_by_user = false;
-  incomplete_form.scheme = PasswordForm::SCHEME_HTML;
+  incomplete_form.scheme = PasswordForm::Scheme::kHtml;
   EXPECT_EQ(AddChangeForForm(incomplete_form), db().AddLogin(incomplete_form));
 
   // A form on some website. It should trigger a match with the stored one.
@@ -1238,7 +1246,7 @@ TEST_F(LoginDatabaseTest, UpdateOverlappingCredentials) {
   incomplete_form.password_value = ASCIIToUTF16("my_password");
   incomplete_form.preferred = true;
   incomplete_form.blacklisted_by_user = false;
-  incomplete_form.scheme = PasswordForm::SCHEME_HTML;
+  incomplete_form.scheme = PasswordForm::Scheme::kHtml;
   EXPECT_EQ(AddChangeForForm(incomplete_form), db().AddLogin(incomplete_form));
 
   // Save a complete version of the previous form. Both forms could exist if
@@ -1284,7 +1292,7 @@ TEST_F(LoginDatabaseTest, DoubleAdd) {
   form.password_value = ASCIIToUTF16("my_password");
   form.preferred = true;
   form.blacklisted_by_user = false;
-  form.scheme = PasswordForm::SCHEME_HTML;
+  form.scheme = PasswordForm::Scheme::kHtml;
   EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
 
   // Add almost the same form again.
@@ -1304,7 +1312,7 @@ TEST_F(LoginDatabaseTest, AddWrongForm) {
   form.password_value = ASCIIToUTF16("my_password");
   form.preferred = true;
   form.blacklisted_by_user = false;
-  form.scheme = PasswordForm::SCHEME_HTML;
+  form.scheme = PasswordForm::Scheme::kHtml;
   EXPECT_EQ(PasswordStoreChangeList(), db().AddLogin(form));
 
   // |signon_realm| shouldn't be empty.
@@ -1321,7 +1329,7 @@ TEST_F(LoginDatabaseTest, UpdateLogin) {
   form.password_value = ASCIIToUTF16("my_password");
   form.preferred = true;
   form.blacklisted_by_user = false;
-  form.scheme = PasswordForm::SCHEME_HTML;
+  form.scheme = PasswordForm::Scheme::kHtml;
   EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
 
   form.action = GURL("http://accounts.google.com/login");
@@ -1334,8 +1342,8 @@ TEST_F(LoginDatabaseTest, UpdateLogin) {
   form.date_synced = base::Time::Now();
   form.date_created = base::Time::Now() - base::TimeDelta::FromDays(1);
   form.blacklisted_by_user = true;
-  form.scheme = PasswordForm::SCHEME_BASIC;
-  form.type = PasswordForm::TYPE_GENERATED;
+  form.scheme = PasswordForm::Scheme::kBasic;
+  form.type = PasswordForm::Type::kGenerated;
   form.display_name = ASCIIToUTF16("Mr. Smith");
   form.icon_url = GURL("https://accounts.google.com/Icon");
   form.federation_origin =
@@ -1361,7 +1369,7 @@ TEST_F(LoginDatabaseTest, RemoveWrongForm) {
   form.password_value = ASCIIToUTF16("my_password");
   form.preferred = true;
   form.blacklisted_by_user = false;
-  form.scheme = PasswordForm::SCHEME_HTML;
+  form.scheme = PasswordForm::Scheme::kHtml;
   // The form isn't in the database.
   EXPECT_FALSE(db().RemoveLogin(form, /*changes=*/nullptr));
 
@@ -1389,22 +1397,22 @@ TEST_F(LoginDatabaseTest, ReportMetricsTest) {
   EXPECT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
 
   password_form.username_value = ASCIIToUTF16("test3@gmail.com");
-  password_form.type = PasswordForm::TYPE_GENERATED;
+  password_form.type = PasswordForm::Type::kGenerated;
   password_form.times_used = 2;
   EXPECT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
 
   password_form.origin = GURL("ftp://third.example.com/");
   password_form.signon_realm = "ftp://third.example.com/";
   password_form.times_used = 4;
-  password_form.scheme = PasswordForm::SCHEME_OTHER;
+  password_form.scheme = PasswordForm::Scheme::kOther;
   EXPECT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
 
   password_form.origin = GURL("http://fourth.example.com/");
   password_form.signon_realm = "http://fourth.example.com/";
-  password_form.type = PasswordForm::TYPE_MANUAL;
+  password_form.type = PasswordForm::Type::kManual;
   password_form.username_value = ASCIIToUTF16("");
   password_form.times_used = 10;
-  password_form.scheme = PasswordForm::SCHEME_HTML;
+  password_form.scheme = PasswordForm::Scheme::kHtml;
   EXPECT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
 
   password_form.origin = GURL("https://fifth.example.com/");
@@ -1458,35 +1466,49 @@ TEST_F(LoginDatabaseTest, ReportMetricsTest) {
   EXPECT_EQ(AddChangeForForm(password_form),
             db().AddBlacklistedLoginForTesting(password_form));
 
+  StatisticsTable& stats_table = db().stats_table();
+  InteractionsStats stats;
+  stats.origin_domain = GURL("https://example.com");
+  stats.username_value = base::ASCIIToUTF16("user1");
+  stats.dismissal_count = 10;
+  stats.update_time = base::Time::FromTimeT(1);
+  EXPECT_TRUE(stats_table.AddRow(stats));
+  stats.username_value = base::ASCIIToUTF16("user2");
+  stats.dismissal_count = 1;
+  EXPECT_TRUE(stats_table.AddRow(stats));
+  stats.username_value = base::ASCIIToUTF16("user3");
+  stats.dismissal_count = 10;
+  EXPECT_TRUE(stats_table.AddRow(stats));
+  stats.origin_domain = GURL("https://foo.com");
+  stats.dismissal_count = 10;
+  EXPECT_TRUE(stats_table.AddRow(stats));
+
   base::HistogramTester histogram_tester;
   db().ReportMetrics("", false);
 
   histogram_tester.ExpectUniqueSample(
-      "PasswordManager.TotalAccounts.UserCreated.WithoutCustomPassphrase", 9,
-      1);
+      "PasswordManager.TotalAccountsHiRes.ByType.UserCreated."
+      "WithoutCustomPassphrase",
+      9, 1);
   histogram_tester.ExpectBucketCount(
-      "PasswordManager.AccountsPerSite.UserCreated.WithoutCustomPassphrase",
-      1,
+      "PasswordManager.AccountsPerSite.UserCreated.WithoutCustomPassphrase", 1,
       2);
   histogram_tester.ExpectBucketCount(
       "PasswordManager.AccountsPerSite.UserCreated.WithoutCustomPassphrase", 2,
       3);
   histogram_tester.ExpectBucketCount(
       "PasswordManager.TimesPasswordUsed.UserCreated.WithoutCustomPassphrase",
-      0,
-      1);
+      0, 1);
   histogram_tester.ExpectBucketCount(
       "PasswordManager.TimesPasswordUsed.UserCreated.WithoutCustomPassphrase",
-      1,
-      1);
+      1, 1);
   histogram_tester.ExpectBucketCount(
       "PasswordManager.TimesPasswordUsed.UserCreated.WithoutCustomPassphrase",
-      3,
-      1);
+      3, 1);
   histogram_tester.ExpectUniqueSample(
-      "PasswordManager.TotalAccounts.AutoGenerated.WithoutCustomPassphrase",
-      2,
-      1);
+      "PasswordManager.TotalAccountsHiRes.ByType.AutoGenerated."
+      "WithoutCustomPassphrase",
+      2, 1);
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.TotalAccountsHiRes.WithScheme.Android", 2, 1);
   histogram_tester.ExpectUniqueSample(
@@ -1502,22 +1524,24 @@ TEST_F(LoginDatabaseTest, ReportMetricsTest) {
       1, 2);
   histogram_tester.ExpectBucketCount(
       "PasswordManager.TimesPasswordUsed.AutoGenerated.WithoutCustomPassphrase",
-      2,
-      1);
+      2, 1);
   histogram_tester.ExpectBucketCount(
       "PasswordManager.TimesPasswordUsed.AutoGenerated.WithoutCustomPassphrase",
-      4,
-      1);
+      4, 1);
   histogram_tester.ExpectUniqueSample(
-      "PasswordManager.EmptyUsernames.CountInDatabase",
-      3,
-      1);
+      "PasswordManager.EmptyUsernames.CountInDatabase", 3, 1);
   histogram_tester.ExpectUniqueSample(
-      "PasswordManager.EmptyUsernames.WithoutCorrespondingNonempty",
-      1,
-      1);
+      "PasswordManager.EmptyUsernames.WithoutCorrespondingNonempty", 1, 1);
   histogram_tester.ExpectUniqueSample("PasswordManager.InaccessiblePasswords",
                                       0, 1);
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.BubbleSuppression.DomainsWithSuppressedBubble", 2, 1);
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.BubbleSuppression.AccountsWithSuppressedBubble", 3, 1);
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.BubbleSuppression.AccountsInStatisticsTable", 4, 1);
+#endif  // !defined(OS_IOS) && !defined(OS_ANDROID)
 }
 
 TEST_F(LoginDatabaseTest, PasswordReuseMetrics) {
@@ -1607,7 +1631,7 @@ TEST_F(LoginDatabaseTest, PasswordReuseMetrics) {
 
   // -- Not HTML form based logins or blacklisted logins. Should be ignored.
   PasswordForm ignored_form;
-  ignored_form.scheme = PasswordForm::SCHEME_HTML;
+  ignored_form.scheme = PasswordForm::Scheme::kHtml;
   ignored_form.signon_realm = "http://example.org/";
   ignored_form.origin = GURL("http://example.org/blacklist");
   ignored_form.blacklisted_by_user = true;
@@ -1615,19 +1639,19 @@ TEST_F(LoginDatabaseTest, PasswordReuseMetrics) {
   ignored_form.password_value = ASCIIToUTF16("password_y");
   EXPECT_EQ(AddChangeForForm(ignored_form), db().AddLogin(ignored_form));
 
-  ignored_form.scheme = PasswordForm::SCHEME_BASIC;
+  ignored_form.scheme = PasswordForm::Scheme::kBasic;
   ignored_form.signon_realm = "http://example.org/HTTP Auth Realm";
   ignored_form.origin = GURL("http://example.org/");
   ignored_form.blacklisted_by_user = false;
   EXPECT_EQ(AddChangeForForm(ignored_form), db().AddLogin(ignored_form));
 
-  ignored_form.scheme = PasswordForm::SCHEME_HTML;
+  ignored_form.scheme = PasswordForm::Scheme::kHtml;
   ignored_form.signon_realm = "android://hash@com.example/";
   ignored_form.origin = GURL();
   ignored_form.blacklisted_by_user = false;
   EXPECT_EQ(AddChangeForForm(ignored_form), db().AddLogin(ignored_form));
 
-  ignored_form.scheme = PasswordForm::SCHEME_HTML;
+  ignored_form.scheme = PasswordForm::Scheme::kHtml;
   ignored_form.signon_realm = "federation://example.com/federation.com";
   ignored_form.origin = GURL("https://example.com/");
   ignored_form.blacklisted_by_user = false;
@@ -1846,6 +1870,57 @@ TEST_F(LoginDatabaseTest, EncryptionDisabled) {
       base::UTF16ToUTF8(password_form.password_value));
 }
 #endif  // defined(OS_LINUX)
+
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+// On Android and ChromeOS there is a mix of plain-text and obfuscated
+// passwords. Verify that they can both be accessed. Obfuscated passwords start
+// with "v10". Some password values also start with "v10". Test that both are
+// accessible (this doesn't work for any plain-text value).
+TEST_F(LoginDatabaseTest, HandleObfuscationMix) {
+  const char k_obfuscated_pw[] = "v10pass1";
+  const char k_plain_text_pw1[] = "v10pass2";
+  const char k_plain_text_pw2[] = "v11pass3";
+
+  base::FilePath file = temp_dir_.GetPath().AppendASCII("TestUnencryptedDB");
+  {
+    LoginDatabase db(file);
+    ASSERT_TRUE(db.Init());
+    // Add obfuscated (new) entries.
+    PasswordForm password_form;
+    GenerateExamplePasswordForm(&password_form);
+    password_form.password_value = ASCIIToUTF16(k_obfuscated_pw);
+    EXPECT_EQ(AddChangeForForm(password_form), db.AddLogin(password_form));
+    // Add plain-text (old) entries.
+    db.disable_encryption();
+    GenerateExamplePasswordForm(&password_form);
+    password_form.username_value = ASCIIToUTF16("other_username");
+    password_form.password_value = ASCIIToUTF16(k_plain_text_pw1);
+    EXPECT_EQ(AddChangeForForm(password_form), db.AddLogin(password_form));
+    GenerateExamplePasswordForm(&password_form);
+    password_form.username_value = ASCIIToUTF16("other_username2");
+    password_form.password_value = ASCIIToUTF16(k_plain_text_pw2);
+    EXPECT_EQ(AddChangeForForm(password_form), db.AddLogin(password_form));
+  }
+
+  std::vector<std::unique_ptr<autofill::PasswordForm>> forms;
+  {
+    LoginDatabase db(file);
+    ASSERT_TRUE(db.Init());
+    ASSERT_TRUE(db.GetAutofillableLogins(&forms));
+  }
+
+  // On disk, unobfuscated passwords are as-is, while obfuscated passwords have
+  // been changed (obfuscated).
+  EXPECT_THAT(GetColumnValuesFromDatabase<std::string>(file, "password_value"),
+              UnorderedElementsAre(Ne(k_obfuscated_pw), k_plain_text_pw1,
+                                   k_plain_text_pw2));
+  // LoginDatabase serves the original values.
+  ASSERT_THAT(forms, SizeIs(3));
+  EXPECT_EQ(k_obfuscated_pw, UTF16ToASCII(forms[0]->password_value));
+  EXPECT_EQ(k_plain_text_pw1, UTF16ToASCII(forms[1]->password_value));
+  EXPECT_EQ(k_plain_text_pw2, UTF16ToASCII(forms[2]->password_value));
+}
+#endif  // defined(OS_ANDROID) || defined(OS_CHROMEOS)
 
 // If the database initialisation fails, the initialisation transaction should
 // roll back without crashing.

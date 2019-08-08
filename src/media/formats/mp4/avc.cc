@@ -8,10 +8,8 @@
 #include <memory>
 #include <utility>
 
-#include "base/feature_list.h"
 #include "base/logging.h"
 #include "media/base/decrypt_config.h"
-#include "media/base/media_switches.h"
 #include "media/formats/mp4/box_definitions.h"
 #include "media/formats/mp4/box_reader.h"
 #include "media/video/h264_parser.h"
@@ -358,15 +356,12 @@ bool AVCBitstreamConverter::ConvertAndAnalyzeFrame(
                                    subsamples));
 
   // |is_keyframe| may be incorrect. Analyze the frame to see if it is a
-  // keyframe. |is_keyframe| will be used if the analysis is inconclusive or if
-  // not kMseBufferByPts.
+  // keyframe. |is_keyframe| will be used if the analysis is inconclusive.
   // Also, provide the analysis result to the caller via out parameter
   // |analysis_result|.
   *analysis_result = Analyze(frame_buf, subsamples);
 
-  if (base::FeatureList::IsEnabled(kMseBufferByPts)
-          ? analysis_result->is_keyframe.value_or(is_keyframe)
-          : is_keyframe) {
+  if (analysis_result->is_keyframe.value_or(is_keyframe)) {
     // If this is a keyframe, we (re-)inject SPS and PPS headers at the start of
     // a frame. If subsample info is present, we also update the clear byte
     // count for that first subsample.

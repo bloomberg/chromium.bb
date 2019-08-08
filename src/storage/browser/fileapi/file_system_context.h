@@ -263,7 +263,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
       const FileSystemURL& url,
       int64_t offset);
 
-  // Creates a new FileSystemOperationRunner.
+  // Creates a new FileSystemOperationRunner. Callers have to make sure that
+  // this FileSystemContext outlives the returned FileSystemOperationRunner.
   std::unique_ptr<FileSystemOperationRunner> CreateFileSystemOperationRunner();
 
   base::SequencedTaskRunner* default_file_task_runner() {
@@ -285,7 +286,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
                                            const base::FilePath& path) const;
 
 #if defined(OS_CHROMEOS)
-  // Used only on ChromeOS for now.
+  // Used only on ChromeOS for now. It can be removed when
+  // kEnableFilesystemInIncognito feature flag is removed.
   void EnableTemporaryFileSystemInIncognito();
 #endif
 

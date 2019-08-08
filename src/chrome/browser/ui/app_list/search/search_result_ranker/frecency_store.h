@@ -38,13 +38,15 @@ class FrecencyStore {
     int32_t last_num_updates;
   };
 
-  // Record the use of a value.
-  void Update(const std::string& value);
+  // Record the use of a value. Returns its ID.
+  unsigned int Update(const std::string& value);
   // Change one value to another but retain its original ID and score.
   void Rename(const std::string& value, const std::string& new_value);
-  // Remove a value from the store entirely.
+  // Remove a value and its associated ID from the store entirely.
   void Remove(const std::string& value);
 
+  // Returns the ID for the given value. If the value is not in the store,
+  // return base::nullopt.
   base::Optional<unsigned int> GetId(const std::string& value);
   // Return all stored value data. This ensures all scores have been correctly
   // updated, and none of the scores are below the |min_score_| threshold.

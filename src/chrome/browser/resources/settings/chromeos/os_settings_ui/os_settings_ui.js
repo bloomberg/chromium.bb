@@ -33,10 +33,19 @@ Polymer({
     prefs: Object,
 
     /** @private */
-    advancedOpened_: {
+    advancedOpenedInMain_: {
       type: Boolean,
       value: false,
       notify: true,
+      observer: 'onAdvancedOpenedInMainChanged_',
+    },
+
+    /** @private */
+    advancedOpenedInMenu_: {
+      type: Boolean,
+      value: false,
+      notify: true,
+      observer: 'onAdvancedOpenedInMenuChanged_',
     },
 
     /** @private {boolean} */
@@ -46,9 +55,21 @@ Polymer({
     },
 
     /**
+     * Whether settings is in the narrow state (side nav hidden). Controlled by
+     * a binding in the cr-toolbar element.
+     */
+    isNarrow: {
+      type: Boolean,
+      observer: 'onNarrowChanged_',
+    },
+
+    /**
      * @private {!PageVisibility}
      */
     pageVisibility_: {type: Object, value: settings.pageVisibility},
+
+    /** @private */
+    showApps_: Boolean,
 
     /** @private */
     showAndroidApps_: Boolean,
@@ -141,16 +162,13 @@ Polymer({
       vpnNameTemplate: loadTimeData.getString('vpnNameTemplate'),
     };
 
-    this.showAndroidApps_ = loadTimeData.valueExists('androidAppsVisible') &&
-        loadTimeData.getBoolean('androidAppsVisible');
+    this.showApps_ = loadTimeData.getBoolean('showApps');
+    this.showAndroidApps_ = loadTimeData.getBoolean('androidAppsVisible');
     this.showKioskNextShell_ = loadTimeData.valueExists('showKioskNextShell') &&
         loadTimeData.getBoolean('showKioskNextShell');
-    this.showCrostini_ = loadTimeData.valueExists('showCrostini') &&
-        loadTimeData.getBoolean('showCrostini');
-    this.showPluginVm_ = loadTimeData.valueExists('showPluginVm') &&
-        loadTimeData.getBoolean('showPluginVm');
-    this.havePlayStoreApp_ = loadTimeData.valueExists('havePlayStoreApp') &&
-        loadTimeData.getBoolean('havePlayStoreApp');
+    this.showCrostini_ = loadTimeData.getBoolean('showCrostini');
+    this.showPluginVm_ = loadTimeData.getBoolean('showPluginVm');
+    this.havePlayStoreApp_ = loadTimeData.getBoolean('havePlayStoreApp');
 
     this.addEventListener('show-container', () => {
       this.$.container.style.visibility = 'visible';
@@ -295,5 +313,28 @@ Polymer({
     listenOnce(this.$.container, ['blur', 'pointerdown'], () => {
       this.$.container.removeAttribute('tabindex');
     });
+  },
+
+  /** @private */
+  onAdvancedOpenedInMainChanged_: function() {
+    // Only sync value when opening, not closing.
+    if (this.advancedOpenedInMain_) {
+      this.advancedOpenedInMenu_ = true;
+    }
+  },
+
+  /** @private */
+  onAdvancedOpenedInMenuChanged_: function() {
+    // Only sync value when opening, not closing.
+    if (this.advancedOpenedInMenu_) {
+      this.advancedOpenedInMain_ = true;
+    }
+  },
+
+  /** @private */
+  onNarrowChanged_: function() {
+    if (this.$.drawer.open && !this.isNarrow) {
+      this.$.drawer.close();
+    }
   },
 });

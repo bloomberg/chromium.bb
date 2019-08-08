@@ -1408,8 +1408,8 @@ def ResolveSymlinkInRoot(file_name, root):
     relative_symlink will be resolved to ROOT-A/a/relative/path
 
   Args:
-    file_name: A path to the file.
-    root: A path to the root directory.
+    file_name (str): A path to the file.
+    root (str|None): A path to the root directory.
 
   Returns:
     |file_name| if |file_name| is not a symlink. Otherwise, the ultimate path
@@ -1422,10 +1422,26 @@ def ResolveSymlinkInRoot(file_name, root):
       raise ValueError('Too many link levels for %s.' % file_name)
     link = os.readlink(file_name)
     if link.startswith('/'):
-      file_name = os.path.join(root, link[1:])
+      file_name = os.path.join(root, link[1:]) if root else link
     else:
       file_name = os.path.join(os.path.dirname(file_name), link)
   return file_name
+
+
+def ResolveSymlink(file_name):
+  """Resolve a symlink |file_name| to an absolute path.
+
+  This is similar to ResolveSymlinkInRoot, but does not resolve absolute
+  symlinks to an alternative root, and normalizes the path before returning.
+
+  Args:
+    file_name (str): The symlink.
+
+  Returns:
+    str - |file_name| if |file_name| is not a symlink. Otherwise, the ultimate
+    path that |file_name| points to.
+  """
+  return os.path.realpath(ResolveSymlinkInRoot(file_name, None))
 
 
 def IsInsideVm():

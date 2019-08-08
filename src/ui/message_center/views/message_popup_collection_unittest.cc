@@ -141,11 +141,11 @@ class MockMessagePopupView : public MessagePopupView {
 
   void AutoCollapse() override {
     if (expandable_)
-      child_at(0)->SetPreferredSize(gfx::Size(kNotificationWidth, 42));
+      children().front()->SetPreferredSize(gfx::Size(kNotificationWidth, 42));
   }
 
   void SetPreferredHeight(int height) {
-    child_at(0)->SetPreferredSize(gfx::Size(kNotificationWidth, height));
+    children().front()->SetPreferredSize(gfx::Size(kNotificationWidth, height));
   }
 
   void SetHovered(bool is_hovered) {

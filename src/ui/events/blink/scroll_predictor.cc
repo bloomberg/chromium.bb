@@ -110,7 +110,7 @@ void ScrollPredictor::UpdatePrediction(const WebScopedInputEvent& event,
       static_cast<const WebGestureEvent&>(*event);
   // When fling, GSU is sending per frame, resampling is not needed.
   if (gesture_event.data.scroll_update.inertial_phase ==
-      WebGestureEvent::kMomentumPhase) {
+      WebGestureEvent::InertialPhaseState::kMomentum) {
     should_resample_scroll_events_ = false;
     return;
   }

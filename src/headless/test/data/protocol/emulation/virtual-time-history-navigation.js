@@ -2,50 +2,59 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-const fooDotCom = `
-    <script> console.log(document.location.href); </script>
-    <iframe src='/a/'></iframe>`;
-const fooDotComSlashA = `
-    <script> console.log(document.location.href); </script>`;
-const barDotCom = `
-    <script> console.log(document.location.href); </script>
-    <iframe src='/b/' id='frame_b'></iframe>
-    <iframe src='/c/'></iframe>`;
-const barDotComSlashB = `
-    <script> console.log(document.location.href); </script>
-    <iframe src='/d/'></iframe>`;
-const barDotComSlashC = `
-    <script> console.log(document.location.href); </script>`
-const barDotComSlashD = `
-    <script> console.log(document.location.href); </script>`
-const barDotComSlashE = `
-    <script> console.log(document.location.href); </script>
-    <iframe src='/f/'></iframe>`
-const barDotComSlashF = `
-    <script> console.log(document.location.href); </script>`
-
-const server = new Map([
-  ['http://foo.com/', fooDotCom],
-  ['http://foo.com/a/', fooDotComSlashA],
-  ['http://bar.com/', barDotCom],
-  ['http://bar.com/b/', barDotComSlashB],
-  ['http://bar.com/c/', barDotComSlashC],
-  ['http://bar.com/d/', barDotComSlashD],
-  ['http://bar.com/e/', barDotComSlashE],
-  ['http://bar.com/f/', barDotComSlashF]]);
-
 (async function(testRunner) {
-  var {page, session, dp} = await testRunner.startBlank(
+  const {page, session, dp} = await testRunner.startBlank(
       `Tests virtual time with history navigation.`);
-  await dp.Network.enable();
-  await dp.Network.setRequestInterception({ patterns: [{ urlPattern: '*' }] });
-  dp.Network.onRequestIntercepted(event => {
-    let body = server.get(event.params.request.url);
-    dp.Network.continueInterceptedRequest({
-      interceptionId: event.params.interceptionId,
-      rawResponse: btoa(body)
-    });
-  });
+
+  const FetchHelper = await testRunner.loadScriptAbsolute(
+      '../fetch/resources/fetch-test.js');
+  const helper = new FetchHelper(testRunner, dp);
+  await helper.enable();
+
+  helper.onceRequest('http://foo.com/').fulfill(
+      FetchHelper.makeContentResponse(`
+          <script> console.log(document.location.href); </script>
+          <iframe src='/a/'></iframe>`)
+  );
+
+  helper.onceRequest('http://foo.com/a/').fulfill(
+      FetchHelper.makeContentResponse(`
+          <script> console.log(document.location.href); </script>`)
+  );
+
+  helper.onceRequest('http://bar.com/').fulfill(
+      FetchHelper.makeContentResponse(`
+          <script> console.log(document.location.href); </script>
+          <iframe src='/b/' id='frame_b'></iframe>
+          <iframe src='/c/'></iframe>`)
+  );
+
+  helper.onceRequest('http://bar.com/b/').fulfill(
+      FetchHelper.makeContentResponse(`
+          <script> console.log(document.location.href); </script>
+          <iframe src='/d/'></iframe>`)
+  );
+
+  helper.onceRequest('http://bar.com/c/').fulfill(
+      FetchHelper.makeContentResponse(`
+          <script> console.log(document.location.href); </script>`)
+  );
+
+  helper.onceRequest('http://bar.com/d/').fulfill(
+      FetchHelper.makeContentResponse(`
+          <script> console.log(document.location.href); </script>`)
+  );
+
+  helper.onceRequest('http://bar.com/e/').fulfill(
+      FetchHelper.makeContentResponse(`
+          <script> console.log(document.location.href); </script>
+          <iframe src='/f/'></iframe>`)
+  );
+
+  helper.onceRequest('http://bar.com/f/').fulfill(
+    FetchHelper.makeContentResponse(`
+        <script> console.log(document.location.href); </script>`)
+  );
 
   const testCommands = [
       `document.location.href = 'http://bar.com/'`,

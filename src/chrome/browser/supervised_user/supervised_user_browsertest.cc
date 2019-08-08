@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -212,15 +213,13 @@ class SupervisedUserTest : public InProcessBrowserTest,
                     history::QueryResults* results) {
     base::RunLoop run_loop;
     base::CancelableTaskTracker history_task_tracker;
-    auto callback = [](history::QueryResults* new_results,
-                       base::RunLoop* run_loop,
-                       history::QueryResults* results) {
-      results->Swap(new_results);
-      run_loop->Quit();
-    };
-    history_service->QueryHistory(base::UTF8ToUTF16(text_query), options,
-                                  base::Bind(callback, results, &run_loop),
-                                  &history_task_tracker);
+    history_service->QueryHistory(
+        base::UTF8ToUTF16(text_query), options,
+        base::BindLambdaForTesting([&](history::QueryResults r) {
+          *results = std::move(r);
+          run_loop.Quit();
+        }),
+        &history_task_tracker);
     run_loop.Run();  // Will go until ...Complete calls Quit.
   }
 
@@ -269,11 +268,14 @@ class TabClosingObserver : public TabStripModelObserver {
     if (change.type() != TabStripModelChange::kRemoved)
       return;
 
-    for (const auto& delta : change.deltas()) {
-      if (delta.remove.will_be_deleted && contents_ == delta.remove.contents) {
+    auto* remove = change.GetRemove();
+    if (!remove->will_be_deleted)
+      return;
+
+    for (const auto& contents : remove->contents) {
+      if (contents_ == contents.contents) {
         if (run_loop_.running())
           run_loop_.Quit();
-
         contents_ = nullptr;
         return;
       }

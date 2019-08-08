@@ -35,6 +35,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_crx_util.h"
@@ -305,8 +306,9 @@ void DownloadHistory::LoadHistoryDownloads(std::unique_ptr<InfoVector> infos) {
     download::DownloadItem* item = notifier_.GetManager()->CreateDownloadItem(
         it->guid, loading_id_, it->current_path, it->target_path, it->url_chain,
         it->referrer_url, it->site_url, it->tab_url, it->tab_referrer_url,
-        it->mime_type, it->original_mime_type, it->start_time, it->end_time,
-        it->etag, it->last_modified, it->received_bytes, it->total_bytes,
+        base::nullopt, it->mime_type, it->original_mime_type, it->start_time,
+        it->end_time, it->etag, it->last_modified, it->received_bytes,
+        it->total_bytes,
         std::string(),  // TODO(asanka): Need to persist and restore hash of
                         // partial file for an interrupted download. No need to
                         // store hash for a completed file.
@@ -555,10 +557,13 @@ bool DownloadHistory::NeedToUpdateDownloadHistory(
   }
 #endif
 
+  if (!base::FeatureList::IsEnabled(
+          download::features::kDownloadDBForNewDownloads)) {
+    return true;
+  }
   // When download DB is enabled, only downloads that are in terminal state
-  // are added to or updated in history DB. In-progress and interrupted download
-  // will be stored in the in-progress DB.
-  return !base::FeatureList::IsEnabled(
-             download::features::kDownloadDBForNewDownloads) ||
-         item->IsSavePackageDownload() || item->IsDone();
+  // are added to or updated in history DB. Non-transient in-progress and
+  // interrupted download will be stored in the in-progress DB.
+  return !item->IsTransient() &&
+         (item->IsSavePackageDownload() || item->IsDone());
 }

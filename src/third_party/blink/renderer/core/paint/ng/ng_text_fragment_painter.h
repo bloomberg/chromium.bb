@@ -12,9 +12,9 @@
 
 namespace blink {
 
-class LayoutPoint;
 class NGPaintFragment;
 struct PaintInfo;
+struct PhysicalOffset;
 
 // Text fragment painter for LayoutNG. Operates on NGPhysicalTextFragments and
 // handles clipping, selection, etc. Delegates to NGTextPainter to paint the
@@ -26,12 +26,12 @@ class NGTextFragmentPainter {
   explicit NGTextFragmentPainter(const NGPaintFragment&);
 
   void Paint(const PaintInfo&,
-             const LayoutPoint& paint_offset,
+             const PhysicalOffset& paint_offset,
              const NodeHolder& node_holder);
 
  private:
   void PaintSymbol(const PaintInfo& paint_info,
-                   const LayoutPoint& paint_offset);
+                   const PhysicalOffset& paint_offset);
 
   const NGPaintFragment& fragment_;
 };

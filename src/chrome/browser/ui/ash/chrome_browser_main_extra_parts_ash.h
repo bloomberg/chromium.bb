@@ -11,10 +11,6 @@
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/common/buildflags.h"
 
-namespace aura {
-class UserActivityForwarder;
-}
-
 namespace chromeos {
 class NetworkPortalNotificationController;
 }
@@ -23,21 +19,12 @@ namespace policy {
 class DisplaySettingsHandler;
 }
 
-namespace ui {
-class UserActivityDetector;
-}
-
-namespace views {
-class MusClient;
-}
-
 class AccessibilityControllerClient;
 class AppListClientImpl;
 class AshShellInit;
-class CastConfigClientMediaRouter;
+class CastConfigControllerMediaRouter;
 class ChromeNewWindowClient;
 class ImeControllerClient;
-class ImmersiveContextMus;
 class KioskNextShellClient;
 class LoginScreenClient;
 class MediaClient;
@@ -45,10 +32,9 @@ class MobileDataNotifications;
 class NetworkConnectDelegateChromeOS;
 class NightLightClient;
 class ScreenOrientationDelegateChromeos;
-class SessionControllerClient;
+class SessionControllerClientImpl;
 class SystemTrayClient;
 class TabletModeClient;
-class VolumeController;
 class VpnListForwarder;
 class WallpaperControllerClient;
 
@@ -68,8 +54,6 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   ~ChromeBrowserMainExtraPartsAsh() override;
 
   // Overridden from ChromeBrowserMainExtraParts:
-  void ServiceManagerConnectionStarted(
-      content::ServiceManagerConnection* connection) override;
   void PreProfileInit() override;
   void PostProfileInit() override;
   void PostBrowserStart() override;
@@ -82,14 +66,11 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
 
   // Initialized in PreProfileInit in all configs before Shell init:
   std::unique_ptr<NetworkConnectDelegateChromeOS> network_connect_delegate_;
+  std::unique_ptr<CastConfigControllerMediaRouter>
+      cast_config_controller_media_router_;
 
   // Initialized in PreProfileInit if ash config != MASH:
   std::unique_ptr<AshShellInit> ash_shell_init_;
-
-  // Initialized in PreProfileInit if ash config == MASH:
-  std::unique_ptr<ImmersiveContextMus> immersive_context_;
-  std::unique_ptr<aura::UserActivityForwarder> user_activity_forwarder_;
-  std::unique_ptr<ui::UserActivityDetector> user_activity_detector_;
 
   // Initialized in PreProfileInit in all configs after Shell init:
   std::unique_ptr<AccessibilityControllerClient>
@@ -99,10 +80,9 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   std::unique_ptr<ImeControllerClient> ime_controller_client_;
   std::unique_ptr<ScreenOrientationDelegateChromeos>
       screen_orientation_delegate_;
-  std::unique_ptr<SessionControllerClient> session_controller_client_;
+  std::unique_ptr<SessionControllerClientImpl> session_controller_client_;
   std::unique_ptr<SystemTrayClient> system_tray_client_;
   std::unique_ptr<TabletModeClient> tablet_mode_client_;
-  std::unique_ptr<VolumeController> volume_controller_;
   std::unique_ptr<VpnListForwarder> vpn_list_forwarder_;
   std::unique_ptr<WallpaperControllerClient> wallpaper_controller_client_;
   // TODO(stevenjb): Move NetworkPortalNotificationController to c/b/ui/ash and
@@ -118,7 +98,6 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
 #endif
 
   // Initialized in PostProfileInit in all configs:
-  std::unique_ptr<CastConfigClientMediaRouter> cast_config_client_media_router_;
   std::unique_ptr<KioskNextShellClient> kiosk_next_shell_client_;
   std::unique_ptr<LoginScreenClient> login_screen_client_;
   std::unique_ptr<MediaClient> media_client_;
@@ -127,9 +106,6 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   // Initialized in PostBrowserStart in all configs:
   std::unique_ptr<MobileDataNotifications> mobile_data_notifications_;
   std::unique_ptr<NightLightClient> night_light_client_;
-
-  // Created for mash (both in single and multi-process).
-  std::unique_ptr<views::MusClient> mus_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsAsh);
 };

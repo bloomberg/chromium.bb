@@ -35,7 +35,7 @@ LayoutFieldset::LayoutFieldset(Element* element) : LayoutBlockFlow(element) {}
 void LayoutFieldset::ComputePreferredLogicalWidths() {
   LayoutBlockFlow::ComputePreferredLogicalWidths();
   // Size-contained elements don't consider their contents for preferred sizing.
-  if (ShouldApplySizeContainment())
+  if (ShouldApplySizeContainment() || DisplayLockInducesSizeContainment())
     return;
 
   if (LayoutBox* legend = FindInFlowLegend()) {
@@ -164,17 +164,17 @@ LayoutBox* LayoutFieldset::FindInFlowLegend(const LayoutBlock& fieldset) {
 
 void LayoutFieldset::PaintBoxDecorationBackground(
     const PaintInfo& paint_info,
-    const LayoutPoint& paint_offset) const {
+    const PhysicalOffset& paint_offset) const {
   FieldsetPainter(*this).PaintBoxDecorationBackground(paint_info, paint_offset);
 }
 
 void LayoutFieldset::PaintMask(const PaintInfo& paint_info,
-                               const LayoutPoint& paint_offset) const {
+                               const PhysicalOffset& paint_offset) const {
   FieldsetPainter(*this).PaintMask(paint_info, paint_offset);
 }
 
 bool LayoutFieldset::BackgroundIsKnownToBeOpaqueInRect(
-    const LayoutRect& local_rect) const {
+    const PhysicalRect& local_rect) const {
   // If the field set has a legend, then it probably does not completely fill
   // its background.
   if (FindInFlowLegend())

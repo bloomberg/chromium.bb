@@ -101,6 +101,18 @@ const COMPLEX_DRIVE_ENTRY_SET = [
 ];
 
 /**
+ * More complex entry set for DocumentsProvider that includes entries with
+ * arying permissions (such as read-only entries).
+ *
+ * @type {Array<TestEntryInfo>}
+ * @const
+ */
+const COMPLEX_DOCUMENTS_PROVIDER_ENTRY_SET = [
+  ENTRIES.hello, ENTRIES.photos, ENTRIES.readOnlyFolder, ENTRIES.readOnlyFile,
+  ENTRIES.deletableFile, ENTRIES.renamableFile
+];
+
+/**
  * Nested entry set (directories inside each other).
  *
  * @type {Array<TestEntryInfo>}

@@ -31,15 +31,19 @@ import isolated_format
 import isolateserver
 import run_isolated
 
-from third_party import colorama
-from third_party.depot_tools import fix_encoding
-from third_party.depot_tools import subcommand
+from utils import tools
+tools.force_local_third_party()
 
+# third_party/
+import colorama
+from depot_tools import fix_encoding
+from depot_tools import subcommand
+
+# pylint: disable=ungrouped-imports
 from utils import logging_utils
 from utils import file_path
 from utils import fs
 from utils import subprocess42
-from utils import tools
 
 
 # Exit code of 'archive' and 'batcharchive' if the command fails due to an error
@@ -110,7 +114,7 @@ def recreate_tree(outdir, indir, infiles, action, as_hash):
         if metadata['s'] == fs.stat(outfile).st_size:
           continue
         else:
-          logging.warn('Overwritting %s' % metadata['h'])
+          logging.warn('Overwriting %s' % metadata['h'])
           fs.remove(outfile)
     else:
       outfile = os.path.join(outdir, relfile)
@@ -402,7 +406,7 @@ class SavedState(Flattenable):
       if self.relative_cwd:
         # Only set relative_cwd if a command was also specified. This reduce the
         # noise for Swarming tasks where the command is specified as part of the
-        # Swarming task request and not thru the isolated file.
+        # Swarming task request and not through the isolated file.
         out['relative_cwd'] = self.relative_cwd
     return out
 
@@ -422,8 +426,9 @@ class SavedState(Flattenable):
     """
     out = super(SavedState, cls).load(data, algo_name, isolated_basedir)
     if data.get('OS') != sys.platform:
-      raise isolated_format.IsolatedError('Unexpected OS %s', data.get('OS'))
+      raise isolated_format.IsolatedError('Unexpected OS %s' % data.get('OS'))
 
+    # pylint: disable=no-member
     # Converts human readable form back into the proper class type.
     algo = data.get('algo')
     if not algo in isolated_format.SUPPORTED_ALGOS:
@@ -442,7 +447,7 @@ class SavedState(Flattenable):
           'Unsupported version \'%s\'' % out.version)
 
     # The .isolate file must be valid. If it is not present anymore, zap the
-    # value as if it was not noted, so .isolate_file can safely be overriden
+    # value as if it was not noted, so .isolate_file can safely be overridden
     # later.
     if out.isolate_file and not fs.isfile(out.isolate_filepath):
       out.isolate_file = None

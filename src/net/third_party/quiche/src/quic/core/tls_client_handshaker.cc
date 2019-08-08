@@ -152,6 +152,15 @@ bool TlsClientHandshaker::ProcessTransportParameters(
     return false;
   }
 
+  // When interoperating with non-Google implementations that do not send
+  // the version extension, set it to what we expect.
+  if (params.version == 0) {
+    params.version = CreateQuicVersionLabel(session()->connection()->version());
+  }
+  if (params.supported_versions.empty()) {
+    params.supported_versions.push_back(params.version);
+  }
+
   if (params.version !=
       CreateQuicVersionLabel(session()->connection()->version())) {
     *error_details = "Version mismatch detected";
@@ -179,16 +188,6 @@ int TlsClientHandshaker::num_sent_client_hellos() const {
 int TlsClientHandshaker::num_scup_messages_received() const {
   // SCUP messages aren't sent or received when using the TLS handshake.
   return 0;
-}
-
-bool TlsClientHandshaker::WasChannelIDSent() const {
-  // Channel ID is not used with TLS in QUIC.
-  return false;
-}
-
-bool TlsClientHandshaker::WasChannelIDSourceCallbackRun() const {
-  // Channel ID is not used with TLS in QUIC.
-  return false;
 }
 
 std::string TlsClientHandshaker::chlo_hash() const {
@@ -331,12 +330,22 @@ enum ssl_verify_result_t TlsClientHandshaker::VerifyCert(uint8_t* out_alert) {
         std::string(reinterpret_cast<const char*>(CRYPTO_BUFFER_data(cert)),
                     CRYPTO_BUFFER_len(cert)));
   }
+  const uint8_t* ocsp_response_raw;
+  size_t ocsp_response_len;
+  SSL_get0_ocsp_response(ssl(), &ocsp_response_raw, &ocsp_response_len);
+  std::string ocsp_response(reinterpret_cast<const char*>(ocsp_response_raw),
+                            ocsp_response_len);
+  const uint8_t* sct_list_raw;
+  size_t sct_list_len;
+  SSL_get0_signed_cert_timestamp_list(ssl(), &sct_list_raw, &sct_list_len);
+  std::string sct_list(reinterpret_cast<const char*>(sct_list_raw),
+                       sct_list_len);
 
   ProofVerifierCallbackImpl* proof_verify_callback =
       new ProofVerifierCallbackImpl(this);
 
   QuicAsyncStatus verify_result = proof_verifier_->VerifyCertChain(
-      server_id_.host(), certs, verify_context_.get(),
+      server_id_.host(), certs, ocsp_response, sct_list, verify_context_.get(),
       &cert_verify_error_details_, &verify_details_,
       std::unique_ptr<ProofVerifierCallback>(proof_verify_callback));
   switch (verify_result) {

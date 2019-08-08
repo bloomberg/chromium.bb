@@ -14,8 +14,8 @@
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/reload_type.h"
-#include "ios/web/public/security_style.h"
-#include "ios/web/public/ssl_status.h"
+#include "ios/web/public/security/security_style.h"
+#include "ios/web/public/security/ssl_status.h"
 #include "ios/web/public/test/element_selector.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #include "ios/web/public/test/fakes/test_web_state_observer.h"
@@ -134,7 +134,13 @@ class ErrorPageTest
 
 // Tests that the error page is correctly displayed after navigating back to it
 // multiple times. See http://crbug.com/944037 .
-TEST_P(ErrorPageTest, FLAKY_BackForwardErrorPage) {
+// TODO(crbug.com/954231): this test is flaky on device.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_BackForwardErrorPage BackForwardErrorPage
+#else
+#define MAYBE_BackForwardErrorPage FLAKY_BackForwardErrorPage
+#endif
+TEST_P(ErrorPageTest, MAYBE_BackForwardErrorPage) {
   test::LoadUrl(web_state(), server_.GetURL("/close-socket"));
   ASSERT_TRUE(WaitForErrorText(web_state(), server_.GetURL("/close-socket")));
 
@@ -153,6 +159,33 @@ TEST_P(ErrorPageTest, FLAKY_BackForwardErrorPage) {
   // Make sure that the forward history isn't destroyed.
   web_state()->GetNavigationManager()->GoForward();
   ASSERT_TRUE(test::WaitForWebViewContainingText(web_state(), "Echo"));
+}
+
+// Tests that reloading a page that is no longer accessible doesn't destroy
+// forward history.
+TEST_P(ErrorPageTest, ReloadOfflinePage) {
+  server_responds_with_content_ = true;
+
+  test::LoadUrl(web_state(), server_.GetURL("/echo-query?foo"));
+  ASSERT_TRUE(test::WaitForWebViewContainingText(web_state(), "foo"));
+
+  test::LoadUrl(web_state(), server_.GetURL("/echoall?bar"));
+  ASSERT_TRUE(test::WaitForWebViewContainingText(web_state(), "bar"));
+
+  web_state()->GetNavigationManager()->GoBack();
+  ASSERT_TRUE(test::WaitForWebViewContainingText(web_state(), "foo"));
+
+  server_responds_with_content_ = false;
+  web_state()->GetNavigationManager()->Reload(ReloadType::NORMAL,
+                                              /*check_for_repost=*/false);
+
+  ASSERT_TRUE(WaitForErrorText(web_state(), server_.GetURL("/echo-query?foo")));
+  server_responds_with_content_ = true;
+
+  // Make sure that forward history hasn't been destroyed.
+  ASSERT_TRUE(web_state()->GetNavigationManager()->CanGoForward());
+  web_state()->GetNavigationManager()->GoForward();
+  ASSERT_TRUE(test::WaitForWebViewContainingText(web_state(), "bar"));
 }
 
 // Loads the URL which fails to load, then sucessfully reloads the page.

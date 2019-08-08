@@ -17,7 +17,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/web_history_service_observer.h"
 #include "components/sync/driver/sync_util.h"
@@ -138,8 +137,7 @@ class RequestImpl : public WebHistoryService::Request {
           })");
     auto resource_request = std::make_unique<network::ResourceRequest>();
     resource_request->url = url_;
-    resource_request->load_flags =
-        net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+    resource_request->allow_credentials = false;
     resource_request->method = post_data_ ? "POST" : "GET";
     resource_request->headers.SetHeader(net::HttpRequestHeaders::kAuthorization,
                                         "Bearer " + access_token_info.token);
@@ -149,9 +147,6 @@ class RequestImpl : public WebHistoryService::Request {
       resource_request->headers.SetHeader(net::HttpRequestHeaders::kUserAgent,
                                           user_agent_);
     }
-    // TODO(https://crbug.com/808498): Re-add data use measurement once
-    // SimpleURLLoader supports it.
-    // ID=data_use_measurement::DataUseUserData::WEB_HISTORY_SERVICE
     simple_url_loader_ = network::SimpleURLLoader::Create(
         std::move(resource_request), traffic_annotation);
     if (post_data_) {

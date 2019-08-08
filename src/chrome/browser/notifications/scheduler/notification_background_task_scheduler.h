@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "chrome/browser/notifications/scheduler/notification_scheduler_types.h"
 
 namespace notifications {
 
@@ -27,6 +28,7 @@ class NotificationBackgroundTaskScheduler {
     virtual void OnStopTask() = 0;
 
    protected:
+    Handler() = default;
     virtual ~Handler() = default;
 
    private:
@@ -34,9 +36,15 @@ class NotificationBackgroundTaskScheduler {
   };
 
   // Schedules a background task in a time window between |window_start| and
-  // |window_end|.
-  virtual void Schedule(base::TimeDelta window_start,
+  // |window_end|. This will update the current background task. Only one
+  // background task exists for notification scheduler. |scheduler_task_time|
+  // tag is passed to background task go support arbitrary time background task.
+  virtual void Schedule(notifications::SchedulerTaskTime scheduler_task_time,
+                        base::TimeDelta window_start,
                         base::TimeDelta window_end) = 0;
+
+  // Cancels the background task.
+  virtual void Cancel() = 0;
 
   virtual ~NotificationBackgroundTaskScheduler() = default;
 

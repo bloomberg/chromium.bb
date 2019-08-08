@@ -1040,10 +1040,14 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
     net::CompletionOnceCallback callback,
     GURL* new_url,
     bool* should_collapse_initiator) {
+  using Action = declarative_net_request::RulesetManager::Action;
+
   DCHECK(should_collapse_initiator);
 
-  if (ShouldHideEvent(browser_context, extension_info_map, *request))
+  if (ShouldHideEvent(browser_context, extension_info_map, *request)) {
+    request->dnr_action.emplace(Action::Type::NONE);
     return net::OK;
+  }
 
   if (IsPageLoad(*request))
     NotifyPageLoad();
@@ -1070,10 +1074,9 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
   // OnBeforeRequest call.
   // |extension_info_map| is null for system level requests.
   if (extension_info_map) {
-    using Action = declarative_net_request::RulesetManager::Action;
-
-    Action action = extension_info_map->GetRulesetManager()->EvaluateRequest(
-        *request, is_incognito_context);
+    const Action& action =
+        extension_info_map->GetRulesetManager()->EvaluateRequest(
+            *request, is_incognito_context);
     switch (action.type) {
       case Action::Type::NONE:
         break;
@@ -1087,14 +1090,15 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
         *new_url = action.redirect_url.value();
         return net::OK;
       case Action::Type::REMOVE_HEADERS:
-        request->request_headers_to_remove =
-            std::move(action.request_headers_to_remove);
-        request->response_headers_to_remove =
-            std::move(action.response_headers_to_remove);
         // Unlike other actions, allow web request extensions to intercept the
-        // request here.
+        // request here. The headers will be removed during subsequent request
+        // stages.
+        DCHECK(request->dnr_action.has_value());
+        DCHECK_EQ(request->dnr_action->type, Action::Type::REMOVE_HEADERS);
         break;
     }
+  } else {
+    request->dnr_action.emplace(Action::Type::NONE);
   }
 
   // Whether to initialized |blocked_requests_|.
@@ -1149,8 +1153,9 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
   // Remove request headers for the Declarative Net Request API. It is given
   // preference over the Web Request API and this also hides the removed headers
   // from extensions using the Web Request API.
+  DCHECK(request->dnr_action.has_value());
   std::set<std::string> removed_headers;
-  for (const char* header : request->request_headers_to_remove) {
+  for (const char* header : request->dnr_action->request_headers_to_remove) {
     if (!headers->HasHeader(header))
       continue;
 
@@ -1247,10 +1252,11 @@ int ExtensionWebRequestEventRouter::OnHeadersReceived(
   // Handle header removal by the Declarative Net Request API. We filter these
   // headers so that headers removed by Declarative Net Request API are not
   // visible to web request extensions.
+  DCHECK(request->dnr_action.has_value());
   bool headers_filtered = false;
   scoped_refptr<const net::HttpResponseHeaders> filtered_response_headers =
       FilterResponseHeaders(original_response_headers,
-                            request->response_headers_to_remove,
+                            request->dnr_action->response_headers_to_remove,
                             &headers_filtered);
   if (headers_filtered) {
     // Create a deep copy to ensure |filtered_response_headers| and
@@ -2388,8 +2394,6 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(void* browser_context,
   helpers::MergeCancelOfResponses(blocked_request.response_deltas, &canceled,
                                   request->logger.get());
 
-  // TODO(crbug.com/947591): Prevent web request extensions from adding headers
-  // removed by Declarative Net Request.
   extension_web_request_api_helpers::IgnoredActions ignored_actions;
   if (blocked_request.event == kOnBeforeRequest) {
     CHECK(!blocked_request.callback.is_null());
@@ -2399,9 +2403,9 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(void* browser_context,
   } else if (blocked_request.event == kOnBeforeSendHeaders) {
     CHECK(!blocked_request.before_send_headers_callback.is_null());
     helpers::MergeOnBeforeSendHeadersResponses(
-        request->url, blocked_request.response_deltas,
+        *request, blocked_request.response_deltas,
         blocked_request.request_headers, &ignored_actions,
-        request->logger.get(), &request_headers_removed, &request_headers_set,
+        &request_headers_removed, &request_headers_set,
         &request_headers_modified);
 
     // Also include headers removed by the declarative net request API.
@@ -2412,10 +2416,10 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(void* browser_context,
   } else if (blocked_request.event == kOnHeadersReceived) {
     CHECK(!blocked_request.callback.is_null());
     helpers::MergeOnHeadersReceivedResponses(
-        request->url, blocked_request.response_deltas,
+        *request, blocked_request.response_deltas,
         blocked_request.filtered_response_headers.get(),
         blocked_request.override_response_headers, blocked_request.new_url,
-        &ignored_actions, request->logger.get(), &response_headers_modified);
+        &ignored_actions, &response_headers_modified);
   } else if (blocked_request.event == kOnAuthRequired) {
     CHECK(blocked_request.callback.is_null());
     CHECK(!blocked_request.auth_callback.is_null());

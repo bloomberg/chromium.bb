@@ -129,10 +129,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
       const FrameReplicationState& replicated_frame_state,
       bool window_was_created_with_opener);
 
-  base::TerminationStatus render_view_termination_status() const {
-    return render_view_termination_status_;
-  }
-
   // Tracks whether this RenderViewHost is in an active state (rather than
   // pending swap out or swapped out), according to its main frame
   // RenderFrameHost.
@@ -340,9 +336,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
 
   // True if the render view can be shut down suddenly.
   bool sudden_termination_allowed_;
-
-  // The termination status of the last render view that terminated.
-  base::TerminationStatus render_view_termination_status_;
 
   // This is updated every time UpdateWebkitPreferences is called. That method
   // is in turn called when any of the settings change that the WebPreferences

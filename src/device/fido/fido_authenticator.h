@@ -17,13 +17,15 @@
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/authenticator_make_credential_response.h"
 #include "device/fido/authenticator_supported_options.h"
+#include "device/fido/bio/enrollment.h"
+#include "device/fido/credential_management.h"
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
 
 namespace device {
 
-class CtapGetAssertionRequest;
-class CtapMakeCredentialRequest;
+struct CtapGetAssertionRequest;
+struct CtapMakeCredentialRequest;
 
 namespace pin {
 struct RetriesResponse;
@@ -58,6 +60,18 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
   using ResetCallback =
       base::OnceCallback<void(CtapDeviceResponseCode,
                               base::Optional<pin::EmptyResponse>)>;
+  using GetCredentialsMetadataCallback =
+      base::OnceCallback<void(CtapDeviceResponseCode,
+                              base::Optional<CredentialsMetadataResponse>)>;
+  using EnumerateCredentialsCallback = base::OnceCallback<void(
+      CtapDeviceResponseCode,
+      base::Optional<std::vector<AggregatedEnumerateCredentialsResponse>>)>;
+  using DeleteCredentialCallback =
+      base::OnceCallback<void(CtapDeviceResponseCode,
+                              base::Optional<DeleteCredentialResponse>)>;
+  using GetBioEnrollmentInfoCallback =
+      base::OnceCallback<void(CtapDeviceResponseCode,
+                              base::Optional<BioEnrollmentResponse>)>;
 
   FidoAuthenticator() = default;
   virtual ~FidoAuthenticator() = default;
@@ -144,6 +158,18 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
   virtual GetAssertionPINDisposition WillNeedPINToGetAssertion(
       const CtapGetAssertionRequest& request,
       const FidoRequestHandlerBase::Observer* observer);
+
+  virtual void GetCredentialsMetadata(base::span<const uint8_t> pin_token,
+                                      GetCredentialsMetadataCallback callback);
+  virtual void EnumerateCredentials(base::span<const uint8_t> pin_token,
+                                    EnumerateCredentialsCallback callback);
+  virtual void DeleteCredential(base::span<const uint8_t> pin_token,
+                                base::span<const uint8_t> credential_id,
+                                DeleteCredentialCallback callback);
+
+  // bio enrollment
+  virtual void GetModality(GetBioEnrollmentInfoCallback callback);
+  virtual void GetSensorInfo(GetBioEnrollmentInfoCallback callback);
 
   // Reset triggers a reset operation on the authenticator. This erases all
   // stored resident keys and any configured PIN.

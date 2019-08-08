@@ -11,6 +11,8 @@ Note that it uses the "cherry picked from" annotation to find merges, so it will
 only work on merges that followed the "use cherry-pick -x" instructions.
 """
 
+from __future__ import print_function
+
 import optparse
 import re
 import sys
@@ -43,16 +45,16 @@ def main():
   for arg in args:
     commit_name = GetNameForCommit(arg)
     if not commit_name:
-      print '%s not found' % arg
+      print('%s not found' % arg)
       return 1
-    print 'commit %s was:' % arg
-    print '  initially in ' + commit_name
+    print('commit %s was:' % arg)
+    print('  initially in ' + commit_name)
     merges = GetMergesForCommit(arg)
     for merge in merges:
-      print '  merged to ' + GetNameForCommit(merge) + ' (as ' + merge + ')'
+      print('  merged to ' + GetNameForCommit(merge) + ' (as ' + merge + ')')
     if not merges:
-      print 'No merges found. If this seems wrong, be sure that you did:'
-      print '  git fetch origin && gclient sync --with_branch_heads'
+      print('No merges found. If this seems wrong, be sure that you did:')
+      print('  git fetch origin && gclient sync --with_branch_heads')
 
   return 0
 

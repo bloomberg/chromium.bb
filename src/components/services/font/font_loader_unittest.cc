@@ -40,7 +40,7 @@ std::string GetPostscriptNameFromFile(base::File& font_file) {
     return "";
 
   std::vector<char> file_contents;
-  file_contents.reserve(file_size);
+  file_contents.resize(file_size);
   CHECK_EQ(file_size, font_file.Read(0, file_contents.data(), file_size));
   std::string font_family_name;
   FT_Library library;

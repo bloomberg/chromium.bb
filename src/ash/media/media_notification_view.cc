@@ -6,19 +6,19 @@
 
 #include "ash/media/media_notification_background.h"
 #include "ash/media/media_notification_constants.h"
-#include "ash/media/media_notification_controller.h"
-#include "ash/shell.h"
+#include "ash/media/media_notification_container.h"
+#include "ash/media/media_notification_item.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/vector_icons/vector_icons.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_list.h"
-#include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
-#include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/message_center/views/notification_header_view.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/layout/box_layout.h"
@@ -54,6 +54,8 @@ constexpr gfx::Insets kMediaTitleArtistInsets = gfx::Insets(8, 8, 0, 8);
 constexpr int kMediaNotificationHeaderTopInset = 6;
 constexpr int kMediaNotificationHeaderRightInset = 6;
 constexpr int kMediaNotificationHeaderInset = 0;
+constexpr gfx::Size kMediaNotificationButtonRowSize =
+    gfx::Size(124, kMediaButtonSize.height());
 
 // The action buttons in order of preference. If there is not enough space to
 // show all the action buttons then this is used to determine which will be
@@ -103,69 +105,74 @@ const char MediaNotificationView::kMetadataHistogramName[] =
     "Media.Notification.MetadataPresent";
 
 MediaNotificationView::MediaNotificationView(
-    const message_center::Notification& notification)
-    : message_center::MessageView(notification) {
+    MediaNotificationContainer* container,
+    base::WeakPtr<MediaNotificationItem> item,
+    views::View* header_row_controls_view,
+    const base::string16& default_app_name)
+    : container_(container),
+      item_(std::move(item)),
+      header_row_controls_view_(header_row_controls_view),
+      default_app_name_(default_app_name) {
+  DCHECK(container_);
+
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(), 0));
 
-  // |controls_button_view_| has the common notification control buttons.
-  control_buttons_view_ =
-      std::make_unique<message_center::NotificationControlButtonsView>(this);
-  control_buttons_view_->set_owned_by_client();
+  auto header_row =
+      std::make_unique<message_center::NotificationHeaderView>(this);
 
-  // |header_row_| contains app_icon, app_name, control buttons, etc.
-  header_row_ = new message_center::NotificationHeaderView(this);
-  header_row_->AddChildView(control_buttons_view_.get());
-  header_row_->SetAppName(
-      message_center::MessageCenter::Get()->GetSystemNotificationAppName());
-  header_row_->ClearAppIcon();
-  header_row_->SetProperty(views::kMarginsKey,
-                           new gfx::Insets(kMediaNotificationHeaderTopInset,
-                                           kMediaNotificationHeaderInset,
-                                           kMediaNotificationHeaderInset,
-                                           kMediaNotificationHeaderRightInset));
-  AddChildView(header_row_);
+  if (header_row_controls_view_)
+    header_row->AddChildView(header_row_controls_view_);
+
+  header_row->SetAppName(default_app_name_);
+  header_row->ClearAppIcon();
+  header_row->SetProperty(views::kMarginsKey,
+                          new gfx::Insets(kMediaNotificationHeaderTopInset,
+                                          kMediaNotificationHeaderInset,
+                                          kMediaNotificationHeaderInset,
+                                          kMediaNotificationHeaderRightInset));
+  header_row_ = AddChildView(std::move(header_row));
 
   // |main_row_| holds the main content of the notification.
-  main_row_ = new views::View();
-  AddChildView(main_row_);
+  auto main_row = std::make_unique<views::View>();
+  main_row_ = AddChildView(std::move(main_row));
 
   // |title_artist_row_| contains the title and artist labels.
-  title_artist_row_ = new views::View();
+  auto title_artist_row = std::make_unique<views::View>();
   title_artist_row_layout_ =
-      title_artist_row_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      title_artist_row->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::kVertical, kMediaTitleArtistInsets, 0));
   title_artist_row_layout_->set_main_axis_alignment(
-      views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::MainAxisAlignment::kCenter);
   title_artist_row_layout_->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
-  main_row_->AddChildView(title_artist_row_);
+      views::BoxLayout::CrossAxisAlignment::kStart);
+  title_artist_row_ = main_row_->AddChildView(std::move(title_artist_row));
 
-  title_label_ = new views::Label(base::string16(), views::style::CONTEXT_LABEL,
-                                  views::style::STYLE_PRIMARY);
+  auto title_label = std::make_unique<views::Label>(
+      base::string16(), views::style::CONTEXT_LABEL,
+      views::style::STYLE_PRIMARY);
   const gfx::FontList& base_font_list = views::Label::GetDefaultFontList();
-  title_label_->SetFontList(base_font_list.Derive(
+  title_label->SetFontList(base_font_list.Derive(
       0, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::MEDIUM));
-  title_label_->SetLineHeight(kTitleArtistLineHeight);
-  title_artist_row_->AddChildView(title_label_);
+  title_label->SetLineHeight(kTitleArtistLineHeight);
+  title_label_ = title_artist_row_->AddChildView(std::move(title_label));
 
-  artist_label_ =
-      new views::Label(base::string16(), views::style::CONTEXT_LABEL,
-                       views::style::STYLE_PRIMARY);
-  artist_label_->SetLineHeight(kTitleArtistLineHeight);
-  title_artist_row_->AddChildView(artist_label_);
+  auto artist_label = std::make_unique<views::Label>(
+      base::string16(), views::style::CONTEXT_LABEL,
+      views::style::STYLE_PRIMARY);
+  artist_label->SetLineHeight(kTitleArtistLineHeight);
+  artist_label_ = title_artist_row_->AddChildView(std::move(artist_label));
 
   // |button_row_| contains the buttons for controlling playback.
-  button_row_ = new views::View();
+  auto button_row = std::make_unique<views::View>();
   auto* button_row_layout =
-      button_row_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      button_row->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::kHorizontal, gfx::Insets(),
           kMediaButtonRowSeparator));
-  button_row_layout->set_main_axis_alignment(
-      views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
   button_row_layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
-  main_row_->AddChildView(button_row_);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
+  button_row->SetPreferredSize(kMediaNotificationButtonRowSize);
+  button_row_ = main_row_->AddChildView(std::move(button_row));
 
   CreateMediaButton(MediaSessionAction::kPreviousTrack,
                     l10n_util::GetStringUTF16(
@@ -175,15 +182,15 @@ MediaNotificationView::MediaNotificationView(
                         IDS_ASH_MEDIA_NOTIFICATION_ACTION_SEEK_BACKWARD));
 
   // |play_pause_button_| toggles playback.
-  play_pause_button_ = views::CreateVectorToggleImageButton(this);
-  play_pause_button_->set_tag(static_cast<int>(MediaSessionAction::kPlay));
-  play_pause_button_->SetPreferredSize(kMediaButtonSize);
-  play_pause_button_->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
-  play_pause_button_->SetTooltipText(
+  auto play_pause_button = views::CreateVectorToggleImageButton(this);
+  play_pause_button->set_tag(static_cast<int>(MediaSessionAction::kPlay));
+  play_pause_button->SetPreferredSize(kMediaButtonSize);
+  play_pause_button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+  play_pause_button->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_ASH_MEDIA_NOTIFICATION_ACTION_PLAY));
-  play_pause_button_->SetToggledTooltipText(
+  play_pause_button->SetToggledTooltipText(
       l10n_util::GetStringUTF16(IDS_ASH_MEDIA_NOTIFICATION_ACTION_PAUSE));
-  button_row_->AddChildView(play_pause_button_);
+  play_pause_button_ = button_row_->AddChildView(std::move(play_pause_button));
 
   CreateMediaButton(MediaSessionAction::kSeekForward,
                     l10n_util::GetStringUTF16(
@@ -197,34 +204,17 @@ MediaNotificationView::MediaNotificationView(
       message_center::kNotificationCornerRadius, kMediaImageMaxWidthPct));
 
   UpdateForegroundColor();
-  UpdateControlButtonsVisibilityWithNotification(notification);
   UpdateCornerRadius(message_center::kNotificationCornerRadius,
                      message_center::kNotificationCornerRadius);
   UpdateViewForExpandedState();
 
-  Shell::Get()->media_notification_controller()->SetView(notification_id(),
-                                                         this);
+  if (item_)
+    item_->SetView(this);
 }
 
 MediaNotificationView::~MediaNotificationView() {
-  Shell::Get()->media_notification_controller()->SetView(notification_id(),
-                                                         nullptr);
-}
-
-void MediaNotificationView::UpdateWithNotification(
-    const message_center::Notification& notification) {
-  MessageView::UpdateWithNotification(notification);
-
-  UpdateControlButtonsVisibilityWithNotification(notification);
-
-  PreferredSizeChanged();
-  Layout();
-  SchedulePaint();
-}
-
-message_center::NotificationControlButtonsView*
-MediaNotificationView::GetControlButtonsView() const {
-  return control_buttons_view_.get();
+  if (item_)
+    item_->SetView(nullptr);
 }
 
 void MediaNotificationView::SetExpanded(bool expanded) {
@@ -246,17 +236,14 @@ void MediaNotificationView::UpdateCornerRadius(int top_radius,
                                                        bottom_radius);
 }
 
-void MediaNotificationView::OnMouseEvent(ui::MouseEvent* event) {
-  switch (event->type()) {
-    case ui::ET_MOUSE_ENTERED:
-    case ui::ET_MOUSE_EXITED:
-      UpdateControlButtonsVisibility();
-      break;
-    default:
-      break;
-  }
+void MediaNotificationView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ax::mojom::Role::kListItem;
+  node_data->AddStringAttribute(
+      ax::mojom::StringAttribute::kRoleDescription,
+      l10n_util::GetStringUTF8(IDS_ASH_MEDIA_NOTIFICATION_ACCESSIBLE_NAME));
 
-  View::OnMouseEvent(event);
+  if (!accessible_name_.empty())
+    node_data->SetName(accessible_name_);
 }
 
 void MediaNotificationView::ButtonPressed(views::Button* sender,
@@ -267,8 +254,10 @@ void MediaNotificationView::ButtonPressed(views::Button* sender,
   }
 
   if (sender->parent() == button_row_) {
-    message_center::MessageCenter::Get()->ClickOnNotificationButton(
-        notification_id(), sender->tag());
+    if (item_) {
+      item_->OnMediaSessionActionButtonPressed(
+          static_cast<MediaSessionAction>(sender->tag()));
+    }
     return;
   }
 
@@ -295,23 +284,31 @@ void MediaNotificationView::UpdateWithMediaSessionInfo(
 
 void MediaNotificationView::UpdateWithMediaMetadata(
     const media_session::MediaMetadata& metadata) {
-  header_row_->SetAppName(
-      metadata.source_title.empty()
-          ? message_center::MessageCenter::Get()->GetSystemNotificationAppName()
-          : metadata.source_title);
-
+  header_row_->SetAppName(metadata.source_title.empty()
+                              ? default_app_name_
+                              : metadata.source_title);
   title_label_->SetText(metadata.title);
   artist_label_->SetText(metadata.artist);
   header_row_->SetSummaryText(metadata.album);
 
-  if (!metadata.title.empty())
+  std::vector<base::string16> text;
+
+  if (!metadata.title.empty()) {
+    text.push_back(metadata.title);
     RecordMetadataHistogram(Metadata::kTitle);
+  }
 
-  if (!metadata.artist.empty())
+  if (!metadata.artist.empty()) {
+    text.push_back(metadata.artist);
     RecordMetadataHistogram(Metadata::kArtist);
+  }
 
-  if (!metadata.album.empty())
+  if (!metadata.album.empty()) {
+    text.push_back(metadata.album);
     RecordMetadataHistogram(Metadata::kAlbum);
+  }
+
+  accessible_name_ = base::JoinString(text, base::ASCIIToUTF16(" - "));
 
   RecordMetadataHistogram(Metadata::kCount);
 
@@ -356,16 +353,6 @@ void MediaNotificationView::UpdateWithMediaIcon(const gfx::ImageSkia& image) {
   }
 }
 
-void MediaNotificationView::UpdateControlButtonsVisibilityWithNotification(
-    const message_center::Notification& notification) {
-  // Media notifications do not use the settings and snooze buttons.
-  DCHECK(!notification.should_show_settings_button());
-  DCHECK(!notification.should_show_snooze_button());
-
-  control_buttons_view_->ShowCloseButton(!notification.pinned());
-  UpdateControlButtonsVisibility();
-}
-
 void MediaNotificationView::UpdateActionButtonsVisibility() {
   std::set<MediaSessionAction> visible_actions =
       CalculateVisibleActions(IsActuallyExpanded());
@@ -385,6 +372,9 @@ void MediaNotificationView::UpdateViewForExpandedState() {
   // notification is expanded then the buttons should be below the title/artist
   // information. If it is collapsed then the buttons will be to the right.
   if (expanded) {
+    static_cast<views::BoxLayout*>(button_row_->GetLayoutManager())
+        ->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
+
     main_row_
         ->SetLayoutManager(std::make_unique<views::BoxLayout>(
             views::BoxLayout::kVertical,
@@ -394,13 +384,16 @@ void MediaNotificationView::UpdateViewForExpandedState() {
             kDefaultMarginSize))
         ->SetDefaultFlex(1);
   } else {
+    static_cast<views::BoxLayout*>(button_row_->GetLayoutManager())
+        ->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kCenter);
+
     main_row_
         ->SetLayoutManager(std::make_unique<views::BoxLayout>(
             views::BoxLayout::kHorizontal,
             gfx::Insets(0, kDefaultMarginSize, 14,
                         has_artwork_ ? kRightMarginSize : kDefaultMarginSize),
             kDefaultMarginSize, true))
-        ->SetDefaultFlex(1);
+        ->SetFlexForView(title_artist_row_, 1);
   }
 
   main_row_->Layout();
@@ -411,17 +404,19 @@ void MediaNotificationView::UpdateViewForExpandedState() {
   header_row_->SetExpanded(expanded);
 
   UpdateActionButtonsVisibility();
+
+  container_->OnExpanded(expanded);
 }
 
 void MediaNotificationView::CreateMediaButton(
     MediaSessionAction action,
     const base::string16& accessible_name) {
-  views::ImageButton* button = views::CreateVectorImageButton(this);
+  auto button = views::CreateVectorImageButton(this);
   button->set_tag(static_cast<int>(action));
   button->SetPreferredSize(kMediaButtonSize);
   button->SetAccessibleName(accessible_name);
   button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
-  button_row_->AddChildView(button);
+  button_row_->AddChildView(std::move(button));
 }
 
 MediaNotificationBackground*
@@ -491,9 +486,7 @@ void MediaNotificationView::UpdateForegroundColor() {
       kMediaButtonIconSize, foreground);
 
   // Update action buttons.
-  for (int i = 0; i < button_row_->child_count(); ++i) {
-    views::View* child = button_row_->child_at(i);
-
+  for (views::View* child : button_row_->children()) {
     // Skip the play pause button since it is a special case.
     if (child == play_pause_button_)
       continue;

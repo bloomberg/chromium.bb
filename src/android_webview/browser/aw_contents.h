@@ -65,10 +65,6 @@ class AwContents : public FindHelper::Listener,
   // Returns the AwContents instance associated with |web_contents|, or NULL.
   static AwContents* FromWebContents(content::WebContents* web_contents);
 
-  // Returns the AwContents instance associated with with the given
-  // render_process_id and render_view_id, or NULL.
-  static AwContents* FromID(int render_process_id, int render_view_id);
-
   static std::string GetLocale();
 
   static std::string GetLocaleList();
@@ -369,8 +365,8 @@ class AwContents : public FindHelper::Listener,
       const base::android::JavaParamRef<jobject>& callback);
 
   // AwRenderProcessGoneDelegate overrides
-  void OnRenderProcessGone(int child_process_id) override;
-  bool OnRenderProcessGoneDetail(int child_process_id, bool crashed) override;
+  RenderProcessGoneResult OnRenderProcessGone(int child_process_id,
+                                              bool crashed) override;
 
  private:
   void InitAutofillIfNecessary(bool autocomplete_enabled);

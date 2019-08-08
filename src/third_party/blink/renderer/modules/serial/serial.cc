@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/serial/serial.h"
 
 #include <inttypes.h>
+#include <utility>
 
 #include "base/unguessable_token.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -16,6 +17,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/event_target_modules_names.h"
 #include "third_party/blink/renderer/modules/serial/serial_port.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -54,15 +56,16 @@ ScriptPromise Serial::getPorts(ScriptState* script_state) {
   auto* context = GetExecutionContext();
   if (!context) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(DOMExceptionCode::kNotSupportedError));
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kNotSupportedError));
   }
 
   if (!context->GetSecurityContext().IsFeatureEnabled(
           mojom::FeaturePolicyFeature::kSerial,
           ReportOptions::kReportOnFailure)) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kSecurityError,
                                            kFeaturePolicyBlocked));
   }
 
@@ -81,22 +84,23 @@ ScriptPromise Serial::requestPort(ScriptState* script_state,
   auto* frame = GetFrame();
   if (!frame || !frame->GetDocument()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(DOMExceptionCode::kNotSupportedError));
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kNotSupportedError));
   }
 
   if (!frame->GetDocument()->IsFeatureEnabled(
           mojom::FeaturePolicyFeature::kSerial,
           ReportOptions::kReportOnFailure)) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kSecurityError,
                                            kFeaturePolicyBlocked));
   }
 
   if (!LocalFrame::HasTransientUserActivation(frame)) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
-        DOMException::Create(
+        MakeGarbageCollected<DOMException>(
             DOMExceptionCode::kSecurityError,
             "Must be handling a user gesture to show a permission request."));
   }
@@ -153,8 +157,8 @@ void Serial::OnServiceConnectionError() {
   HeapHashSet<Member<ScriptPromiseResolver>> request_port_promises;
   request_port_promises_.swap(request_port_promises);
   for (ScriptPromiseResolver* resolver : request_port_promises) {
-    resolver->Reject(DOMException::Create(DOMExceptionCode::kNotFoundError,
-                                          kNoPortSelected));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kNotFoundError, kNoPortSelected));
   }
 }
 
@@ -185,8 +189,8 @@ void Serial::OnRequestPort(ScriptPromiseResolver* resolver,
   request_port_promises_.erase(resolver);
 
   if (!port_info) {
-    resolver->Reject(DOMException::Create(DOMExceptionCode::kNotFoundError,
-                                          kNoPortSelected));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kNotFoundError, kNoPortSelected));
     return;
   }
 

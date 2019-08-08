@@ -78,14 +78,6 @@ bool ParentLocalSurfaceIdAllocator::UpdateFromChild(
   return true;
 }
 
-void ParentLocalSurfaceIdAllocator::Reset(
-    const LocalSurfaceId& local_surface_id) {
-  is_invalid_ = false;
-  current_local_surface_id_allocation_.local_surface_id_ = local_surface_id;
-  current_local_surface_id_allocation_.allocation_time_ =
-      tick_clock_->NowTicks();
-}
-
 void ParentLocalSurfaceIdAllocator::Invalidate() {
   is_invalid_ = true;
 }

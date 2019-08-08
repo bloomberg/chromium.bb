@@ -45,11 +45,24 @@ bool StructTraits<tracing::mojom::DataSourceDataView,
 }
 
 // static
+bool StructTraits<tracing::mojom::PerfettoBuiltinDataSourceDataView,
+                  perfetto::TraceConfig::BuiltinDataSource>::
+    Read(tracing::mojom::PerfettoBuiltinDataSourceDataView data,
+         perfetto::TraceConfig::BuiltinDataSource* out) {
+  out->set_disable_clock_snapshotting(data.disable_clock_snapshotting());
+  out->set_disable_trace_config(data.disable_trace_config());
+  out->set_disable_system_info(data.disable_system_info());
+  return true;
+}
+
+// static
 bool StructTraits<tracing::mojom::TraceConfigDataView, perfetto::TraceConfig>::
     Read(tracing::mojom::TraceConfigDataView data, perfetto::TraceConfig* out) {
   std::vector<perfetto::TraceConfig::DataSource> data_sources;
   std::vector<perfetto::TraceConfig::BufferConfig> buffers;
-  if (!data.ReadDataSources(&data_sources) || !data.ReadBuffers(&buffers)) {
+  if (!data.ReadDataSources(&data_sources) || !data.ReadBuffers(&buffers) ||
+      !data.ReadPerfettoBuiltinDataSource(
+          out->mutable_builtin_data_sources())) {
     return false;
   }
 

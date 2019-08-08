@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/media/router/media_router_base.h"
+
 #include "base/bind.h"
 #include "base/test/mock_callback.h"
 #include "chrome/browser/media/router/test/mock_media_router.h"
@@ -16,7 +18,7 @@ using testing::SaveArg;
 
 namespace media_router {
 
-// MockMediaRouter inherits from MediaRouterBase but overrides some of its
+// MockMediaRouterBase inherits from MediaRouter but overrides some of its
 // methods with mock methods, so we must override them again.
 class MockMediaRouterBase : public MockMediaRouter {
  public:

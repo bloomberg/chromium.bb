@@ -67,6 +67,26 @@ testing::AssertionResult RunManifestVersionFailure(
   return testing::AssertionSuccess();
 }
 
+testing::AssertionResult RunCreationWithFlags(
+    const base::DictionaryValue* manifest,
+    Manifest::Location location,
+    Manifest::Type expected_type,
+    Extension::InitFromValueFlags custom_flag = Extension::NO_FLAGS) {
+  std::string error;
+  scoped_refptr<const Extension> extension = Extension::Create(
+      base::FilePath(), location, *manifest, custom_flag, &error);
+  if (!extension) {
+    return testing::AssertionFailure()
+           << "Extension creation failed: " << error;
+  }
+
+  if (extension->GetType() != expected_type) {
+    return testing::AssertionFailure()
+           << "Wrong type: " << extension->GetType();
+  }
+  return testing::AssertionSuccess();
+}
+
 }  // namespace
 
 // TODO(devlin): Move tests from chrome/common/extensions/extension_unittest.cc
@@ -201,6 +221,22 @@ TEST(ExtensionTest, UserScriptManifestVersions) {
   // Requiring the modern manifest version should make user scripts require v2.
   EXPECT_TRUE(RunManifestVersionFailure(
       get_manifest(1), Extension::REQUIRE_MODERN_MANIFEST_VERSION));
+}
+
+TEST(ExtensionTest, LoginScreenFlag) {
+  DictionaryBuilder builder;
+  builder.Set("name", "My Extension")
+      .Set("version", "0.1")
+      .Set("description", "An awesome extension")
+      .Set("manifest_version", 2);
+  std::unique_ptr<base::DictionaryValue> manifest = builder.Build();
+
+  EXPECT_TRUE(RunCreationWithFlags(manifest.get(), Manifest::EXTERNAL_POLICY,
+                                   Manifest::TYPE_EXTENSION,
+                                   Extension::NO_FLAGS));
+  EXPECT_TRUE(RunCreationWithFlags(manifest.get(), Manifest::EXTERNAL_POLICY,
+                                   Manifest::TYPE_LOGIN_SCREEN_EXTENSION,
+                                   Extension::FOR_LOGIN_SCREEN));
 }
 
 }  // namespace extensions

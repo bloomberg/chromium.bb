@@ -10,13 +10,13 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringize_macros.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -27,13 +27,23 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/name_value_map.h"
+#include "remoting/base/oauth_token_getter.h"
 #include "remoting/base/service_urls.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/it2me/it2me_confirmation_dialog.h"
 #include "remoting/host/policy_watcher.h"
+#include "remoting/host/remoting_register_support_host_request.h"
+#include "remoting/host/xmpp_register_support_host_request.h"
 #include "remoting/protocol/ice_config.h"
 #include "remoting/signaling/delegating_signal_strategy.h"
+#include "remoting/signaling/ftl_client_uuid_device_id_provider.h"
+#include "remoting/signaling/ftl_signal_strategy.h"
+#include "remoting/signaling/muxing_signal_strategy.h"
+#include "remoting/signaling/remoting_log_to_server.h"
+#include "remoting/signaling/server_log_entry.h"
+#include "remoting/signaling/xmpp_log_to_server.h"
+#include "remoting/signaling/xmpp_signal_strategy.h"
 
 #if defined(OS_WIN)
 #include "base/command_line.h"
@@ -85,6 +95,30 @@ void PolicyErrorCallback(
   DCHECK(callback);
   task_runner->PostTask(FROM_HERE, callback);
 }
+
+// An OAuthTokenGetter implementation that simply passes |username| and
+// |access_token| when CallWithToken() is called.
+class PassthroughOAuthTokenGetter : public OAuthTokenGetter {
+ public:
+  PassthroughOAuthTokenGetter(const std::string& username,
+                              const std::string& access_token)
+      : username_(username), access_token_(access_token) {}
+
+  ~PassthroughOAuthTokenGetter() override = default;
+
+  void CallWithToken(OAuthTokenGetter::TokenCallback on_access_token) override {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(on_access_token),
+                                  OAuthTokenGetter::Status::SUCCESS, username_,
+                                  access_token_));
+  }
+
+  void InvalidateCache() override { NOTIMPLEMENTED(); }
+
+ private:
+  std::string username_;
+  std::string access_token_;
+};
 
 }  // namespace
 
@@ -239,23 +273,42 @@ void It2MeNativeMessagingHost::ProcessConnect(
   bool no_dialogs = false;
   message->GetBoolean("noDialogs", &no_dialogs);
 
+  bool terminate_upon_input = false;
+  message->GetBoolean("terminateUponInput", &terminate_upon_input);
+
+  std::string directory_bot_jid =
+      ServiceUrls::GetInstance()->directory_bot_jid();
+
   std::unique_ptr<SignalStrategy> signal_strategy;
+  std::unique_ptr<RegisterSupportHostRequest> register_host_request;
+  std::unique_ptr<LogToServer> log_to_server;
   if (use_signaling_proxy) {
     if (username.empty()) {
       // Allow unauthenticated users for the delegated signal strategy case.
       username = kAnonymousUserName;
     }
     signal_strategy = CreateDelegatedSignalStrategy(message.get());
+    register_host_request =
+        std::make_unique<XmppRegisterSupportHostRequest>(directory_bot_jid);
+    log_to_server = std::make_unique<XmppLogToServer>(
+        ServerLogEntry::IT2ME, signal_strategy.get(), directory_bot_jid,
+        host_context_->network_task_runner());
   } else {
-    signal_strategy = CreateXmppSignalStrategy(username, message.get());
+    std::string access_token = ExtractAccessToken(message.get());
+    signal_strategy =
+        CreateMuxingSignalStrategy(username, access_token, message.get());
+    register_host_request =
+        std::make_unique<RemotingRegisterSupportHostRequest>(
+            std::make_unique<PassthroughOAuthTokenGetter>(username,
+                                                          access_token));
+    log_to_server = std::make_unique<RemotingLogToServer>(
+        ServerLogEntry::IT2ME,
+        std::make_unique<PassthroughOAuthTokenGetter>(username, access_token));
   }
   if (!signal_strategy) {
     SendErrorAndExit(std::move(response), ErrorCode::INCOMPATIBLE_PROTOCOL);
     return;
   }
-
-  std::string directory_bot_jid =
-      ServiceUrls::GetInstance()->directory_bot_jid();
 
 #if !defined(NDEBUG)
   if (!message->GetString("directoryBotJid", &directory_bot_jid)) {
@@ -285,13 +338,15 @@ void It2MeNativeMessagingHost::ProcessConnect(
   // Create the It2Me host and start connecting. Note that disabling dialogs is
   // only supported on ChromeOS.
   it2me_host_ = factory_->CreateIt2MeHost();
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || !defined(NDEBUG)
   it2me_host_->set_enable_dialogs(!no_dialogs);
+  it2me_host_->set_terminate_upon_input(terminate_upon_input);
 #endif
-  it2me_host_->Connect(host_context_->Copy(), std::move(policies),
-                       std::make_unique<It2MeConfirmationDialogFactory>(),
-                       weak_ptr_, std::move(signal_strategy), username,
-                       directory_bot_jid, ice_config);
+  it2me_host_->Connect(
+      host_context_->Copy(), std::move(policies),
+      std::make_unique<It2MeConfirmationDialogFactory>(),
+      std::move(register_host_request), std::move(log_to_server), weak_ptr_,
+      std::move(signal_strategy), username, directory_bot_jid, ice_config);
 
   SendMessageToClient(std::move(response));
 }
@@ -488,7 +543,7 @@ void It2MeNativeMessagingHost::OnPolicyUpdate(
     // may not be ideal, but is still functional.
     needs_elevation_ = needs_elevation_ && allow_elevated_host;
     if (pending_connect_) {
-      base::ResetAndReturn(&pending_connect_).Run();
+      std::move(pending_connect_).Run();
     }
   }
 
@@ -515,7 +570,7 @@ void It2MeNativeMessagingHost::OnPolicyError() {
     // is one, but otherwise do nothing. The policy error will be sent when a
     // connection is made; doing so beforehand would break assumptions made by
     // the Chrome app.
-    base::ResetAndReturn(&pending_connect_).Run();
+    std::move(pending_connect_).Run();
   }
 }
 
@@ -538,8 +593,9 @@ It2MeNativeMessagingHost::CreateDelegatedSignalStrategy(
 }
 
 std::unique_ptr<SignalStrategy>
-It2MeNativeMessagingHost::CreateXmppSignalStrategy(
+It2MeNativeMessagingHost::CreateMuxingSignalStrategy(
     const std::string& username,
+    const std::string& access_token,
     const base::DictionaryValue* message) {
   if (username.empty()) {
     LOG(ERROR) << "'userName' not found in request.";
@@ -555,25 +611,7 @@ It2MeNativeMessagingHost::CreateXmppSignalStrategy(
                             &xmpp_config.host, &xmpp_config.port);
   DCHECK(xmpp_server_valid);
   xmpp_config.use_tls = service_urls->xmpp_server_use_tls();
-
-  std::string auth_service_with_token;
-  if (!message->GetString("authServiceWithToken", &auth_service_with_token)) {
-    LOG(ERROR) << "'authServiceWithToken' not found in request.";
-    return nullptr;
-  }
-
-  // For backward compatibility the webapp still passes OAuth service as part
-  // of the authServiceWithToken field. But auth service part is always
-  // expected to be set to oauth2.
-  const char kOAuth2ServicePrefix[] = "oauth2:";
-  if (!base::StartsWith(auth_service_with_token, kOAuth2ServicePrefix,
-                        base::CompareCase::SENSITIVE)) {
-    LOG(ERROR) << "Invalid 'authServiceWithToken': " << auth_service_with_token;
-    return nullptr;
-  }
-
-  xmpp_config.auth_token =
-      auth_service_with_token.substr(strlen(kOAuth2ServicePrefix));
+  xmpp_config.auth_token = access_token;
 
 #if !defined(NDEBUG)
   std::string address;
@@ -593,9 +631,35 @@ It2MeNativeMessagingHost::CreateXmppSignalStrategy(
   }
 #endif  // !defined(NDEBUG)
 
-  return std::make_unique<XmppSignalStrategy>(
+  auto xmpp_signal_strategy = std::make_unique<XmppSignalStrategy>(
       net::ClientSocketFactory::GetDefaultFactory(),
       host_context_->url_request_context_getter(), xmpp_config);
+  auto ftl_signal_strategy = std::make_unique<FtlSignalStrategy>(
+      std::make_unique<PassthroughOAuthTokenGetter>(username, access_token),
+      std::make_unique<FtlClientUuidDeviceIdProvider>());
+  return std::make_unique<MuxingSignalStrategy>(
+      std::move(ftl_signal_strategy), std::move(xmpp_signal_strategy));
+}
+
+std::string It2MeNativeMessagingHost::ExtractAccessToken(
+    const base::DictionaryValue* message) {
+  std::string auth_service_with_token;
+  if (!message->GetString("authServiceWithToken", &auth_service_with_token)) {
+    LOG(ERROR) << "'authServiceWithToken' not found in request.";
+    return {};
+  }
+
+  // For backward compatibility the webapp still passes OAuth service as part
+  // of the authServiceWithToken field. But auth service part is always
+  // expected to be set to oauth2.
+  const char kOAuth2ServicePrefix[] = "oauth2:";
+  if (!base::StartsWith(auth_service_with_token, kOAuth2ServicePrefix,
+                        base::CompareCase::SENSITIVE)) {
+    LOG(ERROR) << "Invalid 'authServiceWithToken': " << auth_service_with_token;
+    return {};
+  }
+
+  return auth_service_with_token.substr(strlen(kOAuth2ServicePrefix));
 }
 
 #if defined(OS_WIN)

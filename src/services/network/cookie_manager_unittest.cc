@@ -122,6 +122,8 @@ class SynchronousCookieManager {
     net::CanonicalCookie::CookieInclusionStatus result_out =
         net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR;
     net::CookieOptions options;
+    options.set_same_site_cookie_context(
+        net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
     if (modify_http_only)
       options.set_include_httponly();
     cookie_service_->SetCanonicalCookie(
@@ -143,6 +145,8 @@ class SynchronousCookieManager {
       bool modify_http_only) {
     base::RunLoop run_loop;
     net::CookieOptions options;
+    options.set_same_site_cookie_context(
+        net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
     if (modify_http_only)
       options.set_include_httponly();
     net::CanonicalCookie::CookieInclusionStatus result_out =
@@ -228,8 +232,11 @@ class CookieManagerTest : public testing::Test {
     net::ResultSavingCookieCallback<net::CanonicalCookie::CookieInclusionStatus>
         callback;
     net::CookieOptions options;
+    options.set_same_site_cookie_context(
+        net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
     if (can_modify_httponly)
       options.set_include_httponly();
+
     cookie_monster_->SetCanonicalCookieAsync(
         std::make_unique<net::CanonicalCookie>(cookie),
         std::move(source_scheme), options,
@@ -287,6 +294,16 @@ class CookieManagerTest : public testing::Test {
   void InitializeCookieService(
       scoped_refptr<net::CookieMonster::PersistentCookieStore> store,
       scoped_refptr<SessionCleanupCookieStore> cleanup_store) {
+    if (cookie_service_) {
+      // Make sure that data from any previous store is fully saved.
+      // |cookie_service_| destroyed first since it may issue some writes to the
+      // |cookie_monster_|.
+      cookie_service_ = nullptr;
+      net::NoResultCookieCallback callback;
+      cookie_monster_->FlushStore(callback.MakeCallback());
+      callback.WaitUntilDone();
+    }
+
     connection_error_seen_ = false;
     cookie_monster_ = std::make_unique<net::CookieMonster>(
         std::move(store), nullptr /* netlog */);

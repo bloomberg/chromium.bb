@@ -328,6 +328,9 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
     LayoutUnit track_based_logical_height =
         track_sizing_algorithm_.ComputeTrackBasedSize() +
         BorderAndPaddingLogicalHeight();
+    if (!CachedHasDefiniteLogicalHeight() && ShouldApplySizeContainment()) {
+      ComputeTrackSizesForDefiniteSize(kForRows, track_based_logical_height);
+    }
 
     // TODO(rego): We shouldn't need this once crbug.com/906530 is fixed.
     // Right now we need this because
@@ -498,12 +501,8 @@ void LayoutGrid::ComputeIntrinsicLogicalWidths(
     LayoutUnit& min_logical_width,
     LayoutUnit& max_logical_width) const {
   LayoutUnit scrollbar_width = LayoutUnit(ScrollbarLogicalWidth());
-
-  if (ShouldApplySizeContainment()) {
-    min_logical_width = scrollbar_width;
-    max_logical_width = scrollbar_width;
-    return;
-  }
+  min_logical_width = scrollbar_width;
+  max_logical_width = scrollbar_width;
 
   std::unique_ptr<Grid> grid = Grid::Create(this);
   GridTrackSizingAlgorithm algorithm(this, *grid);
@@ -522,30 +521,23 @@ void LayoutGrid::ComputeIntrinsicLogicalWidths(
     }
   }
 
-  ComputeTrackSizesForIndefiniteSize(algorithm, kForColumns, &min_logical_width,
-                                     &max_logical_width);
+  // TODO(crbug.com/953915): Handle display-locked grid sizing.
+  ComputeTrackSizesForIndefiniteSize(algorithm, kForColumns);
 
-  min_logical_width += scrollbar_width;
-  max_logical_width += scrollbar_width;
+  size_t number_of_tracks = algorithm.Tracks(kForColumns).size();
+  LayoutUnit total_gutters_size = GuttersSize(
+      algorithm.GetGrid(), kForColumns, 0, number_of_tracks, base::nullopt);
+
+  min_logical_width += algorithm.MinContentSize() + total_gutters_size;
+  max_logical_width += algorithm.MaxContentSize() + total_gutters_size;
 }
 
 void LayoutGrid::ComputeTrackSizesForIndefiniteSize(
     GridTrackSizingAlgorithm& algo,
-    GridTrackSizingDirection direction,
-    LayoutUnit* min_intrinsic_size,
-    LayoutUnit* max_intrinsic_size) const {
+    GridTrackSizingDirection direction) const {
   const Grid& grid = algo.GetGrid();
   algo.Setup(direction, NumTracks(direction, grid), base::nullopt);
   algo.Run();
-
-  size_t number_of_tracks = algo.Tracks(direction).size();
-  LayoutUnit total_gutters_size =
-      GuttersSize(grid, direction, 0, number_of_tracks, base::nullopt);
-
-  if (min_intrinsic_size)
-    *min_intrinsic_size = algo.MinContentSize() + total_gutters_size;
-  if (max_intrinsic_size)
-    *max_intrinsic_size = algo.MaxContentSize() + total_gutters_size;
 
 #if DCHECK_IS_ON()
   DCHECK(algo.TracksAreWiderThanMinTrackBreadth());
@@ -573,6 +565,12 @@ size_t LayoutGrid::ComputeAutoRepeatTracksCount(
     base::Optional<LayoutUnit> available_size) const {
   DCHECK(!available_size || available_size.value() != -1);
   bool is_row_axis = direction == kForColumns;
+  if (ShouldApplySizeContainment() &&
+      ((is_row_axis &&
+        StyleRef().GridAutoRepeatColumnsType() == AutoRepeatType::kAutoFit) ||
+       (!is_row_axis &&
+        StyleRef().GridAutoRepeatRowsType() == AutoRepeatType::kAutoFit)))
+    return 0;
   const auto& auto_repeat_tracks = is_row_axis
                                        ? StyleRef().GridAutoRepeatColumns()
                                        : StyleRef().GridAutoRepeatRows();
@@ -581,32 +579,51 @@ size_t LayoutGrid::ComputeAutoRepeatTracksCount(
   if (!auto_repeat_track_list_length)
     return 0;
 
-  if (!is_row_axis) {
-    if (!available_size) {
-      const Length& max_length = StyleRef().LogicalMaxHeight();
-      if (!max_length.IsMaxSizeNone()) {
-        available_size = ConvertLayoutUnitToOptional(
-            ConstrainContentBoxLogicalHeightByMinMax(
-                AvailableLogicalHeightUsing(max_length,
-                                            kExcludeMarginBorderPadding),
-                LayoutUnit(-1)));
-      }
-    }
-  }
-
   bool needs_to_fulfill_minimum_size = false;
   if (!available_size) {
+    const Length& max_size = is_row_axis ? StyleRef().LogicalMaxWidth()
+                                         : StyleRef().LogicalMaxHeight();
+    base::Optional<LayoutUnit> containing_block_available_size;
+    LayoutUnit available_max_size = LayoutUnit();
+    if (max_size.IsSpecified()) {
+      if (max_size.IsPercentOrCalc()) {
+        containing_block_available_size =
+            is_row_axis ? ContainingBlockLogicalWidthForContent()
+                        : ContainingBlockLogicalHeightForContent(
+                              kExcludeMarginBorderPadding);
+      }
+      LayoutUnit max_size_value = ValueForLength(
+          max_size, containing_block_available_size.value_or(LayoutUnit()));
+      available_max_size =
+          is_row_axis
+              ? AdjustContentBoxLogicalWidthForBoxSizing(max_size_value)
+              : AdjustContentBoxLogicalHeightForBoxSizing(max_size_value);
+    }
+
     const Length& min_size = is_row_axis ? StyleRef().LogicalMinWidth()
                                          : StyleRef().LogicalMinHeight();
-    if (!min_size.IsSpecified())
+    if (!available_max_size && !min_size.IsSpecified())
       return auto_repeat_track_list_length;
 
-    LayoutUnit containing_block_available_size =
-        is_row_axis ? ContainingBlockLogicalWidthForContent()
-                    : ContainingBlockLogicalHeightForContent(
-                          kExcludeMarginBorderPadding);
-    available_size = ValueForLength(min_size, containing_block_available_size);
-    needs_to_fulfill_minimum_size = true;
+    LayoutUnit available_min_size = LayoutUnit();
+    if (min_size.IsSpecified()) {
+      if (!containing_block_available_size && min_size.IsPercentOrCalc()) {
+        containing_block_available_size =
+            is_row_axis ? ContainingBlockLogicalWidthForContent()
+                        : ContainingBlockLogicalHeightForContent(
+                              kExcludeMarginBorderPadding);
+      }
+      LayoutUnit min_size_value = ValueForLength(
+          min_size, containing_block_available_size.value_or(LayoutUnit()));
+      available_min_size =
+          is_row_axis
+              ? AdjustContentBoxLogicalWidthForBoxSizing(min_size_value)
+              : AdjustContentBoxLogicalHeightForBoxSizing(min_size_value);
+      if (!max_size.IsSpecified())
+        needs_to_fulfill_minimum_size = true;
+    }
+
+    available_size = std::max(available_min_size, available_max_size);
   }
 
   LayoutUnit auto_repeat_tracks_size;
@@ -2343,7 +2360,7 @@ LayoutPoint LayoutGrid::GridAreaLogicalPosition(const GridArea& area) const {
 }
 
 void LayoutGrid::PaintChildren(const PaintInfo& paint_info,
-                               const LayoutPoint& paint_offset) const {
+                               const PhysicalOffset& paint_offset) const {
   DCHECK(!grid_->NeedsItemsPlacement());
   if (grid_->HasGridItems()) {
     BlockPainter(*this).PaintChildrenAtomically(grid_->GetOrderIterator(),

@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_image_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_image_manager_factory.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_metrics_util.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
@@ -62,7 +63,8 @@ void plugin_vm::ShowPluginVmLauncherView(Profile* profile) {
 }
 
 PluginVmLauncherView::PluginVmLauncherView(Profile* profile)
-    : plugin_vm_image_manager_(
+    : profile_(profile),
+      plugin_vm_image_manager_(
           plugin_vm::PluginVmImageManagerFactory::GetForProfile(profile)) {
   // Layout constants from the spec.
   gfx::Insets kDialogInsets(60, 64, 0, 64);
@@ -108,7 +110,7 @@ PluginVmLauncherView::PluginVmLauncherView(Profile* profile)
   logo_image->SetImage(
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           IDR_LOGO_PLUGIN_VM_DEFAULT_32));
-  logo_image->SetHorizontalAlignment(views::ImageView::LEADING);
+  logo_image->SetHorizontalAlignment(views::ImageView::Alignment::kLeading);
   upper_container_view->AddChildView(logo_image);
 
   big_message_label_ = new views::Label(GetBigMessage(), {kTitleFont});
@@ -165,7 +167,7 @@ PluginVmLauncherView::PluginVmLauncherView(Profile* profile)
 
   // Make sure the lower_container_view is pinned to the bottom of the dialog.
   lower_container_layout->set_main_axis_alignment(
-      views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
+      views::BoxLayout::MainAxisAlignment::kEnd);
   layout->SetFlexForView(lower_container_view, 1, true);
 }
 
@@ -173,13 +175,14 @@ int PluginVmLauncherView::GetDialogButtons() const {
   switch (state_) {
     case State::START_DOWNLOADING:
     case State::DOWNLOADING:
-    case State::UNZIPPING:
-    case State::REGISTERING:
+    case State::IMPORTING:
       return ui::DIALOG_BUTTON_CANCEL;
     case State::FINISHED:
       return ui::DIALOG_BUTTON_OK;
     case State::ERROR:
       return ui::DIALOG_BUTTON_CANCEL | ui::DIALOG_BUTTON_OK;
+    case State::NOT_ALLOWED:
+      return ui::DIALOG_BUTTON_CANCEL;
   }
 }
 
@@ -188,8 +191,7 @@ base::string16 PluginVmLauncherView::GetDialogButtonLabel(
   switch (state_) {
     case State::START_DOWNLOADING:
     case State::DOWNLOADING:
-    case State::UNZIPPING:
-    case State::REGISTERING: {
+    case State::IMPORTING: {
       DCHECK_EQ(button, ui::DIALOG_BUTTON_CANCEL);
       return l10n_util::GetStringUTF16(IDS_APP_CANCEL);
     }
@@ -201,6 +203,10 @@ base::string16 PluginVmLauncherView::GetDialogButtonLabel(
       return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK
                                            ? IDS_PLUGIN_VM_LAUNCHER_RETRY_BUTTON
                                            : IDS_APP_CANCEL);
+    }
+    case State::NOT_ALLOWED: {
+      DCHECK_EQ(button, ui::DIALOG_BUTTON_CANCEL);
+      return l10n_util::GetStringUTF16(IDS_APP_CANCEL);
     }
   }
 }
@@ -223,12 +229,18 @@ bool PluginVmLauncherView::Accept() {
 }
 
 bool PluginVmLauncherView::Cancel() {
-  if (state_ == State::DOWNLOADING || state_ == State::START_DOWNLOADING)
+  if (state_ == State::DOWNLOADING || state_ == State::START_DOWNLOADING) {
     plugin_vm_image_manager_->CancelDownload();
-  if (state_ == State::UNZIPPING)
-    plugin_vm_image_manager_->CancelUnzipping();
 
-  // TODO(https://crbug.com/947014): Cancel registering.
+    plugin_vm::RecordPluginVmSetupResultHistogram(
+        plugin_vm::PluginVmSetupResult::kUserCancelledDownloadingPluginVmImage);
+  }
+  if (state_ == State::IMPORTING) {
+    plugin_vm_image_manager_->CancelImport();
+
+    plugin_vm::RecordPluginVmSetupResultHistogram(
+        plugin_vm::PluginVmSetupResult::kUserCancelledImportingPluginVmImage);
+  }
 
   return true;
 }
@@ -271,8 +283,8 @@ void PluginVmLauncherView::OnDownloadCompleted() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(state_, State::DOWNLOADING);
 
-  plugin_vm_image_manager_->StartUnzipping();
-  state_ = State::UNZIPPING;
+  plugin_vm_image_manager_->StartImport();
+  state_ = State::IMPORTING;
   OnStateUpdated();
 }
 
@@ -285,108 +297,68 @@ void PluginVmLauncherView::OnDownloadFailed() {
 
   state_ = State::ERROR;
   OnStateUpdated();
+
+  plugin_vm::RecordPluginVmSetupResultHistogram(
+      plugin_vm::PluginVmSetupResult::kErrorDownloadingPluginVmImage);
 }
 
-void PluginVmLauncherView::OnUnzippingProgressUpdated(
-    int64_t bytes_unzipped,
-    int64_t plugin_vm_image_size,
-    int64_t unzipping_bytes_per_sec) {
+void PluginVmLauncherView::OnImportProgressUpdated(
+    uint64_t percent_completed,
+    int64_t import_percent_per_second) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK_EQ(state_, State::UNZIPPING);
+  DCHECK_EQ(state_, State::IMPORTING);
 
   base::Optional<double> fraction_complete =
-      GetFractionComplete(bytes_unzipped, plugin_vm_image_size);
+      GetFractionComplete(percent_completed, 100.0);
   if (fraction_complete.has_value())
     progress_bar_->SetValue(fraction_complete.value());
   else
     progress_bar_->SetValue(-1);
 
-  base::string16 time_left_message = GetTimeLeftMessage(
-      bytes_unzipped, plugin_vm_image_size, unzipping_bytes_per_sec);
+  base::string16 time_left_message =
+      GetTimeLeftMessage(percent_completed, 100.0, import_percent_per_second);
   time_left_message_label_->SetVisible(!time_left_message.empty());
   time_left_message_label_->SetText(time_left_message);
 }
 
-void PluginVmLauncherView::OnUnzipped() {
+void PluginVmLauncherView::OnImportCancelled() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK_EQ(state_, State::UNZIPPING);
-
-  state_ = State::REGISTERING;
-  OnStateUpdated();
-
-  plugin_vm_image_manager_->StartRegistration();
 }
 
-void PluginVmLauncherView::OnUnzippingFailed() {
+void PluginVmLauncherView::OnImportFailed() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   state_ = State::ERROR;
   OnStateUpdated();
+
+  plugin_vm::RecordPluginVmSetupResultHistogram(
+      plugin_vm::PluginVmSetupResult::kErrorImportingPluginVmImage);
 }
 
-void PluginVmLauncherView::OnRegistered() {
+void PluginVmLauncherView::OnImported() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK_EQ(state_, State::REGISTERING);
+  DCHECK_EQ(state_, State::IMPORTING);
 
   state_ = State::FINISHED;
   OnStateUpdated();
+
+  plugin_vm::RecordPluginVmSetupResultHistogram(
+      plugin_vm::PluginVmSetupResult::kSuccess);
 }
 
-void PluginVmLauncherView::OnRegistrationFailed() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK_EQ(state_, State::REGISTERING);
-
-  state_ = State::ERROR;
-  OnStateUpdated();
-}
-
-base::string16 PluginVmLauncherView::GetBigMessage() {
+base::string16 PluginVmLauncherView::GetBigMessage() const {
   switch (state_) {
     case State::START_DOWNLOADING:
     case State::DOWNLOADING:
-    case State::UNZIPPING:
-    case State::REGISTERING:
+    case State::IMPORTING:
       return l10n_util::GetStringUTF16(
           IDS_PLUGIN_VM_LAUNCHER_ENVIRONMENT_SETTING_TITLE);
     case State::FINISHED:
       return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_FINISHED_TITLE);
     case State::ERROR:
+    case State::NOT_ALLOWED:
       return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_ERROR_TITLE);
   }
-}
-
-PluginVmLauncherView::~PluginVmLauncherView() {
-  plugin_vm_image_manager_->RemoveObserver();
-  g_plugin_vm_launcher_view = nullptr;
-}
-
-void PluginVmLauncherView::AddedToWidget() {
-  StartPluginVmImageDownload();
-}
-
-void PluginVmLauncherView::OnStateUpdated() {
-  SetBigMessageLabel();
-  SetMessageLabel();
-  SetBigImage();
-
-  const bool progress_bar_visible =
-      state_ == State::START_DOWNLOADING || state_ == State::DOWNLOADING ||
-      state_ == State::UNZIPPING || state_ == State::REGISTERING;
-  progress_bar_->SetVisible(progress_bar_visible);
-  // Values outside the range [0,1] display an infinite loading animation.
-  progress_bar_->SetValue(-1);
-
-  const bool time_left_message_label_visible =
-      state_ == State::DOWNLOADING || state_ == State::UNZIPPING;
-  time_left_message_label_->SetVisible(time_left_message_label_visible);
-
-  const bool download_progress_message_label_visible =
-      state_ == State::DOWNLOADING;
-  download_progress_message_label_->SetVisible(
-      download_progress_message_label_visible);
-
-  DialogModelChanged();
-  GetWidget()->GetRootView()->Layout();
 }
 
 base::string16 PluginVmLauncherView::GetMessage() const {
@@ -397,17 +369,63 @@ base::string16 PluginVmLauncherView::GetMessage() const {
     case State::DOWNLOADING:
       return l10n_util::GetStringUTF16(
           IDS_PLUGIN_VM_LAUNCHER_DOWNLOADING_MESSAGE);
-    case State::UNZIPPING:
+    case State::IMPORTING:
       return l10n_util::GetStringUTF16(
-          IDS_PLUGIN_VM_LAUNCHER_UNZIPPING_MESSAGE);
-    case State::REGISTERING:
-      return l10n_util::GetStringUTF16(
-          IDS_PLUGIN_VM_LAUNCHER_REGISTERING_MESSAGE);
+          IDS_PLUGIN_VM_LAUNCHER_IMPORTING_MESSAGE);
     case State::FINISHED:
       return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_FINISHED_MESSAGE);
     case State::ERROR:
       return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_ERROR_MESSAGE);
+    case State::NOT_ALLOWED:
+      return l10n_util::GetStringUTF16(
+          IDS_PLUGIN_VM_LAUNCHER_NOT_ALLOWED_MESSAGE);
   }
+}
+
+PluginVmLauncherView::~PluginVmLauncherView() {
+  plugin_vm_image_manager_->RemoveObserver();
+  g_plugin_vm_launcher_view = nullptr;
+}
+
+void PluginVmLauncherView::AddedToWidget() {
+  // Defensive check that ensures an error message is shown if this
+  // dialogue is reached somehow although PluginVm has been disabled.
+  if (!plugin_vm::IsPluginVmAllowedForProfile(profile_)) {
+    LOG(ERROR) << "PluginVm is disallowed by policy. Showing error screen.";
+    state_ = State::NOT_ALLOWED;
+    plugin_vm::RecordPluginVmSetupResultHistogram(
+        plugin_vm::PluginVmSetupResult::kPluginVmIsNotAllowed);
+  }
+
+  if (state_ == State::START_DOWNLOADING)
+    StartPluginVmImageDownload();
+  else
+    OnStateUpdated();
+}
+
+void PluginVmLauncherView::OnStateUpdated() {
+  SetBigMessageLabel();
+  SetMessageLabel();
+  SetBigImage();
+
+  const bool progress_bar_visible = state_ == State::START_DOWNLOADING ||
+                                    state_ == State::DOWNLOADING ||
+                                    state_ == State::IMPORTING;
+  progress_bar_->SetVisible(progress_bar_visible);
+  // Values outside the range [0,1] display an infinite loading animation.
+  progress_bar_->SetValue(-1);
+
+  const bool time_left_message_label_visible =
+      state_ == State::DOWNLOADING || state_ == State::IMPORTING;
+  time_left_message_label_->SetVisible(time_left_message_label_visible);
+
+  const bool download_progress_message_label_visible =
+      state_ == State::DOWNLOADING;
+  download_progress_message_label_->SetVisible(
+      download_progress_message_label_visible);
+
+  DialogModelChanged();
+  GetWidget()->GetRootView()->Layout();
 }
 
 base::string16 PluginVmLauncherView::GetDownloadProgressMessage(
@@ -438,7 +456,7 @@ base::string16 PluginVmLauncherView::GetTimeLeftMessage(
     int64_t processed_bytes,
     int64_t bytes_to_be_processed,
     int64_t bytes_per_sec) const {
-  DCHECK(state_ == State::DOWNLOADING || state_ == State::UNZIPPING);
+  DCHECK(state_ == State::DOWNLOADING || state_ == State::IMPORTING);
 
   base::Optional<double> fraction_complete =
       GetFractionComplete(processed_bytes, bytes_to_be_processed);
@@ -465,7 +483,7 @@ void PluginVmLauncherView::SetMessageLabel() {
 }
 
 void PluginVmLauncherView::SetBigImage() {
-  if (state_ == State::ERROR) {
+  if (state_ == State::ERROR || state_ == State::NOT_ALLOWED) {
     big_image_->SetImage(
         ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
             IDR_PLUGIN_VM_LAUNCHER_ERROR));

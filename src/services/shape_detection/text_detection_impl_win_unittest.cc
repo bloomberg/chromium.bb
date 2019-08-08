@@ -55,7 +55,7 @@ class TextDetectionImplWinTest : public testing::Test {
 
 TEST_F(TextDetectionImplWinTest, ScanOnce) {
   // OCR not supported before Windows 10
-  if (base::win::GetVersion() < base::win::VERSION_WIN10)
+  if (base::win::GetVersion() < base::win::Version::WIN10)
     return;
 
   mojom::TextDetectionPtr text_service;

@@ -12,6 +12,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/strings/string16.h"
 
 class AppListModelUpdater;
 class ChromeSearchResult;
@@ -22,8 +23,8 @@ namespace test {
 FORWARD_DECLARE_TEST(MixerTest, Publish);
 }
 
-class RecurrenceRanker;
 class SearchProvider;
+class SearchResultRanker;
 enum class RankingItemType;
 
 // Mixer collects results from providers, sorts them and publishes them to the
@@ -47,16 +48,18 @@ class Mixer {
   void AddProviderToGroup(size_t group_id, SearchProvider* provider);
 
   // Collects the results, sorts and publishes them.
-  void MixAndPublish(size_t num_max_results);
+  void MixAndPublish(size_t num_max_results, const base::string16& query);
 
-  // Add a |RecurrenceRanker| to tweak mixing results.
-  void SetRecurrenceRanker(std::unique_ptr<RecurrenceRanker> ranker);
+  // Sets a SearchResultRanker to re-rank non-app search results before they are
+  // published.
+  void SetNonAppSearchResultRanker(std::unique_ptr<SearchResultRanker> ranker);
+
+  // Get a pointer to the SearchResultRanker owned by this object used for all
+  // non-app ranking.
+  SearchResultRanker* GetNonAppSearchResultRanker();
 
   // Handle a training signal.
   void Train(const std::string& id, RankingItemType type);
-
- private:
-  FRIEND_TEST_ALL_PREFIXES(test::MixerTest, Publish);
 
   // Used for sorting and mixing results.
   struct SortData {
@@ -70,6 +73,9 @@ class Mixer {
   };
   typedef std::vector<Mixer::SortData> SortedResults;
 
+ private:
+  FRIEND_TEST_ALL_PREFIXES(test::MixerTest, Publish);
+
   class Group;
   typedef std::vector<std::unique_ptr<Group>> Groups;
 
@@ -79,18 +85,14 @@ class Mixer {
   // |results| may not have been sorted yet.
   static void RemoveDuplicates(SortedResults* results);
 
-  void FetchResults();
+  void FetchResults(const base::string16& query);
 
   AppListModelUpdater* const model_updater_;  // Not owned.
 
   Groups groups_;
 
-  // Adaptive category ranking model, which tweaks the score of search results.
-  std::unique_ptr<RecurrenceRanker> ranker_;
-
-  // How much the scores produced by |ranker_| affect the final scores.
-  // Controlled by Finch.
-  float boost_coefficient_;
+  // Adaptive models used for re-ranking search results.
+  std::unique_ptr<SearchResultRanker> non_app_ranker_;
 
   DISALLOW_COPY_AND_ASSIGN(Mixer);
 };

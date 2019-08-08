@@ -5,6 +5,7 @@
 #include "chrome/test/base/chrome_test_launcher.h"
 
 #include "base/command_line.h"
+#include "base/test/launcher/test_launcher.h"
 #include "build/build_config.h"
 #include "chrome/test/base/chrome_test_suite.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -21,6 +22,10 @@
 #if defined(USE_X11)
 #include "ui/views/test/ui_controls_factory_desktop_aurax11.h"
 #endif
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "ash/test/ui_controls_factory_ash.h"
 #endif
 
 #if defined(OS_WIN)
@@ -42,8 +47,7 @@ class InteractiveUITestSuite : public ChromeTestSuite {
     ChromeTestSuite::Initialize();
 
 #if defined(OS_CHROMEOS)
-    // Do not InstallUIControlsAura in ChromeOS, it will be installed in
-    // InProcessBrowserTest::PreRunTestOnMainThread().
+    ui_controls::InstallUIControlsAura(ash::test::CreateAshUIControls());
 #elif defined(OS_WIN)
     com_initializer_.reset(new base::win::ScopedCOMInitializer());
     ui_controls::InstallUIControlsAura(
@@ -100,14 +104,9 @@ class InteractiveUITestLauncherDelegate : public ChromeTestLauncherDelegate {
   }
 
 #if defined(OS_MACOSX)
-  std::unique_ptr<content::TestState> PreRunTest(
-      base::CommandLine* command_line,
-      base::TestLauncher::LaunchOptions* test_launch_options) override {
-    auto test_state = ChromeTestLauncherDelegate::PreRunTest(
-        command_line, test_launch_options);
+  void PreRunTest() override {
     // Clear currently pressed modifier keys (if any) before the test starts.
     ui_test_utils::ClearKeyEventModifiers();
-    return test_state;
   }
 
   void PostRunTest(base::TestResult* test_result) override {

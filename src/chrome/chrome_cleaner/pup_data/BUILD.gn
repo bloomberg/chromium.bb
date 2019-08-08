@@ -15,7 +15,7 @@ source_set("pup_data_base") {
 
   deps = [
     ":test_uws",
-    "//base:base",
+    "//base",
     "//chrome/chrome_cleaner/chrome_utils:force_installed_extension",
     "//chrome/chrome_cleaner/os:common_os",
     "//chrome/chrome_cleaner/proto:shared_pup_enums_proto",
@@ -36,7 +36,7 @@ source_set("cleaner_pup_util") {
 
   deps = [
     ":pup_data_base",
-    "//base:base",
+    "//base",
     "//chrome/chrome_cleaner/constants:uws_id",
     "//chrome/chrome_cleaner/os:cleaner_os",
     "//chrome/chrome_cleaner/os:common_os",
@@ -85,7 +85,7 @@ source_set("unittest_sources") {
     ":cleaner_pup_util",
     ":dynamic_pup",
     ":pup_data_base",
-    "//base:base",
+    "//base",
     "//base/test:test_support",
     "//chrome/chrome_cleaner/os:common_os",
     "//chrome/chrome_cleaner/proto:shared_pup_enums_proto",

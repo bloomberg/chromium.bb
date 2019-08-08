@@ -5,16 +5,18 @@
 #ifndef COMPONENTS_SAFE_BROWSING_PASSWORD_PROTECTION_PASSWORD_PROTECTION_REQUEST_H_
 #define COMPONENTS_SAFE_BROWSING_PASSWORD_PROTECTION_PASSWORD_PROTECTION_REQUEST_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "base/time/time.h"
+#include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/safe_browsing/password_protection/metrics_util.h"
 #include "components/safe_browsing/password_protection/password_protection_service.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-
-#include <vector>
 
 class GURL;
 
@@ -39,8 +41,10 @@ class PasswordProtectionNavigationThrottle;
 // (3) |   IO   | Check whitelist and return the result back to UI thread.
 // (4) |   UI   | If whitelisted, check verdict cache; else quit request.
 // (5) |   UI   | If verdict cached, quit request; else prepare request proto.
-// (6) |   UI   | Start a timeout task, and send network request.
-// (7) |   UI   | On receiving response, handle response and finish.
+// (6) |   UI   | Collect features related to the DOM of the page.
+// (7) |   UI   | If appropriate, compute visual features of the page.
+// (7) |   UI   | Start a timeout task, and send network request.
+// (8) |   UI   | On receiving response, handle response and finish.
 //     |        | On request timeout, cancel request.
 //     |        | On deletion of |password_protection_service_|, cancel request.
 class PasswordProtectionRequest
@@ -52,6 +56,7 @@ class PasswordProtectionRequest
                             const GURL& main_frame_url,
                             const GURL& password_form_action,
                             const GURL& password_form_frame_url,
+                            const std::string& username,
                             ReusedPasswordType reused_password_type,
                             const std::vector<std::string>& matching_origins,
                             LoginReputationClientRequest::TriggerType type,
@@ -85,6 +90,8 @@ class PasswordProtectionRequest
   LoginReputationClientRequest::TriggerType trigger_type() const {
     return trigger_type_;
   }
+
+  const std::string username() const { return username_; }
 
   ReusedPasswordType reused_password_type() const {
     return reused_password_type_;
@@ -156,6 +163,9 @@ class PasswordProtectionRequest
   void Finish(RequestOutcome outcome,
               std::unique_ptr<LoginReputationClientResponse> response);
 
+  // Called when the DOM feature extraction is complete.
+  void OnGetDomFeatures(const std::string& verdict);
+
   // WebContents of the password protection event.
   content::WebContents* web_contents_;
 
@@ -167,6 +177,11 @@ class PasswordProtectionRequest
 
   // Frame url of the detected password form.
   const GURL password_form_frame_url_;
+
+  // The username of the reused password hash. The username can be an email or
+  // a username for a non-GAIA or saved-password reuse. No validation has been
+  // done on it.
+  const std::string username_;
 
   // Type of the reused password.
   const ReusedPasswordType reused_password_type_;
@@ -214,6 +229,14 @@ class PasswordProtectionRequest
 
   // When we start extracting visual features.
   base::TimeTicks visual_feature_start_time_;
+
+  // The Mojo pipe used for extracting DOM features from the renderer.
+  safe_browsing::mojom::PhishingDetectorPtr phishing_detector_;
+
+  // When we start extracting DOM features. Used to compute the duration of DOM
+  // feature extraction, which is logged at
+  // PasswordProtection.DomFeatureExtractionDuration.
+  base::TimeTicks dom_feature_start_time_;
 
   base::WeakPtrFactory<PasswordProtectionRequest> weakptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(PasswordProtectionRequest);

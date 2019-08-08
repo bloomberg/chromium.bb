@@ -90,7 +90,7 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   bool CanTakeFocus(WebFocusType) override { return false; }
   void TakeFocus(WebFocusType) override {}
 
-  void FocusedNodeChanged(Node*, Node*) override {}
+  void FocusedElementChanged(Element*, Element*) override {}
   void Show(NavigationPolicy) override {}
 
   void DidOverscroll(const FloatSize&,
@@ -102,7 +102,7 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
 
   void BeginLifecycleUpdates() override {}
   void StartDeferringCommits(base::TimeDelta timeout) override {}
-  void StopDeferringCommits() override {}
+  void StopDeferringCommits(cc::PaintHoldingCommitTrigger) override {}
 
   bool HadFormInteraction() const override { return false; }
 
@@ -134,6 +134,7 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
 
   Page* CreateWindowDelegate(LocalFrame*,
                              const FrameLoadRequest&,
+                             const AtomicString&,
                              const WebWindowFeatures&,
                              WebSandboxFlags,
                              const FeaturePolicy::FeatureState&,
@@ -183,6 +184,7 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
                                  ColorChooserClient*,
                                  const Color&) override;
   DateTimeChooser* OpenDateTimeChooser(
+      LocalFrame* frame,
       DateTimeChooserClient*,
       const DateTimeChooserParameters&) override;
   void OpenTextDataListChooser(HTMLInputElement&) override;
@@ -254,7 +256,6 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   void FrameFocused() const override {}
 
   void DispatchWillSendRequest(ResourceRequest&) override {}
-  void DispatchDidReceiveResponse(const ResourceResponse&) override {}
   void DispatchDidLoadResourceFromMemoryCache(
       const ResourceRequest&,
       const ResourceResponse&) override {}
@@ -266,8 +267,9 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   void DispatchDidCommitLoad(HistoryItem*,
                              WebHistoryCommitType,
                              GlobalObjectReusePolicy) override {}
-  void DispatchDidFailProvisionalLoad(const ResourceError&,
-                                      WebHistoryCommitType) override {}
+  void DispatchDidFailProvisionalLoad(
+      const ResourceError&,
+      const AtomicString& http_method) override {}
   void DispatchDidFailLoad(const ResourceError&,
                            WebHistoryCommitType) override {}
   void DispatchDidFinishDocumentLoad() override {}
@@ -334,7 +336,8 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   LocalFrame* CreateFrame(const AtomicString&, HTMLFrameOwnerElement*) override;
   std::pair<RemoteFrame*, base::UnguessableToken> CreatePortal(
       HTMLPortalElement*,
-      mojom::blink::PortalAssociatedRequest) override;
+      mojom::blink::PortalAssociatedRequest,
+      mojom::blink::PortalClientAssociatedPtrInfo) override;
   RemoteFrame* AdoptPortal(HTMLPortalElement*) override;
   WebPluginContainerImpl* CreatePlugin(HTMLPlugInElement&,
                                        const KURL&,

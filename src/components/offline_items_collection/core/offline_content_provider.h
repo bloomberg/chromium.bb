@@ -38,6 +38,29 @@ class OfflineContentProvider {
   using RenameCallback = base::OnceCallback<void(RenameResult)>;
   using DownloadRenameCallback = base::OnceCallback<RenameCallback>;
 
+  // Used by GetVisualsForItem to specify which visuals are needed.
+  struct GetVisualsOptions {
+    bool get_icon;
+    bool get_custom_favicon;
+    static GetVisualsOptions NoVisuals() { return GetVisualsOptions(); }
+    static GetVisualsOptions IconOnly() {
+      GetVisualsOptions options;
+      options.get_icon = true;
+      return options;
+    }
+    static GetVisualsOptions CustomFaviconOnly() {
+      GetVisualsOptions options;
+      options.get_custom_favicon = true;
+      return options;
+    }
+    static GetVisualsOptions IconAndCustomFavicon() {
+      GetVisualsOptions options;
+      options.get_icon = true;
+      options.get_custom_favicon = true;
+      return options;
+    }
+  };
+
   // An observer class that should be notified of relevant changes to the
   // underlying data source.
   // For the Observer that maintains its own cache of items, populated via
@@ -103,10 +126,12 @@ class OfflineContentProvider {
   // Asks for an OfflineItemVisuals struct for an OfflineItem represented by
   // |id| or |nullptr| if one doesn't exist.  The implementer should post any
   // replies even if the results are available immediately to prevent reentrancy
-  // and for consistent behavior.
+  // and for consistent behavior. |options| may be set to let the implementer
+  // know that it need not create the |icon| or |custom_favicon| members.
   // |callback| should be called no matter what (error, unavailable content,
   // etc.).
   virtual void GetVisualsForItem(const ContentId& id,
+                                 GetVisualsOptions options,
                                  VisualsCallback callback) = 0;
 
   // Asks for the right URI to use to share an OfflineItem represented by |id|

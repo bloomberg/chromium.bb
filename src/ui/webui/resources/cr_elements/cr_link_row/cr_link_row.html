@@ -1,15 +1,14 @@
 <link rel="import" href="../../html/polymer.html">
 
 <link rel="import" href="../cr_icon_button/cr_icon_button.html">
-<link rel="import" href="../cr_icons_css.html">
 <link rel="import" href="../hidden_style_css.html">
+<link rel="import" href="../icons.html">
 <link rel="import" href="../shared_vars_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-behaviors/paper-ripple-behavior.html">
 
 <dom-module id="cr-link-row">
   <template strip-whitespace="">
-    <style include="cr-hidden-style cr-icons">
+    <style include="cr-hidden-style">
       :host {
         align-items: center;
         align-self: stretch;
@@ -63,16 +62,17 @@
     <iron-icon id="startIcon" icon="[[startIcon]]" hidden="[[!startIcon]]"
         aria-hidden="true">
     </iron-icon>
-    <div id="labelWrapper" hidden="[[!label]]">
-      <div id="label" class="label">[[label]]</div>
-      <div id="subLabel" class="secondary label">[[subLabel]]</div>
+    <div id="labelWrapper" hidden="[[hideLabelWrapper_]]">
+      <div id="label" class="label">[[label]]<slot name="label"></slot></div>
+      <div id="subLabel" class="secondary label">
+        [[subLabel]]
+        <slot name="sub-label"></slot>
+      </div>
     </div>
     <slot></slot>
-    <cr-icon-button id="icon" class$="[[getIconClass_(external)]]"
-        aria-describedby$="[[ariaDescribedBy_]]"
-        aria-label$="[[label]]"
-        disabled="[[disabled]]">
-    </cr-icon-button>
+    <cr-icon-button id="icon" iron-icon="[[getIcon_(external)]]" role="link"
+        aria-describedby="subLabel" aria-labelledby="label"
+        disabled="[[disabled]]"></cr-icon-button>
   </template>
   <script src="cr_link_row.js"></script>
 </dom-module>

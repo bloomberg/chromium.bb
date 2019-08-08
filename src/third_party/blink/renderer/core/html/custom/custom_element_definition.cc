@@ -34,6 +34,7 @@ CustomElementDefinition::CustomElementDefinition(
       observed_attributes_(observed_attributes),
       has_style_attribute_changed_callback_(
           observed_attributes.Contains(html_names::kStyleAttr.LocalName())),
+      disable_shadow_(disabled_features.Contains(String("shadow"))),
       disable_internals_(disabled_features.Contains(String("internals"))),
       is_form_associated_(form_association_flag == FormAssociationFlag::kYes) {}
 
@@ -149,7 +150,7 @@ HTMLElement* CustomElementDefinition::CreateElement(
       Upgrade(*result);
     else
       EnqueueUpgradeReaction(*result);
-    return ToHTMLElement(result);
+    return To<HTMLElement>(result);
   }
 
   // 6. If definition is non-null, then:
@@ -211,7 +212,7 @@ void CustomElementDefinition::Upgrade(Element& element) {
   element.SetCustomElementDefinition(this);
 
   if (IsFormAssociated())
-    ToHTMLElement(element).EnsureElementInternals().DidUpgrade();
+    To<HTMLElement>(element).EnsureElementInternals().DidUpgrade();
   AddDefaultStylesTo(element);
 }
 

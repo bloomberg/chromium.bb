@@ -12,9 +12,9 @@
 <script type="text/javascript" src="options_loader.js"></script>
 <script type="text/javascript" src="../../chromeVoxChromeOptionsScript.js">
 </script>
-  <link rel="import" href="chrome://resources/cr_elements/icons.html">
+  <link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
+  <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
   <link rel="import" href="chrome://resources/html/polymer.html">
-  <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 </head>
 
 <body>
@@ -96,51 +96,13 @@
     </label>
   </div>
 
-  <div id="richTextIndicationOptions">
+  <div id="richTextIndicationOption">
     <h2 class="i18n" msgid="options_rich_text_header">Rich Text Attributes</h2>
     <div class="option">
-      <input id="customizeRichTextIndication" type="checkbox" class="checkbox pref" name="customizeRichTextIndication">
-      <label for="customizeRichTextIndication" class="i18n" msgid="options_rich_text_checkbox_label">
-        Customize Rich text indication
+      <input id="announceRichTextAttributes" type="checkbox" class="checkbox pref" name="announceRichTextAttributes">
+      <label for="announceRichTextAttributes" class="i18n" msgid="options_rich_text_checkbox_label">
+        Announce rich text attributes
       </label>
-    </div>
-    <div id="additionalRichTextIndicationOptions">
-      <div class="option">
-        <span class="i18n description" msgid="options_misspell_description" id="misspellDescription">
-          Indicate misspell:
-        </span>
-        <select id="indicateMisspell" aria-labelledby="misspellDescription" name="indicateMisspell">
-          <option class="i18n" msgid="rich_text_do_nothing">Do nothing</option>
-          <option class="i18n" msgid="rich_text_announce">Announce</option>
-        </select>
-      </div>
-      <div class="option">
-        <span class="i18n description" msgid="options_bold_description" id="boldDescription">
-          Indicate bold:
-        </span>
-        <select id="indicateBold" aria-labelledby="boldDescription" name="indicateBold">
-          <option class="i18n" msgid="rich_text_do_nothing">Do nothing</option>
-          <option class="i18n" msgid="rich_text_announce">Announce</option>
-        </select>
-      </div>
-      <div class="option">
-        <span class="i18n description" msgid="options_italic_description" id="italicDescription">
-          Indicate italic:
-        </span>
-        <select id="indicateItalic" aria-labelledby="italicDescription" name="indicateItalic">
-          <option class="i18n" msgid="rich_text_do_nothing">Do nothing</option>
-          <option class="i18n" msgid="rich_text_announce">Announce</option>
-        </select>
-      </div>
-      <div class="option">
-        <span class="i18n description" msgid="options_underline_description" id="underlineDescription">
-          Indicate underline:
-        </span>
-        <select id="indicateUnderline" aria-labelledby="underlineDescription" name="indicateUnderline">
-          <option class="i18n" msgid="rich_text_do_nothing">Do nothing</option>
-          <option class="i18n" msgid="rich_text_announce">Announce</option>
-        </select>
-      </div>
     </div>
   </div>
 
@@ -210,18 +172,13 @@
   </h2>
   <div class="chromeos option" id="developerLog">
     <label>
-      <paper-icon-button icon="cr:expand-more"
-        aria-describedby="developer-options-label" aria-expanded="false"
-        class="developer-option-icon-button" id="chromeVoxDeveloperOptionsMore"
-        name="chromeVoxDeveloperOptions"></paper-icon-button>
-      <paper-icon-button icon="cr:expand-less"
-        aria-describedby="developer-options-label" aria-expanded="true"
-        class="developer-option-icon-button" id="chromeVoxDeveloperOptionsLess"
-        name="chromeVoxDeveloperOptions" hidden></paper-icon-button>
-      <span class="i18n" msgid="options_developer_options"
-            id="developer-options-label">
-        Enable developer options
-      </span>
+      <cr-expand-button class="developer-option-icon-button"
+          id="chromeVoxDeveloperOptions" name="chromeVoxDeveloperOptions">
+        <span class="i18n" msgid="options_developer_options"
+              id="developer-options-label">
+          Enable developer options
+        </span>
+      </cr-expand-button>
     </label>
   </div>
   <div class="option" id="developerSpeechLogging">
@@ -261,11 +218,12 @@
   </div>
    <div class="option" id="showDeveloperLog">
     <label>
-      <paper-icon-button aria-describedby="show-log-label" icon="cr:open-in-new"
-        class="developer-option-icon-button" id="openDeveloperLog">
-      </paper-icon-button>
-      <span id="show-log-label" class="i18n" msgid="options_show_log"></span>
-      <span class="i18n sub-description" msgid="options_show_log_key"></span>
+      <cr-link-row class="developer-option-icon-button" id="openDeveloperLog"
+          using-slotted-label external embedded>
+        <span slot="label" class="i18n" msgid="options_show_log"></span>
+        <span slot="sub-label" class="i18n sub-description"
+            msgid="options_show_log_key"></span>
+      </cr-link-row>
     </label>
   </div>
 

@@ -51,13 +51,13 @@
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "content/public/common/content_features.h"
 #include "extensions/common/constants.h"
 #include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/resources/grit/webui_resources.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 
@@ -188,7 +188,7 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
      IDS_PRINT_PREVIEW_EXTENSION_DESTINATION_ICON_TOOLTIP},
     {"goBackButton", IDS_PRINT_PREVIEW_BUTTON_GO_BACK},
     {"groupPrinterSharingInviteText", IDS_PRINT_PREVIEW_GROUP_INVITE_TEXT},
-    {"invalidPrinterSettings", IDS_PRINT_INVALID_PRINTER_SETTINGS},
+    {"invalidPrinterSettings", IDS_PRINT_PREVIEW_INVALID_PRINTER_SETTINGS},
     {"layoutLabel", IDS_PRINT_PREVIEW_LAYOUT_LABEL},
     {"learnMore", IDS_LEARN_MORE},
     {"left", IDS_PRINT_PREVIEW_LEFT_MARGIN_LABEL},
@@ -341,8 +341,7 @@ void AddPrintPreviewFlags(content::WebUIDataSource* source, Profile* profile) {
                                                  : "");
 }
 
-std::vector<std::string> SetupPrintPreviewPlugin(
-    content::WebUIDataSource* source) {
+void SetupPrintPreviewPlugin(content::WebUIDataSource* source) {
   static constexpr struct {
     const char* path;
     int id;
@@ -422,9 +421,7 @@ std::vector<std::string> SetupPrintPreviewPlugin(
     {"pdf/viewport_scroller.js", IDR_PDF_VIEWPORT_SCROLLER_JS},
     {"pdf/zoom_manager.js", IDR_PDF_ZOOM_MANAGER_JS},
   };
-  std::vector<std::string> excluded_paths;
   for (const auto& resource : kPdfResources) {
-    excluded_paths.emplace_back(resource.path);
     source->AddResourcePath(resource.path, resource.id);
   }
 
@@ -433,8 +430,6 @@ std::vector<std::string> SetupPrintPreviewPlugin(
   source->OverrideContentSecurityPolicyChildSrc("child-src 'self';");
   source->DisableDenyXFrameOptions();
   source->OverrideContentSecurityPolicyObjectSrc("object-src 'self';");
-
-  return excluded_paths;
 }
 
 content::WebUIDataSource* CreatePrintPreviewUISource(Profile* profile) {
@@ -445,26 +440,17 @@ content::WebUIDataSource* CreatePrintPreviewUISource(Profile* profile) {
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   source->AddResourcePath("crisper.js", IDR_PRINT_PREVIEW_CRISPER_JS);
   source->SetDefaultResource(IDR_PRINT_PREVIEW_VULCANIZED_HTML);
-  source->SetDefaultResource(
-      base::FeatureList::IsEnabled(features::kWebUIPolymer2) ?
-          IDR_PRINT_PREVIEW_VULCANIZED_P2_HTML :
-          IDR_PRINT_PREVIEW_VULCANIZED_HTML);
-  std::vector<std::string> exclude_from_gzip = SetupPrintPreviewPlugin(source);
-  source->UseGzip(base::BindRepeating(
-      [](const std::vector<std::string>& excluded_paths,
-         const std::string& path) {
-        return !base::ContainsValue(excluded_paths, path) &&
-               !PrintPreviewUI::ParseDataPath(path, nullptr, nullptr);
-      },
-      std::move(exclude_from_gzip)));
 #else
   for (size_t i = 0; i < kPrintPreviewResourcesSize; ++i) {
     source->AddResourcePath(kPrintPreviewResources[i].name,
                             kPrintPreviewResources[i].value);
   }
-  source->SetDefaultResource(IDR_PRINT_PREVIEW_NEW_HTML);
-  SetupPrintPreviewPlugin(source);
+  // Add the subpage loader, to load subpages in non-optimized builds.
+  source->AddResourcePath("subpage_loader.html", IDR_WEBUI_HTML_SUBPAGE_LOADER);
+  source->AddResourcePath("subpage_loader.js", IDR_WEBUI_JS_SUBPAGE_LOADER);
+  source->SetDefaultResource(IDR_PRINT_PREVIEW_HTML);
 #endif
+  SetupPrintPreviewPlugin(source);
   AddPrintPreviewFlags(source, profile);
   return source;
 }

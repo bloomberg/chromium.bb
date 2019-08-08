@@ -29,7 +29,7 @@ class GbmPixmap : public gfx::NativePixmap {
   int GetDmaBufFd(size_t plane) const override;
   int GetDmaBufPitch(size_t plane) const override;
   int GetDmaBufOffset(size_t plane) const override;
-  uint64_t GetDmaBufModifier(size_t plane) const override;
+  uint64_t GetBufferFormatModifier() const override;
   gfx::BufferFormat GetBufferFormat() const override;
   gfx::Size GetBufferSize() const override;
   uint32_t GetUniqueId() const override;
@@ -42,7 +42,7 @@ class GbmPixmap : public gfx::NativePixmap {
                             std::unique_ptr<gfx::GpuFence> gpu_fence) override;
   gfx::NativePixmapHandle ExportHandle() override;
 
-  GbmBuffer* buffer() { return buffer_.get(); }
+  GbmBuffer* buffer() const { return buffer_.get(); }
   const scoped_refptr<DrmFramebuffer>& framebuffer() const {
     return framebuffer_;
   }

@@ -516,6 +516,8 @@ bool FilePathWatcherImpl::IncreaseWatch() {
 
 void FilePathWatcherImpl::DecreaseWatch() {
   --number_of_inotify_watches_;
+  // Sanity check:
+  DCHECK_GE(number_of_inotify_watches_, 0);
 }
 
 bool FilePathWatcherImpl::Watch(const FilePath& path,

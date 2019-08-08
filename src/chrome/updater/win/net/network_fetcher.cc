@@ -79,7 +79,7 @@ NetworkFetcherFactory::~NetworkFetcherFactory() = default;
 
 scoped_hinternet NetworkFetcherFactory::CreateSessionHandle() {
   const auto* os_info = base::win::OSInfo::GetInstance();
-  const uint32_t access_type = os_info->version() >= base::win::VERSION_WIN8_1
+  const uint32_t access_type = os_info->version() >= base::win::Version::WIN8_1
                                    ? WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY
                                    : WINHTTP_ACCESS_TYPE_NO_PROXY;
   return scoped_hinternet(

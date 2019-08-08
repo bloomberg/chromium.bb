@@ -89,9 +89,6 @@ class FakeSyncEngine : public SyncEngine {
                           const base::Closure& callback) override;
   void SetInvalidationsForSessionsEnabled(bool enabled) override;
 
-  std::unique_ptr<ModelTypeControllerDelegate> GetNigoriControllerDelegate()
-      override;
-
   void set_fail_initial_download(bool should_fail);
 
  private:

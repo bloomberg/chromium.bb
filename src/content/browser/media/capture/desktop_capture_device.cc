@@ -47,6 +47,7 @@
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 #include "third_party/webrtc/modules/desktop_capture/fake_desktop_capturer.h"
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor_monitor.h"
+#include "ui/gfx/icc_profile.h"
 
 namespace content {
 
@@ -428,6 +429,13 @@ void DesktopCaptureDevice::Core::OnCaptureResult(
     }
   }
 
+  gfx::ColorSpace frame_color_space;
+  if (!frame->icc_profile().empty()) {
+    gfx::ICCProfile icc_profile = gfx::ICCProfile::FromData(
+        frame->icc_profile().data(), frame->icc_profile().size());
+    frame_color_space = icc_profile.GetColorSpace();
+  }
+
   base::TimeTicks now = NowTicks();
   if (first_ref_time_.is_null())
     first_ref_time_ = now;
@@ -436,7 +444,7 @@ void DesktopCaptureDevice::Core::OnCaptureResult(
       media::VideoCaptureFormat(
           gfx::Size(output_size.width(), output_size.height()),
           requested_frame_rate_, media::PIXEL_FORMAT_ARGB),
-      0, now, now - first_ref_time_);
+      frame_color_space, 0, now, now - first_ref_time_);
 }
 
 void DesktopCaptureDevice::Core::OnCaptureTimer() {

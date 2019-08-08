@@ -57,12 +57,13 @@ namespace mojo {
 template <typename Interface>
 class Remote {
  public:
+  using InterfaceType = Interface;
+  using PendingType = PendingRemote<Interface>;
+
   // Constructs an unbound Remote. This object cannot issue Interface method
   // calls and does not schedule any tasks.
   Remote() = default;
-  Remote(Remote&& other) noexcept {
-    internal_state_.Swap(&other.internal_state_);
-  }
+  Remote(Remote&& other) noexcept { *this = std::move(other); }
 
   // Constructs a new Remote which is bound from |pending_remote| and which
   // schedules response callbacks and disconnection notifications on the default
@@ -77,11 +78,15 @@ class Remote {
   // this Remote.
   Remote(PendingRemote<Interface> pending_remote,
          scoped_refptr<base::SequencedTaskRunner> task_runner) {
-    DCHECK(pending_remote.is_valid());
     Bind(std::move(pending_remote), std::move(task_runner));
   }
 
   ~Remote() = default;
+
+  Remote& operator=(Remote&& other) noexcept {
+    internal_state_.Swap(&other.internal_state_);
+    return *this;
+  }
 
   // Exposes access to callable Interface methods directed at this Remote's
   // receiver. Must only be called on a bound Remote.
@@ -104,6 +109,7 @@ class Remote {
   // methods, it is always safe to assume that a Remote you've bound will remain
   // bound and callable.
   bool is_bound() const { return internal_state_.is_bound(); }
+  explicit operator bool() const { return is_bound(); }
 
   // Indicates whether this Remote is connected to a receiver. Must only be
   // called on a bound Remote. If this returns |true|, method calls made by this
@@ -137,12 +143,32 @@ class Remote {
       internal_state_.set_connection_error_handler(std::move(handler));
   }
 
+  // Like above but also receives extra user-defined metadata about why the
+  // receiving endpoint was closed.
+  void set_disconnect_with_reason_handler(
+      ConnectionErrorWithReasonCallback handler) {
+    internal_state_.set_connection_error_with_reason_handler(
+        std::move(handler));
+  }
+
   // Resets this Remote to an unbound state. To reset the Remote and recover an
   // PendingRemote that can be bound again later, use |Unbind()| instead.
   void reset() {
     State doomed_state;
     internal_state_.Swap(&doomed_state);
   }
+
+  // Similar to the method above, but also specifies a disconnect reason.
+  void ResetWithReason(uint32_t custom_reason, const std::string& description) {
+    if (internal_state_.is_bound())
+      internal_state_.CloseWithReason(custom_reason, description);
+    reset();
+  }
+
+  // Returns the version of Interface used by this Remote. Defaults to 0 but can
+  // be adjusted either at binding time, or by invoking either |QueryVersion()|
+  // or |RequireVersion()|.
+  uint32_t version() const { return internal_state_.version(); }
 
   // Binds this Remote, connecting it to a new PendingReceiver which is
   // returned for transmission to some Receiver which can bind it. The Remote
@@ -182,6 +208,11 @@ class Remote {
   void Bind(PendingRemote<Interface> pending_remote,
             scoped_refptr<base::SequencedTaskRunner> task_runner) {
     DCHECK(!is_bound()) << "Remote is already bound";
+    if (!pending_remote) {
+      reset();
+      return;
+    }
+
     internal_state_.Bind(InterfacePtrInfo<Interface>(pending_remote.PassPipe(),
                                                      pending_remote.version()),
                          std::move(task_runner));
@@ -206,11 +237,42 @@ class Remote {
   // Must only be called on a bound Remote.
   PendingRemote<Interface> Unbind() WARN_UNUSED_RESULT {
     DCHECK(is_bound());
-    CHECK(!internal_state_.has_unbound_callbacks());
+    CHECK(!internal_state_.has_pending_callbacks());
     State state;
     internal_state_.Swap(&state);
     InterfacePtrInfo<Interface> info = state.PassInterface();
     return PendingRemote<Interface>(info.PassHandle(), info.version());
+  }
+
+  // Queries the max version that the receiving endpoint supports. Once a
+  // response is received, |callback| will be invoked with the version number
+  // and the version number of this Remote object will also be updated.
+  void QueryVersion(base::OnceCallback<void(uint32_t)> callback) {
+    internal_state_.QueryVersion(std::move(callback));
+  }
+
+  // Requires the receiving endpoint to support at least the specified
+  // |version|. If it does not, it will close its end of the connection
+  // immediately.
+  void RequireVersion(uint32_t version) {
+    internal_state_.RequireVersion(version);
+  }
+
+  // Sends a no-op message on the underlying message pipe and runs the current
+  // message loop until its response is received. This can be used in tests to
+  // verify that no message was sent on a message pipe in response to some
+  // stimulus.
+  void FlushForTesting() { internal_state_.FlushForTesting(); }
+
+  // Same as |FlushForTesting()| but will call |callback| when the flush is
+  // complete.
+  void FlushAsyncForTesting(base::OnceClosure callback) {
+    internal_state_.FlushAsyncForTesting(std::move(callback));
+  }
+
+  // DO NOT USE. Exposed only for internal use and for testing.
+  internal::InterfacePtrState<Interface>* internal_state() {
+    return &internal_state_;
   }
 
  private:

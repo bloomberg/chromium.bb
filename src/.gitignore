@@ -64,6 +64,8 @@ vs-chromium-project.txt
 .vscode/
 /_out
 /android_emulator_sdk
+/android_webview/tools/webview_log_verbosifier/.gradle/
+/android_webview/tools/webview_log_verbosifier/.settings/
 /ash/ash_unittests_run.xml
 /base/base_unittests_run.xml
 # See build/.gitignore for entries covering src/build.
@@ -87,7 +89,6 @@ vs-chromium-project.txt
 /chrome/app/theme/default_100_percent/google_chrome
 /chrome/app/theme/default_200_percent/google_chrome
 /chrome/app/theme/google_chrome
-/chrome/browser/autofill/internal
 /chrome/browser/chromeos/arc/voice_interaction/internal
 /chrome/browser/chromeos/assistant/internal
 /chrome/browser/chromeos/login/screenshot_testing/golden_screenshots/*.png
@@ -99,6 +100,7 @@ vs-chromium-project.txt
 /chrome/browser/media/engagement_internal
 /chrome/browser/performance_monitor/performance_monitor.xml
 /chrome/browser/protector/internal
+/chrome/browser/resources/chromeos/kiosk_next_home/internal
 /chrome/browser/resources/chromeos/quickoffice
 /chrome/browser/resources/pdf/html_office
 /chrome/browser/resources/media_router/extension/src/
@@ -154,14 +156,12 @@ vs-chromium-project.txt
 /chrome/test/data/vr/
 /chrome/test/data/webrtc/resources
 /chrome/test/data/xr/webvr_info/
-/chrome/test/data/xr/webxr_samples/
 /chrome/test/media_router/internal
 /chrome/test/python_tests/
 /chrome/tools/memory
 /chrome/tools/test/reference_build
 /chrome/unit_tests_run.xml
 /chrome/web_ui_mojo_bindings.xml
-/chrome_elf/chrome_elf_resources.xml
 /chromecast/internal
 /chromeos/assistant/internal
 /cipd_cache/
@@ -230,7 +230,7 @@ vs-chromium-project.txt
 /net/net_unittests_run.xml
 /net/Release
 /net/testserver.log
-/net/third_party/quiche
+/net/third_party/quiche/src
 /orderfiles
 /out*/
 /ppapi/native_client/nacl_irt.xml

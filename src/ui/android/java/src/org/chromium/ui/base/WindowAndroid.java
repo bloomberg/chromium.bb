@@ -165,6 +165,20 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
     private ObserverList<ActivityStateObserver> mActivityStateObservers = new ObserverList<>();
 
     /**
+     * An interface to notify listeners of the changes in selection handles state.
+     */
+    public interface SelectionHandlesObserver {
+        /**
+         * Called when the selection handles state changes.
+         */
+        void onSelectionHandlesStateChanged(boolean active);
+    }
+
+    private boolean mSelectionHandlesActive;
+    private ObserverList<SelectionHandlesObserver> mSelectionHandlesObservers =
+            new ObserverList<>();
+
+    /**
      * Gets the view for readback.
      */
     public View getReadbackView() {
@@ -616,6 +630,27 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
     public void removeActivityStateObserver(ActivityStateObserver observer) {
         assert mActivityStateObservers.hasObserver(observer);
         mActivityStateObservers.removeObserver(observer);
+    }
+
+    public void addSelectionHandlesObserver(SelectionHandlesObserver observer) {
+        assert !mSelectionHandlesObservers.hasObserver(observer);
+        mSelectionHandlesObservers.addObserver(observer);
+        observer.onSelectionHandlesStateChanged(mSelectionHandlesActive);
+    }
+
+    public void removeSelectionHandlesObserver(SelectionHandlesObserver observer) {
+        assert mSelectionHandlesObservers.hasObserver(observer);
+        mSelectionHandlesObservers.removeObserver(observer);
+    }
+
+    /**
+     * Removes a new {@link ActivityStateObserver} instance.
+     */
+    @CalledByNative
+    private void onSelectionHandlesStateChanged(boolean active) {
+        mSelectionHandlesActive = active;
+        for (SelectionHandlesObserver observer : mSelectionHandlesObservers)
+            observer.onSelectionHandlesStateChanged(active);
     }
 
     /**

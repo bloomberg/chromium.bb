@@ -9,7 +9,9 @@
 #include "base/metrics/metrics_hashes.h"
 #include "base/optional.h"
 #include "base/test/simple_test_clock.h"
+#include "base/test/trace_event_analyzer.h"
 #include "base/time/time.h"
+#include "base/trace_event/traced_value.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
 #include "chrome/common/page_load_metrics/test/page_load_metrics_test_util.h"
@@ -411,6 +413,47 @@ TEST_F(UkmPageLoadMetricsObserverTest, LargestTextPaint) {
     EXPECT_TRUE(test_ukm_recorder().EntryHasMetric(
         kv.second.get(), PageLoad::kPageTiming_ForegroundDurationName));
   }
+}
+
+TEST_F(UkmPageLoadMetricsObserverTest, LargestContentPaint_Trace) {
+  using trace_analyzer::Query;
+  trace_analyzer::Start("*");
+  {
+    page_load_metrics::mojom::PageLoadTiming timing;
+    page_load_metrics::InitPageLoadTimingForTest(&timing);
+    timing.navigation_start = base::Time::FromDoubleT(1);
+    timing.paint_timing->largest_text_paint =
+        base::TimeDelta::FromMilliseconds(600);
+    timing.paint_timing->largest_text_paint_size = 1000;
+    PopulateRequiredTimingFields(&timing);
+
+    NavigateAndCommit(GURL(kTestUrl1));
+    SimulateTimingUpdate(timing);
+
+    // Simulate closing the tab.
+    DeleteContents();
+  }
+  auto analyzer = trace_analyzer::Stop();
+  trace_analyzer::TraceEventVector events;
+  Query q =
+      Query::EventNameIs("NavStartToLargestContentfulPaint::AllFrames::UKM");
+  analyzer->FindEvents(q, &events);
+  EXPECT_EQ(1u, events.size());
+  EXPECT_EQ("loading", events[0]->category);
+  EXPECT_TRUE(events[0]->HasArg("data"));
+  std::unique_ptr<base::Value> arg;
+  EXPECT_TRUE(events[0]->GetArgAsValue("data", &arg));
+  base::DictionaryValue* arg_dict;
+  EXPECT_TRUE(arg->GetAsDictionary(&arg_dict));
+  int time;
+  EXPECT_TRUE(arg_dict->GetInteger("durationInMilliseconds", &time));
+  EXPECT_EQ(600, time);
+  int size;
+  EXPECT_TRUE(arg_dict->GetInteger("size", &size));
+  EXPECT_EQ(1000, size);
+  std::string type;
+  EXPECT_TRUE(arg_dict->GetString("type", &type));
+  EXPECT_EQ("text", type);
 }
 
 TEST_F(UkmPageLoadMetricsObserverTest, LargestContentPaint_OnlyText) {
@@ -952,16 +995,40 @@ TEST_F(UkmPageLoadMetricsObserverTest, PageSizeMetrics) {
   }
 }
 
+TEST_F(UkmPageLoadMetricsObserverTest, CpuTimeMetrics) {
+  NavigateAndCommit(GURL(kTestUrl1));
+
+  // Simulate some CPU usage.
+  page_load_metrics::mojom::CpuTiming cpu_timing(
+      base::TimeDelta::FromMilliseconds(500));
+  SimulateCpuTimingUpdate(cpu_timing);
+
+  // Simulate closing the tab.
+  DeleteContents();
+
+  std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
+      test_ukm_recorder().GetMergedEntriesByName(PageLoad::kEntryName);
+  EXPECT_EQ(1ul, merged_entries.size());
+
+  for (const auto& kv : merged_entries) {
+    test_ukm_recorder().ExpectEntrySourceHasUrl(kv.second.get(),
+                                                GURL(kTestUrl1));
+    test_ukm_recorder().ExpectEntryMetric(kv.second.get(),
+                                          PageLoad::kCpuTimeName, 500);
+  }
+}
+
 TEST_F(UkmPageLoadMetricsObserverTest, LayoutStability) {
   NavigateAndCommit(GURL(kTestUrl1));
 
-  page_load_metrics::mojom::FrameRenderDataUpdate render_data(1.0);
+  page_load_metrics::mojom::FrameRenderDataUpdate render_data(1.0, 1.0);
   SimulateRenderDataUpdate(render_data);
 
   // Simulate hiding the tab (the report should include jank after hide).
   web_contents()->WasHidden();
 
   render_data.layout_jank_delta = 1.5;
+  render_data.layout_jank_delta_before_input_or_scroll = 0.0;
   SimulateRenderDataUpdate(render_data);
 
   // Simulate closing the tab.
@@ -977,6 +1044,10 @@ TEST_F(UkmPageLoadMetricsObserverTest, LayoutStability) {
     ukm_recorder.ExpectEntrySourceHasUrl(ukm_entry, GURL(kTestUrl1));
     ukm_recorder.ExpectEntryMetric(
         ukm_entry, PageLoad::kLayoutStability_JankScoreName, 250);
+    ukm_recorder.ExpectEntryMetric(
+        ukm_entry,
+        PageLoad::kLayoutStability_JankScore_MainFrame_BeforeInputOrScrollName,
+        100);
   }
 
   EXPECT_THAT(histogram_tester().GetAllSamples(
@@ -1000,7 +1071,7 @@ TEST_F(UkmPageLoadMetricsObserverTest, LayoutStabilitySubframeAggregation) {
   NavigateAndCommit(GURL(kTestUrl1));
 
   // Simulate jank in the main frame.
-  page_load_metrics::mojom::FrameRenderDataUpdate render_data(1.0);
+  page_load_metrics::mojom::FrameRenderDataUpdate render_data(1.0, 1.0);
   SimulateRenderDataUpdate(render_data);
 
   RenderFrameHost* subframe =

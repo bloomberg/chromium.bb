@@ -23,27 +23,21 @@
 #include "services/identity/public/cpp/identity_manager.h"
 
 namespace views {
-class LabelButton;
+class Button;
 }
 
 class Browser;
 class DiceSigninButtonView;
 class HoverButton;
 
-// TODO(https://crbug.com/934689): Separation of providing content for different
-// menus and the UI effort to view it between this class and
-// |ProfileMenuViewBase| is in progress.
 
 // This bubble view is displayed when the user clicks on the avatar button.
 // It displays a list of profiles and allows users to switch between profiles.
 class ProfileChooserView : public ProfileMenuViewBase,
                            public AvatarMenuObserver,
-                           public views::ButtonListener,
                            public identity::IdentityManager::Observer {
  public:
   ProfileChooserView(views::Button* anchor_button,
-                     const gfx::Rect& anchor_rect,
-                     gfx::NativeView parent_window,
                      Browser* browser,
                      profiles::BubbleViewMode view_mode,
                      signin::GAIAServiceType service_type,
@@ -112,11 +106,24 @@ class ProfileChooserView : public ProfileMenuViewBase,
   // Returns true if header is created.
   bool AddSyncErrorViewIfNeeded(const AvatarMenu::Item& avatar_item);
 
+  // Adds a view showing a sync error and an error button, when dice is not
+  // enabled.
+  void AddPreDiceSyncErrorView(const AvatarMenu::Item& avatar_item,
+                               sync_ui_util::AvatarSyncErrorType error,
+                               int button_string_id,
+                               int content_string_id);
+
   // Adds a view showing the profile associated with |avatar_item| and an error
-  // button below.
+  // button below, when dice is enabled.
   void AddDiceSyncErrorView(const AvatarMenu::Item& avatar_item,
                             sync_ui_util::AvatarSyncErrorType error,
                             int button_string_id);
+
+  // Adds a promo for signin, if dice is not enabled.
+  void AddPreDiceSigninPromo();
+
+  // Adds a promo for signin, if dice is enabled.
+  void AddDiceSigninPromo();
 
   // Clean-up done after an action was performed in the ProfileChooser.
   void PostActionPerformed(ProfileMetrics::ProfileDesktopMenu action_performed);
@@ -136,30 +143,30 @@ class ProfileChooserView : public ProfileMenuViewBase,
   ButtonIndexes open_other_profile_indexes_map_;
 
   // Button in the signin/sync error header on top of the desktop user menu.
-  views::LabelButton* sync_error_button_;
+  views::Button* sync_error_button_;
 
   // Links and buttons displayed in the active profile card.
   views::Link* manage_accounts_link_;
-  views::LabelButton* manage_accounts_button_;
-  views::LabelButton* signin_current_profile_button_;
+  views::Button* manage_accounts_button_;
+  views::Button* signin_current_profile_button_;
   HoverButton* sync_to_another_account_button_;
-  views::LabelButton* signin_with_gaia_account_button_;
+  views::Button* signin_with_gaia_account_button_;
 
   // For material design user menu, the active profile card owns the profile
   // name and photo.
-  views::LabelButton* current_profile_card_;
+  views::Button* current_profile_card_;
 
   // Action buttons.
-  views::LabelButton* first_profile_button_;
-  views::LabelButton* guest_profile_button_;
-  views::LabelButton* users_button_;
-  views::LabelButton* lock_button_;
-  views::LabelButton* close_all_windows_button_;
-  views::LabelButton* passwords_button_;
-  views::LabelButton* credit_cards_button_;
-  views::LabelButton* addresses_button_;
-  views::LabelButton* signout_button_;
-  views::LabelButton* manage_google_account_button_;
+  views::Button* first_profile_button_;
+  views::Button* guest_profile_button_;
+  views::Button* users_button_;
+  views::Button* lock_button_;
+  views::Button* close_all_windows_button_;
+  views::Button* passwords_button_;
+  views::Button* credit_cards_button_;
+  views::Button* addresses_button_;
+  views::Button* signout_button_;
+  views::Button* manage_google_account_button_;
 
   // View for the signin/turn-on-sync button in the dice promo.
   DiceSigninButtonView* dice_signin_button_view_;

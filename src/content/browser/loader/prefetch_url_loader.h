@@ -10,8 +10,10 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
+#include "content/browser/loader/prefetched_signed_exchange_cache.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
@@ -19,6 +21,10 @@
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "url/gurl.h"
+
+namespace storage {
+class BlobStorageContext;
+}  // namespace storage
 
 namespace net {
 class URLRequestContextGetter;
@@ -32,6 +38,7 @@ namespace content {
 
 class ResourceContext;
 class URLLoaderThrottle;
+class PrefetchedSignedExchangeCacheAdapter;
 class SignedExchangePrefetchHandler;
 class SignedExchangePrefetchMetricRecorder;
 
@@ -63,8 +70,19 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       scoped_refptr<SignedExchangePrefetchMetricRecorder>
           signed_exchange_prefetch_metric_recorder,
+      scoped_refptr<PrefetchedSignedExchangeCache>
+          prefetched_signed_exchange_cache,
+      base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
       const std::string& accept_langs);
   ~PrefetchURLLoader() override;
+
+  // Sends an empty response's body to |forwarding_client_|. If failed to create
+  // a new data pipe, sends ERR_INSUFFICIENT_RESOURCES and closes the
+  // connection, and returns false. Otherwise returns true.
+  bool SendEmptyBody();
+
+  void SendOnComplete(
+      const network::URLLoaderCompletionStatus& completion_status);
 
  private:
   // network::mojom::URLLoader overrides:
@@ -84,7 +102,7 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         base::OnceCallback<void()> callback) override;
-  void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override;
+  void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override;
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
@@ -124,6 +142,12 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
 
   scoped_refptr<SignedExchangePrefetchMetricRecorder>
       signed_exchange_prefetch_metric_recorder_;
+
+  // Used when SignedExchangeSubresourcePrefetch is enabled to store the
+  // prefetched signed exchanges to a PrefetchedSignedExchangeCache.
+  std::unique_ptr<PrefetchedSignedExchangeCacheAdapter>
+      prefetched_signed_exchange_cache_adapter_;
+
   const std::string accept_langs_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchURLLoader);

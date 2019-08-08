@@ -501,17 +501,22 @@ public class ItemChooserDialog {
         mListView.setDivider(null);
         setState(State.STARTING);
 
-        // The list is the main element in the dialog and it should grow and
-        // shrink according to the size of the screen available.
-        View listViewContainer = dialogContainer.findViewById(R.id.container);
-        listViewContainer.setLayoutParams(new LinearLayout.LayoutParams(
-                LayoutParams.MATCH_PARENT,
-                getListHeight(mActivity.getWindow().getDecorView().getHeight(),
-                        mActivity.getResources().getDisplayMetrics().density)));
-
         mIgnorePendingWindowFocusChangeForClose = false;
 
         showDialogForView(dialogContainer);
+
+        dialogContainer.addOnLayoutChangeListener(
+                (View v, int l, int t, int r, int b, int ol, int ot, int or, int ob) -> {
+                    if (l != ol || t != ot || r != or || b != ob) {
+                        // The list is the main element in the dialog and it should grow and
+                        // shrink according to the size of the screen available.
+                        View listViewContainer = dialogContainer.findViewById(R.id.container);
+                        listViewContainer.setLayoutParams(new LinearLayout.LayoutParams(
+                                LayoutParams.MATCH_PARENT,
+                                getListHeight(mActivity.getWindow().getDecorView().getHeight(),
+                                        mActivity.getResources().getDisplayMetrics().density)));
+                    }
+                });
     }
 
     /**

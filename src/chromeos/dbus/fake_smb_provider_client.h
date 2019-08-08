@@ -35,15 +35,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeSmbProviderClient
              const std::string& workgroup,
              const std::string& username,
              base::ScopedFD password_fd,
+             bool skip_connect,
              MountCallback callback) override;
 
-  void Remount(const base::FilePath& share_path,
-               int32_t mount_id,
-               bool ntlm_enabled,
-               const std::string& workgroup,
-               const std::string& username,
-               base::ScopedFD password_fd,
-               StatusCallback callback) override;
   void Unmount(int32_t mount_id, StatusCallback callback) override;
   void ReadDirectory(int32_t mount_id,
                      const base::FilePath& directory_path,
@@ -136,10 +130,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeSmbProviderClient
                               std::string username,
                               base::ScopedFD password_fd,
                               StatusCallback callback) override;
-
-  void Premount(const base::FilePath& share_path,
-                bool ntlm_enabled,
-                MountCallback callback) override;
 
   void UpdateSharePath(int32_t mount_id,
                        const std::string& share_path,

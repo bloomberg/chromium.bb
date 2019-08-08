@@ -92,8 +92,6 @@ class NoopLoaderFactory final : public ResourceFetcher::LoaderFactory {
     }
     void LoadAsynchronously(const WebURLRequest&,
                             WebURLLoaderClient*) override {}
-
-    void Cancel() override {}
     void SetDefersLoading(bool) override {}
     void DidChangePriority(WebURLRequest::Priority, int) override {
       NOTREACHED();
@@ -111,9 +109,9 @@ class ScriptStreamingTest : public testing::Test {
         loading_task_runner_(platform_->test_task_runner()) {
     auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
     FetchContext* context = MakeGarbageCollected<MockFetchContext>();
-    auto* fetcher = MakeGarbageCollected<ResourceFetcher>(
-        ResourceFetcherInit(*properties, context, loading_task_runner_,
-                            MakeGarbageCollected<NoopLoaderFactory>()));
+    auto* fetcher = MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
+        properties->MakeDetachable(), context, loading_task_runner_,
+        MakeGarbageCollected<NoopLoaderFactory>()));
 
     ResourceRequest request(url_);
     request.SetRequestContext(mojom::RequestContextType::SCRIPT);

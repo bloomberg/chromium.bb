@@ -26,7 +26,7 @@
 
 namespace blink {
 
-inline SVGRectElement::SVGRectElement(Document& document)
+SVGRectElement::SVGRectElement(Document& document)
     : SVGGeometryElement(svg_names::kRectTag, document),
       x_(MakeGarbageCollected<SVGAnimatedLength>(
           this,
@@ -81,8 +81,6 @@ void SVGRectElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(ry_);
   SVGGeometryElement::Trace(visitor);
 }
-
-DEFINE_NODE_FACTORY(SVGRectElement)
 
 Path SVGRectElement::AsPath() const {
   Path path;

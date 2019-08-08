@@ -9,6 +9,7 @@
  * The inner list ownership is shared between FilteredVolumeInfoList and
  * FilteredVolumeManager to enforce these constraints.
  *
+ * @final
  * @implements {VolumeInfoList}
  */
 class FilteredVolumeInfoList {
@@ -16,29 +17,35 @@ class FilteredVolumeInfoList {
    * @param {!cr.ui.ArrayDataModel} list
    */
   constructor(list) {
-    /** @private */
+    /** @private @const */
     this.list_ = list;
   }
+
   /** @override */
   get length() {
     return this.list_.length;
   }
+
   /** @override */
   addEventListener(type, handler) {
     this.list_.addEventListener(type, handler);
   }
+
   /** @override */
   removeEventListener(type, handler) {
     this.list_.removeEventListener(type, handler);
   }
+
   /** @override */
   add(volumeInfo) {
     throw new Error('FilteredVolumeInfoList.add not allowed in foreground');
   }
+
   /** @override */
   remove(volumeInfo) {
     throw new Error('FilteredVolumeInfoList.remove not allowed in foreground');
   }
+
   /** @override */
   item(index) {
     return /** @type {!VolumeInfo} */ (this.list_.item(index));
@@ -75,35 +82,23 @@ class FilteredVolumeManager extends cr.EventTarget {
     // Public VolumeManager.volumeInfoList property accessed by callers.
     this.volumeInfoList = new FilteredVolumeInfoList(this.list_);
 
+    /** @private {?VolumeManager} */
     this.volumeManager_ = null;
-    this.pendingTasks_ = [];
+
     this.onEventBound_ = this.onEvent_.bind(this);
     this.onVolumeInfoListUpdatedBound_ =
         this.onVolumeInfoListUpdated_.bind(this);
 
     this.disposed_ = false;
 
-    // Start initialize the VolumeManager.
-    const queue = new AsyncUtil.Queue();
+    /** private {Window} */
+    this.backgroundPage_ = opt_backgroundPage;
 
-    if (opt_backgroundPage) {
-      this.backgroundPage_ = opt_backgroundPage;
-    } else {
-      queue.run(callNextStep => {
-        chrome.runtime.getBackgroundPage(
-            /** @type {function(Window=)} */ (opt_backgroundPage => {
-              this.backgroundPage_ = opt_backgroundPage;
-              callNextStep();
-            }));
-      });
-    }
-
-    queue.run(callNextStep => {
-      this.backgroundPage_.volumeManagerFactory.getInstance(volumeManager => {
-        this.onReady_(volumeManager);
-        callNextStep();
-      });
-    });
+    /**
+     * Tracks async initialization of volume manager.
+     * @private @const {!Promise<void> }
+     */
+    this.initialized_ = this.initialize_();
   }
 
   /**
@@ -148,17 +143,21 @@ class FilteredVolumeManager extends cr.EventTarget {
   }
 
   /**
-   * Called when the VolumeManager gets ready for post initialization.
-   * @param {VolumeManager} volumeManager The initialized VolumeManager
-   *     instance.
+   * Async part of the initialization.
    * @private
    */
-  onReady_(volumeManager) {
+  async initialize_() {
+    if (!this.backgroundPage_) {
+      this.backgroundPage_ = await new Promise(
+          resolve => chrome.runtime.getBackgroundPage(resolve));
+    }
+
+    this.volumeManager_ =
+        await this.backgroundPage_.volumeManagerFactory.getInstance();
+
     if (this.disposed_) {
       return;
     }
-
-    this.volumeManager_ = volumeManager;
 
     // Subscribe to VolumeManager.
     this.volumeManager_.addEventListener(
@@ -190,13 +189,6 @@ class FilteredVolumeManager extends cr.EventTarget {
     // In VolumeInfoList, we only use 'splice' event.
     this.volumeManager_.volumeInfoList.addEventListener(
         'splice', this.onVolumeInfoListUpdatedBound_);
-
-    // Run pending tasks.
-    const pendingTasks = this.pendingTasks_;
-    this.pendingTasks_ = null;
-    for (var i = 0; i < pendingTasks.length; i++) {
-      pendingTasks[i]();
-    }
   }
 
   /**
@@ -232,7 +224,7 @@ class FilteredVolumeManager extends cr.EventTarget {
         break;
       case 'externally-unmounted':
         event = /** @type {!ExternallyUnmountedEvent} */ (event);
-        if (this.isAllowedVolume_(event.volumeInfo)) {
+        if (this.isAllowedVolume_(event.detail)) {
           this.dispatchEvent(event);
         }
         break;
@@ -278,26 +270,13 @@ class FilteredVolumeManager extends cr.EventTarget {
   }
 
   /**
-   * Returns whether the VolumeManager is initialized or not.
-   * @return {boolean} True if the VolumeManager is initialized.
-   */
-  isInitialized() {
-    return this.pendingTasks_ === null;
-  }
-
-  /**
    * Ensures the VolumeManager is initialized, and then invokes callback.
    * If the VolumeManager is already initialized, callback will be called
    * immediately.
    * @param {function()} callback Called on initialization completion.
    */
   ensureInitialized(callback) {
-    if (!this.isInitialized()) {
-      this.pendingTasks_.push(this.ensureInitialized.bind(this, callback));
-      return;
-    }
-
-    callback();
+    this.initialized_.then(callback);
   }
 
   /**
@@ -325,7 +304,7 @@ class FilteredVolumeManager extends cr.EventTarget {
   /**
    * Obtains a volume information of the current profile.
    * @param {VolumeManagerCommon.VolumeType} volumeType Volume type.
-   * @return {VolumeInfo} Found volume info.
+   * @return {?VolumeInfo} Found volume info.
    */
   getCurrentProfileVolumeInfo(volumeType) {
     return this.filterDisallowedVolume_(
@@ -338,16 +317,17 @@ class FilteredVolumeManager extends cr.EventTarget {
     this.ensureInitialized(() => {
       const defaultVolume = this.getCurrentProfileVolumeInfo(
           VolumeManagerCommon.VolumeType.DOWNLOADS);
-      if (defaultVolume) {
-        defaultVolume.resolveDisplayRoot(callback, () => {
-          // defaultVolume is DOWNLOADS and resolveDisplayRoot should succeed.
-          throw new Error(
-              'Unexpectedly failed to obtain the default display root.');
-        });
-      } else {
-        console.warn('Unexpectedly failed to obtain the default display root.');
+      if (!defaultVolume) {
+        console.warn('Cannot get default display root');
         callback(null);
+        return;
       }
+
+      defaultVolume.resolveDisplayRoot(callback, () => {
+        // defaultVolume is DOWNLOADS and resolveDisplayRoot should succeed.
+        console.error('Cannot resolve default display root');
+        callback(null);
+      });
     });
   }
 
@@ -355,7 +335,7 @@ class FilteredVolumeManager extends cr.EventTarget {
    * Obtains location information from an entry.
    *
    * @param {(!Entry|!FilesAppEntry)} entry File or directory entry.
-   * @return {EntryLocation} Location information.
+   * @return {?EntryLocation} Location information.
    */
   getLocationInfo(entry) {
     const locationInfo =
@@ -389,15 +369,17 @@ class FilteredVolumeManager extends cr.EventTarget {
    * @return {!Promise<!VolumeInfo>} The VolumeInfo. Will not resolve
    *     if the volume is never mounted.
    */
-  whenVolumeInfoReady(volumeId) {
-    return new Promise(resolve => {
-      this.volumeManager_.whenVolumeInfoReady(volumeId).then((volumeInfo) => {
-        volumeInfo = this.filterDisallowedVolume_(volumeInfo);
-        if (volumeInfo) {
-          resolve(volumeInfo);
-        }
-      });
-    });
+  async whenVolumeInfoReady(volumeId) {
+    await this.initialized_;
+
+    const volumeInfo = this.filterDisallowedVolume_(
+        await this.volumeManager_.whenVolumeInfoReady(volumeId));
+
+    if (!volumeInfo) {
+      throw new Error(`Volume not allowed: ${volumeId}`);
+    }
+
+    return volumeInfo;
   }
 
   /**
@@ -409,13 +391,9 @@ class FilteredVolumeManager extends cr.EventTarget {
    *     when an error occurs.
    */
   mountArchive(fileUrl, successCallback, errorCallback) {
-    if (this.pendingTasks_) {
-      this.pendingTasks_.push(this.mountArchive.bind(
-          this, fileUrl, successCallback, errorCallback));
-      return;
-    }
-
-    this.volumeManager_.mountArchive(fileUrl, successCallback, errorCallback);
+    this.ensureInitialized(() => {
+      this.volumeManager_.mountArchive(fileUrl, successCallback, errorCallback);
+    });
   }
 
   /**
@@ -426,13 +404,9 @@ class FilteredVolumeManager extends cr.EventTarget {
    *     when an error occurs.
    */
   unmount(volumeInfo, successCallback, errorCallback) {
-    if (this.pendingTasks_) {
-      this.pendingTasks_.push(
-          this.unmount.bind(this, volumeInfo, successCallback, errorCallback));
-      return;
-    }
-
-    this.volumeManager_.unmount(volumeInfo, successCallback, errorCallback);
+    this.ensureInitialized(() => {
+      this.volumeManager_.unmount(volumeInfo, successCallback, errorCallback);
+    });
   }
 
   /**
@@ -441,24 +415,16 @@ class FilteredVolumeManager extends cr.EventTarget {
    * @return {!Promise} Fulfilled on success, otherwise rejected with an error
    *     message.
    */
-  configure(volumeInfo) {
-    if (this.pendingTasks_) {
-      return new Promise((fulfill, reject) => {
-        this.pendingTasks_.push(() => {
-          return this.volumeManager_.configure(volumeInfo)
-              .then(fulfill, reject);
-        });
-      });
-    }
-
+  async configure(volumeInfo) {
+    await this.initialized_;
     return this.volumeManager_.configure(volumeInfo);
   }
 
   /**
    * Filters volume info by isAllowedVolume_().
    *
-   * @param {VolumeInfo} volumeInfo Volume info.
-   * @return {VolumeInfo} Null if the volume is disallowed. Otherwise just
+   * @param {?VolumeInfo} volumeInfo Volume info.
+   * @return {?VolumeInfo} Null if the volume is disallowed. Otherwise just
    *     returns the volume.
    * @private
    */

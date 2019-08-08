@@ -83,7 +83,7 @@ class LocationBar {
   // Returns a pointer to the testing interface.
   virtual LocationBarTesting* GetLocationBarForTesting() = 0;
 
-  Profile* profile() { return profile_; }
+  Profile* profile() const { return profile_; }
 
  protected:
   virtual ~LocationBar();

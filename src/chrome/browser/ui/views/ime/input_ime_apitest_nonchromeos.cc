@@ -8,7 +8,6 @@
 #include "chrome/browser/extensions/api/input_ime/input_ime_api_nonchromeos.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "extensions/test/extension_test_message_listener.h"
@@ -25,11 +24,6 @@ class InputImeApiTest : public ExtensionApiTest {
   InputImeApiTest() {}
 
  protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableInputImeAPI);
-  }
-
   // Sets the private flag of |track_key_events_for_testing_| in InputMethod.
   void SetTrackKeyEvents(ui::InputMethod* input_method, bool track) {
     input_method->track_key_events_for_testing_ = track;

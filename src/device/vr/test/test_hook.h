@@ -5,14 +5,54 @@
 #ifndef DEVICE_VR_TEST_TEST_HOOK_H_
 #define DEVICE_VR_TEST_TEST_HOOK_H_
 
+#include "base/logging.h"
+
 #include <cstdint>
 
 namespace device {
 
 // Update this string whenever either interface changes.
-constexpr char kChromeOpenVRTestHookAPI[] = "ChromeTestHook_2";
+constexpr char kChromeOpenVRTestHookAPI[] = "ChromeTestHook_3";
 constexpr unsigned int kMaxTrackedDevices = 64;
 constexpr unsigned int kMaxNumAxes = 5;
+
+// These are largely the same as the OpenVR button/axis constants, but kept
+// separate so they're more runtime-agnostic.
+enum XrButtonId {
+  kSystem = 0,
+  kMenu = 1,
+  kGrip = 2,
+  kDpadLeft = 3,
+  kDpadUp = 4,
+  kDpadRight = 5,
+  kDpadDown = 6,
+  kA = 7,
+  kProximitySensor = 31,
+  kAxisPrimary = 32,
+  kAxisTrigger = 33,
+  kAxisSecondary = 34,
+  kAxisTertiary = 35,
+  kAxisQuaternary = 36,
+  kMax = 64
+};
+
+enum XrAxisType {
+  kNone = 0,
+  kTrackpad = 1,
+  kJoystick = 2,
+  kTrigger = 3,
+};
+
+inline uint64_t XrButtonMaskFromId(XrButtonId id) {
+  return 1ull << id;
+}
+
+inline unsigned int XrAxisOffsetFromId(XrButtonId id) {
+  DCHECK(XrButtonId::kAxisPrimary <= id &&
+         id < XrButtonId::kAxisPrimary + kMaxNumAxes);
+  return static_cast<unsigned int>(id) -
+         static_cast<unsigned int>(XrButtonId::kAxisPrimary);
+}
 
 struct Color {
   unsigned char r;

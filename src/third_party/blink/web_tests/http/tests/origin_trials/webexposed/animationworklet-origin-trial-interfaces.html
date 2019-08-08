@@ -28,12 +28,12 @@ if (!self.internals.runtimeFlags.animationWorkletEnabled) {
 OriginTrialsHelper.add_token(token);
 
 test(t => {
-  OriginTrialsHelper.check_interfaces(this, interfaces_to_check);
+  OriginTrialsHelper.check_interfaces_exist(this, interfaces_to_check);
 }, 'AnimationWorklet related interfaces in Origin-Trial enabled document.');
 
 test(t => {
   assert_own_property(CSS, 'animationWorklet');
-  OriginTrialsHelper.check_properties(this, properties_to_check);
+  OriginTrialsHelper.check_properties_exist(this, properties_to_check);
 }, 'AnimationWorklet related properties in Origin-Trial enabled document.');
 
 </script>

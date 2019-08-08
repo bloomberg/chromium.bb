@@ -1207,21 +1207,8 @@ void DrawImageOp::RasterWithFlags(const DrawImageOp* op,
                                   const PaintFlags* flags,
                                   SkCanvas* canvas,
                                   const PlaybackParams& params) {
-  // TODO(crbug.com/931704): make sure to support the case where paint worklet
-  // generated images are used in other raster work such as canvas2d.
+  DCHECK(!op->image.IsPaintWorklet());
   SkPaint paint = flags ? flags->ToSkPaint() : SkPaint();
-
-  if (op->image.IsPaintWorklet()) {
-    DCHECK(params.image_provider);
-    ImageProvider::ScopedResult result =
-        params.image_provider->GetRasterContent(DrawImage(op->image));
-
-    DCHECK(IsScaleAdjustmentIdentity(op->scale_adjustment));
-    SkAutoCanvasRestore save_restore(canvas, true);
-    canvas->translate(op->left, op->top);
-    result.paint_record()->Playback(canvas, params);
-    return;
-  }
 
   if (!params.image_provider) {
     const bool needs_scale = !IsScaleAdjustmentIdentity(op->scale_adjustment);
@@ -1261,15 +1248,32 @@ void DrawImageOp::RasterWithFlags(const DrawImageOp* op,
   canvas->drawImage(decoded_image.image().get(), op->left, op->top, &paint);
 }
 
-// TODO(xidachen): ensure paint worklet generated images are correctly handled.
 void DrawImageRectOp::RasterWithFlags(const DrawImageRectOp* op,
                                       const PaintFlags* flags,
                                       SkCanvas* canvas,
                                       const PlaybackParams& params) {
+  SkPaint paint = flags ? flags->ToSkPaint() : SkPaint();
+  // TODO(crbug.com/931704): make sure to support the case where paint worklet
+  // generated images are used in other raster work such as canvas2d.
+  if (op->image.IsPaintWorklet()) {
+    DCHECK(params.image_provider);
+    ImageProvider::ScopedResult result =
+        params.image_provider->GetRasterContent(DrawImage(op->image));
+
+    DCHECK(IsScaleAdjustmentIdentity(op->scale_adjustment));
+    SkAutoCanvasRestore save_restore(canvas, true);
+    canvas->concat(
+        SkMatrix::MakeRectToRect(op->src, op->dst, SkMatrix::kFill_ScaleToFit));
+    canvas->clipRect(op->src);
+    canvas->saveLayer(&op->src, &paint);
+    DCHECK(result && result.paint_record());
+    result.paint_record()->Playback(canvas, params);
+    return;
+  }
+
   // TODO(enne): Probably PaintCanvas should just use the skia enum directly.
   SkCanvas::SrcRectConstraint skconstraint =
       static_cast<SkCanvas::SrcRectConstraint>(op->constraint);
-  SkPaint paint = flags ? flags->ToSkPaint() : SkPaint();
 
   if (!params.image_provider) {
     SkRect adjusted_src = AdjustSrcRectForScale(op->src, op->scale_adjustment);

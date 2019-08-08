@@ -807,3 +807,83 @@ Date:   Mon Mar 4 14:01:22 2019 -0800
 Affects:
     libavformat/mov.c
 
+------------------------------------------------------------------
+commit d17a8c9b951d5c4cc8fd2027db48b657deec290f
+Author: Dan Sanders <sandersd@chromium.org>
+Date:   Fri Apr 19 14:52:58 2019 -0700
+
+    libavformat/mov: limit nb_frames_for_fps to INT_MAX
+
+    Bug: 827894
+    Change-Id: I0de1422ba7c8bfb4d66675552d5704bb86ea1fe2
+    Reviewed-on: https://chromium-review.googlesource.com/c/chromium/third_party/ffmpeg/+/1575672
+    Reviewed-by: Chrome Cunningham <chcunningham@chromium.org>
+
+Affects:
+    libavformat/mov.c
+
+------------------------------------------------------------------
+commit d82e355b42a185683ce8c19ccb27e162c9ff66e8
+Author: Dan Sanders <sandersd@chromium.org>
+Date:   Mon Apr 22 11:08:48 2019 -0700
+
+    libavformat/mov: limit nb_frames_for_fps to INT_MAX
+
+    Part 2.
+
+    Bug: 827894
+    Change-Id: Icf597a26f817f342cf120f0c9c17a95122a45797
+    Reviewed-on: https://chromium-review.googlesource.com/c/chromium/third_party/ffmpeg/+/1577698
+    Reviewed-by: Chrome Cunningham <chcunningham@chromium.org>
+
+Affects:
+    libavformat/mov.c
+
+------------------------------------------------------------------
+commit 68f1932090d5e35d958434d0588a33986cd3d65d
+Author: Felicia Lim <flim@chromium.org>
+Date:   Thu May 9 17:40:11 2019 -0700
+
+    Revert "Revert "libopus: Add channel mapping 2 support in libopusdec""
+
+    This reverts commit ffec9d32feaff7075c0b150f1168e08aeb4a296a to avoid
+    incorrect reordering of Opus Ambisonics channels.
+
+    This is a temporary fix that should be removed once Opus Ambisonics is properly
+    supported upstream.
+
+    Bug: chromium:958645
+    Change-Id: I2842b8084eda12e5bed19789056075d5ef3d8de3
+    Reviewed-on: https://chromium-review.googlesource.com/c/chromium/third_party/ffmpeg/+/1604210
+    Reviewed-by: Dale Curtis <dalecurtis@chromium.org>
+
+Affects:
+    libavcodec/libopusdec.c
+
+------------------------------------------------------------------
+commit 4267885f5c532b54fa7ee40c9915fa452dd1dfc5
+Author: Matt Wolenetz <wolenetz@chromium.org>
+Date:   Wed Jul 24 16:38:05 2019 -0700
+
+    wavdec: Fail bext parsing on incomplete reads
+
+    avio_read can successfully return even when less than the requested
+    amount of input was read. wavdec's bext parsing mistakenly assumed a
+    successful avio_read always read the full amount that was requested.
+    The result could be dictionary tags populated with partially
+    uninitialized values.
+
+    This change also fixes a broken assertion in wav_parse_bext_string that
+    was off-by-one, though no known current usage of that method hits that
+    broken case.
+
+    BUG=987270
+
+    Change-Id: I5b2fc654b865195a7c5e3932fd2e3a3eaeff04f7
+    Reviewed-on: https://chromium-review.googlesource.com/c/chromium/third_party/ffmpeg/+/1717599
+    Reviewed-by: Frank Liberato <liberato@chromium.org>
+    (cherry picked from commit e0e3133c40fbca0032a2d9400da736e4b933882f)
+
+Affects:
+    libavformat/wavdec.c
+

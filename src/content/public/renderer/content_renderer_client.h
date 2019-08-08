@@ -22,6 +22,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
 #include "content/public/renderer/websocket_handshake_throttle_provider.h"
+#include "media/base/audio_parameters.h"
 #include "media/base/supported_types.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
@@ -86,17 +87,17 @@ class CONTENT_EXPORT ContentRendererClient {
   // none.
   virtual SkBitmap* GetSadWebViewBitmap();
 
-  // Returns true if the embedder renders the contents of the |plugin_element|
-  // in a cross-process frame using MimeHandlerView.
-  virtual bool MaybeCreateMimeHandlerView(
+  // Returns true if the embedder renders the contents of the |plugin_element|,
+  // using external handlers, in a cross-process frame.
+  virtual bool IsPluginHandledExternally(
       RenderFrame* embedder_frame,
       const blink::WebElement& plugin_element,
       const GURL& original_url,
       const std::string& original_mime_type);
 
   // Returns a scriptable object which implements custom javascript API for the
-  // given element. This is used for MimeHandlerView in providing API such as
-  // |postMessage| for <embed> and <object>.
+  // given element. This is used for external plugin handlers for providing
+  // custom API such as|postMessage| for <embed> and <object>.
   virtual v8::Local<v8::Object> GetScriptableObject(
       const blink::WebElement& plugin_element,
       v8::Isolate* isolate);
@@ -336,6 +337,11 @@ class CONTENT_EXPORT ContentRendererClient {
   // started.
   virtual void SetRuntimeFeaturesDefaultsBeforeBlinkInitialization() {}
 
+  // Notifies that a service worker context is going to be initialized. No
+  // meaningful task has run on the worker thread at this point. This
+  // function is called from the worker thread.
+  virtual void WillInitializeServiceWorkerContextOnWorkerThread() {}
+
   // Notifies that a service worker context has been created. This function
   // is called from the worker thread.
   virtual void DidInitializeServiceWorkerContextOnWorkerThread(
@@ -387,11 +393,6 @@ class CONTENT_EXPORT ContentRendererClient {
   // An empty URL is returned if the URL is not overriden.
   virtual GURL OverrideFlashEmbedWithHTML(const GURL& url);
 
-  // Provides parameters for initializing the global thread pool. Default
-  // params are used if this returns nullptr.
-  virtual std::unique_ptr<base::ThreadPool::InitParams>
-  GetThreadPoolInitParams();
-
   // Whether the renderer allows idle media players to be automatically
   // suspended after a period of inactivity.
   virtual bool IsIdleMediaSuspendEnabled();
@@ -425,6 +426,17 @@ class CONTENT_EXPORT ContentRendererClient {
   // The user agent string is given from the browser process. This is called at
   // most once.
   virtual void DidSetUserAgent(const std::string& user_agent);
+
+  // Returns true if |url| still requires native HTML imports. Used for Web UI
+  // pages.
+  // TODO(https://crbug.com/937747): Remove this function, when all WebUIs have
+  // been migrated to use the HTML Imports Polyfill.
+  virtual bool RequiresHtmlImports(const GURL& url);
+
+  // Optionally returns audio renderer algorithm parameters.
+  virtual base::Optional<::media::AudioRendererAlgorithmParameters>
+  GetAudioRendererAlgorithmParameters(
+      ::media::AudioParameters audio_parameters);
 };
 
 }  // namespace content

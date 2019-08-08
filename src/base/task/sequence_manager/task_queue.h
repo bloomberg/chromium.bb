@@ -12,10 +12,10 @@
 #include "base/message_loop/message_loop.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/common/checked_lock.h"
 #include "base/task/sequence_manager/lazy_now.h"
 #include "base/task/sequence_manager/tasks.h"
 #include "base/task/task_observer.h"
-#include "base/task/thread_pool/scheduler_lock.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 
@@ -83,17 +83,19 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
     // and can starve the best effort queue.
     kHighestPriority = 1,
 
-    kHighPriority = 2,
+    kVeryHighPriority = 2,
+
+    kHighPriority = 3,
 
     // Queues with normal priority are the default.
-    kNormalPriority = 3,
-    kLowPriority = 4,
+    kNormalPriority = 4,
+    kLowPriority = 5,
 
     // Queues with best effort priority will only be run if all other queues are
     // empty. They can be starved by the other queues.
-    kBestEffortPriority = 5,
+    kBestEffortPriority = 6,
     // Must be the last entry.
-    kQueuePriorityCount = 6,
+    kQueuePriorityCount = 7,
     kFirstQueuePriority = kControlPriority,
   };
 
@@ -148,6 +150,9 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
   // end_* and *_duration should be called after RecordTaskEnd.
   class BASE_EXPORT TaskTiming {
    public:
+    enum class State { NotStarted, Running, Finished };
+    enum class TimeRecordingPolicy { DoRecord, DoNotRecord };
+
     TaskTiming(bool has_wall_time, bool has_thread_time);
 
     bool has_wall_time() const { return has_wall_time_; }
@@ -178,11 +183,15 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
       return end_thread_time_ - start_thread_time_;
     }
 
+    State state() const { return state_; }
+
     void RecordTaskStart(LazyNow* now);
     void RecordTaskEnd(LazyNow* now);
 
     // Protected for tests.
    protected:
+    State state_ = State::NotStarted;
+
     bool has_wall_time_;
     bool has_thread_time_;
 
@@ -354,7 +363,7 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
   // |impl_lock_| must be acquired when writing to |impl_| or when accessing
   // it from non-main thread. Reading from the main thread does not require
   // a lock.
-  mutable base::internal::SchedulerLock impl_lock_{
+  mutable base::internal::CheckedLock impl_lock_{
       base::internal::UniversalPredecessor{}};
   std::unique_ptr<internal::TaskQueueImpl> impl_;
 

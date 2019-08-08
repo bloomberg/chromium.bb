@@ -53,7 +53,7 @@ cr.define('preview_generation_test', function() {
           print_preview_test_utils.getCddTemplate(initialSettings.printerName));
       nativeLayer.setPageCount(3);
       const pluginProxy = new print_preview.PDFPluginStub();
-      print_preview_new.PluginProxy.setInstance(pluginProxy);
+      print_preview.PluginProxy.setInstance(pluginProxy);
 
       page = document.createElement('print-preview-app');
       document.body.appendChild(page);

@@ -6,14 +6,14 @@ package org.chromium.chrome.browser.feed;
 
 import android.util.Base64;
 
+import com.google.android.libraries.feed.api.host.config.Configuration;
+import com.google.android.libraries.feed.api.host.network.HttpRequest;
+import com.google.android.libraries.feed.api.host.network.HttpRequest.HttpMethod;
+import com.google.android.libraries.feed.api.host.network.HttpResponse;
+import com.google.android.libraries.feed.api.host.network.NetworkClient;
 import com.google.android.libraries.feed.common.functional.Consumer;
 import com.google.android.libraries.feed.common.logging.Logger;
 import com.google.android.libraries.feed.feedrequestmanager.RequestHelper;
-import com.google.android.libraries.feed.host.config.Configuration;
-import com.google.android.libraries.feed.host.network.HttpRequest;
-import com.google.android.libraries.feed.host.network.HttpRequest.HttpMethod;
-import com.google.android.libraries.feed.host.network.HttpResponse;
-import com.google.android.libraries.feed.host.network.NetworkClient;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.CodedOutputStream;
 import com.google.protobuf.ExtensionRegistryLite;

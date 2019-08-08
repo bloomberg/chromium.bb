@@ -87,7 +87,6 @@ WebPreferences::WebPreferences()
       databases_enabled(false),
       application_cache_enabled(false),
       tabs_to_links(true),
-      history_entry_requires_user_gesture(false),
       disable_ipc_flooding_protection(false),
       hyperlink_auditing_enabled(true),
       allow_universal_access_from_file_urls(false),
@@ -182,6 +181,7 @@ WebPreferences::WebPreferences()
 #else
       double_tap_to_zoom_enabled(false),
 #endif
+      fullscreen_supported(true),
 #if !defined(OS_ANDROID)
       text_autosizing_enabled(false),
 #else
@@ -189,13 +189,11 @@ WebPreferences::WebPreferences()
       font_scale_factor(1.0f),
       device_scale_adjustment(1.0f),
       force_enable_zoom(false),
-      fullscreen_supported(true),
       support_deprecated_target_density_dpi(false),
       use_legacy_background_size_shorthand_behavior(false),
       wide_viewport_quirk(false),
       use_wide_viewport(true),
       force_zero_layout_height(false),
-      viewport_meta_layout_size_quirk(false),
       viewport_meta_merge_content_quirk(false),
       viewport_meta_non_user_scalable_quirk(false),
       viewport_meta_zero_values_quirk(false),

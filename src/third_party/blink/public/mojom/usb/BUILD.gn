@@ -15,10 +15,7 @@ mojom("usb") {
 
   deps = [
     "//mojo/public/mojom/base",
-
-    # TODO(donna.wu@intel.com): Change the following line to //service/device/
-    # after it has been moved to //services/device.
-    "//device/usb/public/mojom",
+    "//services/device/public/mojom:usb",
   ]
 
   # USB Mojom interfaces are exposed publicly to web tests which use

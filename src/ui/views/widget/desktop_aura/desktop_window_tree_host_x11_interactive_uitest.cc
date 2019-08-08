@@ -247,8 +247,8 @@ TEST_F(DesktopWindowTreeHostX11Test, InputMethodFocus) {
   EXPECT_FALSE(widget->IsActive());
   // TODO(shuchen): uncomment the below check once the
   // "default-focused-input-method" logic is removed in aura::WindowTreeHost.
-  //EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE,
-  //          widget->GetInputMethod()->GetTextInputType());
+  // EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE,
+  //           widget->GetInputMethod()->GetTextInputType());
 
   widget->Activate();
   ActivationWaiter waiter(

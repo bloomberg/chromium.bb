@@ -344,6 +344,20 @@ void FrameSchedulerImpl::TraceUrlChange(const String& url) {
   url_tracer_.TraceString(url);
 }
 
+void FrameSchedulerImpl::AddTaskTime(base::TimeDelta time) {
+  // The duration of task time under which AddTaskTime buffers rather than
+  // sending the task time update to the delegate.
+  constexpr base::TimeDelta kTaskDurationSendThreshold =
+      base::TimeDelta::FromMilliseconds(100);
+  if (!delegate_)
+    return;
+  task_time_ += time;
+  if (task_time_ >= kTaskDurationSendThreshold) {
+    delegate_->UpdateTaskTime(task_time_);
+    task_time_ = base::TimeDelta();
+  }
+}
+
 FrameScheduler::FrameType FrameSchedulerImpl::GetFrameType() const {
   return frame_type_;
 }
@@ -449,10 +463,6 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
     // The TaskType of Inspector tasks needs to be unpausable because they need
     // to run even on a paused page.
     case TaskType::kInternalInspector:
-    // The TaskType of worker tasks needs to be unpausable (in addition to
-    // unthrottled and undeferred) not to prevent service workers that may
-    // control browser navigation on multiple tabs.
-    case TaskType::kInternalWorker:
     // Some tasks in the tests need to run when objects are paused e.g. to hook
     // when recovering from debugger JavaScript statetment.
     case TaskType::kInternalTest:
@@ -460,7 +470,7 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
     case TaskType::kInternalTranslation:
       return ForegroundOnlyTaskQueueTraits();
     // Navigation IPCs do not run using virtual time to avoid hanging.
-    case TaskType::kInternalNavigation:
+    case TaskType::kInternalNavigationAssociated:
       return DoesNotUseVirtualTimeTaskQueueTraits();
     case TaskType::kDeprecatedNone:
     case TaskType::kMainThreadTaskQueueV8:
@@ -1054,20 +1064,6 @@ void FrameSchedulerImpl::OnTaskQueueCreated(
     if (task_queues_throttled_) {
       UpdateTaskQueueThrottling(task_queue, true);
     }
-  }
-}
-
-void FrameSchedulerImpl::AddTaskTime(base::TimeDelta time) {
-  // The duration of task time under which AddTaskTime buffers rather than
-  // sending the task time update to the delegate.
-  constexpr base::TimeDelta kTaskDurationSendThreshold =
-      base::TimeDelta::FromMilliseconds(100);
-  if (!delegate_)
-    return;
-  task_time_ += time;
-  if (task_time_ >= kTaskDurationSendThreshold) {
-    delegate_->UpdateTaskTime(task_time_);
-    task_time_ = base::TimeDelta();
   }
 }
 

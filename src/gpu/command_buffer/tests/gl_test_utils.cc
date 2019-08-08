@@ -78,14 +78,14 @@ bool GLTestHelper::HasExtension(const char* extension) {
 }
 
 bool GLTestHelper::CheckGLError(const char* msg, int line) {
-   bool success = true;
-   GLenum error = GL_NO_ERROR;
-   while ((error = glGetError()) != GL_NO_ERROR) {
-     success = false;
-     EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), error)
-         << "GL ERROR in " << msg << " at line " << line << " : " << error;
-   }
-   return success;
+  bool success = true;
+  GLenum error = GL_NO_ERROR;
+  while ((error = glGetError()) != GL_NO_ERROR) {
+    success = false;
+    EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), error)
+        << "GL ERROR in " << msg << " at line " << line << " : " << error;
+  }
+  return success;
 }
 
 GLuint GLTestHelper::CompileShader(GLenum type, const char* shaderSrc) {
@@ -277,7 +277,7 @@ struct BitmapInfoHeader{
   uint8_t clr_important[4];
 };
 
-}
+}  // namespace
 
 bool GLTestHelper::SaveBackbufferAsBMP(
     const char* filename, int width, int height) {
@@ -374,7 +374,7 @@ bool GpuCommandBufferTestEGL::InitializeEGLGLES2(int width, int height) {
     }
 
     gpu::GPUInfo gpu_info;
-    gpu::CollectContextGraphicsInfo(&gpu_info, gpu::GpuPreferences());
+    gpu::CollectContextGraphicsInfo(&gpu_info);
     // See crbug.com/822716, the ATI proprietary driver has eglGetProcAddress
     // but eglInitialize crashes with x11.
     if (gpu_info.gl_vendor.find("ATI Technologies Inc.") != std::string::npos) {

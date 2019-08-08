@@ -172,7 +172,7 @@
       <div id="background-clip">
         <div id="background"></div>
       </div>
-      <div id="date-accessed" class="card-title">
+      <div id="date-accessed" class="card-title" role="heading" aria-level="2">
         [[cardTitle_(numberOfItems, item.dateRelativeDay, searchTerm)]]
       </div>
       <div id="item-container" focus-row-container
@@ -200,7 +200,7 @@
           <span id="domain">[[item.domain]]</span>
         </div>
         <div id="star-container">
-          <template is="dom-if" if="[[item.starred]]" notify-dom-change>
+          <template is="dom-if" if="[[item.starred]]">
             <cr-icon-button id="bookmark-star" iron-icon="cr:star"
                 focus-row-control focus-type="star"
                 title="$i18n{removeBookmark}" on-click="onRemoveBookmarkTap_">

@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/strings/string_split.h"
 #include "chrome/browser/media/router/providers/dial/dial_internal_message_util.h"
-#include "chrome/common/media_router/media_source_helper.h"
+#include "chrome/common/media_router/media_source.h"
 #include "net/base/url_util.h"
 
 namespace media_router {
@@ -75,7 +75,7 @@ std::unique_ptr<DialActivity> DialActivity::From(
   if (!url.is_valid())
     return nullptr;
 
-  std::string app_name = AppNameFromDialMediaSource(source);
+  std::string app_name = source.AppNameFromDialSource();
   if (app_name.empty())
     return nullptr;
 
@@ -176,7 +176,6 @@ void DialActivityManager::LaunchApp(
                                                      : launch_info.post_data;
   DVLOG(2) << "Launching app on " << route_id;
 
-  // TODO(https://crbug.com/816628): Add metrics to record launch success/error.
   auto fetcher =
       CreateFetcher(base::BindOnce(&DialActivityManager::OnLaunchSuccess,
                                    base::Unretained(this), route_id),
@@ -188,25 +187,27 @@ void DialActivityManager::LaunchApp(
           std::move(fetcher), std::move(callback));
 }
 
+std::pair<base::Optional<std::string>, RouteRequestResult::ResultCode>
+DialActivityManager::CanStopApp(const MediaRoute::Id& route_id) const {
+  auto record_it = records_.find(route_id);
+  if (record_it == records_.end())
+    return {"Activity not found", RouteRequestResult::ROUTE_NOT_FOUND};
+
+  if (record_it->second->pending_stop_request) {
+    return {"A pending request already exists",
+            RouteRequestResult::UNKNOWN_ERROR};
+  }
+  return {base::nullopt, RouteRequestResult::OK};
+}
+
 void DialActivityManager::StopApp(
     const MediaRoute::Id& route_id,
     mojom::MediaRouteProvider::TerminateRouteCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
   auto record_it = records_.find(route_id);
-  if (record_it == records_.end()) {
-    DVLOG(2) << "Activity not found: " << route_id;
-    std::move(callback).Run("Activity not found",
-                            RouteRequestResult::ROUTE_NOT_FOUND);
-    return;
-  }
-
-  auto& record = record_it->second;
-  if (record->pending_stop_request) {
-    std::move(callback).Run("A pending request already exists",
-                            RouteRequestResult::UNKNOWN_ERROR);
-    return;
-  }
+  DCHECK(record_it != records_.end());
+  std::unique_ptr<Record>& record = record_it->second;
+  DCHECK(!record->pending_stop_request);
 
   // Note that it is possible that the app launched on the device, but we
   // haven't received the launch response yet. In this case we will treat it
@@ -226,7 +227,6 @@ void DialActivityManager::StopApp(
         GURL(activity.launch_info.app_launch_url.spec() + "/run");
   }
 
-  // TODO(https://crbug.com/816628): Add metrics to record stop success/error.
   auto fetcher =
       CreateFetcher(base::BindOnce(&DialActivityManager::OnStopSuccess,
                                    base::Unretained(this), route_id),

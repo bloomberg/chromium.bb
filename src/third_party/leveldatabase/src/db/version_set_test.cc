@@ -11,10 +11,7 @@ namespace leveldb {
 
 class FindFileTest {
  public:
-  std::vector<FileMetaData*> files_;
-  bool disjoint_sorted_files_;
-
-  FindFileTest() : disjoint_sorted_files_(true) { }
+  FindFileTest() : disjoint_sorted_files_(true) {}
 
   ~FindFileTest() {
     for (int i = 0; i < files_.size(); i++) {
@@ -46,14 +43,19 @@ class FindFileTest {
                                  (smallest != nullptr ? &s : nullptr),
                                  (largest != nullptr ? &l : nullptr));
   }
+
+  bool disjoint_sorted_files_;
+
+ private:
+  std::vector<FileMetaData*> files_;
 };
 
 TEST(FindFileTest, Empty) {
   ASSERT_EQ(0, Find("foo"));
-  ASSERT_TRUE(! Overlaps("a", "z"));
-  ASSERT_TRUE(! Overlaps(nullptr, "z"));
-  ASSERT_TRUE(! Overlaps("a", nullptr));
-  ASSERT_TRUE(! Overlaps(nullptr, nullptr));
+  ASSERT_TRUE(!Overlaps("a", "z"));
+  ASSERT_TRUE(!Overlaps(nullptr, "z"));
+  ASSERT_TRUE(!Overlaps("a", nullptr));
+  ASSERT_TRUE(!Overlaps(nullptr, nullptr));
 }
 
 TEST(FindFileTest, Single) {
@@ -65,8 +67,8 @@ TEST(FindFileTest, Single) {
   ASSERT_EQ(1, Find("q1"));
   ASSERT_EQ(1, Find("z"));
 
-  ASSERT_TRUE(! Overlaps("a", "b"));
-  ASSERT_TRUE(! Overlaps("z1", "z2"));
+  ASSERT_TRUE(!Overlaps("a", "b"));
+  ASSERT_TRUE(!Overlaps("z1", "z2"));
   ASSERT_TRUE(Overlaps("a", "p"));
   ASSERT_TRUE(Overlaps("a", "q"));
   ASSERT_TRUE(Overlaps("a", "z"));
@@ -78,14 +80,13 @@ TEST(FindFileTest, Single) {
   ASSERT_TRUE(Overlaps("q", "q"));
   ASSERT_TRUE(Overlaps("q", "q1"));
 
-  ASSERT_TRUE(! Overlaps(nullptr, "j"));
-  ASSERT_TRUE(! Overlaps("r", nullptr));
+  ASSERT_TRUE(!Overlaps(nullptr, "j"));
+  ASSERT_TRUE(!Overlaps("r", nullptr));
   ASSERT_TRUE(Overlaps(nullptr, "p"));
   ASSERT_TRUE(Overlaps(nullptr, "p1"));
   ASSERT_TRUE(Overlaps("q", nullptr));
   ASSERT_TRUE(Overlaps(nullptr, nullptr));
 }
-
 
 TEST(FindFileTest, Multiple) {
   Add("150", "200");
@@ -110,10 +111,10 @@ TEST(FindFileTest, Multiple) {
   ASSERT_EQ(3, Find("450"));
   ASSERT_EQ(4, Find("451"));
 
-  ASSERT_TRUE(! Overlaps("100", "149"));
-  ASSERT_TRUE(! Overlaps("251", "299"));
-  ASSERT_TRUE(! Overlaps("451", "500"));
-  ASSERT_TRUE(! Overlaps("351", "399"));
+  ASSERT_TRUE(!Overlaps("100", "149"));
+  ASSERT_TRUE(!Overlaps("251", "299"));
+  ASSERT_TRUE(!Overlaps("451", "500"));
+  ASSERT_TRUE(!Overlaps("351", "399"));
 
   ASSERT_TRUE(Overlaps("100", "150"));
   ASSERT_TRUE(Overlaps("100", "200"));
@@ -130,8 +131,8 @@ TEST(FindFileTest, MultipleNullBoundaries) {
   Add("200", "250");
   Add("300", "350");
   Add("400", "450");
-  ASSERT_TRUE(! Overlaps(nullptr, "149"));
-  ASSERT_TRUE(! Overlaps("451", nullptr));
+  ASSERT_TRUE(!Overlaps(nullptr, "149"));
+  ASSERT_TRUE(!Overlaps("451", nullptr));
   ASSERT_TRUE(Overlaps(nullptr, nullptr));
   ASSERT_TRUE(Overlaps(nullptr, "150"));
   ASSERT_TRUE(Overlaps(nullptr, "199"));
@@ -147,8 +148,8 @@ TEST(FindFileTest, MultipleNullBoundaries) {
 
 TEST(FindFileTest, OverlapSequenceChecks) {
   Add("200", "200", 5000, 3000);
-  ASSERT_TRUE(! Overlaps("199", "199"));
-  ASSERT_TRUE(! Overlaps("201", "300"));
+  ASSERT_TRUE(!Overlaps("199", "199"));
+  ASSERT_TRUE(!Overlaps("201", "300"));
   ASSERT_TRUE(Overlaps("200", "200"));
   ASSERT_TRUE(Overlaps("190", "200"));
   ASSERT_TRUE(Overlaps("200", "210"));
@@ -158,8 +159,8 @@ TEST(FindFileTest, OverlappingFiles) {
   Add("150", "600");
   Add("400", "500");
   disjoint_sorted_files_ = false;
-  ASSERT_TRUE(! Overlaps("100", "149"));
-  ASSERT_TRUE(! Overlaps("601", "700"));
+  ASSERT_TRUE(!Overlaps("100", "149"));
+  ASSERT_TRUE(!Overlaps("601", "700"));
   ASSERT_TRUE(Overlaps("100", "150"));
   ASSERT_TRUE(Overlaps("100", "200"));
   ASSERT_TRUE(Overlaps("100", "300"));
@@ -183,14 +184,14 @@ class AddBoundaryInputsTest {
   std::vector<FileMetaData*> all_files_;
   InternalKeyComparator icmp_;
 
-  AddBoundaryInputsTest() : icmp_(BytewiseComparator()){};
+  AddBoundaryInputsTest() : icmp_(BytewiseComparator()) {}
 
   ~AddBoundaryInputsTest() {
     for (size_t i = 0; i < all_files_.size(); ++i) {
       delete all_files_[i];
     }
     all_files_.clear();
-  };
+  }
 
   FileMetaData* CreateFileMetaData(uint64_t number, InternalKey smallest,
                                    InternalKey largest) {

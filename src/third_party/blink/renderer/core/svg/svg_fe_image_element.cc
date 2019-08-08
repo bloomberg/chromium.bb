@@ -35,7 +35,7 @@
 
 namespace blink {
 
-inline SVGFEImageElement::SVGFEImageElement(Document& document)
+SVGFEImageElement::SVGFEImageElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFEImageTag, document),
       SVGURIReference(this),
       preserve_aspect_ratio_(
@@ -44,8 +44,6 @@ inline SVGFEImageElement::SVGFEImageElement(Document& document)
               svg_names::kPreserveAspectRatioAttr)) {
   AddToPropertyMap(preserve_aspect_ratio_);
 }
-
-DEFINE_NODE_FACTORY(SVGFEImageElement)
 
 SVGFEImageElement::~SVGFEImageElement() {
   ClearImageResource();
@@ -99,11 +97,11 @@ void SVGFEImageElement::BuildPendingResource() {
   if (!target) {
     if (!SVGURLReferenceResolver(HrefString(), GetDocument()).IsLocal())
       FetchImageResource();
-  } else if (target->IsSVGElement()) {
+  } else if (auto* svg_element = DynamicTo<SVGElement>(target)) {
     // Register us with the target in the dependencies map. Any change of
     // hrefElement that leads to relayout/repainting now informs us, so we can
     // react to it.
-    AddReferenceTo(ToSVGElement(target));
+    AddReferenceTo(svg_element);
   }
 
   Invalidate();

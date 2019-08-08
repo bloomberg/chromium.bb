@@ -2,7 +2,6 @@ include_rules = [
   "+components/account_id",
   "-components/policy/core/browser",
   "+components/strings",
-  "+components/data_use_measurement/core",
   "+extensions/buildflags",
   "+net/http",
   "+net/traffic_annotation",

@@ -256,10 +256,9 @@ void WebSocket::OnReadDuringHandshake(const char* data, int len) {
   std::string websocket_accept;
   base::Base64Encode(base::SHA1HashString(sec_key_ + kMagicKey),
                      &websocket_accept);
-  scoped_refptr<net::HttpResponseHeaders> headers(
-      new net::HttpResponseHeaders(
-          net::HttpUtil::AssembleRawHeaders(
-              handshake_response_.data(), headers_end)));
+  auto headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(
+          base::StringPiece(handshake_response_.data(), headers_end)));
   if (headers->response_code() != 101 ||
       !headers->HasHeaderValue("Upgrade", "WebSocket") ||
       !headers->HasHeaderValue("Connection", "Upgrade") ||

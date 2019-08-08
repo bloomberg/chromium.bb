@@ -26,7 +26,6 @@ class ChromeAppCacheService;
 class ChromeBlobStorageContext;
 class ResourceContext;
 class ResourceMessageFilter;
-class ServiceWorkerContextWrapper;
 
 // This class represents the type of resource requester.
 // Currently there are four types:
@@ -50,7 +49,6 @@ class CONTENT_EXPORT ResourceRequesterInfo
       ChromeAppCacheService* appcache_service,
       ChromeBlobStorageContext* blob_storage_context,
       storage::FileSystemContext* file_system_context,
-      ServiceWorkerContextWrapper* service_worker_context,
       const GetContextsCallback& get_contexts_callback);
 
   // Creates a ResourceRequesterInfo for a requester that requests resources
@@ -67,13 +65,6 @@ class CONTENT_EXPORT ResourceRequesterInfo
   static scoped_refptr<ResourceRequesterInfo> CreateForDownloadOrPageSave(
       int child_id);
 
-  // Creates a ResourceRequesterInfo for a service worker navigation preload
-  // request. When PlzNavigate is enabled, |original_request_info| must be
-  // browser side navigation type. Otherwise it must be renderer type.
-  static scoped_refptr<ResourceRequesterInfo> CreateForNavigationPreload(
-      ResourceRequesterInfo* original_request_info,
-      net::URLRequestContext* url_request_context);
-
   // Creates a ResourceRequesterInfo for a requester that requests certificates
   // for signed exchange.
   // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html
@@ -84,9 +75,6 @@ class CONTENT_EXPORT ResourceRequesterInfo
   bool IsRenderer() const { return type_ == RequesterType::RENDERER; }
   bool IsBrowserSideNavigation() const {
     return type_ == RequesterType::BROWSER_SIDE_NAVIGATION;
-  }
-  bool IsNavigationPreload() const {
-    return type_ == RequesterType::NAVIGATION_PRELOAD;
   }
   bool IsCertificateFetcherForSignedExchange() const {
     return type_ == RequesterType::CERTIFICATE_FETCHER_FOR_SIGNED_EXCHANGE;
@@ -129,14 +117,6 @@ class CONTENT_EXPORT ResourceRequesterInfo
     return file_system_context_.get();
   }
 
-  // Returns the ServiceWorkerContext associated with the requester. Currently
-  // this method is available for renderer type requester, browser side
-  // navigation type requester and service worker navigation preload type
-  // requester.
-  ServiceWorkerContextWrapper* service_worker_context() {
-    return service_worker_context_.get();
-  }
-
  private:
   friend class base::RefCountedThreadSafe<ResourceRequesterInfo>;
 
@@ -144,7 +124,6 @@ class CONTENT_EXPORT ResourceRequesterInfo
     RENDERER,
     BROWSER_SIDE_NAVIGATION,
     DOWNLOAD_OR_PAGE_SAVE,
-    NAVIGATION_PRELOAD,
     CERTIFICATE_FETCHER_FOR_SIGNED_EXCHANGE
   };
 
@@ -153,7 +132,6 @@ class CONTENT_EXPORT ResourceRequesterInfo
                         ChromeAppCacheService* appcache_service,
                         ChromeBlobStorageContext* blob_storage_context,
                         storage::FileSystemContext* file_system_context,
-                        ServiceWorkerContextWrapper* service_worker_context,
                         const GetContextsCallback& get_contexts_callback);
   ~ResourceRequesterInfo();
 
@@ -164,7 +142,6 @@ class CONTENT_EXPORT ResourceRequesterInfo
   const scoped_refptr<ChromeAppCacheService> appcache_service_;
   const scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
   const scoped_refptr<storage::FileSystemContext> file_system_context_;
-  const scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
   const GetContextsCallback get_contexts_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceRequesterInfo);

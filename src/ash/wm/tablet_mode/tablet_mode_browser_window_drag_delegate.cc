@@ -128,11 +128,11 @@ class TabletModeBrowserWindowDragDelegate::WindowsHider
     source_window->SetProperty(kBackdropWindowMode,
                                BackdropWindowMode::kDisabled);
 
-    DCHECK(!Shell::Get()->overview_controller()->IsSelecting());
+    DCHECK(!Shell::Get()->overview_controller()->InOverviewSession());
 
     aura::Window* root_window = dragged_window->GetRootWindow();
     std::vector<aura::Window*> windows =
-        Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+        Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
     for (aura::Window* window : windows) {
       if (window == dragged_window || window == source_window ||
           window->GetRootWindow() != root_window) {
@@ -176,7 +176,7 @@ class TabletModeBrowserWindowDragDelegate::WindowsHider
       }
     }
 
-    DCHECK(!Shell::Get()->overview_controller()->IsSelecting());
+    DCHECK(!Shell::Get()->overview_controller()->InOverviewSession());
 
     // May reshow the home launcher after dragging.
     Shell::Get()->home_screen_controller()->OnWindowDragEnded();
@@ -248,9 +248,9 @@ void TabletModeBrowserWindowDragDelegate::UpdateWindowDrag(
 }
 
 void TabletModeBrowserWindowDragDelegate::EndingWindowDrag(
-    wm::WmToplevelWindowEventHandler::DragResult result,
+    ToplevelWindowEventHandler::DragResult result,
     const gfx::Point& location_in_screen) {
-  if (result == wm::WmToplevelWindowEventHandler::DragResult::SUCCESS)
+  if (result == ToplevelWindowEventHandler::DragResult::SUCCESS)
     wm::GetWindowState(dragged_window_)->OnCompleteDrag(location_in_screen);
   else
     wm::GetWindowState(dragged_window_)->OnRevertDrag(location_in_screen);
@@ -361,14 +361,14 @@ void TabletModeBrowserWindowDragDelegate::MergeBackToSourceWindowIfApplicable(
       GetSnapPosition(location_in_screen);
   // If splitscreen is not active, do not merge back if the dragged window is
   // in the drag-to-snap preview area.
-  if (!split_view_controller_->IsSplitViewModeActive() &&
+  if (!split_view_controller_->InSplitViewMode() &&
       desired_snap_position != SplitViewController::NONE) {
     return;
   }
 
   // In splitscreen, do not merge back if the drag point is on one side of the
   // split view divider and the source window is snapped on the opposite side.
-  if (split_view_controller_->IsSplitViewModeActive()) {
+  if (split_view_controller_->InSplitViewMode()) {
     const int drag_position = IsCurrentScreenOrientationLandscape()
                                   ? location_in_screen.x()
                                   : location_in_screen.y();

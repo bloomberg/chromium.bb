@@ -35,11 +35,11 @@ class BluetoothRemoteGattDescriptorBlueZ
   device::BluetoothRemoteGattCharacteristic* GetCharacteristic() const override;
   device::BluetoothRemoteGattCharacteristic::Permissions GetPermissions()
       const override;
-  void ReadRemoteDescriptor(const ValueCallback& callback,
-                            const ErrorCallback& error_callback) override;
+  void ReadRemoteDescriptor(ValueCallback callback,
+                            ErrorCallback error_callback) override;
   void WriteRemoteDescriptor(const std::vector<uint8_t>& new_value,
-                             const base::Closure& callback,
-                             const ErrorCallback& error_callback) override;
+                             base::OnceClosure callback,
+                             ErrorCallback error_callback) override;
 
  private:
   friend class BluetoothRemoteGattCharacteristicBlueZ;
@@ -50,7 +50,7 @@ class BluetoothRemoteGattDescriptorBlueZ
 
   // Called by dbus:: on unsuccessful completion of a request to read or write
   // the descriptor value.
-  void OnError(const ErrorCallback& error_callback,
+  void OnError(ErrorCallback error_callback,
                const std::string& error_name,
                const std::string& error_message);
 

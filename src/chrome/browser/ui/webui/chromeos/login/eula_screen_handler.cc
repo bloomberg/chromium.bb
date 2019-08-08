@@ -14,9 +14,9 @@
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
-#include "chrome/browser/chromeos/login/screens/core_oobe_view.h"
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -26,6 +26,8 @@
 #include "url/gurl.h"
 
 namespace chromeos {
+
+constexpr StaticOobeScreenId EulaView::kScreenId;
 
 EulaScreenHandler::EulaScreenHandler(JSCallsContainer* js_calls_container,
                                      CoreOobeView* core_oobe_view)

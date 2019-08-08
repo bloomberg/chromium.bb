@@ -15,10 +15,10 @@ TEST(CSSParsingUtilsTest, BasicShapeUseCount) {
   Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
   Document& document = dummy_page_holder->GetDocument();
   WebFeature feature = WebFeature::kCSSBasicShape;
-  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
+  EXPECT_FALSE(document.IsUseCounted(feature));
   document.documentElement()->SetInnerHTMLFromString(
       "<style>span { shape-outside: circle(); }</style>");
-  EXPECT_TRUE(UseCounter::IsCounted(document, feature));
+  EXPECT_TRUE(document.IsUseCounted(feature));
 }
 
 }  // namespace blink

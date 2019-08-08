@@ -429,7 +429,7 @@ bool PolicyProvider::SetWebsiteSetting(
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
-    base::Value* value) {
+    std::unique_ptr<base::Value>&& value) {
   return false;
 }
 

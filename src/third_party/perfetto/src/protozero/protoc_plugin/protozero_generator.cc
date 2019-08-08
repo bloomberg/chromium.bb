@@ -21,10 +21,10 @@
 #include <set>
 #include <string>
 
-#include "google/protobuf/descriptor.h"
-#include "google/protobuf/io/printer.h"
-#include "google/protobuf/io/zero_copy_stream.h"
-#include "google/protobuf/stubs/strutil.h"
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/io/printer.h>
+#include <google/protobuf/io/zero_copy_stream.h>
+#include <google/protobuf/stubs/strutil.h>
 
 namespace protozero {
 
@@ -487,6 +487,13 @@ class GeneratorJob {
     stub_h_->Print(
         "Decoder(const uint8_t* data, size_t len) "
         ": TypedProtoDecoder(data, len) {}\n");
+    stub_h_->Print(
+        "explicit Decoder(const std::string& raw) : "
+        "TypedProtoDecoder(reinterpret_cast<const uint8_t*>(raw.data()), "
+        "raw.size()) {}\n");
+    stub_h_->Print(
+        "explicit Decoder(const ::protozero::ConstBytes& raw) : "
+        "TypedProtoDecoder(raw.data, raw.size) {}\n");
 
     for (int i = 0; i < message->field_count(); ++i) {
       const FieldDescriptor* field = message->field(i);

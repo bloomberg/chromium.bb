@@ -273,14 +273,14 @@ void MediaStreamUIProxy::ProcessAccessRequestResponse(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!response_callback_.is_null());
 
-  base::ResetAndReturn(&response_callback_).Run(devices, result);
+  std::move(response_callback_).Run(devices, result);
 }
 
 void MediaStreamUIProxy::ProcessStopRequestFromUI() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!stop_callback_.is_null());
 
-  base::ResetAndReturn(&stop_callback_).Run();
+  std::move(stop_callback_).Run();
 }
 
 void MediaStreamUIProxy::ProcessChangeSourceRequestFromUI() {

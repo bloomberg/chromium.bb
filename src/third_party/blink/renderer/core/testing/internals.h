@@ -74,6 +74,7 @@ class OriginTrialsTest;
 class Page;
 class Range;
 class RecordTest;
+class ScriptPromiseResolver;
 class ScrollState;
 class SequenceTest;
 class SerializedScriptValue;
@@ -102,7 +103,8 @@ class Internals final : public ScriptWrappable {
   bool isPreloadedBy(const String& url, Document*);
   bool isLoading(const String& url);
   bool isLoadingFromMemoryCache(const String& url);
-  int getResourcePriority(const String& url, Document*);
+
+  ScriptPromise getResourcePriority(ScriptState*, const String& url, Document*);
   String getResourceHeader(const String& url, const String& header, Document*);
 
   bool doesWindowHaveUrlFragment(DOMWindow*);
@@ -611,6 +613,8 @@ class Internals final : public ScriptWrappable {
                            const String& marker_type,
                            unsigned index,
                            ExceptionState&);
+  void ResolveResourcePriority(ScriptPromiseResolver*,
+                               int resource_load_priority);
   Member<InternalRuntimeFlags> runtime_flags_;
   Member<Document> document_;
 };

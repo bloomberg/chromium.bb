@@ -372,9 +372,8 @@ inline float ToFloat(v8::Isolate* isolate,
                      v8::Local<v8::Value> value,
                      ExceptionState& exception_state) {
   double double_value = ToDouble(isolate, value, exception_state);
-  // TODO(crbug.com/939598): These cases should throw a TypeError instead
-  // of returning Infinity; but before fixing that, we must ensure that
-  // ToFloat is not called in cases where ToDouble should be called instead.
+  if (exception_state.HadException())
+    return 0;
   using Limits = std::numeric_limits<float>;
   if (UNLIKELY(double_value > Limits::max()))
     return Limits::infinity();
@@ -555,6 +554,9 @@ MaybeSharedType ToMaybeShared(v8::Isolate* isolate,
 CORE_EXPORT Vector<String> GetOwnPropertyNames(v8::Isolate*,
                                                const v8::Local<v8::Object>&,
                                                ExceptionState&);
+
+v8::MicrotaskQueue* ToMicrotaskQueue(ExecutionContext*);
+v8::MicrotaskQueue* ToMicrotaskQueue(ScriptState*);
 
 }  // namespace blink
 

@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
@@ -220,6 +221,7 @@ public class LayoutManagerTest implements MockTabModelDelegate {
     @Feature({"Android-TabSwitcher"})
     @UiThreadTest
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @DisabledTest(message = "https://crbug.com/965250")
     public void testStack() throws Exception {
         initializeLayoutManagerPhone(3, 0);
         mManagerPhone.showOverview(true);

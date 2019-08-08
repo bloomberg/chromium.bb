@@ -5,7 +5,7 @@
  * found in the LICENSE file.
  */
 
-#include "SkTypes.h"  // Keep this before any #ifdef ...
+#include "include/core/SkTypes.h"
 #if defined(SK_BUILD_FOR_MAC) || defined(SK_BUILD_FOR_IOS)
 
 #ifdef SK_BUILD_FOR_MAC
@@ -19,51 +19,40 @@
 #include <CoreFoundation/CoreFoundation.h>
 #endif
 
-#include "mac/SkUniqueCFRef.h"
-#include "SkAdvancedTypefaceMetrics.h"
-#include "SkAutoMalloc.h"
-#include "SkCGUtils.h"
-#include "SkColorData.h"
-#include "SkDescriptor.h"
-#include "SkEndian.h"
-#include "SkFloatingPoint.h"
-#include "SkFontDescriptor.h"
-#include "SkFontMetrics.h"
-#include "SkFontMgr.h"
-#include "SkGlyph.h"
-#include "SkMakeUnique.h"
-#include "SkMaskGamma.h"
-#include "SkMathPriv.h"
-#include "SkMutex.h"
-#include "SkOTTable_OS_2.h"
-#include "SkOTUtils.h"
-#include "SkOnce.h"
-#include "SkPaint.h"
-#include "SkPath.h"
-#include "SkSFNTHeader.h"
-#include "SkStream.h"
-#include "SkString.h"
-#include "SkTemplates.h"
-#include "SkTo.h"
-#include "SkTypefaceCache.h"
-#include "SkTypeface_mac.h"
-#include "SkUTF.h"
-#include "SkUtils.h"
+#include "include/core/SkFontMetrics.h"
+#include "include/core/SkFontMgr.h"
+#include "include/core/SkPaint.h"
+#include "include/core/SkPath.h"
+#include "include/core/SkStream.h"
+#include "include/core/SkString.h"
+#include "include/ports/SkTypeface_mac.h"
+#include "include/private/SkColorData.h"
+#include "include/private/SkFloatingPoint.h"
+#include "include/private/SkMutex.h"
+#include "include/private/SkOnce.h"
+#include "include/private/SkTemplates.h"
+#include "include/private/SkTo.h"
+#include "include/utils/mac/SkCGUtils.h"
+#include "src/core/SkAdvancedTypefaceMetrics.h"
+#include "src/core/SkAutoMalloc.h"
+#include "src/core/SkDescriptor.h"
+#include "src/core/SkEndian.h"
+#include "src/core/SkFontDescriptor.h"
+#include "src/core/SkGlyph.h"
+#include "src/core/SkMakeUnique.h"
+#include "src/core/SkMaskGamma.h"
+#include "src/core/SkMathPriv.h"
+#include "src/core/SkTypefaceCache.h"
+#include "src/core/SkUtils.h"
+#include "src/sfnt/SkOTTable_OS_2.h"
+#include "src/sfnt/SkOTUtils.h"
+#include "src/sfnt/SkSFNTHeader.h"
+#include "src/utils/SkUTF.h"
+#include "src/utils/mac/SkUniqueCFRef.h"
 
 #include <dlfcn.h>
 
 #include <utility>
-
-// Experimental code to use a global lock whenever we access CG, to see if this reduces
-// crashes in Chrome
-#define USE_GLOBAL_MUTEX_FOR_CG_ACCESS
-
-#ifdef USE_GLOBAL_MUTEX_FOR_CG_ACCESS
-    SK_DECLARE_STATIC_MUTEX(gCGMutex);
-    #define AUTO_CG_LOCK()  SkAutoMutexAcquire amc(gCGMutex)
-#else
-    #define AUTO_CG_LOCK()
-#endif
 
 // Set to make glyph bounding boxes visible.
 #define SK_SHOW_TEXT_BLIT_COVERAGE 0
@@ -744,6 +733,15 @@ protected:
     std::unique_ptr<SkAdvancedTypefaceMetrics> onGetAdvancedMetrics() const override;
     void onCharsToGlyphs(const SkUnichar* chars, int count, SkGlyphID glyphs[]) const override;
     int onCountGlyphs() const override;
+    void getPostScriptGlyphNames(SkString*) const override {}
+    int onGetVariationDesignParameters(SkFontParameters::Variation::Axis parameters[],
+                                       int parameterCount) const override
+    {
+        return -1;
+    }
+    sk_sp<SkTypeface> onMakeClone(const SkFontArguments&) const override {
+        return nullptr;
+    }
 
     void* onGetCTFontRef() const override { return (void*)fFontRef.get(); }
 
@@ -978,8 +976,6 @@ SkScalerContext_Mac::SkScalerContext_Mac(sk_sp<SkTypeface_Mac> typeface,
         , fDoSubPosition(SkToBool(fRec.fFlags & kSubpixelPositioning_Flag))
 
 {
-    AUTO_CG_LOCK();
-
     CTFontRef ctFont = (CTFontRef)this->getTypeface()->internal_private_getCTFontRef();
     CFIndex numGlyphs = CTFontGetGlyphCount(ctFont);
     SkASSERT(numGlyphs >= 1 && numGlyphs <= 0xFFFF);
@@ -1130,8 +1126,6 @@ bool SkScalerContext_Mac::generateAdvance(SkGlyph* glyph) {
 }
 
 void SkScalerContext_Mac::generateMetrics(SkGlyph* glyph) {
-    AUTO_CG_LOCK();
-
     glyph->fMaskFormat = fRec.fMaskFormat;
 
     const CGGlyph cgGlyph = (CGGlyph) glyph->getGlyphID();
@@ -1208,7 +1202,7 @@ void SkScalerContext_Mac::generateMetrics(SkGlyph* glyph) {
     glyph->fHeight = SkToU16(skIBounds.height());
 }
 
-#include "SkColorData.h"
+#include "include/private/SkColorData.h"
 
 static constexpr uint8_t sk_pow2_table(size_t i) {
     return SkToU8(((i * i + 128) / 255));
@@ -1308,7 +1302,7 @@ void SkScalerContext_Mac::generateImage(const SkGlyph& glyph) {
     CGGlyph cgGlyph = SkTo<CGGlyph>(glyph.getGlyphID());
 
     // FIXME: lcd smoothed un-hinted rasterization unsupported.
-    bool requestSmooth = fRec.getHinting() != kNo_SkFontHinting;
+    bool requestSmooth = fRec.getHinting() != SkFontHinting::kNone;
 
     // Draw the glyph
     size_t cgRowBytes;
@@ -1396,8 +1390,6 @@ void SkScalerContext_Mac::generateImage(const SkGlyph& glyph) {
 #define kScaleForSubPixelPositionHinting (4.0f)
 
 bool SkScalerContext_Mac::generatePath(SkGlyphID glyph, SkPath* path) {
-    AUTO_CG_LOCK();
-
     SkScalar scaleX = SK_Scalar1;
     SkScalar scaleY = SK_Scalar1;
 
@@ -1451,8 +1443,6 @@ void SkScalerContext_Mac::generateFontMetrics(SkFontMetrics* metrics) {
     if (nullptr == metrics) {
         return;
     }
-
-    AUTO_CG_LOCK();
 
     CGRect theBounds = CTFontGetBoundingBox(fCTFont.get());
 
@@ -1579,9 +1569,45 @@ static void populate_glyph_to_unicode_slow(CTFontRef ctFont, CFIndex glyphCount,
     }
 }
 
+static constexpr uint16_t kPlaneSize = 1 << 13;
+
+static void get_plane_glyph_map(const uint8_t* bits,
+                                CTFontRef ctFont,
+                                CFIndex glyphCount,
+                                SkUnichar* glyphToUnicode,
+                                uint8_t planeIndex) {
+    SkUnichar planeOrigin = (SkUnichar)planeIndex << 16; // top half of codepoint.
+    for (uint16_t i = 0; i < kPlaneSize; i++) {
+        uint8_t mask = bits[i];
+        if (!mask) {
+            continue;
+        }
+        for (uint8_t j = 0; j < 8; j++) {
+            if (0 == (mask & ((uint8_t)1 << j))) {
+                continue;
+            }
+            uint16_t planeOffset = (i << 3) | j;
+            SkUnichar codepoint = planeOrigin | (SkUnichar)planeOffset;
+            uint16_t utf16[2] = {planeOffset, 0};
+            size_t count = 1;
+            if (planeOrigin != 0) {
+                count = SkUTF::ToUTF16(codepoint, utf16);
+            }
+            CGGlyph glyphs[2] = {0, 0};
+            if (CTFontGetGlyphsForCharacters(ctFont, utf16, glyphs, count)) {
+                SkASSERT(glyphs[1] == 0);
+                SkASSERT(glyphs[0] < glyphCount);
+                // CTFontCopyCharacterSet and CTFontGetGlyphsForCharacters seem to add 'support'
+                // for characters 0x9, 0xA, and 0xD mapping them to the glyph for character 0x20?
+                // Prefer mappings to codepoints at or above 0x20.
+                if (glyphToUnicode[glyphs[0]] < 0x20) {
+                    glyphToUnicode[glyphs[0]] = codepoint;
+                }
+            }
+        }
+    }
+}
 // Construct Glyph to Unicode table.
-// Unicode code points that require conjugate pairs in utf16 are not
-// supported.
 static void populate_glyph_to_unicode(CTFontRef ctFont, CFIndex glyphCount,
                                       SkUnichar* glyphToUnicode) {
     sk_bzero(glyphToUnicode, sizeof(SkUnichar) * glyphCount);
@@ -1596,33 +1622,36 @@ static void populate_glyph_to_unicode(CTFontRef ctFont, CFIndex glyphCount,
     if (!bitmap) {
         return;
     }
-    CFIndex length = CFDataGetLength(bitmap.get());
-    if (!length) {
+    CFIndex dataLength = CFDataGetLength(bitmap.get());
+    if (!dataLength) {
         return;
     }
-    if (length > 8192) {
-        // TODO: Add support for Unicode above 0xFFFF
-        // Consider only the BMP portion of the Unicode character points.
-        // The bitmap may contain other planes, up to plane 16.
-        // See http://developer.apple.com/library/ios/#documentation/CoreFoundation/Reference/CFCharacterSetRef/Reference/reference.html
-        length = 8192;
-    }
+    SkASSERT(dataLength >= kPlaneSize);
     const UInt8* bits = CFDataGetBytePtr(bitmap.get());
-    sk_bzero(glyphToUnicode, glyphCount * sizeof(SkUnichar));
-    for (int i = 0; i < length; i++) {
-        int mask = bits[i];
-        if (!mask) {
-            continue;
-        }
-        for (int j = 0; j < 8; j++) {
-            CGGlyph glyph;
-            UniChar unichar = static_cast<UniChar>((i << 3) + j);
-            if (mask & (1 << j) && CTFontGetGlyphsForCharacters(ctFont, &unichar, &glyph, 1)) {
-                if (glyphToUnicode[glyph] == 0) {
-                    glyphToUnicode[glyph] = unichar;
-                }
-            }
-        }
+
+    get_plane_glyph_map(bits, ctFont, glyphCount, glyphToUnicode, 0);
+    /*
+    A CFData object that specifies the bitmap representation of the Unicode
+    character points the for the new character set. The bitmap representation could
+    contain all the Unicode character range starting from BMP to Plane 16. The
+    first 8KiB (8192 bytes) of the data represent the BMP range. The BMP range 8KiB
+    can be followed by zero to sixteen 8KiB bitmaps, each prepended with the plane
+    index byte. For example, the bitmap representing the BMP and Plane 2 has the
+    size of 16385 bytes (8KiB for BMP, 1 byte index, and a 8KiB bitmap for Plane
+    2). The plane index byte, in this case, contains the integer value two.
+    */
+
+    if (dataLength <= kPlaneSize) {
+        return;
+    }
+    int extraPlaneCount = (dataLength - kPlaneSize) / (1 + kPlaneSize);
+    SkASSERT(dataLength == kPlaneSize + extraPlaneCount * (1 + kPlaneSize));
+    while (extraPlaneCount-- > 0) {
+        bits += kPlaneSize;
+        uint8_t planeIndex = *bits++;
+        SkASSERT(planeIndex >= 1);
+        SkASSERT(planeIndex <= 16);
+        get_plane_glyph_map(bits, ctFont, glyphCount, glyphToUnicode, planeIndex);
     }
 }
 
@@ -1639,7 +1668,6 @@ static void CFStringToSkString(CFStringRef src, SkString* dst) {
 }
 
 void SkTypeface_Mac::getGlyphToUnicodeMap(SkUnichar* dstArray) const {
-    AUTO_CG_LOCK();
     SkUniqueCFRef<CTFontRef> ctFont =
             ctfont_create_exact_copy(fFontRef.get(), CTFontGetUnitsPerEm(fFontRef.get()), nullptr);
     CFIndex glyphCount = CTFontGetGlyphCount(ctFont.get());
@@ -1647,8 +1675,6 @@ void SkTypeface_Mac::getGlyphToUnicodeMap(SkUnichar* dstArray) const {
 }
 
 std::unique_ptr<SkAdvancedTypefaceMetrics> SkTypeface_Mac::onGetAdvancedMetrics() const {
-
-    AUTO_CG_LOCK();
 
     SkUniqueCFRef<CTFontRef> ctFont =
             ctfont_create_exact_copy(fFontRef.get(), CTFontGetUnitsPerEm(fFontRef.get()), nullptr);
@@ -2213,7 +2239,7 @@ void SkTypeface_Mac::onFilterRec(SkScalerContextRec* rec) const {
         // The above turns off subpixel rendering, but the user requested it.
         // Normal hinting will cause the A8 masks to be generated from CoreGraphics subpixel masks.
         // See comments below for more details.
-        rec->setHinting(kNormal_SkFontHinting);
+        rec->setHinting(SkFontHinting::kNormal);
     }
 
     unsigned flagsWeDontSupport = SkScalerContext::kForceAutohinting_Flag  |
@@ -2227,14 +2253,12 @@ void SkTypeface_Mac::onFilterRec(SkScalerContextRec* rec) const {
     // Only two levels of hinting are supported.
     // kNo_Hinting means avoid CoreGraphics outline dilation (smoothing).
     // kNormal_Hinting means CoreGraphics outline dilation (smoothing) is allowed.
-    if (kSlight_SkFontHinting == rec->getHinting()) {
-        rec->setHinting(kNo_SkFontHinting);
-    } else if (kFull_SkFontHinting == rec->getHinting()) {
-        rec->setHinting(kNormal_SkFontHinting);
+    if (rec->getHinting() != SkFontHinting::kNone) {
+        rec->setHinting(SkFontHinting::kNormal);
     }
     // If smoothing has no effect, don't request it.
     if (smoothBehavior == SmoothBehavior::none) {
-        rec->setHinting(kNo_SkFontHinting);
+        rec->setHinting(SkFontHinting::kNone);
     }
 
     // FIXME: lcd smoothed un-hinted rasterization unsupported.
@@ -2259,11 +2283,11 @@ void SkTypeface_Mac::onFilterRec(SkScalerContextRec* rec) const {
         if (smoothBehavior == SmoothBehavior::subpixel) {
             //CoreGraphics creates 555 masks for smoothed text anyway.
             rec->fMaskFormat = SkMask::kLCD16_Format;
-            rec->setHinting(kNormal_SkFontHinting);
+            rec->setHinting(SkFontHinting::kNormal);
         } else {
             rec->fMaskFormat = SkMask::kA8_Format;
             if (smoothBehavior != SmoothBehavior::none) {
-                rec->setHinting(kNormal_SkFontHinting);
+                rec->setHinting(SkFontHinting::kNormal);
             }
         }
     }
@@ -2277,7 +2301,7 @@ void SkTypeface_Mac::onFilterRec(SkScalerContextRec* rec) const {
 
     // Unhinted A8 masks (those not derived from LCD masks) must respect SK_GAMMA_APPLY_TO_A8.
     // All other masks can use regular gamma.
-    if (SkMask::kA8_Format == rec->fMaskFormat && kNo_SkFontHinting == rec->getHinting()) {
+    if (SkMask::kA8_Format == rec->fMaskFormat && SkFontHinting::kNone == rec->getHinting()) {
 #ifndef SK_GAMMA_APPLY_TO_A8
         // SRGBTODO: Is this correct? Do we want contrast boost?
         rec->ignorePreBlend();
@@ -2390,7 +2414,7 @@ static bool find_desc_str(CTFontDescriptorRef desc, CFStringRef name, SkString* 
     return true;
 }
 
-#include "SkFontMgr.h"
+#include "include/core/SkFontMgr.h"
 
 static inline int sqr(int value) {
     SkASSERT(SkAbs32(value) < 0x7FFF);  // check for overflow

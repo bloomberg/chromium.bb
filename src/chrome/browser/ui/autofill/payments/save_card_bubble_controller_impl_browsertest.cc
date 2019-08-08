@@ -9,7 +9,6 @@
 #include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/ui/autofill/payments/save_card_ui.h"
 #include "chrome/browser/ui/browser.h"
@@ -19,8 +18,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
-#include "components/autofill/core/common/autofill_features.h"
-#include "components/autofill/core/common/autofill_payments_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace autofill {
@@ -31,11 +28,6 @@ class SaveCardBubbleControllerImplTest : public DialogBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     DialogBrowserTest::SetUpCommandLine(command_line);
-    scoped_feature_list_.InitWithFeatures(
-        // Enabled.
-        {features::kAutofillSaveCardSignInAfterLocalSave},
-        // Disabled.
-        {});
   }
 
   std::unique_ptr<base::DictionaryValue> GetTestLegalMessage() {
@@ -86,6 +78,8 @@ class SaveCardBubbleControllerImplTest : public DialogBrowserTest {
       bubble_type = BubbleType::SIGN_IN_PROMO;
     if (name.find("Manage") != std::string::npos)
       bubble_type = BubbleType::MANAGE_CARDS;
+    if (name.find("Failure") != std::string::npos)
+      bubble_type = BubbleType::FAILURE;
 
     switch (bubble_type) {
       case BubbleType::LOCAL_SAVE:
@@ -105,6 +99,9 @@ class SaveCardBubbleControllerImplTest : public DialogBrowserTest {
       case BubbleType::MANAGE_CARDS:
         controller_->ShowBubbleForManageCardsForTesting(test::GetCreditCard());
         break;
+      case BubbleType::FAILURE:
+        controller_->ShowBubbleForSaveCardFailureForTesting();
+        break;
       case BubbleType::INACTIVE:
         break;
     }
@@ -114,7 +111,6 @@ class SaveCardBubbleControllerImplTest : public DialogBrowserTest {
 
  private:
   SaveCardBubbleControllerImpl* controller_ = nullptr;
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SaveCardBubbleControllerImplTest);
 };
@@ -156,6 +152,11 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleControllerImplTest, InvokeUi_Promo) {
 // Invokes a bubble displaying the card just saved and an option to
 // manage cards.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleControllerImplTest, InvokeUi_Manage) {
+  ShowAndVerifyUi();
+}
+
+// Invokes a bubble displaying the card saving just failed.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleControllerImplTest, InvokeUi_Failure) {
   ShowAndVerifyUi();
 }
 

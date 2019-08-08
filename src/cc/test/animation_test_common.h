@@ -100,6 +100,12 @@ int AddAnimatedFilterToAnimation(Animation* animation,
                                  float end_brightness,
                                  KeyframeEffectId effect_id = 0);
 
+int AddAnimatedBackdropFilterToAnimation(Animation* animation,
+                                         double duration,
+                                         float start_invert,
+                                         float end_invert,
+                                         KeyframeEffectId effect_id = 0);
+
 int AddOpacityStepsToAnimation(Animation* animation,
                                double duration,
                                float start_opacity,

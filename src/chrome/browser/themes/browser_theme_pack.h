@@ -240,6 +240,9 @@ class BrowserThemePack : public CustomThemeSupplier {
                                      int frame_color_id,
                                      int source_color_id);
 
+  // Generates missing NTP related colors.
+  void GenerateMissingNtpColors();
+
   // Takes all the SkBitmaps in |images|, encodes them as PNGs and places
   // them in |reencoded_images|.
   void RepackImages(const ImageCache& images,

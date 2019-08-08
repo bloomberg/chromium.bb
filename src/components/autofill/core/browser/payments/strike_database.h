@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/leveldb_proto/public/proto_database.h"
+#include "components/leveldb_proto/public/proto_database_provider.h"
 
 namespace autofill {
 
@@ -49,7 +50,8 @@ class StrikeDatabase : public KeyedService {
 
   using StrikeDataProto = leveldb_proto::ProtoDatabase<StrikeData>;
 
-  explicit StrikeDatabase(const base::FilePath& database_dir);
+  StrikeDatabase(leveldb_proto::ProtoDatabaseProvider* db_provider,
+                 base::FilePath profile_path);
   ~StrikeDatabase() override;
 
   // Increases in-memory cache by |strikes_increase| and updates underlying
@@ -86,9 +88,6 @@ class StrikeDatabase : public KeyedService {
   // Cached StrikeDatabase entries.
   std::map<std::string, StrikeData> strike_map_cache_;
 
-  // Directory where the ProtoDatabase is intialized at.
-  const base::FilePath database_dir_;
-
   // Whether or not the ProtoDatabase database has been initialized and entries
   // have been loaded.
   bool database_initialized_ = false;
@@ -109,7 +108,7 @@ class StrikeDatabase : public KeyedService {
   friend class StrikeDatabaseTest;
   friend class StrikeDatabaseTester;
 
-  void OnDatabaseInit(bool success);
+  void OnDatabaseInit(leveldb_proto::Enums::InitStatus status);
 
   void OnDatabaseLoadKeysAndEntries(
       bool success,

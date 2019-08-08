@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 7118 tests; 6989 PASS, 129 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 7085 tests; 6988 PASS, 97 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS picture.title: 32 tests
 PASS picture.lang: 32 tests
 PASS picture.dir: 62 tests
@@ -185,39 +185,6 @@ PASS object.accessKey: 32 tests
 PASS object.tabIndex: 24 tests
 PASS object.data: 38 tests
 PASS object.type: 32 tests
-FAIL object.typeMustMatch: typeof IDL attribute assert_equals: expected "boolean" but got "undefined"
-FAIL object.typeMustMatch: IDL get with DOM attribute unset assert_equals: expected (boolean) false but got (undefined) undefined
-FAIL object.typeMustMatch: setAttribute() to "" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL object.typeMustMatch: setAttribute() to " foo " assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL object.typeMustMatch: setAttribute() to undefined assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL object.typeMustMatch: setAttribute() to null assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL object.typeMustMatch: setAttribute() to 7 assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL object.typeMustMatch: setAttribute() to 1.5 assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL object.typeMustMatch: setAttribute() to true assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL object.typeMustMatch: setAttribute() to false assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL object.typeMustMatch: setAttribute() to object "[object Object]" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL object.typeMustMatch: setAttribute() to NaN assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL object.typeMustMatch: setAttribute() to Infinity assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL object.typeMustMatch: setAttribute() to -Infinity assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL object.typeMustMatch: setAttribute() to "\0" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL object.typeMustMatch: setAttribute() to object "test-toString" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL object.typeMustMatch: setAttribute() to object "test-valueOf" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL object.typeMustMatch: setAttribute() to "typeMustMatch" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL object.typeMustMatch: IDL set to "" assert_equals: hasAttribute() expected false but got true
-FAIL object.typeMustMatch: IDL set to " foo " assert_equals: IDL get expected (boolean) true but got (string) " foo "
-FAIL object.typeMustMatch: IDL set to undefined assert_equals: hasAttribute() expected false but got true
-FAIL object.typeMustMatch: IDL set to null assert_equals: hasAttribute() expected false but got true
-FAIL object.typeMustMatch: IDL set to 7 assert_equals: IDL get expected (boolean) true but got (number) 7
-FAIL object.typeMustMatch: IDL set to 1.5 assert_equals: IDL get expected (boolean) true but got (number) 1.5
-PASS object.typeMustMatch: IDL set to true
-FAIL object.typeMustMatch: IDL set to false assert_equals: hasAttribute() expected false but got true
-FAIL object.typeMustMatch: IDL set to object "[object Object]" assert_equals: IDL get expected (boolean) true but got (object) object "[object Object]"
-FAIL object.typeMustMatch: IDL set to NaN assert_equals: hasAttribute() expected false but got true
-FAIL object.typeMustMatch: IDL set to Infinity assert_equals: IDL get expected (boolean) true but got (number) Infinity
-FAIL object.typeMustMatch: IDL set to -Infinity assert_equals: IDL get expected (boolean) true but got (number) -Infinity
-FAIL object.typeMustMatch: IDL set to "\0" assert_equals: IDL get expected (boolean) true but got (string) "\0"
-FAIL object.typeMustMatch: IDL set to object "test-toString" assert_equals: IDL get expected (boolean) true but got (object) object "test-toString"
-FAIL object.typeMustMatch: IDL set to object "test-valueOf" assert_equals: IDL get expected (boolean) true but got (object) object "test-valueOf"
 PASS object.name: 32 tests
 PASS object.useMap: 32 tests
 PASS object.width: 32 tests

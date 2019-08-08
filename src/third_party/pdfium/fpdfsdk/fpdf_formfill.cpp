@@ -12,11 +12,11 @@
 #include "core/fpdfapi/page/cpdf_page.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
+#include "core/fpdfapi/render/cpdf_occontext.h"
 #include "core/fpdfapi/render/cpdf_renderoptions.h"
 #include "core/fpdfdoc/cpdf_formcontrol.h"
 #include "core/fpdfdoc/cpdf_formfield.h"
 #include "core/fpdfdoc/cpdf_interactiveform.h"
-#include "core/fpdfdoc/cpdf_occontext.h"
 #include "core/fxge/cfx_defaultrenderdevice.h"
 #include "fpdfsdk/cpdfsdk_actionhandler.h"
 #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
@@ -280,9 +280,7 @@ FPDFPage_HasFormFieldAtPoint(FPDF_FORMHANDLE hHandle,
     if (pXFAAnnot->GetFormFieldType() == FormFieldType::kXFA)
       continue;
 
-    CFX_RectF rcBBox = pXFAAnnot->GetWidgetRect();
-    CFX_FloatRect rcWidget(rcBBox.left, rcBBox.top, rcBBox.left + rcBBox.width,
-                           rcBBox.top + rcBBox.height);
+    CFX_FloatRect rcWidget = pXFAAnnot->GetWidgetRect().ToFloatRect();
     rcWidget.Inflate(1.0f, 1.0f);
     if (rcWidget.Contains(CFX_PointF(static_cast<float>(page_x),
                                      static_cast<float>(page_y)))) {

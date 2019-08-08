@@ -4,6 +4,7 @@
 
 #include <objbase.h>
 
+#include "base/bind.h"
 #include "build/build_config.h"
 #include "content/public/browser/tts_platform.h"
 
@@ -99,7 +100,8 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
           << " volume=" << params.volume << " utterance='" << utterance << "'";
 
   tts->StopSpeaking();
-  tts->Speak(utterance_id, utterance, lang, voice, params);
+  tts->Speak(utterance_id, utterance, lang, voice, params,
+             base::BindOnce([](bool success) {}));
 
   return 0;
 }

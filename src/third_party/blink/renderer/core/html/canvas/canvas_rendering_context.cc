@@ -146,8 +146,6 @@ CanvasRenderingContext::ContextType CanvasRenderingContext::ContextTypeFromId(
     return kContextWebgl2Compute;
   if (id == "bitmaprenderer")
     return kContextImageBitmap;
-  if (id == "xrpresent")
-    return kContextXRPresent;
   if (id == "gpupresent" && RuntimeEnabledFeatures::WebGPUEnabled())
     return kContextGPUPresent;
   return kContextTypeUnknown;

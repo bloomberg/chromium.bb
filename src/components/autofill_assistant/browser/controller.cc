@@ -31,17 +31,9 @@ namespace autofill_assistant {
 
 namespace {
 
-// Time between two periodic script checks.
-static constexpr base::TimeDelta kPeriodicScriptCheckInterval =
-    base::TimeDelta::FromSeconds(1);
-
-// Number of script checks to run after a call to StartPeriodicScriptChecks.
-// This limit does not apply when in autostart mode.
-static constexpr int kPeriodicScriptCheckCount = 10;
-
 // The initial progress to set when autostarting and showing the "Loading..."
 // message.
-static constexpr int kAutostartInitialProgress = 10;
+static constexpr int kAutostartInitialProgress = 5;
 
 // Cookie experiment name.
 // TODO(crbug.com/806868): Introduce a dedicated experiment extra parameter to
@@ -52,6 +44,8 @@ static const char* const kCookieExperimentName = "EXP_COOKIE";
 // set when the cookie experiment is active.
 static const char* const kWebsiteVisitedBeforeParameterName =
     "WEBSITE_VISITED_BEFORE";
+// Parameter that allows setting the color of the overlay.
+static const char* const kOverlayColorParameterName = "OVERLAY_COLORS";
 
 static const char* const kTrueValue = "true";
 }  // namespace
@@ -67,12 +61,20 @@ Controller::Controller(content::WebContents* web_contents,
 
 Controller::~Controller() = default;
 
+const ClientSettings& Controller::GetSettings() {
+  return settings_;
+}
+
 const GURL& Controller::GetCurrentURL() {
   const GURL& last_committed = web_contents()->GetLastCommittedURL();
   if (!last_committed.is_empty())
     return last_committed;
 
-  return initial_url_;
+  return deeplink_url_;
+}
+
+const GURL& Controller::GetDeeplinkURL() {
+  return deeplink_url_;
 }
 
 Service* Controller::GetService() {
@@ -99,7 +101,8 @@ UiController* Controller::GetUiController() {
 
 WebController* Controller::GetWebController() {
   if (!web_controller_) {
-    web_controller_ = WebController::CreateForWebContents(web_contents());
+    web_controller_ =
+        WebController::CreateForWebContents(web_contents(), &settings_);
   }
   return web_controller_.get();
 }
@@ -286,12 +289,136 @@ void Controller::SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) {
   GetUiController()->OnPeekModeChanged(peek_mode);
 }
 
+const FormProto* Controller::GetForm() const {
+  return form_.get();
+}
+
+bool Controller::SetForm(
+    std::unique_ptr<FormProto> form,
+    base::RepeatingCallback<void(const FormProto::Result*)> callback) {
+  form_.reset();
+  form_result_.reset();
+  form_callback_ = base::DoNothing();
+
+  if (!form) {
+    GetUiController()->OnFormChanged(nullptr);
+    return true;
+  }
+
+  // Initialize form result. This will return false if the form is invalid or
+  // contains unsupported inputs.
+  auto form_result = std::make_unique<FormProto::Result>();
+  for (FormInputProto& input : *form->mutable_inputs()) {
+    FormInputProto::Result* result = form_result->add_input_results();
+    switch (input.input_type_case()) {
+      case FormInputProto::InputTypeCase::kCounter:
+        // Add the initial value of each counter into the form result.
+        for (const CounterInputProto::Counter& counter :
+             input.counter().counters()) {
+          result->mutable_counter()->add_values(counter.initial_value());
+        }
+        break;
+      case FormInputProto::InputTypeCase::kSelection: {
+        // Add the initial selected state of each choice into the form result.
+        bool has_selected = false;
+        for (const SelectionInputProto::Choice& choice :
+             input.selection().choices()) {
+          if (choice.selected()) {
+            if (has_selected && !input.selection().allow_multiple()) {
+              // Multiple choices are initially selected even though it is not
+              // allowed by the input.
+              return false;
+            }
+            has_selected = true;
+          }
+          result->mutable_selection()->add_selected(choice.selected());
+        }
+        break;
+      }
+      case FormInputProto::InputTypeCase::INPUT_TYPE_NOT_SET:
+        DVLOG(1) << "Encountered input with INPUT_TYPE_NOT_SET";
+        return false;
+        // Intentionally no default case to make compilation fail if a new value
+        // was added to the enum but not to this list.
+    }
+  }
+
+  // Form is valid.
+  form_ = std::move(form);
+  form_result_ = std::move(form_result);
+  form_callback_ = callback;
+
+  // Call the callback with initial result.
+  form_callback_.Run(form_result_.get());
+
+  GetUiController()->OnFormChanged(form_.get());
+  return true;
+}
+
+void Controller::SetCounterValue(int input_index,
+                                 int counter_index,
+                                 int value) {
+  if (!form_result_ || input_index < 0 ||
+      input_index >= form_result_->input_results_size()) {
+    NOTREACHED() << "Invalid input index: " << input_index;
+    return;
+  }
+
+  FormInputProto::Result* input_result =
+      form_result_->mutable_input_results(input_index);
+  if (!input_result->has_counter() || counter_index < 0 ||
+      counter_index >= input_result->counter().values_size()) {
+    NOTREACHED() << "Invalid counter index: " << counter_index;
+    return;
+  }
+
+  input_result->mutable_counter()->set_values(counter_index, value);
+  form_callback_.Run(form_result_.get());
+}
+
+void Controller::SetChoiceSelected(int input_index,
+                                   int choice_index,
+                                   bool selected) {
+  if (!form_result_ || input_index < 0 ||
+      input_index >= form_result_->input_results_size()) {
+    NOTREACHED() << "Invalid input index: " << input_index;
+    return;
+  }
+
+  FormInputProto::Result* input_result =
+      form_result_->mutable_input_results(input_index);
+  if (!input_result->has_selection() || choice_index < 0 ||
+      choice_index >= input_result->selection().selected_size()) {
+    NOTREACHED() << "Invalid choice index: " << choice_index;
+    return;
+  }
+
+  input_result->mutable_selection()->set_selected(choice_index, selected);
+  form_callback_.Run(form_result_.get());
+}
+
 bool Controller::GetResizeViewport() {
   return resize_viewport_;
 }
 
 ConfigureBottomSheetProto::PeekMode Controller::GetPeekMode() {
   return peek_mode_;
+}
+
+void Controller::SetOverlayColors(std::unique_ptr<OverlayColors> colors) {
+  overlay_colors_ = std::move(colors);
+  if (overlay_colors_) {
+    GetUiController()->OnOverlayColorsChanged(*overlay_colors_);
+  } else {
+    OverlayColors default_colors;
+    GetUiController()->OnOverlayColorsChanged(default_colors);
+  }
+}
+
+void Controller::GetOverlayColors(OverlayColors* colors) const {
+  if (!overlay_colors_)
+    return;
+  *colors = *overlay_colors_;
 }
 
 void Controller::ReportNavigationStateChanged() {
@@ -348,7 +475,7 @@ void Controller::GetOrCheckScripts() {
 }
 
 void Controller::StartPeriodicScriptChecks() {
-  periodic_script_check_count_ = kPeriodicScriptCheckCount;
+  periodic_script_check_count_ = settings_.periodic_script_check_count;
   // If periodic checks are running, setting periodic_script_check_count_ keeps
   // them running longer.
   if (periodic_script_check_scheduled_)
@@ -358,7 +485,7 @@ void Controller::StartPeriodicScriptChecks() {
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&Controller::OnPeriodicScriptCheck,
                      weak_ptr_factory_.GetWeakPtr()),
-      kPeriodicScriptCheckInterval);
+      settings_.periodic_script_check_interval);
 }
 
 void Controller::StopPeriodicScriptChecks() {
@@ -391,7 +518,7 @@ void Controller::OnPeriodicScriptCheck() {
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&Controller::OnPeriodicScriptCheck,
                      weak_ptr_factory_.GetWeakPtr()),
-      kPeriodicScriptCheckInterval);
+      settings_.periodic_script_check_interval);
 }
 
 void Controller::OnGetScripts(const GURL& url,
@@ -420,6 +547,8 @@ void Controller::OnGetScripts(const GURL& url,
                  Metrics::GET_SCRIPTS_UNPARSABLE);
     return;
   }
+  if (response_proto.has_client_settings())
+    settings_.UpdateFromProto(response_proto.client_settings());
 
   std::vector<std::unique_ptr<Script>> scripts;
   for (const auto& script_proto : response_proto.scripts()) {
@@ -565,7 +694,7 @@ void Controller::OnGetCookie(bool has_cookie) {
     return;
   }
   GetWebController()->SetCookie(
-      initial_url_.host(),
+      deeplink_url_.host(),
       base::BindOnce(&Controller::OnSetCookie,
                      // WebController is owned by Controller.
                      base::Unretained(this)));
@@ -579,19 +708,36 @@ void Controller::OnSetCookie(bool result) {
 void Controller::FinishStart() {
   started_ = true;
   if (allow_autostart_) {
-    MaybeSetInitialDetails();
     SetStatusMessage(
         l10n_util::GetStringFUTF8(IDS_AUTOFILL_ASSISTANT_LOADING,
-                                  base::UTF8ToUTF16(initial_url_.host())));
+                                  base::UTF8ToUTF16(deeplink_url_.host())));
     SetProgress(kAutostartInitialProgress);
   }
   GetOrCheckScripts();
 }
 
-void Controller::MaybeSetInitialDetails() {
+void Controller::InitFromParameters() {
   auto details = std::make_unique<Details>();
   if (details->UpdateFromParameters(trigger_context_->script_parameters))
     SetDetails(std::move(details));
+
+  const auto iter =
+      trigger_context_->script_parameters.find(kOverlayColorParameterName);
+  if (iter != trigger_context_->script_parameters.end()) {
+    std::unique_ptr<OverlayColors> colors = std::make_unique<OverlayColors>();
+    std::vector<std::string> color_strings = base::SplitString(
+        iter->second, ":", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+    if (color_strings.size() > 0) {
+      colors->background = color_strings[0];
+    }
+    if (color_strings.size() > 1) {
+      colors->highlight_border = color_strings[1];
+    }
+    // Ignore other colors, to allow future versions of the client to support
+    // setting more colors.
+
+    SetOverlayColors(std::move(colors));
+  }
 }
 
 bool Controller::NeedsUI() const {
@@ -599,14 +745,15 @@ bool Controller::NeedsUI() const {
          state_ != AutofillAssistantState::STOPPED;
 }
 
-void Controller::Start(const GURL& initial_url,
+void Controller::Start(const GURL& deeplink_url,
                        std::unique_ptr<TriggerContext> trigger_context) {
   if (state_ != AutofillAssistantState::INACTIVE) {
     NOTREACHED();
     return;
   }
   trigger_context_ = std::move(trigger_context);
-  initial_url_ = initial_url;
+  InitFromParameters();
+  deeplink_url_ = deeplink_url;
   EnterState(AutofillAssistantState::STARTING);
   client_->ShowUI();
   if (IsCookieExperimentEnabled()) {
@@ -638,7 +785,7 @@ void Controller::OnScriptSelected(const std::string& script_path) {
 }
 
 void Controller::UpdateTouchableArea() {
-  touchable_element_area()->UpdatePositions();
+  touchable_element_area()->Update();
 }
 
 void Controller::OnUserInteractionInsideTouchableArea() {
@@ -646,8 +793,35 @@ void Controller::OnUserInteractionInsideTouchableArea() {
   StartPeriodicScriptChecks();
 }
 
+std::string Controller::GetDebugContext() {
+  base::Value dict(base::Value::Type::DICTIONARY);
+
+  dict.SetKey("status", base::Value(status_message_));
+  if (trigger_context_) {
+    std::vector<base::Value> parameters_js;
+    for (const auto& entry : trigger_context_->script_parameters) {
+      base::Value parameter_js = base::Value(base::Value::Type::DICTIONARY);
+      parameter_js.SetKey(entry.first, base::Value(entry.second));
+      parameters_js.push_back(std::move(parameter_js));
+    }
+    dict.SetKey("parameters", base::Value(parameters_js));
+  }
+  dict.SetKey("scripts", script_tracker()->GetDebugContext());
+
+  if (details_)
+    dict.SetKey("details", details_->GetDebugContext());
+
+  std::string output_js;
+  base::JSONWriter::Write(dict, &output_js);
+  return output_js;
+}
+
 const PaymentRequestOptions* Controller::GetPaymentRequestOptions() const {
   return payment_request_options_.get();
+}
+
+const PaymentInformation* Controller::GetPaymentRequestInformation() const {
+  return payment_request_info_.get();
 }
 
 void Controller::OnPaymentRequestContinueButtonClicked() {
@@ -672,6 +846,8 @@ void Controller::SetShippingAddress(
     return;
 
   payment_request_info_->shipping_address = std::move(address);
+  GetUiController()->OnPaymentRequestInformationChanged(
+      payment_request_info_.get());
   UpdatePaymentRequestActions();
 }
 
@@ -681,6 +857,8 @@ void Controller::SetBillingAddress(
     return;
 
   payment_request_info_->billing_address = std::move(address);
+  GetUiController()->OnPaymentRequestInformationChanged(
+      payment_request_info_.get());
   UpdatePaymentRequestActions();
 }
 
@@ -693,6 +871,8 @@ void Controller::SetContactInfo(std::string name,
   payment_request_info_->payer_name = name;
   payment_request_info_->payer_phone = phone;
   payment_request_info_->payer_email = email;
+  GetUiController()->OnPaymentRequestInformationChanged(
+      payment_request_info_.get());
   UpdatePaymentRequestActions();
 }
 
@@ -701,6 +881,8 @@ void Controller::SetCreditCard(std::unique_ptr<autofill::CreditCard> card) {
     return;
 
   payment_request_info_->card = std::move(card);
+  GetUiController()->OnPaymentRequestInformationChanged(
+      payment_request_info_.get());
   UpdatePaymentRequestActions();
 }
 
@@ -711,6 +893,8 @@ void Controller::SetTermsAndConditions(
 
   payment_request_info_->terms_and_conditions = terms_and_conditions;
   UpdatePaymentRequestActions();
+  GetUiController()->OnPaymentRequestInformationChanged(
+      payment_request_info_.get());
 }
 
 void Controller::UpdatePaymentRequestActions() {
@@ -734,15 +918,20 @@ void Controller::UpdatePaymentRequestActions() {
   bool payment_method_ok = !payment_request_options_->request_payment_method ||
                            payment_request_info_->card;
 
-  bool terms_ok = payment_request_info_->terms_and_conditions != NOT_SELECTED;
+  bool terms_ok = payment_request_info_->terms_and_conditions != NOT_SELECTED ||
+                  !payment_request_options_->request_terms_and_conditions;
 
   bool continue_button_enabled =
       contact_info_ok && shipping_address_ok && payment_method_ok && terms_ok;
 
   auto chips = std::make_unique<std::vector<Chip>>();
   chips->emplace_back();
-  chips->back().text =
-      l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_PAYMENT_INFO_CONFIRM);
+  if (!payment_request_options_->confirm_button_text.empty()) {
+    chips->back().text = payment_request_options_->confirm_button_text;
+  } else {
+    chips->back().text =
+        l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_PAYMENT_INFO_CONFIRM);
+  }
   chips->back().type = HIGHLIGHTED_ACTION;
   chips->back().disabled = !continue_button_enabled;
   if (continue_button_enabled) {
@@ -757,6 +946,11 @@ void Controller::UpdatePaymentRequestActions() {
 void Controller::GetTouchableArea(std::vector<RectF>* area) const {
   if (touchable_element_area_)
     touchable_element_area_->GetRectangles(area);
+}
+
+void Controller::GetVisualViewport(RectF* visual_viewport) const {
+  if (touchable_element_area_)
+    touchable_element_area_->GetVisualViewport(visual_viewport);
 }
 
 void Controller::OnFatalError(const std::string& error_message,
@@ -815,12 +1009,9 @@ void Controller::OnRunnableScriptsChanged(
   // Update the set of scripts in the UI.
   auto chips = std::make_unique<std::vector<Chip>>();
   for (const auto& script : runnable_scripts) {
-    if (!script.autostart &&
-        (!script.name.empty() || script.chip_icon != ChipIcon::NO_ICON)) {
-      chips->emplace_back();
-      chips->back().text = script.name;
-      chips->back().type = script.chip_type;
-      chips->back().icon = script.chip_icon;
+    if (!script.autostart && (!script.chip.text().empty() ||
+                              script.chip.icon() != ChipIcon::NO_ICON)) {
+      chips->emplace_back(script.chip);
       chips->back().callback =
           base::BindOnce(&Controller::OnScriptSelected,
                          weak_ptr_factory_.GetWeakPtr(), script.path);
@@ -935,8 +1126,9 @@ bool Controller::IsCookieExperimentEnabled() const {
          iter->second == "1";
 }
 
-void Controller::OnTouchableAreaChanged(const std::vector<RectF>& areas) {
-  GetUiController()->OnTouchableAreaChanged(areas);
+void Controller::OnTouchableAreaChanged(const RectF& visual_viewport,
+                                        const std::vector<RectF>& areas) {
+  GetUiController()->OnTouchableAreaChanged(visual_viewport, areas);
 }
 
 void Controller::SetPaymentRequestOptions(
@@ -948,11 +1140,18 @@ void Controller::SetPaymentRequestOptions(
 
   if (options) {
     payment_request_info_ = std::make_unique<PaymentInformation>();
+
+    // TODO(crbug.com/806868): set initial state according to proto.
+    payment_request_info_->terms_and_conditions =
+        options->initial_terms_and_conditions;
   }
 
   payment_request_options_ = std::move(options);
   UpdatePaymentRequestActions();
-  GetUiController()->OnPaymentRequestChanged(payment_request_options_.get());
+  GetUiController()->OnPaymentRequestOptionsChanged(
+      payment_request_options_.get());
+  GetUiController()->OnPaymentRequestInformationChanged(
+      payment_request_info_.get());
 }
 
 ElementArea* Controller::touchable_element_area() {

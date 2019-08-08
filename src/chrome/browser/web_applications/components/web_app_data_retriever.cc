@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/installable/installable_data.h"
 #include "chrome/browser/installable/installable_manager.h"
+#include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/web_applications/components/web_app_icon_downloader.h"
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
@@ -69,6 +70,7 @@ void WebAppDataRetriever::GetWebApplicationInfo(
 
 void WebAppDataRetriever::CheckInstallabilityAndRetrieveManifest(
     content::WebContents* web_contents,
+    bool bypass_service_worker_check,
     CheckInstallabilityCallback callback) {
   InstallableManager* installable_manager =
       InstallableManager::FromWebContents(web_contents);
@@ -79,7 +81,9 @@ void WebAppDataRetriever::CheckInstallabilityAndRetrieveManifest(
   params.check_eligibility = true;
   params.valid_primary_icon = true;
   params.valid_manifest = true;
-  params.has_worker = true;
+  params.check_webapp_manifest_display = false;
+  // Do not wait for a service worker if it doesn't exist.
+  params.has_worker = !bypass_service_worker_check;
   // Do not wait_for_worker. OnDidPerformInstallableCheck is always invoked.
   installable_manager->GetData(
       params,
@@ -89,17 +93,21 @@ void WebAppDataRetriever::CheckInstallabilityAndRetrieveManifest(
 
 void WebAppDataRetriever::GetIcons(content::WebContents* web_contents,
                                    const std::vector<GURL>& icon_urls,
-                                   bool skip_page_fav_icons,
+                                   bool skip_page_favicons,
+                                   WebappInstallSource install_source,
                                    GetIconsCallback callback) {
-  DCHECK(!icon_urls.empty());
+  const char* https_status_code_class_histogram_name =
+      install_source == WebappInstallSource::SYNC
+          ? "WebApp.Icon.HttpStatusCodeClassOnSync"
+          : "WebApp.Icon.HttpStatusCodeClassOnCreate";
 
   // TODO(loyso): Refactor WebAppIconDownloader: crbug.com/907296.
   icon_downloader_ = std::make_unique<WebAppIconDownloader>(
-      web_contents, icon_urls, "WebApp.Icon.HttpStatusCodeClassOnCreate",
+      web_contents, icon_urls, https_status_code_class_histogram_name,
       base::BindOnce(&WebAppDataRetriever::OnIconsDownloaded,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 
-  if (skip_page_fav_icons)
+  if (skip_page_favicons)
     icon_downloader_->SkipPageFavicons();
 
   icon_downloader_->Start();
@@ -136,11 +144,12 @@ void WebAppDataRetriever::OnGetWebApplicationInfoFailed() {
 void WebAppDataRetriever::OnDidPerformInstallableCheck(
     CheckInstallabilityCallback callback,
     const InstallableData& data) {
+  DCHECK(data.manifest);
   DCHECK(data.manifest_url.is_valid() || data.manifest->IsEmpty());
 
   const bool is_installable = data.errors.empty();
 
-  std::move(callback).Run(*data.manifest, is_installable);
+  std::move(callback).Run(*data.manifest, data.valid_manifest, is_installable);
 }
 
 void WebAppDataRetriever::OnIconsDownloaded(GetIconsCallback callback,

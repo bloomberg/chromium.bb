@@ -15,8 +15,6 @@ class HTMLLinkElement;
 
 class LinkManifest final : public LinkResource {
  public:
-  static LinkManifest* Create(HTMLLinkElement* owner);
-
   explicit LinkManifest(HTMLLinkElement* owner);
   ~LinkManifest() override;
 

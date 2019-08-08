@@ -47,9 +47,11 @@ _cronet_deps = [
   "//components/cronet/native:cronet_native_impl",
   "//components/grpc_support",
   "//components/prefs:prefs",
-  "//ios/net:net",
+  "//ios/net",
+  "//ios/net:network_protocol",
   "//ios/web/public:user_agent",
-  "//ios/web/public/global_state",
+  "//ios/web/public/init:global_state",
+  "//ios/web/init:global_state",
   "//net",
   "//url",
 ]
@@ -85,7 +87,8 @@ source_set("cronet_sources") {
 source_set("cronet_sources_with_global_state") {
   deps = [
     "//base",
-    "//ios/web/public/global_state",
+    "//ios/web/init:global_state",
+    "//ios/web/public/init:global_state",
   ]
 
   public_deps = [
@@ -384,7 +387,7 @@ if (additional_toolchains == [] || current_toolchain == default_toolchain) {
     }
   }
 
-  group("cronet_package") {
+  group("cronet_package_ios") {
     deps = [
       ":cronet_dsym_archive",
       ":cronet_package_copy",

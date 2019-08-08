@@ -226,7 +226,7 @@ public class PartnerBookmarksReader {
             if (mFaviconThrottle == null) {
                 // Initialize the throttle here since we need to load shared preferences on the
                 // background thread as well.
-                mFaviconThrottle = new PartnerBookmarksFaviconThrottle(mContext);
+                mFaviconThrottle = new PartnerBookmarksFaviconThrottle();
             }
             PartnerBookmark.BookmarkIterator bookmarkIterator =
                     AppHooks.get().getPartnerBookmarkIterator();

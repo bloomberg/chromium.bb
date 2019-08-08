@@ -43,6 +43,8 @@ class ContentCaptureReceiverManager : public content::WebContentsObserver,
   // The methods called by ContentCaptureReceiver.
   void DidCaptureContent(ContentCaptureReceiver* content_capture_receiver,
                          const ContentCaptureData& data);
+  void DidUpdateContent(ContentCaptureReceiver* content_capture_receiver,
+                        const ContentCaptureData& data);
   void DidRemoveContent(ContentCaptureReceiver* content_capture_receiver,
                         const std::vector<int64_t>& data);
   void DidRemoveSession(ContentCaptureReceiver* content_capture_receiver);
@@ -62,6 +64,10 @@ class ContentCaptureReceiverManager : public content::WebContentsObserver,
   // received.
   virtual void DidCaptureContent(const ContentCaptureSession& parent_session,
                                  const ContentCaptureData& data) = 0;
+  // Invoked when the updated content |data| from the |parent_session| was
+  // received.
+  virtual void DidUpdateContent(const ContentCaptureSession& parent_session,
+                                const ContentCaptureData& data) = 0;
   // Invoked when the list of content |ids| of the given |session| was removed.
   virtual void DidRemoveContent(const ContentCaptureSession& session,
                                 const std::vector<int64_t>& ids) = 0;
@@ -78,6 +84,13 @@ class ContentCaptureReceiverManager : public content::WebContentsObserver,
   void BuildContentCaptureSession(
       ContentCaptureReceiver* content_capture_receiver,
       bool ancestor_only,
+      ContentCaptureSession* session);
+
+  // Builds ContentCaptureSession for |content_capture_receiver| into |session|,
+  // return true if succeed, this method returns the session that has been
+  // reported and shall be used for removing session.
+  bool BuildContentCaptureSessionLastSeen(
+      ContentCaptureReceiver* content_capture_receiver,
       ContentCaptureSession* session);
 
   ContentCaptureReceiver* ContentCaptureReceiverForFrame(

@@ -652,7 +652,7 @@ class DirectoryItem extends cr.ui.TreeItem {
     ejectButton.addEventListener('down', (event) => {
       event.stopPropagation();
     });
-    ejectButton.className = 'root-eject';
+    ejectButton.className = 'root-eject align-right-icon';
     ejectButton.setAttribute('aria-label', str('UNMOUNT_DEVICE_BUTTON_LABEL'));
     ejectButton.setAttribute('tabindex', '0');
     ejectButton.addEventListener('click', (event) => {
@@ -664,7 +664,14 @@ class DirectoryItem extends cr.ui.TreeItem {
       command.execute(this);
     });
     rowElement.appendChild(ejectButton);
+    // Mark the row as ejectable (for CSS styling positioning).
+    rowElement.classList.add('ejectable');
 
+    // Disable paper-ripple on this rowElement, crbug.com/965382.
+    const rowRipple = rowElement.querySelector('paper-ripple');
+    if (rowRipple) {
+      rowRipple.setAttribute('style', 'visibility:hidden');
+    }
     // Add paper-ripple effect on the eject button.
     const ripple = cr.doc.createElement('paper-ripple');
     ripple.setAttribute('fit', '');
@@ -1566,6 +1573,74 @@ class ShortcutItem extends cr.ui.TreeItem {
   }
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+// AndroidAppItem
+
+/**
+ * A TreeItem which represents an Android picker app.
+ * Android app items are displayed as top-level children of DirectoryTree.
+ */
+class AndroidAppItem extends cr.ui.TreeItem {
+  /**
+   * @param {!NavigationModelAndroidAppItem} modelItem NavigationModelItem of
+   *     this volume.
+   * @param {!DirectoryTree} tree Current tree, which contains this item.
+   */
+  constructor(modelItem, tree) {
+    super();
+    // Get the original label id defined by TreeItem, before overwriting
+    // prototype.
+    const labelId = this.labelElement.id;
+    this.__proto__ = AndroidAppItem.prototype;
+
+    /** @private {!DirectoryTree} */
+    this.parentTree_ = tree;
+
+    /** @private {!NavigationModelAndroidAppItem} */
+    this.modelItem_ = modelItem;
+
+    this.innerHTML = TREE_ITEM_INNER_HTML;
+    this.labelElement.id = labelId;
+
+    /** @public {string} */
+    this.label = modelItem.androidApp.name;
+
+    const appIcon = this.querySelector('.icon');
+    appIcon.classList.add('item-icon');
+    if (modelItem.androidApp.iconSet) {
+      const backgroundImage =
+          util.iconSetToCSSBackgroundImageValue(modelItem.androidApp.iconSet);
+      if (backgroundImage !== 'none') {
+        appIcon.setAttribute('style', 'background-image: ' + backgroundImage);
+      }
+    }
+
+    const externalLinkIcon = cr.doc.createElement('span');
+    externalLinkIcon.className = 'external-link-icon align-right-icon';
+    this.rowElement.appendChild(externalLinkIcon);
+  }
+
+  /**
+   * Invoked when the tree item is clicked.
+   *
+   * @param {Event} e Click event.
+   * @override
+   */
+  handleClick(e) {
+    chrome.fileManagerPrivate.selectAndroidPickerApp(
+        this.modelItem_.androidApp, () => {
+          if (chrome.runtime.lastError) {
+            console.error(
+                'selectAndroidPickerApp error: ',
+                chrome.runtime.lastError.message);
+          } else {
+            window.close();
+          }
+        });
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // FakeItem
 
@@ -1921,24 +1996,6 @@ class DirectoryTree extends cr.ui.Tree {
   }
 
   /**
-   * Invoked when an item in the tree gets focus.
-   * @param {!Event} e Event.
-   * @private
-   */
-  onFocus_(e) {
-    if (this.selectedItem && this.selectedItem.labelElement) {
-      // Grab the current location to check if it needs to move
-      const element = this.selectedItem.labelElement;
-      const originalPos = element.getBoundingClientRect();
-      element.scrollIntoViewIfNeeded();
-      const newPos = element.getBoundingClientRect();
-      if (newPos.x !== originalPos.x || newPos.y !== originalPos.y) {
-        element.scrollIntoView({inline: 'start'});
-      }
-    }
-  }
-
-  /**
    * Select the item corresponding to the given entry.
    * @param {!DirectoryEntry|!FilesAppDirEntry} entry The directory entry to be
    *     selected. Can be a fake.
@@ -2240,6 +2297,10 @@ DirectoryTree.createDirectoryItem = (modelItem, tree) => {
       return new EntryListItem(
           rootType,
           /** @type {!NavigationModelFakeItem} */ (modelItem), tree);
+      break;
+    case NavigationModelItemType.ANDROID_APP:
+      return new AndroidAppItem(
+          /** @type {!NavigationModelAndroidAppItem} */ (modelItem), tree);
       break;
   }
   assertNotReached(`No DirectoryItem model: "${modelItem.type}"`);

@@ -69,8 +69,10 @@ const char kNoRid[] = "";
 const char kNoMid[] = "";
 
 using ::testing::_;
+using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
+using ::testing::Field;
 using ::testing::Invoke;
 using ::testing::SizeIs;
 
@@ -152,7 +154,7 @@ class MockTransportSequenceNumberAllocator
 
 class MockSendSideDelayObserver : public SendSideDelayObserver {
  public:
-  MOCK_METHOD3(SendSideDelayUpdated, void(int, int, uint32_t));
+  MOCK_METHOD4(SendSideDelayUpdated, void(int, int, uint64_t, uint32_t));
 };
 
 class MockSendPacketObserver : public SendPacketObserver {
@@ -162,8 +164,7 @@ class MockSendPacketObserver : public SendPacketObserver {
 
 class MockTransportFeedbackObserver : public TransportFeedbackObserver {
  public:
-  MOCK_METHOD4(AddPacket,
-               void(uint32_t, uint16_t, size_t, const PacedPacketInfo&));
+  MOCK_METHOD1(OnAddPacket, void(const RtpPacketSendInfo&));
   MOCK_METHOD1(OnTransportFeedback, void(const rtcp::TransportFeedback&));
   MOCK_CONST_METHOD0(GetTransportFeedbackVector, std::vector<PacketFeedback>());
 };
@@ -396,8 +397,14 @@ TEST_P(RtpSenderTestWithoutPacer,
                  : sizeof(kPayloadData);
 
   EXPECT_CALL(feedback_observer_,
-              AddPacket(rtp_sender_->SSRC(), kTransportSequenceNumber,
-                        expected_bytes, PacedPacketInfo()))
+              OnAddPacket(AllOf(
+                  Field(&RtpPacketSendInfo::ssrc, rtp_sender_->SSRC()),
+                  Field(&RtpPacketSendInfo::transport_sequence_number,
+                        kTransportSequenceNumber),
+                  Field(&RtpPacketSendInfo::rtp_sequence_number,
+                        rtp_sender_->SequenceNumber()),
+                  Field(&RtpPacketSendInfo::length, expected_bytes),
+                  Field(&RtpPacketSendInfo::pacing_info, PacedPacketInfo()))))
       .Times(1);
   EXPECT_CALL(mock_overhead_observer,
               OnOverheadChanged(kRtpOverheadBytesPerPacket))
@@ -424,8 +431,13 @@ TEST_P(RtpSenderTestWithoutPacer, SendsPacketsWithTransportSequenceNumber) {
       .Times(1);
 
   EXPECT_CALL(feedback_observer_,
-              AddPacket(rtp_sender_->SSRC(), kTransportSequenceNumber, _,
-                        PacedPacketInfo()))
+              OnAddPacket(AllOf(
+                  Field(&RtpPacketSendInfo::ssrc, rtp_sender_->SSRC()),
+                  Field(&RtpPacketSendInfo::transport_sequence_number,
+                        kTransportSequenceNumber),
+                  Field(&RtpPacketSendInfo::rtp_sequence_number,
+                        rtp_sender_->SequenceNumber()),
+                  Field(&RtpPacketSendInfo::pacing_info, PacedPacketInfo()))))
       .Times(1);
 
   SendGenericPacket();
@@ -503,20 +515,22 @@ TEST_P(RtpSenderTestWithoutPacer, OnSendSideDelayUpdated) {
   rtp_sender_->SetSSRC(kSsrc);
   PlayoutDelayOracle playout_delay_oracle;
   RTPSenderVideo rtp_sender_video(&fake_clock_, rtp_sender_.get(), nullptr,
-                                  &playout_delay_oracle, nullptr, false,
+                                  &playout_delay_oracle, nullptr, false, false,
                                   FieldTrialBasedConfig());
 
   const uint8_t kPayloadType = 127;
   const char payload_name[] = "GENERIC";
 
-  rtp_sender_video.RegisterPayloadType(kPayloadType, payload_name);
+  rtp_sender_video.RegisterPayloadType(kPayloadType, payload_name,
+                                       /*raw_payload=*/false);
 
   const uint32_t kCaptureTimeMsToRtpTimestamp = 90;  // 90 kHz clock
   RTPVideoHeader video_header;
 
-  // Send packet with 10 ms send-side delay. The average and max should be 10
-  // ms.
-  EXPECT_CALL(send_side_delay_observer_, SendSideDelayUpdated(10, 10, kSsrc))
+  // Send packet with 10 ms send-side delay. The average, max and total should
+  // be 10 ms.
+  EXPECT_CALL(send_side_delay_observer_,
+              SendSideDelayUpdated(10, 10, 10, kSsrc))
       .Times(1);
   int64_t capture_time_ms = fake_clock_.TimeInMilliseconds();
   fake_clock_.AdvanceTimeMilliseconds(10);
@@ -526,9 +540,10 @@ TEST_P(RtpSenderTestWithoutPacer, OnSendSideDelayUpdated) {
       kPayloadData, sizeof(kPayloadData), nullptr, &video_header,
       kDefaultExpectedRetransmissionTimeMs));
 
-  // Send another packet with 20 ms delay. The average
-  // and max should be 15 and 20 ms respectively.
-  EXPECT_CALL(send_side_delay_observer_, SendSideDelayUpdated(15, 20, kSsrc))
+  // Send another packet with 20 ms delay. The average, max and total should be
+  // 15, 20 and 30 ms respectively.
+  EXPECT_CALL(send_side_delay_observer_,
+              SendSideDelayUpdated(15, 20, 30, kSsrc))
       .Times(1);
   fake_clock_.AdvanceTimeMilliseconds(10);
   EXPECT_TRUE(rtp_sender_video.SendVideo(
@@ -539,8 +554,9 @@ TEST_P(RtpSenderTestWithoutPacer, OnSendSideDelayUpdated) {
 
   // Send another packet at the same time, which replaces the last packet.
   // Since this packet has 0 ms delay, the average is now 5 ms and max is 10 ms.
+  // The total counter stays the same though.
   // TODO(terelius): Is is not clear that this is the right behavior.
-  EXPECT_CALL(send_side_delay_observer_, SendSideDelayUpdated(5, 10, kSsrc))
+  EXPECT_CALL(send_side_delay_observer_, SendSideDelayUpdated(5, 10, 30, kSsrc))
       .Times(1);
   capture_time_ms = fake_clock_.TimeInMilliseconds();
   EXPECT_TRUE(rtp_sender_video.SendVideo(
@@ -550,11 +566,12 @@ TEST_P(RtpSenderTestWithoutPacer, OnSendSideDelayUpdated) {
       kDefaultExpectedRetransmissionTimeMs));
 
   // Send a packet 1 second later. The earlier packets should have timed
-  // out, so both max and average should be the delay of this packet.
+  // out, so both max and average should be the delay of this packet. The total
+  // keeps increasing.
   fake_clock_.AdvanceTimeMilliseconds(1000);
   capture_time_ms = fake_clock_.TimeInMilliseconds();
   fake_clock_.AdvanceTimeMilliseconds(1);
-  EXPECT_CALL(send_side_delay_observer_, SendSideDelayUpdated(1, 1, kSsrc))
+  EXPECT_CALL(send_side_delay_observer_, SendSideDelayUpdated(1, 1, 31, kSsrc))
       .Times(1);
   EXPECT_TRUE(rtp_sender_video.SendVideo(
       VideoFrameType::kVideoFrameKey, kPayloadType,
@@ -597,8 +614,13 @@ TEST_P(RtpSenderTest, SendsPacketsWithTransportSequenceNumber) {
               OnSendPacket(kTransportSequenceNumber, _, _))
       .Times(1);
   EXPECT_CALL(feedback_observer_,
-              AddPacket(rtp_sender_->SSRC(), kTransportSequenceNumber, _,
-                        PacedPacketInfo()))
+              OnAddPacket(AllOf(
+                  Field(&RtpPacketSendInfo::ssrc, rtp_sender_->SSRC()),
+                  Field(&RtpPacketSendInfo::transport_sequence_number,
+                        kTransportSequenceNumber),
+                  Field(&RtpPacketSendInfo::rtp_sequence_number,
+                        rtp_sender_->SequenceNumber()),
+                  Field(&RtpPacketSendInfo::pacing_info, PacedPacketInfo()))))
       .Times(1);
 
   SendGenericPacket();
@@ -780,23 +802,28 @@ TEST_P(RtpSenderTest, TrafficSmoothingRetransmits) {
   EXPECT_TRUE(rtp_sender_->SendToNetwork(std::move(packet),
                                          kAllowRetransmission,
                                          RtpPacketSender::kNormalPriority));
+  // Immediately process send bucket and send packet.
+  rtp_sender_->TimeToSendPacket(kSsrc, kSeqNum, capture_time_ms, false,
+                                PacedPacketInfo());
+  EXPECT_EQ(1, transport_.packets_sent());
 
-  EXPECT_EQ(0, transport_.packets_sent());
-
-  EXPECT_CALL(mock_paced_sender_, InsertPacket(RtpPacketSender::kNormalPriority,
-                                               kSsrc, kSeqNum, _, _, _));
-
+  // Retransmit packet.
   const int kStoredTimeInMs = 100;
   fake_clock_.AdvanceTimeMilliseconds(kStoredTimeInMs);
 
+  EXPECT_CALL(mock_paced_sender_, InsertPacket(RtpPacketSender::kNormalPriority,
+                                               kSsrc, kSeqNum, _, _, _));
+  EXPECT_CALL(mock_rtc_event_log_,
+              LogProxy(SameRtcEventTypeAs(RtcEvent::Type::RtpPacketOutgoing)));
+
   EXPECT_EQ(static_cast<int>(packet_size), rtp_sender_->ReSendPacket(kSeqNum));
-  EXPECT_EQ(0, transport_.packets_sent());
+  EXPECT_EQ(1, transport_.packets_sent());
 
   rtp_sender_->TimeToSendPacket(kSsrc, kSeqNum, capture_time_ms, false,
                                 PacedPacketInfo());
 
   // Process send bucket. Packet should now be sent.
-  EXPECT_EQ(1, transport_.packets_sent());
+  EXPECT_EQ(2, transport_.packets_sent());
   EXPECT_EQ(packet_size, transport_.last_sent_packet().size());
 
   webrtc::RTPHeader rtp_header;
@@ -1071,9 +1098,10 @@ TEST_P(RtpSenderTestWithoutPacer, SendGenericVideo) {
   const uint8_t payload_type = 127;
   PlayoutDelayOracle playout_delay_oracle;
   RTPSenderVideo rtp_sender_video(&fake_clock_, rtp_sender_.get(), nullptr,
-                                  &playout_delay_oracle, nullptr, false,
+                                  &playout_delay_oracle, nullptr, false, false,
                                   FieldTrialBasedConfig());
-  rtp_sender_video.RegisterPayloadType(payload_type, payload_name);
+  rtp_sender_video.RegisterPayloadType(payload_type, payload_name,
+                                       /*raw_payload=*/false);
   uint8_t payload[] = {47, 11, 32, 93, 89};
 
   // Send keyframe
@@ -1106,6 +1134,29 @@ TEST_P(RtpSenderTestWithoutPacer, SendGenericVideo) {
   EXPECT_THAT(sent_payload.subview(1), ElementsAreArray(payload));
 }
 
+TEST_P(RtpSenderTestWithoutPacer, SendRawVideo) {
+  const char payload_name[] = "VP8";
+  const uint8_t payload_type = 111;
+  const uint8_t payload[] = {11, 22, 33, 44, 55};
+
+  PlayoutDelayOracle playout_delay_oracle;
+  RTPSenderVideo rtp_sender_video(&fake_clock_, rtp_sender_.get(), nullptr,
+                                  &playout_delay_oracle, nullptr, false, false,
+                                  FieldTrialBasedConfig());
+  rtp_sender_video.RegisterPayloadType(payload_type, payload_name,
+                                       /*raw_payload=*/true);
+
+  // Send a frame.
+  RTPVideoHeader video_header;
+  ASSERT_TRUE(rtp_sender_video.SendVideo(
+      VideoFrameType::kVideoFrameKey, payload_type, 1234, 4321, payload,
+      sizeof(payload), nullptr, &video_header,
+      kDefaultExpectedRetransmissionTimeMs));
+
+  auto sent_payload = transport_.last_sent_packet().payload();
+  EXPECT_THAT(sent_payload, ElementsAreArray(payload));
+}
+
 TEST_P(RtpSenderTest, SendFlexfecPackets) {
   constexpr uint32_t kTimestamp = 1234;
   constexpr int kMediaPayloadType = 127;
@@ -1129,10 +1180,11 @@ TEST_P(RtpSenderTest, SendFlexfecPackets) {
   rtp_sender_->SetStorePacketsStatus(true, 10);
 
   PlayoutDelayOracle playout_delay_oracle;
-  RTPSenderVideo rtp_sender_video(&fake_clock_, rtp_sender_.get(),
-                                  &flexfec_sender, &playout_delay_oracle,
-                                  nullptr, false, FieldTrialBasedConfig());
-  rtp_sender_video.RegisterPayloadType(kMediaPayloadType, "GENERIC");
+  RTPSenderVideo rtp_sender_video(
+      &fake_clock_, rtp_sender_.get(), &flexfec_sender, &playout_delay_oracle,
+      nullptr, false, false, FieldTrialBasedConfig());
+  rtp_sender_video.RegisterPayloadType(kMediaPayloadType, "GENERIC",
+                                       /*raw_payload=*/false);
 
   // Parameters selected to generate a single FEC packet per media packet.
   FecProtectionParams params;
@@ -1158,12 +1210,14 @@ TEST_P(RtpSenderTest, SendFlexfecPackets) {
   EXPECT_CALL(mock_rtc_event_log_,
               LogProxy(SameRtcEventTypeAs(RtcEvent::Type::RtpPacketOutgoing)))
       .Times(2);
-  EXPECT_TRUE(rtp_sender_->TimeToSendPacket(kMediaSsrc, kSeqNum,
-                                            fake_clock_.TimeInMilliseconds(),
-                                            false, PacedPacketInfo()));
-  EXPECT_TRUE(rtp_sender_->TimeToSendPacket(kFlexfecSsrc, flexfec_seq_num,
-                                            fake_clock_.TimeInMilliseconds(),
-                                            false, PacedPacketInfo()));
+  EXPECT_EQ(RtpPacketSendResult::kSuccess,
+            rtp_sender_->TimeToSendPacket(kMediaSsrc, kSeqNum,
+                                          fake_clock_.TimeInMilliseconds(),
+                                          false, PacedPacketInfo()));
+  EXPECT_EQ(RtpPacketSendResult::kSuccess,
+            rtp_sender_->TimeToSendPacket(kFlexfecSsrc, flexfec_seq_num,
+                                          fake_clock_.TimeInMilliseconds(),
+                                          false, PacedPacketInfo()));
   ASSERT_EQ(2, transport_.packets_sent());
   const RtpPacketReceived& media_packet = transport_.sent_packets_[0];
   EXPECT_EQ(kMediaPayloadType, media_packet.PayloadType());
@@ -1203,10 +1257,11 @@ TEST_P(RtpSenderTest, NoFlexfecForTimingFrames) {
   rtp_sender_->SetStorePacketsStatus(true, 10);
 
   PlayoutDelayOracle playout_delay_oracle;
-  RTPSenderVideo rtp_sender_video(&fake_clock_, rtp_sender_.get(),
-                                  &flexfec_sender, &playout_delay_oracle,
-                                  nullptr, false, FieldTrialBasedConfig());
-  rtp_sender_video.RegisterPayloadType(kMediaPayloadType, "GENERIC");
+  RTPSenderVideo rtp_sender_video(
+      &fake_clock_, rtp_sender_.get(), &flexfec_sender, &playout_delay_oracle,
+      nullptr, false, false, FieldTrialBasedConfig());
+  rtp_sender_video.RegisterPayloadType(kMediaPayloadType, "GENERIC",
+                                       /*raw_payload=*/false);
 
   // Need extension to be registered for timing frames to be sent.
   ASSERT_EQ(0, rtp_sender_->RegisterRtpHeaderExtension(
@@ -1236,9 +1291,10 @@ TEST_P(RtpSenderTest, NoFlexfecForTimingFrames) {
   EXPECT_CALL(mock_rtc_event_log_,
               LogProxy(SameRtcEventTypeAs(RtcEvent::Type::RtpPacketOutgoing)))
       .Times(1);
-  EXPECT_TRUE(rtp_sender_->TimeToSendPacket(kMediaSsrc, kSeqNum,
-                                            fake_clock_.TimeInMilliseconds(),
-                                            false, PacedPacketInfo()));
+  EXPECT_EQ(RtpPacketSendResult::kSuccess,
+            rtp_sender_->TimeToSendPacket(kMediaSsrc, kSeqNum,
+                                          fake_clock_.TimeInMilliseconds(),
+                                          false, PacedPacketInfo()));
   ASSERT_EQ(1, transport_.packets_sent());
   const RtpPacketReceived& media_packet = transport_.sent_packets_[0];
   EXPECT_EQ(kMediaPayloadType, media_packet.PayloadType());
@@ -1262,12 +1318,14 @@ TEST_P(RtpSenderTest, NoFlexfecForTimingFrames) {
   EXPECT_CALL(mock_rtc_event_log_,
               LogProxy(SameRtcEventTypeAs(RtcEvent::Type::RtpPacketOutgoing)))
       .Times(2);
-  EXPECT_TRUE(rtp_sender_->TimeToSendPacket(kMediaSsrc, kSeqNum + 1,
-                                            fake_clock_.TimeInMilliseconds(),
-                                            false, PacedPacketInfo()));
-  EXPECT_TRUE(rtp_sender_->TimeToSendPacket(kFlexfecSsrc, flexfec_seq_num,
-                                            fake_clock_.TimeInMilliseconds(),
-                                            false, PacedPacketInfo()));
+  EXPECT_EQ(RtpPacketSendResult::kSuccess,
+            rtp_sender_->TimeToSendPacket(kMediaSsrc, kSeqNum + 1,
+                                          fake_clock_.TimeInMilliseconds(),
+                                          false, PacedPacketInfo()));
+  EXPECT_EQ(RtpPacketSendResult::kSuccess,
+            rtp_sender_->TimeToSendPacket(kFlexfecSsrc, flexfec_seq_num,
+                                          fake_clock_.TimeInMilliseconds(),
+                                          false, PacedPacketInfo()));
   ASSERT_EQ(3, transport_.packets_sent());
   const RtpPacketReceived& media_packet2 = transport_.sent_packets_[1];
   EXPECT_EQ(kMediaPayloadType, media_packet2.PayloadType());
@@ -1301,10 +1359,11 @@ TEST_P(RtpSenderTestWithoutPacer, SendFlexfecPackets) {
   rtp_sender_->SetSequenceNumber(kSeqNum);
 
   PlayoutDelayOracle playout_delay_oracle;
-  RTPSenderVideo rtp_sender_video(&fake_clock_, rtp_sender_.get(),
-                                  &flexfec_sender, &playout_delay_oracle,
-                                  nullptr, false, FieldTrialBasedConfig());
-  rtp_sender_video.RegisterPayloadType(kMediaPayloadType, "GENERIC");
+  RTPSenderVideo rtp_sender_video(
+      &fake_clock_, rtp_sender_.get(), &flexfec_sender, &playout_delay_oracle,
+      nullptr, false, false, FieldTrialBasedConfig());
+  rtp_sender_video.RegisterPayloadType(kMediaPayloadType, "GENERIC",
+                                       /*raw_payload=*/false);
 
   // Parameters selected to generate a single FEC packet per media packet.
   FecProtectionParams params;
@@ -1431,10 +1490,11 @@ TEST_P(RtpSenderTest, FecOverheadRate) {
   rtp_sender_->SetSequenceNumber(kSeqNum);
 
   PlayoutDelayOracle playout_delay_oracle;
-  RTPSenderVideo rtp_sender_video(&fake_clock_, rtp_sender_.get(),
-                                  &flexfec_sender, &playout_delay_oracle,
-                                  nullptr, false, FieldTrialBasedConfig());
-  rtp_sender_video.RegisterPayloadType(kMediaPayloadType, "GENERIC");
+  RTPSenderVideo rtp_sender_video(
+      &fake_clock_, rtp_sender_.get(), &flexfec_sender, &playout_delay_oracle,
+      nullptr, false, false, FieldTrialBasedConfig());
+  rtp_sender_video.RegisterPayloadType(kMediaPayloadType, "GENERIC",
+                                       /*raw_payload=*/false);
   // Parameters selected to generate a single FEC packet per media packet.
   FecProtectionParams params;
   params.fec_rate = 15;
@@ -1502,11 +1562,12 @@ TEST_P(RtpSenderTest, BitrateCallbacks) {
 
   PlayoutDelayOracle playout_delay_oracle;
   RTPSenderVideo rtp_sender_video(&fake_clock_, rtp_sender_.get(), nullptr,
-                                  &playout_delay_oracle, nullptr, false,
+                                  &playout_delay_oracle, nullptr, false, false,
                                   FieldTrialBasedConfig());
   const char payload_name[] = "GENERIC";
   const uint8_t payload_type = 127;
-  rtp_sender_video.RegisterPayloadType(payload_type, payload_name);
+  rtp_sender_video.RegisterPayloadType(payload_type, payload_name,
+                                       /*raw_payload=*/false);
 
   // Simulate kNumPackets sent with kPacketInterval ms intervals, with the
   // number of packets selected so that we fill (but don't overflow) the one
@@ -1590,9 +1651,10 @@ TEST_P(RtpSenderTestWithoutPacer, StreamDataCountersCallbacks) {
   const uint8_t payload_type = 127;
   PlayoutDelayOracle playout_delay_oracle;
   RTPSenderVideo rtp_sender_video(&fake_clock_, rtp_sender_.get(), nullptr,
-                                  &playout_delay_oracle, nullptr, false,
+                                  &playout_delay_oracle, nullptr, false, false,
                                   FieldTrialBasedConfig());
-  rtp_sender_video.RegisterPayloadType(payload_type, payload_name);
+  rtp_sender_video.RegisterPayloadType(payload_type, payload_name,
+                                       /*raw_payload=*/false);
   uint8_t payload[] = {47, 11, 32, 93, 89};
   rtp_sender_->SetStorePacketsStatus(true, 1);
   uint32_t ssrc = rtp_sender_->SSRC();

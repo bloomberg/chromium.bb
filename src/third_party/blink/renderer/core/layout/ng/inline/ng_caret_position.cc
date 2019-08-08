@@ -19,16 +19,6 @@ namespace blink {
 
 namespace {
 
-void AssertValidPositionForCaretPositionComputation(
-    const PositionWithAffinity& position) {
-#if DCHECK_IS_ON()
-  DCHECK(NGOffsetMapping::AcceptsPosition(position.GetPosition()));
-  const LayoutObject* layout_object = position.AnchorNode()->GetLayoutObject();
-  DCHECK(layout_object);
-  DCHECK(layout_object->IsText() || layout_object->IsAtomicInlineLevel());
-#endif
-}
-
 // The calculation takes the following input:
 // - An inline formatting context as a |LayoutBlockFlow|
 // - An offset in the |text_content_| string of the above context
@@ -97,7 +87,7 @@ CaretPositionResolution TryResolveCaretPositionInTextFragment(
     TextAffinity affinity) {
   const auto& fragment =
       To<NGPhysicalTextFragment>(paint_fragment.PhysicalFragment());
-  if (fragment.IsAnonymousText())
+  if (fragment.IsGeneratedText())
     return CaretPositionResolution();
 
   const NGOffsetMapping& mapping =
@@ -306,7 +296,6 @@ NGCaretPosition ComputeNGCaretPosition(const LayoutBlockFlow& context,
 }
 
 NGCaretPosition ComputeNGCaretPosition(const PositionWithAffinity& position) {
-  AssertValidPositionForCaretPositionComputation(position);
   LayoutBlockFlow* context =
       NGInlineFormattingContextOf(position.GetPosition());
   if (!context)

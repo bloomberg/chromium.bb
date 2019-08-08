@@ -123,10 +123,10 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
   }
 
 #if defined(OS_MACOSX)
-  // Virtualize PreferIntegratedGpu contexts by default on OS X to prevent
+  // Virtualize GpuPreference::kLowPower contexts by default on OS X to prevent
   // performance regressions when enabling FCM.
   // http://crbug.com/180463
-  if (init_params.attribs.gpu_preference == gl::PreferIntegratedGpu)
+  if (init_params.attribs.gpu_preference == gl::GpuPreference::kLowPower)
     use_virtualized_gl_context_ = true;
 #endif
 
@@ -426,6 +426,10 @@ void GLES2CommandBufferStub::AddFilter(IPC::MessageFilter* message_filter) {
 
 int32_t GLES2CommandBufferStub::GetRouteID() const {
   return route_id_;
+}
+
+viz::GpuVSyncCallback GLES2CommandBufferStub::GetGpuVSyncCallback() {
+  return viz::GpuVSyncCallback();
 }
 
 MemoryTracker* GLES2CommandBufferStub::GetMemoryTracker() const {

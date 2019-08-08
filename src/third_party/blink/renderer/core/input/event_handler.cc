@@ -73,6 +73,7 @@
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/hit_test_request.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
@@ -291,21 +292,32 @@ HitTestResult EventHandler::HitTestResultAtLocation(
       LocalFrameView* frame_view = frame_->View();
       LocalFrameView* main_view = main_frame.View();
       if (frame_view && main_view) {
+        HitTestLocation adjusted_location;
         if (location.IsRectBasedTest()) {
           DCHECK(location.IsRectilinear());
-          LayoutPoint main_content_point =
-              main_view->ConvertFromRootFrame(frame_view->ConvertToRootFrame(
-                  location.BoundingBox().Location()));
-          HitTestLocation adjusted_location(
-              (LayoutRect(main_content_point, location.BoundingBox().Size())));
-          return main_frame.GetEventHandler().HitTestResultAtLocation(
-              adjusted_location, hit_type, stop_node, no_lifecycle_update);
+          if (hit_type & HitTestRequest::kHitTestVisualOverflow) {
+            // Apply ancestor transforms to location rect
+            PhysicalRect local_rect =
+                PhysicalRectToBeNoop(location.BoundingBox());
+            PhysicalRect main_frame_rect =
+                frame_view->GetLayoutView()->LocalToAncestorRect(
+                    local_rect, main_view->GetLayoutView(),
+                    kTraverseDocumentBoundaries);
+            adjusted_location = HitTestLocation(main_frame_rect.ToLayoutRect());
+          } else {
+            // Don't apply ancestor transforms to bounding box
+            LayoutPoint main_content_point =
+                main_view->ConvertFromRootFrame(frame_view->ConvertToRootFrame(
+                    location.BoundingBox().Location()));
+            adjusted_location = HitTestLocation(
+                LayoutRect(main_content_point, location.BoundingBox().Size()));
+          }
         } else {
-          HitTestLocation adjusted_location(main_view->ConvertFromRootFrame(
+          adjusted_location = HitTestLocation(main_view->ConvertFromRootFrame(
               frame_view->ConvertToRootFrame(location.Point())));
-          return main_frame.GetEventHandler().HitTestResultAtLocation(
-              adjusted_location, hit_type, stop_node, no_lifecycle_update);
         }
+        return main_frame.GetEventHandler().HitTestResultAtLocation(
+            adjusted_location, hit_type, stop_node, no_lifecycle_update);
       }
     }
   }
@@ -876,14 +888,9 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
 
   if (RuntimeEnabledFeatures::MiddleClickAutoscrollEnabled()) {
     if (Page* page = frame_->GetPage()) {
-      if (mouse_event.GetType() == WebInputEvent::kMouseLeave &&
-          mouse_event.button != WebPointerProperties::Button::kMiddle) {
-        page->GetAutoscrollController().StopMiddleClickAutoscroll(frame_);
-      } else {
-        page->GetAutoscrollController().HandleMouseMoveForMiddleClickAutoscroll(
-            frame_, mouse_event_manager_->LastKnownMouseScreenPosition(),
-            mouse_event.button == WebPointerProperties::Button::kMiddle);
-      }
+      page->GetAutoscrollController().HandleMouseMoveForMiddleClickAutoscroll(
+          frame_, mouse_event_manager_->LastKnownMouseScreenPosition(),
+          mouse_event.button == WebPointerProperties::Button::kMiddle);
     }
   }
 
@@ -1323,12 +1330,6 @@ bool EventHandler::HasPointerCapture(PointerId pointer_id,
   } else {
     return pointer_event_manager_->HasPointerCapture(pointer_id, target);
   }
-}
-
-void EventHandler::ProcessPendingPointerCaptureForPointerLock(
-    const WebMouseEvent& mouse_event) {
-  pointer_event_manager_->ProcessPendingPointerCaptureForPointerLock(
-      mouse_event);
 }
 
 void EventHandler::ElementRemoved(Element* target) {
@@ -1933,11 +1934,6 @@ WebInputEventResult EventHandler::ShowNonLocatedContextMenu(
 
   static const int kContextMenuMargin = 1;
 
-#if defined(OS_WIN)
-  int right_aligned = ::GetSystemMetrics(SM_MENUDROPALIGNMENT);
-#else
-  int right_aligned = 0;
-#endif
   IntPoint location_in_root_frame;
 
   Element* focused_element =
@@ -1952,7 +1948,7 @@ WebInputEventResult EventHandler::ShowNonLocatedContextMenu(
         FirstRectForRange(selection.ComputeVisibleSelectionInDOMTree()
                               .ToNormalizedEphemeralRange());
 
-    int x = right_aligned ? first_rect.MaxX() : first_rect.X();
+    int x = first_rect.X();
     // In a multiline edit, firstRect.maxY() would end up on the next line, so
     // take the midpoint.
     int y = (first_rect.MaxY() + first_rect.Y()) / 2;
@@ -1963,10 +1959,7 @@ WebInputEventResult EventHandler::ShowNonLocatedContextMenu(
         visual_viewport.ViewportToRootFrame(clipped_rect.Center());
   } else {
     location_in_root_frame = IntPoint(
-        right_aligned
-            ? visual_viewport.VisibleRect(kIncludeScrollbars).MaxX() -
-                  kContextMenuMargin
-            : visual_viewport.GetScrollOffset().Width() + kContextMenuMargin,
+        visual_viewport.GetScrollOffset().Width() + kContextMenuMargin,
         visual_viewport.GetScrollOffset().Height() + kContextMenuMargin);
   }
 
@@ -2301,9 +2294,13 @@ MouseEventWithHitTestResults EventHandler::GetMouseEventTarget(
     if (capture_target) {
       LayoutObject* layout_object = capture_target->GetLayoutObject();
 
+      // TODO(eirage): Is kIgnoreTransforms correct here?
       LayoutPoint local_point =
-          layout_object ? LayoutPoint(layout_object->AbsoluteToLocal(
-                              FloatPoint(document_point)))
+          layout_object ? layout_object
+                              ->AbsoluteToLocalPoint(
+                                  PhysicalOffsetToBeNoop(document_point),
+                                  kIgnoreTransforms)
+                              .ToLayoutPoint()
                         : document_point;
 
       result.SetNodeAndPosition(capture_target, local_point);

@@ -689,9 +689,6 @@ need to be translated for each locale.-->
       <message name="IDS_MESSAGE_CENTER_NOTIFICATION_ACCESSIBLE_NAME_PLURAL" desc="The accessible name for a multiple notifications.">
         Notifications
       </message>
-      <message name="IDS_MESSAGE_CENTER_NOTIFIER_DISABLE" desc="The menu entry for disabling a notifier from a notification.">
-        Disable notifications from <ph name="notifier_name">$1<ex>Notification Galore!</ex></ph>
-      </message>
       <message name="IDS_MESSAGE_CENTER_EXPAND_NOTIFICATION" desc="The button for expanding the notification. By clicking this, the long message and the buttons of the notification are shown.">
         Expand notification
       </message>
@@ -768,7 +765,7 @@ need to be translated for each locale.-->
         Shared from <ph name="DEVICE_NAME">$1<ex>Ted's Pixel 2</ex></ph>
       </message>
       <message name="IDS_MESSAGE_NOTIFICATION_SEND_TAB_TO_SELF_CONFIRMATION_SUCCESS" desc="The title text for the comformation notification when the user successfully share a tab to other devices.">
-        Sending tab...
+        Sending to <ph name="DEVICE_NAME">$1<ex>Ted's Pixel 2</ex></ph>...
       </message>
       <message name="IDS_MESSAGE_NOTIFICATION_SEND_TAB_TO_SELF_CONFIRMATION_FAILURE_TITLE" desc="The title text for the comformation notification when the user failed to share a tab to other devices.">
         Failed to send
@@ -879,12 +876,26 @@ need to be translated for each locale.-->
       <message name="IDS_APP_LIST_START_ASSISTANT" desc="Tooltip for the button that starts Google Assistant from the search box in the app list.">
         Start Google Assistant
       </message>
+      <message name="IDS_APP_LIST_START_ASSISTANT_VOICE_QUERY" desc="Tooltip for the button that starts Google Assistant voice query from the search box in the app list.">
+        Start Google Assistant voice query
+      </message>
       <message name="IDS_APP_LIST_PAGE_SWITCHER" desc="Tooltip for page switcher for each page in fullscreen view which shows all apps.">
         Page <ph name="selected_page">$1<ex>1</ex></ph> of <ph name="total_page_num">$2<ex>3</ex></ph>
       </message>
       <message name="IDS_APP_LIST_CONTINUE_READING_ACCESSIBILE_NAME" desc="The spoken feedback text for the suggestion chip of continue reading.">
         Continue reading from your mobile device <ph name="title">$1<ex>Title</ex></ph>
       </message>
+      <message name="IDS_APP_LIST_LEARN_MORE" desc="Text of Learn more links.">
+        Learn more
+      </message>
+      <message name="IDS_APP_LIST_ASSISTANT_PRIVACY_INFO" desc="Text shown in Launcher to imply Assistant search.">
+        Your searches are powered by the Google Assistant. <ph name="LEARN_MORE">$1<ex>Learn more</ex></ph>
+      </message>
+      <message name="IDS_APP_LIST_ASSISTANT_PRIVACY_INFO_CLOSE" desc="Close button text.">
+        Close
+      </message>
+
+
       <message name="IDS_APP_ACCESSIBILITY_STAR_RATING_ARC" desc="Accessibility text for the star rating of a Play Store app.">
         Star rating <ph name="RATING_SCORE">$1<ex>5.0</ex></ph>
       </message>

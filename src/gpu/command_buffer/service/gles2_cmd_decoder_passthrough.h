@@ -446,6 +446,7 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
   void UpdateTextureBinding(GLenum target,
                             GLuint client_id,
                             TexturePassthrough* texture);
+  void RebindTexture(TexturePassthrough* texture);
 
   void UpdateTextureSizeFromTexturePassthrough(TexturePassthrough* texture,
                                                GLuint client_id);
@@ -510,6 +511,8 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
       }
     }
   }
+
+  bool OnlyHasPendingProgramCompletionQueries();
 
   // A set of raw pointers to currently living PassthroughAbstractTextures
   // which allow us to properly signal to them when we are destroyed.
@@ -670,6 +673,7 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
     std::vector<base::OnceClosure> callbacks;
     std::unique_ptr<gl::GLFence> buffer_shadow_update_fence = nullptr;
     BufferShadowUpdateMap buffer_shadow_updates;
+    GLuint program_service_id = 0u;
   };
   base::circular_deque<PendingQuery> pending_queries_;
 
@@ -848,6 +852,8 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
   // CommandExecutor are descheduled. Once the first fence has completed, both
   // get rescheduled.
   std::vector<std::unique_ptr<gl::GLFence>> deschedule_until_finished_fences_;
+
+  GLuint linking_program_service_id_ = 0u;
 
   base::WeakPtrFactory<GLES2DecoderPassthroughImpl> weak_ptr_factory_;
 

@@ -4,6 +4,7 @@
 <link rel="import" href="../cr_icons_css.html">
 <link rel="import" href="../cr_toolbar/cr_toolbar_search_field.html">
 <link rel="import" href="../hidden_style_css.html">
+<link rel="import" href="../icons.html">
 <link rel="import" href="../shared_vars_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-media-query/iron-media-query.html">
 
@@ -11,7 +12,6 @@
   <template>
     <style include="cr-icons cr-hidden-style">
       :host {
-        --cr-toolbar-height: 56px;
         align-items: center;
         background-color: var(--google-blue-700);
         color: #fff;
@@ -41,22 +41,22 @@
       }
 
       #leftContent {
-        /* margin-start here must match margin-end on #rightContent. */
-        margin-inline-start: 12px;
         position: relative;
         transition: opacity 100ms;
       }
 
       #leftSpacer {
         align-items: center;
+        box-sizing: border-box;
         display: flex;
-        margin-inline-start: 6px;
+        /* 12px to match #rightSpacer + 6px to align with icons in menus. */
+        padding-inline-start: calc(12px + 6px);
+        width: var(--cr-toolbar-left-spacer-width, auto);
       }
 
       cr-icon-button {
-        --cr-icon-button-size:  32px;
+        --cr-icon-button-size: 32px;
         min-width: 32px;
-        padding: 6px 0;
       }
 
       :host-context(html:not([dark])) cr-icon-button {
@@ -69,8 +69,8 @@
         justify-content: center;
       }
 
-      #rightContent {
-        margin-inline-end: 12px;
+      #rightSpacer {
+        padding-inline-end: 12px;
       }
 
       :host([narrow]) #centeredContent {
@@ -89,6 +89,10 @@
 
       :host(:not([narrow])) #leftContent {
         flex: 1 1 var(--cr-toolbar-field-margin, 0);
+      }
+
+      :host(:not([narrow])) #centeredContent {
+        flex-basis: var(--cr-toolbar-center-basis, 0);
       }
 
       :host(:not([narrow])) #rightContent {
@@ -149,8 +153,9 @@
       <div id="leftSpacer">
         <!-- Note: showing #menuPromo relies on this dom-if being [restamp]. -->
         <template is="dom-if" if="[[showMenu]]" restamp>
-          <cr-icon-button id="menuButton" class="icon-toolbar-menu no-overlap"
-              on-click="onMenuTap_" aria-label$="[[menuLabel]]"
+          <cr-icon-button id="menuButton" class="no-overlap"
+              iron-icon="cr20:menu" on-click="onMenuTap_"
+              aria-label$="[[menuLabel]]"
               title="[[titleIfNotShowMenuPromo_(menuLabel, showMenuPromo)]]">
           </cr-icon-button>
           <template is="dom-if" if="[[showMenuPromo]]">
@@ -177,7 +182,9 @@
     </div>
 
     <div id="rightContent">
-      <slot></slot>
+      <div id="rightSpacer">
+        <slot></slot>
+      </div>
     </div>
   </template>
   <script src="cr_toolbar.js"></script>

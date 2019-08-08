@@ -4,8 +4,12 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
+#include "base/strings/strcat.h"
+#include "components/autofill_assistant/browser/actions/click_action.h"
+#include "components/autofill_assistant/browser/client_settings.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/string_conversions_util.h"
+#include "components/autofill_assistant/browser/top_padding.h"
 #include "components/autofill_assistant/browser/web_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -36,8 +40,8 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     ASSERT_TRUE(http_server_->Start());
     ASSERT_TRUE(
         NavigateToURL(shell(), http_server_->GetURL(kTargetWebsitePath)));
-    web_controller_ =
-        WebController::CreateForWebContents(shell()->web_contents());
+    web_controller_ = WebController::CreateForWebContents(
+        shell()->web_contents(), &settings_);
     Observe(shell()->web_contents());
   }
 
@@ -112,33 +116,20 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     }
   }
 
-  void ClickElement(const Selector& selector) {
-    base::RunLoop run_loop;
-    web_controller_->ClickElement(
-        selector,
-        base::BindOnce(&WebControllerBrowserTest::ClickElementCallback,
-                       base::Unretained(this), run_loop.QuitClosure()));
-    run_loop.Run();
-  }
-
   void ClickElementCallback(const base::Closure& done_callback,
                             const ClientStatus& status) {
     EXPECT_EQ(ACTION_APPLIED, status.proto_status());
     done_callback.Run();
   }
 
-  void TapElement(const Selector& selector) {
+  void ClickOrTapElement(const Selector& selector,
+                         ClickAction::ClickType click_type) {
     base::RunLoop run_loop;
-    web_controller_->TapElement(
-        selector,
+    web_controller_->ClickOrTapElement(
+        selector, click_type,
         base::BindOnce(&WebControllerBrowserTest::ClickElementCallback,
                        base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
-  }
-
-  void TapElementCallback(const base::Closure& done_callback, bool result) {
-    ASSERT_TRUE(result);
-    done_callback.Run();
   }
 
   void WaitForElementRemove(const Selector& selector) {
@@ -160,10 +151,10 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     }
   }
 
-  void FocusElement(const Selector& selector) {
+  void FocusElement(const Selector& selector, const TopPadding top_padding) {
     base::RunLoop run_loop;
     web_controller_->FocusElement(
-        selector,
+        selector, top_padding,
         base::BindOnce(&WebControllerBrowserTest::OnFocusElement,
                        base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
@@ -181,14 +172,14 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     ClientStatus result;
     web_controller_->SelectOption(
         selector, option,
-        base::BindOnce(&WebControllerBrowserTest::OnSelectOption,
+        base::BindOnce(&WebControllerBrowserTest::OnClientStatus,
                        base::Unretained(this), run_loop.QuitClosure(),
                        &result));
     run_loop.Run();
     return result;
   }
 
-  void OnSelectOption(base::Closure done_callback,
+  void OnClientStatus(base::Closure done_callback,
                       ClientStatus* result_output,
                       const ClientStatus& status) {
     *result_output = status;
@@ -199,18 +190,11 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     base::RunLoop run_loop;
     ClientStatus result;
     web_controller_->HighlightElement(
-        selector, base::BindOnce(&WebControllerBrowserTest::OnHighlightElement,
+        selector, base::BindOnce(&WebControllerBrowserTest::OnClientStatus,
                                  base::Unretained(this), run_loop.QuitClosure(),
                                  &result));
     run_loop.Run();
     return result;
-  }
-
-  void OnHighlightElement(base::Closure done_callback,
-                          ClientStatus* result_output,
-                          const ClientStatus& status) {
-    *result_output = status;
-    std::move(done_callback).Run();
   }
 
   ClientStatus GetOuterHtml(const Selector& selector,
@@ -423,12 +407,52 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     std::move(done_callback).Run();
   }
 
+  // Scroll an element into view that's within a container element. This
+  // requires scrolling the container, then the window, to get the element to
+  // the desired y position.
+  void TestScrollIntoView(int initial_window_scroll_y,
+                          int initial_container_scroll_y) {
+    EXPECT_TRUE(content::ExecJs(
+        shell(), base::StringPrintf(
+                     R"(window.scrollTo(0, %d);
+           let container = document.querySelector("#scroll_container");
+           container.scrollTo(0, %d);)",
+                     initial_window_scroll_y, initial_container_scroll_y)));
+
+    Selector selector;
+    selector.selectors.emplace_back("#scroll_item_5");
+
+    TopPadding top_padding{0.25, TopPadding::Unit::RATIO};
+    FocusElement(selector, top_padding);
+    base::ListValue eval_result = content::EvalJs(shell(), R"(
+      let item = document.querySelector("#scroll_item_5");
+      let itemRect = item.getBoundingClientRect();
+      let container = document.querySelector("#scroll_container");
+      let containerRect = container.getBoundingClientRect();
+      [itemRect.top, itemRect.bottom, window.innerHeight,
+           containerRect.top, containerRect.bottom])")
+                                      .ExtractList();
+    double top = eval_result.GetList()[0].GetDouble();
+    double bottom = eval_result.GetList()[1].GetDouble();
+    double window_height = eval_result.GetList()[2].GetDouble();
+    double container_top = eval_result.GetList()[3].GetDouble();
+    double container_bottom = eval_result.GetList()[4].GetDouble();
+
+    // Element is at the desired position. (top is relative to the viewport)
+    EXPECT_NEAR(top, window_height * 0.25, 0.5);
+
+    // Element is within the visible portion of its container.
+    EXPECT_GT(bottom, container_top);
+    EXPECT_LT(top, container_bottom);
+  }
+
  protected:
   std::unique_ptr<WebController> web_controller_;
 
  private:
   std::unique_ptr<net::EmbeddedTestServer> http_server_;
   bool paint_occurred_during_last_loop_ = false;
+  ClientSettings settings_;
 
   DISALLOW_COPY_AND_ASSIGN(WebControllerBrowserTest);
 };
@@ -638,7 +662,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ClickElement) {
   Selector selector;
   selector.selectors.emplace_back("#button");
-  ClickElement(selector);
+  ClickOrTapElement(selector, ClickAction::CLICK);
 
   WaitForElementRemove(selector);
 }
@@ -649,7 +673,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
   selector.selectors.emplace_back("#iframe");
   selector.selectors.emplace_back("#shadowsection");
   selector.selectors.emplace_back("#shadowbutton");
-  ClickElement(selector);
+  ClickOrTapElement(selector, ClickAction::CLICK);
 
   selector.selectors.clear();
   selector.selectors.emplace_back("#iframe");
@@ -660,19 +684,19 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, TapElement) {
   Selector selector;
   selector.selectors.emplace_back("#touch_area_two");
-  TapElement(selector);
+  ClickOrTapElement(selector, ClickAction::TAP);
   WaitForElementRemove(selector);
 
   selector.selectors.clear();
   selector.selectors.emplace_back("#touch_area_one");
-  TapElement(selector);
+  ClickOrTapElement(selector, ClickAction::TAP);
   WaitForElementRemove(selector);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, TapElementMovingOutOfView) {
   Selector selector;
   selector.selectors.emplace_back("#touch_area_three");
-  TapElement(selector);
+  ClickOrTapElement(selector, ClickAction::TAP);
   WaitForElementRemove(selector);
 }
 
@@ -683,7 +707,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, TapElementAfterPageIsIdle) {
 
   Selector selector;
   selector.selectors.emplace_back("#touch_area_one");
-  TapElement(selector);
+  ClickOrTapElement(selector, ClickAction::TAP);
 
   WaitForElementRemove(selector);
 }
@@ -693,9 +717,58 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, DISABLED_TapElementInIFrame) {
   Selector selector;
   selector.selectors.emplace_back("#iframe");
   selector.selectors.emplace_back("#touch_area");
-  TapElement(selector);
+  ClickOrTapElement(selector, ClickAction::TAP);
 
   WaitForElementRemove(selector);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
+                       TapRandomMovingElementRepeatedly) {
+  Selector button_selector({"#random_moving_button"});
+  int num_clicks = 100;
+  for (int i = 0; i < num_clicks; ++i) {
+    ClickOrTapElement(button_selector, ClickAction::JAVASCRIPT);
+  }
+
+  std::vector<Selector> click_counter_selectors;
+  std::vector<std::string> expected_values;
+  expected_values.emplace_back(base::NumberToString(num_clicks));
+  Selector click_counter_selector({"#random_moving_click_counter"});
+  click_counter_selectors.emplace_back(click_counter_selector);
+  GetFieldsValue(click_counter_selectors, expected_values);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, TapMovingElementRepeatedly) {
+  Selector button_selector({"#moving_button"});
+  int num_clicks = 100;
+  for (int i = 0; i < num_clicks; ++i) {
+    ClickOrTapElement(button_selector, ClickAction::JAVASCRIPT);
+  }
+
+  std::vector<Selector> click_counter_selectors;
+  std::vector<std::string> expected_values;
+  expected_values.emplace_back(base::NumberToString(num_clicks));
+  Selector click_counter_selector({"#moving_click_counter"});
+  click_counter_selectors.emplace_back(click_counter_selector);
+  GetFieldsValue(click_counter_selectors, expected_values);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, TapStaticElementRepeatedly) {
+  Selector button_selector;
+  button_selector.selectors.emplace_back("#static_button");
+
+  int num_clicks = 100;
+  for (int i = 0; i < num_clicks; ++i) {
+    ClickOrTapElement(button_selector, ClickAction::JAVASCRIPT);
+  }
+
+  std::vector<Selector> click_counter_selectors;
+  std::vector<std::string> expected_values;
+  expected_values.emplace_back(base::NumberToString(num_clicks));
+  Selector click_counter_selector;
+  click_counter_selector.selectors.emplace_back("#static_click_counter");
+  click_counter_selectors.emplace_back(click_counter_selector);
+  GetFieldsValue(click_counter_selectors, expected_values);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ClickPseudoElement) {
@@ -705,7 +778,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ClickPseudoElement) {
   EXPECT_FALSE(content::EvalJs(shell(), javascript).ExtractBool());
   Selector selector({R"(label[for="terms-and-conditions"])"},
                     PseudoType::BEFORE);
-  ClickElement(selector);
+  ClickOrTapElement(selector, ClickAction::CLICK);
   EXPECT_TRUE(content::EvalJs(shell(), javascript).ExtractBool());
 }
 
@@ -775,47 +848,91 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, FocusElement) {
   selector.selectors.emplace_back("#iframe");
   selector.selectors.emplace_back("#focus");
 
-  // The element is not visible initially.
-  const std::string checkNotVisibleScript = R"(
-      let iframe = document.querySelector("#iframe");
-      let div = iframe.contentDocument.querySelector("#focus");
-      let iframeRect = iframe.getBoundingClientRect();
-      let divRect = div.getBoundingClientRect();
-      iframeRect.y + divRect.y > window.innerHeight;
-  )";
-  EXPECT_EQ(true, content::EvalJs(shell(), checkNotVisibleScript));
-  FocusElement(selector);
-
-  // Verify that the scroll moved the div in the iframe into view.
   const std::string checkVisibleScript = R"(
-    const scrollTimeoutMs = 500;
-    var timer = null;
-
-    function check() {
       let iframe = document.querySelector("#iframe");
       let div = iframe.contentDocument.querySelector("#focus");
       let iframeRect = iframe.getBoundingClientRect();
       let divRect = div.getBoundingClientRect();
-      return iframeRect.y + divRect.y < window.innerHeight;
-    }
-    function onScrollDone() {
-      window.removeEventListener("scroll", onScroll);
-      domAutomationController.send(check());
-    }
-    function onScroll(e) {
-      if (timer != null) {
-        clearTimeout(timer);
-      }
-      timer = setTimeout(onScrollDone, scrollTimeoutMs);
-    }
-    if (check()) {
-      // Scrolling finished before this script started. Just return the result.
-      domAutomationController.send(true);
-    } else {
-      window.addEventListener("scroll", onScroll);
-    }
+      iframeRect.y + divRect.y < window.innerHeight;
   )";
-  EXPECT_EQ(true, content::EvalJsWithManualReply(shell(), checkVisibleScript));
+  EXPECT_EQ(false, content::EvalJs(shell(), checkVisibleScript));
+  TopPadding top_padding;
+  FocusElement(selector, top_padding);
+  EXPECT_EQ(true, content::EvalJs(shell(), checkVisibleScript));
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
+                       FocusElementWithScrollIntoViewNeeded) {
+  TestScrollIntoView(/* initial_window_scroll_y= */ 0,
+                     /* initial_container_scroll_y=*/0);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
+                       FocusElementWithScrollIntoViewNotNeeded) {
+  TestScrollIntoView(/* initial_window_scroll_y= */ 0,
+                     /* initial_container_scroll_y=*/200);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
+                       FocusElement_WithPaddingInPixels) {
+  Selector selector;
+  selector.selectors.emplace_back("#scroll-me");
+
+  const std::string checkScrollDifferentThanTargetScript = R"(
+      window.scrollTo(0, 0);
+      let scrollTarget = document.querySelector("#scroll-me");
+      let scrollTargetRect = scrollTarget.getBoundingClientRect();
+      scrollTargetRect.y > 360;
+  )";
+
+  EXPECT_EQ(true,
+            content::EvalJs(shell(), checkScrollDifferentThanTargetScript));
+
+  // Scroll 360px from the top.
+  TopPadding top_padding{/* value= */ 360, TopPadding::Unit::PIXELS};
+  FocusElement(selector, top_padding);
+
+  double eval_result = content::EvalJs(shell(), R"(
+      let scrollTarget = document.querySelector("#scroll-me");
+      let scrollTargetRect = scrollTarget.getBoundingClientRect();
+      scrollTargetRect.top;
+  )")
+                           .ExtractDouble();
+
+  EXPECT_NEAR(360, eval_result, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
+                       FocusElement_WithPaddingInRatio) {
+  Selector selector;
+  selector.selectors.emplace_back("#scroll-me");
+
+  const std::string checkScrollDifferentThanTargetScript = R"(
+      window.scrollTo(0, 0);
+      let scrollTarget = document.querySelector("#scroll-me");
+      let scrollTargetRect = scrollTarget.getBoundingClientRect();
+      let targetScrollY = window.innerHeight * 0.7;
+      scrollTargetRect.y > targetScrollY;
+  )";
+
+  EXPECT_EQ(true,
+            content::EvalJs(shell(), checkScrollDifferentThanTargetScript));
+
+  // Scroll 70% from the top.
+  TopPadding top_padding{/* value= */ 0.7, TopPadding::Unit::RATIO};
+  FocusElement(selector, top_padding);
+
+  base::ListValue eval_result = content::EvalJs(shell(), R"(
+      let scrollTarget = document.querySelector("#scroll-me");
+      let scrollTargetRect = scrollTarget.getBoundingClientRect();
+      [scrollTargetRect.top, window.innerHeight]
+  )")
+                                    .ExtractList();
+
+  double top = eval_result.GetList()[0].GetDouble();
+  double window_inner_height = eval_result.GetList()[1].GetDouble();
+
+  EXPECT_NEAR(top, window_inner_height * 0.7, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOption) {
@@ -1029,6 +1146,19 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, HighlightElement) {
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetAndSetCookie) {
   EXPECT_FALSE(HasCookie());
   EXPECT_TRUE(SetCookie());
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, WaitForHeightChange) {
+  base::RunLoop run_loop;
+  ClientStatus result;
+  web_controller_->WaitForWindowHeightChange(
+      base::BindOnce(&WebControllerBrowserTest::OnClientStatus,
+                     base::Unretained(this), run_loop.QuitClosure(), &result));
+
+  EXPECT_TRUE(
+      content::ExecJs(shell(), "window.dispatchEvent(new Event('resize'))"));
+  run_loop.Run();
+  EXPECT_EQ(ACTION_APPLIED, result.proto_status());
 }
 
 }  // namespace

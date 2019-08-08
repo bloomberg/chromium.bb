@@ -5,27 +5,26 @@
  * found in the LICENSE file.
  */
 
-#include "GrTextureOpList.h"
+#include "src/gpu/GrTextureOpList.h"
 
-#include "GrAuditTrail.h"
-#include "GrContext.h"
-#include "GrContextPriv.h"
-#include "GrGpu.h"
-#include "GrMemoryPool.h"
-#include "GrRecordingContext.h"
-#include "GrRecordingContextPriv.h"
-#include "GrResourceAllocator.h"
-#include "GrTextureProxy.h"
-#include "SkStringUtils.h"
-#include "ops/GrCopySurfaceOp.h"
+#include "include/gpu/GrContext.h"
+#include "include/private/GrAuditTrail.h"
+#include "include/private/GrRecordingContext.h"
+#include "include/private/GrTextureProxy.h"
+#include "src/core/SkStringUtils.h"
+#include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrGpu.h"
+#include "src/gpu/GrMemoryPool.h"
+#include "src/gpu/GrRecordingContextPriv.h"
+#include "src/gpu/GrResourceAllocator.h"
+#include "src/gpu/ops/GrCopySurfaceOp.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
-GrTextureOpList::GrTextureOpList(GrResourceProvider* resourceProvider,
-                                 sk_sp<GrOpMemoryPool> opMemoryPool,
+GrTextureOpList::GrTextureOpList(sk_sp<GrOpMemoryPool> opMemoryPool,
                                  sk_sp<GrTextureProxy> proxy,
                                  GrAuditTrail* auditTrail)
-        : INHERITED(resourceProvider, std::move(opMemoryPool), proxy, auditTrail) {
+        : INHERITED(std::move(opMemoryPool), proxy, auditTrail) {
     SkASSERT(fOpMemoryPool);
     SkASSERT(!proxy->readOnly());
 }
@@ -151,7 +150,7 @@ bool GrTextureOpList::copySurface(GrRecordingContext* context,
     }
 
     const GrCaps* caps = context->priv().caps();
-    auto addDependency = [ caps, this ] (GrSurfaceProxy* p) {
+    auto addDependency = [ caps, this ] (GrSurfaceProxy* p, GrMipMapped) {
         this->addDependency(p, *caps);
     };
     op->visitProxies(addDependency);
@@ -162,7 +161,7 @@ bool GrTextureOpList::copySurface(GrRecordingContext* context,
 
 void GrTextureOpList::purgeOpsWithUninstantiatedProxies() {
     bool hasUninstantiatedProxy = false;
-    auto checkInstantiation = [&hasUninstantiatedProxy](GrSurfaceProxy* p) {
+    auto checkInstantiation = [&hasUninstantiatedProxy](GrSurfaceProxy* p, GrMipMapped) {
         if (!p->isInstantiated()) {
             hasUninstantiatedProxy = true;
         }
@@ -183,7 +182,7 @@ void GrTextureOpList::purgeOpsWithUninstantiatedProxies() {
 bool GrTextureOpList::onIsUsed(GrSurfaceProxy* proxyToCheck) const {
     bool used = false;
 
-    auto visit = [ proxyToCheck, &used ] (GrSurfaceProxy* p) {
+    auto visit = [ proxyToCheck, &used ] (GrSurfaceProxy* p, GrMipMapped) {
         if (p == proxyToCheck) {
             used = true;
         }
@@ -191,7 +190,7 @@ bool GrTextureOpList::onIsUsed(GrSurfaceProxy* proxyToCheck) const {
     for (int i = 0; i < fRecordedOps.count(); ++i) {
         const GrOp* op = fRecordedOps[i].get();
         if (op) {
-            op->visitProxies(visit, GrOp::VisitorType::kOther);
+            op->visitProxies(visit);
         }
     }
 
@@ -204,22 +203,25 @@ void GrTextureOpList::gatherProxyIntervals(GrResourceAllocator* alloc) const {
     if (fRecordedOps.count()) {
         unsigned int cur = alloc->curOp();
 
-        alloc->addInterval(fTarget.get(), cur, cur+fRecordedOps.count()-1);
+        alloc->addInterval(fTarget.get(), cur, cur+fRecordedOps.count()-1,
+                           GrResourceAllocator::ActualUse::kYes);
     } else {
         // This can happen if there is a loadOp (e.g., a clear) but no other draws. In this case we
         // still need to add an interval for the destination so we create a fake op# for
         // the missing clear op.
-        alloc->addInterval(fTarget.get(), alloc->curOp(), alloc->curOp());
+        alloc->addInterval(fTarget.get(), alloc->curOp(), alloc->curOp(),
+                           GrResourceAllocator::ActualUse::kYes);
         alloc->incOps();
     }
 
-    auto gather = [ alloc SkDEBUGCODE(, this) ] (GrSurfaceProxy* p) {
-        alloc->addInterval(p, alloc->curOp(), alloc->curOp() SkDEBUGCODE(, p == fTarget.get()));
+    auto gather = [ alloc SkDEBUGCODE(, this) ] (GrSurfaceProxy* p, GrMipMapped) {
+        alloc->addInterval(p, alloc->curOp(), alloc->curOp(), GrResourceAllocator::ActualUse::kYes
+                           SkDEBUGCODE(, p == fTarget.get()));
     };
     for (int i = 0; i < fRecordedOps.count(); ++i) {
         const GrOp* op = fRecordedOps[i].get(); // only diff from the GrRenderTargetOpList version
         if (op) {
-            op->visitProxies(gather, GrOp::VisitorType::kAllocatorGather);
+            op->visitProxies(gather);
         }
 
         // Even though the op may have been (re)moved we still need to increment the op count to

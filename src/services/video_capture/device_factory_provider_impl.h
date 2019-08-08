@@ -9,7 +9,6 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/threading/thread.h"
-#include "media/capture/video/video_capture_jpeg_decoder.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -37,8 +36,10 @@ class DeviceFactoryProviderImpl : public mojom::DeviceFactoryProvider {
       std::unique_ptr<service_manager::ServiceContextRef> service_ref);
 
   // mojom::DeviceFactoryProvider implementation.
+#if defined(OS_CHROMEOS)
   void InjectGpuDependencies(
       mojom::AcceleratorFactoryPtr accelerator_factory) override;
+#endif  // defined(OS_CHROMEOS)
   void ConnectToDeviceFactory(mojom::DeviceFactoryRequest request) override;
   void ConnectToVideoSourceProvider(
       mojom::VideoSourceProviderRequest request) override;

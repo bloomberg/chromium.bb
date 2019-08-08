@@ -30,6 +30,8 @@
 #include "perfetto/tracing/core/trace_writer.h"
 #include "perfetto/tracing/ipc/producer_ipc_client.h"
 
+#include "src/profiling/memory/bookkeeping_dump.h"
+
 namespace perfetto {
 namespace profiling {
 namespace {
@@ -46,12 +48,6 @@ constexpr uint32_t kChildModeWatchdogPeriodMs = 10 * 1000;
 
 constexpr uint64_t kDefaultShmemSize = 8 * 1048576;  // ~8 MB
 constexpr uint64_t kMaxShmemSize = 500 * 1048576;    // ~500 MB
-
-ClientConfiguration MakeClientConfiguration(const DataSourceConfig& cfg) {
-  ClientConfiguration client_config;
-  client_config.interval = cfg.heapprofd_config().sampling_interval_bytes();
-  return client_config;
-}
 
 std::vector<UnwindingWorker> MakeUnwindingWorkers(HeapprofdProducer* delegate,
                                                   size_t n) {
@@ -229,7 +225,7 @@ void HeapprofdProducer::ConnectService() {
 
 void HeapprofdProducer::SetProducerEndpoint(
     std::unique_ptr<TracingService::ProducerEndpoint> endpoint) {
-  PERFETTO_DCHECK(state_ == kNotConnected);
+  PERFETTO_DCHECK(state_ == kNotConnected || state_ == kNotStarted);
   state_ = kConnecting;
   endpoint_ = std::move(endpoint);
 }
@@ -317,28 +313,30 @@ __attribute__((noreturn)) void HeapprofdProducer::TerminateProcess(
 void HeapprofdProducer::OnTracingSetup() {}
 
 void HeapprofdProducer::SetupDataSource(DataSourceInstanceID id,
-                                        const DataSourceConfig& cfg) {
+                                        const DataSourceConfig& ds_config) {
   PERFETTO_DLOG("Setting up data source.");
-  if (mode_ == HeapprofdMode::kChild && cfg.enable_extra_guardrails()) {
+  if (mode_ == HeapprofdMode::kChild && ds_config.enable_extra_guardrails()) {
     PERFETTO_ELOG("enable_extra_guardrails is not supported on user.");
     return;
   }
 
-  const HeapprofdConfig& heapprofd_config = cfg.heapprofd_config();
+  HeapprofdConfig heapprofd_config;
+  heapprofd_config.ParseRawProto(ds_config.heapprofd_config_raw());
+
   if (heapprofd_config.all() && !heapprofd_config.pid().empty())
     PERFETTO_ELOG("No point setting all and pid");
   if (heapprofd_config.all() && !heapprofd_config.process_cmdline().empty())
     PERFETTO_ELOG("No point setting all and process_cmdline");
 
-  if (cfg.name() != kHeapprofdDataSource) {
+  if (ds_config.name() != kHeapprofdDataSource) {
     PERFETTO_DLOG("Invalid data source name.");
     return;
   }
 
   auto it = data_sources_.find(id);
   if (it != data_sources_.end()) {
-    PERFETTO_DFATAL("Received duplicated data source instance id: %" PRIu64,
-                    id);
+    PERFETTO_DFATAL_OR_ELOG(
+        "Received duplicated data source instance id: %" PRIu64, id);
     return;
   }
 
@@ -358,9 +356,11 @@ void HeapprofdProducer::SetupDataSource(DataSourceInstanceID id,
       PERFETTO_LOG("Child mode skipping concurrent data source.");
 
       // Manually write one ProfilePacket about the rejected session.
-      auto buffer_id = static_cast<BufferID>(cfg.target_buffer());
+      auto buffer_id = static_cast<BufferID>(ds_config.target_buffer());
       auto trace_writer = endpoint_->CreateTraceWriter(buffer_id);
       auto trace_packet = trace_writer->NewTracePacket();
+      trace_packet->set_timestamp(
+          static_cast<uint64_t>(base::GetBootTimeNs().count()));
       auto profile_packet = trace_packet->set_profile_packet();
       auto process_dump = profile_packet->add_process_dumps();
       process_dump->set_pid(static_cast<uint64_t>(target_process_.pid));
@@ -373,9 +373,11 @@ void HeapprofdProducer::SetupDataSource(DataSourceInstanceID id,
 
   DataSource data_source;
   data_source.id = id;
-  data_source.client_configuration = MakeClientConfiguration(cfg);
+  auto& cli_config = data_source.client_configuration;
+  cli_config.interval = heapprofd_config.sampling_interval_bytes();
+  cli_config.block_client = heapprofd_config.block_client();
   data_source.config = heapprofd_config;
-  auto buffer_id = static_cast<BufferID>(cfg.target_buffer());
+  auto buffer_id = static_cast<BufferID>(ds_config.target_buffer());
   data_source.trace_writer = endpoint_->CreateTraceWriter(buffer_id);
   data_source.normalized_cmdlines = std::move(normalized_cmdlines);
 
@@ -395,59 +397,72 @@ bool HeapprofdProducer::IsPidProfiled(pid_t pid) {
   return false;
 }
 
+void HeapprofdProducer::SetStartupProperties(DataSource* data_source) {
+  const HeapprofdConfig& heapprofd_config = data_source->config;
+  if (heapprofd_config.all())
+    data_source->properties.emplace_back(properties_.SetAll());
+
+  for (std::string cmdline : data_source->normalized_cmdlines)
+    data_source->properties.emplace_back(
+        properties_.SetProperty(std::move(cmdline)));
+}
+
+void HeapprofdProducer::SignalRunningProcesses(DataSource* data_source) {
+  const HeapprofdConfig& heapprofd_config = data_source->config;
+
+  std::set<pid_t> pids;
+  if (heapprofd_config.all())
+    FindAllProfilablePids(&pids);
+  for (uint64_t pid : heapprofd_config.pid())
+    pids.emplace(static_cast<pid_t>(pid));
+
+  if (!data_source->normalized_cmdlines.empty())
+    FindPidsForCmdlines(data_source->normalized_cmdlines, &pids);
+
+  for (auto pid_it = pids.cbegin(); pid_it != pids.cend();) {
+    pid_t pid = *pid_it;
+    if (IsPidProfiled(pid)) {
+      PERFETTO_LOG("Rejecting concurrent session for %" PRIdMAX,
+                   static_cast<intmax_t>(pid));
+      data_source->rejected_pids.emplace(pid);
+      pid_it = pids.erase(pid_it);
+      continue;
+    }
+
+    PERFETTO_DLOG("Sending %d to %d", kHeapprofdSignal, pid);
+    if (kill(pid, kHeapprofdSignal) != 0) {
+      PERFETTO_DPLOG("kill");
+    }
+    ++pid_it;
+  }
+  data_source->signaled_pids = std::move(pids);
+}
+
 void HeapprofdProducer::StartDataSource(DataSourceInstanceID id,
-                                        const DataSourceConfig& cfg) {
+                                        const DataSourceConfig&) {
   PERFETTO_DLOG("Start DataSource");
-  const HeapprofdConfig& heapprofd_config = cfg.heapprofd_config();
 
   auto it = data_sources_.find(id);
   if (it == data_sources_.end()) {
     // This is expected in child heapprofd, where we reject uninteresting data
     // sources in SetupDataSource.
     if (mode_ == HeapprofdMode::kCentral) {
-      PERFETTO_DFATAL(
+      PERFETTO_DFATAL_OR_ELOG(
           "Received invalid data source instance to start: %" PRIu64, id);
     }
     return;
   }
+
   DataSource& data_source = it->second;
+  const HeapprofdConfig& heapprofd_config = data_source.config;
 
   // Central daemon - set system properties for any targets that start later,
   // and signal already-running targets to start the profiling client.
   if (mode_ == HeapprofdMode::kCentral) {
-    if (heapprofd_config.all())
-      data_source.properties.emplace_back(properties_.SetAll());
-
-    for (std::string cmdline : data_source.normalized_cmdlines)
-      data_source.properties.emplace_back(
-          properties_.SetProperty(std::move(cmdline)));
-
-    std::set<pid_t> pids;
-    if (heapprofd_config.all())
-      FindAllProfilablePids(&pids);
-    for (uint64_t pid : heapprofd_config.pid())
-      pids.emplace(static_cast<pid_t>(pid));
-
-    if (!data_source.normalized_cmdlines.empty())
-      FindPidsForCmdlines(data_source.normalized_cmdlines, &pids);
-
-    for (auto pid_it = pids.cbegin(); pid_it != pids.cend();) {
-      pid_t pid = *pid_it;
-      if (IsPidProfiled(pid)) {
-        PERFETTO_LOG("Rejecting concurrent session for %" PRIdMAX,
-                     static_cast<intmax_t>(pid));
-        data_source.rejected_pids.emplace(pid);
-        pid_it = pids.erase(pid_it);
-        continue;
-      }
-
-      PERFETTO_DLOG("Sending %d to %d", kHeapprofdSignal, pid);
-      if (kill(pid, kHeapprofdSignal) != 0) {
-        PERFETTO_DPLOG("kill");
-      }
-      ++pid_it;
-    }
-    data_source.signaled_pids = std::move(pids);
+    if (!heapprofd_config.no_startup())
+      SetStartupProperties(&data_source);
+    if (!heapprofd_config.no_running())
+      SignalRunningProcesses(&data_source);
   }
 
   const auto continuous_dump_config = heapprofd_config.continuous_dump_config();
@@ -473,7 +488,8 @@ void HeapprofdProducer::StopDataSource(DataSourceInstanceID id) {
   auto it = data_sources_.find(id);
   if (it == data_sources_.end()) {
     if (mode_ == HeapprofdMode::kCentral)
-      PERFETTO_DFATAL("Trying to stop non existing data source: %" PRIu64, id);
+      PERFETTO_DFATAL_OR_ELOG(
+          "Trying to stop non existing data source: %" PRIu64, id);
     return;
   }
 
@@ -517,23 +533,23 @@ bool HeapprofdProducer::Dump(DataSourceInstanceID id,
   DumpState dump_state(data_source.trace_writer.get(),
                        &data_source.next_index_);
 
-  for (pid_t rejected_pid : data_source.rejected_pids) {
-    ProfilePacket::ProcessHeapSamples* proto =
-        dump_state.current_profile_packet->add_process_dumps();
-    proto->set_pid(static_cast<uint64_t>(rejected_pid));
-    proto->set_rejected_concurrent(true);
-  }
+  for (pid_t rejected_pid : data_source.rejected_pids)
+    dump_state.RejectConcurrent(rejected_pid);
 
   for (std::pair<const pid_t, ProcessState>& pid_and_process_state :
        data_source.process_states) {
     pid_t pid = pid_and_process_state.first;
     ProcessState& process_state = pid_and_process_state.second;
     HeapTracker& heap_tracker = process_state.heap_tracker;
+
     bool from_startup =
         data_source.signaled_pids.find(pid) == data_source.signaled_pids.cend();
-    auto new_heapsamples = [pid, from_startup, &process_state](
+    uint64_t committed_timestamp = heap_tracker.committed_timestamp();
+    auto new_heapsamples = [pid, from_startup, committed_timestamp,
+                            &process_state](
                                ProfilePacket::ProcessHeapSamples* proto) {
       proto->set_pid(static_cast<uint64_t>(pid));
+      proto->set_timestamp(committed_timestamp);
       proto->set_from_startup(from_startup);
       proto->set_disconnected(process_state.disconnected);
       proto->set_buffer_overran(process_state.buffer_overran);
@@ -553,23 +569,32 @@ bool HeapprofdProducer::Dump(DataSourceInstanceID id,
         bucket->set_count(p.second);
       }
     };
-    heap_tracker.Dump(std::move(new_heapsamples), &dump_state);
+    dump_state.StartProcessDump(std::move(new_heapsamples));
+
+    if (process_state.page_idle_checker) {
+      PageIdleChecker& page_idle_checker = *process_state.page_idle_checker;
+      heap_tracker.GetAllocations([&dump_state, &page_idle_checker](
+                                      uint64_t addr, uint64_t size,
+                                      uintptr_t callstack_id) {
+        int64_t idle = page_idle_checker.OnIdlePage(addr, size);
+        if (idle < 0) {
+          PERFETTO_PLOG("OnIdlePage.");
+          return;
+        }
+        if (idle > 0)
+          dump_state.AddIdleBytes(callstack_id, static_cast<uint64_t>(idle));
+      });
+    }
+
+    heap_tracker.GetCallstackAllocations(
+        [&dump_state](const HeapTracker::CallstackAllocations& alloc) {
+          dump_state.WriteAllocation(alloc);
+        });
   }
 
-  for (GlobalCallstackTrie::Node* node : dump_state.callstacks_to_dump) {
-    // There need to be two separate loops over built_callstack because
-    // protozero cannot interleave different messages.
-    auto built_callstack = callsites_.BuildCallstack(node);
-    for (const Interned<Frame>& frame : built_callstack)
-      dump_state.WriteFrame(frame);
-    ProfilePacket::Callstack* callstack =
-        dump_state.current_profile_packet->add_callstacks();
-    callstack->set_id(node->id());
-    for (const Interned<Frame>& frame : built_callstack)
-      callstack->add_frame_ids(frame.id());
-  }
+  dump_state.DumpCallstacks(&callsites_);
+  dump_state.Finalize();
 
-  dump_state.current_trace_packet->Finalize();
   if (has_flush_id) {
     auto weak_producer = weak_factory_.GetWeakPtr();
     auto callback = [weak_producer, flush_id] {
@@ -607,7 +632,8 @@ void HeapprofdProducer::Flush(FlushRequestID flush_id,
 void HeapprofdProducer::FinishDataSourceFlush(FlushRequestID flush_id) {
   auto it = flushes_in_progress_.find(flush_id);
   if (it == flushes_in_progress_.end()) {
-    PERFETTO_DFATAL("FinishDataSourceFlush id invalid: %" PRIu64, flush_id);
+    PERFETTO_DFATAL_OR_ELOG("FinishDataSourceFlush id invalid: %" PRIu64,
+                            flush_id);
     return;
   }
   size_t& flush_in_progress = it->second;
@@ -620,7 +646,7 @@ void HeapprofdProducer::FinishDataSourceFlush(FlushRequestID flush_id) {
 void HeapprofdProducer::SocketDelegate::OnDisconnect(base::UnixSocket* self) {
   auto it = producer_->pending_processes_.find(self->peer_pid());
   if (it == producer_->pending_processes_.end()) {
-    PERFETTO_DFATAL("Unexpected disconnect.");
+    PERFETTO_DFATAL_OR_ELOG("Unexpected disconnect.");
     return;
   }
 
@@ -634,7 +660,7 @@ void HeapprofdProducer::SocketDelegate::OnNewIncomingConnection(
   Process peer_process;
   peer_process.pid = new_connection->peer_pid();
   if (!GetCmdlineForPID(peer_process.pid, &peer_process.cmdline))
-    PERFETTO_ELOG("Failed to get cmdline for %d", peer_process.pid);
+    PERFETTO_PLOG("Failed to get cmdline for %d", peer_process.pid);
 
   producer_->HandleClientConnection(std::move(new_connection), peer_process);
 }
@@ -643,7 +669,7 @@ void HeapprofdProducer::SocketDelegate::OnDataAvailable(
     base::UnixSocket* self) {
   auto it = producer_->pending_processes_.find(self->peer_pid());
   if (it == producer_->pending_processes_.end()) {
-    PERFETTO_DFATAL("Unexpected data.");
+    PERFETTO_DFATAL_OR_ELOG("Unexpected data.");
     return;
   }
 
@@ -653,8 +679,8 @@ void HeapprofdProducer::SocketDelegate::OnDataAvailable(
   char buf[1];
   self->Receive(buf, sizeof(buf), fds, base::ArraySize(fds));
 
-  static_assert(kHandshakeSize == 2, "change if below.");
-  if (fds[kHandshakeMaps] && fds[kHandshakeMem]) {
+  static_assert(kHandshakeSize == 3, "change if and else if below.");
+  if (fds[kHandshakeMaps] && fds[kHandshakeMem] && fds[kHandshakePageMap]) {
     auto ds_it =
         producer_->data_sources_.find(pending_process.data_source_instance_id);
     if (ds_it == producer_->data_sources_.end()) {
@@ -663,8 +689,19 @@ void HeapprofdProducer::SocketDelegate::OnDataAvailable(
     }
 
     DataSource& data_source = ds_it->second;
-    data_source.process_states.emplace(self->peer_pid(),
-                                       &producer_->callsites_);
+    auto it_and_inserted = data_source.process_states.emplace(
+        self->peer_pid(), &producer_->callsites_);
+
+    ProcessState& process_state = it_and_inserted.first->second;
+    if (data_source.config.idle_allocations()) {
+      base::ScopedFile kpageflags(base::OpenFile("/proc/kpageflags", O_RDONLY));
+      if (kpageflags) {
+        process_state.page_idle_checker = PageIdleChecker(
+            std::move(fds[kHandshakePageMap]), std::move(kpageflags));
+      } else {
+        PERFETTO_DFATAL_OR_ELOG("Failed to open /proc/kpageflags");
+      }
+    }
 
     PERFETTO_DLOG("%d: Received FDs.", self->peer_pid());
     int raw_fd = pending_process.shmem.fd();
@@ -677,15 +714,17 @@ void HeapprofdProducer::SocketDelegate::OnDataAvailable(
     handoff_data.data_source_instance_id =
         pending_process.data_source_instance_id;
     handoff_data.sock = self->ReleaseSocket();
-    for (size_t i = 0; i < kHandshakeSize; ++i)
-      handoff_data.fds[i] = std::move(fds[i]);
+    handoff_data.maps_fd = std::move(fds[kHandshakeMaps]);
+    handoff_data.mem_fd = std::move(fds[kHandshakeMem]);
     handoff_data.shmem = std::move(pending_process.shmem);
+    handoff_data.client_config = data_source.client_configuration;
 
     producer_->UnwinderForPID(self->peer_pid())
         .PostHandoffSocket(std::move(handoff_data));
     producer_->pending_processes_.erase(it);
-  } else if (fds[kHandshakeMaps] || fds[kHandshakeMem]) {
-    PERFETTO_DFATAL("%d: Received partial FDs.", self->peer_pid());
+  } else if (fds[kHandshakeMaps] || fds[kHandshakeMem] ||
+             fds[kHandshakePageMap]) {
+    PERFETTO_DFATAL_OR_ELOG("%d: Received partial FDs.", self->peer_pid());
     producer_->pending_processes_.erase(it);
   } else {
     PERFETTO_DLOG("%d: Received no FDs.", self->peer_pid());
@@ -736,7 +775,7 @@ void HeapprofdProducer::HandleClientConnection(
 
   pid_t peer_pid = new_connection->peer_pid();
   if (peer_pid != process.pid) {
-    PERFETTO_DFATAL("Invalid PID connected.");
+    PERFETTO_DFATAL_OR_ELOG("Invalid PID connected.");
     return;
   }
 
@@ -820,7 +859,8 @@ void HeapprofdProducer::HandleAllocRecord(AllocRecord alloc_rec) {
 
   heap_tracker.RecordMalloc(alloc_rec.frames, alloc_metadata.alloc_address,
                             alloc_metadata.total_size,
-                            alloc_metadata.sequence_number);
+                            alloc_metadata.sequence_number,
+                            alloc_metadata.clock_monotonic_coarse_timestamp);
 }
 
 void HeapprofdProducer::HandleFreeRecord(FreeRecord free_rec) {
@@ -844,12 +884,13 @@ void HeapprofdProducer::HandleFreeRecord(FreeRecord free_rec) {
   const FreeBatchEntry* entries = free_batch.entries;
   uint64_t num_entries = free_batch.num_entries;
   if (num_entries > kFreeBatchSize) {
-    PERFETTO_DFATAL("Malformed free page.");
+    PERFETTO_DFATAL_OR_ELOG("Malformed free page.");
     return;
   }
   for (size_t i = 0; i < num_entries; ++i) {
     const FreeBatchEntry& entry = entries[i];
-    heap_tracker.RecordFree(entry.addr, entry.sequence_number);
+    heap_tracker.RecordFree(entry.addr, entry.sequence_number,
+                            free_batch.clock_monotonic_coarse_timestamp);
   }
 }
 

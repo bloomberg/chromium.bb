@@ -98,7 +98,7 @@ void TreeViewExample::CreateExampleView(View* container) {
   // Add control buttons horizontally.
   const int button_column = 1;
   column_set = layout->AddColumnSet(button_column);
-  for (int i = 0; i < 3; i++) {
+  for (size_t i = 0; i < 3; i++) {
     column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
                           1.0f, GridLayout::USE_PREF, 0, 0);
   }

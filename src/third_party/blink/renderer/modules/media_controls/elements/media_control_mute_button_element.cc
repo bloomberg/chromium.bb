@@ -70,7 +70,9 @@ void MediaControlMuteButtonElement::DefaultEventHandler(Event& event) {
     }
 
     MediaElement().setMuted(!MediaElement().muted());
-    event.SetDefaultHandled();
+
+    if (!IsOverflowElement())
+      event.SetDefaultHandled();
   }
 
   if (!IsOverflowElement()) {

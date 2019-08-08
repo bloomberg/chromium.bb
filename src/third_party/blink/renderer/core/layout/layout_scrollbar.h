@@ -88,7 +88,7 @@ class LayoutScrollbar final : public Scrollbar {
   void DisconnectFromScrollableArea() override;
 
   void SetHoveredPart(ScrollbarPart) override;
-  void SetPressedPart(ScrollbarPart) override;
+  void SetPressedPart(ScrollbarPart, WebInputEvent::Type) override;
 
   void StyleChanged() override;
 

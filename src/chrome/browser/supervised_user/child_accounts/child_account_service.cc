@@ -8,21 +8,18 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/supervised_user/child_accounts/permission_request_creator_apiary.h"
-#include "chrome/browser/supervised_user/experimental/safe_search_url_reporter.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -193,10 +190,6 @@ bool ChildAccountService::SetActive(bool active) {
         SupervisedUserServiceFactory::GetForProfile(profile_);
     service->AddPermissionRequestCreator(
         PermissionRequestCreatorApiary::CreateWithProfile(profile_));
-    if (base::FeatureList::IsEnabled(features::kSafeSearchUrlReporting)) {
-      service->SetSafeSearchURLReporter(
-          SafeSearchURLReporter::CreateWithProfile(profile_));
-    }
   } else {
     SupervisedUserSettingsService* settings_service =
         SupervisedUserSettingsServiceFactory::GetForKey(
@@ -220,7 +213,7 @@ bool ChildAccountService::SetActive(bool active) {
   }
 
   // Trigger a sync reconfig to enable/disable the right SU data types.
-  // The logic to do this lives in the SupervisedUserSyncDataTypeController.
+  // The logic to do this lives in the SupervisedUserSyncModelTypeController.
   // TODO(crbug.com/946473): Get rid of this hack and instead call
   // ReadyForStartChanged from the controller.
   syncer::SyncService* sync_service =
@@ -360,6 +353,9 @@ void ChildAccountService::SetFirstCustodianPrefs(
                                   custodian.display_name);
   profile_->GetPrefs()->SetString(prefs::kSupervisedUserCustodianEmail,
                                   custodian.email);
+  profile_->GetPrefs()->SetString(
+      prefs::kSupervisedUserCustodianObfuscatedGaiaId,
+      custodian.obfuscated_gaia_id);
   profile_->GetPrefs()->SetString(prefs::kSupervisedUserCustodianProfileURL,
                                   custodian.profile_url);
   profile_->GetPrefs()->SetString(
@@ -373,6 +369,9 @@ void ChildAccountService::SetSecondCustodianPrefs(
                                   custodian.display_name);
   profile_->GetPrefs()->SetString(prefs::kSupervisedUserSecondCustodianEmail,
                                   custodian.email);
+  profile_->GetPrefs()->SetString(
+      prefs::kSupervisedUserSecondCustodianObfuscatedGaiaId,
+      custodian.obfuscated_gaia_id);
   profile_->GetPrefs()->SetString(
       prefs::kSupervisedUserSecondCustodianProfileURL,
       custodian.profile_url);

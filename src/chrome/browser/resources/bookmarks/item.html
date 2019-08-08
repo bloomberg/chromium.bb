@@ -80,6 +80,12 @@
       :host(:focus) {
         z-index: 1;
       }
+
+      .elided-text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
     </style>
     <div id="icon"></div>
     <div id="website-title" class="elided-text" title="[[item_.title]]">

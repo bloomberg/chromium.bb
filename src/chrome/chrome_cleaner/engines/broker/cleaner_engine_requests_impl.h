@@ -6,15 +6,15 @@
 #define CHROME_CHROME_CLEANER_ENGINES_BROKER_CLEANER_ENGINE_REQUESTS_IMPL_H_
 
 #include <memory>
-#include <vector>
 
 #include "base/callback_forward.h"
+#include "base/files/file_path.h"
 #include "base/strings/string16.h"
-#include "chrome/chrome_cleaner/constants/uws_id.h"
 #include "chrome/chrome_cleaner/engines/broker/cleaner_sandbox_interface.h"
 #include "chrome/chrome_cleaner/engines/broker/interface_metadata_observer.h"
 #include "chrome/chrome_cleaner/interfaces/cleaner_engine_requests.mojom.h"
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
+#include "chrome/chrome_cleaner/os/file_remover_api.h"
 #include "chrome/chrome_cleaner/zip_archiver/zip_archiver.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 
@@ -22,7 +22,6 @@ namespace chrome_cleaner {
 
 std::unique_ptr<chrome_cleaner::FileRemoverAPI>
 CreateFileRemoverWithDigestVerifier(
-    const std::vector<UwSId>& enabled_uws,
     std::unique_ptr<ZipArchiver> archiver,
     const base::RepeatingClosure& reboot_needed_callback);
 

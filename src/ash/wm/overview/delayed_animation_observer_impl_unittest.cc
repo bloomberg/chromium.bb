@@ -4,6 +4,8 @@
 
 #include "ash/wm/overview/delayed_animation_observer_impl.h"
 
+#include <memory>
+#include <utility>
 #include <vector>
 
 #include "ash/test/ash_test_base.h"
@@ -25,7 +27,7 @@ class TestOverviewDelegate : public OverviewDelegate {
   ~TestOverviewDelegate() override = default;
 
   // OverviewDelegate:
-  void OnSelectionEnded() override {}
+  void EndOverview() override {}
   void AddExitAnimationObserver(
       std::unique_ptr<DelayedAnimationObserver> animation_observer) override {
     animation_observer->SetOwner(this);

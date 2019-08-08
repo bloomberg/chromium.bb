@@ -82,6 +82,10 @@ void AudioOutputStreamFuchsia::Stop() {
   timer_.Stop();
 }
 
+// This stream is always used with sub second buffer sizes, where it's
+// sufficient to simply always flush upon Start().
+void AudioOutputStreamFuchsia::Flush() {}
+
 void AudioOutputStreamFuchsia::SetVolume(double volume) {
   DCHECK(0.0 <= volume && volume <= 1.0) << volume;
   volume_ = volume;
@@ -148,6 +152,10 @@ void AudioOutputStreamFuchsia::OnMinLeadTimeChanged(int64_t min_lead_time) {
   if (payload_buffer_.IsValid() &&
       GetMinBufferSize() > payload_buffer_.size()) {
     payload_buffer_ = {};
+
+    // Discard all packets currently in flight. This is required because
+    // AddPayloadBuffer() will fail if there are any packets in flight.
+    audio_renderer_->DiscardAllPacketsNoReply();
   }
 }
 

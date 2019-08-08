@@ -140,15 +140,15 @@ class GpuMemoryBufferVideoFramePoolTest : public ::testing::Test {
 
 void MaybeCreateHardwareFrameCallback(
     scoped_refptr<VideoFrame>* video_frame_output,
-    const scoped_refptr<VideoFrame>& video_frame) {
-  *video_frame_output = video_frame;
+    scoped_refptr<VideoFrame> video_frame) {
+  *video_frame_output = std::move(video_frame);
 }
 
 void MaybeCreateHardwareFrameCallbackAndTrackTime(
     scoped_refptr<VideoFrame>* video_frame_output,
     base::TimeTicks* output_time,
-    const scoped_refptr<VideoFrame>& video_frame) {
-  *video_frame_output = video_frame;
+    scoped_refptr<VideoFrame> video_frame) {
+  *video_frame_output = std::move(video_frame);
   *output_time = base::TimeTicks::Now();
 }
 

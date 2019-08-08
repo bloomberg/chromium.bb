@@ -218,9 +218,9 @@ bool FilePathWatcherTest::SetupWatch(const FilePath& target,
                                      FilePathWatcher* watcher,
                                      TestDelegateBase* delegate,
                                      bool recursive_watch) {
-  return watcher->Watch(
-      target, recursive_watch,
-      base::Bind(&TestDelegateBase::OnFileChanged, delegate->AsWeakPtr()));
+  return watcher->Watch(target, recursive_watch,
+                        base::BindRepeating(&TestDelegateBase::OnFileChanged,
+                                            delegate->AsWeakPtr()));
 }
 
 // Basic test: Create the file and verify that we notice.

@@ -21,6 +21,7 @@ Display CreateDisplayFromDisplayInfo(const DisplayInfo& display_info) {
   display.set_bounds(gfx::ScaleToEnclosingRect(display_info.screen_rect(),
                      1.0f / scale_factor));
   display.set_rotation(display_info.rotation());
+  display.set_display_frequency(display_info.display_frequency());
   return display;
 }
 

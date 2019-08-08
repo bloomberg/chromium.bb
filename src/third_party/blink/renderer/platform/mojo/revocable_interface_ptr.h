@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <cstddef>
 #include <string>
 #include <utility>
 
@@ -69,7 +70,7 @@ class RevocableInterfacePtr : public InterfaceInvalidator::Observer {
 
   // Assigning nullptr to this class causes it to close the currently bound
   // message pipe (if any) and returns the pointer to the unbound state.
-  RevocableInterfacePtr& operator=(decltype(nullptr)) {
+  RevocableInterfacePtr& operator=(std::nullptr_t) {
     reset();
     return *this;
   }

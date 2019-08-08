@@ -31,6 +31,7 @@ class Service;
 class UiController;
 class WebController;
 class ClientMemory;
+struct ClientSettings;
 struct TriggerContext;
 
 class ScriptExecutorDelegate {
@@ -42,7 +43,9 @@ class ScriptExecutorDelegate {
     virtual void OnNavigationStateChanged() = 0;
   };
 
+  virtual const ClientSettings& GetSettings() = 0;
   virtual const GURL& GetCurrentURL() = 0;
+  virtual const GURL& GetDeeplinkURL() = 0;
   virtual Service* GetService() = 0;
   virtual UiController* GetUiController() = 0;
   virtual WebController* GetWebController() = 0;
@@ -65,8 +68,13 @@ class ScriptExecutorDelegate {
   virtual void SetProgress(int progress) = 0;
   virtual void SetProgressVisible(bool visible) = 0;
   virtual void SetChips(std::unique_ptr<std::vector<Chip>> chips) = 0;
+  virtual bool GetResizeViewport() = 0;
   virtual void SetResizeViewport(bool resize_viewport) = 0;
   virtual void SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) = 0;
+  virtual ConfigureBottomSheetProto::PeekMode GetPeekMode() = 0;
+  virtual bool SetForm(
+      std::unique_ptr<FormProto> form,
+      base::RepeatingCallback<void(const FormProto::Result*)> callback) = 0;
 
   // Makes no area of the screen touchable.
   void ClearTouchableElementArea() {

@@ -4,11 +4,11 @@
     <script>
       // Set up a message port so that native test code can query the live
       // state of QueryableData.
-      var port = cast.__platform__.connector.bind('testQuery',
-          function(message) {
-            port.sendMessage(
-                JSON.stringify(cast.__platform__.queryPlatformValue(message)));
-          }.bind(this));
+      var port = cast.__platform__.PortConnector.bind('testQuery');
+      port.onmessage = function(message) {
+          port.postMessage(
+              JSON.stringify(cast.__platform__.queryPlatformValue(message.data)));
+        }.bind(this);
     </script>
   </body>
 </html>

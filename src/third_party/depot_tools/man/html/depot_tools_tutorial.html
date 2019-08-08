@@ -1253,11 +1253,11 @@ It was a Domo-Kuun.
 * <span style="font-weight: bold; color: #e42e16">2250f53	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ ozone: evdev: Filter devices by path
 * <span style="font-weight: bold; color: #e42e16">33a7a74	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ Always output seccomp error messages to stderr
 <span style="font-weight: bold; color: #ffffff">$ git status</span>
-# On branch fix_typo
-# Your branch is ahead of 'origin/master' by 1 commit.
-#   (use "git push" to publish your local commits)
-#
-nothing to commit, working directory clean
+On branch fix_typo
+Your branch is ahead of 'origin/master' by 1 commit.
+  (use "git push" to publish your local commits)
+
+nothing to commit, working tree clean
 <span style="font-weight: bold; color: #ffffff">$ git cl upload -r domo@chromium.org --send-mail</span>
 ... truncated output ...
 </code></pre></div></div><p><div class="paragraph"> While we wait for feedback, let's do something else.</p></div><div class="listingblock"><div class="content"><pre><code><span style="font-weight: bold; color: #ffffff">$ git new-branch chap2</span>
@@ -1272,15 +1272,15 @@ overhead, barely disturbing the thick cigarette smoke. No doubt was left about
 when the fan was last cleaned.
 EOF
 <span style="font-weight: bold; color: #ffffff">$ git status</span>
-# On branch chap2
-# Your branch is up-to-date with 'origin/master'.
-#
-# Changes not staged for commit:
-#   (use "git add &lt;file&gt;..." to update what will be committed)
-#   (use "git checkout -- &lt;file&gt;..." to discard changes in working directory)
-#
-#	<span style="color: #e42e16">modified:   build/whitespace_file.txt</span>
-#
+On branch chap2
+Your branch is up to date with 'origin/master'.
+
+Changes not staged for commit:
+  (use "git add &lt;file&gt;..." to update what will be committed)
+  (use "git restore &lt;file&gt;..." to discard changes in working directory)
+
+	<span style="color: #e42e16">modified:   build/whitespace_file.txt</span>
+
 no changes added to commit (use "git add" and/or "git commit -a")
 </code></pre></div></div><p><div class="paragraph"> Someone on the code review pointed out that our typo-fix has a typo :( We're still working on 'chap2' but we really want to land 'fix_typo', so let's switch over and fix it.</p></div><div class="listingblock"><div class="content"><pre><code><span style="font-weight: bold; color: #ffffff">$ git freeze</span>
 <span style="font-weight: bold; color: #ffffff">$ git checkout fix_typo</span>
@@ -1328,20 +1328,26 @@ It was a Domo-<span style="color: #e42e16">Banana</span><span style="color: #19c
 </span><span style="color: #19c518"></span><span style="color: #19c518">  chap2
 </span><span style="color: #33d6e5"></span><span style="font-weight: bold; color: #33d6e5">  fix_typo *
 </span><span style="font-weight: bold; color: #ffffff">$ git nav-upstream</span>
-Note: checking out 'origin/master'.
+Note: switching to 'origin/master'.
 
 You are in 'detached HEAD' state. You can look around, make experimental
 changes and commit them, and you can discard any commits you make in this
-state without impacting any branches by performing another checkout.
+state without impacting any branches by switching back to a branch.
 
 If you want to create a new branch to retain commits you create, you may
-do so (now or later) by using -b with the checkout command again. Example:
+do so (now or later) by using -c with the switch command. Example:
 
-  git checkout -b &lt;new-branch-name&gt;
+  git switch -c &lt;new-branch-name&gt;
 
-HEAD is now at beec6f4... Make ReflectorImpl use mailboxes
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+HEAD is now at beec6f4 Make ReflectorImpl use mailboxes
 <span style="font-weight: bold; color: #ffffff">$ git nav-downstream</span>
-Previous HEAD position was beec6f4... Make ReflectorImpl use mailboxes
+Previous HEAD position was beec6f4 Make ReflectorImpl use mailboxes
 Switched to branch 'chap2'
 Your branch is ahead of 'origin/master' by 1 commit.
   (use "git push" to publish your local commits)
@@ -1470,7 +1476,7 @@ Rebasing: chap2
   There was an poignant pause.
 
   CHAPTER 3:
-<span style="color: #19c518">++&lt;&lt;&lt;&lt;&lt;&lt;&lt; 59cdb7335b1c3a159ecc22214441cbe2194de25c</span>
+<span style="color: #19c518">++&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</span>
 <span style="color: #19c518"> +Hilariousness! This chapter is awesome!</span>
 <span style="color: #19c518">++=======</span>
 <span style="color: #19c518">+ Mr. Usagi felt that something wasn't right. Shortly after the Domo-Kun left he</span>
@@ -1580,7 +1586,7 @@ from <a href="https://chromium.googlesource.com/chromium/tools/depot_tools.git">
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2016-12-15 15:36:52 PST
+Last updated 2019-05-03 10:40:16 EDT
 </div>
 </div>
 </body>

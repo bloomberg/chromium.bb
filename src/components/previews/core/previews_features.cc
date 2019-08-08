@@ -81,11 +81,6 @@ const base::Feature kResourceLoadingHints {
 const base::Feature kLitePageServerPreviews{"LitePageServerPreviews",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Shows a Previews icon and string in the Android Omnibox instead of an Infobar
-// when enabled. Only works and is honored on Android..
-const base::Feature kAndroidOmniboxPreviewsBadge{
-    "AndroidOmniboxPreviewsBadge", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Provides slow page triggering parameters.
 const base::Feature kSlowPageTriggering{"PreviewsSlowPageTriggering",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
@@ -95,22 +90,29 @@ const base::Feature kSlowPageTriggering{"PreviewsSlowPageTriggering",
 const base::Feature kHTTPSServerPreviewsUsingURLLoader{
     "HTTPSServerPreviewsUsingURLLoader", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Uses 'Lite Mode' strings instead of 'Data Saver'.
-const base::Feature kDataSaverLiteModeRebranding{
-    "DataSaverLiteModeRebranding", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// When enabled, reloading on a preview will cause the session (5 minute) rule
-// to trigger.
-const base::Feature kPreviewsReloadsAreSoftOptOuts{
-    "PreviewsReloadsAreSoftOptOuts", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables fetching optimization hints from a remote Optimization Guide Service.
 const base::Feature kOptimizationHintsFetching{
     "OptimizationHintsFetching", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the use of a pref to only trigger Offline Previews when there is a
+// high chance that there is one to serve.
+const base::Feature kOfflinePreviewsFalsePositivePrevention{
+    "OfflinePreviewsFalsePositivePrevention",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables a per-page load holdback experiment using a random coin flip.
 const base::Feature kCoinFlipHoldback{"PreviewsCoinFlipHoldback_UKMOnly",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables filtering navigation URLs by suffix to exclude navigation that look
+// like media resources from triggering previews. For example,
+// http://chromium.org/video.mp4 would be excluded.
+const base::Feature kExcludedMediaSuffixes{"PreviewsExcludedMediaSuffixes",
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables DeferAllScript previews.
+const base::Feature kDeferAllScriptPreviews{"DeferAllScript",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace previews

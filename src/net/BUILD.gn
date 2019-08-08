@@ -220,6 +220,8 @@ component("net") {
     "cert/internal/path_builder.h",
     "cert/internal/revocation_checker.cc",
     "cert/internal/revocation_checker.h",
+    "cert/internal/revocation_util.cc",
+    "cert/internal/revocation_util.h",
     "cert/internal/signature_algorithm.cc",
     "cert/internal/signature_algorithm.h",
     "cert/internal/simple_path_builder_delegate.cc",
@@ -330,16 +332,10 @@ component("net") {
     "socket/ssl_socket.h",
     "socket/stream_socket.cc",
     "socket/stream_socket.h",
-    "ssl/channel_id_service.cc",
-    "ssl/channel_id_service.h",
-    "ssl/channel_id_store.cc",
-    "ssl/channel_id_store.h",
     "ssl/client_cert_identity.cc",
     "ssl/client_cert_identity.h",
     "ssl/client_cert_identity_mac.cc",
     "ssl/client_cert_identity_mac.h",
-    "ssl/default_channel_id_store.cc",
-    "ssl/default_channel_id_store.h",
     "ssl/openssl_ssl_util.cc",
     "ssl/openssl_ssl_util.h",
     "ssl/ssl_cert_request_info.cc",
@@ -459,7 +455,6 @@ component("net") {
       "base/ip_pattern.h",
       "base/layered_network_delegate.cc",
       "base/layered_network_delegate.h",
-      "base/linked_hash_map.h",
       "base/load_flags.h",
       "base/load_flags_list.h",
       "base/load_states.h",
@@ -494,6 +489,8 @@ component("net") {
       "base/network_interfaces_nacl.cc",
       "base/network_interfaces_win.cc",
       "base/network_interfaces_win.h",
+      "base/network_isolation_key.cc",
+      "base/network_isolation_key.h",
       "base/platform_mime_util.h",
       "base/platform_mime_util_linux.cc",
       "base/platform_mime_util_mac.mm",
@@ -529,7 +526,6 @@ component("net") {
       "cert/caching_cert_verifier.cc",
       "cert/caching_cert_verifier.h",
       "cert/cert_database_mac.cc",
-      "cert/cert_net_fetcher.cc",
       "cert/cert_net_fetcher.h",
       "cert/cert_verify_proc.cc",
       "cert/cert_verify_proc.h",
@@ -831,8 +827,6 @@ component("net") {
       "http/partial_data.h",
       "http/proxy_client_socket.cc",
       "http/proxy_client_socket.h",
-      "http/proxy_connect_redirect_http_stream.cc",
-      "http/proxy_connect_redirect_http_stream.h",
       "http/proxy_fallback.cc",
       "http/proxy_fallback.h",
       "http/transport_security_persister.cc",
@@ -968,6 +962,7 @@ component("net") {
       "proxy_resolution/proxy_resolver_winhttp.cc",
       "proxy_resolution/proxy_resolver_winhttp.h",
       "proxy_resolution/proxy_retry_info.h",
+      "quic/address_utils.h",
       "quic/bidirectional_stream_quic_impl.cc",
       "quic/bidirectional_stream_quic_impl.h",
       "quic/crypto/proof_source_chromium.cc",
@@ -1009,6 +1004,7 @@ component("net") {
       "quic/platform/impl/quic_mem_slice_storage_impl.h",
       "quic/platform/impl/quic_mutex_impl.cc",
       "quic/platform/impl/quic_mutex_impl.h",
+      "quic/platform/impl/quic_optional_impl.h",
       "quic/platform/impl/quic_pcc_sender_impl.h",
       "quic/platform/impl/quic_prefetch_impl.h",
       "quic/platform/impl/quic_ptr_util_impl.h",
@@ -1060,6 +1056,9 @@ component("net") {
       "quic/quic_stream_factory.h",
       "quic/quic_utils_chromium.cc",
       "quic/quic_utils_chromium.h",
+      "quiche/common/platform/impl/quiche_logging_impl.h",
+      "quiche/common/platform/impl/quiche_ptr_util_impl.h",
+      "quiche/common/platform/impl/quiche_unordered_containers_impl.h",
       "socket/client_socket_factory.cc",
       "socket/client_socket_factory.h",
       "socket/client_socket_pool.cc",
@@ -1155,7 +1154,6 @@ component("net") {
       "spdy/platform/impl/spdy_string_utils_impl.cc",
       "spdy/platform/impl/spdy_string_utils_impl.h",
       "spdy/platform/impl/spdy_test_utils_prod_impl.h",
-      "spdy/platform/impl/spdy_unsafe_arena_impl.cc",
       "spdy/platform/impl/spdy_unsafe_arena_impl.h",
       "spdy/server_push_delegate.h",
       "spdy/spdy_buffer.cc",
@@ -1210,6 +1208,10 @@ component("net") {
       "third_party/mozilla_security_manager/nsNSSCertificateDB.h",
       "third_party/mozilla_security_manager/nsPKCS12Blob.cpp",
       "third_party/mozilla_security_manager/nsPKCS12Blob.h",
+      "third_party/quiche/src/common/platform/api/quiche_logging.h",
+      "third_party/quiche/src/common/platform/api/quiche_ptr_util.h",
+      "third_party/quiche/src/common/platform/api/quiche_unordered_containers.h",
+      "third_party/quiche/src/common/simple_linked_hash_map.h",
       "third_party/quiche/src/http2/decoder/decode_buffer.cc",
       "third_party/quiche/src/http2/decoder/decode_buffer.h",
       "third_party/quiche/src/http2/decoder/decode_http2_structures.cc",
@@ -1295,10 +1297,13 @@ component("net") {
       "third_party/quiche/src/http2/http2_structures.h",
       "third_party/quiche/src/http2/platform/api/http2_arraysize.h",
       "third_party/quiche/src/http2/platform/api/http2_bug_tracker.h",
+      "third_party/quiche/src/http2/platform/api/http2_containers.h",
+      "third_party/quiche/src/http2/platform/api/http2_estimate_memory_usage.h",
       "third_party/quiche/src/http2/platform/api/http2_export.h",
       "third_party/quiche/src/http2/platform/api/http2_flag_utils.h",
       "third_party/quiche/src/http2/platform/api/http2_flags.h",
       "third_party/quiche/src/http2/platform/api/http2_logging.h",
+      "third_party/quiche/src/http2/platform/api/http2_macros.h",
       "third_party/quiche/src/http2/platform/api/http2_optional.h",
       "third_party/quiche/src/http2/platform/api/http2_ptr_util.h",
       "third_party/quiche/src/http2/platform/api/http2_reconstruct_object.h",
@@ -1424,8 +1429,8 @@ component("net") {
       "third_party/quiche/src/quic/core/frames/quic_goaway_frame.cc",
       "third_party/quiche/src/quic/core/frames/quic_goaway_frame.h",
       "third_party/quiche/src/quic/core/frames/quic_inlined_frame.h",
-      "third_party/quiche/src/quic/core/frames/quic_max_stream_id_frame.cc",
-      "third_party/quiche/src/quic/core/frames/quic_max_stream_id_frame.h",
+      "third_party/quiche/src/quic/core/frames/quic_max_streams_frame.cc",
+      "third_party/quiche/src/quic/core/frames/quic_max_streams_frame.h",
       "third_party/quiche/src/quic/core/frames/quic_message_frame.cc",
       "third_party/quiche/src/quic/core/frames/quic_message_frame.h",
       "third_party/quiche/src/quic/core/frames/quic_mtu_discovery_frame.h",
@@ -1451,8 +1456,8 @@ component("net") {
       "third_party/quiche/src/quic/core/frames/quic_stop_waiting_frame.h",
       "third_party/quiche/src/quic/core/frames/quic_stream_frame.cc",
       "third_party/quiche/src/quic/core/frames/quic_stream_frame.h",
-      "third_party/quiche/src/quic/core/frames/quic_stream_id_blocked_frame.cc",
-      "third_party/quiche/src/quic/core/frames/quic_stream_id_blocked_frame.h",
+      "third_party/quiche/src/quic/core/frames/quic_streams_blocked_frame.cc",
+      "third_party/quiche/src/quic/core/frames/quic_streams_blocked_frame.h",
       "third_party/quiche/src/quic/core/frames/quic_window_update_frame.cc",
       "third_party/quiche/src/quic/core/frames/quic_window_update_frame.h",
       "third_party/quiche/src/quic/core/http/http_decoder.cc",
@@ -1468,6 +1473,10 @@ component("net") {
       "third_party/quiche/src/quic/core/http/quic_header_list.h",
       "third_party/quiche/src/quic/core/http/quic_headers_stream.cc",
       "third_party/quiche/src/quic/core/http/quic_headers_stream.h",
+      "third_party/quiche/src/quic/core/http/quic_receive_control_stream.cc",
+      "third_party/quiche/src/quic/core/http/quic_receive_control_stream.h",
+      "third_party/quiche/src/quic/core/http/quic_send_control_stream.cc",
+      "third_party/quiche/src/quic/core/http/quic_send_control_stream.h",
       "third_party/quiche/src/quic/core/http/quic_server_session_base.cc",
       "third_party/quiche/src/quic/core/http/quic_server_session_base.h",
       "third_party/quiche/src/quic/core/http/quic_spdy_client_session_base.cc",
@@ -1511,6 +1520,8 @@ component("net") {
       "third_party/quiche/src/quic/core/qpack/qpack_progressive_encoder.h",
       "third_party/quiche/src/quic/core/qpack/qpack_static_table.cc",
       "third_party/quiche/src/quic/core/qpack/qpack_static_table.h",
+      "third_party/quiche/src/quic/core/qpack/value_splitting_header_list.cc",
+      "third_party/quiche/src/quic/core/qpack/value_splitting_header_list.h",
       "third_party/quiche/src/quic/core/quic_ack_listener_interface.cc",
       "third_party/quiche/src/quic/core/quic_ack_listener_interface.h",
       "third_party/quiche/src/quic/core/quic_alarm.cc",
@@ -1528,7 +1539,6 @@ component("net") {
       "third_party/quiche/src/quic/core/quic_config.h",
       "third_party/quiche/src/quic/core/quic_connection.cc",
       "third_party/quiche/src/quic/core/quic_connection.h",
-      "third_party/quiche/src/quic/core/quic_connection_close_delegate_interface.h",
       "third_party/quiche/src/quic/core/quic_connection_id.cc",
       "third_party/quiche/src/quic/core/quic_connection_id.h",
       "third_party/quiche/src/quic/core/quic_connection_stats.cc",
@@ -1614,6 +1624,7 @@ component("net") {
       "third_party/quiche/src/quic/core/quic_versions.h",
       "third_party/quiche/src/quic/core/quic_write_blocked_list.cc",
       "third_party/quiche/src/quic/core/quic_write_blocked_list.h",
+      "third_party/quiche/src/quic/core/session_notifier_interface.h",
       "third_party/quiche/src/quic/core/tls_client_handshaker.cc",
       "third_party/quiche/src/quic/core/tls_client_handshaker.h",
       "third_party/quiche/src/quic/core/tls_handshaker.cc",
@@ -1656,6 +1667,7 @@ component("net") {
       "third_party/quiche/src/quic/platform/api/quic_mem_slice_storage.h",
       "third_party/quiche/src/quic/platform/api/quic_mutex.cc",
       "third_party/quiche/src/quic/platform/api/quic_mutex.h",
+      "third_party/quiche/src/quic/platform/api/quic_optional.h",
       "third_party/quiche/src/quic/platform/api/quic_pcc_sender.h",
       "third_party/quiche/src/quic/platform/api/quic_prefetch.h",
       "third_party/quiche/src/quic/platform/api/quic_ptr_util.h",
@@ -1667,7 +1679,10 @@ component("net") {
       "third_party/quiche/src/quic/platform/api/quic_stack_trace.h",
       "third_party/quiche/src/quic/platform/api/quic_str_cat.h",
       "third_party/quiche/src/quic/platform/api/quic_string_piece.h",
+      "third_party/quiche/src/quic/platform/api/quic_string_utils.h",
       "third_party/quiche/src/quic/platform/api/quic_text_utils.h",
+      "third_party/quiche/src/quic/platform/api/quic_thread.h",
+      "third_party/quiche/src/quic/platform/api/quic_uint128.h",
       "third_party/quiche/src/spdy/core/hpack/hpack_constants.cc",
       "third_party/quiche/src/spdy/core/hpack/hpack_constants.h",
       "third_party/quiche/src/spdy/core/hpack/hpack_decoder_adapter.cc",
@@ -1705,6 +1720,8 @@ component("net") {
       "third_party/quiche/src/spdy/core/spdy_prefixed_buffer_reader.h",
       "third_party/quiche/src/spdy/core/spdy_protocol.cc",
       "third_party/quiche/src/spdy/core/spdy_protocol.h",
+      "third_party/quiche/src/spdy/core/spdy_simple_arena.cc",
+      "third_party/quiche/src/spdy/core/spdy_simple_arena.h",
       "third_party/quiche/src/spdy/core/write_scheduler.h",
       "third_party/quiche/src/spdy/core/zero_copy_output_buffer.h",
       "third_party/quiche/src/spdy/platform/api/spdy_arraysize.h",
@@ -1714,6 +1731,7 @@ component("net") {
       "third_party/quiche/src/spdy/platform/api/spdy_estimate_memory_usage.h",
       "third_party/quiche/src/spdy/platform/api/spdy_export.h",
       "third_party/quiche/src/spdy/platform/api/spdy_flags.h",
+      "third_party/quiche/src/spdy/platform/api/spdy_logging.h",
       "third_party/quiche/src/spdy/platform/api/spdy_macros.h",
       "third_party/quiche/src/spdy/platform/api/spdy_mem_slice.h",
       "third_party/quiche/src/spdy/platform/api/spdy_ptr_util.h",
@@ -1810,14 +1828,14 @@ component("net") {
         "reporting/reporting_cache_impl.h",
         "reporting/reporting_cache_observer.cc",
         "reporting/reporting_cache_observer.h",
-        "reporting/reporting_client.cc",
-        "reporting/reporting_client.h",
         "reporting/reporting_context.cc",
         "reporting/reporting_context.h",
         "reporting/reporting_delegate.cc",
         "reporting/reporting_delegate.h",
         "reporting/reporting_delivery_agent.cc",
         "reporting/reporting_delivery_agent.h",
+        "reporting/reporting_endpoint.cc",
+        "reporting/reporting_endpoint.h",
         "reporting/reporting_endpoint_manager.cc",
         "reporting/reporting_endpoint_manager.h",
         "reporting/reporting_garbage_collector.cc",
@@ -2082,6 +2100,8 @@ component("net") {
       "urlmon.lib",
       "winhttp.lib",
     ]
+
+    ldflags = [ "/DELAYLOAD:urlmon.dll" ]
   }
 
   if (!is_nacl) {
@@ -2123,8 +2143,7 @@ component("net") {
         "ftp/ftp_request_info.h",
         "ftp/ftp_response_info.cc",
         "ftp/ftp_response_info.h",
-        "ftp/ftp_server_type_histograms.cc",
-        "ftp/ftp_server_type_histograms.h",
+        "ftp/ftp_server_type.h",
         "ftp/ftp_transaction.h",
         "ftp/ftp_transaction_factory.h",
         "ftp/ftp_util.cc",
@@ -2587,6 +2606,9 @@ bundle_data("test_support_bundle_data") {
     "data/ssl/certificates/multi-root-crlset-unrelated.raw",
     "data/ssl/certificates/multi-root.keychain",
     "data/ssl/certificates/multivalue_rdn.pem",
+    "data/ssl/certificates/name-normalization-byteequal.pem",
+    "data/ssl/certificates/name-normalization-case-folding.pem",
+    "data/ssl/certificates/name-normalization-printable-utf8.pem",
     "data/ssl/certificates/name_constraint_bad.pem",
     "data/ssl/certificates/name_constraint_good.pem",
     "data/ssl/certificates/ndn.ca.crt",
@@ -2628,6 +2650,8 @@ bundle_data("test_support_bundle_data") {
     "data/ssl/certificates/subjectAltName_www_example_com.pem",
     "data/ssl/certificates/thawte.single.pem",
     "data/ssl/certificates/tls_feature_extension.pem",
+    "data/ssl/certificates/treadclimber.pem",
+    "data/ssl/certificates/treadclimber.sctlist",
     "data/ssl/certificates/unescaped.pem",
     "data/ssl/certificates/unittest.key.bin",
     "data/ssl/certificates/unittest.originbound.der",
@@ -2730,8 +2754,6 @@ static_library("test_support") {
     "test/cert_test_util.cc",
     "test/cert_test_util.h",
     "test/cert_test_util_nss.cc",
-    "test/channel_id_test_util.cc",
-    "test/channel_id_test_util.h",
     "test/ct_test_util.cc",
     "test/ct_test_util.h",
     "test/embedded_test_server/controllable_http_response.cc",
@@ -2887,6 +2909,8 @@ static_library("test_support") {
       "network_error_logging/mock_persistent_nel_store.h",
       "network_error_logging/network_error_logging_test_util.cc",
       "network_error_logging/network_error_logging_test_util.h",
+      "reporting/mock_persistent_reporting_store.cc",
+      "reporting/mock_persistent_reporting_store.h",
       "reporting/reporting_test_util.cc",
       "reporting/reporting_test_util.h",
     ]
@@ -3080,8 +3104,20 @@ if (is_linux || is_mac) {
 if (is_linux) {
   static_library("epoll_server") {
     sources = [
-      "tools/epoll_server/epoll_server.cc",
-      "tools/epoll_server/epoll_server.h",
+      "third_party/quiche/src/epoll_server/platform/api/epoll_bug.h",
+      "third_party/quiche/src/epoll_server/platform/api/epoll_export.h",
+      "third_party/quiche/src/epoll_server/platform/api/epoll_logging.h",
+      "third_party/quiche/src/epoll_server/platform/api/epoll_ptr_util.h",
+      "third_party/quiche/src/epoll_server/platform/api/epoll_thread.h",
+      "third_party/quiche/src/epoll_server/platform/api/epoll_time.h",
+      "third_party/quiche/src/epoll_server/simple_epoll_server.cc",
+      "third_party/quiche/src/epoll_server/simple_epoll_server.h",
+      "tools/epoll_server/platform/impl/epoll_bug_impl.h",
+      "tools/epoll_server/platform/impl/epoll_export_impl.h",
+      "tools/epoll_server/platform/impl/epoll_logging_impl.h",
+      "tools/epoll_server/platform/impl/epoll_ptr_util_impl.h",
+      "tools/epoll_server/platform/impl/epoll_thread_impl.h",
+      "tools/epoll_server/platform/impl/epoll_time_impl.h",
     ]
     deps = [
       ":net",
@@ -3091,8 +3127,6 @@ if (is_linux) {
 
   source_set("epoll_quic_tools") {
     sources = [
-      "quic/platform/impl/quic_default_proof_providers_impl.cc",
-      "quic/platform/impl/quic_default_proof_providers_impl.h",
       "quic/platform/impl/quic_epoll_clock.cc",
       "quic/platform/impl/quic_epoll_clock.h",
       "quic/platform/impl/quic_linux_socket_utils.cc",
@@ -3100,7 +3134,6 @@ if (is_linux) {
       "quic/platform/impl/quic_socket_utils.cc",
       "quic/platform/impl/quic_socket_utils.h",
       "quic/platform/impl/quic_stream_buffer_allocator_impl.h",
-      "quic/platform/impl/quic_system_event_loop_impl.h",
       "third_party/quiche/src/quic/core/quic_default_packet_writer.cc",
       "third_party/quiche/src/quic/core/quic_default_packet_writer.h",
       "third_party/quiche/src/quic/core/quic_epoll_alarm_factory.cc",
@@ -3109,9 +3142,8 @@ if (is_linux) {
       "third_party/quiche/src/quic/core/quic_epoll_connection_helper.h",
       "third_party/quiche/src/quic/core/quic_packet_reader.cc",
       "third_party/quiche/src/quic/core/quic_packet_reader.h",
-      "third_party/quiche/src/quic/platform/api/quic_default_proof_providers.h",
+      "third_party/quiche/src/quic/platform/api/quic_epoll.h",
       "third_party/quiche/src/quic/platform/api/quic_stream_buffer_allocator.h",
-      "third_party/quiche/src/quic/platform/api/quic_system_event_loop.h",
       "third_party/quiche/src/quic/tools/quic_client.cc",
       "third_party/quiche/src/quic/tools/quic_client.h",
       "third_party/quiche/src/quic/tools/quic_client_epoll_network_helper.cc",
@@ -3133,7 +3165,12 @@ if (is_linux) {
 
   executable("epoll_quic_client") {
     sources = [
+      "third_party/quiche/src/quic/tools/fake_proof_verifier.h",
       "third_party/quiche/src/quic/tools/quic_client_bin.cc",
+      "third_party/quiche/src/quic/tools/quic_epoll_client_factory.cc",
+      "third_party/quiche/src/quic/tools/quic_epoll_client_factory.h",
+      "third_party/quiche/src/quic/tools/quic_toy_client.cc",
+      "third_party/quiche/src/quic/tools/quic_toy_client.h",
     ]
     deps = [
       ":epoll_quic_tools",
@@ -3147,7 +3184,11 @@ if (is_linux) {
 
   executable("epoll_quic_server") {
     sources = [
+      "third_party/quiche/src/quic/tools/quic_epoll_server_factory.cc",
+      "third_party/quiche/src/quic/tools/quic_epoll_server_factory.h",
       "third_party/quiche/src/quic/tools/quic_server_bin.cc",
+      "third_party/quiche/src/quic/tools/quic_toy_server.cc",
+      "third_party/quiche/src/quic/tools/quic_toy_server.h",
     ]
     deps = [
       ":epoll_quic_tools",
@@ -3203,6 +3244,25 @@ if (is_android || is_linux) {
   }
 }
 
+source_set("epoll_server_test_tools") {
+  testonly = true
+  sources = [
+    "third_party/quiche/src/epoll_server/platform/api/epoll_address_test_utils.h",
+    "third_party/quiche/src/epoll_server/platform/api/epoll_expect_bug.h",
+    "third_party/quiche/src/epoll_server/platform/api/epoll_test.h",
+    "tools/epoll_server/platform/impl/epoll_address_test_utils_impl.h",
+    "tools/epoll_server/platform/impl/epoll_expect_bug_impl.h",
+    "tools/epoll_server/platform/impl/epoll_test_impl.h",
+  ]
+  deps = [
+    ":net",
+    ":test_support",
+    "//base",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}
+
 source_set("spdy_test_tools") {
   testonly = true
   sources = [
@@ -3212,6 +3272,18 @@ source_set("spdy_test_tools") {
   deps = [
     ":net",
     "//base",
+  ]
+}
+
+source_set("quiche_test_tools") {
+  testonly = true
+  sources = [
+    "quiche/common/platform/impl/quiche_test_impl.h",
+    "third_party/quiche/src/common/platform/api/quiche_test.h",
+  ]
+  deps = [
+    "//testing/gmock",
+    "//testing/gtest",
   ]
 }
 
@@ -3373,6 +3445,8 @@ source_set("quic_test_tools") {
 
   if (is_linux) {
     sources += [
+      "third_party/quiche/src/epoll_server/fake_simple_epoll_server.cc",
+      "third_party/quiche/src/epoll_server/fake_simple_epoll_server.h",
       "third_party/quiche/src/quic/test_tools/bad_packet_writer.cc",
       "third_party/quiche/src/quic/test_tools/bad_packet_writer.h",
       "third_party/quiche/src/quic/test_tools/limited_mtu_test_writer.cc",
@@ -3391,8 +3465,6 @@ source_set("quic_test_tools") {
       "third_party/quiche/src/quic/test_tools/quic_test_server.h",
       "third_party/quiche/src/quic/test_tools/server_thread.cc",
       "third_party/quiche/src/quic/test_tools/server_thread.h",
-      "tools/epoll_server/fake_epoll_server.cc",
-      "tools/epoll_server/fake_epoll_server.h",
     ]
     deps += [
       ":epoll_quic_tools",
@@ -3403,6 +3475,9 @@ source_set("quic_test_tools") {
 
 source_set("simple_quic_tools") {
   sources = [
+    "quic/platform/impl/quic_default_proof_providers_impl.cc",
+    "quic/platform/impl/quic_default_proof_providers_impl.h",
+    "quic/platform/impl/quic_system_event_loop_impl.h",
     "third_party/quiche/src/quic/core/chlo_extractor.cc",
     "third_party/quiche/src/quic/core/chlo_extractor.h",
     "third_party/quiche/src/quic/core/http/quic_spdy_client_session.cc",
@@ -3418,8 +3493,8 @@ source_set("simple_quic_tools") {
     "third_party/quiche/src/quic/core/quic_process_packet_interface.h",
     "third_party/quiche/src/quic/core/quic_time_wait_list_manager.cc",
     "third_party/quiche/src/quic/core/quic_time_wait_list_manager.h",
-    "third_party/quiche/src/quic/core/stateless_rejector.cc",
-    "third_party/quiche/src/quic/core/stateless_rejector.h",
+    "third_party/quiche/src/quic/platform/api/quic_default_proof_providers.h",
+    "third_party/quiche/src/quic/platform/api/quic_system_event_loop.h",
     "third_party/quiche/src/quic/tools/quic_backend_response.cc",
     "third_party/quiche/src/quic/tools/quic_backend_response.h",
     "third_party/quiche/src/quic/tools/quic_client_base.cc",
@@ -3434,12 +3509,14 @@ source_set("simple_quic_tools") {
     "third_party/quiche/src/quic/tools/quic_simple_crypto_server_stream_helper.h",
     "third_party/quiche/src/quic/tools/quic_simple_dispatcher.cc",
     "third_party/quiche/src/quic/tools/quic_simple_dispatcher.h",
+    "third_party/quiche/src/quic/tools/quic_simple_server_backend.h",
     "third_party/quiche/src/quic/tools/quic_simple_server_session.cc",
     "third_party/quiche/src/quic/tools/quic_simple_server_session.h",
     "third_party/quiche/src/quic/tools/quic_simple_server_stream.cc",
     "third_party/quiche/src/quic/tools/quic_simple_server_stream.h",
     "third_party/quiche/src/quic/tools/quic_spdy_client_base.cc",
     "third_party/quiche/src/quic/tools/quic_spdy_client_base.h",
+    "third_party/quiche/src/quic/tools/quic_spdy_server_base.h",
     "third_party/quiche/src/quic/tools/quic_url.cc",
     "third_party/quiche/src/quic/tools/quic_url.h",
     "tools/quic/quic_client_message_loop_network_helper.cc",
@@ -3471,6 +3548,9 @@ source_set("simple_quic_tools") {
 if (!is_ios) {
   executable("quic_client") {
     sources = [
+      "third_party/quiche/src/quic/tools/fake_proof_verifier.h",
+      "third_party/quiche/src/quic/tools/quic_toy_client.cc",
+      "third_party/quiche/src/quic/tools/quic_toy_client.h",
       "tools/quic/quic_simple_client_bin.cc",
     ]
     deps = [
@@ -3497,6 +3577,19 @@ if (!is_ios) {
   executable("quic_packet_printer") {
     sources = [
       "third_party/quiche/src/quic/tools/quic_packet_printer_bin.cc",
+    ]
+    deps = [
+      ":net",
+      ":simple_quic_tools",
+      "//base",
+      "//build/win:default_exe_manifest",
+      "//third_party/boringssl",
+      "//third_party/protobuf:protobuf_lite",
+    ]
+  }
+  executable("quic_crypto_message_printer") {
+    sources = [
+      "third_party/quiche/src/quic/core/crypto/crypto_message_printer_bin.cc",
     ]
     deps = [
       ":net",
@@ -4840,6 +4933,7 @@ test("net_unittests") {
     "base/network_interfaces_linux_unittest.cc",
     "base/network_interfaces_unittest.cc",
     "base/network_interfaces_win_unittest.cc",
+    "base/network_isolation_key_unittest.cc",
     "base/parse_number_unittest.cc",
     "base/port_util_unittest.cc",
     "base/prioritized_dispatcher_unittest.cc",
@@ -4882,6 +4976,7 @@ test("net_unittests") {
     "cert/internal/path_builder_unittest.cc",
     "cert/internal/path_builder_verify_certificate_chain_unittest.cc",
     "cert/internal/revocation_checker_unittest.cc",
+    "cert/internal/revocation_util_unittest.cc",
     "cert/internal/signature_algorithm_unittest.cc",
     "cert/internal/simple_path_builder_delegate_unittest.cc",
     "cert/internal/test_helpers.cc",
@@ -4981,7 +5076,6 @@ test("net_unittests") {
     "http/http_content_disposition_unittest.cc",
     "http/http_log_util_unittest.cc",
     "http/http_network_layer_unittest.cc",
-    "http/http_network_transaction_ssl_unittest.cc",
     "http/http_network_transaction_unittest.cc",
     "http/http_proxy_client_socket_unittest.cc",
     "http/http_proxy_connect_job_unittest.cc",
@@ -5128,13 +5222,11 @@ test("net_unittests") {
     "spdy/spdy_stream_test_util.h",
     "spdy/spdy_stream_unittest.cc",
     "spdy/spdy_write_queue_unittest.cc",
-    "ssl/channel_id_service_unittest.cc",
     "ssl/client_cert_identity_unittest.cc",
     "ssl/client_cert_store_mac_unittest.cc",
     "ssl/client_cert_store_nss_unittest.cc",
     "ssl/client_cert_store_unittest-inl.h",
     "ssl/client_cert_store_win_unittest.cc",
-    "ssl/default_channel_id_store_unittest.cc",
     "ssl/ssl_cipher_suite_names_unittest.cc",
     "ssl/ssl_client_auth_cache_unittest.cc",
     "ssl/ssl_client_session_cache_unittest.cc",
@@ -5152,6 +5244,7 @@ test("net_unittests") {
     "test/run_all_unittests.cc",
     "test/tcp_socket_proxy_unittest.cc",
     "third_party/nist-pkits/pkits_testcases-inl.h",
+    "third_party/quiche/src/common/simple_linked_hash_map_test.cc",
     "third_party/quiche/src/http2/decoder/decode_buffer_test.cc",
     "third_party/quiche/src/http2/decoder/decode_http2_structures_test.cc",
     "third_party/quiche/src/http2/decoder/frame_decoder_state_test_util.cc",
@@ -5236,6 +5329,7 @@ test("net_unittests") {
     "third_party/quiche/src/quic/core/congestion_control/prr_sender_test.cc",
     "third_party/quiche/src/quic/core/congestion_control/rtt_stats_test.cc",
     "third_party/quiche/src/quic/core/congestion_control/send_algorithm_test.cc",
+    "third_party/quiche/src/quic/core/congestion_control/tcp_cubic_sender_bytes_test.cc",
     "third_party/quiche/src/quic/core/congestion_control/uber_loss_algorithm_test.cc",
     "third_party/quiche/src/quic/core/congestion_control/windowed_filter_test.cc",
     "third_party/quiche/src/quic/core/crypto/aes_128_gcm_12_decrypter_test.cc",
@@ -5273,6 +5367,8 @@ test("net_unittests") {
     "third_party/quiche/src/quic/core/http/quic_client_push_promise_index_test.cc",
     "third_party/quiche/src/quic/core/http/quic_header_list_test.cc",
     "third_party/quiche/src/quic/core/http/quic_headers_stream_test.cc",
+    "third_party/quiche/src/quic/core/http/quic_receive_control_stream_test.cc",
+    "third_party/quiche/src/quic/core/http/quic_send_control_stream_test.cc",
     "third_party/quiche/src/quic/core/http/quic_server_session_base_test.cc",
     "third_party/quiche/src/quic/core/http/quic_spdy_session_test.cc",
     "third_party/quiche/src/quic/core/http/quic_spdy_stream_body_buffer_test.cc",
@@ -5293,6 +5389,7 @@ test("net_unittests") {
     "third_party/quiche/src/quic/core/qpack/qpack_progressive_decoder_test.cc",
     "third_party/quiche/src/quic/core/qpack/qpack_round_trip_test.cc",
     "third_party/quiche/src/quic/core/qpack/qpack_static_table_test.cc",
+    "third_party/quiche/src/quic/core/qpack/value_splitting_header_list_test.cc",
     "third_party/quiche/src/quic/core/quic_alarm_test.cc",
     "third_party/quiche/src/quic/core/quic_arena_scoped_ptr_test.cc",
     "third_party/quiche/src/quic/core/quic_bandwidth_test.cc",
@@ -5318,6 +5415,7 @@ test("net_unittests") {
     "third_party/quiche/src/quic/core/quic_packet_creator_test.cc",
     "third_party/quiche/src/quic/core/quic_packet_generator_test.cc",
     "third_party/quiche/src/quic/core/quic_packet_number_test.cc",
+    "third_party/quiche/src/quic/core/quic_packets_test.cc",
     "third_party/quiche/src/quic/core/quic_received_packet_manager_test.cc",
     "third_party/quiche/src/quic/core/quic_sent_packet_manager_test.cc",
     "third_party/quiche/src/quic/core/quic_server_id_test.cc",
@@ -5341,14 +5439,17 @@ test("net_unittests") {
     "third_party/quiche/src/quic/core/quic_write_blocked_list_test.cc",
     "third_party/quiche/src/quic/core/tls_handshaker_test.cc",
     "third_party/quiche/src/quic/core/uber_quic_stream_id_manager_test.cc",
+    "third_party/quiche/src/quic/core/uber_received_packet_manager_test.cc",
     "third_party/quiche/src/quic/platform/api/quic_containers_test.cc",
     "third_party/quiche/src/quic/platform/api/quic_endian_test.cc",
     "third_party/quiche/src/quic/platform/api/quic_hostname_utils_test.cc",
+    "third_party/quiche/src/quic/platform/api/quic_ip_address_test.cc",
     "third_party/quiche/src/quic/platform/api/quic_mem_slice_span_test.cc",
     "third_party/quiche/src/quic/platform/api/quic_mem_slice_storage_test.cc",
     "third_party/quiche/src/quic/platform/api/quic_mem_slice_test.cc",
     "third_party/quiche/src/quic/platform/api/quic_reference_counted_test.cc",
     "third_party/quiche/src/quic/platform/api/quic_str_cat_test.cc",
+    "third_party/quiche/src/quic/platform/api/quic_string_utils_test.cc",
     "third_party/quiche/src/quic/platform/api/quic_text_utils_test.cc",
     "third_party/quiche/src/quic/test_tools/crypto_test_utils_test.cc",
     "third_party/quiche/src/quic/test_tools/mock_quic_time_wait_list_manager.cc",
@@ -5357,6 +5458,7 @@ test("net_unittests") {
     "third_party/quiche/src/quic/test_tools/simple_session_notifier_test.cc",
     "third_party/quiche/src/quic/test_tools/simulator/quic_endpoint_test.cc",
     "third_party/quiche/src/quic/test_tools/simulator/simulator_test.cc",
+    "third_party/quiche/src/quic/tools/quic_simple_crypto_server_stream_helper_test.cc",
     "third_party/quiche/src/spdy/core/array_output_buffer.cc",
     "third_party/quiche/src/spdy/core/array_output_buffer.h",
     "third_party/quiche/src/spdy/core/array_output_buffer_test.cc",
@@ -5386,6 +5488,7 @@ test("net_unittests") {
     "third_party/quiche/src/spdy/core/spdy_protocol_test.cc",
     "third_party/quiche/src/spdy/core/spdy_protocol_test_utils.cc",
     "third_party/quiche/src/spdy/core/spdy_protocol_test_utils.h",
+    "third_party/quiche/src/spdy/core/spdy_simple_arena_test.cc",
     "third_party/quiche/src/spdy/core/spdy_test_utils.cc",
     "third_party/quiche/src/spdy/core/spdy_test_utils.h",
     "third_party/quiche/src/spdy/platform/api/spdy_mem_slice_test.cc",
@@ -5408,7 +5511,6 @@ test("net_unittests") {
     "url_request/url_request_file_dir_job_unittest.cc",
     "url_request/url_request_file_job_unittest.cc",
     "url_request/url_request_filter_unittest.cc",
-    "url_request/url_request_ftp_job_unittest.cc",
     "url_request/url_request_http_job_unittest.cc",
     "url_request/url_request_job_factory_impl_unittest.cc",
     "url_request/url_request_job_unittest.cc",
@@ -5452,6 +5554,23 @@ test("net_unittests") {
       "third_party/quiche/src/quic/quartc/simulated_packet_transport.cc",
       "third_party/quiche/src/quic/quartc/simulated_packet_transport.h",
       "third_party/quiche/src/quic/quartc/simulated_packet_transport_test.cc",
+      "third_party/quiche/src/quic/quartc/test/bidi_test_runner.cc",
+      "third_party/quiche/src/quic/quartc/test/bidi_test_runner.h",
+      "third_party/quiche/src/quic/quartc/test/quartc_bidi_test.cc",
+      "third_party/quiche/src/quic/quartc/test/quartc_competing_endpoint.cc",
+      "third_party/quiche/src/quic/quartc/test/quartc_competing_endpoint.h",
+      "third_party/quiche/src/quic/quartc/test/quartc_data_source.cc",
+      "third_party/quiche/src/quic/quartc/test/quartc_data_source.h",
+      "third_party/quiche/src/quic/quartc/test/quartc_data_source_test.cc",
+      "third_party/quiche/src/quic/quartc/test/quartc_peer.cc",
+      "third_party/quiche/src/quic/quartc/test/quartc_peer.h",
+      "third_party/quiche/src/quic/quartc/test/quartc_peer_test.cc",
+      "third_party/quiche/src/quic/quartc/test/quic_trace_interceptor.cc",
+      "third_party/quiche/src/quic/quartc/test/quic_trace_interceptor.h",
+      "third_party/quiche/src/quic/quartc/test/random_delay_link.cc",
+      "third_party/quiche/src/quic/quartc/test/random_delay_link.h",
+      "third_party/quiche/src/quic/quartc/test/random_packet_filter.cc",
+      "third_party/quiche/src/quic/quartc/test/random_packet_filter.h",
     ]
   }
 
@@ -5461,6 +5580,7 @@ test("net_unittests") {
   deps = [
     ":net",
     ":quic_test_tools",
+    ":quiche_test_tools",
     ":simple_quic_tools",
     ":spdy_test_tools",
     ":test_support",
@@ -5498,6 +5618,7 @@ test("net_unittests") {
     sources += [
       "network_error_logging/mock_persistent_nel_store_unittest.cc",
       "network_error_logging/network_error_logging_service_unittest.cc",
+      "reporting/mock_persistent_reporting_store_unittest.cc",
       "reporting/reporting_browsing_data_remover_unittest.cc",
       "reporting/reporting_cache_unittest.cc",
       "reporting/reporting_delivery_agent_unittest.cc",
@@ -5523,10 +5644,7 @@ test("net_unittests") {
       ]
     }
   } else {
-    sources -= [
-      "extras/sqlite/sqlite_channel_id_store_unittest.cc",
-      "extras/sqlite/sqlite_persistent_cookie_store_unittest.cc",
-    ]
+    sources -= [ "extras/sqlite/sqlite_persistent_cookie_store_unittest.cc" ]
   }
 
   data = []
@@ -5536,18 +5654,15 @@ test("net_unittests") {
 
   if (is_linux || is_mac || is_win || is_fuchsia) {
     deps += [
-      "//third_party/pyftpdlib/",
       "//third_party/pywebsocket/",
       "//third_party/tlslite/",
     ]
     data_deps += [
-      "//third_party/pyftpdlib/",
       "//third_party/pywebsocket/",
       "//third_party/tlslite/",
     ]
     data += [
       "tools/testserver/",
-      "//third_party/pyftpdlib/",
       "//third_party/pywebsocket/src/mod_pywebsocket/",
       "//third_party/tlslite/",
     ]
@@ -5562,6 +5677,7 @@ test("net_unittests") {
       "quic/platform/impl/quic_flags_test.cc",
       "quic/platform/impl/quic_linux_socket_utils_test.cc",
       "quic/platform/impl/quic_socket_utils_test.cc",
+      "third_party/quiche/src/epoll_server/simple_epoll_server_test.cc",
       "third_party/quiche/src/quic/core/chlo_extractor_test.cc",
       "third_party/quiche/src/quic/core/http/end_to_end_test.cc",
       "third_party/quiche/src/quic/core/http/quic_spdy_client_session_test.cc",
@@ -5569,7 +5685,6 @@ test("net_unittests") {
       "third_party/quiche/src/quic/core/http/quic_spdy_server_stream_base_test.cc",
       "third_party/quiche/src/quic/core/quic_epoll_alarm_factory_test.cc",
       "third_party/quiche/src/quic/core/quic_epoll_connection_helper_test.cc",
-      "third_party/quiche/src/quic/core/stateless_rejector_test.cc",
       "third_party/quiche/src/quic/tools/quic_client_test.cc",
       "third_party/quiche/src/quic/tools/quic_memory_cache_backend_test.cc",
       "third_party/quiche/src/quic/tools/quic_server_test.cc",
@@ -5578,12 +5693,12 @@ test("net_unittests") {
       "third_party/quiche/src/quic/tools/quic_url_test.cc",
       "tools/quic/quic_http_proxy_backend_stream_test.cc",
       "tools/quic/quic_http_proxy_backend_test.cc",
-      "tools/quic/quic_simple_server_session_helper_test.cc",
       "tools/quic/quic_simple_server_test.cc",
     ]
     deps += [
       ":epoll_quic_tools",
       ":epoll_server",
+      ":epoll_server_test_tools",
     ]
   }
 
@@ -5709,7 +5824,6 @@ test("net_unittests") {
       "ftp/ftp_directory_listing_parser_windows_unittest.cc",
       "ftp/ftp_network_transaction_unittest.cc",
       "ftp/ftp_util_unittest.cc",
-      "url_request/url_request_ftp_job_unittest.cc",
     ]
   }
 
@@ -5925,6 +6039,7 @@ source_set("net_fuzzer_test_support") {
     "socket/fuzzed_socket.h",
     "socket/fuzzed_socket_factory.cc",
     "socket/fuzzed_socket_factory.h",
+    "third_party/quiche/src/quic/platform/api/quic_fuzzed_data_provider.h",
   ]
   public_deps = [
     "//base/test:test_support",
@@ -6062,6 +6177,17 @@ fuzzer_test("net_get_domain_and_registry_fuzzer") {
     "//net",
   ]
   dict = "data/fuzzer_dictionaries/net_get_domain_and_registry_fuzzer.dict"
+}
+
+fuzzer_test("net_cert_ct_decode_signed_certificate_timestamp_fuzzer") {
+  sources = [
+    "cert/decode_signed_certificate_timestamp_fuzzer.cc",
+  ]
+  deps = [
+    ":net_fuzzer_test_support",
+    "//base",
+    "//net",
+  ]
 }
 
 fuzzer_test("net_cert_verify_name_match_fuzzer") {
@@ -6242,6 +6368,24 @@ if (!disable_ftp_support) {
     # understood (probably just needs to restrict maximum input size).
     additional_configs = [ "//testing/libfuzzer:no_clusterfuzz" ]
   }
+
+  fuzzer_test("net_url_request_ftp_fuzzer") {
+    sources = [
+      "url_request/url_request_ftp_fuzzer.cc",
+    ]
+    deps = [
+      ":net_fuzzer_test_support",
+      ":test_support",
+      "//base",
+      "//net",
+    ]
+    dict = "data/fuzzer_dictionaries/net_url_request_ftp_fuzzer.dict"
+    seed_corpus = "data/fuzzer_data/net_url_request_ftp_fuzzer/"
+
+    # TODO(https://crbug.com/962087): Re-enable once source of timeout is
+    # understood (probably just needs to restrict maximum input size).
+    additional_configs = [ "//testing/libfuzzer:no_clusterfuzz" ]
+  }
 }
 
 fuzzer_test("net_unescape_url_component_fuzzer") {
@@ -6375,20 +6519,6 @@ fuzzer_test("net_socks5_client_socket_fuzzer") {
   ]
 }
 
-fuzzer_test("net_url_request_ftp_fuzzer") {
-  sources = [
-    "url_request/url_request_ftp_fuzzer.cc",
-  ]
-  deps = [
-    ":net_fuzzer_test_support",
-    ":test_support",
-    "//base",
-    "//net",
-  ]
-  dict = "data/fuzzer_dictionaries/net_url_request_ftp_fuzzer.dict"
-  seed_corpus = "data/fuzzer_data/net_url_request_ftp_fuzzer/"
-}
-
 fuzzer_test("net_url_request_fuzzer") {
   sources = [
     "url_request/url_request_fuzzer.cc",
@@ -6519,6 +6649,20 @@ fuzzer_test("net_reporting_header_parser_fuzzer") {
 fuzzer_test("net_quic_stream_factory_fuzzer") {
   sources = [
     "quic/quic_stream_factory_fuzzer.cc",
+  ]
+
+  deps = [
+    ":net_fuzzer_test_support",
+    ":quic_test_tools",
+    ":test_support",
+    "//net",
+    "//net/data/ssl/certificates:generate_fuzzer_cert_includes",
+  ]
+}
+
+fuzzer_test("net_quic_framer_fuzzer") {
+  sources = [
+    "third_party/quiche/src/quic/test_tools/fuzzing/quic_framer_fuzzer.cc",
   ]
 
   deps = [

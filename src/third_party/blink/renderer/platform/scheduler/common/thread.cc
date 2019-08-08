@@ -4,9 +4,11 @@
 
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 
+#include "base/feature_list.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
@@ -48,8 +50,8 @@ void UpdateThreadTLSAndWait(Thread* thread) {
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   PostCrossThreadTask(
       *thread->GetTaskRunner(), FROM_HERE,
-      CrossThreadBind(&UpdateThreadTLS, WTF::CrossThreadUnretained(thread),
-                      WTF::CrossThreadUnretained(&event)));
+      CrossThreadBindOnce(&UpdateThreadTLS, WTF::CrossThreadUnretained(thread),
+                          WTF::CrossThreadUnretained(&event)));
   event.Wait();
 }
 
@@ -68,7 +70,8 @@ std::unique_ptr<Thread>& GetCompositorThread() {
 ThreadCreationParams::ThreadCreationParams(WebThreadType thread_type)
     : thread_type(thread_type),
       name(GetNameForThreadType(thread_type)),
-      frame_or_worker_scheduler(nullptr) {}
+      frame_or_worker_scheduler(nullptr),
+      supports_gc(false) {}
 
 ThreadCreationParams& ThreadCreationParams::SetThreadNameForTest(
     const char* thread_name) {
@@ -91,11 +94,17 @@ std::unique_ptr<Thread> Thread::CreateThread(
 }
 
 std::unique_ptr<Thread> Thread::CreateWebAudioThread() {
-  ThreadCreationParams params(WebThreadType::kWebAudioThread);
+  ThreadCreationParams params(WebThreadType::kAudioWorkletThread);
+  params.supports_gc = true;
+
   // WebAudio uses a thread with |DISPLAY| priority to avoid glitch when the
   // system is under the high pressure. Note that the main browser thread also
   // runs with same priority. (see: crbug.com/734539)
-  params.thread_priority = base::ThreadPriority::DISPLAY;
+  params.thread_priority =
+      base::FeatureList::IsEnabled(features::kAudioWorkletRealtimeThread)
+          ? base::ThreadPriority::REALTIME_AUDIO
+          : base::ThreadPriority::DISPLAY;
+
   return CreateThread(params);
 }
 

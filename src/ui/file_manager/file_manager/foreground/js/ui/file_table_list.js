@@ -486,8 +486,9 @@ filelist.handleKeyDown = function(e) {
     return;
   }
 
-  // Space
-  if (e.code == 'Space') {
+  // Space: Note ChromeOS and ChromeOS on Linux can generate KeyDown Space
+  // events differently the |key| attribute might be set to 'Unidentified'.
+  if (e.code == 'Space' || e.key === ' ') {
     if (leadIndex != -1) {
       const selected = sm.getIndexSelected(leadIndex);
       if (e.ctrlKey) {

@@ -97,18 +97,12 @@ void MemoryPressureListenerRegistry::OnMemoryPressure(
   TRACE_EVENT0("blink", "MemoryPressureListenerRegistry::onMemoryPressure");
   for (auto& client : clients_)
     client->OnMemoryPressure(level);
-  if (level == kWebMemoryPressureLevelCritical)
-    ClearMemory();
   WTF::Partitions::DecommitFreeableMemory();
 }
 
 void MemoryPressureListenerRegistry::OnPurgeMemory() {
   for (auto& client : clients_)
     client->OnPurgeMemory();
-  // Don't call clearMemory() because font cache invalidation always causes full
-  // layout. This increases tab switching cost significantly (e.g.
-  // en.wikipedia.org/wiki/Wikipedia). So we should not invalidate the font
-  // cache in purge+throttle.
   ImageDecodingStore::Instance().Clear();
   WTF::Partitions::DecommitFreeableMemory();
 
@@ -120,16 +114,9 @@ void MemoryPressureListenerRegistry::OnPurgeMemory() {
 
     PostCrossThreadTask(
         *thread->GetTaskRunner(), FROM_HERE,
-        CrossThreadBind(
+        CrossThreadBindOnce(
             MemoryPressureListenerRegistry::ClearThreadSpecificMemory));
   }
-}
-
-void MemoryPressureListenerRegistry::ClearMemory() {
-  // TODO(tasak|bashi): Make FontCache a MemoryPressureListener rather than
-  // clearing caches here.
-  if (base::FeatureList::IsEnabled(features::kInvalidateFontCacheOnPurge))
-    FontGlobalContext::ClearMemory();
 }
 
 void MemoryPressureListenerRegistry::ClearThreadSpecificMemory() {

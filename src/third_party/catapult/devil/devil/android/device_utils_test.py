@@ -1957,6 +1957,33 @@ class DeviceUtilsPullFileTest(DeviceUtilsTest):
           self.device.PullFile('/data/app/test.file.does.not.exist',
                                '/test/file/host/path')
 
+  def testPullFile_asRoot(self):
+    with mock.patch('os.path.exists', return_value=True):
+      with self.assertCalls(
+          (self.call.device.NeedsSU(), True),
+          (self.call.device.PathExists('/this/file/can.be.read.with.su',
+                                       as_root=True), True),
+          (mock.call.devil.android.device_temp_file.DeviceTempFile(self.adb),
+           MockTempFile('/sdcard/tmp/on.device')),
+          self.call.device.RunShellCommand(
+              'SRC=/this/file/can.be.read.with.su DEST=/sdcard/tmp/on.device;'
+              'cp "$SRC" "$DEST" && chmod 666 "$DEST"',
+              shell=True, as_root=True, check_return=True),
+          (self.call.adb.Pull('/sdcard/tmp/on.device',
+                              '/test/file/host/path'))):
+        self.device.PullFile('/this/file/can.be.read.with.su',
+                             '/test/file/host/path', as_root=True)
+
+  def testPullFile_asRootDoesntExistOnDevice(self):
+    with mock.patch('os.path.exists', return_value=True):
+      with self.assertCalls(
+          (self.call.device.NeedsSU(), True),
+          (self.call.device.PathExists('/data/app/test.file.does.not.exist',
+                                       as_root=True), False)):
+        with self.assertRaises(device_errors.CommandFailedError):
+          self.device.PullFile('/data/app/test.file.does.not.exist',
+                               '/test/file/host/path', as_root=True)
+
 
 class DeviceUtilsReadFileTest(DeviceUtilsTest):
 
@@ -2729,6 +2756,16 @@ class DeviceUtilsGetWebViewUpdateServiceDumpTest(DeviceUtilsTest):
       with self.assertCalls():
         self.device.GetWebViewUpdateServiceDump()
 
+  def testGetWebViewUpdateServiceDump_noPackage(self):
+    with self.patch_call(self.call.device.build_version_sdk,
+                         return_value=version_codes.OREO):
+      with self.assertCall(self.call.adb.Shell('dumpsys webviewupdate'),
+                           'Fallback logic enabled: true\n'
+                           'Current WebView package is null'):
+        update = self.device.GetWebViewUpdateServiceDump()
+        self.assertEqual(True, update['FallbackLogicEnabled'])
+        self.assertEqual(None, update['CurrentWebViewPackage'])
+
 
 class DeviceUtilsSetWebViewImplementationTest(DeviceUtilsTest):
 
@@ -2802,6 +2839,15 @@ class DeviceUtilsSetWebViewImplementationTest(DeviceUtilsTest):
     }
     self._testSetWebViewImplementationHelper(mock_dump_sys,
                                              'higher versionCode')
+
+  def testSetWebViewImplementation_invalidSignature(self):
+    mock_dump_sys = {
+        'WebViewPackages': {
+            'foo.org': 'Incorrect signature',
+        }
+    }
+    self._testSetWebViewImplementationHelper(mock_dump_sys,
+                                             'signed with release keys')
 
 
 class DeviceUtilsSetWebViewFallbackLogicTest(DeviceUtilsTest):

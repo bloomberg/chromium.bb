@@ -68,6 +68,11 @@ class TestRenderFrame : public RenderFrameImpl {
   std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
   TakeLastCommitParams();
 
+  // Sets a callback to be run the next time DidAddMessageToConsole
+  // is called (e.g. window.console.log() is called).
+  void SetDidAddMessageToConsoleCallback(
+      base::OnceCallback<void(const base::string16& msg)> callback);
+
   service_manager::mojom::InterfaceProviderRequest
   TakeLastInterfaceProviderRequest();
 

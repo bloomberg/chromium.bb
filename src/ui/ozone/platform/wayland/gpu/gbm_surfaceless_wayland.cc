@@ -11,7 +11,7 @@
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/ozone/common/egl_util.h"
-#include "ui/ozone/platform/wayland/gpu/wayland_connection_proxy.h"
+#include "ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_surface_factory.h"
 
 namespace ui {
@@ -28,11 +28,11 @@ void WaitForFence(EGLDisplay display, EGLSyncKHR fence) {
 
 GbmSurfacelessWayland::GbmSurfacelessWayland(
     WaylandSurfaceFactory* surface_factory,
-    WaylandConnectionProxy* connection,
+    WaylandBufferManagerGpu* buffer_manager,
     gfx::AcceleratedWidget widget)
     : SurfacelessEGL(gfx::Size()),
       surface_factory_(surface_factory),
-      connection_(connection),
+      buffer_manager_(buffer_manager),
       widget_(widget),
       has_implicit_external_sync_(
           HasEGLExtension("EGL_ARM_implicit_external_sync")),
@@ -61,10 +61,6 @@ bool GbmSurfacelessWayland::ScheduleOverlayPlane(
 
 bool GbmSurfacelessWayland::IsOffscreen() {
   return false;
-}
-
-bool GbmSurfacelessWayland::SupportsPresentationCallback() {
-  return true;
 }
 
 bool GbmSurfacelessWayland::SupportsAsyncSwap() {
@@ -216,8 +212,8 @@ void GbmSurfacelessWayland::SubmitFrame() {
     }
 
     submitted_frame_->buffer_id = planes_.back().pixmap->GetUniqueId();
-    connection_->ScheduleBufferSwap(widget_, submitted_frame_->buffer_id,
-                                    submitted_frame_->damage_region_);
+    buffer_manager_->CommitBuffer(widget_, submitted_frame_->buffer_id,
+                                  submitted_frame_->damage_region_);
 
     planes_.clear();
   }
@@ -256,6 +252,7 @@ void GbmSurfacelessWayland::OnSubmission(uint32_t buffer_id,
 void GbmSurfacelessWayland::OnPresentation(
     uint32_t buffer_id,
     const gfx::PresentationFeedback& feedback) {
+  DCHECK(!pending_presentation_frames_.empty());
   auto* frame = pending_presentation_frames_.front().get();
   DCHECK_EQ(frame->buffer_id, buffer_id);
   std::move(frame->presentation_callback).Run(feedback);

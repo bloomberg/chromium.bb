@@ -77,7 +77,7 @@ TEST_F(GrpcAuthenticatedExecutorTest, VerifyExecuteRpcCallIsForwarded) {
                         grpc::CompletionQueue*) {
         return std::unique_ptr<grpc::ClientAsyncResponseReader<EchoResponse>>();
       }),
-      std::make_unique<grpc::ClientContext>(), EchoRequest(),
+      EchoRequest(),
       base::DoNothing::Once<const grpc::Status&, const EchoResponse&>());
   auto* request_ptr = request.get();
   EXPECT_CALL(*mock_executor_, ExecuteRpc(_))
@@ -98,7 +98,7 @@ TEST_F(GrpcAuthenticatedExecutorTest, CancelAuthenticatingRpcAndSendNewOne) {
                         grpc::CompletionQueue*) {
         return std::unique_ptr<grpc::ClientAsyncResponseReader<EchoResponse>>();
       }),
-      std::make_unique<grpc::ClientContext>(), EchoRequest(),
+      EchoRequest(),
       base::DoNothing::Once<const grpc::Status&, const EchoResponse&>());
 
   OAuthTokenGetter::TokenCallback saved_on_access_token;
@@ -125,7 +125,7 @@ TEST_F(GrpcAuthenticatedExecutorTest, CancelAuthenticatingRpcAndSendNewOne) {
                         grpc::CompletionQueue*) {
         return std::unique_ptr<grpc::ClientAsyncResponseReader<EchoResponse>>();
       }),
-      std::make_unique<grpc::ClientContext>(), EchoRequest(),
+      EchoRequest(),
       base::DoNothing::Once<const grpc::Status&, const EchoResponse&>());
   auto* request_ptr = request.get();
 

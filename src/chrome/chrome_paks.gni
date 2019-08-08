@@ -8,6 +8,10 @@ import("//extensions/buildflags/buildflags.gni")
 import("//ui/base/ui_features.gni")
 import("chrome_repack_locales.gni")
 
+if (is_chromeos) {
+  import("//chrome/browser/chromeos/kiosk_next_home/kiosk_next.gni")
+}
+
 # Generates a rule to repack a set of resources, substituting a given string
 # in for the percentage (e.g. "100", "200"). It generates the repacked files in
 # the "gen" directory, and then introduces a copy rule to copy it to the root
@@ -134,6 +138,7 @@ template("chrome_extra_paks") {
       # New paks should be added here by default.
       sources += [
         "$root_gen_dir/chrome/component_extension_resources.pak",
+        "$root_gen_dir/chrome/downloads_resources.pak",
         "$root_gen_dir/chrome/local_ntp_resources.pak",
         "$root_gen_dir/chrome/settings_resources.pak",
         "$root_gen_dir/content/browser/devtools/devtools_resources.pak",
@@ -141,6 +146,7 @@ template("chrome_extra_paks") {
       ]
       deps += [
         "//chrome/browser/resources:component_extension_resources",
+        "//chrome/browser/resources:downloads_resources",
         "//chrome/browser/resources:local_ntp_resources",
         "//chrome/browser/resources:settings_resources",
         "//content/browser/devtools:devtools_resources",
@@ -166,6 +172,10 @@ template("chrome_extra_paks") {
         "//third_party/ink:ink_resources",
         "//ui/file_manager:resources",
       ]
+      if (enable_kiosk_next && is_chrome_branded) {
+        sources += [ "$root_gen_dir/chrome/kiosk_next_internal_resources.pak" ]
+        deps += [ "//chrome/browser/resources:kiosk_next_internal_resources" ]
+      }
     }
     if (!is_android && !is_chromeos) {
       sources += [ "$root_gen_dir/chrome/onboarding_welcome_resources.pak" ]

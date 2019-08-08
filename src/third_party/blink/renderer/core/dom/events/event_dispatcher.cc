@@ -242,9 +242,6 @@ inline EventDispatchContinuation EventDispatcher::DispatchEventAtCapturing() {
   for (wtf_size_t i = event_->GetEventPath().size() - 1; i > 0; --i) {
     const NodeEventContext& event_context = event_->GetEventPath()[i];
     if (event_context.CurrentTargetSameAsTarget()) {
-      if (!RuntimeEnabledFeatures::
-              CallCaptureListenersAtCapturePhaseAtShadowHostsEnabled())
-        continue;
       event_->SetEventPhase(Event::kAtTarget);
       event_->SetFireOnlyCaptureListenersAtTarget(true);
       event_context.HandleLocalEvents(*event_);
@@ -275,14 +272,9 @@ inline void EventDispatcher::DispatchEventAtBubbling() {
     if (event_context.CurrentTargetSameAsTarget()) {
       // TODO(hayato): Need to check cancelBubble() also here?
       event_->SetEventPhase(Event::kAtTarget);
-      if (RuntimeEnabledFeatures::
-              CallCaptureListenersAtCapturePhaseAtShadowHostsEnabled()) {
-        event_->SetFireOnlyNonCaptureListenersAtTarget(true);
-        event_context.HandleLocalEvents(*event_);
-        event_->SetFireOnlyNonCaptureListenersAtTarget(false);
-      } else {
-        event_context.HandleLocalEvents(*event_);
-      }
+      event_->SetFireOnlyNonCaptureListenersAtTarget(true);
+      event_context.HandleLocalEvents(*event_);
+      event_->SetFireOnlyNonCaptureListenersAtTarget(false);
     } else if (event_->bubbles() && !event_->cancelBubble()) {
       event_->SetEventPhase(Event::kBubblingPhase);
       event_context.HandleLocalEvents(*event_);

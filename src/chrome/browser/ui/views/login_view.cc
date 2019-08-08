@@ -42,7 +42,7 @@ void AddHeaderLabel(views::GridLayout* layout,
 LoginView::LoginView(const base::string16& authority,
                      const base::string16& explanation,
                      LoginHandler::LoginModelData* login_model_data)
-    : login_model_(login_model_data ? login_model_data->model : nullptr) {
+    : http_auth_manager_(login_model_data ? login_model_data->model : nullptr) {
   // TODO(tapted): When Harmony is default, this should be removed and left up
   // to textfield_layout.h to decide.
   constexpr int kMessageWidth = 320;
@@ -72,15 +72,15 @@ LoginView::LoginView(const base::string16& authority,
       kFieldsColumnSetId);
   password_field_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
 
-  if (login_model_data) {
-    login_model_->AddObserverAndDeliverCredentials(this,
-                                                   login_model_data->form);
+  if (http_auth_manager_) {
+    http_auth_manager_->SetObserverAndDeliverCredentials(
+        this, login_model_data->form);
   }
 }
 
 LoginView::~LoginView() {
-  if (login_model_)
-    login_model_->RemoveObserver(this);
+  if (http_auth_manager_)
+    http_auth_manager_->DetachObserver(this);
 }
 
 const base::string16& LoginView::GetUsername() const {
@@ -96,11 +96,10 @@ views::View* LoginView::GetInitiallyFocusedView() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// LoginView, views::View, password_manager::LoginModelObserver overrides:
+// LoginView, views::View, password_manager::HttpAuthObserver overrides:
 
-void LoginView::OnAutofillDataAvailableInternal(
-    const base::string16& username,
-    const base::string16& password) {
+void LoginView::OnAutofillDataAvailable(const base::string16& username,
+                                        const base::string16& password) {
   if (username_field_->text().empty()) {
     username_field_->SetText(username);
     password_field_->SetText(password);
@@ -109,11 +108,9 @@ void LoginView::OnAutofillDataAvailableInternal(
 }
 
 void LoginView::OnLoginModelDestroying() {
-  login_model_->RemoveObserver(this);
-  login_model_ = NULL;
+  http_auth_manager_ = nullptr;
 }
 
 const char* LoginView::GetClassName() const {
   return "LoginView";
 }
-

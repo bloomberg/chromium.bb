@@ -104,6 +104,7 @@ class UI_ANDROID_EXPORT OverscrollRefresh {
 
   float viewport_width_;
   float scroll_begin_x_;
+  float scroll_begin_y_;
   const float edge_width_;
   gfx::Vector2dF cumulative_scroll_;
   OverscrollRefreshHandler* const handler_;

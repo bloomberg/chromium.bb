@@ -378,6 +378,13 @@ var Runtime = class {  // eslint-disable-line
     return '\n/*# sourceURL=' + sourceURL + ' */';
   }
 
+  /**
+   * @param {function(string):string} localizationFunction
+   */
+  static setL10nCallback(localizationFunction) {
+    Runtime._l10nCallback = localizationFunction;
+  }
+
   useTestBase() {
     Runtime._remoteBase = 'http://localhost:8000/inspector-sources/';
     if (Runtime.queryParam('debugFrontend'))
@@ -890,8 +897,10 @@ Runtime.Extension = class {
    * @return {string}
    */
   title() {
-    // FIXME: should be Common.UIString() but runtime is not l10n aware yet.
-    return this._descriptor['title-' + Runtime._platform] || this._descriptor['title'];
+    const title = this._descriptor['title-' + Runtime._platform] || this._descriptor['title'];
+    if (title && Runtime._l10nCallback)
+      return Runtime._l10nCallback(title);
+    return title;
   }
 
   /**
@@ -1071,12 +1080,16 @@ Runtime.experiments = new Runtime.ExperimentsSupport();
 /** @type {Function} */
 Runtime._appStartedPromiseCallback;
 Runtime._appStartedPromise = new Promise(fulfil => Runtime._appStartedPromiseCallback = fulfil);
+
+/** @type {function(string):string} */
+Runtime._l10nCallback;
+
 /**
  * @type {?string}
  */
 Runtime._remoteBase;
 (function validateRemoteBase() {
-  if (location.href.startsWith('chrome-devtools://devtools/bundled/') && Runtime.queryParam('remoteBase')) {
+  if (location.href.startsWith('devtools://devtools/bundled/') && Runtime.queryParam('remoteBase')) {
     const versionMatch = /\/serve_file\/(@[0-9a-zA-Z]+)\/?$/.exec(Runtime.queryParam('remoteBase'));
     if (versionMatch)
       Runtime._remoteBase = `${location.origin}/remote/serve_file/${versionMatch[1]}/`;

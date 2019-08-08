@@ -17,19 +17,24 @@ namespace ui {
 namespace {
 
 base::i18n::BreakIterator::BreakType ICUBreakTypeForBoundaryType(
-    TextBoundaryType boundary) {
+    AXTextBoundary boundary) {
   switch (boundary) {
-    case CHAR_BOUNDARY:
+    case AXTextBoundary::kCharacter:
       return base::i18n::BreakIterator::BREAK_CHARACTER;
-    case SENTENCE_BOUNDARY:
+    case AXTextBoundary::kSentenceStart:
       return base::i18n::BreakIterator::BREAK_SENTENCE;
-    case WORD_BOUNDARY:
+    case AXTextBoundary::kWordStart:
+    case AXTextBoundary::kWordStartOrEnd:
       return base::i18n::BreakIterator::BREAK_WORD;
     // These are currently unused since line breaking is done via an array of
-    // line break offsets.
-    case LINE_BOUNDARY:
-    case PARAGRAPH_BOUNDARY:
-    case ALL_BOUNDARY:
+    // line break offsets, and object boundary by finding no boundary within the
+    // current node.
+    case AXTextBoundary::kObject:
+    case AXTextBoundary::kLineStart:
+    case AXTextBoundary::kParagraphStart:
+      return base::i18n::BreakIterator::BREAK_NEWLINE;
+    default:
+      NOTREACHED() << boundary;
       return base::i18n::BreakIterator::BREAK_NEWLINE;
   }
 }
@@ -41,7 +46,7 @@ base::i18n::BreakIterator::BreakType ICUBreakTypeForBoundaryType(
 // TODO(nektar): Rename line_breaks a11y attribute and variable references.
 size_t FindAccessibleTextBoundary(const base::string16& text,
                                   const std::vector<int>& line_breaks,
-                                  TextBoundaryType boundary,
+                                  AXTextBoundary boundary,
                                   size_t start_offset,
                                   TextBoundaryDirection direction,
                                   ax::mojom::TextAffinity affinity) {
@@ -51,13 +56,15 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
   base::i18n::BreakIterator::BreakType break_type =
       ICUBreakTypeForBoundaryType(boundary);
   base::i18n::BreakIterator break_iter(text, break_type);
-  if (boundary == WORD_BOUNDARY || boundary == SENTENCE_BOUNDARY ||
-      boundary == CHAR_BOUNDARY) {
+  if (boundary == AXTextBoundary::kCharacter ||
+      boundary == AXTextBoundary::kSentenceStart ||
+      boundary == AXTextBoundary::kWordStart ||
+      boundary == AXTextBoundary::kWordStartOrEnd) {
     if (!break_iter.Init())
       return start_offset;
   }
 
-  if (boundary == LINE_BOUNDARY) {
+  if (boundary == AXTextBoundary::kLineStart) {
     if (direction == FORWARDS_DIRECTION) {
       for (size_t j = 0; j < line_breaks.size(); ++j) {
           size_t line_break = line_breaks[j] >= 0 ? line_breaks[j] : 0;
@@ -97,10 +104,10 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
     }
 
     switch (boundary) {
-      case LINE_BOUNDARY:
-        NOTREACHED();  // These are handled above.
-        break;
-      case CHAR_BOUNDARY:
+      case AXTextBoundary::kLineStart:
+        NOTREACHED() << boundary;  // This is handled above.
+        return result;
+      case AXTextBoundary::kCharacter:
         if (break_iter.IsGraphemeBoundary(result)) {
           // If we are searching forward and we are still at the start offset,
           // we need to find the next character.
@@ -108,8 +115,7 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
             return result;
         }
         break;
-
-      case WORD_BOUNDARY:
+      case AXTextBoundary::kWordStart:
         if (break_iter.IsStartOfWord(result)) {
           // If we are searching forward and we are still at the start offset,
           // we need to find the next word.
@@ -117,7 +123,20 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
             return result;
         }
         break;
-      case SENTENCE_BOUNDARY:
+      case AXTextBoundary::kWordStartOrEnd:
+        if (break_iter.IsStartOfWord(result)) {
+          // If we are searching forward and we are still at the start offset,
+          // we need to find the next word.
+          if (direction == BACKWARDS_DIRECTION || result != start_offset)
+            return result;
+        } else if (break_iter.IsEndOfWord(result)) {
+          // If we are searching backward and we are still at the end offset, we
+          // need to find the previous word.
+          if (direction == FORWARDS_DIRECTION || result != start_offset)
+            return result;
+        }
+        break;
+      case AXTextBoundary::kSentenceStart:
         if (break_iter.IsSentenceBoundary(result)) {
           // If we are searching forward and we are still at the start offset,
           // we need to find the next sentence.
@@ -134,11 +153,10 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
           }
         }
         break;
-      case PARAGRAPH_BOUNDARY:
+      case AXTextBoundary::kParagraphStart:
         if (text[pos] == '\n')
           return result;
         break;
-      case ALL_BOUNDARY:
       default:
         break;
     }

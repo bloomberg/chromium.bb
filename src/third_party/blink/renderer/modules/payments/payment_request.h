@@ -106,10 +106,8 @@ class MODULES_EXPORT PaymentRequest final
   enum {
     // Implementation defined constants controlling the allowed list length
     kMaxListSize = 1024,
-    // ... and string length
+    // ... and string length.
     kMaxStringLength = 1024,
-    // ... and JSON length.
-    kMaxJSONStringLength = 1048576
   };
 
  private:

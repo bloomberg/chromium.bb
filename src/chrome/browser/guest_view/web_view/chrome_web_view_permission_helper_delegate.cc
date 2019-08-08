@@ -28,9 +28,9 @@ namespace extensions {
 
 namespace {
 
-void CallbackWrapper(const base::Callback<void(bool)>& callback,
+void CallbackWrapper(base::OnceCallback<void(bool)> callback,
                      ContentSetting status) {
-  callback.Run(status == CONTENT_SETTING_ALLOW);
+  std::move(callback).Run(status == CONTENT_SETTING_ALLOW);
 }
 
 }  // anonymous namespace
@@ -145,7 +145,7 @@ void ChromeWebViewPermissionHelperDelegate::RequestGeolocationPermission(
     int bridge_id,
     const GURL& requesting_frame,
     bool user_gesture,
-    const base::Callback<void(bool)>& callback) {
+    base::OnceCallback<void(bool)> callback) {
   base::DictionaryValue request_info;
   request_info.SetString(guest_view::kUrl, requesting_frame.spec());
   request_info.SetBoolean(guest_view::kUserGesture, user_gesture);
@@ -157,7 +157,7 @@ void ChromeWebViewPermissionHelperDelegate::RequestGeolocationPermission(
       base::BindOnce(&ChromeWebViewPermissionHelperDelegate::
                          OnGeolocationPermissionResponse,
                      weak_factory_.GetWeakPtr(), bridge_id, user_gesture,
-                     base::Bind(&CallbackWrapper, callback));
+                     base::BindOnce(&CallbackWrapper, std::move(callback)));
   int request_id = web_view_permission_helper()->RequestPermission(
       WEB_VIEW_PERMISSION_TYPE_GEOLOCATION, request_info,
       std::move(permission_callback), false /* allowed_by_default */);
@@ -167,7 +167,7 @@ void ChromeWebViewPermissionHelperDelegate::RequestGeolocationPermission(
 void ChromeWebViewPermissionHelperDelegate::OnGeolocationPermissionResponse(
     int bridge_id,
     bool user_gesture,
-    const base::Callback<void(ContentSetting)>& callback,
+    base::OnceCallback<void(ContentSetting)> callback,
     bool allow,
     const std::string& user_input) {
   // The <webview> embedder has allowed the permission. We now need to make sure
@@ -175,7 +175,7 @@ void ChromeWebViewPermissionHelperDelegate::OnGeolocationPermissionResponse(
   RemoveBridgeID(bridge_id);
 
   if (!allow || !web_view_guest()->attached()) {
-    callback.Run(CONTENT_SETTING_BLOCK);
+    std::move(callback).Run(CONTENT_SETTING_BLOCK);
     return;
   }
 
@@ -201,8 +201,7 @@ void ChromeWebViewPermissionHelperDelegate::OnGeolocationPermissionResponse(
           ->embedder_web_contents()
           ->GetLastCommittedURL()
           .GetOrigin(),
-      user_gesture,
-      callback);
+      user_gesture, std::move(callback));
 }
 
 void ChromeWebViewPermissionHelperDelegate::CancelGeolocationPermissionRequest(

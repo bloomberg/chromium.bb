@@ -41,12 +41,21 @@ class CastExtensionHost : public extensions::ExtensionHost,
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
   bool DidAddMessageToConsole(content::WebContents* source,
-                              int32_t level,
+                              blink::mojom::ConsoleMessageLevel log_level,
                               const base::string16& message,
                               int32_t line_no,
                               const base::string16& source_id) override;
+  void EnterFullscreenModeForTab(
+      content::WebContents* web_contents,
+      const GURL& origin,
+      const blink::WebFullscreenOptions& options) override;
+  void ExitFullscreenModeForTab(content::WebContents*) override;
+  bool IsFullscreenForTabOrPending(
+      const content::WebContents* web_contents) const override;
 
  private:
+  void SetFullscreen(content::WebContents* web_contents, bool value);
+
   // content::NotificationObserver implementation:
   void Observe(int type,
                const content::NotificationSource& source,
@@ -54,6 +63,7 @@ class CastExtensionHost : public extensions::ExtensionHost,
 
   content::NotificationRegistrar registrar_;
   content::BrowserContext* const browser_context_;
+  bool is_fullscreen_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(CastExtensionHost);
 };

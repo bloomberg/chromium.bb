@@ -68,6 +68,7 @@
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/stroke_data.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/text/bidi_text_run.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -358,8 +359,11 @@ void CanvasRenderingContext2D::ScrollPathIntoViewInternal(const Path& path) {
 
   // We first map canvas coordinates to layout coordinates.
   LayoutRect path_rect(bounding_rect);
-  LayoutRect canvas_rect = layout_box->PhysicalContentBoxRect();
-  canvas_rect.MoveBy(LayoutPoint(layout_box->LocalToAbsolute()));
+  LayoutRect canvas_rect = layout_box->PhysicalContentBoxRect().ToLayoutRect();
+  // TODO(fserb): Is this kIgnoreTransforms correct?
+  canvas_rect.MoveBy(
+      layout_box->LocalToAbsolutePoint(PhysicalOffset(), kIgnoreTransforms)
+          .ToLayoutPoint());
   path_rect.SetX(
       (canvas_rect.X() + path_rect.X() * canvas_rect.Width() / Width()));
   path_rect.SetY(
@@ -557,7 +561,14 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
     Font resolved_font;
     if (!canvas_font_cache->GetFontUsingDefaultStyle(new_font, resolved_font))
       return;
-    ModifiableState().SetFont(resolved_font, Host()->GetFontSelector());
+
+    // We need to reset Computed and Adjusted size so we skip zoom and
+    // minimum font size for detached canvas.
+    FontDescription final_description(resolved_font.GetFontDescription());
+    final_description.SetComputedSize(final_description.SpecifiedSize());
+    final_description.SetAdjustedSize(final_description.SpecifiedSize());
+    Font final_font(final_description);
+    ModifiableState().SetFont(final_font, Host()->GetFontSelector());
   }
 
   // The parse succeeded.
@@ -664,8 +675,8 @@ HitTestCanvasResult* CanvasRenderingContext2D::GetControlAndIdIfHitRegionExists(
     return MakeGarbageCollected<HitTestCanvasResult>(String(), nullptr);
 
   LayoutBox* box = canvas()->GetLayoutBox();
-  FloatPoint local_pos =
-      box->AbsoluteToLocal(FloatPoint(location), kUseTransforms);
+  FloatPoint local_pos(
+      box->AbsoluteToLocalPoint(PhysicalOffsetToBeNoop(location)));
   if (box->StyleRef().HasBorder() || box->StyleRef().MayHavePadding())
     local_pos.Move(FloatSize(-box->PhysicalContentBoxOffset()));
   float scaleWidth = box->ContentWidth().ToFloat() == 0.0f
@@ -780,7 +791,7 @@ TextMetrics* CanvasRenderingContext2D::measureText(const String& text) {
   // The style resolution required for fonts is not available in frame-less
   // documents.
   if (!canvas()->GetDocument().GetFrame())
-    return TextMetrics::Create();
+    return MakeGarbageCollected<TextMetrics>();
 
   canvas()->GetDocument().UpdateStyleAndLayoutTreeForNode(canvas());
 
@@ -793,8 +804,9 @@ TextMetrics* CanvasRenderingContext2D::measureText(const String& text) {
   else
     direction = ToTextDirection(GetState().GetDirection(), canvas());
 
-  return TextMetrics::Create(font, direction, GetState().GetTextBaseline(),
-                             GetState().GetTextAlign(), text);
+  return MakeGarbageCollected<TextMetrics>(font, direction,
+                                           GetState().GetTextBaseline(),
+                                           GetState().GetTextAlign(), text);
 }
 
 void CanvasRenderingContext2D::DrawTextInternal(
@@ -1109,10 +1121,9 @@ unsigned CanvasRenderingContext2D::HitRegionsCount() const {
   return 0;
 }
 
+// TODO(aaronhk) This is only used for the size heuristic. Delete this function
+// once always accelerate fully lands.
 void CanvasRenderingContext2D::DisableAcceleration() {
-  if (base::FeatureList::IsEnabled(features::kAlwaysAccelerateCanvas)) {
-    NOTREACHED();
-  }
   canvas()->DisableAcceleration();
 }
 

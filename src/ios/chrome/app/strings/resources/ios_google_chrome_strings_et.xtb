@@ -1,11 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="et">
+<translation id="1282031177488366470">Aidake täiustada Chrome'i funktsioone ja toimivust</translation>
 <translation id="1326317727527857210">Vahelehtede hankimiseks oma teistest seadmetest logige Chrome'i sisse.</translation>
+<translation id="1682483655351012182">Chrome'i andmete sünkroonimine</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Google Chrome'i privaatsust.</translation>
 <translation id="1863312987075920112">Seda rakendust kasutades nõustute Chrome'i <ph name="BEGIN_LINK_TOS" />teenusetingimuste<ph name="END_LINK_TOS" /> ja <ph name="BEGIN_LINK_PRIVACY" />privaatsusteatisega<ph name="END_LINK_PRIVACY" />.</translation>
-<translation id="1984705450038014246">Chrome'i andmete sünkroonimine</translation>
 <translation id="2147651015520127414">Chrome kinnitas, et veebisaidi sertifikaadi väljastas <ph name="ISSUER" />.</translation>
 <translation id="2199719347983604670">Chrome'i sünkroonimise teave</translation>
 <translation id="2342981853652716282">Logige Chrome'i sisse, et kõikides oma seadmetes kasutada järjehoidjaid, paroole ja muud.</translation>
@@ -26,7 +27,6 @@
 <translation id="4099578267706723511">Aidake muuta Chrome'i paremaks, saates Google'ile kasutusstatistikat ja krahhiaruandeid.</translation>
 <translation id="415767770115540173">Asukohapõhised andmed tagavad teile parema Google Chrome'i kasutuskogemuse.</translation>
 <translation id="424864128008805179">Kas logida Chrome'ist välja?</translation>
-<translation id="447252321002412580">Aidake täiustada Chrome'i funktsioone ja toimivust</translation>
 <translation id="4523886039239821078">Mõned pistikprogrammid põhjustavad Chrome'i kokkujooksmise. Desinstallige need:</translation>
 <translation id="4615174829807303908">Logite välja kontolt, mida haldab <ph name="SIGNOUT_MANAGED_DOMAIN" />. Selle tulemusel kustutatakse seadmes olevad Chrome'i andmed, kuid need jäävad alles teie Google'i kontole.</translation>
 <translation id="5389212809648216794">Google Chrome ei saa kaamerat kasutada, kuna seda kasutab muu rakendus</translation>

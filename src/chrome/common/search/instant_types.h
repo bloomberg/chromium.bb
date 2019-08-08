@@ -88,17 +88,8 @@ struct ThemeBackgroundInfo {
   // The theme text color in RGBA format.
   RGBAColor text_color;
 
-  // The theme link color in RGBA format.
-  RGBAColor link_color;
-
   // The theme text color light in RGBA format.
   RGBAColor text_color_light;
-
-  // The theme color for the header in RGBA format.
-  RGBAColor header_color;
-
-  // The theme color for the section border in RGBA format.
-  RGBAColor section_border_color;
 
   // The theme id for the theme background image.
   // Value is only valid if there's a custom theme background image.

@@ -84,6 +84,15 @@ void ExternalConnector::RegisterService(
   }
 }
 
+void ExternalConnector::QueryServiceList(
+    base::OnceCallback<void(
+        std::vector<chromecast::external_mojo::mojom::ExternalServiceInfoPtr>)>
+        callback) {
+  if (BindConnectorIfNecessary()) {
+    connector_->QueryServiceList(std::move(callback));
+  }
+}
+
 void ExternalConnector::BindInterface(
     const std::string& service_name,
     const std::string& interface_name,

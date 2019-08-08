@@ -995,7 +995,7 @@ void Texture::signalDirtyStorage(const Context *context, InitState initState)
     mState.mInitState = initState;
     invalidateCompletenessCache();
     mState.mCachedSamplerFormatValid = false;
-    onStateChange(context, angle::SubjectMessage::STORAGE_CHANGED);
+    onStateChange(context, angle::SubjectMessage::SubjectChanged);
 }
 
 void Texture::signalDirtyState(const Context *context, size_t dirtyBit)
@@ -1003,7 +1003,7 @@ void Texture::signalDirtyState(const Context *context, size_t dirtyBit)
     mDirtyBits.set(dirtyBit);
     invalidateCompletenessCache();
     mState.mCachedSamplerFormatValid = false;
-    onStateChange(context, angle::SubjectMessage::DEPENDENT_DIRTY_BITS);
+    onStateChange(context, angle::SubjectMessage::DirtyBitsFlagged);
 }
 
 angle::Result Texture::setImage(Context *context,
@@ -1058,6 +1058,8 @@ angle::Result Texture::setSubImage(Context *context,
 
     ANGLE_TRY(handleMipmapGenerationHint(context, level));
 
+    onStateChange(context, angle::SubjectMessage::ContentsChanged);
+
     return angle::Result::Continue;
 }
 
@@ -1103,8 +1105,12 @@ angle::Result Texture::setCompressedSubImage(const Context *context,
 
     ImageIndex index = ImageIndex::MakeFromTarget(target, level);
 
-    return mTexture->setCompressedSubImage(context, index, area, format, unpackState, imageSize,
-                                           pixels);
+    ANGLE_TRY(mTexture->setCompressedSubImage(context, index, area, format, unpackState, imageSize,
+                                              pixels));
+
+    onStateChange(context, angle::SubjectMessage::ContentsChanged);
+
+    return angle::Result::Continue;
 }
 
 angle::Result Texture::copyImage(Context *context,
@@ -1119,9 +1125,6 @@ angle::Result Texture::copyImage(Context *context,
     // Release from previous calls to eglBindTexImage, to avoid calling the Impl after
     ANGLE_TRY(releaseTexImageInternal(context));
     ANGLE_TRY(orphanImages(context));
-
-    // Ensure source FBO is initialized.
-    ANGLE_TRY(source->ensureReadAttachmentInitialized(context, GL_COLOR_BUFFER_BIT));
 
     // Use the source FBO size as the init image area.
     Box destBox(0, 0, 0, sourceArea.width, sourceArea.height, 1);
@@ -1154,15 +1157,14 @@ angle::Result Texture::copySubImage(Context *context,
 {
     ASSERT(TextureTargetToType(index.getTarget()) == mState.mType);
 
-    // Ensure source FBO is initialized.
-    ANGLE_TRY(source->ensureReadAttachmentInitialized(context, GL_COLOR_BUFFER_BIT));
-
     Box destBox(destOffset.x, destOffset.y, destOffset.z, sourceArea.width, sourceArea.height, 1);
     ANGLE_TRY(
         ensureSubImageInitialized(context, index.getTarget(), index.getLevelIndex(), destBox));
 
     ANGLE_TRY(mTexture->copySubImage(context, index, destOffset, sourceArea, source));
     ANGLE_TRY(handleMipmapGenerationHint(context, index.getLevelIndex()));
+
+    onStateChange(context, angle::SubjectMessage::ContentsChanged);
 
     return angle::Result::Continue;
 }
@@ -1228,8 +1230,13 @@ angle::Result Texture::copySubTexture(const Context *context,
 
     ImageIndex index = ImageIndex::MakeFromTarget(target, level);
 
-    return mTexture->copySubTexture(context, index, destOffset, sourceLevel, sourceBox, unpackFlipY,
-                                    unpackPremultiplyAlpha, unpackUnmultiplyAlpha, source);
+    ANGLE_TRY(mTexture->copySubTexture(context, index, destOffset, sourceLevel, sourceBox,
+                                       unpackFlipY, unpackPremultiplyAlpha, unpackUnmultiplyAlpha,
+                                       source));
+
+    onStateChange(context, angle::SubjectMessage::ContentsChanged);
+
+    return angle::Result::Continue;
 }
 
 angle::Result Texture::copyCompressedTexture(Context *context, const Texture *source)
@@ -1801,10 +1808,8 @@ void Texture::onSubjectStateChange(const gl::Context *context,
                                    angle::SubjectIndex index,
                                    angle::SubjectMessage message)
 {
-    if (message == angle::SubjectMessage::DEPENDENT_DIRTY_BITS)
-    {
-        mDirtyBits.set(DIRTY_BIT_IMPLEMENTATION);
-        signalDirtyState(context, DIRTY_BIT_IMPLEMENTATION);
-    }
+    ASSERT(message == angle::SubjectMessage::SubjectChanged);
+    mDirtyBits.set(DIRTY_BIT_IMPLEMENTATION);
+    signalDirtyState(context, DIRTY_BIT_IMPLEMENTATION);
 }
 }  // namespace gl

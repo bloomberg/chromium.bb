@@ -31,7 +31,7 @@ class CONTENT_EXPORT LocalMediaStreamAudioSource
       const blink::MediaStreamDevice& device,
       const int* requested_buffer_size,
       bool disable_local_echo,
-      const ConstraintsCallback& started_callback,
+      ConstraintsRepeatingCallback started_callback,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   ~LocalMediaStreamAudioSource() final;
@@ -61,7 +61,7 @@ class CONTENT_EXPORT LocalMediaStreamAudioSource
   scoped_refptr<media::AudioCapturerSource> source_;
 
   // Callback that's called when the audio source has been initialized.
-  ConstraintsCallback started_callback_;
+  ConstraintsRepeatingCallback started_callback_;
 
   // In debug builds, check that all methods that could cause object graph
   // or data flow changes are being called on the main thread.

@@ -18,6 +18,7 @@
 #include "chrome/browser/offline_pages/offline_page_utils.h"
 #include "chrome/browser/offline_pages/prefetch/prefetch_service_factory.h"
 #include "chrome/browser/offline_pages/request_coordinator_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
 #include "components/offline_pages/core/model/offline_page_model_utils.h"
 #include "components/offline_pages/core/offline_page_item.h"
@@ -100,8 +101,10 @@ OfflinePageTabHelper::OfflinePageTabHelper(content::WebContents* web_contents)
       mhtml_page_notifier_bindings_(web_contents, this),
       weak_ptr_factory_(this) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  prefetch_service_ = PrefetchServiceFactory::GetForBrowserContext(
-      web_contents->GetBrowserContext());
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  prefetch_service_ =
+      PrefetchServiceFactory::GetForKey(profile->GetProfileKey());
 }
 
 OfflinePageTabHelper::~OfflinePageTabHelper() {}

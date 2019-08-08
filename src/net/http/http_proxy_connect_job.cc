@@ -136,13 +136,15 @@ HttpProxySocketParams::HttpProxySocketParams(
     const HostPortPair& endpoint,
     bool is_trusted_proxy,
     bool tunnel,
-    const NetworkTrafficAnnotationTag traffic_annotation)
+    const NetworkTrafficAnnotationTag traffic_annotation,
+    const NetworkIsolationKey& network_isolation_key)
     : transport_params_(std::move(transport_params)),
       ssl_params_(std::move(ssl_params)),
       is_quic_(is_quic),
       endpoint_(endpoint),
       is_trusted_proxy_(is_trusted_proxy),
       tunnel_(tunnel),
+      network_isolation_key_(network_isolation_key),
       traffic_annotation_(traffic_annotation) {
   // This is either a connection to an HTTP proxy or an SSL/QUIC proxy.
   DCHECK(transport_params_ || ssl_params_);
@@ -448,12 +450,6 @@ int HttpProxyConnectJob::DoTransportConnectComplete(int result) {
   if (result != OK) {
     UMA_HISTOGRAM_MEDIUM_TIMES("Net.HttpProxy.ConnectLatency.Insecure.Error",
                                base::TimeTicks::Now() - connect_start_time_);
-    // This is a special error code meaning to reuse an existing SPDY session
-    // rather than use a fresh socket. Overriding it with a proxy error message
-    // would cause the request to fail, instead of switching to using the SPDY
-    // session.
-    if (result == ERR_SPDY_SESSION_ALREADY_EXISTS)
-      return result;
     return ERR_PROXY_CONNECTION_FAILED;
   }
 
@@ -466,12 +462,8 @@ int HttpProxyConnectJob::DoTransportConnectComplete(int result) {
 int HttpProxyConnectJob::DoSSLConnect() {
   DCHECK(params_->ssl_params());
   if (params_->tunnel()) {
-    SpdySessionKey key(
-        params_->ssl_params()->GetDirectConnectionParams()->destination(),
-        ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
-        SpdySessionKey::IsProxySession::kTrue, socket_tag());
     if (common_connect_job_params()->spdy_session_pool->FindAvailableSession(
-            key, /* enable_ip_based_pooling = */ true,
+            CreateSpdySessionKey(), /* enable_ip_based_pooling = */ false,
             /* is_websocket = */ false, net_log())) {
       using_spdy_ = true;
       next_state_ = STATE_SPDY_PROXY_CREATE_STREAM;
@@ -502,13 +494,6 @@ int HttpProxyConnectJob::DoSSLConnectComplete(int result) {
     // TODO(rch): allow the user to deal with proxy cert errors in the
     // same way as server cert errors.
     return ERR_PROXY_CERTIFICATE_INVALID;
-  }
-  // A SPDY session to the proxy completed prior to resolving the proxy
-  // hostname. Surface this error, and allow the delegate to retry.
-  // See crbug.com/334413.
-  if (result == ERR_SPDY_SESSION_ALREADY_EXISTS) {
-    DCHECK(!nested_connect_job_->socket());
-    return ERR_SPDY_SESSION_ALREADY_EXISTS;
   }
   if (result < 0) {
     UMA_HISTOGRAM_MEDIUM_TIMES("Net.HttpProxy.ConnectLatency.Secure.Error",
@@ -562,7 +547,7 @@ int HttpProxyConnectJob::DoHttpProxyConnect() {
       ProxyServer(GetProxyServerScheme(), GetDestination()),
       http_auth_controller_.get(), params_->tunnel(), using_spdy_,
       negotiated_protocol_, common_connect_job_params()->proxy_delegate,
-      params_->ssl_params() != nullptr, params_->traffic_annotation());
+      params_->traffic_annotation());
   nested_connect_job_.reset();
   return transport_socket_->Connect(base::BindOnce(
       &HttpProxyConnectJob::OnIOComplete, base::Unretained(this)));
@@ -580,6 +565,13 @@ int HttpProxyConnectJob::DoHttpProxyConnectComplete(int result) {
   if (result == ERR_HTTP_1_1_REQUIRED)
     return ERR_PROXY_HTTP_1_1_REQUIRED;
 
+  // In TLS 1.2 with False Start or TLS 1.3, alerts from the server rejecting
+  // our client certificate are received at the first Read(), not Connect(), so
+  // the error mapping in DoSSLConnectComplete does not apply. Repeat the
+  // mapping here.
+  if (result == ERR_BAD_SSL_CLIENT_AUTH_CERT)
+    return ERR_PROXY_CONNECTION_FAILED;
+
   return result;
 }
 
@@ -593,13 +585,10 @@ int HttpProxyConnectJob::DoSpdyProxyCreateStream() {
   // longer to timeout than it should.
   ResetTimer(kHttpProxyConnectJobTunnelTimeout);
 
-  SpdySessionKey key(
-      params_->ssl_params()->GetDirectConnectionParams()->destination(),
-      ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
-      SpdySessionKey::IsProxySession::kTrue, socket_tag());
+  SpdySessionKey key = CreateSpdySessionKey();
   base::WeakPtr<SpdySession> spdy_session =
       common_connect_job_params()->spdy_session_pool->FindAvailableSession(
-          key, /* enable_ip_based_pooling = */ true,
+          key, /* enable_ip_based_pooling = */ false,
           /* is_websocket = */ false, net_log());
   // It's possible that a session to the proxy has recently been created
   if (spdy_session) {
@@ -629,6 +618,13 @@ int HttpProxyConnectJob::DoSpdyProxyCreateStream() {
 
 int HttpProxyConnectJob::DoSpdyProxyCreateStreamComplete(int result) {
   if (result < 0) {
+    // See the comment in DoHttpProxyConnectComplete(). HTTP/2 proxies will
+    // typically also fail here, as a result of SpdyProxyClientSocket::Connect()
+    // below, but the error may surface out of SpdyStreamRequest if there were
+    // enough requests in parallel that stream creation became asynchronous.
+    if (result == ERR_BAD_SSL_CLIENT_AUTH_CERT)
+      result = ERR_PROXY_CONNECTION_FAILED;
+
     spdy_stream_request_.reset();
     return result;
   }
@@ -663,10 +659,10 @@ int HttpProxyConnectJob::DoQuicProxyCreateSession() {
       common_connect_job_params()->quic_stream_factory);
 
   // Use default QUIC version, which is the version listed supported version.
-  quic::QuicTransportVersion quic_version =
+  quic::ParsedQuicVersion quic_version =
       common_connect_job_params()->quic_supported_versions->front();
   return quic_stream_request_->Request(
-      proxy_server, quic_version, ssl_params->privacy_mode(),
+      proxy_server, quic_version.transport_version, ssl_params->privacy_mode(),
       kH2QuicTunnelPriority, socket_tag(),
       ssl_params->ssl_config().GetCertVerifyFlags(),
       GURL("https://" + proxy_server.ToString()), net_log(),
@@ -789,7 +785,7 @@ void HttpProxyConnectJob::OnTimedOutInternal() {
 }
 
 int HttpProxyConnectJob::HandleConnectResult(int result) {
-  if (result == OK || result == ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT)
+  if (result == OK)
     SetSocket(std::move(transport_socket_));
   return result;
 }
@@ -817,6 +813,14 @@ std::string HttpProxyConnectJob::GetUserAgent() const {
   if (!http_user_agent_settings())
     return std::string();
   return http_user_agent_settings()->GetUserAgent();
+}
+
+SpdySessionKey HttpProxyConnectJob::CreateSpdySessionKey() const {
+  return SpdySessionKey(
+      params_->ssl_params()->GetDirectConnectionParams()->destination(),
+      ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
+      SpdySessionKey::IsProxySession::kTrue, socket_tag(),
+      params_->network_isolation_key());
 }
 
 }  // namespace net

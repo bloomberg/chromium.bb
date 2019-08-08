@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/extensions/extensions_menu_view.h"
 
+#include <algorithm>
+
 #include "base/path_service.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
@@ -11,11 +13,13 @@
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_button.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
+#include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/webui_url_constants.h"
 #include "ui/views/test/button_test_api.h"
+#include "ui/views/test/widget_test.h"
 
 class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
  protected:
@@ -37,7 +41,7 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
                                base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, 0);
     BrowserView::GetBrowserViewForBrowser(browser())
         ->toolbar()
-        ->extensions_button()
+        ->GetExtensionsButton()
         ->OnMousePressed(click_event);
   }
 
@@ -45,11 +49,38 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
     std::vector<ExtensionsMenuButton*> buttons;
     for (auto* view : ExtensionsMenuView::GetExtensionsMenuViewForTesting()
                           ->extension_menu_button_container_for_testing()
-                          ->GetChildrenInZOrder()) {
+                          ->children()) {
       if (view->GetClassName() == ExtensionsMenuButton::kClassName)
         buttons.push_back(static_cast<ExtensionsMenuButton*>(view));
     }
     return buttons;
+  }
+
+  std::vector<ToolbarActionView*> GetToolbarActionViews() const {
+    std::vector<ToolbarActionView*> views;
+    for (auto* view : BrowserView::GetBrowserViewForBrowser(browser())
+                          ->toolbar()
+                          ->extensions_container()
+                          ->children()) {
+      if (view->GetClassName() == ToolbarActionView::kClassName)
+        views.push_back(static_cast<ToolbarActionView*>(view));
+    }
+    return views;
+  }
+
+  std::vector<ToolbarActionView*> GetVisibleToolbarActionViews() const {
+    auto views = GetToolbarActionViews();
+    base::EraseIf(views, [](views::View* view) { return !view->GetVisible(); });
+    return views;
+  }
+
+  void TriggerSingleExtensionButton() {
+    auto buttons = GetExtensionMenuButtons();
+    ASSERT_EQ(1u, buttons.size());
+    ui::MouseEvent click_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                               base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, 0);
+    views::test::ButtonTestApi test_api(buttons[0]);
+    test_api.NotifyClick(click_event);
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -65,6 +96,63 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest, InvokeUi_default) {
 
 IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest, InvokeUi_NoExtensions) {
   ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest, TriggerPopup) {
+  LoadTestExtension("extensions/simple_with_popup");
+  ShowUi("");
+  VerifyUi();
+
+  ExtensionsContainer* const extensions_container =
+      BrowserView::GetBrowserViewForBrowser(browser())
+          ->toolbar()
+          ->extensions_container();
+
+  EXPECT_EQ(nullptr, extensions_container->GetPoppedOutAction());
+  EXPECT_TRUE(GetVisibleToolbarActionViews().empty());
+
+  TriggerSingleExtensionButton();
+
+  // After triggering an extension with a popup, there should a popped-out
+  // action and show the view.
+  auto visible_icons = GetVisibleToolbarActionViews();
+  EXPECT_NE(nullptr, extensions_container->GetPoppedOutAction());
+  ASSERT_EQ(1u, visible_icons.size());
+  EXPECT_EQ(extensions_container->GetPoppedOutAction(),
+            visible_icons[0]->view_controller());
+
+  extensions_container->HideActivePopup();
+
+  // After dismissing the popup there should no longer be a popped-out action
+  // and the icon should no longer be visible in the extensions container.
+  EXPECT_EQ(nullptr, extensions_container->GetPoppedOutAction());
+  EXPECT_TRUE(GetVisibleToolbarActionViews().empty());
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
+                       TriggeringExtensionClosesMenu) {
+  LoadTestExtension("extensions/trigger_actions/browser_action");
+  ShowUi("");
+  VerifyUi();
+
+  EXPECT_TRUE(ExtensionsMenuView::IsShowing());
+
+  views::test::WidgetDestroyedWaiter destroyed_waiter(
+      ExtensionsMenuView::GetExtensionsMenuViewForTesting()->GetWidget());
+  TriggerSingleExtensionButton();
+
+  destroyed_waiter.Wait();
+
+  ExtensionsContainer* const extensions_container =
+      BrowserView::GetBrowserViewForBrowser(browser())
+          ->toolbar()
+          ->extensions_container();
+
+  // This test should not use a popped-out action, as we want to make sure that
+  // the menu closes on its own and not because a popup dialog replaces it.
+  EXPECT_EQ(nullptr, extensions_container->GetPoppedOutAction());
+
+  EXPECT_FALSE(ExtensionsMenuView::IsShowing());
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
@@ -97,3 +185,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
       chrome::kChromeUIExtensionsURL,
       browser()->tab_strip_model()->GetActiveWebContents()->GetVisibleURL());
 }
+
+// TODO(pbos): Add test coverage that makes sure removing popped-out extensions
+// properly disposes of the popup.

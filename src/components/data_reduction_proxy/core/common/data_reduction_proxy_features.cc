@@ -39,8 +39,13 @@ const base::Feature kDataReductionProxyHoldback{
 
 // Enables data reduction proxy when network service is enabled.
 const base::Feature kDataReductionProxyEnabledWithNetworkService{
-    "DataReductionProxyEnabledWithNetworkService",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+  "DataReductionProxyEnabledWithNetworkService",
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Enables block action of all proxies when 502 is received with no
 // Chrome-Proxy header. The block duration is configurable via field trial with
@@ -60,6 +65,12 @@ const base::Feature kDataReductionProxyPopulatePreviewsPageIDToPingback{
 const base::Feature kDataReductionProxyDisableProxyFailedWarmup{
     "DataReductionProxyDisableProxyFailedWarmup",
     base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables server experiments run jointly with Chrome. The experiment
+// id should be specified using the finch parameter
+// params::GetDataSaverServerExperimentsOptionName().
+const base::Feature kDataReductionProxyServerExperiments{
+    "DataReductionProxyServerExperiments", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables fetching the client config aggressively by tuning the backoff params
 // and by not deferring fetches while Chrome is in background.

@@ -233,9 +233,8 @@ class MediaEngagementContentsObserver : public content::WebContentsObserver {
   // Find the appropriate media engagement session if any or create a new one to
   // be used. Will return nullptr if no session should be used.
   scoped_refptr<MediaEngagementSession> GetOrCreateSession(
-      const url::Origin& origin,
-      content::WebContents* opener,
-      bool was_restored) const;
+      content::NavigationHandle* navigation_handle,
+      content::WebContents* opener) const;
 
   // Stores the ids of the players that were audible. The boolean will be true
   // if the player was significant.

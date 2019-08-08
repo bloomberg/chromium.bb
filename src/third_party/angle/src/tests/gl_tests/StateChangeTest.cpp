@@ -32,10 +32,8 @@ class StateChangeTest : public ANGLETest
         setNoErrorEnabled(true);
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
-
         glGenFramebuffers(1, &mFramebuffer);
         glGenTextures(2, mTextures.data());
         glGenRenderbuffers(1, &mRenderbuffer);
@@ -43,7 +41,7 @@ class StateChangeTest : public ANGLETest
         ASSERT_GL_NO_ERROR();
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
         if (mFramebuffer != 0)
         {
@@ -58,8 +56,6 @@ class StateChangeTest : public ANGLETest
         }
 
         glDeleteRenderbuffers(1, &mRenderbuffer);
-
-        ANGLETest::TearDown();
     }
 
     GLuint mFramebuffer           = 0;
@@ -158,7 +154,7 @@ TEST_P(StateChangeTest, FramebufferIncompleteColorAttachment)
 // Test that caching works when color attachments change with TexStorage.
 TEST_P(StateChangeTest, FramebufferIncompleteWithTexStorage)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_texture_storage"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_texture_storage"));
 
     glBindFramebuffer(GL_FRAMEBUFFER, mFramebuffer);
     glBindTexture(GL_TEXTURE_2D, mTextures[0]);
@@ -254,7 +250,7 @@ TEST_P(StateChangeTest, FramebufferIncompleteStencilAttachment)
 TEST_P(StateChangeTest, FramebufferIncompleteDepthStencilAttachment)
 {
     ANGLE_SKIP_TEST_IF(getClientMajorVersion() < 3 &&
-                       !extensionEnabled("GL_OES_packed_depth_stencil"));
+                       !IsGLExtensionEnabled("GL_OES_packed_depth_stencil"));
 
     glBindFramebuffer(GL_FRAMEBUFFER, mFramebuffer);
     glBindTexture(GL_TEXTURE_2D, mTextures[0]);
@@ -607,9 +603,9 @@ class StateChangeRenderTest : public StateChangeTest
   protected:
     StateChangeRenderTest() : mProgram(0), mRenderbuffer(0) {}
 
-    void SetUp() override
+    void testSetUp() override
     {
-        StateChangeTest::SetUp();
+        StateChangeTest::testSetUp();
 
         constexpr char kVS[] =
             "attribute vec2 position;\n"
@@ -628,12 +624,12 @@ class StateChangeRenderTest : public StateChangeTest
         glGenRenderbuffers(1, &mRenderbuffer);
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
         glDeleteProgram(mProgram);
         glDeleteRenderbuffers(1, &mRenderbuffer);
 
-        StateChangeTest::TearDown();
+        StateChangeTest::testTearDown();
     }
 
     void setUniformColor(const GLColor &color)
@@ -1271,6 +1267,11 @@ class SimpleStateChangeTest : public ANGLETest
 
     void simpleDrawWithBuffer(GLBuffer *buffer);
     void simpleDrawWithColor(const GLColor &color);
+
+    using UpdateFunc = std::function<void(GLenum, GLTexture *, GLint, GLint, const GLColor &)>;
+    void updateTextureBoundToFramebufferHelper(UpdateFunc updateFunc);
+    void bindTextureToFbo(GLFramebuffer &fbo, GLTexture &texture);
+    void drawToFboWithCulling(const GLenum frontFace, bool earlyFrontFaceDirty);
 };
 
 class SimpleStateChangeTestES3 : public SimpleStateChangeTest
@@ -1279,10 +1280,8 @@ class SimpleStateChangeTestES3 : public SimpleStateChangeTest
 class SimpleStateChangeTestES31 : public SimpleStateChangeTest
 {
   protected:
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
-
         glGenFramebuffers(1, &mFramebuffer);
         glGenTextures(1, &mTexture);
 
@@ -1312,7 +1311,7 @@ void main()
         ASSERT_GL_NO_ERROR();
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
         if (mFramebuffer != 0)
         {
@@ -1326,7 +1325,6 @@ void main()
             mTexture = 0;
         }
         glDeleteProgram(mProgram);
-        ANGLETest::TearDown();
     }
 
     GLuint mProgram;
@@ -1794,6 +1792,95 @@ TEST_P(SimpleStateChangeTest, UpdateTextureInUse)
     EXPECT_PIXEL_COLOR_EQ(0, h, GLColor::green);
     EXPECT_PIXEL_COLOR_EQ(w, h, GLColor::red);
     ASSERT_GL_NO_ERROR();
+}
+
+void SimpleStateChangeTest::updateTextureBoundToFramebufferHelper(UpdateFunc updateFunc)
+{
+    std::vector<GLColor> red(4, GLColor::red);
+    std::vector<GLColor> green(4, GLColor::green);
+
+    GLTexture renderTarget;
+    glBindTexture(GL_TEXTURE_2D, renderTarget);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, red.data());
+
+    GLFramebuffer fbo;
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
+    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, renderTarget,
+                           0);
+    ASSERT_GL_FRAMEBUFFER_COMPLETE(GL_DRAW_FRAMEBUFFER);
+    glViewport(0, 0, 2, 2);
+    ASSERT_GL_NO_ERROR();
+
+    GLTexture tex;
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, red.data());
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    // Draw once to flush dirty state bits.
+    draw2DTexturedQuad(0.5f, 1.0f, true);
+
+    ASSERT_GL_NO_ERROR();
+
+    // Update the (0, 1) pixel to be blue
+    updateFunc(GL_TEXTURE_2D, &renderTarget, 0, 1, GLColor::blue);
+
+    // Draw green to the right half of the Framebuffer.
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 2, 2, GL_RGBA, GL_UNSIGNED_BYTE, green.data());
+    glViewport(1, 0, 1, 2);
+    draw2DTexturedQuad(0.5f, 1.0f, true);
+
+    // Update the (1, 1) pixel to be yellow
+    updateFunc(GL_TEXTURE_2D, &renderTarget, 1, 1, GLColor::yellow);
+
+    ASSERT_GL_NO_ERROR();
+
+    // Verify we have a quad with the right colors in the FBO.
+    std::vector<GLColor> expected = {
+        {GLColor::red, GLColor::green, GLColor::blue, GLColor::yellow}};
+    std::vector<GLColor> actual(4);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
+    glReadPixels(0, 0, 2, 2, GL_RGBA, GL_UNSIGNED_BYTE, actual.data());
+    EXPECT_EQ(expected, actual);
+}
+
+// Tests that TexSubImage updates are flushed before rendering.
+TEST_P(SimpleStateChangeTest, TexSubImageOnTextureBoundToFrambuffer)
+{
+    auto updateFunc = [](GLenum textureBinding, GLTexture *tex, GLint x, GLint y,
+                         const GLColor &color) {
+        glBindTexture(textureBinding, *tex);
+        glTexSubImage2D(textureBinding, 0, x, y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, color.data());
+    };
+
+    updateTextureBoundToFramebufferHelper(updateFunc);
+}
+
+// Tests that CopyTexSubImage updates are flushed before rendering.
+TEST_P(SimpleStateChangeTest, CopyTexSubImageOnTextureBoundToFrambuffer)
+{
+    GLTexture copySource;
+    glBindTexture(GL_TEXTURE_2D, copySource);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+
+    GLFramebuffer copyFBO;
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, copyFBO);
+    glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, copySource, 0);
+
+    ASSERT_GL_NO_ERROR();
+    ASSERT_GL_FRAMEBUFFER_COMPLETE(GL_READ_FRAMEBUFFER);
+
+    auto updateFunc = [&copySource](GLenum textureBinding, GLTexture *tex, GLint x, GLint y,
+                                    const GLColor &color) {
+        glBindTexture(GL_TEXTURE_2D, copySource);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, color.data());
+
+        glBindTexture(textureBinding, *tex);
+        glCopyTexSubImage2D(textureBinding, 0, x, y, 0, 0, 1, 1);
+    };
+
+    updateTextureBoundToFramebufferHelper(updateFunc);
 }
 
 // Tests deleting a Framebuffer that is in use.
@@ -3034,6 +3121,16 @@ void main()
     ASSERT_GL_NO_ERROR() << "Draw to float texture with invalid mask";
     glDrawArrays(GL_TRIANGLES, 0, 6);
     EXPECT_GL_ERROR(GL_INVALID_OPERATION);
+    // Set all 4 channels of color mask to false. Validate success.
+    glColorMask(false, false, false, false);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    EXPECT_GL_NO_ERROR();
+    glColorMask(false, true, false, false);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    EXPECT_GL_ERROR(GL_INVALID_OPERATION);
+    glColorMask(true, true, true, true);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    EXPECT_GL_ERROR(GL_INVALID_OPERATION);
 
     // Restore state.
     glDrawBuffers(2, kColor0Enabled);
@@ -3304,7 +3401,7 @@ TEST_P(ValidationStateChangeTest, TransformFeedbackDrawModes)
 // Tests a valid rendering setup with two textures. Followed by a draw with conflicting samplers.
 TEST_P(ValidationStateChangeTest, TextureConflict)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_texture_storage"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_texture_storage"));
 
     GLint maxTextures = 0;
     glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxTextures);
@@ -3526,6 +3623,109 @@ TEST_P(SimpleStateChangeTest, DeleteTextureThenDraw)
     ASSERT_GL_NO_ERROR();
     EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::black);
 }
+
+void SimpleStateChangeTest::bindTextureToFbo(GLFramebuffer &fbo, GLTexture &texture)
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, getWindowWidth(), getWindowHeight(), 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+    ASSERT_GLENUM_EQ(GL_FRAMEBUFFER_COMPLETE, glCheckFramebufferStatus(GL_FRAMEBUFFER));
+}
+
+void SimpleStateChangeTest::drawToFboWithCulling(const GLenum frontFace, bool earlyFrontFaceDirty)
+{
+    // Render to an FBO
+    GLFramebuffer fbo1;
+    GLTexture texture1;
+
+    ANGLE_GL_PROGRAM(greenProgram, essl1_shaders::vs::Simple(), essl1_shaders::fs::Green());
+    ANGLE_GL_PROGRAM(textureProgram, essl1_shaders::vs::Texture(), essl1_shaders::fs::Texture());
+
+    bindTextureToFbo(fbo1, texture1);
+
+    // Clear the surface FBO to initialize it to a known value
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClearColor(GLColor::red.R, GLColor::red.G, GLColor::red.B, GLColor::red.A);
+    glClear(GL_COLOR_BUFFER_BIT);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::red);
+    glFlush();
+
+    // Draw to FBO 1 to initialize it to a known value
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo1);
+
+    if (earlyFrontFaceDirty)
+    {
+        glEnable(GL_CULL_FACE);
+        // Make sure we don't cull
+        glCullFace(frontFace == GL_CCW ? GL_BACK : GL_FRONT);
+        glFrontFace(frontFace);
+    }
+    else
+    {
+        glDisable(GL_CULL_FACE);
+    }
+
+    glUseProgram(greenProgram);
+    drawQuad(greenProgram.get(), std::string(essl1_shaders::PositionAttrib()), 0.0f);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+
+    // Draw into FBO 0 using FBO 1's texture to determine if culling is working or not
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindTexture(GL_TEXTURE_2D, texture1);
+
+    glCullFace(GL_BACK);
+    if (!earlyFrontFaceDirty)
+    {
+        // Set the culling we want to test
+        glEnable(GL_CULL_FACE);
+        glFrontFace(frontFace);
+    }
+
+    glUseProgram(textureProgram);
+    drawQuad(textureProgram.get(), std::string(essl1_shaders::PositionAttrib()), 0.0f);
+    ASSERT_GL_NO_ERROR();
+
+    if (frontFace == GL_CCW)
+    {
+        EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+    }
+    else
+    {
+        EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::red);
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+// Validates if culling rasterization states work with FBOs using CCW winding.
+TEST_P(SimpleStateChangeTest, FboEarlyCullFaceBackCCWState)
+{
+    drawToFboWithCulling(GL_CCW, true);
+}
+
+// Validates if culling rasterization states work with FBOs using CW winding.
+TEST_P(SimpleStateChangeTest, FboEarlyCullFaceBackCWState)
+{
+    drawToFboWithCulling(GL_CW, true);
+}
+
+TEST_P(SimpleStateChangeTest, FboLateCullFaceBackCCWState)
+{
+    drawToFboWithCulling(GL_CCW, false);
+}
+
+// Validates if culling rasterization states work with FBOs using CW winding.
+TEST_P(SimpleStateChangeTest, FboLateCullFaceBackCWState)
+{
+    drawToFboWithCulling(GL_CW, false);
+}
 }  // anonymous namespace
 
 ANGLE_INSTANTIATE_TEST(StateChangeTest, ES2_D3D9(), ES2_D3D11(), ES2_OPENGL(), ES2_VULKAN());
@@ -3534,12 +3734,7 @@ ANGLE_INSTANTIATE_TEST(LineLoopStateChangeTest,
                        ES2_D3D11(),
                        ES2_OPENGL(),
                        ES2_VULKAN());
-ANGLE_INSTANTIATE_TEST(StateChangeRenderTest,
-                       ES2_D3D9(),
-                       ES2_D3D11(),
-                       ES2_OPENGL(),
-                       ES2_D3D11_FL9_3(),
-                       ES2_VULKAN());
+ANGLE_INSTANTIATE_TEST(StateChangeRenderTest, ES2_D3D9(), ES2_D3D11(), ES2_OPENGL(), ES2_VULKAN());
 ANGLE_INSTANTIATE_TEST(StateChangeTestES3, ES3_D3D11(), ES3_OPENGL());
 ANGLE_INSTANTIATE_TEST(SimpleStateChangeTest, ES2_D3D11(), ES2_VULKAN(), ES2_OPENGL());
 ANGLE_INSTANTIATE_TEST(SimpleStateChangeTestES3, ES3_OPENGL(), ES3_D3D11());

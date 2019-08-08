@@ -28,7 +28,6 @@ TEST(DBusThreadManagerTest, Initialize) {
   EXPECT_TRUE(manager->GetCrosDisksClient());
   EXPECT_TRUE(manager->GetDebugDaemonClient());
   EXPECT_TRUE(manager->GetEasyUnlockClient());
-  EXPECT_TRUE(manager->GetGsmSMSClient());
   EXPECT_TRUE(manager->GetImageBurnerClient());
   EXPECT_TRUE(manager->GetLorgnetteManagerClient());
   EXPECT_TRUE(manager->GetModemMessagingClient());
@@ -53,7 +52,6 @@ TEST(DBusThreadManagerTest, InitializeForBrowser) {
   ASSERT_TRUE(manager);
 
   // Common clients were created.
-  EXPECT_TRUE(manager->GetGsmSMSClient());
   EXPECT_TRUE(manager->GetModemMessagingClient());
   EXPECT_TRUE(manager->GetShillDeviceClient());
   EXPECT_TRUE(manager->GetShillIPConfigClient());
@@ -87,7 +85,6 @@ TEST(DBusThreadManagerTest, InitializeForAsh) {
   ASSERT_TRUE(manager);
 
   // Common clients were created.
-  EXPECT_TRUE(manager->GetGsmSMSClient());
   EXPECT_TRUE(manager->GetModemMessagingClient());
   EXPECT_TRUE(manager->GetShillDeviceClient());
   EXPECT_TRUE(manager->GetShillIPConfigClient());

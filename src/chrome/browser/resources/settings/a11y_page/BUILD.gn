@@ -7,10 +7,15 @@ import("//third_party/closure_compiler/compile_js.gni")
 js_type_check("closure_compile") {
   deps = [
     ":a11y_page",
-    ":externs",
-    ":manage_a11y_page",
-    ":tts_subpage",
   ]
+
+  if (is_chromeos) {
+    deps += [
+      ":externs",
+      ":manage_a11y_page",
+      ":tts_subpage",
+    ]
+  }
 }
 
 js_library("a11y_page") {

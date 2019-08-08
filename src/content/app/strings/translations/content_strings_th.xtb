@@ -11,7 +11,6 @@
 <translation id="1206693055195146388">แถบเลื่อน</translation>
 <translation id="1211441953136645838">อ้างอิงท้ายเรื่อง</translation>
 <translation id="1281252709823657822">กล่องโต้ตอบ</translation>
-<translation id="1289247557029249093">ออกจากโหมดการแสดงภาพซ้อนภาพ</translation>
 <translation id="1335095011850992622">เครดิต</translation>
 <translation id="1342835525016946179">บทความ</translation>
 <translation id="1359897965706325498">แบนเนอร์</translation>
@@ -37,6 +36,7 @@
 <translation id="2148716181193084225">วันนี้</translation>
 <translation id="2158401438286456825">รายการหน้า</translation>
 <translation id="2226276347425096477">โปรดย่อข้อความนี้ให้เหลือไม่เกิน <ph name="MAX_CHARACTERS" /> อักขระ (ขณะนี้ข้อความของคุณมี <ph name="CURRENT_LENGTH" /> อักขระ)</translation>
+<translation id="2246498165605549352">ไฟล์ในตัวเครื่อง</translation>
 <translation id="2247351761944213033">สัปดาห์ที่ <ph name="WEEKNUMBER" />, <ph name="YEAR" /></translation>
 <translation id="2277199496770840904">แทร็ก <ph name="NUMBER" /></translation>
 <translation id="2291999235780842123">ช่องทำเครื่องหมาย</translation>
@@ -75,6 +75,7 @@
 <translation id="3685101356851116974">รูปภาพที่ไม่มีป้ายกำกับ</translation>
 <translation id="3706100364254443312">สวิตช์</translation>
 <translation id="3732799496749320381">ดด</translation>
+<translation id="3754210790023674521">ออกจากการแสดงภาพซ้อนภาพ</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3808586225841795776">คีย์เวิร์ด</translation>
 <translation id="3822383571486410024">โปรดกรอกข้อความนี้ให้มีอักขระอย่างน้อย <ph name="MIN_CHARACTERS" /> ตัว (ตอนนี้คุณมี <ph name="CURRENT_LENGTH" /> ตัว)</translation>
@@ -102,6 +103,7 @@
 <translation id="4661075872484491155">แผนผัง</translation>
 <translation id="4664250907885839816">ส่วนที่ต่อท้าย "<ph name="ATSIGN" />" ต้องไม่มีสัญลักษณ์ "<ph name="INVALIDCHARACTER" />"</translation>
 <translation id="4668956016107839909">ภาคผนวก</translation>
+<translation id="4718048029184481307">กำลังเล่นแบบการแสดงภาพซ้อนภาพ</translation>
 <translation id="4742539557769756338">หน้าปก</translation>
 <translation id="4748357248530471599">สลับเป็นแบบเต็มหน้าจอสำหรับหน้าจอรอยบาก</translation>
 <translation id="4757246831282535685">แผงแท็บ</translation>
@@ -150,7 +152,7 @@
 <translation id="6166809985690652833">คำแถลงท้ายเล่ม</translation>
 <translation id="6209276755895393898">ดูเหมือนเป็น<ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">อภิธานศัพท์</translation>
-<translation id="628938136236500310">กำลังเล่นในโหมดการแสดงภาพซ้อนภาพ</translation>
+<translation id="6310801910862476708">ออกจากการแสดงภาพซ้อนภาพ</translation>
 <translation id="6398862346408813489">แสดงแผงการเลือกเดือน</translation>
 <translation id="6404546809543547843">ตัวควบคุมเวลาของเสียง</translation>
 <translation id="6443871981718447451">แสดงเมนูคำอธิบายภาพ</translation>

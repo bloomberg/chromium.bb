@@ -113,6 +113,7 @@ cr.define('omnibox_output', function() {
       this.$$('#contents').appendChild(resultsGroup);
 
       this.updateVisibility_();
+      this.updateEliding_();
       this.updateFilterHighlights_();
     }
 

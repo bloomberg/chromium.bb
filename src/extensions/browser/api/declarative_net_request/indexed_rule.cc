@@ -255,6 +255,11 @@ bool CanonicalizeDomains(std::unique_ptr<std::vector<std::string>> domains,
   return true;
 }
 
+// Returns if the redirect URL will be used as a relative URL.
+bool IsRedirectUrlRelative(const std::string& redirect_url) {
+  return !redirect_url.empty() && redirect_url[0] == '/';
+}
+
 }  // namespace
 
 IndexedRule::IndexedRule() = default;
@@ -264,6 +269,7 @@ IndexedRule& IndexedRule::operator=(IndexedRule&& other) = default;
 
 // static
 ParseResult IndexedRule::CreateIndexedRule(dnr_api::Rule parsed_rule,
+                                           const GURL& base_url,
                                            IndexedRule* indexed_rule) {
   DCHECK(indexed_rule);
   DCHECK(IsAPIAvailable());
@@ -278,8 +284,11 @@ ParseResult IndexedRule::CreateIndexedRule(dnr_api::Rule parsed_rule,
         parsed_rule.action.redirect_url->empty()) {
       return ParseResult::ERROR_EMPTY_REDIRECT_URL;
     }
-    if (!GURL(*parsed_rule.action.redirect_url).is_valid())
+
+    if (!IsRedirectUrlRelative(*parsed_rule.action.redirect_url) &&
+        !GURL(*parsed_rule.action.redirect_url).is_valid()) {
       return ParseResult::ERROR_INVALID_REDIRECT_URL;
+    }
     if (!parsed_rule.priority)
       return ParseResult::ERROR_EMPTY_REDIRECT_RULE_PRIORITY;
     if (*parsed_rule.priority < kMinValidPriority)
@@ -325,8 +334,16 @@ ParseResult IndexedRule::CreateIndexedRule(dnr_api::Rule parsed_rule,
     return ParseResult::ERROR_NON_ASCII_EXCLUDED_DOMAIN;
   }
 
-  if (is_redirect_rule)
-    indexed_rule->redirect_url = std::move(*parsed_rule.action.redirect_url);
+  if (is_redirect_rule) {
+    if (IsRedirectUrlRelative(*parsed_rule.action.redirect_url)) {
+      GURL::Replacements relative_path;
+      relative_path.SetPathStr(parsed_rule.action.redirect_url->c_str());
+      indexed_rule->redirect_url =
+          base_url.ReplaceComponents(relative_path).spec();
+    } else {
+      indexed_rule->redirect_url = std::move(*parsed_rule.action.redirect_url);
+    }
+  }
 
   // Parse the |anchor_left|, |anchor_right|, |url_pattern_type| and
   // |url_pattern| fields.

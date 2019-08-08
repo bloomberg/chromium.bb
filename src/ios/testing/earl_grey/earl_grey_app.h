@@ -20,7 +20,7 @@ typedef MatchesBlock GREYMatchesBlock;
 // Provides a no-op implementation of an EG2 API that doesn't exist in EG1. This
 // helper assumes that it is already being called on the main thread and
 // synchronously runs the given |block|.
-void grey_execute_sync_on_main_thread(void (^block)(void));
+void grey_dispatch_sync_on_main_thread(void (^block)(void));
 
 #elif defined(CHROME_EARL_GREY_2)
 

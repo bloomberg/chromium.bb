@@ -51,9 +51,14 @@ struct StructTraits<viz::mojom::RenderPassDataView,
     return input->backdrop_filters;
   }
 
-  static const gfx::RRectF& backdrop_filter_bounds(
+  static gfx::RRectF backdrop_filter_bounds(
       const std::unique_ptr<viz::RenderPass>& input) {
-    return input->backdrop_filter_bounds;
+    return input->backdrop_filter_bounds.value_or(gfx::RRectF());
+  }
+
+  static bool has_backdrop_filter_bounds(
+      const std::unique_ptr<viz::RenderPass>& input) {
+    return input->backdrop_filter_bounds.has_value();
   }
 
   static const gfx::ColorSpace& color_space(

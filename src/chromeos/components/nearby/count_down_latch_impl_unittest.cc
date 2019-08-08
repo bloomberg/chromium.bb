@@ -31,7 +31,7 @@ class CountDownLatchImplTest : public testing::Test {
   }
 
   void WaitForAllPostedTasksToFinish() {
-    base::ThreadPool::GetInstance()->FlushForTesting();
+    base::ThreadPoolInstance::Get()->FlushForTesting();
   }
 
   // Returns a unique ID for the posted AwaitTask(). This ID can be used in

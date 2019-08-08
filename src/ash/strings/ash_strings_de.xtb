@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">Menü minimieren</translation>
 <translation id="1383876407941801731">Suchen</translation>
 <translation id="1419738280318246476">Wenn Sie die Benachrichtigungsaktion ausführen möchten, entsperren Sie das Gerät</translation>
+<translation id="1426410128494586442">Ja</translation>
 <translation id="1455242230282523554">Spracheinstellungen anzeigen</translation>
 <translation id="1467432559032391204">Links</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -47,7 +48,6 @@
 <translation id="1570871743947603115">Bluetooth aktivieren/deaktivieren. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Auf alle Ihre Aktivitäten in dieser Sitzung zugreifen</translation>
 <translation id="1608626060424371292">Diesen Nutzer entfernen</translation>
-<translation id="1621499497873603021">Verbleibende Akku-Laufzeit: <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Gesprochene Anfrage starten</translation>
 <translation id="1658406695958299976">Ihr Passwort konnte immer noch nicht bestätigt werden. Hinweis: Falls Sie Ihr Passwort kürzlich geändert haben, wird Ihr neues Passwort übernommen, sobald Sie sich abmelden. Bitte verwenden Sie hier das alte Passwort.</translation>
 <translation id="1677472565718498478">Verbleibende Zeit: <ph name="TIME" /> h</translation>
@@ -72,7 +72,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Weitere Informationen zum aktuellen <ph name="SYSTEM_APP_NAME" />-Update</translation>
 <translation id="1995660704900986789">Ausschalten</translation>
-<translation id="1999763610967697511">Drag-and-drop</translation>
 <translation id="2012624427112548395">Strg + Suche + H</translation>
 <translation id="2016340657076538683">Nachricht eingeben</translation>
 <translation id="2050339315714019657">Hochformat</translation>
@@ -100,7 +99,6 @@
 <translation id="239188844683466770">"Bitte nicht stören" aktivieren/deaktivieren</translation>
 <translation id="2412593942846481727">Update verfügbar</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> ist eine verwaltete Sitzung, die von <ph name="DOMAIN" /> verwaltet wird</translation>
-<translation id="2416346634399901812">Verbunden mit <ph name="NETWORK_NAME" /></translation>
 <translation id="2427507373259914951">Linksklick</translation>
 <translation id="2429753432712299108">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für Kopplung. Bevor Sie akzeptieren, überprüfen Sie, ob folgender Zugangscode auf dem Gerät angezeigt wird: <ph name="PASSKEY" />.</translation>
 <translation id="2482878487686419369">Benachrichtigungen</translation>
@@ -114,11 +112,11 @@
 <translation id="2597972630681408282">Nachtlicht: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM-Karte ist gesperrt</translation>
 <translation id="2653659639078652383">Senden</translation>
+<translation id="2658778018866295321">Klicken und ziehen</translation>
 <translation id="2700493154570097719">Tastatur einrichten</translation>
 <translation id="2718395828230677721">Nachtlicht</translation>
 <translation id="2727977024730340865">Das Gerät ist an ein Schwachstrom-Ladegerät angeschlossen. Möglicherweise kann der Akku nicht zuverlässig aufgeladen werden.</translation>
 <translation id="2761704814324807722">Statusleiste, Uhrzeit <ph name="TIME" />, <ph name="BATTERY" /></translation>
-<translation id="277257480934873581">Verbindung zu <ph name="NAME" /> wird wiederhergestellt</translation>
 <translation id="2792498699870441125">Alt+Suchtaste</translation>
 <translation id="2803734122639935495">Zum Entsperren Passwort eingeben</translation>
 <translation id="2819276065543622893">Sie werden jetzt abgemeldet.</translation>
@@ -139,7 +137,6 @@
 <translation id="2996462380875591307">Angedockte Lupe aktiviert. Drücken Sie Strg + Suchtaste + D, um sie zu deaktivieren.</translation>
 <translation id="3000461861112256445">Mono-Audio</translation>
 <translation id="3009178788565917040">Ausgang</translation>
-<translation id="3019353588588144572">Verbleibende Zeit, bis der Akku vollständig geladen ist: <ph name="TIME_REMAINING" /></translation>
 <translation id="3051128274746680507">Ihr Profil für betreute Nutzer wird bald entfernt. Melden Sie sich an, um mehr zu erfahren.</translation>
 <translation id="3055162170959710888">Du hast das Gerät heute <ph name="USED_TIME" /> verwendet</translation>
 <translation id="3077734595579995578">Umschalttaste</translation>
@@ -175,6 +172,7 @@
 <translation id="3510164367642747937">Mauszeiger hervorheben</translation>
 <translation id="3513798432020909783">Konto verwaltet von <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Zurücksetzen auf "<ph name="FROM_LOCALE" />" (Neustart erforderlich)</translation>
+<translation id="3576141592585647168">Zeitzone ändern</translation>
 <translation id="3595596368722241419">Akku voll</translation>
 <translation id="3606978283550408104">Verbindung zur Braillezeile hergestellt</translation>
 <translation id="3621202678540785336">Eingang</translation>
@@ -202,6 +200,7 @@
 <translation id="394485226368336402">Audioeinstellungen</translation>
 <translation id="3962859241508114581">Vorheriger Titel</translation>
 <translation id="397105322502079400">Wird berechnet...</translation>
+<translation id="3977512764614765090">Der Akkustand ist <ph name="PERCENTAGE" /> %. Der Akku wird aufgeladen.</translation>
 <translation id="3995138139523574647">USB-C-Gerät (Port hinten rechts)</translation>
 <translation id="4017989525502048489">Laserpointer</translation>
 <translation id="4042660782729322247">Sie geben Ihren Bildschirm frei</translation>
@@ -218,7 +217,7 @@
 <translation id="4269883910223712419">Der Administrator dieses Geräts kann Folgendes tun:</translation>
 <translation id="4279490309300973883">Spiegelung</translation>
 <translation id="4281007048406351813">Timer um 1 Min. verlängern</translation>
-<translation id="4292681942966152062"><ph name="NETWORK_NAME" /> wird aktiviert</translation>
+<translation id="4296136865091727875">Alle <ph name="COUNT" /> Benachrichtigungen löschen</translation>
 <translation id="4321179778687042513">Strg</translation>
 <translation id="4321776623976362024">Sie haben die Tastenkombination für den Modus "Hoher Kontrast" gedrückt. Möchten Sie ihn aktivieren?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -234,7 +233,6 @@
 <translation id="4477350412780666475">Nächster Titel</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Entkoppelte Geräte</translation>
-<translation id="4508225577814909926"><ph name="NAME" />: Verbindung wird hergestellt...</translation>
 <translation id="4513946894732546136">Google Feedback</translation>
 <translation id="4527045527269911712">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für Kopplung.</translation>
 <translation id="453661520163887813">Vollständig geladen in <ph name="TIME" /> h</translation>
@@ -247,12 +245,12 @@
 <translation id="4696813013609194136">Gerät mit Elterncode entsperren</translation>
 <translation id="4731797938093519117">Elternfreigabe</translation>
 <translation id="4734965478015604180">Horizontal</translation>
-<translation id="476166673298332917">Der Geräteadministrator überwacht unter Umständen Ihre Browseraktivitäten.</translation>
 <translation id="4774338217796918551">Du darfst das Gerät um <ph name="COME_BACK_TIME" /> wieder verwenden.</translation>
 <translation id="4776917500594043016">Passwort für <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">In Demositzungen ist Google Assistant nicht verfügbar.</translation>
 <translation id="479989351350248267">Suchen</translation>
 <translation id="4804818685124855865">Verbindung trennen</translation>
+<translation id="4831034276697007977">Möchten Sie automatische Klicks wirklich deaktivieren?</translation>
 <translation id="4849058404725798627">Objekt mit Tastaturfokus hervorheben</translation>
 <translation id="485592688953820832">Keine Aktion (Pause)</translation>
 <translation id="4872237917498892622">Alt+Suchen oder Umschalttaste</translation>
@@ -355,9 +353,9 @@
 <translation id="6537270692134705506">Screenshot aufnehmen</translation>
 <translation id="6542521951477560771">Inhalte werden an <ph name="RECEIVER_NAME" /> gestreamt</translation>
 <translation id="6559976592393364813">Administrator fragen</translation>
-<translation id="6574601967010742428">Der Geräteadministrator kann Ihre Aktivitäten möglicherweise überwachen.</translation>
 <translation id="6585808820553845416">Sitzung endet in <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Suchtaste + Umschalttaste + K</translation>
+<translation id="6637729079642709226">Zeitraum ändern</translation>
 <translation id="6650933572246256093">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für Kopplung. Geben Sie auf dem Gerät folgenden Zugangscode ein: <ph name="PASSKEY" />.</translation>
 <translation id="6657585470893396449">Passwort</translation>
 <translation id="6665545700722362599">Websites, Apps und Erweiterungen die Berechtigung zur Verwendung von Standortdiensten, des Mikrofons, der Kamera oder anderer Funktionen des Geräts gewähren</translation>
@@ -369,7 +367,6 @@
 <translation id="6715542151869432661">Keine Mobilgeräte gefunden.</translation>
 <translation id="6723839937902243910">Akkuleistung</translation>
 <translation id="6751826523481687655">Leistungsverfolgung ist aktiviert</translation>
-<translation id="6785414152754474415">Akku ist zu <ph name="PERCENTAGE" /> % geladen und wird geladen.</translation>
 <translation id="6790428901817661496">Wiedergabe</translation>
 <translation id="6803622936009808957">Der Bildschirm konnte nicht gespiegelt werden, da die Auflösung nicht unterstützt wird. Stattdessen wurde der Modus für den erweiterten Desktop gestartet.</translation>
 <translation id="6820676911989879663">Zeit für eine Pause.</translation>
@@ -403,6 +400,7 @@
 <translation id="7348093485538360975">Bildschirmtastatur</translation>
 <translation id="735745346212279324">VPN-Verbindung getrennt</translation>
 <translation id="7377169924702866686">Feststelltaste An</translation>
+<translation id="7378594059915113390">Mediensteuerelemente</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" /> Sek.</translation>
 <translation id="7398254312354928459">Netzwerkverbindung gewechselt</translation>
 <translation id="7405710164030118432">Wenn Sie das Gerät entsperren möchten, geben Sie Ihren Eltern-Zugangscode für Family Link ein</translation>
@@ -416,6 +414,7 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> unterstützt <ph name="SPECIFIED_RESOLUTION" /> nicht. Die Auflösung wurde auf <ph name="FALLBACK_RESOLUTION" /> zurückgesetzt.</translation>
 <translation id="7562368315689366235">Emoji-Palette</translation>
 <translation id="7564874036684306347">Das Verschieben von Fenstern auf einen anderen Desktop kann zu unerwartetem Verhalten führen. Nachfolgende Benachrichtigungen, Fenster und Dialogfelder werden unter Umständen zwischen den Desktops aufgeteilt.</translation>
+<translation id="7568294522609223312">Automatische Klicks deaktivieren</translation>
 <translation id="7569509451529460200">Braille und ChromeVox sind aktiviert</translation>
 <translation id="7593891976182323525">Suchen oder Umschalttaste</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (Eigentümer)</translation>
@@ -432,7 +431,6 @@
 <translation id="7814236020522506259"><ph name="HOUR" /> und <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Starkes Signal</translation>
 <translation id="7837740436429729974">Die Zeit ist um</translation>
-<translation id="7842211907556571265">Verbindung zu <ph name="NETWORK_NAME" /> wird hergestellt</translation>
 <translation id="7842569679327885685">Achtung: Experimentelle Funktion</translation>
 <translation id="7846634333498149051">Tastatur</translation>
 <translation id="7868900307798234037">Entsperren mit Fingerabdruck</translation>
@@ -504,6 +502,7 @@
 <translation id="8877788021141246043">Erinnerungen einrichten</translation>
 <translation id="8878886163241303700">Bildschirmerweiterung</translation>
 <translation id="890616557918890486">Quelle ändern</translation>
+<translation id="8909138438987180327">Akkustand: <ph name="PERCENTAGE" />.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Assistant spricht diese Sprache nicht.</translation>
 <translation id="8938800817013097409">USB-C-Gerät (rechter Port hinten)</translation>
@@ -512,9 +511,11 @@
 <translation id="8990809378771970590"><ph name="IME_NAME" /> wird verwendet</translation>
 <translation id="899350903320462459">Wenn Sie die Benachrichtigungsaktion ausführen möchten, entsperren Sie das Gerät als <ph name="LOGIN_ID" /></translation>
 <translation id="8995603266996330174">Verwaltet von <ph name="DOMAIN" /></translation>
+<translation id="9017320285115481645">Geben Sie Ihren Eltern-Zugangscode für Family Link ein.</translation>
 <translation id="9029474291399787231">Update für den Adobe Flash Player verfügbar</translation>
 <translation id="9056839673611986238">Das Gerät wird zurückgesetzt</translation>
 <translation id="9070640332319875144">Assistant-Einstellungen</translation>
+<translation id="9072519059834302790">Noch <ph name="TIME_LEFT" />, bis der Akku leer ist.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">WLAN: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofon wird verwendet.</translation>
@@ -525,8 +526,8 @@
 <translation id="9179259655489829027">Dank dieser Funktion können Sie schnell auf alle angemeldeten Nutzerkonten zugreifen, ohne ein Passwort eingeben zu müssen. Verwenden Sie diese Funktion nur bei Konten, denen Sie vertrauen.</translation>
 <translation id="9193626018745640770">Streaming an unbekannten Empfänger</translation>
 <translation id="9194617393863864469">Anderen Nutzer anmelden...</translation>
-<translation id="9201131092683066720">Akku ist zu <ph name="PERCENTAGE" /> % geladen.</translation>
 <translation id="9210037371811586452">Unified Desktop-Modus wird beendet</translation>
+<translation id="9211681782751733685">Noch <ph name="TIME_REMAINING" />, bis der Akku vollständig geladen ist.</translation>
 <translation id="9215934040295798075">Hintergrund festlegen</translation>
 <translation id="921989828232331238">Deine Eltern haben dein Gerät für heute gesperrt</translation>
 <translation id="923686485342484400">Drücken Sie zum Abmelden zweimal Steuerung - Umschalttaste - Q.</translation>

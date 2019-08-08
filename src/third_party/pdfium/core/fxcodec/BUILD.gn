@@ -9,6 +9,7 @@ import("../../testing/test.gni")
 jumbo_source_set("fxcodec") {
   sources = [
     "JBig2_DocumentContext.h",
+    "codec/ccodec_basicmodule.cpp",
     "codec/ccodec_basicmodule.h",
     "codec/ccodec_faxmodule.cpp",
     "codec/ccodec_faxmodule.h",
@@ -77,7 +78,7 @@ jumbo_source_set("fxcodec") {
     "../fxge",
     "//third_party:jpeg",
   ]
-  allow_circular_includes_from = [ "../fxge" ]
+  allow_circular_includes_from = []
 
   if (pdf_enable_xfa) {
     sources += [
@@ -123,6 +124,11 @@ jumbo_source_set("fxcodec") {
       deps += [ "../../third_party:fx_tiff" ]
     }
   }
+
+  if (is_win) {
+    allow_circular_includes_from += [ "../fxge" ]
+  }
+
   visibility = [ "../../*" ]
 }
 
@@ -140,11 +146,15 @@ pdfium_unittest_source_set("unittests") {
   ]
   pdfium_root_dir = "../../"
 
-  if (pdf_enable_xfa && pdf_enable_xfa_gif) {
-    sources += [
-      "gif/cfx_gifcontext_unittest.cpp",
-      "gif/cfx_lzwdecompressor_unittest.cpp",
-    ]
+  if (pdf_enable_xfa) {
+    sources += [ "codec/ccodec_progressivedecoder_unittest.cpp" ]
+    deps += [ "../fxge" ]
+    if (pdf_enable_xfa_gif) {
+      sources += [
+        "gif/cfx_gifcontext_unittest.cpp",
+        "gif/cfx_lzwdecompressor_unittest.cpp",
+      ]
+    }
   }
 }
 

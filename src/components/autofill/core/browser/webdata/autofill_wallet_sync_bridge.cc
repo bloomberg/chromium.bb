@@ -9,12 +9,11 @@
 #include "base/base64.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_profile_sync_util.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/webdata/autofill_sync_bridge_util.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
@@ -265,20 +264,6 @@ void AutofillWalletSyncBridge::ApplyStopSyncChanges(
       active_callback_.Run(false);
     }
 
-    // Report count of entities to delete. This use case should be pretty rare
-    // so it is okay to read it from DB again.
-    // TODO(crbug.com/853688): Remove when wallet data is launched on USS, incl.
-    // the helper function SyncWalletDataRecordClearedEntitiesCount().
-    std::vector<std::unique_ptr<AutofillProfile>> profiles;
-    std::vector<std::unique_ptr<CreditCard>> cards;
-    std::unique_ptr<PaymentsCustomerData> customer_data;
-    if (GetAutofillTable()->GetServerProfiles(&profiles) &&
-        GetAutofillTable()->GetServerCreditCards(&cards) &&
-        GetAutofillTable()->GetPaymentsCustomerData(&customer_data)) {
-      int count = profiles.size() + cards.size() + (customer_data ? 1 : 0);
-      SyncWalletDataRecordClearedEntitiesCount(count);
-    }
-
     // Do not notify the metadata bridge because we do not want to upstream the
     // deletions. The metadata bridge deletes its data independently when sync
     // gets stopped.
@@ -339,13 +324,11 @@ void AutofillWalletSyncBridge::SetSyncData(
   PopulateWalletTypesFromSyncData(entity_data, &wallet_cards, &wallet_addresses,
                                   &customer_data);
 
-  bool should_log_diff;
+  wallet_data_changed |= SetPaymentsCustomerData(std::move(customer_data));
   wallet_data_changed |=
-      SetPaymentsCustomerData(std::move(customer_data), &should_log_diff);
-  wallet_data_changed |= SetWalletCards(
-      std::move(wallet_cards), should_log_diff, notify_metadata_bridge);
-  wallet_data_changed |= SetWalletAddresses(
-      std::move(wallet_addresses), should_log_diff, notify_metadata_bridge);
+      SetWalletCards(std::move(wallet_cards), notify_metadata_bridge);
+  wallet_data_changed |=
+      SetWalletAddresses(std::move(wallet_addresses), notify_metadata_bridge);
 
   // Commit the transaction to make sure the data and the metadata with the
   // new progress marker is written down (especially on Android where we
@@ -360,7 +343,6 @@ void AutofillWalletSyncBridge::SetSyncData(
 
 bool AutofillWalletSyncBridge::SetWalletCards(
     std::vector<CreditCard> wallet_cards,
-    bool log_diff,
     bool notify_metadata_bridge) {
   // Users can set billing address of the server credit card locally, but that
   // information does not propagate to either Chrome Sync or Google Payments
@@ -377,14 +359,6 @@ bool AutofillWalletSyncBridge::SetWalletCards(
   table->GetServerCreditCards(&existing_cards);
   AutofillWalletDiff<CreditCard> diff =
       ComputeAutofillWalletDiff(existing_cards, wallet_cards);
-
-  if (log_diff) {
-    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletCards2.Added", diff.items_added);
-    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletCards2.Removed",
-                             diff.items_removed);
-    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletCards2.AddedOrRemoved",
-                             diff.items_added + diff.items_removed);
-  }
 
   if (!diff.IsEmpty()) {
     if (base::FeatureList::IsEnabled(
@@ -405,7 +379,6 @@ bool AutofillWalletSyncBridge::SetWalletCards(
 
 bool AutofillWalletSyncBridge::SetWalletAddresses(
     std::vector<AutofillProfile> wallet_addresses,
-    bool log_diff,
     bool notify_metadata_bridge) {
   // We do not have to CopyRelevantWalletMetadataFromDisk() because we will
   // never overwrite the same entity with different data (server_id is generated
@@ -425,15 +398,6 @@ bool AutofillWalletSyncBridge::SetWalletAddresses(
   AutofillWalletDiff<AutofillProfile> diff =
       ComputeAutofillWalletDiff(existing_addresses, wallet_addresses);
 
-  if (log_diff) {
-    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletAddresses2.Added",
-                             diff.items_added);
-    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletAddresses2.Removed",
-                             diff.items_removed);
-    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletAddresses2.AddedOrRemoved",
-                             diff.items_added + diff.items_removed);
-  }
-
   if (!diff.IsEmpty()) {
     if (base::FeatureList::IsEnabled(
             ::switches::kSyncUSSAutofillWalletMetadata)) {
@@ -452,8 +416,7 @@ bool AutofillWalletSyncBridge::SetWalletAddresses(
 }
 
 bool AutofillWalletSyncBridge::SetPaymentsCustomerData(
-    std::vector<PaymentsCustomerData> customer_data,
-    bool* should_log_diff) {
+    std::vector<PaymentsCustomerData> customer_data) {
   AutofillTable* table = GetAutofillTable();
   std::unique_ptr<PaymentsCustomerData> existing_entry;
   table->GetPaymentsCustomerData(&existing_entry);
@@ -469,15 +432,6 @@ bool AutofillWalletSyncBridge::SetPaymentsCustomerData(
                   << " payments-customer-data entries; expected 0 or 1.";
   }
 #endif  // DCHECK_IS_ON()
-
-  // We report the diff to metrics only if this is an incremental change where
-  // the user had sync set-up (having PaymentsCustomerData is a pre-requisite
-  // for having any other data) and continues to have sync set-up (continuing
-  // having a PaymentsCustomerData entity). As a side effect, this excludes
-  // reporting diffs for users that newly got a GPay account and sync
-  // PaymentsCustomerData for the first time but this is the best we can do to
-  // have the metrics consistent with Directory implementation.
-  *should_log_diff = existing_entry && new_entry;
 
   if (!new_entry && existing_entry) {
     // Clear the existing entry in the DB.

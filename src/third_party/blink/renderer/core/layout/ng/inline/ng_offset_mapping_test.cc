@@ -1225,6 +1225,33 @@ TEST_F(NGOffsetMappingTest, SoftHyphen) {
   TEST_RANGE(mapping.GetRanges(), text, 0u, 1u);
 }
 
+// For http://crbug.com/965353
+TEST_F(NGOffsetMappingTest, PreWrapAndReusing) {
+  // Note: "white-space: break-space" yields same result.
+  SetupHtml("t", "<p id='t' style='white-space: pre-wrap'>abc</p>");
+  Element& target = *GetDocument().getElementById("t");
+
+  // Change to <p id=t>abc xyz</p>
+  Text& text = *Text::Create(GetDocument(), " xyz");
+  target.appendChild(&text);
+  UpdateAllLifecyclePhasesForTest();
+
+  // Change to <p id=t> xyz</p>. We attempt to reuse " xyz".
+  target.firstChild()->remove();
+  UpdateAllLifecyclePhasesForTest();
+
+  const NGOffsetMapping& mapping = GetOffsetMapping();
+  EXPECT_EQ(String(u" \u200Bxyz"), mapping.GetText())
+      << "We have ZWS after leading preserved space.";
+  EXPECT_EQ((Vector<NGOffsetMappingUnit>{
+                NGOffsetMappingUnit(kIdentity, *text.GetLayoutObject(), 0u, 1u,
+                                    0u, 1u),
+                NGOffsetMappingUnit(kIdentity, *text.GetLayoutObject(), 1u, 4u,
+                                    2u, 5u),
+            }),
+            mapping.GetUnits());
+}
+
 TEST_F(NGOffsetMappingTest, TextOverflowEllipsis) {
   LoadAhem();
   SetupHtml("t",
@@ -1241,6 +1268,41 @@ TEST_F(NGOffsetMappingTest, TextOverflowEllipsis) {
   TEST_RANGE(mapping.GetRanges(), text, 0u, 1u);
 }
 
+// https://crbug.com/967106
+TEST_F(NGOffsetMappingTest, StartOfNextNonCollapsedContentWithPseudo) {
+  // The white spaces are necessary for bug repro. Do not remove them.
+  SetupHtml("t", R"HTML(
+    <style>span#quote::before { content: '"'}</style>
+    <div id=t>
+      <span>foo </span>
+      <span id=quote>bar</span>
+    </div>)HTML");
+
+  const Element* quote = GetElementById("quote");
+  const Node* text = quote->previousSibling();
+  const Position position = Position::FirstPositionInNode(*text);
+
+  EXPECT_EQ(Position(),
+            GetOffsetMapping().StartOfNextNonCollapsedContent(position));
+}
+
+// https://crbug.com/967106
+TEST_F(NGOffsetMappingTest, EndOfLastNonCollapsedContentWithPseudo) {
+  // The white spaces are necessary for bug repro. Do not remove them.
+  SetupHtml("t", R"HTML(
+    <style>span#quote::after { content: '" '}</style>
+    <div id=t>
+      <span id=quote>foo</span>
+      <span>bar</span>
+    </div>)HTML");
+
+  const Element* quote = GetElementById("quote");
+  const Node* text = quote->nextSibling();
+  const Position position = Position::LastPositionInNode(*text);
+
+  EXPECT_EQ(Position(),
+            GetOffsetMapping().EndOfLastNonCollapsedContent(position));
+}
 // Test |GetOffsetMapping| which is available both for LayoutNG and for legacy.
 class NGOffsetMappingGetterTest : public RenderingTest,
                                   public testing::WithParamInterface<bool>,

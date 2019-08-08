@@ -231,7 +231,7 @@ public class ScreenOrientationListenerTest {
 
         int callCount = mCallbackHelper.getCallCount();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            ScreenOrientationProvider.lockOrientation(
+            ScreenOrientationProvider.getInstance().lockOrientation(
                     mActivityTestRule.getWebContents().getTopLevelNativeWindow(),
                     (byte) orientationValue);
         });

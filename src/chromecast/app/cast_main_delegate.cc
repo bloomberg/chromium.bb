@@ -71,7 +71,8 @@ bool CastMainDelegate::BasicStartupComplete(int* exit_code) {
   RegisterPathProvider();
 
   logging::LoggingSettings settings;
-  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+  settings.logging_dest =
+      logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;
 #if defined(OS_ANDROID)
   const base::CommandLine* command_line(base::CommandLine::ForCurrentProcess());
   std::string process_type =
@@ -80,7 +81,8 @@ bool CastMainDelegate::BasicStartupComplete(int* exit_code) {
   if (process_type.empty()) {
     base::FilePath log_file;
     base::PathService::Get(FILE_CAST_ANDROID_LOG, &log_file);
-    settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+    settings.logging_dest =
+        logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;
     settings.log_file = log_file.value().c_str();
     settings.delete_old = logging::DELETE_OLD_LOG_FILE;
   }

@@ -48,13 +48,12 @@ TaskTraits PostTaskAndroid::CreateTaskTraits(
     jboolean priority_set_explicitly,
     jint priority,
     jboolean may_block,
+    jboolean use_thread_pool,
     jbyte extension_id,
     const base::android::JavaParamRef<jbyteArray>& extension_data) {
   return TaskTraits(priority_set_explicitly,
-                    static_cast<TaskPriority>(priority),
-                    /* shutdown_behavior_set_explicitly */ false,
-                    TaskShutdownBehavior::SKIP_ON_SHUTDOWN, may_block,
-                    /* with_base_sync_primitives */ false,
+                    static_cast<TaskPriority>(priority), may_block,
+                    use_thread_pool,
                     TaskTraitsExtensionStorage(
                         extension_id, GetExtensionData(env, extension_data)));
 }
@@ -64,6 +63,7 @@ void JNI_PostTask_PostDelayedTask(
     jboolean priority_set_explicitly,
     jint priority,
     jboolean may_block,
+    jboolean use_thread_pool,
     jbyte extension_id,
     const base::android::JavaParamRef<jbyteArray>& extension_data,
     const base::android::JavaParamRef<jobject>& task,
@@ -73,8 +73,8 @@ void JNI_PostTask_PostDelayedTask(
   PostDelayedTaskWithTraits(
       FROM_HERE,
       PostTaskAndroid::CreateTaskTraits(env, priority_set_explicitly, priority,
-                                        may_block, extension_id,
-                                        extension_data),
+                                        may_block, use_thread_pool,
+                                        extension_id, extension_data),
       BindOnce(&PostTaskAndroid::RunJavaTask,
                base::android::ScopedJavaGlobalRef<jobject>(task)),
       TimeDelta::FromMilliseconds(delay));

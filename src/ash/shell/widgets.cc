@@ -52,12 +52,7 @@ class WidgetsWindow : public views::WidgetDelegateView {
 };
 
 WidgetsWindow::WidgetsWindow()
-    : button_(
-          views::MdTextButton::Create(nullptr, base::ASCIIToUTF16("Button"))),
-      disabled_button_(
-          views::MdTextButton::Create(nullptr,
-                                      base::ASCIIToUTF16("Disabled button"))),
-      checkbox_(new views::Checkbox(base::ASCIIToUTF16("Checkbox"))),
+    : checkbox_(new views::Checkbox(base::ASCIIToUTF16("Checkbox"))),
       checkbox_disabled_(
           new views::Checkbox(base::ASCIIToUTF16("Checkbox disabled"))),
       checkbox_checked_(
@@ -75,9 +70,11 @@ WidgetsWindow::WidgetsWindow()
       radio_button_selected_disabled_(new views::RadioButton(
           base::ASCIIToUTF16("Radio button selected disabled"),
           1)) {
-  AddChildView(button_);
+  button_ = AddChildView(
+      views::MdTextButton::Create(nullptr, base::ASCIIToUTF16("Button")));
+  disabled_button_ = AddChildView(views::MdTextButton::Create(
+      nullptr, base::ASCIIToUTF16("Disabled button")));
   disabled_button_->SetEnabled(false);
-  AddChildView(disabled_button_);
   AddChildView(checkbox_);
   checkbox_disabled_->SetEnabled(false);
   AddChildView(checkbox_disabled_);

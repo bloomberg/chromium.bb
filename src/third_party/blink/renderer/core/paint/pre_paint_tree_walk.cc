@@ -50,13 +50,15 @@ void PrePaintTreeWalk::WalkTree(LocalFrameView& root_frame_view) {
   if (needs_tree_builder_context_update)
     GeometryMapper::ClearCache();
 
-  auto property_changed = VisualViewportPaintPropertyTreeBuilder::Update(
-      root_frame_view.GetPage()->GetVisualViewport(),
-      *context_storage_.back().tree_builder_context);
+  if (root_frame_view.GetFrame().IsMainFrame()) {
+    auto property_changed = VisualViewportPaintPropertyTreeBuilder::Update(
+        root_frame_view.GetPage()->GetVisualViewport(),
+        *context_storage_.back().tree_builder_context);
 
-  if (property_changed >
-      PaintPropertyChangeType::kChangedOnlyCompositedValues) {
-    root_frame_view.SetPaintArtifactCompositorNeedsUpdate();
+    if (property_changed >
+        PaintPropertyChangeType::kChangedOnlyCompositedValues) {
+      root_frame_view.SetPaintArtifactCompositorNeedsUpdate();
+    }
   }
 
   Walk(root_frame_view);
@@ -125,7 +127,7 @@ void PrePaintTreeWalk::Walk(LocalFrameView& frame_view) {
   }
 
   if (LayoutView* view = frame_view.GetLayoutView()) {
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
     if (VLOG_IS_ON(3) && needs_tree_builder_context_update) {
       LOG(ERROR) << "PrePaintTreeWalk::Walk(frame_view=" << &frame_view
                  << ")\nLayout tree:";
@@ -139,10 +141,7 @@ void PrePaintTreeWalk::Walk(LocalFrameView& frame_view) {
 #endif
   }
 
-  if (RuntimeEnabledFeatures::JankTrackingEnabled(
-          frame_view.GetFrame().GetDocument()))
-    frame_view.GetJankTracker().NotifyPrePaintFinished();
-
+  frame_view.GetJankTracker().NotifyPrePaintFinished();
   context_storage_.pop_back();
 }
 
@@ -250,7 +249,7 @@ bool PrePaintTreeWalk::NeedsTreeBuilderContextUpdate(
     const PrePaintTreeWalkContext& context) {
   if ((RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
        RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) &&
-      frame_view.GetFrame().IsLocalRoot() &&
+      frame_view.GetFrame().IsMainFrame() &&
       frame_view.GetPage()->GetVisualViewport().NeedsPaintPropertyUpdate())
     return true;
 
@@ -287,7 +286,6 @@ bool PrePaintTreeWalk::ContextRequiresTreeBuilderContext(
          context.paint_invalidator_context.NeedsVisualRectUpdate(object);
 }
 
-#if DCHECK_IS_ON()
 void PrePaintTreeWalk::CheckTreeBuilderContextState(
     const LayoutObject& object,
     const PrePaintTreeWalkContext& parent_context) {
@@ -297,21 +295,20 @@ void PrePaintTreeWalk::CheckTreeBuilderContextState(
     return;
   }
 
-  DCHECK(!object.NeedsPaintPropertyUpdate());
-  DCHECK(!object.DescendantNeedsPaintPropertyUpdate());
-  DCHECK(!object.DescendantNeedsPaintOffsetAndVisualRectUpdate());
+  CHECK(!object.NeedsPaintPropertyUpdate());
+  CHECK(!object.DescendantNeedsPaintPropertyUpdate());
+  CHECK(!object.DescendantNeedsPaintOffsetAndVisualRectUpdate());
   if (parent_context.paint_invalidator_context.NeedsVisualRectUpdate(object)) {
     // Note that if paint_invalidator_context's NeedsVisualRectUpdate(object) is
-    // true, we definitely want to DCHECK. However, we would also like to know
+    // true, we definitely want to CHECK. However, we would also like to know
     // the value of object.NeedsPaintOffsetAndVisualRectUpdate(), hence one of
-    // the two DCHECKs below will definitely trigger, and depending on which one
+    // the two CHECKs below will definitely trigger, and depending on which one
     // does we will know the value.
-    DCHECK(object.NeedsPaintOffsetAndVisualRectUpdate());
-    DCHECK(!object.NeedsPaintOffsetAndVisualRectUpdate());
+    CHECK(object.NeedsPaintOffsetAndVisualRectUpdate());
+    CHECK(!object.NeedsPaintOffsetAndVisualRectUpdate());
   }
-  NOTREACHED();
+  CHECK(false) << "Unknown reason.";
 }
-#endif
 
 void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
                                     PrePaintTreeWalkContext& context) {
@@ -392,12 +389,6 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
     ToLayoutBoxModelObject(object).Layer()->SetNeedsRepaint();
 
   CompositingLayerPropertyUpdater::Update(object);
-
-  if (RuntimeEnabledFeatures::JankTrackingEnabled(&object.GetDocument())) {
-    object.GetFrameView()->GetJankTracker().NotifyObjectPrePaint(
-        object, paint_invalidator_context.old_visual_rect,
-        *paint_invalidator_context.painting_layer);
-  }
 }
 
 void PrePaintTreeWalk::Walk(const LayoutObject& object) {
@@ -432,9 +423,8 @@ void PrePaintTreeWalk::Walk(const LayoutObject& object) {
     return;
   }
 
-#if DCHECK_IS_ON()
+  // The following is for debugging crbug.com/974639.
   CheckTreeBuilderContextState(object, parent_context());
-#endif
 
   // Early out from the tree walk if possible.
   if (!needs_tree_builder_context_update && !ObjectRequiresPrePaint(object) &&
@@ -485,13 +475,11 @@ void PrePaintTreeWalk::Walk(const LayoutObject& object) {
     FrameView* frame_view = layout_embedded_content.ChildFrameView();
     if (auto* local_frame_view = DynamicTo<LocalFrameView>(frame_view)) {
       if (context().tree_builder_context) {
-        context().tree_builder_context->fragments[0].current.paint_offset +=
-            layout_embedded_content.ReplacedContentRect().Location() -
-            local_frame_view->FrameRect().Location();
-        context()
-            .tree_builder_context->fragments[0]
-            .current.paint_offset = RoundedIntPoint(
-            context().tree_builder_context->fragments[0].current.paint_offset);
+        auto& offset =
+            context().tree_builder_context->fragments[0].current.paint_offset;
+        offset += layout_embedded_content.ReplacedContentRect().offset;
+        offset -= PhysicalOffset(local_frame_view->FrameRect().Location());
+        offset = PhysicalOffset(RoundedIntPoint(offset));
       }
       Walk(*local_frame_view);
     }

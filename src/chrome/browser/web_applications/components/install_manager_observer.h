@@ -11,8 +11,7 @@ namespace web_app {
 
 class InstallManagerObserver : public base::CheckedObserver {
  public:
-  // Called before InstallManager subsystem gets destroyed.
-  virtual void InstallManagerReset() = 0;
+  virtual void OnInstallManagerShutdown() = 0;
 };
 
 }  // namespace web_app

@@ -35,8 +35,6 @@ class HTMLFrameSetElement final : public HTMLElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_NODE_FACTORY(HTMLFrameSetElement);
-
   explicit HTMLFrameSetElement(Document&);
 
   bool HasFrameBorder() const { return frameborder_; }

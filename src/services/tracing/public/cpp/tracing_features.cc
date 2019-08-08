@@ -19,10 +19,19 @@ namespace features {
 const base::Feature kTracingPerfettoBackend{"TracingPerfettoBackend",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Causes the BackgroundTracingManager to upload proto messages via UMA,
+// rather than JSON via the crash frontend.
+const base::Feature kBackgroundTracingProtoOutput{
+    "BackgroundTracingProtoOutput", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Causes Perfetto to run in-process mode for in-process tracing producers.
+const base::Feature kPerfettoForceOutOfProcessProducer{
+    "PerfettoForceOutOfProcessProducer", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Runs the tracing service as an in-process browser service.
 const base::Feature kTracingServiceInProcess {
   "TracingServiceInProcess",
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(IS_CHROMECAST)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT

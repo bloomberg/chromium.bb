@@ -1,9 +1,10 @@
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-#
 
+import("//chrome/browser/media/router/features.gni")
 import("//extensions/buildflags/buildflags.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 
 static_library("router") {
@@ -16,6 +17,9 @@ static_library("router") {
     "//content/public/common",
     "//crypto",
     "//net",
+    "//net/traffic_annotation",
+    "//services/network:network_service",
+    "//services/network/public/mojom",
     "//third_party/icu",
     "//url",
   ]
@@ -64,10 +68,10 @@ static_library("router") {
   if (enable_extensions) {
     deps += [
       "discovery",
-      "//extensions/browser",
       "//mojo/public/cpp/bindings",
       "//ui/base:buildflags",
     ]
+
     sources += [
       "data_decoder_util.cc",
       "data_decoder_util.h",
@@ -91,8 +95,12 @@ static_library("router") {
       "presentation/independent_otr_profile_manager.h",
       "presentation/presentation_navigation_policy.cc",
       "presentation/presentation_navigation_policy.h",
+      "providers/cast/activity_record.cc",
+      "providers/cast/activity_record.h",
       "providers/cast/cast_activity_manager.cc",
       "providers/cast/cast_activity_manager.h",
+      "providers/cast/cast_activity_record.cc",
+      "providers/cast/cast_activity_record.h",
       "providers/cast/cast_app_availability_tracker.cc",
       "providers/cast/cast_app_availability_tracker.h",
       "providers/cast/cast_app_discovery_service.cc",
@@ -103,12 +111,16 @@ static_library("router") {
       "providers/cast/cast_media_route_provider.h",
       "providers/cast/cast_media_route_provider_metrics.cc",
       "providers/cast/cast_media_route_provider_metrics.h",
+      "providers/cast/cast_session_client.cc",
+      "providers/cast/cast_session_client.h",
       "providers/cast/cast_session_tracker.cc",
       "providers/cast/cast_session_tracker.h",
       "providers/cast/chrome_cast_message_handler.cc",
       "providers/cast/chrome_cast_message_handler.h",
       "providers/cast/dual_media_sink_service.cc",
       "providers/cast/dual_media_sink_service.h",
+      "providers/cast/mirroring_activity_record.cc",
+      "providers/cast/mirroring_activity_record.h",
       "providers/common/buffered_message_sender.cc",
       "providers/common/buffered_message_sender.h",
       "providers/dial/dial_activity_manager.cc",
@@ -127,6 +139,21 @@ static_library("router") {
       "providers/wired_display/wired_display_presentation_receiver_factory.cc",
       "providers/wired_display/wired_display_presentation_receiver_factory.h",
     ]
+
+    if (enable_openscreen) {
+      sources += [
+        "providers/openscreen/network_service_async_packet_sender.cc",
+        "providers/openscreen/network_service_async_packet_sender.h",
+        "providers/openscreen/network_service_quic_packet_writer.cc",
+        "providers/openscreen/network_service_quic_packet_writer.h",
+        "providers/openscreen/platform/logging.cc",
+      ]
+
+      configs +=
+          [ "//third_party/openscreen/src/build:allow_build_from_embedder" ]
+
+      deps += [ "//third_party/openscreen/src/platform" ]
+    }
   }
 }
 
@@ -167,4 +194,18 @@ static_library("test_support") {
       "test/noop_dual_media_sink_service.h",
     ]
   }
+}
+
+fuzzer_test("dial_internal_message_fuzzer") {
+  sources = [
+    "providers/dial/dial_internal_message_fuzzer.cc",
+  ]
+  deps = [
+    ":router",
+    "//base",
+    "//components/mirroring/mojom:service",
+    "//components/translate/content/common",
+  ]
+  dict = "providers/dial/fuzzer_data/dial_internal_message_fuzzer.dict"
+  seed_corpus = "providers/dial/fuzzer_data/corpus/"
 }

@@ -39,10 +39,10 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "content/public/common/content_features.h"
 #include "extensions/common/extension_urls.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/resources/grit/webui_resources.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
@@ -118,6 +118,7 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
     {"back", IDS_ACCNAME_BACK},
     {"cancel", IDS_CANCEL},
     {"close", IDS_CLOSE},
+    {"clear", IDS_CLEAR},
     {"confirm", IDS_CONFIRM},
     {"controlledSettingPolicy", IDS_CONTROLLED_SETTING_POLICY},
     {"done", IDS_DONE},
@@ -204,6 +205,7 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
      IDS_EXTENSIONS_ACTIVITY_LOG_MORE_ACTIONS_LABEL},
     {"activityLogExpandAll", IDS_EXTENSIONS_ACTIVITY_LOG_EXPAND_ALL},
     {"activityLogCollapseAll", IDS_EXTENSIONS_ACTIVITY_LOG_COLLAPSE_ALL},
+    {"activityLogExportHistory", IDS_EXTENSIONS_ACTIVITY_LOG_EXPORT_HISTORY},
     {"appIcon", IDS_EXTENSIONS_APP_ICON},
     {"extensionIcon", IDS_EXTENSIONS_EXTENSION_ICON},
     {"extensionA11yAssociation", IDS_EXTENSIONS_EXTENSION_A11Y_ASSOCIATION},
@@ -243,6 +245,7 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
     {"loadErrorErrorLabel", IDS_EXTENSIONS_LOAD_ERROR_ERROR_LABEL},
     {"loadErrorRetry", IDS_EXTENSIONS_LOAD_ERROR_RETRY},
     {"loadingActivities", IDS_EXTENSIONS_LOADING_ACTIVITIES},
+    {"missingOrUninstalledExtension", IDS_MISSING_OR_UNINSTALLED_EXTENSION},
     {"noActivities", IDS_EXTENSIONS_NO_ACTIVITIES},
     {"noErrorsToShow", IDS_EXTENSIONS_ERROR_NO_ERRORS_CODE_MESSAGE},
     {"runtimeHostsDialogInputError",
@@ -341,17 +344,16 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
 
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   source->AddResourcePath("crisper.js", IDR_EXTENSIONS_CRISPER_JS);
-  source->SetDefaultResource(
-      base::FeatureList::IsEnabled(features::kWebUIPolymer2)
-          ? IDR_EXTENSIONS_VULCANIZED_P2_HTML
-          : IDR_EXTENSIONS_VULCANIZED_HTML);
-  source->UseGzip();
+  source->SetDefaultResource(IDR_EXTENSIONS_VULCANIZED_HTML);
 #else
   // Add all MD Extensions resources.
   for (size_t i = 0; i < kExtensionsResourcesSize; ++i) {
     source->AddResourcePath(kExtensionsResources[i].name,
                             kExtensionsResources[i].value);
   }
+  // Add the subpage loader, to load subpages in non-optimized builds.
+  source->AddResourcePath("subpage_loader.html", IDR_WEBUI_HTML_SUBPAGE_LOADER);
+  source->AddResourcePath("subpage_loader.js", IDR_WEBUI_JS_SUBPAGE_LOADER);
   source->SetDefaultResource(IDR_EXTENSIONS_EXTENSIONS_HTML);
 #endif
 

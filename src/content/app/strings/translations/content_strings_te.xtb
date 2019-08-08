@@ -11,7 +11,6 @@
 <translation id="1206693055195146388">స్లయిడర్</translation>
 <translation id="1211441953136645838">ఎండ్‌నోట్</translation>
 <translation id="1281252709823657822">డైలాగ్</translation>
-<translation id="1289247557029249093">చిత్రంలో చిత్రం మోడ్ నుంచి నిష్క్రమించు</translation>
 <translation id="1335095011850992622">సహకారులు</translation>
 <translation id="1342835525016946179">కథనం</translation>
 <translation id="1359897965706325498">బ్యానర్</translation>
@@ -37,6 +36,7 @@
 <translation id="2148716181193084225">ఈ రోజు</translation>
 <translation id="2158401438286456825">పేజీ జాబితా</translation>
 <translation id="2226276347425096477">దయచేసి ఈ వచనాన్ని <ph name="MAX_CHARACTERS" /> అక్షరాలకు లేదా అంతకంటే తక్కువకు తగ్గించండి (మీరు ప్రస్తుతం <ph name="CURRENT_LENGTH" /> అక్షరాలను ఉపయోగిస్తున్నారు).</translation>
+<translation id="2246498165605549352">స్థానిక ఫైల్</translation>
 <translation id="2247351761944213033"><ph name="WEEKNUMBER" />వ వారం, <ph name="YEAR" /></translation>
 <translation id="2277199496770840904">ట్రాక్ <ph name="NUMBER" /></translation>
 <translation id="2291999235780842123">చెక్‌బాక్స్</translation>
@@ -75,6 +75,7 @@
 <translation id="3685101356851116974">లేబుల్ లేని చిత్రం</translation>
 <translation id="3706100364254443312">మార్పు</translation>
 <translation id="3732799496749320381">mm</translation>
+<translation id="3754210790023674521">చిత్రంలో చిత్రం మోడ్ నుండి నిష్క్రమింపజేయి</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3808586225841795776">పదం</translation>
 <translation id="3822383571486410024">దయచేసి ఈ వచనాన్ని <ph name="MIN_CHARACTERS" /> లేదా అంతకంటే ఎక్కువ అక్షరాలకు పొడిగించండి (ప్రస్తుతం మీరు <ph name="CURRENT_LENGTH" /> అక్షరాలను ఉపయోగిస్తున్నారు).</translation>
@@ -102,6 +103,7 @@
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">'<ph name="ATSIGN" />'కి తర్వాత ఉన్న భాగంలో '<ph name="INVALIDCHARACTER" />' చిహ్నం ఉండకూడదు.</translation>
 <translation id="4668956016107839909">అనుబంధం</translation>
+<translation id="4718048029184481307">చిత్రంలో చిత్రం మోడ్‌లో ప్లే అవుతోంది</translation>
 <translation id="4742539557769756338">ముఖచిత్రం</translation>
 <translation id="4748357248530471599">డిస్‌ప్లే కత్తిరింపు పూర్తి స్క్రీన్‌ని సక్రియం చేస్తుంది</translation>
 <translation id="4757246831282535685">ట్యాబ్ ప్యానెల్</translation>
@@ -150,7 +152,7 @@
 <translation id="6166809985690652833">చివరిమాట</translation>
 <translation id="6209276755895393898">వీరిలా కనిపిస్తున్నారు: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">పదకోశం</translation>
-<translation id="628938136236500310">చిత్రంలో చిత్రం మోడ్‌లో ప్లే చేస్తోంది</translation>
+<translation id="6310801910862476708">చిత్రంలో చిత్రం మోడ్ నుండి నిష్క్రమించు</translation>
 <translation id="6398862346408813489">నెల ఎంపిక ప్యానెల్‌ను చూపుతుంది</translation>
 <translation id="6404546809543547843">ఆడియో సమయ స్క్రబ్బర్</translation>
 <translation id="6443871981718447451">ఉపశీర్షికల మెనూని చూపు</translation>

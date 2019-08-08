@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
+#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 
 namespace blink {
 
@@ -18,12 +19,14 @@ void DrawInternal(cc::PaintCanvas* canvas,
                   const FloatRect& dest_rect,
                   const FloatRect& src_rect,
                   const PaintFlags& flags,
+                  Image::ImageClampingMode clamping_mode,
                   scoped_refptr<PaintWorkletInput> input) {
-  canvas->drawImage(PaintImageBuilder::WithDefault()
-                        .set_paint_worklet_input(std::move(input))
-                        .set_id(PaintImage::GetNextId())
-                        .TakePaintImage(),
-                    0, 0, &flags);
+  canvas->drawImageRect(PaintImageBuilder::WithDefault()
+                            .set_paint_worklet_input(std::move(input))
+                            .set_id(PaintImage::GetNextId())
+                            .TakePaintImage(),
+                        src_rect, dest_rect, &flags,
+                        WebCoreClampingModeToSkiaRectConstraint(clamping_mode));
 }
 }  // namespace
 
@@ -32,15 +35,15 @@ void PaintWorkletDeferredImage::Draw(cc::PaintCanvas* canvas,
                                      const FloatRect& dest_rect,
                                      const FloatRect& src_rect,
                                      RespectImageOrientationEnum,
-                                     ImageClampingMode,
+                                     ImageClampingMode clamping_mode,
                                      ImageDecodingMode) {
-  DrawInternal(canvas, dest_rect, src_rect, flags, input_);
+  DrawInternal(canvas, dest_rect, src_rect, flags, clamping_mode, input_);
 }
 
 void PaintWorkletDeferredImage::DrawTile(GraphicsContext& context,
                                          const FloatRect& src_rect) {
   DrawInternal(context.Canvas(), FloatRect(), src_rect, context.FillFlags(),
-               input_);
+               kClampImageToSourceRect, input_);
 }
 
 }  // namespace blink

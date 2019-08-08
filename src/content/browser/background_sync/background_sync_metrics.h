@@ -54,6 +54,10 @@ class BackgroundSyncMetrics {
   // Records the status of a failed sync registration.
   static void CountRegisterFailure(BackgroundSyncStatus status);
 
+  // Records the status of an attempt to remove a Periodic Background
+  // Sync registration.
+  static void CountUnregisterPeriodicSync(BackgroundSyncStatus status);
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(BackgroundSyncMetrics);
 };

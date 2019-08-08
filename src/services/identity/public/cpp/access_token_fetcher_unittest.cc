@@ -109,7 +109,7 @@ class AccessTokenFetcherTest : public testing::Test,
  private:
   // OAuth2TokenService::DiagnosticsObserver:
   void OnAccessTokenRequested(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       const std::string& consumer_id,
       const OAuth2TokenService::ScopeSet& scopes) override {
     if (on_access_token_request_callback_)

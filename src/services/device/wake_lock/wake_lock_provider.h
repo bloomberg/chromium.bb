@@ -33,9 +33,8 @@ class WakeLockProvider : public mojom::WakeLockProvider,
   void AddBinding(mojom::WakeLockProviderRequest request);
 
   // mojom::WakeLockProvider overrides.
-  void GetWakeLockContextForID(
-      int context_id,
-      mojo::InterfaceRequest<mojom::WakeLockContext> request) override;
+  void GetWakeLockContextForID(int context_id,
+                               mojom::WakeLockContextRequest request) override;
   void GetWakeLockWithoutContext(mojom::WakeLockType type,
                                  mojom::WakeLockReason reason,
                                  const std::string& description,

@@ -3,7 +3,12 @@ from os.path import dirname, join
 from collections import OrderedDict
 
 from xml.parsers import expat
-import xml.etree.ElementTree as etree
+import xml.etree.ElementTree as etree  # noqa: N813
+
+MYPY = False
+if MYPY:
+    # MYPY is set to True when run under Mypy.
+    from typing import Dict
 
 _catalog = join(dirname(__file__), "catalog")
 
@@ -13,7 +18,7 @@ def _wrap_error(e):
     err.position = e.lineno, e.offset
     raise err
 
-_names = {}
+_names = {}  # type: Dict[str, str]
 def _fixname(key):
     try:
         name = _names[key]

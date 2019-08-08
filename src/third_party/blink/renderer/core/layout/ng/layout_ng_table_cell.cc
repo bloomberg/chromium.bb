@@ -29,8 +29,8 @@ void LayoutNGTableCell::UpdateBlockLayout(bool relayout_children) {
       NGBlockNode(this).Layout(constraint_space);
 
   for (NGOutOfFlowPositionedDescendant descendant :
-       result->OutOfFlowPositionedDescendants())
-    descendant.node.UseOldOutOfFlowPositioning();
+       result->PhysicalFragment().OutOfFlowPositionedDescendants())
+    descendant.node.UseLegacyOutOfFlowPositioning();
 }
 
 }  // namespace blink

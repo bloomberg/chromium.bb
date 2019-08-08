@@ -9,8 +9,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
+import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -33,10 +33,15 @@ class TabGridSheetToolbarCoordinator implements Destroyable {
      */
     TabGridSheetToolbarCoordinator(
             Context context, ViewGroup contentView, PropertyModel toolbarPropertyModel) {
+        this(context, contentView, toolbarPropertyModel, null);
+    }
+
+    TabGridSheetToolbarCoordinator(Context context, ViewGroup contentView,
+            PropertyModel toolbarPropertyModel, TabGridDialogParent dialog) {
         mToolbarView = (TabGroupUiToolbarView) LayoutInflater.from(context).inflate(
                 R.layout.bottom_tab_grid_toolbar, contentView, false);
         mModelChangeProcessor = PropertyModelChangeProcessor.create(toolbarPropertyModel,
-                new TabGridSheetViewBinder.ViewHolder(mToolbarView, contentView),
+                new TabGridSheetViewBinder.ViewHolder(mToolbarView, contentView, dialog),
                 TabGridSheetViewBinder::bind);
     }
 

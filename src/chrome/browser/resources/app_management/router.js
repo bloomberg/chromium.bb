@@ -102,18 +102,19 @@ Polymer({
 
   /** @private */
   publishQueryParams_: function() {
-    const newId = this.selectedAppId_;
+    const newQueryParams = Object.assign({}, this.queryParams_);
 
-    this.queryParams_.id = newId;
-    if (!newId) {
-      delete this.queryParams_.id;
+    newQueryParams.q = this.searchTerm_ || undefined;
+    newQueryParams.id = this.selectedAppId_ || undefined;
+
+    // Can't update |this.queryParams_| every time since assigning a new object
+    // to it triggers a state change which causes the URL to change, which
+    // recurses into a loop. JSON.stringify is used here to compare objects as
+    // it is always going to be a key value (string) pair and will serialize
+    // correctly.
+    if (JSON.stringify(newQueryParams) !== JSON.stringify(this.queryParams_)) {
+      this.queryParams_ = newQueryParams;
     }
-    const newSearch = this.searchTerm_;
-    this.queryParams_.q = newSearch;
-    if (!newSearch) {
-      delete this.queryParams_.q;
-    }
-    this.queryParams_ = Object.assign({}, this.queryParams_);
   },
 
   /** @private */
@@ -149,10 +150,12 @@ Polymer({
 
     if (newPage === PageType.DETAIL) {
       this.dispatch(app_management.actions.changePage(PageType.DETAIL, newId));
-    } else if (this.queryParams_.q) {
-      this.dispatch(app_management.actions.setSearchTerm(this.queryParams_.q));
     } else {
       this.dispatch(app_management.actions.changePage(newPage));
+    }
+
+    if (searchTerm) {
+      this.dispatch(app_management.actions.setSearchTerm(searchTerm));
     }
     this.urlParsed_ = true;
   },

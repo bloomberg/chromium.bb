@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -603,8 +604,8 @@ class ReporterRunner {
     // Ensures that any component waiting for the reporter sequence result will
     // be notified if |invocations| doesn't get scheduled.
     base::ScopedClosureRunner scoped_runner(
-        base::BindOnce(&SwReporterInvocationSequence::NotifySequenceDone,
-                       base::Unretained(&invocations),
+        base::BindOnce(&ChromeCleanerController::OnReporterSequenceDone,
+                       base::Unretained(GetCleanerController()),
                        SwReporterInvocationResult::kNotScheduled));
 
     PrefService* local_state = g_browser_process->local_state();
@@ -700,6 +701,9 @@ class ReporterRunner {
                  ReporterRunTimeInfo&& time_info)
       : invocation_type_(invocation_type),
         invocations_(std::move(invocations)),
+        on_sequence_done_(
+            base::BindOnce(&ChromeCleanerController::OnReporterSequenceDone,
+                           base::Unretained(GetCleanerController()))),
         time_info_(std::move(time_info)) {}
 
   ~ReporterRunner() {
@@ -755,8 +759,7 @@ class ReporterRunner {
     // SW_REPORTER_FAILED_TO_START is logged in
     // |LaunchAndWaitForExitOnBackgroundThread|.)
     if (exit_code == kReporterNotLaunchedExitCode) {
-      invocations_.NotifySequenceDone(
-          SwReporterInvocationResult::kProcessFailedToLaunch);
+      NotifySequenceDone(SwReporterInvocationResult::kProcessFailedToLaunch);
       return;
     }
 
@@ -847,8 +850,7 @@ class ReporterRunner {
             ? chrome_cleaner::ChromePromptValue::kUserInitiated
             : chrome_cleaner::ChromePromptValue::kPrompted);
 
-    invocations_.NotifySequenceDone(
-        SwReporterInvocationResult::kCleanupToBeOffered);
+    NotifySequenceDone(SwReporterInvocationResult::kCleanupToBeOffered);
     cleaner_controller->Scan(finished_invocation);
 
     // If this is a periodic reporter run, then create the dialog controller, so
@@ -965,9 +967,14 @@ class ReporterRunner {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK_EQ(instance_, this);
 
-    invocations_.NotifySequenceDone(result);
+    NotifySequenceDone(result);
 
     delete this;
+  }
+
+  void NotifySequenceDone(SwReporterInvocationResult result) {
+    if (on_sequence_done_)
+      std::move(on_sequence_done_).Run(result);
   }
 
   SwReporterInvocationType invocation_type() const { return invocation_type_; }
@@ -988,6 +995,10 @@ class ReporterRunner {
   // The queue of invocations that are currently running.
   SwReporterInvocationSequence invocations_;
 
+  // Invoked once when the |invocations_| sequence run finishes or when it's
+  // aborted with an error, whichever comes first.
+  base::OnceCallback<void(SwReporterInvocationResult result)> on_sequence_done_;
+
   // Last and upcoming reporter runs and logs uploading.
   ReporterRunTimeInfo time_info_;
 
@@ -1004,159 +1015,6 @@ bool IsUserInitiated(SwReporterInvocationType invocation_type) {
              SwReporterInvocationType::kUserInitiatedWithLogsAllowed ||
          invocation_type ==
              SwReporterInvocationType::kUserInitiatedWithLogsDisallowed;
-}
-
-SwReporterInvocation::SwReporterInvocation(
-    const base::CommandLine& command_line)
-    : command_line_(command_line) {}
-
-SwReporterInvocation::SwReporterInvocation(const SwReporterInvocation& other)
-    : command_line_(other.command_line_),
-      supported_behaviours_(other.supported_behaviours_),
-      suffix_(other.suffix_),
-      reporter_logs_upload_enabled_(other.reporter_logs_upload_enabled_),
-      cleaner_logs_upload_enabled_(other.cleaner_logs_upload_enabled_),
-      chrome_prompt_(other.chrome_prompt_) {}
-
-void SwReporterInvocation::operator=(const SwReporterInvocation& invocation) {
-  command_line_ = invocation.command_line_;
-  supported_behaviours_ = invocation.supported_behaviours_;
-  suffix_ = invocation.suffix_;
-  reporter_logs_upload_enabled_ = invocation.reporter_logs_upload_enabled_;
-  cleaner_logs_upload_enabled_ = invocation.cleaner_logs_upload_enabled_;
-  chrome_prompt_ = invocation.chrome_prompt_;
-}
-
-SwReporterInvocation& SwReporterInvocation::WithSuffix(
-    const std::string& suffix) {
-  suffix_ = suffix;
-  return *this;
-}
-
-SwReporterInvocation& SwReporterInvocation::WithSupportedBehaviours(
-    Behaviours supported_behaviours) {
-  supported_behaviours_ = supported_behaviours;
-  return *this;
-}
-
-bool SwReporterInvocation::operator==(const SwReporterInvocation& other) const {
-  return command_line_.argv() == other.command_line_.argv() &&
-         supported_behaviours_ == other.supported_behaviours_ &&
-         suffix_ == other.suffix_ &&
-         reporter_logs_upload_enabled_ == other.reporter_logs_upload_enabled_ &&
-         cleaner_logs_upload_enabled_ == other.cleaner_logs_upload_enabled_ &&
-         chrome_prompt_ == other.chrome_prompt_;
-}
-
-const base::CommandLine& SwReporterInvocation::command_line() const {
-  return command_line_;
-}
-
-base::CommandLine& SwReporterInvocation::mutable_command_line() {
-  return command_line_;
-}
-
-SwReporterInvocation::Behaviours SwReporterInvocation::supported_behaviours()
-    const {
-  return supported_behaviours_;
-}
-
-bool SwReporterInvocation::BehaviourIsSupported(
-    SwReporterInvocation::Behaviours intended_behaviour) const {
-  return (supported_behaviours_ & intended_behaviour) != 0;
-}
-
-std::string SwReporterInvocation::suffix() const {
-  return suffix_;
-}
-
-bool SwReporterInvocation::reporter_logs_upload_enabled() const {
-  return reporter_logs_upload_enabled_;
-}
-
-void SwReporterInvocation::set_reporter_logs_upload_enabled(
-    bool reporter_logs_upload_enabled) {
-  reporter_logs_upload_enabled_ = reporter_logs_upload_enabled;
-}
-
-bool SwReporterInvocation::cleaner_logs_upload_enabled() const {
-  return cleaner_logs_upload_enabled_;
-}
-
-void SwReporterInvocation::set_cleaner_logs_upload_enabled(
-    bool cleaner_logs_upload_enabled) {
-  cleaner_logs_upload_enabled_ = cleaner_logs_upload_enabled;
-}
-
-chrome_cleaner::ChromePromptValue SwReporterInvocation::chrome_prompt() const {
-  return chrome_prompt_;
-}
-
-void SwReporterInvocation::set_chrome_prompt(
-    chrome_cleaner::ChromePromptValue chrome_prompt) {
-  chrome_prompt_ = chrome_prompt;
-}
-
-SwReporterInvocationSequence::SwReporterInvocationSequence(
-    const base::Version& version)
-    : version_(version) {
-  // Notify the cleaner controller once this sequence completes. Don't retain
-  // a reference to the controller object, since it's guaranteed to outlive the
-  // sequence.
-  on_sequence_done_ =
-      base::BindOnce(&ChromeCleanerController::OnReporterSequenceDone,
-                     base::Unretained(GetCleanerController()));
-}
-
-SwReporterInvocationSequence::SwReporterInvocationSequence(
-    SwReporterInvocationSequence&& invocations_sequence)
-    : version_(std::move(invocations_sequence.version_)),
-      container_(std::move(invocations_sequence.container_)),
-      on_sequence_done_(std::move(invocations_sequence.on_sequence_done_)) {}
-
-SwReporterInvocationSequence::SwReporterInvocationSequence(
-    const SwReporterInvocationSequence& invocations_sequence)
-    : version_(invocations_sequence.version_),
-      container_(invocations_sequence.container_) {
-  // As in the regular constructor: notify the cleaner controller once this
-  // sequence completes.
-  on_sequence_done_ =
-      base::BindOnce(&ChromeCleanerController::OnReporterSequenceDone,
-                     base::Unretained(GetCleanerController()));
-}
-
-SwReporterInvocationSequence::~SwReporterInvocationSequence() = default;
-
-void SwReporterInvocationSequence::operator=(
-    SwReporterInvocationSequence&& invocations_sequence) {
-  version_ = std::move(invocations_sequence.version_);
-  container_ = std::move(invocations_sequence.container_);
-  on_sequence_done_ = std::move(invocations_sequence.on_sequence_done_);
-}
-
-void SwReporterInvocationSequence::PushInvocation(
-    const SwReporterInvocation& invocation) {
-  container_.push(invocation);
-}
-
-void SwReporterInvocationSequence::NotifySequenceDone(
-    SwReporterInvocationResult result) {
-  if (on_sequence_done_)
-    std::move(on_sequence_done_).Run(result);
-}
-
-base::Version SwReporterInvocationSequence::version() const {
-  return version_;
-}
-
-const SwReporterInvocationSequence::Queue&
-SwReporterInvocationSequence::container() const {
-  return container_;
-}
-
-SwReporterInvocationSequence::Queue&
-SwReporterInvocationSequence::mutable_container() {
-  return container_;
 }
 
 void MaybeStartSwReporter(SwReporterInvocationType invocation_type,

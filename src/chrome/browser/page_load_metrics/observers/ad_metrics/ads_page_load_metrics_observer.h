@@ -43,7 +43,7 @@ class AdsPageLoadMetricsObserver
 
   using ResourceMimeType = FrameData::ResourceMimeType;
 
-  AdsPageLoadMetricsObserver();
+  explicit AdsPageLoadMetricsObserver(base::TickClock* clock = nullptr);
   ~AdsPageLoadMetricsObserver() override;
 
   // page_load_metrics::PageLoadMetricsObserver
@@ -52,6 +52,10 @@ class AdsPageLoadMetricsObserver
                         bool started_in_foreground) override;
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
                          ukm::SourceId source_id) override;
+  void OnTimingUpdate(
+      content::RenderFrameHost* subframe_rfh,
+      const page_load_metrics::mojom::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
   void OnCpuTimingUpdate(
       content::RenderFrameHost* subframe_rfh,
       const page_load_metrics::mojom::CpuTiming& timing) override;
@@ -119,6 +123,9 @@ class AdsPageLoadMetricsObserver
       int process_id,
       const page_load_metrics::mojom::ResourceDataUpdatePtr& resource);
 
+  void RecordAdFrameLoadUkmEvent(ukm::SourceId source_id,
+                                 const FrameData& frame_data);
+  void RecordAdFrameUkm(ukm::SourceId source_id);
   void RecordPageResourceTotalHistograms(ukm::SourceId source_id);
   void RecordHistograms(ukm::SourceId source_id);
   void RecordHistogramsForAdTagging(FrameData::FrameVisibility visibility);

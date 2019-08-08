@@ -7,11 +7,14 @@
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
+#import "ios/chrome/browser/infobars/infobar_type.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_delegate.h"
 #import "ios/chrome/browser/ui/infobars/infobar_ui_delegate.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_delegate.h"
 
+@protocol ApplicationCommands;
 @protocol InfobarBadgeUIDelegate;
+@protocol InfobarContainer;
 
 @class InfobarBannerTransitionDriver;
 @class InfobarBannerViewController;
@@ -25,13 +28,17 @@ namespace infobars {
 class InfoBarDelegate;
 }
 
+enum class InfobarBannerPresentationState;
+
 // Must be subclassed. Defines common behavior for all Infobars.
 @interface InfobarCoordinator : ChromeCoordinator <InfobarUIDelegate,
                                                    InfobarBannerDelegate,
                                                    InfobarModalDelegate>
 
 - (instancetype)initWithInfoBarDelegate:
-    (infobars::InfoBarDelegate*)infoBarDelegate NS_DESIGNATED_INITIALIZER;
+                    (infobars::InfoBarDelegate*)infoBarDelegate
+                                   type:(InfobarType)infobarType
+    NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
     NS_UNAVAILABLE;
@@ -79,6 +86,18 @@ class InfoBarDelegate;
 // TODO(crbug.com/927064): Once we create the coordinators in the UI Hierarchy
 // baseViewController will be set on init.
 @property(nonatomic, weak) UIViewController* baseViewController;
+
+// The dispatcher for this Coordinator.
+@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
+
+// The InfobarContainer for this InfobarCoordinator.
+@property(nonatomic, weak) id<InfobarContainer> infobarContainer;
+
+// The InfobarBanner presentation state.
+@property(nonatomic, assign) InfobarBannerPresentationState infobarBannerState;
+
+// YES if the banner has ever been presented for this Coordinator.
+@property(nonatomic, assign, readonly) BOOL bannerWasPresented;
 
 @end
 

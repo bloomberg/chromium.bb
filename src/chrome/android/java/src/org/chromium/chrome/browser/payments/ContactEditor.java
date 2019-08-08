@@ -154,10 +154,20 @@ public class ContactEditor extends EditorBase<AutofillContact> {
         mPayerErrors = errors;
     }
 
-    @Override
+    /**
+     * Allows calling |edit| with a single callback used for both 'done' and 'cancel'.
+     * @see #edit(AutofillContact, Callback, Callback)
+     */
     public void edit(
             @Nullable final AutofillContact toEdit, final Callback<AutofillContact> callback) {
-        super.edit(toEdit, callback);
+        edit(toEdit, callback, callback);
+    }
+
+    @Override
+    public void edit(@Nullable final AutofillContact toEdit,
+            final Callback<AutofillContact> doneCallback,
+            final Callback<AutofillContact> cancelCallback) {
+        super.edit(toEdit, doneCallback, cancelCallback);
 
         final AutofillContact contact = toEdit == null
                 ? new AutofillContact(mContext, new AutofillProfile(), null, null, null,
@@ -215,7 +225,7 @@ public class ContactEditor extends EditorBase<AutofillContact> {
 
         // If the user clicks [Cancel], send |toEdit| contact back to the caller, which was the
         // original state (could be null, a complete contact, a partial contact).
-        editor.setCancelCallback(() -> callback.onResult(toEdit));
+        editor.setCancelCallback(() -> cancelCallback.onResult(toEdit));
 
         editor.setDoneCallback(() -> {
             String name = null;
@@ -251,7 +261,7 @@ public class ContactEditor extends EditorBase<AutofillContact> {
 
             profile.setIsLocal(true);
             contact.completeContact(profile.getGUID(), name, phone, email);
-            callback.onResult(contact);
+            doneCallback.onResult(contact);
         });
 
         mEditorDialog.show(editor);

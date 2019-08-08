@@ -4,11 +4,17 @@
 
 #include "services/network/cors/cors_url_loader_factory.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
+#include "mojo/public/cpp/bindings/message.h"
 #include "net/base/load_flags.h"
 #include "services/network/cors/cors_url_loader.h"
 #include "services/network/cors/preflight_controller.h"
+#include "services/network/initiator_lock_compatibility.h"
+#include "services/network/loader_util.h"
 #include "services/network/network_context.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/features.h"
@@ -31,9 +37,11 @@ CorsURLLoaderFactory::CorsURLLoaderFactory(
     : context_(context),
       disable_web_security_(params->disable_web_security),
       process_id_(params->process_id),
+      request_initiator_site_lock_(params->request_initiator_site_lock),
       origin_access_list_(origin_access_list) {
   DCHECK(context_);
   DCHECK(origin_access_list_);
+  DCHECK_NE(mojom::kInvalidProcessId, process_id_);
   factory_bound_origin_access_list_ = std::make_unique<OriginAccessList>();
   if (params->factory_bound_allow_patterns.size()) {
     DCHECK(params->request_initiator_site_lock);
@@ -91,8 +99,8 @@ void CorsURLLoaderFactory::CreateLoaderAndStart(
         base::BindOnce(&CorsURLLoaderFactory::DestroyURLLoader,
                        base::Unretained(this)),
         resource_request, std::move(client), traffic_annotation,
-        network_loader_factory_.get(), origin_access_list_,
-        factory_bound_origin_access_list_.get(),
+        network_loader_factory_.get(), request_initiator_site_lock_,
+        origin_access_list_, factory_bound_origin_access_list_.get(),
         context_->cors_preflight_controller());
     auto* raw_loader = loader.get();
     OnLoaderCreated(std::move(loader));
@@ -129,19 +137,69 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
       request.fetch_request_mode != mojom::FetchRequestMode::kNoCors) {
     LOG(WARNING) << "|fetch_request_mode| is " << request.fetch_request_mode
                  << ", but |request_initiator| is not set.";
+    mojo::ReportBadMessage("CorsURLLoaderFactory: cors without initiator");
     return false;
   }
 
   const auto load_flags_pattern = net::LOAD_DO_NOT_SAVE_COOKIES |
                                   net::LOAD_DO_NOT_SEND_COOKIES |
                                   net::LOAD_DO_NOT_SEND_AUTH_DATA;
-  // The credentials mode and load_flags should match.
+  // The Fetch credential mode and lower-level options should match. If the
+  // Fetch mode is kOmit, then either |allow_credentials| must be false or
+  // all three load flags must be set. https://crbug.com/799935 tracks
+  // unifying |LOAD_DO_NOT_*| into |allow_credentials|.
   if (request.fetch_credentials_mode == mojom::FetchCredentialsMode::kOmit &&
+      request.allow_credentials &&
       (request.load_flags & load_flags_pattern) != load_flags_pattern) {
-    LOG(WARNING) << "|fetch_credentials_mode| and |load_flags| contradict each "
+    LOG(WARNING) << "|fetch_credentials_mode| and |allow_credentials| or "
+                    "|load_flags| contradict each "
                     "other.";
+    mojo::ReportBadMessage(
+        "CorsURLLoaderFactory: omit-credentials vs load_flags");
     return false;
   }
+
+  // Ensure that renderer requests are covered either by CORS or CORB.
+  if (process_id_ != mojom::kBrowserProcessId) {
+    switch (request.fetch_request_mode) {
+      case mojom::FetchRequestMode::kNavigate:
+        // Only the browser process can initiate navigations.  This helps ensure
+        // that a malicious/compromised renderer cannot bypass CORB by issuing
+        // kNavigate, rather than kNoCors requests.  (CORB should apply only to
+        // no-cors requests as tracked in https://crbug.com/953315 and as
+        // captured in https://fetch.spec.whatwg.org/#main-fetch).
+        mojo::ReportBadMessage(
+            "CorsURLLoaderFactory: navigate from non-browser-process");
+        return false;
+
+      case mojom::FetchRequestMode::kSameOrigin:
+      case mojom::FetchRequestMode::kCors:
+      case mojom::FetchRequestMode::kCorsWithForcedPreflight:
+        // SOP enforced by CORS.
+        break;
+
+      case mojom::FetchRequestMode::kNoCors:
+        // SOP enforced by CORB.
+        break;
+    }
+  }
+
+  InitiatorLockCompatibility initiator_lock_compatibility =
+      process_id_ == mojom::kBrowserProcessId
+          ? InitiatorLockCompatibility::kBrowserProcess
+          : VerifyRequestInitiatorLock(request_initiator_site_lock_,
+                                       request.request_initiator);
+  UMA_HISTOGRAM_ENUMERATION(
+      "NetworkService.URLLoader.RequestInitiatorOriginLockCompatibility",
+      initiator_lock_compatibility);
+  // TODO(lukasza): Enforce the origin lock.
+  // - https://crbug.com/766694: In the long-term kIncorrectLock should trigger
+  //   a renderer kill, but this can't be done until HTML Imports are gone.
+  // - https://crbug.com/515309: The lock should apply to Origin header (and
+  //   SameSite cookies) in addition to CORB (which was taken care of in
+  //   https://crbug.com/871827).  Here enforcement most likely would mean
+  //   setting |url_request_|'s initiator to something other than
+  //   |request.request_initiator| (opaque origin?  lock origin?).
 
   if (context) {
     net::HttpRequestHeaders::Iterator header_iterator(
@@ -156,6 +214,11 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
                    << header_iterator.name();
       return false;
     }
+  }
+
+  if (!AreRequestHeadersSafe(request.headers) ||
+      !AreRequestHeadersSafe(request.cors_exempt_headers)) {
+    return false;
   }
 
   // TODO(yhirano): If the request mode is "no-cors", the redirect mode should

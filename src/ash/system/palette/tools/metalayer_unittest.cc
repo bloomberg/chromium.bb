@@ -8,7 +8,6 @@
 #include "ash/highlighter/highlighter_controller_test_api.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/shell.h"
-#include "ash/shell_test_api.h"
 #include "ash/system/palette/mock_palette_tool_delegate.h"
 #include "ash/system/palette/palette_ids.h"
 #include "ash/system/palette/palette_tool.h"
@@ -102,7 +101,7 @@ TEST_F(MetalayerToolTest, PaletteMenuState) {
           std::unique_ptr<views::View> view =
               base::WrapUnique(tool_->CreateView());
           EXPECT_TRUE(view);
-          EXPECT_EQ(selectable, view->enabled());
+          EXPECT_EQ(selectable, view->GetEnabled());
 
           const base::string16 label_text =
               static_cast<HoverHighlightView*>(view.get())

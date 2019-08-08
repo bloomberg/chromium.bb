@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -92,18 +93,12 @@ const Document* CSSStyleSheet::SingleOwnerDocument(
 }
 
 CSSStyleSheet* CSSStyleSheet::Create(Document& document,
-                                     ExceptionState& exception_state) {
-  return CSSStyleSheet::Create(document, CSSStyleSheetInit::Create(),
-                               exception_state);
-}
-
-CSSStyleSheet* CSSStyleSheet::Create(Document& document,
                                      const CSSStyleSheetInit* options,
                                      ExceptionState& exception_state) {
   // Folowing steps at spec draft
   // https://wicg.github.io/construct-stylesheets/#dom-cssstylesheet-cssstylesheet
-  CSSParserContext* parser_context = CSSParserContext::Create(document);
-  StyleSheetContents* contents = StyleSheetContents::Create(parser_context);
+  auto* parser_context = MakeGarbageCollected<CSSParserContext>(document);
+  auto* contents = MakeGarbageCollected<StyleSheetContents>(parser_context);
   CSSStyleSheet* sheet = MakeGarbageCollected<CSSStyleSheet>(contents, nullptr);
   sheet->SetAssociatedDocument(&document);
   sheet->SetIsConstructed(true);
@@ -126,17 +121,6 @@ CSSStyleSheet* CSSStyleSheet::Create(Document& document,
   return sheet;
 }
 
-CSSStyleSheet* CSSStyleSheet::Create(StyleSheetContents* sheet,
-                                     CSSImportRule* owner_rule) {
-  return MakeGarbageCollected<CSSStyleSheet>(sheet, owner_rule);
-}
-
-CSSStyleSheet* CSSStyleSheet::Create(StyleSheetContents* sheet,
-                                     Node& owner_node) {
-  return MakeGarbageCollected<CSSStyleSheet>(sheet, owner_node, false,
-                                             TextPosition::MinimumPosition());
-}
-
 CSSStyleSheet* CSSStyleSheet::CreateInline(StyleSheetContents* sheet,
                                            Node& owner_node,
                                            const TextPosition& start_position) {
@@ -149,12 +133,12 @@ CSSStyleSheet* CSSStyleSheet::CreateInline(Node& owner_node,
                                            const KURL& base_url,
                                            const TextPosition& start_position,
                                            const WTF::TextEncoding& encoding) {
-  CSSParserContext* parser_context = CSSParserContext::Create(
+  auto* parser_context = MakeGarbageCollected<CSSParserContext>(
       owner_node.GetDocument(), owner_node.GetDocument().BaseURL(),
       true /* origin_clean */, owner_node.GetDocument().GetReferrerPolicy(),
       encoding);
-  StyleSheetContents* sheet =
-      StyleSheetContents::Create(base_url.GetString(), parser_context);
+  auto* sheet = MakeGarbageCollected<StyleSheetContents>(parser_context,
+                                                         base_url.GetString());
   return MakeGarbageCollected<CSSStyleSheet>(sheet, owner_node, true,
                                              start_position);
 }
@@ -226,6 +210,8 @@ void CSSStyleSheet::DidMutateRules() {
       resolver->InvalidateMatchedPropertiesCache();
   } else if (!adopted_tree_scopes_.IsEmpty()) {
     for (auto tree_scope : adopted_tree_scopes_) {
+      if (!tree_scope->RootNode().isConnected())
+        continue;
       tree_scope->GetDocument().GetStyleEngine().SetNeedsActiveStyleUpdate(
           *tree_scope);
       if (StyleResolver* resolver =
@@ -357,8 +343,8 @@ unsigned CSSStyleSheet::insertRule(const String& rule_string,
             ").");
     return 0;
   }
-  const CSSParserContext* context =
-      CSSParserContext::CreateWithStyleSheet(contents_->ParserContext(), this);
+  const auto* context =
+      MakeGarbageCollected<CSSParserContext>(contents_->ParserContext(), this);
   StyleRuleBase* rule =
       CSSParser::ParseRule(context, contents_.Get(), rule_string);
 
@@ -494,8 +480,8 @@ void CSSStyleSheet::ResolveReplacePromiseIfNeeded(bool load_error_occured) {
   if (!resolver_)
     return;
   if (load_error_occured) {
-    resolver_->Reject(DOMException::Create(DOMExceptionCode::kNotAllowedError,
-                                           "Loading @imports failed."));
+    resolver_->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kNotAllowedError, "Loading @imports failed."));
   } else {
     resolver_->Resolve(this);
   }
@@ -600,8 +586,9 @@ void CSSStyleSheet::SetAlternateFromConstructor(
 
 bool CSSStyleSheet::IsAlternate() const {
   if (owner_node_) {
-    return owner_node_->IsElementNode() &&
-           ToElement(owner_node_)->getAttribute(kRelAttr).Contains("alternate");
+    auto* owner_element = DynamicTo<Element>(owner_node_.Get());
+    return owner_element &&
+           owner_element->getAttribute(kRelAttr).Contains("alternate");
   }
   return alternate_from_constructor_;
 }
@@ -615,14 +602,14 @@ bool CSSStyleSheet::CanBeActivated(
     if (IsHTMLStyleElement(owner_node_) || IsSVGStyleElement(owner_node_))
       return true;
     if (IsHTMLLinkElement(owner_node_) &&
-        ToHTMLLinkElement(owner_node_)->IsImport())
+        ToHTMLLinkElement(owner_node_.Get())->IsImport())
       return !IsAlternate();
   }
 
   if (!owner_node_ ||
       owner_node_->getNodeType() == Node::kProcessingInstructionNode ||
       !IsHTMLLinkElement(owner_node_) ||
-      !ToHTMLLinkElement(owner_node_)->IsEnabledViaScript()) {
+      !ToHTMLLinkElement(owner_node_.Get())->IsEnabledViaScript()) {
     if (!title_.IsEmpty() && title_ != current_preferrable_name)
       return false;
   }

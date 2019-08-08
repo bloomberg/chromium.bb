@@ -807,6 +807,7 @@ class SimulatorTestRunner(TestRunner):
   def kill_simulators():
     """Kills all running simulators."""
     try:
+      LOGGER.info('Killing simulators.')
       subprocess.check_call([
           'pkill',
           '-9',

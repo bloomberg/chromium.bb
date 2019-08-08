@@ -5,12 +5,12 @@
  * found in the LICENSE file.
  */
 
-#include "GrMockGpu.h"
-#include "GrMockBuffer.h"
-#include "GrMockCaps.h"
-#include "GrMockGpuCommandBuffer.h"
-#include "GrMockStencilAttachment.h"
-#include "GrMockTexture.h"
+#include "src/gpu/mock/GrMockBuffer.h"
+#include "src/gpu/mock/GrMockCaps.h"
+#include "src/gpu/mock/GrMockGpu.h"
+#include "src/gpu/mock/GrMockGpuCommandBuffer.h"
+#include "src/gpu/mock/GrMockStencilAttachment.h"
+#include "src/gpu/mock/GrMockTexture.h"
 #include <atomic>
 
 int GrMockGpu::NextInternalTextureID() {
@@ -196,24 +196,40 @@ GrStencilAttachment* GrMockGpu::createStencilAttachmentForRenderTarget(const GrR
     return new GrMockStencilAttachment(this, width, height, kBits, rt->numColorSamples());
 }
 
-#if GR_TEST_UTILS
-GrBackendTexture GrMockGpu::createTestingOnlyBackendTexture(const void* pixels, int w, int h,
-                                                            GrColorType colorType, bool isRT,
-                                                            GrMipMapped mipMapped,
-                                                            size_t rowBytes) {
+GrBackendTexture GrMockGpu::createBackendTexture(int w, int h,
+                                                 const GrBackendFormat& format,
+                                                 GrMipMapped mipMapped,
+                                                 GrRenderable /* renderable */,
+                                                 const void* /* pixels */,
+                                                 size_t /* rowBytes */,
+                                                 const SkColor4f& /* color */) {
 
-    GrPixelConfig config = GrColorTypeToPixelConfig(colorType, GrSRGBEncoded::kNo);
-    if (!this->caps()->isConfigTexturable(config)) {
+    const GrPixelConfig* pixelConfig = format.getMockFormat();
+    if (!pixelConfig) {
+        return GrBackendTexture();  // invalid
+    }
+
+    if (!this->caps()->isConfigTexturable(*pixelConfig)) {
         return GrBackendTexture();  // invalid
     }
 
     GrMockTextureInfo info;
-    info.fConfig = config;
+    info.fConfig = *pixelConfig;
     info.fID = NextExternalTextureID();
     fOutstandingTestingOnlyTextureIDs.add(info.fID);
     return GrBackendTexture(w, h, mipMapped, info);
 }
 
+void GrMockGpu::deleteBackendTexture(const GrBackendTexture& tex) {
+    SkASSERT(GrBackendApi::kMock == tex.backend());
+
+    GrMockTextureInfo info;
+    if (tex.getMockTextureInfo(&info)) {
+        fOutstandingTestingOnlyTextureIDs.remove(info.fID);
+    }
+}
+
+#if GR_TEST_UTILS
 bool GrMockGpu::isTestingOnlyBackendTexture(const GrBackendTexture& tex) const {
     SkASSERT(GrBackendApi::kMock == tex.backend());
 
@@ -223,15 +239,6 @@ bool GrMockGpu::isTestingOnlyBackendTexture(const GrBackendTexture& tex) const {
     }
 
     return fOutstandingTestingOnlyTextureIDs.contains(info.fID);
-}
-
-void GrMockGpu::deleteTestingOnlyBackendTexture(const GrBackendTexture& tex) {
-    SkASSERT(GrBackendApi::kMock == tex.backend());
-
-    GrMockTextureInfo info;
-    if (tex.getMockTextureInfo(&info)) {
-        fOutstandingTestingOnlyTextureIDs.remove(info.fID);
-    }
 }
 
 GrBackendRenderTarget GrMockGpu::createTestingOnlyBackendRenderTarget(int w, int h,

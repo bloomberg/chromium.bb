@@ -26,6 +26,7 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/test/mock_widget_impl.h"
+#include "content/test/navigation_simulator_impl.h"
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
@@ -240,35 +241,27 @@ TEST_F(RenderViewHostTest, MessageWithBadHistoryItemFiles) {
   EXPECT_EQ(1, process()->bad_msg_count());
 }
 
-namespace {
-void SetBadFilePath(const GURL& url,
-                    const base::FilePath& file_path,
-                    FrameHostMsg_DidCommitProvisionalLoad_Params* params) {
-  params->page_state =
-      PageState::CreateForTesting(url, false, "data", &file_path);
-}
-}
-
 TEST_F(RenderViewHostTest, NavigationWithBadHistoryItemFiles) {
   GURL url("http://www.google.com");
   base::FilePath file_path;
   EXPECT_TRUE(base::PathService::Get(base::DIR_TEMP, &file_path));
   file_path = file_path.AppendASCII("bar");
-  auto set_bad_file_path_callback = base::Bind(SetBadFilePath, url, file_path);
 
   EXPECT_EQ(0, process()->bad_msg_count());
-  main_test_rfh()->SendRendererInitiatedNavigationRequest(url, false);
-  main_test_rfh()->PrepareForCommit();
-  contents()->GetMainFrame()->SendNavigateWithModificationCallback(
-      1, true, url, set_bad_file_path_callback);
+  auto navigation1 =
+      NavigationSimulatorImpl::CreateRendererInitiated(url, main_test_rfh());
+  navigation1->set_page_state(
+      PageState::CreateForTesting(url, false, "data", &file_path));
+  navigation1->Commit();
   EXPECT_EQ(1, process()->bad_msg_count());
 
   ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
       process()->GetID(), file_path);
-  main_test_rfh()->SendRendererInitiatedNavigationRequest(url, false);
-  main_test_rfh()->PrepareForCommit();
-  contents()->GetMainFrame()->SendNavigateWithModificationCallback(
-      2, true, url, std::move(set_bad_file_path_callback));
+  auto navigation2 =
+      NavigationSimulatorImpl::CreateRendererInitiated(url, main_test_rfh());
+  navigation2->set_page_state(
+      PageState::CreateForTesting(url, false, "data", &file_path));
+  navigation2->Commit();
   EXPECT_EQ(1, process()->bad_msg_count());
 }
 

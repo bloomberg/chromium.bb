@@ -7,6 +7,7 @@ import time
 import common
 from common import TestDriver
 from common import IntegrationTest
+from decorators import ChromeVersionEqualOrAfterM
 
 
 class Quic(IntegrationTest):
@@ -35,6 +36,7 @@ class Quic(IntegrationTest):
 
   # Ensure Chrome uses QUIC DataSaver proxy when QUIC is enabled. This test
   # may fail if QUIC is disabled on the server side.
+  @ChromeVersionEqualOrAfterM(76)
   def testCheckPageWithQuicProxyTransaction(self):
     with TestDriver() as t:
       t.AddChromeArg('--enable-spdy-proxy-auth')
@@ -53,6 +55,8 @@ class Quic(IntegrationTest):
       self.assertEqual(2, len(responses))
       for response in responses:
         self.assertHasProxyHeaders(response)
+      t.SleepUntilHistogramHasEntry('PageLoad.Clients.DataReductionProxy.'
+        'ParseTiming.NavigationToParseStart')
 
       # Verify that histogram DataReductionProxy.Quic.ProxyStatus has at least 1
       # sample. This sample must be in bucket 0 (QUIC_PROXY_STATUS_AVAILABLE).

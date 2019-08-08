@@ -90,13 +90,12 @@ PolicyConverter::ConvertJavaStringArrayToListValue(
     JNIEnv* env,
     const JavaRef<jobjectArray>& array) {
   DCHECK(!array.is_null());
-  int length = static_cast<int>(env->GetArrayLength(array.obj()));
-  DCHECK_GE(length, 0) << "Invalid array length: " << length;
+  base::android::JavaObjectArrayReader<jstring> array_reader(array);
+  DCHECK_GE(array_reader.size(), 0)
+      << "Invalid array length: " << array_reader.size();
 
   std::unique_ptr<base::ListValue> list_value(new base::ListValue());
-  for (int i = 0; i < length; ++i) {
-    base::android::ScopedJavaLocalRef<jstring> j_str(
-        env, static_cast<jstring>(env->GetObjectArrayElement(array.obj(), i)));
+  for (auto j_str : array_reader) {
     list_value->AppendString(ConvertJavaStringToUTF8(env, j_str));
   }
 

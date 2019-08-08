@@ -27,15 +27,16 @@
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 
 #include <math.h>
+
 #include <algorithm>
 #include <limits>
 
-#include "SkPoint.h"
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/skia/include/core/SkPoint.h"
 
 namespace blink {
 

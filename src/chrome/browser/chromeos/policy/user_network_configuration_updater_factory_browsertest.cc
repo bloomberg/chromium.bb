@@ -14,7 +14,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
-#include "chrome/browser/chromeos/login/screens/gaia_view.h"
 #include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -27,6 +26,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -262,8 +262,9 @@ int VerifyTestServerCert(
   int result = net::OK;
   content::BrowserContext::GetDefaultStoragePartition(profile)
       ->GetNetworkContext()
-      ->VerifyCertificateForTesting(certificate, "127.0.0.1", std::string(),
-                                    &result);
+      ->VerifyCertificateForTesting(certificate, "127.0.0.1",
+                                    /*ocsp_response=*/std::string(),
+                                    /*sct_list=*/std::string(), &result);
   return result;
 }
 
@@ -581,7 +582,7 @@ class PolicyProvidedTrustAnchorsOnUserSessionInitTest
   void TriggerLogIn() {
     chromeos::LoginDisplayHost::default_host()
         ->GetOobeUI()
-        ->GetGaiaScreenView()
+        ->GetView<chromeos::GaiaScreenHandler>()
         ->ShowSigninScreenForTest(kAccountId, kAccountPassword, kEmptyServices);
   }
 

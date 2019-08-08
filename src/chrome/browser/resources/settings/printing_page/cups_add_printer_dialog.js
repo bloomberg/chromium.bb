@@ -235,10 +235,20 @@ Polymer({
      * @private
      */
     newUserPPD_: String,
+
+    /**
+     * The URL to a printer's EULA.
+     * @private
+     */
+    eulaUrl_: {
+      type: String,
+      value: '',
+    },
   },
 
   observers: [
     'selectedManufacturerChanged_(activePrinter.ppdManufacturer)',
+    'selectedModelChanged_(activePrinter.ppdModel)',
   ],
 
   /** @override */
@@ -250,6 +260,24 @@ Polymer({
 
   close: function() {
     this.$$('add-printer-dialog').close();
+  },
+
+  /**
+   * If the printer is a nearby printer, return make + model with the subtext.
+   * Otherwise, return printer name.
+   * @return {string} The additional information subtext of the manufacturer and
+   * model dialog.
+   * @private
+   */
+  getManufacturerAndModelSubtext_: function() {
+    if (this.activePrinter.printerMakeAndModel) {
+      return loadTimeData.getStringF(
+          'manufacturerAndModelAdditionalInformation',
+          this.activePrinter.printerMakeAndModel);
+    }
+    return loadTimeData.getStringF(
+        'manufacturerAndModelAdditionalInformation',
+        this.activePrinter.printerName);
   },
 
   /**
@@ -266,6 +294,32 @@ Polymer({
           .getCupsPrinterModelsList(manufacturer)
           .then(this.modelListChanged_.bind(this));
     }
+  },
+
+  /**
+   * Attempts to get the EULA Url if the selected printer has one.
+   * @private
+   */
+  selectedModelChanged_: function() {
+    if (!this.activePrinter.ppdManufacturer || !this.activePrinter.ppdModel) {
+      // Do not check for an EULA unless both |ppdManufacturer| and |ppdModel|
+      // are set. Set |eulaUrl_| to be empty in this case.
+      this.onGetEulaUrlCompleted_('' /* eulaUrl */);
+      return;
+    }
+
+    settings.CupsPrintersBrowserProxyImpl.getInstance()
+        .getEulaUrl(
+            this.activePrinter.ppdManufacturer, this.activePrinter.ppdModel)
+        .then(this.onGetEulaUrlCompleted_.bind(this));
+  },
+
+  /**
+   * @param {string} eulaUrl The URL for the printer's EULA.
+   * @private
+   */
+  onGetEulaUrlCompleted_: function(eulaUrl) {
+    this.eulaUrl_ = eulaUrl;
   },
 
   /**
@@ -510,7 +564,7 @@ Polymer({
           this.newPrinter.printerId);
     } else if (this.previousDialog_ == AddPrinterDialogs.MANUFACTURER) {
       this.configuringDialogTitle =
-          loadTimeData.getString('selectManufacturerAndModelTitle');
+          loadTimeData.getString('manufacturerAndModelDialogTitle');
       this.addPrinter_();
     } else if (this.previousDialog_ == AddPrinterDialogs.MANUALLY) {
       this.configuringDialogTitle =

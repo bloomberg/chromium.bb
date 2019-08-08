@@ -39,6 +39,7 @@ class AudioBus;
 class MEDIA_EXPORT AudioRendererAlgorithm {
  public:
   AudioRendererAlgorithm();
+  AudioRendererAlgorithm(AudioRendererAlgorithmParameters params);
   ~AudioRendererAlgorithm();
 
   // Initializes this object with information about the audio stream.
@@ -74,7 +75,7 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
 
   // Enqueues a buffer. It is called from the owner of the algorithm after a
   // read completes.
-  void EnqueueBuffer(const scoped_refptr<AudioBuffer>& buffer_in);
+  void EnqueueBuffer(scoped_refptr<AudioBuffer> buffer_in);
 
   // Returns true if |audio_buffer_| is at or exceeds capacity.
   bool IsQueueFull();
@@ -139,13 +140,13 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   // Do we have enough data to perform one round of WSOLA?
   bool CanPerformWsola() const;
 
-  // Converts a time in milliseconds to frames using |samples_per_second_|.
-  int ConvertMillisecondsToFrames(int ms) const;
-
   // Creates or recreates |target_block_wrapper_| and |search_block_wrapper_|
   // after a |channel_mask_| change. May be called at anytime after a channel
   // mask has been specified.
   void CreateSearchWrappers();
+
+  // Parameters.
+  AudioRendererAlgorithmParameters audio_renderer_algorithm_params_;
 
   // Number of channels in audio stream.
   int channels_;
@@ -160,7 +161,7 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   AudioBufferQueue audio_buffer_;
 
   // How many frames to have in the queue before we report the queue is full.
-  int capacity_;
+  int64_t capacity_;
 
   // Book keeping of the current time of generated audio, in frames. This
   // should be appropriately updated when out samples are generated, regardless
@@ -234,8 +235,8 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   std::unique_ptr<AudioBus> target_block_wrapper_;
 
   // The initial and maximum capacity calculated by Initialize().
-  int initial_capacity_;
-  int max_capacity_;
+  int64_t initial_capacity_;
+  int64_t max_capacity_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererAlgorithm);
 };

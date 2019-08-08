@@ -95,7 +95,7 @@ class BlobBytesStreamer {
 void IncreaseChildProcessRefCount() {
   if (!WTF::IsMainThread()) {
     PostCrossThreadTask(*Thread::MainThread()->GetTaskRunner(), FROM_HERE,
-                        CrossThreadBind(&IncreaseChildProcessRefCount));
+                        CrossThreadBindOnce(&IncreaseChildProcessRefCount));
     return;
   }
   Platform::Current()->SuddenTerminationChanged(false);
@@ -104,7 +104,7 @@ void IncreaseChildProcessRefCount() {
 void DecreaseChildProcessRefCount() {
   if (!WTF::IsMainThread()) {
     PostCrossThreadTask(*Thread::MainThread()->GetTaskRunner(), FROM_HERE,
-                        CrossThreadBind(&DecreaseChildProcessRefCount));
+                        CrossThreadBindOnce(&DecreaseChildProcessRefCount));
     return;
   }
   Platform::Current()->SuddenTerminationChanged(true);
@@ -125,7 +125,7 @@ BlobBytesProvider* BlobBytesProvider::CreateAndBind(
   // using the MayBlock taskrunner for actual file operations.
   PostCrossThreadTask(
       *task_runner, FROM_HERE,
-      CrossThreadBind(
+      CrossThreadBindOnce(
           [](std::unique_ptr<BlobBytesProvider> provider,
              mojom::blink::BytesProviderRequest request) {
             mojo::MakeStrongBinding(std::move(provider), std::move(request));

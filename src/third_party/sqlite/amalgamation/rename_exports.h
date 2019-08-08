@@ -7,390 +7,393 @@
 #ifndef THIRD_PARTY_SQLITE_AMALGAMATION_RENAME_EXPORTS_H_
 #define THIRD_PARTY_SQLITE_AMALGAMATION_RENAME_EXPORTS_H_
 
-#define sqlite3_activate_cerod chrome_sqlite3_activate_cerod  // Lines 5595-5597
-#define sqlite3_activate_see chrome_sqlite3_activate_see      // Lines 5585-5587
-#define sqlite3_aggregate_context chrome_sqlite3_aggregate_context  // Line 5132
-#define sqlite3_aggregate_count chrome_sqlite3_aggregate_count      // Line 4915
-#define sqlite3_auto_extension chrome_sqlite3_auto_extension        // Line 6261
-#define sqlite3_backup_finish chrome_sqlite3_backup_finish          // Line 8256
-#define sqlite3_backup_init chrome_sqlite3_backup_init  // Lines 8249-8254
-#define sqlite3_backup_pagecount chrome_sqlite3_backup_pagecount  // Line 8258
-#define sqlite3_backup_remaining chrome_sqlite3_backup_remaining  // Line 8257
-#define sqlite3_backup_step chrome_sqlite3_backup_step            // Line 8255
-#define sqlite3_bind_blob chrome_sqlite3_bind_blob                // Line 4090
-#define sqlite3_bind_blob64 chrome_sqlite3_bind_blob64  // Lines 4091-4092
-#define sqlite3_bind_double chrome_sqlite3_bind_double  // Line 4093
-#define sqlite3_bind_int chrome_sqlite3_bind_int        // Line 4094
-#define sqlite3_bind_int64 chrome_sqlite3_bind_int64    // Line 4095
-#define sqlite3_bind_null chrome_sqlite3_bind_null      // Line 4096
+#define sqlite3_activate_cerod chrome_sqlite3_activate_cerod  // Lines 5632-5634
+#define sqlite3_activate_see chrome_sqlite3_activate_see      // Lines 5622-5624
+#define sqlite3_aggregate_context chrome_sqlite3_aggregate_context  // Line 5169
+#define sqlite3_aggregate_count chrome_sqlite3_aggregate_count      // Line 4944
+#define sqlite3_auto_extension chrome_sqlite3_auto_extension        // Line 6298
+#define sqlite3_backup_finish chrome_sqlite3_backup_finish          // Line 8293
+#define sqlite3_backup_init chrome_sqlite3_backup_init  // Lines 8286-8291
+#define sqlite3_backup_pagecount chrome_sqlite3_backup_pagecount  // Line 8295
+#define sqlite3_backup_remaining chrome_sqlite3_backup_remaining  // Line 8294
+#define sqlite3_backup_step chrome_sqlite3_backup_step            // Line 8292
+#define sqlite3_bind_blob chrome_sqlite3_bind_blob                // Line 4119
+#define sqlite3_bind_blob64 chrome_sqlite3_bind_blob64  // Lines 4120-4121
+#define sqlite3_bind_double chrome_sqlite3_bind_double  // Line 4122
+#define sqlite3_bind_int chrome_sqlite3_bind_int        // Line 4123
+#define sqlite3_bind_int64 chrome_sqlite3_bind_int64    // Line 4124
+#define sqlite3_bind_null chrome_sqlite3_bind_null      // Line 4125
 #define sqlite3_bind_parameter_count \
-  chrome_sqlite3_bind_parameter_count  // Line 4125
+  chrome_sqlite3_bind_parameter_count  // Line 4154
 #define sqlite3_bind_parameter_index \
-  chrome_sqlite3_bind_parameter_index  // Line 4171
+  chrome_sqlite3_bind_parameter_index  // Line 4200
 #define sqlite3_bind_parameter_name \
-  chrome_sqlite3_bind_parameter_name                        // Line 4153
-#define sqlite3_bind_pointer chrome_sqlite3_bind_pointer    // Line 4102
-#define sqlite3_bind_text chrome_sqlite3_bind_text          // Line 4097
-#define sqlite3_bind_text16 chrome_sqlite3_bind_text16      // Line 4098
-#define sqlite3_bind_text64 chrome_sqlite3_bind_text64      // Lines 4099-4100
-#define sqlite3_bind_value chrome_sqlite3_bind_value        // Line 4101
-#define sqlite3_bind_zeroblob chrome_sqlite3_bind_zeroblob  // Line 4103
-#define sqlite3_bind_zeroblob64 chrome_sqlite3_bind_zeroblob64  // Line 4104
-#define sqlite3_blob_bytes chrome_sqlite3_blob_bytes            // Line 6810
-#define sqlite3_blob_close chrome_sqlite3_blob_close            // Line 6794
-#define sqlite3_blob_open chrome_sqlite3_blob_open        // Lines 6738-6746
-#define sqlite3_blob_read chrome_sqlite3_blob_read        // Line 6839
-#define sqlite3_blob_reopen chrome_sqlite3_blob_reopen    // Line 6771
-#define sqlite3_blob_write chrome_sqlite3_blob_write      // Line 6881
-#define sqlite3_busy_handler chrome_sqlite3_busy_handler  // Line 2526
-#define sqlite3_busy_timeout chrome_sqlite3_busy_timeout  // Line 2549
+  chrome_sqlite3_bind_parameter_name                        // Line 4182
+#define sqlite3_bind_pointer chrome_sqlite3_bind_pointer    // Line 4131
+#define sqlite3_bind_text chrome_sqlite3_bind_text          // Line 4126
+#define sqlite3_bind_text16 chrome_sqlite3_bind_text16      // Line 4127
+#define sqlite3_bind_text64 chrome_sqlite3_bind_text64      // Lines 4128-4129
+#define sqlite3_bind_value chrome_sqlite3_bind_value        // Line 4130
+#define sqlite3_bind_zeroblob chrome_sqlite3_bind_zeroblob  // Line 4132
+#define sqlite3_bind_zeroblob64 chrome_sqlite3_bind_zeroblob64  // Line 4133
+#define sqlite3_blob_bytes chrome_sqlite3_blob_bytes            // Line 6847
+#define sqlite3_blob_close chrome_sqlite3_blob_close            // Line 6831
+#define sqlite3_blob_open chrome_sqlite3_blob_open        // Lines 6775-6783
+#define sqlite3_blob_read chrome_sqlite3_blob_read        // Line 6876
+#define sqlite3_blob_reopen chrome_sqlite3_blob_reopen    // Line 6808
+#define sqlite3_blob_write chrome_sqlite3_blob_write      // Line 6918
+#define sqlite3_busy_handler chrome_sqlite3_busy_handler  // Line 2541
+#define sqlite3_busy_timeout chrome_sqlite3_busy_timeout  // Line 2564
 #define sqlite3_cancel_auto_extension \
-  chrome_sqlite3_cancel_auto_extension                        // Line 6273
-#define sqlite3_changes chrome_sqlite3_changes                // Line 2355
-#define sqlite3_clear_bindings chrome_sqlite3_clear_bindings  // Line 4181
-#define sqlite3_close chrome_sqlite3_close  // Line 331
-#define sqlite3_close_v2 chrome_sqlite3_close_v2  // Line 332
+  chrome_sqlite3_cancel_auto_extension                        // Line 6310
+#define sqlite3_changes chrome_sqlite3_changes                // Line 2370
+#define sqlite3_clear_bindings chrome_sqlite3_clear_bindings  // Line 4210
+#define sqlite3_close chrome_sqlite3_close                    // Line 334
+#define sqlite3_close_v2 chrome_sqlite3_close_v2              // Line 335
 #define sqlite3_collation_needed \
-  chrome_sqlite3_collation_needed  // Lines 5534-5538
+  chrome_sqlite3_collation_needed  // Lines 5571-5575
 #define sqlite3_collation_needed16 \
-  chrome_sqlite3_collation_needed16                           // Lines 5539-5543
-#define sqlite3_column_blob chrome_sqlite3_column_blob        // Line 4661
-#define sqlite3_column_bytes chrome_sqlite3_column_bytes      // Line 4668
-#define sqlite3_column_bytes16 chrome_sqlite3_column_bytes16  // Line 4669
-#define sqlite3_column_count chrome_sqlite3_column_count      // Line 4197
+  chrome_sqlite3_collation_needed16                           // Lines 5576-5580
+#define sqlite3_column_blob chrome_sqlite3_column_blob        // Line 4690
+#define sqlite3_column_bytes chrome_sqlite3_column_bytes      // Line 4697
+#define sqlite3_column_bytes16 chrome_sqlite3_column_bytes16  // Line 4698
+#define sqlite3_column_count chrome_sqlite3_column_count      // Line 4226
 #define sqlite3_column_database_name \
-  chrome_sqlite3_column_database_name  // Line 4275
+  chrome_sqlite3_column_database_name  // Line 4304
 #define sqlite3_column_database_name16 \
-  chrome_sqlite3_column_database_name16                             // Line 4276
-#define sqlite3_column_decltype chrome_sqlite3_column_decltype      // Line 4312
-#define sqlite3_column_decltype16 chrome_sqlite3_column_decltype16  // Line 4313
-#define sqlite3_column_double chrome_sqlite3_column_double          // Line 4662
-#define sqlite3_column_int chrome_sqlite3_column_int                // Line 4663
-#define sqlite3_column_int64 chrome_sqlite3_column_int64            // Line 4664
-#define sqlite3_column_name chrome_sqlite3_column_name              // Line 4226
-#define sqlite3_column_name16 chrome_sqlite3_column_name16          // Line 4227
+  chrome_sqlite3_column_database_name16                             // Line 4305
+#define sqlite3_column_decltype chrome_sqlite3_column_decltype      // Line 4341
+#define sqlite3_column_decltype16 chrome_sqlite3_column_decltype16  // Line 4342
+#define sqlite3_column_double chrome_sqlite3_column_double          // Line 4691
+#define sqlite3_column_int chrome_sqlite3_column_int                // Line 4692
+#define sqlite3_column_int64 chrome_sqlite3_column_int64            // Line 4693
+#define sqlite3_column_name chrome_sqlite3_column_name              // Line 4255
+#define sqlite3_column_name16 chrome_sqlite3_column_name16          // Line 4256
 #define sqlite3_column_origin_name \
-  chrome_sqlite3_column_origin_name  // Line 4279
+  chrome_sqlite3_column_origin_name  // Line 4308
 #define sqlite3_column_origin_name16 \
-  chrome_sqlite3_column_origin_name16                               // Line 4280
-#define sqlite3_column_table_name chrome_sqlite3_column_table_name  // Line 4277
+  chrome_sqlite3_column_origin_name16                               // Line 4309
+#define sqlite3_column_table_name chrome_sqlite3_column_table_name  // Line 4306
 #define sqlite3_column_table_name16 \
-  chrome_sqlite3_column_table_name16                                // Line 4278
-#define sqlite3_column_text chrome_sqlite3_column_text              // Line 4665
-#define sqlite3_column_text16 chrome_sqlite3_column_text16          // Line 4666
-#define sqlite3_column_type chrome_sqlite3_column_type              // Line 4670
-#define sqlite3_column_value chrome_sqlite3_column_value            // Line 4667
-#define sqlite3_commit_hook chrome_sqlite3_commit_hook              // Line 5876
+  chrome_sqlite3_column_table_name16                                // Line 4307
+#define sqlite3_column_text chrome_sqlite3_column_text              // Line 4694
+#define sqlite3_column_text16 chrome_sqlite3_column_text16          // Line 4695
+#define sqlite3_column_type chrome_sqlite3_column_type              // Line 4699
+#define sqlite3_column_value chrome_sqlite3_column_value            // Line 4696
+#define sqlite3_commit_hook chrome_sqlite3_commit_hook              // Line 5913
 #define sqlite3_compileoption_get chrome_sqlite3_compileoption_get  // Line 191
 #define sqlite3_compileoption_used chrome_sqlite3_compileoption_used  // Line 190
-#define sqlite3_complete chrome_sqlite3_complete                    // Line 2464
-#define sqlite3_complete16 chrome_sqlite3_complete16                // Line 2465
-#define sqlite3_config chrome_sqlite3_config                        // Line 1550
-#define sqlite3_context_db_handle chrome_sqlite3_context_db_handle  // Line 5159
+#define sqlite3_complete chrome_sqlite3_complete                    // Line 2479
+#define sqlite3_complete16 chrome_sqlite3_complete16                // Line 2480
+#define sqlite3_config chrome_sqlite3_config                        // Line 1553
+#define sqlite3_context_db_handle chrome_sqlite3_context_db_handle  // Line 5196
 #define sqlite3_create_collation \
-  chrome_sqlite3_create_collation  // Lines 5484-5490
+  chrome_sqlite3_create_collation  // Lines 5521-5527
 #define sqlite3_create_collation16 \
-  chrome_sqlite3_create_collation16  // Lines 5499-5505
+  chrome_sqlite3_create_collation16  // Lines 5536-5542
 #define sqlite3_create_collation_v2 \
-  chrome_sqlite3_create_collation_v2  // Lines 5491-5498
+  chrome_sqlite3_create_collation_v2  // Lines 5528-5535
 #define sqlite3_create_function \
-  chrome_sqlite3_create_function  // Lines 4837-4846
+  chrome_sqlite3_create_function  // Lines 4866-4875
 #define sqlite3_create_function16 \
-  chrome_sqlite3_create_function16  // Lines 4847-4856
+  chrome_sqlite3_create_function16  // Lines 4876-4885
 #define sqlite3_create_function_v2 \
-  chrome_sqlite3_create_function_v2                         // Lines 4857-4867
-#define sqlite3_create_module chrome_sqlite3_create_module  // Lines 6541-6546
+  chrome_sqlite3_create_function_v2                         // Lines 4886-4896
+#define sqlite3_create_module chrome_sqlite3_create_module  // Lines 6578-6583
 #define sqlite3_create_module_v2 \
-  chrome_sqlite3_create_module_v2  // Lines 6547-6553
+  chrome_sqlite3_create_module_v2  // Lines 6584-6590
 #define sqlite3_create_window_function \
-  chrome_sqlite3_create_window_function                       // Lines 4868-4879
-#define sqlite3_data_count chrome_sqlite3_data_count          // Line 4418
-#define sqlite3_data_directory chrome_sqlite3_data_directory  // Line 5712
-#define sqlite3_db_cacheflush chrome_sqlite3_db_cacheflush    // Line 8918
-#define sqlite3_db_config chrome_sqlite3_db_config            // Line 1569
-#define sqlite3_db_filename chrome_sqlite3_db_filename        // Line 5801
-#define sqlite3_db_handle chrome_sqlite3_db_handle            // Line 5784
-#define sqlite3_db_mutex chrome_sqlite3_db_mutex              // Line 7185
-#define sqlite3_db_readonly chrome_sqlite3_db_readonly        // Line 5811
-#define sqlite3_db_release_memory chrome_sqlite3_db_release_memory  // Line 5999
-#define sqlite3_db_status chrome_sqlite3_db_status                  // Line 7606
-#define sqlite3_declare_vtab chrome_sqlite3_declare_vtab            // Line 6610
-#define sqlite3_deserialize chrome_sqlite3_deserialize  // Lines 9312-9319
+  chrome_sqlite3_create_window_function                       // Lines 4897-4908
+#define sqlite3_data_count chrome_sqlite3_data_count          // Line 4447
+#define sqlite3_data_directory chrome_sqlite3_data_directory  // Line 5749
+#define sqlite3_db_cacheflush chrome_sqlite3_db_cacheflush    // Line 8955
+#define sqlite3_db_config chrome_sqlite3_db_config            // Line 1572
+#define sqlite3_db_filename chrome_sqlite3_db_filename        // Line 5838
+#define sqlite3_db_handle chrome_sqlite3_db_handle            // Line 5821
+#define sqlite3_db_mutex chrome_sqlite3_db_mutex              // Line 7222
+#define sqlite3_db_readonly chrome_sqlite3_db_readonly        // Line 5848
+#define sqlite3_db_release_memory chrome_sqlite3_db_release_memory  // Line 6036
+#define sqlite3_db_status chrome_sqlite3_db_status                  // Line 7643
+#define sqlite3_declare_vtab chrome_sqlite3_declare_vtab            // Line 6647
+#define sqlite3_deserialize chrome_sqlite3_deserialize  // Lines 9349-9356
 #define sqlite3_enable_load_extension \
-  chrome_sqlite3_enable_load_extension  // Line 6223
+  chrome_sqlite3_enable_load_extension  // Line 6260
 #define sqlite3_enable_shared_cache \
-  chrome_sqlite3_enable_shared_cache              // Line 5969
-#define sqlite3_errcode chrome_sqlite3_errcode    // Line 3492
-#define sqlite3_errmsg chrome_sqlite3_errmsg      // Line 3494
-#define sqlite3_errmsg16 chrome_sqlite3_errmsg16  // Line 3495
-#define sqlite3_errstr chrome_sqlite3_errstr      // Line 3496
-#define sqlite3_exec chrome_sqlite3_exec  // Lines 403-409
-#define sqlite3_expanded_sql chrome_sqlite3_expanded_sql          // Line 3858
-#define sqlite3_expired chrome_sqlite3_expired                    // Line 4916
-#define sqlite3_extended_errcode chrome_sqlite3_extended_errcode  // Line 3493
+  chrome_sqlite3_enable_shared_cache                      // Line 6006
+#define sqlite3_errcode chrome_sqlite3_errcode            // Line 3507
+#define sqlite3_errmsg chrome_sqlite3_errmsg              // Line 3509
+#define sqlite3_errmsg16 chrome_sqlite3_errmsg16          // Line 3510
+#define sqlite3_errstr chrome_sqlite3_errstr              // Line 3511
+#define sqlite3_exec chrome_sqlite3_exec                  // Lines 406-412
+#define sqlite3_expanded_sql chrome_sqlite3_expanded_sql  // Line 3873
+#define sqlite3_expired chrome_sqlite3_expired            // Line 4945
+#define sqlite3_extended_errcode chrome_sqlite3_extended_errcode  // Line 3508
 #define sqlite3_extended_result_codes \
-  chrome_sqlite3_extended_result_codes                        // Line 2225
-#define sqlite3_file_control chrome_sqlite3_file_control      // Line 7228
-#define sqlite3_finalize chrome_sqlite3_finalize              // Line 4698
-#define sqlite3_free chrome_sqlite3_free                      // Line 2771
-#define sqlite3_free_table chrome_sqlite3_free_table          // Line 2632
-#define sqlite3_get_autocommit chrome_sqlite3_get_autocommit  // Line 5771
-#define sqlite3_get_auxdata chrome_sqlite3_get_auxdata        // Line 5218
-#define sqlite3_get_table chrome_sqlite3_get_table            // Lines 2624-2631
-#define sqlite3_global_recover chrome_sqlite3_global_recover  // Line 4918
-#define sqlite3_initialize chrome_sqlite3_initialize          // Line 1514
-#define sqlite3_interrupt chrome_sqlite3_interrupt            // Line 2429
-#define sqlite3_key chrome_sqlite3_key                        // Lines 5553-5556
-#define sqlite3_key_v2 chrome_sqlite3_key_v2                  // Lines 5557-5561
-#define sqlite3_keyword_check chrome_sqlite3_keyword_check    // Line 7336
-#define sqlite3_keyword_count chrome_sqlite3_keyword_count    // Line 7334
-#define sqlite3_keyword_name chrome_sqlite3_keyword_name      // Line 7335
-#define sqlite3_last_insert_rowid chrome_sqlite3_last_insert_rowid  // Line 2287
+  chrome_sqlite3_extended_result_codes                        // Line 2240
+#define sqlite3_file_control chrome_sqlite3_file_control      // Line 7265
+#define sqlite3_finalize chrome_sqlite3_finalize              // Line 4727
+#define sqlite3_free chrome_sqlite3_free                      // Line 2786
+#define sqlite3_free_table chrome_sqlite3_free_table          // Line 2647
+#define sqlite3_get_autocommit chrome_sqlite3_get_autocommit  // Line 5808
+#define sqlite3_get_auxdata chrome_sqlite3_get_auxdata        // Line 5255
+#define sqlite3_get_table chrome_sqlite3_get_table            // Lines 2639-2646
+#define sqlite3_global_recover chrome_sqlite3_global_recover  // Line 4947
+#define sqlite3_initialize chrome_sqlite3_initialize          // Line 1517
+#define sqlite3_interrupt chrome_sqlite3_interrupt            // Line 2444
+#define sqlite3_key chrome_sqlite3_key                        // Lines 5590-5593
+#define sqlite3_key_v2 chrome_sqlite3_key_v2                  // Lines 5594-5598
+#define sqlite3_keyword_check chrome_sqlite3_keyword_check    // Line 7373
+#define sqlite3_keyword_count chrome_sqlite3_keyword_count    // Line 7371
+#define sqlite3_keyword_name chrome_sqlite3_keyword_name      // Line 7372
+#define sqlite3_last_insert_rowid chrome_sqlite3_last_insert_rowid  // Line 2302
 #define sqlite3_libversion chrome_sqlite3_libversion  // Line 163
 #define sqlite3_libversion_number chrome_sqlite3_libversion_number  // Line 165
-#define sqlite3_limit chrome_sqlite3_limit                          // Line 3564
-#define sqlite3_load_extension chrome_sqlite3_load_extension  // Lines 6191-6196
-#define sqlite3_log chrome_sqlite3_log                        // Line 8454
-#define sqlite3_malloc chrome_sqlite3_malloc                  // Line 2767
-#define sqlite3_malloc64 chrome_sqlite3_malloc64              // Line 2768
-#define sqlite3_memory_alarm chrome_sqlite3_memory_alarm      // Lines 4920-4921
-#define sqlite3_memory_highwater chrome_sqlite3_memory_highwater  // Line 2798
-#define sqlite3_memory_used chrome_sqlite3_memory_used            // Line 2797
-#define sqlite3_mprintf chrome_sqlite3_mprintf                    // Line 2674
-#define sqlite3_msize chrome_sqlite3_msize                        // Line 2772
-#define sqlite3_mutex_alloc chrome_sqlite3_mutex_alloc            // Line 7030
-#define sqlite3_mutex_enter chrome_sqlite3_mutex_enter            // Line 7032
-#define sqlite3_mutex_free chrome_sqlite3_mutex_free              // Line 7031
-#define sqlite3_mutex_held chrome_sqlite3_mutex_held              // Line 7144
-#define sqlite3_mutex_leave chrome_sqlite3_mutex_leave            // Line 7034
-#define sqlite3_mutex_notheld chrome_sqlite3_mutex_notheld        // Line 7145
-#define sqlite3_mutex_try chrome_sqlite3_mutex_try                // Line 7033
-#define sqlite3_next_stmt chrome_sqlite3_next_stmt                // Line 5827
-#define sqlite3_normalized_sql chrome_sqlite3_normalized_sql      // Line 3859
-#define sqlite3_open chrome_sqlite3_open        // Lines 3379-3382
-#define sqlite3_open16 chrome_sqlite3_open16    // Lines 3383-3386
-#define sqlite3_open_v2 chrome_sqlite3_open_v2  // Lines 3387-3392
-#define sqlite3_os_end chrome_sqlite3_os_end    // Line 1517
-#define sqlite3_os_init chrome_sqlite3_os_init  // Line 1516
-#define sqlite3_overload_function chrome_sqlite3_overload_function  // Line 6629
-#define sqlite3_prepare chrome_sqlite3_prepare            // Lines 3774-3780
-#define sqlite3_prepare16 chrome_sqlite3_prepare16        // Lines 3796-3802
-#define sqlite3_prepare16_v2 chrome_sqlite3_prepare16_v2  // Lines 3803-3809
-#define sqlite3_prepare16_v3 chrome_sqlite3_prepare16_v3  // Lines 3810-3817
-#define sqlite3_prepare_v2 chrome_sqlite3_prepare_v2      // Lines 3781-3787
-#define sqlite3_prepare_v3 chrome_sqlite3_prepare_v3      // Lines 3788-3795
-#define sqlite3_preupdate_count chrome_sqlite3_preupdate_count  // Line 9017
-#define sqlite3_preupdate_depth chrome_sqlite3_preupdate_depth  // Line 9018
-#define sqlite3_preupdate_hook chrome_sqlite3_preupdate_hook  // Lines 9003-9015
-#define sqlite3_preupdate_new chrome_sqlite3_preupdate_new    // Line 9019
-#define sqlite3_preupdate_old chrome_sqlite3_preupdate_old    // Line 9016
-#define sqlite3_profile chrome_sqlite3_profile                // Lines 3022-3023
-#define sqlite3_progress_handler chrome_sqlite3_progress_handler  // Line 3150
-#define sqlite3_randomness chrome_sqlite3_randomness              // Line 2821
-#define sqlite3_realloc chrome_sqlite3_realloc                    // Line 2769
-#define sqlite3_realloc64 chrome_sqlite3_realloc64                // Line 2770
-#define sqlite3_rekey chrome_sqlite3_rekey                    // Lines 5571-5574
-#define sqlite3_rekey_v2 chrome_sqlite3_rekey_v2              // Lines 5575-5579
-#define sqlite3_release_memory chrome_sqlite3_release_memory  // Line 5985
-#define sqlite3_reset chrome_sqlite3_reset                    // Line 4725
+#define sqlite3_limit chrome_sqlite3_limit                          // Line 3579
+#define sqlite3_load_extension chrome_sqlite3_load_extension  // Lines 6228-6233
+#define sqlite3_log chrome_sqlite3_log                        // Line 8491
+#define sqlite3_malloc chrome_sqlite3_malloc                  // Line 2782
+#define sqlite3_malloc64 chrome_sqlite3_malloc64              // Line 2783
+#define sqlite3_memory_alarm chrome_sqlite3_memory_alarm      // Lines 4949-4950
+#define sqlite3_memory_highwater chrome_sqlite3_memory_highwater  // Line 2813
+#define sqlite3_memory_used chrome_sqlite3_memory_used            // Line 2812
+#define sqlite3_mprintf chrome_sqlite3_mprintf                    // Line 2689
+#define sqlite3_msize chrome_sqlite3_msize                        // Line 2787
+#define sqlite3_mutex_alloc chrome_sqlite3_mutex_alloc            // Line 7067
+#define sqlite3_mutex_enter chrome_sqlite3_mutex_enter            // Line 7069
+#define sqlite3_mutex_free chrome_sqlite3_mutex_free              // Line 7068
+#define sqlite3_mutex_held chrome_sqlite3_mutex_held              // Line 7181
+#define sqlite3_mutex_leave chrome_sqlite3_mutex_leave            // Line 7071
+#define sqlite3_mutex_notheld chrome_sqlite3_mutex_notheld        // Line 7182
+#define sqlite3_mutex_try chrome_sqlite3_mutex_try                // Line 7070
+#define sqlite3_next_stmt chrome_sqlite3_next_stmt                // Line 5864
+#define sqlite3_normalized_sql chrome_sqlite3_normalized_sql      // Line 3874
+#define sqlite3_open chrome_sqlite3_open        // Lines 3394-3397
+#define sqlite3_open16 chrome_sqlite3_open16    // Lines 3398-3401
+#define sqlite3_open_v2 chrome_sqlite3_open_v2  // Lines 3402-3407
+#define sqlite3_os_end chrome_sqlite3_os_end    // Line 1520
+#define sqlite3_os_init chrome_sqlite3_os_init  // Line 1519
+#define sqlite3_overload_function chrome_sqlite3_overload_function  // Line 6666
+#define sqlite3_prepare chrome_sqlite3_prepare            // Lines 3789-3795
+#define sqlite3_prepare16 chrome_sqlite3_prepare16        // Lines 3811-3817
+#define sqlite3_prepare16_v2 chrome_sqlite3_prepare16_v2  // Lines 3818-3824
+#define sqlite3_prepare16_v3 chrome_sqlite3_prepare16_v3  // Lines 3825-3832
+#define sqlite3_prepare_v2 chrome_sqlite3_prepare_v2      // Lines 3796-3802
+#define sqlite3_prepare_v3 chrome_sqlite3_prepare_v3      // Lines 3803-3810
+#define sqlite3_preupdate_count chrome_sqlite3_preupdate_count  // Line 9054
+#define sqlite3_preupdate_depth chrome_sqlite3_preupdate_depth  // Line 9055
+#define sqlite3_preupdate_hook chrome_sqlite3_preupdate_hook  // Lines 9040-9052
+#define sqlite3_preupdate_new chrome_sqlite3_preupdate_new    // Line 9056
+#define sqlite3_preupdate_old chrome_sqlite3_preupdate_old    // Line 9053
+#define sqlite3_profile chrome_sqlite3_profile                // Lines 3037-3038
+#define sqlite3_progress_handler chrome_sqlite3_progress_handler  // Line 3165
+#define sqlite3_randomness chrome_sqlite3_randomness              // Line 2836
+#define sqlite3_realloc chrome_sqlite3_realloc                    // Line 2784
+#define sqlite3_realloc64 chrome_sqlite3_realloc64                // Line 2785
+#define sqlite3_rekey chrome_sqlite3_rekey                    // Lines 5608-5611
+#define sqlite3_rekey_v2 chrome_sqlite3_rekey_v2              // Lines 5612-5616
+#define sqlite3_release_memory chrome_sqlite3_release_memory  // Line 6022
+#define sqlite3_reset chrome_sqlite3_reset                    // Line 4754
 #define sqlite3_reset_auto_extension \
-  chrome_sqlite3_reset_auto_extension                         // Line 6281
-#define sqlite3_result_blob chrome_sqlite3_result_blob        // Line 5366
-#define sqlite3_result_blob64 chrome_sqlite3_result_blob64    // Lines 5367-5368
-#define sqlite3_result_double chrome_sqlite3_result_double    // Line 5369
-#define sqlite3_result_error chrome_sqlite3_result_error      // Line 5370
-#define sqlite3_result_error16 chrome_sqlite3_result_error16  // Line 5371
-#define sqlite3_result_error_code chrome_sqlite3_result_error_code  // Line 5374
+  chrome_sqlite3_reset_auto_extension                         // Line 6318
+#define sqlite3_result_blob chrome_sqlite3_result_blob        // Line 5403
+#define sqlite3_result_blob64 chrome_sqlite3_result_blob64    // Lines 5404-5405
+#define sqlite3_result_double chrome_sqlite3_result_double    // Line 5406
+#define sqlite3_result_error chrome_sqlite3_result_error      // Line 5407
+#define sqlite3_result_error16 chrome_sqlite3_result_error16  // Line 5408
+#define sqlite3_result_error_code chrome_sqlite3_result_error_code  // Line 5411
 #define sqlite3_result_error_nomem \
-  chrome_sqlite3_result_error_nomem  // Line 5373
+  chrome_sqlite3_result_error_nomem  // Line 5410
 #define sqlite3_result_error_toobig \
-  chrome_sqlite3_result_error_toobig                            // Line 5372
-#define sqlite3_result_int chrome_sqlite3_result_int            // Line 5375
-#define sqlite3_result_int64 chrome_sqlite3_result_int64        // Line 5376
-#define sqlite3_result_null chrome_sqlite3_result_null          // Line 5377
-#define sqlite3_result_pointer chrome_sqlite3_result_pointer    // Line 5385
-#define sqlite3_result_subtype chrome_sqlite3_result_subtype    // Line 5402
-#define sqlite3_result_text chrome_sqlite3_result_text          // Line 5378
-#define sqlite3_result_text16 chrome_sqlite3_result_text16      // Line 5381
-#define sqlite3_result_text16be chrome_sqlite3_result_text16be  // Line 5383
-#define sqlite3_result_text16le chrome_sqlite3_result_text16le  // Line 5382
-#define sqlite3_result_text64 chrome_sqlite3_result_text64  // Lines 5379-5380
-#define sqlite3_result_value chrome_sqlite3_result_value    // Line 5384
-#define sqlite3_result_zeroblob chrome_sqlite3_result_zeroblob      // Line 5386
-#define sqlite3_result_zeroblob64 chrome_sqlite3_result_zeroblob64  // Line 5387
-#define sqlite3_rollback_hook chrome_sqlite3_rollback_hook          // Line 5877
+  chrome_sqlite3_result_error_toobig                            // Line 5409
+#define sqlite3_result_int chrome_sqlite3_result_int            // Line 5412
+#define sqlite3_result_int64 chrome_sqlite3_result_int64        // Line 5413
+#define sqlite3_result_null chrome_sqlite3_result_null          // Line 5414
+#define sqlite3_result_pointer chrome_sqlite3_result_pointer    // Line 5422
+#define sqlite3_result_subtype chrome_sqlite3_result_subtype    // Line 5439
+#define sqlite3_result_text chrome_sqlite3_result_text          // Line 5415
+#define sqlite3_result_text16 chrome_sqlite3_result_text16      // Line 5418
+#define sqlite3_result_text16be chrome_sqlite3_result_text16be  // Line 5420
+#define sqlite3_result_text16le chrome_sqlite3_result_text16le  // Line 5419
+#define sqlite3_result_text64 chrome_sqlite3_result_text64  // Lines 5416-5417
+#define sqlite3_result_value chrome_sqlite3_result_value    // Line 5421
+#define sqlite3_result_zeroblob chrome_sqlite3_result_zeroblob      // Line 5423
+#define sqlite3_result_zeroblob64 chrome_sqlite3_result_zeroblob64  // Line 5424
+#define sqlite3_rollback_hook chrome_sqlite3_rollback_hook          // Line 5914
 #define sqlite3_rtree_geometry_callback \
-  chrome_sqlite3_rtree_geometry_callback  // Lines 9399-9404
+  chrome_sqlite3_rtree_geometry_callback  // Lines 9436-9441
 #define sqlite3_rtree_query_callback \
-  chrome_sqlite3_rtree_query_callback                         // Lines 9425-9431
-#define sqlite3_serialize chrome_sqlite3_serialize            // Lines 9260-9265
-#define sqlite3_set_authorizer chrome_sqlite3_set_authorizer  // Lines 2912-2916
-#define sqlite3_set_auxdata chrome_sqlite3_set_auxdata        // Line 5219
+  chrome_sqlite3_rtree_query_callback                         // Lines 9462-9468
+#define sqlite3_serialize chrome_sqlite3_serialize            // Lines 9297-9302
+#define sqlite3_set_authorizer chrome_sqlite3_set_authorizer  // Lines 2927-2931
+#define sqlite3_set_auxdata chrome_sqlite3_set_auxdata        // Line 5256
 #define sqlite3_set_last_insert_rowid \
-  chrome_sqlite3_set_last_insert_rowid                      // Line 2297
-#define sqlite3_shutdown chrome_sqlite3_shutdown            // Line 1515
-#define sqlite3_sleep chrome_sqlite3_sleep                  // Line 5617
-#define sqlite3_snapshot_cmp chrome_sqlite3_snapshot_cmp    // Lines 9194-9197
-#define sqlite3_snapshot_free chrome_sqlite3_snapshot_free  // Line 9167
-#define sqlite3_snapshot_get chrome_sqlite3_snapshot_get    // Lines 9101-9105
-#define sqlite3_snapshot_open chrome_sqlite3_snapshot_open  // Lines 9150-9154
-#define sqlite3_snapshot_recover chrome_sqlite3_snapshot_recover    // Line 9222
-#define sqlite3_snprintf chrome_sqlite3_snprintf                    // Line 2676
-#define sqlite3_soft_heap_limit chrome_sqlite3_soft_heap_limit      // Line 6063
-#define sqlite3_soft_heap_limit64 chrome_sqlite3_soft_heap_limit64  // Line 6052
+  chrome_sqlite3_set_last_insert_rowid                      // Line 2312
+#define sqlite3_shutdown chrome_sqlite3_shutdown            // Line 1518
+#define sqlite3_sleep chrome_sqlite3_sleep                  // Line 5654
+#define sqlite3_snapshot_cmp chrome_sqlite3_snapshot_cmp    // Lines 9231-9234
+#define sqlite3_snapshot_free chrome_sqlite3_snapshot_free  // Line 9204
+#define sqlite3_snapshot_get chrome_sqlite3_snapshot_get    // Lines 9138-9142
+#define sqlite3_snapshot_open chrome_sqlite3_snapshot_open  // Lines 9187-9191
+#define sqlite3_snapshot_recover chrome_sqlite3_snapshot_recover    // Line 9259
+#define sqlite3_snprintf chrome_sqlite3_snprintf                    // Line 2691
+#define sqlite3_soft_heap_limit chrome_sqlite3_soft_heap_limit      // Line 6100
+#define sqlite3_soft_heap_limit64 chrome_sqlite3_soft_heap_limit64  // Line 6089
 #define sqlite3_sourceid chrome_sqlite3_sourceid  // Line 164
-#define sqlite3_sql chrome_sqlite3_sql            // Line 3857
-#define sqlite3_status chrome_sqlite3_status      // Line 7496
-#define sqlite3_status64 chrome_sqlite3_status64  // Lines 7497-7502
-#define sqlite3_step chrome_sqlite3_step          // Line 4397
-#define sqlite3_stmt_busy chrome_sqlite3_stmt_busy          // Line 3916
-#define sqlite3_stmt_readonly chrome_sqlite3_stmt_readonly  // Line 3895
+#define sqlite3_sql chrome_sqlite3_sql            // Line 3872
+#define sqlite3_status chrome_sqlite3_status      // Line 7533
+#define sqlite3_status64 chrome_sqlite3_status64  // Lines 7534-7539
+#define sqlite3_step chrome_sqlite3_step          // Line 4426
+#define sqlite3_stmt_busy chrome_sqlite3_stmt_busy            // Line 3943
+#define sqlite3_stmt_isexplain chrome_sqlite3_stmt_isexplain  // Line 3922
+#define sqlite3_stmt_readonly chrome_sqlite3_stmt_readonly    // Line 3910
 #define sqlite3_stmt_scanstatus \
-  chrome_sqlite3_stmt_scanstatus  // Lines 8870-8875
+  chrome_sqlite3_stmt_scanstatus  // Lines 8907-8912
 #define sqlite3_stmt_scanstatus_reset \
-  chrome_sqlite3_stmt_scanstatus_reset                        // Line 8886
-#define sqlite3_stmt_status chrome_sqlite3_stmt_status        // Line 7759
-#define sqlite3_str_append chrome_sqlite3_str_append          // Line 7432
-#define sqlite3_str_appendall chrome_sqlite3_str_appendall    // Line 7433
-#define sqlite3_str_appendchar chrome_sqlite3_str_appendchar  // Line 7434
-#define sqlite3_str_appendf chrome_sqlite3_str_appendf        // Line 7430
-#define sqlite3_str_errcode chrome_sqlite3_str_errcode        // Line 7466
-#define sqlite3_str_finish chrome_sqlite3_str_finish          // Line 7396
-#define sqlite3_str_length chrome_sqlite3_str_length          // Line 7467
-#define sqlite3_str_new chrome_sqlite3_str_new                // Line 7381
-#define sqlite3_str_reset chrome_sqlite3_str_reset            // Line 7435
-#define sqlite3_str_value chrome_sqlite3_str_value            // Line 7468
-#define sqlite3_str_vappendf chrome_sqlite3_str_vappendf      // Line 7431
-#define sqlite3_strglob chrome_sqlite3_strglob                // Line 8408
-#define sqlite3_stricmp chrome_sqlite3_stricmp                // Line 8390
-#define sqlite3_strlike chrome_sqlite3_strlike                // Line 8431
-#define sqlite3_strnicmp chrome_sqlite3_strnicmp              // Line 8391
-#define sqlite3_system_errno chrome_sqlite3_system_errno      // Line 9032
+  chrome_sqlite3_stmt_scanstatus_reset                        // Line 8923
+#define sqlite3_stmt_status chrome_sqlite3_stmt_status        // Line 7796
+#define sqlite3_str_append chrome_sqlite3_str_append          // Line 7469
+#define sqlite3_str_appendall chrome_sqlite3_str_appendall    // Line 7470
+#define sqlite3_str_appendchar chrome_sqlite3_str_appendchar  // Line 7471
+#define sqlite3_str_appendf chrome_sqlite3_str_appendf        // Line 7467
+#define sqlite3_str_errcode chrome_sqlite3_str_errcode        // Line 7503
+#define sqlite3_str_finish chrome_sqlite3_str_finish          // Line 7433
+#define sqlite3_str_length chrome_sqlite3_str_length          // Line 7504
+#define sqlite3_str_new chrome_sqlite3_str_new                // Line 7418
+#define sqlite3_str_reset chrome_sqlite3_str_reset            // Line 7472
+#define sqlite3_str_value chrome_sqlite3_str_value            // Line 7505
+#define sqlite3_str_vappendf chrome_sqlite3_str_vappendf      // Line 7468
+#define sqlite3_strglob chrome_sqlite3_strglob                // Line 8445
+#define sqlite3_stricmp chrome_sqlite3_stricmp                // Line 8427
+#define sqlite3_strlike chrome_sqlite3_strlike                // Line 8468
+#define sqlite3_strnicmp chrome_sqlite3_strnicmp              // Line 8428
+#define sqlite3_system_errno chrome_sqlite3_system_errno      // Line 9069
 #define sqlite3_table_column_metadata \
-  chrome_sqlite3_table_column_metadata                        // Lines 6135-6145
-#define sqlite3_temp_directory chrome_sqlite3_temp_directory  // Line 5675
-#define sqlite3_test_control chrome_sqlite3_test_control      // Line 7247
-#define sqlite3_thread_cleanup chrome_sqlite3_thread_cleanup  // Line 4919
-#define sqlite3_threadsafe chrome_sqlite3_threadsafe  // Line 230
-#define sqlite3_total_changes chrome_sqlite3_total_changes  // Line 2392
-#define sqlite3_trace chrome_sqlite3_trace                  // Lines 3020-3021
-#define sqlite3_trace_v2 chrome_sqlite3_trace_v2            // Lines 3111-3116
-#define sqlite3_transfer_bindings chrome_sqlite3_transfer_bindings  // Line 4917
-#define sqlite3_unlock_notify chrome_sqlite3_unlock_notify    // Lines 8375-8379
-#define sqlite3_update_hook chrome_sqlite3_update_hook        // Lines 5928-5932
-#define sqlite3_uri_boolean chrome_sqlite3_uri_boolean        // Line 3436
-#define sqlite3_uri_int64 chrome_sqlite3_uri_int64            // Line 3437
-#define sqlite3_uri_parameter chrome_sqlite3_uri_parameter    // Line 3435
-#define sqlite3_user_data chrome_sqlite3_user_data            // Line 5147
-#define sqlite3_value_blob chrome_sqlite3_value_blob          // Line 5045
-#define sqlite3_value_bytes chrome_sqlite3_value_bytes        // Line 5054
-#define sqlite3_value_bytes16 chrome_sqlite3_value_bytes16    // Line 5055
-#define sqlite3_value_double chrome_sqlite3_value_double      // Line 5046
-#define sqlite3_value_dup chrome_sqlite3_value_dup            // Line 5086
-#define sqlite3_value_free chrome_sqlite3_value_free          // Line 5087
-#define sqlite3_value_int chrome_sqlite3_value_int            // Line 5047
-#define sqlite3_value_int64 chrome_sqlite3_value_int64        // Line 5048
-#define sqlite3_value_nochange chrome_sqlite3_value_nochange  // Line 5058
+  chrome_sqlite3_table_column_metadata                        // Lines 6172-6182
+#define sqlite3_temp_directory chrome_sqlite3_temp_directory  // Line 5712
+#define sqlite3_test_control chrome_sqlite3_test_control      // Line 7284
+#define sqlite3_thread_cleanup chrome_sqlite3_thread_cleanup  // Line 4948
+#define sqlite3_threadsafe chrome_sqlite3_threadsafe          // Line 233
+#define sqlite3_total_changes chrome_sqlite3_total_changes    // Line 2407
+#define sqlite3_trace chrome_sqlite3_trace                    // Lines 3035-3036
+#define sqlite3_trace_v2 chrome_sqlite3_trace_v2              // Lines 3126-3131
+#define sqlite3_transfer_bindings chrome_sqlite3_transfer_bindings  // Line 4946
+#define sqlite3_unlock_notify chrome_sqlite3_unlock_notify    // Lines 8412-8416
+#define sqlite3_update_hook chrome_sqlite3_update_hook        // Lines 5965-5969
+#define sqlite3_uri_boolean chrome_sqlite3_uri_boolean        // Line 3451
+#define sqlite3_uri_int64 chrome_sqlite3_uri_int64            // Line 3452
+#define sqlite3_uri_parameter chrome_sqlite3_uri_parameter    // Line 3450
+#define sqlite3_user_data chrome_sqlite3_user_data            // Line 5184
+#define sqlite3_value_blob chrome_sqlite3_value_blob          // Line 5081
+#define sqlite3_value_bytes chrome_sqlite3_value_bytes        // Line 5090
+#define sqlite3_value_bytes16 chrome_sqlite3_value_bytes16    // Line 5091
+#define sqlite3_value_double chrome_sqlite3_value_double      // Line 5082
+#define sqlite3_value_dup chrome_sqlite3_value_dup            // Line 5123
+#define sqlite3_value_free chrome_sqlite3_value_free          // Line 5124
+#define sqlite3_value_frombind chrome_sqlite3_value_frombind  // Line 5095
+#define sqlite3_value_int chrome_sqlite3_value_int            // Line 5083
+#define sqlite3_value_int64 chrome_sqlite3_value_int64        // Line 5084
+#define sqlite3_value_nochange chrome_sqlite3_value_nochange  // Line 5094
 #define sqlite3_value_numeric_type \
-  chrome_sqlite3_value_numeric_type                           // Line 5057
-#define sqlite3_value_pointer chrome_sqlite3_value_pointer    // Line 5049
-#define sqlite3_value_subtype chrome_sqlite3_value_subtype    // Line 5070
-#define sqlite3_value_text chrome_sqlite3_value_text          // Line 5050
-#define sqlite3_value_text16 chrome_sqlite3_value_text16      // Line 5051
-#define sqlite3_value_text16be chrome_sqlite3_value_text16be  // Line 5053
-#define sqlite3_value_text16le chrome_sqlite3_value_text16le  // Line 5052
-#define sqlite3_value_type chrome_sqlite3_value_type          // Line 5056
+  chrome_sqlite3_value_numeric_type                           // Line 5093
+#define sqlite3_value_pointer chrome_sqlite3_value_pointer    // Line 5085
+#define sqlite3_value_subtype chrome_sqlite3_value_subtype    // Line 5107
+#define sqlite3_value_text chrome_sqlite3_value_text          // Line 5086
+#define sqlite3_value_text16 chrome_sqlite3_value_text16      // Line 5087
+#define sqlite3_value_text16be chrome_sqlite3_value_text16be  // Line 5089
+#define sqlite3_value_text16le chrome_sqlite3_value_text16le  // Line 5088
+#define sqlite3_value_type chrome_sqlite3_value_type          // Line 5092
 #define sqlite3_version chrome_sqlite3_version  // Line 162
-#define sqlite3_vfs_find chrome_sqlite3_vfs_find                  // Line 6912
-#define sqlite3_vfs_register chrome_sqlite3_vfs_register          // Line 6913
-#define sqlite3_vfs_unregister chrome_sqlite3_vfs_unregister      // Line 6914
-#define sqlite3_vmprintf chrome_sqlite3_vmprintf                  // Line 2675
-#define sqlite3_vsnprintf chrome_sqlite3_vsnprintf                // Line 2677
-#define sqlite3_vtab_collation chrome_sqlite3_vtab_collation      // Line 8765
-#define sqlite3_vtab_config chrome_sqlite3_vtab_config            // Line 8677
-#define sqlite3_vtab_nochange chrome_sqlite3_vtab_nochange        // Line 8750
-#define sqlite3_vtab_on_conflict chrome_sqlite3_vtab_on_conflict  // Line 8731
+#define sqlite3_vfs_find chrome_sqlite3_vfs_find                  // Line 6949
+#define sqlite3_vfs_register chrome_sqlite3_vfs_register          // Line 6950
+#define sqlite3_vfs_unregister chrome_sqlite3_vfs_unregister      // Line 6951
+#define sqlite3_vmprintf chrome_sqlite3_vmprintf                  // Line 2690
+#define sqlite3_vsnprintf chrome_sqlite3_vsnprintf                // Line 2692
+#define sqlite3_vtab_collation chrome_sqlite3_vtab_collation      // Line 8802
+#define sqlite3_vtab_config chrome_sqlite3_vtab_config            // Line 8714
+#define sqlite3_vtab_nochange chrome_sqlite3_vtab_nochange        // Line 8787
+#define sqlite3_vtab_on_conflict chrome_sqlite3_vtab_on_conflict  // Line 8768
 #define sqlite3_wal_autocheckpoint \
-  chrome_sqlite3_wal_autocheckpoint                           // Line 8525
-#define sqlite3_wal_checkpoint chrome_sqlite3_wal_checkpoint  // Line 8547
+  chrome_sqlite3_wal_autocheckpoint                           // Line 8562
+#define sqlite3_wal_checkpoint chrome_sqlite3_wal_checkpoint  // Line 8584
 #define sqlite3_wal_checkpoint_v2 \
-  chrome_sqlite3_wal_checkpoint_v2                // Lines 8641-8647
-#define sqlite3_wal_hook chrome_sqlite3_wal_hook  // Lines 8490-8494
+  chrome_sqlite3_wal_checkpoint_v2                // Lines 8678-8684
+#define sqlite3_wal_hook chrome_sqlite3_wal_hook  // Lines 8527-8531
 #define sqlite3_win32_set_directory \
-  chrome_sqlite3_win32_set_directory  // Lines 5733-5736
+  chrome_sqlite3_win32_set_directory  // Lines 5770-5773
 #define sqlite3_win32_set_directory16 \
-  chrome_sqlite3_win32_set_directory16  // Line 5738
+  chrome_sqlite3_win32_set_directory16  // Line 5775
 #define sqlite3_win32_set_directory8 \
-  chrome_sqlite3_win32_set_directory8                         // Line 5737
-#define sqlite3changegroup_add chrome_sqlite3changegroup_add  // Line 10412
+  chrome_sqlite3_win32_set_directory8                         // Line 5774
+#define sqlite3changegroup_add chrome_sqlite3changegroup_add  // Line 10449
 #define sqlite3changegroup_add_strm \
-  chrome_sqlite3changegroup_add_strm  // Lines 11074-11077
+  chrome_sqlite3changegroup_add_strm  // Lines 11111-11114
 #define sqlite3changegroup_delete \
-  chrome_sqlite3changegroup_delete                            // Line 10449
-#define sqlite3changegroup_new chrome_sqlite3changegroup_new  // Line 10334
+  chrome_sqlite3changegroup_delete                            // Line 10486
+#define sqlite3changegroup_new chrome_sqlite3changegroup_new  // Line 10371
 #define sqlite3changegroup_output \
-  chrome_sqlite3changegroup_output  // Lines 10439-10443
+  chrome_sqlite3changegroup_output  // Lines 10476-10480
 #define sqlite3changegroup_output_strm \
-  chrome_sqlite3changegroup_output_strm  // Lines 11078-11081
+  chrome_sqlite3changegroup_output_strm  // Lines 11115-11118
 #define sqlite3changeset_apply \
-  chrome_sqlite3changeset_apply  // Lines 10609-10623
+  chrome_sqlite3changeset_apply  // Lines 10646-10660
 #define sqlite3changeset_apply_strm \
-  chrome_sqlite3changeset_apply_strm  // Lines 11007-11021
+  chrome_sqlite3changeset_apply_strm  // Lines 11044-11058
 #define sqlite3changeset_apply_v2 \
-  chrome_sqlite3changeset_apply_v2  // Lines 10624-10640
+  chrome_sqlite3changeset_apply_v2  // Lines 10661-10677
 #define sqlite3changeset_apply_v2_strm \
-  chrome_sqlite3changeset_apply_v2_strm  // Lines 11022-11038
+  chrome_sqlite3changeset_apply_v2_strm  // Lines 11059-11075
 #define sqlite3changeset_concat \
-  chrome_sqlite3changeset_concat  // Lines 10280-10287
+  chrome_sqlite3changeset_concat  // Lines 10317-10324
 #define sqlite3changeset_concat_strm \
-  chrome_sqlite3changeset_concat_strm  // Lines 11039-11046
+  chrome_sqlite3changeset_concat_strm  // Lines 11076-11083
 #define sqlite3changeset_conflict \
-  chrome_sqlite3changeset_conflict  // Lines 10166-10170
+  chrome_sqlite3changeset_conflict  // Lines 10203-10207
 #define sqlite3changeset_finalize \
-  chrome_sqlite3changeset_finalize  // Line 10219
+  chrome_sqlite3changeset_finalize  // Line 10256
 #define sqlite3changeset_fk_conflicts \
-  chrome_sqlite3changeset_fk_conflicts  // Lines 10183-10186
+  chrome_sqlite3changeset_fk_conflicts  // Lines 10220-10223
 #define sqlite3changeset_invert \
-  chrome_sqlite3changeset_invert  // Lines 10249-10252
+  chrome_sqlite3changeset_invert  // Lines 10286-10289
 #define sqlite3changeset_invert_strm \
-  chrome_sqlite3changeset_invert_strm                       // Lines 11047-11052
-#define sqlite3changeset_new chrome_sqlite3changeset_new    // Lines 10138-10142
-#define sqlite3changeset_next chrome_sqlite3changeset_next  // Line 10010
-#define sqlite3changeset_old chrome_sqlite3changeset_old    // Lines 10104-10108
-#define sqlite3changeset_op chrome_sqlite3changeset_op      // Lines 10039-10045
-#define sqlite3changeset_pk chrome_sqlite3changeset_pk      // Lines 10073-10077
-#define sqlite3changeset_start chrome_sqlite3changeset_start  // Lines 9961-9965
+  chrome_sqlite3changeset_invert_strm                       // Lines 11084-11089
+#define sqlite3changeset_new chrome_sqlite3changeset_new    // Lines 10175-10179
+#define sqlite3changeset_next chrome_sqlite3changeset_next  // Line 10047
+#define sqlite3changeset_old chrome_sqlite3changeset_old    // Lines 10141-10145
+#define sqlite3changeset_op chrome_sqlite3changeset_op      // Lines 10076-10082
+#define sqlite3changeset_pk chrome_sqlite3changeset_pk      // Lines 10110-10114
+#define sqlite3changeset_start \
+  chrome_sqlite3changeset_start  // Lines 9998-10002
 #define sqlite3changeset_start_strm \
-  chrome_sqlite3changeset_start_strm  // Lines 11053-11057
+  chrome_sqlite3changeset_start_strm  // Lines 11090-11094
 #define sqlite3changeset_start_v2 \
-  chrome_sqlite3changeset_start_v2  // Lines 9966-9971
+  chrome_sqlite3changeset_start_v2  // Lines 10003-10008
 #define sqlite3changeset_start_v2_strm \
-  chrome_sqlite3changeset_start_v2_strm  // Lines 11058-11063
+  chrome_sqlite3changeset_start_v2_strm  // Lines 11095-11100
 #define sqlite3rebaser_configure \
-  chrome_sqlite3rebaser_configure                           // Lines 10882-10885
-#define sqlite3rebaser_create chrome_sqlite3rebaser_create  // Line 10871
-#define sqlite3rebaser_delete chrome_sqlite3rebaser_delete  // Line 10915
-#define sqlite3rebaser_rebase chrome_sqlite3rebaser_rebase  // Lines 10901-10905
+  chrome_sqlite3rebaser_configure                           // Lines 10919-10922
+#define sqlite3rebaser_create chrome_sqlite3rebaser_create  // Line 10908
+#define sqlite3rebaser_delete chrome_sqlite3rebaser_delete  // Line 10952
+#define sqlite3rebaser_rebase chrome_sqlite3rebaser_rebase  // Lines 10938-10942
 #define sqlite3rebaser_rebase_strm \
-  chrome_sqlite3rebaser_rebase_strm                         // Lines 11082-11088
-#define sqlite3session_attach chrome_sqlite3session_attach  // Lines 9668-9671
+  chrome_sqlite3rebaser_rebase_strm                         // Lines 11119-11125
+#define sqlite3session_attach chrome_sqlite3session_attach  // Lines 9705-9708
 #define sqlite3session_changeset \
-  chrome_sqlite3session_changeset  // Lines 9797-9801
+  chrome_sqlite3session_changeset  // Lines 9834-9838
 #define sqlite3session_changeset_strm \
-  chrome_sqlite3session_changeset_strm                      // Lines 11064-11068
-#define sqlite3session_config chrome_sqlite3session_config  // Line 11123
-#define sqlite3session_create chrome_sqlite3session_create  // Lines 9538-9542
-#define sqlite3session_delete chrome_sqlite3session_delete  // Line 9557
-#define sqlite3session_diff chrome_sqlite3session_diff      // Lines 9860-9865
-#define sqlite3session_enable chrome_sqlite3session_enable  // Line 9578
-#define sqlite3session_indirect chrome_sqlite3session_indirect  // Line 9608
-#define sqlite3session_isempty chrome_sqlite3session_isempty    // Line 9918
+  chrome_sqlite3session_changeset_strm                      // Lines 11101-11105
+#define sqlite3session_config chrome_sqlite3session_config  // Line 11160
+#define sqlite3session_create chrome_sqlite3session_create  // Lines 9575-9579
+#define sqlite3session_delete chrome_sqlite3session_delete  // Line 9594
+#define sqlite3session_diff chrome_sqlite3session_diff      // Lines 9897-9902
+#define sqlite3session_enable chrome_sqlite3session_enable  // Line 9615
+#define sqlite3session_indirect chrome_sqlite3session_indirect  // Line 9645
+#define sqlite3session_isempty chrome_sqlite3session_isempty    // Line 9955
 #define sqlite3session_patchset \
-  chrome_sqlite3session_patchset  // Lines 9897-9901
+  chrome_sqlite3session_patchset  // Lines 9934-9938
 #define sqlite3session_patchset_strm \
-  chrome_sqlite3session_patchset_strm  // Lines 11069-11073
+  chrome_sqlite3session_patchset_strm  // Lines 11106-11110
 #define sqlite3session_table_filter \
-  chrome_sqlite3session_table_filter  // Lines 9683-9690
+  chrome_sqlite3session_table_filter  // Lines 9720-9727
 
 #endif  // THIRD_PARTY_SQLITE_AMALGAMATION_RENAME_EXPORTS_H_
 

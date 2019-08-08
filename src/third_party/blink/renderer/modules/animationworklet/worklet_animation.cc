@@ -59,21 +59,6 @@ bool ConvertAnimationEffects(
     return false;
   }
 
-  // TODO(crbug.com/781816): Allow using effects with no target.
-  for (const auto& effect : keyframe_effects) {
-    if (!effect->target()) {
-      error_string = "All effect targets must exist";
-      return false;
-    }
-  }
-
-  Document& target_document = keyframe_effects.at(0)->target()->GetDocument();
-  for (const auto& effect : keyframe_effects) {
-    if (effect->target()->GetDocument() != target_document) {
-      error_string = "All effects must target elements in the same document";
-      return false;
-    }
-  }
   return true;
 }
 
@@ -126,6 +111,7 @@ bool CheckElementComposited(const Node& target) {
 void StartEffectOnCompositor(CompositorAnimation* animation,
                              KeyframeEffect* effect) {
   DCHECK(effect);
+  DCHECK(effect->target());
   Element& target = *effect->target();
   effect->Model()->SnapshotAllCompositorKeyframesIfNecessary(
       target, target.ComputedStyleRef(), target.ParentComputedStyle());
@@ -218,7 +204,7 @@ WorkletAnimation* WorkletAnimation::Create(
     return nullptr;
   }
 
-  Document& document = keyframe_effects.at(0)->target()->GetDocument();
+  Document& document = *To<Document>(ExecutionContext::From(script_state));
   if (!document.GetWorkletAnimationController().IsAnimatorRegistered(
           animator_name)) {
     exception_state.ThrowDOMException(
@@ -263,11 +249,17 @@ WorkletAnimation::WorkletAnimation(
       effect_needs_restart_(false) {
   DCHECK(IsMainThread());
 
+  auto timings = base::MakeRefCounted<base::RefCountedData<Vector<Timing>>>();
+  timings->data.ReserveInitialCapacity(effects_.size());
+
+  DCHECK_GE(effects_.size(), 1u);
   for (auto& effect : effects_) {
     AnimationEffect* target_effect = effect;
     target_effect->Attach(this);
     local_times_.push_back(base::nullopt);
+    timings->data.push_back(target_effect->SpecifiedTiming());
   }
+  effect_timings_ = std::make_unique<WorkletAnimationEffectTimings>(timings);
 
   if (timeline_->IsScrollTimeline())
     ToScrollTimeline(timeline_)->AttachAnimation();
@@ -311,7 +303,9 @@ void WorkletAnimation::play(ExceptionState& exception_state) {
 
   for (auto& effect : effects_) {
     Element* target = effect->target();
-    DCHECK(target);
+    if (!target)
+      continue;
+
     // TODO(yigu): Currently we have to keep a set of worklet animations in
     // ElementAnimations so that the compositor knows that there are active
     // worklet animations running. Ideally, this should be done via the regular
@@ -382,7 +376,8 @@ void WorkletAnimation::cancel() {
 
   for (auto& effect : effects_) {
     Element* target = effect->target();
-    DCHECK(target);
+    if (!target)
+      continue;
     // TODO(yigu): Currently we have to keep a set of worklet animations in
     // ElementAnimations so that the compositor knows that there are active
     // worklet animations running. Ideally, this should be done via the regular
@@ -509,8 +504,17 @@ void WorkletAnimation::UpdateCompositingState() {
     // TODO(majidvp): If keyframes have changed then it may be possible to now
     // run the animation on compositor. The current logic does not allow this
     // switch from main to compositor to happen.
-    if (!running_on_main_thread_)
-      UpdateOnCompositor();
+    if (!running_on_main_thread_) {
+      if (!UpdateOnCompositor()) {
+        // When an animation that is running on compositor loses the target, it
+        // falls back to main thread. We need to initialize the last play state
+        // before this transition to avoid re-adding the same animation to the
+        // worklet.
+        last_play_state_ = play_state_;
+
+        StartOnMain();
+      }
+    }
   }
   DCHECK(running_on_main_thread_ != !!compositor_animation_)
       << "Active worklet animation should either run on main or compositor";
@@ -536,6 +540,9 @@ bool WorkletAnimation::StartOnCompositor() {
     return false;
   }
 
+  if (!GetEffect()->target())
+    return false;
+
   Element& target = *GetEffect()->target();
 
   // TODO(crbug.com/836393): This should not be possible but it is currently
@@ -550,13 +557,11 @@ bool WorkletAnimation::StartOnCompositor() {
       target, target.ComputedStyleRef(), target.ParentComputedStyle());
 
   double playback_rate = 1;
-  CompositorAnimations::FailureCode failure_code =
-      GetEffect()->CheckCanStartAnimationOnCompositor(
-          base::Optional<CompositorElementIdSet>(), playback_rate);
+  CompositorAnimations::FailureReasons failure_reasons =
+      GetEffect()->CheckCanStartAnimationOnCompositor(nullptr, playback_rate);
 
-  if (!failure_code.Ok()) {
+  if (failure_reasons != CompositorAnimations::kNoFailure)
     return false;
-  }
 
   if (!CheckElementComposited(target))
     return false;
@@ -569,7 +574,7 @@ bool WorkletAnimation::StartOnCompositor() {
     compositor_animation_ = CompositorAnimation::CreateWorkletAnimation(
         id_, animator_name_, playback_rate_,
         scroll_timeline_util::ToCompositorScrollTimeline(timeline_),
-        std::move(options_));
+        std::move(options_), std::move(effect_timings_));
     compositor_animation_->SetAnimationDelegate(this);
   }
 
@@ -589,13 +594,17 @@ bool WorkletAnimation::StartOnCompositor() {
   return true;
 }
 
-void WorkletAnimation::UpdateOnCompositor() {
+bool WorkletAnimation::UpdateOnCompositor() {
   if (effect_needs_restart_) {
     // We want to update the keyframe effect on compositor animation without
     // destroying the compositor animation instance. This is achieved by
     // canceling, and start the blink keyframe effect on compositor.
     effect_needs_restart_ = false;
     GetEffect()->CancelAnimationOnCompositor(compositor_animation_.get());
+    if (!GetEffect()->target()) {
+      DestroyCompositorAnimation();
+      return false;
+    }
     StartEffectOnCompositor(compositor_animation_.get(), GetEffect());
   }
 
@@ -624,6 +633,7 @@ void WorkletAnimation::UpdateOnCompositor() {
         start_scroll_offset, end_scroll_offset);
   }
   compositor_animation_->UpdatePlaybackRate(playback_rate_);
+  return true;
 }
 
 void WorkletAnimation::DestroyCompositorAnimation() {
@@ -781,16 +791,24 @@ void WorkletAnimation::UpdateInputState(
   bool was_active = IsActive(last_play_state_);
   bool is_active = IsActive(play_state_);
 
-  double current_time_ms = ToMilliseconds(current_time);
+  // We don't animate if there is no valid current time.
+  if (!current_time)
+    return;
+
   bool did_time_change = current_time != last_input_update_current_time_;
   last_input_update_current_time_ = current_time;
 
+  double current_time_ms = current_time.value().InMillisecondsF();
+
   if (!was_active && is_active) {
     input_state->Add({id_, std::string(animator_name_.Utf8().data()),
-                      current_time_ms, CloneOptions(), effects_.size()});
+                      current_time_ms, CloneOptions(), CloneEffectTimings()});
   } else if (was_active && is_active) {
     // Skip if the input time is not changed.
     if (did_time_change)
+      // TODO(jortaylo): EffectTimings need to be sent to the worklet during
+      // updates, otherwise the timing info will become outdated.
+      // https://crbug.com/915344.
       input_state->Update({id_, current_time_ms});
   } else if (was_active && !is_active) {
     input_state->Remove(id_);

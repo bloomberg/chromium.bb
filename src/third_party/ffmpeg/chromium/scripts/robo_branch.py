@@ -16,7 +16,6 @@ import find_patches
 import os
 from robo_lib import UserInstructions
 from robo_lib import log
-from subprocess import call
 from subprocess import check_output
 
 def IsWorkingDirectoryClean():
@@ -38,7 +37,7 @@ def CreateAndCheckoutDatedSushiBranch(cfg):
   branch_name=cfg.sushi_branch_prefix() + now.strftime("%Y-%m-%d-%H-%M-%S")
   log("Creating dated branch %s" % branch_name)
   # Fetch the latest from origin
-  if call(["git", "fetch", "origin"]):
+  if cfg.Call(["git", "fetch", "origin"]):
     raise Exception("Could not fetch from origin")
 
   # Create the named branch
@@ -52,7 +51,11 @@ def CreateAndCheckoutDatedSushiBranch(cfg):
   #
   # We don't want to push anything to origin yet, though, just to keep from
   # making a bunch of sushi branches.  We can do it later just as easily.
-  if call(["git", "branch", "--no-track", branch_name, "origin/master"]):
+  if cfg.Call(["git",
+                             "branch",
+                             "--no-track",
+                             branch_name,
+                             "origin/master"]):
     raise Exception("Could not create branch")
 
   # NOTE: we could push the remote branch back to origin and start tracking it
@@ -60,8 +63,8 @@ def CreateAndCheckoutDatedSushiBranch(cfg):
   # actually work, i don't want to push a bunch of branches to origin.
 
   # Check out the branch.  On failure, delete the new branch.
-  if call(["git", "checkout", branch_name]):
-    call(["git", "branch", "-D", branch_name])
+  if cfg.Call(["git", "checkout", branch_name]):
+    cfg.Call(["git", "branch", "-D", branch_name])
     raise Exception("Could not checkout branch")
 
   cfg.SetBranchName(branch_name)
@@ -79,9 +82,9 @@ def MergeUpstreamToSushiBranch(cfg):
   log("Merging upstream/master to local branch")
   if not cfg.sushi_branch_name():
     raise Exception("Refusing to do a merge on a branch I didn't create")
-  if call(["git", "fetch", "upstream"]):
+  if cfg.Call(["git", "fetch", "upstream"]):
     raise Exception("Could not fetch from upstream")
-  if call(["git", "merge", "upstream/master"]):
+  if cfg.Call(["git", "merge", "upstream/master"]):
     raise UserInstructions("Merge failed -- resolve conflicts manually.")
   log("Merge has completed successfully")
 
@@ -106,7 +109,7 @@ def MergeUpstreamToSushiBranchIfNeeded(cfg):
     return
   # See if a merge is in progress.  "git merge HEAD" will do nothing if it
   # succeeds, but will fail if a merge is in progress.
-  if call(["git", "merge", "HEAD"]):
+  if cfg.Call(["git", "merge", "HEAD"]):
     raise UserInstructions(
       "Merge is in progress -- please resolve conflicts and complete it.")
   # There is no merge on this branch, and none is in progress.  Start a merge.
@@ -144,9 +147,9 @@ def AddAndCommit(cfg, commit_title):
     log("No files to commit to %s" % commit_title)
     return
   # TODO: Ignore this file, for the "comment out autorename exception" thing.
-  if call(["git", "add", "-u"]):
+  if cfg.Call(["git", "add", "-u"]):
     raise Exception("Could not add files")
-  if call(["git", "commit", "-m", commit_title]):
+  if cfg.Call(["git", "commit", "-m", commit_title]):
     raise Exception("Could create commit")
 
 def IsTrackingBranchSet(cfg):
@@ -166,9 +169,9 @@ def PushToOriginWithoutReviewAndTrackIfNeeded(cfg):
     log("Already have local tracking branch")
     return
   log("Pushing merge to origin without review")
-  call(["git", "push", "origin", cfg.sushi_branch_name()])
+  cfg.Call(["git", "push", "origin", cfg.sushi_branch_name()])
   log("Setting tracking branch")
-  call(["git", "branch", "--set-upstream-to=origin/%s" %
+  cfg.Call(["git", "branch", "--set-upstream-to=origin/%s" %
          cfg.sushi_branch_name()])
   # Sanity check.  We don't want to start pushing other commits without review.
   if not IsTrackingBranchSet(cfg):
@@ -179,9 +182,9 @@ def HandleAutorename(cfg):
   # removes files needed for autorenames.  Run it.
   log("Updating git for any autorename changes")
   cfg.chdir_to_ffmpeg_home();
-  if call(["chmod", "+x", cfg.autorename_git_file()]):
+  if cfg.Call(["chmod", "+x", cfg.autorename_git_file()]):
     raise Exception("Unable to chmod %s" % cfg.autorename_git_file())
-  if call([cfg.autorename_git_file()]):
+  if cfg.Call([cfg.autorename_git_file()]):
     raise Exception("Unable to run %s" % cfg.autorename_git_file())
 
 def IsCommitOnThisBranch(robo_configuration, commit_title):
@@ -190,3 +193,18 @@ def IsCommitOnThisBranch(robo_configuration, commit_title):
   titles = check_output(["git", "log", "--format=%s",
           "origin/master..%s" % robo_configuration.branch_name()])
   return commit_title in titles
+
+def IsPatchesFileDone(robo_configuration):
+  """Return False if and only if the patches file isn't checked in."""
+  if IsCommitOnThisBranch(
+                          robo_configuration,
+                          robo_configuration.patches_commit_title()):
+    log("Skipping patches file since already committed")
+    return True
+  return False
+
+def UpdatePatchesFileUnconditionally(robo_configuration):
+  """Update the patches file."""
+  WritePatchesReadme(robo_configuration)
+  AddAndCommit(robo_configuration,
+               robo_configuration.patches_commit_title())

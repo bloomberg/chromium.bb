@@ -17,7 +17,3 @@ contains the mojom interfaces for these APIs.
 [`FileSystemManagerImpl`](file_system_manager_impl.h) is the main entry point
 for calls from the renderer, it mostly redirects incoming mojom calls to a
 `storage::FileSystemContext` instance.
-
-[`FileSystemChooser`](file_system_chooser.h) uses ui::SelectFileDialog to show
-a file or directory picker, and is responsible for granting a process the right
-permissions for actually accessing the files that were selected.

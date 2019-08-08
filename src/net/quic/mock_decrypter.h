@@ -17,10 +17,10 @@
 
 namespace net {
 
-// A MockDecrypter is a QuicDecrypter that does no validation of
-// the given ciphertext and returns it untouched, ignoring the
-// associated data. This is used to allow fuzzing to mutate
-// plaintext packets.
+// A MockDecrypter is a QuicDecrypter that strips the last 12 bytes of
+// ciphertext (which should be zeroes, but are ignored), and returns the
+// remaining ciphertext untouched and ignores the associated data. This is used
+// to allow fuzzing to mutate plaintext packets.
 class MockDecrypter : public quic::QuicDecrypter {
  public:
   explicit MockDecrypter(quic::Perspective perspective);

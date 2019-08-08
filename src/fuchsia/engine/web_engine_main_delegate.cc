@@ -23,19 +23,14 @@ namespace {
 WebEngineMainDelegate* g_current_web_engine_main_delegate = nullptr;
 
 void InitLoggingFromCommandLine(const base::CommandLine& command_line) {
-  base::FilePath log_filename;
-  std::string filename = command_line.GetSwitchValueASCII(switches::kLogFile);
-  if (filename.empty()) {
-    base::PathService::Get(base::DIR_APP_DATA, &log_filename);
-    log_filename = log_filename.AppendASCII("web_engine.log");
-  } else {
-    log_filename = base::FilePath::FromUTF8Unsafe(filename);
-  }
-
   logging::LoggingSettings settings;
-  settings.logging_dest = logging::LOG_TO_ALL;
-  settings.log_file = log_filename.value().c_str();
-  settings.delete_old = logging::DELETE_OLD_LOG_FILE;
+  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+  if (command_line.HasSwitch(switches::kLogFile)) {
+    settings.logging_dest |= logging::LOG_TO_FILE;
+    settings.log_file =
+        command_line.GetSwitchValueASCII(switches::kLogFile).c_str();
+    settings.delete_old = logging::DELETE_OLD_LOG_FILE;
+  }
   logging::InitLogging(settings);
   logging::SetLogItems(true /* Process ID */, true /* Thread ID */,
                        true /* Timestamp */, false /* Tick count */);
@@ -45,7 +40,7 @@ void InitializeResourceBundle() {
   base::FilePath pak_file;
   bool result = base::PathService::Get(base::DIR_ASSETS, &pak_file);
   DCHECK(result);
-  pak_file = pak_file.Append(FILE_PATH_LITERAL("webrunner.pak"));
+  pak_file = pak_file.Append(FILE_PATH_LITERAL("web_engine.pak"));
   ui::ResourceBundle::InitSharedInstanceWithPakPath(pak_file);
 }
 

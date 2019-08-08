@@ -13,12 +13,10 @@
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/graph/system_node_impl.h"
-#include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
-#include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
 
 namespace performance_manager {
 
-TestProcessNodeImpl::TestProcessNodeImpl(Graph* graph)
+TestProcessNodeImpl::TestProcessNodeImpl(GraphImpl* graph)
     : ProcessNodeImpl(graph) {}
 
 void TestProcessNodeImpl::SetProcessWithPid(base::ProcessId pid,
@@ -28,15 +26,13 @@ void TestProcessNodeImpl::SetProcessWithPid(base::ProcessId pid,
 }
 
 MockSinglePageInSingleProcessGraph::MockSinglePageInSingleProcessGraph(
-    Graph* graph)
+    GraphImpl* graph)
     : system(TestNodeWrapper<SystemNodeImpl>::Create(graph)),
       process(TestNodeWrapper<TestProcessNodeImpl>::Create(graph)),
-      page(TestNodeWrapper<PageNodeImpl>::Create(graph, nullptr)),
+      page(TestNodeWrapper<PageNodeImpl>::Create(graph)),
       frame(TestNodeWrapper<FrameNodeImpl>::Create(graph,
                                                    process.get(),
-                                                   page.get(),
-                                                   nullptr,
-                                                   0)) {
+                                                   page.get())) {
   frame->SetAllInterventionPoliciesForTesting(
       resource_coordinator::mojom::InterventionPolicy::kDefault);
   process->SetProcessWithPid(1, base::Process::Current(), base::Time::Now());
@@ -49,9 +45,9 @@ MockSinglePageInSingleProcessGraph::~MockSinglePageInSingleProcessGraph() {
 }
 
 MockMultiplePagesInSingleProcessGraph::MockMultiplePagesInSingleProcessGraph(
-    Graph* graph)
+    GraphImpl* graph)
     : MockSinglePageInSingleProcessGraph(graph),
-      other_page(TestNodeWrapper<PageNodeImpl>::Create(graph, nullptr)),
+      other_page(TestNodeWrapper<PageNodeImpl>::Create(graph)),
       other_frame(TestNodeWrapper<FrameNodeImpl>::Create(graph,
                                                          process.get(),
                                                          other_page.get(),
@@ -68,7 +64,7 @@ MockMultiplePagesInSingleProcessGraph::
 }
 
 MockSinglePageWithMultipleProcessesGraph::
-    MockSinglePageWithMultipleProcessesGraph(Graph* graph)
+    MockSinglePageWithMultipleProcessesGraph(GraphImpl* graph)
     : MockSinglePageInSingleProcessGraph(graph),
       other_process(TestNodeWrapper<TestProcessNodeImpl>::Create(graph)),
       child_frame(TestNodeWrapper<FrameNodeImpl>::Create(graph,
@@ -86,7 +82,7 @@ MockSinglePageWithMultipleProcessesGraph::
     ~MockSinglePageWithMultipleProcessesGraph() = default;
 
 MockMultiplePagesWithMultipleProcessesGraph::
-    MockMultiplePagesWithMultipleProcessesGraph(Graph* graph)
+    MockMultiplePagesWithMultipleProcessesGraph(GraphImpl* graph)
     : MockMultiplePagesInSingleProcessGraph(graph),
       other_process(TestNodeWrapper<TestProcessNodeImpl>::Create(graph)),
       child_frame(TestNodeWrapper<FrameNodeImpl>::Create(graph,

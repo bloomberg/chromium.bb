@@ -4,6 +4,7 @@
 
 #include "content/browser/web_package/signed_exchange_cert_fetcher.h"
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/optional.h"
@@ -20,6 +21,7 @@
 #include "net/cert/x509_util.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -188,11 +190,13 @@ class SignedExchangeCertFetcherTest : public testing::Test {
     return net::x509_util::CryptoBufferAsStringPiece(cert.cert_buffer());
   }
 
-  static mojo::ScopedDataPipeConsumerHandle CreateTestDataFilledDataPipe() {
+  static std::string CreateTestData() {
     scoped_refptr<net::X509Certificate> certificate = ImportTestCert();
-    const std::string message =
-        CreateCertMessage(CreateCertMessageFromCert(*certificate));
+    return CreateCertMessage(CreateCertMessageFromCert(*certificate));
+  }
 
+  static mojo::ScopedDataPipeConsumerHandle CreateTestDataFilledDataPipe() {
+    auto message = CreateTestData();
     mojo::DataPipe data_pipe(message.size());
     CHECK(mojo::BlockingCopyFromString(message, data_pipe.producer_handle));
     return std::move(data_pipe.consumer_handle);
@@ -264,9 +268,7 @@ TEST_F(SignedExchangeCertFetcherTest, Simple) {
   EXPECT_EQ(url_, mock_loader_factory_.url_request()->url);
   EXPECT_EQ(static_cast<int>(ResourceType::kSubResource),
             mock_loader_factory_.url_request()->resource_type);
-  EXPECT_EQ(net::LOAD_DO_NOT_SEND_AUTH_DATA | net::LOAD_DO_NOT_SAVE_COOKIES |
-                net::LOAD_DO_NOT_SEND_COOKIES,
-            mock_loader_factory_.url_request()->load_flags);
+  EXPECT_FALSE(mock_loader_factory_.url_request()->allow_credentials);
   EXPECT_TRUE(mock_loader_factory_.url_request()->request_initiator->opaque());
   std::string accept;
   EXPECT_TRUE(
@@ -322,10 +324,9 @@ TEST_F(SignedExchangeCertFetcherTest, ForceFetchAndFail) {
   EXPECT_EQ(url_, mock_loader_factory_.url_request()->url);
   EXPECT_EQ(static_cast<int>(ResourceType::kSubResource),
             mock_loader_factory_.url_request()->resource_type);
-  EXPECT_EQ(net::LOAD_DO_NOT_SEND_AUTH_DATA | net::LOAD_DO_NOT_SAVE_COOKIES |
-                net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DISABLE_CACHE |
-                net::LOAD_BYPASS_CACHE,
+  EXPECT_EQ(net::LOAD_DISABLE_CACHE | net::LOAD_BYPASS_CACHE,
             mock_loader_factory_.url_request()->load_flags);
+  EXPECT_FALSE(mock_loader_factory_.url_request()->allow_credentials);
 
   mock_loader_factory_.client_ptr()->OnComplete(
       network::URLLoaderCompletionStatus(net::ERR_INVALID_SIGNED_EXCHANGE));
@@ -780,19 +781,32 @@ TEST_F(SignedExchangeCertFetcherTest, CloseClientPipe_AfterReceivingBody) {
 }
 
 TEST_F(SignedExchangeCertFetcherTest, DataURL) {
-  const GURL data_url = GURL("data:application/cert-chain+cbor,foobar");
+  std::string data_url_string = "data:application/cert-chain+cbor";
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    std::string output;
+    base::Base64Encode(CreateTestData(), &output);
+    data_url_string += ";base64," + output;
+  } else {
+    data_url_string += ",foobar";
+  }
+  const GURL data_url = GURL(data_url_string);
   std::unique_ptr<SignedExchangeCertFetcher> fetcher =
       CreateFetcherAndStart(data_url, false /* force_fetch */);
-  EXPECT_EQ(data_url, mock_loader_factory_.url_request()->url);
 
-  network::ResourceResponseHead resource_response;
-  resource_response.mime_type = "application/cert-chain+cbor";
-  mock_loader_factory_.client_ptr()->OnReceiveResponse(resource_response);
+  // SignedExchangeCertFetcher directly creates DataURLLoaderFactory for data
+  // scheme.
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    EXPECT_EQ(data_url, mock_loader_factory_.url_request()->url);
+    network::ResourceResponseHead resource_response;
+    resource_response.mime_type = "application/cert-chain+cbor";
+    mock_loader_factory_.client_ptr()->OnReceiveResponse(resource_response);
 
-  mock_loader_factory_.client_ptr()->OnStartLoadingResponseBody(
-      CreateTestDataFilledDataPipe());
-  mock_loader_factory_.client_ptr()->OnComplete(
-      network::URLLoaderCompletionStatus(net::OK));
+    mock_loader_factory_.client_ptr()->OnStartLoadingResponseBody(
+        CreateTestDataFilledDataPipe());
+    mock_loader_factory_.client_ptr()->OnComplete(
+        network::URLLoaderCompletionStatus(net::OK));
+  }
+
   RunUntilIdle();
   EXPECT_TRUE(callback_called_);
   EXPECT_EQ(SignedExchangeLoadResult::kSuccess, result_);
@@ -805,11 +819,16 @@ TEST_F(SignedExchangeCertFetcherTest, DataURLWithWrongMimeType) {
   const GURL data_url = GURL("data:application/octet-stream,foobar");
   std::unique_ptr<SignedExchangeCertFetcher> fetcher =
       CreateFetcherAndStart(data_url, false /* force_fetch */);
-  EXPECT_EQ(data_url, mock_loader_factory_.url_request()->url);
 
-  network::ResourceResponseHead resource_response;
-  resource_response.mime_type = "application/octet-stream";
-  mock_loader_factory_.client_ptr()->OnReceiveResponse(resource_response);
+  // SignedExchangeCertFetcher directly creates DataURLLoaderFactory for data
+  // scheme.
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    EXPECT_EQ(data_url, mock_loader_factory_.url_request()->url);
+    network::ResourceResponseHead resource_response;
+    resource_response.mime_type = "application/octet-stream";
+    mock_loader_factory_.client_ptr()->OnReceiveResponse(resource_response);
+  }
+
   RunUntilIdle();
 
   EXPECT_TRUE(callback_called_);

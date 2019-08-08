@@ -46,9 +46,10 @@ void MockOfflineContentProvider::NotifyOnItemUpdated(const OfflineItem& item) {
 }
 
 void MockOfflineContentProvider::GetVisualsForItem(const ContentId& id,
+                                                   GetVisualsOptions options,
                                                    VisualsCallback callback) {
   if (!override_visuals_) {
-    GetVisualsForItem_(id, std::move(callback));
+    GetVisualsForItem_(id, options, std::move(callback));
   } else {
     std::unique_ptr<OfflineItemVisuals> visuals;
     auto iter = visuals_.find(id);

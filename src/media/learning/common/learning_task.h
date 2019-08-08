@@ -23,6 +23,9 @@ namespace learning {
 // TODO(liberato): should this be in impl?  Probably not if we want to allow
 // registering tasks.
 struct COMPONENT_EXPORT(LEARNING_COMMON) LearningTask {
+  // Numeric ID for this task for UKM reporting.
+  using Id = uint64_t;
+
   // Not all models support all feature / target descriptions.  For example,
   // NaiveBayes requires kUnordered features.  Similarly, LogLinear woudln't
   // support kUnordered features or targets.  kRandomForest might support more
@@ -84,7 +87,11 @@ struct COMPONENT_EXPORT(LEARNING_COMMON) LearningTask {
   LearningTask(const LearningTask&);
   ~LearningTask();
 
-  // Unique name for this learner.
+  // Return a stable, unique numeric ID for this task.  This requires a stable,
+  // unique |name| for the task.  This is used to identify this task in UKM.
+  Id GetId() const;
+
+  // Unique name for this task.
   std::string name;
 
   Model model = Model::kExtraTrees;
@@ -171,7 +178,13 @@ struct COMPONENT_EXPORT(LEARNING_COMMON) LearningTask {
   // into different confusion matrices in the same histogram, evenly spaced
   // from 0 to |max_reporting_weight|, with one additional bucket for everything
   // larger than that.  The number of buckets is |num_reporting_weight_buckets|.
-  double max_reporting_weight = 99.;
+  // The default value of 0 is special; it means that we should split up the
+  // buckets such that the last bucket means "entirely full training set", while
+  // the remainder are evenly spaced.  This is the same as setting it to
+  // |max_data_set_size - 1|.  Of course, |max_data_set_size| is a number of
+  // examples, not a weight, so this only makes any sense at all if all of the
+  // examples have the default weight of 1.
+  double max_reporting_weight = 0.;
 
   // Number of buckets that we'll use to split out the confusion matrix by
   // training weight.  The last one is reserved for "all", while the others are
@@ -183,6 +196,20 @@ struct COMPONENT_EXPORT(LEARNING_COMMON) LearningTask {
   // [0-9] [10-19] ... [90-99] [100 and up].  This makes sense if the training
   // set maximum size is the default of 100, and each example has a weight of 1.
   int num_reporting_weight_buckets = 11;
+
+  // If set, then we'll record results to UKM.  Note that this may require an
+  // additional privacy review for your learning task!  Also note that it is
+  // currently exclusive with |uma_hacky_confusion_matrix| for no technical
+  // reason whatsoever.
+  bool report_via_ukm = false;
+
+  // When reporting via UKM, we will scale observed / predicted values.  These
+  // are the minimum and maximum target / observed values that will be
+  // representable.  The UKM record will scale / translate this range into
+  // 0-100 integer, inclusive.  This is intended for regression targets.
+  // Classification will do something else.
+  double ukm_min_input_value = 0.0;
+  double ukm_max_input_value = 1.0;
 };
 
 }  // namespace learning

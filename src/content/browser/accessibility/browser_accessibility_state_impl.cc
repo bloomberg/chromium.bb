@@ -184,7 +184,7 @@ void BrowserAccessibilityStateImpl::OnAXModeAdded(ui::AXMode mode) {
   AddAccessibilityModeFlags(mode);
 }
 
-ui::AXMode BrowserAccessibilityStateImpl::GetAccessibilityMode() const {
+ui::AXMode BrowserAccessibilityStateImpl::GetAccessibilityMode() {
   return accessibility_mode_;
 }
 

@@ -12,7 +12,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
-import android.util.Log;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.ProcessInitException;
@@ -20,19 +19,15 @@ import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.components.aboutui.CreditUtils;
 
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 
 /**
- * Content provider for the OSS licenses file.
+ * Content provider for the OSS licenses file used on Monochrome and Trichrome.
  */
-@TargetApi(Build.VERSION_CODES.KITKAT)
+@TargetApi(Build.VERSION_CODES.N)
 public class LicenseContentProvider
         extends ContentProvider implements ContentProvider.PipeDataWriter<String> {
     public static final String LICENSES_URI_SUFFIX = "LicenseContentProvider/webview_licenses";
     public static final String LICENSES_CONTENT_TYPE = "text/html";
-    private static final String TAG = "LicenseCP";
 
     @Override
     public boolean onCreate() {
@@ -50,22 +45,17 @@ public class LicenseContentProvider
     @Override
     public void writeDataToPipe(
             ParcelFileDescriptor output, Uri uri, String mimeType, Bundle opts, String filename) {
-        try (OutputStream out = new FileOutputStream(output.getFileDescriptor());) {
-            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        ChromeBrowserInitializer.getInstance(getContext())
-                                .handleSynchronousStartup();
-                    } catch (ProcessInitException e) {
-                        Log.e(TAG, "Fail to initialize the Chrome Browser.", e);
-                    }
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    ChromeBrowserInitializer.getInstance(getContext()).handleSynchronousStartup();
+                } catch (ProcessInitException e) {
+                    throw new RuntimeException(e);
                 }
-            });
-            out.write(CreditUtils.nativeGetJavaWrapperCredits());
-        } catch (IOException e) {
-            Log.e(TAG, "Failed to write the license file", e);
-        }
+            }
+        });
+        CreditUtils.nativeWriteCreditsHtml(output.detachFd());
     }
 
     @Override

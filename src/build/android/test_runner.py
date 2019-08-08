@@ -175,19 +175,21 @@ def AddCommonOptions(parser):
 
   class FastLocalDevAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
-      namespace.verbose_count = max(namespace.verbose_count, 1)
-      namespace.num_retries = 0
-      namespace.enable_device_cache = True
       namespace.enable_concurrent_adb = True
-      namespace.skip_clear_data = True
+      namespace.enable_device_cache = True
       namespace.extract_test_list_from_filter = True
+      namespace.local_output = True
+      namespace.num_retries = 0
+      namespace.skip_clear_data = True
 
   parser.add_argument(
       '--fast-local-dev',
-      type=bool, nargs=0, action=FastLocalDevAction,
-      help='Alias for: --verbose --num-retries=0 '
-           '--enable-device-cache --enable-concurrent-adb '
-           '--skip-clear-data --extract-test-list-from-filter')
+      type=bool,
+      nargs=0,
+      action=FastLocalDevAction,
+      help='Alias for: --num-retries=0 --enable-device-cache '
+      '--enable-concurrent-adb --skip-clear-data '
+      '--extract-test-list-from-filter --local-output')
 
   # TODO(jbudorick): Remove this once downstream bots have switched to
   # api.test_results.
@@ -397,7 +399,7 @@ def AddInstrumentationTestOptions(parser):
       '--coverage-dir',
       type=os.path.realpath,
       help='Directory in which to place all generated '
-           'EMMA coverage files.')
+      'Jacoco coverage files.')
   parser.add_argument(
       '--delete-stale-data',
       action='store_true', dest='delete_stale_data',
@@ -509,8 +511,9 @@ def AddJUnitTestOptions(parser):
   parser = parser.add_argument_group('junit arguments')
 
   parser.add_argument(
-      '--jacoco', action='store_true',
-      help='Generate jacoco report.')
+      '--coverage-on-the-fly',
+      action='store_true',
+      help='Generate coverage data by Jacoco on-the-fly instrumentation.')
   parser.add_argument(
       '--coverage-dir', type=os.path.realpath,
       help='Directory to store coverage info.')
@@ -535,18 +538,12 @@ def AddJUnitTestOptions(parser):
 
   # These arguments are for Android Robolectric tests.
   parser.add_argument(
-      '--android-manifest-path',
-      help='Path to Android Manifest to configure Robolectric.')
-  parser.add_argument(
-      '--package-name',
-      help='Default app package name for Robolectric tests.')
-  parser.add_argument(
-      '--resource-zip',
-      action='append', dest='resource_zips', default=[],
-      help='Path to resource zips to configure Robolectric.')
-  parser.add_argument(
       '--robolectric-runtime-deps-dir',
       help='Path to runtime deps for Robolectric.')
+  parser.add_argument(
+      '--resource-apk',
+      required=True,
+      help='Path to .ap_ containing binary resources for Robolectric.')
 
 
 def AddLinkerTestOptions(parser):
@@ -932,7 +929,7 @@ def RunTestsInPlatformMode(args):
             test_name=args.command,
             cs_base_url='http://cs.chromium.org',
             local_output=True)
-        results_detail_file.write(result_html_string)
+        results_detail_file.write(result_html_string.encode('utf-8'))
         results_detail_file.flush()
       logging.critical('TEST RESULTS: %s', results_detail_file.Link())
 
@@ -1040,9 +1037,9 @@ def main():
     parser.error('--use-webview-provider and --enable-concurrent-adb cannot '
                  'be used together')
 
-  if (getattr(args, 'jacoco', False) and
-      not getattr(args, 'coverage_dir', '')):
-    parser.error('--jacoco requires --coverage-dir')
+  if (getattr(args, 'coverage_on_the_fly', False)
+      and not getattr(args, 'coverage_dir', '')):
+    parser.error('--coverage-on-the-fly requires --coverage-dir')
 
   if (hasattr(args, 'debug_socket') or
       (hasattr(args, 'wait_for_java_debugger') and

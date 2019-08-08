@@ -2,6 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+
 import webapp2
 import webtest
 
@@ -129,7 +133,7 @@ class SpeedReleasingTest(testing_common.TestCase):
       test.put()
 
     # Add some (10 * len(keys)) non-triaged alerts.
-    for end_rev in xrange(420500, 421500, 100):
+    for end_rev in range(420500, 421500, 100):
       for test_key in test_keys:
         ref_test_key = utils.TestKey('%s_ref' % utils.TestPath(test_key))
         anomaly_entity = anomaly.Anomaly(
@@ -156,7 +160,7 @@ class SpeedReleasingTest(testing_common.TestCase):
       for rev in revisions:
         row_key = utils.GetRowKey(key, rev)
         row = row_key.get()
-        row.r_commit_pos = str(rev / 10000)
+        row.r_commit_pos = str(rev // 10000)
         row.a_default_rev = 'r_foo'
         row.r_foo = 'abcdefghijk'
         row.put()

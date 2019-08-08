@@ -26,7 +26,7 @@
 
 // Version number for shader translation API.
 // It is incremented every time the API changes.
-#define ANGLE_SH_VERSION 206
+#define ANGLE_SH_VERSION 208
 
 enum ShShaderSpec
 {
@@ -230,7 +230,7 @@ const ShCompileOptions SH_INITIALIZE_BUILTINS_FOR_INSTANCED_MULTIVIEW = UINT64_C
 
 // With the flag enabled the GLSL/ESSL vertex shader is modified to include code for viewport
 // selection in the following way:
-// - Code to enable the extension NV_viewport_array2 is included.
+// - Code to enable the extension ARB_shader_viewport_layer_array/NV_viewport_array2 is included.
 // - Code to select the viewport index or layer is inserted at the beginning of main after
 // ViewID_OVR's initialization.
 // - A declaration of the uniform multiviewBaseViewLayerIndex.
@@ -326,6 +326,7 @@ struct ShBuiltInResources
     int EXT_shader_framebuffer_fetch;
     int NV_shader_framebuffer_fetch;
     int ARM_shader_framebuffer_fetch;
+    int OVR_multiview;
     int OVR_multiview2;
     int EXT_YUV_target;
     int EXT_geometry_shader;

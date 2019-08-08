@@ -10,7 +10,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/login/screens/gaia_view.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/ui/ash/kiosk_next_shell_client.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "components/prefs/pref_service.h"
@@ -51,7 +51,7 @@ class KioskNextShellClientTest : public OobeBaseTest {
 
     LoginDisplayHost::default_host()
         ->GetOobeUI()
-        ->GetGaiaScreenView()
+        ->GetView<GaiaScreenHandler>()
         ->ShowSigninScreenForTest(username, "password", "[]");
 
     // Wait for the session to start after submitting the credentials. This

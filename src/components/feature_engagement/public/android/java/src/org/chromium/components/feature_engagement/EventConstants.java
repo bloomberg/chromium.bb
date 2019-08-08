@@ -163,6 +163,21 @@ public final class EventConstants {
     /** The `Translate` app menu button was clicked. */
     public static final String TRANSLATE_MENU_BUTTON_CLICKED = "translate_menu_button_clicked";
 
+    /** The keyboard accessory was used to fill address data into a form. */
+    public static final String KEYBOARD_ACCESSORY_ADDRESS_AUTOFILLED =
+            "keyboard_accessory_address_suggestion_accepted";
+
+    /** The keyboard accessory was used to fill a password form. */
+    public static final String KEYBOARD_ACCESSORY_PASSWORD_AUTOFILLED =
+            "keyboard_accessory_password_suggestion_accepted";
+
+    /** The keyboard accessory was used to fill payment data into a form. */
+    public static final String KEYBOARD_ACCESSORY_PAYMENT_AUTOFILLED =
+            "keyboard_accessory_payment_suggestion_accepted";
+
+    /** The Explore Sites tile was tapped. */
+    public static final String EXPLORE_SITES_TILE_TAPPED = "explore_sites_tile_tapped";
+
     /**
      * Do not instantiate.
      */

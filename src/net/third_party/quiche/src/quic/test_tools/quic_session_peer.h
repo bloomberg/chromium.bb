@@ -32,10 +32,24 @@ class QuicSessionPeer {
       QuicSession* session);
   static void SetNextOutgoingBidirectionalStreamId(QuicSession* session,
                                                    QuicStreamId id);
+  // Following is only for Google-QUIC, will QUIC_BUG if called for IETF
+  // QUIC.
   static void SetMaxOpenIncomingStreams(QuicSession* session,
                                         uint32_t max_streams);
+  // Following two are only for IETF-QUIC, will QUIC_BUG if called for Google
+  // QUIC.
+  static void SetMaxOpenIncomingBidirectionalStreams(QuicSession* session,
+                                                     uint32_t max_streams);
+  static void SetMaxOpenIncomingUnidirectionalStreams(QuicSession* session,
+                                                      uint32_t max_streams);
+
   static void SetMaxOpenOutgoingStreams(QuicSession* session,
                                         uint32_t max_streams);
+  static void SetMaxOpenOutgoingBidirectionalStreams(QuicSession* session,
+                                                     uint32_t max_streams);
+  static void SetMaxOpenOutgoingUnidirectionalStreams(QuicSession* session,
+                                                      uint32_t max_streams);
+
   static QuicCryptoStream* GetMutableCryptoStream(QuicSession* session);
   static QuicWriteBlockedList* GetWriteBlockedStreams(QuicSession* session);
   static QuicStream* GetOrCreateDynamicStream(QuicSession* session,
@@ -50,6 +64,11 @@ class QuicSessionPeer {
       QuicSession* session);
   static void ActivateStream(QuicSession* session,
                              std::unique_ptr<QuicStream> stream);
+  static void RegisterStaticStream(QuicSession* session,
+                                   QuicStreamId stream_id,
+                                   QuicStream* stream);
+  static void RegisterStaticStreamNew(QuicSession* session,
+                                      std::unique_ptr<QuicStream> stream);
 
   // Discern the state of a stream.  Exactly one of these should be true at a
   // time for any stream id > 0 (other than the special streams 1 and 3).

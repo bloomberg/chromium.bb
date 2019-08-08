@@ -111,7 +111,7 @@ class BrowserFrame : public views::Widget,
   const ui::ThemeProvider* GetThemeProvider() const override;
   const ui::NativeTheme* GetNativeTheme() const override;
   void OnNativeWidgetWorkspaceChanged() override;
-  void OnNativeThemeUpdated(ui::NativeTheme* observed_theme) override;
+  void PropagateNativeThemeChanged() override;
 
   // views::ContextMenuController:
   void ShowContextMenuForViewImpl(views::View* source,

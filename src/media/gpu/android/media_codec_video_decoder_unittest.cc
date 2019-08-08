@@ -38,8 +38,8 @@ namespace media {
 namespace {
 
 void OutputCb(scoped_refptr<VideoFrame>* output,
-              const scoped_refptr<VideoFrame>& frame) {
-  *output = frame;
+              scoped_refptr<VideoFrame> frame) {
+  *output = std::move(frame);
 }
 
 std::unique_ptr<AndroidOverlay> CreateAndroidOverlayCb(
@@ -184,19 +184,21 @@ class MediaCodecVideoDecoderTest : public testing::TestWithParam<VideoCodec> {
       CreateMcvd();
     bool result = false;
     auto init_cb = [](bool* result_out, bool result) { *result_out = result; };
-    mcvd_->Initialize(config, false, cdm_.get(), base::Bind(init_cb, &result),
-                      base::BindRepeating(&OutputCb, &most_recent_frame_),
-                      base::DoNothing());
+    mcvd_->Initialize(
+        config, false, cdm_.get(), base::BindOnce(init_cb, &result),
+        base::BindRepeating(&OutputCb, &most_recent_frame_), base::DoNothing());
     base::RunLoop().RunUntilIdle();
 
     // If there is a CDM available, then we expect that MCVD will be waiting
     // for the media crypto object.
     // TODO(liberato): why does CreateJavaObjectPtr() not link?
     if (cdm_ && cdm_->media_crypto_ready_cb) {
-      cdm_->media_crypto_ready_cb.Run(
-          std::make_unique<base::android::ScopedJavaGlobalRef<jobject>>(
-              media_crypto_),
-          require_secure_video_decoder_);
+      std::move(cdm_->media_crypto_ready_cb)
+          .Run(std::make_unique<base::android::ScopedJavaGlobalRef<jobject>>(
+                   media_crypto_),
+               require_secure_video_decoder_);
+      // The callback is consumed, mark that we ran it so tests can verify.
+      cdm_->ran_media_crypto_ready_cb = true;
       base::RunLoop().RunUntilIdle();
     }
 
@@ -838,7 +840,7 @@ TEST_P(MediaCodecVideoDecoderTest, CdmInitializationWorksForL3) {
       TestVideoConfig::NormalEncrypted(codec_));
   ASSERT_TRUE(!!cdm_->new_key_cb);
   ASSERT_TRUE(!!cdm_->cdm_unset_cb);
-  ASSERT_TRUE(!!cdm_->media_crypto_ready_cb);
+  ASSERT_TRUE(!!cdm_->ran_media_crypto_ready_cb);
   ASSERT_EQ(surface_chooser_->current_state_.is_secure, true);
   ASSERT_EQ(surface_chooser_->current_state_.is_required, false);
   ASSERT_FALSE(codec_allocator_->most_recent_config->requires_secure_codec);
@@ -857,7 +859,7 @@ TEST_P(MediaCodecVideoDecoderTest, CdmInitializationWorksForL1) {
       TestVideoConfig::NormalEncrypted(codec_));
   ASSERT_TRUE(!!cdm_->new_key_cb);
   ASSERT_TRUE(!!cdm_->cdm_unset_cb);
-  ASSERT_TRUE(!!cdm_->media_crypto_ready_cb);
+  ASSERT_TRUE(!!cdm_->ran_media_crypto_ready_cb);
   ASSERT_EQ(surface_chooser_->current_state_.is_secure, true);
   ASSERT_EQ(surface_chooser_->current_state_.is_required, true);
   ASSERT_TRUE(codec_allocator_->most_recent_config->requires_secure_codec);
@@ -876,7 +878,7 @@ TEST_P(MediaCodecVideoDecoderTest, CdmIsSetEvenForClearStream) {
   InitializeWithOverlay_OneDecodePending(TestVideoConfig::Large(codec_));
   ASSERT_TRUE(!!cdm_->new_key_cb);
   ASSERT_TRUE(!!cdm_->cdm_unset_cb);
-  ASSERT_TRUE(!!cdm_->media_crypto_ready_cb);
+  ASSERT_TRUE(!!cdm_->ran_media_crypto_ready_cb);
   ASSERT_EQ(surface_chooser_->current_state_.is_secure, true);
   ASSERT_EQ(surface_chooser_->current_state_.is_required, false);
   ASSERT_FALSE(codec_allocator_->most_recent_config->requires_secure_codec);
@@ -895,6 +897,7 @@ TEST_P(MediaCodecVideoDecoderTest, NoMediaCryptoContext_ClearStream) {
   ASSERT_FALSE(!!cdm_->new_key_cb);
   ASSERT_FALSE(!!cdm_->cdm_unset_cb);
   ASSERT_FALSE(!!cdm_->media_crypto_ready_cb);
+  ASSERT_FALSE(!!cdm_->ran_media_crypto_ready_cb);
   ASSERT_EQ(surface_chooser_->current_state_.is_secure, false);
   ASSERT_EQ(surface_chooser_->current_state_.is_required, false);
   ASSERT_FALSE(codec_allocator_->most_recent_config->requires_secure_codec);

@@ -1,11 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
+<translation id="1282031177488366470">‏کمک به بهبود ویژگی‌ها و عملکرد Chrome</translation>
 <translation id="1326317727527857210">‏برای دسترسی به برگه‌هایتان در دستگاه‌های دیگر، به سیستم Chrome وارد شوید.</translation>
+<translation id="1682483655351012182">‏همگام‌سازی داده‌های Chrome</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">‏اعلان حریم خصوصی Google Chrome</translation>
 <translation id="1863312987075920112">‏استفاده از این برنامه به‌معنای اعلام موافقت شما با <ph name="BEGIN_LINK_TOS" />شرایط و ضوابط<ph name="END_LINK_TOS" /> و <ph name="BEGIN_LINK_PRIVACY" />اعلان حریم خصوصی<ph name="END_LINK_PRIVACY" /> Chrome است.</translation>
-<translation id="1984705450038014246">‏همگام‌سازی داده‌های Chrome</translation>
 <translation id="2147651015520127414">‏Chrome تأیید می‌کند که <ph name="ISSUER" /> گواهی‌نامه این وب‌سایت را صادر کرده است.</translation>
 <translation id="2199719347983604670">‏داده‌های مربوط به همگام‌سازی Chrome</translation>
 <translation id="2342981853652716282">‏برای دریافت نشانک‌ها، گذرواژه‌ها و موارد دیگر در همه دستگاه‌هایتان، به سیستم Chrome وارد شوید.</translation>
@@ -26,7 +27,6 @@
 <translation id="4099578267706723511">‏‫با ارسال آمار کاربرد و گزارش‌های خرابی به Google، به بهتر شدن Chrome کمک کنید.</translation>
 <translation id="415767770115540173">‏با Chrome تجربه بهتری از Google براساس موقعیت مکانی‌تان داشته باشید.</translation>
 <translation id="424864128008805179">‏از سیستم Chrome خارج می شوید؟</translation>
-<translation id="447252321002412580">‏کمک به بهبود ویژگی‌ها و عملکرد Chrome</translation>
 <translation id="4523886039239821078">‏برخی از افزونه‌ها باعث می‌شوند Chrome از کار بیفتد. لطفاً آنها را حذف نصب کنید:</translation>
 <translation id="4615174829807303908">‏هم‌اکنون از حسابی که توسط <ph name="SIGNOUT_MANAGED_DOMAIN" /> مدیریت می‌شود، خارج می‌شوید. با این کار داده‌های Chrome شما از این دستگاه حذف می‌شود اما همچنان در حساب Google شما باقی می‌ماند.</translation>
 <translation id="5389212809648216794">‏Google Chrome نمی‌تواند از دوربین استفاده کند زیرا برنامه دیگری از آن استفاده می‌کند</translation>

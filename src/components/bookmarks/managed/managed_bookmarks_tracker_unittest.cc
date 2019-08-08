@@ -57,7 +57,7 @@ class ManagedBookmarksTrackerTest : public testing::Test {
     BookmarkPermanentNode* managed_node = new BookmarkPermanentNode(100);
     ManagedBookmarksTracker::LoadInitial(
         managed_node, prefs_.GetList(prefs::kManagedBookmarks), 101);
-    managed_node->set_visible(!managed_node->empty());
+    managed_node->set_visible(!managed_node->children().empty());
     managed_node->SetTitle(l10n_util::GetStringUTF16(
         IDS_BOOKMARK_BAR_MANAGED_FOLDER_DEFAULT_NAME));
 
@@ -181,9 +181,9 @@ class ManagedBookmarksTrackerTest : public testing::Test {
 
 TEST_F(ManagedBookmarksTrackerTest, Empty) {
   CreateModel();
-  EXPECT_TRUE(model_->bookmark_bar_node()->empty());
-  EXPECT_TRUE(model_->other_node()->empty());
-  EXPECT_TRUE(managed_node()->empty());
+  EXPECT_TRUE(model_->bookmark_bar_node()->children().empty());
+  EXPECT_TRUE(model_->other_node()->children().empty());
+  EXPECT_TRUE(managed_node()->children().empty());
   EXPECT_FALSE(managed_node()->IsVisible());
 }
 
@@ -191,9 +191,9 @@ TEST_F(ManagedBookmarksTrackerTest, LoadInitial) {
   // Set a policy before loading the model.
   prefs_.SetManagedPref(prefs::kManagedBookmarks, CreateTestTree());
   CreateModel();
-  EXPECT_TRUE(model_->bookmark_bar_node()->empty());
-  EXPECT_TRUE(model_->other_node()->empty());
-  EXPECT_FALSE(managed_node()->empty());
+  EXPECT_TRUE(model_->bookmark_bar_node()->children().empty());
+  EXPECT_TRUE(model_->other_node()->children().empty());
+  EXPECT_FALSE(managed_node()->children().empty());
   EXPECT_TRUE(managed_node()->IsVisible());
 
   std::unique_ptr<base::DictionaryValue> expected(CreateExpectedTree());
@@ -207,9 +207,9 @@ TEST_F(ManagedBookmarksTrackerTest, LoadInitialWithTitle) {
   // Set a policy before loading the model.
   prefs_.SetManagedPref(prefs::kManagedBookmarks, CreateTestTree());
   CreateModel();
-  EXPECT_TRUE(model_->bookmark_bar_node()->empty());
-  EXPECT_TRUE(model_->other_node()->empty());
-  EXPECT_FALSE(managed_node()->empty());
+  EXPECT_TRUE(model_->bookmark_bar_node()->children().empty());
+  EXPECT_TRUE(model_->other_node()->children().empty());
+  EXPECT_FALSE(managed_node()->children().empty());
   EXPECT_TRUE(managed_node()->IsVisible());
 
   std::unique_ptr<base::DictionaryValue> expected(
@@ -293,7 +293,7 @@ TEST_F(ManagedBookmarksTrackerTest, RemoveAll) {
   prefs_.RemoveManagedPref(prefs::kManagedBookmarks);
   Mock::VerifyAndClearExpectations(&observer_);
 
-  EXPECT_TRUE(managed_node()->empty());
+  EXPECT_TRUE(managed_node()->children().empty());
   EXPECT_FALSE(managed_node()->IsVisible());
 }
 

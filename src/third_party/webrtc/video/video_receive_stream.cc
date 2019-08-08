@@ -35,7 +35,6 @@
 #include "modules/video_coding/include/video_codec_interface.h"
 #include "modules/video_coding/include/video_coding_defines.h"
 #include "modules/video_coding/include/video_error_codes.h"
-#include "modules/video_coding/jitter_estimator.h"
 #include "modules/video_coding/timing.h"
 #include "modules/video_coding/utility/vp8_header_parser.h"
 #include "rtc_base/checks.h"
@@ -205,9 +204,9 @@ VideoReceiveStream::VideoReceiveStream(
                                  rtp_receive_statistics_.get(),
                                  &stats_proxy_,
                                  process_thread_,
-                                 this,  // NackSender
-                                 this,  // KeyFrameRequestSender
-                                 this,  // OnCompleteFrameCallback
+                                 this,     // NackSender
+                                 nullptr,  // Use default KeyFrameRequestSender
+                                 this,     // OnCompleteFrameCallback
                                  config_.frame_decryptor),
       rtp_stream_sync_(this),
       max_wait_for_keyframe_ms_(KeyframeIntervalSettings::ParseFromFieldTrials()
@@ -239,17 +238,15 @@ VideoReceiveStream::VideoReceiveStream(
     decoder_payload_types.insert(decoder.payload_type);
   }
 
-  video_receiver_.SetRenderDelay(config_.render_delay_ms);
+  timing_->set_render_delay(config_.render_delay_ms);
 
-  jitter_estimator_.reset(new VCMJitterEstimator(clock_));
-  frame_buffer_.reset(new video_coding::FrameBuffer(
-      clock_, jitter_estimator_.get(), timing_.get(), &stats_proxy_));
+  frame_buffer_.reset(
+      new video_coding::FrameBuffer(clock_, timing_.get(), &stats_proxy_));
 
   process_thread_->RegisterModule(&rtp_stream_sync_, RTC_FROM_HERE);
-
-  if (config_.media_transport) {
-    config_.media_transport->SetReceiveVideoSink(this);
-    config_.media_transport->AddRttObserver(this);
+  if (config_.media_transport()) {
+    config_.media_transport()->SetReceiveVideoSink(this);
+    config_.media_transport()->AddRttObserver(this);
   } else {
     // Register with RtpStreamReceiverController.
     media_receiver_ = receiver_controller->CreateReceiver(
@@ -290,9 +287,9 @@ VideoReceiveStream::~VideoReceiveStream() {
   RTC_DCHECK_RUN_ON(&worker_sequence_checker_);
   RTC_LOG(LS_INFO) << "~VideoReceiveStream: " << config_.ToString();
   Stop();
-  if (config_.media_transport) {
-    config_.media_transport->SetReceiveVideoSink(nullptr);
-    config_.media_transport->RemoveRttObserver(this);
+  if (config_.media_transport()) {
+    config_.media_transport()->SetReceiveVideoSink(nullptr);
+    config_.media_transport()->RemoveRttObserver(this);
   }
   process_thread_->DeRegisterModule(&rtp_stream_sync_);
 }
@@ -352,9 +349,13 @@ void VideoReceiveStream::Start() {
 
     std::string decoded_output_file =
         field_trial::FindFullName("WebRTC-DecoderDataDumpDirectory");
-    // Because '/' can't be used inside a field trial parameter, we use ':'
+    // Because '/' can't be used inside a field trial parameter, we use ';'
     // instead.
-    absl::c_replace(decoded_output_file, ':', '/');
+    // This is only relevant to WebRTC-DecoderDataDumpDirectory
+    // field trial. ';' is chosen arbitrary. Even though it's a legal character
+    // in some file systems, we can sacrifice ability to use it in the path to
+    // dumped video, since it's developers-only feature for debugging.
+    absl::c_replace(decoded_output_file, ';', '/');
     if (!decoded_output_file.empty()) {
       char filename_buffer[256];
       rtc::SimpleStringBuilder ssb(filename_buffer);
@@ -370,8 +371,11 @@ void VideoReceiveStream::Start() {
     video_receiver_.RegisterExternalDecoder(video_decoders_.back().get(),
                                             decoder.payload_type);
     VideoCodec codec = CreateDecoderVideoCodec(decoder);
-    rtp_video_stream_receiver_.AddReceiveCodec(codec,
-                                               decoder.video_format.parameters);
+
+    const bool raw_payload =
+        config_.rtp.raw_payload_types.count(codec.plType) > 0;
+    rtp_video_stream_receiver_.AddReceiveCodec(
+        codec, decoder.video_format.parameters, raw_payload);
     RTC_CHECK_EQ(VCM_OK, video_receiver_.RegisterReceiveCodec(
                              &codec, num_cpu_cores_, false));
   }
@@ -514,8 +518,8 @@ void VideoReceiveStream::SendNack(
 }
 
 void VideoReceiveStream::RequestKeyFrame() {
-  if (config_.media_transport) {
-    config_.media_transport->RequestKeyFrame(config_.rtp.remote_ssrc);
+  if (config_.media_transport()) {
+    config_.media_transport()->RequestKeyFrame(config_.rtp.remote_ssrc);
   } else {
     rtp_video_stream_receiver_.RequestKeyFrame();
   }
@@ -579,7 +583,7 @@ absl::optional<Syncable::Info> VideoReceiveStream::GetInfo() const {
   if (!info)
     return absl::nullopt;
 
-  info->current_delay_ms = video_receiver_.Delay();
+  info->current_delay_ms = timing_->TargetVideoDelay();
   return info;
 }
 
@@ -620,10 +624,8 @@ void VideoReceiveStream::StartNextDecode() {
     std::unique_ptr<EncodedFrame> frame;
   };
 
-  // TODO(philipel): Call NextFrame with |keyframe_required| argument set when
-  //                 downstream project has been fixed.
   frame_buffer_->NextFrame(
-      GetWaitMs(), /*keyframe_required*/ false, &decode_queue_,
+      GetWaitMs(), keyframe_required_, &decode_queue_,
       [this](std::unique_ptr<EncodedFrame> frame, ReturnReason res) {
         RTC_DCHECK_EQ(frame == nullptr, res == ReturnReason::kTimeout);
         RTC_DCHECK_EQ(frame != nullptr, res == ReturnReason::kFrameFound);
@@ -642,10 +644,9 @@ bool VideoReceiveStream::Decode() {
   TRACE_EVENT0("webrtc", "VideoReceiveStream::Decode");
 
   std::unique_ptr<video_coding::EncodedFrame> frame;
-  // TODO(philipel): Call NextFrame with |keyframe_required| argument when
-  //                 downstream project has been fixed.
   video_coding::FrameBuffer::ReturnReason res =
-      frame_buffer_->NextFrame(GetWaitMs(), &frame);
+      frame_buffer_->NextFrame(GetWaitMs(), &frame, keyframe_required_);
+
   if (res == ReturnReason::kStopped) {
     return false;
   }

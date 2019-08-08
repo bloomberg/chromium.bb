@@ -4,7 +4,9 @@
 
 #include "gpu/ipc/service/gpu_memory_buffer_factory_native_pixmap.h"
 
+#include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
+#include "gpu/vulkan/vulkan_device_queue.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/client_native_pixmap.h"
 #include "ui/gfx/linux/native_pixmap_dmabuf.h"
@@ -20,8 +22,12 @@
 
 namespace gpu {
 
-GpuMemoryBufferFactoryNativePixmap::GpuMemoryBufferFactoryNativePixmap() =
-    default;
+GpuMemoryBufferFactoryNativePixmap::GpuMemoryBufferFactoryNativePixmap()
+    : vulkan_context_provider_(nullptr) {}
+
+GpuMemoryBufferFactoryNativePixmap::GpuMemoryBufferFactoryNativePixmap(
+    viz::VulkanContextProvider* vulkan_context_provider)
+    : vulkan_context_provider_(vulkan_context_provider) {}
 
 GpuMemoryBufferFactoryNativePixmap::~GpuMemoryBufferFactoryNativePixmap() =
     default;
@@ -38,7 +44,8 @@ GpuMemoryBufferFactoryNativePixmap::CreateGpuMemoryBuffer(
   scoped_refptr<gfx::NativePixmap> pixmap =
       ui::OzonePlatform::GetInstance()
           ->GetSurfaceFactoryOzone()
-          ->CreateNativePixmap(surface_handle, size, format, usage);
+          ->CreateNativePixmap(surface_handle, GetVulkanDevice(), size, format,
+                               usage);
   if (!pixmap.get()) {
     DLOG(ERROR) << "Failed to create pixmap " << size.ToString() << ",  "
                 << gfx::BufferFormatToString(format) << ", usage "
@@ -144,10 +151,10 @@ GpuMemoryBufferFactoryNativePixmap::CreateAnonymousImage(
     bool* is_cleared) {
   scoped_refptr<gfx::NativePixmap> pixmap;
 #if defined(USE_OZONE)
-  pixmap =
-      ui::OzonePlatform::GetInstance()
-          ->GetSurfaceFactoryOzone()
-          ->CreateNativePixmap(gpu::kNullSurfaceHandle, size, format, usage);
+  pixmap = ui::OzonePlatform::GetInstance()
+               ->GetSurfaceFactoryOzone()
+               ->CreateNativePixmap(gpu::kNullSurfaceHandle, GetVulkanDevice(),
+                                    size, format, usage);
 #else
   NOTIMPLEMENTED();
 #endif
@@ -168,6 +175,12 @@ GpuMemoryBufferFactoryNativePixmap::CreateAnonymousImage(
 
 unsigned GpuMemoryBufferFactoryNativePixmap::RequiredTextureType() {
   return GL_TEXTURE_2D;
+}
+
+VkDevice GpuMemoryBufferFactoryNativePixmap::GetVulkanDevice() {
+  return vulkan_context_provider_
+             ? vulkan_context_provider_->GetDeviceQueue()->GetVulkanDevice()
+             : VK_NULL_HANDLE;
 }
 
 }  // namespace gpu

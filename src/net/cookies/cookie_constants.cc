@@ -67,11 +67,15 @@ std::string CookieSameSiteToString(CookieSameSite same_site) {
 }
 
 CookieSameSite StringToCookieSameSite(const std::string& same_site) {
+  if (base::EqualsCaseInsensitiveASCII(same_site, kSameSiteNone))
+    return CookieSameSite::NO_RESTRICTION;
   if (base::EqualsCaseInsensitiveASCII(same_site, kSameSiteLax))
     return CookieSameSite::LAX_MODE;
   if (base::EqualsCaseInsensitiveASCII(same_site, kSameSiteStrict))
     return CookieSameSite::STRICT_MODE;
-  return CookieSameSite::NO_RESTRICTION;
+  if (base::EqualsCaseInsensitiveASCII(same_site, kSameSiteExtended))
+    return CookieSameSite::EXTENDED_MODE;
+  return CookieSameSite::UNSPECIFIED;
 }
 
 }  // namespace net

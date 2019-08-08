@@ -304,9 +304,7 @@ void LayoutBlock::AddChildBeforeDescendant(LayoutObject* new_child,
   // If the requested insertion point is not one of our children, then this is
   // because there is an anonymous container within this object that contains
   // the beforeDescendant.
-  if (before_descendant_container->IsAnonymousBlock() ||
-      (before_descendant_container->IsLayoutInline() &&
-       ToLayoutInline(before_descendant_container)->IsFirstLineAnonymous())) {
+  if (before_descendant_container->IsAnonymousBlock()) {
     // Insert the child into the anonymous block box instead of here.
     if (new_child->IsInline() ||
         (new_child->IsFloatingOrOutOfFlowPositioned() &&
@@ -419,26 +417,6 @@ void LayoutBlock::UpdateLayout() {
 
   LayoutAnalyzer::Scope analyzer(*this);
 
-  base::Optional<DisplayLockContext::ScopedPendingFrameRect>
-      scoped_pending_frame_rect;
-  if (auto* context = GetDisplayLockContext()) {
-    // In a display locked element, we might be prevented from doing layout in
-    // which case we should abort.
-    if (LayoutBlockedByDisplayLock()) {
-      // TODO(vmpstr): This is probably wrong, we need to do full self-layout
-      // here, but for now just update our frame rect.
-      SetFrameRect(context->GetLockedFrameRect());
-      return;
-    }
-    // If we're display locked, then our layout should go into a pending frame
-    // rect without updating the frame rect visible to the ancestors. The
-    // following scoped object provides this functionality: it puts in place the
-    // (previously updated) pending frame rect. When the object is destroyed, it
-    // saves the pending frame rect in the DisplayLockContext and restores the
-    // frame rect that was in place at the time the lock was acquired.
-    scoped_pending_frame_rect.emplace(context->GetScopedPendingFrameRect());
-  }
-
   bool needs_scroll_anchoring =
       HasOverflowClip() && GetScrollableArea()->ShouldPerformScrollAnchoring();
   if (needs_scroll_anchoring)
@@ -456,7 +434,6 @@ void LayoutBlock::UpdateLayout() {
     ClearLayoutOverflow();
 
   height_available_to_children_changed_ = false;
-  NotifyDisplayLockDidLayout();
 }
 
 bool LayoutBlock::WidthAvailableToChildrenHasChanged() {
@@ -500,6 +477,9 @@ void LayoutBlock::AddVisualOverflowFromChildren() {
 }
 
 void LayoutBlock::AddLayoutOverflowFromChildren() {
+  if (DisplayLockInducesSizeContainment())
+    return;
+
   if (ChildrenInline())
     To<LayoutBlockFlow>(this)->AddLayoutOverflowFromInlineChildren();
   else
@@ -696,6 +676,9 @@ bool LayoutBlock::SimplifiedLayout() {
         return false;
     }
 
+    if (LayoutBlockedByDisplayLock(DisplayLockContext::kChildren))
+      return false;
+
     TextAutosizer::LayoutScope text_autosizer_layout_scope(this);
 
     // Lay out positioned descendants or objects that just need to recompute
@@ -829,6 +812,9 @@ static bool NeedsLayoutDueToStaticPosition(LayoutBox* child) {
 
 void LayoutBlock::LayoutPositionedObjects(bool relayout_children,
                                           PositionedLayoutBehavior info) {
+  if (LayoutBlockedByDisplayLock(DisplayLockContext::kChildren))
+    return;
+
   TrackedLayoutBoxListHashSet* positioned_descendants = PositionedObjects();
   if (!positioned_descendants)
     return;
@@ -960,12 +946,12 @@ void LayoutBlock::Paint(const PaintInfo& paint_info) const {
 }
 
 void LayoutBlock::PaintChildren(const PaintInfo& paint_info,
-                                const LayoutPoint&) const {
+                                const PhysicalOffset&) const {
   BlockPainter(*this).PaintChildren(paint_info);
 }
 
 void LayoutBlock::PaintObject(const PaintInfo& paint_info,
-                              const LayoutPoint& paint_offset) const {
+                              const PhysicalOffset& paint_offset) const {
   BlockPainter(*this).PaintObject(paint_info, paint_offset);
 }
 
@@ -1274,7 +1260,7 @@ bool LayoutBlock::HitTestChildren(HitTestResult& result,
     }
     if (did_hit) {
       UpdateHitTestResult(
-          result, FlipForWritingMode(ToLayoutPoint(
+          result, DeprecatedFlipForWritingMode(ToLayoutPoint(
                       location_in_container.Point() - accumulated_offset)));
       return true;
     }
@@ -1322,7 +1308,7 @@ PositionWithAffinity LayoutBlock::PositionForPointRespectingEditingBoundaries(
     const LayoutPoint& point_in_parent_coordinates) const {
   LayoutPoint child_location = child.Location();
   if (child.IsInFlowPositioned())
-    child_location += child.OffsetForInFlowPosition();
+    child_location += child.OffsetForInFlowPosition().ToLayoutPoint();
 
   // FIXME: This is wrong if the child's writing-mode is different from the
   // parent's.
@@ -1446,12 +1432,12 @@ PositionWithAffinity LayoutBlock::PositionForPoint(
 }
 
 void LayoutBlock::OffsetForContents(LayoutPoint& offset) const {
-  offset = FlipForWritingMode(offset);
+  offset = DeprecatedFlipForWritingMode(offset);
 
   if (HasOverflowClip())
     offset += LayoutSize(ScrolledContentOffset());
 
-  offset = FlipForWritingMode(offset);
+  offset = DeprecatedFlipForWritingMode(offset);
 }
 
 void LayoutBlock::ScrollbarsChanged(bool horizontal_scrollbar_changed,
@@ -1470,12 +1456,17 @@ void LayoutBlock::ComputeIntrinsicLogicalWidths(
   if (ShouldApplySizeContainment()) {
     // For multicol containers we need the column gaps. So allow descending into
     // the flow thread, which will take care of that.
-    const auto* block_flow = ToLayoutBlockFlowOrNull(this);
+    const auto* block_flow = DynamicTo<LayoutBlockFlow>(this);
     if (!block_flow || !block_flow->MultiColumnFlowThread()) {
       max_logical_width = LayoutUnit(scrollbar_width);
       min_logical_width = LayoutUnit(scrollbar_width);
       return;
     }
+  } else if (DisplayLockInducesSizeContainment()) {
+    min_logical_width = max_logical_width =
+        LayoutUnit(scrollbar_width) +
+        GetDisplayLockContext()->GetLockedContentLogicalWidth();
+    return;
   }
 
   if (ChildrenInline()) {
@@ -1987,11 +1978,11 @@ LayoutRect LayoutBlock::LocalCaretRect(
   return caret_rect;
 }
 
-void LayoutBlock::AddOutlineRects(Vector<LayoutRect>& rects,
-                                  const LayoutPoint& additional_offset,
+void LayoutBlock::AddOutlineRects(Vector<PhysicalRect>& rects,
+                                  const PhysicalOffset& additional_offset,
                                   NGOutlineType include_block_overflows) const {
   if (!IsAnonymous())  // For anonymous blocks, the children add outline rects.
-    rects.push_back(LayoutRect(additional_offset, Size()));
+    rects.emplace_back(additional_offset, Size());
 
   if (include_block_overflows == NGOutlineType::kIncludeBlockVisualOverflow &&
       !HasOverflowClip() && !HasControlClip()) {

@@ -47,7 +47,7 @@ class CONTROLLER_EXPORT OomInterventionImpl
   // Overridden by test.
   virtual MemoryUsageMonitor& MemoryUsageMonitorInstance();
 
-  void Check(OomInterventionMetrics);
+  void Check(MemoryUsage);
 
   void ReportMemoryStats(OomInterventionMetrics& current_memory);
 

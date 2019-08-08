@@ -32,6 +32,8 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_base.h"
 #include "base/path_service.h"
+#include "base/power_monitor/power_monitor.h"
+#include "base/power_monitor/power_monitor_device_source.h"
 #include "base/process/launch.h"
 #include "base/process/memory.h"
 #include "base/process/process.h"
@@ -86,6 +88,7 @@
 #elif defined(OS_MACOSX)
 #include "base/mac/mach_port_broker.h"
 #include "base/power_monitor/power_monitor_device_source.h"
+#include "sandbox/mac/seatbelt.h"
 #include "sandbox/mac/seatbelt_exec.h"
 #endif  // OS_WIN
 
@@ -543,17 +546,9 @@ static void RegisterMainThreadFactories() {
 int RunBrowserProcessMain(const MainFunctionParams& main_function_params,
                           ContentMainDelegate* delegate) {
   int exit_code = delegate->RunProcess("", main_function_params);
-#if defined(OS_ANDROID)
-  // In Android's browser process, the negative exit code doesn't mean the
-  // default behavior should be used as the UI message loop is managed by
-  // the Java and the browser process's default behavior is always
-  // overridden.
-  return exit_code;
-#else
   if (exit_code >= 0)
     return exit_code;
   return BrowserMain(main_function_params);
-#endif
 }
 #endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 
@@ -812,19 +807,16 @@ int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
             params.sandbox_info))
       return TerminateForFatalInitializationError();
 #elif defined(OS_MACOSX)
-    // Do not initialize the sandbox at this point if the V2
-    // sandbox is enabled for the process type.
+    // Only the GPU process still runs the V1 sandbox.
     bool v2_enabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
         sandbox::switches::kSeatbeltClientName);
 
-    if (process_type == switches::kRendererProcess ||
-        process_type == switches::kPpapiPluginProcess || v2_enabled ||
-        delegate_->DelaySandboxInitialization(process_type)) {
-      // On OS X the renderer sandbox needs to be initialized later in the
-      // startup sequence in RendererMainPlatformDelegate::EnableSandbox().
-    } else {
-      if (!InitializeSandbox())
+    if (!v2_enabled && process_type == switches::kGpuProcess) {
+      if (!InitializeSandbox()) {
         return TerminateForFatalInitializationError();
+      }
+    } else if (v2_enabled) {
+      CHECK(sandbox::Seatbelt::IsSandboxed());
     }
 #endif
 
@@ -898,7 +890,7 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
     if (GetContentClient()->browser()->ShouldCreateThreadPool()) {
       // Create and start the ThreadPool early to allow upcoming code to use
       // the post_task.h API.
-      base::ThreadPool::Create("Browser");
+      base::ThreadPoolInstance::Create("Browser");
     }
 
     delegate_->PreCreateMainMessageLoop();
@@ -925,6 +917,8 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
     }
 
     BrowserTaskExecutor::PostFeatureListSetup();
+
+    delegate_->PostTaskSchedulerStart();
 
     if (!base::FeatureList::IsEnabled(
             features::kAllowStartingServiceManagerOnly)) {
@@ -957,9 +951,14 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
       }
     }
 
+    // PowerMonitor is needed in reduced mode but is eventually passed on to
+    // BrowserMainLoop.
+    power_monitor_ = std::make_unique<base::PowerMonitor>(
+        std::make_unique<base::PowerMonitorDeviceSource>());
+
     // The thread used to start the ServiceManager is handed-off to
     // BrowserMain() which may elect to promote it (e.g. to BrowserThread::IO).
-    service_manager_thread_ = BrowserProcessSubThread::CreateIOThread();
+    service_manager_thread_ = BrowserTaskExecutor::CreateIOThread();
     service_manager_context_.reset(
         new ServiceManagerContext(service_manager_thread_->task_runner()));
     download::SetIOTaskRunner(service_manager_thread_->task_runner());
@@ -978,6 +977,7 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
   startup_data_ = std::make_unique<StartupDataImpl>();
   startup_data_->thread = std::move(service_manager_thread_);
   startup_data_->service_manager_context = service_manager_context_.get();
+  startup_data_->power_monitor = std::move(power_monitor_);
   main_params.startup_data = startup_data_.get();
   return RunBrowserProcessMain(main_params, delegate_);
 }

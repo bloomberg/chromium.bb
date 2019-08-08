@@ -229,6 +229,9 @@ class ArcAppLauncherBrowserTest : public extensions::ExtensionBrowserTest {
   void SendPackageUpdated(const std::string& package_name, bool multi_app) {
     app_host()->OnPackageAppListRefreshed(
         package_name, GetTestAppsList(package_name, multi_app));
+
+    // Ensure async callbacks from the resulting observer calls are run.
+    base::RunLoop().RunUntilIdle();
   }
 
   void SendPackageRemoved(const std::string& package_name) {
@@ -329,8 +332,6 @@ IN_PROC_BROWSER_TEST_F(ArcAppDeferredLauncherBrowserTest,
       controller->shelf_model()->ItemIndexByID(ash::ShelfID(app_id));
   ASSERT_GE(item_index, 0);
 
-  controller->FlushForTesting();
-
   ash::ShelfAppButton* const button = test_api.GetButton(item_index);
   ASSERT_TRUE(button);
 
@@ -343,12 +344,6 @@ IN_PROC_BROWSER_TEST_F(ArcAppDeferredLauncherBrowserTest,
   event_generator.MoveMouseTo(button->GetBoundsInScreen().CenterPoint());
   base::RunLoop().RunUntilIdle();
   event_generator.ClickLeftButton();
-
-  EXPECT_EQ(views::InkDropState::ACTION_PENDING,
-            ink_drop->GetTargetInkDropState());
-
-  // Flush RemoteShelfItemDelegate::ItemSelected and callback mojo messages.
-  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(views::InkDropState::ACTION_TRIGGERED,
             ink_drop->GetTargetInkDropState());

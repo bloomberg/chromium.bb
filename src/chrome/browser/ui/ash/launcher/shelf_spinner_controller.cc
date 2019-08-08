@@ -4,15 +4,17 @@
 
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
 
-#include <memory>
+#include <vector>
 
 #include "ash/public/cpp/shelf_model.h"
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_item_controller.h"
+#include "components/user_manager/user_manager.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -61,6 +63,14 @@ class SpinningEffectSource : public gfx::CanvasImageSource {
 ShelfSpinnerController::ShelfSpinnerController(ChromeLauncherController* owner)
     : owner_(owner), weak_ptr_factory_(this) {
   owner->shelf_model()->AddObserver(this);
+  if (user_manager::UserManager::IsInitialized()) {
+    if (auto* active_user = user_manager::UserManager::Get()->GetActiveUser())
+      current_account_id_ = active_user->GetAccountId();
+    else
+      LOG(ERROR) << "Failed to get active user, UserManager returned null";
+  } else {
+    LOG(ERROR) << "Failed to get active user, UserManager is not initialized";
+  }
 }
 
 ShelfSpinnerController::~ShelfSpinnerController() {
@@ -83,31 +93,61 @@ void ShelfSpinnerController::MaybeApplySpinningEffect(const std::string& app_id,
       image->size());
 }
 
-void ShelfSpinnerController::Close(const std::string& app_id) {
-  // Code below may invalidate passed |app_id|. Use local variable for safety.
-  const std::string safe_app_id(app_id);
-
-  AppControllerMap::const_iterator it = app_controller_map_.find(safe_app_id);
-  if (it == app_controller_map_.end())
+void ShelfSpinnerController::HideSpinner(const std::string& app_id) {
+  if (!RemoveSpinnerFromControllerMap(app_id))
     return;
 
-  const ash::ShelfID shelf_id(safe_app_id);
+  const ash::ShelfID shelf_id(app_id);
+
+  // If the app whose spinner is being hidden is pinned, we don't want to un-pin
+  // it when we remove it from the shelf, so disable pin syncing while we update
+  // things.
+  auto pin_disabler = owner_->GetScopedPinSyncDisabler();
+  // The static_cast here is safe, because if the delegate were not a
+  // ShelfSpinnerItemController then ShelfItemDelegateChanged would have been
+  // called and we would not have reached this place.
+  auto delegate =
+      owner_->shelf_model()->RemoveItemAndTakeShelfItemDelegate(shelf_id);
+  std::unique_ptr<ShelfSpinnerItemController> cast_delegate(
+      static_cast<ShelfSpinnerItemController*>(delegate.release()));
+
+  hidden_app_controller_map_.emplace(
+      current_account_id_, std::make_pair(app_id, std::move(cast_delegate)));
+}
+
+void ShelfSpinnerController::CloseSpinner(const std::string& app_id) {
+  if (!RemoveSpinnerFromControllerMap(app_id))
+    return;
+
+  owner_->CloseLauncherItem(ash::ShelfID(app_id));
+  UpdateShelfItemIcon(app_id);
+}
+
+bool ShelfSpinnerController::RemoveSpinnerFromControllerMap(
+    const std::string& app_id) {
+  AppControllerMap::const_iterator it = app_controller_map_.find(app_id);
+  if (it == app_controller_map_.end())
+    return false;
+
+  const ash::ShelfID shelf_id(app_id);
   DCHECK_EQ(it->second, owner_->shelf_model()->GetShelfItemDelegate(shelf_id));
   app_controller_map_.erase(it);
-  owner_->CloseLauncherItem(shelf_id);
-  UpdateShelfItemIcon(safe_app_id);
+
+  return true;
 }
 
 void ShelfSpinnerController::CloseCrostiniSpinners() {
   std::vector<std::string> app_ids_to_close;
   crostini::CrostiniRegistryService* registry_service =
-      crostini::CrostiniRegistryServiceFactory::GetForProfile(OwnerProfile());
+      crostini::CrostiniRegistryServiceFactory::GetForProfile(
+          chromeos::ProfileHelper::Get()->GetProfileByAccountId(
+              current_account_id_));
   for (const auto& app_id_controller_pair : app_controller_map_) {
     if (registry_service->IsCrostiniShelfAppId(app_id_controller_pair.first))
       app_ids_to_close.push_back(app_id_controller_pair.first);
   }
   for (const auto& app_id : app_ids_to_close)
-    Close(app_id);
+    CloseSpinner(app_id);
 }
 
 bool ShelfSpinnerController::HasApp(const std::string& app_id) const {
@@ -132,12 +172,43 @@ void ShelfSpinnerController::ShelfItemDelegateChanged(
     ash::ShelfItemDelegate* old_delegate,
     ash::ShelfItemDelegate* delegate) {
   auto it = app_controller_map_.find(id.app_id);
-  if (it == app_controller_map_.end())
+  if (it != app_controller_map_.end()) {
+    app_controller_map_.erase(it);
+    UpdateShelfItemIcon(id.app_id);
+  }
+}
+
+void ShelfSpinnerController::ActiveUserChanged(const AccountId& account_id) {
+  if (account_id == current_account_id_) {
+    LOG(WARNING) << "Tried switching to currently active user";
     return;
-  DCHECK_EQ(it->second, old_delegate);
-  app_controller_map_.erase(it);
-  // Update the icon one more time so it doesn't remain stuck with a spinner.
-  UpdateShelfItemIcon(id.app_id);
+  }
+
+  std::vector<std::string> to_hide;
+  std::vector<
+      std::pair<std::string, std::unique_ptr<ShelfSpinnerItemController>>>
+      to_show;
+
+  for (const auto& app_id : app_controller_map_)
+    to_hide.push_back(app_id.first);
+  for (auto it = hidden_app_controller_map_.lower_bound(account_id);
+       it != hidden_app_controller_map_.upper_bound(account_id); it++) {
+    to_show.push_back(std::move(it->second));
+  }
+
+  hidden_app_controller_map_.erase(
+      hidden_app_controller_map_.lower_bound(account_id),
+      hidden_app_controller_map_.upper_bound(account_id));
+
+  for (const auto& app_id : to_hide)
+    HideSpinner(app_id);
+
+  for (auto& app_id_delegate_pair : to_show) {
+    AddSpinnerToShelf(app_id_delegate_pair.first,
+                      std::move(app_id_delegate_pair.second));
+  }
+
+  current_account_id_ = account_id;
 }
 
 void ShelfSpinnerController::UpdateShelfItemIcon(const std::string& app_id) {

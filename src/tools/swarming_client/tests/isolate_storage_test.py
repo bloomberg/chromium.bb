@@ -3,20 +3,18 @@
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
 
-import binascii
 import hashlib
-import os
 import re
-import sys
-import time
 import unittest
 
-# Somehow this lets us find isolate_storage
-import net_utils
+# Mutates sys.path.
+import test_env
 
+# third_party/
 from depot_tools import auto_stub
+
 import isolate_storage
-import test_utils
+import net_utils
 
 
 class ByteStreamStubMock(object):
@@ -157,7 +155,7 @@ class IsolateStorageGPRCTest(auto_stub.TestCase):
       self.request = request
       response = isolate_storage.bytestream_pb2.ReadResponse()
       for i in range(0, 3):
-        if i is 2:
+        if i == 2:
           raise isolate_storage.grpc.RpcError(
               'proxy died during fetch stream :(')
         response.data = str(i)
@@ -282,22 +280,20 @@ class IsolateStorageGPRCTest(auto_stub.TestCase):
 
   def testPushRetriesOnGrpcFailure(self):
     """Push: retry will succeed if the Isolate failure is transient."""
-    class IsFirstWrapper:
-      is_first = True
+    calls = []
 
     def Write(self, requests, timeout=None):
       del timeout
-      if IsFirstWrapper.is_first:
-        IsFirstWrapper.is_first = False
+      if not calls:
+        calls.append(True)
         raiseError(isolate_storage.grpc.StatusCode.INTERNAL_ERROR)
-      else:
-        nb = 0
-        for r in requests:
-          nb += len(r.data)
-          self._push_requests.append(r.__deepcopy__())
-        resp = isolate_storage.bytestream_pb2.WriteResponse()
-        resp.committed_size = nb
-        return resp
+      nb = 0
+      for r in requests:
+        nb += len(r.data)
+        self._push_requests.append(r.__deepcopy__())
+      resp = isolate_storage.bytestream_pb2.WriteResponse()
+      resp.committed_size = nb
+      return resp
 
     self.mock(ByteStreamStubMock, 'Write', Write)
 
@@ -324,4 +320,4 @@ class IsolateStorageGPRCTest(auto_stub.TestCase):
 
 
 if __name__ == '__main__':
-  test_utils.main()
+  test_env.main()

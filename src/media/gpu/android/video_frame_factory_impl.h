@@ -13,6 +13,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "gpu/ipc/common/vulkan_ycbcr_info.h"
 #include "gpu/ipc/service/command_buffer_stub.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/android/codec_image.h"
@@ -34,10 +35,19 @@ class GpuVideoFrameFactory;
 // to a helper class hosted on the gpu thread.
 class MEDIA_GPU_EXPORT VideoFrameFactoryImpl : public VideoFrameFactory {
  public:
+  // Callback used to return a mailbox and release callback for an image. The
+  // release callback may be dropped without being run, and the image will be
+  // cleaned up properly. The release callback may be called from any thread.
+  using ImageReadyCB =
+      base::OnceCallback<void(gpu::Mailbox mailbox,
+                              VideoFrame::ReleaseMailboxCB release_cb,
+                              base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info)>;
+
   // |get_stub_cb| will be run on |gpu_task_runner|.
   VideoFrameFactoryImpl(
       scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
-      GetStubCb get_stub_cb);
+      GetStubCb get_stub_cb,
+      const gpu::GpuPreferences& gpu_preferences);
   ~VideoFrameFactoryImpl() override;
 
   void Initialize(OverlayMode overlay_mode, InitCb init_cb) override;
@@ -52,6 +62,29 @@ class MEDIA_GPU_EXPORT VideoFrameFactoryImpl : public VideoFrameFactory {
   void RunAfterPendingVideoFrames(base::OnceClosure closure) override;
 
  private:
+  // ImageReadyCB that will construct a VideoFrame, and forward it to
+  // |output_cb| if construction succeeds.  This is static for two reasons.
+  // First, we want to snapshot the state of the world when the request is made,
+  // in case things like the texture owner change before it's returned.  While
+  // it's unclear that MCVD would actually do this (it drains output buffers
+  // before switching anything, which guarantees that the VideoFrame has been
+  // created and sent to the renderer), it's still much simpler to think about
+  // if this uses the same state as the CreateVideoFrame call.
+  //
+  // Second, this way we don't care about the lifetime of |this|; |output_cb|
+  // can worry about it.
+  static void OnImageReady(OnceOutputCb output_cb,
+                           base::TimeDelta timestamp,
+                           gfx::Size coded_size,
+                           gfx::Size natural_size,
+                           scoped_refptr<TextureOwner> texture_owner,
+                           VideoPixelFormat pixel_format,
+                           OverlayMode overlay_mode,
+                           bool enable_threaded_texture_mailboxes,
+                           gpu::Mailbox mailbox,
+                           VideoFrame::ReleaseMailboxCB release_cb,
+                           base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info);
+
   // The gpu thread side of the implementation.
   std::unique_ptr<GpuVideoFrameFactory> gpu_video_frame_factory_;
   scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
@@ -59,6 +92,11 @@ class MEDIA_GPU_EXPORT VideoFrameFactoryImpl : public VideoFrameFactory {
 
   // The texture owner that video frames should use, or nullptr.
   scoped_refptr<TextureOwner> texture_owner_;
+
+  OverlayMode overlay_mode_ = OverlayMode::kDontRequestPromotionHints;
+
+  // Is the sync mailbox manager enabled?
+  bool enable_threaded_texture_mailboxes_ = false;
 
   SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(VideoFrameFactoryImpl);
@@ -76,14 +114,12 @@ class GpuVideoFrameFactory
       VideoFrameFactory::OverlayMode overlay_mode,
       VideoFrameFactory::GetStubCb get_stub_cb);
 
-  // Creates and returns a VideoFrame with its ReleaseMailboxCB.
-  void CreateVideoFrame(
+  // Creates a SharedImage for |output_buffer|, and returns it via the callback.
+  void CreateImage(
       std::unique_ptr<CodecOutputBuffer> output_buffer,
       scoped_refptr<TextureOwner> texture_owner,
-      base::TimeDelta timestamp,
-      gfx::Size natural_size,
       PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
-      VideoFrameFactory::OnceOutputCb output_cb,
+      VideoFrameFactoryImpl::ImageReadyCB image_ready_cb,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // Set our image group.  Must be called before the first call to
@@ -91,15 +127,12 @@ class GpuVideoFrameFactory
   void SetImageGroup(scoped_refptr<CodecImageGroup> image_group);
 
  private:
-  // Creates an AbstractTexture and VideoFrame.
-  void CreateVideoFrameInternal(
+  // Creates a SharedImage for |mailbox|, and returns success or failure.
+  bool CreateImageInternal(
       std::unique_ptr<CodecOutputBuffer> output_buffer,
       scoped_refptr<TextureOwner> texture_owner,
-      base::TimeDelta timestamp,
-      gfx::Size natural_size,
-      PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
-      scoped_refptr<VideoFrame>* video_frame_out,
-      CodecImage** codec_image_out);
+      gpu::Mailbox mailbox,
+      PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb);
 
   void OnWillDestroyStub(bool have_context) override;
 
@@ -111,18 +144,16 @@ class GpuVideoFrameFactory
 
   gpu::CommandBufferStub* stub_ = nullptr;
 
-  // Callback to notify us that an image has been destroyed.
-  CodecImage::DestructionCb destruction_cb_;
-
-  VideoFrameFactory::OverlayMode overlay_mode_ =
-      VideoFrameFactory::OverlayMode::kDontRequestPromotionHints;
-
   // A helper for creating textures. Only valid while |stub_| is valid.
   std::unique_ptr<GLES2DecoderHelper> decoder_helper_;
 
   // Current image group to which new images (frames) will be added.  We'll
   // replace this when SetImageGroup() is called.
   scoped_refptr<CodecImageGroup> image_group_;
+
+  // Sampler conversion information which is used in vulkan context. This is
+  // constant for all the frames in a video and hence we cache it.
+  base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info_;
 
   THREAD_CHECKER(thread_checker_);
   base::WeakPtrFactory<GpuVideoFrameFactory> weak_factory_;

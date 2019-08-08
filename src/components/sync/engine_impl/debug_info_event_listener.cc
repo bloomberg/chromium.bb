@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "components/sync/base/cryptographer.h"
+#include "components/sync/nigori/cryptographer.h"
 
 namespace syncer {
 

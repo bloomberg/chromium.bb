@@ -18,12 +18,13 @@
 #include "base/threading/thread.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
-#include "components/services/heap_profiling/allocation_event.h"
-#include "components/services/heap_profiling/backtrace_storage.h"
+#include "components/services/heap_profiling/allocation.h"
 #include "components/services/heap_profiling/public/mojom/heap_profiling_service.mojom.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 
 namespace heap_profiling {
+
+struct ExportParams;
 
 using VmRegions =
     base::flat_map<base::ProcessId,
@@ -46,22 +47,6 @@ class ConnectionManager {
  public:
   ConnectionManager();
   ~ConnectionManager();
-
-  // Shared types for the dump-type-specific args structures.
-  struct DumpArgs {
-    DumpArgs();
-    DumpArgs(DumpArgs&&) noexcept;
-    ~DumpArgs();
-
-   private:
-    friend ConnectionManager;
-
-    // This lock keeps the backtrace atoms alive throughout the dumping
-    // process. It will be initialized by DumpProcess.
-    BacktraceStorage::Lock backtrace_storage_lock;
-
-    DISALLOW_COPY_AND_ASSIGN(DumpArgs);
-  };
 
   // Dumping is asynchronous so will not be complete when this function
   // returns. The dump is complete when the callback provided in the args is
@@ -90,16 +75,9 @@ class ConnectionManager {
       uint32_t sampling_rate,
       mojom::HeapProfilePtr profile);
 
-  void DoDumpOneProcessForTracing(
-      scoped_refptr<DumpProcessesForTracingTracking> tracking,
-      base::ProcessId pid,
-      mojom::ProcessType process_type,
-      bool strip_path_from_mapped_files,
-      uint32_t sampling_rate,
-      bool success,
-      AllocationCountMap counts,
-      ContextMap context,
-      AddressToStringMap mapped_strings);
+  bool ConvertProfileToExportParams(mojom::HeapProfilePtr profile,
+                                    uint32_t sampling_rate,
+                                    ExportParams* out_params);
 
   // Notification that a connection is complete. Unlike OnNewConnection which
   // is signaled by the pipe server, this is signaled by the allocation tracker
@@ -109,8 +87,6 @@ class ConnectionManager {
 
   // Reports the ProcessTypes of the processes being profiled.
   void ReportMetrics();
-
-  BacktraceStorage backtrace_storage_;
 
   // The next ID to use when exporting a heap dump.
   size_t next_id_ = 1;

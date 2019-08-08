@@ -36,7 +36,7 @@ class DBusClientsBrowser;
 class DBusThreadManagerSetter;
 class DebugDaemonClient;
 class EasyUnlockClient;
-class GsmSMSClient;
+class GnubbyClient;
 class ImageBurnerClient;
 class ImageLoaderClient;
 class LorgnetteManagerClient;
@@ -54,6 +54,7 @@ class SmbProviderClient;
 class SMSClient;
 class UpdateEngineClient;
 class VirtualFileProviderClient;
+class VmPluginDispatcherClient;
 class WilcoDtcSupportdClient;
 
 // THIS CLASS IS BEING DEPRECATED. See README.md for guidelines and
@@ -124,6 +125,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManager {
   CrosDisksClient* GetCrosDisksClient();
   DebugDaemonClient* GetDebugDaemonClient();
   EasyUnlockClient* GetEasyUnlockClient();
+  GnubbyClient* GetGnubbyClient();
   ImageBurnerClient* GetImageBurnerClient();
   ImageLoaderClient* GetImageLoaderClient();
   LorgnetteManagerClient* GetLorgnetteManagerClient();
@@ -133,11 +135,11 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManager {
   SmbProviderClient* GetSmbProviderClient();
   UpdateEngineClient* GetUpdateEngineClient();
   VirtualFileProviderClient* GetVirtualFileProviderClient();
+  VmPluginDispatcherClient* GetVmPluginDispatcherClient();
   WilcoDtcSupportdClient* GetWilcoDtcSupportdClient();
 
   // DEPRECATED, DO NOT USE. The static getter for each of these classes should
   // be used instead. TODO(stevenjb): Remove. https://crbug.com/948390.
-  GsmSMSClient* GetGsmSMSClient();
   ModemMessagingClient* GetModemMessagingClient();
   SMSClient* GetSMSClient();
   ShillDeviceClient* GetShillDeviceClient();
@@ -180,6 +182,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManagerSetter {
   void SetConciergeClient(std::unique_ptr<ConciergeClient> client);
   void SetCrosDisksClient(std::unique_ptr<CrosDisksClient> client);
   void SetDebugDaemonClient(std::unique_ptr<DebugDaemonClient> client);
+  void SetGnubbyClient(std::unique_ptr<GnubbyClient> client);
   void SetImageBurnerClient(std::unique_ptr<ImageBurnerClient> client);
   void SetImageLoaderClient(std::unique_ptr<ImageLoaderClient> client);
   void SetSeneschalClient(std::unique_ptr<SeneschalClient> client);

@@ -9,14 +9,47 @@
 
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "base/unguessable_token.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
-#include "chrome/browser/performance_manager/observers/graph_observer.h"
+#include "chrome/browser/performance_manager/public/graph/frame_node.h"
 #include "url/gurl.h"
 
 namespace performance_manager {
 
+class FrameNodeImpl;
 class PageNodeImpl;
 class ProcessNodeImpl;
+
+// Observer interface for FrameNodeImpl objects. This must be declared first as
+// the type is referenced by members of FrameNodeImpl.
+class FrameNodeImplObserver {
+ public:
+  FrameNodeImplObserver();
+  virtual ~FrameNodeImplObserver();
+
+  // Notifications of property changes.
+
+  // Invoked when the |is_current| property changes.
+  virtual void OnIsCurrentChanged(FrameNodeImpl* frame_node) = 0;
+
+  // Invoked when the |network_almost_idle| property changes.
+  virtual void OnNetworkAlmostIdleChanged(FrameNodeImpl* frame_node) = 0;
+
+  // Invoked when the |lifecycle_state| property changes.
+  virtual void OnLifecycleStateChanged(FrameNodeImpl* frame_node) = 0;
+
+  // Invoked when the |url| property changes.
+  virtual void OnURLChanged(FrameNodeImpl* frame_node) = 0;
+
+  // Events with no property changes.
+
+  // Invoked when a non-persistent notification has been issued by the frame.
+  virtual void OnNonPersistentNotificationCreated(
+      FrameNodeImpl* frame_node) = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FrameNodeImplObserver);
+};
 
 // Frame nodes form a tree structure, each FrameNode at most has one parent that
 // is a FrameNode. Conceptually, a frame corresponds to a
@@ -41,33 +74,42 @@ class ProcessNodeImpl;
 // another process!) and commits, the frame will be swapped with the previously
 // active frame.
 class FrameNodeImpl
-    : public CoordinationUnitInterface<
-          FrameNodeImpl,
-          resource_coordinator::mojom::FrameCoordinationUnit,
-          resource_coordinator::mojom::FrameCoordinationUnitRequest> {
+    : public PublicNodeImpl<FrameNodeImpl, FrameNode>,
+      public TypedNodeBase<FrameNodeImpl, FrameNodeImplObserver>,
+      public resource_coordinator::mojom::DocumentCoordinationUnit {
  public:
-  static constexpr resource_coordinator::CoordinationUnitType Type() {
-    return resource_coordinator::CoordinationUnitType::kFrame;
-  }
+  // A do-nothing implementation of the observer. Derive from this if you want
+  // to selectively override a few methods and not have to worry about
+  // continuously updating your implementation as new methods are added.
+  class ObserverDefaultImpl;
+
+  static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kFrame; }
 
   // Construct a frame node associated with a |process_node|, a |page_node| and
   // optionally with a |parent_frame_node|. For the main frame of |page_node|
   // the |parent_frame_node| parameter should be nullptr.
-  FrameNodeImpl(Graph* graph,
+  FrameNodeImpl(GraphImpl* graph,
                 ProcessNodeImpl* process_node,
                 PageNodeImpl* page_node,
                 FrameNodeImpl* parent_frame_node,
-                int frame_tree_node_id);
+                int frame_tree_node_id,
+                const base::UnguessableToken& dev_tools_token,
+                int32_t browsing_instance_id,
+                int32_t site_instance_id);
   ~FrameNodeImpl() override;
 
-  // FrameNode implementation.
-  void SetNetworkAlmostIdle(bool idle) override;
+  void Bind(
+      resource_coordinator::mojom::DocumentCoordinationUnitRequest request);
+
+  // resource_coordinator::mojom::DocumentCoordinationUnit implementation.
+  void SetNetworkAlmostIdle() override;
   void SetLifecycleState(
       resource_coordinator::mojom::LifecycleState state) override;
   void SetHasNonEmptyBeforeUnload(bool has_nonempty_beforeunload) override;
   void SetInterventionPolicy(
       resource_coordinator::mojom::PolicyControlledIntervention intervention,
       resource_coordinator::mojom::InterventionPolicy policy) override;
+  void SetIsAdFrame() override;
   void OnNonPersistentNotificationCreated() override;
 
   // Getters for const properties. These can be called from any thread.
@@ -75,6 +117,9 @@ class FrameNodeImpl
   PageNodeImpl* page_node() const;
   ProcessNodeImpl* process_node() const;
   int frame_tree_node_id() const;
+  const base::UnguessableToken& dev_tools_token() const;
+  int32_t browsing_instance_id() const;
+  int32_t site_instance_id() const;
 
   // Getters for non-const properties. These are not thread safe.
   const base::flat_set<FrameNodeImpl*>& child_frame_nodes() const;
@@ -83,14 +128,17 @@ class FrameNodeImpl
   const GURL& url() const;
   bool is_current() const;
   bool network_almost_idle() const;
+  bool is_ad_frame() const;
 
   // Setters are not thread safe.
-  void set_url(const GURL& url);
   void SetIsCurrent(bool is_current);
 
   // A frame is a main frame if it has no |parent_frame_node|. This can be
   // called from any thread.
   bool IsMainFrame() const;
+
+  // Invoked when a navigation is committed in the frame.
+  void OnNavigationCommitted(const GURL& url, bool same_document);
 
   // Returns true if all intervention policies have been set for this frame.
   bool AreAllInterventionPoliciesSet() const;
@@ -104,6 +152,24 @@ class FrameNodeImpl
   friend class PageNodeImpl;
   friend class ProcessNodeImpl;
 
+  // Properties associated with a Document, which are reset when a
+  // different-document navigation is committed in the frame.
+  struct DocumentProperties {
+    DocumentProperties();
+    ~DocumentProperties();
+
+    void Reset(FrameNodeImpl* frame_node, const GURL& url_in);
+
+    ObservedProperty::NotifiesOnlyOnChanges<GURL, &Observer::OnURLChanged> url;
+    bool has_nonempty_beforeunload = false;
+
+    // Network is considered almost idle when there are no more than 2 network
+    // connections.
+    ObservedProperty::
+        NotifiesOnlyOnChanges<bool, &Observer::OnNetworkAlmostIdleChanged>
+            network_almost_idle{false};
+  };
+
   // Invoked by subframes on joining/leaving the graph.
   void AddChildFrame(FrameNodeImpl* frame_node);
   void RemoveChildFrame(FrameNodeImpl* frame_node);
@@ -114,41 +180,79 @@ class FrameNodeImpl
   bool HasFrameNodeInAncestors(FrameNodeImpl* frame_node) const;
   bool HasFrameNodeInDescendants(FrameNodeImpl* frame_node) const;
 
+  mojo::Binding<resource_coordinator::mojom::DocumentCoordinationUnit> binding_;
+
   FrameNodeImpl* const parent_frame_node_;
   PageNodeImpl* const page_node_;
   ProcessNodeImpl* const process_node_;
   // Can be used to tie together "sibling" frames, where a navigation is ongoing
   // in a new frame that will soon replace the existing one.
   const int frame_tree_node_id_;
+  // A unique identifier shared with all representations of this node across
+  // content and blink. The token is only defined by the browser process and
+  // is never sent back from the renderer in control calls. It should never be
+  // used to look up the FrameTreeNode instance.
+  const base::UnguessableToken dev_tools_token_;
+  // The unique ID of the BrowsingInstance this frame belongs to. Frames in the
+  // same BrowsingInstance are allowed to script each other at least
+  // asynchronously (if cross-site), and sometimes synchronously (if same-site,
+  // and thus same SiteInstance).
+  const int32_t browsing_instance_id_;
+  // The unique ID of the SiteInstance this frame belongs to. Frames in the
+  // same SiteInstance may sychronously script each other. Frames with the
+  // same |site_instance_id_| will also have the same |browsing_instance_id_|.
+  const int32_t site_instance_id_;
 
   base::flat_set<FrameNodeImpl*> child_frame_nodes_;
+
+  // Does *not* change when a navigation is committed.
   ObservedProperty::NotifiesOnlyOnChanges<
       resource_coordinator::mojom::LifecycleState,
-      &GraphObserver::OnLifecycleStateChanged>
+      &Observer::OnLifecycleStateChanged>
       lifecycle_state_{resource_coordinator::mojom::LifecycleState::kRunning};
 
-  bool has_nonempty_beforeunload_ = false;
-  GURL url_;
+  // This is a one way switch. Once marked an ad-frame, always an ad-frame.
+  bool is_ad_frame_ = false;
 
-  ObservedProperty::NotifiesOnlyOnChanges<bool,
-                                          &GraphObserver::OnIsCurrentChanged>
+  ObservedProperty::NotifiesOnlyOnChanges<bool, &Observer::OnIsCurrentChanged>
       is_current_{false};
-
-  // Network is considered almost idle when there are no more than 2 network
-  // connections.
-  ObservedProperty::
-      NotifiesOnlyOnChanges<bool, &GraphObserver::OnNetworkAlmostIdleChanged>
-          network_almost_idle_{false};
 
   // Intervention policy for this frame. These are communicated from the
   // renderer process and are controlled by origin trials.
+  //
+  // TODO(fdoray): Adapt aggregation logic in PageNodeImpl to allow moving this
+  // to DocumentProperties.
   resource_coordinator::mojom::InterventionPolicy
       intervention_policy_[static_cast<size_t>(
                                resource_coordinator::mojom::
                                    PolicyControlledIntervention::kMaxValue) +
                            1];
 
+  // Properties associated with a Document, which are reset when a
+  // different-document navigation is committed in the frame.
+  //
+  // TODO(fdoray): Cleanup this once there is a 1:1 mapping between
+  // RenderFrameHost and Document https://crbug.com/936696.
+  DocumentProperties document_;
+
   DISALLOW_COPY_AND_ASSIGN(FrameNodeImpl);
+};
+
+// A do-nothing default implementation of a FrameNodeImpl::Observer.
+class FrameNodeImpl::ObserverDefaultImpl : public FrameNodeImpl::Observer {
+ public:
+  ObserverDefaultImpl();
+  ~ObserverDefaultImpl() override;
+
+  // FrameNodeImplObserver implementation:
+  void OnIsCurrentChanged(FrameNodeImpl* frame_node) override {}
+  void OnNetworkAlmostIdleChanged(FrameNodeImpl* frame_node) override {}
+  void OnLifecycleStateChanged(FrameNodeImpl* frame_node) override {}
+  void OnNonPersistentNotificationCreated(FrameNodeImpl* frame_node) override {}
+  void OnURLChanged(FrameNodeImpl* frame_node) override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ObserverDefaultImpl);
 };
 
 }  // namespace performance_manager

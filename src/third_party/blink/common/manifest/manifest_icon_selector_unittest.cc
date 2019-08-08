@@ -531,6 +531,26 @@ TEST_P(ManifestIconSelectorTest, UseAnyIfNoIdealSize) {
                                     Purpose::ANY);
     EXPECT_EQ("http://foo.com/icon.png", url.spec());
   }
+
+  // Multiple icons with ideal size => the last one is chosen.
+  {
+    std::vector<gfx::Size> sizes_1;
+    sizes_1.push_back(
+        gfx::Size(width_to_height_ratio() * kIdealIconSize, kIdealIconSize));
+    std::vector<gfx::Size> sizes_2;
+    sizes_2.push_back(
+        gfx::Size(width_to_height_ratio() * kIdealIconSize, kIdealIconSize));
+
+    std::vector<blink::Manifest::ImageResource> icons;
+    icons.push_back(
+        CreateIcon("http://foo.com/icon.png", "", sizes_1, Purpose::ANY));
+    icons.push_back(
+        CreateIcon("http://foo.com/icon_no.png", "", sizes_2, Purpose::ANY));
+
+    GURL url = FindBestMatchingIcon(icons, kIdealIconSize, kMinimumIconSize,
+                                    Purpose::ANY);
+    EXPECT_EQ("http://foo.com/icon_no.png", url.spec());
+  }
 }
 
 INSTANTIATE_TEST_SUITE_P(/* No prefix */,

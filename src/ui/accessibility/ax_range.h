@@ -22,12 +22,13 @@ namespace ui {
 template <class AXPositionType>
 class AXRange {
  public:
+  using AXPositionInstance = std::unique_ptr<AXPositionType>;
+
   AXRange()
       : anchor_(AXPositionType::CreateNullPosition()),
         focus_(AXPositionType::CreateNullPosition()) {}
 
-  AXRange(std::unique_ptr<AXPositionType> anchor,
-          std::unique_ptr<AXPositionType> focus) {
+  AXRange(AXPositionInstance anchor, AXPositionInstance focus) {
     if (anchor) {
       anchor_ = std::move(anchor);
     } else {
@@ -59,6 +60,15 @@ class AXRange {
     return *this;
   }
 
+  bool operator==(const AXRange& other) const {
+    if (IsNull())
+      return other.IsNull();
+    return !other.IsNull() && *anchor_ == *other.anchor() &&
+           *focus_ == *other.focus();
+  }
+
+  bool operator!=(const AXRange& other) const { return !(*this == other); }
+
   virtual ~AXRange() {}
 
   bool IsNull() const {
@@ -76,27 +86,29 @@ class AXRange {
     return focus_.get();
   }
 
-  base::string16 GetText() const {
-    base::string16 text;
-    if (IsNull())
-      return text;
+  AXRange GetForwardRange() const {
+    DCHECK(!IsNull());
+    if (*focus_ < *anchor_)
+      return AXRange(focus_->Clone(), anchor_->Clone());
+    return AXRange(anchor_->Clone(), focus_->Clone());
+  }
 
-    std::unique_ptr<AXPositionType> start, end;
-    if (*anchor_ < *focus_) {
-      start = anchor_->AsLeafTextPosition();
-      end = focus_->AsLeafTextPosition();
-    } else {
-      start = focus_->AsLeafTextPosition();
-      end = anchor_->AsLeafTextPosition();
-    }
+  base::string16 GetText() const {
+    if (IsNull() || *anchor_ == *focus_)
+      return base::string16();
+
+    AXRange forward_range = GetForwardRange();
+    AXPositionInstance start = forward_range.anchor()->AsLeafTextPosition();
+    AXPositionInstance end = forward_range.focus()->AsLeafTextPosition();
 
     int start_offset = start->text_offset();
     DCHECK_GE(start_offset, 0);
     int end_offset = end->text_offset();
     DCHECK_GE(end_offset, 0);
 
+    base::string16 text;
     do {
-      text += start->GetInnerText();
+      text += start->GetText();
       start = start->CreateNextTextAnchorPosition();
     } while (!start->IsNullPosition() && *start < *end);
 
@@ -109,77 +121,51 @@ class AXRange {
     if (*start == *end && !start->IsNullPosition())
       return text;
 
-    size_t text_length = text.length() - end->GetInnerText().length() +
+    size_t text_length = text.length() - end->GetText().length() +
                          static_cast<size_t>(end_offset);
     return text.substr(0, text_length);
   }
 
-  // Returns a vector of AXRanges that span from the start of an anchor
-  // to the end of an anchor, all of which are in between anchor_ and focus_
-  // endpoints of this range.
-  std::vector<AXRange<AXPositionType>> GetAnchors() {
-    DCHECK(*anchor_ <= *focus_);
-
+  // Returns a vector of all ranges (each of them spanning a single anchor)
+  // between the anchor_ and focus_ endpoints of this instance.
+  std::vector<AXRange<AXPositionType>> GetAnchors() const {
     std::vector<AXRange<AXPositionType>> anchors;
-    auto range_start = anchor_->Clone();
-    auto range_end = focus_->Clone();
-
-    // Non-null degenerate ranges span no content, but they do have a single
-    // anchor.
-    auto current_anchor_start = range_start->AsLeafTextPosition();
-    if (!current_anchor_start->IsNullPosition() && *range_start == *range_end) {
-      anchors.emplace_back(AXRange(current_anchor_start->Clone(),
-                                   current_anchor_start->Clone()));
+    if (IsNull())
       return anchors;
-    }
 
-    // If start and end are in the same anchor, use end instead of
-    // CreatePositionAtEndOfAnchor to ensure this doesn't return a range that
-    // spans past end.
-    auto current_anchor_end =
-        current_anchor_start->CreatePositionAtEndOfAnchor();
-    const auto end = range_end->AsLeafTextPosition();
-    if (*current_anchor_end > *end &&
-        end->GetAnchor() == current_anchor_start->GetAnchor())
-      current_anchor_end = end->Clone();
+    AXRange forward_range = GetForwardRange();
+    AXPositionInstance current_anchor_start =
+        forward_range.anchor()->AsLeafTextPosition();
+    AXPositionInstance range_end = forward_range.focus()->AsLeafTextPosition();
 
     while (!current_anchor_start->IsNullPosition() &&
-           !current_anchor_end->IsNullPosition() &&
-           *current_anchor_start < *current_anchor_end) {
-      if (current_anchor_start->GetAnchor() ==
-          current_anchor_end->GetAnchor()) {
-        anchors.emplace_back(AXRange(current_anchor_start->Clone(),
-                                     current_anchor_end->Clone()));
+           *current_anchor_start <= *range_end) {
+      // When the current start reaches the same anchor as this AXRange's end,
+      // simply append this last anchor (trimmed at range_end) and exit.
+      if (current_anchor_start->GetAnchor() == range_end->GetAnchor()) {
+        anchors.emplace_back(current_anchor_start->Clone(), range_end->Clone());
+        return anchors;
       }
 
-      if (*current_anchor_end >= *end)
-        break;
+      AXPositionInstance current_anchor_end =
+          current_anchor_start->CreatePositionAtEndOfAnchor();
+      DCHECK_EQ(current_anchor_start->GetAnchor(),
+                current_anchor_end->GetAnchor());
+      DCHECK_LE(*current_anchor_start, *current_anchor_end);
+      DCHECK_LE(*current_anchor_end, *range_end);
 
-      if (current_anchor_end->CreateNextTextAnchorPosition()
-              ->IsNullPosition()) {
-        current_anchor_start = current_anchor_start->CreateNextAnchorPosition()
-                                   ->AsLeafTextPosition();
-      } else {
-        current_anchor_start =
-            current_anchor_end->CreateNextTextAnchorPosition();
-      }
-
-      current_anchor_end = current_anchor_start->CreatePositionAtEndOfAnchor();
-
-      // If CreatePositionAtEndOfAnchor goes past the end anchor, use the end
-      // anchor instead.
-      if (*current_anchor_end > *end &&
-          end->GetAnchor() == current_anchor_start->GetAnchor())
-        current_anchor_end = end->Clone();
+      anchors.emplace_back(current_anchor_start->Clone(),
+                           current_anchor_end->Clone());
+      current_anchor_start =
+          current_anchor_end->CreateNextAnchorPosition()->AsLeafTextPosition();
     }
-
     return anchors;
   }
 
   // Appends rects in screen coordinates of all text nodes that span between
   // anchor_ and focus_. Rects outside of the viewport are skipped.
   std::vector<gfx::Rect> GetScreenRects() const {
-    DCHECK(*anchor_ <= *focus_);
+    DCHECK_LE(*anchor_, *focus_);
     std::vector<gfx::Rect> rectangles;
     auto current_line_start = anchor_->Clone();
     auto range_end = focus_->Clone();
@@ -196,6 +182,7 @@ class AXRange {
       if (current_line_start->GetAnchor()->data().role ==
           ax::mojom::Role::kInlineTextBox) {
         current_line_start = current_line_start->CreateParentPosition();
+        current_line_end = current_line_end->CreateParentPosition();
       }
 
       AXTreeID current_tree_id = current_line_start->tree_id();
@@ -205,13 +192,15 @@ class AXRange {
       AXPlatformNodeDelegate* current_anchor_delegate =
           manager->GetDelegate(current_tree_id, current_anchor->id());
 
-      gfx::Rect current_rect = current_anchor_delegate->GetRangeBoundsRect(
-          current_line_start->text_offset(), current_line_end->text_offset(),
-          AXCoordinateSystem::kScreen, AXClippingBehavior::kClipped);
+      gfx::Rect current_rect =
+          current_anchor_delegate->GetHypertextRangeBoundsRect(
+              current_line_start->text_offset(),
+              current_line_end->text_offset(), AXCoordinateSystem::kScreen,
+              AXClippingBehavior::kClipped);
 
       // Only add rects that are within the current viewport. The 'clipped'
-      // parameter for GetClippedScreenRangeBoundsRect will return an empty rect
-      // in that case.
+      // parameter for GetHypertextRangeBoundsRect will return an empty rect in
+      // that case.
       if (!current_rect.IsEmpty())
         rectangles.emplace_back(current_rect);
 
@@ -223,8 +212,8 @@ class AXRange {
   }
 
  private:
-  std::unique_ptr<AXPositionType> anchor_;
-  std::unique_ptr<AXPositionType> focus_;
+  AXPositionInstance anchor_;
+  AXPositionInstance focus_;
 };
 
 }  // namespace ui

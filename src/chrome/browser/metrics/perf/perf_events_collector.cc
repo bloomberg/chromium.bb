@@ -103,6 +103,17 @@ const char kPerfRecordLBRCmd[] = "perf record -a -e r20c4 -b -c 200011";
 // we sample on the branches retired event.
 const char kPerfRecordLBRCmdAtom[] = "perf record -a -e rc4 -b -c 300001";
 
+// The following events count misses in the level 1 caches and TLBs.
+
+// Perf doesn't support the generic dTLB-misses event for Goldmont. We define it
+// in terms of raw event number and umask value. Event codes taken from
+// "Intel 64 and IA-32 Architectures Software Developer's Manual, Vol 3".
+const char kPerfRecordInstructionTLBMissesCmdGLM[] =
+    "perf record -a -e r0481 -c 2003";
+
+const char kPerfRecordDataTLBMissesCmdGLM[] = "perf record -a -e r13d0 -c 2003";
+
+// Use the generic event names for the other microarchitectures.
 const char kPerfRecordInstructionTLBMissesCmd[] =
     "perf record -a -e iTLB-misses -c 2003";
 
@@ -156,13 +167,22 @@ const std::vector<RandomSelector::WeightAndValue> GetDefaultCommands_x86_64(
     cmds.push_back(WeightAndValue(5.0, kPerfRecordCacheMissesCmd));
     return cmds;
   }
-  if (cpu_uarch == "Silvermont" || cpu_uarch == "Airmont" ||
-      cpu_uarch == "Goldmont") {
+  if (cpu_uarch == "Silvermont" || cpu_uarch == "Airmont") {
     cmds.push_back(WeightAndValue(50.0, kPerfRecordCyclesCmd));
     cmds.push_back(WeightAndValue(20.0, callgraph_cmd));
     cmds.push_back(WeightAndValue(15.0, kPerfRecordLBRCmdAtom));
     cmds.push_back(WeightAndValue(5.0, kPerfRecordInstructionTLBMissesCmd));
     cmds.push_back(WeightAndValue(5.0, kPerfRecordDataTLBMissesCmd));
+    cmds.push_back(WeightAndValue(5.0, kPerfRecordCacheMissesCmd));
+    return cmds;
+  }
+  if (cpu_uarch == "Goldmont" || cpu_uarch == "GoldmontPlus") {
+    cmds.push_back(WeightAndValue(50.0, kPerfRecordCyclesCmd));
+    cmds.push_back(WeightAndValue(20.0, callgraph_cmd));
+    cmds.push_back(WeightAndValue(15.0, kPerfRecordLBRCmdAtom));
+    // Use the Goldmont variants of iTLB and dTLB misses.
+    cmds.push_back(WeightAndValue(5.0, kPerfRecordInstructionTLBMissesCmdGLM));
+    cmds.push_back(WeightAndValue(5.0, kPerfRecordDataTLBMissesCmdGLM));
     cmds.push_back(WeightAndValue(5.0, kPerfRecordCacheMissesCmd));
     return cmds;
   }

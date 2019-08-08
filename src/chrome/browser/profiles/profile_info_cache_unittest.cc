@@ -381,7 +381,7 @@ TEST_F(ProfileInfoCacheTest, GAIAPicture) {
   // Set GAIA picture.
   gfx::Image gaia_image(gfx::test::CreateImage(
       kGaiaPictureSize, kGaiaPictureSize));
-  GetCache()->SetGAIAPictureOfProfileAtIndex(1, &gaia_image);
+  GetCache()->SetGAIAPictureOfProfileAtIndex(1, gaia_image);
   EXPECT_EQ(NULL, GetCache()->GetGAIAPictureOfProfileAtIndex(0));
   EXPECT_TRUE(gfx::test::AreImagesEqual(
       gaia_image, *GetCache()->GetGAIAPictureOfProfileAtIndex(1)));
@@ -428,7 +428,7 @@ TEST_F(ProfileInfoCacheTest, PersistGAIAPicture) {
       base::string16(), 0, std::string(), EmptyAccountId());
   gfx::Image gaia_image(gfx::test::CreateImage());
 
-  GetCache()->SetGAIAPictureOfProfileAtIndex(0, &gaia_image);
+  GetCache()->SetGAIAPictureOfProfileAtIndex(0, gaia_image);
 
   // Make sure everything has completed, and the file has been written to disk.
   content::RunAllTasksUntilIdle();
@@ -480,7 +480,7 @@ TEST_F(ProfileInfoCacheTest, EmptyGAIAInfo) {
 
   // Set empty GAIA info.
   GetCache()->SetGAIANameOfProfileAtIndex(0, base::string16());
-  GetCache()->SetGAIAPictureOfProfileAtIndex(0, NULL);
+  GetCache()->SetGAIAPictureOfProfileAtIndex(0, gfx::Image());
   GetCache()->SetIsUsingGAIAPictureOfProfileAtIndex(0, true);
 
   // Verify that the profile name and picture are not empty.
@@ -707,7 +707,7 @@ TEST_F(ProfileInfoCacheTest, GetGaiaImageForAvatarMenu) {
                                 std::string(), EmptyAccountId());
 
   gfx::Image gaia_image(gfx::test::CreateImage());
-  GetCache()->SetGAIAPictureOfProfileAtIndex(0, &gaia_image);
+  GetCache()->SetGAIAPictureOfProfileAtIndex(0, gaia_image);
 
   // Make sure everything has completed, and the file has been written to disk.
   content::RunAllTasksUntilIdle();

@@ -19,7 +19,7 @@
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
-#import "ios/web/public/ssl_status.h"
+#import "ios/web/public/security/ssl_status.h"
 #import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -127,4 +127,26 @@ bool LocationBarModelDelegateIOS::IsOfflinePage() const {
     return false;
   const GURL& url = visibleItem->GetURL();
   return url.SchemeIs(kChromeUIScheme) && url.host() == kChromeUIOfflineHost;
+}
+
+bool LocationBarModelDelegateIOS::IsInstantNTP() const {
+  // This is currently only called by the OmniboxEditModel to determine if the
+  // Google landing page is showing.
+  //
+  // TODO(crbug.com/315563)(lliabraa): This should also check the user's default
+  // search engine because if they're not using Google the Google landing page
+  // is not shown.
+  GURL currentURL;
+  if (!GetURL(&currentURL))
+    return false;
+  return currentURL == kChromeUINewTabURL;
+}
+
+bool LocationBarModelDelegateIOS::IsNewTabPage(const GURL& url) const {
+  return url.spec() == kChromeUINewTabURL;
+}
+
+bool LocationBarModelDelegateIOS::IsHomePage(const GURL& url) const {
+  // iOS does not have a notion of home page.
+  return false;
 }

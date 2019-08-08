@@ -35,8 +35,6 @@ class SVGFEMorphologyElement final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_NODE_FACTORY(SVGFEMorphologyElement);
-
   explicit SVGFEMorphologyElement(Document&);
 
   SVGAnimatedNumber* radiusX() { return radius_->FirstNumber(); }

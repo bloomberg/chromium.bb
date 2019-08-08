@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "ash/public/interfaces/system_tray.mojom.h"
+#include "ash/public/interfaces/locale.mojom.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 

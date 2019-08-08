@@ -26,7 +26,7 @@
 
 namespace blink {
 
-inline SVGClipPathElement::SVGClipPathElement(Document& document)
+SVGClipPathElement::SVGClipPathElement(Document& document)
     : SVGGraphicsElement(svg_names::kClipPathTag, document),
       clip_path_units_(MakeGarbageCollected<
                        SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>>(
@@ -40,8 +40,6 @@ void SVGClipPathElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(clip_path_units_);
   SVGGraphicsElement::Trace(visitor);
 }
-
-DEFINE_NODE_FACTORY(SVGClipPathElement)
 
 void SVGClipPathElement::SvgAttributeChanged(const QualifiedName& attr_name) {
   if (attr_name == svg_names::kClipPathUnitsAttr) {

@@ -11,8 +11,8 @@ PaymentInstrument::PaymentInstrument(int icon_resource_id, Type type)
 
 PaymentInstrument::~PaymentInstrument() {}
 
-const gfx::ImageSkia* PaymentInstrument::icon_image_skia() const {
-  return nullptr;
+gfx::ImageSkia PaymentInstrument::icon_image_skia() const {
+  return gfx::ImageSkia();
 }
 
 }  // namespace payments

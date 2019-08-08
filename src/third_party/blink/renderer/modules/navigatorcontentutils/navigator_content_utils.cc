@@ -32,21 +32,20 @@
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
-static HashSet<String>* g_scheme_whitelist;
-
-static void InitCustomSchemeHandlerWhitelist() {
-  g_scheme_whitelist = new HashSet<String>;
-  static const char* const kSchemes[] = {
-      "bitcoin", "geo",  "im",   "irc",         "ircs", "magnet", "mailto",
-      "mms",     "news", "nntp", "openpgp4fpr", "sip",  "sms",    "smsto",
-      "ssh",     "tel",  "urn",  "webcal",      "wtai", "xmpp",
-  };
-  for (size_t i = 0; i < base::size(kSchemes); ++i)
-    g_scheme_whitelist->insert(kSchemes[i]);
+static const HashSet<String>& SupportedSchemes() {
+  DEFINE_STATIC_LOCAL(
+      HashSet<String>, supported_schemes,
+      ({
+          "bitcoin", "geo",  "im",   "irc",         "ircs", "magnet", "mailto",
+          "mms",     "news", "nntp", "openpgp4fpr", "sip",  "sms",    "smsto",
+          "ssh",     "tel",  "urn",  "webcal",      "wtai", "xmpp",
+      }));
+  return supported_schemes;
 }
 
 static bool VerifyCustomHandlerURL(const Document& document,
@@ -88,16 +87,6 @@ static bool VerifyCustomHandlerURL(const Document& document,
   return true;
 }
 
-static bool IsSchemeWhitelisted(const String& scheme) {
-  if (!g_scheme_whitelist)
-    InitCustomSchemeHandlerWhitelist();
-
-  StringBuilder builder;
-  builder.Append(scheme.LowerASCII());
-
-  return g_scheme_whitelist->Contains(builder.ToString());
-}
-
 static bool VerifyCustomHandlerScheme(const String& scheme,
                                       ExceptionState& exception_state) {
   if (!IsValidProtocol(scheme)) {
@@ -117,7 +106,7 @@ static bool VerifyCustomHandlerScheme(const String& scheme,
     return false;
   }
 
-  if (IsSchemeWhitelisted(scheme))
+  if (SupportedSchemes().Contains(scheme.LowerASCII()))
     return true;
 
   exception_state.ThrowSecurityError(

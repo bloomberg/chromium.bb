@@ -14,10 +14,10 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
-#include "device/usb/public/mojom/device_enumeration_options.mojom.h"
-#include "device/usb/public/mojom/device_manager.mojom.h"
-#include "device/usb/public/mojom/device_manager_client.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "services/device/public/mojom/usb_enumeration_options.mojom.h"
+#include "services/device/public/mojom/usb_manager.mojom.h"
+#include "services/device/public/mojom/usb_manager_client.mojom.h"
 
 namespace chromeos {
 

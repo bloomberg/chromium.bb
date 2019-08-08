@@ -92,10 +92,6 @@
         <item name="android:padding">3dp</item>
     </style>
 
-    <style name="Theme.Chromium.Incognito" parent="Theme.Chromium.WithWindowAnimation">
-        <item name="android:colorPrimary">@color/incognito_modern_primary_color</item>
-    </style>
-
     <!-- Theme variation for low-end devices.
 
         Since ChromeActivities are not HW accelerated, they don't get fancy

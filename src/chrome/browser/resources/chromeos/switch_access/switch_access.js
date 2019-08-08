@@ -140,16 +140,6 @@ class SwitchAccess {
   }
 
   /**
-   * Return the default key code for a command.
-   * @override
-   * @param {!SAConstants.Command} command
-   * @return {number}
-   */
-  getDefaultKeyCodeFor(command) {
-    return this.commands_.getDefaultKeyCodeFor(command);
-  }
-
-  /**
    * Forwards the keycodes received from keyPressed events to |callback|.
    * @param {function(number)} callback
    */
@@ -184,6 +174,7 @@ class SwitchAccess {
 
   /**
    * Handle a change in user preferences.
+   * @override
    * @param {!Object} changes
    */
   onPreferencesChanged(changes) {
@@ -208,19 +199,19 @@ class SwitchAccess {
    * updated.
    *
    * @override
-   * @param {string} key
-   * @param {boolean|string|number} value
+   * @param {SAConstants.Preference} key
+   * @param {boolean|number} value
    */
   setPreference(key, value) {
     this.switchAccessPreferences_.setPreference(key, value);
   }
 
   /**
-   * Get the value of type 'boolean' of the preference |key|. Will throw a type
-   * error if the value of |key| is not 'boolean'.
+   * Get the boolean value for the given key. Will throw a type error if the
+   * value associated with |key| is not a boolean, or undefined.
    *
    * @override
-   * @param  {string} key
+   * @param  {SAConstants.Preference} key
    * @return {boolean}
    */
   getBooleanPreference(key) {
@@ -228,15 +219,26 @@ class SwitchAccess {
   }
 
   /**
-   * Get the value of type 'number' of the preference |key|. Will throw a type
-   * error if the value of |key| is not 'number'.
+   * Get the number value for the given key. Will throw a type error if the
+   * value associated with |key| is not a number, or undefined.
    *
    * @override
-   * @param  {string} key
+   * @param  {SAConstants.Preference} key
    * @return {number}
    */
   getNumberPreference(key) {
     return this.switchAccessPreferences_.getNumberPreference(key);
+  }
+
+  /**
+   * Get the number value for the given key, or |null| if none exists.
+   *
+   * @override
+   * @param  {SAConstants.Preference} key
+   * @return {number|null}
+   */
+  getNumberPreferenceIfDefined(key) {
+    return this.switchAccessPreferences_.getNumberPreferenceIfDefined(key);
   }
 
   /**

@@ -5,10 +5,10 @@
 #include "ash/system/power/power_button_test_base.h"
 
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/session/session_controller.h"
+#include "ash/public/cpp/test/shell_test_api.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
-#include "ash/shell_test_api.h"
 #include "ash/system/power/power_button_controller.h"
 #include "ash/system/power/power_button_controller_test_api.h"
 #include "ash/wm/lock_state_controller.h"
@@ -108,7 +108,7 @@ void PowerButtonTestBase::Initialize(
 
 void PowerButtonTestBase::LockScreen() {
   lock_state_controller_->OnLockStateChanged(true);
-  Shell::Get()->session_controller()->LockScreenAndFlushForTest();
+  GetSessionControllerClient()->LockScreen();
 }
 
 void PowerButtonTestBase::UnlockScreen() {

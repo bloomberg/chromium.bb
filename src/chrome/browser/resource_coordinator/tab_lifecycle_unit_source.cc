@@ -9,10 +9,10 @@
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/performance_manager/graph/graph.h"
+#include "chrome/browser/performance_manager/graph/graph_impl.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/performance_manager.h"
-#include "chrome/browser/performance_manager/web_contents_proxy.h"
+#include "chrome/browser/performance_manager/public/web_contents_proxy.h"
 #include "chrome/browser/resource_coordinator/discard_metrics_lifecycle_unit_observer.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_source_observer.h"
 #include "chrome/browser/resource_coordinator/resource_coordinator_parts.h"
@@ -64,7 +64,8 @@ WEB_CONTENTS_USER_DATA_KEY_IMPL(TabLifecycleUnitSource::TabLifecycleUnitHolder)
 // A very simple graph observer that forwards events over to the
 // TabLifecycleUnitSource on the UI thread. This is created on the UI thread
 // and ownership passed to the performance manager.
-class TabLifecycleStateObserver : public performance_manager::GraphObserver {
+class TabLifecycleStateObserver
+    : public performance_manager::GraphObserverDefaultImpl {
  public:
   using NodeBase = performance_manager::NodeBase;
   using PageNodeImpl = performance_manager::PageNodeImpl;
@@ -75,20 +76,17 @@ class TabLifecycleStateObserver : public performance_manager::GraphObserver {
 
  private:
   bool ShouldObserve(const NodeBase* node) override {
-    return node->id().type == resource_coordinator::CoordinationUnitType::kPage;
+    return node->type() == performance_manager::PageNodeImpl::Type();
   }
 
   static void OnLifecycleStateChangedImpl(
-      const base::WeakPtr<WebContentsProxy>& contents_proxy,
+      const WebContentsProxy& contents_proxy,
       mojom::LifecycleState state) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     // If the web contents is still alive then dispatch to the actual
     // implementation in TabLifecycleUnitSource.
-    if (contents_proxy.get()) {
-      DCHECK(contents_proxy.get()->GetWebContents());
-      TabLifecycleUnitSource::OnLifecycleStateChanged(
-          contents_proxy.get()->GetWebContents(), state);
-    }
+    if (auto* contents = contents_proxy.Get())
+      TabLifecycleUnitSource::OnLifecycleStateChanged(contents, state);
   }
 
   void OnLifecycleStateChanged(PageNodeImpl* page_node) override {
@@ -285,20 +283,20 @@ void TabLifecycleUnitSource::OnTabStripModelChanged(
     const TabStripSelectionChange& selection) {
   switch (change.type()) {
     case TabStripModelChange::kInserted: {
-      for (const auto& delta : change.deltas()) {
-        OnTabInserted(tab_strip_model, delta.insert.contents,
-                      selection.new_contents == delta.insert.contents);
+      for (const auto& contents : change.GetInsert()->contents) {
+        OnTabInserted(tab_strip_model, contents.contents,
+                      selection.new_contents == contents.contents);
       }
       break;
     }
     case TabStripModelChange::kRemoved: {
-      for (const auto& delta : change.deltas())
-        OnTabDetached(delta.remove.contents);
+      for (const auto& contents : change.GetRemove()->contents)
+        OnTabDetached(contents.contents);
       break;
     }
     case TabStripModelChange::kReplaced: {
-      for (const auto& delta : change.deltas())
-        OnTabReplaced(delta.replace.old_contents, delta.replace.new_contents);
+      auto* replace = change.GetReplace();
+      OnTabReplaced(replace->old_contents, replace->new_contents);
       break;
     }
     case TabStripModelChange::kMoved:

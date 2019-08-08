@@ -6,6 +6,8 @@ import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("service_worker") {
   sources = [
+    "controller_service_worker.cc",
+    "controller_service_worker.h",
     "extendable_event.cc",
     "extendable_event.h",
     "extendable_message_event.cc",
@@ -52,6 +54,8 @@ blink_modules_sources("service_worker") {
     "service_worker_script_cached_metadata_handler.h",
     "service_worker_thread.cc",
     "service_worker_thread.h",
+    "service_worker_timeout_timer.cc",
+    "service_worker_timeout_timer.h",
     "service_worker_window_client.cc",
     "service_worker_window_client.h",
     "thread_safe_script_container.cc",

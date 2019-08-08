@@ -25,7 +25,6 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
-import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -48,11 +47,11 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.tab.TabObserverRegistrar;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.ColorUtils;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
@@ -91,7 +90,9 @@ public class WebappActivity extends SingleTabActivity {
 
     private WebappInfo mWebappInfo;
 
-    private WebappSplashScreenController mSplashController;
+    private TabObserverRegistrar mTabObserverRegistrar;
+
+    private SplashController mSplashController;
 
     private WebappDisclosureSnackbarController mDisclosureSnackbarController;
 
@@ -134,7 +135,9 @@ public class WebappActivity extends SingleTabActivity {
     public WebappActivity() {
         mWebappInfo = createWebappInfo(null);
         mDirectoryManager = new WebappDirectoryManager();
-        mSplashController = new WebappSplashScreenController();
+        mTabObserverRegistrar = new TabObserverRegistrar(getLifecycleDispatcher());
+        mSplashController =
+                new SplashController(this, getLifecycleDispatcher(), mTabObserverRegistrar);
         mDisclosureSnackbarController = new WebappDisclosureSnackbarController();
     }
 
@@ -188,10 +191,8 @@ public class WebappActivity extends SingleTabActivity {
     @Override
     public void initializeState() {
         super.initializeState();
+        mTabObserverRegistrar.addObserversForTab(getActivityTab());
         initializeUI(getSavedInstanceState());
-        if (FeatureUtilities.isNoTouchModeEnabled()) {
-            getActivityTab().setWebappManifestScope(getWebappInfo().scopeUri().toString());
-        }
     }
 
     @Override
@@ -228,15 +229,14 @@ public class WebappActivity extends SingleTabActivity {
     }
 
     private void onLayoutInflated(ViewGroup mainView) {
-        mSplashController.setViewHierarchyBelowSplashscreen(mainView);
+        ViewGroup contentView = (ViewGroup) findViewById(android.R.id.content);
+        WarmupManager.transferViewHeirarchy(mainView, contentView);
+        mSplashController.bringSplashBackToFront();
         onInitialLayoutInflationComplete();
     }
 
     protected void initializeUI(Bundle savedInstanceState) {
         Tab tab = getActivityTab();
-
-        // Make display mode available before page load.
-        tab.getTabWebContentsDelegateAndroid().setDisplayMode(mWebappInfo.displayMode());
 
         // We do not load URL when restoring from saved instance states. However, it's possible that
         // we saved instance state before loading a URL, so even after restoring from
@@ -294,9 +294,6 @@ public class WebappActivity extends SingleTabActivity {
             StrictMode.setThreadPolicy(oldPolicy);
         }
 
-        ScreenOrientationProvider.lockOrientation(
-                getWindowAndroid(), (byte) mWebappInfo.orientation());
-
         // When turning on TalkBack on Android, hitting app switcher to bring a WebappActivity to
         // front will speak "Web App", which is the label of WebappActivity. Therefore, we set title
         // of the WebappActivity explicitly to make it speak the short name of the Web App.
@@ -304,13 +301,13 @@ public class WebappActivity extends SingleTabActivity {
 
         super.performPreInflationStartup();
 
+        applyScreenOrientation();
+
         if (mWebappInfo.displayMode() == WebDisplayMode.FULLSCREEN) {
             enterImmersiveMode();
         }
-        try (TraceEvent te = TraceEvent.scoped("WebappActivity.showSplash")) {
-            ViewGroup contentView = (ViewGroup) findViewById(android.R.id.content);
-            mSplashController.showSplash(contentView, mWebappInfo);
-        }
+
+        initSplash();
     }
 
     @Override
@@ -326,7 +323,6 @@ public class WebappActivity extends SingleTabActivity {
         getToolbarManager().setCloseButtonDrawable(null); // Hides close button.
 
         getFullscreenManager().setTab(getActivityTab());
-        mSplashController.showSplashWithNative(getActivityTab(), getCompositorViewHolder());
         super.finishNativeInitialization();
         mIsInitialized = true;
     }
@@ -521,18 +517,15 @@ public class WebappActivity extends SingleTabActivity {
     }
 
     @Override
-    protected int getAppMenuLayoutId() {
-        return R.menu.custom_tabs_menu;
-    }
-
-    @Override
     protected int getToolbarLayoutId() {
         return R.layout.custom_tabs_toolbar;
     }
 
     @Override
-    protected AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
-        return new CustomTabAppMenuPropertiesDelegate(this,
+    public AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
+        return new CustomTabAppMenuPropertiesDelegate(this, getActivityTabProvider(),
+                getMultiWindowModeStateDispatcher(), getTabModelSelector(), getToolbarManager(),
+                getWindow().getDecorView(),
                 CustomTabIntentDataProvider.CustomTabsUiType.MINIMAL_UI_WEBAPP,
                 new ArrayList<String>(), true /* is opened by Chrome */,
                 true /* should show share */, false /* should show star (bookmarking) */,
@@ -830,7 +823,7 @@ public class WebappActivity extends SingleTabActivity {
     }
 
     @VisibleForTesting
-    ViewGroup getSplashScreenForTests() {
+    View getSplashScreenForTests() {
         return mSplashController.getSplashScreenForTests();
     }
 
@@ -859,6 +852,42 @@ public class WebappActivity extends SingleTabActivity {
     @Override
     protected boolean isContextualSearchAllowed() {
         return false;
+    }
+
+    /** Inits the splash screen */
+    protected void initSplash() {
+        // Splash screen is shown after preInflationStartup() is run and the delegate is set.
+        boolean isWindowInitiallyTranslucent = mWebappInfo.isSplashProvidedByWebApk();
+        mSplashController.setConfig(new WebappSplashDelegate(this, getLifecycleDispatcher(),
+                                            mTabObserverRegistrar, mWebappInfo),
+                isWindowInitiallyTranslucent, WebappSplashDelegate.HIDE_ANIMATION_DURATION_MS);
+    }
+
+    /** Sets the screen orientation. */
+    private void applyScreenOrientation() {
+        if (mWebappInfo.isSplashProvidedByWebApk()
+                && Build.VERSION.SDK_INT == Build.VERSION_CODES.O) {
+            // When the splash screen is provided by the WebAPK, the activity is initially
+            // translucent. Setting the screen orientation while the activity is translucent
+            // throws an exception on O (but not O MR1). Delay setting it.
+            ScreenOrientationProvider.getInstance().delayOrientationRequests(getWindowAndroid());
+
+            addSplashscreenObserver(new SplashscreenObserver() {
+                @Override
+                public void onTranslucencyRemoved() {
+                    ScreenOrientationProvider.getInstance().runDelayedOrientationRequests(
+                            getWindowAndroid());
+                }
+
+                @Override
+                public void onSplashscreenHidden(long startTimestamp, long endTimestamp) {}
+            });
+
+            // Fall through and queue up request for the default screen orientation because the web
+            // page might change it via JavaScript.
+        }
+        ScreenOrientationProvider.getInstance().lockOrientation(
+                getWindowAndroid(), (byte) mWebappInfo.orientation());
     }
 
     /**

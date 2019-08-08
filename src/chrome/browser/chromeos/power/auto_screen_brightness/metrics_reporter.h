@@ -27,7 +27,7 @@ class MetricsReporter : public PowerManagerClient::Observer {
  public:
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
-  enum class UserAdjustment {
+  enum class DeviceClass {
     kNoAls = 0,
     kSupportedAls = 1,
     kUnsupportedAls = 2,
@@ -36,8 +36,8 @@ class MetricsReporter : public PowerManagerClient::Observer {
     kMaxValue = kEve
   };
 
-  static constexpr int kNumberAdjustmentTypes =
-      static_cast<int>(UserAdjustment::kMaxValue) + 1;
+  static constexpr int kNumberDeviceClasses =
+      static_cast<int>(DeviceClass::kMaxValue) + 1;
 
   // A histogram recorded in UMA, showing reasons why daily metrics are
   // reported.
@@ -67,8 +67,13 @@ class MetricsReporter : public PowerManagerClient::Observer {
   // PowerManagerClient::Observer:
   void SuspendDone(const base::TimeDelta& duration) override;
 
-  // Increments number of adjustments with type |user_adjustment|.
-  void OnUserBrightnessChangeRequested(UserAdjustment user_adjustment);
+  // Sets |device_class_|. Should only be called once after adapter is
+  // initialized.
+  void SetDeviceClass(DeviceClass device_class);
+
+  // Increments number of adjustments for |device_class_|. Should only
+  // be called after |SetDeviceClass| is called.
+  void OnUserBrightnessChangeRequested();
 
   // Calls ReportDailyMetrics directly.
   void ReportDailyMetricsForTesting(metrics::DailyEvent::IntervalType type);
@@ -80,6 +85,10 @@ class MetricsReporter : public PowerManagerClient::Observer {
   // |daily_event_|.
   void ReportDailyMetrics(metrics::DailyEvent::IntervalType type);
 
+  // Used as an index into |daily_counts_| for counting adjustments.
+  // Set once and then never changed during the Chrome session.
+  base::Optional<DeviceClass> device_class_;
+
   ScopedObserver<PowerManagerClient, PowerManagerClient::Observer>
       power_manager_client_observer_;
 
@@ -90,8 +99,9 @@ class MetricsReporter : public PowerManagerClient::Observer {
   // Instructs |daily_event_| to check if a day has passed.
   base::RepeatingTimer timer_;
 
-  // Daily count for each UserAjustment. Ordered by UserAdjustment values.
-  std::array<int, kNumberAdjustmentTypes> daily_counts_;
+  // Daily count for each DeviceClass. Ordered by DeviceClass values.
+  // Initial values will be loaded from prefs service.
+  std::array<int, kNumberDeviceClasses> daily_counts_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsReporter);
 };

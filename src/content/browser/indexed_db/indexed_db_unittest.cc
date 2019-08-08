@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/time/default_clock.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_factory_impl.h"
@@ -89,7 +90,8 @@ class IndexedDBTest : public testing::Test {
             CreateAndReturnTempDir(&temp_dir_),
             /*special_storage_policy=*/special_storage_policy_.get(),
             quota_manager_proxy_.get(),
-            indexed_db::GetDefaultLevelDBFactory())) {
+            indexed_db::GetDefaultLevelDBFactory(),
+            base::DefaultClock::GetInstance())) {
     special_storage_policy_->AddSessionOnly(kSessionOnlyOrigin.GetURL());
   }
   ~IndexedDBTest() override {

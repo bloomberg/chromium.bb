@@ -7,6 +7,9 @@
 #include <memory>
 #include <vector>
 
+#include "ash/keyboard/ui/container_behavior.h"
+#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/test/test_keyboard_controller_observer.h"
 #include "ash/public/interfaces/keyboard_controller.mojom.h"
 #include "ash/shell.h"
@@ -20,8 +23,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
-#include "ui/keyboard/container_behavior.h"
-#include "ui/keyboard/keyboard_controller.h"
+#include "ui/display/manager/display_manager.h"
 
 using keyboard::mojom::KeyboardConfig;
 using keyboard::mojom::KeyboardConfigPtr;
@@ -394,16 +396,10 @@ TEST_F(AshKeyboardControllerTest, SetContainerType) {
       target_bounds.size(),
       keyboard_controller()->GetKeyboardWindow()->GetTargetBounds().size());
 
-  // Set the container type to kFullscreen.
-  EXPECT_TRUE(test_client()->SetContainerType(
-      keyboard::mojom::ContainerType::kFullscreen, base::nullopt));
-  EXPECT_EQ(keyboard::mojom::ContainerType::kFullscreen,
-            keyboard_controller()->GetActiveContainerType());
-
   // Setting the container type to the current type should fail.
   EXPECT_FALSE(test_client()->SetContainerType(
-      keyboard::mojom::ContainerType::kFullscreen, base::nullopt));
-  EXPECT_EQ(keyboard::mojom::ContainerType::kFullscreen,
+      keyboard::mojom::ContainerType::kFloating, base::nullopt));
+  EXPECT_EQ(keyboard::mojom::ContainerType::kFloating,
             keyboard_controller()->GetActiveContainerType());
 }
 
@@ -471,6 +467,38 @@ TEST_F(AshKeyboardControllerTest, ChangingSessionRebuildsKeyboard) {
       session_manager::SessionState::ACTIVE);
   test_client()->FlushMojoForTesting();
   EXPECT_EQ(2, test_observer()->destroyed_count());
+}
+
+TEST_F(AshKeyboardControllerTest, VisualBoundsInMultipleDisplays) {
+  UpdateDisplay("800x600,1024x768");
+
+  test_client()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
+
+  // Show the keyboard in the second display.
+  keyboard_controller()->ShowKeyboardInDisplay(
+      Shell::Get()->display_manager()->GetSecondaryDisplay());
+  ASSERT_TRUE(keyboard::WaitUntilShown());
+
+  gfx::Rect root_bounds = keyboard_controller()->visual_bounds_in_root();
+  EXPECT_EQ(0, root_bounds.x());
+
+  gfx::Rect screen_bounds = keyboard_controller()->GetVisualBoundsInScreen();
+  EXPECT_EQ(800, screen_bounds.x());
+}
+
+TEST_F(AshKeyboardControllerTest, OccludedBoundsInMultipleDisplays) {
+  UpdateDisplay("800x600,1024x768");
+
+  test_client()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
+
+  // Show the keyboard in the second display.
+  keyboard_controller()->ShowKeyboardInDisplay(
+      Shell::Get()->display_manager()->GetSecondaryDisplay());
+  ASSERT_TRUE(keyboard::WaitUntilShown());
+
+  gfx::Rect screen_bounds =
+      keyboard_controller()->GetWorkspaceOccludedBoundsInScreen();
+  EXPECT_EQ(800, screen_bounds.x());
 }
 
 }  // namespace ash

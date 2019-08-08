@@ -6,10 +6,10 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "components/ntp_tiles/json_unsafe_parser.h"
 #include "components/ntp_tiles/popular_sites_impl.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/json_parser/in_process_json_parser.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/web/public/web_thread.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -24,5 +24,5 @@ IOSPopularSitesFactory::NewForBrowserState(
       GetApplicationContext()->GetVariationsService(),
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
           browser_state->GetURLLoaderFactory()),
-      base::Bind(ntp_tiles::JsonUnsafeParser::Parse));
+      base::BindRepeating(&InProcessJsonParser::Parse));
 }

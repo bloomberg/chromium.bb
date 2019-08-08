@@ -37,7 +37,7 @@ class ResourceLoaderDefersLoadingTest : public testing::Test {
 
   ResourceFetcher* CreateFetcher() {
     return MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
-        *MakeGarbageCollected<TestResourceFetcherProperties>(),
+        MakeGarbageCollected<TestResourceFetcherProperties>()->MakeDetachable(),
         MakeGarbageCollected<MockFetchContext>(),
         base::MakeRefCounted<scheduler::FakeTaskRunner>(),
         MakeGarbageCollected<TestLoaderFactory>()));
@@ -101,7 +101,6 @@ class ResourceLoaderDefersLoadingTest::TestWebURLLoader final
   }
   void LoadAsynchronously(const WebURLRequest&, WebURLLoaderClient*) override {}
 
-  void Cancel() override {}
   void SetDefersLoading(bool defers) override { *defers_flag_ptr_ = defers; }
   void DidChangePriority(WebURLRequest::Priority, int) override {
     NOTREACHED();

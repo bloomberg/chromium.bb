@@ -101,6 +101,7 @@ class WebSocket::WebSocketEventHandler final
       std::unique_ptr<net::WebSocketEventInterface::SSLErrorCallbacks>
           callbacks,
       const GURL& url,
+      int net_error,
       const net::SSLInfo& ssl_info,
       bool fatal) override;
   int OnAuthRequired(
@@ -277,6 +278,7 @@ void WebSocket::WebSocketEventHandler::OnFinishOpeningHandshake(
 void WebSocket::WebSocketEventHandler::OnSSLCertificateError(
     std::unique_ptr<net::WebSocketEventInterface::SSLErrorCallbacks> callbacks,
     const GURL& url,
+    int net_error,
     const net::SSLInfo& ssl_info,
     bool fatal) {
   DVLOG(3) << "WebSocketEventHandler::OnSSLCertificateError"
@@ -284,7 +286,7 @@ void WebSocket::WebSocketEventHandler::OnSSLCertificateError(
            << " cert_status=" << ssl_info.cert_status << " fatal=" << fatal;
   impl_->delegate_->OnSSLCertificateError(std::move(callbacks), url,
                                           impl_->child_id_, impl_->frame_id_,
-                                          ssl_info, fatal);
+                                          net_error, ssl_info, fatal);
 }
 
 int WebSocket::WebSocketEventHandler::OnAuthRequired(
@@ -420,9 +422,9 @@ void WebSocket::SendFrame(bool fin,
                       data.size());
 }
 
-void WebSocket::SendFlowControl(int64_t quota) {
-  DVLOG(3) << "WebSocket::OnFlowControl @" << reinterpret_cast<void*>(this)
-           << " quota=" << quota;
+void WebSocket::AddReceiveFlowControlQuota(int64_t quota) {
+  DVLOG(3) << "WebSocket::AddReceiveFlowControlQuota @"
+           << reinterpret_cast<void*>(this) << " quota=" << quota;
 
   if (!channel_) {
     // WebSocketChannel is not yet created due to the delay introduced by
@@ -432,7 +434,7 @@ void WebSocket::SendFlowControl(int64_t quota) {
     return;
   }
 
-  ignore_result(channel_->SendFlowControl(quota));
+  ignore_result(channel_->AddReceiveFlowControlQuota(quota));
 }
 
 void WebSocket::StartClosingHandshake(uint16_t code,
@@ -546,7 +548,7 @@ void WebSocket::AddChannel(
   channel_->SendAddChannelRequest(socket_url, requested_protocols, origin_,
                                   site_for_cookies, headers_to_pass);
   if (quota > 0)
-    SendFlowControl(quota);
+    AddReceiveFlowControlQuota(quota);
 }
 
 void WebSocket::OnAuthRequiredComplete(

@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/core/css/property_registry.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -129,7 +130,7 @@ const CSSValue* StyleValueToCSSValue(
       !(property_id == CSSPropertyID::kVariable && registration)) {
     return CSSParser::ParseSingleValue(
         property.PropertyID(), style_value.toString(),
-        CSSParserContext::Create(execution_context));
+        MakeGarbageCollected<CSSParserContext>(execution_context));
   }
 
   // Handle properties that use ad-hoc structures for their CSSValues:
@@ -139,7 +140,8 @@ const CSSValue* StyleValueToCSSValue(
     case CSSPropertyID::kVariable:
       if (registration &&
           style_value.GetType() != CSSStyleValue::kUnparsedType) {
-        CSSParserContext* context = CSSParserContext::Create(execution_context);
+        auto* context =
+            MakeGarbageCollected<CSSParserContext>(execution_context);
         String string =
             StyleValueToString(property, style_value, syntax_component);
         return CreateVariableReferenceValue(string, *context);
@@ -290,7 +292,8 @@ const CSSValue* CoerceStyleValueOrString(
     DCHECK(value.IsString());
     const auto values = StyleValueFactory::FromString(
         property.PropertyID(), custom_property_name, registration,
-        value.GetAsString(), CSSParserContext::Create(execution_context));
+        value.GetAsString(),
+        MakeGarbageCollected<CSSParserContext>(execution_context));
     if (values.size() != 1U)
       return nullptr;
 
@@ -320,7 +323,7 @@ const CSSValue* CoerceStyleValuesOrStrings(
     return nullptr;
 
   if (property.IDEquals(CSSPropertyID::kVariable) && registration) {
-    CSSParserContext* context = CSSParserContext::Create(execution_context);
+    auto* context = MakeGarbageCollected<CSSParserContext>(execution_context);
     return CreateVariableReferenceValue(property, custom_property_name,
                                         *registration, style_values, *context);
   }
@@ -461,8 +464,8 @@ void StylePropertyMap::append(const ExecutionContext* execution_context,
 
       if (!incoming_style_values.IsEmpty()) {
         style_values.AppendVector(incoming_style_values);
-        CSSParserContext* context =
-            CSSParserContext::Create(*execution_context);
+        auto* context =
+            MakeGarbageCollected<CSSParserContext>(*execution_context);
         result =
             CreateVariableReferenceValue(property, custom_property_name,
                                          *registration, style_values, *context);

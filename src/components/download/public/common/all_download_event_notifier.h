@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/simple_download_manager_coordinator.h"
 
@@ -16,7 +17,7 @@ namespace download {
 
 // Observes all the download events from a single
 // SimpleDownloadManagerCoordinator.
-class AllDownloadEventNotifier
+class COMPONENTS_DOWNLOAD_EXPORT AllDownloadEventNotifier
     : public SimpleDownloadManagerCoordinator::Observer,
       public DownloadItem::Observer {
  public:

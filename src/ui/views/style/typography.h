@@ -83,12 +83,6 @@ enum TextStyle {
   // Active tab in a tabbed pane.
   STYLE_TAB_ACTIVE,
 
-  // Hovered tab in a tabbed pane.
-  STYLE_TAB_HOVERED,
-
-  // Inactive tab in a tabbed pane.
-  STYLE_TAB_INACTIVE,
-
   // Embedders must start TextStyle enum values from here.
   VIEWS_TEXT_STYLE_END
 };

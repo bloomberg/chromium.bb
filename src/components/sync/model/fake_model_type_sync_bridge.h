@@ -169,7 +169,7 @@ class FakeModelTypeSyncBridge : public ModelTypeSyncBridge {
   std::string GenerateStorageKey(const EntityData& entity_data);
 
   // The conflict resolution to use for calls to ResolveConflict.
-  std::unique_ptr<ConflictResolution> conflict_resolution_;
+  ConflictResolution conflict_resolution_;
 
   // The keys that the bridge will ignore.
   std::unordered_set<std::string> values_to_ignore_;

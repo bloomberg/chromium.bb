@@ -16,7 +16,7 @@ namespace net {
 
 // Error values are negative.
 enum Error {
-  // No error.
+  // No error. Change NetError.template after changing value.
   OK = 0,
 
 #define NET_ERROR(label, value) ERR_ ## label = value,

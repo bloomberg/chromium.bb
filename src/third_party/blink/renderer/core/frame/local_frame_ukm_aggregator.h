@@ -11,6 +11,10 @@
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
+namespace base {
+class TickClock;
+}
+
 namespace ukm {
 class UkmRecorder;
 }
@@ -194,10 +198,12 @@ class CORE_EXPORT LocalFrameUkmAggregator
     friend class LocalFrameUkmAggregator;
 
     ScopedUkmHierarchicalTimer(scoped_refptr<LocalFrameUkmAggregator>,
-                               size_t metric_index);
+                               size_t metric_index,
+                               const base::TickClock* clock);
 
     scoped_refptr<LocalFrameUkmAggregator> aggregator_;
     const size_t metric_index_;
+    const base::TickClock* clock_;
     const TimeTicks start_time_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedUkmHierarchicalTimer);
@@ -226,6 +232,10 @@ class CORE_EXPORT LocalFrameUkmAggregator
 
   bool InMainFrame() { return in_main_frame_update_; }
 
+  // The caller is the owner of the |clock|. The |clock| must outlive the
+  // LocalFrameUkmAggregator.
+  void SetTickClockForTesting(const base::TickClock* clock);
+
  private:
   struct AbsoluteMetricRecord {
     std::unique_ptr<CustomCountHistogram> uma_counter;
@@ -252,6 +262,9 @@ class CORE_EXPORT LocalFrameUkmAggregator
   void ResetAllMetrics();
   unsigned SampleFramesToNextEvent();
 
+  // Implements throttling of the ForcedStyleAndLayoutUMA metric.
+  void RecordForcedStyleLayoutUMA(TimeDelta& duration);
+
   // To test event sampling. This and all future intervals will be the given
   // frame count, until this is called again.
   void FramesToNextEventForTest(unsigned num_frames) {
@@ -261,6 +274,7 @@ class CORE_EXPORT LocalFrameUkmAggregator
   // UKM system data
   const int64_t source_id_;
   ukm::UkmRecorder* const recorder_;
+  const base::TickClock* clock_;
 
   // Event and metric data
   const String event_name_;
@@ -273,6 +287,10 @@ class CORE_EXPORT LocalFrameUkmAggregator
   // is already beyond the throtting threshold.
   unsigned mean_frames_between_samples_ = 2000;
   unsigned frames_to_next_event_ = 0;
+
+  // Control for the ForcedStyleAndUpdate UMA metric sampling
+  unsigned mean_calls_between_forced_style_layout_uma_ = 100;
+  unsigned calls_to_next_forced_style_layout_uma_ = 0;
 
   // Test data, used for SampleFramesToNextEvent if present
   unsigned frames_to_next_event_for_test_ = 0;

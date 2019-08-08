@@ -277,8 +277,7 @@ String SecurityOrigin::RegistrableDomain() const {
     return String();
 
   OriginAccessEntry entry(
-      Protocol(), Host(),
-      network::mojom::CorsOriginAccessMatchMode::kAllowRegistrableDomains);
+      *this, network::mojom::CorsDomainMatchMode::kAllowRegistrableDomains);
   String domain = entry.registrable_domain();
   return domain.IsEmpty() ? String() : domain;
 }

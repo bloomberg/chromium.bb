@@ -16,9 +16,9 @@
 
 namespace net {
 
-// A MockEncrypter is a QuicEncrypter that returns a plaintext
-// unmodified. No encryption or MAC is applied. This is used
-// to allow fuzzing to mutate plaintext packets.
+// A MockEncrypter is a QuicEncrypter that returns this plaintext followed by 12
+// bytes of zeroes. No encryption or MAC is applied. This is used to allow
+// fuzzing to mutate plaintext packets.
 class MockEncrypter : public quic::QuicEncrypter {
  public:
   explicit MockEncrypter(quic::Perspective perspective);

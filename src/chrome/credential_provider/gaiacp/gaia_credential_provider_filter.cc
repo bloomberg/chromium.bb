@@ -82,6 +82,8 @@ HRESULT CGaiaCredentialProviderFilter::UpdateRemoteCredential(
          pcpcs_in->cbSerialization);
   pcpcs_out->cbSerialization = pcpcs_in->cbSerialization;
   pcpcs_out->clsidCredentialProvider = CLSID_GaiaCredentialProvider;
+  pcpcs_out->ulAuthenticationPackage = pcpcs_in->ulAuthenticationPackage;
+
   return S_OK;
 }
 

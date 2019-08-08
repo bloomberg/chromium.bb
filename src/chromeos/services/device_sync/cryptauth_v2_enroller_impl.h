@@ -93,7 +93,7 @@ class CryptAuthV2EnrollerImpl : public CryptAuthV2Enroller {
   void SetState(State state);
 
   // Constructs a SyncKeysRequest with information about every key bundle
-  // contained in CryptAuthKeyBundle::AllNames().
+  // contained in CryptAuthKeyBundle::AllEnrollableNames().
   cryptauthv2::SyncKeysRequest BuildSyncKeysRequest(
       const cryptauthv2::ClientMetadata& client_metadata,
       const cryptauthv2::ClientAppMetadata& client_app_metadata,

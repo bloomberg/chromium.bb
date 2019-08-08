@@ -85,14 +85,15 @@ jboolean LargeIconBridge::GetLargeIconForURL(
   if (!large_icon_service)
     return false;
 
-  favicon_base::LargeIconCallback callback_runner = base::Bind(
+  favicon_base::LargeIconCallback callback_runner = base::BindOnce(
       &OnLargeIconAvailable, ScopedJavaGlobalRef<jobject>(env, j_callback));
 
   // Use desired_size = 0 for getting the icon from the cache (so that
   // the icon is not poorly rescaled by LargeIconService).
   large_icon_service->GetLargeIconRawBitmapOrFallbackStyleForPageUrl(
       GURL(ConvertJavaStringToUTF16(env, j_page_url)), min_source_size_px,
-      /*desired_size_in_pixel=*/0, callback_runner, &cancelable_task_tracker_);
+      /*desired_size_in_pixel=*/0, std::move(callback_runner),
+      &cancelable_task_tracker_);
 
   return true;
 }

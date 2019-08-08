@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/media/router/mojo/media_router_desktop.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
 #include <memory>
 #include <string>
 #include <utility>
-
-#include "chrome/browser/media/router/mojo/media_router_desktop.h"
 
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
@@ -20,7 +20,7 @@
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/test/media_router_mojo_test.h"
 #include "chrome/browser/media/router/test/test_helper.h"
-#include "chrome/common/media_router/media_source_helper.h"
+#include "chrome/common/media_router/media_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -134,7 +134,7 @@ TEST_F(MediaRouterDesktopTestCastDiscoveryDisabled,
 
 TEST_F(MediaRouterDesktopTest, OnUserGesture) {
   EXPECT_CALL(mock_extension_provider_,
-              UpdateMediaSinks(MediaSourceForDesktop().id()));
+              UpdateMediaSinks(MediaSource::ForDesktop().id()));
   router()->OnUserGesture();
   base::RunLoop().RunUntilIdle();
 }

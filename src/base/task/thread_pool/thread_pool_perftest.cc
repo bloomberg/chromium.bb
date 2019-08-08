@@ -113,20 +113,14 @@ class ThreadPoolPerfTest : public testing::Test {
   }
 
  protected:
-  ThreadPoolPerfTest() { ThreadPool::Create("PerfTest"); }
+  ThreadPoolPerfTest() { ThreadPoolInstance::Create("PerfTest"); }
 
-  ~ThreadPoolPerfTest() override { ThreadPool::SetInstance(nullptr); }
+  ~ThreadPoolPerfTest() override { ThreadPoolInstance::Set(nullptr); }
 
   void StartThreadPool(size_t num_running_threads,
                        size_t num_posting_threads,
                        base::RepeatingClosure post_action) {
-    constexpr TimeDelta kSuggestedReclaimTime = TimeDelta::FromSeconds(30);
-    constexpr int kMaxNumBackgroundThreads = 1;
-
-    ThreadPool::GetInstance()->Start(
-        {{kMaxNumBackgroundThreads, kSuggestedReclaimTime},
-         {num_running_threads, kSuggestedReclaimTime}},
-        nullptr);
+    ThreadPoolInstance::Get()->Start({num_running_threads});
 
     base::RepeatingClosure done = BarrierClosure(
         num_posting_threads,
@@ -142,7 +136,7 @@ class ThreadPoolPerfTest : public testing::Test {
   void OnCompletePostingTasks() { complete_posting_tasks_.Signal(); }
 
   void Benchmark(const std::string& trace, ExecutionMode execution_mode) {
-    base::Optional<ThreadPool::ScopedExecutionFence> execution_fence;
+    base::Optional<ThreadPoolInstance::ScopedExecutionFence> execution_fence;
     if (execution_mode == ExecutionMode::kPostThenRun) {
       execution_fence.emplace();
     }
@@ -157,13 +151,13 @@ class ThreadPoolPerfTest : public testing::Test {
     }
 
     // Wait for no pending tasks.
-    ThreadPool::GetInstance()->FlushForTesting();
+    ThreadPoolInstance::Get()->FlushForTesting();
     tasks_run_duration_ = TimeTicks::Now() - tasks_run_start;
     ASSERT_EQ(0U, num_tasks_pending_);
 
     for (auto& thread : threads_)
       thread->Join();
-    ThreadPool::GetInstance()->JoinForTesting();
+    ThreadPoolInstance::Get()->JoinForTesting();
 
     perf_test::PrintResult(
         "Posting tasks throughput", "", trace,

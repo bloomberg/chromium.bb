@@ -5,9 +5,11 @@
 #include "chrome/browser/serial/serial_chooser_context.h"
 
 #include "base/run_loop.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/chooser_context_base_mock_permission_observer.h"
 #include "chrome/browser/serial/serial_chooser_context_factory.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "services/device/public/mojom/serial.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -53,7 +55,7 @@ TEST_F(SerialChooserContextTest, GrantAndRevokeEphemeralPermission) {
   EXPECT_TRUE(context->HasPortPermission(origin, origin, *port));
 
   std::vector<std::unique_ptr<ChooserContextBase::Object>> origin_objects =
-      context->GetGrantedObjects(origin.GetURL(), origin.GetURL());
+      context->GetGrantedObjects(origin, origin);
   ASSERT_EQ(1u, origin_objects.size());
 
   std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
@@ -69,14 +71,37 @@ TEST_F(SerialChooserContextTest, GrantAndRevokeEphemeralPermission) {
   EXPECT_CALL(observer(), OnChooserObjectPermissionChanged(
                               CONTENT_SETTINGS_TYPE_SERIAL_GUARD,
                               CONTENT_SETTINGS_TYPE_SERIAL_CHOOSER_DATA));
-  EXPECT_CALL(observer(),
-              OnPermissionRevoked(origin.GetURL(), origin.GetURL()));
+  EXPECT_CALL(observer(), OnPermissionRevoked(origin, origin));
 
-  context->RevokeObjectPermission(origin.GetURL(), origin.GetURL(),
-                                  objects[0]->value);
+  context->RevokeObjectPermission(origin, origin, objects[0]->value);
   EXPECT_FALSE(context->HasPortPermission(origin, origin, *port));
-  origin_objects = context->GetGrantedObjects(origin.GetURL(), origin.GetURL());
+  origin_objects = context->GetGrantedObjects(origin, origin);
   EXPECT_EQ(0u, origin_objects.size());
   objects = context->GetAllGrantedObjects();
   EXPECT_EQ(0u, objects.size());
+}
+
+TEST_F(SerialChooserContextTest, GuardPermission) {
+  const auto origin = url::Origin::Create(GURL("https://google.com"));
+
+  auto port = device::mojom::SerialPortInfo::New();
+  port->token = base::UnguessableToken::Create();
+
+  SerialChooserContext* context = GetContext(profile());
+  context->GrantPortPermission(origin, origin, *port);
+  EXPECT_TRUE(context->HasPortPermission(origin, origin, *port));
+
+  auto* map = HostContentSettingsMapFactory::GetForProfile(profile());
+  map->SetContentSettingDefaultScope(origin.GetURL(), origin.GetURL(),
+                                     CONTENT_SETTINGS_TYPE_SERIAL_GUARD,
+                                     std::string(), CONTENT_SETTING_BLOCK);
+  EXPECT_FALSE(context->HasPortPermission(origin, origin, *port));
+
+  std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
+      context->GetGrantedObjects(origin, origin);
+  EXPECT_EQ(0u, objects.size());
+
+  std::vector<std::unique_ptr<ChooserContextBase::Object>> all_origin_objects =
+      context->GetAllGrantedObjects();
+  EXPECT_EQ(0u, all_origin_objects.size());
 }

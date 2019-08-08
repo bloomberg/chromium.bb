@@ -45,8 +45,8 @@ void WorkletModuleResponsesMap::Entry::SetParams(
     for (auto& it : clients_) {
       PostCrossThreadTask(
           *it.value, FROM_HERE,
-          CrossThreadBind(&ModuleScriptFetcher::Client::OnFetched, it.key,
-                          *params));
+          CrossThreadBindOnce(&ModuleScriptFetcher::Client::OnFetched, it.key,
+                              *params));
     }
   } else {
     state_ = State::kFailed;
@@ -54,7 +54,7 @@ void WorkletModuleResponsesMap::Entry::SetParams(
     for (auto& it : clients_) {
       PostCrossThreadTask(
           *it.value, FROM_HERE,
-          CrossThreadBind(&ModuleScriptFetcher::Client::OnFailed, it.key));
+          CrossThreadBindOnce(&ModuleScriptFetcher::Client::OnFailed, it.key));
     }
   }
 

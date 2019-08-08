@@ -76,7 +76,11 @@ def GetChrootVersion(chroot):
   Returns:
     The version of the chroot dir, or None if the version is missing/invalid.
   """
-  ver_path = os.path.join(chroot, CHROOT_VERSION_FILE.lstrip(os.sep))
+  if chroot:
+    ver_path = os.path.join(chroot, CHROOT_VERSION_FILE.lstrip(os.sep))
+  else:
+    ver_path = CHROOT_VERSION_FILE
+
   updater = ChrootUpdater(version_file=ver_path)
   try:
     return updater.GetVersion()
@@ -390,7 +394,18 @@ def CleanupChrootMount(chroot=None, buildroot=None, delete=False,
   # unmount it.
   vg_name, _ = FindChrootMountSource(chroot, proc_mounts=proc_mounts)
 
-  osutils.UmountTree(chroot)
+  try:
+    osutils.UmountTree(chroot)
+  except cros_build_lib.RunCommandError as e:
+    # TODO(lamontjones): Dump some information to help find the process still
+    # inside the chroot, causing crbug.com/923432.  In the end, this is likely
+    # to become fuser -k.
+    fuser = cros_build_lib.SudoRunCommand(['fuser', chroot], error_code_ok=True)
+    lsof = cros_build_lib.SudoRunCommand(['lsof', chroot], error_code_ok=True)
+    ps = cros_build_lib.RunCommand(['ps', 'auxf'], error_code_ok=True)
+    raise Error(
+        'Umount failed: %s.\nfuser output=%s\nlsof output=%s\nps output=%s\n',
+        e.result.error, fuser.output, lsof.output, ps.output)
 
   # Find the loopback device by either matching the VG or the image.
   chroot_dev = None

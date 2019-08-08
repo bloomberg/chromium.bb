@@ -78,9 +78,28 @@ class ContextGL : public ContextImpl
     // Memory object creation.
     MemoryObjectImpl *createMemoryObject() override;
 
+    // Semaphore creation.
+    SemaphoreImpl *createSemaphore() override;
+
     // Flush and finish.
     angle::Result flush(const gl::Context *context) override;
     angle::Result finish(const gl::Context *context) override;
+
+    // Semaphore operations.
+    angle::Result waitSemaphore(const gl::Context *context,
+                                const gl::Semaphore *semaphore,
+                                GLuint numBufferBarriers,
+                                const GLuint *buffers,
+                                GLuint numTextureBarriers,
+                                const GLuint *textures,
+                                const GLenum *srcLayouts) override;
+    angle::Result signalSemaphore(const gl::Context *context,
+                                  const gl::Semaphore *semaphore,
+                                  GLuint numBufferBarriers,
+                                  const GLuint *buffers,
+                                  GLuint numTextureBarriers,
+                                  const GLuint *textures,
+                                  const GLenum *dstLayouts) override;
 
     // Drawing methods.
     angle::Result drawArrays(const gl::Context *context,
@@ -230,8 +249,6 @@ class ContextGL : public ContextImpl
                                        const void *indices,
                                        GLsizei instanceCount,
                                        const void **outIndices);
-
-    angle::Result setDrawIndirectState(const gl::Context *context);
 
   protected:
     std::shared_ptr<RendererGL> mRenderer;

@@ -88,10 +88,9 @@ int LocalCardMigrationBubbleViews::GetDialogButtons() const {
 
 base::string16 LocalCardMigrationBubbleViews::GetDialogButtonLabel(
     ui::DialogButton button) const {
+  DCHECK_EQ(button, ui::DIALOG_BUTTON_OK);
   return l10n_util::GetStringUTF16(
-      button == ui::DIALOG_BUTTON_OK
-          ? IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_BUTTON_LABEL
-          : IDS_NO_THANKS);
+      IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_BUTTON_LABEL);
 }
 
 gfx::Size LocalCardMigrationBubbleViews::CalculatePreferredSize() const {
@@ -125,7 +124,7 @@ void LocalCardMigrationBubbleViews::AddedToWidget() {
 #endif
   views::ImageView* icon_view = new views::ImageView();
   icon_view->SetImage(image);
-  icon_view->SetHorizontalAlignment(views::ImageView::LEADING);
+  icon_view->SetHorizontalAlignment(views::ImageView::Alignment::kLeading);
   icon_view->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_GOOGLE_PAY_LOGO_ACCESSIBLE_NAME));
   title_container->AddChildView(icon_view);
@@ -170,7 +169,7 @@ void LocalCardMigrationBubbleViews::Init() {
   explanatory_message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   explanatory_message->SetMultiLine(true);
   AddChildView(explanatory_message);
-  set_id(DialogViewId::MAIN_CONTENT_VIEW_MIGRATION_BUBBLE);
+  SetID(DialogViewId::MAIN_CONTENT_VIEW_MIGRATION_BUBBLE);
 }
 
 }  // namespace autofill

@@ -288,7 +288,7 @@ presentBubbleForFeature:(const base::Feature&)feature
   NSString* text =
       l10n_util::GetNSStringWithFixup(IDS_IOS_NEW_TAB_IPH_PROMOTION_TEXT);
   CGPoint tabSwitcherAnchor;
-  if (IsIPadIdiom()) {
+  if (IsRegularXRegularSizeClass()) {
     tabSwitcherAnchor = [self anchorPointToGuide:kTabStripTabSwitcherGuide
                                        direction:arrowDirection];
   } else {

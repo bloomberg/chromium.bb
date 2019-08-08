@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/ng_base_layout_algorithm_test.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 
 namespace blink {
@@ -30,29 +31,22 @@ class NGFieldsetLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
   }
 
   scoped_refptr<const NGPhysicalBoxFragment> RunBlockLayoutAlgorithm(
-      const NGConstraintSpace& space,
-      NGBlockNode node) {
-    scoped_refptr<const NGLayoutResult> result =
-        NGBlockLayoutAlgorithm(node, space).Layout();
-
-    return To<NGPhysicalBoxFragment>(result->PhysicalFragment());
-  }
-
-  scoped_refptr<const NGPhysicalBoxFragment> RunBlockLayoutAlgorithm(
       Element* element) {
     NGBlockNode container(ToLayoutBox(element->GetLayoutObject()));
     NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
         WritingMode::kHorizontalTb, TextDirection::kLtr,
-        NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
-    return RunBlockLayoutAlgorithm(space, container);
+        LogicalSize(LayoutUnit(1000), kIndefiniteSize));
+    return NGBaseLayoutAlgorithmTest::RunBlockLayoutAlgorithm(container, space);
   }
 
   MinMaxSize RunComputeMinAndMax(NGBlockNode node) {
     NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
         WritingMode::kHorizontalTb, TextDirection::kLtr,
-        NGLogicalSize(LayoutUnit(), LayoutUnit()));
+        LogicalSize(LayoutUnit(), LayoutUnit()));
+    NGFragmentGeometry fragment_geometry =
+        CalculateInitialMinMaxFragmentGeometry(space, node);
 
-    NGFieldsetLayoutAlgorithm algorithm(node, space);
+    NGFieldsetLayoutAlgorithm algorithm({node, fragment_geometry, space});
     MinMaxSizeInput input(
         /* percentage_resolution_block_size */ (LayoutUnit()));
     auto min_max = algorithm.ComputeMinMaxSize(input);

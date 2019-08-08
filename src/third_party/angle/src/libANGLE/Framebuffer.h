@@ -254,7 +254,7 @@ class Framebuffer final : public angle::ObserverInterface,
     }
 
     // For when we don't want to check completeness in getSamples().
-    int getCachedSamples(const Context *context);
+    int getCachedSamples(const Context *context) const;
 
     // Helper for checkStatus == GL_FRAMEBUFFER_COMPLETE.
     ANGLE_INLINE bool isComplete(const Context *context)
@@ -314,6 +314,11 @@ class Framebuffer final : public angle::ObserverInterface,
             DIRTY_BIT_COLOR_ATTACHMENT_0 + IMPLEMENTATION_MAX_FRAMEBUFFER_ATTACHMENTS,
         DIRTY_BIT_DEPTH_ATTACHMENT = DIRTY_BIT_COLOR_ATTACHMENT_MAX,
         DIRTY_BIT_STENCIL_ATTACHMENT,
+        DIRTY_BIT_COLOR_BUFFER_CONTENTS_0,
+        DIRTY_BIT_COLOR_BUFFER_CONTENTS_MAX =
+            DIRTY_BIT_COLOR_BUFFER_CONTENTS_0 + IMPLEMENTATION_MAX_FRAMEBUFFER_ATTACHMENTS,
+        DIRTY_BIT_DEPTH_BUFFER_CONTENTS,
+        DIRTY_BIT_STENCIL_BUFFER_CONTENTS,
         DIRTY_BIT_DRAW_BUFFERS,
         DIRTY_BIT_READ_BUFFER,
         DIRTY_BIT_DEFAULT_WIDTH,
@@ -352,7 +357,9 @@ class Framebuffer final : public angle::ObserverInterface,
                                                           GLenum buffer,
                                                           GLint drawbuffer);
     angle::Result ensureDrawAttachmentsInitialized(const Context *context);
-    angle::Result ensureReadAttachmentInitialized(const Context *context, GLbitfield blitMask);
+
+    // Conservatively initializes both read color and depth. Blit can access the depth buffer.
+    angle::Result ensureReadAttachmentsInitialized(const Context *context);
     Box getDimensions() const;
 
   private:

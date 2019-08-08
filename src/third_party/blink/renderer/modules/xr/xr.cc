@@ -15,13 +15,15 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/xr/xr_frame_provider.h"
-#include "third_party/blink/renderer/modules/xr/xr_presentation_context.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
+#include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
-
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 namespace blink {
 
 namespace {
@@ -43,6 +45,10 @@ const char kSessionNotSupported[] =
 
 const char kNoDevicesMessage[] = "No XR hardware found.";
 
+const char kImmersiveArModeNotValid[] =
+    "Failed to execute '%s' on 'XR': The provided value 'immersive-ar' is not "
+    "a valid enum value of type XRSessionMode.";
+
 // Helper method to convert session mode into Mojo options.
 device::mojom::blink::XRSessionOptionsPtr convertModeToMojo(
     XRSession::SessionMode mode) {
@@ -50,7 +56,7 @@ device::mojom::blink::XRSessionOptionsPtr convertModeToMojo(
   session_options->immersive = (mode == XRSession::kModeImmersiveVR ||
                                 mode == XRSession::kModeImmersiveAR);
   session_options->environment_integration =
-      (mode == XRSession::kModeInlineAR || mode == XRSession::kModeImmersiveAR);
+      mode == XRSession::kModeImmersiveAR;
 
   return session_options;
 }
@@ -58,9 +64,6 @@ device::mojom::blink::XRSessionOptionsPtr convertModeToMojo(
 XRSession::SessionMode stringToSessionMode(const String& mode_string) {
   if (mode_string == "inline") {
     return XRSession::kModeInline;
-  }
-  if (mode_string == "legacy-inline-ar") {
-    return XRSession::kModeInlineAR;
   }
   if (mode_string == "immersive-vr") {
     return XRSession::kModeImmersiveVR;
@@ -73,20 +76,12 @@ XRSession::SessionMode stringToSessionMode(const String& mode_string) {
   return XRSession::kModeInline;
 }
 
-String sessionModeToString(XRSession::SessionMode mode) {
-  switch (mode) {
-    case XRSession::kModeInline:
-      return "inline";
-    case XRSession::kModeInlineAR:
-      return "legacy-inline-ar";
-    case XRSession::kModeImmersiveVR:
-      return "immersive-vr";
-    case XRSession::kModeImmersiveAR:
-      return "immersive-ar";
-  }
-
-  NOTREACHED();
-  return "";
+// When updating this list, also update XRRuntimeManager's
+// AreArFeaturesEnabled() until https://crbug.com/966647 is fixed.
+// TODO(https://crbug.com/966647) remove the above comment when fixed.
+bool AreArRuntimeFeaturesEnabled(const FeatureContext* context) {
+  return RuntimeEnabledFeatures::WebXRHitTestEnabled(context) ||
+         RuntimeEnabledFeatures::WebXRPlaneDetectionEnabled(context);
 }
 
 }  // namespace
@@ -104,8 +99,11 @@ XR::XR(LocalFrame& frame, int64_t ukm_source_id)
     : ContextLifecycleObserver(frame.GetDocument()),
       FocusChangedObserver(frame.GetPage()),
       ukm_source_id_(ukm_source_id),
-      binding_(this) {
+      binding_(this),
+      navigation_start_(
+          frame.Loader().GetDocumentLoader()->GetTiming().NavigationStart()) {
   // See https://bit.ly/2S0zRAS for task types.
+  DCHECK(frame.IsAttached());
   frame.GetInterfaceProvider().GetInterface(mojo::MakeRequest(
       &service_, frame.GetTaskRunner(TaskType::kMiscPlatformAPI)));
   service_.set_connection_error_handler(
@@ -142,6 +140,17 @@ XRFrameProvider* XR::frameProvider() {
   return frame_provider_;
 }
 
+bool XR::CanRequestNonImmersiveFrameData() const {
+  return !!magic_window_provider_;
+}
+
+void XR::GetNonImmersiveFrameData(
+    device::mojom::blink::XRFrameDataRequestOptionsPtr options,
+    device::mojom::blink::XRFrameDataProvider::GetFrameDataCallback callback) {
+  DCHECK(CanRequestNonImmersiveFrameData());
+  magic_window_provider_->GetFrameData(std::move(options), std::move(callback));
+}
+
 const device::mojom::blink::XREnvironmentIntegrationProviderAssociatedPtr&
 XR::xrEnvironmentProviderPtr() {
   return environment_provider_;
@@ -152,30 +161,46 @@ void XR::AddEnvironmentProviderErrorHandler(
   environment_provider_error_callbacks_.push_back(std::move(callback));
 }
 
-ScriptPromise XR::supportsSessionMode(ScriptState* script_state,
-                                      const String& mode) {
+void XR::ExitPresent() {
+  DCHECK(device_);
+  device_->ExitPresent();
+}
+
+ScriptPromise XR::supportsSession(ScriptState* script_state,
+                                  const String& mode) {
   LocalFrame* frame = GetFrame();
   if (!frame || !frame->GetDocument()) {
     // Reject if the frame is inaccessible.
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
                                            kNavigatorDetachedError));
   }
 
-  if (!frame->GetDocument()->IsFeatureEnabled(
-          mojom::FeaturePolicyFeature::kWebVr,
-          ReportOptions::kReportOnFailure)) {
+  Document* doc = frame->GetDocument();
+  XRSession::SessionMode session_mode = stringToSessionMode(mode);
+
+  if (session_mode == XRSession::kModeImmersiveAR &&
+      !AreArRuntimeFeaturesEnabled(doc)) {
+    return ScriptPromise::Reject(
+        script_state, V8ThrowException::CreateTypeError(
+                          script_state->GetIsolate(),
+                          String::Format(kImmersiveArModeNotValid, __func__)));
+  }
+
+  if (!doc->IsFeatureEnabled(mojom::FeaturePolicyFeature::kWebVr,
+                             ReportOptions::kReportOnFailure)) {
     // Only allow the call to be made if the appropriate feature policy is in
     // place.
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kSecurityError,
                                            kFeaturePolicyBlocked));
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  XRSession::SessionMode session_mode = stringToSessionMode(mode);
   if (session_mode == XRSession::kModeInline) {
     // `inline` sessions are always supported if not blocked by feature policy.
     resolver->Resolve();
@@ -190,18 +215,18 @@ ScriptPromise XR::supportsSessionMode(ScriptState* script_state,
       // The pending queries will be resolved once the device is returned.
       EnsureDevice();
     } else {
-      DispatchSupportsSessionMode(query);
+      DispatchSupportsSession(query);
     }
   }
 
   return promise;
 }
 
-void XR::DispatchSupportsSessionMode(PendingSessionQuery* query) {
+void XR::DispatchSupportsSession(PendingSessionQuery* query) {
   if (!device_) {
     // If we don't have a device by the time we reach this call it indicates
     // that there's no WebXR hardware. Reject as not supported.
-    query->resolver->Reject(DOMException::Create(
+    query->resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotSupportedError, kSessionNotSupported));
     return;
   }
@@ -209,6 +234,7 @@ void XR::DispatchSupportsSessionMode(PendingSessionQuery* query) {
   device::mojom::blink::XRSessionOptionsPtr session_options =
       convertModeToMojo(query->mode);
 
+  outstanding_support_queries_.insert(query);
   device_->SupportsSession(
       std::move(session_options),
       WTF::Bind(&XR::OnSupportsSessionReturned, WrapPersistent(this),
@@ -217,16 +243,34 @@ void XR::DispatchSupportsSessionMode(PendingSessionQuery* query) {
 
 ScriptPromise XR::requestSession(ScriptState* script_state,
                                  const String& mode) {
+  // TODO(https://crbug.com/968622): Make sure we don't forget to call
+  // metrics-related methods when the promise gets resolved/rejected.
+
   LocalFrame* frame = GetFrame();
   if (!frame || !frame->GetDocument()) {
     // Reject if the frame is inaccessible.
+
+    // Do *not* record an UKM event in this case (we won't be able to access the
+    // Document to get UkmRecorder anyway).
+
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
                                            kNavigatorDetachedError));
   }
 
   Document* doc = frame->GetDocument();
   XRSession::SessionMode session_mode = stringToSessionMode(mode);
+
+  if (session_mode == XRSession::kModeImmersiveAR &&
+      !AreArRuntimeFeaturesEnabled(doc)) {
+    ReportRequestSessionResult(session_mode, SessionRequestStatus::kOtherError);
+    return ScriptPromise::Reject(
+        script_state, V8ThrowException::CreateTypeError(
+                          script_state->GetIsolate(),
+                          String::Format(kImmersiveArModeNotValid, __func__)));
+  }
+
   bool is_immersive = session_mode == XRSession::kModeImmersiveVR ||
                       session_mode == XRSession::kModeImmersiveAR;
 
@@ -241,41 +285,44 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
                              ReportOptions::kReportOnFailure)) {
     // Only allow the call to be made if the appropriate feature policy is in
     // place.
+    ReportRequestSessionResult(session_mode, SessionRequestStatus::kOtherError);
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kSecurityError,
                                            kFeaturePolicyBlocked));
-  }
-
-  // If we no longer have a valid service connection reject the request, unless
-  // it was for an inline mode.  In which case, we'll end up creating the
-  // session in OnRequestSessionReturned.
-  if (!service_ && session_mode != XRSession::kModeInline) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kNotFoundError,
-                                           kNoDevicesMessage));
   }
 
   // Only one immersive session can be active at a time.
   if (is_immersive && frameProvider()->immersive_session()) {
+    ReportRequestSessionResult(session_mode, SessionRequestStatus::kOtherError);
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
                                            kActiveImmersiveSession));
   }
 
-  // All immersive and AR sessions require a user gesture.
+  // All immersive sessions require a user gesture.
   bool has_user_activation = LocalFrame::HasTransientUserActivation(frame);
-  if ((is_immersive || session_mode == XRSession::kModeInlineAR) &&
-      !has_user_activation) {
+  if (is_immersive && !has_user_activation) {
+    ReportRequestSessionResult(session_mode, SessionRequestStatus::kOtherError);
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kSecurityError,
                                            kRequestRequiresUserActivation));
   }
 
-  if (session_mode == XRSession::kModeInlineAR) {
-    doc->AddConsoleMessage(ConsoleMessage::Create(
-        mojom::ConsoleMessageSource::kOther,
-        mojom::ConsoleMessageLevel::kWarning,
-        "Inline AR is deprecated and will be removed soon."));
+  // TODO(https://crbug.com/962991): The error handling here is not spec
+  // compliant. The spec says to reject based on no device before rejecting
+  // based on user gesture.
+  // If we no longer have a valid service connection reject the request, unless
+  // it was for an inline mode.  In which case, we'll end up creating the
+  // session in OnRequestSessionReturned.
+  if (!service_ && session_mode != XRSession::kModeInline) {
+    ReportRequestSessionResult(session_mode, SessionRequestStatus::kOtherError);
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
+                                           kNoDevicesMessage));
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -283,7 +330,6 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
 
   PendingSessionQuery* query =
       MakeGarbageCollected<PendingSessionQuery>(resolver, session_mode);
-  query->has_user_activation = has_user_activation;
 
   if (!device_) {
     pending_session_requests_.push_back(query);
@@ -298,6 +344,9 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
 }
 
 void XR::DispatchRequestSession(PendingSessionQuery* query) {
+  // TODO(https://crbug.com/968622): Make sure we don't forget to call
+  // metrics-related methods when the promise gets resolved/rejected.
+
   if (!device_) {
     // If we don't have a device by the time we reach this call, there is no XR
     // hardware. Attempt to create a sensorless session.
@@ -305,25 +354,31 @@ void XR::DispatchRequestSession(PendingSessionQuery* query) {
     // OnRequestSessionReturned() and inline CreateSensorlessInlineSession().
     if (query->mode == XRSession::kModeInline) {
       XRSession* session = CreateSensorlessInlineSession();
+
+      ReportRequestSessionResult(query->mode, SessionRequestStatus::kSuccess);
       query->resolver->Resolve(session);
       return;
     }
 
-    query->resolver->Reject(DOMException::Create(
+    ReportRequestSessionResult(query->mode, SessionRequestStatus::kOtherError);
+    // TODO(https://crbug.com/962991): The spec says to reject with null.
+    // Clarify/fix the spec. In other places where we have no device or no
+    // service we return kNotSupportedError.
+    query->resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotSupportedError, kSessionNotSupported));
     return;
   }
 
   device::mojom::blink::XRSessionOptionsPtr session_options =
       convertModeToMojo(query->mode);
-  session_options->has_user_activation = query->has_user_activation;
 
   // TODO(http://crbug.com/826899) Once device activation is sorted out for
   // WebXR, either pass in the correct value for metrics to know whether
   // this was triggered by device activation, or remove the value as soon as
   // legacy API has been removed.
+  outstanding_request_queries_.insert(query);
   device_->RequestSession(
-      std::move(session_options), false /* triggered by display activate */,
+      std::move(session_options),
       WTF::Bind(&XR::OnRequestSessionReturned, WrapWeakPersistent(this),
                 WrapPersistent(query)));
 }
@@ -355,27 +410,20 @@ void XR::OnRequestDeviceReturned(device::mojom::blink::XRDevicePtr device) {
   pending_device_ = false;
   if (device) {
     device_ = std::move(device);
+    device_.set_connection_error_handler(
+        WTF::Bind(&XR::OnDeviceDisconnect, WrapWeakPersistent(this)));
 
     // Log metrics
-    if (!did_log_returned_device_ || !did_log_supports_immersive_) {
-      Document* doc = GetFrame() ? GetFrame()->GetDocument() : nullptr;
-      if (doc) {
-        ukm::builders::XR_WebXR ukm_builder(ukm_source_id_);
-        ukm_builder.SetReturnedDevice(1);
-        did_log_returned_device_ = true;
+    if (!did_log_supports_immersive_) {
+      device::mojom::blink::XRSessionOptionsPtr session_options =
+          device::mojom::blink::XRSessionOptions::New();
+      session_options->immersive = true;
 
-        ukm_builder.Record(doc->UkmRecorder());
-
-        device::mojom::blink::XRSessionOptionsPtr session_options =
-            device::mojom::blink::XRSessionOptions::New();
-        session_options->immersive = true;
-
-        // TODO(http://crbug.com/872086) This shouldn't need to be called.
-        // This information should be logged on the browser side.
-        device_->SupportsSession(
-            std::move(session_options),
-            WTF::Bind(&XR::ReportImmersiveSupported, WrapPersistent(this)));
-      }
+      // TODO(http://crbug.com/872086) This shouldn't need to be called.
+      // This information should be logged on the browser side.
+      device_->SupportsSession(
+          std::move(session_options),
+          WTF::Bind(&XR::ReportImmersiveSupported, WrapPersistent(this)));
     }
   }
 
@@ -385,7 +433,7 @@ void XR::OnRequestDeviceReturned(device::mojom::blink::XRDevicePtr device) {
 void XR::DispatchPendingSessionCalls() {
   // Process any calls that were waiting for the device query to be returned.
   for (auto& query : pending_mode_queries_) {
-    DispatchSupportsSessionMode(query);
+    DispatchSupportsSession(query);
   }
   pending_mode_queries_.clear();
 
@@ -397,15 +445,25 @@ void XR::DispatchPendingSessionCalls() {
 
 void XR::OnSupportsSessionReturned(PendingSessionQuery* query,
                                    bool supports_session) {
+  // The session query has returned and we're about to resolve or reject the
+  // promise, so remove it from our outstanding list.
+  DCHECK(outstanding_support_queries_.Contains(query));
+  outstanding_support_queries_.erase(query);
+
   supports_session
       ? query->resolver->Resolve()
-      : query->resolver->Reject(DOMException::Create(
+      : query->resolver->Reject(MakeGarbageCollected<DOMException>(
             DOMExceptionCode::kNotSupportedError, kSessionNotSupported));
 }
 
 void XR::OnRequestSessionReturned(
     PendingSessionQuery* query,
     device::mojom::blink::XRSessionPtr session_ptr) {
+  // The session query has returned and we're about to resolve or reject the
+  // promise, so remove it from our outstanding list.
+  DCHECK(outstanding_request_queries_.Contains(query));
+  outstanding_request_queries_.erase(query);
+
   // TODO(https://crbug.com/872316) Improve the error messaging to indicate why
   // a request failed.
   if (!session_ptr) {
@@ -415,18 +473,21 @@ void XR::OnRequestSessionReturned(
     // DispatchRequestSession() and inline CreateSensorlessInlineSession().
     if (query->mode == XRSession::kModeInline) {
       XRSession* session = CreateSensorlessInlineSession();
+
+      ReportRequestSessionResult(query->mode, SessionRequestStatus::kSuccess);
+
       query->resolver->Resolve(session);
       return;
     }
 
-    DOMException* exception = DOMException::Create(
+    ReportRequestSessionResult(query->mode, SessionRequestStatus::kOtherError);
+    auto* exception = MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotSupportedError, kSessionNotSupported);
     query->resolver->Reject(exception);
     return;
   }
 
-  bool environment_integration = query->mode == XRSession::kModeInlineAR ||
-                                 query->mode == XRSession::kModeImmersiveAR;
+  bool environment_integration = query->mode == XRSession::kModeImmersiveAR;
 
   // immersive sessions must supply display info.
   DCHECK(session_ptr->display_info);
@@ -434,6 +495,11 @@ void XR::OnRequestSessionReturned(
   // as well.
   DCHECK(!environment_integration || session_ptr->display_info->capabilities
                                          ->canProvideEnvironmentIntegration);
+  DVLOG(2) << __func__
+           << ": environment_integration=" << environment_integration
+           << "canProvideEnvironmentIntegration="
+           << session_ptr->display_info->capabilities
+                  ->canProvideEnvironmentIntegration;
 
   // TODO(https://crbug.com/944936): The blend mode could be "additive".
   XRSession::EnvironmentBlendMode blend_mode = XRSession::kBlendModeOpaque;
@@ -447,20 +513,26 @@ void XR::OnRequestSessionReturned(
   if (query->mode == XRSession::kModeImmersiveVR ||
       query->mode == XRSession::kModeImmersiveAR) {
     frameProvider()->BeginImmersiveSession(session, std::move(session_ptr));
-  } else {
-    magic_window_provider_.Bind(std::move(session_ptr->data_provider));
     if (environment_integration) {
-      // See https://bit.ly/2S0zRAS for task types.
-      magic_window_provider_->GetEnvironmentIntegrationProvider(
+      // See Task Sources spreadsheet for more information:
+      // https://docs.google.com/spreadsheets/d/1b-dus1Ug3A8y0lX0blkmOjJILisUASdj8x9YN_XMwYc/view
+      frameProvider()->GetDataProvider()->GetEnvironmentIntegrationProvider(
           mojo::MakeRequest(&environment_provider_,
                             GetExecutionContext()->GetTaskRunner(
                                 TaskType::kMiscPlatformAPI)));
-
       environment_provider_.set_connection_error_handler(WTF::Bind(
           &XR::OnEnvironmentProviderDisconnect, WrapWeakPersistent(this)));
     }
+  } else {
+    magic_window_provider_.Bind(std::move(session_ptr->data_provider));
+    magic_window_provider_.set_connection_error_handler(WTF::Bind(
+        &XR::OnMagicWindowProviderDisconnect, WrapWeakPersistent(this)));
   }
 
+  UseCounter::Count(ExecutionContext::From(query->resolver->GetScriptState()),
+                    WebFeature::kWebXrSessionCreated);
+
+  ReportRequestSessionResult(query->mode, SessionRequestStatus::kSuccess);
   query->resolver->Resolve(session);
 }
 
@@ -474,10 +546,25 @@ void XR::ReportImmersiveSupported(bool supported) {
   }
 }
 
+void XR::ReportRequestSessionResult(XRSession::SessionMode session_mode,
+                                    SessionRequestStatus status) {
+  Document* doc = GetFrame() ? GetFrame()->GetDocument() : nullptr;
+  if (!doc)
+    return;
+
+  ukm::builders::XR_WebXR_SessionRequest(GetSourceId())
+      .SetMode(static_cast<int64_t>(session_mode))
+      .SetStatus(static_cast<int64_t>(status))
+      .Record(doc->UkmRecorder());
+}
+
 void XR::AddedEventListener(const AtomicString& event_type,
                             RegisteredEventListener& registered_listener) {
   EventTargetWithInlineData::AddedEventListener(event_type,
                                                 registered_listener);
+
+  if (!service_)
+    return;
 
   if (event_type == event_type_names::kDevicechange) {
     // Register for notifications if we haven't already.
@@ -509,7 +596,7 @@ XRSession* XR::CreateSession(
     bool sensorless_session) {
   XRSession* session = MakeGarbageCollected<XRSession>(
       this, client_request ? std::move(client_request) : nullptr, mode,
-      sessionModeToString(mode), blend_mode, sensorless_session);
+      blend_mode, sensorless_session);
   if (display_info)
     session->SetXRDisplayInfo(std::move(display_info));
   sessions_.insert(session);
@@ -534,13 +621,37 @@ void XR::Dispose() {
   if (frame_provider_)
     frame_provider_->Dispose();
 
-  device_ = nullptr;
+  OnDeviceDisconnect();
 
   // If we failed out with an outstanding call to RequestDevice, we may have
   // pending promises that need to be resolved.  Fake a call that we found no
   // devices to free up those promises.
   if (pending_device_)
     OnRequestDeviceReturned(nullptr);
+}
+
+void XR::OnDeviceDisconnect() {
+  if (!device_)
+    return;
+
+  device_ = nullptr;
+
+  HeapHashSet<Member<PendingSessionQuery>> support_queries =
+      outstanding_support_queries_;
+  for (const auto& query : support_queries) {
+    OnSupportsSessionReturned(query, false);
+  }
+  DCHECK(outstanding_support_queries_.IsEmpty());
+
+  HeapHashSet<Member<PendingSessionQuery>> request_queries =
+      outstanding_request_queries_;
+  for (const auto& query : request_queries) {
+    // We had a device, so rejecting the session request as though the mode
+    // isn't supported. TODO(https://crbug.com/962991): The spec should specify
+    // what is returned here.
+    OnRequestSessionReturned(query, nullptr);
+  }
+  DCHECK(outstanding_support_queries_.IsEmpty());
 }
 
 void XR::OnEnvironmentProviderDisconnect() {
@@ -552,11 +663,24 @@ void XR::OnEnvironmentProviderDisconnect() {
   environment_provider_.reset();
 }
 
+// Ends all non-immersive sessions when the magic window provider got
+// disconnected.
+void XR::OnMagicWindowProviderDisconnect() {
+  for (auto& session : sessions_) {
+    if (!session->immersive() && !session->ended()) {
+      session->ForceEnd();
+    }
+  }
+  magic_window_provider_.reset();
+}
+
 void XR::Trace(blink::Visitor* visitor) {
   visitor->Trace(pending_mode_queries_);
   visitor->Trace(pending_session_requests_);
   visitor->Trace(frame_provider_);
   visitor->Trace(sessions_);
+  visitor->Trace(outstanding_support_queries_);
+  visitor->Trace(outstanding_request_queries_);
   ContextLifecycleObserver::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
 }

@@ -69,6 +69,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDiscoverySession {
 
   virtual const BluetoothDiscoveryFilter* GetDiscoveryFilter() const;
 
+  base::WeakPtr<BluetoothDiscoverySession> GetWeakPtr();
+
  protected:
   explicit BluetoothDiscoverySession(
       scoped_refptr<BluetoothAdapter> adapter,

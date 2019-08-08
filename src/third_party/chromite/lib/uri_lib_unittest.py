@@ -128,3 +128,63 @@ class ShortenUriTests(cros_test_lib.TestCase):
     )
     for exp, uri in TESTS:
       self.assertEqual(exp, uri_lib.ShortenUri(uri))
+
+
+class ConstructUrlTests(cros_test_lib.TestCase):
+  """Tests functions that create URLs."""
+
+  def testConstructMiloBuildURL(self):
+    """Tests generating Legoland build URIs."""
+    actual = uri_lib.ConstructMiloBuildUri('bbid')
+    expected = 'https://ci.chromium.org/b/bbid'
+
+    self.assertEqual(actual, expected)
+
+  def testConstructDashboardUrl(self):
+    """Test generating dashboard URIs."""
+    actual = uri_lib.ConstructDashboardUri('master', 'builder', 123)
+    expected = 'https://luci-milo.appspot.com/buildbot/master/builder/123'
+    self.assertEqual(actual, expected)
+
+  def testConstructLogDogUri(self):
+    """Test generating LogDog URIs."""
+    actual = uri_lib.ConstructLogDogUri(123, 'stage')
+    expected = (
+        'https://luci-logdog.appspot.com/v/'
+        '?s=chromeos/buildbucket/cr-buildbucket.appspot.com/'
+        '123/%2B/steps/stage/0/stdout')
+    self.assertEqual(actual, expected)
+
+  def testConstructViceroyBuildDetailsUri(self):
+    """Test generating Viceroy build details URIs."""
+    actual = uri_lib.ConstructViceroyBuildDetailsUri(123)
+    expected = (
+        'https://viceroy.corp.google.com/chromeos/build_details?build_id=123')
+    self.assertEqual(actual, expected)
+
+  def testConstructGoldenEyeSuiteDetailsUriWithJobId(self):
+    """Test generating GoldenEye suite details URIs with job ID."""
+    actual = uri_lib.ConstructGoldenEyeSuiteDetailsUri(job_id=123)
+    expected = 'http://cros-goldeneye/healthmonitoring/suiteDetails?suiteId=123'
+    self.assertEqual(actual, expected)
+
+  def testConstructGoldenEyeSuiteDetailsUriWithBuildId(self):
+    """Test generating GoldenEye suite details URIs with CIDB build ID."""
+    actual = uri_lib.ConstructGoldenEyeSuiteDetailsUri(build_id=123)
+    expected = (
+        'http://cros-goldeneye/healthmonitoring/suiteDetails?cidbBuildId=123')
+    self.assertEqual(actual, expected)
+
+  def testConstructGoldenEyeBuildDetailsUri(self):
+    """Test generating GoldenEye suite details URIs with suite ID."""
+    actual = uri_lib.ConstructGoldenEyeBuildDetailsUri(123)
+    expected = ('http://go/goldeneye/'
+                'chromeos/healthmonitoring/buildDetails?id=123')
+    self.assertEqual(actual, expected)
+
+  def testConstructAnnotatorUri(self):
+    """Test generating GoldenEye suite details URIs with suite ID."""
+    actual = uri_lib.ConstructAnnotatorUri(123)
+    expected = ('https://chromiumos-build-annotator.googleplex.com/'
+                'build_annotations/edit_annotations/master-paladin/123/?')
+    self.assertEqual(actual, expected)

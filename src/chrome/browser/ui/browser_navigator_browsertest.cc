@@ -27,11 +27,11 @@
 #include "chrome/browser/ui/search/local_ntp_test_utils.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/navigation_handle.h"
@@ -646,42 +646,9 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewWindow) {
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 // This test verifies that navigating with "open_pwa_window_if_possible = true"
-// when the DesktopPWAWindowing flag is disabled does not open any new app
-// windows even if the app was installed when the flag was enabled.
-IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
-                       AppInstalledFlagDisabled_OpenAppWindowIfPossible_True) {
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(features::kDesktopPWAWindowing);
-
-    WebApplicationInfo web_app_info;
-    web_app_info.app_url = GetGoogleURL();
-    web_app_info.scope = GetGoogleURL();
-    web_app_info.open_as_window = true;
-    extensions::browsertest_util::InstallBookmarkApp(browser()->profile(),
-                                                     web_app_info);
-  }
-
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(features::kDesktopPWAWindowing);
-
-  int num_tabs = browser()->tab_strip_model()->count();
-
-  NavigateParams params(MakeNavigateParams());
-  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  params.open_pwa_window_if_possible = true;
-  Navigate(&params);
-
-  EXPECT_EQ(browser(), params.browser);
-  EXPECT_EQ(++num_tabs, browser()->tab_strip_model()->count());
-}
-
-// This test verifies that navigating with "open_pwa_window_if_possible = true"
 // opens a new app window if there is an installed Bookmark App for the URL.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        AppInstalled_OpenAppWindowIfPossible_True) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kDesktopPWAWindowing);
 
   WebApplicationInfo web_app_info;
   web_app_info.app_url = GetGoogleURL();
@@ -706,9 +673,6 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 // URL.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        AppInstalled_OpenAppWindowIfPossible_False) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kDesktopPWAWindowing);
-
   WebApplicationInfo web_app_info;
   web_app_info.app_url = GetGoogleURL();
   web_app_info.scope = GetGoogleURL();
@@ -731,9 +695,6 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 // opens a new foreground tab when there is no app installed for the URL.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        NoAppInstalled_OpenAppWindowIfPossible) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kDesktopPWAWindowing);
-
   int num_tabs = browser()->tab_strip_model()->count();
 
   NavigateParams params(MakeNavigateParams());
@@ -805,6 +766,33 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SchemeMismatchTabSwitchTest) {
                  false);
 
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
+}
+
+// Make sure that switching tabs preserves the post-focus state (of the
+// content area) of the previous tab.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SaveAfterFocusTabSwitchTest) {
+  GURL first_url("chrome://dino/");
+  GURL second_url("chrome://history/");
+
+  NavigateHelper(first_url, browser(), WindowOpenDisposition::CURRENT_TAB,
+                 true);
+
+  // Generate history so the tab isn't closed.
+  NavigateHelper(second_url, browser(),
+                 WindowOpenDisposition::NEW_FOREGROUND_TAB, true);
+
+  LocationBar* location_bar = browser()->window()->GetLocationBar();
+  location_bar->FocusLocation(true);
+
+  NavigateHelper(first_url, browser(), WindowOpenDisposition::SWITCH_TO_TAB,
+                 false);
+
+  browser()->tab_strip_model()->ActivateTabAt(
+      1, {TabStripModel::GestureType::kOther});
+
+  OmniboxView* omnibox_view = location_bar->GetOmniboxView();
+  EXPECT_EQ(omnibox_view->model()->focus_state(),
+            OmniboxFocusState::OMNIBOX_FOCUS_NONE);
 }
 
 // This test verifies that we're picking the correct browser and tab to
@@ -893,15 +881,15 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SingletonIncognitoLeak) {
   Browser* orig_browser;
 
   // Navigate to a site.
-  orig_browser = NavigateHelper(GURL("chrome://version"), browser(),
+  orig_browser = NavigateHelper(GURL(chrome::kChromeUIVersionURL), browser(),
                                 WindowOpenDisposition::CURRENT_TAB, true);
 
   // Open about for (not) finding later.
-  NavigateHelper(GURL("chrome://about"), orig_browser,
+  NavigateHelper(GURL(chrome::kChromeUIAboutURL), orig_browser,
                  WindowOpenDisposition::NEW_FOREGROUND_TAB, true);
 
   // Also open settings for finding later.
-  NavigateHelper(GURL("chrome://settings"), orig_browser,
+  NavigateHelper(GURL(chrome::kChromeUISettingsURL), orig_browser,
                  WindowOpenDisposition::NEW_FOREGROUND_TAB, false);
 
   EXPECT_EQ(3, browser()->tab_strip_model()->count());
@@ -911,8 +899,9 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SingletonIncognitoLeak) {
   {
     Browser* incognito_browser = CreateIncognitoBrowser();
 
-    test_browser = NavigateHelper(GURL("chrome://downloads"), incognito_browser,
-                                  WindowOpenDisposition::OFF_THE_RECORD, true);
+    test_browser =
+        NavigateHelper(GURL(chrome::kChromeUIDownloadsURL), incognito_browser,
+                       WindowOpenDisposition::OFF_THE_RECORD, true);
     // Sanity check where OTR tab landed.
     EXPECT_EQ(incognito_browser, test_browser);
 
@@ -921,20 +910,23 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SingletonIncognitoLeak) {
 
     // Open about singleton. Should not find in regular browser and
     // open locally.
-    test_browser = NavigateHelper(GURL("chrome://about"), incognito_browser,
-                                  WindowOpenDisposition::SINGLETON_TAB, true);
+    test_browser =
+        NavigateHelper(GURL(chrome::kChromeUIAboutURL), incognito_browser,
+                       WindowOpenDisposition::SINGLETON_TAB, true);
     EXPECT_NE(orig_browser, test_browser);
 
     // Open settings. Should switch to non-incognito profile to do so.
-    test_browser = NavigateHelper(GURL("chrome://settings"), incognito_browser,
-                                  WindowOpenDisposition::SINGLETON_TAB, false);
+    test_browser =
+        NavigateHelper(GURL(chrome::kChromeUISettingsURL), incognito_browser,
+                       WindowOpenDisposition::SINGLETON_TAB, false);
     EXPECT_EQ(orig_browser, test_browser);
   }
 
   // Open downloads singleton. Should not search OTR browser and
   // should open in regular browser.
-  test_browser = NavigateHelper(GURL("chrome://downloads"), orig_browser,
-                                WindowOpenDisposition::SINGLETON_TAB, true);
+  test_browser =
+      NavigateHelper(GURL(chrome::kChromeUIDownloadsURL), orig_browser,
+                     WindowOpenDisposition::SINGLETON_TAB, true);
   EXPECT_EQ(browser(), test_browser);
 }
 
@@ -944,15 +936,15 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SwitchToTabIncognitoLeak) {
   Browser* orig_browser;
 
   // Navigate to a site.
-  orig_browser = NavigateHelper(GURL("chrome://version"), browser(),
+  orig_browser = NavigateHelper(GURL(chrome::kChromeUIVersionURL), browser(),
                                 WindowOpenDisposition::CURRENT_TAB, true);
 
   // Also open settings for finding later.
-  NavigateHelper(GURL("chrome://settings"), orig_browser,
+  NavigateHelper(GURL(chrome::kChromeUISettingsURL), orig_browser,
                  WindowOpenDisposition::NEW_FOREGROUND_TAB, false);
 
   // Also open about for searching too.
-  NavigateHelper(GURL("chrome://about"), orig_browser,
+  NavigateHelper(GURL(chrome::kChromeUIAboutURL), orig_browser,
                  WindowOpenDisposition::NEW_FOREGROUND_TAB, true);
 
   EXPECT_EQ(3, browser()->tab_strip_model()->count());
@@ -962,8 +954,9 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SwitchToTabIncognitoLeak) {
   {
     Browser* incognito_browser = CreateIncognitoBrowser();
 
-    test_browser = NavigateHelper(GURL("chrome://downloads"), incognito_browser,
-                                  WindowOpenDisposition::OFF_THE_RECORD, true);
+    test_browser =
+        NavigateHelper(GURL(chrome::kChromeUIDownloadsURL), incognito_browser,
+                       WindowOpenDisposition::OFF_THE_RECORD, true);
     // Sanity check where OTR tab landed.
     EXPECT_EQ(incognito_browser, test_browser);
 
@@ -972,20 +965,23 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SwitchToTabIncognitoLeak) {
 
     // Try to open the original chrome://about via switch-to-tab. Should not
     // find copy in regular browser, and open new tab in incognito.
-    test_browser = NavigateHelper(GURL("chrome://about"), incognito_browser,
-                                  WindowOpenDisposition::SWITCH_TO_TAB, true);
+    test_browser =
+        NavigateHelper(GURL(chrome::kChromeUIAboutURL), incognito_browser,
+                       WindowOpenDisposition::SWITCH_TO_TAB, true);
     EXPECT_EQ(incognito_browser, test_browser);
 
     // Open settings. Should switch to non-incognito profile to do so.
-    test_browser = NavigateHelper(GURL("chrome://settings"), incognito_browser,
-                                  WindowOpenDisposition::SWITCH_TO_TAB, false);
+    test_browser =
+        NavigateHelper(GURL(chrome::kChromeUISettingsURL), incognito_browser,
+                       WindowOpenDisposition::SWITCH_TO_TAB, false);
     EXPECT_EQ(orig_browser, test_browser);
   }
 
   // Switch-to-tab shouldn't find the incognito tab, and open new one in
   // current browser.
-  test_browser = NavigateHelper(GURL("chrome://downloads"), orig_browser,
-                                WindowOpenDisposition::SWITCH_TO_TAB, true);
+  test_browser =
+      NavigateHelper(GURL(chrome::kChromeUIDownloadsURL), orig_browser,
+                     WindowOpenDisposition::SWITCH_TO_TAB, true);
   EXPECT_EQ(browser(), test_browser);
 }
 

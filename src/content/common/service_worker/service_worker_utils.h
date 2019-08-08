@@ -69,6 +69,12 @@ class ServiceWorkerUtils {
       bool is_main_script,
       blink::mojom::ServiceWorkerUpdateViaCache cache_mode);
 
+  static bool ShouldValidateBrowserCacheForScript(
+      bool is_main_script,
+      bool force_bypass_cache,
+      blink::mojom::ServiceWorkerUpdateViaCache cache_mode,
+      base::TimeDelta time_since_last_check);
+
   // Converts an enum defined in net/base/load_flags.h to
   // blink::mojom::FetchCacheMode.
   CONTENT_EXPORT static blink::mojom::FetchCacheMode GetCacheModeFromLoadFlags(
@@ -83,13 +89,24 @@ class ServiceWorkerUtils {
   CONTENT_EXPORT static const char* FetchResponseSourceToSuffix(
       network::mojom::FetchResponseSource source);
 
-  CONTENT_EXPORT static void SendHttpResponseInfoToClient(
-      const net::HttpResponseInfo* http_info,
-      uint32_t options,
-      base::TimeTicks request_start_time,
-      base::TimeTicks response_start_time,
-      int response_data_size,
-      network::mojom::URLLoaderClientProxy* client_proxy);
+  struct CONTENT_EXPORT ResourceResponseHeadAndMetadata {
+    ResourceResponseHeadAndMetadata(network::ResourceResponseHead head,
+                                    std::vector<uint8_t> metadata);
+    ResourceResponseHeadAndMetadata(ResourceResponseHeadAndMetadata&& other);
+    ResourceResponseHeadAndMetadata(
+        const ResourceResponseHeadAndMetadata& other) = delete;
+    ~ResourceResponseHeadAndMetadata();
+
+    network::ResourceResponseHead head;
+    std::vector<uint8_t> metadata;
+  };
+
+  CONTENT_EXPORT static ResourceResponseHeadAndMetadata
+  CreateResourceResponseHeadAndMetadata(const net::HttpResponseInfo* http_info,
+                                        uint32_t options,
+                                        base::TimeTicks request_start_time,
+                                        base::TimeTicks response_start_time,
+                                        int response_data_size);
 
  private:
   static bool IsPathRestrictionSatisfiedInternal(

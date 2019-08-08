@@ -11,9 +11,6 @@
 // closing the last incognito tab.
 extern const base::Feature kClosingLastIncognitoTab;
 
-// Feature to contain the NTP directly from browser container.
-extern const base::Feature kBrowserContainerContainsNTP;
-
 // Feature to retain the contentView in the browser container.
 extern const base::Feature kBrowserContainerKeepsContentView;
 
@@ -42,5 +39,8 @@ extern const base::Feature kNewOmniboxPopupLayout;
 // Feature to display the omnibox with default search engine favicon
 // in the omnibox.
 extern const base::Feature kOmniboxUseDefaultSearchEngineFavicon;
+
+// Feature flag for the language settings page.
+extern const base::Feature kLanguageSettings;
 
 #endif  // IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_

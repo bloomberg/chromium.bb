@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">Свиване на менюто</translation>
 <translation id="1383876407941801731">Търсене</translation>
 <translation id="1419738280318246476">Отключете устройството, за да се изпълни действието от известието</translation>
+<translation id="1426410128494586442">Да</translation>
 <translation id="1455242230282523554">Показване на езиковите настройки</translation>
 <translation id="1467432559032391204">Наляво</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -47,7 +48,6 @@
 <translation id="1570871743947603115">Превключване на Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">да осъществява достъп до цялата ви активност в тази сесия;</translation>
 <translation id="1608626060424371292">Премахване на този потребител</translation>
-<translation id="1621499497873603021">Оставащо време до изразходването на батерията: <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Стартиране на гласова заявка</translation>
 <translation id="1658406695958299976">За съжаление, паролата ви пак не можа да бъде потвърдена. Забележка: Ако наскоро сте я променили, новата ще влезе в сила, след като излезете от профила си. Моля, използвайте старата парола тук.</translation>
 <translation id="1677472565718498478">Оставащо време: <ph name="TIME" /></translation>
@@ -72,7 +72,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Научете повече за най-новата актуализация на <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">Изключване</translation>
-<translation id="1999763610967697511">Хващане и преместване с мишката</translation>
 <translation id="2012624427112548395">Ctrl + клавиш „Търсене“ + H</translation>
 <translation id="2016340657076538683">Въведете съобщение</translation>
 <translation id="2050339315714019657">Вертикално</translation>
@@ -100,7 +99,6 @@
 <translation id="239188844683466770">Превключване на режима „Не безпокойте“</translation>
 <translation id="2412593942846481727">Налице е актуализация</translation>
 <translation id="2413728805700750528">„<ph name="DISPLAY_NAME" />“ е сесия, управлявана от <ph name="DOMAIN" /></translation>
-<translation id="2416346634399901812">Установена е връзка (<ph name="NETWORK_NAME" />)</translation>
 <translation id="2427507373259914951">Кликване с левия бутон</translation>
 <translation id="2429753432712299108">Устройството с Bluetooth „<ph name="DEVICE_NAME" />“ иска разрешение за сдвояване. Преди да приемете, моля, уверете се, че на него се показва следният ключ за достъп: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Известия</translation>
@@ -114,11 +112,11 @@
 <translation id="2597972630681408282">Нощно осветление: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM картата е заключена</translation>
 <translation id="2653659639078652383">Изпращане</translation>
+<translation id="2658778018866295321">Кликване и преместване с плъзгане</translation>
 <translation id="2700493154570097719">Задайте клавиатура</translation>
 <translation id="2718395828230677721">Нощно осветление</translation>
 <translation id="2727977024730340865">Използва се зарядно устройство с малка мощност. Зареждането на батерията може да не е надеждно.</translation>
 <translation id="2761704814324807722">Област за състоянието, часът е <ph name="TIME" />, <ph name="BATTERY" /></translation>
-<translation id="277257480934873581">Установява се повторна връзка с мрежата „<ph name="NAME" />“</translation>
 <translation id="2792498699870441125">Alt + търсене</translation>
 <translation id="2803734122639935495">За да отключите, въведете паролата си</translation>
 <translation id="2819276065543622893">Ще излезете сега.</translation>
@@ -139,7 +137,6 @@
 <translation id="2996462380875591307">Лупата в прикрепен режим е активирана. За да я изключите, натиснете отново Ctrl + клавиш „Търсене“ + D.</translation>
 <translation id="3000461861112256445">Монозвук</translation>
 <translation id="3009178788565917040">Изход</translation>
-<translation id="3019353588588144572">Оставащо време до пълното зареждане на батерията: <ph name="TIME_REMAINING" /></translation>
 <translation id="3051128274746680507">Профилът ви на контролиран потребител скоро ще бъде премахнат. Влезте в профила си, за да научите повече.</translation>
 <translation id="3055162170959710888">Днес използвахте това устройство <ph name="USED_TIME" /></translation>
 <translation id="3077734595579995578">shift</translation>
@@ -175,6 +172,7 @@
 <translation id="3510164367642747937">Открояване на курсора на мишката</translation>
 <translation id="3513798432020909783">Профилът се управлява от <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Връщане към „<ph name="FROM_LOCALE" />“ (изисква рестартиране)</translation>
+<translation id="3576141592585647168">Промяна на часовата зона</translation>
 <translation id="3595596368722241419">Батерията е заредена</translation>
 <translation id="3606978283550408104">Брайловият дисплей е свързан.</translation>
 <translation id="3621202678540785336">Вход</translation>
@@ -202,6 +200,7 @@
 <translation id="394485226368336402">Настройки за звука</translation>
 <translation id="3962859241508114581">Предишен запис</translation>
 <translation id="397105322502079400">Изчислява се...</translation>
+<translation id="3977512764614765090">Батерията е на <ph name="PERCENTAGE" />% и се зарежда.</translation>
 <translation id="3995138139523574647">устройство с USB-C (задният десен порт)</translation>
 <translation id="4017989525502048489">Лазерна показалка</translation>
 <translation id="4042660782729322247">Споделяте екрана си</translation>
@@ -218,7 +217,7 @@
 <translation id="4269883910223712419">Администраторът на това устройство може:</translation>
 <translation id="4279490309300973883">Дублиране</translation>
 <translation id="4281007048406351813">Добавяне на 1 минута към таймера</translation>
-<translation id="4292681942966152062">Мрежата се активира (<ph name="NETWORK_NAME" />)</translation>
+<translation id="4296136865091727875">Изчистване на всичките <ph name="COUNT" /> известия</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Използвахте клавишната комбинация за режима на висок контраст. Искате ли да го включите?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -234,7 +233,6 @@
 <translation id="4477350412780666475">Следващ запис</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Несдвоени устройства</translation>
-<translation id="4508225577814909926"><ph name="NAME" />: Установява се връзка...</translation>
 <translation id="4513946894732546136">Отзиви</translation>
 <translation id="4527045527269911712">Устройството с Bluetooth „<ph name="DEVICE_NAME" />“ иска разрешение за сдвояване.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> до пълно зареждане</translation>
@@ -247,12 +245,12 @@
 <translation id="4696813013609194136">Отключване на устройството с код на родител</translation>
 <translation id="4731797938093519117">Достъп на родител</translation>
 <translation id="4734965478015604180">Хоризонтална ориентация</translation>
-<translation id="476166673298332917">Администраторът на устройството може да наблюдава активността ви при сърфиране.</translation>
 <translation id="4774338217796918551">Заповядайте отново утре в <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Парола за <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Google Асистент не е налице по време на демонстрационна сесия.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Изключване</translation>
+<translation id="4831034276697007977">Наистина ли искате да изключите автоматичните кликвания?</translation>
 <translation id="4849058404725798627">Открояване на обекта, върху който е фокусът от клавиатурата</translation>
 <translation id="485592688953820832">Без действие (пауза)</translation>
 <translation id="4872237917498892622">„Alt + търсене“ или „Shift“</translation>
@@ -355,9 +353,9 @@
 <translation id="6537270692134705506">Заснемане на екрана</translation>
 <translation id="6542521951477560771">Предава се към „<ph name="RECEIVER_NAME" />“</translation>
 <translation id="6559976592393364813">Попитайте администратора</translation>
-<translation id="6574601967010742428">Администраторът на устройството може да е в състояние да наблюдава активността ви.</translation>
 <translation id="6585808820553845416">Сесията приключва след <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">клавиш „търсене“ + Shift + K</translation>
+<translation id="6637729079642709226">Промяна на часа</translation>
 <translation id="6650933572246256093">Устройството с Bluetooth „<ph name="DEVICE_NAME" />“ иска разрешение за сдвояване. Моля, въведете на него следния ключ за достъп: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Парола</translation>
 <translation id="6665545700722362599">да разрешава на уебсайтове, приложения и разширения да използват услугите за местоположение и микрофона, камерата или други функции на устройството;</translation>
@@ -369,7 +367,6 @@
 <translation id="6715542151869432661">Няма намерени мобилни устройства.</translation>
 <translation id="6723839937902243910">Захранване</translation>
 <translation id="6751826523481687655">Проследяването на ефективността е включено</translation>
-<translation id="6785414152754474415">Батерията е <ph name="PERCENTAGE" />% пълна и се зарежда.</translation>
 <translation id="6790428901817661496">Пускане</translation>
 <translation id="6803622936009808957">Дисплеите не можаха да се дублират, тъй като не бяха намерени поддържани разделителни способности. Вместо това влязохте в режима за разширен работен плот.</translation>
 <translation id="6820676911989879663">Време е за почивка!</translation>
@@ -403,6 +400,7 @@
 <translation id="7348093485538360975">Екранна клавиатура</translation>
 <translation id="735745346212279324">Връзката с виртуалната частна мрежа (VPN) е прекъсната</translation>
 <translation id="7377169924702866686">„Caps Lock“ е включен.</translation>
+<translation id="7378594059915113390">Контроли за мултимедия</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" /> сек</translation>
 <translation id="7398254312354928459">Преминахте към друга мрежа</translation>
 <translation id="7405710164030118432">За да отключите устройството, въведете кода си за достъп на родител от Family Link</translation>
@@ -416,6 +414,7 @@
 <translation id="7561014039265304140">„<ph name="DISPLAY_NAME" />“ не поддържа разделителна способност от <ph name="SPECIFIED_RESOLUTION" />. Тя бе променена на <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Панел с емотикони</translation>
 <translation id="7564874036684306347">Преместването на прозорци към друг работен плот може да предизвика неочаквано поведение. Последващите известия, прозорци и диалогови прозорци може да бъдат разделени между работните плотове.</translation>
+<translation id="7568294522609223312">Изключване на автоматичните кликвания</translation>
 <translation id="7569509451529460200">Активирахте функцията за брайлово писмо и ChromeVox</translation>
 <translation id="7593891976182323525">„търсене“ или „Shift“</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (собственик)</translation>
@@ -432,7 +431,6 @@
 <translation id="7814236020522506259"><ph name="HOUR" /> и <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">силен сигнал</translation>
 <translation id="7837740436429729974">Времето изтече</translation>
-<translation id="7842211907556571265">Установява се връзка (<ph name="NETWORK_NAME" />)</translation>
 <translation id="7842569679327885685">Предупреждение: Експериментална функция</translation>
 <translation id="7846634333498149051">Клавиатура</translation>
 <translation id="7868900307798234037">Отключване с отпечатък</translation>
@@ -504,6 +502,7 @@
 <translation id="8877788021141246043">„Set a reminder“ („Задай напомняне“)</translation>
 <translation id="8878886163241303700">Разгъване на екрана</translation>
 <translation id="890616557918890486">Промяна на източника</translation>
+<translation id="8909138438987180327">Батерията е на <ph name="PERCENTAGE" /> процента.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Асистент не поддържа този език.</translation>
 <translation id="8938800817013097409">Устройство с USB-C (десният порт на гърба)</translation>
@@ -512,9 +511,11 @@
 <translation id="8990809378771970590">Използвате <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Отключете устройството като <ph name="LOGIN_ID" />, за да се изпълни действието от известието</translation>
 <translation id="8995603266996330174">Управлявано от <ph name="DOMAIN" /></translation>
+<translation id="9017320285115481645">Въведете кода за достъп на родител от Family Link.</translation>
 <translation id="9029474291399787231">Налице е актуализация на Adobe Flash Player</translation>
 <translation id="9056839673611986238">Устройството ще бъде върнато към по-ранна версия</translation>
 <translation id="9070640332319875144">Настройки на Асистент</translation>
+<translation id="9072519059834302790"><ph name="TIME_LEFT" /> до изразходването на батерията.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Микрофонът се използва.</translation>
@@ -525,8 +526,8 @@
 <translation id="9179259655489829027">С тази функция получавате бърз достъп без парола до всеки влязъл потребител. Използвайте я само с надеждни профили.</translation>
 <translation id="9193626018745640770">Предава се към неизвестен приемник</translation>
 <translation id="9194617393863864469">Влизане в профила на друг потребител...</translation>
-<translation id="9201131092683066720">Батерията е <ph name="PERCENTAGE" />% пълна.</translation>
 <translation id="9210037371811586452">Излиза се от режима на обединен работен плот</translation>
+<translation id="9211681782751733685">Оставащо време до пълното зареждане на батерията: <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">Задаване на тапета</translation>
 <translation id="921989828232331238">Родителят ви заключи устройството ви за деня</translation>
 <translation id="923686485342484400">Натиснете два пъти „Control+Shift+Q“ за изход.</translation>

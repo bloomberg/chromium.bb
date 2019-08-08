@@ -180,12 +180,16 @@ void FolderHeaderView::SetFolderNameForTest(const base::string16& name) {
 }
 
 bool FolderHeaderView::IsFolderNameEnabledForTest() const {
-  return folder_name_view_->enabled();
+  return folder_name_view_->GetEnabled();
 }
 
 gfx::Size FolderHeaderView::CalculatePreferredSize() const {
   return gfx::Size(kMaxFolderNameWidth,
                    folder_name_view_->GetPreferredSize().height());
+}
+
+const char* FolderHeaderView::GetClassName() const {
+  return "FolderHeaderView";
 }
 
 views::View* FolderHeaderView::GetFolderNameViewForTest() const {

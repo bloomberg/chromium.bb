@@ -229,8 +229,10 @@ void RecentTabHelper::DidFinishNavigation(
            last_n_latest_saved_snapshot_info_->request_id)) {
     DVLOG(1) << " - Deleting previous last_n snapshot with offline_id "
              << last_n_latest_saved_snapshot_info_->request_id;
-    std::vector<int64_t> id{last_n_latest_saved_snapshot_info_->request_id};
-    page_model_->DeletePagesByOfflineId(id, DeletePageCallback());
+    PageCriteria criteria;
+    criteria.offline_ids =
+        std::vector<int64_t>{last_n_latest_saved_snapshot_info_->request_id};
+    page_model_->DeletePagesWithCriteria(criteria, base::DoNothing());
     last_n_latest_saved_snapshot_info_.reset();
   }
 
@@ -310,12 +312,17 @@ void RecentTabHelper::WebContentsWasHidden() {
   // - A last_n snapshot is currently being saved.
   // - The tab is in the process of being closed.
   // - The tab is currently presented as a custom tab.
+  // Note that a WebContents may be embedded in another WebContents. The
+  // outermost WebContents is the one associated with the tab.
   if (!last_n_listen_to_tab_hidden_ || last_n_ongoing_snapshot_info_ ||
-      tab_is_closing_ || delegate_->IsCustomTab(web_contents())) {
+      tab_is_closing_ ||
+      delegate_->IsCustomTab(web_contents()->GetOutermostWebContents())) {
     DVLOG(1) << "Will not snapshot for last_n (reasons: "
              << !last_n_listen_to_tab_hidden_ << ", "
              << !!last_n_ongoing_snapshot_info_ << ", " << tab_is_closing_
-             << ", " << delegate_->IsCustomTab(web_contents())
+             << ", "
+             << delegate_->IsCustomTab(
+                    web_contents()->GetOutermostWebContents())
              << ") for: " << web_contents()->GetLastCommittedURL().spec();
     return;
   }
@@ -446,9 +453,11 @@ void RecentTabHelper::ContinueSnapshotWithIdsToPurge(
 
   DVLOG_IF(1, !page_ids.empty()) << "Deleting " << page_ids.size()
                                  << " offline pages...";
-  page_model_->DeletePagesByOfflineId(
-      page_ids, base::Bind(&RecentTabHelper::ContinueSnapshotAfterPurge,
-                           weak_ptr_factory_.GetWeakPtr(), snapshot_info));
+  PageCriteria criteria;
+  criteria.offline_ids = page_ids;
+  page_model_->DeletePagesWithCriteria(
+      criteria, base::BindOnce(&RecentTabHelper::ContinueSnapshotAfterPurge,
+                               weak_ptr_factory_.GetWeakPtr(), snapshot_info));
 }
 
 void RecentTabHelper::ContinueSnapshotAfterPurge(

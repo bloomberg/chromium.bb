@@ -38,13 +38,20 @@ void MockIndexedDBCallbacks::OnSuccess() {}
 void MockIndexedDBCallbacks::OnSuccess(int64_t result) {}
 
 void MockIndexedDBCallbacks::OnSuccess(const std::vector<base::string16>&) {}
+void MockIndexedDBCallbacks::OnSuccess(
+    std::vector<blink::mojom::IDBNameAndVersionPtr> names_and_versions) {
+  info_called_ = true;
+}
 
 void MockIndexedDBCallbacks::OnSuccess(const IndexedDBKey& key) {}
 
 void MockIndexedDBCallbacks::OnSuccess(
     std::unique_ptr<IndexedDBConnection> connection,
     const IndexedDBDatabaseMetadata& metadata) {
-  connection_ = std::move(connection);
+  if (!upgrade_called_)
+    connection_ = std::move(connection);
+  if (call_on_db_success_)
+    std::move(call_on_db_success_).Run();
 }
 
 void MockIndexedDBCallbacks::OnUpgradeNeeded(
@@ -54,6 +61,15 @@ void MockIndexedDBCallbacks::OnUpgradeNeeded(
     const IndexedDBDataLossInfo& data_loss_info) {
   connection_ = std::move(connection);
   upgrade_called_ = true;
+  if (call_on_upgrade_needed_)
+    std::move(call_on_upgrade_needed_).Run();
+}
+
+void MockIndexedDBCallbacks::CallOnUpgradeNeeded(base::OnceClosure closure) {
+  call_on_upgrade_needed_ = std::move(closure);
+}
+void MockIndexedDBCallbacks::CallOnDBSuccess(base::OnceClosure closure) {
+  call_on_db_success_ = std::move(closure);
 }
 
 }  // namespace content

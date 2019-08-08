@@ -32,7 +32,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_WORKER_THREAD_DEBUGGER_H_
 
 #include "base/macros.h"
-#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/inspector/thread_debugger.h"
 
@@ -92,7 +91,6 @@ class CORE_EXPORT WorkerThreadDebugger final : public ThreadDebugger {
 
   int paused_context_group_id_;
   WTF::HashMap<int, WorkerThread*> worker_threads_;
-  std::unique_ptr<Platform::NestedMessageLoopRunner> nested_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerThreadDebugger);
 };

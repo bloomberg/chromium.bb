@@ -46,6 +46,7 @@ interface Animation : EventTarget
     getter id
     getter oncancel
     getter onfinish
+    getter pending
     getter playState
     getter playbackRate
     getter startTime
@@ -55,6 +56,7 @@ interface Animation : EventTarget
     method pause
     method play
     method reverse
+    method updatePlaybackRate
     setter currentTime
     setter effect
     setter id
@@ -358,8 +360,11 @@ interface Blob
     attribute @@toStringTag
     getter size
     getter type
+    method arrayBuffer
     method constructor
     method slice
+    method stream
+    method text
 interface BlobEvent : Event
     attribute @@toStringTag
     getter data
@@ -839,12 +844,19 @@ interface CharacterData : Node
 interface Clipboard : EventTarget
     attribute @@toStringTag
     method constructor
+    method read
     method readText
+    method write
     method writeText
 interface ClipboardEvent : Event
     attribute @@toStringTag
     getter clipboardData
     method constructor
+interface ClipboardItem
+    attribute @@toStringTag
+    getter types
+    method constructor
+    method getType
 interface CloseEvent : Event
     attribute @@toStringTag
     getter code
@@ -1332,6 +1344,7 @@ interface Document : Node
     getter onresume
     getter onscroll
     getter onsearch
+    getter onsecuritypolicyviolation
     getter onseeked
     getter onseeking
     getter onselect
@@ -1513,6 +1526,7 @@ interface Document : Node
     setter onresume
     setter onscroll
     setter onsearch
+    setter onsecuritypolicyviolation
     setter onseeked
     setter onseeking
     setter onselect
@@ -2419,6 +2433,7 @@ interface HTMLFormElement : HTMLElement
     method checkValidity
     method constructor
     method reportValidity
+    method requestSubmit
     method reset
     method submit
     setter acceptCharset
@@ -3450,6 +3465,7 @@ interface IDBCursor
     getter direction
     getter key
     getter primaryKey
+    getter request
     getter source
     method advance
     method constructor
@@ -3566,6 +3582,7 @@ interface IDBTransaction : EventTarget
     getter oncomplete
     getter onerror
     method abort
+    method commit
     method constructor
     method objectStore
     setter onabort
@@ -4552,9 +4569,15 @@ interface PaymentManager
     getter userHint
     method constructor
     setter userHint
+interface PaymentMethodChangeEvent : PaymentRequestUpdateEvent
+    attribute @@toStringTag
+    getter methodDetails
+    getter methodName
+    method constructor
 interface PaymentRequest : EventTarget
     attribute @@toStringTag
     getter id
+    getter onpaymentmethodchange
     getter onshippingaddresschange
     getter onshippingoptionchange
     getter shippingAddress
@@ -4565,6 +4588,7 @@ interface PaymentRequest : EventTarget
     method constructor
     method hasEnrolledInstrument
     method show
+    setter onpaymentmethodchange
     setter onshippingaddresschange
     setter onshippingoptionchange
 interface PaymentRequestUpdateEvent : Event
@@ -4610,6 +4634,13 @@ interface PerformanceEntry
     getter entryType
     getter name
     getter startTime
+    method constructor
+    method toJSON
+interface PerformanceEventTiming : PerformanceEntry
+    attribute @@toStringTag
+    getter cancelable
+    getter processingEnd
+    getter processingStart
     method constructor
     method toJSON
 interface PerformanceLongTaskTiming : PerformanceEntry
@@ -4939,6 +4970,7 @@ interface RTCDtlsTransport : EventTarget
     getter onstatechange
     getter state
     method constructor
+    method getRemoteCertificates
     setter onerror
     setter onstatechange
 interface RTCError : DOMException
@@ -5011,6 +5043,7 @@ interface RTCPeerConnection : EventTarget
     getter pendingLocalDescription
     getter pendingRemoteDescription
     getter remoteDescription
+    getter sctp
     getter signalingState
     method addIceCandidate
     method addStream
@@ -5071,6 +5104,7 @@ interface RTCRtpSender
     method getStats
     method replaceTrack
     method setParameters
+    method setStreams
 interface RTCRtpTransceiver
     attribute @@toStringTag
     getter currentDirection
@@ -5080,7 +5114,17 @@ interface RTCRtpTransceiver
     getter sender
     getter stopped
     method constructor
+    method setCodecPreferences
     setter direction
+interface RTCSctpTransport : EventTarget
+    attribute @@toStringTag
+    getter maxChannels
+    getter maxMessageSize
+    getter onstatechange
+    getter state
+    getter transport
+    method constructor
+    setter onstatechange
 interface RTCSessionDescription
     attribute @@toStringTag
     getter sdp
@@ -8596,6 +8640,7 @@ interface webkitRTCPeerConnection : EventTarget
     getter pendingLocalDescription
     getter pendingRemoteDescription
     getter remoteDescription
+    getter sctp
     getter signalingState
     method addIceCandidate
     method addStream

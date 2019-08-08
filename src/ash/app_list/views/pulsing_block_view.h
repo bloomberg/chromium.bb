@@ -24,6 +24,9 @@ class PulsingBlockView : public views::View {
   PulsingBlockView(const gfx::Size& size, bool start_delay);
   ~PulsingBlockView() override;
 
+  // views::View:
+  const char* GetClassName() const override;
+
  private:
   void OnStartDelayTimer();
 

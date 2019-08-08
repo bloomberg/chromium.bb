@@ -59,7 +59,6 @@
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
-#include "third_party/blink/renderer/core/loader/navigation_scheduler.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/histogram.h"
@@ -215,12 +214,10 @@ void ScriptController::UpdateDocument() {
   EnableEval();
 }
 
-bool ScriptController::ExecuteScriptIfJavaScriptURL(
+void ScriptController::ExecuteJavaScriptURL(
     const KURL& url,
-    Element* element,
     ContentSecurityPolicyDisposition check_main_world_csp) {
-  if (!url.ProtocolIsJavaScript())
-    return false;
+  DCHECK(url.ProtocolIsJavaScript());
 
   const int kJavascriptSchemeLength = sizeof("javascript:") - 1;
   String script_source = DecodeURLEscapeSequences(
@@ -232,10 +229,10 @@ bool ScriptController::ExecuteScriptIfJavaScriptURL(
   if (!GetFrame()->GetPage() ||
       (!should_bypass_main_world_content_security_policy &&
        !GetFrame()->GetDocument()->GetContentSecurityPolicy()->AllowInline(
-           ContentSecurityPolicy::InlineType::kNavigation, element,
+           ContentSecurityPolicy::InlineType::kNavigation, nullptr,
            script_source, String() /* nonce */,
            GetFrame()->GetDocument()->Url(), EventHandlerPosition().line_))) {
-    return true;
+    return;
   }
 
   script_source = script_source.Substring(kJavascriptSchemeLength);
@@ -261,14 +258,11 @@ bool ScriptController::ExecuteScriptIfJavaScriptURL(
   // If executing script caused this frame to be removed from the page, we
   // don't want to try to replace its document!
   if (!GetFrame()->GetPage())
-    return true;
-
+    return;
   if (result.IsEmpty() || !result->IsString())
-    return true;
-  String script_result = ToCoreString(v8::Local<v8::String>::Cast(result));
+    return;
   GetFrame()->Loader().ReplaceDocumentWhileExecutingJavaScriptURL(
-      script_result, owner_document);
-  return true;
+      ToCoreString(v8::Local<v8::String>::Cast(result)), owner_document);
 }
 
 void ScriptController::ExecuteScriptInMainWorld(

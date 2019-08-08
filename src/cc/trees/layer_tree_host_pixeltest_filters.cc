@@ -19,7 +19,7 @@ namespace {
 
 class LayerTreeHostFiltersPixelTest
     : public LayerTreePixelTest,
-      public ::testing::WithParamInterface<LayerTreePixelTest::PixelTestType> {
+      public ::testing::WithParamInterface<LayerTreeTest::RendererType> {
  protected:
   void InitializeSettings(LayerTreeSettings* settings) override {
     LayerTreePixelTest::InitializeSettings(settings);
@@ -29,17 +29,17 @@ class LayerTreeHostFiltersPixelTest
         layer_transforms_should_scale_layer_contents_;
   }
 
-  LayerTreePixelTest::PixelTestType GetPixelTestType() { return GetParam(); }
+  RendererType renderer_type() { return GetParam(); }
 
   // Text string for graphics backend of the RendererType. Suitable for
   // generating separate base line file paths.
   const char* GetRendererSuffix() {
-    switch (GetPixelTestType()) {
-      case LayerTreePixelTest::PIXEL_TEST_GL:
+    switch (renderer_type()) {
+      case RENDERER_GL:
         return "gl";
-      case LayerTreePixelTest::PIXEL_TEST_SKIA_GL:
+      case RENDERER_SKIA_GL:
         return "skia";
-      case LayerTreePixelTest::PIXEL_TEST_SOFTWARE:
+      case RENDERER_SOFTWARE:
         return "sw";
     }
   }
@@ -54,17 +54,17 @@ class LayerTreeHostFiltersPixelTest
     // This matrix swaps the red and green channels, and has a slight
     // translation in the alpha component, so that it affects transparent
     // pixels.
-    SkScalar matrix[20] = {
+    float matrix[20] = {
         0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 20.0f,
+        0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 20 / 255.0f,
     };
 
     FilterOperations filters;
     SkImageFilter::CropRect cropRect(
         SkRect::MakeXYWH(-40000, -40000, 80000, 80000));
     filters.Append(FilterOperation::CreateReferenceFilter(
-        sk_make_sp<ColorFilterPaintFilter>(
-            SkColorFilters::MatrixRowMajor255(matrix), nullptr, &cropRect)));
+        sk_make_sp<ColorFilterPaintFilter>(SkColorFilters::Matrix(matrix),
+                                           nullptr, &cropRect)));
     filter_layer->SetFilters(filters);
     background->SetMasksToBounds(masks_to_bounds);
     background->AddChild(filter_layer);
@@ -75,20 +75,33 @@ class LayerTreeHostFiltersPixelTest
   bool layer_transforms_should_scale_layer_contents_ = true;
 };
 
-// TODO(crbug.com/948128): Enable these tests for Skia.
-INSTANTIATE_TEST_SUITE_P(
-    ,
-    LayerTreeHostFiltersPixelTest,
-    ::testing::Values(LayerTreePixelTest::PIXEL_TEST_GL,
-                      LayerTreePixelTest::PIXEL_TEST_SOFTWARE));
+INSTANTIATE_TEST_SUITE_P(,
+                         LayerTreeHostFiltersPixelTest,
+                         ::testing::Values(LayerTreeTest::RENDERER_GL,
+                                           LayerTreeTest::RENDERER_SKIA_GL,
+                                           LayerTreeTest::RENDERER_SOFTWARE));
 
-class LayerTreeHostFiltersPixelTestGPU : public LayerTreeHostFiltersPixelTest {
-};
+using LayerTreeHostFiltersPixelTestNonSkia = LayerTreeHostFiltersPixelTest;
 
 // TODO(crbug.com/948128): Enable these tests for Skia.
 INSTANTIATE_TEST_SUITE_P(,
+                         LayerTreeHostFiltersPixelTestNonSkia,
+                         ::testing::Values(LayerTreeTest::RENDERER_GL,
+                                           LayerTreeTest::RENDERER_SOFTWARE));
+
+using LayerTreeHostFiltersPixelTestGL = LayerTreeHostFiltersPixelTest;
+
+// TODO(crbug.com/948128): Enable these tests for Skia.
+INSTANTIATE_TEST_SUITE_P(,
+                         LayerTreeHostFiltersPixelTestGL,
+                         ::testing::Values(LayerTreeTest::RENDERER_GL));
+
+using LayerTreeHostFiltersPixelTestGPU = LayerTreeHostFiltersPixelTest;
+
+INSTANTIATE_TEST_SUITE_P(,
                          LayerTreeHostFiltersPixelTestGPU,
-                         ::testing::Values(LayerTreePixelTest::PIXEL_TEST_GL));
+                         ::testing::Values(LayerTreeTest::RENDERER_GL,
+                                           LayerTreeTest::RENDERER_SKIA_GL));
 
 TEST_P(LayerTreeHostFiltersPixelTestGPU, BackdropFilterBlurRect) {
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
@@ -126,7 +139,7 @@ TEST_P(LayerTreeHostFiltersPixelTestGPU, BackdropFilterBlurRect) {
       small_error_allowed));
 #endif
 
-  RunPixelTest(GetPixelTestType(), background,
+  RunPixelTest(renderer_type(), background,
                base::FilePath(FILE_PATH_LITERAL("backdrop_filter_blur.png")));
 }
 
@@ -163,22 +176,30 @@ TEST_P(LayerTreeHostFiltersPixelTestGPU, BackdropFilterBlurRounded) {
       percentage_pixels_large_error, percentage_pixels_small_error,
       average_error_allowed_in_bad_pixels, large_error_allowed,
       small_error_allowed));
+#else
+  pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(false);
 #endif
 
   RunPixelTest(
-      GetPixelTestType(), background,
+      renderer_type(), background,
       base::FilePath(FILE_PATH_LITERAL("backdrop_filter_blur_rounded.png")));
 }
 
 TEST_P(LayerTreeHostFiltersPixelTestGPU, BackdropFilterBlurOutsets) {
+  if (renderer_type() == RENDERER_SKIA_GL
+#if defined(ENABLE_CC_VULKAN_TESTS)
+      || renderer_type() == RENDERER_SKIA_VK
+#endif
+  ) {
+    // TODO(973696): Implement bounds clipping in skia_renderer.
+    return;
+  }
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
       gfx::Rect(200, 200), SK_ColorWHITE);
 
-  // The green border is outside the layer with backdrop blur, but the
-  // backdrop blur should use pixels from outside its layer borders, up to the
-  // radius of the blur effect. So the border should be blurred underneath the
-  // top layer causing the green to bleed under the transparent layer, but not
-  // in the 1px region between the transparent layer and the green border.
+  // The green border is outside the layer with backdrop blur, so the backdrop
+  // blur should not include pixels from outside its layer borders. So the
+  // interior region of the transparent layer should be perfectly white.
   scoped_refptr<SolidColorLayer> green_border = CreateSolidColorLayerWithBorder(
       gfx::Rect(1, 1, 198, 198), SK_ColorWHITE, 10, kCSSGreen);
   scoped_refptr<SolidColorLayer> blur = CreateSolidColorLayer(
@@ -215,11 +236,11 @@ TEST_P(LayerTreeHostFiltersPixelTestGPU, BackdropFilterBlurOutsets) {
 #endif
 
   RunPixelTest(
-      GetPixelTestType(), background,
+      renderer_type(), background,
       base::FilePath(FILE_PATH_LITERAL("backdrop_filter_blur_outsets.png")));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTestGPU, BackdropFilterBlurOffAxis) {
+TEST_P(LayerTreeHostFiltersPixelTestGL, BackdropFilterBlurOffAxis) {
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorTRANSPARENT);
 
@@ -258,8 +279,12 @@ TEST_P(LayerTreeHostFiltersPixelTestGPU, BackdropFilterBlurOffAxis) {
   filters.Append(FilterOperation::CreateBlurFilter(
       2.f, SkBlurImageFilter::kClamp_TileMode));
   blur->SetBackdropFilters(filters);
-  // TODO(916311): Fix clipping for 3D transformed elements.
-  blur->SetBackdropFilterBounds(gfx::RRectF());
+  // TODO(916311): We should be able to set the bounds like this, but the
+  // resulting output is clipped incorrectly.
+  // gfx::RRectF
+  // backdrop_filter_bounds(gfx::RectF(gfx::SizeF(blur->bounds())),0);
+  // blur->SetBackdropFilterBounds(backdrop_filter_bounds);
+  blur->ClearBackdropFilterBounds();
 
 #if defined(OS_WIN) || defined(ARCH_CPU_ARM64)
 #if defined(OS_WIN)
@@ -283,8 +308,36 @@ TEST_P(LayerTreeHostFiltersPixelTestGPU, BackdropFilterBlurOffAxis) {
 #endif
 
   RunPixelTest(
-      GetPixelTestType(), background,
+      renderer_type(), background,
       base::FilePath(FILE_PATH_LITERAL("backdrop_filter_blur_off_axis.png")));
+}
+
+TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterBoundsWithChildren) {
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(50, 50, 100, 100), kCSSGreen);
+  scoped_refptr<SolidColorLayer> invert =
+      CreateSolidColorLayer(gfx::Rect(30, 30, 140, 40), SK_ColorTRANSPARENT);
+  scoped_refptr<SolidColorLayer> invert_child1 =
+      CreateSolidColorLayer(gfx::Rect(50, -20, 40, 20), kCSSOrange);
+  scoped_refptr<SolidColorLayer> invert_child2 =
+      CreateSolidColorLayer(gfx::Rect(50, 40, 40, 20), kCSSOrange);
+  background->AddChild(green);
+  background->AddChild(invert);
+  invert->AddChild(invert_child1);
+  invert->AddChild(invert_child2);
+
+  FilterOperations filters;
+  filters.Append(FilterOperation::CreateInvertFilter(1.f));
+  invert->SetBackdropFilters(filters);
+  gfx::RRectF backdrop_filter_bounds(gfx::RectF(gfx::SizeF(invert->bounds())),
+                                     0);
+  invert->SetBackdropFilterBounds(backdrop_filter_bounds);
+
+  RunPixelTest(renderer_type(), background,
+               base::FilePath(FILE_PATH_LITERAL(
+                   "backdrop_filter_bounds_with_children.png")));
 }
 
 class LayerTreeHostFiltersScaledPixelTest
@@ -318,19 +371,18 @@ class LayerTreeHostFiltersScaledPixelTest
 
     device_scale_factor_ = device_scale_factor;
     RunPixelTest(
-        GetPixelTestType(), background,
+        renderer_type(), background,
         base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
   }
 
   float device_scale_factor_;
 };
 
-// TODO(crbug.com/948128): Enable these tests for Skia.
-INSTANTIATE_TEST_SUITE_P(
-    ,
-    LayerTreeHostFiltersScaledPixelTest,
-    ::testing::Values(LayerTreePixelTest::PIXEL_TEST_GL,
-                      LayerTreePixelTest::PIXEL_TEST_SOFTWARE));
+INSTANTIATE_TEST_SUITE_P(,
+                         LayerTreeHostFiltersScaledPixelTest,
+                         ::testing::Values(LayerTreeTest::RENDERER_GL,
+                                           LayerTreeTest::RENDERER_SKIA_GL,
+                                           LayerTreeTest::RENDERER_SOFTWARE));
 
 TEST_P(LayerTreeHostFiltersScaledPixelTest, StandardDpi) {
   RunPixelTestType(100, 1.f);
@@ -350,7 +402,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, NullFilter) {
   filters.Append(FilterOperation::CreateReferenceFilter(nullptr));
   foreground->SetFilters(filters);
 
-  RunPixelTest(GetPixelTestType(), foreground,
+  RunPixelTest(renderer_type(), foreground,
                base::FilePath(FILE_PATH_LITERAL("green.png")));
 }
 
@@ -369,7 +421,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, CroppedFilter) {
   filters.Append(FilterOperation::CreateReferenceFilter(offset));
   foreground->SetFilters(filters);
 
-  RunPixelTest(GetPixelTestType(), foreground,
+  RunPixelTest(renderer_type(), foreground,
                base::FilePath(FILE_PATH_LITERAL("white.png")));
 }
 
@@ -381,16 +433,16 @@ TEST_P(LayerTreeHostFiltersPixelTest, ImageFilterClipped) {
       CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorRED);
   background->AddChild(foreground);
 
-  SkScalar matrix[20];
+  float matrix[20];
   memset(matrix, 0, 20 * sizeof(matrix[0]));
   // This filter does a red-blue swap, so the foreground becomes blue.
-  matrix[2] = matrix[6] = matrix[10] = matrix[18] = SK_Scalar1;
+  matrix[2] = matrix[6] = matrix[10] = matrix[18] = 1.0f;
   // We filter only the bottom 200x100 pixels of the foreground.
   SkImageFilter::CropRect crop_rect(SkRect::MakeXYWH(0, 100, 200, 100));
   FilterOperations filters;
   filters.Append(
       FilterOperation::CreateReferenceFilter(sk_make_sp<ColorFilterPaintFilter>(
-          SkColorFilters::MatrixRowMajor255(matrix), nullptr, &crop_rect)));
+          SkColorFilters::Matrix(matrix), nullptr, &crop_rect)));
 
   // Make the foreground layer's render surface be clipped by the background
   // layer.
@@ -405,7 +457,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, ImageFilterClipped) {
   transform.Translate(0.0, -100.0);
   foreground->SetTransform(transform);
 
-  RunPixelTest(GetPixelTestType(), background,
+  RunPixelTest(renderer_type(), background,
                base::FilePath(FILE_PATH_LITERAL("blue_yellow.png")));
 }
 
@@ -417,16 +469,16 @@ TEST_P(LayerTreeHostFiltersPixelTest, ImageFilterNonZeroOrigin) {
       CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorRED);
   background->AddChild(foreground);
 
-  SkScalar matrix[20];
+  float matrix[20];
   memset(matrix, 0, 20 * sizeof(matrix[0]));
   // This filter does a red-blue swap, so the foreground becomes blue.
-  matrix[2] = matrix[6] = matrix[10] = matrix[18] = SK_Scalar1;
+  matrix[2] = matrix[6] = matrix[10] = matrix[18] = 1.0f;
   // Set up a crop rec to filter the bottom 200x100 pixels of the foreground.
   SkImageFilter::CropRect crop_rect(SkRect::MakeXYWH(0, 100, 200, 100));
   FilterOperations filters;
   filters.Append(
       FilterOperation::CreateReferenceFilter(sk_make_sp<ColorFilterPaintFilter>(
-          SkColorFilters::MatrixRowMajor255(matrix), nullptr, &crop_rect)));
+          SkColorFilters::Matrix(matrix), nullptr, &crop_rect)));
 
   // Make the foreground layer's render surface be clipped by the background
   // layer.
@@ -437,7 +489,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, ImageFilterNonZeroOrigin) {
   // applied only to the top 100 pixels, not the bottom.
   foreground->SetFiltersOrigin(gfx::PointF(0.0f, -100.0f));
 
-  RunPixelTest(GetPixelTestType(), background,
+  RunPixelTest(renderer_type(), background,
                base::FilePath(FILE_PATH_LITERAL("blue_yellow.png")));
 }
 
@@ -478,7 +530,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, ImageFilterScaled) {
   FilterOperations filters;
   filters.Append(FilterOperation::CreateGrayscaleFilter(1.0f));
   filter->SetBackdropFilters(filters);
-  filter->SetBackdropFilterBounds(gfx::RRectF());
+  filter->ClearBackdropFilterBounds();
 
 #if defined(OS_WIN) || defined(_MIPS_ARCH_LOONGSON) || defined(ARCH_CPU_ARM64)
 #if defined(OS_WIN)
@@ -504,7 +556,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, ImageFilterScaled) {
 #endif
 
   RunPixelTest(
-      GetPixelTestType(), background,
+      renderer_type(), background,
       base::FilePath(FILE_PATH_LITERAL("backdrop_filter_on_scaled_layer_.png"))
           .InsertBeforeExtensionASCII(GetRendererSuffix()));
 }
@@ -542,12 +594,9 @@ TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterRotated) {
   filters.Append(FilterOperation::CreateBlurFilter(
       5.0f, SkBlurImageFilter::kClamp_TileMode));
   filter_layer->SetBackdropFilters(filters);
-  // TODO(916311): Adding filter bounds here should work, but it clips
-  // the corner of the red box.
-  // gfx::RectF backdrop_filter_bounds(gfx::SizeF(filter_layer->bounds()));
-  gfx::RRectF backdrop_filter_bounds;
+  gfx::RRectF backdrop_filter_bounds(
+      gfx::RectF(gfx::SizeF(filter_layer->bounds())), 0);
   filter_layer->SetBackdropFilterBounds(backdrop_filter_bounds);
-
   background->AddChild(filter_layer);
 
   // Allow some fuzziness so that this doesn't fail when Skia makes minor
@@ -563,7 +612,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterRotated) {
       average_error_allowed_in_bad_pixels, large_error_allowed,
       small_error_allowed));
 
-  RunPixelTest(GetPixelTestType(), background,
+  RunPixelTest(renderer_type(), background,
                base::FilePath(FILE_PATH_LITERAL("backdrop_filter_rotated_.png"))
                    .InsertBeforeExtensionASCII(GetRendererSuffix()));
 }
@@ -600,24 +649,26 @@ TEST_P(LayerTreeHostFiltersPixelTest, ImageRenderSurfaceScaled) {
 
   // Software has some huge differences in the AA'd pixels on the different
   // trybots. See crbug.com/452198.
-  float percentage_pixels_large_error = 0.686f;
-  float percentage_pixels_small_error = 0.0f;
-  float average_error_allowed_in_bad_pixels = 16.f;
-  int large_error_allowed = 17;
-  int small_error_allowed = 0;
-  pixel_comparator_.reset(new FuzzyPixelComparator(
-      true,  // discard_alpha
-      percentage_pixels_large_error, percentage_pixels_small_error,
-      average_error_allowed_in_bad_pixels, large_error_allowed,
-      small_error_allowed));
+  if (renderer_type() == LayerTreeTest::RENDERER_SOFTWARE) {
+    float percentage_pixels_large_error = 0.686f;
+    float percentage_pixels_small_error = 0.0f;
+    float average_error_allowed_in_bad_pixels = 16.f;
+    int large_error_allowed = 17;
+    int small_error_allowed = 0;
+    pixel_comparator_.reset(new FuzzyPixelComparator(
+        true,  // discard_alpha
+        percentage_pixels_large_error, percentage_pixels_small_error,
+        average_error_allowed_in_bad_pixels, large_error_allowed,
+        small_error_allowed));
+  }
 
   RunPixelTest(
-      GetPixelTestType(), background,
+      renderer_type(), background,
       base::FilePath(FILE_PATH_LITERAL("scaled_render_surface_layer_.png"))
           .InsertBeforeExtensionASCII(GetRendererSuffix()));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTest, ZoomFilter) {
+TEST_P(LayerTreeHostFiltersPixelTestNonSkia, ZoomFilter) {
   scoped_refptr<SolidColorLayer> root =
       CreateSolidColorLayer(gfx::Rect(300, 300), SK_ColorWHITE);
 
@@ -681,7 +732,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, ZoomFilter) {
       small_error_allowed));
 #endif
 
-  RunPixelTest(GetPixelTestType(), std::move(root),
+  RunPixelTest(renderer_type(), std::move(root),
                base::FilePath(FILE_PATH_LITERAL("zoom_filter_.png"))
                    .InsertBeforeExtensionASCII(GetRendererSuffix()));
 }
@@ -722,7 +773,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, RotatedFilter) {
       small_error_allowed));
 #endif
 
-  RunPixelTest(GetPixelTestType(), background,
+  RunPixelTest(renderer_type(), background,
                base::FilePath(FILE_PATH_LITERAL("rotated_filter_.png"))
                    .InsertBeforeExtensionASCII(GetRendererSuffix()));
 }
@@ -769,7 +820,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, RotatedDropShadowFilter) {
 #endif
 
   RunPixelTest(
-      GetPixelTestType(), background,
+      renderer_type(), background,
       base::FilePath(FILE_PATH_LITERAL("rotated_drop_shadow_filter_.png"))
           .InsertBeforeExtensionASCII(GetRendererSuffix()));
 }
@@ -808,10 +859,12 @@ TEST_P(LayerTreeHostFiltersPixelTest, TranslatedFilter) {
   parent->AddChild(child);
   clip->AddChild(parent);
 
+  if (renderer_type() == RENDERER_SOFTWARE)
+    pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(true);
+
   RunPixelTest(
-      GetPixelTestType(), clip,
-      base::FilePath(FILE_PATH_LITERAL("translated_blue_green_alpha_.png"))
-          .InsertBeforeExtensionASCII(GetRendererSuffix()));
+      renderer_type(), clip,
+      base::FilePath(FILE_PATH_LITERAL("translated_blue_green_alpha.png")));
 }
 
 TEST_P(LayerTreeHostFiltersPixelTest, EnlargedTextureWithAlphaThresholdFilter) {
@@ -850,7 +903,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, EnlargedTextureWithAlphaThresholdFilter) {
   set_enlarge_texture_amount(gfx::Size(50, 50));
 
   RunPixelTest(
-      GetPixelTestType(), background,
+      renderer_type(), background,
       base::FilePath(FILE_PATH_LITERAL("enlarged_texture_on_threshold.png")));
 }
 
@@ -888,11 +941,12 @@ TEST_P(LayerTreeHostFiltersPixelTest, EnlargedTextureWithCropOffsetFilter) {
   set_enlarge_texture_amount(gfx::Size(50, 50));
 
   RunPixelTest(
-      GetPixelTestType(), background,
+      renderer_type(), background,
       base::FilePath(FILE_PATH_LITERAL("enlarged_texture_on_crop_offset.png")));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTest, BlurFilterWithClip) {
+// TODO(crbug.com/948128): Enable this test for SkiaRenderer.
+TEST_P(LayerTreeHostFiltersPixelTestNonSkia, BlurFilterWithClip) {
   scoped_refptr<SolidColorLayer> child1 =
       CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorBLUE);
   scoped_refptr<SolidColorLayer> child2 =
@@ -937,7 +991,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, BlurFilterWithClip) {
       small_error_allowed));
 #endif
 
-  RunPixelTest(GetPixelTestType(), filter_layer,
+  RunPixelTest(renderer_type(), filter_layer,
                base::FilePath(FILE_PATH_LITERAL("blur_filter_with_clip_.png"))
                    .InsertBeforeExtensionASCII(GetRendererSuffix()));
 }
@@ -945,14 +999,14 @@ TEST_P(LayerTreeHostFiltersPixelTest, BlurFilterWithClip) {
 TEST_P(LayerTreeHostFiltersPixelTestGPU, FilterWithGiantCropRect) {
   scoped_refptr<SolidColorLayer> tree = BuildFilterWithGiantCropRect(true);
   RunPixelTest(
-      GetPixelTestType(), tree,
+      renderer_type(), tree,
       base::FilePath(FILE_PATH_LITERAL("filter_with_giant_crop_rect.png")));
 }
 
 TEST_P(LayerTreeHostFiltersPixelTestGPU, FilterWithGiantCropRectNoClip) {
   scoped_refptr<SolidColorLayer> tree = BuildFilterWithGiantCropRect(false);
   RunPixelTest(
-      GetPixelTestType(), tree,
+      renderer_type(), tree,
       base::FilePath(FILE_PATH_LITERAL("filter_with_giant_crop_rect.png")));
 }
 
@@ -976,13 +1030,13 @@ class BackdropFilterWithDeviceScaleFactorTest
     filters.Append(FilterOperation::CreateReferenceFilter(
         sk_make_sp<OffsetPaintFilter>(0, 80, nullptr)));
     filtered->SetBackdropFilters(filters);
-    filtered->SetBackdropFilterBounds(gfx::RRectF());
+    filtered->ClearBackdropFilterBounds();
     root->AddChild(filtered);
 
     // This should appear as a grid of 4 100x100 squares which are:
     // BLACK       WHITE
     // DARK GREEN  LIGHT GREEN
-    RunPixelTest(GetPixelTestType(), std::move(root), expected_result);
+    RunPixelTest(renderer_type(), std::move(root), expected_result);
   }
 
  private:
@@ -995,12 +1049,12 @@ class BackdropFilterWithDeviceScaleFactorTest
   float device_scale_factor_ = 1;
 };
 
-// TODO(crbug.com/948128): Enable these tests for Skia.
-INSTANTIATE_TEST_SUITE_P(
-    ,
-    BackdropFilterWithDeviceScaleFactorTest,
-    ::testing::Values(LayerTreePixelTest::PIXEL_TEST_GL,
-                      LayerTreePixelTest::PIXEL_TEST_SOFTWARE));
+// TODO(973699): This test is broken in software_renderer. Re-enable this test
+// when fixed.
+INSTANTIATE_TEST_SUITE_P(,
+                         BackdropFilterWithDeviceScaleFactorTest,
+                         ::testing::Values(LayerTreeTest::RENDERER_GL,
+                                           LayerTreeTest::RENDERER_SKIA_GL));
 
 TEST_P(BackdropFilterWithDeviceScaleFactorTest, StandardDpi) {
   RunPixelTestType(

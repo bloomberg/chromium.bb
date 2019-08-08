@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/webui/print_preview/print_preview_utils.h"
 #include "components/cloud_devices/common/cloud_device_description.h"
 #include "components/cloud_devices/common/printer_description.h"
-#include "device/usb/public/mojom/device.mojom.h"
 #include "extensions/browser/api/device_permissions_manager.h"
 #include "extensions/browser/api/printer_provider/printer_provider_api.h"
 #include "extensions/browser/api/printer_provider/printer_provider_api_factory.h"
@@ -34,6 +33,7 @@
 #include "extensions/common/value_builder.h"
 #include "printing/print_job_constants.h"
 #include "printing/pwg_raster_settings.h"
+#include "services/device/public/mojom/usb_device.mojom.h"
 
 using extensions::DevicePermissionsManager;
 using extensions::DictionaryBuilder;

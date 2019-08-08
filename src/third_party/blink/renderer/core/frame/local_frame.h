@@ -39,6 +39,7 @@
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/previews_resource_loading_hints.mojom-blink.h"
 #include "third_party/blink/public/mojom/reporting/reporting.mojom-blink.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
@@ -77,7 +78,6 @@ class EventHandlerRegistry;
 class FloatSize;
 class FrameConsole;
 class FrameOverlay;
-class FrameResourceCoordinator;
 // class FrameScheduler;
 class FrameSelection;
 class InputMethodController;
@@ -91,7 +91,6 @@ class LayoutView;
 class LocalDOMWindow;
 class LocalWindowProxy;
 class LocalFrameClient;
-class NavigationScheduler;
 class Node;
 class NodeTraversal;
 class PerformanceMonitor;
@@ -120,12 +119,10 @@ class CORE_EXPORT LocalFrame final : public Frame,
   USING_GARBAGE_COLLECTED_MIXIN(LocalFrame);
 
  public:
-  static LocalFrame* Create(LocalFrameClient*,
-                            Page&,
-                            FrameOwner*,
-                            InterfaceRegistry* = nullptr);
-
-  LocalFrame(LocalFrameClient*, Page&, FrameOwner*, InterfaceRegistry*);
+  LocalFrame(LocalFrameClient*,
+             Page&,
+             FrameOwner*,
+             InterfaceRegistry* = nullptr);
 
   void Init();
   void SetView(LocalFrameView*);
@@ -134,10 +131,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // Frame overrides:
   ~LocalFrame() override;
   void Trace(blink::Visitor*) override;
-  void ScheduleNavigation(Document& origin_document,
-                          const KURL&,
-                          WebFrameLoadType,
-                          UserGestureStatus) override;
   void Navigate(const FrameLoadRequest&, WebFrameLoadType) override;
   bool ShouldClose() override;
   SecurityContext* GetSecurityContext() const override;
@@ -181,7 +174,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   EventHandler& GetEventHandler() const;
   EventHandlerRegistry& GetEventHandlerRegistry() const;
   FrameLoader& Loader() const;
-  NavigationScheduler& GetNavigationScheduler() const;
   FrameSelection& Selection() const;
   InputMethodController& GetInputMethodController() const;
   TextSuggestionController& GetTextSuggestionController() const;
@@ -194,14 +186,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // et cetera for that subtree of frames.
   bool IsLocalRoot() const;
   LocalFrame& LocalFrameRoot() const;
-
-  // Note that the result of this function should not be cached: a frame is
-  // not necessarily detached when it is navigated, so the return value can
-  // change.
-  // In addition, this function will always return true for a detached frame.
-  // TODO(dcheng): Move this to LocalDOMWindow and figure out the right
-  // behavior for detached windows.
-  bool IsCrossOriginSubframe() const;
 
   CoreProbeSink* GetProbeSink() { return probe_sink_.Get(); }
   scoped_refptr<InspectorTaskRunner> GetInspectorTaskRunner();
@@ -323,10 +307,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   WebContentSettingsClient* GetContentSettingsClient();
 
-  // GetFrameResourceCoordinator may return nullptr when it can not hook up to
-  // services/resource_coordinator.
-  FrameResourceCoordinator* GetFrameResourceCoordinator();
-
   PluginData* GetPluginData() const;
 
   PerformanceMonitor* GetPerformanceMonitor() { return performance_monitor_; }
@@ -337,8 +317,13 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // Returns true if Client Lo-Fi should be used for this request.
   bool IsClientLoFiAllowed(const ResourceRequest&) const;
 
-  // Returns true if lazyloading the image is possible.
-  bool IsLazyLoadingImageAllowed() const;
+  enum class LazyLoadImageEnabledState {
+    kDisabled,
+    kEnabledExplicit,
+    kEnabledAutomatic
+  };
+  // Returns the enabled state of lazyloading of images.
+  LazyLoadImageEnabledState GetLazyLoadImageEnabledState() const;
 
   // The returned value is a off-heap raw-ptr and should not be stored.
   WebURLLoaderFactory* GetURLLoaderFactory();
@@ -431,6 +416,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   void SetLifecycleState(mojom::FrameLifecycleState state);
 
+  void WasHidden();
+  void WasShown();
+
   // For a navigation initiated from this LocalFrame with user gesture, record
   // the UseCounter AdClickNavigation if this frame is an adframe.
   //
@@ -439,6 +427,18 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // RemoteFrame, we could call it at FrameLoader::StartNavigation where all
   // navigations go through.
   void MaybeLogAdClickNavigation();
+
+  // Triggers a use counter if a feature, which is currently available in all
+  // frames, would be blocked by the introduction of feature policy. This takes
+  // two counters (which may be the same). It triggers |blockedCrossOrigin| if
+  // the frame is cross-origin relative to the top-level document, and triggers
+  // |blockedSameOrigin| if it is same-origin with the top level, but is
+  // embedded in any way through a cross-origin frame. (A->B->A embedding)
+  void CountUseIfFeatureWouldBeBlockedByFeaturePolicy(
+      mojom::WebFeature blocked_cross_origin,
+      mojom::WebFeature blocked_same_origin);
+
+  void FinishedLoading();
 
  private:
   friend class FrameNavigationDisabler;
@@ -496,7 +496,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
       pause_handle_bindings_;
 
   mutable FrameLoader loader_;
-  Member<NavigationScheduler> navigation_scheduler_;
 
   // Cleared by LocalFrame::detach(), so as to keep the observable lifespan
   // of LocalFrame::view().
@@ -549,7 +548,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   IntRect remote_viewport_intersection_;
   FrameOcclusionState occlusion_state_ = FrameOcclusionState::kUnknown;
-  std::unique_ptr<FrameResourceCoordinator> frame_resource_coordinator_;
 
   // Per-frame URLLoader factory.
   std::unique_ptr<WebURLLoaderFactory> url_loader_factory_;
@@ -573,15 +571,11 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   mojom::FrameLifecycleState lifecycle_state_ =
       mojom::FrameLifecycleState::kRunning;
+  base::Optional<mojom::FrameLifecycleState> pending_lifecycle_state_;
 };
 
 inline FrameLoader& LocalFrame::Loader() const {
   return loader_;
-}
-
-inline NavigationScheduler& LocalFrame::GetNavigationScheduler() const {
-  DCHECK(navigation_scheduler_);
-  return *navigation_scheduler_.Get();
 }
 
 inline LocalFrameView* LocalFrame::View() const {

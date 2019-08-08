@@ -43,8 +43,10 @@ class VideoDecoderProxy : public media::mojom::InterfaceFactory {
       media::mojom::RendererRequest request,
       media::mojom::MediaPlayerRendererExtensionRequest
           renderer_extension_request) final;
-  void CreateFlingingRenderer(const std::string& presentation_id,
-                              media::mojom::RendererRequest request) final;
+  void CreateFlingingRenderer(
+      const std::string& presentation_id,
+      media::mojom::FlingingRendererClientExtensionPtr client_extension,
+      media::mojom::RendererRequest request) final;
 #endif  // defined(OS_ANDROID)
   void CreateCdm(const std::string& key_system,
                  media::mojom::ContentDecryptionModuleRequest request) final;

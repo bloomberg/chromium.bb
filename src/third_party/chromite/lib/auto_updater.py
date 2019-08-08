@@ -1314,10 +1314,10 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
     logging.debug('Start pre-setup for stateful update...')
     self._RetryCommand(['sudo', 'stop', 'ap-update-manager'],
                        **self._cmd_kwargs_omit_error)
-
-    for folder in self.REMOTE_STATEFUL_PATH_TO_CHECK:
-      touch_path = os.path.join(folder, self.REMOTE_STATEFUL_TEST_FILENAME)
-      self._RetryCommand(['touch', touch_path], **self._cmd_kwargs)
+    if self._clobber_stateful:
+      for folder in self.REMOTE_STATEFUL_PATH_TO_CHECK:
+        touch_path = os.path.join(folder, self.REMOTE_STATEFUL_TEST_FILENAME)
+        self._RetryCommand(['touch', touch_path], **self._cmd_kwargs)
 
     self._ResetUpdateEngine()
     self.ResetStatefulPartition()

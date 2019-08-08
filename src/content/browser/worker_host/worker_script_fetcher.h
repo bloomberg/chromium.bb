@@ -7,7 +7,7 @@
 
 #include "base/callback.h"
 #include "base/optional.h"
-#include "content/common/navigation_subresource_loader_params.h"
+#include "content/browser/navigation_subresource_loader_params.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -65,7 +65,7 @@ class WorkerScriptFetcher : public network::mojom::URLLoaderClient {
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         OnUploadProgressCallback callback) override;
-  void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override;
+  void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override;
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;

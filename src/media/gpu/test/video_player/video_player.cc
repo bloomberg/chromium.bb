@@ -185,6 +185,11 @@ bool VideoPlayer::WaitForFrameProcessors() {
   return !decoder_client_ || decoder_client_->WaitForFrameProcessors();
 }
 
+void VideoPlayer::WaitForRenderer() {
+  if (decoder_client_)
+    decoder_client_->WaitForRenderer();
+}
+
 size_t VideoPlayer::GetFlushDoneCount() const {
   return GetEventCount(VideoPlayerEvent::kFlushDone);
 }

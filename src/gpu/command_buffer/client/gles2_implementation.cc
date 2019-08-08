@@ -377,8 +377,12 @@ void GLES2Implementation::OnGpuControlSwapBuffersCompleted(
   if (found == pending_swap_callbacks_.end())
     return;
 
-  std::move(found->second).Run(params);
+  // Erase the entry before running the callback to guard against the callback
+  // mutating the |pending_swap_callbacks_|.
+  auto callback = std::move(found->second);
   pending_swap_callbacks_.erase(found);
+
+  std::move(callback).Run(params);
 }
 
 void GLES2Implementation::SendErrorMessage(std::string message, int32_t id) {
@@ -416,8 +420,13 @@ void GLES2Implementation::OnSwapBufferPresented(
   auto found = pending_presentation_callbacks_.find(swap_id);
   if (found == pending_presentation_callbacks_.end())
     return;
-  std::move(found->second).Run(feedback);
+
+  // Erase the entry before running the callback to guard against the callback
+  // mutating the |pending_presentation_callbacks_|.
+  auto callback = std::move(found->second);
   pending_presentation_callbacks_.erase(found);
+
+  std::move(callback).Run(feedback);
 }
 
 void GLES2Implementation::OnGpuControlReturnData(
@@ -6078,6 +6087,7 @@ void GLES2Implementation::BeginQueryEXT(GLenum target, GLuint id) {
     case GL_LATENCY_QUERY_CHROMIUM:
     case GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM:
     case GL_GET_ERROR_QUERY_CHROMIUM:
+    case GL_PROGRAM_COMPLETION_QUERY_CHROMIUM:
       break;
     case GL_READBACK_SHADOW_COPIES_UPDATED_CHROMIUM:
     case GL_COMMANDS_COMPLETED_CHROMIUM:
@@ -6446,6 +6456,7 @@ GLuint GLES2Implementation::CreateAndTexStorage2DSharedImageCHROMIUM(
   const Mailbox& mailbox = *reinterpret_cast<const Mailbox*>(mailbox_data);
   DCHECK(mailbox.Verify()) << "CreateAndTexStorage2DSharedImageCHROMIUM was "
                               "passed an invalid mailbox.";
+  DCHECK(mailbox.IsSharedImage());
   GLuint client_id;
   GetIdHandler(SharedIdNamespaces::kTextures)->MakeIds(this, 0, 1, &client_id);
   helper_->CreateAndTexStorage2DSharedImageINTERNALImmediate(client_id, GL_NONE,
@@ -6470,6 +6481,7 @@ GLES2Implementation::CreateAndTexStorage2DSharedImageWithInternalFormatCHROMIUM(
   DCHECK(mailbox.Verify())
       << "CreateAndTexStorage2DSharedImageWithInternalFormatCHROMIUM was "
          "passed an invalid mailbox.";
+  DCHECK(mailbox.IsSharedImage());
   GLuint client_id;
   GetIdHandler(SharedIdNamespaces::kTextures)->MakeIds(this, 0, 1, &client_id);
   helper_->CreateAndTexStorage2DSharedImageINTERNALImmediate(

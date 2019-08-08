@@ -21,6 +21,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/test_proxy_delegate.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_network_session.h"
@@ -133,7 +134,8 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
     return base::MakeRefCounted<HttpProxySocketParams>(
         CreateHttpProxyParams(), CreateHttpsProxyParams(), false /* is_quic */,
         HostPortPair(kEndpointHost, tunnel ? 443 : 80),
-        /*is_trusted_proxy=*/false, tunnel, TRAFFIC_ANNOTATION_FOR_TESTS);
+        /*is_trusted_proxy=*/false, tunnel, TRAFFIC_ANNOTATION_FOR_TESTS,
+        NetworkIsolationKey());
   }
 
   std::unique_ptr<HttpProxyConnectJob> CreateConnectJobForHttpRequest(
@@ -1147,46 +1149,19 @@ TEST_P(HttpProxyConnectJobTest, TunnelSetupRedirect) {
 
     Initialize(reads, writes, spdy_reads, spdy_writes, io_mode);
 
-    // Redirects in the HTTPS case return errors, but also return sockets.
+    // Redirects during CONNECT returns an error.
     TestConnectJobDelegate test_delegate(
-        GetParam() == HTTP
-            ? TestConnectJobDelegate::SocketExpected::ON_SUCCESS_ONLY
-            : TestConnectJobDelegate::SocketExpected::ALWAYS);
+        TestConnectJobDelegate::SocketExpected::ON_SUCCESS_ONLY);
     std::unique_ptr<ConnectJob> connect_job =
         CreateConnectJobForTunnel(&test_delegate);
 
     // H2 never completes synchronously.
     bool expect_sync_result = (io_mode == SYNCHRONOUS && GetParam() != SPDY);
 
-    if (GetParam() == HTTP) {
-      // We don't trust 302 responses to CONNECT from HTTP proxies.
-      test_delegate.StartJobExpectingResult(
-          connect_job.get(), ERR_TUNNEL_CONNECTION_FAILED, expect_sync_result);
-      EXPECT_FALSE(test_delegate.socket());
-    } else {
-      // Expect ProxyClientSocket to return the proxy's response, sanitized.
-      test_delegate.StartJobExpectingResult(
-          connect_job.get(), ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT,
-          expect_sync_result);
-      ASSERT_TRUE(test_delegate.socket());
-
-      const ProxyClientSocket* tunnel_socket =
-          static_cast<ProxyClientSocket*>(test_delegate.socket());
-      const HttpResponseInfo* response =
-          tunnel_socket->GetConnectResponseInfo();
-      const HttpResponseHeaders* headers = response->headers.get();
-
-      // Make sure Set-Cookie header was stripped.
-      EXPECT_FALSE(headers->HasHeader("set-cookie"));
-
-      // Make sure Content-Length: 0 header was added.
-      EXPECT_TRUE(headers->HasHeaderValue("content-length", "0"));
-
-      // Make sure Location header was included and correct.
-      std::string location;
-      EXPECT_TRUE(headers->IsRedirect(&location));
-      EXPECT_EQ(location, kRedirectTarget);
-    }
+    // We don't trust 302 responses to CONNECT from proxies.
+    test_delegate.StartJobExpectingResult(
+        connect_job.get(), ERR_TUNNEL_CONNECTION_FAILED, expect_sync_result);
+    EXPECT_FALSE(test_delegate.socket());
 
     // Need to close the session to prevent reuse in the next loop iteration.
     session_->spdy_session_pool()->CloseAllSessions();

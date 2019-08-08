@@ -35,6 +35,7 @@ management.BrowserReportingResponse;
  *   pageSubtitle: string,
  *   managed: boolean,
  *   overview: string,
+ *   customerLogo: string,
  * }}
  */
 management.ManagedDataResponse;

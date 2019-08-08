@@ -5,51 +5,51 @@
  * found in the LICENSE file.
  */
 
-#include "SkGpuDevice.h"
+#include "src/gpu/SkGpuDevice.h"
 
-#include "../private/SkShadowFlags.h"
-#include "GrBitmapTextureMaker.h"
-#include "GrBlurUtils.h"
-#include "GrContext.h"
-#include "GrContextPriv.h"
-#include "GrGpu.h"
-#include "GrImageTextureMaker.h"
-#include "GrRenderTargetContextPriv.h"
-#include "GrShape.h"
-#include "GrStyle.h"
-#include "GrSurfaceProxyPriv.h"
-#include "GrTextureAdjuster.h"
-#include "GrTracing.h"
-#include "SkCanvasPriv.h"
-#include "SkClipStack.h"
-#include "SkDraw.h"
-#include "SkGr.h"
-#include "SkImageFilter.h"
-#include "SkImageFilterCache.h"
-#include "SkImageInfoPriv.h"
-#include "SkImage_Base.h"
-#include "SkLatticeIter.h"
-#include "SkMakeUnique.h"
-#include "SkPathEffect.h"
-#include "SkPicture.h"
-#include "SkPictureData.h"
-#include "SkRRectPriv.h"
-#include "SkRasterClip.h"
-#include "SkReadPixelsRec.h"
-#include "SkRecord.h"
-#include "SkSpecialImage.h"
-#include "SkStroke.h"
-#include "SkSurface.h"
-#include "SkSurface_Gpu.h"
-#include "SkTLazy.h"
-#include "SkTo.h"
-#include "SkUTF.h"
-#include "SkVertState.h"
-#include "SkVertices.h"
-#include "SkWritePixelsRec.h"
-#include "effects/GrBicubicEffect.h"
-#include "effects/GrTextureDomain.h"
-#include "text/GrTextTarget.h"
+#include "include/core/SkImageFilter.h"
+#include "include/core/SkPathEffect.h"
+#include "include/core/SkPicture.h"
+#include "include/core/SkSurface.h"
+#include "include/core/SkVertices.h"
+#include "include/gpu/GrContext.h"
+#include "include/private/SkImageInfoPriv.h"
+#include "include/private/SkShadowFlags.h"
+#include "include/private/SkTo.h"
+#include "src/core/SkCanvasPriv.h"
+#include "src/core/SkClipStack.h"
+#include "src/core/SkDraw.h"
+#include "src/core/SkImageFilterCache.h"
+#include "src/core/SkLatticeIter.h"
+#include "src/core/SkMakeUnique.h"
+#include "src/core/SkPictureData.h"
+#include "src/core/SkRRectPriv.h"
+#include "src/core/SkRasterClip.h"
+#include "src/core/SkRecord.h"
+#include "src/core/SkSpecialImage.h"
+#include "src/core/SkStroke.h"
+#include "src/core/SkTLazy.h"
+#include "src/core/SkVertState.h"
+#include "src/core/SkWritePixelsRec.h"
+#include "src/gpu/GrBitmapTextureMaker.h"
+#include "src/gpu/GrBlurUtils.h"
+#include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrGpu.h"
+#include "src/gpu/GrImageTextureMaker.h"
+#include "src/gpu/GrRenderTargetContextPriv.h"
+#include "src/gpu/GrShape.h"
+#include "src/gpu/GrStyle.h"
+#include "src/gpu/GrSurfaceProxyPriv.h"
+#include "src/gpu/GrTextureAdjuster.h"
+#include "src/gpu/GrTracing.h"
+#include "src/gpu/SkGr.h"
+#include "src/gpu/effects/GrBicubicEffect.h"
+#include "src/gpu/effects/GrTextureDomain.h"
+#include "src/gpu/text/GrTextTarget.h"
+#include "src/image/SkImage_Base.h"
+#include "src/image/SkReadPixelsRec.h"
+#include "src/image/SkSurface_Gpu.h"
+#include "src/utils/SkUTF.h"
 
 #define ASSERT_SINGLE_OWNER \
 SkDEBUGCODE(GrSingleOwner::AutoEnforce debug_SingleOwner(fContext->priv().singleOwner());)
@@ -243,6 +243,23 @@ void SkGpuDevice::clearAll() {
                                 GrRenderTargetContext::CanClearFullscreen::kYes);
 }
 
+void SkGpuDevice::replaceRenderTargetContext(sk_sp<GrRenderTargetContext> rtc,
+                                             bool shouldRetainContent) {
+    SkASSERT(rtc->width() == this->width());
+    SkASSERT(rtc->height() == this->height());
+    SkASSERT(rtc->numColorSamples() == fRenderTargetContext->numColorSamples());
+    SkASSERT(rtc->numStencilSamples() == fRenderTargetContext->numStencilSamples());
+    SkASSERT(rtc->asSurfaceProxy()->priv().isExact());
+    if (shouldRetainContent) {
+        if (this->context()->abandoned()) {
+            return;
+        }
+        rtc->copy(fRenderTargetContext->asSurfaceProxy());
+    }
+
+    fRenderTargetContext = std::move(rtc);
+}
+
 void SkGpuDevice::replaceRenderTargetContext(bool shouldRetainContent) {
     ASSERT_SINGLE_OWNER
 
@@ -261,16 +278,7 @@ void SkGpuDevice::replaceRenderTargetContext(bool shouldRetainContent) {
     if (!newRTC) {
         return;
     }
-    SkASSERT(newRTC->asSurfaceProxy()->priv().isExact());
-
-    if (shouldRetainContent) {
-        if (this->context()->abandoned()) {
-            return;
-        }
-        newRTC->copy(fRenderTargetContext->asSurfaceProxy());
-    }
-
-    fRenderTargetContext = newRTC;
+    this->replaceRenderTargetContext(std::move(newRTC), shouldRetainContent);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -562,7 +570,7 @@ void SkGpuDevice::drawArc(const SkRect& oval, SkScalar startAngle,
                                   GrStyle(paint));
 }
 
-#include "SkMaskFilter.h"
+#include "include/core/SkMaskFilter.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 void SkGpuDevice::drawStrokedLine(const SkPoint points[2],
@@ -971,7 +979,9 @@ void SkGpuDevice::drawBitmapTile(const SkBitmap& bitmap,
             domain.fTop = domain.fBottom = srcRect.centerY();
         }
         if (bicubic) {
-            fp = GrBicubicEffect::Make(std::move(proxy), texMatrix, domain, bitmap.alphaType());
+            static constexpr auto kDir = GrBicubicEffect::Direction::kXY;
+            fp = GrBicubicEffect::Make(std::move(proxy), texMatrix, domain, kDir,
+                                       bitmap.alphaType());
         } else {
             fp = GrTextureDomainEffect::Make(std::move(proxy), texMatrix, domain,
                                              GrTextureDomain::kClamp_Mode, samplerState.filter());
@@ -979,7 +989,8 @@ void SkGpuDevice::drawBitmapTile(const SkBitmap& bitmap,
     } else if (bicubic) {
         SkASSERT(GrSamplerState::Filter::kNearest == samplerState.filter());
         GrSamplerState::WrapMode wrapMode[2] = {samplerState.wrapModeX(), samplerState.wrapModeY()};
-        fp = GrBicubicEffect::Make(std::move(proxy), texMatrix, wrapMode, bitmap.alphaType());
+        static constexpr auto kDir = GrBicubicEffect::Direction::kXY;
+        fp = GrBicubicEffect::Make(std::move(proxy), texMatrix, wrapMode, kDir, bitmap.alphaType());
     } else {
         fp = GrSimpleTextureEffect::Make(std::move(proxy), texMatrix, samplerState);
     }

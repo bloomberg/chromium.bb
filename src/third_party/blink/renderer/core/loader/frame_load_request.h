@@ -26,8 +26,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_FRAME_LOAD_REQUEST_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_FRAME_LOAD_REQUEST_H_
 
-#include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
+#include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-shared.h"
 #include "third_party/blink/public/web/web_triggering_event_info.h"
 #include "third_party/blink/public/web/web_window_features.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -45,15 +45,7 @@ struct CORE_EXPORT FrameLoadRequest {
   STACK_ALLOCATED();
 
  public:
-  explicit FrameLoadRequest(Document* origin_document);
   FrameLoadRequest(Document* origin_document, const ResourceRequest&);
-  FrameLoadRequest(Document* origin_document,
-                   const ResourceRequest&,
-                   const AtomicString& frame_name);
-  FrameLoadRequest(Document* origin_document,
-                   const ResourceRequest&,
-                   const AtomicString& frame_name,
-                   ContentSecurityPolicyDisposition);
 
   Document* OriginDocument() const { return origin_document_.Get(); }
 
@@ -67,11 +59,6 @@ struct CORE_EXPORT FrameLoadRequest {
   ResourceRequest& GetResourceRequest() { return resource_request_; }
   const ResourceRequest& GetResourceRequest() const {
     return resource_request_;
-  }
-
-  const AtomicString& FrameName() const { return frame_name_; }
-  void SetFrameName(const AtomicString& frame_name) {
-    frame_name_ = frame_name;
   }
 
   // TODO(japhet): This is only used from frame_loader.cc, and can probably be
@@ -105,9 +92,6 @@ struct CORE_EXPORT FrameLoadRequest {
   ShouldSendReferrer GetShouldSendReferrer() const {
     return should_send_referrer_;
   }
-  void SetShouldSendReferrer(ShouldSendReferrer should_send_referrer) {
-    should_send_referrer_ = should_send_referrer;
-  }
 
   const AtomicString& HrefTranslate() const { return href_translate_; }
   void SetHrefTranslate(const AtomicString& translate) {
@@ -119,22 +103,11 @@ struct CORE_EXPORT FrameLoadRequest {
     return should_check_main_world_content_security_policy_;
   }
 
-  // Sets the BlobURLToken that should be used when fetching the resource. This
+  // The BlobURLToken that should be used when fetching the resource. This
   // is needed for blob URLs, because the blob URL might be revoked before the
   // actual fetch happens, which would result in incorrect failures to fetch.
   // The token lets the browser process securely resolves the blob URL even
   // after the url has been revoked.
-  // FrameFetchRequest initializes this in its constructor, but in some cases
-  // FrameFetchRequest is created asynchronously rather than when a navigation
-  // is scheduled, so in those cases NavigationScheduler needs to override the
-  // blob FrameLoadRequest might have found.
-  void SetBlobURLToken(mojom::blink::BlobURLTokenPtr blob_url_token) {
-    DCHECK(blob_url_token);
-    blob_url_token_ = base::MakeRefCounted<
-        base::RefCountedData<mojom::blink::BlobURLTokenPtr>>(
-        std::move(blob_url_token));
-  }
-
   mojom::blink::BlobURLTokenPtr GetBlobURLToken() const {
     if (!blob_url_token_)
       return nullptr;
@@ -159,11 +132,15 @@ struct CORE_EXPORT FrameLoadRequest {
   bool IsWindowOpen() const { return is_window_open_; }
 
   void SetNoOpener() { window_features_.noopener = true; }
+  void SetNoReferrer() {
+    should_send_referrer_ = kNeverSendReferrer;
+    resource_request_.ClearHTTPReferrer();
+    resource_request_.ClearHTTPOrigin();
+  }
 
  private:
   Member<Document> origin_document_;
   ResourceRequest resource_request_;
-  AtomicString frame_name_;
   AtomicString href_translate_;
   ClientNavigationReason client_navigation_reason_ =
       ClientNavigationReason::kNone;

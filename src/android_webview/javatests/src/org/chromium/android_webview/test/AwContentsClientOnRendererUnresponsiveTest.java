@@ -148,8 +148,7 @@ public class AwContentsClientOnRendererUnresponsiveTest {
     }
 
     private void addJsBlockerInterface(final AwContents awContents, final JSBlocker blocker) {
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
-                () -> { awContents.addJavascriptInterface(blocker, "blocker"); });
+        AwActivityTestRule.addJavascriptInterfaceOnUiThread(awContents, blocker, "blocker");
     }
 
     // This test requires the ability to terminate the renderer in order to recover from a

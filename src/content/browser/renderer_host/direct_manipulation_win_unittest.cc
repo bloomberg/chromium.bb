@@ -422,7 +422,7 @@ class DirectManipulationUnitTest : public testing::Test {
 TEST_F(DirectManipulationUnitTest, HelperShouldCreateForWin10) {
   // We should create DirectManipulationHelper instance when win version >= 10.
   EXPECT_EQ(GetDirectManipulationHelper() != nullptr,
-            base::win::GetVersion() >= base::win::VERSION_WIN10);
+            base::win::GetVersion() >= base::win::Version::WIN10);
 }
 
 TEST_F(DirectManipulationUnitTest, ReceiveSimplePanTransform) {

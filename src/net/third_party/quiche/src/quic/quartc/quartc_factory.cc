@@ -68,18 +68,8 @@ void ConfigureGlobalQuicSettings() {
 
   // Ensure that we don't drop data because QUIC streams refuse to buffer it.
   // TODO(b/120099046):  Replace this with correct handling of WriteMemSlices().
-  SetQuicFlag(&FLAGS_quic_buffered_data_threshold,
+  SetQuicFlag(FLAGS_quic_buffered_data_threshold,
               std::numeric_limits<int>::max());
-
-  // TODO(b/117157454): Perform version negotiation for Quartc outside of
-  // QuicSession/QuicConnection. Currently default of
-  // quic_restart_flag_quic_no_server_conn_ver_negotiation2 is false,
-  // but we fail blueprint test that sets all QUIC flags to true.
-  //
-  // Forcing flag to false to pass blueprint tests, but eventually we'll have
-  // to implement negotiation outside of QuicConnection.
-  SetQuicRestartFlag(quic_no_server_conn_ver_negotiation2, false);
-  SetQuicReloadableFlag(quic_no_client_conn_ver_negotiation, false);
 
   // Enable and request QUIC to include receive timestamps in ACK frames.
   SetQuicReloadableFlag(quic_send_timestamps, true);
@@ -133,7 +123,6 @@ QuicConfig CreateQuicConfig(const QuartcSessionConfig& quartc_session_config) {
   copt.push_back(kBBR9);  // Ignore app-limited if enough data is in flight.
   copt.push_back(kBBQ1);  // 2.773 pacing gain in STARTUP.
   copt.push_back(kBBQ2);  // 2.0 CWND gain in STARTUP.
-  copt.push_back(kBBQ4);  // 0.75 pacing gain in DRAIN.
   copt.push_back(k1RTT);  // Exit STARTUP after 1 RTT with no gains.
   copt.push_back(kIW10);  // 10-packet (14600 byte) initial cwnd.
 
@@ -191,7 +180,7 @@ QuicConfig CreateQuicConfig(const QuartcSessionConfig& quartc_session_config) {
   // incomplete streams, but targets 1 second for recovery. Increasing the
   // number of open streams gives sufficient headroom to recover before QUIC
   // refuses new streams.
-  quic_config.SetMaxIncomingDynamicStreamsToSend(1000);
+  quic_config.SetMaxIncomingBidirectionalStreamsToSend(1000);
 
   return quic_config;
 }

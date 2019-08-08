@@ -47,6 +47,7 @@ enum KeyboardCode {
   VKEY_CAPITAL = 0x14,
   VKEY_KANA = 0x15,
   VKEY_HANGUL = 0x15,
+  VKEY_PASTE = 0x16,
   VKEY_JUNJA = 0x17,
   VKEY_FINAL = 0x18,
   VKEY_HANJA = 0x19,

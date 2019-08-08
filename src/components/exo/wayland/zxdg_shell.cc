@@ -10,10 +10,12 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/public/cpp/window_state_type.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/exo/display.h"
 #include "components/exo/wayland/server_util.h"
+#include "components/exo/wayland/wayland_positioner.h"
 #include "components/exo/xdg_shell_surface.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/hit_test.h"
@@ -27,139 +29,6 @@ namespace {
 
 ////////////////////////////////////////////////////////////////////////////////
 // xdg_positioner_interface:
-
-uint32_t InvertBitfield(uint32_t bitfield, uint32_t mask) {
-  return (bitfield & ~mask) | ((bitfield & mask) ^ mask);
-}
-
-// TODO(oshima): propagate x/y flip state to children.
-struct WaylandPositioner {
-  static constexpr uint32_t kHorizontalAnchors =
-      ZXDG_POSITIONER_V6_ANCHOR_LEFT | ZXDG_POSITIONER_V6_ANCHOR_RIGHT;
-  static constexpr uint32_t kVerticalAnchors =
-      ZXDG_POSITIONER_V6_ANCHOR_TOP | ZXDG_POSITIONER_V6_ANCHOR_BOTTOM;
-  static constexpr uint32_t kHorizontalGravities =
-      ZXDG_POSITIONER_V6_GRAVITY_LEFT | ZXDG_POSITIONER_V6_GRAVITY_RIGHT;
-  static constexpr uint32_t kVerticalGravities =
-      ZXDG_POSITIONER_V6_GRAVITY_TOP | ZXDG_POSITIONER_V6_GRAVITY_BOTTOM;
-
-  static int CalculateX(const gfx::Size& size,
-                        const gfx::Rect& anchor_rect,
-                        uint32_t anchor,
-                        uint32_t gravity,
-                        int offset,
-                        bool flipped) {
-    if (flipped) {
-      anchor = InvertBitfield(anchor, kHorizontalAnchors);
-      gravity = InvertBitfield(gravity, kHorizontalGravities);
-      offset = -offset;
-    }
-
-    int x = offset;
-    if (anchor & ZXDG_POSITIONER_V6_ANCHOR_LEFT)
-      x += anchor_rect.x();
-    else if (anchor & ZXDG_POSITIONER_V6_ANCHOR_RIGHT)
-      x += anchor_rect.right();
-    else
-      x += anchor_rect.CenterPoint().x();
-
-    if (gravity & ZXDG_POSITIONER_V6_GRAVITY_LEFT)
-      return x - size.width();
-    if (gravity & ZXDG_POSITIONER_V6_GRAVITY_RIGHT)
-      return x;
-    return x - size.width() / 2;
-  }
-
-  static int CalculateY(const gfx::Size& size,
-                        const gfx::Rect& anchor_rect,
-                        uint32_t anchor,
-                        uint32_t gravity,
-                        int offset,
-                        bool flipped) {
-    if (flipped) {
-      anchor = InvertBitfield(anchor, kVerticalAnchors);
-      gravity = InvertBitfield(gravity, kVerticalGravities);
-      offset = -offset;
-    }
-
-    int y = offset;
-    if (anchor & ZXDG_POSITIONER_V6_ANCHOR_TOP)
-      y += anchor_rect.y();
-    else if (anchor & ZXDG_POSITIONER_V6_ANCHOR_BOTTOM)
-      y += anchor_rect.bottom();
-    else
-      y += anchor_rect.CenterPoint().y();
-
-    if (gravity & ZXDG_POSITIONER_V6_GRAVITY_TOP)
-      return y - size.height();
-    if (gravity & ZXDG_POSITIONER_V6_GRAVITY_BOTTOM)
-      return y;
-    return y - size.height() / 2;
-  }
-
-  // Calculate and return position from current state.
-  gfx::Point CalculatePosition(const gfx::Rect& work_area) {
-    // TODO(oshima): The size must be smaller than work area.
-
-    gfx::Rect bounds(gfx::Point(CalculateX(size, anchor_rect, anchor, gravity,
-                                           offset.x(), x_flipped),
-                                CalculateY(size, anchor_rect, anchor, gravity,
-                                           offset.y(), y_flipped)),
-                     size);
-
-    // Adjust x position if the bounds are not fully contained by the work area.
-    if (work_area.x() > bounds.x() || work_area.right() < bounds.right()) {
-      // Allow sliding horizontally if the surface is attached below
-      // or above the parent surface.
-      bool can_slide_x = (anchor & ZXDG_POSITIONER_V6_ANCHOR_BOTTOM &&
-                          gravity & ZXDG_POSITIONER_V6_GRAVITY_BOTTOM) ||
-                         (anchor & ZXDG_POSITIONER_V6_ANCHOR_TOP &&
-                          gravity & ZXDG_POSITIONER_V6_GRAVITY_TOP);
-      if (adjustment & ZXDG_POSITIONER_V6_CONSTRAINT_ADJUSTMENT_SLIDE_X &&
-          can_slide_x) {
-        if (bounds.x() < work_area.x())
-          bounds.set_x(work_area.x());
-        else if (bounds.right() > work_area.right())
-          bounds.set_x(work_area.right() - size.width());
-      } else if (adjustment & ZXDG_POSITIONER_V6_CONSTRAINT_ADJUSTMENT_FLIP_X) {
-        x_flipped = !x_flipped;
-        bounds.set_x(CalculateX(size, anchor_rect, anchor, gravity, offset.x(),
-                                x_flipped));
-      }
-    }
-
-    // Adjust y position if the bounds are not fully contained by the work area.
-    if (work_area.y() > bounds.y() || work_area.bottom() < bounds.bottom()) {
-      // Allow sliding vertically if the surface is attached left or
-      // right of the parent surface.
-      bool can_slide_y = (anchor & ZXDG_POSITIONER_V6_ANCHOR_LEFT &&
-                          gravity & ZXDG_POSITIONER_V6_GRAVITY_LEFT) ||
-                         (anchor & ZXDG_POSITIONER_V6_ANCHOR_RIGHT &&
-                          gravity & ZXDG_POSITIONER_V6_GRAVITY_RIGHT);
-      if (adjustment & ZXDG_POSITIONER_V6_CONSTRAINT_ADJUSTMENT_SLIDE_Y &&
-          can_slide_y) {
-        if (bounds.y() < work_area.y())
-          bounds.set_y(work_area.y());
-        else if (bounds.bottom() > work_area.bottom())
-          bounds.set_y(work_area.bottom() - size.height());
-      } else if (adjustment & ZXDG_POSITIONER_V6_CONSTRAINT_ADJUSTMENT_FLIP_Y) {
-        y_flipped = !y_flipped;
-        bounds.set_y(CalculateY(size, anchor_rect, anchor, gravity, offset.y(),
-                                y_flipped));
-      }
-    }
-    return bounds.origin();
-  }
-
-  gfx::Size size;
-  gfx::Rect anchor_rect;
-  uint32_t anchor = ZXDG_POSITIONER_V6_ANCHOR_NONE;
-  uint32_t gravity = ZXDG_POSITIONER_V6_GRAVITY_NONE;
-  uint32_t adjustment = ZXDG_POSITIONER_V6_CONSTRAINT_ADJUSTMENT_NONE;
-  gfx::Vector2d offset;
-  bool y_flipped = false;
-  bool x_flipped = false;
-};
 
 void xdg_positioner_v6_destroy(wl_client* client, wl_resource* resource) {
   wl_resource_destroy(resource);
@@ -175,7 +44,7 @@ void xdg_positioner_v6_set_size(wl_client* client,
     return;
   }
 
-  GetUserDataAs<WaylandPositioner>(resource)->size = gfx::Size(width, height);
+  GetUserDataAs<WaylandPositioner>(resource)->SetSize(gfx::Size(width, height));
 }
 
 void xdg_positioner_v6_set_anchor_rect(wl_client* client,
@@ -190,8 +59,8 @@ void xdg_positioner_v6_set_anchor_rect(wl_client* client,
     return;
   }
 
-  GetUserDataAs<WaylandPositioner>(resource)->anchor_rect =
-      gfx::Rect(x, y, width, height);
+  GetUserDataAs<WaylandPositioner>(resource)->SetAnchorRect(
+      gfx::Rect(x, y, width, height));
 }
 
 void xdg_positioner_v6_set_anchor(wl_client* client,
@@ -206,7 +75,7 @@ void xdg_positioner_v6_set_anchor(wl_client* client,
     return;
   }
 
-  GetUserDataAs<WaylandPositioner>(resource)->anchor = anchor;
+  GetUserDataAs<WaylandPositioner>(resource)->SetAnchor(anchor);
 }
 
 void xdg_positioner_v6_set_gravity(wl_client* client,
@@ -221,20 +90,20 @@ void xdg_positioner_v6_set_gravity(wl_client* client,
     return;
   }
 
-  GetUserDataAs<WaylandPositioner>(resource)->gravity = gravity;
+  GetUserDataAs<WaylandPositioner>(resource)->SetGravity(gravity);
 }
 
 void xdg_positioner_v6_set_constraint_adjustment(wl_client* client,
                                                  wl_resource* resource,
                                                  uint32_t adjustment) {
-  GetUserDataAs<WaylandPositioner>(resource)->adjustment = adjustment;
+  GetUserDataAs<WaylandPositioner>(resource)->SetAdjustment(adjustment);
 }
 
 void xdg_positioner_v6_set_offset(wl_client* client,
                                   wl_resource* resource,
                                   int32_t x,
                                   int32_t y) {
-  GetUserDataAs<WaylandPositioner>(resource)->offset = gfx::Vector2d(x, y);
+  GetUserDataAs<WaylandPositioner>(resource)->SetOffset(gfx::Vector2d(x, y));
 }
 
 const struct zxdg_positioner_v6_interface xdg_positioner_v6_implementation = {
@@ -274,7 +143,7 @@ int XdgToplevelV6ResizeComponent(uint32_t edges) {
 
 using XdgSurfaceConfigureCallback =
     base::Callback<void(const gfx::Size& size,
-                        ash::mojom::WindowStateType state_type,
+                        ash::WindowStateType state_type,
                         bool resizing,
                         bool activated)>;
 
@@ -282,7 +151,7 @@ uint32_t HandleXdgSurfaceV6ConfigureCallback(
     wl_resource* resource,
     const XdgSurfaceConfigureCallback& callback,
     const gfx::Size& size,
-    ash::mojom::WindowStateType state_type,
+    ash::WindowStateType state_type,
     bool resizing,
     bool activated,
     const gfx::Vector2d& origin_offset) {
@@ -401,14 +270,14 @@ class WaylandToplevel : public aura::WindowObserver {
   }
 
   void OnConfigure(const gfx::Size& size,
-                   ash::mojom::WindowStateType state_type,
+                   ash::WindowStateType state_type,
                    bool resizing,
                    bool activated) {
     wl_array states;
     wl_array_init(&states);
-    if (state_type == ash::mojom::WindowStateType::MAXIMIZED)
+    if (state_type == ash::WindowStateType::kMaximized)
       AddState(&states, ZXDG_TOPLEVEL_V6_STATE_MAXIMIZED);
-    if (state_type == ash::mojom::WindowStateType::FULLSCREEN)
+    if (state_type == ash::WindowStateType::kFullscreen)
       AddState(&states, ZXDG_TOPLEVEL_V6_STATE_FULLSCREEN);
     if (resizing)
       AddState(&states, ZXDG_TOPLEVEL_V6_STATE_RESIZING);
@@ -576,7 +445,7 @@ class WaylandPopup : aura::WindowObserver {
   }
 
   void OnConfigure(const gfx::Size& size,
-                   ash::mojom::WindowStateType state_type,
+                   ash::WindowStateType state_type,
                    bool resizing,
                    bool activated) {
     // Nothing to do here as popups don't have additional configure state.
@@ -614,7 +483,7 @@ void xdg_surface_v6_get_toplevel(wl_client* client,
                                  wl_resource* resource,
                                  uint32_t id) {
   ShellSurface* shell_surface = GetUserDataAs<ShellSurface>(resource);
-  if (shell_surface->enabled()) {
+  if (shell_surface->GetEnabled()) {
     wl_resource_post_error(resource, ZXDG_SURFACE_V6_ERROR_ALREADY_CONSTRUCTED,
                            "surface has already been constructed");
     return;
@@ -637,7 +506,7 @@ void xdg_surface_v6_get_popup(wl_client* client,
                               wl_resource* parent_resource,
                               wl_resource* positioner_resource) {
   XdgShellSurface* shell_surface = GetUserDataAs<XdgShellSurface>(resource);
-  if (shell_surface->enabled()) {
+  if (shell_surface->GetEnabled()) {
     wl_resource_post_error(resource, ZXDG_SURFACE_V6_ERROR_ALREADY_CONSTRUCTED,
                            "surface has already been constructed");
     return;
@@ -662,25 +531,23 @@ void xdg_surface_v6_get_popup(wl_client* client,
   gfx::Rect work_area = display.work_area();
   wm::ConvertRectFromScreen(parent->GetWidget()->GetNativeWindow(), &work_area);
 
+  // Try layout using parent's flip state.
   WaylandPositioner* positioner =
       GetUserDataAs<WaylandPositioner>(positioner_resource);
-  // Try layout using parent's flip state.
-  positioner->x_flipped = parent->x_flipped();
-  positioner->y_flipped = parent->y_flipped();
-
-  gfx::Point position = positioner->CalculatePosition(work_area);
+  WaylandPositioner::Result position = positioner->CalculatePosition(
+      work_area, parent->x_flipped(), parent->y_flipped());
 
   // Remember the new flip state for its child popups.
-  shell_surface->set_x_flipped(positioner->x_flipped);
-  shell_surface->set_y_flipped(positioner->y_flipped);
+  shell_surface->set_x_flipped(position.x_flipped);
+  shell_surface->set_y_flipped(position.y_flipped);
 
   // |position| is relative to the parent's contents view origin, and |origin|
   // is in screen coordinates.
-  gfx::Point origin = position;
+  gfx::Point origin = position.origin;
   views::View::ConvertPointToScreen(
       parent->GetWidget()->widget_delegate()->GetContentsView(), &origin);
   shell_surface->SetOrigin(origin);
-  shell_surface->SetContainer(ash::kShellWindowId_MenuContainer);
+  shell_surface->SetSize(position.size);
   shell_surface->DisableMovement();
   shell_surface->SetActivatable(false);
   shell_surface->SetCanMinimize(false);
@@ -694,6 +561,12 @@ void xdg_surface_v6_get_popup(wl_client* client,
   SetImplementation(
       xdg_popup_resource, &xdg_popup_v6_implementation,
       std::make_unique<WaylandPopup>(xdg_popup_resource, resource));
+
+  // We send the configure event here as this event needs x,y coordinates
+  // relative to the parent window.
+  zxdg_popup_v6_send_configure(xdg_popup_resource, position.origin.x(),
+                               position.origin.y(), position.size.width(),
+                               position.size.height());
 }
 
 void xdg_surface_v6_set_window_geometry(wl_client* client,

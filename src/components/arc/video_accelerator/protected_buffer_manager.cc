@@ -12,13 +12,12 @@
 #include "base/memory/shared_memory.h"
 #include "base/system/sys_info.h"
 #include "components/arc/video_accelerator/protected_buffer_allocator.h"
+#include "media/gpu/macros.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
-
-#define VLOGF(level) VLOG(level) << __func__ << "(): "
 
 namespace arc {
 
@@ -165,9 +164,9 @@ ProtectedBufferManager::ProtectedNativePixmap::Create(
 
   ui::OzonePlatform* platform = ui::OzonePlatform::GetInstance();
   ui::SurfaceFactoryOzone* factory = platform->GetSurfaceFactoryOzone();
-  protected_pixmap->native_pixmap_ =
-      factory->CreateNativePixmap(gfx::kNullAcceleratedWidget, size, format,
-                                  gfx::BufferUsage::SCANOUT_VDA_WRITE);
+  protected_pixmap->native_pixmap_ = factory->CreateNativePixmap(
+      gfx::kNullAcceleratedWidget, VK_NULL_HANDLE, size, format,
+      gfx::BufferUsage::SCANOUT_VDA_WRITE);
 
   if (!protected_pixmap->native_pixmap_) {
     VLOGF(1) << "Failed allocating a native pixmap";

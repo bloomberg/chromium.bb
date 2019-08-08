@@ -42,3 +42,18 @@ message DlcModuleList {
   // update_engine to download the DLC payloads from a specific address.
   string omaha_url = 2;
 }
+
+// This message is sent from DLC Service via OnInstalled signal.
+//
+// When an install operation finishes, DLC Service sends OnInstalled signal
+// with following message.
+message InstallResult {
+  // Whether install is successful.
+  bool success = 1;
+  // Error code of the install. See dbus-constants.h for definitions.
+  int32 error_code = 2;
+  // ID of the installed DLC module.
+  string dlc_id = 3;
+  // Path to the DLC module content.
+  string dlc_root = 4;
+}

@@ -27,9 +27,6 @@ ResultCode CreateAltWindowStation(HWINSTA* winsta);
 // the function will return SBOX_ERROR_FAILED_TO_SWITCH_BACK_WINSTATION.
 ResultCode CreateAltDesktop(HWINSTA winsta, HDESK* desktop);
 
-// Returns the name of a desktop or a window station.
-base::string16 GetWindowObjectName(HANDLE handle);
-
 // Returns the name of the desktop referenced by |desktop|. If a window
 // station is specified, the name is prepended with the window station name,
 // followed by a backslash. This name can be used as the lpDesktop parameter

@@ -61,7 +61,8 @@ GpuInProcessThreadService::GpuInProcessThreadService(
     const GpuFeatureInfo& gpu_feature_info,
     const GpuPreferences& gpu_preferences,
     SharedImageManager* shared_image_manager,
-    gles2::ProgramCache* program_cache)
+    gles2::ProgramCache* program_cache,
+    scoped_refptr<SharedContextState> shared_context_state)
     : CommandBufferTaskExecutor(gpu_preferences,
                                 gpu_feature_info,
                                 sync_point_manager,
@@ -69,7 +70,8 @@ GpuInProcessThreadService::GpuInProcessThreadService(
                                 share_group,
                                 share_group_surface_format,
                                 shared_image_manager,
-                                program_cache),
+                                program_cache,
+                                std::move(shared_context_state)),
       task_runner_(task_runner),
       scheduler_(scheduler) {}
 

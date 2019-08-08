@@ -8,7 +8,7 @@
     RuntimeEnabled=WebXR,
     Constructor(DOMString type, XRInputSourceEventInit eventInitDict)
 ] interface XRInputSourceEvent : Event {
-  readonly attribute XRFrame frame;
-  readonly attribute XRInputSource inputSource;
-  readonly attribute long? buttonIndex;
+  [SameObject] readonly attribute XRFrame frame;
+  [SameObject] readonly attribute XRInputSource inputSource;
+  [SameObject] readonly attribute long? buttonIndex;
 };

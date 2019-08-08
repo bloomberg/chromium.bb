@@ -150,9 +150,9 @@ TEST_F(CustomFrameViewTest, DefaultButtons) {
   const std::vector<views::FrameButton>& trailing = trailing_buttons();
   EXPECT_EQ(trailing.size(), 3u);
   EXPECT_TRUE(leading_buttons().empty());
-  EXPECT_EQ(trailing[0], FRAME_BUTTON_MINIMIZE);
-  EXPECT_EQ(trailing[1], FRAME_BUTTON_MAXIMIZE);
-  EXPECT_EQ(trailing[2], FRAME_BUTTON_CLOSE);
+  EXPECT_EQ(trailing[0], views::FrameButton::kMinimize);
+  EXPECT_EQ(trailing[1], views::FrameButton::kMaximize);
+  EXPECT_EQ(trailing[2], views::FrameButton::kClose);
 }
 
 // Tests that layout places the buttons in order, that the restore button is
@@ -166,7 +166,7 @@ TEST_F(CustomFrameViewTest, DefaultButtonLayout) {
 
   EXPECT_LT(minimize_button()->x(), maximize_button()->x());
   EXPECT_LT(maximize_button()->x(), close_button()->x());
-  EXPECT_FALSE(restore_button()->visible());
+  EXPECT_FALSE(restore_button()->GetVisible());
 
   EXPECT_GT(minimize_button()->x(),
             title_bounds().x() + title_bounds().width());
@@ -178,9 +178,9 @@ TEST_F(CustomFrameViewTest, LeadingButtonLayout) {
   CustomFrameView* view = custom_frame_view();
 
   std::vector<views::FrameButton> leading;
-  leading.push_back(views::FRAME_BUTTON_CLOSE);
-  leading.push_back(views::FRAME_BUTTON_MINIMIZE);
-  leading.push_back(views::FRAME_BUTTON_MAXIMIZE);
+  leading.push_back(views::FrameButton::kClose);
+  leading.push_back(views::FrameButton::kMinimize);
+  leading.push_back(views::FrameButton::kMaximize);
 
   std::vector<views::FrameButton> trailing;
 
@@ -191,7 +191,7 @@ TEST_F(CustomFrameViewTest, LeadingButtonLayout) {
   parent->Show();
   EXPECT_LT(close_button()->x(), minimize_button()->x());
   EXPECT_LT(minimize_button()->x(), maximize_button()->x());
-  EXPECT_FALSE(restore_button()->visible());
+  EXPECT_FALSE(restore_button()->GetVisible());
   EXPECT_LT(maximize_button()->x() + maximize_button()->width(),
             title_bounds().x());
 }
@@ -205,8 +205,8 @@ TEST_F(CustomFrameViewTest, MaximizeRevealsRestoreButton) {
   parent->SetBounds(gfx::Rect(0, 0, 300, 100));
   parent->Show();
 
-  ASSERT_FALSE(restore_button()->visible());
-  ASSERT_TRUE(maximize_button()->visible());
+  ASSERT_FALSE(restore_button()->GetVisible());
+  ASSERT_TRUE(maximize_button()->GetVisible());
 
   parent->Maximize();
   view->Layout();
@@ -214,11 +214,11 @@ TEST_F(CustomFrameViewTest, MaximizeRevealsRestoreButton) {
 #if defined(OS_MACOSX)
   // Restore buttons do not exist on Mac. The maximize button is instead a kind
   // of toggle, but has no effect on frame decorations.
-  EXPECT_FALSE(restore_button()->visible());
-  EXPECT_TRUE(maximize_button()->visible());
+  EXPECT_FALSE(restore_button()->GetVisible());
+  EXPECT_TRUE(maximize_button()->GetVisible());
 #else
-  EXPECT_TRUE(restore_button()->visible());
-  EXPECT_FALSE(maximize_button()->visible());
+  EXPECT_TRUE(restore_button()->GetVisible());
+  EXPECT_FALSE(maximize_button()->GetVisible());
 #endif
 }
 
@@ -235,8 +235,8 @@ TEST_F(CustomFrameViewTest, CannotMaximizeHidesButton) {
   parent->SetBounds(gfx::Rect(0, 0, 300, 100));
   parent->Show();
 
-  EXPECT_FALSE(restore_button()->visible());
-  EXPECT_FALSE(maximize_button()->visible());
+  EXPECT_FALSE(restore_button()->GetVisible());
+  EXPECT_FALSE(maximize_button()->GetVisible());
 }
 
 // Tests that when the parent cannot minimize that the minimize button is not
@@ -252,7 +252,7 @@ TEST_F(CustomFrameViewTest, CannotMinimizeHidesButton) {
   parent->SetBounds(gfx::Rect(0, 0, 300, 100));
   parent->Show();
 
-  EXPECT_FALSE(minimize_button()->visible());
+  EXPECT_FALSE(minimize_button()->GetVisible());
 }
 
 // Tests that when maximized that the edge button has an increased width.
@@ -262,10 +262,10 @@ TEST_F(CustomFrameViewTest, LargerEdgeButtonsWhenMaximized) {
 
   // Custom ordering to have a button on each edge.
   std::vector<views::FrameButton> leading;
-  leading.push_back(views::FRAME_BUTTON_CLOSE);
-  leading.push_back(views::FRAME_BUTTON_MAXIMIZE);
+  leading.push_back(views::FrameButton::kClose);
+  leading.push_back(views::FrameButton::kMaximize);
   std::vector<views::FrameButton> trailing;
-  trailing.push_back(views::FRAME_BUTTON_MINIMIZE);
+  trailing.push_back(views::FrameButton::kMinimize);
   SetWindowButtonOrder(leading, trailing);
 
   view->Init(parent);

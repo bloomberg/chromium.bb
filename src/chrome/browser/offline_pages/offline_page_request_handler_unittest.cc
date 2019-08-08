@@ -22,6 +22,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
+#include "build/build_config.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/offline_pages/offline_page_request_interceptor.h"
 #include "chrome/browser/offline_pages/offline_page_tab_helper.h"
@@ -57,6 +58,11 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+#if defined(OS_ANDROID)
+#include "components/gcm_driver/instance_id/instance_id_android.h"
+#include "components/gcm_driver/instance_id/scoped_use_fake_instance_id_android.h"
+#endif  // OS_ANDROID
 
 namespace offline_pages {
 
@@ -323,7 +329,7 @@ class TestURLLoaderClient : public network::mojom::URLLoaderClient {
     observer_->OnReceiveRedirect(redirect_info.new_url);
   }
 
-  void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override {}
+  void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override {}
 
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override {}
 
@@ -546,6 +552,18 @@ class OfflinePageRequestHandlerTestBase : public testing::Test {
   bool is_offline_page_set_in_navigation_data_;
   OfflinePageItem page_;
   OfflinePageHeader offline_page_header_;
+
+#if defined(OS_ANDROID)
+  // OfflinePageTabHelper instantiates PrefetchService which in turn requests a
+  // fresh GCM token automatically. These two lines mock out InstanceID (the
+  // component which actually requests the token from play services). Without
+  // this, each test takes an extra 30s waiting on the token (because
+  // content::TestBrowserThreadBundle tries to finish all pending tasks before
+  // ending the test).
+  instance_id::InstanceIDAndroid::ScopedBlockOnAsyncTasksForTesting
+      block_async_;
+  instance_id::ScopedUseFakeInstanceIDAndroid use_fake_;
+#endif  // OS_ANDROID
 
   // These are not thread-safe. But they can be used in the pattern that
   // setting the state is done first from one thread and reading this state

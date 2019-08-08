@@ -15,7 +15,7 @@
 #ifndef VK_FORMAT_UTILS_HPP_
 #define VK_FORMAT_UTILS_HPP_
 
-#include <vulkan/vulkan_core.h>
+#include <Vulkan/VulkanPlatform.h>
 
 namespace sw
 {
@@ -36,17 +36,19 @@ public:
 	bool isUnsignedNonNormalizedInteger() const;
 	bool isNonNormalizedInteger() const;
 
+	VkImageAspectFlags getAspects() const;
+	Format getAspectFormat(VkImageAspectFlags aspect) const;
 	bool isStencil() const;
 	bool isDepth() const;
 	bool hasQuadLayout() const;
-
+	VkFormat getNonQuadLayoutFormat() const;
 	bool isSRGBformat() const;
-	bool isSRGBreadable() const;
-	bool isSRGBwritable() const;
 	bool isFloatFormat() const;
+	bool isYcbcrFormat() const;
 
 	bool isCompatible(const Format& other) const;
 	bool isCompressed() const;
+	VkFormat getDecompressedFormat() const;
 	int blockWidth() const;
 	int blockHeight() const;
 	int bytesPerBlock() const;
@@ -65,11 +67,11 @@ public:
 	bool has8bitTextureComponents() const;
 	bool has16bitTextureComponents() const;
 	bool has32bitIntegerTextureComponents() const;
-	bool hasYuvFormat() const;
 	bool isRGBComponent(int component) const;
 
 private:
 	VkFormat compatibleFormat() const;
+	int sliceBUnpadded(int width, int height, int border, bool target) const;
 
 	VkFormat format = VK_FORMAT_UNDEFINED;
 };

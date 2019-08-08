@@ -46,7 +46,7 @@ inline ScrollOffset ToScrollOffset(const FloatPoint& p) {
 }
 
 using ScrollDirection = WebScrollDirection;
-using ScrollGranularity = WebScrollGranularity;
+using ui::input_types::ScrollGranularity;
 
 enum ScrollDirectionPhysical {
   kScrollUp,
@@ -243,21 +243,6 @@ inline ScrollOffset ToScrollDelta(ScrollDirectionPhysical dir, float delta) {
 
   return (dir == kScrollLeft || dir == kScrollRight) ? ScrollOffset(delta, 0)
                                                      : ScrollOffset(0, delta);
-}
-
-inline ScrollGranularity ToPlatformScrollGranularity(
-    WebGestureEvent::ScrollUnits units) {
-  switch (units) {
-    case WebGestureEvent::ScrollUnits::kPrecisePixels:
-      return ScrollGranularity::kScrollByPrecisePixel;
-    case WebGestureEvent::ScrollUnits::kPixels:
-      return ScrollGranularity::kScrollByPixel;
-    case WebGestureEvent::ScrollUnits::kPage:
-      return ScrollGranularity::kScrollByPage;
-    default:
-      NOTREACHED();
-      return ScrollGranularity::kScrollByPrecisePixel;
-  }
 }
 
 typedef unsigned ScrollbarControlPartMask;

@@ -36,6 +36,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/resource_scheduler_params_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -83,9 +84,14 @@ const int kChildId = 30;
 const int kRouteId = 75;
 const int kChildId2 = 43;
 const int kRouteId2 = 67;
+const int kChildId3 = 100;
+const int kRouteId3 = 100;
 const int kBackgroundChildId = 35;
 const int kBackgroundRouteId = 43;
+const int kBrowserChildId = mojom::kBrowserProcessId;
+const int kBrowserRouteId = 1;
 
+const size_t kNumResourceSchedulerClients = 20;
 const size_t kMaxNumDelayableRequestsPerHostPerClient = 6;
 
 class TestRequest {
@@ -182,6 +188,8 @@ class ResourceSchedulerTest : public testing::Test {
                                 &network_quality_estimator_);
     scheduler_->OnClientCreated(kBackgroundChildId, kBackgroundRouteId,
                                 &network_quality_estimator_);
+    scheduler_->OnClientCreated(kBrowserChildId, kBrowserRouteId,
+                                &network_quality_estimator_);
   }
 
   ResourceSchedulerParamsManager FixedParamsManager(
@@ -205,6 +213,7 @@ class ResourceSchedulerTest : public testing::Test {
     if (scheduler_) {
       scheduler_->OnClientDeleted(kChildId, kRouteId);
       scheduler_->OnClientDeleted(kBackgroundChildId, kBackgroundRouteId);
+      scheduler_->OnClientDeleted(kBrowserChildId, kBrowserRouteId);
     }
   }
 
@@ -249,6 +258,13 @@ class ResourceSchedulerTest : public testing::Test {
       net::RequestPriority priority) {
     return NewRequestWithChildAndRoute(url, priority, kBackgroundChildId,
                                        kBackgroundRouteId);
+  }
+
+  std::unique_ptr<TestRequest> NewBrowserRequest(
+      const char* url,
+      net::RequestPriority priority) {
+    return NewRequestWithChildAndRoute(url, priority, kBrowserChildId,
+                                       kBrowserRouteId);
   }
 
   std::unique_ptr<TestRequest> NewSyncRequest(const char* url,
@@ -687,6 +703,35 @@ TEST_F(ResourceSchedulerTest, LowerPriority) {
 
   EXPECT_FALSE(request->started());
   EXPECT_TRUE(idle->started());
+}
+
+// Verify that browser requests are not throttled by the resource scheduler.
+TEST_F(ResourceSchedulerTest, LowerPriorityBrowserRequestsNotThrottled) {
+  SetMaxDelayableRequests(1);
+  // Dummies to enforce scheduling.
+  std::unique_ptr<TestRequest> high(
+      NewBrowserRequest("http://host/high", net::HIGHEST));
+  std::unique_ptr<TestRequest> low(
+      NewBrowserRequest("http://host/low", net::LOWEST));
+
+  std::unique_ptr<TestRequest> request(
+      NewBrowserRequest("http://host/req", net::LOWEST));
+  std::unique_ptr<TestRequest> idle(
+      NewBrowserRequest("http://host/idle", net::IDLE));
+  EXPECT_TRUE(request->started());
+  EXPECT_TRUE(idle->started());
+
+  const int kDefaultMaxNumDelayableRequestsPerClient =
+      10;  // Should match the .cc.
+
+  // Create more requests than kDefaultMaxNumDelayableRequestsPerClient. All
+  // requests should be started immediately.
+  std::vector<std::unique_ptr<TestRequest>> lows;
+  for (int i = 0; i < kDefaultMaxNumDelayableRequestsPerClient + 1; ++i) {
+    string url = "http://host" + base::NumberToString(i) + "/low";
+    lows.push_back(NewBrowserRequest(url.c_str(), net::LOWEST));
+    EXPECT_TRUE(lows.back()->started());
+  }
 }
 
 TEST_F(ResourceSchedulerTest, ReprioritizedRequestGoesToBackOfQueue) {
@@ -1220,6 +1265,70 @@ TEST_F(ResourceSchedulerTest, NonDelayableThrottlesDelayableVaryNonDelayable) {
     std::unique_ptr<TestRequest> last_low(
         NewRequest("http://lasthost/low", net::LOWEST));
     EXPECT_FALSE(last_low->started());
+  }
+}
+
+// Test that UMA counts are correctly recorded for the number of active resource
+// scheduler clients.
+TEST_F(ResourceSchedulerTest, NumActiveResourceSchedulerClientsUMA) {
+  std::unique_ptr<base::HistogramTester> histogram_tester(
+      new base::HistogramTester);
+  // Check that 0 is recorded when a new client is created and there are no
+  // active scheduler clients in the background.
+  scheduler_->OnClientCreated(kChildId2, kRouteId2,
+                              &network_quality_estimator_);
+  histogram_tester->ExpectTotalCount(
+      "ResourceScheduler.ActiveSchedulerClientsCount", 1);
+  histogram_tester->ExpectUniqueSample(
+      "ResourceScheduler.ActiveSchedulerClientsCount", 0, 1);
+
+  // Test that UMA data remains the same even when a new request starts and a
+  // scheduler client becomes active.
+  std::unique_ptr<TestRequest> high1(
+      NewRequest("http://host/high", net::HIGHEST));
+  EXPECT_TRUE(high1->started());
+  histogram_tester->ExpectUniqueSample(
+      "ResourceScheduler.ActiveSchedulerClientsCount", 0, 1);
+
+  // Test that UMA data is recorded when a new client starts. Check that the
+  // total number of samples is 2. Also, check that 1 active resource scheduler
+  // client is recorded.
+  scheduler_->OnClientCreated(kChildId3, kRouteId3,
+                              &network_quality_estimator_);
+  histogram_tester->ExpectTotalCount(
+      "ResourceScheduler.ActiveSchedulerClientsCount", 2);
+  histogram_tester->ExpectBucketCount(
+      "ResourceScheduler.ActiveSchedulerClientsCount", 1, 1);
+  scheduler_->OnClientDeleted(kChildId3, kRouteId3);
+  scheduler_->OnClientDeleted(kChildId2, kRouteId2);
+  histogram_tester.reset(new base::HistogramTester);
+
+  // Test that UMA counts are recorded correctly when multiple scheduler clients
+  // are created in sequence. There are at most 20 active clients.
+  std::vector<std::unique_ptr<TestRequest>> requests;
+  for (size_t i = 0; i < kNumResourceSchedulerClients; ++i) {
+    scheduler_->OnClientCreated(kChildId3 + i, kRouteId3 + i,
+                                &network_quality_estimator_);
+    requests.push_back(NewRequestWithChildAndRoute(
+        "http://host/medium", net::LOWEST, kChildId3 + i, kRouteId3 + i));
+    EXPECT_TRUE(requests[i]->started());
+    histogram_tester->ExpectTotalCount(
+        "ResourceScheduler.ActiveSchedulerClientsCount", 1 + i);
+    histogram_tester->ExpectBucketCount(
+        "ResourceScheduler.ActiveSchedulerClientsCount", 1 + i, 1);
+  }
+  histogram_tester.reset(new base::HistogramTester);
+
+  // Test that UMA counts are recorded correctly when a sequence of resource
+  // scheduler clients are deleted in sequence. Note: Create a new client
+  // each time in order to update the UMA counts.
+  for (size_t i = 0; i < kNumResourceSchedulerClients; ++i) {
+    scheduler_->OnClientDeleted(kChildId3 + 19 - i, kRouteId3 + 19 - i);
+    scheduler_->OnClientCreated(kChildId2, kRouteId2,
+                                &network_quality_estimator_);
+    histogram_tester->ExpectBucketCount(
+        "ResourceScheduler.ActiveSchedulerClientsCount", 20 - i, 1);
+    scheduler_->OnClientDeleted(kChildId2, kRouteId2);
   }
 }
 

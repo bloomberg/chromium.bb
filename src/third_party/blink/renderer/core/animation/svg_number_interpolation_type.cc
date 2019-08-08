@@ -11,8 +11,15 @@
 #include "third_party/blink/renderer/core/svg/properties/svg_animated_property.h"
 #include "third_party/blink/renderer/core/svg/svg_number.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
+
+SVGPropertyBase* SVGNumberInterpolationType::AppliedSVGValueForTesting(
+    const InterpolableValue& interpolable_value,
+    const NonInterpolableValue* non_interpolable_value) const {
+  return AppliedSVGValue(interpolable_value, non_interpolable_value);
+}
 
 InterpolationValue SVGNumberInterpolationType::MaybeConvertNeutral(
     const InterpolationValue&,
@@ -31,7 +38,8 @@ InterpolationValue SVGNumberInterpolationType::MaybeConvertSVGValue(
 SVGPropertyBase* SVGNumberInterpolationType::AppliedSVGValue(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue*) const {
-  double value = ToInterpolableNumber(interpolable_value).Value();
+  float value =
+      clampTo<float>(ToInterpolableNumber(interpolable_value).Value());
   return MakeGarbageCollected<SVGNumber>(is_non_negative_ && value < 0 ? 0
                                                                        : value);
 }

@@ -31,6 +31,7 @@ struct ReceiverSetTraits;
 template <typename Interface, typename ImplRefTraits>
 struct ReceiverSetTraits<Receiver<Interface, ImplRefTraits>> {
   using InterfaceType = Interface;
+  using PendingType = PendingReceiver<Interface>;
   using ImplPointerType = typename ImplRefTraits::PointerType;
 };
 
@@ -87,6 +88,7 @@ class ReceiverSetBase {
  public:
   using Traits = ReceiverSetTraits<ReceiverType>;
   using Interface = typename Traits::InterfaceType;
+  using PendingType = typename Traits::PendingType;
   using ImplPointerType = typename Traits::ImplPointerType;
   using ContextTraits = ReceiverSetContextTraits<ContextType>;
   using Context = typename ContextTraits::Type;
@@ -101,6 +103,14 @@ class ReceiverSetBase {
   // ContextType is not void.
   void set_disconnect_handler(base::RepeatingClosure handler) {
     disconnect_handler_ = std::move(handler);
+    disconnect_with_reason_handler_.Reset();
+  }
+
+  // Like above but also provides the reason given for disconnection, if any.
+  void set_disconnect_with_reason_handler(
+      RepeatingConnectionErrorWithReasonCallback handler) {
+    disconnect_with_reason_handler_ = std::move(handler);
+    disconnect_handler_.Reset();
   }
 
   // Adds a new receiver to the set, binding |receiver| to |impl| with no
@@ -112,7 +122,7 @@ class ReceiverSetBase {
   // will be used to run scheduled tasks for the receiver.
   ReceiverId Add(
       ImplPointerType impl,
-      PendingReceiver<Interface> receiver,
+      PendingType receiver,
       scoped_refptr<base::SequencedTaskRunner> task_runner = nullptr) {
     static_assert(!ContextTraits::SupportsContext(),
                   "Context value required for non-void context type.");
@@ -124,7 +134,7 @@ class ReceiverSetBase {
   // other (identical) details.
   ReceiverId Add(
       ImplPointerType impl,
-      PendingReceiver<Interface> receiver,
+      PendingType receiver,
       Context context,
       scoped_refptr<base::SequencedTaskRunner> task_runner = nullptr) {
     static_assert(ContextTraits::SupportsContext(),
@@ -214,7 +224,7 @@ class ReceiverSetBase {
            const std::string& error) {
           std::move(error_callback).Run(error);
           if (receiver_set)
-            receiver_set->RemoveBinding(receiver_id);
+            receiver_set->Remove(receiver_id);
         },
         mojo::GetBadMessageCallback(), weak_ptr_factory_.GetWeakPtr(),
         current_receiver());
@@ -226,7 +236,7 @@ class ReceiverSetBase {
   class Entry {
    public:
     Entry(ImplPointerType impl,
-          PendingReceiver<Interface> receiver,
+          PendingType receiver,
           ReceiverSetBase* receiver_set,
           ReceiverId receiver_id,
           Context context,
@@ -238,7 +248,7 @@ class ReceiverSetBase {
           receiver_id_(receiver_id),
           context_(std::move(context)) {
       receiver_.AddFilter(std::make_unique<DispatchFilter>(this));
-      receiver_.set_disconnect_handler(
+      receiver_.set_disconnect_with_reason_handler(
           base::BindOnce(&Entry::OnDisconnect, base::Unretained(this)));
     }
 
@@ -264,9 +274,11 @@ class ReceiverSetBase {
       receiver_set_->SetDispatchContext(&context_, receiver_id_);
     }
 
-    void OnDisconnect() {
+    void OnDisconnect(uint32_t custom_reason_code,
+                      const std::string& description) {
       WillDispatch();
-      receiver_set_->OnDisconnect(receiver_id_);
+      receiver_set_->OnDisconnect(receiver_id_, custom_reason_code,
+                                  description);
     }
 
     ReceiverType receiver_;
@@ -283,7 +295,7 @@ class ReceiverSetBase {
   }
 
   ReceiverId AddImpl(ImplPointerType impl,
-                     PendingReceiver<Interface> receiver,
+                     PendingType receiver,
                      Context context,
                      scoped_refptr<base::SequencedTaskRunner> task_runner) {
     ReceiverId id = next_receiver_id_++;
@@ -295,7 +307,9 @@ class ReceiverSetBase {
     return id;
   }
 
-  void OnDisconnect(ReceiverId id) {
+  void OnDisconnect(ReceiverId id,
+                    uint32_t custom_reason_code,
+                    const std::string& description) {
     auto it = receivers_.find(id);
     DCHECK(it != receivers_.end());
 
@@ -305,9 +319,12 @@ class ReceiverSetBase {
 
     if (disconnect_handler_)
       disconnect_handler_.Run();
+    else if (disconnect_with_reason_handler_)
+      disconnect_with_reason_handler_.Run(custom_reason_code, description);
   }
 
   base::RepeatingClosure disconnect_handler_;
+  RepeatingConnectionErrorWithReasonCallback disconnect_with_reason_handler_;
   ReceiverId next_receiver_id_ = 0;
   std::map<ReceiverId, std::unique_ptr<Entry>> receivers_;
   const Context* current_context_ = nullptr;

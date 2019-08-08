@@ -46,9 +46,6 @@ interface PageHandler {
   // Reload the current suggestions.
   ReloadSuggestions();
 
-  // Get the debug log.
-  GetDebugLog() => (string debugLog);
-
   // Clear cached suggestions.
   ClearCachedSuggestions();
 
@@ -60,9 +57,6 @@ interface PageHandler {
 
   // Download the last suggestions in json form.
   GetLastJson() => (string json);
-
-  // Reset the notification state.
-  ResetNotificationState();
 
   // Get the suggestions by category.
   GetSuggestionsByCategory() => (array<SuggestionCategory> categories);

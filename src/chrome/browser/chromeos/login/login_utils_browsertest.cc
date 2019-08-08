@@ -14,11 +14,11 @@
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/login/screens/gaia_view.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -69,7 +69,7 @@ class LoginUtilsTest : public OobeBaseTest {
 
     LoginDisplayHost::default_host()
         ->GetOobeUI()
-        ->GetGaiaScreenView()
+        ->GetView<GaiaScreenHandler>()
         ->ShowSigninScreenForTest(username, "password", "[]");
 
     // Wait for the session to start after submitting the credentials. This
@@ -84,7 +84,13 @@ class LoginUtilsTest : public OobeBaseTest {
 };
 
 // Exercises login, like the desktopui_MashLogin Chrome OS autotest.
-IN_PROC_BROWSER_TEST_F(LoginUtilsTest, MashLogin) {
+// Test is flaky, see https://crbug.com/957584.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_MashLogin DISABLED_MashLogin
+#else
+#define MAYBE_MashLogin MashLogin
+#endif
+IN_PROC_BROWSER_TEST_F(LoginUtilsTest, MAYBE_MashLogin) {
   // Test is relevant for both SingleProcessMash and MultiProcessMash, but
   // not classic ash.
   if (!features::IsUsingWindowService())

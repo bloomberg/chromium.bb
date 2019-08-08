@@ -34,11 +34,6 @@ bool BookmarkAppIsLocallyInstalled(content::BrowserContext* context,
 bool BookmarkAppIsLocallyInstalled(const ExtensionPrefs* prefs,
                                    const Extension* extension);
 
-// Returns true if a bookmark or hosted app from a given URL is already
-// installed and enabled.
-bool BookmarkOrHostedAppInstalled(content::BrowserContext* browser_context,
-                                  const GURL& url);
-
 // Generates a scope based on |launch_url| and checks if the |url| falls under
 // it. https://www.w3.org/TR/appmanifest/#navigation-scope
 bool IsInNavigationScopeForLaunchUrl(const GURL& launch_url, const GURL& url);

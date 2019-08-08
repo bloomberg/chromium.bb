@@ -7,6 +7,7 @@
 
 #include "base/sequenced_task_runner.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
+#include "third_party/blink/public/mojom/blob/data_element.mojom-blink.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 
 namespace blink {

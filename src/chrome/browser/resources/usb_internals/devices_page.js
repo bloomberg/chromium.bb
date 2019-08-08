@@ -20,7 +20,6 @@ cr.define('devices_page', function() {
     constructor(usbManager) {
       /** @private {device.mojom.UsbDeviceManagerProxy} */
       this.usbManager_ = usbManager;
-
       this.renderDeviceList_();
     }
 
@@ -65,6 +64,9 @@ cr.define('devices_page', function() {
 
         tableBody.appendChild(clone);
       }
+      // window.deviceListCompleteFn() provides a hook for the test suite to
+      // perform test actions after the devices list is loaded.
+      window.deviceListCompleteFn();
     }
 
     /**
@@ -94,8 +96,7 @@ cr.define('devices_page', function() {
     constructor(usbManager, device) {
       /** @private {device.mojom.UsbDeviceManagerProxy} */
       this.usbManager_ = usbManager;
-
-      this.renderTab(device);
+      this.renderTab_(device);
     }
 
     /**
@@ -103,7 +104,7 @@ cr.define('devices_page', function() {
      * @param {!device.mojom.UsbDeviceInfo} device
      * @private
      */
-    renderTab(device) {
+    renderTab_(device) {
       const tabs = document.querySelector('tabs');
 
       const tabTemplate = document.querySelector('#tab-template');
@@ -123,31 +124,44 @@ cr.define('devices_page', function() {
       cr.ui.decorate('tab', cr.ui.Tab);
 
       const tabPanels = document.querySelector('tabpanels');
-
       const tabPanelTemplate = document.querySelector('#tabpanel-template');
       const tabPanelClone = document.importNode(tabPanelTemplate.content, true);
 
       /**
        * Root of the WebContents tree of current device.
-       * @type {cr.ui.Tree|null}
+       * @type {?cr.ui.Tree}
        */
       const treeViewRoot = tabPanelClone.querySelector('#tree-view');
       cr.ui.decorate(treeViewRoot, cr.ui.Tree);
       treeViewRoot.detail = {payload: {}, children: {}};
       // Clear the tree first before populating it with the new content.
       treeViewRoot.innerText = '';
-      this.renderDeviceTree_(device, treeViewRoot);
+      renderDeviceTree(device, treeViewRoot);
 
+      const tabPanel = tabPanelClone.querySelector('tabpanel');
+      this.initializeDescriptorPanels_(tabPanel, device.guid);
+
+      tabPanels.appendChild(tabPanelClone);
+      cr.ui.decorate(tabPanel, cr.ui.TabPanel);
+    }
+
+    /**
+     * Initializes all the descriptor panels.
+     * @param {!HTMLElement} tabPanel
+     * @param {number} guid
+     * @private
+     */
+    async initializeDescriptorPanels_(tabPanel, guid) {
       const usbDeviceProxy = new UsbDeviceProxy;
-      this.usbManager_.getDevice(device.guid, usbDeviceProxy.$.createRequest());
+      await this.usbManager_.getDevice(guid, usbDeviceProxy.$.createRequest());
 
       const getStringDescriptorButton =
-          tabPanelClone.querySelector('#string-descriptor-button');
+          tabPanel.querySelector('#string-descriptor-button');
       const stringDescriptorElement =
-          tabPanelClone.querySelector('.string-descriptor-panel');
+          tabPanel.querySelector('.string-descriptor-panel');
       const stringDescriptorPanel = new descriptor_panel.DescriptorPanel(
           usbDeviceProxy, stringDescriptorElement);
-      stringDescriptorPanel.initialStringDescriptorPanel(tab.id);
+      stringDescriptorPanel.initialStringDescriptorPanel(guid);
       getStringDescriptorButton.addEventListener('click', () => {
         stringDescriptorElement.hidden = !stringDescriptorElement.hidden;
 
@@ -160,9 +174,9 @@ cr.define('devices_page', function() {
       });
 
       const getDeviceDescriptorButton =
-          tabPanelClone.querySelector('#device-descriptor-button');
+          tabPanel.querySelector('#device-descriptor-button');
       const deviceDescriptorElement =
-          tabPanelClone.querySelector('.device-descriptor-panel');
+          tabPanel.querySelector('.device-descriptor-panel');
       const deviceDescriptorPanel = new descriptor_panel.DescriptorPanel(
           usbDeviceProxy, deviceDescriptorElement, stringDescriptorPanel);
       getDeviceDescriptorButton.addEventListener('click', () => {
@@ -177,9 +191,9 @@ cr.define('devices_page', function() {
       });
 
       const getConfigurationDescriptorButton =
-          tabPanelClone.querySelector('#configuration-descriptor-button');
+          tabPanel.querySelector('#configuration-descriptor-button');
       const configurationDescriptorElement =
-          tabPanelClone.querySelector('.configuration-descriptor-panel');
+          tabPanel.querySelector('.configuration-descriptor-panel');
       const configurationDescriptorPanel = new descriptor_panel.DescriptorPanel(
           usbDeviceProxy, configurationDescriptorElement,
           stringDescriptorPanel);
@@ -195,173 +209,199 @@ cr.define('devices_page', function() {
         }
       });
 
-      tabPanels.appendChild(tabPanelClone);
-      cr.ui.decorate('tabpanel', cr.ui.TabPanel);
+      const getBosDescriptorButton =
+          tabPanel.querySelector('#bos-descriptor-button');
+      const bosDescriptorElement =
+          tabPanel.querySelector('.bos-descriptor-panel');
+      const bosDescriptorPanel = new descriptor_panel.DescriptorPanel(
+          usbDeviceProxy, bosDescriptorElement);
+      getBosDescriptorButton.addEventListener('click', () => {
+        bosDescriptorElement.hidden = !bosDescriptorElement.hidden;
+
+        // Clear the panel before rendering new data.
+        bosDescriptorPanel.clearView();
+
+        if (!bosDescriptorElement.hidden) {
+          bosDescriptorPanel.renderBosDescriptor();
+        }
+      });
+      // window.deviceTabInitializedFn() provides a hook for the test suite to
+      // perform test actions after the device tab query descriptors actions are
+      // initialized.
+      window.deviceTabInitializedFn();
     }
+  }
 
-    /**
-     * Renders a tree to display the device's detail information.
-     * @param {!device.mojom.UsbDeviceInfo} device
-     * @param {!cr.ui.Tree} root
-     * @private
-     */
-    renderDeviceTree_(device, root) {
-      root.add(customTreeItem(`USB Version: ${device.usbVersionMajor}.${
-          device.usbVersionMinor}.${device.usbVersionSubminor}`));
+  /**
+   * Renders a tree to display the device's detail information.
+   * @param {!device.mojom.UsbDeviceInfo} device
+   * @param {!cr.ui.Tree} root
+   */
+  function renderDeviceTree(device, root) {
+    root.add(customTreeItem(`USB Version: ${device.usbVersionMajor}.${
+        device.usbVersionMinor}.${device.usbVersionSubminor}`));
 
-      root.add(customTreeItem(`Class Code: ${device.classCode}`));
+    root.add(customTreeItem(`Class Code: ${device.classCode}`));
 
-      root.add(customTreeItem(`Subclass Code: ${device.subclassCode}`));
+    root.add(customTreeItem(`Subclass Code: ${device.subclassCode}`));
 
-      root.add(customTreeItem(`Protocol Code: ${device.protocolCode}`));
+    root.add(customTreeItem(`Protocol Code: ${device.protocolCode}`));
 
-      root.add(customTreeItem(`Port Number: ${device.portNumber}`));
+    root.add(customTreeItem(`Port Number: ${device.portNumber}`));
 
-      root.add(customTreeItem(`Vendor Id: ${toHex(device.vendorId)}`));
+    root.add(customTreeItem(`Vendor Id: ${toHex(device.vendorId)}`));
 
-      root.add(customTreeItem(`Product Id: ${toHex(device.productId)}`));
+    root.add(customTreeItem(`Product Id: ${toHex(device.productId)}`));
 
-      root.add(customTreeItem(`Device Version: ${device.deviceVersionMajor}.${
-          device.deviceVersionMinor}.${device.deviceVersionSubminor}`));
+    root.add(customTreeItem(`Device Version: ${device.deviceVersionMajor}.${
+        device.deviceVersionMinor}.${device.deviceVersionSubminor}`));
 
+    if (device.manufacturerName) {
       root.add(customTreeItem(`Manufacturer Name: ${
           decodeString16(device.manufacturerName.data)}`));
+    }
 
+    if (device.productName) {
       root.add(customTreeItem(
           `Product Name: ${decodeString16(device.productName.data)}`));
+    }
 
+    if (device.serialNumber) {
       root.add(customTreeItem(
           `Serial Number: ${decodeString16(device.serialNumber.data)}`));
-
-      root.add(customTreeItem(
-          `WebUSB Landing Page: ${device.webusbLandingPage.url}`));
-
-      root.add(customTreeItem(
-          `Active Configuration: ${device.activeConfiguration}`));
-
-      const configurationsArray = device.configurations;
-      this.renderConfigurationTreeItem_(configurationsArray, root);
     }
 
-    /**
-     * Renders a tree item to display the device's configurations information.
-     * @param {!Array<!device.mojom.UsbConfigurationInfo>} configurationsArray
-     * @param {!cr.ui.TreeItem} root
-     * @private
-     */
-    renderConfigurationTreeItem_(configurationsArray, root) {
-      for (const configuration of configurationsArray) {
-        const configurationItem =
-            customTreeItem(`Configuration ${configuration.configurationValue}`);
+    if (device.webusbLandingPage) {
+      const urlItem = customTreeItem(
+          `WebUSB Landing Page: ${device.webusbLandingPage.url}`);
+      root.add(urlItem);
 
-        if (configuration.configurationName) {
-          configurationItem.add(customTreeItem(`Configuration Name: ${
-              decodeString16(configuration.configurationName.data)}`));
-        }
-
-        const interfacesArray = configuration.interfaces;
-        this.renderInterfacesTreeItem_(interfacesArray, configurationItem);
-
-        root.add(configurationItem);
-      }
+      urlItem.querySelector('.tree-label')
+          .addEventListener(
+              'click',
+              () => window.open(device.webusbLandingPage.url, '_blank'));
     }
 
-    /**
-     * Renders a tree item to display the device's interfaces information.
-     * @param {!Array<!device.mojom.UsbInterfaceInfo>} interfacesArray
-     * @param {!cr.ui.TreeItem} root
-     * @private
-     */
-    renderInterfacesTreeItem_(interfacesArray, root) {
-      for (const currentInterface of interfacesArray) {
-        const interfaceItem =
-            customTreeItem(`Interface ${currentInterface.interfaceNumber}`);
+    root.add(
+        customTreeItem(`Active Configuration: ${device.activeConfiguration}`));
 
-        const alternatesArray = currentInterface.alternates;
-        this.renderAlternatesTreeItem_(alternatesArray, interfaceItem);
+    const configurationsArray = device.configurations;
+    renderConfigurationTreeItem(configurationsArray, root);
+  }
 
-        root.add(interfaceItem);
+  /**
+   * Renders a tree item to display the device's configuration information.
+   * @param {!Array<!device.mojom.UsbConfigurationInfo>} configurationsArray
+   * @param {!cr.ui.TreeItem} root
+   */
+  function renderConfigurationTreeItem(configurationsArray, root) {
+    for (const configuration of configurationsArray) {
+      const configurationItem =
+          customTreeItem(`Configuration ${configuration.configurationValue}`);
+
+      if (configuration.configurationName) {
+        configurationItem.add(customTreeItem(`Configuration Name: ${
+            decodeString16(configuration.configurationName.data)}`));
       }
+
+      const interfacesArray = configuration.interfaces;
+      renderInterfacesTreeItem(interfacesArray, configurationItem);
+
+      root.add(configurationItem);
     }
+  }
 
-    /**
-     * Renders a tree item to display the device's alternate interfaces
-     * information.
-     * @param {!Array<!device.mojom.UsbAlternateInterfaceInfo>} alternatesArray
-     * @param {!cr.ui.TreeItem} root
-     * @private
-     */
-    renderAlternatesTreeItem_(alternatesArray, root) {
-      for (const alternate of alternatesArray) {
-        const alternateItem =
-            customTreeItem(`Alternate ${alternate.alternateSetting}`);
+  /**
+   * Renders a tree item to display the device's interface information.
+   * @param {!Array<!device.mojom.UsbInterfaceInfo>} interfacesArray
+   * @param {!cr.ui.TreeItem} root
+   */
+  function renderInterfacesTreeItem(interfacesArray, root) {
+    for (const currentInterface of interfacesArray) {
+      const interfaceItem =
+          customTreeItem(`Interface ${currentInterface.interfaceNumber}`);
 
-        alternateItem.add(customTreeItem(`Class Code: ${alternate.classCode}`));
+      const alternatesArray = currentInterface.alternates;
+      renderAlternatesTreeItem(alternatesArray, interfaceItem);
 
-        alternateItem.add(
-            customTreeItem(`Subclass Code: ${alternate.subclassCode}`));
-
-        alternateItem.add(
-            customTreeItem(`Protocol Code: ${alternate.protocolCode}`));
-
-        if (alternate.interfaceName) {
-          alternateItem.add(customTreeItem(`Interface Name: ${
-              decodeString16(alternate.interfaceName.data)}`));
-        }
-
-        const endpointsArray = alternate.endpoints;
-        this.renderEndpointsTreeItem_(endpointsArray, alternateItem);
-
-        root.add(alternateItem);
-      }
+      root.add(interfaceItem);
     }
+  }
 
-    /**
-     * Renders a tree item to display the device's endpoints information.
-     * @param {!Array<!device.mojom.UsbEndpointInfo>} endpointsArray
-     * @param {!cr.ui.TreeItem} root
-     * @private
-     */
-    renderEndpointsTreeItem_(endpointsArray, root) {
-      for (const endpoint of endpointsArray) {
-        let itemLabel = 'Endpoint ';
+  /**
+   * Renders a tree item to display the device's alternate interfaces
+   * information.
+   * @param {!Array<!device.mojom.UsbAlternateInterfaceInfo>} alternatesArray
+   * @param {!cr.ui.TreeItem} root
+   */
+  function renderAlternatesTreeItem(alternatesArray, root) {
+    for (const alternate of alternatesArray) {
+      const alternateItem =
+          customTreeItem(`Alternate ${alternate.alternateSetting}`);
 
-        itemLabel += endpoint.endpointNumber;
+      alternateItem.add(customTreeItem(`Class Code: ${alternate.classCode}`));
 
-        switch (endpoint.direction) {
-          case device.mojom.UsbTransferDirection.INBOUND:
-            itemLabel += ' (INBOUND)';
-            break;
-          case device.mojom.UsbTransferDirection.OUTBOUND:
-            itemLabel += ' (OUTBOUND)';
-            break;
-        }
+      alternateItem.add(
+          customTreeItem(`Subclass Code: ${alternate.subclassCode}`));
 
-        const endpointItem = customTreeItem(itemLabel);
+      alternateItem.add(
+          customTreeItem(`Protocol Code: ${alternate.protocolCode}`));
 
-        let usbTransferType = '';
-        switch (endpoint.type) {
-          case device.mojom.UsbTransferType.CONTROL:
-            usbTransferType = 'CONTROL';
-            break;
-          case device.mojom.UsbTransferType.ISOCHRONOUS:
-            usbTransferType = 'ISOCHRONOUS';
-            break;
-          case device.mojom.UsbTransferType.BULK:
-            usbTransferType = 'BULK';
-            break;
-          case device.mojom.UsbTransferType.INTERRUPT:
-            usbTransferType = 'INTERRUPT';
-            break;
-        }
-
-        endpointItem.add(
-            customTreeItem(`USB Transfer Type: ${usbTransferType}`));
-
-        endpointItem.add(customTreeItem(`Packet Size: ${endpoint.packetSize}`));
-
-        root.add(endpointItem);
+      if (alternate.interfaceName) {
+        alternateItem.add(customTreeItem(
+            `Interface Name: ${decodeString16(alternate.interfaceName.data)}`));
       }
+
+      const endpointsArray = alternate.endpoints;
+      renderEndpointsTreeItem(endpointsArray, alternateItem);
+
+      root.add(alternateItem);
+    }
+  }
+
+  /**
+   * Renders a tree item to display the device's endpoints information.
+   * @param {!Array<!device.mojom.UsbEndpointInfo>} endpointsArray
+   * @param {!cr.ui.TreeItem} root
+   */
+  function renderEndpointsTreeItem(endpointsArray, root) {
+    for (const endpoint of endpointsArray) {
+      let itemLabel = 'Endpoint ';
+
+      itemLabel += endpoint.endpointNumber;
+
+      switch (endpoint.direction) {
+        case device.mojom.UsbTransferDirection.INBOUND:
+          itemLabel += ' (INBOUND)';
+          break;
+        case device.mojom.UsbTransferDirection.OUTBOUND:
+          itemLabel += ' (OUTBOUND)';
+          break;
+      }
+
+      const endpointItem = customTreeItem(itemLabel);
+
+      let usbTransferType = '';
+      switch (endpoint.type) {
+        case device.mojom.UsbTransferType.CONTROL:
+          usbTransferType = 'CONTROL';
+          break;
+        case device.mojom.UsbTransferType.ISOCHRONOUS:
+          usbTransferType = 'ISOCHRONOUS';
+          break;
+        case device.mojom.UsbTransferType.BULK:
+          usbTransferType = 'BULK';
+          break;
+        case device.mojom.UsbTransferType.INTERRUPT:
+          usbTransferType = 'INTERRUPT';
+          break;
+      }
+
+      endpointItem.add(customTreeItem(`USB Transfer Type: ${usbTransferType}`));
+
+      endpointItem.add(customTreeItem(`Packet Size: ${endpoint.packetSize}`));
+
+      root.add(endpointItem);
     }
   }
 
@@ -380,7 +420,7 @@ cr.define('devices_page', function() {
    * @return {string}
    */
   function toHex(num) {
-    return `0x${num.toString(16).padStart(4, '0').slice(-4).toUpperCase()}`;
+    return `0x${num.toString(16).padStart(4, '0').toUpperCase()}`;
   }
 
   /**
@@ -401,3 +441,7 @@ cr.define('devices_page', function() {
     DevicesPage,
   };
 });
+
+window.deviceListCompleteFn = window.deviceListCompleteFn || function() {};
+
+window.deviceTabInitializedFn = window.deviceTabInitializedFn || function() {};

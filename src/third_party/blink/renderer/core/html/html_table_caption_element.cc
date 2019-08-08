@@ -34,8 +34,6 @@ using namespace html_names;
 HTMLTableCaptionElement::HTMLTableCaptionElement(Document& document)
     : HTMLElement(kCaptionTag, document) {}
 
-DEFINE_NODE_FACTORY(HTMLTableCaptionElement)
-
 void HTMLTableCaptionElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,

@@ -112,7 +112,7 @@ class MEDIA_GPU_EXPORT V4L2WritableBufferRef {
   // V4L2ReadableBufferRef if both references point to the same V4L2 buffer.
   // Note: at the moment, this method is valid for MMAP buffers only. It will
   // return nullptr for any other buffer type.
-  const scoped_refptr<VideoFrame>& GetVideoFrame() WARN_UNUSED_RESULT;
+  scoped_refptr<VideoFrame> GetVideoFrame() WARN_UNUSED_RESULT;
 
   // Return the V4L2 buffer ID of the underlying buffer.
   // TODO(acourbot) This is used for legacy clients but should be ultimately
@@ -171,7 +171,7 @@ class MEDIA_GPU_EXPORT V4L2ReadableBuffer
   // V4L2ReadableBufferRef if both references point to the same V4L2 buffer.
   // Note: at the moment, this method is valid for MMAP buffers only. It will
   // return nullptr for any other buffer type.
-  const scoped_refptr<VideoFrame>& GetVideoFrame() WARN_UNUSED_RESULT;
+  scoped_refptr<VideoFrame> GetVideoFrame() WARN_UNUSED_RESULT;
 
  private:
   friend class V4L2BufferRefFactory;
@@ -302,8 +302,6 @@ class MEDIA_GPU_EXPORT V4L2Queue
   // Callback to call in this queue's destructor.
   base::OnceClosure destroy_cb_;
 
-  base::WeakPtrFactory<V4L2Queue> weak_this_factory_;
-
   V4L2Queue(scoped_refptr<V4L2Device> dev,
             enum v4l2_buf_type type,
             base::OnceClosure destroy_cb);
@@ -312,6 +310,9 @@ class MEDIA_GPU_EXPORT V4L2Queue
   friend class base::RefCountedThreadSafe<V4L2Queue>;
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<V4L2Queue> weak_this_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(V4L2Queue);
 };
 

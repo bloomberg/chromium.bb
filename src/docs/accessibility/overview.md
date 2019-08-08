@@ -486,7 +486,7 @@ outside Chromium to integrate with.
 
 ## Views
 
-Views generates a [NativeViewAccessibility] for each View, which is used as the
+Views generates a [ViewAccessibility] for each View, which is used as the
 delegate for an [AXPlatformNode] representing that View. This part is relatively
 straightforward, but then the generated tree must be combined with the web
 accessibility tree, which is handled by BrowserAccessibilityManager.
@@ -521,7 +521,7 @@ is defined by [automation.idl], which must be kept synchronized with
 [BrowserAccessibilityDelegate]: https://cs.chromium.org/chromium/src/content/browser/accessibility/browser_accessibility_manager.h?sq=package:chromium&l=64
 [BrowserAccessibilityManager]: https://cs.chromium.org/chromium/src/content/browser/accessibility/browser_accessibility_manager.h
 [LayoutObject]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/layout/layout_object.h
-[NativeViewAccessibility]: https://cs.chromium.org/chromium/src/ui/views/accessibility/native_view_accessibility.h
+[ViewAccessibility]: https://cs.chromium.org/chromium/src/ui/views/accessibility/view_accessibility.h
 [Node]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/dom/Node.h
 [RenderAccessibilityImpl]: https://cs.chromium.org/chromium/src/content/renderer/accessibility/render_accessibility_impl.h
 [RenderFrameHostImpl]: https://cs.chromium.org/chromium/src/content/browser/frame_host/render_frame_host_impl.h

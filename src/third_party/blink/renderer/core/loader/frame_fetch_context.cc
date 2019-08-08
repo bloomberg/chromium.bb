@@ -36,17 +36,17 @@
 #include "base/feature_list.h"
 #include "base/optional.h"
 #include "build/build_config.h"
-#include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
 #include "third_party/blink/public/common/device_memory/approximated_device_memory.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
-#include "third_party/blink/public/platform/web_application_cache_host.h"
+#include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
-#include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/platform/websocket_handshake_throttle.h"
+#include "third_party/blink/public/web/web_application_cache_host.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
@@ -111,6 +111,21 @@
 namespace blink {
 
 namespace {
+
+// Client hints sent to third parties are controlled through two mechanisms,
+// based on the state of the experimental flag "FeaturePolicyForClientHints".
+//
+// If that flag is disabled (the default), then all hints are always sent for
+// first-party subresources, and the kAllowClientHintsToThirdParty feature
+// controls whether some specific hints are sent to third parties. (Only
+// device-memory, resource-width, viewport-width and the limited UA hints are
+// sent under this model). This feature is enabled by default on Android, and
+// disabled by default on all other platforms.
+//
+// When the runtime flag is enabled, all client hints except UA are controlled
+// entirely by feature policy on all platforms. In that case, hints will
+// generally be sent for first-party resources, and not for third-party
+// resources, unless specifically enabled by policy.
 
 // If kAllowClientHintsToThirdParty is enabled, then device-memory,
 // resource-width and viewport-width client hints can be sent to third-party
@@ -213,18 +228,21 @@ struct FrameFetchContext::FrozenState final
 ResourceFetcher* FrameFetchContext::CreateFetcherForCommittedDocument(
     DocumentLoader& loader,
     Document& document) {
-  auto* frame_or_imported_document =
-      MakeGarbageCollected<FrameOrImportedDocument>(loader, document);
-  auto* resource_fetcher_properties =
-      MakeGarbageCollected<FrameResourceFetcherProperties>(
-          *frame_or_imported_document);
-  LocalFrame& frame = frame_or_imported_document->GetFrame();
+  auto& frame_or_imported_document =
+      *MakeGarbageCollected<FrameOrImportedDocument>(loader, document);
+  auto& properties = *MakeGarbageCollected<DetachableResourceFetcherProperties>(
+      *MakeGarbageCollected<FrameResourceFetcherProperties>(
+          frame_or_imported_document));
+  LocalFrame& frame = frame_or_imported_document.GetFrame();
   ResourceFetcherInit init(
-      *resource_fetcher_properties,
-      MakeGarbageCollected<FrameFetchContext>(*frame_or_imported_document),
+      properties,
+      MakeGarbageCollected<FrameFetchContext>(frame_or_imported_document,
+                                              properties),
       frame.GetTaskRunner(TaskType::kNetworking),
-      MakeGarbageCollected<LoaderFactoryForFrame>(*frame_or_imported_document));
-  init.console_logger = &document;
+      MakeGarbageCollected<LoaderFactoryForFrame>(frame_or_imported_document));
+  auto* console_logger =
+      MakeGarbageCollected<DetachableConsoleLogger>(&document);
+  init.console_logger = console_logger;
   // Frame loading should normally start with |kTight| throttling, as the
   // frame will be in layout-blocking state until the <body> tag is inserted
   init.initial_throttling_policy =
@@ -234,7 +252,7 @@ ResourceFetcher* FrameFetchContext::CreateFetcherForCommittedDocument(
   ResourceFetcher* fetcher = MakeGarbageCollected<ResourceFetcher>(init);
   fetcher->SetResourceLoadObserver(
       MakeGarbageCollected<ResourceLoadObserverForFrame>(
-          *frame_or_imported_document, fetcher->GetProperties()));
+          frame_or_imported_document, fetcher->GetProperties()));
   fetcher->SetImagesEnabled(frame.GetSettings()->GetImagesEnabled());
   fetcher->SetAutoLoadImages(
       frame.GetSettings()->GetLoadsImagesAutomatically());
@@ -248,14 +266,19 @@ ResourceFetcher* FrameFetchContext::CreateFetcherForImportedDocument(
   DCHECK(!document->GetFrame());
   auto& frame_or_imported_document =
       *MakeGarbageCollected<FrameOrImportedDocument>(*document);
+  auto& properties = *MakeGarbageCollected<DetachableResourceFetcherProperties>(
+      *MakeGarbageCollected<FrameResourceFetcherProperties>(
+          frame_or_imported_document));
   LocalFrame& frame = frame_or_imported_document.GetFrame();
   ResourceFetcherInit init(
-      *MakeGarbageCollected<FrameResourceFetcherProperties>(
-          frame_or_imported_document),
-      MakeGarbageCollected<FrameFetchContext>(frame_or_imported_document),
+      properties,
+      MakeGarbageCollected<FrameFetchContext>(frame_or_imported_document,
+                                              properties),
       document->GetTaskRunner(blink::TaskType::kNetworking),
       MakeGarbageCollected<LoaderFactoryForFrame>(frame_or_imported_document));
-  init.console_logger = document;
+  auto* console_logger =
+      MakeGarbageCollected<DetachableConsoleLogger>(document);
+  init.console_logger = console_logger;
   init.frame_scheduler = frame.GetFrameScheduler();
   auto* fetcher = MakeGarbageCollected<ResourceFetcher>(init);
   fetcher->SetResourceLoadObserver(
@@ -265,8 +288,10 @@ ResourceFetcher* FrameFetchContext::CreateFetcherForImportedDocument(
 }
 
 FrameFetchContext::FrameFetchContext(
-    const FrameOrImportedDocument& frame_or_imported_document)
-    : frame_or_imported_document_(frame_or_imported_document),
+    const FrameOrImportedDocument& frame_or_imported_document,
+    const DetachableResourceFetcherProperties& properties)
+    : BaseFetchContext(properties),
+      frame_or_imported_document_(frame_or_imported_document),
       save_data_enabled_(
           GetNetworkStateNotifier().SaveDataEnabled() &&
           !GetFrame()->GetSettings()->GetDataSaverHoldbackWebApi()) {}
@@ -310,8 +335,6 @@ LocalFrameClient* FrameFetchContext::GetLocalFrameClient() const {
 }
 
 void FrameFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
-  BaseFetchContext::AddAdditionalRequestHeaders(request);
-
   // The remaining modifications are only necessary for HTTP and HTTPS.
   if (!request.Url().IsEmpty() && !request.Url().ProtocolIsInHTTPFamily())
     return;
@@ -396,13 +419,28 @@ void FrameFetchContext::PrepareRequest(
        ResourceRequest::RedirectStatus::kFollowedRedirect);
 
   SetFirstPartyCookie(request);
-  request.SetTopFrameOrigin(GetTopFrameOrigin());
+  if (request.GetRequestContext() ==
+      mojom::RequestContextType::SERVICE_WORKER) {
+    // The top frame origin is defined to be null for service worker main
+    // resource requests.
+    DCHECK(!request.TopFrameOrigin());
+  } else {
+    request.SetTopFrameOrigin(GetTopFrameOrigin());
+  }
 
   String user_agent = GetUserAgent();
   request.SetHTTPUserAgent(AtomicString(user_agent));
 
   if (GetResourceFetcherProperties().IsDetached())
     return;
+
+  if (!frame_or_imported_document_->GetDocumentLoader()) {
+    // When HTML imports are involved, it is dangerous to rely on the
+    // factory bound origin.
+    DCHECK(frame_or_imported_document_->GetDocument().ImportsController());
+    request.SetShouldAlsoUseFactoryBoundOriginForCors(false);
+  }
+
   GetLocalFrameClient()->DispatchWillSendRequest(request);
   FrameScheduler* frame_scheduler = GetFrame()->GetFrameScheduler();
   if (!for_redirect && frame_scheduler) {
@@ -484,7 +522,9 @@ void FrameFetchContext::ModifyRequestForCSP(ResourceRequest& resource_request) {
   // request.
   GetFrame()->Loader().RecordLatestRequiredCSP();
   GetFrame()->Loader().ModifyRequestForCSP(
-      resource_request, &frame_or_imported_document_->GetDocument(),
+      resource_request,
+      &GetResourceFetcherProperties().GetFetchClientSettingsObject(),
+      &frame_or_imported_document_->GetDocument(),
       network::mojom::RequestContextFrameType::kNone);
 }
 
@@ -504,6 +544,15 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   if (!AllowScriptFromSourceWithoutNotifying(request.Url()))
     return;
 
+  // When the runtime flag "FeaturePolicyForClientHints" is enabled, feature
+  // policy is used to enable hints for all subresources, based on the policy of
+  // the requesting document, and the origin of the resource.
+  const FeaturePolicy* policy = nullptr;
+  if (frame_or_imported_document_)
+    policy = frame_or_imported_document_->GetDocument().GetFeaturePolicy();
+  url::Origin resource_origin =
+      SecurityOrigin::Create(request.Url())->ToUrlOrigin();
+
   // Sec-CH-UA is special: we always send the header to all origins that are
   // eligible for client hints (e.g. secure transport, JavaScript enabled). We
   // alter the header's value based on whether or not the site has opted into
@@ -511,14 +560,18 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   //
   // https://github.com/WICG/ua-client-hints
   blink::UserAgentMetadata ua = GetUserAgentMetadata();
+  bool use_full_ua =
+      (RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() ||
+       (policy &&
+        policy->IsFeatureEnabledForOrigin(
+            mojom::FeaturePolicyFeature::kClientHintUA, resource_origin))) &&
+      ShouldSendClientHint(mojom::WebClientHintsType::kUA, hints_preferences,
+                           enabled_hints);
   if (RuntimeEnabledFeatures::UserAgentClientHintEnabled()) {
     StringBuilder result;
     result.Append(ua.brand.data());
     const std::string& version =
-        ShouldSendClientHint(mojom::WebClientHintsType::kUA, hints_preferences,
-                             enabled_hints)
-            ? ua.full_version
-            : ua.major_version;
+        use_full_ua ? ua.full_version : ua.major_version;
     if (!version.empty()) {
       result.Append(' ');
       result.Append(version.data());
@@ -529,9 +582,14 @@ void FrameFetchContext::AddClientHintsIfNecessary(
         result.ToAtomicString());
   }
 
+  // If the frame is detached, then don't send any hints other than UA.
+  if (!policy)
+    return;
+
   bool is_1p_origin = IsFirstPartyOrigin(request.Url());
 
-  if (!base::FeatureList::IsEnabled(kAllowClientHintsToThirdParty) &&
+  if (!RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() &&
+      !base::FeatureList::IsEnabled(kAllowClientHintsToThirdParty) &&
       !is_1p_origin) {
     // No client hints for 3p origins.
     return;
@@ -543,7 +601,18 @@ void FrameFetchContext::AddClientHintsIfNecessary(
                                                                 &enabled_hints);
   }
 
-  if (ShouldSendClientHint(mojom::WebClientHintsType::kDeviceMemory,
+  // TODO(iclelland): If feature policy control over client hints ships, remove
+  // the runtime flag check for the next four hints. Currently, when the
+  // kAllowClientHintsToThirdParty feature is enabled, but the runtime flag is
+  // *not* set, the behaviour is that these four hints will be sent on all
+  // eligible requests. Feature policy control is intended to change that
+  // default.
+
+  if ((!RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() ||
+       policy->IsFeatureEnabledForOrigin(
+           mojom::FeaturePolicyFeature::kClientHintDeviceMemory,
+           resource_origin)) &&
+      ShouldSendClientHint(mojom::WebClientHintsType::kDeviceMemory,
                            hints_preferences, enabled_hints)) {
     request.AddHttpHeaderField(
         "Device-Memory",
@@ -552,12 +621,18 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   }
 
   float dpr = GetDevicePixelRatio();
-  if (ShouldSendClientHint(mojom::WebClientHintsType::kDpr, hints_preferences,
+  if ((!RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() ||
+       policy->IsFeatureEnabledForOrigin(
+           mojom::FeaturePolicyFeature::kClientHintDPR, resource_origin)) &&
+      ShouldSendClientHint(mojom::WebClientHintsType::kDpr, hints_preferences,
                            enabled_hints)) {
     request.AddHttpHeaderField("DPR", AtomicString(String::Number(dpr)));
   }
 
-  if (ShouldSendClientHint(mojom::WebClientHintsType::kResourceWidth,
+  if ((!RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() ||
+       policy->IsFeatureEnabledForOrigin(
+           mojom::FeaturePolicyFeature::kClientHintWidth, resource_origin)) &&
+      ShouldSendClientHint(mojom::WebClientHintsType::kResourceWidth,
                            hints_preferences, enabled_hints)) {
     if (resource_width.is_set) {
       float physical_width = resource_width.width * dpr;
@@ -566,7 +641,11 @@ void FrameFetchContext::AddClientHintsIfNecessary(
     }
   }
 
-  if (ShouldSendClientHint(mojom::WebClientHintsType::kViewportWidth,
+  if ((!RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() ||
+       policy->IsFeatureEnabledForOrigin(
+           mojom::FeaturePolicyFeature::kClientHintViewportWidth,
+           resource_origin)) &&
+      ShouldSendClientHint(mojom::WebClientHintsType::kViewportWidth,
                            hints_preferences, enabled_hints) &&
       !GetResourceFetcherProperties().IsDetached() && GetFrame()->View()) {
     request.AddHttpHeaderField(
@@ -574,13 +653,27 @@ void FrameFetchContext::AddClientHintsIfNecessary(
         AtomicString(String::Number(GetFrame()->View()->ViewportWidth())));
   }
 
-  if (!is_1p_origin) {
-    // No network quality client hints for 3p origins. Only DPR, resource width
-    // and viewport width client hints are allowed for 1p origins.
-    return;
-  }
+  // TODO(iclelland): If feature policy control over client hints ships, remove
+  // the runtime flag check and the 1p origin requirement for the remaining
+  // hints. Currently, even when the kAllowClientHintsToThirdParty feature is
+  // (and the runtime flag is *not* set,) these hints are only sent for first-
+  // party requests. With feature policy control, these can be sent to third
+  // parties as well, if correctly delegated.
 
-  if (ShouldSendClientHint(mojom::WebClientHintsType::kRtt, hints_preferences,
+  // Note that if both the kAllowClientHintsToThirdParty feature and the runtime
+  // flag are disabled, this code will not be reached.
+
+  // True if this is a first-party resource request, and feature policy for
+  // client hints is *not* in use.
+  bool can_always_send_hints =
+      is_1p_origin &&
+      !RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled();
+
+  if ((can_always_send_hints ||
+       (RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() &&
+        policy->IsFeatureEnabledForOrigin(
+            mojom::FeaturePolicyFeature::kClientHintRTT, resource_origin))) &&
+      ShouldSendClientHint(mojom::WebClientHintsType::kRtt, hints_preferences,
                            enabled_hints)) {
     base::Optional<TimeDelta> http_rtt =
         GetNetworkStateNotifier().GetWebHoldbackHttpRtt();
@@ -596,7 +689,12 @@ void FrameFetchContext::AddClientHintsIfNecessary(
         AtomicString(String::Number(rtt)));
   }
 
-  if (ShouldSendClientHint(mojom::WebClientHintsType::kDownlink,
+  if ((can_always_send_hints ||
+       (RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() &&
+        policy->IsFeatureEnabledForOrigin(
+            mojom::FeaturePolicyFeature::kClientHintDownlink,
+            resource_origin))) &&
+      ShouldSendClientHint(mojom::WebClientHintsType::kDownlink,
                            hints_preferences, enabled_hints)) {
     base::Optional<double> throughput_mbps =
         GetNetworkStateNotifier().GetWebHoldbackDownlinkThroughputMbps();
@@ -612,7 +710,11 @@ void FrameFetchContext::AddClientHintsIfNecessary(
         AtomicString(String::Number(mbps)));
   }
 
-  if (ShouldSendClientHint(mojom::WebClientHintsType::kEct, hints_preferences,
+  if ((can_always_send_hints ||
+       (RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() &&
+        policy->IsFeatureEnabledForOrigin(
+            mojom::FeaturePolicyFeature::kClientHintECT, resource_origin))) &&
+      ShouldSendClientHint(mojom::WebClientHintsType::kEct, hints_preferences,
                            enabled_hints)) {
     base::Optional<WebEffectiveConnectionType> holdback_ect =
         GetNetworkStateNotifier().GetWebHoldbackEffectiveType();
@@ -626,7 +728,11 @@ void FrameFetchContext::AddClientHintsIfNecessary(
             holdback_ect.value())));
   }
 
-  if (ShouldSendClientHint(mojom::WebClientHintsType::kLang, hints_preferences,
+  if ((can_always_send_hints ||
+       (RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() &&
+        policy->IsFeatureEnabledForOrigin(
+            mojom::FeaturePolicyFeature::kClientHintLang, resource_origin))) &&
+      ShouldSendClientHint(mojom::WebClientHintsType::kLang, hints_preferences,
                            enabled_hints)) {
     request.AddHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
@@ -637,7 +743,12 @@ void FrameFetchContext::AddClientHintsIfNecessary(
             ->SerializeLanguagesForClientHintHeader());
   }
 
-  if (ShouldSendClientHint(mojom::WebClientHintsType::kUAArch,
+  if ((can_always_send_hints ||
+       (RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() &&
+        policy->IsFeatureEnabledForOrigin(
+            mojom::FeaturePolicyFeature::kClientHintUAArch,
+            resource_origin))) &&
+      ShouldSendClientHint(mojom::WebClientHintsType::kUAArch,
                            hints_preferences, enabled_hints)) {
     request.AddHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
@@ -645,7 +756,12 @@ void FrameFetchContext::AddClientHintsIfNecessary(
         AtomicString(ua.architecture.data()));
   }
 
-  if (ShouldSendClientHint(mojom::WebClientHintsType::kUAPlatform,
+  if ((can_always_send_hints ||
+       (RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() &&
+        policy->IsFeatureEnabledForOrigin(
+            mojom::FeaturePolicyFeature::kClientHintUAPlatform,
+            resource_origin))) &&
+      ShouldSendClientHint(mojom::WebClientHintsType::kUAPlatform,
                            hints_preferences, enabled_hints)) {
     request.AddHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
@@ -653,7 +769,12 @@ void FrameFetchContext::AddClientHintsIfNecessary(
         AtomicString(ua.platform.data()));
   }
 
-  if (ShouldSendClientHint(mojom::WebClientHintsType::kUAModel,
+  if ((can_always_send_hints ||
+       (RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() &&
+        policy->IsFeatureEnabledForOrigin(
+            mojom::FeaturePolicyFeature::kClientHintUAModel,
+            resource_origin))) &&
+      ShouldSendClientHint(mojom::WebClientHintsType::kUAModel,
                            hints_preferences, enabled_hints)) {
     request.AddHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
@@ -752,7 +873,7 @@ void FrameFetchContext::CountUsage(WebFeature feature) const {
   if (GetResourceFetcherProperties().IsDetached())
     return;
   if (DocumentLoader* loader = MasterDocumentLoader())
-    loader->GetUseCounter().Count(feature, GetFrame());
+    loader->GetUseCounterHelper().Count(feature, GetFrame());
 }
 
 void FrameFetchContext::CountDeprecation(WebFeature feature) const {
@@ -928,53 +1049,6 @@ void FrameFetchContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_or_imported_document_);
   visitor->Trace(frozen_state_);
   BaseFetchContext::Trace(visitor);
-}
-
-ResourceLoadPriority FrameFetchContext::ModifyPriorityForExperiments(
-    ResourceLoadPriority priority) const {
-  if (!GetSettings())
-    return priority;
-
-  WebEffectiveConnectionType max_effective_connection_type_threshold =
-      GetSettings()->GetLowPriorityIframesThreshold();
-
-  if (max_effective_connection_type_threshold <=
-      WebEffectiveConnectionType::kTypeOffline) {
-    return priority;
-  }
-
-  WebEffectiveConnectionType effective_connection_type =
-      GetNetworkStateNotifier().EffectiveType();
-
-  if (effective_connection_type <= WebEffectiveConnectionType::kTypeOffline) {
-    return priority;
-  }
-
-  if (effective_connection_type > max_effective_connection_type_threshold) {
-    // Network is not slow enough.
-    return priority;
-  }
-
-  if (GetFrame()->IsMainFrame()) {
-    DEFINE_STATIC_LOCAL(EnumerationHistogram, main_frame_priority_histogram,
-                        ("LowPriorityIframes.MainFrameRequestPriority",
-                         static_cast<int>(ResourceLoadPriority::kHighest) + 1));
-    main_frame_priority_histogram.Count(static_cast<int>(priority));
-    return priority;
-  }
-
-  DEFINE_STATIC_LOCAL(EnumerationHistogram, iframe_priority_histogram,
-                      ("LowPriorityIframes.IframeRequestPriority",
-                       static_cast<int>(ResourceLoadPriority::kHighest) + 1));
-  iframe_priority_histogram.Count(static_cast<int>(priority));
-  // When enabled, the priority of all resources in subframe is dropped.
-  // Non-delayable resources are assigned a priority of kLow, and the rest of
-  // them are assigned a priority of kLowest. This ensures that if the webpage
-  // fetches most of its primary content using iframes, then high priority
-  // requests within the iframe go on the network first.
-  if (priority >= ResourceLoadPriority::kHigh)
-    return ResourceLoadPriority::kLow;
-  return ResourceLoadPriority::kLowest;
 }
 
 bool FrameFetchContext::CalculateIfAdSubresource(

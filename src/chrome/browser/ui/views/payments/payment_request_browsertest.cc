@@ -10,19 +10,23 @@
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/payments/payment_request_browsertest_base.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/payments/content/payment_request.h"
 #include "components/payments/content/payment_request_web_contents_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/test/browser_test_utils.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/styled_label.h"
 #include "url/gurl.h"
 
 namespace payments {
+
+using ::testing::UnorderedElementsAre;
 
 class PaymentRequestWebContentsManagerTest
     : public PaymentRequestBrowserTestBase {
@@ -277,76 +281,17 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentMethodIdentifierTest,
   EXPECT_EQ("visa", supported_card_networks[7]);
 }
 
-// Specifying 'basic-card' after having explicitely included a network yields
-// the expected order when in different supportedMethods lists.
-IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentMethodIdentifierTest,
-                       BasicCard_NetworkThenBasicCard_DifferentList) {
-  NavigateTo("/payment_request_payment_method_identifier_test.html");
-  InvokePaymentRequestWithJs(
-      "buyHelper([{"
-      "  supportedMethods: 'mastercard',"
-      "}, {"
-      "  supportedMethods: 'basic-card'"
-      "}]);");
-
-  std::vector<PaymentRequest*> requests =
-      GetPaymentRequests(GetActiveWebContents());
-  EXPECT_EQ(1u, requests.size());
-  std::vector<std::string> supported_card_networks =
-      requests[0]->spec()->supported_card_networks();
-  // 'mastercard' is first because it was explicitely specified first. The rest
-  // is alphabetical.
-  EXPECT_EQ(8u, supported_card_networks.size());
-  EXPECT_EQ("mastercard", supported_card_networks[0]);
-  EXPECT_EQ("amex", supported_card_networks[1]);
-  EXPECT_EQ("diners", supported_card_networks[2]);
-  EXPECT_EQ("discover", supported_card_networks[3]);
-  EXPECT_EQ("jcb", supported_card_networks[4]);
-  EXPECT_EQ("mir", supported_card_networks[5]);
-  EXPECT_EQ("unionpay", supported_card_networks[6]);
-  EXPECT_EQ("visa", supported_card_networks[7]);
-}
-
-// Specifying 'basic-card' after having explicitely included a network yields
-// the expected order when in the same supportedMethods list.
-IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentMethodIdentifierTest,
-                       BasicCard_NetworkThenBasicCard_SameList) {
-  NavigateTo("/payment_request_payment_method_identifier_test.html");
-  InvokePaymentRequestWithJs(
-      "buyHelper([{"
-      "  supportedMethods: 'visa'"
-      "}, {"
-      "  supportedMethods: 'basic-card'"
-      "}]);");
-
-  std::vector<PaymentRequest*> requests =
-      GetPaymentRequests(GetActiveWebContents());
-  EXPECT_EQ(1u, requests.size());
-  std::vector<std::string> supported_card_networks =
-      requests[0]->spec()->supported_card_networks();
-  // 'visa' is first because it was explicitely specified first. The rest
-  // is alphabetical.
-  EXPECT_EQ(8u, supported_card_networks.size());
-  EXPECT_EQ("visa", supported_card_networks[0]);
-  EXPECT_EQ("amex", supported_card_networks[1]);
-  EXPECT_EQ("diners", supported_card_networks[2]);
-  EXPECT_EQ("discover", supported_card_networks[3]);
-  EXPECT_EQ("jcb", supported_card_networks[4]);
-  EXPECT_EQ("mastercard", supported_card_networks[5]);
-  EXPECT_EQ("mir", supported_card_networks[6]);
-  EXPECT_EQ("unionpay", supported_card_networks[7]);
-}
-
 // Specifying 'basic-card' with some networks after having explicitely included
 // the same networks does not yield duplicates and has the expected order.
 IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentMethodIdentifierTest,
-                       BasicCard_NetworkThenBasicCardWithSameNetwork) {
+                       RepeatedBasicCardWithSameNetworkAreDeduped) {
   NavigateTo("/payment_request_payment_method_identifier_test.html");
   InvokePaymentRequestWithJs(
       "buyHelper([{"
-      "  supportedMethods: 'mastercard'"
-      "}, {"
-      "  supportedMethods: 'visa'"
+      "  supportedMethods: 'basic-card',"
+      "  data: {"
+      "    supportedNetworks: ['mastercard'],"
+      "  }"
       "}, {"
       "  supportedMethods: 'basic-card',"
       "  data: {"
@@ -396,10 +341,6 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentMethodIdentifierTest,
       "}, {"
       "  supportedMethods: 'https://bobpay.xyz'"
       "}, {"
-      "  supportedMethods: 'mastercard'"
-      "}, {"
-      "  supportedMethods: 'visa'"
-      "}, {"
       "  supportedMethods: 'https://alicepay.com'"
       "}, {"
       "  supportedMethods: 'basic-card',"
@@ -414,10 +355,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentMethodIdentifierTest,
 
   std::vector<std::string> supported_card_networks =
       requests[0]->spec()->supported_card_networks();
-  EXPECT_EQ(3u, supported_card_networks.size());
-  EXPECT_EQ("mastercard", supported_card_networks[0]);
-  EXPECT_EQ("visa", supported_card_networks[1]);
-  EXPECT_EQ("jcb", supported_card_networks[2]);
+  EXPECT_THAT(supported_card_networks,
+              UnorderedElementsAre("mastercard", "visa", "jcb"));
 
   std::vector<GURL> url_payment_method_identifiers =
       requests[0]->spec()->url_payment_method_identifiers();
@@ -481,8 +420,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestSettingsLinkTest, ClickSettingsLink) {
   content::WebContents* new_tab_contents =
       web_contents_added_observer.GetWebContents();
 
-  EXPECT_EQ("chrome://settings/payments",
-            new_tab_contents->GetVisibleURL().spec());
+  EXPECT_EQ(
+      std::string(chrome::kChromeUISettingsURL) + chrome::kPaymentsSubPage,
+      new_tab_contents->GetVisibleURL().spec());
 }
 
 }  // namespace payments

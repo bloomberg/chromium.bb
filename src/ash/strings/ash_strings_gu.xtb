@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">મેનૂ સંકુચિત કરો</translation>
 <translation id="1383876407941801731">શોધો</translation>
 <translation id="1419738280318246476">નોટિફિકેશન ક્રિયા કરવા માટે ઉપકરણને અનલૉક કરો</translation>
+<translation id="1426410128494586442">હા</translation>
 <translation id="1455242230282523554">ભાષા સેટિંગ બતાવો</translation>
 <translation id="1467432559032391204">ડાબું</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -47,7 +48,6 @@
 <translation id="1570871743947603115">બ્લૂટૂથ ટૉગલ કરો. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">આ સત્રમાં તમારી બધી પ્રવૃત્તિને ઍક્સેસ કરો</translation>
 <translation id="1608626060424371292">આ વપરાશકર્તાને દૂર કરો</translation>
-<translation id="1621499497873603021">બેટરી ખાલી થવામાં બાકી સમય, <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">વૉઇસ ક્વેરી શરૂ કરો</translation>
 <translation id="1658406695958299976">માફ કરશો, તમારો પાસવર્ડ હજી ચકાસી શકાયો નથી. નોંધ: જો તમે તાજેતરમાં તમારો પાસવર્ડ બદલ્યો હોય, તો તમારો નવો પાસવર્ડ તમે એક વાર સાઇન આઉટ કરી લો તે પછી લાગુ થશે, કૃપા કરીને અહીં જૂના પાસવર્ડનો ઉપયોગ કરો.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> બાકી</translation>
@@ -72,7 +72,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">નવીનતમ <ph name="SYSTEM_APP_NAME" /> અપડેટ વિશે વધુ જાણો</translation>
 <translation id="1995660704900986789">પાવર બંધ કરો</translation>
-<translation id="1999763610967697511">ખેંચો અને છોડો</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">એક સંદેશ લખો</translation>
 <translation id="2050339315714019657">પોર્ટ્રેટ</translation>
@@ -100,7 +99,6 @@
 <translation id="239188844683466770">'ખલેલ પાડશો નહીં'ને ટૉગલ કરો</translation>
 <translation id="2412593942846481727">અપડેટ ઉપલબ્ધ છે</translation>
 <translation id="2413728805700750528">મેનેજ કરાયેલ સત્ર <ph name="DISPLAY_NAME" />ને <ph name="DOMAIN" /> દ્વારા મેનેજ કરવામાં આવે છે</translation>
-<translation id="2416346634399901812"><ph name="NETWORK_NAME" /> સાથે કનેક્ટ થયા</translation>
 <translation id="2427507373259914951">લેફ્ટ ક્લિક કરો</translation>
 <translation id="2429753432712299108">Bluetooth ડિવાઇસ "<ph name="DEVICE_NAME" />" ને જોડી બનાવવા માટે પરવાનગી જોઈએ છે. સ્વીકારતાં પહેલાં, કૃપા કરીને તે ડિવાઇસ પર બતાવેલ આ પાસકીની પુષ્ટિ કરો: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">સૂચનાઓ</translation>
@@ -114,11 +112,11 @@
 <translation id="2597972630681408282">રાત્રિ પ્રકાશ: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM કાર્ડ લૉક કરેલ છે</translation>
 <translation id="2653659639078652383">સબમિટ કરો</translation>
+<translation id="2658778018866295321">ક્લિક કરો અને ખેંચો</translation>
 <translation id="2700493154570097719">તમારું કીબોર્ડ સેટ કરો</translation>
 <translation id="2718395828230677721">રાત્રિ પ્રકાશ</translation>
 <translation id="2727977024730340865">નિમ્ન-પાવર ચાર્જરમાં પ્લગ કરેલું છે. બૅટરી ચાર્જિંગ વિશ્વસનીય હશે નહીં.</translation>
 <translation id="2761704814324807722">સ્થિતિ ટ્રે, સમય <ph name="TIME" />, <ph name="BATTERY" /></translation>
-<translation id="277257480934873581"><ph name="NAME" /> થી ફરીથી કનેક્ટ કરી રહ્યાં છે</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="2803734122639935495">અનલૉક કરવા માટે, તમારો પાસવર્ડ દાખલ કરો</translation>
 <translation id="2819276065543622893">તમે હવે સાઇન આઉટ થશો.</translation>
@@ -139,7 +137,6 @@
 <translation id="2996462380875591307">ડૉક કરેલ મૅગ્નિફાયર ચાલુ કર્યું. ટૉગલ કરવાનું બંધ કરવા માટે ફરીથી Ctrl+Search+D દબાવો.</translation>
 <translation id="3000461861112256445">મૉનો ઑડિઓ</translation>
 <translation id="3009178788565917040">આઉટપુટ</translation>
-<translation id="3019353588588144572">બેટરી સંપૂર્ણપણે ચાર્જ થવામાં બાકી સમય, <ph name="TIME_REMAINING" /></translation>
 <translation id="3051128274746680507">તમારું નિરીક્ષિત વપરાશકર્તા પ્રોફાઇલ ટૂંક સમયમાં કાઢી નાખવામાં આવશે. વધુ જાણવા માટે સાઇન ઇન કરો.</translation>
 <translation id="3055162170959710888">આજે તમે <ph name="USED_TIME" /> માટે આ ડિવાઇસનો ઉપયોગ કર્યો છે</translation>
 <translation id="3077734595579995578">shift</translation>
@@ -175,6 +172,7 @@
 <translation id="3510164367642747937">માઉસ કર્સરને હાઇલાઇટ કરો</translation>
 <translation id="3513798432020909783"><ph name="MANAGER_EMAIL" /> દ્વારા મેનેજ કરાતું એકાઉન્ટ</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" પર પાછા જાઓ (ફરી શરૂ કરવું જરૂરી છે)</translation>
+<translation id="3576141592585647168">ટાઇમઝોનમાં ફેરફાર કરો</translation>
 <translation id="3595596368722241419">બૅટરી પૂર્ણ ચાર્જ</translation>
 <translation id="3606978283550408104">બ્રેઇલ ડિસ્પ્લે કનેક્ટ થયું.</translation>
 <translation id="3621202678540785336">ઇનપુટ</translation>
@@ -202,6 +200,7 @@
 <translation id="394485226368336402">ઑડિઓ સેટિંગ્સ</translation>
 <translation id="3962859241508114581">પાછલું ટ્રૅક</translation>
 <translation id="397105322502079400">ગણના કરી રહ્યું છે...</translation>
+<translation id="3977512764614765090">બૅટરી <ph name="PERCENTAGE" />% પર છે અને ચાર્જ થઈ રહી છે.</translation>
 <translation id="3995138139523574647">USB-C ડિવાઇસ (જમણી બાજુનું પાછળનું પોર્ટ)</translation>
 <translation id="4017989525502048489">લેઝર પૉઇન્ટર</translation>
 <translation id="4042660782729322247">તમે તમારી સ્ક્રીન શેર કરી રહ્યા છો</translation>
@@ -218,7 +217,7 @@
 <translation id="4269883910223712419">આ ઉપકરણના વ્યવસ્થાપકની ક્ષમતા:</translation>
 <translation id="4279490309300973883">પ્રતિબિંબત થઈ રહ્યું છે</translation>
 <translation id="4281007048406351813">ટાઇમરમાં 1 મિનિટ ઉમેરો</translation>
-<translation id="4292681942966152062"><ph name="NETWORK_NAME" /> સક્રિય થઈ રહ્યું છે</translation>
+<translation id="4296136865091727875">બધા <ph name="COUNT" /> નોટિફિકેશન સાફ કરો</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">તમે હાઇ કૉન્ટ્રાસ્ટ માટેનો કીબોર્ડ શૉર્ટકટ દબાવેલ છે. શું તમે તેને ચાલુ કરવા માગો છો?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -234,7 +233,6 @@
 <translation id="4477350412780666475">આગલો ટ્રૅક</translation>
 <translation id="4479639480957787382">ઇથરનેટ</translation>
 <translation id="4481530544597605423">જોડીથી અલગ કરેલા ઉપકરણો</translation>
-<translation id="4508225577814909926"><ph name="NAME" />: કનેક્ટ કરી રહ્યું છે...</translation>
 <translation id="4513946894732546136">પ્રતિસાદ</translation>
 <translation id="4527045527269911712">Bluetooth ડિવાઇસ "<ph name="DEVICE_NAME" />" ને જોડી બનાવવા માટે પરવાનગી જોઈએ છે.</translation>
 <translation id="453661520163887813">પૂર્ણપણે ચાર્જ થવામાં <ph name="TIME" /></translation>
@@ -247,12 +245,12 @@
 <translation id="4696813013609194136">માતાપિતાના કોડ વડે ડિવાઇસને અનલૉક કરો</translation>
 <translation id="4731797938093519117">માતાપિતા માટે ઍક્સેસ</translation>
 <translation id="4734965478015604180">આડી</translation>
-<translation id="476166673298332917">ડિવાઇસ વ્યવસ્થાપક તમારી બ્રાઉઝિંગ પ્રવૃત્તિને મોનિટર કરી શકે છે.</translation>
 <translation id="4774338217796918551">આવતી કાલે <ph name="COME_BACK_TIME" /> વાગ્યે પાછા આવજો.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> માટેનો પાસવર્ડ </translation>
 <translation id="4778095205580009397">ડેમો સત્રમાં Google આસિસ્ટંટ ઉપલબ્ધ નથી.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">ડિસ્કનેક્ટ કરો</translation>
+<translation id="4831034276697007977">શું તમારે ખરેખર ઑટોમૅટિક ક્લિક બંધ કરવા છે?</translation>
 <translation id="4849058404725798627">કીબોર્ડ ફોકસ વડે ઑબ્જેક્ટને હાઇલાઇટ કરો</translation>
 <translation id="485592688953820832">કોઈ ક્રિયા નથી (થોભાવો)</translation>
 <translation id="4872237917498892622">Alt+Search અથવા Shift</translation>
@@ -355,9 +353,9 @@
 <translation id="6537270692134705506">સ્ક્રીનને કૅપ્ચર કરો</translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" /> પર કાસ્ટ કરી રહ્યાં છીએ</translation>
 <translation id="6559976592393364813">વ્યવસ્થાપકને પૂછો</translation>
-<translation id="6574601967010742428">ડિવાઇસના વ્યવસ્થાપક તમારી પ્રવૃત્તિને મૉનિટર કરી શકે છે.</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" /> માં સત્ર સમાપ્ત થાય છે.</translation>
 <translation id="6627638273713273709">શોધ+Shift+K</translation>
+<translation id="6637729079642709226">સમય બદલો</translation>
 <translation id="6650933572246256093">Bluetooth ડિવાઇસ "<ph name="DEVICE_NAME" />" ને જોડી બનાવવા માટે પરવાનગી જોઈએ છે. કૃપા કરીને તે ડિવાઇસ પર આ પાસકીને દાખલ કરો: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">પાસવર્ડ</translation>
 <translation id="6665545700722362599">સ્થાન સેવાઓ, ડિવાઇસના માઇક્રોફોન, કૅમેરા અથવા અન્ય સુવિધાઓનો ઉપયોગ કરવા માટે વેબસાઇટ, ઍપ અને એક્સ્ટેન્શનને પરવાનગી આપો</translation>
@@ -369,7 +367,6 @@
 <translation id="6715542151869432661">કોઈ મોબાઇલ ઉપકરણો મળ્યાં નથી.</translation>
 <translation id="6723839937902243910">પાવર</translation>
 <translation id="6751826523481687655">કાર્યપ્રદર્શનની નોંધ રાખવાનું ચાલુ કરેલું છે</translation>
-<translation id="6785414152754474415">બેટરી <ph name="PERCENTAGE" /> % પૂર્ણ અને ચાર્જ થઈ રહી છે.</translation>
 <translation id="6790428901817661496">ચલાવો</translation>
 <translation id="6803622936009808957">કોઈ સમર્થિત રિઝોલ્યૂશન મળ્યું ન હોવાથી, પ્રદર્શનોને પ્રતિબિંબિત કરી શકાયા નથી. તેને બદલે વિસ્તૃત ડેસ્કટૉપ દાખલ કર્યું.</translation>
 <translation id="6820676911989879663">વિરામ લો!</translation>
@@ -403,6 +400,7 @@
 <translation id="7348093485538360975">ઑન-સ્ક્રીન કીબોર્ડ</translation>
 <translation id="735745346212279324">VPN ડિસ્કનેક્ટ કર્યું છે</translation>
 <translation id="7377169924702866686">Caps Lock ચાલુ છે.</translation>
+<translation id="7378594059915113390">મીડિયા નિયંત્રણો</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" /> સેકન્ડ</translation>
 <translation id="7398254312354928459">સ્વિચ કરેલ નેટવર્ક કનેક્શન</translation>
 <translation id="7405710164030118432">ડિવાઇસને અનલૉક કરવા માટે, તમારી Family Linkનો માતાપિતા માટેનો ઍક્સેસ કોડ દાખલ કરો</translation>
@@ -416,6 +414,7 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />, <ph name="SPECIFIED_RESOLUTION" />ને સહાય આપતું નથી. રિઝોલ્યુશન <ph name="FALLBACK_RESOLUTION" /> પર બદલાયું હતું</translation>
 <translation id="7562368315689366235">ઇમોજી પૅલેટ</translation>
 <translation id="7564874036684306347">વિંડોને બીજા ડેસ્કટૉપમાં ખસેડવું તે અનપેક્ષિત વર્તણૂકનું કારણ બની શકે છે. અનુગામી નોટિફિકેશન, વિંડો અને સંવાદો ડેસ્કટૉપ વચ્ચે વિભાજિત થઈ શકે છે.</translation>
+<translation id="7568294522609223312">ઑટોમૅટિક ક્લિક બંધ કરો</translation>
 <translation id="7569509451529460200">બ્રેઇલ અને ChromeVox સક્ષમ કર્યાં</translation>
 <translation id="7593891976182323525">Search અથવા Shift</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (માલિક)</translation>
@@ -432,7 +431,6 @@
 <translation id="7814236020522506259"><ph name="HOUR" /> અને <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">પ્રબળ સિગ્નલ</translation>
 <translation id="7837740436429729974">સમય સમાપ્ત</translation>
-<translation id="7842211907556571265"><ph name="NETWORK_NAME" /> સાથે કનેક્ટ થઈ રહ્યું છે</translation>
 <translation id="7842569679327885685">ચેતવણી: પ્રાયોગિક સુવિધા</translation>
 <translation id="7846634333498149051">કીબોર્ડ</translation>
 <translation id="7868900307798234037">ફિંગરપ્રિન્ટથી અનલૉક કરી રહ્યાં છે</translation>
@@ -504,6 +502,7 @@
 <translation id="8877788021141246043">રિમાઇન્ડર સેટ કરો</translation>
 <translation id="8878886163241303700">સ્ક્રીનને વિસ્તૃત કરી રહ્યું છે</translation>
 <translation id="890616557918890486">સ્રોત બદલો</translation>
+<translation id="8909138438987180327">બૅટરી <ph name="PERCENTAGE" /> ટકા પર છે.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google સહાયક આ ભાષા બોલતું નથી.</translation>
 <translation id="8938800817013097409">USB-C ડિવાઇસ (પાછળની બાજુએ જમણું પોર્ટ)</translation>
@@ -512,9 +511,11 @@
 <translation id="8990809378771970590"><ph name="IME_NAME" />નો ઉપયોગ કરી રહ્યા છે</translation>
 <translation id="899350903320462459">નોટિફિકેશન ક્રિયા કરવા માટે ઉપકરણને <ph name="LOGIN_ID" /> તરીકે અનલૉક કરો</translation>
 <translation id="8995603266996330174"><ph name="DOMAIN" /> દ્વારા સંચાલિત</translation>
+<translation id="9017320285115481645">Family Linkનો માતાપિતા માટેનો ઍક્સેસ કોડ દાખલ કરો.</translation>
 <translation id="9029474291399787231">Adobe Flash Player અપડેટ ઉપલબ્ધ છે</translation>
 <translation id="9056839673611986238">ઉપકરણ રોલ બૅક કરવામાં આવશે</translation>
 <translation id="9070640332319875144">આસિસ્ટંટ સેટિંગ</translation>
+<translation id="9072519059834302790">બૅટરી ખલાસ થવામાં <ph name="TIME_LEFT" /> બાકી છે.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">વાઇ-ફાઇ: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">માઇકોફોન ઉપયોગમાં છે.</translation>
@@ -525,8 +526,8 @@
 <translation id="9179259655489829027">આ સુવિધા તમને પાસવર્ડની જરૂર વગર ઝડપથી કોઈ સાઇન-ઇન થયેલ વપરાશકર્તાને ઍક્સેસ કરવાની પરવાનગી આપે છે. માત્ર તમે જેના પર વિશ્વાસ કરતા હો તે એકાઉન્ટ સાથે જ આ સુવિધાનો ઉપયોગ કરો.</translation>
 <translation id="9193626018745640770">અજાણ્યા પ્રાપ્તકર્તા પર કાસ્ટ કરી રહ્યાં છીએ</translation>
 <translation id="9194617393863864469">અન્ય વપરાશકર્તા સાઇન ઇન કરો...</translation>
-<translation id="9201131092683066720">બેટરી <ph name="PERCENTAGE" /> % પૂર્ણ છે.</translation>
 <translation id="9210037371811586452">એકીકૃત ડેસ્કટૉપ મોડથી બહાર નીકળે છે</translation>
+<translation id="9211681782751733685">બૅટરી સંપૂર્ણપણે ચાર્જ થવામાં <ph name="TIME_REMAINING" /> બાકી છે.</translation>
 <translation id="9215934040295798075">વૉલપેપર સેટ કરો</translation>
 <translation id="921989828232331238">તમારા માતાપિતાએ તમારા ડિવાઇસને આજના માટે લૉક કર્યું છે</translation>
 <translation id="923686485342484400">સાઇન આઉટ કરવા માટે બે વાર Control Shift Q દબાવો.</translation>

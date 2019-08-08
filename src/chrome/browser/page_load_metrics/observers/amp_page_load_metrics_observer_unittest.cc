@@ -23,7 +23,6 @@
 #include "url/gurl.h"
 
 using content::NavigationSimulator;
-using AMPViewType = AMPPageLoadMetricsObserver::AMPViewType;
 
 class AMPPageLoadMetricsObserverTest
     : public page_load_metrics::PageLoadMetricsObserverTestHarness {
@@ -55,30 +54,6 @@ class AMPPageLoadMetricsObserverTest
     // Navigate again to force OnComplete, which happens when a new navigation
     // occurs.
     NavigateAndCommit(GURL("http://otherurl.com"));
-  }
-
-  void ValidateHistograms(bool expect_histograms, const char* view_type) {
-    ValidateHistogramsFor(
-        "PageLoad.Clients.AMP.DocumentTiming."
-        "NavigationToDOMContentLoadedEventFired",
-        view_type, timing_.document_timing->dom_content_loaded_event_start,
-        expect_histograms);
-    ValidateHistogramsFor(
-        "PageLoad.Clients.AMP.DocumentTiming.NavigationToFirstLayout",
-        view_type, timing_.document_timing->first_layout, expect_histograms);
-    ValidateHistogramsFor(
-        "PageLoad.Clients.AMP.DocumentTiming."
-        "NavigationToLoadEventFired",
-        view_type, timing_.document_timing->load_event_start,
-        expect_histograms);
-    ValidateHistogramsFor(
-        "PageLoad.Clients.AMP.PaintTiming."
-        "NavigationToFirstContentfulPaint",
-        view_type, timing_.paint_timing->first_contentful_paint,
-        expect_histograms);
-    ValidateHistogramsFor(
-        "PageLoad.Clients.AMP.ParseTiming.NavigationToParseStart", view_type,
-        timing_.parse_timing->parse_start, expect_histograms);
   }
 
   void ValidateHistogramsFor(const std::string& histogram,
@@ -126,37 +101,8 @@ class AMPPageLoadMetricsObserverTest
   DISALLOW_COPY_AND_ASSIGN(AMPPageLoadMetricsObserverTest);
 };
 
-TEST_F(AMPPageLoadMetricsObserverTest, AMPViewType) {
-  using AMPViewType = AMPPageLoadMetricsObserver::AMPViewType;
-
-  struct {
-    AMPViewType expected_type;
-    const char* url;
-  } test_cases[] = {
-      {AMPViewType::NONE, "https://google.com/"},
-      {AMPViewType::NONE, "https://google.com/amp/foo"},
-      {AMPViewType::NONE, "https://google.com/news/amp?foo"},
-      {AMPViewType::NONE, "https://example.com/"},
-      {AMPViewType::NONE, "https://example.com/amp/foo"},
-      {AMPViewType::NONE, "https://example.com/news/amp?foo"},
-      {AMPViewType::NONE, "https://www.google.com/"},
-      {AMPViewType::NONE, "https://news.google.com/"},
-      {AMPViewType::AMP_CACHE, "https://cdn.ampproject.org/foo"},
-      {AMPViewType::AMP_CACHE, "https://site.cdn.ampproject.org/foo"},
-      {AMPViewType::GOOGLE_SEARCH_AMP_VIEWER, "https://www.google.com/amp/foo"},
-      {AMPViewType::GOOGLE_NEWS_AMP_VIEWER,
-       "https://news.google.com/news/amp?foo"},
-  };
-  for (const auto& test : test_cases) {
-    EXPECT_EQ(test.expected_type,
-              AMPPageLoadMetricsObserver::GetAMPViewType(GURL(test.url)))
-        << "For URL: " << test.url;
-  }
-}
-
 TEST_F(AMPPageLoadMetricsObserverTest, AMPCachePage) {
   RunTest(GURL("https://cdn.ampproject.org/page"));
-  ValidateHistograms(true, "AmpCache.");
   EXPECT_TRUE(test_ukm_recorder()
                   .GetEntriesByName(ukm::builders::AmpPageLoad::kEntryName)
                   .empty());
@@ -164,7 +110,6 @@ TEST_F(AMPPageLoadMetricsObserverTest, AMPCachePage) {
 
 TEST_F(AMPPageLoadMetricsObserverTest, GoogleSearchAMPCachePage) {
   RunTest(GURL("https://www.google.com/amp/page"));
-  ValidateHistograms(true, "GoogleSearch.");
   EXPECT_TRUE(test_ukm_recorder()
                   .GetEntriesByName(ukm::builders::AmpPageLoad::kEntryName)
                   .empty());
@@ -172,7 +117,6 @@ TEST_F(AMPPageLoadMetricsObserverTest, GoogleSearchAMPCachePage) {
 
 TEST_F(AMPPageLoadMetricsObserverTest, GoogleSearchAMPCachePageBaseURL) {
   RunTest(GURL("https://www.google.com/amp/"));
-  ValidateHistograms(false, "");
   EXPECT_TRUE(test_ukm_recorder()
                   .GetEntriesByName(ukm::builders::AmpPageLoad::kEntryName)
                   .empty());
@@ -180,7 +124,6 @@ TEST_F(AMPPageLoadMetricsObserverTest, GoogleSearchAMPCachePageBaseURL) {
 
 TEST_F(AMPPageLoadMetricsObserverTest, GoogleNewsAMPCachePage) {
   RunTest(GURL("https://news.google.com/news/amp?page"));
-  ValidateHistograms(true, "GoogleNews.");
   EXPECT_TRUE(test_ukm_recorder()
                   .GetEntriesByName(ukm::builders::AmpPageLoad::kEntryName)
                   .empty());
@@ -188,7 +131,6 @@ TEST_F(AMPPageLoadMetricsObserverTest, GoogleNewsAMPCachePage) {
 
 TEST_F(AMPPageLoadMetricsObserverTest, GoogleNewsAMPCachePageBaseURL) {
   RunTest(GURL("https://news.google.com/news/amp"));
-  ValidateHistograms(false, "");
   EXPECT_TRUE(test_ukm_recorder()
                   .GetEntriesByName(ukm::builders::AmpPageLoad::kEntryName)
                   .empty());
@@ -196,7 +138,6 @@ TEST_F(AMPPageLoadMetricsObserverTest, GoogleNewsAMPCachePageBaseURL) {
 
 TEST_F(AMPPageLoadMetricsObserverTest, NonAMPPage) {
   RunTest(GURL("https://www.google.com/not-amp/page"));
-  ValidateHistograms(false, "");
   EXPECT_TRUE(test_ukm_recorder()
                   .GetEntriesByName(ukm::builders::AmpPageLoad::kEntryName)
                   .empty());
@@ -210,35 +151,6 @@ TEST_F(AMPPageLoadMetricsObserverTest, GoogleSearchAMPViewerSameDocument) {
   NavigationSimulator::CreateRendererInitiated(
       GURL("https://www.google.com/amp/page"), main_rfh())
       ->CommitSameDocument();
-
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.AMP.SameDocumentView",
-      static_cast<base::HistogramBase::Sample>(
-          AMPViewType::GOOGLE_SEARCH_AMP_VIEWER),
-      1);
-
-  // Verify that additional same-document navigations to the same URL don't
-  // result in additional views being counted.
-  NavigationSimulator::CreateRendererInitiated(
-      GURL("https://www.google.com/amp/page#fragment"), main_rfh())
-      ->CommitSameDocument();
-  NavigationSimulator::CreateRendererInitiated(
-      GURL("https://www.google.com/amp/page"), main_rfh())
-      ->CommitSameDocument();
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.AMP.SameDocumentView",
-      static_cast<base::HistogramBase::Sample>(
-          AMPViewType::GOOGLE_SEARCH_AMP_VIEWER),
-      1);
-
-  NavigationSimulator::CreateRendererInitiated(
-      GURL("https://www.google.com/amp/page2"), main_rfh())
-      ->CommitSameDocument();
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.AMP.SameDocumentView",
-      static_cast<base::HistogramBase::Sample>(
-          AMPViewType::GOOGLE_SEARCH_AMP_VIEWER),
-      2);
 
   // Verify that subframe metrics aren't recorded without an AMP subframe.
   histogram_tester().ExpectTotalCount(
@@ -255,31 +167,6 @@ TEST_F(AMPPageLoadMetricsObserverTest, GoogleSearchAMPViewerSameDocument) {
   EXPECT_TRUE(test_ukm_recorder()
                   .GetEntriesByName(ukm::builders::AmpPageLoad::kEntryName)
                   .empty());
-}
-
-TEST_F(AMPPageLoadMetricsObserverTest, GoogleNewsAMPCacheRedirect) {
-  auto navigation_simulator = NavigationSimulator::CreateRendererInitiated(
-      GURL("https://news.google.com/news/amp?page"), main_rfh());
-  navigation_simulator->Redirect(GURL("http://www.example.com/"));
-  navigation_simulator->Commit();
-  SimulateTimingUpdate(timing_);
-
-  histogram_tester().ExpectTotalCount(
-      "PageLoad.Clients.AMP.ParseTiming.NavigationToParseStart", 0);
-  histogram_tester().ExpectTotalCount(
-      "PageLoad.Clients.AMP.GoogleNews.ParseTiming.NavigationToParseStart", 0);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.AMP.ParseTiming.NavigationToParseStart."
-      "RedirectToNonAmpPage",
-      static_cast<base::HistogramBase::Sample>(
-          timing_.parse_timing->parse_start.value().InMilliseconds()),
-      1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.AMP.GoogleNews.ParseTiming.NavigationToParseStart."
-      "RedirectToNonAmpPage",
-      static_cast<base::HistogramBase::Sample>(
-          timing_.parse_timing->parse_start.value().InMilliseconds()),
-      1);
 }
 
 TEST_F(AMPPageLoadMetricsObserverTest, SubFrameInputBeforeNavigation) {
@@ -468,7 +355,7 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetrics_LayoutStability) {
       blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorAmpDocumentLoaded;
   SimulateMetadataUpdate(metadata, subframe);
 
-  page_load_metrics::mojom::FrameRenderDataUpdate render_data(1.0);
+  page_load_metrics::mojom::FrameRenderDataUpdate render_data(1.0, 1.0);
   SimulateRenderDataUpdate(render_data, subframe);
 
   // Navigate the main frame to trigger metrics recording.

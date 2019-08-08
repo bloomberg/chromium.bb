@@ -4,10 +4,13 @@
 
 #include "chrome/browser/notifications/notification_test_util.h"
 
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "content/public/test/test_utils.h"
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/browser.h"
+#endif
 
 // -----------------------------------------------------------------------------
 
@@ -139,6 +142,7 @@ void StubNotificationUIManager::StartShutdown() {
   CancelAll();
 }
 
+#if !defined(OS_ANDROID)
 FullscreenStateWaiter::FullscreenStateWaiter(
     Browser* browser, bool desired_state)
     : browser_(browser),
@@ -150,3 +154,4 @@ void FullscreenStateWaiter::Wait() {
     content::RunAllPendingInMessageLoop();
   }
 }
+#endif

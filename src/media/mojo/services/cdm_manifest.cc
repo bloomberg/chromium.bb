@@ -16,9 +16,12 @@ const service_manager::Manifest& GetCdmManifest() {
       service_manager::ManifestBuilder()
           .WithServiceName(mojom::kCdmServiceName)
           .WithDisplayName("Content Decryption Module Service")
-          .WithOptions(service_manager::ManifestOptionsBuilder()
-                           .WithSandboxType("cdm")
-                           .Build())
+          .WithOptions(
+              service_manager::ManifestOptionsBuilder()
+                  .WithExecutionMode(service_manager::Manifest::ExecutionMode::
+                                         kOutOfProcessBuiltin)
+                  .WithSandboxType("cdm")
+                  .Build())
           .ExposeCapability(
               "media:cdm",
               service_manager::Manifest::InterfaceList<mojom::CdmService>())

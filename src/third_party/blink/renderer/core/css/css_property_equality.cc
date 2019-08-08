@@ -65,8 +65,7 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
                                           const ComputedStyle& b) {
   if (property.IsCSSCustomProperty()) {
     const AtomicString& name = property.CustomPropertyName();
-    return DataEquivalent(a.GetRegisteredVariable(name),
-                          b.GetRegisteredVariable(name));
+    return DataEquivalent(a.GetVariableValue(name), b.GetVariableValue(name));
   }
   switch (property.GetCSSProperty().PropertyID()) {
     case CSSPropertyID::kBackgroundColor:

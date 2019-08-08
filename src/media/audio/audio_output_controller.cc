@@ -205,6 +205,19 @@ void AudioOutputController::Close(base::OnceClosure closed_task) {
           base::WrapRefCounted(this), std::move(closed_task)));
 }
 
+void AudioOutputController::Flush() {
+  CHECK_EQ(AudioManager::Get(), audio_manager_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
+
+  if (task_runner_->BelongsToCurrentThread()) {
+    DoFlush();
+    return;
+  }
+
+  task_runner_->PostTask(FROM_HERE,
+                         base::BindOnce(&AudioOutputController::DoFlush, this));
+}
+
 void AudioOutputController::SetVolume(double volume) {
   CHECK_EQ(AudioManager::Get(), audio_manager_);
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
@@ -344,6 +357,21 @@ void AudioOutputController::DoClose() {
     DoStopCloseAndClearStream();
     sync_reader_->Close();
     state_ = kClosed;
+  }
+}
+
+void AudioOutputController::DoFlush() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.FlushTime");
+  TRACE_EVENT0("audio", "AudioOutputController::DoFlush");
+  handler_->OnLog("AOC::DoFlush");
+
+  if (stream_) {
+    if (state_ == kPlaying) {
+      handler_->OnControllerError();
+    } else {
+      stream_->Flush();
+    }
   }
 }
 

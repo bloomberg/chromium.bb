@@ -4,7 +4,10 @@
 */
 'use strict';
 
-export default class CpToast extends Polymer.Element {
+import {PolymerElement, html} from '@polymer/polymer/polymer-element.js';
+import {simpleGUID, timeout} from './utils.js';
+
+export default class CpToast extends PolymerElement {
   static get is() { return 'cp-toast'; }
 
   static get properties() {
@@ -18,7 +21,7 @@ export default class CpToast extends Polymer.Element {
   }
 
   static get template() {
-    return Polymer.html`
+    return html`
       <style>
         :host {
           bottom: 0;
@@ -45,8 +48,8 @@ export default class CpToast extends Polymer.Element {
   async open(wait = 10000) {
     this.opened = true;
     if (!wait) return;
-    const start = this.openId_ = cp.simpleGUID();
-    if (typeof wait === 'number') wait = cp.timeout(wait);
+    const start = this.openId_ = simpleGUID();
+    if (typeof wait === 'number') wait = timeout(wait);
     await wait;
     if (this.openId_ !== start) return;
     this.opened = false;

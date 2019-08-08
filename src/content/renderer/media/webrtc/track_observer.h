@@ -16,8 +16,8 @@ namespace content {
 
 class CONTENT_EXPORT TrackObserver {
  public:
-  typedef base::Callback<void(webrtc::MediaStreamTrackInterface::TrackState)>
-      OnChangedCallback;
+  using OnChangedCallback = base::RepeatingCallback<void(
+      webrtc::MediaStreamTrackInterface::TrackState)>;
 
   TrackObserver(const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
                 const scoped_refptr<webrtc::MediaStreamTrackInterface>& track);

@@ -194,7 +194,7 @@ scoped_refptr<HttpResponseHeaders> HttpResponseHeaders::TryToCreate(
   }
 
   return base::MakeRefCounted<HttpResponseHeaders>(
-      HttpUtil::AssembleRawHeaders(headers.data(), headers.size()));
+      HttpUtil::AssembleRawHeaders(headers));
 }
 
 void HttpResponseHeaders::Persist(base::Pickle* pickle,
@@ -774,7 +774,8 @@ void HttpResponseHeaders::AddHeader(std::string::const_iterator name_begin,
                                     std::string::const_iterator values_end) {
   // If the header can be coalesced, then we should split it up.
   if (values_begin == values_end ||
-      HttpUtil::IsNonCoalescingHeader(name_begin, name_end)) {
+      HttpUtil::IsNonCoalescingHeader(
+          base::StringPiece(name_begin, name_end))) {
     AddToParsed(name_begin, name_end, values_begin, values_end);
   } else {
     HttpUtil::ValuesIterator it(values_begin, values_end, ',',
@@ -1329,21 +1330,21 @@ bool HttpResponseHeaders::GetContentRangeFor206(
       instance_length);
 }
 
-std::unique_ptr<base::Value> HttpResponseHeaders::NetLogCallback(
+base::Value HttpResponseHeaders::NetLogCallback(
     NetLogCaptureMode capture_mode) const {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  auto headers = std::make_unique<base::ListValue>();
-  headers->GetList().push_back(NetLogStringValue(GetStatusLine()));
+  base::DictionaryValue dict;
+  base::ListValue headers;
+  headers.GetList().push_back(NetLogStringValue(GetStatusLine()));
   size_t iterator = 0;
   std::string name;
   std::string value;
   while (EnumerateHeaderLines(&iterator, &name, &value)) {
     std::string log_value =
         ElideHeaderValueForNetLog(capture_mode, name, value);
-    headers->GetList().push_back(
+    headers.GetList().push_back(
         NetLogStringValue(base::StrCat({name, ": ", log_value})));
   }
-  dict->Set("headers", std::move(headers));
+  dict.SetKey("headers", std::move(headers));
   return std::move(dict);
 }
 

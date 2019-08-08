@@ -33,8 +33,6 @@ using namespace html_names;
 HTMLDivElement::HTMLDivElement(Document& document)
     : HTMLElement(kDivTag, document) {}
 
-DEFINE_NODE_FACTORY(HTMLDivElement)
-
 void HTMLDivElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,

@@ -56,7 +56,7 @@ source_set("unittest_sources") {
 
   deps = [
     ":common",
-    "//base:base",
+    "//base",
     "//chrome/chrome_cleaner/interfaces:engine_sandbox_interface",
     "//chrome/chrome_cleaner/ipc:ipc_test_util",
     "//chrome/chrome_cleaner/ipc:mojo_task_runner",

@@ -12,6 +12,7 @@ import("//build/config/compiler/compiler.gni")
 import("//build/config/features.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
+import("//build/util/generate_wrapper.gni")
 import("//components/nacl/features.gni")
 import("//device/vr/buildflags/buildflags.gni")
 import("//extensions/buildflags/buildflags.gni")
@@ -19,14 +20,13 @@ import("//gpu/vulkan/features.gni")
 import("//media/gpu/args.gni")
 import("//media/media_options.gni")
 import("//remoting/remoting_enable.gni")
-import("//testing/test.gni")
 import("//third_party/openh264/openh264_args.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 import("//ui/base/ui_features.gni")
 import("//ui/ozone/ozone.gni")
 import("//ui/webui/webui_features.gni")
+import("//v8/gni/snapshot_toolchain.gni")
 import("//v8/gni/v8.gni")
-import("//v8/snapshot_toolchain.gni")
 
 if (is_android) {
   import("//build/config/android/config.gni")
@@ -66,6 +66,7 @@ group("gn_all") {
     ":gn_visibility",
     "//base:base_perftests",
     "//base:base_unittests",
+    "//base/util:base_util_unittests",
     "//chrome/installer",
     "//chrome/updater",
     "//net:net_unittests",
@@ -156,6 +157,10 @@ group("gn_all") {
     deps += [
       "//cc:cc_unittests",
       "//components/policy:policy_templates",
+      "//components/ui_devtools/viz",
+      "//components/viz:viz_perftests",
+      "//components/viz:viz_unittests",
+      "//components/viz/common:viz_benchmark",
       "//content/shell:content_shell",
       "//content/test:content_browsertests",
       "//content/test:content_perftests",
@@ -168,12 +173,22 @@ group("gn_all") {
       "//mojo",
       "//mojo:mojo_unittests",
       "//net:net_perftests",
+      "//storage:storage_unittests",
       "//third_party/angle/src/tests:angle_end2end_tests",
       "//third_party/angle/src/tests:angle_unittests",
+      "//third_party/blink/common:blink_common_unittests",
       "//third_party/blink/renderer/controller:blink_unittests",
+      "//third_party/blink/renderer/platform:blink_platform_unittests",
+      "//third_party/blink/renderer/platform/heap:blink_heap_unittests",
       "//third_party/blink/renderer/platform/wtf:wtf_unittests",
+      "//tools/imagediff",
+      "//ui/display:display_unittests",
+      "//ui/events:events_unittests",
       "//ui/gl:gl_unittests",
+      "//ui/latency:latency_unittests",
+      "//ui/touch_selection:ui_touch_selection_unittests",
       "//url/ipc:url_ipc_unittests",
+      "//v8:gn_all",
     ]
   }
 
@@ -190,27 +205,13 @@ group("gn_all") {
       "//chrome/test:telemetry_perf_unittests",
       "//chrome/test:unit_tests",
       "//components:components_browsertests",
-      "//components/ui_devtools/viz",
-      "//components/viz:viz_perftests",
-      "//components/viz:viz_unittests",
-      "//components/viz/common:viz_benchmark",
       "//device:device_unittests",
       "//google_apis/gcm:mcs_probe",
       "//media/capture:capture_unittests",
       "//media/cast:cast_unittests",
-      "//storage:storage_unittests",
       "//third_party/angle/src/tests:angle_white_box_tests",
-      "//third_party/blink/common:blink_common_unittests",
-      "//third_party/blink/renderer/platform:blink_platform_unittests",
-      "//third_party/blink/renderer/platform/heap:blink_heap_unittests",
       "//third_party/catapult/telemetry:bitmaptools($host_toolchain)",
       "//third_party/smhasher:pmurhash",
-      "//tools/imagediff",
-      "//ui/display:display_unittests",
-      "//ui/events:events_unittests",
-      "//ui/latency:latency_unittests",
-      "//ui/touch_selection:ui_touch_selection_unittests",
-      "//v8:gn_all",
     ]
   } else if (is_ios) {
     deps += [ "//ios:all" ]
@@ -219,7 +220,7 @@ group("gn_all") {
       ":d8_fuchsia",
       "//build/fuchsia/fidlgen_js:fidlgen_js_unittests",
       "//fuchsia:gn_all",
-      "//headless",
+      "//headless:headless_non_renderer",
     ]
   }
 
@@ -332,7 +333,7 @@ group("gn_all") {
 
     if (!is_component_build) {
       deps += [
-        "//components/cronet/android:cronet_package",
+        "//components/cronet/android:cronet_package_android",
         "//components/cronet/android:cronet_perf_test_apk",
         "//components/cronet/android:cronet_sample_apk",
         "//components/cronet/android:cronet_sample_test_apk",
@@ -401,13 +402,13 @@ group("gn_all") {
       "//ash:ash_unittests",
       "//ash/app_list:app_list_demo",
       "//ash/app_list:app_list_unittests",
+      "//ash/keyboard/ui:keyboard_unittests",
       "//chrome/test:usage_time_limit_unittests",
       "//chromeos:chromeos_unittests",
       "//chromeos/components:chromeos_components_unittests",
       "//chromeos/components/proximity_auth:proximity_auth_unittests",
       "//components/session_manager/core",
       "//ui/chromeos:ui_chromeos_unittests",
-      "//ui/keyboard:keyboard_unittests",
     ]
   }
 
@@ -586,14 +587,14 @@ group("gn_all") {
       "//base:pe_image_test",
       "//chrome/browser/browser_switcher/bho:browser_switcher_bho",
       "//chrome/chrome_cleaner:chrome_cleaner_unittests",
+      "//chrome/chrome_elf:chrome_elf_unittests",
+      "//chrome/chrome_elf:dll_hash_main",
       "//chrome/elevation_service:elevation_service_unittests",
       "//chrome/install_static:install_static_unittests",
       "//chrome/installer/gcapi",
       "//chrome/installer/setup:setup_unittests",
       "//chrome/notification_helper:notification_helper_unittests",
-      "//chrome_elf:chrome_elf_import_unittests",
-      "//chrome_elf:chrome_elf_unittests",
-      "//chrome_elf:dll_hash_main",
+      "//chrome/test:delayloads_unittests",
       "//cloud_print:cloud_print_unittests",
       "//components/wifi:wifi_test",
       "//components/zucchini",
@@ -747,7 +748,7 @@ group("gn_all") {
 
   if (is_linux && use_ozone) {
     deps += [
-      "//headless",
+      "//headless:headless_non_renderer",
       "//headless:headless_tests",
     ]
   }
@@ -871,8 +872,8 @@ if (is_chromeos) {
     deps = [
       "//chrome",
       "//chrome/test/chromedriver",
+      "//components/chromeos_camera:jpeg_decode_accelerator_unittest",
       "//media:media_unittests",
-      "//media/gpu:jpeg_decode_accelerator_unittest",
       "//ppapi/examples/video_decode",
       "//sandbox/linux:chrome_sandbox",
       "//sandbox/linux:sandbox_linux_unittests",
@@ -885,6 +886,7 @@ if (is_chromeos) {
 
     if (use_v4l2_codec || use_vaapi) {
       deps += [
+        "//components/chromeos_camera:jpeg_encode_accelerator_unittest",
         "//media/gpu:video_decode_accelerator_perf_tests",
         "//media/gpu:video_decode_accelerator_tests",
 
@@ -893,9 +895,6 @@ if (is_chromeos) {
         "//media/gpu:video_decode_accelerator_unittest",
         "//media/gpu:video_encode_accelerator_unittest",
       ]
-    }
-    if (use_vaapi) {
-      deps += [ "//media/gpu:jpeg_encode_accelerator_unittest" ]
     }
   }
 }
@@ -979,19 +978,22 @@ if (!is_ios) {
   # and is useful for testing with the regular isolate mechanism.
   # To run the full web test suite you need to use
   # :blink_web_tests_exparchive, above, instead.
-  generated_script_test("blink_web_tests") {
-    generator_script =
-        "//testing/scripts/generators/gen_run_web_tests_script.py"
-    extra_args = []
+  generate_wrapper("blink_web_tests") {
+    testonly = true
+    wrapper_script = "${root_build_dir}/bin/run_blink_web_tests"
+    executable = "//third_party/blink/tools/run_web_tests.py"
+    executable_args = []
+
     if (is_debug) {
-      extra_args += [
-        "--build-type",
-        "debug",
-      ]
+      executable_args += [ "--debug" ]
     } else {
-      extra_args += [
-        "--build-type",
-        "release",
+      executable_args += [ "--release" ]
+    }
+
+    if (is_android) {
+      executable_args += [
+        "--platform",
+        "android",
       ]
     }
 
@@ -1000,8 +1002,8 @@ if (!is_ios) {
       ":layout_test_data_mojo_bindings_lite",
       "//content/shell:content_shell",
       "//content/test:mojo_web_test_bindings_js_data_deps",
+      "//content/shell:mojo_bindings_js_data_deps",
       "//device/bluetooth/public/mojom:fake_bluetooth_interfaces_js_data_deps",
-      "//device/usb/public/mojom:mojom_js_data_deps",
       "//device/vr/public/mojom:mojom_js_data_deps",
       "//media/capture/mojom:image_capture_js_data_deps",
       "//media/midi:mojo_js_data_deps",
@@ -1010,9 +1012,11 @@ if (!is_ios) {
       "//services/shape_detection/public/mojom:mojom_js_data_deps",
       "//services/device/public/mojom:mojom_js_data_deps",
       "//services/device/public/mojom:generic_sensor_js_data_deps",
+      "//services/device/public/mojom:usb_js_data_deps",
       "//skia/public/interfaces:interfaces_js_data_deps",
+      "//testing/buildbot/filters:blink_web_tests_filter",
       "//third_party/blink/public:blink_devtools_frontend_resources_files",
-      "//third_party/blink/public:mojo_bindings_js_data_deps",
+      "//third_party/blink/public/mojom:mojom_platform_js_data_deps",
       "//third_party/mesa_headers",
       "//tools/imagediff",
     ]

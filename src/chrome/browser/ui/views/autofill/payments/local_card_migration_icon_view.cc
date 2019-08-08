@@ -31,7 +31,7 @@ LocalCardMigrationIconView::LocalCardMigrationIconView(
                          font_list),
       browser_(browser) {
   DCHECK(delegate);
-  set_id(VIEW_ID_MIGRATE_LOCAL_CREDIT_CARD_BUTTON);
+  SetID(VIEW_ID_MIGRATE_LOCAL_CREDIT_CARD_BUTTON);
   SetUpForInOutAnimation();
 }
 
@@ -67,7 +67,7 @@ bool LocalCardMigrationIconView::Update() {
   enabled &= SetCommandEnabled(enabled);
   SetVisible(enabled);
 
-  if (visible()) {
+  if (GetVisible()) {
     switch (controller->GetFlowStep()) {
       // When the dialog is about to show, trigger the ink drop animation
       // so that the credit card icon in "selected" state by default. This needs

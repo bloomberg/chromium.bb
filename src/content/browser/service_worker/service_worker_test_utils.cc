@@ -10,6 +10,7 @@
 #include "base/barrier_closure.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
+#include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_database.h"
@@ -240,8 +241,8 @@ base::WeakPtr<ServiceWorkerProviderHost> CreateProviderHostForWindow(
   auto provider_info = blink::mojom::ServiceWorkerProviderInfoForWindow::New();
   base::WeakPtr<ServiceWorkerProviderHost> host =
       ServiceWorkerProviderHost::PreCreateNavigationHost(
-          context, is_parent_frame_secure, base::NullCallback(),
-          &provider_info);
+          context, is_parent_frame_secure,
+          FrameTreeNode::kFrameTreeNodeInvalidId, &provider_info);
   output_endpoint->BindForWindow(std::move(provider_info));
 
   // In production code this is called from NavigationRequest in the browser

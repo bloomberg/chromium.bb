@@ -12,6 +12,7 @@
 #include <sstream>
 #include <utility>
 
+#include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
@@ -49,7 +50,6 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/chromeos/ime/input_method_menu_item.h"
 #include "ui/chromeos/ime/input_method_menu_manager.h"
-#include "ui/keyboard/keyboard_controller.h"
 
 namespace chromeos {
 namespace input_method {

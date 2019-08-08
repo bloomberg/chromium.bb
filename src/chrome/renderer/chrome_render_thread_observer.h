@@ -10,7 +10,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "chrome/common/renderer_configuration.mojom.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "content/public/renderer/render_thread_observer.h"
@@ -97,9 +96,6 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
   }
 #endif  // defined(OS_CHROMEOS)
 
-  // Return a weak pointer to |this|.
-  base::WeakPtr<ChromeRenderThreadObserver> GetWeakPtr();
-
  private:
   // content::RenderThreadObserver:
   void RegisterMojoInterfaces(
@@ -134,8 +130,6 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
   // was started.
   scoped_refptr<ChromeOSListener> chromeos_listener_;
 #endif  // defined(OS_CHROMEOS)
-
-  base::WeakPtrFactory<ChromeRenderThreadObserver> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeRenderThreadObserver);
 };

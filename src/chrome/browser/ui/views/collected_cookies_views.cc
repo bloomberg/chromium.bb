@@ -490,8 +490,8 @@ views::View* CollectedCookiesViews::CreateAllowedPane() {
   layout->StartRow(1.0, single_column_layout_id);
 
   allowed_cookies_tree_ = allowed_cookies_tree.get();
-  layout->AddView(CreateScrollView(std::move(allowed_cookies_tree)), 1, 1,
-                  views::GridLayout::FILL, views::GridLayout::FILL,
+  layout->AddView(CreateScrollView(std::move(allowed_cookies_tree)).release(),
+                  1, 1, views::GridLayout::FILL, views::GridLayout::FILL,
                   kTreeViewWidth, kTreeViewHeight);
   layout->AddPaddingRow(views::GridLayout::kFixedSize,
                         unrelated_vertical_distance);
@@ -557,8 +557,8 @@ views::View* CollectedCookiesViews::CreateBlockedPane() {
   layout->StartRow(1.0, single_column_layout_id);
 
   blocked_cookies_tree_ = blocked_cookies_tree.get();
-  layout->AddView(CreateScrollView(std::move(blocked_cookies_tree)), 1, 1,
-                  views::GridLayout::FILL, views::GridLayout::FILL,
+  layout->AddView(CreateScrollView(std::move(blocked_cookies_tree)).release(),
+                  1, 1, views::GridLayout::FILL, views::GridLayout::FILL,
                   kTreeViewWidth, kTreeViewHeight);
   layout->AddPaddingRow(views::GridLayout::kFixedSize,
                         unrelated_vertical_distance);
@@ -575,16 +575,19 @@ std::unique_ptr<views::View> CollectedCookiesViews::CreateButtonsPane() {
     views::GridLayout* layout = allowed->SetLayoutManager(
         std::make_unique<views::GridLayout>(allowed.get()));
 
-    block_allowed_button_ = views::MdTextButton::CreateSecondaryUiButton(
-        this, l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_BLOCK_BUTTON));
-    delete_allowed_button_ = views::MdTextButton::CreateSecondaryUiButton(
-        this, l10n_util::GetStringUTF16(IDS_COOKIES_REMOVE_LABEL));
+    block_allowed_button_ =
+        views::MdTextButton::CreateSecondaryUiButton(
+            this, l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_BLOCK_BUTTON))
+            .release();
+    delete_allowed_button_ =
+        views::MdTextButton::CreateSecondaryUiButton(
+            this, l10n_util::GetStringUTF16(IDS_COOKIES_REMOVE_LABEL))
+            .release();
     StartNewButtonColumnSet(layout, 0);
     layout->AddView(block_allowed_button_);
     layout->AddView(delete_allowed_button_);
 
-    allowed_buttons_pane_ = allowed.get();
-    view->AddChildView(allowed.release());
+    allowed_buttons_pane_ = view->AddChildView(std::move(allowed));
   }
 
   {
@@ -593,26 +596,28 @@ std::unique_ptr<views::View> CollectedCookiesViews::CreateButtonsPane() {
         std::make_unique<views::GridLayout>(blocked.get()));
     blocked->SetVisible(false);
 
-    allow_blocked_button_ = views::MdTextButton::CreateSecondaryUiButton(
-        this, l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_ALLOW_BUTTON));
-    for_session_blocked_button_ = views::MdTextButton::CreateSecondaryUiButton(
-        this,
-        l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_SESSION_ONLY_BUTTON));
+    allow_blocked_button_ =
+        views::MdTextButton::CreateSecondaryUiButton(
+            this, l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_ALLOW_BUTTON))
+            .release();
+    for_session_blocked_button_ =
+        views::MdTextButton::CreateSecondaryUiButton(
+            this, l10n_util::GetStringUTF16(
+                      IDS_COLLECTED_COOKIES_SESSION_ONLY_BUTTON))
+            .release();
     StartNewButtonColumnSet(layout, 0);
     layout->AddView(allow_blocked_button_);
     layout->AddView(for_session_blocked_button_);
 
-    blocked_buttons_pane_ = blocked.get();
-    view->AddChildView(blocked.release());
+    blocked_buttons_pane_ = view->AddChildView(std::move(blocked));
   }
 
   return view;
 }
 
-views::View* CollectedCookiesViews::CreateScrollView(
+std::unique_ptr<views::View> CollectedCookiesViews::CreateScrollView(
     std::unique_ptr<views::TreeView> pane) {
-  views::ScrollView* scroll_view =
-      views::ScrollView::CreateScrollViewWithBorder();
+  auto scroll_view = views::ScrollView::CreateScrollViewWithBorder();
   scroll_view->SetContents(std::move(pane));
   return scroll_view;
 }

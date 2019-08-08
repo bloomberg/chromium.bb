@@ -11,7 +11,6 @@
 #include "base/callback_forward.h"
 #include "base/hash/md5.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "media/audio/clockless_audio_sink.h"
 #include "media/audio/null_audio_sink.h"
@@ -219,7 +218,7 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
   // Creates Demuxer and sets |demuxer_|.
   void CreateDemuxer(std::unique_ptr<DataSource> data_source);
 
-  void OnVideoFramePaint(const scoped_refptr<VideoFrame>& frame);
+  void OnVideoFramePaint(scoped_refptr<VideoFrame> frame);
 
   void CheckDuration();
 
@@ -230,7 +229,7 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
   // Pipeline::Client overrides.
   void OnError(PipelineStatus status) override;
   void OnEnded() override;
-  MOCK_METHOD1(OnMetadata, void(PipelineMetadata));
+  MOCK_METHOD1(OnMetadata, void(const PipelineMetadata&));
   MOCK_METHOD1(OnBufferingStateChange, void(BufferingState));
   MOCK_METHOD0(OnDurationChange, void());
   MOCK_METHOD2(OnAddTextTrack,

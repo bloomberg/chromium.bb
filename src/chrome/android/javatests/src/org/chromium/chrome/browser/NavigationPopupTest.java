@@ -181,6 +181,11 @@ public class NavigationPopupTest {
         }
 
         @Override
+        public NavigationEntry getVisibleEntry() {
+            return null;
+        }
+
+        @Override
         public NavigationEntry getPendingEntry() {
             return null;
         }

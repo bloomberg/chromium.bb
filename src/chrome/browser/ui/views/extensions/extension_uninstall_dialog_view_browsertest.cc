@@ -6,7 +6,6 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
@@ -15,7 +14,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -140,9 +138,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionUninstallDialogViewBrowserTest,
 // window in Ash. Context: crbug.com/825554
 IN_PROC_BROWSER_TEST_F(ExtensionUninstallDialogViewBrowserTest,
                        BookmarkAppWindowAshCrash) {
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeature(features::kDesktopPWAWindowing);
-
   scoped_refptr<const extensions::Extension> extension(BuildTestExtension());
   extensions::ExtensionSystem::Get(browser()->profile())
       ->extension_service()

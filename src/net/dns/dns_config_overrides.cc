@@ -23,7 +23,8 @@ bool DnsConfigOverrides::operator==(const DnsConfigOverrides& other) const {
          randomize_ports == other.randomize_ports && ndots == other.ndots &&
          timeout == other.timeout && attempts == other.attempts &&
          rotate == other.rotate && use_local_ipv6 == other.use_local_ipv6 &&
-         dns_over_https_servers == other.dns_over_https_servers;
+         dns_over_https_servers == other.dns_over_https_servers &&
+         secure_dns_mode == other.secure_dns_mode;
 }
 
 bool DnsConfigOverrides::operator!=(const DnsConfigOverrides& other) const {
@@ -47,6 +48,7 @@ DnsConfigOverrides::CreateOverridingEverythingWithDefaults() {
   overrides.rotate = defaults.rotate;
   overrides.use_local_ipv6 = defaults.use_local_ipv6;
   overrides.dns_over_https_servers = defaults.dns_over_https_servers;
+  overrides.secure_dns_mode = defaults.secure_dns_mode;
 
   return overrides;
 }
@@ -54,7 +56,7 @@ DnsConfigOverrides::CreateOverridingEverythingWithDefaults() {
 bool DnsConfigOverrides::OverridesEverything() const {
   return nameservers && search && hosts && append_to_multi_label_name &&
          randomize_ports && ndots && timeout && attempts && rotate &&
-         use_local_ipv6 && dns_over_https_servers;
+         use_local_ipv6 && dns_over_https_servers && secure_dns_mode;
 }
 
 DnsConfig DnsConfigOverrides::ApplyOverrides(const DnsConfig& config) const {
@@ -85,6 +87,8 @@ DnsConfig DnsConfigOverrides::ApplyOverrides(const DnsConfig& config) const {
     overridden.use_local_ipv6 = use_local_ipv6.value();
   if (dns_over_https_servers)
     overridden.dns_over_https_servers = dns_over_https_servers.value();
+  if (secure_dns_mode)
+    overridden.secure_dns_mode = secure_dns_mode.value();
 
   return overridden;
 }

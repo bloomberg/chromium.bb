@@ -166,7 +166,7 @@ void ModuleScriptLoaderTest::InitializeForDocument() {
   auto* properties =
       MakeGarbageCollected<TestResourceFetcherProperties>(security_origin_);
   fetcher_ = MakeGarbageCollected<ResourceFetcher>(
-      ResourceFetcherInit(*properties, fetch_context,
+      ResourceFetcherInit(properties->MakeDetachable(), fetch_context,
                           base::MakeRefCounted<scheduler::FakeTaskRunner>(),
                           MakeGarbageCollected<TestLoaderFactory>()));
   modulator_ = MakeGarbageCollected<ModuleScriptLoaderTestModulator>(
@@ -178,7 +178,7 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
   auto* properties =
       MakeGarbageCollected<TestResourceFetcherProperties>(security_origin_);
   fetcher_ = MakeGarbageCollected<ResourceFetcher>(
-      ResourceFetcherInit(*properties, fetch_context,
+      ResourceFetcherInit(properties->MakeDetachable(), fetch_context,
                           base::MakeRefCounted<scheduler::FakeTaskRunner>(),
                           MakeGarbageCollected<TestLoaderFactory>()));
   reporting_proxy_ = std::make_unique<MockWorkerReportingProxy>();
@@ -194,7 +194,7 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
       MakeGarbageCollected<WorkletModuleResponsesMap>());
   global_scope_ = MakeGarbageCollected<WorkletGlobalScope>(
       std::move(creation_params), *reporting_proxy_, &GetFrame());
-  ASSERT_TRUE(global_scope_->ScriptController()->Initialize(NullURL()));
+  global_scope_->ScriptController()->Initialize(NullURL());
   modulator_ = MakeGarbageCollected<ModuleScriptLoaderTestModulator>(
       global_scope_->ScriptController()->GetScriptState());
 }

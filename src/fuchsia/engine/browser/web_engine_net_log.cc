@@ -22,7 +22,7 @@ std::unique_ptr<base::DictionaryValue> GetWebEngineConstants() {
       net::GetNetConstants();
 
   base::DictionaryValue dict;
-  dict.SetKey("name", base::Value("webrunner"));
+  dict.SetKey("name", base::Value("WebEngine"));
   dict.SetKey(
       "command_line",
       base::Value(

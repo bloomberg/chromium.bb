@@ -623,6 +623,20 @@ ThreadTicks ThreadTicks::GetForThread(
     const PlatformThreadHandle& thread_handle) {
   DCHECK(IsSupported());
 
+#if defined(ARCH_CPU_ARM64)
+  // QueryThreadCycleTime versus TSCTicksPerSecond doesn't have much relation to
+  // actual elapsed time on Windows on Arm, because QueryThreadCycleTime is
+  // backed by the actual number of CPU cycles executed, rather than a
+  // constant-rate timer like Intel. To work around this, use GetThreadTimes
+  // (which isn't as accurate but is meaningful as a measure of elapsed
+  // per-thread time).
+  FILETIME creation_time, exit_time, kernel_time, user_time;
+  ::GetThreadTimes(thread_handle.platform_handle(), &creation_time, &exit_time,
+                   &kernel_time, &user_time);
+
+  int64_t us = FileTimeToMicroseconds(user_time);
+  return ThreadTicks(us);
+#else
   // Get the number of TSC ticks used by the current thread.
   ULONG64 thread_cycle_time = 0;
   ::QueryThreadCycleTime(thread_handle.platform_handle(), &thread_cycle_time);
@@ -636,6 +650,7 @@ ThreadTicks ThreadTicks::GetForThread(
   double thread_time_seconds = thread_cycle_time / tsc_ticks_per_second;
   return ThreadTicks(
       static_cast<int64_t>(thread_time_seconds * Time::kMicrosecondsPerSecond));
+#endif
 }
 
 // static
@@ -646,23 +661,18 @@ bool ThreadTicks::IsSupportedWin() {
 
 // static
 void ThreadTicks::WaitUntilInitializedWin() {
+#if !defined(ARCH_CPU_ARM64)
   while (TSCTicksPerSecond() == 0)
     ::Sleep(10);
+#endif
 }
 
-#if defined(_M_ARM64) && defined(__clang__)
-#define ReadCycleCounter() _ReadStatusReg(ARM64_PMCCNTR_EL0)
-#else
-#define ReadCycleCounter() __rdtsc()
-#endif
-
+#if !defined(ARCH_CPU_ARM64)
 double ThreadTicks::TSCTicksPerSecond() {
   DCHECK(IsSupported());
-
   // The value returned by QueryPerformanceFrequency() cannot be used as the TSC
   // frequency, because there is no guarantee that the TSC frequency is equal to
   // the performance counter frequency.
-
   // The TSC frequency is cached in a static variable because it takes some time
   // to compute it.
   static double tsc_ticks_per_second = 0;
@@ -677,12 +687,12 @@ double ThreadTicks::TSCTicksPerSecond() {
   // The first time that this function is called, make an initial reading of the
   // TSC and the performance counter.
 
-  static const uint64_t tsc_initial = ReadCycleCounter();
+  static const uint64_t tsc_initial = __rdtsc();
   static const uint64_t perf_counter_initial = QPCNowRaw();
 
   // Make a another reading of the TSC and the performance counter every time
   // that this function is called.
-  uint64_t tsc_now = ReadCycleCounter();
+  uint64_t tsc_now = __rdtsc();
   uint64_t perf_counter_now = QPCNowRaw();
 
   // Reset the thread priority.
@@ -715,8 +725,8 @@ double ThreadTicks::TSCTicksPerSecond() {
 
   return tsc_ticks_per_second;
 }
+#endif  // defined(ARCH_CPU_ARM64)
 
-#undef ReadCycleCounter
 // static
 TimeTicks TimeTicks::FromQPCValue(LONGLONG qpc_value) {
   return TimeTicks() + QPCValueToTimeDelta(qpc_value);

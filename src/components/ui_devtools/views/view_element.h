@@ -37,6 +37,7 @@ class ViewElement : public views::ViewObserver, public UIElement {
   void SetBounds(const gfx::Rect& bounds) override;
   void GetVisible(bool* visible) const override;
   void SetVisible(bool visible) override;
+  bool SetPropertiesFromString(const std::string& text) override;
   std::unique_ptr<protocol::Array<std::string>> GetAttributes() const override;
   std::pair<gfx::NativeWindow, gfx::Rect> GetNodeWindowAndScreenBounds()
       const override;

@@ -82,6 +82,7 @@ class DeviceCommandStartCRDSessionJob : public RemoteCommandJob {
     // Attempts to start CRD host and get Auth Code.
     virtual void StartCRDHostAndGetCode(const std::string& oauth_token,
                                         base::Value ice_config,
+                                        bool terminate_upon_input,
                                         AccessCodeCallback success_callback,
                                         ErrorCallback error_callback) = 0;
   };
@@ -120,6 +121,10 @@ class DeviceCommandStartCRDSessionJob : public RemoteCommandJob {
 
   // Defines whether connection attempt to active user should succeed or fail.
   base::TimeDelta idleness_cutoff_;
+
+  // Defines if CRD session should be terminated upon any input event from local
+  // user.
+  bool terminate_upon_input_ = false;
 
   std::string oauth_token_;
   base::Value ice_config_;

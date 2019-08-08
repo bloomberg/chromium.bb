@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/shutdown_reason.h"
 #include "ash/wm/lock_state_controller.h"

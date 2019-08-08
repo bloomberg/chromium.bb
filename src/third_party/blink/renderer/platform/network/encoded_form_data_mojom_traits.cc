@@ -6,15 +6,20 @@
 
 #include "third_party/blink/renderer/platform/network/encoded_form_data_mojom_traits.h"
 
+#include "base/feature_list.h"
 #include "mojo/public/cpp/base/file_mojom_traits.h"
 #include "mojo/public/cpp/base/file_path_mojom_traits.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "mojo/public/cpp/bindings/array_traits_wtf_vector.h"
 #include "mojo/public/cpp/bindings/string_traits_wtf.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom-blink.h"
+#include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/network/form_data_encoder.h"
+#include "third_party/blink/renderer/platform/network/wrapped_data_pipe_getter.h"
 
 namespace mojo {
 
@@ -135,10 +140,15 @@ bool StructTraits<network::mojom::DataElementDataView, blink::FormDataElement>::
       break;
     }
     case network::mojom::DataElementType::kBlob: {
+      // Blobs are actually passed around as kDataPipe elements when network
+      // service is enabled, which keeps the blobs alive.
+      DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
       out->type_ = blink::FormDataElement::kEncodedBlob;
       if (!data.ReadBlobUuid(&out->blob_uuid_)) {
         return false;
       }
+      out->optional_blob_data_handle_ = blink::BlobDataHandle::Create(
+          out->blob_uuid_, "" /* type is not necessary */, data.length());
       break;
     }
     case network::mojom::DataElementType::kDataPipe: {
@@ -174,6 +184,7 @@ bool StructTraits<network::mojom::URLRequestBodyDataView,
   }
   (*out)->identifier_ = in.identifier();
   (*out)->contains_password_data_ = in.contains_sensitive_info();
+  (*out)->SetBoundary(blink::FormDataEncoder::GenerateUniqueBoundaryString());
 
   return true;
 }

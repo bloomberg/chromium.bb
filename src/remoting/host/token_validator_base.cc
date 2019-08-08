@@ -97,6 +97,14 @@ bool WorseThan(const std::string& issuer,
   return c1->valid_expiry() < c2->valid_expiry();
 }
 
+#if defined(OS_WIN)
+HCERTSTORE OpenLocalMachineCertStore() {
+  return ::CertOpenStore(
+      CERT_STORE_PROV_SYSTEM, 0, NULL,
+      CERT_SYSTEM_STORE_LOCAL_MACHINE | CERT_STORE_READONLY_FLAG, L"MY");
+}
+#endif
+
 }  // namespace
 
 namespace remoting {
@@ -204,10 +212,8 @@ void TokenValidatorBase::OnCertificateRequested(
   // store instead.
   // The ACL on the private key of the machine certificate in the "Local
   // Machine" cert store needs to allow access by "Local Service".
-  HCERTSTORE cert_store = ::CertOpenStore(
-      CERT_STORE_PROV_SYSTEM, 0, NULL,
-      CERT_SYSTEM_STORE_LOCAL_MACHINE | CERT_STORE_READONLY_FLAG, L"MY");
-  client_cert_store = new net::ClientCertStoreWin(cert_store);
+  client_cert_store = new net::ClientCertStoreWin(
+      base::BindRepeating(&OpenLocalMachineCertStore));
 #elif defined(OS_MACOSX)
   client_cert_store = new net::ClientCertStoreMac();
 #else

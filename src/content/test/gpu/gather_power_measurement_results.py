@@ -58,10 +58,11 @@ def GetJsonForBuildSteps(bot, build):
   return GetBuildData('GetBuild', request)
 
 
-def GetLatestBuild(bot):
+def GetLatestGreenBuild(bot):
   request = json.dumps({ 'predicate': { 'builder': { 'project': 'chromium',
                                                      'bucket': 'ci',
-                                                     'builder': bot }},
+                                                     'builder': bot },
+                                        'status': 'SUCCESS' },
                          'fields': 'builds.*.number',
                          'pageSize': 1 })
   builds_json = GetBuildData('SearchBuilds', request)
@@ -162,7 +163,7 @@ def ProcessStepStdout(stdout_url, entry):
     logging.warn('[BUILD %d] Fail to locate the bot name' % number)
 
 
-def CollectBuildData(build, data_entry):
+def CollectBuildData(build, data_entries):
   if 'number' not in build:
     logging.warn('Missing build number')
     return False
@@ -173,15 +174,18 @@ def CollectBuildData(build, data_entry):
     logging.warn('[BUILD %d] Measured test count should be %d, got %d' % (
         build['number'], len(_TESTS), len(build['tests'])))
     return False
-  data_entry['build'] = build['number']
-  data_entry['bot'] = build['bot']
   for test in build['tests']:
-    if not CollectTestData(test, data_entry):
+    if not CollectTestData(test, data_entries):
       return False
+  for ii in range(len(data_entries)):
+    data_entry = data_entries[ii]
+    data_entry['build'] = build['number']
+    data_entry['bot'] = build['bot']
+    data_entry['iteration'] = ii
   return True
 
 
-def CollectTestData(test, data_entry):
+def CollectTestData(test, data_entries):
   test_name = test['name'].split('.')[-1]
   if test_name not in _TESTS:
     logging.warn('Unexpected test name: %s' % test_name)
@@ -191,7 +195,17 @@ def CollectTestData(test, data_entry):
     if measure_name not in test:
       logging.warn('Missing measurment: %s' % measure_name)
       return False
-    data_entry[test_name + '_' + measure] = test[measure_name]
+    results = test[measure_name]
+    assert results
+    if isinstance(results, list):
+      repeats = len(results)
+    else:
+      repeats = 1
+      results = [results]
+    while len(data_entries) < repeats:
+      data_entries.append({})
+    for ii in range(repeats):
+      data_entries[ii][test_name + '_' + measure] = results[ii]
   return True
 
 
@@ -199,10 +213,10 @@ def SaveResultsAsCSV(results, output_filename):
   builds = results['builds']
   csv_data = []
   for build in builds:
-    entry = {}
-    if not CollectBuildData(build, entry):
+    entries = []
+    if not CollectBuildData(build, entries):
       continue
-    csv_data.append(entry)
+    csv_data.extend(entries)
   if len(csv_data) > 0:
     with open(output_filename, 'w') as csv_file:
       labels = sorted(csv_data[0].keys())
@@ -247,10 +261,10 @@ def main():
     builds = GetJsonForLatestNBuilds(options.bot, options.build_count)
   else:
     if last_build is None:
-      last_build = GetLatestBuild(options.bot)
+      last_build = GetLatestGreenBuild(options.bot)
     first_build = last_build - options.build_count + 1
     builds = []
-    for build_id in range(last_build, first_build, -1):
+    for build_id in range(last_build, first_build - 1, -1):
       logging.debug('Pull data for build %d' % build_id)
       build_json = GetJsonForBuildSteps(options.bot, build_id)
       build_json['number'] = build_id

@@ -11,7 +11,7 @@ cr.define('inline.login', function() {
 
   /**
    * The auth extension host instance.
-   * @type {cr.login.GaiaAuthHost}
+   * @type {cr.login.Authenticator}
    */
   let authExtHost;
 
@@ -65,7 +65,7 @@ cr.define('inline.login', function() {
    */
   function initialize() {
     $('navigation-button').addEventListener('click', navigationButtonClicked);
-    authExtHost = new cr.login.GaiaAuthHost('signin-frame');
+    authExtHost = new cr.login.Authenticator('signin-frame');
     authExtHost.addEventListener('dropLink', onDropLink);
     authExtHost.addEventListener('ready', onAuthReady);
     authExtHost.addEventListener('newWindow', onNewWindow);
@@ -86,7 +86,7 @@ cr.define('inline.login', function() {
     $('contents')
         .classList.toggle(
             'loading',
-            data.authMode != cr.login.GaiaAuthHost.AuthMode.DESKTOP ||
+            data.authMode != cr.login.Authenticator.AuthMode.DESKTOP ||
                 data.constrained == '1');
     isLoginPrimaryAccount = data.isLoginPrimaryAccount;
   }

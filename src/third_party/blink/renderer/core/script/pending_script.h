@@ -28,7 +28,7 @@
 
 #include "base/macros.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
-#include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
+#include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/script/script_element_base.h"

@@ -17,34 +17,6 @@
 #include "components/autofill/core/browser/field_types.h"
 
 namespace autofill {
-namespace {
-
-using data_util::bit_field_type_groups::kAddress;
-using data_util::bit_field_type_groups::kEmail;
-using data_util::bit_field_type_groups::kName;
-using data_util::bit_field_type_groups::kPhone;
-
-// Returns the histogram suffix corresponding to the given |bitmask|.
-std::string GetSuffixForFormType(uint32_t bitmask) {
-  switch (bitmask) {
-    case kName | kAddress | kEmail | kPhone:
-      return ".AddressPlusEmailPlusPhone";
-    case kName | kAddress | kPhone:
-      return ".AddressPlusPhone";
-    case kName | kAddress | kEmail:
-      return ".AddressPlusEmail";
-    case kName | kAddress:
-      return ".AddressOnly";
-    case kName | kEmail | kPhone:
-    case kName | kEmail:
-    case kName | kPhone:
-      return ".ContactOnly";
-    default:
-      return ".Other";
-  }
-}
-
-}  // namespace
 
 AddressFormEventLogger::AddressFormEventLogger(
     bool is_in_main_frame,
@@ -118,9 +90,10 @@ void AddressFormEventLogger::OnLog(const std::string& name,
       });
 
   uint32_t groups = data_util::DetermineGroups(types);
-  base::UmaHistogramEnumeration(name + GetSuffixForFormType(groups), event,
-                                NUM_FORM_EVENTS);
-  if (data_util::ContainsName(groups) && data_util::ContainsAddress(groups) &&
+  base::UmaHistogramEnumeration(
+      name + data_util::GetSuffixForProfileFormType(groups), event,
+      NUM_FORM_EVENTS);
+  if (data_util::ContainsAddress(groups) &&
       (data_util::ContainsPhone(groups) || data_util::ContainsEmail(groups))) {
     base::UmaHistogramEnumeration(name + ".AddressPlusContact", event,
                                   NUM_FORM_EVENTS);

@@ -22,6 +22,7 @@
 #include "components/autofill_assistant/browser/actions/set_attribute_action.h"
 #include "components/autofill_assistant/browser/actions/set_form_field_value_action.h"
 #include "components/autofill_assistant/browser/actions/show_details_action.h"
+#include "components/autofill_assistant/browser/actions/show_form_action.h"
 #include "components/autofill_assistant/browser/actions/show_info_box_action.h"
 #include "components/autofill_assistant/browser/actions/show_progress_bar_action.h"
 #include "components/autofill_assistant/browser/actions/stop_action.h"
@@ -86,19 +87,25 @@ void ProtocolUtils::AddScript(const SupportedScriptProto& script_proto,
   script->handle.path = script_proto.path();
 
   const auto& presentation = script_proto.presentation();
-  script->handle.name = presentation.name();
   script->handle.autostart = presentation.autostart();
   script->handle.interrupt = presentation.interrupt();
   script->handle.initial_prompt = presentation.initial_prompt();
-  script->handle.chip_type = presentation.chip_type();
-  script->handle.chip_icon = presentation.chip_icon();
+
+  if (presentation.has_chip()) {
+    script->handle.chip = presentation.chip();
+  } else {
+    script->handle.chip.set_text(presentation.name());
+    script->handle.chip.set_type(presentation.chip_type());
+    script->handle.chip.set_icon(presentation.chip_icon());
+  }
+
   script->precondition = ScriptPrecondition::FromProto(
       script_proto.path(), presentation.precondition());
   script->priority = presentation.priority();
 
   if (script->handle.path.empty() || !script->precondition ||
-      (script->handle.name.empty() &&
-       script->handle.chip_icon == ChipIcon::NO_ICON &&
+      (script->handle.chip.text().empty() &&
+       script->handle.chip.icon() == ChipIcon::NO_ICON &&
        !script->handle.interrupt)) {
     return;
   }
@@ -273,6 +280,10 @@ bool ProtocolUtils::ParseActions(const std::string& response,
       }
       case ActionProto::ActionInfoCase::kConfigureBottomSheet: {
         client_action = std::make_unique<ConfigureBottomSheetAction>(action);
+        break;
+      }
+      case ActionProto::ActionInfoCase::kShowForm: {
+        client_action = std::make_unique<ShowFormAction>(action);
         break;
       }
       case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET: {

@@ -11,7 +11,6 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "services/content/public/cpp/buildflags.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
@@ -19,10 +18,6 @@
 #if defined(OS_LINUX)
 #include "components/services/font/public/cpp/font_loader.h"  // nogncheck
 #endif
-
-namespace views {
-class AuraInit;
-}
 
 namespace simple_browser {
 
@@ -56,10 +51,6 @@ class COMPONENT_EXPORT(SIMPLE_BROWSER) SimpleBrowserService
 
   service_manager::ServiceBinding service_binding_;
   const UIInitializationMode ui_initialization_mode_;
-
-#if defined(USE_AURA) && BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
-  std::unique_ptr<views::AuraInit> aura_init_;
-#endif
 
   std::unique_ptr<Window> window_;
 

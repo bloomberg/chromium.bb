@@ -115,10 +115,7 @@ class WKBasedNavigationManagerTest : public PlatformTest {
 
   // Returns the value of the "#session=" URL hash component from |url|.
   static std::string ExtractRestoredSession(const GURL& url) {
-    std::string decoded = net::UnescapeURLComponent(
-        url.ref(), net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS |
-                       net::UnescapeRule::SPACES |
-                       net::UnescapeRule::PATH_SEPARATORS);
+    std::string decoded = net::UnescapeBinaryURLComponent(url.ref());
     return decoded.substr(
         strlen(wk_navigation_util::kRestoreSessionSessionHashPrefix));
   }
@@ -299,9 +296,8 @@ TEST_F(WKBasedNavigationManagerTest, ReusePendingItemForHistoryNavigation) {
   mock_wk_list_.currentItem = wk_item0;
   mock_wk_list_.backList = nil;
   mock_wk_list_.forwardList = @[ wk_item1 ];
-  OCMExpect([mock_web_view_ URL])
+  OCMStub([mock_web_view_ URL])
       .andReturn([[NSURL alloc] initWithString:@"http://www.0.com"]);
-
   manager_->AddPendingItem(
       GURL("http://www.0.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::BROWSER_INITIATED,
@@ -641,15 +637,9 @@ TEST_F(WKBasedNavigationManagerTest, RestoreSessionWithHistory) {
   EXPECT_EQ(url.spec(), pending_item->GetVirtualURL());
   EXPECT_EQ("Test Website 0", base::UTF16ToUTF8(pending_item->GetTitle()));
 
-  std::string testwebui_url = web::features::WebUISchemeHandlingEnabled()
-                                  ? "testwebui://test/"
-                                  : "about:blank?for=testwebui%3A%2F%2Ftest%2F";
-
   EXPECT_EQ("{\"offset\":0,\"titles\":[\"Test Website 0\",\"\"],"
-            "\"urls\":[\"" +
-                testwebui_url +
-                "\","
-                "\"http://www.1.com/\"]}",
+            "\"urls\":[\"testwebui://test/\","
+            "\"http://www.1.com/\"]}",
             ExtractRestoredSession(pending_url));
 
   // Check that cached visible item is returned.
@@ -808,6 +798,8 @@ TEST_F(WKBasedNavigationManagerTest, EmptyWindowOpenNavigation) {
 
   [mock_wk_list_ setCurrentURL:@"http://www.2.com"];
   manager_->CommitPendingItem();
+  OCMExpect([mock_web_view_ URL])
+      .andReturn([[NSURL alloc] initWithString:@"http://www.2.com"]);
 
   const NavigationItem* last_committed_item_2 =
       manager_->GetLastCommittedItem();

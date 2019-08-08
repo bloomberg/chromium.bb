@@ -332,6 +332,8 @@ void SourceUrlRecorderWebContentsObserver::MaybeRecordUrl(
   navigation_data.previous_source_id =
       last_committed_full_navigation_source_id_;
 
+  navigation_data.navigation_time = navigation_handle->NavigationStart();
+
   // If the last_committed_full_navigation_or_same_document_source_id_ isn't
   // equal to the last_committed_full_navigation_source_id_, it indicates the
   // previous source was a same document navigation.

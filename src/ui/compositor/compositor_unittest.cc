@@ -19,9 +19,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
-#include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
 #include "ui/compositor/test/in_process_context_factory.h"
+#include "ui/compositor/test/test_context_factories.h"
 
 using testing::Mock;
 using testing::_;
@@ -35,21 +35,19 @@ class CompositorTest : public testing::Test {
   ~CompositorTest() override {}
 
   void SetUp() override {
-    ui::ContextFactory* context_factory = nullptr;
-    ui::ContextFactoryPrivate* context_factory_private = nullptr;
-    ui::InitializeContextFactoryForTests(false, &context_factory,
-                                         &context_factory_private);
+    context_factories_ = std::make_unique<TestContextFactories>(false);
 
-    compositor_.reset(new ui::Compositor(
-        context_factory_private->AllocateFrameSinkId(), context_factory,
-        context_factory_private, CreateTaskRunner(),
-        false /* enable_pixel_canvas */));
+    compositor_ = std::make_unique<Compositor>(
+        context_factories_->GetContextFactoryPrivate()->AllocateFrameSinkId(),
+        context_factories_->GetContextFactory(),
+        context_factories_->GetContextFactoryPrivate(), CreateTaskRunner(),
+        false /* enable_pixel_canvas */);
     compositor_->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
   }
 
   void TearDown() override {
     compositor_.reset();
-    ui::TerminateContextFactoryForTests();
+    context_factories_.reset();
   }
 
   void DestroyCompositor() { compositor_.reset(); }
@@ -57,10 +55,11 @@ class CompositorTest : public testing::Test {
  protected:
   virtual scoped_refptr<base::SingleThreadTaskRunner> CreateTaskRunner() = 0;
 
-  ui::Compositor* compositor() { return compositor_.get(); }
+  Compositor* compositor() { return compositor_.get(); }
 
  private:
-  std::unique_ptr<ui::Compositor> compositor_;
+  std::unique_ptr<TestContextFactories> context_factories_;
+  std::unique_ptr<Compositor> compositor_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorTest);
 };

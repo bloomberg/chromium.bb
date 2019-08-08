@@ -52,11 +52,19 @@ class BatchElementChecker {
   void AddFieldValueCheck(const Selector& selector,
                           GetFieldValueCallback callback);
 
+  // A callback to call once all the elements have been checked. These callbacks
+  // are guaranteed to be called in order, finishing with the callback passed to
+  // Run().
+  //
+  // These callback are allowed to delete the current instance.
+  void AddAllDoneCallback(base::OnceCallback<void()> all_done);
+
   // Returns true if all there are no checks to run.
   bool empty() const;
 
-  // Runs the checks. Call |all_done| once all the results have been reported.
-  void Run(WebController* web_controller, base::OnceCallback<void()> all_done);
+  // Runs the checks. Once all checks are done, calls the callbacks registered
+  // to AddAllDoneCallback().
+  void Run(WebController* web_controller);
 
  private:
   void OnElementChecked(std::vector<ElementCheckCallback>* callbacks,
@@ -80,7 +88,7 @@ class BatchElementChecker {
   // Run() was called. Checking elements might or might not have finished yet.
   bool started_ = false;
 
-  base::OnceCallback<void()> all_done_;
+  std::vector<base::OnceCallback<void()>> all_done_;
 
   base::WeakPtrFactory<BatchElementChecker> weak_ptr_factory_;
 

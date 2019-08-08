@@ -18,7 +18,8 @@ namespace {
 
 void InitLogging() {
   logging::LoggingSettings settings;
-  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+  settings.logging_dest =
+      logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;
   settings.log_file = nullptr;
   settings.lock_log = logging::DONT_LOCK_LOG_FILE;
   settings.delete_old = logging::APPEND_TO_OLD_LOG_FILE;

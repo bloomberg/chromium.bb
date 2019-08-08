@@ -26,6 +26,7 @@ class ConciergeClient;
 class CrosDisksClient;
 class DebugDaemonClient;
 class EasyUnlockClient;
+class GnubbyClient;
 class ImageBurnerClient;
 class ImageLoaderClient;
 class LorgnetteManagerClient;
@@ -35,6 +36,7 @@ class SeneschalClient;
 class SmbProviderClient;
 class UpdateEngineClient;
 class VirtualFileProviderClient;
+class VmPluginDispatcherClient;
 class WilcoDtcSupportdClient;
 
 // D-Bus clients used only in the browser process.
@@ -62,6 +64,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusClientsBrowser {
   std::unique_ptr<CrosDisksClient> cros_disks_client_;
   std::unique_ptr<DebugDaemonClient> debug_daemon_client_;
   std::unique_ptr<EasyUnlockClient> easy_unlock_client_;
+  std::unique_ptr<GnubbyClient> gnubby_client_;
   std::unique_ptr<ImageBurnerClient> image_burner_client_;
   std::unique_ptr<ImageLoaderClient> image_loader_client_;
   std::unique_ptr<LorgnetteManagerClient> lorgnette_manager_client_;
@@ -71,6 +74,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusClientsBrowser {
   std::unique_ptr<SmbProviderClient> smb_provider_client_;
   std::unique_ptr<UpdateEngineClient> update_engine_client_;
   std::unique_ptr<VirtualFileProviderClient> virtual_file_provider_client_;
+  std::unique_ptr<VmPluginDispatcherClient> vm_plugin_dispatcher_client_;
   std::unique_ptr<WilcoDtcSupportdClient> wilco_dtc_supportd_client_;
 
   DISALLOW_COPY_AND_ASSIGN(DBusClientsBrowser);

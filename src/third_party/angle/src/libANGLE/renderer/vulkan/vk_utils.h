@@ -27,6 +27,7 @@
     PROC(Framebuffer)            \
     PROC(MemoryObject)           \
     PROC(Program)                \
+    PROC(Semaphore)              \
     PROC(Texture)                \
     PROC(VertexArray)
 
@@ -163,14 +164,28 @@ GetImplType<T> *GetImpl(const T *glObject)
     return GetImplAs<GetImplType<T>>(glObject);
 }
 
-class GarbageObject final
+class GarbageObjectBase
 {
   public:
     template <typename ObjectT>
-    GarbageObject(Serial serial, const ObjectT &object)
-        : mSerial(serial),
-          mHandleType(HandleTypeHelper<ObjectT>::kHandleType),
+    GarbageObjectBase(const ObjectT &object)
+        : mHandleType(HandleTypeHelper<ObjectT>::kHandleType),
           mHandle(reinterpret_cast<VkDevice>(object.getHandle()))
+    {}
+    GarbageObjectBase();
+
+    void destroy(VkDevice device);
+
+  private:
+    HandleType mHandleType;
+    VkDevice mHandle;
+};
+
+class GarbageObject final : public GarbageObjectBase
+{
+  public:
+    template <typename ObjectT>
+    GarbageObject(Serial serial, const ObjectT &object) : GarbageObjectBase(object), mSerial(serial)
     {}
 
     GarbageObject();
@@ -178,15 +193,12 @@ class GarbageObject final
     GarbageObject &operator=(const GarbageObject &other);
 
     bool destroyIfComplete(VkDevice device, Serial completedSerial);
-    void destroy(VkDevice device);
 
   private:
     // TODO(jmadill): Since many objects will have the same serial, it might be more efficient to
     // store the serial outside of the garbage object itself. We could index ranges of garbage
     // objects in the Renderer, using a circular buffer.
     Serial mSerial;
-    HandleType mHandleType;
-    VkDevice mHandle;
 };
 
 class MemoryProperties final : angle::NonCopyable
@@ -291,6 +303,8 @@ angle::Result InitShaderAndSerial(Context *context,
                                   ShaderAndSerial *shaderAndSerial,
                                   const uint32_t *shaderCode,
                                   size_t shaderCodeSize);
+
+gl::TextureType Get2DTextureType(uint32_t layerCount, GLint samples);
 
 enum class RecordingMode
 {
@@ -465,6 +479,7 @@ class Shared final : angle::NonCopyable
   private:
     RefCounted<T> *mRefCounted;
 };
+
 }  // namespace vk
 
 // List of function pointers for used extensions.
@@ -481,6 +496,9 @@ extern PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT;
 
 // VK_KHR_get_physical_device_properties2
 extern PFN_vkGetPhysicalDeviceProperties2KHR vkGetPhysicalDeviceProperties2KHR;
+
+// VK_KHR_external_semaphore_fd
+extern PFN_vkImportSemaphoreFdKHR vkImportSemaphoreFdKHR;
 
 // Lazily load entry points for each extension as necessary.
 void InitDebugUtilsEXTFunctions(VkInstance instance);
@@ -499,6 +517,8 @@ extern PFN_vkGetAndroidHardwareBufferPropertiesANDROID vkGetAndroidHardwareBuffe
 extern PFN_vkGetMemoryAndroidHardwareBufferANDROID vkGetMemoryAndroidHardwareBufferANDROID;
 void InitExternalMemoryHardwareBufferANDROIDFunctions(VkInstance instance);
 #endif
+
+void InitExternalSemaphoreFdFunctions(VkInstance instance);
 
 namespace gl_vk
 {
@@ -531,6 +551,16 @@ void GetViewport(const gl::Rectangle &viewport,
                  GLint renderAreaHeight,
                  VkViewport *viewportOut);
 }  // namespace gl_vk
+
+namespace vk_gl
+{
+// Find set bits in sampleCounts and add the corresponding sample count to the set.
+void AddSampleCounts(VkSampleCountFlags sampleCounts, gl::SupportedSampleSet *outSet);
+// Return the maximum sample count with a bit set in |sampleCounts|.
+GLuint GetMaxSampleCount(VkSampleCountFlags sampleCounts);
+// Return a supported sample count that's at least as large as the requested one.
+GLuint GetSampleCount(VkSampleCountFlags supportedCounts, GLuint requestedCount);
+}  // namespace vk_gl
 
 }  // namespace rx
 

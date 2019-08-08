@@ -14,8 +14,8 @@
 
       iron-dropdown,
       cr-input {
-        width: var(--cr-searchable-drop-down-width,
-                   var(--cr-default-input-max-width));
+        /* 472px is the max width of the input field for a dialog. */
+        width: var(--cr-searchable-drop-down-width, 472px);
       }
 
       iron-dropdown {

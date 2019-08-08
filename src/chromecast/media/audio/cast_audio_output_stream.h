@@ -12,6 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "chromecast/base/task_runner_impl.h"
 #include "chromecast/common/mojom/multiroom.mojom.h"
 #include "chromecast/media/cma/backend/cma_backend.h"
@@ -124,6 +125,7 @@ class CastAudioOutputStream : public ::media::AudioOutputStream {
   void Stop() override;
   void SetVolume(double volume) override;
   void GetVolume(double* volume) override;
+  void Flush() override;
 
  private:
   class CmaWrapper;

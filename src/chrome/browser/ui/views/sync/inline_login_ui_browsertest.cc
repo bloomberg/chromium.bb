@@ -71,6 +71,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(OS_WIN)
+#include "chrome/credential_provider/common/gcp_strings.h"
+#endif  // defined(OS_WIN)
+
 using ::testing::_;
 using ::testing::AtLeast;
 using ::testing::Invoke;
@@ -130,8 +134,6 @@ class FooWebUIProvider
                std::unique_ptr<content::WebUIController>(content::WebUI* web_ui,
                                                          const GURL& url));
 };
-
-const char kFooWebUIURL[] = "chrome://foo/";
 
 bool AddToSet(std::set<content::WebContents*>* set,
               content::WebContents* web_contents) {
@@ -768,12 +770,12 @@ class InlineLoginUISafeIframeBrowserTest : public InProcessBrowserTest {
         ChromeWebUIControllerFactory::GetInstance());
     test_factory_ = std::make_unique<TestChromeWebUIControllerFactory>();
     content::WebUIControllerFactory::RegisterFactory(test_factory_.get());
-    test_factory_->AddFactoryOverride(GURL(kFooWebUIURL).host(),
+    test_factory_->AddFactoryOverride(content::GetWebUIURL("foo/").host(),
                                       &foo_provider_);
   }
 
   void TearDownOnMainThread() override {
-    test_factory_->RemoveFactoryOverride(GURL(kFooWebUIURL).host());
+    test_factory_->RemoveFactoryOverride(content::GetWebUIURL("foo/").host());
     content::WebUIControllerFactory::UnregisterFactoryForTesting(
         test_factory_.get());
     test_factory_.reset();
@@ -787,10 +789,10 @@ class InlineLoginUISafeIframeBrowserTest : public InProcessBrowserTest {
 // Make sure that the foo webui handler is working properly and that it gets
 // created when navigated to normally.
 IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest, Basic) {
-  const GURL kUrl(kFooWebUIURL);
+  const GURL kUrl(content::GetWebUIURL("foo/"));
   EXPECT_CALL(foo_provider(), NewWebUI(_, ::testing::Eq(kUrl)))
       .WillOnce(ReturnNewWebUI());
-  ui_test_utils::NavigateToURL(browser(), GURL(kFooWebUIURL));
+  ui_test_utils::NavigateToURL(browser(), content::GetWebUIURL("foo/"));
 }
 
 // Make sure that the foo webui handler does not get created when we try to
@@ -800,34 +802,6 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest, NoWebUIInIframe) {
       "?source=0&access_point=0&reason=5&frameUrl=chrome://foo");
   EXPECT_CALL(foo_provider(), NewWebUI(_, _)).Times(0);
   ui_test_utils::NavigateToURL(browser(), url);
-}
-
-// Make sure that "success.html" can be loaded by chrome://chrome-signin.
-// http://crbug.com/709117.
-// Flaky on Linux and Mac. http://crbug.com/722164.
-IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest,
-                       LoadSuccessContinueURL) {
-  ui_test_utils::NavigateToURL(browser(), GetSigninPromoURL());
-  WaitUntilUIReady(browser());
-
-  const std::string success_url =
-      GaiaUrls::GetInstance()->signin_completed_continue_url().spec();
-  const char* kLoadSuccessPageScript =
-      "var handler = function(e) {"
-      "  if (e.url == '%s') {"
-      "    window.domAutomationController.send('success_page_loaded');"
-      "  }"
-      "};"
-      "var extension_webview = inline.login.getAuthExtHost().webview_;"
-      "extension_webview.addEventListener('loadcommit', handler);"
-      "extension_webview.src = '%s';";
-  std::string script = base::StringPrintf(
-      kLoadSuccessPageScript, success_url.c_str(), success_url.c_str());
-
-  std::string message;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      browser()->tab_strip_model()->GetActiveWebContents(), script, &message));
-  EXPECT_EQ("success_page_loaded", message);
 }
 
 // Make sure that the gaia iframe cannot trigger top-frame navigation.
@@ -866,3 +840,152 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest,
 
   EXPECT_EQ(GURL("about:blank"), contents->GetVisibleURL());
 }
+
+// Tracks the URLs requested while running a browser test and returns a default
+// empty html page as a result. Each URL + path tracks all the query params
+// requested to this endpoint for validation later on.
+class HtmlRequestTracker {
+ public:
+  HtmlRequestTracker() = default;
+  ~HtmlRequestTracker() = default;
+  std::unique_ptr<net::test_server::HttpResponse> HtmlResponseHandler(
+      const net::test_server::HttpRequest& request) {
+    // Track the query keyed on the host + path portion of the URL.
+    std::vector<std::pair<std::string, std::string>> query_params;
+    GURL request_url = request.GetURL();
+    net::QueryIterator it(request_url);
+    for (; !it.IsAtEnd(); it.Advance()) {
+      query_params.push_back(
+          std::make_pair(it.GetKey(), it.GetUnescapedValue()));
+    }
+    requested_urls_[GURL(request.GetURL().GetWithEmptyPath().Resolve(
+                        request.GetURL().path()))]
+        .push_back(query_params);
+
+    return EmptyHtmlResponseHandler(request);
+  }
+
+  bool PageRequested(const GURL& url) { return PageRequested(url, {}); }
+
+  bool PageRequested(const GURL& url,
+                     const std::vector<std::pair<std::string, std::string>>&
+                         required_query_params) {
+    auto it = requested_urls_.find(url.GetWithEmptyPath().Resolve(url.path()));
+
+    if (it == requested_urls_.end())
+      return false;
+
+    if (required_query_params.empty())
+      return true;
+
+    // Go to every query made on this endpoint and see if one of them matches
+    // the required query params.
+    for (auto& query_param : required_query_params) {
+      bool query_params_match = true;
+      for (auto& requested_query_params : it->second) {
+        if (std::find_if(requested_query_params.begin(),
+                         requested_query_params.end(),
+                         [&query_param](auto& lhs) {
+                           return base::EqualsCaseInsensitiveASCII(
+                                      query_param.first, lhs.first) &&
+                                  base::EqualsCaseInsensitiveASCII(
+                                      query_param.second, lhs.second);
+                         }) == requested_query_params.end()) {
+          query_params_match = false;
+          break;
+        }
+      }
+
+      if (query_params_match)
+        return true;
+    }
+
+    return false;
+  }
+
+ private:
+  std::map<GURL, std::vector<std::vector<std::pair<std::string, std::string>>>>
+      requested_urls_;
+};
+
+// Tests whether the correct gaia url and query parameters are requested based
+// on the signin reason.
+class InlineLoginCorrectGaiaUrlBrowserTest : public InProcessBrowserTest {
+ protected:
+  void SetUp() override {
+    // Track all the requests through the |tracker_| and return an empty html
+    // page to the browser that is running.
+    embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+        &HtmlRequestTracker::HtmlResponseHandler, base::Unretained(&tracker_)));
+
+    // Don't spin up the IO thread yet since no threads are allowed while
+    // spawning sandbox host process. See crbug.com/322732.
+    ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
+
+    InProcessBrowserTest::SetUp();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // Redirect all gaia requests to the test server that is running.
+    const GURL& base_url = embedded_test_server()->base_url();
+    command_line->AppendSwitchASCII(::switches::kGaiaUrl, base_url.spec());
+    command_line->AppendSwitchASCII(::switches::kLsoUrl, base_url.spec());
+    command_line->AppendSwitchASCII(::switches::kGoogleApisUrl,
+                                    base_url.spec());
+  }
+
+  void SetUpOnMainThread() override {
+    embedded_test_server()->StartAcceptingConnections();
+  }
+
+  void TearDownOnMainThread() override {
+    EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
+  }
+
+  HtmlRequestTracker tracker_;
+};
+
+#if defined(OS_WIN)
+IN_PROC_BROWSER_TEST_F(InlineLoginCorrectGaiaUrlBrowserTest,
+                       FetchLstOnlyEndpointForSignin) {
+  signin_metrics::AccessPoint access_point =
+      signin_metrics::AccessPoint::ACCESS_POINT_MACHINE_LOGON;
+  signin_metrics::Reason reason = signin_metrics::Reason::REASON_FETCH_LST_ONLY;
+
+  auto signin_url = signin::GetEmbeddedPromoURL(access_point, reason, false);
+  ui_test_utils::NavigateToURL(browser(), signin_url);
+
+  WaitUntilUIReady(browser());
+
+  // Expected gaia endpoint to load.
+  GURL gaia_url = GaiaUrls::GetInstance()->embedded_setup_windows_url();
+
+  EXPECT_TRUE(tracker_.PageRequested(gaia_url, {{"flow", "signin"}}));
+}
+
+IN_PROC_BROWSER_TEST_F(InlineLoginCorrectGaiaUrlBrowserTest,
+                       FetchLstOnlyEndpointForReauth) {
+  signin_metrics::AccessPoint access_point =
+      signin_metrics::AccessPoint::ACCESS_POINT_MACHINE_LOGON;
+  signin_metrics::Reason reason = signin_metrics::Reason::REASON_FETCH_LST_ONLY;
+
+  static const std::string email = "foo@gmail.com";
+  auto signin_url =
+      signin::GetEmbeddedReauthURLWithEmail(access_point, reason, email);
+
+  // Set the validated gaia id parameter so that the InlineLoginHandler will
+  // request a reauth.
+  signin_url = net::AppendQueryParameter(
+      signin_url, credential_provider::kValidateGaiaIdSigninPromoParameter,
+      "gaia_id");
+
+  ui_test_utils::NavigateToURL(browser(), signin_url);
+  WaitUntilUIReady(browser());
+
+  // Expected gaia endpoint to load.
+  GURL gaia_url = GaiaUrls::GetInstance()->embedded_setup_windows_url();
+
+  EXPECT_TRUE(
+      tracker_.PageRequested(gaia_url, {{"flow", "reauth"}, {"email", email}}));
+}
+#endif

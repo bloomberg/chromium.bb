@@ -92,7 +92,7 @@ IN_PROC_BROWSER_TEST_F(LocationIconViewTest,
           ->GetOmniboxPageActionIconContainerView()
           ->GetPageActionIconView(PageActionIconType::kTranslate);
   ASSERT_TRUE(icon_view);
-  EXPECT_TRUE(icon_view->visible());
+  EXPECT_TRUE(icon_view->GetVisible());
 
   // Ensure the bubble's widget is visible, but inactive. Active widgets are
   // focused by accessibility, so not of concern.
@@ -105,7 +105,7 @@ IN_PROC_BROWSER_TEST_F(LocationIconViewTest,
   EXPECT_TRUE(location_bar_view->ActivateFirstInactiveBubbleForAccessibility());
 
   // Ensure the bubble's widget refreshed appropriately.
-  EXPECT_TRUE(icon_view->visible());
+  EXPECT_TRUE(icon_view->GetVisible());
   EXPECT_TRUE(widget->IsVisible());
   EXPECT_TRUE(widget->IsActive());
 }

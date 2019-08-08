@@ -53,7 +53,7 @@ void RetryForHistogramUntilCountReached(base::HistogramTester* histogram_tester,
                                         const std::string& histogram_name,
                                         size_t count) {
   while (true) {
-    base::ThreadPool::GetInstance()->FlushForTesting();
+    base::ThreadPoolInstance::Get()->FlushForTesting();
     base::RunLoop().RunUntilIdle();
 
     content::FetchHistogramsFromChildProcesses();
@@ -218,7 +218,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsBrowserTest, NoScriptPreviewsDisabled) {
   EXPECT_FALSE(noscript_css_requested());
 
   // Verify info bar not presented via histogram check.
-  histogram_tester.ExpectTotalCount("Previews.InfoBarAction.NoScript", 0);
+  histogram_tester.ExpectTotalCount("Previews.PreviewShown.NoScript", 0);
 }
 
 // This test class enables NoScriptPreviews but without OptimizationHints.
@@ -315,7 +315,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
 
   // Verify info bar presented via histogram check.
   RetryForHistogramUntilCountReached(&histogram_tester,
-                                     "Previews.InfoBarAction.NoScript", 1);
+                                     "Previews.PreviewShown.NoScript", 1);
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -369,7 +369,7 @@ IN_PROC_BROWSER_TEST_F(
 
   // Verify info bar presented via histogram check.
   RetryForHistogramUntilCountReached(&histogram_tester,
-                                     "Previews.InfoBarAction.NoScript", 1);
+                                     "Previews.PreviewShown.NoScript", 1);
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -558,6 +558,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsReportingBrowserTest,
         [
           {
             "body": {
+              "id": "LitePageServed",
               "message": "Modified page load behavior on the page because )text"
       R"text(the page was expected to take a long amount of time to load. )text"
       R"text(https://www.chromestatus.com/feature/5148050062311424"

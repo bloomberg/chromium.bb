@@ -83,6 +83,14 @@
           ['translate(10px, 10px)', 'translateY(10px)', 'translate3d(10px, 10px, 10px)']);
     },
 
+    function testNameValuePresets(next) {
+      testAgainstGolden(namePrompt, 'underli', false, ['text-decoration: underline'], [], next);
+    },
+
+    function testNameValuePresetWithNameMatch(next) {
+      testAgainstGolden(namePrompt, 'display', false, ['display: block'], [], next);
+    },
+
     function testValueSubstring(next) {
       testAgainstGolden(
           valuePromptFor('color'), 'blue', false, ['blue', 'darkblue', 'lightblue'],

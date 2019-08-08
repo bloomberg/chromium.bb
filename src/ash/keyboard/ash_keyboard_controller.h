@@ -8,12 +8,12 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/keyboard/ui/keyboard_controller_observer.h"
 #include "ash/public/interfaces/keyboard_controller.mojom.h"
 #include "ash/session/session_observer.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
-#include "ui/keyboard/keyboard_controller_observer.h"
 
 namespace gfx {
 class Rect;
@@ -26,7 +26,7 @@ class KeyboardUIFactory;
 
 namespace ash {
 
-class SessionController;
+class SessionControllerImpl;
 class VirtualKeyboardController;
 
 // Contains and observes a keyboard::KeyboardController instance. Ash specific
@@ -39,7 +39,7 @@ class ASH_EXPORT AshKeyboardController
       public SessionObserver {
  public:
   // |session_controller| is expected to outlive AshKeyboardController.
-  explicit AshKeyboardController(SessionController* session_controller);
+  explicit AshKeyboardController(SessionControllerImpl* session_controller);
   ~AshKeyboardController() override;
 
   // Called from RegisterInterfaces to bind this to the Ash service.
@@ -58,8 +58,7 @@ class ASH_EXPORT AshKeyboardController
   void SendOnKeyboardUIDestroyed();
 
   // mojom::KeyboardController:
-  void KeyboardContentsLoaded(const base::UnguessableToken& token,
-                              const gfx::Size& size) override;
+  void KeyboardContentsLoaded(const gfx::Size& size) override;
   void GetKeyboardConfig(GetKeyboardConfigCallback callback) override;
   void SetKeyboardConfig(
       keyboard::mojom::KeyboardConfigPtr keyboard_config) override;
@@ -110,7 +109,7 @@ class ASH_EXPORT AshKeyboardController
       override;
   void OnKeyboardEnabledChanged(bool is_enabled) override;
 
-  SessionController* session_controller_;  // unowned
+  SessionControllerImpl* session_controller_;  // unowned
   std::unique_ptr<keyboard::KeyboardController> keyboard_controller_;
   std::unique_ptr<VirtualKeyboardController> virtual_keyboard_controller_;
   mojo::BindingSet<mojom::KeyboardController> bindings_;

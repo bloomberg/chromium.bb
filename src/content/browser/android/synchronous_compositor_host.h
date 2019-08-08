@@ -54,8 +54,8 @@ class SynchronousCompositorHost : public SynchronousCompositor,
   void ReturnResources(
       uint32_t layer_tree_frame_sink_id,
       const std::vector<viz::ReturnedResource>& resources) override;
-  void DidPresentCompositorFrames(
-      viz::PresentationFeedbackMap feedbacks) override;
+  void DidPresentCompositorFrames(viz::PresentationFeedbackMap feedbacks,
+                                  uint32_t frame_token) override;
   void SetMemoryPolicy(size_t bytes_limit) override;
   void DidBecomeActive() override;
   void DidChangeRootLayerScrollOffset(
@@ -109,6 +109,7 @@ class SynchronousCompositorHost : public SynchronousCompositor,
   // handle blocking calls.
   bool IsReadyForSynchronousCall();
   void UpdateRootLayerStateOnClient();
+  void UpdatePresentedFrameToken(uint32_t frame_token);
 
   RenderWidgetHostViewAndroid* const rwhva_;
   SynchronousCompositorClient* const client_;
@@ -158,6 +159,9 @@ class SynchronousCompositorHost : public SynchronousCompositor,
   float page_scale_factor_ = 0.f;
   float min_page_scale_factor_ = 0.f;
   float max_page_scale_factor_ = 0.f;
+
+  // From viz display.
+  uint32_t last_frame_token_ = 0u;
 
   scoped_refptr<SynchronousCompositorSyncCallBridge> bridge_;
 

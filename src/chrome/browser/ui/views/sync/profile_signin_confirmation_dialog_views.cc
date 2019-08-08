@@ -119,8 +119,10 @@ views::View* ProfileSigninConfirmationDialogViews::CreateExtraView() {
 
   const base::string16 continue_signin_text =
       l10n_util::GetStringUTF16(IDS_ENTERPRISE_SIGNIN_CONTINUE);
+
   return views::MdTextButton::CreateSecondaryUiButton(this,
-                                                      continue_signin_text);
+                                                      continue_signin_text)
+      .release();
 }
 
 bool ProfileSigninConfirmationDialogViews::Accept() {

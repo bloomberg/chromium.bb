@@ -4,6 +4,7 @@
 
 module network.mojom;
 
+import "mojo/public/mojom/base/big_buffer.mojom";
 import "mojo/public/mojom/base/file.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/time.mojom";
@@ -14,7 +15,6 @@ import "services/network/public/mojom/data_pipe_getter.mojom";
 import "services/network/public/mojom/fetch_api.mojom";
 import "services/network/public/mojom/http_request_headers.mojom";
 import "services/network/public/mojom/network_param.mojom";
-import "services/network/public/mojom/request_context_frame_type.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
@@ -87,9 +87,22 @@ struct URLRequest {
   url.mojom.Url site_for_cookies;
 
   // A non-null |top_frame_origin| contains the origin of the top frame of the
-  // page making the request. Note that this is experimental and is only set for
-  // navigation and document subresource requests but not other cases such as
-  // workers.
+  // page making the request. |top_frame_origin| depends on the context making
+  // the request.
+  // - If a page is making the request, it is the origin of the top-level
+  //   frame of the page. This is set for the navigation and subresource
+  //   requests.
+  // - If a dedicated worker is making the request, it is the top-frame
+  //   origin of its creator (which may be a page or a dedicated worker).
+  // - If a shared worker or a service worker is making the request, it is null,
+  //   including for both the main script request and subresource requests.
+  //
+  // In some other cases(?) |top_frame_origin| may be null.
+  //
+  // Note that this is experimental.
+  //
+  // TODO(crbug.com/911299): This field will most likely be removed at some
+  // point.
   url.mojom.Origin? top_frame_origin;
 
   // Boolean indicating whether SameSite cookies are allowed to be attached
@@ -159,9 +172,8 @@ struct URLRequest {
   // The priority of this request determined by Blink.
   RequestPriority priority;
 
-  // Indicates which frame (or worker context) the request is being loaded into,
-  // or kAppCacheNoHostId.
-  int32 appcache_host_id;
+  // Indicates which frame (or worker context) the request is being loaded into.
+  mojo_base.mojom.UnguessableToken? appcache_host_id;
 
   // True if corresponding AppCache group should be reset.
   bool should_reset_appcache;
@@ -184,6 +196,14 @@ struct URLRequest {
   // TODO(jam): remove this from the struct since network service shouldn't know
   // about this.
   bool skip_service_worker;
+
+  // If true then the request continues even if it's blocked by CORB.
+  bool corb_detachable = false;
+
+  // TODO(lukasza): https://crbug.com/846339: Remove the field below and instead
+  // make plugins use a separate URLoaderFactory. Note requests of this type are
+  // only excluded if fetch_request_mode is kNoCors.
+  bool corb_excluded = false;
 
   // https://fetch.spec.whatwg.org/#concept-request-mode
   // Used mainly by CORS handling (out-of-blink CORS), CORB, Service Worker.
@@ -211,9 +231,6 @@ struct URLRequest {
   // TODO(jam): remove this from the struct since network service shouldn't know
   // about this.
   int32 fetch_request_context_type;
-
-  // The frame type passed to the ServiceWorker.
-  RequestContextFrameType fetch_frame_type;
 
   // Optional resource request body.
   URLRequestBody? request_body;
@@ -275,6 +292,10 @@ struct URLRequest {
   // Some users, notably blink, has its own cache. This flag is set to exempt
   // some CORS logic for a revalidating request.
   bool is_revalidating;
+
+  // True when the CORS module should *also* use the origin set to the
+  // associated URLLoaderFactory.
+  bool should_also_use_factory_bound_origin_for_cors;
 
   // The profile ID of network conditions to throttle the network request.
   mojo_base.mojom.UnguessableToken? throttling_profile_id;
@@ -420,7 +441,7 @@ interface URLLoaderClient {
   OnUploadProgress(int64 current_position, int64 total_size) => ();
 
   // Called when cached metadata from a resource request is ready.
-  OnReceiveCachedMetadata(array<uint8> data);
+  OnReceiveCachedMetadata(mojo_base.mojom.BigBuffer data);
 
   // Called when the transfer size is updated. This is only called if
   // |report_raw_headers| is set or the renderer has permission to read the

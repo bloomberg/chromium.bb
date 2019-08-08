@@ -27,10 +27,6 @@
 #include "ui/android/view_android.h"
 #endif  // OS_ANDROID
 
-namespace viz {
-class CompositorFrameMetadata;
-}
-
 namespace content {
 
 class BrowserContext;
@@ -38,6 +34,7 @@ class DevToolsFrameTraceRecorder;
 class FrameTreeNode;
 class NavigationHandleImpl;
 class RenderFrameHostImpl;
+struct DevToolsFrameMetadata;
 
 class CONTENT_EXPORT RenderFrameDevToolsAgentHost
     : public DevToolsAgentHostImpl,
@@ -64,8 +61,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
   static void SignalSynchronousSwapCompositorFrame(
       RenderFrameHost* frame_host,
-      viz::CompositorFrameMetadata frame_metadata);
-
+      const DevToolsFrameMetadata& frame_metadata);
   FrameTreeNode* frame_tree_node() { return frame_tree_node_; }
 
   // DevToolsAgentHost overrides.
@@ -119,7 +115,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
   bool IsChildFrame();
 
-  void OnSwapCompositorFrame(const IPC::Message& message);
   void DestroyOnRenderFrameGone();
   void UpdateFrameHost(RenderFrameHostImpl* frame_host);
   void SetFrameTreeNode(FrameTreeNode* frame_tree_node);
@@ -131,7 +126,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 #endif
 
   void SynchronousSwapCompositorFrame(
-      viz::CompositorFrameMetadata frame_metadata);
+      const DevToolsFrameMetadata& frame_metadata);
   void UpdateResourceLoaderFactories();
 
   std::unique_ptr<DevToolsFrameTraceRecorder> frame_trace_recorder_;

@@ -15,6 +15,7 @@ import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
+import org.chromium.chrome.browser.init.ServiceManagerStartupUtils;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -27,6 +28,13 @@ public class ServicificationBackgroundService extends ChromeBackgroundService {
     private boolean mLaunchBrowserCalled;
     private boolean mNativeLoaded;
     private boolean mSupportsServiceManagerOnly;
+
+    public static void launchChromeInBackground(boolean serviceManagerOnlyMode) {
+        ServicificationBackgroundService service =
+                new ServicificationBackgroundService(serviceManagerOnlyMode);
+        service.onRunTask(new TaskParams(ServiceManagerStartupUtils.TASK_TAG));
+        service.waitForNativeLoaded();
+    }
 
     public ServicificationBackgroundService(boolean supportsServiceManagerOnly) {
         mSupportsServiceManagerOnly = supportsServiceManagerOnly;
@@ -109,4 +117,10 @@ public class ServicificationBackgroundService extends ChromeBackgroundService {
                                 BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
                                         .isStartupSuccessfullyCompleted()));
     }
+
+    public void assertPersistentHistogramsOnDiskSystemProfile() {
+        Assert.assertTrue(nativeTestPersistentHistogramsOnDiskSystemProfile());
+    }
+
+    private static native boolean nativeTestPersistentHistogramsOnDiskSystemProfile();
 }

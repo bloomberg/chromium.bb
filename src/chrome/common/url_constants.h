@@ -33,6 +33,9 @@ extern const char kAccessibilityLabelsLearnMoreURL[];
 // "Learn more" URL for when profile settings are automatically reset.
 extern const char kAutomaticSettingsResetLearnMoreURL[];
 
+// "Learn more" URL for Advanced Protection download warnings.
+extern const char kAdvancedProtectionDownloadLearnMoreURL[];
+
 // The URL for providing help when the Bluetooth adapter is off.
 extern const char kBluetoothAdapterOffHelpURL[];
 
@@ -209,6 +212,9 @@ extern const char kEnhancedPlaybackNotificationLearnMoreURL[];
 #endif
 
 #if defined(OS_CHROMEOS)
+// Help center URL for Chrome OS Account Manager.
+extern const char kAccountManagerLearnMoreURL[];
+
 // The URL for the "learn more" link for Google Play Store (ARC) settings.
 extern const char kAndroidAppsLearnMoreURL[];
 
@@ -226,6 +232,8 @@ extern const char kChromePaletteHelpURL[];
 extern const char kCrosScheme[];
 
 extern const char kCupsPrintLearnMoreURL[];
+
+extern const char kCupsPrintPPDLearnMoreURL[];
 
 // The URL for the "Learn more" link the the Easy Unlock settings.
 extern const char kEasyUnlockLearnMoreUrl[];

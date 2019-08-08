@@ -22,7 +22,7 @@ namespace storage {
 
 class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemUsageCache {
  public:
-  FileSystemUsageCache();
+  FileSystemUsageCache(bool is_incognito);
   ~FileSystemUsageCache();
 
   // Gets the size described in the .usage file even if dirty > 0 or
@@ -92,6 +92,12 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemUsageCache {
 
   // Used to scheduled delayed calls to CloseCacheFiles().
   base::OneShotTimer timer_;
+
+  // Incognito usages are kept in memory and are not written to disk.
+  bool is_incognito_;
+  // TODO(https://crbug.com/955905): Stop using base::FilePath as the key in
+  // this API as the paths are not necessarily actual on-disk locations.
+  std::map<base::FilePath, std::vector<uint8_t>> incognito_usages_;
 
   std::map<base::FilePath, std::unique_ptr<base::File>> cache_files_;
 

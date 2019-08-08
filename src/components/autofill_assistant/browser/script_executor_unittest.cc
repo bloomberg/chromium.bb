@@ -67,8 +67,8 @@ class ScriptExecutorTest : public testing::Test,
 
     ON_CALL(mock_web_controller_, OnElementCheck(_, _))
         .WillByDefault(RunOnceCallback<1>(true));
-    ON_CALL(mock_web_controller_, OnFocusElement(_, _))
-        .WillByDefault(RunOnceCallback<1>(OkClientStatus()));
+    ON_CALL(mock_web_controller_, OnFocusElement(_, _, _))
+        .WillByDefault(RunOnceCallback<2>(OkClientStatus()));
   }
 
  protected:
@@ -214,6 +214,8 @@ TEST_F(ScriptExecutorTest, RunOneActionReportAndReturn) {
 
   ASSERT_EQ(1u, processed_actions_capture.size());
   EXPECT_EQ(OTHER_ACTION_STATUS, processed_actions_capture[0].status());
+  EXPECT_TRUE(processed_actions_capture[0].has_run_time_ms());
+  EXPECT_GE(processed_actions_capture[0].run_time_ms(), 0);
 }
 
 TEST_F(ScriptExecutorTest, RunMultipleActions) {
@@ -846,7 +848,7 @@ TEST_F(ScriptExecutorTest, UpdateScriptListGetNext) {
   EXPECT_THAT(scripts_update_, SizeIs(1));
   EXPECT_THAT(scripts_update_count_, Eq(1));
   EXPECT_THAT("path", scripts_update_[0]->handle.path);
-  EXPECT_THAT("name", scripts_update_[0]->handle.name);
+  EXPECT_THAT("name", scripts_update_[0]->handle.chip.text());
 }
 
 TEST_F(ScriptExecutorTest, UpdateScriptListShouldNotifyMultipleTimes) {
@@ -921,7 +923,7 @@ TEST_F(ScriptExecutorTest, UpdateScriptListFromInterrupt) {
   EXPECT_THAT(scripts_update_, SizeIs(1));
   EXPECT_THAT(scripts_update_count_, Eq(1));
   EXPECT_THAT("path", scripts_update_[0]->handle.path);
-  EXPECT_THAT("update_from_interrupt", scripts_update_[0]->handle.name);
+  EXPECT_THAT("update_from_interrupt", scripts_update_[0]->handle.chip.text());
 }
 
 TEST_F(ScriptExecutorTest, RestorePreInterruptStatusMessage) {

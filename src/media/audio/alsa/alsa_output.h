@@ -81,6 +81,7 @@ class MEDIA_EXPORT AlsaPcmOutputStream : public AudioOutputStream {
   void Close() override;
   void Start(AudioSourceCallback* callback) override;
   void Stop() override;
+  void Flush() override;
   void SetVolume(double volume) override;
   void GetVolume(double* volume) override;
 

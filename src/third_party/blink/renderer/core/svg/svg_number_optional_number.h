@@ -43,12 +43,6 @@ class SVGNumberOptionalNumber final : public SVGPropertyBase {
   typedef void TearOffType;
   typedef void PrimitiveType;
 
-  static SVGNumberOptionalNumber* Create(SVGNumber* first_number,
-                                         SVGNumber* second_number) {
-    return MakeGarbageCollected<SVGNumberOptionalNumber>(first_number,
-                                                         second_number);
-  }
-
   SVGNumberOptionalNumber(SVGNumber* first_number, SVGNumber* second_number);
 
   SVGNumberOptionalNumber* Clone() const;

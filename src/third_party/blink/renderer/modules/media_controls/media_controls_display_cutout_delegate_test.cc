@@ -192,8 +192,8 @@ TEST_F(MediaControlsDisplayCutoutDelegateTest, CombinedGesture) {
   EXPECT_EQ(mojom::ViewportFit::kAuto, CurrentViewportFit());
 
   // Make sure we recorded a UseCounter metric.
-  EXPECT_TRUE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kMediaControlsDisplayCutoutGesture));
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kMediaControlsDisplayCutoutGesture));
 }
 
 TEST_F(MediaControlsDisplayCutoutDelegateTest, ContractingGesture) {
@@ -209,8 +209,8 @@ TEST_F(MediaControlsDisplayCutoutDelegateTest, ContractingGesture) {
   EXPECT_EQ(mojom::ViewportFit::kAuto, CurrentViewportFit());
 
   // Make sure we recorded a UseCounter metric.
-  EXPECT_TRUE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kMediaControlsDisplayCutoutGesture));
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kMediaControlsDisplayCutoutGesture));
 }
 
 TEST_F(MediaControlsDisplayCutoutDelegateTest, ContractingGesture_Noop) {
@@ -235,8 +235,8 @@ TEST_F(MediaControlsDisplayCutoutDelegateTest, ExpandingGesture) {
   EXPECT_EQ(mojom::ViewportFit::kAuto, CurrentViewportFit());
 
   // Make sure we recorded a UseCounter metric.
-  EXPECT_TRUE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kMediaControlsDisplayCutoutGesture));
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kMediaControlsDisplayCutoutGesture));
 }
 
 TEST_F(MediaControlsDisplayCutoutDelegateTest, ExpandingGesture_DoubleNoop) {
@@ -270,8 +270,8 @@ TEST_F(MediaControlsDisplayCutoutDelegateTest, IncompleteGestureClearsState) {
 }
 
 TEST_F(MediaControlsDisplayCutoutDelegateTest, MetricsNoop) {
-  EXPECT_FALSE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kMediaControlsDisplayCutoutGesture));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kMediaControlsDisplayCutoutGesture));
 }
 
 TEST_F(MediaControlsDisplayCutoutDelegateTest, NoFullscreen_Noop) {

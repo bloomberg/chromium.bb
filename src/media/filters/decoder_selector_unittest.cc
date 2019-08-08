@@ -89,13 +89,14 @@ class AudioDecoderSelectorTestParam {
   // Decoder::Initialize() takes different parameters depending on the type.
   static void ExpectInitialize(MockDecoder* decoder,
                                DecoderCapability capability) {
-    EXPECT_CALL(*decoder, Initialize(_, _, _, _, _))
-        .WillRepeatedly(
-            [capability](const AudioDecoderConfig& config, CdmContext*,
-                         const AudioDecoder::InitCB& init_cb,
-                         const AudioDecoder::OutputCB&, const WaitingCB&) {
-              init_cb.Run(IsConfigSupported(capability, config.is_encrypted()));
-            });
+    EXPECT_CALL(*decoder, Initialize_(_, _, _, _, _))
+        .WillRepeatedly([capability](const AudioDecoderConfig& config,
+                                     CdmContext*, AudioDecoder::InitCB& init_cb,
+                                     const AudioDecoder::OutputCB&,
+                                     const WaitingCB&) {
+          std::move(init_cb).Run(
+              IsConfigSupported(capability, config.is_encrypted()));
+        });
   }
 };
 
@@ -125,12 +126,13 @@ class VideoDecoderSelectorTestParam {
 
   static void ExpectInitialize(MockDecoder* decoder,
                                DecoderCapability capability) {
-    EXPECT_CALL(*decoder, Initialize(_, _, _, _, _, _))
+    EXPECT_CALL(*decoder, Initialize_(_, _, _, _, _, _))
         .WillRepeatedly(
             [capability](const VideoDecoderConfig& config, bool low_delay,
-                         CdmContext*, const VideoDecoder::InitCB& init_cb,
+                         CdmContext*, VideoDecoder::InitCB& init_cb,
                          const VideoDecoder::OutputCB&, const WaitingCB&) {
-              init_cb.Run(IsConfigSupported(capability, config.is_encrypted()));
+              std::move(init_cb).Run(
+                  IsConfigSupported(capability, config.is_encrypted()));
             });
   }
 };
@@ -162,7 +164,7 @@ class DecoderSelectorTest : public ::testing::Test {
         demuxer_stream_(TypeParam::kStreamType) {}
 
   void OnWaiting(WaitingReason reason) { NOTREACHED(); }
-  void OnOutput(const scoped_refptr<Output>& output) { NOTREACHED(); }
+  void OnOutput(scoped_refptr<Output> output) { NOTREACHED(); }
 
   MOCK_METHOD2_T(OnDecoderSelected,
                  void(std::string, std::unique_ptr<DecryptingDemuxerStream>));

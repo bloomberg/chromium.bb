@@ -268,7 +268,7 @@ TEST(EscapeTest, UnescapeURLComponent) {
   EXPECT_EQ(expected, UnescapeURLComponent(input, UnescapeRule::NORMAL));
 }
 
-TEST(EscapeTest, UnescapeAndDecodeUTF8URLComponent) {
+TEST(EscapeTest, UnescapeAndDecodeUTF8URLComponentWithAdjustments) {
   const UnescapeAndDecodeCase unescape_cases[] = {
     { "%",
       "%",
@@ -321,9 +321,11 @@ TEST(EscapeTest, UnescapeAndDecodeUTF8URLComponent) {
                                      UnescapeRule::REPLACE_PLUS_WITH_SPACE);
     EXPECT_EQ(std::string(unescape_case.query_unescaped), unescaped);
 
+    // The adjustments argument is covered by the next test.
+    //
     // TODO: Need to test unescape_spaces and unescape_percent.
-    base::string16 decoded = UnescapeAndDecodeUTF8URLComponent(
-        unescape_case.input, UnescapeRule::NORMAL);
+    base::string16 decoded = UnescapeAndDecodeUTF8URLComponentWithAdjustments(
+        unescape_case.input, UnescapeRule::NORMAL, nullptr);
     EXPECT_EQ(base::WideToUTF16(unescape_case.decoded), decoded);
   }
 }
@@ -411,13 +413,8 @@ TEST(EscapeTest, UnescapeBinaryURLComponent) {
   };
 
   for (const auto& test_case : kTestCases) {
-    std::string output;
-    UnescapeBinaryURLComponent(test_case.input, test_case.rules, &output);
-    EXPECT_EQ(std::string(test_case.output), output);
-    // Also test in-place unescaping.
-    output = test_case.input;
-    UnescapeBinaryURLComponent(output, test_case.rules, &output);
-    EXPECT_EQ(std::string(test_case.output), output);
+    EXPECT_EQ(test_case.output,
+              UnescapeBinaryURLComponent(test_case.input, test_case.rules));
   }
 
   // Test NULL character unescaping, which can't be tested above since those are
@@ -430,13 +427,64 @@ TEST(EscapeTest, UnescapeBinaryURLComponent) {
   expected.push_back(0);
   expected.push_back(0);
   expected.append("9Test");
-  std::string output;
-  UnescapeBinaryURLComponent(input, &output);
-  EXPECT_EQ(expected, output);
-  // Also test in-place unescaping.
-  output = input;
-  UnescapeBinaryURLComponent(output, &output);
-  EXPECT_EQ(expected, output);
+  EXPECT_EQ(expected, UnescapeBinaryURLComponent(input));
+}
+
+TEST(EscapeTest, UnescapeBinaryURLComponentSafe) {
+  const struct TestCase {
+    const char* input;
+    // Expected output. Null if call is expected to fail when
+    // |fail_on_path_separators| is false.
+    const char* expected_output;
+    // Whether |input| has any escaped path separators.
+    bool has_path_separators;
+  } kTestCases[] = {
+      // Spaces, percents, and invalid UTF-8 characters are all successfully
+      // unescaped.
+      {"%20%25foo%81", " %foo\x81", false},
+
+      // Characters disallowed unconditionally.
+      {"foo%00", nullptr, false},
+      {"foo%01", nullptr, false},
+      {"foo%0A", nullptr, false},
+      {"foo%0D", nullptr, false},
+
+      // Path separators.
+      {"foo%2F", "foo/", true},
+      {"foo%5C", "foo\\", true},
+
+      // Characters that are considered invalid to escape are ignored if passed
+      // in unescaped.
+      {"foo\x01\r/\\", "foo\x01\r/\\", false},
+  };
+
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(test_case.input);
+
+    std::string output = "foo";
+    if (!test_case.expected_output) {
+      EXPECT_FALSE(UnescapeBinaryURLComponentSafe(
+          test_case.input, false /* fail_on_path_separators */, &output));
+      EXPECT_TRUE(output.empty());
+      EXPECT_FALSE(UnescapeBinaryURLComponentSafe(
+          test_case.input, true /* fail_on_path_separators */, &output));
+      EXPECT_TRUE(output.empty());
+      continue;
+    }
+    EXPECT_TRUE(UnescapeBinaryURLComponentSafe(
+        test_case.input, false /* fail_on_path_separators */, &output));
+    EXPECT_EQ(test_case.expected_output, output);
+    if (test_case.has_path_separators) {
+      EXPECT_FALSE(UnescapeBinaryURLComponentSafe(
+          test_case.input, true /* fail_on_path_separators */, &output));
+      EXPECT_TRUE(output.empty());
+    } else {
+      output = "foo";
+      EXPECT_TRUE(UnescapeBinaryURLComponentSafe(
+          test_case.input, true /* fail_on_path_separators */, &output));
+      EXPECT_EQ(test_case.expected_output, output);
+    }
+  }
 }
 
 TEST(EscapeTest, EscapeForHTML) {

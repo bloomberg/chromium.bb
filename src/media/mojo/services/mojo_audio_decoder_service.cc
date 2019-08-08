@@ -133,11 +133,11 @@ void MojoAudioDecoderService::OnResetDone(ResetCallback callback) {
 }
 
 void MojoAudioDecoderService::OnAudioBufferReady(
-    const scoped_refptr<AudioBuffer>& audio_buffer) {
+    scoped_refptr<AudioBuffer> audio_buffer) {
   DVLOG(1) << __func__;
 
   // TODO(timav): Use DataPipe.
-  client_->OnBufferDecoded(mojom::AudioBuffer::From(audio_buffer));
+  client_->OnBufferDecoded(mojom::AudioBuffer::From(*audio_buffer));
 }
 
 void MojoAudioDecoderService::OnWaiting(WaitingReason reason) {

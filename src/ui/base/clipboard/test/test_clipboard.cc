@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "skia/ext/skia_utils_base.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/clipboard_monitor.h"
@@ -17,7 +18,7 @@ namespace ui {
 TestClipboard::TestClipboard()
     : default_store_type_(CLIPBOARD_TYPE_COPY_PASTE) {}
 
-TestClipboard::~TestClipboard() {}
+TestClipboard::~TestClipboard() = default;
 
 Clipboard* TestClipboard::CreateForCurrentThread() {
   base::AutoLock lock(Clipboard::clipboard_map_lock_.Get());
@@ -39,6 +40,12 @@ uint64_t TestClipboard::GetSequenceNumber(ClipboardType type) const {
 
 bool TestClipboard::IsFormatAvailable(const ClipboardFormatType& format,
                                       ClipboardType type) const {
+#if defined(OS_LINUX)
+  // The linux clipboard treats the presence of text on the clipboard
+  // as the url format being available.
+  if (format.Equals(ClipboardFormatType::GetUrlType()))
+    return IsFormatAvailable(ClipboardFormatType::GetPlainTextType(), type);
+#endif  // OS_LINUX
   const DataStore& store = GetStore(type);
   return store.data.find(format) != store.data.end();
 }
@@ -115,10 +122,13 @@ void TestClipboard::ReadCustomData(ClipboardType clipboard_type,
 void TestClipboard::ReadBookmark(base::string16* title,
                                  std::string* url) const {
   const DataStore& store = GetDefaultStore();
-  auto it = store.data.find(ClipboardFormatType::GetUrlWType());
-  if (it != store.data.end())
-    *url = it->second;
-  *title = base::UTF8ToUTF16(store.url_title);
+  if (url) {
+    auto it = store.data.find(ClipboardFormatType::GetUrlWType());
+    if (it != store.data.end())
+      *url = it->second;
+  }
+  if (title)
+    *title = base::UTF8ToUTF16(store.url_title);
 }
 
 void TestClipboard::ReadData(const ClipboardFormatType& format,
@@ -208,7 +218,7 @@ TestClipboard::DataStore::DataStore() : sequence_number(0) {}
 
 TestClipboard::DataStore::DataStore(const DataStore& other) = default;
 
-TestClipboard::DataStore::~DataStore() {}
+TestClipboard::DataStore::~DataStore() = default;
 
 void TestClipboard::DataStore::Clear() {
   data.clear();

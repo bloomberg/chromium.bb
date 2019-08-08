@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.appmenu;
 
 import android.animation.TimeAnimator;
 import android.annotation.SuppressLint;
-import android.app.Activity;
+import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Rect;
 import android.support.annotation.IntDef;
@@ -33,7 +33,7 @@ import java.util.ArrayList;
  */
 @SuppressLint("NewApi")
 class AppMenuDragHelper {
-    private final Activity mActivity;
+    private final Context mContext;
     private final AppMenu mAppMenu;
 
     // Internally used action constants for dragging.
@@ -67,11 +67,11 @@ class AppMenuDragHelper {
     private final int mTapTimeout;
     private final int mScaledTouchSlop;
 
-    AppMenuDragHelper(Activity activity, AppMenu appMenu, int itemRowHeight) {
-        mActivity = activity;
+    AppMenuDragHelper(Context context, AppMenu appMenu, int itemRowHeight) {
+        mContext = context;
         mAppMenu = appMenu;
         mItemRowHeight = itemRowHeight;
-        Resources res = mActivity.getResources();
+        Resources res = mContext.getResources();
         mAutoScrollFullVelocity = res.getDimensionPixelSize(R.dimen.auto_scroll_full_velocity);
         // If user is dragging and the popup ListView is too big to display at once,
         // mDragScrolling animator scrolls mPopup.getListView() automatically depending on
@@ -98,7 +98,7 @@ class AppMenuDragHelper {
         // with ListPopupWindow#ForwardingListener implementation.
         mTapTimeout =
                 (ViewConfiguration.getTapTimeout() + ViewConfiguration.getLongPressTimeout()) / 2;
-        mScaledTouchSlop = ViewConfiguration.get(activity).getScaledTouchSlop();
+        mScaledTouchSlop = ViewConfiguration.get(mContext).getScaledTouchSlop();
     }
 
     /**

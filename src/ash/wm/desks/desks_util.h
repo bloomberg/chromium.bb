@@ -18,11 +18,9 @@ namespace ash {
 
 namespace desks_util {
 
-// TODO(afakhry): Fix the size of the array when you add the rest of the desks'
-// containters.
-constexpr size_t kMaxNumberOfDesks = 1;
+constexpr size_t kMaxNumberOfDesks = 4;
 
-ASH_EXPORT const std::array<int, kMaxNumberOfDesks>& GetDesksContainersIds();
+ASH_EXPORT std::vector<int> GetDesksContainersIds();
 
 ASH_EXPORT std::vector<aura::Window*> GetDesksContainers(aura::Window* root);
 
@@ -37,6 +35,12 @@ ASH_EXPORT int GetActiveDeskContainerId();
 ASH_EXPORT bool IsActiveDeskContainer(const aura::Window* container);
 
 ASH_EXPORT aura::Window* GetActiveDeskContainerForRoot(aura::Window* root);
+
+ASH_EXPORT bool BelongsToActiveDesk(aura::Window* window);
+
+// If |context| is a descendent window of a desk container, return that desk
+// container, otherwise return nullptr.
+ASH_EXPORT aura::Window* GetDeskContainerForContext(aura::Window* context);
 
 }  // namespace desks_util
 

@@ -41,7 +41,7 @@ class InitBase {
   InitBase(int argc, char** argv) {
     base::CommandLine::Init(argc, argv);
     base::i18n::InitializeICU();
-    base::ThreadPool::CreateAndStartWithDefaultParams("demo");
+    base::ThreadPoolInstance::CreateAndStartWithDefaultParams("demo");
   }
 
   ~InitBase() = default;

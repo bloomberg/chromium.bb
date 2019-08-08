@@ -67,8 +67,7 @@ class ScheduledNotificationManagerTest : public testing::Test {
     delegate_ = std::make_unique<MockDelegate>();
     auto store = std::make_unique<MockNotificationStore>();
     store_ = store.get();
-    manager_ =
-        ScheduledNotificationManager::Create(std::move(store), delegate_.get());
+    manager_ = ScheduledNotificationManager::Create(std::move(store));
   }
 
  protected:
@@ -93,12 +92,13 @@ class ScheduledNotificationManagerTest : public testing::Test {
               std::move(cb).Run(true, std::move(entries));
             }));
     base::RunLoop loop;
-    manager()->Init(base::BindOnce(
-        [](base::RepeatingClosure closure, bool success) {
-          EXPECT_TRUE(success);
-          std::move(closure).Run();
-        },
-        loop.QuitClosure()));
+    manager()->Init(delegate(),
+                    base::BindOnce(
+                        [](base::RepeatingClosure closure, bool success) {
+                          EXPECT_TRUE(success);
+                          std::move(closure).Run();
+                        },
+                        loop.QuitClosure()));
     loop.Run();
   }
 
@@ -118,13 +118,14 @@ TEST_F(ScheduledNotificationManagerTest, InitFailed) {
       }));
 
   base::RunLoop loop;
-  manager()->Init(base::BindOnce(
-      [](base::RepeatingClosure closure, bool success) {
-        // Expected to receive error.
-        EXPECT_FALSE(success);
-        std::move(closure).Run();
-      },
-      loop.QuitClosure()));
+  manager()->Init(delegate(),
+                  base::BindOnce(
+                      [](base::RepeatingClosure closure, bool success) {
+                        // Expected to receive error.
+                        EXPECT_FALSE(success);
+                        std::move(closure).Run();
+                      },
+                      loop.QuitClosure()));
   loop.Run();
 }
 

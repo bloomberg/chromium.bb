@@ -45,24 +45,23 @@ constexpr int kReScanButtonTag = 2;
 
 DeviceChooserContentView::BluetoothStatusContainer::BluetoothStatusContainer(
     views::ButtonListener* listener) {
-  re_scan_button_ = views::MdTextButton::CreateSecondaryUiButton(
+  auto re_scan_button = views::MdTextButton::CreateSecondaryUiButton(
       listener,
       l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_RE_SCAN));
-  re_scan_button_->SetTooltipText(
+  re_scan_button->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_RE_SCAN_TOOLTIP));
-  re_scan_button_->SetFocusForPlatform();
-  re_scan_button_->set_tag(kReScanButtonTag);
-  AddChildView(re_scan_button_);
+  re_scan_button->SetFocusForPlatform();
+  re_scan_button->set_tag(kReScanButtonTag);
+  re_scan_button_ = AddChildView(std::move(re_scan_button));
 
-  throbber_ = new views::Throbber();
-  AddChildView(throbber_);
+  throbber_ = AddChildView(std::make_unique<views::Throbber>());
 
-  scanning_label_ = new views::Label(
+  auto scanning_label = std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_SCANNING_LABEL),
       views::style::CONTEXT_LABEL, views::style::STYLE_DISABLED);
-  scanning_label_->SetTooltipText(l10n_util::GetStringUTF16(
+  scanning_label->SetTooltipText(l10n_util::GetStringUTF16(
       IDS_BLUETOOTH_DEVICE_CHOOSER_SCANNING_LABEL_TOOLTIP));
-  AddChildView(scanning_label_);
+  scanning_label_ = AddChildView(std::move(scanning_label));
 }
 
 gfx::Size
@@ -314,25 +313,28 @@ base::string16 DeviceChooserContentView::GetWindowTitle() const {
 }
 
 std::unique_ptr<views::View> DeviceChooserContentView::CreateExtraView() {
-  std::vector<views::View*> extra_views;
+  std::vector<std::unique_ptr<views::View>> extra_views;
   if (chooser_controller_->ShouldShowHelpButton()) {
-    views::ImageButton* help_button = views::CreateVectorImageButton(this);
-    views::SetImageFromVectorIcon(help_button, vector_icons::kHelpOutlineIcon);
+    auto help_button = views::CreateVectorImageButton(this);
+    views::SetImageFromVectorIcon(help_button.get(),
+                                  vector_icons::kHelpOutlineIcon);
     help_button->SetFocusForPlatform();
     help_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
     help_button->set_tag(kHelpButtonTag);
-    extra_views.push_back(help_button);
+    extra_views.push_back(std::move(help_button));
   }
 
   if (chooser_controller_->ShouldShowReScanButton()) {
-    bluetooth_status_container_ = new BluetoothStatusContainer(this);
-    extra_views.push_back(bluetooth_status_container_);
+    auto bluetooth_status_container =
+        std::make_unique<BluetoothStatusContainer>(this);
+    bluetooth_status_container_ = bluetooth_status_container.get();
+    extra_views.push_back(std::move(bluetooth_status_container));
   }
 
   if (extra_views.empty())
     return nullptr;
   if (extra_views.size() == 1)
-    return std::unique_ptr<views::View>(extra_views.at(0));
+    return std::move(extra_views.at(0));
 
   auto container = std::make_unique<views::View>();
   auto layout = std::make_unique<views::BoxLayout>(
@@ -340,10 +342,11 @@ std::unique_ptr<views::View> DeviceChooserContentView::CreateExtraView() {
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
   container->SetLayoutManager(std::move(layout));
-  for (auto* view : extra_views)
-    container->AddChildView(view);
+
+  for (auto& view : extra_views)
+    container->AddChildView(std::move(view));
   return container;
 }
 
@@ -351,11 +354,14 @@ base::string16 DeviceChooserContentView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   return button == ui::DIALOG_BUTTON_OK
              ? chooser_controller_->GetOkButtonLabel()
-             : l10n_util::GetStringUTF16(IDS_DEVICE_CHOOSER_CANCEL_BUTTON_TEXT);
+             : chooser_controller_->GetCancelButtonLabel();
 }
 
 bool DeviceChooserContentView::IsDialogButtonEnabled(
     ui::DialogButton button) const {
+  if (chooser_controller_->BothButtonsAlwaysEnabled())
+    return true;
+
   return button != ui::DIALOG_BUTTON_OK ||
          !table_view_->selection_model().empty();
 }
@@ -378,7 +384,10 @@ void DeviceChooserContentView::Close() {
 void DeviceChooserContentView::UpdateTableView() {
   bool has_options = adapter_enabled_ && chooser_controller_->NumOptions() > 0;
   table_parent_->SetVisible(has_options);
-  table_view_->SetEnabled(has_options);
+  if (chooser_controller_->TableViewAlwaysDisabled())
+    table_view_->SetEnabled(false);
+  else
+    table_view_->SetEnabled(has_options);
   no_options_help_->SetVisible(!has_options && adapter_enabled_);
   adapter_off_help_->SetVisible(!adapter_enabled_);
 }

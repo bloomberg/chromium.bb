@@ -46,9 +46,7 @@ void LayoutNGMixin<Base>::StyleDidChange(StyleDifference diff,
                                          const ComputedStyle* old_style) {
   Base::StyleDidChange(diff, old_style);
 
-  const ComputedStyle& new_style = Base::StyleRef();
-  if (old_style && Base::ChildrenInline() &&
-      new_style.GetUnicodeBidi() != old_style->GetUnicodeBidi()) {
+  if (diff.NeedsCollectInlines()) {
     Base::SetNeedsCollectInlines();
   }
 }
@@ -85,7 +83,7 @@ const NGPhysicalBoxFragment* LayoutNGMixin<Base>::CurrentFragment() const {
   if (!cached_layout_result)
     return nullptr;
 
-  return To<NGPhysicalBoxFragment>(cached_layout_result->PhysicalFragment());
+  return &To<NGPhysicalBoxFragment>(cached_layout_result->PhysicalFragment());
 }
 
 template <typename Base>
@@ -154,7 +152,7 @@ void LayoutNGMixin<Base>::AddScrollingOverflowFromChildren() {
                                Base::StyleRef().Direction());
   }
 
-  NGPhysicalOffsetRect children_overflow;
+  PhysicalRect children_overflow;
 
   // Only add overflow for fragments NG has not reflected into Legacy.
   // These fragments are:
@@ -163,8 +161,12 @@ void LayoutNGMixin<Base>::AddScrollingOverflowFromChildren() {
   // TODO(layout-dev) Transfroms also need to be applied to compute overflow
   // correctly. NG is not yet transform-aware. crbug.com/855965
   if (!physical_fragment->Children().IsEmpty()) {
+    LayoutUnit border_inline_start =
+        LayoutUnit(Base::StyleRef().BorderStartWidth());
+    LayoutUnit border_block_start =
+        LayoutUnit(Base::StyleRef().BorderBeforeWidth());
     for (const auto& child : physical_fragment->Children()) {
-      NGPhysicalOffsetRect child_scrollable_overflow;
+      PhysicalRect child_scrollable_overflow;
       if (child->IsOutOfFlowPositioned()) {
         child_scrollable_overflow =
             child->ScrollableOverflowForPropagation(this);
@@ -179,7 +181,18 @@ void LayoutNGMixin<Base>::AddScrollingOverflowFromChildren() {
         continue;
       }
       child_scrollable_overflow.offset += child.Offset();
-      children_overflow.Unite(child_scrollable_overflow);
+
+      // Do not add overflow if fragment is not reachable by scrolling.
+      WritingMode writing_mode = Base::StyleRef().GetWritingMode();
+      LogicalOffset child_logical_end =
+          child_scrollable_overflow.offset.ConvertToLogical(
+              writing_mode, Base::StyleRef().Direction(),
+              physical_fragment->Size(), child_scrollable_overflow.size) +
+          child_scrollable_overflow.size.ConvertToLogical(writing_mode);
+
+      if (child_logical_end.inline_offset > border_inline_start &&
+          child_logical_end.block_offset > border_block_start)
+        children_overflow.Unite(child_scrollable_overflow);
     }
   }
 
@@ -191,15 +204,25 @@ void LayoutNGMixin<Base>::AddScrollingOverflowFromChildren() {
 
 template <typename Base>
 void LayoutNGMixin<Base>::AddOutlineRects(
-    Vector<LayoutRect>& rects,
-    const LayoutPoint& additional_offset,
+    Vector<PhysicalRect>& rects,
+    const PhysicalOffset& additional_offset,
     NGOutlineType include_block_overflows) const {
   if (PaintFragment()) {
-    PaintFragment()->AddSelfOutlineRect(&rects, additional_offset,
-                                        include_block_overflows);
+    PaintFragment()->AddSelfOutlineRects(&rects, additional_offset,
+                                         include_block_overflows);
   } else {
     Base::AddOutlineRects(rects, additional_offset, include_block_overflows);
   }
+}
+
+template <typename Base>
+bool LayoutNGMixin<Base>::PaintedOutputOfObjectHasNoEffectRegardlessOfSize()
+    const {
+  // LayoutNGMixin is in charge of paint invalidation of the first line.
+  if (PaintFragment())
+    return false;
+
+  return Base::PaintedOutputOfObjectHasNoEffectRegardlessOfSize();
 }
 
 // Retrieve NGBaseline from the current fragment.
@@ -249,36 +272,15 @@ void LayoutNGMixin<Base>::SetPaintFragment(
   scoped_refptr<NGPaintFragment>* current =
       NGPaintFragment::Find(&paint_fragment_, break_token);
   DCHECK(current);
-  const NGPaintFragment* old = current->get();
   if (fragment) {
     *current = NGPaintFragment::Create(std::move(fragment), break_token,
                                        std::move(*current));
-  } else {
+    // |NGPaintFragment::Create()| calls |SlowSetPaintingLayerNeedsRepaint()|.
+  } else if (*current) {
+    DCHECK_EQ(this, (*current)->GetLayoutObject());
     *current = nullptr;
-  }
-
-  if (old && old != current->get()) {
-    // Painting layer needs repaint when a DisplayItemClient is destroyed.
-    // TODO(kojii): We need this here for now, but this should be handled
-    // differently for better efficiency, in pre-paint tree walk to walk
-    // fragment tree, or before layout. crbug.com/941228
     ObjectPaintInvalidator(*this).SlowSetPaintingLayerNeedsRepaint();
   }
-}
-
-template <typename Base>
-void LayoutNGMixin<Base>::InvalidateDisplayItemClients(
-    PaintInvalidationReason invalidation_reason) const {
-  if (NGPaintFragment* fragment = PaintFragment()) {
-    // TODO(koji): Should be in the PaintInvalidator, possibly with more logic
-    // ported from BlockFlowPaintInvalidator.
-    ObjectPaintInvalidator object_paint_invalidator(*this);
-    object_paint_invalidator.InvalidateDisplayItemClient(*fragment,
-                                                         invalidation_reason);
-    return;
-  }
-
-  LayoutBlockFlow::InvalidateDisplayItemClients(invalidation_reason);
 }
 
 template <typename Base>
@@ -340,8 +342,10 @@ PositionWithAffinity LayoutNGMixin<Base>::PositionForPoint(
   if (!PaintFragment())
     return Base::CreatePositionWithAffinity(0);
 
+  // Flip because |point| is in flipped physical coordinates while
+  // NGPaintFragment::PositionForPoint() requires pure physical coordinates.
   const PositionWithAffinity ng_position =
-      PaintFragment()->PositionForPoint(NGPhysicalOffset(point));
+      PaintFragment()->PositionForPoint(Base::FlipForWritingMode(point));
   if (ng_position.IsNotNull())
     return ng_position;
   return Base::CreatePositionWithAffinity(0);

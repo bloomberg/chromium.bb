@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/loader/private/prerender_handle.h"
 #include "third_party/blink/renderer/core/loader/resource/css_style_sheet_resource.h"
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
+#include "third_party/blink/renderer/core/page/viewport_description.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_finish_observer.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
@@ -185,7 +186,7 @@ bool LinkLoader::LoadLink(const LinkLoadParameters& params,
 
   Resource* resource = PreloadHelper::PreloadIfNeeded(
       params, document, NullURL(), PreloadHelper::kLinkCalledFromMarkup,
-      nullptr,
+      base::nullopt /* viewport_description */,
       client_->IsLinkCreatedByParser() ? kParserInserted : kNotParserInserted);
   if (!resource) {
     resource = PreloadHelper::PrefetchIfNeeded(params, document);
@@ -193,7 +194,8 @@ bool LinkLoader::LoadLink(const LinkLoadParameters& params,
   if (resource)
     finish_observer_ = MakeGarbageCollected<FinishObserver>(this, resource);
 
-  PreloadHelper::ModulePreloadIfNeeded(params, document, nullptr, this);
+  PreloadHelper::ModulePreloadIfNeeded(
+      params, document, base::nullopt /* viewport_description */, this);
 
   if (const unsigned prerender_rel_types =
           PrerenderRelTypesFromRelAttribute(params.rel, document)) {

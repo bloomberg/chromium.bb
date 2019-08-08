@@ -8,9 +8,9 @@
 #include <memory>
 #include <vector>
 
-#include "device/usb/public/mojom/device.mojom.h"
-#include "device/usb/public/mojom/device_enumeration_options.mojom.h"
 #include "extensions/common/extension.h"
+#include "services/device/public/mojom/usb_device.mojom.h"
+#include "services/device/public/mojom/usb_enumeration_options.mojom.h"
 
 namespace extensions {
 

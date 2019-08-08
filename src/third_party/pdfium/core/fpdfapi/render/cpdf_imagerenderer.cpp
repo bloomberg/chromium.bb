@@ -21,11 +21,11 @@
 #include "core/fpdfapi/parser/cpdf_document.h"
 #include "core/fpdfapi/parser/cpdf_stream.h"
 #include "core/fpdfapi/render/cpdf_dibbase.h"
+#include "core/fpdfapi/render/cpdf_occontext.h"
 #include "core/fpdfapi/render/cpdf_pagerendercache.h"
 #include "core/fpdfapi/render/cpdf_rendercontext.h"
 #include "core/fpdfapi/render/cpdf_renderstatus.h"
 #include "core/fpdfapi/render/cpdf_transferfunc.h"
-#include "core/fpdfdoc/cpdf_occontext.h"
 #include "core/fxcrt/fx_safe_types.h"
 #include "core/fxcrt/maybe_owned.h"
 #include "core/fxge/cfx_defaultrenderdevice.h"
@@ -112,7 +112,7 @@ bool CPDF_ImageRenderer::StartRenderDIBBase() {
   m_ResampleOptions = FXDIB_ResampleOptions();
   if (GetRenderOptions().GetOptions().bForceDownsample)
     m_ResampleOptions.bInterpolateDownsample = true;
-  else if (GetRenderOptions().GetOptions().bForceDownsample)
+  else if (GetRenderOptions().GetOptions().bForceHalftone)
     m_ResampleOptions.bHalftone = true;
 
   if (m_pRenderStatus->GetRenderDevice()->GetDeviceClass() != FXDC_DISPLAY)
@@ -147,16 +147,15 @@ bool CPDF_ImageRenderer::StartRenderDIBBase() {
   CPDF_Object* pCSObj =
       m_pImageObject->GetImage()->GetStream()->GetDict()->GetDirectObjectFor(
           "ColorSpace");
-  CPDF_ColorSpace* pColorSpace =
+  RetainPtr<CPDF_ColorSpace> pColorSpace =
       pDocument->LoadColorSpace(pCSObj, pPageResources);
-  if (!pColorSpace)
-    return StartDIBBase();
-  int format = pColorSpace->GetFamily();
-  if (format == PDFCS_DEVICECMYK || format == PDFCS_SEPARATION ||
-      format == PDFCS_DEVICEN) {
-    m_BlendType = BlendMode::kDarken;
+  if (pColorSpace) {
+    int format = pColorSpace->GetFamily();
+    if (format == PDFCS_DEVICECMYK || format == PDFCS_SEPARATION ||
+        format == PDFCS_DEVICEN) {
+      m_BlendType = BlendMode::kDarken;
+    }
   }
-  pDocument->GetPageData()->ReleaseColorSpace(pCSObj);
   return StartDIBBase();
 }
 

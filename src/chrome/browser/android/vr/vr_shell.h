@@ -30,6 +30,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "device/vr/android/gvr/cardboard_gamepad_data_provider.h"
 #include "device/vr/android/gvr/gvr_gamepad_data_provider.h"
+#include "device/vr/public/cpp/session_mode.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device.h"
 #include "services/device/public/mojom/geolocation_config.mojom.h"
@@ -118,10 +119,11 @@ class VrShell : device::GvrGamepadDataProvider,
   void OnLoadProgressChanged(JNIEnv* env,
                              const base::android::JavaParamRef<jobject>& obj,
                              double progress);
-  void OnTabListCreated(JNIEnv* env,
-                        const base::android::JavaParamRef<jobject>& obj,
-                        jobjectArray tabs,
-                        jobjectArray incognito_tabs);
+  void OnTabListCreated(
+      JNIEnv* env,
+      const base::android::JavaRef<jobject>& obj,
+      const base::android::JavaRef<jobjectArray>& tabs,
+      const base::android::JavaRef<jobjectArray>& incognito_tabs);
   void OnTabUpdated(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& obj,
                     jboolean incognito,
@@ -197,7 +199,11 @@ class VrShell : device::GvrGamepadDataProvider,
   void ExitFullscreen();
   void LogUnsupportedModeUserMetric(UiUnsupportedMode mode);
   void RecordVrStartAction(VrStartAction action);
-  void RecordPresentationStartAction(PresentationStartAction action);
+  // TODO(https://crbug.com/965744): Rename below method to better reflect its
+  // purpose (recording a start of immersive VR session).
+  void RecordPresentationStartAction(
+      PresentationStartAction action,
+      const device::mojom::XRRuntimeSessionOptions& options);
   void OnUnsupportedMode(UiUnsupportedMode mode);
   void OnExitVrPromptResult(UiUnsupportedMode reason,
                             ExitVrPromptChoice choice);

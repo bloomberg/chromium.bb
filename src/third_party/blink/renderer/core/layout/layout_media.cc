@@ -49,7 +49,7 @@ void LayoutMedia::UpdateLayout() {
 
   LayoutImage::UpdateLayout();
 
-  LayoutRect new_rect(PhysicalContentBoxRect());
+  auto new_rect = PhysicalContentBoxRect().ToLayoutRect();
 
   LayoutState state(*this);
 
@@ -130,7 +130,7 @@ bool LayoutMedia::IsChildAllowed(LayoutObject* child,
 }
 
 void LayoutMedia::PaintReplaced(const PaintInfo&,
-                                const LayoutPoint& paint_offset) const {}
+                                const PhysicalOffset& paint_offset) const {}
 
 LayoutUnit LayoutMedia::ComputePanelWidth(const LayoutRect& media_rect) const {
   // TODO(mlamouri): we don't know if the main frame has an horizontal scrollbar
@@ -173,13 +173,13 @@ LayoutUnit LayoutMedia::ComputePanelWidth(const LayoutRect& media_rect) const {
   // On desktop, this will include scrollbars when they stay visible.
   const LayoutUnit visible_width(page->GetVisualViewport().VisibleWidth());
   // The bottom left corner of the video.
-  const FloatPoint bottom_left_point(LocalToAbsolute(
-      FloatPoint(media_rect.X(), media_rect.MaxY()),
-      kUseTransforms | kApplyContainerFlip | kTraverseDocumentBoundaries));
+  const FloatPoint bottom_left_point(
+      LocalToAbsoluteFloatPoint(FloatPoint(media_rect.X(), media_rect.MaxY()),
+                                kTraverseDocumentBoundaries));
   // The bottom right corner of the video.
-  const FloatPoint bottom_right_point(LocalToAbsolute(
+  const FloatPoint bottom_right_point(LocalToAbsoluteFloatPoint(
       FloatPoint(media_rect.MaxX(), media_rect.MaxY()),
-      kUseTransforms | kApplyContainerFlip | kTraverseDocumentBoundaries));
+      kTraverseDocumentBoundaries));
 
   const bool bottom_left_corner_visible = bottom_left_point.X() < visible_width;
   const bool bottom_right_corner_visible =

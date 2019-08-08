@@ -16,6 +16,7 @@ source_set("lib") {
 
   deps = [
     "//base",
+    "//chrome/services/cups_proxy/public/cpp",
     "//mojo/public/cpp/bindings",
     "//net",
   ]
@@ -27,7 +28,7 @@ source_set("lib") {
     "//services/service_manager/public/cpp",
   ]
 
-  # We stub the implementation if libCUPS is not present
+  # We stub the implementation if libCUPS is not present.
   if (enable_service) {
     configs += [ "//printing:cups" ]
     sources += [ "ipp_parser.cc" ]

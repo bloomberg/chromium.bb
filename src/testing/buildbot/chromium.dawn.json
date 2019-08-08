@@ -10,6 +10,34 @@
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "intel-hd-630-ubuntu-stable",
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "dawn_end2end_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--use-wire"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_wire_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -28,6 +56,10 @@
           "--use-gpu-in-tests",
           "--use-cmd-decoder=validating"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -45,6 +77,10 @@
           "--use-gpu-in-tests",
           "--no-xvfb"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -56,6 +92,39 @@
           ]
         },
         "test": "gl_unittests"
+      }
+    ],
+    "isolated_scripts": [
+      {
+        "args": [
+          "--additional-driver-flag",
+          "--enable-unsafe-webgpu",
+          "--additional-driver-flag",
+          "--disable-gpu-sandbox",
+          "--driver-logging",
+          "--skipped",
+          "ignore",
+          "webgpu",
+          "--no-xvfb"
+        ],
+        "isolate_name": "blink_web_tests_exparchive",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "webgpu_blink_web_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "intel-hd-630-ubuntu-stable",
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        }
       }
     ]
   },
@@ -66,12 +135,40 @@
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu",
+              "os": "Ubuntu-14.04",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "dawn_end2end_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--use-wire"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_wire_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "nvidia-quadro-p400-ubuntu-stable",
+              "os": "Ubuntu-14.04",
               "pool": "Chrome-GPU"
             }
           ],
@@ -84,12 +181,16 @@
           "--use-gpu-in-tests",
           "--use-cmd-decoder=validating"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu",
+              "os": "Ubuntu-14.04",
               "pool": "Chrome-GPU"
             }
           ]
@@ -101,17 +202,54 @@
           "--use-gpu-in-tests",
           "--no-xvfb"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu",
+              "os": "Ubuntu-14.04",
               "pool": "Chrome-GPU"
             }
           ]
         },
         "test": "gl_unittests"
+      }
+    ],
+    "isolated_scripts": [
+      {
+        "args": [
+          "--additional-driver-flag",
+          "--enable-unsafe-webgpu",
+          "--additional-driver-flag",
+          "--disable-gpu-sandbox",
+          "--driver-logging",
+          "--skipped",
+          "ignore",
+          "webgpu",
+          "--no-xvfb"
+        ],
+        "isolate_name": "blink_web_tests_exparchive",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "webgpu_blink_web_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "nvidia-quadro-p400-ubuntu-stable",
+              "os": "Ubuntu-14.04",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        }
       }
     ]
   },
@@ -122,6 +260,10 @@
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -130,8 +272,30 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ],
-          "shards": 4
+          ]
+        },
+        "test": "dawn_end2end_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--use-wire"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_wire_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "intel-hd-630-ubuntu-stable",
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
+            }
+          ]
         },
         "test": "dawn_end2end_tests"
       }
@@ -144,16 +308,42 @@
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu",
+              "os": "Ubuntu-14.04",
               "pool": "Chrome-GPU"
             }
-          ],
-          "shards": 4
+          ]
+        },
+        "test": "dawn_end2end_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--use-wire"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_wire_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "nvidia-quadro-p400-ubuntu-stable",
+              "os": "Ubuntu-14.04",
+              "pool": "Chrome-GPU"
+            }
+          ]
         },
         "test": "dawn_end2end_tests"
       }
@@ -168,6 +358,35 @@
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6821",
+              "hidpi": "1",
+              "os": "Mac-10.13.6",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "dawn_end2end_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--use-wire"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_wire_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -187,6 +406,10 @@
           "--use-gpu-in-tests",
           "--use-cmd-decoder=validating"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -204,6 +427,10 @@
         "args": [
           "--use-gpu-in-tests"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -216,6 +443,39 @@
           ]
         },
         "test": "gl_unittests"
+      }
+    ],
+    "isolated_scripts": [
+      {
+        "args": [
+          "--additional-driver-flag",
+          "--enable-unsafe-webgpu",
+          "--additional-driver-flag",
+          "--disable-gpu-sandbox",
+          "--driver-logging",
+          "--skipped",
+          "ignore",
+          "webgpu"
+        ],
+        "isolate_name": "blink_web_tests_exparchive",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "webgpu_blink_web_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6821",
+              "hidpi": "1",
+              "os": "Mac-10.13.6",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        }
       }
     ]
   },
@@ -226,6 +486,34 @@
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.13.6",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "dawn_end2end_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--use-wire"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_wire_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -244,6 +532,10 @@
           "--use-gpu-in-tests",
           "--use-cmd-decoder=validating"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -260,6 +552,10 @@
         "args": [
           "--use-gpu-in-tests"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -272,6 +568,38 @@
         },
         "test": "gl_unittests"
       }
+    ],
+    "isolated_scripts": [
+      {
+        "args": [
+          "--additional-driver-flag",
+          "--enable-unsafe-webgpu",
+          "--additional-driver-flag",
+          "--disable-gpu-sandbox",
+          "--driver-logging",
+          "--skipped",
+          "ignore",
+          "webgpu"
+        ],
+        "isolate_name": "blink_web_tests_exparchive",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "webgpu_blink_web_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.13.6",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        }
+      }
     ]
   },
   "Dawn Mac x64 Release (AMD)": {
@@ -281,6 +609,10 @@
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -290,8 +622,31 @@
               "os": "Mac-10.13.6",
               "pool": "Chrome-GPU"
             }
-          ],
-          "shards": 4
+          ]
+        },
+        "test": "dawn_end2end_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--use-wire"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_wire_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6821",
+              "hidpi": "1",
+              "os": "Mac-10.13.6",
+              "pool": "Chrome-GPU"
+            }
+          ]
         },
         "test": "dawn_end2end_tests"
       }
@@ -304,6 +659,10 @@
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -312,8 +671,30 @@
               "os": "Mac-10.13.6",
               "pool": "Chrome-GPU"
             }
-          ],
-          "shards": 4
+          ]
+        },
+        "test": "dawn_end2end_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--use-wire"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_wire_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.13.6",
+              "pool": "Chrome-GPU"
+            }
+          ]
         },
         "test": "dawn_end2end_tests"
       }
@@ -328,6 +709,34 @@
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "intel-hd-630-win10-stable",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "dawn_end2end_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--use-wire"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_wire_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -346,6 +755,10 @@
           "--use-gpu-in-tests",
           "--use-cmd-decoder=validating"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -362,6 +775,10 @@
         "args": [
           "--use-gpu-in-tests"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -373,6 +790,40 @@
           ]
         },
         "test": "gl_unittests"
+      }
+    ],
+    "isolated_scripts": [
+      {
+        "args": [
+          "--additional-driver-flag",
+          "--enable-unsafe-webgpu",
+          "--additional-driver-flag",
+          "--disable-gpu-sandbox",
+          "--driver-logging",
+          "--skipped",
+          "ignore",
+          "-t",
+          "Release_x64",
+          "webgpu"
+        ],
+        "isolate_name": "blink_web_tests_exparchive",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "webgpu_blink_web_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "intel-hd-630-win10-stable",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        }
       }
     ]
   },
@@ -383,6 +834,34 @@
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "nvidia-quadro-p400-win10-stable",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "dawn_end2end_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--use-wire"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_wire_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -401,6 +880,10 @@
           "--use-gpu-in-tests",
           "--use-cmd-decoder=validating"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -417,6 +900,10 @@
         "args": [
           "--use-gpu-in-tests"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -429,6 +916,40 @@
         },
         "test": "gl_unittests"
       }
+    ],
+    "isolated_scripts": [
+      {
+        "args": [
+          "--additional-driver-flag",
+          "--enable-unsafe-webgpu",
+          "--additional-driver-flag",
+          "--disable-gpu-sandbox",
+          "--driver-logging",
+          "--skipped",
+          "ignore",
+          "-t",
+          "Release_x64",
+          "webgpu"
+        ],
+        "isolate_name": "blink_web_tests_exparchive",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "webgpu_blink_web_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "nvidia-quadro-p400-win10-stable",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        }
+      }
     ]
   },
   "Dawn Win10 x64 Release (Intel HD 630)": {
@@ -438,6 +959,10 @@
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -446,8 +971,30 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ],
-          "shards": 4
+          ]
+        },
+        "test": "dawn_end2end_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--use-wire"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_wire_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "intel-hd-630-win10-stable",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ]
         },
         "test": "dawn_end2end_tests"
       }
@@ -460,6 +1007,10 @@
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -468,8 +1019,30 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ],
-          "shards": 4
+          ]
+        },
+        "test": "dawn_end2end_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--use-wire"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_wire_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "nvidia-quadro-p400-win10-stable",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ]
         },
         "test": "dawn_end2end_tests"
       }
@@ -484,6 +1057,34 @@
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "intel-hd-630-win10-stable",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "dawn_end2end_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--use-wire"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_wire_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -502,6 +1103,10 @@
           "--use-gpu-in-tests",
           "--use-cmd-decoder=validating"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -518,6 +1123,10 @@
         "args": [
           "--use-gpu-in-tests"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -529,6 +1138,38 @@
           ]
         },
         "test": "gl_unittests"
+      }
+    ],
+    "isolated_scripts": [
+      {
+        "args": [
+          "--additional-driver-flag",
+          "--enable-unsafe-webgpu",
+          "--additional-driver-flag",
+          "--disable-gpu-sandbox",
+          "--driver-logging",
+          "--skipped",
+          "ignore",
+          "webgpu"
+        ],
+        "isolate_name": "blink_web_tests_exparchive",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "webgpu_blink_web_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "intel-hd-630-win10-stable",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        }
       }
     ]
   },
@@ -539,6 +1180,34 @@
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "nvidia-quadro-p400-win10-stable",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "dawn_end2end_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--use-wire"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_wire_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -557,6 +1226,10 @@
           "--use-gpu-in-tests",
           "--use-cmd-decoder=validating"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -573,6 +1246,10 @@
         "args": [
           "--use-gpu-in-tests"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -585,6 +1262,38 @@
         },
         "test": "gl_unittests"
       }
+    ],
+    "isolated_scripts": [
+      {
+        "args": [
+          "--additional-driver-flag",
+          "--enable-unsafe-webgpu",
+          "--additional-driver-flag",
+          "--disable-gpu-sandbox",
+          "--driver-logging",
+          "--skipped",
+          "ignore",
+          "webgpu"
+        ],
+        "isolate_name": "blink_web_tests_exparchive",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "webgpu_blink_web_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "nvidia-quadro-p400-win10-stable",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        }
+      }
     ]
   },
   "Dawn Win10 x86 Release (Intel HD 630)": {
@@ -594,6 +1303,10 @@
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -602,8 +1315,30 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ],
-          "shards": 4
+          ]
+        },
+        "test": "dawn_end2end_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--use-wire"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_wire_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "intel-hd-630-win10-stable",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ]
         },
         "test": "dawn_end2end_tests"
       }
@@ -616,6 +1351,10 @@
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0"
         ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -624,8 +1363,30 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ],
-          "shards": 4
+          ]
+        },
+        "test": "dawn_end2end_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--use-wire"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_wire_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "nvidia-quadro-p400-win10-stable",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ]
         },
         "test": "dawn_end2end_tests"
       }

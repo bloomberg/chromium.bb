@@ -118,7 +118,6 @@ COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsTimerTicksEnabled();
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsWarmerWelcomeEnabled();
 
-
 }  // namespace features
 }  // namespace assistant
 }  // namespace chromeos

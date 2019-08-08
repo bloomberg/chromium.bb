@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/containers/adapters.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
@@ -115,7 +116,7 @@ TreeView::~TreeView() {
 // static
 std::unique_ptr<ScrollView> TreeView::CreateScrollViewWithTree(
     std::unique_ptr<TreeView> tree) {
-  auto scroll_view = base::WrapUnique(ScrollView::CreateScrollViewWithBorder());
+  auto scroll_view = ScrollView::CreateScrollViewWithBorder();
   scroll_view->SetContents(std::move(tree));
   return scroll_view;
 }
@@ -309,8 +310,8 @@ void TreeView::ExpandAll(TreeModelNode* node) {
   // Expand the node.
   bool expanded_at_least_one = ExpandImpl(node);
   // And recursively expand all the children.
-  for (int i = model_->GetChildCount(node) - 1; i >= 0; --i) {
-    TreeModelNode* child = model_->GetChild(node, i);
+  const auto& children = model_->GetChildren(node);
+  for (TreeModelNode* child : base::Reversed(children)) {
     if (ExpandImpl(child))
       expanded_at_least_one = true;
   }
@@ -342,10 +343,8 @@ void TreeView::SetRootShown(bool root_shown) {
     return;
   root_shown_ = root_shown;
   if (!root_shown_ && selected_node_ == &root_) {
-    if (model_->GetChildCount(root_.model_node()))
-      SetSelectedNode(model_->GetChild(root_.model_node(), 0));
-    else
-      SetSelectedNode(nullptr);
+    const auto& children = model_->GetChildren(root_.model_node());
+    SetSelectedNode(children.empty() ? nullptr : children.front());
   }
   DrawnNodesChanged();
 }
@@ -453,10 +452,11 @@ void TreeView::TreeNodesAdded(TreeModel* model,
       GetInternalNodeForModelNode(parent, DONT_CREATE_IF_NOT_LOADED);
   if (!parent_node || !parent_node->loaded_children())
     return;
-  for (int i = 0; i < count; ++i) {
-    std::unique_ptr<InternalNode> child = std::make_unique<InternalNode>();
-    ConfigureInternalNode(model_->GetChild(parent, start + i), child.get());
-    parent_node->Add(std::move(child), start + i);
+  const auto& children = model_->GetChildren(parent);
+  for (int i = start; i < start + count; ++i) {
+    auto child = std::make_unique<InternalNode>();
+    ConfigureInternalNode(children[size_t{i}], child.get());
+    parent_node->Add(std::move(child), i);
   }
   if (IsExpanded(parent))
     DrawnNodesChanged();
@@ -485,9 +485,8 @@ void TreeView::TreeNodesRemoved(TreeModel* model,
     selected_node_ = nullptr;
     TreeModelNode* to_select = parent;
     if (parent == root_.model_node() && !root_shown_) {
-      to_select = model_->GetChildCount(parent) > 0
-                      ? model_->GetChild(parent, 0)
-                      : nullptr;
+      const auto& children = model_->GetChildren(parent);
+      to_select = children.empty() ? nullptr : children.front();
     }
     SetSelectedNode(to_select);
   }
@@ -694,10 +693,9 @@ void TreeView::LoadChildren(InternalNode* node) {
   DCHECK_EQ(0, node->child_count());
   DCHECK(!node->loaded_children());
   node->set_loaded_children(true);
-  for (int i = 0, child_count = model_->GetChildCount(node->model_node());
-       i < child_count; ++i) {
+  for (auto* model_child : model_->GetChildren(node->model_node())) {
     std::unique_ptr<InternalNode> child = std::make_unique<InternalNode>();
-    ConfigureInternalNode(model_->GetChild(node->model_node(), i), child.get());
+    ConfigureInternalNode(model_child, child.get());
     node->Add(std::move(child), node->child_count());
   }
 }
@@ -796,7 +794,7 @@ void TreeView::PaintRow(gfx::Canvas* canvas,
     canvas->FillRect(GetBackgroundBoundsForNode(node), selected_row_bg_color);
   }
 
-  if (model_->GetChildCount(node->model_node()))
+  if (!model_->GetChildren(node->model_node()).empty())
     PaintExpandControl(canvas, bounds, node->is_expanded());
 
   if (drawing_provider()->ShouldDrawIconForNode(this, node->model_node()))
@@ -1108,7 +1106,7 @@ PrefixSelector* TreeView::GetPrefixSelector() {
 
 bool TreeView::IsPointInExpandControl(InternalNode* node,
                                       const gfx::Point& point) {
-  if (!model_->GetChildCount(node->model_node()))
+  if (model_->GetChildren(node->model_node()).empty())
     return false;
 
   int depth = -1;

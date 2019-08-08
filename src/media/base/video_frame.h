@@ -22,11 +22,13 @@
 #include "base/memory/shared_memory.h"
 #include "base/memory/shared_memory_handle.h"
 #include "base/memory/unsafe_shared_memory_region.h"
+#include "base/optional.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
+#include "gpu/ipc/common/vulkan_ycbcr_info.h"
 #include "media/base/video_frame_layout.h"
 #include "media/base/video_frame_metadata.h"
 #include "media/base/video_types.h"
@@ -302,7 +304,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Wraps |frame|. |visible_rect| must be a sub rect within
   // frame->visible_rect().
   static scoped_refptr<VideoFrame> WrapVideoFrame(
-      const scoped_refptr<VideoFrame>& frame,
+      const VideoFrame& frame,
       VideoPixelFormat format,
       const gfx::Rect& visible_rect,
       const gfx::Size& natural_size);
@@ -434,6 +436,10 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
     return data_[plane];
   }
 
+  const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info() const {
+    return ycbcr_info_;
+  }
+
   // Returns pointer to the data in the visible region of the frame, for
   // IsMappable() storage types. The returned pointer is offsetted into the
   // plane buffer specified by visible_rect().origin(). Memory is owned by
@@ -536,6 +542,11 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 
   // Returns the number of bits per channel.
   size_t BitDepth() const;
+
+  // Provide the sampler conversion information for the frame.
+  void set_ycbcr_info(const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info) {
+    ycbcr_info_ = ycbcr_info;
+  }
 
  protected:
   friend class base::RefCountedThreadSafe<VideoFrame>;
@@ -677,6 +688,9 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   const int unique_id_;
 
   gfx::ColorSpace color_space_;
+
+  // Sampler conversion information which is used in vulkan context for android.
+  base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(VideoFrame);
 };

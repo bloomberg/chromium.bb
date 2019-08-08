@@ -323,7 +323,7 @@ void GetProgIdEntries(const ApplicationInfo& app_info,
 
   // The following entries are required as of Windows 8, but do not
   // depend on the DelegateExecute verb handler being set.
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+  if (base::win::GetVersion() >= base::win::Version::WIN8) {
     if (!app_info.app_id.empty()) {
       entries->push_back(std::make_unique<RegistryEntry>(
           prog_id_path, ShellUtil::kRegAppUserModelId, app_info.app_id));
@@ -849,7 +849,7 @@ bool QuickIsChromeRegisteredForMode(
   // shell integration entries as of Windows 8.
   if (confirmation_level == CONFIRM_PROGID_REGISTRATION ||
       (confirmation_level == CONFIRM_SHELL_REGISTRATION &&
-       base::win::GetVersion() >= base::win::VERSION_WIN8)) {
+       base::win::GetVersion() >= base::win::Version::WIN8)) {
     const RegKey key_hkcu(HKEY_CURRENT_USER, reg_key.c_str(), KEY_QUERY_VALUE);
     base::string16 hkcu_value;
     // If |reg_key| is present in HKCU, assert that it points to |chrome_exe|.
@@ -969,8 +969,9 @@ bool GetInstallationSpecificSuffix(const base::FilePath& chrome_exe,
 // be placed for this install. As of Windows 8 everything can go in HKCU for
 // per-user installs.
 HKEY DetermineRegistrationRoot(bool is_per_user) {
-  return is_per_user && base::win::GetVersion() >= base::win::VERSION_WIN8 ?
-      HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
+  return is_per_user && base::win::GetVersion() >= base::win::Version::WIN8
+             ? HKEY_CURRENT_USER
+             : HKEY_LOCAL_MACHINE;
 }
 
 // Associates Chrome with supported protocols and file associations. This should
@@ -1095,7 +1096,7 @@ base::win::ShortcutProperties TranslateShortcutProperties(
 // Cleans up an old verb (run) we used to register in
 // <root>\Software\Classes\Chrome<.suffix>\.exe\shell\run on Windows 8.
 void RemoveRunVerbOnWindows8() {
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+  if (base::win::GetVersion() >= base::win::Version::WIN8) {
     bool is_per_user_install = InstallUtil::IsPerUserInstall();
     HKEY root_key = DetermineRegistrationRoot(is_per_user_install);
     // There's no need to rollback, so forgo the usual work item lists and just
@@ -1255,7 +1256,7 @@ ShellUtil::DefaultState ProbeProtocolHandlers(
 
   const base::win::Version windows_version = base::win::GetVersion();
 
-  if (windows_version >= base::win::VERSION_WIN8)
+  if (windows_version >= base::win::Version::WIN8)
     return ProbeCurrentDefaultHandlers(chrome_exe, protocols, num_protocols);
 
   return ProbeAppIsDefaultHandlers(chrome_exe, protocols, num_protocols);
@@ -1265,7 +1266,7 @@ ShellUtil::DefaultState ProbeProtocolHandlers(
 // Returns true on success.
 bool GetAppShortcutsFolder(ShellUtil::ShellChange level, base::FilePath* path) {
   DCHECK(path);
-  DCHECK_GE(base::win::GetVersion(), base::win::VERSION_WIN8);
+  DCHECK_GE(base::win::GetVersion(), base::win::Version::WIN8);
 
   base::FilePath folder;
   if (!base::PathService::Get(base::DIR_APP_SHORTCUTS, &folder)) {
@@ -1555,9 +1556,9 @@ bool ShellUtil::ShortcutLocationIsSupported(ShortcutLocation location) {
     case SHORTCUT_LOCATION_START_MENU_CHROME_APPS_DIR:
       return true;
     case SHORTCUT_LOCATION_TASKBAR_PINS:
-      return base::win::GetVersion() >= base::win::VERSION_WIN7;
+      return base::win::GetVersion() >= base::win::Version::WIN7;
     case SHORTCUT_LOCATION_APP_SHORTCUTS:
-      return base::win::GetVersion() >= base::win::VERSION_WIN8;
+      return base::win::GetVersion() >= base::win::Version::WIN8;
     default:
       NOTREACHED();
       return false;
@@ -1948,14 +1949,14 @@ ShellUtil::DefaultState ShellUtil::GetChromeDefaultProtocolClientState(
 
 // static
 bool ShellUtil::CanMakeChromeDefaultUnattended() {
-  return base::win::GetVersion() < base::win::VERSION_WIN8;
+  return base::win::GetVersion() < base::win::Version::WIN8;
 }
 
 // static
 ShellUtil::InteractiveSetDefaultMode ShellUtil::GetInteractiveSetDefaultMode() {
   DCHECK(!CanMakeChromeDefaultUnattended());
 
-  if (base::win::GetVersion() >= base::win::VERSION_WIN10)
+  if (base::win::GetVersion() >= base::win::Version::WIN10)
     return InteractiveSetDefaultMode::SYSTEM_SETTINGS;
 
   return InteractiveSetDefaultMode::INTENT_PICKER;
@@ -2026,7 +2027,7 @@ bool ShellUtil::MakeChromeDefault(int shell_change,
 #if defined(GOOGLE_CHROME_BUILD)
 // static
 bool ShellUtil::LaunchUninstallAppsSettings() {
-  DCHECK_GE(base::win::GetVersion(), base::win::VERSION_WIN10);
+  DCHECK_GE(base::win::GetVersion(), base::win::Version::WIN10);
 
   static constexpr wchar_t kControlPanelAppModelId[] =
       L"windows.immersivecontrolpanel_cw5n1h2txyewy"

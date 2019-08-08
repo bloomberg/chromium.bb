@@ -8,8 +8,8 @@
 #ifndef RandomScalerContext_DEFINED
 #define RandomScalerContext_DEFINED
 
-#include "SkScalerContext.h"
-#include "SkTypeface.h"
+#include "include/core/SkTypeface.h"
+#include "src/core/SkScalerContext.h"
 
 /*
  * This scaler context is for debug only purposes.  It will 'randomly' but deterministically return
@@ -39,6 +39,8 @@ protected:
 
     void                          onGetFamilyName(SkString* familyName) const override;
     SkTypeface::LocalizedStrings* onCreateFamilyNameIterator() const override;
+
+    void getPostScriptGlyphNames(SkString*) const override;
 
     int onGetVariationDesignPosition(SkFontArguments::VariationPosition::Coordinate coordinates[],
                                      int coordinateCount) const override;

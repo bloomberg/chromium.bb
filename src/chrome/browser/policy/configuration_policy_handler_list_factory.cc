@@ -74,7 +74,6 @@
 #include "ppapi/buildflags/buildflags.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/contextual_suggestions/contextual_suggestions_prefs.h"
 #include "chrome/browser/search/contextual_search_policy_handler_android.h"
 #endif
 
@@ -563,6 +562,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kShowLogoutButtonInTray,
     ash::prefs::kShowLogoutButtonInTray,
     base::Value::Type::BOOLEAN },
+  { key::kAppRecommendationZeroStateEnabled,
+    prefs::kAppReinstallRecommendationEnabled,
+    base::Value::Type::BOOLEAN },
   { key::kShelfAutoHideBehavior,
     ash::prefs::kShelfAutoHideBehaviorLocal,
     base::Value::Type::STRING },
@@ -605,17 +607,23 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kVirtualKeyboardEnabled,
     ash::prefs::kAccessibilityVirtualKeyboardEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kStickyKeysEnabled,
+    ash::prefs::kAccessibilityStickyKeysEnabled,
+    base::Value::Type::BOOLEAN },
+  { key::kDockedMagnifierEnabled,
+    ash::prefs::kDockedMagnifierEnabled,
+    base::Value::Type::BOOLEAN },
   { key::kDeviceLoginScreenDefaultLargeCursorEnabled,
-    NULL,
+    nullptr,
     base::Value::Type::BOOLEAN },
   { key::kDeviceLoginScreenDefaultSpokenFeedbackEnabled,
-    NULL,
+    nullptr,
     base::Value::Type::BOOLEAN },
   { key::kDeviceLoginScreenDefaultHighContrastEnabled,
-    NULL,
+    nullptr,
     base::Value::Type::BOOLEAN },
   { key::kDeviceLoginScreenDefaultVirtualKeyboardEnabled,
-    NULL,
+    nullptr,
     base::Value::Type::BOOLEAN },
   { key::kRebootAfterUpdate,
     prefs::kRebootAfterUpdate,
@@ -758,6 +766,18 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kDeviceUsbPowerShareEnabled,
     ash::prefs::kUsbPowerShareEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kKerberosEnabled,
+    prefs::kKerberosEnabled,
+    base::Value::Type::BOOLEAN },
+  { key::kKerberosRememberPasswordEnabled,
+    prefs::kKerberosRememberPasswordEnabled,
+    base::Value::Type::BOOLEAN },
+  { key::kKerberosAddAccountsAllowed,
+    prefs::kKerberosAddAccountsAllowed,
+    base::Value::Type::BOOLEAN },
+  { key::kStartupBrowserWindowLaunchSuppressed,
+    prefs::kStartupBrowserWindowLaunchSuppressed,
+    base::Value::Type::BOOLEAN },
 #endif  // defined(OS_CHROMEOS)
 
 // Metrics reporting is controlled by a platform specific policy for ChromeOS
@@ -805,9 +825,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kAuthAndroidNegotiateAccountType,
     prefs::kAuthAndroidNegotiateAccountType,
     base::Value::Type::STRING },
-  { key::kContextualSuggestionsEnabled,
-    contextual_suggestions::prefs::kContextualSuggestionsEnabled,
-    base::Value::Type::BOOLEAN },
 #endif  // defined(OS_ANDROID)
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
@@ -844,6 +861,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
 #if !defined(OS_CHROMEOS)
   { key::kPromotionalTabsEnabled,
     prefs::kPromotionalTabsEnabled,
+    base::Value::Type::BOOLEAN },
+  { key::kCommandLineFlagSecurityWarningsEnabled,
+    prefs::kCommandLineFlagSecurityWarningsEnabled,
     base::Value::Type::BOOLEAN },
 #endif  // !OS_CHROMEOS
   { key::kSuppressUnsupportedOSWarning,
@@ -943,6 +963,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::INTEGER },
 #endif  // !defined(OS_ANDROID)
 
+#if defined(OS_CHROMEOS)
+  { key::kRelaunchHeadsUpPeriod,
+    prefs::kRelaunchHeadsUpPeriod,
+    base::Value::Type::INTEGER },
+#endif  // defined(OS_CHROMEOS)
+
 #if !defined(OS_ANDROID)
   { key::kAutoplayAllowed,
     prefs::kAutoplayAllowed,
@@ -1010,6 +1036,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::LIST },
   { key::kBrowserSwitcherExternalSitelistUrl,
     browser_switcher::prefs::kExternalSitelistUrl,
+    base::Value::Type::STRING },
+  { key::kBrowserSwitcherExternalGreylistUrl,
+    browser_switcher::prefs::kExternalGreylistUrl,
     base::Value::Type::STRING },
   { key::kBrowserSwitcherEnabled,
     browser_switcher::prefs::kEnabled,
@@ -1100,6 +1129,8 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(std::make_unique<ProxyPolicyHandler>());
   handlers->AddHandler(std::make_unique<URLBlacklistPolicyHandler>());
 
+  // TODO(https://crbug.com/953615): Consider switching from SCHEMA_STRICT to
+  // SCHEMA_ALLOW_UNKNOWN for all schema validating policy handlers.
   handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
       key::kCertificateTransparencyEnforcementDisabledForUrls,
       certificate_transparency::prefs::kCTExcludedHosts, chrome_schema,
@@ -1137,8 +1168,8 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
           key::kUnsafelyTreatInsecureOriginAsSecure, chrome_schema));
   handlers->AddHandler(std::make_unique<LegacyPoliciesDeprecatingPolicyHandler>(
       std::move(secure_origin_legacy_policy),
-      base::WrapUnique(new SecureOriginPolicyHandler(
-          key::kOverrideSecurityRestrictionsOnInsecureOrigin, chrome_schema))));
+      std::make_unique<SecureOriginPolicyHandler>(
+          key::kOverrideSecurityRestrictionsOnInsecureOrigin, chrome_schema)));
 #endif  // defined(OS_CHROMEOS) || defined(OS_ANDROID)
 
   handlers->AddHandler(std::make_unique<DeveloperToolsPolicyHandler>());
@@ -1189,6 +1220,8 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(
       std::make_unique<extensions::ExtensionSettingsPolicyHandler>(
           chrome_schema));
+  // TODO(https://crbug.com/953615): Consider switching from SCHEMA_STRICT to
+  // SCHEMA_ALLOW_UNKNOWN for all schema validating policy handlers.
   handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
       key::kWebAppInstallForceList, prefs::kWebAppInstallForceList,
       chrome_schema, SCHEMA_STRICT,
@@ -1214,6 +1247,8 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(std::make_unique<DownloadDirPolicyHandler>());
   handlers->AddHandler(std::make_unique<LocalSyncPolicyHandler>());
 
+  // TODO(https://crbug.com/953615): Consider switching from SCHEMA_STRICT to
+  // SCHEMA_ALLOW_UNKNOWN for all schema validating policy handlers.
   handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
       key::kRegisteredProtocolHandlers,
       prefs::kPolicyRegisteredProtocolHandlers, chrome_schema, SCHEMA_STRICT,
@@ -1227,14 +1262,16 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       key::kSafeBrowsingExtendedReportingOptInAllowed,
       prefs::kSafeBrowsingExtendedReportingOptInAllowed,
       base::Value::Type::BOOLEAN));
+  // TODO(https://crbug.com/953615): Consider switching from SCHEMA_STRICT to
+  // SCHEMA_ALLOW_UNKNOWN for all schema validating policy handlers.
   handlers->AddHandler(std::make_unique<LegacyPoliciesDeprecatingPolicyHandler>(
       std::move(sber_legacy_policy),
-      base::WrapUnique(new SimpleSchemaValidatingPolicyHandler(
+      std::make_unique<SimpleSchemaValidatingPolicyHandler>(
           key::kSafeBrowsingExtendedReportingEnabled,
           prefs::kSafeBrowsingScoutReportingEnabled, chrome_schema,
           SCHEMA_STRICT,
           SimpleSchemaValidatingPolicyHandler::RECOMMENDED_ALLOWED,
-          SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED))));
+          SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED)));
 
   // Handlers for policies with embedded JSON strings. These handlers are very
   // lenient - as long as the root value is of the right type, they only display
@@ -1369,9 +1406,9 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       ash::prefs::kPowerUserActivityScreenDimDelayFactor, 100, INT_MAX, true));
   handlers->AddHandler(std::make_unique<IntRangePolicyHandler>(
       key::kUptimeLimit, prefs::kUptimeLimit, 3600, INT_MAX, true));
-  handlers->AddHandler(base::WrapUnique(new IntRangePolicyHandler(
+  handlers->AddHandler(std::make_unique<IntRangePolicyHandler>(
       key::kDeviceLoginScreenDefaultScreenMagnifierType, nullptr,
-      chromeos::MAGNIFIER_DISABLED, chromeos::MAGNIFIER_FULL, false)));
+      chromeos::MAGNIFIER_DISABLED, chromeos::MAGNIFIER_FULL, false));
   // TODO(binjin): Remove LegacyPoliciesDeprecatingPolicyHandler for these two
   // policies once deprecation of legacy power management policies is done.
   // http://crbug.com/346229
@@ -1381,7 +1418,7 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
           new PowerManagementIdleSettingsPolicyHandler(chrome_schema))));
   handlers->AddHandler(std::make_unique<LegacyPoliciesDeprecatingPolicyHandler>(
       std::move(screen_lock_legacy_policies),
-      base::WrapUnique(new ScreenLockDelayPolicyHandler(chrome_schema))));
+      std::make_unique<ScreenLockDelayPolicyHandler>(chrome_schema)));
   handlers->AddHandler(
       std::make_unique<ScreenBrightnessPercentPolicyHandler>(chrome_schema));
   handlers->AddHandler(
@@ -1394,19 +1431,23 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       key::kNativePrintersBulkConfiguration));
   handlers->AddHandler(std::make_unique<ExternalDataPolicyHandler>(
       key::kDeviceWilcoDtcConfiguration));
-  handlers->AddHandler(base::WrapUnique(new SimpleSchemaValidatingPolicyHandler(
-      key::kSessionLocales, NULL, chrome_schema, SCHEMA_STRICT,
+  // TODO(https://crbug.com/953615): Consider switching from SCHEMA_STRICT to
+  // SCHEMA_ALLOW_UNKNOWN for all schema validating policy handlers.
+  handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
+      key::kSessionLocales, nullptr, chrome_schema, SCHEMA_STRICT,
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_ALLOWED,
-      SimpleSchemaValidatingPolicyHandler::MANDATORY_PROHIBITED)));
+      SimpleSchemaValidatingPolicyHandler::MANDATORY_PROHIBITED));
   handlers->AddHandler(
       std::make_unique<chromeos::KeyPermissionsPolicyHandler>(chrome_schema));
-  handlers->AddHandler(base::WrapUnique(new DefaultGeolocationPolicyHandler()));
+  handlers->AddHandler(std::make_unique<DefaultGeolocationPolicyHandler>());
   handlers->AddHandler(std::make_unique<extensions::ExtensionListPolicyHandler>(
       key::kNoteTakingAppsLockScreenWhitelist,
       prefs::kNoteTakingAppsLockScreenWhitelist, false /*allow_wildcards*/));
   handlers->AddHandler(
       std::make_unique<SecondaryGoogleAccountSigninPolicyHandler>());
   if (base::FeatureList::IsEnabled(features::kUsageTimeLimitPolicy)) {
+    // TODO(https://crbug.com/953615): Consider switching from SCHEMA_STRICT to
+    // SCHEMA_ALLOW_UNKNOWN for all schema validating policy handlers.
     handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
         key::kUsageTimeLimit, prefs::kUsageTimeLimit, chrome_schema,
         SCHEMA_STRICT,
@@ -1431,6 +1472,8 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(std::make_unique<PrintingDuplexDefaultPolicyHandler>());
   handlers->AddHandler(std::make_unique<PrintingPinDefaultPolicyHandler>());
   handlers->AddHandler(std::make_unique<PrintingSizeDefaultPolicyHandler>());
+  // TODO(https://crbug.com/953615): Consider switching from SCHEMA_STRICT to
+  // SCHEMA_ALLOW_UNKNOWN for all schema validating policy handlers.
   handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
       key::kNetworkFileSharesPreconfiguredShares,
       prefs::kNetworkFileSharesPreconfiguredShares, chrome_schema,
@@ -1444,6 +1487,11 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
   handlers->AddHandler(
       std::make_unique<EcryptfsMigrationStrategyPolicyHandler>());
+  handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
+      key::kKerberosAccounts, prefs::kKerberosAccounts, chrome_schema,
+      SCHEMA_ALLOW_UNKNOWN,
+      SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
+      SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
 #endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_PLUGINS)

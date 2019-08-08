@@ -406,7 +406,7 @@ class _FakeTracingController(object):
   def __init__(self):
     self._is_tracing = False
 
-  def StartTracing(self, tracing_config, timeout=10):
+  def StartTracing(self, tracing_config, timeout=20):
     self._is_tracing = True
     del tracing_config
     del timeout
@@ -420,9 +420,6 @@ class _FakeTracingController(object):
 
   def ClearStateIfNeeded(self):
     pass
-
-  def IsChromeTracingSupported(self):
-    return True
 
 
 class _FakeNetworkController(object):

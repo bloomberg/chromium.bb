@@ -34,9 +34,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_FRAME_LOADER_H_
 
 #include "base/macros.h"
-#include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
-#include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
+#include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-shared.h"
+#include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 #include "third_party/blink/renderer/core/loader/history_item.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
@@ -57,21 +58,15 @@ namespace blink {
 class ContentSecurityPolicy;
 class Document;
 class DocumentLoader;
-class ExecutionContext;
 class LocalFrame;
 class Frame;
 class LocalFrameClient;
 class ProgressTracker;
 class ResourceRequest;
-class SerializedScriptValue;
 class TracedValue;
 struct FrameLoadRequest;
 struct WebNavigationInfo;
 struct WebNavigationParams;
-
-namespace mojom {
-enum class CommitResult : int32_t;
-}
 
 CORE_EXPORT bool IsBackForwardLoadType(WebFrameLoadType);
 CORE_EXPORT bool IsReloadLoadType(WebFrameLoadType);
@@ -107,26 +102,10 @@ class CORE_EXPORT FrameLoader final {
       std::unique_ptr<WebNavigationParams> navigation_params,
       std::unique_ptr<WebDocumentLoader::ExtraData> extra_data);
 
-  // Called when the browser process has asked this renderer process to commit a
-  // same document navigation in that frame. Returns false if the navigation
-  // cannot commit, true otherwise.
-  mojom::CommitResult CommitSameDocumentNavigation(
-      const KURL&,
-      WebFrameLoadType,
-      HistoryItem*,
-      ClientRedirectPolicy,
-      Document* origin_document,
-      bool has_event,
-      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data = nullptr);
-
-  // Called when the browser process is handling the navigation, to
-  // create a "placeholder" document loader and mark the frame as loading.
-  // This placeholder document loader will be later abandoned, and only
-  // lives temporarily so that the rest of Blink code knows the navigation
-  // is in place.
-  bool CreatePlaceholderDocumentLoader(
-      const WebNavigationInfo&,
-      std::unique_ptr<WebDocumentLoader::ExtraData>);
+  // Called before the browser process is asked to navigate this frame, to mark
+  // the frame as loading and save some navigation information for later use.
+  bool WillStartNavigation(const WebNavigationInfo& info,
+                           bool is_history_navigation_in_new_frame);
 
   // This runs the "stop document loading" algorithm in HTML:
   // https://html.spec.whatwg.org/C/browsing-the-web.html#stop-document-loading
@@ -148,9 +127,6 @@ class CORE_EXPORT FrameLoader final {
   void DidAccessInitialDocument();
 
   DocumentLoader* GetDocumentLoader() const { return document_loader_.Get(); }
-  DocumentLoader* GetProvisionalDocumentLoader() const {
-    return provisional_document_loader_.Get();
-  }
 
   void SetDefersLoading(bool);
 
@@ -175,9 +151,14 @@ class CORE_EXPORT FrameLoader final {
   // already present in the FrameOwner's ContainerPolicy.
   WebSandboxFlags EffectiveSandboxFlags() const;
 
-  void ModifyRequestForCSP(ResourceRequest&,
-                           Document*,
-                           network::mojom::RequestContextFrameType) const;
+  // Modifying itself is done based on |fetch_client_settings_object|.
+  // |document_for_logging| is used only for logging, use counters,
+  // UKM-related things.
+  void ModifyRequestForCSP(
+      ResourceRequest&,
+      const FetchClientSettingsObject* fetch_client_settings_object,
+      Document* document_for_logging,
+      network::mojom::RequestContextFrameType) const;
 
   Frame* Opener();
   void SetOpener(LocalFrame*);
@@ -190,6 +171,10 @@ class CORE_EXPORT FrameLoader final {
   void FinishedParsing();
   void DidFinishNavigation();
 
+  void DidFinishSameDocumentNavigation(const KURL&,
+                                       WebFrameLoadType,
+                                       HistoryItem*);
+
   // This prepares the FrameLoader for the next commit. It will dispatch unload
   // events, abort XHR requests and detach the document. Returns true if the
   // frame is ready to receive the next commit, or false otherwise.
@@ -199,50 +184,41 @@ class CORE_EXPORT FrameLoader final {
 
   FrameLoaderStateMachine* StateMachine() const { return &state_machine_; }
 
-  bool AllAncestorsAreComplete() const;  // including this
-
   bool ShouldClose(bool is_reload = false);
   void DispatchUnloadEvent();
 
   bool AllowPlugins(ReasonForCallingAllowPlugins);
 
-  void UpdateForSameDocumentNavigation(const KURL&,
-                                       SameDocumentNavigationSource,
-                                       scoped_refptr<SerializedScriptValue>,
-                                       HistoryScrollRestorationType,
-                                       WebFrameLoadType,
-                                       Document*);
-
   void SaveScrollAnchor();
   void SaveScrollState();
   void RestoreScrollPositionAndViewState();
 
-  // Note: When a PlzNavigtate navigation is handled by the client, we will
-  // have created a dummy provisional DocumentLoader, so this will return true
-  // while the client handles the navigation.
   bool HasProvisionalNavigation() const {
-    return GetProvisionalDocumentLoader();
+    return client_navigation_.get() || provisional_document_loader_.Get();
   }
 
-  void DetachProvisionalDocumentLoader(DocumentLoader*);
+  bool MaybeRenderFallbackContent();
+
+  // Like ClearClientNavigation, but also notifies the client to actually cancel
+  // the navigation.
+  void CancelClientNavigation();
+  void DetachProvisionalDocumentLoader();
 
   void Trace(blink::Visitor*);
 
-  static void SetReferrerForFrameRequest(FrameLoadRequest&);
-  static void UpgradeInsecureRequest(ResourceRequest&,
-                                     ExecutionContext*,
-                                     network::mojom::RequestContextFrameType);
-
-  void ClientDroppedNavigation();
+  void DidDropNavigation();
   void MarkAsLoading();
 
   ContentSecurityPolicy* GetLastOriginDocumentCSP() {
     return last_origin_document_csp_.Get();
   }
-  bool ShouldReuseDefaultView(const KURL&, const ContentSecurityPolicy*);
+  bool ShouldReuseDefaultView(const scoped_refptr<const SecurityOrigin>&,
+                              const ContentSecurityPolicy*);
+
+  bool IsClientNavigationInitialHistoryLoad();
 
  private:
-  bool PrepareRequestForThisFrame(FrameLoadRequest&);
+  bool AllowRequestForThisFrame(const FrameLoadRequest&);
   WebFrameLoadType DetermineFrameLoadType(const KURL& url,
                                           const AtomicString& http_method,
                                           Document* origin_document,
@@ -256,18 +232,11 @@ class CORE_EXPORT FrameLoader final {
   void ProcessFragment(const KURL&, WebFrameLoadType, LoadStartType);
 
   // Returns whether we should continue with new navigation.
-  bool CancelProvisionalLoaderForNewNavigation(
-      bool cancel_scheduled_navigations,
-      bool is_starting_blank_navigation,
-      bool is_form_submission);
+  bool CancelProvisionalLoaderForNewNavigation();
 
-  void LoadInSameDocument(const KURL&,
-                          scoped_refptr<SerializedScriptValue> state_object,
-                          WebFrameLoadType,
-                          HistoryItem*,
-                          ClientRedirectPolicy,
-                          Document*,
-                          std::unique_ptr<WebDocumentLoader::ExtraData>);
+  // Clears any information about client navigation, see client_navigation_.
+  void ClearClientNavigation();
+
   void RestoreScrollPositionAndViewState(WebFrameLoadType,
                                          bool is_same_document,
                                          const HistoryItem::ViewState&,
@@ -298,6 +267,16 @@ class CORE_EXPORT FrameLoader final {
   // certain settings on the new loader.
   Member<DocumentLoader> document_loader_;
   Member<DocumentLoader> provisional_document_loader_;
+
+  // This struct holds information about a navigation, which is being
+  // initiated by the client through the browser process, until the navigation
+  // is either committed or cancelled.
+  struct ClientNavigationState {
+    KURL url;
+    AtomicString http_method;
+    bool is_history_navigation_in_new_frame = false;
+  };
+  std::unique_ptr<ClientNavigationState> client_navigation_;
 
   bool in_restore_scroll_;
 

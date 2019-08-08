@@ -26,7 +26,7 @@ cr.define('button_strip_interactive_test', function() {
           'FooDevice', print_preview.DestinationType.GOOGLE,
           print_preview.DestinationOrigin.COOKIES, 'FooName',
           print_preview.DestinationConnectionStatus.ONLINE);
-      buttonStrip.state = print_preview_new.State.NOT_READY;
+      buttonStrip.state = print_preview.State.NOT_READY;
       document.body.appendChild(buttonStrip);
     });
 
@@ -38,7 +38,7 @@ cr.define('button_strip_interactive_test', function() {
       const whenFocusDone = test_util.eventToPromise('focus', printButton);
 
       // Simulate initialization finishing.
-      buttonStrip.state = print_preview_new.State.READY;
+      buttonStrip.state = print_preview.State.READY;
       return whenFocusDone;
     });
   });

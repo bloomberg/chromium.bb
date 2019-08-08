@@ -109,14 +109,14 @@ class CONTENT_EXPORT NavigationBodyLoader
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         OnUploadProgressCallback callback) override;
-  void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override;
+  void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override;
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle handle) override;
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
-  void CodeCacheReceived(const base::Time& response_time,
-                         const std::vector<uint8_t>& data);
+  void CodeCacheReceived(base::Time response_time,
+                         base::span<const uint8_t> data);
   void BindURLLoaderAndContinue();
   void OnConnectionClosed();
   void OnReadable(MojoResult unused);

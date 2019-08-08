@@ -140,14 +140,6 @@ public class TrustedWebActivityUmaRecorder {
                 ));
     }
 
-    /**
-     * Records the fact that a reflective call to Activity#convertFromTranslucent failed.
-     */
-    public void recordTranslucencyRemovalFailed() {
-        doWhenNativeLoaded(() -> RecordHistogram.recordBooleanHistogram(
-                "TrustedWebActivity.TranslucencyRemovalFailed", true));
-    }
-
     private void doWhenNativeLoaded(Runnable runnable) {
         mBrowserInitializer.runNowOrAfterNativeInitialization(runnable);
     }

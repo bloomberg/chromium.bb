@@ -20,27 +20,29 @@
 #include "SetupProcessor.hpp"
 #include "Plane.hpp"
 #include "Blitter.hpp"
-#include "System/MutexLock.hpp"
-#include "System/Thread.hpp"
 #include "Device/Config.hpp"
+#include "System/Synchronization.hpp"
+#include "System/Thread.hpp"
 #include "Vulkan/VkDescriptorSet.hpp"
 
 #include <list>
+#include <mutex>
+#include <thread>
 
 namespace vk
 {
 	class DescriptorSet;
-	struct Query;
+	class Query;
 }
 
 namespace sw
 {
-	class Clipper;
 	struct DrawCall;
 	class PixelShader;
 	class VertexShader;
 	class SwiftConfig;
 	struct Task;
+	class TaskEvents;
 	class Resource;
 	struct Constants;
 
@@ -57,15 +59,13 @@ namespace sw
 	extern TranscendentalPrecision expPrecision;
 	extern TranscendentalPrecision rcpPrecision;
 	extern TranscendentalPrecision rsqPrecision;
-	extern bool perspectiveCorrection;
 
-	struct Conventions
+	struct Conventions  // FIXME(capn): Eliminate. Only support Vulkan 1.1 conventions.
 	{
 		bool halfIntegerCoordinates;
 		bool symmetricNormalizedDepth;
 		bool booleanFaceRegister;
 		bool fullPixelPositionRegister;
-		bool colorsDefaultToZero;
 	};
 
 	static const Conventions OpenGL =
@@ -74,7 +74,6 @@ namespace sw
 		true,    // symmetricNormalizedDepth
 		true,    // booleanFaceRegister
 		true,    // fullPixelPositionRegister
-		true,    // colorsDefaultToZero
 	};
 
 	static const Conventions Direct3D =
@@ -83,7 +82,6 @@ namespace sw
 		false,   // symmetricNormalizedDepth
 		false,   // booleanFaceRegister
 		false,   // fullPixelPositionRegister
-		false,   // colorsDefaultToZero
 	};
 
 	struct DrawData
@@ -95,7 +93,6 @@ namespace sw
 
 		const void *input[MAX_VERTEX_INPUTS];
 		unsigned int stride[MAX_VERTEX_INPUTS];
-		Texture mipmap[TOTAL_IMAGE_UNITS];
 		const void *indices;
 
 		int instanceID;
@@ -196,30 +193,16 @@ namespace sw
 		};
 
 	public:
-		Renderer(Context *context, Conventions conventions, bool exactColorRounding);
+		Renderer(Conventions conventions, bool exactColorRounding);
 
 		virtual ~Renderer();
 
 		void *operator new(size_t size);
 		void operator delete(void * mem);
 
-		void draw(VkPrimitiveTopology topology, VkIndexType indexType, unsigned int count, int baseVertex, bool update = true);
+		bool hasQueryOfType(VkQueryType type) const;
 
-		void setContext(const sw::Context& context);
-
-		void setMultiSampleMask(unsigned int mask);
-		void setTransparencyAntialiasing(TransparencyAntialiasing transparencyAntialiasing);
-
-		void setLineWidth(float width);
-
-		void setDepthBias(float bias);
-		void setSlopeDepthBias(float slopeBias);
-
-		void setRasterizerDiscard(bool rasterizerDiscard);
-
-		// Programmable pipelines
-		void setPixelShader(const SpirvShader *shader);
-		void setVertexShader(const SpirvShader *shader);
+		void draw(const sw::Context* context, VkIndexType indexType, unsigned int count, int baseVertex, TaskEvents *events, bool update = true);
 
 		// Viewport & Clipper
 		void setViewport(const VkViewport &viewport);
@@ -228,7 +211,7 @@ namespace sw
 		void addQuery(vk::Query *query);
 		void removeQuery(vk::Query *query);
 
-		void advanceInstanceAttributes();
+		void advanceInstanceAttributes(Stream* inputs);
 
 		void synchronize();
 
@@ -265,9 +248,6 @@ namespace sw
 		void initializeThreads();
 		void terminateThreads();
 
-		Context *context;
-		Clipper *clipper;
-		Blitter *blitter;
 		VkViewport viewport;
 		VkRect2D scissor;
 		int clipFlags;
@@ -277,7 +257,7 @@ namespace sw
 
 		AtomicInt exitThreads;
 		AtomicInt threadsAwake;
-		Thread *worker[16];
+		std::thread *worker[16];
 		Event *resume[16];         // Events for resuming threads
 		Event *suspend[16];        // Events for suspending threads
 		Event *resumeApp;          // Event for resuming the application thread
@@ -307,7 +287,7 @@ namespace sw
 		static AtomicInt unitCount;
 		static AtomicInt clusterCount;
 
-		MutexLock schedulerMutex;
+		std::mutex schedulerMutex;
 
 		#if PERF_HUD
 			int64_t vertexTime[16];
@@ -355,6 +335,7 @@ namespace sw
 		vk::ImageView *renderTarget[RENDERTARGETS];
 		vk::ImageView *depthBuffer;
 		vk::ImageView *stencilBuffer;
+		TaskEvents *events;
 
 		std::list<vk::Query*> *queries;
 

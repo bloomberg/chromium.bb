@@ -282,12 +282,35 @@ namespace dawn_native { namespace metal {
             return mtlDepthStencilDescriptor;
         }
 
+        MTLWinding MTLFrontFace(dawn::FrontFace face) {
+            // Note that these are inverted because we flip the Y coordinate in the vertex shader
+            switch (face) {
+                case dawn::FrontFace::CW:
+                    return MTLWindingCounterClockwise;
+                case dawn::FrontFace::CCW:
+                    return MTLWindingClockwise;
+            }
+        }
+
+        MTLCullMode ToMTLCullMode(dawn::CullMode mode) {
+            switch (mode) {
+                case dawn::CullMode::None:
+                    return MTLCullModeNone;
+                case dawn::CullMode::Front:
+                    return MTLCullModeFront;
+                case dawn::CullMode::Back:
+                    return MTLCullModeBack;
+            }
+        }
+
     }  // anonymous namespace
 
     RenderPipeline::RenderPipeline(Device* device, const RenderPipelineDescriptor* descriptor)
         : RenderPipelineBase(device, descriptor),
-          mMtlIndexType(MTLIndexFormat(GetInputStateDescriptor()->indexFormat)),
-          mMtlPrimitiveTopology(MTLPrimitiveTopology(GetPrimitiveTopology())) {
+          mMtlIndexType(MTLIndexFormat(GetVertexInputDescriptor()->indexFormat)),
+          mMtlPrimitiveTopology(MTLPrimitiveTopology(GetPrimitiveTopology())),
+          mMtlFrontFace(MTLFrontFace(GetFrontFace())),
+          mMtlCullMode(ToMTLCullMode(GetCullMode())) {
         auto mtlDevice = device->GetMTLDevice();
 
         MTLRenderPipelineDescriptor* descriptorMTL = [MTLRenderPipelineDescriptor new];
@@ -362,6 +385,14 @@ namespace dawn_native { namespace metal {
         return mMtlPrimitiveTopology;
     }
 
+    MTLWinding RenderPipeline::GetMTLFrontFace() const {
+        return mMtlFrontFace;
+    }
+
+    MTLCullMode RenderPipeline::GetMTLCullMode() const {
+        return mMtlCullMode;
+    }
+
     void RenderPipeline::Encode(id<MTLRenderCommandEncoder> encoder) {
         [encoder setRenderPipelineState:mMtlRenderPipelineState];
     }
@@ -385,17 +416,28 @@ namespace dawn_native { namespace metal {
         }
 
         for (uint32_t i : IterateBitSet(GetInputsSetMask())) {
-            const VertexInputDescriptor& info = GetInput(i);
+            const VertexBufferDescriptor& info = GetInput(i);
 
             auto layoutDesc = [MTLVertexBufferLayoutDescriptor new];
             if (info.stride == 0) {
                 // For MTLVertexStepFunctionConstant, the stepRate must be 0,
-                // but the stride must NOT be 0, so I made up a value (256).
-                // TODO(cwallez@chromium.org): the made up value will need to be at least
-                //    max(attrib.offset + sizeof(attrib) for each attrib)
+                // but the stride must NOT be 0, so we made up it with
+                // max(attrib.offset + sizeof(attrib) for each attrib)
+                size_t max_stride = 0;
+                for (uint32_t attribIndex : IterateBitSet(GetAttributesSetMask())) {
+                    const VertexAttributeDescriptor& attrib = GetAttribute(attribIndex);
+                    // Only use the attributes that use the current input
+                    if (attrib.inputSlot != info.inputSlot) {
+                        continue;
+                    }
+                    max_stride = std::max(max_stride,
+                                          VertexFormatSize(attrib.format) + size_t(attrib.offset));
+                }
                 layoutDesc.stepFunction = MTLVertexStepFunctionConstant;
                 layoutDesc.stepRate = 0;
-                layoutDesc.stride = 256;
+                // Metal requires the stride must be a multiple of 4 bytes, align it with next
+                // multiple of 4 if it's not.
+                layoutDesc.stride = Align(max_stride, 4);
             } else {
                 layoutDesc.stepFunction = InputStepModeFunction(info.stepMode);
                 layoutDesc.stepRate = 1;

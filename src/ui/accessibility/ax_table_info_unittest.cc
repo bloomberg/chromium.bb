@@ -108,8 +108,8 @@ TEST_F(AXTableInfoTest, SimpleTable) {
   table_info = GetTableInfo(&tree, tree.root());
   EXPECT_TRUE(table_info);
 
-  EXPECT_EQ(2, table_info->row_count);
-  EXPECT_EQ(2, table_info->col_count);
+  EXPECT_EQ(2u, table_info->row_count);
+  EXPECT_EQ(2u, table_info->col_count);
 
   EXPECT_EQ(2U, table_info->row_headers.size());
   EXPECT_EQ(0U, table_info->row_headers[0].size());
@@ -132,10 +132,10 @@ TEST_F(AXTableInfoTest, SimpleTable) {
   EXPECT_EQ(6, table_info->unique_cell_ids[2]);
   EXPECT_EQ(7, table_info->unique_cell_ids[3]);
 
-  EXPECT_EQ(0, table_info->cell_id_to_index[4]);
-  EXPECT_EQ(1, table_info->cell_id_to_index[5]);
-  EXPECT_EQ(2, table_info->cell_id_to_index[6]);
-  EXPECT_EQ(3, table_info->cell_id_to_index[7]);
+  EXPECT_EQ(0u, table_info->cell_id_to_index[4]);
+  EXPECT_EQ(1u, table_info->cell_id_to_index[5]);
+  EXPECT_EQ(2u, table_info->cell_id_to_index[6]);
+  EXPECT_EQ(3u, table_info->cell_id_to_index[7]);
 
   EXPECT_EQ(0U, table_info->extra_mac_nodes.size());
 
@@ -225,8 +225,8 @@ TEST_F(AXTableInfoTest, ComputedTableSizeIncludesSpans) {
   AXTree tree(initial_state);
 
   AXTableInfo* table_info = GetTableInfo(&tree, tree.root());
-  EXPECT_EQ(4, table_info->row_count);
-  EXPECT_EQ(6, table_info->col_count);
+  EXPECT_EQ(4u, table_info->row_count);
+  EXPECT_EQ(6u, table_info->col_count);
 }
 
 TEST_F(AXTableInfoTest, AuthorRowAndColumnCountsAreRespected) {
@@ -243,8 +243,8 @@ TEST_F(AXTableInfoTest, AuthorRowAndColumnCountsAreRespected) {
   AXTree tree(initial_state);
 
   AXTableInfo* table_info = GetTableInfo(&tree, tree.root());
-  EXPECT_EQ(8, table_info->row_count);
-  EXPECT_EQ(9, table_info->col_count);
+  EXPECT_EQ(8u, table_info->row_count);
+  EXPECT_EQ(9u, table_info->col_count);
 }
 
 TEST_F(AXTableInfoTest, TableInfoRecomputedOnlyWhenTableChanges) {
@@ -260,8 +260,8 @@ TEST_F(AXTableInfoTest, TableInfoRecomputedOnlyWhenTableChanges) {
   AXTree tree(initial_state);
 
   AXTableInfo* table_info = GetTableInfo(&tree, tree.root());
-  EXPECT_EQ(1, table_info->row_count);
-  EXPECT_EQ(1, table_info->col_count);
+  EXPECT_EQ(1u, table_info->row_count);
+  EXPECT_EQ(1u, table_info->col_count);
 
   // Table info is cached.
   AXTableInfo* table_info_2 = GetTableInfo(&tree, tree.root());
@@ -273,8 +273,8 @@ TEST_F(AXTableInfoTest, TableInfoRecomputedOnlyWhenTableChanges) {
   EXPECT_TRUE(tree.Unserialize(update));
 
   AXTableInfo* table_info_3 = GetTableInfo(&tree, tree.root());
-  EXPECT_EQ(1, table_info_3->row_count);
-  EXPECT_EQ(2, table_info_3->col_count);
+  EXPECT_EQ(1u, table_info_3->row_count);
+  EXPECT_EQ(2u, table_info_3->col_count);
 }
 
 TEST_F(AXTableInfoTest, CellIdsHandlesSpansAndMissingCells) {
@@ -312,9 +312,9 @@ TEST_F(AXTableInfoTest, CellIdsHandlesSpansAndMissingCells) {
   EXPECT_EQ(5, table_info->unique_cell_ids[1]);
   EXPECT_EQ(6, table_info->unique_cell_ids[2]);
 
-  EXPECT_EQ(0, table_info->cell_id_to_index[4]);
-  EXPECT_EQ(1, table_info->cell_id_to_index[5]);
-  EXPECT_EQ(2, table_info->cell_id_to_index[6]);
+  EXPECT_EQ(0u, table_info->cell_id_to_index[4]);
+  EXPECT_EQ(1u, table_info->cell_id_to_index[5]);
+  EXPECT_EQ(2u, table_info->cell_id_to_index[6]);
 }
 
 TEST_F(AXTableInfoTest, SkipsGenericAndIgnoredNodes) {
@@ -362,8 +362,8 @@ TEST_F(AXTableInfoTest, SkipsGenericAndIgnoredNodes) {
   table_info = GetTableInfo(&tree, tree.root());
   EXPECT_TRUE(table_info);
 
-  EXPECT_EQ(2, table_info->row_count);
-  EXPECT_EQ(2, table_info->col_count);
+  EXPECT_EQ(2u, table_info->row_count);
+  EXPECT_EQ(2u, table_info->col_count);
 
   EXPECT_EQ(5, table_info->cell_ids[0][0]);
   EXPECT_EQ(6, table_info->cell_ids[0][1]);
@@ -836,8 +836,8 @@ TEST_F(AXTableInfoTest, TableChanges) {
   AXTableInfo* table_info = GetTableInfo(&tree, tree.root());
   EXPECT_TRUE(table_info);
 
-  EXPECT_EQ(1, table_info->row_count);
-  EXPECT_EQ(2, table_info->col_count);
+  EXPECT_EQ(1u, table_info->row_count);
+  EXPECT_EQ(2u, table_info->col_count);
 
   // Update the tree to remove the table role.
   AXTreeUpdate update = initial_state;

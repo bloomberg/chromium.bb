@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/base64.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/payments/ssl_validity_checker.h"
@@ -16,14 +15,14 @@
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/payments/content/origin_security_checker.h"
+#include "components/payments/content/icon/icon_size.h"
+#include "components/payments/core/url_util.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -36,7 +35,6 @@
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
-#include "url/url_constants.h"
 
 namespace payments {
 namespace {
@@ -57,7 +55,7 @@ class ReadOnlyOriginView : public views::View {
  public:
   ReadOnlyOriginView(const base::string16& page_title,
                      const GURL& origin,
-                     const gfx::ImageSkia* icon_image_skia,
+                     gfx::ImageSkia icon_image_skia,
                      SkColor background_color,
                      views::ButtonListener* site_settings_listener) {
     std::unique_ptr<views::View> title_origin_container =
@@ -77,7 +75,7 @@ class ReadOnlyOriginView : public views::View {
       std::unique_ptr<views::Label> title_label =
           std::make_unique<views::Label>(page_title,
                                          views::style::CONTEXT_DIALOG_TITLE);
-      title_label->set_id(static_cast<int>(DialogViewID::SHEET_TITLE));
+      title_label->SetID(static_cast<int>(DialogViewID::SHEET_TITLE));
       title_label->SetFocusBehavior(
           views::View::FocusBehavior::ACCESSIBLE_ONLY);
       // Turn off autoreadability because the computed |foreground| color takes
@@ -93,7 +91,7 @@ class ReadOnlyOriginView : public views::View {
     origin_label->SetElideBehavior(gfx::ELIDE_HEAD);
     if (!title_is_valid) {
       // Set the origin as title when the page title is invalid.
-      origin_label->set_id(static_cast<int>(DialogViewID::SHEET_TITLE));
+      origin_label->SetID(static_cast<int>(DialogViewID::SHEET_TITLE));
 
       // Pad to keep header as the same height as when the page title is valid.
       constexpr int kVerticalPadding = 10;
@@ -114,19 +112,19 @@ class ReadOnlyOriginView : public views::View {
     top_level_columns->AddColumn(views::GridLayout::LEADING,
                                  views::GridLayout::CENTER, 1.0,
                                  views::GridLayout::USE_PREF, 0, 0);
-    // Payment handler icon should be 32 pixels tall.
-    constexpr int kPaymentHandlerIconHeight = 32;
-    bool has_icon = icon_image_skia && icon_image_skia->width() &&
-                    icon_image_skia->height();
-    float adjusted_width = base::checked_cast<float>(icon_image_skia->width());
+    const bool has_icon = icon_image_skia.width() && icon_image_skia.height();
+    float adjusted_width = base::checked_cast<float>(icon_image_skia.width());
     if (has_icon) {
-      adjusted_width = adjusted_width * kPaymentHandlerIconHeight /
-                       icon_image_skia->height();
+      adjusted_width =
+          adjusted_width *
+          IconSizeCalculator::kPaymentAppDeviceIndependentIdealIconHeight /
+          icon_image_skia.height();
       // A column for the instrument icon.
       top_level_columns->AddColumn(
           views::GridLayout::LEADING, views::GridLayout::FILL,
           views::GridLayout::kFixedSize, views::GridLayout::FIXED,
-          adjusted_width, kPaymentHandlerIconHeight);
+          adjusted_width,
+          IconSizeCalculator::kPaymentAppDeviceIndependentIdealIconHeight);
       top_level_columns->AddPaddingColumn(views::GridLayout::kFixedSize, 8);
     }
 
@@ -136,8 +134,11 @@ class ReadOnlyOriginView : public views::View {
       std::unique_ptr<views::ImageView> instrument_icon_view =
           CreateInstrumentIconView(/*icon_id=*/0, icon_image_skia,
                                    /*label=*/page_title);
-      instrument_icon_view->SetImageSize(
-          gfx::Size(adjusted_width, kPaymentHandlerIconHeight));
+      // We should set image size in density independent pixels here, since
+      // views::ImageView objects are rastered at the device scale factor.
+      instrument_icon_view->SetImageSize(gfx::Size(
+          adjusted_width,
+          IconSizeCalculator::kPaymentAppDeviceIndependentIdealIconHeight));
       top_level_layout->AddView(instrument_icon_view.release());
     }
   }
@@ -285,11 +286,7 @@ void PaymentHandlerWebFlowViewController::LoadProgressChanged(
 void PaymentHandlerWebFlowViewController::VisibleSecurityStateChanged(
     content::WebContents* source) {
   DCHECK(source == web_contents());
-  // IsSslCertificateValid checks security_state::SecurityInfo.security_level
-  // which reflects security state.
-  // Allow localhost for test.
-  if (!SslValidityChecker::IsSslCertificateValid(source) &&
-      !net::IsLocalhost(source->GetLastCommittedURL())) {
+  if (!SslValidityChecker::IsValidPageInPaymentHandlerWindow(source)) {
     log_.Error("Aborting payment handler window \"" + target_.spec() +
                "\" because of insecure certificate state on \"" +
                source->GetVisibleURL().spec() + "\"");
@@ -328,22 +325,13 @@ void PaymentHandlerWebFlowViewController::DidFinishNavigation(
   if (navigation_handle->IsSameDocument())
     return;
 
-  if (!OriginSecurityChecker::IsOriginSecure(navigation_handle->GetURL()) ||
-      (!OriginSecurityChecker::IsSchemeCryptographic(
-           navigation_handle->GetURL()) &&
-       !OriginSecurityChecker::IsOriginLocalhostOrFile(
-           navigation_handle->GetURL()) &&
-       !navigation_handle->GetURL().IsAboutBlank()) ||
-      !SslValidityChecker::IsSslCertificateValid(
+  if (!SslValidityChecker::IsValidPageInPaymentHandlerWindow(
           navigation_handle->GetWebContents())) {
-    // Allow localhost for test.
-    if (!net::IsLocalhost(navigation_handle->GetURL())) {
-      log_.Error("Aborting payment handler window \"" + target_.spec() +
-                 "\" because of navigation to an insecure url \"" +
-                 navigation_handle->GetURL().spec() + "\"");
-      AbortPayment();
-      return;
-    }
+    log_.Error("Aborting payment handler window \"" + target_.spec() +
+               "\" because of navigation to an insecure url \"" +
+               navigation_handle->GetURL().spec() + "\"");
+    AbortPayment();
+    return;
   }
 
   if (first_navigation_complete_callback_) {

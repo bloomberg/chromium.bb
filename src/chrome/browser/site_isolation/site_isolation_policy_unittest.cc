@@ -13,6 +13,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -67,8 +68,12 @@ TEST_F(PasswordSiteIsolationPolicyTest, ApplyPersistedIsolatedOrigins) {
   }
 
   // New SiteInstances for foo.com and bar.com shouldn't require a dedicated
-  // process to start with.
-  {
+  // process to start with.  An exception is if this test runs with a
+  // command-line --site-per-process flag (which might be the case on some
+  // bots).  This will override the feature configuration in this test and make
+  // all sites isolated.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
     scoped_refptr<content::SiteInstance> foo_instance =
         content::SiteInstance::CreateForURL(profile, GURL("http://foo.com/1"));
     EXPECT_FALSE(foo_instance->RequiresDedicatedProcess());
@@ -121,6 +126,13 @@ class NoPasswordSiteIsolationPolicyTest : public SiteIsolationPolicyTest {
 // stored isolated origins when site isolation for password sites is off.
 TEST_F(NoPasswordSiteIsolationPolicyTest,
        PersistedIsolatedOriginsIgnoredWithoutPasswordIsolation) {
+  // Running this test with a command-line --site-per-process flag (which might
+  // be the case on some bots) doesn't make sense, as that will make all sites
+  // isolated, overriding the feature configuration in this test.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess))
+    return;
+
   EXPECT_FALSE(SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled());
   TestingProfile* profile = manager()->CreateTestingProfile("Test");
 

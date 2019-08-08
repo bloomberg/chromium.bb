@@ -26,7 +26,6 @@
   <uses-permission android:name="android.permission.WAKE_LOCK"/>
   <uses-permission android:name="android.permission.VIBRATE"/>
   <uses-permission android:name="android.permission.USE_CREDENTIALS"/>
-  <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
   <uses-permission android:name="android.permission.RECORD_AUDIO"/>
   <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
   <uses-permission android:name="android.permission.READ_SYNC_STATS"/>
@@ -89,28 +88,6 @@
       android:use32bitAbi="true">
     <activity
         android:autoRemoveFromRecents="false"
-        android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
-        android:excludeFromRecents="true"
-        android:hardwareAccelerated="false"
-        android:launchMode="singleInstance"
-        android:name="org.chromium.chrome.browser.upgrade.UpgradeActivity"
-        android:persistableMode="persistNever"
-        android:taskAffinity=""
-        android:theme="@style/Theme.Chromium.Activity"
-        android:windowSoftInputMode="adjustResize"/>
-    <activity
-        android:autoRemoveFromRecents="false"
-        android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode|density"
-        android:exported="false"
-        android:hardwareAccelerated="false"
-        android:icon="@mipmap/incognito_app_icon"
-        android:name="org.chromium.chrome.browser.document.IncognitoDocumentActivity"
-        android:persistableMode="persistNever"
-        android:taskAffinity=""
-        android:theme="@style/Theme.Chromium.Incognito"
-        android:windowSoftInputMode="adjustResize"/>
-    <activity
-        android:autoRemoveFromRecents="false"
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode|density"
         android:exported="false"
         android:hardwareAccelerated="false"
@@ -127,16 +104,6 @@
         <category android:name="com.google.intent.category.DAYDREAM"/>
       </intent-filter>
     </activity>
-    <activity
-        android:autoRemoveFromRecents="false"
-        android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode|density"
-        android:exported="false"
-        android:hardwareAccelerated="false"
-        android:name="org.chromium.chrome.browser.document.DocumentActivity"
-        android:persistableMode="persistAcrossReboots"
-        android:taskAffinity=""
-        android:theme="@style/Theme.Chromium.Activity"
-        android:windowSoftInputMode="adjustResize"/>
     <activity
         android:autoRemoveFromRecents="true"
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
@@ -788,7 +755,7 @@
         android:persistableMode="persistNever"
         android:resizeableActivity="true"
         android:supportsPictureInPicture="true"
-        android:theme="@style/Theme.Chromium.Webapp"
+        android:theme="@style/Theme.Chromium.Webapp.Translucent"
         android:windowSoftInputMode="adjustResize">
       <intent-filter>
         <action android:name="org.chromium.chrome.browser.dummy.action"/>
@@ -992,7 +959,6 @@
       <intent-filter tools:ignore="AppLinkUrlError">
         <action android:name="android.intent.action.VIEW"/>
         <category android:name="android.intent.category.DEFAULT"/>
-        <data android:mimeType="audio/*"/>
         <data android:mimeType="image/*"/>
         <data android:mimeType="video/*"/>
         <data android:scheme="content"/>
@@ -1009,14 +975,6 @@
         <category android:name="android.intent.category.DEFAULT"/>
       </intent-filter>
     </activity-alias>
-    <activity-alias
-        android:exported="false"
-        android:name="com.google.android.apps.chrome.document.DocumentActivity"
-        android:targetActivity="org.chromium.chrome.browser.document.DocumentActivity"/>
-    <activity-alias
-        android:exported="false"
-        android:name="com.google.android.apps.chrome.document.IncognitoDocumentActivity"
-        android:targetActivity="org.chromium.chrome.browser.document.IncognitoDocumentActivity"/>
     <activity-alias
         android:exported="true"
         android:name="com.google.android.apps.chrome.IntentDispatcher"
@@ -1127,7 +1085,6 @@
         <category android:name="android.intent.category.BROWSABLE"/>
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.LAUNCHER"/>
-        <category android:name="android.intent.category.MULTIWINDOW_LAUNCHER"/>
       </intent-filter>
       <intent-filter>
         <action android:name="org.chromium.chrome.browser.dummy.action"/>
@@ -1195,6 +1152,21 @@
     <activity-alias
         android:name="com.google.android.apps.chrome.webapps.WebappManager"
         android:targetActivity="org.chromium.chrome.browser.webapps.WebappLauncherActivity"/>
+    <activity-alias
+        android:enabled="false"
+        android:excludeFromRecents="true"
+        android:exported="true"
+        android:name="org.chromium.chrome.browser.media.AudioLauncherActivity"
+        android:targetActivity="org.chromium.chrome.browser.media.MediaLauncherActivity"
+        android:theme="@android:style/Theme.NoDisplay">
+      <intent-filter tools:ignore="AppLinkUrlError">
+        <action android:name="android.intent.action.VIEW"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+        <data android:mimeType="audio/*"/>
+        <data android:scheme="content"/>
+        <data android:scheme="file"/>
+      </intent-filter>
+    </activity-alias>
     <meta-data android:name="android.allow_multiple_resumed_activities" android:value="true"/>
     <meta-data
         android:name="android.content.APP_RESTRICTIONS"
@@ -1214,7 +1186,6 @@
     <meta-data
         android:name="com.samsung.android.sdk.multiwindow.penwindow.enable"
         android:value="true"/>
-    <meta-data android:name="com.sec.android.support.multiwindow" android:value="true"/>
     <meta-data
         android:name="ipc.invalidation.ticl.gcm_upstream_service_class"
         android:value="org.chromium.chrome.browser.services.gcm.InvalidationGcmUpstreamSender"/>
@@ -1301,15 +1272,6 @@
     </receiver>
     <receiver
         android:exported="false"
-        android:name="org.chromium.chrome.browser.ntp.ContentSuggestionsNotifier$DeleteReceiver"/>
-    <receiver
-        android:exported="false"
-        android:name="org.chromium.chrome.browser.ntp.ContentSuggestionsNotifier$OpenUrlReceiver"/>
-    <receiver
-        android:exported="false"
-        android:name="org.chromium.chrome.browser.ntp.ContentSuggestionsNotifier$TimeoutReceiver"/>
-    <receiver
-        android:exported="false"
         android:name="org.chromium.chrome.browser.offlinepages.AutoFetchNotifier$CompleteNotificationReceiver"/>
     <receiver
         android:exported="false"
@@ -1356,10 +1318,6 @@
         <action android:name="android.intent.action.PACKAGE_DATA_CLEARED"/>
         <action android:name="android.intent.action.PACKAGE_FULLY_REMOVED"/>
         <data android:scheme="package"/>
-      </intent-filter>
-      <intent-filter>
-        <action
-            android:name="org.chromium.chrome.browser.browserservices.ClientAppBroadcastReceiver.DEBUG"/>
       </intent-filter>
     </receiver>
     <receiver
@@ -1558,9 +1516,6 @@
     <service
         android:exported="false"
         android:name="org.chromium.chrome.browser.tracing.TracingNotificationService"/>
-    <service
-        android:exported="false"
-        android:name="org.chromium.chrome.browser.upgrade.UpgradeIntentService"/>
     <service
         android:exported="false"
         android:name="org.chromium.components.background_task_scheduler.BackgroundTaskJobService"
@@ -1969,6 +1924,7 @@
         tools:ignore="ExportedService">
       <intent-filter>
         <action android:name="android.support.customtabs.action.CustomTabsService"/>
+        <category android:name="androidx.browser.trusted.category.NavBarColorCustomization"/>
         <category android:name="androidx.browser.trusted.category.TrustedWebActivities"/>
         <category
             android:name="androidx.browser.trusted.category.TrustedWebActivitySplashScreensV1"/>

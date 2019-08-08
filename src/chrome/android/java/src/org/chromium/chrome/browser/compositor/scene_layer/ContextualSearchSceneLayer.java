@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.compositor.scene_layer;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchBarBannerControl;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchBarControl;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchImageControl;
@@ -62,6 +63,14 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
         int searchTermViewId = searchBarControl.getSearchTermViewId();
         int searchCaptionViewId = searchBarControl.getCaptionViewId();
 
+        int openNewTabIconId = (ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)
+                                       && panel.canPromoteToNewTab())
+                ? R.drawable.open_in_new_tab
+                : INVALID_RESOURCE_ID;
+        int dragHandlebarId = ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)
+                ? R.drawable.drag_handlebar
+                : INVALID_RESOURCE_ID;
+
         int searchPromoViewId = promoControl.getViewId();
         boolean searchPromoVisible = promoControl.isVisible();
         float searchPromoHeightPx = promoControl.getHeightPx();
@@ -91,6 +100,7 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
         float searchPanelHeight = panel.getHeight();
 
         float searchBarMarginSide = panel.getBarMarginSide();
+        float searchBarMarginTop = panel.getBarMarginTop();
         float searchBarHeight = panel.getBarHeight();
 
         float searchContextOpacity = searchBarControl.getSearchBarContextOpacity();
@@ -106,6 +116,7 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
         float searchBarShadowOpacity = panel.getBarShadowOpacity();
 
         final int iconColor = panel.getIconColor();
+        final int dragHandlebarColor = panel.getDragHandlebarColor();
         float arrowIconOpacity = panel.getArrowIconOpacity();
         float arrowIconRotation = panel.getArrowIconRotation();
 
@@ -134,27 +145,30 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
                 searchBarBackgroundColor, searchContextViewId, searchTermViewId,
                 searchCaptionViewId, R.drawable.modern_toolbar_shadow,
                 R.drawable.ic_logo_googleg_24dp, quickActionIconResId, R.drawable.breadcrumb_arrow,
-                ContextualSearchPanel.CLOSE_ICON_DRAWABLE_ID, R.drawable.progress_bar_background,
-                R.drawable.progress_bar_foreground, searchPromoViewId,
-                R.drawable.contextual_search_promo_ripple, searchBarBannerTextViewId, mDpToPx,
-                panel.getFullscreenWidth() * mDpToPx, panel.getTabHeight() * mDpToPx,
-                panel.getBasePageBrightness(), panel.getBasePageY() * mDpToPx, panelWebContents,
-                searchPromoVisible, searchPromoHeightPx, searchPromoOpacity,
-                searchPromoBackgroundColor, searchBarBannerVisible, searchBarBannerHeightPx,
-                searchBarBannerPaddingPx, searchBarBannerRippleWidthPx,
-                searchBarBannerRippleOpacity, searchBarBannerTextOpacity, searchPanelX * mDpToPx,
-                searchPanelY * mDpToPx, searchPanelWidth * mDpToPx, searchPanelHeight * mDpToPx,
-                searchBarMarginSide * mDpToPx, searchBarHeight * mDpToPx, searchContextOpacity,
+                dragHandlebarId, openNewTabIconId, ContextualSearchPanel.CLOSE_ICON_DRAWABLE_ID,
+                R.drawable.progress_bar_background, R.drawable.progress_bar_foreground,
+                searchPromoViewId, R.drawable.contextual_search_promo_ripple,
+                searchBarBannerTextViewId, mDpToPx, panel.getFullscreenWidth() * mDpToPx,
+                panel.getTabHeight() * mDpToPx, panel.getBasePageBrightness(),
+                panel.getBasePageY() * mDpToPx, panelWebContents, searchPromoVisible,
+                searchPromoHeightPx, searchPromoOpacity, searchPromoBackgroundColor,
+                searchBarBannerVisible, searchBarBannerHeightPx, searchBarBannerPaddingPx,
+                searchBarBannerRippleWidthPx, searchBarBannerRippleOpacity,
+                searchBarBannerTextOpacity, searchPanelX * mDpToPx, searchPanelY * mDpToPx,
+                searchPanelWidth * mDpToPx, searchPanelHeight * mDpToPx,
+                searchBarMarginSide * mDpToPx, searchBarMarginTop * mDpToPx,
+                searchBarHeight * mDpToPx, searchContextOpacity,
                 searchBarControl.getTextLayerMinHeight(), searchTermOpacity,
                 searchBarControl.getSearchTermCaptionSpacing(), searchCaptionAnimationPercentage,
                 searchCaptionVisible, searchBarBorderVisible, searchBarBorderHeight * mDpToPx,
                 searchBarShadowVisible, searchBarShadowOpacity, quickActionIconVisible,
                 thumbnailVisible, thumbnailUrl, customImageVisibilityPercentage, barImageSize,
-                iconColor, arrowIconOpacity, arrowIconRotation, closeIconOpacity,
-                isProgressBarVisible, progressBarHeight * mDpToPx, progressBarOpacity,
-                progressBarCompletion, dividerLineVisibilityPercentage, dividerLineWidth,
-                dividerLineHeight, dividerLineColor, dividerLineXOffset, touchHighlightVisible,
-                touchHighlightXOffset, touchHighlightWidth, Profile.getLastUsedProfile());
+                iconColor, dragHandlebarColor, arrowIconOpacity, arrowIconRotation,
+                closeIconOpacity, isProgressBarVisible, progressBarHeight * mDpToPx,
+                progressBarOpacity, progressBarCompletion, dividerLineVisibilityPercentage,
+                dividerLineWidth, dividerLineHeight, dividerLineColor, dividerLineXOffset,
+                touchHighlightVisible, touchHighlightXOffset, touchHighlightWidth,
+                Profile.getLastUsedProfile());
     }
 
     @CalledByNative
@@ -206,27 +220,28 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
             int searchBarBackgroundResourceId, int searchBarBackgroundColor,
             int searchContextResourceId, int searchTermResourceId, int searchCaptionResourceId,
             int searchBarShadowResourceId, int searchProviderIconResourceId,
-            int quickActionIconResourceId, int arrowUpResourceId, int closeIconResourceId,
-            int progressBarBackgroundResourceId, int progressBarResourceId,
-            int searchPromoResourceId, int barBannerRippleResourceId, int barBannerTextResourceId,
-            float dpToPx, float layoutWidth, float layoutHeight, float basePageBrightness,
-            float basePageYOffset, WebContents webContents, boolean searchPromoVisible,
-            float searchPromoHeight, float searchPromoOpacity, int searchPromoBackgroundColor,
-            boolean searchBarBannerVisible, float searchBarBannerHeight,
-            float searchBarBannerPaddingPx, float searchBarBannerRippleWidth,
-            float searchBarBannerRippleOpacity, float searchBarBannerTextOpacity,
-            float searchPanelX, float searchPanelY, float searchPanelWidth, float searchPanelHeight,
-            float searchBarMarginSide, float searchBarHeight, float searchContextOpacity,
+            int quickActionIconResourceId, int arrowUpResourceId, int dragHandlebarResourceId,
+            int openTabIconResourceId, int closeIconResourceId, int progressBarBackgroundResourceId,
+            int progressBarResourceId, int searchPromoResourceId, int barBannerRippleResourceId,
+            int barBannerTextResourceId, float dpToPx, float layoutWidth, float layoutHeight,
+            float basePageBrightness, float basePageYOffset, WebContents webContents,
+            boolean searchPromoVisible, float searchPromoHeight, float searchPromoOpacity,
+            int searchPromoBackgroundColor, boolean searchBarBannerVisible,
+            float searchBarBannerHeight, float searchBarBannerPaddingPx,
+            float searchBarBannerRippleWidth, float searchBarBannerRippleOpacity,
+            float searchBarBannerTextOpacity, float searchPanelX, float searchPanelY,
+            float searchPanelWidth, float searchPanelHeight, float searchBarMarginSide,
+            float searchBarMarginTop, float searchBarHeight, float searchContextOpacity,
             float searchTextLayerMinHeight, float searchTermOpacity, float searchTermCaptionSpacing,
             float searchCaptionAnimationPercentage, boolean searchCaptionVisible,
             boolean searchBarBorderVisible, float searchBarBorderHeight,
             boolean searchBarShadowVisible, float searchBarShadowOpacity,
             boolean quickActionIconVisible, boolean thumbnailVisible, String thumbnailUrl,
             float customImageVisibilityPercentage, int barImageSize, int iconColor,
-            float arrowIconOpacity, float arrowIconRotation, float closeIconOpacity,
-            boolean isProgressBarVisible, float progressBarHeight, float progressBarOpacity,
-            int progressBarCompletion, float dividerLineVisibilityPercentage,
-            float dividerLineWidth, float dividerLineHeight, int dividerLineColor,
-            float dividerLineXOffset, boolean touchHighlightVisible, float touchHighlightXOffset,
-            float toucHighlightWidth, Profile profile);
+            int dragHandlebarColor, float arrowIconOpacity, float arrowIconRotation,
+            float closeIconOpacity, boolean isProgressBarVisible, float progressBarHeight,
+            float progressBarOpacity, int progressBarCompletion,
+            float dividerLineVisibilityPercentage, float dividerLineWidth, float dividerLineHeight,
+            int dividerLineColor, float dividerLineXOffset, boolean touchHighlightVisible,
+            float touchHighlightXOffset, float toucHighlightWidth, Profile profile);
 }

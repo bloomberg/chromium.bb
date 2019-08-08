@@ -13,11 +13,9 @@
 
 #include "base/callback.h"
 #include "base/containers/span.h"
-#include "third_party/skia/include/core/SkImageInfo.h"
-
-namespace gfx {
-class Size;
-}  // namespace gfx
+#include "ui/gfx/buffer_types.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 
 namespace gpu {
 
@@ -27,16 +25,12 @@ class ImageDecodeAcceleratorWorker {
  public:
   virtual ~ImageDecodeAcceleratorWorker() {}
 
-  // Encapsulates the result of a decode request giving implementations the
-  // chance to do custom resource management (e.g., some resources may need to
-  // be released when the decoded data is no longer needed). Implementations
-  // should not assume that destruction happens on a specific thread.
-  class DecodeResult {
-   public:
-    virtual ~DecodeResult() {}
-    virtual base::span<const uint8_t> GetData() const = 0;
-    virtual size_t GetStride() const = 0;
-    virtual SkImageInfo GetImageInfo() const = 0;
+  // Encapsulates the result of a decode request.
+  struct DecodeResult {
+    gfx::GpuMemoryBufferHandle handle;
+    gfx::Size visible_size;
+    gfx::BufferFormat buffer_format;
+    size_t buffer_byte_size;
   };
 
   using CompletedDecodeCB =
@@ -44,13 +38,10 @@ class ImageDecodeAcceleratorWorker {
 
   // Enqueue a decode of |encoded_data|. The |decode_cb| is called
   // asynchronously when the decode completes passing as parameter DecodeResult
-  // containing the decoded image. For a successful decode, implementations must
-  // guarantee that:
-  //
-  // 1) GetImageInfo().width() == |output_size|.width().
-  // 2) GetImageInfo().height() == |output_size|.height().
-  // 3) GetStride() >= GetImageInfo().minRowBytes().
-  // 4) GetData().size() >= GetImageInfo().computeByteSize(stride()).
+  // containing a reference to the decoded image (in the form of a
+  // gfx::GpuMemoryBufferHandle). The |buffer_byte_size| is the size of the
+  // buffer that |handle| refers to. For a successful decode, implementations
+  // must guarantee that |visible_size| == |output_size|.
   //
   // If the decode fails, |decode_cb| is called asynchronously with nullptr.
   // Callbacks should be called in the order that this method is called.

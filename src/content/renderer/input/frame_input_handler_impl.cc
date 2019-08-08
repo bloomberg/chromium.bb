@@ -188,7 +188,7 @@ void FrameInputHandlerImpl::CopyToFindPboard() {
 #if defined(OS_MACOSX)
   if (!main_thread_task_runner_->BelongsToCurrentThread()) {
     RunOnMainThread(
-        base::Bind(&FrameInputHandlerImpl::CopyToFindPboard, weak_this_));
+        base::BindOnce(&FrameInputHandlerImpl::CopyToFindPboard, weak_this_));
     return;
   }
   if (!render_frame_)

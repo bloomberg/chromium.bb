@@ -2105,6 +2105,14 @@ TEST_PPAPI_NACL(MouseCursor)
 
 TEST_PPAPI_NACL(NetworkProxy)
 
+// TODO(crbug.com/619765): get working on CrOS build.
+#if defined(OS_CHROMEOS)
+#define MAYBE_TrueTypeFont DISABLED_TrueTypeFont
+#else
+#define MAYBE_TrueTypeFont TrueTypeFont
+#endif
+TEST_PPAPI_NACL(MAYBE_TrueTypeFont)
+
 // TODO(crbug.com/602875), TODO(crbug.com/602876) Flaky on Win and CrOS.
 #if defined(OS_CHROMEOS) || defined(OS_WIN)
 #define MAYBE_VideoDecoder DISABLED_VideoDecoder
@@ -2138,7 +2146,9 @@ TEST_PPAPI_OUT_OF_PROCESS(FlashFile)
 // aura: http://crbug.com/104384
 // cros: http://crbug.com/396502
 // windows: http://crbug.com/899893
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS) || defined(OS_WIN)
+// linux: http://crbug.com/899893
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS) || defined(OS_WIN) || \
+    defined(OS_LINUX)
 #define MAYBE_FlashFullscreen DISABLED_FlashFullscreen
 #else
 #define MAYBE_FlashFullscreen FlashFullscreen

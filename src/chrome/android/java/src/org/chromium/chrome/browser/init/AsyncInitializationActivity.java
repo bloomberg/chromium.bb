@@ -39,9 +39,9 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
-import org.chromium.chrome.browser.upgrade.UpgradeActivity;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -64,8 +64,10 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
     private final NativeInitializationController mNativeInitializationController =
             new NativeInitializationController(this);
 
-    private final ActivityLifecycleDispatcher mLifecycleDispatcher =
-            new ActivityLifecycleDispatcher();
+    private final ActivityLifecycleDispatcherImpl mLifecycleDispatcher =
+            new ActivityLifecycleDispatcherImpl();
+    private final MultiWindowModeStateDispatcher mMultiWindowModeStateDispatcher =
+            new MultiWindowModeStateDispatcher(this);
 
     /** Time at which onCreate is called. This is realtime, counted in ms since device boot. */
     private long mOnCreateTimestampMs;
@@ -291,19 +293,6 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
         int dispatchAction = maybeDispatchLaunchIntent(getIntent());
         if (dispatchAction != LaunchIntentDispatcher.Action.CONTINUE) {
             abortLaunch(dispatchAction);
-            return;
-        }
-        if (DocumentModeAssassin.getInstance().isMigrationNecessary()) {
-            // Some Samsung devices load fonts from disk, crbug.com/691706.
-            try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
-                super.onCreate(null);
-            }
-
-            // Kick the user to the MigrationActivity.
-            UpgradeActivity.launchInstance(this, getIntent());
-
-            // Don't remove this task -- it may be a DocumentActivity that exists only in Recents.
-            finish();
             return;
         }
 
@@ -552,6 +541,12 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
     }
 
     @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        mLifecycleDispatcher.dispatchOnConfigurationChanged(newConfig);
+    }
+
+    @Override
     public abstract boolean shouldStartGpuProcess();
 
     @CallSuper
@@ -775,6 +770,13 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
      */
     public ActivityLifecycleDispatcher getLifecycleDispatcher() {
         return mLifecycleDispatcher;
+    }
+
+    /**
+     * @return {@link MultiWindowModeStateDispatcher} associated with this activity.
+     */
+    public MultiWindowModeStateDispatcher getMultiWindowModeStateDispatcher() {
+        return mMultiWindowModeStateDispatcher;
     }
 
     /**

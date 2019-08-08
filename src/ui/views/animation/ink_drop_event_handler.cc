@@ -51,7 +51,7 @@ ui::LocatedEvent* InkDropEventHandler::GetLastRippleTriggeringEvent() const {
 }
 
 void InkDropEventHandler::OnGestureEvent(ui::GestureEvent* event) {
-  if (!host_view_->enabled() || !delegate_->SupportsGestureEvents())
+  if (!host_view_->GetEnabled() || !delegate_->SupportsGestureEvents())
     return;
 
   InkDropState current_ink_drop_state =

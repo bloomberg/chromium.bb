@@ -11,14 +11,13 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "components/exo/vsync_timing_manager.h"
 #include "components/exo/wm_helper.h"
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/base/cursor/cursor.h"
-#include "ui/compositor/compositor_vsync_manager.h"
 #include "ui/display/display_observer.h"
 
 namespace aura {
-class env;
 class Window;
 namespace client {
 class CursorClient;
@@ -55,15 +54,13 @@ namespace exo {
 
 // A CastShell-specific helper class for accessing WindowManager related
 // features.
-class WMHelperCastShell : public WMHelper {
+class WMHelperCastShell : public WMHelper, public VSyncTimingManager::Delegate {
  public:
-  WMHelperCastShell(aura::Env* env,
-                    chromecast::CastWindowManagerAura* cast_window_manager_aura,
+  WMHelperCastShell(chromecast::CastWindowManagerAura* cast_window_manager_aura,
                     chromecast::CastScreen* cast_screen);
   ~WMHelperCastShell() override;
 
   // Overridden from WMHelper
-  aura::Env* env() override;
   void AddActivationObserver(wm::ActivationChangeObserver* observer) override;
   void RemoveActivationObserver(
       wm::ActivationChangeObserver* observer) override;
@@ -75,10 +72,7 @@ class WMHelperCastShell : public WMHelper {
   void RemoveDragDropObserver(DragDropObserver* observer) override;
   void SetDragDropDelegate(aura::Window*) override;
   void ResetDragDropDelegate(aura::Window*) override;
-  void AddVSyncObserver(
-      ui::CompositorVSyncManager::Observer* observer) override;
-  void RemoveVSyncObserver(
-      ui::CompositorVSyncManager::Observer* observer) override;
+  VSyncTimingManager& GetVSyncTimingManager() override;
 
   const display::ManagedDisplayInfo& GetDisplayInfo(
       int64_t display_id) const override;
@@ -107,6 +101,10 @@ class WMHelperCastShell : public WMHelper {
   void OnDragExited() override;
   int OnPerformDrop(const ui::DropTargetEvent& event) override;
 
+  // Overridden from VSyncTimingManager::Delegate:
+  void AddVSyncParameterObserver(
+      viz::mojom::VSyncParameterObserverPtr observer) override;
+
  private:
   class CastDisplayObserver : public display::DisplayObserver {
    public:
@@ -128,15 +126,14 @@ class WMHelperCastShell : public WMHelper {
   };
 
   chromecast::CastWindowManagerAura* cast_window_manager_aura_;
-  aura::Env* const env_;
   chromecast::CastScreen* cast_screen_;
   CastDisplayObserver display_observer_;
   LifetimeManager lifetime_manager_;
-  scoped_refptr<ui::CompositorVSyncManager> vsync_manager_;
+  VSyncTimingManager vsync_timing_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(WMHelperCastShell);
 };
 
 }  // namespace exo
 
-#endif  // CHROMECAST_BROWSER_EXO_EM_HELPER_CAST_SHELL_H_
+#endif  // CHROMECAST_BROWSER_EXO_WM_HELPER_CAST_SHELL_H_

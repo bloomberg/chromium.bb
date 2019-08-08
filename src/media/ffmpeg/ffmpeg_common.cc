@@ -621,8 +621,10 @@ bool AVStreamToVideoDecoderConfig(const AVStream* stream,
     extra_data.assign(codec_context->extradata,
                       codec_context->extradata + codec_context->extradata_size);
   }
-  config->Initialize(codec, profile, format, color_space, video_rotation,
-                     coded_size, visible_rect, natural_size, extra_data,
+  // TODO(tmathmeyer) ffmpeg can't provide us with an actual video rotation yet.
+  config->Initialize(codec, profile, format, color_space,
+                     VideoTransformation(video_rotation), coded_size,
+                     visible_rect, natural_size, extra_data,
                      GetEncryptionScheme(stream));
 
   if (stream->nb_side_data) {

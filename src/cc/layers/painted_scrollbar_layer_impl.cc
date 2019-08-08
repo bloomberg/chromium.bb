@@ -217,6 +217,36 @@ gfx::Rect PaintedScrollbarLayerImpl::ForwardButtonRect() const {
   return forward_button_rect_;
 }
 
+gfx::Rect PaintedScrollbarLayerImpl::BackTrackRect() const {
+  gfx::Rect thumb_rect = ComputeThumbQuadRect();
+  if (orientation() == HORIZONTAL) {
+    int rect_x = back_button_rect_.x() + back_button_rect_.width();
+    int rect_y = back_button_rect_.y();
+    return gfx::Rect(rect_x, rect_y, thumb_rect.x() - rect_x,
+                     back_button_rect_.height());
+  } else {
+    int rect_x = back_button_rect_.x();
+    int rect_y = back_button_rect_.y() + back_button_rect_.height();
+    return gfx::Rect(rect_x, rect_y, back_button_rect_.width(),
+                     thumb_rect.y() - rect_y);
+  }
+}
+
+gfx::Rect PaintedScrollbarLayerImpl::ForwardTrackRect() const {
+  gfx::Rect thumb_rect = ComputeThumbQuadRect();
+  if (orientation() == HORIZONTAL) {
+    int rect_x = thumb_rect.x() + thumb_rect.width();
+    int rect_y = thumb_rect.y();
+    return gfx::Rect(rect_x, rect_y, forward_button_rect_.x() - rect_x,
+                     forward_button_rect_.height());
+  } else {
+    int rect_x = thumb_rect.x();
+    int rect_y = thumb_rect.y() + thumb_rect.height();
+    return gfx::Rect(rect_x, rect_y, forward_button_rect_.width(),
+                     forward_button_rect_.y() - rect_y);
+  }
+}
+
 void PaintedScrollbarLayerImpl::SetTrackLength(int track_length) {
   if (track_length_ == track_length)
     return;

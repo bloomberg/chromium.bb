@@ -12,9 +12,9 @@
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_listener.h"
@@ -94,7 +94,7 @@ class DesktopSessionAgentTest : public ::testing::Test {
   void Shutdown();
 
  protected:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::RunLoop run_loop_;
   scoped_refptr<AutoThreadTaskRunner> task_runner_;
   scoped_refptr<DesktopSessionAgent> agent_;
@@ -102,9 +102,12 @@ class DesktopSessionAgentTest : public ::testing::Test {
 
 DesktopSessionAgentTest::DesktopSessionAgentTest()
     : task_runner_(new AutoThreadTaskRunner(
-          message_loop_.task_runner(), run_loop_.QuitClosure())),
-      agent_(new DesktopSessionAgent(
-          task_runner_, task_runner_, task_runner_, task_runner_)) {}
+          scoped_task_environment_.GetMainThreadTaskRunner(),
+          run_loop_.QuitClosure())),
+      agent_(new DesktopSessionAgent(task_runner_,
+                                     task_runner_,
+                                     task_runner_,
+                                     task_runner_)) {}
 
 void DesktopSessionAgentTest::Shutdown() {
   task_runner_ = nullptr;

@@ -80,24 +80,9 @@ class TestTransactionFactory : public HttpTransactionFactory {
   std::unique_ptr<HttpNetworkSession> session_;
 };
 
-struct TestParams {
-  explicit TestParams(bool use_stateless_rejects)
-      : use_stateless_rejects(use_stateless_rejects) {}
-
-  friend std::ostream& operator<<(std::ostream& os, const TestParams& p) {
-    os << "{ use_stateless_rejects: " << p.use_stateless_rejects << " }";
-    return os;
-  }
-  bool use_stateless_rejects;
-};
-
-std::vector<TestParams> GetTestParams() {
-  return std::vector<TestParams>{TestParams(true), TestParams(false)};
-}
-
 }  // namespace
 
-class QuicEndToEndTest : public ::testing::TestWithParam<TestParams>,
+class QuicEndToEndTest : public ::testing::Test,
                          public WithScopedTaskEnvironment {
  protected:
   QuicEndToEndTest()
@@ -115,9 +100,6 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams>,
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
     session_params_.enable_quic = true;
-    if (GetParam().use_stateless_rejects) {
-      session_params_.quic_connection_options.push_back(quic::kSREJ);
-    }
 
     session_context_.quic_random = nullptr;
     session_context_.host_resolver = &host_resolver_;
@@ -256,11 +238,7 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams>,
   bool strike_register_no_startup_period_;
 };
 
-INSTANTIATE_TEST_SUITE_P(Tests,
-                         QuicEndToEndTest,
-                         ::testing::ValuesIn(GetTestParams()));
-
-TEST_P(QuicEndToEndTest, LargeGetWithNoPacketLoss) {
+TEST_F(QuicEndToEndTest, LargeGetWithNoPacketLoss) {
   std::string response(10 * 1024, 'x');
 
   AddToCache(request_.url.PathForRequest(), 200, "OK", response);
@@ -277,9 +255,9 @@ TEST_P(QuicEndToEndTest, LargeGetWithNoPacketLoss) {
 
 // crbug.com/559173
 #if defined(THREAD_SANITIZER)
-TEST_P(QuicEndToEndTest, DISABLED_LargePostWithNoPacketLoss) {
+TEST_F(QuicEndToEndTest, DISABLED_LargePostWithNoPacketLoss) {
 #else
-TEST_P(QuicEndToEndTest, LargePostWithNoPacketLoss) {
+TEST_F(QuicEndToEndTest, LargePostWithNoPacketLoss) {
 #endif
   InitializePostRequest(1024 * 1024);
 
@@ -297,9 +275,9 @@ TEST_P(QuicEndToEndTest, LargePostWithNoPacketLoss) {
 
 // crbug.com/559173
 #if defined(THREAD_SANITIZER)
-TEST_P(QuicEndToEndTest, DISABLED_LargePostWithPacketLoss) {
+TEST_F(QuicEndToEndTest, DISABLED_LargePostWithPacketLoss) {
 #else
-TEST_P(QuicEndToEndTest, LargePostWithPacketLoss) {
+TEST_F(QuicEndToEndTest, LargePostWithPacketLoss) {
 #endif
   // FLAGS_fake_packet_loss_percentage = 30;
   InitializePostRequest(1024 * 1024);
@@ -319,9 +297,9 @@ TEST_P(QuicEndToEndTest, LargePostWithPacketLoss) {
 
 // crbug.com/536845
 #if defined(THREAD_SANITIZER)
-TEST_P(QuicEndToEndTest, DISABLED_UberTest) {
+TEST_F(QuicEndToEndTest, DISABLED_UberTest) {
 #else
-TEST_P(QuicEndToEndTest, UberTest) {
+TEST_F(QuicEndToEndTest, UberTest) {
 #endif
   // FLAGS_fake_packet_loss_percentage = 30;
 

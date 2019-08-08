@@ -46,8 +46,10 @@ void LayoutNGBlockFlow::UpdateBlockLayout(bool relayout_children) {
       NGBlockNode(this).Layout(constraint_space);
 
   for (const NGOutOfFlowPositionedDescendant& descendant :
-       result->OutOfFlowPositionedDescendants())
-    descendant.node.UseOldOutOfFlowPositioning();
+       result->PhysicalFragment().OutOfFlowPositionedDescendants())
+    descendant.node.UseLegacyOutOfFlowPositioning();
+
+  UpdateMargins(constraint_space);
 }
 
 void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
@@ -78,7 +80,7 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
   // borders and scrollbars to compensate.
   NGBoxStrut border_scrollbar =
       ComputeBorders(constraint_space, container_node) +
-      NGBlockNode(container).GetScrollbarSizes();
+      ComputeScrollbars(constraint_space, container_node);
 
   // Calculate the border-box size of the object that's the containing block of
   // this out-of-flow positioned descendant. Note that this is not to be used as
@@ -104,27 +106,26 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
     container_border_box_logical_height = container->LogicalHeight();
   }
 
-  container_builder.SetInlineSize(container_border_box_logical_width);
-  container_builder.SetBlockSize(container_border_box_logical_height);
-  container_builder.SetBorders(
-      ComputeBorders(constraint_space, container_node));
-  container_builder.SetPadding(
-      ComputePadding(constraint_space, *container_style));
+  NGFragmentGeometry fragment_geometry;
+  fragment_geometry.border_box_size = {container_border_box_logical_width,
+                                       container_border_box_logical_height};
+  fragment_geometry.border = ComputeBorders(constraint_space, container_node);
+  fragment_geometry.padding =
+      ComputePadding(constraint_space, *container_style);
+  container_builder.SetInitialFragmentGeometry(fragment_geometry);
 
   NGStaticPosition static_position =
       LayoutBoxUtils::ComputeStaticPositionFromLegacy(*this);
   // Set correct container for inline containing blocks.
   container_builder.AddOutOfFlowLegacyCandidate(
-      NGBlockNode(this), static_position,
-      css_container->IsBox() ? nullptr : css_container);
+      NGBlockNode(this), static_position, ToLayoutInlineOrNull(css_container));
 
-  base::Optional<NGLogicalSize> initial_containing_block_fixed_size;
+  base::Optional<LogicalSize> initial_containing_block_fixed_size;
   if (container->IsLayoutView() && !GetDocument().Printing()) {
     if (LocalFrameView* frame_view = ToLayoutView(container)->GetFrameView()) {
       IntSize size =
           frame_view->LayoutViewport()->ExcludeScrollbars(frame_view->Size());
-      NGPhysicalSize physical_size =
-          NGPhysicalSize(LayoutUnit(size.Width()), LayoutUnit(size.Height()));
+      PhysicalSize physical_size(size);
       initial_containing_block_fixed_size =
           physical_size.ConvertToLogical(container->Style()->GetWritingMode());
     }
@@ -142,21 +143,21 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
       container_builder.ToBoxFragment();
   // These are the unpositioned OOF descendants of the current OOF block.
   for (const NGOutOfFlowPositionedDescendant& descendant :
-       result->OutOfFlowPositionedDescendants())
-    descendant.node.UseOldOutOfFlowPositioning();
+       result->PhysicalFragment().OutOfFlowPositionedDescendants())
+    descendant.node.UseLegacyOutOfFlowPositioning();
 
-  const auto* fragment = To<NGPhysicalBoxFragment>(result->PhysicalFragment());
-  DCHECK_GT(fragment->Children().size(), 0u);
+  const auto& fragment = result->PhysicalFragment();
+  DCHECK_GT(fragment.Children().size(), 0u);
   // Copy sizes of all child fragments to Legacy.
   // There could be multiple fragments, when this node has descendants whose
   // container is this node's container.
   // Example: fixed descendant of fixed element.
-  for (auto& child : fragment->Children()) {
+  for (auto& child : fragment.Children()) {
     const NGPhysicalFragment* child_fragment = child.get();
     DCHECK(child_fragment->GetLayoutObject()->IsBox());
     LayoutBox* child_legacy_box =
-        ToLayoutBox(child_fragment->GetLayoutObject());
-    NGPhysicalOffset child_offset = child.Offset();
+        ToLayoutBox(child_fragment->GetMutableLayoutObject());
+    PhysicalOffset child_offset = child.Offset();
     if (container_style->IsFlippedBlocksWritingMode()) {
       child_legacy_box->SetX(container_border_box_logical_height -
                              child_offset.left - child_fragment->Size().width);
@@ -165,8 +166,30 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
     }
     child_legacy_box->SetY(child_offset.top);
   }
-  DCHECK_EQ(fragment->Children()[0]->GetLayoutObject(), this);
+  DCHECK_EQ(fragment.Children()[0]->GetLayoutObject(), this);
   SetIsLegacyInitiatedOutOfFlowLayout(true);
+}
+
+void LayoutNGBlockFlow::UpdateMargins(const NGConstraintSpace& space) {
+  const LayoutBlock* containing_block = ContainingBlock();
+  if (!containing_block || !containing_block->IsLayoutBlockFlow())
+    return;
+
+  // In the legacy engine, for regular block container layout, children
+  // calculate and store margins on themselves, while in NG that's done by the
+  // container. Since this object is a LayoutNG entry-point, we'll have to do it
+  // on ourselves, since that's what the legacy container expects.
+  const ComputedStyle& style = StyleRef();
+  const ComputedStyle& cb_style = containing_block->StyleRef();
+  const auto writing_mode = cb_style.GetWritingMode();
+  const auto direction = cb_style.Direction();
+  LayoutUnit percentage_resolution_size =
+      space.PercentageResolutionInlineSizeForParentWritingMode();
+  NGBoxStrut margins = ComputePhysicalMargins(style, percentage_resolution_size)
+                           .ConvertToLogical(writing_mode, direction);
+  ResolveInlineMargins(style, cb_style, space.AvailableSize().inline_size,
+                       LogicalWidth(), &margins);
+  SetMargin(margins.ConvertToPhysical(writing_mode, direction));
 }
 
 }  // namespace blink

@@ -235,7 +235,7 @@ class WindowCycleView : public views::WidgetDelegateView {
         views::BoxLayout::kHorizontal, gfx::Insets(kInsideBorderPaddingDip),
         kBetweenChildPaddingDip);
     layout->set_cross_axis_alignment(
-        views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+        views::BoxLayout::CrossAxisAlignment::kStart);
     mirror_container_->SetLayoutManager(std::move(layout));
     mirror_container_->SetPaintToLayer();
     mirror_container_->layer()->SetFillsBoundsOpaquely(false);

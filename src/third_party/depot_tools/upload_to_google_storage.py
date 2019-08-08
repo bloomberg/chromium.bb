@@ -5,6 +5,8 @@
 
 """Uploads files to Google Storage content addressed."""
 
+from __future__ import print_function
+
 import hashlib
 import optparse
 import os
@@ -77,7 +79,7 @@ def _upload_worker(
     if gsutil.check_call('ls', file_url)[0] == 0 and not force:
       # File exists, check MD5 hash.
       _, out, _ = gsutil.check_call_with_retries('ls', '-L', file_url)
-      etag_match = re.search('ETag:\s+([a-z0-9]{32})', out)
+      etag_match = re.search(r'ETag:\s+([a-z0-9]{32})', out)
       if etag_match:
         remote_md5 = etag_match.group(1)
         # Calculate the MD5 checksum to match it to Google Storage's ETag.
@@ -170,7 +172,7 @@ def upload_to_google_storage(
       with open(filename + '.sha1', 'rb') as f:
         sha1_file = f.read(1024)
       if not re.match('^([a-z0-9]{40})$', sha1_file):
-        print >> sys.stderr, 'Invalid sha1 hash file %s.sha1' % filename
+        print('Invalid sha1 hash file %s.sha1' % filename, file=sys.stderr)
         return 1
       upload_queue.put((filename, sha1_file))
       continue
@@ -191,19 +193,19 @@ def upload_to_google_storage(
   printer_thread.join()
 
   # Print timing information.
-  print 'Hashing %s files took %1f seconds' % (
-      len(input_filenames), hashing_duration)
-  print 'Uploading took %1f seconds' % (time.time() - upload_timer)
+  print('Hashing %s files took %1f seconds' % (
+      len(input_filenames), hashing_duration))
+  print('Uploading took %1f seconds' % (time.time() - upload_timer))
 
   # See if we ran into any errors.
   max_ret_code = 0
   for ret_code, message in ret_codes.queue:
     max_ret_code = max(ret_code, max_ret_code)
     if message:
-      print >> sys.stderr, message
+      print(message, file=sys.stderr)
 
   if not max_ret_code:
-    print 'Success!'
+    print('Success!')
 
   return max_ret_code
 

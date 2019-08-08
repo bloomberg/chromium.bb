@@ -23,6 +23,20 @@ class HomeScreenDelegate {
   using UpdateAnimationSettingsCallback =
       base::RepeatingCallback<void(ui::ScopedLayerAnimationSettings* settings)>;
 
+  enum class AnimationTrigger {
+    // Launcher animation is triggered by drag release.
+    kDragRelease,
+
+    // Launcher animation is triggered by pressing the AppList button.
+    kLauncherButton,
+
+    // Launcher animation is triggered by window activation.
+    kHideForWindow,
+
+    // Launcher animation is triggered by entering/exiting overview mode.
+    kOverviewMode
+  };
+
   virtual ~HomeScreenDelegate() = default;
 
   // Shows the home screen view.
@@ -62,6 +76,12 @@ class HomeScreenDelegate {
   virtual void OnHomeLauncherDragStart() {}
   virtual void OnHomeLauncherDragInProgress() {}
   virtual void OnHomeLauncherDragEnd() {}
+
+  // Propagates the home launcher animation transition. |trigger| is what
+  // triggers the home launcher animation; |launcher_will_show| indicates
+  // whether the launcher will show by the end of animation.
+  virtual void NotifyHomeLauncherAnimationTransition(AnimationTrigger trigger,
+                                                     bool launcher_will_show) {}
 };
 
 }  // namespace ash

@@ -218,20 +218,23 @@ std::string getPrimitiveTopologyShortName (const VkPrimitiveTopology topology)
 	return de::toLower(name.substr(22));
 }
 
-DrawState::DrawState(const vk::VkPrimitiveTopology topology_, deUint32 renderWidth_, deUint32 renderHeight_)
-	: topology				(topology_)
-	, colorFormat			(VK_FORMAT_R8G8B8A8_UNORM)
-	, renderSize			(tcu::UVec2(renderWidth_, renderHeight_))
-	, depthClampEnable		(false)
-	, depthTestEnable		(false)
-	, depthWriteEnable		(false)
-	, compareOp				(rr::TESTFUNC_LESS)
-	, depthBoundsTestEnable	(false)
-	, blendEnable			(false)
-	, lineWidth				(1.0)
-	, numPatchControlPoints	(0)
-	, numSamples			(VK_SAMPLE_COUNT_1_BIT)
-	, sampleShadingEnable	(false)
+DrawState::DrawState(const vk::VkPrimitiveTopology topology_, deUint32 renderWidth_, deUint32 renderHeight_, const int subpixelBits_)
+	: topology					(topology_)
+	, colorFormat				(VK_FORMAT_R8G8B8A8_UNORM)
+	, renderSize				(tcu::UVec2(renderWidth_, renderHeight_))
+	, depthClampEnable			(false)
+	, depthTestEnable			(false)
+	, depthWriteEnable			(false)
+	, compareOp					(rr::TESTFUNC_LESS)
+	, depthBoundsTestEnable		(false)
+	, blendEnable				(false)
+	, lineWidth					(1.0)
+	, numPatchControlPoints		(0)
+	, numSamples				(VK_SAMPLE_COUNT_1_BIT)
+	, sampleShadingEnable		(false)
+	, subpixelBits			(subpixelBits_)
+	, explicitDepthClipEnable	(false)
+	, depthClipEnable			(false)
 {
 	DE_ASSERT(renderSize.x() != 0 && renderSize.y() != 0);
 }
@@ -249,7 +252,7 @@ void ReferenceDrawContext::draw (void)
 		const rr::Program						program(&m_vertexShader, &m_fragmentShader);
 		const rr::MultisamplePixelBufferAccess	referenceColorBuffer = rr::MultisamplePixelBufferAccess::fromSinglesampleAccess(m_refImage.getAccess());
 		const rr::RenderTarget					renderTarget(referenceColorBuffer);
-		const rr::RenderState					renderState((rr::ViewportState(referenceColorBuffer)), rr::VIEWPORTORIENTATION_UPPER_LEFT);
+		const rr::RenderState					renderState((rr::ViewportState(referenceColorBuffer)), m_drawState.subpixelBits, rr::VIEWPORTORIENTATION_UPPER_LEFT);
 		const rr::Renderer						renderer;
 		const rr::VertexAttrib					vertexAttrib[] =
 		{
@@ -472,7 +475,7 @@ VulkanDrawContext::VulkanDrawContext ( Context&				context,
 		const std::vector<VkViewport>	viewports	(1, makeViewport(m_drawState.renderSize));
 		const std::vector<VkRect2D>		scissors	(1, makeRect2D(m_drawState.renderSize));
 
-		const VkPipelineRasterizationStateCreateInfo pipelineRasterizationStateInfo =
+		VkPipelineRasterizationStateCreateInfo pipelineRasterizationStateInfo =
 		{
 			VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,		// VkStructureType							sType;
 			DE_NULL,														// const void*								pNext;
@@ -488,6 +491,16 @@ VulkanDrawContext::VulkanDrawContext ( Context&				context,
 			0.0f,															// float									depthBiasSlopeFactor;
 			m_drawState.lineWidth,											// float									lineWidth;
 		};
+
+		VkPipelineRasterizationDepthClipStateCreateInfoEXT pipelineRasterizationDepthCliptateInfo =
+		{
+			VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_DEPTH_CLIP_STATE_CREATE_INFO_EXT,	// VkStructureType										sType;
+			DE_NULL,																	// const void*											pNext;
+			(VkPipelineRasterizationDepthClipStateCreateFlagsEXT)0,						// VkPipelineRasterizationDepthClipStateCreateFlagsEXT	flags;
+			m_drawState.depthClipEnable,												// VkBool32												depthClipEnable;
+		};
+		if (m_drawState.explicitDepthClipEnable)
+			pipelineRasterizationStateInfo.pNext = &pipelineRasterizationDepthCliptateInfo;
 
 		const VkPipelineMultisampleStateCreateInfo pipelineMultisampleStateInfo =
 		{

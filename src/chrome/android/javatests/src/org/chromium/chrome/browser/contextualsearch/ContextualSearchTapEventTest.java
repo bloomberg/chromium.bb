@@ -32,6 +32,7 @@ import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.TestSelectionPopupController;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.content_public.browser.test.util.WebContentsUtils;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
@@ -88,7 +89,7 @@ public class ContextualSearchTapEventTest {
                     new ActivityWindowAndroid(activity),
                     WebContents.createDefaultInternalsHolder());
             SelectionPopupController selectionPopupController =
-                    SelectionPopupController.createForTesting(webContents);
+                    WebContentsUtils.createSelectionPopupController(webContents);
             selectionPopupController.setSelectionClient(this.getContextualSearchSelectionClient());
             MockContextualSearchPolicy policy = new MockContextualSearchPolicy();
             setContextualSearchPolicy(policy);
@@ -96,7 +97,8 @@ public class ContextualSearchTapEventTest {
         }
 
         @Override
-        public void startSearchTermResolutionRequest(String selection) {
+        public void startSearchTermResolutionRequest(
+                String selection, boolean isRestrictedResolve) {
             // Skip native calls and immediately "resolve" the search term.
             onSearchTermResolutionResponse(true, 200, selection, selection, "", "", false, 0, 10,
                     "", "", "", "", QuickActionCategory.NONE, 0, "", "", 0);
@@ -318,7 +320,7 @@ public class ContextualSearchTapEventTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-    public void testTapProcessIsRobustWhenSelectionGetsCleared() throws InterruptedException {
+    public void testTapProcessIsRobustWhenSelectionGetsClearedDLD() throws InterruptedException {
         Assert.assertEquals(mPanelManager.getRequestPanelShowCount(), 0);
 
         // Fake a Tap event.

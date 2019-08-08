@@ -42,18 +42,13 @@ namespace blink {
 
 using namespace html_names;
 
-inline HTMLEmbedElement::HTMLEmbedElement(Document& document,
-                                          const CreateElementFlags flags)
+HTMLEmbedElement::HTMLEmbedElement(Document& document,
+                                   const CreateElementFlags flags)
     : HTMLPlugInElement(kEmbedTag,
                         document,
                         flags,
-                        kShouldPreferPlugInsForImages) {}
-
-HTMLEmbedElement* HTMLEmbedElement::Create(Document& document,
-                                           const CreateElementFlags flags) {
-  auto* element = MakeGarbageCollected<HTMLEmbedElement>(document, flags);
-  element->EnsureUserAgentShadowRoot();
-  return element;
+                        kShouldPreferPlugInsForImages) {
+  EnsureUserAgentShadowRoot();
 }
 
 const AttrNameToTrustedType& HTMLEmbedElement::GetCheckedAttributeTypes()
@@ -106,6 +101,10 @@ void HTMLEmbedElement::CollectStyleForPresentationAttribute(
 
 void HTMLEmbedElement::ParseAttribute(
     const AttributeModificationParams& params) {
+  // Changing an attribute may change the content, type of content, layout
+  // object type, or all of the above. Not safe to re-use through reattach.
+  SetDisposeView();
+
   if (params.name == kTypeAttr) {
     SetServiceType(params.new_value.LowerASCII());
     wtf_size_t pos = service_type_.Find(";");
@@ -130,7 +129,7 @@ void HTMLEmbedElement::ParseAttribute(
       // Check if this Embed can transition from potentially-active to active
       if (FastHasAttribute(kTypeAttr)) {
         SetNeedsPluginUpdate(true);
-        LazyReattachIfNeeded();
+        ReattachOnPluginChangeIfNeeded();
       }
     }
   } else {

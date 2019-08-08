@@ -219,7 +219,7 @@ WebViewImpl* TouchActionTest::SetupTest(
 }
 
 IntRect WindowClipRect(const LocalFrameView& frame_view) {
-  LayoutRect clip_rect(LayoutPoint(), LayoutSize(frame_view.Size()));
+  PhysicalRect clip_rect(PhysicalOffset(), PhysicalSize(frame_view.Size()));
   frame_view.GetLayoutView()->MapToVisualRectInAncestorSpace(
       &frame_view.GetLayoutView()->ContainerForPaintInvalidation(), clip_rect,
       0, kDefaultVisualRectFlags);

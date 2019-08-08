@@ -58,6 +58,16 @@ struct BASE_EXPORT PendingTask {
   static constexpr size_t kTaskBacktraceLength = 4;
   std::array<const void*, kTaskBacktraceLength> task_backtrace = {};
 
+  // The context of the IPC message that was being handled when this task was
+  // posted. This is a hash of the IPC message name that is set within the scope
+  // of an IPC handler and when symbolized uniquely identifies the message being
+  // processed. This property is also propagated from one PendingTask to the
+  // next. For example, if pending task A was posted while handling an IPC,
+  // and pending task B was posted from within pending task A, then pending task
+  // B will inherit the |ipc_hash| of pending task A. In some sense this can be
+  // interpreted as a "root" task backtrace frame.
+  uint32_t ipc_hash = 0;
+
   // Secondary sort key for run time.
   int sequence_num = 0;
 

@@ -7,14 +7,13 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "components/previews/content/hint_update_data.h"
+#include "components/previews/core/previews_experiments.h"
 #include "url/gurl.h"
 
 namespace previews {
 
 namespace {
-
-// Realistic minimum length of a host suffix.
-const int kMinHostSuffix = 6;  // eg., abc.tv
 
 // The default number of hints retained within the memory cache. When the limit
 // is exceeded, the least recently used hint is purged from the cache.
@@ -25,7 +24,7 @@ const size_t kDefaultMaxMemoryCacheHints = 20;
 // there are applicable hints moved into UpdateData that can be stored.
 bool ProcessGetHintsResponse(
     optimization_guide::proto::GetHintsResponse* get_hints_response,
-    HintCacheStore::ComponentUpdateData* fetched_hints_update_data) {
+    HintUpdateData* fetched_hints_update_data) {
   std::unordered_set<std::string> seen_host_suffixes;
 
   bool has_processed_hints = false;
@@ -80,20 +79,22 @@ void HintCache::Initialize(bool purge_existing_data,
                      std::move(callback)));
 }
 
-std::unique_ptr<HintCacheStore::ComponentUpdateData>
-HintCache::MaybeCreateComponentUpdateData(const base::Version& version) const {
+std::unique_ptr<HintUpdateData>
+HintCache::MaybeCreateUpdateDataForComponentHints(
+    const base::Version& version) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return hint_store_->MaybeCreateComponentUpdateData(version);
+  return hint_store_->MaybeCreateUpdateDataForComponentHints(version);
 }
 
-std::unique_ptr<HintCacheStore::ComponentUpdateData>
-HintCache::CreateUpdateDataForFetchedHints(base::Time update_time) const {
+std::unique_ptr<HintUpdateData> HintCache::CreateUpdateDataForFetchedHints(
+    base::Time update_time,
+    base::Time expiry_time) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return hint_store_->CreateUpdateDataForFetchedHints(update_time);
+  return hint_store_->CreateUpdateDataForFetchedHints(update_time, expiry_time);
 }
 
-void HintCache::UpdateComponentData(
-    std::unique_ptr<HintCacheStore::ComponentUpdateData> component_data,
+void HintCache::UpdateComponentHints(
+    std::unique_ptr<HintUpdateData> component_data,
     base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(component_data);
@@ -102,37 +103,52 @@ void HintCache::UpdateComponentData(
   // data.
   memory_cache_.Clear();
 
-  hint_store_->UpdateComponentData(std::move(component_data),
-                                   std::move(callback));
+  hint_store_->UpdateComponentHints(std::move(component_data),
+                                    std::move(callback));
 }
 
-bool HintCache::StoreFetchedHints(
+bool HintCache::UpdateFetchedHints(
     std::unique_ptr<optimization_guide::proto::GetHintsResponse>
         get_hints_response,
     base::Time update_time,
     base::OnceClosure callback) {
-  std::unique_ptr<HintCacheStore::ComponentUpdateData>
-      fetched_hints_update_data = CreateUpdateDataForFetchedHints(update_time);
+  base::Time expiry_time = update_time;
+  if (get_hints_response->has_max_cache_duration()) {
+    expiry_time += base::TimeDelta().FromSeconds(
+        get_hints_response->max_cache_duration().seconds());
+  } else {
+    expiry_time += params::StoredFetchedHintsFreshnessDuration();
+  }
+  std::unique_ptr<HintUpdateData> fetched_hints_update_data =
+      CreateUpdateDataForFetchedHints(update_time, expiry_time);
   if (ProcessGetHintsResponse(get_hints_response.get(),
                               fetched_hints_update_data.get())) {
-    hint_store_->UpdateFetchedHintsData(std::move(fetched_hints_update_data),
-                                        std::move(callback));
+    hint_store_->UpdateFetchedHints(std::move(fetched_hints_update_data),
+                                    std::move(callback));
     return true;
   }
   return false;
 }
 
+void HintCache::ClearFetchedHints() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(hint_store_);
+  // TODO(mcrouse): Update to remove only fetched hints from |memory_cache_|.
+  memory_cache_.Clear();
+  hint_store_->ClearFetchedHintsFromDatabase();
+}
+
 bool HintCache::HasHint(const std::string& host) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   HintCacheStore::EntryKey hint_entry_key;
-  return FindHintEntryKey(host, &hint_entry_key);
+  return hint_store_->FindHintEntryKey(host, &hint_entry_key);
 }
 
 void HintCache::LoadHint(const std::string& host, HintLoadedCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   HintCacheStore::EntryKey hint_entry_key;
-  if (!FindHintEntryKey(host, &hint_entry_key)) {
+  if (!hint_store_->FindHintEntryKey(host, &hint_entry_key)) {
     std::move(callback).Run(nullptr);
     return;
   }
@@ -159,7 +175,7 @@ const optimization_guide::proto::Hint* HintCache::GetHintIfLoaded(
   // Try to retrieve the hint entry key for the host. If no hint exists for the
   // host, then simply return.
   HintCacheStore::EntryKey hint_entry_key;
-  if (!FindHintEntryKey(host, &hint_entry_key)) {
+  if (!hint_store_->FindHintEntryKey(host, &hint_entry_key)) {
     return nullptr;
   }
 
@@ -204,32 +220,6 @@ void HintCache::OnLoadStoreHint(
   }
 
   std::move(callback).Run(hint_it->second.get());
-}
-
-bool HintCache::FindHintEntryKey(
-    const std::string& host,
-    HintCacheStore::EntryKey* out_hint_entry_key) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(out_hint_entry_key);
-
-  // Look for longest host name suffix that has a hint. No need to continue
-  // lookups and substring work once get to a root domain like ".com" or
-  // ".co.in" (MinHostSuffix length check is a heuristic for that).
-  std::string host_suffix(host);
-  while (host_suffix.length() >= kMinHostSuffix) {
-    // Attempt to find a hint entry key associated with the current host suffix
-    // within the store.
-    if (hint_store_->FindHintEntryKey(host_suffix, out_hint_entry_key)) {
-      return true;
-    }
-
-    size_t pos = host_suffix.find_first_of('.');
-    if (pos == std::string::npos) {
-      break;
-    }
-    host_suffix = host_suffix.substr(pos + 1);
-  }
-  return false;
 }
 
 }  // namespace previews

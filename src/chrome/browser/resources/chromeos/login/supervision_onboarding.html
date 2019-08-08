@@ -1,0 +1,53 @@
+<!-- Copyright 2019 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://oobe/custom_elements.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.html">
+<link rel="import" href="chrome://resources/mojo/url/mojom/url.mojom.html">
+<script src="chrome://oobe/supervision/onboarding_controller.mojom-lite.js">
+</script>
+
+<!--
+  UI for the Supervision Onboarding flow that's displayed for the first login
+  or OOBE of supervised users. -->
+<dom-module id="supervision-onboarding">
+  <template>
+    <link rel="stylesheet" href="oobe_flex_layout.css">
+    <link rel="stylesheet" href="supervision_onboarding.css">
+    <div id="supervision-onboarding-flow-container">
+      <oobe-dialog id="loading-dialog" role="dialog" no-header no-footer-padding
+          hidden="[[pageLoaded_]]">
+        <div slot="footer" class="flex layout vertical center center-justified">
+          <throbber-notice text="$i18n{supervisionOnboardingWaitMessage}">
+          </throbber-notice>
+        </div>
+      </oobe-dialog>
+      <oobe-dialog id="supervision-onboarding-content" role="dialog" no-header
+          no-footer-padding has-buttons hidden="[[!pageLoaded_]]">
+        <webview id="supervisionOnboardingWebview" slot="footer">
+        </webview>
+        <div id="supervision-onboarding-flow-buttons" slot="bottom-buttons"
+            class="layout horizontal end-justified">
+          <oobe-back-button id="supervision-onboarding-back-button"
+              on-tap="onBack_">
+            <div i18n-content="supervisionOnboardingBackButtonLabel"></div>
+          </oobe-back-button>
+          <div class="flex">
+          </div>
+          <oobe-text-button id="supervision-onboarding-skip-button" border
+              on-tap="onSkip_">
+            <div i18n-content="supervisionOnboardingSkipButtonLabel"></div>
+          </oobe-text-button>
+          <oobe-text-button id="supervision-onboarding-next-button" inverse
+              on-tap="onNext_">
+            <div i18n-content="supervisionOnboardingNextButtonLabel"></div>
+          </oobe-text-button>
+        </div>
+      </oobe-dialog>
+    </div>
+  </template>
+</dom-module>

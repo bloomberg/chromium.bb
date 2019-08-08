@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/message_loop/message_loop_current.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/common/google_url_loader_throttle.h"
 #include "chrome/common/prerender.mojom.h"
 #include "chrome/common/prerender_url_loader_throttle.h"
@@ -17,12 +17,13 @@
 #include "chrome/renderer/chrome_render_thread_observer.h"
 #include "chrome/renderer/prerender/prerender_dispatcher.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
+#include "chrome/renderer/subresource_redirect/subresource_redirect_params.h"
+#include "chrome/renderer/subresource_redirect/subresource_redirect_url_loader_throttle.h"
 #include "components/data_reduction_proxy/content/common/data_reduction_proxy_url_loader_throttle.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_throttle_manager.h"
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/renderer/renderer_url_loader_throttle.h"
-#include "components/subresource_filter/content/renderer/ad_delay_renderer_metadata_provider.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/render_frame.h"
@@ -56,8 +57,7 @@ chrome::mojom::PrerenderCanceler* GetPrerenderCanceller(int render_frame_id) {
 
   auto* canceler = new chrome::mojom::PrerenderCancelerPtr;
   render_frame->GetRemoteInterfaces()->GetInterface(canceler);
-  base::MessageLoopCurrent::Get()->task_runner()->DeleteSoon(FROM_HERE,
-                                                             canceler);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, canceler);
   return canceler->get();
 }
 
@@ -126,14 +126,9 @@ URLLoaderThrottleProviderImpl::URLLoaderThrottleProviderImpl(
   }
 
   if (data_reduction_proxy::params::IsEnabledWithNetworkService()) {
-    data_reduction_proxy::mojom::DataReductionProxyPtr drp;
     content::RenderThread::Get()->GetConnector()->BindInterface(
-        content::mojom::kBrowserServiceName, mojo::MakeRequest(&drp));
-
-    data_reduction_proxy_manager_ = std::make_unique<
-        data_reduction_proxy::DataReductionProxyThrottleManager>(
-        std::move(drp),
-        data_reduction_proxy::mojom::DataReductionProxyThrottleConfigPtr());
+        content::mojom::kBrowserServiceName,
+        mojo::MakeRequest(&data_reduction_proxy_info_));
   }
 }
 
@@ -148,9 +143,9 @@ URLLoaderThrottleProviderImpl::URLLoaderThrottleProviderImpl(
   DETACH_FROM_THREAD(thread_checker_);
   if (other.safe_browsing_)
     other.safe_browsing_->Clone(mojo::MakeRequest(&safe_browsing_info_));
-  if (other.data_reduction_proxy_manager_) {
-    data_reduction_proxy_manager_ =
-        other.data_reduction_proxy_manager_->Clone();
+  if (other.data_reduction_proxy_) {
+    other.data_reduction_proxy_->Clone(
+        mojo::MakeRequest(&data_reduction_proxy_info_));
   }
   // An ad_delay_factory_ is created, rather than cloning the existing one.
 }
@@ -160,6 +155,8 @@ URLLoaderThrottleProviderImpl::Clone() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (safe_browsing_info_)
     safe_browsing_.Bind(std::move(safe_browsing_info_));
+  if (data_reduction_proxy_info_)
+    data_reduction_proxy_.Bind(std::move(data_reduction_proxy_info_));
   return base::WrapUnique(new URLLoaderThrottleProviderImpl(*this));
 }
 
@@ -181,7 +178,15 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
   DCHECK(!is_frame_resource ||
          type_ == content::URLLoaderThrottleProviderType::kFrame);
 
-  if (data_reduction_proxy_manager_) {
+  if (data_reduction_proxy::params::IsEnabledWithNetworkService()) {
+    if (data_reduction_proxy_info_)
+      data_reduction_proxy_.Bind(std::move(data_reduction_proxy_info_));
+    if (!data_reduction_proxy_manager_) {
+      data_reduction_proxy_manager_ = std::make_unique<
+          data_reduction_proxy::DataReductionProxyThrottleManager>(
+          data_reduction_proxy_.get(),
+          data_reduction_proxy::mojom::DataReductionProxyThrottleConfigPtr());
+    }
     throttles.push_back(
         std::make_unique<
             data_reduction_proxy::DataReductionProxyURLLoaderThrottle>(
@@ -212,7 +217,7 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
           prerender_helper->prerender_mode(),
           prerender_helper->histogram_prefix(),
           base::BindOnce(GetPrerenderCanceller, render_frame_id),
-          base::MessageLoopCurrent::Get()->task_runner());
+          base::ThreadTaskRunnerHandle::Get());
       prerender_helper->AddThrottle(throttle->AsWeakPtr());
       if (prerender_helper->prerender_mode() == prerender::PREFETCH_ONLY) {
         auto* prerender_dispatcher =
@@ -260,19 +265,6 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
   }
 #endif
 
-  // Initialize the factory here rather than in the constructor, since metrics
-  // does not support registering field trials (as opposed to Features) before
-  // Blink is initialized (after this class).
-  if (!ad_delay_factory_) {
-    ad_delay_factory_ =
-        std::make_unique<subresource_filter::AdDelayThrottle::Factory>();
-  }
-  if (auto ad_throttle = ad_delay_factory_->MaybeCreate(
-          std::make_unique<subresource_filter::AdDelayRendererMetadataProvider>(
-              request, type_, render_frame_id))) {
-    throttles.push_back(std::move(ad_throttle));
-  }
-
   throttles.push_back(std::make_unique<GoogleURLLoaderThrottle>(
       ChromeRenderThreadObserver::is_incognito_process(),
       ChromeRenderThreadObserver::GetDynamicParams()));
@@ -282,6 +274,12 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
       chrome_content_renderer_client_->GetChromeObserver()
           ->chromeos_listener()));
 #endif  // defined(OS_CHROMEOS)
+
+  if (subresource_redirect::ShouldForceEnableSubresourceRedirect()) {
+    throttles.push_back(
+        std::make_unique<
+            subresource_redirect::SubresourceRedirectURLLoaderThrottle>());
+  }
 
   return throttles;
 }

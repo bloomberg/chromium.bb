@@ -347,6 +347,9 @@ void Database::Preload() {
   base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
   InitScopedBlockingCall(&scoped_blocking_call);
 
+  if (base::FeatureList::IsEnabled(features::kSqlSkipPreload))
+    return;
+
   if (!db_) {
     DCHECK(poisoned_) << "Cannot preload null db";
     return;
@@ -1459,12 +1462,6 @@ bool Database::OpenInternal(const std::string& file_name,
     // requests exclusive locking but doesn't get it is almost certain
     // to be ill-tested.
     ignore_result(Execute("PRAGMA locking_mode=EXCLUSIVE"));
-  }
-
-  if (base::FeatureList::IsEnabled(features::kSqlTempStoreMemory)) {
-    err = ExecuteAndReturnErrorCode("PRAGMA temp_store=MEMORY");
-    // This operates on in-memory configuration, so it should not fail.
-    DCHECK_EQ(err, SQLITE_OK) << "Failed switching to in-RAM temporary storage";
   }
 
   // http://www.sqlite.org/pragma.html#pragma_journal_mode

@@ -25,19 +25,6 @@ namespace credential_provider {
 
 namespace testing {
 
-namespace {
-
-HRESULT CreateReauthCredentialWithProvider(
-    IGaiaCredentialProvider* provider,
-    IGaiaCredential** gaia_credential,
-    ICredentialProviderCredential** credential) {
-  return CreateInheritedCredentialWithProvider<CReauthCredential,
-                                               IReauthCredential>(
-      provider, gaia_credential, credential);
-}
-
-}  // namespace
-
 class GcpReauthCredentialTest : public ::testing::Test {
  protected:
   FakeOSUserManager* fake_os_user_manager() { return &fake_os_user_manager_; }
@@ -80,7 +67,9 @@ TEST_F(GcpReauthCredentialTest, SetOSUserInfoAndReauthEmail) {
   ::CoTaskMemFree(sid);
 }
 
-TEST_F(GcpReauthCredentialTest, UserGaiaIdMismatch) {
+class GcpReauthCredentialGlsRunnerTest : public GlsRunnerTestBase {};
+
+TEST_F(GcpReauthCredentialGlsRunnerTest, UserGaiaIdMismatch) {
   USES_CONVERSION;
 
   CredentialProviderSigninDialogTestDataStorage test_data_storage;
@@ -95,10 +84,6 @@ TEST_F(GcpReauthCredentialTest, UserGaiaIdMismatch) {
   EXPECT_TRUE(
       base::JSONWriter::Write(unexpected_full_result, &signin_result_utf8));
   CComBSTR unexpected_signin_result = A2COLE(signin_result_utf8.c_str());
-
-  // Create a fake credential provider.  This object must outlive the reauth
-  // credential so it should be declared first.
-  FakeGaiaCredentialProvider provider;
 
   CComBSTR username = L"foo_bar";
   CComBSTR full_name = A2COLE(test_data_storage.GetSuccessFullName().c_str());
@@ -120,43 +105,31 @@ TEST_F(GcpReauthCredentialTest, UserGaiaIdMismatch) {
                       base::UTF8ToUTF16(unexpected_gaia_id), base::string16(),
                       &second_sid));
 
-  // Initialize a reauth credential for the valid gaia id.
-  CComPtr<IReauthCredential> reauth;
-  ASSERT_EQ(S_OK, CComCreator<CComObject<CReauthCredential>>::CreateInstance(
-                      nullptr, IID_IReauthCredential, (void**)&reauth));
+  // Create provider and start logon.
+  CComPtr<ICredentialProviderCredential> cred;
 
-  CComPtr<IGaiaCredential> gaia_cred;
-  gaia_cred = reauth;
-  ASSERT_TRUE(!!gaia_cred);
+  // Create with invalid token handle response so that a reauth occurs.
+  SetDefaultTokenHandleResponse(kDefaultInvalidTokenHandleResponse);
+  ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(1, &cred));
 
-  ASSERT_EQ(S_OK, gaia_cred->Initialize(&provider));
+  CComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
 
-  ASSERT_EQ(S_OK,
-            reauth->SetOSUserInfo(
-                first_sid, CComBSTR(OSUserManager::GetLocalDomain().c_str()),
-                username));
-  ASSERT_EQ(S_OK, reauth->SetEmailForReauth(email));
+  // Force the GLS to return an invalid Gaia Id without reporting the usual
+  // kUiecEMailMissmatch exit code when this happens. This will test whether
+  // the credential can perform necessary validation in case the GLS ever
+  // does not do the validation for us.
+  test->SetGaiaIdOverride(unexpected_gaia_id, /*ignore_expected_gaia_id=*/true);
 
-  // Finishing reauth with an unexpected gaia id should fail.
-  CComBSTR error2;
-  ASSERT_NE(S_OK,
-            gaia_cred->OnUserAuthenticated(unexpected_signin_result, &error2));
-
-  ASSERT_EQ(S_OK, gaia_cred->Terminate());
-
-  EXPECT_EQ(0u, provider.username().Length());
-  EXPECT_EQ(0u, provider.password().Length());
-  EXPECT_EQ(0u, provider.sid().Length());
-  ASSERT_STREQ((BSTR)error2,
-               GetStringResource(IDS_ACCOUNT_IN_USE_BASE).c_str());
-  EXPECT_EQ(FALSE, provider.credentials_changed_fired());
+  // The logon should have failed with an error about another user already
+  // associated to this Google account.
+  ASSERT_EQ(S_OK, FinishLogonProcess(false, false, IDS_ACCOUNT_IN_USE_BASE));
 }
-
-class GcpReauthCredentialGlsRunnerTest : public GlsRunnerTestBase {};
 
 TEST_F(GcpReauthCredentialGlsRunnerTest, NormalReauth) {
   USES_CONVERSION;
   CredentialProviderSigninDialogTestDataStorage test_data_storage;
+
   CComBSTR username = L"foo_bar";
   CComBSTR full_name = A2COLE(test_data_storage.GetSuccessFullName().c_str());
   CComBSTR password = A2COLE(test_data_storage.GetSuccessPassword().c_str());
@@ -170,48 +143,33 @@ TEST_F(GcpReauthCredentialGlsRunnerTest, NormalReauth) {
                 L"comment", base::UTF8ToUTF16(test_data_storage.GetSuccessId()),
                 OLE2CW(email), &sid));
 
-  FakeGaiaCredentialProvider provider;
-
-  CComPtr<IGaiaCredential> gaia_cred;
+  // Create provider and start logon.
   CComPtr<ICredentialProviderCredential> cred;
-  ASSERT_EQ(S_OK,
-            CreateReauthCredentialWithProvider(&provider, &gaia_cred, &cred));
 
-  CComPtr<IReauthCredential> reauth;
-  reauth = cred;
-  ASSERT_TRUE(!!reauth);
-
-  ASSERT_EQ(S_OK, reauth->SetOSUserInfo(
-                      sid, CComBSTR(OSUserManager::GetLocalDomain().c_str()),
-                      username));
-  ASSERT_EQ(S_OK, reauth->SetEmailForReauth(email));
+  // Create with invalid token handle response so that a reauth occurs.
+  SetDefaultTokenHandleResponse(kDefaultInvalidTokenHandleResponse);
+  ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(1, &cred));
 
   CComPtr<ITestCredential> test;
   ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+
   ASSERT_EQ(S_OK, test->SetGlsEmailAddress(std::string()));
 
-  ASSERT_EQ(S_OK, run_helper()->StartLogonProcessAndWait(cred));
+  ASSERT_EQ(S_OK, StartLogonProcessAndWait());
 
-  ASSERT_EQ(S_OK, gaia_cred->Terminate());
-
-  // Check that values were propagated to the provider.
-  EXPECT_EQ(username, provider.username());
-  EXPECT_EQ(password, provider.password());
-  EXPECT_EQ(sid, provider.sid());
-  EXPECT_EQ(TRUE, provider.credentials_changed_fired());
-
-  ASSERT_STREQ(test->GetErrorText(), NULL);
+  // Teardown of the test should confirm that the logon was successful.
 }
 
 TEST_F(GcpReauthCredentialGlsRunnerTest, NormalReauthWithoutEmail) {
   USES_CONVERSION;
   CredentialProviderSigninDialogTestDataStorage test_data_storage;
+
   CComBSTR username = L"foo_bar";
   CComBSTR full_name = A2COLE(test_data_storage.GetSuccessFullName().c_str());
   CComBSTR password = A2COLE(test_data_storage.GetSuccessPassword().c_str());
   CComBSTR email = A2COLE(test_data_storage.GetSuccessEmail().c_str());
 
-  // Create a fake user to reauth.
+  // Create a fake user to reauth with no e-mail specified.
   CComBSTR sid;
   ASSERT_EQ(S_OK,
             fake_os_user_manager()->CreateTestOSUser(
@@ -219,86 +177,28 @@ TEST_F(GcpReauthCredentialGlsRunnerTest, NormalReauthWithoutEmail) {
                 L"comment", base::UTF8ToUTF16(test_data_storage.GetSuccessId()),
                 base::string16(), &sid));
 
-  FakeGaiaCredentialProvider provider;
-
-  CComPtr<IGaiaCredential> gaia_cred;
+  // Create provider and start logon.
   CComPtr<ICredentialProviderCredential> cred;
-  ASSERT_EQ(S_OK,
-            CreateReauthCredentialWithProvider(&provider, &gaia_cred, &cred));
 
-  CComPtr<IReauthCredential> reauth;
-  reauth = cred;
-  ASSERT_TRUE(!!reauth);
-
-  ASSERT_EQ(S_OK, reauth->SetOSUserInfo(
-                      sid, CComBSTR(OSUserManager::GetLocalDomain().c_str()),
-                      username));
+  // Create with invalid token handle response so that a reauth occurs.
+  SetDefaultTokenHandleResponse(kDefaultInvalidTokenHandleResponse);
+  ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(1, &cred));
 
   CComPtr<ITestCredential> test;
   ASSERT_EQ(S_OK, cred.QueryInterface(&test));
 
-  ASSERT_EQ(S_OK, run_helper()->StartLogonProcessAndWait(cred));
+  ASSERT_EQ(S_OK, StartLogonProcessAndWait());
 
   // Email associated should be the default one
   EXPECT_EQ(test->GetFinalEmail(), kDefaultEmail);
 
-  ASSERT_EQ(S_OK, gaia_cred->Terminate());
-
-  // Check that values were propagated to the provider.
-  EXPECT_EQ(username, provider.username());
-  EXPECT_EQ(password, provider.password());
-  EXPECT_EQ(sid, provider.sid());
-  EXPECT_EQ(TRUE, provider.credentials_changed_fired());
-
-  ASSERT_STREQ(test->GetErrorText(), NULL);
-}
-
-TEST_F(GcpReauthCredentialGlsRunnerTest, NoGaiaIdAssociatedToCredential) {
-  USES_CONVERSION;
-  CredentialProviderSigninDialogTestDataStorage test_data_storage;
-  CComBSTR username = L"foo_bar";
-  CComBSTR full_name = A2COLE(test_data_storage.GetSuccessFullName().c_str());
-  CComBSTR password = A2COLE(test_data_storage.GetSuccessPassword().c_str());
-  CComBSTR email = A2COLE(test_data_storage.GetSuccessEmail().c_str());
-
-  // Create a fake user to reauth.
-  CComBSTR sid;
-  ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
-                      OLE2CW(username), OLE2CW(password), OLE2CW(full_name),
-                      L"comment", base::string16(), base::string16(), &sid));
-
-  FakeGaiaCredentialProvider provider;
-
-  CComPtr<IGaiaCredential> gaia_cred;
-  CComPtr<ICredentialProviderCredential> cred;
-  ASSERT_EQ(S_OK,
-            CreateReauthCredentialWithProvider(&provider, &gaia_cred, &cred));
-
-  CComPtr<IReauthCredential> reauth;
-  reauth = cred;
-  ASSERT_TRUE(!!reauth);
-
-  ASSERT_EQ(S_OK, reauth->SetOSUserInfo(
-                      sid, CComBSTR(OSUserManager::GetLocalDomain().c_str()),
-                      username));
-  ASSERT_EQ(S_OK, reauth->SetEmailForReauth(email));
-
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
-  ASSERT_EQ(S_OK, test->SetGlsEmailAddress(std::string()));
-
-  // This call should fail
-  CREDENTIAL_PROVIDER_GET_SERIALIZATION_RESPONSE cpgsr;
-  CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION cpcs;
-  wchar_t* status_text;
-  CREDENTIAL_PROVIDER_STATUS_ICON status_icon;
-  EXPECT_EQ(E_UNEXPECTED,
-            cred->GetSerialization(&cpgsr, &cpcs, &status_text, &status_icon));
+  // Teardown of the test should confirm that the logon was successful.
 }
 
 TEST_F(GcpReauthCredentialGlsRunnerTest, GaiaIdMismatch) {
   USES_CONVERSION;
   CredentialProviderSigninDialogTestDataStorage test_data_storage;
+
   CComBSTR username = L"foo_bar";
   CComBSTR full_name = A2COLE(test_data_storage.GetSuccessFullName().c_str());
   CComBSTR password = A2COLE(test_data_storage.GetSuccessPassword().c_str());
@@ -310,42 +210,28 @@ TEST_F(GcpReauthCredentialGlsRunnerTest, GaiaIdMismatch) {
             fake_os_user_manager()->CreateTestOSUser(
                 OLE2CW(username), OLE2CW(password), OLE2CW(full_name),
                 L"comment", base::UTF8ToUTF16(test_data_storage.GetSuccessId()),
-                base::string16(), &sid));
+                OLE2CW(email), &sid));
 
   std::string unexpected_gaia_id = "unexpected-gaia-id";
-  FakeGaiaCredentialProvider provider;
 
-  CComPtr<IGaiaCredential> gaia_cred;
+  // Create provider and start logon.
   CComPtr<ICredentialProviderCredential> cred;
-  ASSERT_EQ(S_OK,
-            CreateReauthCredentialWithProvider(&provider, &gaia_cred, &cred));
 
-  CComPtr<IReauthCredential> reauth;
-  reauth = cred;
-  ASSERT_TRUE(!!reauth);
+  // Create with invalid token handle response so that a reauth occurs.
+  SetDefaultTokenHandleResponse(kDefaultInvalidTokenHandleResponse);
+  ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(1, &cred));
 
-  ASSERT_EQ(S_OK, reauth->SetOSUserInfo(
-                      sid, CComBSTR(OSUserManager::GetLocalDomain().c_str()),
-                      username));
-  ASSERT_EQ(S_OK, reauth->SetEmailForReauth(email));
-
-  CComPtr<testing::ITestCredential> test;
+  CComPtr<ITestCredential> test;
   ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+
   ASSERT_EQ(S_OK, test->SetGlsEmailAddress(std::string()));
-  ASSERT_EQ(S_OK, test->SetGaiaIdOverride(unexpected_gaia_id));
+  ASSERT_EQ(S_OK, test->SetGaiaIdOverride(unexpected_gaia_id,
+                                          /*ignore_expected_gaia_id=*/false));
 
-  ASSERT_EQ(S_OK, run_helper()->StartLogonProcessAndWait(cred));
+  ASSERT_EQ(S_OK, StartLogonProcessAndWait());
 
-  ASSERT_EQ(S_OK, gaia_cred->Terminate());
-
-  // Check that values were not propagated to the provider.
-  EXPECT_EQ(0u, provider.username().Length());
-  EXPECT_EQ(0u, provider.password().Length());
-  EXPECT_EQ(0u, provider.sid().Length());
-  EXPECT_EQ(FALSE, provider.credentials_changed_fired());
-
-  ASSERT_STREQ(test->GetErrorText(),
-               GetStringResource(IDS_EMAIL_MISMATCH_BASE).c_str());
+  // The logon should have failed with an email mismatch error.
+  ASSERT_EQ(S_OK, FinishLogonProcess(false, false, IDS_EMAIL_MISMATCH_BASE));
 }
 
 }  // namespace testing

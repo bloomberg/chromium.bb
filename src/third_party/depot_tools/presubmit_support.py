@@ -6,6 +6,8 @@
 """Enables directory-specific presubmit checks to run at upload and/or commit.
 """
 
+from __future__ import print_function
+
 __version__ = '1.8.0'
 
 # TODO(joi) Add caching where appropriate/needed. The API is designed to allow
@@ -729,11 +731,8 @@ class InputApi(object):
     return 'TBR' in self.change.tags or self.change.TBRsFromDescription()
 
   def RunTests(self, tests_mix, parallel=True):
-    # RunTests doesn't actually run tests. It adds them to a ThreadPool that
-    # will run all tests once all PRESUBMIT files are processed.
     tests = []
     msgs = []
-    parallel = parallel and self.parallel
     for t in tests_mix:
       if isinstance(t, OutputApi.PresubmitResult) and t:
         msgs.append(t)
@@ -745,7 +744,11 @@ class InputApi(object):
         if not t.kwargs.get('cwd'):
           t.kwargs['cwd'] = self.PresubmitLocalPath()
     self.thread_pool.AddTests(tests, parallel)
-    if not parallel:
+    # When self.parallel is True (i.e. --parallel is passed as an option)
+    # RunTests doesn't actually run tests. It adds them to a ThreadPool that
+    # will run all tests once all PRESUBMIT files are processed.
+    # Otherwise, it will run them and return the results.
+    if not self.parallel:
       msgs.extend(self.thread_pool.RunAsync())
     return msgs
 
@@ -1216,8 +1219,9 @@ class GetTryMastersExecuter(object):
     """
     context = {}
     try:
-      exec script_text in context
-    except Exception, e:
+      exec(compile(script_text, 'PRESUBMIT.py', 'exec', dont_inherit=True),
+           context)
+    except Exception as e:
       raise PresubmitFailure('"%s" had an exception.\n%s'
                              % (presubmit_path, e))
 
@@ -1247,8 +1251,9 @@ class GetPostUploadExecuter(object):
     """
     context = {}
     try:
-      exec script_text in context
-    except Exception, e:
+      exec(compile(script_text, 'PRESUBMIT.py', 'exec', dont_inherit=True),
+           context)
+    except Exception as e:
       raise PresubmitFailure('"%s" had an exception.\n%s'
                              % (presubmit_path, e))
 
@@ -1412,8 +1417,9 @@ class PresubmitExecuter(object):
     output_api = OutputApi(self.committing)
     context = {}
     try:
-      exec script_text in context
-    except Exception, e:
+      exec(compile(script_text, 'PRESUBMIT.py', 'exec', dont_inherit=True),
+           context)
+    except Exception as e:
       raise PresubmitFailure('"%s" had an exception.\n%s' % (presubmit_path, e))
 
     # These function names must change if we make substantial changes to
@@ -1714,9 +1720,9 @@ def main(argv=None):
           options.dry_run,
           options.parallel)
     return not results.should_continue()
-  except PresubmitFailure, e:
-    print >> sys.stderr, e
-    print >> sys.stderr, 'Maybe your depot_tools is out of date?'
+  except PresubmitFailure as e:
+    print(e, file=sys.stderr)
+    print('Maybe your depot_tools is out of date?', file=sys.stderr)
     return 2
 
 

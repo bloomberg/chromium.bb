@@ -307,7 +307,7 @@ CPDF_NameTree::CPDF_NameTree(CPDF_Document* pDoc, const ByteString& category) {
   if (!pNames)
     return;
 
-  m_pRoot = pNames->GetDictFor(category);
+  m_pRoot.Reset(pNames->GetDictFor(category));
 }
 
 CPDF_NameTree::~CPDF_NameTree() {}
@@ -328,7 +328,7 @@ int CPDF_NameTree::GetIndex(const WideString& csName) const {
   return nIndex;
 }
 
-bool CPDF_NameTree::AddValueAndName(std::unique_ptr<CPDF_Object> pObj,
+bool CPDF_NameTree::AddValueAndName(RetainPtr<CPDF_Object> pObj,
                                     const WideString& name) {
   if (!m_pRoot)
     return false;

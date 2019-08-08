@@ -23,6 +23,7 @@
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/win/wincrypt_shim.h"
+#include "crypto/scoped_capi_types.h"
 #include "net/cert/x509_util.h"
 #include "net/cert/x509_util_win.h"
 #include "net/ssl/ssl_platform_key_util.h"
@@ -33,6 +34,12 @@
 namespace net {
 
 namespace {
+
+using ScopedHCERTSTORE = crypto::ScopedCAPIHandle<
+    HCERTSTORE,
+    crypto::CAPIDestroyerWithFlags<HCERTSTORE,
+                                   CertCloseStore,
+                                   CERT_CLOSE_STORE_CHECK_FLAG>>;
 
 class ClientCertIdentityWin : public ClientCertIdentity {
  public:
@@ -211,47 +218,44 @@ ClientCertIdentityList GetClientCertsImpl(HCERTSTORE cert_store,
 
 ClientCertStoreWin::ClientCertStoreWin() {}
 
-ClientCertStoreWin::ClientCertStoreWin(HCERTSTORE cert_store) {
-  DCHECK(cert_store);
-  cert_store_.reset(cert_store);
+ClientCertStoreWin::ClientCertStoreWin(
+    base::RepeatingCallback<HCERTSTORE()> cert_store_callback)
+    : cert_store_callback_(std::move(cert_store_callback)) {
+  DCHECK(!cert_store_callback_.is_null());
 }
 
 ClientCertStoreWin::~ClientCertStoreWin() {}
 
 void ClientCertStoreWin::GetClientCerts(const SSLCertRequestInfo& request,
                                         ClientCertListCallback callback) {
-  if (cert_store_) {
-    // Use the existing client cert store. Note: Under some situations,
-    // it's possible for this to return certificates that aren't usable
-    // (see below).
-    // When using caller provided HCERTSTORE, assume that it should be accessed
-    // on the current thread.
-    std::move(callback).Run(GetClientCertsImpl(cert_store_, request));
-    return;
-  }
-
   base::PostTaskAndReplyWithResult(
       GetSSLPlatformKeyTaskRunner().get(), FROM_HERE,
       // Caller is responsible for keeping the |request| alive
       // until the callback is run, so std::cref is safe.
-      base::BindOnce(&ClientCertStoreWin::GetClientCertsWithMyCertStore,
-                     std::cref(request)),
+      base::BindOnce(&ClientCertStoreWin::GetClientCertsWithCertStore,
+                     std::cref(request), cert_store_callback_),
       std::move(callback));
 }
 
 // static
-ClientCertIdentityList ClientCertStoreWin::GetClientCertsWithMyCertStore(
-    const SSLCertRequestInfo& request) {
-  // Always open a new instance of the "MY" store, to ensure that there
-  // are no previously cached certificates being reused after they're
-  // no longer available (some smartcard providers fail to update the "MY"
-  // store handles and instead interpose CertOpenSystemStore).
-  ScopedHCERTSTORE my_cert_store(CertOpenSystemStore(NULL, L"MY"));
-  if (!my_cert_store) {
-    PLOG(ERROR) << "Could not open the \"MY\" system certificate store: ";
+ClientCertIdentityList ClientCertStoreWin::GetClientCertsWithCertStore(
+    const SSLCertRequestInfo& request,
+    const base::RepeatingCallback<HCERTSTORE()>& cert_store_callback) {
+  ScopedHCERTSTORE cert_store;
+  if (cert_store_callback.is_null()) {
+    // Always open a new instance of the "MY" store, to ensure that there
+    // are no previously cached certificates being reused after they're
+    // no longer available (some smartcard providers fail to update the "MY"
+    // store handles and instead interpose CertOpenSystemStore).
+    cert_store.reset(CertOpenSystemStore(NULL, L"MY"));
+  } else {
+    cert_store.reset(cert_store_callback.Run());
+  }
+  if (!cert_store) {
+    PLOG(ERROR) << "Could not open certificate store: ";
     return ClientCertIdentityList();
   }
-  return GetClientCertsImpl(my_cert_store, request);
+  return GetClientCertsImpl(cert_store, request);
 }
 
 bool ClientCertStoreWin::SelectClientCertsForTesting(

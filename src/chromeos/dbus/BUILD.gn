@@ -7,6 +7,11 @@ import("//third_party/protobuf/proto_library.gni")
 
 assert(is_chromeos, "Non-Chrome-OS builds must not depend on //chromeos")
 
+declare_args() {
+  # Instantiate real D-Bus clients instead of fakes.
+  use_real_dbus_clients = false
+}
+
 component("dbus") {
   output_name = "chromeos_dbus"  # Avoid conflict with //dbus
   defines = [ "IS_CHROMEOS_DBUS_IMPL" ]
@@ -26,6 +31,7 @@ component("dbus") {
     ":seneschal_proto",
     ":smbprovider_proto",
     ":vm_applications_apps_proto",
+    ":vm_plugin_dispatcher_proto",
     "//base",
     "//components/account_id",
     "//components/device_event_log",
@@ -84,6 +90,8 @@ component("dbus") {
     "fake_debug_daemon_client.h",
     "fake_easy_unlock_client.cc",
     "fake_easy_unlock_client.h",
+    "fake_gnubby_client.cc",
+    "fake_gnubby_client.h",
     "fake_image_burner_client.cc",
     "fake_image_burner_client.h",
     "fake_image_loader_client.cc",
@@ -102,8 +110,12 @@ component("dbus") {
     "fake_update_engine_client.h",
     "fake_virtual_file_provider_client.cc",
     "fake_virtual_file_provider_client.h",
+    "fake_vm_plugin_dispatcher_client.cc",
+    "fake_vm_plugin_dispatcher_client.h",
     "fake_wilco_dtc_supportd_client.cc",
     "fake_wilco_dtc_supportd_client.h",
+    "gnubby_client.cc",
+    "gnubby_client.h",
     "image_burner_client.cc",
     "image_burner_client.h",
     "image_loader_client.cc",
@@ -124,15 +136,24 @@ component("dbus") {
     "util/version_loader.h",
     "virtual_file_provider_client.cc",
     "virtual_file_provider_client.h",
+    "vm_plugin_dispatcher_client.cc",
+    "vm_plugin_dispatcher_client.h",
     "wilco_dtc_supportd_client.cc",
     "wilco_dtc_supportd_client.h",
   ]
+}
+
+config("use_real_dbus_clients_config") {
+  if (use_real_dbus_clients) {
+    defines = [ "USE_REAL_DBUS_CLIENTS" ]
+  }
 }
 
 component("common") {
   output_name = "chromeos_dbus_common"
   defines = [ "IS_CHROMEOS_DBUS_IMPL" ]
 
+  all_dependent_configs = [ ":use_real_dbus_clients_config" ]
   public_deps = [
     "//chromeos/dbus/constants",
   ]
@@ -148,6 +169,7 @@ component("common") {
     "blocking_method_caller.h",
     "dbus_method_call_status.cc",
     "dbus_method_call_status.h",
+    "initialize_dbus_client.h",
     "pipe_reader.cc",
     "pipe_reader.h",
   ]
@@ -206,6 +228,7 @@ source_set("unit_tests") {
     "cryptohome/fake_cryptohome_client_unittest.cc",
     "dbus_thread_manager_unittest.cc",
     "fake_easy_unlock_client_unittest.cc",
+    "fake_gnubby_client_unittest.cc",
     "native_timer_unittest.cc",
     "oobe_configuration_client_unittest.cc",
     "pipe_reader_unittest.cc",
@@ -288,4 +311,12 @@ proto_library("vm_applications_apps_proto") {
   ]
 
   proto_out_dir = "chromeos/dbus/vm_applications"
+}
+
+proto_library("vm_plugin_dispatcher_proto") {
+  sources = [
+    "//third_party/cros_system_api/dbus/vm_plugin_dispatcher/vm_plugin_dispatcher.proto",
+  ]
+
+  proto_out_dir = "chromeos/dbus/vm_plugin_dispatcher"
 }

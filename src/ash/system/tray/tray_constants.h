@@ -230,15 +230,25 @@ constexpr int kUnifiedFeaturePodSpacing = 6;
 constexpr int kUnifiedFeaturePodHoverRadius = 4;
 constexpr int kUnifiedFeaturePodVerticalPadding = 28;
 constexpr int kUnifiedFeaturePodTopPadding = 24;
-constexpr int kUnifiedFeaturePodBottomPadding = 20;
+constexpr int kUnifiedFeaturePodBottomPadding = 5;
 constexpr int kUnifiedFeaturePodHorizontalSidePadding = 12;
 constexpr int kUnifiedFeaturePodHorizontalMiddlePadding = 0;
-constexpr int kUnifiedFeaturePodCollapsedVerticalPadding = 16;
+constexpr int kUnifiedFeaturePodCollapsedVerticalPadding = 12;
 constexpr int kUnifiedFeaturePodCollapsedHorizontalPadding = 24;
 constexpr int kUnifiedFeaturePodArrowSpacing = 4;
 constexpr int kUnifiedFeaturePodItemsInRow = 3;
+constexpr int kUnifiedFeaturePodItemsRows = 3;
 constexpr int kUnifiedFeaturePodMaxItemsInCollapsed = 5;
+constexpr int kUnifiedFeaturePodsPageSpacing = 48;
 constexpr int kUnifiedNotificationSeparatorThickness = 1;
+
+// Constants used in PageIndicatorView of UnifiedSystemTray.
+constexpr int kUnifiedPageIndicatorButtonRadius = 3;
+constexpr SkColor kUnifiedPageIndicatorButtonColor =
+    SkColorSetRGB(0xF1, 0xF3, 0xF4);
+constexpr SkColor kUnifiedPageIndicatorButtonAlpha = 0x6E;
+constexpr SkColor kUnifiedPageIndicatorButtonInkDropColor =
+    SkColorSetRGB(0xFF, 0xFF, 0xFF);
 
 // Separators between multiple users are shorter than the full width.
 constexpr int kUnifiedUserChooserSeparatorSideMargin = 64;

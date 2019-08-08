@@ -13,10 +13,9 @@ namespace {
 template <typename Base>
 class FrameAdapter : public Base {
  public:
-  explicit FrameAdapter(const scoped_refptr<media::VideoFrame>& frame)
+  explicit FrameAdapter(scoped_refptr<media::VideoFrame> frame)
       : frame_(std::move(frame)) {}
 
- private:
   int width() const override { return frame_->visible_rect().width(); }
   int height() const override { return frame_->visible_rect().height(); }
 
@@ -44,41 +43,39 @@ class FrameAdapter : public Base {
     return frame_->stride(media::VideoFrame::kVPlane);
   }
 
+ protected:
   scoped_refptr<media::VideoFrame> frame_;
 };
 
 template <typename BaseWithA>
 class FrameAdapterWithA : public FrameAdapter<BaseWithA> {
  public:
-  FrameAdapterWithA(const scoped_refptr<media::VideoFrame>& frame)
-      : FrameAdapter<BaseWithA>(std::move(frame)), frame_(std::move(frame)) {}
+  explicit FrameAdapterWithA(scoped_refptr<media::VideoFrame> frame)
+      : FrameAdapter<BaseWithA>(std::move(frame)) {}
 
- private:
   const uint8_t* DataA() const override {
-    return frame_->visible_data(media::VideoFrame::kAPlane);
+    return FrameAdapter<BaseWithA>::frame_->visible_data(
+        media::VideoFrame::kAPlane);
   }
 
   int StrideA() const override {
-    return frame_->stride(media::VideoFrame::kAPlane);
+    return FrameAdapter<BaseWithA>::frame_->stride(media::VideoFrame::kAPlane);
   }
-
-  scoped_refptr<media::VideoFrame> frame_;
 };
 
-void IsValidFrame(const scoped_refptr<media::VideoFrame>& frame) {
+void IsValidFrame(const media::VideoFrame& frame) {
   // Paranoia checks.
-  DCHECK(frame);
   DCHECK(media::VideoFrame::IsValidConfig(
-      frame->format(), frame->storage_type(), frame->coded_size(),
-      frame->visible_rect(), frame->natural_size()));
-  DCHECK(media::PIXEL_FORMAT_I420 == frame->format() ||
-         media::PIXEL_FORMAT_I420A == frame->format());
-  CHECK(reinterpret_cast<void*>(frame->data(media::VideoFrame::kYPlane)));
-  CHECK(reinterpret_cast<void*>(frame->data(media::VideoFrame::kUPlane)));
-  CHECK(reinterpret_cast<void*>(frame->data(media::VideoFrame::kVPlane)));
-  CHECK(frame->stride(media::VideoFrame::kYPlane));
-  CHECK(frame->stride(media::VideoFrame::kUPlane));
-  CHECK(frame->stride(media::VideoFrame::kVPlane));
+      frame.format(), frame.storage_type(), frame.coded_size(),
+      frame.visible_rect(), frame.natural_size()));
+  DCHECK(media::PIXEL_FORMAT_I420 == frame.format() ||
+         media::PIXEL_FORMAT_I420A == frame.format());
+  CHECK(reinterpret_cast<const void*>(frame.data(media::VideoFrame::kYPlane)));
+  CHECK(reinterpret_cast<const void*>(frame.data(media::VideoFrame::kUPlane)));
+  CHECK(reinterpret_cast<const void*>(frame.data(media::VideoFrame::kVPlane)));
+  CHECK(frame.stride(media::VideoFrame::kYPlane));
+  CHECK(frame.stride(media::VideoFrame::kUPlane));
+  CHECK(frame.stride(media::VideoFrame::kVPlane));
 }
 
 }  // anonymous namespace
@@ -86,8 +83,8 @@ void IsValidFrame(const scoped_refptr<media::VideoFrame>& frame) {
 namespace content {
 
 WebRtcVideoFrameAdapter::WebRtcVideoFrameAdapter(
-    const scoped_refptr<media::VideoFrame>& frame)
-    : frame_(frame) {}
+    scoped_refptr<media::VideoFrame> frame)
+    : frame_(std::move(frame)) {}
 
 WebRtcVideoFrameAdapter::~WebRtcVideoFrameAdapter() {
 }
@@ -105,7 +102,7 @@ int WebRtcVideoFrameAdapter::height() const {
 }
 
 rtc::scoped_refptr<webrtc::I420BufferInterface>
-WebRtcVideoFrameAdapter::ToI420() {
+WebRtcVideoFrameAdapter::CreateFrameAdapter() const {
   // We cant convert texture synchronously due to threading issues, see
   // https://crbug.com/663452. Instead, return a black frame (yuv = {0, 0x80,
   // 0x80}).
@@ -116,13 +113,28 @@ WebRtcVideoFrameAdapter::ToI420() {
                                             0x80, 0x80, frame_->timestamp()));
   }
 
-  IsValidFrame(frame_);
+  IsValidFrame(*frame_);
   if (media::PIXEL_FORMAT_I420A == frame_->format()) {
     return new rtc::RefCountedObject<
         FrameAdapterWithA<webrtc::I420ABufferInterface>>(frame_);
   }
   return new rtc::RefCountedObject<FrameAdapter<webrtc::I420BufferInterface>>(
       frame_);
+}
+
+rtc::scoped_refptr<webrtc::I420BufferInterface>
+WebRtcVideoFrameAdapter::ToI420() {
+  if (!frame_adapter_) {
+    frame_adapter_ = CreateFrameAdapter();
+  }
+  return frame_adapter_;
+}
+
+const webrtc::I420BufferInterface* WebRtcVideoFrameAdapter::GetI420() const {
+  if (!frame_adapter_) {
+    frame_adapter_ = CreateFrameAdapter();
+  }
+  return frame_adapter_.get();
 }
 
 }  // namespace content

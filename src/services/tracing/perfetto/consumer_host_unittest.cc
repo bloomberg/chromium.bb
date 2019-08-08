@@ -39,7 +39,7 @@ constexpr base::ProcessId kProducerPid = 1234;
 // different sequences (ProducerClient side, Service side, and
 // whatever connects via Mojo to the Producer). This is needed
 // so we don't get into read/write locks.
-class ThreadedPerfettoService : public mojom::TracingSession {
+class ThreadedPerfettoService : public mojom::TracingSessionClient {
  public:
   ThreadedPerfettoService()
       : task_runner_(base::CreateSequencedTaskRunnerWithTraits(
@@ -66,8 +66,6 @@ class ThreadedPerfettoService : public mojom::TracingSession {
       task_runner_->DeleteSoon(FROM_HERE, std::move(consumer_));
     }
 
-    task_runner_->DeleteSoon(FROM_HERE, std::move(perfetto_service_));
-
     {
       base::RunLoop wait_for_destruction;
       task_runner_->PostTaskAndReply(FROM_HERE, base::DoNothing(),
@@ -77,17 +75,21 @@ class ThreadedPerfettoService : public mojom::TracingSession {
 
     {
       base::RunLoop wait_for_destruction;
-      ProducerClient::GetTaskRunner()->task_runner()->PostTaskAndReply(
-          FROM_HERE, base::DoNothing(), wait_for_destruction.QuitClosure());
+      PerfettoTracedProcess::GetTaskRunner()
+          ->GetOrCreateTaskRunner()
+          ->PostTaskAndReply(FROM_HERE, base::DoNothing(),
+                             wait_for_destruction.QuitClosure());
       wait_for_destruction.Run();
     }
   }
 
-  // mojom::TracingSession implementation:
+  // mojom::TracingSessionClient implementation:
   void OnTracingEnabled() override {
     EXPECT_FALSE(tracing_enabled_);
     tracing_enabled_ = true;
   }
+
+  void OnTracingDisabled() override {}
 
   void CreateProducer(const std::string& data_source_name,
                       size_t num_packets,
@@ -129,38 +131,50 @@ class ThreadedPerfettoService : public mojom::TracingSession {
   }
 
   void EnableTracingOnSequence(const perfetto::TraceConfig& config) {
-    tracing::mojom::TracingSessionPtr tracing_session;
+    tracing::mojom::TracingSessionClientPtr tracing_session_client;
+    binding_ = std::make_unique<mojo::Binding<mojom::TracingSessionClient>>(
+        this, mojo::MakeRequest(&tracing_session_client));
 
-    binding_ = std::make_unique<mojo::Binding<mojom::TracingSession>>(
-        this, mojo::MakeRequest(&tracing_session));
-
-    consumer_->EnableTracing(std::move(tracing_session), std::move(config));
+    consumer_->EnableTracing(
+        mojo::MakeRequest(&tracing_session_host_),
+        std::move(tracing_session_client), std::move(config),
+        tracing::mojom::TracingClientPriority::kUserInitiated);
   }
 
   void ReadBuffers(mojo::ScopedDataPipeProducerHandle stream,
-                   ConsumerHost::ReadBuffersCallback callback) {
+                   ConsumerHost::TracingSession::ReadBuffersCallback callback) {
     task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&ConsumerHost::ReadBuffers,
-                                  base::Unretained(consumer_.get()),
-                                  std::move(stream), std::move(callback)));
+        FROM_HERE,
+        base::BindOnce(
+            &ConsumerHost::TracingSession::ReadBuffers,
+            base::Unretained(consumer_.get()->tracing_session_for_testing()),
+            std::move(stream), std::move(callback)));
   }
 
-  void FreeBuffers() {
-    base::RunLoop wait_for_call;
-    task_runner_->PostTaskAndReply(
-        FROM_HERE,
-        base::BindOnce(&ConsumerHost::FreeBuffers,
-                       base::Unretained(consumer_.get())),
-        wait_for_call.QuitClosure());
-    wait_for_call.Run();
-  }
+  void FreeBuffers() { tracing_session_host_.reset(); }
 
   void DisableTracing() {
     base::RunLoop wait_for_call;
     task_runner_->PostTaskAndReply(
         FROM_HERE,
-        base::BindOnce(&ConsumerHost::DisableTracing,
-                       base::Unretained(consumer_.get())),
+        base::BindOnce(
+            &ConsumerHost::TracingSession::DisableTracing,
+            base::Unretained(consumer_.get()->tracing_session_for_testing())),
+        wait_for_call.QuitClosure());
+    wait_for_call.Run();
+  }
+
+  void DisableTracingAndEmitJson(
+      mojo::ScopedDataPipeProducerHandle stream,
+      ConsumerHost::TracingSession::DisableTracingAndEmitJsonCallback
+          callback) {
+    base::RunLoop wait_for_call;
+    task_runner_->PostTaskAndReply(
+        FROM_HERE,
+        base::BindOnce(
+            &ConsumerHost::TracingSession::DisableTracingAndEmitJson,
+            base::Unretained(consumer_.get()->tracing_session_for_testing()),
+            std::string(), std::move(stream), std::move(callback)),
         wait_for_call.QuitClosure());
     wait_for_call.Run();
   }
@@ -177,14 +191,16 @@ class ThreadedPerfettoService : public mojom::TracingSession {
   void Flush(base::OnceClosure on_flush_complete) {
     task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(&ConsumerHost::Flush, base::Unretained(consumer_.get()),
-                       10000u,
-                       base::BindOnce(
-                           [](base::OnceClosure callback, bool success) {
-                             EXPECT_TRUE(success);
-                             std::move(callback).Run();
-                           },
-                           std::move(on_flush_complete))));
+        base::BindOnce(
+            &ConsumerHost::TracingSession::Flush,
+            base::Unretained(consumer_.get()->tracing_session_for_testing()),
+            10000u,
+            base::BindOnce(
+                [](base::OnceClosure callback, bool success) {
+                  EXPECT_TRUE(success);
+                  std::move(callback).Run();
+                },
+                std::move(on_flush_complete))));
   }
 
   void ExpectPid(base::ProcessId pid) {
@@ -236,21 +252,32 @@ class ThreadedPerfettoService : public mojom::TracingSession {
   perfetto::DataSourceConfig GetProducerClientConfig() {
     perfetto::DataSourceConfig config;
     base::RunLoop wait_loop;
-    task_runner_->PostTaskAndReply(
-        FROM_HERE, base::BindLambdaForTesting([&]() {
-          config = producer_->producer_client()->data_source()->config();
-        }),
-        wait_loop.QuitClosure());
+    task_runner_->PostTaskAndReply(FROM_HERE, base::BindLambdaForTesting([&]() {
+                                     config =
+                                         producer_->data_source()->config();
+                                   }),
+                                   wait_loop.QuitClosure());
     wait_loop.Run();
     return config;
   }
+
+  void ClearConsumer() {
+    base::RunLoop wait_loop;
+    task_runner_->PostTaskAndReply(
+        FROM_HERE, base::BindLambdaForTesting([&]() { consumer_.reset(); }),
+        wait_loop.QuitClosure());
+    wait_loop.Run();
+  }
+
+  PerfettoService* perfetto_service() const { return perfetto_service_.get(); }
 
  private:
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   std::unique_ptr<PerfettoService> perfetto_service_;
   std::unique_ptr<ConsumerHost> consumer_;
   std::unique_ptr<MockProducer> producer_;
-  std::unique_ptr<mojo::Binding<mojom::TracingSession>> binding_;
+  std::unique_ptr<mojo::Binding<mojom::TracingSessionClient>> binding_;
+  tracing::mojom::TracingSessionHostPtr tracing_session_host_;
   bool tracing_enabled_ = false;
 };
 
@@ -258,7 +285,7 @@ class TracingConsumerTest : public testing::Test,
                             public mojo::DataPipeDrainer::Client {
  public:
   void SetUp() override {
-    ProducerClient::ResetTaskRunnerForTesting();
+    PerfettoTracedProcess::ResetTaskRunnerForTesting();
     threaded_service_ = std::make_unique<ThreadedPerfettoService>();
 
     matching_packet_count_ = 0;
@@ -277,13 +304,21 @@ class TracingConsumerTest : public testing::Test,
 
   // mojo::DataPipeDrainer::Client
   void OnDataComplete() override {
-    auto proto = std::make_unique<perfetto::protos::Trace>();
-    EXPECT_TRUE(
-        proto->ParseFromArray(received_data_.data(), received_data_.size()));
-
-    for (int i = 0; i < proto->packet_size(); ++i) {
-      if (proto->packet(i).for_testing().str() == packet_testing_str_) {
+    if (expect_json_data_) {
+      std::string output(reinterpret_cast<const char*>(received_data_.data()),
+                         received_data_.size());
+      if (output.find(packet_testing_str_) != std::string::npos) {
         matching_packet_count_++;
+      }
+    } else {
+      auto proto = std::make_unique<perfetto::protos::Trace>();
+      EXPECT_TRUE(
+          proto->ParseFromArray(received_data_.data(), received_data_.size()));
+
+      for (int i = 0; i < proto->packet_size(); ++i) {
+        if (proto->packet(i).for_testing().str() == packet_testing_str_) {
+          matching_packet_count_++;
+        }
       }
     }
 
@@ -300,11 +335,27 @@ class TracingConsumerTest : public testing::Test,
   }
 
   void ReadBuffers() {
-    mojo::DataPipe data_pipe;
-    threaded_service_->ReadBuffers(std::move(data_pipe.producer_handle),
-                                   base::OnceClosure());
-    drainer_.reset(
-        new mojo::DataPipeDrainer(this, std::move(data_pipe.consumer_handle)));
+    MojoCreateDataPipeOptions options = {sizeof(MojoCreateDataPipeOptions),
+                                         MOJO_CREATE_DATA_PIPE_FLAG_NONE, 1, 0};
+    mojo::ScopedDataPipeProducerHandle producer;
+    mojo::ScopedDataPipeConsumerHandle consumer;
+    MojoResult rv = mojo::CreateDataPipe(&options, &producer, &consumer);
+    ASSERT_EQ(MOJO_RESULT_OK, rv);
+    threaded_service_->ReadBuffers(std::move(producer), base::OnceClosure());
+    drainer_.reset(new mojo::DataPipeDrainer(this, std::move(consumer)));
+  }
+
+  void DisableTracingAndEmitJson(base::OnceClosure write_callback) {
+    expect_json_data_ = true;
+    MojoCreateDataPipeOptions options = {sizeof(MojoCreateDataPipeOptions),
+                                         MOJO_CREATE_DATA_PIPE_FLAG_NONE, 1, 0};
+    mojo::ScopedDataPipeProducerHandle producer;
+    mojo::ScopedDataPipeConsumerHandle consumer;
+    MojoResult rv = mojo::CreateDataPipe(&options, &producer, &consumer);
+    ASSERT_EQ(MOJO_RESULT_OK, rv);
+    threaded_service_->DisableTracingAndEmitJson(std::move(producer),
+                                                 std::move(write_callback));
+    drainer_.reset(new mojo::DataPipeDrainer(this, std::move(consumer)));
   }
 
   perfetto::TraceConfig GetDefaultTraceConfig(
@@ -356,6 +407,7 @@ class TracingConsumerTest : public testing::Test,
   std::string packet_testing_str_;
   size_t matching_packet_count_ = 0;
   size_t total_bytes_received_ = 0;
+  bool expect_json_data_ = false;
 };
 
 TEST_F(TracingConsumerTest, EnableAndDisableTracing) {
@@ -391,6 +443,26 @@ TEST_F(TracingConsumerTest, ReceiveTestPackets) {
   no_more_data.Run();
 
   EXPECT_EQ(10u, matching_packet_count());
+}
+
+TEST_F(TracingConsumerTest, DeleteConsumerWhenReceiving) {
+  EnableTracingWithDataSourceName(mojom::kTraceEventDataSourceName);
+
+  base::RunLoop wait_for_tracing_start;
+  threaded_perfetto_service()->CreateProducer(
+      mojom::kTraceEventDataSourceName, 100u,
+      wait_for_tracing_start.QuitClosure());
+
+  wait_for_tracing_start.Run();
+
+  base::RunLoop no_more_data;
+  ExpectPackets(kPerfettoTestString, no_more_data.QuitClosure());
+
+  threaded_perfetto_service()->DisableTracing();
+  ReadBuffers();
+
+  threaded_perfetto_service()->ClearConsumer();
+  no_more_data.Run();
 }
 
 TEST_F(TracingConsumerTest, FlushProducers) {
@@ -545,6 +617,130 @@ TEST_F(TracingConsumerTest, PrivacyFilterConfig) {
                   ->GetProducerClientConfig()
                   .chrome_config()
                   .privacy_filtering_enabled());
+}
+
+TEST_F(TracingConsumerTest, PrivacyFilterConfigInJson) {
+  EnableTracingWithDataSourceName(mojom::kTraceEventDataSourceName,
+                                  /* enable_privacy_filtering =*/true);
+
+  base::RunLoop wait_for_tracing_start;
+  threaded_perfetto_service()->CreateProducer(
+      mojom::kTraceEventDataSourceName, 10u,
+      wait_for_tracing_start.QuitClosure());
+
+  wait_for_tracing_start.Run();
+
+  EXPECT_TRUE(threaded_perfetto_service()
+                  ->GetProducerClientConfig()
+                  .chrome_config()
+                  .privacy_filtering_enabled());
+
+  base::RunLoop no_more_data;
+  ExpectPackets("\"perfetto_trace_stats\":\"__stripped__\"",
+                no_more_data.QuitClosure());
+
+  base::RunLoop write_done;
+  DisableTracingAndEmitJson(write_done.QuitClosure());
+
+  no_more_data.Run();
+  write_done.Run();
+
+  EXPECT_EQ(1u, matching_packet_count());
+}
+
+class MockConsumerHost : public mojom::TracingSessionClient {
+ public:
+  MockConsumerHost(PerfettoService* service)
+      : consumer_host_(std::make_unique<ConsumerHost>(service)) {}
+
+  void EnableTracing(const perfetto::TraceConfig& config,
+                     mojom::TracingClientPriority priority) {
+    tracing::mojom::TracingSessionClientPtr tracing_session_client;
+    binding_.Bind(mojo::MakeRequest(&tracing_session_client));
+
+    binding_.set_connection_error_handler(base::BindOnce(
+        &MockConsumerHost::OnConnectionLost, base::Unretained(this)));
+
+    consumer_host_->EnableTracing(mojo::MakeRequest(&tracing_session_host_),
+                                  std::move(tracing_session_client), config,
+                                  priority);
+    tracing_session_host_.set_connection_error_handler(base::BindOnce(
+        &MockConsumerHost::OnConnectionLost, base::Unretained(this)));
+  }
+
+  void DisableTracing() { tracing_session_host_->DisableTracing(); }
+
+  void OnConnectionLost() {
+    CloseTracingSession();
+    wait_for_connection_lost_.Quit();
+  }
+
+  void CloseTracingSession() {
+    tracing_session_host_.reset();
+    binding_.Close();
+  }
+
+  // mojom::TracingSessionClient implementation:
+  void OnTracingEnabled() override { wait_for_tracing_enabled_.Quit(); }
+
+  void OnTracingDisabled() override { wait_for_tracing_disabled_.Quit(); }
+
+  void WaitForConnectionLost() { wait_for_connection_lost_.Run(); }
+
+  void WaitForTracingEnabled() { wait_for_tracing_enabled_.Run(); }
+
+  void WaitForTracingDisabled() { wait_for_tracing_disabled_.Run(); }
+
+ private:
+  tracing::mojom::TracingSessionHostPtr tracing_session_host_;
+  mojo::Binding<mojom::TracingSessionClient> binding_{this};
+  std::unique_ptr<ConsumerHost> consumer_host_;
+  base::RunLoop wait_for_connection_lost_;
+  base::RunLoop wait_for_tracing_enabled_;
+  base::RunLoop wait_for_tracing_disabled_;
+};
+
+TEST_F(TracingConsumerTest, TestConsumerPriority) {
+  // auto perfetto_service = std::make_unique<PerfettoService>(nullptr);
+  PerfettoService::GetInstance()->SetActiveServicePidsInitialized();
+  auto trace_config = GetDefaultTraceConfig(mojom::kTraceEventDataSourceName);
+
+  MockConsumerHost background_consumer_1(PerfettoService::GetInstance());
+  background_consumer_1.EnableTracing(
+      trace_config, tracing::mojom::TracingClientPriority::kBackground);
+  background_consumer_1.WaitForTracingEnabled();
+
+  // Second consumer of the same priority should cause the first one to
+  // be disabled and the second to start.
+  MockConsumerHost background_consumer_2(PerfettoService::GetInstance());
+  background_consumer_2.EnableTracing(
+      trace_config, tracing::mojom::TracingClientPriority::kBackground);
+  background_consumer_1.WaitForTracingDisabled();
+  background_consumer_2.WaitForTracingEnabled();
+
+  // Third consumer will have a higher priority, and should kill the second
+  // one.
+  MockConsumerHost user_initiated_consumer(PerfettoService::GetInstance());
+  user_initiated_consumer.EnableTracing(
+      trace_config, tracing::mojom::TracingClientPriority::kUserInitiated);
+  background_consumer_2.WaitForTracingDisabled();
+  user_initiated_consumer.WaitForTracingEnabled();
+
+  // Fourth consumer will be another background consumer, and should be
+  // itself killed as the third consumer is still running.
+  MockConsumerHost background_consumer_3(PerfettoService::GetInstance());
+  background_consumer_3.EnableTracing(
+      trace_config, tracing::mojom::TracingClientPriority::kBackground);
+  background_consumer_3.WaitForConnectionLost();
+
+  // If we close the user initiated consumer, the third background consumer
+  // should now be able to trace.
+  user_initiated_consumer.DisableTracing();
+  user_initiated_consumer.WaitForTracingDisabled();
+  user_initiated_consumer.CloseTracingSession();
+  background_consumer_3.EnableTracing(
+      trace_config, tracing::mojom::TracingClientPriority::kBackground);
+  background_consumer_3.WaitForTracingEnabled();
 }
 
 }  // namespace tracing

@@ -1,9 +1,7 @@
 [
   {
     "failure": {
-      "failure": {
-        "step": ""
-      },
+      "failure": {},
       "humanReason": "boom!"
     },
     "name": "$result"

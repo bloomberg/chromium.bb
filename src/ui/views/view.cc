@@ -50,6 +50,7 @@
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/drag_controller.h"
 #include "ui/views/layout/layout_manager.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view_observer.h"
 #include "ui/views/view_tracker.h"
 #include "ui/views/views_switches.h"
@@ -141,6 +142,9 @@ View::~View() {
 
   for (ViewObserver& observer : observers_)
     observer.OnViewIsDeleting(this);
+
+  for (ui::Layer* layer_beneath : layers_beneath_)
+    layer_beneath->RemoveObserver(this);
 }
 
 // Tree operations -------------------------------------------------------------
@@ -293,9 +297,8 @@ void View::SetBoundsRect(const gfx::Rect& bounds) {
   // Notify interested Views that visible bounds within the root view may have
   // changed.
   if (descendants_to_notify_) {
-    for (auto i(descendants_to_notify_->begin());
-         i != descendants_to_notify_->end(); ++i) {
-      (*i)->OnVisibleBoundsChanged();
+    for (auto* i : *descendants_to_notify_) {
+      i->OnVisibleBoundsChanged();
     }
   }
 
@@ -417,6 +420,10 @@ int View::GetHeightForWidth(int w) const {
   return GetPreferredSize().height();
 }
 
+bool View::GetVisible() const {
+  return visible_;
+}
+
 void View::SetVisible(bool visible) {
   if (parent_) {
     LayoutManager* const layout_manager = parent_->GetLayoutManager();
@@ -424,7 +431,7 @@ void View::SetVisible(bool visible) {
       layout_manager->ViewVisibilitySet(parent_, this, visible);
   }
 
-  if (visible != visible_) {
+  if (visible_ != visible) {
     // If the View is currently visible, schedule paint to refresh parent.
     // TODO(beng): not sure we should be doing this if we have a layer.
     if (visible_)
@@ -444,35 +451,36 @@ void View::SetVisible(bool visible) {
     PropagateVisibilityNotifications(this, visible_);
     UpdateLayerVisibility();
 
-    // If we are newly visible, schedule paint.
-    if (visible_)
-      SchedulePaint();
+    // Notify all other subscriptions of the change.
+    OnPropertyChanged(&visible_, kPropertyEffectsPaint);
   }
+}
+
+PropertyChangedSubscription View::AddVisibleChangedCallback(
+    PropertyChangedCallback callback) {
+  return AddPropertyChangedCallback(&visible_, std::move(callback));
 }
 
 bool View::IsDrawn() const {
   return visible_ && parent_ ? parent_->IsDrawn() : false;
 }
 
-void View::SetEnabled(bool is_enabled) {
-  if (enabled_ == is_enabled)
+bool View::GetEnabled() const {
+  return enabled_;
+}
+
+void View::SetEnabled(bool enabled) {
+  if (enabled_ == enabled)
     return;
 
-  enabled_ = is_enabled;
+  enabled_ = enabled;
   AdvanceFocusIfNecessary();
   OnPropertyChanged(&enabled_, kPropertyEffectsPaint);
-
-  // TODO(kylixrd): Remove this once all overridden instances are refactored
-  // to use property change callback.
-  OnEnabledChanged();
 }
 
 PropertyChangedSubscription View::AddEnabledChangedCallback(
     PropertyChangedCallback callback) {
   return AddPropertyChangedCallback(&enabled_, std::move(callback));
-}
-
-void View::OnEnabledChanged() {
 }
 
 View::Views View::GetChildrenInZOrder() {
@@ -507,6 +515,9 @@ void View::SetTransform(const gfx::Transform& transform) {
     layer()->SetTransform(transform);
     layer()->ScheduleDraw();
   }
+
+  for (ui::Layer* layer_beneath : layers_beneath_)
+    layer_beneath->SetTransform(transform);
 }
 
 void View::SetPaintToLayer(ui::LayerType layer_type) {
@@ -531,6 +542,53 @@ void View::SetPaintToLayer(ui::LayerType layer_type) {
 void View::DestroyLayer() {
   paint_to_layer_explicitly_set_ = false;
   CreateOrDestroyLayer();
+}
+
+void View::AddLayerBeneathView(ui::Layer* new_layer) {
+  DCHECK(new_layer);
+  DCHECK(!base::ContainsValue(layers_beneath_, new_layer))
+      << "Layer already added.";
+
+  new_layer->AddObserver(this);
+  new_layer->SetVisible(GetVisible());
+  layers_beneath_.push_back(new_layer);
+
+  // If painting to a layer already, ensure |new_layer| gets added and stacked
+  // correctly. If not, this will happen on layer creation.
+  if (layer()) {
+    ui::Layer* parent_layer = layer()->parent();
+    if (parent_layer)
+      parent_layer->Add(new_layer);
+    new_layer->SetBounds(gfx::Rect(new_layer->size()) +
+                         layer()->bounds().OffsetFromOrigin());
+    if (parent())
+      parent()->ReorderLayers();
+  }
+
+  CreateOrDestroyLayer();
+
+  layer()->SetFillsBoundsOpaquely(false);
+}
+
+void View::RemoveLayerBeneathView(ui::Layer* old_layer) {
+  auto layer_pos =
+      std::find(layers_beneath_.begin(), layers_beneath_.end(), old_layer);
+  DCHECK(layer_pos != layers_beneath_.end())
+      << "Attempted to remove a layer that was never added.";
+  layers_beneath_.erase(layer_pos);
+  old_layer->RemoveObserver(this);
+
+  ui::Layer* parent_layer = layer()->parent();
+  if (parent_layer)
+    parent_layer->Remove(old_layer);
+
+  CreateOrDestroyLayer();
+}
+
+void View::LayerDestroyed(ui::Layer* layer) {
+  // Only layers added with |AddLayerBeneathView()| are observed so |layer| can
+  // safely be removed.
+  RemoveLayerBeneathView(layer);
 }
 
 std::unique_ptr<ui::Layer> View::RecreateLayer() {
@@ -660,14 +718,36 @@ View* View::GetViewByID(int id) {
   return const_cast<View*>(const_cast<const View*>(this)->GetViewByID(id));
 }
 
+void View::SetID(int id) {
+  if (id == id_)
+    return;
+
+  id_ = id;
+
+  OnPropertyChanged(&id_, kPropertyEffectsNone);
+}
+
+PropertyChangedSubscription View::AddIDChangedCallback(
+    PropertyChangedCallback callback) {
+  return AddPropertyChangedCallback(&id_, callback);
+}
+
 void View::SetGroup(int gid) {
   // Don't change the group id once it's set.
   DCHECK(group_ == -1 || group_ == gid);
-  group_ = gid;
+  if (group_ != gid) {
+    group_ = gid;
+    OnPropertyChanged(&group_, kPropertyEffectsNone);
+  }
 }
 
 int View::GetGroup() const {
   return group_;
+}
+
+PropertyChangedSubscription View::AddGroupChangedCallback(
+    PropertyChangedCallback callback) {
+  return AddPropertyChangedCallback(&group_, callback);
 }
 
 bool View::IsGroupFocusTraversable() const {
@@ -913,6 +993,7 @@ void View::Paint(const PaintInfo& parent_paint_info) {
 
 void View::SetBackground(std::unique_ptr<Background> b) {
   background_ = std::move(b);
+  SchedulePaint();
 }
 
 void View::SetBorder(std::unique_ptr<Border> b) {
@@ -942,7 +1023,7 @@ void View::SetNativeTheme(ui::NativeTheme* theme) {
   ui::NativeTheme* original_native_theme = GetNativeTheme();
   native_theme_ = theme;
   if (native_theme_ != original_native_theme)
-    PropagateNativeThemeChanged(theme);
+    PropagateThemeChanged();
 }
 
 // RTL painting ----------------------------------------------------------------
@@ -975,7 +1056,7 @@ View* View::GetTooltipHandlerForPoint(const gfx::Point& point) {
   View::Views children = GetChildrenInZOrder();
   DCHECK_EQ(children_.size(), children.size());
   for (auto* child : base::Reversed(children)) {
-    if (!child->visible())
+    if (!child->GetVisible())
       continue;
 
     gfx::Point point_in_child_coords(point);
@@ -1271,12 +1352,18 @@ void View::SetNextFocusableView(View* view) {
   next_focusable_view_ = view;
 }
 
+View::FocusBehavior View::GetFocusBehavior() const {
+  return focus_behavior_;
+}
+
 void View::SetFocusBehavior(FocusBehavior focus_behavior) {
   if (focus_behavior_ == focus_behavior)
     return;
 
   focus_behavior_ = focus_behavior;
   AdvanceFocusIfNecessary();
+
+  OnPropertyChanged(&focus_behavior_, kPropertyEffectsNone);
 }
 
 bool View::IsFocusable() const {
@@ -1605,7 +1692,13 @@ void View::MoveLayerToParent(ui::Layer* parent_layer,
     local_offset_data += GetMirroredPosition().OffsetFromOrigin();
 
   if (layer() && parent_layer != layer()) {
+    // Adding the main layer can trigger a call to |SnapLayerToPixelBoundary()|.
+    // That method assumes layers beneath have already been added. Therefore
+    // layers beneath must be added first here. See crbug.com/961212.
+    for (ui::Layer* layer_beneath : layers_beneath_)
+      parent_layer->Add(layer_beneath);
     parent_layer->Add(layer());
+
     SetLayerBounds(size(), local_offset_data);
   } else {
     internal::ScopedChildrenLock lock(this);
@@ -1617,31 +1710,40 @@ void View::MoveLayerToParent(ui::Layer* parent_layer,
 void View::UpdateLayerVisibility() {
   bool visible = visible_;
   for (const View* v = parent_; visible && v && !v->layer(); v = v->parent_)
-    visible = v->visible();
+    visible = v->GetVisible();
 
   UpdateChildLayerVisibility(visible);
 }
 
 void View::UpdateChildLayerVisibility(bool ancestor_visible) {
+  const bool layers_visible = ancestor_visible && visible_;
   if (layer()) {
-    layer()->SetVisible(ancestor_visible && visible_);
+    layer()->SetVisible(layers_visible);
+    for (ui::Layer* layer_beneath : layers_beneath_)
+      layer_beneath->SetVisible(layers_visible);
   } else {
     internal::ScopedChildrenLock lock(this);
     for (auto* child : children_)
-      child->UpdateChildLayerVisibility(ancestor_visible && visible_);
+      child->UpdateChildLayerVisibility(layers_visible);
   }
 }
 
 void View::DestroyLayerImpl(LayerChangeNotifyBehavior notify_parents) {
+  // Normally, adding layers beneath will trigger painting to a layer. It would
+  // leave this view in an inconsistent state if its layer were destroyed while
+  // layers beneath were still present. So, assume this doesn't happen.
+  DCHECK(layers_beneath_.empty());
+
   if (!layer())
     return;
 
-  ui::Layer* new_parent = layer()->parent();
+  // Copy children(), since the loop below will mutate its result.
   std::vector<ui::Layer*> children = layer()->children();
-  for (size_t i = 0; i < children.size(); ++i) {
-    layer()->Remove(children[i]);
+  ui::Layer* new_parent = layer()->parent();
+  for (auto* child : children) {
+    layer()->Remove(child);
     if (new_parent)
-      new_parent->Add(children[i]);
+      new_parent->Add(child);
   }
 
   LayerOwner::DestroyLayer();
@@ -1711,7 +1813,8 @@ void View::OnDeviceScaleFactorChanged(float old_device_scale_factor,
 }
 
 void View::CreateOrDestroyLayer() {
-  if (paint_to_layer_explicitly_set_ || paint_to_layer_for_transform_) {
+  if (paint_to_layer_explicitly_set_ || paint_to_layer_for_transform_ ||
+      !layers_beneath_.empty()) {
     // If we need to paint to a layer, make sure we have one.
     if (!layer())
       CreateLayer(ui::LAYER_TEXTURED);
@@ -1751,6 +1854,8 @@ void View::ReorderChildLayers(ui::Layer* parent_layer) {
   if (layer() && layer() != parent_layer) {
     DCHECK_EQ(parent_layer, layer()->parent());
     parent_layer->StackAtBottom(layer());
+    for (ui::Layer* layer_beneath : layers_beneath_)
+      parent_layer->StackAtBottom(layer_beneath);
   } else {
     // Iterate backwards through the children so that a child with a layer
     // which is further to the back is stacked above one which is further to
@@ -1852,6 +1957,8 @@ PaintInfo::ScaleType View::GetPaintScaleType() const {
 }
 
 void View::HandlePropertyChangeEffects(PropertyEffects effects) {
+  if (effects & kPropertyEffectsPreferredSizeChanged)
+    PreferredSizeChanged();
   if (effects & kPropertyEffectsLayout)
     InvalidateLayout();
   if (effects & kPropertyEffectsPaint)
@@ -2058,7 +2165,7 @@ void View::AddChildViewAtImpl(View* view, int index) {
   if (widget) {
     const ui::NativeTheme* new_theme = view->GetNativeTheme();
     if (new_theme != old_theme)
-      view->PropagateNativeThemeChanged(new_theme);
+      view->PropagateThemeChanged();
   }
 
   ViewHierarchyChangedDetails details(true, this, view, parent);
@@ -2073,7 +2180,7 @@ void View::AddChildViewAtImpl(View* view, int index) {
   if (widget) {
     RegisterChildrenForVisibleBoundsNotification(view);
 
-    if (view->visible())
+    if (view->GetVisible())
       view->SchedulePaint();
   }
 
@@ -2109,7 +2216,7 @@ void View::DoRemoveChildView(View* view,
   bool is_removed_from_widget = false;
   if (widget) {
     UnregisterChildrenForVisibleBoundsNotification(view);
-    if (view->visible())
+    if (view->GetVisible())
       view->SchedulePaint();
 
     is_removed_from_widget = !new_parent || new_parent->GetWidget() != widget;
@@ -2159,8 +2266,11 @@ void View::PropagateRemoveNotifications(View* old_parent,
   for (View* v = this; v; v = v->parent_)
     v->ViewHierarchyChangedImpl(true, details);
 
-  if (is_removed_from_widget)
+  if (is_removed_from_widget) {
     RemovedFromWidget();
+    for (ViewObserver& observer : observers_)
+      observer.OnViewRemovedFromWidget(this);
+  }
 }
 
 void View::PropagateAddNotifications(const ViewHierarchyChangedDetails& details,
@@ -2171,8 +2281,11 @@ void View::PropagateAddNotifications(const ViewHierarchyChangedDetails& details,
       child->PropagateAddNotifications(details, is_added_to_widget);
   }
   ViewHierarchyChangedImpl(true, details);
-  if (is_added_to_widget)
+  if (is_added_to_widget) {
     AddedToWidget();
+    for (ViewObserver& observer : observers_)
+      observer.OnViewAddedToWidget(this);
+  }
 }
 
 void View::PropagateNativeViewHierarchyChanged() {
@@ -2206,20 +2319,6 @@ void View::ViewHierarchyChangedImpl(
   details.parent->needs_layout_ = true;
 }
 
-void View::PropagateNativeThemeChanged(const ui::NativeTheme* theme) {
-  if (native_theme_ && native_theme_ != theme)
-    return;
-
-  {
-    internal::ScopedChildrenLock lock(this);
-    for (auto* child : children_)
-      child->PropagateNativeThemeChanged(theme);
-  }
-  OnNativeThemeChanged(theme);
-  for (ViewObserver& observer : observers_)
-    observer.OnViewNativeThemeChanged(this);
-}
-
 // Size and disposition --------------------------------------------------------
 
 void View::PropagateVisibilityNotifications(View* start, bool is_visible) {
@@ -2241,16 +2340,29 @@ void View::SnapLayerToPixelBoundary(const LayerOffsetData& offset_data) {
   if (!layer())
     return;
 
+#if DCHECK_IS_ON()
+  // We rely on our layers beneath being parented correctly at this point.
+  for (ui::Layer* layer_beneath : layers_beneath_)
+    DCHECK_EQ(layer()->parent(), layer_beneath->parent());
+#endif  // DCHECK_IS_ON()
+
   if (snap_layer_to_pixel_boundary_ && layer()->parent() &&
       layer()->GetCompositor()) {
     if (layer()->GetCompositor()->is_pixel_canvas()) {
       layer()->SetSubpixelPositionOffset(offset_data.GetSubpixelOffset());
+      for (ui::Layer* layer_beneath : layers_beneath_)
+        layer_beneath->SetSubpixelPositionOffset(
+            offset_data.GetSubpixelOffset());
     } else {
       ui::SnapLayerToPhysicalPixelBoundary(layer()->parent(), layer());
+      for (ui::Layer* layer_beneath : layers_beneath_)
+        ui::SnapLayerToPhysicalPixelBoundary(layer()->parent(), layer_beneath);
     }
   } else {
     // Reset the offset.
     layer()->SetSubpixelPositionOffset(gfx::Vector2dF());
+    for (ui::Layer* layer_beneath : layers_beneath_)
+      layer_beneath->SetSubpixelPositionOffset(gfx::Vector2dF());
   }
 }
 
@@ -2319,7 +2431,12 @@ void View::SetLayoutManagerImpl(std::unique_ptr<LayoutManager> layout_manager) {
 
 void View::SetLayerBounds(const gfx::Size& size,
                           const LayerOffsetData& offset_data) {
-  layer()->SetBounds(gfx::Rect(size) + offset_data.offset());
+  const gfx::Rect bounds = gfx::Rect(size) + offset_data.offset();
+  layer()->SetBounds(bounds);
+  for (ui::Layer* layer_beneath : layers_beneath_) {
+    layer_beneath->SetBounds(gfx::Rect(layer_beneath->size()) +
+                             bounds.OffsetFromOrigin());
+  }
   SnapLayerToPixelBoundary(offset_data);
 }
 
@@ -2439,8 +2556,12 @@ bool View::UpdateParentLayers() {
 
 void View::OrphanLayers() {
   if (layer()) {
-    if (layer()->parent())
-      layer()->parent()->Remove(layer());
+    ui::Layer* parent = layer()->parent();
+    if (parent) {
+      parent->Remove(layer());
+      for (ui::Layer* layer_beneath : layers_beneath_)
+        parent->Remove(layer_beneath);
+    }
 
     // The layer belonging to this View has already been orphaned. It is not
     // necessary to orphan the child layers.
@@ -2453,9 +2574,18 @@ void View::OrphanLayers() {
 
 void View::ReparentLayer(const gfx::Vector2d& offset, ui::Layer* parent_layer) {
   layer()->SetBounds(GetLocalBounds() + offset);
+  for (ui::Layer* layer_beneath : layers_beneath_)
+    layer_beneath->SetBounds(gfx::Rect(layer_beneath->size()) + offset);
+
   DCHECK_NE(layer(), parent_layer);
-  if (parent_layer)
+  if (parent_layer) {
+    // Adding the main layer can trigger a call to |SnapLayerToPixelBoundary()|.
+    // That method assumes layers beneath have already been added. Therefore
+    // layers beneath must be added first here. See crbug.com/961212.
+    for (ui::Layer* layer_beneath : layers_beneath_)
+      parent_layer->Add(layer_beneath);
     parent_layer->Add(layer());
+  }
   layer()->SchedulePaint(GetLocalBounds());
   MoveLayerToParent(layer(), LayerOffsetData(layer()->device_scale_factor()));
 }
@@ -2649,6 +2779,8 @@ void View::PropagateThemeChanged() {
       child->PropagateThemeChanged();
   }
   OnThemeChanged();
+  for (ViewObserver& observer : observers_)
+    observer.OnViewThemeChanged(this);
 }
 
 void View::PropagateDeviceScaleFactorChanged(float old_device_scale_factor,
@@ -2710,10 +2842,25 @@ bool View::DoDrag(const ui::LocatedEvent& event,
   return true;
 }
 
+DEFINE_ENUM_CONVERTERS(View::FocusBehavior,
+                       {View::FocusBehavior::ACCESSIBLE_ONLY,
+                        base::ASCIIToUTF16("ACCESSIBLE_ONLY")},
+                       {View::FocusBehavior::ALWAYS,
+                        base::ASCIIToUTF16("ALWAYS")},
+                       {View::FocusBehavior::NEVER,
+                        base::ASCIIToUTF16("NEVER")})
+
 // This block requires the existence of METADATA_HEADER(View) in the class
 // declaration for View.
 BEGIN_METADATA(View)
+ADD_READONLY_PROPERTY_METADATA(View, const char*, ClassName)
 ADD_PROPERTY_METADATA(View, bool, Enabled)
+ADD_PROPERTY_METADATA(View, View::FocusBehavior, FocusBehavior)
+ADD_PROPERTY_METADATA(View, int, Group)
+ADD_PROPERTY_METADATA(View, int, ID)
+ADD_READONLY_PROPERTY_METADATA(View, gfx::Size, MaximumSize)
+ADD_READONLY_PROPERTY_METADATA(View, gfx::Size, MinimumSize)
+ADD_PROPERTY_METADATA(View, bool, Visible)
 END_METADATA()
 
 }  // namespace views

@@ -8,6 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <vector>
+
 #include "base/atomic_sequence_num.h"
 #include "base/containers/span.h"
 #include "cc/paint/transfer_cache_entry.h"
@@ -16,7 +18,6 @@
 class GrContext;
 class SkColorSpace;
 class SkImage;
-struct SkImageInfo;
 class SkPixmap;
 
 namespace cc {
@@ -60,21 +61,35 @@ class CC_PAINT_EXPORT ServiceImageTransferCacheEntry
   ServiceImageTransferCacheEntry& operator=(
       ServiceImageTransferCacheEntry&& other);
 
-  // Populates this entry using |decoded_image| described by |row_bytes| and
-  // |image_info|. The image is uploaded to the GPU if its dimensions are both
-  // at most |context_|->maxTextureSize().
-  bool BuildFromDecodedData(GrContext* context,
-                            base::span<const uint8_t> decoded_image,
-                            size_t row_bytes,
-                            const SkImageInfo& image_info,
-                            bool needs_mips,
-                            sk_sp<SkColorSpace> target_color_space);
+  // Populates this entry using the result of a hardware decode. The assumption
+  // is that |plane_images| are backed by textures that are in turn backed by a
+  // buffer (dmabuf in Chrome OS) containing the planes of the decoded image.
+  // |buffer_byte_size| is the size of the buffer. We assume the following:
+  //
+  // - |plane_images| represents a YUV 4:2:0 triplanar image.
+  // - The backing textures don't have mipmaps. We will generate the mipmaps if
+  //   |needs_mips| is true.
+  // - The conversion from YUV to RGB will be performed assuming a JPEG image.
+  // - The colorspace of the resulting RGB image is sRGB. We will convert from
+  //   this to |target_color_space| (if non-null).
+  //
+  // Returns true if the entry can be built, false otherwise.
+  //
+  // TODO(andrescj): actually generate the mipmaps when |needs_mips| is true.
+  bool BuildFromHardwareDecodedImage(GrContext* context,
+                                     std::vector<sk_sp<SkImage>> plane_images,
+                                     size_t buffer_byte_size,
+                                     bool needs_mips,
+                                     sk_sp<SkColorSpace> target_color_space);
 
   // ServiceTransferCacheEntry implementation:
   size_t CachedSize() const final;
   bool Deserialize(GrContext* context, base::span<const uint8_t> data) final;
 
   bool fits_on_gpu() const { return fits_on_gpu_; }
+  const std::vector<sk_sp<SkImage>>& plane_images() const {
+    return plane_images_;
+  }
   const sk_sp<SkImage>& image() const { return image_; }
 
   // Ensures the cached image has mips.
@@ -87,6 +102,7 @@ class CC_PAINT_EXPORT ServiceImageTransferCacheEntry
                    sk_sp<SkColorSpace> target_color_space);
 
   GrContext* context_ = nullptr;
+  std::vector<sk_sp<SkImage>> plane_images_;
   sk_sp<SkImage> image_;
   bool has_mips_ = false;
   size_t size_ = 0;

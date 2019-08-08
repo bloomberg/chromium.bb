@@ -7,6 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 
 namespace blink {
@@ -48,7 +49,7 @@ class StyleTraversalRootTest : public testing::Test {
  protected:
   enum ElementIndex { kA, kB, kC, kD, kE, kF, kG, kElementCount };
   void SetUp() final {
-    document_ = Document::CreateForTest();
+    document_ = MakeGarbageCollected<Document>();
     elements_ = MakeGarbageCollected<HeapVector<Member<Element>, 7>>();
     for (size_t i = 0; i < kElementCount; i++) {
       elements_->push_back(GetDocument().CreateRawElement(html_names::kDivTag));

@@ -181,7 +181,8 @@ void VerifyTrustAPI::IOPart::Verify(std::unique_ptr<Params> params,
   }
 
   if (!base::ContainsKey(extension_to_verifier_, extension_id)) {
-    extension_to_verifier_[extension_id] = net::CertVerifier::CreateDefault();
+    extension_to_verifier_[extension_id] =
+        net::CertVerifier::CreateDefault(/*cert_net_fetcher=*/nullptr);
   }
   net::CertVerifier* verifier = extension_to_verifier_[extension_id].get();
 
@@ -191,6 +192,7 @@ void VerifyTrustAPI::IOPart::Verify(std::unique_ptr<Params> params,
   const int flags = 0;
 
   std::string ocsp_response;
+  std::string sct_list;
   net::CertVerifyResult* const verify_result_ptr = verify_result.get();
 
   RequestState* request_state = new RequestState();
@@ -200,7 +202,7 @@ void VerifyTrustAPI::IOPart::Verify(std::unique_ptr<Params> params,
 
   const int return_value = verifier->Verify(
       net::CertVerifier::RequestParams(std::move(cert_chain), details.hostname,
-                                       flags, ocsp_response),
+                                       flags, ocsp_response, sct_list),
       verify_result_ptr, bound_callback, &request_state->request, *net_log);
 
   if (return_value != net::ERR_IO_PENDING) {

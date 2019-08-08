@@ -7,7 +7,7 @@
 import os, re, json
 
 AX_MOJOM = 'ui/accessibility/ax_enums.mojom'
-AUTOMATION_IDL = 'chrome/common/extensions/api/automation.idl'
+AUTOMATION_IDL = 'extensions/common/api/automation.idl'
 
 AX_JS_FILE = 'chrome/browser/resources/accessibility/accessibility.js'
 AX_MODE_HEADER = 'ui/accessibility/ax_mode.h'
@@ -243,7 +243,3 @@ def CheckChangeOnCommit(input_api, output_api):
       errs.extend(CheckModesMatch(input_api, output_api))
 
   return errs
-
-# Run this script directly to dump its keys, for debugging.
-if __name__ == '__main__':
-  print json.dumps(GetEnumsFromFile(AX_MOJOM), sort_keys=True, indent=4)

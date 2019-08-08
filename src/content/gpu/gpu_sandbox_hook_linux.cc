@@ -137,6 +137,16 @@ void AddArmMaliGpuWhitelist(std::vector<BrokerFilePermission>* permissions) {
 
   permissions->push_back(BrokerFilePermission::ReadWrite(kMali0Path));
   permissions->push_back(BrokerFilePermission::ReadWrite(kDevImageProc0Path));
+
+  // Non-privileged render nodes for format enumeration.
+  // https://dri.freedesktop.org/docs/drm/gpu/drm-uapi.html#render-nodes
+  base::FileEnumerator enumerator(
+      base::FilePath(FILE_PATH_LITERAL("/dev/dri/")), false /* recursive */,
+      base::FileEnumerator::FILES, FILE_PATH_LITERAL("renderD*"));
+  for (base::FilePath name = enumerator.Next(); !name.empty();
+       name = enumerator.Next()) {
+    permissions->push_back(BrokerFilePermission::ReadWrite(name.value()));
+  }
 }
 
 void AddImgPvrGpuWhitelist(std::vector<BrokerFilePermission>* permissions) {

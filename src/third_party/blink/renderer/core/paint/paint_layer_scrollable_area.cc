@@ -113,15 +113,11 @@ static const int kDefaultMinimumHeightForResizing = 15;
 }  // namespace
 
 static LayoutRect LocalToAbsolute(const LayoutBox& box, LayoutRect rect) {
-  return LayoutRect(
-      box.LocalToAbsoluteQuad(FloatQuad(FloatRect(rect)), kUseTransforms)
-          .BoundingBox());
+  return box.LocalToAbsoluteRect(PhysicalRectToBeNoop(rect)).ToLayoutRect();
 }
 
 static LayoutRect AbsoluteToLocal(const LayoutBox& box, LayoutRect rect) {
-  return LayoutRect(
-      box.AbsoluteToLocalQuad(FloatQuad(FloatRect(rect)), kUseTransforms)
-          .BoundingBox());
+  return box.AbsoluteToLocalRect(PhysicalRectToBeNoop(rect)).ToLayoutRect();
 }
 
 PaintLayerScrollableAreaRareData::PaintLayerScrollableAreaRareData() = default;
@@ -668,15 +664,17 @@ LayoutRect PaintLayerScrollableArea::VisibleScrollSnapportRect(
 }
 
 IntSize PaintLayerScrollableArea::ContentsSize() const {
-  LayoutPoint offset(
+  PhysicalOffset offset(
       GetLayoutBox()->ClientLeft() + GetLayoutBox()->Location().X(),
       GetLayoutBox()->ClientTop() + GetLayoutBox()->Location().Y());
+  // TODO(crbug.com/962299): The pixel snapping is incorrect in some cases.
   return PixelSnappedContentsSize(offset);
 }
 
 IntSize PaintLayerScrollableArea::PixelSnappedContentsSize(
-    const LayoutPoint& paint_offset) const {
-  return PixelSnappedIntSize(overflow_rect_.Size(), paint_offset);
+    const PhysicalOffset& paint_offset) const {
+  return PixelSnappedIntRect(PhysicalRect(paint_offset, overflow_rect_.Size()))
+      .Size();
 }
 
 void PaintLayerScrollableArea::ContentsResized() {
@@ -857,7 +855,7 @@ void PaintLayerScrollableArea::UpdateScrollOrigin() {
 
 void PaintLayerScrollableArea::UpdateScrollDimensions() {
   LayoutRect new_overflow_rect = GetLayoutBox()->LayoutOverflowRect();
-  GetLayoutBox()->FlipForWritingMode(new_overflow_rect);
+  GetLayoutBox()->DeprecatedFlipForWritingMode(new_overflow_rect);
 
   // The layout viewport can be larger than the document's layout overflow when
   // top controls are hidden.  Expand the overflow here to ensure that our
@@ -1798,8 +1796,8 @@ bool PaintLayerScrollableArea::IsPointInResizeControl(
   if (!GetLayoutBox()->CanResize())
     return false;
 
-  IntPoint local_point = RoundedIntPoint(GetLayoutBox()->AbsoluteToLocal(
-      FloatPoint(absolute_point), kUseTransforms));
+  IntPoint local_point = RoundedIntPoint(
+      GetLayoutBox()->AbsoluteToLocalPoint(PhysicalOffset(absolute_point)));
   IntRect local_bounds(IntPoint(), Layer()->PixelSnappedSize());
   return ResizerCornerRect(local_bounds, resizer_hit_test_type)
       .Contains(local_point);
@@ -1929,8 +1927,8 @@ IntSize PaintLayerScrollableArea::OffsetFromResizeCorner(
   if (GetLayoutBox()->ShouldPlaceBlockDirectionScrollbarOnLogicalLeft())
     element_size.SetWidth(0);
   IntPoint resizer_point = IntPoint(element_size);
-  IntPoint local_point = RoundedIntPoint(GetLayoutBox()->AbsoluteToLocal(
-      FloatPoint(absolute_point), kUseTransforms));
+  IntPoint local_point = RoundedIntPoint(
+      GetLayoutBox()->AbsoluteToLocalPoint(PhysicalOffset(absolute_point)));
   return local_point - resizer_point;
 }
 
@@ -2832,7 +2830,8 @@ void PaintLayerScrollableArea::ScrollControlWasSetNeedsPaintInvalidation() {
 
 void PaintLayerScrollableArea::DidScrollWithScrollbar(
     ScrollbarPart part,
-    ScrollbarOrientation orientation) {
+    ScrollbarOrientation orientation,
+    WebInputEvent::Type type) {
   WebFeature scrollbar_use_uma;
   switch (part) {
     case kBackButtonStartPart:
@@ -2861,7 +2860,26 @@ void PaintLayerScrollableArea::DidScrollWithScrollbar(
       return;
   }
 
-  UseCounter::Count(GetLayoutBox()->GetDocument(), scrollbar_use_uma);
+  Document& document = GetLayoutBox()->GetDocument();
+
+  // TODO(alpastew): Remove the UseCounters kScrollbarUseVerticalScrollbarThumb
+  // and kScrollbarUseHorizontalScrollbarThumb to avoid redundancy in metrics.
+  UseCounter::Count(document, scrollbar_use_uma);
+
+  if (scrollbar_use_uma == WebFeature::kScrollbarUseVerticalScrollbarThumb) {
+    WebFeature input_specific_uma =
+        (WebInputEvent::IsMouseEventType(type)
+             ? WebFeature::kVerticalScrollbarThumbScrollingWithMouse
+             : WebFeature::kVerticalScrollbarThumbScrollingWithTouch);
+    UseCounter::Count(document, input_specific_uma);
+  } else if (scrollbar_use_uma ==
+             WebFeature::kScrollbarUseHorizontalScrollbarThumb) {
+    WebFeature input_specific_uma =
+        (WebInputEvent::IsMouseEventType(type)
+             ? WebFeature::kHorizontalScrollbarThumbScrollingWithMouse
+             : WebFeature::kHorizontalScrollbarThumbScrollingWithTouch);
+    UseCounter::Count(document, input_specific_uma);
+  }
 }
 
 CompositorElementId PaintLayerScrollableArea::GetCompositorElementId() const {

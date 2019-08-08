@@ -527,7 +527,7 @@ bool EsParserH264::UpdateVideoDecoderConfig(const H264SPS* sps,
 
   VideoDecoderConfig video_decoder_config(
       kCodecH264, profile, PIXEL_FORMAT_I420, VideoColorSpace::REC709(),
-      VIDEO_ROTATION_0, coded_size.value(), visible_rect.value(), natural_size,
+      kNoTransformation, coded_size.value(), visible_rect.value(), natural_size,
       EmptyExtraData(), scheme);
 
   if (!video_decoder_config.IsValidConfig()) {

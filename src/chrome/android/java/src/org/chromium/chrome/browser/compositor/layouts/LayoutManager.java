@@ -41,7 +41,7 @@ import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
-import org.chromium.chrome.browser.tab.TabFullscreenHandler;
+import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.chrome.browser.tab.TabThemeColorHelper;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
@@ -353,7 +353,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
      * @return       Whether or not the {@link LayoutManager} needs more updates.
      */
     @VisibleForTesting
-    public boolean onUpdate(long timeMs, long dtMs) {
+    boolean onUpdate(long timeMs, long dtMs) {
         if (!mUpdateRequested) return false;
         mUpdateRequested = false;
 
@@ -510,7 +510,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     @Override
     public void releaseOverlayPanelContent() {
         if (getTabModelSelector() == null) return;
-        TabFullscreenHandler.updateEnabledState(getTabModelSelector().getCurrentTab());
+        TabBrowserControlsState.updateEnabledState(getTabModelSelector().getCurrentTab());
     }
 
     /**

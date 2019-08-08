@@ -29,6 +29,7 @@
 #include "components/crash/core/common/crash_key.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/translate/content/renderer/translate_helper.h"
+#include "components/web_cache/renderer/web_cache_impl.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
@@ -137,10 +138,12 @@ SkBitmap Downscale(const SkBitmap& image,
 }  // namespace
 
 ChromeRenderFrameObserver::ChromeRenderFrameObserver(
-    content::RenderFrame* render_frame)
+    content::RenderFrame* render_frame,
+    web_cache::WebCacheImpl* web_cache_impl)
     : content::RenderFrameObserver(render_frame),
       translate_helper_(nullptr),
-      phishing_classifier_(nullptr) {
+      phishing_classifier_(nullptr),
+      web_cache_impl_(web_cache_impl) {
   render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
       base::Bind(&ChromeRenderFrameObserver::OnRenderFrameObserverRequest,
                  base::Unretained(this)));
@@ -377,6 +380,11 @@ void ChromeRenderFrameObserver::DidCreateNewDocument() {
 
 void ChromeRenderFrameObserver::ReadyToCommitNavigation(
     WebDocumentLoader* document_loader) {
+  // Execute cache clear operations that were postponed until a navigation
+  // event (including tab reload).
+  if (render_frame()->IsMainFrame() && web_cache_impl_)
+    web_cache_impl_->ExecutePendingClearCache();
+
   // Let translate_helper do any preparatory work for loading a URL.
   if (!translate_helper_)
     return;

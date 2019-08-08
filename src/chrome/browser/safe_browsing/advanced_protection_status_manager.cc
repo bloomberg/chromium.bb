@@ -312,7 +312,9 @@ AdvancedProtectionStatusManager::AdvancedProtectionStatusManager(
 }
 
 std::string AdvancedProtectionStatusManager::GetPrimaryAccountId() const {
-  return identity_manager_ ? identity_manager_->GetPrimaryAccountId()
+  // TODO(triploblastic@): Remove explicit conversion once
+  // AdvancedProtectionStatusManager has been fixed to use CoreAccountId.
+  return identity_manager_ ? identity_manager_->GetPrimaryAccountId().id
                            : std::string();
 }
 

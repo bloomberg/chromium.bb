@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">मेनू कोलॅप्स करा</translation>
 <translation id="1383876407941801731">शोधा</translation>
 <translation id="1419738280318246476">सूचनेशी संबंधित क्रिया पार पाडण्यासाठी डिव्हाइस अनलॉक करा</translation>
+<translation id="1426410128494586442">होय</translation>
 <translation id="1455242230282523554">भाषा सेटिंग्ज दर्शवा</translation>
 <translation id="1467432559032391204">डावे</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -47,7 +48,6 @@
 <translation id="1570871743947603115">ब्लूटूथ टॉगल करा. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">या सेशनमध्ये तुमची सर्व अ‍ॅक्टिव्हिटी अ‍ॅक्सेस करा</translation>
 <translation id="1608626060424371292">हा वापरकर्ता काढून टाका</translation>
-<translation id="1621499497873603021">बॅटरी रिक्त होईपर्यंत शिल्लक वेळ, <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">व्हॉइस क्वेरी सुरू करा</translation>
 <translation id="1658406695958299976">सॉरी, तुमच्या पासवर्डची पडताळणी अजूनही झालेली नाही. टिप: तुम्ही तुमचा पासवर्ड अलीकडेच बदलला असल्यास, तुम्ही साइन आउट केल्यानंतर तुमचा नवीन पासवर्ड लागू केला जाईल, कृपया येथे जुना पासवर्ड वापरा.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> शिल्लक</translation>
@@ -72,7 +72,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854"><ph name="SYSTEM_APP_NAME" /> च्या नवीनतम अपडेटबाबत अधिक जाणून घ्या</translation>
 <translation id="1995660704900986789">बंद करा</translation>
-<translation id="1999763610967697511">ड्रॅग आणि ड्रॉप करा</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">मेसेज टाइप करा</translation>
 <translation id="2050339315714019657">पोर्ट्रेट</translation>
@@ -100,7 +99,6 @@
 <translation id="239188844683466770">व्यत्यय आणू नका टॉगल करा</translation>
 <translation id="2412593942846481727">अपडेट उपलब्ध आहे</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> हे <ph name="DOMAIN" /> द्वारे व्यवस्थापित केलेले एक सेशन आहे</translation>
-<translation id="2416346634399901812"><ph name="NETWORK_NAME" /> शी कनेक्ट केले</translation>
 <translation id="2427507373259914951">लेफ्ट क्लिक करा</translation>
 <translation id="2429753432712299108">"<ph name="DEVICE_NAME" />" Bluetooth डिव्हाइस जोडण्यासाठी परवानगी घेऊ इच्छिते. स्वीकार करण्यापूर्वी, कृपया त्या डिव्हाइसवर ही पासकी दर्शवली असल्याची पुष्टी करा: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">सूचना</translation>
@@ -114,11 +112,11 @@
 <translation id="2597972630681408282">रात्रीचा प्रकाश: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">सिम कार्ड लॉक केले आहे</translation>
 <translation id="2653659639078652383">सबमिट करा</translation>
+<translation id="2658778018866295321">क्लिक आणि ड्रॅग करा</translation>
 <translation id="2700493154570097719">तुमचा कीबोर्ड सेट करा</translation>
 <translation id="2718395828230677721">रात्रीचा प्रकाश</translation>
 <translation id="2727977024730340865">एका निम्न-उर्जेच्या चार्जरवर प्लग इन केले. बॅटरी चार्जिंग विश्वसनीय असू शकत नाही.</translation>
 <translation id="2761704814324807722">स्थिती ट्रे, वेळ <ph name="TIME" />, <ph name="BATTERY" /></translation>
-<translation id="277257480934873581"><ph name="NAME" /> शी पुन्हा कनेक्ट करीत आहे</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="2803734122639935495">अनलॉक करण्यासाठी, तुमचा पासवर्ड एंटर करा</translation>
 <translation id="2819276065543622893">आता तुम्हाला साइन आउट केले जाईल.</translation>
@@ -139,7 +137,6 @@
 <translation id="2996462380875591307">डॉक केलेले मॅग्निफायर सुरू केले. ते टॉगल करून बंद करण्यासाठी पुन्हा Ctrl+Search+D दाबा.</translation>
 <translation id="3000461861112256445">मोनो ऑडिओ</translation>
 <translation id="3009178788565917040">आउटपुट</translation>
-<translation id="3019353588588144572">बॅटरी पूर्णपणे चार्ज होईपर्यंत उर्वरित वेळ, <ph name="TIME_REMAINING" /></translation>
 <translation id="3051128274746680507">तुमचे व्यवस्थापित वापरकर्ता प्रोफाइल लवकरच काढले जाईल. अधिक जाणून घेण्यासाठी साइन इन करा.</translation>
 <translation id="3055162170959710888">तुम्ही हे डिव्हाइस आज <ph name="USED_TIME" /> साठी वापरले</translation>
 <translation id="3077734595579995578">shift</translation>
@@ -175,6 +172,7 @@
 <translation id="3510164367642747937">माउसचा कर्सर हायलाइट करा</translation>
 <translation id="3513798432020909783">खाते <ph name="MANAGER_EMAIL" /> ने व्‍यवस्‍थापित केले आहे</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" मध्ये परत बदला (रीस्टार्ट करणे आवश्यक)</translation>
+<translation id="3576141592585647168">टाइमझोन बदला</translation>
 <translation id="3595596368722241419">बॅटरी पूर्ण चार्ज</translation>
 <translation id="3606978283550408104">ब्रेल डिस्प्ले कनेक्ट केला.</translation>
 <translation id="3621202678540785336">इनपुट</translation>
@@ -202,6 +200,7 @@
 <translation id="394485226368336402">ऑडिओ सेटिंग्ज</translation>
 <translation id="3962859241508114581">मागील ट्रॅक</translation>
 <translation id="397105322502079400">गणना करत आहे...</translation>
+<translation id="3977512764614765090">बॅटरी <ph name="PERCENTAGE" />% वर आहे आणि चार्ज होत आहे.</translation>
 <translation id="3995138139523574647">USB-C डिव्‍हाइस (उजव्या बाजूचे मागील पोर्ट)</translation>
 <translation id="4017989525502048489">लेझर पॉइंट</translation>
 <translation id="4042660782729322247">तुम्ही तुमची स्क्रीन शेअर करत आहात</translation>
@@ -218,7 +217,7 @@
 <translation id="4269883910223712419">या डिव्हाइसचे प्रशासन पुढील गोष्टी करू शकते:</translation>
 <translation id="4279490309300973883">मिररिंग</translation>
 <translation id="4281007048406351813">टायमरला एक मिनिट जोडा</translation>
-<translation id="4292681942966152062"><ph name="NETWORK_NAME" /> अ‍ॅक्टिव्हेट करत आहे</translation>
+<translation id="4296136865091727875">सर्व <ph name="COUNT" /> सूचना साफ करा</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">तुम्ही उच्च कॉंट्रास्टसाठी कीबोर्ड शॉर्टकट दाबला आहे. तुम्हाला ते सुरू करायचे आहे का?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -234,7 +233,6 @@
 <translation id="4477350412780666475">पुढील ट्रॅक</translation>
 <translation id="4479639480957787382">इथरनेट</translation>
 <translation id="4481530544597605423">जोडणी वेगळी केलेली डिव्हाइस</translation>
-<translation id="4508225577814909926"><ph name="NAME" />: कनेक्ट करत आहे...</translation>
 <translation id="4513946894732546136">अभिप्राय</translation>
 <translation id="4527045527269911712">"<ph name="DEVICE_NAME" />" Bluetooth डिव्हाइस जोडण्यासाठी परवानगी घेऊ इच्छिते.</translation>
 <translation id="453661520163887813">पूर्ण होण्यात <ph name="TIME" /></translation>
@@ -247,12 +245,12 @@
 <translation id="4696813013609194136">पालक कोडने डिव्हाइस अनलॉक करा</translation>
 <translation id="4731797938093519117">पालक अ‍ॅक्सेस</translation>
 <translation id="4734965478015604180">आडवा</translation>
-<translation id="476166673298332917">डिव्हाइस प्रशासक तुमच्या ब्राउझिंग ॲक्टिव्हिटीचे परीक्षण करू शकतो.</translation>
 <translation id="4774338217796918551"><ph name="COME_BACK_TIME" /> वाजता परत या.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> साठी पासवर्ड</translation>
 <translation id="4778095205580009397">डेमो सेशनमध्ये Google असिस्टंट उपलब्ध नाही.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">‍डिस्कनेक्ट</translation>
+<translation id="4831034276697007977">तुम्हाला ऑटोमेटिक क्लिक नक्की बंद करायचे आहे का?</translation>
 <translation id="4849058404725798627">कीबोर्ड फोकससह ऑब्जेक्ट हायलाइट करा</translation>
 <translation id="485592688953820832">कृती नाही (थांबवा)</translation>
 <translation id="4872237917498892622">Alt+Search किंवा Shift</translation>
@@ -355,9 +353,9 @@
 <translation id="6537270692134705506">स्क्रीन कॅप्चर करा</translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" /> वर कास्ट करत आहे</translation>
 <translation id="6559976592393364813">अ‍ॅडमिनिस्ट्रेटरला विचारा</translation>
-<translation id="6574601967010742428">डिव्हाइस ॲडमिनिस्ट्रेटर कदाचित तुमची ॲक्टिव्हिटी नियंत्रित करू शकेल.</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" /> मध्ये सेशन समाप्त होते.</translation>
 <translation id="6627638273713273709">Search+Shift+K</translation>
+<translation id="6637729079642709226">वेळ बदला</translation>
 <translation id="6650933572246256093">"<ph name="DEVICE_NAME" />" Bluetooth डिव्हाइस जोडण्यासाठी परवानगी घेऊ इच्छिते. कृपया त्या डिव्हाइसवर ही पासकी प्रविष्ट करा: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">पासवर्ड</translation>
 <translation id="6665545700722362599">वेबसाइट, अ‍ॅप्स आणि एक्स्टेंशनना स्थान सेवा, डिव्हाइसचा मायक्रोफोन, कॅमेरा किंवा इतर वैशिष्ट्ये वापरण्याची परवानगी द्या</translation>
@@ -369,7 +367,6 @@
 <translation id="6715542151869432661">कोणतेही मोबाइल डिव्हाइस आढळले नाहीत.</translation>
 <translation id="6723839937902243910">सामर्थ्य</translation>
 <translation id="6751826523481687655">परफॉर्मंस ट्रेसिंग चालू आहे</translation>
-<translation id="6785414152754474415">बॅटरी <ph name="PERCENTAGE" />% भरली आहे आणि चार्ज होत आहे.</translation>
 <translation id="6790428901817661496">प्ले करा</translation>
 <translation id="6803622936009808957">समर्थित रिजोल्यूशन न आढळल्यामुळे प्रदर्शने मिरर करू शकली नाहीत. त्याऐवजी विस्तारित डेस्कटॉप एंटर केला.</translation>
 <translation id="6820676911989879663">ब्रेक घ्या!</translation>
@@ -403,6 +400,7 @@
 <translation id="7348093485538360975">ऑन-स्क्रीन कीबोर्ड</translation>
 <translation id="735745346212279324">VPN डिस्कनेक्ट केले</translation>
 <translation id="7377169924702866686">Caps Lock सुरू आहे.</translation>
+<translation id="7378594059915113390">मीडिया नियंत्रणे</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" />से</translation>
 <translation id="7398254312354928459">नेटवर्क कनेक्शन स्विच केले</translation>
 <translation id="7405710164030118432">डिव्हाइस अनलॉक करण्यासाठी, तुमचा Family Link पालक ॲक्सेस कोड एंटर करा</translation>
@@ -416,6 +414,7 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" /> ला सपोर्ट देत नाही. रिजोल्यूशन <ph name="FALLBACK_RESOLUTION" /> मध्ये बदलले</translation>
 <translation id="7562368315689366235">इमोजी पॅलेट</translation>
 <translation id="7564874036684306347">दुसऱ्या डेस्कटॉपवर विंडो हलवण्याने अनपेक्षित वर्तन घडू शकते. नंतर येणाऱ्या सूचना, विंडो आणि डायलॉग हे डेस्कटॉपच्या दरम्यान विभाजित केले जाऊ शकतात.</translation>
+<translation id="7568294522609223312">ऑटोमेटिक क्लिक बंद करा</translation>
 <translation id="7569509451529460200">ब्रेल आणि ChromeVox चालू केलेले आहेत</translation>
 <translation id="7593891976182323525">Search किंवा Shift</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (मालक)</translation>
@@ -432,7 +431,6 @@
 <translation id="7814236020522506259"><ph name="HOUR" /> आणि <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">मजबूत सिग्नल</translation>
 <translation id="7837740436429729974">वेळ संपली</translation>
-<translation id="7842211907556571265"><ph name="NETWORK_NAME" /> शी कनेक्ट करत आहे</translation>
 <translation id="7842569679327885685">चेतावणी: प्रयोगात्मक वैशिष्ट्य</translation>
 <translation id="7846634333498149051">कीबोर्ड</translation>
 <translation id="7868900307798234037">फिंगरप्रिंटने अनलॉक करत आहे</translation>
@@ -504,6 +502,7 @@
 <translation id="8877788021141246043">रिमाइंडर सेट करा</translation>
 <translation id="8878886163241303700">स्क्रीन विस्तृत करत आहे</translation>
 <translation id="890616557918890486">स्रोत बदला</translation>
+<translation id="8909138438987180327">बॅटरी <ph name="PERCENTAGE" /> टक्के आहे.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google साहाय्यक ही भाषा बोलत नाही.</translation>
 <translation id="8938800817013097409">USB-C डिव्‍हाइस (मागील बाजूचे उजवे पोर्ट)</translation>
@@ -512,9 +511,11 @@
 <translation id="8990809378771970590"><ph name="IME_NAME" /> वापरत आहे</translation>
 <translation id="899350903320462459">सूचनेशी संबंधित क्रिया पार पाडण्यासाठी डिव्हाइस <ph name="LOGIN_ID" /> म्हणून अनलॉक करा</translation>
 <translation id="8995603266996330174"><ph name="DOMAIN" /> द्वारे व्यवस्थापित</translation>
+<translation id="9017320285115481645">Family Link पालक ॲक्सेस कोड एंटर करा.</translation>
 <translation id="9029474291399787231">Adobe Flash Player अपडेट उपलब्ध आहे</translation>
 <translation id="9056839673611986238">डिव्हाइस रोल बॅक केले जाईल</translation>
 <translation id="9070640332319875144">असिस्टंट सेटिंग्ज</translation>
+<translation id="9072519059834302790">बॅटरी रिक्त होईपर्यंत शिल्लक वेळ <ph name="TIME_LEFT" />.</translation>
 <translation id="9074739597929991885">ब्लूटूथ</translation>
 <translation id="9079731690316798640">वाय-फाय: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">मायक्रोफोन वापरात आहे.</translation>
@@ -525,8 +526,8 @@
 <translation id="9179259655489829027">हे वैशिष्ट्य तुम्हाला पासवर्ड शिवाय कोणत्याही साइन-इन केलेल्या वापरकर्त्यास जलदपणे अॅक्सेस करण्याची अनुमती देते. तुमचा विश्वास असलेल्या खात्यांसाठीच फक्त या वैशिष्ट्याचा वापर करा.</translation>
 <translation id="9193626018745640770">एका अज्ञात मिळवणाऱ्यावर कास्ट करत आहे</translation>
 <translation id="9194617393863864469">दुसरा वापरकर्ता साइन इन करा...</translation>
-<translation id="9201131092683066720">बॅटरी <ph name="PERCENTAGE" />% भरली आहे.</translation>
 <translation id="9210037371811586452">एकीकृत डेस्कटॉप मोडमधून बाहेर पडत आहे</translation>
+<translation id="9211681782751733685">बॅटरी पूर्णपणे चार्ज होण्यासाठी <ph name="TIME_REMAINING" /> तास बाकी.</translation>
 <translation id="9215934040295798075">वॉलपेपर सेट करा</translation>
 <translation id="921989828232331238">तुमच्या पालकाने आज दिवसभरासाठी तुमचे डिव्हाइस लॉक केले</translation>
 <translation id="923686485342484400">साइन आउट करण्यासाठी Control Shift Q दोनदा दाबा.</translation>

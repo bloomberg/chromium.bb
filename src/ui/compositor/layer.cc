@@ -581,8 +581,7 @@ bool Layer::ShouldDraw() const {
   return type_ != LAYER_NOT_DRAWN && GetCombinedOpacity() > 0.0f;
 }
 
-void Layer::SetRoundedCornerRadius(
-    const std::array<uint32_t, 4>& corner_radii) {
+void Layer::SetRoundedCornerRadius(const gfx::RoundedCornersF& corner_radii) {
   cc_layer_->SetRoundedCorner(corner_radii);
   ScheduleDraw();
 
@@ -637,6 +636,9 @@ void Layer::SetFillsBoundsOpaquely(bool fills_bounds_opaquely) {
   fills_bounds_opaquely_ = fills_bounds_opaquely;
 
   cc_layer_->SetContentsOpaque(fills_bounds_opaquely);
+
+  if (delegate_)
+    delegate_->OnLayerFillsBoundsOpaquelyChanged();
 }
 
 void Layer::SetFillsBoundsCompletely(bool fills_bounds_completely) {
@@ -781,6 +783,15 @@ void Layer::SetSurfaceSize(gfx::Size surface_size_in_dip) {
   RecomputeDrawsContentAndUVRect();
 }
 
+bool Layer::ContainsMirrorForTest(Layer* mirror) const {
+  const auto it =
+      std::find_if(mirrors_.begin(), mirrors_.end(),
+                   [mirror](const std::unique_ptr<LayerMirror>& mirror_ptr) {
+                     return mirror_ptr.get()->dest() == mirror;
+                   });
+  return it != mirrors_.end();
+}
+
 void Layer::SetTransferableResource(
     const viz::TransferableResource& resource,
     std::unique_ptr<viz::SingleReleaseCallback> release_callback,
@@ -884,10 +895,10 @@ void Layer::SetShowReflectedSurface(const viz::SurfaceId& surface_id,
                                cc::DeadlinePolicy::UseInfiniteDeadline());
   surface_layer_->SetBackgroundColor(SK_ColorBLACK);
   surface_layer_->SetSafeOpaqueBackgroundColor(SK_ColorBLACK);
-  // TODO(kylechar): Include UV transform and don't stretch to fill bounds.
   surface_layer_->SetStretchContentToFillBounds(true);
+  surface_layer_->SetIsReflection(true);
 
-  // The reflecting surface uses the native size of the display.
+  // The reflecting surface uses the native size of the reflected display.
   frame_size_in_dip_ = frame_size_in_pixels;
   RecomputeDrawsContentAndUVRect();
 }
@@ -1171,7 +1182,7 @@ bool Layer::PrepareTransferableResource(
 }
 
 std::unique_ptr<base::trace_event::TracedValue> Layer::TakeDebugInfo(
-    cc::Layer* layer) {
+    const cc::Layer* layer) {
   auto value = std::make_unique<base::trace_event::TracedValue>();
   value->SetString("layer_name", name_);
   return value;
@@ -1255,9 +1266,10 @@ void Layer::SetBoundsFromAnimation(const gfx::Rect& bounds,
     SchedulePaint(gfx::Rect(bounds.size()));
   }
 
-  if (sync_bounds_) {
-    for (const auto& mirror : mirrors_)
-      mirror->dest()->SetBounds(bounds);
+  for (const auto& mirror : mirrors_) {
+    Layer* mirror_dest = mirror->dest();
+    if (mirror_dest->sync_bounds_with_source_)
+      mirror_dest->SetBounds(bounds);
   }
 }
 

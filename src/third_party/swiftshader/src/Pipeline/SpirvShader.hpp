@@ -16,32 +16,38 @@
 #define sw_SpirvShader_hpp
 
 #include "ShaderCore.hpp"
+#include "SamplerCore.hpp"
 #include "SpirvID.hpp"
 #include "System/Types.hpp"
 #include "Vulkan/VkDebug.hpp"
 #include "Vulkan/VkConfig.h"
 #include "Vulkan/VkDescriptorSet.hpp"
+#include "Common/Types.hpp"
 #include "Device/Config.hpp"
+#include "Device/Sampler.hpp"
 
 #include <spirv/unified1/spirv.hpp>
 
 #include <array>
+#include <atomic>
+#include <cstdint>
 #include <cstring>
 #include <functional>
-#include <string>
-#include <vector>
-#include <unordered_set>
-#include <unordered_map>
-#include <cstdint>
-#include <type_traits>
 #include <memory>
 #include <queue>
+#include <string>
+#include <type_traits>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 namespace vk
 {
 	class PipelineLayout;
 	class ImageView;
 	class Sampler;
+	class RenderPass;
+	struct SampledImageDescriptor;
 } // namespace vk
 
 namespace sw
@@ -65,19 +71,122 @@ namespace sw
 
 		struct Pointer
 		{
-			Pointer(rr::Pointer<Byte> base) : base(base), offset(0), uniform(true) {}
-			Pointer(rr::Pointer<Byte> base, SIMD::Int offset) : base(base), offset(offset), uniform(false) {}
+			Pointer(rr::Pointer<Byte> base, rr::Int limit)
+				: base(base), limit(limit), dynamicOffsets(0), staticOffsets{}, hasDynamicOffsets(false) {}
+			Pointer(rr::Pointer<Byte> base, rr::Int limit, SIMD::Int offset)
+				: base(base), limit(limit), dynamicOffsets(offset), staticOffsets{}, hasDynamicOffsets(false) {}
+
+			inline Pointer& operator += (Int i)
+			{
+				dynamicOffsets += i;
+				hasDynamicOffsets = true;
+				return *this;
+			}
+
+			inline Pointer& operator *= (Int i)
+			{
+				dynamicOffsets = offsets() * i;
+				staticOffsets = {};
+				hasDynamicOffsets = true;
+				return *this;
+			}
+
+			inline Pointer operator + (SIMD::Int i) { Pointer p = *this; p += i; return p; }
+			inline Pointer operator * (SIMD::Int i) { Pointer p = *this; p *= i; return p; }
+
+			inline Pointer& operator += (int i)
+			{
+				for (int el = 0; el < SIMD::Width; el++) { staticOffsets[el] += i; }
+				return *this;
+			}
+
+			inline Pointer& operator *= (int i)
+			{
+				for (int el = 0; el < SIMD::Width; el++) { staticOffsets[el] *= i; }
+				if (hasDynamicOffsets)
+				{
+					dynamicOffsets *= SIMD::Int(i);
+				}
+				return *this;
+			}
+
+			inline Pointer operator + (int i) { Pointer p = *this; p += i; return p; }
+			inline Pointer operator * (int i) { Pointer p = *this; p *= i; return p; }
+
+			inline SIMD::Int offsets() const
+			{
+				static_assert(SIMD::Width == 4, "Expects SIMD::Width to be 4");
+				return dynamicOffsets + SIMD::Int(staticOffsets[0], staticOffsets[1], staticOffsets[2], staticOffsets[3]);
+			}
+
+			// Returns true if all offsets are sequential (N+0, N+1, N+2, N+3)
+			inline rr::Bool hasSequentialOffsets() const
+			{
+				if (hasDynamicOffsets)
+				{
+					auto o = offsets();
+					static_assert(SIMD::Width == 4, "Expects SIMD::Width to be 4");
+					return rr::SignMask(~CmpEQ(o.yzww, o + SIMD::Int(1, 2, 3, 0))) == 0;
+				}
+				else
+				{
+					for (int i = 1; i < SIMD::Width; i++)
+					{
+						if (staticOffsets[i-1] + 1 != staticOffsets[i]) { return false; }
+					}
+					return true;
+				}
+			}
+
+			// Returns true if all offsets are equal (N, N, N, N)
+			inline rr::Bool hasEqualOffsets() const
+			{
+				if (hasDynamicOffsets)
+				{
+					auto o = offsets();
+					static_assert(SIMD::Width == 4, "Expects SIMD::Width to be 4");
+					return rr::SignMask(~CmpEQ(o, o.yzwx)) == 0;
+				}
+				else
+				{
+					for (int i = 1; i < SIMD::Width; i++)
+					{
+						if (staticOffsets[i-1] != staticOffsets[i]) { return false; }
+					}
+					return true;
+				}
+			}
 
 			// Base address for the pointer, common across all lanes.
-			rr::Pointer<rr::Float> base;
+			rr::Pointer<rr::Byte> base;
+
+			// Upper (non-inclusive) limit for offsets from base.
+			rr::Int limit;
 
 			// Per lane offsets from base.
-			// If uniform is false, all offsets are considered zero.
-			Int offset;
+			SIMD::Int dynamicOffsets; // If hasDynamicOffsets is false, all dynamicOffsets are zero.
+			std::array<int32_t, SIMD::Width> staticOffsets;
 
-			// True if all offsets are zero.
-			bool uniform;
+			// True if all dynamicOffsets are zero.
+			bool hasDynamicOffsets;
 		};
+
+		template <typename T> struct Element {};
+		template <> struct Element<Float> { using type = rr::Float; };
+		template <> struct Element<Int>   { using type = rr::Int; };
+		template <> struct Element<UInt>  { using type = rr::UInt; };
+
+		template<typename T>
+		void Store(Pointer ptr, T val, Int mask, bool atomic = false, std::memory_order order = std::memory_order_relaxed);
+
+		template<typename T>
+		void Store(Pointer ptr, RValue<T> val, Int mask, bool atomic = false, std::memory_order order = std::memory_order_relaxed)
+		{
+			Store(ptr, T(val), mask, atomic, order);
+		}
+
+		template<typename T>
+		T Load(Pointer ptr, Int mask, bool atomic = false, std::memory_order order = std::memory_order_relaxed);
 	}
 
 	// Incrementally constructed complex bundle of rvalues
@@ -151,6 +260,14 @@ namespace sw
 		using InsnStore = std::vector<uint32_t>;
 		InsnStore insns;
 
+		using ImageSampler = void(void* texture, void *sampler, void* uvsIn, void* texelOut, void* constants);
+		using GetImageSampler = ImageSampler*(const vk::ImageView *imageView, const vk::Sampler *sampler);
+
+		enum class YieldResult
+		{
+			ControlBarrier,
+		};
+
 		/* Pseudo-iterator over SPIRV instructions, designed to support range-based-for. */
 		class InsnIterator
 		{
@@ -177,6 +294,11 @@ namespace sw
 			{
 				ASSERT(n < wordCount());
 				return &iter[n];
+			}
+
+			const char* string(uint32_t n) const
+			{
+				return reinterpret_cast<const char*>(wordPointer(n));
 			}
 
 			bool operator==(InsnIterator const &other) const
@@ -273,21 +395,12 @@ namespace sw
 				// Value held by SpirvRoutine::intermediates.
 				Intermediate,
 
-				// DivergentPointer formed from a base pointer and per-lane offset.
-				// Base pointer held by SpirvRoutine::pointers
-				// Per-lane offset held by SpirvRoutine::intermediates.
-				DivergentPointer,
-
-				// Pointer with uniform address across all lanes.
 				// Pointer held by SpirvRoutine::pointers
-				NonDivergentPointer,
+				Pointer,
 
 				// A pointer to a vk::DescriptorSet*.
 				// Pointer held by SpirvRoutine::pointers.
 				DescriptorSet,
-
-				// Pointer to an image/sampler descriptor.
-				SampledImage,
 			};
 
 			Kind kind = Kind::Unknown;
@@ -336,14 +449,14 @@ namespace sw
 				Loop, // OpLoopMerge + [OpBranchConditional | OpBranch]
 			};
 
-			Kind kind;
+			Kind kind = Simple;
 			InsnIterator mergeInstruction; // Structured control flow merge instruction.
 			InsnIterator branchInstruction; // Branch instruction.
 			ID mergeBlock; // Structured flow merge block.
 			ID continueTarget; // Loop continue block.
 			Set ins; // Blocks that branch into this block.
 			Set outs; // Blocks that this block branches to.
-
+			bool isLoopMerge = false;
 		private:
 			InsnIterator begin_;
 			InsnIterator end_;
@@ -365,12 +478,77 @@ namespace sw
 			inline operator Object::ID() const { return Object::ID(value()); }
 		};
 
+		// OpImageSample variants
+		enum Variant
+		{
+			None,  // No Dref or Proj. Also used by OpImageFetch and OpImageQueryLod.
+			Dref,
+			Proj,
+			ProjDref,
+			VARIANT_LAST = ProjDref
+		};
+
+		// Compact representation of image instruction parameters that is passed to the
+		// trampoline function for retrieving/generating the corresponding sampling routine.
+		struct ImageInstruction
+		{
+			ImageInstruction(Variant variant, SamplerMethod samplerMethod)
+				: parameters(0)
+			{
+				this->variant = variant;
+				this->samplerMethod = samplerMethod;
+			}
+
+			// Unmarshal from raw 32-bit data
+			ImageInstruction(uint32_t parameters) : parameters(parameters) {}
+
+			SamplerFunction getSamplerFunction() const
+			{
+				return { static_cast<SamplerMethod>(samplerMethod), static_cast<SamplerOption>(samplerOption) };
+			}
+
+			bool isDref() const
+			{
+				return (variant == Dref) || (variant == ProjDref);
+			}
+
+			bool isProj() const
+			{
+				return (variant == Proj) || (variant == ProjDref);
+			}
+
+			union
+			{
+				struct
+				{
+					uint32_t variant : BITS(VARIANT_LAST);
+					uint32_t samplerMethod : BITS(SAMPLER_METHOD_LAST);
+					uint32_t samplerOption : BITS(SAMPLER_OPTION_LAST);
+					uint32_t gatherComponent : 2;
+
+					// Parameters are passed to the sampling routine in this order:
+					uint32_t coordinates : 3;       // 1-4 (does not contain projection component)
+				//	uint32_t dref : 1;              // Indicated by Variant::ProjDref|Dref
+				//	uint32_t lodOrBias : 1;         // Indicated by SamplerMethod::Lod|Bias|Fetch
+					uint32_t gradComponents : 2;    // 0-3 (for each of dx / dy)
+					uint32_t offsetComponents : 2;  // 0-3
+				};
+
+				uint32_t parameters;
+			};
+		};
+
+		static_assert(sizeof(ImageInstruction) == 4, "ImageInstruction must be 32-bit");
+
 		int getSerialID() const
 		{
 			return serialID;
 		}
 
-		explicit SpirvShader(InsnStore const &insns);
+		SpirvShader(VkPipelineShaderStageCreateInfo const *createInfo,
+					InsnStore const &insns,
+					vk::RenderPass *renderPass,
+					uint32_t subpassIndex);
 
 		struct Modes
 		{
@@ -380,6 +558,7 @@ namespace sw
 			bool DepthLess : 1;
 			bool DepthUnchanged : 1;
 			bool ContainsKill : 1;
+			bool ContainsControlBarriers : 1;
 			bool NeedsCentroid : 1;
 
 			// Compute workgroup dimensions
@@ -404,6 +583,11 @@ namespace sw
 		bool hasBuiltinInput(spv::BuiltIn b) const
 		{
 			return inputBuiltins.find(b) != inputBuiltins.end();
+		}
+
+		bool hasBuiltinOutput(spv::BuiltIn b) const
+		{
+			return outputBuiltins.find(b) != outputBuiltins.end();
 		}
 
 		struct Decorations
@@ -461,21 +645,32 @@ namespace sw
 		{
 			int32_t DescriptorSet = -1;
 			int32_t Binding = -1;
+			int32_t InputAttachmentIndex = -1;
 
 			void Apply(DescriptorDecorations const &src);
 		};
 
 		std::unordered_map<Object::ID, DescriptorDecorations> descriptorDecorations;
+		std::vector<VkFormat> inputAttachmentFormats;
 
 		struct InterfaceComponent
 		{
 			AttribType Type;
-			bool Flat : 1;
-			bool Centroid : 1;
-			bool NoPerspective : 1;
+
+			union
+			{
+				struct
+				{
+					bool Flat : 1;
+					bool Centroid : 1;
+					bool NoPerspective : 1;
+				};
+
+				uint8_t DecorationBits;
+			};
 
 			InterfaceComponent()
-					: Type{ATTRIBTYPE_UNUSED}, Flat{false}, Centroid{false}, NoPerspective{false}
+				: Type{ATTRIBTYPE_UNUSED}, DecorationBits{0}
 			{
 			}
 		};
@@ -485,6 +680,30 @@ namespace sw
 			Object::ID Id;
 			uint32_t FirstComponent;
 			uint32_t SizeInComponents;
+		};
+
+		struct WorkgroupMemory
+		{
+			// allocates a new variable of size bytes with the given identifier.
+			inline void allocate(Object::ID id, uint32_t size)
+			{
+				uint32_t offset = totalSize;
+				auto it = offsets.emplace(id, offset);
+				ASSERT_MSG(it.second, "WorkgroupMemory already has an allocation for object %d", int(id.value()));
+				totalSize += size;
+			}
+			// returns the byte offset of the variable with the given identifier.
+			inline uint32_t offsetOf(Object::ID id) const
+			{
+				auto it = offsets.find(id);
+				ASSERT_MSG(it != offsets.end(), "WorkgroupMemory has no allocation for object %d", int(id.value()));
+				return it->second;
+			}
+			// returns the total allocated size in bytes.
+			inline uint32_t size() const { return totalSize; }
+		private:
+			uint32_t totalSize = 0; // in bytes
+			std::unordered_map<Object::ID, uint32_t> offsets; // in bytes
 		};
 
 		std::vector<InterfaceComponent> inputs;
@@ -497,6 +716,7 @@ namespace sw
 		using BuiltInHash = std::hash<std::underlying_type<spv::BuiltIn>::type>;
 		std::unordered_map<spv::BuiltIn, BuiltinMapping, BuiltInHash> inputBuiltins;
 		std::unordered_map<spv::BuiltIn, BuiltinMapping, BuiltInHash> outputBuiltins;
+		WorkgroupMemory workgroupMemory;
 
 		Type const &getType(Type::ID id) const
 		{
@@ -521,19 +741,23 @@ namespace sw
 
 	private:
 		const int serialID;
-		static volatile int serialCounter;
+		static std::atomic<int> serialCounter;
 		Modes modes;
 		HandleMap<Type> types;
 		HandleMap<Object> defs;
 		HandleMap<Block> blocks;
-		Block::ID mainBlockId; // Block of the entry point function.
+		Block::ID entryPointBlockId; // Block of the entry point function.
 
 		// Walks all reachable the blocks starting from id adding them to
 		// reachable.
 		void TraverseReachableBlocks(Block::ID id, Block::Set& reachable);
 
-		// Assigns Block::ins from Block::outs for every block.
-		void AssignBlockIns();
+		// AssignBlockFields() performs the following for all reachable blocks:
+		// * Assigns Block::ins with the identifiers of all blocks that contain
+		//   this block in their Block::outs.
+		// * Sets Block::isLoopMerge to true if the block is the merge of a
+		//   another loop block.
+		void AssignBlockFields();
 
 		// DeclareType creates a Type for the given OpTypeX instruction, storing
 		// it into the types map. It is called from the analysis pass (constructor).
@@ -544,7 +768,7 @@ namespace sw
 		uint32_t ComputeTypeSize(InsnIterator insn);
 		void ApplyDecorationsForId(Decorations *d, TypeOrObjectID id) const;
 		void ApplyDecorationsForIdMember(Decorations *d, Type::ID id, uint32_t member) const;
-		void ApplyDecorationsForAccessChain(Decorations *d, Object::ID baseId, uint32_t numIndexes, uint32_t const *indexIds) const;
+		void ApplyDecorationsForAccessChain(Decorations *d, DescriptorDecorations *dd, Object::ID baseId, uint32_t numIndexes, uint32_t const *indexIds) const;
 
 		// Creates an Object for the instruction's result in 'defs'.
 		void DefineResult(const InsnIterator &insn);
@@ -592,6 +816,7 @@ namespace sw
 		//  LaneOffset=3: |  Word[3]  |  Word[3]  |  Word[3]  |  Word[3]
 		//
 		static bool IsStorageInterleavedByLane(spv::StorageClass storageClass);
+		static bool IsExplicitLayout(spv::StorageClass storageClass);
 
 		template<typename F>
 		int VisitInterfaceInner(Type::ID id, Decorations d, F f) const;
@@ -605,7 +830,6 @@ namespace sw
 		template<typename F>
 		void VisitMemoryObjectInner(Type::ID id, Decorations d, uint32_t &index, uint32_t offset, F f) const;
 
-		uint32_t GetConstantInt(Object::ID id) const;
 		Object& CreateConstant(InsnIterator it);
 
 		void ProcessInterfaceVariable(Object &object);
@@ -621,7 +845,9 @@ namespace sw
 		SIMD::Pointer GetPointerToData(Object::ID id, int arrayIndex, SpirvRoutine *routine) const;
 
 		SIMD::Pointer WalkExplicitLayoutAccessChain(Object::ID id, uint32_t numIndexes, uint32_t const *indexIds, SpirvRoutine *routine) const;
-		SIMD::Int WalkAccessChain(Object::ID id, uint32_t numIndexes, uint32_t const *indexIds, SpirvRoutine *routine) const;
+		SIMD::Pointer WalkAccessChain(Object::ID id, uint32_t numIndexes, uint32_t const *indexIds, SpirvRoutine *routine) const;
+
+		// Returns the *component* offset in the literal for the given access chain.
 		uint32_t WalkLiteralAccessChain(Type::ID id, uint32_t numIndexes, uint32_t const *indexes) const;
 
 		// EmitState holds control-flow state for the emit() pass.
@@ -724,12 +950,50 @@ namespace sw
 		EmitResult EmitReturn(InsnIterator insn, EmitState *state) const;
 		EmitResult EmitKill(InsnIterator insn, EmitState *state) const;
 		EmitResult EmitPhi(InsnIterator insn, EmitState *state) const;
-		EmitResult EmitImageSampleImplicitLod(InsnIterator insn, EmitState *state) const;
+		EmitResult EmitImageSampleImplicitLod(Variant variant, InsnIterator insn, EmitState *state) const;
+		EmitResult EmitImageSampleExplicitLod(Variant variant, InsnIterator insn, EmitState *state) const;
+		EmitResult EmitImageGather(Variant variant, InsnIterator insn, EmitState *state) const;
+		EmitResult EmitImageFetch(InsnIterator insn, EmitState *state) const;
+		EmitResult EmitImageSample(ImageInstruction instruction, InsnIterator insn, EmitState *state) const;
+		EmitResult EmitImageQuerySizeLod(InsnIterator insn, EmitState *state) const;
 		EmitResult EmitImageQuerySize(InsnIterator insn, EmitState *state) const;
+		EmitResult EmitImageQueryLod(InsnIterator insn, EmitState *state) const;
+		EmitResult EmitImageQueryLevels(InsnIterator insn, EmitState *state) const;
+		EmitResult EmitImageQuerySamples(InsnIterator insn, EmitState *state) const;
 		EmitResult EmitImageRead(InsnIterator insn, EmitState *state) const;
 		EmitResult EmitImageWrite(InsnIterator insn, EmitState *state) const;
+		EmitResult EmitImageTexelPointer(InsnIterator insn, EmitState *state) const;
+		EmitResult EmitAtomicOp(InsnIterator insn, EmitState *state) const;
+		EmitResult EmitAtomicCompareExchange(InsnIterator insn, EmitState *state) const;
+		EmitResult EmitSampledImageCombineOrSplit(InsnIterator insn, EmitState *state) const;
+		EmitResult EmitCopyObject(InsnIterator insn, EmitState *state) const;
+		EmitResult EmitCopyMemory(InsnIterator insn, EmitState *state) const;
+		EmitResult EmitControlBarrier(InsnIterator insn, EmitState *state) const;
+		EmitResult EmitMemoryBarrier(InsnIterator insn, EmitState *state) const;
+		EmitResult EmitGroupNonUniform(InsnIterator insn, EmitState *state) const;
+		EmitResult EmitArrayLength(InsnIterator insn, EmitState *state) const;
 
-		SIMD::Int GetTexelOffset(GenericValue const & coordinate, Type const & imageType, Pointer<Byte> descriptor, int texelSize) const;
+		void GetImageDimensions(SpirvRoutine const *routine, Type const &resultTy, Object::ID imageId, Object::ID lodId, Intermediate &dst) const;
+		SIMD::Pointer GetTexelAddress(SpirvRoutine const *routine, SIMD::Pointer base, GenericValue const & coordinate, Type const & imageType, Pointer<Byte> descriptor, int texelSize, Object::ID sampleId, bool useStencilAspect) const;
+		uint32_t GetConstScalarInt(Object::ID id) const;
+		void EvalSpecConstantOp(InsnIterator insn);
+		void EvalSpecConstantUnaryOp(InsnIterator insn);
+		void EvalSpecConstantBinaryOp(InsnIterator insn);
+
+		// LoadPhi loads the phi values from the alloca storage and places the
+		// load values into the intermediate with the phi's result id.
+		void LoadPhi(InsnIterator insn, EmitState *state) const;
+
+		// StorePhi updates the phi's alloca storage value using the incoming
+		// values from blocks that are both in the OpPhi instruction and in
+		// filter.
+		void StorePhi(Block::ID blockID, InsnIterator insn, EmitState *state, std::unordered_set<SpirvShader::Block::ID> const& filter) const;
+
+		// Emits a rr::Fence for the given MemorySemanticsMask.
+		void Fence(spv::MemorySemanticsMask semantics) const;
+
+		// Helper for calling rr::Yield with res cast to an rr::Int.
+		void Yield(YieldResult res) const;
 
 		// OpcodeName() returns the name of the opcode op.
 		// If NDEBUG is defined, then OpcodeName() will only return the numerical code.
@@ -740,7 +1004,6 @@ namespace sw
 		SIMD::Float Dot(unsigned numComponents, GenericValue const & x, GenericValue const & y) const;
 
 		SIMD::UInt FloatToHalfBits(SIMD::UInt floatBits, bool storeInUpperBits) const;
-		SIMD::UInt HalfToFloatBits(SIMD::UInt halfBits) const;
 
 		// Splits x into a floating-point significand in the range [0.5, 1.0)
 		// and an integral exponent of two, such that:
@@ -748,12 +1011,15 @@ namespace sw
 		// Returns the pair <significand, exponent>
 		std::pair<SIMD::Float, SIMD::Int> Frexp(RValue<SIMD::Float> val) const;
 
-		using ImageSampler = void(void* image, void* uvsIn, void* texelOut);
+		static ImageSampler *getImageSampler(uint32_t instruction, vk::SampledImageDescriptor const *imageDescriptor, const vk::Sampler *sampler);
+		static ImageSampler *emitSamplerFunction(ImageInstruction instruction, const Sampler &samplerState);
 
-		static ImageSampler *getImageSampler(vk::ImageView *imageView, vk::Sampler *sampler);
-		static void emitSamplerFunction(
-			vk::ImageView *imageView, vk::Sampler *sampler,
-			Pointer<Byte> image, Pointer<SIMD::Float> in, Pointer<Byte> out);
+		// TODO(b/129523279): Eliminate conversion and use vk::Sampler members directly.
+		static sw::TextureType convertTextureType(VkImageViewType imageViewType);
+		static sw::FilterType convertFilterMode(const vk::Sampler *sampler);
+		static sw::MipmapType convertMipmapMode(const vk::Sampler *sampler);
+		static sw::AddressingMode convertAddressingMode(int coordinateIndex, VkSamplerAddressMode addressMode, VkImageViewType imageViewType);
+		static VkShaderStageFlagBits executionModelToStage(spv::ExecutionModel model);
 	};
 
 	class SpirvRoutine
@@ -769,15 +1035,20 @@ namespace sw
 
 		std::unordered_map<SpirvShader::Object::ID, Intermediate> intermediates;
 
-		std::unordered_map<SpirvShader::Object::ID, Pointer<Byte> > pointers;
+		std::unordered_map<SpirvShader::Object::ID, SIMD::Pointer> pointers;
+
+		std::unordered_map<SpirvShader::Object::ID, Variable> phis;
 
 		Variable inputs = Variable{MAX_INTERFACE_COMPONENTS};
 		Variable outputs = Variable{MAX_INTERFACE_COMPONENTS};
 
+		Pointer<Byte> workgroupMemory;
 		Pointer<Pointer<Byte>> descriptorSets;
 		Pointer<Int> descriptorDynamicOffsets;
 		Pointer<Byte> pushConstants;
+		Pointer<Byte> constants;
 		Int killMask = Int{0};
+		SIMD::Int windowSpacePosition[2];
 
 		void createVariable(SpirvShader::Object::ID id, uint32_t size)
 		{
@@ -785,23 +1056,10 @@ namespace sw
 			ASSERT_MSG(added, "Variable %d created twice", id.value());
 		}
 
-		template <typename T>
-		void createPointer(SpirvShader::Object::ID id, Pointer<T> ptrBase)
+		void createPointer(SpirvShader::Object::ID id, SIMD::Pointer ptr)
 		{
-			bool added = pointers.emplace(id, ptrBase).second;
+			bool added = pointers.emplace(id, ptr).second;
 			ASSERT_MSG(added, "Pointer %d created twice", id.value());
-		}
-
-		template <typename T>
-		void createPointer(SpirvShader::Object::ID id, RValue<Pointer<T>> ptrBase)
-		{
-			createPointer(id, Pointer<T>(ptrBase));
-		}
-
-		template <typename T>
-		void createPointer(SpirvShader::Object::ID id, Reference<Pointer<T>> ptrBase)
-		{
-			createPointer(id, Pointer<T>(ptrBase));
 		}
 
 		Intermediate& createIntermediate(SpirvShader::Object::ID id, uint32_t size)
@@ -827,7 +1085,7 @@ namespace sw
 			return it->second;
 		}
 
-		Pointer<Byte>& getPointer(SpirvShader::Object::ID id)
+		SIMD::Pointer const& getPointer(SpirvShader::Object::ID id) const
 		{
 			auto it = pointers.find(id);
 			ASSERT_MSG(it != pointers.end(), "Unknown pointer %d", id.value());

@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SNIPPETS_INTERNALS_SNIPPETS_INTERNALS_PAGE_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SNIPPETS_INTERNALS_SNIPPETS_INTERNALS_PAGE_HANDLER_H_
 
+#include <map>
+#include <vector>
+
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "base/timer/timer.h"
@@ -34,7 +37,6 @@ class SnippetsInternalsPageHandler
   void GetCategoryRankerProperties(
       GetCategoryRankerPropertiesCallback) override;
   void ReloadSuggestions() override;
-  void GetDebugLog(GetDebugLogCallback) override;
   void ClearCachedSuggestions() override;
   void GetRemoteContentSuggestionsProperties(
       GetRemoteContentSuggestionsPropertiesCallback) override;
@@ -42,7 +44,6 @@ class SnippetsInternalsPageHandler
       int64_t,
       FetchSuggestionsInBackgroundCallback) override;
   void GetLastJson(GetLastJsonCallback) override;
-  void ResetNotificationState() override;
   void GetSuggestionsByCategory(GetSuggestionsByCategoryCallback) override;
   void ClearDismissedSuggestions(int64_t) override;
 

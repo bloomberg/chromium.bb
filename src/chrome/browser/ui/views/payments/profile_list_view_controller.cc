@@ -140,15 +140,18 @@ class ShippingProfileViewController : public ProfileListViewController,
     // of the profile list. When the spec comes back updated (in OnSpecUpdated),
     // the decision will be made to either stay on this screen or go back to the
     // payment sheet.
-    state()->SetSelectedShippingProfile(profile);
+    state()->SetSelectedShippingProfile(
+        profile, PaymentRequestState::SectionSelectionStatus::kSelected);
   }
 
   void ShowEditor(autofill::AutofillProfile* profile) override {
     dialog()->ShowShippingAddressEditor(
         BackNavigationType::kPaymentSheet,
         /*on_edited=*/
-        base::BindOnce(&PaymentRequestState::SetSelectedShippingProfile,
-                       base::Unretained(state()), profile),
+        base::BindOnce(
+            &PaymentRequestState::SetSelectedShippingProfile,
+            base::Unretained(state()), profile,
+            PaymentRequestState::SectionSelectionStatus::kEditedSelected),
         /*on_added=*/
         base::BindOnce(&PaymentRequestState::AddAutofillShippingProfile,
                        base::Unretained(state()), /*selected=*/true),
@@ -188,16 +191,16 @@ class ShippingProfileViewController : public ProfileListViewController,
     return GetShippingAddressSectionString(spec()->shipping_type());
   }
 
-  int GetExtraFooterViewButtonTextId() override {
-    return IDS_PAYMENTS_ADD_ADDRESS;
+  base::string16 GetSecondaryButtonLabel() override {
+    return l10n_util::GetStringUTF16(IDS_PAYMENTS_ADD_ADDRESS);
   }
 
-  int GetExtraFooterViewButtonTag() override {
+  int GetSecondaryButtonTag() override {
     return static_cast<int>(
         ProfileListViewControllerTags::ADD_SHIPPING_ADDRESS_BUTTON);
   }
 
-  int GetExtraFooterViewButtonViewId() override {
+  int GetSecondaryButtonId() override {
     return static_cast<int>(DialogViewID::PAYMENT_METHOD_ADD_SHIPPING_BUTTON);
   }
 
@@ -251,7 +254,8 @@ class ContactProfileViewController : public ProfileListViewController {
   }
 
   void SelectProfile(autofill::AutofillProfile* profile) override {
-    state()->SetSelectedContactProfile(profile);
+    state()->SetSelectedContactProfile(
+        profile, PaymentRequestState::SectionSelectionStatus::kSelected);
     dialog()->GoBack();
   }
 
@@ -259,8 +263,10 @@ class ContactProfileViewController : public ProfileListViewController {
     dialog()->ShowContactInfoEditor(
         BackNavigationType::kPaymentSheet,
         /*on_edited=*/
-        base::BindOnce(&PaymentRequestState::SetSelectedContactProfile,
-                       base::Unretained(state()), profile),
+        base::BindOnce(
+            &PaymentRequestState::SetSelectedContactProfile,
+            base::Unretained(state()), profile,
+            PaymentRequestState::SectionSelectionStatus::kEditedSelected),
         /*on_added=*/
         base::BindOnce(&PaymentRequestState::AddAutofillContactProfile,
                        base::Unretained(state()), /*selected=*/true),
@@ -288,15 +294,15 @@ class ContactProfileViewController : public ProfileListViewController {
         IDS_PAYMENT_REQUEST_CONTACT_INFO_SECTION_NAME);
   }
 
-  int GetExtraFooterViewButtonTextId() override {
-    return IDS_PAYMENTS_ADD_CONTACT;
+  base::string16 GetSecondaryButtonLabel() override {
+    return l10n_util::GetStringUTF16(IDS_PAYMENTS_ADD_CONTACT);
   }
 
-  int GetExtraFooterViewButtonTag() override {
+  int GetSecondaryButtonTag() override {
     return static_cast<int>(ProfileListViewControllerTags::ADD_CONTACT_BUTTON);
   }
 
-  int GetExtraFooterViewButtonViewId() override {
+  int GetSecondaryButtonId() override {
     return static_cast<int>(DialogViewID::PAYMENT_METHOD_ADD_CONTACT_BUTTON);
   }
 
@@ -354,39 +360,21 @@ void ProfileListViewController::PopulateList() {
 
 void ProfileListViewController::FillContentView(views::View* content_view) {
   auto layout = std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
-  layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+  layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
+      views::BoxLayout::CrossAxisAlignment::kStretch);
   content_view->SetLayoutManager(std::move(layout));
   std::unique_ptr<views::View> header_view = CreateHeaderView();
   if (header_view)
     content_view->AddChildView(header_view.release());
   std::unique_ptr<views::View> list_view = list_.CreateListView();
-  list_view->set_id(static_cast<int>(GetDialogViewId()));
+  list_view->SetID(static_cast<int>(GetDialogViewId()));
   content_view->AddChildView(list_view.release());
-}
-
-std::unique_ptr<views::View>
-ProfileListViewController::CreateExtraFooterView() {
-  auto extra_view = std::make_unique<views::View>();
-
-  extra_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(),
-      kPaymentRequestButtonSpacing));
-
-  views::LabelButton* button = views::MdTextButton::CreateSecondaryUiButton(
-      this, l10n_util::GetStringUTF16(GetExtraFooterViewButtonTextId()));
-  button->set_tag(GetExtraFooterViewButtonTag());
-  button->set_id(GetExtraFooterViewButtonViewId());
-  button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
-  extra_view->AddChildView(button);
-
-  return extra_view;
 }
 
 void ProfileListViewController::ButtonPressed(views::Button* sender,
                                               const ui::Event& event) {
-  if (sender->tag() == GetExtraFooterViewButtonTag())
+  if (sender->tag() == GetSecondaryButtonTag())
     ShowEditor(nullptr);
   else
     PaymentRequestSheetController::ButtonPressed(sender, event);

@@ -2,46 +2,61 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build_overrides/build.gni")
+import("osp/build/config/services.gni")
+
 # All compilable non-test targets in the repository (both executables and
 # source_sets).
 group("gn_all") {
   deps = [
-    "//api",
-    "//base",
-    "//discovery/mdns:embedder_demo",
-    "//platform",
-    "//sample:hello",
-    "//third_party/abseil",
-    "//third_party/chromium_quic",
-    "//third_party/chromium_quic:demo_client",
-    "//third_party/chromium_quic:demo_server",
-    "//third_party/tinycbor",
-    "//tools/cddl",
+    "cast/common/mdns",
+    "osp",
+    "osp/msgs",
+    "osp_base",
+    "platform",
+    "third_party/abseil",
+    "third_party/tinycbor",
+    "tools/cddl",
   ]
+
+  if (use_mdns_responder) {
+    deps += [ "osp/impl/discovery/mdns:embedder_demo" ]
+  }
+
+  if (use_chromium_quic) {
+    deps += [
+      "third_party/chromium_quic",
+      "third_party/chromium_quic:demo_client",
+      "third_party/chromium_quic:demo_server",
+    ]
+  }
 }
 
-executable("demo") {
-  sources = [
-    "//demo/demo.cc",
-  ]
-
-  deps = [
-    "//api:api_with_chromium_quic",
-    "//base",
-    "//discovery/mdns",
-    "//platform",
-  ]
-}
-
-executable("unittests") {
+executable("openscreen_unittests") {
   testonly = true
   deps = [
-    "//api:api_unittests",
-    "//base:base_unittests",
-    "//discovery/mdns:mdns_unittests",
-    "//msgs:unittests",
-    "//sample:hello_unittests",
-    "//third_party/abseil",
-    "//third_party/googletest:gtest_main",
+    "osp:osp_unittests",
+    "osp/impl/discovery/mdns:mdns_unittests",
+    "osp/msgs:unittests",
+    "osp_base:osp_base_unittests",
+    "platform:platform_unittests",
+    "streaming/cast:cast_unittests",
+    "third_party/abseil",
+    "third_party/googletest:gtest_main",
   ]
+}
+
+if (use_chromium_quic && use_mdns_responder) {
+  executable("demo") {
+    sources = [
+      "osp/demo/demo.cc",
+    ]
+
+    deps = [
+      "//osp:osp_with_chromium_quic",
+      "//osp/impl/discovery/mdns",
+      "//osp_base",
+      "//platform",
+    ]
+  }
 }

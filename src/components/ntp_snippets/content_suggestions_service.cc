@@ -61,8 +61,7 @@ ContentSuggestionsService::ContentSuggestionsService(
     PrefService* pref_service,
     std::unique_ptr<CategoryRanker> category_ranker,
     std::unique_ptr<UserClassifier> user_classifier,
-    std::unique_ptr<RemoteSuggestionsScheduler> remote_suggestions_scheduler,
-    std::unique_ptr<Logger> debug_logger)
+    std::unique_ptr<RemoteSuggestionsScheduler> remote_suggestions_scheduler)
     : state_(state),
       identity_manager_observer_(this),
       history_service_observer_(this),
@@ -71,8 +70,7 @@ ContentSuggestionsService::ContentSuggestionsService(
       pref_service_(pref_service),
       remote_suggestions_scheduler_(std::move(remote_suggestions_scheduler)),
       user_classifier_(std::move(user_classifier)),
-      category_ranker_(std::move(category_ranker)),
-      debug_logger_(std::move(debug_logger)) {
+      category_ranker_(std::move(category_ranker)) {
   // Can be null in tests.
   if (identity_manager) {
     identity_manager_observer_.Add(identity_manager);
@@ -81,8 +79,6 @@ ContentSuggestionsService::ContentSuggestionsService(
   if (history_service) {
     history_service_observer_.Add(history_service);
   }
-
-  debug_logger_->Log(FROM_HERE, /*message=*/std::string());
 
   RestoreDismissedCategoriesFromPrefs();
 }
@@ -298,7 +294,8 @@ void ContentSuggestionsService::OnGetFaviconFromCacheFinished(
       ->GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
           favicon::FaviconServerFetcherParams::CreateForMobile(
               publisher_url, minimum_size_in_pixel, desired_size_in_pixel),
-          /*may_page_url_be_private=*/false, traffic_annotation,
+          /*may_page_url_be_private=*/false,
+          /*should_trim_page_url_path=*/false, traffic_annotation,
           base::Bind(
               &ContentSuggestionsService::OnGetFaviconFromGoogleServerFinished,
               base::Unretained(this), publisher_url, minimum_size_in_pixel,

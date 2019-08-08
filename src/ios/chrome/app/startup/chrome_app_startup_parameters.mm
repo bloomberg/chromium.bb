@@ -312,7 +312,6 @@ enum SearchExtensionAction {
                 completeURL:url];
 
     params.textQuery = externalText;
-    params.postOpeningAction = SEARCH_TEXT;
 
     action = ACTION_SEARCH_TEXT;
   }
@@ -331,7 +330,6 @@ enum SearchExtensionAction {
                 completeURL:url];
 
     params.imageSearchData = externalData;
-    params.postOpeningAction = SEARCH_IMAGE;
 
     action = ACTION_SEARCH_IMAGE;
   }

@@ -89,7 +89,7 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
     base::WaitableEvent waitable_event;
     PostCrossThreadTask(
         *thread->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
-        CrossThreadBind(
+        CrossThreadBindOnce(
             &AudioWorkletGlobalScopeTest::RunBasicTestOnWorkletThread,
             CrossThreadUnretained(this), CrossThreadUnretained(thread),
             CrossThreadUnretained(&waitable_event)));
@@ -100,7 +100,7 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
     base::WaitableEvent waitable_event;
     PostCrossThreadTask(
         *thread->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
-        CrossThreadBind(
+        CrossThreadBindOnce(
             &AudioWorkletGlobalScopeTest::RunSimpleProcessTestOnWorkletThread,
             CrossThreadUnretained(this), CrossThreadUnretained(thread),
             CrossThreadUnretained(&waitable_event)));
@@ -111,7 +111,7 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
     base::WaitableEvent waitable_event;
     PostCrossThreadTask(
         *thread->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
-        CrossThreadBind(
+        CrossThreadBindOnce(
             &AudioWorkletGlobalScopeTest::RunParsingTestOnWorkletThread,
             CrossThreadUnretained(this), CrossThreadUnretained(thread),
             CrossThreadUnretained(&waitable_event)));
@@ -122,11 +122,11 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
     base::WaitableEvent waitable_event;
     PostCrossThreadTask(
         *thread->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
-        CrossThreadBind(&AudioWorkletGlobalScopeTest::
-                            RunParsingParameterDescriptorTestOnWorkletThread,
-                        CrossThreadUnretained(this),
-                        CrossThreadUnretained(thread),
-                        CrossThreadUnretained(&waitable_event)));
+        CrossThreadBindOnce(
+            &AudioWorkletGlobalScopeTest::
+                RunParsingParameterDescriptorTestOnWorkletThread,
+            CrossThreadUnretained(this), CrossThreadUnretained(thread),
+            CrossThreadUnretained(&waitable_event)));
     waitable_event.Wait();
   }
 

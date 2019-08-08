@@ -1,5 +1,4 @@
 include_rules = [
-  "+components/data_use_measurement/core",
   "+components/favicon",
   "+components/favicon_base",
   "+components/google/core",
@@ -18,9 +17,9 @@ include_rules = [
   "+components/variations",
   "+jni",
   "+net",
+  "+services/data_decoder/public/cpp/testing_json_parser.h",
   "+services/network/public/cpp",
   "+services/network/test",
   "+ui/gfx",
   "+ui/base",
 ]
-

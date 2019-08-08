@@ -61,7 +61,7 @@ HTMLViewSourceDocument::HTMLViewSourceDocument(const DocumentInit& initializer,
 }
 
 DocumentParser* HTMLViewSourceDocument::CreateParser() {
-  return HTMLViewSourceParser::Create(*this, type_);
+  return MakeGarbageCollected<HTMLViewSourceParser>(*this, type_);
 }
 
 void HTMLViewSourceDocument::CreateContainingTable() {
@@ -74,7 +74,7 @@ void HTMLViewSourceDocument::CreateContainingTable() {
 
   // Create a line gutter div that can be used to make sure the gutter extends
   // down the height of the whole document.
-  HTMLDivElement* div = HTMLDivElement::Create(*this);
+  auto* div = MakeGarbageCollected<HTMLDivElement>(*this);
   div->setAttribute(kClassAttr, "line-gutter-backdrop");
   body->ParserAppendChild(div);
 
@@ -199,7 +199,7 @@ Element* HTMLViewSourceDocument::AddSpanWithClassName(
     return current_;
   }
 
-  HTMLSpanElement* span = HTMLSpanElement::Create(*this);
+  auto* span = MakeGarbageCollected<HTMLSpanElement>(*this);
   span->setAttribute(kClassAttr, class_name);
   current_->ParserAppendChild(span);
   return span;

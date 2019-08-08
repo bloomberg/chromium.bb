@@ -23,6 +23,7 @@
 #include "libANGLE/LoggingAnnotator.h"
 #include "libANGLE/MemoryProgramCache.h"
 #include "libANGLE/Version.h"
+#include "platform/Feature.h"
 
 namespace gl
 {
@@ -114,7 +115,10 @@ class Display final : public LabeledObject, angle::NonCopyable
                      const AttributeMap &attribs,
                      Sync **outSync);
 
-    Error makeCurrent(Surface *drawSurface, Surface *readSurface, gl::Context *context);
+    Error makeCurrent(const Thread *thread,
+                      Surface *drawSurface,
+                      Surface *readSurface,
+                      gl::Context *context);
 
     Error destroySurface(Surface *surface);
     void destroyImage(Image *image);
@@ -187,6 +191,10 @@ class Display final : public LabeledObject, angle::NonCopyable
     typedef std::set<gl::Context *> ContextSet;
     const ContextSet &getContextSet() { return mContextSet; }
 
+    const angle::FeatureList &getFeatures() const { return mFeatures; }
+
+    const char *queryStringi(const EGLint name, const EGLint index);
+
   private:
     Display(EGLenum platform, EGLNativeDisplayType displayId, Device *eglDevice);
 
@@ -234,6 +242,8 @@ class Display final : public LabeledObject, angle::NonCopyable
     BlobCache mBlobCache;
     gl::MemoryProgramCache mMemoryProgramCache;
     size_t mGlobalTextureShareGroupUsers;
+
+    angle::FeatureList mFeatures;
 };
 
 }  // namespace egl

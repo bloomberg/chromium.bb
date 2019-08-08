@@ -124,7 +124,7 @@ class SelectionTemplate final {
   void Trace(Visitor*);
 
   void PrintTo(std::ostream*, const char* type) const;
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   void ShowTreeForThis() const;
 #endif
 

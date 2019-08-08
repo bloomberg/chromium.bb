@@ -6,10 +6,10 @@
 
 #include <memory>
 
-#include "ash/accelerators/accelerator_controller.h"
+#include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/accelerators/pre_target_accelerator_handler.h"
 #include "ash/app_list/test/app_list_test_helper.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test_screenshot_delegate.h"
@@ -133,7 +133,7 @@ TEST_F(AcceleratorFilterTest, CanConsumeSystemKeys) {
 }
 
 TEST_F(AcceleratorFilterTest, SearchKeyShortcutsAreAlwaysHandled) {
-  SessionController* const session_controller =
+  SessionControllerImpl* const session_controller =
       Shell::Get()->session_controller();
   EXPECT_FALSE(session_controller->IsScreenLocked());
 
@@ -142,7 +142,7 @@ TEST_F(AcceleratorFilterTest, SearchKeyShortcutsAreAlwaysHandled) {
   // We can lock the screen (Search+L) if a window is not present.
   generator.PressKey(ui::VKEY_L, ui::EF_COMMAND_DOWN);
   generator.ReleaseKey(ui::VKEY_L, ui::EF_COMMAND_DOWN);
-  session_controller->FlushMojoForTest();  // LockScreen is an async mojo call.
+  GetSessionControllerClient()->FlushForTest();  // LockScreen is an async call.
   EXPECT_TRUE(session_controller->IsScreenLocked());
   UnblockUserSession();
   EXPECT_FALSE(session_controller->IsScreenLocked());
@@ -152,7 +152,7 @@ TEST_F(AcceleratorFilterTest, SearchKeyShortcutsAreAlwaysHandled) {
   GetAppListTestHelper()->CheckVisibility(false);
   generator.PressKey(ui::VKEY_L, ui::EF_COMMAND_DOWN);
   generator.ReleaseKey(ui::VKEY_L, ui::EF_COMMAND_DOWN);
-  session_controller->FlushMojoForTest();  // LockScreen is an async mojo call.
+  GetSessionControllerClient()->FlushForTest();  // LockScreen is an async call.
   EXPECT_TRUE(session_controller->IsScreenLocked());
   UnblockUserSession();
   EXPECT_FALSE(session_controller->IsScreenLocked());
@@ -164,7 +164,7 @@ TEST_F(AcceleratorFilterTest, SearchKeyShortcutsAreAlwaysHandled) {
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
   generator.PressKey(ui::VKEY_L, ui::EF_COMMAND_DOWN);
   generator.ReleaseKey(ui::VKEY_L, ui::EF_COMMAND_DOWN);
-  session_controller->FlushMojoForTest();  // LockScreen is an async mojo call.
+  GetSessionControllerClient()->FlushForTest();  // LockScreen is an async call.
   EXPECT_TRUE(session_controller->IsScreenLocked());
   UnblockUserSession();
   EXPECT_FALSE(session_controller->IsScreenLocked());

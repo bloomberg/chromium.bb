@@ -86,6 +86,11 @@ class ScriptTracker : public ScriptExecutor::Listener {
   // script running at a time.
   bool running() const { return executor_ != nullptr; }
 
+  // Returns a dictionary describing the current execution context, which
+  // is intended to be serialized as JSON string. The execution context is
+  // useful when analyzing feedback forms and for debugging in general.
+  base::Value GetDebugContext() const;
+
  private:
   typedef std::map<Script*, std::unique_ptr<Script>> AvailableScriptMap;
 

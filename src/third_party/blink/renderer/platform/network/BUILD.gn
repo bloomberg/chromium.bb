@@ -62,6 +62,7 @@ blink_platform_sources("network") {
     "parsed_content_type.h",
     "server_timing_header.cc",
     "server_timing_header.h",
+    "wrapped_data_pipe_getter.h",
   ]
 
   sources += get_target_outputs(":http_names")

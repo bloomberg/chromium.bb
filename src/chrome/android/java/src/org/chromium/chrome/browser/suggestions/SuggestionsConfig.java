@@ -42,10 +42,6 @@ public final class SuggestionsConfig {
     private static final String DEFAULT_CONTENT_SUGGESTIONS_REFERRER_URL =
             "https://www.googleapis.com/auth/chrome-content-suggestions";
 
-    /** Default value of referrer URL for contextual suggestions. */
-    private static final String DEFAULT_CONTEXTUAL_SUGGESTIONS_REFERRER_URL =
-            "https://goto.google.com/explore-on-content-viewer";
-
     private SuggestionsConfig() {}
 
     /**
@@ -96,13 +92,7 @@ public final class SuggestionsConfig {
      */
     public static String getReferrerUrl(String featureName) {
         assert ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS.equals(featureName)
-                || ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS.equals(featureName)
-                || ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON.equals(featureName);
-
-        if (ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON.equals(featureName)) {
-            return getReferrerUrlParamOrDefault(
-                    featureName, DEFAULT_CONTEXTUAL_SUGGESTIONS_REFERRER_URL);
-        }
+                || ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS.equals(featureName);
 
         return getReferrerUrlParamOrDefault(featureName, DEFAULT_CONTENT_SUGGESTIONS_REFERRER_URL);
     }

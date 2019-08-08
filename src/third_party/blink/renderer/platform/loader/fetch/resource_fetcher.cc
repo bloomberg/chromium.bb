@@ -36,7 +36,7 @@
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
+#include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_utils.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/loader/fetch/raw_resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
@@ -63,10 +64,10 @@
 #include "third_party/blink/renderer/platform/mhtml/mhtml_archive.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
-#include "third_party/blink/renderer/platform/probe/platform_probes.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/known_ports.h"
+#include "third_party/blink/renderer/platform/weborigin/origin_access_entry.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
@@ -176,6 +177,21 @@ static ResourceFetcher::ResourceFetcherSet& MainThreadFetchersSet() {
   return *fetchers;
 }
 
+static bool& PriorityObserverMapCreated() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(bool, priority_observer_map_created, (false));
+  return priority_observer_map_created;
+}
+
+// Calls to PriorityObservers() that don't need to explicitly interact with the
+// map should be guarded with a call to PriorityObserverMapCreated(), to avoid
+// unnecessarily creating a PriorityObserverMap.
+using PriorityObserverMap = HashMap<String, base::OnceCallback<void(int)>>;
+static ThreadSpecific<PriorityObserverMap>& PriorityObservers() {
+  PriorityObserverMapCreated() = true;
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<PriorityObserverMap>, map, ());
+  return map;
+}
+
 ResourceLoadPriority AdjustPriorityWithPriorityHint(
     ResourceLoadPriority priority_so_far,
     ResourceType type,
@@ -246,10 +262,92 @@ std::unique_ptr<TracedValue> ResourcePrioritySetData(
   return value;
 }
 
+void SetReferrer(
+    ResourceRequest& request,
+    const FetchClientSettingsObject& fetch_client_settings_object) {
+  // TODO(domfarolino): we can probably *just set* the HTTP `Referer` here
+  // no matter what now.
+  if (!request.DidSetHttpReferrer()) {
+    String referrer_to_use = request.ReferrerString();
+    network::mojom::ReferrerPolicy referrer_policy_to_use =
+        request.GetReferrerPolicy();
+
+    if (referrer_to_use == Referrer::ClientReferrerString())
+      referrer_to_use = fetch_client_settings_object.GetOutgoingReferrer();
+
+    if (referrer_policy_to_use == network::mojom::ReferrerPolicy::kDefault) {
+      referrer_policy_to_use = fetch_client_settings_object.GetReferrerPolicy();
+    }
+
+    // TODO(domfarolino): Stop storing ResourceRequest's referrer as a header
+    // and store it elsewhere. See https://crbug.com/850813.
+    request.SetHttpReferrer(SecurityPolicy::GenerateReferrer(
+        referrer_policy_to_use, request.Url(), referrer_to_use));
+  } else {
+    CHECK_EQ(
+        SecurityPolicy::GenerateReferrer(request.GetReferrerPolicy(),
+                                         request.Url(), request.HttpReferrer())
+            .referrer,
+        request.HttpReferrer());
+  }
+}
+
+// This maps the network::mojom::FetchRequestMode to a string that can be used
+// in a `Sec-Fetch-Mode` header.
+const char* FetchRequestModeToString(network::mojom::FetchRequestMode mode) {
+  switch (mode) {
+    case network::mojom::FetchRequestMode::kSameOrigin:
+      return "same-origin";
+    case network::mojom::FetchRequestMode::kNoCors:
+      return "no-cors";
+    case network::mojom::FetchRequestMode::kCors:
+    case network::mojom::FetchRequestMode::kCorsWithForcedPreflight:
+      return "cors";
+    case network::mojom::FetchRequestMode::kNavigate:
+      return "navigate";
+  }
+  NOTREACHED();
+  return "";
+}
+
+void SetSecFetchHeaders(
+    ResourceRequest& request,
+    const FetchClientSettingsObject& fetch_client_settings_object) {
+  scoped_refptr<SecurityOrigin> url_origin =
+      SecurityOrigin::Create(request.Url());
+  if (blink::RuntimeEnabledFeatures::FetchMetadataEnabled() &&
+      url_origin->IsPotentiallyTrustworthy()) {
+    const char* destination_value =
+        FetchUtils::GetDestinationFromContext(request.GetRequestContext());
+
+    // If the request's destination is the empty string (e.g. `fetch()`), then
+    // we'll use the identifier "empty" instead.
+    if (strlen(destination_value) == 0)
+      destination_value = "empty";
+
+    // We'll handle adding these headers to navigations outside of Blink.
+    if (strncmp(destination_value, "document", 8) != 0 &&
+        request.GetRequestContext() != mojom::RequestContextType::INTERNAL) {
+      if (blink::RuntimeEnabledFeatures::FetchMetadataDestinationEnabled()) {
+        request.SetHttpHeaderField("Sec-Fetch-Dest", destination_value);
+      }
+
+      request.SetHttpHeaderField(
+          "Sec-Fetch-Mode",
+          FetchRequestModeToString(request.GetFetchRequestMode()));
+
+      // Note that the `Sec-Fetch-User` header is always false (and therefore
+      // omitted) for subresource requests. Likewise, note that we rely on
+      // Blink's embedder to set `Sec-Fetch-Site`, as we don't want to trust the
+      // renderer to assert its own origin.
+    }
+  }
+}
+
 }  // namespace
 
 ResourceFetcherInit::ResourceFetcherInit(
-    const ResourceFetcherProperties& properties,
+    DetachableResourceFetcherProperties& properties,
     FetchContext* context,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     ResourceFetcher::LoaderFactory* loader_factory)
@@ -260,6 +358,57 @@ ResourceFetcherInit::ResourceFetcherInit(
   DCHECK(context);
   DCHECK(this->task_runner);
   DCHECK(loader_factory || properties.IsDetached());
+}
+
+mojom::RequestContextType ResourceFetcher::DetermineRequestContext(
+    ResourceType type,
+    IsImageSet is_image_set) {
+  DCHECK((is_image_set == kImageNotImageSet) ||
+         (type == ResourceType::kImage && is_image_set == kImageIsImageSet));
+  switch (type) {
+    case ResourceType::kXSLStyleSheet:
+      DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
+      FALLTHROUGH;
+    case ResourceType::kCSSStyleSheet:
+      return mojom::RequestContextType::STYLE;
+    case ResourceType::kScript:
+      return mojom::RequestContextType::SCRIPT;
+    case ResourceType::kFont:
+      return mojom::RequestContextType::FONT;
+    case ResourceType::kImage:
+      if (is_image_set == kImageIsImageSet)
+        return mojom::RequestContextType::IMAGE_SET;
+      return mojom::RequestContextType::IMAGE;
+    case ResourceType::kRaw:
+      return mojom::RequestContextType::SUBRESOURCE;
+    case ResourceType::kImportResource:
+      return mojom::RequestContextType::IMPORT;
+    case ResourceType::kLinkPrefetch:
+      return mojom::RequestContextType::PREFETCH;
+    case ResourceType::kTextTrack:
+      return mojom::RequestContextType::TRACK;
+    case ResourceType::kSVGDocument:
+      return mojom::RequestContextType::IMAGE;
+    case ResourceType::kAudio:
+      return mojom::RequestContextType::AUDIO;
+    case ResourceType::kVideo:
+      return mojom::RequestContextType::VIDEO;
+    case ResourceType::kManifest:
+      return mojom::RequestContextType::MANIFEST;
+    case ResourceType::kMock:
+      return mojom::RequestContextType::SUBRESOURCE;
+  }
+  NOTREACHED();
+  return mojom::RequestContextType::SUBRESOURCE;
+}
+
+// static
+void ResourceFetcher::AddPriorityObserverForTesting(
+    const KURL& resource_url,
+    base::OnceCallback<void(int)> callback) {
+  PriorityObservers()->Set(
+      MemoryCache::RemoveFragmentIdentifierIfNeeded(resource_url),
+      std::move(callback));
 }
 
 ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
@@ -325,170 +474,47 @@ ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
   priority = AdjustPriorityWithPriorityHint(priority, type, resource_request,
                                             defer_option, is_link_preload);
 
+  if (properties_->IsSubframeDeprioritizationEnabled()) {
+    if (properties_->IsMainFrame()) {
+      DEFINE_STATIC_LOCAL(
+          EnumerationHistogram, main_frame_priority_histogram,
+          ("LowPriorityIframes.MainFrameRequestPriority",
+           static_cast<int>(ResourceLoadPriority::kHighest) + 1));
+      main_frame_priority_histogram.Count(static_cast<int>(priority));
+    } else {
+      DEFINE_STATIC_LOCAL(
+          EnumerationHistogram, iframe_priority_histogram,
+          ("LowPriorityIframes.IframeRequestPriority",
+           static_cast<int>(ResourceLoadPriority::kHighest) + 1));
+      iframe_priority_histogram.Count(static_cast<int>(priority));
+      // When enabled, the priority of all resources in subframe is dropped.
+      // Non-delayable resources are assigned a priority of kLow, and the rest
+      // of them are assigned a priority of kLowest. This ensures that if the
+      // webpage fetches most of its primary content using iframes, then high
+      // priority requests within the iframe go on the network first.
+      if (priority >= ResourceLoadPriority::kHigh) {
+        priority = ResourceLoadPriority::kLow;
+      } else {
+        priority = ResourceLoadPriority::kLowest;
+      }
+    }
+  }
+
   // A manually set priority acts as a floor. This is used to ensure that
   // synchronous requests are always given the highest possible priority, as
   // well as to ensure that there isn't priority churn if images move in and out
   // of the viewport, or are displayed more than once, both in and out of the
   // viewport.
-  return std::max(Context().ModifyPriorityForExperiments(priority),
-                  resource_request.Priority());
+  return std::max(resource_request.Priority(), priority);
 }
-
-mojom::RequestContextType ResourceFetcher::DetermineRequestContext(
-    ResourceType type,
-    IsImageSet is_image_set) {
-  DCHECK((is_image_set == kImageNotImageSet) ||
-         (type == ResourceType::kImage && is_image_set == kImageIsImageSet));
-  switch (type) {
-    case ResourceType::kXSLStyleSheet:
-      DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
-      FALLTHROUGH;
-    case ResourceType::kCSSStyleSheet:
-      return mojom::RequestContextType::STYLE;
-    case ResourceType::kScript:
-      return mojom::RequestContextType::SCRIPT;
-    case ResourceType::kFont:
-      return mojom::RequestContextType::FONT;
-    case ResourceType::kImage:
-      if (is_image_set == kImageIsImageSet)
-        return mojom::RequestContextType::IMAGE_SET;
-      return mojom::RequestContextType::IMAGE;
-    case ResourceType::kRaw:
-      return mojom::RequestContextType::SUBRESOURCE;
-    case ResourceType::kImportResource:
-      return mojom::RequestContextType::IMPORT;
-    case ResourceType::kLinkPrefetch:
-      return mojom::RequestContextType::PREFETCH;
-    case ResourceType::kTextTrack:
-      return mojom::RequestContextType::TRACK;
-    case ResourceType::kSVGDocument:
-      return mojom::RequestContextType::IMAGE;
-    case ResourceType::kAudio:
-      return mojom::RequestContextType::AUDIO;
-    case ResourceType::kVideo:
-      return mojom::RequestContextType::VIDEO;
-    case ResourceType::kManifest:
-      return mojom::RequestContextType::MANIFEST;
-    case ResourceType::kMock:
-      return mojom::RequestContextType::SUBRESOURCE;
-  }
-  NOTREACHED();
-  return mojom::RequestContextType::SUBRESOURCE;
-}
-
-class ResourceFetcher::DetachableConsoleLogger final
-    : public GarbageCollectedFinalized<DetachableConsoleLogger>,
-      public ConsoleLogger {
-  USING_GARBAGE_COLLECTED_MIXIN(DetachableConsoleLogger);
-
- public:
-  DetachableConsoleLogger(ConsoleLogger& logger) : logger_(logger) {}
-
-  void Detach() { logger_ = nullptr; }
-
-  // ConsoleLogger implementation.
-  void AddConsoleMessage(mojom::ConsoleMessageSource source,
-                         mojom::ConsoleMessageLevel level,
-                         const String& message) override {
-    if (logger_) {
-      logger_->AddConsoleMessage(source, level, message);
-    }
-  }
-  void Trace(Visitor* visitor) override {
-    visitor->Trace(logger_);
-    ConsoleLogger::Trace(visitor);
-  }
-
- private:
-  Member<ConsoleLogger> logger_;
-};
-
-// A delegating ResourceFetcherProperties subclass which can be from the
-// original ResourceFetcherProperties.
-class ResourceFetcher::DetachableProperties final
-    : public ResourceFetcherProperties {
- public:
-  explicit DetachableProperties(const ResourceFetcherProperties& properties)
-      : properties_(properties) {}
-  ~DetachableProperties() override = default;
-
-  void Detach() {
-    if (!properties_) {
-      // Already detached.
-      return;
-    }
-
-    fetch_client_settings_object_ =
-        MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
-            properties_->GetFetchClientSettingsObject());
-    is_main_frame_ = properties_->IsMainFrame();
-    paused_ = properties_->IsPaused();
-    load_complete_ = properties_->IsLoadComplete();
-
-    properties_ = nullptr;
-  }
-
-  void Trace(Visitor* visitor) override {
-    visitor->Trace(properties_);
-    visitor->Trace(fetch_client_settings_object_);
-    ResourceFetcherProperties::Trace(visitor);
-  }
-
-  // ResourceFetcherProperties implementation
-  // Add a test in resource_fetcher_test.cc when you change behaviors.
-  const FetchClientSettingsObject& GetFetchClientSettingsObject()
-      const override {
-    return properties_ ? properties_->GetFetchClientSettingsObject()
-                       : *fetch_client_settings_object_;
-  }
-  bool IsMainFrame() const override {
-    return properties_ ? properties_->IsMainFrame() : is_main_frame_;
-  }
-  ControllerServiceWorkerMode GetControllerServiceWorkerMode() const override {
-    return properties_ ? properties_->GetControllerServiceWorkerMode()
-                       : ControllerServiceWorkerMode::kNoController;
-  }
-  int64_t ServiceWorkerId() const override {
-    // When detached, GetControllerServiceWorkerMode returns kNoController, so
-    // this function must not be called.
-    DCHECK(properties_);
-    return properties_->ServiceWorkerId();
-  }
-  bool IsPaused() const override {
-    return properties_ ? properties_->IsPaused() : paused_;
-  }
-  bool IsDetached() const override { return !properties_; }
-  bool IsLoadComplete() const override {
-    return properties_ ? properties_->IsLoadComplete() : load_complete_;
-  }
-  bool ShouldBlockLoadingSubResource() const override {
-    // Returns true when detached in order to preserve the existing behavior.
-    return properties_ ? properties_->ShouldBlockLoadingSubResource() : true;
-  }
-  scheduler::FrameStatus GetFrameStatus() const override {
-    return properties_ ? properties_->GetFrameStatus()
-                       : scheduler::FrameStatus::kNone;
-  }
-
- private:
-  // |properties_| is null if and only if detached.
-  Member<const ResourceFetcherProperties> properties_;
-
-  // The following members are used when detached.
-  Member<const FetchClientSettingsObject> fetch_client_settings_object_;
-  bool is_main_frame_ = false;
-  bool paused_ = false;
-  bool load_complete_ = false;
-};
 
 ResourceFetcher::ResourceFetcher(const ResourceFetcherInit& init)
-    : properties_(
-          *MakeGarbageCollected<DetachableProperties>(*init.properties)),
+    : properties_(*init.properties),
       context_(init.context),
       task_runner_(init.task_runner),
-      console_logger_(MakeGarbageCollected<DetachableConsoleLogger>(
-          init.console_logger ? *init.console_logger
-                              : *MakeGarbageCollected<NullConsoleLogger>())),
+      console_logger_(init.console_logger
+                          ? init.console_logger.Get()
+                          : MakeGarbageCollected<DetachableConsoleLogger>()),
       loader_factory_(init.loader_factory),
       scheduler_(MakeGarbageCollected<ResourceLoadScheduler>(
           init.initial_throttling_policy,
@@ -511,15 +537,10 @@ ResourceFetcher::ResourceFetcher(const ResourceFetcherInit& init)
   InstanceCounters::IncrementCounter(InstanceCounters::kResourceFetcherCounter);
   if (IsMainThread())
     MainThreadFetchersSet().insert(this);
-  context_->Init(*properties_);
 }
 
 ResourceFetcher::~ResourceFetcher() {
   InstanceCounters::DecrementCounter(InstanceCounters::kResourceFetcherCounter);
-}
-
-const ResourceFetcherProperties& ResourceFetcher::GetProperties() const {
-  return *properties_;
 }
 
 bool ResourceFetcher::IsDetached() const {
@@ -820,6 +841,14 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
                                              http_names::kGET &&
                                          !params.IsStaleRevalidation());
 
+  SetReferrer(resource_request, properties_->GetFetchClientSettingsObject());
+
+  resource_request.SetExternalRequestStateFromRequestorAddressSpace(
+      properties_->GetFetchClientSettingsObject().GetAddressSpace());
+
+  SetSecFetchHeaders(resource_request,
+                     properties_->GetFetchClientSettingsObject());
+
   Context().AddAdditionalRequestHeaders(resource_request);
 
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT1(
@@ -877,6 +906,15 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
 Resource* ResourceFetcher::RequestResource(FetchParameters& params,
                                            const ResourceFactory& factory,
                                            ResourceClient* client) {
+  // If detached, we do very early return here to skip all processing below.
+  if (properties_->IsDetached()) {
+    return ResourceForBlockedRequest(
+        params, factory, ResourceRequestBlockedReason::kOther, client);
+  }
+  // Otherwise, we assume we can send network requests and the fetch client's
+  // settings object's origin is non-null.
+  DCHECK(properties_->GetFetchClientSettingsObject().GetSecurityOrigin());
+
   uint64_t identifier = CreateUniqueIdentifier();
   ResourceRequest& resource_request = params.MutableResourceRequest();
   resource_request.SetInspectorId(identifier);
@@ -888,18 +926,6 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
       "Blink.Fetch.RequestResourceTime");
   TRACE_EVENT1("blink", "ResourceFetcher::requestResource", "url",
                params.Url().GetString().Utf8());
-
-  // TODO(crbug.com/123004): Remove once we have enough stats on data URIs that
-  // contain fragments ('#' characters).
-  //
-  // TODO(crbug.com/796173): This call happens before commit for iframes that
-  // have data URI sources, which causes UKM to miss the metric recording.
-  if (context_) {
-    const KURL& url = params.Url();
-    if (url.HasFragmentIdentifier() && url.ProtocolIsData()) {
-      context_->CountUsage(mojom::WebFeature::kDataUriHasOctothorpe);
-    }
-  }
 
   // We need to attach an origin header when the request's method is neither
   // GET nor HEAD. For requests made by an extension content scripts, we want to
@@ -1006,8 +1032,7 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
       break;
   }
   DCHECK(resource);
-  // TODO(yoav): turn to a DCHECK. See https://crbug.com/690632
-  CHECK_EQ(resource->GetType(), resource_type);
+  DCHECK_EQ(resource->GetType(), resource_type);
 
   if (policy != kUse)
     resource->VirtualTimePauser() = std::move(pauser);
@@ -1034,8 +1059,15 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
   DCHECK(EqualIgnoringFragmentIdentifier(resource->Url(), params.Url()));
   RequestLoadStarted(identifier, resource, params, policy, is_static_data);
   if (!is_stale_revalidation) {
-    cached_resources_map_.Set(
-        MemoryCache::RemoveFragmentIdentifierIfNeeded(params.Url()), resource);
+    String resource_url =
+        MemoryCache::RemoveFragmentIdentifierIfNeeded(params.Url());
+    cached_resources_map_.Set(resource_url, resource);
+    if (PriorityObserverMapCreated() &&
+        PriorityObservers()->Contains(resource_url)) {
+      // Resolve the promise.
+      std::move(PriorityObservers()->Take(resource_url))
+          .Run(static_cast<int>(resource->GetResourceRequest().Priority()));
+    }
   }
   document_resources_.insert(resource);
 
@@ -1115,8 +1147,6 @@ std::unique_ptr<WebURLLoader> ResourceFetcher::CreateURLLoader(
     const ResourceLoaderOptions& options) {
   DCHECK(!GetProperties().IsDetached());
   DCHECK(loader_factory_);
-  if (!IsMainThread())
-    Context().CountUsage(mojom::WebFeature::kOffMainThreadFetch);
   return loader_factory_->CreateURLLoader(request, options, task_runner_);
 }
 
@@ -1628,10 +1658,6 @@ void ResourceFetcher::ClearContext() {
   }
 }
 
-ConsoleLogger& ResourceFetcher::GetConsoleLogger() {
-  return *console_logger_;
-}
-
 int ResourceFetcher::BlockingRequestCount() const {
   return loaders_.size();
 }
@@ -1841,17 +1867,12 @@ bool ResourceFetcher::StartLoad(Resource* resource) {
         revalidation_start_forbidden_scope(resource);
     ScriptForbiddenScope script_forbidden_scope;
 
-    if (!Context().ShouldLoadNewResource(resource->GetType()) &&
-        IsMainThread()) {
+    if (properties_->ShouldBlockLoadingSubResource() && IsMainThread()) {
       GetMemoryCache()->Remove(resource);
       return false;
     }
 
     ResourceResponse response;
-
-    blink::probe::PlatformSendRequest probe(&Context(), resource->InspectorId(),
-                                            request, response,
-                                            resource->Options().initiator_info);
 
     resource->VirtualTimePauser().PauseVirtualTime();
     if (resource_load_observer_) {

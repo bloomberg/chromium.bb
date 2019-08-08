@@ -40,7 +40,7 @@ const SVGEnumerationMap& GetEnumerationMap<SVGMarkerUnitsType>() {
   return entries;
 }
 
-inline SVGMarkerElement::SVGMarkerElement(Document& document)
+SVGMarkerElement::SVGMarkerElement(Document& document)
     : SVGElement(svg_names::kMarkerTag, document),
       SVGFitToViewBox(this),
       ref_x_(MakeGarbageCollected<SVGAnimatedLength>(
@@ -89,8 +89,6 @@ void SVGMarkerElement::Trace(blink::Visitor* visitor) {
   SVGElement::Trace(visitor);
   SVGFitToViewBox::Trace(visitor);
 }
-
-DEFINE_NODE_FACTORY(SVGMarkerElement)
 
 AffineTransform SVGMarkerElement::ViewBoxToViewTransform(
     float view_width,

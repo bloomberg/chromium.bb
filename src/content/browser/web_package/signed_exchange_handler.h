@@ -26,6 +26,7 @@
 namespace net {
 class CertVerifyResult;
 class DrainableIOBuffer;
+struct SHA256HashValue;
 class SourceStream;
 struct OCSPVerifyResult;
 }  // namespace net
@@ -96,9 +97,14 @@ class CONTENT_EXPORT SignedExchangeHandler {
       std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy,
       SignedExchangeReporter* reporter,
       base::RepeatingCallback<int(void)> frame_tree_node_id_getter);
-  ~SignedExchangeHandler();
+  virtual ~SignedExchangeHandler();
 
   int64_t GetExchangeHeaderLength() const { return exchange_header_length_; }
+
+  // Returns the header integrity value of the loaded signed exchange if
+  // available. This is available after |headers_callback| is called.
+  // Otherwise returns nullopt.
+  virtual base::Optional<net::SHA256HashValue> ComputeHeaderIntegrity() const;
 
  protected:
   SignedExchangeHandler();

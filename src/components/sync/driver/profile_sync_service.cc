@@ -24,7 +24,6 @@
 #include "components/sync/driver/backend_migrator.h"
 #include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/directory_data_type_controller.h"
-#include "components/sync/driver/model_type_controller.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/driver/sync_auth_manager.h"
 #include "components/sync/driver/sync_driver_switches.h"
@@ -36,10 +35,8 @@
 #include "components/sync/engine/net/network_resources.h"
 #include "components/sync/engine/polling_constants.h"
 #include "components/sync/engine/sync_encryption_handler.h"
-#include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/model/sync_error.h"
-#include "components/sync/syncable/base_transaction.h"
-#include "components/sync/syncable/directory.h"
+#include "components/sync/syncable/user_share.h"
 #include "components/version_info/version_info_values.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/primary_account_mutator.h"
@@ -311,13 +308,21 @@ void ProfileSyncService::AccountStateChanged() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!IsSignedIn()) {
+    // The account was signed out, so shut down.
     sync_disabled_by_admin_ = false;
     StopImpl(CLEAR_DATA);
     DCHECK(!engine_);
   } else {
-    DCHECK(!engine_);
-    startup_controller_->TryStart(/*force_immediate=*/IsSetupInProgress());
+    // Either a new account was signed in, or the existing account's
+    // |is_primary| bit was changed. Start up or reconfigure.
+    if (!engine_) {
+      startup_controller_->TryStart(/*force_immediate=*/IsSetupInProgress());
+    } else {
+      ReconfigureDatatypeManager(/*bypass_setup_in_progress_check=*/false);
+    }
   }
+
+  // Propagate the (potentially) changed account ID to the invalidations system.
   for (auto* provider : invalidations_identity_providers_) {
     if (provider) {
       provider->SetActiveAccountId(GetAuthenticatedAccountInfo().account_id);
@@ -494,7 +499,6 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
   params.unrecoverable_error_handler = GetUnrecoverableErrorHandler();
   params.report_unrecoverable_error_function =
       base::BindRepeating(ReportUnrecoverableError, channel_);
-  params.saved_nigori_state = crypto_.TakeSavedNigoriState();
   sync_prefs_.GetInvalidationVersions(&params.invalidation_versions);
   params.poll_interval = sync_prefs_.GetPollInterval();
   if (params.poll_interval.is_zero()) {
@@ -575,14 +579,6 @@ void ProfileSyncService::ShutdownImpl(ShutdownReason reason) {
   // snapshot.
   migrator_.reset();
   sync_js_controller_.AttachJsBackend(WeakHandle<JsBackend>());
-
-  if (base::FeatureList::IsEnabled(switches::kSyncUSSNigori)) {
-    // We need to remove ModelTypeController for Nigori before the engine
-    // shutdown because it's no longer valid after shutdown.
-    // TODO(crbug.com/943019): This logic can be removed if Nigori local
-    // model will be moved to UI thread.
-    data_type_controllers_.erase(NIGORI);
-  }
 
   engine_->Shutdown(reason);
   engine_.reset();
@@ -845,8 +841,7 @@ void ProfileSyncService::OnEngineInitialized(
 
   sync_js_controller_.AttachJsBackend(js_backend);
 
-  // Copy some data to preferences to be able to one day migrate away from the
-  // directory.
+  // Save initialization data to preferences.
   sync_prefs_.SetCacheGuid(cache_guid);
   sync_prefs_.SetBirthday(birthday);
   sync_prefs_.SetBagOfChips(bag_of_chips);
@@ -861,16 +856,6 @@ void ProfileSyncService::OnEngineInitialized(
 
   if (is_first_time_sync_configure_) {
     UpdateLastSyncedTime();
-  }
-
-  if (base::FeatureList::IsEnabled(switches::kSyncUSSNigori)) {
-    // Nigori's ModelTypeController can only be created after sync engine
-    // initialization. Therefore, it cannot be created with other controllers
-    // in BuildDataTypeControllerMap().
-    // TODO(crbug.com/943019): This logic can be removed if Nigori local
-    // model will be moved to UI thread.
-    data_type_controllers_[NIGORI] = std::make_unique<ModelTypeController>(
-        NIGORI, engine_->GetNigoriControllerDelegate());
   }
 
   data_type_manager_ =
@@ -919,11 +904,7 @@ void ProfileSyncService::OnSyncCycleCompleted(
   DCHECK(!snapshot.poll_interval().is_zero());
   sync_prefs_.SetPollInterval(snapshot.poll_interval());
 
-  UserShare* user_share = GetUserShare();
-  if (user_share) {
-    sync_prefs_.SetBirthday(user_share->directory->store_birthday());
-    sync_prefs_.SetBagOfChips(user_share->directory->bag_of_chips());
-  }
+  sync_prefs_.SetBagOfChips(snapshot.bag_of_chips());
 
   DVLOG(2) << "Notifying observers sync cycle completed";
   NotifySyncCycleCompleted();
@@ -1288,8 +1269,7 @@ void ProfileSyncService::ConfigureDataTypeManager(ConfigureReason reason) {
   if (use_transport_only_mode) {
     ModelTypeSet allowed_types = {USER_CONSENTS};
 
-    if (autofill_enable_account_wallet_storage_ &&
-        base::FeatureList::IsEnabled(switches::kSyncUSSAutofillWalletData)) {
+    if (autofill_enable_account_wallet_storage_) {
       if (!GetUserSettings()->IsUsingSecondaryPassphrase() ||
           base::FeatureList::IsEnabled(
               switches::
@@ -1771,7 +1751,7 @@ std::string ProfileSyncService::GetAccessTokenForTest() const {
   return auth_manager_->access_token();
 }
 
-SyncTokenStatus ProfileSyncService::GetSyncTokenStatus() const {
+SyncTokenStatus ProfileSyncService::GetSyncTokenStatusForDebugging() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return auth_manager_->GetSyncTokenStatus();
 }
@@ -1835,12 +1815,8 @@ void ProfileSyncService::RemoveClientFromServer() const {
     return;
   }
   const std::string cache_guid = sync_prefs_.GetCacheGuid();
+  const std::string birthday = sync_prefs_.GetBirthday();
   DCHECK(!cache_guid.empty());
-  std::string birthday;
-  UserShare* user_share = GetUserShare();
-  if (user_share && user_share->directory.get()) {
-    birthday = user_share->directory->store_birthday();
-  }
   const std::string& access_token = auth_manager_->access_token();
   if (!access_token.empty() && !birthday.empty()) {
     sync_stopped_reporter_->ReportSyncStopped(access_token, cache_guid,

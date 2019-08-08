@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/core/page/scrolling/fragment_anchor.h"
+#include "third_party/blink/renderer/core/page/scrolling/text_fragment_anchor_metrics.h"
 #include "third_party/blink/renderer/core/page/scrolling/text_fragment_finder.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -21,7 +22,9 @@ class KURL;
 class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
                                              public TextFragmentFinder::Client {
  public:
-  static TextFragmentAnchor* TryCreate(const KURL& url, LocalFrame& frame);
+  static TextFragmentAnchor* TryCreate(const KURL& url,
+                                       LocalFrame& frame,
+                                       bool same_document_navigation);
 
   TextFragmentAnchor(
       const std::vector<TextFragmentSelector>& text_fragment_selectors,
@@ -42,6 +45,7 @@ class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
 
   // TextFragmentFinder::Client interface
   void DidFindMatch(const EphemeralRangeInFlatTree& range) override;
+  void DidFindAmbiguousMatch() override;
 
  private:
   std::vector<TextFragmentFinder> text_fragment_finders_;
@@ -50,7 +54,9 @@ class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
 
   bool search_finished_ = false;
   bool user_scrolled_ = false;
-  bool first_match_needs_scroll_ = true;
+  bool first_match_needs_scroll_ = false;
+
+  Member<TextFragmentAnchorMetrics> metrics_;
 
   DISALLOW_COPY_AND_ASSIGN(TextFragmentAnchor);
 };

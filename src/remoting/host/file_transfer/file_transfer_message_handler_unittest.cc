@@ -94,7 +94,7 @@ class FileTransferMessageHandlerTest : public testing::Test {
 FileTransferMessageHandlerTest::FileTransferMessageHandlerTest()
     : scoped_task_environment_(
           base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
-          base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED) {}
+          base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED) {}
 FileTransferMessageHandlerTest::~FileTransferMessageHandlerTest() = default;
 
 void FileTransferMessageHandlerTest::SetUp() {

@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/optional.h"
+#include "base/time/clock.h"
 #include "components/autofill/core/common/password_form.h"
 
 namespace password_manager {
@@ -27,29 +28,36 @@ class PasswordGenerationState {
   // Returns true iff the generated password was presaved.
   bool HasGeneratedPassword() const { return presaved_.has_value(); }
 
+  const base::string16& generated_password() const {
+    return presaved_->password_value;
+  }
+
   // Called when generated password is accepted or changed by user.
   void PresaveGeneratedPassword(autofill::PasswordForm generated);
 
   // Signals that the user cancels password generation.
   void PasswordNoLongerGenerated();
 
-  // Finish the generation flow by saving the final credential |generated| and
-  // leaving the generation state.
-  // |best_matches| constains possible passwords for the current site. They will
-  // be update according to the new preferred state.
-  // |credentials_to_update| are credentials for probably related domain that
-  // should be also updated.
+  // Finish the generation flow by saving the final credential |generated|.
+  // |matches| and |old_password| have the same meaning as in FormSaver.
   void CommitGeneratedPassword(
-      const autofill::PasswordForm& generated,
-      const std::map<base::string16, const autofill::PasswordForm*>&
-          best_matches,
-      const std::vector<autofill::PasswordForm>* credentials_to_update);
+      autofill::PasswordForm generated,
+      const std::vector<const autofill::PasswordForm*>& matches,
+      const base::string16& old_password);
+
+#if defined(UNIT_TEST)
+  void set_clock(std::unique_ptr<base::Clock> clock) {
+    clock_ = std::move(clock);
+  }
+#endif
 
  private:
   // Weak reference to the interface for saving credentials.
   FormSaver* const form_saver_;
   // Stores the pre-saved credential.
   base::Optional<autofill::PasswordForm> presaved_;
+  // Interface to get current time.
+  std::unique_ptr<base::Clock> clock_;
 };
 
 }  // namespace password_manager

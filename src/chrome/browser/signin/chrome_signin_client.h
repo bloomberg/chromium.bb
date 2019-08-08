@@ -54,6 +54,7 @@ class ChromeSigninClient
   bool IsFirstRun() const override;
   base::Time GetInstallDate() override;
   bool AreSigninCookiesAllowed() override;
+  bool AreSigninCookiesDeletedOnExit() override;
   void AddContentSettingsObserver(
       content_settings::Observer* observer) override;
   void RemoveContentSettingsObserver(
@@ -61,9 +62,7 @@ class ChromeSigninClient
   void DelayNetworkCall(base::OnceClosure callback) override;
   std::unique_ptr<GaiaAuthFetcher> CreateGaiaAuthFetcher(
       GaiaAuthConsumer* consumer,
-      gaia::GaiaSource source,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-      override;
+      gaia::GaiaSource source) override;
 
   // Returns a string describing the chrome version environment. Version format:
   // <Build Info> <OS> <Version number> (<Last change>)<channel or "-devel">

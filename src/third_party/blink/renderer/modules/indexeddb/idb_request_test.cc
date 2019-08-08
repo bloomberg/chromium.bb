@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_request.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
@@ -55,6 +56,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/mock_web_idb_transaction.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/wtf/dtoa/utils.h"
@@ -106,7 +108,7 @@ class BackendDatabaseWithMockedClose
               mojom::blink::IDBKeyRangePtr key_range,
               bool key_only,
               int64_t max_count,
-              mojom::blink::IDBCallbacksAssociatedPtrInfo callbacks) override {}
+              mojom::blink::IDBDatabase::GetAllCallback callback) override {}
   void SetIndexKeys(int64_t transaction_id,
                     int64_t object_store_id,
                     std::unique_ptr<::blink::IDBKey> primary_key,
@@ -211,8 +213,8 @@ void EnsureIDBCallbacksDontThrow(IDBRequest* request,
   ASSERT_TRUE(request->transaction());
   V8TestingScope scope;
 
-  request->HandleResponse(DOMException::Create(DOMExceptionCode::kAbortError,
-                                               "Description goes here."));
+  request->HandleResponse(MakeGarbageCollected<DOMException>(
+      DOMExceptionCode::kAbortError, "Description goes here."));
   request->HandleResponse(nullptr, IDBKey::CreateInvalid(),
                           IDBKey::CreateInvalid(),
                           CreateNullIDBValueForTesting(scope.GetIsolate()));
@@ -360,8 +362,8 @@ TEST_F(IDBRequestTest, AbortErrorAfterAbort) {
 
   // Now simulate the back end having fired an abort error at the request to
   // clear up any intermediaries.  Ensure an assertion is not raised.
-  request->HandleResponse(DOMException::Create(DOMExceptionCode::kAbortError,
-                                               "Description goes here."));
+  request->HandleResponse(MakeGarbageCollected<DOMException>(
+      DOMExceptionCode::kAbortError, "Description goes here."));
 
   // Stop the request lest it be GCed and its destructor
   // finds the object in a pending state (and asserts.)

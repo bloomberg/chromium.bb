@@ -23,16 +23,13 @@ class Action {
    * @return {?string}
    */
   getTitle() {}
-}
 
-/**
- * @typedef {{
- *  alertDialog: FilesAlertDialog,
- *  errorDialog: ErrorDialog,
- *  listContainer: ListContainer,
- * }}
- */
-let ActionModelUI;
+  /**
+   * Entries that this Action will execute upon.
+   * @return {!Array<!Entry|!FileEntry>}
+   */
+  getEntries() {}
+}
 
 /** @implements {Action} */
 class DriveShareAction {
@@ -126,6 +123,11 @@ class DriveShareAction {
    */
   getTitle() {
     return null;
+  }
+
+  /** @override */
+  getEntries() {
+    return [this.entry_];
   }
 }
 
@@ -296,6 +298,11 @@ class DriveToggleOfflineAction {
   getTitle() {
     return null;
   }
+
+  /** @override */
+  getEntries() {
+    return this.entries_;
+  }
 }
 
 
@@ -367,6 +374,11 @@ class DriveCreateFolderShortcutAction {
   getTitle() {
     return null;
   }
+
+  /** @override */
+  getEntries() {
+    return [this.entry_];
+  }
 }
 
 
@@ -432,6 +444,11 @@ class DriveRemoveFolderShortcutAction {
    */
   getTitle() {
     return null;
+  }
+
+  /** @override */
+  getEntries() {
+    return [this.entry_];
   }
 }
 
@@ -526,6 +543,11 @@ class DriveManageAction {
   getTitle() {
     return null;
   }
+
+  /** @override */
+  getEntries() {
+    return [this.entry_];
+  }
 }
 
 
@@ -594,6 +616,11 @@ class CustomAction {
    */
   getTitle() {
     return this.title_;
+  }
+
+  /** @override */
+  getEntries() {
+    return this.entries_;
   }
 }
 
@@ -692,21 +719,12 @@ class ActionsModel extends cr.EventTarget {
 
           const volumeInfo = this.entries_.length >= 1 &&
               this.volumeManager_.getVolumeInfo(this.entries_[0]);
-          if (!volumeInfo) {
-            fulfill({});
-            return;
-          }
           // All entries need to be on the same volume to execute ActionsModel
           // commands.
-          // TODO(sashab): Move this to util.js.
-          for (let i = 1; i < this.entries_.length; i++) {
-            const volumeInfoToCompare =
-                this.volumeManager_.getVolumeInfo(this.entries_[i]);
-            if (!volumeInfoToCompare ||
-                volumeInfoToCompare.volumeId != volumeInfo.volumeId) {
-              fulfill({});
-              return;
-            }
+          if (!volumeInfo ||
+              !util.isSameVolume(this.entries_, this.volumeManager_)) {
+            fulfill({});
+            return;
           }
 
           const actions = {};
@@ -836,6 +854,14 @@ class ActionsModel extends cr.EventTarget {
       reject();
     }
     cr.dispatchSimpleEvent(this, 'invalidated', true);
+  }
+
+  /**
+   * @return {!Array<!Entry>}
+   * @public
+   */
+  getEntries() {
+    return this.entries_;
   }
 }
 

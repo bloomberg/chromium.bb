@@ -11,24 +11,24 @@ var RoleType = chrome.automation.RoleType;
 const SELECT_TO_SPEAK_TRAY_CLASS_NAME =
     'tray/TrayBackgroundView/SelectToSpeakTray';
 
-// Matches one of the known Drive apps which need the clipboard to find and read
-// selected text. Includes sandbox and non-sandbox versions.
-const DRIVE_APP_REGEXP =
+// Matches one of the known GSuite apps which need the clipboard to find and
+// read selected text. Includes sandbox and non-sandbox versions.
+const GSUITE_APP_REGEXP =
     /^https:\/\/docs\.(?:sandbox\.)?google\.com\/(?:(?:presentation)|(?:document)|(?:spreadsheets)|(?:drawings)){1}\//;
 
 /**
- * Determines if a node is in one of the known Google Drive apps that needs
- * special case treatment for speaking selected text. Not all Google Drive pages
- * are included, because some are not known to have a problem with selection:
- * Forms is not included since it's relatively similar to any HTML page, for
- * example.
+ * Determines if a node is in one of the known Google GSuite apps that needs
+ * special case treatment for speaking selected text. Not all Google GSuite
+ * pages are included, because some are not known to have a problem with
+ * selection: Forms is not included since it's relatively similar to any HTML
+ * page, for example.
  * @param {AutomationNode=}  node The node to check
- * @return {?AutomationNode} The Drive App root node, or null if none is
+ * @return {?AutomationNode} The root node of the GSuite app, or null if none is
  *     found.
  */
-function getDriveAppRoot(node) {
+function getGSuiteAppRoot(node) {
   while (node !== undefined && node.root !== undefined) {
-    if (node.root.url !== undefined && DRIVE_APP_REGEXP.exec(node.root.url))
+    if (node.root.url !== undefined && GSUITE_APP_REGEXP.exec(node.root.url))
       return node.root;
     node = node.root.parent;
   }
@@ -107,6 +107,17 @@ let SelectToSpeak = function() {
 
   this.runContentScripts_();
   this.setUpEventListeners_();
+
+  /**
+   * Feature flag controlling STS language detection integration.
+   * @type {boolean}
+   */
+  this.enableLanguageDetectionIntegration_ = false;
+  // TODO(chrishall): do we want to (also?) expose this in preferences?
+  chrome.commandLinePrivate.hasSwitch(
+      'enable-experimental-accessibility-language-detection', (result) => {
+        this.enableLanguageDetectionIntegration_ = result;
+      });
 };
 
 /** @const {number} */
@@ -190,16 +201,18 @@ SelectToSpeak.prototype = {
       this.onNullSelection_();
       return;
     }
-    let anchorObject = focusedNode.root.selectionStartObject;
-    let anchorOffset = focusedNode.root.selectionStartOffset || 0;
-    let focusObject = focusedNode.root.selectionEndObject;
-    let focusOffset = focusedNode.root.selectionEndOffset || 0;
-    if (anchorObject === focusObject && anchorOffset == focusOffset) {
+
+    let startObject = focusedNode.root.selectionStartObject;
+    let startOffset = focusedNode.root.selectionStartOffset || 0;
+    let endObject = focusedNode.root.selectionEndObject;
+    let endOffset = focusedNode.root.selectionEndOffset || 0;
+    if (startObject === endObject && startOffset == endOffset) {
       this.onNullSelection_();
       return;
     }
+
     // First calculate the equivalent position for this selection.
-    // Sometimes the automation selection returns a offset into a root
+    // Sometimes the automation selection returns an offset into a root
     // node rather than a child node, which may be a bug. This allows us to
     // work around that bug until it is fixed or redefined.
     // Note that this calculation is imperfect: it uses node name length
@@ -208,44 +221,38 @@ SelectToSpeak.prototype = {
     // fix the Blink bug where focus offset is not specific enough to
     // say which node is selected and at what charOffset. See
     // https://crbug.com/803160 for more.
-    let anchorPosition = NodeUtils.getDeepEquivalentForSelection(
-        anchorObject, anchorOffset, true);
-    let focusPosition = NodeUtils.getDeepEquivalentForSelection(
-        focusObject, focusOffset, false);
+
+    let startPosition =
+        NodeUtils.getDeepEquivalentForSelection(startObject, startOffset, true);
+    let endPosition =
+        NodeUtils.getDeepEquivalentForSelection(endObject, endOffset, false);
+
+    // TODO(katie): We go into these blocks but they feel redundant. Can
+    // there be another way to do this?
     let firstPosition;
     let lastPosition;
-    if (anchorPosition.node === focusPosition.node) {
-      if (anchorPosition.offset < focusPosition.offset) {
-        firstPosition = anchorPosition;
-        lastPosition = focusPosition;
+    if (startPosition.node === endPosition.node) {
+      if (startPosition.offset < endPosition.offset) {
+        firstPosition = startPosition;
+        lastPosition = endPosition;
       } else {
-        lastPosition = anchorPosition;
-        firstPosition = focusPosition;
+        lastPosition = startPosition;
+        firstPosition = endPosition;
       }
     } else {
       let dir =
-          AutomationUtil.getDirection(anchorPosition.node, focusPosition.node);
+          AutomationUtil.getDirection(startPosition.node, endPosition.node);
       // Highlighting may be forwards or backwards. Make sure we start at the
       // first node.
       if (dir == constants.Dir.FORWARD) {
-        firstPosition = anchorPosition;
-        lastPosition = focusPosition;
+        firstPosition = startPosition;
+        lastPosition = endPosition;
       } else {
-        lastPosition = anchorPosition;
-        firstPosition = focusPosition;
+        lastPosition = startPosition;
+        firstPosition = endPosition;
       }
     }
 
-    // Adjust such that non-text types don't have offsets into their names.
-    if (firstPosition.node.role != RoleType.STATIC_TEXT &&
-        firstPosition.node.role != RoleType.INLINE_TEXT_BOX) {
-      firstPosition.offset = 0;
-    }
-    if (lastPosition.node.role != RoleType.STATIC_TEXT &&
-        lastPosition.node.role != RoleType.INLINE_TEXT_BOX) {
-      lastPosition.offset =
-          ParagraphUtils.getNodeName(lastPosition.node).length;
-    }
     this.readNodesInSelection_(firstPosition, lastPosition, focusedNode);
   },
 
@@ -312,19 +319,19 @@ SelectToSpeak.prototype = {
       MetricsUtils.recordStartEvent(
           MetricsUtils.StartSpeechMethod.KEYSTROKE, this.prefsManager_);
     } else {
-      let driveAppRootNode = getDriveAppRoot(focusedNode);
-      if (!driveAppRootNode)
+      let gsuiteAppRootNode = getGSuiteAppRoot(focusedNode);
+      if (!gsuiteAppRootNode)
         return;
       chrome.tabs.query({active: true}, (tabs) => {
-        // Closure doesn't realize that we did a !driveAppRootNode earlier
+        // Closure doesn't realize that we did a !gsuiteAppRootNode earlier
         // so we check again here.
-        if (tabs.length == 0 || !driveAppRootNode) {
+        if (tabs.length == 0 || !gsuiteAppRootNode) {
           return;
         }
         let tab = tabs[0];
         this.inputHandler_.onRequestReadClipboardData();
         this.currentNode_ =
-            new ParagraphUtils.NodeGroupItem(driveAppRootNode, 0, false);
+            new ParagraphUtils.NodeGroupItem(gsuiteAppRootNode, 0, false);
         chrome.tabs.executeScript(tab.id, {
           allFrames: true,
           matchAboutBlank: true,
@@ -569,7 +576,9 @@ SelectToSpeak.prototype = {
   startSpeechQueue_: function(nodes, opt_startIndex, opt_endIndex) {
     this.prepareForSpeech_();
     for (var i = 0; i < nodes.length; i++) {
-      let nodeGroup = ParagraphUtils.buildNodeGroup(nodes, i);
+      let nodeGroup = ParagraphUtils.buildNodeGroup(
+          nodes, i, this.enableLanguageDetectionIntegration_);
+
       if (i == 0) {
         // We need to start in the middle of a node. Remove all text before
         // the start index so that it is not spoken.
@@ -612,7 +621,14 @@ SelectToSpeak.prototype = {
         continue;
       }
 
-      let options = this.prefsManager_.speechOptions();
+      let options = {};
+      /* Copy options so we can add lang below */
+      Object.assign(options, this.prefsManager_.speechOptions());
+      if (this.enableLanguageDetectionIntegration_ &&
+          nodeGroup.detectedLanguage) {
+        options.lang = nodeGroup.detectedLanguage;
+      }
+
       options.onEvent = (event) => {
         if (event.type == 'start' && nodeGroup.nodes.length > 0) {
           this.onStateChanged_(SelectToSpeakState.SPEAKING);
@@ -916,7 +932,7 @@ SelectToSpeak.prototype = {
       // Do a hit test to make sure the node is not in a background window
       // or minimimized. On the result checkCurrentNodeMatchesHitTest_ will be
       // called, and we will use that result plus the currentNode's state to
-      // deterimine how to set the focus and whether to stop speech.
+      // determine how to set the focus and whether to stop speech.
       this.desktop_.hitTest(
           this.currentNode_.node.location.left,
           this.currentNode_.node.location.top, EventType.HOVER);

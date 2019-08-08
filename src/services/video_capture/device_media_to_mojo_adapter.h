@@ -9,10 +9,14 @@
 #include "media/capture/video/video_capture_device.h"
 #include "media/capture/video/video_capture_device_client.h"
 #include "media/capture/video/video_capture_device_factory.h"
-#include "media/capture/video/video_capture_jpeg_decoder.h"
 #include "media/capture/video_capture_types.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 #include "services/video_capture/public/mojom/device.mojom.h"
+
+#if defined(OS_CHROMEOS)
+#include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
+#include "media/capture/video/chromeos/video_capture_jpeg_decoder.h"
+#endif  // defined(OS_CHROMEOS)
 
 namespace video_capture {
 
@@ -22,11 +26,17 @@ class ReceiverMojoToMediaAdapter;
 // media::VideoCaptureDevice.
 class DeviceMediaToMojoAdapter : public mojom::Device {
  public:
+#if defined(OS_CHROMEOS)
   DeviceMediaToMojoAdapter(
       std::unique_ptr<service_manager::ServiceContextRef> service_ref,
       std::unique_ptr<media::VideoCaptureDevice> device,
       media::MojoMjpegDecodeAcceleratorFactoryCB jpeg_decoder_factory_callback,
       scoped_refptr<base::SequencedTaskRunner> jpeg_decoder_task_runner);
+#else
+  DeviceMediaToMojoAdapter(
+      std::unique_ptr<service_manager::ServiceContextRef> service_ref,
+      std::unique_ptr<media::VideoCaptureDevice> device);
+#endif  // defined(OS_CHROMEOS)
   ~DeviceMediaToMojoAdapter() override;
 
   // mojom::Device implementation.
@@ -49,9 +59,11 @@ class DeviceMediaToMojoAdapter : public mojom::Device {
  private:
   const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
   const std::unique_ptr<media::VideoCaptureDevice> device_;
+#if defined(OS_CHROMEOS)
   const media::MojoMjpegDecodeAcceleratorFactoryCB
       jpeg_decoder_factory_callback_;
   scoped_refptr<base::SequencedTaskRunner> jpeg_decoder_task_runner_;
+#endif  // defined(OS_CHROMEOS)
   std::unique_ptr<ReceiverMojoToMediaAdapter> receiver_;
   bool device_started_;
   base::ThreadChecker thread_checker_;

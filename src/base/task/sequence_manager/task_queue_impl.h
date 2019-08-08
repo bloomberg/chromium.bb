@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/pending_task.h"
+#include "base/task/common/checked_lock.h"
 #include "base/task/common/intrusive_heap.h"
 #include "base/task/common/operations_controller.h"
 #include "base/task/sequence_manager/associated_thread_id.h"
@@ -23,7 +24,6 @@
 #include "base/task/sequence_manager/lazily_deallocated_deque.h"
 #include "base/task/sequence_manager/sequenced_task_source.h"
 #include "base/task/sequence_manager/task_queue.h"
-#include "base/task/thread_pool/scheduler_lock.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
@@ -92,7 +92,7 @@ class BASE_EXPORT TaskQueueImpl {
   using OnTaskStartedHandler =
       RepeatingCallback<void(const Task&, const TaskQueue::TaskTiming&)>;
   using OnTaskCompletedHandler =
-      RepeatingCallback<void(const Task&, const TaskQueue::TaskTiming&)>;
+      RepeatingCallback<void(const Task&, TaskQueue::TaskTiming*, LazyNow*)>;
 
   // May be called from any thread.
   scoped_refptr<SingleThreadTaskRunner> CreateTaskRunner(
@@ -198,9 +198,16 @@ class BASE_EXPORT TaskQueueImpl {
   void SetOnTaskStartedHandler(OnTaskStartedHandler handler);
   void OnTaskStarted(const Task& task,
                      const TaskQueue::TaskTiming& task_timing);
+
+  // |task_timing| may be passed in Running state and may not have the end time,
+  // so that the handler can run an additional task that is counted as a part of
+  // the main task.
+  // The handler can call TaskTiming::RecordTaskEnd, which is optional, to
+  // finalize the task, and use the resulting timing.
   void SetOnTaskCompletedHandler(OnTaskCompletedHandler handler);
   void OnTaskCompleted(const Task& task,
-                       const TaskQueue::TaskTiming& task_timing);
+                       TaskQueue::TaskTiming* task_timing,
+                       LazyNow* lazy_now);
   bool RequiresTaskTiming() const;
 
   WeakPtr<SequenceManagerImpl> GetSequenceManagerWeakPtr();
@@ -412,7 +419,7 @@ class BASE_EXPORT TaskQueueImpl {
 
   const scoped_refptr<GuardedTaskPoster> task_poster_;
 
-  mutable base::internal::SchedulerLock any_thread_lock_;
+  mutable base::internal::CheckedLock any_thread_lock_;
 
   struct AnyThread {
     explicit AnyThread(TimeDomain* time_domain);

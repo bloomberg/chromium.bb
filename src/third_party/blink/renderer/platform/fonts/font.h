@@ -85,6 +85,10 @@ class PLATFORM_EXPORT Font {
     kDoNotPaintIfFontNotReady,
     kUseFallbackIfFontNotReady
   };
+
+  // TODO(layout-dev): Once zoom-for-dsf launches on Mac the device_scale_factor
+  // parameter can be removed from all of these methods.
+  // https://crbug.com/716231
   void DrawText(cc::PaintCanvas*,
                 const TextRunPaintInfo&,
                 const FloatPoint&,
@@ -120,6 +124,8 @@ class PLATFORM_EXPORT Font {
                          const FloatPoint&,
                          float device_scale_factor,
                          const cc::PaintFlags&) const;
+
+  FloatRect TextInkBounds(const NGTextFragmentPaintInfo&) const;
 
   struct TextIntercept {
     float begin_, end_;
@@ -232,11 +238,11 @@ class PLATFORM_EXPORT Font {
   bool LoadingCustomFonts() const;
   bool IsFallbackValid() const;
 
- private:
   bool ShouldSkipDrawing() const {
     return font_fallback_list_ && font_fallback_list_->ShouldSkipDrawing();
   }
 
+ private:
   FontDescription font_description_;
   mutable scoped_refptr<FontFallbackList> font_fallback_list_;
   mutable unsigned can_shape_word_by_word_ : 1;

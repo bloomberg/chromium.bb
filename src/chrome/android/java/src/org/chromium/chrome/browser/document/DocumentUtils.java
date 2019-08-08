@@ -10,7 +10,6 @@ import android.app.ActivityManager.AppTask;
 import android.app.ActivityManager.RecentTaskInfo;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
@@ -19,8 +18,6 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelImpl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -122,18 +119,4 @@ public class DocumentUtils {
         }
     }
 
-    /**
-     * Returns the ID of the last shown Tab for the given DocumentTabModel type.
-     * @param context     Context to pull SharedPrefs from.
-     * @param isIncognito Whether to get the ID for the regular or Incognito TabModel.
-     * @return ID of the last shown Tab for the given TabModel type.
-     */
-    public static int getLastShownTabIdFromPrefs(Context context, boolean isIncognito) {
-        SharedPreferences prefs = context.getSharedPreferences(
-                DocumentTabModelImpl.PREF_PACKAGE, Context.MODE_PRIVATE);
-        String prefName = isIncognito
-                ? DocumentTabModelImpl.PREF_LAST_SHOWN_TAB_ID_INCOGNITO
-                : DocumentTabModelImpl.PREF_LAST_SHOWN_TAB_ID_REGULAR;
-        return prefs.getInt(prefName, Tab.INVALID_TAB_ID);
-    }
 }

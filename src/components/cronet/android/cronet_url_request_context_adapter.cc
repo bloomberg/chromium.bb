@@ -54,7 +54,6 @@
 #include "net/nqe/network_quality_estimator_params.h"
 #include "net/proxy_resolution/proxy_config_service_android.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
-#include "net/ssl/channel_id_service.h"
 #include "net/third_party/quiche/src/quic/core/quic_versions.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
@@ -307,10 +306,7 @@ static void JNI_CronetUrlRequestContext_AddPkp(
           jinclude_subdomains,
           base::Time::UnixEpoch() +
               base::TimeDelta::FromMilliseconds(jexpiration_time)));
-  size_t hash_count = env->GetArrayLength(jhashes);
-  for (size_t i = 0; i < hash_count; ++i) {
-    ScopedJavaLocalRef<jbyteArray> bytes_array(
-        env, static_cast<jbyteArray>(env->GetObjectArrayElement(jhashes, i)));
+  for (auto bytes_array : jhashes.ReadElements<jbyteArray>()) {
     static_assert(std::is_pod<net::SHA256HashValue>::value,
                   "net::SHA256HashValue is not POD");
     static_assert(sizeof(net::SHA256HashValue) * CHAR_BIT == 256,

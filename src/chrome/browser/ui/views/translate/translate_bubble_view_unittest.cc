@@ -181,7 +181,7 @@ class TranslateBubbleViewTest : public ChromeViewsTestBase {
 
   void PressButton(TranslateBubbleView::ButtonID id) {
     views::LabelButton button(nullptr, base::ASCIIToUTF16("hello"));
-    button.set_id(id);
+    button.SetID(id);
 
     bubble_->ButtonPressed(&button,
                            ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RETURN,
@@ -289,7 +289,7 @@ TEST_F(TranslateBubbleViewTest, AlwaysTranslateCheckboxAndCancelButton) {
   // Check the initial state.
   EXPECT_FALSE(mock_model_->should_always_translate_);
   EXPECT_EQ(0, mock_model_->set_always_translate_called_count_);
-  EXPECT_FALSE(bubble_->advanced_always_translate_checkbox_->checked());
+  EXPECT_FALSE(bubble_->advanced_always_translate_checkbox_->GetChecked());
 
   // Click the checkbox. The state is not saved yet.
   bubble_->advanced_always_translate_checkbox_->SetChecked(true);
@@ -313,7 +313,7 @@ TEST_F(TranslateBubbleViewTest, AlwaysTranslateCheckboxAndDoneButton) {
   // Check the initial state.
   EXPECT_FALSE(mock_model_->should_always_translate_);
   EXPECT_EQ(0, mock_model_->set_always_translate_called_count_);
-  EXPECT_FALSE(bubble_->advanced_always_translate_checkbox_->checked());
+  EXPECT_FALSE(bubble_->advanced_always_translate_checkbox_->GetChecked());
 
   // Click the checkbox. The state is not saved yet.
   bubble_->advanced_always_translate_checkbox_->SetChecked(true);
@@ -342,7 +342,8 @@ TEST_F(TranslateBubbleViewTest, DoneButton) {
       TranslateBubbleView::COMBOBOX_ID_TARGET_LANGUAGE);
   PressButton(TranslateBubbleView::BUTTON_ID_DONE);
   EXPECT_TRUE(mock_model_->translate_called_);
-  EXPECT_EQ(10, mock_model_->original_language_index_);
+  // Expected value is (set id - 1) because user selected id is actual id + 1
+  EXPECT_EQ(9, mock_model_->original_language_index_);
   EXPECT_EQ(20, mock_model_->target_language_index_);
 }
 

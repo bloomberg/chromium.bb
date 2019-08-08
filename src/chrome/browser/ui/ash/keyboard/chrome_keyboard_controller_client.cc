@@ -6,6 +6,9 @@
 
 #include <utility>
 
+#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/resources/keyboard_resource_util.h"
+#include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -32,9 +35,6 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/public/keyboard_switches.h"
-#include "ui/keyboard/resources/keyboard_resource_util.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace virtual_keyboard_private = extensions::api::virtual_keyboard_private;
@@ -391,11 +391,10 @@ void ChromeKeyboardControllerClient::OnKeyboardUIDestroyed() {
 }
 
 void ChromeKeyboardControllerClient::OnKeyboardContentsLoaded(
-    const base::UnguessableToken& token,
     const gfx::Size& size) {
   DVLOG(1) << "OnLoadKeyboardContentsRequested: " << size.ToString();
   NotifyKeyboardLoaded();
-  keyboard_controller_ptr_->KeyboardContentsLoaded(token, size);
+  keyboard_controller_ptr_->KeyboardContentsLoaded(size);
 }
 
 void ChromeKeyboardControllerClient::OnSessionStateChanged() {

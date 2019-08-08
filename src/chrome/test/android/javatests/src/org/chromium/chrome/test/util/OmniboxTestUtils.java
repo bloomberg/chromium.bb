@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
 import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController.OnSuggestionsReceivedListener;
+import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinatorTestUtils;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion.MatchClassification;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -77,7 +78,7 @@ public class OmniboxTestUtils {
             List<MatchClassification> classifications = new ArrayList<>();
             classifications.add(new MatchClassification(0, MatchClassificationStyle.NONE));
             mSuggestions.add(new OmniboxSuggestion(type, false, 0, 0, text, classifications, null,
-                    classifications, null, "", url, false, false));
+                    classifications, null, "", url, null, null, false, false));
             return this;
         }
 
@@ -332,8 +333,8 @@ public class OmniboxTestUtils {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                ListView suggestionsList =
-                        locationBar.getAutocompleteCoordinator().getSuggestionList();
+                ListView suggestionsList = AutocompleteCoordinatorTestUtils.getSuggestionList(
+                        locationBar.getAutocompleteCoordinator());
                 if (suggestionsList == null) {
                     updateFailureReason("suggestionList is null");
                     return false;
@@ -361,8 +362,8 @@ public class OmniboxTestUtils {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                ListView suggestionsList =
-                        locationBar.getAutocompleteCoordinator().getSuggestionList();
+                ListView suggestionsList = AutocompleteCoordinatorTestUtils.getSuggestionList(
+                        locationBar.getAutocompleteCoordinator());
                 return suggestionsList != null
                         && suggestionsList.isShown()
                         && suggestionsList.getCount() == expectedCount;

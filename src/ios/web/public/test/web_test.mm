@@ -5,7 +5,7 @@
 #include "ios/web/public/test/web_test.h"
 
 #include "base/memory/ptr_util.h"
-#include "ios/web/public/web_state/global_web_state_observer.h"
+#include "ios/web/public/deprecated/global_web_state_observer.h"
 #import "ios/web/public/test/fakes/test_web_client.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

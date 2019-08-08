@@ -39,8 +39,6 @@ class SVGDiscardElement final : public SVGSMILElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_NODE_FACTORY(SVGDiscardElement);
-
   explicit SVGDiscardElement(Document&);
 
   bool IsSVGDiscardElement() const override { return true; }

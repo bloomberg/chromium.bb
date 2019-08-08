@@ -22,7 +22,7 @@ class NetLogCaptureMode;
 // logged in the NetLog.
 // See the documentation for SIGNED_CERTIFICATE_TIMESTAMPS_CHECKED
 // in net/log/net_log_event_type_list.h
-std::unique_ptr<base::Value> NetLogSignedCertificateTimestampCallback(
+base::Value NetLogSignedCertificateTimestampCallback(
     const SignedCertificateTimestampAndStatusList* scts,
     NetLogCaptureMode capture_mode);
 
@@ -30,7 +30,7 @@ std::unique_ptr<base::Value> NetLogSignedCertificateTimestampCallback(
 // in the NetLog.
 // See the documentation for SIGNED_CERTIFICATE_TIMESTAMPS_RECEIVED
 // in net/log/net_log_event_type_list.h
-std::unique_ptr<base::Value> NetLogRawSignedCertificateTimestampCallback(
+base::Value NetLogRawSignedCertificateTimestampCallback(
     base::StringPiece embedded_scts,
     base::StringPiece sct_list_from_ocsp,
     base::StringPiece sct_list_from_tls_extension,

@@ -21,7 +21,9 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * A class responsible for turning a {@link Collection} of {@link OfflineItem}s into a list meant
@@ -185,17 +187,17 @@ class DateOrderedListMutator implements OfflineItemFilterObserver {
                             sectionIndex == 0 && dateIndex > 0 /* showDivider */);
                     if (!mHideSectionHeaders) {
                         sectionHeaderItem.showTitle = !mHideTitleFromSectionHeaders;
-                        sectionHeaderItem.showMenu = filter == OfflineItemFilter.FILTER_IMAGE;
-                        sectionHeaderItem.items = new ArrayList<>(section.items.values());
+                        sectionHeaderItem.showMenu = filter == OfflineItemFilter.IMAGE;
+                        sectionHeaderItem.items = new ArrayList<>(section.items);
                     }
                     listItems.add(sectionHeaderItem);
                 }
 
                 // Add the items in the section.
-                for (OfflineItem offlineItem : section.items.values()) {
+                for (OfflineItem offlineItem : section.items) {
                     OfflineItemListItem item = new OfflineItemListItem(offlineItem);
                     if (mConfig.supportFullWidthImages && section.items.size() == 1
-                            && offlineItem.filter == OfflineItemFilter.FILTER_IMAGE) {
+                            && offlineItem.filter == OfflineItemFilter.IMAGE) {
                         item.spanFullWidth = true;
                     }
                     listItems.add(item);
@@ -258,7 +260,7 @@ class DateOrderedListMutator implements OfflineItemFilterObserver {
 
         public boolean contains(ContentId id) {
             for (Section section : sections.values()) {
-                for (OfflineItem item : section.items.values()) {
+                for (OfflineItem item : section.items) {
                     if (item.id.equals(id)) return true;
                 }
             }
@@ -268,15 +270,25 @@ class DateOrderedListMutator implements OfflineItemFilterObserver {
 
     /** Represents a group of items having the same filter type. */
     private static class Section {
-        public Map<Date, OfflineItem> items =
-                new TreeMap<>((lhs, rhs) -> { return rhs.compareTo(lhs); });
+        /**
+         * The list of items in a section for a day. Ordered by descending creation time then
+         * namespace and finally by id.
+         */
+        public Set<OfflineItem> items = new TreeSet<>((lhs, rhs) -> {
+            int comparison = Long.compare(rhs.creationTimeMs, lhs.creationTimeMs);
+            if (comparison != 0) return comparison;
+            comparison = lhs.id.namespace.compareTo(rhs.id.namespace);
+            if (comparison != 0) return comparison;
+            return lhs.id.id.compareTo(rhs.id.id);
+        });
 
         public void addOrUpdateItem(OfflineItem item) {
-            items.put(new Date(item.creationTimeMs), item);
+            items.remove(item);
+            items.add(item);
         }
 
         public void removeItem(OfflineItem item) {
-            items.remove(new Date(item.creationTimeMs));
+            items.remove(item);
         }
     }
 }

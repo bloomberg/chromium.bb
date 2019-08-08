@@ -6,11 +6,11 @@
 #define ASH_SYSTEM_VIRTUAL_KEYBOARD_VIRTUAL_KEYBOARD_TRAY_H_
 
 #include "ash/accessibility/accessibility_observer.h"
+#include "ash/keyboard/ui/keyboard_controller_observer.h"
 #include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "base/macros.h"
-#include "ui/keyboard/keyboard_controller_observer.h"
 
 namespace views {
 class ImageView;
@@ -42,6 +42,11 @@ class VirtualKeyboardTray : public TrayBackgroundView,
 
   // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;
+
+  // views::View:
+  const char* GetClassName() const override;
+
+  void UpdateIconVisibility();
 
  private:
   // Updates the icon UI.

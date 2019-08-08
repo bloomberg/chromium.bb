@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/views/ime/ime_warning_bubble_view.h"
 
 #include <string>
+#include <utility>
 
-#include "base/callback_helpers.h"
 #include "chrome/browser/extensions/api/input_ime/input_ime_api_nonchromeos.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -51,11 +51,11 @@ void ImeWarningBubbleView::ShowBubble(
 }
 
 bool ImeWarningBubbleView::Accept() {
-  if (never_show_checkbox_->checked()) {
-    base::ResetAndReturn(&response_callback_)
+  if (never_show_checkbox_->GetChecked()) {
+    std::move(response_callback_)
         .Run(ImeWarningBubblePermissionStatus::GRANTED_AND_NEVER_SHOW);
   } else {
-    base::ResetAndReturn(&response_callback_)
+    std::move(response_callback_)
         .Run(ImeWarningBubblePermissionStatus::GRANTED);
   }
   return true;
@@ -63,8 +63,7 @@ bool ImeWarningBubbleView::Accept() {
 
 bool ImeWarningBubbleView::Cancel() {
   if (!response_callback_.is_null())
-    base::ResetAndReturn(&response_callback_)
-        .Run(ImeWarningBubblePermissionStatus::DENIED);
+    std::move(response_callback_).Run(ImeWarningBubblePermissionStatus::DENIED);
   return true;
 }
 
@@ -121,7 +120,7 @@ ImeWarningBubbleView::ImeWarningBubbleView(
 
 ImeWarningBubbleView::~ImeWarningBubbleView() {
   if (!response_callback_.is_null()) {
-    base::ResetAndReturn(&response_callback_)
+    std::move(response_callback_)
         .Run(ImeWarningBubblePermissionStatus::ABORTED);
   }
 
@@ -137,7 +136,7 @@ void ImeWarningBubbleView::InitAnchorView() {
     // Anchors the bubble to the browser action of the extension.
     reference_view = container_->GetViewForId(extension_->id());
   }
-  if (!reference_view || !reference_view->visible()) {
+  if (!reference_view || !reference_view->GetVisible()) {
     // Anchors the bubble to the app menu.
     reference_view =
         browser_view_->toolbar_button_provider()->GetAppMenuButton();

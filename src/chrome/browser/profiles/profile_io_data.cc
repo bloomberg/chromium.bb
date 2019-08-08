@@ -47,7 +47,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/about_handler/about_protocol_handler.h"
-#include "components/certificate_transparency/tree_state_tracker.h"
 #include "components/content_settings/core/browser/content_settings_provider.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -80,6 +79,7 @@
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/cert/multi_threaded_cert_verifier.h"
+#include "net/cert_net/cert_net_fetcher_impl.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_network_session.h"
@@ -88,7 +88,6 @@
 #include "net/http/transport_security_persister.h"
 #include "net/net_buildflags.h"
 #include "net/nqe/network_quality_estimator.h"
-#include "net/ssl/channel_id_service.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/data_protocol_handler.h"
@@ -522,12 +521,6 @@ void ProfileIOData::AppRequestContext::SetCookieStore(
   set_cookie_store(cookie_store_.get());
 }
 
-void ProfileIOData::AppRequestContext::SetChannelIDService(
-    std::unique_ptr<net::ChannelIDService> channel_id_service) {
-  channel_id_service_ = std::move(channel_id_service);
-  set_channel_id_service(channel_id_service_.get());
-}
-
 void ProfileIOData::AppRequestContext::SetHttpNetworkSession(
     std::unique_ptr<net::HttpNetworkSession> http_network_session) {
   http_network_session_ = std::move(http_network_session);
@@ -569,6 +562,9 @@ ProfileIOData::ProfileIOData(Profile::ProfileType profile_type)
 ProfileIOData::~ProfileIOData() {
   if (BrowserThread::IsThreadInitialized(BrowserThread::IO))
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (cert_net_fetcher_)
+    cert_net_fetcher_->Shutdown();
 
   // Pull the contents of the request context maps onto the stack for sanity
   // checking of values in a minidump. http://crbug.com/260425
@@ -962,6 +958,10 @@ void ProfileIOData::Init(
       builder->SetCertVerifier(
           std::make_unique<WrappedCertVerifierForProfileIODataTesting>());
     } else {
+#if defined(OS_ANDROID) || defined(OS_FUCHSIA) || \
+    BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
+      cert_net_fetcher_ = base::MakeRefCounted<net::CertNetFetcherImpl>();
+#endif
       std::unique_ptr<net::CertVerifier> cert_verifier;
 #if defined(OS_CHROMEOS)
       crypto::ScopedPK11Slot public_slot =
@@ -988,14 +988,14 @@ void ProfileIOData::Init(
                 trial_params->initial_allowed,
                 std::move(trial_params->config_client_request),
                 std::move(trial_params->report_client),
-                net::CertVerifyProc::CreateDefault(),
-                net::CreateCertVerifyProcBuiltin()));
+                net::CertVerifyProc::CreateDefault(cert_net_fetcher_),
+                net::CreateCertVerifyProcBuiltin(cert_net_fetcher_)));
       }
 #endif
       if (!cert_verifier) {
         cert_verifier = std::make_unique<net::CachingCertVerifier>(
             std::make_unique<net::MultiThreadedCertVerifier>(
-                net::CertVerifyProc::CreateDefault()));
+                net::CertVerifyProc::CreateDefault(cert_net_fetcher_)));
       }
       const base::CommandLine& command_line =
           *base::CommandLine::ForCurrentProcess();
@@ -1026,6 +1026,9 @@ void ProfileIOData::Init(
             std::move(profile_params_->main_network_context_request),
             std::move(profile_params_->main_network_context_params),
             std::move(builder), &main_request_context_);
+
+    if (cert_net_fetcher_)
+      cert_net_fetcher_->SetURLRequestContext(main_request_context_);
   }
 
   OnMainRequestContextCreated(profile_params_.get());

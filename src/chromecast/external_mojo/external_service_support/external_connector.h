@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -77,6 +78,13 @@ class ExternalConnector {
 
   // Sends a request for a Chromium ServiceManager connector.
   void SendChromiumConnectorRequest(mojo::ScopedMessagePipeHandle request);
+
+  // Query the list of available services from this connector.
+  void QueryServiceList(
+      base::OnceCallback<
+          void(std::vector<
+               chromecast::external_mojo::mojom::ExternalServiceInfoPtr>)>
+          callback);
 
  private:
   void OnConnectionError();

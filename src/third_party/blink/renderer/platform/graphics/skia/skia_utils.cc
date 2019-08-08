@@ -35,7 +35,7 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
 #include "third_party/skia/include/effects/SkCornerPathEffect.h"
-#include "third_party/skia/third_party/skcms/skcms.h"
+#include "third_party/skia/include/third_party/skcms/skcms.h"
 
 #include <algorithm>
 #include <cmath>

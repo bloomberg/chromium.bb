@@ -10,6 +10,7 @@ from __future__ import print_function
 import mock
 import os
 
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import portage_util
@@ -152,7 +153,7 @@ class ToolchainInfoTest(cros_test_lib.MockTestCase):
     self.assertEqual('cross-tc/go', self.not_matching_toolchain._GetCP('go'))
 
 
-class ToolchainInstallerTest(cros_test_lib.TempDirTestCase):
+class ToolchainInstallerTest(cros_test_lib.MockTempDirTestCase):
   """Tests for the toolchain installer class."""
 
   def setUp(self):
@@ -185,16 +186,12 @@ class ToolchainInstallerTest(cros_test_lib.TempDirTestCase):
                                                     'build/board'))
 
     # Build out the testing CPV objects.
-    unused_fields = {'pv': None, 'package': None, 'version_no_rev': None,
-                     'rev': None, 'category': None, 'cp': None, 'cpv': None}
-    self.gcc_cpv = portage_util.CPV(cpf='sys-devel/gcc-1.2', version='1.2',
-                                    **unused_fields)
-    self.libc_cpv = portage_util.CPV(cpf='sys-libs/glibc-3.4.5',
-                                     version='3.4.5', **unused_fields)
-    self.go_cpv = portage_util.CPV(cpf='dev-lang/go-6.7-r8', version='6.7-r8',
-                                   **unused_fields)
-    self.rpcsvc_cpv = portage_util.CPV(cpf='net-libs/rpcsvc-proto-9.10',
-                                       version='9.10', **unused_fields)
+    self.gcc_cpv = portage_util.SplitCPV('sys-devel/gcc-1.2', strict=False)
+    self.libc_cpv = portage_util.SplitCPV('sys-libs/glibc-3.4.5', strict=False)
+
+    self.go_cpv = portage_util.SplitCPV('dev-lang/go-6.7-r8', strict=False)
+    self.rpcsvc_cpv = portage_util.SplitCPV('net-libs/rpcsvc-proto-9.10',
+                                            strict=False)
 
     # pylint: disable=protected-access
     self.go_toolchain = toolchain.ToolchainInfo('tc', 'tc')
@@ -218,6 +215,9 @@ class ToolchainInstallerTest(cros_test_lib.TempDirTestCase):
     pkgdir = os.path.join(self.tempdir, 'var/lib/portage/pkgs')
     self.updater = toolchain.ToolchainInstaller(False, True, 'tc', pkgdir)
 
+    # Avoid sudo password prompt for _WriteConfigs.
+    self.PatchObject(os, 'getuid', return_value=0)
+    self.PatchObject(os, 'geteuid', return_value=0)
 
   def testUpdateProvided(self):
     """Test the updates to the package.provided file."""
@@ -267,3 +267,45 @@ class ToolchainInstallerTest(cros_test_lib.TempDirTestCase):
     # pylint: disable=protected-access
     self.updater._WriteConfigs(self.sysroot, self.go_toolchain)
     self.assertEqual('3.4.5', self.sysroot.GetCachedField('LIBC_VERSION'))
+
+  def testInstallLibcFailures(self):
+    """Test the installer error handling."""
+    # Test error thrown during toolchain installation.
+    # We want a ToolchainInstallError with the glibc info set.
+    error_result = cros_build_lib.CommandResult(returncode=1)
+    self.PatchObject(cros_build_lib, 'SudoRunCommand',
+                     side_effect=cros_build_lib.RunCommandError('Error',
+                                                                error_result))
+
+    try:
+      # pylint: disable=protected-access
+      self.updater._InstallLibc(self.sysroot, self.go_toolchain)
+    except toolchain.ToolchainInstallError as e:
+      self.assertTrue(e.failed_toolchain_info)
+      self.assertEqual(self.different_toolchain.libc_cpf,
+                       e.failed_toolchain_info[0].cpf)
+    except Exception as e:
+      self.fail('Unexpected exception type thrown: %s' % type(e))
+    else:
+      self.fail('_InstallLibc should have thrown an error.')
+
+    # Test error thrown during cross toolchain installation.
+    self.PatchObject(cros_build_lib, 'SudoRunCommand')
+    # This is the error we're testing for, but _InstallLibc catches and
+    # modifies the error before re-raising it.
+    self.PatchObject(self.updater, '_ExtractLibc',
+                     side_effect=toolchain.ToolchainInstallError('Error',
+                                                                 error_result))
+
+    try:
+      # pylint: disable=protected-access
+      self.updater._InstallLibc(self.sysroot, self.different_toolchain)
+    except toolchain.ToolchainInstallError as e:
+      # Make sure it did in fact modify the error to include the glibc CPV.
+      self.assertTrue(e.failed_toolchain_info)
+      self.assertEqual(self.go_toolchain.libc_cpf,
+                       e.failed_toolchain_info[0].cpf)
+    except Exception as e:
+      self.fail('Unexpected exception type thrown: %s' % type(e))
+    else:
+      self.fail('_InstallLibc should have thrown an error.')

@@ -11,21 +11,17 @@ For a description of AFDO see gcc.gnu.org/wiki/AutoFDO.
 from __future__ import print_function
 
 import bisect
+import collections
 import datetime
 import glob
+import json
 import os
 import re
 
-from chromite.lib import failures_lib
-from chromite.lib import constants
-from chromite.lib import cros_build_lib
+from chromite.lib import constants, cros_build_lib
 from chromite.lib import cros_logging as logging
-from chromite.lib import git
-from chromite.lib import gs
-from chromite.lib import osutils
-from chromite.lib import path_util
-from chromite.lib import timeout_util
-
+from chromite.lib import (failures_lib, git, gs, osutils, path_util,
+                          timeout_util)
 
 # AFDO-specific constants.
 AFDO_SUFFIX = '.afdo'
@@ -41,8 +37,7 @@ CHROME_PERF_AFDO_FILE = '%s.perf.data' % CHROME_ARCH_VERSION
 CHROME_AFDO_FILE = '%s%s' % (CHROME_ARCH_VERSION, AFDO_SUFFIX)
 CHROME_ARCH_RELEASE = '%(package)s-%(arch)s-%(release)s'
 LATEST_CHROME_AFDO_FILE = 'latest-%s%s' % (CHROME_ARCH_RELEASE, AFDO_SUFFIX)
-CHROME_DEBUG_BIN = os.path.join('%(root)s',
-                                'build/%(board)s/usr/lib/debug',
+CHROME_DEBUG_BIN = os.path.join('%(root)s', 'build/%(board)s/usr/lib/debug',
                                 'opt/google/chrome/chrome.debug')
 # regex to find AFDO file for specific architecture within the ebuild file.
 CHROME_EBUILD_AFDO_REGEX = (
@@ -52,6 +47,7 @@ CHROME_EBUILD_AFDO_REPL = r'\g<bef>%s\g<aft>'
 
 GSURL_BASE_BENCH = 'gs://chromeos-prebuilt/afdo-job/llvm'
 GSURL_BASE_CWP = 'gs://chromeos-prebuilt/afdo-job/cwp/chrome'
+GSURL_BASE_RELEASE = 'gs://chromeos-prebuilt/afdo-job/release-merged'
 GSURL_CHROME_PERF = os.path.join(GSURL_BASE_BENCH,
                                  CHROME_PERF_AFDO_FILE + COMPRESSION_SUFFIX)
 GSURL_CHROME_AFDO = os.path.join(GSURL_BASE_BENCH,
@@ -87,7 +83,8 @@ KERNEL_WARN_STALE_DAYS = 14
 AFDO_DATA_GENERATORS_LLVM = ('chell', 'samus')
 
 AFDO_ALERT_RECIPIENTS = [
-    'chromeos-toolchain-sheriff@grotations.appspotmail.com']
+    'chromeos-toolchain-sheriff@grotations.appspotmail.com'
+]
 
 KERNEL_PROFILE_URL = 'gs://chromeos-prebuilt/afdo-job/cwp/kernel/'
 KERNEL_PROFILE_LS_PATTERN = '*/*.gcov.xz'
@@ -97,9 +94,7 @@ KERNEL_PROFILE_MATCH_PATTERN = (
     r'^AFDO_PROFILE_VERSION="R[0-9]+-[0-9]+\.[0-9]+-[0-9]+"$')
 KERNEL_PROFILE_WRITE_PATTERN = 'AFDO_PROFILE_VERSION="R%d-%d.%d-%d"'
 KERNEL_EBUILD_ROOT = os.path.join(
-    constants.SOURCE_ROOT,
-    'src/third_party/chromiumos-overlay/sys-kernel'
-)
+    constants.SOURCE_ROOT, 'src/third_party/chromiumos-overlay/sys-kernel')
 
 GSURL_CWP_SUBDIR = {
     'silvermont': '',
@@ -108,9 +103,32 @@ GSURL_CWP_SUBDIR = {
     'broadwell': 'broadwell',
 }
 
+# Relative weights we should use when merging our 'release' profiles. The
+# counters in our benchmark/cwp profiles end up being multiplied by these
+# numbers, so they can technically be anything, but we have them sum to 100 for
+# ease of understanding.
+_RELEASE_BENCHMARK_MERGE_WEIGHT = 25
+_RELEASE_CWP_MERGE_WEIGHT = 75
 
 # Filename pattern of CWP profiles for Chrome
 CWP_CHROME_PROFILE_NAME_PATTERN = r'R%s-%s.%s-%s' + AFDO_SUFFIX + '.xz'
+
+BENCHMARK_PROFILE_NAME_RE = re.compile(
+    r'''
+       ^chromeos-chrome-amd64-
+       (\d+)\.                    # Major
+       (\d+)\.                    # Minor
+       (\d+)\.                    # Build
+       (\d+)                      # Patch
+       (?:_rc)?-r(\d+)            # Revision
+       (-merged)?\.
+       afdo(?:\.bz2)?$            # We don't care about the presence of .bz2,
+                                  # so we use the ignore-group '?:' operator.
+     ''', re.VERBOSE)
+
+BenchmarkProfileVersion = collections.namedtuple(
+    'BenchmarkProfileVersion',
+    ['major', 'minor', 'build', 'patch', 'revision', 'is_merged'])
 
 
 class MissingAFDOData(failures_lib.StepFailure):
@@ -205,9 +223,11 @@ def GetAFDOPerfDataURL(cpv, arch):
   # revision number.
   # TODO(llozano): perf data filename should include the revision number.
   version_number = cpv.version_no_rev.split('_')[0]
-  chrome_spec = {'package': cpv.package,
-                 'arch': arch,
-                 'version': version_number}
+  chrome_spec = {
+      'package': cpv.package,
+      'arch': arch,
+      'version': version_number
+  }
   return GSURL_CHROME_PERF % chrome_spec
 
 
@@ -234,7 +254,10 @@ def CheckAFDOPerfData(cpv, arch, gs_context):
   return True
 
 
-def WaitForAFDOPerfData(cpv, arch, buildroot, gs_context,
+def WaitForAFDOPerfData(cpv,
+                        arch,
+                        buildroot,
+                        gs_context,
                         timeout=constants.AFDO_GENERATE_TIMEOUT):
   """Wait for AFDO perf data to show up (with an appropriate timeout).
 
@@ -256,7 +279,8 @@ def WaitForAFDOPerfData(cpv, arch, buildroot, gs_context,
     timeout_util.WaitForReturnTrue(
         CheckAFDOPerfData,
         func_args=(cpv, arch, gs_context),
-        timeout=timeout, period=constants.SLEEP_TIMEOUT)
+        timeout=timeout,
+        period=constants.SLEEP_TIMEOUT)
   except timeout_util.TimeoutError:
     logging.info('Could not find AFDO perf data before timeout')
     return False
@@ -278,8 +302,272 @@ def _BuildrootToWorkDirs(buildroot):
   return chroot_root, local_dir, in_chroot_local_dir
 
 
-def CreateAndUploadMergedAFDOProfile(gs_context, buildroot, unmerged_name,
-                                     recent_to_merge=5, max_age_days=14):
+def _EnumerateMostRecentProfiles(gs_context, milestones, glob_url,
+                                 parse_profile_name):
+  """Enumerates the most recent AFDO profiles for the given Chrome releases.
+
+  Args:
+    gs_context: How we talk to gs://
+    milestones: An iterable of ints; each one is a major Chrome version. We'll
+      try to get the most recent profile for each of these.
+    glob_url: A URL to query gsutil with.
+    parse_profile_name: A callable that transforms a profile's filename into
+      an object that:
+      - is orderable such that |a < b| implies that |a| is an older profile
+        than |b|
+      - has a |major| attribute that indicates Chrome's major version number
+
+      Alternatively, if it returns None, we skip the given profile.
+
+  Returns:
+    A dict of {milestone_number: latest_profile_gs_url}. The keys in this
+    milestone are a (not-strict) subset of the values in |milestones|.
+  """
+  profile_listing = gs_context.List(glob_url)
+  if not profile_listing:
+    raise ValueError('No profiles matched %s' % glob_url)
+
+  parsed_profiles = []
+  for profile in profile_listing:
+    url = profile.url
+    parsed = parse_profile_name(os.path.basename(url))
+    if parsed is not None:
+      parsed_profiles.append((parsed, url))
+
+  newest = {}
+  for version in milestones:
+    profiles = [(v, url) for v, url in parsed_profiles if v.major == version]
+    if not profiles:
+      continue
+
+    _, url = max(profiles)
+    newest[version] = url
+
+  return newest
+
+
+def _EnumerateMostRecentCWPProfiles(gs_context, milestones):
+  """Enumerates the most recent CWP AFDO profiles for Chrome releases.
+
+  See _EnumerateMostRecentProfiles for info about args/return value.
+  """
+  profile_suffix = AFDO_SUFFIX + '.xz'
+  glob_url = os.path.join(GSURL_BASE_CWP, '*' + profile_suffix)
+
+  # e.g. R75-3729.38-1554716539.afdo.xz
+  profile_name_re = re.compile(
+      r'''
+         ^R(\d+)-      # Major
+         (\d+)\.       # Build
+         (\d+)-        # Patch
+         (\d+)         # Clock; breaks ties sometimes.
+         \.afdo\.xz$
+       ''', re.VERBOSE)
+
+  ProfileVersion = collections.namedtuple('ProfileVersion',
+                                          ['major', 'build', 'patch', 'clock'])
+
+  def parse_profile_name(url_basename):
+    match = profile_name_re.match(url_basename)
+    if not match:
+      raise ValueError('Unparseable CWP profile name: %s' % url_basename)
+    return ProfileVersion(*[int(x) for x in match.groups()])
+
+  return _EnumerateMostRecentProfiles(gs_context, milestones, glob_url,
+                                      parse_profile_name)
+
+
+def _ParseBenchmarkProfileName(profile_name):
+  match = BENCHMARK_PROFILE_NAME_RE.match(profile_name)
+  if not match:
+    raise ValueError('Unparseable benchmark profile name: %s' % profile_name)
+
+  groups = match.groups()
+  version_groups = groups[:-1]
+  is_merged = groups[-1]
+  return BenchmarkProfileVersion(
+      *[int(x) for x in version_groups], is_merged=bool(is_merged))
+
+
+def _EnumerateMostRecentBenchmarkProfiles(gs_context, milestones):
+  """Enumerates the most recent benchmark AFDO profiles for Chrome releases.
+
+  See _EnumerateMostRecentProfiles for info about args/return value.
+  """
+  profile_suffix = AFDO_SUFFIX + COMPRESSION_SUFFIX
+  glob_url = os.path.join(GSURL_BASE_BENCH, '*' + profile_suffix)
+
+  def parse_profile_name(url_basename):
+    parsed = _ParseBenchmarkProfileName(url_basename)
+    # We don't want to merge a merged profile; merged profiles are primarily
+    # for stability, and we have CWP to provide us that.
+    return None if parsed.is_merged else parsed
+
+  return _EnumerateMostRecentProfiles(gs_context, milestones, glob_url,
+                                      parse_profile_name)
+
+
+def GenerateReleaseProfileMergePlan(gs_context, milestones):
+  """Generates a plan to merge release profiles for Chrome milestones.
+
+  Args:
+    gs_context: How we talk to gs://
+    milestones: An iterable of ints; Chrome milestones
+
+  Returns:
+    A tuple (a, b), where:
+      - |b| is a dict of {milestone: (cwp_profile, benchmark_profile)}, where
+        |benchmark_profile| and |cwp_profile| are paths in gs:// that point to
+        the most recent benchmark and CWP profiles for |milestone|.
+      - |a| is a sorted list of milestones that aren't present in |b|, but are
+        present in |milestones|.
+  """
+  benchmark_profiles = _EnumerateMostRecentBenchmarkProfiles(
+      gs_context, milestones)
+  cwp_profiles = _EnumerateMostRecentCWPProfiles(gs_context, milestones)
+
+  planned_merges = {
+      version: (cwp_profiles[version], benchmark_profile)
+      for version, benchmark_profile in benchmark_profiles.iteritems()
+      if version in cwp_profiles
+  }
+  skipped = sorted(set(milestones) - set(planned_merges))
+  return skipped, planned_merges
+
+
+def ExecuteReleaseProfileMergePlan(gs_context, buildroot, merge_plan):
+  """Generates release profiles, given a release profile merge plan.
+
+  Args:
+    gs_context: How we talk to gs://
+    buildroot: Our buildroot
+    merge_plan: The second result of GenerateReleaseProfileMergePlan. This
+      determines the profiles we pull and merge.
+  """
+  _, work_dir, chroot_work_dir = _BuildrootToWorkDirs(buildroot)
+
+  def path_pair(suffix):
+    outside_chroot = os.path.join(work_dir, suffix)
+    in_chroot = os.path.join(chroot_work_dir, suffix)
+    return in_chroot, outside_chroot
+
+  chroot_work_dir, work_dir = path_pair('afdo_data_merge')
+
+  def copy_profile(gs_path, local_path):
+    assert local_path.endswith('.afdo'), local_path
+    assert not gs_path.endswith('.afdo'), gs_path
+
+    compression_suffix = os.path.splitext(gs_path)[1]
+    temp_path = local_path + compression_suffix
+    gs_context.Copy(gs_path, temp_path)
+    cros_build_lib.UncompressFile(temp_path, local_path)
+
+  merge_results = {}
+  for version, (cwp_profile, benchmark_profile) in merge_plan.iteritems():
+    chroot_benchmark_path, benchmark_path = path_pair('benchmark.afdo')
+    copy_profile(benchmark_profile, benchmark_path)
+
+    chroot_cwp_path, cwp_path = path_pair('cwp.afdo')
+    copy_profile(cwp_profile, cwp_path)
+
+    chroot_merged_path, merged_path = path_pair('m%d.afdo' % version)
+    merge_weights = [
+        (chroot_cwp_path, _RELEASE_CWP_MERGE_WEIGHT),
+        (chroot_benchmark_path, _RELEASE_BENCHMARK_MERGE_WEIGHT),
+    ]
+    _MergeAFDOProfiles(merge_weights, chroot_merged_path, use_compbinary=True)
+
+    comp_merged_path = merged_path + COMPRESSION_SUFFIX
+    cros_build_lib.CompressFile(merged_path, comp_merged_path)
+    merge_results[version] = comp_merged_path
+
+  return merge_results
+
+
+def UploadReleaseProfiles(gs_context, run_id, merge_plan, merge_results):
+  """Uploads the profiles in merge_results to our release profile bucket.
+
+  Args:
+    gs_context: Our GS context
+    run_id: A unique identifier for this run. Generally recommended to be the
+      number of seconds since the unix epoch, or something similarly difficult
+      to 'collide' with other runs. This is used in paths to guarantee
+      uniqueness.
+    merge_plan: The merge plan that generated the given |merge_results|. Only
+      used to write to a metadata file, so we know what went into this profile.
+    merge_results: A map describing the profiles to upload; you can get one
+      from ExecuteReleaseProfileMergePlan.
+  """
+  gs_url_base = os.path.join(GSURL_BASE_RELEASE, run_id)
+
+  def copy_file_to_gs(local_path, remote_path):
+    # Note that version=0 implies that we'll never overwrite anything. If
+    # run_id is truly unique, this should never make a difference.
+    gs_context.Copy(local_path, remote_path, acl='public-read', version=0)
+
+  for version, profile in merge_results.iteritems():
+    suffix = os.path.splitext(profile)[1]
+    assert suffix != '.afdo', 'All profiles should be compressed.'
+    output_path = os.path.join(gs_url_base,
+                               'profiles/m%d.afdo%s' % (version, suffix))
+    copy_file_to_gs(profile, output_path)
+
+  # Write a map describing the profiles that have been uploaded. Not
+  # compressed, because it's expected to be <500 bytes. At the time of writing,
+  # no automated system relies on these; we just write them so it's easier to
+  # understand what 'gs://path/to/profiles/m75.afdo' actually consists of.
+  temp_dir = osutils.GetGlobalTempDir()
+  meta_file_path = os.path.join(temp_dir, 'meta.json')
+  osutils.WriteFile(meta_file_path, json.dumps(merge_plan))
+  copy_file_to_gs(meta_file_path, os.path.join(gs_url_base, 'meta.json'))
+
+
+def _MergeAFDOProfiles(chroot_profile_list,
+                       chroot_output_profile,
+                       use_compbinary=False):
+  """Merges the given profile list.
+
+  Args:
+    chroot_profile_list: a list of (profile_path, profile_weight).
+      Profile_weight is an int that tells us how to weight the profile compared
+      to everything else.
+    chroot_output_profile: where to store the result profile.
+    use_compbinary: whether to use the new compressed binary AFDO profile
+      format.
+  """
+  if not chroot_profile_list:
+    raise ValueError('Need profiles to merge')
+
+  # A regular llvm-profdata command looks like:
+  # llvm-profdata merge [-sample] -output=/path/to/output input1 [input2
+  #                                                               [input3 ...]]
+  #
+  # Alternatively, we can specify inputs by `-weighted-input=A,file`, where A
+  # is a multiplier of the sample counts in the profile.
+  merge_command = [
+      'llvm-profdata',
+      'merge',
+      '-sample',
+      '-output=' + chroot_output_profile,
+  ]
+
+  merge_command += [
+      '-weighted-input=%d,%s' % (weight, name)
+      for name, weight in chroot_profile_list
+  ]
+
+  if use_compbinary:
+    merge_command.append('-compbinary')
+
+  cros_build_lib.RunCommand(
+      merge_command, enter_chroot=True, capture_output=True, print_cmd=True)
+
+
+def CreateAndUploadMergedAFDOProfile(gs_context,
+                                     buildroot,
+                                     unmerged_name,
+                                     recent_to_merge=5,
+                                     max_age_days=14):
   """Create a merged AFDO profile from recent AFDO profiles and upload it.
 
   If the upload would overwrite an existing merged file, this skips the upload.
@@ -302,22 +590,17 @@ def CreateAndUploadMergedAFDOProfile(gs_context, buildroot, unmerged_name,
   _, work_dir, chroot_work_dir = _BuildrootToWorkDirs(buildroot)
   profile_suffix = AFDO_SUFFIX + COMPRESSION_SUFFIX
   merged_suffix = '-merged'
-  merged_profile_suffix = merged_suffix + profile_suffix
 
   glob_url = os.path.join(GSURL_BASE_BENCH, '*' + profile_suffix)
   benchmark_listing = gs_context.List(glob_url, details=True)
 
+  unmerged_version = _ParseBenchmarkProfileName(unmerged_name)
+
   def is_merge_candidate(x):
-    url = x.url
-
-    # We don't want merged profiles to merge into merged profiles.
-    if url.endswith(merged_profile_suffix):
-      return False
-
-    url_base = os.path.basename(url)
-    uncompressed = url_base[:-len(COMPRESSION_SUFFIX)]
-    return unmerged_name >= uncompressed
-
+    version = _ParseBenchmarkProfileName(os.path.basename(x.url))
+    # Exclude merged profiles, because merging merged profiles into merged
+    # profiles is likely bad.
+    return unmerged_version >= version and not version.is_merged
 
   benchmark_profiles = [p for p in benchmark_listing if is_merge_candidate(p)]
 
@@ -327,10 +610,34 @@ def CreateAndUploadMergedAFDOProfile(gs_context, buildroot, unmerged_name,
     return None, False
 
   latest_profile = benchmark_profiles[-1]
+  latest_profile_version = _ParseBenchmarkProfileName(
+      os.path.basename(benchmark_profiles[-1].url))
+
+  # crbug.com/954978: branch profiles don't play nicely with non-branch
+  # profiles. Hence, we want to avoid merging branch profiles into ToT
+  # profiles. Merging ToT profiles -> branch is fine, since that's all we
+  # realistically have in our past, but ToT should always prefer profiles
+  # collected from ToT only.
+  def is_differing_branch_profile(x):
+    parsed = _ParseBenchmarkProfileName(os.path.basename(x.url))
+    # Branches bump patch levels.
+    if parsed.patch == 0:
+      return False
+    return parsed.major != latest_profile_version.major
+
+  benchmark_profiles = [
+      p for p in benchmark_profiles if not is_differing_branch_profile(p)
+  ]
+  # We'll always have |latest_profile| in |benchmark_profiles|. If not,
+  # |is_differing_branch_profile| is broken, since it should only filter out
+  # branch profiles with a major version != |latest_profile|'s.
+  assert benchmark_profiles
+
   base_time = latest_profile.creation_time
   time_cutoff = base_time - datetime.timedelta(days=max_age_days)
-  merge_candidates = [p for p in benchmark_profiles
-                      if p.creation_time >= time_cutoff]
+  merge_candidates = [
+      p for p in benchmark_profiles if p.creation_time >= time_cutoff
+  ]
 
   merge_candidates = merge_candidates[-recent_to_merge:]
 
@@ -370,22 +677,10 @@ def CreateAndUploadMergedAFDOProfile(gs_context, buildroot, unmerged_name,
 
   merged_output_path = os.path.join(work_dir, merged_basename)
   chroot_merged_output_path = os.path.join(chroot_work_dir, merged_basename)
-  # A regular llvm-profdata command looks like:
-  # llvm-profdata merge [-sample] -output=/path/to/output input1 [input2
-  #                                                               [input3 ...]]
-  #
-  # -sample implies that we're working with AFDO profiles. Without explicitly
-  # specifying weights, we're merging all profiles in equally.
-  merge_command = [
-      'llvm-profdata',
-      'merge',
-      '-sample',
-      '-output=' + chroot_merged_output_path,
-  ]
-  merge_command.extend(chroot_afdo_files)
 
-  cros_build_lib.RunCommand(merge_command, enter_chroot=True,
-                            capture_output=True, print_cmd=True)
+  # Weight all profiles equally.
+  _MergeAFDOProfiles([(profile, 1) for profile in chroot_afdo_files],
+                     chroot_merged_output_path)
 
   compressed_path = CompressAFDOFile(merged_output_path, buildroot)
   compressed_basename = os.path.basename(compressed_path)
@@ -421,7 +716,7 @@ def PatchChromeEbuildAFDOFile(ebuild_file, profiles):
             markers[source] = True
             modified.write(patterns[source].sub(repls[source], line))
             break
-        else: # line without markers, just copy it.
+        else:  # line without markers, just copy it.
           modified.write(line)
 
   for source, found in markers.iteritems():
@@ -451,17 +746,16 @@ def CommitIfChanged(ebuild_dir, message):
     message: commit message
   """
   # Check if anything changed compared to the previous version.
-  modifications = git.RunGit(ebuild_dir,
-                             ['status', '--porcelain', '-uno'],
-                             capture_output=True, print_cmd=True).output
+  modifications = git.RunGit(
+      ebuild_dir, ['status', '--porcelain', '-uno'],
+      capture_output=True,
+      print_cmd=True).output
   if not modifications:
     logging.info('AFDO info for the ebuilds did not change. '
                  'Nothing to commit')
     return
 
-  git.RunGit(ebuild_dir,
-             ['commit', '-a', '-m', message],
-             print_cmd=True)
+  git.RunGit(ebuild_dir, ['commit', '-a', '-m', message], print_cmd=True)
 
 
 def UpdateChromeEbuildAFDOFile(board, profiles):
@@ -484,9 +778,8 @@ def UpdateChromeEbuildAFDOFile(board, profiles):
     ebuild_prog += '-%s' % board
 
   equery_cmd = [equery_prog, 'w', 'chromeos-chrome']
-  ebuild_file = cros_build_lib.RunCommand(equery_cmd,
-                                          enter_chroot=True,
-                                          redirect_stdout=True).output.rstrip()
+  ebuild_file = cros_build_lib.RunCommand(
+      equery_cmd, enter_chroot=True, redirect_stdout=True).output.rstrip()
 
   # Patch the ebuild file with the names of the available afdo_files.
   PatchChromeEbuildAFDOFile(ebuild_file, profiles)
@@ -497,8 +790,8 @@ def UpdateChromeEbuildAFDOFile(board, profiles):
   # want the names of the available afdo_files to show as differences.
   # It also allows developers to do USE=afdo_use when using the 9999
   # ebuild.
-  ebuild_9999 = os.path.join(os.path.dirname(ebuild_file),
-                             'chromeos-chrome-9999.ebuild')
+  ebuild_9999 = os.path.join(
+      os.path.dirname(ebuild_file), 'chromeos-chrome-9999.ebuild')
   PatchChromeEbuildAFDOFile(ebuild_9999, profiles)
 
   UpdateManifest(ebuild_9999, ebuild_prog)
@@ -582,10 +875,12 @@ def GetBenchmarkProfile(cpv, _source, buildroot, gs_context):
   version_numbers = cpv.version.split('.')
   current_release = version_numbers[0]
   current_build = version_numbers[2]
-  afdo_release_spec = {'package': cpv.package,
-                       'arch': arch,
-                       'release': current_release,
-                       'build': current_build}
+  afdo_release_spec = {
+      'package': cpv.package,
+      'arch': arch,
+      'release': current_release,
+      'build': current_build
+  }
   afdo_file, expired = VerifyLatestAFDOFile(afdo_release_spec, buildroot,
                                             gs_context)
   if afdo_file and not expired:
@@ -599,10 +894,12 @@ def GetBenchmarkProfile(cpv, _source, buildroot, gs_context):
   # Could not find suitable AFDO file for the current release.
   # Let's see if there is one from the previous release.
   previous_release = str(int(current_release) - 1)
-  prev_release_spec = {'package': cpv.package,
-                       'arch': arch,
-                       'release': previous_release,
-                       'build': current_build}
+  prev_release_spec = {
+      'package': cpv.package,
+      'arch': arch,
+      'release': previous_release,
+      'build': current_build
+  }
   afdo_file, expired = VerifyLatestAFDOFile(prev_release_spec, buildroot,
                                             gs_context)
   if expired:
@@ -610,8 +907,7 @@ def GetBenchmarkProfile(cpv, _source, buildroot, gs_context):
   return afdo_file
 
 
-def UpdateLatestAFDOProfileInGS(cpv, arch, buildroot, profile_name,
-                                gs_context):
+def UpdateLatestAFDOProfileInGS(cpv, arch, buildroot, profile_name, gs_context):
   """Updates our 'latest profile' file in GS to point to `profile_name`.
 
   Args:
@@ -626,15 +922,18 @@ def UpdateLatestAFDOProfileInGS(cpv, arch, buildroot, profile_name,
   # Create latest-chrome-<arch>-<release>.afdo pointing to the name
   # of the AFDO profile file and upload to GS.
   current_release = cpv.version.split('.')[0]
-  afdo_release_spec = {'package': cpv.package,
-                       'arch': arch,
-                       'release': current_release}
+  afdo_release_spec = {
+      'package': cpv.package,
+      'arch': arch,
+      'release': current_release
+  }
   latest_afdo_file = LATEST_CHROME_AFDO_FILE % afdo_release_spec
   latest_afdo_path = os.path.join(local_dir, latest_afdo_file)
   osutils.WriteFile(latest_afdo_path, profile_name)
-  gs_context.Copy(latest_afdo_path,
-                  GSURL_LATEST_CHROME_AFDO % afdo_release_spec,
-                  acl='public-read')
+  gs_context.Copy(
+      latest_afdo_path,
+      GSURL_LATEST_CHROME_AFDO % afdo_release_spec,
+      acl='public-read')
 
 
 def GenerateAFDOData(cpv, arch, board, buildroot, gs_context):
@@ -664,16 +963,13 @@ def GenerateAFDOData(cpv, arch, board, buildroot, gs_context):
   CHROME_UNSTRIPPED_NAME = 'chrome.unstripped'
 
   version_number = cpv.version
-  afdo_spec = {'package': cpv.package,
-               'arch': arch,
-               'version': version_number}
+  afdo_spec = {'package': cpv.package, 'arch': arch, 'version': version_number}
   chroot_root, local_dir, in_chroot_local_dir = _BuildrootToWorkDirs(buildroot)
 
   # Upload compressed chrome debug binary to GS for triaging purposes.
   # TODO(llozano): This simplifies things in case of need of triaging
   # problems but is it really necessary?
-  debug_bin = CHROME_DEBUG_BIN % {'root': chroot_root,
-                                  'board': board}
+  debug_bin = CHROME_DEBUG_BIN % {'root': chroot_root, 'board': board}
   comp_debug_bin_path = CompressAFDOFile(debug_bin, buildroot)
   GSUploadIfNotPresent(gs_context, comp_debug_bin_path,
                        GSURL_CHROME_DEBUG_BIN % afdo_spec)
@@ -692,19 +988,23 @@ def GenerateAFDOData(cpv, arch, board, buildroot, gs_context):
   debug_sym = os.path.join(in_chroot_local_dir, CHROME_UNSTRIPPED_NAME)
   # The name of the 'perf' file is based only on the version of chrome. The
   # revision number is not included.
-  afdo_spec_no_rev = {'package': cpv.package,
-                      'arch': arch,
-                      'version': cpv.version_no_rev.split('_')[0]}
+  afdo_spec_no_rev = {
+      'package': cpv.package,
+      'arch': arch,
+      'version': cpv.version_no_rev.split('_')[0]
+  }
   perf_afdo_file = CHROME_PERF_AFDO_FILE % afdo_spec_no_rev
   perf_afdo_path = os.path.join(in_chroot_local_dir, perf_afdo_file)
   afdo_file = CHROME_AFDO_FILE % afdo_spec
   afdo_path = os.path.join(in_chroot_local_dir, afdo_file)
-  afdo_cmd = [AFDO_GENERATE_LLVM_PROF,
-              '--binary=%s' % debug_sym,
-              '--profile=%s' % perf_afdo_path,
-              '--out=%s' % afdo_path]
-  cros_build_lib.RunCommand(afdo_cmd, enter_chroot=True, capture_output=True,
-                            print_cmd=True)
+  afdo_cmd = [
+      AFDO_GENERATE_LLVM_PROF,
+      '--binary=%s' % debug_sym,
+      '--profile=%s' % perf_afdo_path,
+      '--out=%s' % afdo_path
+  ]
+  cros_build_lib.RunCommand(
+      afdo_cmd, enter_chroot=True, capture_output=True, print_cmd=True)
 
   afdo_local_path = os.path.join(local_dir, afdo_file)
   comp_afdo_path = CompressAFDOFile(afdo_local_path, buildroot)
@@ -760,8 +1060,9 @@ def CWPProfileToVersionTuple(url):
   Returns:
     A tuple of (milestone, major, minor, timestamp)
   """
-  fn_mat = (CWP_CHROME_PROFILE_NAME_PATTERN %
-            tuple(r'([0-9]+)' for _ in xrange(0, 4)))
+  fn_mat = (
+      CWP_CHROME_PROFILE_NAME_PATTERN % tuple(
+          r'([0-9]+)' for _ in xrange(0, 4)))
   fn_mat.replace('.', '\\.')
   return map(int, re.match(fn_mat, os.path.basename(url)).groups())
 
@@ -804,9 +1105,9 @@ def GetCWPProfile(cpv, source, _buildroot, gs_context):
   #    master.
   versions = []
   for milestone in (target[0], target[0] - 1):
-    gs_ls_url = os.path.join(GSURL_BASE_CWP, GSURL_CWP_SUBDIR[source],
-                             CWP_CHROME_PROFILE_NAME_PATTERN %
-                             (milestone, '*', '*', '*'))
+    gs_ls_url = os.path.join(
+        GSURL_BASE_CWP, GSURL_CWP_SUBDIR[source],
+        CWP_CHROME_PROFILE_NAME_PATTERN % (milestone, '*', '*', '*'))
     try:
       res = gs_context.List(gs_ls_url)
       versions += map(CWPProfileToVersionTuple, [r.url for r in res])
@@ -863,6 +1164,7 @@ def FindKernelEbuilds():
   Returns:
     a list of (ebuilds, kernel rev)
   """
+
   def kver(ebuild):
     matched = re.match(r'.*/chromeos-kernel-([0-9]+_[0-9]+)-.+\.ebuild$',
                        ebuild)
@@ -888,8 +1190,8 @@ def ProfileAge(profile_version):
   Returns:
     Age of profile_version in days.
   """
-  return (datetime.datetime.utcnow() -
-          datetime.datetime.utcfromtimestamp(profile_version[3])).days
+  return (datetime.datetime.utcnow() - datetime.datetime.utcfromtimestamp(
+      profile_version[3])).days
 
 
 PROFILE_SOURCES = {

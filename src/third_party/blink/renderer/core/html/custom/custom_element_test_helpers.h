@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 #include <utility>
@@ -155,7 +156,7 @@ class CreateElement {
   operator Element*() const {
     Document* document = document_.Get();
     if (!document)
-      document = HTMLDocument::CreateForTest();
+      document = MakeGarbageCollected<HTMLDocument>();
     NonThrowableExceptionState no_exceptions;
     Element* element = document->CreateElement(
         QualifiedName(g_null_atom, local_name_, namespace_uri_),

@@ -107,9 +107,7 @@ public class ActivityAssigner {
     private static final Object LOCK = new Object();
     private static List<ActivityAssigner> sInstances;
 
-    private final Context mContext;
     private final List<ActivityEntry> mActivityList;
-
     private final String mPrefPackage;
     private final String mPrefNumSavedEntries;
     private final String mPrefActivityIndex;
@@ -154,8 +152,6 @@ public class ActivityAssigner {
     }
 
     private ActivityAssigner(int activityTypeIndex) {
-        mContext = ContextUtils.getApplicationContext();
-
         mPrefPackage = PREF_PACKAGE[activityTypeIndex];
         mPrefNumSavedEntries = PREF_NUM_SAVED_ENTRIES[activityTypeIndex];
         mPrefActivityIndex = PREF_ACTIVITY_INDEX[activityTypeIndex];
@@ -274,7 +270,8 @@ public class ActivityAssigner {
 
         // Restore any entries that were previously saved.  If it seems that the preferences have
         // been corrupted somehow, just discard the whole map.
-        SharedPreferences prefs = mContext.getSharedPreferences(mPrefPackage, Context.MODE_PRIVATE);
+        SharedPreferences prefs = ContextUtils.getApplicationContext().getSharedPreferences(
+                mPrefPackage, Context.MODE_PRIVATE);
         try {
             long time = SystemClock.elapsedRealtime();
             final int numSavedEntries = prefs.getInt(mPrefNumSavedEntries, 0);
@@ -328,7 +325,8 @@ public class ActivityAssigner {
      * Saves the mapping between apps and Activities.
      */
     private void storeActivityList() {
-        SharedPreferences prefs = mContext.getSharedPreferences(mPrefPackage, Context.MODE_PRIVATE);
+        SharedPreferences prefs = ContextUtils.getApplicationContext().getSharedPreferences(
+                mPrefPackage, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.clear();
         editor.putInt(mPrefNumSavedEntries, mActivityList.size());

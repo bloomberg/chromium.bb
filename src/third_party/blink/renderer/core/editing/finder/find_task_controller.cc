@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/editing/finder/text_finder.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
@@ -120,7 +121,7 @@ class FindTaskController::IdleFindTask
         const EphemeralRangeInFlatTree ephemeral_match_range =
             buffer.RangeFromBufferIndex(match.start,
                                         match.start + match.length);
-        Range* const match_range = Range::Create(
+        auto* const match_range = MakeGarbageCollected<Range>(
             ephemeral_match_range.GetDocument(),
             ToPositionInDOMTree(ephemeral_match_range.StartPosition()),
             ToPositionInDOMTree(ephemeral_match_range.EndPosition()));
@@ -220,10 +221,10 @@ void FindTaskController::DidFinishTask(
   last_search_string_ = search_text;
 
   if (next_starting_position.IsNotNull()) {
-    resume_finding_from_range_ =
-        Range::Create(*next_starting_position.GetDocument(),
-                      ToPositionInDOMTree(next_starting_position),
-                      ToPositionInDOMTree(next_starting_position));
+    resume_finding_from_range_ = MakeGarbageCollected<Range>(
+        *next_starting_position.GetDocument(),
+        ToPositionInDOMTree(next_starting_position),
+        ToPositionInDOMTree(next_starting_position));
   }
 
   if (match_count > 0) {

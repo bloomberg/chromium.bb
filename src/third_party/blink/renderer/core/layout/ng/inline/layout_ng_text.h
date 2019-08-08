@@ -23,12 +23,6 @@ class CORE_EXPORT LayoutNGText : public LayoutText {
   }
   bool IsLayoutNGObject() const override { return true; }
 
- protected:
-  void InsertedIntoTree() override {
-    valid_ng_items_ = false;
-    LayoutText::InsertedIntoTree();
-  }
-
  private:
   const NGInlineItems* GetNGInlineItems() const final { return &inline_items_; }
   NGInlineItems* GetNGInlineItems() final { return &inline_items_; }

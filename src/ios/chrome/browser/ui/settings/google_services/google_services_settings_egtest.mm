@@ -6,6 +6,7 @@
 #import <XCTest/XCTest.h>
 
 #include "components/prefs/pref_service.h"
+#include "components/unified_consent/feature.h"
 #import "ios/chrome/app/main_controller.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
@@ -62,6 +63,13 @@ TabModel* GetNormalTabModel() {
 @end
 
 @implementation GoogleServicesSettingsTestCase
+
+- (void)setUp {
+  [super setUp];
+
+  CHECK(unified_consent::IsUnifiedConsentFeatureEnabled())
+      << "This test suite must be run with Unified Consent feature enabled.";
+}
 
 // Opens the Google services settings view, and closes it.
 - (void)testOpenGoogleServicesSettings {

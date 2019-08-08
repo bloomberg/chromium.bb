@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import argparse
 import doctest
 import itertools
@@ -94,4 +96,4 @@ if __name__ == '__main__':
     value = settings[key]
     if isinstance(value, str):
       value = '"%s"' % value
-    print '%s=%s' % (key, value)
+    print('%s=%s' % (key, value))

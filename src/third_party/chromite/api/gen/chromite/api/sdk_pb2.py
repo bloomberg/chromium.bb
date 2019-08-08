@@ -20,57 +20,12 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='chromite/api/sdk.proto',
   package='chromite.api',
   syntax='proto3',
-  serialized_options=None,
-  serialized_pb=_b('\n\x16\x63hromite/api/sdk.proto\x12\x0c\x63hromite.api\x1a\x1c\x63hromite/api/build_api.proto\x1a\x17\x63hromiumos/common.proto\"<\n\x0b\x43hrootPaths\x12\r\n\x05\x63\x61\x63he\x18\x01 \x01(\t\x12\x0e\n\x06\x63hrome\x18\x02 \x01(\t\x12\x0e\n\x06\x63hroot\x18\x03 \x01(\t\" \n\rChrootVersion\x12\x0f\n\x07version\x18\x01 \x01(\r\"\xb1\x01\n\rCreateRequest\x12\x30\n\x05\x66lags\x18\x01 \x01(\x0b\x32!.chromite.api.CreateRequest.Flags\x12(\n\x05paths\x18\x02 \x01(\x0b\x32\x19.chromite.api.ChrootPaths\x1a\x44\n\x05\x46lags\x12\x12\n\nno_replace\x18\x01 \x01(\x08\x12\x11\n\tbootstrap\x18\x02 \x01(\x08\x12\x14\n\x0cno_use_image\x18\x03 \x01(\x08\">\n\x0e\x43reateResponse\x12,\n\x07version\x18\x01 \x01(\x0b\x32\x1b.chromite.api.ChrootVersion\"\x94\x01\n\rUpdateRequest\x12\x30\n\x05\x66lags\x18\x01 \x01(\x0b\x32!.chromite.api.UpdateRequest.Flags\x12\x32\n\x11toolchain_targets\x18\x02 \x03(\x0b\x32\x17.chromiumos.BuildTarget\x1a\x1d\n\x05\x46lags\x12\x14\n\x0c\x62uild_source\x18\x01 \x01(\x08\">\n\x0eUpdateResponse\x12,\n\x07version\x18\x01 \x01(\x0b\x32\x1b.chromite.api.ChrootVersion2\xab\x01\n\nSdkService\x12\x43\n\x06\x43reate\x12\x1b.chromite.api.CreateRequest\x1a\x1c.chromite.api.CreateResponse\x12K\n\x06Update\x12\x1b.chromite.api.UpdateRequest\x1a\x1c.chromite.api.UpdateResponse\"\x06\xc2\xed\x1a\x02\x10\x01\x1a\x0b\xc2\xed\x1a\x07\n\x03sdk\x10\x02\x62\x06proto3')
+  serialized_options=_b('Z6go.chromium.org/chromiumos/infra/proto/go/chromite/api'),
+  serialized_pb=_b('\n\x16\x63hromite/api/sdk.proto\x12\x0c\x63hromite.api\x1a\x1c\x63hromite/api/build_api.proto\x1a\x17\x63hromiumos/common.proto\" \n\rChrootVersion\x12\x0f\n\x07version\x18\x01 \x01(\r\"\xab\x01\n\rCreateRequest\x12\x30\n\x05\x66lags\x18\x01 \x01(\x0b\x32!.chromite.api.CreateRequest.Flags\x12\"\n\x06\x63hroot\x18\x02 \x01(\x0b\x32\x12.chromiumos.Chroot\x1a\x44\n\x05\x46lags\x12\x12\n\nno_replace\x18\x01 \x01(\x08\x12\x11\n\tbootstrap\x18\x02 \x01(\x08\x12\x14\n\x0cno_use_image\x18\x03 \x01(\x08\">\n\x0e\x43reateResponse\x12,\n\x07version\x18\x01 \x01(\x0b\x32\x1b.chromite.api.ChrootVersion\"\xb8\x01\n\rUpdateRequest\x12\x30\n\x05\x66lags\x18\x01 \x01(\x0b\x32!.chromite.api.UpdateRequest.Flags\x12\x32\n\x11toolchain_targets\x18\x02 \x03(\x0b\x32\x17.chromiumos.BuildTarget\x12\"\n\x06\x63hroot\x18\x03 \x01(\x0b\x32\x12.chromiumos.Chroot\x1a\x1d\n\x05\x46lags\x12\x14\n\x0c\x62uild_source\x18\x01 \x01(\x08\">\n\x0eUpdateResponse\x12,\n\x07version\x18\x01 \x01(\x0b\x32\x1b.chromite.api.ChrootVersion2\xab\x01\n\nSdkService\x12\x43\n\x06\x43reate\x12\x1b.chromite.api.CreateRequest\x1a\x1c.chromite.api.CreateResponse\x12K\n\x06Update\x12\x1b.chromite.api.UpdateRequest\x1a\x1c.chromite.api.UpdateResponse\"\x06\xc2\xed\x1a\x02\x10\x01\x1a\x0b\xc2\xed\x1a\x07\n\x03sdk\x10\x02\x42\x38Z6go.chromium.org/chromiumos/infra/proto/go/chromite/apib\x06proto3')
   ,
   dependencies=[chromite_dot_api_dot_build__api__pb2.DESCRIPTOR,chromiumos_dot_common__pb2.DESCRIPTOR,])
 
 
-
-
-_CHROOTPATHS = _descriptor.Descriptor(
-  name='ChrootPaths',
-  full_name='chromite.api.ChrootPaths',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='cache', full_name='chromite.api.ChrootPaths.cache', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='chrome', full_name='chromite.api.ChrootPaths.chrome', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='chroot', full_name='chromite.api.ChrootPaths.chroot', index=2,
-      number=3, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=95,
-  serialized_end=155,
-)
 
 
 _CHROOTVERSION = _descriptor.Descriptor(
@@ -99,8 +54,8 @@ _CHROOTVERSION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=157,
-  serialized_end=189,
+  serialized_start=95,
+  serialized_end=127,
 )
 
 
@@ -144,8 +99,8 @@ _CREATEREQUEST_FLAGS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=301,
-  serialized_end=369,
+  serialized_start=233,
+  serialized_end=301,
 )
 
 _CREATEREQUEST = _descriptor.Descriptor(
@@ -163,7 +118,7 @@ _CREATEREQUEST = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='paths', full_name='chromite.api.CreateRequest.paths', index=1,
+      name='chroot', full_name='chromite.api.CreateRequest.chroot', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -181,8 +136,8 @@ _CREATEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=192,
-  serialized_end=369,
+  serialized_start=130,
+  serialized_end=301,
 )
 
 
@@ -212,8 +167,8 @@ _CREATERESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=371,
-  serialized_end=433,
+  serialized_start=303,
+  serialized_end=365,
 )
 
 
@@ -243,8 +198,8 @@ _UPDATEREQUEST_FLAGS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=555,
-  serialized_end=584,
+  serialized_start=523,
+  serialized_end=552,
 )
 
 _UPDATEREQUEST = _descriptor.Descriptor(
@@ -268,6 +223,13 @@ _UPDATEREQUEST = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='chroot', full_name='chromite.api.UpdateRequest.chroot', index=2,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -280,8 +242,8 @@ _UPDATEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=436,
-  serialized_end=584,
+  serialized_start=368,
+  serialized_end=552,
 )
 
 
@@ -311,32 +273,25 @@ _UPDATERESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=586,
-  serialized_end=648,
+  serialized_start=554,
+  serialized_end=616,
 )
 
 _CREATEREQUEST_FLAGS.containing_type = _CREATEREQUEST
 _CREATEREQUEST.fields_by_name['flags'].message_type = _CREATEREQUEST_FLAGS
-_CREATEREQUEST.fields_by_name['paths'].message_type = _CHROOTPATHS
+_CREATEREQUEST.fields_by_name['chroot'].message_type = chromiumos_dot_common__pb2._CHROOT
 _CREATERESPONSE.fields_by_name['version'].message_type = _CHROOTVERSION
 _UPDATEREQUEST_FLAGS.containing_type = _UPDATEREQUEST
 _UPDATEREQUEST.fields_by_name['flags'].message_type = _UPDATEREQUEST_FLAGS
 _UPDATEREQUEST.fields_by_name['toolchain_targets'].message_type = chromiumos_dot_common__pb2._BUILDTARGET
+_UPDATEREQUEST.fields_by_name['chroot'].message_type = chromiumos_dot_common__pb2._CHROOT
 _UPDATERESPONSE.fields_by_name['version'].message_type = _CHROOTVERSION
-DESCRIPTOR.message_types_by_name['ChrootPaths'] = _CHROOTPATHS
 DESCRIPTOR.message_types_by_name['ChrootVersion'] = _CHROOTVERSION
 DESCRIPTOR.message_types_by_name['CreateRequest'] = _CREATEREQUEST
 DESCRIPTOR.message_types_by_name['CreateResponse'] = _CREATERESPONSE
 DESCRIPTOR.message_types_by_name['UpdateRequest'] = _UPDATEREQUEST
 DESCRIPTOR.message_types_by_name['UpdateResponse'] = _UPDATERESPONSE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
-
-ChrootPaths = _reflection.GeneratedProtocolMessageType('ChrootPaths', (_message.Message,), dict(
-  DESCRIPTOR = _CHROOTPATHS,
-  __module__ = 'chromite.api.sdk_pb2'
-  # @@protoc_insertion_point(class_scope:chromite.api.ChrootPaths)
-  ))
-_sym_db.RegisterMessage(ChrootPaths)
 
 ChrootVersion = _reflection.GeneratedProtocolMessageType('ChrootVersion', (_message.Message,), dict(
   DESCRIPTOR = _CHROOTVERSION,
@@ -390,6 +345,7 @@ UpdateResponse = _reflection.GeneratedProtocolMessageType('UpdateResponse', (_me
 _sym_db.RegisterMessage(UpdateResponse)
 
 
+DESCRIPTOR._options = None
 
 _SDKSERVICE = _descriptor.ServiceDescriptor(
   name='SdkService',
@@ -397,8 +353,8 @@ _SDKSERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=_b('\302\355\032\007\n\003sdk\020\002'),
-  serialized_start=651,
-  serialized_end=822,
+  serialized_start=619,
+  serialized_end=790,
   methods=[
   _descriptor.MethodDescriptor(
     name='Create',

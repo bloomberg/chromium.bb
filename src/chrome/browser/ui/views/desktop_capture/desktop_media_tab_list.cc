@@ -165,6 +165,15 @@ gfx::Size DesktopMediaTabList::CalculatePreferredSize() const {
   return gfx::Size(0, rows * child_->row_height());
 }
 
+int DesktopMediaTabList::GetHeightForWidth(int width) const {
+  // If this method isn't overridden here, the default implementation would fall
+  // back to FillLayout's GetHeightForWidth, which would ask the TableView,
+  // which would return something based on the total number of rows, since
+  // TableView expects to always be sized by its container. Avoid even asking it
+  // by using the same height as CalculatePreferredSize().
+  return CalculatePreferredSize().height();
+}
+
 base::Optional<content::DesktopMediaID> DesktopMediaTabList::GetSelection() {
   int row = child_->FirstSelectedRow();
   if (row == -1)

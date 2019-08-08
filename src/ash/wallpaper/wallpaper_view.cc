@@ -4,17 +4,14 @@
 
 #include "ash/wallpaper/wallpaper_view.h"
 
-#include "ash/public/cpp/login_constants.h"
-#include "ash/public/cpp/wallpaper_types.h"
 #include "ash/public/cpp/window_animation_types.h"
 #include "ash/root_window_controller.h"
-#include "ash/session/session_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
-#include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_utils.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "cc/paint/render_surface_filters.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
@@ -22,20 +19,14 @@
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/color_analysis.h"
-#include "ui/gfx/color_utils.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/transform.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_animations.h"
 
 namespace ash {
-namespace {
 
-// The value used for alpha to apply a dark filter to the wallpaper in tablet
-// mode. A higher number up to 255 results in a darker wallpaper.
-constexpr int kTabletModeWallpaperAlpha = 102;
+namespace {
 
 // A view that controls the child view's layer so that the layer always has the
 // same size as the display's original, un-scaled size in DIP. The layer is then
@@ -62,7 +53,7 @@ class LayerControlView : public views::View {
         Shell::Get()->display_manager()->GetDisplayInfo(display.id());
 
     DCHECK_EQ(1u, children().size());
-    views::View* child = child_at(0);
+    views::View* child = children().front();
     child->SetBounds(0, 0, display.size().width(), display.size().height());
     gfx::Transform transform;
     // Apply RTL transform explicitly becacuse Views layer code
@@ -74,34 +65,6 @@ class LayerControlView : public views::View {
  private:
   DISALLOW_COPY_AND_ASSIGN(LayerControlView);
 };
-
-// Returns the color used to dim the wallpaper.
-SkColor GetWallpaperDarkenColor() {
-  SkColor darken_color =
-      Shell::Get()->wallpaper_controller()->GetProminentColor(
-          color_utils::ColorProfile(color_utils::LumaRange::DARK,
-                                    color_utils::SaturationRange::MUTED));
-  if (darken_color == kInvalidWallpaperColor)
-    darken_color = login_constants::kDefaultBaseColor;
-
-  darken_color = color_utils::GetResultingPaintColor(
-      SkColorSetA(login_constants::kDefaultBaseColor,
-                  login_constants::kTranslucentColorDarkenAlpha),
-      SkColorSetA(darken_color, 0xFF));
-
-  int alpha = login_constants::kTranslucentAlpha;
-  if (Shell::Get()
-          ->tablet_mode_controller()
-          ->IsTabletModeWindowManagerEnabled()) {
-    alpha = kTabletModeWallpaperAlpha;
-  } else if (Shell::Get()->overview_controller()->IsSelecting()) {
-    // Overview mode will apply its own brightness filter on a downscaled image,
-    // so color with full opacity here.
-    alpha = 255;
-  }
-
-  return SkColorSetA(darken_color, alpha);
-}
 
 }  // namespace
 
@@ -129,7 +92,7 @@ class PreEventDispatchHandler : public ui::EventHandler {
   void HandleClickOrTap(ui::Event* event) {
     CHECK_EQ(ui::EP_PRETARGET, event->phase());
     OverviewController* controller = Shell::Get()->overview_controller();
-    if (!controller->IsSelecting())
+    if (!controller->InOverviewSession())
       return;
     // Events that happen while app list is sliding out during overview should
     // be ignored to prevent overview from disappearing out from under the user.
@@ -166,81 +129,8 @@ void WallpaperView::RepaintBlurAndOpacity(int repaint_blur,
   SchedulePaint();
 }
 
-void WallpaperView::OnPaint(gfx::Canvas* canvas) {
-  // Scale the image while maintaining the aspect ratio, cropping as necessary
-  // to fill the wallpaper. Ideally the image should be larger than the largest
-  // display supported, if not we will scale and center it if the layout is
-  // WALLPAPER_LAYOUT_CENTER_CROPPED.
-  WallpaperController* controller = Shell::Get()->wallpaper_controller();
-  gfx::ImageSkia wallpaper = controller->GetWallpaper();
-  WallpaperLayout layout = controller->GetWallpaperLayout();
-
-  // Wallpapers with png format could be partially transparent. Fill the canvas
-  // with black to make it opaque before painting the wallpaper.
-  canvas->FillRect(GetLocalBounds(), SK_ColorBLACK);
-
-  if (wallpaper.isNull())
-    return;
-
-  cc::PaintFlags flags;
-  if (controller->ShouldApplyDimming()) {
-    flags.setColorFilter(
-        SkColorFilters::Blend(GetWallpaperDarkenColor(), SkBlendMode::kDarken));
-  }
-
-  switch (layout) {
-    case WALLPAPER_LAYOUT_CENTER_CROPPED: {
-      // The dimension with the smallest ratio must be cropped, the other one
-      // is preserved. Both are set in gfx::Size cropped_size.
-      double horizontal_ratio =
-          static_cast<double>(width()) / static_cast<double>(wallpaper.width());
-      double vertical_ratio = static_cast<double>(height()) /
-                              static_cast<double>(wallpaper.height());
-
-      gfx::Size cropped_size;
-      if (vertical_ratio > horizontal_ratio) {
-        cropped_size = gfx::Size(
-            gfx::ToFlooredInt(static_cast<double>(width()) / vertical_ratio),
-            wallpaper.height());
-      } else {
-        cropped_size = gfx::Size(
-            wallpaper.width(), gfx::ToFlooredInt(static_cast<double>(height()) /
-                                                 horizontal_ratio));
-      }
-
-      gfx::Rect wallpaper_cropped_rect(wallpaper.size());
-      wallpaper_cropped_rect.ClampToCenteredSize(cropped_size);
-      DrawWallpaper(wallpaper, wallpaper_cropped_rect, gfx::Rect(size()), flags,
-                    canvas);
-      break;
-    }
-    case WALLPAPER_LAYOUT_TILE: {
-      canvas->TileImageInt(wallpaper, 0, 0, 0, 0, width(), height(), 1.0f,
-                           SkTileMode::kRepeat, SkTileMode::kRepeat, &flags);
-      break;
-    }
-    case WALLPAPER_LAYOUT_STRETCH: {
-      // This is generally not recommended as it may show artifacts.
-      DrawWallpaper(wallpaper, gfx::Rect(wallpaper.size()), gfx::Rect(size()),
-                    flags, canvas);
-      break;
-    }
-    case WALLPAPER_LAYOUT_CENTER: {
-      const float image_scale = canvas->image_scale();
-      // Simply centered and not scaled (but may be clipped).
-      gfx::Rect wallpaper_rect = gfx::ScaleToRoundedRect(
-          gfx::Rect(wallpaper.size()), 1.f / image_scale);
-      wallpaper_rect.set_x((width() - wallpaper_rect.width()) / 2);
-      wallpaper_rect.set_y((height() - wallpaper_rect.height()) / 2);
-      DrawWallpaper(wallpaper, gfx::Rect(wallpaper.size()), wallpaper_rect,
-                    flags, canvas);
-      break;
-    }
-    default: {
-      NOTREACHED();
-      break;
-    }
-  }
+const char* WallpaperView::GetClassName() const {
+  return "WallpaperView";
 }
 
 bool WallpaperView::OnMousePressed(const ui::MouseEvent& event) {
@@ -320,7 +210,7 @@ views::Widget* CreateWallpaperWidget(aura::Window* root_window,
                                      int blur,
                                      float opacity,
                                      WallpaperView** out_wallpaper_view) {
-  WallpaperController* controller = Shell::Get()->wallpaper_controller();
+  auto* controller = Shell::Get()->wallpaper_controller();
 
   views::Widget* wallpaper_widget = new views::Widget;
   views::Widget::InitParams params(

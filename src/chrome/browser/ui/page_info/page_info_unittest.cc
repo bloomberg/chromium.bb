@@ -32,8 +32,6 @@
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/common/content_switches.h"
-#include "device/usb/public/cpp/fake_usb_device_manager.h"
-#include "device/usb/public/mojom/device.mojom.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_connection_status_flags.h"
@@ -41,9 +39,12 @@
 #include "net/test/test_certificate_data.h"
 #include "net/test/test_data_directory.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "services/device/public/cpp/test/fake_usb_device_manager.h"
+#include "services/device/public/mojom/usb_device.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/origin.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/android_theme_resources.h"
@@ -121,7 +122,7 @@ class MockPageInfoUI : public PageInfoUI {
 
 class PageInfoTest : public ChromeRenderViewHostTestHarness {
  public:
-  PageInfoTest() : url_("http://www.example.com") {}
+  PageInfoTest() { SetURL("http://www.example.com"); }
 
   ~PageInfoTest() override {}
 
@@ -156,7 +157,10 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
     EXPECT_CALL(*mock_ui, SetCookieInfo(_));
   }
 
-  void SetURL(const std::string& url) { url_ = GURL(url); }
+  void SetURL(const std::string& url) {
+    url_ = GURL(url);
+    origin_ = url::Origin::Create(url_);
+  }
 
   void SetPermissionInfo(const PermissionInfoList& permission_info_list,
                          ChosenObjectInfoList chosen_object_info_list) {
@@ -184,6 +188,7 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
   }
 
   const GURL& url() const { return url_; }
+  const url::Origin& origin() const { return origin_; }
   scoped_refptr<net::X509Certificate> cert() { return cert_; }
   MockPageInfoUI* mock_ui() { return mock_ui_.get(); }
   security_state::SecurityLevel security_level() { return security_level_; }
@@ -221,6 +226,7 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
   std::unique_ptr<MockPageInfoUI> mock_ui_;
   scoped_refptr<net::X509Certificate> cert_;
   GURL url_;
+  url::Origin origin_;
   std::vector<std::unique_ptr<PageInfoUI::ChosenObjectInfo>>
       last_chosen_object_info_;
   PermissionInfoList last_permission_info_list_;
@@ -322,7 +328,7 @@ TEST_F(PageInfoTest, OnPermissionsChanged) {
 #if BUILDFLAG(ENABLE_PLUGINS)
   setting = content_settings->GetContentSetting(
       url(), url(), CONTENT_SETTINGS_TYPE_PLUGINS, std::string());
-  EXPECT_EQ(setting, CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
+  EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
 #endif
   setting = content_settings->GetContentSetting(
       url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string());
@@ -406,7 +412,7 @@ TEST_F(PageInfoTest, OnChosenObjectDeleted) {
 
   auto device_info = usb_device_manager.CreateAndAddDevice(
       0, 0, "Google", "Gizmo", "1234567890");
-  store->GrantDevicePermission(url(), url(), *device_info);
+  store->GrantDevicePermission(origin(), origin(), *device_info);
 
   EXPECT_CALL(*mock_ui(), SetIdentityInfo(_));
   EXPECT_CALL(*mock_ui(), SetCookieInfo(_));
@@ -422,7 +428,7 @@ TEST_F(PageInfoTest, OnChosenObjectDeleted) {
   page_info()->OnSiteChosenObjectDeleted(info->ui_info,
                                          info->chooser_object->value);
 
-  EXPECT_FALSE(store->HasDevicePermission(url(), url(), *device_info));
+  EXPECT_FALSE(store->HasDevicePermission(origin(), origin(), *device_info));
   EXPECT_EQ(0u, last_chosen_object_info().size());
 }
 
@@ -853,7 +859,8 @@ TEST_F(PageInfoTest, HTTPSSHA1) {
 TEST_F(PageInfoTest, NoInfoBar) {
   SetDefaultUIExpectations(mock_ui());
   EXPECT_EQ(0u, infobar_service()->infobar_count());
-  page_info()->OnUIClosing();
+  bool unused;
+  page_info()->OnUIClosing(&unused);
   EXPECT_EQ(0u, infobar_service()->infobar_count());
 }
 
@@ -866,7 +873,8 @@ TEST_F(PageInfoTest, ShowInfoBar) {
   EXPECT_EQ(0u, infobar_service()->infobar_count());
   page_info()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_GEOLOCATION,
                                        CONTENT_SETTING_ALLOW);
-  page_info()->OnUIClosing();
+  bool unused;
+  page_info()->OnUIClosing(&unused);
   ASSERT_EQ(1u, infobar_service()->infobar_count());
 
   infobar_service()->RemoveInfoBar(infobar_service()->infobar_at(0));
@@ -876,7 +884,8 @@ TEST_F(PageInfoTest, NoInfoBarWhenSoundSettingChanged) {
   EXPECT_EQ(0u, infobar_service()->infobar_count());
   page_info()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_SOUND,
                                        CONTENT_SETTING_BLOCK);
-  page_info()->OnUIClosing();
+  bool unused;
+  page_info()->OnUIClosing(&unused);
   EXPECT_EQ(0u, infobar_service()->infobar_count());
 }
 
@@ -886,7 +895,8 @@ TEST_F(PageInfoTest, ShowInfoBarWhenSoundSettingAndAnotherSettingChanged) {
                                        CONTENT_SETTING_BLOCK);
   page_info()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_SOUND,
                                        CONTENT_SETTING_BLOCK);
-  page_info()->OnUIClosing();
+  bool unused;
+  page_info()->OnUIClosing(&unused);
   EXPECT_EQ(1u, infobar_service()->infobar_count());
 
   infobar_service()->RemoveInfoBar(infobar_service()->infobar_at(0));

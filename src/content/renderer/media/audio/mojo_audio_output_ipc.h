@@ -50,6 +50,7 @@ class CONTENT_EXPORT MojoAudioOutputIPC
       const base::Optional<base::UnguessableToken>& processing_id) override;
   void PlayStream() override;
   void PauseStream() override;
+  void FlushStream() override;
   void CloseStream() override;
   void SetVolume(double volume) override;
 

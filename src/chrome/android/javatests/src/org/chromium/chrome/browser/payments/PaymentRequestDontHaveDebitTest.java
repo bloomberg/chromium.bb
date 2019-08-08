@@ -25,7 +25,6 @@ import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityS
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -46,8 +45,7 @@ public class PaymentRequestDontHaveDebitTest implements MainActivityStartCallbac
             new PaymentRequestTestRule("payment_request_debit_test.html", this);
 
     @Override
-    public void onMainActivityStarted()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
         String billingAddressId = helper.setProfile(new AutofillProfile("", "https://example.com",
                 true, "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "",
@@ -71,7 +69,7 @@ public class PaymentRequestDontHaveDebitTest implements MainActivityStartCallbac
     @MediumTest
     @Feature({"Payments"})
     public void testUnknownCardTypeIsNotPreselectedButAvailable()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws InterruptedException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
 
         Assert.assertTrue(
@@ -92,7 +90,7 @@ public class PaymentRequestDontHaveDebitTest implements MainActivityStartCallbac
     @MediumTest
     @Feature({"Payments"})
     public void testCanMakePaymentWithUnknownCardType()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws InterruptedException, TimeoutException {
         mPaymentRequestTestRule.openPageAndClickNodeAndWait(
                 "canMakePayment", mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
         mPaymentRequestTestRule.expectResultContains(new String[] {"true"});

@@ -61,6 +61,7 @@ class ViewAXPlatformNodeDelegate : public ViewAccessibility,
   bool AccessibilityPerformAction(const ui::AXActionData& data) override;
   bool ShouldIgnoreHoveredStateForTesting() override;
   bool IsOffscreen() const override;
+  base::string16 GetAuthorUniqueId() const override;
   // Also in |ViewAccessibility|.
   const ui::AXUniqueId& GetUniqueId() const override;
 

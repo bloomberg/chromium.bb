@@ -39,10 +39,10 @@ class TemplateURLService;
 
 namespace ntp_tiles {
 
-using ParseJSONCallback = base::Callback<void(
+using ParseJSONCallback = base::RepeatingCallback<void(
     const std::string& unsafe_json,
-    const base::Callback<void(std::unique_ptr<base::Value>)>& success_callback,
-    const base::Callback<void(const std::string&)>& error_callback)>;
+    base::OnceCallback<void(base::Value)> success_callback,
+    base::OnceCallback<void(const std::string&)> error_callback)>;
 
 // Actual (non-test) implementation of the PopularSites interface. Caches the
 // downloaded file on disk to avoid re-downloading on every startup.
@@ -53,7 +53,7 @@ class PopularSitesImpl : public PopularSites {
       const TemplateURLService* template_url_service,
       variations::VariationsService* variations_service,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      ParseJSONCallback parse_json);
+      const ParseJSONCallback& parse_json);
 
   ~PopularSitesImpl() override;
 
@@ -80,7 +80,7 @@ class PopularSitesImpl : public PopularSites {
   // Called once SimpleURLLoader completes the network request.
   void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
 
-  void OnJsonParsed(std::unique_ptr<base::Value> json);
+  void OnJsonParsed(base::Value json);
   void OnJsonParseFailed(const std::string& error_message);
   void OnDownloadFailed();
 

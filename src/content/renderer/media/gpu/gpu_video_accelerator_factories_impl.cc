@@ -8,7 +8,6 @@
 #include <GLES2/gl2ext.h>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/unguessable_token.h"
@@ -24,7 +23,6 @@
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
-#include "media/base/media_switches.h"
 #include "media/filters/gpu_video_decoder.h"
 #include "media/gpu/gpu_video_accelerator_util.h"
 #include "media/gpu/ipc/client/gpu_video_decode_accelerator_host.h"
@@ -128,17 +126,15 @@ void GpuVideoAcceleratorFactoriesImpl::BindOnTaskRunner(
   context_provider_->AddObserver(this);
 
 #if BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
-  if (base::FeatureList::IsEnabled(media::kMojoVideoDecoder)) {
-    // Note: This is a bit of a hack, since we don't specify the implementation
-    // before asking for the map of supported configs.  We do this because it
-    // (a) saves an ipc call, and (b) makes the return of those configs atomic.
-    // Otherwise, we might have received configs for kDefault but not yet
-    // kAlternate, for example.
-    interface_factory_->CreateVideoDecoder(mojo::MakeRequest(&video_decoder_));
-    video_decoder_->GetSupportedConfigs(base::BindOnce(
-        &GpuVideoAcceleratorFactoriesImpl::OnSupportedDecoderConfigs,
-        base::Unretained(this)));
-  }
+  // Note: This is a bit of a hack, since we don't specify the implementation
+  // before asking for the map of supported configs.  We do this because it
+  // (a) saves an ipc call, and (b) makes the return of those configs atomic.
+  // Otherwise, we might have received configs for kDefault but not yet
+  // kAlternate, for example.
+  interface_factory_->CreateVideoDecoder(mojo::MakeRequest(&video_decoder_));
+  video_decoder_->GetSupportedConfigs(base::BindOnce(
+      &GpuVideoAcceleratorFactoriesImpl::OnSupportedDecoderConfigs,
+      base::Unretained(this)));
 #endif  // BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
 }
 
@@ -235,21 +231,14 @@ GpuVideoAcceleratorFactoriesImpl::CreateVideoDecoder(
     return nullptr;
 
 #if BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
-  if (base::FeatureList::IsEnabled(media::kMojoVideoDecoder)) {
-    media::mojom::VideoDecoderPtr video_decoder;
-    interface_factory_->CreateVideoDecoder(mojo::MakeRequest(&video_decoder));
-    return std::make_unique<media::MojoVideoDecoder>(
-        task_runner_, this, media_log, std::move(video_decoder), implementation,
-        request_overlay_info_cb, rendering_color_space_);
-  }
+  media::mojom::VideoDecoderPtr video_decoder;
+  interface_factory_->CreateVideoDecoder(mojo::MakeRequest(&video_decoder));
+  return std::make_unique<media::MojoVideoDecoder>(
+      task_runner_, this, media_log, std::move(video_decoder), implementation,
+      request_overlay_info_cb, rendering_color_space_);
+#else
+  return nullptr;
 #endif  // BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
-
-  // GpuVideoDecoder is our default implementation without MVD.
-  if (implementation != media::VideoDecoderImplementation::kDefault)
-    return nullptr;
-
-  return std::make_unique<media::GpuVideoDecoder>(
-      this, request_overlay_info_cb, rendering_color_space_, media_log);
 }
 
 std::unique_ptr<media::VideoDecodeAccelerator>

@@ -146,7 +146,7 @@ class EgtestsApp(object):
   """
 
   def __init__(self, egtests_app, filtered_tests=None, invert=False,
-               test_args=None, env_vars=None):
+               test_args=None, env_vars=None, host_app_path=None):
     """Initialize Egtests.
 
     Args:
@@ -159,6 +159,7 @@ class EgtestsApp(object):
       test_args: List of strings to pass as arguments to the test when
         launching.
       env_vars: List of environment variables to pass to the test itself.
+      host_app_path: (str) full path to host app.
 
     Raises:
       AppNotFoundError: If the given app does not exist
@@ -172,6 +173,7 @@ class EgtestsApp(object):
     self.invert = invert
     self.test_args = test_args
     self.env_vars = env_vars
+    self.host_app_path = host_app_path
 
   def _xctest_path(self):
     """Gets xctest-file from egtests/PlugIns folder.
@@ -187,12 +189,12 @@ class EgtestsApp(object):
     if not os.path.exists(plugins_dir):
       raise test_runner.PlugInsNotFoundError(plugins_dir)
     plugin_xctest = None
-    for plugin in os.listdir(plugins_dir):
-      if plugin.startswith(
-          self.module_name) and plugin.endswith('.xctest'):
-        plugin_xctest = os.path.join(plugins_dir, plugin)
+    if os.path.exists(plugins_dir):
+      for plugin in os.listdir(plugins_dir):
+        if plugin.endswith('.xctest'):
+          plugin_xctest = os.path.join(plugins_dir, plugin)
     if not plugin_xctest:
-      raise test_runner.XCTestPlugInNotFoundError(plugins_dir)
+      raise test_runner.XCTestPlugInNotFoundError(plugin_xctest)
     return plugin_xctest.replace(self.egtests_path, '')
 
   def xctestrun_node(self):
@@ -202,9 +204,7 @@ class EgtestsApp(object):
       A node with filled required fields about egtests.
     """
     module = self.module_name + '_module'
-    xctestrun_data = {
-        module: {
-            'IsAppHostedTestBundle': True,
+    module_data = {
             'TestBundlePath': '__TESTHOST__%s' % self._xctest_path(),
             'TestHostPath': '%s' % self.egtests_path,
             'TestingEnvironmentVariables': {
@@ -216,6 +216,25 @@ class EgtestsApp(object):
                 'XCInjectBundleInto': '__TESTHOST__/%s' % self.module_name
             }
         }
+    # Add module data specific to EG2 or EG1 tests
+    # EG2 tests
+    if self.host_app_path:
+      module_data['IsUITestBundle'] = True
+      module_data['IsXCTRunnerHostedTestBundle'] = True
+      module_data['UITargetAppPath'] = '%s' % self.host_app_path
+      # Special handling for Xcode10.2
+      dependent_products = [
+        module_data['UITargetAppPath'],
+        module_data['TestBundlePath'],
+        module_data['TestHostPath']
+      ]
+      module_data['DependentProductPaths'] = dependent_products
+    # EG1 tests
+    else:
+      module_data['IsAppHostedTestBundle'] = True
+
+    xctestrun_data = {
+        module: module_data
     }
     if self.filter:
       if self.invert:
@@ -290,7 +309,8 @@ class LaunchCommand(object):
         egtests_app=self.egtests_app.egtests_path,
         filtered_tests=[test.replace(' ', '/') for test in failed_results],
         test_args=test_args,
-        env_vars=env_vars)
+        env_vars=env_vars,
+        host_app_path=self.egtests_app.host_app_path)
     # Regenerates xctest run and gets a command.
     return self.command(eg_app, out_dir, self.destination, shards=1)
 
@@ -494,6 +514,7 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
   def __init__(
       self,
       app_path,
+      host_app_path,
       iossim_path,
       xcode_build_version,
       version,
@@ -511,6 +532,7 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
 
     Args:
       app_path: (str) A path to egtests_app.
+      host_app_path: (str) A path to the host app for EG2.
       iossim_path: Path to the compiled iossim binary to use.
                    Not used, but is required by the base class.
       xcode_build_version: (str) Xcode build version for running tests.
@@ -549,7 +571,11 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
         xcode_path=xcode_path,
         xctest=False
     )
+    self.set_up()
     self.erase_all_simulators()
+    self.host_app_path = None
+    if host_app_path != 'NO_PATH':
+      self.host_app_path = os.path.abspath(host_app_path)
     self._init_sharding_data()
     self.logs = collections.OrderedDict()
     self.test_results = collections.OrderedDict()
@@ -571,6 +597,7 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
     self.sharding_data = [
         {
             'app': self.app_path,
+            'host': self.host_app_path,
             # Destination is required to run tests via xcodebuild and it
             # looks like
             # 'platform=iOS Simulator,OS=<os_version>,Name=<simulator-name>'
@@ -600,7 +627,8 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
     for params in self.sharding_data:
       launch_commands.append(LaunchCommand(
           EgtestsApp(params['app'], filtered_tests=params['test_cases'],
-                     env_vars=self.env_vars, test_args=self.test_args),
+                     env_vars=self.env_vars, test_args=self.test_args,
+                     host_app_path=params['host']),
           params['destination'],
           shards=params['shards'],
           retries=self.retries,
@@ -615,16 +643,16 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
     self.test_results['end_run'] = int(time.time())
 
     # Gets passed tests
-    self.logs['passed'] = []
+    self.logs['passed tests'] = []
     for shard_attempts in attempts_results:
       for attempt in shard_attempts:
-        self.logs['passed'].extend(attempt['passed'])
+        self.logs['passed tests'].extend(attempt['passed'])
 
     # If the last attempt does not have failures, mark failed as empty
-    self.logs['failed'] = []
+    self.logs['failed tests'] = []
     for shard_attempts in attempts_results:
       if shard_attempts[-1]['failed']:
-        self.logs['failed'].extend(shard_attempts[-1]['failed'].keys())
+        self.logs['failed tests'].extend(shard_attempts[-1]['failed'].keys())
 
     # Gets all failures/flakes and lists them in bot summary
     all_failures = set()
@@ -638,10 +666,11 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
           all_failures.add(failure)
 
     # Gets only flaky(not failed) tests.
-    self.logs['flaked'] = list(all_failures - set(self.logs['failed']))
+    self.logs['flaked tests'] = list(
+        all_failures - set(self.logs['failed tests']))
 
     # Test is failed if there are failures for the last run.
-    return not self.logs['failed']
+    return not self.logs['failed tests']
 
   def erase_all_simulators(self):
     """Erases all simulator devices.

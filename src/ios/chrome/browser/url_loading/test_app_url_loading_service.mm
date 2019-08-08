@@ -14,3 +14,7 @@ void TestAppUrlLoadingService::LoadUrlInNewTab(const UrlLoadParams& params) {
   last_params = params;
   load_new_tab_call_count++;
 }
+
+ios::ChromeBrowserState* TestAppUrlLoadingService::GetCurrentBrowserState() {
+  return currentBrowserState;
+}

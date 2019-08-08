@@ -30,7 +30,7 @@
   session.evaluate('document.forms[0].submit()');
   await waitForRequestedNavigationAndDump();
 
-  session.evaluate('frameLoadPromise.then(() => document.forms[1].submit())');
+  session.evaluate('document.forms[1].submit()');
   await waitForRequestedNavigationAndDump();
 
   testRunner.completeTest();

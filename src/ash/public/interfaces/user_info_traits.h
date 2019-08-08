@@ -5,7 +5,7 @@
 #ifndef ASH_PUBLIC_INTERFACES_USER_INFO_TRAITS_H_
 #define ASH_PUBLIC_INTERFACES_USER_INFO_TRAITS_H_
 
-#include "ash/public/interfaces/user_info.mojom.h"
+#include "ash/public/cpp/session/user_info.h"
 #include "components/user_manager/user_type.h"
 
 namespace mojo {

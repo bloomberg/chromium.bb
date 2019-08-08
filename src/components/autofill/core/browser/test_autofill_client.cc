@@ -47,10 +47,6 @@ payments::PaymentsClient* TestAutofillClient::GetPaymentsClient() {
   return payments_client_.get();
 }
 
-LegacyStrikeDatabase* TestAutofillClient::GetLegacyStrikeDatabase() {
-  return test_legacy_strike_database_.get();
-}
-
 StrikeDatabase* TestAutofillClient::GetStrikeDatabase() {
   return test_strike_database_.get();
 }
@@ -175,6 +171,7 @@ void TestAutofillClient::ShowAutofillPopup(
     base::i18n::TextDirection text_direction,
     const std::vector<Suggestion>& suggestions,
     bool autoselect_first_suggestion,
+    PopupType popup_type,
     base::WeakPtr<AutofillPopupDelegate> delegate) {}
 
 void TestAutofillClient::UpdateAutofillPopupDataListValues(

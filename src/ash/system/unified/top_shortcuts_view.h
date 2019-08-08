@@ -29,6 +29,7 @@ class TopShortcutButtonContainer : public views::View {
   // views::View:
   void Layout() override;
   gfx::Size CalculatePreferredSize() const override;
+  const char* GetClassName() const override;
 
   void AddUserAvatarButton(views::View* user_avatar_button);
   // Add the sign-out button, which can be resized upon layout.

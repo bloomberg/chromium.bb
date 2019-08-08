@@ -18,6 +18,7 @@
 #include "third_party/blink/public/mojom/csp/content_security_policy.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/platform/web_content_security_policy.h"
+#include "third_party/blink/public/platform/web_cursor_info.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/web/web_ime_text_span.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -37,6 +38,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::WebContentSecurityPolicySource,
                           blink::kWebContentSecurityPolicySourceLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::ContentSecurityPolicyType,
                           blink::mojom::ContentSecurityPolicyType::kMaxValue)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebCursorInfo::Type,
+                          blink::WebCursorInfo::Type::kTypeMaxValue)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebInputEvent::Type,
                               blink::WebInputEvent::kTypeFirst,
                               blink::WebInputEvent::kTypeLast)

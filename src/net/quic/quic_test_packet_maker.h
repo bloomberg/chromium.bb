@@ -40,7 +40,7 @@ class QuicTestPacketMaker {
   // stream id set to the |parent_stream_id| param of MakeRequestHeaders...().
   // Otherwise, headers are constructed with the exclusive flag set to false and
   // the parent stream ID set to 0 (ignoring the |parent_stream_id| param).
-  QuicTestPacketMaker(quic::QuicTransportVersion version,
+  QuicTestPacketMaker(quic::ParsedQuicVersion version,
                       quic::QuicConnectionId connection_id,
                       quic::MockClock* clock,
                       const std::string& host,
@@ -64,15 +64,17 @@ class QuicTestPacketMaker {
       uint64_t smallest_received,
       uint64_t least_unacked);
 
-  std::unique_ptr<quic::QuicReceivedPacket> MakeStreamIdBlockedPacket(
+  std::unique_ptr<quic::QuicReceivedPacket> MakeStreamsBlockedPacket(
       uint64_t num,
       bool include_version,
-      quic::QuicStreamId stream_id);
+      quic::QuicStreamCount stream_count,
+      bool unidirectional);
 
-  std::unique_ptr<quic::QuicReceivedPacket> MakeMaxStreamIdPacket(
+  std::unique_ptr<quic::QuicReceivedPacket> MakeMaxStreamsPacket(
       uint64_t num,
       bool include_version,
-      quic::QuicStreamId stream_id);
+      quic::QuicStreamCount stream_count,
+      bool unidirectional);
 
   std::unique_ptr<quic::QuicReceivedPacket> MakeRstPacket(
       uint64_t num,
@@ -408,7 +410,7 @@ class QuicTestPacketMaker {
   quic::QuicConnectionIdIncluded HasDestinationConnectionId() const;
   quic::QuicConnectionIdIncluded HasSourceConnectionId() const;
 
-  quic::QuicTransportVersion version_;
+  quic::ParsedQuicVersion version_;
   quic::QuicConnectionId connection_id_;
   quic::MockClock* clock_;  // Owned by QuicStreamFactory.
   std::string host_;

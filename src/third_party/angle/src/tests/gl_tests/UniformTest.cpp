@@ -9,6 +9,7 @@
 
 #include <array>
 #include <cmath>
+#include <sstream>
 
 using namespace angle;
 
@@ -322,10 +323,8 @@ class UniformTest : public ANGLETest
         setConfigAlphaBits(8);
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
-
         constexpr char kVS[] = "void main() { gl_Position = vec4(1); }";
         constexpr char kFS[] =
             "precision mediump float;\n"
@@ -357,11 +356,7 @@ class UniformTest : public ANGLETest
         ASSERT_GL_NO_ERROR();
     }
 
-    void TearDown() override
-    {
-        glDeleteProgram(mProgram);
-        ANGLETest::TearDown();
-    }
+    void testTearDown() override { glDeleteProgram(mProgram); }
 
     GLuint mProgram;
     GLint mUniformFLocation;
@@ -677,15 +672,13 @@ class UniformTestES3 : public ANGLETest
   protected:
     UniformTestES3() : mProgram(0) {}
 
-    void TearDown() override
+    void testTearDown() override
     {
         if (mProgram != 0)
         {
             glDeleteProgram(mProgram);
             mProgram = 0;
         }
-
-        ANGLETest::TearDown();
     }
 
     GLuint mProgram;
@@ -1097,15 +1090,13 @@ class UniformTestES31 : public ANGLETest
   protected:
     UniformTestES31() : mProgram(0) {}
 
-    void TearDown() override
+    void testTearDown() override
     {
         if (mProgram != 0)
         {
             glDeleteProgram(mProgram);
             mProgram = 0;
         }
-
-        ANGLETest::TearDown();
     }
 
     GLuint mProgram;
@@ -1249,6 +1240,95 @@ TEST_P(UniformTestES3, StructWithNonSquareMatrixAndBool)
     EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::white);
 }
 
+// Test that matrix uniform upload is correct.
+TEST_P(UniformTestES3, MatrixUniformUpload)
+{
+    constexpr size_t kMinDims = 2;
+    constexpr size_t kMaxDims = 4;
+
+    GLfloat matrixValues[kMaxDims * kMaxDims];
+
+    for (size_t i = 0; i < kMaxDims * kMaxDims; ++i)
+    {
+        matrixValues[i] = static_cast<GLfloat>(i);
+    }
+
+    using UniformMatrixCxRfv = decltype(glUniformMatrix2fv);
+    UniformMatrixCxRfv uniformMatrixCxRfv[kMaxDims + 1][kMaxDims + 1] = {
+        {nullptr, nullptr, nullptr, nullptr, nullptr},
+        {nullptr, nullptr, nullptr, nullptr, nullptr},
+        {nullptr, nullptr, glUniformMatrix2fv, glUniformMatrix2x3fv, glUniformMatrix2x4fv},
+        {nullptr, nullptr, glUniformMatrix3x2fv, glUniformMatrix3fv, glUniformMatrix3x4fv},
+        {nullptr, nullptr, glUniformMatrix4x2fv, glUniformMatrix4x3fv, glUniformMatrix4fv},
+    };
+
+    for (int transpose = 0; transpose < 2; ++transpose)
+    {
+        for (size_t cols = kMinDims; cols <= kMaxDims; ++cols)
+        {
+            for (size_t rows = kMinDims; rows <= kMaxDims; ++rows)
+            {
+                std::ostringstream shader;
+                shader << "#version 300 es\n"
+                          "precision highp float;\n"
+                          "out highp vec4 colorOut;\n"
+                          "uniform mat"
+                       << cols << 'x' << rows
+                       << " unused;\n"
+                          "uniform mat"
+                       << cols << 'x' << rows
+                       << " m;\n"
+                          "void main()\n"
+                          "{\n"
+                          "  bool isCorrect =";
+
+                for (size_t col = 0; col < cols; ++col)
+                {
+                    for (size_t row = 0; row < rows; ++row)
+                    {
+                        size_t value;
+                        if (!transpose)
+                        {
+                            // Matrix data is uploaded column-major.
+                            value = col * rows + row;
+                        }
+                        else
+                        {
+                            // Matrix data is uploaded row-major.
+                            value = row * cols + col;
+                        }
+
+                        if (value != 0)
+                        {
+                            shader << "&&\n    ";
+                        }
+
+                        shader << "(m[" << col << "][" << row << "] == " << value << ".0)";
+                    }
+                }
+
+                shader << ";\n  colorOut = vec4(isCorrect);\n"
+                          "}\n";
+
+                ANGLE_GL_PROGRAM(program, essl3_shaders::vs::Simple(), shader.str().c_str());
+
+                glUseProgram(program.get());
+
+                GLint location = glGetUniformLocation(program.get(), "m");
+                ASSERT_NE(-1, location);
+
+                uniformMatrixCxRfv[cols][rows](location, 1, transpose != 0, matrixValues);
+                ASSERT_GL_NO_ERROR();
+
+                drawQuad(program.get(), essl3_shaders::PositionAttrib(), 0.0f);
+
+                ASSERT_GL_NO_ERROR();
+                EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::white);
+            }
+        }
+    }
+}
+
 // Test that uniforms with reserved OpenGL names that aren't reserved in GL ES 2 work correctly.
 TEST_P(UniformTest, UniformWithReservedOpenGLName)
 {
@@ -1279,21 +1359,21 @@ TEST_P(UniformTest, UniformWithReservedOpenGLName)
 ANGLE_INSTANTIATE_TEST(SimpleUniformTest,
                        ES2_D3D9(),
                        ES2_D3D11(),
-                       ES2_D3D11_FL9_3(),
-                       ES2_OPENGL(),
                        ES3_D3D11(),
+                       ES2_OPENGL(),
                        ES3_OPENGL(),
-                       ES3_OPENGLES(),
                        ES2_OPENGLES(),
-                       ES2_VULKAN());
+                       ES3_OPENGLES(),
+                       ES2_VULKAN(),
+                       ES3_VULKAN());
 ANGLE_INSTANTIATE_TEST(UniformTest,
                        ES2_D3D9(),
                        ES2_D3D11(),
-                       ES2_D3D11_FL9_3(),
                        ES2_OPENGL(),
                        ES2_OPENGLES(),
-                       ES2_VULKAN());
-ANGLE_INSTANTIATE_TEST(UniformTestES3, ES3_D3D11(), ES3_OPENGL(), ES3_OPENGLES());
+                       ES2_VULKAN(),
+                       ES3_VULKAN());
+ANGLE_INSTANTIATE_TEST(UniformTestES3, ES3_D3D11(), ES3_OPENGL(), ES3_OPENGLES(), ES3_VULKAN());
 ANGLE_INSTANTIATE_TEST(UniformTestES31, ES31_D3D11(), ES31_OPENGL(), ES31_OPENGLES());
 
 }  // namespace

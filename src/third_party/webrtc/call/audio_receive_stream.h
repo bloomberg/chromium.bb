@@ -20,7 +20,7 @@
 #include "api/audio_codecs/audio_decoder_factory.h"
 #include "api/call/transport.h"
 #include "api/crypto/crypto_options.h"
-#include "api/media_transport_interface.h"
+#include "api/media_transport_config.h"
 #include "api/rtp_parameters.h"
 #include "api/rtp_receiver_interface.h"
 #include "api/scoped_refptr.h"
@@ -38,6 +38,8 @@ class AudioReceiveStream {
     uint32_t remote_ssrc = 0;
     int64_t bytes_rcvd = 0;
     uint32_t packets_rcvd = 0;
+    uint64_t fec_packets_received = 0;
+    uint64_t fec_packets_discarded = 0;
     uint32_t packets_lost = 0;
     float fraction_lost = 0.0f;
     std::string codec_name;
@@ -54,9 +56,12 @@ class AudioReceiveStream {
     uint64_t total_samples_received = 0;
     double total_output_duration = 0.0;
     uint64_t concealed_samples = 0;
+    uint64_t silent_concealed_samples = 0;
     uint64_t concealment_events = 0;
     double jitter_buffer_delay_seconds = 0.0;
     uint64_t jitter_buffer_emitted_count = 0;
+    uint64_t inserted_samples_for_deceleration = 0;
+    uint64_t removed_samples_for_acceleration = 0;
     // Stats below DO NOT correspond directly to anything in the WebRTC stats
     float expand_rate = 0.0f;
     float speech_expand_rate = 0.0f;
@@ -79,6 +84,8 @@ class AudioReceiveStream {
     absl::optional<int64_t> last_packet_received_timestamp_ms;
     uint64_t jitter_buffer_flushes = 0;
     double relative_packet_arrival_delay_seconds = 0.0;
+    int32_t interruption_count = 0;
+    int32_t total_interruption_duration_ms = 0;
   };
 
   struct Config {
@@ -115,7 +122,7 @@ class AudioReceiveStream {
 
     Transport* rtcp_send_transport = nullptr;
 
-    MediaTransportInterface* media_transport = nullptr;
+    MediaTransportConfig media_transport_config;
 
     // NetEq settings.
     size_t jitter_buffer_max_packets = 200;

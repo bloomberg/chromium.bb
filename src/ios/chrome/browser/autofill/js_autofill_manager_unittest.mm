@@ -13,9 +13,9 @@
 #import "components/autofill/ios/browser/js_autofill_manager.h"
 #include "ios/chrome/browser/web/chrome_web_client.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
+#import "ios/web/public/deprecated/crw_js_injection_receiver.h"
+#include "ios/web/public/js_messaging/web_frame_util.h"
 #import "ios/web/public/test/js_test_util.h"
-#import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
-#include "ios/web/public/web_state/web_frame_util.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "testing/gtest_mac.h"
 
@@ -59,9 +59,6 @@ NSString* const kUnownedUntitledFormHtml =
      "<TEXTAREA id='textarea-nonempty'>Go&#10;away!</TEXTAREA>"
      "<INPUT type='submit' name='reply-send' value='Send'/>";
 
-// TODO(crbug.com/619982): MobileSafari corrected HTMLInputElement.maxLength
-// with the specification ( https://bugs.webkit.org/show_bug.cgi?id=154906 ).
-// Add support for old and new default maxLength value until we dropped Xcode 7.
 NSNumber* GetDefaultMaxLength() {
   return @524288;
 }

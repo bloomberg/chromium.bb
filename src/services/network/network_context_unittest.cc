@@ -80,8 +80,6 @@
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/socket/transport_client_socket_pool.h"
-#include "net/ssl/channel_id_service.h"
-#include "net/ssl/channel_id_store.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/default_handlers.h"
@@ -118,6 +116,7 @@
 #if BUILDFLAG(ENABLE_REPORTING)
 #include "net/network_error_logging/network_error_logging_service.h"
 #include "net/reporting/reporting_cache.h"
+#include "net/reporting/reporting_context.h"
 #include "net/reporting/reporting_report.h"
 #include "net/reporting/reporting_service.h"
 #include "net/reporting/reporting_test_util.h"
@@ -1425,7 +1424,7 @@ TEST_F(NetworkContextTest, NotifyExternalCacheHit_Split) {
 
     // Since this is splitting the cache, the key also includes the top-level
     // frame origin.
-    EXPECT_EQ(base::StrCat({"_dk_http://a.com \n", test_url.spec()}),
+    EXPECT_EQ(base::StrCat({"_dk_http://a.com ", test_url.spec()}),
               mock_cache.disk_cache()->GetExternalCacheHits().back());
   }
 }
@@ -1873,21 +1872,19 @@ TEST_F(NetworkContextTest, ClearReportingCacheClients) {
       reporting_service.get());
 
   GURL domain("https://google.com");
-  reporting_cache->SetClient(url::Origin::Create(domain), domain,
-                             net::ReportingClient::Subdomains::EXCLUDE, "group",
-                             base::TimeTicks::Max(), 0, 1);
+  reporting_cache->SetEndpointForTesting(url::Origin::Create(domain), "group",
+                                         domain, net::OriginSubdomains::DEFAULT,
+                                         base::Time::Max(), 1 /* priority */,
+                                         1 /* weight */);
 
-  std::vector<const net::ReportingClient*> clients;
-  reporting_cache->GetClients(&clients);
-  ASSERT_EQ(1u, clients.size());
+  ASSERT_EQ(1u, reporting_cache->GetEndpointCount());
 
   base::RunLoop run_loop;
   network_context->ClearReportingCacheClients(nullptr /* filter */,
                                               run_loop.QuitClosure());
   run_loop.Run();
 
-  reporting_cache->GetClients(&clients);
-  EXPECT_EQ(0u, clients.size());
+  EXPECT_EQ(0u, reporting_cache->GetEndpointCount());
 }
 
 TEST_F(NetworkContextTest, ClearReportingCacheClientsWithFilter) {
@@ -1904,17 +1901,17 @@ TEST_F(NetworkContextTest, ClearReportingCacheClientsWithFilter) {
       reporting_service.get());
 
   GURL domain1("https://google.com");
-  reporting_cache->SetClient(url::Origin::Create(domain1), domain1,
-                             net::ReportingClient::Subdomains::EXCLUDE, "group",
-                             base::TimeTicks::Max(), 0, 1);
+  reporting_cache->SetEndpointForTesting(
+      url::Origin::Create(domain1), "group", domain1,
+      net::OriginSubdomains::DEFAULT, base::Time::Max(), 1 /* priority */,
+      1 /* weight */);
   GURL domain2("https://chromium.org");
-  reporting_cache->SetClient(url::Origin::Create(domain2), domain2,
-                             net::ReportingClient::Subdomains::EXCLUDE, "group",
-                             base::TimeTicks::Max(), 0, 1);
+  reporting_cache->SetEndpointForTesting(
+      url::Origin::Create(domain2), "group", domain2,
+      net::OriginSubdomains::DEFAULT, base::Time::Max(), 1 /* priority */,
+      1 /* weight */);
 
-  std::vector<const net::ReportingClient*> clients;
-  reporting_cache->GetClients(&clients);
-  ASSERT_EQ(2u, clients.size());
+  ASSERT_EQ(2u, reporting_cache->GetEndpointCount());
 
   mojom::ClearDataFilterPtr filter = mojom::ClearDataFilter::New();
   filter->type = mojom::ClearDataFilter_Type::KEEP_MATCHES;
@@ -1925,9 +1922,11 @@ TEST_F(NetworkContextTest, ClearReportingCacheClientsWithFilter) {
                                               run_loop.QuitClosure());
   run_loop.Run();
 
-  reporting_cache->GetClients(&clients);
-  EXPECT_EQ(1u, clients.size());
-  EXPECT_EQ(domain2, clients.front()->endpoint);
+  EXPECT_EQ(1u, reporting_cache->GetEndpointCount());
+  EXPECT_TRUE(reporting_cache->GetEndpointForTesting(
+      url::Origin::Create(domain2), "group", domain2));
+  EXPECT_FALSE(reporting_cache->GetEndpointForTesting(
+      url::Origin::Create(domain1), "group", domain1));
 }
 
 TEST_F(NetworkContextTest, ClearEmptyReportingCacheClients) {
@@ -1943,17 +1942,14 @@ TEST_F(NetworkContextTest, ClearEmptyReportingCacheClients) {
   network_context->url_request_context()->set_reporting_service(
       reporting_service.get());
 
-  std::vector<const net::ReportingClient*> clients;
-  reporting_cache->GetClients(&clients);
-  ASSERT_TRUE(clients.empty());
+  ASSERT_EQ(0u, reporting_cache->GetEndpointCount());
 
   base::RunLoop run_loop;
   network_context->ClearReportingCacheClients(nullptr /* filter */,
                                               run_loop.QuitClosure());
   run_loop.Run();
 
-  reporting_cache->GetClients(&clients);
-  EXPECT_TRUE(clients.empty());
+  ASSERT_EQ(0u, reporting_cache->GetEndpointCount());
 }
 
 TEST_F(NetworkContextTest, ClearReportingCacheClientsWithNoService) {
@@ -2477,7 +2473,7 @@ TEST_F(NetworkContextTest, CreateNetLogExporter) {
 
   net::TestCompletionCallback start_callback;
   net_log_exporter->Start(std::move(out_file), std::move(dict_start),
-                          mojom::NetLogCaptureMode::DEFAULT, 100 * 1024,
+                          net::NetLogCaptureMode::Default(), 100 * 1024,
                           start_callback.callback());
   EXPECT_EQ(net::OK, start_callback.WaitForResult());
 
@@ -2522,7 +2518,7 @@ TEST_F(NetworkContextTest, CreateNetLogExporterUnbounded) {
   net::TestCompletionCallback start_callback;
   net_log_exporter->Start(
       std::move(out_file), base::Value(base::Value::Type::DICTIONARY),
-      mojom::NetLogCaptureMode::DEFAULT,
+      net::NetLogCaptureMode::Default(),
       mojom::NetLogExporter::kUnlimitedFileSize, start_callback.callback());
   EXPECT_EQ(net::OK, start_callback.WaitForResult());
 
@@ -2564,7 +2560,7 @@ TEST_F(NetworkContextTest, CreateNetLogExporterErrors) {
   net::TestCompletionCallback start_callback;
   net_log_exporter->Start(
       std::move(temp_file), base::Value(base::Value::Type::DICTIONARY),
-      mojom::NetLogCaptureMode::DEFAULT, 100 * 1024, start_callback.callback());
+      net::NetLogCaptureMode::Default(), 100 * 1024, start_callback.callback());
   EXPECT_EQ(net::OK, start_callback.WaitForResult());
 
   // Can't start twice.
@@ -2577,7 +2573,7 @@ TEST_F(NetworkContextTest, CreateNetLogExporterErrors) {
   net::TestCompletionCallback start_callback2;
   net_log_exporter->Start(std::move(temp_file2),
                           base::Value(base::Value::Type::DICTIONARY),
-                          mojom::NetLogCaptureMode::DEFAULT, 100 * 1024,
+                          net::NetLogCaptureMode::Default(), 100 * 1024,
                           start_callback2.callback());
   EXPECT_EQ(net::ERR_UNEXPECTED, start_callback2.WaitForResult());
 
@@ -2622,7 +2618,7 @@ TEST_F(NetworkContextTest, DestroyNetLogExporterWhileCreatingScratchDir) {
 
   net_log_exporter->Start(
       std::move(temp_file), base::Value(base::Value::Type::DICTIONARY),
-      mojom::NetLogCaptureMode::DEFAULT, 100, base::BindOnce([](int) {}));
+      net::NetLogCaptureMode::Default(), 100, base::BindOnce([](int) {}));
   net_log_exporter = nullptr;
   block_mktemp.Signal();
 
@@ -3001,7 +2997,7 @@ class TestResolverFactory : public net::HostResolver::Factory {
 
   std::unique_ptr<net::HostResolver> CreateStandaloneResolver(
       net::NetLog* net_log,
-      const net::HostResolver::Options& options,
+      const net::HostResolver::ManagerOptions& options,
       base::StringPiece host_mapping_rules,
       bool enable_caching) override {
     DCHECK(host_mapping_rules.empty());
@@ -3188,19 +3184,20 @@ TEST_F(NetworkContextTest, CreateHostResolverWithConfigOverrides) {
   CHECK(result.AssignFromIPLiteral(kResult));
   net::MockDnsClientRuleList rules;
   rules.emplace_back(kQueryHostname, net::dns_protocol::kTypeA,
-                     net::SecureDnsMode::AUTOMATIC,
+                     net::DnsConfig::SecureDnsMode::AUTOMATIC,
                      net::MockDnsClientRule::Result(
                          net::BuildTestDnsResponse(kQueryHostname, result)),
                      false /* delay */);
   rules.emplace_back(
       kQueryHostname, net::dns_protocol::kTypeAAAA,
-      net::SecureDnsMode::AUTOMATIC,
+      net::DnsConfig::SecureDnsMode::AUTOMATIC,
       net::MockDnsClientRule::Result(net::MockDnsClientRule::ResultType::EMPTY),
       false /* delay */);
   auto mock_dns_client =
       std::make_unique<net::MockDnsClient>(net::DnsConfig(), std::move(rules));
   auto* mock_dns_client_ptr = mock_dns_client.get();
-  internal_resolver->SetDnsClientForTesting(std::move(mock_dns_client));
+  internal_resolver->GetManagerForTesting()->SetDnsClientForTesting(
+      std::move(mock_dns_client));
 
   // Force the base configuration to ensure consistent overriding.
   net::DnsConfig base_configuration;
@@ -3949,7 +3946,7 @@ TEST_F(NetworkContextTest, ForceReloadProxyConfig) {
     net_log_exporter->Start(
         std::move(net_log_file),
         /*extra_constants=*/base::Value(base::Value::Type::DICTIONARY),
-        network::mojom::NetLogCaptureMode::DEFAULT,
+        net::NetLogCaptureMode::Default(),
         network::mojom::NetLogExporter::kUnlimitedFileSize, start_callback);
     run_loop.Run();
     EXPECT_EQ(net::OK, start_param);
@@ -4784,7 +4781,12 @@ TEST_F(NetworkContextTest, HangingHeaderClientAbortDuringOnBeforeSendHeaders) {
 
   client.RunUntilComplete();
 
-  EXPECT_EQ(client.completion_status().error_code, net::ERR_FAILED);
+  // The reported error differs, but eventually URLLoader returns
+  // net::ERR_ABORTED once OOR-CORS clean-up is finished.
+  if (features::ShouldEnableOutOfBlinkCors())
+    EXPECT_EQ(client.completion_status().error_code, net::ERR_ABORTED);
+  else
+    EXPECT_EQ(client.completion_status().error_code, net::ERR_FAILED);
 }
 
 // Test destroying the mojom::URLLoader after the OnHeadersReceived event and
@@ -4832,339 +4834,13 @@ TEST_F(NetworkContextTest, HangingHeaderClientAbortDuringOnHeadersReceived) {
 
   client.RunUntilComplete();
 
-  EXPECT_EQ(client.completion_status().error_code, net::ERR_FAILED);
-}
-
-// Test power monitor source that can simulate entering suspend mode. Can't use
-// the one in base/ because it insists on bringing its own MessageLoop.
-class TestPowerMonitorSource : public base::PowerMonitorSource {
- public:
-  TestPowerMonitorSource() = default;
-  ~TestPowerMonitorSource() override = default;
-
-  void Shutdown() override {}
-
-  void Suspend() { ProcessPowerEvent(SUSPEND_EVENT); }
-
-  void Resume() { ProcessPowerEvent(RESUME_EVENT); }
-
-  bool IsOnBatteryPowerImpl() override { return false; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestPowerMonitorSource);
-};
-
-// If the OnBeforeSendHeadersCallback is called immediately after a Suspend
-// event (|runloop_after_suspend|==false), the URLRequest will not have been
-// destroyed yet, but the URLRequestHttpJob will have been cancelled. This test
-// ensures the URLRequestHttpJob doesn't attempt to start the transaction on a
-// cancelled request.
-//
-// If a Suspend event occurs and the message loop is allowed to run afterwards
-// (|runloop_after_suspend|==true), the URLLoader and URLRequest will be
-// destroyed. Attempting to call the OnBeforeSendHeadersCallback should do
-// nothing as URLLoader bound it to a weakptr.
-TEST_F(NetworkContextTest,
-       HangingHeaderClientSuspendDuringOnBeforeSendHeadersThenCallback) {
-  net::EmbeddedTestServer test_server;
-  net::test_server::RegisterDefaultHandlers(&test_server);
-  ASSERT_TRUE(test_server.Start());
-
-  for (bool runloop_after_suspend : {false, true}) {
-    SCOPED_TRACE(testing::Message()
-                 << "runloop_after_suspend=" << runloop_after_suspend);
-
-    std::unique_ptr<TestPowerMonitorSource> power_monitor_source =
-        std::make_unique<TestPowerMonitorSource>();
-    TestPowerMonitorSource* unowned_power_monitor_source =
-        power_monitor_source.get();
-    base::PowerMonitor power_monitor(std::move(power_monitor_source));
-
-    std::unique_ptr<NetworkContext> network_context =
-        CreateContextWithParams(CreateContextParams());
-
-    ResourceRequest request;
-    request.url = test_server.GetURL("/echoheader?foo");
-
-    mojom::URLLoaderFactoryPtr loader_factory;
-    mojom::URLLoaderFactoryParamsPtr params =
-        mojom::URLLoaderFactoryParams::New();
-    params->process_id = mojom::kBrowserProcessId;
-    params->is_corb_enabled = false;
-    HangingTestURLLoaderHeaderClient header_client(
-        mojo::MakeRequest(&params->header_client));
-    network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
-                                            std::move(params));
-
-    mojom::URLLoaderPtr loader;
-    TestURLLoaderClient client;
-    loader_factory->CreateLoaderAndStart(
-        mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-        mojom::kURLLoadOptionUseHeaderClient, request,
-        client.CreateInterfacePtr(),
-        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
-
-    header_client.WaitForOnBeforeSendHeaders();
-
-    unowned_power_monitor_source->Suspend();
-    if (runloop_after_suspend)
-      base::RunLoop().RunUntilIdle();
-
-    header_client.CallOnBeforeSendHeadersCallback();
-
-    client.RunUntilComplete();
-
+  // The reported error differs, but eventually URLLoader returns
+  // net::ERR_ABORTED once OOR-CORS clean-up is finished.
+  if (features::ShouldEnableOutOfBlinkCors())
     EXPECT_EQ(client.completion_status().error_code, net::ERR_ABORTED);
-
-    unowned_power_monitor_source->Resume();
-  }
+  else
+    EXPECT_EQ(client.completion_status().error_code, net::ERR_FAILED);
 }
-
-// If the OnHeadersReceivedCallback is called immediately after a Suspend event
-// (|runloop_after_suspend|==false), the URLRequest will not have been destroyed
-// yet, but the URLRequestHttpJob will have destroyed the transaction_. This
-// test ensures that URLRequestHttpJob does not attempt to dereference the
-// transaction_.
-//
-// If a Suspend event occurs and the message loop is allowed to run afterwards
-// (|runloop_after_suspend|==true), the URLLoader and URLRequest will be
-// destroyed. Attempting to call the OnHeadersReceivedCallback should do nothing
-// as URLLoader bound it to a weakptr.
-TEST_F(NetworkContextTest,
-       HangingHeaderClientSuspendDuringOnHeadersReceivedThenCallback) {
-  net::EmbeddedTestServer test_server;
-  net::test_server::RegisterDefaultHandlers(&test_server);
-  ASSERT_TRUE(test_server.Start());
-
-  for (bool runloop_after_suspend : {false, true}) {
-    SCOPED_TRACE(testing::Message()
-                 << "runloop_after_suspend=" << runloop_after_suspend);
-
-    std::unique_ptr<TestPowerMonitorSource> power_monitor_source =
-        std::make_unique<TestPowerMonitorSource>();
-    TestPowerMonitorSource* unowned_power_monitor_source =
-        power_monitor_source.get();
-    base::PowerMonitor power_monitor(std::move(power_monitor_source));
-
-    std::unique_ptr<NetworkContext> network_context =
-        CreateContextWithParams(CreateContextParams());
-
-    ResourceRequest request;
-    request.url = test_server.GetURL("/echoheader?foo");
-
-    mojom::URLLoaderFactoryPtr loader_factory;
-    mojom::URLLoaderFactoryParamsPtr params =
-        mojom::URLLoaderFactoryParams::New();
-    params->process_id = mojom::kBrowserProcessId;
-    params->is_corb_enabled = false;
-    HangingTestURLLoaderHeaderClient header_client(
-        mojo::MakeRequest(&params->header_client));
-    network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
-                                            std::move(params));
-
-    mojom::URLLoaderPtr loader;
-    TestURLLoaderClient client;
-    loader_factory->CreateLoaderAndStart(
-        mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-        mojom::kURLLoadOptionUseHeaderClient, request,
-        client.CreateInterfacePtr(),
-        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
-
-    header_client.WaitForOnBeforeSendHeaders();
-    header_client.CallOnBeforeSendHeadersCallback();
-
-    header_client.WaitForOnHeadersReceived();
-
-    unowned_power_monitor_source->Suspend();
-    if (runloop_after_suspend)
-      base::RunLoop().RunUntilIdle();
-
-    header_client.CallOnHeadersReceivedCallback();
-
-    client.RunUntilComplete();
-
-    EXPECT_EQ(client.completion_status().error_code, net::ERR_ABORTED);
-
-    unowned_power_monitor_source->Resume();
-  }
-}
-
-#if !defined(OS_IOS)
-class TestWebSocketClient : public mojom::WebSocketClient {
- public:
-  TestWebSocketClient() : binding_(this) {}
-
-  // mojom::WebSocketClient methods:
-  void OnFailChannel(const std::string& reason) override {
-    fail_channel_run_loop_.Quit();
-  }
-  void OnStartOpeningHandshake(
-      mojom::WebSocketHandshakeRequestPtr request) override {}
-  void OnFinishOpeningHandshake(
-      mojom::WebSocketHandshakeResponsePtr response) override {}
-  void OnAddChannelResponse(const std::string& selected_protocol,
-                            const std::string& extensions) override {}
-  void OnDataFrame(bool fin,
-                   mojom::WebSocketMessageType type,
-                   const std::vector<uint8_t>& data) override {}
-  void OnFlowControl(int64_t quota) override {}
-  void OnDropChannel(bool was_clean,
-                     uint16_t code,
-                     const std::string& reason) override {}
-  void OnClosingHandshake() override {}
-
-  mojom::WebSocketClientPtr CreateInterfacePtr() {
-    mojom::WebSocketClientPtr client_ptr;
-    binding_.Bind(mojo::MakeRequest(&client_ptr));
-    return client_ptr;
-  }
-
-  void WaitForFailChannel() { fail_channel_run_loop_.Run(); }
-
- private:
-  base::RunLoop fail_channel_run_loop_;
-  mojo::Binding<mojom::WebSocketClient> binding_;
-};
-
-// If the OnBeforeSendHeadersCallback is called immediately after a Suspend
-// event (|runloop_after_suspend|==false), the URLRequest will not have been
-// destroyed yet, but the URLRequestHttpJob will have been cancelled. This test
-// ensures the URLRequestHttpJob doesn't attempt to start the transaction on a
-// cancelled request.
-//
-// If a Suspend event occurs and the message loop is allowed to run afterwards
-// (|runloop_after_suspend|==true), the WebSocketChannel and URLRequest will be
-// destroyed. Attempting to call the OnBeforeSendHeadersCallback should do
-// nothing as WebSocket::OnBeforeSendHeadersComplete checks that the |channel_|
-// hasn't been destroyed.
-TEST_F(NetworkContextTest,
-       WebSocketHangingHeaderClientSuspendDuringOnOnBeforeSendHeaders) {
-  net::SpawnedTestServer ws_server(net::SpawnedTestServer::TYPE_WS,
-                                   net::GetWebSocketTestDataDirectory());
-  ASSERT_TRUE(ws_server.Start());
-
-  for (bool runloop_after_suspend : {false, true}) {
-    SCOPED_TRACE(testing::Message()
-                 << "runloop_after_suspend=" << runloop_after_suspend);
-
-    std::unique_ptr<TestPowerMonitorSource> power_monitor_source =
-        std::make_unique<TestPowerMonitorSource>();
-    TestPowerMonitorSource* unowned_power_monitor_source =
-        power_monitor_source.get();
-    base::PowerMonitor power_monitor(std::move(power_monitor_source));
-
-    std::unique_ptr<NetworkContext> network_context =
-        CreateContextWithParams(CreateContextParams());
-
-    mojom::TrustedURLLoaderHeaderClientPtr url_loader_header_client_ptr;
-    HangingTestURLLoaderHeaderClient header_client(
-        mojo::MakeRequest(&url_loader_header_client_ptr));
-    mojom::TrustedHeaderClientPtr header_client_ptr;
-    header_client.OnLoaderCreated(0, mojo::MakeRequest(&header_client_ptr));
-    network::mojom::WebSocketPtr web_socket;
-    network::mojom::AuthenticationHandlerPtr auth_handler;
-    network_context->CreateWebSocket(
-        mojo::MakeRequest(&web_socket), network::mojom::kBrowserProcessId,
-        1 /* render_frame_id */, url::Origin::Create(ws_server.GetURL("/")),
-        network::mojom::kWebSocketOptionNone, std::move(auth_handler),
-        std::move(header_client_ptr));
-
-    TestWebSocketClient client;
-    web_socket->AddChannelRequest(
-        ws_server.GetURL("close-immediately"), {} /* requested_protocols */,
-        ws_server.GetURL("close-immediately"), {} /* additional_headers */,
-        client.CreateInterfacePtr());
-
-    header_client.WaitForOnBeforeSendHeaders();
-
-    unowned_power_monitor_source->Suspend();
-    if (runloop_after_suspend)
-      base::RunLoop().RunUntilIdle();
-
-    header_client.CallOnBeforeSendHeadersCallback();
-
-    client.WaitForFailChannel();
-
-    // WebSocketClient::OnFailChannel gets called before the
-    // WebSocket::OnBeforeSendHeadersComplete callback. Run the loops to ensure
-    // OnBeforeSendHeadersComplete has a chance to run.
-    base::RunLoop().RunUntilIdle();
-
-    unowned_power_monitor_source->Resume();
-  }
-}
-
-// If the OnHeadersReceivedCallback is called immediately after a Suspend event
-// (|runloop_after_suspend|==false), the URLRequest will not have been destroyed
-// yet, but the URLRequestHttpJob will have destroyed the transaction_. This
-// test ensures that URLRequestHttpJob does not attempt to dereference the
-// transaction_.
-//
-// If a Suspend event occurs and the message loop is allowed to run afterwards
-// (|runloop_after_suspend|==true), the WebSocketChannel and URLRequest will be
-// destroyed. Attempting to call the OnHeadersReceivedCallback should do nothing
-// as  WebSocket::OnHeadersReceivedComplete checks that the |channel_|
-// hasn't been destroyed.
-TEST_F(NetworkContextTest,
-       WebSocketHangingHeaderClientSuspendDuringOnHeadersReceived) {
-  net::SpawnedTestServer ws_server(net::SpawnedTestServer::TYPE_WS,
-                                   net::GetWebSocketTestDataDirectory());
-  ASSERT_TRUE(ws_server.Start());
-
-  for (bool runloop_after_suspend : {false, true}) {
-    SCOPED_TRACE(testing::Message()
-                 << "runloop_after_suspend=" << runloop_after_suspend);
-
-    std::unique_ptr<TestPowerMonitorSource> power_monitor_source =
-        std::make_unique<TestPowerMonitorSource>();
-    TestPowerMonitorSource* unowned_power_monitor_source =
-        power_monitor_source.get();
-    base::PowerMonitor power_monitor(std::move(power_monitor_source));
-
-    std::unique_ptr<NetworkContext> network_context =
-        CreateContextWithParams(CreateContextParams());
-
-    mojom::TrustedURLLoaderHeaderClientPtr url_loader_header_client_ptr;
-    HangingTestURLLoaderHeaderClient header_client(
-        mojo::MakeRequest(&url_loader_header_client_ptr));
-    mojom::TrustedHeaderClientPtr header_client_ptr;
-    header_client.OnLoaderCreated(0, mojo::MakeRequest(&header_client_ptr));
-    network::mojom::WebSocketPtr web_socket;
-    network::mojom::AuthenticationHandlerPtr auth_handler;
-    network_context->CreateWebSocket(
-        mojo::MakeRequest(&web_socket), network::mojom::kBrowserProcessId,
-        1 /* render_frame_id */, url::Origin::Create(ws_server.GetURL("/")),
-        network::mojom::kWebSocketOptionNone, std::move(auth_handler),
-        std::move(header_client_ptr));
-
-    TestWebSocketClient client;
-    web_socket->AddChannelRequest(
-        ws_server.GetURL("close-immediately"), {} /* requested_protocols */,
-        ws_server.GetURL("close-immediately"), {} /* additional_headers */,
-        client.CreateInterfacePtr());
-
-    header_client.WaitForOnBeforeSendHeaders();
-    header_client.CallOnBeforeSendHeadersCallback();
-
-    header_client.WaitForOnHeadersReceived();
-
-    unowned_power_monitor_source->Suspend();
-    if (runloop_after_suspend)
-      base::RunLoop().RunUntilIdle();
-
-    header_client.CallOnHeadersReceivedCallback();
-
-    client.WaitForFailChannel();
-
-    // WebSocketClient::OnFailChannel gets called before the
-    // WebSocket::OnHeadersReceivedComplete callback. Run the loops to ensure
-    // OnHeadersReceivedComplete has a chance to run.
-    base::RunLoop().RunUntilIdle();
-
-    unowned_power_monitor_source->Resume();
-  }
-}
-#endif  // !defined(OS_IOS)
 
 // Custom proxy does not apply to localhost, so resolve kMockHost to localhost,
 // and use that instead.

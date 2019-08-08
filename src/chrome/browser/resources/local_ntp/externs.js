@@ -30,10 +30,12 @@ let MostVisitedData;
  *            isGooglePage: boolean,
  *            googleBaseUrl: string,
  *            isAccessibleBrowser: boolean,
+ *            enableShortcutsGrid: boolean,
  *            removeFakebox: boolean,
  *            alternateFakebox: boolean,
  *            fakeboxSearchIcon: boolean,
- *            hideShortcuts: boolean}}
+ *            hideShortcuts: boolean,
+ *            chromeColors: boolean}}
  */
 let configData;
 
@@ -136,6 +138,12 @@ window.gbar.a.pc;
  */
 window.localNTPUnitTest;
 
+/**
+ * Used for running Most Visited iframe javascript unit tests. Defined in
+ * src/chrome/test/data/local_ntp/most_visited_browsertest.html
+ */
+window.mostVisitedUnitTest;
+
 /**************************** Embedded Search API ****************************/
 
 /**
@@ -160,16 +168,6 @@ window.chrome.embeddedSearch.newTabPage.blacklistSearchSuggestion;
  * @param {string} hash
  */
 window.chrome.embeddedSearch.newTabPage.blacklistSearchSuggestionWithHash;
-
-/**
- * @param {string} identity
- */
-window.chrome.embeddedSearch.newTabPage.checkIsUserSignedIntoChromeAs;
-
-/**
- * No params.
- */
-window.chrome.embeddedSearch.newTabPage.checkIsUserSyncingHistory;
 
 /**
  * @param {number} tid

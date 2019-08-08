@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "components/cbor/diagnostic_writer.h"
+
+#include "components/cbor/reader.h"
 #include "components/cbor/values.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -56,6 +58,17 @@ TEST(CBORDiagnosticWriterTest, SizeLimit) {
       DiagnosticWriter::Write(cbor::Value(bytes), /*rough_max_output_bytes=*/0)
           .size(),
       3u);
+}
+
+TEST(CBORDiagnosticWriterTest, InvalidUTF8) {
+  static const uint8_t kInvalidUTF8[] = {0x62, 0xe2, 0x80};
+  cbor::Reader::Config config;
+  config.allow_invalid_utf8 = true;
+  base::Optional<cbor::Value> maybe_value =
+      cbor::Reader::Read(kInvalidUTF8, config);
+
+  ASSERT_TRUE(maybe_value);
+  EXPECT_EQ("s'E280'", DiagnosticWriter::Write(*maybe_value));
 }
 
 }  // namespace cbor

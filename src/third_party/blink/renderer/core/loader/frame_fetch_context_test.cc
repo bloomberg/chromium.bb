@@ -34,18 +34,18 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
-#include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/device_memory/approximated_device_memory.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
+#include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/platform/web_client_hints_type.h"
 #include "third_party/blink/public/platform/web_document_subresource_filter.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
-#include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/ad_tracker.h"
 #include "third_party/blink/renderer/core/frame/frame_owner.h"
@@ -62,6 +62,7 @@
 #include "third_party/blink/renderer/core/loader/subresource_filter.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_info.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
@@ -78,21 +79,6 @@
 namespace blink {
 
 using Checkpoint = testing::StrictMock<testing::MockFunction<void(int)>>;
-
-class StubLocalFrameClientWithParent final : public EmptyLocalFrameClient {
- public:
-  explicit StubLocalFrameClientWithParent(Frame* parent) : parent_(parent) {}
-
-  void Trace(blink::Visitor* visitor) override {
-    visitor->Trace(parent_);
-    EmptyLocalFrameClient::Trace(visitor);
-  }
-
-  Frame* Parent() const override { return parent_.Get(); }
-
- private:
-  Member<Frame> parent_;
-};
 
 class FrameFetchContextMockLocalFrameClient : public EmptyLocalFrameClient {
  public:
@@ -141,25 +127,6 @@ class FrameFetchContextTest : public testing::Test {
     owner = MakeGarbageCollected<DummyFrameOwner>();
   }
 
-  void TearDown() override {
-    if (child_frame)
-      child_frame->Detach(FrameDetachType::kRemove);
-  }
-
-  FrameFetchContext* CreateChildFrame() {
-    child_client = MakeGarbageCollected<StubLocalFrameClientWithParent>(
-        document->GetFrame());
-    child_frame = LocalFrame::Create(
-        child_client.Get(), *document->GetFrame()->GetPage(), owner.Get());
-    child_frame->SetView(
-        LocalFrameView::Create(*child_frame, IntSize(500, 500)));
-    child_frame->Init();
-    child_document = child_frame->GetDocument();
-    FrameFetchContext* child_fetch_context =
-        static_cast<FrameFetchContext*>(&child_document->Fetcher()->Context());
-    return child_fetch_context;
-  }
-
   FrameFetchContext* GetFetchContext() {
     return static_cast<FrameFetchContext*>(&document->Fetcher()->Context());
   }
@@ -180,9 +147,6 @@ class FrameFetchContextTest : public testing::Test {
   // usage.
   Persistent<Document> document;
 
-  Persistent<StubLocalFrameClientWithParent> child_client;
-  Persistent<LocalFrame> child_frame;
-  Persistent<Document> child_document;
   Persistent<DummyFrameOwner> owner;
 };
 
@@ -305,7 +269,9 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
                            network::mojom::RequestContextFrameType frame_type) {
     document->GetFrame()->Loader().RecordLatestRequiredCSP();
     document->GetFrame()->Loader().ModifyRequestForCSP(
-        resource_request, document.Get(), frame_type);
+        resource_request,
+        &document->Fetcher()->GetProperties().GetFetchClientSettingsObject(),
+        document.Get(), frame_type);
   }
 
   void ExpectUpgrade(const char* input, const char* expected) {
@@ -429,7 +395,7 @@ TEST_F(FrameFetchContextModifyRequestTest, UpgradeInsecureResourceRequests) {
   document->SetInsecureRequestPolicy(kUpgradeInsecureRequests);
 
   for (const auto& test : tests) {
-    document->InsecureNavigationsToUpgrade()->clear();
+    document->ClearInsecureNavigationsToUpgradeForTest();
 
     // We always upgrade for FrameTypeNone.
     ExpectUpgrade(test.original, mojom::RequestContextType::SCRIPT,
@@ -581,7 +547,7 @@ TEST_F(FrameFetchContextModifyRequestTest, SendRequiredCSPHeader) {
                {"https://example.test/page.html",
                 network::mojom::RequestContextFrameType::kTopLevel}};
 
-  HTMLIFrameElement* iframe = HTMLIFrameElement::Create(*document);
+  auto* iframe = MakeGarbageCollected<HTMLIFrameElement>(*document);
   const AtomicString& required_csp = AtomicString("default-src 'none'");
   const AtomicString& another_required_csp = AtomicString("default-src 'self'");
 
@@ -613,6 +579,7 @@ class FrameFetchContextHintsTest : public FrameFetchContextTest {
     document->SetURL(KURL("https://www.example.com/"));
     document->SetSecurityOrigin(
         SecurityOrigin::Create(KURL("https://www.example.com/")));
+    document->InitializeFeaturePolicy({}, {}, nullptr, nullptr);
     Settings* settings = document->GetSettings();
     settings->SetScriptEnabled(true);
   }
@@ -666,15 +633,10 @@ TEST_F(FrameFetchContextHintsTest, MonitorDeviceMemorySecureTransport) {
   ExpectHeader("https://www.example.com/1.gif", "DPR", false, "");
   ExpectHeader("https://www.example.com/1.gif", "Width", false, "");
   ExpectHeader("https://www.example.com/1.gif", "Viewport-Width", false, "");
-// On non-Android platforms, the client hints should be sent only to the first
-// party origins.
-#if defined(OS_ANDROID)
-  ExpectHeader("https://www.someother-example.com/1.gif", "Device-Memory", true,
-               "4");
-#else
+  // Without a feature policy header, the client hints should be sent only to
+  // the first party origins.
   ExpectHeader("https://www.someother-example.com/1.gif", "Device-Memory",
                false, "");
-#endif
 }
 
 // Verify that client hints are not attached when the resources do not belong to
@@ -699,6 +661,7 @@ TEST_F(FrameFetchContextHintsTest, MonitorDeviceMemoryHintsLocalContext) {
   document->SetURL(KURL("http://localhost/"));
   document->SetSecurityOrigin(
       SecurityOrigin::Create(KURL("http://localhost/")));
+  document->InitializeFeaturePolicy({}, {}, nullptr, nullptr);
   ExpectHeader("http://localhost/1.gif", "Device-Memory", false, "");
   ClientHintsPreferences preferences;
   preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kDeviceMemory);
@@ -933,6 +896,121 @@ TEST_F(FrameFetchContextHintsTest, MonitorAllHints) {
       GetHeaderValue("https://www.example.com/1.gif", "ect").Ascii().length());
 }
 
+// Verify that the client hints should be attached for third-party subresources
+// fetched over secure transport, when specifically allowed by feature policy.
+TEST_F(FrameFetchContextHintsTest, MonitorAllHintsFeaturePolicy) {
+  ParsedFeaturePolicy policy = FeaturePolicyParser::ParseHeader(
+      "ch-dpr *; ch-device-memory *; ch-downlink *; ch-ect *; ch-lang *;"
+      "ch-rtt *; ch-ua *; ch-ua-arch *; ch-ua-platform *; ch-ua-model *;"
+      "ch-viewport-width *; ch-width *",
+      SecurityOrigin::CreateFromString("https://www.example.com/"), nullptr,
+      document);
+  document->InitializeFeaturePolicy(policy, {}, nullptr, nullptr);
+  ClientHintsPreferences preferences;
+  preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kDeviceMemory);
+  preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kDpr);
+  preferences.SetShouldSendForTesting(
+      mojom::WebClientHintsType::kResourceWidth);
+  preferences.SetShouldSendForTesting(
+      mojom::WebClientHintsType::kViewportWidth);
+  preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kRtt);
+  preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kDownlink);
+  preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kEct);
+  preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kLang);
+  preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kUA);
+  preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kUAArch);
+  preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kUAPlatform);
+  preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kUAModel);
+  ApproximatedDeviceMemory::SetPhysicalMemoryMBForTesting(4096);
+  document->GetFrame()->GetClientHintsPreferences().UpdateFrom(preferences);
+
+  // Verify that all client hints are sent to a third-party origin, with this
+  // feature policy header.
+  ExpectHeader("https://www.example.net/1.gif", "DPR", true, "1");
+  ExpectHeader("https://www.example.net/1.gif", "Device-Memory", true, "4");
+
+  document->domWindow()->navigator()->SetLanguagesForTesting("en,de,fr");
+  ExpectHeader("https://www.example.net/1.gif", "Sec-CH-Lang", true,
+               "\"en\", \"de\", \"fr\"");
+  ExpectHeader("https://www.example.net/1.gif", "Sec-CH-UA", true, "");
+  ExpectHeader("https://www.example.net/1.gif", "Sec-CH-UA-Arch", true, "");
+  ExpectHeader("https://www.example.net/1.gif", "Sec-CH-UA-Platform", true, "");
+  ExpectHeader("https://www.example.net/1.gif", "Sec-CH-UA-Model", true, "");
+  ExpectHeader("https://www.example.net/1.gif", "Width", true, "400", 400);
+  ExpectHeader("https://www.example.net/1.gif", "Viewport-Width", true, "500");
+
+  // Value of network quality client hints may vary, so only check if the
+  // header is present and the values are non-negative/non-empty.
+  bool conversion_ok = false;
+  int rtt_header_value = GetHeaderValue("https://www.example.com/1.gif", "rtt")
+                             .ToIntStrict(&conversion_ok);
+  EXPECT_TRUE(conversion_ok);
+  EXPECT_LE(0, rtt_header_value);
+
+  float downlink_header_value =
+      GetHeaderValue("https://www.example.com/1.gif", "downlink")
+          .ToFloat(&conversion_ok);
+  EXPECT_TRUE(conversion_ok);
+  EXPECT_LE(0, downlink_header_value);
+
+  EXPECT_LT(
+      0u,
+      GetHeaderValue("https://www.example.com/1.gif", "ect").Ascii().length());
+}
+
+// Verify that only the specifically allowed client hints are attached for
+// third-party subresources fetched over secure transport.
+TEST_F(FrameFetchContextHintsTest, MonitorSomeHintsFeaturePolicy) {
+  ParsedFeaturePolicy policy = FeaturePolicyParser::ParseHeader(
+      "ch-device-memory 'self' https://www.example.net",
+      SecurityOrigin::CreateFromString("https://www.example.com/"), nullptr,
+      document);
+  document->InitializeFeaturePolicy(policy, {}, nullptr, nullptr);
+  ClientHintsPreferences preferences;
+  preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kDeviceMemory);
+  preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kDpr);
+  ApproximatedDeviceMemory::SetPhysicalMemoryMBForTesting(4096);
+  document->GetFrame()->GetClientHintsPreferences().UpdateFrom(preferences);
+  // With a feature policy header, the client hints should be sent to the
+  // declared third party origins.
+  ExpectHeader("https://www.example.net/1.gif", "Device-Memory", true, "4");
+  ExpectHeader("https://www.someother-example.com/1.gif", "Device-Memory",
+               false, "");
+  // `Sec-CH-UA` is special.
+  ExpectHeader("https://www.example.net/1.gif", "Sec-CH-UA", true, "");
+
+  // Other hints not declared in the policy are still not attached.
+  ExpectHeader("https://www.example.net/1.gif", "downlink", false, "");
+  ExpectHeader("https://www.example.net/1.gif", "ect", false, "");
+  ExpectHeader("https://www.example.net/1.gif", "DPR", false, "");
+  ExpectHeader("https://www.example.net/1.gif", "Sec-CH-Lang", false, "");
+  ExpectHeader("https://www.example.net/1.gif", "Sec-CH-UA-Arch", false, "");
+  ExpectHeader("https://www.example.net/1.gif", "Sec-CH-UA-Platform", false,
+               "");
+  ExpectHeader("https://www.example.net/1.gif", "Sec-CH-UA-Model", false, "");
+  ExpectHeader("https://www.example.net/1.gif", "Width", false, "");
+  ExpectHeader("https://www.example.net/1.gif", "Viewport-Width", false, "");
+}
+
+// Verify that the client hints are not attached for third-party subresources
+// fetched over insecure transport, even when specifically allowed by feature
+// policy.
+TEST_F(FrameFetchContextHintsTest, MonitorHintsFeaturePolicyInsecureContext) {
+  ParsedFeaturePolicy policy = FeaturePolicyParser::ParseHeader(
+      "ch-device-memory *",
+      SecurityOrigin::CreateFromString("https://www.example.com/"), nullptr,
+      document);
+  document->InitializeFeaturePolicy(policy, {}, nullptr, nullptr);
+  ExpectHeader("https://www.example.com/1.gif", "Device-Memory", false, "");
+  ClientHintsPreferences preferences;
+  preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kDeviceMemory);
+  document->GetFrame()->GetClientHintsPreferences().UpdateFrom(preferences);
+  ApproximatedDeviceMemory::SetPhysicalMemoryMBForTesting(4096);
+  // Device-Memory hint in this case is sent to all (and only) secure origins.
+  ExpectHeader("https://www.example.net/1.gif", "Device-Memory", true, "4");
+  ExpectHeader("http://www.example.net/1.gif", "Device-Memory", false, "");
+}
+
 TEST_F(FrameFetchContextTest, SubResourceCachePolicy) {
   // Reset load event state: if the load event is finished, we ignore the
   // DocumentLoader load type.
@@ -982,57 +1060,6 @@ TEST_F(FrameFetchContextTest, SubResourceCachePolicy) {
   EXPECT_EQ(mojom::FetchCacheMode::kForceCache,
             GetFetchContext()->ResourceRequestCachePolicy(
                 conditional, ResourceType::kMock, FetchParameters::kNoDefer));
-}
-
-TEST_F(FrameFetchContextTest, ModifyPriorityForLowPriorityIframes) {
-  Settings* settings = document->GetSettings();
-  FrameFetchContext* childFetchContext = CreateChildFrame();
-  GetNetworkStateNotifier().SetNetworkConnectionInfoOverride(
-      true, WebConnectionType::kWebConnectionTypeCellular3G,
-      WebEffectiveConnectionType::kType3G, 1 /* http_rtt_msec */,
-      10.0 /* max_bandwidth_mbps */);
-
-  // Experiment is not enabled, expect default values.
-  EXPECT_EQ(ResourceLoadPriority::kVeryHigh,
-            GetFetchContext()->ModifyPriorityForExperiments(
-                ResourceLoadPriority::kVeryHigh));
-  EXPECT_EQ(ResourceLoadPriority::kVeryHigh,
-            childFetchContext->ModifyPriorityForExperiments(
-                ResourceLoadPriority::kVeryHigh));
-  EXPECT_EQ(ResourceLoadPriority::kMedium,
-            childFetchContext->ModifyPriorityForExperiments(
-                ResourceLoadPriority::kMedium));
-
-  // Low priority iframes enabled but network is not slow enough. Expect default
-  // values.
-  settings->SetLowPriorityIframesThreshold(WebEffectiveConnectionType::kType2G);
-  EXPECT_EQ(ResourceLoadPriority::kVeryHigh,
-            GetFetchContext()->ModifyPriorityForExperiments(
-                ResourceLoadPriority::kVeryHigh));
-  EXPECT_EQ(ResourceLoadPriority::kVeryHigh,
-            childFetchContext->ModifyPriorityForExperiments(
-                ResourceLoadPriority::kVeryHigh));
-  EXPECT_EQ(ResourceLoadPriority::kMedium,
-            childFetchContext->ModifyPriorityForExperiments(
-                ResourceLoadPriority::kMedium));
-
-  // Low priority iframes enabled and network is slow, main frame request's
-  // priorities should not change.
-  GetNetworkStateNotifier().SetNetworkConnectionInfoOverride(
-      true, WebConnectionType::kWebConnectionTypeCellular3G,
-      WebEffectiveConnectionType::kType2G, 1 /* http_rtt_msec */,
-      10.0 /* max_bandwidth_mbps */);
-  EXPECT_EQ(ResourceLoadPriority::kVeryHigh,
-            GetFetchContext()->ModifyPriorityForExperiments(
-                ResourceLoadPriority::kVeryHigh));
-  // Low priority iframes enabled, everything in child frame should be low
-  // priority.
-  EXPECT_EQ(ResourceLoadPriority::kLow,
-            childFetchContext->ModifyPriorityForExperiments(
-                ResourceLoadPriority::kVeryHigh));
-  EXPECT_EQ(ResourceLoadPriority::kVeryLow,
-            childFetchContext->ModifyPriorityForExperiments(
-                ResourceLoadPriority::kMedium));
 }
 
 // Tests if "Save-Data" header is correctly added on the first load and reload.
@@ -1146,17 +1173,11 @@ TEST_F(FrameFetchContextTest, AddAdditionalRequestHeadersWhenDetached) {
   request.SetHttpMethod("PUT");
 
   GetNetworkStateNotifier().SetSaveDataEnabledOverride(true);
-  document->SetSecurityOrigin(SecurityOrigin::Create(KURL(origin)));
-  document->SetURL(document_url);
-  document->SetReferrerPolicy(network::mojom::ReferrerPolicy::kOrigin);
-  document->SetAddressSpace(mojom::IPAddressSpace::kPublic);
 
   dummy_page_holder = nullptr;
 
   GetFetchContext()->AddAdditionalRequestHeaders(request);
 
-  EXPECT_EQ(String(origin + "/"),
-            request.HttpHeaderField(http_names::kReferer));
   EXPECT_EQ(String(), request.HttpHeaderField("Save-Data"));
 }
 
@@ -1188,14 +1209,6 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
                                     virtual_time_pauser, ResourceType::kRaw);
 
   EXPECT_EQ("hi", request.HttpHeaderField(http_names::kUserAgent));
-}
-
-TEST_F(FrameFetchContextTest, ShouldLoadNewResourceWhenDetached) {
-  dummy_page_holder = nullptr;
-
-  EXPECT_FALSE(GetFetchContext()->ShouldLoadNewResource(ResourceType::kImage));
-  EXPECT_FALSE(GetFetchContext()->ShouldLoadNewResource(ResourceType::kRaw));
-  EXPECT_FALSE(GetFetchContext()->ShouldLoadNewResource(ResourceType::kScript));
 }
 
 TEST_F(FrameFetchContextTest, RecordLoadingActivityWhenDetached) {

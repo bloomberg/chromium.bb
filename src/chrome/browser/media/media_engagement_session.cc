@@ -39,8 +39,12 @@ void RecordRestoredSessionStatus(SessionStatus status) {
 
 MediaEngagementSession::MediaEngagementSession(MediaEngagementService* service,
                                                const url::Origin& origin,
-                                               RestoreType restore_status)
-    : service_(service), origin_(origin), restore_status_(restore_status) {
+                                               RestoreType restore_status,
+                                               ukm::SourceId ukm_source_id)
+    : service_(service),
+      origin_(origin),
+      ukm_source_id_(ukm_source_id),
+      restore_status_(restore_status) {
   if (restore_status_ == RestoreType::kRestored)
     pending_data_to_commit_.visit = false;
 }
@@ -68,7 +72,7 @@ void MediaEngagementSession::RecordSignificantAudioContextPlayback() {
 }
 
 void MediaEngagementSession::RecordShortPlaybackIgnored(int length_msec) {
-  ukm::UkmRecorder* ukm_recorder = GetUkmRecorder();
+  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
   if (!ukm_recorder)
     return;
 
@@ -123,19 +127,6 @@ MediaEngagementSession::~MediaEngagementSession() {
   RecordUkmMetrics();
 }
 
-ukm::UkmRecorder* MediaEngagementSession::GetUkmRecorder() {
-  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
-  if (!ukm_recorder)
-    return nullptr;
-
-  if (ukm_source_id_ == ukm::kInvalidSourceId) {
-    ukm_source_id_ = ukm_recorder->GetNewSourceID();
-    ukm_recorder->UpdateSourceURL(ukm_source_id_, origin_.GetURL());
-  }
-
-  return ukm_recorder;
-}
-
 void MediaEngagementSession::RecordSignificantPlayback() {
   DCHECK(WasSignificantPlaybackRecorded());
 
@@ -152,7 +143,7 @@ void MediaEngagementSession::RecordSignificantPlayback() {
 }
 
 void MediaEngagementSession::RecordUkmMetrics() {
-  ukm::UkmRecorder* ukm_recorder = GetUkmRecorder();
+  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
   if (!ukm_recorder)
     return;
 
@@ -163,8 +154,7 @@ void MediaEngagementSession::RecordUkmMetrics() {
             origin_);
   }
 
-  MediaEngagementScore score =
-      service_->CreateEngagementScore(origin_.GetURL());
+  MediaEngagementScore score = service_->CreateEngagementScore(origin_);
   ukm::builders::Media_Engagement_SessionFinished(ukm_source_id_)
       .SetPlaybacks_AudioContextTotal(score.audio_context_playbacks())
       .SetPlaybacks_MediaElementTotal(score.media_element_playbacks())
@@ -214,8 +204,7 @@ void MediaEngagementSession::CommitPendingData() {
 
   RecordStatusHistograms();
 
-  MediaEngagementScore score =
-      service_->CreateEngagementScore(origin_.GetURL());
+  MediaEngagementScore score = service_->CreateEngagementScore(origin_);
   bool previous_high_value = score.high_score();
 
   if (pending_data_to_commit_.visit)

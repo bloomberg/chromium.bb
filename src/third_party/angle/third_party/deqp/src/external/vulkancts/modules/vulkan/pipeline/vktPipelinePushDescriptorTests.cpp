@@ -577,7 +577,8 @@ tcu::TestStatus PushDescriptorBufferGraphicsTestInstance::verifyImage (void)
 			for (deUint32 vertexIdx = 0; vertexIdx < 6; vertexIdx++)
 				m_vertices[quadIdx * 6 + vertexIdx].color.xyzw() = defaultTestColors[quadIdx];
 
-		refRenderer.draw(rr::RenderState(refRenderer.getViewportState()), rr::PRIMITIVETYPE_TRIANGLES, m_vertices);
+		refRenderer.draw(rr::RenderState(refRenderer.getViewportState(), m_context.getDeviceProperties().limits.subPixelPrecisionBits),
+						 rr::PRIMITIVETYPE_TRIANGLES, m_vertices);
 	}
 
 	// Compare result with reference image
@@ -636,7 +637,7 @@ TestInstance* PushDescriptorBufferGraphicsTest::createInstance (Context& context
 
 void PushDescriptorBufferGraphicsTest::initPrograms (SourceCollections& sourceCollections) const
 {
-	const string	bufferType	= m_params.descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER ? "uniform" : "buffer";
+	const string	bufferType	= m_params.descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER ? "uniform" : "readonly buffer";
 	const string	vertexSrc	=
 		"#version 450\n"
 		"layout(location = 0) in highp vec4 position;\n"
@@ -1716,7 +1717,8 @@ tcu::TestStatus PushDescriptorImageGraphicsTestInstance::verifyImage (void)
 		if (hasBorder)
 			refQuadsOuter.insert(refQuadsOuter.end(), refQuadsInner.begin(), refQuadsInner.end());
 
-		refRenderer.draw(rr::RenderState(refRenderer.getViewportState()), rr::PRIMITIVETYPE_TRIANGLES, refQuadsOuter);
+		refRenderer.draw(rr::RenderState(refRenderer.getViewportState(), m_context.getDeviceProperties().limits.subPixelPrecisionBits),
+						 rr::PRIMITIVETYPE_TRIANGLES, refQuadsOuter);
 	}
 
 	// Compare result with reference image
@@ -2997,7 +2999,8 @@ tcu::TestStatus PushDescriptorTexelBufferGraphicsTestInstance::verifyImage (void
 			for (deUint32 vertexIdx = 0; vertexIdx < 6; vertexIdx++)
 				m_vertices[quadIdx * 6 + vertexIdx].color.xyzw() = defaultTestColors[quadIdx];
 
-		refRenderer.draw(rr::RenderState(refRenderer.getViewportState()), rr::PRIMITIVETYPE_TRIANGLES, m_vertices);
+		refRenderer.draw(rr::RenderState(refRenderer.getViewportState(), m_context.getDeviceProperties().limits.subPixelPrecisionBits),
+						 rr::PRIMITIVETYPE_TRIANGLES, m_vertices);
 	}
 
 	// Compare result with reference image
@@ -4047,7 +4050,8 @@ tcu::TestStatus PushDescriptorInputAttachmentGraphicsTestInstance::verifyImage (
 				refQuads[idx].color.xyzw() = colors[quadIdx];
 			}
 
-		refRenderer.draw(rr::RenderState(refRenderer.getViewportState()), rr::PRIMITIVETYPE_TRIANGLES, refQuads);
+		refRenderer.draw(rr::RenderState(refRenderer.getViewportState(), m_context.getDeviceProperties().limits.subPixelPrecisionBits),
+						 rr::PRIMITIVETYPE_TRIANGLES, refQuads);
 	}
 
 	// Compare result with reference image

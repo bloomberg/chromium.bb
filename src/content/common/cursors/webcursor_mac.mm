@@ -272,12 +272,8 @@ bool WebCursor::IsPlatformDataEqual(const WebCursor& other) const {
   return true;
 }
 
-void WebCursor::CleanupPlatformData() {
-  return;
-}
+void WebCursor::CleanupPlatformData() {}
 
-void WebCursor::CopyPlatformData(const WebCursor& other) {
-  return;
-}
+void WebCursor::CopyPlatformData(const WebCursor& other) {}
 
 }  // namespace content

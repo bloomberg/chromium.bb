@@ -145,6 +145,11 @@ void VideoCaptureDeviceAndroid::AllocateAndStart(
     return;
   }
 
+  // TODO(julien.isorce): Use Camera.SENSOR_COLOR_TRANSFORM2 to build a
+  // gfx::ColorSpace, and rename VideoCaptureDeviceAndroid::GetColorspace()
+  // to GetPixelFormat, see http://crbug.com/959901.
+  capture_color_space_ = gfx::ColorSpace();
+
   capture_format_.frame_size.SetSize(
       Java_VideoCapture_queryWidth(env, j_capture_),
       Java_VideoCapture_queryHeight(env, j_capture_));
@@ -624,7 +629,8 @@ void VideoCaptureDeviceAndroid::SendIncomingDataToClient(
   base::AutoLock lock(lock_);
   if (!client_)
     return;
-  client_->OnIncomingCapturedData(data, length, capture_format_, rotation,
+  client_->OnIncomingCapturedData(data, length, capture_format_,
+                                  capture_color_space_, rotation,
                                   reference_time, timestamp);
 }
 

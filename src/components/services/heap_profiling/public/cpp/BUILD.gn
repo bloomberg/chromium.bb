@@ -4,12 +4,10 @@
 
 static_library("cpp") {
   sources = [
-    "client.cc",
-    "client.h",
     "controller.cc",
     "controller.h",
-    "sampling_profiler_wrapper.cc",
-    "sampling_profiler_wrapper.h",
+    "profiling_client.cc",
+    "profiling_client.h",
     "settings.cc",
     "settings.h",
     "switches.cc",

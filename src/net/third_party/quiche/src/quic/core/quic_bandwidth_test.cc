@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "net/third_party/quiche/src/quic/core/quic_bandwidth.h"
+
+#include <limits>
+
 #include "net/third_party/quiche/src/quic/core/quic_time.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 
@@ -102,20 +105,32 @@ TEST_F(QuicBandwidthTest, RelOps) {
   EXPECT_GE(b2, b1);
 }
 
-TEST_F(QuicBandwidthTest, DebugValue) {
+TEST_F(QuicBandwidthTest, DebuggingValue) {
   EXPECT_EQ("128 bits/s (16 bytes/s)",
-            QuicBandwidth::FromBytesPerSecond(16).ToDebugValue());
+            QuicBandwidth::FromBytesPerSecond(16).ToDebuggingValue());
   EXPECT_EQ("4096 bits/s (512 bytes/s)",
-            QuicBandwidth::FromBytesPerSecond(512).ToDebugValue());
+            QuicBandwidth::FromBytesPerSecond(512).ToDebuggingValue());
 
   QuicBandwidth bandwidth = QuicBandwidth::FromBytesPerSecond(1000 * 50);
-  EXPECT_EQ("400.00 kbits/s (50.00 kbytes/s)", bandwidth.ToDebugValue());
+  EXPECT_EQ("400.00 kbits/s (50.00 kbytes/s)", bandwidth.ToDebuggingValue());
 
   bandwidth = bandwidth * 1000;
-  EXPECT_EQ("400.00 Mbits/s (50.00 Mbytes/s)", bandwidth.ToDebugValue());
+  EXPECT_EQ("400.00 Mbits/s (50.00 Mbytes/s)", bandwidth.ToDebuggingValue());
 
   bandwidth = bandwidth * 1000;
-  EXPECT_EQ("400.00 Gbits/s (50.00 Gbytes/s)", bandwidth.ToDebugValue());
+  EXPECT_EQ("400.00 Gbits/s (50.00 Gbytes/s)", bandwidth.ToDebuggingValue());
+}
+
+TEST_F(QuicBandwidthTest, SpecialValues) {
+  EXPECT_EQ(0, QuicBandwidth::Zero().ToBitsPerSecond());
+  EXPECT_EQ(std::numeric_limits<int64_t>::max(),
+            QuicBandwidth::Infinite().ToBitsPerSecond());
+
+  EXPECT_TRUE(QuicBandwidth::Zero().IsZero());
+  EXPECT_FALSE(QuicBandwidth::Zero().IsInfinite());
+
+  EXPECT_TRUE(QuicBandwidth::Infinite().IsInfinite());
+  EXPECT_FALSE(QuicBandwidth::Infinite().IsZero());
 }
 
 }  // namespace test

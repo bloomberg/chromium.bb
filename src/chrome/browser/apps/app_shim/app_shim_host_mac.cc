@@ -11,18 +11,11 @@
 #include "base/logging.h"
 #include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
+#include "components/remote_cocoa/common/bridge_factory.mojom.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/ns_view_bridge_factory_host.h"
-#include "content/public/common/ns_view_bridge_factory.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/views/cocoa/bridge_factory_host.h"
-#include "ui/views_bridge_mac/mojo/bridge_factory.mojom.h"
-
-namespace {
-// Start counting host ids at 1000 to help in debugging.
-uint64_t g_next_host_id = 1000;
-}  // namespace
 
 AppShimHost::AppShimHost(const std::string& app_id,
                          const base::FilePath& profile_path,
@@ -37,26 +30,14 @@ AppShimHost::AppShimHost(const std::string& app_id,
   // Create the interfaces used to host windows, so that browser windows may be
   // created before the host process finishes launching.
   if (uses_remote_views_) {
-    uint64_t host_id = g_next_host_id++;
-
     // Create the interface that will be used by views::NativeWidgetMac to
     // create NSWindows hosted in the app shim process.
-    views_bridge_mac::mojom::BridgeFactoryAssociatedRequest
+    remote_cocoa::mojom::BridgeFactoryAssociatedRequest
         views_bridge_factory_request;
     views_bridge_factory_host_ = std::make_unique<views::BridgeFactoryHost>(
-        host_id, &views_bridge_factory_request);
+        &views_bridge_factory_request);
     app_shim_->CreateViewsBridgeFactory(
         std::move(views_bridge_factory_request));
-
-    // Create the interface that will be used content::RenderWidgetHostView to
-    // create NSViews hosted in the app shim process.
-    content::mojom::NSViewBridgeFactoryAssociatedRequest
-        content_bridge_factory_request;
-    content_bridge_factory_ =
-        std::make_unique<content::NSViewBridgeFactoryHost>(
-            &content_bridge_factory_request, host_id);
-    app_shim_->CreateContentNSViewBridgeFactory(
-        std::move(content_bridge_factory_request));
   }
 }
 

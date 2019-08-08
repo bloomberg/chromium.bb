@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_message_bubble_controller.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
@@ -281,7 +282,7 @@ void ExtensionMessageBubbleController::HandleExtensionUnloadOrUninstall() {
   // If the callback is set, then that means that OnShown() was called, and the
   // bubble was displayed.
   if (close_bubble_callback_ && GetExtensionIdList().empty()) {
-    base::ResetAndReturn(&close_bubble_callback_).Run();
+    std::move(close_bubble_callback_).Run();
   }
   // If the bubble refers to multiple extensions, we do not close the bubble.
 }

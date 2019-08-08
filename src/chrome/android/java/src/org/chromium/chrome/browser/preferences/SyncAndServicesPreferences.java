@@ -36,7 +36,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsEnabledStateUtils;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
@@ -49,7 +49,6 @@ import org.chromium.chrome.browser.signin.UnifiedConsentServiceBridge;
 import org.chromium.chrome.browser.sync.GoogleServiceAuthError;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.ui.PassphraseDialogFragment;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
@@ -74,7 +73,9 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     public static final String FRAGMENT_ENTER_PASSPHRASE = "enter_password";
     private static final String FRAGMENT_CANCEL_SYNC = "cancel_sync_dialog";
 
+    private static final String PREF_USER_CATEGORY = "user_category";
     private static final String PREF_SIGNIN = "sign_in";
+    private static final String PREF_MANAGE_YOUR_GOOGLE_ACCOUNT = "manage_your_google_account";
 
     private static final String PREF_SYNC_CATEGORY = "sync_category";
     private static final String PREF_SYNC_ERROR_CARD = "sync_error_card";
@@ -89,7 +90,6 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     private static final String PREF_USAGE_AND_CRASH_REPORTING = "usage_and_crash_reports";
     private static final String PREF_URL_KEYED_ANONYMIZED_DATA = "url_keyed_anonymized_data";
     private static final String PREF_CONTEXTUAL_SEARCH = "contextual_search";
-    private static final String PREF_CONTEXTUAL_SUGGESTIONS = "contextual_suggestions";
 
     @IntDef({SyncError.NO_ERROR, SyncError.ANDROID_SYNC_DISABLED, SyncError.AUTH_ERROR,
             SyncError.PASSPHRASE_REQUIRED, SyncError.CLIENT_OUT_OF_DATE, SyncError.OTHER_ERRORS})
@@ -113,6 +113,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     private boolean mIsFromSigninScreen;
 
     private SignInPreference mSigninPreference;
+    private Preference mManageYourGoogleAccount;
 
     private PreferenceCategory mSyncCategory;
     private Preference mSyncErrorCard;
@@ -125,7 +126,6 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     private ChromeSwitchPreference mUsageAndCrashReporting;
     private ChromeSwitchPreference mUrlKeyedAnonymizedData;
     private @Nullable Preference mContextualSearch;
-    private @Nullable Preference mContextualSuggestions;
 
     private ProfileSyncService.SyncSetupInProgressHandle mSyncSetupInProgressHandle;
 
@@ -161,8 +161,14 @@ public class SyncAndServicesPreferences extends PreferenceFragment
 
         PreferenceUtils.addPreferencesFromResource(this, R.xml.sync_and_services_preferences);
 
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.IDENTITY_DISC)) {
+            getPreferenceScreen().removePreference(findPreference(PREF_USER_CATEGORY));
+        }
         mSigninPreference = (SignInPreference) findPreference(PREF_SIGNIN);
         mSigninPreference.setPersonalizedPromoEnabled(false);
+        mManageYourGoogleAccount = findPreference(PREF_MANAGE_YOUR_GOOGLE_ACCOUNT);
+        mManageYourGoogleAccount.setOnPreferenceClickListener(SyncPreferenceUtils.toOnClickListener(
+                this, () -> SyncPreferenceUtils.openGoogleMyAccount(getActivity())));
 
         mSyncCategory = (PreferenceCategory) findPreference(PREF_SYNC_CATEGORY);
         mSyncErrorCard = findPreference(PREF_SYNC_ERROR_CARD);
@@ -206,13 +212,6 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         if (!ContextualSearchFieldTrial.isEnabled()) {
             removePreference(servicesCategory, mContextualSearch);
             mContextualSearch = null;
-        }
-
-        mContextualSuggestions = findPreference(PREF_CONTEXTUAL_SUGGESTIONS);
-        if (!FeatureUtilities.areContextualSuggestionsEnabled(getActivity())
-                || !ContextualSuggestionsEnabledStateUtils.shouldShowSettings()) {
-            removePreference(servicesCategory, mContextualSuggestions);
-            mContextualSuggestions = null;
         }
 
         // Prevent sync settings changes from taking effect until the user leaves this screen.
@@ -506,12 +505,6 @@ public class SyncAndServicesPreferences extends PreferenceFragment
             mContextualSearch.setSummary(
                     isContextualSearchEnabled ? R.string.text_on : R.string.text_off);
         }
-
-        if (mContextualSuggestions != null) {
-            mContextualSuggestions.setSummary(
-                    ContextualSuggestionsEnabledStateUtils.getEnabledState() ? R.string.text_on
-                                                                             : R.string.text_off);
-        }
     }
 
     private void updateSyncPreferences() {
@@ -521,9 +514,11 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         }
 
         if (!ChromeSigninController.get().isSignedIn()) {
+            getPreferenceScreen().removePreference(mManageYourGoogleAccount);
             getPreferenceScreen().removePreference(mSyncCategory);
             return;
         }
+        getPreferenceScreen().addPreference(mManageYourGoogleAccount);
         getPreferenceScreen().addPreference(mSyncCategory);
 
         mCurrentSyncError = getSyncError();

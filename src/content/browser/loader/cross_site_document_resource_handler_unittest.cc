@@ -1558,10 +1558,15 @@ TEST_P(CrossSiteDocumentResourceHandlerTest, ResponseBlocking) {
     case MimeType::kOthers:
       bucket = "Others";
       break;
+    case MimeType::kNeverSniffed:
+      DCHECK_EQ(Verdict::kBlock, scenario.verdict);
+      DCHECK_EQ(-1, scenario.verdict_packet);
+      bucket = "Blocked without sniffing / no bucket";
+      break;
     case MimeType::kInvalidMimeType:
       DCHECK_EQ(Verdict::kAllow, scenario.verdict);
       DCHECK_EQ(-1, scenario.verdict_packet);
-      bucket = "No blocking = no bucket";
+      bucket = "Allowed without considering the MIME type / no bucket";
       break;
   }
   int start_action = static_cast<int>(
@@ -1620,6 +1625,7 @@ TEST_P(CrossSiteDocumentResourceHandlerTest, ResponseBlocking) {
   }
   if (should_be_blocked) {
     expected_counts[histogram_base + ".Blocked"] = 1;
+    expected_counts[histogram_base + ".Blocked.CanonicalMimeType"] = 1;
     expected_counts[histogram_base + ".Blocked.ContentLength.WasAvailable"] = 1;
     expected_counts[histogram_base + ".Blocked." + bucket] = 1;
     EXPECT_THAT(histograms.GetAllSamples(histogram_base + ".Blocked"),

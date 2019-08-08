@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "base/time/tick_clock.h"
+#include "base/trace_event/trace_event.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/resources/transferable_resource.h"
@@ -29,14 +30,13 @@ Surface::Surface(const SurfaceInfo& surface_info,
                  SurfaceManager* surface_manager,
                  SurfaceAllocationGroup* allocation_group,
                  base::WeakPtr<SurfaceClient> surface_client,
-                 bool needs_sync_tokens,
                  bool block_activation_on_parent)
     : surface_info_(surface_info),
       surface_manager_(surface_manager),
       surface_client_(std::move(surface_client)),
-      needs_sync_tokens_(needs_sync_tokens),
       block_activation_on_parent_(block_activation_on_parent),
-      allocation_group_(allocation_group) {
+      allocation_group_(allocation_group),
+      weak_factory_(this) {
   TRACE_EVENT_ASYNC_BEGIN1(TRACE_DISABLED_BY_DEFAULT("viz.surface_lifetime"),
                            "Surface", this, "surface_info",
                            surface_info.ToString());
@@ -176,26 +176,36 @@ void Surface::OnSurfaceDependencyAdded() {
     return;
 
   // All blockers have been cleared. The surface can be activated now.
-  ActivatePendingFrame(base::nullopt);
+  ActivatePendingFrame();
 }
 
 void Surface::SetIsFallbackAndMaybeActivate() {
   is_fallback_ = true;
   if (HasPendingFrame())
-    ActivatePendingFrameForDeadline(base::nullopt);
+    ActivatePendingFrameForDeadline();
 }
 
-bool Surface::QueueFrame(
+void Surface::ActivateIfDeadlinePassed() {
+  DCHECK(HasPendingFrame());
+  if (!deadline_->HasDeadlinePassed())
+    return;
+  TRACE_EVENT1("viz", "Surface deadline passed", "FrameSinkId",
+               surface_id().frame_sink_id().ToString());
+  ActivatePendingFrameForDeadline();
+}
+
+Surface::QueueFrameResult Surface::QueueFrame(
     CompositorFrame frame,
     uint64_t frame_index,
-    base::ScopedClosureRunner frame_rejected_callback,
-    PresentedCallback presented_callback) {
+    base::ScopedClosureRunner frame_rejected_callback) {
   if (frame.size_in_pixels() != surface_info_.size_in_pixels() ||
       frame.device_scale_factor() != surface_info_.device_scale_factor()) {
     TRACE_EVENT_INSTANT0("viz", "Surface invariants violation",
                          TRACE_EVENT_SCOPE_THREAD);
-    return false;
+    return QueueFrameResult::REJECTED;
   }
+
+  QueueFrameResult result = QueueFrameResult::ACCEPTED_ACTIVE;
 
   is_latency_info_taken_ = false;
 
@@ -225,16 +235,16 @@ bool Surface::QueueFrame(
 
   if (!block_activation && activation_dependencies_.empty()) {
     // If there are no blockers, then immediately activate the frame.
-    ActivateFrame(
-        FrameData(std::move(frame), frame_index, std::move(presented_callback)),
-        base::nullopt);
+    ActivateFrame(FrameData(std::move(frame), frame_index), base::nullopt);
   } else {
-    pending_frame_data_ =
-        FrameData(std::move(frame), frame_index, std::move(presented_callback));
+    pending_frame_data_ = FrameData(std::move(frame), frame_index);
 
-    // If the deadline is in the past, then the CompositorFrame will activate
-    // immediately.
     deadline_->Set(ResolveFrameDeadline(pending_frame_data_->frame));
+    if (deadline_->HasDeadlinePassed()) {
+      ActivatePendingFrameForDeadline();
+    } else {
+      result = QueueFrameResult::ACCEPTED_PENDING;
+    }
   }
 
   // Returns resources for the previous pending frame.
@@ -244,7 +254,7 @@ bool Surface::QueueFrame(
   // callback so it is not called.
   (void)frame_rejected_callback.Release();
 
-  return true;
+  return result;
 }
 
 void Surface::RequestCopyOfOutput(
@@ -278,11 +288,10 @@ void Surface::OnActivationDependencyResolved(
   if (block_activation || !activation_dependencies_.empty())
     return;
   // All blockers have been cleared. The surface can be activated now.
-  ActivatePendingFrame(base::nullopt);
+  ActivatePendingFrame();
 }
 
-void Surface::ActivatePendingFrameForDeadline(
-    base::Optional<base::TimeDelta> duration) {
+void Surface::ActivatePendingFrameForDeadline() {
   if (!pending_frame_data_)
     return;
 
@@ -295,15 +304,11 @@ void Surface::ActivatePendingFrameForDeadline(
   // surface.
   seen_first_surface_dependency_ = true;
 
-  ActivatePendingFrame(duration);
+  ActivatePendingFrame();
 }
 
-Surface::FrameData::FrameData(CompositorFrame&& frame,
-                              uint64_t frame_index,
-                              PresentedCallback presented_callback)
-    : frame(std::move(frame)),
-      frame_index(frame_index),
-      presented_callback(std::move(presented_callback)) {}
+Surface::FrameData::FrameData(CompositorFrame&& frame, uint64_t frame_index)
+    : frame(std::move(frame)), frame_index(frame_index) {}
 
 Surface::FrameData::FrameData(FrameData&& other) = default;
 
@@ -311,16 +316,14 @@ Surface::FrameData& Surface::FrameData::operator=(FrameData&& other) = default;
 
 Surface::FrameData::~FrameData() = default;
 
-void Surface::ActivatePendingFrame(base::Optional<base::TimeDelta> duration) {
+void Surface::ActivatePendingFrame() {
   DCHECK(pending_frame_data_);
   FrameData frame_data = std::move(*pending_frame_data_);
   pending_frame_data_.reset();
 
-  DCHECK(!duration || !deadline_->has_deadline());
-  if (!duration)
-    duration = deadline_->Cancel();
+  base::Optional<base::TimeDelta> duration = deadline_->Cancel();
 
-  ActivateFrame(std::move(frame_data), duration);
+  ActivateFrame(std::move(frame_data), std::move(duration));
 }
 
 void Surface::UpdateReferencedAllocationGroups(
@@ -600,11 +603,20 @@ void Surface::TakeActiveAndPendingLatencyInfo(
 }
 
 bool Surface::TakePresentedCallback(PresentedCallback* callback) {
-  if (active_frame_data_ && active_frame_data_->presented_callback) {
-    *callback = std::move(active_frame_data_->presented_callback);
+  if (active_frame_data_ && !active_frame_data_->is_presented_callback_bound) {
+    *callback =
+        base::BindOnce(&Surface::DidPresentSurface, weak_factory_.GetWeakPtr(),
+                       active_frame_data_->frame.metadata.frame_token);
+    active_frame_data_->is_presented_callback_bound = true;
     return true;
   }
   return false;
+}
+
+void Surface::DidPresentSurface(uint32_t presentation_token,
+                                const gfx::PresentationFeedback& feedback) {
+  if (surface_client_)
+    surface_client_->OnSurfacePresented(presentation_token, feedback);
 }
 
 void Surface::SendAckToClient() {
@@ -632,12 +644,6 @@ void Surface::NotifyAggregatedDamage(const gfx::Rect& damage_rect,
       damage_rect, expected_display_time);
 }
 
-void Surface::OnDeadline(base::TimeDelta duration) {
-  TRACE_EVENT1("viz", "Surface::OnDeadline", "FrameSinkId",
-               surface_id().frame_sink_id().ToString());
-  ActivatePendingFrameForDeadline(duration);
-}
-
 void Surface::UnrefFrameResourcesAndRunCallbacks(
     base::Optional<FrameData> frame_data) {
   if (!frame_data || !surface_client_)
@@ -653,10 +659,11 @@ void Surface::UnrefFrameResourcesAndRunCallbacks(
   if (!frame_data->frame_acked)
     surface_client_->OnSurfaceProcessed(this);
 
-  if (frame_data->presented_callback) {
-    std::move(frame_data->presented_callback)
-        .Run(gfx::PresentationFeedback::Failure());
-  }
+  // If we have not bound a presented callback, we'll notify the client when
+  // the frame is unref'd.
+  if (!frame_data->is_presented_callback_bound)
+    DidPresentSurface(frame_data->frame.metadata.frame_token,
+                      gfx::PresentationFeedback::Failure());
 }
 
 void Surface::ClearCopyRequests() {
@@ -732,20 +739,7 @@ void Surface::ActivatePendingFrameForInheritedDeadline() {
   // Deadline inheritance implies that this surface was blocking the embedder,
   // so there shouldn't be an active frame.
   DCHECK(!HasActiveFrame());
-  ActivatePendingFrameForDeadline(base::nullopt);
-}
-
-void Surface::ResetBlockActivationOnParent() {
-  if (!block_activation_on_parent_)
-    return;
-
-  block_activation_on_parent_ = false;
-
-  if (!activation_dependencies_.empty() || !pending_frame_data_)
-    return;
-
-  // All blockers have been cleared. The surface can be activated now.
-  ActivatePendingFrame(base::nullopt);
+  ActivatePendingFrameForDeadline();
 }
 
 }  // namespace viz

@@ -37,8 +37,9 @@ constexpr const char kCategoryGroup[] = "foo";
 class MockProducerClient : public ProducerClient {
  public:
   explicit MockProducerClient(
-      scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner)
-      : delegate_(perfetto::base::kPageSize),
+      std::unique_ptr<PerfettoTaskRunner> main_thread_task_runner)
+      : ProducerClient(main_thread_task_runner.get()),
+        delegate_(perfetto::base::kPageSize),
         stream_(&delegate_),
         main_thread_task_runner_(std::move(main_thread_task_runner)) {
     trace_packet_.Reset(&stream_);
@@ -109,7 +110,7 @@ class MockProducerClient : public ProducerClient {
   perfetto::protos::pbzero::TracePacket trace_packet_;
   protozero::ScatteredStreamWriterNullDelegate delegate_;
   protozero::ScatteredStreamWriter stream_;
-  scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner_;
+  std::unique_ptr<PerfettoTaskRunner> main_thread_task_runner_;
 };
 
 // For sequences/threads other than our own, we just want to ignore
@@ -169,7 +170,8 @@ std::unique_ptr<perfetto::TraceWriter> MockProducerClient::CreateTraceWriter(
   // but there's no guarantee that this will succeed if that taskrunner is also
   // shut down.
   ANNOTATE_SCOPED_MEMORY_LEAK;
-  if (main_thread_task_runner_->RunsTasksInCurrentSequence()) {
+  if (main_thread_task_runner_->GetOrCreateTaskRunner()
+          ->RunsTasksInCurrentSequence()) {
     return std::make_unique<MockTraceWriter>(this);
   } else {
     return std::make_unique<DummyTraceWriter>();
@@ -179,9 +181,12 @@ std::unique_ptr<perfetto::TraceWriter> MockProducerClient::CreateTraceWriter(
 class TraceEventDataSourceTest : public testing::Test {
  public:
   void SetUp() override {
-    ProducerClient::ResetTaskRunnerForTesting();
-    producer_client_ = std::make_unique<MockProducerClient>(
+    PerfettoTracedProcess::ResetTaskRunnerForTesting();
+    PerfettoTracedProcess::GetTaskRunner()->GetOrCreateTaskRunner();
+    auto perfetto_wrapper = std::make_unique<PerfettoTaskRunner>(
         scoped_task_environment_.GetMainThreadTaskRunner());
+    producer_client_ =
+        std::make_unique<MockProducerClient>(std::move(perfetto_wrapper));
   }
 
   void TearDown() override {

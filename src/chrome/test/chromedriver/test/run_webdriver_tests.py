@@ -40,6 +40,23 @@ WD_CLIENT_PATH = 'blinkpy/third_party/wpt/wpt/tools/webdriver'
 WEBDRIVER_CLIENT_ABS_PATH = os.path.join(BLINK_TOOLS_ABS_PATH, WD_CLIENT_PATH)
 
 
+class TestShard(object):
+  def __init__(self, total_shards, shard_index):
+    self.total_shards = total_shards
+    self.shard_index = shard_index
+
+  def is_matched_test(self, test_path):
+    """Determines if a test belongs to the current shard_index.
+
+    Returns:
+      A boolean: True if tests in test_dir should be run in the
+      current shard index; False otherwise.
+    """
+    if self.total_shards == 1:
+      return True
+
+    return (hash(test_path) % self.total_shards) == self.shard_index
+
 class WebDriverTestResult(object):
   def __init__(self, test_name, test_status, messsage=None):
     self.test_name = test_name
@@ -178,6 +195,15 @@ if __name__ == '__main__':
       help='log extra details that may be helpful when debugging')
 
   options = parser.parse_args()
+  env = os.environ
+
+  total_shards = 1
+  shard_index = 0
+  if 'GTEST_TOTAL_SHARDS' in env:
+      total_shards = int(env['GTEST_TOTAL_SHARDS'])
+  if 'GTEST_SHARD_INDEX' in env:
+      shard_index = int(env['GTEST_SHARD_INDEX'])
+  test_shard = TestShard(total_shards, shard_index)
 
   test_results = []
   log_level = logging.DEBUG if options.verbose else logging.INFO
@@ -230,7 +256,10 @@ if __name__ == '__main__':
         for filename in filenames:
           if '__init__' in filename:
             continue
+
           test_file = os.path.join(root, filename)
+          if not test_shard.is_matched_test(test_file):
+            continue
           test_results += run_test(test_file, path_finder, port, skipped_tests)
     else:
       _log.error('%s is not a file nor directory.' % test_path)
@@ -278,7 +307,7 @@ if __name__ == '__main__':
       if test_result.test_status == 'PASS':
         success_count += 1
 
-      if is_unexpected:
+      if is_unexpected and test_result.test_status != 'PASS':
         exit_code += 1
 
     output['num_failures_by_type']['PASS'] = success_count

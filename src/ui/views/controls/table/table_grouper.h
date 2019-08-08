@@ -27,4 +27,4 @@ class VIEWS_EXPORT TableGrouper {
 
 }  // namespace views
 
-#endif  // UI_VIEWS_CONTROLS_TABLE_GROUP_TABLE_VIEW_H_
+#endif  // UI_VIEWS_CONTROLS_TABLE_TABLE_GROUPER_H_

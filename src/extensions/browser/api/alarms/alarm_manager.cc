@@ -129,10 +129,9 @@ AlarmManager::~AlarmManager() {
 void AlarmManager::AddAlarm(const std::string& extension_id,
                             std::unique_ptr<Alarm> alarm,
                             AddAlarmCallback callback) {
-  RunWhenReady(
-      extension_id,
-      base::BindOnce(&AlarmManager::AddAlarmWhenReady, AsWeakPtr(),
-                     base::Passed(std::move(alarm)), std::move(callback)));
+  RunWhenReady(extension_id,
+               base::BindOnce(&AlarmManager::AddAlarmWhenReady, AsWeakPtr(),
+                              std::move(alarm), std::move(callback)));
 }
 
 void AlarmManager::GetAlarm(const std::string& extension_id,

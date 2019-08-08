@@ -122,7 +122,7 @@ void AlwaysOnTopController::OnWindowDestroying(aura::Window* window) {
 
 void AlwaysOnTopController::OnPreWindowStateTypeChange(
     wm::WindowState* window_state,
-    mojom::WindowStateType old_type) {
+    WindowStateType old_type) {
   ReparentWindow(window_state->window());
 }
 

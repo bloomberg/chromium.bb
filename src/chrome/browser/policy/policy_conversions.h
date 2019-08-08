@@ -6,8 +6,10 @@
 #define CHROME_BROWSER_POLICY_POLICY_CONVERSIONS_H_
 
 #include <memory>
+#include <string>
 
 #include "base/values.h"
+#include "chrome/browser/ui/webui/localized_string.h"
 #include "components/policy/core/common/policy_types.h"
 
 namespace content {
@@ -16,12 +18,7 @@ class BrowserContext;
 
 namespace policy {
 
-struct PolicyStringMap {
-  const char* key;
-  int string_id;
-};
-
-extern const PolicyStringMap kPolicySources[policy::POLICY_SOURCE_COUNT];
+extern const LocalizedString kPolicySources[POLICY_SOURCE_COUNT];
 
 // Returns an array with the values of all set policies, with some values
 // converted to be shown in javascript, if it is specified.

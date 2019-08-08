@@ -43,6 +43,41 @@
         ]
     },
     {
+        name: "DiffNeedsReshapeAndFullLayoutAndPaintInvalidation",
+        fields_to_diff: ["font"],
+        methods_to_diff: [
+          {
+            method: "FontInternal().LoadingCustomFonts()",
+            field_dependencies: ["font"]
+          },
+          {
+            method: "TextTransform()",
+            field_dependencies: ["text-transform"]
+          },
+          {
+            method: "WhiteSpace()",
+            field_dependencies: ["white-space"]
+          },
+        ]
+    },
+    {
+        name: "DiffNeedsCollectInlinesAndFullLayoutAndPaintInvalidation",
+        methods_to_diff: [
+          {
+            method: "Direction()",
+            field_dependencies: ["direction"]
+          },
+          {
+            method: "RtlOrdering()",
+            field_dependencies: ["-webkit-rtl-ordering"]
+          },
+          {
+            method: "GetUnicodeBidi()",
+            field_dependencies: ["unicode-bidi"]
+          },
+        ]
+    },
+    {
         name: "DiffNeedsFullLayoutAndPaintInvalidation",
         fields_to_diff: ["padding-top", "padding-left", "padding-right", 
                 "padding-bottom", "-webkit-appearance",
@@ -58,7 +93,7 @@
                 "TextEmphasisCustomMark", "text-justify", "text-orientation", 
                 "text-combine-upright", "tab-size", "text-size-adjust", 
                 "list-style-image", "line-height-step", 
-                "-webkit-text-stroke-width", "line-height", "font", 
+                "-webkit-text-stroke-width", "line-height",
                 "-webkit-border-horizontal-spacing", 
                 "-webkit-border-vertical-spacing", "TextAutosizingMultiplier", 
                 "NamedGridColumnLines", "NamedGridRowLines", "OrderedNamedGridColumnLines", 
@@ -99,10 +134,6 @@
             field_dependencies: ["filter"]
           },
           {
-            method: "FontInternal().LoadingCustomFonts()",
-            field_dependencies: ["font"]
-          },
-          {
             method: "HasPseudoStyle(kPseudoIdScrollbar)",
             field_dependencies: ["StyleType"]
           },
@@ -111,24 +142,8 @@
             field_dependencies: ["-webkit-box-direction"]
           },
           {
-            method: "RtlOrdering()",
-            field_dependencies: ["-webkit-rtl-ordering"]
-          },
-          {
             method: "GetTextAlign()",
             field_dependencies: ["text-align"]
-          },
-          {
-            method: "TextTransform()",
-            field_dependencies: ["text-transform"]
-          },
-          {
-            method: "Direction()",
-            field_dependencies: ["direction"]
-          },
-          {
-            method: "WhiteSpace()",
-            field_dependencies: ["white-space"]
           },
           {
             method: "GetWritingMode()",
@@ -145,10 +160,6 @@
           {
             method: "Clear()",
             field_dependencies: ["clear"]
-          },
-          {
-            method: "GetUnicodeBidi()",
-            field_dependencies: ["unicode-bidi"]
           },
           {
             method: "Floating()",

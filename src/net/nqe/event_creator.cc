@@ -23,18 +23,18 @@ namespace internal {
 
 namespace {
 
-std::unique_ptr<base::Value> NetworkQualityChangedNetLogCallback(
+base::Value NetworkQualityChangedNetLogCallback(
     base::TimeDelta http_rtt,
     base::TimeDelta transport_rtt,
     int32_t downstream_throughput_kbps,
     EffectiveConnectionType effective_connection_type,
     NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetInteger("http_rtt_ms", http_rtt.InMilliseconds());
-  dict->SetInteger("transport_rtt_ms", transport_rtt.InMilliseconds());
-  dict->SetInteger("downstream_throughput_kbps", downstream_throughput_kbps);
-  dict->SetString("effective_connection_type",
-                  GetNameForEffectiveConnectionType(effective_connection_type));
+  base::DictionaryValue dict;
+  dict.SetInteger("http_rtt_ms", http_rtt.InMilliseconds());
+  dict.SetInteger("transport_rtt_ms", transport_rtt.InMilliseconds());
+  dict.SetInteger("downstream_throughput_kbps", downstream_throughput_kbps);
+  dict.SetString("effective_connection_type",
+                 GetNameForEffectiveConnectionType(effective_connection_type));
   return std::move(dict);
 }
 

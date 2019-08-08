@@ -89,9 +89,9 @@ DeltaFileService::DeltaFileService(const base::FilePath& dir)
 
 DeltaFileService::~DeltaFileService() {
   // Unregister should happen on task runner.
-  task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&DeltaFileServiceDoUnregisterMDP,
-                                base::Passed(std::move(delta_file_backend_))));
+  task_runner_->PostTask(FROM_HERE,
+                         base::BindOnce(&DeltaFileServiceDoUnregisterMDP,
+                                        std::move(delta_file_backend_)));
 }
 
 void DeltaFileService::PageAdded(const GURL& url) {

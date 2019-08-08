@@ -32,4 +32,9 @@ SiteInstance* BrowserPluginGuestDelegate::GetOwnerSiteInstance() {
   return nullptr;
 }
 
+RenderFrameHost* BrowserPluginGuestDelegate::GetEmbedderFrame() const {
+  NOTREACHED();
+  return nullptr;
+}
+
 }  // namespace content

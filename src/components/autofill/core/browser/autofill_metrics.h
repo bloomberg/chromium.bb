@@ -14,8 +14,8 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_client.h"
-#include "components/autofill/core/browser/autofill_profile.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/browser/metrics/form_events.h"
@@ -476,6 +476,31 @@ class AutofillMetrics {
     NUM_SCAN_CREDIT_CARD_PROMPT_METRICS,
   };
 
+  // Metrics to record the decision on whether to offer local card migration.
+  enum class LocalCardMigrationDecisionMetric {
+    // All the required conditions are satisfied and main prompt is shown.
+    OFFERED = 0,
+    // Migration not offered because user uses new card.
+    NOT_OFFERED_USE_NEW_CARD = 1,
+    // Migration not offered because failed migration prerequisites.
+    NOT_OFFERED_FAILED_PREREQUISITES = 2,
+    // The Autofill StrikeDatabase decided not to allow offering migration
+    // because max strike count was reached.
+    NOT_OFFERED_REACHED_MAX_STRIKE_COUNT = 3,
+    // Migration not offered because no migratable cards.
+    NOT_OFFERED_NO_MIGRATABLE_CARDS = 4,
+    // Met the migration requirements but the request to Payments for upload
+    // details failed.
+    NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED = 5,
+    // Abandoned the migration because no supported local cards were left after
+    // filtering out unsupported cards.
+    NOT_OFFERED_NO_SUPPORTED_CARDS = 6,
+    // User used a local card and they only have a single migratable local card
+    // on file, we will offer Upstream instead.
+    NOT_OFFERED_SINGLE_LOCAL_CARD = 7,
+    kMaxValue = NOT_OFFERED_SINGLE_LOCAL_CARD,
+  };
+
   // Metrics to track events when local credit card migration is offered.
   enum LocalCardMigrationBubbleOfferMetric {
     // The bubble is requested due to a credit card being used or
@@ -867,6 +892,11 @@ class AutofillMetrics {
     DISALLOW_IMPLICIT_CONSTRUCTORS(UkmTimestampPin);
   };
 
+  // When the autofill-use-improved-label-disambiguation experiment is enabled
+  // and suggestions are available, records if a LabelFormatter successfully
+  // created the suggestions.
+  static void LogProfileSuggestionsMadeWithFormatter(bool made_with_formatter);
+
   static void LogSubmittedCardStateMetric(SubmittedCardStateMetric metric);
 
   // If a credit card that matches a server card (unmasked or not) was submitted
@@ -940,6 +970,8 @@ class AutofillMetrics {
   static void LogManageCardsPromptMetric(ManageCardsPromptMetric metric,
                                          bool is_uploading);
   static void LogScanCreditCardPromptMetric(ScanCreditCardPromptMetric metric);
+  static void LogLocalCardMigrationDecisionMetric(
+      LocalCardMigrationDecisionMetric metric);
   static void LogLocalCardMigrationBubbleOfferMetric(
       LocalCardMigrationBubbleOfferMetric metric,
       bool is_reshow);
@@ -967,7 +999,6 @@ class AutofillMetrics {
 
   static void LogSaveCardWithFirstAndLastNameOffered(bool is_local);
   static void LogSaveCardWithFirstAndLastNameComplete(bool is_local);
-  static void LogSaveCardReachedPersonalDataManager(bool is_local);
 
   static void LogDeveloperEngagementMetric(DeveloperEngagementMetric metric);
 
@@ -992,17 +1023,22 @@ class AutofillMetrics {
   static void LogUserHappinessMetric(
       UserHappinessMetric metric,
       FieldTypeGroup field_type_group,
-      security_state::SecurityLevel security_level);
+      security_state::SecurityLevel security_level,
+      uint32_t profile_form_bitmask);
 
   static void LogUserHappinessMetric(
       UserHappinessMetric metric,
       const std::set<FormType>& form_types,
-      security_state::SecurityLevel security_level);
+      security_state::SecurityLevel security_level,
+      uint32_t profile_form_bitmask);
 
   static void LogUserHappinessBySecurityLevel(
       UserHappinessMetric metric,
       FormType form_type,
       security_state::SecurityLevel security_level);
+
+  static void LogUserHappinessByProfileFormType(UserHappinessMetric metric,
+                                                uint32_t profile_form_bitmask);
 
   // Logs |event| to the unmask prompt events histogram.
   static void LogUnmaskPromptEvent(UnmaskPromptEvent event);

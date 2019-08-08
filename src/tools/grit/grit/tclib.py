@@ -141,10 +141,8 @@ class BaseMessage(object):
     return self.id
 
   def GenerateId(self):
-    # Must use a UTF-8 encoded version of the presentable content, along with
-    # the meaning attribute, to match the TC.
-    return grit.extern.tclib.GenerateMessageId(
-      self.GetPresentableContent().encode('utf-8'), self.meaning)
+    return grit.extern.tclib.GenerateMessageId(self.GetPresentableContent(),
+                                               self.meaning)
 
   def GetPlaceholders(self):
     return self.placeholders

@@ -68,7 +68,8 @@ class CONTENT_EXPORT Compositor {
   virtual void SetWindowBounds(const gfx::Size& size) = 0;
 
   // Set the output surface which the compositor renders into.
-  virtual void SetSurface(jobject surface, bool backed_by_surface_texture) = 0;
+  virtual void SetSurface(jobject surface,
+                          bool can_be_used_with_surface_control) = 0;
 
   // Set the background color used by the layer tree host.
   virtual void SetBackgroundColor(int color) = 0;
@@ -87,6 +88,14 @@ class CONTENT_EXPORT Compositor {
 
   // Returns the resource manager associated with the compositor.
   virtual ui::ResourceManager& GetResourceManager() = 0;
+
+  // Caches the back buffer associated with the current surface, if any. The
+  // client is responsible for evicting this cache entry before destroying the
+  // associated window.
+  virtual void CacheBackBufferForCurrentSurface() = 0;
+
+  // Evicts the cache entry created from the cached call above.
+  virtual void EvictCachedBackBuffer() = 0;
 
  protected:
   Compositor() {}

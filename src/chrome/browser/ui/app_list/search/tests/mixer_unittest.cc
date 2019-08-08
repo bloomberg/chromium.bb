@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "ash/public/cpp/app_list/app_list_config.h"
-#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/files/scoped_temp_dir.h"
@@ -23,8 +22,6 @@
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
-#include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
-#include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -38,9 +35,7 @@ using ResultType = ash::SearchResultType;
 // Maximum number of results to show in each mixer group.
 const size_t kMaxAppsGroupResults = 4;
 const size_t kMaxOmniboxResults = 4;
-const size_t kMaxWebstoreResults = 2;
-
-const bool kEphemeralUser = false;
+const size_t kMaxPlaystoreResults = 2;
 
 class TestSearchResult : public ChromeSearchResult {
  public:
@@ -141,50 +136,22 @@ class MixerTest : public testing::Test {
     providers_.push_back(
         std::make_unique<TestSearchProvider>("omnibox", ResultType::kOmnibox));
     providers_.push_back(std::make_unique<TestSearchProvider>(
-        "webstore", ResultType::kWebStoreApp));
+        "playstore", ResultType::kPlayStoreApp));
   }
 
-  void CreateMixer(bool use_adaptive_ranker,
-                   const std::map<std::string, std::string>& params = {}) {
-    if (use_adaptive_ranker) {
-      scoped_feature_list_.InitAndEnableFeatureWithParameters(
-          app_list_features::kEnableAdaptiveResultRanker, params);
-    } else {
-      scoped_feature_list_.InitWithFeatures(
-          {}, {app_list_features::kEnableAdaptiveResultRanker});
-    }
-
+  void CreateMixer() {
     mixer_ = std::make_unique<Mixer>(model_updater_.get());
-
-    if (use_adaptive_ranker) {
-      ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-
-      RecurrenceRankerConfigProto ranker_config;
-      ranker_config.set_min_seconds_between_saves(240u);
-      auto* predictor = ranker_config.mutable_zero_state_frecency_predictor();
-      predictor->set_target_limit(200u);
-      predictor->set_decay_coeff(0.8f);
-      auto* fallback = ranker_config.mutable_fallback_predictor();
-      fallback->set_target_limit(200u);
-      fallback->set_decay_coeff(0.8f);
-
-      std::unique_ptr<RecurrenceRanker> ranker =
-          std::make_unique<RecurrenceRanker>(
-              temp_dir_.GetPath().AppendASCII("ranker_model.proto"),
-              ranker_config, kEphemeralUser);
-      Wait();
-      mixer_->SetRecurrenceRanker(std::move(ranker));
-    }
 
     // TODO(warx): when fullscreen app list is default enabled, modify this test
     // to test answer card/apps group having relevance boost.
     size_t apps_group_id = mixer_->AddGroup(kMaxAppsGroupResults, 1.0, 0.0);
     size_t omnibox_group_id = mixer_->AddGroup(kMaxOmniboxResults, 1.0, 0.0);
-    size_t webstore_group_id = mixer_->AddGroup(kMaxWebstoreResults, 0.5, 0.0);
+    size_t playstore_group_id =
+        mixer_->AddGroup(kMaxPlaystoreResults, 0.5, 0.0);
 
     mixer_->AddProviderToGroup(apps_group_id, providers_[0].get());
     mixer_->AddProviderToGroup(omnibox_group_id, providers_[1].get());
-    mixer_->AddProviderToGroup(webstore_group_id, providers_[2].get());
+    mixer_->AddProviderToGroup(playstore_group_id, providers_[2].get());
   }
 
   void RunQuery() {
@@ -193,7 +160,8 @@ class MixerTest : public testing::Test {
     for (size_t i = 0; i < providers_.size(); ++i)
       providers_[i]->Start(query);
 
-    mixer_->MixAndPublish(AppListConfig::instance().max_search_results());
+    mixer_->MixAndPublish(AppListConfig::instance().max_search_results(),
+                          base::string16());
   }
 
   std::string GetResults() const {
@@ -209,16 +177,12 @@ class MixerTest : public testing::Test {
     return result;
   }
 
-  void Train(const std::string& id, const RankingItemType& type) {
-    mixer_->Train(id, type);
-  }
-
   void Wait() { scoped_task_environment_.RunUntilIdle(); }
 
   Mixer* mixer() { return mixer_.get(); }
   TestSearchProvider* app_provider() { return providers_[0].get(); }
   TestSearchProvider* omnibox_provider() { return providers_[1].get(); }
-  TestSearchProvider* webstore_provider() { return providers_[2].get(); }
+  TestSearchProvider* playstore_provider() { return providers_[2].get(); }
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -234,8 +198,7 @@ class MixerTest : public testing::Test {
 };
 
 TEST_F(MixerTest, Basic) {
-  // Create mixer without adaptive ranker.
-  CreateMixer(false);
+  CreateMixer();
 
   // Note: Some cases in |expected| have vastly more results than others, due to
   // the "at least 6" mechanism. If it gets at least 6 results from all
@@ -244,43 +207,43 @@ TEST_F(MixerTest, Basic) {
   struct TestCase {
     const size_t app_results;
     const size_t omnibox_results;
-    const size_t webstore_results;
+    const size_t playstore_results;
     const char* expected;
   } kTestCases[] = {
       {0, 0, 0, ""},
       {10, 0, 0, "app0,app1,app2,app3,app4,app5,app6,app7,app8,app9"},
       {0, 0, 10,
-       "webstore0,webstore1,webstore2,webstore3,webstore4,webstore5,webstore6,"
-       "webstore7,webstore8,webstore9"},
+       "playstore0,playstore1,playstore2,playstore3,playstore4,playstore5,"
+       "playstore6,playstore7,playstore8,playstore9"},
       {4, 6, 0, "app0,omnibox0,app1,omnibox1,app2,omnibox2,app3,omnibox3"},
       {4, 6, 2,
-       "app0,omnibox0,app1,omnibox1,app2,omnibox2,app3,omnibox3,webstore0,"
-       "webstore1"},
+       "app0,omnibox0,app1,omnibox1,app2,omnibox2,app3,omnibox3,playstore0,"
+       "playstore1"},
       {10, 10, 10,
-       "app0,omnibox0,app1,omnibox1,app2,omnibox2,app3,omnibox3,webstore0,"
-       "webstore1"},
+       "app0,omnibox0,app1,omnibox1,app2,omnibox2,app3,omnibox3,playstore0,"
+       "playstore1"},
       {0, 10, 0,
        "omnibox0,omnibox1,omnibox2,omnibox3,omnibox4,omnibox5,omnibox6,"
        "omnibox7,omnibox8,omnibox9"},
       {0, 10, 1,
-       "omnibox0,omnibox1,omnibox2,omnibox3,webstore0,omnibox4,omnibox5,"
+       "omnibox0,omnibox1,omnibox2,omnibox3,playstore0,omnibox4,omnibox5,"
        "omnibox6,omnibox7,omnibox8,omnibox9"},
-      {0, 10, 2, "omnibox0,omnibox1,omnibox2,omnibox3,webstore0,webstore1"},
+      {0, 10, 2, "omnibox0,omnibox1,omnibox2,omnibox3,playstore0,playstore1"},
       {1, 10, 0,
        "app0,omnibox0,omnibox1,omnibox2,omnibox3,omnibox4,omnibox5,omnibox6,"
        "omnibox7,omnibox8,omnibox9"},
       {2, 10, 0, "app0,omnibox0,app1,omnibox1,omnibox2,omnibox3"},
-      {2, 10, 1, "app0,omnibox0,app1,omnibox1,omnibox2,omnibox3,webstore0"},
+      {2, 10, 1, "app0,omnibox0,app1,omnibox1,omnibox2,omnibox3,playstore0"},
       {2, 10, 2,
-       "app0,omnibox0,app1,omnibox1,omnibox2,omnibox3,webstore0,webstore1"},
-      {2, 0, 2, "app0,app1,webstore0,webstore1"},
+       "app0,omnibox0,app1,omnibox1,omnibox2,omnibox3,playstore0,playstore1"},
+      {2, 0, 2, "app0,app1,playstore0,playstore1"},
       {0, 0, 0, ""},
   };
 
   for (size_t i = 0; i < base::size(kTestCases); ++i) {
     app_provider()->set_count(kTestCases[i].app_results);
     omnibox_provider()->set_count(kTestCases[i].omnibox_results);
-    webstore_provider()->set_count(kTestCases[i].webstore_results);
+    playstore_provider()->set_count(kTestCases[i].playstore_results);
     RunQuery();
 
     EXPECT_EQ(kTestCases[i].expected, GetResults()) << "Case " << i;
@@ -288,8 +251,7 @@ TEST_F(MixerTest, Basic) {
 }
 
 TEST_F(MixerTest, RemoveDuplicates) {
-  // Create mixer without adaptive ranker.
-  CreateMixer(false);
+  CreateMixer();
 
   const std::string dup = "dup";
 
@@ -302,48 +264,13 @@ TEST_F(MixerTest, RemoveDuplicates) {
   omnibox_provider()->set_count(2);
 
   // This gives "dup0".
-  webstore_provider()->set_prefix(dup);
-  webstore_provider()->set_count(1);
+  playstore_provider()->set_prefix(dup);
+  playstore_provider()->set_count(1);
 
   RunQuery();
 
   // Only three results with unique id are kept.
   EXPECT_EQ("dup0,dup1,dup2", GetResults());
-}
-
-TEST_F(MixerTest, RankerIsDisabledWithFlag) {
-  CreateMixer(false);
-
-  for (int i = 0; i < 20; ++i)
-    Train("omnibox2", RankingItemType::kOmniboxGeneric);
-
-  app_provider()->set_count(4);
-  app_provider()->set_small_relevance_range();
-  omnibox_provider()->set_count(4);
-  omnibox_provider()->set_small_relevance_range();
-  RunQuery();
-
-  // Expect training calls to have not affected rankings.
-  EXPECT_EQ(GetResults(),
-            "app0,omnibox0,app1,omnibox1,app2,omnibox2,app3,omnibox3");
-}
-
-TEST_F(MixerTest, RankerImprovesScores) {
-  CreateMixer(true, {{"boost_coefficient", "10.0"}});
-
-  for (int i = 0; i < 20; ++i)
-    Train("omnibox2", RankingItemType::kOmniboxGeneric);
-
-  app_provider()->set_count(4);
-  app_provider()->set_small_relevance_range();
-  omnibox_provider()->set_count(4);
-  omnibox_provider()->set_small_relevance_range();
-  RunQuery();
-
-  // Omnibox results exist in the ranker and should be up-weighted to the top of
-  // the list.
-  EXPECT_EQ(GetResults(),
-            "omnibox0,omnibox1,omnibox2,omnibox3,app0,app1,app2,app3");
 }
 
 }  // namespace test

@@ -12,7 +12,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/strings/string_piece.h"
 #include "components/domain_reliability/beacon.h"
@@ -160,7 +159,7 @@ class DomainReliabilityContextTest : public testing::Test {
 
   void CallUploadAllowedResultCallback(bool allowed) {
     DCHECK(!upload_allowed_result_callback_.is_null());
-    base::ResetAndReturn(&upload_allowed_result_callback_).Run(allowed);
+    std::move(upload_allowed_result_callback_).Run(allowed);
   }
 
   MockTime time_;

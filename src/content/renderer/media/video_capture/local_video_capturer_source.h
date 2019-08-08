@@ -58,13 +58,13 @@ class LocalVideoCapturerSource : public media::VideoCapturerSource {
 
   VideoCaptureImplManager* const manager_;
 
-  base::Closure release_device_cb_;
+  base::OnceClosure release_device_cb_;
 
   // These two are valid between StartCapture() and StopCapture().
   // |running_call_back_| is run when capture is successfully started, and when
   // it is stopped or error happens.
   RunningCallback running_callback_;
-  base::Closure stop_capture_cb_;
+  base::OnceClosure stop_capture_cb_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 

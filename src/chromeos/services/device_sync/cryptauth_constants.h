@@ -13,6 +13,7 @@ namespace device_sync {
 // not arbitrary; CryptAuth must be able to identify these names.
 extern const char kCryptAuthUserKeyPairName[];
 extern const char kCryptAuthLegacyMasterKeyName[];
+extern const char kCryptAuthDeviceSyncBetterTogetherKeyName[];
 
 // CryptAuth demands that the kUserKeyPair key bundle have a lone key with this
 // handle for backward compatibility reasons.

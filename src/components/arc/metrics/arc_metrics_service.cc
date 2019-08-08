@@ -29,6 +29,7 @@
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
+#include "ui/events/ozone/gamepad/gamepad_provider_ozone.h"
 
 namespace arc {
 
@@ -151,6 +152,7 @@ ArcMetricsService::ArcMetricsService(content::BrowserContext* context,
   arc_window_delegate_->RegisterActivationChangeObserver();
   session_manager::SessionManager::Get()->AddObserver(this);
   chromeos::PowerManagerClient::Get()->AddObserver(this);
+  ui::GamepadProviderOzone::GetInstance()->AddGamepadObserver(this);
 
   DCHECK(pref_service_);
   RestoreEngagementTimeFromPrefs();
@@ -172,6 +174,7 @@ ArcMetricsService::~ArcMetricsService() {
   UpdateEngagementTime();
   SaveEngagementTimeToPrefs();
 
+  ui::GamepadProviderOzone::GetInstance()->RemoveGamepadObserver(this);
   chromeos::PowerManagerClient::Get()->RemoveObserver(this);
   session_manager::SessionManager::Get()->RemoveObserver(this);
   arc_window_delegate_->UnregisterActivationChangeObserver();
@@ -325,8 +328,10 @@ void ArcMetricsService::OnWindowActivated(
     aura::Window* lost_active) {
   UpdateEngagementTime();
   was_arc_window_active_ = arc_window_delegate_->IsArcAppWindow(gained_active);
-  if (!was_arc_window_active_)
+  if (!was_arc_window_active_) {
+    gamepad_interaction_recorded_ = false;
     return;
+  }
   UMA_HISTOGRAM_ENUMERATION(
       "Arc.UserInteraction",
       UserInteractionType::APP_CONTENT_WINDOW_INTERACTION);
@@ -343,6 +348,16 @@ void ArcMetricsService::ScreenIdleStateChanged(
     const power_manager::ScreenIdleState& proto) {
   UpdateEngagementTime();
   was_screen_dimmed_ = proto.dimmed();
+}
+
+void ArcMetricsService::OnGamepadEvent(const ui::GamepadEvent& event) {
+  if (!was_arc_window_active_)
+    return;
+  if (gamepad_interaction_recorded_)
+    return;
+  gamepad_interaction_recorded_ = true;
+  UMA_HISTOGRAM_ENUMERATION("Arc.UserInteraction",
+                            UserInteractionType::GAMEPAD_INTERACTION);
 }
 
 void ArcMetricsService::OnTaskCreated(int32_t task_id,

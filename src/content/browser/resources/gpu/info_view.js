@@ -14,7 +14,7 @@ cr.define('gpu', function() {
    * @constructor
    * @extends {cr.ui.TabPanel}
    */
-  var InfoView = cr.ui.define(cr.ui.TabPanel);
+  const InfoView = cr.ui.define(cr.ui.TabPanel);
 
   InfoView.prototype = {
     __proto__: cr.ui.TabPanel.prototype,
@@ -47,6 +47,7 @@ cr.define('gpu', function() {
      * Updates the view based on its currently known data
      */
     refresh: function(data) {
+      let clientInfo;
       function createSourcePermalink(revisionIdentifier, filepath) {
         if (revisionIdentifier.length !== 40) {
           // If the revision id isn't a hash, just use the 0.0.0.0 version
@@ -59,7 +60,7 @@ cr.define('gpu', function() {
 
       // Client info
       if (browserBridge.clientInfo) {
-        var clientInfo = browserBridge.clientInfo;
+        clientInfo = browserBridge.clientInfo;
 
         this.setTable_('client-info', [
           {description: 'Data exported', value: (new Date()).toISOString()},
@@ -89,31 +90,31 @@ cr.define('gpu', function() {
 
 
       // GPU info, basic
-      var diagnosticsDiv = this.querySelector('.diagnostics');
-      var diagnosticsLoadingDiv = this.querySelector('.diagnostics-loading');
-      var featureStatusList = this.querySelector('.feature-status-list');
-      var problemsDiv = this.querySelector('.problems-div');
-      var problemsList = this.querySelector('.problems-list');
-      var workaroundsDiv = this.querySelector('.workarounds-div');
-      var workaroundsList = this.querySelector('.workarounds-list');
+      const diagnosticsDiv = this.querySelector('.diagnostics');
+      const diagnosticsLoadingDiv = this.querySelector('.diagnostics-loading');
+      const featureStatusList = this.querySelector('.feature-status-list');
+      const problemsDiv = this.querySelector('.problems-div');
+      const problemsList = this.querySelector('.problems-list');
+      const workaroundsDiv = this.querySelector('.workarounds-div');
+      const workaroundsList = this.querySelector('.workarounds-list');
 
-      var basicInfoForHardwareGpuDiv =
+      const basicInfoForHardwareGpuDiv =
           this.querySelector('.basic-info-for-hardware-gpu-div');
-      var featureStatusForHardwareGpuDiv =
+      const featureStatusForHardwareGpuDiv =
           this.querySelector('.feature-status-for-hardware-gpu-div');
-      var featureStatusForHardwareGpuList =
+      const featureStatusForHardwareGpuList =
           this.querySelector('.feature-status-for-hardware-gpu-list');
-      var problemsForHardwareGpuDiv =
+      const problemsForHardwareGpuDiv =
           this.querySelector('.problems-for-hardware-gpu-div');
-      var problemsForHardwareGpuList =
+      const problemsForHardwareGpuList =
           this.querySelector('.problems-for-hardware-gpu-list');
-      var workaroundsForHardwareGpuDiv =
+      const workaroundsForHardwareGpuDiv =
           this.querySelector('.workarounds-for-hardware-gpu-div');
-      var workaroundsForHardwareGpuList =
+      const workaroundsForHardwareGpuList =
           this.querySelector('.workarounds-for-hardware-gpu-list');
 
-      var gpuInfo = browserBridge.gpuInfo;
-      var i;
+      const gpuInfo = browserBridge.gpuInfo;
+      let i;
       if (gpuInfo) {
         // Not using jstemplate here for blacklist status because we construct
         // href from data, which jstemplate can't seem to do.
@@ -211,7 +212,7 @@ cr.define('gpu', function() {
         featureInfo, featureStatusList, problemsDiv, problemsList,
         workaroundsDiv, workaroundsList) {
       // Feature map
-      var featureLabelMap = {
+      const featureLabelMap = {
         '2d_canvas': 'Canvas',
         'gpu_compositing': 'Compositing',
         'webgl': 'WebGL',
@@ -223,6 +224,7 @@ cr.define('gpu', function() {
         'video_decode': 'Video Decode',
         'rasterization': 'Rasterization',
         'oop_rasterization': 'Out-of-process Rasterization',
+        'metal': 'Metal',
         'multiple_raster_threads': 'Multiple Raster Threads',
         'native_gpu_memory_buffers': 'Native GpuMemoryBuffers',
         'protected_video_decode': 'Hardware Protected Video Decode',
@@ -235,7 +237,7 @@ cr.define('gpu', function() {
         'skia_renderer': 'Skia Renderer',
       };
 
-      var statusMap = {
+      const statusMap = {
         'disabled_software': {
           'label': 'Software only. Hardware acceleration disabled',
           'class': 'feature-yellow'
@@ -265,19 +267,19 @@ cr.define('gpu', function() {
 
       // feature status list
       featureStatusList.textContent = '';
-      for (var featureName in featureInfo.featureStatus) {
-        var featureStatus = featureInfo.featureStatus[featureName];
-        var featureEl = document.createElement('li');
+      for (const featureName in featureInfo.featureStatus) {
+        const featureStatus = featureInfo.featureStatus[featureName];
+        const featureEl = document.createElement('li');
 
-        var nameEl = document.createElement('span');
+        const nameEl = document.createElement('span');
         if (!featureLabelMap[featureName]) {
           console.log('Missing featureLabel for', featureName);
         }
         nameEl.textContent = featureLabelMap[featureName] + ': ';
         featureEl.appendChild(nameEl);
 
-        var statusEl = document.createElement('span');
-        var statusInfo = statusMap[featureStatus];
+        const statusEl = document.createElement('span');
+        const statusInfo = statusMap[featureStatus];
         if (!statusInfo) {
           console.log('Missing status for ', featureStatus);
           statusEl.textContent = 'Unknown';
@@ -296,8 +298,8 @@ cr.define('gpu', function() {
         problemsDiv.hidden = false;
         problemsList.textContent = '';
         for (i = 0; i < featureInfo.problems.length; i++) {
-          var problem = featureInfo.problems[i];
-          var problemEl = this.createProblemEl_(problem);
+          const problem = featureInfo.problems[i];
+          const problemEl = this.createProblemEl_(problem);
           problemsList.appendChild(problemEl);
         }
       } else {
@@ -309,7 +311,7 @@ cr.define('gpu', function() {
         workaroundsDiv.hidden = false;
         workaroundsList.textContent = '';
         for (i = 0; i < featureInfo.workarounds.length; i++) {
-          var workaroundEl = document.createElement('li');
+          const workaroundEl = document.createElement('li');
           workaroundEl.textContent = featureInfo.workarounds[i];
           workaroundsList.appendChild(workaroundEl);
         }
@@ -319,34 +321,33 @@ cr.define('gpu', function() {
     },
 
     createProblemEl_: function(problem) {
-      var problemEl;
-      problemEl = document.createElement('li');
+      const problemEl = document.createElement('li');
 
       // Description of issue
-      var desc = document.createElement('a');
+      const desc = document.createElement('a');
       desc.textContent = problem.description;
       problemEl.appendChild(desc);
 
       // Spacing ':' element
       if (problem.crBugs.length > 0) {
-        var tmp = document.createElement('span');
+        const tmp = document.createElement('span');
         tmp.textContent = ': ';
         problemEl.appendChild(tmp);
       }
 
-      var nbugs = 0;
-      var j;
+      let nbugs = 0;
+      let j;
 
       // crBugs
       for (j = 0; j < problem.crBugs.length; ++j) {
         if (nbugs > 0) {
-          var tmp = document.createElement('span');
+          const tmp = document.createElement('span');
           tmp.textContent = ', ';
           problemEl.appendChild(tmp);
         }
 
-        var link = document.createElement('a');
-        var bugid = parseInt(problem.crBugs[j]);
+        const link = document.createElement('a');
+        const bugid = parseInt(problem.crBugs[j]);
         link.textContent = bugid;
         link.href = 'http://crbug.com/' + bugid;
         problemEl.appendChild(link);
@@ -354,13 +355,13 @@ cr.define('gpu', function() {
       }
 
       if (problem.affectedGpuSettings.length > 0) {
-        var brNode = document.createElement('br');
+        const brNode = document.createElement('br');
         problemEl.appendChild(brNode);
 
-        var iNode = document.createElement('i');
+        const iNode = document.createElement('i');
         problemEl.appendChild(iNode);
 
-        var headNode = document.createElement('span');
+        const headNode = document.createElement('span');
         if (problem.tag == 'disabledFeatures') {
           headNode.textContent = 'Disabled Features: ';
         } else {  // problem.tag == 'workarounds'
@@ -369,11 +370,11 @@ cr.define('gpu', function() {
         iNode.appendChild(headNode);
         for (j = 0; j < problem.affectedGpuSettings.length; ++j) {
           if (j > 0) {
-            var separateNode = document.createElement('span');
+            const separateNode = document.createElement('span');
             separateNode.textContent = ', ';
             iNode.appendChild(separateNode);
           }
-          var nameNode = document.createElement('span');
+          const nameNode = document.createElement('span');
           if (problem.tag == 'disabledFeatures') {
             nameNode.classList.add('feature-red');
           } else {  // problem.tag == 'workarounds'
@@ -388,15 +389,15 @@ cr.define('gpu', function() {
     },
 
     setText_: function(outputElementId, text) {
-      var peg = $(outputElementId);
+      const peg = $(outputElementId);
       peg.textContent = text;
     },
 
     setTable_: function(outputElementId, inputData) {
-      var template = jstGetTemplate('info-view-table-template');
+      const template = jstGetTemplate('info-view-table-template');
       jstProcess(new JsEvalContext({value: inputData}), template);
 
-      var peg = $(outputElementId);
+      const peg = $(outputElementId);
       if (!peg) {
         throw new Error('Node ' + outputElementId + ' not found');
       }

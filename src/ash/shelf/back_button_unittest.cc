@@ -6,16 +6,21 @@
 
 #include <memory>
 
-#include "ash/accelerators/accelerator_controller.h"
+#include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/app_list/views/app_list_view.h"
+#include "ash/kiosk_next/kiosk_next_shell_test_util.h"
+#include "ash/kiosk_next/mock_kiosk_next_shell_client.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/test_accelerator_target.h"
 #include "ui/events/test/event_generator.h"
@@ -27,14 +32,13 @@ class BackButtonTest : public AshTestBase {
   BackButtonTest() = default;
   ~BackButtonTest() override = default;
 
-  BackButton* back_button() { return back_button_; }
+  BackButton* back_button() { return test_api_->shelf_view()->GetBackButton(); }
   ShelfViewTestAPI* test_api() { return test_api_.get(); }
 
   void SetUp() override {
     AshTestBase::SetUp();
     test_api_ = std::make_unique<ShelfViewTestAPI>(
         GetPrimaryShelf()->GetShelfViewForTesting());
-    back_button_ = test_api_->shelf_view()->GetBackButton();
 
     // Finish all setup tasks. In particular we want to finish the
     // GetSwitchStates post task in (Fake)PowerManagerClient which is triggered
@@ -43,8 +47,7 @@ class BackButtonTest : public AshTestBase {
     base::RunLoop().RunUntilIdle();
   }
 
- private:
-  BackButton* back_button_ = nullptr;
+ protected:
   std::unique_ptr<ShelfViewTestAPI> test_api_;
 
   DISALLOW_COPY_AND_ASSIGN(BackButtonTest);
@@ -85,7 +88,8 @@ TEST_F(BackButtonTest, BackKeySequenceGenerated) {
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   test_api()->RunMessageLoopUntilAnimationsDone();
 
-  AcceleratorController* controller = Shell::Get()->accelerator_controller();
+  AcceleratorControllerImpl* controller =
+      Shell::Get()->accelerator_controller();
 
   // Register an accelerator that looks for back presses. Note there is already
   // an accelerator on AppListView, which will handle the accelerator since it
@@ -118,6 +122,71 @@ TEST_F(BackButtonTest, BackKeySequenceGenerated) {
   generator->ReleaseLeftButton();
   EXPECT_EQ(1, target_back_press.accelerator_count());
   EXPECT_EQ(1, target_back_release.accelerator_count());
+}
+
+class KioskNextBackButtonTest : public BackButtonTest {
+ public:
+  KioskNextBackButtonTest() {
+    scoped_feature_list_.InitAndEnableFeature(features::kKioskNextShell);
+  }
+
+  void SetUp() override {
+    set_start_session(false);
+    BackButtonTest::SetUp();
+    client_ = BindMockKioskNextShellClient();
+  }
+
+  void SimulateKioskNextSession() {
+    LogInKioskNextUser(GetSessionControllerClient());
+
+    // Update test_api_ because its reference to ShelfView is outdated.
+    test_api_ = std::make_unique<ShelfViewTestAPI>(
+        GetPrimaryShelf()->GetShelfViewForTesting());
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  std::unique_ptr<MockKioskNextShellClient> client_;
+
+  DISALLOW_COPY_AND_ASSIGN(KioskNextBackButtonTest);
+};
+
+TEST_F(KioskNextBackButtonTest, BackKeySequenceGenerated) {
+  SimulateKioskNextSession();
+
+  // Tablet mode should be enabled in Kiosk Next.
+  ASSERT_TRUE(Shell::Get()
+                  ->tablet_mode_controller()
+                  ->IsTabletModeWindowManagerEnabled());
+  test_api()->RunMessageLoopUntilAnimationsDone();
+
+  // Enter Overview mode, since the shelf view is hidden from the Kiosk Next
+  // home screen.
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  ASSERT_TRUE(overview_controller->ToggleOverview());
+  ASSERT_TRUE(overview_controller->InOverviewSession());
+  test_api()->RunMessageLoopUntilAnimationsDone();
+
+  // Register an accelerator that looks for back releases.
+  ui::Accelerator accelerator_back_release(ui::VKEY_BROWSER_BACK, ui::EF_NONE);
+  accelerator_back_release.set_key_state(ui::Accelerator::KeyState::RELEASED);
+  ui::TestAcceleratorTarget target_back_release;
+  Shell::Get()->accelerator_controller()->Register({accelerator_back_release},
+                                                   &target_back_release);
+
+  // Verify that when pressing down the back button, the accelerator is not
+  // triggered yet.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(back_button()->GetBoundsInScreen().CenterPoint());
+  generator->PressLeftButton();
+  EXPECT_EQ(0, target_back_release.accelerator_count());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+
+  // Verify that by releasing the back button, the accelerator is triggered,
+  // exiting Overview mode and sending a release event.
+  generator->ReleaseLeftButton();
+  EXPECT_EQ(1, target_back_release.accelerator_count());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
 }
 
 }  // namespace ash

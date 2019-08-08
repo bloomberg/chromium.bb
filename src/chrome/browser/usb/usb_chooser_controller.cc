@@ -20,13 +20,13 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "device/usb/public/cpp/usb_utils.h"
-#include "device/usb/public/mojom/device_enumeration_options.mojom.h"
+#include "services/device/public/cpp/usb/usb_utils.h"
+#include "services/device/public/mojom/usb_enumeration_options.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 #if !defined(OS_ANDROID)
-#include "device/usb/usb_ids.h"
+#include "services/device/public/cpp/usb/usb_ids.h"
 #endif  // !defined(OS_ANDROID)
 
 using content::RenderFrameHost;
@@ -65,8 +65,8 @@ base::string16 FormatUsbDeviceName(
 
 void OnDeviceInfoRefreshed(
     base::WeakPtr<UsbChooserContext> chooser_context,
-    const GURL& requesting_origin,
-    const GURL& embedding_origin,
+    const url::Origin& requesting_origin,
+    const url::Origin& embedding_origin,
     blink::mojom::WebUsbService::GetPermissionCallback callback,
     device::mojom::UsbDeviceInfoPtr device_info) {
   if (!chooser_context || !device_info) {
@@ -99,8 +99,8 @@ UsbChooserController::UsbChooserController(
       observer_(this),
       weak_factory_(this) {
   RenderFrameHost* main_frame = web_contents_->GetMainFrame();
-  requesting_origin_ = render_frame_host->GetLastCommittedURL().GetOrigin();
-  embedding_origin_ = main_frame->GetLastCommittedURL().GetOrigin();
+  requesting_origin_ = render_frame_host->GetLastCommittedOrigin();
+  embedding_origin_ = main_frame->GetLastCommittedOrigin();
   Profile* profile =
       Profile::FromBrowserContext(web_contents_->GetBrowserContext());
   chooser_context_ =

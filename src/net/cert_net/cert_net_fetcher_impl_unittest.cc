@@ -134,7 +134,8 @@ class CertNetFetcherImplTest : public PlatformTest {
   CertNetFetcher* fetcher() const { return fetcher_.get(); }
 
   void CreateFetcherOnNetworkThread(base::WaitableEvent* done) {
-    fetcher_ = CreateCertNetFetcher(&state_->context);
+    fetcher_ = base::MakeRefCounted<CertNetFetcherImpl>();
+    fetcher_->SetURLRequestContext(&state_->context);
     done->Signal();
   }
 
@@ -223,7 +224,7 @@ class CertNetFetcherImplTest : public PlatformTest {
 
   EmbeddedTestServer test_server_;
   std::unique_ptr<base::Thread> network_thread_;
-  scoped_refptr<CertNetFetcher> fetcher_;
+  scoped_refptr<CertNetFetcherImpl> fetcher_;
 
   std::unique_ptr<NetworkThreadState> state_;
 };

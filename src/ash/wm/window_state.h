@@ -9,7 +9,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/display/persistent_window_info.h"
-#include "ash/public/interfaces/window_state_type.mojom.h"
 #include "ash/wm/drag_details.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -28,6 +27,7 @@ class Rect;
 namespace ash {
 class LockWindowState;
 class TabletModeWindowState;
+enum class WindowStateType;
 
 namespace mojom {
 enum class WindowPinType;
@@ -84,7 +84,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
     // Update WindowState based on |event|.
     virtual void OnWMEvent(WindowState* window_state, const WMEvent* event) = 0;
 
-    virtual mojom::WindowStateType GetType() const = 0;
+    virtual WindowStateType GetType() const = 0;
 
     // Gets called when the state object became active and the managed window
     // needs to be adjusted to the State's requirement.
@@ -127,7 +127,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // Returns the window's current ash state type.
   // Refer to WindowStateType definition in wm_types.h as for why Ash
   // has its own state type.
-  mojom::WindowStateType GetStateType() const;
+  WindowStateType GetStateType() const;
 
   // Predicates to check window state.
   bool IsMinimized() const;
@@ -138,12 +138,12 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   bool IsTrustedPinned() const;
   bool IsPip() const;
 
-  // True if the window's state type is WindowStateType::MAXIMIZED,
-  // WindowStateType::FULLSCREEN or WindowStateType::PINNED.
+  // True if the window's state type is WindowStateType::kMaximized,
+  // WindowStateType::kFullscreen or WindowStateType::kPinned.
   bool IsMaximizedOrFullscreenOrPinned() const;
 
-  // True if the window's state type is WindowStateType::NORMAL or
-  // WindowStateType::DEFAULT.
+  // True if the window's state type is WindowStateType::kNormal or
+  // WindowStateType::kDefault.
   bool IsNormalStateType() const;
 
   bool IsNormalOrSnapped() const;
@@ -401,8 +401,8 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // Note that this does not update the window bounds.
   void UpdateWindowPropertiesFromStateType();
 
-  void NotifyPreStateTypeChange(mojom::WindowStateType old_window_state_type);
-  void NotifyPostStateTypeChange(mojom::WindowStateType old_window_state_type);
+  void NotifyPreStateTypeChange(WindowStateType old_window_state_type);
+  void NotifyPostStateTypeChange(WindowStateType old_window_state_type);
 
   // Sets |bounds| as is and ensure the layer is aligned with pixel boundary.
   void SetBoundsDirect(const gfx::Rect& bounds);
@@ -425,11 +425,11 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
   // Called before the state change and update PIP related state, such as next
   // window animation type, upon state change.
-  void OnPrePipStateChange(mojom::WindowStateType old_window_state_type);
+  void OnPrePipStateChange(WindowStateType old_window_state_type);
 
   // Called after the state change and update PIP related state, such as next
   // window animation type, upon state change.
-  void OnPostPipStateChange(mojom::WindowStateType old_window_state_type);
+  void OnPostPipStateChange(WindowStateType old_window_state_type);
 
   // Update the PIP bounds if necessary. This may need to happen when the
   // display work area changes, or if system ui regions like the virtual

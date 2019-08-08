@@ -30,9 +30,8 @@ void SharedWorkerFactoryImpl::CreateSharedWorker(
     blink::mojom::WorkerContentSettingsProxyPtr content_settings,
     blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
         service_worker_provider_info,
-    int appcache_host_id,
-    network::mojom::URLLoaderFactoryAssociatedPtrInfo
-        main_script_loader_factory,
+    const base::Optional<base::UnguessableToken>& appcache_host_id,
+    network::mojom::URLLoaderFactoryPtr main_script_loader_factory,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories,
@@ -45,8 +44,8 @@ void SharedWorkerFactoryImpl::CreateSharedWorker(
       std::move(info), pause_on_start, devtools_worker_token,
       *renderer_preferences, std::move(preference_watcher_request),
       std::move(content_settings), std::move(service_worker_provider_info),
-      appcache_host_id, std::move(main_script_loader_factory),
-      std::move(main_script_load_params),
+      appcache_host_id.value_or(base::UnguessableToken()),
+      std::move(main_script_loader_factory), std::move(main_script_load_params),
       std::move(subresource_loader_factories), std::move(controller_info),
       std::move(host), std::move(request), std::move(interface_provider));
 }

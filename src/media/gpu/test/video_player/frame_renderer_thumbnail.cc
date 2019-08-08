@@ -174,6 +174,9 @@ void FrameRendererThumbnail::RenderFrame(
     scoped_refptr<VideoFrame> video_frame) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(renderer_sequence_checker_);
 
+  if (video_frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM))
+    return;
+
   // Find the texture associated with the video frame's mailbox.
   base::AutoLock auto_lock(renderer_lock_);
   const gpu::MailboxHolder& mailbox_holder = video_frame->mailbox_holder(0);
@@ -183,6 +186,8 @@ void FrameRendererThumbnail::RenderFrame(
 
   RenderThumbnail(mailbox_holder.texture_target, it->second);
 }
+
+void FrameRendererThumbnail::WaitUntilRenderingDone() {}
 
 scoped_refptr<VideoFrame> FrameRendererThumbnail::CreateVideoFrame(
     VideoPixelFormat pixel_format,

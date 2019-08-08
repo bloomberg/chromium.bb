@@ -13,16 +13,20 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "ios/web/common/features.h"
-#import "ios/web/interstitials/web_interstitial_impl.h"
+#import "ios/web/navigation/navigation_context_impl.h"
 #import "ios/web/navigation/navigation_item_impl.h"
+#import "ios/web/navigation/serializable_user_data_manager_impl.h"
 #import "ios/web/navigation/wk_navigation_util.h"
-#import "ios/web/public/crw_navigation_item_storage.h"
-#import "ios/web/public/crw_session_storage.h"
+#include "ios/web/public/deprecated/global_web_state_observer.h"
 #import "ios/web/public/java_script_dialog_presenter.h"
+#import "ios/web/public/session/crw_navigation_item_storage.h"
+#import "ios/web/public/session/crw_session_storage.h"
+#import "ios/web/public/session/serializable_user_data_manager.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
 #import "ios/web/public/test/fakes/fake_web_frame.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
@@ -30,13 +34,12 @@
 #import "ios/web/public/test/fakes/test_web_state_observer.h"
 #include "ios/web/public/test/web_test.h"
 #import "ios/web/public/web_state/context_menu_params.h"
-#include "ios/web/public/web_state/global_web_state_observer.h"
 #import "ios/web/public/web_state/web_state_delegate.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #import "ios/web/public/web_state/web_state_policy_decider.h"
+#import "ios/web/security/web_interstitial_impl.h"
 #import "ios/web/test/fakes/mock_interstitial_delegate.h"
 #include "ios/web/web_state/global_web_state_event_tracker.h"
-#import "ios/web/web_state/navigation_context_impl.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
@@ -126,16 +129,6 @@ class MockWebStatePolicyDecider : public WebStatePolicyDecider {
   MOCK_METHOD0(WebStateDestroyed, void());
 };
 
-// Creates and returns an HttpResponseHeader using the string representation.
-scoped_refptr<net::HttpResponseHeaders> HeadersFromString(const char* string) {
-  std::string raw_string(string);
-  std::string headers_string = net::HttpUtil::AssembleRawHeaders(
-      raw_string.c_str(), raw_string.length());
-  scoped_refptr<net::HttpResponseHeaders> headers(
-      new net::HttpResponseHeaders(headers_string));
-  return headers;
-}
-
 // Test callback for script commands.
 // Sets |is_called| to true if it is called, and checks that the parameters
 // match their expected values.
@@ -222,16 +215,16 @@ TEST_P(WebStateImplTest, WebUsageEnabled) {
 TEST_P(WebStateImplTest, ResponseHeaders) {
   GURL real_url("http://foo.com/bar");
   GURL frame_url("http://frames-r-us.com/");
-  scoped_refptr<net::HttpResponseHeaders> real_headers(HeadersFromString(
-      "HTTP/1.1 200 OK\r\n"
-      "Content-Type: text/html\r\n"
-      "X-Should-Be-Here: yep\r\n"
-      "\r\n"));
-  scoped_refptr<net::HttpResponseHeaders> frame_headers(HeadersFromString(
-      "HTTP/1.1 200 OK\r\n"
-      "Content-Type: application/pdf\r\n"
-      "X-Should-Not-Be-Here: oops\r\n"
-      "\r\n"));
+  auto real_headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders("HTTP/1.1 200 OK\r\n"
+                                        "Content-Type: text/html\r\n"
+                                        "X-Should-Be-Here: yep\r\n"
+                                        "\r\n"));
+  auto frame_headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders("HTTP/1.1 200 OK\r\n"
+                                        "Content-Type: application/pdf\r\n"
+                                        "X-Should-Not-Be-Here: oops\r\n"
+                                        "\r\n"));
   // Simulate a load of a page with a frame.
   web_state_->OnHttpResponseHeadersReceived(real_headers.get(), real_url);
   web_state_->OnHttpResponseHeadersReceived(frame_headers.get(), frame_url);
@@ -252,10 +245,10 @@ TEST_P(WebStateImplTest, ResponseHeaders) {
 
 TEST_P(WebStateImplTest, ResponseHeaderClearing) {
   GURL url("http://foo.com/");
-  scoped_refptr<net::HttpResponseHeaders> headers(HeadersFromString(
-      "HTTP/1.1 200 OK\r\n"
-      "Content-Type: text/html\r\n"
-      "\r\n"));
+  auto headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders("HTTP/1.1 200 OK\r\n"
+                                        "Content-Type: text/html\r\n"
+                                        "\r\n"));
   web_state_->OnHttpResponseHeadersReceived(headers.get(), url);
 
   // There should be no headers before loading.
@@ -921,7 +914,8 @@ TEST_P(WebStateImplTest, FaviconUpdateForSameDocumentNavigations) {
 }
 
 // Tests that BuildSessionStorage() and GetTitle() return information about the
-// most recently restored session if no navigation item has been committed.
+// most recently restored session if no navigation item has been committed. Also
+// tests that re-restoring that session includes updated userData.
 TEST_P(WebStateImplTest, UncommittedRestoreSession) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
@@ -939,12 +933,25 @@ TEST_P(WebStateImplTest, UncommittedRestoreSession) {
   web::WebState::CreateParams params(GetBrowserState());
   WebStateImpl web_state(params, session_storage);
 
+  // After restoring |web_state| change the uncommitted state's user data.
+  web::SerializableUserDataManager* user_data_manager =
+      web::SerializableUserDataManager::FromWebState(&web_state);
+  user_data_manager->AddSerializableData(@(1), @"user_data_key");
+
   CRWSessionStorage* extracted_session_storage =
       web_state.BuildSessionStorage();
   EXPECT_EQ(0, extracted_session_storage.lastCommittedItemIndex);
   EXPECT_EQ(1U, extracted_session_storage.itemStorages.count);
   EXPECT_NSEQ(@"Title", base::SysUTF16ToNSString(web_state.GetTitle()));
   EXPECT_EQ(url, web_state.GetVisibleURL());
+
+  WebStateImpl restored_web_state(params, extracted_session_storage);
+  web::SerializableUserDataManager* restored_user_data_manager =
+      web::SerializableUserDataManager::FromWebState(&restored_web_state);
+  NSNumber* user_data_value = base::mac::ObjCCast<NSNumber>(
+      restored_user_data_manager->GetValueForSerializationKey(
+          @"user_data_key"));
+  EXPECT_EQ(@(1), user_data_value);
 }
 
 TEST_P(WebStateImplTest, NoUncommittedRestoreSession) {

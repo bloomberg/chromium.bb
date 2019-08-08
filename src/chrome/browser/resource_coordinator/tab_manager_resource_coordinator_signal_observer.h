@@ -7,20 +7,17 @@
 
 #include "base/macros.h"
 #include "chrome/browser/performance_manager/observers/graph_observer.h"
-#include "chrome/browser/performance_manager/web_contents_proxy.h"
-#include "chrome/browser/resource_coordinator/page_signal_receiver.h"
+#include "chrome/browser/performance_manager/public/web_contents_proxy.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 
 namespace resource_coordinator {
 
-// TabManager::ResourceCoordinatorSignalObserver implements some observer
-// interfaces, for example it currently implements PageSignalObserver but can
-// implement more; and receives signals from resource coordinator through those
-// interfaces.
+// TabManager::ResourceCoordinatorSignalObserver forwards data from the
+// performance manager graph.
 // TODO(chrisha): Kill this thing entirely and move all of tab manager into the
 // performance manager.
 class TabManager::ResourceCoordinatorSignalObserver
-    : public performance_manager::GraphObserver {
+    : public performance_manager::GraphObserverDefaultImpl {
  public:
   using NodeBase = performance_manager::NodeBase;
   using PageNodeImpl = performance_manager::PageNodeImpl;
@@ -45,18 +42,17 @@ class TabManager::ResourceCoordinatorSignalObserver
   // UI thread.
   static content::WebContents* GetContentsForDispatch(
       const base::WeakPtr<TabManager>& tab_manager,
-      const base::WeakPtr<WebContentsProxy>& contents_proxy,
+      const WebContentsProxy& contents_proxy,
       int64_t navigation_id);
 
   // Equivalent to the the GraphObserver functions above, but these are the
   // counterparts that run on the UI thread.
-  static void OnPageAlmostIdleOnUi(
-      const base::WeakPtr<TabManager>& tab_manager,
-      const base::WeakPtr<WebContentsProxy>& contents_proxy,
-      int64_t navigation_id);
+  static void OnPageAlmostIdleOnUi(const base::WeakPtr<TabManager>& tab_manager,
+                                   const WebContentsProxy& contents_proxy,
+                                   int64_t navigation_id);
   static void OnExpectedTaskQueueingDurationSampleOnUi(
       const base::WeakPtr<TabManager>& tab_manager,
-      const base::WeakPtr<WebContentsProxy>& contents_proxy,
+      const WebContentsProxy& contents_proxy,
       int64_t navigation_id,
       base::TimeDelta duration);
 

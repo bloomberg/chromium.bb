@@ -5,14 +5,20 @@
 #ifndef GPU_COMMAND_BUFFER_TESTS_WEBGPU_TEST_H_
 #define GPU_COMMAND_BUFFER_TESTS_WEBGPU_TEST_H_
 
+#include <dawn/dawncpp.h>
+
 #include <memory>
 
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace viz {
+class TestGpuServiceHolder;
+}
+
 namespace gpu {
 
-class InProcessGpuThreadHolder;
+class SharedImageInterface;
 class WebGPUInProcessContext;
 
 namespace webgpu {
@@ -35,16 +41,20 @@ class WebGPUTest : public testing::Test {
   ~WebGPUTest() override;
 
   bool WebGPUSupported() const;
+  bool WebGPUSharedImageSupported() const;
   void SetUp() override;
   void TearDown() override;
 
   void Initialize(const Options& options);
 
   webgpu::WebGPUInterface* webgpu() const;
+  SharedImageInterface* GetSharedImageInterface() const;
+
   void RunPendingTasks();
+  void WaitForCompletion(dawn::Device device);
 
  private:
-  std::unique_ptr<InProcessGpuThreadHolder> gpu_thread_holder_;
+  std::unique_ptr<viz::TestGpuServiceHolder> gpu_service_holder_;
   std::unique_ptr<WebGPUInProcessContext> context_;
 };
 

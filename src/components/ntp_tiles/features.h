@@ -11,6 +11,21 @@ struct Feature;
 
 namespace ntp_tiles {
 
+// Name of the field trial to configure PopularSites.
+extern const char kPopularSitesFieldTrialName[];
+
+// This feature is enabled by default. Otherwise, users who need it would not
+// get the right configuration timely enough. The configuration affects only
+// Android or iOS users.
+extern const base::Feature kPopularSitesBakedInContentFeature;
+
+// Feature to allow the new Google favicon server for fetching favicons for Most
+// Likely tiles on the New Tab Page.
+extern const base::Feature kNtpMostLikelyFaviconsFromServerFeature;
+
+// If this feature is enabled, we enable popular sites in the suggestions UI.
+extern const base::Feature kUsePopularSitesSuggestions;
+
 // If enabled, show a Google search shortcut on the NTP by default.
 extern const base::Feature kDefaultSearchShortcut;
 

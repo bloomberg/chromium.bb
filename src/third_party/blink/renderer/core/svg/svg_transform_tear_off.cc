@@ -59,11 +59,6 @@ SVGTransformTearOff* SVGTransformTearOff::CreateDetached() {
       nullptr, kPropertyIsNotAnimVal);
 }
 
-SVGTransformTearOff* SVGTransformTearOff::Create(SVGMatrixTearOff* matrix) {
-  return Create(SVGTransform::Create(matrix->Value()), nullptr,
-                kPropertyIsNotAnimVal);
-}
-
 SVGMatrixTearOff* SVGTransformTearOff::matrix() {
   if (!matrix_tearoff_)
     matrix_tearoff_ = MakeGarbageCollected<SVGMatrixTearOff>(this);

@@ -19,7 +19,7 @@ class ComputedStyle;
 class DisplayItemClient;
 class PaintLayer;
 class GraphicsContext;
-class LayoutPoint;
+struct PhysicalOffset;
 
 // This class is responsible for painting self-painting PaintLayer.
 //
@@ -68,7 +68,7 @@ class CORE_EXPORT PaintLayerPainter {
       PaintLayerFragments&,
       const PaintLayerPaintingInfo&,
       PaintLayerFlags,
-      const LayoutPoint& offset_from_root);
+      const PhysicalOffset& offset_from_root);
   void PaintFragmentWithPhase(PaintPhase,
                               const PaintLayerFragment&,
                               GraphicsContext&,

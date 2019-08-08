@@ -53,8 +53,8 @@
 // Avoid using allowances outside of unit tests. In unit tests, use allowances
 // with the suffix "ForTesting".
 //
-// Prefer making blocking calls from tasks posted to base::ThreadPool with
-// base::MayBlock().
+// Prefer making blocking calls from tasks posted to base::ThreadPoolInstance
+// with base::MayBlock().
 //
 // Instead of waiting on a WaitableEvent or a ConditionVariable, prefer putting
 // the work that should happen after the wait in a continuation callback and
@@ -140,6 +140,7 @@ class DesktopCaptureDevice;
 class DWriteFontLookupTableBuilder;
 class GpuProcessTransportFactory;
 class NestedMessagePumpAndroid;
+class RenderWidgetHostViewMac;
 class RTCVideoDecoder;
 class RTCVideoDecoderAdapter;
 class RTCVideoEncoder;
@@ -184,6 +185,9 @@ namespace media {
 class AudioInputDevice;
 class AudioOutputDevice;
 class BlockingUrlProtocol;
+}
+namespace memory_instrumentation {
+class OSMetrics;
 }
 namespace midi {
 class TaskService;  // https://crbug.com/796830
@@ -335,9 +339,11 @@ class BASE_EXPORT ScopedAllowBlocking {
   friend class android_webview::ScopedAllowInitGLBindings;
   friend class content::BrowserProcessSubThread;
   friend class content::GpuProcessTransportFactory;
+  friend class content::RenderWidgetHostViewMac;  // http://crbug.com/121917
   friend class content::WebContentsViewMac;
   friend class cronet::CronetPrefsManager;
   friend class cronet::CronetURLRequestContext;
+  friend class memory_instrumentation::OSMetrics;
   friend class mojo::CoreLibraryInitializer;
   friend class resource_coordinator::TabManagerDelegate;  // crbug.com/778703
   friend class ui::MaterialDesignController;

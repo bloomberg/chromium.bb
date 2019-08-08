@@ -9,11 +9,14 @@
 
 #include "gpu/command_buffer/client/interface_base.h"
 
-extern "C" typedef struct _ClientBuffer* ClientBuffer;
-extern "C" typedef struct _GLColorSpace* GLColorSpace;
-
 namespace gpu {
 namespace webgpu {
+
+struct ReservedTexture {
+  DawnTexture texture;
+  uint32_t id;
+  uint32_t generation;
+};
 
 class WebGPUInterface : public InterfaceBase {
  public:
@@ -23,6 +26,7 @@ class WebGPUInterface : public InterfaceBase {
   virtual const DawnProcTable& GetProcs() const = 0;
   virtual void FlushCommands() = 0;
   virtual DawnDevice GetDefaultDevice() = 0;
+  virtual ReservedTexture ReserveTexture(DawnDevice device) = 0;
 
 // Include the auto-generated part of this class. We split this because
 // it means we can easily edit the non-auto generated parts right here in

@@ -7,14 +7,14 @@
 #import "base/test/ios/wait_util.h"
 #import "components/autofill/ios/form_util/form_activity_observer.h"
 #import "components/autofill/ios/form_util/test_form_activity_observer.h"
+#include "ios/web/public/js_messaging/web_frame.h"
+#include "ios/web/public/js_messaging/web_frame_util.h"
+#import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/test/fakes/test_web_client.h"
 #import "ios/web/public/test/fakes/test_web_state_observer_util.h"
 #import "ios/web/public/test/js_test_util.h"
 #import "ios/web/public/test/web_js_test.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
-#include "ios/web/public/web_state/web_frame.h"
-#include "ios/web/public/web_state/web_frame_util.h"
-#import "ios/web/public/web_state/web_frames_manager.h"
 #include "testing/platform_test.h"
 
 class FormTestClient : public web::TestWebClient {

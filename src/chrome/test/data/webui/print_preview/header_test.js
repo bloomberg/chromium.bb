@@ -37,7 +37,7 @@ cr.define('header_test', function() {
           'FooDevice', print_preview.DestinationType.GOOGLE,
           print_preview.DestinationOrigin.COOKIES, 'FooName',
           print_preview.DestinationConnectionStatus.ONLINE);
-      header.state = print_preview_new.State.READY;
+      header.state = print_preview.State.READY;
       header.managed = false;
       test_util.fakeDataBind(model, header, 'settings');
       document.body.appendChild(header);
@@ -101,31 +101,31 @@ cr.define('header_test', function() {
       assertEquals('Total: 1 sheet of paper', summary.textContent);
       assertFalse(printButton.disabled);
 
-      header.state = print_preview_new.State.NOT_READY;
+      header.state = print_preview.State.NOT_READY;
       assertEquals('', summary.textContent);
       assertTrue(printButton.disabled);
 
-      header.state = print_preview_new.State.PRINTING;
+      header.state = print_preview.State.PRINTING;
       assertEquals(loadTimeData.getString('printing'), summary.textContent);
       assertTrue(printButton.disabled);
       setPdfDestination();
       assertEquals(loadTimeData.getString('saving'), summary.textContent);
 
-      header.error = print_preview_new.Error.INVALID_TICKET;
-      header.state = print_preview_new.State.ERROR;
+      header.error = print_preview.Error.INVALID_TICKET;
+      header.state = print_preview.State.ERROR;
       assertEquals('', summary.textContent);
       assertTrue(printButton.disabled);
 
-      header.state = print_preview_new.State.READY;
-      header.error = print_preview_new.Error.INVALID_PRINTER;
-      header.state = print_preview_new.State.ERROR;
+      header.state = print_preview.State.READY;
+      header.error = print_preview.Error.INVALID_PRINTER;
+      header.state = print_preview.State.ERROR;
       assertEquals('', summary.textContent);
       assertTrue(printButton.disabled);
 
       const testError = 'Error printing to cloud print';
       header.cloudPrintErrorMessage = testError;
-      header.error = print_preview_new.Error.CLOUD_PRINT_ERROR;
-      header.state = print_preview_new.State.FATAL_ERROR;
+      header.error = print_preview.Error.CLOUD_PRINT_ERROR;
+      header.state = print_preview.State.FATAL_ERROR;
       assertEquals(testError, summary.textContent);
       assertTrue(printButton.disabled);
     });

@@ -28,7 +28,6 @@
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
 #include "ui/views/layout/fill_layout.h"
@@ -122,8 +121,6 @@ class SearchResultAnswerCardView::AnswerCardResultView
     params->background_color = SK_ColorTRANSPARENT;
     contents_ = std::make_unique<content::NavigableContents>(
         contents_factory_.get(), std::move(params));
-    if (features::IsUsingWindowService())
-      contents_->ForceUseWindowService();
     contents_->AddObserver(this);
   }
 
@@ -225,9 +222,8 @@ class SearchResultAnswerCardView::AnswerCardResultView
                                    view_delegate_->GetSearchModel());
       view_delegate_->OpenSearchResult(
           result()->id(), event.flags(),
-          ash::mojom::AppListLaunchedFrom::kLaunchedFromSearchBox,
-          ash::mojom::AppListLaunchType::kSearchResult,
-          -1 /* suggestion_index */);
+          ash::AppListLaunchedFrom::kLaunchedFromSearchBox,
+          ash::AppListLaunchType::kSearchResult, -1 /* suggestion_index */);
     }
   }
 
@@ -368,6 +364,12 @@ bool SearchResultAnswerCardView::OnKeyPressed(const ui::KeyEvent& event) {
 
 SearchResultBaseView* SearchResultAnswerCardView::GetFirstResultView() {
   return num_results() <= 0 ? nullptr : search_answer_container_view_;
+}
+
+SearchResultBaseView* SearchResultAnswerCardView::GetResultViewAt(
+    size_t index) {
+  DCHECK_EQ(index, 0u);
+  return search_answer_container_view_;
 }
 
 views::View* SearchResultAnswerCardView::GetAnswerCardResultViewForTest()

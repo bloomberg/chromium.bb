@@ -90,12 +90,13 @@ class BuildType(object):
   """Class to hold the different kinds of build types."""
 
   ASAN = 'asan'
+  MSAN = 'msan'
   UBSAN = 'ubsan'
   COVERAGE = 'coverage'
   STANDARD = ''
 
   # Build types that users can specify.
-  CHOICES = (ASAN, UBSAN, COVERAGE)
+  CHOICES = (ASAN, MSAN, UBSAN, COVERAGE)
 
 
 class SysrootPath(object):
@@ -412,7 +413,10 @@ def GetFuzzExtraEnv(extra_options=None):
   return {x + '_OPTIONS': sanitizer_options for x in sanitizers}
 
 
-def RunFuzzer(fuzzer, corpus_path=None, fuzz_args='', testcase_path=None,
+def RunFuzzer(fuzzer,
+              corpus_path=None,
+              fuzz_args='',
+              testcase_path=None,
               crash_expected=False):
   """Runs the fuzzer while chrooted into the sysroot.
 
@@ -634,7 +638,7 @@ def BuildPackage(package, board, build_type):
   Args:
     package: The package to build. Nothing is built if None.
     board: The board to build the package on.
-    build_type: The type of the build to do (e.g. asan, ubsan or coverage).
+    build_type: The type of the build to do (e.g. asan, msan, ubsan, coverage).
   """
   if package is None:
     return
@@ -650,6 +654,11 @@ def BuildPackage(package, board, build_type):
       '--skip_chroot_upgrade',
       package,
   ]
+  # For msan builds, always use "--nousepkg" since all package needs to be
+  # instrumented with msan.
+  if build_type == BuildType.MSAN:
+    command += ['--nousepkg']
+
   # Print the output of the build command. Do this because it is familiar to
   # devs and we don't want to leave them not knowing about the build's progress
   # for a long time.
@@ -1084,6 +1093,20 @@ def ExecuteReproduceCommand(options):
   """
   if options.build_type and not options.package:
     raise Exception('Cannot specify --build_type without specifying --package.')
+
+  # Verify that "msan-fuzzer" profile is being used with msan.
+  # Check presence of "-fsanitize=memory" in CFLAGS.
+  if options.build_type == BuildType.MSAN:
+    cmd = ['portageq-%s' % options.board, 'envvar', 'CFLAGS']
+    cflags = cros_build_lib.RunCommand(
+        cmd, capture_output=True).output.splitlines()
+    check_string = '-fsanitize=memory'
+    if not any(check_string in s for s in cflags):
+      logging.error(
+          '-fsanitize=memory not found in CFLAGS. '
+          'Use "setup_board --board=amd64-generic --profile=msan-fuzzer" '
+          'for MSan Fuzzing Builds.')
+      raise Exception('Incompatible profile used for msan fuzzing.')
 
   BuildPackage(options.package, options.board, options.build_type)
   SetUpSysrootForFuzzing()

@@ -19,9 +19,9 @@ import jp.tomorrowkey.android.gifplayer.BaseGifImage;
  */
 public abstract class ImageFetcher {
     // All UMA client names collected here to prevent duplicates.
+    public static final String ANSWER_SUGGESTIONS_UMA_CLIENT_NAME = "AnswerSuggestions";
     public static final String ASSISTANT_DETAILS_UMA_CLIENT_NAME = "AssistantDetails";
     public static final String ASSISTANT_INFO_BOX_UMA_CLIENT_NAME = "AssistantInfoBox";
-    public static final String CONTEXTUAL_SUGGESTIONS_UMA_CLIENT_NAME = "ContextualSuggestions";
     public static final String FEED_UMA_CLIENT_NAME = "Feed";
     public static final String NTP_ANIMATED_LOGO_UMA_CLIENT_NAME = "NewTabPageAnimatedLogo";
 
@@ -98,6 +98,11 @@ public abstract class ImageFetcher {
     public void fetchImage(String url, String clientName, Callback<Bitmap> callback) {
         fetchImage(url, clientName, 0, 0, callback);
     }
+
+    /**
+     * Clear the cache of any bitmaps that may be in-memory.
+     */
+    public abstract void clear();
 
     /**
      * Returns the type of Image Fetcher this is based on class arrangements. See

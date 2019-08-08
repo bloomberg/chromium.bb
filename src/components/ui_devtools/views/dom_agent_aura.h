@@ -11,7 +11,6 @@
 #include "ui/aura/window_observer.h"
 
 namespace aura {
-class Env;
 class Window;
 }  // namespace aura
 
@@ -25,8 +24,6 @@ class DOMAgentAura : public DOMAgentViews,
 
   ~DOMAgentAura() override;
   static DOMAgentAura* GetInstance() { return dom_agent_aura_; }
-  void RegisterEnv(aura::Env* env);
-  void RegisterRootWindow(aura::Window* root);
 
   // DOMAgent
   std::vector<UIElement*> CreateChildrenForRoot() override;
@@ -44,7 +41,6 @@ class DOMAgentAura : public DOMAgentViews,
  private:
   static DOMAgentAura* dom_agent_aura_;
 
-  std::vector<aura::Env*> envs_;
   std::vector<aura::Window*> roots_;
 
   DISALLOW_COPY_AND_ASSIGN(DOMAgentAura);

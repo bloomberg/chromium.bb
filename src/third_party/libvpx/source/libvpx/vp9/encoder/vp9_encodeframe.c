@@ -22,6 +22,10 @@
 #include "vpx_ports/vpx_timer.h"
 #include "vpx_ports/system_state.h"
 
+#if CONFIG_MISMATCH_DEBUG
+#include "vpx_util/vpx_debug_util.h"
+#endif  // CONFIG_MISMATCH_DEBUG
+
 #include "vp9/common/vp9_common.h"
 #include "vp9/common/vp9_entropy.h"
 #include "vp9/common/vp9_entropymode.h"
@@ -231,6 +235,7 @@ static void set_segment_index(VP9_COMP *cpi, MACROBLOCK *const x, int mi_row,
         mi->segment_id = get_segment_id(cm, map, bsize, mi_row, mi_col);
       break;
     case PSNR_AQ: mi->segment_id = segment_index; break;
+    case PERCEPTUAL_AQ: mi->segment_id = x->segment_id; break;
     default:
       // NO_AQ or PSNR_AQ
       break;
@@ -239,8 +244,6 @@ static void set_segment_index(VP9_COMP *cpi, MACROBLOCK *const x, int mi_row,
   // Set segment index from ROI map if it's enabled.
   if (cpi->roi.enabled)
     mi->segment_id = get_segment_id(cm, map, bsize, mi_row, mi_col);
-
-  if (cpi->sf.enable_wiener_variance) mi->segment_id = x->segment_id;
 
   vp9_init_plane_quantizers(cpi, x);
 }
@@ -254,13 +257,11 @@ static INLINE void set_mode_info_offsets(VP9_COMMON *const cm,
   const int idx_str = xd->mi_stride * mi_row + mi_col;
   xd->mi = cm->mi_grid_visible + idx_str;
   xd->mi[0] = cm->mi + idx_str;
-  xd->mi_row = mi_row;
-  xd->mi_col = mi_col;
   x->mbmi_ext = x->mbmi_ext_base + (mi_row * cm->mi_cols + mi_col);
 }
 
-static double get_ssim_rdmult_scaling_factor(VP9_COMP *const cpi, int mi_row,
-                                             int mi_col) {
+static void set_ssim_rdmult(VP9_COMP *const cpi, MACROBLOCK *const x,
+                            int mi_row, int mi_col, int *rdmult) {
   const VP9_COMMON *const cm = &cpi->common;
 
   // SSIM rdmult scaling factors are currently 64x64 based.
@@ -272,7 +273,11 @@ static double get_ssim_rdmult_scaling_factor(VP9_COMP *const cpi, int mi_row,
   const int index = row * num_cols + col;
 
   assert(cpi->oxcf.tuning == VP8_TUNE_SSIM);
-  return cpi->mi_ssim_rdmult_scaling_factors[index];
+  *rdmult =
+      (int)((double)(*rdmult) * cpi->mi_ssim_rdmult_scaling_factors[index]);
+  *rdmult = VPXMAX(*rdmult, 1);
+  set_error_per_bit(x, *rdmult);
+  vpx_clear_system_state();
 }
 
 static void set_offsets(VP9_COMP *cpi, const TileInfo *const tile,
@@ -311,9 +316,7 @@ static void set_offsets(VP9_COMP *cpi, const TileInfo *const tile,
   x->rddiv = cpi->rd.RDDIV;
   x->rdmult = cpi->rd.RDMULT;
   if (oxcf->tuning == VP8_TUNE_SSIM) {
-    const double ssim_factor =
-        get_ssim_rdmult_scaling_factor(cpi, mi_row, mi_col);
-    x->rdmult = (int)(ssim_factor * x->rdmult);
+    set_ssim_rdmult(cpi, x, mi_row, mi_col, &x->rdmult);
   }
 
   // required by vp9_append_sub8x8_mvs_for_idx() and vp9_find_best_ref_mvs()
@@ -1944,8 +1947,9 @@ static void set_segment_rdmult(VP9_COMP *const cpi, MACROBLOCK *const x,
   vpx_clear_system_state();
 
   if (aq_mode == NO_AQ || aq_mode == PSNR_AQ) {
-    if (cpi->sf.enable_tpl_model || cpi->sf.enable_wiener_variance)
-      x->rdmult = x->cb_rdmult;
+    if (cpi->sf.enable_tpl_model) x->rdmult = x->cb_rdmult;
+  } else if (aq_mode == PERCEPTUAL_AQ) {
+    x->rdmult = x->cb_rdmult;
   } else if (aq_mode == CYCLIC_REFRESH_AQ) {
     // If segment is boosted, use rdmult for that segment.
     if (cyclic_refresh_segment_id_boosted(
@@ -1953,18 +1957,10 @@ static void set_segment_rdmult(VP9_COMP *const cpi, MACROBLOCK *const x,
       x->rdmult = vp9_cyclic_refresh_get_rdmult(cpi->cyclic_refresh);
   } else {
     x->rdmult = vp9_compute_rd_mult(cpi, cm->base_qindex + cm->y_dc_delta_q);
-    if (cpi->sf.enable_wiener_variance && cm->show_frame) {
-      if (cm->seg.enabled)
-        x->rdmult = vp9_compute_rd_mult(
-            cpi, vp9_get_qindex(&cm->seg, x->e_mbd.mi[0]->segment_id,
-                                cm->base_qindex));
-    }
   }
 
   if (oxcf->tuning == VP8_TUNE_SSIM) {
-    const double ssim_factor =
-        get_ssim_rdmult_scaling_factor(cpi, mi_row, mi_col);
-    x->rdmult = (int)(ssim_factor * x->rdmult);
+    set_ssim_rdmult(cpi, x, mi_row, mi_col, &x->rdmult);
   }
 }
 
@@ -2202,14 +2198,12 @@ static void encode_b(VP9_COMP *cpi, const TileInfo *const tile, ThreadData *td,
   MACROBLOCK *const x = &td->mb;
   set_offsets(cpi, tile, x, mi_row, mi_col, bsize);
 
-  if ((cpi->sf.enable_tpl_model || cpi->sf.enable_wiener_variance) &&
-      cpi->oxcf.aq_mode == NO_AQ) {
+  if (cpi->sf.enable_tpl_model &&
+      (cpi->oxcf.aq_mode == NO_AQ || cpi->oxcf.aq_mode == PERCEPTUAL_AQ)) {
     const VP9EncoderConfig *const oxcf = &cpi->oxcf;
     x->rdmult = x->cb_rdmult;
     if (oxcf->tuning == VP8_TUNE_SSIM) {
-      const double ssim_factor =
-          get_ssim_rdmult_scaling_factor(cpi, mi_row, mi_col);
-      x->rdmult = (int)(ssim_factor * x->rdmult);
+      set_ssim_rdmult(cpi, x, mi_row, mi_col, &x->rdmult);
     }
   }
 
@@ -3822,9 +3816,7 @@ static void rd_pick_partition(VP9_COMP *cpi, ThreadData *td,
 
   int partition_mul = x->cb_rdmult;
   if (oxcf->tuning == VP8_TUNE_SSIM) {
-    const double ssim_factor =
-        get_ssim_rdmult_scaling_factor(cpi, mi_row, mi_col);
-    partition_mul = (int)(ssim_factor * partition_mul);
+    set_ssim_rdmult(cpi, x, mi_row, mi_col, &partition_mul);
   }
 
   (void)*tp_orig;
@@ -4429,7 +4421,7 @@ static void encode_rd_sb_row(VP9_COMP *cpi, ThreadData *td,
         x->cb_rdmult = dr;
       }
 
-      if (cpi->sf.enable_wiener_variance && cm->show_frame) {
+      if (cpi->oxcf.aq_mode == PERCEPTUAL_AQ && cm->show_frame) {
         x->segment_id = wiener_var_segment(cpi, BLOCK_64X64, mi_row, mi_col);
         x->cb_rdmult = vp9_compute_rd_mult(
             cpi, vp9_get_qindex(&cm->seg, x->segment_id, cm->base_qindex));
@@ -5827,13 +5819,11 @@ int vp9_get_group_idx(double value, double *boundary_ls, int k) {
 
 void vp9_kmeans(double *ctr_ls, double *boundary_ls, int *count_ls, int k,
                 KMEANS_DATA *arr, int size) {
-  double min, max;
-  double step;
   int i, j;
   int itr;
   int group_idx;
-  double sum;
-  int count;
+  double sum[MAX_KMEANS_GROUPS];
+  int count[MAX_KMEANS_GROUPS];
 
   vpx_clear_system_state();
 
@@ -5841,38 +5831,40 @@ void vp9_kmeans(double *ctr_ls, double *boundary_ls, int *count_ls, int k,
 
   qsort(arr, size, sizeof(*arr), compare_kmeans_data);
 
-  min = arr[0].value;
-  max = arr[size - 1].value;
-
   // initialize the center points
-  step = (max - min) * 1. / k;
   for (j = 0; j < k; ++j) {
-    ctr_ls[j] = min + j * step + step / 2;
+    ctr_ls[j] = arr[(size * (2 * j + 1)) / (2 * k)].value;
   }
 
   for (itr = 0; itr < 10; ++itr) {
     compute_boundary_ls(ctr_ls, k, boundary_ls);
+    for (i = 0; i < MAX_KMEANS_GROUPS; ++i) {
+      sum[i] = 0;
+      count[i] = 0;
+    }
+
+    // Both the data and centers are sorted in ascending order.
+    // As each data point is processed in order, its corresponding group index
+    // can only increase. So we only need to reset the group index to zero here.
     group_idx = 0;
-    count = 0;
-    sum = 0;
     for (i = 0; i < size; ++i) {
       while (arr[i].value >= boundary_ls[group_idx]) {
+        // place samples into clusters
         ++group_idx;
         if (group_idx == k - 1) {
           break;
         }
       }
+      sum[group_idx] += arr[i].value;
+      ++count[group_idx];
+    }
 
-      sum += arr[i].value;
-      ++count;
+    for (group_idx = 0; group_idx < k; ++group_idx) {
+      if (count[group_idx] > 0)
+        ctr_ls[group_idx] = sum[group_idx] / count[group_idx];
 
-      if (i + 1 == size || arr[i + 1].value >= boundary_ls[group_idx]) {
-        if (count > 0) {
-          ctr_ls[group_idx] = sum / count;
-        }
-        count = 0;
-        sum = 0;
-      }
+      sum[group_idx] = 0;
+      count[group_idx] = 0;
     }
   }
 
@@ -5993,7 +5985,7 @@ static void encode_frame_internal(VP9_COMP *cpi) {
   }
 
   // Frame segmentation
-  if (cpi->sf.enable_wiener_variance) build_kmeans_segmentation(cpi);
+  if (cpi->oxcf.aq_mode == PERCEPTUAL_AQ) build_kmeans_segmentation(cpi);
 
   {
     struct vpx_usec_timer emr_timer;
@@ -6115,6 +6107,10 @@ void vp9_encode_frame(VP9_COMP *cpi) {
 
 #if CONFIG_CONSISTENT_RECODE
   restore_encode_params(cpi);
+#endif
+
+#if CONFIG_MISMATCH_DEBUG
+  mismatch_reset_frame(MAX_MB_PLANE);
 #endif
 
   // In the longer term the encoder should be generalized to match the
@@ -6360,7 +6356,27 @@ static void encode_superblock(VP9_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
     vp9_build_inter_predictors_sbuv(xd, mi_row, mi_col,
                                     VPXMAX(bsize, BLOCK_8X8));
 
-    vp9_encode_sb(x, VPXMAX(bsize, BLOCK_8X8));
+#if CONFIG_MISMATCH_DEBUG
+    if (output_enabled) {
+      int plane;
+      for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
+        const struct macroblockd_plane *pd = &xd->plane[plane];
+        int pixel_c, pixel_r;
+        const BLOCK_SIZE plane_bsize =
+            get_plane_block_size(VPXMAX(bsize, BLOCK_8X8), &xd->plane[plane]);
+        const int bw = get_block_width(plane_bsize);
+        const int bh = get_block_height(plane_bsize);
+        mi_to_pixel_loc(&pixel_c, &pixel_r, mi_col, mi_row, 0, 0,
+                        pd->subsampling_x, pd->subsampling_y);
+
+        mismatch_record_block_pre(pd->dst.buf, pd->dst.stride, plane, pixel_c,
+                                  pixel_r, bw, bh,
+                                  xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH);
+      }
+    }
+#endif
+
+    vp9_encode_sb(x, VPXMAX(bsize, BLOCK_8X8), mi_row, mi_col, output_enabled);
     vp9_tokenize_sb(cpi, td, t, !output_enabled, seg_skip,
                     VPXMAX(bsize, BLOCK_8X8));
   }

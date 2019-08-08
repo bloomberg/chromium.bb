@@ -1,0 +1,21 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/html/assert.html">
+<link rel="import" href="../prefs/prefs.html">
+<link rel="import" href="../settings_shared_css.html">
+
+<dom-module id="settings-storage-external">
+  <template>
+    <style include="settings-shared"></style>
+    <div class="settings-box first">
+      <span>
+        $i18n{storageAndroidAppsExternalDrivesNote}
+      </span>
+    </div>
+    <settings-toggle-button class="hr"
+        pref="{{prefs.arc.has_access_to_removable_media}}"
+        label="$i18n{storageAndroidAppsExternalDrives}">
+    </settings-toggle-button>
+  </template>
+  <script src="storage_external.js"></script>
+</dom-module>

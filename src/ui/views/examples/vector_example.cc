@@ -32,41 +32,38 @@ class VectorIconGallery : public View,
                           public TextfieldController,
                           public ButtonListener {
  public:
-  VectorIconGallery()
-      : image_view_(new ImageView()),
-        image_view_container_(new views::View()),
-        size_input_(new Textfield()),
-        color_input_(new Textfield()),
-        file_chooser_(new Textfield()),
-        file_go_button_(
-            MdTextButton::Create(this, base::ASCIIToUTF16("Render"))) {
-    AddChildView(size_input_);
-    AddChildView(color_input_);
+  VectorIconGallery() {
+    size_input_ = AddChildView(std::make_unique<Textfield>());
+    color_input_ = AddChildView(std::make_unique<Textfield>());
 
-    image_view_container_->AddChildView(image_view_);
+    auto image_view_container = std::make_unique<views::View>();
+    image_view_ =
+        image_view_container->AddChildView(std::make_unique<ImageView>());
     auto image_layout = std::make_unique<BoxLayout>(BoxLayout::kHorizontal);
     image_layout->set_cross_axis_alignment(
-        BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+        BoxLayout::CrossAxisAlignment::kCenter);
     image_layout->set_main_axis_alignment(
-        BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
-    image_view_container_->SetLayoutManager(std::move(image_layout));
+        BoxLayout::MainAxisAlignment::kCenter);
+    image_view_container->SetLayoutManager(std::move(image_layout));
     image_view_->SetBorder(CreateSolidSidedBorder(1, 1, 1, 1, SK_ColorBLACK));
-    AddChildView(image_view_container_);
+    image_view_container_ = AddChildView(std::move(image_view_container));
 
     BoxLayout* box = SetLayoutManager(
         std::make_unique<BoxLayout>(BoxLayout::kVertical, gfx::Insets(10), 10));
     box->SetFlexForView(image_view_container_, 1);
 
-    file_chooser_->set_placeholder_text(
+    auto file_chooser = std::make_unique<Textfield>();
+    file_chooser->set_placeholder_text(
         base::ASCIIToUTF16("Enter a file to read"));
-    View* file_container = new View();
+    auto file_container = std::make_unique<View>();
     BoxLayout* file_box =
         file_container->SetLayoutManager(std::make_unique<BoxLayout>(
             BoxLayout::kHorizontal, gfx::Insets(10), 10));
-    file_container->AddChildView(file_chooser_);
-    file_container->AddChildView(file_go_button_);
+    file_chooser_ = file_container->AddChildView(std::move(file_chooser));
+    file_go_button_ = file_container->AddChildView(
+        MdTextButton::Create(this, base::ASCIIToUTF16("Render")));
     file_box->SetFlexForView(file_chooser_, 1);
-    AddChildView(file_container);
+    AddChildView(std::move(file_container));
 
     size_input_->set_placeholder_text(base::ASCIIToUTF16("Size in dip"));
     size_input_->set_controller(this);

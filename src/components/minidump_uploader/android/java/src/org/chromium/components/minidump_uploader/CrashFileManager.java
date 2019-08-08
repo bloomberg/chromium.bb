@@ -20,10 +20,12 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -57,6 +59,11 @@ public class CrashFileManager {
     // This should mirror the C++ CrashUploadList::kReporterLogFilename variable.
     @VisibleForTesting
     public static final String CRASH_DUMP_LOGFILE = "uploads.log";
+
+    // Local ID is the segment after the last hyphen and before the extensions part. It's usually an
+    // alphanumeric value but there is not restriction of having other characters like `_`. So we
+    // define the id to be a sequence of non separator characters {`-`, `,` or `.`}
+    private static final Pattern CRASH_LOCAL_ID_PATTERN = Pattern.compile("^[^.]+-([^-,]+?)\\.");
 
     // Unlike the MINIDUMP_READY_FOR_UPLOAD_PATTERN below, this pattern omits a ".tryN" suffix.
     private static final Pattern MINIDUMP_SANS_LOGCAT_PATTERN =
@@ -345,6 +352,22 @@ public class CrashFileManager {
     }
 
     /**
+     * Imports minidumps from Crashpad's database to the Crash Reports directory, converting them to
+     * MIME files and returning crash info as key-value pairs.
+     *
+     * @return a Map for crash report uuid to this crash info key-value pairs.
+     */
+    public Map<String, Map<String, String>> importMinidumpsCrashKeys() {
+        File crashpadDir = getCrashpadDirectory();
+        if (!crashpadDir.exists() || !ensureCrashDirExists()) {
+            return null;
+        }
+        File crashDir = getCrashDirectory();
+        return CrashReportMimeWriter.rewriteMinidumpsAsMIMEsAndGetCrashKeys(
+                crashpadDir, crashDir);
+    }
+
+    /**
      * Returns the most recent minidump without a logcat for a given pid, or null if no such
      * minidump exists. This method begins by reading all minidumps from Crashpad's database and
      * rewriting them as MIME files in the Crash Reports directory.
@@ -360,12 +383,23 @@ public class CrashFileManager {
      * Returns all minidump files that definitely do not have logcat output, sorted by modification
      * time stamp. This method begins by reading all minidumps from Crashpad's database and
      * rewriting them as MIME files in the Crash Reports directory. Note: This method does not
-     * provide an "if and only if" test: it may return omit some files that lack logcat output, if
-     * logcat output has been intentionally skipped for those minidumps. However, any files returned
+     * provide an "if and only if" test: it may return some files that lack logcat output, if logcat
+     * output has been intentionally skipped for those minidumps. However, any files returned
      * definitely lack logcat output.
      */
     public File[] getMinidumpsSansLogcat() {
         importCrashpadMinidumps();
+        return listCrashFiles(MINIDUMP_SANS_LOGCAT_PATTERN);
+    }
+
+    /**
+     * Returns all minidump files currently in the Crash Reports directory that definitely do not
+     * have logcat output, sorted by modification time stamp. Note: This method does not provide an
+     * "if and only if" test: it may return some files that lack logcat output, if logcat outpuy has
+     * been intentionally skipped for those minidumps. However, any files returned definitely lack
+     * logcat output.
+     */
+    public File[] getCurrentMinidumpsSansLogcat() {
         return listCrashFiles(MINIDUMP_SANS_LOGCAT_PATTERN);
     }
 
@@ -522,6 +556,24 @@ public class CrashFileManager {
             if (filenameSansExtension.endsWith(localId)) {
                 return f;
             }
+        }
+        return null;
+    }
+
+    /**
+     * Extracts crash local ID from crash file name.
+     *
+     * ID is the last part of the file name. e.g. {@code
+     * chromium-renderer-minidump-f297dbcba7a2d0bb.dump.try2} has local ID of {@code
+     * f297dbcba7a2d0bb}.
+     *
+     * @param fileName Crash File name.
+     * @return Local ID string or null if not found.
+     */
+    public static String getCrashLocalIdFromFileName(String fileName) {
+        Matcher matcher = CRASH_LOCAL_ID_PATTERN.matcher(fileName);
+        if (matcher.find()) {
+            return matcher.group(1);
         }
         return null;
     }

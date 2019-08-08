@@ -351,7 +351,7 @@ void H264VideoToolboxEncoder::DestroyCompressionSession() {
 }
 
 bool H264VideoToolboxEncoder::EncodeVideoFrame(
-    const scoped_refptr<media::VideoFrame>& video_frame,
+    scoped_refptr<media::VideoFrame> video_frame,
     const base::TimeTicks& reference_time,
     const FrameEncodedCallback& frame_encoded_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());

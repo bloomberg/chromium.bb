@@ -33,7 +33,7 @@ public class H2OLauncher {
     public static boolean shouldIntentLaunchSplashActivity(HostBrowserLauncherParams params) {
         return params.getHostBrowserMajorChromiumVersion()
                 >= MINIMUM_REQUIRED_CHROMIUM_VERSION_NEW_SPLASH
-                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
+                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N;
     }
 
     /** Returns whether the WebAPK requested a relaunch within the last {@link deltaMs}. */

@@ -52,6 +52,9 @@ class AccountManagerUIHandler : public ::settings::SettingsPageUIHandler,
   // WebUI "reauthenticateAccount" message callback.
   void HandleReauthenticateAccount(const base::ListValue* args);
 
+  // WebUI "migrateAccount" message callback.
+  void HandleMigrateAccount(const base::ListValue* args);
+
   // WebUI "removeAccount" message callback.
   void HandleRemoveAccount(const base::ListValue* args);
 

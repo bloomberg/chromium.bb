@@ -77,10 +77,11 @@ IN_PROC_BROWSER_TEST_F(WebContentsBindingSetBrowserTest, OverrideForTesting) {
   // Now override the binder for this interface. It quits |run_loop| whenever
   // an incoming interface request is received.
   base::RunLoop run_loop;
-  WebContentsBindingSet::GetForWebContents<
-      mojom::BrowserAssociatedInterfaceTestDriver>(web_contents)
-      ->SetBinderForTesting(
-          std::make_unique<TestInterfaceBinder>(run_loop.QuitClosure()));
+  auto* binding_set = WebContentsBindingSet::GetForWebContents<
+      mojom::BrowserAssociatedInterfaceTestDriver>(web_contents);
+
+  TestInterfaceBinder test_binder(run_loop.QuitClosure());
+  binding_set->SetBinder(&test_binder);
 
   // Simulate an inbound request for the test interface. This should get routed
   // to the overriding binder and allow the test to complete.
@@ -92,6 +93,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsBindingSetBrowserTest, OverrideForTesting) {
           mojo::MakeRequestAssociatedWithDedicatedPipe(&override_client)
               .PassHandle());
   run_loop.Run();
+
+  binding_set->SetBinder(nullptr);
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsBindingSetBrowserTest, CloseOnFrameDeletion) {

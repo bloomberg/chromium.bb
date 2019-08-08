@@ -78,6 +78,17 @@ TEST(SendTabToSelfEntry, AsProto) {
   EXPECT_TRUE(IsEqualForTesting(entry, pb_entry.specifics()));
 }
 
+// Tests that the send tab to self entry is correctly created from the required
+// fields
+TEST(SendTabToSelfEntry, FromRequiredFields) {
+  SendTabToSelfEntry expected("1", GURL("http://example.com"), "", base::Time(),
+                              base::Time(), "", "target_device");
+  std::unique_ptr<SendTabToSelfEntry> actual =
+      SendTabToSelfEntry::FromRequiredFields("1", GURL("http://example.com"),
+                                             "target_device");
+  EXPECT_TRUE(IsEqualForTesting(expected, *actual));
+}
+
 // Tests that the send tab to self entry is correctly parsed from
 // sync_pb::SendTabToSelfSpecifics.
 TEST(SendTabToSelfEntry, FromProto) {
@@ -144,6 +155,33 @@ TEST(SendTabToSelfEntry, InvalidStrings) {
 
   EXPECT_DCHECK_DEATH(
       SendTabToSelfEntry::FromProto(*pb_entry, base::Time::FromTimeT(10)));
+}
+
+// Tests that the send tab to self entry is correctly encoded to
+// sync_pb::SendTabToSelfSpecifics.
+TEST(SendTabToSelfEntry, MarkAsOpened) {
+  SendTabToSelfEntry entry("1", GURL("http://example.com"), "bar",
+                           base::Time::FromTimeT(10), base::Time::FromTimeT(10),
+                           "device", "device2");
+  EXPECT_FALSE(entry.IsOpened());
+  entry.MarkOpened();
+  EXPECT_TRUE(entry.IsOpened());
+
+  std::unique_ptr<sync_pb::SendTabToSelfSpecifics> pb_entry =
+      std::make_unique<sync_pb::SendTabToSelfSpecifics>();
+  pb_entry->set_guid("1");
+  pb_entry->set_url("http://example.com/");
+  pb_entry->set_title("title");
+  pb_entry->set_device_name("device");
+  pb_entry->set_target_device_sync_cache_guid("device");
+  pb_entry->set_shared_time_usec(1);
+  pb_entry->set_navigation_time_usec(1);
+  pb_entry->set_opened(true);
+
+  std::unique_ptr<SendTabToSelfEntry> entry2(
+      SendTabToSelfEntry::FromProto(*pb_entry, base::Time::FromTimeT(10)));
+
+  EXPECT_TRUE(entry2->IsOpened());
 }
 
 }  // namespace

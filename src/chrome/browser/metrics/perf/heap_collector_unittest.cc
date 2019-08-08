@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/sampling_heap_profiler/poisson_allocation_sampler.h"
 #include "base/sampling_heap_profiler/sampling_heap_profiler.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -146,6 +147,7 @@ class TestHeapCollector : public HeapCollector {
   DISALLOW_COPY_AND_ASSIGN(TestHeapCollector);
 };
 
+#if !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 size_t HeapSamplingPeriod(const TestHeapCollector& collector) {
   CHECK_EQ(collector.Mode(), HeapCollectionMode::kTcmalloc)
       << "Reading heap sampling period works only with tcmalloc sampling";
@@ -155,6 +157,7 @@ size_t HeapSamplingPeriod(const TestHeapCollector& collector) {
       << "Failed to read heap sampling period";
   return sampling_period;
 }
+#endif
 
 }  // namespace
 
@@ -225,6 +228,7 @@ class HeapCollectorTest : public testing::Test {
 
 size_t HeapCollectorTest::next_browser_id = 1;
 
+#if !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 TEST_F(HeapCollectorTest, CheckSetup_Tcmalloc) {
   MakeHeapCollector(HeapCollectionMode::kTcmalloc);
   heap_collector_->Init();
@@ -239,18 +243,6 @@ TEST_F(HeapCollectorTest, CheckSetup_Tcmalloc) {
   EXPECT_GT(sampling_period, 0u);
 }
 
-TEST_F(HeapCollectorTest, CheckSetup_ShimLayer) {
-  MakeHeapCollector(HeapCollectionMode::kShimLayer);
-  heap_collector_->Init();
-
-  // No profiles are cached on start.
-  std::vector<SampledProfile> stored_profiles;
-  EXPECT_FALSE(heap_collector_->GetSampledProfiles(&stored_profiles));
-  EXPECT_TRUE(stored_profiles.empty());
-
-  EXPECT_TRUE(heap_collector_->IsEnabled());
-}
-
 TEST_F(HeapCollectorTest, IncognitoWindowDisablesSamplingOnInit_Tcmalloc) {
   MakeHeapCollector(HeapCollectionMode::kTcmalloc);
   OpenBrowserWindow(/*incognito=*/true);
@@ -259,15 +251,6 @@ TEST_F(HeapCollectorTest, IncognitoWindowDisablesSamplingOnInit_Tcmalloc) {
   // Heap sampling is disabled when an incognito session is active.
   size_t sampling_period = HeapSamplingPeriod(*heap_collector_);
   EXPECT_EQ(sampling_period, 0u);
-}
-
-TEST_F(HeapCollectorTest, IncognitoWindowDisablesSamplingOnInit_ShimLayer) {
-  MakeHeapCollector(HeapCollectionMode::kShimLayer);
-  OpenBrowserWindow(/*incognito=*/true);
-  heap_collector_->Init();
-
-  // Heap sampling is disabled when an incognito session is active.
-  EXPECT_FALSE(heap_collector_->IsEnabled());
 }
 
 TEST_F(HeapCollectorTest, IncognitoWindowPausesSampling_Tcmalloc) {
@@ -303,32 +286,6 @@ TEST_F(HeapCollectorTest, IncognitoWindowPausesSampling_Tcmalloc) {
   EXPECT_GT(sampling_period, 0u);
 }
 
-TEST_F(HeapCollectorTest, IncognitoWindowPausesSampling_ShimLayer) {
-  MakeHeapCollector(HeapCollectionMode::kShimLayer);
-  heap_collector_->Init();
-
-  // Heap sampling is enabled.
-  EXPECT_TRUE(heap_collector_->IsEnabled());
-
-  // Opening an incognito window disables sampling and doesn't crash the test.
-  auto win1 = OpenBrowserWindow(/*incognito=*/true);
-  EXPECT_FALSE(heap_collector_->IsEnabled());
-
-  // Open also a regular window. Sampling still disabled.
-  OpenBrowserWindow(/*incognito=*/false);
-  EXPECT_FALSE(heap_collector_->IsEnabled());
-
-  // Open another incognito window and close the first one.
-  auto win3 = OpenBrowserWindow(/*incognito=*/true);
-  CloseBrowserWindow(win1);
-  EXPECT_FALSE(heap_collector_->IsEnabled());
-
-  // Closing the last incognito window resumes heap sampling, without
-  // crashing the test.
-  CloseBrowserWindow(win3);
-  EXPECT_TRUE(heap_collector_->IsEnabled());
-}
-
 TEST_F(HeapCollectorTest, DumpProfileToTempFile_Tcmalloc) {
   MakeHeapCollector(HeapCollectionMode::kTcmalloc);
   base::Optional<base::FilePath> got_path =
@@ -343,39 +300,6 @@ TEST_F(HeapCollectorTest, DumpProfileToTempFile_Tcmalloc) {
   temp.Close();
   // We must be able to remove the temp file.
   ASSERT_TRUE(base::DeleteFile(got_path.value(), false));
-}
-
-TEST_F(HeapCollectorTest, DumpProfileToTempFile_ShimLayer) {
-  MakeHeapCollector(HeapCollectionMode::kShimLayer);
-  base::Optional<base::FilePath> got_path =
-      heap_collector_->DumpProfileToTempFile();
-  // Check that we got a path.
-  ASSERT_TRUE(got_path);
-  // Check that the file is readable and not empty.
-  base::File temp(got_path.value(),
-                  base::File::FLAG_OPEN | base::File::FLAG_READ);
-  ASSERT_TRUE(temp.IsValid());
-  EXPECT_GT(temp.GetLength(), 0);
-  temp.Close();
-  // We must be able to remove the temp file.
-  ASSERT_TRUE(base::DeleteFile(got_path.value(), false));
-}
-
-TEST_F(HeapCollectorTest, MakeQuipperCommand) {
-  const base::FilePath kTempProfile(
-      FILE_PATH_LITERAL("/tmp/MakeQuipperCommand.test"));
-  base::CommandLine got = heap_collector_->MakeQuipperCommand(kTempProfile);
-
-  // Check that we got the correct two switch names.
-  ASSERT_EQ(got.GetSwitches().size(), 2u);
-  EXPECT_TRUE(got.HasSwitch("input_heap_profile"));
-  EXPECT_TRUE(got.HasSwitch("pid"));
-
-  // Check that we got the correct program name and switch values.
-  EXPECT_EQ(got.GetProgram().value(), "/usr/bin/quipper");
-  EXPECT_EQ(got.GetSwitchValuePath("input_heap_profile"), kTempProfile);
-  EXPECT_EQ(got.GetSwitchValueASCII("pid"),
-            std::to_string(base::GetCurrentProcId()));
 }
 
 TEST_F(HeapCollectorTest, ParseAndSaveProfile_Tcmalloc) {
@@ -427,6 +351,87 @@ TEST_F(HeapCollectorTest, ParseAndSaveProfile_Tcmalloc) {
   temp =
       base::File(kTempProfile, base::File::FLAG_OPEN | base::File::FLAG_READ);
   ASSERT_FALSE(temp.IsValid());
+}
+#endif
+
+TEST_F(HeapCollectorTest, CheckSetup_ShimLayer) {
+  MakeHeapCollector(HeapCollectionMode::kShimLayer);
+  heap_collector_->Init();
+
+  // No profiles are cached on start.
+  std::vector<SampledProfile> stored_profiles;
+  EXPECT_FALSE(heap_collector_->GetSampledProfiles(&stored_profiles));
+  EXPECT_TRUE(stored_profiles.empty());
+
+  EXPECT_TRUE(heap_collector_->IsEnabled());
+}
+
+TEST_F(HeapCollectorTest, IncognitoWindowDisablesSamplingOnInit_ShimLayer) {
+  MakeHeapCollector(HeapCollectionMode::kShimLayer);
+  OpenBrowserWindow(/*incognito=*/true);
+  heap_collector_->Init();
+
+  // Heap sampling is disabled when an incognito session is active.
+  EXPECT_FALSE(heap_collector_->IsEnabled());
+}
+
+TEST_F(HeapCollectorTest, IncognitoWindowPausesSampling_ShimLayer) {
+  MakeHeapCollector(HeapCollectionMode::kShimLayer);
+  heap_collector_->Init();
+
+  // Heap sampling is enabled.
+  EXPECT_TRUE(heap_collector_->IsEnabled());
+
+  // Opening an incognito window disables sampling and doesn't crash the test.
+  auto win1 = OpenBrowserWindow(/*incognito=*/true);
+  EXPECT_FALSE(heap_collector_->IsEnabled());
+
+  // Open also a regular window. Sampling still disabled.
+  OpenBrowserWindow(/*incognito=*/false);
+  EXPECT_FALSE(heap_collector_->IsEnabled());
+
+  // Open another incognito window and close the first one.
+  auto win3 = OpenBrowserWindow(/*incognito=*/true);
+  CloseBrowserWindow(win1);
+  EXPECT_FALSE(heap_collector_->IsEnabled());
+
+  // Closing the last incognito window resumes heap sampling, without
+  // crashing the test.
+  CloseBrowserWindow(win3);
+  EXPECT_TRUE(heap_collector_->IsEnabled());
+}
+
+TEST_F(HeapCollectorTest, DumpProfileToTempFile_ShimLayer) {
+  MakeHeapCollector(HeapCollectionMode::kShimLayer);
+  base::Optional<base::FilePath> got_path =
+      heap_collector_->DumpProfileToTempFile();
+  // Check that we got a path.
+  ASSERT_TRUE(got_path);
+  // Check that the file is readable and not empty.
+  base::File temp(got_path.value(),
+                  base::File::FLAG_OPEN | base::File::FLAG_READ);
+  ASSERT_TRUE(temp.IsValid());
+  EXPECT_GT(temp.GetLength(), 0);
+  temp.Close();
+  // We must be able to remove the temp file.
+  ASSERT_TRUE(base::DeleteFile(got_path.value(), false));
+}
+
+TEST_F(HeapCollectorTest, MakeQuipperCommand) {
+  const base::FilePath kTempProfile(
+      FILE_PATH_LITERAL("/tmp/MakeQuipperCommand.test"));
+  base::CommandLine got = heap_collector_->MakeQuipperCommand(kTempProfile);
+
+  // Check that we got the correct two switch names.
+  ASSERT_EQ(got.GetSwitches().size(), 2u);
+  EXPECT_TRUE(got.HasSwitch("input_heap_profile"));
+  EXPECT_TRUE(got.HasSwitch("pid"));
+
+  // Check that we got the correct program name and switch values.
+  EXPECT_EQ(got.GetProgram().value(), "/usr/bin/quipper");
+  EXPECT_EQ(got.GetSwitchValuePath("input_heap_profile"), kTempProfile);
+  EXPECT_EQ(got.GetSwitchValueASCII("pid"),
+            base::NumberToString(base::GetCurrentProcId()));
 }
 
 TEST_F(HeapCollectorTest, ParseAndSaveProfile_ShimLayer) {
@@ -493,6 +498,7 @@ class HeapCollectorCollectionParamsTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(HeapCollectorCollectionParamsTest);
 };
 
+#if !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 TEST_F(HeapCollectorCollectionParamsTest, ParametersOverride_Tcmalloc) {
   std::map<std::string, std::string> params;
   params.insert(std::make_pair("SamplingIntervalBytes", "800000"));
@@ -532,6 +538,7 @@ TEST_F(HeapCollectorCollectionParamsTest, ParametersOverride_Tcmalloc) {
   EXPECT_EQ(base::TimeDelta::FromSeconds(20),
             parsed_params.restore_session.max_collection_delay);
 }
+#endif
 
 TEST_F(HeapCollectorCollectionParamsTest, ParametersOverride_ShimLayer) {
   std::map<std::string, std::string> params;

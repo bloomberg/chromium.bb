@@ -4,37 +4,23 @@
 
 #include "content/browser/cache_storage/cache_storage_dispatcher_host.h"
 
-#include <stddef.h>
-#include <utility>
-
 #include "base/bind.h"
-#include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
+#include "content/browser/cache_storage/cache_storage.h"
 #include "content/browser/cache_storage/cache_storage_cache.h"
-#include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
 #include "content/browser/cache_storage/cache_storage_histogram_utils.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/cache_storage/cache_storage_trace_utils.h"
 #include "content/common/background_fetch/background_fetch_types.h"
-#include "content/common/service_worker/service_worker_utils.h"
-#include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/browser/content_browser_client.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/referrer_type_converters.h"
 #include "mojo/public/cpp/bindings/message.h"
-#include "third_party/blink/public/common/cache_storage/cache_storage_utils.h"
-#include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -88,13 +74,14 @@ class CacheStorageDispatcherHost::CacheImpl
   explicit CacheImpl(CacheStorageCacheHandle cache_handle)
       : cache_handle_(std::move(cache_handle)) {}
 
-  ~CacheImpl() override = default;
+  ~CacheImpl() override { DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_); }
 
   // blink::mojom::CacheStorageCache implementation:
   void Match(blink::mojom::FetchAPIRequestPtr request,
              blink::mojom::CacheQueryOptionsPtr match_options,
              int64_t trace_id,
              MatchCallback callback) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     TRACE_EVENT_WITH_FLOW2("CacheStorage",
                            "CacheStorageDispatchHost::CacheImpl::Match",
                            TRACE_ID_GLOBAL(trace_id),
@@ -157,6 +144,7 @@ class CacheStorageDispatcherHost::CacheImpl
                 blink::mojom::CacheQueryOptionsPtr match_options,
                 int64_t trace_id,
                 MatchAllCallback callback) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     TRACE_EVENT_WITH_FLOW2("CacheStorage",
                            "CacheStorageDispatchHost::CacheImpl::MatchAll",
                            TRACE_ID_GLOBAL(trace_id),
@@ -210,6 +198,7 @@ class CacheStorageDispatcherHost::CacheImpl
             blink::mojom::CacheQueryOptionsPtr match_options,
             int64_t trace_id,
             KeysCallback callback) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     TRACE_EVENT_WITH_FLOW2("CacheStorage",
                            "CacheStorageDispatchHost::CacheImpl::Keys",
                            TRACE_ID_GLOBAL(trace_id),
@@ -266,6 +255,7 @@ class CacheStorageDispatcherHost::CacheImpl
   void Batch(std::vector<blink::mojom::BatchOperationPtr> batch_operations,
              int64_t trace_id,
              BatchCallback callback) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     TRACE_EVENT_WITH_FLOW1(
         "CacheStorage", "CacheStorageDispatchHost::CacheImpl::Batch",
         TRACE_ID_GLOBAL(trace_id),
@@ -334,6 +324,7 @@ class CacheStorageDispatcherHost::CacheImpl
                    const std::vector<uint8_t>& side_data,
                    int64_t trace_id,
                    SetSideDataCallback callback) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     TRACE_EVENT_WITH_FLOW1("CacheStorage",
                            "CacheStorageDispatcherHost::CacheImpl::SetSideData",
                            TRACE_ID_GLOBAL(trace_id),
@@ -353,6 +344,7 @@ class CacheStorageDispatcherHost::CacheImpl
   }
 
   CacheStorageCacheHandle cache_handle_;
+  SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(CacheImpl);
 };
 
@@ -370,11 +362,14 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
     // the backend when the mojo connection is created.
   }
 
-  ~CacheStorageImpl() override = default;
+  ~CacheStorageImpl() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  }
 
   // Mojo CacheStorage Interface implementation:
   void Keys(int64_t trace_id,
             blink::mojom::CacheStorage::KeysCallback callback) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     TRACE_EVENT_WITH_FLOW0(
         "CacheStorage", "CacheStorageDispatchHost::CacheStorageImpl::Keys",
         TRACE_ID_GLOBAL(trace_id),
@@ -413,6 +408,7 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
   void Delete(const base::string16& cache_name,
               int64_t trace_id,
               blink::mojom::CacheStorage::DeleteCallback callback) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     std::string utf8_cache_name = base::UTF16ToUTF8(cache_name);
     TRACE_EVENT_WITH_FLOW1("CacheStorage",
                            "CacheStorageDispatchHost::CacheStorageImpl::Delete",
@@ -449,6 +445,7 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
   void Has(const base::string16& cache_name,
            int64_t trace_id,
            blink::mojom::CacheStorage::HasCallback callback) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     std::string utf8_cache_name = base::UTF16ToUTF8(cache_name);
     TRACE_EVENT_WITH_FLOW1("CacheStorage",
                            "CacheStorageDispatchHost::CacheStorageImpl::Has",
@@ -489,6 +486,7 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
              blink::mojom::MultiCacheQueryOptionsPtr match_options,
              int64_t trace_id,
              blink::mojom::CacheStorage::MatchCallback callback) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     TRACE_EVENT_WITH_FLOW2("CacheStorage",
                            "CacheStorageDispatchHost::CacheStorageImpl::Match",
                            TRACE_ID_GLOBAL(trace_id),
@@ -555,6 +553,7 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
   void Open(const base::string16& cache_name,
             int64_t trace_id,
             blink::mojom::CacheStorage::OpenCallback callback) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     std::string utf8_cache_name = base::UTF16ToUTF8(cache_name);
     TRACE_EVENT_WITH_FLOW1("CacheStorage",
                            "CacheStorageDispatchHost::CacheStorageImpl::Open",
@@ -616,6 +615,7 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
   // automatically.  This automatic open is necessary to re-attach to the
   // backend after the browser storage has been wiped.
   content::CacheStorage* GetOrCreateCacheStorage() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(owner_);
     if (!cache_storage_handle_.value())
       cache_storage_handle_ = owner_->OpenCacheStorage(origin_);
@@ -628,32 +628,26 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
   const url::Origin origin_;
   CacheStorageHandle cache_storage_handle_;
 
+  SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<CacheStorageImpl> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(CacheStorageImpl);
 };
 
 CacheStorageDispatcherHost::CacheStorageDispatcherHost() = default;
 
-CacheStorageDispatcherHost::~CacheStorageDispatcherHost() = default;
-
-void CacheStorageDispatcherHost::Init(CacheStorageContextImpl* context) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&CacheStorageDispatcherHost::CreateCacheListener,
-                     base::RetainedRef(this), base::RetainedRef(context)));
+CacheStorageDispatcherHost::~CacheStorageDispatcherHost() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void CacheStorageDispatcherHost::CreateCacheListener(
-    CacheStorageContextImpl* context) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+void CacheStorageDispatcherHost::Init(CacheStorageContextImpl* context) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   context_ = context;
 }
 
 void CacheStorageDispatcherHost::AddBinding(
     blink::mojom::CacheStorageRequest request,
     const url::Origin& origin) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto impl = std::make_unique<CacheStorageImpl>(this, origin);
   bindings_.AddBinding(std::move(impl), std::move(request));
 }
@@ -661,12 +655,13 @@ void CacheStorageDispatcherHost::AddBinding(
 void CacheStorageDispatcherHost::AddCacheBinding(
     std::unique_ptr<CacheImpl> cache_impl,
     blink::mojom::CacheStorageCacheAssociatedRequest request) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   cache_bindings_.AddBinding(std::move(cache_impl), std::move(request));
 }
 
 CacheStorageHandle CacheStorageDispatcherHost::OpenCacheStorage(
     const url::Origin& origin) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!context_ || !context_->cache_manager() ||
       !OriginCanAccessCacheStorage(origin))
     return CacheStorageHandle();

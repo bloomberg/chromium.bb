@@ -36,6 +36,7 @@ settings.ContentSettingsTypes = {
   CLIPBOARD: 'clipboard',
   SENSORS: 'sensors',
   PAYMENT_HANDLER: 'payment-handler',
+  BLUETOOTH_SCANNING: 'bluetooth-scanning',
 };
 
 /**

@@ -26,7 +26,7 @@
 #endif
 
 namespace {
-const CGFloat kOmniboxIconSize = 20;
+const CGFloat kOmniboxIconSize = 16;
 }  // namespace
 
 @implementation OmniboxPopupMediator {
@@ -81,6 +81,7 @@ const CGFloat kOmniboxIconSize = 20;
         [AutocompleteMatchFormatter formatterWithMatch:match];
     formatter.starred = _delegate->IsStarredMatch(match);
     formatter.incognito = _incognito;
+    formatter.defaultSearchEngineIsGoogle = self.defaultSearchEngineIsGoogle;
     [wrappedMatches addObject:formatter];
   }
 
@@ -186,7 +187,7 @@ const CGFloat kOmniboxIconSize = 20;
 
   FaviconAttributes* cachedAttributes = self.faviconLoader->FaviconForPageUrl(
       pageURL, kOmniboxIconSize, kOmniboxIconSize,
-      /*fallback_to_google_server=*/YES, ^(FaviconAttributes* attributes) {
+      /*fallback_to_google_server=*/false, ^(FaviconAttributes* attributes) {
         if (attributes.faviconImage && !attributes.usesDefaultImage)
           completion(attributes.faviconImage);
       });
@@ -194,9 +195,7 @@ const CGFloat kOmniboxIconSize = 20;
   // Only use cached attributes when they are a non-default icon. Never show
   // monograms or default globe icon.
   if (cachedAttributes.faviconImage && !cachedAttributes.usesDefaultImage) {
-    dispatch_async(dispatch_get_main_queue(), ^() {
       completion(cachedAttributes.faviconImage);
-    });
   }
 }
 

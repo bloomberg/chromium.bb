@@ -8,6 +8,7 @@
 #include <dawn/dawn.h>
 
 #include "base/callback_helpers.h"
+#include "build/build_config.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
 #include "gpu/command_buffer/service/shared_image_manager.h"
@@ -69,6 +70,9 @@ class SharedImageRepresentationFactoryRef : public SharedImageRepresentation {
 
   const Mailbox& mailbox() const { return backing()->mailbox(); }
   void Update() { backing()->Update(); }
+#if defined(OS_WIN)
+  void PresentSwapChain() { backing()->PresentSwapChain(); }
+#endif  // OS_WIN
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) {
     return backing()->ProduceLegacyMailbox(mailbox_manager);
   }
@@ -150,11 +154,30 @@ class SharedImageRepresentationSkia : public SharedImageRepresentation {
                                 MemoryTypeTracker* tracker)
       : SharedImageRepresentation(manager, backing, tracker) {}
 
+  // Begin the write access. The implementations should insert semaphores into
+  // begin_semaphores vector which client will wait on before writing the
+  // backing. The ownership of begin_semaphores will be passed to client.
+  // The implementations should also insert semaphores into end_semaphores,
+  // client must submit them with drawing operations which use the backing.
+  // The ownership of end_semaphores are not passed to client. And client must
+  // submit the end_semaphores before calling EndWriteAccess().
   virtual sk_sp<SkSurface> BeginWriteAccess(
       int final_msaa_count,
-      const SkSurfaceProps& surface_props) = 0;
+      const SkSurfaceProps& surface_props,
+      std::vector<GrBackendSemaphore>* begin_semaphores,
+      std::vector<GrBackendSemaphore>* end_semaphores) = 0;
   virtual void EndWriteAccess(sk_sp<SkSurface> surface) = 0;
-  virtual sk_sp<SkPromiseImageTexture> BeginReadAccess() = 0;
+
+  // Begin the read access. The implementations should insert semaphores into
+  // begin_semaphores vector which client will wait on before reading the
+  // backing. The ownership of begin_semaphores will be passed to client.
+  // The implementations should also insert semaphores into end_semaphores,
+  // client must submit them with drawing operations which use the backing.
+  // The ownership of end_semaphores are not passed to client. And client must
+  // submit the end_semaphores before calling EndReadAccess().
+  virtual sk_sp<SkPromiseImageTexture> BeginReadAccess(
+      std::vector<GrBackendSemaphore>* begin_semaphores,
+      std::vector<GrBackendSemaphore>* end_semaphores) = 0;
   virtual void EndReadAccess() = 0;
 };
 
@@ -165,6 +188,8 @@ class SharedImageRepresentationDawn : public SharedImageRepresentation {
                                 MemoryTypeTracker* tracker)
       : SharedImageRepresentation(manager, backing, tracker) {}
 
+  // This can return null in case of a Dawn validation error, for example if
+  // usage is invalid.
   virtual DawnTexture BeginAccess(DawnTextureUsageBit usage) = 0;
   virtual void EndAccess() = 0;
 };

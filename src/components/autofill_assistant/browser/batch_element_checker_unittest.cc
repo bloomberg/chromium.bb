@@ -17,6 +17,7 @@
 
 using ::testing::_;
 using ::testing::Contains;
+using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::InSequence;
 using ::testing::Key;
@@ -30,6 +31,13 @@ namespace {
 class BatchElementCheckerTest : public testing::Test {
  protected:
   BatchElementCheckerTest() : checks_() {}
+
+  void SetUp() override {
+    ON_CALL(mock_web_controller_, OnElementCheck(_, _))
+        .WillByDefault(RunOnceCallback<1>(false));
+    ON_CALL(mock_web_controller_, OnGetFieldValue(_, _))
+        .WillByDefault(RunOnceCallback<1>(false, ""));
+  }
 
   void OnElementExistenceCheck(const std::string& name, bool result) {
     element_exists_results_[name] = result;
@@ -72,7 +80,8 @@ class BatchElementCheckerTest : public testing::Test {
   }
 
   void Run(const std::string& callback_name) {
-    checks_.Run(&mock_web_controller_, DoneCallback(callback_name));
+    checks_.AddAllDoneCallback(DoneCallback(callback_name));
+    checks_.Run(&mock_web_controller_);
   }
 
   MockWebController mock_web_controller_;
@@ -88,6 +97,8 @@ TEST_F(BatchElementCheckerTest, Empty) {
   checks_.AddElementCheck(Selector({"exists"}),
                           ElementExistenceCallback("exists"));
   EXPECT_FALSE(checks_.empty());
+  Run("all_done");
+  EXPECT_THAT(all_done_, Contains("all_done"));
 }
 
 TEST_F(BatchElementCheckerTest, OneElementFound) {
@@ -210,6 +221,16 @@ TEST_F(BatchElementCheckerTest, DeduplicateElementVisible) {
   EXPECT_THAT(element_visible_results_, Contains(Pair("second 1", true)));
   EXPECT_THAT(element_visible_results_, Contains(Pair("2", true)));
   EXPECT_THAT(all_done_, Contains("was_run"));
+}
+
+TEST_F(BatchElementCheckerTest, CallMultipleAllDoneCallbacks) {
+  checks_.AddElementCheck(Selector({"exists"}),
+                          ElementExistenceCallback("exists"));
+  checks_.AddAllDoneCallback(DoneCallback("1"));
+  checks_.AddAllDoneCallback(DoneCallback("2"));
+  checks_.AddAllDoneCallback(DoneCallback("3"));
+  checks_.Run(&mock_web_controller_);
+  EXPECT_THAT(all_done_, ElementsAre("1", "2", "3"));
 }
 
 // Deduplicate get field

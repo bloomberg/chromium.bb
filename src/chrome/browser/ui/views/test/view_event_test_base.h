@@ -32,6 +32,10 @@ namespace gfx {
 class Size;
 }
 
+namespace ui {
+class TestContextFactories;
+}
+
 class ViewEventTestPlatformPart;
 
 // Base class for Views based tests that dispatch events.
@@ -119,7 +123,7 @@ class ViewEventTestBase : public views::WidgetDelegate, public testing::Test {
   // Returns a task runner to use for drag-related mouse events.
   scoped_refptr<base::SingleThreadTaskRunner> GetDragTaskRunner();
 
-  views::Widget* window_;
+  views::Widget* window_ = nullptr;
 
  private:
   // Callback from CreateEventTask. Runs the supplied task and if there are
@@ -127,7 +131,7 @@ class ViewEventTestBase : public views::WidgetDelegate, public testing::Test {
   void RunTestMethod(base::OnceClosure task);
 
   // The content of the Window.
-  views::View* content_view_;
+  views::View* content_view_ = nullptr;
 
   // Thread for posting background drag events.
   std::unique_ptr<base::Thread> drag_event_thread_;
@@ -137,6 +141,8 @@ class ViewEventTestBase : public views::WidgetDelegate, public testing::Test {
 #if defined(OS_WIN)
   ui::ScopedOleInitializer ole_initializer_;
 #endif
+
+  std::unique_ptr<ui::TestContextFactories> context_factories_;
 
   std::unique_ptr<ViewEventTestPlatformPart> platform_part_;
 

@@ -209,6 +209,7 @@ template("proto_library") {
 
   protos = rebase_path(invoker.sources, proto_in_dir)
   protogens = []
+  protogens_cc = []
 
   # List output files.
   foreach(proto, protos) {
@@ -217,7 +218,7 @@ template("proto_library") {
     proto_path = proto_dir + "/" + proto_name
 
     if (generate_cc) {
-      protogens += [
+      protogens_cc += [
         "$cc_out_dir/$proto_path.pb.h",
         "$cc_out_dir/$proto_path.pb.cc",
       ]
@@ -227,7 +228,7 @@ template("proto_library") {
     }
     if (generate_with_plugin) {
       foreach(suffix, generator_plugin_suffixes) {
-        protogens += [ "$cc_out_dir/${proto_path}${suffix}" ]
+        protogens_cc += [ "$cc_out_dir/${proto_path}${suffix}" ]
       }
     }
   }
@@ -240,7 +241,7 @@ template("proto_library") {
     visibility = [ ":$source_set_name" ]
     script = "//tools/protoc_wrapper/protoc_wrapper.py"
     sources = proto_sources
-    outputs = get_path_info(protogens, "abspath")
+    outputs = get_path_info(protogens + protogens_cc, "abspath")
     args = protos
 
     protoc_label = "//third_party/protobuf:protoc($host_toolchain)"
@@ -366,7 +367,7 @@ template("proto_library") {
                              "visibility",
                            ])
 
-    sources = get_target_outputs(":$action_name")
+    sources = get_path_info(protogens_cc, "abspath")
 
     if (defined(invoker.remove_configs)) {
       configs -= invoker.remove_configs

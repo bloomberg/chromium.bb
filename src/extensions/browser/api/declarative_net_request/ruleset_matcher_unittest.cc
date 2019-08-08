@@ -95,6 +95,27 @@ TEST_F(RulesetMatcherTest, RedirectRule) {
   EXPECT_FALSE(should_redirect_request(params, &redirect_url));
 }
 
+// Test that a URL cannot redirect to itself, as filed in crbug.com/954646.
+TEST_F(RulesetMatcherTest, PreventSelfRedirect) {
+  TestRule rule = CreateGenericRule();
+  rule.condition->url_filter = std::string("go*");
+  rule.priority = kMinValidPriority;
+  rule.action->type = std::string("redirect");
+  rule.action->redirect_url = std::string("http://google.com");
+
+  std::unique_ptr<RulesetMatcher> matcher;
+  ASSERT_TRUE(CreateVerifiedMatcher({rule}, CreateTemporarySource(), &matcher));
+
+  GURL url("http://google.com");
+  RequestParams params;
+  params.url = &url;
+  params.element_type = url_pattern_index::flat::ElementType_SUBDOCUMENT;
+  params.is_third_party = true;
+
+  GURL redirect_url;
+  EXPECT_FALSE(matcher->HasMatchingRedirectRule(params, &redirect_url));
+}
+
 // Tests that a modified ruleset file fails verification.
 TEST_F(RulesetMatcherTest, FailedVerification) {
   RulesetSource source = CreateTemporarySource();

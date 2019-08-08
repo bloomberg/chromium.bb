@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "media/gpu/macros.h"
 
 namespace media {
@@ -35,7 +36,7 @@ void MunmapBuffers(const std::vector<std::pair<uint8_t*, size_t>>& chunks,
   }
 }
 
-// Create VideoFrame whose dtor deallocates memory in mapped planes referred
+// Create VideoFrame whose dtor unmaps memory in mapped planes referred
 // by |plane_addrs|. |plane_addrs| are addresses to (Y, U, V) in this order.
 // |chunks| is the vector of pair of (address, size) to be called in munmap().
 // |src_video_frame| is the video frame that owns dmabufs to the mapped planes.
@@ -63,9 +64,10 @@ scoped_refptr<VideoFrame> CreateMappedVideoFrame(
                << ", plane_size=" << plane_size;
       return nullptr;
     }
-    video_frame = VideoFrame::WrapExternalData(
-        layout.format(), layout.coded_size(), visible_rect, visible_rect.size(),
-        plane_addrs[0], plane_size, src_video_frame->timestamp());
+
+    video_frame = VideoFrame::WrapExternalDataWithLayout(
+        layout, visible_rect, visible_rect.size(), plane_addrs[0], plane_size,
+        src_video_frame->timestamp());
   }
   if (!video_frame) {
     return nullptr;
@@ -79,16 +81,35 @@ scoped_refptr<VideoFrame> CreateMappedVideoFrame(
 
 bool IsFormatSupported(VideoPixelFormat format) {
   constexpr VideoPixelFormat supported_formats[] = {
+      // RGB pixel formats.
+      PIXEL_FORMAT_ABGR,
+      PIXEL_FORMAT_ARGB,
+      PIXEL_FORMAT_XBGR,
+
+      // YUV pixel formats.
       PIXEL_FORMAT_I420,
-      PIXEL_FORMAT_YV12,
       PIXEL_FORMAT_NV12,
-      PIXEL_FORMAT_RGB32,
+      PIXEL_FORMAT_YV12,
   };
   return std::find(std::cbegin(supported_formats), std::cend(supported_formats),
                    format);
 }
 
 }  // namespace
+
+// static
+std::unique_ptr<GenericDmaBufVideoFrameMapper>
+GenericDmaBufVideoFrameMapper::Create(VideoPixelFormat format) {
+  if (!IsFormatSupported(format)) {
+    VLOGF(1) << "Unsupported format: " << format;
+    return nullptr;
+  }
+  return base::WrapUnique(new GenericDmaBufVideoFrameMapper(format));
+}
+
+GenericDmaBufVideoFrameMapper::GenericDmaBufVideoFrameMapper(
+    VideoPixelFormat format)
+    : VideoFrameMapper(format) {}
 
 scoped_refptr<VideoFrame> GenericDmaBufVideoFrameMapper::Map(
     scoped_refptr<const VideoFrame> video_frame) const {
@@ -98,10 +119,9 @@ scoped_refptr<VideoFrame> GenericDmaBufVideoFrameMapper::Map(
     return nullptr;
   }
 
-  // TODO(crbug.com/952147): Create GenericDmaBufVideoFrameMapper with pixel
-  // format, and only the format should be acceptable here.
-  if (!IsFormatSupported(video_frame->format())) {
-    VLOGF(1) << "Unsupported format: " << video_frame->format();
+  if (video_frame->format() != format_) {
+    VLOGF(1) << "Unexpected format: " << video_frame->format()
+             << ", expected: " << format_;
     return nullptr;
   }
 
@@ -112,9 +132,9 @@ scoped_refptr<VideoFrame> GenericDmaBufVideoFrameMapper::Map(
   std::vector<std::pair<uint8_t*, size_t>> chunks;
   const auto& buffer_sizes = layout.buffer_sizes();
   std::vector<uint8_t*> buffer_addrs(buffer_sizes.size(), nullptr);
-  DCHECK_EQ(buffer_addrs.size(), dmabuf_fds.size());
+  DCHECK_LE(buffer_addrs.size(), dmabuf_fds.size());
   DCHECK_LE(buffer_addrs.size(), VideoFrame::kMaxPlanes);
-  for (size_t i = 0; i < dmabuf_fds.size(); i++) {
+  for (size_t i = 0; i < buffer_sizes.size(); i++) {
     buffer_addrs[i] = Mmap(buffer_sizes[i], dmabuf_fds[i].get());
     if (!buffer_addrs[i]) {
       MunmapBuffers(chunks, std::move(video_frame));
@@ -129,14 +149,10 @@ scoped_refptr<VideoFrame> GenericDmaBufVideoFrameMapper::Map(
   const auto& planes = layout.planes();
   const size_t num_of_planes = layout.num_planes();
   uint8_t* plane_addrs[VideoFrame::kMaxPlanes] = {};
-  if (dmabuf_fds.size() == 1) {
-    for (size_t i = 0; i < num_of_planes; i++) {
-      plane_addrs[i] = buffer_addrs[0] + planes[i].offset;
-    }
-  } else {
-    for (size_t i = 0; i < num_of_planes; i++) {
-      plane_addrs[i] = buffer_addrs[i] + planes[i].offset;
-    }
+  for (size_t i = 0; i < num_of_planes; i++) {
+    uint8_t* buffer =
+        i < buffer_addrs.size() ? buffer_addrs[i] : buffer_addrs.back();
+    plane_addrs[i] = buffer + planes[i].offset;
   }
   return CreateMappedVideoFrame(std::move(video_frame), plane_addrs, chunks);
 }

@@ -43,6 +43,7 @@ class MockFormValidationMessageClient
   }
 
   void DocumentDetached(const Document&) override {}
+  void DidChangeFocusTo(const Element*) override {}
   void WillBeDestroyed() override {}
   void Trace(Visitor* visitor) override {
     visitor->Trace(anchor_);

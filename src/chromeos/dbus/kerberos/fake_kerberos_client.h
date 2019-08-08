@@ -9,7 +9,6 @@
 #include <string>
 #include <unordered_map>
 
-#include "base/optional.h"
 #include "chromeos/dbus/kerberos/kerberos_client.h"
 #include "chromeos/dbus/kerberos/kerberos_service.pb.h"
 #include "dbus/object_proxy.h"
@@ -17,8 +16,7 @@
 namespace chromeos {
 
 class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeKerberosClient
-    : public KerberosClient,
-      public KerberosClient::TestInterface {
+    : public KerberosClient {
  public:
   FakeKerberosClient();
   ~FakeKerberosClient() override;
@@ -28,6 +26,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeKerberosClient
                   AddAccountCallback callback) override;
   void RemoveAccount(const kerberos::RemoveAccountRequest& request,
                      RemoveAccountCallback callback) override;
+  void ClearAccounts(const kerberos::ClearAccountsRequest& request,
+                     ClearAccountsCallback callback) override;
+  void ListAccounts(const kerberos::ListAccountsRequest& request,
+                    ListAccountsCallback callback) override;
   void SetConfig(const kerberos::SetConfigRequest& request,
                  SetConfigCallback callback) override;
   void AcquireKerberosTgt(const kerberos::AcquireKerberosTgtRequest& request,
@@ -37,11 +39,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeKerberosClient
                         GetKerberosFilesCallback callback) override;
   void ConnectToKerberosFileChangedSignal(
       KerberosFilesChangedCallback callback) override;
-  KerberosClient::TestInterface* GetTestInterface() override;
-
-  // KerberosClient::TestInterface:
-  void set_started(bool started) override;
-  bool started() const override;
 
  private:
   struct AccountData {
@@ -51,16 +48,13 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeKerberosClient
     bool has_tgt = false;
   };
 
-  // Returns the AccountData for |principal_name| if available or nullopt
+  // Returns the AccountData for |principal_name| if available or nullptr
   // otherwise.
-  base::Optional<AccountData> GetAccountData(const std::string& principal_name);
+  AccountData* GetAccountData(const std::string& principal_name);
 
   // Maps principal name (user@REALM.COM) to account data.
   using AccountsMap = std::unordered_map<std::string, AccountData>;
   AccountsMap accounts_;
-
-  // Whether the service has started by UpstartClient.
-  bool started_ = false;
 
   KerberosFilesChangedCallback kerberos_files_changed_callback_;
 

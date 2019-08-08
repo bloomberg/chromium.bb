@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">Skjul menyen</translation>
 <translation id="1383876407941801731">Søk</translation>
 <translation id="1419738280318246476">Lås opp enheten for å utføre varselhandlingen</translation>
+<translation id="1426410128494586442">Ja</translation>
 <translation id="1455242230282523554">Vis språkinnstillinger</translation>
 <translation id="1467432559032391204">Venstre</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -47,7 +48,6 @@
 <translation id="1570871743947603115">Slå av/på Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">se all aktiviteten din i denne økten</translation>
 <translation id="1608626060424371292">Fjern denne brukeren</translation>
-<translation id="1621499497873603021">Gjenværende tid til batteriet er tomt – <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Start et talesøk</translation>
 <translation id="1658406695958299976">Beklager, men passordet ditt kunne fremdeles ikke bekreftes. Merk: Hvis du endret passordet ditt nylig, trer det nye passordet ditt i kraft så snart du logger av. Bruk det gamle passordet ditt her.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> igjen</translation>
@@ -72,7 +72,6 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1993072747612765854">Finn ut mer om den nyeste <ph name="SYSTEM_APP_NAME" />-oppdateringen</translation>
 <translation id="1995660704900986789">Slå av</translation>
-<translation id="1999763610967697511">Dra-og-slipp</translation>
 <translation id="2012624427112548395">Ctrl + Søk + H</translation>
 <translation id="2016340657076538683">Skriv inn en melding</translation>
 <translation id="2050339315714019657">Stående</translation>
@@ -100,7 +99,6 @@
 <translation id="239188844683466770">Slå av/på «ikke forstyrr»</translation>
 <translation id="2412593942846481727">En oppdatering er tilgjengelig</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> er en administrert økt administrert av <ph name="DOMAIN" /></translation>
-<translation id="2416346634399901812">Koblet til <ph name="NETWORK_NAME" /></translation>
 <translation id="2427507373259914951">Venstreklikk</translation>
 <translation id="2429753432712299108">Bluetooth-enheten «<ph name="DEVICE_NAME" />» ber om tillatelse til å koble til. Før du godtar dette, må du bekrefte at denne tilgangskoden vises på den aktuelle enheten: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Varsler</translation>
@@ -114,11 +112,11 @@
 <translation id="2597972630681408282">Nattlys: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM-kortet er låst</translation>
 <translation id="2653659639078652383">Send</translation>
+<translation id="2658778018866295321">Klikk og dra</translation>
 <translation id="2700493154570097719">Velg tastatur</translation>
 <translation id="2718395828230677721">Nattlys</translation>
 <translation id="2727977024730340865">Tilkoblet laveffektslader. Batteriladingen kan være upålitelig.</translation>
 <translation id="2761704814324807722">Statusfelt, klokken <ph name="TIME" />, <ph name="BATTERY" /></translation>
-<translation id="277257480934873581">Kobler til <ph name="NAME" /> på nytt</translation>
 <translation id="2792498699870441125">Alt + Søk</translation>
 <translation id="2803734122639935495">Skriv inn passordet ditt for å låse opp</translation>
 <translation id="2819276065543622893">Du blir nå logget av.</translation>
@@ -139,7 +137,6 @@
 <translation id="2996462380875591307">Dokket lupe er slått på. Trykk på Ctrl + Søk + D igjen for å slå det av.</translation>
 <translation id="3000461861112256445">Monolyd</translation>
 <translation id="3009178788565917040">Utdata</translation>
-<translation id="3019353588588144572">Tid som gjenstår til batteriet er fulladet – <ph name="TIME_REMAINING" /></translation>
 <translation id="3051128274746680507">Den administrerte brukerprofilen din fjernes snart. Logg på for å finne ut mer.</translation>
 <translation id="3055162170959710888">Du har brukt denne enheten i <ph name="USED_TIME" /> i dag</translation>
 <translation id="3077734595579995578">shift</translation>
@@ -175,6 +172,7 @@
 <translation id="3510164367642747937">Fremhev musemarkøren</translation>
 <translation id="3513798432020909783">Kontoen er administrert av <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Endre tilbake til <ph name="FROM_LOCALE" /> (krever omstart)</translation>
+<translation id="3576141592585647168">Endre tidssonen</translation>
 <translation id="3595596368722241419">Batteriet er fullt</translation>
 <translation id="3606978283550408104">En leselist er tilkoblet.</translation>
 <translation id="3621202678540785336">Inndata</translation>
@@ -202,6 +200,7 @@
 <translation id="394485226368336402">Lydinnstillinger</translation>
 <translation id="3962859241508114581">Forrige spor</translation>
 <translation id="397105322502079400">Beregner …</translation>
+<translation id="3977512764614765090">Batteriet er <ph name="PERCENTAGE" /> % fullt og lades.</translation>
 <translation id="3995138139523574647">USB-C-enhet (porten bak på høyre side)</translation>
 <translation id="4017989525502048489">Laserpeker</translation>
 <translation id="4042660782729322247">Du deler skjermen din</translation>
@@ -218,7 +217,7 @@
 <translation id="4269883910223712419">Administratoren av denne enheten kan</translation>
 <translation id="4279490309300973883">Speiling</translation>
 <translation id="4281007048406351813">Legg til 1 min i nedtellingen</translation>
-<translation id="4292681942966152062">Aktiverer <ph name="NETWORK_NAME" /></translation>
+<translation id="4296136865091727875">Fjern alle <ph name="COUNT" /> varsler</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Du trykket på hurtigtasten for høy kontrast. Vil du slå det på?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -234,7 +233,6 @@
 <translation id="4477350412780666475">Neste spor</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Frakoblede enheter</translation>
-<translation id="4508225577814909926"><ph name="NAME" />: kobler til ...</translation>
 <translation id="4513946894732546136">Google Feedback</translation>
 <translation id="4527045527269911712">Bluetooth-enheten «<ph name="DEVICE_NAME" />» ber om tillatelse til å koble til.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> til batteriet er fulladet</translation>
@@ -247,12 +245,12 @@
 <translation id="4696813013609194136">Lås opp enheten med foreldrekode</translation>
 <translation id="4731797938093519117">Foreldretilgang</translation>
 <translation id="4734965478015604180">Horisontal</translation>
-<translation id="476166673298332917">Enhetsadministratoren har tilgang til nettleseraktiviteten din.</translation>
 <translation id="4774338217796918551">Kom tilbake i morgen <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Passord for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Google-assistenten er ikke tilgjengelig under demonstrasjonsøkter.</translation>
 <translation id="479989351350248267">søk</translation>
 <translation id="4804818685124855865">Koble fra</translation>
+<translation id="4831034276697007977">Er du sikker på at du vil slå av automatiske klikk?</translation>
 <translation id="4849058404725798627">Fremhev objektet med tastaturfokus</translation>
 <translation id="485592688953820832">Ingen handling (pause)</translation>
 <translation id="4872237917498892622">Alt + Søk eller Shift</translation>
@@ -355,9 +353,9 @@
 <translation id="6537270692134705506">Ta skjermdump av skjermen</translation>
 <translation id="6542521951477560771">Caster til <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Spør administratoren</translation>
-<translation id="6574601967010742428">Enhetsadministratoren kan muligens overvåke aktiviteten din.</translation>
 <translation id="6585808820553845416">Økten slutter om <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Søk + Shift + K</translation>
+<translation id="6637729079642709226">Endre tiden</translation>
 <translation id="6650933572246256093">Bluetooth-enheten «<ph name="DEVICE_NAME" />» ber om tillatelse til å koble til. Skriv inn denne tilgangskoden på den aktuelle enheten: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Passord</translation>
 <translation id="6665545700722362599">gi nettsteder, apper og utvidelser tillatelse til å bruke posisjonstjenester, enhetens mikrofon, kamera eller andre funksjoner</translation>
@@ -369,7 +367,6 @@
 <translation id="6715542151869432661">Fant ingen mobilenheter.</translation>
 <translation id="6723839937902243910">Strøm</translation>
 <translation id="6751826523481687655">Ytelsessporing er slått på</translation>
-<translation id="6785414152754474415">Batteriet er <ph name="PERCENTAGE" /> % fullt og til lading.</translation>
 <translation id="6790428901817661496">Spill av</translation>
 <translation id="6803622936009808957">Kunne ikke speile skjermene fordi ingen støttede oppløsninger ble funnet. Utvidet skrivebord ble brukt i stedet.</translation>
 <translation id="6820676911989879663">Ta en pause!</translation>
@@ -403,6 +400,7 @@
 <translation id="7348093485538360975">Skjermtastatur</translation>
 <translation id="735745346212279324">VPN frakoblet</translation>
 <translation id="7377169924702866686">Caps Lock er på.</translation>
+<translation id="7378594059915113390">Mediekontroller</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" /> s</translation>
 <translation id="7398254312354928459">Byttet nettverkstilkobling</translation>
 <translation id="7405710164030118432">For å låse opp enheten, skriv inn koden din for foreldretilgang til Family Link</translation>
@@ -416,6 +414,7 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> støtter ikke <ph name="SPECIFIED_RESOLUTION" />. Oppløsningen ble endret til <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Emoji-palett</translation>
 <translation id="7564874036684306347">Flytting av vinduer til et annet skrivebord kan føre til uventet atferd. Følgende varsler, vinduer og dialogbokser kan bli delt mellom skrivebordene.</translation>
+<translation id="7568294522609223312">Slå av automatiske klikk</translation>
 <translation id="7569509451529460200">Braille og ChromeVox er slått på</translation>
 <translation id="7593891976182323525">Søk eller Shift</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (eier)</translation>
@@ -432,7 +431,6 @@
 <translation id="7814236020522506259"><ph name="HOUR" /> og <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Sterkt signal</translation>
 <translation id="7837740436429729974">Tiden er ute</translation>
-<translation id="7842211907556571265">Kobler til <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Advarsel: Funksjon på forsøksstadiet</translation>
 <translation id="7846634333498149051">Tastatur</translation>
 <translation id="7868900307798234037">Låser opp med fingeravtrykk</translation>
@@ -504,6 +502,7 @@
 <translation id="8877788021141246043">Angi en påminnelse</translation>
 <translation id="8878886163241303700">Utvidet skjerm</translation>
 <translation id="890616557918890486">Endre kilde</translation>
+<translation id="8909138438987180327">Batteriet er <ph name="PERCENTAGE" /> % fullt.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google-assistenten kan ikke dette språket.</translation>
 <translation id="8938800817013097409">USB-C-enhet (høyre port på baksiden)</translation>
@@ -512,9 +511,11 @@
 <translation id="8990809378771970590">Bruker <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Lås opp enheten som <ph name="LOGIN_ID" /> for å utføre varselhandlingen</translation>
 <translation id="8995603266996330174">Drevet av <ph name="DOMAIN" /></translation>
+<translation id="9017320285115481645">Skriv inn koden for foreldretilgang til Family Link.</translation>
 <translation id="9029474291399787231">En oppdatering av Adobe Flash Player er tilgjengelig</translation>
 <translation id="9056839673611986238">Enheten blir tilbakestilt til forrige versjon</translation>
 <translation id="9070640332319875144">Assistent-innstillinger</translation>
+<translation id="9072519059834302790"><ph name="TIME_LEFT" /> til batteriet er tomt.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofonen er i bruk.</translation>
@@ -525,8 +526,8 @@
 <translation id="9179259655489829027">Med denne funksjonen får du rask tilgang til påloggede brukere uten å måtte skrive inn passord. Du bør bare bruke denne funksjonen med kontoer du stoler på.</translation>
 <translation id="9193626018745640770">Caster på en ukjent mottaker</translation>
 <translation id="9194617393863864469">Logg på en annen bruker</translation>
-<translation id="9201131092683066720">Batteriet er <ph name="PERCENTAGE" /> % fullt</translation>
 <translation id="9210037371811586452">Avslutter enhetlig skrivebordsmodus</translation>
+<translation id="9211681782751733685"><ph name="TIME_REMAINING" /> gjenstår til batteriet er fulladet.</translation>
 <translation id="9215934040295798075">Velg bakgrunn</translation>
 <translation id="921989828232331238">Forelderen din har låst enheten din for dagen</translation>
 <translation id="923686485342484400">Trykk på Control+Shift+Q to ganger for å logge av.</translation>

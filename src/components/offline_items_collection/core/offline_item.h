@@ -165,6 +165,9 @@ struct OfflineItem {
   // Whether or not this item is off the record.
   bool is_off_the_record;
 
+  // Identifies the item's publisher.
+  std::string attribution;
+
   // In Progress Metadata.
   // ---------------------------------------------------------------------------
   // The current state of the OfflineItem.
@@ -216,6 +219,7 @@ std::ostream& operator<<(std::ostream& os, const OfflineItem& item);
 // an OfflineItem update to let us know about an update to the visuals.
 struct OfflineItemVisuals {
   OfflineItemVisuals();
+  OfflineItemVisuals(const gfx::Image& icon, const gfx::Image& custom_favicon);
   OfflineItemVisuals(const OfflineItemVisuals& other);
 
   ~OfflineItemVisuals();
@@ -224,6 +228,9 @@ struct OfflineItemVisuals {
   // TODO(dtrainor): Suggest icon size based on the icon size supported by the
   // current OS.
   gfx::Image icon;
+
+  // Favicon to be shown with the item; optional.
+  gfx::Image custom_favicon;
 };
 
 // This struct holds additional information related to sharing a particular

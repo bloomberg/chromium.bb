@@ -29,8 +29,8 @@ JingleInfoRequest::JingleInfoRequest(SignalStrategy* signal_strategy)
 
 JingleInfoRequest::~JingleInfoRequest() = default;
 
-void JingleInfoRequest::Send(const OnIceConfigCallback& callback) {
-  on_ice_config_callback_ = callback;
+void JingleInfoRequest::Send(OnIceConfigCallback callback) {
+  on_ice_config_callback_ = std::move(callback);
   std::unique_ptr<jingle_xmpp::XmlElement> iq_body(
       new jingle_xmpp::XmlElement(jingle_xmpp::QN_JINGLE_INFO_QUERY, true));
   request_ = iq_sender_.SendIq(
@@ -40,7 +40,7 @@ void JingleInfoRequest::Send(const OnIceConfigCallback& callback) {
     // If we failed to send IqRequest it means that SignalStrategy is
     // disconnected. Notify the caller.
     IceConfig config;
-    on_ice_config_callback_.Run(config);
+    std::move(on_ice_config_callback_).Run(config);
     return;
   }
   request_->SetTimeout(base::TimeDelta::FromSeconds(kRequestTimeoutSeconds));
@@ -52,7 +52,9 @@ void JingleInfoRequest::OnResponse(IqRequest* request,
 
   if (!stanza) {
     LOG(WARNING) << "Jingle info request has timed out.";
-    on_ice_config_callback_.Run(result);
+    if (on_ice_config_callback_) {
+      std::move(on_ice_config_callback_).Run(result);
+    }
     return;
   }
 
@@ -61,7 +63,9 @@ void JingleInfoRequest::OnResponse(IqRequest* request,
   if (query == nullptr) {
     LOG(WARNING) << "No Jingle info found in Jingle Info query response."
                  << stanza->Str();
-    on_ice_config_callback_.Run(result);
+    if (on_ice_config_callback_) {
+      std::move(on_ice_config_callback_).Run(result);
+    }
     return;
   }
 
@@ -102,7 +106,9 @@ void JingleInfoRequest::OnResponse(IqRequest* request,
       base::Time::Now() +
       base::TimeDelta::FromSeconds(kJingleInfoUpdatePeriodSeconds);
 
-  on_ice_config_callback_.Run(result);
+  if (on_ice_config_callback_) {
+    std::move(on_ice_config_callback_).Run(result);
+  }
 }
 
 }  // namespace protocol

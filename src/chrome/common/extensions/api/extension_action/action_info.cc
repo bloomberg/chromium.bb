@@ -24,8 +24,8 @@ namespace {
 constexpr char kEnabled[] = "enabled";
 constexpr char kDisabled[] = "disabled";
 
-// The manifest data container for the ActionInfos for BrowserActions,
-// PageActions and SystemIndicators.
+// The manifest data container for the ActionInfos for BrowserActions and
+// PageActions.
 struct ActionInfoData : public Extension::ManifestData {
   explicit ActionInfoData(std::unique_ptr<ActionInfo> action_info);
   ~ActionInfoData() override;
@@ -49,7 +49,17 @@ static const ActionInfo* GetActionInfo(const Extension* extension,
 
 }  // namespace
 
-ActionInfo::ActionInfo() : synthesized(false) {}
+ActionInfo::ActionInfo(Type type) : type(type), synthesized(false) {
+  switch (type) {
+    case TYPE_PAGE:
+      default_state = STATE_DISABLED;
+      break;
+    case TYPE_BROWSER:
+    case TYPE_ACTION:
+      default_state = STATE_ENABLED;
+      break;
+  }
+}
 
 ActionInfo::ActionInfo(const ActionInfo& other) = default;
 
@@ -58,9 +68,10 @@ ActionInfo::~ActionInfo() {
 
 // static
 std::unique_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
+                                             Type type,
                                              const base::DictionaryValue* dict,
                                              base::string16* error) {
-  std::unique_ptr<ActionInfo> result(new ActionInfo());
+  auto result = std::make_unique<ActionInfo>(type);
 
   // Read the page action |default_icon| (optional).
   // The |default_icon| value can be either dictionary {icon size -> icon path}
@@ -118,18 +129,24 @@ std::unique_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
     }
   }
 
-  std::string default_state;
   if (dict->HasKey(keys::kActionDefaultState)) {
+    // The default_state key is only valid for TYPE_ACTION; throw an error for
+    // others.
+    if (type != TYPE_ACTION) {
+      *error = base::ASCIIToUTF16(errors::kDefaultStateShouldNotBeSet);
+      return nullptr;
+    }
+
+    std::string default_state;
     if (!dict->GetString(keys::kActionDefaultState, &default_state) ||
         !(default_state == kEnabled || default_state == kDisabled)) {
       *error = base::ASCIIToUTF16(errors::kInvalidActionDefaultState);
       return nullptr;
     }
+    result->default_state = default_state == kEnabled
+                                ? ActionInfo::STATE_ENABLED
+                                : ActionInfo::STATE_DISABLED;
   }
-
-  result->default_state = default_state == kEnabled
-                              ? ActionInfo::STATE_ENABLED
-                              : ActionInfo::STATE_DISABLED;
 
   return result;
 }
@@ -164,12 +181,6 @@ const ActionInfo* ActionInfo::GetPageActionInfo(const Extension* extension) {
 }
 
 // static
-const ActionInfo* ActionInfo::GetSystemIndicatorInfo(
-    const Extension* extension) {
-  return GetActionInfo(extension, keys::kSystemIndicator);
-}
-
-// static
 void ActionInfo::SetExtensionActionInfo(Extension* extension,
                                         std::unique_ptr<ActionInfo> info) {
   extension->SetManifestData(keys::kAction,
@@ -187,13 +198,6 @@ void ActionInfo::SetBrowserActionInfo(Extension* extension,
 void ActionInfo::SetPageActionInfo(Extension* extension,
                                    std::unique_ptr<ActionInfo> info) {
   extension->SetManifestData(keys::kPageAction,
-                             std::make_unique<ActionInfoData>(std::move(info)));
-}
-
-// static
-void ActionInfo::SetSystemIndicatorInfo(Extension* extension,
-                                        std::unique_ptr<ActionInfo> info) {
-  extension->SetManifestData(keys::kSystemIndicator,
                              std::make_unique<ActionInfoData>(std::move(info)));
 }
 

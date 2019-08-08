@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "media/mojo/buildflags.h"
 #include "media/mojo/services/mojo_media_client.h"
 
 namespace chromecast {
@@ -31,8 +32,15 @@ class CastMojoMediaClient : public ::media::MojoMediaClient {
                       MediaResourceTracker* media_resource_tracker);
   ~CastMojoMediaClient() override;
 
-  // MojoMediaClient overrides.
+  // MojoMediaClient implementation:
   void Initialize(service_manager::Connector* connector) override;
+#if BUILDFLAG(ENABLE_CAST_RENDERER)
+  std::unique_ptr<::media::Renderer> CreateCastRenderer(
+      service_manager::mojom::InterfaceProvider* host_interfaces,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      ::media::MediaLog* media_log,
+      const base::UnguessableToken& overlay_plane_id) override;
+#endif
   std::unique_ptr<::media::Renderer> CreateRenderer(
       service_manager::mojom::InterfaceProvider* host_interfaces,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,

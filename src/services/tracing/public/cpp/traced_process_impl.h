@@ -46,7 +46,8 @@ class COMPONENT_EXPORT(TRACING_CPP) TracedProcessImpl
 
   // tracing::mojom::TracedProcess:
   void ConnectToTracingService(
-      mojom::ConnectToTracingRequestPtr request) override;
+      mojom::ConnectToTracingRequestPtr request,
+      ConnectToTracingServiceCallback callback) override;
 
   // Lock protecting binding_.
   base::Lock lock_;

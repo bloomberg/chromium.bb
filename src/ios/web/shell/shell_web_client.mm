@@ -85,6 +85,10 @@ base::RefCountedMemory* ShellWebClient::GetDataResourceBytes(
       resource_id);
 }
 
+bool ShellWebClient::IsDataResourceGzipped(int resource_id) const {
+  return ui::ResourceBundle::GetSharedInstance().IsGzipped(resource_id);
+}
+
 std::unique_ptr<service_manager::Service> ShellWebClient::HandleServiceRequest(
     const std::string& service_name,
     service_manager::mojom::ServiceRequest request) {
@@ -104,13 +108,13 @@ ShellWebClient::GetServiceManifestOverlay(base::StringPiece name) {
         .Build();
   }
 
-  if (name == mojom::kPackagedServicesServiceName) {
-    return service_manager::ManifestBuilder()
-        .PackageService(echo::GetManifest())
-        .Build();
-  }
-
   return base::nullopt;
+}
+
+std::vector<service_manager::Manifest>
+ShellWebClient::GetExtraServiceManifests() {
+  return std::vector<service_manager::Manifest>{echo::GetManifest(
+      service_manager::Manifest::ExecutionMode::kInProcessBuiltin)};
 }
 
 void ShellWebClient::BindInterfaceRequestFromMainFrame(
