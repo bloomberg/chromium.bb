@@ -13904,7 +13904,7 @@
       'tags': ['system-security'],
       'desc': '''Allow this user root access to Crostini containers.
 
-      If the policy is set to true of left unset root access to Crostini containers will be granted to the user.
+      If the policy is set to true or left unset root access to Crostini containers will be granted to the user.
       If the policy is set to false, root access to both existing and new Crostini containers will not be granted to the user.''',
     },
     {
@@ -16916,7 +16916,7 @@
       },
       'id': 578,
       'supported_on': ['chrome.*:77-','chrome_os:77-'],
-      'caption': '''Check SafeBrowsing reputation of visited URLs in real time''',
+      'caption': '''Check Safe Browsing reputation of visited URLs in real time''',
       'tags': ['google-sharing'],
       'desc': '''When this policy is set to enabled, all visited URLs will be checked with Safe Browsing in real time.
 
