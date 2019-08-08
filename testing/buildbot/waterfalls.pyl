@@ -1748,7 +1748,6 @@
         ],
         'test_suites': {
           'gtest_tests': 'chromium_gtests',
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
         'gtest_args': [
           '--enable-features=BlinkHeapConcurrentMarking',
