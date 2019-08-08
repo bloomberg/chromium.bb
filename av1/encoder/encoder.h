@@ -798,6 +798,7 @@ typedef struct AV1_COMP {
   int rate_size;
   int rate_index;
   hash_table *previous_hash_table;
+  int need_to_clear_prev_hash_table;
   int previous_index;
 
   unsigned int row_mt;

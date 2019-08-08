@@ -5404,6 +5404,20 @@ static void set_mb_ssim_rdmult_scaling(AV1_COMP *cpi) {
   (void)xd;
 }
 
+#if CONFIG_DEBUG
+static int hash_me_has_at_most_two_refs(RefCntBuffer *frame_bufs) {
+  int total_count = 0;
+  for (int frame_idx = 0; frame_idx < FRAME_BUFFERS; ++frame_idx) {
+    if (frame_bufs[frame_idx].hash_table.has_content > 1) {
+      return 0;
+    }
+    total_count += frame_bufs[frame_idx].hash_table.has_content;
+  }
+
+  return total_count <= 2;
+}
+#endif
+
 static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
                                      uint8_t *dest) {
   AV1_COMMON *const cm = &cpi->common;
@@ -5493,6 +5507,16 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
     }
   } else {
     cpi->common.cur_frame_force_integer_mv = 0;
+  }
+
+#if CONFIG_DEBUG
+  assert(hash_me_has_at_most_two_refs(cm->buffer_pool->frame_bufs) &&
+         "Hash-me is leaking memory!");
+#endif
+
+  if (cpi->oxcf.pass != 1 && cpi->need_to_clear_prev_hash_table) {
+    av1_hash_table_clear_all(cpi->previous_hash_table);
+    cpi->need_to_clear_prev_hash_table = 0;
   }
 
   // Set default state for segment based loop filter update flags.
@@ -5693,9 +5717,12 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 
   av1_rc_postencode_update(cpi, *size);
 
-  // Store encoded frame's hash table for is_integer_mv() next time
-  if (oxcf->pass != 1 && cpi->common.allow_screen_content_tools) {
+  // Store encoded frame's hash table for in_integer_mv() next time.
+  // Beware! If we don't update previous_hash_table here we will leak the
+  // items stored in cur_frame's hash_table!
+  if (oxcf->pass != 1 && av1_use_hash_me(cm)) {
     cpi->previous_hash_table = &cm->cur_frame->hash_table;
+    cpi->need_to_clear_prev_hash_table = 1;
   }
 
   // Clear the one shot update flags for segmentation map and mode/ref loop
