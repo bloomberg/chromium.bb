@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_VIDEO_CAPTURER_SOURCE_H_
-#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_VIDEO_CAPTURER_SOURCE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_VIDEO_CAPTURER_SOURCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_VIDEO_CAPTURER_SOURCE_H_
 
 #include <memory>
 #include <string>
@@ -14,8 +14,9 @@
 #include "base/threading/thread_checker.h"
 #include "media/capture/video_capture_types.h"
 #include "third_party/blink/public/common/media/video_capture.h"
-#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace media {
 class VideoCapturerSource;
@@ -23,13 +24,13 @@ class VideoCapturerSource;
 
 namespace blink {
 
-class WebLocalFrame;
+class LocalFrame;
 
 // Representation of a video stream coming from a camera, owned by Blink as
 // WebMediaStreamSource. Objects of this class are created and live on main
 // Render thread. Objects can be constructed either by indicating a |device| to
 // look for, or by plugging in a |source| constructed elsewhere.
-class BLINK_MODULES_EXPORT MediaStreamVideoCapturerSource
+class MODULES_EXPORT MediaStreamVideoCapturerSource
     : public MediaStreamVideoSource {
  public:
   using DeviceCapturerFactoryCallback =
@@ -39,7 +40,7 @@ class BLINK_MODULES_EXPORT MediaStreamVideoCapturerSource
       const SourceStoppedCallback& stop_callback,
       std::unique_ptr<media::VideoCapturerSource> source);
   MediaStreamVideoCapturerSource(
-      WebLocalFrame* web_frame,
+      LocalFrame* frame,
       const SourceStoppedCallback& stop_callback,
       const MediaStreamDevice& device,
       const media::VideoCaptureParams& capture_params,
@@ -49,9 +50,8 @@ class BLINK_MODULES_EXPORT MediaStreamVideoCapturerSource
   void SetDeviceCapturerFactoryCallbackForTesting(
       DeviceCapturerFactoryCallback testing_factory_callback);
 
-  // TODO(crbug.com/704136) Use a mojom::blink::MediaStreamDispatcherHostPtr
-  // once this header file moves to blink/renderer.
-  void SetMediaStreamDispatcherHostForTesting(void* dispatcher_host);
+  void SetMediaStreamDispatcherHostForTesting(
+      mojom::blink::MediaStreamDispatcherHostPtr dispatcher_host);
 
   media::VideoCapturerSource* GetSourceForTesting();
 
@@ -82,10 +82,11 @@ class BLINK_MODULES_EXPORT MediaStreamVideoCapturerSource
   void OnRunStateChanged(const media::VideoCaptureParams& new_capture_params,
                          bool is_running);
 
-  // TODO(crbug.com/704136): Replace |internal_state_| with regular fields once
-  // this header file moves to blink/renderer.
-  class InternalState;
-  std::unique_ptr<InternalState> internal_state_;
+  const mojom::blink::MediaStreamDispatcherHostPtr&
+  GetMediaStreamDispatcherHost();
+
+  WeakPersistent<LocalFrame> frame_;
+  mojom::blink::MediaStreamDispatcherHostPtr host_;
 
   // The source that provides video frames.
   std::unique_ptr<media::VideoCapturerSource> source_;
@@ -109,4 +110,4 @@ class BLINK_MODULES_EXPORT MediaStreamVideoCapturerSource
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_VIDEO_CAPTURER_SOURCE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_VIDEO_CAPTURER_SOURCE_H_
