@@ -7,7 +7,6 @@ import("//chrome/common/features.gni")
 import("//chromeos/assistant/assistant.gni")
 import("//components/gwp_asan/buildflags/buildflags.gni")
 import("//components/nacl/features.gni")
-import("//device/vr/buildflags/buildflags.gni")
 import("//ppapi/buildflags/buildflags.gni")
 import("//printing/buildflags/buildflags.gni")
 import("//tools/grit/grit_rule.gni")
@@ -570,10 +569,6 @@ source_set("builtin_service_manifests") {
 
   if (enable_print_preview) {
     deps += [ "//chrome/services/printing/public/cpp:manifest" ]
-  }
-
-  if (enable_vr && !is_android) {
-    deps += [ "//chrome/services/isolated_xr_device:manifest" ]
   }
 
   if (enable_simple_browser_service_in_process ||

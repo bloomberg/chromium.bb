@@ -8,7 +8,6 @@
 #include "build/build_config.h"
 #include "chrome/common/buildflags.h"
 #include "components/services/quarantine/public/cpp/manifest.h"
-#include "device/vr/buildflags/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 
@@ -38,10 +37,6 @@
 #include "chrome/services/printing/public/cpp/manifest.h"
 #endif
 
-#if BUILDFLAG(ENABLE_VR) && !defined(OS_ANDROID)
-#include "chrome/services/isolated_xr_device/manifest.h"
-#endif
-
 #if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_IN_PROCESS) || \
     BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_OUT_OF_PROCESS)
 #include "services/content/simple_browser/public/cpp/manifest.h"  // nogncheck
@@ -57,9 +52,6 @@ GetChromeBuiltinServiceManifests() {
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
     (BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN))
       GetChromePrintingManifest(),
-#endif
-#if BUILDFLAG(ENABLE_VR) && !defined(OS_ANDROID)
-      GetXrDeviceServiceManifest(),
 #endif
 #if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_IN_PROCESS)
       simple_browser::GetManifest(),

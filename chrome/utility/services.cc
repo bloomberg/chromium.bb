@@ -15,6 +15,7 @@
 #include "components/services/patch/public/mojom/file_patcher.mojom.h"
 #include "components/services/unzip/public/mojom/unzipper.mojom.h"
 #include "components/services/unzip/unzipper_impl.h"
+#include "device/vr/buildflags/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
 #include "mojo/public/cpp/bindings/service_factory.h"
 #include "printing/buildflags/buildflags.h"
@@ -46,6 +47,11 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
 #include "chrome/services/media_gallery_util/media_parser_factory.h"
 #include "chrome/services/media_gallery_util/public/mojom/media_parser.mojom.h"
+#endif
+
+#if BUILDFLAG(ENABLE_VR) && !defined(OS_ANDROID)
+#include "chrome/services/isolated_xr_device/xr_device_service.h"  // nogncheck
+#include "device/vr/public/mojom/isolated_xr_service.mojom.h"      // nogncheck
 #endif
 
 namespace {
@@ -101,6 +107,13 @@ auto RunMediaParserFactory(
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
 
+#if BUILDFLAG(ENABLE_VR) && !defined(OS_ANDROID)
+auto RunXrDeviceService(
+    mojo::PendingReceiver<device::mojom::XRDeviceService> receiver) {
+  return std::make_unique<device::XrDeviceService>(std::move(receiver));
+}
+#endif
+
 }  // namespace
 
 mojo::ServiceFactory* GetElevatedMainThreadServiceFactory() {
@@ -142,6 +155,10 @@ mojo::ServiceFactory* GetMainThreadServiceFactory() {
 
 #if BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
     RunMediaParserFactory,
+#endif
+
+#if BUILDFLAG(ENABLE_VR) && !defined(OS_ANDROID)
+    RunXrDeviceService,
 #endif
   };
   // clang-format on

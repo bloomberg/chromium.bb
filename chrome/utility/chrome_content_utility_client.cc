@@ -26,7 +26,6 @@
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/simple_connection_filter.h"
 #include "content/public/utility/utility_thread.h"
-#include "device/vr/buildflags/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/sandbox/switches.h"
@@ -42,10 +41,6 @@
 #include "components/services/quarantine/public/cpp/quarantine_features_win.h"  // nogncheck
 #include "components/services/quarantine/public/mojom/quarantine.mojom.h"  // nogncheck
 #include "components/services/quarantine/quarantine_service.h"  // nogncheck
-#endif
-
-#if BUILDFLAG(ENABLE_VR) && !defined(OS_ANDROID)
-#include "chrome/services/isolated_xr_device/xr_device_service.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS) && defined(OS_WIN)
@@ -187,11 +182,6 @@ ChromeContentUtilityClient::MaybeCreateMainThreadService(
 #if BUILDFLAG(ENABLE_PRINTING)
   if (service_name == printing::mojom::kServiceName)
     return printing::CreatePdfCompositorService(std::move(request));
-#endif
-
-#if BUILDFLAG(ENABLE_VR) && !defined(OS_ANDROID)
-  if (service_name == device::mojom::kVrIsolatedServiceName)
-    return std::make_unique<device::XrDeviceService>(std::move(request));
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
